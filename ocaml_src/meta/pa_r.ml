@@ -161,8 +161,6 @@ Grammar.extend
      grammar_entry_create "mod_decl_binding"
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
-   and package_type : 'package_type Grammar.Entry.e =
-     grammar_entry_create "package_type"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
      grammar_entry_create "cons_expr_opt"
    and dummy : 'dummy Grammar.Entry.e = grammar_entry_create "dummy"
@@ -999,12 +997,11 @@ Grammar.extend
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm
-         (Grammar.Entry.obj (package_type : 'package_type Grammar.Entry.e));
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (pt : 'package_type) _ (me : 'module_expr) _ _
-             (loc : Ploc.t) ->
-           (MLast.ExPck (loc, me, pt) : 'expr));
+        (fun _ (mt : 'module_type) _ (me : 'module_expr) _ _ (loc : Ploc.t) ->
+           (MLast.ExPck (loc, me, mt) : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ _ (loc : Ploc.t) -> (MLast.ExUid (loc, "()") : 'expr));
@@ -1079,13 +1076,6 @@ Grammar.extend
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
            (MLast.ExInt (loc, s, "") : 'expr))]];
-    Grammar.Entry.obj (package_type : 'package_type Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
-      Gramext.action
-        (fun (mt : 'module_type) (loc : Ploc.t) ->
-           (mt, [] : 'package_type))]];
     Grammar.Entry.obj (cons_expr_opt : 'cons_expr_opt Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Ploc.t) -> (None : 'cons_expr_opt));

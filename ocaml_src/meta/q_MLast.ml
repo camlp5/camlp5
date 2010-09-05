@@ -372,8 +372,6 @@ Grammar.extend
      grammar_entry_create "mod_decl_binding"
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
-   and package_type : 'package_type Grammar.Entry.e =
-     grammar_entry_create "package_type"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
      grammar_entry_create "cons_expr_opt"
    and dummy : 'dummy Grammar.Entry.e = grammar_entry_create "dummy"
@@ -2430,18 +2428,18 @@ Grammar.extend
                  Gramext.Stoken ("", ","))],
              Gramext.action
                (fun (a : 'expr list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__72));
+                  (Qast.VaVal (Qast.List a) : 'e__71));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__72));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__71));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__72))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__71))]);
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (el : 'e__72) _ (loc : Ploc.t) ->
+        (fun _ (el : 'e__71) _ (loc : Ploc.t) ->
            (Qast.Node ("ExTup", [Qast.Loc; el]) : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action (fun _ (e : 'expr) _ (loc : Ploc.t) -> (e : 'expr));
@@ -2463,26 +2461,12 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
        Gramext.Stoken ("", ":");
-       Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj
-                   (package_type : 'package_type Grammar.Entry.e))],
-             Gramext.action
-               (fun (a : 'package_type) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__71));
-             [Gramext.Stoken ("ANTIQUOT", "_pack")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_pack", loc, a) : 'e__71));
-             [Gramext.Stoken ("ANTIQUOT", "pack")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("pack", loc, a)) : 'e__71))]);
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (pt : 'e__71) _ (me : 'module_expr) _ _ (loc : Ploc.t) ->
-           (Qast.Node ("ExPck", [Qast.Loc; me; pt]) : 'expr));
+        (fun _ (mt : 'module_type) _ (me : 'module_expr) _ _ (loc : Ploc.t) ->
+           (Qast.Node ("ExPck", [Qast.Loc; me; mt]) : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ _ (loc : Ploc.t) ->
@@ -2743,13 +2727,6 @@ Grammar.extend
       Gramext.action
         (fun (s : 'e__59) (loc : Ploc.t) ->
            (Qast.Node ("ExInt", [Qast.Loc; s; Qast.Str ""]) : 'expr))]];
-    Grammar.Entry.obj (package_type : 'package_type Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
-      Gramext.action
-        (fun (mt : 'module_type) (loc : Ploc.t) ->
-           (Qast.Tuple [mt; Qast.VaVal (Qast.List [])] : 'package_type))]];
     Grammar.Entry.obj (cons_expr_opt : 'cons_expr_opt Grammar.Entry.e), None,
     [None, None,
      [[],
@@ -2782,23 +2759,23 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__73));
+                  (Qast.VaVal (Qast.Bool a) : 'e__72));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__73));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__72));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__73));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__72));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__73));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__72));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__73))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__72))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Slist1sep
@@ -2808,18 +2785,18 @@ Grammar.extend
                  Gramext.Stoken ("", "and"))],
              Gramext.action
                (fun (a : 'let_binding list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__74));
+                  (Qast.VaVal (Qast.List a) : 'e__73));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__74));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__73));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__74))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__73))]);
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (el : 'sequence) _ (l : 'e__74) (rf : 'e__73) _ (loc : Ploc.t) ->
+        (fun (el : 'sequence) _ (l : 'e__73) (rf : 'e__72) _ (loc : Ploc.t) ->
            (Qast.List
               [Qast.Node
                  ("ExLet", [Qast.Loc; rf; l; mksequence Qast.Loc el])] :
@@ -2868,19 +2845,19 @@ Grammar.extend
                       (when_expr : 'when_expr Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'when_expr option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__75));
+                  (Qast.VaVal (Qast.Option a) : 'e__74));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__75));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__74));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__75))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__74))]);
        Gramext.Stoken ("", "->");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'expr) _ (w : 'e__75) (aso : 'as_patt_opt) (p : 'patt)
+        (fun (e : 'expr) _ (w : 'e__74) (aso : 'as_patt_opt) (p : 'patt)
              (loc : Ploc.t) ->
            (mkmatchcase Qast.Loc p aso w e : 'match_case))]];
     Grammar.Entry.obj (as_patt_opt : 'as_patt_opt Grammar.Entry.e), None,
@@ -2969,18 +2946,18 @@ Grammar.extend
                  Gramext.Stoken ("", ";"))],
              Gramext.action
                (fun (a : 'label_patt list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__86));
+                  (Qast.VaVal (Qast.List a) : 'e__85));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__86));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__85));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__86))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__85))]);
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (lpl : 'e__86) _ (loc : Ploc.t) ->
+        (fun _ (lpl : 'e__85) _ (loc : Ploc.t) ->
            (Qast.Node ("PaRec", [Qast.Loc; lpl]) : 'patt));
       [Gramext.Stoken ("", "[|");
        Gramext.Sfacto
@@ -2991,18 +2968,18 @@ Grammar.extend
                  Gramext.Stoken ("", ";"))],
              Gramext.action
                (fun (a : 'patt list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__85));
+                  (Qast.VaVal (Qast.List a) : 'e__84));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__85));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__84));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__85))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__84))]);
        Gramext.Stoken ("", "|]")],
       Gramext.action
-        (fun _ (pl : 'e__85) _ (loc : Ploc.t) ->
+        (fun _ (pl : 'e__84) _ (loc : Ploc.t) ->
            (Qast.Node ("PaArr", [Qast.Loc; pl]) : 'patt));
       [Gramext.Stoken ("", "[");
        Gramext.Slist1sep
@@ -3032,149 +3009,124 @@ Grammar.extend
             [[Gramext.Stoken ("CHAR", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__84));
+                  (Qast.VaVal (Qast.Str a) : 'e__83));
              [Gramext.Stoken ("ANTIQUOT", "_chr")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_chr", loc, a) : 'e__84));
+                  (Qast.VaAnt ("_chr", loc, a) : 'e__83));
              [Gramext.Stoken ("ANTIQUOT", "chr")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("chr", loc, a)) : 'e__84))])],
+                  (Qast.VaVal (Qast.VaAnt ("chr", loc, a)) : 'e__83))])],
       Gramext.action
-        (fun (s : 'e__84) (loc : Ploc.t) ->
+        (fun (s : 'e__83) (loc : Ploc.t) ->
            (Qast.Node ("PaChr", [Qast.Loc; s]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("STRING", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__83));
+                  (Qast.VaVal (Qast.Str a) : 'e__82));
              [Gramext.Stoken ("ANTIQUOT", "_str")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_str", loc, a) : 'e__83));
+                  (Qast.VaAnt ("_str", loc, a) : 'e__82));
              [Gramext.Stoken ("ANTIQUOT", "str")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("str", loc, a)) : 'e__83))])],
+                  (Qast.VaVal (Qast.VaAnt ("str", loc, a)) : 'e__82))])],
       Gramext.action
-        (fun (s : 'e__83) (loc : Ploc.t) ->
+        (fun (s : 'e__82) (loc : Ploc.t) ->
            (Qast.Node ("PaStr", [Qast.Loc; s]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("FLOAT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__82));
+                  (Qast.VaVal (Qast.Str a) : 'e__81));
              [Gramext.Stoken ("ANTIQUOT", "_flo")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flo", loc, a) : 'e__82));
+                  (Qast.VaAnt ("_flo", loc, a) : 'e__81));
              [Gramext.Stoken ("ANTIQUOT", "flo")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flo", loc, a)) : 'e__82))])],
+                  (Qast.VaVal (Qast.VaAnt ("flo", loc, a)) : 'e__81))])],
       Gramext.action
-        (fun (s : 'e__82) (loc : Ploc.t) ->
+        (fun (s : 'e__81) (loc : Ploc.t) ->
            (Qast.Node ("PaFlo", [Qast.Loc; s]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("INT_n", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__81));
+                  (Qast.VaVal (Qast.Str a) : 'e__80));
              [Gramext.Stoken ("ANTIQUOT", "_nativeint")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_nativeint", loc, a) : 'e__81));
+                  (Qast.VaAnt ("_nativeint", loc, a) : 'e__80));
              [Gramext.Stoken ("ANTIQUOT", "nativeint")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.VaAnt ("nativeint", loc, a)) :
-                   'e__81))])],
+                   'e__80))])],
       Gramext.action
-        (fun (s : 'e__81) (loc : Ploc.t) ->
+        (fun (s : 'e__80) (loc : Ploc.t) ->
            (Qast.Node ("PaInt", [Qast.Loc; s; Qast.Str "n"]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("INT_L", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__80));
+                  (Qast.VaVal (Qast.Str a) : 'e__79));
              [Gramext.Stoken ("ANTIQUOT", "_int64")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_int64", loc, a) : 'e__80));
+                  (Qast.VaAnt ("_int64", loc, a) : 'e__79));
              [Gramext.Stoken ("ANTIQUOT", "int64")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("int64", loc, a)) : 'e__80))])],
+                  (Qast.VaVal (Qast.VaAnt ("int64", loc, a)) : 'e__79))])],
       Gramext.action
-        (fun (s : 'e__80) (loc : Ploc.t) ->
+        (fun (s : 'e__79) (loc : Ploc.t) ->
            (Qast.Node ("PaInt", [Qast.Loc; s; Qast.Str "L"]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("INT_l", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__79));
+                  (Qast.VaVal (Qast.Str a) : 'e__78));
              [Gramext.Stoken ("ANTIQUOT", "_int32")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_int32", loc, a) : 'e__79));
+                  (Qast.VaAnt ("_int32", loc, a) : 'e__78));
              [Gramext.Stoken ("ANTIQUOT", "int32")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("int32", loc, a)) : 'e__79))])],
+                  (Qast.VaVal (Qast.VaAnt ("int32", loc, a)) : 'e__78))])],
       Gramext.action
-        (fun (s : 'e__79) (loc : Ploc.t) ->
+        (fun (s : 'e__78) (loc : Ploc.t) ->
            (Qast.Node ("PaInt", [Qast.Loc; s; Qast.Str "l"]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("INT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__78));
+                  (Qast.VaVal (Qast.Str a) : 'e__77));
              [Gramext.Stoken ("ANTIQUOT", "_int")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_int", loc, a) : 'e__78));
+                  (Qast.VaAnt ("_int", loc, a) : 'e__77));
              [Gramext.Stoken ("ANTIQUOT", "int")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("int", loc, a)) : 'e__78))])],
+                  (Qast.VaVal (Qast.VaAnt ("int", loc, a)) : 'e__77))])],
       Gramext.action
-        (fun (s : 'e__78) (loc : Ploc.t) ->
+        (fun (s : 'e__77) (loc : Ploc.t) ->
            (Qast.Node ("PaInt", [Qast.Loc; s; Qast.Str ""]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("UIDENT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__77));
-             [Gramext.Stoken ("ANTIQUOT", "_")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__77));
-             [Gramext.Stoken ("ANTIQUOT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__77));
-             [Gramext.Stoken ("ANTIQUOT", "_uid")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_uid", loc, a) : 'e__77));
-             [Gramext.Stoken ("ANTIQUOT", "uid")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__77))])],
-      Gramext.action
-        (fun (s : 'e__77) (loc : Ploc.t) ->
-           (Qast.Node ("PaUid", [Qast.Loc; s]) : 'patt));
-      [Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Stoken ("LIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.Str a) : 'e__76));
@@ -3186,16 +3138,41 @@ Grammar.extend
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__76));
+             [Gramext.Stoken ("ANTIQUOT", "_uid")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_uid", loc, a) : 'e__76));
+             [Gramext.Stoken ("ANTIQUOT", "uid")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__76))])],
+      Gramext.action
+        (fun (s : 'e__76) (loc : Ploc.t) ->
+           (Qast.Node ("PaUid", [Qast.Loc; s]) : 'patt));
+      [Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Stoken ("LIDENT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.Str a) : 'e__75));
+             [Gramext.Stoken ("ANTIQUOT", "_")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_", loc, a) : 'e__75));
+             [Gramext.Stoken ("ANTIQUOT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__75));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__76));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__75));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__76))])],
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__75))])],
       Gramext.action
-        (fun (s : 'e__76) (loc : Ploc.t) ->
+        (fun (s : 'e__75) (loc : Ploc.t) ->
            (Qast.Node ("PaLid", [Qast.Loc; s]) : 'patt))]];
     Grammar.Entry.obj (paren_patt : 'paren_patt Grammar.Entry.e), None,
     [None, None,
@@ -3212,17 +3189,17 @@ Grammar.extend
                  Gramext.Stoken ("", ","))],
              Gramext.action
                (fun (a : 'patt list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__87));
+                  (Qast.VaVal (Qast.List a) : 'e__86));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__87));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__86));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__87))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__86))])],
       Gramext.action
-        (fun (pl : 'e__87) (loc : Ploc.t) ->
+        (fun (pl : 'e__86) (loc : Ploc.t) ->
            (Qast.Node ("PaTup", [Qast.Loc; pl]) : 'paren_patt));
       [Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e))],
       Gramext.action (fun (p : 'patt) (loc : Ploc.t) -> (p : 'paren_patt));
@@ -3280,31 +3257,6 @@ Grammar.extend
             [[Gramext.Stoken ("LIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__89));
-             [Gramext.Stoken ("ANTIQUOT", "_")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__89));
-             [Gramext.Stoken ("ANTIQUOT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__89));
-             [Gramext.Stoken ("ANTIQUOT", "_lid")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__89));
-             [Gramext.Stoken ("ANTIQUOT", "lid")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__89))])],
-      Gramext.action
-        (fun (i : 'e__89) (loc : Ploc.t) ->
-           (Qast.Node ("PaLid", [Qast.Loc; i]) : 'patt_label_ident));
-      [Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Stoken ("UIDENT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.Str a) : 'e__88));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
@@ -3314,16 +3266,41 @@ Grammar.extend
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__88));
+             [Gramext.Stoken ("ANTIQUOT", "_lid")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__88));
+             [Gramext.Stoken ("ANTIQUOT", "lid")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__88))])],
+      Gramext.action
+        (fun (i : 'e__88) (loc : Ploc.t) ->
+           (Qast.Node ("PaLid", [Qast.Loc; i]) : 'patt_label_ident));
+      [Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Stoken ("UIDENT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.Str a) : 'e__87));
+             [Gramext.Stoken ("ANTIQUOT", "_")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_", loc, a) : 'e__87));
+             [Gramext.Stoken ("ANTIQUOT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__87));
              [Gramext.Stoken ("ANTIQUOT", "_uid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_uid", loc, a) : 'e__88));
+                  (Qast.VaAnt ("_uid", loc, a) : 'e__87));
              [Gramext.Stoken ("ANTIQUOT", "uid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__88))])],
+                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__87))])],
       Gramext.action
-        (fun (i : 'e__88) (loc : Ploc.t) ->
+        (fun (i : 'e__87) (loc : Ploc.t) ->
            (Qast.Node ("PaUid", [Qast.Loc; i]) : 'patt_label_ident))]];
     Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e), None,
     [None, None,
@@ -3335,25 +3312,25 @@ Grammar.extend
             [[Gramext.Stoken ("LIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__91));
+                  (Qast.VaVal (Qast.Str a) : 'e__90));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__91));
+                  (Qast.VaAnt ("_", loc, a) : 'e__90));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__91));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__90));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__91));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__90));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__91))])],
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__90))])],
       Gramext.action
-        (fun (s : 'e__91) (loc : Ploc.t) ->
+        (fun (s : 'e__90) (loc : Ploc.t) ->
            (Qast.Node ("PaLid", [Qast.Loc; s]) : 'ipatt));
       [Gramext.Stoken ("", "(");
        Gramext.Snterm
@@ -3371,18 +3348,18 @@ Grammar.extend
                  Gramext.Stoken ("", ";"))],
              Gramext.action
                (fun (a : 'label_ipatt list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__90));
+                  (Qast.VaVal (Qast.List a) : 'e__89));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__90));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__89));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__90))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__89))]);
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (lpl : 'e__90) _ (loc : Ploc.t) ->
+        (fun _ (lpl : 'e__89) _ (loc : Ploc.t) ->
            (Qast.Node ("PaRec", [Qast.Loc; lpl]) : 'ipatt))]];
     Grammar.Entry.obj (paren_ipatt : 'paren_ipatt Grammar.Entry.e), None,
     [None, None,
@@ -3399,17 +3376,17 @@ Grammar.extend
                  Gramext.Stoken ("", ","))],
              Gramext.action
                (fun (a : 'ipatt list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__92));
+                  (Qast.VaVal (Qast.List a) : 'e__91));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__92));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__91));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__92))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__91))])],
       Gramext.action
-        (fun (pl : 'e__92) (loc : Ploc.t) ->
+        (fun (pl : 'e__91) (loc : Ploc.t) ->
            (Qast.Node ("PaTup", [Qast.Loc; pl]) : 'paren_ipatt));
       [Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e))],
       Gramext.action (fun (p : 'ipatt) (loc : Ploc.t) -> (p : 'paren_ipatt));
@@ -3456,38 +3433,38 @@ Grammar.extend
                       (type_parameter : 'type_parameter Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'type_parameter list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__93));
+                  (Qast.VaVal (Qast.List a) : 'e__92));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__93));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__92));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__93))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__92))]);
        Gramext.Stoken ("", "=");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__94));
+                  (Qast.VaVal (Qast.Bool a) : 'e__93));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__94));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__93));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__94));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__93));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__94));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__93));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__94))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__93))]);
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
        Gramext.Sfacto
          (Gramext.srules
@@ -3497,17 +3474,17 @@ Grammar.extend
                       (constrain : 'constrain Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'constrain list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__95));
+                  (Qast.VaVal (Qast.List a) : 'e__94));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__95));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__94));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__95))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__94))])],
       Gramext.action
-        (fun (cl : 'e__95) (tk : 'ctyp) (pf : 'e__94) _ (tpl : 'e__93)
+        (fun (cl : 'e__94) (tk : 'ctyp) (pf : 'e__93) _ (tpl : 'e__92)
              (n : 'type_patt) (loc : Ploc.t) ->
            (Qast.Record
               ["tdNam", n; "tdPrm", tpl; "tdPrv", pf; "tdDef", tk;
@@ -3520,25 +3497,25 @@ Grammar.extend
             [[Gramext.Stoken ("LIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__96));
+                  (Qast.VaVal (Qast.Str a) : 'e__95));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__96));
+                  (Qast.VaAnt ("_", loc, a) : 'e__95));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__96));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__95));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__96));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__95));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__96))])],
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__95))])],
       Gramext.action
-        (fun (n : 'e__96) (loc : Ploc.t) ->
+        (fun (n : 'e__95) (loc : Ploc.t) ->
            (Qast.Tuple [Qast.Loc; n] : 'type_patt))]];
     Grammar.Entry.obj (constrain : 'constrain Grammar.Entry.e), None,
     [None, None,
@@ -3558,25 +3535,6 @@ Grammar.extend
             [[Gramext.Snterm
                 (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__99));
-             [Gramext.Stoken ("ANTIQUOT", "_")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__99));
-             [Gramext.Stoken ("ANTIQUOT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__99))])],
-      Gramext.action
-        (fun (i : 'e__99) _ _ (loc : Ploc.t) ->
-           (Qast.Tuple [i; Qast.Tuple [Qast.Bool false; Qast.Bool true]] :
-            'type_parameter));
-      [Gramext.Stoken ("", "+"); Gramext.Stoken ("", "'");
-       Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
-             Gramext.action
                (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__98));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
@@ -3588,9 +3546,9 @@ Grammar.extend
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__98))])],
       Gramext.action
         (fun (i : 'e__98) _ _ (loc : Ploc.t) ->
-           (Qast.Tuple [i; Qast.Tuple [Qast.Bool true; Qast.Bool false]] :
+           (Qast.Tuple [i; Qast.Tuple [Qast.Bool false; Qast.Bool true]] :
             'type_parameter));
-      [Gramext.Stoken ("", "'");
+      [Gramext.Stoken ("", "+"); Gramext.Stoken ("", "'");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
@@ -3606,7 +3564,26 @@ Grammar.extend
                (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__97))])],
       Gramext.action
-        (fun (i : 'e__97) _ (loc : Ploc.t) ->
+        (fun (i : 'e__97) _ _ (loc : Ploc.t) ->
+           (Qast.Tuple [i; Qast.Tuple [Qast.Bool true; Qast.Bool false]] :
+            'type_parameter));
+      [Gramext.Stoken ("", "'");
+       Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Snterm
+                (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+             Gramext.action
+               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__96));
+             [Gramext.Stoken ("ANTIQUOT", "_")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_", loc, a) : 'e__96));
+             [Gramext.Stoken ("ANTIQUOT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__96))])],
+      Gramext.action
+        (fun (i : 'e__96) _ (loc : Ploc.t) ->
            (Qast.Tuple [i; Qast.Tuple [Qast.Bool false; Qast.Bool false]] :
             'type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,
@@ -3629,18 +3606,18 @@ Grammar.extend
                    (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'typevar list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__100));
+                  (Qast.VaVal (Qast.List a) : 'e__99));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__100));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__99));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__100))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__99))]);
        Gramext.Stoken ("", "."); Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) _ (pl : 'e__100) _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (pl : 'e__99) _ (loc : Ploc.t) ->
            (Qast.Node ("TyPol", [Qast.Loc; pl; t]) : 'ctyp))];
      Some "arrow", Some Gramext.RightA,
      [[Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
@@ -3669,18 +3646,18 @@ Grammar.extend
                  Gramext.Stoken ("", ";"))],
              Gramext.action
                (fun (a : 'label_declaration list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__106));
+                  (Qast.VaVal (Qast.List a) : 'e__105));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__106));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__105));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__106))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__105))]);
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (ldl : 'e__106) _ (loc : Ploc.t) ->
+        (fun _ (ldl : 'e__105) _ (loc : Ploc.t) ->
            (Qast.Node ("TyRec", [Qast.Loc; ldl]) : 'ctyp));
       [Gramext.Stoken ("", "[");
        Gramext.Sfacto
@@ -3693,18 +3670,18 @@ Grammar.extend
                  Gramext.Stoken ("", "|"))],
              Gramext.action
                (fun (a : 'constructor_declaration list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__105));
+                  (Qast.VaVal (Qast.List a) : 'e__104));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__105));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__104));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__105))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__104))]);
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (cdl : 'e__105) _ (loc : Ploc.t) ->
+        (fun _ (cdl : 'e__104) _ (loc : Ploc.t) ->
            (Qast.Node ("TySum", [Qast.Loc; cdl]) : 'ctyp));
       [Gramext.Stoken ("", "(");
        Gramext.Sfacto
@@ -3715,18 +3692,18 @@ Grammar.extend
                  Gramext.Stoken ("", "*"))],
              Gramext.action
                (fun (a : 'ctyp list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__104));
+                  (Qast.VaVal (Qast.List a) : 'e__103));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__104));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__103));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__104))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__103))]);
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (tl : 'e__104) _ (loc : Ploc.t) ->
+        (fun _ (tl : 'e__103) _ (loc : Ploc.t) ->
            (Qast.Node ("TyTup", [Qast.Loc; tl]) : 'ctyp));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action (fun _ (t : 'ctyp) _ (loc : Ploc.t) -> (t : 'ctyp));
@@ -3743,31 +3720,6 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__103));
-             [Gramext.Stoken ("ANTIQUOT", "_")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__103));
-             [Gramext.Stoken ("ANTIQUOT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__103));
-             [Gramext.Stoken ("ANTIQUOT", "_uid")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_uid", loc, a) : 'e__103));
-             [Gramext.Stoken ("ANTIQUOT", "uid")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__103))])],
-      Gramext.action
-        (fun (i : 'e__103) (loc : Ploc.t) ->
-           (Qast.Node ("TyUid", [Qast.Loc; i]) : 'ctyp));
-      [Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Stoken ("LIDENT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.Str a) : 'e__102));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
@@ -3777,16 +3729,41 @@ Grammar.extend
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__102));
+             [Gramext.Stoken ("ANTIQUOT", "_uid")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_uid", loc, a) : 'e__102));
+             [Gramext.Stoken ("ANTIQUOT", "uid")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__102))])],
+      Gramext.action
+        (fun (i : 'e__102) (loc : Ploc.t) ->
+           (Qast.Node ("TyUid", [Qast.Loc; i]) : 'ctyp));
+      [Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Stoken ("LIDENT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.Str a) : 'e__101));
+             [Gramext.Stoken ("ANTIQUOT", "_")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_", loc, a) : 'e__101));
+             [Gramext.Stoken ("ANTIQUOT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__101));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__102));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__101));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__102))])],
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__101))])],
       Gramext.action
-        (fun (i : 'e__102) (loc : Ploc.t) ->
+        (fun (i : 'e__101) (loc : Ploc.t) ->
            (Qast.Node ("TyLid", [Qast.Loc; i]) : 'ctyp));
       [Gramext.Stoken ("", "_")],
       Gramext.action
@@ -3797,17 +3774,17 @@ Grammar.extend
             [[Gramext.Snterm
                 (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__101));
+               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__100));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__101));
+                  (Qast.VaAnt ("_", loc, a) : 'e__100));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__101))])],
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__100))])],
       Gramext.action
-        (fun (i : 'e__101) _ (loc : Ploc.t) ->
+        (fun (i : 'e__100) _ (loc : Ploc.t) ->
            (Qast.Node ("TyQuo", [Qast.Loc; i]) : 'ctyp))]];
     Grammar.Entry.obj
       (constructor_declaration : 'constructor_declaration Grammar.Entry.e),
@@ -3818,25 +3795,25 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__109));
+                  (Qast.VaVal (Qast.Str a) : 'e__108));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__109));
+                  (Qast.VaAnt ("_", loc, a) : 'e__108));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__109));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__108));
              [Gramext.Stoken ("ANTIQUOT", "_uid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_uid", loc, a) : 'e__109));
+                  (Qast.VaAnt ("_uid", loc, a) : 'e__108));
              [Gramext.Stoken ("ANTIQUOT", "uid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__109))])],
+                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__108))])],
       Gramext.action
-        (fun (ci : 'e__109) (loc : Ploc.t) ->
+        (fun (ci : 'e__108) (loc : Ploc.t) ->
            (Qast.Tuple [Qast.Loc; ci; Qast.VaVal (Qast.List [])] :
             'constructor_declaration));
       [Gramext.Sfacto
@@ -3844,23 +3821,23 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__107));
+                  (Qast.VaVal (Qast.Str a) : 'e__106));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__107));
+                  (Qast.VaAnt ("_", loc, a) : 'e__106));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__107));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__106));
              [Gramext.Stoken ("ANTIQUOT", "_uid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_uid", loc, a) : 'e__107));
+                  (Qast.VaAnt ("_uid", loc, a) : 'e__106));
              [Gramext.Stoken ("ANTIQUOT", "uid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__107))]);
+                  (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) : 'e__106))]);
        Gramext.Stoken ("", "of");
        Gramext.Sfacto
          (Gramext.srules
@@ -3870,17 +3847,17 @@ Grammar.extend
                  Gramext.Stoken ("", "and"))],
              Gramext.action
                (fun (a : 'ctyp list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__108));
+                  (Qast.VaVal (Qast.List a) : 'e__107));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__108));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__107));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__108))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__107))])],
       Gramext.action
-        (fun (cal : 'e__108) _ (ci : 'e__107) (loc : Ploc.t) ->
+        (fun (cal : 'e__107) _ (ci : 'e__106) (loc : Ploc.t) ->
            (Qast.Tuple [Qast.Loc; ci; cal] : 'constructor_declaration))]];
     Grammar.Entry.obj
       (label_declaration : 'label_declaration Grammar.Entry.e),
@@ -3928,17 +3905,17 @@ Grammar.extend
                  Gramext.Stoken ("", "and"))],
              Gramext.action
                (fun (a : 'class_type_declaration list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__111));
+                  (Qast.VaVal (Qast.List a) : 'e__110));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__111));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__110));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__111))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__110))])],
       Gramext.action
-        (fun (ctd : 'e__111) _ _ (loc : Ploc.t) ->
+        (fun (ctd : 'e__110) _ _ (loc : Ploc.t) ->
            (Qast.Node ("StClt", [Qast.Loc; ctd]) : 'str_item));
       [Gramext.Stoken ("", "class");
        Gramext.Sfacto
@@ -3951,17 +3928,17 @@ Grammar.extend
                  Gramext.Stoken ("", "and"))],
              Gramext.action
                (fun (a : 'class_declaration list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__110));
+                  (Qast.VaVal (Qast.List a) : 'e__109));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__110));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__109));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__110))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__109))])],
       Gramext.action
-        (fun (cd : 'e__110) _ (loc : Ploc.t) ->
+        (fun (cd : 'e__109) _ (loc : Ploc.t) ->
            (Qast.Node ("StCls", [Qast.Loc; cd]) : 'str_item))]];
     Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e), None,
     [None, None,
@@ -3976,17 +3953,17 @@ Grammar.extend
                  Gramext.Stoken ("", "and"))],
              Gramext.action
                (fun (a : 'class_type_declaration list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__113));
+                  (Qast.VaVal (Qast.List a) : 'e__112));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__113));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__112));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__113))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__112))])],
       Gramext.action
-        (fun (ctd : 'e__113) _ _ (loc : Ploc.t) ->
+        (fun (ctd : 'e__112) _ _ (loc : Ploc.t) ->
            (Qast.Node ("SgClt", [Qast.Loc; ctd]) : 'sig_item));
       [Gramext.Stoken ("", "class");
        Gramext.Sfacto
@@ -3999,17 +3976,17 @@ Grammar.extend
                  Gramext.Stoken ("", "and"))],
              Gramext.action
                (fun (a : 'class_description list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__112));
+                  (Qast.VaVal (Qast.List a) : 'e__111));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__112));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__111));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__112))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__111))])],
       Gramext.action
-        (fun (cd : 'e__112) _ (loc : Ploc.t) ->
+        (fun (cd : 'e__111) _ (loc : Ploc.t) ->
            (Qast.Node ("SgCls", [Qast.Loc; cd]) : 'sig_item))]];
     Grammar.Entry.obj
       (class_declaration : 'class_declaration Grammar.Entry.e),
@@ -4020,45 +3997,45 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "virtual"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__114));
+                  (Qast.VaVal (Qast.Bool a) : 'e__113));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__114));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__113));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__114));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__113));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__114));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__113));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__114))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__113))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("LIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__115));
+                  (Qast.VaVal (Qast.Str a) : 'e__114));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__115));
+                  (Qast.VaAnt ("_", loc, a) : 'e__114));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__115));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__114));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__115));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__114));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__115))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__114))]);
        Gramext.Snterm
          (Grammar.Entry.obj
             (class_type_parameters : 'class_type_parameters Grammar.Entry.e));
@@ -4067,7 +4044,7 @@ Grammar.extend
             (class_fun_binding : 'class_fun_binding Grammar.Entry.e))],
       Gramext.action
         (fun (cfb : 'class_fun_binding) (ctp : 'class_type_parameters)
-             (i : 'e__115) (vf : 'e__114) (loc : Ploc.t) ->
+             (i : 'e__114) (vf : 'e__113) (loc : Ploc.t) ->
            (Qast.Record
               ["ciLoc", Qast.Loc; "ciVir", vf; "ciPrm", ctp; "ciNam", i;
                "ciExp", cfb] :
@@ -4110,18 +4087,18 @@ Grammar.extend
                  Gramext.Stoken ("", ","))],
              Gramext.action
                (fun (a : 'type_parameter list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__116));
+                  (Qast.VaVal (Qast.List a) : 'e__115));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__116));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__115));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__116))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__115))]);
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (tpl : 'e__116) _ (loc : Ploc.t) ->
+        (fun _ (tpl : 'e__115) _ (loc : Ploc.t) ->
            (Qast.Tuple [Qast.Loc; tpl] : 'class_type_parameters));
       [],
       Gramext.action
@@ -4148,23 +4125,23 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__117));
+                  (Qast.VaVal (Qast.Bool a) : 'e__116));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__117));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__116));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__117));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__116));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__117));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__116));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__117))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__116))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Slist1sep
@@ -4174,18 +4151,18 @@ Grammar.extend
                  Gramext.Stoken ("", "and"))],
              Gramext.action
                (fun (a : 'let_binding list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__118));
+                  (Qast.VaVal (Qast.List a) : 'e__117));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__118));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__117));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__118))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__117))]);
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (ce : 'class_expr) _ (lb : 'e__118) (rf : 'e__117) _
+        (fun (ce : 'class_expr) _ (lb : 'e__117) (rf : 'e__116) _
              (loc : Ploc.t) ->
            (Qast.Node ("CeLet", [Qast.Loc; rf; lb; ce]) : 'class_expr));
       [Gramext.Stoken ("", "fun");
@@ -4223,21 +4200,21 @@ Grammar.extend
                       (class_self_patt : 'class_self_patt Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'class_self_patt option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__122));
+                  (Qast.VaVal (Qast.Option a) : 'e__121));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__122));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__121));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__122))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__121))]);
        Gramext.Snterm
          (Grammar.Entry.obj
             (class_structure : 'class_structure Grammar.Entry.e));
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (cf : 'class_structure) (cspo : 'e__122) _ (loc : Ploc.t) ->
+        (fun _ (cf : 'class_structure) (cspo : 'e__121) _ (loc : Ploc.t) ->
            (Qast.Node ("CeStr", [Qast.Loc; cspo; cf]) : 'class_expr));
       [Gramext.Sfacto
          (Gramext.srules
@@ -4246,17 +4223,17 @@ Grammar.extend
                    (class_longident : 'class_longident Grammar.Entry.e))],
              Gramext.action
                (fun (a : 'class_longident) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__121));
+                  (Qast.VaVal a : 'e__120));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__121));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__120));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__121))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__120))])],
       Gramext.action
-        (fun (ci : 'e__121) (loc : Ploc.t) ->
+        (fun (ci : 'e__120) (loc : Ploc.t) ->
            (Qast.Node ("CeCon", [Qast.Loc; ci; Qast.VaVal (Qast.List [])]) :
             'class_expr));
       [Gramext.Sfacto
@@ -4266,15 +4243,15 @@ Grammar.extend
                    (class_longident : 'class_longident Grammar.Entry.e))],
              Gramext.action
                (fun (a : 'class_longident) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__119));
+                  (Qast.VaVal a : 'e__118));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__119));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__118));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__119))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__118))]);
        Gramext.Stoken ("", "[");
        Gramext.Sfacto
          (Gramext.srules
@@ -4284,18 +4261,18 @@ Grammar.extend
                  Gramext.Stoken ("", ","))],
              Gramext.action
                (fun (a : 'ctyp list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__120));
+                  (Qast.VaVal (Qast.List a) : 'e__119));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__120));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__119));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__120))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__119))]);
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (ctcl : 'e__120) _ (ci : 'e__119) (loc : Ploc.t) ->
+        (fun _ (ctcl : 'e__119) _ (ci : 'e__118) (loc : Ploc.t) ->
            (Qast.Node ("CeCon", [Qast.Loc; ci; ctcl]) : 'class_expr))]];
     Grammar.Entry.obj (class_structure : 'class_structure Grammar.Entry.e),
     None,
@@ -4310,20 +4287,20 @@ Grammar.extend
                      Gramext.Stoken ("", ";")],
                     Gramext.action
                       (fun _ (cf : 'class_str_item) (loc : Ploc.t) ->
-                         (cf : 'e__123))])],
+                         (cf : 'e__122))])],
              Gramext.action
-               (fun (a : 'e__123 list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__124));
+               (fun (a : 'e__122 list) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.List a) : 'e__123));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__124));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__123));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__124))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__123))])],
       Gramext.action
-        (fun (cf : 'e__124) (loc : Ploc.t) -> (cf : 'class_structure))]];
+        (fun (cf : 'e__123) (loc : Ploc.t) -> (cf : 'class_structure))]];
     Grammar.Entry.obj (class_self_patt : 'class_self_patt Grammar.Entry.e),
     None,
     [None, None,
@@ -4361,45 +4338,45 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__132));
+                  (Qast.VaVal (Qast.Bool a) : 'e__131));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__132));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__131));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__132));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__131));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__132));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__131));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__132))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__131))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__133));
+               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__132));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__133));
+                  (Qast.VaAnt ("_", loc, a) : 'e__132));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__133));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__132));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__133));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__132));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__133))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__132))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Sopt
@@ -4407,19 +4384,19 @@ Grammar.extend
                    (Grammar.Entry.obj (polyt : 'polyt Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'polyt option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__134));
+                  (Qast.VaVal (Qast.Option a) : 'e__133));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__134));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__133));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__134))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__133))]);
        Gramext.Snterm
          (Grammar.Entry.obj (fun_binding : 'fun_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'fun_binding) (topt : 'e__134) (l : 'e__133) (pf : 'e__132)
+        (fun (e : 'fun_binding) (topt : 'e__133) (l : 'e__132) (pf : 'e__131)
              _ (loc : Ploc.t) ->
            (Qast.Node ("CrMth", [Qast.Loc; l; pf; e; topt]) :
             'class_str_item));
@@ -4429,49 +4406,49 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__130));
+                  (Qast.VaVal (Qast.Bool a) : 'e__129));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__130));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__129));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__130));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__129));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__130));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__129));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__130))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__129))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__131));
+               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__130));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__131));
+                  (Qast.VaAnt ("_", loc, a) : 'e__130));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__131));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__130));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__131));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__130));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__131))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__130))]);
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'e__131) (pf : 'e__130) _ _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (l : 'e__130) (pf : 'e__129) _ _ (loc : Ploc.t) ->
            (Qast.Node ("CrVir", [Qast.Loc; l; pf; t]) : 'class_str_item));
       [Gramext.Stoken ("", "value");
        Gramext.Sfacto
@@ -4479,50 +4456,50 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "mutable"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__128));
+                  (Qast.VaVal (Qast.Bool a) : 'e__127));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__128));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__127));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__128));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__127));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__128));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__127));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__128))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__127))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__129));
+               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__128));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__129));
+                  (Qast.VaAnt ("_", loc, a) : 'e__128));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__129));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__128));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__129));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__128));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__129))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__128))]);
        Gramext.Snterm
          (Grammar.Entry.obj
             (cvalue_binding : 'cvalue_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'cvalue_binding) (lab : 'e__129) (mf : 'e__128) _
+        (fun (e : 'cvalue_binding) (lab : 'e__128) (mf : 'e__127) _
              (loc : Ploc.t) ->
            (Qast.Node ("CrVal", [Qast.Loc; lab; mf; e]) : 'class_str_item));
       [Gramext.Stoken ("", "inherit");
@@ -4536,17 +4513,17 @@ Grammar.extend
                       (as_lident : 'as_lident Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'as_lident option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__127));
+                  (Qast.VaVal (Qast.Option a) : 'e__126));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__127));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__126));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__127))])],
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__126))])],
       Gramext.action
-        (fun (pb : 'e__127) (ce : 'class_expr) _ (loc : Ploc.t) ->
+        (fun (pb : 'e__126) (ce : 'class_expr) _ (loc : Ploc.t) ->
            (Qast.Node ("CrInh", [Qast.Loc; ce; pb]) : 'class_str_item));
       [Gramext.Stoken ("", "declare");
        Gramext.Sfacto
@@ -4559,21 +4536,21 @@ Grammar.extend
                      Gramext.Stoken ("", ";")],
                     Gramext.action
                       (fun _ (s : 'class_str_item) (loc : Ploc.t) ->
-                         (s : 'e__125))])],
+                         (s : 'e__124))])],
              Gramext.action
-               (fun (a : 'e__125 list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__126));
+               (fun (a : 'e__124 list) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.List a) : 'e__125));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__126));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__125));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__126))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__125))]);
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (st : 'e__126) _ (loc : Ploc.t) ->
+        (fun _ (st : 'e__125) _ (loc : Ploc.t) ->
            (Qast.Node ("CrDcl", [Qast.Loc; st]) : 'class_str_item))]];
     Grammar.Entry.obj (as_lident : 'as_lident Grammar.Entry.e), None,
     [None, None,
@@ -4633,15 +4610,15 @@ Grammar.extend
                       (class_self_type : 'class_self_type Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'class_self_type option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__138));
+                  (Qast.VaVal (Qast.Option a) : 'e__137));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__138));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__137));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__138))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__137))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Slist0
@@ -4652,21 +4629,21 @@ Grammar.extend
                      Gramext.Stoken ("", ";")],
                     Gramext.action
                       (fun _ (csf : 'class_sig_item) (loc : Ploc.t) ->
-                         (csf : 'e__139))])],
+                         (csf : 'e__138))])],
              Gramext.action
-               (fun (a : 'e__139 list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__140));
+               (fun (a : 'e__138 list) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.List a) : 'e__139));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__140));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__139));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__140))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__139))]);
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (csf : 'e__140) (cst : 'e__138) _ (loc : Ploc.t) ->
+        (fun _ (csf : 'e__139) (cst : 'e__137) _ (loc : Ploc.t) ->
            (Qast.Node ("CtSig", [Qast.Loc; cst; csf]) : 'class_type));
       [Gramext.Sfacto
          (Gramext.srules
@@ -4675,17 +4652,17 @@ Grammar.extend
                    (clty_longident : 'clty_longident Grammar.Entry.e))],
              Gramext.action
                (fun (a : 'clty_longident) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__137));
+                  (Qast.VaVal a : 'e__136));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__137));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__136));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__137))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__136))])],
       Gramext.action
-        (fun (id : 'e__137) (loc : Ploc.t) ->
+        (fun (id : 'e__136) (loc : Ploc.t) ->
            (Qast.Node ("CtCon", [Qast.Loc; id; Qast.VaVal (Qast.List [])]) :
             'class_type));
       [Gramext.Sfacto
@@ -4695,15 +4672,15 @@ Grammar.extend
                    (clty_longident : 'clty_longident Grammar.Entry.e))],
              Gramext.action
                (fun (a : 'clty_longident) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__135));
+                  (Qast.VaVal a : 'e__134));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__135));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__134));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__135))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__134))]);
        Gramext.Stoken ("", "[");
        Gramext.Sfacto
          (Gramext.srules
@@ -4713,18 +4690,18 @@ Grammar.extend
                  Gramext.Stoken ("", ","))],
              Gramext.action
                (fun (a : 'ctyp list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__136));
+                  (Qast.VaVal (Qast.List a) : 'e__135));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__136));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__135));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__136))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__135))]);
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (tl : 'e__136) _ (id : 'e__135) (loc : Ploc.t) ->
+        (fun _ (tl : 'e__135) _ (id : 'e__134) (loc : Ploc.t) ->
            (Qast.Node ("CtCon", [Qast.Loc; id; tl]) : 'class_type));
       [Gramext.Stoken ("", "[");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
@@ -4756,49 +4733,49 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__147));
+                  (Qast.VaVal (Qast.Bool a) : 'e__146));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__147));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__146));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__147));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__146));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__147));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__146));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__147))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__146))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__148));
+               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__147));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__148));
+                  (Qast.VaAnt ("_", loc, a) : 'e__147));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__148));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__147));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__148));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__147));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__148))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__147))]);
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'e__148) (pf : 'e__147) _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (l : 'e__147) (pf : 'e__146) _ (loc : Ploc.t) ->
            (Qast.Node ("CgMth", [Qast.Loc; l; pf; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.Sfacto
@@ -4806,49 +4783,49 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__145));
+                  (Qast.VaVal (Qast.Bool a) : 'e__144));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__145));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__144));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__145));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__144));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__145));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__144));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__145))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__144))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__146));
+               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__145));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__146));
+                  (Qast.VaAnt ("_", loc, a) : 'e__145));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__146));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__145));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__146));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__145));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__146))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__145))]);
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'e__146) (pf : 'e__145) _ _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (l : 'e__145) (pf : 'e__144) _ _ (loc : Ploc.t) ->
            (Qast.Node ("CgVir", [Qast.Loc; l; pf; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "value");
        Gramext.Sfacto
@@ -4856,49 +4833,49 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "mutable"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__143));
+                  (Qast.VaVal (Qast.Bool a) : 'e__142));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__143));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__142));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__143));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__142));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__143));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__142));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__143))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__142))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__144));
+               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__143));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__144));
+                  (Qast.VaAnt ("_", loc, a) : 'e__143));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__144));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__143));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__144));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__143));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__144))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__143))]);
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'e__144) (mf : 'e__143) _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (l : 'e__143) (mf : 'e__142) _ (loc : Ploc.t) ->
            (Qast.Node ("CgVal", [Qast.Loc; l; mf; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "inherit");
        Gramext.Snterm
@@ -4917,21 +4894,21 @@ Grammar.extend
                      Gramext.Stoken ("", ";")],
                     Gramext.action
                       (fun _ (s : 'class_sig_item) (loc : Ploc.t) ->
-                         (s : 'e__141))])],
+                         (s : 'e__140))])],
              Gramext.action
-               (fun (a : 'e__141 list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__142));
+               (fun (a : 'e__140 list) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.List a) : 'e__141));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__142));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__141));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__142))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__141))]);
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (st : 'e__142) _ (loc : Ploc.t) ->
+        (fun _ (st : 'e__141) _ (loc : Ploc.t) ->
            (Qast.Node ("CgDcl", [Qast.Loc; st]) : 'class_sig_item))]];
     Grammar.Entry.obj
       (class_description : 'class_description Grammar.Entry.e),
@@ -4942,45 +4919,45 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "virtual"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__149));
+                  (Qast.VaVal (Qast.Bool a) : 'e__148));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__149));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__148));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__149));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__148));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__149));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__148));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__149))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__148))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("LIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__150));
+                  (Qast.VaVal (Qast.Str a) : 'e__149));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__150));
+                  (Qast.VaAnt ("_", loc, a) : 'e__149));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__150));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__149));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__150));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__149));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__150))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__149))]);
        Gramext.Snterm
          (Grammar.Entry.obj
             (class_type_parameters : 'class_type_parameters Grammar.Entry.e));
@@ -4988,8 +4965,8 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e))],
       Gramext.action
-        (fun (ct : 'class_type) _ (ctp : 'class_type_parameters) (n : 'e__150)
-             (vf : 'e__149) (loc : Ploc.t) ->
+        (fun (ct : 'class_type) _ (ctp : 'class_type_parameters) (n : 'e__149)
+             (vf : 'e__148) (loc : Ploc.t) ->
            (Qast.Record
               ["ciLoc", Qast.Loc; "ciVir", vf; "ciPrm", ctp; "ciNam", n;
                "ciExp", ct] :
@@ -5003,45 +4980,45 @@ Grammar.extend
             [[Gramext.Sflag (Gramext.Stoken ("", "virtual"))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__151));
+                  (Qast.VaVal (Qast.Bool a) : 'e__150));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__151));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__150));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__151));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__150));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__151));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__150));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__151))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__150))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("LIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__152));
+                  (Qast.VaVal (Qast.Str a) : 'e__151));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__152));
+                  (Qast.VaAnt ("_", loc, a) : 'e__151));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__152));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__151));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__152));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__151));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__152))]);
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__151))]);
        Gramext.Snterm
          (Grammar.Entry.obj
             (class_type_parameters : 'class_type_parameters Grammar.Entry.e));
@@ -5049,8 +5026,8 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e))],
       Gramext.action
-        (fun (cs : 'class_type) _ (ctp : 'class_type_parameters) (n : 'e__152)
-             (vf : 'e__151) (loc : Ploc.t) ->
+        (fun (cs : 'class_type) _ (ctp : 'class_type_parameters) (n : 'e__151)
+             (vf : 'e__150) (loc : Ploc.t) ->
            (Qast.Record
               ["ciLoc", Qast.Loc; "ciVir", vf; "ciPrm", ctp; "ciNam", n;
                "ciExp", cs] :
@@ -5067,21 +5044,21 @@ Grammar.extend
                       (class_self_patt : 'class_self_patt Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'class_self_patt option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__154));
+                  (Qast.VaVal (Qast.Option a) : 'e__153));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__154));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__153));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__154))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__153))]);
        Gramext.Snterm
          (Grammar.Entry.obj
             (class_structure : 'class_structure Grammar.Entry.e));
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (cf : 'class_structure) (cspo : 'e__154) _ (loc : Ploc.t) ->
+        (fun _ (cf : 'class_structure) (cspo : 'e__153) _ (loc : Ploc.t) ->
            (Qast.Node ("ExObj", [Qast.Loc; cspo; cf]) : 'expr));
       [Gramext.Stoken ("", "new");
        Gramext.Sfacto
@@ -5091,17 +5068,17 @@ Grammar.extend
                    (class_longident : 'class_longident Grammar.Entry.e))],
              Gramext.action
                (fun (a : 'class_longident) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__153));
+                  (Qast.VaVal a : 'e__152));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__153));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__152));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__153))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__152))])],
       Gramext.action
-        (fun (i : 'e__153) _ (loc : Ploc.t) ->
+        (fun (i : 'e__152) _ (loc : Ploc.t) ->
            (Qast.Node ("ExNew", [Qast.Loc; i]) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "."),
@@ -5112,25 +5089,25 @@ Grammar.extend
             [[Gramext.Snterm
                 (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__155));
+               (fun (a : 'label) (loc : Ploc.t) -> (Qast.VaVal a : 'e__154));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__155));
+                  (Qast.VaAnt ("_", loc, a) : 'e__154));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__155));
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__154));
              [Gramext.Stoken ("ANTIQUOT", "_lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_lid", loc, a) : 'e__155));
+                  (Qast.VaAnt ("_lid", loc, a) : 'e__154));
              [Gramext.Stoken ("ANTIQUOT", "lid")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__155))])],
+                  (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) : 'e__154))])],
       Gramext.action
-        (fun (lab : 'e__155) _ (e : 'expr) (loc : Ploc.t) ->
+        (fun (lab : 'e__154) _ (e : 'expr) (loc : Ploc.t) ->
            (Qast.Node ("ExSnd", [Qast.Loc; e; lab]) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -5145,18 +5122,18 @@ Grammar.extend
                  Gramext.Stoken ("", ";"))],
              Gramext.action
                (fun (a : 'field_expr list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__156));
+                  (Qast.VaVal (Qast.List a) : 'e__155));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__156));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__155));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__156))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__155))]);
        Gramext.Stoken ("", ">}")],
       Gramext.action
-        (fun _ (fel : 'e__156) _ (loc : Ploc.t) ->
+        (fun _ (fel : 'e__155) _ (loc : Ploc.t) ->
            (Qast.Node ("ExOvr", [Qast.Loc; fel]) : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ":>");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
@@ -5193,40 +5170,40 @@ Grammar.extend
                  Gramext.Stoken ("", ";"))],
              Gramext.action
                (fun (a : 'field list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__158));
+                  (Qast.VaVal (Qast.List a) : 'e__157));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__158));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__157));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__158))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__157))]);
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Sflag (Gramext.Stoken ("", ".."))],
              Gramext.action
                (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__159));
+                  (Qast.VaVal (Qast.Bool a) : 'e__158));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__159));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__158));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__159));
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__158));
              [Gramext.Stoken ("ANTIQUOT", "_flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__159));
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__158));
              [Gramext.Stoken ("ANTIQUOT", "flag")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__159))]);
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__158))]);
        Gramext.Stoken ("", ">")],
       Gramext.action
-        (fun _ (v : 'e__159) (ml : 'e__158) _ (loc : Ploc.t) ->
+        (fun _ (v : 'e__158) (ml : 'e__157) _ (loc : Ploc.t) ->
            (Qast.Node ("TyObj", [Qast.Loc; ml; v]) : 'ctyp));
       [Gramext.Stoken ("", "#");
        Gramext.Sfacto
@@ -5236,17 +5213,17 @@ Grammar.extend
                    (class_longident : 'class_longident Grammar.Entry.e))],
              Gramext.action
                (fun (a : 'class_longident) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__157));
+                  (Qast.VaVal a : 'e__156));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__157));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__156));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__157))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__156))])],
       Gramext.action
-        (fun (id : 'e__157) _ (loc : Ploc.t) ->
+        (fun (id : 'e__156) _ (loc : Ploc.t) ->
            (Qast.Node ("TyCls", [Qast.Loc; id]) : 'ctyp))]];
     Grammar.Entry.obj (field : 'field Grammar.Entry.e), None,
     [None, None,
@@ -5292,44 +5269,44 @@ Grammar.extend
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_qic : 'a_qic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__161));
+               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__160));
              [Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__161));
+                  (Qast.VaVal (Qast.Str a) : 'e__160));
              [Gramext.Stoken ("ANTIQUOT", "?_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("?_:", loc, a) : 'e__161));
+                  (Qast.VaAnt ("?_:", loc, a) : 'e__160));
              [Gramext.Stoken ("ANTIQUOT", "?:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__161))]);
+                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__160))]);
        Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) (i : 'e__161) (loc : Ploc.t) ->
+        (fun (t : 'ctyp) (i : 'e__160) (loc : Ploc.t) ->
            (Qast.Node ("TyOlb", [Qast.Loc; i; t]) : 'ctyp));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_tic : 'a_tic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__160));
+               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__159));
              [Gramext.Stoken ("TILDEIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__160));
+                  (Qast.VaVal (Qast.Str a) : 'e__159));
              [Gramext.Stoken ("ANTIQUOT", "~_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("~_:", loc, a) : 'e__160));
+                  (Qast.VaAnt ("~_:", loc, a) : 'e__159));
              [Gramext.Stoken ("ANTIQUOT", "~:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__160))]);
+                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__159))]);
        Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) (i : 'e__160) (loc : Ploc.t) ->
+        (fun (t : 'ctyp) (i : 'e__159) (loc : Ploc.t) ->
            (Qast.Node ("TyLab", [Qast.Loc; i; t]) : 'ctyp))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -5347,18 +5324,18 @@ Grammar.extend
                       (name_tag : 'name_tag Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'name_tag list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__162));
+                  (Qast.VaVal (Qast.List a) : 'e__161));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__162));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__161));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__162))]);
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__161))]);
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (ntl : 'e__162) _ (rfl : 'poly_variant_list) _ _
+        (fun _ (ntl : 'e__161) _ (rfl : 'poly_variant_list) _ _
              (loc : Ploc.t) ->
            (Qast.Node
               ("TyVrn",
@@ -5410,81 +5387,23 @@ Grammar.extend
                  Gramext.Stoken ("", "|"))],
              Gramext.action
                (fun (a : 'poly_variant list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__163));
+                  (Qast.VaVal (Qast.List a) : 'e__162));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__163));
+                  (Qast.VaAnt ("_list", loc, a) : 'e__162));
              [Gramext.Stoken ("ANTIQUOT", "list")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__163))])],
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__162))])],
       Gramext.action
-        (fun (rfl : 'e__163) (loc : Ploc.t) -> (rfl : 'poly_variant_list))]];
+        (fun (rfl : 'e__162) (loc : Ploc.t) -> (rfl : 'poly_variant_list))]];
     Grammar.Entry.obj (poly_variant : 'poly_variant Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) (loc : Ploc.t) ->
            (Qast.Node ("PvInh", [t]) : 'poly_variant));
-      [Gramext.Stoken ("", "`");
-       Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
-             Gramext.action
-               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__165));
-             [Gramext.Stoken ("ANTIQUOT", "_")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__165));
-             [Gramext.Stoken ("ANTIQUOT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__165))]);
-       Gramext.Stoken ("", "of");
-       Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Sflag (Gramext.Stoken ("", "&"))],
-             Gramext.action
-               (fun (a : bool) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Bool a) : 'e__166));
-             [Gramext.Stoken ("ANTIQUOT", "_opt")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__166));
-             [Gramext.Stoken ("ANTIQUOT", "opt")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__166));
-             [Gramext.Stoken ("ANTIQUOT", "_flag")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_flag", loc, a) : 'e__166));
-             [Gramext.Stoken ("ANTIQUOT", "flag")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__166))]);
-       Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Slist1sep
-                (Gramext.Snterm
-                   (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
-                 Gramext.Stoken ("", "&"))],
-             Gramext.action
-               (fun (a : 'ctyp list) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.List a) : 'e__167));
-             [Gramext.Stoken ("ANTIQUOT", "_list")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__167));
-             [Gramext.Stoken ("ANTIQUOT", "list")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__167))])],
-      Gramext.action
-        (fun (l : 'e__167) (ao : 'e__166) _ (i : 'e__165) _ (loc : Ploc.t) ->
-           (Qast.Node ("PvTag", [i; ao; l]) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Sfacto
          (Gramext.srules
@@ -5499,9 +5418,67 @@ Grammar.extend
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__164))])],
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__164))]);
+       Gramext.Stoken ("", "of");
+       Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Sflag (Gramext.Stoken ("", "&"))],
+             Gramext.action
+               (fun (a : bool) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.Bool a) : 'e__165));
+             [Gramext.Stoken ("ANTIQUOT", "_opt")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__165));
+             [Gramext.Stoken ("ANTIQUOT", "opt")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__165));
+             [Gramext.Stoken ("ANTIQUOT", "_flag")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_flag", loc, a) : 'e__165));
+             [Gramext.Stoken ("ANTIQUOT", "flag")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) : 'e__165))]);
+       Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Slist1sep
+                (Gramext.Snterm
+                   (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
+                 Gramext.Stoken ("", "&"))],
+             Gramext.action
+               (fun (a : 'ctyp list) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.List a) : 'e__166));
+             [Gramext.Stoken ("ANTIQUOT", "_list")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_list", loc, a) : 'e__166));
+             [Gramext.Stoken ("ANTIQUOT", "list")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__166))])],
       Gramext.action
-        (fun (i : 'e__164) _ (loc : Ploc.t) ->
+        (fun (l : 'e__166) (ao : 'e__165) _ (i : 'e__164) _ (loc : Ploc.t) ->
+           (Qast.Node ("PvTag", [i; ao; l]) : 'poly_variant));
+      [Gramext.Stoken ("", "`");
+       Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Snterm
+                (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+             Gramext.action
+               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__163));
+             [Gramext.Stoken ("ANTIQUOT", "_")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_", loc, a) : 'e__163));
+             [Gramext.Stoken ("ANTIQUOT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__163))])],
+      Gramext.action
+        (fun (i : 'e__163) _ (loc : Ploc.t) ->
            (Qast.Node
               ("PvTag",
                [i; Qast.VaVal (Qast.Bool true); Qast.VaVal (Qast.List [])]) :
@@ -5524,18 +5501,18 @@ Grammar.extend
                    (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__175));
+                  (Qast.VaVal (Qast.Option a) : 'e__174));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__175));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__174));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__175))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__174))]);
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'e__175) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
+        (fun _ (eo : 'e__174) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
            (Qast.Node
               ("PaOlb",
                [Qast.Loc; Qast.VaVal (Qast.Str "");
@@ -5545,40 +5522,40 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_qi : 'a_qi Grammar.Entry.e))],
-             Gramext.action (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__174));
+             Gramext.action (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__173));
              [Gramext.Stoken ("QUESTIONIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__174));
+                  (Qast.VaVal (Qast.Str a) : 'e__173));
              [Gramext.Stoken ("ANTIQUOT", "?_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("?_", loc, a) : 'e__174));
+                  (Qast.VaAnt ("?_", loc, a) : 'e__173));
              [Gramext.Stoken ("ANTIQUOT", "?")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("?", loc, a)) : 'e__174))])],
+                  (Qast.VaVal (Qast.VaAnt ("?", loc, a)) : 'e__173))])],
       Gramext.action
-        (fun (i : 'e__174) (loc : Ploc.t) ->
+        (fun (i : 'e__173) (loc : Ploc.t) ->
            (Qast.Node ("PaOlb", [Qast.Loc; i; Qast.Option None]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_qic : 'a_qic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__172));
+               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__171));
              [Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__172));
+                  (Qast.VaVal (Qast.Str a) : 'e__171));
              [Gramext.Stoken ("ANTIQUOT", "?_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("?_:", loc, a) : 'e__172));
+                  (Qast.VaAnt ("?_:", loc, a) : 'e__171));
              [Gramext.Stoken ("ANTIQUOT", "?:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__172))]);
+                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__171))]);
        Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (patt_tcon : 'patt_tcon Grammar.Entry.e));
@@ -5589,18 +5566,18 @@ Grammar.extend
                    (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__173));
+                  (Qast.VaVal (Qast.Option a) : 'e__172));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__173));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__172));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__173))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__172))]);
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'e__173) (p : 'patt_tcon) _ (i : 'e__172)
+        (fun _ (eo : 'e__172) (p : 'patt_tcon) _ (i : 'e__171)
              (loc : Ploc.t) ->
            (Qast.Node
               ("PaOlb",
@@ -5610,43 +5587,43 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_ti : 'a_ti Grammar.Entry.e))],
-             Gramext.action (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__171));
+             Gramext.action (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__170));
              [Gramext.Stoken ("TILDEIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__171));
+                  (Qast.VaVal (Qast.Str a) : 'e__170));
              [Gramext.Stoken ("ANTIQUOT", "~_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("~_", loc, a) : 'e__171));
+                  (Qast.VaAnt ("~_", loc, a) : 'e__170));
              [Gramext.Stoken ("ANTIQUOT", "~")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'e__171))])],
+                  (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'e__170))])],
       Gramext.action
-        (fun (i : 'e__171) (loc : Ploc.t) ->
+        (fun (i : 'e__170) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option None]) : 'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_tic : 'a_tic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__170));
+               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__169));
              [Gramext.Stoken ("TILDEIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__170));
+                  (Qast.VaVal (Qast.Str a) : 'e__169));
              [Gramext.Stoken ("ANTIQUOT", "~_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("~_:", loc, a) : 'e__170));
+                  (Qast.VaAnt ("~_:", loc, a) : 'e__169));
              [Gramext.Stoken ("ANTIQUOT", "~:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__170))]);
+                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__169))]);
        Gramext.Sself],
       Gramext.action
-        (fun (p : 'patt) (i : 'e__170) (loc : Ploc.t) ->
+        (fun (p : 'patt) (i : 'e__169) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option (Some p)]) :
             'patt));
       [Gramext.Stoken ("", "#");
@@ -5656,33 +5633,7 @@ Grammar.extend
                 (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
              Gramext.action
                (fun (a : 'mod_ident) (loc : Ploc.t) ->
-                  (Qast.VaVal a : 'e__169));
-             [Gramext.Stoken ("ANTIQUOT", "_")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__169));
-             [Gramext.Stoken ("ANTIQUOT", "")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__169));
-             [Gramext.Stoken ("ANTIQUOT", "_list")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_list", loc, a) : 'e__169));
-             [Gramext.Stoken ("ANTIQUOT", "list")],
-             Gramext.action
-               (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__169))])],
-      Gramext.action
-        (fun (sl : 'e__169) _ (loc : Ploc.t) ->
-           (Qast.Node ("PaTyp", [Qast.Loc; sl]) : 'patt));
-      [Gramext.Stoken ("", "`");
-       Gramext.Sfacto
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
-             Gramext.action
-               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__168));
+                  (Qast.VaVal a : 'e__168));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
@@ -5690,9 +5641,35 @@ Grammar.extend
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__168))])],
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__168));
+             [Gramext.Stoken ("ANTIQUOT", "_list")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_list", loc, a) : 'e__168));
+             [Gramext.Stoken ("ANTIQUOT", "list")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__168))])],
       Gramext.action
-        (fun (s : 'e__168) _ (loc : Ploc.t) ->
+        (fun (sl : 'e__168) _ (loc : Ploc.t) ->
+           (Qast.Node ("PaTyp", [Qast.Loc; sl]) : 'patt));
+      [Gramext.Stoken ("", "`");
+       Gramext.Sfacto
+         (Gramext.srules
+            [[Gramext.Snterm
+                (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+             Gramext.action
+               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__167));
+             [Gramext.Stoken ("ANTIQUOT", "_")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaAnt ("_", loc, a) : 'e__167));
+             [Gramext.Stoken ("ANTIQUOT", "")],
+             Gramext.action
+               (fun (a : string) (loc : Ploc.t) ->
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__167))])],
+      Gramext.action
+        (fun (s : 'e__167) _ (loc : Ploc.t) ->
            (Qast.Node ("PaVrn", [Qast.Loc; s]) : 'patt))]];
     Grammar.Entry.obj (patt_tcon : 'patt_tcon Grammar.Entry.e), None,
     [None, None,
@@ -5716,18 +5693,18 @@ Grammar.extend
                    (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__181));
+                  (Qast.VaVal (Qast.Option a) : 'e__180));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__181));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__180));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__181))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__180))]);
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'e__181) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
+        (fun _ (eo : 'e__180) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
            (Qast.Node
               ("PaOlb",
                [Qast.Loc; Qast.VaVal (Qast.Str "");
@@ -5737,40 +5714,40 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_qi : 'a_qi Grammar.Entry.e))],
-             Gramext.action (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__180));
+             Gramext.action (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__179));
              [Gramext.Stoken ("QUESTIONIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__180));
+                  (Qast.VaVal (Qast.Str a) : 'e__179));
              [Gramext.Stoken ("ANTIQUOT", "?_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("?_", loc, a) : 'e__180));
+                  (Qast.VaAnt ("?_", loc, a) : 'e__179));
              [Gramext.Stoken ("ANTIQUOT", "?")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("?", loc, a)) : 'e__180))])],
+                  (Qast.VaVal (Qast.VaAnt ("?", loc, a)) : 'e__179))])],
       Gramext.action
-        (fun (i : 'e__180) (loc : Ploc.t) ->
+        (fun (i : 'e__179) (loc : Ploc.t) ->
            (Qast.Node ("PaOlb", [Qast.Loc; i; Qast.Option None]) : 'ipatt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_qic : 'a_qic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__178));
+               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__177));
              [Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__178));
+                  (Qast.VaVal (Qast.Str a) : 'e__177));
              [Gramext.Stoken ("ANTIQUOT", "?_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("?_:", loc, a) : 'e__178));
+                  (Qast.VaAnt ("?_:", loc, a) : 'e__177));
              [Gramext.Stoken ("ANTIQUOT", "?:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__178))]);
+                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__177))]);
        Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e));
@@ -5781,18 +5758,18 @@ Grammar.extend
                    (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
              Gramext.action
                (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Option a) : 'e__179));
+                  (Qast.VaVal (Qast.Option a) : 'e__178));
              [Gramext.Stoken ("ANTIQUOT", "_opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_opt", loc, a) : 'e__179));
+                  (Qast.VaAnt ("_opt", loc, a) : 'e__178));
              [Gramext.Stoken ("ANTIQUOT", "opt")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__179))]);
+                  (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) : 'e__178))]);
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'e__179) (p : 'ipatt_tcon) _ (i : 'e__178)
+        (fun _ (eo : 'e__178) (p : 'ipatt_tcon) _ (i : 'e__177)
              (loc : Ploc.t) ->
            (Qast.Node
               ("PaOlb",
@@ -5802,43 +5779,43 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_ti : 'a_ti Grammar.Entry.e))],
-             Gramext.action (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__177));
+             Gramext.action (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__176));
              [Gramext.Stoken ("TILDEIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__177));
+                  (Qast.VaVal (Qast.Str a) : 'e__176));
              [Gramext.Stoken ("ANTIQUOT", "~_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("~_", loc, a) : 'e__177));
+                  (Qast.VaAnt ("~_", loc, a) : 'e__176));
              [Gramext.Stoken ("ANTIQUOT", "~")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'e__177))])],
+                  (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'e__176))])],
       Gramext.action
-        (fun (i : 'e__177) (loc : Ploc.t) ->
+        (fun (i : 'e__176) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option None]) : 'ipatt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_tic : 'a_tic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__176));
+               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__175));
              [Gramext.Stoken ("TILDEIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__176));
+                  (Qast.VaVal (Qast.Str a) : 'e__175));
              [Gramext.Stoken ("ANTIQUOT", "~_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("~_:", loc, a) : 'e__176));
+                  (Qast.VaAnt ("~_:", loc, a) : 'e__175));
              [Gramext.Stoken ("ANTIQUOT", "~:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__176))]);
+                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__175))]);
        Gramext.Sself],
       Gramext.action
-        (fun (p : 'ipatt) (i : 'e__176) (loc : Ploc.t) ->
+        (fun (p : 'ipatt) (i : 'e__175) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option (Some p)]) :
             'ipatt))]];
     Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e), None,
@@ -5863,86 +5840,86 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_qi : 'a_qi Grammar.Entry.e))],
-             Gramext.action (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__185));
+             Gramext.action (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__184));
              [Gramext.Stoken ("QUESTIONIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__185));
+                  (Qast.VaVal (Qast.Str a) : 'e__184));
              [Gramext.Stoken ("ANTIQUOT", "?_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("?_", loc, a) : 'e__185));
+                  (Qast.VaAnt ("?_", loc, a) : 'e__184));
              [Gramext.Stoken ("ANTIQUOT", "?")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("?", loc, a)) : 'e__185))])],
+                  (Qast.VaVal (Qast.VaAnt ("?", loc, a)) : 'e__184))])],
       Gramext.action
-        (fun (i : 'e__185) (loc : Ploc.t) ->
+        (fun (i : 'e__184) (loc : Ploc.t) ->
            (Qast.Node ("ExOlb", [Qast.Loc; i; Qast.Option None]) : 'expr));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_qic : 'a_qic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__184));
+               (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__183));
              [Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__184));
+                  (Qast.VaVal (Qast.Str a) : 'e__183));
              [Gramext.Stoken ("ANTIQUOT", "?_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("?_:", loc, a) : 'e__184));
+                  (Qast.VaAnt ("?_:", loc, a) : 'e__183));
              [Gramext.Stoken ("ANTIQUOT", "?:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__184))]);
+                  (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) : 'e__183))]);
        Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) (i : 'e__184) (loc : Ploc.t) ->
+        (fun (e : 'expr) (i : 'e__183) (loc : Ploc.t) ->
            (Qast.Node ("ExOlb", [Qast.Loc; i; Qast.Option (Some e)]) :
             'expr));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_ti : 'a_ti Grammar.Entry.e))],
-             Gramext.action (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__183));
+             Gramext.action (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__182));
              [Gramext.Stoken ("TILDEIDENT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__183));
+                  (Qast.VaVal (Qast.Str a) : 'e__182));
              [Gramext.Stoken ("ANTIQUOT", "~_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("~_", loc, a) : 'e__183));
+                  (Qast.VaAnt ("~_", loc, a) : 'e__182));
              [Gramext.Stoken ("ANTIQUOT", "~")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'e__183))])],
+                  (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'e__182))])],
       Gramext.action
-        (fun (i : 'e__183) (loc : Ploc.t) ->
+        (fun (i : 'e__182) (loc : Ploc.t) ->
            (Qast.Node ("ExLab", [Qast.Loc; i; Qast.Option None]) : 'expr));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (a_tic : 'a_tic Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__182));
+               (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__181));
              [Gramext.Stoken ("TILDEIDENTCOLON", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.Str a) : 'e__182));
+                  (Qast.VaVal (Qast.Str a) : 'e__181));
              [Gramext.Stoken ("ANTIQUOT", "~_:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("~_:", loc, a) : 'e__182));
+                  (Qast.VaAnt ("~_:", loc, a) : 'e__181));
              [Gramext.Stoken ("ANTIQUOT", "~:")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__182))]);
+                  (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) : 'e__181))]);
        Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) (i : 'e__182) (loc : Ploc.t) ->
+        (fun (e : 'expr) (i : 'e__181) (loc : Ploc.t) ->
            (Qast.Node ("ExLab", [Qast.Loc; i; Qast.Option (Some e)]) :
             'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
@@ -5954,17 +5931,17 @@ Grammar.extend
             [[Gramext.Snterm
                 (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
              Gramext.action
-               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__186));
+               (fun (a : 'ident) (loc : Ploc.t) -> (Qast.VaVal a : 'e__185));
              [Gramext.Stoken ("ANTIQUOT", "_")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaAnt ("_", loc, a) : 'e__186));
+                  (Qast.VaAnt ("_", loc, a) : 'e__185));
              [Gramext.Stoken ("ANTIQUOT", "")],
              Gramext.action
                (fun (a : string) (loc : Ploc.t) ->
-                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__186))])],
+                  (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__185))])],
       Gramext.action
-        (fun (s : 'e__186) _ (loc : Ploc.t) ->
+        (fun (s : 'e__185) _ (loc : Ploc.t) ->
            (Qast.Node ("ExVrn", [Qast.Loc; s]) : 'expr))]];
     Grammar.Entry.obj (direction_flag : 'direction_flag Grammar.Entry.e),
     None,

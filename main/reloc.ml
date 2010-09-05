@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.44 2010/09/05 12:08:02 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.45 2010/09/05 12:29:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -201,8 +201,7 @@ and expr floc sh =
         ExOvr (floc loc)
           (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1)
     | ExPck loc x1 x2 ->
-        ExPck (floc loc) (module_expr floc sh x1)
-          (vala_map (package_type floc sh) x2)
+        ExPck (floc loc) (module_expr floc sh x1) (module_type floc sh x2)
     | ExRec loc x1 x2 ->
         ExRec (floc loc)
           (vala_map (List.map (fun (x1, x2) -> (patt floc sh x1, self x2)))
@@ -388,9 +387,6 @@ and class_str_item floc sh =
           (vala_map (option_map (ctyp floc sh)) x4)
     | CrVal loc x1 x2 x3 -> CrVal (floc loc) x1 x2 (expr floc sh x3)
     | CrVir loc x1 x2 x3 -> CrVir (floc loc) x1 x2 (ctyp floc sh x3) ]
-and package_type floc sh (x1, x2) =
-  (module_type floc sh x1,
-   vala_map (List.map (fun (x1, x2) -> (x1, ctyp floc sh x2))) x2)
 ;
 
 (* Equality over syntax trees *)

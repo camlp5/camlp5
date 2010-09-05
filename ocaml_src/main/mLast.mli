@@ -100,7 +100,7 @@ and expr =
   | ExObj of loc * patt option * class_str_item list
   | ExOlb of loc * string * expr option
   | ExOvr of loc * (string * expr) list
-  | ExPck of loc * module_expr * package_type
+  | ExPck of loc * module_expr * module_type
   | ExRec of loc * (patt * expr) list * expr option
   | ExSeq of loc * expr list
   | ExSnd of loc * expr * string
@@ -192,7 +192,7 @@ and class_str_item =
   | CrMth of loc * string * bool * expr * ctyp option
   | CrVal of loc * string * bool * expr
   | CrVir of loc * string * bool * ctyp
-and package_type = module_type * (string * ctyp) list;;
+;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;

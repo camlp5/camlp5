@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.211 2010/09/05 12:08:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.212 2010/09/05 12:29:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -769,11 +769,6 @@ value with_constraint pc wc =
     END ]
 ;
 
-value package_type pc (mt, stl) =
-  if Pcaml.unvala stl <> [] then failwith "not impl (module .. : .. with ..)"
-  else module_type pc mt
-;
-
 EXTEND_PRINTER
   pr_expr:
     [ "top"
@@ -1138,8 +1133,8 @@ EXTEND_PRINTER
               pprintf pc "@[<1>[%p]@]" (plist expr1 0) xl ]
       | <:expr< ($e$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
-      |  <:expr< (module $me$ : $pack:pt$) >> ->
-          pprintf pc "@[<1>(module %p:@ %p)@]" module_expr me package_type pt
+      | <:expr< (module $me$ : $mt$) >> ->
+          pprintf pc "@[<1>(module %p:@ %p)@]" module_expr me module_type mt
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
