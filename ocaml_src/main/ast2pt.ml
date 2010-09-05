@@ -384,7 +384,7 @@ let mkwithc =
       let (params, variance) = List.split (uv tpl) in
       let params = List.map uv params in
       let ct = Some (ctyp ct) in
-      let tk = if uv pf then ocaml_ptype_private else Ptype_abstract in
+      let tk = if uv pf then ocaml_ptype_abstract else Ptype_abstract in
       let pf = if uv pf then Private else Public in
       long_id_of_string_list loc (uv id),
       (match

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.97 2010/09/03 13:21:29 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.98 2010/09/05 03:47:13 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -390,7 +390,7 @@ value mkwithc =
       let (params, variance) = List.split (uv tpl) in
       let params = List.map uv params in
       let ct = Some (ctyp ct) in
-      let tk = if uv pf then ocaml_ptype_private else Ptype_abstract in
+      let tk = if uv pf then ocaml_ptype_abstract else Ptype_abstract in
       let pf = if uv pf then Private else Public in
       (long_id_of_string_list loc (uv id),
        match

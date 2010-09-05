@@ -37,7 +37,7 @@ let ocaml_class_type = None;;
 
 let ocaml_class_expr = None;;
 
-let ocaml_ptype_private = Ptype_abstract;;
+let ocaml_ptype_abstract = Ptype_abstract;;
 
 let ocaml_ptype_record ltl priv =
   let ltl = List.map (fun (n, m, t, _) -> n, m, t) ltl in Ptype_record ltl

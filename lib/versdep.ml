@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.35 2010/09/04 19:18:47 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.36 2010/09/05 03:47:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -86,7 +86,7 @@ value ocaml_class_expr =
   ELSE Some (fun d loc -> {pcl_desc = d; pcl_loc = loc}) END
 ;
 
-value ocaml_ptype_private =
+value ocaml_ptype_abstract =
   IFDEF OCAML_VERSION <= OCAML_3_08_4 OR OCAML_VERSION >= OCAML_3_11 THEN
     Ptype_abstract
   ELSE

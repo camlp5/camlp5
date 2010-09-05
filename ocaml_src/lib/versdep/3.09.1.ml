@@ -32,7 +32,7 @@ let ocaml_class_type = Some (fun d loc -> {pcty_desc = d; pcty_loc = loc});;
 
 let ocaml_class_expr = Some (fun d loc -> {pcl_desc = d; pcl_loc = loc});;
 
-let ocaml_ptype_private = Ptype_private;;
+let ocaml_ptype_abstract = Ptype_private;;
 
 let ocaml_ptype_record ltl priv = Ptype_record (ltl, priv);;
 
