@@ -428,9 +428,9 @@ module Meta_make (C : MetaSig) =
       | CrInh (_, ce, os) ->
           C.node "CrInh" [class_expr ce; C.vala (C.option C.string) os]
       | CrIni (_, e) -> C.node "CrIni" [expr e]
-      | CrMth (_, s, pf, e, ot) ->
+      | CrMth (_, s, pf, ovf, e, ot) ->
           C.node "CrMth"
-            [C.vala C.string s; C.vala C.bool pf; expr e;
+            [C.vala C.string s; C.vala C.bool pf; C.vala C.bool ovf; expr e;
              C.vala (C.option ctyp) ot]
       | CrVal (_, s, rf, e) ->
           C.node "CrVal" [C.vala C.string s; C.vala C.bool rf; expr e]

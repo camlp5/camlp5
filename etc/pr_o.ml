@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.212 2010/09/05 12:29:31 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.213 2010/09/05 18:07:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -2039,7 +2039,9 @@ EXTEND_PRINTER
           pprintf pc "initializer@;%p" expr e
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
-      | <:class_str_item< method $flag:priv$ $lid:s$ $opt:topt$ = $e$ >> ->
+      | <:class_str_item<
+          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$
+        >> ->
           let (pl, e) =
             match topt with
             [ Some _ -> ([], e)
@@ -2048,13 +2050,13 @@ EXTEND_PRINTER
           let simple_patt = Eprinter.apply_level pr_patt "simple" in
           match topt with
           [ None ->
-              pprintf pc "method%s %s%s%p =@;%p"
-                (if priv then " private" else "") s
+              pprintf pc "method%s%s %s%s%p =@;%p"
+                (if ov then "!" else "") (if priv then " private" else "") s
                 (if pl = [] then "" else " ") (hlist simple_patt) pl
                 expr e
           | Some t ->
-              pprintf pc "method%s %s%s%p :@;<1 4>%p =@;%p"
-                (if priv then " private" else "") s
+              pprintf pc "method%s%s %s%s%p :@;<1 4>%p =@;%p"
+                (if ov then "!" else "") (if priv then " private" else "") s
                 (if pl = [] then "" else " ") (hlist simple_patt) pl
                 poly_type t expr e ]
       | <:class_str_item< type $t1$ = $t2$ >> ->

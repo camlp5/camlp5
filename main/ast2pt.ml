@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.99 2010/09/05 12:08:02 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.100 2010/09/05 18:07:14 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -1122,7 +1122,7 @@ and class_str_item c l =
       match ocaml_pcf_init with
       [ Some pcf_init -> [pcf_init (expr e) :: l]
       | None -> error loc "no initializer in this ocaml version" ]
-  | CrMth loc s b e t ->
+  | CrMth loc s pf ovf e t ->
       let e =
         match ocaml_pexp_poly with
         [ Some pexp_poly ->
@@ -1132,7 +1132,7 @@ and class_str_item c l =
             if uv t = None then expr e
             else error loc "no method with label in this ocaml version" ]
       in
-      [ocaml_pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l]
+      [ocaml_pcf_meth (uv s, mkprivate (uv pf), uv ovf, e, mkloc loc) :: l]
   | CrVal loc s b e ->
       [ocaml_pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l]
   | CrVir loc s b t ->

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.75 2010/09/04 12:38:54 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.76 2010/09/05 18:07:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1239,7 +1239,7 @@ EXTEND_PRINTER
             [(fun pc -> class_expr pc ce, "") :: list]
       | <:class_str_item< initializer $e$ >> ->
           plistb expr 0 (paren pc "initializer") [(e, "")]
-      | <:class_str_item< method $flag:pf$ $s$ = $e$ >> ->
+      | <:class_str_item< method $priv:pf$ $s$ = $e$ >> ->
           let (pl, e) = expr_fun_args e in
           let list =
             let list =

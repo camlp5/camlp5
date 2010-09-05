@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.89 2010/09/04 12:38:54 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.90 2010/09/05 18:07:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -419,15 +419,17 @@ EXTEND_PRINTER
           pprintf pc "initializer@;%p" expr e
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
-      | <:class_str_item< method $flag:priv$ $lid:s$ $opt:topt$ = $e$ >> ->
+      | <:class_str_item<
+          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$
+        >> ->
           let (pl, e) =
             match topt with
             [ Some _ -> ([], e)
             | None -> expr_fun_args e ]
           in
           let pl = List.map (fun p -> (p, "")) pl in
-          pprintf pc "method%s %s%s%p%p =@;%p"
-            (if priv then " private" else "") s
+          pprintf pc "method%s%s %s%s%p%p =@;%p"
+            (if ov then "!" else "") (if priv then " private" else "") s
             (if pl = [] then "" else " ") (plist patt 2) pl
             (fun pc ->
                fun

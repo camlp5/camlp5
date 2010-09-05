@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 1.111 2010/09/01 16:34:55 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.112 2010/09/05 18:07:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -203,7 +203,7 @@ value rec antiquot_rest ctx bp =
 value rec antiquot ctx bp =
   lexer
   [ "$"/ -> ":" ^ $buf
-  | [ 'a'-'z' | 'A'-'Z' | '0'-'9' | '_' ] (antiquot ctx bp)!
+  | [ 'a'-'z' | 'A'-'Z' | '0'-'9' | '!' | '_' ] (antiquot ctx bp)!
   | ":" (antiquot_rest ctx bp)! -> $buf
   | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> ":" ^ $buf
   | (any ctx) (antiquot_rest ctx bp)! -> ":" ^ $buf

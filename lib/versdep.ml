@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.36 2010/09/05 03:47:13 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.37 2010/09/05 18:07:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -370,9 +370,11 @@ value ocaml_pcf_init =
   ELSE Some (fun e -> Pcf_init e) END
 ;
 
-value ocaml_pcf_meth (s, b, e, loc) =
-  IFDEF OCAML_VERSION >= OCAML_3_12 THEN Pcf_meth (s, b, Fresh, e, loc) 
-  ELSE Pcf_meth (s, b, e, loc) END
+value ocaml_pcf_meth (s, pf, ovf, e, loc) =
+  IFDEF OCAML_VERSION >= OCAML_3_12 THEN
+    let ovf = if ovf then Override else Fresh in
+    Pcf_meth (s, pf, ovf, e, loc) 
+  ELSE Pcf_meth (s, pf, e, loc) END
 ;
 
 value ocaml_pcf_val (s, mf, e, loc) =

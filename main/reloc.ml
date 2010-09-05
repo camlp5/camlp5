@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.45 2010/09/05 12:29:31 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.46 2010/09/05 18:07:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -382,9 +382,9 @@ and class_str_item floc sh =
         CrDcl (floc loc) (vala_map (List.map (class_str_item floc sh)) x1)
     | CrInh loc x1 x2 -> CrInh (floc loc) (class_expr floc sh x1) x2
     | CrIni loc x1 -> CrIni (floc loc) (expr floc sh x1)
-    | CrMth loc x1 x2 x3 x4 ->
-        CrMth (floc loc) x1 x2 (expr floc sh x3)
-          (vala_map (option_map (ctyp floc sh)) x4)
+    | CrMth loc x1 x2 x3 x4 x5 ->
+        CrMth (floc loc) x1 x2 x3 (expr floc sh x4)
+          (vala_map (option_map (ctyp floc sh)) x5)
     | CrVal loc x1 x2 x3 -> CrVal (floc loc) x1 x2 (expr floc sh x3)
     | CrVir loc x1 x2 x3 -> CrVir (floc loc) x1 x2 (ctyp floc sh x3) ]
 ;

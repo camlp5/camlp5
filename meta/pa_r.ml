@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.127 2010/09/05 12:29:31 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.128 2010/09/05 18:07:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -609,9 +609,10 @@ EXTEND
       | "method"; "virtual"; pf = V (FLAG "private"); l = V label "lid" "";
         ":"; t = ctyp ->
           <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>
-      | "method"; pf = V (FLAG "private"); l = V label "lid" "";
-        topt = V (OPT polyt); e = fun_binding ->
-          <:class_str_item< method $_flag:pf$ $_lid:l$ $_opt:topt$ = $e$ >>
+      | "method"; ovf = V (FLAG "!") "!"; pf = V (FLAG "private") "priv";
+        l = V label "lid" ""; topt = V (OPT polyt); e = fun_binding ->
+          <:class_str_item<
+            method $_!:ovf$ $_priv:pf$ $_lid:l$ $_opt:topt$ = $e$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]

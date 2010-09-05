@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.61 2010/09/04 17:42:44 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.62 2010/09/05 18:07:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -250,8 +250,8 @@ and class_str_item =
   fun
   [ CrInh _ ce _ -> class_expr ce
   | CrIni _ e -> expr e
-  | <:class_str_item< method $flag:_$ $lid:_$ = $e$ >> -> expr e
-  | <:class_str_item< method $flag:_$ $lid:_$ : $t$ = $e$ >> -> do {
+  | <:class_str_item< method $priv:_$ $lid:_$ = $e$ >> -> expr e
+  | <:class_str_item< method $priv:_$ $lid:_$ : $t$ = $e$ >> -> do {
       expr e;
       ctyp t
     }

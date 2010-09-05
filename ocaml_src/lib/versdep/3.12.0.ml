@@ -135,7 +135,9 @@ let ocaml_pcf_inher ce pb = Pcf_inher (Fresh, ce, pb);;
 
 let ocaml_pcf_init = Some (fun e -> Pcf_init e);;
 
-let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, Fresh, e, loc);;
+let ocaml_pcf_meth (s, pf, ovf, e, loc) =
+  let ovf = if ovf then Override else Fresh in Pcf_meth (s, pf, ovf, e, loc)
+;;
 
 let ocaml_pcf_val (s, mf, e, loc) = Pcf_val (s, mf, Fresh, e, loc);;
 

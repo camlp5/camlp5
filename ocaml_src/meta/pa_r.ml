@@ -1826,6 +1826,7 @@ Grammar.extend
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) _ (loc : Ploc.t) ->
            (MLast.CrCtr (loc, t1, t2) : 'class_str_item));
       [Gramext.Stoken ("", "method");
+       Gramext.Sflag (Gramext.Stoken ("", "!"));
        Gramext.Sflag (Gramext.Stoken ("", "private"));
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.Sopt
@@ -1835,8 +1836,8 @@ Grammar.extend
          (Grammar.Entry.obj (fun_binding : 'fun_binding Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'fun_binding) (topt : 'polyt option) (l : 'label)
-             (pf : bool) _ (loc : Ploc.t) ->
-           (MLast.CrMth (loc, l, pf, e, topt) : 'class_str_item));
+             (pf : bool) (ovf : bool) _ (loc : Ploc.t) ->
+           (MLast.CrMth (loc, l, pf, ovf, e, topt) : 'class_str_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.Sflag (Gramext.Stoken ("", "private"));
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));

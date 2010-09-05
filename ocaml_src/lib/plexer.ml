@@ -463,7 +463,7 @@ let rec antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
 let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' -> Stream.junk strm__; ":" ^ Plexing.Lexbuf.get buf
-  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) ->
+  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '!' | '_' as c) ->
       Stream.junk strm__; antiquot ctx bp (Plexing.Lexbuf.add c buf) strm__
   | Some ':' ->
       Stream.junk strm__;
