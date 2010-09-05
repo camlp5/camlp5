@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.98 2010/09/05 03:47:13 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.99 2010/09/05 12:08:02 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -759,6 +759,7 @@ value rec expr =
       | None -> error loc "no object in this ocaml version" ]
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
+  | ExPck loc me pt -> error loc "package not implemented"
   | ExRec loc lel eo ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"

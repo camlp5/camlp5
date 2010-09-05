@@ -243,6 +243,8 @@ module Meta_make (C : MetaSig) =
       | ExOvr (_, lse) ->
           C.node "ExOvr"
             [C.vala (C.list (fun (s, e) -> C.tuple [C.string s; expr e])) lse]
+      | ExPck (_, me, pt) ->
+          C.node "ExPck" [module_expr me; C.vala package_type pt]
       | ExRec (_, lpe, oe) ->
           let lpe =
             C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe
@@ -435,6 +437,10 @@ module Meta_make (C : MetaSig) =
           C.node "CrVal" [C.vala C.string s; C.vala C.bool rf; expr e]
       | CrVir (_, s, pf, t) ->
           C.node "CrVir" [C.vala C.string s; C.vala C.bool pf; ctyp t]
+    and package_type (mt, stl) =
+      C.tuple
+        [module_type mt;
+         C.vala (C.list (fun (s, t) -> C.tuple [C.string s; ctyp t])) stl]
     ;;
   end
 ;;

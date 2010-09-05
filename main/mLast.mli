@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.56 2010/08/18 16:57:59 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.57 2010/09/05 12:08:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -111,6 +111,7 @@ and expr =
   | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and V string and option expr
   | ExOvr of loc and V (list (string * expr))
+  | ExPck of loc and module_expr and V package_type
   | ExRec of loc and V (list (patt * expr)) and option expr
   | ExSeq of loc and V (list expr)
   | ExSnd of loc and expr and V string
@@ -223,7 +224,7 @@ and class_str_item =
   | CrMth of loc and V string and V bool and expr and V (option ctyp)
   | CrVal of loc and V string and V bool and expr
   | CrVir of loc and V string and V bool and ctyp ]
-;
+and package_type = (module_type * V (list (string * ctyp)));
 
 external loc_of_ctyp : ctyp -> loc = "%field0";
 external loc_of_patt : patt -> loc = "%field0";

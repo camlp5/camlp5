@@ -189,6 +189,10 @@ and expr floc sh =
     | ExOlb (loc, x1, x2) -> ExOlb (floc loc, x1, option_map self x2)
     | ExOvr (loc, x1) ->
         ExOvr (floc loc, vala_map (List.map (fun (x1, x2) -> x1, self x2)) x1)
+    | ExPck (loc, x1, x2) ->
+        ExPck
+          (floc loc, module_expr floc sh x1,
+           vala_map (package_type floc sh) x2)
     | ExRec (loc, x1, x2) ->
         ExRec
           (floc loc,
@@ -377,6 +381,9 @@ and class_str_item floc sh =
     | CrVir (loc, x1, x2, x3) -> CrVir (floc loc, x1, x2, ctyp floc sh x3)
   in
   self
+and package_type floc sh (x1, x2) =
+  module_type floc sh x1,
+  vala_map (List.map (fun (x1, x2) -> x1, ctyp floc sh x2)) x2
 ;;
 
 (* Equality over syntax trees *)

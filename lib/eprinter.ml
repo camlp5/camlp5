@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.20 2010/09/04 12:38:54 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.21 2010/09/05 12:08:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -86,7 +86,8 @@ value pr_fun name pr lab =
     [ [] ->
         fun pc z ->
           failwith
-            (Printf.sprintf "cannot print %s%s; probably a missing case"
+            (Printf.sprintf
+               "cannot print %s%s; a missing case in camlp5; please report"
                name (if lab = "" then "" else " \"" ^ lab ^ "\""))
     | [lev :: levl] ->
         if lab = "" || app || lev.pr_label = lab then

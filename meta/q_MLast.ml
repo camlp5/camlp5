@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.134 2010/09/04 12:38:54 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.135 2010/09/05 12:08:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -701,6 +701,9 @@ EXTEND
         "}" ->
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option (Some e)]
       | "("; ")" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]
+      | "("; "module"; me = module_expr; ":"; pt = SV package_type "pack";
+        ")" ->
+          Qast.Node "ExPck" [Qast.Loc; me; pt]
       | "("; e = SELF; ":"; t = ctyp; ")" ->
           Qast.Node "ExTyc" [Qast.Loc; e; t]
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" ->
@@ -708,6 +711,9 @@ EXTEND
       | "("; e = SELF; ")" -> e
       | "("; el = SV (LIST1 expr SEP ","); ")" ->
           Qast.Node "ExTup" [Qast.Loc; el] ] ]
+  ;
+  package_type:
+    [ [ mt = module_type -> Qast.Tuple [mt; Qast.VaVal (Qast.List [])] ] ]
   ;
   cons_expr_opt:
     [ [ "::"; e = expr -> Qast.Option (Some e)

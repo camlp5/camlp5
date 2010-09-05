@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.87 2010/09/04 08:46:05 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.88 2010/09/05 12:08:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -632,6 +632,9 @@ EXTEND
       | "{"; e = expr LEVEL "."; "with"; lel = V lbl_expr_list "list"; "}" ->
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
+      | "("; "module"; me = module_expr; ":"; pt = V package_type "pack";
+        ")" ->
+          <:expr< (module $me$ : $_pack:pt$) >>
       | "("; op = operator_rparen -> <:expr< $lid:op$ >>
       | "("; el = V e_phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
@@ -641,6 +644,9 @@ EXTEND
       | x = QUOTATION ->
           let con = quotation_content x in
           Pcaml.handle_expr_quotation loc con ] ]
+  ;
+  package_type:
+    [ [ mt = module_type -> (mt, Ploc.VaVal []) ] ]
   ;
   let_binding:
     [ [ p = val_ident; e = fun_binding -> (p, e)

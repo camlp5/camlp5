@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.125 2010/09/04 08:46:05 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.126 2010/09/05 12:08:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -347,10 +347,16 @@ EXTEND
         "}" ->
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
+      | "("; "module"; me = module_expr; ":"; pt = V package_type "pack";
+        ")" ->
+          <:expr< (module $me$ : $_pack:pt$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" -> mktupexp loc e el
       | "("; e = SELF; ")" -> <:expr< $e$ >>
       | "("; el = V (LIST1 expr SEP ","); ")" -> <:expr< ($_list:el$) >> ] ]
+  ;
+  package_type:
+    [ [ mt = module_type -> (mt, <:vala< [] >>) ] ]
   ;
   cons_expr_opt:
     [ [ "::"; e = expr -> Some e

@@ -83,8 +83,9 @@ let pr_fun name pr lab =
       [] ->
         (fun pc z ->
            failwith
-             (Printf.sprintf "cannot print %s%s; probably a missing case" name
-                (if lab = "" then "" else " \"" ^ lab ^ "\"")))
+             (Printf.sprintf
+                "cannot print %s%s; a missing case in camlp5; please report"
+                name (if lab = "" then "" else " \"" ^ lab ^ "\"")))
     | lev :: levl ->
         if lab = "" || app || lev.pr_label = lab then
           let next = loop true levl in
@@ -97,7 +98,7 @@ let pr_fun name pr lab =
 let make name =
   let pr =
     {pr_name = name;
-     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 100, 37)));
+     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 101, 37)));
      pr_levels = []}
   in
   pr.pr_fun <- pr_fun name pr; pr

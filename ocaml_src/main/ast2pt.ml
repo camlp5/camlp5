@@ -894,6 +894,7 @@ let rec expr =
       end
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
+  | ExPck (loc, me, pt) -> error loc "package not implemented"
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
