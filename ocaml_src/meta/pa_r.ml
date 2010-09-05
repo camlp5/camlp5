@@ -444,7 +444,14 @@ Grammar.extend
         (fun (wcl : 'with_constr list) _ (mt : 'module_type) (loc : Ploc.t) ->
            (MLast.MtWit (loc, mt, wcl) : 'module_type))];
      None, None,
-     [[Gramext.Stoken ("", "sig");
+     [[Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
+       Gramext.Stoken ("", "of");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'module_expr) _ _ _ (loc : Ploc.t) ->
+           (MLast.MtTyo (loc, me) : 'module_type));
+      [Gramext.Stoken ("", "sig");
        Gramext.Snterm
          (Grammar.Entry.obj (signature : 'signature Grammar.Entry.e));
        Gramext.Stoken ("", "end")],

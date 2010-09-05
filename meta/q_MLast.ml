@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.137 2010/09/05 18:07:14 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.138 2010/09/05 18:33:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -343,7 +343,9 @@ EXTEND
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ]
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") ->
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
-    | [ "sig"; sg = signature; "end" -> Qast.Node "MtSig" [Qast.Loc; sg] ]
+    | [ "sig"; sg = signature; "end" -> Qast.Node "MtSig" [Qast.Loc; sg]
+      | "module"; "type"; "of"; me = module_expr ->
+          Qast.Node "MtTyo" [Qast.Loc; me] ]
     | [ m1 = SELF; m2 = SELF -> Qast.Node "MtApp" [Qast.Loc; m1; m2] ]
     | [ m1 = SELF; "."; m2 = SELF -> Qast.Node "MtAcc" [Qast.Loc; m1; m2] ]
     | "simple"

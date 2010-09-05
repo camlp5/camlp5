@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.198 2010/09/05 12:29:31 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.199 2010/09/05 18:33:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1471,6 +1471,8 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "@[<b>sig@;%p@ end@]"
                  (vlist (semi_after sig_item)) sil)
+      | <:module_type< module type of $me$ >> ->
+          pprintf pc "@[module type of@ %p@]" module_expr me
       | <:module_type< $mt$ with $list:wcl$ >> ->
           pprintf pc "%p@;%p" module_type mt (vlist with_constraint) wcl ]
     | "dot"

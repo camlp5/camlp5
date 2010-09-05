@@ -277,6 +277,7 @@ module Meta_make (C : MetaSig) =
           C.node "MtFun" [C.vala C.string s; module_type mt1; module_type mt2]
       | MtLid (_, s) -> C.node "MtLid" [C.vala C.string s]
       | MtQuo (_, s) -> C.node "MtQuo" [C.vala C.string s]
+      | MtTyo (_, me) -> C.node "MtTyo" [module_expr me]
       | MtSig (_, sil) -> C.node "MtSig" [C.vala (C.list sig_item) sil]
       | MtUid (_, s) -> C.node "MtUid" [C.vala C.string s]
       | MtWit (_, mt, lwc) ->

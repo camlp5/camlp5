@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.91 2010/09/05 18:18:08 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.92 2010/09/05 18:33:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -436,6 +436,8 @@ EXTEND
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; "end" ->
           <:module_type< sig $_list:sg$ end >>
+      | "module"; "type"; "of"; me = module_expr ->
+          <:module_type< module type of $me$ >>
       | i = mod_type_ident -> i
       | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
   ;

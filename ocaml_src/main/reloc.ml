@@ -226,6 +226,7 @@ and module_type floc sh =
     | MtQuo (loc, x1) -> MtQuo (floc loc, x1)
     | MtSig (loc, x1) ->
         MtSig (floc loc, vala_map (List.map (sig_item floc sh)) x1)
+    | MtTyo (loc, x1) -> MtTyo (floc loc, module_expr floc sh x1)
     | MtUid (loc, x1) -> MtUid (floc loc, x1)
     | MtWit (loc, x1, x2) ->
         MtWit

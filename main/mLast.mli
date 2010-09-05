@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.59 2010/09/05 18:07:14 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.60 2010/09/05 18:33:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -133,6 +133,7 @@ and module_type =
   | MtLid of loc and V string
   | MtQuo of loc and V string
   | MtSig of loc and V (list sig_item)
+  | MtTyo of loc and module_expr
   | MtUid of loc and V string
   | MtWit of loc and module_type and V (list with_constr)
   | IFDEF STRICT THEN

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.213 2010/09/05 18:07:13 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.214 2010/09/05 18:33:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1478,6 +1478,8 @@ EXTEND_PRINTER
                  pprintf pc "sig %p end" (hlist sig_item_sep) sil)
             (fun () ->
                pprintf pc "sig@;%p@ end" (vlist sig_item_sep) sil)
+      | <:module_type< module type of $me$ >> ->
+          pprintf pc "@[module type of@ %p@]" module_expr me
       | <:module_type< $mt$ with $list:wcl$ >> ->
           horiz_vertic
             (fun () ->

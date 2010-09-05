@@ -1037,7 +1037,14 @@ Grammar.extend
         (fun (wcl : 'e__22) _ (mt : 'module_type) (loc : Ploc.t) ->
            (Qast.Node ("MtWit", [Qast.Loc; mt; wcl]) : 'module_type))];
      None, None,
-     [[Gramext.Stoken ("", "sig");
+     [[Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
+       Gramext.Stoken ("", "of");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'module_expr) _ _ _ (loc : Ploc.t) ->
+           (Qast.Node ("MtTyo", [Qast.Loc; me]) : 'module_type));
+      [Gramext.Stoken ("", "sig");
        Gramext.Snterm
          (Grammar.Entry.obj (signature : 'signature Grammar.Entry.e));
        Gramext.Stoken ("", "end")],
@@ -1406,7 +1413,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 366, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 368, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

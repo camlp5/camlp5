@@ -119,6 +119,7 @@ and module_type =
   | MtLid of loc * string
   | MtQuo of loc * string
   | MtSig of loc * sig_item list
+  | MtTyo of loc * module_expr
   | MtUid of loc * string
   | MtWit of loc * module_type * with_constr list
 and sig_item =

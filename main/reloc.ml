@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.46 2010/09/05 18:07:14 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.47 2010/09/05 18:33:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -237,6 +237,7 @@ and module_type floc sh =
     | MtQuo loc x1 -> MtQuo (floc loc) x1
     | MtSig loc x1 ->
         MtSig (floc loc) (vala_map (List.map (sig_item floc sh)) x1)
+    | MtTyo loc x1 -> MtTyo (floc loc) (module_expr floc sh x1)
     | MtUid loc x1 -> MtUid (floc loc) x1
     | MtWit loc x1 x2 ->
         MtWit (floc loc) (self x1)
