@@ -37,6 +37,8 @@ let ocaml_class_type = None;;
 
 let ocaml_class_expr = None;;
 
+let ocaml_pmty_typeof = None;;
+
 let ocaml_ptype_abstract = Ptype_abstract;;
 
 let ocaml_ptype_record ltl priv =

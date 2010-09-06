@@ -990,7 +990,11 @@ and module_type =
   | MtQuo (loc, _) -> error loc "abstract module type not allowed here"
   | MtSig (loc, sl) ->
       mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
-  | MtTyo (loc, me) -> error loc "module type of not impl"
+  | MtTyo (loc, me) ->
+      begin match ocaml_pmty_typeof with
+        Some pmty_typeof -> mkmty loc (pmty_typeof (module_expr me))
+      | None -> error loc "no 'module type of ..' in this ocaml version"
+      end
   | MtUid (loc, s) -> mkmty loc (Pmty_ident (lident (uv s)))
   | MtWit (loc, mt, wcl) ->
       mkmty loc (Pmty_with (module_type mt, List.map mkwithc (uv wcl)))

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.104 2010/09/06 02:03:08 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.105 2010/09/06 08:53:43 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -853,7 +853,10 @@ and module_type =
   | MtQuo loc _ -> error loc "abstract module type not allowed here"
   | MtSig loc sl ->
       mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
-  | MtTyo loc me -> error loc "module type of not impl"
+  | MtTyo loc me ->
+      match ocaml_pmty_typeof with
+      [ Some pmty_typeof -> mkmty loc (pmty_typeof (module_expr me))
+      | None -> error loc "no 'module type of ..' in this ocaml version" ]
   | MtUid loc s -> mkmty loc (Pmty_ident (lident (uv s)))
   | MtWit loc mt wcl ->
       mkmty loc (Pmty_with (module_type mt) (List.map mkwithc (uv wcl)))

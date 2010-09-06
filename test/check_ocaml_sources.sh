@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_sources.sh,v 1.3 2010/09/06 08:32:33 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.4 2010/09/06 08:53:45 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -36,23 +36,28 @@ for i in $files; do
   idir=$(basename $(dirname $i))
   syntax="etc/pa_o.cmo"
   altsyntax="meta/pa_r.cmo"
+  syntname="normal syntax"
+  altsyntname="revised syntax"
   if [ "$idir" = "Camlp4Printers" ]; then
     syntax="meta/pa_r.cmo"
     altsyntax="etc/pa_o.cmo"
+    syntname="revised syntax"
+    altsyntname="normal syntax"
   fi
-  echo '*** 1'
+  echo "*** testing $syntname to revised syntax"
   main/camlp5 $syntax -I etc pr_r.cmo pr_ro.cmo "$i" > /tmp/t1.ml
-  echo '*** 2'
+  echo "*** testing revised syntax on itself"
   main/camlp5 meta/pa_r.cmo -I etc pr_r.cmo pr_ro.cmo /tmp/t1.ml |
   diff /tmp/t1.ml -
-  echo '*** 3'
+  echo "*** testing revised syntax to normal syntax"
   main/camlp5 meta/pa_r.cmo -I etc pr_o.cmo /tmp/t1.ml > /tmp/t2.ml
-  echo '*** 4'
+  echo "*** testing $syntname to normal syntax (result: t2.ml)"
   main/camlp5 $syntax -I etc pr_o.cmo "$i" > /tmp/t3.ml
-  echo '*** 5'
+  echo "*** testing normal syntax on itself (result: t3.ml)"
   main/camlp5 etc/pa_o.cmo -I etc pr_o.cmo /tmp/t3.ml | diff /tmp/t3.ml -
-  echo '*** 6'
+  echo "*** comparing t2.ml and t3.ml"
   diff /tmp/t2.ml /tmp/t3.ml || :
-  echo '*** 7'
+  echo "*** testing $syntname to OCaml parse tree"
   main/camlp5 $syntax meta/pr_dump.cmo "$i" > /dev/null
 done
+rm -f /tmp/t1.ml /tmp/t2.ml /tmp/t3.ml
