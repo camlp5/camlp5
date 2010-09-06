@@ -1,6 +1,8 @@
 Camlp5 Version 5.16:
 --------------------
 
+* [06 Sep 10] Changed revised syntax of 'inherit something [params]'
+  into 'inherit [params] something' (like in normal syntax).
 * [06 Sep 10] Added statements (which were missing in camlp5 parsers):
     - 'module type of' as module type,
     - '(module ... : ...)' as expression,
