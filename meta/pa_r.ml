@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.131 2010/09/06 01:50:20 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.132 2010/09/06 16:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -584,14 +584,14 @@ EXTEND
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
     | "simple"
-      [ ci = V class_longident "list"; "["; ctcl = V (LIST1 ctyp SEP ",");
-        "]" ->
-          <:class_expr< $_list:ci$ [ $_list:ctcl$ ] >>
-      | ci = V class_longident "list" ->
+      [ ci = V class_longident "list" ->
           <:class_expr< $_list:ci$ >>
       | "object"; cspo = V (OPT class_self_patt); cf = class_structure;
         "end" ->
           <:class_expr< object $_opt:cspo$ $_list:cf$ end >>
+      | "["; ctcl = V (LIST1 ctyp SEP ","); "]";
+        ci = V class_longident "list" ->
+          <:class_expr< [ $_list:ctcl$ ] $_list:ci$ >>
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           <:class_expr< ($ce$ : $ct$) >>
       | "("; ce = SELF; ")" -> ce ] ]

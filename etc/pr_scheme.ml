@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.76 2010/09/05 18:07:13 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.77 2010/09/06 16:54:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1396,7 +1396,7 @@ EXTEND_PRINTER
              List.map (fun e -> (fun pc -> expr pc e, "")) el]
       | <:class_expr< $list:sl$ >> ->
           longident pc sl
-      | <:class_expr< $list:sl$ [ $list:ctcl$ ] >> ->
+      | <:class_expr< [ $list:ctcl$ ] $list:sl$ >> ->
           not_impl "CeCon" pc sl
       | x ->
           not_impl "class_expr" pc x ] ]

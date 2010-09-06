@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.216 2010/09/06 09:26:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.217 2010/09/06 16:54:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1977,7 +1977,7 @@ EXTEND_PRINTER
             e ]
     | "simple"
       [ <:class_expr< $list:cl$ >> -> class_longident pc cl
-      | <:class_expr< $list:cl$ [ $list:ctcl$ ] >> ->
+      | <:class_expr< [ $list:ctcl$ ] $list:cl$ >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
           pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl class_longident cl
       | <:class_expr:< object $opt:csp$ $list:csl$ end >> ->

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.5 2010/09/06 15:39:30 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.6 2010/09/06 16:54:59 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -60,4 +60,4 @@ for i in $files; do
   echo "*** testing $syntname to OCaml parse tree"
   main/camlp5 $syntax meta/pr_dump.cmo "$i" > /dev/null
 done
-rm -f /tmp/t1.ml /tmp/t2.ml /tmp/t3.ml
+# rm -f /tmp/t1.ml /tmp/t2.ml /tmp/t3.ml

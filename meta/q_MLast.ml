@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.140 2010/09/06 01:50:20 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.141 2010/09/06 16:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -958,14 +958,14 @@ EXTEND
       [ ce = SELF; e = expr LEVEL "label" ->
           Qast.Node "CeApp" [Qast.Loc; ce; e] ]
     | "simple"
-      [ ci = SV class_longident "list"; "["; ctcl = SV (LIST1 ctyp SEP ",");
-        "]" ->
-          Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
-      | ci = SV class_longident "list" ->
+      [ ci = SV class_longident "list" ->
           Qast.Node "CeCon" [Qast.Loc; ci; Qast.VaVal (Qast.List [])]
       | "object"; cspo = SV (OPT class_self_patt); cf = class_structure;
         "end" ->
           Qast.Node "CeStr" [Qast.Loc; cspo; cf]
+      | "["; ctcl = SV (LIST1 ctyp SEP ","); "]";
+        ci = SV class_longident "list" ->
+          Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           Qast.Node "CeTyc" [Qast.Loc; ce; ct]
       | "("; ce = SELF; ")" -> ce ] ]

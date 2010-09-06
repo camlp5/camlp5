@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.25 2010/09/06 14:01:17 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.26 2010/09/06 16:54:58 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1779,10 +1779,10 @@
 <dl class="nodelist">
   <dt>- constructor</dt>
   <dd>
-    <tt style="color:blue">&lt;:class_expr&lt; $list:ls$ [ $list:lt$ ] >></tt><br/>
+    <tt style="color:blue">&lt;:class_expr&lt; [ $list:lt$ ] $list:ls$ >></tt><br/>
     <tt style="color:red">MLast.CeCon loc (Ploc.VaVal ls) (Ploc.VaVal lt)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:class_expr&lt; $_list:ls$ [ $_list:lt$ ] >></tt><br/>
+    <tt style="color:blue">&lt;:class_expr&lt; [ $_list:lt$ ] $_list:ls$ >></tt><br/>
     <tt style="color:red">MLast.CeCon loc ls lt</tt>
   </dd>
 </dl>

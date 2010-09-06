@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.47 2010/09/06 15:39:30 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.48 2010/09/06 16:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -77,7 +77,7 @@ Added statements:
   An <op> is among: < <= = > >=
   A <version> is a version of OCaml whose dots are replaced by underscores
   and the possible subpart starting with 'plus' are removed, and prefixed
-  with 'OCAML_". E.g.:
+  with 'OCAML_'. E.g.:
       OCAML_3_08 for ocaml version 3.08
       OCAML_3_13_0 for ocaml version 3.13.0+dev1
 

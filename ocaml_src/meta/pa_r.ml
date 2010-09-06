@@ -1772,6 +1772,17 @@ Grammar.extend
       Gramext.action
         (fun _ (ct : 'class_type) _ (ce : 'class_expr) _ (loc : Ploc.t) ->
            (MLast.CeTyc (loc, ce, ct) : 'class_expr));
+      [Gramext.Stoken ("", "[");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
+          Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", "]");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (class_longident : 'class_longident Grammar.Entry.e))],
+      Gramext.action
+        (fun (ci : 'class_longident) _ (ctcl : 'ctyp list) _ (loc : Ploc.t) ->
+           (MLast.CeCon (loc, ci, ctcl) : 'class_expr));
       [Gramext.Stoken ("", "object");
        Gramext.Sopt
          (Gramext.Snterm
@@ -1790,18 +1801,7 @@ Grammar.extend
             (class_longident : 'class_longident Grammar.Entry.e))],
       Gramext.action
         (fun (ci : 'class_longident) (loc : Ploc.t) ->
-           (MLast.CeCon (loc, ci, []) : 'class_expr));
-      [Gramext.Snterm
-         (Grammar.Entry.obj
-            (class_longident : 'class_longident Grammar.Entry.e));
-       Gramext.Stoken ("", "[");
-       Gramext.Slist1sep
-         (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
-          Gramext.Stoken ("", ","));
-       Gramext.Stoken ("", "]")],
-      Gramext.action
-        (fun _ (ctcl : 'ctyp list) _ (ci : 'class_longident) (loc : Ploc.t) ->
-           (MLast.CeCon (loc, ci, ctcl) : 'class_expr))]];
+           (MLast.CeCon (loc, ci, []) : 'class_expr))]];
     Grammar.Entry.obj (class_structure : 'class_structure Grammar.Entry.e),
     None,
     [None, None,

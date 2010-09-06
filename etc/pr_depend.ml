@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.62 2010/09/05 18:07:13 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.63 2010/09/06 16:54:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -232,7 +232,7 @@ and type_decl td = ctyp td.MLast.tdDef
 and class_expr =
   fun
   [ <:class_expr< $ce$ $e$ >> -> do { class_expr ce; expr e }
-  | <:class_expr< $list:li$ [ $list:tl$ ] >> -> do {
+  | <:class_expr< [ $list:tl$ ] $list:li$ >> -> do {
       longident li;
       list ctyp tl
     }
