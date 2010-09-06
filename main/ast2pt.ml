@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.105 2010/09/06 08:53:43 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.106 2010/09/06 09:21:15 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -590,6 +590,36 @@ value bigarray_set loc e el v =
   | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
 ;
 
+value package_of_module_type loc mt =
+  let (mt, with_con) =
+    match mt with
+    [ <:module_type< $mt$ with $list:with_con$ >> ->
+        let with_con =
+          List.map
+            (fun
+             [ WcTyp loc id tpl pf ct -> do {
+                 let li =
+                   match uv id with
+                   [ [id] -> id
+                   | _ -> error loc "simple identifier expected" ]
+                 in
+                 if uv tpl <> [] then
+                   error loc "no type parameters allowed here"
+                 else ();
+                 if uv pf then error loc "no 'private' allowed here" else ();
+                 (li, ctyp ct)
+               }
+             | WcMod loc _ _ ->
+                 error loc "package type with 'module' no allowed" ])
+            with_con
+        in
+        (mt, with_con)
+    | _ -> (mt, []) ]
+  in
+  let li = module_type_long_id mt in
+  (li, with_con)
+;
+
 value rec expr =
   fun
   [ ExAcc loc x <:expr< val >> ->
@@ -760,7 +790,12 @@ value rec expr =
       | None -> error loc "no object in this ocaml version" ]
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
-  | ExPck loc me pt -> error loc "package not implemented"
+  | ExPck loc me mt ->
+      match ocaml_pexp_pack with
+      [ Some pexp_pack ->
+          let pt = package_of_module_type loc mt in
+          mkexp loc (pexp_pack (module_expr me) pt)
+      | None -> error loc "no '(module ... : ...)' in this ocaml version" ]
   | ExRec loc lel eo ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"

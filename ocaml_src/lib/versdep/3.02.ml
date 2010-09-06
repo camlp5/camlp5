@@ -84,6 +84,8 @@ let ocaml_pexp_letmodule = Some (fun i me e -> Pexp_letmodule (i, me, e));;
 
 let ocaml_pexp_object = None;;
 
+let ocaml_pexp_pack = None;;
+
 let ocaml_pexp_poly = None;;
 
 let ocaml_pexp_record lel eo = Pexp_record (lel, eo);;

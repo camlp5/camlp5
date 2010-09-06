@@ -716,6 +716,33 @@ let bigarray_set loc e el v =
          v)
 ;;
 
+let package_of_module_type loc mt =
+  let (mt, with_con) =
+    match mt with
+      MLast.MtWit (_, mt, with_con) ->
+        let with_con =
+          List.map
+            (function
+               WcTyp (loc, id, tpl, pf, ct) ->
+                 let li =
+                   match uv id with
+                     [id] -> id
+                   | _ -> error loc "simple identifier expected"
+                 in
+                 if uv tpl <> [] then
+                   error loc "no type parameters allowed here";
+                 if uv pf then error loc "no 'private' allowed here";
+                 li, ctyp ct
+             | WcMod (loc, _, _) ->
+                 error loc "package type with 'module' no allowed")
+            with_con
+        in
+        mt, with_con
+    | _ -> mt, []
+  in
+  let li = module_type_long_id mt in li, with_con
+;;
+
 let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
@@ -895,7 +922,13 @@ let rec expr =
       end
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
-  | ExPck (loc, me, pt) -> error loc "package not implemented"
+  | ExPck (loc, me, mt) ->
+      begin match ocaml_pexp_pack with
+        Some pexp_pack ->
+          let pt = package_of_module_type loc mt in
+          mkexp loc (pexp_pack (module_expr me) pt)
+      | None -> error loc "no '(module ... : ...)' in this ocaml version"
+      end
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
