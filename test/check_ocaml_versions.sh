@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.56 2010/09/04 16:59:22 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.1 2010/09/06 01:50:22 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr

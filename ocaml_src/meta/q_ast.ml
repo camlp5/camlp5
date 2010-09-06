@@ -335,6 +335,7 @@ module Meta_make (C : MetaSig) =
       | MeStr (_, lsi) -> C.node "MeStr" [C.vala (C.list str_item) lsi]
       | MeTyc (_, me, mt) -> C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid (_, s) -> C.node "MeUid" [C.vala C.string s]
+      | MeUnp (_, e, mt) -> C.node "MeUnp" [expr e; module_type mt]
     and str_item =
       function
         StCls (_, cd) ->

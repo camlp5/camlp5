@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.139 2010/09/05 19:11:16 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.140 2010/09/06 01:50:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -288,6 +288,8 @@ EXTEND
           Qast.Node "MeAcc" [Qast.Loc; me1; me2] ]
     | "simple"
       [ i = SV UIDENT -> Qast.Node "MeUid" [Qast.Loc; i]
+      | "("; "value"; e = expr; ":"; mt = module_type; ")" ->
+          Qast.Node "MeUnp" [Qast.Loc; e; mt]
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "("; me = SELF; ")" -> me ] ]

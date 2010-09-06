@@ -145,6 +145,7 @@ and module_expr =
   | MeStr of loc * str_item list
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string
+  | MeUnp of loc * expr * module_type
 and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list

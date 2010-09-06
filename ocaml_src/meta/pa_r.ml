@@ -277,6 +277,15 @@ Grammar.extend
       Gramext.action
         (fun _ (mt : 'module_type) _ (me : 'module_expr) _ (loc : Ploc.t) ->
            (MLast.MeTyc (loc, me, mt) : 'module_expr));
+      [Gramext.Stoken ("", "("); Gramext.Stoken ("", "value");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
+       Gramext.Stoken ("", ":");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (mt : 'module_type) _ (e : 'expr) _ _ (loc : Ploc.t) ->
+           (MLast.MeUnp (loc, e, mt) : 'module_expr));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->

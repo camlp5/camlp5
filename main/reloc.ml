@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.48 2010/09/05 19:11:16 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.49 2010/09/06 01:50:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -288,6 +288,8 @@ and module_expr floc sh =
         MeStr (floc loc) (vala_map (List.map (str_item floc sh)) x1)
     | MeTyc loc x1 x2 -> MeTyc (floc loc) (self x1) (module_type floc sh x2)
     | MeUid loc x1 -> MeUid (floc loc) x1
+    | MeUnp loc x1 x2 ->
+        MeUnp (floc loc) (expr floc sh x1) (module_type floc sh x2)
     | IFDEF STRICT THEN
         MeXtr loc x1 x2 -> MeXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.199 2010/09/05 18:33:12 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.200 2010/09/06 01:50:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1316,6 +1316,8 @@ EXTEND_PRINTER
       | <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
           pprintf pc "@[<1>(%p)@]" (plist ctyp 0) tl
+      | <:ctyp< module $mt$ >> ->
+          pprintf pc "@[module@ %p@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
       | <:ctyp< $uid:t$ >> ->
@@ -1451,6 +1453,8 @@ EXTEND_PRINTER
     | "simple"
       [ <:module_expr< $uid:s$ >> ->
           pprintf pc "%s" s
+      | <:module_expr< (value $e$ : $mt$) >> ->
+          pprintf pc "@[(value %p :@ %p)@]" expr e module_type mt
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |

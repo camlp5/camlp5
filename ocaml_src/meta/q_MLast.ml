@@ -515,6 +515,15 @@ Grammar.extend
       Gramext.action
         (fun _ (mt : 'module_type) _ (me : 'module_expr) _ (loc : Ploc.t) ->
            (Qast.Node ("MeTyc", [Qast.Loc; me; mt]) : 'module_expr));
+      [Gramext.Stoken ("", "("); Gramext.Stoken ("", "value");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
+       Gramext.Stoken ("", ":");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (mt : 'module_type) _ (e : 'expr) _ _ (loc : Ploc.t) ->
+           (Qast.Node ("MeUnp", [Qast.Loc; e; mt]) : 'module_expr));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("UIDENT", "")],
@@ -842,7 +851,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 306, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 308, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1413,7 +1422,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 368, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 370, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

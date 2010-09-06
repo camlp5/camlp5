@@ -278,6 +278,8 @@ and module_expr floc sh =
         MeStr (floc loc, vala_map (List.map (str_item floc sh)) x1)
     | MeTyc (loc, x1, x2) -> MeTyc (floc loc, self x1, module_type floc sh x2)
     | MeUid (loc, x1) -> MeUid (floc loc, x1)
+    | MeUnp (loc, x1, x2) ->
+        MeUnp (floc loc, expr floc sh x1, module_type floc sh x2)
   in
   self
 and str_item floc sh =

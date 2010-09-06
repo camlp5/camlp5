@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.130 2010/09/05 19:11:16 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.131 2010/09/06 01:50:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -141,6 +141,8 @@ EXTEND
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
     | "simple"
       [ i = V UIDENT -> <:module_expr< $_uid:i$ >>
+      | "("; "value"; e = expr; ":"; mt = module_type; ")" ->
+         <:module_expr< (value $e$ : $mt$) >>
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "("; me = SELF; ")" -> <:module_expr< $me$ >> ] ]
