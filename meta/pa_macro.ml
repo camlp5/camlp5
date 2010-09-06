@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.46 2010/09/04 12:24:15 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.47 2010/09/06 15:39:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -13,13 +13,13 @@ Added statements:
      DEFINE <uident>
      DEFINE <uident> = <expression>
      DEFINE <uident> <parameters> = <expression>
-     IFDEF <dexpr> THEN <structure_item> <else> END
-     IFNDEF <dexpr> THEN <structure_item> <else> END
+     IFDEF <dexpr> THEN <structure> <else> END
+     IFNDEF <dexpr> THEN <structure> <else> END
 
      where <else> is either:
-        ELSIFDEF <dexpr> THEN <structure_item> <else>
-        ELSIFNDEF <dexpr> THEN <structure_item> <else>
-        ELSE <structure_item>
+        ELSIFDEF <dexpr> THEN <structure> <else>
+        ELSIFNDEF <dexpr> THEN <structure> <else>
+        ELSE <structure>
         <nothing>
 
   In signature items:
@@ -27,13 +27,13 @@ Added statements:
      DEFINE <uident>
      DEFINE <uident> = <type>
      DEFINE <uident> <parameters> = <type>
-     IFDEF <dexpr> THEN <signature_item> <else> END
-     IFNDEF <dexpr> THEN <signature_item> <else> END
+     IFDEF <dexpr> THEN <signature> <else> END
+     IFNDEF <dexpr> THEN <signature> <else> END
 
      where <else> is either:
-        ELSIFDEF <dexpr> THEN <signature_item> <else>
-        ELSIFNDEF <dexpr> THEN <signature_item> <else>
-        ELSE <signature_item>
+        ELSIFDEF <dexpr> THEN <signature> <else>
+        ELSIFNDEF <dexpr> THEN <signature> <else>
+        ELSE <signature>
         <nothing>
 
   In expressions:
@@ -72,6 +72,14 @@ Added statements:
      NOT <dexpr>
      ( <dexpr> )
      <uident>
+     OCAML_VERSION <op> <version>
+
+  An <op> is among: < <= = > >=
+  A <version> is a version of OCaml whose dots are replaced by underscores
+  and the possible subpart starting with 'plus' are removed, and prefixed
+  with 'OCAML_". E.g.:
+      OCAML_3_08 for ocaml version 3.08
+      OCAML_3_13_0 for ocaml version 3.13.0+dev1
 
   As Camlp5 options:
 

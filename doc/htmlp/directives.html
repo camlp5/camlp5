@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <!-- $Id: directives.html,v 1.1 2010/09/06 15:39:30 deraugla Exp $ -->
+  <!-- Copyright (c) INRIA 2007-2010 -->
+  <title>Directives</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="stylesheet" type="text/css" href="styles/base.css"
+        title="Normal" />
+</head>
+<body>
+
+<div id="menu">
+</div>
+
+<div id="content">
+
+<h1 class="top">Directives</h1>
+
+<p>Directives in normal or revised syntax are statements at top level,
+  or, more generally, as signature items or structure items, which
+  stops the preprocessor for evaluate things - which can change the
+  behaviour of the preprocessor, for example to add syntax, load
+  syntax extensions and so on. After the directive is evaluated,
+  the parsing resumes.</p>
+
+<p>Directives begin with '#', followed by an identifier, and,
+  optionnally by an expression. They are usable in source files the
+  and generally in the ocaml toplevel too.</p>
+
+<p>Four predefined directives exist: #load, #directory, #option and
+  #use. It is also possible to add other directives. An example of
+  that is the parsing kit <a href="pragma.html">pa_pragma.cmo</a>
+  which adds a new directive #pragma.</p>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Predefined directives</h2>
+
+<p>The predefined directives are:</p>
+
+<h3>#load "name"</h3>
+
+<p>Loads an object file (ocaml cmo or cma file) in the core,
+  evaluating it.  This is typically to be used in the ocaml toplevel
+  to add an syntax extension kit.</p>
+
+<p>For example, in the toplevel, loading
+  the <a href="quot.html">quotation</a> expander
+  of <a href="ast_strict.html">ocaml syntax trees</a>:</p>
+
+<pre>
+  # #load "q_MLast.cmo";
+
+  # value loc = Ploc.dummy;
+  value loc : Ploc.t = &lt;abstr&gt;
+
+  # &lt;:expr&lt; fun x -&gt; x &gt;&gt;;
+  - : MLast.expr =
+  MLast.ExFun &lt;abstr&gt;
+    (Ploc.VaVal
+       [(MLast.PaLid &lt;abstr&gt; (Ploc.VaVal "x"), Ploc.VaVal None,
+         MLast.ExLid &lt;abstr&gt; (Ploc.VaVal "x"))])
+</pre>
+
+<p>In a source file, the '#load' directive is equivalent to put the
+  object file as camlp5 parameter among the 'load options':</p>
+
+<pre>
+   $ cat myfile.ml
+
+   #load "pa_extend.cmo";
+   value g = Grammar.gcreate (Plexer.gmake ());
+   value e = Grammar.Entry.create g "e";
+
+   EXTEND e: [[ i = INT -> i ]]; END;
+
+   $ ocamlc -pp camlp5r -I +camlp5 -c myfile.ml
+</pre>
+
+<p>which is equivalent to, without using '#load':</p>
+
+<pre>
+   $ cat myfile2.ml
+
+   value g = Grammar.gcreate (Plexer.gmake ());
+   value e = Grammar.Entry.create g "e";
+
+   EXTEND e: [[ i = INT -> i ]]; END;
+</pre>
+
+<p>and compiling it like this:</p>
+
+<pre>
+   $ ocamlc -pp 'camlp5r pa_extend.cmo' -I +camlp5 -c myfile2.ml
+</pre>
+
+<h3>#directory "name"</h3>
+
+<p>Adds a new directory in the camlp5 path searching for loaded files
+  (using the directive #load above). This is equivalent to the option
+  '-I' of the camlp5 command. See the camlp5 man page.</p>
+
+<h3>#use "name"</h3>
+
+<p>Loads a source file name. Useful in the ocaml toplevel to test a
+  source file.</p>
+
+<h3>#option "option"</h3>
+
+<p>Adds an option as if it were added in camlp5 command line (to be
+  used in a source file, not in the ocaml toplevel). Implemented
+  only on options without an extra parameter.</p>
+
+<p>For example, the syntax
+  kit <a href="grammars.html">pa_extend.cmo</a> adds an option named
+  '-split_ext'. This can be viewed through the command:</p>
+
+<pre>
+  camlp5r pa_extend.cmo -help
+</pre>
+
+<p>Thanks to the directive '#option', the following command in the
+  shell:</p>
+
+<pre>
+  $ camlp5r pa_extend.cmo -split_ext file.ml
+</pre>
+
+<p>can be used only as:</p>
+
+<pre>
+  $ camlp5r file.ml
+</pre>
+
+<p>providing the file starts with:</p>
+
+<pre>
+  #load "pa_extend.cmo";
+  #option "-split_ext";
+</pre>
+
+<h2>User directives</h2>
+
+<p>It is possible to add any extra directive. The syntax
+  kit <a href="pragma.html">pragma.cmo</a>, for example, adds a
+  directive named '#pragma'.</p>
+
+<p>A user syntax kit can add its directives using the function
+  "add_directive" of the module <a href="pcaml.html">Pcaml</a>.</p>
+
+<div class="trailer">
+</div>
+
+</div>
+
+</body>
+</html>

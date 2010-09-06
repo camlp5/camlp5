@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.16 2010/08/30 00:45:14 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.17 2010/09/06 15:39:30 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -90,9 +90,9 @@
                       | "IFNDEF" dexpr "THEN" match-assoc
                         "ELSE" match-assoc "END"
           st-or-mac ::= str_macro-def
-                      | str-item
+                      | structure
           sg-or-mac ::= sig-macro-def
-                      | sig-item
+                      | signature
              params ::= ident params
                       | ident
               dexpr ::= dexpr "OR" dexpr

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.95 2010/09/06 02:06:17 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.96 2010/09/06 15:39:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -607,7 +607,13 @@ EXTEND
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
       | e = SELF; "."; "{"; el = V (LIST1 expr LEVEL "+" SEP ","); "}" ->
           <:expr< $e$ .{ $_list:el$ } >>
-      | e1 = SELF; "."; e2 = SELF -> <:expr< $e1$ . $e2$ >> ]
+      | e1 = SELF; "."; e2 = SELF ->
+          let rec loop m =
+            fun
+            [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
+            | e -> <:expr< $m$ . $e$ >> ]
+          in
+          loop e1 e2 ]
     | "~-" NONA
       [ "!"; e = SELF -> <:expr< $e$ . val>>
       | "~-"; e = SELF -> <:expr< ~- $e$ >>
