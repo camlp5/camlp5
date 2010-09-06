@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.103 2010/09/06 01:50:20 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.104 2010/09/06 02:03:08 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -923,10 +923,7 @@ and module_expr =
   | MeTyc loc me mt ->
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
   | MeUid loc s -> mkmod loc (Pmod_ident (lident (uv s)))
-  | MeUnp loc e mt ->
-      match ocaml_pmod_unpack with
-      [ Some pmod_unpack -> mkmod loc (pmod_unpack (expr e) (module_type mt))
-      | None -> error loc "no module unpack in this ocaml version" ]
+  | MeUnp loc e mt -> error loc "module unpack not implemented"
   | IFDEF STRICT THEN
       MeXtr loc _ _ -> error loc "bad ast MeXtr"
     END ]

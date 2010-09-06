@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_sources.sh,v 1.1 2010/09/06 01:50:22 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.2 2010/09/06 02:03:09 deraugla Exp $
 
 files="$(find ../ocaml/trunk -type f -name '*.ml' -print)"
 
@@ -23,4 +23,6 @@ for i in $files; do
   main/camlp5 etc/pa_o.cmo -I etc pr_o.cmo /tmp/t3.ml | diff /tmp/t3.ml -
   echo '*** 6'
   diff /tmp/t2.ml /tmp/t3.ml || :
+  echo '*** 7'
+  main/camlp5 etc/pa_o.cmo meta/pr_dump.cmo "$i" > /dev/null
 done

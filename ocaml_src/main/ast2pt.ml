@@ -1055,10 +1055,7 @@ and module_expr =
   | MeTyc (loc, me, mt) ->
       mkmod loc (Pmod_constraint (module_expr me, module_type mt))
   | MeUid (loc, s) -> mkmod loc (Pmod_ident (lident (uv s)))
-  | MeUnp (loc, e, mt) ->
-      match ocaml_pmod_unpack with
-        Some pmod_unpack -> mkmod loc (pmod_unpack (expr e) (module_type mt))
-      | None -> error loc "no module unpack in this ocaml version"
+  | MeUnp (loc, e, mt) -> error loc "module unpack not implemented"
 and str_item s l =
   match s with
     StCls (loc, cd) ->

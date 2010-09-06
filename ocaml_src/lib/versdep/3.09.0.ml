@@ -162,8 +162,6 @@ let ocaml_pcty_signature = Some (fun (t, cil) -> Pcty_signature (t, cil));;
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 
-let ocaml_pmod_unpack = None;;
-
 let module_prefix_can_be_in_first_record_label_only = true;;
 
 let split_or_patterns_with_bindings = false;;

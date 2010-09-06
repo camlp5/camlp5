@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.94 2010/09/06 01:50:20 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.95 2010/09/06 02:06:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -979,9 +979,9 @@ EXTEND
       | "method"; ov = V (FLAG "!"); l = V label "lid" ""; ":";
         t = poly_type; "="; e = expr ->
           <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ >>
-      | "method"; ovr = V (FLAG "!"); l = V label "lid" "";
+      | "method"; ov = V (FLAG "!"); l = V label "lid" "";
         sb = fun_binding ->
-          <:class_str_item< method $_!:ovr$ $_lid:l$ = $sb$ >>
+          <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]
