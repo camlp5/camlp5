@@ -146,6 +146,8 @@ let ocaml_pstr_recmodule = None;;
 
 let ocaml_class_infos = None;;
 
+let ocaml_pmod_unpack = None;;
+
 let ocaml_pcf_cstr = None;;
 
 let ocaml_pcf_inher (id, cl, el, loc) pb = Pcf_inher (id, cl, el, pb, loc);;

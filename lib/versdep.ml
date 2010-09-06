@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.41 2010/09/06 09:21:15 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.42 2010/09/06 09:34:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -358,6 +358,11 @@ value ocaml_class_infos =
         {pci_virt = virt; pci_params = params; pci_name = name;
          pci_expr = expr; pci_loc = loc; pci_variance = variance})
   END
+;
+
+value ocaml_pmod_unpack =
+  IFDEF OCAML_VERSION < OCAML_3_12 THEN None
+  ELSE Some (fun e pt -> Pmod_unpack e pt) END
 ;
 
 value ocaml_pcf_cstr =

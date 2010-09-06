@@ -170,6 +170,8 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc})
 ;;
 
+let ocaml_pmod_unpack = None;;
+
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
 
 let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
