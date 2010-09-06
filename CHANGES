@@ -1,9 +1,10 @@
 Camlp5 Version 5.16:
 --------------------
 
-* [06 Sep 10] Added missing parsed statements: 'module type of' as
-  module type, '(module ... : ...)' as expression, '(val ...)'
-  ('value' in revised syntax) as module expression.
+* [06 Sep 10] Added statements (which were missing in camlp5 parsers):
+    - 'module type of' as module type,
+    - '(module ... : ...)' as expression,
+    - '(val ...)' ('value' in revised syntax) as module expression.
 * [02 Sep 10] Added directive "#option" (in files, not in toplevel).
 * [02 Sep 10] pa_macro.cmo: phrases inside IFDEF statements now are
   implementation or interface items, which means:
