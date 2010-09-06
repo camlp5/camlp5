@@ -294,16 +294,23 @@ MLast.CrDcl loc lcstri;
 MLast.CrInh loc ce (Ploc.VaVal None);
 MLast.CrInh loc ce os;
 MLast.CrIni loc e;
-MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal False) e (Ploc.VaVal None);
-MLast.CrMth loc s (Ploc.VaVal False) e (Ploc.VaVal None);
-MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal False) e (Ploc.VaVal (Some t));
-MLast.CrMth loc s (Ploc.VaVal False) e (Ploc.VaVal (Some t));
-MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal True) e (Ploc.VaVal None);
-MLast.CrMth loc s (Ploc.VaVal True) e (Ploc.VaVal None);
-MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal True) e (Ploc.VaVal (Some t));
-MLast.CrMth loc s (Ploc.VaVal True) e (Ploc.VaVal (Some t));
-MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal b) e (Ploc.VaVal ot);
-MLast.CrMth loc s b e ot;
+MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal False) (Ploc.VaVal False) e
+  (Ploc.VaVal None);
+MLast.CrMth loc s (Ploc.VaVal False) (Ploc.VaVal False) e (Ploc.VaVal None);
+MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal False) (Ploc.VaVal False) e
+  (Ploc.VaVal (Some t));
+MLast.CrMth loc s (Ploc.VaVal False) (Ploc.VaVal False) e
+  (Ploc.VaVal (Some t));
+MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal False) e
+  (Ploc.VaVal None);
+MLast.CrMth loc s (Ploc.VaVal True) (Ploc.VaVal False) e (Ploc.VaVal None);
+MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal False) e
+  (Ploc.VaVal (Some t));
+MLast.CrMth loc s (Ploc.VaVal True) (Ploc.VaVal False) e
+  (Ploc.VaVal (Some t));
+MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal b) (Ploc.VaVal False) e
+  (Ploc.VaVal ot);
+MLast.CrMth loc s b (Ploc.VaVal False) e ot;
 MLast.CrVal loc (Ploc.VaVal s) (Ploc.VaVal False) e;
 MLast.CrVal loc s (Ploc.VaVal False) e;
 MLast.CrVal loc (Ploc.VaVal s) (Ploc.VaVal True) e;

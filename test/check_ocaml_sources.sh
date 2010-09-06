@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.6 2010/09/06 16:54:59 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.7 2010/09/06 17:16:26 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -33,6 +33,10 @@ fi
 for i in $files; do
   echo ===============================
   echo $i
+  bname=$(basename $i$)
+  if [ "$bname" = "frx_fileinput.ml" ]; then
+    echo "skipping $bname$"
+  fi
   idir=$(basename $(dirname $i))
   syntax="etc/pa_o.cmo"
   altsyntax="meta/pa_r.cmo"

@@ -271,8 +271,8 @@
 <:with_constr< module $list:ls$ = $me$ >>;
 <:with_constr< module $_list:ls$ = $me$ >>;
 <:class_expr< $ce$ $e$ >>;
-<:class_expr< $list:ls$ [ $list:lt$ ] >>;
-<:class_expr< $_list:ls$ [ $_list:lt$ ] >>;
+<:class_expr< [ $list:lt$ ] $list:ls$ >>;
+<:class_expr< [ $_list:lt$ ] $_list:ls$ >>;
 <:class_expr< fun $p$ -> $ce$ >>;
 <:class_expr< let $flag:b$ $list:lpe$ in $ce$ >>;
 <:class_expr< let $_flag:b$ $_list:lpe$ in $ce$ >>;
@@ -302,8 +302,8 @@
 <:class_str_item< method private $_:s$ = $e$ >>;
 <:class_str_item< method private $s$ : $t$ = $e$ >>;
 <:class_str_item< method private $_:s$ : $t$ = $e$ >>;
-<:class_str_item< method $flag:b$ $s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_flag:b$ $_:s$ $_opt:ot$ = $e$ >>;
+<:class_str_item< method $priv:b$ $s$ $opt:ot$ = $e$ >>;
+<:class_str_item< method $_priv:b$ $_:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< value $s$ = $e$ >>;
 <:class_str_item< value $_:s$ = $e$ >>;
 <:class_str_item< value mutable $s$ = $e$ >>;
