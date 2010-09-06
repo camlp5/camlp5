@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.23 2010/08/19 10:40:44 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.24 2010/09/06 10:04:10 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1427,8 +1427,8 @@
 
 <h4>sig_item</h4>
 
-<p>Signature items, i.e. phrases in a ".mli" file or "sig"s
-  elements.</p>
+<p>Signature items, i.e. phrases in a ".mli" file or elements inside
+  "sig ... end".</p>
 
 <dl class="nodelist">
   <dt>- class</dt>
@@ -1709,6 +1709,13 @@
     <br/>
     <tt style="color:blue">&lt;:module_type&lt; sig $_list:lsigi$ end >></tt><br/>
     <tt style="color:red">MLast.MtSig loc lsigi</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- module type of module expression</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; module type of $me$ >></tt><br/>
+    <tt style="color:red">MLast.MtTyo loc me</tt>
   </dd>
 </dl>
 <dl class="nodelist">

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 1.12 2010/08/19 10:40:44 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 1.13 2010/09/06 10:04:10 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1042,6 +1042,11 @@
     <td><tt>MtSig loc lsigi</tt></td>
     <td align="center"><tt>sig $list:lsigi$ end</tt></td>
     <td>signature</td>
+  </tr>
+  <tr>
+    <td><tt>MtTyo loc me</tt></td>
+    <td align="center"><tt>module type of $me$</tt></td>
+    <td>of module expression</td>
   </tr>
   <tr>
     <td><tt>MtUid loc s</tt></td>
