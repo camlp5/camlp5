@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.1 2010/09/07 20:04:36 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.2 2010/09/07 20:27:39 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -8,26 +8,31 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
+value rec prefix_of_type t =
+  let t =
+    match t with
+    [ <:ctyp< Ploc.vala $t$ >> -> t
+    | t -> t ]
+  in
+  match t with
+  [ <:ctyp< loc >> -> "l"
+  | <:ctyp< bool >> -> "b"
+  | <:ctyp< expr >> -> "e"
+  | <:ctyp< module_type >> -> "mt"
+  | <:ctyp< patt >> -> "p"
+  | <:ctyp< string >> -> "s"
+  | <:ctyp< ctyp >> -> "t"
+  | <:ctyp< list $t$ >> -> "l" ^ prefix_of_type t
+  | <:ctyp< option $t$ >> -> "o" ^ prefix_of_type t
+  | <:ctyp< ($list:tl$) >> -> String.concat "" (List.map prefix_of_type tl)
+  | _ -> "x" ]
+;
+
 value name_of_vars tl =
   let (rev_tnl, env) =
     List.fold_left
       (fun (rev_tnl, env) t ->
-         let pt =
-           let t =
-             match t with
-             [ <:ctyp< Ploc.vala $t$ >> -> t
-             | t -> t ]
-           in
-           match t with
-           [ <:ctyp< loc >> -> "loc"
-           | <:ctyp< bool >> -> "b"
-           | <:ctyp< string >> -> "s"
-           | <:ctyp< ctyp >> -> "t"
-           | <:ctyp< list string >> -> "ls"
-           | <:ctyp< list (string * ctyp) >> -> "lst"
-           | <:ctyp< module_type >> -> "mt"
-           | _ -> "x" ]
-         in
+         let pt = prefix_of_type t in
          let (n, env) =
            loop env where rec loop =
              fun
@@ -90,7 +95,7 @@ value rec expr_of_type loc t =
       let f =
         match t1 with
         [ <:ctyp< list >> -> <:expr< C.list >>
-        | <:ctyp< option >> -> <:expr< option_map >>
+        | <:ctyp< option >> -> <:expr< C.option >>
         | <:ctyp< Ploc.vala >> -> <:expr< C.vala >>
         | <:ctyp< $lid:n$ >> -> <:expr< $lid:n^"_map"$ floc >>
         | _ -> <:expr< error >> ]
