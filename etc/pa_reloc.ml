@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 1.2 2010/09/07 14:04:19 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 1.3 2010/09/07 15:07:21 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -87,23 +87,39 @@ value conv_cons_decl gtn use_self (loc, c, tl) =
   in
   let e = <:expr< $_uid:c$ >> in
   let (e, _, use_self) =
-    List.fold_left
-      (fun (e1, n, use_self) t ->
-         let x = "x" ^ string_of_int n in
-         let e = <:expr< $lid:x$ >> in
-         let (e2, n, use_self) =
-           match t with
-           [ <:ctyp< loc >> -> (<:expr< floc loc >>, n, use_self)
-           | _ ->
-               let (e, use_self) =
-                 match expr_of_type gtn use_self loc t with
-                 [ Some (f, use_self) -> (<:expr< $f$ $e$ >>, use_self)
-                 | None -> (e, use_self) ]
-               in
-               (e, n + 1, use_self) ]
+    match Pcaml.unvala c with
+    [ "ExAnt" ->
+         let e =
+           <:expr<
+             let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
+             expr new_floc sh x1 >>
          in
-         (<:expr< $e1$ $e2$ >>, n, use_self))
-      (e, 1, use_self) tl
+         (e, 0, use_self)
+    | "PaAnt" ->
+         let e =
+           <:expr<
+             let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
+             patt new_floc sh x1 >>
+         in
+         (e, 0, use_self)
+    | _ ->
+        List.fold_left
+          (fun (e1, n, use_self) t ->
+             let x = "x" ^ string_of_int n in
+             let e = <:expr< $lid:x$ >> in
+             let (e2, n, use_self) =
+               match t with
+               [ <:ctyp< loc >> -> (<:expr< floc loc >>, n, use_self)
+               | _ ->
+                   let (e, use_self) =
+                     match expr_of_type gtn use_self loc t with
+                     [ Some (f, use_self) -> (<:expr< $f$ $e$ >>, use_self)
+                     | None -> (e, use_self) ]
+                   in
+                   (e, n + 1, use_self) ]
+             in
+             (<:expr< $e1$ $e2$ >>, n, use_self))
+          (e, 1, use_self) tl ]
   in
   ((p, <:vala< None >>, e), use_self)
 ;
