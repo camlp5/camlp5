@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.50 2010/09/07 10:14:27 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.51 2010/09/07 11:46:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -22,12 +22,12 @@ value vala_map f =
   END
 ;
 
-value class_infos a floc sh x =
+value class_infos_map floc f x =
   {ciLoc = floc x.ciLoc; ciVir = x.ciVir;
    ciPrm =
      let (x1, x2) = x.ciPrm in
      (floc x1, x2);
-   ciNam = x.ciNam; ciExp = a floc sh x.ciExp}
+   ciNam = x.ciNam; ciExp = f x.ciExp}
 ;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
@@ -248,10 +248,10 @@ and sig_item floc sh =
     fun
     [ SgCls loc x1 ->
         SgCls (floc loc)
-          (vala_map (List.map (class_infos class_type floc sh)) x1)
+          (vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)
     | SgClt loc x1 ->
         SgClt (floc loc)
-          (vala_map (List.map (class_infos class_type floc sh)) x1)
+          (vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)
     | SgDcl loc x1 -> SgDcl (floc loc) (vala_map (List.map self) x1)
     | SgDir loc x1 x2 -> SgDir (floc loc) x1 x2
     | SgExc loc x1 x2 ->
@@ -260,7 +260,7 @@ and sig_item floc sh =
     | SgInc loc x1 -> SgInc (floc loc) (module_type floc sh x1)
     | SgMod loc x1 x2 ->
         SgMod (floc loc) x1
-          (vala_map (List.map (fun (n, mt) -> (n, module_type floc sh mt)))
+          (vala_map (List.map (fun (x1, x2) -> (x1, module_type floc sh x2)))
              x2)
     | SgMty loc x1 x2 -> SgMty (floc loc) x1 (module_type floc sh x2)
     | SgOpn loc x1 -> SgOpn (floc loc) x1
@@ -272,10 +272,9 @@ and sig_item floc sh =
         SgXtr loc x1 x2 -> SgXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
 and with_constr floc sh =
-  self where rec self =
-    fun
-    [ WcTyp loc x1 x2 x3 x4 -> WcTyp (floc loc) x1 x2 x3 (ctyp floc sh x4)
-    | WcMod loc x1 x2 -> WcMod (floc loc) x1 (module_expr floc sh x2) ]
+  fun
+  [ WcTyp loc x1 x2 x3 x4 -> WcTyp (floc loc) x1 x2 x3 (ctyp floc sh x4)
+  | WcMod loc x1 x2 -> WcMod (floc loc) x1 (module_expr floc sh x2) ]
 and module_expr floc sh =
   self where rec self =
     fun
@@ -297,10 +296,10 @@ and str_item floc sh =
     fun
     [ StCls loc x1 ->
         StCls (floc loc)
-          (vala_map (List.map (class_infos class_expr floc sh)) x1)
+          (vala_map (List.map (class_infos_map floc (class_expr floc sh))) x1)
     | StClt loc x1 ->
         StClt (floc loc)
-          (vala_map (List.map (class_infos class_type floc sh)) x1)
+          (vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)
     | StDcl loc x1 -> StDcl (floc loc) (vala_map (List.map self) x1)
     | StDir loc x1 x2 -> StDir (floc loc) x1 x2
     | StExc loc x1 x2 x3 ->
