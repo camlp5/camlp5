@@ -101,21 +101,21 @@ module Meta_make (C : MetaSig) =
       function
         TyAcc (_, t1, t2) -> C.node "TyAcc" [ctyp t1; ctyp t2]
       | TyAli (_, t1, t2) -> C.node "TyAli" [ctyp t1; ctyp t2]
-      | TyArr (_, t1, t2) -> C.node "TyArr" [ctyp t1; ctyp t2]
       | TyAny _ -> C.node "TyAny" []
       | TyApp (_, t1, t2) -> C.node "TyApp" [ctyp t1; ctyp t2]
+      | TyArr (_, t1, t2) -> C.node "TyArr" [ctyp t1; ctyp t2]
       | TyCls (_, ls) -> C.node "TyCls" [C.vala (C.list C.string) ls]
-      | TyLab (_, i, t) -> C.node "TyLab" [C.vala C.string i; ctyp t]
+      | TyLab (_, s, t) -> C.node "TyLab" [C.vala C.string s; ctyp t]
       | TyLid (_, s) -> C.node "TyLid" [C.vala C.string s]
       | TyMan (_, t1, t2) -> C.node "TyMan" [ctyp t1; ctyp t2]
-      | TyObj (_, lm, v) ->
+      | TyObj (_, lst, b) ->
           C.node "TyObj"
-            [C.vala (C.list (fun (s, t) -> C.tuple [C.string s; ctyp t])) lm;
-             C.vala C.bool v]
-      | TyOlb (_, i, t) -> C.node "TyOlb" [C.vala C.string i; ctyp t]
+            [C.vala (C.list (fun (s, t) -> C.tuple [C.string s; ctyp t])) lst;
+             C.vala C.bool b]
+      | TyOlb (_, s, t) -> C.node "TyOlb" [C.vala C.string s; ctyp t]
       | TyPck (_, mt) -> C.node "TyPck" [module_type mt]
-      | TyPol (_, lv, t) ->
-          C.node "TyPol" [C.vala (C.list C.string) lv; ctyp t]
+      | TyPol (_, ls, t) ->
+          C.node "TyPol" [C.vala (C.list C.string) ls; ctyp t]
       | TyQuo (_, s) -> C.node "TyQuo" [C.vala C.string s]
       | TyRec (_, lld) ->
           let lld =

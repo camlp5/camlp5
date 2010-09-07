@@ -112,11 +112,11 @@ and patt floc sh =
                 self x1, vala_map (option_map (expr floc sh)) x2)
              x2)
     | PaOrp (loc, x1, x2) -> PaOrp (floc loc, self x1, self x2)
-    | PaRng (loc, x1, x2) -> PaRng (floc loc, self x1, self x2)
     | PaRec (loc, x1) ->
         PaRec
           (floc loc,
            vala_map (List.map (fun (x1, x2) -> self x1, self x2)) x1)
+    | PaRng (loc, x1, x2) -> PaRng (floc loc, self x1, self x2)
     | PaStr (loc, x1) -> PaStr (floc loc, x1)
     | PaTup (loc, x1) -> PaTup (floc loc, vala_map (List.map self) x1)
     | PaTyc (loc, x1, x2) -> PaTyc (floc loc, self x1, ctyp floc sh x2)
