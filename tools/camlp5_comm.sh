@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 1.13 2010/08/24 15:06:48 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.14 2010/09/07 17:30:37 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
@@ -39,5 +39,7 @@ else
     OFILE=`basename $FILE .ml`.ppo
   fi
   if test "$QUIET" = "no"; then echo cp $FILE $OFILE; fi
-  cp $FILE $OFILE
+  echo "# 1 \"$FILE\"" > $OFILE
+  echo cat $FILE ">" $OFILE
+  cat $FILE >> $OFILE
 fi
