@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 1.3 2010/09/07 15:07:21 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 1.4 2010/09/07 17:37:23 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -61,12 +61,12 @@ value rec expr_of_type gtn use_self loc t =
             | <:ctyp< option >> -> <:expr< option_map >>
             | <:ctyp< Ploc.vala >> -> <:expr< vala_map >>
             | <:ctyp< $lid:n$ >> -> <:expr< $lid:n^"_map"$ floc >>
-            | _ -> <:expr< fucking_map >> ]
+            | _ -> <:expr< error >> ]
           in
           Some (<:expr< $f$ $e$ >>, use_self)
       | None -> None ]
   | _ ->
-      Some (<:expr< fucking 9 >>, use_self) ]
+      Some (<:expr< error >>, use_self) ]
 ;
 
 value conv_cons_decl gtn use_self (loc, c, tl) =
@@ -144,6 +144,20 @@ value gen_reloc loc tdl =
                        cdl ([], False)
                    in
                    (<:expr< fun [ $list:pwel$ ] >>, use_self)
+               | <:ctyp< { $list:ldl$ } >> ->
+                   let lel =
+                     List.map
+                       (fun (loc, l, mf, t) ->
+                          let e = <:expr< x.$lid:l$ >> in
+                          let e =
+                            match expr_of_type "" False loc t with
+                            [ Some (f, _) -> <:expr< $f$ $e$ >>
+                            | None -> e ]
+                          in
+                          (<:patt< $lid:l$ >>, e))
+                       ldl
+                   in
+                   (<:expr< fun x -> {$list:lel$} >>, False)
                | _ -> (<:expr< 0 >>, False) ]
              in
              let e =
