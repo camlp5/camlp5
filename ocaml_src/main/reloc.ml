@@ -14,10 +14,10 @@ let option_map f =
 
 let vala_map f x = f x;;
 
-let class_infos a floc sh x =
+let class_infos_map floc f x =
   {ciLoc = floc x.ciLoc; ciVir = x.ciVir;
    ciPrm = (let (x1, x2) = x.ciPrm in floc x1, x2); ciNam = x.ciNam;
-   ciExp = a floc sh x.ciExp}
+   ciExp = f x.ciExp}
 ;;
 
 let with_tdNam_tdDef_tdCon td tdNam tdDef tdCon =
@@ -140,7 +140,7 @@ and expr floc sh =
     | ExApp (loc, x1, x2) -> ExApp (floc loc, self x1, self x2)
     | ExAre (loc, x1, x2) -> ExAre (floc loc, self x1, self x2)
     | ExArr (loc, x1) -> ExArr (floc loc, vala_map (List.map self) x1)
-    | ExAsr (loc, x1) -> let nloc = floc loc in ExAsr (nloc, self x1)
+    | ExAsr (loc, x1) -> ExAsr (floc loc, self x1)
     | ExAss (loc, x1, x2) -> ExAss (floc loc, self x1, self x2)
     | ExBae (loc, x1, x2) ->
         ExBae (floc loc, self x1, vala_map (List.map self) x2)
@@ -237,12 +237,15 @@ and sig_item floc sh =
     function
       SgCls (loc, x1) ->
         SgCls
-          (floc loc, vala_map (List.map (class_infos class_type floc sh)) x1)
+          (floc loc,
+           vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)
     | SgClt (loc, x1) ->
         SgClt
-          (floc loc, vala_map (List.map (class_infos class_type floc sh)) x1)
+          (floc loc,
+           vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)
     | SgDcl (loc, x1) -> SgDcl (floc loc, vala_map (List.map self) x1)
-    | SgDir (loc, x1, x2) -> SgDir (floc loc, x1, x2)
+    | SgDir (loc, x1, x2) ->
+        SgDir (floc loc, x1, vala_map (option_map (expr floc sh)) x2)
     | SgExc (loc, x1, x2) ->
         SgExc (floc loc, x1, vala_map (List.map (ctyp floc sh)) x2)
     | SgExt (loc, x1, x2, x3) -> SgExt (floc loc, x1, ctyp floc sh x2, x3)
@@ -250,23 +253,22 @@ and sig_item floc sh =
     | SgMod (loc, x1, x2) ->
         SgMod
           (floc loc, x1,
-           vala_map (List.map (fun (n, mt) -> n, module_type floc sh mt)) x2)
+           vala_map (List.map (fun (x1, x2) -> x1, module_type floc sh x2))
+             x2)
     | SgMty (loc, x1, x2) -> SgMty (floc loc, x1, module_type floc sh x2)
     | SgOpn (loc, x1) -> SgOpn (floc loc, x1)
     | SgTyp (loc, x1) ->
         SgTyp (floc loc, vala_map (List.map (type_decl floc sh)) x1)
-    | SgUse (loc, x1, x2) -> SgUse (loc, x1, x2)
+    | SgUse (loc, x1, x2) ->
+        SgUse (floc loc, x1, List.map (fun (x1, loc) -> self x1, floc loc) x2)
     | SgVal (loc, x1, x2) -> SgVal (floc loc, x1, ctyp floc sh x2)
   in
   self
 and with_constr floc sh =
-  let rec self =
-    function
-      WcTyp (loc, x1, x2, x3, x4) ->
-        WcTyp (floc loc, x1, x2, x3, ctyp floc sh x4)
-    | WcMod (loc, x1, x2) -> WcMod (floc loc, x1, module_expr floc sh x2)
-  in
-  self
+  function
+    WcTyp (loc, x1, x2, x3, x4) ->
+      WcTyp (floc loc, x1, x2, x3, ctyp floc sh x4)
+  | WcMod (loc, x1, x2) -> WcMod (floc loc, x1, module_expr floc sh x2)
 and module_expr floc sh =
   let rec self =
     function
@@ -287,12 +289,15 @@ and str_item floc sh =
     function
       StCls (loc, x1) ->
         StCls
-          (floc loc, vala_map (List.map (class_infos class_expr floc sh)) x1)
+          (floc loc,
+           vala_map (List.map (class_infos_map floc (class_expr floc sh))) x1)
     | StClt (loc, x1) ->
         StClt
-          (floc loc, vala_map (List.map (class_infos class_type floc sh)) x1)
+          (floc loc,
+           vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)
     | StDcl (loc, x1) -> StDcl (floc loc, vala_map (List.map self) x1)
-    | StDir (loc, x1, x2) -> StDir (floc loc, x1, x2)
+    | StDir (loc, x1, x2) ->
+        StDir (floc loc, x1, vala_map (option_map (expr floc sh)) x2)
     | StExc (loc, x1, x2, x3) ->
         StExc (floc loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3)
     | StExp (loc, x1) -> StExp (floc loc, expr floc sh x1)
@@ -301,12 +306,14 @@ and str_item floc sh =
     | StMod (loc, x1, x2) ->
         StMod
           (floc loc, x1,
-           vala_map (List.map (fun (n, me) -> n, module_expr floc sh me)) x2)
+           vala_map (List.map (fun (x1, x2) -> x1, module_expr floc sh x2))
+             x2)
     | StMty (loc, x1, x2) -> StMty (floc loc, x1, module_type floc sh x2)
     | StOpn (loc, x1) -> StOpn (floc loc, x1)
     | StTyp (loc, x1) ->
         StTyp (floc loc, vala_map (List.map (type_decl floc sh)) x1)
-    | StUse (loc, x1, x2) -> StUse (loc, x1, x2)
+    | StUse (loc, x1, x2) ->
+        StUse (floc loc, x1, List.map (fun (x1, loc) -> self x1, floc loc) x2)
     | StVal (loc, x1, x2) ->
         StVal
           (floc loc, x1,
@@ -336,8 +343,7 @@ and class_sig_item floc sh =
     function
       CgCtr (loc, x1, x2) ->
         CgCtr (floc loc, ctyp floc sh x1, ctyp floc sh x2)
-    | CgDcl (loc, x1) ->
-        CgDcl (floc loc, vala_map (List.map (class_sig_item floc sh)) x1)
+    | CgDcl (loc, x1) -> CgDcl (floc loc, vala_map (List.map self) x1)
     | CgInh (loc, x1) -> CgInh (floc loc, class_type floc sh x1)
     | CgMth (loc, x1, x2, x3) -> CgMth (floc loc, x1, x2, ctyp floc sh x3)
     | CgVal (loc, x1, x2, x3) -> CgVal (floc loc, x1, x2, ctyp floc sh x3)
@@ -369,8 +375,7 @@ and class_str_item floc sh =
     function
       CrCtr (loc, x1, x2) ->
         CrCtr (floc loc, ctyp floc sh x1, ctyp floc sh x2)
-    | CrDcl (loc, x1) ->
-        CrDcl (floc loc, vala_map (List.map (class_str_item floc sh)) x1)
+    | CrDcl (loc, x1) -> CrDcl (floc loc, vala_map (List.map self) x1)
     | CrInh (loc, x1, x2) -> CrInh (floc loc, class_expr floc sh x1, x2)
     | CrIni (loc, x1) -> CrIni (floc loc, expr floc sh x1)
     | CrMth (loc, x1, x2, x3, x4, x5) ->
