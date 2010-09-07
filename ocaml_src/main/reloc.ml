@@ -20,11 +20,6 @@ let class_infos_map floc f x =
    ciExp = f x.ciExp}
 ;;
 
-let with_tdNam_tdDef_tdCon td tdNam tdDef tdCon =
-  {tdNam = tdNam; tdPrm = td.tdPrm; tdPrv = td.tdPrv; tdDef = tdDef;
-   tdCon = tdCon}
-;;
-
 let anti_loc qloc sh loc loc1 =
   (*
     ...<:expr<.....$lid:...xxxxxxxx...$...>>...
@@ -321,11 +316,12 @@ and str_item floc sh =
              (List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2)) x2)
   in
   self
-and type_decl floc sh td =
-  with_tdNam_tdDef_tdCon td (floc (fst td.tdNam), snd td.tdNam)
-    (ctyp floc sh td.tdDef)
-    (vala_map (List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2))
-       td.tdCon)
+and type_decl floc sh x =
+  {tdNam = (let (loc, x1) = x.tdNam in floc loc, x1); tdPrm = x.tdPrm;
+   tdPrv = x.tdPrv; tdDef = ctyp floc sh x.tdDef;
+   tdCon =
+     vala_map (List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2))
+       x.tdCon}
 and class_type floc sh =
   let rec self =
     function

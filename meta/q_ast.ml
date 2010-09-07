@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.114 2010/09/06 01:50:20 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.115 2010/09/07 20:04:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -105,19 +105,18 @@ module Meta_make (C : MetaSig) =
       fun
       [ TyAcc _ t1 t2 -> C.node "TyAcc" [ctyp t1; ctyp t2]
       | TyAli _ t1 t2 -> C.node "TyAli" [ctyp t1; ctyp t2]
-      | TyArr _ t1 t2 -> C.node "TyArr" [ctyp t1; ctyp t2]
       | TyAny _ -> C.node "TyAny" []
       | TyApp _ t1 t2 -> C.node "TyApp" [ctyp t1; ctyp t2]
+      | TyArr _ t1 t2 -> C.node "TyArr" [ctyp t1; ctyp t2]
       | TyCls _ ls -> C.node "TyCls" [C.vala (C.list C.string) ls]
-      | TyLab _ i t -> C.node "TyLab" [C.vala C.string i; ctyp t]
+      | TyLab _ s t -> C.node "TyLab" [C.vala C.string s; ctyp t]
       | TyLid _ s -> C.node "TyLid" [C.vala C.string s]
       | TyMan _ t1 t2 -> C.node "TyMan" [ctyp t1; ctyp t2]
-      | TyObj _ lm v ->
+      | TyObj _ lst b ->
           C.node "TyObj"
-            [C.vala (C.list (fun (s, t) -> C.tuple [C.string s; ctyp t]))
-               lm;
-             C.vala C.bool v]
-      | TyOlb _ i t -> C.node "TyOlb" [C.vala C.string i; ctyp t]
+            [C.vala (C.list (fun (s, t) -> C.tuple [C.string s; ctyp t])) lst;
+             C.vala C.bool b]
+      | TyOlb _ s t -> C.node "TyOlb" [C.vala C.string s; ctyp t]
       | TyPck _ mt -> C.node "TyPck" [module_type mt]
       | TyPol _ lv t ->
           C.node "TyPol" [C.vala (C.list C.string) lv; ctyp t]

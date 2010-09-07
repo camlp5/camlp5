@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.31 2010/09/01 16:34:55 deraugla Exp $
+# $Id: Makefile,v 1.32 2010/09/07 20:04:36 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -55,6 +55,15 @@ compare:
 	@for j in $(CAMLP5); do \
 		if cmp $$j $(TOP)/boot/$$j; then :; else exit 1; fi; \
 	done
+
+bootstrap_reloc:
+	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
+	./mkreloc.sh > tmp
+	mv tmp reloc.ml
+
+compare_reloc:
+	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
+	./mkreloc.sh | diff -c reloc.ml -
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"

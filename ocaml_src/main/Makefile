@@ -56,6 +56,15 @@ compare:
 		if cmp $$j $(TOP)/boot/$$j; then :; else exit 1; fi; \
 	done
 
+bootstrap_reloc:
+	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
+	./mkreloc.sh > tmp
+	mv tmp reloc.ml
+
+compare_reloc:
+	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
+	./mkreloc.sh | diff -c reloc.ml -
+
 install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5"

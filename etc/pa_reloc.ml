@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 1.4 2010/09/07 17:37:23 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 1.5 2010/09/07 20:04:36 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -69,7 +69,7 @@ value rec expr_of_type gtn use_self loc t =
       Some (<:expr< error >>, use_self) ]
 ;
 
-value conv_cons_decl gtn use_self (loc, c, tl) =
+value expr_of_cons_decl gtn use_self (loc, c, tl) =
   let tl = Pcaml.unvala tl in
   let (p, _) =
     let p = <:patt< $_uid:c$ >> in
@@ -124,6 +124,42 @@ value conv_cons_decl gtn use_self (loc, c, tl) =
   ((p, <:vala< None >>, e), use_self)
 ;
 
+value apply loc f e =
+  match f with
+  [ <:expr< fun $p1$ -> $e1$ >> -> <:expr< let $p1$ = $e$ in $e1$ >>
+  | _ -> <:expr< $f$ $e$ >> ]
+;
+
+value expr_of_type_decl loc tn td =
+  match td.MLast.tdDef with
+  [ <:ctyp< [ $list:cdl$ ] >> ->
+      let (pwel, use_self) =
+        List.fold_right
+          (fun cd (pwel, use_self) ->
+             let (pwe, use_self) =
+               expr_of_cons_decl tn use_self cd
+             in
+             ([pwe :: pwel], use_self))
+          cdl ([], False)
+      in
+      (<:expr< fun [ $list:pwel$ ] >>, use_self)
+  | <:ctyp< { $list:ldl$ } >> ->
+      let lel =
+        List.map
+          (fun (loc, l, mf, t) ->
+             let e = <:expr< x.$lid:l$ >> in
+             let e =
+               match expr_of_type "" False loc t with
+               [ Some (f, _) -> apply loc f e
+               | None -> e ]
+             in
+             (<:patt< $lid:l$ >>, e))
+          ldl
+      in
+      (<:expr< fun x -> {$list:lel$} >>, False)
+  | _ -> (<:expr< 0 >>, False) ]
+;
+
 value gen_reloc loc tdl =
   match tdl with
   [ [{MLast.tdNam = (_, <:vala< "ctyp" >>)} :: _] ->
@@ -131,35 +167,7 @@ value gen_reloc loc tdl =
         List.map
           (fun td ->
              let tn = Pcaml.unvala (snd td.MLast.tdNam) in
-             let (e, use_self) =
-               match td.MLast.tdDef with
-               [ <:ctyp< [ $list:cdl$ ] >> ->
-                   let (pwel, use_self) =
-                     List.fold_right
-                       (fun cd (pwel, use_self) ->
-                          let (pwe, use_self) =
-                            conv_cons_decl tn use_self cd
-                          in
-                          ([pwe :: pwel], use_self))
-                       cdl ([], False)
-                   in
-                   (<:expr< fun [ $list:pwel$ ] >>, use_self)
-               | <:ctyp< { $list:ldl$ } >> ->
-                   let lel =
-                     List.map
-                       (fun (loc, l, mf, t) ->
-                          let e = <:expr< x.$lid:l$ >> in
-                          let e =
-                            match expr_of_type "" False loc t with
-                            [ Some (f, _) -> <:expr< $f$ $e$ >>
-                            | None -> e ]
-                          in
-                          (<:patt< $lid:l$ >>, e))
-                       ldl
-                   in
-                   (<:expr< fun x -> {$list:lel$} >>, False)
-               | _ -> (<:expr< 0 >>, False) ]
-             in
+             let (e, use_self) = expr_of_type_decl loc tn td in
              let e =
                if use_self then <:expr< self where rec self = $e$ >>
                else e

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.53 2010/09/07 15:34:47 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.54 2010/09/07 20:04:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -29,13 +29,6 @@ value class_infos_map floc f x =
      (floc x1, x2);
    ciNam = x.ciNam; ciExp = f x.ciExp}
 ;
-
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_tdNam_tdDef_tdCon td tdNam tdDef tdCon =
-    {tdNam = tdNam; tdPrm = td.tdPrm; tdPrv = td.tdPrv; tdDef = tdDef;
-     tdCon = tdCon}
-  ;
-END;
 
 value anti_loc qloc sh loc loc1 =
   (*
@@ -331,9 +324,10 @@ and str_item floc sh =
         StXtr loc x1 x2 -> StXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
 and type_decl floc sh x =
-  {(x) with
-   tdNam = (floc (fst x.tdNam), snd x.tdNam);
-   tdDef = ctyp floc sh x.tdDef;
+  {tdNam =
+     let (loc, x1) = x.tdNam in
+     (floc loc, x1);
+   tdPrm = x.tdPrm; tdPrv = x.tdPrv; tdDef = ctyp floc sh x.tdDef;
    tdCon =
      vala_map (List.map (fun (x1, x2) -> (ctyp floc sh x1, ctyp floc sh x2)))
        x.tdCon}
