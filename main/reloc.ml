@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.52 2010/09/07 14:04:19 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.53 2010/09/07 15:34:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -330,14 +330,13 @@ and str_item floc sh =
     | IFDEF STRICT THEN
         StXtr loc x1 x2 -> StXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
-and type_decl floc sh td =
-  {(td) with
-   tdNam = (floc (fst td.tdNam), snd td.tdNam);
-   tdDef = ctyp floc sh td.tdDef;
+and type_decl floc sh x =
+  {(x) with
+   tdNam = (floc (fst x.tdNam), snd x.tdNam);
+   tdDef = ctyp floc sh x.tdDef;
    tdCon =
-     vala_map
-       (List.map (fun (x1, x2) -> (ctyp floc sh x1, ctyp floc sh x2)))
-       td.tdCon}
+     vala_map (List.map (fun (x1, x2) -> (ctyp floc sh x1, ctyp floc sh x2)))
+       x.tdCon}
 and class_type floc sh =
   self where rec self =
     fun
