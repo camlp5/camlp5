@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.20 2010/09/08 15:37:49 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.21 2010/09/08 15:45:57 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -575,6 +575,32 @@
 
 <p>Same for the Scheme syntax: the files are etc/pa_scheme.ml and
   'etc/pa_scheme.ml'.</p>
+
+<h3>EXTEND statement bootstrapping</h3>
+
+<p>The EXTEND statement of Camlp5 is a syntax extension. The file
+  'meta/pa_extend.ml' contains the statement for the adding of this
+  syntax extension, therefore something like:</p>
+
+<pre>
+    EXTEND
+      expr:
+        [ [ "EXTEND" .....
+</pre>
+
+<p>To be compiled, the file 'meta/pa_extend.ml' needs 'pa_extend.cmo'.
+  This is actually its previous version in the directory 'boot'. When
+  checking for a correct bootstrapping of Camlp5 (with the command
+  'make compare', for example), a test is done to verify that the
+  binary files 'meta/pa_extend.cmo' and 'boot/pa_extend.cmo' are the
+  same.</p>
+
+<p>Notice that there is also a file 'ocaml_src/meta/pa_extend.ml' in
+  pure OCaml syntax, but, although this file is pretty printed, is is
+  hardly editable, because the expansion of the 'EXTEND' statement is
+  a very long expression rather difficult to understand. But this file
+  need not to be changes, since the command 'make
+  bootstrap_sources' (see above) rebuilts it.</p>
 
 <div class="trailer">
 </div>
