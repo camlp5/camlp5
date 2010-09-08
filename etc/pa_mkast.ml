@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.6 2010/09/08 10:01:00 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.7 2010/09/08 12:06:06 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -7,6 +7,8 @@
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
+
+open Versdep;
 
 Pcaml.strict_mode.val := True;
 
@@ -62,7 +64,7 @@ value name_of_vars tl =
          ([(t, (pt, n)) :: rev_tnl], env))
        ([], []) tl
   in
-  List.rev_map
+  list_rev_map
     (fun (t, (pt, n)) ->
        let name =
          if List.assoc pt env = 2 then pt
@@ -182,7 +184,7 @@ value expr_of_type_decl loc td =
       <:expr< fun [ $list:pwel$ ] >>
   | <:ctyp< { $list:ldl$ } >> ->
       let rev_lel =
-        List.rev_map
+        list_rev_map
           (fun (loc, l, mf, t) ->
              let e = <:expr< x.$lid:l$ >> in
              let e =
