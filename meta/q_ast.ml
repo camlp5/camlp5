@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.118 2010/09/08 08:51:25 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.119 2010/09/08 09:41:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -230,9 +230,9 @@ module Meta_make (C : MetaSig) =
                      C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
                lpoee]
       | ExNew _ ls -> C.node "ExNew" [C.vala (C.list C.string) ls]
-      | ExObj _ op lcs ->
+      | ExObj _ op lcsi ->
           C.node "ExObj"
-            [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcs]
+            [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]
       | ExOlb _ s oe -> C.node "ExOlb" [C.vala C.string s; C.option expr oe]
       | ExOvr _ lse ->
           C.node "ExOvr"
@@ -373,16 +373,17 @@ module Meta_make (C : MetaSig) =
       | IFDEF STRICT THEN
           StXtr loc s _ -> C.xtr loc s
         END ]
-    and type_decl td =
+    and type_decl x =
       C.record
         [(record_label "tdNam",
-          C.tuple [C.loc_v (); C.vala C.string (snd td.tdNam)]);
-         (record_label "tdPrm", C.vala (C.list type_var) td.tdPrm);
-         (record_label "tdPrv", C.vala C.bool td.tdPrv);
-         (record_label "tdDef", ctyp td.tdDef);
+          let (loc, s) = x.tdNam in
+          C.tuple [C.loc_v (); C.vala C.string s]);
+         (record_label "tdPrm", C.vala (C.list type_var) x.tdPrm);
+         (record_label "tdPrv", C.vala C.bool x.tdPrv);
+         (record_label "tdDef", ctyp x.tdDef);
          (record_label "tdCon",
           C.vala (C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2]))
-            td.tdCon)]
+            x.tdCon)]
     and class_type =
       fun
       [ CtCon _ ls lt ->
@@ -391,40 +392,36 @@ module Meta_make (C : MetaSig) =
       | CtFun _ t ct -> C.node "CtFun" [ctyp t; class_type ct]
       | CtSig _ ot lcsi ->
           C.node "CtSig"
-            [C.vala (C.option ctyp) ot;
-             C.vala (C.list class_sig_item) lcsi]
+            [C.vala (C.option ctyp) ot; C.vala (C.list class_sig_item) lcsi]
       | IFDEF STRICT THEN
           CtXtr loc s _ -> C.xtr loc s
         END ]
     and class_sig_item =
       fun
       [ CgCtr _ t1 t2 -> C.node "CgCtr" [ctyp t1; ctyp t2]
-      | CgDcl _ lcsi ->
-          C.node "CgDcl" [C.vala (C.list class_sig_item) lcsi]
+      | CgDcl _ lcsi -> C.node "CgDcl" [C.vala (C.list class_sig_item) lcsi]
       | CgInh _ ct -> C.node "CgInh" [class_type ct]
-      | CgMth _ s mf t ->
-          C.node "CgMth" [C.vala C.string s; C.vala C.bool mf; ctyp t]
-      | CgVal _ s mf t ->
-          C.node "CgVal" [C.vala C.string s; C.vala C.bool mf; ctyp t]
-      | CgVir _ s mf t ->
-          C.node "CgVir" [C.vala C.string s; C.vala C.bool mf; ctyp t] ]
+      | CgMth _ s b t ->
+          C.node "CgMth" [C.vala C.string s; C.vala C.bool b; ctyp t]
+      | CgVal _ s b t ->
+          C.node "CgVal" [C.vala C.string s; C.vala C.bool b; ctyp t]
+      | CgVir _ s b t ->
+          C.node "CgVir" [C.vala C.string s; C.vala C.bool b; ctyp t] ]
     and class_expr =
       fun
       [ CeApp _ ce e -> C.node "CeApp" [class_expr ce; expr e]
-      | CeCon _ c l ->
-          let c = C.vala (C.list C.string) c in
-          C.node "CeCon" [c; C.vala (C.list ctyp) l]
+      | CeCon _ ls lt ->
+          C.node "CeCon"
+            [C.vala (C.list C.string) ls; C.vala (C.list ctyp) lt]
       | CeFun _ p ce -> C.node "CeFun" [patt p; class_expr ce]
-      | CeLet _ rf lb ce ->
+      | CeLet _ b lpe ce ->
           C.node "CeLet"
-            [C.vala C.bool rf;
-             C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e]))
-               lb;
+            [C.vala C.bool b;
+             C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe;
              class_expr ce]
-      | CeStr _ ocsp lcsi ->
-          let ocsp = C.vala (C.option patt) ocsp in
-          let lcsi = C.vala (C.list class_str_item) lcsi in
-          C.node "CeStr" [ocsp; lcsi]
+      | CeStr _ op lcsi ->
+          C.node "CeStr"
+            [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]
       | CeTyc _ ce ct -> C.node "CeTyc" [class_expr ce; class_type ct]
       | IFDEF STRICT THEN
           CeXtr loc s _ -> C.xtr loc s
@@ -436,14 +433,14 @@ module Meta_make (C : MetaSig) =
       | CrInh _ ce os ->
           C.node "CrInh" [class_expr ce; C.vala (C.option C.string) os]
       | CrIni _ e -> C.node "CrIni" [expr e]
-      | CrMth _ s pf ovf e ot ->
+      | CrMth _ s b1 b2 e ot ->
           C.node "CrMth"
-            [C.vala C.string s; C.vala C.bool pf; C.vala C.bool ovf; expr e;
+            [C.vala C.string s; C.vala C.bool b1; C.vala C.bool b2; expr e;
              C.vala (C.option ctyp) ot]
-      | CrVal _ s rf e ->
-          C.node "CrVal" [C.vala C.string s; C.vala C.bool rf; expr e]
-      | CrVir _ s pf t ->
-          C.node "CrVir" [C.vala C.string s; C.vala C.bool pf; ctyp t] ]
+      | CrVal _ s b e ->
+          C.node "CrVal" [C.vala C.string s; C.vala C.bool b; expr e]
+      | CrVir _ s b t ->
+          C.node "CrVir" [C.vala C.string s; C.vala C.bool b; ctyp t] ]
     ;
   end
 ;

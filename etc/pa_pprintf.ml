@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pprintf.ml,v 1.32 2010/09/08 03:03:38 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.33 2010/09/08 09:41:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -418,7 +418,7 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
         | A_all_if ->
             match al with
             [ [a :: al] -> (a, al)
-            | [] -> (<:expr< moncul >>, al) ] ]
+            | [] -> (<:expr< error >>, al) ] ]
       in
       let (e1, al) =
         expr_of_tree_aux loc fmt is_empty_bef (is_empty_aft || tl <> [])

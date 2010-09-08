@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.4 2010/09/08 08:51:25 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.5 2010/09/08 09:41:24 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -18,7 +18,8 @@ value rec pfx short t =
   [ <:ctyp< loc >> -> if short then "l" else "loc"
   | <:ctyp< bool >> -> "b"
   | <:ctyp< class_expr >> -> "ce"
-  | <:ctyp< class_str_item >> -> "cs"
+  | <:ctyp< class_sig_item >> -> "csi"
+  | <:ctyp< class_str_item >> -> "csi"
   | <:ctyp< class_type >> -> "ct"
   | <:ctyp< expr >> -> "e"
   | <:ctyp< module_expr >> -> "me"
@@ -178,18 +179,23 @@ value expr_of_type_decl loc td =
       in
       <:expr< fun [ $list:pwel$ ] >>
   | <:ctyp< { $list:ldl$ } >> ->
-      let lel =
-        List.map
+      let rev_lel =
+        List.rev_map
           (fun (loc, l, mf, t) ->
              let e = <:expr< x.$lid:l$ >> in
              let e =
                let f = expr_of_type loc t in
                apply loc f e
              in
-             (<:patt< $lid:l$ >>, e))
+             (<:expr< record_label $str:l$ >>, e))
           ldl
       in
-      <:expr< fun x -> {$list:lel$} >>
+      let e =
+        List.fold_left
+          (fun pel (p, e) -> <:expr< [($p$, $e$) :: $pel$] >>) <:expr< [] >>
+          rev_lel
+      in
+      <:expr< fun x -> C.record $e$ >>
   | _ -> <:expr< 0 >> ]
 ;
 
