@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.2 2010/09/07 20:27:39 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.3 2010/09/08 03:03:38 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -8,25 +8,28 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
-value rec prefix_of_type t =
+value rec pfx short t =
   let t =
     match t with
     [ <:ctyp< Ploc.vala $t$ >> -> t
     | t -> t ]
   in
   match t with
-  [ <:ctyp< loc >> -> "l"
+  [ <:ctyp< loc >> -> if short then "l" else "loc"
   | <:ctyp< bool >> -> "b"
   | <:ctyp< expr >> -> "e"
   | <:ctyp< module_type >> -> "mt"
   | <:ctyp< patt >> -> "p"
+  | <:ctyp< poly_variant >> -> "pv"
   | <:ctyp< string >> -> "s"
   | <:ctyp< ctyp >> -> "t"
-  | <:ctyp< list $t$ >> -> "l" ^ prefix_of_type t
-  | <:ctyp< option $t$ >> -> "o" ^ prefix_of_type t
-  | <:ctyp< ($list:tl$) >> -> String.concat "" (List.map prefix_of_type tl)
+  | <:ctyp< list $t$ >> -> "l" ^ pfx True t
+  | <:ctyp< option $t$ >> -> "o" ^ pfx True t
+  | <:ctyp< ($list:tl$) >> -> String.concat "" (List.map (pfx True) tl)
   | _ -> "x" ]
 ;
+
+value prefix_of_type = pfx False;
 
 value name_of_vars tl =
   let (rev_tnl, env) =
@@ -76,7 +79,7 @@ value rec expr_of_type loc t =
           (fun rev_el (t, name) ->
              let e =
                match t with
-               [ <:ctyp< loc >> -> <:expr< floc loc >>
+               [ <:ctyp< loc >> -> <:expr< C.loc_v () >>
                | _ ->
                    let e = <:expr< $lid:name$ >> in
                    <:expr< $expr_of_type loc t$ $e$ >> ]
@@ -121,7 +124,11 @@ value expr_of_cons_decl (loc, c, tl) =
       p tnl
   in
   let c = Pcaml.unvala c in
-  let f = <:expr< C.node $str:c$ >> in
+  let f =
+    match tl with
+    [ [<:ctyp< loc >> :: _] -> <:expr< C.node $str:c$ >>
+    | [_ :: _] | [] -> <:expr< C.node_no_loc $str:c$ >> ]
+  in
   let (rev_el, _) =
     List.fold_left
       (fun (rev_el, n) (t, name) ->

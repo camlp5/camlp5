@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.201 2010/09/06 09:26:30 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.202 2010/09/08 03:03:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -470,7 +470,8 @@ value match_assoc force_vertic pc (p, w, e) =
        [ Some el ->
            pprintf pc "%p do {@;%p@ }" patt_arrow (p, w) sequence el
        | None ->
-           pprintf pc "%p@;%p" patt_arrow (p, w) (comm_expr expr_wh) e ])
+           pprintf pc "@[<i>%p@;%p@]" force_vertic patt_arrow (p, w)
+             (comm_expr expr_wh) e ])
 ;
 
 value match_assoc_sh force_vertic pc pwe =

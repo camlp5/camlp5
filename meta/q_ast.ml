@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.116 2010/09/07 20:27:39 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.117 2010/09/08 03:03:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -120,27 +120,23 @@ module Meta_make (C : MetaSig) =
       | TyPck _ mt -> C.node "TyPck" [module_type mt]
       | TyPol _ ls t -> C.node "TyPol" [C.vala (C.list C.string) ls; ctyp t]
       | TyQuo _ s -> C.node "TyQuo" [C.vala C.string s]
-      | TyRec _ lld ->
-          let lld =
-            C.vala
-              (C.list
-                 (fun (loc, lab, mf, t) ->
-                    C.tuple
-                      [C.loc_v (); C.string lab; C.bool mf; ctyp t]))
-              lld
-          in
-          C.node "TyRec" [lld]
-      | TySum _ lcd ->
-          let lcd =
-            C.vala
-              (C.list
-                 (fun (loc, lab, lt) ->
-                    let lt = C.vala (C.list ctyp) lt in
-                    C.tuple [C.loc_v (); C.vala C.string lab; lt]))
-              lcd
-          in
-          C.node "TySum" [lcd]
-      | TyTup _ tl -> C.node "TyTup" [C.vala (C.list ctyp) tl]
+      | TyRec _ llsbt ->
+          C.node "TyRec"
+            [C.vala
+               (C.list
+                  (fun (loc, s, b, t) ->
+                     C.tuple [C.loc_v (); C.string s; C.bool b; ctyp t]))
+               llsbt]
+      | TySum _ llslt ->
+          C.node "TySum"
+            [C.vala
+               (C.list
+                  (fun (loc, s, lt) ->
+                     C.tuple
+                       [C.loc_v (); C.vala C.string s;
+                        C.vala (C.list ctyp) lt]))
+               llslt]
+      | TyTup _ lt -> C.node "TyTup" [C.vala (C.list ctyp) lt]
       | TyUid _ s -> C.node "TyUid" [C.vala C.string s]
       | TyVrn _ lpv ools ->
           C.node "TyVrn"
@@ -151,13 +147,10 @@ module Meta_make (C : MetaSig) =
         END ]
     and poly_variant =
       fun
-      [ PvTag s a lt ->
-          let s = C.vala C.string s in
-          let a = C.vala C.bool a in
-          let lt = C.vala (C.list ctyp) lt in
-          C.node_no_loc "PvTag" [s; a; lt]
-      | PvInh t ->
-          C.node_no_loc "PvInh" [ctyp t] ]
+      [ PvTag s b lt ->
+          C.node_no_loc "PvTag"
+            [C.vala C.string s; C.vala C.bool b; C.vala (C.list ctyp) lt]
+      | PvInh t -> C.node_no_loc "PvInh" [ctyp t] ]
     and patt =
       fun
       [ PaAcc _ p1 p2 -> C.node "PaAcc" [patt p1; patt p2]

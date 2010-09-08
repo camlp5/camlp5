@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pprintf.ml,v 1.31 2010/08/19 10:36:39 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.32 2010/09/08 03:03:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -21,7 +21,8 @@ value not_impl name x = do {
 };
 
 type break = [ PPbreak of int and int | PPspace ];
-type paren_param = [ PPoffset of int | PPall of bool | PPnone ];
+type all = [ A_all_or_nothing | A_all | A_all_if ];
+type paren_param = [ PPoffset of int | PPall of all | PPnone ];
 
 type tree =
   [ Tempty
@@ -81,10 +82,18 @@ value parse_break =
       PPspace ]
 ;
 
+value all =
+  fun
+  [ 'a' -> A_all_or_nothing
+  | 'b' -> A_all
+  | 'i' -> A_all_if
+  | _ -> invalid_arg "all" ]
+;
+
 value parse_paren_param =
   fparser
   [ [: `'<'; off = parse_int; `'>' :] -> PPoffset off
-  | [: `'<'; `('a' | 'b' as c); `'>' :] -> PPall (c = 'b')
+  | [: `'<'; `('a' | 'b' | 'i' as c); `'>' :] -> PPall (all c)
   | [: :] -> PPnone ]
 ;
 
@@ -395,12 +404,21 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
         expr_of_tree_aux loc fmt is_empty_bef is_empty_aft <:expr< pc >> al t
       in
       (<:expr< let pc = $pc$ in $e$ >>, al)
-  | Tparen (PPall b) t ->
+  | Tparen (PPall all) t ->
       let (t1, tl) =
         loop [] t where rec loop tl =
           fun
           [ Tnode br t1 t2 -> loop [(br, t2) :: tl] t1
           | t -> (t, tl) ]
+      in
+      let (b, al) =
+        match all with
+        [ A_all -> (<:expr< True >>, al)
+        | A_all_or_nothing -> (<:expr< False >>, al)
+        | A_all_if ->
+            match al with
+            [ [a :: al] -> (a, al)
+            | [] -> (<:expr< moncul >>, al) ] ]
       in
       let (e1, al) =
         expr_of_tree_aux loc fmt is_empty_bef (is_empty_aft || tl <> [])
@@ -432,7 +450,6 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
                <:expr< [($int:off$, $int:sp$, fun pc -> $e1$) :: $e$] >>)
             <:expr< [] >> (List.rev el)
         in
-        let b = if b then <:expr< True >> else <:expr< False >> in
         <:expr< Pprintf.sprint_break_all $b$ $pc$ (fun pc -> $e1$) $el$ >>
       in
       (e, al)
