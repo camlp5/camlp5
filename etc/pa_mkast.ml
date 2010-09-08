@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.5 2010/09/08 09:41:24 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.6 2010/09/08 10:01:00 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -7,6 +7,8 @@
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
+
+Pcaml.strict_mode.val := True;
 
 value rec pfx short t =
   let t =
@@ -217,6 +219,10 @@ value gen_ast loc tdl =
           end >>
   | _ -> <:str_item< type $list:tdl$ >> ]
 ;
+
+DELETE_RULE
+  Pcaml.str_item: "type"; LIST1 Pcaml.type_declaration SEP "and"
+END;
 
 EXTEND
   Pcaml.str_item:
