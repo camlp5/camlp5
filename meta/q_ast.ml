@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.117 2010/09/08 03:03:39 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.118 2010/09/08 08:51:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -158,30 +158,26 @@ module Meta_make (C : MetaSig) =
       | PaAnt _ p -> C.node "PaAnt" [patt p]
       | PaAny _ -> C.node "PaAny" []
       | PaApp _ p1 p2 -> C.node "PaApp" [patt p1; patt p2]
-      | PaArr _ pl -> C.node "PaArr" [C.vala (C.list patt) pl]
+      | PaArr _ lp -> C.node "PaArr" [C.vala (C.list patt) lp]
       | PaChr _ s -> C.node "PaChr" [C.vala C.string s]
-      | PaInt _ s k -> C.node "PaInt" [C.vala C.string s; C.string k]
+      | PaInt _ s1 s2 -> C.node "PaInt" [C.vala C.string s1; C.string s2]
       | PaFlo _ s -> C.node "PaFlo" [C.vala C.string s]
-      | PaLab _ s p -> C.node "PaLab" [C.vala C.string s; C.option patt p]
+      | PaLab _ s op -> C.node "PaLab" [C.vala C.string s; C.option patt op]
       | PaLaz _ p -> C.node "PaLaz" [patt p]
       | PaLid _ s -> C.node "PaLid" [C.vala C.string s]
-      | PaOlb _ s opeo ->
+      | PaOlb _ s opoe ->
           C.node "PaOlb"
             [C.vala C.string s;
              C.option
-               (fun (p, oe) ->
-                  C.tuple [patt p; C.vala (C.option expr) oe])
-               opeo]
+               (fun (p, oe) -> C.tuple [patt p; C.vala (C.option expr) oe])
+               opoe]
       | PaOrp _ p1 p2 -> C.node "PaOrp" [patt p1; patt p2]
-      | PaRec _ lpe ->
-          let lpe =
-            C.vala
-              (C.list (fun (p, e) -> C.tuple [patt p; patt e])) lpe
-          in
-          C.node "PaRec" [lpe]
+      | PaRec _ lpp ->
+          C.node "PaRec"
+            [C.vala (C.list (fun (p1, p2) -> C.tuple [patt p1; patt p2])) lpp]
       | PaRng _ p1 p2 -> C.node "PaRng" [patt p1; patt p2]
       | PaStr _ s -> C.node "PaStr" [C.vala C.string s]
-      | PaTup _ pl -> C.node "PaTup" [C.vala (C.list patt) pl]
+      | PaTup _ lp -> C.node "PaTup" [C.vala (C.list patt) lp]
       | PaTyc _ p t -> C.node "PaTyc" [patt p; ctyp t]
       | PaTyp _ ls -> C.node "PaTyp" [C.vala (C.list C.string) ls]
       | PaUid _ s -> C.node "PaUid" [C.vala C.string s]
@@ -192,166 +188,138 @@ module Meta_make (C : MetaSig) =
     and expr =
       fun
       [ ExAcc _ e1 e2 -> C.node "ExAcc" [expr e1; expr e2]
-      | ExAnt _ p -> C.node "ExAnt" [expr p]
+      | ExAnt _ e -> C.node "ExAnt" [expr e]
       | ExApp _ e1 e2 -> C.node "ExApp" [expr e1; expr e2]
       | ExAre _ e1 e2 -> C.node "ExAre" [expr e1; expr e2]
-      | ExArr _ el -> C.node "ExArr" [C.vala (C.list expr) el]
-      | ExAss _ e1 e2 -> C.node "ExAss" [expr e1; expr e2]
+      | ExArr _ le -> C.node "ExArr" [C.vala (C.list expr) le]
       | ExAsr _ e -> C.node "ExAsr" [expr e]
-      | ExBae _ e el -> C.node "ExBae" [expr e; C.vala (C.list expr) el]
+      | ExAss _ e1 e2 -> C.node "ExAss" [expr e1; expr e2]
+      | ExBae _ e le -> C.node "ExBae" [expr e; C.vala (C.list expr) le]
       | ExChr _ s -> C.node "ExChr" [C.vala C.string s]
-      | ExCoe _ e ot t ->
-          C.node "ExCoe" [expr e; C.option ctyp ot; ctyp t]
-      | ExIfe _ e1 e2 e3 -> C.node "ExIfe" [expr e1; expr e2; expr e3]
-      | ExInt _ s k -> C.node "ExInt" [C.vala C.string s; C.string k]
+      | ExCoe _ e ot t -> C.node "ExCoe" [expr e; C.option ctyp ot; ctyp t]
       | ExFlo _ s -> C.node "ExFlo" [C.vala C.string s]
-      | ExFor _ i e1 e2 df el ->
-          let i = C.vala C.string i in
-          let df = C.vala C.bool df in
-          let el = C.vala (C.list expr) el in
-          C.node "ExFor" [i; expr e1; expr e2; df; el]
-      | ExFun _ pwel ->
-          let pwel =
-            C.vala
-              (C.list
-                (fun (p, oe, e) ->
-                   C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
-              pwel
-          in
-          C.node "ExFun" [pwel]
-      | ExLab _ s oe ->
-          C.node "ExLab" [C.vala C.string s; C.option expr oe]
+      | ExFor _ s e1 e2 b le ->
+          C.node "ExFor"
+            [C.vala C.string s; expr e1; expr e2; C.vala C.bool b;
+             C.vala (C.list expr) le]
+      | ExFun _ lpoee ->
+          C.node "ExFun"
+            [C.vala
+               (C.list
+                  (fun (p, oe, e) ->
+                     C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
+               lpoee]
+      | ExIfe _ e1 e2 e3 -> C.node "ExIfe" [expr e1; expr e2; expr e3]
+      | ExInt _ s1 s2 -> C.node "ExInt" [C.vala C.string s1; C.string s2]
+      | ExLab _ s oe -> C.node "ExLab" [C.vala C.string s; C.option expr oe]
       | ExLaz _ e -> C.node "ExLaz" [expr e]
-      | ExLet _ rf lpe e ->
-          let rf = C.vala C.bool rf in
-          let lpe =
-            C.vala
-              (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe
-          in
-          C.node "ExLet" [rf; lpe; expr e]
+      | ExLet _ b lpe e ->
+          C.node "ExLet"
+            [C.vala C.bool b;
+             C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe;
+             expr e]
       | ExLid _ s -> C.node "ExLid" [C.vala C.string s]
-      | ExLmd _ i me e ->
-          let i = C.vala C.string i in
-          let me = module_expr me in
-          C.node "ExLmd" [i; me; expr e]
-      | ExMat _ e pwel ->
-          let pwel =
-            C.vala
-              (C.list
-                 (fun (p, oe, e) ->
-                    C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
-              pwel
-          in
-          C.node "ExMat" [expr e; pwel]
+      | ExLmd _ s me e ->
+          C.node "ExLmd" [C.vala C.string s; module_expr me; expr e]
+      | ExMat _ e lpoee ->
+          C.node "ExMat"
+            [expr e;
+             C.vala
+               (C.list
+                  (fun (p, oe, e) ->
+                     C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
+               lpoee]
       | ExNew _ ls -> C.node "ExNew" [C.vala (C.list C.string) ls]
-      | ExObj _ op lcsi ->
+      | ExObj _ op lcs ->
           C.node "ExObj"
-            [C.vala (C.option patt) op;
-             C.vala (C.list class_str_item) lcsi]
-      | ExOlb _ s oe ->
-          C.node "ExOlb" [C.vala C.string s; C.option expr oe]
+            [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcs]
+      | ExOlb _ s oe -> C.node "ExOlb" [C.vala C.string s; C.option expr oe]
       | ExOvr _ lse ->
           C.node "ExOvr"
-            [C.vala (C.list (fun (s, e) -> C.tuple [C.string s; expr e]))
-               lse]
+            [C.vala (C.list (fun (s, e) -> C.tuple [C.string s; expr e])) lse]
       | ExPck _ me mt -> C.node "ExPck" [module_expr me; module_type mt]
       | ExRec _ lpe oe ->
-          let lpe =
-            C.vala
-              (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe
-          in
-          let oe = C.option expr oe in
-          C.node "ExRec" [lpe; oe]
-      | ExSeq _ el -> C.node "ExSeq" [C.vala (C.list expr) el]
+          C.node "ExRec"
+            [C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe;
+             C.option expr oe]
+      | ExSeq _ le -> C.node "ExSeq" [C.vala (C.list expr) le]
       | ExSnd _ e s -> C.node "ExSnd" [expr e; C.vala C.string s]
       | ExSte _ e1 e2 -> C.node "ExSte" [expr e1; expr e2]
       | ExStr _ s -> C.node "ExStr" [C.vala C.string s]
-      | ExTry _ e pwel ->
-          let pwel =
-            C.vala
-              (C.list
-                 (fun (p, oe, e) ->
-                    C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
-              pwel
-          in
-          C.node "ExTry" [expr e; pwel]
-      | ExTup _ el -> C.node "ExTup" [C.vala (C.list expr) el]
+      | ExTry _ e lpoee ->
+          C.node "ExTry"
+            [expr e;
+             C.vala
+               (C.list
+                  (fun (p, oe, e) ->
+                     C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
+               lpoee]
+      | ExTup _ le -> C.node "ExTup" [C.vala (C.list expr) le]
       | ExTyc _ e t -> C.node "ExTyc" [expr e; ctyp t]
       | ExUid _ s -> C.node "ExUid" [C.vala C.string s]
       | ExVrn _ s -> C.node "ExVrn" [C.vala C.string s]
-      | ExWhi _ e el -> C.node "ExWhi" [expr e; C.vala (C.list expr) el]
+      | ExWhi _ e le -> C.node "ExWhi" [expr e; C.vala (C.list expr) le]
       | IFDEF STRICT THEN
           ExXtr loc s _ -> C.xtr_or_anti loc (fun r -> C.node "ExAnt" [r]) s
         END ]
     and module_type =
       fun
-      [ MtAcc _ mt1 mt2 ->
-          C.node "MtAcc" [module_type mt1; module_type mt2]
-      | MtApp _ mt1 mt2 ->
-          C.node "MtApp" [module_type mt1; module_type mt2]
+      [ MtAcc _ mt1 mt2 -> C.node "MtAcc" [module_type mt1; module_type mt2]
+      | MtApp _ mt1 mt2 -> C.node "MtApp" [module_type mt1; module_type mt2]
       | MtFun _ s mt1 mt2 ->
-          C.node "MtFun"
-            [C.vala C.string s; module_type mt1; module_type mt2]
+          C.node "MtFun" [C.vala C.string s; module_type mt1; module_type mt2]
       | MtLid _ s -> C.node "MtLid" [C.vala C.string s]
       | MtQuo _ s -> C.node "MtQuo" [C.vala C.string s]
+      | MtSig _ lsi -> C.node "MtSig" [C.vala (C.list sig_item) lsi]
       | MtTyo _ me -> C.node "MtTyo" [module_expr me]
-      | MtSig _ sil -> C.node "MtSig" [C.vala (C.list sig_item) sil]
       | MtUid _ s -> C.node "MtUid" [C.vala C.string s]
       | MtWit _ mt lwc ->
-          C.node "MtWit"
-            [module_type mt; C.vala (C.list with_constr) lwc]
+          C.node "MtWit" [module_type mt; C.vala (C.list with_constr) lwc]
       | IFDEF STRICT THEN
           MtXtr loc s _ -> C.xtr loc s
         END ]
     and sig_item =
       fun
-      [ SgCls _ cd ->
-          C.node "SgCls" [C.vala (C.list (class_infos class_type)) cd]
-      | SgClt _ ctd ->
-          C.node "SgClt" [C.vala (C.list (class_infos class_type)) ctd]
-      | SgDcl _ lsi ->
-          C.node "SgDcl" [C.vala (C.list sig_item) lsi]
-      | SgDir _ n dp ->
-          C.node "SgDir" [C.vala C.string n; C.vala (C.option expr) dp]
+      [ SgCls _ lcict ->
+          C.node "SgCls" [C.vala (C.list (class_infos class_type)) lcict]
+      | SgClt _ lcict ->
+          C.node "SgClt" [C.vala (C.list (class_infos class_type)) lcict]
+      | SgDcl _ lsi -> C.node "SgDcl" [C.vala (C.list sig_item) lsi]
+      | SgDir _ s oe ->
+          C.node "SgDir" [C.vala C.string s; C.vala (C.option expr) oe]
       | SgExc _ s lt ->
-          let s = C.vala C.string s in
-          let lt = C.vala (C.list ctyp) lt in
-          C.node "SgExc" [s; lt]
+          C.node "SgExc" [C.vala C.string s; C.vala (C.list ctyp) lt]
       | SgExt _ s t ls ->
-          let ls = C.vala (C.list C.string) ls in
-          C.node "SgExt" [C.vala C.string s; ctyp t; ls]
+          C.node "SgExt"
+            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls]
       | SgInc _ mt -> C.node "SgInc" [module_type mt]
-      | SgMod _ rf lsmt ->
-          let lsmt =
-            C.vala
-              (C.list
-                 (fun (s, mt) -> C.tuple [C.vala C.string s; module_type mt]))
-              lsmt
-          in
-          C.node "SgMod" [C.vala C.bool rf; lsmt]
+      | SgMod _ b lsmt ->
+          C.node "SgMod"
+            [C.vala C.bool b;
+             C.vala
+               (C.list
+                  (fun (s, mt) ->
+                     C.tuple [C.vala C.string s; module_type mt]))
+               lsmt]
       | SgMty _ s mt -> C.node "SgMty" [C.vala C.string s; module_type mt]
-      | SgOpn _ sl -> C.node "SgOpn" [C.vala (C.list C.string) sl]
+      | SgOpn _ ls -> C.node "SgOpn" [C.vala (C.list C.string) ls]
       | SgTyp _ ltd -> C.node "SgTyp" [C.vala (C.list type_decl) ltd]
-      | SgUse _ s sil ->
+      | SgUse _ s lsil ->
           C.node "SgUse"
             [C.string s;
-             C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]) sil]
+             C.list (fun (si, loc) -> C.tuple [sig_item si; C.loc_v ()]) lsil]
       | SgVal _ s t -> C.node "SgVal" [C.vala C.string s; ctyp t]
       | IFDEF STRICT THEN
           SgXtr loc s _ -> C.xtr loc s
         END ]
     and with_constr =
       fun
-      [ WcTyp _ li ltp pf t ->
-          let li = C.vala (C.list C.string) li in
-          let ltp = C.vala (C.list type_var) ltp in
-          let pf = C.vala C.bool pf in
-          let t = ctyp t in
-          C.node "WcTyp" [li; ltp; pf; t]
-      | WcMod _ li me ->
-          let li = C.vala (C.list C.string) li in
-          let me = module_expr me in
-          C.node "WcMod" [li; me] ]
+      [ WcTyp _ ls ltv b t ->
+          C.node "WcTyp"
+            [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
+             C.vala C.bool b; ctyp t]
+      | WcMod _ ls me ->
+          C.node "WcMod" [C.vala (C.list C.string) ls; module_expr me] ]
     and module_expr =
       fun
       [ MeAcc _ me1 me2 -> C.node "MeAcc" [module_expr me1; module_expr me2]
@@ -367,46 +335,41 @@ module Meta_make (C : MetaSig) =
         END ]
     and str_item =
       fun
-      [ StCls _ cd ->
-          C.node "StCls" [C.vala (C.list (class_infos class_expr)) cd]
-      | StClt _ ctd ->
-          C.node "StClt" [C.vala (C.list (class_infos class_type)) ctd]
-      | StDcl _ lsi ->
-          C.node "StDcl" [C.vala (C.list str_item) lsi]
-      | StDir _ n dp ->
-          C.node "StDir" [C.vala C.string n; C.vala (C.option expr) dp]
+      [ StCls _ lcice ->
+          C.node "StCls" [C.vala (C.list (class_infos class_expr)) lcice]
+      | StClt _ lcict ->
+          C.node "StClt" [C.vala (C.list (class_infos class_type)) lcict]
+      | StDcl _ lsi -> C.node "StDcl" [C.vala (C.list str_item) lsi]
+      | StDir _ s oe ->
+          C.node "StDir" [C.vala C.string s; C.vala (C.option expr) oe]
       | StExc _ s lt ls ->
-          let s = C.vala C.string s in
-          let lt = C.vala (C.list ctyp) lt in
-          let ls = C.vala (C.list C.string) ls in
-          C.node "StExc" [s; lt; ls]
+          C.node "StExc"
+            [C.vala C.string s; C.vala (C.list ctyp) lt;
+             C.vala (C.list C.string) ls]
       | StExp _ e -> C.node "StExp" [expr e]
       | StExt _ s t ls ->
-          let ls = C.vala (C.list C.string) ls in
-          C.node "StExt" [C.vala C.string s; ctyp t; ls]
+          C.node "StExt"
+            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls]
       | StInc _ me -> C.node "StInc" [module_expr me]
-      | StMod _ rf lsme ->
-          let lsme =
-            C.vala
-              (C.list
-                 (fun (s, me) -> C.tuple [C.vala C.string s; module_expr me]))
-              lsme
-          in
-          C.node "StMod" [C.vala C.bool rf; lsme]
-      | StMty _ s mt ->
-          C.node "StMty" [C.vala C.string s; module_type mt]
-      | StOpn _ sl -> C.node "StOpn" [C.vala (C.list C.string) sl]
+      | StMod _ b lsme ->
+          C.node "StMod"
+            [C.vala C.bool b;
+             C.vala
+               (C.list
+                  (fun (s, me) ->
+                     C.tuple [C.vala C.string s; module_expr me]))
+               lsme]
+      | StMty _ s mt -> C.node "StMty" [C.vala C.string s; module_type mt]
+      | StOpn _ ls -> C.node "StOpn" [C.vala (C.list C.string) ls]
       | StTyp _ ltd -> C.node "StTyp" [C.vala (C.list type_decl) ltd]
-      | StUse _ s sil ->
+      | StUse _ s lsil ->
           C.node "StUse"
             [C.string s;
-             C.list (fun (si, _) -> C.tuple [str_item si; C.loc_v ()]) sil]
-      | StVal _ rf lpe ->
-          let lpe =
-            C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e]))
-              lpe
-          in
-          C.node "StVal" [C.vala C.bool rf; lpe]
+             C.list (fun (si, loc) -> C.tuple [str_item si; C.loc_v ()]) lsil]
+      | StVal _ b lpe ->
+          C.node "StVal"
+            [C.vala C.bool b;
+             C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe]
       | IFDEF STRICT THEN
           StXtr loc s _ -> C.xtr loc s
         END ]

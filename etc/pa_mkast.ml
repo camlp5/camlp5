@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.3 2010/09/08 03:03:38 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.4 2010/09/08 08:51:25 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -17,12 +17,22 @@ value rec pfx short t =
   match t with
   [ <:ctyp< loc >> -> if short then "l" else "loc"
   | <:ctyp< bool >> -> "b"
+  | <:ctyp< class_expr >> -> "ce"
+  | <:ctyp< class_str_item >> -> "cs"
+  | <:ctyp< class_type >> -> "ct"
   | <:ctyp< expr >> -> "e"
+  | <:ctyp< module_expr >> -> "me"
   | <:ctyp< module_type >> -> "mt"
   | <:ctyp< patt >> -> "p"
   | <:ctyp< poly_variant >> -> "pv"
+  | <:ctyp< sig_item >> -> "si"
+  | <:ctyp< str_item >> -> "si"
   | <:ctyp< string >> -> "s"
   | <:ctyp< ctyp >> -> "t"
+  | <:ctyp< type_decl >> -> "td"
+  | <:ctyp< type_var >> -> "tv"
+  | <:ctyp< with_constr >> -> "wc"
+  | <:ctyp< class_infos $t$ >> -> "ci" ^ pfx True t
   | <:ctyp< list $t$ >> -> "l" ^ pfx True t
   | <:ctyp< option $t$ >> -> "o" ^ pfx True t
   | <:ctyp< ($list:tl$) >> -> String.concat "" (List.map (pfx True) tl)
@@ -99,6 +109,7 @@ value rec expr_of_type loc t =
         match t1 with
         [ <:ctyp< list >> -> <:expr< C.list >>
         | <:ctyp< option >> -> <:expr< C.option >>
+        | <:ctyp< class_infos >> -> <:expr< class_infos >>
         | <:ctyp< Ploc.vala >> -> <:expr< C.vala >>
         | <:ctyp< $lid:n$ >> -> <:expr< $lid:n^"_map"$ floc >>
         | _ -> <:expr< error >> ]
