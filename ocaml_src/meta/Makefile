@@ -51,6 +51,15 @@ compare_q_MLast:
 	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
 	./mk_q_MLast.sh | diff -c q_MLast.ml -
 
+bootstrap_q_ast:
+	cd ../etc; $(MAKE) pr_r.cmo pa_mkast.cmo
+	./mk_q_ast.sh > tmp
+	mv tmp q_ast.ml
+
+compare_q_ast:
+	cd ../etc; $(MAKE) pr_r.cmo pa_mkast.cmo
+	./mk_q_ast.sh | diff -c q_ast.ml -
+
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5" "$(DESTDIR)$(BINDIR)"
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/camlp5/."
