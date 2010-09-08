@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.120 2010/09/08 19:41:05 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.121 2010/09/08 19:55:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -485,9 +485,12 @@ module Meta_E =
                [ Some (loc, typ, str) ->
                    let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
                    if is_anti_anti typ then <:expr< $anti:r$ >>
+                   else if not Pcaml.strict_mode.val then <:expr< $anti:r$ >>
                    else <:expr< Ploc.VaVal $anti:r$ >>
                | None -> assert False ]
-           | Ploc.VaVal v -> <:expr< Ploc.VaVal $elem v$ >> ]
+           | Ploc.VaVal v ->
+               if not Pcaml.strict_mode.val then elem v
+               else <:expr< Ploc.VaVal $elem v$ >> ]
          END
        ;
        value bool b = if b then <:expr< True >> else <:expr< False >>;
@@ -555,9 +558,12 @@ module Meta_P =
                [ Some (loc, typ, str) ->
                    let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
                    if is_anti_anti typ then <:patt< $anti:r$ >>
+                   else if not Pcaml.strict_mode.val then <:patt< $anti:r$ >>
                    else <:patt< Ploc.VaVal $anti:r$ >>
                | None -> assert False ]
-           | Ploc.VaVal v -> <:patt< Ploc.VaVal $elem v$ >> ]
+           | Ploc.VaVal v ->
+               if not Pcaml.strict_mode.val then elem v
+               else <:patt< Ploc.VaVal $elem v$ >> ]
          END
        ;
        value bool b = if b then <:patt< True >> else <:patt< False >>;
