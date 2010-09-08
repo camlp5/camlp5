@@ -35,20 +35,22 @@ let eval_anti entry loc typ str =
   loc, r
 ;;
 
+let skip_to_next_colon s i =
+  let rec loop j =
+    if j = String.length s then i, 0
+    else
+      match s.[j] with
+        ':' -> j, j - i - 1
+      | 'a'..'z' | 'A'..'Z' | '0'..'9' | '!' | '_' -> loop (j + 1)
+      | _ -> i, 0
+  in
+  loop (i + 1)
+;;
+
 let get_anti_loc s =
   try
     let i = String.index s ':' in
-    let (j, len) =
-      let rec loop j =
-        if j = String.length s then i, 0
-        else
-          match s.[j] with
-            ':' -> j, j - i - 1
-          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
-          | _ -> i, 0
-      in
-      loop (i + 1)
-    in
+    let (j, len) = skip_to_next_colon s i in
     let kind = String.sub s (i + 1) len in
     let loc =
       let k = String.index s ',' in
@@ -708,17 +710,7 @@ Grammar.extend
 let check_anti_loc s kind =
   try
     let i = String.index s ':' in
-    let (j, len) =
-      let rec loop j =
-        if j = String.length s then i, 0
-        else
-          match s.[j] with
-            ':' -> j, j - i - 1
-          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
-          | _ -> i, 0
-      in
-      loop (i + 1)
-    in
+    let (j, len) = skip_to_next_colon s i in
     if String.sub s (i + 1) len = kind then
       let loc =
         let k = String.index s ',' in
@@ -734,18 +726,7 @@ let check_anti_loc s kind =
 let check_anti_loc2 s =
   try
     let i = String.index s ':' in
-    let (j, len) =
-      let rec loop j =
-        if j = String.length s then i, 0
-        else
-          match s.[j] with
-            ':' -> j, j - i - 1
-          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
-          | _ -> i, 0
-      in
-      loop (i + 1)
-    in
-    String.sub s (i + 1) len
+    let (j, len) = skip_to_next_colon s i in String.sub s (i + 1) len
   with Not_found | Failure _ -> raise Stream.Failure
 ;;
 

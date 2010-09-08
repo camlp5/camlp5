@@ -491,7 +491,7 @@ let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
     Some '$' ->
       Stream.junk strm__;
       antiloc bp (Stream.count strm__) (":" ^ Plexing.Lexbuf.get buf)
-  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) ->
+  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '!' | '_' as c) ->
       Stream.junk strm__;
       antiquot_loc ctx bp (Plexing.Lexbuf.add c buf) strm__
   | Some ':' ->

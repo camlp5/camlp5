@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.119 2010/09/08 09:41:24 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.120 2010/09/08 19:41:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -40,18 +40,20 @@ value eval_anti entry loc typ str =
   (loc, r)
 ;
 
+value skip_to_next_colon s i =
+  loop (i + 1) where rec loop j =
+    if j = String.length s then (i, 0)
+    else
+      match s.[j] with
+      [ ':' -> (j, j - i - 1)
+      | 'a'..'z' | 'A'..'Z' | '0'..'9' | '!' | '_' -> loop (j + 1)
+      | _ -> (i, 0) ]
+;
+
 value get_anti_loc s =
   try
     let i = String.index s ':' in
-    let (j, len) =
-      loop (i + 1) where rec loop j =
-        if j = String.length s then (i, 0)
-        else
-          match s.[j] with
-          [ ':' -> (j, j - i - 1)
-          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
-          | _ -> (i, 0) ]
-    in
+    let (j, len) = skip_to_next_colon s i in
     let kind = String.sub s (i + 1) len in
     let loc =
       let k = String.index s ',' in
@@ -660,15 +662,7 @@ END;
 value check_anti_loc s kind =
   try
     let i = String.index s ':' in
-    let (j, len) =
-      loop (i + 1) where rec loop j =
-        if j = String.length s then (i, 0)
-        else
-          match s.[j] with
-          [ ':' -> (j, j - i - 1)
-          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
-          | _ -> (i, 0) ]
-    in
+    let (j, len) = skip_to_next_colon s i in
     if String.sub s (i + 1) len = kind then
       let loc =
         let k = String.index s ',' in
@@ -685,15 +679,7 @@ value check_anti_loc s kind =
 value check_anti_loc2 s =
   try
     let i = String.index s ':' in
-    let (j, len) =
-      loop (i + 1) where rec loop j =
-        if j = String.length s then (i, 0)
-        else
-          match s.[j] with
-          [ ':' -> (j, j - i - 1)
-          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
-          | _ -> (i, 0) ]
-    in
+    let (j, len) = skip_to_next_colon s i in
     String.sub s (i + 1) len
   with
   [ Not_found | Failure _ -> raise Stream.Failure ]

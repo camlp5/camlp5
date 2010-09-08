@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 1.112 2010/09/05 18:07:13 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.113 2010/09/08 19:41:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -215,7 +215,7 @@ value antiloc bp ep s = Printf.sprintf "%d,%d:%s" bp ep s;
 value rec antiquot_loc ctx bp =
   lexer
   [ "$"/ -> antiloc bp $pos (":" ^ $buf)
-  | [ 'a'-'z' | 'A'-'Z' | '0'-'9' | '_' ] (antiquot_loc ctx bp)!
+  | [ 'a'-'z' | 'A'-'Z' | '0'-'9' | '!' | '_' ] (antiquot_loc ctx bp)!
   | ":" (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
   | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
   | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
