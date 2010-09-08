@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 1.6 2010/09/08 10:01:00 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 1.7 2010/09/08 16:24:26 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -181,10 +181,6 @@ value gen_reloc loc tdl =
       <:str_item< value rec $list:pel$ >>
   | _ -> <:str_item< type $list:tdl$ >> ]
 ;
-
-DELETE_RULE
-  Pcaml.str_item: "type"; LIST1 Pcaml.type_declaration SEP "and"
-END;
 
 EXTEND
   Pcaml.str_item:

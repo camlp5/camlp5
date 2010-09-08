@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.7 2010/09/08 12:06:06 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.8 2010/09/08 16:24:26 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -221,10 +221,6 @@ value gen_ast loc tdl =
           end >>
   | _ -> <:str_item< type $list:tdl$ >> ]
 ;
-
-DELETE_RULE
-  Pcaml.str_item: "type"; LIST1 Pcaml.type_declaration SEP "and"
-END;
 
 EXTEND
   Pcaml.str_item:
