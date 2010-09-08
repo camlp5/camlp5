@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.32 2010/08/29 23:59:53 deraugla Exp $
+# $Id: Makefile,v 1.33 2010/09/08 09:47:32 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -50,6 +50,15 @@ bootstrap_q_MLast:
 compare_q_MLast:
 	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
 	./mk_q_MLast.sh | diff -c q_MLast.ml -
+
+bootstrap_q_ast:
+	cd ../etc; $(MAKE) pr_r.cmo pa_mkaast.cmo
+	./mk_q_ast.sh > tmp
+	mv tmp q_ast.ml
+
+compare_q_ast:
+	cd ../etc; $(MAKE) pr_r.cmo pa_mkast.cmo
+	./mk_q_ast.sh | diff -c q_ast.ml -
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5" "$(DESTDIR)$(BINDIR)"
