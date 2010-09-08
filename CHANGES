@@ -1,6 +1,8 @@
 Camlp5 Version 5.16:
 --------------------
 
+* [08 Sep 10] Fixed option '-flag E' (equilibrate cases) of pr_r.cmo and
+  pr_o.cmo which did not work.
 * [06 Sep 10] Changed revised syntax of 'inherit something [params]'
   into 'inherit [params] something' (like in normal syntax).
 * [06 Sep 10] Added statements (which were missing in camlp5 parsers):

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.202 2010/09/08 03:03:38 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.203 2010/09/08 03:36:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -468,7 +468,8 @@ value match_assoc force_vertic pc (p, w, e) =
     (fun () ->
        match sequencify e with
        [ Some el ->
-           pprintf pc "%p do {@;%p@ }" patt_arrow (p, w) sequence el
+           pprintf pc "@[<i>%p do {@;%p@ }@]" force_vertic patt_arrow (p, w)
+             sequence el
        | None ->
            pprintf pc "@[<i>%p@;%p@]" force_vertic patt_arrow (p, w)
              (comm_expr expr_wh) e ])
@@ -638,9 +639,11 @@ value if_then force_vertic curr pc (e1, e2) =
        let if_e1_then pc () = pprintf pc "@[<3>if %p@]@ then" curr e1 in
        match sequencify e2 with
        [ Some el ->
-           pprintf pc "%p do {@;%p@ }" if_e1_then () sequence el
+           pprintf pc "@[<i>%p do {@;%p@ }@]" force_vertic if_e1_then ()
+             sequence el
        | None ->
-           pprintf pc "%p@;%p" if_e1_then () (comm_expr expr_wh) e2 ])
+           pprintf pc "@[<i>%p@;%p@]" force_vertic if_e1_then ()
+             (comm_expr expr_wh) e2 ])
 ;
 
 value else_if_then force_vertic curr pc (e1, e2) =
@@ -652,9 +655,11 @@ value else_if_then force_vertic curr pc (e1, e2) =
        let if_e1_then pc () = pprintf pc "@[<a>else if@;%p@ then@]" curr e1 in
        match sequencify e2 with
        [ Some el ->
-           pprintf pc "%p do {@;%p@ }" if_e1_then () sequence el
+           pprintf pc "@[<i>%p do {@;%p@ }@]" force_vertic if_e1_then ()
+             sequence el
        | None ->
-           pprintf pc "%p@;%p" if_e1_then () (comm_expr expr_wh) e2 ])
+           pprintf pc "@[<i>%p@;%p@]" force_vertic if_e1_then ()
+             (comm_expr expr_wh) e2 ])
 ;
 
 value rec loop_else_if force_vertic curr pc =
@@ -673,8 +678,10 @@ value ending_else force_vertic curr pc e3 =
        pprintf pc "else %p" (comm_expr curr) e3)
     (fun () ->
        match sequencify e3 with
-       [ Some el -> pprintf pc "else do {@;%p@ }" sequence el
-       | None -> pprintf pc "else@;%p" (comm_expr expr_wh) e3 ])
+       [ Some el ->
+           pprintf pc "@[<i>else do {@;%p@ }@]" force_vertic sequence el
+       | None ->
+           pprintf pc "@[<i>else@;%p@]" force_vertic (comm_expr expr_wh) e3 ])
 ;
 
 value if_case_has_vertic curr pc e1 e2 eel e3 =

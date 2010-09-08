@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.217 2010/09/06 16:54:58 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.218 2010/09/08 03:36:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -345,7 +345,7 @@ value match_assoc force_vertic pc ((p, w, e), is_last) =
            w
            (comm_expr expr) e pc_dang)
     (fun () ->
-       pprintf pc "%p@;%q"
+       pprintf pc "@[<i>%p@;%q@]" force_vertic
          (fun pc ->
             fun
             [ <:vala< Some e >> ->
@@ -559,7 +559,7 @@ value else_if_then force_vertic curr pc (e1, e2) =
          pprintf pc "else if %q then %p" curr e1 ""
            curr e2)
     (fun () ->
-       pprintf pc "@[<a>else if@;%q@ then@]@;%p" curr e1 ""
+       pprintf pc "@[<i>else if@;%q@ then@]@;%p" force_vertic curr e1 ""
          (comm_expr expr1) e2)
 ;
 
