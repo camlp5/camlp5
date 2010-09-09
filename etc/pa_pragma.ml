@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pragma.ml,v 1.69 2010/09/04 12:38:54 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.70 2010/09/09 14:02:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -1028,7 +1028,7 @@ value rec eval_expr env e =
   match e with
   [ <:expr< fun [ $list:pel$ ] >> ->
       eval_fun loc env pel
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
+  | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
       eval_let loc env rf pel e
   | <:expr< match $e$ with [ $list:pel$ ] >> ->
       eval_match loc env e pel

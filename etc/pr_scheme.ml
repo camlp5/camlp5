@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.77 2010/09/06 16:54:58 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.78 2010/09/09 14:02:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -675,7 +675,7 @@ EXTEND_PRINTER
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
-      | <:expr< let module $s$ = $me$ in $e$ >> ->
+      | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           plistbf 0 (paren pc "letmodule")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
