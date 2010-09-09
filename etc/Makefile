@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.65 2010/09/09 14:09:00 deraugla Exp $
+# $Id: Makefile,v 1.66 2010/09/09 17:55:04 deraugla Exp $
 
 include ../config/Makefile
 
@@ -17,33 +17,33 @@ opt: $(COPT) mkcamlp5.opt.sh
 
 # these ones must be compiled with new created camlp5:
 
-pa_lisp.cm[ox]: pa_lisp.ml
+pa_lisp.cmo pa_lisp.cmx: pa_lisp.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pa_scheme.cm[ox]: pa_scheme.ml
+pa_scheme.cmo pa_scheme.cmx: pa_scheme.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pa_extfold.cm[ox]: pa_extfold.ml
+pa_extfold.cmo pa_extfold.cmx: pa_extfold.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_r.cm[ox]: pr_r.ml
+pr_r.cmo pr_r.cmx: pr_r.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_ro.cm[ox]: pr_ro.ml
+pr_ro.cmo pr_ro.cmx: pr_ro.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_rp.cm[ox]: pr_rp.ml
+pr_rp.cmo pr_rp.cmx: pr_rp.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_o.cm[ox]: pr_o.ml
+pr_o.cmo pr_o.cmx: pr_o.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_op.cm[ox]: pr_op.ml
+pr_op.cmo pr_op.cmx: pr_op.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_scheme.cm[ox]: pr_scheme.ml
+pr_scheme.cmo pr_scheme.cmx: pr_scheme.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_schemep.cm[ox]: pr_schemep.ml
+pr_schemep.cmo pr_schemep.cmx: pr_schemep.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_extend.cm[ox]: pr_extend.ml
+pr_extend.cmo pr_extend.cmx: pr_extend.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_extfun.cm[ox]: pr_extfun.ml
+pr_extfun.cmo pr_extfun.cmx: pr_extfun.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-pr_extprint.cm[ox]: pr_extprint.ml
+pr_extprint.cmo pr_extprint.cmx: pr_extprint.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
-q_phony.cm[ox]: q_phony.ml
+q_phony.cmo q_phony.cmx: q_phony.ml
 	$(MAKE) --no-print-directory -f Makefile.withnew $@
 
 META: META.tpl
