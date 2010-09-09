@@ -917,13 +917,37 @@ lex.Plexing.tok_match <-
 Grammar.iter_entry Grammar.reinit_entry_functions
   (Grammar.Entry.obj Pcaml.expr);;
 
+let separate_locate s =
+  let len = String.length s in
+  if len > 0 && s.[0] = '@' then String.sub s 1 (len - 1), true else s, false
+;;
+
 let apply_entry e me mp =
   let f s =
     Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse e)
       (Stream.of_string s)
   in
-  let expr s = me (f s) in
-  let patt s = mp (f s) in Quotation.ExAst (expr, patt)
+  let expr s = let (s, locate) = separate_locate s in me (f s) in
+  let patt s =
+    let (s, locate) = separate_locate s in
+    let ast = mp (f s) in
+    if locate then
+      let (p, pl) =
+        let rec loop pl =
+          function
+            MLast.PaApp (loc, p1, p2) -> loop ((p2, loc) :: pl) p1
+          | p -> p, pl
+        in
+        loop [] ast
+      in
+      match pl with
+        (MLast.PaAny _, loc) :: pl ->
+          List.fold_left (fun p1 (p2, loc) -> MLast.PaApp (loc, p1, p2))
+            (MLast.PaApp (loc, p, MLast.PaLid (loc, !(Ploc.name)))) pl
+      | _ -> ast
+    else ast
+  in
+  Quotation.ExAst (expr, patt)
 ;;
 
 List.iter (fun (q, f) -> Quotation.add q f)

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.121 2010/09/08 19:55:47 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.122 2010/09/09 13:26:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -883,13 +883,38 @@ lex.Plexing.tok_match :=
 Grammar.iter_entry Grammar.reinit_entry_functions
   (Grammar.Entry.obj Pcaml.expr);
 
+value separate_locate s =
+  let len = String.length s in
+  if len > 0 && s.[0] = '@' then (String.sub s 1 (len - 1), True)
+  else (s, False)
+;
+
 value apply_entry e me mp =
   let f s =
     Ploc.call_with Plexer.force_antiquot_loc True
       (Grammar.Entry.parse e) (Stream.of_string s)
   in
-  let expr s = me (f s) in
-  let patt s = mp (f s) in
+  let expr s =
+    let (s, locate) = separate_locate s in
+    me (f s)
+  in
+  let patt s =
+    let (s, locate) = separate_locate s in
+    let ast = mp (f s) in
+    if locate then
+      let (p, pl) =
+        loop [] ast where rec loop pl =
+          fun
+          [ <:patt:< $p1$ $p2$ >> -> loop [(p2, loc) :: pl] p1
+          | p -> (p, pl) ]
+      in
+      match pl with
+      [ [(<:patt< _ >>, loc) :: pl] ->
+          List.fold_left (fun p1 (p2, loc) -> <:patt< $p1$ $p2$ >>)
+            <:patt< $p$ $lid:Ploc.name.val$ >> pl
+      | _ -> ast ]
+    else ast
+  in
   Quotation.ExAst (expr, patt)
 ;
 
