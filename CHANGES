@@ -1,7 +1,9 @@
 Camlp5 Version 5.16:
 --------------------
 
-* [08 Aug 10] Added new chapters in the documentation:
+* [08 Sep 10] Added option '-flag O' of pr_r.cmo and pr_o.cmo which
+  add location comments in the output.
+* [08 Sep 10] Added new chapters in the documentation:
      - Directives
      - Redefining OCaml syntax
 * [08 Sep 10] Fixed option '-flag E' (equilibrate cases) of pr_r.cmo and
