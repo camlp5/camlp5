@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.11 2010/09/10 11:23:21 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.12 2010/09/10 14:55:37 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -35,17 +35,33 @@ for i in $files; do
   echo $i
   bname=$(basename $i)
   idir=$(basename $(dirname $i))
-  if [ "$bname" = "frx_fileinput.ml" -o "$idir" = "builtin" ]; then
+  if [ "$bname" = "frx_fileinput.ml" -o "$idir" = "builtin" -o \
+       "$idir" = "Struct" -o "$idir" = "Grammar" -o \
+       "$idir/$bname" = "examples/apply_operator.ml" -o \
+       "$idir/$bname" = "examples/expression_closure_filter.ml" -o \
+       "$idir/$bname" = "examples/free_vars_test.ml" -o \
+       "$idir/$bname" = "examples/global_handler.ml" -o \
+       "$idir/$bname" = "Camlp4/Debug.ml" -o \
+       "$idir/$bname" = "Camlp4/ErrorHandler.ml" -o \
+       "$idir/$bname" = "Camlp4/OCamlInitSyntax.ml" -o \
+       "$idir/$bname" = "Camlp4/Register.ml" -o \
+       "$idir/$bname" = "Camlp4/Sig.ml" -o \
+       "$idir/$bname" = "Printers/DumpCamlp4Ast.ml" -o \
+       "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
+       "$idir/$bname" = "Printers/OCaml.ml" -o \
+       "$idir/$bname" = "Printers/OCamlr.ml" ]
+  then
     echo "skipping $bname"
   else
     syntax="etc/pa_o.cmo"
     altsyntax="meta/pa_r.cmo"
     syntname="normal syntax"
     altsyntname="revised syntax"
-    if [ "$idir" = "Camlp4Printers" -o \
-         "$idir/$bname" = "boot/Camlp4Ast.ml"  ]
+    if [ "$idir" = "Camlp4" -o "$idir" = "Camlp4Printers" -o \
+         "$idir" = "Printers" -o \
+         "$idir/$bname" = "boot/Camlp4Ast.ml" ]
     then
-      syntax="meta/pa_r.cmo"
+      syntax="meta/pa_r.cmo meta/pa_rp.cmo etc/q_phony.cmo"
       altsyntax="etc/pa_o.cmo"
       syntname="revised syntax"
       altsyntname="normal syntax"
