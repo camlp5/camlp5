@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.100 2010/09/10 15:12:18 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.101 2010/09/10 22:33:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -952,7 +952,7 @@ EXTEND
   class_str_item:
     [ [ "inherit"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ->
           <:class_str_item< inherit $ce$ $_opt:pb$ >>
-      | "val"; ov = V (FLAG "!"); mf = V (FLAG "mutable");
+      | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
         lab = V label "lid" ""; e = cvalue_binding ->
           <:class_str_item< value $_!:ov$ $_flag:mf$ $_lid:lab$ = $e$ >>
       | "method"; "private"; "virtual"; l = V label "lid" ""; ":";
