@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.203 2010/09/08 03:36:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.204 2010/09/10 00:55:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -956,7 +956,7 @@ EXTEND_PRINTER
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
-      | <:expr< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
+      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
           let expr_wh = if flag_where_after_in.val then expr_wh else curr in
           horiz_vertic_if (not flag_horiz_let_in.val)
             (fun () ->
@@ -970,9 +970,7 @@ EXTEND_PRINTER
                      curr e ])
             (fun () ->
                match flatten_sequence ge with
-               [ Some el ->
-                   let loc = MLast.loc_of_expr ge in
-                   curr pc <:expr< do { $list:el$ } >>
+               [ Some el -> curr pc <:expr< do { $list:el$ } >>
                | None ->
                    if flag_horiz_let_in.val then
                      pprintf pc "let %s%pin@ %p" (if rf then "rec " else "")
