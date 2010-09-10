@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.219 2010/09/10 01:57:39 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.220 2010/09/10 02:58:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -582,7 +582,7 @@ value loop_else_if_and_else force_vertic curr pc (eel, e3) =
         pprintf pc "@[<b>@ %q%p@]"
           (else_if_then force_vertic curr) (e1, e2) "else" loop eel
     | [] ->
-        pprintf pc "@[<b>@ @[else@;%p@]@]" (comm_expr curr) e3 ]
+        pprintf pc "@[<b>@ @[else@;%p@]@]" curr e3 ]
 ;
 
 value if_case_has_vertic curr pc e1 e2 eel e3 =

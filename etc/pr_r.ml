@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.204 2010/09/10 00:55:09 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.205 2010/09/10 02:58:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -425,8 +425,8 @@ value value_or_let_binding flag_where sequ pc (p, e) =
   in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p = %p%s" (hlistl patt patt_tycon) pl expr_wh e
-         (if pc.aft = "in" then " " else ""))
+       pprintf pc "%p = %p%s" (hlistl patt patt_tycon) pl (comm_expr expr_wh)
+         e (if pc.aft = "in" then " " else ""))
     (fun () ->
        let patt_eq pc () =
          let pl = List.map (fun p -> (p, "")) pl in
@@ -675,7 +675,7 @@ value ending_else force_vertic curr pc e3 =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
   horiz_vertic_if force_vertic
     (fun () ->
-       pprintf pc "else %p" (comm_expr curr) e3)
+       pprintf pc "else %p" curr e3)
     (fun () ->
        match sequencify e3 with
        [ Some el ->
@@ -705,7 +705,7 @@ value if_case_has_vertic curr pc e1 e2 eel e3 =
     (fun () ->
        let _ : string =
          let pc = {(pc) with bef = tab pc.ind} in
-         pprintf pc "else %p" (comm_expr curr) e3
+         pprintf pc "else %p" curr e3
        in
        False)
     (fun () -> True)
