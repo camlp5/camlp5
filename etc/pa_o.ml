@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.97 2010/09/06 16:54:58 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.98 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1010,12 +1010,15 @@ EXTEND
       | cs = class_signature -> cs ] ]
   ;
   class_signature:
-    [ [ "["; tl = LIST1 ctyp SEP ","; "]"; id = clty_longident ->
-          <:class_type< $list:id$ [ $list:tl$ ] >>
-      | id = clty_longident -> <:class_type< $list:id$ >>
+    [ [ "["; tl = LIST1 ctyp SEP ","; "]"; id = SELF ->
+          <:class_type< $id$ [ $list:tl$ ] >>
       | "object"; cst = V (OPT class_self_type);
         csf = V (LIST0 class_sig_item); "end" ->
-          <:class_type< object $_opt:cst$ $_list:csf$ end >> ] ]
+          <:class_type< object $_opt:cst$ $_list:csf$ end >> ]
+    | [ ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ ( $ct2$ ) >> ]
+    | [ ct1 = SELF; "."; ct2 = SELF -> <:class_type< $ct1$ . $ct2$ >> ]
+    | [ i = V LIDENT -> <:class_type< $_id: i$ >>
+      | i = V UIDENT -> <:class_type< $_id: i$ >> ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
@@ -1106,10 +1109,6 @@ EXTEND
       | t = ctyp -> t ] ]
   ;
   (* Identifiers *)
-  clty_longident:
-    [ [ m = UIDENT; "."; l = SELF -> [m :: l]
-      | i = LIDENT -> [i] ] ]
-  ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF -> [m :: l]
       | i = LIDENT -> [i] ] ]

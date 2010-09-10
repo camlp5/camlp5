@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.220 2010/09/10 02:58:19 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.221 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1491,12 +1491,17 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "%p@;%p" module_type mt (vlist with_constraint)
                  wcl) ]
-    | "dot"
-      [ <:module_type< $x$ . $y$ >> ->
+    | "apply"
+      [ <:module_type< $x$ $y$ >> ->
+          pprintf pc "%p(%p)" curr x curr y
+      | <:module_type< $x$ . $y$ >> ->
           pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:module_type< $uid:s$ >> ->
-          pprintf pc "%s" s ] ]
+          pprintf pc "%s" s
+      | z ->
+          Ploc.raise (MLast.loc_of_module_type z)
+            (Failure (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
 END;
 
@@ -2014,11 +2019,12 @@ EXTEND_PRINTER
                     [ Some t -> pprintf pc "object@;(%p)" ctyp t
                     | None -> pprintf pc "object" ])
                   cst (vlist class_sig_item_sep) csi)
-      | <:class_type< $list:cl$ >> ->
-          class_longident pc cl
+(*
       | <:class_type< $list:cl$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl class_longident cl ] ]
+          pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl class_longident cl
+*)
+      ] ]
   ;
   pr_class_sig_item:
     [ "top"

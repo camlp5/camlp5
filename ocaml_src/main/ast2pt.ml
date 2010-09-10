@@ -1170,14 +1170,9 @@ and str_item s l =
       mkstr loc (Pstr_value (mkrf (uv rf), List.map mkpe (uv pel))) :: l
 and class_type =
   function
-    CtCon (loc, id, tl) ->
-      begin match ocaml_pcty_constr with
-        Some pcty_constr ->
-          mkcty loc
-            (pcty_constr (long_id_of_string_list loc (uv id))
-               (List.map ctyp (uv tl)))
-      | None -> error loc "no class type desc in this ocaml version"
-      end
+    CtAcc (loc, _, _) -> error loc "CtAcc not impl"
+  | CtApp (loc, _, _) -> error loc "CtApp not impl"
+  | CtCon (loc, li, tl) -> error loc "CtCon not impl"
   | CtFun (loc, TyLab (_, lab, t), ct) ->
       begin match ocaml_pcty_fun with
         Some pcty_fun ->
@@ -1199,6 +1194,7 @@ and class_type =
         Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version"
       end
+  | CtIde (loc, _) -> error loc "CtIde not impl"
   | CtSig (loc, t_o, ctfl) ->
       match ocaml_pcty_signature with
         Some pcty_signature ->

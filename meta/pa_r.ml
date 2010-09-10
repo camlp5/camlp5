@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.132 2010/09/06 16:54:59 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.133 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -639,14 +639,21 @@ EXTEND
     [ [ i = LIDENT -> mkident i ] ]
   ;
   class_type:
-    [ [ "["; t = ctyp; "]"; "->"; ct = SELF ->
+    [ "top"
+      [ "["; t = ctyp; "]"; "->"; ct = SELF ->
           <:class_type< [ $t$ ] -> $ct$ >>
-      | id = V clty_longident "list"; "["; tl = V (LIST1 ctyp SEP ","); "]" ->
-          <:class_type< $_list:id$ [ $_list:tl$ ] >>
-      | id = V clty_longident "list" -> <:class_type< $_list:id$ >>
       | "object"; cst = V (OPT class_self_type);
         csf = V (LIST0 [ csf = class_sig_item; ";" -> csf ]); "end" ->
-          <:class_type< object $_opt:cst$ $_list:csf$ end >> ] ]
+          <:class_type< object $_opt:cst$ $_list:csf$ end >>
+      | ct = SELF; "["; tl = V (LIST1 ctyp SEP ","); "]" ->
+          MLast.CtCon loc ct tl ]
+    | "apply"
+      [ ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ ( $ct2$ ) >> ]
+    | "dot"
+      [ ct1 = SELF; "."; ct2 = SELF -> <:class_type< $ct1$ . $ct2$ >> ]
+    | "simple"
+      [ i = V LIDENT "id" -> <:class_type< $_id:i$ >>
+      | i = V UIDENT "id" -> <:class_type< $_id:i$ >> ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
@@ -710,10 +717,6 @@ EXTEND
   ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
-  ;
-  clty_longident:
-    [ [ m = UIDENT; "."; l = SELF -> [mkident m :: l]
-      | i = LIDENT -> [mkident i] ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF -> [mkident m :: l]

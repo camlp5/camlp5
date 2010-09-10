@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.107 2010/09/06 09:34:10 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.108 2010/09/10 09:26:58 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -1042,13 +1042,15 @@ and str_item s l =
     END ]
 and class_type =
   fun
-  [ CtCon loc id tl ->
+  [ CtAcc loc _ _ -> error loc "CtAcc not impl"
+  | CtApp loc _ _ -> error loc "CtApp not impl"
+  | CtCon loc li tl -> error loc "CtCon not impl"
+(*
       match ocaml_pcty_constr with
       [ Some pcty_constr ->
-          mkcty loc
-            (pcty_constr
-               (long_id_of_string_list loc (uv id)) (List.map ctyp (uv tl)))
+          mkcty loc (pcty_constr (longident li) (List.map ctyp (uv tl)))
       | None -> error loc "no class type desc in this ocaml version" ]
+*)
   | CtFun loc (TyLab _ lab t) ct ->
       match ocaml_pcty_fun with
       [ Some pcty_fun ->
@@ -1067,6 +1069,7 @@ and class_type =
       match ocaml_pcty_fun with
       [ Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version" ]
+  | CtIde loc _ -> error loc "CtIde not impl"
   | CtSig loc t_o ctfl ->
       match ocaml_pcty_signature with
       [ Some pcty_signature ->

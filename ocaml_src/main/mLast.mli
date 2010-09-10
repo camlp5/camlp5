@@ -168,8 +168,11 @@ and type_decl =
     tdDef : ctyp;
     tdCon : (ctyp * ctyp) list }
 and class_type =
-    CtCon of loc * string list * ctyp list
+    CtAcc of loc * class_type * class_type
+  | CtApp of loc * class_type * class_type
+  | CtCon of loc * class_type * ctyp list
   | CtFun of loc * ctyp * class_type
+  | CtIde of loc * string
   | CtSig of loc * ctyp option * class_sig_item list
 and class_sig_item =
     CgCtr of loc * ctyp * ctyp

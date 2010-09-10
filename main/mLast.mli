@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.63 2010/09/07 20:27:39 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.64 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -194,8 +194,11 @@ and type_decl =
     tdDef : ctyp;
     tdCon : V (list (ctyp * ctyp)) }
 and class_type =
-  [ CtCon of loc and V (list string) and V (list ctyp)
+  [ CtAcc of loc and class_type and class_type
+  | CtApp of loc and class_type and class_type
+  | CtCon of loc and class_type and V (list ctyp)
   | CtFun of loc and ctyp and class_type
+  | CtIde of loc and V string
   | CtSig of loc and V (option ctyp) and V (list class_sig_item)
   | IFDEF STRICT THEN
       CtXtr of loc and string and option (V class_type)

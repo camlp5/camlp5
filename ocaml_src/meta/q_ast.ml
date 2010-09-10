@@ -370,10 +370,12 @@ module Meta_make (C : MetaSig) =
          C.vala (C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2])) x.tdCon]
     and class_type =
       function
-        CtCon (_, ls, lt) ->
-          C.node "CtCon"
-            [C.vala (C.list C.string) ls; C.vala (C.list ctyp) lt]
+        CtAcc (_, ct1, ct2) -> C.node "CtAcc" [class_type ct1; class_type ct2]
+      | CtApp (_, ct1, ct2) -> C.node "CtApp" [class_type ct1; class_type ct2]
+      | CtCon (_, ct, lt) ->
+          C.node "CtCon" [class_type ct; C.vala (C.list ctyp) lt]
       | CtFun (_, t, ct) -> C.node "CtFun" [ctyp t; class_type ct]
+      | CtIde (_, s) -> C.node "CtIde" [C.vala C.string s]
       | CtSig (_, ot, lcsi) ->
           C.node "CtSig"
             [C.vala (C.option ctyp) ot; C.vala (C.list class_sig_item) lcsi]

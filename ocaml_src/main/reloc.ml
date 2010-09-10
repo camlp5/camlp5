@@ -325,9 +325,12 @@ and type_decl floc sh x =
 and class_type floc sh =
   let rec self =
     function
-      CtCon (loc, x1, x2) ->
-        CtCon (floc loc, x1, vala_map (List.map (ctyp floc sh)) x2)
+      CtAcc (loc, x1, x2) -> CtAcc (floc loc, self x1, self x2)
+    | CtApp (loc, x1, x2) -> CtApp (floc loc, self x1, self x2)
+    | CtCon (loc, x1, x2) ->
+        CtCon (floc loc, self x1, vala_map (List.map (ctyp floc sh)) x2)
     | CtFun (loc, x1, x2) -> CtFun (floc loc, ctyp floc sh x1, self x2)
+    | CtIde (loc, x1) -> CtIde (floc loc, x1)
     | CtSig (loc, x1, x2) ->
         CtSig
           (floc loc, vala_map (option_map (ctyp floc sh)) x1,

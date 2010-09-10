@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.141 2010/09/06 16:54:59 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.142 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1014,16 +1014,23 @@ EXTEND
     [ [ i = LIDENT -> mkident i ] ]
   ;
   class_type:
-    [ [ "["; t = ctyp; "]"; "->"; ct = SELF ->
+    [ "top"
+      [ "["; t = ctyp; "]"; "->"; ct = SELF ->
           Qast.Node "CtFun" [Qast.Loc; t; ct]
-      | id = SV clty_longident "list"; "["; tl = SV (LIST1 ctyp SEP ",");
-        "]" ->
-          Qast.Node "CtCon" [Qast.Loc; id; tl]
-      | id = SV clty_longident "list" ->
-          Qast.Node "CtCon" [Qast.Loc; id; Qast.VaVal (Qast.List [])]
       | "object"; cst = SV (OPT class_self_type);
         csf = SV (LIST0 [ csf = class_sig_item; ";" -> csf ]); "end" ->
-          Qast.Node "CtSig" [Qast.Loc; cst; csf] ] ]
+          Qast.Node "CtSig" [Qast.Loc; cst; csf]
+      | ct = SELF; "["; tl = SV (LIST1 ctyp SEP ","); "]" ->
+          Qast.Node "CtCon" [Qast.Loc; ct; tl] ]
+    | "apply"
+      [ ct1 = SELF; "("; ct2 = SELF; ")" ->
+          Qast.Node "CtApp" [Qast.Loc; ct1; ct2] ]
+    | "dot"
+      [ ct1 = SELF; "."; ct2 = SELF ->
+          Qast.Node "CtAcc" [Qast.Loc; ct1; ct2] ]
+    | "simple"
+      [ i = SV LIDENT "id" -> Qast.Node "CtIde" [Qast.Loc; i]
+      | i = SV UIDENT "id" -> Qast.Node "CtIde" [Qast.Loc; i] ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
@@ -1092,10 +1099,6 @@ EXTEND
   ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
-  ;
-  clty_longident:
-    [ [ m = UIDENT; "."; l = SELF -> Qast.Cons (mkident m) l
-      | i = LIDENT -> Qast.List [mkident i] ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF -> Qast.Cons (mkident m) l

@@ -223,8 +223,6 @@ Grammar.extend
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
-   and clty_longident : 'clty_longident Grammar.Entry.e =
-     grammar_entry_create "clty_longident"
    and class_longident : 'class_longident Grammar.Entry.e =
      grammar_entry_create "class_longident"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
@@ -1946,8 +1944,16 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (mkident i : 'label))]];
     Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "object");
+    [Some "top", None,
+     [[Gramext.Sself; Gramext.Stoken ("", "[");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
+          Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", "]")],
+      Gramext.action
+        (fun _ (tl : 'ctyp list) _ (ct : 'class_type) (loc : Ploc.t) ->
+           (MLast.CtCon (loc, ct, tl) : 'class_type));
+      [Gramext.Stoken ("", "object");
        Gramext.Sopt
          (Gramext.Snterm
             (Grammar.Entry.obj
@@ -1966,29 +1972,32 @@ Grammar.extend
         (fun _ (csf : 'e__7 list) (cst : 'class_self_type option) _
              (loc : Ploc.t) ->
            (MLast.CtSig (loc, cst, csf) : 'class_type));
-      [Gramext.Snterm
-         (Grammar.Entry.obj
-            (clty_longident : 'clty_longident Grammar.Entry.e))],
-      Gramext.action
-        (fun (id : 'clty_longident) (loc : Ploc.t) ->
-           (MLast.CtCon (loc, id, []) : 'class_type));
-      [Gramext.Snterm
-         (Grammar.Entry.obj
-            (clty_longident : 'clty_longident Grammar.Entry.e));
-       Gramext.Stoken ("", "[");
-       Gramext.Slist1sep
-         (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
-          Gramext.Stoken ("", ","));
-       Gramext.Stoken ("", "]")],
-      Gramext.action
-        (fun _ (tl : 'ctyp list) _ (id : 'clty_longident) (loc : Ploc.t) ->
-           (MLast.CtCon (loc, id, tl) : 'class_type));
       [Gramext.Stoken ("", "[");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
        Gramext.Stoken ("", "]"); Gramext.Stoken ("", "->"); Gramext.Sself],
       Gramext.action
         (fun (ct : 'class_type) _ _ (t : 'ctyp) _ (loc : Ploc.t) ->
-           (MLast.CtFun (loc, t, ct) : 'class_type))]];
+           (MLast.CtFun (loc, t, ct) : 'class_type))];
+     Some "apply", None,
+     [[Gramext.Sself; Gramext.Stoken ("", "("); Gramext.Sself;
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (ct2 : 'class_type) _ (ct1 : 'class_type) (loc : Ploc.t) ->
+           (MLast.CtApp (loc, ct1, ct2) : 'class_type))];
+     Some "dot", None,
+     [[Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Sself],
+      Gramext.action
+        (fun (ct2 : 'class_type) _ (ct1 : 'class_type) (loc : Ploc.t) ->
+           (MLast.CtAcc (loc, ct1, ct2) : 'class_type))];
+     Some "simple", None,
+     [[Gramext.Stoken ("UIDENT", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) ->
+           (MLast.CtIde (loc, i) : 'class_type));
+      [Gramext.Stoken ("LIDENT", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) ->
+           (MLast.CtIde (loc, i) : 'class_type))]];
     Grammar.Entry.obj (class_self_type : 'class_self_type Grammar.Entry.e),
     None,
     [None, None,
@@ -2181,17 +2190,6 @@ Grammar.extend
      [[Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action (fun (i : 'ident) _ (loc : Ploc.t) -> (i : 'typevar))]];
-    Grammar.Entry.obj (clty_longident : 'clty_longident Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Stoken ("LIDENT", "")],
-      Gramext.action
-        (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'clty_longident));
-      [Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ".");
-       Gramext.Sself],
-      Gramext.action
-        (fun (l : 'clty_longident) _ (m : string) (loc : Ploc.t) ->
-           (mkident m :: l : 'clty_longident))]];
     Grammar.Entry.obj (class_longident : 'class_longident Grammar.Entry.e),
     None,
     [None, None,

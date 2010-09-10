@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.205 2010/09/10 02:58:19 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.206 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1485,6 +1485,9 @@ EXTEND_PRINTER
           pprintf pc "@[module type of@ %p@]" module_expr me
       | <:module_type< $mt$ with $list:wcl$ >> ->
           pprintf pc "%p@;%p" module_type mt (vlist with_constraint) wcl ]
+    | "apply"
+      [ <:module_type< $x$ $y$ >> ->
+          pprintf pc "%p %p" curr x next y ]
     | "dot"
       [ <:module_type< $x$ . $y$ >> ->
           pprintf pc "%p.%p" curr x curr y ]
@@ -1492,7 +1495,12 @@ EXTEND_PRINTER
       [ <:module_type< $uid:s$ >> ->
           pprintf pc "%s" s
       | <:module_type< ' $s$ >> ->
-          pprintf pc "'%s" s ] ]
+          pprintf pc "'%s" s
+      | <:module_type< $_$ $_$ >> as z ->
+          pprintf pc "(%p)" module_type z
+      | z ->
+          Ploc.raise (MLast.loc_of_module_type z)
+            (Failure (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
 END;
 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.122 2010/09/09 13:26:16 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.123 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -388,10 +388,12 @@ module Meta_make (C : MetaSig) =
             x.tdCon)]
     and class_type =
       fun
-      [ CtCon _ ls lt ->
-          C.node "CtCon"
-            [C.vala (C.list C.string) ls; C.vala (C.list ctyp) lt]
+      [ CtAcc _ ct1 ct2 -> C.node "CtAcc" [class_type ct1; class_type ct2]
+      | CtApp _ ct1 ct2 -> C.node "CtApp" [class_type ct1; class_type ct2]
+      | CtCon _ ct lt ->
+          C.node "CtCon" [class_type ct; C.vala (C.list ctyp) lt]
       | CtFun _ t ct -> C.node "CtFun" [ctyp t; class_type ct]
+      | CtIde _ s -> C.node "CtIde" [C.vala C.string s]
       | CtSig _ ot lcsi ->
           C.node "CtSig"
             [C.vala (C.option ctyp) ot; C.vala (C.list class_sig_item) lcsi]

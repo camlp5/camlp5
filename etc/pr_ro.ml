@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.91 2010/09/06 16:54:58 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.92 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -387,12 +387,13 @@ EXTEND_PRINTER
                     | None -> pprintf pc "object" ])
                  cst
                  (vlist (semi_after class_sig_item)) csi)
-      | <:class_type< $list:cl$ >> ->
-          class_longident pc cl
-      | <:class_type< $list:cl$ [ $list:ctcl$ ] >> ->
+(*
+      | <:class_type< $ct$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          pprintf pc "%p@;@[<1>[%p]@]" class_longident cl
-            (plist ctyp 0) ctcl ] ]
+          pprintf pc "%p@;@[<1>[%p]@]" longident li
+            (plist ctyp 0) ctcl
+*)
+            ] ]
   ;
   pr_class_sig_item:
     [ "top"

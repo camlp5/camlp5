@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.55 2010/09/07 20:27:39 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.56 2010/09/10 09:26:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -334,9 +334,12 @@ and type_decl floc sh x =
 and class_type floc sh =
   self where rec self =
     fun
-    [ CtCon loc x1 x2 ->
-        CtCon (floc loc) x1 (vala_map (List.map (ctyp floc sh)) x2)
+    [ CtAcc loc x1 x2 -> CtAcc (floc loc) (self x1) (self x2)
+    | CtApp loc x1 x2 -> CtApp (floc loc) (self x1) (self x2)
+    | CtCon loc x1 x2 ->
+        CtCon (floc loc) (self x1) (vala_map (List.map (ctyp floc sh)) x2)
     | CtFun loc x1 x2 -> CtFun (floc loc) (ctyp floc sh x1) (self x2)
+    | CtIde loc x1 -> CtIde (floc loc) x1
     | CtSig loc x1 x2 ->
         CtSig (floc loc) (vala_map (option_map (ctyp floc sh)) x1)
           (vala_map (List.map (class_sig_item floc sh)) x2)
