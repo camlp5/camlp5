@@ -803,10 +803,19 @@ let rec expr =
           | None -> mkexp loc (ocaml_pexp_apply (expr f) al)
       end
   | ExAre (loc, e1, e2) ->
-      mkexp loc
-        (ocaml_pexp_apply
-           (mkexp loc (Pexp_ident (array_function "Array" "get")))
-           ["", expr e1; "", expr e2])
+      begin match e1 with
+        MLast.ExUid (_, m) ->
+          begin match ocaml_pexp_open with
+            Some pexp_open ->
+              let li = Lident m in mkexp loc (pexp_open li (expr e2))
+          | None -> error loc "no expression open in this ocaml version"
+          end
+      | _ ->
+          mkexp loc
+            (ocaml_pexp_apply
+               (mkexp loc (Pexp_ident (array_function "Array" "get")))
+               ["", expr e1; "", expr e2])
+      end
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss (loc, e, v) ->
       begin match e with

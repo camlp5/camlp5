@@ -110,6 +110,8 @@ let ocaml_pexp_letmodule = None;;
 
 let ocaml_pexp_object = None;;
 
+let ocaml_pexp_open = None;;
+
 let ocaml_pexp_pack = None;;
 
 let ocaml_pexp_poly = None;;

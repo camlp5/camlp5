@@ -80,6 +80,8 @@ let ocaml_pexp_letmodule = Some (fun i me e -> Pexp_letmodule (i, me, e));;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
+let ocaml_pexp_open = Some (fun li e -> Pexp_open (li, e));;
+
 let ocaml_pexp_pack = Some (fun me pt -> Pexp_pack (me, pt));;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;

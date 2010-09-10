@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.110 2010/09/10 13:38:02 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.111 2010/09/10 15:27:05 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -680,10 +680,18 @@ value rec expr =
                   mkexp loc (ocaml_pexp_apply (expr f) al) ]
           | None -> mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
   | ExAre loc e1 e2 ->
-      mkexp loc
-        (ocaml_pexp_apply
-           (mkexp loc (Pexp_ident (array_function "Array" "get")))
-           [("", expr e1); ("", expr e2)])
+      match e1 with
+      [ <:expr< $uid:m$ >> ->
+          match ocaml_pexp_open with
+          [ Some pexp_open ->
+              let li = Lident m in
+              mkexp loc (pexp_open li (expr e2))
+          | None -> error loc "no expression open in this ocaml version" ]
+      | _ ->
+          mkexp loc
+            (ocaml_pexp_apply
+               (mkexp loc (Pexp_ident (array_function "Array" "get")))
+               [("", expr e1); ("", expr e2)]) ]
   | ExArr loc el -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v ->
       match e with
