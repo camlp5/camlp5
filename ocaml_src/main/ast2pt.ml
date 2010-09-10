@@ -95,9 +95,6 @@ let mklazy loc e =
       ghexp (ocaml_pexp_apply r ["", df])
 ;;
 
-let lident s = Lident s;;
-let ldot l s = Ldot (l, s);;
-
 let conv_con =
   let t = Hashtbl.create 73 in
   List.iter (fun (s, s') -> Hashtbl.add t s s')
@@ -112,7 +109,7 @@ let conv_lab =
 ;;
 
 let array_function str name =
-  ldot (lident str) (if !fast then "unsafe_" ^ name else name)
+  Ldot (Lident str, (if !fast then "unsafe_" ^ name else name))
 ;;
 
 let uv c =
@@ -130,10 +127,10 @@ let mkrf =
 let mkli s =
   let rec loop f =
     function
-      i :: il -> loop (fun s -> ldot (f i) s) il
+      i :: il -> loop (fun s -> Ldot (f i, s)) il
     | [] -> f s
   in
-  loop (fun s -> lident s)
+  loop (fun s -> Lident s)
 ;;
 
 let long_id_of_string_list loc sl =
@@ -151,14 +148,14 @@ let rec ctyp_fa al =
 let rec ctyp_long_id =
   function
     MLast.TyAcc (_, m, MLast.TyLid (_, s)) ->
-      let (is_cls, li) = ctyp_long_id m in is_cls, ldot li s
+      let (is_cls, li) = ctyp_long_id m in is_cls, Ldot (li, s)
   | MLast.TyAcc (_, m, MLast.TyUid (_, s)) ->
-      let (is_cls, li) = ctyp_long_id m in is_cls, ldot li s
+      let (is_cls, li) = ctyp_long_id m in is_cls, Ldot (li, s)
   | MLast.TyApp (_, m1, m2) ->
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in is_cls, Lapply (li1, li2)
-  | MLast.TyUid (_, s) -> false, lident s
-  | MLast.TyLid (_, s) -> false, lident s
+  | MLast.TyUid (_, s) -> false, Lident s
+  | MLast.TyLid (_, s) -> false, Lident s
   | TyCls (loc, sl) -> true, long_id_of_string_list loc (uv sl)
   | t -> error (loc_of_ctyp t) "incorrect type"
 ;;
@@ -195,7 +192,7 @@ let rec ctyp =
   | TyCls (loc, id) ->
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
-  | TyLid (loc, s) -> mktyp loc (Ptyp_constr (lident (uv s), []))
+  | TyLid (loc, s) -> mktyp loc (Ptyp_constr (Lident (uv s), []))
   | TyMan (loc, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
   | TyPck (loc, mt) -> error loc "type 'module' not impl"
@@ -208,7 +205,7 @@ let rec ctyp =
   | TyRec (loc, _) -> error loc "record type not allowed here"
   | TySum (loc, _) -> error loc "sum type not allowed here"
   | TyTup (loc, tl) -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
-  | TyUid (loc, s) -> mktyp loc (Ptyp_constr (lident (uv s), []))
+  | TyUid (loc, s) -> mktyp loc (Ptyp_constr (Lident (uv s), []))
   | TyVrn (loc, catl, ool) ->
       let catl =
         List.map
@@ -339,43 +336,45 @@ let rec same_type_expr ct ce =
 
 let rec common_id loc t e =
   match t, e with
-    MLast.TyLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 -> lident s1
-  | MLast.TyUid (_, s1), MLast.ExUid (_, s2) when s1 = s2 -> lident s1
+    MLast.TyLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 -> Lident s1
+  | MLast.TyUid (_, s1), MLast.ExUid (_, s2) when s1 = s2 -> Lident s1
   | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)),
     MLast.ExAcc (_, e1, MLast.ExLid (_, s2))
     when s1 = s2 ->
-      ldot (common_id loc t1 e1) s1
+      Ldot (common_id loc t1 e1, s1)
   | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)),
     MLast.ExAcc (_, e1, MLast.ExUid (_, s2))
     when s1 = s2 ->
-      ldot (common_id loc t1 e1) s1
+      Ldot (common_id loc t1 e1, s1)
   | _ -> error loc "this expression should repeat the class id inherited"
 ;;
 
 let rec type_id loc t =
   match t with
-    MLast.TyLid (_, s1) -> lident s1
-  | MLast.TyUid (_, s1) -> lident s1
-  | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)) -> ldot (type_id loc t1) s1
-  | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)) -> ldot (type_id loc t1) s1
+    MLast.TyLid (_, s1) -> Lident s1
+  | MLast.TyUid (_, s1) -> Lident s1
+  | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)) -> Ldot (type_id loc t1, s1)
+  | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)) -> Ldot (type_id loc t1, s1)
   | _ -> error loc "type identifier expected"
 ;;
 
 let rec module_type_long_id =
   function
-    MLast.MtAcc (_, m, MLast.MtUid (_, s)) -> ldot (module_type_long_id m) s
-  | MLast.MtAcc (_, m, MLast.MtLid (_, s)) -> ldot (module_type_long_id m) s
+    MLast.MtAcc (_, m, MLast.MtUid (_, s)) -> Ldot (module_type_long_id m, s)
+  | MLast.MtAcc (_, m, MLast.MtLid (_, s)) -> Ldot (module_type_long_id m, s)
   | MtApp (_, m1, m2) ->
       Lapply (module_type_long_id m1, module_type_long_id m2)
-  | MLast.MtLid (_, s) -> lident s
-  | MLast.MtUid (_, s) -> lident s
+  | MLast.MtLid (_, s) -> Lident s
+  | MLast.MtUid (_, s) -> Lident s
   | t -> error (loc_of_module_type t) "bad module type long ident"
 ;;
 
 let rec module_expr_long_id =
   function
-    MLast.MeAcc (_, m, MLast.MeUid (_, s)) -> ldot (module_expr_long_id m) s
-  | MLast.MeUid (_, s) -> lident s
+    MLast.MeApp (_, me1, me2) ->
+      Lapply (module_expr_long_id me1, module_expr_long_id me2)
+  | MLast.MeAcc (_, m, MLast.MeUid (_, s)) -> Ldot (module_expr_long_id m, s)
+  | MLast.MeUid (_, s) -> Lident s
   | t -> error (loc_of_module_expr t) "bad module expr long ident"
 ;;
 
@@ -422,10 +421,10 @@ let rec patt_long_id il =
 let rec patt_label_long_id =
   function
     MLast.PaAcc (_, m, MLast.PaLid (_, s)) ->
-      ldot (patt_label_long_id m) (conv_lab s)
-  | MLast.PaAcc (_, m, MLast.PaUid (_, s)) -> ldot (patt_label_long_id m) s
-  | MLast.PaUid (_, s) -> lident s
-  | MLast.PaLid (_, s) -> lident (conv_lab s)
+      Ldot (patt_label_long_id m, conv_lab s)
+  | MLast.PaAcc (_, m, MLast.PaUid (_, s)) -> Ldot (patt_label_long_id m, s)
+  | MLast.PaUid (_, s) -> Lident s
+  | MLast.PaLid (_, s) -> Lident (conv_lab s)
   | p -> error (loc_of_patt p) "bad label"
 ;;
 
@@ -533,7 +532,7 @@ let rec patt =
       end
   | PaUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
-      mkpat loc (Ppat_construct (lident (conv_con (uv s)), None, ca))
+      mkpat loc (Ppat_construct (Lident (conv_con (uv s)), None, ca))
   | PaVrn (loc, s) ->
       match ocaml_ppat_variant with
         Some (_, ppat_variant) -> mkpat loc (ppat_variant (uv s, None))
@@ -891,7 +890,7 @@ let rec expr =
   | ExLaz (loc, e) -> mklazy loc (expr e)
   | ExLet (loc, rf, pel, e) ->
       mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe (uv pel), expr e))
-  | ExLid (loc, s) -> mkexp loc (Pexp_ident (lident (uv s)))
+  | ExLid (loc, s) -> mkexp loc (Pexp_ident (Lident (uv s)))
   | ExLmd (loc, i, me, e) ->
       begin match ocaml_pexp_letmodule with
         Some pexp_letmodule ->
@@ -981,7 +980,7 @@ let rec expr =
       mkexp loc (Pexp_constraint (expr e, Some (ctyp t), None))
   | ExUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
-      mkexp loc (Pexp_construct (lident (conv_con (uv s)), None, ca))
+      mkexp loc (Pexp_construct (Lident (conv_con (uv s)), None, ca))
   | ExVrn (loc, s) ->
       begin match ocaml_pexp_variant with
         Some (_, pexp_variant) -> mkexp loc (pexp_variant (uv s, None))
@@ -1019,7 +1018,7 @@ and module_type =
   | MtApp (loc, _, _) as f -> mkmty loc (Pmty_ident (module_type_long_id f))
   | MtFun (loc, n, nt, mt) ->
       mkmty loc (Pmty_functor (uv n, module_type nt, module_type mt))
-  | MtLid (loc, s) -> mkmty loc (Pmty_ident (lident (uv s)))
+  | MtLid (loc, s) -> mkmty loc (Pmty_ident (Lident (uv s)))
   | MtQuo (loc, _) -> error loc "abstract module type not allowed here"
   | MtSig (loc, sl) ->
       mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
@@ -1028,7 +1027,7 @@ and module_type =
         Some pmty_typeof -> mkmty loc (pmty_typeof (module_expr me))
       | None -> error loc "no 'module type of ..' in this ocaml version"
       end
-  | MtUid (loc, s) -> mkmty loc (Pmty_ident (lident (uv s)))
+  | MtUid (loc, s) -> mkmty loc (Pmty_ident (Lident (uv s)))
   | MtWit (loc, mt, wcl) ->
       mkmty loc (Pmty_with (module_type mt, List.map mkwithc (uv wcl)))
 and sig_item s l =
@@ -1091,7 +1090,7 @@ and module_expr =
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc (loc, me, mt) ->
       mkmod loc (Pmod_constraint (module_expr me, module_type mt))
-  | MeUid (loc, s) -> mkmod loc (Pmod_ident (lident (uv s)))
+  | MeUid (loc, s) -> mkmod loc (Pmod_ident (Lident (uv s)))
   | MeUnp (loc, e, mt) ->
       match ocaml_pmod_unpack with
         Some pmod_unpack ->
@@ -1170,9 +1169,69 @@ and str_item s l =
       mkstr loc (Pstr_value (mkrf (uv rf), List.map mkpe (uv pel))) :: l
 and class_type =
   function
-    CtAcc (loc, _, _) -> error loc "CtAcc not impl"
-  | CtApp (loc, _, _) -> error loc "CtApp not impl"
-  | CtCon (loc, li, tl) -> error loc "CtCon not impl"
+    CtAcc (loc, _, _) as ct ->
+      let li =
+        let rec longident =
+          function
+            CtIde (loc, s) -> Lident (uv s)
+          | CtApp (loc, ct1, ct2) ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in Lapply (li1, li2)
+          | CtAcc (loc, ct1, ct2) ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in Lapply (li1, li2)
+          | _ -> failwith "CtAcc is not implemented 5"
+        in
+        longident ct
+      in
+      begin match ocaml_pcty_constr with
+        Some pcty_constr -> mkcty loc (pcty_constr li [])
+      | None -> error loc "no class type desc in this ocaml version"
+      end
+  | CtApp (loc, _, _) as ct ->
+      let li =
+        let rec longident =
+          function
+            CtIde (loc, s) -> Lident (uv s)
+          | CtApp (loc, ct1, ct2) ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in Lapply (li1, li2)
+          | CtAcc (loc, ct1, ct2) ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in Lapply (li1, li2)
+          | _ -> failwith "CtAcc is not implemented 5"
+        in
+        longident ct
+      in
+      begin match ocaml_pcty_constr with
+        Some pcty_constr -> mkcty loc (pcty_constr li [])
+      | None -> error loc "no class type desc in this ocaml version"
+      end
+  | CtIde (loc, _) as ct ->
+      let li =
+        let rec longident =
+          function
+            CtIde (loc, s) -> Lident (uv s)
+          | CtApp (loc, ct1, ct2) ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in Lapply (li1, li2)
+          | CtAcc (loc, ct1, ct2) ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in Lapply (li1, li2)
+          | _ -> failwith "CtAcc is not implemented 5"
+        in
+        longident ct
+      in
+      begin match ocaml_pcty_constr with
+        Some pcty_constr -> mkcty loc (pcty_constr li [])
+      | None -> error loc "no class type desc in this ocaml version"
+      end
+  | CtCon (loc, ct, tl) ->
+      let li = failwith "CtCon not impl" in
+      begin match ocaml_pcty_constr with
+        Some pcty_constr -> mkcty loc (pcty_constr li (List.map ctyp (uv tl)))
+      | None -> error loc "no class type desc in this ocaml version"
+      end
   | CtFun (loc, TyLab (_, lab, t), ct) ->
       begin match ocaml_pcty_fun with
         Some pcty_fun ->
@@ -1194,7 +1253,6 @@ and class_type =
         Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version"
       end
-  | CtIde (loc, _) -> error loc "CtIde not impl"
   | CtSig (loc, t_o, ctfl) ->
       match ocaml_pcty_signature with
         Some pcty_signature ->
@@ -1299,22 +1357,18 @@ and class_str_item c l =
       | None -> error loc "no initializer in this ocaml version"
       end
   | CrMth (loc, ovf, pf, s, ot, e) ->
-      (*
-            let e =
-              match ocaml_pexp_poly with
-              [ Some pexp_poly ->
-                  let t = option (fun t -> add_polytype t) (uv ot) in
-                  mkexp loc (pexp_poly (expr e) t)
-              | None ->
-                  if uv ot = None then expr e
-                  else error loc "no method with label in this ocaml version" ]
-            in
-            [ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l]
-      *)      failwith "ast2pt CrMth"
+      let e =
+        match ocaml_pexp_poly with
+          Some pexp_poly ->
+            let t = option (fun t -> add_polytype t) (uv ot) in
+            mkexp loc (pexp_poly (expr e) t)
+        | None ->
+            if uv ot = None then expr e
+            else error loc "no method with label in this ocaml version"
+      in
+      ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l
   | CrVal (loc, ovf, mf, s, e) ->
-      (*
-            [ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l]
-      *)      failwith "ast2pt CrVal"
+      ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l
   | CrVir (loc, s, b, t) ->
       Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
 ;;

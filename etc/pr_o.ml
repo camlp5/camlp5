@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.221 2010/09/10 09:26:58 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.222 2010/09/10 13:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -38,6 +38,8 @@ do {
 };
 
 (* general functions *)
+
+value error loc msg = Ploc.raise loc (Failure msg);
 
 value is_infix = do {
   let infixes = Hashtbl.create 73 in
@@ -727,14 +729,16 @@ value str_module pref pc (m, me) =
           mal module_expr me ]
 ;
 
-value sig_module_or_module_type pref defc pc (m, mt) =
+value sig_module_or_module_type pref unfun defc pc (m, mt) =
   let (mal, mt) =
-    loop mt where rec loop =
-      fun
-      [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
-          let (mal, mt) = loop mt2 in
-          ([(s, mt1) :: mal], mt)
-      | mt -> ([], mt) ]
+    if unfun then
+      loop mt where rec loop =
+        fun
+        [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
+            let (mal, mt) = loop mt2 in
+            ([(s, mt1) :: mal], mt)
+        | mt -> ([], mt) ]
+    else ([], mt)
   in
   let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
   match mt with
@@ -760,10 +764,10 @@ value with_constraint pc wc =
   match wc with
   [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
       let tpl = List.map (fun tp -> (loc, tp)) tpl in
-      pprintf pc "with type %p%p =%s %p" mod_ident (loc, sl) (hlist type_var)
+      pprintf pc "type %p%p =%s %p" mod_ident (loc, sl) (hlist type_var)
         tpl (if pf then " private" else "") ctyp t
   | <:with_constr:< module $sl$ = $me$ >> ->
-      pprintf pc "with module %p = %p" mod_ident (loc, sl) module_expr me
+      pprintf pc "module %p = %p" mod_ident (loc, sl) module_expr me
   | IFDEF STRICT THEN
       x -> not_impl "with_constraint" pc x
     END ]
@@ -1155,8 +1159,8 @@ EXTEND_PRINTER
           pprintf pc "\"%s\"" s
       | <:expr< $chr:s$ >> ->
           pprintf pc "'%s'" (ocaml_char s)
-      | <:expr< ?$_$ >> | <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
-          failwith "labels not pretty printed (in expr); add pr_ro.cmo"
+      | <:expr:< ?$_$ >> | <:expr:< ~$_$ >> | <:expr:< ~$_$: $_$ >> ->
+          error loc ("labels not pretty printed (in expr)")
       | <:expr:< do { $list:el$ } >> ->
           pprintf pc "@[<a>begin@;%p@ end@]"
             (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
@@ -1253,10 +1257,10 @@ EXTEND_PRINTER
       | <:patt< $chr:s$ >> -> pprintf pc "'%s'" (ocaml_char s)
       | <:patt< $str:s$ >> -> pprintf pc "\"%s\"" s
       | <:patt< _ >> -> pprintf pc "_"
-      | <:patt< ?$_$ >> | <:patt< ? ($_$ $opt:_$) >> |
-        <:patt< ?$_$: ($_$ $opt:_$) >> | <:patt< ~$_$ >> |
-        <:patt< ~$_$: $_$ >> ->
-          failwith "labels not pretty printed (in patt); add pr_ro.cmo"
+      | <:patt:< ?$_$ >> | <:patt:< ? ($_$ $opt:_$) >> |
+        <:patt:< ?$_$: ($_$ $opt:_$) >> | <:patt:< ~$_$ >> |
+        <:patt:< ~$_$: $_$ >> ->
+          error loc "labels not pretty printed (in patt)"
       | <:patt< `$s$ >> ->
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
@@ -1317,8 +1321,8 @@ EXTEND_PRINTER
           pprintf pc "'%p" var_escaped (loc, s)
       | <:ctyp< _ >> ->
           pprintf pc "_"
-      | <:ctyp< ?$_$: $_$ >> | <:ctyp< ~$_$: $_$ >> ->
-          failwith "labels not pretty printed (in type); add pr_ro.cmo"
+      | <:ctyp:< ?$_$: $_$ >> | <:ctyp:< ~$_$: $_$ >> ->
+          error loc "labels not pretty printed (in type)"
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
         <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
@@ -1352,7 +1356,7 @@ EXTEND_PRINTER
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $uid:m$ = $mt$ >> ->
-          sig_module_or_module_type "module type" '=' pc (m, mt)
+          sig_module_or_module_type "module type" False '=' pc (m, mt)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:str_item:< type $list:tdl$ >> ->
@@ -1398,10 +1402,10 @@ EXTEND_PRINTER
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
           let rf = if rf then " rec" else "" in
-          vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
-            (sig_module_or_module_type "and" ':') pc mdl
+          vlist2 (sig_module_or_module_type ("module" ^ rf) True ':')
+            (sig_module_or_module_type "and" True ':') pc mdl
       | <:sig_item< module type $uid:m$ = $mt$ >> ->
-          sig_module_or_module_type "module type" '=' pc (m, mt)
+          sig_module_or_module_type "module type" False '=' pc (m, mt)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item:< type $list:tdl$ >> ->
@@ -1485,12 +1489,8 @@ EXTEND_PRINTER
       | <:module_type< module type of $me$ >> ->
           pprintf pc "@[module type of@ %p@]" module_expr me
       | <:module_type< $mt$ with $list:wcl$ >> ->
-          horiz_vertic
-            (fun () ->
-               pprintf pc "%p %p" module_type mt (hlist with_constraint) wcl)
-            (fun () ->
-               pprintf pc "%p@;%p" module_type mt (vlist with_constraint)
-                 wcl) ]
+          pprintf pc "%p with@;%p" module_type mt
+            (vlist2 with_constraint (and_before with_constraint)) wcl ]
     | "apply"
       [ <:module_type< $x$ $y$ >> ->
           pprintf pc "%p(%p)" curr x curr y
@@ -1500,8 +1500,8 @@ EXTEND_PRINTER
       [ <:module_type< $uid:s$ >> ->
           pprintf pc "%s" s
       | z ->
-          Ploc.raise (MLast.loc_of_module_type z)
-            (Failure (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z)))) ] ]
+          error (MLast.loc_of_module_type z)
+            (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z))) ] ]
   ;
 END;
 
@@ -1881,6 +1881,11 @@ EXTEND_PRINTER
       | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
           pprintf pc "@[<1>(%p)@]" expr z ] ]
   ;
+  pr_ctyp: AFTER "star"
+    [ "label"
+      [ <:ctyp< ?$i$: $t$ >> -> pprintf pc "?%s:%p" i curr t
+      | <:ctyp< ~$i$: $t$ >> -> pprintf pc "~%s:%p" i curr t ] ]
+  ;
   pr_ctyp: LEVEL "simple"
     [ [ <:ctyp< < $list:ml$ $flag:v$ > >> ->
           if ml = [] then pprintf pc "<%s >" (if v then " .." else "")
@@ -1993,7 +1998,8 @@ EXTEND_PRINTER
   pr_class_type:
     [ "top"
       [ <:class_type< [ $t$ ] -> $ct$ >> ->
-          pprintf pc "%p ->@;%p" ctyp t curr ct
+          pprintf pc "%p ->@;%p" (Eprinter.apply_level pr_ctyp "star") t curr
+            ct
       | <:class_type:< object $opt:cst$ $list:csi$ end >> ->
           let class_sig_item_sep =
             if flag_semi_semi.val then semi_semi_after class_sig_item
@@ -2018,13 +2024,15 @@ EXTEND_PRINTER
                     fun
                     [ Some t -> pprintf pc "object@;(%p)" ctyp t
                     | None -> pprintf pc "object" ])
-                  cst (vlist class_sig_item_sep) csi)
-(*
-      | <:class_type< $list:cl$ [ $list:ctcl$ ] >> ->
-          let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl class_longident cl
-*)
-      ] ]
+                  cst (vlist class_sig_item_sep) csi) ]
+    | [ <:class_type< $ct1$ ( $ct2$ ) >> ->
+          pprintf pc "%p(%p)" curr ct1 curr ct2
+      | <:class_type< $ct1$ . $ct2$ >> ->
+          pprintf pc "%p.%p" curr ct1 curr ct2 ]
+    | [ <:class_type< $id:id$ >> -> pprintf pc "%s" id
+      | z ->
+          error (MLast.loc_of_class_type z)
+            (sprintf "pr_class_type %d" (Obj.tag (Obj.repr z))) ] ]
   ;
   pr_class_sig_item:
     [ "top"
@@ -2073,8 +2081,11 @@ EXTEND_PRINTER
                 poly_type t expr e ]
       | <:class_str_item< type $t1$ = $t2$ >> ->
           pprintf pc "constraint %p =@;%p" ctyp t1 ctyp t2
-      | <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
-          pprintf pc "val%s %s =@;%p" (if mf then " mutable" else "") s
-            expr e ] ]
+      | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
+          pprintf pc "val%s%s %s =@;%p" (if ovf then "!" else "")
+            (if mf then " mutable" else "") s expr e
+      | z ->
+          error (MLast.loc_of_class_str_item z)
+            (sprintf "pr_class_str_item %d" (Obj.tag (Obj.repr z))) ] ]
   ;
 END;

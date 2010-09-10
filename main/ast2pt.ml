@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.109 2010/09/10 11:23:19 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.110 2010/09/10 13:38:02 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -96,9 +96,6 @@ value mklazy loc e =
     } ]
 ;
 
-value lident s = Lident s;
-value ldot l s = Ldot l s;
-
 value conv_con = do {
   let t = Hashtbl.create 73 in
   List.iter (fun (s, s') -> Hashtbl.add t s s')
@@ -114,7 +111,7 @@ value conv_lab = do {
 };
 
 value array_function str name =
-  ldot (lident str) (if fast.val then "unsafe_" ^ name else name)
+  Ldot (Lident str) (if fast.val then "unsafe_" ^ name else name)
 ;
 
 value uv c =
@@ -130,9 +127,9 @@ value mkrf =
 ;
 
 value mkli s =
-  loop (fun s -> lident s) where rec loop f =
+  loop (fun s -> Lident s) where rec loop f =
     fun
-    [ [i :: il] -> loop (fun s -> ldot (f i) s) il
+    [ [i :: il] -> loop (fun s -> Ldot (f i) s) il
     | [] -> f s ]
 ;
 
@@ -152,16 +149,16 @@ value rec ctyp_long_id =
   fun
   [ <:ctyp< $m$.$lid:s$ >> ->
       let (is_cls, li) = ctyp_long_id m in
-      (is_cls, ldot li s)
+      (is_cls, Ldot li s)
   | <:ctyp< $m$.$uid:s$ >> ->
       let (is_cls, li) = ctyp_long_id m in
-      (is_cls, ldot li s)
+      (is_cls, Ldot li s)
   | <:ctyp< $m1$ $m2$ >> ->
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
-  | <:ctyp< $uid:s$ >> -> (False, lident s)
-  | <:ctyp< $lid:s$ >> -> (False, lident s)
+  | <:ctyp< $uid:s$ >> -> (False, Lident s)
+  | <:ctyp< $lid:s$ >> -> (False, Lident s)
   | TyCls loc sl -> (True, long_id_of_string_list loc (uv sl))
   | t -> error (loc_of_ctyp t) "incorrect type" ]
 ;
@@ -199,7 +196,7 @@ value rec ctyp =
   | TyCls loc id ->
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab loc _ _ -> error loc "labeled type not allowed here"
-  | TyLid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
+  | TyLid loc s -> mktyp loc (Ptyp_constr (Lident (uv s)) [])
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
   | TyPck loc mt -> error loc "type 'module' not impl"
@@ -211,7 +208,7 @@ value rec ctyp =
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
   | TyTup loc tl -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
-  | TyUid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
+  | TyUid loc s -> mktyp loc (Ptyp_constr (Lident (uv s)) [])
   | TyVrn loc catl ool ->
       let catl =
         List.map
@@ -350,38 +347,40 @@ value rec same_type_expr ct ce =
 
 value rec common_id loc t e =
   match (t, e) with
-  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 -> lident s1
-  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) when s1 = s2 -> lident s1
+  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 -> Lident s1
+  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) when s1 = s2 -> Lident s1
   | (<:ctyp< $t1$.$lid:s1$ >>, <:expr< $e1$.$lid:s2$ >>) when s1 = s2 ->
-      ldot (common_id loc t1 e1) s1
+      Ldot (common_id loc t1 e1) s1
   | (<:ctyp< $t1$.$uid:s1$ >>, <:expr< $e1$.$uid:s2$ >>) when s1 = s2 ->
-      ldot (common_id loc t1 e1) s1
+      Ldot (common_id loc t1 e1) s1
   | _ -> error loc "this expression should repeat the class id inherited" ]
 ;
 
 value rec type_id loc t =
   match t with
-  [ <:ctyp< $lid:s1$ >> -> lident s1
-  | <:ctyp< $uid:s1$ >> -> lident s1
-  | <:ctyp< $t1$.$lid:s1$ >> -> ldot (type_id loc t1) s1
-  | <:ctyp< $t1$.$uid:s1$ >> -> ldot (type_id loc t1) s1
+  [ <:ctyp< $lid:s1$ >> -> Lident s1
+  | <:ctyp< $uid:s1$ >> -> Lident s1
+  | <:ctyp< $t1$.$lid:s1$ >> -> Ldot (type_id loc t1) s1
+  | <:ctyp< $t1$.$uid:s1$ >> -> Ldot (type_id loc t1) s1
   | _ -> error loc "type identifier expected" ]
 ;
 
 value rec module_type_long_id =
   fun
-  [ <:module_type< $m$ . $uid:s$ >> -> ldot (module_type_long_id m) s
-  | <:module_type< $m$ . $lid:s$ >> -> ldot (module_type_long_id m) s
+  [ <:module_type< $m$ . $uid:s$ >> -> Ldot (module_type_long_id m) s
+  | <:module_type< $m$ . $lid:s$ >> -> Ldot (module_type_long_id m) s
   | MtApp _ m1 m2 -> Lapply (module_type_long_id m1) (module_type_long_id m2)
-  | <:module_type< $lid:s$ >> -> lident s
-  | <:module_type< $uid:s$ >> -> lident s
+  | <:module_type< $lid:s$ >> -> Lident s
+  | <:module_type< $uid:s$ >> -> Lident s
   | t -> error (loc_of_module_type t) "bad module type long ident" ]
 ;
 
 value rec module_expr_long_id =
   fun
-  [ <:module_expr< $m$ . $uid:s$ >> -> ldot (module_expr_long_id m) s
-  | <:module_expr< $uid:s$ >> -> lident s
+  [ <:module_expr< $me1$ ( $me2$ ) >> ->
+      Lapply (module_expr_long_id me1) (module_expr_long_id me2)
+  | <:module_expr< $m$ . $uid:s$ >> -> Ldot (module_expr_long_id m) s
+  | <:module_expr< $uid:s$ >> -> Lident s
   | t -> error (loc_of_module_expr t) "bad module expr long ident" ]
 ;
 
@@ -427,10 +426,10 @@ value rec patt_long_id il =
 
 value rec patt_label_long_id =
   fun
-  [ <:patt< $m$.$lid:s$ >> -> ldot (patt_label_long_id m) (conv_lab s)
-  | <:patt< $m$.$uid:s$ >> -> ldot (patt_label_long_id m) s
-  | <:patt< $uid:s$ >> -> lident s
-  | <:patt< $lid:s$ >> -> lident (conv_lab s)
+  [ <:patt< $m$.$lid:s$ >> -> Ldot (patt_label_long_id m) (conv_lab s)
+  | <:patt< $m$.$uid:s$ >> -> Ldot (patt_label_long_id m) s
+  | <:patt< $uid:s$ >> -> Lident s
+  | <:patt< $lid:s$ >> -> Lident (conv_lab s)
   | p -> error (loc_of_patt p) "bad label" ]
 ;
 
@@ -531,7 +530,7 @@ value rec patt =
       | None -> error loc "no #type in this ocaml version" ]
   | PaUid loc s ->
       let ca = not Prtools.no_constructors_arity.val in
-      mkpat loc (Ppat_construct (lident (conv_con (uv s))) None ca)
+      mkpat loc (Ppat_construct (Lident (conv_con (uv s))) None ca)
   | PaVrn loc s ->
       match ocaml_ppat_variant with
       [ Some (_, ppat_variant) -> mkpat loc (ppat_variant (uv s, None))
@@ -762,7 +761,7 @@ value rec expr =
   | ExLaz loc e -> mklazy loc (expr e)
   | ExLet loc rf pel e ->
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
-  | ExLid loc s -> mkexp loc (Pexp_ident (lident (uv s)))
+  | ExLid loc s -> mkexp loc (Pexp_ident (Lident (uv s)))
   | ExLmd loc i me e ->
       match ocaml_pexp_letmodule with
       [ Some pexp_letmodule ->
@@ -844,7 +843,7 @@ value rec expr =
   | ExTyc loc e t -> mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid loc s ->
       let ca = not Prtools.no_constructors_arity.val in
-      mkexp loc (Pexp_construct (lident (conv_con (uv s))) None ca)
+      mkexp loc (Pexp_construct (Lident (conv_con (uv s))) None ca)
   | ExVrn loc s ->
       match ocaml_pexp_variant with
       [ Some (_, pexp_variant) -> mkexp loc (pexp_variant (uv s, None))
@@ -884,7 +883,7 @@ and module_type =
   | MtApp loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))
   | MtFun loc n nt mt ->
       mkmty loc (Pmty_functor (uv n) (module_type nt) (module_type mt))
-  | MtLid loc s -> mkmty loc (Pmty_ident (lident (uv s)))
+  | MtLid loc s -> mkmty loc (Pmty_ident (Lident (uv s)))
   | MtQuo loc _ -> error loc "abstract module type not allowed here"
   | MtSig loc sl ->
       mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
@@ -892,7 +891,7 @@ and module_type =
       match ocaml_pmty_typeof with
       [ Some pmty_typeof -> mkmty loc (pmty_typeof (module_expr me))
       | None -> error loc "no 'module type of ..' in this ocaml version" ]
-  | MtUid loc s -> mkmty loc (Pmty_ident (lident (uv s)))
+  | MtUid loc s -> mkmty loc (Pmty_ident (Lident (uv s)))
   | MtWit loc mt wcl ->
       mkmty loc (Pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | IFDEF STRICT THEN
@@ -960,7 +959,7 @@ and module_expr =
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc loc me mt ->
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
-  | MeUid loc s -> mkmod loc (Pmod_ident (lident (uv s)))
+  | MeUid loc s -> mkmod loc (Pmod_ident (Lident (uv s)))
   | MeUnp loc e mt ->
       match ocaml_pmod_unpack with
       [ Some pmod_unpack ->
@@ -1042,15 +1041,29 @@ and str_item s l =
     END ]
 and class_type =
   fun
-  [ CtAcc loc _ _ -> error loc "CtAcc not impl"
-  | CtApp loc _ _ -> error loc "CtApp not impl"
-  | CtCon loc li tl -> error loc "CtCon not impl"
-(*
+  [ CtAcc loc _ _ | CtApp loc _ _ | CtIde loc _ as ct ->
+      let li =
+        longident ct where rec longident =
+          fun
+          [ CtIde loc s -> Lident (uv s)
+          | CtApp loc ct1 ct2 ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in
+              Lapply li1 li2
+          | CtAcc loc ct1 ct2 ->
+              let li1 = longident ct1 in
+              let li2 = longident ct2 in
+              Lapply li1 li2
+          | _ -> failwith "CtAcc is not implemented 5" ]
+      in
       match ocaml_pcty_constr with
-      [ Some pcty_constr ->
-          mkcty loc (pcty_constr (longident li) (List.map ctyp (uv tl)))
+      [ Some pcty_constr -> mkcty loc (pcty_constr li [])
       | None -> error loc "no class type desc in this ocaml version" ]
-*)
+  | CtCon loc ct tl ->
+      let li = failwith "CtCon not impl" in
+      match ocaml_pcty_constr with
+      [ Some pcty_constr -> mkcty loc (pcty_constr li (List.map ctyp (uv tl)))
+      | None -> error loc "no class type desc in this ocaml version" ]
   | CtFun loc (TyLab _ lab t) ct ->
       match ocaml_pcty_fun with
       [ Some pcty_fun ->
@@ -1069,7 +1082,6 @@ and class_type =
       match ocaml_pcty_fun with
       [ Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version" ]
-  | CtIde loc _ -> error loc "CtIde not impl"
   | CtSig loc t_o ctfl ->
       match ocaml_pcty_signature with
       [ Some pcty_signature ->
@@ -1172,7 +1184,6 @@ and class_str_item c l =
       [ Some pcf_init -> [pcf_init (expr e) :: l]
       | None -> error loc "no initializer in this ocaml version" ]
   | CrMth loc ovf pf s ot e ->
-(*
       let e =
         match ocaml_pexp_poly with
         [ Some pexp_poly ->
@@ -1183,14 +1194,10 @@ and class_str_item c l =
             else error loc "no method with label in this ocaml version" ]
       in
       [ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l]
-*) failwith "ast2pt CrMth"
   | CrVal loc ovf mf s e ->
-(*
       [ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l]
-*) failwith "ast2pt CrVal"
   | CrVir loc s b t ->
-      [Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) ::
-         l] ]
+      [Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l] ]
 ;
 
 value interf fname ast = do {

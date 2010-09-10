@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.206 2010/09/10 09:26:58 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.207 2010/09/10 13:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -834,10 +834,10 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
 value with_constraint pc wc =
   match wc with
   [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
-      pprintf pc "with type %p%p =%s %p" mod_ident (loc, sl) (hlist type_var)
+      pprintf pc "type %p%p =%s %p" mod_ident (loc, sl) (hlist type_var)
         tpl (if pf then " private" else "") ctyp t
   | <:with_constr:< module $sl$ = $me$ >> ->
-      pprintf pc "with module %p = %p" mod_ident (loc, sl) module_expr me
+      pprintf pc "module %p = %p" mod_ident (loc, sl) module_expr me
   | IFDEF STRICT THEN
       x -> not_impl "with_constraint" pc x
     END ]
@@ -1484,7 +1484,8 @@ EXTEND_PRINTER
       | <:module_type< module type of $me$ >> ->
           pprintf pc "@[module type of@ %p@]" module_expr me
       | <:module_type< $mt$ with $list:wcl$ >> ->
-          pprintf pc "%p@;%p" module_type mt (vlist with_constraint) wcl ]
+          pprintf pc "%p with@;%p" module_type mt
+            (vlist2 with_constraint (and_before with_constraint)) wcl ]
     | "apply"
       [ <:module_type< $x$ $y$ >> ->
           pprintf pc "%p %p" curr x next y ]
