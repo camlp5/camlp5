@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.99 2010/09/10 11:23:19 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.100 2010/09/10 15:12:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -629,7 +629,8 @@ EXTEND
       | c = V CHAR -> <:expr< $_chr:c$ >>
       | UIDENT "True" -> <:expr< $uid:" True"$ >>
       | UIDENT "False" -> <:expr< $uid:" False"$ >>
-      | i = expr_ident -> i
+      | i = V LIDENT -> <:expr< $_lid:i$ >>
+      | i = V UIDENT -> <:expr< $_uid:i$ >>
       | "false" -> <:expr< False >>
       | "true" -> <:expr< True >>
       | "["; "]" -> <:expr< [] >>
@@ -689,20 +690,6 @@ EXTEND
     [ RIGHTA
       [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "->"; e = expr -> <:expr< $e$ >> ] ]
-  ;
-  expr_ident:
-    [ RIGHTA
-      [ i = V LIDENT -> <:expr< $_lid:i$ >>
-      | i = V UIDENT -> <:expr< $_uid:i$ >>
-      | i = V UIDENT; "."; j = SELF ->
-          let rec loop m =
-            fun
-            [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
-            | e -> <:expr< $m$ . $e$ >> ]
-          in
-          loop <:expr< $_uid:i$ >> j
-      | i = V UIDENT; "."; "("; j = operator_rparen ->
-          <:expr< $_uid:i$ . $lid:j$ >> ] ]
   ;
   (* Patterns *)
   patt:

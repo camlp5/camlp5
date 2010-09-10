@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.143 2010/09/10 11:23:19 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.144 2010/09/10 15:12:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -435,12 +435,8 @@ EXTEND
       | "try"; e = SELF; "with"; "["; l = SV (LIST0 match_case SEP "|");
         "]" ->
           Qast.Node "ExTry" [Qast.Loc; e; l]
-      | "try"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
-          Qast.Node "ExTry"
-            [Qast.Loc; e;
-             Qast.VaVal
-               (Qast.List
-                  [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]
+      | "try"; e = SELF; "with"; mc = match_case ->
+          Qast.Node "ExTry" [Qast.Loc; e; Qast.VaVal (Qast.List [mc])]
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           Qast.Node "ExIfe" [Qast.Loc; e1; e2; e3]
       | "do"; "{"; seq = SV sequence "list"; "}" -> mksequence2 Qast.Loc seq

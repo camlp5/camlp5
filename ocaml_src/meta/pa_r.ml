@@ -696,11 +696,11 @@ Grammar.extend
         (fun (e3 : 'expr) _ (e2 : 'expr) _ (e1 : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExIfe (loc, e1, e2, e3) : 'expr));
       [Gramext.Stoken ("", "try"); Gramext.Sself; Gramext.Stoken ("", "with");
-       Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e));
-       Gramext.Stoken ("", "->"); Gramext.Sself],
+       Gramext.Snterm
+         (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e))],
       Gramext.action
-        (fun (e1 : 'expr) _ (p1 : 'ipatt) _ (e : 'expr) _ (loc : Ploc.t) ->
-           (MLast.ExTry (loc, e, [p1, None, e1]) : 'expr));
+        (fun (mc : 'match_case) _ (e : 'expr) _ (loc : Ploc.t) ->
+           (MLast.ExTry (loc, e, [mc]) : 'expr));
       [Gramext.Stoken ("", "try"); Gramext.Sself; Gramext.Stoken ("", "with");
        Gramext.Stoken ("", "[");
        Gramext.Slist0sep

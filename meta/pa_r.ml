@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.134 2010/09/10 11:23:19 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.135 2010/09/10 15:12:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -271,8 +271,8 @@ EXTEND
           <:expr< match $e$ with $p1$ -> $e1$ >>
       | "try"; e = SELF; "with"; "["; l = V (LIST0 match_case SEP "|"); "]" ->
           <:expr< try $e$ with [ $_list:l$ ] >>
-      | "try"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
-          <:expr< try $e$ with $p1$ -> $e1$ >>
+      | "try"; e = SELF; "with"; mc = match_case ->
+          <:expr< try $e$ with [ $list:[mc]$ ] >>
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           <:expr< if $e1$ then $e2$ else $e3$ >>
       | "do"; "{"; seq = V sequence "list"; "}" -> mksequence2 loc seq

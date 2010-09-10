@@ -1778,16 +1778,11 @@ Grammar.extend
         (fun (e3 : 'expr) _ (e2 : 'expr) _ (e1 : 'expr) _ (loc : Ploc.t) ->
            (Qast.Node ("ExIfe", [Qast.Loc; e1; e2; e3]) : 'expr));
       [Gramext.Stoken ("", "try"); Gramext.Sself; Gramext.Stoken ("", "with");
-       Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e));
-       Gramext.Stoken ("", "->"); Gramext.Sself],
+       Gramext.Snterm
+         (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e))],
       Gramext.action
-        (fun (e1 : 'expr) _ (p1 : 'ipatt) _ (e : 'expr) _ (loc : Ploc.t) ->
-           (Qast.Node
-              ("ExTry",
-               [Qast.Loc; e;
-                Qast.VaVal
-                  (Qast.List
-                     [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]) :
+        (fun (mc : 'match_case) _ (e : 'expr) _ (loc : Ploc.t) ->
+           (Qast.Node ("ExTry", [Qast.Loc; e; Qast.VaVal (Qast.List [mc])]) :
             'expr));
       [Gramext.Stoken ("", "try"); Gramext.Sself; Gramext.Stoken ("", "with");
        Gramext.Stoken ("", "[");
