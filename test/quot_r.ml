@@ -279,8 +279,8 @@
 <:class_expr< object $opt:op$ $list:lcstri$ end >>;
 <:class_expr< object $_opt:op$ $_list:lcstri$ end >>;
 <:class_expr< ($ce$ : $ct$) >>;
-<:class_type< $list:ls$ [ $list:lt$ ] >>;
-<:class_type< $_list:ls$ [ $_list:lt$ ] >>;
+<:class_type< $ct$ [ $list:lt$ ] >>;
+<:class_type< $ct$ [ $_list:lt$ ] >>;
 <:class_type< [ $t$ ] -> $ct$ >>;
 <:class_type< object $list:lcsigi$ end >>;
 <:class_type< object $_list:lcsigi$ end >>;

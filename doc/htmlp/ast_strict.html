@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.26 2010/09/06 16:54:58 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.27 2010/09/10 18:56:44 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1926,11 +1926,11 @@
     <tt style="color:blue">&lt;:class_str_item&lt; method private $_:s$ : $t$ = $e$ >></tt><br/>
     <tt style="color:red">MLast.CrMth loc s (Ploc.VaVal True) e (Ploc.VaVal (Some t))</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:class_str_item&lt; method $flag:b$ $s$ $opt:ot$ = $e$ >></tt><br/>
-    <tt style="color:red">MLast.CrMth loc (Ploc.VaVal s) (Ploc.VaVal b) e (Ploc.VaVal ot)</tt>
+    <tt style="color:blue">&lt;:class_str_item&lt; method $!:b1$ $flag:b2$ $s$ $opt:ot$ = $e$ >></tt><br/>
+    <tt style="color:red">MLast.CrMth loc (Ploc.VaVal b1) (Ploc.VaVal b2) (Ploc.VaVal 1) (Ploc.VaVal ot) e</tt>
     <br/>
-    <tt style="color:blue">&lt;:class_str_item&lt; method $_flag:b$ $_:s$ $_opt:ot$ = $e$ >></tt><br/>
-    <tt style="color:red">MLast.CrMth loc s b e ot</tt>
+    <tt style="color:blue">&lt;:class_str_item&lt; method $_!:b1 $_flag:b2$ $_:s$ $_opt:ot$ = $e$ >></tt><br/>
+    <tt style="color:red">MLast.CrMth loc b1 b2 s ot e</tt>
   </dd>
 </dl>
 <dl class="nodelist">
