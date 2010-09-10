@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.133 2010/09/10 09:26:58 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.134 2010/09/10 11:23:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -162,7 +162,7 @@ EXTEND
       | "include"; me = module_expr -> <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V UIDENT "uid" ""; "="; mt = module_type ->
+      | "module"; "type"; i = V UIDENT "uid" ""; mt = mod_type_fun_binding ->
           <:str_item< module type $_uid:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
@@ -187,6 +187,12 @@ EXTEND
       | ":"; mt = module_type; "="; me = module_expr ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]
+  ;
+  mod_type_fun_binding:
+    [ [ "("; m = V UIDENT; ":"; mt1 = module_type; ")"; mt2 = SELF ->
+          <:module_type< functor ( $_uid:m$ : $mt1$ ) -> $mt2$ >>
+      | "="; mt = module_type ->
+          <:module_type< $mt$ >> ] ]
   ;
   module_type:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
@@ -608,9 +614,9 @@ EXTEND
           <:class_str_item< declare $_list:st$ end >>
       | "inherit"; ce = class_expr; pb = V (OPT as_lident) ->
           <:class_str_item< inherit $ce$ $_opt:pb$ >>
-      | "value"; mf = V (FLAG "mutable"); lab = V label "lid" "";
-        e = cvalue_binding ->
-          <:class_str_item< value $_flag:mf$ $_lid:lab$ = $e$ >>
+      | "value"; ovf = V (FLAG "!") "!"; mf = V (FLAG "mutable");
+        lab = V label "lid" ""; e = cvalue_binding ->
+          <:class_str_item< value $_!:ovf$ $_flag:mf$ $_lid:lab$ = $e$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V label "lid" "";
         ":"; t = ctyp ->
           <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>
@@ -646,7 +652,7 @@ EXTEND
         csf = V (LIST0 [ csf = class_sig_item; ";" -> csf ]); "end" ->
           <:class_type< object $_opt:cst$ $_list:csf$ end >>
       | ct = SELF; "["; tl = V (LIST1 ctyp SEP ","); "]" ->
-          MLast.CtCon loc ct tl ]
+          <:class_type< $ct$ [ $_list:tl$ ] >> ]
     | "apply"
       [ ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ ( $ct2$ ) >> ]
     | "dot"

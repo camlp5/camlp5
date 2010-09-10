@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.10 2010/09/10 09:26:59 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.11 2010/09/10 11:23:21 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -42,7 +42,9 @@ for i in $files; do
     altsyntax="meta/pa_r.cmo"
     syntname="normal syntax"
     altsyntname="revised syntax"
-    if [ "$idir" = "Camlp4Printers" ]; then
+    if [ "$idir" = "Camlp4Printers" -o \
+         "$idir/$bname" = "boot/Camlp4Ast.ml"  ]
+    then
       syntax="meta/pa_r.cmo"
       altsyntax="etc/pa_o.cmo"
       syntname="revised syntax"

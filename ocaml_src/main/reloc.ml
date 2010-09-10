@@ -379,9 +379,10 @@ and class_str_item floc sh =
     | CrIni (loc, x1) -> CrIni (floc loc, expr floc sh x1)
     | CrMth (loc, x1, x2, x3, x4, x5) ->
         CrMth
-          (floc loc, x1, x2, x3, expr floc sh x4,
-           vala_map (option_map (ctyp floc sh)) x5)
-    | CrVal (loc, x1, x2, x3) -> CrVal (floc loc, x1, x2, expr floc sh x3)
+          (floc loc, x1, x2, x3, vala_map (option_map (ctyp floc sh)) x4,
+           expr floc sh x5)
+    | CrVal (loc, x1, x2, x3, x4) ->
+        CrVal (floc loc, x1, x2, x3, expr floc sh x4)
     | CrVir (loc, x1, x2, x3) -> CrVir (floc loc, x1, x2, ctyp floc sh x3)
   in
   self

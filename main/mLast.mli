@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.64 2010/09/10 09:26:58 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.65 2010/09/10 11:23:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -225,9 +225,9 @@ and class_str_item =
   | CrDcl of loc and V (list class_str_item)
   | CrInh of loc and class_expr and V (option string)
   | CrIni of loc and expr
-  | CrMth of loc and V string and V bool and V bool and expr and
-      V (option ctyp)
-  | CrVal of loc and V string and V bool and expr
+  | CrMth of loc and V bool and V bool and V string and V (option ctyp) and
+      expr
+  | CrVal of loc and V bool and V bool and V string and expr
   | CrVir of loc and V string and V bool and ctyp ]
 ;
 

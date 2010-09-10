@@ -415,12 +415,13 @@ module Meta_make (C : MetaSig) =
       | CrInh (_, ce, os) ->
           C.node "CrInh" [class_expr ce; C.vala (C.option C.string) os]
       | CrIni (_, e) -> C.node "CrIni" [expr e]
-      | CrMth (_, s, b1, b2, e, ot) ->
+      | CrMth (_, b1, b2, s, ot, e) ->
           C.node "CrMth"
-            [C.vala C.string s; C.vala C.bool b1; C.vala C.bool b2; expr e;
-             C.vala (C.option ctyp) ot]
-      | CrVal (_, s, b, e) ->
-          C.node "CrVal" [C.vala C.string s; C.vala C.bool b; expr e]
+            [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s;
+             C.vala (C.option ctyp) ot; expr e]
+      | CrVal (_, b1, b2, s, e) ->
+          C.node "CrVal"
+            [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e]
       | CrVir (_, s, b, t) ->
           C.node "CrVir" [C.vala C.string s; C.vala C.bool b; ctyp t]
     ;;

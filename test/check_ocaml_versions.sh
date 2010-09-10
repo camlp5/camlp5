@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.1 2010/09/06 01:50:22 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.2 2010/09/10 11:27:42 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -7,6 +7,7 @@ OCAMLSDIR=$TOP/ocaml/release
 CAMLP5DIR=$TOP/camlp5
 MODE=--strict
 DOOPT=1
+ARCH64=0
 
 wd=$(pwd)
 cd $DEST
@@ -14,9 +15,11 @@ PATH=$(pwd)/bin:$PATH
 
 getvers () {
   cd "$OCAMLSDIR"
-  vers="$(ls | grep -v csl | grep -v '^1.0[0-5]')"
-  # WARNING: on 64 bits arch, rather use this:
-  # vers="$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6]')"
+  if [ "$ARCH64" = "0" ]; then
+    vers="$(ls | grep -v csl | grep -v '^1.0[0-5]')"
+  else
+    vers="$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6]')"
+  fi
   vers=$(echo $vers | tr '\n' ' ')
 }
 
@@ -28,6 +31,7 @@ usage () {
   echo "  -n          No opt (only bytecode)"
   echo "  -t          Camlp5 transitional mode"
   echo "  -v <vers>   Only that version (can be used several times)."
+  echo "  -6          This is a 64 bits machine"
   echo
   echo "Directory of versions: $OCAMLSDIR"
   if [ "$versopt" != "" ]; then
@@ -38,13 +42,14 @@ usage () {
 }
 getvers
 versopt=""
-while getopts ":d:hntv:" name; do
+while getopts ":d:hntv:6" name; do
   case "$name" in
   'd') D="$OPTARG"; OCAMLSDIR=$(cd "$wd"; cd "$D"; pwd); getvers;;
   'h') usage; exit 0;;
   'n') DOOPT=0;;
   't') MODE="--transitional";;
   'v') versopt="$versopt $OPTARG";;
+  '6') ARCH64=1; getvers;;
   '?') echo "Invalid option -$OPTARG"; echo "Use option -h for help"; exit 2;;
   esac
 done

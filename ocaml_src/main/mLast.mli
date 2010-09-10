@@ -193,8 +193,8 @@ and class_str_item =
   | CrDcl of loc * class_str_item list
   | CrInh of loc * class_expr * string option
   | CrIni of loc * expr
-  | CrMth of loc * string * bool * bool * expr * ctyp option
-  | CrVal of loc * string * bool * expr
+  | CrMth of loc * bool * bool * string * ctyp option * expr
+  | CrVal of loc * bool * bool * string * expr
   | CrVir of loc * string * bool * ctyp
 ;;
 

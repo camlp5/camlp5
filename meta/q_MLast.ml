@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.142 2010/09/10 09:26:58 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.143 2010/09/10 11:23:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -314,7 +314,7 @@ EXTEND
       | "include"; me = module_expr -> Qast.Node "StInc" [Qast.Loc; me]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") ->
           Qast.Node "StMod" [Qast.Loc; r; l]
-      | "module"; "type"; i = SV UIDENT; "="; mt = module_type ->
+      | "module"; "type"; i = SV UIDENT; mt = mod_type_fun_binding ->
           Qast.Node "StMty" [Qast.Loc; i; mt]
       | "open"; i = SV mod_ident "list" "" -> Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; tdl = SV (LIST1 type_declaration SEP "and") ->
@@ -339,6 +339,11 @@ EXTEND
       | ":"; mt = module_type; "="; me = module_expr ->
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "="; me = module_expr -> me ] ]
+  ;
+  mod_type_fun_binding:
+    [ [ "("; m = SV UIDENT; ":"; mt1 = module_type; ")"; mt2 = SELF ->
+          Qast.Node "MtFun" [Qast.Loc; m; mt1; mt2]
+      | "="; mt = module_type -> mt ] ]
   ;
   module_type:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
@@ -983,15 +988,15 @@ EXTEND
           Qast.Node "CrDcl" [Qast.Loc; st]
       | "inherit"; ce = class_expr; pb = SV (OPT as_lident) ->
           Qast.Node "CrInh" [Qast.Loc; ce; pb]
-      | "value"; mf = SV (FLAG "mutable"); lab = SV label "lid" "";
-        e = cvalue_binding ->
-          Qast.Node "CrVal" [Qast.Loc; lab; mf; e]
+      | "value"; ovf = SV (FLAG "!") "!"; mf = SV (FLAG "mutable");
+        lab = SV label "lid" ""; e = cvalue_binding ->
+          Qast.Node "CrVal" [Qast.Loc; ovf; mf; lab; e]
       | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid" "";
         ":"; t = ctyp ->
           Qast.Node "CrVir" [Qast.Loc; l; pf; t]
       | "method"; ovf = SV (FLAG "!") "!"; pf = SV (FLAG "private") "priv";
         l = SV label "lid" ""; topt = SV (OPT polyt); e = fun_binding ->
-          Qast.Node "CrMth" [Qast.Loc; l; pf; ovf; e; topt]
+          Qast.Node "CrMth" [Qast.Loc; ovf; pf; l; topt; e]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           Qast.Node "CrCtr" [Qast.Loc; t1; t2]
       | "initializer"; se = expr -> Qast.Node "CrIni" [Qast.Loc; se] ] ]

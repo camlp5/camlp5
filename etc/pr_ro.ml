@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.92 2010/09/10 09:26:58 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.93 2010/09/10 11:23:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -387,12 +387,21 @@ EXTEND_PRINTER
                     | None -> pprintf pc "object" ])
                  cst
                  (vlist (semi_after class_sig_item)) csi)
-(*
       | <:class_type< $ct$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          pprintf pc "%p@;@[<1>[%p]@]" longident li
-            (plist ctyp 0) ctcl
-*)
+          pprintf pc "%p@;@[<1>[%p]@]" curr ct (plist ctyp 0) ctcl ]
+    | "apply"
+      [ <:class_type< $ct1$ ( $ct2$ ) >> ->
+          pprintf pc "%p(%p)" curr ct1 curr ct2 ]
+    | "dot"
+      [ <:class_type< $ct1$ . $ct2$ >> ->
+          pprintf pc "%p.%p" class_type ct1 class_type ct2 ]
+    | "simple"
+      [ <:class_type< $id:s$ >> ->
+          pprintf pc "%s" s
+      | z ->
+          Ploc.raise (MLast.loc_of_class_type z)
+            (Failure (Printf.sprintf "pr_class_type %d" (Obj.tag (Obj.repr z))))
             ] ]
   ;
   pr_class_sig_item:
@@ -439,8 +448,13 @@ EXTEND_PRINTER
             topt expr e
       | <:class_str_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
-      | <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
-          pprintf pc "value%s %s =@;%p" (if mf then " mutable" else "") s
-            expr e ] ]
+      | <:class_str_item< value$!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
+          pprintf pc "value%s%s %s =@;%p" (if ovf then "!" else "")
+            (if mf then " mutable" else "") s expr e
+      | z ->
+          Ploc.raise (MLast.loc_of_class_str_item z)
+            (Failure
+               (Printf.sprintf "pr_class_str_item %d"
+                  (Obj.tag (Obj.repr z)))) ] ]
   ;
 END;

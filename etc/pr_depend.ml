@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.63 2010/09/06 16:54:58 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.64 2010/09/10 11:23:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -255,7 +255,7 @@ and class_str_item =
       expr e;
       ctyp t
     }
-  | CrVal _ _ _ e -> expr e
+  | CrVal _ _ _ _ e -> expr e
   | CrVir _ _ _ t -> ctyp t
   | x -> not_impl "class_str_item" x ]
 ;

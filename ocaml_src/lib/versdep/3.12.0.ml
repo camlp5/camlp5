@@ -142,10 +142,14 @@ let ocaml_pcf_inher ce pb = Pcf_inher (Fresh, ce, pb);;
 let ocaml_pcf_init = Some (fun e -> Pcf_init e);;
 
 let ocaml_pcf_meth (s, pf, ovf, e, loc) =
+  let pf = if pf then Private else Public in
   let ovf = if ovf then Override else Fresh in Pcf_meth (s, pf, ovf, e, loc)
 ;;
 
-let ocaml_pcf_val (s, mf, e, loc) = Pcf_val (s, mf, Fresh, e, loc);;
+let ocaml_pcf_val (s, mf, ovf, e, loc) =
+  let mf = if mf then Mutable else Immutable in
+  let ovf = if ovf then Override else Fresh in Pcf_val (s, mf, ovf, e, loc)
+;;
 
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
 

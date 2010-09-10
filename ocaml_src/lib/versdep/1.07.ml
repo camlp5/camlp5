@@ -154,9 +154,14 @@ let ocaml_pcf_inher (id, cl, el, loc) pb = Pcf_inher (id, cl, el, pb, loc);;
 
 let ocaml_pcf_init = None;;
 
-let ocaml_pcf_meth (s, pf, ovf, e, loc) = Pcf_meth (s, pf, e, loc);;
+let ocaml_pcf_meth (s, pf, ovf, e, loc) =
+  let pf = if pf then Private else Public in Pcf_meth (s, pf, e, loc)
+;;
 
-let ocaml_pcf_val (s, mf, e, loc) = Pcf_val (s, Public, mf, Some e, loc);;
+let ocaml_pcf_val (s, mf, ovf, e, loc) =
+  let mf = if mf then Mutable else Immutable in
+  Pcf_val (s, Public, mf, Some e, loc)
+;;
 
 let ocaml_pcl_apply = None;;
 

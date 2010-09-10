@@ -157,6 +157,8 @@ Grammar.extend
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
      grammar_entry_create "mod_fun_binding"
+   and mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e =
+     grammar_entry_create "mod_type_fun_binding"
    and mod_decl_binding : 'mod_decl_binding Grammar.Entry.e =
      grammar_entry_create "mod_decl_binding"
    and module_declaration : 'module_declaration Grammar.Entry.e =
@@ -336,11 +338,12 @@ Grammar.extend
         (fun (i : 'mod_ident) _ (loc : Ploc.t) ->
            (MLast.StOpn (loc, i) : 'str_item));
       [Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
-       Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", "=");
+       Gramext.Stoken ("UIDENT", "");
        Gramext.Snterm
-         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+         (Grammar.Entry.obj
+            (mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (mt : 'module_type) _ (i : string) _ _ (loc : Ploc.t) ->
+        (fun (mt : 'mod_type_fun_binding) (i : string) _ _ (loc : Ploc.t) ->
            (MLast.StMty (loc, i, mt) : 'str_item));
       [Gramext.Stoken ("", "module");
        Gramext.Sflag (Gramext.Stoken ("", "rec"));
@@ -432,6 +435,25 @@ Grammar.extend
         (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
              (loc : Ploc.t) ->
            (MLast.MeFun (loc, m, mt, mb) : 'mod_fun_binding))]];
+    Grammar.Entry.obj
+      (mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("", "=");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_type) _ (loc : Ploc.t) ->
+           (mt : 'mod_type_fun_binding));
+      [Gramext.Stoken ("", "("); Gramext.Stoken ("UIDENT", "");
+       Gramext.Stoken ("", ":");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
+       Gramext.Stoken ("", ")"); Gramext.Sself],
+      Gramext.action
+        (fun (mt2 : 'mod_type_fun_binding) _ (mt1 : 'module_type) _
+             (m : string) _ (loc : Ploc.t) ->
+           (MLast.MtFun (loc, m, mt1, mt2) : 'mod_type_fun_binding))]];
     Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "functor"); Gramext.Stoken ("", "(");
@@ -1857,7 +1879,7 @@ Grammar.extend
       Gramext.action
         (fun (e : 'fun_binding) (topt : 'polyt option) (l : 'label)
              (pf : bool) (ovf : bool) _ (loc : Ploc.t) ->
-           (MLast.CrMth (loc, l, pf, ovf, e, topt) : 'class_str_item));
+           (MLast.CrMth (loc, ovf, pf, l, topt, e) : 'class_str_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.Sflag (Gramext.Stoken ("", "private"));
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
@@ -1866,16 +1888,16 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'label) (pf : bool) _ _ (loc : Ploc.t) ->
            (MLast.CrVir (loc, l, pf, t) : 'class_str_item));
-      [Gramext.Stoken ("", "value");
+      [Gramext.Stoken ("", "value"); Gramext.Sflag (Gramext.Stoken ("", "!"));
        Gramext.Sflag (Gramext.Stoken ("", "mutable"));
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
             (cvalue_binding : 'cvalue_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'cvalue_binding) (lab : 'label) (mf : bool) _
+        (fun (e : 'cvalue_binding) (lab : 'label) (mf : bool) (ovf : bool) _
              (loc : Ploc.t) ->
-           (MLast.CrVal (loc, lab, mf, e) : 'class_str_item));
+           (MLast.CrVal (loc, ovf, mf, lab, e) : 'class_str_item));
       [Gramext.Stoken ("", "inherit");
        Gramext.Snterm
          (Grammar.Entry.obj (class_expr : 'class_expr Grammar.Entry.e));

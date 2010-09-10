@@ -1298,19 +1298,23 @@ and class_str_item c l =
         Some pcf_init -> pcf_init (expr e) :: l
       | None -> error loc "no initializer in this ocaml version"
       end
-  | CrMth (loc, s, pf, ovf, e, t) ->
-      let e =
-        match ocaml_pexp_poly with
-          Some pexp_poly ->
-            let t = option (fun t -> add_polytype t) (uv t) in
-            mkexp loc (pexp_poly (expr e) t)
-        | None ->
-            if uv t = None then expr e
-            else error loc "no method with label in this ocaml version"
-      in
-      ocaml_pcf_meth (uv s, mkprivate (uv pf), uv ovf, e, mkloc loc) :: l
-  | CrVal (loc, s, b, e) ->
-      ocaml_pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l
+  | CrMth (loc, ovf, pf, s, ot, e) ->
+      (*
+            let e =
+              match ocaml_pexp_poly with
+              [ Some pexp_poly ->
+                  let t = option (fun t -> add_polytype t) (uv ot) in
+                  mkexp loc (pexp_poly (expr e) t)
+              | None ->
+                  if uv ot = None then expr e
+                  else error loc "no method with label in this ocaml version" ]
+            in
+            [ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l]
+      *)      failwith "ast2pt CrMth"
+  | CrVal (loc, ovf, mf, s, e) ->
+      (*
+            [ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l]
+      *)      failwith "ast2pt CrVal"
   | CrVir (loc, s, b, t) ->
       Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
 ;;
