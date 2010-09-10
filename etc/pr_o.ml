@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.218 2010/09/08 03:36:40 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.219 2010/09/10 01:57:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -548,7 +548,7 @@ value if_then force_vertic curr pc (e1, e2) =
        if force_vertic then sprintf "\n"
        else pprintf pc "if %q then %p" curr e1 "" curr e2)
     (fun () ->
-       pprintf pc "@[<3>if %q@]@ then@;%p" curr e1 "" (comm_expr expr1) e2)
+       pprintf pc "@[<3>if %q@]@ then@;%p" curr e1 "" expr1 e2)
 ;
 
 value else_if_then force_vertic curr pc (e1, e2) =

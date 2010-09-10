@@ -451,8 +451,6 @@ let rev_read_comment_in_file bp ep =
   in
   let (s, nl_bef, ind_bef) = rev_extract_comment strm in
   if s = "" then
-    (* heuristic to find the possible comment before 'begin' or left
-       parenthesis *)
     let rec loop i =
       let (strm__ : _ Stream.t) = strm in
       match Stream.peek strm__ with
