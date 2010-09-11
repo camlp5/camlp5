@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.44 2010/09/10 15:27:05 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.45 2010/09/11 18:27:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -137,6 +137,11 @@ value ocaml_ptyp_arrow lab t1 t2 =
 value ocaml_ptyp_class li tl ll =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Ptyp_class li tl
   ELSE Ptyp_class li tl ll END
+;
+
+value ocaml_ptyp_package =
+  IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
+  ELSE Some (fun pt -> Ptyp_package pt) END
 ;
 
 value ocaml_ptyp_poly =

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.112 2010/09/11 17:53:25 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.113 2010/09/11 18:27:35 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -163,6 +163,16 @@ value rec ctyp_long_id =
   | t -> error (loc_of_ctyp t) "incorrect type" ]
 ;
 
+value rec module_type_long_id =
+  fun
+  [ <:module_type< $m$ . $uid:s$ >> -> Ldot (module_type_long_id m) s
+  | <:module_type< $m$ . $lid:s$ >> -> Ldot (module_type_long_id m) s
+  | MtApp _ m1 m2 -> Lapply (module_type_long_id m1) (module_type_long_id m2)
+  | <:module_type< $lid:s$ >> -> Lident s
+  | <:module_type< $uid:s$ >> -> Lident s
+  | t -> error (loc_of_module_type t) "bad module type long ident" ]
+;
+
 value rec ctyp =
   fun
   [ TyAcc loc _ _ as f ->
@@ -199,7 +209,12 @@ value rec ctyp =
   | TyLid loc s -> mktyp loc (Ptyp_constr (Lident (uv s)) [])
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
-  | TyPck loc mt -> error loc "type 'module' not impl"
+  | TyPck loc mt ->
+      match ocaml_ptyp_package with
+      [ Some ptyp_package ->
+          let pt = package_of_module_type loc mt in
+          mktyp loc (ptyp_package pt)
+      | None -> error loc "no package type in this ocaml version" ]
   | TyPol loc pl t ->
        match ocaml_ptyp_poly with
        [ Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
@@ -243,6 +258,34 @@ and add_polytype t =
           let loc = MLast.loc_of_ctyp t in
           mktyp loc (ptyp_poly [] (ctyp t)) ]
   | None -> ctyp t ]
+and package_of_module_type loc mt =
+  let (mt, with_con) =
+    match mt with
+    [ <:module_type< $mt$ with $list:with_con$ >> ->
+        let with_con =
+          List.map
+            (fun
+             [ WcTyp loc id tpl pf ct -> do {
+                 let li =
+                   match uv id with
+                   [ [id] -> id
+                   | _ -> error loc "simple identifier expected" ]
+                 in
+                 if uv tpl <> [] then
+                   error loc "no type parameters allowed here"
+                 else ();
+                 if uv pf then error loc "no 'private' allowed here" else ();
+                 (li, ctyp ct)
+               }
+             | WcMod loc _ _ ->
+                 error loc "package type with 'module' no allowed" ])
+            with_con
+        in
+        (mt, with_con)
+    | _ -> (mt, []) ]
+  in
+  let li = module_type_long_id mt in
+  (li, with_con)
 ;
 
 value mktype loc tl cl tk pf tm =
@@ -363,16 +406,6 @@ value rec type_id loc t =
   | <:ctyp< $t1$.$lid:s1$ >> -> Ldot (type_id loc t1) s1
   | <:ctyp< $t1$.$uid:s1$ >> -> Ldot (type_id loc t1) s1
   | _ -> error loc "type identifier expected" ]
-;
-
-value rec module_type_long_id =
-  fun
-  [ <:module_type< $m$ . $uid:s$ >> -> Ldot (module_type_long_id m) s
-  | <:module_type< $m$ . $lid:s$ >> -> Ldot (module_type_long_id m) s
-  | MtApp _ m1 m2 -> Lapply (module_type_long_id m1) (module_type_long_id m2)
-  | <:module_type< $lid:s$ >> -> Lident s
-  | <:module_type< $uid:s$ >> -> Lident s
-  | t -> error (loc_of_module_type t) "bad module type long ident" ]
 ;
 
 value rec module_expr_long_id =
@@ -587,36 +620,6 @@ value bigarray_set loc e el v =
   | [c1; c2] -> <:expr< Bigarray.Array2.set $e$ $c1$ $c2$ $v$ >>
   | [c1; c2; c3] -> <:expr< Bigarray.Array3.set $e$ $c1$ $c2$ $c3$ $v$ >>
   | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
-;
-
-value package_of_module_type loc mt =
-  let (mt, with_con) =
-    match mt with
-    [ <:module_type< $mt$ with $list:with_con$ >> ->
-        let with_con =
-          List.map
-            (fun
-             [ WcTyp loc id tpl pf ct -> do {
-                 let li =
-                   match uv id with
-                   [ [id] -> id
-                   | _ -> error loc "simple identifier expected" ]
-                 in
-                 if uv tpl <> [] then
-                   error loc "no type parameters allowed here"
-                 else ();
-                 if uv pf then error loc "no 'private' allowed here" else ();
-                 (li, ctyp ct)
-               }
-             | WcMod loc _ _ ->
-                 error loc "package type with 'module' no allowed" ])
-            with_con
-        in
-        (mt, with_con)
-    | _ -> (mt, []) ]
-  in
-  let li = module_type_long_id mt in
-  (li, with_con)
 ;
 
 value rec expr =

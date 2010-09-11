@@ -44,6 +44,8 @@ let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
 
 let ocaml_ptyp_class li tl ll = Ptyp_class (li, tl, ll);;
 
+let ocaml_ptyp_package = None;;
+
 let ocaml_ptyp_poly = None;;
 
 let ocaml_ptyp_variant catl clos sl_opt =

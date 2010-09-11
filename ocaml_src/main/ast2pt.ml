@@ -160,6 +160,17 @@ let rec ctyp_long_id =
   | t -> error (loc_of_ctyp t) "incorrect type"
 ;;
 
+let rec module_type_long_id =
+  function
+    MLast.MtAcc (_, m, MLast.MtUid (_, s)) -> Ldot (module_type_long_id m, s)
+  | MLast.MtAcc (_, m, MLast.MtLid (_, s)) -> Ldot (module_type_long_id m, s)
+  | MtApp (_, m1, m2) ->
+      Lapply (module_type_long_id m1, module_type_long_id m2)
+  | MLast.MtLid (_, s) -> Lident s
+  | MLast.MtUid (_, s) -> Lident s
+  | t -> error (loc_of_module_type t) "bad module type long ident"
+;;
+
 let rec ctyp =
   function
     TyAcc (loc, _, _) as f ->
@@ -195,7 +206,13 @@ let rec ctyp =
   | TyLid (loc, s) -> mktyp loc (Ptyp_constr (Lident (uv s), []))
   | TyMan (loc, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
-  | TyPck (loc, mt) -> error loc "type 'module' not impl"
+  | TyPck (loc, mt) ->
+      begin match ocaml_ptyp_package with
+        Some ptyp_package ->
+          let pt = package_of_module_type loc mt in
+          mktyp loc (ptyp_package pt)
+      | None -> error loc "no package type in this ocaml version"
+      end
   | TyPol (loc, pl, t) ->
       begin match ocaml_ptyp_poly with
         Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
@@ -237,6 +254,31 @@ and add_polytype t =
           let loc = MLast.loc_of_ctyp t in mktyp loc (ptyp_poly [] (ctyp t))
       end
   | None -> ctyp t
+and package_of_module_type loc mt =
+  let (mt, with_con) =
+    match mt with
+      MLast.MtWit (_, mt, with_con) ->
+        let with_con =
+          List.map
+            (function
+               WcTyp (loc, id, tpl, pf, ct) ->
+                 let li =
+                   match uv id with
+                     [id] -> id
+                   | _ -> error loc "simple identifier expected"
+                 in
+                 if uv tpl <> [] then
+                   error loc "no type parameters allowed here";
+                 if uv pf then error loc "no 'private' allowed here";
+                 li, ctyp ct
+             | WcMod (loc, _, _) ->
+                 error loc "package type with 'module' no allowed")
+            with_con
+        in
+        mt, with_con
+    | _ -> mt, []
+  in
+  let li = module_type_long_id mt in li, with_con
 ;;
 
 let mktype loc tl cl tk pf tm =
@@ -356,17 +398,6 @@ let rec type_id loc t =
   | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)) -> Ldot (type_id loc t1, s1)
   | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)) -> Ldot (type_id loc t1, s1)
   | _ -> error loc "type identifier expected"
-;;
-
-let rec module_type_long_id =
-  function
-    MLast.MtAcc (_, m, MLast.MtUid (_, s)) -> Ldot (module_type_long_id m, s)
-  | MLast.MtAcc (_, m, MLast.MtLid (_, s)) -> Ldot (module_type_long_id m, s)
-  | MtApp (_, m1, m2) ->
-      Lapply (module_type_long_id m1, module_type_long_id m2)
-  | MLast.MtLid (_, s) -> Lident s
-  | MLast.MtUid (_, s) -> Lident s
-  | t -> error (loc_of_module_type t) "bad module type long ident"
 ;;
 
 let rec module_expr_long_id =
@@ -713,33 +744,6 @@ let bigarray_set loc e el v =
                e),
             MLast.ExArr (loc, el)),
          v)
-;;
-
-let package_of_module_type loc mt =
-  let (mt, with_con) =
-    match mt with
-      MLast.MtWit (_, mt, with_con) ->
-        let with_con =
-          List.map
-            (function
-               WcTyp (loc, id, tpl, pf, ct) ->
-                 let li =
-                   match uv id with
-                     [id] -> id
-                   | _ -> error loc "simple identifier expected"
-                 in
-                 if uv tpl <> [] then
-                   error loc "no type parameters allowed here";
-                 if uv pf then error loc "no 'private' allowed here";
-                 li, ctyp ct
-             | WcMod (loc, _, _) ->
-                 error loc "package type with 'module' no allowed")
-            with_con
-        in
-        mt, with_con
-    | _ -> mt, []
-  in
-  let li = module_type_long_id mt in li, with_con
 ;;
 
 let rec expr =

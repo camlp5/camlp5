@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.223 2010/09/11 17:53:25 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.224 2010/09/11 18:27:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1312,7 +1312,7 @@ EXTEND_PRINTER
                  pprintf pc "  %p"
                    (vlist2 cons_decl (bar_before cons_decl)) vdl)
       | <:ctyp< module $mt$ >> ->
-          pprintf pc "@[module@ %p@]" module_type mt
+          pprintf pc "@[<1>(module@ %p)@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
       | <:ctyp< $uid:t$ >> ->
