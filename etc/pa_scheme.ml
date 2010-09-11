@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.96 2010/09/01 09:54:59 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.97 2010/09/11 17:53:25 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -998,14 +998,15 @@
  (type_declaration_se
   (lambda_match
    ((Sexpr loc [se1 se2])
-    (let
+    (let*
      (((values n1 loc1 tpl)
        (match se1
         ((Sexpr _ [(Slid loc n) . sel])
          (values (rename_id n) loc (List.map type_param_se sel)))
         ((Slid loc n) (values (rename_id n) loc []))
-        (se (error se "type declaration")))))
-     {(MLast.tdNam (values loc1 <:vala< n1 >>)) (MLast.tdPrm <:vala< tpl >>)
+        (se (error se "type declaration"))))
+      (n (values loc1 <:vala< n1 >>)))
+     {(MLast.tdNam <:vala< n >>) (MLast.tdPrm <:vala< tpl >>)
       (MLast.tdPrv <:vala< False >>) (MLast.tdDef (ctyp_se se2))
       (MLast.tdCon <:vala< [] >>)}))
    (se (error se "type_declaration"))))
@@ -1019,8 +1020,9 @@
          (values (rename_id n) loc (List.map type_param_se sel)))
         ((Slid loc n) (values (rename_id n) loc []))
         (se (error se "type declaration"))))
+      (n (values loc1 <:vala< n1 >>))
       (td
-       {(MLast.tdNam (values loc1 <:vala< n1 >>)) (MLast.tdPrm <:vala< tpl >>)
+       {(MLast.tdNam <:vala< n >>) (MLast.tdPrm <:vala< tpl >>)
         (MLast.tdPrv <:vala< False >>) (MLast.tdDef (ctyp_se se2))
         (MLast.tdCon <:vala< [] >>)}))
      [td . (type_declaration_list_se sel)]))

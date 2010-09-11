@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.144 2010/09/10 15:12:19 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.145 2010/09/11 17:53:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -270,7 +270,6 @@ value mktuptyp _ t tl =
 ;
 
 value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t];
-
 value mkident i = Qast.Str i;
 
 EXTEND
@@ -843,8 +842,9 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = ipatt -> Qast.Tuple [i; p] ] ]
   ;
   type_declaration:
-    [ [ n = type_patt; tpl = SV (LIST0 type_parameter); "=";
-        pf = SV (FLAG "private"); tk = ctyp; cl = SV (LIST0 constrain) ->
+    [ [ n = SV type_patt "tp"; tpl = SV (LIST0 type_parameter); "=";
+        pf = SV (FLAG "private") "priv"; tk = ctyp;
+        cl = SV (LIST0 constrain) ->
           Qast.Record
             [("tdNam", n); ("tdPrm", tpl); ("tdPrv", pf); ("tdDef", tk);
              ("tdCon", cl)] ] ]
@@ -1357,6 +1357,7 @@ let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item_eoi" in
 let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
 let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
+let type_declaration_eoi = Grammar.Entry.create gram "type_declaration_eoi" in
 do {
   EXTEND
     sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
@@ -1372,6 +1373,7 @@ do {
     class_str_item_eoi: [ [ x = class_str_item; EOI -> x ] ];
     with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
     poly_variant_eoi: [ [ x = poly_variant; EOI -> x ] ];
+    type_declaration_eoi: [ [ x = type_declaration; EOI -> x ] ];
   END;
   List.iter (fun (q, f) -> Quotation.add q (f q))
     [("sig_item", apply_entry sig_item_eoi);
@@ -1386,7 +1388,8 @@ do {
      ("class_sig_item", apply_entry class_sig_item_eoi);
      ("class_str_item", apply_entry class_str_item_eoi);
      ("with_constr", apply_entry with_constr_eoi);
-     ("poly_variant", apply_entry poly_variant_eoi)];
+     ("poly_variant", apply_entry poly_variant_eoi);
+     ("type_decl", apply_entry type_declaration_eoi)];
 };
 
 do {

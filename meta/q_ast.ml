@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.124 2010/09/10 11:23:19 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.125 2010/09/11 17:53:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -126,14 +126,14 @@ module Meta_make (C : MetaSig) =
           C.node "TyRec"
             [C.vala
                (C.list
-                  (fun (loc, s, b, t) ->
+                  (fun (_, s, b, t) ->
                      C.tuple [C.loc_v (); C.string s; C.bool b; ctyp t]))
                llsbt]
       | TySum _ llslt ->
           C.node "TySum"
             [C.vala
                (C.list
-                  (fun (loc, s, lt) ->
+                  (fun (_, s, lt) ->
                      C.tuple
                        [C.loc_v (); C.vala C.string s;
                         C.vala (C.list ctyp) lt]))
@@ -309,7 +309,7 @@ module Meta_make (C : MetaSig) =
       | SgUse _ s lsil ->
           C.node "SgUse"
             [C.string s;
-             C.list (fun (si, loc) -> C.tuple [sig_item si; C.loc_v ()]) lsil]
+             C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]) lsil]
       | SgVal _ s t -> C.node "SgVal" [C.vala C.string s; ctyp t]
       | IFDEF STRICT THEN
           SgXtr loc s _ -> C.xtr loc s
@@ -367,7 +367,7 @@ module Meta_make (C : MetaSig) =
       | StUse _ s lsil ->
           C.node "StUse"
             [C.string s;
-             C.list (fun (si, loc) -> C.tuple [str_item si; C.loc_v ()]) lsil]
+             C.list (fun (si, _) -> C.tuple [str_item si; C.loc_v ()]) lsil]
       | StVal _ b lpe ->
           C.node "StVal"
             [C.vala C.bool b;
@@ -378,8 +378,8 @@ module Meta_make (C : MetaSig) =
     and type_decl x =
       C.record
         [(record_label "tdNam",
-          let (loc, s) = x.tdNam in
-          C.tuple [C.loc_v (); C.vala C.string s]);
+          C.vala (fun (_, s) -> C.tuple [C.loc_v (); C.vala C.string s])
+            x.tdNam);
          (record_label "tdPrm", C.vala (C.list type_var) x.tdPrm);
          (record_label "tdPrv", C.vala C.bool x.tdPrv);
          (record_label "tdDef", ctyp x.tdDef);
@@ -612,6 +612,7 @@ value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
 value class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";
 value class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";
 value class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";
+value type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";
 
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
@@ -627,6 +628,7 @@ EXTEND
   class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
   class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
   class_sig_item_eoi: [ [ x = Pcaml.class_sig_item; EOI -> x ] ];
+  type_decl_eoi: [ [ x = Pcaml.type_declaration; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
@@ -945,7 +947,9 @@ List.iter
       Meta_P.class_str_item);
    ("class_sig_item",
     apply_entry class_sig_item_eoi Meta_E.class_sig_item
-      Meta_P.class_sig_item)]
+      Meta_P.class_sig_item);
+   ("type_decl",
+    apply_entry type_decl_eoi Meta_E.type_decl Meta_P.type_decl)]
 ;
 
 do {

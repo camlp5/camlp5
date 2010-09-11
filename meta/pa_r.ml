@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.135 2010/09/10 15:12:18 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.136 2010/09/11 17:53:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -123,7 +123,6 @@ value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 
 value mklabdecl loc i mf t = (loc, i, mf, t);
-
 value mkident i : string = i;
 
 EXTEND
@@ -480,10 +479,9 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = ipatt -> (i, p) ] ]
   ;
   type_declaration:
-    [ [ n = type_patt; tpl = V (LIST0 type_parameter); "=";
-        pf = V (FLAG "private"); tk = ctyp; cl = V (LIST0 constrain) ->
-          {MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = pf;
-           MLast.tdDef = tk; MLast.tdCon = cl} ] ]
+    [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter); "=";
+        pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ->
+          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ >> ] ]
   ;
   type_patt:
     [ [ n = V LIDENT -> (loc, n) ] ]

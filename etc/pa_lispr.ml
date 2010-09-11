@@ -514,8 +514,9 @@ and type_declaration_list_se =
         | se -> error se "type declaration" ]
       in
       let empty = [] in
+      let n = (loc1, <:vala< n1 >>) in
       let td =
-        {MLast.tdNam = (loc1, <:vala< n1 >>); MLast.tdPrm = <:vala< tpl >>;
+        {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
          MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
          MLast.tdCon = <:vala< empty >>}
       in

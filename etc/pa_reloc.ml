@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 1.7 2010/09/08 16:24:26 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 1.8 2010/09/11 17:53:25 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -164,11 +164,11 @@ value expr_of_type_decl loc tn td =
 
 value gen_reloc loc tdl =
   match tdl with
-  [ [{MLast.tdNam = (_, <:vala< "ctyp" >>)} :: _] ->
+  [ [{MLast.tdNam = <:vala< (_, <:vala< "ctyp" >>) >>} :: _] ->
       let pel =
         List.map
           (fun td ->
-             let tn = Pcaml.unvala (snd td.MLast.tdNam) in
+             let tn = Pcaml.unvala (snd (Pcaml.unvala td.MLast.tdNam)) in
              let (e, use_self) = expr_of_type_decl loc tn td in
              let e =
                if use_self then <:expr< self where rec self = $e$ >>

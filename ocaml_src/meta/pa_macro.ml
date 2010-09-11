@@ -376,11 +376,7 @@ let define eo x =
           [[Gramext.Stoken ("UIDENT", x); Gramext.Sself],
            Gramext.action
              (fun (param : 'ctyp) _ (loc : Ploc.t) ->
-                (let tl =
-                   match param with
-                     MLast.TyTup (_, tl) -> tl
-                   | t -> [t]
-                 in
+                (let tl = [param] in
                  if List.length tl = List.length sl then
                    let env = List.combine sl tl in
                    let t = substt loc env t in t

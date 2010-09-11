@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.57 2010/09/10 11:23:19 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.58 2010/09/11 17:53:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -324,9 +324,7 @@ and str_item floc sh =
         StXtr loc x1 x2 -> StXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
 and type_decl floc sh x =
-  {tdNam =
-     let (loc, x1) = x.tdNam in
-     (floc loc, x1);
+  {tdNam = vala_map (fun (loc, x1) -> (floc loc, x1)) x.tdNam;
    tdPrm = x.tdPrm; tdPrv = x.tdPrv; tdDef = ctyp floc sh x.tdDef;
    tdCon =
      vala_map (List.map (fun (x1, x2) -> (ctyp floc sh x1, ctyp floc sh x2)))

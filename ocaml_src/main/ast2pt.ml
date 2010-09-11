@@ -1020,7 +1020,7 @@ and mktype_decl td =
          ctyp t1, ctyp t2, mkloc loc)
       (uv td.tdCon)
   in
-  uv (snd td.tdNam), type_decl (uv td.tdPrm) priv cl td.tdDef
+  uv (snd (uv td.tdNam)), type_decl (uv td.tdPrm) priv cl td.tdDef
 and module_type =
   function
     MtAcc (loc, _, _) as f -> mkmty loc (Pmty_ident (module_type_long_id f))

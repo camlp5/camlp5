@@ -122,7 +122,6 @@ let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
 let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 
 let mklabdecl loc i mf t = loc, i, mf, t;;
-
 let mkident i : string = i;;
 
 Grammar.extend

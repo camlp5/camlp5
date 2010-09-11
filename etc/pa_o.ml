@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.101 2010/09/10 22:33:02 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.102 2010/09/11 17:53:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -785,11 +785,11 @@ EXTEND
   ;
   (* Type declaration *)
   type_declaration:
-    [ [ tpl = type_parameters; n = type_patt; "="; pf = V (FLAG "private");
+    [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
         tk = type_kind; cl = V (LIST0 constrain) ->
           {MLast.tdNam = n; MLast.tdPrm = <:vala< tpl >>;
            MLast.tdPrv = pf; MLast.tdDef = tk; MLast.tdCon = cl}
-      | tpl = type_parameters; n = type_patt; cl = V (LIST0 constrain) ->
+      | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ->
           {MLast.tdNam = n; MLast.tdPrm = <:vala< tpl >>;
            MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< '$choose_tvar tpl$ >>; MLast.tdCon = cl} ] ]

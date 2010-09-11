@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 1.8 2010/09/08 16:24:26 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 1.9 2010/09/11 17:53:25 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -74,6 +74,12 @@ value name_of_vars tl =
     rev_tnl
 ;
 
+value patt_of_type loc name =
+  fun
+  [ <:ctyp< loc >> -> <:patt< _ >>
+  | _ -> <:patt< $lid:name$ >> ]
+;
+
 value rec expr_of_type loc t =
   match t with
   [ <:ctyp< $lid:tn$ >> ->
@@ -85,7 +91,7 @@ value rec expr_of_type loc t =
       let rev_pl =
         List.fold_left
           (fun rev_pl (t, name) ->
-             let p = <:patt< $lid:name$ >> in
+             let p = patt_of_type loc name t in
              [p :: rev_pl])
           [] tnl
       in
@@ -131,11 +137,7 @@ value expr_of_cons_decl (loc, c, tl) =
     let p = <:patt< $_uid:c$ >> in
     List.fold_left
       (fun p1 (t, name) ->
-         let p2 =
-           match t with
-           [ <:ctyp< loc >> -> <:patt< _ >>
-           | _ -> <:patt< $lid:name$ >> ]
-         in
+         let p2 = patt_of_type loc name t in
          <:patt< $p1$ $p2$ >>)
       p tnl
   in
@@ -200,16 +202,40 @@ value expr_of_type_decl loc td =
           rev_lel
       in
       <:expr< fun x -> C.record $e$ >>
+  | <:ctyp< ($list:tl$) >> ->
+      let tnl = name_of_vars tl in
+      let rev_pl =
+        List.fold_left
+          (fun rev_pl (t, name) ->
+             let p = patt_of_type loc name t in
+             [p :: rev_pl])
+          [] tnl
+      in
+      let rev_el =
+        list_rev_map
+          (fun (t, n) ->
+             match t with
+             [ <:ctyp< loc >> -> <:expr< C.loc_v () >>
+             | _ ->
+                 let loc = MLast.loc_of_ctyp t in
+                 <:expr< $expr_of_type loc t$ $lid:n$ >>])
+          tnl
+      in
+      let e =
+        List.fold_left (fun el e -> <:expr< [$e$ :: $el$] >>) <:expr< [] >>
+          rev_el
+      in
+      <:expr< fun ($list:List.rev rev_pl$) -> C.tuple $e$ >>
   | _ -> <:expr< 0 >> ]
 ;
 
 value gen_ast loc tdl =
   match tdl with
-  [ [{MLast.tdNam = (_, <:vala< "ctyp" >>)} :: _] ->
+  [ [{MLast.tdNam = <:vala< (_, <:vala< "ctyp" >>) >>} :: _] ->
       let pel =
         List.map
           (fun td ->
-             let tn = Pcaml.unvala (snd td.MLast.tdNam) in
+             let tn = Pcaml.unvala (snd (Pcaml.unvala td.MLast.tdNam)) in
              let e = expr_of_type_decl loc td in
              (<:patt< $lid:tn$ >>, e))
           tdl

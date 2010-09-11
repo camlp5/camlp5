@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.207 2010/09/10 13:38:02 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.208 2010/09/11 17:53:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -534,8 +534,8 @@ value type_constraint pc (t1, t2) =
 
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
-    (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
-     td.MLast.tdCon)
+    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv,
+     td.MLast.tdDef, td.MLast.tdCon)
   in
   let loc = MLast.loc_of_ctyp te in
   horiz_vertic

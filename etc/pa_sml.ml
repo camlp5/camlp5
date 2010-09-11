@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_sml.ml,v 1.29 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.30 2010/09/11 17:53:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -182,7 +182,7 @@ value extract_label_types loc tn tal cdol =
              let new_tn = tn ^ "_" ^ c in
              let loc = MLast.loc_of_ctyp anon_record_type in
              let aux_def =
-               {MLast.tdNam = (loc, <:vala< new_tn >>);
+               {MLast.tdNam = <:vala< (loc, <:vala< new_tn >>) >>;
                 MLast.tdPrm = <:vala< [] >>; MLast.tdPrv = <:vala< False >>;
                 MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>}
              in
@@ -192,9 +192,9 @@ value extract_label_types loc tn tal cdol =
       cdol ([], [])
   in
   let td1 =
-    {MLast.tdNam = (loc, <:vala< tn >>); MLast.tdPrm = <:vala< tal >>;
-     MLast.tdPrv = <:vala< False >>; MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>;
-     MLast.tdCon = <:vala< [] >>}
+    {MLast.tdNam = <:vala< (loc, <:vala< tn >>) >>;
+     MLast.tdPrm = <:vala< tal >>; MLast.tdPrv = <:vala< False >>;
+     MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = <:vala< [] >>}
   in
   [td1 :: aux]
 ;
@@ -642,7 +642,7 @@ EXTEND
   ;
   tb:
     [ [ x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
@@ -650,7 +650,7 @@ EXTEND
             List.map
               (fun (loc, c, tl, _) -> (loc, <:vala< c>>, <:vala< tl >>)) x4
           in
-          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< $x3$ == [ $list:x4$ ] >>;
            MLast.tdCon = <:vala< [] >>} ] ]
@@ -754,12 +754,12 @@ EXTEND
   ;
   tyspec:
     [ [ x1 = tyvars; x2 = idd ->
-          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< '$choose_tvar x1$ >>;
            MLast.tdCon = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>} ] ]
   ;

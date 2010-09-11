@@ -1,3 +1,7 @@
+<:type_decl< n $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ >>;
+<:type_decl< $tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ >>;
+<:type_decl< $_tp:n$ $list:tpl$ = $priv:pf$ $tk$ $list:cl$ >>;
+
 <:expr< $e1$ . $e2$ >>;
 <:expr< $anti:e$ >>;
 <:expr< $e1$ $e2$ >>;

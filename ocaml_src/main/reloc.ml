@@ -317,7 +317,7 @@ and str_item floc sh =
   in
   self
 and type_decl floc sh x =
-  {tdNam = (let (loc, x1) = x.tdNam in floc loc, x1); tdPrm = x.tdPrm;
+  {tdNam = vala_map (fun (loc, x1) -> floc loc, x1) x.tdNam; tdPrm = x.tdPrm;
    tdPrv = x.tdPrv; tdDef = ctyp floc sh x.tdDef;
    tdCon =
      vala_map (List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2))

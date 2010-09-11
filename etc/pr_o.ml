@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.222 2010/09/10 13:38:02 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.223 2010/09/11 17:53:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -444,8 +444,8 @@ value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
 
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
-    (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
-     td.MLast.tdCon)
+    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv,
+     td.MLast.tdDef, td.MLast.tdCon)
   in
   match te with
   [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.48 2010/09/06 16:54:59 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.49 2010/09/11 17:53:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -346,11 +346,7 @@ value define eo x = do {
       EXTEND
         ctyp: LEVEL "apply"
           [ [ UIDENT $x$; param = SELF ->
-                let tl =
-                  match param with
-                  [ <:ctyp< ($list:tl$) >> -> tl
-                  | t -> [t] ]
-                in
+                let tl = [param] in
                 if List.length tl = List.length sl then
                   let env = List.combine sl tl in
                   let t = substt loc env t in

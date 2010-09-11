@@ -123,14 +123,14 @@ module Meta_make (C : MetaSig) =
           C.node "TyRec"
             [C.vala
                (C.list
-                  (fun (loc, s, b, t) ->
+                  (fun (_, s, b, t) ->
                      C.tuple [C.loc_v (); C.string s; C.bool b; ctyp t]))
                llsbt]
       | TySum (_, llslt) ->
           C.node "TySum"
             [C.vala
                (C.list
-                  (fun (loc, s, lt) ->
+                  (fun (_, s, lt) ->
                      C.tuple
                        [C.loc_v (); C.vala C.string s;
                         C.vala (C.list ctyp) lt]))
@@ -300,7 +300,7 @@ module Meta_make (C : MetaSig) =
       | SgUse (_, s, lsil) ->
           C.node "SgUse"
             [C.string s;
-             C.list (fun (si, loc) -> C.tuple [sig_item si; C.loc_v ()]) lsil]
+             C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]) lsil]
       | SgVal (_, s, t) -> C.node "SgVal" [C.vala C.string s; ctyp t]
     and with_constr =
       function
@@ -354,7 +354,7 @@ module Meta_make (C : MetaSig) =
       | StUse (_, s, lsil) ->
           C.node "StUse"
             [C.string s;
-             C.list (fun (si, loc) -> C.tuple [str_item si; C.loc_v ()]) lsil]
+             C.list (fun (si, _) -> C.tuple [str_item si; C.loc_v ()]) lsil]
       | StVal (_, b, lpe) ->
           C.node "StVal"
             [C.vala C.bool b;
@@ -362,7 +362,8 @@ module Meta_make (C : MetaSig) =
     and type_decl x =
       C.record
         [record_label "tdNam",
-         (let (loc, s) = x.tdNam in C.tuple [C.loc_v (); C.vala C.string s]);
+         C.vala (fun (_, s) -> C.tuple [C.loc_v (); C.vala C.string s])
+           x.tdNam;
          record_label "tdPrm", C.vala (C.list type_var) x.tdPrm;
          record_label "tdPrv", C.vala C.bool x.tdPrv;
          record_label "tdDef", ctyp x.tdDef;
@@ -588,6 +589,7 @@ let class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";;
 let class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";;
 let class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";;
 let class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";;
+let type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";;
 
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
@@ -706,7 +708,17 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__class_sig_item) (loc : Ploc.t) ->
-          (x : 'class_sig_item_eoi))]]];;
+          (x : 'class_sig_item_eoi))]];
+   Grammar.Entry.obj (type_decl_eoi : 'type_decl_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.type_declaration :
+            'Pcaml__type_declaration Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__type_declaration) (loc : Ploc.t) ->
+          (x : 'type_decl_eoi))]]];;
 
 (* *)
 
@@ -974,8 +986,8 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "class_str_item",
    apply_entry class_str_item_eoi Meta_E.class_str_item Meta_P.class_str_item;
    "class_sig_item",
-   apply_entry class_sig_item_eoi Meta_E.class_sig_item
-     Meta_P.class_sig_item];;
+   apply_entry class_sig_item_eoi Meta_E.class_sig_item Meta_P.class_sig_item;
+   "type_decl", apply_entry type_decl_eoi Meta_E.type_decl Meta_P.type_decl];;
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
 Grammar.extend

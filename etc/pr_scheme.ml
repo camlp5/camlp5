@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.78 2010/09/09 14:02:07 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.79 2010/09/11 17:53:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -147,7 +147,7 @@ value type_param pc (s, (pl, mi)) =
 value type_var pc v = pprintf pc "'%s" v;
 
 value type_decl b pc td =
-  let n = rename_id (Pcaml.unvala (snd td.MLast.tdNam)) in
+  let n = rename_id (Pcaml.unvala (snd (Pcaml.unvala td.MLast.tdNam))) in
   pprintf pc "@[<1>(%s%p@ %p)@]" b
     (fun pc ->
        fun

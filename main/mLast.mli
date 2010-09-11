@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.65 2010/09/10 11:23:19 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.66 2010/09/11 17:53:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -188,7 +188,7 @@ and str_item =
       StXtr of loc and string and option (V str_item)
     END ]
 and type_decl =
-  { tdNam : (loc * V string);
+  { tdNam : V (loc * V string);
     tdPrm : V (list type_var);
     tdPrv : V bool;
     tdDef : ctyp;
