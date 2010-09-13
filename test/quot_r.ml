@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.31 2010/09/13 14:50:05 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.32 2010/09/13 14:57:02 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -174,14 +174,16 @@ MLast.ExMat loc e (Ploc.VaVal lpee);
 MLast.ExMat loc e lpee;
 MLast.ExNew loc (Ploc.VaVal ls);
 MLast.ExNew loc ls;
-MLast.ExObj loc (Ploc.VaVal None) (Ploc.VaVal lcsi);
-MLast.ExObj loc (Ploc.VaVal None) lcsi;
-MLast.ExObj loc (Ploc.VaVal (Some p)) (Ploc.VaVal lcsi);
-MLast.ExObj loc (Ploc.VaVal (Some p)) lcsi;
-MLast.ExObj loc (Ploc.VaVal p) (Ploc.VaVal lcsi);
-MLast.ExObj loc (Ploc.VaVal p) lcsi;
-MLast.ExObj loc p (Ploc.VaVal lcsi);
-MLast.ExObj loc p lcsi;
+
+<:expr< object $list:lcsi$ end >>;
+<:expr< object $_list:lcsi$ end >>;
+<:expr< object ($p$) $list:lcsi$ end >>;
+<:expr< object ($p$) $_list:lcsi$ end >>;
+<:expr< object $opt:p$ $list:lcsi$ end >>;
+<:expr< object $opt:p$ $_list:lcsi$ end >>;
+<:expr< object $_opt:p$ $list:lcsi$ end >>;
+<:expr< object $_opt:p$ $_list:lcsi$ end >>;
+
 MLast.ExOlb loc (Ploc.VaVal s) None;
 MLast.ExOlb loc (Ploc.VaVal s) (Some e);
 MLast.ExOlb loc (Ploc.VaVal s) e;
