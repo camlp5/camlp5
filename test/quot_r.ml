@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.37 2010/09/13 15:40:54 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.38 2010/09/13 15:43:02 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -368,14 +368,16 @@ MLast.StOpn loc ls;
 MLast.StTyp loc (Ploc.VaVal ltd);
 MLast.StTyp loc ltd;
 MLast.StUse loc s lsil;
+
 <:str_item< value rec $list:lpe$ >>;
-MLast.StVal loc (Ploc.VaVal True) lpe;
-MLast.StVal loc (Ploc.VaVal False) (Ploc.VaVal lpe);
-MLast.StVal loc (Ploc.VaVal False) lpe;
-MLast.StVal loc (Ploc.VaVal b) (Ploc.VaVal lpe);
-MLast.StVal loc (Ploc.VaVal b) lpe;
-MLast.StVal loc b (Ploc.VaVal lpe);
-MLast.StVal loc b lpe;
+<:str_item< value rec $_list:lpe$ >>;
+<:str_item< value $list:lpe$ >>;
+<:str_item< value $_list:lpe$ >>;
+<:str_item< value $flag:b$ $list:lpe$ >>;
+<:str_item< value $flag:b$ $_list:lpe$ >>;
+<:str_item< value $_flag:b$ $list:lpe$ >>;
+<:str_item< value $_flag:b$ $_list:lpe$ >>;
+
 MLast.StXtr loc s None;
 MLast.StXtr loc s (Some si);
 MLast.StXtr loc s si;
@@ -471,14 +473,15 @@ MLast.CeCon loc (Ploc.VaVal ls) lt;
 MLast.CeCon loc ls (Ploc.VaVal lt);
 MLast.CeCon loc ls lt;
 MLast.CeFun loc p ce;
-MLast.CeLet loc (Ploc.VaVal True) (Ploc.VaVal lpe) ce;
-MLast.CeLet loc (Ploc.VaVal True) lpe ce;
-MLast.CeLet loc (Ploc.VaVal False) (Ploc.VaVal lpe) ce;
-MLast.CeLet loc (Ploc.VaVal False) lpe ce;
-MLast.CeLet loc (Ploc.VaVal b) (Ploc.VaVal lpe) ce;
-MLast.CeLet loc (Ploc.VaVal b) lpe ce;
-MLast.CeLet loc b (Ploc.VaVal lpe) ce;
-MLast.CeLet loc b lpe ce;
+
+<:class_expr< let rec $list:lpe$ in $ce$ >>;
+<:class_expr< let rec $_list:lpe$ in $ce$ >>;
+<:class_expr< let $list:lpe$ in $ce$ >>;
+<:class_expr< let $_list:lpe$ in $ce$ >>;
+<:class_expr< let $flag:b$ $list:lpe$ in $ce$ >>;
+<:class_expr< let $flag:b$ $_list:lpe$ in $ce$ >>;
+<:class_expr< let $_flag:b$ $list:lpe$ in $ce$ >>;
+<:class_expr< let $_flag:b$ $_list:lpe$ in $ce$ >>;
 
 <:class_expr< object $list:lcsi$ end >>;
 <:class_expr< object $_list:lcsi$ end >>;
