@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.32 2010/09/13 14:57:02 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.33 2010/09/13 14:58:58 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -158,14 +158,16 @@ MLast.ExLab loc s None;
 MLast.ExLab loc s (Some e);
 MLast.ExLab loc s e;
 MLast.ExLaz loc e;
-MLast.ExLet loc (Ploc.VaVal True) (Ploc.VaVal lpe) e;
-MLast.ExLet loc (Ploc.VaVal True) lpe e;
-MLast.ExLet loc (Ploc.VaVal False) (Ploc.VaVal lpe) e;
-MLast.ExLet loc (Ploc.VaVal False) lpe e;
-MLast.ExLet loc (Ploc.VaVal b) (Ploc.VaVal lpe) e;
-MLast.ExLet loc (Ploc.VaVal b) lpe e;
-MLast.ExLet loc b (Ploc.VaVal lpe) e;
-MLast.ExLet loc b lpe e;
+
+<:expr< let rec $list:lpe$ in $e$ >>;
+<:expr< let rec $_list:lpe$ in $e$ >>;
+<:expr< let $list:lpe$ in $e$ >>;
+<:expr< let $_list:lpe$ in $e$ >>;
+<:expr< let $flag:b$ $list:lpe$ in $e$ >>;
+<:expr< let $flag:b$ $_list:lpe$ in $e$ >>;
+<:expr< let $_flag:b$ $list:lpe$ in $e$ >>;
+<:expr< let $_flag:b$ $_list:lpe$ in $e$ >>;
+
 MLast.ExLid loc (Ploc.VaVal s);
 MLast.ExLid loc s;
 MLast.ExLmd loc (Ploc.VaVal s) me e;
