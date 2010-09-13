@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.209 2010/09/13 13:48:02 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.210 2010/09/13 18:39:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -61,7 +61,7 @@ value is_infix = do {
 };
 
 value is_keyword =
-  let keywords = ["value"; "where"] in
+  let keywords = ["declare"; "value"; "where"] in
   fun s -> List.mem s keywords
 ;
 

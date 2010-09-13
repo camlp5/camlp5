@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.12 2010/09/10 14:55:37 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.13 2010/09/13 18:39:07 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -53,7 +53,7 @@ for i in $files; do
   then
     echo "skipping $bname"
   else
-    syntax="etc/pa_o.cmo"
+    syntax="etc/pa_o.cmo etc/pa_op.cmo"
     altsyntax="meta/pa_r.cmo"
     syntname="normal syntax"
     altsyntname="revised syntax"
