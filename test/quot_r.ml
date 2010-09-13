@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.39 2010/09/13 16:28:27 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.40 2010/09/13 19:27:55 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -38,16 +38,16 @@ MLast.TyTup loc lt;
 MLast.TyUid loc (Ploc.VaVal s);
 MLast.TyUid loc s;
 
-MLast.TyVrn loc (Ploc.VaVal lpv) None;
-MLast.TyVrn loc (Ploc.VaVal lpv) (Some None);
-MLast.TyVrn loc (Ploc.VaVal lpv) (Some (Some (Ploc.VaVal ls)));
-MLast.TyVrn loc (Ploc.VaVal lpv) (Some (Some ls));
+<:ctyp< [ = $list:lpv$ ] >>;
+<:ctyp< [ > $list:lpv$ ] >>;
+<:ctyp< [ < $list:lpv$ > $list:ls$ ] >>;
+<:ctyp< [ < $list:lpv$ > $_list:ls$ ] >>;
 MLast.TyVrn loc (Ploc.VaVal lpv) (Some ls);
 MLast.TyVrn loc (Ploc.VaVal lpv) ls;
-MLast.TyVrn loc lpv None;
-MLast.TyVrn loc lpv (Some None);
-MLast.TyVrn loc lpv (Some (Some (Ploc.VaVal ls)));
-MLast.TyVrn loc lpv (Some (Some ls));
+<:ctyp< [ = $_list:lpv$ ] >>;
+<:ctyp< [ > $_list:lpv$ ] >>;
+<:ctyp< [ < $_list:lpv$ > $list:ls$ ] >>;
+<:ctyp< [ < $_list:lpv$ > $_list:ls$ ] >>;
 MLast.TyVrn loc lpv (Some ls);
 MLast.TyVrn loc lpv ls;
 
@@ -96,12 +96,20 @@ MLast.PaLab loc s p;
 MLast.PaLaz loc p;
 MLast.PaLid loc (Ploc.VaVal s);
 MLast.PaLid loc s;
-MLast.PaOlb loc (Ploc.VaVal s) None;
+
+<:patt< ?$s$ >>;
 MLast.PaOlb loc (Ploc.VaVal s) (Some pe);
 MLast.PaOlb loc (Ploc.VaVal s) pe;
-MLast.PaOlb loc s None;
+<:patt< ?$_:s$ >>;
+
+<:patt< ?$s$: ($p$ = $e$) >>;
+<:patt< ?$s$: ($p$) >>;
+<:patt< ?$_:s$: ($p$ = $e$) >>;
+<:patt< ?$_:s$: ($p$) >>;
+
 MLast.PaOlb loc s (Some pe);
 MLast.PaOlb loc s pe;
+
 MLast.PaOrp loc p1 p2;
 MLast.PaRec loc (Ploc.VaVal lpp);
 MLast.PaRec loc lpp;
