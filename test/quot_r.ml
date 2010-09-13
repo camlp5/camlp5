@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.26 2010/09/13 14:35:19 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.27 2010/09/13 14:37:58 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -332,14 +332,14 @@ MLast.StExt loc (Ploc.VaVal s) t ls;
 MLast.StExt loc s t (Ploc.VaVal ls);
 MLast.StExt loc s t ls;
 MLast.StInc loc me;
-MLast.StMod loc (Ploc.VaVal True) (Ploc.VaVal lsme);
-MLast.StMod loc (Ploc.VaVal True) lsme;
-MLast.StMod loc (Ploc.VaVal False) (Ploc.VaVal lsme);
-MLast.StMod loc (Ploc.VaVal False) lsme;
-MLast.StMod loc (Ploc.VaVal b) (Ploc.VaVal lsme);
-MLast.StMod loc (Ploc.VaVal b) lsme;
-MLast.StMod loc b (Ploc.VaVal lsme);
-MLast.StMod loc b lsme;
+<:str_item< module rec $list:lsme$ >>;
+<:str_item< module rec $_list:lsme$ >>;
+<:str_item< module $list:lsme$ >>;
+<:str_item< module $_list:lsme$ >>;
+<:str_item< module $flag:b$ $list:lsme$ >>;
+<:str_item< module $flag:b$ $_list:lsme$ >>;
+<:str_item< module $_flag:b$ $list:lsme$ >>;
+<:str_item< module $_flag:b$ $_list:lsme$ >>;
 MLast.StMty loc (Ploc.VaVal s) mt;
 MLast.StMty loc s mt;
 MLast.StOpn loc (Ploc.VaVal ls);
