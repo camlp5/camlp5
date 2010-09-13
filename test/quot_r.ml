@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.27 2010/09/13 14:37:58 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.28 2010/09/13 14:40:12 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -318,14 +318,14 @@ MLast.StDir loc s (Ploc.VaVal None);
 MLast.StDir loc s (Ploc.VaVal (Some e));
 MLast.StDir loc s (Ploc.VaVal e);
 MLast.StDir loc s e;
-MLast.StExc loc (Ploc.VaVal s) (Ploc.VaVal lt) (Ploc.VaVal ls);
-MLast.StExc loc (Ploc.VaVal s) (Ploc.VaVal lt) ls;
-MLast.StExc loc (Ploc.VaVal s) lt (Ploc.VaVal ls);
-MLast.StExc loc (Ploc.VaVal s) lt ls;
-MLast.StExc loc s (Ploc.VaVal lt) (Ploc.VaVal ls);
-MLast.StExc loc s (Ploc.VaVal lt) ls;
-MLast.StExc loc s lt (Ploc.VaVal ls);
-MLast.StExc loc s lt ls;
+<:str_item< exception $uid:s$ of $list:lt$ = $list:ls$ >>;
+<:str_item< exception $uid:s$ of $list:lt$ = $_list:ls$ >>;
+<:str_item< exception $uid:s$ of $_list:lt$ = $list:ls$ >>;
+<:str_item< exception $uid:s$ of $_list:lt$ = $_list:ls$ >>;
+<:str_item< exception $_uid:s$ of $list:lt$ = $list:ls$ >>;
+<:str_item< exception $_uid:s$ of $list:lt$ = $_list:ls$ >>;
+<:str_item< exception $_uid:s$ of $_list:lt$ = $list:ls$ >>;
+<:str_item< exception $_uid:s$ of $_list:lt$ = $_list:ls$ >>;
 MLast.StExp loc e;
 MLast.StExt loc (Ploc.VaVal s) t (Ploc.VaVal ls);
 MLast.StExt loc (Ploc.VaVal s) t ls;
