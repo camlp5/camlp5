@@ -4869,7 +4869,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'e__151) (pf : 'e__150) _ (loc : Ploc.t) ->
-           (Qast.Node ("CgMth", [Qast.Loc; l; pf; t]) : 'class_sig_item));
+           (Qast.Node ("CgMth", [Qast.Loc; pf; l; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.Sfacto
          (Gramext.srules
@@ -4919,7 +4919,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'e__149) (pf : 'e__148) _ _ (loc : Ploc.t) ->
-           (Qast.Node ("CgVir", [Qast.Loc; l; pf; t]) : 'class_sig_item));
+           (Qast.Node ("CgVir", [Qast.Loc; pf; l; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "value");
        Gramext.Sfacto
          (Gramext.srules
@@ -4969,7 +4969,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'e__147) (mf : 'e__146) _ (loc : Ploc.t) ->
-           (Qast.Node ("CgVal", [Qast.Loc; l; mf; t]) : 'class_sig_item));
+           (Qast.Node ("CgVal", [Qast.Loc; mf; l; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "inherit");
        Gramext.Snterm
          (Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e))],

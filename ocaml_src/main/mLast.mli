@@ -178,9 +178,9 @@ and class_sig_item =
     CgCtr of loc * ctyp * ctyp
   | CgDcl of loc * class_sig_item list
   | CgInh of loc * class_type
-  | CgMth of loc * string * bool * ctyp
-  | CgVal of loc * string * bool * ctyp
-  | CgVir of loc * string * bool * ctyp
+  | CgMth of loc * bool * string * ctyp
+  | CgVal of loc * bool * string * ctyp
+  | CgVir of loc * bool * string * ctyp
 and class_expr =
     CeApp of loc * class_expr * expr
   | CeCon of loc * string list * ctyp list

@@ -384,12 +384,12 @@ module Meta_make (C : MetaSig) =
       | CgDcl (_, lcsi) ->
           C.node "CgDcl" [C.vala (C.list class_sig_item) lcsi]
       | CgInh (_, ct) -> C.node "CgInh" [class_type ct]
-      | CgMth (_, s, b, t) ->
-          C.node "CgMth" [C.vala C.string s; C.vala C.bool b; ctyp t]
-      | CgVal (_, s, b, t) ->
-          C.node "CgVal" [C.vala C.string s; C.vala C.bool b; ctyp t]
-      | CgVir (_, s, b, t) ->
-          C.node "CgVir" [C.vala C.string s; C.vala C.bool b; ctyp t]
+      | CgMth (_, b, s, t) ->
+          C.node "CgMth" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CgVal (_, b, s, t) ->
+          C.node "CgVal" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CgVir (_, b, s, t) ->
+          C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t]
     and class_expr =
       function
         CeApp (_, ce, e) -> C.node "CeApp" [class_expr ce; expr e]

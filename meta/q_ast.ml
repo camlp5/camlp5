@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.127 2010/09/13 15:13:04 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.128 2010/09/13 15:37:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -405,12 +405,12 @@ module Meta_make (C : MetaSig) =
       [ CgCtr _ t1 t2 -> C.node "CgCtr" [ctyp t1; ctyp t2]
       | CgDcl _ lcsi -> C.node "CgDcl" [C.vala (C.list class_sig_item) lcsi]
       | CgInh _ ct -> C.node "CgInh" [class_type ct]
-      | CgMth _ s b t ->
-          C.node "CgMth" [C.vala C.string s; C.vala C.bool b; ctyp t]
-      | CgVal _ s b t ->
-          C.node "CgVal" [C.vala C.string s; C.vala C.bool b; ctyp t]
-      | CgVir _ s b t ->
-          C.node "CgVir" [C.vala C.string s; C.vala C.bool b; ctyp t] ]
+      | CgMth _ b s t ->
+          C.node "CgMth" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CgVal _ b s t ->
+          C.node "CgVal" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CgVir _ b s t ->
+          C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t] ]
     and class_expr =
       fun
       [ CeApp _ ce e -> C.node "CeApp" [class_expr ce; expr e]

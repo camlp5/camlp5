@@ -1299,11 +1299,11 @@ and class_sig_item c l =
       end
   | CgDcl (loc, cl) -> List.fold_right class_sig_item (uv cl) l
   | CgInh (loc, ct) -> Pctf_inher (class_type ct) :: l
-  | CgMth (loc, s, pf, t) ->
+  | CgMth (loc, pf, s, t) ->
       Pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc) :: l
-  | CgVal (loc, s, b, t) ->
+  | CgVal (loc, b, s, t) ->
       ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc) :: l
-  | CgVir (loc, s, b, t) ->
+  | CgVir (loc, b, s, t) ->
       Pctf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
 and class_expr =
   function

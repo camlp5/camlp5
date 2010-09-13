@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.68 2010/09/13 15:13:04 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.69 2010/09/13 15:37:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -207,9 +207,9 @@ and class_sig_item =
   [ CgCtr of loc and ctyp and ctyp
   | CgDcl of loc and V (list class_sig_item)
   | CgInh of loc and class_type
-  | CgMth of loc and V string and V bool and ctyp
-  | CgVal of loc and V string and V bool and ctyp
-  | CgVir of loc and V string and V bool and ctyp ]
+  | CgMth of loc and V bool and V string and ctyp
+  | CgVal of loc and V bool and V string and ctyp
+  | CgVir of loc and V bool and V string and ctyp ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and V (list string) and V (list ctyp)

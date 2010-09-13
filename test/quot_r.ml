@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.35 2010/09/13 15:13:05 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.36 2010/09/13 15:37:07 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -437,30 +437,34 @@ MLast.CgCtr loc t1 t2;
 MLast.CgDcl loc (Ploc.VaVal lcsi);
 MLast.CgDcl loc lcsi;
 MLast.CgInh loc ct;
-MLast.CgMth loc (Ploc.VaVal s) (Ploc.VaVal True) t;
-MLast.CgMth loc (Ploc.VaVal s) (Ploc.VaVal False) t;
-MLast.CgMth loc (Ploc.VaVal s) (Ploc.VaVal b) t;
-MLast.CgMth loc (Ploc.VaVal s) b t;
-MLast.CgMth loc s (Ploc.VaVal True) t;
-MLast.CgMth loc s (Ploc.VaVal False) t;
-MLast.CgMth loc s (Ploc.VaVal b) t;
-MLast.CgMth loc s b t;
-MLast.CgVal loc (Ploc.VaVal s) (Ploc.VaVal True) t;
-MLast.CgVal loc (Ploc.VaVal s) (Ploc.VaVal False) t;
-MLast.CgVal loc (Ploc.VaVal s) (Ploc.VaVal b) t;
-MLast.CgVal loc (Ploc.VaVal s) b t;
-MLast.CgVal loc s (Ploc.VaVal True) t;
-MLast.CgVal loc s (Ploc.VaVal False) t;
-MLast.CgVal loc s (Ploc.VaVal b) t;
-MLast.CgVal loc s b t;
-MLast.CgVir loc (Ploc.VaVal s) (Ploc.VaVal True) t;
-MLast.CgVir loc (Ploc.VaVal s) (Ploc.VaVal False) t;
-MLast.CgVir loc (Ploc.VaVal s) (Ploc.VaVal b) t;
-MLast.CgVir loc (Ploc.VaVal s) b t;
-MLast.CgVir loc s (Ploc.VaVal True) t;
-MLast.CgVir loc s (Ploc.VaVal False) t;
-MLast.CgVir loc s (Ploc.VaVal b) t;
-MLast.CgVir loc s b t;
+
+<:class_sig_item< method private $lid:s$ : $t$ >>;
+<:class_sig_item< method private $_lid:s$ : $t$ >>;
+<:class_sig_item< method $lid:s$ : $t$ >>;
+<:class_sig_item< method $_lid:s$ : $t$ >>;
+<:class_sig_item< method $flag:b$ $lid:s$ : $t$ >>;
+<:class_sig_item< method $flag:b$ $_lid:s$ : $t$ >>;
+<:class_sig_item< method $_flag:b$ $lid:s$ : $t$ >>;
+<:class_sig_item< method $_flag:b$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< value mutable $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $_lid:s$ : $t$ >>;
+<:class_sig_item< value $lid:s$ : $t$ >>;
+<:class_sig_item< value $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< method virtual private $lid:s$ : $t$ >>;
+<:class_sig_item< method virtual private $_lid:s$ : $t$ >>;
+<:class_sig_item< method virtual $lid:s$ : $t$ >>;
+<:class_sig_item< method virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
+<:class_sig_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
+<:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
+<:class_sig_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
+
 MLast.CeApp loc ce e;
 MLast.CeCon loc (Ploc.VaVal ls) (Ploc.VaVal lt);
 MLast.CeCon loc (Ploc.VaVal ls) lt;

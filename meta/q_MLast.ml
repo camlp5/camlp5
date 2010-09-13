@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.147 2010/09/13 15:13:04 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.148 2010/09/13 15:37:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1041,13 +1041,13 @@ EXTEND
       | "inherit"; cs = class_type -> Qast.Node "CgInh" [Qast.Loc; cs]
       | "value"; mf = SV (FLAG "mutable"); l = SV label "lid" ""; ":";
         t = ctyp ->
-          Qast.Node "CgVal" [Qast.Loc; l; mf; t]
+          Qast.Node "CgVal" [Qast.Loc; mf; l; t]
       | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid" "";
         ":"; t = ctyp ->
-          Qast.Node "CgVir" [Qast.Loc; l; pf; t]
+          Qast.Node "CgVir" [Qast.Loc; pf; l; t]
       | "method"; pf = SV (FLAG "private"); l = SV label "lid" ""; ":";
         t = ctyp ->
-          Qast.Node "CgMth" [Qast.Loc; l; pf; t]
+          Qast.Node "CgMth" [Qast.Loc; pf; l; t]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           Qast.Node "CgCtr" [Qast.Loc; t1; t2] ] ]
   ;

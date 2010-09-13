@@ -2043,7 +2043,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'label) (pf : bool) _ (loc : Ploc.t) ->
-           (MLast.CgMth (loc, l, pf, t) : 'class_sig_item));
+           (MLast.CgMth (loc, pf, l, t) : 'class_sig_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.Sflag (Gramext.Stoken ("", "private"));
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
@@ -2051,7 +2051,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'label) (pf : bool) _ _ (loc : Ploc.t) ->
-           (MLast.CgVir (loc, l, pf, t) : 'class_sig_item));
+           (MLast.CgVir (loc, pf, l, t) : 'class_sig_item));
       [Gramext.Stoken ("", "value");
        Gramext.Sflag (Gramext.Stoken ("", "mutable"));
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
@@ -2059,7 +2059,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'label) (mf : bool) _ (loc : Ploc.t) ->
-           (MLast.CgVal (loc, l, mf, t) : 'class_sig_item));
+           (MLast.CgVal (loc, mf, l, t) : 'class_sig_item));
       [Gramext.Stoken ("", "inherit");
        Gramext.Snterm
          (Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e))],
