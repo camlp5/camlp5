@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.30 2010/09/13 14:48:48 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.31 2010/09/13 14:50:05 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -12,6 +12,7 @@ MLast.TyLab loc s t;
 MLast.TyLid loc (Ploc.VaVal s);
 MLast.TyLid loc s;
 MLast.TyMan loc t1 t2;
+
 <:ctyp< < $list:lst$ .. > >>;
 <:ctyp< < $list:lst$ > >>;
 <:ctyp< < $list:lst$ $flag:b$ > >>;
@@ -20,6 +21,7 @@ MLast.TyMan loc t1 t2;
 <:ctyp< < $_list:lst$ > >>;
 <:ctyp< < $_list:lst$ $flag:b$ > >>;
 <:ctyp< < $_list:lst$ $_flag:b$ > >>;
+
 MLast.TyOlb loc (Ploc.VaVal s) t;
 MLast.TyOlb loc s t;
 MLast.TyPck loc mt;
@@ -44,6 +46,7 @@ MLast.TyVrn loc lpv ls;
 MLast.TyXtr loc s None;
 MLast.TyXtr loc s (Some t);
 MLast.TyXtr loc s t;
+
 <:poly_variant< `$s$ of & $list:lt$ >>;
 <:poly_variant< `$s$ of & $_list:lt$ >>;
 <:poly_variant< `$s$ of $list:lt$ >>;
@@ -60,6 +63,7 @@ MLast.TyXtr loc s t;
 <:poly_variant< `$_:s$ of $flag:b$ $_list:lt$ >>;
 <:poly_variant< `$_:s$ of $_flag:b$ $list:lt$ >>;
 <:poly_variant< `$_:s$ of $_flag:b$ $_list:lt$ >>;
+
 MLast.PvInh t;
 MLast.PaAcc loc p1 p2;
 MLast.PaAli loc p1 p2;
@@ -124,6 +128,7 @@ MLast.ExCoe loc e (Some t1) t2;
 MLast.ExCoe loc e t1 t2;
 MLast.ExFlo loc (Ploc.VaVal s);
 MLast.ExFlo loc s;
+
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $_list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ downto $e2$ do { $list:le$ } >>;
@@ -140,6 +145,7 @@ MLast.ExFlo loc s;
 <:expr< for $_lid:s$ = $e1$ $to:b$ $e2$ do { $_list:le$ } >>;
 <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $list:le$ } >>;
 <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>;
+
 MLast.ExFun loc (Ploc.VaVal lpee);
 MLast.ExFun loc lpee;
 MLast.ExIfe loc e1 e2 e3;
@@ -277,6 +283,7 @@ MLast.SgVal loc s t;
 MLast.SgXtr loc s None;
 MLast.SgXtr loc s (Some si);
 MLast.SgXtr loc s si;
+
 <:with_constr< type $list:ls$ $list:ltv$ = private $t$ >>;
 <:with_constr< type $list:ls$ $list:ltv$ = $t$ >>;
 <:with_constr< type $list:ls$ $list:ltv$ = $flag:b$ $t$ >>;
@@ -293,6 +300,7 @@ MLast.SgXtr loc s si;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $t$ >>;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
+
 MLast.WcMod loc (Ploc.VaVal ls) me;
 MLast.WcMod loc ls me;
 MLast.MeAcc loc me1 me2;
@@ -339,6 +347,7 @@ MLast.StExt loc (Ploc.VaVal s) t ls;
 MLast.StExt loc s t (Ploc.VaVal ls);
 MLast.StExt loc s t ls;
 MLast.StInc loc me;
+
 <:str_item< module rec $list:lsme$ >>;
 <:str_item< module rec $_list:lsme$ >>;
 <:str_item< module $list:lsme$ >>;
@@ -347,6 +356,7 @@ MLast.StInc loc me;
 <:str_item< module $flag:b$ $_list:lsme$ >>;
 <:str_item< module $_flag:b$ $list:lsme$ >>;
 <:str_item< module $_flag:b$ $_list:lsme$ >>;
+
 MLast.StMty loc (Ploc.VaVal s) mt;
 MLast.StMty loc s mt;
 MLast.StOpn loc (Ploc.VaVal ls);
@@ -365,6 +375,7 @@ MLast.StVal loc b lpe;
 MLast.StXtr loc s None;
 MLast.StXtr loc s (Some si);
 MLast.StXtr loc s si;
+
 <:type_decl< $tp:ls$ $list:ltv$ = private $t$ $list:ltt$ >>;
 <:type_decl< $tp:ls$ $list:ltv$ = private $t$ $_list:ltt$ >>;
 <:type_decl< $tp:ls$ $list:ltv$ = $t$ $list:ltt$ >>;
@@ -397,6 +408,7 @@ MLast.StXtr loc s si;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $priv:b$ $t$ $_list:ltt$ >>;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
+
 MLast.CtAcc loc ct1 ct2;
 MLast.CtApp loc ct1 ct2;
 MLast.CtCon loc ct (Ploc.VaVal lt);
@@ -477,6 +489,7 @@ MLast.CrInh loc ce (Ploc.VaVal (Some s));
 MLast.CrInh loc ce (Ploc.VaVal s);
 MLast.CrInh loc ce s;
 MLast.CrIni loc e;
+
 <:class_str_item< method! private $lid:s$ = $e$ >>;
 <:class_str_item< method! private $lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method! private $lid:s$ $opt:t$ = $e$ >>;
@@ -605,6 +618,7 @@ MLast.CrIni loc e;
 <:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $opt:t$ = $e$ >>;
 <:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $_opt:t$ = $e$ >>;
+
 <:class_str_item< value! mutable $lid:s$ = $e$ >>;
 <:class_str_item< value! mutable $_lid:s$ = $e$ >>;
 <:class_str_item< value! $lid:s$ = $e$ >>;
@@ -637,6 +651,7 @@ MLast.CrIni loc e;
 <:class_str_item< value $_!:b1$ $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $_lid:s$ = $e$ >>;
+
 MLast.CrVir loc (Ploc.VaVal s) (Ploc.VaVal True) t;
 MLast.CrVir loc (Ploc.VaVal s) (Ploc.VaVal False) t;
 MLast.CrVir loc (Ploc.VaVal s) (Ploc.VaVal b) t;
