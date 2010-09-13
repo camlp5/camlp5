@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.145 2010/09/11 17:53:26 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.146 2010/09/13 13:48:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -856,12 +856,11 @@ EXTEND
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> Qast.Tuple [t1; t2] ] ]
   ;
   type_parameter:
-    [ [ "'"; i = SV ident "" ->
-          Qast.Tuple [i; Qast.Tuple [Qast.Bool False; Qast.Bool False]]
+    [ [ "'"; i = SV ident "" -> Qast.Tuple [i; Qast.Option None]
       | "+"; "'"; i = SV ident "" ->
-          Qast.Tuple [i; Qast.Tuple [Qast.Bool True; Qast.Bool False]]
+          Qast.Tuple [i; Qast.Option (Some (Qast.Bool True))]
       | "-"; "'"; i = SV ident "" ->
-          Qast.Tuple [i; Qast.Tuple [Qast.Bool False; Qast.Bool True]] ] ]
+          Qast.Tuple [i; Qast.Option (Some (Qast.Bool False))] ] ]
   ;
   ctyp:
     [ "top" LEFTA

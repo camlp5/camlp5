@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.224 2010/09/11 18:27:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.225 2010/09/13 13:48:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -422,8 +422,12 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
-value type_var pc (loc, (tv, (p, m))) =
-  pprintf pc "%s'%s" (if p then "+" else if m then "-" else "")
+value type_var pc (loc, (tv, vari)) =
+  pprintf pc "%s'%s"
+    (match vari with
+     [ Some True -> "+"
+     | Some False -> "-"
+     | None -> "" ])
     (Pcaml.unvala tv)
 ;
 

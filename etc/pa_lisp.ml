@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.27 2010/09/11 17:53:25 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.28 2010/09/13 13:48:00 deraugla Exp $
 ;; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -553,7 +553,7 @@
  (lambda_match
   ((Satom _ Alid s) (&& (>= (String.length s) 2) (= ([] s 0) '''))
    (let ((s (String.sub s 1 (- (String.length s) 1))))
-      (, <:vala< s >> (, False False))))
+      (, <:vala< s >> None)))
   (se
    (error se "type_parameter")))
  ctyp_se

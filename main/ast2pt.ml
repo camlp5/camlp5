@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.113 2010/09/11 18:27:35 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.114 2010/09/13 13:48:02 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -288,8 +288,16 @@ and package_of_module_type loc mt =
   (li, with_con)
 ;
 
+value variance_of_var =
+  fun
+  [ Some False -> (False, True)
+  | Some True -> (True, False)
+  | None -> (False, False) ]
+;
+
 value mktype loc tl cl tk pf tm =
-  let (params, variance) = List.split tl in
+  let (params, var_list) = List.split tl in
+  let variance = List.map variance_of_var var_list in
   let params = List.map uv params in
   match ocaml_type_declaration params cl tk pf tm (mkloc loc) variance with
   [ Some td -> td
@@ -420,17 +428,21 @@ value rec module_expr_long_id =
 value mkwithc =
   fun
   [ WcTyp loc id tpl pf ct ->
-      let (params, variance) = List.split (uv tpl) in
+      let (params, var_list) = List.split (uv tpl) in
+      let variance = List.map variance_of_var var_list in
       let params = List.map uv params in
       let ct = Some (ctyp ct) in
       let tk = if uv pf then ocaml_ptype_abstract else Ptype_abstract in
       let pf = if uv pf then Private else Public in
-      (long_id_of_string_list loc (uv id),
+      let li = long_id_of_string_list loc (uv id) in
+      let wc =
        match
          ocaml_type_declaration params [] tk pf ct (mkloc loc) variance
        with
        [ Some td -> Pwith_type td
-       | None -> error loc "no such with constraint in this ocaml version" ])
+       | None -> error loc "no such with constraint in this ocaml version" ]
+      in
+      (li, wc)
   | WcMod loc id m ->
       (long_id_of_string_list loc (uv id),
        Pwith_module (module_expr_long_id m)) ]
@@ -597,7 +609,8 @@ value rec sep_expr_acc l =
 ;
 
 value class_info class_expr ci =
-  let (params, variance) = List.split (uv (snd ci.ciPrm)) in
+  let (params, var_list) = List.split (uv (snd ci.ciPrm)) in
+  let variance = List.map variance_of_var var_list in
   match ocaml_class_infos with
   [ Some class_infos ->
       class_infos (if uv ci.ciVir then Virtual else Concrete)

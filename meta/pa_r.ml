@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.136 2010/09/11 17:53:26 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.137 2010/09/13 13:48:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -490,9 +490,9 @@ EXTEND
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> (t1, t2) ] ]
   ;
   type_parameter:
-    [ [ "'"; i = V ident "" -> (i, (False, False))
-      | "+"; "'"; i = V ident "" -> (i, (True, False))
-      | "-"; "'"; i = V ident "" -> (i, (False, True)) ] ]
+    [ [ "'"; i = V ident "" -> (i, None)
+      | "+"; "'"; i = V ident "" -> (i, Some True)
+      | "-"; "'"; i = V ident "" -> (i, Some False) ] ]
   ;
   ctyp:
     [ "top"

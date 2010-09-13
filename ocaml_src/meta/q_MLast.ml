@@ -3603,7 +3603,7 @@ Grammar.extend
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__100))])],
       Gramext.action
         (fun (i : 'e__100) _ _ (loc : Ploc.t) ->
-           (Qast.Tuple [i; Qast.Tuple [Qast.Bool false; Qast.Bool true]] :
+           (Qast.Tuple [i; Qast.Option (Some (Qast.Bool false))] :
             'type_parameter));
       [Gramext.Stoken ("", "+"); Gramext.Stoken ("", "'");
        Gramext.Sfacto
@@ -3622,7 +3622,7 @@ Grammar.extend
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__99))])],
       Gramext.action
         (fun (i : 'e__99) _ _ (loc : Ploc.t) ->
-           (Qast.Tuple [i; Qast.Tuple [Qast.Bool true; Qast.Bool false]] :
+           (Qast.Tuple [i; Qast.Option (Some (Qast.Bool true))] :
             'type_parameter));
       [Gramext.Stoken ("", "'");
        Gramext.Sfacto
@@ -3641,8 +3641,7 @@ Grammar.extend
                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__98))])],
       Gramext.action
         (fun (i : 'e__98) _ (loc : Ploc.t) ->
-           (Qast.Tuple [i; Qast.Tuple [Qast.Bool false; Qast.Bool false]] :
-            'type_parameter))]];
+           (Qast.Tuple [i; Qast.Option None] : 'type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,
     [Some "top", Some Gramext.LeftA,
      [[Gramext.Sself; Gramext.Stoken ("", "=="); Gramext.Sself],

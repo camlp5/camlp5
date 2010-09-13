@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_sml.ml,v 1.30 2010/09/11 17:53:25 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.31 2010/09/13 13:48:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -382,9 +382,8 @@ EXTEND
   tyvarseq: [ [ -> not_impl loc "tyvarseq" ] ];
 
   tyvar_pc:
-    [ [ "'"; x1 = V LIDENT -> [(x1, (False, False))]
-      | "'"; x1 = V LIDENT; ","; l = tyvar_pc ->
-          [(x1, (False, False)) :: l] ] ]
+    [ [ "'"; x1 = V LIDENT -> [(x1, None)]
+      | "'"; x1 = V LIDENT; ","; l = tyvar_pc -> [(x1, None) :: l] ] ]
   ;
   id:
     [ [ x1 = idd -> x1
@@ -656,7 +655,7 @@ EXTEND
            MLast.tdCon = <:vala< [] >>} ] ]
   ;
   tyvars:
-    [ [ "'"; x1 = V LIDENT -> [(x1, (False, False))]
+    [ [ "'"; x1 = V LIDENT -> [(x1, None)]
       | "("; x1 = tyvar_pc; ")" -> x1
       | -> [] ] ]
   ;

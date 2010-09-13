@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.103 2010/09/11 18:01:51 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.104 2010/09/13 13:48:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -817,9 +817,9 @@ EXTEND
       | "("; tpl = LIST1 type_parameter SEP ","; ")" -> tpl ] ]
   ;
   type_parameter:
-    [ [ "'"; i = V ident "" -> (i, (False, False))
-      | "+"; "'"; i = V ident "" -> (i, (True, False))
-      | "-"; "'"; i = V ident "" -> (i, (False, True)) ] ]
+    [ [ "'"; i = V ident "" -> (i, None)
+      | "+"; "'"; i = V ident "" -> (i, Some True)
+      | "-"; "'"; i = V ident "" -> (i, Some False) ] ]
   ;
   constructor_declaration:
     [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->

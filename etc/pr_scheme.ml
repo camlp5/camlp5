@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.79 2010/09/11 17:53:25 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.80 2010/09/13 13:48:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -139,8 +139,12 @@ value braceless pc b =
    aft = sprintf ">}%s" pc.aft}
 ;
 
-value type_param pc (s, (pl, mi)) =
-  pprintf pc "%s'%s" (if pl then "+" else if mi then "-" else "")
+value type_param pc (s, vari) =
+  pprintf pc "%s'%s"
+    (match vari with
+     [ Some True -> "+"
+     | Some False -> "-"
+     | None -> "" ])
     (Pcaml.unvala s)
 ;
 

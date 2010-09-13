@@ -1489,17 +1489,16 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'ident) _ _ (loc : Ploc.t) ->
-           (i, (false, true) : 'type_parameter));
+           (i, Some false : 'type_parameter));
       [Gramext.Stoken ("", "+"); Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'ident) _ _ (loc : Ploc.t) ->
-           (i, (true, false) : 'type_parameter));
+           (i, Some true : 'type_parameter));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ (loc : Ploc.t) ->
-           (i, (false, false) : 'type_parameter))]];
+        (fun (i : 'ident) _ (loc : Ploc.t) -> (i, None : 'type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,
     [Some "top", Some Gramext.LeftA,
      [[Gramext.Sself; Gramext.Stoken ("", "=="); Gramext.Sself],
