@@ -421,8 +421,8 @@ module Meta_make (C : MetaSig) =
       | CrVal (_, b1, b2, s, e) ->
           C.node "CrVal"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e]
-      | CrVir (_, s, b, t) ->
-          C.node "CrVir" [C.vala C.string s; C.vala C.bool b; ctyp t]
+      | CrVir (_, b, s, t) ->
+          C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t]
     ;;
   end
 ;;

@@ -4517,7 +4517,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'e__133) (pf : 'e__132) _ _ (loc : Ploc.t) ->
-           (Qast.Node ("CrVir", [Qast.Loc; l; pf; t]) : 'class_str_item));
+           (Qast.Node ("CrVir", [Qast.Loc; pf; l; t]) : 'class_str_item));
       [Gramext.Stoken ("", "value");
        Gramext.Sfacto
          (Gramext.srules

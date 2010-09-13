@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.34 2010/09/13 15:01:50 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.35 2010/09/13 15:13:05 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -658,11 +658,11 @@ MLast.CrIni loc e;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $_lid:s$ = $e$ >>;
 
-MLast.CrVir loc (Ploc.VaVal s) (Ploc.VaVal True) t;
-MLast.CrVir loc (Ploc.VaVal s) (Ploc.VaVal False) t;
-MLast.CrVir loc (Ploc.VaVal s) (Ploc.VaVal b) t;
-MLast.CrVir loc (Ploc.VaVal s) b t;
-MLast.CrVir loc s (Ploc.VaVal True) t;
-MLast.CrVir loc s (Ploc.VaVal False) t;
-MLast.CrVir loc s (Ploc.VaVal b) t;
-MLast.CrVir loc s b t;
+<:class_str_item< method virtual private $lid:s$ : $t$ >>;
+<:class_str_item< method virtual private $_lid:s$ : $t$ >>;
+<:class_str_item< method virtual $lid:s$ : $t$ >>;
+<:class_str_item< method virtual $_lid:s$ : $t$ >>;
+<:class_str_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
+<:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
+<:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
+<:class_str_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.146 2010/09/13 13:48:02 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.147 2010/09/13 15:13:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -988,7 +988,7 @@ EXTEND
           Qast.Node "CrVal" [Qast.Loc; ovf; mf; lab; e]
       | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid" "";
         ":"; t = ctyp ->
-          Qast.Node "CrVir" [Qast.Loc; l; pf; t]
+          Qast.Node "CrVir" [Qast.Loc; pf; l; t]
       | "method"; ovf = SV (FLAG "!") "!"; pf = SV (FLAG "private") "priv";
         l = SV label "lid" ""; topt = SV (OPT polyt); e = fun_binding ->
           Qast.Node "CrMth" [Qast.Loc; ovf; pf; l; topt; e]

@@ -1885,7 +1885,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (l : 'label) (pf : bool) _ _ (loc : Ploc.t) ->
-           (MLast.CrVir (loc, l, pf, t) : 'class_str_item));
+           (MLast.CrVir (loc, pf, l, t) : 'class_str_item));
       [Gramext.Stoken ("", "value"); Gramext.Sflag (Gramext.Stoken ("", "!"));
        Gramext.Sflag (Gramext.Stoken ("", "mutable"));
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));

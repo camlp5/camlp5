@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.114 2010/09/13 13:48:02 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.115 2010/09/13 15:13:04 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -1220,7 +1220,7 @@ and class_str_item c l =
       [ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l]
   | CrVal loc ovf mf s e ->
       [ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l]
-  | CrVir loc s b t ->
+  | CrVir loc b s t ->
       [Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l] ]
 ;
 

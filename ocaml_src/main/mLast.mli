@@ -195,7 +195,7 @@ and class_str_item =
   | CrIni of loc * expr
   | CrMth of loc * bool * bool * string * ctyp option * expr
   | CrVal of loc * bool * bool * string * expr
-  | CrVir of loc * string * bool * ctyp
+  | CrVir of loc * bool * string * ctyp
 ;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;

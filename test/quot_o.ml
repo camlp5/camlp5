@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 1.20 2010/09/13 14:35:19 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 1.21 2010/09/13 15:13:05 deraugla Exp $ *)
 
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
@@ -712,11 +712,11 @@ MLast.CrVal (loc, b1, Ploc.VaVal b2, Ploc.VaVal s, e);;
 MLast.CrVal (loc, b1, Ploc.VaVal b2, s, e);;
 MLast.CrVal (loc, b1, b2, Ploc.VaVal s, e);;
 MLast.CrVal (loc, b1, b2, s, e);;
-MLast.CrVir (loc, Ploc.VaVal s, Ploc.VaVal true, t);;
-MLast.CrVir (loc, Ploc.VaVal s, Ploc.VaVal false, t);;
-MLast.CrVir (loc, Ploc.VaVal s, Ploc.VaVal b, t);;
-MLast.CrVir (loc, Ploc.VaVal s, b, t);;
-MLast.CrVir (loc, s, Ploc.VaVal true, t);;
-MLast.CrVir (loc, s, Ploc.VaVal false, t);;
-MLast.CrVir (loc, s, Ploc.VaVal b, t);;
-MLast.CrVir (loc, s, b, t);;
+MLast.CrVir (loc, Ploc.VaVal true, Ploc.VaVal s, t);;
+MLast.CrVir (loc, Ploc.VaVal true, s, t);;
+MLast.CrVir (loc, Ploc.VaVal false, Ploc.VaVal s, t);;
+MLast.CrVir (loc, Ploc.VaVal false, s, t);;
+MLast.CrVir (loc, Ploc.VaVal b, Ploc.VaVal s, t);;
+MLast.CrVir (loc, Ploc.VaVal b, s, t);;
+MLast.CrVir (loc, b, Ploc.VaVal s, t);;
+MLast.CrVir (loc, b, s, t);;
