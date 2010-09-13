@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 1.23 2010/09/13 16:28:27 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 1.24 2010/09/13 20:14:36 deraugla Exp $ *)
 
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
@@ -91,11 +91,11 @@ MLast.PaLaz (loc, p);;
 MLast.PaLid (loc, Ploc.VaVal s);;
 MLast.PaLid (loc, s);;
 MLast.PaOlb (loc, Ploc.VaVal s, None);;
-MLast.PaOlb (loc, Ploc.VaVal s, Some pe);;
-MLast.PaOlb (loc, Ploc.VaVal s, pe);;
+MLast.PaOlb (loc, Ploc.VaVal s, Some (p, Ploc.VaVal (Some e)));;
+MLast.PaOlb (loc, Ploc.VaVal s, Some (p, Ploc.VaVal None));;
 MLast.PaOlb (loc, s, None);;
-MLast.PaOlb (loc, s, Some pe);;
-MLast.PaOlb (loc, s, pe);;
+MLast.PaOlb (loc, s, Some (p, Ploc.VaVal (Some e)));;
+MLast.PaOlb (loc, s, Some (p, Ploc.VaVal None));;
 MLast.PaOrp (loc, p1, p2);;
 MLast.PaRec (loc, Ploc.VaVal lpp);;
 MLast.PaRec (loc, lpp);;

@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.40 2010/09/13 19:27:55 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.41 2010/09/13 20:14:36 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -87,28 +87,24 @@ MLast.PaInt loc (Ploc.VaVal s1) s2;
 MLast.PaInt loc s1 s2;
 MLast.PaFlo loc (Ploc.VaVal s);
 MLast.PaFlo loc s;
-MLast.PaLab loc (Ploc.VaVal s) None;
-MLast.PaLab loc (Ploc.VaVal s) (Some p);
+
+<:patt< ~$s$ >>;
+<:patt< ~$s$:$p$ >>;
 MLast.PaLab loc (Ploc.VaVal s) p;
-MLast.PaLab loc s None;
-MLast.PaLab loc s (Some p);
+<:patt< ~$_:s$ >>;
+<:patt< ~$_:s$:$p$ >>;
 MLast.PaLab loc s p;
+
 MLast.PaLaz loc p;
 MLast.PaLid loc (Ploc.VaVal s);
 MLast.PaLid loc s;
 
 <:patt< ?$s$ >>;
-MLast.PaOlb loc (Ploc.VaVal s) (Some pe);
-MLast.PaOlb loc (Ploc.VaVal s) pe;
-<:patt< ?$_:s$ >>;
-
 <:patt< ?$s$: ($p$ = $e$) >>;
 <:patt< ?$s$: ($p$) >>;
+<:patt< ?$_:s$ >>;
 <:patt< ?$_:s$: ($p$ = $e$) >>;
 <:patt< ?$_:s$: ($p$) >>;
-
-MLast.PaOlb loc s (Some pe);
-MLast.PaOlb loc s pe;
 
 MLast.PaOrp loc p1 p2;
 MLast.PaRec loc (Ploc.VaVal lpp);
@@ -169,12 +165,14 @@ MLast.ExFun loc lpee;
 MLast.ExIfe loc e1 e2 e3;
 MLast.ExInt loc (Ploc.VaVal s1) s2;
 MLast.ExInt loc s1 s2;
-MLast.ExLab loc (Ploc.VaVal s) None;
-MLast.ExLab loc (Ploc.VaVal s) (Some e);
+
+<:expr< ~$s$ >>;
+<:expr< ~$s$:$e$ >>;
 MLast.ExLab loc (Ploc.VaVal s) e;
-MLast.ExLab loc s None;
-MLast.ExLab loc s (Some e);
+<:expr< ~$_:s$ >>;
+<:expr< ~$_:s$:$e$ >>;
 MLast.ExLab loc s e;
+
 MLast.ExLaz loc e;
 
 <:expr< let rec $list:lpe$ in $e$ >>;
@@ -204,21 +202,24 @@ MLast.ExNew loc ls;
 <:expr< object $_opt:p$ $list:lcsi$ end >>;
 <:expr< object $_opt:p$ $_list:lcsi$ end >>;
 
-MLast.ExOlb loc (Ploc.VaVal s) None;
-MLast.ExOlb loc (Ploc.VaVal s) (Some e);
+<:expr< ?$s$ >>;
+<:expr< ?$s$:$e$ >>;
 MLast.ExOlb loc (Ploc.VaVal s) e;
-MLast.ExOlb loc s None;
-MLast.ExOlb loc s (Some e);
+<:expr< ?$_:s$ >>;
+<:expr< ?$_:s$:$e$ >>;
 MLast.ExOlb loc s e;
+
 MLast.ExOvr loc (Ploc.VaVal lse);
 MLast.ExOvr loc lse;
 MLast.ExPck loc me mt;
-MLast.ExRec loc (Ploc.VaVal lpe) None;
-MLast.ExRec loc (Ploc.VaVal lpe) (Some e);
+
+<:expr< {$list:lpe$} >>;
+<:expr< {($e$) with $list:lpe$} >>;
 MLast.ExRec loc (Ploc.VaVal lpe) e;
-MLast.ExRec loc lpe None;
-MLast.ExRec loc lpe (Some e);
+<:expr< {$_list:lpe$} >>;
+<:expr< {($e$) with $_list:lpe$} >>;
 MLast.ExRec loc lpe e;
+
 MLast.ExSeq loc (Ploc.VaVal le);
 MLast.ExSeq loc le;
 MLast.ExSnd loc e (Ploc.VaVal s);
