@@ -1,3 +1,5 @@
+(* $Id: quot_o.ml,v 1.20 2010/09/13 14:35:19 deraugla Exp $ *)
+
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
 MLast.TyAny loc;;

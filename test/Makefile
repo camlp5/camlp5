@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2010/02/19 09:06:41 deraugla Exp $
+# $Id: Makefile,v 1.10 2010/09/13 14:35:19 deraugla Exp $
 # Copyright (c) INRIA 2007-2010
 
 DEP=../etc/pr_r.cmo quot_r.out.ml
@@ -9,15 +9,15 @@ clean:
 	rm -f *.ml[tu]
 
 quot_r.mlt: quot_r.ml ../meta/camlp5r ../meta/q_MLast.cmo $(DEP)
-	../meta/camlp5r ../meta/q_MLast.cmo ../etc/pr_r.cmo quot_r.ml | diff quot_r.out.ml -
+	../meta/camlp5r ../meta/q_MLast.cmo ../etc/pr_r.cmo quot_r.ml | diff -I '(\*' quot_r.out.ml -
 	@touch $@
 
 quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast.cmo $(DEP)
-	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo quot_r.ml | diff quot_r.out.ml -
+	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo quot_r.ml | diff -I '(\*' quot_r.out.ml -
 	@touch $@
 
 quot_o.mlu: quot_o.ml ../etc/camlp5o ../meta/q_ast.cmo $(DEP)
-	../etc/camlp5o ../meta/q_ast.cmo ../etc/pr_r.cmo quot_o.ml | diff quot_r.out.ml -
+	../etc/camlp5o ../meta/q_ast.cmo ../etc/pr_r.cmo quot_o.ml | diff -I '(\*' quot_r.out.ml -
 	@touch $@
 
 quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast.cmo $(DEP)

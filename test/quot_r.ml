@@ -1,3 +1,5 @@
+(* $Id: quot_r.ml,v 1.26 2010/09/13 14:35:19 deraugla Exp $ *)
+
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
 <:ctyp< _ >>;
@@ -345,7 +347,7 @@ MLast.StOpn loc ls;
 MLast.StTyp loc (Ploc.VaVal ltd);
 MLast.StTyp loc ltd;
 MLast.StUse loc s lsil;
-MLast.StVal loc (Ploc.VaVal True) (Ploc.VaVal lpe);
+<:str_item< value rec $list:lpe$ >>;
 MLast.StVal loc (Ploc.VaVal True) lpe;
 MLast.StVal loc (Ploc.VaVal False) (Ploc.VaVal lpe);
 MLast.StVal loc (Ploc.VaVal False) lpe;
