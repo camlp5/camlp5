@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.36 2010/09/13 15:37:07 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.37 2010/09/13 15:40:54 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -479,14 +479,16 @@ MLast.CeLet loc (Ploc.VaVal b) (Ploc.VaVal lpe) ce;
 MLast.CeLet loc (Ploc.VaVal b) lpe ce;
 MLast.CeLet loc b (Ploc.VaVal lpe) ce;
 MLast.CeLet loc b lpe ce;
-MLast.CeStr loc (Ploc.VaVal None) (Ploc.VaVal lcsi);
-MLast.CeStr loc (Ploc.VaVal None) lcsi;
-MLast.CeStr loc (Ploc.VaVal (Some p)) (Ploc.VaVal lcsi);
-MLast.CeStr loc (Ploc.VaVal (Some p)) lcsi;
-MLast.CeStr loc (Ploc.VaVal p) (Ploc.VaVal lcsi);
-MLast.CeStr loc (Ploc.VaVal p) lcsi;
-MLast.CeStr loc p (Ploc.VaVal lcsi);
-MLast.CeStr loc p lcsi;
+
+<:class_expr< object $list:lcsi$ end >>;
+<:class_expr< object $_list:lcsi$ end >>;
+<:class_expr< object ($p$) $list:lcsi$ end >>;
+<:class_expr< object ($p$) $_list:lcsi$ end >>;
+<:class_expr< object $opt:p$ $list:lcsi$ end >>;
+<:class_expr< object $opt:p$ $_list:lcsi$ end >>;
+<:class_expr< object $_opt:p$ $list:lcsi$ end >>;
+<:class_expr< object $_opt:p$ $_list:lcsi$ end >>;
+
 MLast.CeTyc loc ce ct;
 MLast.CeXtr loc s None;
 MLast.CeXtr loc s (Some ce);
