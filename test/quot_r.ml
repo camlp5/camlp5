@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.29 2010/09/13 14:45:49 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.30 2010/09/13 14:48:48 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -236,14 +236,16 @@ MLast.SgClt loc (Ploc.VaVal lcict);
 MLast.SgClt loc lcict;
 MLast.SgDcl loc (Ploc.VaVal lsi);
 MLast.SgDcl loc lsi;
-MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal None);
-MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal (Some e));
-MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal e);
-MLast.SgDir loc (Ploc.VaVal s) e;
-MLast.SgDir loc s (Ploc.VaVal None);
-MLast.SgDir loc s (Ploc.VaVal (Some e));
-MLast.SgDir loc s (Ploc.VaVal e);
-MLast.SgDir loc s e;
+
+<:sig_item< # $lid:s$ >>;
+<:sig_item< # $lid:s$ $e$ >>;
+<:sig_item< # $lid:s$ $opt:e$ >>;
+<:sig_item< # $lid:s$ $_opt:e$ >>;
+<:sig_item< # $_lid:s$ >>;
+<:sig_item< # $_lid:s$ $e$ >>;
+<:sig_item< # $_lid:s$ $opt:e$ >>;
+<:sig_item< # $_lid:s$ $_opt:e$ >>;
+
 MLast.SgExc loc (Ploc.VaVal s) (Ploc.VaVal lt);
 MLast.SgExc loc (Ploc.VaVal s) lt;
 MLast.SgExc loc s (Ploc.VaVal lt);
@@ -253,14 +255,16 @@ MLast.SgExt loc (Ploc.VaVal s) t ls;
 MLast.SgExt loc s t (Ploc.VaVal ls);
 MLast.SgExt loc s t ls;
 MLast.SgInc loc mt;
-MLast.SgMod loc (Ploc.VaVal True) (Ploc.VaVal lsmt);
-MLast.SgMod loc (Ploc.VaVal True) lsmt;
-MLast.SgMod loc (Ploc.VaVal False) (Ploc.VaVal lsmt);
-MLast.SgMod loc (Ploc.VaVal False) lsmt;
-MLast.SgMod loc (Ploc.VaVal b) (Ploc.VaVal lsmt);
-MLast.SgMod loc (Ploc.VaVal b) lsmt;
-MLast.SgMod loc b (Ploc.VaVal lsmt);
-MLast.SgMod loc b lsmt;
+
+<:sig_item< module rec $list:lsmt$ >>;
+<:sig_item< module rec $_list:lsmt$ >>;
+<:sig_item< module $list:lsmt$ >>;
+<:sig_item< module $_list:lsmt$ >>;
+<:sig_item< module $flag:b$ $list:lsmt$ >>;
+<:sig_item< module $flag:b$ $_list:lsmt$ >>;
+<:sig_item< module $_flag:b$ $list:lsmt$ >>;
+<:sig_item< module $_flag:b$ $_list:lsmt$ >>;
+
 MLast.SgMty loc (Ploc.VaVal s) mt;
 MLast.SgMty loc s mt;
 MLast.SgOpn loc (Ploc.VaVal ls);
@@ -310,6 +314,7 @@ MLast.StClt loc (Ploc.VaVal lcict);
 MLast.StClt loc lcict;
 MLast.StDcl loc (Ploc.VaVal lsi);
 MLast.StDcl loc lsi;
+
 <:str_item< # $lid:s$ >>;
 <:str_item< # $lid:s$ $e$ >>;
 <:str_item< # $lid:s$ $opt:e$ >>;
@@ -318,6 +323,7 @@ MLast.StDcl loc lsi;
 <:str_item< # $_lid:s$ $e$ >>;
 <:str_item< # $_lid:s$ $opt:e$ >>;
 <:str_item< # $_lid:s$ $_opt:e$ >>;
+
 <:str_item< exception $uid:s$ of $list:lt$ = $list:ls$ >>;
 <:str_item< exception $uid:s$ of $list:lt$ = $_list:ls$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ = $list:ls$ >>;
@@ -326,6 +332,7 @@ MLast.StDcl loc lsi;
 <:str_item< exception $_uid:s$ of $list:lt$ = $_list:ls$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $list:ls$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $_list:ls$ >>;
+
 MLast.StExp loc e;
 MLast.StExt loc (Ploc.VaVal s) t (Ploc.VaVal ls);
 MLast.StExt loc (Ploc.VaVal s) t ls;
