@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.33 2010/09/13 14:58:58 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.34 2010/09/13 15:01:50 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -420,14 +420,16 @@ MLast.CtCon loc ct lt;
 MLast.CtFun loc t ct;
 MLast.CtIde loc (Ploc.VaVal s);
 MLast.CtIde loc s;
-MLast.CtSig loc (Ploc.VaVal None) (Ploc.VaVal lcsi);
-MLast.CtSig loc (Ploc.VaVal None) lcsi;
-MLast.CtSig loc (Ploc.VaVal (Some t)) (Ploc.VaVal lcsi);
-MLast.CtSig loc (Ploc.VaVal (Some t)) lcsi;
-MLast.CtSig loc (Ploc.VaVal t) (Ploc.VaVal lcsi);
-MLast.CtSig loc (Ploc.VaVal t) lcsi;
-MLast.CtSig loc t (Ploc.VaVal lcsi);
-MLast.CtSig loc t lcsi;
+
+<:class_type< object $list:lcsi$ end >>;
+<:class_type< object $_list:lcsi$ end >>;
+<:class_type< object ($t$) $list:lcsi$ end >>;
+<:class_type< object ($t$) $_list:lcsi$ end >>;
+<:class_type< object $opt:t$ $list:lcsi$ end >>;
+<:class_type< object $opt:t$ $_list:lcsi$ end >>;
+<:class_type< object $_opt:t$ $list:lcsi$ end >>;
+<:class_type< object $_opt:t$ $_list:lcsi$ end >>;
+
 MLast.CtXtr loc s None;
 MLast.CtXtr loc s (Some ct);
 MLast.CtXtr loc s ct;
