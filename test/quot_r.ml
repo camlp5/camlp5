@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.38 2010/09/13 15:43:02 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.39 2010/09/13 16:28:27 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -37,13 +37,22 @@ MLast.TyTup loc (Ploc.VaVal lt);
 MLast.TyTup loc lt;
 MLast.TyUid loc (Ploc.VaVal s);
 MLast.TyUid loc s;
+
 MLast.TyVrn loc (Ploc.VaVal lpv) None;
+MLast.TyVrn loc (Ploc.VaVal lpv) (Some None);
+MLast.TyVrn loc (Ploc.VaVal lpv) (Some (Some (Ploc.VaVal ls)));
+MLast.TyVrn loc (Ploc.VaVal lpv) (Some (Some ls));
 MLast.TyVrn loc (Ploc.VaVal lpv) (Some ls);
 MLast.TyVrn loc (Ploc.VaVal lpv) ls;
 MLast.TyVrn loc lpv None;
+MLast.TyVrn loc lpv (Some None);
+MLast.TyVrn loc lpv (Some (Some (Ploc.VaVal ls)));
+MLast.TyVrn loc lpv (Some (Some ls));
 MLast.TyVrn loc lpv (Some ls);
 MLast.TyVrn loc lpv ls;
+
 MLast.TyXtr loc s None;
+MLast.TyXtr loc s (Some (Ploc.VaVal t));
 MLast.TyXtr loc s (Some t);
 MLast.TyXtr loc s t;
 
@@ -109,6 +118,7 @@ MLast.PaUid loc s;
 MLast.PaVrn loc (Ploc.VaVal s);
 MLast.PaVrn loc s;
 MLast.PaXtr loc s None;
+MLast.PaXtr loc s (Some (Ploc.VaVal p));
 MLast.PaXtr loc s (Some p);
 MLast.PaXtr loc s p;
 MLast.ExAcc loc e1 e2;
@@ -220,6 +230,7 @@ MLast.ExVrn loc s;
 MLast.ExWhi loc e (Ploc.VaVal le);
 MLast.ExWhi loc e le;
 MLast.ExXtr loc s None;
+MLast.ExXtr loc s (Some (Ploc.VaVal e));
 MLast.ExXtr loc s (Some e);
 MLast.ExXtr loc s e;
 MLast.MtAcc loc mt1 mt2;
@@ -238,6 +249,7 @@ MLast.MtUid loc s;
 MLast.MtWit loc mt (Ploc.VaVal lwc);
 MLast.MtWit loc mt lwc;
 MLast.MtXtr loc s None;
+MLast.MtXtr loc s (Some (Ploc.VaVal mt));
 MLast.MtXtr loc s (Some mt);
 MLast.MtXtr loc s mt;
 MLast.SgCls loc (Ploc.VaVal lcict);
@@ -285,6 +297,7 @@ MLast.SgUse loc s lsil;
 MLast.SgVal loc (Ploc.VaVal s) t;
 MLast.SgVal loc s t;
 MLast.SgXtr loc s None;
+MLast.SgXtr loc s (Some (Ploc.VaVal si));
 MLast.SgXtr loc s (Some si);
 MLast.SgXtr loc s si;
 
@@ -318,6 +331,7 @@ MLast.MeUid loc (Ploc.VaVal s);
 MLast.MeUid loc s;
 MLast.MeUnp loc e mt;
 MLast.MeXtr loc s None;
+MLast.MeXtr loc s (Some (Ploc.VaVal me));
 MLast.MeXtr loc s (Some me);
 MLast.MeXtr loc s me;
 MLast.StCls loc (Ploc.VaVal lcice);
@@ -379,6 +393,7 @@ MLast.StUse loc s lsil;
 <:str_item< value $_flag:b$ $_list:lpe$ >>;
 
 MLast.StXtr loc s None;
+MLast.StXtr loc s (Some (Ploc.VaVal si));
 MLast.StXtr loc s (Some si);
 MLast.StXtr loc s si;
 
@@ -433,6 +448,7 @@ MLast.CtIde loc s;
 <:class_type< object $_opt:t$ $_list:lcsi$ end >>;
 
 MLast.CtXtr loc s None;
+MLast.CtXtr loc s (Some (Ploc.VaVal ct));
 MLast.CtXtr loc s (Some ct);
 MLast.CtXtr loc s ct;
 MLast.CgCtr loc t1 t2;
@@ -494,6 +510,7 @@ MLast.CeFun loc p ce;
 
 MLast.CeTyc loc ce ct;
 MLast.CeXtr loc s None;
+MLast.CeXtr loc s (Some (Ploc.VaVal ce));
 MLast.CeXtr loc s (Some ce);
 MLast.CeXtr loc s ce;
 MLast.CrCtr loc t1 t2;

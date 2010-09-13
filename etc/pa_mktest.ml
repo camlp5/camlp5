@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 1.1 2010/09/13 10:05:31 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 1.2 2010/09/13 16:28:27 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -75,30 +75,18 @@ value name_of_vars proj_t xl =
     rev_tnl
 ;
 
-value expr_list_of_type loc f n =
+value rec expr_list_of_type loc f n =
   fun
   [ <:ctyp< Ploc.vala $t$ >> ->
-      match t with
-      [ <:ctyp< bool >> ->
-          f <:expr< Ploc.VaVal True >> @
-          f <:expr< Ploc.VaVal False >> @
-          f <:expr< Ploc.VaVal $lid:n$ >> @
-          f <:expr< $lid:n$ >>
-      | <:ctyp< option $t$ >> ->
-          f <:expr< Ploc.VaVal None >> @
-          f <:expr< Ploc.VaVal (Some $lid:n$) >> @
-          f <:expr< Ploc.VaVal $lid:n$ >> @
-          f <:expr< $lid:n$ >>
-      | _ ->
-          f <:expr< Ploc.VaVal $lid:n$ >> @
-          f <:expr< $lid:n$ >> ]
+      expr_list_of_type loc (fun e -> f <:expr< Ploc.VaVal $e$ >>) n t @
+      f <:expr< $lid:n$ >>
   | <:ctyp< bool >> ->
       f <:expr< True >> @
       f <:expr< False >> @
       f <:expr< $lid:n$ >>
   | <:ctyp< option $t$ >> ->
       f <:expr< None >> @
-      f <:expr< Some $lid:n$ >> @
+      expr_list_of_type loc (fun e -> f <:expr< Some $e$ >>) n t @
       f <:expr< $lid:n$ >>
   | _ ->
       f <:expr< $lid:n$ >> ]
