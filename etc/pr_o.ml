@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.227 2010/09/14 13:43:52 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.228 2010/09/14 19:14:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1269,7 +1269,10 @@ EXTEND_PRINTER
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
         <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
-          pprintf pc "@[<1>(%p)@]" patt z ] ]
+          pprintf pc "@[<1>(%p)@]" patt z
+      | z ->
+          Ploc.raise (MLast.loc_of_patt z)
+            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_ctyp:
     [ "top"
@@ -1842,6 +1845,8 @@ EXTEND_PRINTER
   pr_patt: LEVEL "simple"
     [ [ <:patt< ? ($p$ : $t$) >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
+      | <:patt< ?($p$ : $t$ = $e$) >> ->
+          pprintf pc "?(%s :@;%p =@;%p)" p ctyp t expr e
 
       | <:patt< ?$s$ >> -> pprintf pc "?%s" s
       | <:patt< ? ($p$ = $e$) >> ->
@@ -1859,7 +1864,10 @@ EXTEND_PRINTER
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
       | <:patt:< # $list:sl$ >> ->
-          pprintf pc "#%p" mod_ident (loc, sl) ] ]
+          pprintf pc "#%p" mod_ident (loc, sl)
+      | z ->
+          Ploc.raise (MLast.loc_of_patt z)
+            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $list:cl$ >> ->

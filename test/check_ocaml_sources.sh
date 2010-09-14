@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.13 2010/09/13 18:39:07 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.14 2010/09/14 19:14:25 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -72,7 +72,7 @@ for i in $files; do
     main/camlp5 meta/pa_r.cmo -I etc pr_r.cmo pr_ro.cmo /tmp/t1.ml |
     diff -c /tmp/t1.ml -
     echo "*** testing revised syntax to normal syntax (t2.ml)"
-    main/camlp5 meta/pa_r.cmo -I etc pr_o.cmo /tmp/t1.ml > /tmp/t2.ml
+    main/camlp5 -nolib meta/pa_r.cmo -I etc pr_o.cmo /tmp/t1.ml > /tmp/t2.ml
     echo "*** testing $syntname to normal syntax (result: t3.ml)"
     main/camlp5 $syntax -I etc pr_o.cmo "$i" > /tmp/t3.ml
     echo "*** testing normal syntax on itself"

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.212 2010/09/14 13:43:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.213 2010/09/14 19:14:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1266,7 +1266,10 @@ EXTEND_PRINTER
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
         as z ->
-          pprintf pc "@[<1>(%p)@]" patt z ] ]
+          pprintf pc "@[<1>(%p)@]" patt z
+      | z ->
+          Ploc.raise (MLast.loc_of_patt z)
+            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_ctyp:
     [ "top"

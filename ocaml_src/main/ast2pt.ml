@@ -867,6 +867,11 @@ let rec expr =
             | PaTyc (_, PaLid (_, lab), _) -> uv lab
             | _ -> error loc "not impl label for that patt 2"
           in
+          let (p, eo) =
+            match uv eo with
+              Some (ExOlb (_, p, eo)) -> p, eo
+            | Some _ | None -> p, eo
+          in
           mkexp loc
             (ocaml_pexp_function ("?" ^ lab) (option expr (uv eo))
                [patt p, when_expr e (uv w)])
@@ -1329,14 +1334,33 @@ and class_expr =
                (List.map ctyp (uv tl)))
       | None -> error loc "no class expr desc in this ocaml version"
       end
-  | CeFun (loc, PaLab (_, lab, po), ce) ->
+  | CeFun (loc, PaLab (_, p, po), ce) ->
       begin match ocaml_pcl_fun with
-        Some pcl_fun -> error loc "CeFun PaLab"
+        Some pcl_fun ->
+          let _ =
+            match uv po with
+              Some _ -> error loc "label not implemented in that case 1"
+            | None -> None
+          in
+          let lab =
+            match p with
+              PaLid (_, s) -> uv s
+            | p -> error loc "label not implemented in that case 2"
+          in
+          mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version"
       end
-  | CeFun (loc, PaOlb (_, lab, eo), ce) ->
+  | CeFun (loc, PaOlb (_, p, eo), ce) ->
       begin match ocaml_pcl_fun with
-        Some pcl_fun -> error loc "CeFun PaOlb"
+        Some pcl_fun ->
+          let lab =
+            match p with
+              PaLid (_, s) -> uv s
+            | p -> error loc "label not implemented in that case 4"
+          in
+          mkpcl loc
+            (pcl_fun ("?" ^ lab) (option expr (uv eo)) (patt p)
+               (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version"
       end
   | CeFun (loc, p, ce) ->

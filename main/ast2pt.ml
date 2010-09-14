@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.118 2010/09/14 13:43:53 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.119 2010/09/14 19:14:24 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -740,6 +740,11 @@ value rec expr =
             | PaTyc _ (PaLid _ lab) _ -> uv lab
             | _ -> error loc "not impl label for that patt 2" ]
           in
+          let (p, eo) =
+            match uv eo with
+            [ Some (ExOlb _ p eo) -> (p, eo)
+            | Some _ | None -> (p, eo) ]
+          in
           mkexp loc
             (ocaml_pexp_function ("?" ^ lab) (option expr (uv eo))
                [(patt p, when_expr e (uv w))])
@@ -1156,13 +1161,32 @@ and class_expr =
             (pcl_constr
                (long_id_of_string_list loc (uv id)) (List.map ctyp (uv tl)))
       | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc (PaLab _ lab po) ce ->
+  | CeFun loc (PaLab _ p po) ce ->
       match ocaml_pcl_fun with
-      [ Some pcl_fun -> error loc "CeFun PaLab"
+      [ Some pcl_fun ->
+          let _ =
+            match uv po with
+            [ Some _ -> error loc "label not implemented in that case 1"
+            | None -> None ]
+          in
+          let lab =
+            match p with
+            [ PaLid _ s -> uv s
+            | p -> error loc "label not implemented in that case 2" ]
+          in
+          mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc (PaOlb _ lab eo) ce ->
+  | CeFun loc (PaOlb _ p eo) ce ->
       match ocaml_pcl_fun with
-      [ Some pcl_fun -> error loc "CeFun PaOlb"
+      [ Some pcl_fun ->
+          let lab =
+            match p with
+            [ PaLid _ s -> uv s
+            | p -> error loc "label not implemented in that case 4" ]
+          in
+          mkpcl loc
+            (pcl_fun ("?" ^ lab) (option expr (uv eo)) (patt p)
+               (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version" ]
   | CeFun loc p ce ->
       match ocaml_pcl_fun with

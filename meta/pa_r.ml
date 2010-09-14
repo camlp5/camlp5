@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.140 2010/09/14 17:25:20 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.141 2010/09/14 19:14:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -765,20 +765,16 @@ EXTEND
   name_tag:
     [ [ "`"; i = ident -> i ] ]
   ;
-  binding_with_patt:
-    [ [ "="; p = patt -> p
-      | ":"; t = ctyp; "="; p = patt -> <:patt< ($p$ : $t$) >> ] ]
-  ;
-  binding_with_expr:
-    [ [ "="; e = expr -> e
-      | ":"; t = ctyp; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
+  patt_tcon:
+    [ [ p = patt -> p
+      | p = patt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >> ] ]
   ;
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:patt< ` $_:s$ >>
       | "#"; sl = V mod_ident "list" "" -> <:patt< # $_:sl$ >>
-      | "~"; "{"; p = SELF; po = V (OPT binding_with_patt); "}" ->
+      | "~"; "{"; p = patt_tcon; po = V (OPT [ "="; p = patt -> p ]); "}" ->
           <:patt< ~{$p$ $_opt:po$ } >>
-      | "?"; "{"; p = SELF; eo = V (OPT binding_with_expr); "}" ->
+      | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
           <:patt< ?{$p$ $_opt:eo$ } >>
 
       | i = V TILDEIDENTCOLON; p = SELF ->
@@ -791,10 +787,14 @@ EXTEND
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
   ;
+  ipatt_tcon:
+    [ [ p = ipatt -> p
+      | p = ipatt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >> ] ]
+  ;
   ipatt:
-    [ [ "~"; "{"; p = SELF; po = V (OPT binding_with_patt); "}" ->
+    [ [ "~"; "{"; p = ipatt_tcon; po = V (OPT [ "="; p = patt -> p ]); "}" ->
           <:patt< ~{$p$ $_opt:po$ } >>
-      | "?"; "{"; p = SELF; eo = V (OPT binding_with_expr); "}" ->
+      | "?"; "{"; p = ipatt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
           <:patt< ?{$p$ $_opt:eo$ } >>
 
       | i = V TILDEIDENTCOLON; p = SELF ->
@@ -822,17 +822,17 @@ EXTEND
       | "?"; "("; i = V LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
           <:patt< ?{$_lid:i$ : $t$ = $e$} >>
       | "?"; "("; i = V LIDENT; ":"; t = ctyp; ")" ->
-          <:patt< ?{($_lid:i$ : $t$)} >>
+          <:patt< ?{$_lid:i$ : $t$} >>
       | "?"; "("; i = V LIDENT; "="; e = expr; ")" ->
-          <:patt< ? ($_lid:i$ = $e$) >>
+          <:patt< ?{$_lid:i$ = $e$} >>
       | "?"; "("; i = V LIDENT; ")" ->
-          <:patt< ? ($_lid:i$) >> ] ]
+          <:patt< ?{$_lid:i$} >> ] ]
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ "~"; "{"; p = patt; eo = V (OPT binding_with_expr); "}" ->
+      [ "~"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
           <:expr< ~{$p$ $_opt:eo$ } >>
-      | "?"; "{"; p = patt; eo = V (OPT binding_with_expr); "}" ->
+      | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
           <:expr< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~$_:i$: $e$ >>
       | i = V TILDEIDENT -> <:expr< ~$_:i$ >>

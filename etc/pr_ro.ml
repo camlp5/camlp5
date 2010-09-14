@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.96 2010/09/14 13:43:53 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.97 2010/09/14 19:14:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -13,6 +13,7 @@
 
 open Pcaml;
 open Prtools;
+open Printf;
 
 value not_impl name pc x =
   let desc =
@@ -227,6 +228,8 @@ EXTEND_PRINTER
   pr_patt: LEVEL "simple"
     [ [ <:patt< ?($p$ : $t$) >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
+      | <:patt< ?($p$ : $t$ = $e$) >> ->
+          pprintf pc "?(%s :@;%p =@;%p)" p ctyp t expr e
 
       | <:patt< ?$s$ >> ->
           pprintf pc "?%s" s
@@ -245,7 +248,10 @@ EXTEND_PRINTER
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
       | <:patt< # $list:sl$ >> ->
-          pprintf pc "#%p" mod_ident sl ] ]
+          pprintf pc "#%p" mod_ident sl
+      | z ->
+          Ploc.raise (MLast.loc_of_patt z)
+            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $list:cl$ >> ->
@@ -406,8 +412,7 @@ EXTEND_PRINTER
           pprintf pc "%s" s
       | z ->
           Ploc.raise (MLast.loc_of_class_type z)
-            (Failure (Printf.sprintf "pr_class_type %d" (Obj.tag (Obj.repr z))))
-            ] ]
+            (Failure (sprintf "pr_class_type %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_class_sig_item:
     [ "top"
@@ -459,7 +464,6 @@ EXTEND_PRINTER
       | z ->
           Ploc.raise (MLast.loc_of_class_str_item z)
             (Failure
-               (Printf.sprintf "pr_class_str_item %d"
-                  (Obj.tag (Obj.repr z)))) ] ]
+               (sprintf "pr_class_str_item %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
 END;
