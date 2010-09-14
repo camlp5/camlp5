@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.81 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.82 2010/09/14 19:51:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -93,11 +93,10 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< ?$_$: ($_$ = $_$) >> -> True
-  | <:patt< ?$_$: ($_$) >> -> True
-  | <:patt< ?$_$ >> -> True
-  | <:patt< ~$_$ >> -> True
-  | <:patt< ~$_$: $_$ >> -> True
+  | <:patt< ?{$_$ = ?{$_$ = $_$}} >> -> True
+  | <:patt< ?{$_$ = $_$} >> -> True
+  | <:patt< ?{$_$} >> -> True
+  | <:patt< ~{$_$} >> -> True
   | _ -> False ]
 ;
 
@@ -1001,21 +1000,21 @@ EXTEND_PRINTER
           in
           plist record_binding 0 (brace pc "")
             (List.map (fun fp -> (fp, "")) fpl)
-      | <:patt< ?$s$ >> ->
+      | <:patt< ?{$p$} >> ->
           plistbf 0 (paren pc "?")
-            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
-      | <:patt< ?$s$: ($p$) >> ->
+            [(fun pc -> pprintf pc "%p" patt p, "")]
+      | <:patt< ?{$lid:s$ = $lid:p$} >> ->
           plistbf 0 (paren pc "?")
             [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> p, "")], "")]
-      | <:patt< ? ($lid:s$ = $e$) >> ->
+      | <:patt< ?{$lid:s$ = $e$} >> ->
           plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> expr pc e, "")]
-      | <:patt< ?$s$: ($p$ = $e$) >> ->
+      | <:patt< ?{$lid:s$ = ?{$lid:p$ = $e$}} >> ->
           plistbf 0 (paren pc "?")
             [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> p, "")], "");
              (fun pc -> expr pc e, "")]
-      | <:patt< ~$s$ >> ->
+      | <:patt< ~{$lid:s$} >> ->
           plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:patt< ~$s$: $p$ >> ->

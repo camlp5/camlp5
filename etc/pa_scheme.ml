@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.99 2010/09/14 10:57:41 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.100 2010/09/14 19:51:35 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -901,16 +901,16 @@
    ((Schar loc s) <:patt< $_chr:s$ >>)
    ((Sstring loc s) <:patt< $_str:s$ >>)
    ((Sexpr loc [(Slid _ "~") se])
-    (let ((s (anti_lid_or_error se))) <:patt< ~$_:s$ >>))
+    (let ((s (anti_lid_or_error se))) <:patt< ~{$_:s$} >>))
    ((Sexpr loc [(Slid _ "~") se1 se2])
     (let ((s (anti_lid_or_error se1)) (p (patt_se se2)))
-     <:patt< ~$_:s$: $p$ >>))
+     <:patt< ~{$_:s$ = $p$} >>))
    ((Sexpr loc [(Slid _ "?") se])
     (match se
-     ((Sexpr _ [se1 (Slid _ p)])
-      (let ((s (anti_lid_or_error se1)))
-       <:patt< ?$_:s$: ($p$) >>))
-     (se (let ((s (anti_lid_or_error se))) <:patt< ?$_:s$ >>))))
+     ((Sexpr _ [se1 se2])
+      (let ((s (anti_lid_or_error se1)) (e (expr_se se2)))
+       <:patt< ?{$_:s$ = $e$} >>))
+     (se (let ((s (anti_lid_or_error se))) <:patt< ?{$_:s$} >>))))
    ((Sexpr loc [(Slid _ "?") se1 se2])
     (let ((e (expr_se se2)))
      (match se1

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.97 2010/09/14 19:14:24 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.98 2010/09/14 19:51:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -131,7 +131,7 @@ value rec is_irrefut_patt =
   fun
   [ <:patt< $lid:_$ >> -> True
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
-  | <:patt< ~$_$ >> -> True
+  | <:patt< ~{$_$} >> -> True
   | _ -> False ]
 ;
 
@@ -226,25 +226,25 @@ value sig_method_or_method_virtual pc virt priv s t =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ?($p$ : $t$) >> ->
-          pprintf pc "?(%s :@;%p)" p ctyp t
-      | <:patt< ?($p$ : $t$ = $e$) >> ->
-          pprintf pc "?(%s :@;%p =@;%p)" p ctyp t expr e
+    [ [ <:patt< ?{$p$ : $t$} >> ->
+          pprintf pc "?{%p :@;%p}" patt p ctyp t
+      | <:patt< ?{$p$ : $t$ = $e$} >> ->
+          pprintf pc "?(%p :@;%p =@;%p)" patt p ctyp t expr e
 
-      | <:patt< ?$s$ >> ->
-          pprintf pc "?%s" s
-      | <:patt< ? ($p$ = $e$) >> ->
-          pprintf pc "?(%s =@;%p)" p expr e
-      | <:patt< ? ($p$) >> ->
-          pprintf pc "?(%s)" p
-      | <:patt< ?$i$: ($p$ = $e$) >> ->
-          pprintf pc "?%s:@;<0 1>@[<1>(%s =@ %p)@]" i p expr e
-      | <:patt< ?$i$: ($p$) >> ->
-          pprintf pc "?%s:@;<0 1>(%s)" i p
-      | <:patt< ~$s$ >> ->
-          pprintf pc "~%s" s
-      | <:patt< ~$s$: $p$ >> ->
-          pprintf pc "~%s:%p" s curr p
+      | <:patt< ?{$p$} >> ->
+          pprintf pc "?%p" patt p
+      | <:patt< ?{$p$ = $e$} >> ->
+          pprintf pc "?(%p =@;%p)" patt p expr e
+      | <:patt< ?{$p$} >> ->
+          pprintf pc "?(%p)" patt p
+      | <:patt< ?{$p1$ = ?{$p2$ = $e$}} >> ->
+          pprintf pc "?%p:@;<0 1>@[<1>(%p =@ %p)@]" patt p1 patt p2 expr e
+      | <:patt< ?{$p$ = $e$} >> ->
+          pprintf pc "?%p:@;<0 1>(%p)" patt p expr e
+      | <:patt< ~{$p$} >> ->
+          pprintf pc "~%p" patt p
+      | <:patt< ~{$p1$ = $p2$} >> ->
+          pprintf pc "~%p:%p" patt p1 curr p2
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
       | <:patt< # $list:sl$ >> ->

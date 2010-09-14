@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.228 2010/09/14 19:14:24 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.229 2010/09/14 19:51:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -75,11 +75,10 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< ?$_$: ($_$ = $_$) >> -> True
-  | <:patt< ?$_$: ($_$) >> -> True
-  | <:patt< ?$_$ >> -> True
-  | <:patt< ~$_$ >> -> True
-  | <:patt< ~$_$: $_$ >> -> True
+  | <:patt< ?{$_$ = ?{$_$ = $_$}} >> -> True
+  | <:patt< ?{$_$ = $_$} >> -> True
+  | <:patt< ?{$_$} >> -> True
+  | <:patt< ~{$_$} >> -> True
   | _ -> False ]
 ;
 
@@ -104,11 +103,11 @@ value rec get_defined_ident =
   | <:patt< $p1$ | $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< $p1$ .. $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< ($p$ : $_$) >> -> get_defined_ident p
-  | <:patt< ~$_$ >> -> []
-  | <:patt< ~$_$: $p$ >> -> get_defined_ident p
-  | <:patt< ?$_$ >> -> []
-  | <:patt< ?$_$: ($p$) >> -> [p]
-  | <:patt< ?$_$: ($p$ = $e$) >> -> [p]
+  | <:patt< ~{$_$} >> -> []
+  | <:patt< ~{$_$ = $p$} >> -> get_defined_ident p
+  | <:patt< ?{$_$} >> -> []
+  | <:patt< ?{$lid:s$ = $_$} >> -> [s]
+  | <:patt< ?{$_$ = ?{$lid:s$ = $e$}} >> -> [s]
   | <:patt< $anti:p$ >> -> get_defined_ident p
   | _ -> [] ]
 ;
@@ -1261,7 +1260,7 @@ EXTEND_PRINTER
       | <:patt< $chr:s$ >> -> pprintf pc "'%s'" (ocaml_char s)
       | <:patt< $str:s$ >> -> pprintf pc "\"%s\"" s
       | <:patt< _ >> -> pprintf pc "_"
-      | <:patt:< ?$_$ >> | <:patt:< ? ($_$ = $_$) >> | <:patt:< ? ($_$) >> |
+      | <:patt:< ?{$_$} >> | <:patt:< ? ($_$ = $_$) >> | <:patt:< ? ($_$) >> |
         <:patt:< ?$_$: ($_$ = $_$) >> | <:patt:< ?$_$: ($_$) >> |
         <:patt:< ~$_$ >> | <:patt:< ~$_$: $_$ >> ->
           error loc "labels not pretty printed (in patt)"

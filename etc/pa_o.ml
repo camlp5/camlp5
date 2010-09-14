@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.106 2010/09/14 17:25:20 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.107 2010/09/14 19:51:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1153,29 +1153,29 @@ EXTEND
   ;
   labeled_patt:
     [ [ i = V TILDEIDENTCOLON; p = patt LEVEL "simple" ->
-           <:patt< ~$_:i$: $p$ >>
+           <:patt< ~{$_:i$ = $p$} >>
       | i = V TILDEIDENT ->
-           <:patt< ~$_:i$ >>
+           <:patt< ~{$_:i$} >>
       | "~"; "("; i = LIDENT; ")" ->
-           <:patt< ~$i$ >>
+           <:patt< ~{$lid:i$} >>
       | "~"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
-           <:patt< ~$i$: ($lid:i$ : $t$) >>
+           <:patt< ~{$lid:i$ : $t$} >>
       | i = V QUESTIONIDENTCOLON; j = LIDENT ->
-           <:patt< ?$_:i$: ($lid:j$) >>
+           <:patt< ?{$_:i$ = ?{$lid:j$}} >>
       | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; "="; e = expr; ")" ->
-          <:patt< ?$_:i$: ( $lid:j$ = $e$ ) >>
+          <:patt< ?{$_:i$ = ?{$lid:j$ = $e$}} >>
       | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; ":"; t = ctyp; ")" ->
-          <:patt< ?$_:i$: ( $j$ : $t$ ) >>
+          <:patt< ?{$_:i$ = ?{$lid:j$ : $t$}} >>
       | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; ":"; t = ctyp; "=";
         e = expr; ")" ->
-          <:patt< ?$_:i$: ( $j$ : $t$ = $e$ ) >>
+          <:patt< ?{$_:i$ = ?{$lid:j$ : $t$ = $e$}} >>
       | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; ")" ->
-          <:patt< ?$_:i$: ( $j$ ) >>
-      | i = V QUESTIONIDENT -> <:patt< ?$_:i$ >>
+          <:patt< ?{$_:i$ = $lid:j$} >>
+      | i = V QUESTIONIDENT -> <:patt< ?{$_:i$} >>
       | "?"; "("; i = LIDENT; "="; e = expr; ")" ->
-          <:patt< ? ( $lid:i$ = $e$ ) >>
+          <:patt< ?{$lid:i$ = $e$} >>
       | "?"; "("; i = LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
-          <:patt< ? ( $lid:i$ : $t$ = $e$ ) >>
+          <:patt< ?{$lid:i$ : $t$ = $e$} >>
       | "?"; "("; i = LIDENT; ")" ->
           <:patt< ?$i$ >>
       | "?"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
