@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.70 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.71 2010/09/14 13:43:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -68,10 +68,10 @@ and patt =
   | PaChr of loc and V string
   | PaInt of loc and V string and string
   | PaFlo of loc and V string
-  | PaLab of loc and V string and option patt
+  | PaLab of loc and patt and V (option patt)
   | PaLaz of loc and patt
   | PaLid of loc and V string
-  | PaOlb of loc and V string and option expr
+  | PaOlb of loc and patt and V (option expr)
   | PaOrp of loc and patt and patt
   | PaRec of loc and V (list (patt * patt))
   | PaRng of loc and patt and patt
@@ -100,7 +100,7 @@ and expr =
   | ExFun of loc and V (list (patt * V (option expr) * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
-  | ExLab of loc and V string and option expr
+  | ExLab of loc and patt and V (option expr)
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr)) and expr
   | ExLid of loc and V string
@@ -108,7 +108,7 @@ and expr =
   | ExMat of loc and expr and V (list (patt * V (option expr) * expr))
   | ExNew of loc and V (list string)
   | ExObj of loc and V (option patt) and V (list class_str_item)
-  | ExOlb of loc and V string and option expr
+  | ExOlb of loc and patt and V (option expr)
   | ExOvr of loc and V (list (string * expr))
   | ExPck of loc and module_expr and module_type
   | ExRec of loc and V (list (patt * expr)) and option expr

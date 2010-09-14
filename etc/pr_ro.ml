@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.95 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.96 2010/09/14 13:43:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -225,7 +225,10 @@ value sig_method_or_method_virtual pc virt priv s t =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ?$s$ >> ->
+    [ [ <:patt< ?($p$ : $t$) >> ->
+          pprintf pc "?(%s :@;%p)" p ctyp t
+
+      | <:patt< ?$s$ >> ->
           pprintf pc "?%s" s
       | <:patt< ? ($p$ = $e$) >> ->
           pprintf pc "?(%s =@;%p)" p expr e

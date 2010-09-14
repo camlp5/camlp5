@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.65 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.66 2010/09/14 13:43:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -87,7 +87,7 @@ value rec patt =
   | <:patt< [| $list:pl$ |] >> -> list patt pl
   | PaChr _ _ -> ()
   | PaInt _ _ _ -> ()
-  | PaLab _ _ po -> option patt po
+  | PaLab _ _ po -> option patt (Pcaml.unvala po)
   | PaLid _ _ -> ()
   | <:patt< ?$_$: ($_$ = $e$) >> -> expr e
   | <:patt< ?$_$ >> -> ()
@@ -126,7 +126,7 @@ and expr =
   | ExIfe _ e1 e2 e3 -> do { expr e1; expr e2; expr e3 }
   | ExInt _ _ _ -> ()
   | ExFlo _ _ -> ()
-  | ExLab _ _ eo -> option expr eo
+  | ExLab _ _ eo -> option expr (Pcaml.unvala eo)
   | ExLaz _ e -> expr e
   | <:expr< let $flag:_$ $list:pel$ in $e$ >> -> do {
       list let_binding pel;
@@ -142,7 +142,7 @@ and expr =
       list match_case pwel
     }
   | <:expr< new $list:li$ >> -> longident li
-  | ExOlb _ _ eo -> option expr eo
+  | ExOlb _ _ eo -> option expr (Pcaml.unvala eo)
   | <:expr< {$list:lel$} >> -> list label_expr lel
   | <:expr< {($w$) with $list:lel$} >> -> do {
       list label_expr lel;

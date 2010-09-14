@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.226 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.227 2010/09/14 13:43:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1840,7 +1840,10 @@ value class_object loc pc (csp, csl) =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ?$s$ >> -> pprintf pc "?%s" s
+    [ [ <:patt< ? ($p$ : $t$) >> ->
+          pprintf pc "?(%s :@;%p)" p ctyp t
+
+      | <:patt< ?$s$ >> -> pprintf pc "?%s" s
       | <:patt< ? ($p$ = $e$) >> ->
           pprintf pc "?(%s =@;%p)" p expr e
       | <:patt< ? ($p$) >> ->

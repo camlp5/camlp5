@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.211 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.212 2010/09/14 13:43:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -47,6 +47,8 @@ do {
 
 (* general functions *)
 
+value error loc msg = Ploc.raise loc (Failure msg);
+
 value horiz_vertic_if force_vertic f g =
   horiz_vertic (fun () -> if force_vertic then sprintf "\n" else f ()) g
 ;
@@ -83,11 +85,8 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< ?$_$: ($_$ = $_$) >> -> True
-  | <:patt< ?$_$: ($_$) >> -> True
-  | <:patt< ?$_$ >> -> True
-  | <:patt< ~$_$ >> -> True
-  | <:patt< ~$_$: $_$ >> -> True
+  | MLast.PaOlb _ p _ -> is_irrefut_patt p
+  | MLast.PaLab _ p _ -> is_irrefut_patt p
   | _ -> False ]
 ;
 
@@ -112,11 +111,8 @@ value rec get_defined_ident =
   | <:patt< $p1$ | $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< $p1$ .. $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< ($p$ : $_$) >> -> get_defined_ident p
-  | <:patt< ~$_$ >> -> []
-  | <:patt< ~$_$: $p$ >> -> get_defined_ident p
-  | <:patt< ?$_$ >> -> []
-  | <:patt< ?$_$: ($p$) >> -> [p]
-  | <:patt< ?$_$: ($p$ = $e$) >> -> [p]
+  | MLast.PaLab _ p _ -> get_defined_ident p
+  | MLast.PaOlb _ p _ -> get_defined_ident p
   | <:patt< $anti:p$ >> -> get_defined_ident p
   | _ -> [] ]
 ;
@@ -1176,8 +1172,7 @@ EXTEND_PRINTER
           pprintf pc "\"%s\"" s
       | <:expr< $chr:s$ >> ->
           pprintf pc "'%s'" s
-      | <:expr< ?$_$ >> | <:expr< ?$_$: $_$ >> |
-        <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
+      | MLast.ExOlb _ _ _ | MLast.ExLab _ _ _ ->
           failwith "labels not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
         <:expr< $_$ := $_$ >> |
@@ -1265,10 +1260,8 @@ EXTEND_PRINTER
           pprintf pc "\"%s\"" s
       | <:patt< _ >> ->
           pprintf pc "_"
-      | <:patt< ?$_$ >> | <:patt< ? ($_$ = $_$) >> | <:patt< ? ($_$) >> |
-        <:patt< ?$_$: ($_$ = $_$) >> | <:patt< ?$_$: ($_$) >> |
-        <:patt< ~$_$ >> | <:patt< ~$_$: $_$ >> ->
-          failwith "labels not pretty printed (in patt); add pr_ro.cmo"
+      | MLast.PaLab loc _ _ | MLast.PaOlb loc _ _ ->
+          error loc "labels not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< `$s$ >> ->
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>

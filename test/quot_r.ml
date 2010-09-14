@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.42 2010/09/14 10:57:42 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.43 2010/09/14 13:43:54 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -88,23 +88,19 @@ MLast.PaInt loc s1 s2;
 MLast.PaFlo loc (Ploc.VaVal s);
 MLast.PaFlo loc s;
 
-<:patt< ~$s$ >>;
-<:patt< ~$s$:$p$ >>;
-MLast.PaLab loc (Ploc.VaVal s) p;
-<:patt< ~$_:s$ >>;
-<:patt< ~$_:s$:$p$ >>;
-MLast.PaLab loc s p;
+MLast.PaLab loc p1 (Ploc.VaVal None);
+MLast.PaLab loc p1 (Ploc.VaVal (Some p2));
+MLast.PaLab loc p1 (Ploc.VaVal p2);
+MLast.PaLab loc p1 p2;
 
 MLast.PaLaz loc p;
 MLast.PaLid loc (Ploc.VaVal s);
 MLast.PaLid loc s;
 
-<:patt< ?$s$ >>;
-MLast.PaOlb loc (Ploc.VaVal s) (Some e);
-MLast.PaOlb loc (Ploc.VaVal s) e;
-<:patt< ?$_:s$ >>;
-MLast.PaOlb loc s (Some e);
-MLast.PaOlb loc s e;
+MLast.PaOlb loc p (Ploc.VaVal None);
+MLast.PaOlb loc p (Ploc.VaVal (Some e));
+MLast.PaOlb loc p (Ploc.VaVal e);
+MLast.PaOlb loc p e;
 
 MLast.PaOrp loc p1 p2;
 MLast.PaRec loc (Ploc.VaVal lpp);
@@ -166,12 +162,10 @@ MLast.ExIfe loc e1 e2 e3;
 MLast.ExInt loc (Ploc.VaVal s1) s2;
 MLast.ExInt loc s1 s2;
 
-<:expr< ~$s$ >>;
-<:expr< ~$s$:$e$ >>;
-MLast.ExLab loc (Ploc.VaVal s) e;
-<:expr< ~$_:s$ >>;
-<:expr< ~$_:s$:$e$ >>;
-MLast.ExLab loc s e;
+MLast.ExLab loc p (Ploc.VaVal None);
+MLast.ExLab loc p (Ploc.VaVal (Some e));
+MLast.ExLab loc p (Ploc.VaVal e);
+MLast.ExLab loc p e;
 
 MLast.ExLaz loc e;
 
@@ -202,12 +196,10 @@ MLast.ExNew loc ls;
 <:expr< object $_opt:p$ $list:lcsi$ end >>;
 <:expr< object $_opt:p$ $_list:lcsi$ end >>;
 
-<:expr< ?$s$ >>;
-<:expr< ?$s$:$e$ >>;
-MLast.ExOlb loc (Ploc.VaVal s) e;
-<:expr< ?$_:s$ >>;
-<:expr< ?$_:s$:$e$ >>;
-MLast.ExOlb loc s e;
+MLast.ExOlb loc p (Ploc.VaVal None);
+MLast.ExOlb loc p (Ploc.VaVal (Some e));
+MLast.ExOlb loc p (Ploc.VaVal e);
+MLast.ExOlb loc p e;
 
 MLast.ExOvr loc (Ploc.VaVal lse);
 MLast.ExOvr loc lse;

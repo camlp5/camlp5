@@ -156,12 +156,10 @@ module Meta_make (C : MetaSig) =
       | PaChr (_, s) -> C.node "PaChr" [C.vala C.string s]
       | PaInt (_, s1, s2) -> C.node "PaInt" [C.vala C.string s1; C.string s2]
       | PaFlo (_, s) -> C.node "PaFlo" [C.vala C.string s]
-      | PaLab (_, s, op) ->
-          C.node "PaLab" [C.vala C.string s; C.option patt op]
+      | PaLab (_, p, op) -> C.node "PaLab" [patt p; C.vala (C.option patt) op]
       | PaLaz (_, p) -> C.node "PaLaz" [patt p]
       | PaLid (_, s) -> C.node "PaLid" [C.vala C.string s]
-      | PaOlb (_, s, oe) ->
-          C.node "PaOlb" [C.vala C.string s; C.option expr oe]
+      | PaOlb (_, p, oe) -> C.node "PaOlb" [patt p; C.vala (C.option expr) oe]
       | PaOrp (_, p1, p2) -> C.node "PaOrp" [patt p1; patt p2]
       | PaRec (_, lpp) ->
           C.node "PaRec"
@@ -200,8 +198,7 @@ module Meta_make (C : MetaSig) =
                lpoee]
       | ExIfe (_, e1, e2, e3) -> C.node "ExIfe" [expr e1; expr e2; expr e3]
       | ExInt (_, s1, s2) -> C.node "ExInt" [C.vala C.string s1; C.string s2]
-      | ExLab (_, s, oe) ->
-          C.node "ExLab" [C.vala C.string s; C.option expr oe]
+      | ExLab (_, p, oe) -> C.node "ExLab" [patt p; C.vala (C.option expr) oe]
       | ExLaz (_, e) -> C.node "ExLaz" [expr e]
       | ExLet (_, b, lpe, e) ->
           C.node "ExLet"
@@ -223,8 +220,7 @@ module Meta_make (C : MetaSig) =
       | ExObj (_, op, lcsi) ->
           C.node "ExObj"
             [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]
-      | ExOlb (_, s, oe) ->
-          C.node "ExOlb" [C.vala C.string s; C.option expr oe]
+      | ExOlb (_, p, oe) -> C.node "ExOlb" [patt p; C.vala (C.option expr) oe]
       | ExOvr (_, lse) ->
           C.node "ExOvr"
             [C.vala (C.list (fun (s, e) -> C.tuple [C.string s; expr e])) lse]

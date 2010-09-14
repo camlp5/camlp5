@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.138 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.139 2010/09/14 13:43:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -761,33 +761,33 @@ EXTEND
       | "#"; sl = V mod_ident "list" "" -> <:patt< # $_:sl$ >>
       | i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
       | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
-      | p = patt_option -> p ] ]
+      | p = patt_option_label -> p ] ]
   ;
   ipatt:
     [ [ i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
       | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
-      | p = patt_option -> p ] ]
+      | p = patt_option_label -> p ] ]
   ;
-  patt_option:
+  patt_option_label:
     [ [ i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ":"; t = ctyp; "=";
         e = expr; ")" ->
-          <:patt< ?$_:i$:($_:j$ : $t$ = $e$) >>
+          <:patt< ?$_:i$: ($_lid:j$ : $t$ = $e$) >>
       | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ":"; t = ctyp; ")" ->
-          <:patt< ?$_:i$:($_:j$ : $t$) >>
+          <:patt< ?$_:i$: ($_lid:j$ : $t$) >>
       | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; "="; e = expr; ")" ->
-          <:patt< ?$_:i$:($_:j$ = $e$) >>
+          <:patt< ?$_:i$: ($_lid:j$ = $e$) >>
       | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ")" ->
-          <:patt< ?$_:i$:($_:j$) >>
+          <:patt< ?$_:i$: ($_lid:j$) >>
       | i = V QUESTIONIDENT ->
           <:patt< ?$_:i$ >>
       | "?"; "("; i = V LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
-          <:patt< ?($_:i$ : $t$ = $e$) >>
+          <:patt< ? ($_lid:i$ : $t$ = $e$) >>
       | "?"; "("; i = V LIDENT; ":"; t = ctyp; ")" ->
-          <:patt< ?($_:i$ : $t$) >>
+          <:patt< ? ($_lid:i$ : $t$) >>
       | "?"; "("; i = V LIDENT; "="; e = expr; ")" ->
-          <:patt< ?($_:i$ = $e$) >>
+          <:patt< ? ($_lid:i$ = $e$) >>
       | "?"; "("; i = V LIDENT; ")" ->
-          <:patt< ?($_:i$) >> ] ]
+          <:patt< ? ($_lid:i$) >> ] ]
   ;
   expr: AFTER "apply"
     [ "label" NONA

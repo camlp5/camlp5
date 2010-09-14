@@ -60,10 +60,10 @@ and patt =
   | PaChr of loc * string
   | PaInt of loc * string * string
   | PaFlo of loc * string
-  | PaLab of loc * string * patt option
+  | PaLab of loc * patt * patt option
   | PaLaz of loc * patt
   | PaLid of loc * string
-  | PaOlb of loc * string * expr option
+  | PaOlb of loc * patt * expr option
   | PaOrp of loc * patt * patt
   | PaRec of loc * (patt * patt) list
   | PaRng of loc * patt * patt
@@ -89,7 +89,7 @@ and expr =
   | ExFun of loc * (patt * expr option * expr) list
   | ExIfe of loc * expr * expr * expr
   | ExInt of loc * string * string
-  | ExLab of loc * string * expr option
+  | ExLab of loc * patt * expr option
   | ExLaz of loc * expr
   | ExLet of loc * bool * (patt * expr) list * expr
   | ExLid of loc * string
@@ -97,7 +97,7 @@ and expr =
   | ExMat of loc * expr * (patt * expr option * expr) list
   | ExNew of loc * string list
   | ExObj of loc * patt option * class_str_item list
-  | ExOlb of loc * string * expr option
+  | ExOlb of loc * patt * expr option
   | ExOvr of loc * (string * expr) list
   | ExPck of loc * module_expr * module_type
   | ExRec of loc * (patt * expr) list * expr option

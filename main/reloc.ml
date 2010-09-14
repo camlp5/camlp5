@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.59 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.60 2010/09/14 13:43:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -112,10 +112,12 @@ and patt floc sh =
     | PaChr loc x1 -> PaChr (floc loc) x1
     | PaInt loc x1 x2 -> PaInt (floc loc) x1 x2
     | PaFlo loc x1 -> PaFlo (floc loc) x1
-    | PaLab loc x1 x2 -> PaLab (floc loc) x1 (option_map self x2)
+    | PaLab loc x1 x2 ->
+        PaLab (floc loc) (self x1) (vala_map (option_map self) x2)
     | PaLaz loc x1 -> PaLaz (floc loc) (self x1)
     | PaLid loc x1 -> PaLid (floc loc) x1
-    | PaOlb loc x1 x2 -> PaOlb (floc loc) x1 (option_map (expr floc sh) x2)
+    | PaOlb loc x1 x2 ->
+        PaOlb (floc loc) (self x1) (vala_map (option_map (expr floc sh)) x2)
     | PaOrp loc x1 x2 -> PaOrp (floc loc) (self x1) (self x2)
     | PaRec loc x1 ->
         PaRec (floc loc)
@@ -161,7 +163,8 @@ and expr floc sh =
              x1)
     | ExIfe loc x1 x2 x3 -> ExIfe (floc loc) (self x1) (self x2) (self x3)
     | ExInt loc x1 x2 -> ExInt (floc loc) x1 x2
-    | ExLab loc x1 x2 -> ExLab (floc loc) x1 (option_map self x2)
+    | ExLab loc x1 x2 ->
+        ExLab (floc loc) (patt floc sh x1) (vala_map (option_map self) x2)
     | ExLaz loc x1 -> ExLaz (floc loc) (self x1)
     | ExLet loc x1 x2 x3 ->
         ExLet (floc loc) x1
@@ -182,7 +185,8 @@ and expr floc sh =
     | ExObj loc x1 x2 ->
         ExObj (floc loc) (vala_map (option_map (patt floc sh)) x1)
           (vala_map (List.map (class_str_item floc sh)) x2)
-    | ExOlb loc x1 x2 -> ExOlb (floc loc) x1 (option_map self x2)
+    | ExOlb loc x1 x2 ->
+        ExOlb (floc loc) (patt floc sh x1) (vala_map (option_map self) x2)
     | ExOvr loc x1 ->
         ExOvr (floc loc)
           (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1)

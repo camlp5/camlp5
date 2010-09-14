@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.117 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.118 2010/09/14 13:43:53 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -357,35 +357,6 @@ value option f =
   fun
   [ Some x -> Some (f x)
   | None -> None ]
-;
-
-value expr_of_lab loc lab =
-  fun
-  [ Some e -> e
-  | None -> <:expr< $lid:lab$ >> ]
-;
-
-value patt_of_lab loc lab =
-  fun
-  [ Some p -> p
-  | None -> <:patt< $lid:lab$ >> ]
-;
-
-value lab_p_eo loc lab eo =
-  match eo with
-  [ Some e ->
-      match e with
-      [ ExOlb loc lab1 eo ->
-          let lab = uv lab in
-          let lab = if lab = "" then uv lab1 else lab in
-          let p = PaLid loc lab1 in
-          (lab, p, eo)
-      | _ ->
-          let p = PaLid loc lab in
-          (uv lab, p, eo) ]
-  | None ->
-      let p = PaLid loc lab in
-      (uv lab, p, None) ]
 ;
 
 value rec same_type_expr ct ce =
@@ -749,14 +720,28 @@ value rec expr =
       mkexp loc (Pexp_for (uv i) (expr e1) (expr e2) df (expr e3))
   | ExFun loc pel ->
       match uv pel with
-      [ [(PaLab _ lab po, w, e)] ->
+      [ [(PaLab _ p po, w, e)] ->
+          let lab =
+            match p with
+            [ PaLid _ lab -> uv lab
+            | _ -> error loc "not impl label for that patt 1" ]
+          in
+          let p =
+            match uv po with
+            [ Some p -> p
+            | None -> p ]
+          in
+          mkexp loc (ocaml_pexp_function lab None
+            [(patt p, when_expr e (uv w))])
+      | [(PaOlb loc p eo, w, e)] ->
+          let lab =
+            match p with
+            [ PaLid _ lab -> uv lab
+            | PaTyc _ (PaLid _ lab) _ -> uv lab
+            | _ -> error loc "not impl label for that patt 2" ]
+          in
           mkexp loc
-            (ocaml_pexp_function (uv lab) None
-               [(patt (patt_of_lab loc (uv lab) po), when_expr e (uv w))])
-      | [(PaOlb loc lab eo, w, e)] ->
-          let (lab, p, eo) = lab_p_eo loc lab eo in
-          mkexp loc
-            (ocaml_pexp_function ("?" ^ lab) (option expr eo)
+            (ocaml_pexp_function ("?" ^ lab) (option expr (uv eo))
                [(patt p, when_expr e (uv w))])
       | pel ->
           let pel =
@@ -881,8 +866,26 @@ value rec expr =
     END ]
 and label_expr =
   fun
-  [ ExLab loc lab eo -> (uv lab, expr (expr_of_lab loc (uv lab) eo))
-  | ExOlb loc lab eo -> ("?" ^ uv lab, expr (expr_of_lab loc (uv lab) eo))
+  [ ExLab loc p eo ->
+      match p with
+      [ PaLid loc lab ->
+          let e =
+            match uv eo with
+            [ Some e -> e
+            | None -> ExLid loc lab ]
+          in
+          (uv lab, expr e)
+      | _ -> error loc "ExLab case not impl" ]
+  | ExOlb loc p eo ->
+      match p with
+      [ PaLid loc lab ->
+          let e =
+            match uv eo with
+            [ Some e -> e
+            | None -> ExLid loc lab ]
+          in
+          ("?" ^ uv lab, expr e)
+      | _ -> error loc "ExOlb case not impl" ]
   | e -> ("", expr e) ]
 and mkpe (p, e) = (patt p, expr e)
 and mkpwe (p, w, e) = (patt p, when_expr e (uv w))
@@ -1155,17 +1158,11 @@ and class_expr =
       | None -> error loc "no class expr desc in this ocaml version" ]
   | CeFun loc (PaLab _ lab po) ce ->
       match ocaml_pcl_fun with
-      [ Some pcl_fun ->
-          mkpcl loc
-            (pcl_fun (uv lab) None
-               (patt (patt_of_lab loc (uv lab) po)) (class_expr ce))
+      [ Some pcl_fun -> error loc "CeFun PaLab"
       | None -> error loc "no class expr desc in this ocaml version" ]
   | CeFun loc (PaOlb _ lab eo) ce ->
       match ocaml_pcl_fun with
-      [ Some pcl_fun ->
-          let (lab, p, eo) = lab_p_eo loc lab eo in
-          mkpcl loc
-            (pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
+      [ Some pcl_fun -> error loc "CeFun PaOlb"
       | None -> error loc "no class expr desc in this ocaml version" ]
   | CeFun loc p ce ->
       match ocaml_pcl_fun with
