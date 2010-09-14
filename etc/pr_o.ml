@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.225 2010/09/13 13:48:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.226 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -107,8 +107,8 @@ value rec get_defined_ident =
   | <:patt< ~$_$ >> -> []
   | <:patt< ~$_$: $p$ >> -> get_defined_ident p
   | <:patt< ?$_$ >> -> []
-  | <:patt< ?$_$: ($p$) >> -> get_defined_ident p
-  | <:patt< ?$_$: ($p$ = $e$) >> -> get_defined_ident p
+  | <:patt< ?$_$: ($p$) >> -> [p]
+  | <:patt< ?$_$: ($p$ = $e$) >> -> [p]
   | <:patt< $anti:p$ >> -> get_defined_ident p
   | _ -> [] ]
 ;
@@ -1261,9 +1261,9 @@ EXTEND_PRINTER
       | <:patt< $chr:s$ >> -> pprintf pc "'%s'" (ocaml_char s)
       | <:patt< $str:s$ >> -> pprintf pc "\"%s\"" s
       | <:patt< _ >> -> pprintf pc "_"
-      | <:patt:< ?$_$ >> | <:patt:< ? ($_$ $opt:_$) >> |
-        <:patt:< ?$_$: ($_$ $opt:_$) >> | <:patt:< ~$_$ >> |
-        <:patt:< ~$_$: $_$ >> ->
+      | <:patt:< ?$_$ >> | <:patt:< ? ($_$ = $_$) >> | <:patt:< ? ($_$) >> |
+        <:patt:< ?$_$: ($_$ = $_$) >> | <:patt:< ?$_$: ($_$) >> |
+        <:patt:< ~$_$ >> | <:patt:< ~$_$: $_$ >> ->
           error loc "labels not pretty printed (in patt)"
       | <:patt< `$s$ >> ->
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
@@ -1841,16 +1841,14 @@ value class_object loc pc (csp, csl) =
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
     [ [ <:patt< ?$s$ >> -> pprintf pc "?%s" s
-      | <:patt< ? ($p$ $opt:eo$) >> ->
-          match eo with
-          [ Some e -> pprintf pc "?(%p =@;%p)" patt_tcon p expr e
-          | None -> pprintf pc "?(%p)" patt_tcon p ]
-      | <:patt< ?$i$: ($p$ $opt:eo$) >> ->
-          match eo with
-          [ Some e ->
-              pprintf pc "?%s:@;<0 1>@[<1>(%p =@ %p)@]" i patt p expr e
-          | None ->
-              pprintf pc "?%s:@;<0 1>(%p)" i patt p ]
+      | <:patt< ? ($p$ = $e$) >> ->
+          pprintf pc "?(%s =@;%p)" p expr e
+      | <:patt< ? ($p$) >> ->
+          pprintf pc "?(%s)" p
+      | <:patt< ?$i$: ($p$ = $e$) >> ->
+          pprintf pc "?%s:@;<0 1>@[<1>(%s =@ %p)@]" i p expr e
+      | <:patt< ?$i$: ($p$) >> ->
+          pprintf pc "?%s:@;<0 1>(%s)" i p
       | <:patt< ~$s$ >> ->
           pprintf pc "~%s" s
       | <:patt< ~$s$: $p$ >> ->

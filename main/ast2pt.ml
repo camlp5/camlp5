@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.116 2010/09/13 15:37:06 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.117 2010/09/14 10:57:41 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -371,20 +371,21 @@ value patt_of_lab loc lab =
   | None -> <:patt< $lid:lab$ >> ]
 ;
 
-value paolab loc lab peoo =
-  let lab =
-    match (lab, peoo) with
-    [ ("", Some (<:patt< $lid:i$ >>, _)) -> i
-    | ("", Some (<:patt< ($lid:i$ : $_$) >>, _)) -> i
-    | ("", _) -> error loc "bad ast"
-    | _ -> lab ]
-  in
-  let (p, eo) =
-    match peoo with
-    [ Some (p, eo) -> (p, uv eo)
-    | None -> (<:patt< $lid:lab$ >>, None) ]
-  in
-  (lab, p, eo)
+value lab_p_eo loc lab eo =
+  match eo with
+  [ Some e ->
+      match e with
+      [ ExOlb loc lab1 eo ->
+          let lab = uv lab in
+          let lab = if lab = "" then uv lab1 else lab in
+          let p = PaLid loc lab1 in
+          (lab, p, eo)
+      | _ ->
+          let p = PaLid loc lab in
+          (uv lab, p, eo) ]
+  | None ->
+      let p = PaLid loc lab in
+      (uv lab, p, None) ]
 ;
 
 value rec same_type_expr ct ce =
@@ -752,8 +753,8 @@ value rec expr =
           mkexp loc
             (ocaml_pexp_function (uv lab) None
                [(patt (patt_of_lab loc (uv lab) po), when_expr e (uv w))])
-      | [(PaOlb _ lab peoo, w, e)] ->
-          let (lab, p, eo) = paolab loc (uv lab) peoo in
+      | [(PaOlb loc lab eo, w, e)] ->
+          let (lab, p, eo) = lab_p_eo loc lab eo in
           mkexp loc
             (ocaml_pexp_function ("?" ^ lab) (option expr eo)
                [(patt p, when_expr e (uv w))])
@@ -1159,10 +1160,10 @@ and class_expr =
             (pcl_fun (uv lab) None
                (patt (patt_of_lab loc (uv lab) po)) (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc (PaOlb _ lab peoo) ce ->
+  | CeFun loc (PaOlb _ lab eo) ce ->
       match ocaml_pcl_fun with
       [ Some pcl_fun ->
-          let (lab, p, eo) = paolab loc (uv lab) peoo in
+          let (lab, p, eo) = lab_p_eo loc lab eo in
           mkpcl loc
             (pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version" ]

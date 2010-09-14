@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.104 2010/09/13 13:48:00 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.105 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1162,15 +1162,15 @@ EXTEND
            <:patt< ~$i$: ($lid:i$ : $t$) >>
       | i = V QUESTIONIDENTCOLON; j = LIDENT ->
            <:patt< ?$_:i$: ($lid:j$) >>
-      | i = V QUESTIONIDENTCOLON; "("; p = patt; "="; e = expr; ")" ->
-          <:patt< ?$_:i$: ( $p$ = $e$ ) >>
-      | i = V QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; ")" ->
-          <:patt< ?$_:i$: ( $p$ : $t$ ) >>
-      | i = V QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; "=";
+      | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; "="; e = expr; ")" ->
+          <:patt< ?$_:i$: ( $j$ = $e$ ) >>
+      | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; ":"; t = ctyp; ")" ->
+          <:patt< ?$_:i$: ( $j$ : $t$ ) >>
+      | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; ":"; t = ctyp; "=";
         e = expr; ")" ->
-          <:patt< ?$_:i$: ( $p$ : $t$ = $e$ ) >>
-      | i = V QUESTIONIDENTCOLON; "("; p = patt; ")" ->
-          <:patt< ?$_:i$: ( $p$ ) >>
+          <:patt< ?$_:i$: ( $j$ : $t$ = $e$ ) >>
+      | i = V QUESTIONIDENTCOLON; "("; j = LIDENT; ")" ->
+          <:patt< ?$_:i$: ( $j$ ) >>
       | i = V QUESTIONIDENT -> <:patt< ?$_:i$ >>
       | "?"; "("; i = LIDENT; "="; e = expr; ")" ->
           <:patt< ? ( $lid:i$ = $e$ ) >>

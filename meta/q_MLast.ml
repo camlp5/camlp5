@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.148 2010/09/13 15:37:06 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.149 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1150,43 +1150,63 @@ EXTEND
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option (Some p)]
       | i = SV TILDEIDENT "~" a_ti ->
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
-      | i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; p = patt_tcon;
-        eo = SV (OPT eq_expr); ")" ->
-          Qast.Node "PaOlb"
-            [Qast.Loc; i; Qast.Option (Some (Qast.Tuple [p; eo]))]
-      | i = SV QUESTIONIDENT "?" a_qi ->
-          Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option None]
-      | "?"; "("; p = patt_tcon; eo = SV (OPT eq_expr); ")" ->
-          Qast.Node "PaOlb"
-            [Qast.Loc; Qast.VaVal (Qast.Str "");
-             Qast.Option (Some (Qast.Tuple [p; eo]))] ] ]
-  ;
-  patt_tcon:
-    [ [ p = patt; ":"; t = ctyp -> Qast.Node "PaTyc" [Qast.Loc; p; t]
-      | p = patt -> p ] ]
+      | p = patt_option -> p ] ]
   ;
   ipatt:
     [ [ i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option (Some p)]
       | i = SV TILDEIDENT "~" a_ti ->
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
-      | i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; p = ipatt_tcon;
-        eo = SV (OPT eq_expr); ")" ->
+      | p = patt_option -> p ] ]
+  ;
+  patt_option:
+    [ [ i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; ":";
+        t = ctyp; "="; e = expr; ")" ->
           Qast.Node "PaOlb"
-            [Qast.Loc; i; Qast.Option (Some (Qast.Tuple [p; eo]))]
+            [Qast.Loc; i;
+             Qast.Option
+               (Some
+                  (Qast.Node "ExTyc"
+                     [Qast.Loc;
+                      Qast.Node "ExOlb" [Qast.Loc; j; Qast.Option (Some e)];
+                      t]))]
+      | i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; ":";
+        t = ctyp; ")" ->
+          Qast.Node "PaOlb"
+            [Qast.Loc; i;
+             Qast.Option
+               (Some
+                  (Qast.Node "ExTyc"
+                     [Qast.Loc;
+                      Qast.Node "ExOlb" [Qast.Loc; j; Qast.Option None]; t]))]
+      | i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; "=";
+        e = expr; ")" ->
+          Qast.Node "PaOlb"
+            [Qast.Loc; i;
+             Qast.Option
+               (Some (Qast.Node "ExOlb" [Qast.Loc; j; Qast.Option (Some e)]))]
+      | i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; ")" ->
+          Qast.Node "PaOlb"
+            [Qast.Loc; i;
+             Qast.Option
+               (Some (Qast.Node "ExOlb" [Qast.Loc; j; Qast.Option None]))]
       | i = SV QUESTIONIDENT "?" a_qi ->
           Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option None]
-      | "?"; "("; p = ipatt_tcon; eo = SV (OPT eq_expr); ")" ->
+      | "?"; "("; i = SV LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
           Qast.Node "PaOlb"
-            [Qast.Loc; Qast.VaVal (Qast.Str "");
-             Qast.Option (Some (Qast.Tuple [p; eo]))] ] ]
-  ;
-  ipatt_tcon:
-    [ [ p = ipatt; ":"; t = ctyp -> Qast.Node "PaTyc" [Qast.Loc; p; t]
-      | p = ipatt -> p ] ]
-  ;
-  eq_expr:
-    [ [ "="; e = expr -> e ] ]
+            [Qast.Loc; i;
+             Qast.Option (Some (Qast.Node "ExTyc" [Qast.Loc; e; t]))]
+      | "?"; "("; i = SV LIDENT; ":"; t = ctyp; ")" ->
+          Qast.Node "PaOlb"
+            [Qast.Loc; i;
+             Qast.Option
+               (Some
+                  (Qast.Node "ExTyc"
+                     [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; i]; t]))]
+      | "?"; "("; i = SV LIDENT; "="; e = expr; ")" ->
+          Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option (Some e)]
+      | "?"; "("; i = SV LIDENT; ")" ->
+          Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option None] ] ]
   ;
   expr: AFTER "apply"
     [ "label" NONA

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.94 2010/09/13 13:48:02 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.95 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -227,16 +227,14 @@ EXTEND_PRINTER
   pr_patt: LEVEL "simple"
     [ [ <:patt< ?$s$ >> ->
           pprintf pc "?%s" s
-      | <:patt< ? ($p$ $opt:eo$) >> ->
-          match eo with
-          [ Some e -> pprintf pc "?(%p =@;%p)" patt_tcon p expr e
-          | None -> pprintf pc "?(%p)" patt_tcon p ]
-      | <:patt< ?$i$: ($p$ $opt:eo$) >> ->
-          match eo with
-          [ Some e ->
-              pprintf pc "?%s:@;<0 1>@[<1>(%p =@ %p)@]" i patt p expr e
-          | None ->
-              pprintf pc "?%s:@;<0 1>(%p)" i patt p ]
+      | <:patt< ? ($p$ = $e$) >> ->
+          pprintf pc "?(%s =@;%p)" p expr e
+      | <:patt< ? ($p$) >> ->
+          pprintf pc "?(%s)" p
+      | <:patt< ?$i$: ($p$ = $e$) >> ->
+          pprintf pc "?%s:@;<0 1>@[<1>(%s =@ %p)@]" i p expr e
+      | <:patt< ?$i$: ($p$) >> ->
+          pprintf pc "?%s:@;<0 1>(%s)" i p
       | <:patt< ~$s$ >> ->
           pprintf pc "~%s" s
       | <:patt< ~$s$: $p$ >> ->

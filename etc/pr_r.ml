@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.210 2010/09/13 18:39:07 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.211 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -115,8 +115,8 @@ value rec get_defined_ident =
   | <:patt< ~$_$ >> -> []
   | <:patt< ~$_$: $p$ >> -> get_defined_ident p
   | <:patt< ?$_$ >> -> []
-  | <:patt< ?$_$: ($p$) >> -> get_defined_ident p
-  | <:patt< ?$_$: ($p$ = $e$) >> -> get_defined_ident p
+  | <:patt< ?$_$: ($p$) >> -> [p]
+  | <:patt< ?$_$: ($p$ = $e$) >> -> [p]
   | <:patt< $anti:p$ >> -> get_defined_ident p
   | _ -> [] ]
 ;
@@ -1265,9 +1265,9 @@ EXTEND_PRINTER
           pprintf pc "\"%s\"" s
       | <:patt< _ >> ->
           pprintf pc "_"
-      | <:patt< ?$_$ >> | <:patt< ? ($_$ $opt:_$) >> |
-        <:patt< ?$_$: ($_$ $opt:_$) >> | <:patt< ~$_$ >> |
-        <:patt< ~$_$: $_$ >> ->
+      | <:patt< ?$_$ >> | <:patt< ? ($_$ = $_$) >> | <:patt< ? ($_$) >> |
+        <:patt< ?$_$: ($_$ = $_$) >> | <:patt< ?$_$: ($_$) >> |
+        <:patt< ~$_$ >> | <:patt< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< `$s$ >> ->
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"

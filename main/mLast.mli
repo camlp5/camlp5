@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.69 2010/09/13 15:37:06 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.70 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -71,7 +71,7 @@ and patt =
   | PaLab of loc and V string and option patt
   | PaLaz of loc and patt
   | PaLid of loc and V string
-  | PaOlb of loc and V string and option (patt * V (option expr))
+  | PaOlb of loc and V string and option expr
   | PaOrp of loc and patt and patt
   | PaRec of loc and V (list (patt * patt))
   | PaRng of loc and patt and patt

@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.41 2010/09/13 20:14:36 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.42 2010/09/14 10:57:42 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -100,11 +100,11 @@ MLast.PaLid loc (Ploc.VaVal s);
 MLast.PaLid loc s;
 
 <:patt< ?$s$ >>;
-<:patt< ?$s$: ($p$ = $e$) >>;
-<:patt< ?$s$: ($p$) >>;
+MLast.PaOlb loc (Ploc.VaVal s) (Some e);
+MLast.PaOlb loc (Ploc.VaVal s) e;
 <:patt< ?$_:s$ >>;
-<:patt< ?$_:s$: ($p$ = $e$) >>;
-<:patt< ?$_:s$: ($p$) >>;
+MLast.PaOlb loc s (Some e);
+MLast.PaOlb loc s e;
 
 MLast.PaOrp loc p1 p2;
 MLast.PaRec loc (Ploc.VaVal lpp);

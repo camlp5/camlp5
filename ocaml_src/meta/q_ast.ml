@@ -160,12 +160,8 @@ module Meta_make (C : MetaSig) =
           C.node "PaLab" [C.vala C.string s; C.option patt op]
       | PaLaz (_, p) -> C.node "PaLaz" [patt p]
       | PaLid (_, s) -> C.node "PaLid" [C.vala C.string s]
-      | PaOlb (_, s, opoe) ->
-          C.node "PaOlb"
-            [C.vala C.string s;
-             C.option
-               (fun (p, oe) -> C.tuple [patt p; C.vala (C.option expr) oe])
-               opoe]
+      | PaOlb (_, s, oe) ->
+          C.node "PaOlb" [C.vala C.string s; C.option expr oe]
       | PaOrp (_, p1, p2) -> C.node "PaOrp" [patt p1; patt p2]
       | PaRec (_, lpp) ->
           C.node "PaRec"

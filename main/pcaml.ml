@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 1.83 2010/09/04 08:46:05 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.84 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -320,8 +320,12 @@ value print_exn =
       else print_format ("Parse error: " ^ str)
   | Stream.Failure -> Format.print_string "Parse failure"
   | Plexing.Error str -> do {
-      Format.print_string "Lexing error: ";
-      Format.print_string str
+      Format.print_string "Lexing error";
+      if str <> "" then do {
+        Format.print_string ": ";
+        Format.print_string str
+      }
+      else Format.print_string ".";
     }
   | Failure str -> do {
       Format.print_string "Failure: ";

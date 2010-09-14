@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.128 2010/09/13 15:37:06 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.129 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -167,12 +167,7 @@ module Meta_make (C : MetaSig) =
       | PaLab _ s op -> C.node "PaLab" [C.vala C.string s; C.option patt op]
       | PaLaz _ p -> C.node "PaLaz" [patt p]
       | PaLid _ s -> C.node "PaLid" [C.vala C.string s]
-      | PaOlb _ s opoe ->
-          C.node "PaOlb"
-            [C.vala C.string s;
-             C.option
-               (fun (p, oe) -> C.tuple [patt p; C.vala (C.option expr) oe])
-               opoe]
+      | PaOlb _ s oe -> C.node "PaOlb" [C.vala C.string s; C.option expr oe]
       | PaOrp _ p1 p2 -> C.node "PaOrp" [patt p1; patt p2]
       | PaRec _ lpp ->
           C.node "PaRec"

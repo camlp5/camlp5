@@ -359,20 +359,17 @@ let patt_of_lab loc lab =
   | None -> MLast.PaLid (loc, lab)
 ;;
 
-let paolab loc lab peoo =
-  let lab =
-    match lab, peoo with
-      "", Some (MLast.PaLid (_, i), _) -> i
-    | "", Some (MLast.PaTyc (_, MLast.PaLid (_, i), _), _) -> i
-    | "", _ -> error loc "bad ast"
-    | _ -> lab
-  in
-  let (p, eo) =
-    match peoo with
-      Some (p, eo) -> p, uv eo
-    | None -> MLast.PaLid (loc, lab), None
-  in
-  lab, p, eo
+let lab_p_eo loc lab eo =
+  match eo with
+    Some e ->
+      begin match e with
+        ExOlb (loc, lab1, eo) ->
+          let lab = uv lab in
+          let lab = if lab = "" then uv lab1 else lab in
+          let p = PaLid (loc, lab1) in lab, p, eo
+      | _ -> let p = PaLid (loc, lab) in uv lab, p, eo
+      end
+  | None -> let p = PaLid (loc, lab) in uv lab, p, None
 ;;
 
 let rec same_type_expr ct ce =
@@ -879,8 +876,8 @@ let rec expr =
           mkexp loc
             (ocaml_pexp_function (uv lab) None
                [patt (patt_of_lab loc (uv lab) po), when_expr e (uv w)])
-      | [PaOlb (_, lab, peoo), w, e] ->
-          let (lab, p, eo) = paolab loc (uv lab) peoo in
+      | [PaOlb (loc, lab, eo), w, e] ->
+          let (lab, p, eo) = lab_p_eo loc lab eo in
           mkexp loc
             (ocaml_pexp_function ("?" ^ lab) (option expr eo)
                [patt p, when_expr e (uv w)])
@@ -1331,10 +1328,10 @@ and class_expr =
                (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version"
       end
-  | CeFun (loc, PaOlb (_, lab, peoo), ce) ->
+  | CeFun (loc, PaOlb (_, lab, eo), ce) ->
       begin match ocaml_pcl_fun with
         Some pcl_fun ->
-          let (lab, p, eo) = paolab loc (uv lab) peoo in
+          let (lab, p, eo) = lab_p_eo loc lab eo in
           mkpcl loc
             (pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version"

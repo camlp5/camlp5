@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.137 2010/09/13 13:48:02 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.138 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -761,35 +761,33 @@ EXTEND
       | "#"; sl = V mod_ident "list" "" -> <:patt< # $_:sl$ >>
       | i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
       | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
-      | i = V QUESTIONIDENTCOLON; "("; p = patt_tcon; eo = V (OPT eq_expr);
-        ")" ->
-          <:patt< ?$_:i$: ($p$ $_opt:eo$) >>
-      | i = V QUESTIONIDENT ->
-          <:patt< ?$_:i$ >>
-      | "?"; "("; p = patt_tcon; eo = V (OPT eq_expr); ")" ->
-          <:patt< ? ($p$ $_opt:eo$) >> ] ]
-  ;
-  patt_tcon:
-    [ [ p = patt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>
-      | p = patt -> p ] ]
+      | p = patt_option -> p ] ]
   ;
   ipatt:
     [ [ i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
       | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
-      | i = V QUESTIONIDENTCOLON; "("; p = ipatt_tcon;
-        eo = V (OPT eq_expr); ")" ->
-          <:patt< ?$_:i$: ($p$ $_opt:eo$) >>
+      | p = patt_option -> p ] ]
+  ;
+  patt_option:
+    [ [ i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ":"; t = ctyp; "=";
+        e = expr; ")" ->
+          <:patt< ?$_:i$:($_:j$ : $t$ = $e$) >>
+      | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ":"; t = ctyp; ")" ->
+          <:patt< ?$_:i$:($_:j$ : $t$) >>
+      | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; "="; e = expr; ")" ->
+          <:patt< ?$_:i$:($_:j$ = $e$) >>
+      | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ")" ->
+          <:patt< ?$_:i$:($_:j$) >>
       | i = V QUESTIONIDENT ->
           <:patt< ?$_:i$ >>
-      | "?"; "("; p = ipatt_tcon; eo = V (OPT eq_expr); ")" ->
-          <:patt< ? ($p$ $_opt:eo$) >> ] ]
-  ;
-  ipatt_tcon:
-    [ [ p = ipatt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>
-      | p = ipatt -> p ] ]
-  ;
-  eq_expr:
-    [ [ "="; e = expr -> e ] ]
+      | "?"; "("; i = V LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
+          <:patt< ?($_:i$ : $t$ = $e$) >>
+      | "?"; "("; i = V LIDENT; ":"; t = ctyp; ")" ->
+          <:patt< ?($_:i$ : $t$) >>
+      | "?"; "("; i = V LIDENT; "="; e = expr; ")" ->
+          <:patt< ?($_:i$ = $e$) >>
+      | "?"; "("; i = V LIDENT; ")" ->
+          <:patt< ?($_:i$) >> ] ]
   ;
   expr: AFTER "apply"
     [ "label" NONA

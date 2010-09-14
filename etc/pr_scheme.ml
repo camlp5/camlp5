@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.80 2010/09/13 13:48:02 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.81 2010/09/14 10:57:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1006,16 +1006,14 @@ EXTEND_PRINTER
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:patt< ?$s$: ($p$) >> ->
           plistbf 0 (paren pc "?")
-            [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> curr pc p, "")],
-              "")]
+            [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> p, "")], "")]
       | <:patt< ? ($lid:s$ = $e$) >> ->
           plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> expr pc e, "")]
       | <:patt< ?$s$: ($p$ = $e$) >> ->
           plistbf 0 (paren pc "?")
-            [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> curr pc p, "")],
-              "");
+            [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> p, "")], "");
              (fun pc -> expr pc e, "")]
       | <:patt< ~$s$ >> ->
           plistbf 0 (paren pc "~")

@@ -302,7 +302,10 @@ let print_exn =
       else print_format ("Parse error: " ^ str)
   | Stream.Failure -> Format.print_string "Parse failure"
   | Plexing.Error str ->
-      Format.print_string "Lexing error: "; Format.print_string str
+      Format.print_string "Lexing error";
+      if str <> "" then
+        begin Format.print_string ": "; Format.print_string str end
+      else Format.print_string "."
   | Failure str -> Format.print_string "Failure: "; Format.print_string str
   | Invalid_argument str ->
       Format.print_string "Invalid argument: "; Format.print_string str

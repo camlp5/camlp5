@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 1.4 2010/09/13 20:14:36 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 1.5 2010/09/14 10:57:41 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -86,14 +86,8 @@ value rec expr_list_of_type loc f n =
       f <:expr< $lid:n$ >>
   | <:ctyp< option $t$ >> ->
       f <:expr< None >> @
-      match t with
-      [ <:ctyp< (patt * Ploc.vala (option expr)) >> ->
-          (* ad hoc for PaOlb *)
-          f <:expr< Some (p, Ploc.VaVal (Some e)) >> @
-          f <:expr< Some (p, Ploc.VaVal None) >>
-      | t ->
-          expr_list_of_type loc (fun e -> f <:expr< Some $e$ >>) n t @
-          f <:expr< $lid:n$ >> ]
+      expr_list_of_type loc (fun e -> f <:expr< Some $e$ >>) n t @
+      f <:expr< $lid:n$ >>
   | _ ->
       f <:expr< $lid:n$ >> ]
 ;
