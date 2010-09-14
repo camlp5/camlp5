@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.150 2010/09/14 13:43:53 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.151 2010/09/14 17:25:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -271,6 +271,15 @@ value mktuptyp _ t tl =
 
 value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t];
 value mkident i = Qast.Str i;
+
+value warned = ref False;
+value warning_deprecated_since_6_00 loc =
+  if not warned.val then do {
+    Pcaml.warning.val loc "syntax deprecated since version 6.00";
+    warned.val := True
+  }
+  else ()
+;
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr signature
@@ -1143,53 +1152,81 @@ EXTEND
   name_tag:
     [ [ "`"; i = ident -> i ] ]
   ;
+  binding_with_patt:
+    [ [ "="; p = patt -> p
+      | ":"; t = ctyp; "="; p = patt -> Qast.Node "PaTyc" [Qast.Loc; p; t] ] ]
+  ;
+  binding_with_expr:
+    [ [ "="; e = expr -> e
+      | ":"; t = ctyp; "="; e = expr -> Qast.Node "ExTyc" [Qast.Loc; e; t] ] ]
+  ;
   patt: LEVEL "simple"
     [ [ "`"; s = SV ident "" -> Qast.Node "PaVrn" [Qast.Loc; s]
       | "#"; sl = SV mod_ident "list" "" -> Qast.Node "PaTyp" [Qast.Loc; sl]
+      | "~"; "{"; p = SELF; po = SV (OPT binding_with_patt); "}" ->
+          Qast.Node "PaLab" [Qast.Loc; p; po]
+      | "?"; "{"; p = SELF; eo = SV (OPT binding_with_expr); "}" ->
+          Qast.Node "PaOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option (Some p))]
       | i = SV TILDEIDENT "~" a_ti ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option None)]
-      | p = patt_option_label -> p ] ]
+      | p = patt_option_label ->
+          let _ = warning_deprecated_since_6_00 loc in
+          p ] ]
   ;
   ipatt:
-    [ [ i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
+    [ [ "~"; "{"; p = SELF; po = SV (OPT binding_with_patt); "}" ->
+          Qast.Node "PaLab" [Qast.Loc; p; po]
+      | "?"; "{"; p = SELF; eo = SV (OPT binding_with_expr); "}" ->
+          Qast.Node "PaOlb" [Qast.Loc; p; eo]
+      | i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option (Some p))]
       | i = SV TILDEIDENT "~" a_ti ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option None)]
-      | p = patt_option_label -> p ] ]
+      | p = patt_option_label ->
+          let _ = warning_deprecated_since_6_00 loc in
+          p ] ]
   ;
   patt_option_label:
     [ [ i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; ":";
         t = ctyp; "="; e = expr; ")" ->
           Qast.Node "PaOlb"
-            [Qast.Loc;
-             Qast.Node "PaTyc" [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i]; t];
+            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal
                (Qast.Option
                   (Some
-                     (Qast.Node "ExOlb"
-                        [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; j];
-                         Qast.VaVal (Qast.Option (Some e))])))]
+                     (Qast.Node "ExTyc"
+                        [Qast.Loc;
+                         Qast.Node "ExOlb"
+                           [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; j];
+                            Qast.VaVal (Qast.Option (Some e))];
+                         t])))]
       | i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; ":";
         t = ctyp; ")" ->
           Qast.Node "PaOlb"
-            [Qast.Loc;
-             Qast.Node "PaTyc" [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i]; t];
+            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal
                (Qast.Option
                   (Some
-                     (Qast.Node "ExOlb"
-                        [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; j];
-                         Qast.VaVal (Qast.Option None)])))]
+                     (Qast.Node "ExTyc"
+                        [Qast.Loc;
+                         Qast.Node "ExOlb"
+                           [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; j];
+                            Qast.VaVal (Qast.Option None)];
+                         t])))]
       | i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; "=";
         e = expr; ")" ->
           Qast.Node "PaOlb"
@@ -1211,9 +1248,9 @@ EXTEND
              Qast.VaVal (Qast.Option None)]
       | "?"; "("; i = SV LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
           Qast.Node "PaOlb"
-            [Qast.Loc;
-             Qast.Node "PaTyc" [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i]; t];
-             Qast.VaVal (Qast.Option (Some e))]
+            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
+             Qast.VaVal
+               (Qast.Option (Some (Qast.Node "ExTyc" [Qast.Loc; e; t])))]
       | "?"; "("; i = SV LIDENT; ":"; t = ctyp; ")" ->
           Qast.Node "PaOlb"
             [Qast.Loc;
@@ -1230,7 +1267,11 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = SV TILDEIDENTCOLON "~:" a_tic; e = SELF ->
+      [ "~"; "{"; p = patt; eo = SV (OPT binding_with_expr); "}" ->
+          Qast.Node "ExLab" [Qast.Loc; p; eo]
+      | "?"; "{"; p = patt; eo = SV (OPT binding_with_expr); "}" ->
+          Qast.Node "ExOlb" [Qast.Loc; p; eo]
+      | i = SV TILDEIDENTCOLON "~:" a_tic; e = SELF ->
           Qast.Node "ExLab"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option (Some e))]

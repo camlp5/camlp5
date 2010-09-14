@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.139 2010/09/14 13:43:53 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.140 2010/09/14 17:25:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -124,6 +124,15 @@ value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 
 value mklabdecl loc i mf t = (loc, i, mf, t);
 value mkident i : string = i;
+
+value warned = ref False;
+value warning_deprecated_since_6_00 loc =
+  if not warned.val then do {
+    Pcaml.warning.val loc "syntax deprecated since version 6.00";
+    warned.val := True
+  }
+  else ()
+;
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
@@ -756,34 +765,64 @@ EXTEND
   name_tag:
     [ [ "`"; i = ident -> i ] ]
   ;
+  binding_with_patt:
+    [ [ "="; p = patt -> p
+      | ":"; t = ctyp; "="; p = patt -> <:patt< ($p$ : $t$) >> ] ]
+  ;
+  binding_with_expr:
+    [ [ "="; e = expr -> e
+      | ":"; t = ctyp; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
+  ;
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:patt< ` $_:s$ >>
       | "#"; sl = V mod_ident "list" "" -> <:patt< # $_:sl$ >>
-      | i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
-      | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
-      | p = patt_option_label -> p ] ]
+      | "~"; "{"; p = SELF; po = V (OPT binding_with_patt); "}" ->
+          <:patt< ~{$p$ $_opt:po$ } >>
+      | "?"; "{"; p = SELF; eo = V (OPT binding_with_expr); "}" ->
+          <:patt< ?{$p$ $_opt:eo$ } >>
+
+      | i = V TILDEIDENTCOLON; p = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:patt< ~{$_lid:i$ = $p$} >>
+      | i = V TILDEIDENT ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:patt< ~{$_lid:i$} >>
+      | p = patt_option_label ->
+          let _ = warning_deprecated_since_6_00 loc in
+          p ] ]
   ;
   ipatt:
-    [ [ i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
-      | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
-      | p = patt_option_label -> p ] ]
+    [ [ "~"; "{"; p = SELF; po = V (OPT binding_with_patt); "}" ->
+          <:patt< ~{$p$ $_opt:po$ } >>
+      | "?"; "{"; p = SELF; eo = V (OPT binding_with_expr); "}" ->
+          <:patt< ?{$p$ $_opt:eo$ } >>
+
+      | i = V TILDEIDENTCOLON; p = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:patt< ~{$_lid:i$ = $p$} >>
+      | i = V TILDEIDENT ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:patt< ~{$_lid:i$} >>
+      | p = patt_option_label ->
+          let _ = warning_deprecated_since_6_00 loc in
+          p ] ]
   ;
   patt_option_label:
     [ [ i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ":"; t = ctyp; "=";
         e = expr; ")" ->
-          <:patt< ?$_:i$: ($_lid:j$ : $t$ = $e$) >>
+          <:patt< ?{$_lid:i$ : $t$ = ?{$_lid:j$ = $e$}} >>
       | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ":"; t = ctyp; ")" ->
-          <:patt< ?$_:i$: ($_lid:j$ : $t$) >>
+          <:patt< ?{$_lid:i$ : $t$ = ?{$_lid:j$}} >>
       | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; "="; e = expr; ")" ->
-          <:patt< ?$_:i$: ($_lid:j$ = $e$) >>
+          <:patt< ?{$_lid:i$ = ?{$_lid:j$ = $e$}} >>
       | i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ")" ->
-          <:patt< ?$_:i$: ($_lid:j$) >>
+          <:patt< ?{$_lid:i$ = $_lid:j$} >>
       | i = V QUESTIONIDENT ->
-          <:patt< ?$_:i$ >>
+          <:patt< ?{$_lid:i$} >>
       | "?"; "("; i = V LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
-          <:patt< ? ($_lid:i$ : $t$ = $e$) >>
+          <:patt< ?{$_lid:i$ : $t$ = $e$} >>
       | "?"; "("; i = V LIDENT; ":"; t = ctyp; ")" ->
-          <:patt< ? ($_lid:i$ : $t$) >>
+          <:patt< ?{($_lid:i$ : $t$)} >>
       | "?"; "("; i = V LIDENT; "="; e = expr; ")" ->
           <:patt< ? ($_lid:i$ = $e$) >>
       | "?"; "("; i = V LIDENT; ")" ->
@@ -791,7 +830,11 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~$_:i$: $e$ >>
+      [ "~"; "{"; p = patt; eo = V (OPT binding_with_expr); "}" ->
+          <:expr< ~{$p$ $_opt:eo$ } >>
+      | "?"; "{"; p = patt; eo = V (OPT binding_with_expr); "}" ->
+          <:expr< ?{$p$ $_opt:eo$ } >>
+      | i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~$_:i$: $e$ >>
       | i = V TILDEIDENT -> <:expr< ~$_:i$ >>
       | i = V QUESTIONIDENTCOLON; e = SELF -> <:expr< ?$_:i$: $e$ >>
       | i = V QUESTIONIDENT -> <:expr< ?$_:i$ >> ] ]

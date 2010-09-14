@@ -696,6 +696,8 @@ let anti_of_tok =
   | s -> []
 ;;
 
+let is_not_translated_function f = f = "warning_deprecated_since_6_00";;
+
 let quot_expr psl e =
   let rec loop e =
     let loc = MLast.loc_of_expr e in
@@ -856,9 +858,11 @@ let quot_expr psl e =
                   MLast.ExStr (loc, m ^ "." ^ c)),
                mklistexp loc al)
         | MLast.ExLid (_, f) ->
-            let al = List.map loop al in
-            List.fold_left (fun f e -> MLast.ExApp (loc, f, e))
-              (MLast.ExLid (loc, f)) al
+            if is_not_translated_function f then e
+            else
+              let al = List.map loop al in
+              List.fold_left (fun f e -> MLast.ExApp (loc, f, e))
+                (MLast.ExLid (loc, f)) al
         | _ -> e
         end
     | MLast.ExRec (_, pel, None) ->

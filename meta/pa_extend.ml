@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extend.ml,v 1.108 2010/09/02 03:39:59 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.109 2010/09/14 17:25:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -372,6 +372,10 @@ value anti_of_tok =
   | s -> [] ]
 ;
 
+value is_not_translated_function f =
+  f = "warning_deprecated_since_6_00"
+;
+
 value quot_expr psl e =
   loop e where rec loop e =
     let loc = MLast.loc_of_expr e in
@@ -408,9 +412,11 @@ value quot_expr psl e =
             let al = List.map loop al in
             <:expr< Qast.Node $str:m ^ "." ^ c$ $mklistexp loc al$ >>
         | <:expr< $lid:f$ >> ->
-            let al = List.map loop al in
-            List.fold_left (fun f e -> <:expr< $f$ $e$ >>) <:expr< $lid:f$ >>
-              al
+            if is_not_translated_function f then e
+            else
+              let al = List.map loop al in
+              List.fold_left (fun f e -> <:expr< $f$ $e$ >>)
+                <:expr< $lid:f$ >> al
         | _ -> e ]
     | <:expr< {$list:pel$} >> ->
         try
@@ -429,7 +435,8 @@ value quot_expr psl e =
           <:expr< Qast.Record $mklistexp loc lel$>>
         with
         [ Not_found -> e ]
-    | <:expr< $lid:s$ >> -> if s = Ploc.name.val then <:expr< Qast.Loc >> else e
+    | <:expr< $lid:s$ >> ->
+        if s = Ploc.name.val then <:expr< Qast.Loc >> else e
     | <:expr< MLast.$uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
     | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
     | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
