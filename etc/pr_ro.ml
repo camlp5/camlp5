@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.99 2010/09/15 01:54:01 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.100 2010/09/15 12:20:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -14,6 +14,7 @@
 open Pcaml;
 open Prtools;
 open Printf;
+open Pretty;
 
 value not_impl name pc x =
   let desc =
@@ -104,7 +105,7 @@ value class_type_params pc ctp =
   if ctp = [] then pprintf pc ""
   else
     let ctp = List.map (fun ct -> (ct, ",")) ctp in
-    pprintf pc " [%p]" (plist type_var 1) ctp
+    pprintf pc "@;[%p]" (plist type_var 1) ctp
 ;
 
 value class_def_or_type_decl char pc ci =
@@ -132,6 +133,10 @@ value rec is_irrefut_patt =
   [ <:patt< $lid:_$ >> -> True
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ~{$_$} >> -> True
+  | <:patt< ~{$_$ = $_$} >> -> True
+  | <:patt< ?{$_$} >> -> True
+  | <:patt< ?{$_$ = $_$} >> -> True
+  | <:patt< () >> -> True
   | _ -> False ]
 ;
 
@@ -146,12 +151,28 @@ value class_decl pc ci =
           else ([], gce)
       | ce -> ([], ce) ]
   in
-  pprintf pc "%s%s%p%s%p =@;%p"
-    (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-    (Pcaml.unvala ci.MLast.ciNam)
-    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
-    (if pl = [] then "" else " ") (hlist patt) pl
-    class_expr ce
+  let def pc () =
+    horiz_vertic
+      (fun () ->
+         pprintf pc "%s%s%p%s%p ="
+           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+           (Pcaml.unvala ci.MLast.ciNam)
+           class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+           (if pl = [] then "" else " ") (hlist patt) pl)
+      (fun () ->
+         let pl = List.map (fun p -> (p, "")) pl in
+         let pc =
+           {(pc) with
+            bef =
+              sprintf "%s%s%s%s " pc.bef 
+                (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+                (Pcaml.unvala ci.MLast.ciNam)
+                (class_type_params Pprintf.empty_pc
+                   (Pcaml.unvala (snd ci.MLast.ciPrm)))}
+         in
+         pprintf pc "%p =" (plistl patt patt 4) pl)
+  in
+  pprintf pc "@[%p@;%p@]" def () class_expr ce
 ;
 
 value variant_decl pc pv =
@@ -262,14 +283,14 @@ EXTEND_PRINTER
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
-      [ <:expr< ?{$lid:s$} >> ->
-          pprintf pc "?%s" s
-      | <:expr< ?{$p$ = $e$} >> ->
-          pprintf pc "@[<2>?{%p =@;%p}@]" patt p curr e
-      | <:expr< ~{$p$ = $e$} >> ->
+      [ <:expr< ~{$p$ = $e$} >> ->
           pprintf pc "~{%p = %p}" patt p expr e
       | <:expr< ~{$p$} >> ->
-          pprintf pc "~{%p}" patt p ] ]
+          pprintf pc "~{%p}" patt p
+      | <:expr< ?{$p$ = $e$} >> ->
+          pprintf pc "@[<2>?{%p =@;%p}@]" patt p curr e
+      | <:expr< ?{$p$} >> ->
+          pprintf pc "?{%p}" patt p ] ]
   ;
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]

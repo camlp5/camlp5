@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.230 2010/09/15 01:54:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.231 2010/09/15 12:20:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1723,7 +1723,7 @@ value class_type_params pc (loc, ctp) =
   if ctp = [] then pprintf pc ""
   else
     let ctp = List.map (fun ct -> ((loc, ct), ",")) ctp in
-    pprintf pc "[%p] " (plist type_var 1) ctp
+    pprintf pc "[%p]@;" (plist type_var 1) ctp
 ;
 
 value class_def pc ci =
@@ -1761,11 +1761,28 @@ value class_decl pc ci =
           else ([], gce)
       | ce -> ([], ce) ]
   in
-  pprintf pc "%s%p%s%s%p =@;%p"
-    (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-    class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
-    (Pcaml.unvala ci.MLast.ciNam) (if pl = [] then "" else " ")
-    (hlist patt) pl class_expr ce
+  let def pc () =
+    horiz_vertic
+      (fun () ->
+         pprintf pc "%s%p%s%s%p ="
+           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+           class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
+           (Pcaml.unvala ci.MLast.ciNam) (if pl = [] then "" else " ")
+           (hlist patt) pl)
+      (fun () ->
+         let pl = List.map (fun p -> (p, "")) pl in
+         let pc =
+           {(pc) with
+            bef =
+              sprintf "%s%s%s%s " pc.bef 
+                (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+                (class_type_params Pprintf.empty_pc
+                   (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm)))
+                (Pcaml.unvala ci.MLast.ciNam)}
+         in
+         pprintf pc "%p =" (plistl patt patt 4) pl)
+  in
+  pprintf pc "@[%p@;%p@]" def () class_expr ce
 ;
 
 value variant_decl pc pv =
@@ -1838,6 +1855,8 @@ value class_object loc pc (csp, csl) =
          csp (vlist class_str_item_sep) csl)
 ;
 
+value simple_expr = Eprinter.apply_level pr_expr "simple";
+
 (* *)
 
 EXTEND_PRINTER
@@ -1846,21 +1865,29 @@ EXTEND_PRINTER
           pprintf pc "?(%s :@;%p)" p ctyp t
       | <:patt< ?{$lid:p$ : $t$ = $e$} >> ->
           pprintf pc "?(%s :@;%p =@;%p)" p ctyp t expr e
-
+      | <:patt< ?{$p1$ = ?{$p2$ = $e$}} >> ->
+          pprintf pc "?%p:(%p =@;%p)" patt p1 patt p2 expr e
+      | <:patt< ?{$p1$ = ?{$p2$}} >> ->
+          pprintf pc "?%p:(%p)" patt p1 patt p2
+      | <:patt< ?{$p$ = $e$} >> ->
+          pprintf pc "?(%p =@;%p)" patt p expr e
+      | <:patt< ?{$p$} >> ->
+          pprintf pc "?%p" curr p
+(*
       | <:patt< ?{$lid:s$} >> ->
           pprintf pc "?%s" s
       | <:patt< ?{$lid:p$ = $e$} >> ->
           pprintf pc "?(%s =@;%p)" p expr e
       | <:patt< ?{$lid:p$} >> ->
           pprintf pc "?(%s)" p
-      | <:patt< ?{$lid:i$ = ?{$lid:p$ = $e$}} >> ->
-          pprintf pc "?%s:@;<0 1>@[<1>(%s =@ %p)@]" i p expr e
       | <:patt< ?{$lid:i$ = $lid:p$} >> ->
           pprintf pc "?%s:@;<0 1>(%s)" i p
       | <:patt< ~{$lid:s$} >> ->
           pprintf pc "~%s" s
       | <:patt< ~{$lid:s$ = $p$} >> ->
           pprintf pc "~%s:%p" s curr p
+*)
+
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
       | <:patt:< # $list:sl$ >> ->
@@ -1960,14 +1987,14 @@ value poly_type pc =
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
-      [ <:expr< ?{$lid:s$} >> ->
-          pprintf pc "?%s" s
-      | <:expr< ?{$lid:i$ = $e$} >> ->
-          pprintf pc "?%s:%p" i curr e
-      | <:expr< ~{$lid:s$} >> ->
-          pprintf pc "~%s" s
-      | <:expr< ~{$lid:s$ = $e$} >> ->
-          pprintf pc "~%s:%p" s (Eprinter.apply_level pr_expr "dot") e ] ]
+      [ <:expr< ~{$p$ = $e$} >> ->
+          pprintf pc "~%p:%p" patt p curr e
+      | <:expr< ~{$p$} >> ->
+          pprintf pc "~%p" patt p
+      | <:expr< ?{$p$ = $e$} >> ->
+          pprintf pc "?%p:%p" patt p curr e
+      | <:expr< ?{$p$} >> ->
+          pprintf pc "?%p" patt p ] ]
   ;
   pr_ctyp: AFTER "top"
     [ "as"

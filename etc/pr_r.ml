@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.214 2010/09/15 02:31:27 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.215 2010/09/15 12:20:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1175,8 +1175,8 @@ EXTEND_PRINTER
           pprintf pc "\"%s\"" s
       | <:expr< $chr:s$ >> ->
           pprintf pc "'%s'" s
-      | MLast.ExOlb _ _ _ | MLast.ExLab _ _ _ ->
-          failwith "labels not pretty printed (in expr); add pr_ro.cmo"
+      | MLast.ExOlb loc _ _ | MLast.ExLab loc _ _ ->
+          error loc "labels not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
         <:expr< $_$ := $_$ >> |
         <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |

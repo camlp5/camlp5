@@ -1158,7 +1158,7 @@ and str_item s l =
                 pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
             | None -> error loc "no exception renaming in this ocaml version"
             end
-        | _ -> error loc "bad exception declaration"
+        | _ -> error loc "renamed exception should not have parameters"
       in
       mkstr loc si :: l
   | StExp (loc, e) -> mkstr loc (Pstr_eval (expr e)) :: l
