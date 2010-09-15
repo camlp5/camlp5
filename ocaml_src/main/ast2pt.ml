@@ -903,7 +903,7 @@ let rec expr =
       | None -> error loc "no nativeint in this ocaml version"
       end
   | ExInt (loc, _, _) -> error loc "special int not implemented"
-  | ExLab (loc, _, _) -> error loc "labeled expression not allowed here"
+  | ExLab (loc, _, _) -> error loc "labeled expression not allowed here 1"
   | ExLaz (loc, e) -> mklazy loc (expr e)
   | ExLet (loc, rf, pel, e) ->
       mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe (uv pel), expr e))
@@ -936,7 +936,7 @@ let rec expr =
           mkexp loc (pexp_object (patt p, cil))
       | None -> error loc "no object in this ocaml version"
       end
-  | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here"
+  | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here 2"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExPck (loc, me, mt) ->
       begin match ocaml_pexp_pack with
@@ -1357,6 +1357,11 @@ and class_expr =
             match p with
               PaLid (_, s) -> uv s
             | p -> error loc "label not implemented in that case 4"
+          in
+          let (p, eo) =
+            match uv eo with
+              Some (ExOlb (_, p, eo)) -> p, eo
+            | Some _ | None -> p, eo
           in
           mkpcl loc
             (pcl_fun ("?" ^ lab) (option expr (uv eo)) (patt p)
