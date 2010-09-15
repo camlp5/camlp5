@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.44 2010/09/14 19:24:01 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.45 2010/09/15 08:07:43 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -121,8 +121,9 @@ MLast.PaXtr loc s None;
 MLast.PaXtr loc s (Some (Ploc.VaVal p));
 MLast.PaXtr loc s (Some p);
 MLast.PaXtr loc s p;
-MLast.ExAcc loc e1 e2;
-MLast.ExAnt loc e;
+
+<:expr< $e1$ . $e2$ >>;
+<:expr< $anti:e$ >>;
 MLast.ExApp loc e1 e2;
 MLast.ExAre loc e1 e2;
 MLast.ExArr loc (Ploc.VaVal le);
