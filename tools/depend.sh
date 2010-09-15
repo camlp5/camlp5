@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: depend.sh,v 1.5 2010/08/24 15:06:49 deraugla Exp $
+# $Id: depend.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
 
 ARGS1="pr_depend.cmo --"
 FILE=

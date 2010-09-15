@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.1 2010/09/15 16:00:48 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.2 2010/09/15 16:05:46 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -328,8 +328,9 @@ MLast.SgXtr loc s si;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
 
-MLast.WcMod loc (Ploc.VaVal ls) me;
-MLast.WcMod loc ls me;
+<:with_constr< module $list:ls$ = $me$ >>;
+<:with_constr< module $_list:ls$ = $me$ >>;
+
 MLast.MeAcc loc me1 me2;
 MLast.MeApp loc me1 me2;
 MLast.MeFun loc (Ploc.VaVal s) mt me;
@@ -495,12 +496,14 @@ MLast.CgInh loc ct;
 <:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
 
-MLast.CeApp loc ce e;
-MLast.CeCon loc (Ploc.VaVal ls) (Ploc.VaVal lt);
-MLast.CeCon loc (Ploc.VaVal ls) lt;
-MLast.CeCon loc ls (Ploc.VaVal lt);
-MLast.CeCon loc ls lt;
-MLast.CeFun loc p ce;
+<:class_expr< $ce$ $e$ >>;
+
+<:class_expr< [ $list:lt$ ] $list:ls$ >>;
+<:class_expr< [ $_list:lt$ ] $list:ls$ >>;
+<:class_expr< [ $list:lt$ ] $_list:ls$ >>;
+<:class_expr< [ $_list:lt$ ] $_list:ls$ >>;
+
+<:class_expr< fun $p$ -> $ce$ >>;
 
 <:class_expr< let rec $list:lpe$ in $ce$ >>;
 <:class_expr< let rec $_list:lpe$ in $ce$ >>;

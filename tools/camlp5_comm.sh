@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 1.14 2010/09/07 17:30:37 deraugla Exp $
+# $Id: camlp5_comm.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
