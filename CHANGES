@@ -1,4 +1,4 @@
-Camlp5 Version 5.16:
+Camlp5 Version 6.00:
 --------------------
 
 * [08 Sep 10] Added option '-flag O' of pr_r.cmo and pr_o.cmo which
