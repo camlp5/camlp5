@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.119 2010/09/14 19:14:24 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.120 2010/09/15 02:31:27 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -1025,7 +1025,7 @@ and str_item s l =
                 pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
             | None ->
                 error loc "no exception renaming in this ocaml version" ]
-        | _ -> error loc "bad exception declaration" ]
+        | _ -> error loc "renamed exception should not have parameters" ]
       in
       [mkstr loc si :: l]
   | StExp loc e -> [mkstr loc (Pstr_eval (expr e)) :: l]

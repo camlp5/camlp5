@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.213 2010/09/14 19:14:24 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.214 2010/09/15 02:31:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -534,26 +534,29 @@ value type_constraint pc (t1, t2) =
 
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
-    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv,
+    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon)
   in
   let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p%s%p = %p%p" var_escaped (loc, Pcaml.unvala tn)
+       pprintf pc "%p%s%p = %s%p%p" var_escaped (loc, Pcaml.unvala tn)
          (if Pcaml.unvala tp = [] then "" else " ")
-         (hlist type_var) (Pcaml.unvala tp) ctyp te
+         (hlist type_var) (Pcaml.unvala tp)
+         (if pf then "private " else "") ctyp te
          (hlist type_constraint) (Pcaml.unvala cl))
     (fun () ->
        if pc.aft = "" then
-         pprintf pc "%p%s%p =@;%p%p" var_escaped (loc, Pcaml.unvala tn)
+         pprintf pc "%p%s%p =@;%s%p%p" var_escaped (loc, Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp) ctyp te
+           (hlist type_var) (Pcaml.unvala tp)
+           (if pf then "private " else "") ctyp te
            (hlist type_constraint) (Pcaml.unvala cl)
        else
-         pprintf pc "@[<a>%p%s%p =@;%p%p@ @]" var_escaped
+         pprintf pc "@[<a>%p%s%p =@;%s%p%p@ @]" var_escaped
            (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp) ctyp te
+           (hlist type_var) (Pcaml.unvala tp)
+           (if pf then "private " else "") ctyp te
            (hlist type_constraint) (Pcaml.unvala cl))
 ;
 

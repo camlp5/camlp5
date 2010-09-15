@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.14 2010/09/14 19:14:25 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.15 2010/09/15 02:31:27 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -37,15 +37,16 @@ for i in $files; do
   idir=$(basename $(dirname $i))
   if [ "$bname" = "frx_fileinput.ml" -o "$idir" = "builtin" -o \
        "$idir" = "Struct" -o "$idir" = "Grammar" -o \
-       "$idir/$bname" = "examples/apply_operator.ml" -o \
-       "$idir/$bname" = "examples/expression_closure_filter.ml" -o \
-       "$idir/$bname" = "examples/free_vars_test.ml" -o \
-       "$idir/$bname" = "examples/global_handler.ml" -o \
        "$idir/$bname" = "Camlp4/Debug.ml" -o \
        "$idir/$bname" = "Camlp4/ErrorHandler.ml" -o \
        "$idir/$bname" = "Camlp4/OCamlInitSyntax.ml" -o \
        "$idir/$bname" = "Camlp4/Register.ml" -o \
        "$idir/$bname" = "Camlp4/Sig.ml" -o \
+       "$idir/$bname" = "examples/apply_operator.ml" -o \
+       "$idir/$bname" = "examples/expression_closure_filter.ml" -o \
+       "$idir/$bname" = "examples/free_vars_test.ml" -o \
+       "$idir/$bname" = "examples/global_handler.ml" -o \
+       "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
        "$idir/$bname" = "Printers/DumpCamlp4Ast.ml" -o \
        "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
        "$idir/$bname" = "Printers/OCaml.ml" -o \
