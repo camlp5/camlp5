@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.7 2010/09/15 20:57:20 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.8 2010/09/15 21:11:37 deraugla Exp $ *)
 
 (* dot *)
 <:ctyp< $t1$ . $t2$ >>;
@@ -357,12 +357,16 @@ MLast.ExUid loc (Ploc.VaVal s);
 MLast.ExUid loc s;
 MLast.ExVrn loc (Ploc.VaVal s);
 MLast.ExVrn loc s;
-MLast.ExWhi loc e (Ploc.VaVal le);
-MLast.ExWhi loc e le;
+
+(* while *)
+<:expr< while $e$ do { $list:le$} >>;
+<:expr< while $e$ do { $_list:le$} >>;
+
 MLast.ExXtr loc s None;
 MLast.ExXtr loc s (Some (Ploc.VaVal e));
 MLast.ExXtr loc s (Some e);
 MLast.ExXtr loc s e;
+
 MLast.MtAcc loc mt1 mt2;
 MLast.MtApp loc mt1 mt2;
 MLast.MtFun loc (Ploc.VaVal s) mt1 mt2;
@@ -376,12 +380,16 @@ MLast.MtSig loc lsi;
 MLast.MtTyo loc me;
 MLast.MtUid loc (Ploc.VaVal s);
 MLast.MtUid loc s;
-MLast.MtWit loc mt (Ploc.VaVal lwc);
-MLast.MtWit loc mt lwc;
+
+(* with construction *)
+<:module_type< $mt$ with $list:lwc$ >>;
+<:module_type< $mt$ with $_list:lwc$ >>;
+
 MLast.MtXtr loc s None;
 MLast.MtXtr loc s (Some (Ploc.VaVal mt));
 MLast.MtXtr loc s (Some mt);
 MLast.MtXtr loc s mt;
+
 MLast.SgCls loc (Ploc.VaVal lcict);
 MLast.SgCls loc lcict;
 MLast.SgClt loc (Ploc.VaVal lcict);
@@ -426,8 +434,11 @@ MLast.SgOpn loc ls;
 MLast.SgTyp loc (Ploc.VaVal ltd);
 MLast.SgTyp loc ltd;
 MLast.SgUse loc s lsil;
-MLast.SgVal loc (Ploc.VaVal s) t;
-MLast.SgVal loc s t;
+
+(* value *)
+<:sig_item< value $s$ : $t$ >>;
+<:sig_item< value $_:s$ : $t$ >>;
+
 MLast.SgXtr loc s None;
 MLast.SgXtr loc s (Some (Ploc.VaVal si));
 MLast.SgXtr loc s (Some si);
@@ -455,13 +466,19 @@ MLast.SgXtr loc s si;
 
 MLast.MeAcc loc me1 me2;
 MLast.MeApp loc me1 me2;
-MLast.MeFun loc (Ploc.VaVal s) mt me;
-MLast.MeFun loc s mt me;
+
+(* functor *)
+<:module_expr< functor ($s$ : $mt$) -> $me$ >>;
+<:module_expr< functor ($_:s$ : $mt$) -> $me$ >>;
+
 MLast.MeStr loc (Ploc.VaVal lsi);
 MLast.MeStr loc lsi;
 MLast.MeTyc loc me mt;
-MLast.MeUid loc (Ploc.VaVal s);
-MLast.MeUid loc s;
+
+(* uppercase identifier *)
+<:module_expr< $uid:s$ >>;
+<:module_expr< $_uid:s$ >>;
+
 MLast.MeUnp loc e mt;
 MLast.MeXtr loc s None;
 MLast.MeXtr loc s (Some (Ploc.VaVal me));
