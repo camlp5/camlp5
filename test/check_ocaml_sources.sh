@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.16 2010/09/15 13:14:55 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.17 2010/09/15 13:28:23 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -43,11 +43,27 @@ for i in $files; do
        "$idir/$bname" = "Camlp4/Register.ml" -o \
        "$idir/$bname" = "Camlp4/Sig.ml" -o \
        "$idir/$bname" = "examples/apply_operator.ml" -o \
+       "$idir/$bname" = "examples/arith.ml" -o \
+       "$idir/$bname" = "examples/debug_extension.ml" -o \
+       "$idir/$bname" = "examples/ex_str.ml" -o \
+       "$idir/$bname" = "examples/ex_str_test.ml" -o \
+       "$idir/$bname" = "examples/expression_closure.ml" -o \
        "$idir/$bname" = "examples/expression_closure_filter.ml" -o \
+       "$idir/$bname" = "examples/fancy_lambda_quot.ml" -o \
        "$idir/$bname" = "examples/fancy_lambda_quot_test.ml" -o \
        "$idir/$bname" = "examples/free_vars_test.ml" -o \
+       "$idir/$bname" = "examples/gen_match_case.ml" -o \
        "$idir/$bname" = "examples/gen_type_N.ml" -o \
        "$idir/$bname" = "examples/global_handler.ml" -o \
+       "$idir/$bname" = "examples/lambda_parser.ml" -o \
+       "$idir/$bname" = "examples/lambda_quot.ml" -o \
+       "$idir/$bname" = "examples/lambda_quot_expr.ml" -o \
+       "$idir/$bname" = "examples/lambda_quot_patt.ml" -o \
+       "$idir/$bname" = "examples/lambda_test.ml" -o \
+       "$idir/$bname" = "examples/macros.ml" -o \
+       "$idir/$bname" = "examples/parse_files.ml" -o \
+       "$idir/$bname" = "examples/test_type_quotation.ml" -o \
+       "$idir/$bname" = "examples/type_quotation.ml" -o \
        "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
        "$idir/$bname" = "Printers/DumpCamlp4Ast.ml" -o \
        "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
