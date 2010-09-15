@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.46 2010/09/15 08:13:12 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.47 2010/09/15 09:22:49 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -137,8 +137,8 @@ MLast.PaXtr loc s p;
 <:expr< ($e$ :> $t2$) >>;
 <:expr< ($e$ : $t1$ :> $t2$) >>;
 MLast.ExCoe loc e t1 t2;
-MLast.ExFlo loc (Ploc.VaVal s);
-MLast.ExFlo loc s;
+<:expr< $flo:s$ >>;
+<:expr< $_flo:s$ >>;
 
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $_list:le$ } >>;
@@ -157,11 +157,17 @@ MLast.ExFlo loc s;
 <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $list:le$ } >>;
 <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>;
 
-MLast.ExFun loc (Ploc.VaVal lpee);
-MLast.ExFun loc lpee;
-MLast.ExIfe loc e1 e2 e3;
-MLast.ExInt loc (Ploc.VaVal s1) s2;
-MLast.ExInt loc s1 s2;
+<:expr< fun [ $list:lpee$ ] >>;
+<:expr< fun [ $_list:lpee$ ] >>;
+<:expr< if $e1$ then $e2$ else $e3$ >>;
+<:expr< $int:s1$ >>;
+<:expr< $_int:s1$ >>;
+<:expr< $int32:s1$ >>;
+<:expr< $_int32:s1$ >>;
+<:expr< $int64:s1$ >>;
+<:expr< $_int64:s1$ >>;
+<:expr< $nativeint:s1$ >>;
+<:expr< $_nativeint:s1$ >>;
 
 <:expr< ~{$p$} >>;
 <:expr< ~{$p$ = $e$} >>;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 1.5 2010/09/14 10:57:41 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 1.6 2010/09/15 09:22:49 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -96,12 +96,28 @@ value expr_of_cons_decl (loc, c, tl) =
   let tl = Pcaml.unvala tl in
   let tnl = name_of_vars (fun t -> t) tl in
   let c = Pcaml.unvala c in
-  loop <:expr< MLast.$uid:c$ >> tnl where rec loop e1 =
-    fun
-    [ [(t, n) :: tnl] ->
-        let f e2 = loop <:expr< $e1$ $e2$ >> tnl in
-        expr_list_of_type loc f n t
-    | [] -> [e1] ]
+  let el =
+    loop <:expr< MLast.$uid:c$ >> tnl where rec loop e1 =
+      fun
+      [ [(t, n) :: tnl] ->
+          let f e2 = loop <:expr< $e1$ $e2$ >> tnl in
+          expr_list_of_type loc f n t
+      | [] -> [e1] ]
+  in
+  match c with
+  [ "ExInt" ->
+      List.fold_right
+        (fun int_type gel ->
+           List.rev_append
+             (List.rev_map
+                (fun e ->
+                   match e with
+                   [ <:expr:< $e$ s2 >> -> <:expr< $e$ $str:int_type$ >>
+                   | x -> x ])
+                el)
+             gel)
+        [""; "l"; "L"; "n"] []
+  | _ -> el ]
 ;
 
 value expr_list_of_type_decl loc td =
