@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.27 2010/09/10 18:56:44 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.28 2010/09/15 03:39:01 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -2117,29 +2117,54 @@
 <dl class="nodelist">
   <dt>- constructor</dt>
   <dd>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $s$ >></tt><br/>
-    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal [])</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $_:s$ >></tt><br/>
-    <tt style="color:red">MLast.PvTag s (Ploc.VaVal True) (Ploc.VaVal [])</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $s$ of $list:lt$ >></tt><br/>
-    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal False) (Ploc.VaVal lt)</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $_:s$ of $_list:lt$ >></tt><br/>
-    <tt style="color:red">MLast.PvTag s (Ploc.VaVal False) lt</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $s$ of &amp; $list:lt$ >></tt><br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of & $list:lt$ >></tt><br/>
     <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal lt)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $_:s$ of &amp; $_list:lt$ >></tt><br/>
-    <tt style="color:red">MLast.PvTag s (Ploc.VaVal True) lt</tt><br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of & $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal True) lt</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $s$ of $flag:b$ $list:lt$ >></tt><br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of $list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal False) (Ploc.VaVal lt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal False) lt</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of $flag:b$ $list:lt$ >></tt><br/>
     <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal b) (Ploc.VaVal lt)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; ` $_:s$ of $_flag:b$ $_list:lt$ >></tt><br/>
-    <tt style="color:red">MLast.PvTag s b lt</tt>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of $flag:b$ $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal b) lt</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of $_flag:b$ $list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) b (Ploc.VaVal lt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of $_flag:b$ $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag (Ploc.VaVal s) b lt</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of & $list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s (Ploc.VaVal True) (Ploc.VaVal lt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of & $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s (Ploc.VaVal True) lt</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of $list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s (Ploc.VaVal False) (Ploc.VaVal lt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s (Ploc.VaVal False) lt</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of $flag:b$ $list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s (Ploc.VaVal b) (Ploc.VaVal lt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of $flag:b$ $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s (Ploc.VaVal b) lt</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of $_flag:b$ $list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s b (Ploc.VaVal lt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of $_flag:b$ $_list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.PvTag s b lt</tt><br/>
+    <br/>
   </dd>
 </dl>
 <dl class="nodelist">
