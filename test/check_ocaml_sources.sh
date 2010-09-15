@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.15 2010/09/15 02:31:27 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.16 2010/09/15 13:14:55 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -44,11 +44,14 @@ for i in $files; do
        "$idir/$bname" = "Camlp4/Sig.ml" -o \
        "$idir/$bname" = "examples/apply_operator.ml" -o \
        "$idir/$bname" = "examples/expression_closure_filter.ml" -o \
+       "$idir/$bname" = "examples/fancy_lambda_quot_test.ml" -o \
        "$idir/$bname" = "examples/free_vars_test.ml" -o \
+       "$idir/$bname" = "examples/gen_type_N.ml" -o \
        "$idir/$bname" = "examples/global_handler.ml" -o \
        "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
        "$idir/$bname" = "Printers/DumpCamlp4Ast.ml" -o \
        "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
+       "$idir/$bname" = "Printers/Null.ml" -o \
        "$idir/$bname" = "Printers/OCaml.ml" -o \
        "$idir/$bname" = "Printers/OCamlr.ml" ]
   then

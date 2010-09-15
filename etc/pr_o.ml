@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.231 2010/09/15 12:20:06 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.232 2010/09/15 13:14:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -75,10 +75,10 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< ?{$_$ = ?{$_$ = $_$}} >> -> True
+  | <:patt< ~{$_$ = $_$} >> -> True
+  | <:patt< ~{$_$} >> -> True
   | <:patt< ?{$_$ = $_$} >> -> True
   | <:patt< ?{$_$} >> -> True
-  | <:patt< ~{$_$} >> -> True
   | _ -> False ]
 ;
 
@@ -1861,7 +1861,10 @@ value simple_expr = Eprinter.apply_level pr_expr "simple";
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ?{$lid:p$ : $t$} >> ->
+    [ [ <:patt< ~{$p1$ = $p2$} >> ->
+          pprintf pc "~%p:%p" patt p1 curr p2
+
+      | <:patt< ?{$lid:p$ : $t$} >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
       | <:patt< ?{$lid:p$ : $t$ = $e$} >> ->
           pprintf pc "?(%s :@;%p =@;%p)" p ctyp t expr e
@@ -1884,8 +1887,6 @@ EXTEND_PRINTER
           pprintf pc "?%s:@;<0 1>(%s)" i p
       | <:patt< ~{$lid:s$} >> ->
           pprintf pc "~%s" s
-      | <:patt< ~{$lid:s$ = $p$} >> ->
-          pprintf pc "~%s:%p" s curr p
 *)
 
       | <:patt< `$s$ >> ->
