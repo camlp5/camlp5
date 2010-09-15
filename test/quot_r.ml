@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.6 2010/09/15 20:33:23 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.7 2010/09/15 20:57:20 deraugla Exp $ *)
 
 (* dot *)
 <:ctyp< $t1$ . $t2$ >>;
@@ -467,15 +467,24 @@ MLast.MeXtr loc s None;
 MLast.MeXtr loc s (Some (Ploc.VaVal me));
 MLast.MeXtr loc s (Some me);
 MLast.MeXtr loc s me;
-MLast.StCls loc (Ploc.VaVal lcice);
-MLast.StCls loc lcice;
-MLast.StClt loc (Ploc.VaVal lcict);
-MLast.StClt loc lcict;
-MLast.StDcl loc (Ploc.VaVal lsi);
-MLast.StDcl loc lsi;
 
+(* class declaration *)
+<:str_item< class $list:lcice$ >>;
+<:str_item< class $_list:lcice$ >>;
+
+(* class type declaration *)
+<:str_item< class type $list:lcict$ >>;
+<:str_item< class type $_list:lcict$ >>;
+
+(* declare *)
+<:str_item< declare $list:lsi$ end >>;
+<:str_item< declare $_list:lsi$ end >>;
+
+(* directive *)
 <:str_item< # $lid:s$ >>;
+(* directive *)
 <:str_item< # $lid:s$ $e$ >>;
+(* directive (general) *)
 <:str_item< # $lid:s$ $opt:e$ >>;
 <:str_item< # $lid:s$ $_opt:e$ >>;
 <:str_item< # $_lid:s$ >>;
@@ -483,6 +492,7 @@ MLast.StDcl loc lsi;
 <:str_item< # $_lid:s$ $opt:e$ >>;
 <:str_item< # $_lid:s$ $_opt:e$ >>;
 
+(* exception *)
 <:str_item< exception $uid:s$ of $list:lt$ = $list:ls$ >>;
 <:str_item< exception $uid:s$ of $list:lt$ = $_list:ls$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ = $list:ls$ >>;
@@ -492,14 +502,17 @@ MLast.StDcl loc lsi;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $list:ls$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $_list:ls$ >>;
 
-MLast.StExp loc e;
+(* expression *)
+<:str_item< $exp:e$ >>;
 
+(* external *)
 <:str_item< external $s$ : $t$ = $list:ls$ >>;
 <:str_item< external $s$ : $t$ = $_list:ls$ >>;
 <:str_item< external $_:s$ : $t$ = $list:ls$ >>;
 <:str_item< external $_:s$ : $t$ = $_list:ls$ >>;
 
-MLast.StInc loc me;
+(* include *)
+<:str_item< include $me$ >>;
 
 <:str_item< module rec $list:lsme$ >>;
 <:str_item< module rec $_list:lsme$ >>;
@@ -518,10 +531,13 @@ MLast.StTyp loc (Ploc.VaVal ltd);
 MLast.StTyp loc ltd;
 MLast.StUse loc s lsil;
 
+(* value rec *)
 <:str_item< value rec $list:lpe$ >>;
 <:str_item< value rec $_list:lpe$ >>;
+(* value non rec *)
 <:str_item< value $list:lpe$ >>;
 <:str_item< value $_list:lpe$ >>;
+(* value *)
 <:str_item< value $flag:b$ $list:lpe$ >>;
 <:str_item< value $flag:b$ $_list:lpe$ >>;
 <:str_item< value $_flag:b$ $list:lpe$ >>;

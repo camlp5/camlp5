@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.4 2010/09/15 20:33:23 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.5 2010/09/15 20:57:19 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -780,43 +780,43 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>StCls loc lcd</tt></td>
-    <td align="center"><tt>class $list:lcd$</tt></td>
+    <td><tt>StCls loc lcice</tt></td>
+    <td align="center"><tt>class $list:lcice$</tt></td>
     <td>class declaration</td>
   </tr>
   <tr>
-    <td><tt>StClt loc lcdt</tt></td>
-    <td align="center"><tt>class type $list:lctd$</tt></td>
+    <td><tt>StClt loc lcict</tt></td>
+    <td align="center"><tt>class type $list:lcict$</tt></td>
     <td>class type declaration</td>
   </tr>
   <tr>
-    <td><tt>StDcl loc lstri</tt></td>
-    <td align="center"><tt>declare $list:lstri$ end</tt></td>
+    <td><tt>StDcl loc lsi</tt></td>
+    <td align="center"><tt>declare $list:lsi$ end</tt></td>
     <td>declare</td>
   </tr>
   <tr>
     <td><tt>StDir loc s None</tt></td>
-    <td align="center"><tt># $s$</tt></td>
+    <td align="center"><tt># $lid:s$</tt></td>
     <td>directive</td>
   </tr>
   <tr>
     <td><tt>StDir loc s (Some e)</tt></td>
-    <td align="center"><tt># $s$ $e$</tt></td>
+    <td align="center"><tt># $lid:s$ $e$</tt></td>
     <td>directive</td>
   </tr>
   <tr>
-    <td><tt>StDir loc s oe</tt></td>
-    <td align="center"><tt># $s$ $opt:oe$</tt></td>
+    <td><tt>StDir loc s e</tt></td>
+    <td align="center"><tt># $lid:s$ $opt:e$</tt></td>
     <td>directive (general)</td>
   </tr>
   <tr>
     <td><tt>StExc loc s lt []</tt></td>
-    <td align="center"><tt>exception $s$ of $list:lt$</tt></td>
+    <td align="center"><tt>exception $uid:s$ of $list:lt$</tt></td>
     <td>exception</td>
   </tr>
   <tr>
     <td><tt>StExc loc s lt ls</tt></td>
-    <td align="center"><tt>exception $s$ of $list:lt$ = $list:ls$</tt></td>
+    <td align="center"><tt>exception $uid:s$ of $list:lt$ = $list:ls$</tt></td>
     <td>exception</td>
   </tr>
   <tr>
