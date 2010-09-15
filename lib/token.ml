@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: token.ml,v 1.23 2010/08/31 12:34:38 deraugla Exp $ *)
+(* $Id: token.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pattern = Plexing.pattern;

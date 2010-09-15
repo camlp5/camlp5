@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.18 2010/09/15 13:59:59 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
 
 dir='../ocaml/trunk'
 

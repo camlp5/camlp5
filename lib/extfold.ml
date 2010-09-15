@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: extfold.ml,v 1.8 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: extfold.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type t 'te 'a 'b =

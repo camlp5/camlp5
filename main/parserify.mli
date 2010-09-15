@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: parserify.mli,v 1.3 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: parserify.mli,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type spat_comp =

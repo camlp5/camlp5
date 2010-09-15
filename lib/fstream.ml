@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.ml,v 1.13 2010/08/26 19:08:32 deraugla Exp $ *)
+(* $Id: fstream.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type mlazy_c 'a =

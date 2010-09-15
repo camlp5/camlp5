@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: comp_head.ml.tpl,v 1.11 2010/08/18 16:26:25 deraugla Exp $ *)
+(* $Id: comp_head.ml.tpl,v 6.1 2010/09/15 16:00:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";

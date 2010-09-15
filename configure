@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.36 2010/08/29 23:59:53 deraugla Exp $
+# $Id: configure,v 6.1 2010/09/15 16:00:18 deraugla Exp $
 
 prefix=''
 bindir=''

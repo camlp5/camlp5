@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.48 2010/09/15 15:54:02 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.1 2010/09/15 16:00:48 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;

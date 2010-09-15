@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkcamlp5.opt.sh.tpl,v 1.2 2007/11/20 08:55:44 deraugla Exp $
+# $Id: mkcamlp5.opt.sh.tpl,v 6.1 2010/09/15 16:00:21 deraugla Exp $
 
 OLIB=`ocamlc -where`
 LIB=LIBDIR/camlp5

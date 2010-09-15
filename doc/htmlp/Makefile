@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.43 2010/09/06 15:39:30 deraugla Exp $
+# $Id: Makefile,v 6.1 2010/09/15 16:00:19 deraugla Exp $
 
 H=../html
 OBJS=$H/index.html $H/about.html $H/ast_strict.html $H/ast_transi.html $H/bparsers.html $H/commands.html $H/conclusion.html $H/directives.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pprintf.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/q_ast.html $H/quot.html $H/redef.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html

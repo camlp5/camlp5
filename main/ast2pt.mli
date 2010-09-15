@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.mli,v 1.12 2010/08/31 12:39:31 deraugla Exp $ *)
+(* $Id: ast2pt.mli,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
 
 (** Conversion between Camlp5 AST into OCaml AST *)
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.35 2010/09/06 15:39:30 deraugla Exp $
+# $Id: html2texi,v 6.1 2010/09/15 16:00:19 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"

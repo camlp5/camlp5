@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.11 2010/09/13 14:48:47 deraugla Exp $
+# $Id: Makefile,v 6.1 2010/09/15 16:00:48 deraugla Exp $
 # Copyright (c) INRIA 2007-2010
 
 DEP=../etc/pr_r.cmo quot_r.out.ml

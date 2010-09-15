@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkreloc.sh,v 1.3 2010/09/08 10:01:00 deraugla Exp $
+# $Id: mkreloc.sh,v 6.1 2010/09/15 16:00:24 deraugla Exp $
 
 IFILE=pa_r.ml
 OFILE=reloc.ml

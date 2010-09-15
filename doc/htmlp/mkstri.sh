@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkstri.sh,v 1.4 2010/09/15 08:03:39 deraugla Exp $
+# $Id: mkstri.sh,v 6.1 2010/09/15 16:00:20 deraugla Exp $
 
 top=../..
 quotation="$1"
