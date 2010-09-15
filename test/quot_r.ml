@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.45 2010/09/15 08:07:43 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.46 2010/09/15 08:13:12 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -124,18 +124,18 @@ MLast.PaXtr loc s p;
 
 <:expr< $e1$ . $e2$ >>;
 <:expr< $anti:e$ >>;
-MLast.ExApp loc e1 e2;
-MLast.ExAre loc e1 e2;
-MLast.ExArr loc (Ploc.VaVal le);
-MLast.ExArr loc le;
-MLast.ExAsr loc e;
-MLast.ExAss loc e1 e2;
-MLast.ExBae loc e (Ploc.VaVal le);
-MLast.ExBae loc e le;
-MLast.ExChr loc (Ploc.VaVal s);
-MLast.ExChr loc s;
-MLast.ExCoe loc e None t2;
-MLast.ExCoe loc e (Some t1) t2;
+<:expr< $e1$ $e2$ >>;
+<:expr< $e1$.($e2$) >>;
+<:expr< [| $list:le$ |] >>;
+<:expr< [| $_list:le$ |] >>;
+<:expr< assert $e$ >>;
+<:expr< $e1$ := $e2$ >>;
+<:expr< $e$.{$list:le$} >>;
+<:expr< $e$.{$_list:le$} >>;
+<:expr< $chr:s$ >>;
+<:expr< $_chr:s$ >>;
+<:expr< ($e$ :> $t2$) >>;
+<:expr< ($e$ : $t1$ :> $t2$) >>;
 MLast.ExCoe loc e t1 t2;
 MLast.ExFlo loc (Ploc.VaVal s);
 MLast.ExFlo loc s;
