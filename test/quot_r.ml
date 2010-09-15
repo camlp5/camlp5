@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.4 2010/09/15 18:53:16 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.5 2010/09/15 19:31:47 deraugla Exp $ *)
 
 (* dot *)
 <:ctyp< $t1$ . $t2$ >>;
@@ -106,37 +106,72 @@ MLast.TyXtr loc s t;
 <:poly_variant< `$_:s$ of $_flag:b$ $_list:lt$ >>;
 
 MLast.PvInh t;
-MLast.PaAcc loc p1 p2;
-MLast.PaAli loc p1 p2;
-MLast.PaAnt loc p;
-MLast.PaAny loc;
-MLast.PaApp loc p1 p2;
-MLast.PaArr loc (Ploc.VaVal lp);
-MLast.PaArr loc lp;
-MLast.PaChr loc (Ploc.VaVal s);
-MLast.PaChr loc s;
-MLast.PaInt loc (Ploc.VaVal s1) s2;
-MLast.PaInt loc s1 s2;
-MLast.PaFlo loc (Ploc.VaVal s);
-MLast.PaFlo loc s;
 
+(* dot *)
+<:patt< $p1$ . $p2$ >>;
+(* alias *)
+<:patt< ($p1$ as $p2$) >>;
+(* antiquotation <a href="#patt_1">(1)</a> *)
+<:patt< $anti:p$ >>;
+(* wildcard *)
+<:patt< _ >>;
+(* application *)
+<:patt< $p1$ $p2$ >>;
+(* array *)
+<:patt< [| $list:lp$ |] >>;
+<:patt< [| $_list:lp$ |] >>;
+(* character *)
+<:patt< $chr:s$ >>;
+<:patt< $_chr:s$ >>;
+
+(* integer *)
+<:patt< $int:s1$ >>;
+<:patt< $_int:s1$ >>;
+(* integer 32 bits *)
+<:patt< $int32:s1$ >>;
+<:patt< $_int32:s1$ >>;
+(* integer 64 bits *)
+<:patt< $int64:s1$ >>;
+<:patt< $_int64:s1$ >>;
+(* native integer *)
+<:patt< $nativeint:s1$ >>;
+<:patt< $_nativeint:s1$ >>;
+
+(* float *)
+<:patt< $flo:s$ >>;
+<:patt< $_flo:s$ >>;
+
+(* label *)
 <:patt< ~{$p1$} >>;
+(* label *)
 <:patt< ~{$p1$ = $p2$} >>;
+(* label *)
 <:patt< ~{$p1$ $opt:p2$} >>;
+(* label *)
 <:patt< ~{$p1$ $_opt:p2$} >>;
 
-MLast.PaLaz loc p;
-MLast.PaLid loc (Ploc.VaVal s);
-MLast.PaLid loc s;
+(* lazy *)
+<:patt< lazy $p$ >>;
+(* lowercase identifier *)
+<:patt< $lid:s$ >>;
+<:patt< $_lid:s$ >>;
 
+(* option label *)
 <:patt< ?{$p$} >>;
+(* option label *)
 <:patt< ?{$p$ = $e$} >>;
+(* option label *)
 <:patt< ?{$p$ $opt:e$} >>;
+(* option label *)
 <:patt< ?{$p$ $_opt:e$} >>;
 
-MLast.PaOrp loc p1 p2;
-MLast.PaRec loc (Ploc.VaVal lpp);
-MLast.PaRec loc lpp;
+(* or *)
+<:patt< $p1$ | $p2$ >>;
+
+(* record *)
+<:patt< { $list:lpp$ } >>;
+<:patt< { $_list:lpp$ } >>;
+
 MLast.PaRng loc p1 p2;
 MLast.PaStr loc (Ploc.VaVal s);
 MLast.PaStr loc s;

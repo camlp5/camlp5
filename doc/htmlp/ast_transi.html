@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.2 2010/09/15 18:53:16 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.3 2010/09/15 19:31:47 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -553,18 +553,18 @@
     <td>float</td>
   </tr>
   <tr>
-    <td><tt>PaLab loc s None</tt></td>
-    <td align="center"><tt>~ $s$</tt></td>
+    <td><tt>PaLab loc p1 None</tt></td>
+    <td align="center"><tt>~{$p1$}</tt></td>
     <td>label</td>
   </tr>
   <tr>
-    <td><tt>PaLab loc s (Some p)</tt></td>
-    <td align="center"><tt>~ $s$ : $p$</tt></td>
+    <td><tt>PaLab loc p1 (Some p2)</tt></td>
+    <td align="center"><tt>~{$p1$ = $p2$}</tt></td>
     <td>label</td>
   </tr>
   <tr>
-    <td><tt>PaLaz loc s None</tt></td>
-    <td align="center"><tt>lazy $s$</tt></td>
+    <td><tt>PaLaz loc p</tt></td>
+    <td align="center"><tt>lazy $p$</tt></td>
     <td>lazy</td>
   </tr>
   <tr>
@@ -573,18 +573,18 @@
     <td>lowercase identifier</td>
   </tr>
   <tr>
-    <td><tt>PaOlb loc s None</tt></td>
-    <td align="center"><tt>? $s$</tt></td>
+    <td><tt>PaOlb loc p None</tt></td>
+    <td align="center"><tt>?{$p$}</tt></td>
     <td>option label</td>
   </tr>
   <tr>
-    <td><tt>PaOlb loc s (Some (p, None))</tt></td>
-    <td align="center"><tt>? $s$ : ($p$)</tt></td>
+    <td><tt>PaOlb loc p (Some e)</tt></td>
+    <td align="center"><tt>?{$p$ = $e$}</tt></td>
     <td>option label</td>
   </tr>
   <tr>
-    <td><tt>PaOlb loc s (Some (p, Some e))</tt></td>
-    <td align="center"><tt>? $s$ : ($p$ = $e$)</tt></td>
+    <td><tt>PaOlb loc p e</tt></td>
+    <td align="center"><tt>?{$p$ $opt:e$}</tt></td>
     <td>option label</td>
   </tr>
   <tr>
@@ -593,14 +593,14 @@
     <td>or</td>
   </tr>
   <tr>
+    <td><tt>PaRec loc lpp</tt></td>
+    <td align="center"><tt>{ $list:lpp$ }</tt></td>
+    <td>record</td>
+  </tr>
+  <tr>
     <td><tt>PaRng loc p1 p2</tt></td>
     <td align="center"><tt>$p1$ .. $p2$</tt></td>
     <td>range</td>
-  </tr>
-  <tr>
-    <td><tt>PaRec loc lpp None</tt></td>
-    <td align="center"><tt>{ $list:lpp$ }</tt></td>
-    <td>record</td>
   </tr>
   <tr>
     <td><tt>PaStr loc s</tt></td>

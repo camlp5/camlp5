@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.2 2010/09/15 18:53:16 deraugla Exp $
+# $Id: mktrans.sh,v 6.3 2010/09/15 19:31:47 deraugla Exp $
 
 top=../..
 quotation="$1"
@@ -8,7 +8,7 @@ file=$top/test/quot_r.ml
 echo '<table border="1">'
 echo '  <tr>'
 echo '    <th>Node</th>'
-echo '    <th><tt>&lt;:ctyp&lt; ... >></tt></th>'
+echo "    <th><tt>&lt;:${quotation}&lt; ... >></tt></th>"
 echo '    <th>Comment</th>'
 echo '  </tr>'
 echo '  <tr>'
