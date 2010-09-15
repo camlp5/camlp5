@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 1.47 2010/09/15 09:22:49 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 1.48 2010/09/15 15:54:02 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
@@ -276,14 +276,16 @@ MLast.SgDcl loc lsi;
 <:sig_item< # $_lid:s$ $opt:e$ >>;
 <:sig_item< # $_lid:s$ $_opt:e$ >>;
 
-MLast.SgExc loc (Ploc.VaVal s) (Ploc.VaVal lt);
-MLast.SgExc loc (Ploc.VaVal s) lt;
-MLast.SgExc loc s (Ploc.VaVal lt);
-MLast.SgExc loc s lt;
-MLast.SgExt loc (Ploc.VaVal s) t (Ploc.VaVal ls);
-MLast.SgExt loc (Ploc.VaVal s) t ls;
-MLast.SgExt loc s t (Ploc.VaVal ls);
-MLast.SgExt loc s t ls;
+<:sig_item< exception $s$ of $list:lt$ >>;
+<:sig_item< exception $s$ of $_list:lt$ >>;
+<:sig_item< exception $_:s$ of $list:lt$ >>;
+<:sig_item< exception $_:s$ of $_list:lt$ >>;
+
+<:sig_item< external $s$ : $t$ = $list:ls$ >>;
+<:sig_item< external $s$ : $t$ = $_list:ls$ >>;
+<:sig_item< external $_:s$ : $t$ = $list:ls$ >>;
+<:sig_item< external $_:s$ : $t$ = $_list:ls$ >>;
+
 MLast.SgInc loc mt;
 
 <:sig_item< module rec $list:lsmt$ >>;
@@ -368,10 +370,12 @@ MLast.StDcl loc lsi;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $_list:ls$ >>;
 
 MLast.StExp loc e;
-MLast.StExt loc (Ploc.VaVal s) t (Ploc.VaVal ls);
-MLast.StExt loc (Ploc.VaVal s) t ls;
-MLast.StExt loc s t (Ploc.VaVal ls);
-MLast.StExt loc s t ls;
+
+<:str_item< external $s$ : $t$ = $list:ls$ >>;
+<:str_item< external $s$ : $t$ = $_list:ls$ >>;
+<:str_item< external $_:s$ : $t$ = $list:ls$ >>;
+<:str_item< external $_:s$ : $t$ = $_list:ls$ >>;
+
 MLast.StInc loc me;
 
 <:str_item< module rec $list:lsme$ >>;
@@ -524,10 +528,12 @@ MLast.CeXtr loc s ce;
 MLast.CrCtr loc t1 t2;
 MLast.CrDcl loc (Ploc.VaVal lcsi);
 MLast.CrDcl loc lcsi;
-MLast.CrInh loc ce (Ploc.VaVal None);
-MLast.CrInh loc ce (Ploc.VaVal (Some s));
-MLast.CrInh loc ce (Ploc.VaVal s);
-MLast.CrInh loc ce s;
+
+<:class_str_item< inherit $ce$ >>;
+<:class_str_item< inherit $ce$ $opt:Some s$ >>;
+<:class_str_item< inherit $ce$ $opt:s$ >>;
+<:class_str_item< inherit $ce$ $_opt:s$ >>;
+
 MLast.CrIni loc e;
 
 <:class_str_item< method! private $lid:s$ = $e$ >>;
