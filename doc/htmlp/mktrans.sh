@@ -1,15 +1,22 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.1 2010/09/15 16:49:47 deraugla Exp $
+# $Id: mktrans.sh,v 6.2 2010/09/15 18:53:16 deraugla Exp $
 
 top=../..
 quotation="$1"
+file=$top/test/quot_r.ml
 
 echo '<table border="1">'
 echo '  <tr>'
+echo '    <th>Node</th>'
+echo '    <th><tt>&lt;:ctyp&lt; ... >></tt></th>'
+echo '    <th>Comment</th>'
+echo '  </tr>'
+echo '  <tr>'
 
-$top/meta/camlp5r -nolib $top/meta/q_MLast.cmo $top/etc/pr_r.cmo -mode T -l200 -impl $top/test/quot_r.ml |
-paste - $top/test/quot_r.ml |
+$top/meta/camlp5r -nolib $top/meta/q_MLast.cmo $top/etc/pr_r.cmo -mode T -l200 -impl $file |
+paste - $file |
+sed -e 's/(\*.*\*)	//; /\*)$/N; s/\*)./*)/' |
 grep "<:$quotation<" |
 grep -v '$_' |
-sed -e 's/;$//; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|	    <td>...</td>	  </tr>	  <tr>|' |
+sed -e 's/\((\*.*\*)\)\(.*\)$/\2	\1/; s/ < / \&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|	  </tr>	  <tr>|; s/(\* /    <td>/;s| \*)|</td>|' |
 tr '\t' '\n'

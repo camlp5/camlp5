@@ -1,22 +1,35 @@
-(* $Id: quot_r.ml,v 6.3 2010/09/15 16:12:35 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.4 2010/09/15 18:53:16 deraugla Exp $ *)
 
+(* dot *)
 <:ctyp< $t1$ . $t2$ >>;
+(* alias *)
 <:ctyp< $t1$ as $t2$ >>;
+(* wildcard *)
 <:ctyp< _ >>;
+(* application *)
 <:ctyp< $t1$ $t2$ >>;
+(* arrow *)
 <:ctyp< $t1$ -> $t2$ >>;
+(* class *)
 <:ctyp< # $list:ls$ >>;
 <:ctyp< # $_list:ls$ >>;
-MLast.TyLab loc (Ploc.VaVal s) t;
-MLast.TyLab loc s t;
 
+(* label *)
+<:ctyp< ~$s$: $t$ >>;
+<:ctyp< ~$_:s$: $t$ >>;
+
+(* lowercase identifier *)
 <:ctyp< $lid:s$ >>;
 <:ctyp< $_lid:s$ >>;
 
+(* manifest *)
 <:ctyp< $t1$ == $t2$ >>;
 
+(* object *)
 <:ctyp< < $list:lst$ .. > >>;
+(* object *)
 <:ctyp< < $list:lst$ > >>;
+(* object (general) *)
 <:ctyp< < $list:lst$ $flag:b$ > >>;
 <:ctyp< < $list:lst$ $_flag:b$ > >>;
 <:ctyp< < $_list:lst$ .. > >>;
@@ -24,26 +37,42 @@ MLast.TyLab loc s t;
 <:ctyp< < $_list:lst$ $flag:b$ > >>;
 <:ctyp< < $_list:lst$ $_flag:b$ > >>;
 
-MLast.TyOlb loc (Ploc.VaVal s) t;
-MLast.TyOlb loc s t;
-MLast.TyPck loc mt;
-MLast.TyPol loc (Ploc.VaVal ls) t;
-MLast.TyPol loc ls t;
-MLast.TyQuo loc (Ploc.VaVal s);
-MLast.TyQuo loc s;
-MLast.TyRec loc (Ploc.VaVal llsbt);
-MLast.TyRec loc llsbt;
-MLast.TySum loc (Ploc.VaVal llslt);
-MLast.TySum loc llslt;
-MLast.TyTup loc (Ploc.VaVal lt);
-MLast.TyTup loc lt;
+(* option label *)
+<:ctyp< ?$s$: $t$ >>;
+<:ctyp< ?$_:s$: $t$ >>;
 
+MLast.TyPck loc mt;
+
+(* polymorph *)
+<:ctyp< ! $list:ls$ . $t$ >>;
+<:ctyp< ! $_list:ls$ . $t$ >>;
+
+(* variable *)
+<:ctyp< '$s$ >>;
+<:ctyp< '$_:s$ >>;
+
+(* record *)
+<:ctyp< { $list:llsbt$ } >>;
+<:ctyp< { $_list:llsbt$ } >>;
+
+(* sum *)
+<:ctyp< [ $list:llslt$ ] >>;
+<:ctyp< [ $_list:llslt$ ] >>;
+
+(* t-uple *)
+<:ctyp< ( $list:lt$ ) >>;
+<:ctyp< ( $_list:lt$ ) >>;
+
+(* uppercase identifier *)
 <:ctyp< $uid:s$ >>;
 <:ctyp< $_uid:s$ >>;
 
+(* variant *)
 <:ctyp< [ = $list:lpv$ ] >>;
+(* variant *)
 <:ctyp< [ > $list:lpv$ ] >>;
 <:ctyp< [ < $list:lpv$ > $list:ls$ ] >>;
+(* variant *)
 <:ctyp< [ < $list:lpv$ > $_list:ls$ ] >>;
 MLast.TyVrn loc (Ploc.VaVal lpv) (Some ls);
 MLast.TyVrn loc (Ploc.VaVal lpv) ls;
