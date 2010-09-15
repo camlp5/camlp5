@@ -2535,19 +2535,27 @@ Grammar.extend
      [[Gramext.Stoken ("QUESTIONIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
-           (MLast.ExOlb (loc, MLast.PaLid (loc, i), None) : 'expr));
+           (let _ = warning_deprecated_since_6_00 loc in
+            MLast.ExOlb (loc, MLast.PaLid (loc, i), None) :
+            'expr));
       [Gramext.Stoken ("QUESTIONIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
         (fun (e : 'expr) (i : string) (loc : Ploc.t) ->
-           (MLast.ExOlb (loc, MLast.PaLid (loc, i), Some e) : 'expr));
+           (let _ = warning_deprecated_since_6_00 loc in
+            MLast.ExOlb (loc, MLast.PaLid (loc, i), Some e) :
+            'expr));
       [Gramext.Stoken ("TILDEIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
-           (MLast.ExLab (loc, MLast.PaLid (loc, i), None) : 'expr));
+           (let _ = warning_deprecated_since_6_00 loc in
+            MLast.ExLab (loc, MLast.PaLid (loc, i), None) :
+            'expr));
       [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
         (fun (e : 'expr) (i : string) (loc : Ploc.t) ->
-           (MLast.ExLab (loc, MLast.PaLid (loc, i), Some e) : 'expr));
+           (let _ = warning_deprecated_since_6_00 loc in
+            MLast.ExLab (loc, MLast.PaLid (loc, i), Some e) :
+            'expr));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("", "{");
        Gramext.Snterm
          (Grammar.Entry.obj (patt_tcon : 'patt_tcon Grammar.Entry.e));

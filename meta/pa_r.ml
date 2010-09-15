@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.141 2010/09/14 19:14:25 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.142 2010/09/15 01:54:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -834,10 +834,18 @@ EXTEND
           <:expr< ~{$p$ $_opt:eo$ } >>
       | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
           <:expr< ?{$p$ $_opt:eo$ } >>
-      | i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~$_:i$: $e$ >>
-      | i = V TILDEIDENT -> <:expr< ~$_:i$ >>
-      | i = V QUESTIONIDENTCOLON; e = SELF -> <:expr< ?$_:i$: $e$ >>
-      | i = V QUESTIONIDENT -> <:expr< ?$_:i$ >> ] ]
+      | i = V TILDEIDENTCOLON; e = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:expr< ~{$_:i$ = $e$} >>
+      | i = V TILDEIDENT ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:expr< ~{$_:i$} >>
+      | i = V QUESTIONIDENTCOLON; e = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:expr< ?{$_:i$ = $e$} >>
+      | i = V QUESTIONIDENT ->
+          let _ = warning_deprecated_since_6_00 loc in
+          <:expr< ?{$_:i$} >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]

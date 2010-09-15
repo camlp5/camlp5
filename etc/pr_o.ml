@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.229 2010/09/14 19:51:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.230 2010/09/15 01:54:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1162,7 +1162,7 @@ EXTEND_PRINTER
           pprintf pc "\"%s\"" s
       | <:expr< $chr:s$ >> ->
           pprintf pc "'%s'" (ocaml_char s)
-      | <:expr:< ?$_$ >> | <:expr:< ~$_$ >> | <:expr:< ~$_$: $_$ >> ->
+      | <:expr:< ?{$_$} >> | <:expr:< ~{$_$} >> | <:expr:< ~{$_$ = $_$} >> ->
           error loc ("labels not pretty printed (in expr)")
       | <:expr:< do { $list:el$ } >> ->
           pprintf pc "@[<a>begin@;%p@ end@]"
@@ -1260,9 +1260,9 @@ EXTEND_PRINTER
       | <:patt< $chr:s$ >> -> pprintf pc "'%s'" (ocaml_char s)
       | <:patt< $str:s$ >> -> pprintf pc "\"%s\"" s
       | <:patt< _ >> -> pprintf pc "_"
-      | <:patt:< ?{$_$} >> | <:patt:< ? ($_$ = $_$) >> | <:patt:< ? ($_$) >> |
-        <:patt:< ?$_$: ($_$ = $_$) >> | <:patt:< ?$_$: ($_$) >> |
-        <:patt:< ~$_$ >> | <:patt:< ~$_$: $_$ >> ->
+      | <:patt:< ?{$_$} >> | <:patt:< ?{$_$ = $_$} >> | <:patt:< ?{$_$} >> |
+        <:patt:< ?{$_$ = ?{$_$ = $_$}} >> | <:patt:< ?{$_$ = $_$} >> |
+        <:patt:< ~{$_$} >> | <:patt:< ~{$_$ = $_$} >> ->
           error loc "labels not pretty printed (in patt)"
       | <:patt< `$s$ >> ->
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
@@ -1842,23 +1842,24 @@ value class_object loc pc (csp, csl) =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ? ($p$ : $t$) >> ->
+    [ [ <:patt< ?{$lid:p$ : $t$} >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
-      | <:patt< ?($p$ : $t$ = $e$) >> ->
+      | <:patt< ?{$lid:p$ : $t$ = $e$} >> ->
           pprintf pc "?(%s :@;%p =@;%p)" p ctyp t expr e
 
-      | <:patt< ?$s$ >> -> pprintf pc "?%s" s
-      | <:patt< ? ($p$ = $e$) >> ->
+      | <:patt< ?{$lid:s$} >> ->
+          pprintf pc "?%s" s
+      | <:patt< ?{$lid:p$ = $e$} >> ->
           pprintf pc "?(%s =@;%p)" p expr e
-      | <:patt< ? ($p$) >> ->
+      | <:patt< ?{$lid:p$} >> ->
           pprintf pc "?(%s)" p
-      | <:patt< ?$i$: ($p$ = $e$) >> ->
+      | <:patt< ?{$lid:i$ = ?{$lid:p$ = $e$}} >> ->
           pprintf pc "?%s:@;<0 1>@[<1>(%s =@ %p)@]" i p expr e
-      | <:patt< ?$i$: ($p$) >> ->
+      | <:patt< ?{$lid:i$ = $lid:p$} >> ->
           pprintf pc "?%s:@;<0 1>(%s)" i p
-      | <:patt< ~$s$ >> ->
+      | <:patt< ~{$lid:s$} >> ->
           pprintf pc "~%s" s
-      | <:patt< ~$s$: $p$ >> ->
+      | <:patt< ~{$lid:s$ = $p$} >> ->
           pprintf pc "~%s:%p" s curr p
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
@@ -1959,13 +1960,13 @@ value poly_type pc =
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
-      [ <:expr< ?$s$ >> ->
+      [ <:expr< ?{$lid:s$} >> ->
           pprintf pc "?%s" s
-      | <:expr< ?$i$: $e$ >> ->
+      | <:expr< ?{$lid:i$ = $e$} >> ->
           pprintf pc "?%s:%p" i curr e
-      | <:expr< ~$s$ >> ->
+      | <:expr< ~{$lid:s$} >> ->
           pprintf pc "~%s" s
-      | <:expr< ~$s$: $e$ >> ->
+      | <:expr< ~{$lid:s$ = $e$} >> ->
           pprintf pc "~%s:%p" s (Eprinter.apply_level pr_expr "dot") e ] ]
   ;
   pr_ctyp: AFTER "top"

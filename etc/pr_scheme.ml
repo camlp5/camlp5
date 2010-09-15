@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.82 2010/09/14 19:51:35 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.83 2010/09/15 01:54:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -842,17 +842,17 @@ EXTEND_PRINTER
             [(fun pc -> sprintf "%ssend%s" pc.bef pc.aft, "");
              (fun pc -> curr pc e, "");
              (fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
-      | <:expr< ?$s$ >> ->
+      | <:expr< ?{$lid:s$} >> ->
           plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
-      | <:expr< ?$s$: $e$ >> ->
+      | <:expr< ?{$lid:s$ = $e$} >> ->
           plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
-      | <:expr< ~$s$ >> ->
+      | <:expr< ~{$lid:s$} >> ->
           plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
-      | <:expr< ~$s$: $e$ >> ->
+      | <:expr< ~{$lid:s$ = $e$} >> ->
           plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
@@ -1017,7 +1017,7 @@ EXTEND_PRINTER
       | <:patt< ~{$lid:s$} >> ->
           plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
-      | <:patt< ~$s$: $p$ >> ->
+      | <:patt< ~{$lid:s$ = $p$} >> ->
           plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc p, "")]

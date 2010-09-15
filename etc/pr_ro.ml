@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.98 2010/09/14 19:51:35 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.99 2010/09/15 01:54:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -226,25 +226,28 @@ value sig_method_or_method_virtual pc virt priv s t =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ?{$p$ : $t$} >> ->
+    [ [ <:patt< ?{$p$ : $t$ = $e$} >> ->
+          pprintf pc "?{%p :@;%p =@;%p}" patt p ctyp t expr e
+      | <:patt< ?{$p$ : $t$} >> ->
           pprintf pc "?{%p :@;%p}" patt p ctyp t
-      | <:patt< ?{$p$ : $t$ = $e$} >> ->
-          pprintf pc "?(%p :@;%p =@;%p)" patt p ctyp t expr e
-
+      | <:patt< ?{$p$ = $e$} >> ->
+          pprintf pc "?{%p =@;%p}" patt p expr e
       | <:patt< ?{$p$} >> ->
-          pprintf pc "?%p" patt p
+          pprintf pc "?{%p}" patt p
+
+      | <:patt< ~{$p$} >> ->
+          pprintf pc "~%p" patt p
+      | <:patt< ~{$p1$ = $p2$} >> ->
+          pprintf pc "~%p:%p" patt p1 curr p2
+(*
       | <:patt< ?{$p$ = $e$} >> ->
           pprintf pc "?(%p =@;%p)" patt p expr e
       | <:patt< ?{$p$} >> ->
           pprintf pc "?(%p)" patt p
       | <:patt< ?{$p1$ = ?{$p2$ = $e$}} >> ->
           pprintf pc "?%p:@;<0 1>@[<1>(%p =@ %p)@]" patt p1 patt p2 expr e
-      | <:patt< ?{$p$ = $e$} >> ->
-          pprintf pc "?%p:@;<0 1>(%p)" patt p expr e
-      | <:patt< ~{$p$} >> ->
-          pprintf pc "~%p" patt p
-      | <:patt< ~{$p1$ = $p2$} >> ->
-          pprintf pc "~%p:%p" patt p1 curr p2
+*)
+
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
       | <:patt< # $list:sl$ >> ->
@@ -259,14 +262,14 @@ EXTEND_PRINTER
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
-      [ <:expr< ?$s$ >> ->
+      [ <:expr< ?{$lid:s$} >> ->
           pprintf pc "?%s" s
-      | <:expr< ?$i$: $e$ >> ->
-          pprintf pc "?%s:%p" i curr e
-      | <:expr< ~$s$ >> ->
-          pprintf pc "~%s" s
-      | <:expr< ~$s$: $e$ >> ->
-          pprintf pc "~%s:%p" s (Eprinter.apply_level pr_expr "dot") e ] ]
+      | <:expr< ?{$p$ = $e$} >> ->
+          pprintf pc "@[<2>?{%p =@;%p}@]" patt p curr e
+      | <:expr< ~{$p$ = $e$} >> ->
+          pprintf pc "~{%p = %p}" patt p expr e
+      | <:expr< ~{$p$} >> ->
+          pprintf pc "~{%p}" patt p ] ]
   ;
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]

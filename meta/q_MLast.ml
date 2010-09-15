@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.152 2010/09/14 19:14:25 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.153 2010/09/15 01:54:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1268,18 +1268,22 @@ EXTEND
       | "?"; "{"; p = patt_tcon; eo = SV (OPT [ "="; e = expr -> e ]); "}" ->
           Qast.Node "ExOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; e = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "ExLab"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option (Some e))]
       | i = SV TILDEIDENT "~" a_ti ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "ExLab"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option None)]
       | i = SV QUESTIONIDENTCOLON "?:" a_qic; e = SELF ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "ExOlb"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option (Some e))]
       | i = SV QUESTIONIDENT "?" a_qi ->
+          let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "ExOlb"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option None)] ] ]

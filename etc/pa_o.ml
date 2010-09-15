@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.107 2010/09/14 19:51:35 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.108 2010/09/15 01:54:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1132,10 +1132,10 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label"
-      [ i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~$_:i$: $e$ >>
-      | i = V TILDEIDENT -> <:expr< ~$_:i$ >>
-      | i = V QUESTIONIDENTCOLON; e = SELF -> <:expr< ?$_:i$: $e$ >>
-      | i = V QUESTIONIDENT -> <:expr< ?$_:i$ >> ] ]
+      [ i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~{$_:i$ = $e$} >>
+      | i = V TILDEIDENT -> <:expr< ~{$_:i$} >>
+      | i = V QUESTIONIDENTCOLON; e = SELF -> <:expr< ?{$_:i$ = $e$} >>
+      | i = V QUESTIONIDENT -> <:expr< ?{$_:i$} >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
@@ -1177,9 +1177,9 @@ EXTEND
       | "?"; "("; i = LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
           <:patt< ?{$lid:i$ : $t$ = $e$} >>
       | "?"; "("; i = LIDENT; ")" ->
-          <:patt< ?$i$ >>
+          <:patt< ?{$lid:i$} >>
       | "?"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
-          <:patt< ? ( $lid:i$ : $t$ ) >> ] ]
+          <:patt< ?{$lid:i$ : $t$} >> ] ]
   ;
   class_type:
     [ [ i = LIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->

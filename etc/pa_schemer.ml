@@ -657,18 +657,18 @@ and expr_se =
   | Sstring loc s -> <:expr< $_str:s$ >>
   | Sexpr loc [Slid _ "~"; se] ->
       let s = anti_lid_or_error se in
-      <:expr< ~$_:s$ >>
+      <:expr< ~{$_:s$} >>
   | Sexpr loc [Slid _ "~"; se1; se2] ->
       let s = anti_lid_or_error se1 in
       let e = expr_se se2 in
-      <:expr< ~$_:s$: $e$ >>
+      <:expr< ~{$_:s$ = $e$} >>
   | Sexpr loc [Slid _ "?"; se1; se2] ->
       let s = anti_lid_or_error se1 in
       let e = expr_se se2 in
-      <:expr< ?$_:s$: $e$ >>
+      <:expr< ?{$_:s$ = $e$} >>
   | Sexpr loc [Slid _ "?"; se] ->
       let s = anti_lid_or_error se in
-      <:expr< ?$_:s$ >>
+      <:expr< ?{$_:s$} >>
   | Sexpr loc [] -> <:expr< () >>
   | Sexpr loc [Slid _ s; e1 :: ([_ :: _] as sel)]
     when List.mem s assoc_left_parsed_op_list ->
@@ -1024,12 +1024,13 @@ and patt_se =
   | Sexpr loc [Slid _ "?"; se1; se2] ->
       let e = expr_se se2 in
       match se1 with
-      [ Sexpr _ [se1; Slid _ p] ->
-          let s = anti_lid_or_error se1 in
-          <:patt< ?$_:s$: ($p$ = $e$) >>
+      [ Sexpr _ [se1; se2] ->
+          let s = anti_lid_or_error se1
+          and p = patt_se se2 in
+          <:patt< ?{$_:s$ = ?{$p$ = $e$}} >>
       | se ->
           let s = anti_lid_or_error se in
-          <:patt< ? ($_:s$ = $e$) >> ]
+          <:patt< ?{$_:s$ = $e$} >> ]
   | Srec loc sel ->
       let lpl = anti_list_map (label_patt_se loc) sel in
       <:patt< { $_list:lpl$ } >>
@@ -1088,27 +1089,27 @@ and ipatt_opt_se =
   fun
   [ Slid loc "_" -> Left <:patt< _ >>
   | Slid loc s -> Left <:patt< $lid:(rename_id s)$ >>
-  | Sexpr loc [Slid _ "~"; Slid _ s] -> Left <:patt< ~$s$ >>
+  | Sexpr loc [Slid _ "~"; Slid _ s] -> Left <:patt< ~{$lid:s$} >>
   | Sexpr loc [Slid _ "~"; Slid _ s; se] ->
       let p = patt_se se in
-      Left <:patt< ~$s$: $p$ >>
+      Left <:patt< ~{$lid:s$ = $p$} >>
   | Sexpr loc [Slid _ "?"; se] ->
       match se with
       [ Sexpr _ [se1; Slid _ p] ->
           let s = anti_lid_or_error se1 in
-          Left <:patt< ?$_:s$: ($p$) >>
+          Left <:patt< ?{$_:s$ = $lid:p$} >>
       | se ->
           let s = anti_lid_or_error se in
-          Left <:patt< ?$_:s$ >> ]
+          Left <:patt< ?{$_:s$} >> ]
   | Sexpr loc [Slid _ "?"; se1; se2] ->
       let e = expr_se se2 in
       match se1 with
       [ Sexpr _ [se1; Slid _ p] ->
           let s = anti_lid_or_error se1 in
-          Left <:patt< ?$_:s$: ($p$ = $e$) >>
+          Left <:patt< ?{$_:s$ = ?{$lid:p$ = $e$}} >>
       | se ->
           let s = anti_lid_or_error se in
-          Left <:patt< ? ($_:s$ = $e$) >> ]
+          Left <:patt< ?{$_:s$ = $e$} >> ]
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let p = ipatt_se se1 in
       let t = ctyp_se se2 in

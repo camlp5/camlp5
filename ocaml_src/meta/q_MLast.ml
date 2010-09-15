@@ -6292,7 +6292,8 @@ Grammar.extend
                   (Qast.VaVal (Qast.VaAnt ("?", loc, a)) : 'e__205))])],
       Gramext.action
         (fun (i : 'e__205) (loc : Ploc.t) ->
-           (Qast.Node
+           (let _ = warning_deprecated_since_6_00 loc in
+            Qast.Node
               ("ExOlb",
                [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
                 Qast.VaVal (Qast.Option None)]) :
@@ -6318,7 +6319,8 @@ Grammar.extend
        Gramext.Sself],
       Gramext.action
         (fun (e : 'expr) (i : 'e__204) (loc : Ploc.t) ->
-           (Qast.Node
+           (let _ = warning_deprecated_since_6_00 loc in
+            Qast.Node
               ("ExOlb",
                [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
                 Qast.VaVal (Qast.Option (Some e))]) :
@@ -6342,7 +6344,8 @@ Grammar.extend
                   (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'e__203))])],
       Gramext.action
         (fun (i : 'e__203) (loc : Ploc.t) ->
-           (Qast.Node
+           (let _ = warning_deprecated_since_6_00 loc in
+            Qast.Node
               ("ExLab",
                [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
                 Qast.VaVal (Qast.Option None)]) :
@@ -6368,7 +6371,8 @@ Grammar.extend
        Gramext.Sself],
       Gramext.action
         (fun (e : 'expr) (i : 'e__202) (loc : Ploc.t) ->
-           (Qast.Node
+           (let _ = warning_deprecated_since_6_00 loc in
+            Qast.Node
               ("ExLab",
                [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
                 Qast.VaVal (Qast.Option (Some e))]) :
