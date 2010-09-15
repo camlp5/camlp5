@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.5 2010/09/15 19:31:47 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.6 2010/09/15 20:33:23 deraugla Exp $ *)
 
 (* dot *)
 <:ctyp< $t1$ . $t2$ >>;
@@ -71,6 +71,7 @@ MLast.TyPck loc mt;
 <:ctyp< [ = $list:lpv$ ] >>;
 (* variant *)
 <:ctyp< [ > $list:lpv$ ] >>;
+(* variant *)
 <:ctyp< [ < $list:lpv$ > $list:ls$ ] >>;
 (* variant *)
 <:ctyp< [ < $list:lpv$ > $_list:ls$ ] >>;
@@ -172,45 +173,78 @@ MLast.PvInh t;
 <:patt< { $list:lpp$ } >>;
 <:patt< { $_list:lpp$ } >>;
 
-MLast.PaRng loc p1 p2;
-MLast.PaStr loc (Ploc.VaVal s);
-MLast.PaStr loc s;
-MLast.PaTup loc (Ploc.VaVal lp);
-MLast.PaTup loc lp;
-MLast.PaTyc loc p t;
-MLast.PaTyp loc (Ploc.VaVal ls);
-MLast.PaTyp loc ls;
-MLast.PaUid loc (Ploc.VaVal s);
-MLast.PaUid loc s;
-MLast.PaVrn loc (Ploc.VaVal s);
-MLast.PaVrn loc s;
+(* range *)
+<:patt< $p1$ .. $p2$ >>;
+
+(* string *)
+<:patt< $str:s$ >>;
+<:patt< $_str:s$ >>;
+
+(* t-uple *)
+<:patt< ($list:lp$) >>;
+<:patt< ($_list:lp$) >>;
+
+(* type constraint *)
+<:patt< ($p$ : $t$) >>;
+
+(* type pattern *)
+<:patt< # $list:ls$ >>;
+<:patt< # $_list:ls$ >>;
+
+(* uppercase identifier *)
+<:patt< $uid:s$ >>;
+<:patt< $_uid:s$ >>;
+
+(* variant *)
+<:patt< ` $s$ >>;
+<:patt< ` $_:s$ >>;
+
 MLast.PaXtr loc s None;
 MLast.PaXtr loc s (Some (Ploc.VaVal p));
 MLast.PaXtr loc s (Some p);
 MLast.PaXtr loc s p;
 
+(* dot *)
 <:expr< $e1$ . $e2$ >>;
+(* antiquotation <a href="#expr_1">(1)</a> *)
 <:expr< $anti:e$ >>;
+(* application *)
 <:expr< $e1$ $e2$ >>;
-<:expr< $e1$.($e2$) >>;
+(* array access *)
+<:expr< $e1$ .( $e2$ ) >>;
+
+(* array *)
 <:expr< [| $list:le$ |] >>;
 <:expr< [| $_list:le$ |] >>;
+
+(* assert *)
 <:expr< assert $e$ >>;
+(* assignment *)
 <:expr< $e1$ := $e2$ >>;
-<:expr< $e$.{$list:le$} >>;
-<:expr< $e$.{$_list:le$} >>;
+(* big array access *)
+<:expr< $e$ .{ $list:le$ } >>;
+<:expr< $e$ .{ $_list:le$ } >>;
+(* character constant *)
 <:expr< $chr:s$ >>;
 <:expr< $_chr:s$ >>;
+
+(* coercion *)
 <:expr< ($e$ :> $t2$) >>;
+(* coercion *)
 <:expr< ($e$ : $t1$ :> $t2$) >>;
 MLast.ExCoe loc e t1 t2;
+
+(* float constant *)
 <:expr< $flo:s$ >>;
 <:expr< $_flo:s$ >>;
 
+(* for *)
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $_list:le$ } >>;
+(* for *)
 <:expr< for $lid:s$ = $e1$ downto $e2$ do { $list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ downto $e2$ do { $_list:le$ } >>;
+(* for *)
 <:expr< for $lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ $to:b$ $e2$ do { $_list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ $_to:b$ $e2$ do { $list:le$ } >>;
@@ -224,42 +258,63 @@ MLast.ExCoe loc e t1 t2;
 <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $list:le$ } >>;
 <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>;
 
+(* function <a href="#expr_2">(2)</a> *)
 <:expr< fun [ $list:lpee$ ] >>;
 <:expr< fun [ $_list:lpee$ ] >>;
+
+(* if *)
 <:expr< if $e1$ then $e2$ else $e3$ >>;
+
+(* integer constant *)
 <:expr< $int:s1$ >>;
 <:expr< $_int:s1$ >>;
+(* integer 32 bits *)
 <:expr< $int32:s1$ >>;
 <:expr< $_int32:s1$ >>;
+(* integer 64 bits *)
 <:expr< $int64:s1$ >>;
 <:expr< $_int64:s1$ >>;
+(* native integer *)
 <:expr< $nativeint:s1$ >>;
 <:expr< $_nativeint:s1$ >>;
 
+(* label *)
 <:expr< ~{$p$} >>;
+(* label *)
 <:expr< ~{$p$ = $e$} >>;
 <:expr< ~{$p$ $opt:e$} >>;
 <:expr< ~{$p$ $_opt:e$} >>;
 
-MLast.ExLaz loc e;
+(* lazy *)
+<:expr< lazy $e$ >>;
 
+(* let rec *)
 <:expr< let rec $list:lpe$ in $e$ >>;
 <:expr< let rec $_list:lpe$ in $e$ >>;
+(* let not rec *)
 <:expr< let $list:lpe$ in $e$ >>;
 <:expr< let $_list:lpe$ in $e$ >>;
+(* let binding *)
 <:expr< let $flag:b$ $list:lpe$ in $e$ >>;
 <:expr< let $flag:b$ $_list:lpe$ in $e$ >>;
 <:expr< let $_flag:b$ $list:lpe$ in $e$ >>;
 <:expr< let $_flag:b$ $_list:lpe$ in $e$ >>;
 
-MLast.ExLid loc (Ploc.VaVal s);
-MLast.ExLid loc s;
-MLast.ExLmd loc (Ploc.VaVal s) me e;
-MLast.ExLmd loc s me e;
-MLast.ExMat loc e (Ploc.VaVal lpee);
-MLast.ExMat loc e lpee;
-MLast.ExNew loc (Ploc.VaVal ls);
-MLast.ExNew loc ls;
+(* lowercase identifier *)
+<:expr< $lid:s$ >>;
+<:expr< $_lid:s$ >>;
+
+(* let module *)
+<:expr< let module $uid:s$ = $me$ in $e$ >>;
+<:expr< let module $_uid:s$ = $me$ in $e$ >>;
+
+(* match <a href="#expr_2">(2)</a> *)
+<:expr< match $e$ with [ $list:lpee$ ] >>;
+<:expr< match $e$ with [ $_list:lpee$ ] >>;
+
+(* new *)
+<:expr< new $list:ls$ >>;
+<:expr< new $_list:ls$ >>;
 
 <:expr< object $list:lcsi$ end >>;
 <:expr< object $_list:lcsi$ end >>;

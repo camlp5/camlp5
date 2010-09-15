@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.3 2010/09/15 19:31:47 deraugla Exp $
+# $Id: mktrans.sh,v 6.4 2010/09/15 20:33:23 deraugla Exp $
 
 top=../..
 quotation="$1"
@@ -18,5 +18,7 @@ paste - $file |
 sed -e 's/(\*.*\*)	//; /\*)$/N; s/\*)./*)/' |
 grep "<:$quotation<" |
 grep -v '$_' |
-sed -e 's/\((\*.*\*)\)\(.*\)$/\2	\1/; s/ < / \&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|	  </tr>	  <tr>|; s/(\* /    <td>/;s| \*)|</td>|' |
+sed -e 's/\((\*.*\*)\)\(.*\)$/\2	\1/; s/ < / \&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|	  </tr>	  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|	  <tr>||' |
 tr '\t' '\n'
+
+echo '</table>'

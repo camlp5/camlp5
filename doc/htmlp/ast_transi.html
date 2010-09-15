@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.3 2010/09/15 19:31:47 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.4 2010/09/15 20:33:23 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -271,7 +271,7 @@
   </tr>
   <tr>
     <td><tt>ExBae loc e le</tt></td>
-    <td align="center"><tt>$e$ .{ $le$ }</tt></td>
+    <td align="center"><tt>$e$ .{ $list:le$ }</tt></td>
     <td>big array access</td>
   </tr>
   <tr>
@@ -280,13 +280,13 @@
     <td>character constant</td>
   </tr>
   <tr>
-    <td><tt>ExCoe loc e (Some t1) t2</tt></td>
-    <td align="center"><tt>($e$ : $t1$ :> $t2$)</tt></td>
+    <td><tt>ExCoe loc e None t2</tt></td>
+    <td align="center"><tt>($e$ :> $t2$)</tt></td>
     <td>coercion</td>
   </tr>
   <tr>
-    <td><tt>ExCoe loc e None t2</tt></td>
-    <td align="center"><tt>($e$ :> $t2$)</tt></td>
+    <td><tt>ExCoe loc e (Some t1) t2</tt></td>
+    <td align="center"><tt>($e$ : $t1$ :> $t2$)</tt></td>
     <td>coercion</td>
   </tr>
   <tr>
@@ -296,12 +296,12 @@
   </tr>
   <tr>
     <td><tt>ExFor loc s e1 e2 b le</tt></td>
-    <td align="center"><tt>for $s$ = $e1$ $to:b$ $e2$ do { $list:le$ }</tt></td>
+    <td align="center"><tt>for $lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ }</tt></td>
     <td>for</td>
   </tr>
   <tr>
-    <td><tt>ExFun loc lopee</tt></td>
-    <td align="center"><tt>fun [ $list:lpoee$ ]</tt></td>
+    <td><tt>ExFun loc lpee</tt></td>
+    <td align="center"><tt>fun [ $list:lpee$ ]</tt></td>
     <td>function <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
@@ -310,33 +310,33 @@
     <td>if</td>
   </tr>
   <tr>
-    <td><tt>ExInt loc s ""</tt></td>
-    <td align="center"><tt>$int:s$</tt></td>
+    <td><tt>ExInt loc s1 ""</tt></td>
+    <td align="center"><tt>$int:s1$</tt></td>
     <td>integer constant</td>
   </tr>
   <tr>
-    <td><tt>ExInt loc s "l"</tt></td>
-    <td align="center"><tt>$int32:s$</tt></td>
+    <td><tt>ExInt loc s1 "l"</tt></td>
+    <td align="center"><tt>$int32:s1$</tt></td>
     <td>integer 32 bits</td>
   </tr>
   <tr>
-    <td><tt>ExInt loc s "L"</tt></td>
-    <td align="center"><tt>$int64:s$</tt></td>
+    <td><tt>ExInt loc s1 "L"</tt></td>
+    <td align="center"><tt>$int64:s1$</tt></td>
     <td>integer 64 bits</td>
   </tr>
   <tr>
-    <td><tt>ExInt loc s "n"</tt></td>
-    <td align="center"><tt>$nativeint:s$</tt></td>
+    <td><tt>ExInt loc s1 "n"</tt></td>
+    <td align="center"><tt>$nativeint:s1$</tt></td>
     <td>native integer</td>
   </tr>
   <tr>
-    <td><tt>ExLab loc s None</tt></td>
-    <td align="center"><tt>~ $s$</tt></td>
+    <td><tt>ExLab loc p None</tt></td>
+    <td align="center"><tt>~{$p$}</tt></td>
     <td>label</td>
   </tr>
   <tr>
-    <td><tt>ExLab loc s (Some e)</tt></td>
-    <td align="center"><tt>~$s$: $e$</tt></td>
+    <td><tt>ExLab loc p (Some e)</tt></td>
+    <td align="center"><tt>~{$p$ = $e$}</tt></td>
     <td>label</td>
   </tr>
   <tr>
@@ -356,12 +356,12 @@
   </tr>
   <tr>
     <td><tt>ExLmd loc s me e</tt></td>
-    <td align="center"><tt>let module $s$ = $me$ in $e$</tt></td>
+    <td align="center"><tt>let module $uid:s$ = $me$ in $e$</tt></td>
     <td>let module</td>
   </tr>
   <tr>
-    <td><tt>ExMat loc e lpoee</tt></td>
-    <td align="center"><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
+    <td><tt>ExMat loc e lpee</tt></td>
+    <td align="center"><tt>match $e$ with [ $list:lpee$ ]</tt></td>
     <td>match <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
@@ -425,8 +425,8 @@
     <td>string</td>
   </tr>
   <tr>
-    <td><tt>ExTry loc e lpoee</tt></td>
-    <td align="center"><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
+    <td><tt>ExTry loc e lpee</tt></td>
+    <td align="center"><tt>try $e$ with [ $list:lpee$ ]</tt></td>
     <td>try <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
@@ -469,7 +469,7 @@
 </div>
 
 <div id="expr_2" style="margin: 5mm 0 0 1cm">(2)
-  <p>The variable "lpoee" found in "function", "match" and "try"
+  <p>The variable "lpee" found in "function", "match" and "try"
     statements correspond to a list of "<tt>(patt * option expr *
       expr)</tt>" where the "<tt>option expr</tt>" is the "when"
     optionally following the pattern:</p>
