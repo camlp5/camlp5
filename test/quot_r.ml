@@ -1,17 +1,19 @@
-(* $Id: quot_r.ml,v 6.2 2010/09/15 16:05:46 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.3 2010/09/15 16:12:35 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;
 <:ctyp< $t1$ as $t2$ >>;
 <:ctyp< _ >>;
 <:ctyp< $t1$ $t2$ >>;
 <:ctyp< $t1$ -> $t2$ >>;
-MLast.TyCls loc (Ploc.VaVal ls);
-MLast.TyCls loc ls;
+<:ctyp< # $list:ls$ >>;
+<:ctyp< # $_list:ls$ >>;
 MLast.TyLab loc (Ploc.VaVal s) t;
 MLast.TyLab loc s t;
-MLast.TyLid loc (Ploc.VaVal s);
-MLast.TyLid loc s;
-MLast.TyMan loc t1 t2;
+
+<:ctyp< $lid:s$ >>;
+<:ctyp< $_lid:s$ >>;
+
+<:ctyp< $t1$ == $t2$ >>;
 
 <:ctyp< < $list:lst$ .. > >>;
 <:ctyp< < $list:lst$ > >>;
@@ -35,8 +37,9 @@ MLast.TySum loc (Ploc.VaVal llslt);
 MLast.TySum loc llslt;
 MLast.TyTup loc (Ploc.VaVal lt);
 MLast.TyTup loc lt;
-MLast.TyUid loc (Ploc.VaVal s);
-MLast.TyUid loc s;
+
+<:ctyp< $uid:s$ >>;
+<:ctyp< $_uid:s$ >>;
 
 <:ctyp< [ = $list:lpv$ ] >>;
 <:ctyp< [ > $list:lpv$ ] >>;
