@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 1.17 2010/09/15 13:28:23 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 1.18 2010/09/15 13:59:59 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -65,6 +65,17 @@ for i in $files; do
        "$idir/$bname" = "examples/test_type_quotation.ml" -o \
        "$idir/$bname" = "examples/type_quotation.ml" -o \
        "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4AstLoader.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4DebugParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4GrammarParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4ListComprehension.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4MacroParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlParserParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlReloadedParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlRevisedParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlRevisedParserParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4QuotationCommon.ml" -o \
        "$idir/$bname" = "Printers/DumpCamlp4Ast.ml" -o \
        "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
        "$idir/$bname" = "Printers/Null.ml" -o \
@@ -77,9 +88,13 @@ for i in $files; do
     altsyntax="meta/pa_r.cmo"
     syntname="normal syntax"
     altsyntname="revised syntax"
-    if [ "$idir" = "Camlp4" -o "$idir" = "Camlp4Printers" -o \
+    if [ "$idir" = "Camlp4" -o \
+         "$idir" = "Camlp4Parsers" -o \
+         "$idir" = "Camlp4Printers" -o \
          "$idir" = "Printers" -o \
-         "$idir/$bname" = "boot/Camlp4Ast.ml" ]
+         "$idir/$bname" = "boot/Camlp4Ast.ml" -o \
+         "$idir/$bname" = "camlp4/camlp4prof.ml" -o \
+         "$idir/$bname" = "camlp4/mkcamlp4.ml" ]
     then
       syntax="meta/pa_r.cmo meta/pa_rp.cmo etc/q_phony.cmo"
       altsyntax="etc/pa_o.cmo"
