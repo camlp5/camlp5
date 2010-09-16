@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.6 2010/09/16 12:46:18 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.7 2010/09/16 14:38:04 deraugla Exp $ *)
 
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
@@ -260,8 +260,10 @@ MLast.SgDir (loc, s, Ploc.VaVal None);;
 MLast.SgDir (loc, s, Ploc.VaVal (Some e));;
 MLast.SgDir (loc, s, Ploc.VaVal oe);;
 MLast.SgDir (loc, s, oe);;
+MLast.SgExc (loc, Ploc.VaVal s, Ploc.VaVal []);;
 MLast.SgExc (loc, Ploc.VaVal s, Ploc.VaVal lt);;
 MLast.SgExc (loc, Ploc.VaVal s, lt);;
+MLast.SgExc (loc, s, Ploc.VaVal []);;
 MLast.SgExc (loc, s, Ploc.VaVal lt);;
 MLast.SgExc (loc, s, lt);;
 MLast.SgExt (loc, Ploc.VaVal s, t, Ploc.VaVal ls);;

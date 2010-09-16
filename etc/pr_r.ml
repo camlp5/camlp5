@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.1 2010/09/15 16:00:22 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.2 2010/09/16 14:38:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1338,7 +1338,7 @@ EXTEND_PRINTER
       | <:ctyp< ?$i$: $t$ >> | <:ctyp< ~$_$: $t$ >> ->
           failwith "labels not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
-        <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
+       (* <:ctyp< [ < $list:_$ ] >> | *) <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" ctyp z ] ]

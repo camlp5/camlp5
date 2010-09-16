@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.16 2010/09/16 12:46:18 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.17 2010/09/16 14:38:04 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -43,7 +43,8 @@
 <:ctyp< ?$s$: $t$ >>;
 <:ctyp< ?$_:s$: $t$ >>;
 
-MLast.TyPck loc mt;
+(* package *)
+<:ctyp< (module $mt$) >>;
 
 (* polymorph *)
 <:ctyp< ! $list:ls$ . $t$ >>;
@@ -454,39 +455,52 @@ MLast.MtXtr loc s omt;
 <:sig_item< # $_lid:s$ $_opt:oe$ >>;
 
 (* exception *)
+<:sig_item< exception $s$ >>;
+(* exception *)
 <:sig_item< exception $s$ of $list:lt$ >>;
 <:sig_item< exception $s$ of $_list:lt$ >>;
+<:sig_item< exception $_:s$ >>;
 <:sig_item< exception $_:s$ of $list:lt$ >>;
 <:sig_item< exception $_:s$ of $_list:lt$ >>;
 
+(* external *)
 <:sig_item< external $s$ : $t$ = $list:ls$ >>;
 <:sig_item< external $s$ : $t$ = $_list:ls$ >>;
 <:sig_item< external $_:s$ : $t$ = $list:ls$ >>;
 <:sig_item< external $_:s$ : $t$ = $_list:ls$ >>;
 
-MLast.SgInc loc mt;
+(* include *)
+<:sig_item< include $mt$ >>;
 
+(* module rec *)
 <:sig_item< module rec $list:lsmt$ >>;
 <:sig_item< module rec $_list:lsmt$ >>;
+(* module non rec *)
 <:sig_item< module $list:lsmt$ >>;
 <:sig_item< module $_list:lsmt$ >>;
+(* module *)
 <:sig_item< module $flag:b$ $list:lsmt$ >>;
 <:sig_item< module $flag:b$ $_list:lsmt$ >>;
 <:sig_item< module $_flag:b$ $list:lsmt$ >>;
 <:sig_item< module $_flag:b$ $_list:lsmt$ >>;
 
+(* module type *)
 <:sig_item< module type $s$ = $mt$ >>;
 <:sig_item< module type $_:s$ = $mt$ >>;
 
-MLast.SgOpn loc (Ploc.VaVal ls);
-MLast.SgOpn loc ls;
-MLast.SgTyp loc (Ploc.VaVal ltd);
-MLast.SgTyp loc ltd;
+(* open *)
+<:sig_item< open $list:ls$ >>;
+<:sig_item< open $_list:ls$ >>;
 
-MLast.SgUse loc (Ploc.VaVal s) (Ploc.VaVal lsil);
-MLast.SgUse loc (Ploc.VaVal s) lsil;
-MLast.SgUse loc s (Ploc.VaVal lsil);
-MLast.SgUse loc s lsil;
+(* type declaration *)
+<:sig_item< type $list:ltd$ >>;
+<:sig_item< type $_list:ltd$ >>;
+
+(* ... internal use ... <a href="#t_sig_item_1">(1) *)
+<:sig_item< # $str:s$ $list:lsil$ >>;
+<:sig_item< # $str:s$ $_list:lsil$ >>;
+<:sig_item< # $_str:s$ $list:lsil$ >>;
+<:sig_item< # $_str:s$ $_list:lsil$ >>;
 
 (* value *)
 <:sig_item< value $s$ : $t$ >>;

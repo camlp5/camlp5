@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.3 2010/09/16 14:38:04 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -235,8 +235,10 @@ value rec ctyp =
       let (clos, sl) =
         match ool with
         [ None -> (True, None)
-        | Some None -> (False, None)
-        | Some (Some sl) -> (True, Some (uv sl)) ]
+        | Some ol ->
+            match ol with
+            [ None -> (False, None)
+            | Some sl -> (True, Some (uv sl)) ] ]
       in
       match ocaml_ptyp_variant catl clos sl with
       [ Some t -> mktyp loc t
