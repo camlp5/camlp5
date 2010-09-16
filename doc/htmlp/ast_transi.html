@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.8 2010/09/16 09:33:30 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.9 2010/09/16 10:05:28 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -583,9 +583,24 @@
     <td>character</td>
   </tr>
   <tr>
-    <td><tt>PaInt loc s1 s2</tt></td>
-    <td align="center"><tt>$int:s$</tt></td>
-    <td>integer</td>
+    <td><tt>PaInt loc s1 ""</tt></td>
+    <td align="center"><tt>$int:s1$</tt></td>
+    <td>integer constant</td>
+  </tr>
+  <tr>
+    <td><tt>PaInt loc s1 "l"</tt></td>
+    <td align="center"><tt>$int32:s1$</tt></td>
+    <td>integer 32 bits</td>
+  </tr>
+  <tr>
+    <td><tt>PaInt loc s1 "L"</tt></td>
+    <td align="center"><tt>$int64:s1$</tt></td>
+    <td>integer 64 bits</td>
+  </tr>
+  <tr>
+    <td><tt>PaInt loc s1 "n"</tt></td>
+    <td align="center"><tt>$nativeint:s1$</tt></td>
+    <td>native integer</td>
   </tr>
   <tr>
     <td><tt>PaFlo loc s</tt></td>
@@ -600,6 +615,11 @@
   <tr>
     <td><tt>PaLab loc p1 (Some p2)</tt></td>
     <td align="center"><tt>~{$p1$ = $p2$}</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>PaLab loc p1 op2</tt></td>
+    <td align="center"><tt>~{$p1$ $opt:op2$}</tt></td>
     <td>label</td>
   </tr>
   <tr>
@@ -623,8 +643,8 @@
     <td>option label</td>
   </tr>
   <tr>
-    <td><tt>PaOlb loc p e</tt></td>
-    <td align="center"><tt>?{$p$ $opt:e$}</tt></td>
+    <td><tt>PaOlb loc p oe</tt></td>
+    <td align="center"><tt>?{$p$ $opt:oe$}</tt></td>
     <td>option label</td>
   </tr>
   <tr>

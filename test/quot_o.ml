@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.3 2010/09/16 08:32:02 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.4 2010/09/16 10:05:28 deraugla Exp $ *)
 
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
@@ -37,12 +37,14 @@ MLast.TyUid (loc, Ploc.VaVal s);;
 MLast.TyUid (loc, s);;
 MLast.TyVrn (loc, Ploc.VaVal lpv, None);;
 MLast.TyVrn (loc, Ploc.VaVal lpv, Some None);;
+MLast.TyVrn (loc, Ploc.VaVal lpv, Some (Some (Ploc.VaVal [])));;
 MLast.TyVrn (loc, Ploc.VaVal lpv, Some (Some (Ploc.VaVal ls)));;
 MLast.TyVrn (loc, Ploc.VaVal lpv, Some (Some ls));;
 MLast.TyVrn (loc, Ploc.VaVal lpv, Some ols);;
 MLast.TyVrn (loc, Ploc.VaVal lpv, ools);;
 MLast.TyVrn (loc, lpv, None);;
 MLast.TyVrn (loc, lpv, Some None);;
+MLast.TyVrn (loc, lpv, Some (Some (Ploc.VaVal [])));;
 MLast.TyVrn (loc, lpv, Some (Some (Ploc.VaVal ls)));;
 MLast.TyVrn (loc, lpv, Some (Some ls));;
 MLast.TyVrn (loc, lpv, Some ols);;

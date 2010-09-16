@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.12 2010/09/16 09:33:30 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.13 2010/09/16 10:05:28 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -74,6 +74,8 @@ MLast.TyPck loc mt;
 (* variant *)
 <:ctyp< [ > $list:lpv$ ] >>;
 (* variant *)
+<:ctyp< [ < $list:lpv$ ] >>;
+(* variant *)
 <:ctyp< [ < $list:lpv$ > $list:ls$ ] >>;
 (* variant *)
 <:ctyp< [ < $list:lpv$ > $_list:ls$ ] >>;
@@ -81,6 +83,7 @@ MLast.TyVrn loc (Ploc.VaVal lpv) (Some ols);
 MLast.TyVrn loc (Ploc.VaVal lpv) ools;
 <:ctyp< [ = $_list:lpv$ ] >>;
 <:ctyp< [ > $_list:lpv$ ] >>;
+<:ctyp< [ < $_list:lpv$ ] >>;
 <:ctyp< [ < $_list:lpv$ > $list:ls$ ] >>;
 <:ctyp< [ < $_list:lpv$ > $_list:ls$ ] >>;
 MLast.TyVrn loc lpv (Some ols);
@@ -131,7 +134,7 @@ MLast.PvInh t;
 <:patt< $chr:s$ >>;
 <:patt< $_chr:s$ >>;
 
-(* integer *)
+(* integer constant *)
 <:patt< $int:s1$ >>;
 <:patt< $_int:s1$ >>;
 (* integer 32 bits *)
