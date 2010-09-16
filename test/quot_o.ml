@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.4 2010/09/16 10:05:28 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.5 2010/09/16 11:11:59 deraugla Exp $ *)
 
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
@@ -336,12 +336,16 @@ MLast.StDir (loc, s, Ploc.VaVal None);;
 MLast.StDir (loc, s, Ploc.VaVal (Some e));;
 MLast.StDir (loc, s, Ploc.VaVal oe);;
 MLast.StDir (loc, s, oe);;
+MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal lt, Ploc.VaVal []);;
 MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal lt, Ploc.VaVal ls);;
 MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal lt, ls);;
+MLast.StExc (loc, Ploc.VaVal s, lt, Ploc.VaVal []);;
 MLast.StExc (loc, Ploc.VaVal s, lt, Ploc.VaVal ls);;
 MLast.StExc (loc, Ploc.VaVal s, lt, ls);;
+MLast.StExc (loc, s, Ploc.VaVal lt, Ploc.VaVal []);;
 MLast.StExc (loc, s, Ploc.VaVal lt, Ploc.VaVal ls);;
 MLast.StExc (loc, s, Ploc.VaVal lt, ls);;
+MLast.StExc (loc, s, lt, Ploc.VaVal []);;
 MLast.StExc (loc, s, lt, Ploc.VaVal ls);;
 MLast.StExc (loc, s, lt, ls);;
 MLast.StExp (loc, e);;

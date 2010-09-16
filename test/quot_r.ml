@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.14 2010/09/16 10:21:02 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.15 2010/09/16 11:11:59 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -561,12 +561,17 @@ MLast.MeXtr loc s ome;
 <:str_item< # $_lid:s$ $_opt:oe$ >>;
 
 (* exception *)
+<:str_item< exception $uid:s$ of $list:lt$ >>;
+(* exception *)
 <:str_item< exception $uid:s$ of $list:lt$ = $list:ls$ >>;
 <:str_item< exception $uid:s$ of $list:lt$ = $_list:ls$ >>;
+<:str_item< exception $uid:s$ of $_list:lt$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ = $list:ls$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ = $_list:ls$ >>;
+<:str_item< exception $_uid:s$ of $list:lt$ >>;
 <:str_item< exception $_uid:s$ of $list:lt$ = $list:ls$ >>;
 <:str_item< exception $_uid:s$ of $list:lt$ = $_list:ls$ >>;
+<:str_item< exception $_uid:s$ of $_list:lt$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $list:ls$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $_list:ls$ >>;
 
@@ -594,12 +599,19 @@ MLast.MeXtr loc s ome;
 <:str_item< module $_flag:b$ $list:lsme$ >>;
 <:str_item< module $_flag:b$ $_list:lsme$ >>;
 
-MLast.StMty loc (Ploc.VaVal s) mt;
-MLast.StMty loc s mt;
-MLast.StOpn loc (Ploc.VaVal ls);
-MLast.StOpn loc ls;
-MLast.StTyp loc (Ploc.VaVal ltd);
-MLast.StTyp loc ltd;
+(* module type *)
+<:str_item< module type $s$ = $mt$ >>;
+<:str_item< module type $_:s$ = $mt$ >>;
+
+(* open *)
+<:str_item< open $list:ls$ >>;
+<:str_item< open $_list:ls$ >>;
+
+(* type declaration *)
+<:str_item< type $list:ltd$ >>;
+<:str_item< type $_list:ltd$ >>;
+
+(* ... internal use ... *)
 MLast.StUse loc s lsil;
 
 (* value rec *)

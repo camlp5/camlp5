@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.10 2010/09/16 10:21:02 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.11 2010/09/16 11:11:59 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -928,6 +928,16 @@
     <td><tt>StUse loc s lstrib</tt></td>
     <td align="center"><tt>...internal use...</tt></td>
     <td><a href="#str_item_1">(1)</a></td>
+  </tr>
+  <tr>
+    <td><tt>StVal loc True lpe</tt></td>
+    <td align="center"><tt>value rec $list:lpe$</tt></td>
+    <td>value rec</td>
+  </tr>
+  <tr>
+    <td><tt>StVal loc False lpe</tt></td>
+    <td align="center"><tt>value $list:lpe$</tt></td>
+    <td>value non rec</td>
   </tr>
   <tr>
     <td><tt>StVal loc b lpe</tt></td>

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.5 2010/09/16 10:16:11 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.6 2010/09/16 11:11:59 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -131,6 +131,15 @@ value expr_of_cons_decl (loc, c, tl) =
                 el)
              gel)
         [""; "l"; "L"; "n"] []
+  | "StExc" ->
+      List.fold_right
+        (fun e el ->
+           let el = [e :: el] in
+           match e with
+           [ <:expr< $f$ (Ploc.VaVal $_$) >> ->
+               [<:expr< $f$ (Ploc.VaVal []) >> :: el]
+           | _ -> el ])
+        el []
   | _ -> el ]
 ;
 
