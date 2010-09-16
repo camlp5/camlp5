@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
+(* $Id: main.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -88,7 +88,8 @@ value rec parse_file pa getdir useast = do {
                 match x with
                 [ (loc1, "use", Some <:expr< $str:s$ >>) ->
                     list_rev_append rpl
-                      [(useast loc1 s (use_file pa getdir useast s), loc1)]
+                      [(useast loc1 <:vala< s >>
+                          <:vala< use_file pa getdir useast s >>, loc1)]
                 | (loc, x, eo) -> do {
                     match
                       try Some (Pcaml.find_directive x) with

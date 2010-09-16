@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.1 2010/09/15 16:00:25 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.2 2010/09/16 12:46:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -303,8 +303,10 @@ module Meta_make (C : MetaSig) =
       | SgTyp _ ltd -> C.node "SgTyp" [C.vala (C.list type_decl) ltd]
       | SgUse _ s lsil ->
           C.node "SgUse"
-            [C.string s;
-             C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]) lsil]
+            [C.vala C.string s;
+             C.vala
+               (C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]))
+               lsil]
       | SgVal _ s t -> C.node "SgVal" [C.vala C.string s; ctyp t]
       | IFDEF STRICT THEN
           SgXtr loc s _ -> C.xtr loc s
@@ -361,8 +363,10 @@ module Meta_make (C : MetaSig) =
       | StTyp _ ltd -> C.node "StTyp" [C.vala (C.list type_decl) ltd]
       | StUse _ s lsil ->
           C.node "StUse"
-            [C.string s;
-             C.list (fun (si, _) -> C.tuple [str_item si; C.loc_v ()]) lsil]
+            [C.vala C.string s;
+             C.vala
+               (C.list (fun (si, _) -> C.tuple [str_item si; C.loc_v ()]))
+               lsil]
       | StVal _ b lpe ->
           C.node "StVal"
             [C.vala C.bool b;

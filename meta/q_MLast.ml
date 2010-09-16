@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.1 2010/09/15 16:00:25 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -331,6 +331,9 @@ EXTEND
           Qast.Node "StVal" [Qast.Loc; r; l]
       | "#"; n = SV LIDENT; dp = SV (OPT expr) ->
           Qast.Node "StDir" [Qast.Loc; n; dp]
+      | "#"; s = SV STRING;
+        sil = SV (LIST0 [ si = str_item -> Qast.Tuple [si; Qast.Loc] ]) ->
+          Qast.Node "StUse" [Qast.Loc; s; sil]
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
   rebind_exn:
@@ -398,7 +401,10 @@ EXTEND
       | "value"; i = SV LIDENT; ":"; t = ctyp ->
           Qast.Node "SgVal" [Qast.Loc; i; t]
       | "#"; n = SV LIDENT; dp = SV (OPT expr) ->
-          Qast.Node "SgDir" [Qast.Loc; n; dp] ] ]
+          Qast.Node "SgDir" [Qast.Loc; n; dp]
+      | "#"; s = SV STRING;
+        sil = SV (LIST0 [ si = sig_item -> Qast.Tuple [si; Qast.Loc] ]) ->
+          Qast.Node "SgUse" [Qast.Loc; s; sil] ] ]
   ;
   mod_decl_binding:
     [ [ i = SV UIDENT; mt = module_declaration -> Qast.Tuple [i; mt] ] ]

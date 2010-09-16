@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.5 2010/09/16 11:11:59 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.6 2010/09/16 12:46:18 deraugla Exp $ *)
 
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
@@ -283,6 +283,9 @@ MLast.SgOpn (loc, Ploc.VaVal ls);;
 MLast.SgOpn (loc, ls);;
 MLast.SgTyp (loc, Ploc.VaVal ltd);;
 MLast.SgTyp (loc, ltd);;
+MLast.SgUse (loc, Ploc.VaVal s, Ploc.VaVal lsil);;
+MLast.SgUse (loc, Ploc.VaVal s, lsil);;
+MLast.SgUse (loc, s, Ploc.VaVal lsil);;
 MLast.SgUse (loc, s, lsil);;
 MLast.SgVal (loc, Ploc.VaVal s, t);;
 MLast.SgVal (loc, s, t);;
@@ -336,14 +339,20 @@ MLast.StDir (loc, s, Ploc.VaVal None);;
 MLast.StDir (loc, s, Ploc.VaVal (Some e));;
 MLast.StDir (loc, s, Ploc.VaVal oe);;
 MLast.StDir (loc, s, oe);;
+MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal [], Ploc.VaVal []);;
 MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal lt, Ploc.VaVal []);;
+MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal [], Ploc.VaVal ls);;
 MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal lt, Ploc.VaVal ls);;
+MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal [], ls);;
 MLast.StExc (loc, Ploc.VaVal s, Ploc.VaVal lt, ls);;
 MLast.StExc (loc, Ploc.VaVal s, lt, Ploc.VaVal []);;
 MLast.StExc (loc, Ploc.VaVal s, lt, Ploc.VaVal ls);;
 MLast.StExc (loc, Ploc.VaVal s, lt, ls);;
+MLast.StExc (loc, s, Ploc.VaVal [], Ploc.VaVal []);;
 MLast.StExc (loc, s, Ploc.VaVal lt, Ploc.VaVal []);;
+MLast.StExc (loc, s, Ploc.VaVal [], Ploc.VaVal ls);;
 MLast.StExc (loc, s, Ploc.VaVal lt, Ploc.VaVal ls);;
+MLast.StExc (loc, s, Ploc.VaVal [], ls);;
 MLast.StExc (loc, s, Ploc.VaVal lt, ls);;
 MLast.StExc (loc, s, lt, Ploc.VaVal []);;
 MLast.StExc (loc, s, lt, Ploc.VaVal ls);;
@@ -368,6 +377,9 @@ MLast.StOpn (loc, Ploc.VaVal ls);;
 MLast.StOpn (loc, ls);;
 MLast.StTyp (loc, Ploc.VaVal ltd);;
 MLast.StTyp (loc, ltd);;
+MLast.StUse (loc, Ploc.VaVal s, Ploc.VaVal lsil);;
+MLast.StUse (loc, Ploc.VaVal s, lsil);;
+MLast.StUse (loc, s, Ploc.VaVal lsil);;
 MLast.StUse (loc, s, lsil);;
 MLast.StVal (loc, Ploc.VaVal true, Ploc.VaVal lpe);;
 MLast.StVal (loc, Ploc.VaVal true, lpe);;

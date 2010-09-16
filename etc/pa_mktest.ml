@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.6 2010/09/16 11:11:59 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.7 2010/09/16 12:46:17 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -135,10 +135,19 @@ value expr_of_cons_decl (loc, c, tl) =
       List.fold_right
         (fun e el ->
            let el = [e :: el] in
-           match e with
-           [ <:expr< $f$ (Ploc.VaVal $_$) >> ->
-               [<:expr< $f$ (Ploc.VaVal []) >> :: el]
-           | _ -> el ])
+           let el =
+             match e with
+             [ <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal $e2$) >> ->
+                 [<:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal []) >>;
+                  <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal []) >>;
+                  <:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal $e2$) >> :: el]
+             | <:expr< $f$ (Ploc.VaVal $_$) >> ->
+                 [<:expr< $f$ (Ploc.VaVal []) >> :: el]
+             | <:expr< $f$ (Ploc.VaVal $_$) $e$ >> ->
+                 [<:expr< $f$ (Ploc.VaVal []) $e$ >> :: el]
+             | _ -> el ]
+           in
+           el)
         el []
   | _ -> el ]
 ;

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.12 2010/09/16 11:39:49 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.13 2010/09/16 12:46:17 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -870,8 +870,18 @@
     <td>directive (general)</td>
   </tr>
   <tr>
+    <td><tt>StExc loc s [] []</tt></td>
+    <td align="center"><tt>exception $uid:s$</tt></td>
+    <td>exception</td>
+  </tr>
+  <tr>
     <td><tt>StExc loc s lt []</tt></td>
     <td align="center"><tt>exception $uid:s$ of $list:lt$</tt></td>
+    <td>exception</td>
+  </tr>
+  <tr>
+    <td><tt>StExc loc s [] ls</tt></td>
+    <td align="center"><tt>exception $uid:s$ = $list:ls$</tt></td>
     <td>exception</td>
   </tr>
   <tr>
@@ -926,8 +936,8 @@
   </tr>
   <tr>
     <td><tt>StUse loc s lsil</tt></td>
-    <td align="center"><tt>...internal use...</tt></td>
-    <td><a href="#str_item_1">(1)</a></td>
+    <td align="center"><tt># $str:s$ $list:lsil$</tt></td>
+    <td>... internal use ... <a href="#t_str_item_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>StVal loc True lpe</tt></td>
@@ -965,33 +975,33 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>SgCls loc lcd</tt></td>
-    <td align="center"><tt>class $list:lcd$</tt></td>
+    <td><tt>SgCls loc lcict</tt></td>
+    <td align="center"><tt>class $list:lcict$</tt></td>
     <td>class</td>
   </tr>
   <tr>
-    <td><tt>SgClt loc lct</tt></td>
-    <td align="center"><tt>class type $list:lct$</tt></td>
+    <td><tt>SgClt loc lcict</tt></td>
+    <td align="center"><tt>class type $list:lcict$</tt></td>
     <td>class type</td>
   </tr>
   <tr>
-    <td><tt>SgDcl loc lsigi</tt></td>
-    <td align="center"><tt>declare $list:lsigi$ end</tt></td>
+    <td><tt>SgDcl loc lsi</tt></td>
+    <td align="center"><tt>declare $list:lsi$ end</tt></td>
     <td>declare</td>
   </tr>
   <tr>
     <td><tt>SgDir loc s None</tt></td>
-    <td align="center"><tt># $s$</tt></td>
+    <td align="center"><tt># $lid:s$</tt></td>
     <td>directive</td>
   </tr>
   <tr>
     <td><tt>SgDir loc s (Some e)</tt></td>
-    <td align="center"><tt># $s$ $e$</tt></td>
+    <td align="center"><tt># $lid:s$ $e$</tt></td>
     <td>directive</td>
   </tr>
   <tr>
     <td><tt>SgDir loc s oe</tt></td>
-    <td align="center"><tt># $s$ $opt:oe$</tt></td>
+    <td align="center"><tt># $lid:s$ $opt:oe$</tt></td>
     <td>directive (general)</td>
   </tr>
   <tr>
@@ -1037,7 +1047,7 @@
   <tr>
     <td><tt>SgUse loc s lstrib</tt></td>
     <td align="center"><tt>...internal use...</tt></td>
-    <td><a href="#sig_item_1">(1)</a></td>
+    <td><a href="#t_sig_item_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>SgVal loc s t</tt></td>

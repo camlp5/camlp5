@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.15 2010/09/16 11:11:59 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.16 2010/09/16 12:46:18 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -429,15 +429,23 @@ MLast.MtXtr loc s (Some (Ploc.VaVal mt));
 MLast.MtXtr loc s (Some mt);
 MLast.MtXtr loc s omt;
 
-MLast.SgCls loc (Ploc.VaVal lcict);
-MLast.SgCls loc lcict;
-MLast.SgClt loc (Ploc.VaVal lcict);
-MLast.SgClt loc lcict;
-MLast.SgDcl loc (Ploc.VaVal lsi);
-MLast.SgDcl loc lsi;
+(* class *)
+<:sig_item< class $list:lcict$ >>;
+<:sig_item< class $_list:lcict$ >>;
 
+(* class type *)
+<:sig_item< class type $list:lcict$ >>;
+<:sig_item< class type $_list:lcict$ >>;
+
+(* declare *)
+<:sig_item< declare $list:lsi$ end >>;
+<:sig_item< declare $_list:lsi$ end >>;
+
+(* directive *)
 <:sig_item< # $lid:s$ >>;
+(* directive *)
 <:sig_item< # $lid:s$ $e$ >>;
+(* directive (general) *)
 <:sig_item< # $lid:s$ $opt:oe$ >>;
 <:sig_item< # $lid:s$ $_opt:oe$ >>;
 <:sig_item< # $_lid:s$ >>;
@@ -445,6 +453,7 @@ MLast.SgDcl loc lsi;
 <:sig_item< # $_lid:s$ $opt:oe$ >>;
 <:sig_item< # $_lid:s$ $_opt:oe$ >>;
 
+(* exception *)
 <:sig_item< exception $s$ of $list:lt$ >>;
 <:sig_item< exception $s$ of $_list:lt$ >>;
 <:sig_item< exception $_:s$ of $list:lt$ >>;
@@ -473,6 +482,10 @@ MLast.SgOpn loc (Ploc.VaVal ls);
 MLast.SgOpn loc ls;
 MLast.SgTyp loc (Ploc.VaVal ltd);
 MLast.SgTyp loc ltd;
+
+MLast.SgUse loc (Ploc.VaVal s) (Ploc.VaVal lsil);
+MLast.SgUse loc (Ploc.VaVal s) lsil;
+MLast.SgUse loc s (Ploc.VaVal lsil);
 MLast.SgUse loc s lsil;
 
 (* value *)
@@ -561,15 +574,23 @@ MLast.MeXtr loc s ome;
 <:str_item< # $_lid:s$ $_opt:oe$ >>;
 
 (* exception *)
+<:str_item< exception $uid:s$ >>;
+(* exception *)
 <:str_item< exception $uid:s$ of $list:lt$ >>;
 (* exception *)
+<:str_item< exception $uid:s$ = $list:ls$ >>;
+(* exception *)
 <:str_item< exception $uid:s$ of $list:lt$ = $list:ls$ >>;
+<:str_item< exception $uid:s$ = $_list:ls$ >>;
 <:str_item< exception $uid:s$ of $list:lt$ = $_list:ls$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ = $list:ls$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ = $_list:ls$ >>;
+<:str_item< exception $_uid:s$ >>;
 <:str_item< exception $_uid:s$ of $list:lt$ >>;
+<:str_item< exception $_uid:s$ = $list:ls$ >>;
 <:str_item< exception $_uid:s$ of $list:lt$ = $list:ls$ >>;
+<:str_item< exception $_uid:s$ = $_list:ls$ >>;
 <:str_item< exception $_uid:s$ of $list:lt$ = $_list:ls$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ = $list:ls$ >>;
@@ -611,8 +632,11 @@ MLast.MeXtr loc s ome;
 <:str_item< type $list:ltd$ >>;
 <:str_item< type $_list:ltd$ >>;
 
-(* ... internal use ... *)
-MLast.StUse loc s lsil;
+(* ... internal use ... <a href="#t_str_item_1">(1)</a> *)
+<:str_item< # $str:s$ $list:lsil$ >>;
+<:str_item< # $str:s$ $_list:lsil$ >>;
+<:str_item< # $_str:s$ $list:lsil$ >>;
+<:str_item< # $_str:s$ $_list:lsil$ >>;
 
 (* value rec *)
 <:str_item< value rec $list:lpe$ >>;

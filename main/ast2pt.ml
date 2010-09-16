@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -974,8 +974,8 @@ and sig_item s l =
   | SgTyp loc tdl ->
       [mksig loc (Psig_type (List.map mktype_decl (uv tdl))) :: l]
   | SgUse loc fn sl ->
-      Ploc.call_with glob_fname fn
-        (fun () -> List.fold_right (fun (si, _) -> sig_item si) sl l) ()
+      Ploc.call_with glob_fname (uv fn)
+        (fun () -> List.fold_right (fun (si, _) -> sig_item si) (uv sl) l) ()
   | SgVal loc n t ->
       [mksig loc (Psig_value (uv n) (mkvalue_desc t [])) :: l]
   | IFDEF STRICT THEN
@@ -1065,8 +1065,8 @@ and str_item s l =
   | StTyp loc tdl ->
       [mkstr loc (Pstr_type (List.map mktype_decl (uv tdl))) :: l]
   | StUse loc fn sl ->
-      Ploc.call_with glob_fname fn
-        (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l) ()
+      Ploc.call_with glob_fname (uv fn)
+        (fun () -> List.fold_right (fun (si, _) -> str_item si) (uv sl) l) ()
   | StVal loc rf pel ->
       [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l]
   | IFDEF STRICT THEN

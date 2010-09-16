@@ -253,7 +253,9 @@ and sig_item floc sh =
     | SgTyp (loc, x1) ->
         SgTyp (floc loc, vala_map (List.map (type_decl floc sh)) x1)
     | SgUse (loc, x1, x2) ->
-        SgUse (floc loc, x1, List.map (fun (x1, loc) -> self x1, floc loc) x2)
+        SgUse
+          (floc loc, x1,
+           vala_map (List.map (fun (x1, loc) -> self x1, floc loc)) x2)
     | SgVal (loc, x1, x2) -> SgVal (floc loc, x1, ctyp floc sh x2)
   in
   self
@@ -306,7 +308,9 @@ and str_item floc sh =
     | StTyp (loc, x1) ->
         StTyp (floc loc, vala_map (List.map (type_decl floc sh)) x1)
     | StUse (loc, x1, x2) ->
-        StUse (floc loc, x1, List.map (fun (x1, loc) -> self x1, floc loc) x2)
+        StUse
+          (floc loc, x1,
+           vala_map (List.map (fun (x1, loc) -> self x1, floc loc)) x2)
     | StVal (loc, x1, x2) ->
         StVal
           (floc loc, x1,

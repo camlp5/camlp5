@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -261,7 +261,7 @@ and sig_item floc sh =
         SgTyp (floc loc) (vala_map (List.map (type_decl floc sh)) x1)
     | SgUse loc x1 x2 ->
         SgUse (floc loc) x1
-          (List.map (fun (x1, loc) -> (self x1, floc loc)) x2)
+          (vala_map (List.map (fun (x1, loc) -> (self x1, floc loc))) x2)
     | SgVal loc x1 x2 -> SgVal (floc loc) x1 (ctyp floc sh x2)
     | IFDEF STRICT THEN
         SgXtr loc x1 x2 -> SgXtr (floc loc) x1 (option_map (vala_map self) x2)
@@ -313,7 +313,7 @@ and str_item floc sh =
         StTyp (floc loc) (vala_map (List.map (type_decl floc sh)) x1)
     | StUse loc x1 x2 ->
         StUse (floc loc) x1
-          (List.map (fun (x1, loc) -> (self x1, floc loc)) x2)
+          (vala_map (List.map (fun (x1, loc) -> (self x1, floc loc))) x2)
     | StVal loc x1 x2 ->
         StVal (floc loc) x1
           (vala_map

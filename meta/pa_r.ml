@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.1 2010/09/15 16:00:25 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -179,6 +179,8 @@ EXTEND
           <:str_item< value $_flag:r$ $_list:l$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) ->
           <:str_item< # $_lid:n$ $_opt:dp$ >>
+      | "#"; s = V STRING; sil = V (LIST0 [ si = str_item -> (si, loc) ]) ->
+          <:str_item< # $_str:s$ $_list:sil$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
@@ -244,7 +246,9 @@ EXTEND
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ->
           <:sig_item< value $_lid:i$ : $t$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) ->
-          <:sig_item< # $_lid:n$ $_opt:dp$ >> ] ]
+          <:sig_item< # $_lid:n$ $_opt:dp$ >>
+      | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item -> (si, loc) ]) ->
+          <:sig_item< # $_str:s$ $_list:sil$ >> ] ]
   ;
   mod_decl_binding:
     [ [ i = V UIDENT; mt = module_declaration -> (i, mt) ] ]

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -150,7 +150,7 @@ and sig_item =
   | SgMty of loc and V string and module_type
   | SgOpn of loc and V (list string)
   | SgTyp of loc and V (list type_decl)
-  | SgUse of loc and string and list (sig_item * loc)
+  | SgUse of loc and V string and V (list (sig_item * loc))
   | SgVal of loc and V string and ctyp
   | IFDEF STRICT THEN
       SgXtr of loc and string and option (V sig_item)
@@ -182,7 +182,7 @@ and str_item =
   | StMty of loc and V string and module_type
   | StOpn of loc and V (list string)
   | StTyp of loc and V (list type_decl)
-  | StUse of loc and string and list (str_item * loc)
+  | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr))
   | IFDEF STRICT THEN
       StXtr of loc and string and option (V str_item)
