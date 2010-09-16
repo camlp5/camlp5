@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.4 2010/09/16 10:05:28 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.5 2010/09/16 10:16:11 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -94,6 +94,11 @@ value rec expr_list_of_type loc f n =
       f <:expr< $lid:n$ >>
   | <:ctyp< option $t$ >> ->
       f <:expr< None >> @
+      match t with
+      [ <:ctyp< Ploc.vala (list $t$) >> ->
+          let f _ = f <:expr< Some (Ploc.VaVal []) >> in
+          expr_list_of_type loc f n t
+      | _ -> [] ] @
       expr_list_of_type loc (fun e -> f <:expr< Some $e$ >>) n t @
       let n = add_o ("o" ^ n) t in
       f <:expr< $lid:n$ >>
@@ -126,15 +131,6 @@ value expr_of_cons_decl (loc, c, tl) =
                 el)
              gel)
         [""; "l"; "L"; "n"] []
-  | "TyVrn" ->
-      List.fold_right
-        (fun e el ->
-           match e with
-           [ <:expr< $e1$ $e2$ (Some (Some (Ploc.VaVal $_$))) >> ->
-               let e' = <:expr< $e1$ $e2$ (Some (Some (Ploc.VaVal []))) >> in
-               [e'; e :: el]
-           | _ -> [e :: el] ])
-        el []
   | _ -> el ]
 ;
 

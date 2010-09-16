@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.9 2010/09/16 10:05:28 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.10 2010/09/16 10:21:02 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -865,8 +865,8 @@
     <td>directive</td>
   </tr>
   <tr>
-    <td><tt>StDir loc s e</tt></td>
-    <td align="center"><tt># $lid:s$ $opt:e$</tt></td>
+    <td><tt>StDir loc s oe</tt></td>
+    <td align="center"><tt># $lid:s$ $opt:oe$</tt></td>
     <td>directive (general)</td>
   </tr>
   <tr>
@@ -893,6 +893,16 @@
     <td><tt>StInc loc me</tt></td>
     <td align="center"><tt>include $me$</tt></td>
     <td>include</td>
+  </tr>
+  <tr>
+    <td><tt>StMod loc True lsme</tt></td>
+    <td align="center"><tt>module rec $list:lsme$</tt></td>
+    <td>module rec</td>
+  </tr>
+  <tr>
+    <td><tt>StMod loc False lsme</tt></td>
+    <td align="center"><tt>module $list:lsme$</tt></td>
+    <td>module non rec</td>
   </tr>
   <tr>
     <td><tt>StMod loc b lsme</tt></td>

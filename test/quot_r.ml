@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.13 2010/09/16 10:05:28 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.14 2010/09/16 10:21:02 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -582,10 +582,13 @@ MLast.MeXtr loc s ome;
 (* include *)
 <:str_item< include $me$ >>;
 
+(* module rec *)
 <:str_item< module rec $list:lsme$ >>;
 <:str_item< module rec $_list:lsme$ >>;
+(* module non rec *)
 <:str_item< module $list:lsme$ >>;
 <:str_item< module $_list:lsme$ >>;
+(* module *)
 <:str_item< module $flag:b$ $list:lsme$ >>;
 <:str_item< module $flag:b$ $_list:lsme$ >>;
 <:str_item< module $_flag:b$ $list:lsme$ >>;
