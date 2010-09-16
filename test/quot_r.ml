@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.21 2010/09/16 18:39:52 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.22 2010/09/16 19:08:51 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -754,33 +754,43 @@ MLast.ExRec loc lpe oe;
 <:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
 
+(* application *)
 <:class_expr< $ce$ $e$ >>;
 
+(* constructor *)
 <:class_expr< [ $list:lt$ ] $list:ls$ >>;
 <:class_expr< [ $_list:lt$ ] $list:ls$ >>;
 <:class_expr< [ $list:lt$ ] $_list:ls$ >>;
 <:class_expr< [ $_list:lt$ ] $_list:ls$ >>;
 
+(* function *)
 <:class_expr< fun $p$ -> $ce$ >>;
 
+(* let rec *)
 <:class_expr< let rec $list:lpe$ in $ce$ >>;
 <:class_expr< let rec $_list:lpe$ in $ce$ >>;
+(* let non rec *)
 <:class_expr< let $list:lpe$ in $ce$ >>;
 <:class_expr< let $_list:lpe$ in $ce$ >>;
+(* let *)
 <:class_expr< let $flag:b$ $list:lpe$ in $ce$ >>;
 <:class_expr< let $flag:b$ $_list:lpe$ in $ce$ >>;
 <:class_expr< let $_flag:b$ $list:lpe$ in $ce$ >>;
 <:class_expr< let $_flag:b$ $_list:lpe$ in $ce$ >>;
 
+(* object *)
 <:class_expr< object $list:lcsi$ end >>;
 <:class_expr< object $_list:lcsi$ end >>;
+(* object *)
 <:class_expr< object ($p$) $list:lcsi$ end >>;
 <:class_expr< object ($p$) $_list:lcsi$ end >>;
+(* object *)
 <:class_expr< object $opt:op$ $list:lcsi$ end >>;
 <:class_expr< object $opt:op$ $_list:lcsi$ end >>;
 <:class_expr< object $_opt:op$ $list:lcsi$ end >>;
 <:class_expr< object $_opt:op$ $_list:lcsi$ end >>;
 
+(* class type constraint *)
 <:class_expr< ($ce$ : $ct$) >>;
 
 (* type constraint *)
@@ -792,7 +802,9 @@ MLast.ExRec loc lpe oe;
 
 (* inheritance *)
 <:class_str_item< inherit $ce$ >>;
+(* inheritance *)
 <:class_str_item< inherit $ce$ $opt:Some s$ >>;
+(* inheritance (general) *)
 <:class_str_item< inherit $ce$ $opt:os$ >>;
 <:class_str_item< inherit $ce$ $_opt:os$ >>;
 
@@ -907,7 +919,7 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ = $e$ >>;
 (* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-(* method *)
+(* method (general) *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ = $e$ >>;
@@ -955,26 +967,35 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
 
+(* value *)
 <:class_str_item< value! mutable $lid:s$ = $e$ >>;
 <:class_str_item< value! mutable $_lid:s$ = $e$ >>;
+(* value *)
 <:class_str_item< value! $lid:s$ = $e$ >>;
 <:class_str_item< value! $_lid:s$ = $e$ >>;
+(* value *)
 <:class_str_item< value! $flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value! $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value! $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value! $_flag:b2$ $_lid:s$ = $e$ >>;
+(* value *)
 <:class_str_item< value mutable $lid:s$ = $e$ >>;
 <:class_str_item< value mutable $_lid:s$ = $e$ >>;
+(* value *)
 <:class_str_item< value $lid:s$ = $e$ >>;
 <:class_str_item< value $_lid:s$ = $e$ >>;
+(* value *)
 <:class_str_item< value $flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $_flag:b2$ $_lid:s$ = $e$ >>;
+(* value *)
 <:class_str_item< value $!:b1$ mutable $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ mutable $_lid:s$ = $e$ >>;
+(* value *)
 <:class_str_item< value $!:b1$ $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $_lid:s$ = $e$ >>;
+(* value (general) *)
 <:class_str_item< value $!:b1$ $flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
@@ -988,10 +1009,13 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $_lid:s$ = $e$ >>;
 
+(* virtual method *)
 <:class_str_item< method virtual private $lid:s$ : $t$ >>;
 <:class_str_item< method virtual private $_lid:s$ : $t$ >>;
+(* virtual method *)
 <:class_str_item< method virtual $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_lid:s$ : $t$ >>;
+(* virtual method (general) *)
 <:class_str_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;

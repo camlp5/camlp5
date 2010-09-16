@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.17 2010/09/16 18:19:34 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.18 2010/09/16 19:08:51 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -220,8 +220,8 @@
   <li><tt>lpp</tt>: list (patt * patt)</li>
   <li><tt>lpoee</tt>: list (patt * option expr * expr)</li>
   <li><tt>op</tt>: option patt</li>
-  <li><tt>lcstri</tt>: list class_str_item</li>
-  <li><tt>lcsigi</tt>: list class_sig_item</li>
+  <li><tt>lcsi</tt>: list class_str_item</li>
+  <li><tt>lcsi</tt>: list class_sig_item</li>
 </ul>
 
 <h3>expr</h3>
@@ -1201,13 +1201,33 @@
     <td>function</td>
   </tr>
   <tr>
-    <td><tt>CeLet loc b lpe ce</tt></td>
-    <td align="center"><tt>let $flag:b$ $list:lpe$ in $ce$</tt></td>
-    <td>let binding</td>
+    <td><tt>CeLet loc True lpe ce</tt></td>
+    <td align="center"><tt>let rec $list:lpe$ in $ce$</tt></td>
+    <td>let rec</td>
   </tr>
   <tr>
-    <td><tt>CeStr loc po lcstri</tt></td>
-    <td align="center"><tt>object $opt:op$ $list:lcstri$ end</tt></td>
+    <td><tt>CeLet loc False lpe ce</tt></td>
+    <td align="center"><tt>let $list:lpe$ in $ce$</tt></td>
+    <td>let non rec</td>
+  </tr>
+  <tr>
+    <td><tt>CeLet loc b lpe ce</tt></td>
+    <td align="center"><tt>let $flag:b$ $list:lpe$ in $ce$</tt></td>
+    <td>let</td>
+  </tr>
+  <tr>
+    <td><tt>CeStr loc None lcsi</tt></td>
+    <td align="center"><tt>object $list:lcsi$ end</tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CeStr loc (Some p) lcsi</tt></td>
+    <td align="center"><tt>object ($p$) $list:lcsi$ end</tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CeStr loc op lcsi</tt></td>
+    <td align="center"><tt>object $opt:op$ $list:lcsi$ end</tt></td>
     <td>object</td>
   </tr>
   <tr>
@@ -1292,12 +1312,12 @@
   </tr>
   <tr>
     <td><tt>CrInh loc ce (Some s)</tt></td>
-    <td align="center"><tt>inherit $ce$ as $s$</tt></td>
+    <td align="center"><tt>inherit $ce$ $opt:Some s$</tt></td>
     <td>inheritance</td>
   </tr>
   <tr>
     <td><tt>CrInh loc ce os</tt></td>
-    <td align="center"><tt>inherit $ce$ $opt:s$</tt></td>
+    <td align="center"><tt>inherit $ce$ $opt:os$</tt></td>
     <td>inheritance (general)</td>
   </tr>
   <tr>
@@ -1306,58 +1326,198 @@
     <td>initialization</td>
   </tr>
   <tr>
-    <td><tt>CrMth loc s False e None</tt></td>
-    <td align="center"><tt>method $s$ = $e$</tt></td>
+    <td><tt>CrMth loc True True s None e</tt></td>
+    <td align="center"><tt>method! private $lid:s$ = $e$</tt></td>
     <td>method</td>
   </tr>
   <tr>
-    <td><tt>CrMth loc s False e (Some t)</tt></td>
-    <td align="center"><tt>method $s$ : $t$ = $e$</tt></td>
+    <td><tt>CrMth loc True True s (Some t) e</tt></td>
+    <td align="center"><tt>method! private $lid:s$ : $t$ = $e$</tt></td>
     <td>method</td>
   </tr>
   <tr>
-    <td><tt>CrMth loc s True e None</tt></td>
-    <td align="center"><tt>method private $s$ = $e$</tt></td>
+    <td><tt>CrMth loc True True s ot e</tt></td>
+    <td align="center"><tt>method! private $lid:s$ $opt:ot$ = $e$</tt></td>
     <td>method</td>
   </tr>
   <tr>
-    <td><tt>CrMth loc s True e (Some t)</tt></td>
-    <td align="center"><tt>method private $s$ : $t$ = $e$</tt></td>
+    <td><tt>CrMth loc True False s None e</tt></td>
+    <td align="center"><tt>method! $lid:s$ = $e$</tt></td>
     <td>method</td>
   </tr>
   <tr>
-    <td><tt>CrMth loc s b e ot</tt></td>
-    <td align="center"><tt>method $flag:b$ $s$ $opt:ot$ = $e$</tt></td>
+    <td><tt>CrMth loc True False s (Some t) e</tt></td>
+    <td align="center"><tt>method! $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc True False s ot e</tt></td>
+    <td align="center"><tt>method! $lid:s$ $opt:ot$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc True b2 s None e</tt></td>
+    <td align="center"><tt>method! $priv:b2$ $lid:s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc True b2 s (Some t) e</tt></td>
+    <td align="center"><tt>method! $priv:b2$ $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc True b2 s ot e</tt></td>
+    <td align="center"><tt>method! $priv:b2$ $lid:s$ $opt:ot$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False True s None e</tt></td>
+    <td align="center"><tt>method private $lid:s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False True s (Some t) e</tt></td>
+    <td align="center"><tt>method private $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False True s ot e</tt></td>
+    <td align="center"><tt>method private $lid:s$ $opt:ot$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False False s None e</tt></td>
+    <td align="center"><tt>method $lid:s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False False s (Some t) e</tt></td>
+    <td align="center"><tt>method $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False False s ot e</tt></td>
+    <td align="center"><tt>method $lid:s$ $opt:ot$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False b2 s None e</tt></td>
+    <td align="center"><tt>method $priv:b2$ $lid:s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False b2 s (Some t) e</tt></td>
+    <td align="center"><tt>method $priv:b2$ $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc False b2 s ot e</tt></td>
+    <td align="center"><tt>method $priv:b2$ $lid:s$ $opt:ot$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 True s None e</tt></td>
+    <td align="center"><tt>method $!:b1$ private $lid:s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 True s (Some t) e</tt></td>
+    <td align="center"><tt>method $!:b1$ private $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 True s ot e</tt></td>
+    <td align="center"><tt>method $!:b1$ private $lid:s$ $opt:ot$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 False s None e</tt></td>
+    <td align="center"><tt>method $!:b1$ $lid:s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 False s (Some t) e</tt></td>
+    <td align="center"><tt>method $!:b1$ $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 False s ot e</tt></td>
+    <td align="center"><tt>method $!:b1$ $lid:s$ $opt:ot$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 b2 s None e</tt></td>
+    <td align="center"><tt>method $!:b1$ $priv:b2$ $lid:s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 b2 s (Some t) e</tt></td>
+    <td align="center"><tt>method $!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc b1 b2 s ot e</tt></td>
+    <td align="center"><tt>method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$</tt></td>
     <td>method (general)</td>
   </tr>
   <tr>
-    <td><tt>CrVal loc s False e</tt></td>
-    <td align="center"><tt>value $s$ = $e$</tt></td>
+    <td><tt>CrVal loc True True s e</tt></td>
+    <td align="center"><tt>value! mutable $lid:s$ = $e$</tt></td>
     <td>value</td>
   </tr>
   <tr>
-    <td><tt>CrVal loc s True e</tt></td>
-    <td align="center"><tt>value mutable $s$ = $e$</tt></td>
+    <td><tt>CrVal loc True False s e</tt></td>
+    <td align="center"><tt>value! $lid:s$ = $e$</tt></td>
     <td>value</td>
   </tr>
   <tr>
-    <td><tt>CrVal loc s b e</tt></td>
-    <td align="center"><tt>value $flag:b$ $s$ = $e$</tt></td>
+    <td><tt>CrVal loc True b2 s e</tt></td>
+    <td align="center"><tt>value! $flag:b2$ $lid:s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc False True s e</tt></td>
+    <td align="center"><tt>value mutable $lid:s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc False False s e</tt></td>
+    <td align="center"><tt>value $lid:s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc False b2 s e</tt></td>
+    <td align="center"><tt>value $flag:b2$ $lid:s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc b1 True s e</tt></td>
+    <td align="center"><tt>value $!:b1$ mutable $lid:s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc b1 False s e</tt></td>
+    <td align="center"><tt>value $!:b1$ $lid:s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc b1 b2 s e</tt></td>
+    <td align="center"><tt>value $!:b1$ $flag:b2$ $lid:s$ = $e$</tt></td>
     <td>value (general)</td>
   </tr>
   <tr>
-    <td><tt>CrVir loc s False t</tt></td>
-    <td align="center"><tt>method virtual $s$ : $t$</tt></td>
+    <td><tt>CrVir loc True s t</tt></td>
+    <td align="center"><tt>method virtual private $lid:s$ : $t$</tt></td>
     <td>virtual method</td>
   </tr>
   <tr>
-    <td><tt>CrVir loc s True t</tt></td>
-    <td align="center"><tt>method virtual private $s$ : $t$</tt></td>
+    <td><tt>CrVir loc False s t</tt></td>
+    <td align="center"><tt>method virtual $lid:s$ : $t$</tt></td>
     <td>virtual method</td>
   </tr>
   <tr>
-    <td><tt>CrVir loc s b t</tt></td>
-    <td align="center"><tt>method virtual $flag:b$ $s$ : $t$</tt></td>
+    <td><tt>CrVir loc b s t</tt></td>
+    <td align="center"><tt>method virtual $flag:b$ $lid:s$ : $t$</tt></td>
     <td>virtual method (general)</td>
   </tr>
 </table>
