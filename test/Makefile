@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2010/09/16 07:48:24 deraugla Exp $
+# $Id: Makefile,v 6.3 2010/09/16 08:32:02 deraugla Exp $
 # Copyright (c) INRIA 2007-2010
 
 DEP=../etc/pr_r.cmo quot_r.out.ml
@@ -10,6 +10,16 @@ clean:
 
 compare_quot:
 	./mkquot.sh | diff quot_r.out.ml -
+
+quot:
+	./mkquot.sh > quot_r.out.ml -
+
+compare_quot_o:
+	./mkquot_o.sh | diff quot_o.ml -
+
+quot_o:
+	./mkquot_o.sh > tmp
+	mv tmp quot_o.ml
 
 quot_r.mlt: quot_r.ml ../meta/camlp5r ../meta/q_MLast.cmo $(DEP)
 	../meta/camlp5r ../meta/q_MLast.cmo ../etc/pr_r.cmo quot_r.ml | diff -I '(\*' -B quot_r.out.ml -
