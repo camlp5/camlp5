@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.17 2010/09/16 14:38:04 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.18 2010/09/16 17:37:49 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -407,19 +407,33 @@ MLast.ExXtr loc s (Some (Ploc.VaVal e));
 MLast.ExXtr loc s (Some e);
 MLast.ExXtr loc s oe;
 
-MLast.MtAcc loc mt1 mt2;
-MLast.MtApp loc mt1 mt2;
-MLast.MtFun loc (Ploc.VaVal s) mt1 mt2;
-MLast.MtFun loc s mt1 mt2;
-MLast.MtLid loc (Ploc.VaVal s);
-MLast.MtLid loc s;
-MLast.MtQuo loc (Ploc.VaVal s);
-MLast.MtQuo loc s;
-MLast.MtSig loc (Ploc.VaVal lsi);
-MLast.MtSig loc lsi;
-MLast.MtTyo loc me;
-MLast.MtUid loc (Ploc.VaVal s);
-MLast.MtUid loc s;
+(* dot *)
+<:module_type< $mt1$ . $mt2$ >>;
+(* application *)
+<:module_type< $mt1$ $mt2$ >>;
+
+(* functor *)
+<:module_type< functor ($s$ : $mt1$) -> $mt2$ >>;
+<:module_type< functor ($_:s$ : $mt1$) -> $mt2$ >>;
+
+(* lowercase identifier *)
+<:module_type< $lid:s$ >>;
+<:module_type< $_lid:s$ >>;
+
+(* abstract *)
+<:module_type< ' $s$ >>;
+<:module_type< ' $_:s$ >>;
+
+(* signature *)
+<:module_type< sig $list:lsi$ end >>;
+<:module_type< sig $_list:lsi$ end >>;
+
+(* of module expression *)
+<:module_type< module type of $me$ >>;
+
+(* uppercase identifier *)
+<:module_type< $uid:s$ >>;
+<:module_type< $_uid:s$ >>;
 
 (* with construction *)
 <:module_type< $mt$ with $list:lwc$ >>;
@@ -546,15 +560,20 @@ MLast.SgXtr loc s osi;
 <:module_expr< functor ($s$ : $mt$) -> $me$ >>;
 <:module_expr< functor ($_:s$ : $mt$) -> $me$ >>;
 
-MLast.MeStr loc (Ploc.VaVal lsi);
-MLast.MeStr loc lsi;
-MLast.MeTyc loc me mt;
+(* struct *)
+<:module_expr< struct $list:lsi$ end >>;
+<:module_expr< struct $_list:lsi$ end >>;
+
+(* module type constraint *)
+<:module_expr< ($me$ : $mt$) >>;
 
 (* uppercase identifier *)
 <:module_expr< $uid:s$ >>;
 <:module_expr< $_uid:s$ >>;
 
-MLast.MeUnp loc e mt;
+(* module unpacking *)
+<:module_expr< (value $e$ : $mt$) >>;
+
 MLast.MeXtr loc s None;
 MLast.MeXtr loc s (Some (Ploc.VaVal me));
 MLast.MeXtr loc s (Some me);
