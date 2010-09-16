@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.20 2010/09/16 18:19:34 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.21 2010/09/16 18:39:52 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -89,11 +89,6 @@ MLast.TyVrn loc (Ploc.VaVal lpv) ools;
 <:ctyp< [ < $_list:lpv$ > $_list:ls$ ] >>;
 MLast.TyVrn loc lpv (Some ols);
 MLast.TyVrn loc lpv ools;
-
-MLast.TyXtr loc s None;
-MLast.TyXtr loc s (Some (Ploc.VaVal t));
-MLast.TyXtr loc s (Some t);
-MLast.TyXtr loc s ot;
 
 (* poly_variant: Polymorphic variants. *)
 
@@ -207,11 +202,6 @@ MLast.TyXtr loc s ot;
 (* variant *)
 <:patt< ` $s$ >>;
 <:patt< ` $_:s$ >>;
-
-MLast.PaXtr loc s None;
-MLast.PaXtr loc s (Some (Ploc.VaVal p));
-MLast.PaXtr loc s (Some p);
-MLast.PaXtr loc s op;
 
 (* expr: Expressions of the language. *)
 
@@ -402,11 +392,6 @@ MLast.ExRec loc lpe oe;
 <:expr< while $e$ do { $list:le$ } >>;
 <:expr< while $e$ do { $_list:le$ } >>;
 
-MLast.ExXtr loc s None;
-MLast.ExXtr loc s (Some (Ploc.VaVal e));
-MLast.ExXtr loc s (Some e);
-MLast.ExXtr loc s oe;
-
 (* dot *)
 <:module_type< $mt1$ . $mt2$ >>;
 (* application *)
@@ -438,11 +423,6 @@ MLast.ExXtr loc s oe;
 (* with construction *)
 <:module_type< $mt$ with $list:lwc$ >>;
 <:module_type< $mt$ with $_list:lwc$ >>;
-
-MLast.MtXtr loc s None;
-MLast.MtXtr loc s (Some (Ploc.VaVal mt));
-MLast.MtXtr loc s (Some mt);
-MLast.MtXtr loc s omt;
 
 (* class *)
 <:sig_item< class $list:lcict$ >>;
@@ -520,11 +500,6 @@ MLast.MtXtr loc s omt;
 <:sig_item< value $s$ : $t$ >>;
 <:sig_item< value $_:s$ : $t$ >>;
 
-MLast.SgXtr loc s None;
-MLast.SgXtr loc s (Some (Ploc.VaVal si));
-MLast.SgXtr loc s (Some si);
-MLast.SgXtr loc s osi;
-
 (* with_constr: "With" possibly following a module type. *)
 
 (* with type *)
@@ -573,11 +548,6 @@ MLast.SgXtr loc s osi;
 
 (* module unpacking *)
 <:module_expr< (value $e$ : $mt$) >>;
-
-MLast.MeXtr loc s None;
-MLast.MeXtr loc s (Some (Ploc.VaVal me));
-MLast.MeXtr loc s (Some me);
-MLast.MeXtr loc s ome;
 
 (* str_item: Structure items, i.e. phrases in a ".ml" file or "struct"s *)
 (* str_item:   elements. *)
@@ -683,11 +653,6 @@ MLast.MeXtr loc s ome;
 <:str_item< value $_flag:b$ $list:lpe$ >>;
 <:str_item< value $_flag:b$ $_list:lpe$ >>;
 
-MLast.StXtr loc s None;
-MLast.StXtr loc s (Some (Ploc.VaVal si));
-MLast.StXtr loc s (Some si);
-MLast.StXtr loc s osi;
-
 <:type_decl< $tp:ls$ $list:ltv$ = private $t$ $list:ltt$ >>;
 <:type_decl< $tp:ls$ $list:ltv$ = private $t$ $_list:ltt$ >>;
 <:type_decl< $tp:ls$ $list:ltv$ = $t$ $list:ltt$ >>;
@@ -748,11 +713,6 @@ MLast.StXtr loc s osi;
 <:class_type< object $opt:ot$ $_list:lcsi$ end >>;
 <:class_type< object $_opt:ot$ $list:lcsi$ end >>;
 <:class_type< object $_opt:ot$ $_list:lcsi$ end >>;
-
-MLast.CtXtr loc s None;
-MLast.CtXtr loc s (Some (Ploc.VaVal ct));
-MLast.CtXtr loc s (Some ct);
-MLast.CtXtr loc s oct;
 
 (* sig_item: Signature items, i.e. phrases in a ".mli" file or "sig"s *)
 (* sig_item:   elements. *)
@@ -821,11 +781,7 @@ MLast.CtXtr loc s oct;
 <:class_expr< object $_opt:op$ $list:lcsi$ end >>;
 <:class_expr< object $_opt:op$ $_list:lcsi$ end >>;
 
-MLast.CeTyc loc ce ct;
-MLast.CeXtr loc s None;
-MLast.CeXtr loc s (Some (Ploc.VaVal ce));
-MLast.CeXtr loc s (Some ce);
-MLast.CeXtr loc s oce;
+<:class_expr< ($ce$ : $ct$) >>;
 
 (* type constraint *)
 <:class_str_item< type $t1$ = $t2$ >>;

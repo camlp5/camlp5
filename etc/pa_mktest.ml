@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.8 2010/09/16 14:38:03 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.9 2010/09/16 18:39:52 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -106,63 +106,66 @@ value rec expr_list_of_type loc f n =
       f <:expr< $lid:n$ >> ]
 ;
 
-value expr_of_cons_decl (loc, c, tl) =
-  let tl = Pcaml.unvala tl in
-  let tnl = name_of_vars (fun t -> t) tl in
+value expr_of_cons_decl (loc, c, tl) = do {
   let c = Pcaml.unvala c in
-  let el =
-    loop <:expr< MLast.$uid:c$ >> tnl where rec loop e1 =
-      fun
-      [ [(t, n) :: tnl] ->
-          let f e2 = loop <:expr< $e1$ $e2$ >> tnl in
-          expr_list_of_type loc f n t
-      | [] -> [e1] ]
-  in
-  match c with
-  [ "ExInt" | "PaInt" ->
-      List.fold_right
-        (fun int_type gel ->
-           List.rev_append
-             (List.rev_map
-                (fun e ->
-                   match e with
-                   [ <:expr:< $e$ s2 >> -> <:expr< $e$ $str:int_type$ >>
-                   | x -> x ])
-                el)
-             gel)
-        [""; "l"; "L"; "n"] []
-  | "SgExc" ->
-      List.fold_right
-        (fun e el ->
-           let el = [e :: el] in
-           let el =
-             match e with
-             [ <:expr< $f$ (Ploc.VaVal $_$) >> ->
-                 [<:expr< $f$ (Ploc.VaVal []) >> :: el]
-             | _ -> el ]
-           in
-           el)
-        el []
-  | "StExc" ->
-      List.fold_right
-        (fun e el ->
-           let el = [e :: el] in
-           let el =
-             match e with
-             [ <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal $e2$) >> ->
-                 [<:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal []) >>;
-                  <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal []) >>;
-                  <:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal $e2$) >> :: el]
-             | <:expr< $f$ (Ploc.VaVal $_$) >> ->
-                 [<:expr< $f$ (Ploc.VaVal []) >> :: el]
-             | <:expr< $f$ (Ploc.VaVal $_$) $e$ >> ->
-                 [<:expr< $f$ (Ploc.VaVal []) $e$ >> :: el]
-             | _ -> el ]
-           in
-           el)
-        el []
-  | _ -> el ]
-;
+  if String.length c = 5 && String.sub c 2 3 = "Xtr" then []
+  else do {
+    let tl = Pcaml.unvala tl in
+    let tnl = name_of_vars (fun t -> t) tl in
+    let el =
+      loop <:expr< MLast.$uid:c$ >> tnl where rec loop e1 =
+        fun
+        [ [(t, n) :: tnl] ->
+            let f e2 = loop <:expr< $e1$ $e2$ >> tnl in
+            expr_list_of_type loc f n t
+        | [] -> [e1] ]
+    in
+    match c with
+    [ "ExInt" | "PaInt" ->
+        List.fold_right
+          (fun int_type gel ->
+             List.rev_append
+               (List.rev_map
+                  (fun e ->
+                     match e with
+                     [ <:expr:< $e$ s2 >> -> <:expr< $e$ $str:int_type$ >>
+                     | x -> x ])
+                  el)
+               gel)
+          [""; "l"; "L"; "n"] []
+    | "SgExc" ->
+        List.fold_right
+          (fun e el ->
+             let el = [e :: el] in
+             let el =
+               match e with
+               [ <:expr< $f$ (Ploc.VaVal $_$) >> ->
+                   [<:expr< $f$ (Ploc.VaVal []) >> :: el]
+               | _ -> el ]
+             in
+             el)
+          el []
+    | "StExc" ->
+        List.fold_right
+          (fun e el ->
+             let el = [e :: el] in
+             let el =
+               match e with
+               [ <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal $e2$) >> ->
+                   [<:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal []) >>;
+                    <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal []) >>;
+                    <:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal $e2$) >> :: el]
+               | <:expr< $f$ (Ploc.VaVal $_$) >> ->
+                   [<:expr< $f$ (Ploc.VaVal []) >> :: el]
+               | <:expr< $f$ (Ploc.VaVal $_$) $e$ >> ->
+                   [<:expr< $f$ (Ploc.VaVal []) $e$ >> :: el]
+               | _ -> el ]
+             in
+             el)
+          el []
+    | _ -> el ]
+  }
+};
 
 value expr_list_of_type_decl loc td =
   match td.MLast.tdDef with
