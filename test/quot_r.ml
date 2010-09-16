@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.19 2010/09/16 18:04:14 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.20 2010/09/16 18:19:34 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -826,35 +826,50 @@ MLast.CeXtr loc s None;
 MLast.CeXtr loc s (Some (Ploc.VaVal ce));
 MLast.CeXtr loc s (Some ce);
 MLast.CeXtr loc s oce;
-MLast.CrCtr loc t1 t2;
-MLast.CrDcl loc (Ploc.VaVal lcsi);
-MLast.CrDcl loc lcsi;
 
+(* type constraint *)
+<:class_str_item< type $t1$ = $t2$ >>;
+
+(* declaration list *)
+<:class_str_item< declare $list:lcsi$ end >>;
+<:class_str_item< declare $_list:lcsi$ end >>;
+
+(* inheritance *)
 <:class_str_item< inherit $ce$ >>;
 <:class_str_item< inherit $ce$ $opt:Some s$ >>;
 <:class_str_item< inherit $ce$ $opt:os$ >>;
 <:class_str_item< inherit $ce$ $_opt:os$ >>;
 
-MLast.CrIni loc e;
+(* initialization *)
+<:class_str_item< initializer $e$ >>;
 
+(* method *)
 <:class_str_item< method! private $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method! private $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method! private $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! private $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method! $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method! $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method! $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method! $priv:b2$ $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method! $priv:b2$ $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method! $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method! $priv:b2$ $_lid:s$ = $e$ >>;
@@ -869,24 +884,33 @@ MLast.CrIni loc e;
 <:class_str_item< method! $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method! $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method private $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method private $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method private $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method private $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $_lid:s$ = $e$ >>;
 <:class_str_item< method $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method $priv:b2$ $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method $priv:b2$ $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $priv:b2$ $_lid:s$ = $e$ >>;
@@ -901,24 +925,33 @@ MLast.CrIni loc e;
 <:class_str_item< method $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ private $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ private $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ private $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ $_opt:ot$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ >>;
+(* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ = $e$ >>;
