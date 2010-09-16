@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.6 2010/09/15 21:11:37 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.7 2010/09/16 07:46:42 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1121,8 +1121,8 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>CtCon loc ls lt</tt></td>
-    <td align="center"><tt>$list:ls$ [ $list:lt$ ] </tt></td>
+    <td><tt>CtCon loc ct lt</tt></td>
+    <td align="center"><tt>$ct$ [ $list:lt$ ]</tt></td>
     <td>constructor</td>
   </tr>
   <tr>
@@ -1321,22 +1321,22 @@
 <table border="1">
   <tr>
     <th>Node</th>
-    <th><tt>&lt;:with_const&lt; ... >></tt></th>
+    <th><tt>&lt;:with_constr&lt; ... >></tt></th>
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>WcTyp loc s ltv False t</tt></td>
-    <td align="center"><tt>type $s$ $list:ltv$ = $t$</tt></td>
+    <td><tt>WcTyp loc ls ltv True t</tt></td>
+    <td align="center"><tt>type $list:ls$ $list:ltv$ = private $t$</tt></td>
     <td>with type</td>
   </tr>
   <tr>
-    <td><tt>WcTyp loc s ltv True t</tt></td>
-    <td align="center"><tt>type $s$ $list:ltv$ = private $t$</tt></td>
+    <td><tt>WcTyp loc ls ltv False t</tt></td>
+    <td align="center"><tt>type $list:ls$ $list:ltv$ = $t$</tt></td>
     <td>with type</td>
   </tr>
   <tr>
-    <td><tt>WcTyp loc s ltv b t</tt></td>
-    <td align="center"><tt>type $s$ $list:ltv$ = $flag:b$ $t$</tt></td>
+    <td><tt>WcTyp loc ls ltv b t</tt></td>
+    <td align="center"><tt>type $list:ls$ $list:ltv$ = $flag:b$ $t$</tt></td>
     <td>with type (general)</td>
   </tr>
   <tr>

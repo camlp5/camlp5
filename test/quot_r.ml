@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.8 2010/09/15 21:11:37 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.9 2010/09/16 07:46:42 deraugla Exp $ *)
 
 (* dot *)
 <:ctyp< $t1$ . $t2$ >>;
@@ -427,8 +427,9 @@ MLast.SgInc loc mt;
 <:sig_item< module $_flag:b$ $list:lsmt$ >>;
 <:sig_item< module $_flag:b$ $_list:lsmt$ >>;
 
-MLast.SgMty loc (Ploc.VaVal s) mt;
-MLast.SgMty loc s mt;
+<:sig_item< module type $s$ = $mt$ >>;
+<:sig_item< module type $_:s$ = $mt$ >>;
+
 MLast.SgOpn loc (Ploc.VaVal ls);
 MLast.SgOpn loc ls;
 MLast.SgTyp loc (Ploc.VaVal ltd);
@@ -444,8 +445,11 @@ MLast.SgXtr loc s (Some (Ploc.VaVal si));
 MLast.SgXtr loc s (Some si);
 MLast.SgXtr loc s si;
 
+(* with type *)
 <:with_constr< type $list:ls$ $list:ltv$ = private $t$ >>;
+(* with type *)
 <:with_constr< type $list:ls$ $list:ltv$ = $t$ >>;
+(* with type (general) *)
 <:with_constr< type $list:ls$ $list:ltv$ = $flag:b$ $t$ >>;
 <:with_constr< type $list:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
 <:with_constr< type $list:ls$ $_list:ltv$ = private $t$ >>;
@@ -461,11 +465,14 @@ MLast.SgXtr loc s si;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
 
+(* with module *)
 <:with_constr< module $list:ls$ = $me$ >>;
 <:with_constr< module $_list:ls$ = $me$ >>;
 
-MLast.MeAcc loc me1 me2;
-MLast.MeApp loc me1 me2;
+(* dot *)
+<:module_expr< $me1$ . $me2$ >>;
+(* application *)
+<:module_expr< $me1$ $me2$ >>;
 
 (* functor *)
 <:module_expr< functor ($s$ : $mt$) -> $me$ >>;
@@ -600,9 +607,14 @@ MLast.StXtr loc s si;
 
 MLast.CtAcc loc ct1 ct2;
 MLast.CtApp loc ct1 ct2;
-MLast.CtCon loc ct (Ploc.VaVal lt);
-MLast.CtCon loc ct lt;
-MLast.CtFun loc t ct;
+
+(* constructor *)
+<:class_type< $ct$ [ $list:lt$ ] >>;
+<:class_type< $ct$ [ $_list:lt$ ] >>;
+
+(* arrow *)
+<:class_type< [ $t$ ] -> $ct$ >>;
+
 MLast.CtIde loc (Ploc.VaVal s);
 MLast.CtIde loc s;
 
@@ -619,10 +631,16 @@ MLast.CtXtr loc s None;
 MLast.CtXtr loc s (Some (Ploc.VaVal ct));
 MLast.CtXtr loc s (Some ct);
 MLast.CtXtr loc s ct;
-MLast.CgCtr loc t1 t2;
-MLast.CgDcl loc (Ploc.VaVal lcsi);
-MLast.CgDcl loc lcsi;
-MLast.CgInh loc ct;
+
+(* type constraint *)
+<:class_sig_item< type $t1$ = $t2$ >>;
+
+(* declare *)
+<:class_sig_item< declare $list:lcsi$ end >>;
+<:class_sig_item< declare $_list:lcsi$ end >>;
+
+(* inheritance *)
+<:class_sig_item< inherit $ct$ >>;
 
 <:class_sig_item< method private $lid:s$ : $t$ >>;
 <:class_sig_item< method private $_lid:s$ : $t$ >>;

@@ -1,10 +1,14 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.5 2010/09/15 21:11:37 deraugla Exp $
+# $Id: mktrans.sh,v 6.6 2010/09/16 07:46:42 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
+quotation_list="$*"
+if [ "$quotation_list" = "" ]; then
+  quotation_list="expr patt ctyp str_item sig_item module_expr module_type class_expr class_type class_str_item class_sig_item with_constr poly_variant"
+fi
 
-for quotation in $*; do
+for quotation in $quotation_list; do
 
   echo '<table border="1">'
   echo '  <tr>'
