@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.8 2010/09/16 09:33:30 deraugla Exp $
+# $Id: mktrans.sh,v 6.9 2010/09/16 15:06:17 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -15,6 +15,7 @@ for q in $quotation_list; do
     n=3
   fi
 
+  echo
   echo "<h$n>$q</h$n>"
   echo
 
