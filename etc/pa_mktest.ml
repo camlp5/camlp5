@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.2 2010/09/15 19:31:47 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.3 2010/09/16 08:53:56 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -75,10 +75,18 @@ value name_of_vars proj_t xl =
     rev_tnl
 ;
 
+value rec add_o n =
+  fun
+  [ <:ctyp< Ploc.vala $t$ >> -> add_o n t
+  | <:ctyp< option $t$ >> -> add_o ("o" ^ n) t
+  | _ -> n ]
+;
+
 value rec expr_list_of_type loc f n =
   fun
   [ <:ctyp< Ploc.vala $t$ >> ->
       expr_list_of_type loc (fun e -> f <:expr< Ploc.VaVal $e$ >>) n t @
+      let n = add_o n t in
       f <:expr< $lid:n$ >>
   | <:ctyp< bool >> ->
       f <:expr< True >> @
@@ -87,6 +95,7 @@ value rec expr_list_of_type loc f n =
   | <:ctyp< option $t$ >> ->
       f <:expr< None >> @
       expr_list_of_type loc (fun e -> f <:expr< Some $e$ >>) n t @
+      let n = add_o ("o" ^ n) t in
       f <:expr< $lid:n$ >>
   | _ ->
       f <:expr< $lid:n$ >> ]

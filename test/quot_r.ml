@@ -1,4 +1,6 @@
-(* $Id: quot_r.ml,v 6.10 2010/09/16 08:32:02 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.11 2010/09/16 08:53:56 deraugla Exp $ *)
+
+(* ctyp: Type expressions of the language. *)
 
 (* dot *)
 <:ctyp< $t1$ . $t2$ >>;
@@ -89,6 +91,8 @@ MLast.TyXtr loc s (Some (Ploc.VaVal t));
 MLast.TyXtr loc s (Some t);
 MLast.TyXtr loc s ot;
 
+(* poly_variant: Polymorphic variants. *)
+
 <:poly_variant< `$s$ of & $list:lt$ >>;
 <:poly_variant< `$s$ of & $_list:lt$ >>;
 <:poly_variant< `$s$ of $list:lt$ >>;
@@ -107,6 +111,8 @@ MLast.TyXtr loc s ot;
 <:poly_variant< `$_:s$ of $_flag:b$ $_list:lt$ >>;
 
 MLast.PvInh t;
+
+(* patt: Patterns of the language. *)
 
 (* dot *)
 <:patt< $p1$ . $p2$ >>;
@@ -203,6 +209,8 @@ MLast.PaXtr loc s None;
 MLast.PaXtr loc s (Some (Ploc.VaVal p));
 MLast.PaXtr loc s (Some p);
 MLast.PaXtr loc s op;
+
+(* expr: Expressions of the language. *)
 
 (* dot *)
 <:expr< $e1$ . $e2$ >>;
@@ -445,6 +453,8 @@ MLast.SgXtr loc s (Some (Ploc.VaVal si));
 MLast.SgXtr loc s (Some si);
 MLast.SgXtr loc s osi;
 
+(* with_constr: "With" possibly following a module type. *)
+
 (* with type *)
 <:with_constr< type $list:ls$ $list:ltv$ = private $t$ >>;
 (* with type *)
@@ -491,6 +501,9 @@ MLast.MeXtr loc s None;
 MLast.MeXtr loc s (Some (Ploc.VaVal me));
 MLast.MeXtr loc s (Some me);
 MLast.MeXtr loc s ome;
+
+(* str_item: Structure items, i.e. phrases in a ".ml" file or "struct"s *)
+(* str_item:   elements. *)
 
 (* class declaration *)
 <:str_item< class $list:lcice$ >>;
@@ -631,6 +644,9 @@ MLast.CtXtr loc s None;
 MLast.CtXtr loc s (Some (Ploc.VaVal ct));
 MLast.CtXtr loc s (Some ct);
 MLast.CtXtr loc s oct;
+
+(* sig_item: Signature items, i.e. phrases in a ".mli" file or "sig"s *)
+(* sig_item:   elements. *)
 
 (* type constraint *)
 <:class_sig_item< type $t1$ = $t2$ >>;
