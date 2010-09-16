@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.15 2010/09/16 17:37:49 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.16 2010/09/16 18:04:14 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1226,6 +1226,16 @@
     <th>Comment</th>
   </tr>
   <tr>
+    <td><tt>CtAcc loc ct1 ct2</tt></td>
+    <td align="center"><tt>$ct1$ . $ct2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>CtApp loc ct1 ct2</tt></td>
+    <td align="center"><tt>$ct1$ ($ct2$)</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
     <td><tt>CtCon loc ct lt</tt></td>
     <td align="center"><tt>$ct$ [ $list:lt$ ]</tt></td>
     <td>constructor</td>
@@ -1236,18 +1246,23 @@
     <td>arrow</td>
   </tr>
   <tr>
-    <td><tt>CtSig loc pt None lcsigi_item</tt></td>
-    <td align="center"><tt>object $list:lcsigi$ end</tt></td>
+    <td><tt>CtIde loc s</tt></td>
+    <td align="center"><tt>$id:s$</tt></td>
+    <td>identifier</td>
+  </tr>
+  <tr>
+    <td><tt>CtSig loc None lcsi</tt></td>
+    <td align="center"><tt>object $list:lcsi$ end</tt></td>
     <td>object</td>
   </tr>
   <tr>
-    <td><tt>CtSig loc pt (Some t) lcsigi_item</tt></td>
-    <td align="center"><tt>object ($t$) $list:lcsigi$ end</tt></td>
+    <td><tt>CtSig loc (Some t) lcsi</tt></td>
+    <td align="center"><tt>object ($t$) $list:lcsi$ end</tt></td>
     <td>object</td>
   </tr>
   <tr>
-    <td><tt>CtSig loc pt ot lcsigi_item</tt></td>
-    <td align="center"><tt>object $opt:ot$ $list:lcsigi$ end</tt></td>
+    <td><tt>CtSig loc ot lcsi</tt></td>
+    <td align="center"><tt>object $opt:ot$ $list:lcsi$ end</tt></td>
     <td>object (general)</td>
   </tr>
 </table>

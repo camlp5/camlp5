@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.18 2010/09/16 17:37:49 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.19 2010/09/16 18:04:14 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -114,7 +114,7 @@ MLast.TyXtr loc s ot;
 <:poly_variant< `$_:s$ of $_flag:b$ $list:lt$ >>;
 <:poly_variant< `$_:s$ of $_flag:b$ $_list:lt$ >>;
 
-MLast.PvInh t;
+<:poly_variant< $t$ >>;
 
 (* patt: Patterns of the language. *)
 
@@ -721,8 +721,10 @@ MLast.StXtr loc s osi;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
 
-MLast.CtAcc loc ct1 ct2;
-MLast.CtApp loc ct1 ct2;
+(* dot *)
+<:class_type< $ct1$ . $ct2$ >>;
+(* application *)
+<:class_type< $ct1$ ($ct2$) >>;
 
 (* constructor *)
 <:class_type< $ct$ [ $list:lt$ ] >>;
@@ -731,13 +733,17 @@ MLast.CtApp loc ct1 ct2;
 (* arrow *)
 <:class_type< [ $t$ ] -> $ct$ >>;
 
-MLast.CtIde loc (Ploc.VaVal s);
-MLast.CtIde loc s;
+(* identifier *)
+<:class_type< $id:s$ >>;
+<:class_type< $_id:s$ >>;
 
+(* object *)
 <:class_type< object $list:lcsi$ end >>;
 <:class_type< object $_list:lcsi$ end >>;
+(* object *)
 <:class_type< object ($t$) $list:lcsi$ end >>;
 <:class_type< object ($t$) $_list:lcsi$ end >>;
+(* object (general) *)
 <:class_type< object $opt:ot$ $list:lcsi$ end >>;
 <:class_type< object $opt:ot$ $_list:lcsi$ end >>;
 <:class_type< object $_opt:ot$ $list:lcsi$ end >>;
