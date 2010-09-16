@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.3 2010/09/16 17:20:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -840,16 +840,16 @@ EXTEND
           <:expr< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; e = SELF ->
           let _ = warning_deprecated_since_6_00 loc in
-          <:expr< ~{$_:i$ = $e$} >>
+          <:expr< ~{$_lid:i$ = $e$} >>
       | i = V TILDEIDENT ->
           let _ = warning_deprecated_since_6_00 loc in
-          <:expr< ~{$_:i$} >>
+          <:expr< ~{$_lid:i$} >>
       | i = V QUESTIONIDENTCOLON; e = SELF ->
           let _ = warning_deprecated_since_6_00 loc in
-          <:expr< ?{$_:i$ = $e$} >>
+          <:expr< ?{$_lid:i$ = $e$} >>
       | i = V QUESTIONIDENT ->
           let _ = warning_deprecated_since_6_00 loc in
-          <:expr< ?{$_:i$} >> ] ]
+          <:expr< ?{$_lid:i$} >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
