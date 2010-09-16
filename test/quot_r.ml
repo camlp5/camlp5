@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.11 2010/09/16 08:53:56 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.12 2010/09/16 09:33:30 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -169,7 +169,6 @@ MLast.PvInh t;
 <:patt< ?{$p$ = $e$} >>;
 (* option label *)
 <:patt< ?{$p$ $opt:oe$} >>;
-(* option label *)
 <:patt< ?{$p$ $_opt:oe$} >>;
 
 (* or *)
@@ -246,10 +245,10 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $flo:s$ >>;
 <:expr< $_flo:s$ >>;
 
-(* for *)
+(* for (increasing) *)
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ to $e2$ do { $_list:le$ } >>;
-(* for *)
+(* for (decreasing) *)
 <:expr< for $lid:s$ = $e1$ downto $e2$ do { $list:le$ } >>;
 <:expr< for $lid:s$ = $e1$ downto $e2$ do { $_list:le$ } >>;
 (* for *)
@@ -290,6 +289,7 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< ~{$p$} >>;
 (* label *)
 <:expr< ~{$p$ = $e$} >>;
+(* label *)
 <:expr< ~{$p$ $opt:oe$} >>;
 <:expr< ~{$p$ $_opt:oe$} >>;
 
@@ -302,7 +302,7 @@ MLast.ExCoe loc e ot1 t2;
 (* let not rec *)
 <:expr< let $list:lpe$ in $e$ >>;
 <:expr< let $_list:lpe$ in $e$ >>;
-(* let binding *)
+(* let *)
 <:expr< let $flag:b$ $list:lpe$ in $e$ >>;
 <:expr< let $flag:b$ $_list:lpe$ in $e$ >>;
 <:expr< let $_flag:b$ $list:lpe$ in $e$ >>;
@@ -324,51 +324,79 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< new $list:ls$ >>;
 <:expr< new $_list:ls$ >>;
 
+(* object expression *)
 <:expr< object $list:lcsi$ end >>;
 <:expr< object $_list:lcsi$ end >>;
+(* object expression *)
 <:expr< object ($p$) $list:lcsi$ end >>;
 <:expr< object ($p$) $_list:lcsi$ end >>;
+(* object expression *)
 <:expr< object $opt:op$ $list:lcsi$ end >>;
 <:expr< object $opt:op$ $_list:lcsi$ end >>;
 <:expr< object $_opt:op$ $list:lcsi$ end >>;
 <:expr< object $_opt:op$ $_list:lcsi$ end >>;
 
+(* option label *)
 <:expr< ?{$p$} >>;
+(* option label *)
 <:expr< ?{$p$ = $e$} >>;
+(* option label *)
 <:expr< ?{$p$ $opt:oe$} >>;
 <:expr< ?{$p$ $_opt:oe$} >>;
 
-MLast.ExOvr loc (Ploc.VaVal lse);
-MLast.ExOvr loc lse;
-MLast.ExPck loc me mt;
+(* override *)
+<:expr< {< $list:lse$ >} >>;
+<:expr< {< $_list:lse$ >} >>;
 
+(* module packing *)
+<:expr< (module $me$ : $mt$) >>;
+
+(* record *)
 <:expr< {$list:lpe$} >>;
+(* record *)
 <:expr< {($e$) with $list:lpe$} >>;
 MLast.ExRec loc (Ploc.VaVal lpe) oe;
 <:expr< {$_list:lpe$} >>;
 <:expr< {($e$) with $_list:lpe$} >>;
+(* record *)
 MLast.ExRec loc lpe oe;
 
-MLast.ExSeq loc (Ploc.VaVal le);
-MLast.ExSeq loc le;
-MLast.ExSnd loc e (Ploc.VaVal s);
-MLast.ExSnd loc e s;
-MLast.ExSte loc e1 e2;
-MLast.ExStr loc (Ploc.VaVal s);
-MLast.ExStr loc s;
-MLast.ExTry loc e (Ploc.VaVal lpee);
-MLast.ExTry loc e lpee;
-MLast.ExTup loc (Ploc.VaVal le);
-MLast.ExTup loc le;
-MLast.ExTyc loc e t;
-MLast.ExUid loc (Ploc.VaVal s);
-MLast.ExUid loc s;
-MLast.ExVrn loc (Ploc.VaVal s);
-MLast.ExVrn loc s;
+(* sequence *)
+<:expr< do { $list:le$ } >>;
+<:expr< do { $_list:le$ } >>;
+
+(* method call *)
+<:expr< $e$ # $s$ >>;
+<:expr< $e$ # $_:s$ >>;
+
+(* string element *)
+<:expr< $e1$ .[ $e2$ ] >>;
+
+(* string *)
+<:expr< $str:s$ >>;
+<:expr< $_str:s$ >>;
+
+(* try <a href="#expr_2">(2)</a> *)
+<:expr< try $e$ with [ $list:lpee$ ] >>;
+<:expr< try $e$ with [ $_list:lpee$ ] >>;
+
+(* t-uple *)
+<:expr< ($list:le$) >>;
+<:expr< ($_list:le$) >>;
+
+(* type constraint *)
+<:expr< ($e$ : $t$) >>;
+(* uppercase identifier *)
+<:expr< $uid:s$ >>;
+<:expr< $_uid:s$ >>;
+
+(* variant *)
+<:expr< ` $s$ >>;
+<:expr< ` $_:s$ >>;
 
 (* while *)
-<:expr< while $e$ do { $list:le$} >>;
-<:expr< while $e$ do { $_list:le$} >>;
+<:expr< while $e$ do { $list:le$ } >>;
+<:expr< while $e$ do { $_list:le$ } >>;
 
 MLast.ExXtr loc s None;
 MLast.ExXtr loc s (Some (Ploc.VaVal e));

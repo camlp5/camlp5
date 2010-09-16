@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.7 2010/09/16 07:46:42 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.8 2010/09/16 09:33:30 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -295,6 +295,16 @@
     <td>float constant</td>
   </tr>
   <tr>
+    <td><tt>ExFor loc s e1 e2 True le</tt></td>
+    <td align="center"><tt>for $lid:s$ = $e1$ to $e2$ do { $list:le$ }</tt></td>
+    <td>for (increasing)</td>
+  </tr>
+  <tr>
+    <td><tt>ExFor loc s e1 e2 False le</tt></td>
+    <td align="center"><tt>for $lid:s$ = $e1$ downto $e2$ do { $list:le$ }</tt></td>
+    <td>for (decreasing)</td>
+  </tr>
+  <tr>
     <td><tt>ExFor loc s e1 e2 b le</tt></td>
     <td align="center"><tt>for $lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ }</tt></td>
     <td>for</td>
@@ -340,14 +350,29 @@
     <td>label</td>
   </tr>
   <tr>
+    <td><tt>ExLab loc p oe</tt></td>
+    <td align="center"><tt>~{$p$ $opt:oe$}</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
     <td><tt>ExLaz loc e</tt></td>
     <td align="center"><tt>lazy $e$</tt></td>
     <td>lazy</td>
   </tr>
   <tr>
+    <td><tt>ExLet loc True lpe e</tt></td>
+    <td align="center"><tt>let rec $list:lpe$ in $e$</tt></td>
+    <td>let rec</td>
+  </tr>
+  <tr>
+    <td><tt>ExLet loc False lpe e</tt></td>
+    <td align="center"><tt>let $list:lpe$ in $e$</tt></td>
+    <td>let not rec</td>
+  </tr>
+  <tr>
     <td><tt>ExLet loc b lpe e</tt></td>
     <td align="center"><tt>let $flag:b$ $list:lpe$ in $e$</tt></td>
-    <td>let binding</td>
+    <td>let</td>
   </tr>
   <tr>
     <td><tt>ExLid loc s</tt></td>
@@ -370,38 +395,53 @@
     <td>new</td>
   </tr>
   <tr>
-    <td><tt>ExObj loc op lcstri</tt></td>
-    <td align="center"><tt>object $opt:op$ $list:lcstri$ end</tt></td>
+    <td><tt>ExObj loc None lcsi</tt></td>
+    <td align="center"><tt>object $list:lcsi$ end</tt></td>
     <td>object expression</td>
   </tr>
   <tr>
-    <td><tt>ExOlb loc s None</tt></td>
-    <td align="center"><tt>? $s$</tt></td>
+    <td><tt>ExObj loc (Some p) lcsi</tt></td>
+    <td align="center"><tt>object ($p$) $list:lcsi$ end</tt></td>
+    <td>object expression</td>
+  </tr>
+  <tr>
+    <td><tt>ExObj loc op lcsi</tt></td>
+    <td align="center"><tt>object $opt:op$ $list:lcsi$ end</tt></td>
+    <td>object expression</td>
+  </tr>
+  <tr>
+    <td><tt>ExOlb loc p None</tt></td>
+    <td align="center"><tt>?{$p$}</tt></td>
     <td>option label</td>
   </tr>
   <tr>
-    <td><tt>ExOlb loc s (Some e)</tt></td>
-    <td align="center"><tt>? $s$ : $e$</tt></td>
+    <td><tt>ExOlb loc p (Some e)</tt></td>
+    <td align="center"><tt>?{$p$ = $e$}</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>ExOlb loc p oe</tt></td>
+    <td align="center"><tt>?{$p$ $opt:oe$}</tt></td>
     <td>option label</td>
   </tr>
   <tr>
     <td><tt>ExOvr loc lse</tt></td>
-    <td align="center"><tt>{&lt; $lse$ >}</tt></td>
+    <td align="center"><tt>{&lt; $list:lse$ >}</tt></td>
     <td>override</td>
   </tr>
   <tr>
     <td><tt>ExPck loc me mt</tt></td>
-    <td align="center"><tt>($me$ : $mt$)</tt></td>
+    <td align="center"><tt>(module $me$ : $mt$)</tt></td>
     <td>module packing</td>
   </tr>
   <tr>
     <td><tt>ExRec loc lpe None</tt></td>
-    <td align="center"><tt>{ $list:lpe$ }</tt></td>
+    <td align="center"><tt>{$list:lpe$}</tt></td>
     <td>record</td>
   </tr>
   <tr>
     <td><tt>ExRec loc lpe (Some e)</tt></td>
-    <td align="center"><tt>{ ($e$) with $list:lpe$ }</tt></td>
+    <td align="center"><tt>{($e$) with $list:lpe$}</tt></td>
     <td>record</td>
   </tr>
   <tr>
