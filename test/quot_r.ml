@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.26 2010/09/17 09:11:15 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.27 2010/09/17 18:09:32 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -29,9 +29,7 @@
 
 (* object *)
 <:ctyp< < $list:lst$ .. > >>;
-(* object *)
 <:ctyp< < $list:lst$ > >>;
-(* object (general) *)
 <:ctyp< < $list:lst$ $flag:b$ > >>;
 <:ctyp< < $list:lst$ $_flag:b$ > >>;
 <:ctyp< < $_list:lst$ .. > >>;
@@ -72,13 +70,9 @@
 
 (* variant *)
 <:ctyp< [ = $list:lpv$ ] >>;
-(* variant *)
 <:ctyp< [ > $list:lpv$ ] >>;
-(* variant *)
 <:ctyp< [ < $list:lpv$ ] >>;
-(* variant *)
 <:ctyp< [ < $list:lpv$ > $list:ls$ ] >>;
-(* variant *)
 <:ctyp< [ < $list:lpv$ > $_list:ls$ ] >>;
 MLast.TyVrn loc (Ploc.VaVal lpv) (Some ols);
 MLast.TyVrn loc (Ploc.VaVal lpv) ools;
@@ -94,13 +88,10 @@ MLast.TyVrn loc lpv ools;
 
 (* constructor *)
 <:poly_variant< `$s$ >>;
-(* constructor *)
 <:poly_variant< `$s$ of & $list:lt$ >>;
 <:poly_variant< `$s$ of & $_list:lt$ >>;
-(* constructor *)
 <:poly_variant< `$s$ of $list:lt$ >>;
 <:poly_variant< `$s$ of $_list:lt$ >>;
-(* constructor (general) *)
 <:poly_variant< `$s$ of $flag:b$ $list:lt$ >>;
 <:poly_variant< `$s$ of $flag:b$ $_list:lt$ >>;
 <:poly_variant< `$s$ of $_flag:b$ $list:lt$ >>;
@@ -156,11 +147,8 @@ MLast.TyVrn loc lpv ools;
 
 (* label *)
 <:patt< ~{$p1$} >>;
-(* label *)
 <:patt< ~{$p1$ = $p2$} >>;
-(* label *)
 <:patt< ~{$p1$ $opt:op2$} >>;
-(* label *)
 <:patt< ~{$p1$ $_opt:op2$} >>;
 
 (* lazy *)
@@ -171,9 +159,7 @@ MLast.TyVrn loc lpv ools;
 
 (* option label *)
 <:patt< ?{$p$} >>;
-(* option label *)
 <:patt< ?{$p$ = $e$} >>;
-(* option label *)
 <:patt< ?{$p$ $opt:oe$} >>;
 <:patt< ?{$p$ $_opt:oe$} >>;
 
@@ -238,7 +224,6 @@ MLast.TyVrn loc lpv ools;
 
 (* coercion *)
 <:expr< ($e$ :> $t2$) >>;
-(* coercion *)
 <:expr< ($e$ : $t1$ :> $t2$) >>;
 MLast.ExCoe loc e ot1 t2;
 
@@ -288,9 +273,7 @@ MLast.ExCoe loc e ot1 t2;
 
 (* label *)
 <:expr< ~{$p$} >>;
-(* label *)
 <:expr< ~{$p$ = $e$} >>;
-(* label *)
 <:expr< ~{$p$ $opt:oe$} >>;
 <:expr< ~{$p$ $_opt:oe$} >>;
 
@@ -328,10 +311,8 @@ MLast.ExCoe loc e ot1 t2;
 (* object expression *)
 <:expr< object $list:lcsi$ end >>;
 <:expr< object $_list:lcsi$ end >>;
-(* object expression *)
 <:expr< object ($p$) $list:lcsi$ end >>;
 <:expr< object ($p$) $_list:lcsi$ end >>;
-(* object expression *)
 <:expr< object $opt:op$ $list:lcsi$ end >>;
 <:expr< object $opt:op$ $_list:lcsi$ end >>;
 <:expr< object $_opt:op$ $list:lcsi$ end >>;
@@ -339,9 +320,7 @@ MLast.ExCoe loc e ot1 t2;
 
 (* option label *)
 <:expr< ?{$p$} >>;
-(* option label *)
 <:expr< ?{$p$ = $e$} >>;
-(* option label *)
 <:expr< ?{$p$ $opt:oe$} >>;
 <:expr< ?{$p$ $_opt:oe$} >>;
 
@@ -354,12 +333,10 @@ MLast.ExCoe loc e ot1 t2;
 
 (* record *)
 <:expr< {$list:lpe$} >>;
-(* record *)
 <:expr< {($e$) with $list:lpe$} >>;
 MLast.ExRec loc (Ploc.VaVal lpe) oe;
 <:expr< {$_list:lpe$} >>;
 <:expr< {($e$) with $_list:lpe$} >>;
-(* record *)
 MLast.ExRec loc lpe oe;
 
 (* sequence *)
@@ -445,9 +422,7 @@ MLast.ExRec loc lpe oe;
 
 (* directive *)
 <:sig_item< # $lid:s$ >>;
-(* directive *)
 <:sig_item< # $lid:s$ $e$ >>;
-(* directive (general) *)
 <:sig_item< # $lid:s$ $opt:oe$ >>;
 <:sig_item< # $lid:s$ $_opt:oe$ >>;
 <:sig_item< # $_lid:s$ >>;
@@ -457,7 +432,6 @@ MLast.ExRec loc lpe oe;
 
 (* exception *)
 <:sig_item< exception $s$ >>;
-(* exception *)
 <:sig_item< exception $s$ of $list:lt$ >>;
 <:sig_item< exception $s$ of $_list:lt$ >>;
 <:sig_item< exception $_:s$ >>;
@@ -511,9 +485,7 @@ MLast.ExRec loc lpe oe;
 
 (* with type *)
 <:with_constr< type $list:ls$ $list:ltv$ = private $t$ >>;
-(* with type *)
 <:with_constr< type $list:ls$ $list:ltv$ = $t$ >>;
-(* with type (general) *)
 <:with_constr< type $list:ls$ $list:ltv$ = $flag:b$ $t$ >>;
 <:with_constr< type $list:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
 <:with_constr< type $list:ls$ $_list:ltv$ = private $t$ >>;
@@ -573,9 +545,7 @@ MLast.ExRec loc lpe oe;
 
 (* directive *)
 <:str_item< # $lid:s$ >>;
-(* directive *)
 <:str_item< # $lid:s$ $e$ >>;
-(* directive (general) *)
 <:str_item< # $lid:s$ $opt:oe$ >>;
 <:str_item< # $lid:s$ $_opt:oe$ >>;
 <:str_item< # $_lid:s$ >>;
@@ -585,11 +555,8 @@ MLast.ExRec loc lpe oe;
 
 (* exception *)
 <:str_item< exception $uid:s$ >>;
-(* exception *)
 <:str_item< exception $uid:s$ of $list:lt$ >>;
-(* exception *)
 <:str_item< exception $uid:s$ = $list:ls$ >>;
-(* exception *)
 <:str_item< exception $uid:s$ of $list:lt$ = $list:ls$ >>;
 <:str_item< exception $uid:s$ = $_list:ls$ >>;
 <:str_item< exception $uid:s$ of $list:lt$ = $_list:ls$ >>;
@@ -714,10 +681,8 @@ MLast.ExRec loc lpe oe;
 (* object *)
 <:class_type< object $list:lcsi$ end >>;
 <:class_type< object $_list:lcsi$ end >>;
-(* object *)
 <:class_type< object ($t$) $list:lcsi$ end >>;
 <:class_type< object ($t$) $_list:lcsi$ end >>;
-(* object (general) *)
 <:class_type< object $opt:ot$ $list:lcsi$ end >>;
 <:class_type< object $opt:ot$ $_list:lcsi$ end >>;
 <:class_type< object $_opt:ot$ $list:lcsi$ end >>;
@@ -739,10 +704,8 @@ MLast.ExRec loc lpe oe;
 (* method *)
 <:class_sig_item< method private $lid:s$ : $t$ >>;
 <:class_sig_item< method private $_lid:s$ : $t$ >>;
-(* method *)
 <:class_sig_item< method $lid:s$ : $t$ >>;
 <:class_sig_item< method $_lid:s$ : $t$ >>;
-(* method *)
 <:class_sig_item< method $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< method $_flag:b$ $lid:s$ : $t$ >>;
@@ -751,10 +714,8 @@ MLast.ExRec loc lpe oe;
 (* value *)
 <:class_sig_item< value mutable $lid:s$ : $t$ >>;
 <:class_sig_item< value mutable $_lid:s$ : $t$ >>;
-(* value *)
 <:class_sig_item< value $lid:s$ : $t$ >>;
 <:class_sig_item< value $_lid:s$ : $t$ >>;
-(* value *)
 <:class_sig_item< value $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< value $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $lid:s$ : $t$ >>;
@@ -763,10 +724,8 @@ MLast.ExRec loc lpe oe;
 (* virtual method *)
 <:class_sig_item< method virtual private $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual private $_lid:s$ : $t$ >>;
-(* virtual method *)
 <:class_sig_item< method virtual $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_lid:s$ : $t$ >>;
-(* virtual method *)
 <:class_sig_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
@@ -799,10 +758,8 @@ MLast.ExRec loc lpe oe;
 (* object *)
 <:class_expr< object $list:lcsi$ end >>;
 <:class_expr< object $_list:lcsi$ end >>;
-(* object *)
 <:class_expr< object ($p$) $list:lcsi$ end >>;
 <:class_expr< object ($p$) $_list:lcsi$ end >>;
-(* object *)
 <:class_expr< object $opt:op$ $list:lcsi$ end >>;
 <:class_expr< object $opt:op$ $_list:lcsi$ end >>;
 <:class_expr< object $_opt:op$ $list:lcsi$ end >>;
@@ -820,9 +777,7 @@ MLast.ExRec loc lpe oe;
 
 (* inheritance *)
 <:class_str_item< inherit $ce$ >>;
-(* inheritance *)
 <:class_str_item< inherit $ce$ $opt:Some s$ >>;
-(* inheritance *)
 <:class_str_item< inherit $ce$ $opt:os$ >>;
 <:class_str_item< inherit $ce$ $_opt:os$ >>;
 
@@ -831,31 +786,23 @@ MLast.ExRec loc lpe oe;
 
 (* method *)
 <:class_str_item< method! private $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method! private $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method! private $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! private $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! private $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method! $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method! $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method! $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method! $priv:b2$ $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method! $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method! $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method! $priv:b2$ $_lid:s$ = $e$ >>;
@@ -870,33 +817,24 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< method! $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method! $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method! $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method private $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method private $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method private $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method private $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method private $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $_lid:s$ = $e$ >>;
 <:class_str_item< method $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method $priv:b2$ $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $priv:b2$ $_lid:s$ = $e$ >>;
@@ -911,33 +849,24 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< method $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ private $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ private $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ private $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ private $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ : $t$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $_lid:s$ $_opt:ot$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-(* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ = $e$ >>;
@@ -988,32 +917,24 @@ MLast.ExRec loc lpe oe;
 (* value *)
 <:class_str_item< value! mutable $lid:s$ = $e$ >>;
 <:class_str_item< value! mutable $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value! $lid:s$ = $e$ >>;
 <:class_str_item< value! $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value! $flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value! $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value! $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value! $_flag:b2$ $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value mutable $lid:s$ = $e$ >>;
 <:class_str_item< value mutable $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value $lid:s$ = $e$ >>;
 <:class_str_item< value $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value $flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $_flag:b2$ $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value $!:b1$ mutable $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ mutable $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value $!:b1$ $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $_lid:s$ = $e$ >>;
-(* value *)
 <:class_str_item< value $!:b1$ $flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
@@ -1030,10 +951,8 @@ MLast.ExRec loc lpe oe;
 (* virtual method *)
 <:class_str_item< method virtual private $lid:s$ : $t$ >>;
 <:class_str_item< method virtual private $_lid:s$ : $t$ >>;
-(* virtual method *)
 <:class_str_item< method virtual $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_lid:s$ : $t$ >>;
-(* virtual method *)
 <:class_str_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
