@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.9 2010/09/16 15:06:17 deraugla Exp $
+# $Id: mktrans.sh,v 6.10 2010/09/17 01:04:52 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -38,7 +38,7 @@ for q in $quotation_list; do
   sed -e 's/(\*.*\*)	//; /\*)$/N; s/\*)./*)/' |
   grep "<:$q<" |
   grep -v '$_' |
-  sed -e 's/\((\*.*\*)\)\(.*\)$/\2	\1/; s/ < / \&lt; /g; s/ {< / {\&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|	  </tr>	  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|	  <tr>||' |
+  sed -e 's/\((\*.*\*)\)\(.*\)$/\2	\1/; s/&/\&amp;/g; s/ < / \&lt; /g; s/ {< / {\&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|	  </tr>	  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|	  <tr>||' |
   tr '\t' '\n'
 
   echo '</table>'

@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.22 2010/09/16 19:08:51 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.23 2010/09/17 01:04:52 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -92,14 +92,20 @@ MLast.TyVrn loc lpv ools;
 
 (* poly_variant: Polymorphic variants. *)
 
+(* constructor *)
+<:poly_variant< `$s$ >>;
+(* constructor *)
 <:poly_variant< `$s$ of & $list:lt$ >>;
 <:poly_variant< `$s$ of & $_list:lt$ >>;
+(* constructor *)
 <:poly_variant< `$s$ of $list:lt$ >>;
 <:poly_variant< `$s$ of $_list:lt$ >>;
+(* constructor (general) *)
 <:poly_variant< `$s$ of $flag:b$ $list:lt$ >>;
 <:poly_variant< `$s$ of $flag:b$ $_list:lt$ >>;
 <:poly_variant< `$s$ of $_flag:b$ $list:lt$ >>;
 <:poly_variant< `$s$ of $_flag:b$ $_list:lt$ >>;
+<:poly_variant< `$_:s$ >>;
 <:poly_variant< `$_:s$ of & $list:lt$ >>;
 <:poly_variant< `$_:s$ of & $_list:lt$ >>;
 <:poly_variant< `$_:s$ of $list:lt$ >>;
@@ -109,6 +115,7 @@ MLast.TyVrn loc lpv ools;
 <:poly_variant< `$_:s$ of $_flag:b$ $list:lt$ >>;
 <:poly_variant< `$_:s$ of $_flag:b$ $_list:lt$ >>;
 
+(* type *)
 <:poly_variant< $t$ >>;
 
 (* patt: Patterns of the language. *)
@@ -490,7 +497,7 @@ MLast.ExRec loc lpe oe;
 <:sig_item< type $list:ltd$ >>;
 <:sig_item< type $_list:ltd$ >>;
 
-(* ... internal use ... <a href="#t_sig_item_1">(1) *)
+(* ... internal use ... <a href="#t_sig_item_1">(1)</a> *)
 <:sig_item< # $str:s$ $list:lsil$ >>;
 <:sig_item< # $str:s$ $_list:lsil$ >>;
 <:sig_item< # $_str:s$ $list:lsil$ >>;
@@ -727,28 +734,37 @@ MLast.ExRec loc lpe oe;
 (* inheritance *)
 <:class_sig_item< inherit $ct$ >>;
 
+(* method *)
 <:class_sig_item< method private $lid:s$ : $t$ >>;
 <:class_sig_item< method private $_lid:s$ : $t$ >>;
+(* method *)
 <:class_sig_item< method $lid:s$ : $t$ >>;
 <:class_sig_item< method $_lid:s$ : $t$ >>;
+(* method (general) *)
 <:class_sig_item< method $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< method $_flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method $_flag:b$ $_lid:s$ : $t$ >>;
 
+(* value *)
 <:class_sig_item< value mutable $lid:s$ : $t$ >>;
 <:class_sig_item< value mutable $_lid:s$ : $t$ >>;
+(* value *)
 <:class_sig_item< value $lid:s$ : $t$ >>;
 <:class_sig_item< value $_lid:s$ : $t$ >>;
+(* value (general) *)
 <:class_sig_item< value $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< value $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $_lid:s$ : $t$ >>;
 
+(* virtual method *)
 <:class_sig_item< method virtual private $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual private $_lid:s$ : $t$ >>;
+(* virtual method *)
 <:class_sig_item< method virtual $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_lid:s$ : $t$ >>;
+(* virtual method (general) *)
 <:class_sig_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;

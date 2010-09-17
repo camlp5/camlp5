@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.18 2010/09/16 19:08:51 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.19 2010/09/17 01:04:52 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1062,7 +1062,7 @@
   <tr>
     <td><tt>SgUse loc s lsil</tt></td>
     <td align="center"><tt># $str:s$ $list:lsil$</tt></td>
-    <td>... internal use ... <a href="#t_sig_item_1">(1)</td>
+    <td>... internal use ... <a href="#t_sig_item_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>SgVal loc s t</tt></td>
@@ -1536,59 +1536,59 @@
     <td>type constraint</td>
   </tr>
   <tr>
-    <td><tt>CgDcl loc lcsigi</tt></td>
-    <td align="center"><tt>declare $list:lcsigi$ end</tt></td>
+    <td><tt>CgDcl loc lcsi</tt></td>
+    <td align="center"><tt>declare $list:lcsi$ end</tt></td>
     <td>declare</td>
   </tr>
   <tr>
     <td><tt>CgInh loc ct</tt></td>
     <td align="center"><tt>inherit $ct$</tt></td>
-    <td>inheritance </td>
+    <td>inheritance</td>
   </tr>
   <tr>
-    <td><tt>CgMth loc s False t</tt></td>
-    <td align="center"><tt>method $s$ : $t$</tt></td>
+    <td><tt>CgMth loc True s t</tt></td>
+    <td align="center"><tt>method private $lid:s$ : $t$</tt></td>
     <td>method</td>
   </tr>
   <tr>
-    <td><tt>CgMth loc s True t</tt></td>
-    <td align="center"><tt>method private $s$ : $t$</tt></td>
+    <td><tt>CgMth loc False s t</tt></td>
+    <td align="center"><tt>method $lid:s$ : $t$</tt></td>
     <td>method</td>
   </tr>
   <tr>
-    <td><tt>CgMth loc s b t</tt></td>
-    <td align="center"><tt>method $flag:b$ $s$ : $t$</tt></td>
+    <td><tt>CgMth loc b s t</tt></td>
+    <td align="center"><tt>method $flag:b$ $lid:s$ : $t$</tt></td>
     <td>method (general)</td>
   </tr>
   <tr>
-    <td><tt>CgVal loc s False t</tt></td>
-    <td align="center"><tt>value $s$ : $t$</tt></td>
+    <td><tt>CgVal loc True s t</tt></td>
+    <td align="center"><tt>value mutable $lid:s$ : $t$</tt></td>
     <td>value</td>
   </tr>
   <tr>
-    <td><tt>CgVal loc s True t</tt></td>
-    <td align="center"><tt>value mutable $s$ : $t$</tt></td>
+    <td><tt>CgVal loc False s t</tt></td>
+    <td align="center"><tt>value $lid:s$ : $t$</tt></td>
     <td>value</td>
   </tr>
   <tr>
-    <td><tt>CgVal loc s b t</tt></td>
-    <td align="center"><tt>value $flag:b$ $s$ : $t$</tt></td>
+    <td><tt>CgVal loc b s t</tt></td>
+    <td align="center"><tt>value $flag:b$ $lid:s$ : $t$</tt></td>
     <td>value (general)</td>
   </tr>
   <tr>
-    <td><tt>CgVir loc s False t</tt></td>
-    <td align="center"><tt>method virtual $s$ : $t$</tt></td>
-    <td>method virtual</td>
+    <td><tt>CgVir loc True s t</tt></td>
+    <td align="center"><tt>method virtual private $lid:s$ : $t$</tt></td>
+    <td>virtual method</td>
   </tr>
   <tr>
-    <td><tt>CgVir loc s True t</tt></td>
-    <td align="center"><tt>method virtual private $s$ : $t$</tt></td>
-    <td>method virtual</td>
+    <td><tt>CgVir loc False s t</tt></td>
+    <td align="center"><tt>method virtual $lid:s$ : $t$</tt></td>
+    <td>virtual method</td>
   </tr>
   <tr>
-    <td><tt>CgVir loc s b t</tt></td>
-    <td align="center"><tt>method virtual $flag:b$ $s$ : $t$</tt></td>
-    <td>method virtual (general)</td>
+    <td><tt>CgVir loc b s t</tt></td>
+    <td align="center"><tt>method virtual $flag:b$ $lid:s$ : $t$</tt></td>
+    <td>virtual method (general)</td>
   </tr>
 </table>
 
@@ -1637,18 +1637,23 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>PvTag s False []</tt></td>
-    <td align="center"><tt>` $i$</tt></td>
+    <td><tt>PvTag s True []</tt></td>
+    <td align="center"><tt>`$s$</tt></td>
     <td>constructor</td>
   </tr>
   <tr>
     <td><tt>PvTag s True lt</tt></td>
-    <td align="center"><tt>` $i$ of &amp; $list:lt$</tt></td>
+    <td align="center"><tt>`$s$ of &amp; $list:lt$</tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>PvTag s False lt</tt></td>
+    <td align="center"><tt>`$s$ of $list:lt$</tt></td>
     <td>constructor</td>
   </tr>
   <tr>
     <td><tt>PvTag s b lt</tt></td>
-    <td align="center"><tt>` $i$ of $flag:b$ $list:lt$</tt></td>
+    <td align="center"><tt>`$s$ of $flag:b$ $list:lt$</tt></td>
     <td>constructor (general)</td>
   </tr>
   <tr>

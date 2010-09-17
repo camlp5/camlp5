@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.8 2010/09/16 18:39:52 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.9 2010/09/17 01:04:52 deraugla Exp $ *)
 
 MLast.TyAcc (loc, t1, t2);;
 MLast.TyAli (loc, t1, t2);;
@@ -49,6 +49,7 @@ MLast.TyVrn (loc, lpv, Some (Some (Ploc.VaVal ls)));;
 MLast.TyVrn (loc, lpv, Some (Some ls));;
 MLast.TyVrn (loc, lpv, Some ols);;
 MLast.TyVrn (loc, lpv, ools);;
+MLast.PvTag (Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal []);;
 MLast.PvTag (Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal lt);;
 MLast.PvTag (Ploc.VaVal s, Ploc.VaVal true, lt);;
 MLast.PvTag (Ploc.VaVal s, Ploc.VaVal false, Ploc.VaVal lt);;
@@ -57,6 +58,7 @@ MLast.PvTag (Ploc.VaVal s, Ploc.VaVal b, Ploc.VaVal lt);;
 MLast.PvTag (Ploc.VaVal s, Ploc.VaVal b, lt);;
 MLast.PvTag (Ploc.VaVal s, b, Ploc.VaVal lt);;
 MLast.PvTag (Ploc.VaVal s, b, lt);;
+MLast.PvTag (s, Ploc.VaVal true, Ploc.VaVal []);;
 MLast.PvTag (s, Ploc.VaVal true, Ploc.VaVal lt);;
 MLast.PvTag (s, Ploc.VaVal true, lt);;
 MLast.PvTag (s, Ploc.VaVal false, Ploc.VaVal lt);;
