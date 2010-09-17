@@ -234,8 +234,10 @@ let rec ctyp =
       let (clos, sl) =
         match ool with
           None -> true, None
-        | Some None -> false, None
-        | Some (Some sl) -> true, Some (uv sl)
+        | Some ol ->
+            match ol with
+              None -> false, None
+            | Some sl -> true, Some (uv sl)
       in
       match ocaml_ptyp_variant catl clos sl with
         Some t -> mktyp loc t
