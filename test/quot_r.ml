@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.24 2010/09/17 02:25:29 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.25 2010/09/17 02:32:45 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -740,7 +740,7 @@ MLast.ExRec loc lpe oe;
 (* method *)
 <:class_sig_item< method $lid:s$ : $t$ >>;
 <:class_sig_item< method $_lid:s$ : $t$ >>;
-(* method (general) *)
+(* method *)
 <:class_sig_item< method $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< method $_flag:b$ $lid:s$ : $t$ >>;
@@ -752,7 +752,7 @@ MLast.ExRec loc lpe oe;
 (* value *)
 <:class_sig_item< value $lid:s$ : $t$ >>;
 <:class_sig_item< value $_lid:s$ : $t$ >>;
-(* value (general) *)
+(* value *)
 <:class_sig_item< value $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< value $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $lid:s$ : $t$ >>;
@@ -764,7 +764,7 @@ MLast.ExRec loc lpe oe;
 (* virtual method *)
 <:class_sig_item< method virtual $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_lid:s$ : $t$ >>;
-(* virtual method (general) *)
+(* virtual method *)
 <:class_sig_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
@@ -820,7 +820,7 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< inherit $ce$ >>;
 (* inheritance *)
 <:class_str_item< inherit $ce$ $opt:Some s$ >>;
-(* inheritance (general) *)
+(* inheritance *)
 <:class_str_item< inherit $ce$ $opt:os$ >>;
 <:class_str_item< inherit $ce$ $_opt:os$ >>;
 
@@ -935,7 +935,7 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ = $e$ >>;
 (* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-(* method (general) *)
+(* method *)
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
 <:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ = $e$ >>;
@@ -1011,7 +1011,7 @@ MLast.ExRec loc lpe oe;
 (* value *)
 <:class_str_item< value $!:b1$ $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $_lid:s$ = $e$ >>;
-(* value (general) *)
+(* value *)
 <:class_str_item< value $!:b1$ $flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value $!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
@@ -1031,7 +1031,7 @@ MLast.ExRec loc lpe oe;
 (* virtual method *)
 <:class_str_item< method virtual $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_lid:s$ : $t$ >>;
-(* virtual method (general) *)
+(* virtual method *)
 <:class_str_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;

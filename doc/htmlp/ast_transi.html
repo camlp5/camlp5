@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.20 2010/09/17 02:22:31 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.21 2010/09/17 02:32:45 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1318,7 +1318,7 @@
   <tr>
     <td><tt>CrInh loc ce os</tt></td>
     <td align="center"><tt>inherit $ce$ $opt:os$</tt></td>
-    <td>inheritance (general)</td>
+    <td>inheritance</td>
   </tr>
   <tr>
     <td><tt>CrIni loc e</tt></td>
@@ -1458,7 +1458,7 @@
   <tr>
     <td><tt>CrMth loc b1 b2 s ot e</tt></td>
     <td align="center"><tt>method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$</tt></td>
-    <td>method (general)</td>
+    <td>method</td>
   </tr>
   <tr>
     <td><tt>CrVal loc True True s e</tt></td>
@@ -1503,7 +1503,7 @@
   <tr>
     <td><tt>CrVal loc b1 b2 s e</tt></td>
     <td align="center"><tt>value $!:b1$ $flag:b2$ $lid:s$ = $e$</tt></td>
-    <td>value (general)</td>
+    <td>value</td>
   </tr>
   <tr>
     <td><tt>CrVir loc True s t</tt></td>
@@ -1518,7 +1518,7 @@
   <tr>
     <td><tt>CrVir loc b s t</tt></td>
     <td align="center"><tt>method virtual $flag:b$ $lid:s$ : $t$</tt></td>
-    <td>virtual method (general)</td>
+    <td>virtual method</td>
   </tr>
 </table>
 
@@ -1558,7 +1558,7 @@
   <tr>
     <td><tt>CgMth loc b s t</tt></td>
     <td align="center"><tt>method $flag:b$ $lid:s$ : $t$</tt></td>
-    <td>method (general)</td>
+    <td>method</td>
   </tr>
   <tr>
     <td><tt>CgVal loc True s t</tt></td>
@@ -1573,7 +1573,7 @@
   <tr>
     <td><tt>CgVal loc b s t</tt></td>
     <td align="center"><tt>value $flag:b$ $lid:s$ : $t$</tt></td>
-    <td>value (general)</td>
+    <td>value</td>
   </tr>
   <tr>
     <td><tt>CgVir loc True s t</tt></td>
@@ -1588,7 +1588,7 @@
   <tr>
     <td><tt>CgVir loc b s t</tt></td>
     <td align="center"><tt>method virtual $flag:b$ $lid:s$ : $t$</tt></td>
-    <td>virtual method (general)</td>
+    <td>virtual method</td>
   </tr>
 </table>
 
