@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.13 2010/09/17 15:17:21 deraugla Exp $
+# $Id: mktrans.sh,v 6.14 2010/09/17 16:05:42 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -12,7 +12,7 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: mktrans.sh,v 6.13 2010/09/17 15:17:21 deraugla Exp $ -->
+  <!-- $Id: mktrans.sh,v 6.14 2010/09/17 16:05:42 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -85,18 +85,22 @@ for q in $quotation_list; do
   echo '  <tr>'
 
   $top/meta/camlp5r -nolib $top/meta/q_MLast.cmo $top/etc/pr_r.cmo -mode T -l200 -impl $file |
-  paste -d@ - $file |
-  sed -e 's/(\*.*\*)@//; /\*)$/N; s/\*)./*)/' |
+  paste -d@ $file - |
+  sed -e 's/(\*.*\*)@//; /\*)$/N; s/\n//' |
+  sed -e '/(\*/{h; s/\*).*$/\*)/; x}; /^</{G; s/^\(.*\)\n\(.*\)$/\2\1/}' |
+  sed -e '/@{/s/(\*.*\*)/(*  *)/' |
   grep "<:$q<" |
   grep -v '$_' |
   sed -e 's/\((\*.*\*)\)\(.*\)$/\2@\1/' |
+  sed -e 's/^\([^@]*\)@\([^@]*\)@/\2@\1@/' |
   sed -e 's/&/\&amp;/g; s/ < / \&lt; /g; s/ {< / {\&lt; /g; s/>>;/>>/' |
   sed -e 's/<:[^<]*< /    <td align="center"><tt>/; s|;@|</tt></td>@|' |
   sed -e 's/^MLast./    <td><tt>/; s| >>|</tt></td>|' |
-  sed -e 's/{MLast./    <td><tt>{/' |
+  sed -e 's/^{MLast./    <td><tt>{/' |
   sed -e 's|$|@  </tr>@  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|@  <tr>||' |
   tr '@' '\n' |
-  sed -e '/; MLast./{s/; MLast./;/g; s/ = /=/g}'
+  sed -e '/; MLast./{s/; MLast./;/g; s/ = /=/g}' |
+  grep -v '<td></td>'
 
   echo '</table>'
 done
