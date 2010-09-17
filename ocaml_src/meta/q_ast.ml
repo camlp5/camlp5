@@ -716,23 +716,7 @@ Grammar.extend
 
 (* *)
 
-let check_anti_loc s kind =
-  try
-    let i = String.index s ':' in
-    let (j, len) = skip_to_next_colon s i in
-    if String.sub s (i + 1) len = kind then
-      let loc =
-        let k = String.index s ',' in
-        let bp = int_of_string (String.sub s 0 k) in
-        let ep = int_of_string (String.sub s (k + 1) (i - k - 1)) in
-        Ploc.make_unlined (bp, ep)
-      in
-      loc, String.sub s (j + 1) (String.length s - j - 1)
-    else raise Stream.Failure
-  with Not_found | Failure _ -> raise Stream.Failure
-;;
-
-let check_anti_loc2 s =
+let check_anti_loc s =
   try
     let i = String.index s ':' in
     let (j, len) = skip_to_next_colon s i in String.sub s (i + 1) len
@@ -753,7 +737,7 @@ lex.Plexing.tok_match <-
               if prm <> "" && prm.[0] = p_prm0 then
                 if prm.[String.length prm - 1] = ':' then
                   let prm = String.sub prm 1 (String.length prm - 2) in
-                  let kind = check_anti_loc2 prm in
+                  let kind = check_anti_loc prm in
                   if kind = p_prm || kind = anti_anti p_prm then prm
                   else raise Stream.Failure
                 else raise Stream.Failure
@@ -767,7 +751,7 @@ lex.Plexing.tok_match <-
                 if prm.[String.length prm - 1] = ':' then raise Stream.Failure
                 else
                   let prm = String.sub prm 1 (String.length prm - 1) in
-                  let kind = check_anti_loc2 prm in
+                  let kind = check_anti_loc prm in
                   if kind = p_prm || kind = anti_anti p_prm then prm
                   else raise Stream.Failure
               else raise Stream.Failure
@@ -778,83 +762,83 @@ lex.Plexing.tok_match <-
              if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
                raise Stream.Failure
              else
-               let kind = check_anti_loc2 prm in
+               let kind = check_anti_loc prm in
                if kind = p_prm then prm else raise Stream.Failure
          | _ -> raise Stream.Failure)
   | "V", p_prm ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = p_prm || kind = anti_anti p_prm then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V CHAR", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "chr" || kind = anti_anti "chr" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLAG", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "flag" || kind = anti_anti "flag" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLOAT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "flo" || kind = anti_anti "flo" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "int" || kind = anti_anti "int" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT_l", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "int32" || kind = anti_anti "int32" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT_L", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "int64" || kind = anti_anti "int64" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT_n", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "nativeint" || kind = anti_anti "nativeint" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "lid" || kind = anti_anti "lid" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIST", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "list" || kind = anti_anti "list" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V OPT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "opt" || kind = anti_anti "opt" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
@@ -865,7 +849,7 @@ lex.Plexing.tok_match <-
              if prm.[String.length prm - 1] = ':' then raise Stream.Failure
              else
                let prm = String.sub prm 1 (String.length prm - 1) in
-               let kind = check_anti_loc2 prm in
+               let kind = check_anti_loc prm in
                if kind = "" || kind = anti_anti "" then prm
                else raise Stream.Failure
            else raise Stream.Failure
@@ -876,7 +860,7 @@ lex.Plexing.tok_match <-
            if prm <> "" && prm.[0] = '?' then
              if prm.[String.length prm - 1] = ':' then
                let prm = String.sub prm 1 (String.length prm - 2) in
-               let kind = check_anti_loc2 prm in
+               let kind = check_anti_loc prm in
                if kind = "" || kind = anti_anti "" then prm
                else raise Stream.Failure
              else raise Stream.Failure
@@ -885,7 +869,7 @@ lex.Plexing.tok_match <-
   | "V STRING", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "str" || kind = anti_anti "str" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
@@ -896,7 +880,7 @@ lex.Plexing.tok_match <-
              if prm.[String.length prm - 1] = ':' then raise Stream.Failure
              else
                let prm = String.sub prm 1 (String.length prm - 1) in
-               let kind = check_anti_loc2 prm in
+               let kind = check_anti_loc prm in
                if kind = "" || kind = anti_anti "" then prm
                else raise Stream.Failure
            else raise Stream.Failure
@@ -907,7 +891,7 @@ lex.Plexing.tok_match <-
            if prm <> "" && prm.[0] = '~' then
              if prm.[String.length prm - 1] = ':' then
                let prm = String.sub prm 1 (String.length prm - 2) in
-               let kind = check_anti_loc2 prm in
+               let kind = check_anti_loc prm in
                if kind = "" || kind = anti_anti "" then prm
                else raise Stream.Failure
              else raise Stream.Failure
@@ -916,7 +900,7 @@ lex.Plexing.tok_match <-
   | "V UIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
+           let kind = check_anti_loc prm in
            if kind = "uid" || kind = anti_anti "uid" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)

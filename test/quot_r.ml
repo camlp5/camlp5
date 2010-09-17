@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.25 2010/09/17 02:32:45 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.26 2010/09/17 09:11:15 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -556,7 +556,7 @@ MLast.ExRec loc lpe oe;
 (* module unpacking *)
 <:module_expr< (value $e$ : $mt$) >>;
 
-(* str_item: Structure items, i.e. phrases in a ".ml" file or "struct"s *)
+(* str_item: Structure items, i.e. phrases in a ".ml" file or "struct" *)
 (* str_item:   elements. *)
 
 (* class declaration *)
@@ -660,6 +660,8 @@ MLast.ExRec loc lpe oe;
 <:str_item< value $_flag:b$ $list:lpe$ >>;
 <:str_item< value $_flag:b$ $_list:lpe$ >>;
 
+(* type_decl: What is after 'type' or 'and' in a type declaration. *)
+
 <:type_decl< $tp:ls$ $list:ltv$ = private $t$ $list:ltt$ >>;
 <:type_decl< $tp:ls$ $list:ltv$ = private $t$ $_list:ltt$ >>;
 <:type_decl< $tp:ls$ $list:ltv$ = $t$ $list:ltt$ >>;
@@ -721,7 +723,7 @@ MLast.ExRec loc lpe oe;
 <:class_type< object $_opt:ot$ $list:lcsi$ end >>;
 <:class_type< object $_opt:ot$ $_list:lcsi$ end >>;
 
-(* sig_item: Signature items, i.e. phrases in a ".mli" file or "sig"s *)
+(* sig_item: Signature items, i.e. phrases in a ".mli" file or "sig" *)
 (* sig_item:   elements. *)
 
 (* type constraint *)
