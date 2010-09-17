@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkstri.sh,v 6.5 2010/09/17 12:36:28 deraugla Exp $
+# $Id: mkstri.sh,v 6.6 2010/09/17 12:57:44 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -12,7 +12,7 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: mkstri.sh,v 6.5 2010/09/17 12:36:28 deraugla Exp $ -->
+  <!-- $Id: mkstri.sh,v 6.6 2010/09/17 12:57:44 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -37,13 +37,32 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 <div id="tableofcontents">
 </div>
 
-<h2>Nodes</h2>'
+<h2>Nodes and Quotations</h2>'
 
 for q in $quotation_list; do
 
-  n=4
   if [ "$q" = "expr" -o "$q" = "patt" -o "$q" = "ctyp" ]; then
     n=3
+  else
+    do3=""
+    if [ "$q" = "str_item" -o "$q" = "sig_item" -o "$q" = "module_expr" -o \
+         "$q" = "module_type" ]
+    then
+      if [ "$tit3" != "modules..." ]; then do3="modules..."; fi
+    elif [ "$q" = "class_expr" -o "$q" = "class_type" -o \
+           "$q" = "class_str_item" -o "$q" = "class_sig_item" ]
+    then
+      if [ "$tit3" != "classes..." ]; then do3="classes..."; fi
+    else
+      if [ "$tit3" != "other" ]; then do3="other"; fi
+    fi
+    if [ "$do3" != "" ]; then
+      tit3="$do3"
+      echo
+      echo "<h3>$tit3</h3>"
+      echo
+    fi
+    n=4
   fi
 
   echo
