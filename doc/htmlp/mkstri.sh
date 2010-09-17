@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkstri.sh,v 6.3 2010/09/17 01:41:33 deraugla Exp $
+# $Id: mkstri.sh,v 6.4 2010/09/17 02:22:31 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -14,8 +14,15 @@ for q in $quotation_list; do
 
   $top/meta/camlp5r $top/meta/q_MLast.cmo $top/etc/pr_r.cmo -l200 -impl $top/test/quot_r.ml |
   paste -d@ $top/test/quot_r.ml - |
+  sed -e 's/(\*.*\*)@//; /\*)$/N; s/\*)./*)/' |
   grep "<:$q<" |
-  sed -e 's/;$//; s/&/&amp;/g; s/</\&lt;/g; s/^/    <tt style="color:blue">/; s/MLast/    <tt style="color:red">MLast/; s|>>;|>></tt><br/>|; s|$|</tt>aaaa|; $s/aaaa//; s|aaaa|@  </dd>@</dl>@<dl class="nodelist">@  <dt>- aaa</dt>@  <dd>|' |
+  sed -e 's/;$//; s/&/&amp;/g; s/<:/\&lt;:/g; s/< /\&lt; /g' |
+  sed -e 's/^/<dl class="nodelist">@/' |
+  sed -e 's|(\* |  <dt>- |; s| \*)|</dt>@|' |
+  sed -e 's/@&/@  <dd>@    <tt style="color:blue">\&/' |
+  sed -e 's/MLast/    <tt style="color:red">MLast/' |
+  sed -e 's|>>;|>></tt><br/>|' |
+  sed -e 's|$|</tt>@  </dd>@</dl>|' |
   tr '@' '\n'
 
 done

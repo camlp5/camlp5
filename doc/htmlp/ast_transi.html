@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.19 2010/09/17 01:04:52 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.20 2010/09/17 02:22:31 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -237,7 +237,7 @@
   <tr>
     <td><tt>ExAcc loc e1 e2</tt></td>
     <td align="center"><tt>$e1$ . $e2$</tt></td>
-    <td>dot</td>
+    <td>access</td>
   </tr>
   <tr>
     <td><tt>ExAnt loc e</tt></td>
@@ -252,7 +252,7 @@
   <tr>
     <td><tt>ExAre loc e1 e2</tt></td>
     <td align="center"><tt>$e1$ .( $e2$ )</tt></td>
-    <td>array access</td>
+    <td>array element</td>
   </tr>
   <tr>
     <td><tt>ExArr loc le</tt></td>
@@ -272,7 +272,7 @@
   <tr>
     <td><tt>ExBae loc e le</tt></td>
     <td align="center"><tt>$e$ .{ $list:le$ }</tt></td>
-    <td>big array access</td>
+    <td>big array element</td>
   </tr>
   <tr>
     <td><tt>ExChr loc s</tt></td>
@@ -550,7 +550,7 @@
   <tr>
     <td><tt>PaAcc loc p1 p2</tt></td>
     <td align="center"><tt>$p1$ . $p2$</tt></td>
-    <td>dot</td>
+    <td>access</td>
   </tr>
   <tr>
     <td><tt>PaAli loc p1 p2</tt></td>
@@ -712,7 +712,7 @@
   <tr>
     <td><tt>TyAcc loc t1 t2</tt></td>
     <td align="center"><tt>$t1$ . $t2$</tt></td>
-    <td>dot</td>
+    <td>access</td>
   </tr>
   <tr>
     <td><tt>TyAli loc t1 t2</tt></td>
@@ -1086,7 +1086,7 @@
   <tr>
     <td><tt>MeAcc loc me1 me2</tt></td>
     <td align="center"><tt>$me1$ . $me2$</tt></td>
-    <td>dot</td>
+    <td>access</td>
   </tr>
   <tr>
     <td><tt>MeApp loc me1 me2</tt></td>
@@ -1131,7 +1131,7 @@
   <tr>
     <td><tt>MtAcc loc mt1 mt2</tt></td>
     <td align="center"><tt>$mt1$ . $mt2$</tt></td>
-    <td>dot</td>
+    <td>access</td>
   </tr>
   <tr>
     <td><tt>MtApp loc mt1 mt2</tt></td>
@@ -1248,7 +1248,7 @@
   <tr>
     <td><tt>CtAcc loc ct1 ct2</tt></td>
     <td align="center"><tt>$ct1$ . $ct2$</tt></td>
-    <td>dot</td>
+    <td>access</td>
   </tr>
   <tr>
     <td><tt>CtApp loc ct1 ct2</tt></td>

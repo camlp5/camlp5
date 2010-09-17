@@ -1,8 +1,8 @@
-(* $Id: quot_r.ml,v 6.23 2010/09/17 01:04:52 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.24 2010/09/17 02:25:29 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
-(* dot *)
+(* access *)
 <:ctyp< $t1$ . $t2$ >>;
 (* alias *)
 <:ctyp< $t1$ as $t2$ >>;
@@ -120,7 +120,7 @@ MLast.TyVrn loc lpv ools;
 
 (* patt: Patterns of the language. *)
 
-(* dot *)
+(* access *)
 <:patt< $p1$ . $p2$ >>;
 (* alias *)
 <:patt< ($p1$ as $p2$) >>;
@@ -212,13 +212,13 @@ MLast.TyVrn loc lpv ools;
 
 (* expr: Expressions of the language. *)
 
-(* dot *)
+(* access *)
 <:expr< $e1$ . $e2$ >>;
 (* antiquotation <a href="#expr_1">(1)</a> *)
 <:expr< $anti:e$ >>;
 (* application *)
 <:expr< $e1$ $e2$ >>;
-(* array access *)
+(* array element *)
 <:expr< $e1$ .( $e2$ ) >>;
 
 (* array *)
@@ -229,7 +229,7 @@ MLast.TyVrn loc lpv ools;
 <:expr< assert $e$ >>;
 (* assignment *)
 <:expr< $e1$ := $e2$ >>;
-(* big array access *)
+(* big array element *)
 <:expr< $e$ .{ $list:le$ } >>;
 <:expr< $e$ .{ $_list:le$ } >>;
 (* character constant *)
@@ -399,7 +399,7 @@ MLast.ExRec loc lpe oe;
 <:expr< while $e$ do { $list:le$ } >>;
 <:expr< while $e$ do { $_list:le$ } >>;
 
-(* dot *)
+(* access *)
 <:module_type< $mt1$ . $mt2$ >>;
 (* application *)
 <:module_type< $mt1$ $mt2$ >>;
@@ -533,7 +533,7 @@ MLast.ExRec loc lpe oe;
 <:with_constr< module $list:ls$ = $me$ >>;
 <:with_constr< module $_list:ls$ = $me$ >>;
 
-(* dot *)
+(* access *)
 <:module_expr< $me1$ . $me2$ >>;
 (* application *)
 <:module_expr< $me1$ $me2$ >>;
@@ -693,7 +693,7 @@ MLast.ExRec loc lpe oe;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
 
-(* dot *)
+(* access *)
 <:class_type< $ct1$ . $ct2$ >>;
 (* application *)
 <:class_type< $ct1$ ($ct2$) >>;
