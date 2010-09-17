@@ -1,11 +1,11 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.11 2010/09/17 01:41:33 deraugla Exp $
+# $Id: mktrans.sh,v 6.12 2010/09/17 08:02:24 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
 quotation_list="$*"
 if [ "$quotation_list" = "" ]; then
-  quotation_list="expr patt ctyp str_item sig_item module_expr module_type class_expr class_type class_str_item class_sig_item with_constr poly_variant"
+  quotation_list="expr patt ctyp str_item sig_item module_expr module_type class_expr class_type class_str_item class_sig_item type_decl with_constr poly_variant"
 fi
 
 for q in $quotation_list; do
@@ -38,7 +38,12 @@ for q in $quotation_list; do
   sed -e 's/(\*.*\*)@//; /\*)$/N; s/\*)./*)/' |
   grep "<:$q<" |
   grep -v '$_' |
-  sed -e 's/\((\*.*\*)\)\(.*\)$/\2@\1/; s/&/\&amp;/g; s/ < / \&lt; /g; s/ {< / {\&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|@  </tr>@  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|@  <tr>||' |
+  sed -e 's/\((\*.*\*)\)\(.*\)$/\2@\1/' |
+  sed -e 's/&/\&amp;/g; s/ < / \&lt; /g; s/ {< / {\&lt; /g; s/>>;/>>/' |
+  sed -e 's/<:[^<]*< /    <td align="center"><tt>/; s|;@|</tt></td>@|' |
+  sed -e 's/^MLast./    <td><tt>/; s| >>|</tt></td>|' |
+  sed -e 's/{MLast./    <td><tt>{/; s/; MLast./; /g' |
+  sed -e 's|$|@  </tr>@  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|@  <tr>||' |
   tr '@' '\n'
 
   echo '</table>'
