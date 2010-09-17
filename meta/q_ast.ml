@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.3 2010/09/17 09:11:14 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.4 2010/09/17 09:41:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -507,7 +507,7 @@ module Meta_E =
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
                  <:expr< $anti:r$ >>
              | _ -> assert False ]
-         | _ -> assert False ]
+         | None -> assert False ]
        ;
        value xtr_or_anti loc f s =
          match get_anti_loc s with
@@ -520,7 +520,7 @@ module Meta_E =
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
                  f <:expr< $anti:r$ >>
              | _ -> assert False ]
-         | _ -> assert False ]
+         | None -> assert False ]
        ;
      end)
 ;
@@ -580,7 +580,7 @@ module Meta_P =
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
                  <:patt< $anti:r$ >>
              | _ -> assert False ]
-         | _ -> assert False ]
+         | None -> assert False ]
        ;
        value xtr_or_anti loc f s =
          match get_anti_loc s with
@@ -593,7 +593,7 @@ module Meta_P =
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
                  f <:patt< $anti:r$ >>
              | _ -> assert False ]
-         | _ -> assert False ]
+         | None -> assert False ]
        ;
      end)
 ;
