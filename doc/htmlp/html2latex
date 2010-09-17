@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 6.1 2010/09/15 16:00:19 deraugla Exp $
+# $Id: html2latex,v 6.2 2010/09/17 08:32:48 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"
@@ -79,7 +79,7 @@ for i in $FILES; do
       -e 's/^ *<h4>/\\subsubsection{/' -e 's|</h4>|}|' \
       -e 's/^ *<h5>/\\textbf{/' -e 's|</h5>|}|' \
       -e 's| *<table width[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{tabular}\1\\hline\n\\end{tabular}\n\\end{center}|' \
-      -e 's| *<table[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{longtable}\1\\hline\n\\end{longtable}\n\\end{center}|' \
+      -e 's| *<table[^>]*>\(.*\)</table>|\\small\n\\begin{center}\n\\begin{longtable}\1\\hline\n\\end{longtable}\n\\end{center}\\normalsize|' \
       -e 's/<thead>//g' -e 's|</thead>||g' \
       -e 's/<tbody>//g' -e 's|</tbody>||g' \
       -e 's/<tr>\(<th[^>]*>.*<th[^>]*>.*<th[^>]*>\)/{|l|c|l|}\ntr\1/' \
