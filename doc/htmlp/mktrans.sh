@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.10 2010/09/17 01:04:52 deraugla Exp $
+# $Id: mktrans.sh,v 6.11 2010/09/17 01:41:33 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -34,12 +34,12 @@ for q in $quotation_list; do
   echo '  <tr>'
 
   $top/meta/camlp5r -nolib $top/meta/q_MLast.cmo $top/etc/pr_r.cmo -mode T -l200 -impl $file |
-  paste - $file |
-  sed -e 's/(\*.*\*)	//; /\*)$/N; s/\*)./*)/' |
+  paste -d@ - $file |
+  sed -e 's/(\*.*\*)@//; /\*)$/N; s/\*)./*)/' |
   grep "<:$q<" |
   grep -v '$_' |
-  sed -e 's/\((\*.*\*)\)\(.*\)$/\2	\1/; s/&/\&amp;/g; s/ < / \&lt; /g; s/ {< / {\&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|	  </tr>	  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|	  <tr>||' |
-  tr '\t' '\n'
+  sed -e 's/\((\*.*\*)\)\(.*\)$/\2@\1/; s/&/\&amp;/g; s/ < / \&lt; /g; s/ {< / {\&lt; /g; s/>>;/>>/; s/<:[^<]*< /    <td align="center"><tt>/; s|;|</tt></td>|; s/^MLast./    <td><tt>/; s| >>|</tt></td>|; s|$|@  </tr>@  <tr>|; s/(\* /    <td>/;s| \*)|</td>|; $s|@  <tr>||' |
+  tr '@' '\n'
 
   echo '</table>'
 done
