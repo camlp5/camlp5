@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.2 2010/09/18 17:51:09 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -65,6 +65,12 @@ for i in $files; do
        "$idir/$bname" = "examples/test_type_quotation.ml" -o \
        "$idir/$bname" = "examples/type_quotation.ml" -o \
        "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4AstLifter.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4ExceptionTracer.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4FoldGenerator.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4MetaGenerator.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4Profiler.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4TrashRemover.ml" -o \
        "$idir/$bname" = "Camlp4Parsers/Camlp4AstLoader.ml" -o \
        "$idir/$bname" = "Camlp4Parsers/Camlp4DebugParser.ml" -o \
        "$idir/$bname" = "Camlp4Parsers/Camlp4GrammarParser.ml" -o \
@@ -89,6 +95,7 @@ for i in $files; do
     syntname="normal syntax"
     altsyntname="revised syntax"
     if [ "$idir" = "Camlp4" -o \
+         "$idir" = "Camlp4Filters" -o \
          "$idir" = "Camlp4Parsers" -o \
          "$idir" = "Camlp4Printers" -o \
          "$idir" = "Printers" -o \
