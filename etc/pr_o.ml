@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.1 2010/09/15 16:00:22 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.2 2010/09/18 18:06:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1863,6 +1863,8 @@ EXTEND_PRINTER
   pr_patt: LEVEL "simple"
     [ [ <:patt< ~{$p1$ = $p2$} >> ->
           pprintf pc "~%p:%p" patt p1 curr p2
+      | <:patt< ~{$p$} >> ->
+          pprintf pc "~%p" patt p
 
       | <:patt< ?{$lid:p$ : $t$} >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
@@ -1876,18 +1878,6 @@ EXTEND_PRINTER
           pprintf pc "?(%p =@;%p)" patt p expr e
       | <:patt< ?{$p$} >> ->
           pprintf pc "?%p" curr p
-(*
-      | <:patt< ?{$lid:s$} >> ->
-          pprintf pc "?%s" s
-      | <:patt< ?{$lid:p$ = $e$} >> ->
-          pprintf pc "?(%s =@;%p)" p expr e
-      | <:patt< ?{$lid:p$} >> ->
-          pprintf pc "?(%s)" p
-      | <:patt< ?{$lid:i$ = $lid:p$} >> ->
-          pprintf pc "?%s:@;<0 1>(%s)" i p
-      | <:patt< ~{$lid:s$} >> ->
-          pprintf pc "~%s" s
-*)
 
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
