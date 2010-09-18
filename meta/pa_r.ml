@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.3 2010/09/16 17:20:00 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.4 2010/09/18 09:25:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -371,7 +371,7 @@ EXTEND
       | "("; ")" -> <:expr< () >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
           <:expr< (module $me$ : $mt$) >>
-      | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
+      | "("; e = SELF; t = colon_type; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" -> mktupexp loc e el
       | "("; e = SELF; ")" -> <:expr< $e$ >>
       | "("; el = V (LIST1 expr SEP ","); ")" -> <:expr< ($_list:el$) >> ] ]
@@ -715,11 +715,14 @@ EXTEND
           <:expr< $e$ # $_lid:lab$ >> ] ]
   ;
   expr: LEVEL "simple"
-    [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->
+    [ [ "("; e = SELF; t = colon_type; ":>"; t2 = ctyp; ")" ->
           <:expr< ($e$ : $t$ :> $t2$ ) >>
       | "("; e = SELF; ":>"; t = ctyp; ")" -> <:expr< ($e$ :> $t$) >>
       | "{<"; fel = V (LIST0 field_expr SEP ";"); ">}" ->
           <:expr< {< $_list:fel$ >} >> ] ]
+  ;
+  colon_type:
+    [ [ ":"; t = ctyp -> t ] ]
   ;
   field_expr:
     [ [ l = label; "="; e = expr -> (l, e) ] ]
