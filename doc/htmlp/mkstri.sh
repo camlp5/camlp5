@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkstri.sh,v 6.10 2010/09/17 20:37:30 deraugla Exp $
+# $Id: mkstri.sh,v 6.11 2010/09/18 04:53:22 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -12,7 +12,7 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: mkstri.sh,v 6.10 2010/09/17 20:37:30 deraugla Exp $ -->
+  <!-- $Id: mkstri.sh,v 6.11 2010/09/18 04:53:22 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -88,7 +88,7 @@ for q in $quotation_list; do
   sed -e "s|(\* |  </dd>@</dl>@<dl$class>@  <dt>- |" |
   sed -e 's| \*)|</dt>@  <dd>@    <tt style="color:blue">|' |
   sed -e 's|<:\([a-z_]*\)<|\&lt;:\1\&lt;|' |
-  sed -e 's|{<|{\&lt;|' |
+  sed -e 's|{<|{\&lt;|; s| < | \&lt; |' |
   sed -e 's| >>;@| >></tt><br/>@    <tt style="color:red">|' |
   sed -e 's|;$|</tt>|' |
   sed -e 's|^&|    <br/><br/>@    <tt style="color:blue">\&|' |
@@ -97,7 +97,6 @@ for q in $quotation_list; do
 
   echo '  </dd>'
   echo '</dl>'
-  echo
 
 done
 

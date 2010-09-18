@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.24 2010/09/17 08:46:28 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.25 2010/09/18 04:53:22 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -218,7 +218,7 @@
   <li><tt>lse</tt>: list (string * expr)</li>
   <li><tt>lpe</tt>: list (patt * expr)</li>
   <li><tt>lpp</tt>: list (patt * patt)</li>
-  <li><tt>lpoee</tt>: list (patt * option expr * expr)</li>
+  <li><tt>lpee</tt>: list (patt * option expr * expr)</li>
   <li><tt>op</tt>: option patt</li>
   <li><tt>lcsi</tt>: list class_str_item</li>
   <li><tt>lcsi</tt>: list class_sig_item</li>
@@ -767,7 +767,7 @@
   <tr>
     <td><tt>TyObj loc lst b</tt></td>
     <td align="center"><tt>&lt; $list:lst$ $flag:b$ ></tt></td>
-    <td>object (general)</td>
+    <td>object</td>
   </tr>
   <tr>
     <td><tt>TyOlb loc s t</tt></td>
@@ -872,7 +872,7 @@
   <tr>
     <td><tt>StDir loc s oe</tt></td>
     <td align="center"><tt># $lid:s$ $opt:oe$</tt></td>
-    <td>directive (general)</td>
+    <td>directive</td>
   </tr>
   <tr>
     <td><tt>StExc loc s [] []</tt></td>
@@ -1007,7 +1007,7 @@
   <tr>
     <td><tt>SgDir loc s oe</tt></td>
     <td align="center"><tt># $lid:s$ $opt:oe$</tt></td>
-    <td>directive (general)</td>
+    <td>directive</td>
   </tr>
   <tr>
     <td><tt>SgExc loc s []</tt></td>
@@ -1283,7 +1283,7 @@
   <tr>
     <td><tt>CtSig loc ot lcsi</tt></td>
     <td align="center"><tt>object $opt:ot$ $list:lcsi$ end</tt></td>
-    <td>object (general)</td>
+    <td>object</td>
   </tr>
 </table>
 
@@ -1640,7 +1640,7 @@
   <tr>
     <td><tt>WcTyp loc ls ltv b t</tt></td>
     <td align="center"><tt>type $list:ls$ $list:ltv$ = $flag:b$ $t$</tt></td>
-    <td>with type (general)</td>
+    <td>with type</td>
   </tr>
   <tr>
     <td><tt>WcMod loc ls me</tt></td>
@@ -1677,7 +1677,7 @@
   <tr>
     <td><tt>PvTag s b lt</tt></td>
     <td align="center"><tt>`$s$ of $flag:b$ $list:lt$</tt></td>
-    <td>constructor (general)</td>
+    <td>constructor</td>
   </tr>
   <tr>
     <td><tt>PvInh t</tt></td>
