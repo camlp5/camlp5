@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.2 2010/09/18 17:51:09 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.3 2010/09/18 18:42:57 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -35,7 +35,10 @@ for i in $files; do
   echo $i
   bname=$(basename $i)
   idir=$(basename $(dirname $i))
-  if [ "$bname" = "frx_fileinput.ml" -o "$idir" = "builtin" -o \
+  pdir=$(basename $(dirname $(dirname $i)))
+  if [ "$bname" = "frx_fileinput.ml" -o \
+       "$pdir" = "unmaintained" -o \
+       "$idir" = "builtin" -o \
        "$idir" = "Struct" -o "$idir" = "Grammar" -o \
        "$idir/$bname" = "Camlp4/Debug.ml" -o \
        "$idir/$bname" = "Camlp4/ErrorHandler.ml" -o \
