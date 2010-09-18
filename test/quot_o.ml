@@ -1,8 +1,8 @@
-(* $Id: quot_o.ml,v 6.9 2010/09/17 01:04:52 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.10 2010/09/18 19:29:43 deraugla Exp $ *)
 
-MLast.TyAcc (loc, t1, t2);;
+<:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
-MLast.TyAny loc;;
+<:ctyp< _ >>;;
 MLast.TyApp (loc, t1, t2);;
 MLast.TyArr (loc, t1, t2);;
 MLast.TyCls (loc, Ploc.VaVal ls);;
