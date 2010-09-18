@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 6.4 2010/09/18 04:53:22 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 6.5 2010/09/18 05:06:03 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1870,61 +1870,61 @@
 <h4>module_expr</h4>
 
 <dl class="nodelist">
-  <dt> - access</dt>
+  <dt>- access</dt>
   <dd>
     <tt style="color:blue">&lt;:module_expr&lt; $me1$ . $me2$ >></tt><br/>
     <tt style="color:red">MLast.MeAcc loc me1 me2</tt>
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt> - application</dt>
+  <dt>- application</dt>
   <dd>
     <tt style="color:blue">&lt;:module_expr&lt; $me1$ $me2$ >></tt><br/>
     <tt style="color:red">MLast.MeApp loc me1 me2</tt>
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt> - functor</dt>
+  <dt>- functor</dt>
   <dd>
-    <tt style="color:blue">&lt;:module_expr&lt; functor ($s$ : $mt$) ->  $me$ >></tt><br/>
-    <tt style="color:red">MLast.MeFun loc (Ploc.VaVal s) mt me</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:module_expr&lt; functor ($_:s$ : $mt$) ->  $me$ >></tt><br/>
+    <tt style="color:blue">&lt;:module_expr&lt; functor ($s$ : $mt$) -> $me$ >></tt><br/>
+    <tt style="color:red">MLast.MeFun loc (Ploc.VaVal s) mt me</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:module_expr&lt; functor ($_:s$ : $mt$) -> $me$ >></tt><br/>
     <tt style="color:red">MLast.MeFun loc s mt me</tt>
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt> - struct</dt>
+  <dt>- struct</dt>
   <dd>
-    <tt style="color:blue">&lt;:module_expr&lt; struct $list:lstri$ end >></tt><br/>
-    <tt style="color:red">MLast.MeStr loc (Ploc.VaVal lstri)</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:module_expr&lt; struct $_list:lstri$ end >></tt><br/>
-    <tt style="color:red">MLast.MeStr loc lstri</tt>
+    <tt style="color:blue">&lt;:module_expr&lt; struct $list:lsi$ end >></tt><br/>
+    <tt style="color:red">MLast.MeStr loc (Ploc.VaVal lsi)</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:module_expr&lt; struct $_list:lsi$ end >></tt><br/>
+    <tt style="color:red">MLast.MeStr loc lsi</tt>
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt> - module type constraint</dt>
+  <dt>- module type constraint</dt>
   <dd>
     <tt style="color:blue">&lt;:module_expr&lt; ($me$ : $mt$) >></tt><br/>
     <tt style="color:red">MLast.MeTyc loc me mt</tt>
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt> - module unpacking</dt>
+  <dt>- uppercase identifier</dt>
   <dd>
-    <tt style="color:blue">&lt;:module_expr&lt; (value $e$ : $mt$) >></tt><br/>
-    <tt style="color:red">MLast.MeUnp loc e mt</tt>
+    <tt style="color:blue">&lt;:module_expr&lt; $uid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MeUid loc (Ploc.VaVal s)</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:module_expr&lt; $_uid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MeUid loc s</tt>
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt> - uppercase identifier</dt>
+  <dt>- module unpacking</dt>
   <dd>
-    <tt style="color:blue">&lt;:module_expr&lt; $uid:s$ >></tt><br/>
-    <tt style="color:red">MLast.MeUid loc (Ploc.VaVal s)</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:module_expr&lt; $_uid:s$ >></tt><br/>
-    <tt style="color:red">MLast.MeUid loc s</tt>
+    <tt style="color:blue">&lt;:module_expr&lt; (value $e$ : $mt$) >></tt><br/>
+    <tt style="color:red">MLast.MeUnp loc e mt</tt>
   </dd>
 </dl>
 <dl class="nodelist">
@@ -1960,8 +1960,8 @@
   <dt>- functor</dt>
   <dd>
     <tt style="color:blue">&lt;:module_type&lt; functor ($s$ : $mt1$) -> $mt2$ >></tt><br/>
-    <tt style="color:red">MLast.MtFun loc (Ploc.VaVal s) mt1 mt2</tt><br/>
-    <br/>
+    <tt style="color:red">MLast.MtFun loc (Ploc.VaVal s) mt1 mt2</tt>
+    <br/><br/>
     <tt style="color:blue">&lt;:module_type&lt; functor ($_:s$ : $mt1$) -> $mt2$ >></tt><br/>
     <tt style="color:red">MLast.MtFun loc s mt1 mt2</tt>
   </dd>
@@ -1970,8 +1970,8 @@
   <dt>- lowercase identifier</dt>
   <dd>
     <tt style="color:blue">&lt;:module_type&lt; $lid:s$ >></tt><br/>
-    <tt style="color:red">MLast.MtLid loc (Ploc.VaVal s)</tt><br/>
-    <br/>
+    <tt style="color:red">MLast.MtLid loc (Ploc.VaVal s)</tt>
+    <br/><br/>
     <tt style="color:blue">&lt;:module_type&lt; $_lid:s$ >></tt><br/>
     <tt style="color:red">MLast.MtLid loc s</tt>
   </dd>
@@ -1980,8 +1980,8 @@
   <dt>- abstract</dt>
   <dd>
     <tt style="color:blue">&lt;:module_type&lt; ' $s$ >></tt><br/>
-    <tt style="color:red">MLast.MtQuo loc (Ploc.VaVal s)</tt><br/>
-    <br/>
+    <tt style="color:red">MLast.MtQuo loc (Ploc.VaVal s)</tt>
+    <br/><br/>
     <tt style="color:blue">&lt;:module_type&lt; ' $_:s$ >></tt><br/>
     <tt style="color:red">MLast.MtQuo loc s</tt>
   </dd>
@@ -1989,15 +1989,15 @@
 <dl class="nodelist">
   <dt>- signature</dt>
   <dd>
-    <tt style="color:blue">&lt;:module_type&lt; sig $list:lsigi$ end >></tt><br/>
-    <tt style="color:red">MLast.MtSig loc (Ploc.VaVal lsigi)</tt><br/>
-    <br/>
-    <tt style="color:blue">&lt;:module_type&lt; sig $_list:lsigi$ end >></tt><br/>
-    <tt style="color:red">MLast.MtSig loc lsigi</tt>
+    <tt style="color:blue">&lt;:module_type&lt; sig $list:lsi$ end >></tt><br/>
+    <tt style="color:red">MLast.MtSig loc (Ploc.VaVal lsi)</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:module_type&lt; sig $_list:lsi$ end >></tt><br/>
+    <tt style="color:red">MLast.MtSig loc lsi</tt>
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- module type of module expression</dt>
+  <dt>- of module expression</dt>
   <dd>
     <tt style="color:blue">&lt;:module_type&lt; module type of $me$ >></tt><br/>
     <tt style="color:red">MLast.MtTyo loc me</tt>
@@ -2007,8 +2007,8 @@
   <dt>- uppercase identifier</dt>
   <dd>
     <tt style="color:blue">&lt;:module_type&lt; $uid:s$ >></tt><br/>
-    <tt style="color:red">MLast.MtUid loc (Ploc.VaVal s)</tt><br/>
-    <br/>
+    <tt style="color:red">MLast.MtUid loc (Ploc.VaVal s)</tt>
+    <br/><br/>
     <tt style="color:blue">&lt;:module_type&lt; $_uid:s$ >></tt><br/>
     <tt style="color:red">MLast.MtUid loc s</tt>
   </dd>
@@ -2017,8 +2017,8 @@
   <dt>- with construction</dt>
   <dd>
     <tt style="color:blue">&lt;:module_type&lt; $mt$ with $list:lwc$ >></tt><br/>
-    <tt style="color:red">MLast.MtWit loc mt (Ploc.VaVal lwc)</tt><br/>
-    <br/>
+    <tt style="color:red">MLast.MtWit loc mt (Ploc.VaVal lwc)</tt>
+    <br/><br/>
     <tt style="color:blue">&lt;:module_type&lt; $mt$ with $_list:lwc$ >></tt><br/>
     <tt style="color:red">MLast.MtWit loc mt lwc</tt>
   </dd>
