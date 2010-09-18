@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.27 2010/09/17 18:09:32 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.28 2010/09/18 08:51:07 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -688,8 +688,8 @@ MLast.ExRec loc lpe oe;
 <:class_type< object $_opt:ot$ $list:lcsi$ end >>;
 <:class_type< object $_opt:ot$ $_list:lcsi$ end >>;
 
-(* sig_item: Signature items, i.e. phrases in a ".mli" file or "sig" *)
-(* sig_item:   elements. *)
+(* sig_item: Signature items, i.e. phrases in a ".mli" file or elements *)
+(* sig_item:   inside "sig ... end". *)
 
 (* type constraint *)
 <:class_sig_item< type $t1$ = $t2$ >>;
