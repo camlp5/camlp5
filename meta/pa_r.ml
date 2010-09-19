@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.6 2010/09/19 01:56:50 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.7 2010/09/19 20:11:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -263,8 +263,13 @@ EXTEND
     [ [ "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
         "="; pf = V (FLAG "private"); t = ctyp ->
           <:with_constr< type $_:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
+      | "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
+        ":="; t = ctyp ->
+          <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
       | "module"; i = V mod_ident "list" ""; "="; me = module_expr ->
-          <:with_constr< module $_:i$ = $me$ >> ] ]
+          <:with_constr< module $_:i$ = $me$ >>
+      | "module"; i = V mod_ident "list" ""; ":="; me = module_expr ->
+          <:with_constr< module $_:i$ := $me$ >> ] ]
   ;
   expr:
     [ "top" RIGHTA

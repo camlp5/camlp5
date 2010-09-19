@@ -669,12 +669,34 @@ Grammar.extend
      [[Gramext.Stoken ("", "module");
        Gramext.Snterm
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));
+       Gramext.Stoken ("", ":=");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'module_expr) _ (i : 'mod_ident) _ (loc : Ploc.t) ->
+           (MLast.WcMos (loc, i, me) : 'with_constr));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));
        Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
         (fun (me : 'module_expr) _ (i : 'mod_ident) _ (loc : Ploc.t) ->
            (MLast.WcMod (loc, i, me) : 'with_constr));
+      [Gramext.Stoken ("", "type");
+       Gramext.Snterm
+         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));
+       Gramext.Slist0
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (type_parameter : 'type_parameter Grammar.Entry.e)));
+       Gramext.Stoken ("", ":=");
+       Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
+      Gramext.action
+        (fun (t : 'ctyp) _ (tpl : 'type_parameter list) (i : 'mod_ident) _
+             (loc : Ploc.t) ->
+           (MLast.WcTys (loc, i, tpl, t) : 'with_constr));
       [Gramext.Stoken ("", "type");
        Gramext.Snterm
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));

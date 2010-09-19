@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.5 2010/09/19 01:56:50 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.6 2010/09/19 20:11:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -313,12 +313,18 @@ module Meta_make (C : MetaSig) =
         END ]
     and with_constr =
       fun
-      [ WcTyp _ ls ltv b t ->
+      [ WcMod _ ls me ->
+          C.node "WcMod" [C.vala (C.list C.string) ls; module_expr me]
+      | WcMos _ ls me ->
+          C.node "WcMos" [C.vala (C.list C.string) ls; module_expr me]
+      | WcTyp _ ls ltv b t ->
           C.node "WcTyp"
             [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
              C.vala C.bool b; ctyp t]
-      | WcMod _ ls me ->
-          C.node "WcMod" [C.vala (C.list C.string) ls; module_expr me] ]
+      | WcTys _ ls ltv t ->
+          C.node "WcTys"
+            [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
+             ctyp t] ]
     and module_expr =
       fun
       [ MeAcc _ me1 me2 -> C.node "MeAcc" [module_expr me1; module_expr me2]

@@ -261,9 +261,11 @@ and sig_item floc sh =
   self
 and with_constr floc sh =
   function
-    WcTyp (loc, x1, x2, x3, x4) ->
+    WcMod (loc, x1, x2) -> WcMod (floc loc, x1, module_expr floc sh x2)
+  | WcMos (loc, x1, x2) -> WcMos (floc loc, x1, module_expr floc sh x2)
+  | WcTyp (loc, x1, x2, x3, x4) ->
       WcTyp (floc loc, x1, x2, x3, ctyp floc sh x4)
-  | WcMod (loc, x1, x2) -> WcMod (floc loc, x1, module_expr floc sh x2)
+  | WcTys (loc, x1, x2, x3) -> WcTys (floc loc, x1, x2, ctyp floc sh x3)
 and module_expr floc sh =
   let rec self =
     function

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.3 2010/09/19 01:56:50 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.4 2010/09/19 20:11:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -419,8 +419,13 @@ EXTEND
     [ [ "type"; i = SV mod_ident "list" ""; tpl = SV (LIST0 type_parameter);
         "="; pf = SV (FLAG "private"); t = ctyp ->
           Qast.Node "WcTyp" [Qast.Loc; i; tpl; pf; t]
+      | "type"; i = SV mod_ident "list" ""; tpl = SV (LIST0 type_parameter);
+        ":="; t = ctyp ->
+          Qast.Node "WcTys" [Qast.Loc; i; tpl; t]
       | "module"; i = SV mod_ident "list" ""; "="; me = module_expr ->
-          Qast.Node "WcMod" [Qast.Loc; i; me] ] ]
+          Qast.Node "WcMod" [Qast.Loc; i; me]
+      | "module"; i = SV mod_ident "list" ""; ":="; me = module_expr ->
+          Qast.Node "WcMos" [Qast.Loc; i; me] ] ]
   ;
   expr:
     [ "top" RIGHTA

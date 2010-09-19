@@ -296,12 +296,18 @@ module Meta_make (C : MetaSig) =
       | SgVal (_, s, t) -> C.node "SgVal" [C.vala C.string s; ctyp t]
     and with_constr =
       function
-        WcTyp (_, ls, ltv, b, t) ->
+        WcMod (_, ls, me) ->
+          C.node "WcMod" [C.vala (C.list C.string) ls; module_expr me]
+      | WcMos (_, ls, me) ->
+          C.node "WcMos" [C.vala (C.list C.string) ls; module_expr me]
+      | WcTyp (_, ls, ltv, b, t) ->
           C.node "WcTyp"
             [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
              C.vala C.bool b; ctyp t]
-      | WcMod (_, ls, me) ->
-          C.node "WcMod" [C.vala (C.list C.string) ls; module_expr me]
+      | WcTys (_, ls, ltv, t) ->
+          C.node "WcTys"
+            [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
+             ctyp t]
     and module_expr =
       function
         MeAcc (_, me1, me2) ->

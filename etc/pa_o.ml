@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.8 2010/09/19 17:26:35 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.9 2010/09/19 20:11:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -497,8 +497,13 @@ EXTEND
     [ [ "type"; tpl = V type_parameters "list"; i = V mod_ident ""; "=";
         pf = V (FLAG "private"); t = ctyp ->
           <:with_constr< type $_:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
+      | "type"; tpl = V type_parameters "list"; i = V mod_ident ""; ":=";
+        t = ctyp ->
+          <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
       | "module"; i = V mod_ident ""; "="; me = module_expr ->
-          <:with_constr< module $_:i$ = $me$ >> ] ]
+          <:with_constr< module $_:i$ = $me$ >>
+      | "module"; i = V mod_ident ""; ":="; me = module_expr ->
+          <:with_constr< module $_:i$ := $me$ >> ] ]
   ;
   (* Core expressions *)
   expr:

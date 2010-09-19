@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.3 2010/09/19 01:56:50 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.4 2010/09/19 20:11:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -156,8 +156,10 @@ and sig_item =
       SgXtr of loc and string and option (V sig_item)
     END ]
 and with_constr =
-  [ WcTyp of loc and V (list string) and V (list type_var) and V bool and ctyp
-  | WcMod of loc and V (list string) and module_expr ]
+  [ WcMod of loc and V (list string) and module_expr
+  | WcMos of loc and V (list string) and module_expr
+  | WcTyp of loc and V (list string) and V (list type_var) and V bool and ctyp
+  | WcTys of loc and V (list string) and V (list type_var) and ctyp ]
 and module_expr =
   [ MeAcc of loc and module_expr and module_expr
   | MeApp of loc and module_expr and module_expr

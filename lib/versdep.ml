@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.2 2010/09/19 02:43:24 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.3 2010/09/19 20:11:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -495,6 +495,16 @@ value ocaml_pcty_signature =
 value ocaml_pdir_bool =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN None
   ELSE Some (fun b -> Pdir_bool b) END
+;
+
+value ocaml_pwith_modsubst =
+  IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
+  ELSE Some (fun me -> Pwith_modsubst me) END
+;
+
+value ocaml_pwith_typesubst =
+  IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
+  ELSE Some (fun td -> Pwith_typesubst td) END
 ;
 
 value module_prefix_can_be_in_first_record_label_only =

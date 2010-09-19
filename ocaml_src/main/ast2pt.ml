@@ -273,7 +273,11 @@ and package_of_module_type loc mt =
                    error loc "no type parameters allowed here";
                  if uv pf then error loc "no 'private' allowed here";
                  li, ctyp ct
+             | WcTys (loc, id, tpl, t) ->
+                 error loc "package type with 'type :=' no allowed"
              | WcMod (loc, _, _) ->
+                 error loc "package type with 'module' no allowed"
+             | WcMos (loc, _, _) ->
                  error loc "package type with 'module' no allowed")
             with_con
         in
@@ -391,26 +395,42 @@ let rec module_expr_long_id =
   | t -> error (loc_of_module_expr t) "bad module expr long ident"
 ;;
 
+let type_decl_of_with_type loc tpl pf ct =
+  let (params, var_list) = List.split (uv tpl) in
+  let variance = List.map variance_of_var var_list in
+  let params = List.map uv params in
+  let ct = Some (ctyp ct) in
+  let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
+  let pf = if pf then Private else Public in
+  ocaml_type_declaration params [] tk pf ct (mkloc loc) variance
+;;
+
 let mkwithc =
   function
-    WcTyp (loc, id, tpl, pf, ct) ->
-      let (params, var_list) = List.split (uv tpl) in
-      let variance = List.map variance_of_var var_list in
-      let params = List.map uv params in
-      let ct = Some (ctyp ct) in
-      let tk = if uv pf then ocaml_ptype_abstract else Ptype_abstract in
-      let pf = if uv pf then Private else Public in
-      let li = long_id_of_string_list loc (uv id) in
-      let wc =
-        match
-          ocaml_type_declaration params [] tk pf ct (mkloc loc) variance
-        with
-          Some td -> Pwith_type td
-        | None -> error loc "no such with constraint in this ocaml version"
-      in
-      li, wc
-  | WcMod (loc, id, m) ->
+    WcMod (loc, id, m) ->
       long_id_of_string_list loc (uv id), Pwith_module (module_expr_long_id m)
+  | WcMos (loc, id, m) ->
+      begin match ocaml_pwith_modsubst with
+        Some pwith_modsubst ->
+          long_id_of_string_list loc (uv id),
+          pwith_modsubst (module_expr_long_id m)
+      | None -> error loc "no with module := in this ocaml version"
+      end
+  | WcTyp (loc, id, tpl, pf, ct) ->
+      begin match type_decl_of_with_type loc tpl (uv pf) ct with
+        Some td -> long_id_of_string_list loc (uv id), Pwith_type td
+      | None -> error loc "no such with constraint in this ocaml version"
+      end
+  | WcTys (loc, id, tpl, t) ->
+      match ocaml_pwith_typesubst with
+        Some pwith_typesubst ->
+          begin match type_decl_of_with_type loc tpl false t with
+            Some td ->
+              let li = long_id_of_string_list loc (uv id) in
+              li, pwith_typesubst td
+          | None -> error loc "no such with constraint in this ocaml version"
+          end
+      | None -> error loc "no with type := in this ocaml version"
 ;;
 
 let rec patt_fa al =

@@ -136,8 +136,10 @@ and sig_item =
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp
 and with_constr =
-    WcTyp of loc * string list * type_var list * bool * ctyp
-  | WcMod of loc * string list * module_expr
+    WcMod of loc * string list * module_expr
+  | WcMos of loc * string list * module_expr
+  | WcTyp of loc * string list * type_var list * bool * ctyp
+  | WcTys of loc * string list * type_var list * ctyp
 and module_expr =
     MeAcc of loc * module_expr * module_expr
   | MeApp of loc * module_expr * module_expr

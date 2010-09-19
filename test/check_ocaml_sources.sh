@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.9 2010/09/19 18:37:06 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.10 2010/09/19 20:11:14 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -134,7 +134,8 @@ for i in $files; do
        "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
        "$idir/$bname" = "Printers/Null.ml" -o \
        "$idir/$bname" = "Printers/OCaml.ml" -o \
-       "$idir/$bname" = "Printers/OCamlr.ml" ]
+       "$idir/$bname" = "Printers/OCamlr.ml" -o \
+       "$idir/$bname" = "testlabl/tests.ml" ]
   then
     echo "skipping $bname"
   else

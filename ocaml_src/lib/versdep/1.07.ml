@@ -193,6 +193,10 @@ let ocaml_pcty_signature = None;;
 
 let ocaml_pdir_bool = None;;
 
+let ocaml_pwith_modsubst = None;;
+
+let ocaml_pwith_typesubst = None;;
+
 let module_prefix_can_be_in_first_record_label_only = false;;
 
 let split_or_patterns_with_bindings = true;;

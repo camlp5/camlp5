@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.3 2010/09/19 01:56:50 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.4 2010/09/19 20:11:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -268,8 +268,10 @@ and sig_item floc sh =
       END ]
 and with_constr floc sh =
   fun
-  [ WcTyp loc x1 x2 x3 x4 -> WcTyp (floc loc) x1 x2 x3 (ctyp floc sh x4)
-  | WcMod loc x1 x2 -> WcMod (floc loc) x1 (module_expr floc sh x2) ]
+  [ WcMod loc x1 x2 -> WcMod (floc loc) x1 (module_expr floc sh x2)
+  | WcMos loc x1 x2 -> WcMos (floc loc) x1 (module_expr floc sh x2)
+  | WcTyp loc x1 x2 x3 x4 -> WcTyp (floc loc) x1 x2 x3 (ctyp floc sh x4)
+  | WcTys loc x1 x2 x3 -> WcTys (floc loc) x1 x2 (ctyp floc sh x3) ]
 and module_expr floc sh =
   self where rec self =
     fun
