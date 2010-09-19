@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.5 2010/09/19 17:26:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.6 2010/09/19 18:47:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1158,7 +1158,7 @@ EXTEND_PRINTER
           else pprintf pc "%sL" s
       | <:expr< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
-          else pprintf pc "%s" s
+          else pprintf pc "%sn" s
       | <:expr:< $lid:s$ >> -> var_escaped pc (loc, s)
       | <:expr:< $uid:s$ >> -> cons_escaped pc (loc, s)
       | <:expr< `$s$ >> ->
