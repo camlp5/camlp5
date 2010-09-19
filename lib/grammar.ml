@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
+(* $Id: grammar.ml,v 6.3 2010/09/19 10:23:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_fstream.cmo";
@@ -673,7 +673,7 @@ and parser_of_symbol entry nlevn =
       let rec kont al =
         parser
         [ [: v = pt; al = ps al; a = kont al ! :] -> a
-        | [: v = pt; al = ps al ! :] -> al
+        | [: v = pt :] -> al
         | [: :] -> al ]
       in
       parser

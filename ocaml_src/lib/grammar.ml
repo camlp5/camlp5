@@ -715,7 +715,7 @@ and parser_of_symbol entry nlevn =
               (try Some (ps al strm__) with Stream.Failure -> None)
             with
               Some al -> kont al strm__
-            | _ -> ps al strm__
+            | _ -> al
             end
         | _ -> al
       in
