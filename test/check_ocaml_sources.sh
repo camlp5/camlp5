@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.6 2010/09/19 03:08:23 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.7 2010/09/19 09:56:37 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -111,6 +111,7 @@ for i in $files; do
     altsyntax="meta/pa_r.cmo"
     syntname="normal syntax"
     altsyntname="revised syntax"
+    opt=1
     if [ "$idir" = "Camlp4" -o \
          "$idir" = "Camlp4Filters" -o \
          "$idir" = "Camlp4Parsers" -o \
@@ -127,6 +128,7 @@ for i in $files; do
       altsyntax="etc/pa_o.cmo"
       syntname="revised syntax"
       altsyntname="normal syntax"
+      opt=0
     fi
     echo "*** testing $syntname to revised syntax (t1.ml)"
     main/camlp5 $syntax -I etc pr_r.cmo pr_ro.cmo "$i" > /tmp/t1.ml
@@ -142,7 +144,11 @@ for i in $files; do
     echo "*** comparing t2.ml and t3.ml"
     diff /tmp/t2.ml /tmp/t3.ml || :
     echo "*** testing $syntname to OCaml parse tree"
-    main/camlp5 $syntax meta/pr_dump.cmo "$i" > /dev/null
+    time main/camlp5 $syntax meta/pr_dump.cmo "$i" 2>&1 >/dev/null
+    if [ "$opt" = "1" ]; then
+      echo "*** testing normal syntax with opt"
+      time compile/camlp5o.fast.opt "$i" 2>&1 >/dev/null
+    fi
     echo "*** testing revised syntax (t1.ml) to OCaml parse tree"
     main/camlp5 meta/pa_r.cmo meta/pr_dump.cmo /tmp/t1.ml > /dev/null
     echo "*** testing normal syntax (t2.ml) to OCaml parse tree"

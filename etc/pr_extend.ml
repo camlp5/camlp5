@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_extend.ml,v 6.1 2010/09/15 16:00:22 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 6.2 2010/09/19 09:56:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -44,9 +44,9 @@ type symbol =
   [ Snterm of MLast.expr
   | Snterml of MLast.expr and string
   | Slist0 of symbol
-  | Slist0sep of symbol and symbol
+  | Slist0sep of symbol and symbol and bool
   | Slist1 of symbol
-  | Slist1sep of symbol and symbol
+  | Slist1sep of symbol and symbol and bool
   | Sopt of symbol
   | Sflag of symbol
   | Sself
@@ -144,6 +144,13 @@ value unstring =
   | _ -> assert False ]
 ;
 
+value unbool =
+  fun
+  [ <:expr< True >> -> True
+  | <:expr< False >> -> False
+  | _ -> assert False ]
+;
+
 value untoken =
   fun
   [ <:expr< ($str:x$, $str:y$) >> -> Left (x, y)
@@ -182,15 +189,15 @@ and unsymbol =
   | <:expr< Gramext.Snterml ($uid:_$.Entry.obj ($e$ : $_$), $str:s$) >> ->
       Snterml e s
   | <:expr< Gramext.Slist0 $e$ >> -> Slist0 (unsymbol e)
-  | <:expr< Gramext.Slist0sep $e1$ $e2$ >> ->
-      Slist0sep (unsymbol e1) (unsymbol e2)
-  | <:expr< Gramext.Slist0sep ($e1$, $e2$) >> ->
-      Slist0sep (unsymbol e1) (unsymbol e2)
+  | <:expr< Gramext.Slist0sep $e1$ $e2$ $b$ >> ->
+      Slist0sep (unsymbol e1) (unsymbol e2) (unbool b)
+  | <:expr< Gramext.Slist0sep ($e1$, $e2$, $b$) >> ->
+      Slist0sep (unsymbol e1) (unsymbol e2) (unbool b)
   | <:expr< Gramext.Slist1 $e$ >> -> Slist1 (unsymbol e)
-  | <:expr< Gramext.Slist1sep $e1$ $e2$ >> ->
-      Slist1sep (unsymbol e1) (unsymbol e2)
-  | <:expr< Gramext.Slist1sep ($e1$, $e2$) >> ->
-      Slist1sep (unsymbol e1) (unsymbol e2)
+  | <:expr< Gramext.Slist1sep $e1$ $e2$ $b$ >> ->
+      Slist1sep (unsymbol e1) (unsymbol e2) (unbool b)
+  | <:expr< Gramext.Slist1sep ($e1$, $e2$, $b$) >> ->
+      Slist1sep (unsymbol e1) (unsymbol e2) (unbool b)
   | <:expr< Gramext.Sopt $e$ >> -> Sopt (unsymbol e)
   | <:expr< Gramext.Sflag $e$ >> -> Sflag (unsymbol e)
   | <:expr< Gramext.Sself >> -> Sself
@@ -365,12 +372,14 @@ and symbol pc sy =
   | Snterml e s -> pprintf pc "%p LEVEL \"%s\"" expr e s
   | Slist0 sy ->
       pprintf pc "LIST0@;%p" simple_symbol sy
-  | Slist0sep sy sep ->
-      pprintf pc "LIST0@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
+  | Slist0sep sy sep b ->
+      pprintf pc "LIST0@;%p@ @[SEP@;%p%s@]" simple_symbol sy simple_symbol sep
+        (if b then " OPT_SEP" else "")
   | Slist1 sy ->
       pprintf pc "LIST1@;%p" simple_symbol sy
-  | Slist1sep sy sep ->
-      pprintf pc "LIST1@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
+  | Slist1sep sy sep b ->
+      pprintf pc "LIST1@;%p@ @[SEP@;%p%s@]" simple_symbol sy simple_symbol sep
+        (if b then " OPT_SEP" else "")
   | Sopt sy ->
       pprintf pc "OPT@;%p" simple_symbol sy
   | Sflag sy ->
@@ -400,7 +409,7 @@ and simple_symbol pc sy =
                pprintf pc "[ %p ]"
                  (vlist2 (rule False) (bar_before (rule False))) rl) ]
   | Stoken (Left ("", _) | Left (_, "")) -> symbol pc sy
-  | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ |
+  | Snterml _ _ | Slist0 _ | Slist0sep _ _ _ | Slist1 _ | Slist1sep _ _ _ |
     Sflag _ | Sopt _ ->
       pprintf pc "@[<1>(%p)@]" symbol sy
   | sy -> not_impl "simple_symbol" pc sy ]
@@ -408,10 +417,12 @@ and s_symbol pc =
   fun
   [ Slist0 sy -> pprintf pc "SLIST0@;%p" simple_symbol sy
   | Slist1 sy -> pprintf pc "SLIST1@;%p" simple_symbol sy
-  | Slist0sep sy sep ->
-      pprintf pc "SLIST0@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
-  | Slist1sep sy sep ->
-      pprintf pc "SLIST1@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
+  | Slist0sep sy sep b ->
+      pprintf pc "SLIST0@;%p@ @[SEP@;%p%s@]" simple_symbol sy simple_symbol
+        sep (if b then " OPT_SEP" else "")
+  | Slist1sep sy sep b ->
+      pprintf pc "SLIST1@;%p@ @[SEP@;%p%s@]" simple_symbol sy simple_symbol
+        sep (if b then " OPT_SEP" else "")
   | Sopt s ->
       let sy =
         match s with
@@ -436,12 +447,12 @@ and check_slist rl =
     match rl with
     [ [([(Some <:patt< a >>, Snterm <:expr< a_list >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>,
-          ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
+          ((Slist0 _ | Slist1 _ | Slist0sep _ _ _ | Slist1sep _ _ _) as s))],
           Some <:expr< Qast.List a >>)] ->
         Some s
     | [([(Some <:patt< a >>, Snterm <:expr< a_list2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>,
-          ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
+          ((Slist0 _ | Slist1 _ | Slist0sep _ _ _ | Slist1sep _ _ _) as s))],
           Some <:expr< Qast.VaVal (Qast.List a) >>)] ->
         Some (Svala [] None s)
 
@@ -475,8 +486,8 @@ and check_slist rl =
               let ls =
                 match (s, ls) with
                 [ (Sflag _, ["flag"; "opt"]) -> []
-                | ((Slist0 _ | Slist0sep _ _), ["list"]) -> []
-                | ((Slist1 _ | Slist1sep _ _), ["list"]) -> []
+                | ((Slist0 _ | Slist0sep _ _ _), ["list"]) -> []
+                | ((Slist1 _ | Slist1sep _ _ _), ["list"]) -> []
                 | (Sopt _, ["opt"]) -> []
                 | (Stoken (Left (s, "")), _) ->
                     if ls = anti_of_tok s then [] else ls

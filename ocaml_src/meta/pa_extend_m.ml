@@ -31,7 +31,7 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
              Gramext.action
-               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__2))])],
+               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t, false : 'e__2))])],
       Gramext.action
         (fun (sep : 'e__2 option) (s : 'symbol) _ (loc : Ploc.t) ->
            (ASquot (loc, ASlist (loc, LML_1, s, sep)) : 'symbol));
@@ -42,7 +42,7 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
              Gramext.action
-               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__1))])],
+               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t, false : 'e__1))])],
       Gramext.action
         (fun (sep : 'e__1 option) (s : 'symbol) _ (loc : Ploc.t) ->
            (ASquot (loc, ASlist (loc, LML_0, s, sep)) : 'symbol))]];

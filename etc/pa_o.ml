@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.5 2010/09/19 08:51:16 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.6 2010/09/19 09:56:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -686,13 +686,13 @@ EXTEND
   lbl_expr:
     [ [ i = patt_label_ident; "="; e = expr LEVEL "expr1" -> (i, e) ] ]
   ;
-(**)
+(*
   expr1_semi_list:
     [ [ e = expr LEVEL "expr1"; ";"; el = SELF -> [e :: el]
       | e = expr LEVEL "expr1"; ";" -> [e]
       | e = expr LEVEL "expr1" -> [e] ] ]
   ;
-(**)
+*)
 (*
   expr1_semi_list:
     [ [ rev_el = expr1_semi_rev_list -> List.rev rev_el ] ]
@@ -703,11 +703,11 @@ EXTEND
       | e = expr LEVEL "expr1" -> [e] ] ]
   ;
 *)
-(*
+(**)
   expr1_semi_list:
     [ [ el = LIST1 (expr LEVEL "expr1") SEP ";" OPT_SEP -> el ] ]
   ;
-*)
+(**)
   fun_def:
     [ RIGHTA
       [ p = patt LEVEL "simple"; (eo, e) = SELF ->

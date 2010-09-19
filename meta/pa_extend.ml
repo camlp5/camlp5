@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extend.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 6.3 2010/09/19 09:56:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -37,7 +37,8 @@ and a_psymbol 'e 'p =
 and a_symbol 'e 'p =
   [ ASflag of loc and a_symbol 'e 'p
   | ASkeyw of loc and a_string 'e
-  | ASlist of loc and lmin_len and a_symbol 'e 'p and option (a_symbol 'e 'p)
+  | ASlist of loc and lmin_len and a_symbol 'e 'p and
+      option (a_symbol 'e 'p * bool)
   | ASnext of loc
   | ASnterm of loc and (string * 'e) and option string
   | ASopt of loc and a_symbol 'e 'p
@@ -71,7 +72,7 @@ type styp =
 type text 'e 'p =
   [ TXfacto of loc and text 'e 'p
   | TXmeta of loc and string and list (text 'e 'p) and 'e and styp
-  | TXlist of loc and lmin_len and text 'e 'p and option (text 'e 'p)
+  | TXlist of loc and lmin_len and text 'e 'p and option (text 'e 'p * bool)
   | TXnext of loc
   | TXnterm of loc and name 'e and option string
   | TXopt of loc and text 'e 'p
@@ -560,12 +561,14 @@ value rec make_expr gmod tvar =
       match (min, ts) with
       [ (LML_0, None) -> <:expr< Gramext.Slist0 $txt$ >>
       | (LML_1, None) -> <:expr< Gramext.Slist1 $txt$ >>
-      | (LML_0, Some s) ->
+      | (LML_0, Some (s, b)) ->
           let x = make_expr gmod tvar s in
-          <:expr< Gramext.Slist0sep $txt$ $x$ False >>
-      | (LML_1, Some s) ->
+          let b = if b then <:expr< True >> else <:expr< False >> in
+          <:expr< Gramext.Slist0sep $txt$ $x$ $b$ >>
+      | (LML_1, Some (s, b)) ->
           let x = make_expr gmod tvar s in
-          <:expr< Gramext.Slist1sep $txt$ $x$ False >> ]
+          let b = if b then <:expr< True >> else <:expr< False >> in
+          <:expr< Gramext.Slist1sep $txt$ $x$ $b$ >> ]
   | TXnext loc -> <:expr< Gramext.Snext >>
   | TXnterm loc n lev ->
       match lev with
@@ -623,7 +626,7 @@ value mk_name2 (i, e) =
 value slist loc min sep symb =
   let t =
     match sep with
-    [ Some s -> Some s.text
+    [ Some (s, b) -> Some (s.text, b)
     | None -> None ]
   in
   TXlist loc min symb.text t
@@ -756,10 +759,10 @@ value rec symbol_of_a =
       {used = []; text = text; styp = STlid loc "string"}
   | ASlist loc min s sep ->
       let s = symbol_of_a s in
-      let sep = option_map symbol_of_a sep in
+      let sep = option_map (fun (sep, b) -> (symbol_of_a sep, b)) sep in
       let used =
         match sep with
-        [ Some symb -> symb.used @ s.used
+        [ Some (symb, _) -> symb.used @ s.used
         | None -> s.used ]
       in
       let text = slist loc min sep s in
@@ -1105,13 +1108,15 @@ EXTEND
       | s = symbol ->
           {ap_loc = loc; ap_patt = None; ap_symb = s} ] ]
   ;
+  sep_opt_sep:
+    [ [ sep = UIDENT "SEP"; t = symbol; b = FLAG [ UIDENT "OPT_SEP" ] ->
+          (t, b) ] ]
+  ;
   symbol:
     [ "top" NONA
-      [ UIDENT "LIST0"; s = SELF;
-        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+      [ UIDENT "LIST0"; s = SELF; sep = OPT sep_opt_sep ->
           ASlist loc LML_0 s sep
-      | UIDENT "LIST1"; s = SELF;
-        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+      | UIDENT "LIST1"; s = SELF; sep = OPT sep_opt_sep ->
           ASlist loc LML_1 s sep
       | UIDENT "OPT"; s = SELF ->
           ASopt loc s

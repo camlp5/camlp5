@@ -33,7 +33,8 @@ and ('e, 'p) a_psymbol =
 and ('e, 'p) a_symbol =
     ASflag of loc * ('e, 'p) a_symbol
   | ASkeyw of loc * 'e a_string
-  | ASlist of loc * lmin_len * ('e, 'p) a_symbol * ('e, 'p) a_symbol option
+  | ASlist of
+      loc * lmin_len * ('e, 'p) a_symbol * (('e, 'p) a_symbol * bool) option
   | ASnext of loc
   | ASnterm of loc * (string * 'e) * string option
   | ASopt of loc * ('e, 'p) a_symbol
@@ -65,7 +66,7 @@ type styp =
 type ('e, 'p) text =
     TXfacto of loc * ('e, 'p) text
   | TXmeta of loc * string * ('e, 'p) text list * 'e * styp
-  | TXlist of loc * lmin_len * ('e, 'p) text * ('e, 'p) text option
+  | TXlist of loc * lmin_len * ('e, 'p) text * (('e, 'p) text * bool) option
   | TXnext of loc
   | TXnterm of loc * 'e name * string option
   | TXopt of loc * ('e, 'p) text
@@ -1117,8 +1118,12 @@ let rec make_expr gmod tvar =
                (loc, MLast.ExUid (loc, "Gramext"),
                 MLast.ExUid (loc, "Slist1")),
              txt)
-      | LML_0, Some s ->
+      | LML_0, Some (s, b) ->
           let x = make_expr gmod tvar s in
+          let b =
+            if b then MLast.ExUid (loc, "True")
+            else MLast.ExUid (loc, "False")
+          in
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -1130,9 +1135,13 @@ let rec make_expr gmod tvar =
                       MLast.ExUid (loc, "Slist0sep")),
                    txt),
                 x),
-             MLast.ExUid (loc, "False"))
-      | LML_1, Some s ->
+             b)
+      | LML_1, Some (s, b) ->
           let x = make_expr gmod tvar s in
+          let b =
+            if b then MLast.ExUid (loc, "True")
+            else MLast.ExUid (loc, "False")
+          in
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -1144,7 +1153,7 @@ let rec make_expr gmod tvar =
                       MLast.ExUid (loc, "Slist1sep")),
                    txt),
                 x),
-             MLast.ExUid (loc, "False"))
+             b)
       end
   | TXnext loc ->
       MLast.ExAcc
@@ -1282,7 +1291,7 @@ let mk_name2 (i, e) =
 let slist loc min sep symb =
   let t =
     match sep with
-      Some s -> Some s.text
+      Some (s, b) -> Some (s.text, b)
     | None -> None
   in
   TXlist (loc, min, symb.text, t)
@@ -1531,10 +1540,10 @@ let rec symbol_of_a =
       {used = []; text = text; styp = STlid (loc, "string")}
   | ASlist (loc, min, s, sep) ->
       let s = symbol_of_a s in
-      let sep = option_map symbol_of_a sep in
+      let sep = option_map (fun (sep, b) -> symbol_of_a sep, b) sep in
       let used =
         match sep with
-          Some symb -> symb.used @ s.used
+          Some (symb, _) -> symb.used @ s.used
         | None -> s.used
       in
       let text = slist loc min sep s in
@@ -1946,6 +1955,8 @@ Grammar.extend
      grammar_entry_create "rule_list"
    and rule : 'rule Grammar.Entry.e = grammar_entry_create "rule"
    and psymbol : 'psymbol Grammar.Entry.e = grammar_entry_create "psymbol"
+   and sep_opt_sep : 'sep_opt_sep Grammar.Entry.e =
+     grammar_entry_create "sep_opt_sep"
    and pattern : 'pattern Grammar.Entry.e = grammar_entry_create "pattern"
    and patterns_comma : 'patterns_comma Grammar.Entry.e =
      grammar_entry_create "patterns_comma"
@@ -2279,6 +2290,18 @@ Grammar.extend
            ({ap_loc = loc; ap_patt = Some (MLast.PaLid (loc, p));
              ap_symb = s} :
             'psymbol))]];
+    Grammar.Entry.obj (sep_opt_sep : 'sep_opt_sep Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("UIDENT", "SEP");
+       Gramext.Snterm (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e));
+       Gramext.Sflag
+         (Gramext.srules
+            [[Gramext.Stoken ("UIDENT", "OPT_SEP")],
+             Gramext.action
+               (fun (x : string) (loc : Ploc.t) -> (x : 'e__4))])],
+      Gramext.action
+        (fun (b : bool) (t : 'symbol) (sep : string) (loc : Ploc.t) ->
+           (t, b : 'sep_opt_sep))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
      [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
@@ -2289,25 +2312,19 @@ Grammar.extend
         (fun (s : 'symbol) _ (loc : Ploc.t) -> (ASopt (loc, s) : 'symbol));
       [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
        Gramext.Sopt
-         (Gramext.srules
-            [[Gramext.Stoken ("UIDENT", "SEP");
-              Gramext.Snterm
-                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-             Gramext.action
-               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__5))])],
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (sep_opt_sep : 'sep_opt_sep Grammar.Entry.e)))],
       Gramext.action
-        (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Ploc.t) ->
+        (fun (sep : 'sep_opt_sep option) (s : 'symbol) _ (loc : Ploc.t) ->
            (ASlist (loc, LML_1, s, sep) : 'symbol));
       [Gramext.Stoken ("UIDENT", "LIST0"); Gramext.Sself;
        Gramext.Sopt
-         (Gramext.srules
-            [[Gramext.Stoken ("UIDENT", "SEP");
-              Gramext.Snterm
-                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-             Gramext.action
-               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (sep_opt_sep : 'sep_opt_sep Grammar.Entry.e)))],
       Gramext.action
-        (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Ploc.t) ->
+        (fun (sep : 'sep_opt_sep option) (s : 'symbol) _ (loc : Ploc.t) ->
            (ASlist (loc, LML_0, s, sep) : 'symbol))];
      Some "vala", None,
      [[Gramext.Stoken ("UIDENT", "V"); Gramext.Snext;
@@ -2340,9 +2357,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__7))])],
+               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__6))])],
       Gramext.action
-        (fun (lev : 'e__7 option) (n : 'name) (loc : Ploc.t) ->
+        (fun (lev : 'e__6 option) (n : 'name) (loc : Ploc.t) ->
            (ASnterm (loc, n, lev) : 'symbol));
       [Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ".");
        Gramext.Snterm (Grammar.Entry.obj (qualid : 'qualid Grammar.Entry.e));
@@ -2351,9 +2368,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__6))])],
+               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__5))])],
       Gramext.action
-        (fun (lev : 'e__6 option) (e : 'qualid) _ (i : string)
+        (fun (lev : 'e__5 option) (e : 'qualid) _ (i : string)
              (loc : Ploc.t) ->
            (let v = MLast.ExAcc (loc, MLast.ExUid (loc, i), snd e) in
             ASnterm (loc, (i ^ "__" ^ fst e, v), lev) :
