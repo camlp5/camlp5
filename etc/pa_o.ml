@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.6 2010/09/19 09:56:36 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.7 2010/09/19 11:23:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1033,8 +1033,8 @@ EXTEND
       | "object"; cst = V (OPT class_self_type);
         csf = V (LIST0 class_sig_item); "end" ->
           <:class_type< object $_opt:cst$ $_list:csf$ end >> ]
-    | [ ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ ( $ct2$ ) >> ]
     | [ ct1 = SELF; "."; ct2 = SELF -> <:class_type< $ct1$ . $ct2$ >> ]
+    | [ ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ ( $ct2$ ) >> ]
     | [ i = V LIDENT -> <:class_type< $_id: i$ >>
       | i = V UIDENT -> <:class_type< $_id: i$ >> ] ]
   ;
