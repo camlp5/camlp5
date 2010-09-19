@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 6.1 2010/09/15 16:00:19 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 6.2 2010/09/19 10:48:02 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -136,14 +136,16 @@ to <em>extend</em> it, using a specific syntactic statement:
                  | "SELF"
                  | "NEXT"
                  | "LIST0" symbol
-                 | "LIST0" symbol "SEP" symbol
+                 | "LIST0" symbol "SEP" symbol opt-opt-sep
                  | "LIST1" symbol
-                 | "LIST1" symbol "SEP" symbol
+                 | "LIST1" symbol "SEP" symbol opt-opt-sep
                  | "OPT" symbol
                  | "FLAG" symbol
                  | "V" symbol opt-strings
                  | "[" rules "]"
                  | "(" symbol ")"
+   opt-opt-sep ::= "OPT_SEP"
+                 | &lt;nothing&gt;
    opt-strings ::= string opt-strings
                  | &lt;nothing&gt;
        keyword ::= string
@@ -346,14 +348,16 @@ symbols. They are:</p>
 <ul>
   <li>LIST0 followed by a symbol: this is a list of this symbol,
     possibly empty,</li>
-  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
-    list, possibly empty, of the first symbol separated by the second
-    one,</li>
+  <li>LIST0 followed by a symbol, SEP and another symbol, and optional
+    OPT_SEP: this is a list, possibly empty, of the first symbol
+    separated by the second one, possibly ended with the separator if
+    OPT_SEP is present,</li>
   <li>LIST1 followed by a symbol: this is a list of this symbol,
     with at least one element,</li>
-  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
-    list, with at least one element, of the first symbol separated by
-    the second one,</li>
+  <li>LIST1 followed by a symbol, SEP and another symbol, and optional
+    OPT_SEP: this is a list, with at least one element, of the first
+    symbol separated by the second one, possibly ended with the
+    separator if OPT_SEP is present,</li>
   <li>OPT followed by a symbol: equivalent to "this symbol or
     nothing" returning a value of type "<tt>option</tt>".</li>
   <li>FLAG followed by a symbol: equivalent to "this symbol or
