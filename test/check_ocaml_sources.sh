@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.8 2010/09/19 17:26:36 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.9 2010/09/19 18:37:06 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -40,11 +40,30 @@ for i in $files; do
        "$pdir" = "unmaintained" -o \
        "$idir" = "builtin" -o \
        "$idir" = "Struct" -o "$idir" = "Grammar" -o \
+       "$idir/$bname" = "camlp4/Camlp4Bin.ml" -o \
        "$idir/$bname" = "Camlp4/Debug.ml" -o \
        "$idir/$bname" = "Camlp4/ErrorHandler.ml" -o \
        "$idir/$bname" = "Camlp4/OCamlInitSyntax.ml" -o \
        "$idir/$bname" = "Camlp4/Register.ml" -o \
        "$idir/$bname" = "Camlp4/Sig.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4AstLifter.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4ExceptionTracer.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4FoldGenerator.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4MetaGenerator.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4Profiler.ml" -o \
+       "$idir/$bname" = "Camlp4Filters/Camlp4TrashRemover.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4AstLoader.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4DebugParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4GrammarParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4ListComprehension.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4MacroParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlParserParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlReloadedParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlRevisedParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlRevisedParserParser.ml" -o \
+       "$idir/$bname" = "Camlp4Parsers/Camlp4QuotationCommon.ml" -o \
+       "$idir/$bname" = "Camlp4Top/Top.ml" -o \
        "$idir/$bname" = "examples/apply_operator.ml" -o \
        "$idir/$bname" = "examples/arith.ml" -o \
        "$idir/$bname" = "examples/debug_extension.ml" -o \
@@ -76,12 +95,15 @@ for i in $files; do
        "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
        "$idir/$bname" = "fixtures/functor-perf2.ml" -o \
        "$idir/$bname" = "fixtures/functor-perf3.ml" -o \
+       "$idir/$bname" = "fixtures/gram.ml" -o \
        "$idir/$bname" = "fixtures/gram-fold.ml" -o \
        "$idir/$bname" = "fixtures/gram-list.ml" -o \
        "$idir/$bname" = "fixtures/gram-loc-lost.ml" -o \
        "$idir/$bname" = "fixtures/gram-sub-rule.ml" -o \
+       "$idir/$bname" = "fixtures/gram-tree.ml" -o \
        "$idir/$bname" = "fixtures/gram-tree2.ml" -o \
        "$idir/$bname" = "fixtures/gram-tree3.ml" -o \
+       "$idir/$bname" = "fixtures/label.ml" -o \
        "$idir/$bname" = "fixtures/lambda_free.ml" -o \
        "$idir/$bname" = "fixtures/loc-bug.ml" -o \
        "$idir/$bname" = "fixtures/make_extend.ml" -o \
@@ -89,15 +111,17 @@ for i in $files; do
        "$idir/$bname" = "fixtures/metalib.ml" -o \
        "$idir/$bname" = "fixtures/method_private_virtual.ml" -o \
        "$idir/$bname" = "fixtures/pp_let_in.ml" -o \
-       "$idir/$bname" = "fixtures/pprecoredtyp.ml" -o \
+       "$idir/$bname" = "fixtures/pprecordtyp.ml" -o \
        "$idir/$bname" = "fixtures/pr4314gram1.ml" -o \
        "$idir/$bname" = "fixtures/pr4314gram2.ml" -o \
        "$idir/$bname" = "fixtures/pr4314gram3.ml" -o \
        "$idir/$bname" = "fixtures/pr4314gram4.ml" -o \
+       "$idir/$bname" = "fixtures/pr4314gram5.ml" -o \
        "$idir/$bname" = "fixtures/pr4329.ml" -o \
        "$idir/$bname" = "fixtures/pr4330.ml" -o \
        "$idir/$bname" = "fixtures/pr4357.ml" -o \
        "$idir/$bname" = "fixtures/pr4357sample.ml" -o \
+       "$idir/$bname" = "fixtures/pr4357sample2.ml" -o \
        "$idir/$bname" = "fixtures/pr4452.ml" -o \
        "$idir/$bname" = "fixtures/simplify.ml" -o \
        "$idir/$bname" = "fixtures/simplify_r.ml" -o \
@@ -106,23 +130,6 @@ for i in $files; do
        "$idir/$bname" = "fixtures/tuple_as_retval.ml" -o \
        "$idir/$bname" = "fixtures/unit.ml" -o \
        "$idir/$bname" = "fixtures/use.ml" -o \
-       "$idir/$bname" = "Camlp4Filters/Camlp4AstLifter.ml" -o \
-       "$idir/$bname" = "Camlp4Filters/Camlp4ExceptionTracer.ml" -o \
-       "$idir/$bname" = "Camlp4Filters/Camlp4FoldGenerator.ml" -o \
-       "$idir/$bname" = "Camlp4Filters/Camlp4MetaGenerator.ml" -o \
-       "$idir/$bname" = "Camlp4Filters/Camlp4Profiler.ml" -o \
-       "$idir/$bname" = "Camlp4Filters/Camlp4TrashRemover.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4AstLoader.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4DebugParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4GrammarParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4ListComprehension.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4MacroParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlParserParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlReloadedParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlRevisedParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4OCamlRevisedParserParser.ml" -o \
-       "$idir/$bname" = "Camlp4Parsers/Camlp4QuotationCommon.ml" -o \
        "$idir/$bname" = "Printers/DumpCamlp4Ast.ml" -o \
        "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
        "$idir/$bname" = "Printers/Null.ml" -o \
@@ -144,7 +151,9 @@ for i in $files; do
          "$idir/$bname" = "boot/Camlp4Ast.ml" -o \
          "$idir/$bname" = "camlp4/camlp4prof.ml" -o \
          "$idir/$bname" = "camlp4/mkcamlp4.ml" -o \
+         "$idir/$bname" = "Camlp4Top/Rprint.ml" -o \
          "$idir/$bname" = "fixtures/external.ml" -o \
+         "$idir/$bname" = "fixtures/fun.ml" -o \
          "$idir/$bname" = "fixtures/meta_multi_term.ml" -o \
          "$idir/$bname" = "fixtures/mod2.ml" -o \
          "$idir/$bname" = "fixtures/outside-scope.ml" -o \
@@ -174,10 +183,10 @@ for i in $files; do
     echo "*** comparing t2.ml and t3.ml"
     diff /tmp/t2.ml /tmp/t3.ml || :
     echo "*** testing $syntname to OCaml parse tree"
-    time main/camlp5 $syntax meta/pr_dump.cmo "$i" 2>&1 >/dev/null
+    main/camlp5 $syntax meta/pr_dump.cmo "$i" >/dev/null
     if [ "$opt" = "1" ]; then
       echo "*** testing normal syntax with opt"
-      time compile/camlp5o.fast.opt "$i" 2>&1 >/dev/null
+      compile/camlp5o.fast.opt "$i" >/dev/null
     fi
     echo "*** testing revised syntax (t1.ml) to OCaml parse tree"
     main/camlp5 meta/pa_r.cmo meta/pr_dump.cmo /tmp/t1.ml > /dev/null
