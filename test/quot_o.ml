@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.10 2010/09/18 19:29:43 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.11 2010/09/19 20:46:26 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -277,6 +277,10 @@ MLast.SgUse (loc, s, Ploc.VaVal lsil);;
 MLast.SgUse (loc, s, lsil);;
 MLast.SgVal (loc, Ploc.VaVal s, t);;
 MLast.SgVal (loc, s, t);;
+MLast.WcMod (loc, Ploc.VaVal ls, me);;
+MLast.WcMod (loc, ls, me);;
+MLast.WcMos (loc, Ploc.VaVal ls, me);;
+MLast.WcMos (loc, ls, me);;
 MLast.WcTyp (loc, Ploc.VaVal ls, Ploc.VaVal ltv, Ploc.VaVal true, t);;
 MLast.WcTyp (loc, Ploc.VaVal ls, Ploc.VaVal ltv, Ploc.VaVal false, t);;
 MLast.WcTyp (loc, Ploc.VaVal ls, Ploc.VaVal ltv, Ploc.VaVal b, t);;
@@ -293,8 +297,10 @@ MLast.WcTyp (loc, ls, ltv, Ploc.VaVal true, t);;
 MLast.WcTyp (loc, ls, ltv, Ploc.VaVal false, t);;
 MLast.WcTyp (loc, ls, ltv, Ploc.VaVal b, t);;
 MLast.WcTyp (loc, ls, ltv, b, t);;
-MLast.WcMod (loc, Ploc.VaVal ls, me);;
-MLast.WcMod (loc, ls, me);;
+MLast.WcTys (loc, Ploc.VaVal ls, Ploc.VaVal ltv, t);;
+MLast.WcTys (loc, Ploc.VaVal ls, ltv, t);;
+MLast.WcTys (loc, ls, Ploc.VaVal ltv, t);;
+MLast.WcTys (loc, ls, ltv, t);;
 MLast.MeAcc (loc, me1, me2);;
 MLast.MeApp (loc, me1, me2);;
 MLast.MeFun (loc, Ploc.VaVal s, mt, me);;
@@ -717,6 +723,14 @@ MLast.CrVal (loc, b1, Ploc.VaVal b2, Ploc.VaVal s, e);;
 MLast.CrVal (loc, b1, Ploc.VaVal b2, s, e);;
 MLast.CrVal (loc, b1, b2, Ploc.VaVal s, e);;
 MLast.CrVal (loc, b1, b2, s, e);;
+MLast.CrVav (loc, Ploc.VaVal true, Ploc.VaVal s, t);;
+MLast.CrVav (loc, Ploc.VaVal true, s, t);;
+MLast.CrVav (loc, Ploc.VaVal false, Ploc.VaVal s, t);;
+MLast.CrVav (loc, Ploc.VaVal false, s, t);;
+MLast.CrVav (loc, Ploc.VaVal b, Ploc.VaVal s, t);;
+MLast.CrVav (loc, Ploc.VaVal b, s, t);;
+MLast.CrVav (loc, b, Ploc.VaVal s, t);;
+MLast.CrVav (loc, b, s, t);;
 MLast.CrVir (loc, Ploc.VaVal true, Ploc.VaVal s, t);;
 MLast.CrVir (loc, Ploc.VaVal true, s, t);;
 MLast.CrVir (loc, Ploc.VaVal false, Ploc.VaVal s, t);;

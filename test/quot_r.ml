@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.28 2010/09/18 08:51:07 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.29 2010/09/19 20:46:26 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -483,6 +483,14 @@ MLast.ExRec loc lpe oe;
 
 (* with_constr: "With" possibly following a module type. *)
 
+(* with module *)
+<:with_constr< module $list:ls$ = $me$ >>;
+<:with_constr< module $_list:ls$ = $me$ >>;
+
+(* with module substitution *)
+<:with_constr< module $list:ls$ := $me$ >>;
+<:with_constr< module $_list:ls$ := $me$ >>;
+
 (* with type *)
 <:with_constr< type $list:ls$ $list:ltv$ = private $t$ >>;
 <:with_constr< type $list:ls$ $list:ltv$ = $t$ >>;
@@ -501,9 +509,11 @@ MLast.ExRec loc lpe oe;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
 <:with_constr< type $_list:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
 
-(* with module *)
-<:with_constr< module $list:ls$ = $me$ >>;
-<:with_constr< module $_list:ls$ = $me$ >>;
+(* with type substitution *)
+<:with_constr< type $list:ls$ $list:ltv$ := $t$ >>;
+<:with_constr< type $list:ls$ $_list:ltv$ := $t$ >>;
+<:with_constr< type $_list:ls$ $list:ltv$ := $t$ >>;
+<:with_constr< type $_list:ls$ $_list:ltv$ := $t$ >>;
 
 (* access *)
 <:module_expr< $me1$ . $me2$ >>;
@@ -947,6 +957,16 @@ MLast.ExRec loc lpe oe;
 <:class_str_item< value $_!:b1$ $flag:b2$ $_lid:s$ = $e$ >>;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
 <:class_str_item< value $_!:b1$ $_flag:b2$ $_lid:s$ = $e$ >>;
+
+(* virtual value *)
+<:class_str_item< value virtual mutable $lid:s$ : $t$ >>;
+<:class_str_item< value virtual mutable $_lid:s$ : $t$ >>;
+<:class_str_item< value virtual $lid:s$ : $t$ >>;
+<:class_str_item< value virtual $_lid:s$ : $t$ >>;
+<:class_str_item< value virtual $flag:b$ $lid:s$ : $t$ >>;
+<:class_str_item< value virtual $flag:b$ $_lid:s$ : $t$ >>;
+<:class_str_item< value virtual $_flag:b$ $lid:s$ : $t$ >>;
+<:class_str_item< value virtual $_flag:b$ $_lid:s$ : $t$ >>;
 
 (* virtual method *)
 <:class_str_item< method virtual private $lid:s$ : $t$ >>;
