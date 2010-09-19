@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.4 2010/09/19 02:43:24 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.5 2010/09/19 17:26:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1294,7 +1294,8 @@ EXTEND_PRINTER
           let tl = List.map (fun t -> (t, " *")) tl in
           plist next 2 pc tl ]
     | "apply"
-      [ <:ctyp:< $_$ $_$ >> as z ->
+      [ <:ctyp< $uid:_$ $_$ >> as z -> next pc z
+      | <:ctyp:< $_$ $_$ >> as z ->
           let (t, tl) =
             loop [] z where rec loop args =
               fun
@@ -1308,6 +1309,8 @@ EXTEND_PRINTER
                 tl curr t ] ]
     | "dot"
       [ <:ctyp< $x$ . $y$ >> -> pprintf pc "%p.%p" curr x curr y ]
+    | "mod_apply"
+      [ <:ctyp< $uid:m$ $x$ >> -> pprintf pc "%s(%p)" m curr x ]
     | "simple"
       [ <:ctyp:< { $list:ltl$ } >> ->
           pprintf pc "@[<a>@[<2>{ %p }@]@]"
@@ -1446,8 +1449,12 @@ EXTEND_PRINTER
                  pprintf pc "struct %p end" (hlist str_item_sep) sil)
             (fun () ->
                pprintf pc "@[<b>struct@;%p@ end@]" (vlist str_item_sep) sil) ]
+    | "dot"
+      [ <:module_expr< $x$ . $y$ >> ->
+          pprintf pc "%p.%p" curr x curr y ]
     | "apply"
       [ <:module_expr< $x$ $y$ >> ->
+(*
           let mod_exp2 pc (is_first, me) =
             match me with
             [ <:module_expr< $uid:_$ >> | <:module_expr< $_$ . $_$ >>
@@ -1463,9 +1470,9 @@ EXTEND_PRINTER
           in
           let mel = List.map (fun me -> (me, "")) [me :: mel] in
           plist mod_exp2 2 pc mel ]
-    | "dot"
-      [ <:module_expr< $x$ . $y$ >> ->
-          pprintf pc "%p.%p" curr x curr y ]
+*)
+          pprintf pc "%p(%p)" curr x curr y ]
+(**)
     | "simple"
       [ <:module_expr< $uid:s$ >> ->
           pprintf pc "%s" s

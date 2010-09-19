@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.7 2010/09/19 09:56:37 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.8 2010/09/19 17:26:36 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -67,21 +67,45 @@ for i in $files; do
        "$idir/$bname" = "examples/parse_files.ml" -o \
        "$idir/$bname" = "examples/test_type_quotation.ml" -o \
        "$idir/$bname" = "examples/type_quotation.ml" -o \
+       "$idir/$bname" = "fixtures/backquoted_irrefutable_tuple.ml" -o \
+       "$idir/$bname" = "fixtures/backquoted_record.ml" -o \
+       "$idir/$bname" = "fixtures/backquoted_tuple.ml" -o \
        "$idir/$bname" = "fixtures/bug_escaping_quot.ml" -o \
        "$idir/$bname" = "fixtures/class_expr_quot.ml" -o \
+       "$idir/$bname" = "fixtures/default_quotation.ml" -o \
        "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
+       "$idir/$bname" = "fixtures/functor-perf2.ml" -o \
        "$idir/$bname" = "fixtures/functor-perf3.ml" -o \
+       "$idir/$bname" = "fixtures/gram-fold.ml" -o \
        "$idir/$bname" = "fixtures/gram-list.ml" -o \
+       "$idir/$bname" = "fixtures/gram-loc-lost.ml" -o \
        "$idir/$bname" = "fixtures/gram-sub-rule.ml" -o \
        "$idir/$bname" = "fixtures/gram-tree2.ml" -o \
+       "$idir/$bname" = "fixtures/gram-tree3.ml" -o \
        "$idir/$bname" = "fixtures/lambda_free.ml" -o \
+       "$idir/$bname" = "fixtures/loc-bug.ml" -o \
+       "$idir/$bname" = "fixtures/make_extend.ml" -o \
+       "$idir/$bname" = "fixtures/match_parser.ml" -o \
+       "$idir/$bname" = "fixtures/metalib.ml" -o \
        "$idir/$bname" = "fixtures/method_private_virtual.ml" -o \
+       "$idir/$bname" = "fixtures/pp_let_in.ml" -o \
+       "$idir/$bname" = "fixtures/pprecoredtyp.ml" -o \
+       "$idir/$bname" = "fixtures/pr4314gram1.ml" -o \
        "$idir/$bname" = "fixtures/pr4314gram2.ml" -o \
+       "$idir/$bname" = "fixtures/pr4314gram3.ml" -o \
+       "$idir/$bname" = "fixtures/pr4314gram4.ml" -o \
        "$idir/$bname" = "fixtures/pr4329.ml" -o \
+       "$idir/$bname" = "fixtures/pr4330.ml" -o \
        "$idir/$bname" = "fixtures/pr4357.ml" -o \
+       "$idir/$bname" = "fixtures/pr4357sample.ml" -o \
        "$idir/$bname" = "fixtures/pr4452.ml" -o \
+       "$idir/$bname" = "fixtures/simplify.ml" -o \
        "$idir/$bname" = "fixtures/simplify_r.ml" -o \
+       "$idir/$bname" = "fixtures/superfluous.ml" -o \
        "$idir/$bname" = "fixtures/transform-examples.ml" -o \
+       "$idir/$bname" = "fixtures/tuple_as_retval.ml" -o \
+       "$idir/$bname" = "fixtures/unit.ml" -o \
+       "$idir/$bname" = "fixtures/use.ml" -o \
        "$idir/$bname" = "Camlp4Filters/Camlp4AstLifter.ml" -o \
        "$idir/$bname" = "Camlp4Filters/Camlp4ExceptionTracer.ml" -o \
        "$idir/$bname" = "Camlp4Filters/Camlp4FoldGenerator.ml" -o \
@@ -120,8 +144,14 @@ for i in $files; do
          "$idir/$bname" = "boot/Camlp4Ast.ml" -o \
          "$idir/$bname" = "camlp4/camlp4prof.ml" -o \
          "$idir/$bname" = "camlp4/mkcamlp4.ml" -o \
+         "$idir/$bname" = "fixtures/external.ml" -o \
          "$idir/$bname" = "fixtures/meta_multi_term.ml" -o \
+         "$idir/$bname" = "fixtures/mod2.ml" -o \
+         "$idir/$bname" = "fixtures/outside-scope.ml" -o \
          "$idir/$bname" = "fixtures/parser.ml" -o \
+         "$idir/$bname" = "fixtures/rec.ml" -o \
+         "$idir/$bname" = "fixtures/seq.ml" -o \
+         "$idir/$bname" = "fixtures/seq2.ml" -o \
          "$idir/$bname" = "fixtures/type.ml" ]
     then
       syntax="meta/pa_r.cmo meta/pa_rp.cmo etc/q_phony.cmo"

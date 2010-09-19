@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.7 2010/09/19 11:23:36 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.8 2010/09/19 17:26:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -364,7 +364,8 @@ EXTEND
           <:module_expr< functor ( $_uid:i$ : $t$ ) -> $me$ >>
       | "struct"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
-    | [ me1 = SELF; me2 = SELF -> <:module_expr< $me1$ $me2$ >> ]
+    | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
+    | [ me1 = SELF; "("; me2 = SELF; ")" -> <:module_expr< $me1$ $me2$ >> ]
     | [ i = mod_expr_ident -> i
       | "("; "val"; e = expr; ":"; mt = module_type; ")" ->
          <:module_expr< (value $e$ : $mt$) >>
