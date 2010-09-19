@@ -195,6 +195,7 @@ and class_str_item =
   | CrIni of loc * expr
   | CrMth of loc * bool * bool * string * ctyp option * expr
   | CrVal of loc * bool * bool * string * expr
+  | CrVav of loc * bool * string * ctyp
   | CrVir of loc * bool * string * ctyp
 ;;
 

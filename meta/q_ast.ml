@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.4 2010/09/17 09:41:09 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.5 2010/09/19 01:56:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -443,6 +443,8 @@ module Meta_make (C : MetaSig) =
       | CrVal _ b1 b2 s e ->
           C.node "CrVal"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e]
+      | CrVav _ b s t ->
+          C.node "CrVav" [C.vala C.bool b; C.vala C.string s; ctyp t]
       | CrVir _ b s t ->
           C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t] ]
     ;

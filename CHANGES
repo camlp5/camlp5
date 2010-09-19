@@ -1,6 +1,7 @@
 Camlp5 Version 6.00:
 --------------------
 
+* [19 Sep 10] Completed missing statements in objects and classes.
 * [08 Sep 10] Added option '-flag O' of pr_r.cmo and pr_o.cmo which
   add location comments in the output.
 * [08 Sep 10] Added new chapters in the documentation:
@@ -10,7 +11,7 @@ Camlp5 Version 6.00:
   pr_o.cmo which did not work.
 * [06 Sep 10] Changed revised syntax of 'inherit something [params]'
   into 'inherit [params] something' (like in normal syntax).
-* [06 Sep 10] Added statements (which were missing in camlp5 parsers):
+* [06 Sep 10] Added missing statements:
     - 'module type of' as module type,
     - '(module ... : ...)' as expression,
     - '(val ...)' ('value' in revised syntax) as module expression.

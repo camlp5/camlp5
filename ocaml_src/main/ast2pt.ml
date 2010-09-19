@@ -1426,6 +1426,7 @@ and class_str_item c l =
       ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l
   | CrVal (loc, ovf, mf, s, e) ->
       ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l
+  | CrVav (loc, mf, s, t) -> failwith "CrVav not impl in ast2pt"
   | CrVir (loc, b, s, t) ->
       Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
 ;;

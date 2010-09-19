@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.2 2010/09/19 01:13:50 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.3 2010/09/19 01:56:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -958,26 +958,35 @@ EXTEND
     [ [ "inherit"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ->
           <:class_str_item< inherit $ce$ $_opt:pb$ >>
       | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
-        lab = V label "lid" ""; e = cvalue_binding ->
+        lab = V LIDENT "lid" ""; e = cvalue_binding ->
           <:class_str_item< value $_!:ov$ $_flag:mf$ $_lid:lab$ = $e$ >>
-      | "method"; "private"; "virtual"; l = V label "lid" ""; ":";
+      | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
+        "virtual"; lab = V LIDENT "lid" ""; ":"; t = ctyp ->
+          if Pcaml.unvala ov then
+            Ploc.raise loc (Stream.Error "virtual value cannot override")
+          else
+            <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
+      | "val"; "virtual"; mf = V (FLAG "mutable"); lab = V LIDENT "lid" "";
+        ":"; t = ctyp ->
+          <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
+      | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
         t = poly_type ->
           <:class_str_item< method virtual private $_lid:l$ : $t$ >>
-      | "method"; "virtual"; "private"; l = V label "lid" ""; ":";
+      | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
         t = poly_type ->
           <:class_str_item< method virtual private $_lid:l$ : $t$ >>
-      | "method"; "virtual"; l = V label "lid" ""; ":"; t = poly_type ->
+      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
           <:class_str_item< method virtual $_lid:l$ : $t$ >>
-      | "method"; ov = V (FLAG "!") "!"; "private"; l = V label "lid" ""; ":";
-        t = poly_type; "="; e = expr ->
+      | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
+        ":"; t = poly_type; "="; e = expr ->
           <:class_str_item< method $_!:ov$ private $_lid:l$ : $t$ = $e$ >>
-      | "method"; ov = V (FLAG "!") "!"; "private"; l = V label "lid" "";
+      | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
         sb = fun_binding ->
           <:class_str_item< method $_!:ov$ private $_lid:l$ = $sb$ >>
-      | "method"; ov = V (FLAG "!") "!"; l = V label "lid" ""; ":";
+      | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" ""; ":";
         t = poly_type; "="; e = expr ->
           <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ >>
-      | "method"; ov = V (FLAG "!") "!"; l = V label "lid" "";
+      | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" "";
         sb = fun_binding ->
           <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
@@ -1018,19 +1027,19 @@ EXTEND
   class_sig_item:
     [ [ "inherit"; cs = class_signature ->
           <:class_sig_item< inherit $cs$ >>
-      | "val"; mf = V (FLAG "mutable"); l = V label "lid" ""; ":"; t = ctyp ->
+      | "val"; mf = V (FLAG "mutable"); l = V LIDENT "lid" ""; ":"; t = ctyp ->
           <:class_sig_item< value $_flag:mf$ $_lid:l$ : $t$ >>
-      | "method"; "private"; "virtual"; l = V label "lid" ""; ":";
+      | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
         t = poly_type ->
           <:class_sig_item< method virtual private $_lid:l$ : $t$ >>
-      | "method"; "virtual"; "private"; l = V label "lid" ""; ":";
+      | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
         t = poly_type ->
           <:class_sig_item< method virtual private $_lid:l$ : $t$ >>
-      | "method"; "virtual"; l = V label "lid" ""; ":"; t = poly_type ->
+      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
           <:class_sig_item< method virtual $_lid:l$ : $t$ >>
-      | "method"; "private"; l = V label "lid" ""; ":"; t = poly_type ->
+      | "method"; "private"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
           <:class_sig_item< method private $_lid:l$ : $t$ >>
-      | "method"; l = V label "lid" ""; ":"; t = poly_type ->
+      | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
           <:class_sig_item< method $_lid:l$ : $t$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
@@ -1056,7 +1065,7 @@ EXTEND
           <:expr< object $_opt:cspo$ $_list:cf$ end >> ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = V label "lid" -> <:expr< $e$ # $_lid:lab$ >> ] ]
+    [ [ e = SELF; "#"; lab = V LIDENT "lid" -> <:expr< $e$ # $_lid:lab$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->

@@ -385,6 +385,7 @@ and class_str_item floc sh =
            expr floc sh x5)
     | CrVal (loc, x1, x2, x3, x4) ->
         CrVal (floc loc, x1, x2, x3, expr floc sh x4)
+    | CrVav (loc, x1, x2, x3) -> CrVav (floc loc, x1, x2, ctyp floc sh x3)
     | CrVir (loc, x1, x2, x3) -> CrVir (floc loc, x1, x2, ctyp floc sh x3)
   in
   self

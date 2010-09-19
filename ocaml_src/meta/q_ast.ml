@@ -417,6 +417,8 @@ module Meta_make (C : MetaSig) =
       | CrVal (_, b1, b2, s, e) ->
           C.node "CrVal"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e]
+      | CrVav (_, b, s, t) ->
+          C.node "CrVav" [C.vala C.bool b; C.vala C.string s; ctyp t]
       | CrVir (_, b, s, t) ->
           C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t]
     ;;
@@ -479,7 +481,7 @@ module Meta_E =
                  MLast.ExAnt (loc, r)
              | _ -> assert false
              end
-         | _ -> assert false
+         | None -> assert false
        ;;
        let xtr_or_anti loc f s =
          match get_anti_loc s with
@@ -493,7 +495,7 @@ module Meta_E =
                  f (MLast.ExAnt (loc, r))
              | _ -> assert false
              end
-         | _ -> assert false
+         | None -> assert false
        ;;
      end)
 ;;
@@ -551,7 +553,7 @@ module Meta_P =
                  MLast.PaAnt (loc, r)
              | _ -> assert false
              end
-         | _ -> assert false
+         | None -> assert false
        ;;
        let xtr_or_anti loc f s =
          match get_anti_loc s with
@@ -565,7 +567,7 @@ module Meta_P =
                  f (MLast.PaAnt (loc, r))
              | _ -> assert false
              end
-         | _ -> assert false
+         | None -> assert false
        ;;
      end)
 ;;

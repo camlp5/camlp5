@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.3 2010/09/16 14:38:04 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.4 2010/09/19 01:56:50 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -1249,6 +1249,8 @@ and class_str_item c l =
       [ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l]
   | CrVal loc ovf mf s e ->
       [ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l]
+  | CrVav loc mf s t ->
+      failwith "CrVav not impl in ast2pt"
   | CrVir loc b s t ->
       [Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l] ]
 ;

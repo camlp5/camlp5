@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.3 2010/09/19 01:56:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -999,13 +999,16 @@ EXTEND
       | "inherit"; ce = class_expr; pb = SV (OPT as_lident) ->
           Qast.Node "CrInh" [Qast.Loc; ce; pb]
       | "value"; ovf = SV (FLAG "!") "!"; mf = SV (FLAG "mutable");
-        lab = SV label "lid" ""; e = cvalue_binding ->
+        lab = SV lident "lid" ""; e = cvalue_binding ->
           Qast.Node "CrVal" [Qast.Loc; ovf; mf; lab; e]
-      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid" "";
+      | "value"; "virtual"; mf = SV (FLAG "mutable");
+        lab = SV lident "lid" ""; ":"; t = ctyp ->
+          Qast.Node "CrVav" [Qast.Loc; mf; lab; t]
+      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV lident "lid" "";
         ":"; t = ctyp ->
           Qast.Node "CrVir" [Qast.Loc; pf; l; t]
       | "method"; ovf = SV (FLAG "!") "!"; pf = SV (FLAG "private") "priv";
-        l = SV label "lid" ""; topt = SV (OPT polyt); e = fun_binding ->
+        l = SV lident "lid" ""; topt = SV (OPT polyt); e = fun_binding ->
           Qast.Node "CrMth" [Qast.Loc; ovf; pf; l; topt; e]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           Qast.Node "CrCtr" [Qast.Loc; t1; t2]
@@ -1025,7 +1028,7 @@ EXTEND
       | ":>"; t = ctyp; "="; e = expr ->
           Qast.Node "ExCoe" [Qast.Loc; e; Qast.Option None; t] ] ]
   ;
-  label:
+  lident:
     [ [ i = LIDENT -> mkident i ] ]
   ;
   class_type:
@@ -1054,13 +1057,13 @@ EXTEND
     [ [ "declare"; st = SV (LIST0 [ s = class_sig_item; ";" -> s ]); "end" ->
           Qast.Node "CgDcl" [Qast.Loc; st]
       | "inherit"; cs = class_type -> Qast.Node "CgInh" [Qast.Loc; cs]
-      | "value"; mf = SV (FLAG "mutable"); l = SV label "lid" ""; ":";
+      | "value"; mf = SV (FLAG "mutable"); l = SV lident "lid" ""; ":";
         t = ctyp ->
           Qast.Node "CgVal" [Qast.Loc; mf; l; t]
-      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid" "";
+      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV lident "lid" "";
         ":"; t = ctyp ->
           Qast.Node "CgVir" [Qast.Loc; pf; l; t]
-      | "method"; pf = SV (FLAG "private"); l = SV label "lid" ""; ":";
+      | "method"; pf = SV (FLAG "private"); l = SV lident "lid" ""; ":";
         t = ctyp ->
           Qast.Node "CgMth" [Qast.Loc; pf; l; t]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
@@ -1089,7 +1092,7 @@ EXTEND
           Qast.Node "ExObj" [Qast.Loc; cspo; cf] ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = SV label "lid" "" ->
+    [ [ e = SELF; "#"; lab = SV lident "lid" "" ->
           Qast.Node "ExSnd" [Qast.Loc; e; lab] ] ]
   ;
   expr: LEVEL "simple"
@@ -1101,7 +1104,7 @@ EXTEND
           Qast.Node "ExOvr" [Qast.Loc; fel] ] ]
   ;
   field_expr:
-    [ [ l = label; "="; e = expr -> Qast.Tuple [l; e] ] ]
+    [ [ l = lident; "="; e = expr -> Qast.Tuple [l; e] ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "#"; id = SV class_longident "list" ->
