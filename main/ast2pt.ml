@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.4 2010/09/19 01:56:50 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.5 2010/09/19 02:43:24 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -1250,7 +1250,11 @@ and class_str_item c l =
   | CrVal loc ovf mf s e ->
       [ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l]
   | CrVav loc mf s t ->
-      failwith "CrVav not impl in ast2pt"
+      match ocaml_pcf_valvirt with
+      [ Some pcf_valvirt ->
+          [pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc) :: l]
+      | None ->
+          error loc "no virtual value in this ocaml version" ]
   | CrVir loc b s t ->
       [Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l] ]
 ;

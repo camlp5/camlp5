@@ -158,6 +158,8 @@ let ocaml_pcf_val (s, mf, ovf, e, loc) =
   let mf = if mf then Mutable else Immutable in Pcf_val (s, mf, e, loc)
 ;;
 
+let ocaml_pcf_valvirt = None;;
+
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
 
 let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (li, ctl));;

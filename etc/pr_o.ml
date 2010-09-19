@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.3 2010/09/19 01:13:50 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.4 2010/09/19 02:43:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1052,7 +1052,9 @@ EXTEND_PRINTER
           let loc = MLast.loc_of_expr z in
           right_operator pc loc 0 unfold next z ]
     | "unary"
-      [ <:expr< ~- $x$ >> -> pprintf pc "-%p" curr x
+      [ <:expr< (~- $x$).val >> -> pprintf pc "! -%p" curr x
+      | <:expr< ~- ($x$.val) >> -> pprintf pc "- !%p" curr x
+      | <:expr< ~- $x$ >> -> pprintf pc "-%p" curr x
       | <:expr< ~-. $x$ >> -> pprintf pc "-.%p" curr x
       | <:expr< $int:i$ >> -> pprintf pc "%s" i ]
     | "apply"
@@ -2118,6 +2120,9 @@ EXTEND_PRINTER
       | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
           pprintf pc "val%s%s %s =@;%p" (if ovf then "!" else "")
             (if mf then " mutable" else "") s expr e
+      | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ >> ->
+          pprintf pc "val virtual%s %s :@;%p"
+            (if mf then " mutable" else "") s ctyp t
       | z ->
           error (MLast.loc_of_class_str_item z)
             (sprintf "pr_class_str_item %d" (Obj.tag (Obj.repr z))) ] ]

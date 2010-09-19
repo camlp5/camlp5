@@ -167,6 +167,8 @@ let ocaml_pcf_val (s, mf, ovf, e, loc) =
   Pcf_val (s, Public, mf, Some e, loc)
 ;;
 
+let ocaml_pcf_valvirt = None;;
+
 let ocaml_pcl_apply = None;;
 
 let ocaml_pcl_constr = None;;

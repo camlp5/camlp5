@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.1 2010/09/15 16:00:22 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.2 2010/09/19 02:43:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -483,9 +483,12 @@ EXTEND_PRINTER
             topt expr e
       | <:class_str_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
-      | <:class_str_item< value$!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
+      | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
           pprintf pc "value%s%s %s =@;%p" (if ovf then "!" else "")
             (if mf then " mutable" else "") s expr e
+      | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ >> ->
+          pprintf pc "value virtual%s %s :@;%p"
+            (if mf then " mutable" else "") s ctyp t
       | z ->
           Ploc.raise (MLast.loc_of_class_str_item z)
             (Failure
