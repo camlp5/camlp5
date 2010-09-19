@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.1 2010/09/15 16:00:21 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.2 2010/09/19 01:13:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -515,8 +515,8 @@ EXTEND
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
       | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
           <:expr< fun [ $_list:l$ ] >>
-      | "fun"; p = patt LEVEL "simple"; e = fun_def ->
-          <:expr< fun [$p$ -> $e$] >>
+      | "fun"; p = patt LEVEL "simple"; (eo, e) = fun_def ->
+          <:expr< fun [$p$ $opt:eo$ -> $e$] >>
       | "match"; e = SELF; "with"; OPT "|";
         l = V (LIST1 match_case SEP "|") ->
           <:expr< match $e$ with [ $_list:l$ ] >>
@@ -603,7 +603,10 @@ EXTEND
       | "assert"; e = SELF -> <:expr< assert $e$ >>
       | "lazy"; e = SELF -> <:expr< lazy ($e$) >> ]
     | "." LEFTA
-      [ e1 = SELF; "."; "("; e2 = SELF; ")" -> <:expr< $e1$ .( $e2$ ) >>
+      [ e1 = SELF; "."; "("; e2 = SELF; ")" ->
+          <:expr< $e1$ .( $e2$ ) >>
+      | e1 = SELF; "."; "("; op = operator_rparen ->
+          <:expr< $e1$ .( $lid:op$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
       | e = SELF; "."; "{"; el = V (LIST1 expr LEVEL "+" SEP ","); "}" ->
           <:expr< $e$ .{ $_list:el$ } >>
@@ -657,7 +660,9 @@ EXTEND
   ;
   let_binding:
     [ [ p = val_ident; e = fun_binding -> (p, e)
-      | p = patt; "="; e = expr -> (p, e) ] ]
+      | p = patt; "="; e = expr -> (p, e)
+      | p = patt; ":"; t = ctyp; "="; e = expr ->
+          (p, <:expr< ($e$ : $t$) >>) ] ]
   ;
   val_ident:
     [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>
@@ -688,8 +693,10 @@ EXTEND
   ;
   fun_def:
     [ RIGHTA
-      [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
-      | "->"; e = expr -> <:expr< $e$ >> ] ]
+      [ p = patt LEVEL "simple"; (eo, e) = SELF ->
+          (None, <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >>)
+      | eo = OPT [ "when"; e = expr -> e ]; "->"; e = expr ->
+          (eo, <:expr< $e$ >>) ] ]
   ;
   (* Patterns *)
   patt:
@@ -961,16 +968,16 @@ EXTEND
           <:class_str_item< method virtual private $_lid:l$ : $t$ >>
       | "method"; "virtual"; l = V label "lid" ""; ":"; t = poly_type ->
           <:class_str_item< method virtual $_lid:l$ : $t$ >>
-      | "method"; ov = V (FLAG "!"); "private"; l = V label "lid" ""; ":";
+      | "method"; ov = V (FLAG "!") "!"; "private"; l = V label "lid" ""; ":";
         t = poly_type; "="; e = expr ->
           <:class_str_item< method $_!:ov$ private $_lid:l$ : $t$ = $e$ >>
-      | "method"; ov = V (FLAG "!"); "private"; l = V label "lid" "";
+      | "method"; ov = V (FLAG "!") "!"; "private"; l = V label "lid" "";
         sb = fun_binding ->
           <:class_str_item< method $_!:ov$ private $_lid:l$ = $sb$ >>
-      | "method"; ov = V (FLAG "!"); l = V label "lid" ""; ":";
+      | "method"; ov = V (FLAG "!") "!"; l = V label "lid" ""; ":";
         t = poly_type; "="; e = expr ->
           <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ >>
-      | "method"; ov = V (FLAG "!"); l = V label "lid" "";
+      | "method"; ov = V (FLAG "!") "!"; l = V label "lid" "";
         sb = fun_binding ->
           <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
@@ -1128,7 +1135,8 @@ EXTEND
     [ [ "`"; i = ident -> i ] ]
   ;
   expr: LEVEL "expr1"
-    [ [ "fun"; p = labeled_patt; e = fun_def -> <:expr< fun $p$ -> $e$ >> ] ]
+    [ [ "fun"; p = labeled_patt; (eo, e) = fun_def ->
+          <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >> ] ]
   ;
   expr: AFTER "apply"
     [ "label"
@@ -1141,7 +1149,8 @@ EXTEND
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
   ;
   fun_def:
-    [ [ p = labeled_patt; e = SELF -> <:expr< fun $p$ -> $e$ >> ] ]
+    [ [ p = labeled_patt; (eo, e) = SELF ->
+          (None, <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >>) ] ]
   ;
   fun_binding:
     [ [ p = labeled_patt; e = SELF -> <:expr< fun $p$ -> $e$ >> ] ]

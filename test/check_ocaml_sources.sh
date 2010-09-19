@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.3 2010/09/18 18:42:57 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.4 2010/09/19 01:13:50 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -68,6 +68,8 @@ for i in $files; do
        "$idir/$bname" = "examples/test_type_quotation.ml" -o \
        "$idir/$bname" = "examples/type_quotation.ml" -o \
        "$idir/$bname" = "fixtures/exception-with-eqn-bug.ml" -o \
+       "$idir/$bname" = "fixtures/gram-list.ml" -o \
+       "$idir/$bname" = "fixtures/pr4329.ml" -o \
        "$idir/$bname" = "Camlp4Filters/Camlp4AstLifter.ml" -o \
        "$idir/$bname" = "Camlp4Filters/Camlp4ExceptionTracer.ml" -o \
        "$idir/$bname" = "Camlp4Filters/Camlp4FoldGenerator.ml" -o \

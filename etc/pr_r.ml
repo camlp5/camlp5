@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.2 2010/09/16 14:38:03 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.3 2010/09/19 01:13:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -760,17 +760,18 @@ value exception_decl pc (loc, e, tl, id) =
   match id with
   [ [] ->
       match tl with
-      [ [] -> pprintf pc "exception %s" e
+      [ [] -> pprintf pc "exception %p" cons_escaped e
       | tl ->
           let tl = List.map (fun t -> (t, " and")) tl in
-          pprintf pc "exception %s of@;%p" e (plist ctyp 0) tl ]
+          pprintf pc "exception %p of@;%p" cons_escaped e (plist ctyp 0) tl ]
   | id ->
       match tl with
-      [ [] -> pprintf pc "exception %s@;= %p" e mod_ident (loc, id)
+      [ [] ->
+          pprintf pc "exception %p@;= %p" cons_escaped e mod_ident (loc, id)
       | tl ->
           let tl = List.map (fun t -> (t, " and")) tl in
-          pprintf pc "exception %s of@;%p@;= %p" e (plist ctyp 0) tl
-            mod_ident (loc, id) ] ]
+          pprintf pc "exception %p of@;%p@;= %p" cons_escaped e
+            (plist ctyp 0) tl mod_ident (loc, id) ] ]
 ;
 
 value str_module pref pc (m, me) =
