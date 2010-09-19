@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pragma.ml,v 6.1 2010/09/15 16:00:21 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -459,18 +459,18 @@ value val_tab = do {
         let t = ty_var () in
         {ctyp =
            <:ctyp<
-             Gramext.g_symbol $t$ -> Gramext.g_symbol $t$ ->
+             Gramext.g_symbol $t$ -> Gramext.g_symbol $t$ -> bool ->
                Gramext.g_symbol $t$ >>;
-         expr = Obj.repr (fun s1 s2 -> Gramext.Slist0sep s1 s2);
+         expr = Obj.repr (fun s1 s2 b -> Gramext.Slist0sep s1 s2 b);
          patt = no_patt loc});
      ("Gramext.Slist1sep",
       fun loc ->
         let t = ty_var () in
         {ctyp =
            <:ctyp<
-             Gramext.g_symbol $t$ -> Gramext.g_symbol $t$ ->
+             Gramext.g_symbol $t$ -> Gramext.g_symbol $t$ -> bool ->
                Gramext.g_symbol $t$ >>;
-         expr = Obj.repr (fun s1 s2 -> Gramext.Slist1sep s1 s2);
+         expr = Obj.repr (fun s1 s2 b -> Gramext.Slist1sep s1 s2 b);
          patt = no_patt loc});
      ("Gramext.Snext",
       fun loc ->

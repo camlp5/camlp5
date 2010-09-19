@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 6.1 2010/09/15 16:00:18 deraugla Exp $ *)
+(* $Id: compile.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -32,9 +32,9 @@ value rec name_of_symbol entry =
 value rec name_of_symbol_failed entry =
   fun
   [ Slist0 s -> name_of_symbol_failed entry s
-  | Slist0sep s _ -> name_of_symbol_failed entry s
+  | Slist0sep s _ _ -> name_of_symbol_failed entry s
   | Slist1 s -> name_of_symbol_failed entry s
-  | Slist1sep s _ -> name_of_symbol_failed entry s
+  | Slist1sep s _ _ -> name_of_symbol_failed entry s
   | Sopt s -> name_of_symbol_failed entry s
   | Sflag s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
@@ -68,10 +68,10 @@ value tree_failed entry prev_symb tree =
     | Slist1 s ->
         let txt1 = name_of_symbol_failed entry s in
         ("", txt1 ^ " or " ^ txt)
-    | Slist0sep s sep ->
+    | Slist0sep s sep _ ->
         let txt1 = name_of_symbol_failed entry s in
         ("", txt1 ^ " or " ^ txt)
-    | Slist1sep s sep ->
+    | Slist1sep s sep _ ->
         let txt1 = name_of_symbol_failed entry s in
         ("", txt1 ^ " or " ^ txt)
     | Sopt _ | Sflag _ | Stree _ -> ("", txt)
@@ -298,7 +298,7 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
   | s ->
       let e = symbol_parser entry nlevn s in
       match s with
-      [ Slist0 _ | Slist0sep _ _ | Sopt _ | Sflag _ ->
+      [ Slist0 _ | Slist0sep _ _ _ | Sopt _ | Sflag _ ->
           parse_symbol_no_failure e rkont fkont ending_act
       | s ->
           parse_standard_symbol e rkont fkont ending_act ] ]
@@ -306,14 +306,16 @@ and symbol_parser entry nlevn =
   fun
   [ Slist0 s -> <:expr< P.list0 $symbol_parser entry nlevn s$ >>
   | Slist1 s -> <:expr< P.list1 $symbol_parser entry nlevn s$ >>
-  | Slist0sep s sep ->
+  | Slist0sep s sep b ->
+      let b = if b then <:expr< True >> else <:expr< False >> in
       <:expr<
         P.list0sep $symbol_parser entry nlevn s$
-          $symbol_parser entry nlevn sep$ >>
-  | Slist1sep s sep ->
+          $symbol_parser entry nlevn sep$ $b$ >>
+  | Slist1sep s sep b ->
+      let b = if b then <:expr< True >> else <:expr< False >> in
       <:expr<
          P.list1sep $symbol_parser entry nlevn s$
-           $symbol_parser entry nlevn sep$ >>
+           $symbol_parser entry nlevn sep$ $b$ >>
   | Sopt s -> <:expr< P.option $symbol_parser entry nlevn s$ >>
   | Sflag s -> <:expr< P.bool $symbol_parser entry nlevn s$ >>
   | Stree tree ->
@@ -541,9 +543,9 @@ and scan_symbol list =
   | Snterm e -> scan_entry list e
   | Snterml e l -> scan_entry list e
   | Slist0 s -> scan_symbol list s
-  | Slist0sep s sep -> scan_symbol (scan_symbol list s) sep
+  | Slist0sep s sep _ -> scan_symbol (scan_symbol list s) sep
   | Slist1 s -> scan_symbol list s
-  | Slist1sep s sep -> scan_symbol (scan_symbol list s) sep
+  | Slist1sep s sep _ -> scan_symbol (scan_symbol list s) sep
   | Sopt s -> scan_symbol list s
   | Sflag s -> scan_symbol list s
   | Stree t -> scan_tree list t

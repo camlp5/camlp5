@@ -37,9 +37,9 @@ and 'te g_symbol =
   | Snterm of 'te g_entry
   | Snterml of 'te g_entry * string
   | Slist0 of 'te g_symbol
-  | Slist0sep of 'te g_symbol * 'te g_symbol
+  | Slist0sep of 'te g_symbol * 'te g_symbol * bool
   | Slist1 of 'te g_symbol
-  | Slist1sep of 'te g_symbol * 'te g_symbol
+  | Slist1sep of 'te g_symbol * 'te g_symbol * bool
   | Sopt of 'te g_symbol
   | Sflag of 'te g_symbol
   | Sself

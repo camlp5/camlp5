@@ -1123,22 +1123,28 @@ let rec make_expr gmod tvar =
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Gramext"),
-                   MLast.ExUid (loc, "Slist0sep")),
-                txt),
-             x)
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "Gramext"),
+                      MLast.ExUid (loc, "Slist0sep")),
+                   txt),
+                x),
+             MLast.ExUid (loc, "False"))
       | LML_1, Some s ->
           let x = make_expr gmod tvar s in
           MLast.ExApp
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Gramext"),
-                   MLast.ExUid (loc, "Slist1sep")),
-                txt),
-             x)
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "Gramext"),
+                      MLast.ExUid (loc, "Slist1sep")),
+                   txt),
+                x),
+             MLast.ExUid (loc, "False"))
       end
   | TXnext loc ->
       MLast.ExAcc
@@ -2021,7 +2027,8 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e)),
           Gramext.Snterm
-            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
+            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)),
+          false)],
       Gramext.action
         (fun (sl : 'symbol list) _ (n : 'name) (loc : Ploc.t) ->
            (let (e, b) = expr_of_delete_rule loc "Grammar" n sl in
@@ -2046,7 +2053,8 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e)),
           Gramext.Snterm
-            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
+            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)),
+          false)],
       Gramext.action
         (fun (sl : 'symbol list) _ (n : 'name) (g : string) (loc : Ploc.t) ->
            (let (e, b) = expr_of_delete_rule loc g n sl in
@@ -2162,7 +2170,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "[");
        Gramext.Slist0sep
          (Gramext.Snterm (Grammar.Entry.obj (level : 'level Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (ll : 'level list) _ (loc : Ploc.t) -> (ll : 'level_list))]];
@@ -2206,7 +2214,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "[");
        Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (rule : 'rule Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (rules : 'rule list) _ (loc : Ploc.t) ->
@@ -2221,7 +2229,8 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj (psymbol : 'psymbol Grammar.Entry.e)),
           Gramext.Snterm
-            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
+            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)),
+          false)],
       Gramext.action
         (fun (psl : 'psymbol list) (loc : Ploc.t) ->
            ({ar_loc = loc; ar_psymbols = psl; ar_action = None} : 'rule));
@@ -2229,7 +2238,8 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj (psymbol : 'psymbol Grammar.Entry.e)),
           Gramext.Snterm
-            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)));
+            (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)),
+          false);
        Gramext.Stoken ("", "->");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
@@ -2362,7 +2372,7 @@ Grammar.extend
       [Gramext.Stoken ("", "[");
        Gramext.Slist0sep
          (Gramext.Snterm (Grammar.Entry.obj (rule : 'rule Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (rl : 'rule list) _ (loc : Ploc.t) ->

@@ -478,7 +478,7 @@ Grammar.extend
        Gramext.Slist0sep
          (Gramext.Snterm
             (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
@@ -501,7 +501,7 @@ Grammar.extend
        Gramext.Slist0sep
          (Gramext.Snterm
             (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
@@ -527,7 +527,7 @@ Grammar.extend
        Gramext.Slist0sep
          (Gramext.Snterm
             (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
@@ -550,7 +550,7 @@ Grammar.extend
        Gramext.Slist0sep
          (Gramext.Snterm
             (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
@@ -582,7 +582,7 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj
                (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e)),
-          Gramext.Stoken ("", ";"))],
+          Gramext.Stoken ("", ";"), false)],
       Gramext.action
         (fun (sp : 'stream_patt_comp list) _ (spc : 'stream_patt_comp)
              (loc : Ploc.t) ->
@@ -637,7 +637,7 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj
                (stream_expr_comp : 'stream_expr_comp Grammar.Entry.e)),
-          Gramext.Stoken ("", ";"));
+          Gramext.Stoken ("", ";"), false);
        Gramext.Stoken ("", ":]")],
       Gramext.action
         (fun _ (se : 'stream_expr_comp list) _ _ (loc : Ploc.t) ->

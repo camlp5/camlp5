@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: grammar.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_fstream.cmo";
@@ -24,11 +24,13 @@ value rec print_symbol ppf =
   [ Sfacto s -> print_symbol ppf s
   | Smeta n sl _ -> print_meta ppf n sl
   | Slist0 s -> fprintf ppf "LIST0 %a" print_symbol1 s
-  | Slist0sep s t ->
-      fprintf ppf "LIST0 %a SEP %a" print_symbol1 s print_symbol1 t
+  | Slist0sep s t osep ->
+      fprintf ppf "LIST0 %a SEP %a%s" print_symbol1 s print_symbol1 t
+        (if osep then " OPT_SEP" else "")
   | Slist1 s -> fprintf ppf "LIST1 %a" print_symbol1 s
-  | Slist1sep s t ->
-      fprintf ppf "LIST1 %a SEP %a" print_symbol1 s print_symbol1 t
+  | Slist1sep s t osep ->
+      fprintf ppf "LIST1 %a SEP %a%s" print_symbol1 s print_symbol1 t
+        (if osep then " OPT_SEP" else "")
   | Sopt s -> fprintf ppf "OPT %a" print_symbol1 s
   | Sflag s -> fprintf ppf "FLAG %a" print_symbol1 s
   | Stoken (con, prm) when con <> "" && prm <> "" ->
@@ -60,8 +62,8 @@ and print_symbol1 ppf =
   | Stoken ("", s) -> print_str ppf s
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
-  | Smeta _ _ _ | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ |
-    Slist1sep _ _ | Sopt _ | Sflag _ | Stoken _ | Svala _ _ as s ->
+  | Smeta _ _ _ | Snterml _ _ | Slist0 _ | Slist0sep _ _ _ | Slist1 _ |
+    Slist1sep _ _ _ | Sopt _ | Sflag _ | Stoken _ | Svala _ _ as s ->
       fprintf ppf "(%a)" print_symbol s ]
 and print_rule ppf symbols = do {
   fprintf ppf "@[<hov 0>";
@@ -148,8 +150,8 @@ value iter_entry f e =
     | Slist1 s -> do_symbol s
     | Sopt s -> do_symbol s
     | Sflag s -> do_symbol s
-    | Slist0sep s1 s2 -> do { do_symbol s1; do_symbol s2 }
-    | Slist1sep s1 s2 -> do { do_symbol s1; do_symbol s2 }
+    | Slist0sep s1 s2 _ -> do { do_symbol s1; do_symbol s2 }
+    | Slist1sep s1 s2 _ -> do { do_symbol s1; do_symbol s2 }
     | Stree t -> do_tree t
     | Svala _ s -> do_symbol s
     | Sself | Snext | Stoken _ -> () ]
@@ -189,8 +191,8 @@ value fold_entry f e init =
     | Slist1 s -> do_symbol accu s
     | Sopt s -> do_symbol accu s
     | Sflag s -> do_symbol accu s
-    | Slist0sep s1 s2 -> do_symbol (do_symbol accu s1) s2
-    | Slist1sep s1 s2 -> do_symbol (do_symbol accu s1) s2
+    | Slist0sep s1 s2 _ -> do_symbol (do_symbol accu s1) s2
+    | Slist1sep s1 s2 _ -> do_symbol (do_symbol accu s1) s2
     | Stree t -> do_tree accu t
     | Svala _ s -> do_symbol accu s
     | Sself | Snext | Stoken _ -> accu ]
@@ -234,9 +236,9 @@ value rec name_of_symbol_failed entry =
   fun
   [ Sfacto s -> name_of_symbol_failed entry s
   | Slist0 s -> name_of_symbol_failed entry s
-  | Slist0sep s _ -> name_of_symbol_failed entry s
+  | Slist0sep s _ _ -> name_of_symbol_failed entry s
   | Slist1 s -> name_of_symbol_failed entry s
-  | Slist1sep s _ -> name_of_symbol_failed entry s
+  | Slist1sep s _ _ -> name_of_symbol_failed entry s
   | Sopt s -> name_of_symbol_failed entry s
   | Sflag s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
@@ -305,31 +307,31 @@ value search_tree_in_entry prev_symb tree =
           | LocAct _ _ | DeadEnd -> None ]
       and search_symbol symb =
         match symb with
-        [ Snterm _ | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ |
-          Slist1sep _ _ | Sopt _ | Stoken _ | Stree _
+        [ Snterm _ | Snterml _ _ | Slist0 _ | Slist0sep _ _ _ | Slist1 _ |
+          Slist1sep _ _ _ | Sopt _ | Stoken _ | Stree _
           when symb == prev_symb ->
             Some symb
         | Slist0 symb ->
             match search_symbol symb with
             [ Some symb -> Some (Slist0 symb)
             | None -> None ]
-        | Slist0sep symb sep ->
+        | Slist0sep symb sep b ->
             match search_symbol symb with
-            [ Some symb -> Some (Slist0sep symb sep)
+            [ Some symb -> Some (Slist0sep symb sep b)
             | None ->
                 match search_symbol sep with
-                [ Some sep -> Some (Slist0sep symb sep)
+                [ Some sep -> Some (Slist0sep symb sep b)
                 | None -> None ] ]
         | Slist1 symb ->
             match search_symbol symb with
             [ Some symb -> Some (Slist1 symb)
             | None -> None ]
-        | Slist1sep symb sep ->
+        | Slist1sep symb sep b ->
             match search_symbol symb with
-            [ Some symb -> Some (Slist1sep symb sep)
+            [ Some symb -> Some (Slist1sep symb sep b)
             | None ->
                 match search_symbol sep with
-                [ Some sep -> Some (Slist1sep symb sep)
+                [ Some sep -> Some (Slist1sep symb sep b)
                 | None -> None ] ]
         | Sopt symb ->
             match search_symbol symb with
@@ -357,7 +359,7 @@ value tree_failed entry prev_symb_result prev_symb tree = do {
     | Slist1 s ->
         let txt1 = name_of_symbol_failed entry s in
         txt1 ^ " or " ^ txt ^ " expected"
-    | Slist0sep s sep ->
+    | Slist0sep s sep _ ->
         match Obj.magic prev_symb_result with
         [ [] ->
             let txt1 = name_of_symbol_failed entry s in
@@ -365,7 +367,7 @@ value tree_failed entry prev_symb_result prev_symb tree = do {
         | _ ->
             let txt1 = name_of_symbol_failed entry sep in
             txt1 ^ " or " ^ txt ^ " expected" ]
-    | Slist1sep s sep ->
+    | Slist1sep s sep _ ->
         match Obj.magic prev_symb_result with
         [ [] ->
             let txt1 = name_of_symbol_failed entry s in
@@ -421,7 +423,7 @@ value rec top_symb entry =
   fun
   [ Sself | Snext -> Snterm entry
   | Snterml e _ -> Snterm e
-  | Slist1sep s sep -> Slist1sep (top_symb entry s) sep
+  | Slist1sep s sep b -> Slist1sep (top_symb entry s) sep b
   | _ -> raise Stream.Failure ]
 ;
 
@@ -652,7 +654,7 @@ and parser_of_symbol entry nlevn =
         | [: :] -> al ]
       in
       parser [: a = loop [] :] -> Obj.repr (List.rev a)
-  | Slist0sep symb sep ->
+  | Slist0sep symb sep False ->
       let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al =
@@ -660,6 +662,18 @@ and parser_of_symbol entry nlevn =
         [ [: v = pt; al = ps al ? symb_failed entry v sep symb;
              a = kont al ! :] ->
             a
+        | [: :] -> al ]
+      in
+      parser
+      [ [: al = ps []; a = kont al ! :] -> Obj.repr (List.rev a)
+      | [: :] -> Obj.repr [] ]
+  | Slist0sep symb sep True ->
+      let ps = call_and_push (parser_of_symbol entry nlevn symb) in
+      let pt = parser_of_symbol entry nlevn sep in
+      let rec kont al =
+        parser
+        [ [: v = pt; al = ps al; a = kont al ! :] -> a
+        | [: v = pt; al = ps al ! :] -> al
         | [: :] -> al ]
       in
       parser
@@ -673,7 +687,7 @@ and parser_of_symbol entry nlevn =
         | [: :] -> al ]
       in
       parser [: al = ps []; a = loop al ! :] -> Obj.repr (List.rev a)
-  | Slist1sep symb sep ->
+  | Slist1sep symb sep False ->
       let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al =
@@ -687,6 +701,18 @@ and parser_of_symbol entry nlevn =
                    raise (Stream.Error (symb_failed entry v sep symb)) ] !;
              a = kont al ! :] ->
             a
+        | [: :] -> al ]
+      in
+      parser [: al = ps []; a = kont al ! :] -> Obj.repr (List.rev a)
+  | Slist1sep symb sep True ->
+      let ps = call_and_push (parser_of_symbol entry nlevn symb) in
+      let pt = parser_of_symbol entry nlevn sep in
+      let rec kont al =
+        parser
+        [ [: v = pt; al = ps al; al = kont al ! :] -> al
+        | [: v = pt; a = parse_top_symb entry symb;
+             al = kont [a :: al] ! :] -> al
+        | [: v = pt :] -> al
         | [: :] -> al ]
       in
       parser [: al = ps []; a = kont al ! :] -> Obj.repr (List.rev a)
@@ -714,8 +740,8 @@ and parser_of_symbol entry nlevn =
               match s with
               [ Sflag _ -> Some "V FLAG"
               | Sopt _ -> Some "V OPT"
-              | Slist0 _ | Slist0sep _ _ -> Some "V LIST"
-              | Slist1 _ | Slist1sep _ _ -> Some "V LIST"
+              | Slist0 _ | Slist0sep _ _ _ -> Some "V LIST"
+              | Slist1 _ | Slist1sep _ _ _ -> Some "V LIST"
               | Stoken (con, "") -> Some ("V " ^ con)
               | _ -> None ]
             in
@@ -888,9 +914,9 @@ value rec btop_symb entry =
   fun
   [ Sself | Snext -> Some (Snterm entry)
   | Snterml e _ -> Some (Snterm e)
-  | Slist1sep s sep ->
+  | Slist1sep s sep b ->
       match btop_symb entry s with
-      [ Some s -> Some (Slist1sep s sep)
+      [ Some s -> Some (Slist1sep s sep b)
       | None -> None ]
   | _ -> None ]
 ;
@@ -974,7 +1000,7 @@ and bparser_of_symbol entry next_levn =
         | [: :] -> al ]
       in
       bparser [: a = loop [] :] -> Obj.repr (List.rev a)
-  | Slist0sep symb sep ->
+  | Slist0sep symb sep False ->
       let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
       let pt = bparser_of_symbol entry next_levn sep in
       let rec kont al =
@@ -985,6 +1011,8 @@ and bparser_of_symbol entry next_levn =
       bparser
       [ [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
+  | Slist0sep symb sep True ->
+      failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1 s ->
       let ps = bcall_and_push (bparser_of_symbol entry next_levn s) in
       let rec loop al =
@@ -993,7 +1021,9 @@ and bparser_of_symbol entry next_levn =
         | [: :] -> al ]
       in
       bparser [: al = ps []; a = loop al :] -> Obj.repr (List.rev a)
-  | Slist1sep symb sep ->
+  | Slist1sep symb sep True ->
+      failwith "LIST1 _ SEP _ OPT_SEP not implemented; please report"
+  | Slist1sep symb sep False ->
       let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
       let pt = bparser_of_symbol entry next_levn sep in
       let rec kont al =
@@ -1032,8 +1062,8 @@ and bparser_of_symbol entry next_levn =
               match s with
               [ Sflag _ -> Some "V FLAG"
               | Sopt _ -> Some "V OPT"
-              | Slist0 _ | Slist0sep _ _ -> Some "V LIST"
-              | Slist1 _ | Slist1sep _ _ -> Some "V LIST"
+              | Slist0 _ | Slist0sep _ _ _ -> Some "V LIST"
+              | Slist1 _ | Slist1sep _ _ _ -> Some "V LIST"
               | Stoken (con, "") -> Some ("V " ^ con)
               | _ -> None ]
             in
@@ -1596,9 +1626,9 @@ value find_entry e s =
     | Snterml e _ -> if e.ename = s then Some e else None
     | Smeta _ sl _ -> find_symbol_list sl
     | Slist0 s -> find_symbol s
-    | Slist0sep s _ -> find_symbol s
+    | Slist0sep s _ _ -> find_symbol s
     | Slist1 s -> find_symbol s
-    | Slist1sep s _ -> find_symbol s
+    | Slist1sep s _ _ -> find_symbol s
     | Sopt s -> find_symbol s
     | Sflag s -> find_symbol s
     | Stree t -> find_tree t

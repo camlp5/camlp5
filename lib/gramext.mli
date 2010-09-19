@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.mli,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: gramext.mli,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type parser_t 'a = Stream.t 'a -> Obj.t;
@@ -37,9 +37,9 @@ and g_symbol 'te =
   | Snterm of g_entry 'te
   | Snterml of g_entry 'te and string
   | Slist0 of g_symbol 'te
-  | Slist0sep of g_symbol 'te and g_symbol 'te
+  | Slist0sep of g_symbol 'te and g_symbol 'te and bool
   | Slist1 of g_symbol 'te
-  | Slist1sep of g_symbol 'te and g_symbol 'te
+  | Slist1sep of g_symbol 'te and g_symbol 'te and bool
   | Sopt of g_symbol 'te
   | Sflag of g_symbol 'te
   | Sself

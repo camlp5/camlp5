@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extend.ml,v 6.1 2010/09/15 16:00:25 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -562,10 +562,10 @@ value rec make_expr gmod tvar =
       | (LML_1, None) -> <:expr< Gramext.Slist1 $txt$ >>
       | (LML_0, Some s) ->
           let x = make_expr gmod tvar s in
-          <:expr< Gramext.Slist0sep $txt$ $x$ >>
+          <:expr< Gramext.Slist0sep $txt$ $x$ False >>
       | (LML_1, Some s) ->
           let x = make_expr gmod tvar s in
-          <:expr< Gramext.Slist1sep $txt$ $x$ >> ]
+          <:expr< Gramext.Slist1sep $txt$ $x$ False >> ]
   | TXnext loc -> <:expr< Gramext.Snext >>
   | TXnterm loc n lev ->
       match lev with

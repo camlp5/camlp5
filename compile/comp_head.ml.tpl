@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: comp_head.ml.tpl,v 6.1 2010/09/15 16:00:18 deraugla Exp $ *)
+(* $Id: comp_head.ml.tpl,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -17,15 +17,17 @@ module P =
       in
       parser [: a = loop [] :] -> List.rev a
     ;
-    value list0sep symb sep =
-      let rec kont al =
+    value list0sep symb sep b =
+      if not b then
+        let rec kont al =
+          parser
+          [ [: v = sep; a = symb; a = kont [a :: al] ! :] -> a
+          | [: :] -> al ]
+        in
         parser
-        [ [: v = sep; a = symb; a = kont [a :: al] ! :] -> a
-        | [: :] -> al ]
-      in
-      parser
-      [ [: a = symb; a = kont [a] ! :] -> List.rev a
-      | [: :] -> [] ]
+        [ [: a = symb; a = kont [a] ! :] -> List.rev a
+        | [: :] -> [] ]
+      else failwith "LIST0 _ SEP _ OPT_SEP not yet implemented"
     ;
     value list1 symb =
       let rec loop al =
@@ -35,13 +37,22 @@ module P =
       in
       parser [: a = symb; a = loop [a] ! :] -> List.rev a
     ;
-    value list1sep symb sep =
-      let rec kont al =
-        parser
-        [ [: v = sep; a = symb; a = kont [a :: al] ! :] -> a
-        | [: :] -> al ]
-      in
-      parser [: a = symb; a = kont [a] ! :] -> List.rev a
+    value list1sep symb sep b =
+      if not b then
+        let rec kont al =
+          parser
+          [ [: v = sep; a = symb; a = kont [a :: al] ! :] -> a
+          | [: :] -> al ]
+        in
+        parser [: a = symb; a = kont [a] ! :] -> List.rev a
+      else
+        let rec kont al =
+          parser
+          [ [: v = sep; a = symb; a = kont [a :: al] ! :] -> a
+          | [: v = sep :] -> al
+          | [: :] -> al ]
+        in
+        parser [: a = symb; a = kont [a] ! :] -> List.rev a
     ;
     value option f =
       parser

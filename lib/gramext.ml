@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: gramext.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Printf;
@@ -39,9 +39,9 @@ and g_symbol 'te =
   | Snterm of g_entry 'te
   | Snterml of g_entry 'te and string
   | Slist0 of g_symbol 'te
-  | Slist0sep of g_symbol 'te and g_symbol 'te
+  | Slist0sep of g_symbol 'te and g_symbol 'te and bool
   | Slist1 of g_symbol 'te
-  | Slist1sep of g_symbol 'te and g_symbol 'te
+  | Slist1sep of g_symbol 'te and g_symbol 'te and bool
   | Sopt of g_symbol 'te
   | Sflag of g_symbol 'te
   | Sself
@@ -72,13 +72,13 @@ value warning_verbose = ref True;
 value rec derive_eps =
   fun
   [ Slist0 _ -> True
-  | Slist0sep _ _ -> True
+  | Slist0sep _ _ _ -> True
   | Sopt _ | Sflag _ -> True
   | Sfacto s -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Svala _ s -> derive_eps s
-  | Smeta _ _ _ | Slist1 _ | Slist1sep _ _ | Snterm _ | Snterml _ _ | Snext |
-    Sself | Stoken _ ->
+  | Smeta _ _ _ | Slist1 _ | Slist1sep _ _ _ | Snterm _ | Snterml _ _ |
+    Snext | Sself | Stoken _ ->
       False ]
 and tree_derive_eps =
   fun
@@ -93,11 +93,11 @@ value rec eq_symbol s1 s2 =
   [ (Snterm e1, Snterm e2) -> e1 == e2
   | (Snterml e1 l1, Snterml e2 l2) -> e1 == e2 && l1 = l2
   | (Slist0 s1, Slist0 s2) -> eq_symbol s1 s2
-  | (Slist0sep s1 sep1, Slist0sep s2 sep2) ->
-      eq_symbol s1 s2 && eq_symbol sep1 sep2
+  | (Slist0sep s1 sep1 b1, Slist0sep s2 sep2 b2) ->
+      eq_symbol s1 s2 && eq_symbol sep1 sep2 && b1 = b2
   | (Slist1 s1, Slist1 s2) -> eq_symbol s1 s2
-  | (Slist1sep s1 sep1, Slist1sep s2 sep2) ->
-      eq_symbol s1 s2 && eq_symbol sep1 sep2
+  | (Slist1sep s1 sep1 b1, Slist1sep s2 sep2 b2) ->
+      eq_symbol s1 s2 && eq_symbol sep1 sep2 && b1 = b2
   | (Sflag s1, Sflag s2) -> eq_symbol s1 s2
   | (Sopt s1, Sopt s2) -> eq_symbol s1 s2
   | (Svala ls1 s1, Svala ls2 s2) -> ls1 = ls2 && eq_symbol s1 s2
@@ -211,10 +211,10 @@ and token_exists_in_symbol f =
   [ Sfacto sy -> token_exists_in_symbol f sy
   | Smeta _ syl _ -> List.exists (token_exists_in_symbol f) syl
   | Slist0 sy -> token_exists_in_symbol f sy
-  | Slist0sep sy sep ->
+  | Slist0sep sy sep _ ->
       token_exists_in_symbol f sy || token_exists_in_symbol f sep
   | Slist1 sy -> token_exists_in_symbol f sy
-  | Slist1sep sy sep ->
+  | Slist1sep sy sep _ ->
       token_exists_in_symbol f sy || token_exists_in_symbol f sep
   | Sopt sy -> token_exists_in_symbol f sy
   | Sflag sy -> token_exists_in_symbol f sy
@@ -356,8 +356,8 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
       else ()
   | Sfacto s -> check_gram entry s
   | Smeta _ sl _ -> List.iter (check_gram entry) sl
-  | Slist0sep s t -> do { check_gram entry t; check_gram entry s }
-  | Slist1sep s t -> do { check_gram entry t; check_gram entry s }
+  | Slist0sep s t _ -> do { check_gram entry t; check_gram entry s }
+  | Slist1sep s t _ -> do { check_gram entry t; check_gram entry s }
   | Slist0 s -> check_gram entry s
   | Slist1 s -> check_gram entry s
   | Sopt s -> check_gram entry s
@@ -394,8 +394,8 @@ value insert_tokens gram symbols =
     | Smeta _ sl _ -> List.iter insert sl
     | Slist0 s -> insert s
     | Slist1 s -> insert s
-    | Slist0sep s t -> do { insert s; insert t }
-    | Slist1sep s t -> do { insert s; insert t }
+    | Slist0sep s t _ -> do { insert s; insert t }
+    | Slist1sep s t _ -> do { insert s; insert t }
     | Sopt s -> insert s
     | Sflag s -> insert s
     | Stree t -> tinsert t
@@ -468,11 +468,11 @@ value logically_eq_symbols entry =
     | (Sself, Snterm e2) -> entry.ename = e2.ename
     | (Snterml e1 l1, Snterml e2 l2) -> e1.ename = e2.ename && l1 = l2
     | (Slist0 s1, Slist0 s2) -> eq_symbols s1 s2
-    | (Slist0sep s1 sep1, Slist0sep s2 sep2) ->
-        eq_symbols s1 s2 && eq_symbols sep1 sep2
+    | (Slist0sep s1 sep1 b1, Slist0sep s2 sep2 b2) ->
+        eq_symbols s1 s2 && eq_symbols sep1 sep2 && b1 = b2
     | (Slist1 s1, Slist1 s2) -> eq_symbols s1 s2
-    | (Slist1sep s1 sep1, Slist1sep s2 sep2) ->
-        eq_symbols s1 s2 && eq_symbols sep1 sep2
+    | (Slist1sep s1 sep1 b1, Slist1sep s2 sep2 b2) ->
+        eq_symbols s1 s2 && eq_symbols sep1 sep2 && b1 = b2
     | (Sopt s1, Sopt s2) -> eq_symbols s1 s2
     | (Stree t1, Stree t2) -> eq_trees t1 t2
     | _ -> s1 = s2 ]
@@ -543,8 +543,8 @@ value rec decr_keyw_use gram =
   | Smeta _ sl _ -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s
   | Slist1 s -> decr_keyw_use gram s
-  | Slist0sep s1 s2 -> do { decr_keyw_use gram s1; decr_keyw_use gram s2 }
-  | Slist1sep s1 s2 -> do { decr_keyw_use gram s1; decr_keyw_use gram s2 }
+  | Slist0sep s1 s2 _ -> do { decr_keyw_use gram s1; decr_keyw_use gram s2 }
+  | Slist1sep s1 s2 _ -> do { decr_keyw_use gram s1; decr_keyw_use gram s2 }
   | Sopt s -> decr_keyw_use gram s
   | Sflag s -> decr_keyw_use gram s
   | Stree t -> decr_keyw_use_in_tree gram t

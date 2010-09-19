@@ -56,7 +56,7 @@ Grammar.extend
        Gramext.Slist0sep
          (Gramext.Snterm
             (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
@@ -79,7 +79,7 @@ Grammar.extend
        Gramext.Slist0sep
          (Gramext.Snterm
             (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
@@ -194,7 +194,7 @@ Grammar.extend
        Gramext.Slist1sep
          (Gramext.Snterm
             (Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"))],
+          Gramext.Stoken ("", "|"), false)],
       Gramext.action
         (fun (pll : 'lookahead list) _ (loc : Ploc.t) ->
            (SpLhd (loc, pll) : 'stream_patt_comp));
@@ -226,7 +226,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "[");
        Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e)),
-          Gramext.Stoken ("", ";"));
+          Gramext.Stoken ("", ";"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pl : 'patt list) _ (loc : Ploc.t) -> (pl : 'lookahead))]];
@@ -238,7 +238,7 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj
                (stream_expr_comp : 'stream_expr_comp Grammar.Entry.e)),
-          Gramext.Stoken ("", ";"));
+          Gramext.Stoken ("", ";"), false);
        Gramext.Stoken ("", ":]")],
       Gramext.action
         (fun _ (se : 'stream_expr_comp list) _ (loc : Ploc.t) ->

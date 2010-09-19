@@ -292,7 +292,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "[");
        Gramext.Slist0sep
          (Gramext.Snterm (Grammar.Entry.obj (rule : 'rule Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (rl : 'rule list) _ (loc : Ploc.t) -> (rl : 'rules))]];
@@ -330,7 +330,7 @@ Grammar.extend
        Gramext.Slist1sep
          (Gramext.Snterm
             (Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"));
+          Gramext.Stoken ("", "|"), false);
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pll : 'lookahead list) _ _ (loc : Ploc.t) ->

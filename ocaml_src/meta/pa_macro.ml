@@ -721,7 +721,7 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "(");
        Gramext.Slist1sep
-         (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","));
+         (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","), false);
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (sl : string list) _ (loc : Ploc.t) -> (sl : 'macro_param));
