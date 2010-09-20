@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkstri.sh,v 6.12 2010/09/18 08:51:07 deraugla Exp $
+# $Id: mkstri.sh,v 6.13 2010/09/20 10:21:04 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -12,7 +12,7 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: mkstri.sh,v 6.12 2010/09/18 08:51:07 deraugla Exp $ -->
+  <!-- $Id: mkstri.sh,v 6.13 2010/09/20 10:21:04 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -92,7 +92,7 @@ for q in $quotation_list; do
   sed -e 's| >>;@| >></tt><br/>@    <tt style="color:red">|' |
   sed -e 's|;$|</tt>|' |
   sed -e 's|^&|    <br/><br/>@    <tt style="color:blue">\&|' |
-  sed -e '1s|^</dd>[^@]*@[^@]*@||' |
+  sed -e '1s|^  </dd>[^@]*@[^@]*@||' |
   tr '@' '\n'
   echo '  </dd>'
   echo '</dl>'

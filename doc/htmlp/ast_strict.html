@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 6.6 2010/09/18 08:51:07 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 6.7 2010/09/20 10:21:04 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -933,6 +933,16 @@
   </dd>
 </dl>
 <dl class="nodelist">
+  <dt>- float</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $flo:s$ >></tt><br/>
+    <tt style="color:red">MLast.PaFlo loc (Ploc.VaVal s)</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:patt&lt; $_flo:s$ >></tt><br/>
+    <tt style="color:red">MLast.PaFlo loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
   <dt>- integer constant</dt>
   <dd>
     <tt style="color:blue">&lt;:patt&lt; $int:s1$ >></tt><br/>
@@ -970,16 +980,6 @@
     <br/><br/>
     <tt style="color:blue">&lt;:patt&lt; $_nativeint:s1$ >></tt><br/>
     <tt style="color:red">MLast.PaInt loc s1 "n"</tt>
-  </dd>
-</dl>
-<dl class="nodelist">
-  <dt>- float</dt>
-  <dd>
-    <tt style="color:blue">&lt;:patt&lt; $flo:s$ >></tt><br/>
-    <tt style="color:red">MLast.PaFlo loc (Ploc.VaVal s)</tt>
-    <br/><br/>
-    <tt style="color:blue">&lt;:patt&lt; $_flo:s$ >></tt><br/>
-    <tt style="color:red">MLast.PaFlo loc s</tt>
   </dd>
 </dl>
 <dl class="nodelist">
@@ -2745,6 +2745,34 @@
   </dd>
 </dl>
 <dl class="nodelist">
+  <dt>- virtual value</dt>
+  <dd>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual mutable $lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc (Ploc.VaVal True) (Ploc.VaVal s) t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual mutable $_lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc (Ploc.VaVal True) s t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual $lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc (Ploc.VaVal False) (Ploc.VaVal s) t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual $_lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc (Ploc.VaVal False) s t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual $flag:b$ $lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc (Ploc.VaVal b) (Ploc.VaVal s) t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual $flag:b$ $_lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc (Ploc.VaVal b) s t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual $_flag:b$ $lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc b (Ploc.VaVal s) t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:class_str_item&lt; value virtual $_flag:b$ $_lid:s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.CrVav loc b s t</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
   <dt>- virtual method</dt>
   <dd>
     <tt style="color:blue">&lt;:class_str_item&lt; method virtual private $lid:s$ : $t$ >></tt><br/>
@@ -3019,6 +3047,26 @@
 <p>"With" possibly following a module type.</p>
 
 <dl class="nodelist">
+  <dt>- with module</dt>
+  <dd>
+    <tt style="color:blue">&lt;:with_constr&lt; module $list:ls$ = $me$ >></tt><br/>
+    <tt style="color:red">MLast.WcMod loc (Ploc.VaVal ls) me</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:with_constr&lt; module $_list:ls$ = $me$ >></tt><br/>
+    <tt style="color:red">MLast.WcMod loc ls me</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- with module substitution</dt>
+  <dd>
+    <tt style="color:blue">&lt;:with_constr&lt; module $list:ls$ := $me$ >></tt><br/>
+    <tt style="color:red">MLast.WcMos loc (Ploc.VaVal ls) me</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:with_constr&lt; module $_list:ls$ := $me$ >></tt><br/>
+    <tt style="color:red">MLast.WcMos loc ls me</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
   <dt>- with type</dt>
   <dd>
     <tt style="color:blue">&lt;:with_constr&lt; type $list:ls$ $list:ltv$ = private $t$ >></tt><br/>
@@ -3071,13 +3119,19 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- with module</dt>
+  <dt>- with type substitution</dt>
   <dd>
-    <tt style="color:blue">&lt;:with_constr&lt; module $list:ls$ = $me$ >></tt><br/>
-    <tt style="color:red">MLast.WcMod loc (Ploc.VaVal ls) me</tt>
+    <tt style="color:blue">&lt;:with_constr&lt; type $list:ls$ $list:ltv$ := $t$ >></tt><br/>
+    <tt style="color:red">MLast.WcTys loc (Ploc.VaVal ls) (Ploc.VaVal ltv) t</tt>
     <br/><br/>
-    <tt style="color:blue">&lt;:with_constr&lt; module $_list:ls$ = $me$ >></tt><br/>
-    <tt style="color:red">MLast.WcMod loc ls me</tt>
+    <tt style="color:blue">&lt;:with_constr&lt; type $list:ls$ $_list:ltv$ := $t$ >></tt><br/>
+    <tt style="color:red">MLast.WcTys loc (Ploc.VaVal ls) ltv t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:with_constr&lt; type $_list:ls$ $list:ltv$ := $t$ >></tt><br/>
+    <tt style="color:red">MLast.WcTys loc ls (Ploc.VaVal ltv) t</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:with_constr&lt; type $_list:ls$ $_list:ltv$ := $t$ >></tt><br/>
+    <tt style="color:red">MLast.WcTys loc ls ltv t</tt>
   </dd>
 </dl>
 
@@ -3091,10 +3145,10 @@
     <tt style="color:blue">&lt;:poly_variant&lt; `$s$ >></tt><br/>
     <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal [])</tt>
     <br/><br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of & $list:lt$ >></tt><br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of &amp; $list:lt$ >></tt><br/>
     <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal lt)</tt>
     <br/><br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of & $_list:lt$ >></tt><br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of &amp; $_list:lt$ >></tt><br/>
     <tt style="color:red">MLast.PvTag (Ploc.VaVal s) (Ploc.VaVal True) lt</tt>
     <br/><br/>
     <tt style="color:blue">&lt;:poly_variant&lt; `$s$ of $list:lt$ >></tt><br/>
@@ -3118,10 +3172,10 @@
     <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ >></tt><br/>
     <tt style="color:red">MLast.PvTag s (Ploc.VaVal True) (Ploc.VaVal [])</tt>
     <br/><br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of & $list:lt$ >></tt><br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of &amp; $list:lt$ >></tt><br/>
     <tt style="color:red">MLast.PvTag s (Ploc.VaVal True) (Ploc.VaVal lt)</tt>
     <br/><br/>
-    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of & $_list:lt$ >></tt><br/>
+    <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of &amp; $_list:lt$ >></tt><br/>
     <tt style="color:red">MLast.PvTag s (Ploc.VaVal True) lt</tt>
     <br/><br/>
     <tt style="color:blue">&lt;:poly_variant&lt; `$_:s$ of $list:lt$ >></tt><br/>
