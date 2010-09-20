@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.10 2010/09/17 01:04:52 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.11 2010/09/20 04:39:16 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -124,8 +124,8 @@ value expr_of_cons_decl (loc, c, tl) = do {
     [ "ExInt" | "PaInt" ->
         List.fold_right
           (fun int_type gel ->
-             List.rev_append
-               (List.rev_map
+             list_rev_append
+               (list_rev_map
                   (fun e ->
                      match e with
                      [ <:expr:< $e$ s2 >> -> <:expr< $e$ $str:int_type$ >>
