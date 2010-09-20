@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.4 2010/09/19 20:11:12 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.5 2010/09/20 12:29:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1283,8 +1283,9 @@ EXTEND_PRINTER
   ;
   pr_ctyp:
     [ "top"
-      [ <:ctyp< $x$ == $y$ >> ->
-          operator pc next next 2 "==" x y ]
+      [ <:ctyp< $x$ == $priv:pf$ $y$ >> ->
+          let op = if pf then "== private" else "==" in
+          operator pc next next 2 op x y ]
     | "as"
       [ <:ctyp< $t1$ as $t2$ >> ->
           pprintf pc "%p@ as %p" curr t1 next t2 ]

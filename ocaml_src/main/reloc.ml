@@ -54,7 +54,7 @@ let rec ctyp floc sh =
     | TyCls (loc, x1) -> TyCls (floc loc, x1)
     | TyLab (loc, x1, x2) -> TyLab (floc loc, x1, self x2)
     | TyLid (loc, x1) -> TyLid (floc loc, x1)
-    | TyMan (loc, x1, x2) -> TyMan (floc loc, self x1, self x2)
+    | TyMan (loc, x1, x2, x3) -> TyMan (floc loc, self x1, x2, self x3)
     | TyObj (loc, x1, x2) ->
         TyObj
           (floc loc, vala_map (List.map (fun (x1, x2) -> x1, self x2)) x1, x2)

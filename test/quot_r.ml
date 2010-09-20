@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.30 2010/09/20 09:51:05 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.31 2010/09/20 12:32:32 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -25,7 +25,10 @@
 <:ctyp< $_lid:s$ >>;
 
 (* manifest *)
+<:ctyp< $t1$ == private $t2$ >>;
 <:ctyp< $t1$ == $t2$ >>;
+<:ctyp< $t1$ == $priv:b$ $t2$ >>;
+<:ctyp< $t1$ == $_priv:b$ $t2$ >>;
 
 (* object *)
 <:ctyp< < $list:lst$ .. > >>;

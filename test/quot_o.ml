@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.14 2010/09/20 10:05:03 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.15 2010/09/20 12:32:32 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -11,7 +11,10 @@ MLast.TyLab (loc, Ploc.VaVal s, t);;
 MLast.TyLab (loc, s, t);;
 <:ctyp< $lid:s$ >>;;
 <:ctyp< $_lid:s$ >>;;
-MLast.TyMan (loc, t1, t2);;
+MLast.TyMan (loc, t1, Ploc.VaVal true, t2);;
+MLast.TyMan (loc, t1, Ploc.VaVal false, t2);;
+MLast.TyMan (loc, t1, Ploc.VaVal b, t2);;
+MLast.TyMan (loc, t1, b, t2);;
 MLast.TyObj (loc, Ploc.VaVal lst, Ploc.VaVal true);;
 MLast.TyObj (loc, Ploc.VaVal lst, Ploc.VaVal false);;
 MLast.TyObj (loc, Ploc.VaVal lst, Ploc.VaVal b);;

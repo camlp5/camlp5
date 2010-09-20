@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.9 2010/09/19 20:11:12 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.10 2010/09/20 12:29:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -834,10 +834,12 @@ EXTEND
           <:ctyp< [ $list:cdl$ ] >>
       | t = ctyp ->
           <:ctyp< $t$ >>
-      | t = ctyp; "="; "{"; ldl = V label_declarations "list"; "}" ->
-          <:ctyp< $t$ == { $_list:ldl$ } >>
-      | t = ctyp; "="; OPT "|"; cdl = LIST1 constructor_declaration SEP "|" ->
-          <:ctyp< $t$ == [ $list:cdl$ ] >>
+      | t = ctyp; "="; pf = FLAG "private"; "{";
+        ldl = V label_declarations "list"; "}" ->
+          <:ctyp< $t$ == $priv:pf$ { $_list:ldl$ } >>
+      | t = ctyp; "="; pf = FLAG "private"; OPT "|";
+        cdl = LIST1 constructor_declaration SEP "|" ->
+          <:ctyp< $t$ == $priv:pf$ [ $list:cdl$ ] >>
       | "{"; ldl = V label_declarations "list"; "}" ->
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;

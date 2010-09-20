@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.7 2010/09/20 09:51:04 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.8 2010/09/20 12:29:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -113,7 +113,7 @@ module Meta_make (C : MetaSig) =
       | TyCls _ ls -> C.node "TyCls" [C.vala (C.list C.string) ls]
       | TyLab _ s t -> C.node "TyLab" [C.vala C.string s; ctyp t]
       | TyLid _ s -> C.node "TyLid" [C.vala C.string s]
-      | TyMan _ t1 t2 -> C.node "TyMan" [ctyp t1; ctyp t2]
+      | TyMan _ t1 b t2 -> C.node "TyMan" [ctyp t1; C.vala C.bool b; ctyp t2]
       | TyObj _ lst b ->
           C.node "TyObj"
             [C.vala (C.list (fun (s, t) -> C.tuple [C.string s; ctyp t])) lst;

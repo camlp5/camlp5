@@ -204,7 +204,7 @@ let rec ctyp =
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
   | TyLid (loc, s) -> mktyp loc (Ptyp_constr (Lident (uv s), []))
-  | TyMan (loc, _, _) -> error loc "type manifest not allowed here"
+  | TyMan (loc, _, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
   | TyPck (loc, mt) ->
       begin match ocaml_ptyp_package with
@@ -328,12 +328,12 @@ let mktvariant ctl priv =
 
 let type_decl tl priv cl =
   function
-    TyMan (loc, t, MLast.TyRec (_, ltl)) ->
-      mktype loc tl cl (mktrecord ltl priv) priv (Some (ctyp t))
-  | TyMan (loc, t, MLast.TySum (_, ctl)) ->
-      mktype loc tl cl (mktvariant ctl priv) priv (Some (ctyp t))
-  | TyRec (loc, ltl) -> mktype loc tl cl (mktrecord (uv ltl) priv) priv None
-  | TySum (loc, ctl) -> mktype loc tl cl (mktvariant (uv ctl) priv) priv None
+    TyMan (loc, t, pf, MLast.TyRec (_, ltl)) ->
+      mktype loc tl cl (mktrecord ltl pf) priv (Some (ctyp t))
+  | TyMan (loc, t, pf, MLast.TySum (_, ctl)) ->
+      mktype loc tl cl (mktvariant ctl pf) priv (Some (ctyp t))
+  | TyRec (loc, ltl) -> mktype loc tl cl (mktrecord (uv ltl) false) priv None
+  | TySum (loc, ctl) -> mktype loc tl cl (mktvariant (uv ctl) false) priv None
   | t ->
       let m =
         match t with

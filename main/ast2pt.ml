@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.6 2010/09/19 20:11:12 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.7 2010/09/20 12:29:07 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -207,7 +207,7 @@ value rec ctyp =
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab loc _ _ -> error loc "labeled type not allowed here"
   | TyLid loc s -> mktyp loc (Ptyp_constr (Lident (uv s)) [])
-  | TyMan loc _ _ -> error loc "type manifest not allowed here"
+  | TyMan loc _ _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
   | TyPck loc mt ->
       match ocaml_ptyp_package with
@@ -336,14 +336,14 @@ value mktvariant ctl priv =
 
 value type_decl tl priv cl =
   fun
-  [ TyMan loc t <:ctyp< { $list:ltl$ } >> ->
-      mktype loc tl cl (mktrecord ltl priv) priv (Some (ctyp t))
-  | TyMan loc t <:ctyp< [ $list:ctl$ ] >> ->
-      mktype loc tl cl (mktvariant ctl priv) priv (Some (ctyp t))
+  [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> ->
+      mktype loc tl cl (mktrecord ltl pf) priv (Some (ctyp t))
+  | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> ->
+      mktype loc tl cl (mktvariant ctl pf) priv (Some (ctyp t))
   | TyRec loc ltl ->
-      mktype loc tl cl (mktrecord (uv ltl) priv) priv None
+      mktype loc tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl ->
-      mktype loc tl cl (mktvariant (uv ctl) priv) priv None
+      mktype loc tl cl (mktvariant (uv ctl) False) priv None
   | t ->
       let m =
         match t with

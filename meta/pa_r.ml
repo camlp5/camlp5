@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.7 2010/09/19 20:11:13 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.8 2010/09/20 12:29:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -515,7 +515,8 @@ EXTEND
   ctyp:
     [ "top"
       LEFTA
-      [ t1 = SELF; "=="; t2 = SELF -> <:ctyp< $t1$ == $t2$ >> ]
+      [ t1 = SELF; "=="; pf = V (FLAG "private") "priv"; t2 = SELF ->
+          <:ctyp< $t1$ == $_priv:pf$ $t2$ >> ]
     | "as"
       LEFTA
       [ t1 = SELF; "as"; t2 = SELF -> <:ctyp< $t1$ as $t2$ >> ]

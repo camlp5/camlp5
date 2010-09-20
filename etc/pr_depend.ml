@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.1 2010/09/15 16:00:22 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.2 2010/09/20 12:29:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -51,7 +51,7 @@ value rec ctyp =
   | <:ctyp< # $list:li$ >> -> longident li
   | TyLab _ _ t -> ctyp t
   | TyLid _ _ -> ()
-  | TyMan _ t1 t2 -> do { ctyp t1; ctyp t2 }
+  | TyMan _ t1 _ t2 -> do { ctyp t1; ctyp t2 }
   | TyOlb _ _ t -> ctyp t
   | <:ctyp< ' $_$ >> -> ()
   | <:ctyp< { $list:ldl$ } >> -> list label_decl ldl

@@ -36,7 +36,7 @@ type ctyp =
   | TyCls of loc * string list
   | TyLab of loc * string * ctyp
   | TyLid of loc * string
-  | TyMan of loc * ctyp * ctyp
+  | TyMan of loc * ctyp * bool * ctyp
   | TyObj of loc * (string * ctyp) list * bool
   | TyOlb of loc * string * ctyp
   | TyPck of loc * module_type

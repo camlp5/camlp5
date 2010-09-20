@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.4 2010/09/19 20:11:13 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.5 2010/09/20 12:29:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -884,7 +884,8 @@ EXTEND
   ;
   ctyp:
     [ "top" LEFTA
-      [ t1 = SELF; "=="; t2 = SELF -> Qast.Node "TyMan" [Qast.Loc; t1; t2] ]
+      [ t1 = SELF; "=="; pf = SV (FLAG "private") "priv"; t2 = SELF ->
+          Qast.Node "TyMan" [Qast.Loc; t1; pf; t2] ]
     | "as" LEFTA
       [ t1 = SELF; "as"; t2 = SELF -> Qast.Node "TyAli" [Qast.Loc; t1; t2] ]
     | LEFTA

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.7 2010/09/19 20:11:12 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.8 2010/09/20 12:29:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1286,7 +1286,9 @@ EXTEND_PRINTER
   ;
   pr_ctyp:
     [ "top"
-      [ <:ctyp:< $x$ == $y$ >> -> operator pc next next 2 (loc, "=") x y ]
+      [ <:ctyp:< $x$ == $priv:pf$ $y$ >> ->
+          let op = if pf then "= private" else "=" in
+          operator pc next next 2 (loc, op) x y ]
     | "arrow"
       [ <:ctyp:< $_$ -> $_$ >> as z ->
           let unfold =

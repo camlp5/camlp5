@@ -1553,10 +1553,11 @@ Grammar.extend
         (fun (i : 'ident) _ (loc : Ploc.t) -> (i, None : 'type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,
     [Some "top", Some Gramext.LeftA,
-     [[Gramext.Sself; Gramext.Stoken ("", "=="); Gramext.Sself],
+     [[Gramext.Sself; Gramext.Stoken ("", "==");
+       Gramext.Sflag (Gramext.Stoken ("", "private")); Gramext.Sself],
       Gramext.action
-        (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
-           (MLast.TyMan (loc, t1, t2) : 'ctyp))];
+        (fun (t2 : 'ctyp) (pf : bool) _ (t1 : 'ctyp) (loc : Ploc.t) ->
+           (MLast.TyMan (loc, t1, pf, t2) : 'ctyp))];
      Some "as", Some Gramext.LeftA,
      [[Gramext.Sself; Gramext.Stoken ("", "as"); Gramext.Sself],
       Gramext.action
