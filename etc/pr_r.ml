@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.5 2010/09/20 12:29:07 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.6 2010/09/20 20:54:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1159,7 +1159,7 @@ EXTEND_PRINTER
       | <:expr< ($e$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       |  <:expr< (module $me$ : $mt$) >> ->
-          pprintf pc "@[<1>(module %p:@ %p)@]" module_expr me module_type mt
+          pprintf pc "@[<1>(module %p :@ %p)@]" module_expr me module_type mt
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
