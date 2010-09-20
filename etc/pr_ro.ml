@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.3 2010/09/20 04:39:16 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.4 2010/09/20 12:59:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -26,6 +26,8 @@ value not_impl name pc x =
   in
   pprintf pc "\"pr_ro, not impl: %s; %s\"" name (String.escaped desc)
 ;
+
+value error loc msg = Ploc.raise loc (Failure msg);
 
 value is_infix = do {
   let infixes = Hashtbl.create 73 in
@@ -395,7 +397,12 @@ EXTEND_PRINTER
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
-          pprintf pc "@[<1>(%p :@ %p)@]" curr ce class_type ct ] ]
+          pprintf pc "@[<1>(%p :@ %p)@]" curr ce class_type ct
+      | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >> as z ->
+          pprintf pc "@[<1>(%p)@]" class_expr z
+      | z ->
+          error (MLast.loc_of_class_expr z)
+            (sprintf "pr_class_expr %d" (Obj.tag (Obj.repr z))) ] ]
   ;
   pr_class_type:
     [ "top"

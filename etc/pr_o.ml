@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.9 2010/09/20 12:47:40 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.10 2010/09/20 12:59:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -2044,7 +2044,9 @@ EXTEND_PRINTER
       | <:class_expr:< object $opt:csp$ $list:csl$ end >> ->
           class_object loc pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
-          pprintf pc "(%p :@;<1 1>%p)" curr ce class_type ct ] ]
+          pprintf pc "(%p :@;<1 1>%p)" curr ce class_type ct
+      | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >> as z ->
+          pprintf pc "@[<1>(%p)@]" class_expr z ] ]
   ;
   pr_class_type:
     [ "top"
