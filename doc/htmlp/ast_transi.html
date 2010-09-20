@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.25 2010/09/18 04:53:22 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.26 2010/09/20 10:11:10 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -583,6 +583,11 @@
     <td>character</td>
   </tr>
   <tr>
+    <td><tt>PaFlo loc s</tt></td>
+    <td align="center"><tt>$flo:s$</tt></td>
+    <td>float</td>
+  </tr>
+  <tr>
     <td><tt>PaInt loc s1 ""</tt></td>
     <td align="center"><tt>$int:s1$</tt></td>
     <td>integer constant</td>
@@ -601,11 +606,6 @@
     <td><tt>PaInt loc s1 "n"</tt></td>
     <td align="center"><tt>$nativeint:s1$</tt></td>
     <td>native integer</td>
-  </tr>
-  <tr>
-    <td><tt>PaFlo loc s</tt></td>
-    <td align="center"><tt>$flo:s$</tt></td>
-    <td>float</td>
   </tr>
   <tr>
     <td><tt>PaLab loc p1 None</tt></td>
@@ -970,8 +970,8 @@
 
 <h4>sig_item</h4>
 
-<p>Signature items, i.e. phrases in a ".mli" file or "sig"
-  elements.</p>
+<p>Signature items, i.e. phrases in a ".mli" file or elements
+  inside "sig ... end".</p>
 
 <table border="1">
   <tr>
@@ -1506,6 +1506,21 @@
     <td>value</td>
   </tr>
   <tr>
+    <td><tt>CrVav loc True s t</tt></td>
+    <td align="center"><tt>value virtual mutable $lid:s$ : $t$</tt></td>
+    <td>virtual value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVav loc False s t</tt></td>
+    <td align="center"><tt>value virtual $lid:s$ : $t$</tt></td>
+    <td>virtual value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVav loc b s t</tt></td>
+    <td align="center"><tt>value virtual $flag:b$ $lid:s$ : $t$</tt></td>
+    <td>virtual value</td>
+  </tr>
+  <tr>
     <td><tt>CrVir loc True s t</tt></td>
     <td align="center"><tt>method virtual private $lid:s$ : $t$</tt></td>
     <td>virtual method</td>
@@ -1628,6 +1643,16 @@
     <th>Comment</th>
   </tr>
   <tr>
+    <td><tt>WcMod loc ls me</tt></td>
+    <td align="center"><tt>module $list:ls$ = $me$</tt></td>
+    <td>with module</td>
+  </tr>
+  <tr>
+    <td><tt>WcMos loc ls me</tt></td>
+    <td align="center"><tt>module $list:ls$ := $me$</tt></td>
+    <td>with module substitution</td>
+  </tr>
+  <tr>
     <td><tt>WcTyp loc ls ltv True t</tt></td>
     <td align="center"><tt>type $list:ls$ $list:ltv$ = private $t$</tt></td>
     <td>with type</td>
@@ -1643,9 +1668,9 @@
     <td>with type</td>
   </tr>
   <tr>
-    <td><tt>WcMod loc ls me</tt></td>
-    <td align="center"><tt>module $list:ls$ = $me$</tt></td>
-    <td>with module</td>
+    <td><tt>WcTys loc ls ltv t</tt></td>
+    <td align="center"><tt>type $list:ls$ $list:ltv$ := $t$</tt></td>
+    <td>with type substitution</td>
   </tr>
 </table>
 
