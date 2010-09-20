@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.4 2010/09/20 12:59:39 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.5 2010/09/20 13:35:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -455,9 +455,14 @@ EXTEND_PRINTER
           sig_method_or_method_virtual pc "" priv s t
       | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
+      | <:class_sig_item< type $t1$ = $t2$ >> ->
+          pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
       | <:class_sig_item< value $flag:mf$ $lid:s$ : $t$ >> ->
           pprintf pc "value%s %p :@;%p" (if mf then " mutable" else "")
-            var_escaped s ctyp t ] ]
+            var_escaped s ctyp t
+      | z ->
+          error (MLast.loc_of_class_sig_item z)
+            (sprintf "pr_class_sig_item %d" (Obj.tag (Obj.repr z))) ] ]
   ;
   pr_class_str_item:
     [ "top"
