@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 6.2 2010/09/20 04:48:32 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -23,10 +23,20 @@ getvers () {
   vers=$(echo $vers | tr '\n' ' ')
 }
 
+exclude () {
+  e="$OPTARG"
+  vers1=""
+  for i in $vers; do
+    if [ "$i" != "$e" ]; then vers1="$vers1$i "; fi
+  done
+  vers="$vers1"
+}
+
 usage () {
   echo "Usage: check_ocaml_versions.sh <options>"
   echo "<options> are:"
   echo "  -d <dir>    Change directory of versions"
+  echo "  -e <vers>   Exclude that version (can be used several times)."
   echo "  -h          Display this list of options"
   echo "  -n          No opt (only bytecode)"
   echo "  -t          Camlp5 transitional mode"
@@ -42,9 +52,10 @@ usage () {
 }
 getvers
 versopt=""
-while getopts ":d:hntv:6" name; do
+while getopts ":d:e:hntv:6" name; do
   case "$name" in
   'd') D="$OPTARG"; OCAMLSDIR=$(cd "$wd"; cd "$D"; pwd); getvers;;
+  'e') exclude;;
   'h') usage; exit 0;;
   'n') DOOPT=0;;
   't') MODE="--transitional";;
