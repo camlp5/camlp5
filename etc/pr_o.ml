@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.11 2010/09/20 13:35:25 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.12 2010/09/20 20:05:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1301,24 +1301,32 @@ EXTEND_PRINTER
       [ <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
           plist next 2 pc tl ]
-    | "apply"
-      [ <:ctyp< $uid:_$ $_$ >> as z -> next pc z
-      | <:ctyp:< $_$ $_$ >> as z ->
-          let (t, tl) =
-            loop [] z where rec loop args =
-              fun
-              [ <:ctyp< $x$ $y$ >> -> loop [y :: args] x
-              | t -> (t, args) ]
-          in
-          match tl with
-          [ [t2] -> pprintf pc "%p@;%p" curr t2 next t
-          | _ ->
+   | "apply"
+      [ <:ctyp:< $t1$ $t2$ >> ->
+          match t1 with
+          [ <:ctyp< $_$ $_$ >> ->
+              let (t, tl) =
+                loop [t2] t1 where rec loop args =
+                  fun
+                  [ <:ctyp< $x$ $y$ >> -> loop [y :: args] x
+                  | t -> (t, args) ]
+              in
               pprintf pc "(%p)@;%p" (hlistl (comma_after ctyp) ctyp)
-                tl curr t ] ]
+                tl curr t
+          | _ ->
+              match t2 with
+              [ <:ctyp< $_$ $_$ >> -> pprintf pc "%p@;%p" curr t2 next t1
+              | t -> pprintf pc "%p@;%p" next t2 next t1 ] ] ]
     | "dot"
-      [ <:ctyp< $x$ . $y$ >> -> pprintf pc "%p.%p" curr x curr y ]
-    | "mod_apply"
-      [ <:ctyp< $uid:m$ $x$ >> -> pprintf pc "%s(%p)" m curr x ]
+      [ <:ctyp:< $_$ . $_$ >> as z ->
+          match z with
+          [ <:ctyp< $uid:m$ . $lid:t$ >> ->
+              pprintf pc "%s.%s" m t
+          | <:ctyp< ($uid:m1$.$uid:m2$ $uid:m3$).$lid:t$ >> ->
+              pprintf pc "%s.%s(%s).%s" m1 m2 m3 t
+          | <:ctyp< $uid:m1$.$uid:m2$.$lid:t$ >> ->
+              pprintf pc "%s.%s.%s" m1 m2 t
+          | _ -> error loc "type dot" ] ]
     | "simple"
       [ <:ctyp:< { $list:ltl$ } >> ->
           pprintf pc "@[<a>@[<2>{ %p }@]@]"
@@ -1457,30 +1465,28 @@ EXTEND_PRINTER
                  pprintf pc "struct %p end" (hlist str_item_sep) sil)
             (fun () ->
                pprintf pc "@[<b>struct@;%p@ end@]" (vlist str_item_sep) sil) ]
+
+   | "apply"
+      [ <:module_expr:< $_$ $_$ >> as z ->
+          match z with
+          [ <:module_expr< $uid:m1$.$uid:m2$ $uid:m3$ >> ->
+              pprintf pc "%s.%s(%s)" m1 m2 m3
+          | <:module_expr< $uid:m1$ $uid:m2$ $uid:m3$ >> ->
+              pprintf pc "%s(%s)(%s)" m1 m2 m3
+
+          | <:module_expr< $uid:m1$ $m2$ >> ->
+              match m2 with
+              [ <:module_expr< $uid:m2$ >> ->
+                  pprintf pc "%s(%s)" m1 m2
+              | <:module_expr< struct $list:_$ end >> ->
+                  pprintf pc "%s@;%p" m1 next m2
+              | _ -> error loc "module app 1" ]
+
+          | _ -> error loc "module app" ] ]
+
     | "dot"
-      [ <:module_expr< $x$ . $y$ >> ->
-          pprintf pc "%p.%p" curr x curr y ]
-    | "apply"
-      [ <:module_expr< $x$ $y$ >> ->
-(*
-          let mod_exp2 pc (is_first, me) =
-            match me with
-            [ <:module_expr< $uid:_$ >> | <:module_expr< $_$ . $_$ >>
-              when not is_first ->
-                pprintf pc "(%p)" next me
-            | _ -> next pc me ]
-          in
-          let (me, mel) =
-            loop [(False, y)] x where rec loop mel =
-              fun
-              [ <:module_expr< $x$ $y$ >> -> loop [(False, y) :: mel] x
-              | me -> ((True, me), mel) ]
-          in
-          let mel = List.map (fun me -> (me, "")) [me :: mel] in
-          plist mod_exp2 2 pc mel ]
-*)
-          pprintf pc "@[%p@;<0 2>@[<1>(%p)@]@]" curr x module_expr y ]
-(**)
+      [ <:module_expr:< $_$ . $_$ >> -> error loc "module dot" ]
+
     | "simple"
       [ <:module_expr< $uid:s$ >> ->
           pprintf pc "%s" s
@@ -1955,7 +1961,10 @@ EXTEND_PRINTER
       | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
           not_impl "variants 4" pc pvl
       | <:ctyp< $_$ as $_$ >> as z ->
-          pprintf pc "@[<1>(%p)@]" ctyp z ] ]
+          pprintf pc "@[<1>(%p)@]" ctyp z
+      | z ->
+          error (MLast.loc_of_ctyp z)
+            (sprintf "pr_ctyp %d" (Obj.tag (Obj.repr z))) ] ]
   ;
   pr_sig_item: LEVEL "top"
     [ [ <:sig_item:< class $list:cd$ >> ->
