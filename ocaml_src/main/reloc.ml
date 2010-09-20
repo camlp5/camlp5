@@ -99,8 +99,8 @@ and patt floc sh =
     | PaApp (loc, x1, x2) -> PaApp (floc loc, self x1, self x2)
     | PaArr (loc, x1) -> PaArr (floc loc, vala_map (List.map self) x1)
     | PaChr (loc, x1) -> PaChr (floc loc, x1)
-    | PaInt (loc, x1, x2) -> PaInt (floc loc, x1, x2)
     | PaFlo (loc, x1) -> PaFlo (floc loc, x1)
+    | PaInt (loc, x1, x2) -> PaInt (floc loc, x1, x2)
     | PaLab (loc, x1, x2) ->
         PaLab (floc loc, self x1, vala_map (option_map self) x2)
     | PaLaz (loc, x1) -> PaLaz (floc loc, self x1)

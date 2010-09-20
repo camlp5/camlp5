@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.29 2010/09/19 20:46:26 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.30 2010/09/20 09:51:05 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -128,6 +128,10 @@ MLast.TyVrn loc lpv ools;
 <:patt< $chr:s$ >>;
 <:patt< $_chr:s$ >>;
 
+(* float *)
+<:patt< $flo:s$ >>;
+<:patt< $_flo:s$ >>;
+
 (* integer constant *)
 <:patt< $int:s1$ >>;
 <:patt< $_int:s1$ >>;
@@ -140,10 +144,6 @@ MLast.TyVrn loc lpv ools;
 (* native integer *)
 <:patt< $nativeint:s1$ >>;
 <:patt< $_nativeint:s1$ >>;
-
-(* float *)
-<:patt< $flo:s$ >>;
-<:patt< $_flo:s$ >>;
 
 (* label *)
 <:patt< ~{$p1$} >>;

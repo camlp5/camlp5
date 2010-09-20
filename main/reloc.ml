@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.4 2010/09/19 20:11:13 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.5 2010/09/20 09:51:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -110,8 +110,8 @@ and patt floc sh =
     | PaApp loc x1 x2 -> PaApp (floc loc) (self x1) (self x2)
     | PaArr loc x1 -> PaArr (floc loc) (vala_map (List.map self) x1)
     | PaChr loc x1 -> PaChr (floc loc) x1
-    | PaInt loc x1 x2 -> PaInt (floc loc) x1 x2
     | PaFlo loc x1 -> PaFlo (floc loc) x1
+    | PaInt loc x1 x2 -> PaInt (floc loc) x1 x2
     | PaLab loc x1 x2 ->
         PaLab (floc loc) (self x1) (vala_map (option_map self) x2)
     | PaLaz loc x1 -> PaLaz (floc loc) (self x1)

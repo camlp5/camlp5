@@ -58,8 +58,8 @@ and patt =
   | PaApp of loc * patt * patt
   | PaArr of loc * patt list
   | PaChr of loc * string
-  | PaInt of loc * string * string
   | PaFlo of loc * string
+  | PaInt of loc * string * string
   | PaLab of loc * patt * patt option
   | PaLaz of loc * patt
   | PaLid of loc * string
