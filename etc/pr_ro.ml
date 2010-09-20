@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.5 2010/09/20 13:35:25 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.6 2010/09/20 19:35:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -340,7 +340,8 @@ EXTEND_PRINTER
       | <:ctyp< $_$ as $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" ctyp z
       | z ->
-          not_impl "ctyp" pc z ] ]
+          error (MLast.loc_of_ctyp z)
+            (sprintf "pr_ctyp %d" (Obj.tag (Obj.repr z))) ] ]
   ;
   pr_sig_item: LEVEL "top"
     [ [ <:sig_item< class $list:cd$ >> ->

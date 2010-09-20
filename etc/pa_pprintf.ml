@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pprintf.ml,v 6.1 2010/09/15 16:00:21 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 6.2 2010/09/20 19:34:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -479,14 +479,14 @@ value expand_pprintf loc pc fmt al =
 EXTEND
   GLOBAL: expr;
   expr: LEVEL "apply"
-    [ [ "pprintf"; pc = qualid; fmt = STRING; al = LIST0 NEXT ->
+    [ [ "pprintf"; pc = variable; fmt = STRING; al = LIST0 NEXT ->
           expand_pprintf loc pc fmt al
-      | "lprintf"; pc = qualid; fmt = STRING; al = LIST0 NEXT ->
+      | "lprintf"; pc = variable; fmt = STRING; al = LIST0 NEXT ->
           let e = expand_pprintf loc pc fmt al in
           <:expr< expand_lprintf $pc$ loc (fun pc -> $e$) >>
    ] ]
   ;
-  qualid:
+  variable:
     [ [ e1 = SELF; "."; e2 = SELF -> <:expr< $e1$ . $e2$ >> ]
     | [ i = UIDENT -> <:expr< $uid:i$ >>
       | i = LIDENT -> <:expr< $lid:i$ >> ] ]
