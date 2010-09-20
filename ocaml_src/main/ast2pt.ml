@@ -139,6 +139,21 @@ let long_id_of_string_list loc sl =
   | s :: sl -> mkli s (List.rev sl)
 ;;
 
+let long_id_class_type loc ct =
+  let rec longident =
+    function
+      CtIde (loc, s) -> Lident (uv s)
+    | CtApp (loc, ct1, ct2) ->
+        let li1 = longident ct1 in
+        let li2 = longident ct2 in Lapply (li1, li2)
+    | CtAcc (loc, ct1, ct2) ->
+        let li1 = longident ct1 in
+        let li2 = longident ct2 in Lapply (li1, li2)
+    | _ -> error loc "long_id_of_class_type case not impl"
+  in
+  longident ct
+;;
+
 let rec ctyp_fa al =
   function
     TyApp (_, f, a) -> ctyp_fa (a :: al) f
@@ -1229,64 +1244,25 @@ and str_item s l =
 and class_type =
   function
     CtAcc (loc, _, _) as ct ->
-      let li =
-        let rec longident =
-          function
-            CtIde (loc, s) -> Lident (uv s)
-          | CtApp (loc, ct1, ct2) ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in Lapply (li1, li2)
-          | CtAcc (loc, ct1, ct2) ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in Lapply (li1, li2)
-          | _ -> failwith "CtAcc is not implemented 5"
-        in
-        longident ct
-      in
+      let li = long_id_class_type loc ct in
       begin match ocaml_pcty_constr with
         Some pcty_constr -> mkcty loc (pcty_constr li [])
       | None -> error loc "no class type desc in this ocaml version"
       end
   | CtApp (loc, _, _) as ct ->
-      let li =
-        let rec longident =
-          function
-            CtIde (loc, s) -> Lident (uv s)
-          | CtApp (loc, ct1, ct2) ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in Lapply (li1, li2)
-          | CtAcc (loc, ct1, ct2) ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in Lapply (li1, li2)
-          | _ -> failwith "CtAcc is not implemented 5"
-        in
-        longident ct
-      in
+      let li = long_id_class_type loc ct in
       begin match ocaml_pcty_constr with
         Some pcty_constr -> mkcty loc (pcty_constr li [])
       | None -> error loc "no class type desc in this ocaml version"
       end
   | CtIde (loc, _) as ct ->
-      let li =
-        let rec longident =
-          function
-            CtIde (loc, s) -> Lident (uv s)
-          | CtApp (loc, ct1, ct2) ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in Lapply (li1, li2)
-          | CtAcc (loc, ct1, ct2) ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in Lapply (li1, li2)
-          | _ -> failwith "CtAcc is not implemented 5"
-        in
-        longident ct
-      in
+      let li = long_id_class_type loc ct in
       begin match ocaml_pcty_constr with
         Some pcty_constr -> mkcty loc (pcty_constr li [])
       | None -> error loc "no class type desc in this ocaml version"
       end
   | CtCon (loc, ct, tl) ->
-      let li = failwith "CtCon not impl" in
+      let li = long_id_class_type loc ct in
       begin match ocaml_pcty_constr with
         Some pcty_constr -> mkcty loc (pcty_constr li (List.map ctyp (uv tl)))
       | None -> error loc "no class type desc in this ocaml version"

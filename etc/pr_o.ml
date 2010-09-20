@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.8 2010/09/20 12:29:06 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.9 2010/09/20 12:47:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -2075,7 +2075,10 @@ EXTEND_PRINTER
                     fun
                     [ Some t -> pprintf pc "object@;(%p)" ctyp t
                     | None -> pprintf pc "object" ])
-                  cst (vlist class_sig_item_sep) csi) ]
+                  cst (vlist class_sig_item_sep) csi)
+      | <:class_type< $ct$ [ $list:ctcl$ ] >> ->
+          let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
+          pprintf pc "@[<1>[%p]@;%p@]" (plist ctyp 0) ctcl curr ct ]
     | [ <:class_type< $ct1$ ( $ct2$ ) >> ->
           pprintf pc "%p(%p)" curr ct1 curr ct2
       | <:class_type< $ct1$ . $ct2$ >> ->

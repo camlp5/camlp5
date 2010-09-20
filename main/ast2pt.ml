@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.7 2010/09/20 12:29:07 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.8 2010/09/20 12:47:41 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -137,6 +137,21 @@ value long_id_of_string_list loc sl =
   match List.rev sl with
   [ [] -> error loc "bad ast"
   | [s :: sl] -> mkli s (List.rev sl) ]
+;
+
+value long_id_class_type loc ct =
+  longident ct where rec longident =
+    fun
+    [ CtIde loc s -> Lident (uv s)
+    | CtApp loc ct1 ct2 ->
+        let li1 = longident ct1 in
+        let li2 = longident ct2 in
+        Lapply li1 li2
+    | CtAcc loc ct1 ct2 ->
+        let li1 = longident ct1 in
+        let li2 = longident ct2 in
+        Lapply li1 li2
+    | _ -> error loc "long_id_of_class_type case not impl" ]
 ;
 
 value rec ctyp_fa al =
@@ -1093,25 +1108,12 @@ and str_item s l =
 and class_type =
   fun
   [ CtAcc loc _ _ | CtApp loc _ _ | CtIde loc _ as ct ->
-      let li =
-        longident ct where rec longident =
-          fun
-          [ CtIde loc s -> Lident (uv s)
-          | CtApp loc ct1 ct2 ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in
-              Lapply li1 li2
-          | CtAcc loc ct1 ct2 ->
-              let li1 = longident ct1 in
-              let li2 = longident ct2 in
-              Lapply li1 li2
-          | _ -> failwith "CtAcc is not implemented 5" ]
-      in
+      let li = long_id_class_type loc ct in
       match ocaml_pcty_constr with
       [ Some pcty_constr -> mkcty loc (pcty_constr li [])
       | None -> error loc "no class type desc in this ocaml version" ]
   | CtCon loc ct tl ->
-      let li = failwith "CtCon not impl" in
+      let li = long_id_class_type loc ct in
       match ocaml_pcty_constr with
       [ Some pcty_constr -> mkcty loc (pcty_constr li (List.map ctyp (uv tl)))
       | None -> error loc "no class type desc in this ocaml version" ]
