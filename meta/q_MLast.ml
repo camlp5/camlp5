@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.5 2010/09/20 12:29:07 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.6 2010/09/20 16:47:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -7,7 +7,7 @@
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
 
-IFDEF OCAML_VERSION <= OCAML_2_02 AND NOT COMPATIBLE_WITH_OLD_OCAML THEN
+IFDEF OCAML_VERSION <= OCAML_3_00 AND NOT COMPATIBLE_WITH_OLD_OCAML THEN
   #option "-split_ext";
 END;
 
