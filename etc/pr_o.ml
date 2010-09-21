@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.17 2010/09/21 11:26:11 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.18 2010/09/21 13:19:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1319,15 +1319,26 @@ EXTEND_PRINTER
               [ <:ctyp< $_$ $_$ >> -> pprintf pc "%p@;%p" curr t2 next t1
               | t -> pprintf pc "%p@;%p" next t2 next t1 ] ] ]
     | "dot"
-      [ <:ctyp:< $_$ . $_$ >> as z ->
-          match z with
-          [ <:ctyp< $uid:m$ . $lid:t$ >> ->
-              pprintf pc "%s.%s" m t
-          | <:ctyp< ($uid:m1$.$uid:m2$ $uid:m3$).$lid:t$ >> ->
-              pprintf pc "%s.%s(%s).%s" m1 m2 m3 t
-          | <:ctyp< $uid:m1$.$uid:m2$.$lid:t$ >> ->
-              pprintf pc "%s.%s.%s" m1 m2 t
-          | _ -> error loc "type dot" ] ]
+      [ <:ctyp:< $t1$ . $t2$ >> ->
+          pprintf pc "%p.%p"
+            (fun pc ->
+               fun
+               [ <:ctyp< $uid:m$ >> ->
+                   pprintf pc "%s" m
+               | <:ctyp< $uid:m1$.$uid:m2$ $uid:m3$ >> ->
+                   pprintf pc "%s.%s(%s)" m1 m2 m3
+               | <:ctyp< $uid:m1$ $uid:m2$ >> ->
+                   pprintf pc "%s(%s)" m1 m2
+               | <:ctyp< $uid:m1$.$uid:m2$ >> ->
+                   pprintf pc "%s.%s" m1 m2
+               | _ -> error loc "type dot 1" ])
+            t1
+            (fun pc ->
+               fun
+               [ <:ctyp< $lid:t$ >> ->
+                   pprintf pc "%s" t
+               | _ -> error loc "type dot 2" ])
+            t2 ]
     | "simple"
       [ <:ctyp:< { $list:ltl$ } >> ->
           pprintf pc "@[<a>@[<2>{ %p }@]@]"
