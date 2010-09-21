@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.2 2010/09/21 15:31:41 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.3 2010/09/21 17:42:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -224,7 +224,7 @@ value rec antiquot_loc ctx bp =
 
 value dollar ctx bp buf strm =
   if no_quotations.val then
-    ("LIDENT", "$")
+    ("", "$")
   else if ctx.dollar_for_antiquotation then
     ("ANTIQUOT", antiquot ctx bp buf strm)
   else if force_antiquot_loc.val then

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.12 2010/09/21 15:31:41 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.13 2010/09/21 17:42:35 deraugla Exp $
 
 dir='../ocaml/trunk'
 
@@ -184,7 +184,7 @@ for i in $files; do
     echo "*** testing $syntname to normal syntax (result: t3.ml)"
     main/camlp5 $syntax -I etc pr_o.cmo $c5o "$i" > /tmp/t3.ml
     echo "*** testing normal syntax on itself"
-    main/camlp5 etc/pa_o.cmo -I etc pr_o.cmo -no_quot /tmp/t3.ml | diff /tmp/t3.ml -
+    main/camlp5 -nolib etc/pa_o.cmo etc/pa_op.cmo -I etc pr_o.cmo -no_quot /tmp/t3.ml | diff /tmp/t3.ml -
     echo "*** comparing t2.ml and t3.ml"
     diff /tmp/t2.ml /tmp/t3.ml || :
     echo "*** testing $syntname to OCaml parse tree"

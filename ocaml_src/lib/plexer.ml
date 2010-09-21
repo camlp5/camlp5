@@ -514,7 +514,7 @@ let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
 ;;
 
 let dollar ctx bp buf strm =
-  if !no_quotations then "LIDENT", "$"
+  if !no_quotations then "", "$"
   else if ctx.dollar_for_antiquotation then
     "ANTIQUOT", antiquot ctx bp buf strm
   else if !force_antiquot_loc then
