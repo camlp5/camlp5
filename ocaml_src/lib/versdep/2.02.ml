@@ -100,6 +100,8 @@ let ocaml_pexp_lazy = None;;
 
 let ocaml_pexp_letmodule = Some (fun i me e -> Pexp_letmodule (i, me, e));;
 
+let ocaml_pexp_newtype = None;;
+
 let ocaml_pexp_object = None;;
 
 let ocaml_pexp_open = None;;

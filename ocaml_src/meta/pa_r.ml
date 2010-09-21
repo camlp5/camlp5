@@ -3,7 +3,7 @@
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* #load "pa_extend.cmo" *)
-(* #load "q_MLast.cmo" *)
+(* #load "q_ast.cmo" *)
 
 open Pcaml;;
 
@@ -1372,6 +1372,10 @@ Grammar.extend
      [[],
       Gramext.action
         (fun (loc : Ploc.t) -> (MLast.PaUid (loc, "()") : 'paren_patt));
+      [Gramext.Stoken ("", "type"); Gramext.Stoken ("LIDENT", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (MLast.PaNty (loc, s) : 'paren_patt));
       [Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e)),
           Gramext.Stoken ("", ","), false)],
@@ -1461,6 +1465,10 @@ Grammar.extend
      [[],
       Gramext.action
         (fun (loc : Ploc.t) -> (MLast.PaUid (loc, "()") : 'paren_ipatt));
+      [Gramext.Stoken ("", "type"); Gramext.Stoken ("LIDENT", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (MLast.PaNty (loc, s) : 'paren_ipatt));
       [Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e)),
           Gramext.Stoken ("", ","), false)],

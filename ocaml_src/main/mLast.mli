@@ -63,6 +63,7 @@ and patt =
   | PaLab of loc * patt * patt option
   | PaLaz of loc * patt
   | PaLid of loc * string
+  | PaNty of loc * string
   | PaOlb of loc * patt * expr option
   | PaOrp of loc * patt * patt
   | PaRec of loc * (patt * patt) list

@@ -560,6 +560,7 @@ let rec patt =
       | None -> error loc "lazy patterns not in this version"
       end
   | PaLid (loc, s) -> mkpat loc (Ppat_var (uv s))
+  | PaNty (loc, s) -> error loc "new type not allowed here"
   | PaOlb (loc, _, _) -> error loc "labeled pattern not allowed here"
   | PaOrp (loc, p1, p2) -> mkpat loc (Ppat_or (patt p1, patt p2))
   | PaRng (loc, p1, p2) ->
@@ -897,6 +898,15 @@ let rec expr =
           in
           mkexp loc
             (ocaml_pexp_function lab None [patt p, when_expr e (uv w)])
+      | [PaNty (loc, s), w, e] ->
+          begin match ocaml_pexp_newtype with
+            Some newtype ->
+              begin match uv w with
+                Some _ -> error loc "(type ..) not allowed with 'when'"
+              | None -> mkexp loc (newtype (uv s) (expr e))
+              end
+          | None -> error loc "(type ..) not in this ocaml version"
+          end
       | [PaOlb (loc, p, eo), w, e] ->
           let lab =
             match p with

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.6 2010/09/20 16:47:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.7 2010/09/21 05:48:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -827,6 +827,7 @@ EXTEND
       | p = patt; ","; pl = LIST1 patt SEP "," -> mktuppat Qast.Loc p pl
       | p = patt -> p
       | pl = SV (LIST1 patt SEP ",") -> Qast.Node "PaTup" [Qast.Loc; pl]
+      | "type"; s = SV LIDENT -> Qast.Node "PaNty" [Qast.Loc; s]
       | -> Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   cons_patt_opt:
@@ -856,6 +857,7 @@ EXTEND
       | p = ipatt; ","; pl = LIST1 ipatt SEP "," -> mktuppat Qast.Loc p pl
       | p = ipatt -> p
       | pl = SV (LIST1 ipatt SEP ",") -> Qast.Node "PaTup" [Qast.Loc; pl]
+      | "type"; s = SV LIDENT -> Qast.Node "PaNty" [Qast.Loc; s]
       | -> Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   label_ipatt:
