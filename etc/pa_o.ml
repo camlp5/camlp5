@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.10 2010/09/20 12:29:06 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.11 2010/09/21 05:48:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -788,6 +788,7 @@ EXTEND
       | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
+      | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
       | "_" -> <:patt< _ >>
       | x = QUOTATION ->
           let con = quotation_content x in

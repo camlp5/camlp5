@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.13 2010/09/20 20:54:42 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.14 2010/09/21 05:48:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -75,10 +75,9 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< ~{$_$ = $_$} >> -> True
-  | <:patt< ~{$_$} >> -> True
-  | <:patt< ?{$_$ = $_$} >> -> True
-  | <:patt< ?{$_$} >> -> True
+  | <:patt< (type $lid__$) >> -> True
+  | <:patt< ~{$_$ $opt:_$} >> -> True
+  | <:patt< ?{$_$ $opt:_$} >> -> True
   | _ -> False ]
 ;
 
@@ -1254,6 +1253,8 @@ EXTEND_PRINTER
               pprintf pc "@[<1>[%p]@]" (plist patt 0) xl ]
       | <:patt< ($p$ : $t$) >> ->
           pprintf pc "(%p :@;<1 1>%p)" patt p ctyp t
+      | <:patt< (type $lid:s$) >> ->
+          pprintf pc "(type %s)" s
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
@@ -1469,8 +1470,14 @@ EXTEND_PRINTER
    | "apply"
       [ <:module_expr:< $_$ $_$ >> as z ->
           match z with
-          [ <:module_expr< $uid:m1$.$uid:m2$ $uid:m3$ >> ->
-              pprintf pc "%s.%s(%s)" m1 m2 m3
+          [ <:module_expr< $uid:m1$.$uid:m2$ $m3$ >> ->
+              match m3 with
+              [ <:module_expr< $uid:m3$ >> ->
+                  pprintf pc "%s.%s(%s)" m1 m2 m3
+              | <:module_expr< struct $list:sil$ end >> ->
+                  pprintf pc "%s.%s@;%p" m1 m2 next m3
+              | _ -> error loc "module app 2" ]
+
           | <:module_expr< $uid:m1$ $uid:m2$ $uid:m3$ >> ->
               pprintf pc "%s(%s)(%s)" m1 m2 m3
 

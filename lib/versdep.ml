@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.3 2010/09/19 20:11:12 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.4 2010/09/21 05:48:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -249,6 +249,11 @@ value ocaml_pexp_lazy =
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSE Some (fun i me e -> Pexp_letmodule i me e) END
+;
+
+value ocaml_pexp_newtype =
+  IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
+  ELSE Some (fun s e -> Pexp_newtype s e) END
 ;
 
 value ocaml_pexp_object =

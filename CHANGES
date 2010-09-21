@@ -3,8 +3,8 @@ Camlp5 Version 6.00:
 
 * [19 Sep 10] In grammars, added list with separator with optional ending
   separator (LIST0 .. SEP OPT_SEP and LIST1 .. SEP OPT_SEP).
-* [19 Sep 10] Completed missing statements in particular in objects and
-  classes.
+* [19 Sep 10] Completed missing statements in particular in objects,
+  classes, and first class modules.
 * [08 Sep 10] Added option '-flag O' of pr_r.cmo and pr_o.cmo which
   add location comments in the output.
 * [08 Sep 10] Added new chapters in the documentation:

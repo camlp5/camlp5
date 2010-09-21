@@ -1,9 +1,9 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.8 2010/09/20 12:29:07 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.9 2010/09/21 05:48:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
-#load "q_MLast.cmo";
+#load "q_ast.cmo";
 
 open Pcaml;
 
@@ -462,6 +462,7 @@ EXTEND
       | p = patt; ","; pl = LIST1 patt SEP "," -> mktuppat loc p pl
       | p = patt -> <:patt< $p$ >>
       | pl = V (LIST1 patt SEP ",") -> <:patt< ($_list:pl$) >>
+      | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
       | -> <:patt< () >> ] ]
   ;
   cons_patt_opt:
@@ -491,6 +492,7 @@ EXTEND
       | p = ipatt; ","; pl = LIST1 ipatt SEP "," -> mktuppat loc p pl
       | p = ipatt -> <:patt< $p$ >>
       | pl = V (LIST1 ipatt SEP ",") -> <:patt< ( $_list:pl$) >>
+      | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
       | -> <:patt< () >> ] ]
   ;
   label_ipatt:

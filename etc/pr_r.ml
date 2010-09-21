@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.6 2010/09/20 20:54:42 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.7 2010/09/21 05:48:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -85,8 +85,9 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | MLast.PaOlb _ p _ -> is_irrefut_patt p
-  | MLast.PaLab _ p _ -> is_irrefut_patt p
+  | <:patt< (type $lid__$) >> -> True
+  | <:patt< ~{$p$ $opt:_$} >> -> is_irrefut_patt p
+  | <:patt< ?{$p$ $opt:_$} >> -> is_irrefut_patt p
   | _ -> False ]
 ;
 
@@ -1248,6 +1249,8 @@ EXTEND_PRINTER
               pprintf pc "@[<1>[%p]@]" (plist patt 0) xl ]
       | <:patt< ($p$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
+      | <:patt< (type $lid:s$) >> ->
+          pprintf pc "(type %s)" s
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s

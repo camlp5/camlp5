@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.8 2010/09/20 12:47:41 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.9 2010/09/21 05:48:06 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -557,6 +557,7 @@ value rec patt =
       [ Some ppat_lazy -> mkpat loc (ppat_lazy (patt p))
       | None -> error loc "lazy patterns not in this version" ]
   | PaLid loc s -> mkpat loc (Ppat_var (uv s))
+  | PaNty loc s -> error loc "new type not allowed here"
   | PaOlb loc _ _ -> error loc "labeled pattern not allowed here"
   | PaOrp loc p1 p2 -> mkpat loc (Ppat_or (patt p1) (patt p2))
   | PaRng loc p1 p2 ->
@@ -766,6 +767,13 @@ value rec expr =
           in
           mkexp loc (ocaml_pexp_function lab None
             [(patt p, when_expr e (uv w))])
+      | [(PaNty loc s, w, e)] ->
+          match ocaml_pexp_newtype with
+          [ Some newtype ->
+              match uv w with
+              [ Some _ -> error loc "(type ..) not allowed with 'when'"
+              | None -> mkexp loc (newtype (uv s) (expr e)) ]
+          | None -> error loc "(type ..) not in this ocaml version" ]
       | [(PaOlb loc p eo, w, e)] ->
           let lab =
             match p with
