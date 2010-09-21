@@ -514,7 +514,9 @@ let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
 ;;
 
 let dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation then "ANTIQUOT", antiquot ctx bp buf strm
+  if !no_quotations then "LIDENT", "$"
+  else if ctx.dollar_for_antiquotation then
+    "ANTIQUOT", antiquot ctx bp buf strm
   else if !force_antiquot_loc then
     "ANTIQUOT_LOC", antiquot_loc ctx bp buf strm
   else
@@ -1326,15 +1328,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 686, 25)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 688, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 686, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 688, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 686, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 688, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 687, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 689, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 687, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 689, 37)));
        Plexing.tok_comm = None}
   in
   let glex =
