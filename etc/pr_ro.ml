@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.6 2010/09/20 19:35:00 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.7 2010/09/21 19:31:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -440,7 +440,7 @@ EXTEND_PRINTER
           pprintf pc "%p(%p)" curr ct1 curr ct2 ]
     | "dot"
       [ <:class_type< $ct1$ . $ct2$ >> ->
-          pprintf pc "%p.%p" class_type ct1 class_type ct2 ]
+          pprintf pc "%p.%p" curr ct1 curr ct2 ]
     | "simple"
       [ <:class_type< $id:s$ >> ->
           pprintf pc "%s" s

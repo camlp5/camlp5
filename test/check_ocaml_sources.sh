@@ -1,10 +1,11 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.13 2010/09/21 17:42:35 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.14 2010/09/21 19:31:55 deraugla Exp $
 
 dir='../ocaml/trunk'
+suff=mli
 
 getfiles () {
-  files="$(find $dir -type f -name '*.ml' -print)"
+  files="$(find $dir -type f -name "*.$suff" -print)"
 }
 getfiles
 
@@ -106,6 +107,7 @@ for i in $files; do
        "$idir/$bname" = "fixtures/label.ml" -o \
        "$idir/$bname" = "fixtures/lambda_free.ml" -o \
        "$idir/$bname" = "fixtures/loc-bug.ml" -o \
+       "$idir/$bname" = "fixtures/macrotest.mli" -o \
        "$idir/$bname" = "fixtures/make_extend.ml" -o \
        "$idir/$bname" = "fixtures/match_parser.ml" -o \
        "$idir/$bname" = "fixtures/metalib.ml" -o \
@@ -130,11 +132,13 @@ for i in $files; do
        "$idir/$bname" = "fixtures/tuple_as_retval.ml" -o \
        "$idir/$bname" = "fixtures/unit.ml" -o \
        "$idir/$bname" = "fixtures/use.ml" -o \
+       "$idir/$bname" = "frx/frx_lbutton.mli" -o \
        "$idir/$bname" = "Printers/DumpCamlp4Ast.ml" -o \
        "$idir/$bname" = "Printers/DumpOCamlAst.ml" -o \
        "$idir/$bname" = "Printers/Null.ml" -o \
        "$idir/$bname" = "Printers/OCaml.ml" -o \
        "$idir/$bname" = "Printers/OCamlr.ml" -o \
+       "$idir/$bname" = "Printers/OCamlr.mli" -o \
        "$idir/$bname" = "testlabl/multimatch.ml" -o \
        "$idir/$bname" = "testlabl/tests.ml" -o \
        "$idir/$bname" = "testlabl/varunion.ml" ]
@@ -154,6 +158,7 @@ for i in $files; do
          "$idir" = "Printers" -o \
          "$idir/$bname" = "boot/Camlp4Ast.ml" -o \
          "$idir/$bname" = "camlp4/camlp4prof.ml" -o \
+         "$idir/$bname" = "camlp4/camlp4prof.mli" -o \
          "$idir/$bname" = "camlp4/mkcamlp4.ml" -o \
          "$idir/$bname" = "Camlp4Top/Rprint.ml" -o \
          "$idir/$bname" = "fixtures/external.ml" -o \
@@ -174,29 +179,29 @@ for i in $files; do
       c5o=
       opt=0
     fi
-    echo "*** testing $syntname to revised syntax (t1.ml)"
-    main/camlp5 $syntax -I etc pr_r.cmo pr_ro.cmo $c5o "$i" > /tmp/t1.ml
+    echo "*** testing $syntname to revised syntax (t1.$suff)"
+    main/camlp5 $syntax -I etc pr_r.cmo pr_ro.cmo $c5o "$i" > /tmp/t1.$suff
     echo "*** testing revised syntax on itself"
-    main/camlp5 meta/pa_r.cmo -I etc pr_r.cmo pr_ro.cmo /tmp/t1.ml |
-    diff -c /tmp/t1.ml -
-    echo "*** testing revised syntax to normal syntax (t2.ml)"
-    main/camlp5 -nolib meta/pa_r.cmo -I etc pr_o.cmo /tmp/t1.ml > /tmp/t2.ml
-    echo "*** testing $syntname to normal syntax (result: t3.ml)"
-    main/camlp5 $syntax -I etc pr_o.cmo $c5o "$i" > /tmp/t3.ml
+    main/camlp5 meta/pa_r.cmo -I etc pr_r.cmo pr_ro.cmo /tmp/t1.$suff |
+    diff -c /tmp/t1.$suff -
+    echo "*** testing revised syntax to normal syntax (t2.$suff)"
+    main/camlp5 -nolib meta/pa_r.cmo -I etc pr_o.cmo /tmp/t1.$suff > /tmp/t2.$suff
+    echo "*** testing $syntname to normal syntax (result: t3.$suff)"
+    main/camlp5 $syntax -I etc pr_o.cmo $c5o "$i" > /tmp/t3.$suff
     echo "*** testing normal syntax on itself"
-    main/camlp5 -nolib etc/pa_o.cmo etc/pa_op.cmo -I etc pr_o.cmo -no_quot /tmp/t3.ml | diff /tmp/t3.ml -
-    echo "*** comparing t2.ml and t3.ml"
-    diff /tmp/t2.ml /tmp/t3.ml || :
+    main/camlp5 -nolib etc/pa_o.cmo etc/pa_op.cmo -I etc pr_o.cmo -no_quot /tmp/t3.$suff | diff /tmp/t3.$suff -
+    echo "*** comparing t2.$suff and t3.$suff"
+    diff /tmp/t2.$suff /tmp/t3.$suff || :
     echo "*** testing $syntname to OCaml parse tree"
     main/camlp5 $syntax meta/pr_dump.cmo $c5o "$i" >/dev/null
     if [ "$opt" = "1" ]; then
       echo "*** testing normal syntax with opt"
       compile/camlp5o.fast.opt -no_quot "$i" >/dev/null
     fi
-    echo "*** testing revised syntax (t1.ml) to OCaml parse tree"
-    main/camlp5 meta/pa_r.cmo meta/pr_dump.cmo /tmp/t1.ml > /dev/null
-    echo "*** testing normal syntax (t2.ml) to OCaml parse tree"
-    main/camlp5 etc/pa_o.cmo meta/pr_dump.cmo -no_quot /tmp/t2.ml > /dev/null
+    echo "*** testing revised syntax (t1.$suff) to OCaml parse tree"
+    main/camlp5 meta/pa_r.cmo meta/pr_dump.cmo /tmp/t1.$suff > /dev/null
+    echo "*** testing normal syntax (t2.$suff) to OCaml parse tree"
+    main/camlp5 etc/pa_o.cmo meta/pr_dump.cmo -no_quot /tmp/t2.$suff > /dev/null
   fi
 done
-# rm -f /tmp/t1.ml /tmp/t2.ml /tmp/t3.ml
+# rm -f /tmp/t1.$suff /tmp/t2.$suff /tmp/t3.$suff

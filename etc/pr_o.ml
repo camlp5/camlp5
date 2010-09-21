@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.19 2010/09/21 15:01:48 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.20 2010/09/21 19:31:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1321,6 +1321,7 @@ EXTEND_PRINTER
     | "dot"
       [ <:ctyp:< $t1$ . $t2$ >> ->
           pprintf pc "%p.%p"
+(*
             (fun pc ->
                fun
                [ <:ctyp< $uid:m$ >> ->
@@ -1331,11 +1332,17 @@ EXTEND_PRINTER
                    pprintf pc "%s(%s)" m1 m2
                | <:ctyp< $uid:m1$.$uid:m2$ >> ->
                    pprintf pc "%s.%s" m1 m2
+               | <:ctyp< ($_$ $_$ >> ->
+                   pprintf pc "%s.%s" m1 m2
                | _ -> error loc "type dot 1" ])
+*)
+curr
             t1
             (fun pc ->
                fun
                [ <:ctyp< $lid:t$ >> ->
+                   pprintf pc "%s" t
+               | <:ctyp< $uid:t$ >> ->
                    pprintf pc "%s" t
                | _ -> error loc "type dot 2" ])
             t2 ]
@@ -1951,7 +1958,7 @@ EXTEND_PRINTER
   pr_ctyp: AFTER "star"
     [ "label"
       [ <:ctyp< ?$i$: $t$ >> -> pprintf pc "?%s:%p" i curr t
-      | <:ctyp< ~$i$: $t$ >> -> pprintf pc "~%s:%p" i curr t ] ]
+      | <:ctyp< ~$i$: $t$ >> -> pprintf pc "%s:%p" i curr t ] ]
   ;
   pr_ctyp: LEVEL "simple"
     [ [ <:ctyp< < $list:ml$ $flag:v$ > >> ->
