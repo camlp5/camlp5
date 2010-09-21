@@ -3,7 +3,7 @@
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* #load "pa_extend.cmo" *)
-(* #load "q_ast.cmo" *)
+(* #load "q_MLast.cmo" *)
 
 open Pcaml;;
 

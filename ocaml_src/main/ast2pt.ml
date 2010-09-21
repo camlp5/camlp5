@@ -889,6 +889,7 @@ let rec expr =
           let lab =
             match p with
               PaLid (_, lab) -> uv lab
+            | PaTyc (_, PaLid (_, lab), _) -> uv lab
             | _ -> error loc "not impl label for that patt 1"
           in
           let p =

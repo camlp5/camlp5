@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.18 2010/09/21 13:19:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.19 2010/09/21 15:01:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1477,60 +1477,26 @@ EXTEND_PRINTER
                  pprintf pc "struct %p end" (hlist str_item_sep) sil)
             (fun () ->
                pprintf pc "@[<b>struct@;%p@ end@]" (vlist str_item_sep) sil) ]
-
    | "apply"
-      [ <:module_expr:< $_$ $_$ >> as z ->
-          match z with
-          [ <:module_expr< $m1$ $m2$ $m3$ $m4$ >> ->
-              pprintf pc "%p(%p)(%p)(%p)"
-                (fun pc ->
-                   fun
-                   [ <:module_expr< $uid:m1$.$uid:m2$ >> ->
-                       pprintf pc "%s.%s" m1 m2
-                   | _ -> error loc "module app 5" ])
-                m1 curr m2 curr m3 curr m4
-
-          | <:module_expr< $m1$ $m2$ $m3$ >> ->
-              pprintf pc "%p(%p)(%p)"
-                (fun pc ->
-                   fun
-                   [ <:module_expr< $uid:m1$.$uid:m2$.$uid:m3$ >> ->
-                       pprintf pc "%s.%s.%s" m1 m2 m3
-                   | <:module_expr< $uid:m1$.$uid:m2$ >> ->
-                       pprintf pc "%s.%s" m1 m2
-                   | <:module_expr< $uid:m$ >> ->
-                       pprintf pc "%s" m
-                   | _ -> error loc "module app 6" ])
-                m1 curr m2 curr m3
-
-          | <:module_expr< $m1$ $m2$ >> ->
-              pprintf pc "%p(%p)"
-                (fun pc ->
-                   fun
-                   [ <:module_expr< $uid:m1$.$uid:m2$.$uid:m3$.$uid:m4$ >> ->
-                       pprintf pc "%s.%s.%s.%s" m1 m2 m3 m4
-                   | <:module_expr< $uid:m1$.$uid:m2$.$uid:m3$ >> ->
-                       pprintf pc "%s.%s.%s" m1 m2 m3
-                   | <:module_expr< $uid:m1$.$uid:m2$ >> ->
-                       pprintf pc "%s.%s" m1 m2
-                   | <:module_expr< $uid:m$ >> ->
-                       pprintf pc "%s" m
-                   | _ -> error loc "module app 7" ])
-                m1 curr m2
-
-          | _ -> error loc "module app" ] ]
-
+      [ <:module_expr< $x$ $y$ >> ->
+          let mod_exp2 pc (is_first, me) =
+            match me with
+            [ <:module_expr< $uid:_$ >> | <:module_expr< $_$ . $_$ >>
+              when not is_first ->
+                pprintf pc "(%p)" next me
+            | _ -> next pc me ]
+          in
+          let (me, mel) =
+            loop [(False, y)] x where rec loop mel =
+              fun
+              [ <:module_expr< $x$ $y$ >> -> loop [(False, y) :: mel] x
+              | me -> ((True, me), mel) ]
+          in
+          let mel = List.map (fun me -> (me, "")) [me :: mel] in
+          plist mod_exp2 2 pc mel ]
     | "dot"
-      [ <:module_expr:< $_$ . $_$ >> as z ->
-          match z with
-          [ <:module_expr< $uid:m1$ . $uid:m2$ . $uid:m3$ . $uid:m4$ >> ->
-              pprintf pc "%s.%s.%s.%s" m1 m2 m3 m4
-          | <:module_expr< $uid:m1$ . $uid:m2$ . $uid:m3$ >> ->
-              pprintf pc "%s.%s.%s" m1 m2 m3
-          | <:module_expr< $uid:m1$ . $uid:m2$ >> ->
-              pprintf pc "%s.%s" m1 m2
-          | _ -> error loc "module dot" ] ]
-
+      [ <:module_expr< $x$ . $y$ >> ->
+          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:module_expr< $uid:s$ >> ->
           pprintf pc "%s" s

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.9 2010/09/21 05:48:06 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.10 2010/09/21 15:01:49 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -758,6 +758,7 @@ value rec expr =
           let lab =
             match p with
             [ PaLid _ lab -> uv lab
+            | PaTyc _ (PaLid _ lab) _ -> uv lab
             | _ -> error loc "not impl label for that patt 1" ]
           in
           let p =
@@ -765,8 +766,8 @@ value rec expr =
             [ Some p -> p
             | None -> p ]
           in
-          mkexp loc (ocaml_pexp_function lab None
-            [(patt p, when_expr e (uv w))])
+          mkexp loc
+            (ocaml_pexp_function lab None [(patt p, when_expr e (uv w))])
       | [(PaNty loc s, w, e)] ->
           match ocaml_pexp_newtype with
           [ Some newtype ->
