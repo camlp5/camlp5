@@ -97,6 +97,8 @@ MLast.PaLab loc p1 op2;
 MLast.PaLaz loc p;
 MLast.PaLid loc (Ploc.VaVal s);
 MLast.PaLid loc s;
+MLast.PaNty loc (Ploc.VaVal s);
+MLast.PaNty loc s;
 MLast.PaOlb loc p (Ploc.VaVal None);
 MLast.PaOlb loc p (Ploc.VaVal (Some e));
 MLast.PaOlb loc p (Ploc.VaVal oe);

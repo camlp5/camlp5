@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.31 2010/09/20 12:32:32 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.32 2010/09/21 05:56:36 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -159,6 +159,10 @@ MLast.TyVrn loc lpv ools;
 (* lowercase identifier *)
 <:patt< $lid:s$ >>;
 <:patt< $_lid:s$ >>;
+
+(* new type *)
+<:patt< (type $lid:s$) >>;
+<:patt< (type $_lid:s$) >>;
 
 (* option label *)
 <:patt< ?{$p$} >>;

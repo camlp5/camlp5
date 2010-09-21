@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.15 2010/09/20 12:32:32 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.16 2010/09/21 05:56:36 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -97,6 +97,8 @@ MLast.PaLab (loc, p1, op2);;
 <:patt< lazy $p$ >>;;
 <:patt< $lid:s$ >>;;
 <:patt< $_lid:s$ >>;;
+<:patt< (type $lid:s$) >>;;
+<:patt< (type $_lid:s$) >>;;
 MLast.PaOlb (loc, p, Ploc.VaVal None);;
 MLast.PaOlb (loc, p, Ploc.VaVal (Some e));;
 MLast.PaOlb (loc, p, Ploc.VaVal oe);;
