@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.16 2010/09/21 11:19:12 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.17 2010/09/21 11:26:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1483,7 +1483,9 @@ EXTEND_PRINTER
               pprintf pc "%p(%p)(%p)"
                 (fun pc ->
                    fun
-                   [ <:module_expr< $uid:m1$.$uid:m2$ >> ->
+                   [ <:module_expr< $uid:m1$.$uid:m2$.$uid:m3$ >> ->
+                       pprintf pc "%s.%s.%s" m1 m2 m3
+                   | <:module_expr< $uid:m1$.$uid:m2$ >> ->
                        pprintf pc "%s.%s" m1 m2
                    | <:module_expr< $uid:m$ >> ->
                        pprintf pc "%s" m
