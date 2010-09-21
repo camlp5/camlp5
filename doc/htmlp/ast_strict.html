@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 6.7 2010/09/20 10:21:04 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 6.8 2010/09/21 14:16:01 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1016,6 +1016,16 @@
   </dd>
 </dl>
 <dl class="nodelist">
+  <dt>- new type</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; (type $lid:s$) >></tt><br/>
+    <tt style="color:red">MLast.PaNty loc (Ploc.VaVal s)</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:patt&lt; (type $_lid:s$) >></tt><br/>
+    <tt style="color:red">MLast.PaNty loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
   <dt>- option label</dt>
   <dd>
     <tt style="color:blue">&lt;:patt&lt; ?{$p$} >></tt><br/>
@@ -1202,8 +1212,17 @@
 <dl class="nodelist">
   <dt>- manifest</dt>
   <dd>
+    <tt style="color:blue">&lt;:ctyp&lt; $t1$ == private $t2$ >></tt><br/>
+    <tt style="color:red">MLast.TyMan loc t1 (Ploc.VaVal True) t2</tt>
+    <br/><br/>
     <tt style="color:blue">&lt;:ctyp&lt; $t1$ == $t2$ >></tt><br/>
-    <tt style="color:red">MLast.TyMan loc t1 t2</tt>
+    <tt style="color:red">MLast.TyMan loc t1 (Ploc.VaVal False) t2</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:ctyp&lt; $t1$ == $priv:b$ $t2$ >></tt><br/>
+    <tt style="color:red">MLast.TyMan loc t1 (Ploc.VaVal b) t2</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:ctyp&lt; $t1$ == $_priv:b$ $t2$ >></tt><br/>
+    <tt style="color:red">MLast.TyMan loc t1 b t2</tt>
   </dd>
 </dl>
 <dl class="nodelist">

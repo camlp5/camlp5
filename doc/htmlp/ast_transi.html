@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.26 2010/09/20 10:11:10 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.27 2010/09/21 14:11:09 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -633,6 +633,11 @@
     <td>lowercase identifier</td>
   </tr>
   <tr>
+    <td><tt>PaNty loc s</tt></td>
+    <td align="center"><tt>(type $lid:s$)</tt></td>
+    <td>new type</td>
+  </tr>
+  <tr>
     <td><tt>PaOlb loc p None</tt></td>
     <td align="center"><tt>?{$p$}</tt></td>
     <td>option label</td>
@@ -750,8 +755,18 @@
     <td>lowercase identifier</td>
   </tr>
   <tr>
-    <td><tt>TyMan loc t1 t2</tt></td>
+    <td><tt>TyMan loc t1 True t2</tt></td>
+    <td align="center"><tt>$t1$ == private $t2$</tt></td>
+    <td>manifest</td>
+  </tr>
+  <tr>
+    <td><tt>TyMan loc t1 False t2</tt></td>
     <td align="center"><tt>$t1$ == $t2$</tt></td>
+    <td>manifest</td>
+  </tr>
+  <tr>
+    <td><tt>TyMan loc t1 b t2</tt></td>
+    <td align="center"><tt>$t1$ == $priv:b$ $t2$</tt></td>
     <td>manifest</td>
   </tr>
   <tr>
