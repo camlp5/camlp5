@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.11 2010/09/21 05:48:06 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.12 2010/09/21 06:05:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -667,7 +667,7 @@ EXTEND
   let_binding:
     [ [ p = val_ident; e = fun_binding -> (p, e)
       | p = patt; "="; e = expr -> (p, e)
-      | p = patt; ":"; t = ctyp; "="; e = expr ->
+      | p = patt; ":"; t = poly_type; "="; e = expr ->
           (p, <:expr< ($e$ : $t$) >>) ] ]
   ;
   val_ident:
@@ -678,7 +678,7 @@ EXTEND
     [ RIGHTA
       [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "="; e = expr -> <:expr< $e$ >>
-      | ":"; t = ctyp; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
+      | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
   ;
   match_case:
     [ [ x1 = patt; w = V (OPT [ "when"; e = expr -> e ]); "->"; x2 = expr ->
