@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.14 2010/09/21 05:48:06 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.15 2010/09/21 07:53:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1492,7 +1492,13 @@ EXTEND_PRINTER
           | _ -> error loc "module app" ] ]
 
     | "dot"
-      [ <:module_expr:< $_$ . $_$ >> -> error loc "module dot" ]
+      [ <:module_expr:< $_$ . $_$ >> as z ->
+          match z with
+          [ <:module_expr< $uid:m1$ . $uid:m2$ . $uid:m3$ >> ->
+              pprintf pc "%s.%s.%s" m1 m2 m3
+          | <:module_expr< $uid:m1$ . $uid:m2$ >> ->
+              pprintf pc "%s.%s" m1 m2
+          | _ -> error loc "module dot" ] ]
 
     | "simple"
       [ <:module_expr< $uid:s$ >> ->

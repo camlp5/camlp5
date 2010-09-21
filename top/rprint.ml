@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.1 2010/09/15 16:00:49 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.2 2010/09/21 07:53:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -175,6 +175,12 @@ and print_simple_out_type ppf =
   | IFDEF OCAML_VERSION >= OCAML_3_05 THEN
       Otyp_poly _ _ as ty ->
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
+    END
+  | IFDEF OCAML_VERSION >= OCAML_3_12_0 THEN
+      Otyp_module s sl tyl ->
+        fprintf ppf "@[<1>(module %s@ with type %a =@;%a)@]" s
+          (print_list value_ident (fun ppf -> fprintf ppf ".")) sl
+          (print_typlist print_simple_out_type "") tyl
     END
   | x ->
       IFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
