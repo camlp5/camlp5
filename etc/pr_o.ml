@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.21 2010/09/22 02:14:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.22 2010/09/22 04:11:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -765,16 +765,23 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
     module_expr_or_type met
 ;
 
+value con_typ_pat pc (loc, sl, tpl) =
+  let tpl = List.map (fun tp -> (loc, tp)) tpl in
+  match tpl with
+  [ [] -> pprintf pc "%p" mod_ident (loc, sl)
+  | [tp] -> pprintf pc "%p %p" type_var tp mod_ident (loc, sl)
+  | _ ->
+      pprintf pc "(%p) %p"
+        (hlistl (comma_after type_var) type_var) tpl mod_ident (loc, sl) ]
+;
+
 value with_constraint pc wc =
   match wc with
   [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
-      let tpl = List.map (fun tp -> (loc, tp)) tpl in
-      pprintf pc "type %p%p =@;%s%p" mod_ident (loc, sl) (hlist type_var)
-        tpl (if pf then "private " else "") ctyp t
+      pprintf pc "type %p =@;%s%p" con_typ_pat (loc, sl, tpl)
+        (if pf then "private " else "") ctyp t
   | <:with_constr:< type $sl$ $list:tpl$ := $t$ >> ->
-      let tpl = List.map (fun tp -> (loc, tp)) tpl in
-      pprintf pc "type %p%p :=@;%p" mod_ident (loc, sl) (hlist type_var)
-        tpl ctyp t
+      pprintf pc "type %p :=@;%p" con_typ_pat (loc, sl, tpl) ctyp t
   | <:with_constr:< module $sl$ = $me$ >> ->
       pprintf pc "module %p =@;%p" mod_ident (loc, sl) module_expr me
   | <:with_constr:< module $sl$ := $me$ >> ->
