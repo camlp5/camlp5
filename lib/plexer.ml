@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.4 2010/09/22 03:47:00 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.5 2010/09/22 14:37:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -352,7 +352,7 @@ value next_token_after_spaces ctx bp =
   | "0" [ 'x' | 'X' ] (digits hexa)!
   | "0" [ 'b' | 'B' ] (digits binary)!
   | "0" number!
-  | ?= [ ''' '\\' 'a'-'z' 'a'-'z' ] "'" -> keyword_or_error ctx (bp, $pos) "'"
+  | "'"/ ?= [ '\\' 'a'-'z' 'a'-'z' ] -> keyword_or_error ctx (bp, $pos) "'"
   | "'"/ (char ctx bp) -> ("CHAR", $buf)
   | "'" -> keyword_or_error ctx (bp, $pos) "'"
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
