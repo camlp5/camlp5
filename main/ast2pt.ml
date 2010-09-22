@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.11 2010/09/22 16:16:44 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.12 2010/09/22 16:21:48 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -711,7 +711,7 @@ value rec expr =
   | ExApp loc (ExLid _ <:vala< "-" >>) (ExInt _ s c) ->
       let s = neg_string (uv s) in
       mkexp loc (Pexp_constant (mkintconst loc s c))
-  | ExApp loc (ExLid _ <:vala< "-." >>) (ExFlo _ s) ->
+  | ExApp loc (ExLid _ <:vala< "-" | "-." >>) (ExFlo _ s) ->
       let s = neg_string (uv s) in
       mkexp loc (Pexp_constant (Const_float s))
   | ExApp loc _ _ as f ->

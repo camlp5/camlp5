@@ -846,7 +846,7 @@ let rec expr =
   | ExApp (loc, ExLid (_, "-"), ExInt (_, s, c)) ->
       let s = neg_string (uv s) in
       mkexp loc (Pexp_constant (mkintconst loc s c))
-  | ExApp (loc, ExLid (_, "-."), ExFlo (_, s)) ->
+  | ExApp (loc, ExLid (_, ("-" | "-.")), ExFlo (_, s)) ->
       let s = neg_string (uv s) in mkexp loc (Pexp_constant (Const_float s))
   | ExApp (loc, _, _) as f ->
       let (f, al) = expr_fa [] f in
