@@ -399,6 +399,12 @@ Grammar.extend
      [[Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'lookahead_char));
+      [Gramext.Stoken ("CHAR", ""); Gramext.Stoken ("", "-");
+       Gramext.Stoken ("CHAR", "")],
+      Gramext.action
+        (fun (d : string) _ (c : string) (loc : Ploc.t) ->
+           (MLast.PaRng (loc, MLast.PaChr (loc, c), MLast.PaChr (loc, d)) :
+            'lookahead_char));
       [Gramext.Stoken ("CHAR", "")],
       Gramext.action
         (fun (c : string) (loc : Ploc.t) ->

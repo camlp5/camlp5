@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_lexer.ml,v 6.1 2010/09/15 16:00:25 deraugla Exp $ *)
+(* $Id: pa_lexer.ml,v 6.2 2010/09/22 03:47:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -256,6 +256,7 @@ EXTEND
   ;
   lookahead_char:
     [ [ c = CHAR -> <:patt< $chr:c$ >>
+      | c = CHAR; "-"; d = CHAR -> <:patt< $chr:c$..$chr:d$ >>
       | "_" -> <:patt< _ >> ] ]
   ;
   no_rec:
