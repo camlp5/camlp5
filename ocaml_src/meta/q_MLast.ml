@@ -5039,10 +5039,9 @@ Grammar.extend
         (fun (ct : 'class_type) _ _ (t : 'ctyp) _ (loc : Ploc.t) ->
            (Qast.Node ("CtFun", [Qast.Loc; t; ct]) : 'class_type))];
      Some "apply", None,
-     [[Gramext.Sself; Gramext.Stoken ("", "("); Gramext.Sself;
-       Gramext.Stoken ("", ")")],
+     [[Gramext.Sself; Gramext.Sself],
       Gramext.action
-        (fun _ (ct2 : 'class_type) _ (ct1 : 'class_type) (loc : Ploc.t) ->
+        (fun (ct2 : 'class_type) (ct1 : 'class_type) (loc : Ploc.t) ->
            (Qast.Node ("CtApp", [Qast.Loc; ct1; ct2]) : 'class_type))];
      Some "dot", None,
      [[Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Sself],
@@ -5050,7 +5049,10 @@ Grammar.extend
         (fun (ct2 : 'class_type) _ (ct1 : 'class_type) (loc : Ploc.t) ->
            (Qast.Node ("CtAcc", [Qast.Loc; ct1; ct2]) : 'class_type))];
      Some "simple", None,
-     [[Gramext.Sfacto
+     [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (ct : 'class_type) _ (loc : Ploc.t) -> (ct : 'class_type));
+      [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("UIDENT", "")],
              Gramext.action
@@ -6923,7 +6925,8 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.VaAnt ("", loc, a) : 'class_sig_item))]];
-   Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e), None,
+   Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e),
+   Some (Gramext.Level "simple"),
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action

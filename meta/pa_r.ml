@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.10 2010/09/21 05:49:38 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.11 2010/09/22 02:06:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -676,12 +676,13 @@ EXTEND
       | ct = SELF; "["; tl = V (LIST1 ctyp SEP ","); "]" ->
           <:class_type< $ct$ [ $_list:tl$ ] >> ]
     | "apply"
-      [ ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ ( $ct2$ ) >> ]
+      [ ct1 = SELF; ct2 = SELF -> <:class_type< $ct1$ ( $ct2$ ) >> ]
     | "dot"
       [ ct1 = SELF; "."; ct2 = SELF -> <:class_type< $ct1$ . $ct2$ >> ]
     | "simple"
       [ i = V LIDENT "id" -> <:class_type< $_id:i$ >>
-      | i = V UIDENT "id" -> <:class_type< $_id:i$ >> ] ]
+      | i = V UIDENT "id" -> <:class_type< $_id:i$ >>
+      | "("; ct = SELF; ")" -> ct ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]

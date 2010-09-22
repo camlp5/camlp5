@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.7 2010/09/21 05:48:07 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.8 2010/09/22 02:06:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1049,14 +1049,14 @@ EXTEND
       | ct = SELF; "["; tl = SV (LIST1 ctyp SEP ","); "]" ->
           Qast.Node "CtCon" [Qast.Loc; ct; tl] ]
     | "apply"
-      [ ct1 = SELF; "("; ct2 = SELF; ")" ->
-          Qast.Node "CtApp" [Qast.Loc; ct1; ct2] ]
+      [ ct1 = SELF; ct2 = SELF -> Qast.Node "CtApp" [Qast.Loc; ct1; ct2] ]
     | "dot"
       [ ct1 = SELF; "."; ct2 = SELF ->
           Qast.Node "CtAcc" [Qast.Loc; ct1; ct2] ]
     | "simple"
       [ i = SV LIDENT "id" -> Qast.Node "CtIde" [Qast.Loc; i]
-      | i = SV UIDENT "id" -> Qast.Node "CtIde" [Qast.Loc; i] ] ]
+      | i = SV UIDENT "id" -> Qast.Node "CtIde" [Qast.Loc; i]
+      | "("; ct = SELF; ")" -> ct ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
@@ -1393,7 +1393,7 @@ EXTEND
   class_sig_item:
     [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
-  class_type:
+  class_type: LEVEL "simple"
     [ [ a = ANTIQUOT "xtr" -> antiquot_xtr loc "CtXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;

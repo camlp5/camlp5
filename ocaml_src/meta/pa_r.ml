@@ -2068,10 +2068,9 @@ Grammar.extend
         (fun (ct : 'class_type) _ _ (t : 'ctyp) _ (loc : Ploc.t) ->
            (MLast.CtFun (loc, t, ct) : 'class_type))];
      Some "apply", None,
-     [[Gramext.Sself; Gramext.Stoken ("", "("); Gramext.Sself;
-       Gramext.Stoken ("", ")")],
+     [[Gramext.Sself; Gramext.Sself],
       Gramext.action
-        (fun _ (ct2 : 'class_type) _ (ct1 : 'class_type) (loc : Ploc.t) ->
+        (fun (ct2 : 'class_type) (ct1 : 'class_type) (loc : Ploc.t) ->
            (MLast.CtApp (loc, ct1, ct2) : 'class_type))];
      Some "dot", None,
      [[Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Sself],
@@ -2079,7 +2078,10 @@ Grammar.extend
         (fun (ct2 : 'class_type) _ (ct1 : 'class_type) (loc : Ploc.t) ->
            (MLast.CtAcc (loc, ct1, ct2) : 'class_type))];
      Some "simple", None,
-     [[Gramext.Stoken ("UIDENT", "")],
+     [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (ct : 'class_type) _ (loc : Ploc.t) -> (ct : 'class_type));
+      [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (MLast.CtIde (loc, i) : 'class_type));
