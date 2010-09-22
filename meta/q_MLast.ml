@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.9 2010/09/22 03:03:36 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.10 2010/09/22 16:16:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -191,26 +191,6 @@ value neg_string n =
   let len = String.length n in
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
   else "-" ^ n
-;
-
-value mkumin _ f arg =
-  match arg with
-  [ Qast.Node "ExInt" [Qast.Loc; Qast.VaVal (Qast.Str n); Qast.Str c]
-    when int_of_string n > 0 ->
-      let n = neg_string n in
-      Qast.Node "ExInt" [Qast.Loc; Qast.VaVal (Qast.Str n); Qast.Str c]
-  | Qast.Node "ExFlo" [Qast.Loc; Qast.VaVal (Qast.Str n)]
-    when float_of_string n > 0.0 ->
-      let n = neg_string n in
-      Qast.Node "ExFlo" [Qast.Loc; Qast.VaVal (Qast.Str n)]
-  | _ ->
-      match f with
-      [ Qast.VaVal (Qast.Str f) | Qast.Str f ->
-          let f = "~" ^ f in
-          Qast.Node "ExApp"
-            [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str f)];
-             arg]
-      | _ -> assert False ] ]
 ;
 
 value mkuminpat _ f is_int s =
@@ -681,8 +661,14 @@ EXTEND
                 e1];
              e2] ]
     | "unary minus" NONA
-      [ "-"; e = SELF -> mkumin Qast.Loc (Qast.Str "-") e
-      | "-."; e = SELF -> mkumin Qast.Loc (Qast.Str "-.") e ]
+      [ "-"; e = SELF ->
+          Qast.Node "ExApp"
+            [Qast.Loc;
+             Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "-")]; e]
+      | "-."; e = SELF ->
+          Qast.Node "ExApp"
+            [Qast.Loc;
+             Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "-.")]; e] ]
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF -> Qast.Node "ExApp" [Qast.Loc; e1; e2]
       | "assert"; e = SELF -> Qast.Node "ExAsr" [Qast.Loc; e]

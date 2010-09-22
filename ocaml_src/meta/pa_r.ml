@@ -73,13 +73,6 @@ let neg_string n =
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
 ;;
 
-let mkumin loc f arg =
-  match arg with
-    MLast.ExInt (_, n, "") -> MLast.ExInt (loc, neg_string n, "")
-  | MLast.ExFlo (_, n) -> MLast.ExFlo (loc, neg_string n)
-  | _ -> let f = "~" ^ f in MLast.ExApp (loc, MLast.ExLid (loc, f), arg)
-;;
-
 let mkuminpat loc f is_int n =
   if is_int then MLast.PaInt (loc, neg_string n, "")
   else MLast.PaFlo (loc, neg_string n)
@@ -1007,10 +1000,12 @@ Grammar.extend
      Some "unary minus", Some Gramext.NonA,
      [[Gramext.Stoken ("", "-."); Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) _ (loc : Ploc.t) -> (mkumin loc "-." e : 'expr));
+        (fun (e : 'expr) _ (loc : Ploc.t) ->
+           (MLast.ExApp (loc, MLast.ExLid (loc, "-."), e) : 'expr));
       [Gramext.Stoken ("", "-"); Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) _ (loc : Ploc.t) -> (mkumin loc "-" e : 'expr))];
+        (fun (e : 'expr) _ (loc : Ploc.t) ->
+           (MLast.ExApp (loc, MLast.ExLid (loc, "-"), e) : 'expr))];
      Some "apply", Some Gramext.LeftA,
      [[Gramext.Stoken ("", "lazy"); Gramext.Sself],
       Gramext.action

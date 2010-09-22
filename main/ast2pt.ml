@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.10 2010/09/21 15:01:49 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.11 2010/09/22 16:16:44 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -94,6 +94,36 @@ value mklazy loc e =
       let r = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "ref")) in
       ghexp (ocaml_pexp_apply r [("", df)])
     } ]
+;
+
+value mkintconst loc s c =
+  match c with
+  [ "" ->
+      match try Some (int_of_string s) with [ Failure _ -> None ] with
+      [ Some i -> Const_int i
+      | None -> error loc "too big integer value" ]
+  | "l" ->
+      match ocaml_const_int32 with
+      [ Some const_int32 ->
+          match try Some (const_int32 s) with [ Failure _ -> None ] with
+          [ Some i32 -> i32
+          | None -> error loc "too big 32 bits integer value" ]
+      | None -> error loc "no int32 in this ocaml version" ]
+  | "L" ->
+      match ocaml_const_int64 with
+      [ Some const_int64 ->
+          match try Some (const_int64 s) with [ Failure _ -> None ] with
+          [ Some i64 -> i64
+          | None -> error loc "too big 64 bits integer value" ]
+      | None -> error loc "no int64 in this ocaml version" ]
+  | "n" ->
+      match ocaml_const_nativeint with
+      [ Some const_nativeint ->
+          match try Some (const_nativeint s) with [ Failure _ -> None ] with
+          [ Some ni -> ni
+          | None -> error loc "too big native int integer value" ]
+      | None -> error loc "no native int in this ocaml version" ]
+  | _ -> error loc "special int not implemented" ]
 ;
 
 value conv_con = do {
@@ -483,6 +513,8 @@ value rec patt_label_long_id =
   | p -> error (loc_of_patt p) "bad label" ]
 ;
 
+value int_of_string_l loc s = try int_of_string s with e -> Ploc.raise loc e;
+
 value rec patt =
   fun
   [ PaAcc loc p1 p2 ->
@@ -548,7 +580,7 @@ value rec patt =
   | PaChr loc s ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
   | PaInt loc s "" ->
-      mkpat loc (Ppat_constant (Const_int (int_of_string (uv s))))
+      mkpat loc (Ppat_constant (Const_int (int_of_string_l loc (uv s))))
   | PaInt loc _ _ -> error loc "special int not impl in patt"
   | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float (uv s)))
   | PaLab loc _ _ -> error loc "labeled pattern not allowed here"
@@ -641,6 +673,12 @@ value bigarray_set loc e el v =
   | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
 ;
 
+value neg_string n =
+  let len = String.length n in
+  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
+  else "-" ^ n
+;
+
 value rec expr =
   fun
   [ ExAcc loc x <:expr< val >> ->
@@ -670,8 +708,23 @@ value rec expr =
       in
       e
   | ExAnt _ e -> expr e
+  | ExApp loc (ExLid _ <:vala< "-" >>) (ExInt _ s c) ->
+      let s = neg_string (uv s) in
+      mkexp loc (Pexp_constant (mkintconst loc s c))
+  | ExApp loc (ExLid _ <:vala< "-." >>) (ExFlo _ s) ->
+      let s = neg_string (uv s) in
+      mkexp loc (Pexp_constant (Const_float s))
   | ExApp loc _ _ as f ->
       let (f, al) = expr_fa [] f in
+      let f =
+        match (f, al) with
+        [ (ExLid loc s, [_]) ->
+            let s = uv s in
+            match s with
+            [ "-" | "-." -> ExLid loc <:vala< "~" ^ s >>
+            | _ -> f ]
+        | _ -> f ]
+      in
       let al = List.map label_expr al in
       match (expr f).pexp_desc with
       [ Pexp_construct li None _ ->
@@ -799,21 +852,8 @@ value rec expr =
           mkexp loc (ocaml_pexp_function "" None (List.map mkpwe pel)) ]
   | ExIfe loc e1 e2 e3 ->
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
-  | ExInt loc s "" ->
-      mkexp loc (Pexp_constant (Const_int (int_of_string (uv s))))
-  | ExInt loc s "l" ->
-      match ocaml_const_int32 with
-      [ Some const_int32 -> mkexp loc (Pexp_constant (const_int32 (uv s)))
-      | None -> error loc "no int32 in this ocaml version" ]
-  | ExInt loc s "L" ->
-      match ocaml_const_int64 with
-      [ Some const_int64 -> mkexp loc (Pexp_constant (const_int64 (uv s)))
-      | None -> error loc "no int64 in this ocaml version" ]
-  | ExInt loc s "n" ->
-      match ocaml_const_nativeint with
-      [ Some const_nat -> mkexp loc (Pexp_constant (const_nat (uv s)))
-      | None -> error loc "no nativeint in this ocaml version" ]
-  | ExInt loc _ _ -> error loc "special int not implemented"
+  | ExInt loc s c ->
+      mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
   | ExLab loc _ _ -> error loc "labeled expression not allowed here 1"
   | ExLaz loc e -> mklazy loc (expr e)
   | ExLet loc rf pel e ->
@@ -1300,7 +1340,7 @@ value directive loc =
   fun
   [ None -> Pdir_none
   | Some <:expr< $str:s$ >> -> Pdir_string s
-  | Some <:expr< $int:i$ >> -> Pdir_int (int_of_string i)
+  | Some <:expr< $int:i$ >> -> Pdir_int (int_of_string_l loc i)
   | Some <:expr< True >> ->
       match ocaml_pdir_bool with
       [ Some pdir_bool -> pdir_bool True

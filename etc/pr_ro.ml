@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.9 2010/09/22 03:03:36 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.10 2010/09/22 16:16:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -448,6 +448,8 @@ EXTEND_PRINTER
     | "simple"
       [ <:class_type< $id:s$ >> ->
           pprintf pc "%s" s
+      | <:class_type< $_$ $_$ >> as z ->
+          pprintf pc "@[<1>(%p)@]" class_type z
       | z ->
           Ploc.raise (MLast.loc_of_class_type z)
             (Failure (sprintf "pr_class_type %d" (Obj.tag (Obj.repr z)))) ] ]

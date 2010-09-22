@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.8 2010/09/22 04:11:35 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.9 2010/09/22 16:16:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1104,9 +1104,8 @@ EXTEND_PRINTER
           in
           right_operator pc 0 unfold next z ]
     | "unary"
-      [ <:expr< ~- $x$ >> -> pprintf pc "-%p" curr x
-      | <:expr< ~-. $x$ >> -> pprintf pc "-.%p" curr x
-      | <:expr< $int:i$ >> -> pprintf pc "%s" i ]
+      [ <:expr< - $x$ >> -> pprintf pc "-%p" curr x
+      | <:expr< -. $x$ >> -> pprintf pc "-.%p" curr x ]
     | "apply"
       [ <:expr< assert $e$ >> ->
           pprintf pc "assert@;%p" next e

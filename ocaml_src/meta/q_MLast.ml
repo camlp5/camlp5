@@ -236,33 +236,6 @@ let neg_string n =
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
 ;;
 
-let mkumin _ f arg =
-  match arg with
-    Qast.Node ("ExInt", [Qast.Loc; Qast.VaVal (Qast.Str n); Qast.Str c])
-    when int_of_string n > 0 ->
-      let n = neg_string n in
-      Qast.Node ("ExInt", [Qast.Loc; Qast.VaVal (Qast.Str n); Qast.Str c])
-  | Qast.Node ("ExFlo", [Qast.Loc; Qast.VaVal (Qast.Str n)])
-    when float_of_string n > 0.0 ->
-      let n = neg_string n in
-      Qast.Node ("ExFlo", [Qast.Loc; Qast.VaVal (Qast.Str n)])
-  | _ ->
-      match f with
-        Qast.VaVal (Qast.Str f) ->
-          let f = "~" ^ f in
-          Qast.Node
-            ("ExApp",
-             [Qast.Loc;
-              Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str f)]); arg])
-      | Qast.Str f ->
-          let f = "~" ^ f in
-          Qast.Node
-            ("ExApp",
-             [Qast.Loc;
-              Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str f)]); arg])
-      | _ -> assert false
-;;
-
 let mkuminpat _ f is_int s =
   let s = Qast.Str (neg_string s) in
   match is_int with
@@ -899,7 +872,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 316, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 296, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1551,7 +1524,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 386, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 366, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -2560,11 +2533,21 @@ Grammar.extend
      [[Gramext.Stoken ("", "-."); Gramext.Sself],
       Gramext.action
         (fun (e : 'expr) _ (loc : Ploc.t) ->
-           (mkumin Qast.Loc (Qast.Str "-.") e : 'expr));
+           (Qast.Node
+              ("ExApp",
+               [Qast.Loc;
+                Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "-.")]);
+                e]) :
+            'expr));
       [Gramext.Stoken ("", "-"); Gramext.Sself],
       Gramext.action
         (fun (e : 'expr) _ (loc : Ploc.t) ->
-           (mkumin Qast.Loc (Qast.Str "-") e : 'expr))];
+           (Qast.Node
+              ("ExApp",
+               [Qast.Loc;
+                Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "-")]);
+                e]) :
+            'expr))];
      Some "apply", Some Gramext.LeftA,
      [[Gramext.Stoken ("", "lazy"); Gramext.Sself],
       Gramext.action

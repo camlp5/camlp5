@@ -1,6 +1,7 @@
 Camlp5 Version 6.00:
 --------------------
 
+* [22 Sep 10] Fixed bug bad result of unary minus functions.
 * [22 Sep 10] Fixed bug in printing parameters of types of 'with constraint'.
 * [22 Sep 10] Fixed bug in revised syntax for class_types. Now application.
   does not need parenthesis any more (like for other entries of that kind).

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.13 2010/09/22 03:03:36 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.14 2010/09/22 16:16:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -74,15 +74,6 @@ value neg_string n =
   let len = String.length n in
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
   else "-" ^ n
-;
-
-value mkumin loc f arg =
-  match arg with
-  [ <:expr< $int:n$ >> -> <:expr< $int:neg_string n$ >>
-  | <:expr< $flo:n$ >> -> <:expr< $flo:neg_string n$ >>
-  | _ ->
-      let f = "~" ^ f in
-      <:expr< $lid:f$ $arg$ >> ]
 ;
 
 value mkuminpat loc f is_int n =
@@ -339,8 +330,8 @@ EXTEND
       | e1 = SELF; "lsl"; e2 = SELF -> <:expr< $e1$ lsl $e2$ >>
       | e1 = SELF; "lsr"; e2 = SELF -> <:expr< $e1$ lsr $e2$ >> ]
     | "unary minus" NONA
-      [ "-"; e = SELF -> mkumin loc "-" e
-      | "-."; e = SELF -> mkumin loc "-." e ]
+      [ "-"; e = SELF -> <:expr< - $e$ >>
+      | "-."; e = SELF -> <:expr< -. $e$ >> ]
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF -> <:expr< $e1$ $e2$ >>
       | "assert"; e = SELF -> <:expr< assert $e$ >>

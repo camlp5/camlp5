@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.22 2010/09/22 04:11:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.23 2010/09/22 16:16:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1064,11 +1064,10 @@ EXTEND_PRINTER
           let loc = MLast.loc_of_expr z in
           right_operator pc loc 0 unfold next z ]
     | "unary"
-      [ <:expr< (~- $x$).val >> -> pprintf pc "! -%p" curr x
-      | <:expr< ~- ($x$.val) >> -> pprintf pc "- !%p" curr x
-      | <:expr< ~- $x$ >> -> pprintf pc "-%p" curr x
-      | <:expr< ~-. $x$ >> -> pprintf pc "-.%p" curr x
-      | <:expr< $int:i$ >> -> pprintf pc "%s" i ]
+      [ <:expr< (- $x$).val >> -> pprintf pc "! -%p" curr x
+      | <:expr< - ($x$.val) >> -> pprintf pc "- !%p" curr x
+      | <:expr< - $x$ >> -> pprintf pc "-%p" curr x
+      | <:expr< -. $x$ >> -> pprintf pc "-.%p" curr x ]
     | "apply"
       [ <:expr< assert $e$ >> ->
           pprintf pc "assert@;%p" next e
@@ -1328,22 +1327,47 @@ EXTEND_PRINTER
     | "dot"
       [ <:ctyp:< $t1$ . $t2$ >> ->
           pprintf pc "%p.%p"
-(*
             (fun pc ->
                fun
-               [ <:ctyp< $uid:m$ >> ->
-                   pprintf pc "%s" m
-               | <:ctyp< $uid:m1$.$uid:m2$ $uid:m3$ >> ->
-                   pprintf pc "%s.%s(%s)" m1 m2 m3
-               | <:ctyp< $uid:m1$ $uid:m2$ >> ->
-                   pprintf pc "%s(%s)" m1 m2
+               [ <:ctyp:< $t1$ $t2$ >> ->
+                   let (t1, tl) =
+                     loop [t2] t1 where rec loop tl =
+                       fun
+                       [ <:ctyp< $t1$ $t2$ >> -> loop [t2 :: tl] t1
+                       | t -> (t, tl) ]
+                   in
+                   let mod_fun pc =
+                     fun
+                     [ <:ctyp< $uid:s1$.$uid:s2$.$uid:s3$.$uid:s4$ >> ->
+                         pprintf pc "%s.%s.%s.%s" s1 s2 s3 s4
+                     | <:ctyp< $uid:s1$.$uid:s2$ >> ->
+                         pprintf pc "%s.%s" s1 s2
+                     | <:ctyp< $uid:s$ >> -> pprintf pc "%s" s
+                     | t -> error (MLast.loc_of_ctyp t) "type dot 4" ]
+                   in
+                   let mod_param pc =
+                     fun
+                     [ <:ctyp< $uid:s1$.$uid:s2$ >> ->
+                         pprintf pc "%s.%s" s1 s2
+                     | <:ctyp< $uid:s$ >> -> pprintf pc "%s" s
+                     | t -> error (MLast.loc_of_ctyp t) "type dot 5" ]
+                   in
+                   match tl with
+                   [ [] -> assert False
+                   | [t2] -> pprintf pc "%p(%p)" mod_fun t1 mod_param t2
+                   | [t2; t3] ->
+                       pprintf pc "%p(%p)(%p)" mod_fun t1 mod_param t2
+                         mod_param t3
+                   | _ -> error loc "type dot 3" ]
+               
+               | <:ctyp< $uid:m1$.$uid:m2$.$uid:m3$ >> ->
+                   pprintf pc "%s.%s.%s" m1 m2 m3
                | <:ctyp< $uid:m1$.$uid:m2$ >> ->
                    pprintf pc "%s.%s" m1 m2
-               | <:ctyp< ($_$ $_$ >> ->
-                   pprintf pc "%s.%s" m1 m2
+               | <:ctyp< $uid:m$ >> ->
+                   pprintf pc "%s" m
+
                | _ -> error loc "type dot 1" ])
-*)
-curr
             t1
             (fun pc ->
                fun
@@ -2115,7 +2139,7 @@ EXTEND_PRINTER
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
           pprintf pc "@[<1>[%p]@;%p@]" (plist ctyp 0) ctcl curr ct ]
     | [ <:class_type< $ct1$ $ct2$ >> ->
-          pprintf pc "%p(%p)" curr ct1 curr ct2
+          pprintf pc "%p(%p)" curr ct1 class_type ct2
       | <:class_type< $ct1$ . $ct2$ >> ->
           pprintf pc "%p.%p" curr ct1 curr ct2 ]
     | [ <:class_type< $id:id$ >> -> pprintf pc "%s" id

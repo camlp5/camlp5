@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.14 2010/09/22 02:14:01 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.15 2010/09/22 16:16:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -43,20 +43,6 @@ do {
 
 Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
-
-value neg_string n =
-  let len = String.length n in
-  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
-;
-
-value mkumin loc f arg =
-  match arg with
-  [ <:expr< $int:n$ >> -> <:expr< $int:neg_string n$ >>
-  | <:expr< $flo:n$ >> -> <:expr< $flo:neg_string n$ >>
-  | _ ->
-      let f = "~" ^ f in
-      <:expr< $lid:f$ $arg$ >> ]
-;
 
 value mklistexp loc last =
   loop True where rec loop top =
@@ -588,8 +574,8 @@ EXTEND
       | e1 = SELF; "lsr"; e2 = SELF -> <:expr< $e1$ lsr $e2$ >>
       | e1 = SELF; op = infixop4; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "unary minus" NONA
-      [ "-"; e = SELF -> <:expr< $mkumin loc "-" e$ >>
-      | "-."; e = SELF -> <:expr< $mkumin loc "-." e$ >> ]
+      [ "-"; e = SELF -> <:expr< - $e$ >>
+      | "-."; e = SELF -> <:expr< -. $e$ >> ]
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF ->
           let (e1, e2) =
@@ -1042,8 +1028,8 @@ EXTEND
       | "object"; cst = V (OPT class_self_type);
         csf = V (LIST0 class_sig_item); "end" ->
           <:class_type< object $_opt:cst$ $_list:csf$ end >> ]
-    | [ ct1 = SELF; "."; ct2 = SELF -> <:class_type< $ct1$ . $ct2$ >> ]
-    | [ ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ $ct2$ >> ]
+    | [ ct1 = SELF; "."; ct2 = SELF -> <:class_type< $ct1$ . $ct2$ >>
+      | ct1 = SELF; "("; ct2 = SELF; ")" -> <:class_type< $ct1$ $ct2$ >> ]
     | [ i = V LIDENT -> <:class_type< $_id: i$ >>
       | i = V UIDENT -> <:class_type< $_id: i$ >> ] ]
   ;
