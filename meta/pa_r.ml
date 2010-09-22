@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.12 2010/09/22 02:14:01 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.13 2010/09/22 03:03:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -667,7 +667,7 @@ EXTEND
     [ [ i = LIDENT -> mkident i ] ]
   ;
   class_type:
-    [ "top"
+    [ "top" RIGHTA
       [ "["; t = ctyp; "]"; "->"; ct = SELF ->
           <:class_type< [ $t$ ] -> $ct$ >>
       | "object"; cst = V (OPT class_self_type);

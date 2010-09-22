@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.8 2010/09/22 02:06:21 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.9 2010/09/22 03:03:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1040,7 +1040,7 @@ EXTEND
     [ [ i = LIDENT -> mkident i ] ]
   ;
   class_type:
-    [ "top"
+    [ "top" RIGHTA
       [ "["; t = ctyp; "]"; "->"; ct = SELF ->
           Qast.Node "CtFun" [Qast.Loc; t; ct]
       | "object"; cst = SV (OPT class_self_type);

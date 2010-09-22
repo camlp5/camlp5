@@ -4965,7 +4965,7 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (mkident i : 'lident))]];
     Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e), None,
-    [Some "top", None,
+    [Some "top", Some Gramext.RightA,
      [[Gramext.Sself; Gramext.Stoken ("", "[");
        Gramext.Sfacto
          (Gramext.srules
