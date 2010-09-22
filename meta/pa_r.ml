@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.14 2010/09/22 16:16:44 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.15 2010/09/22 16:31:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -384,6 +384,9 @@ EXTEND
       [ "let"; rf = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and");
         "in"; el = SELF ->
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
+      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+        el = SELF ->
+          [<:expr< let module $_uid:m$ = $mb$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF -> [e :: el]
       | e = expr; ";" -> [e]
       | e = expr -> [e] ] ]

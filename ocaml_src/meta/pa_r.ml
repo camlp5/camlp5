@@ -1179,6 +1179,16 @@ Grammar.extend
       Gramext.action
         (fun (el : 'sequence) _ (e : 'expr) (loc : Ploc.t) ->
            (e :: el : 'sequence));
+      [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "module");
+       Gramext.Stoken ("UIDENT", "");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e));
+       Gramext.Stoken ("", "in"); Gramext.Sself],
+      Gramext.action
+        (fun (el : 'sequence) _ (mb : 'mod_fun_binding) (m : string) _ _
+             (loc : Ploc.t) ->
+           ([MLast.ExLmd (loc, m, mb, mksequence loc el)] : 'sequence));
       [Gramext.Stoken ("", "let"); Gramext.Sflag (Gramext.Stoken ("", "rec"));
        Gramext.Slist1sep
          (Gramext.Snterm

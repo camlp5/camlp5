@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.10 2010/09/22 16:16:44 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.11 2010/09/22 16:31:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -734,6 +734,10 @@ EXTEND
         "in"; el = SELF ->
           Qast.List
             [Qast.Node "ExLet" [Qast.Loc; rf; l; mksequence Qast.Loc el]]
+      | "let"; "module"; m = SV UIDENT; mb = mod_fun_binding; "in";
+        el = SELF ->
+          Qast.List
+            [Qast.Node "ExLmd" [Qast.Loc; m; mb; mksequence Qast.Loc el]]
       | e = expr; ";"; el = SELF -> Qast.Cons e el
       | e = expr; ";" -> Qast.List [e]
       | e = expr -> Qast.List [e] ] ]
