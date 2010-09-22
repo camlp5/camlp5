@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.16 2010/09/22 19:34:26 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.17 2010/09/22 19:36:54 deraugla Exp $
 
 dir='../ocaml/trunk'
-suff=mli
+suff=ml
 
 getfiles () {
   files="$(find $dir -type f -name "*.$suff" -print)"
@@ -14,14 +14,16 @@ usage () {
   echo "<options> are:"
   echo "  -d <dir>    Change testing directory"
   echo "  -h          Display this list of options"
+  echo "  -i          Interfaces (.mli files)"
   echo
   echo "Testing directory: $dir"
   echo "Files: $files"
 }
-while getopts ":d:h" name; do
+while getopts ":d:hi" name; do
   case "$name" in
   'd') dir="$OPTARG"; getfiles;;
   'h') usage; exit 0;;
+  'i') suff=mli;;
   '?') echo "Invalid option -$OPTARG"; echo "Use option -h for help"; exit 2;;
   esac
 done

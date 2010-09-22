@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.16 2010/09/21 05:56:36 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.17 2010/09/22 19:34:26 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -71,6 +71,7 @@ MLast.PvTag (s, Ploc.VaVal b, lt);;
 MLast.PvTag (s, b, Ploc.VaVal lt);;
 MLast.PvTag (s, b, lt);;
 MLast.PvInh t;;
+
 <:patt< $p1$ . $p2$ >>;;
 MLast.PaAli (loc, p1, p2);;
 MLast.PaAnt (loc, p);;
@@ -109,11 +110,11 @@ MLast.PaOlb (loc, p, oe);;
 <:patt< $p1$..$p2$ >>;;
 <:patt< $str:s$ >>;;
 <:patt< $_str:s$ >>;;
-MLast.PaTup (loc, Ploc.VaVal lp);;
-MLast.PaTup (loc, lp);;
+<:patt< ($list:lp$) >>;;
+<:patt< ($_list:lp$) >>;;
 <:patt< ($p$ : $t$) >>;;
-MLast.PaTyp (loc, Ploc.VaVal ls);;
-MLast.PaTyp (loc, ls);;
+<:patt< # $list:ls$ >>;;
+<:patt< # $_list:ls$ >>;;
 <:patt< $uid:s$ >>;;
 <:patt< $_uid:s$ >>;;
 MLast.PaVrn (loc, Ploc.VaVal s);;
@@ -226,17 +227,17 @@ MLast.ExVrn (loc, s);;
 
 MLast.MtAcc (loc, mt1, mt2);;
 MLast.MtApp (loc, mt1, mt2);;
-MLast.MtFun (loc, Ploc.VaVal s, mt1, mt2);;
-MLast.MtFun (loc, s, mt1, mt2);;
-MLast.MtLid (loc, Ploc.VaVal s);;
-MLast.MtLid (loc, s);;
+<:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>;;
+<:module_type< functor ($_uid:s$ : $mt1$) -> $mt2$ >>;;
+<:module_type< $lid:s$ >>;;
+<:module_type< $_lid:s$ >>;;
 MLast.MtQuo (loc, Ploc.VaVal s);;
 MLast.MtQuo (loc, s);;
-MLast.MtSig (loc, Ploc.VaVal lsi);;
-MLast.MtSig (loc, lsi);;
-MLast.MtTyo (loc, me);;
-MLast.MtUid (loc, Ploc.VaVal s);;
-MLast.MtUid (loc, s);;
+<:module_type< sig $list:lsi$ end >>;;
+<:module_type< sig $_list:lsi$ end >>;;
+<:module_type< module type of $me$ >>;;
+<:module_type< $uid:s$ >>;;
+<:module_type< $_uid:s$ >>;;
 MLast.MtWit (loc, mt, Ploc.VaVal lwc);;
 MLast.MtWit (loc, mt, lwc);;
 MLast.SgCls (loc, Ploc.VaVal lcict);;
