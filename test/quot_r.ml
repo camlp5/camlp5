@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.32 2010/09/21 05:56:36 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.33 2010/09/22 02:14:01 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -682,7 +682,7 @@ MLast.ExRec loc lpe oe;
 (* access *)
 <:class_type< $ct1$ . $ct2$ >>;
 (* application *)
-<:class_type< $ct1$ ($ct2$) >>;
+<:class_type< $ct1$ $ct2$ >>;
 
 (* constructor *)
 <:class_type< $ct$ [ $list:lt$ ] >>;
