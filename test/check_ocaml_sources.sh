@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.15 2010/09/22 16:16:44 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.16 2010/09/22 19:34:26 deraugla Exp $
 
 dir='../ocaml/trunk'
-suff=ml
+suff=mli
 
 getfiles () {
   files="$(find $dir -type f -name "*.$suff" -print)"
