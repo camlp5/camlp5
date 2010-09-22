@@ -73,11 +73,6 @@ let neg_string n =
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
 ;;
 
-let mkuminpat loc f is_int n =
-  if is_int then MLast.PaInt (loc, neg_string n, "")
-  else MLast.PaFlo (loc, neg_string n)
-;;
-
 let mklistexp loc last =
   let rec loop top =
     function
@@ -1336,11 +1331,23 @@ Grammar.extend
       [Gramext.Stoken ("", "-"); Gramext.Stoken ("FLOAT", "")],
       Gramext.action
         (fun (s : string) _ (loc : Ploc.t) ->
-           (mkuminpat loc "-" false s : 'patt));
+           (MLast.PaFlo (loc, neg_string s) : 'patt));
+      [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT_n", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (MLast.PaInt (loc, neg_string s, "n") : 'patt));
+      [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT_L", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (MLast.PaInt (loc, neg_string s, "L") : 'patt));
+      [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT_l", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (MLast.PaInt (loc, neg_string s, "l") : 'patt));
       [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT", "")],
       Gramext.action
         (fun (s : string) _ (loc : Ploc.t) ->
-           (mkuminpat loc "-" true s : 'patt));
+           (MLast.PaInt (loc, neg_string s, "") : 'patt));
       [Gramext.Stoken ("CHAR", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) -> (MLast.PaChr (loc, s) : 'patt));

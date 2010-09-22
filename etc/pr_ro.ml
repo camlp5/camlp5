@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.10 2010/09/22 16:16:43 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.11 2010/09/22 19:12:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -143,6 +143,12 @@ value rec is_irrefut_patt =
   | _ -> False ]
 ;
 
+value class_type_opt pc =
+  fun
+  [ Some ct -> pprintf pc " :@ %p" class_type ct
+  | None -> pprintf pc "" ]
+;
+
 value class_decl pc ci =
   let (pl, ce) =
     loop ci.MLast.ciExp where rec loop =
@@ -154,14 +160,20 @@ value class_decl pc ci =
           else ([], gce)
       | ce -> ([], ce) ]
   in
+  let (ce, ct_opt) =
+    match ce with
+    [ <:class_expr< ($ce$ : $ct$) >> -> (ce, Some ct)
+    | ce -> (ce, None) ]
+  in
   let def pc () =
     horiz_vertic
       (fun () ->
-         pprintf pc "%s%s%p%s%p ="
+         pprintf pc "%s%s%p%s%p%p ="
            (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
            (Pcaml.unvala ci.MLast.ciNam)
            class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
-           (if pl = [] then "" else " ") (hlist patt) pl)
+           (if pl = [] then "" else " ") (hlist patt) pl
+           class_type_opt ct_opt)
       (fun () ->
          let pl = List.map (fun p -> (p, "")) pl in
          let pc =
@@ -173,7 +185,7 @@ value class_decl pc ci =
                 (class_type_params Pprintf.empty_pc
                    (Pcaml.unvala (snd ci.MLast.ciPrm)))}
          in
-         pprintf pc "%p =" (plistl patt patt 4) pl)
+         pprintf pc "%p%p =" (plistl patt patt 4) pl class_type_opt ct_opt)
   in
   pprintf pc "@[%p@;%p@]" def () class_expr ce
 ;
@@ -398,7 +410,7 @@ EXTEND_PRINTER
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
-          pprintf pc "@[<1>(%p :@ %p)@]" curr ce class_type ct
+          pprintf pc "@[<1>(%p :@ %p)@]" class_expr ce class_type ct
       | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" class_expr z
       | z ->

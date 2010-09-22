@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.9 2010/09/22 16:16:43 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.10 2010/09/22 19:12:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -161,12 +161,9 @@ value expand_lprintf pc loc f =
 ;
 
 value var_escaped pc (loc, v) =
-  let x =
-    if is_infix v || has_special_chars v then "\\" ^ v
-    else if is_keyword v then "\\" ^ v
-    else v
-  in
-  lprintf pc "%s" x
+  if is_infix v || has_special_chars v then lprintf pc "\\%s@ " v
+  else if is_keyword v then lprintf pc "\\%s@ " v
+  else lprintf pc "%s" v
 ;
 
 value cons_escaped pc v =

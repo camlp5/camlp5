@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.15 2010/09/22 16:16:43 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.16 2010/09/22 19:12:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -610,7 +610,7 @@ EXTEND
           in
           loop e1 e2 ]
     | "~-" NONA
-      [ "!"; e = SELF -> <:expr< $e$ . val>>
+      [ "!"; e = SELF -> <:expr< $e$ . val >>
       | "~-"; e = SELF -> <:expr< ~- $e$ >>
       | "~-."; e = SELF -> <:expr< ~-. $e$ >>
       | f = prefixop; e = SELF -> <:expr< $lid:f$ $e$ >> ]

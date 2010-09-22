@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.15 2010/09/22 16:31:05 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.16 2010/09/22 19:12:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -74,11 +74,6 @@ value neg_string n =
   let len = String.length n in
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
   else "-" ^ n
-;
-
-value mkuminpat loc f is_int n =
-  if is_int then <:patt< $int:neg_string n$ >>
-  else <:patt< $flo:neg_string n$ >>
 ;
 
 value mklistexp loc last =
@@ -439,8 +434,11 @@ EXTEND
       | s = V FLOAT -> <:patt< $_flo:s$ >>
       | s = V STRING -> <:patt< $_str:s$ >>
       | s = V CHAR -> <:patt< $_chr:s$ >>
-      | "-"; s = INT -> mkuminpat loc "-" True s
-      | "-"; s = FLOAT -> mkuminpat loc "-" False s
+      | "-"; s = INT -> <:patt< $int:neg_string s$ >>
+      | "-"; s = INT_l -> <:patt< $int32:neg_string s$ >>
+      | "-"; s = INT_L -> <:patt< $int64:neg_string s$ >>
+      | "-"; s = INT_n -> <:patt< $nativeint:neg_string s$ >>
+      | "-"; s = FLOAT -> <:patt< $flo:neg_string s$ >>
       | "["; "]" -> <:patt< [] >>
       | "["; pl = LIST1 patt SEP ";"; last = cons_patt_opt; "]" ->
           mklistpat loc last pl

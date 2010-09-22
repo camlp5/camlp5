@@ -590,9 +590,7 @@ let rec patt =
       end
   | PaChr (loc, s) ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
-  | PaInt (loc, s, "") ->
-      mkpat loc (Ppat_constant (Const_int (int_of_string_l loc (uv s))))
-  | PaInt (loc, _, _) -> error loc "special int not impl in patt"
+  | PaInt (loc, s, c) -> mkpat loc (Ppat_constant (mkintconst loc (uv s) c))
   | PaFlo (loc, s) -> mkpat loc (Ppat_constant (Const_float (uv s)))
   | PaLab (loc, _, _) -> error loc "labeled pattern not allowed here"
   | PaLaz (loc, p) ->

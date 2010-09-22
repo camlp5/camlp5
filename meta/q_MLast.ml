@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.11 2010/09/22 16:31:05 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.12 2010/09/22 19:12:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -188,17 +188,12 @@ value mkmatchcase _ p aso w e =
 ;
 
 value neg_string n =
-  let len = String.length n in
-  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
-  else "-" ^ n
-;
-
-value mkuminpat _ f is_int s =
-  let s = Qast.Str (neg_string s) in
-  match is_int with
-  [ Qast.Bool True -> Qast.Node "PaInt" [Qast.Loc; Qast.VaVal s; Qast.Str ""]
-  | Qast.Bool False -> Qast.Node "PaFlo" [Qast.Loc; Qast.VaVal s]
-  | _ -> assert False ]
+  let x =
+    let len = String.length n in
+    if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
+    else "-" ^ n
+  in
+  Qast.Str x
 ;
 
 value mklistexp _ last =
@@ -798,9 +793,19 @@ EXTEND
       | s = SV FLOAT -> Qast.Node "PaFlo" [Qast.Loc; s]
       | s = SV STRING -> Qast.Node "PaStr" [Qast.Loc; s]
       | s = SV CHAR -> Qast.Node "PaChr" [Qast.Loc; s]
-      | "-"; s = INT -> mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool True) s
+      | "-"; s = INT ->
+          Qast.Node "PaInt" [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str ""]
+      | "-"; s = INT_l ->
+          Qast.Node "PaInt"
+            [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str "l"]
+      | "-"; s = INT_L ->
+          Qast.Node "PaInt"
+            [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str "L"]
+      | "-"; s = INT_n ->
+          Qast.Node "PaInt"
+            [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str "n"]
       | "-"; s = FLOAT ->
-          mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool False) s
+          Qast.Node "PaFlo" [Qast.Loc; Qast.VaVal (neg_string s)]
       | "["; "]" -> Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; pl = LIST1 patt SEP ";"; last = cons_patt_opt; "]" ->
           mklistpat Qast.Loc last pl

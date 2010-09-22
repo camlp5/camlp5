@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.12 2010/09/22 16:21:48 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.13 2010/09/22 19:12:02 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -579,9 +579,7 @@ value rec patt =
       | None -> error loc "no array patterns in this ocaml version" ]
   | PaChr loc s ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
-  | PaInt loc s "" ->
-      mkpat loc (Ppat_constant (Const_int (int_of_string_l loc (uv s))))
-  | PaInt loc _ _ -> error loc "special int not impl in patt"
+  | PaInt loc s c -> mkpat loc (Ppat_constant (mkintconst loc (uv s) c))
   | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float (uv s)))
   | PaLab loc _ _ -> error loc "labeled pattern not allowed here"
   | PaLaz loc p ->

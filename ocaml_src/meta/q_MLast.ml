@@ -232,17 +232,11 @@ let mkmatchcase _ p aso w e =
 ;;
 
 let neg_string n =
-  let len = String.length n in
-  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
-;;
-
-let mkuminpat _ f is_int s =
-  let s = Qast.Str (neg_string s) in
-  match is_int with
-    Qast.Bool true ->
-      Qast.Node ("PaInt", [Qast.Loc; Qast.VaVal s; Qast.Str ""])
-  | Qast.Bool false -> Qast.Node ("PaFlo", [Qast.Loc; Qast.VaVal s])
-  | _ -> assert false
+  let x =
+    let len = String.length n in
+    if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
+  in
+  Qast.Str x
 ;;
 
 let mklistexp _ last =
@@ -872,7 +866,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 296, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 291, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1524,7 +1518,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 366, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 361, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -3232,11 +3226,32 @@ Grammar.extend
       [Gramext.Stoken ("", "-"); Gramext.Stoken ("FLOAT", "")],
       Gramext.action
         (fun (s : string) _ (loc : Ploc.t) ->
-           (mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool false) s : 'patt));
+           (Qast.Node ("PaFlo", [Qast.Loc; Qast.VaVal (neg_string s)]) :
+            'patt));
+      [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT_n", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (Qast.Node
+              ("PaInt", [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str "n"]) :
+            'patt));
+      [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT_L", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (Qast.Node
+              ("PaInt", [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str "L"]) :
+            'patt));
+      [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT_l", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (Qast.Node
+              ("PaInt", [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str "l"]) :
+            'patt));
       [Gramext.Stoken ("", "-"); Gramext.Stoken ("INT", "")],
       Gramext.action
         (fun (s : string) _ (loc : Ploc.t) ->
-           (mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool true) s : 'patt));
+           (Qast.Node
+              ("PaInt", [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str ""]) :
+            'patt));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("CHAR", "")],
