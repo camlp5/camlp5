@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.10 2010/09/22 19:12:02 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.11 2010/09/22 20:31:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -558,8 +558,9 @@ value type_decl pc td =
            (hlist type_constraint) (Pcaml.unvala cl))
 ;
 
-value label_decl pc (_, l, m, t) =
-  pprintf pc "%s :%s@;%p" l (if m then " mutable" else "") ctyp t
+value label_decl pc (loc, l, m, t) =
+  pprintf pc "%p :%s@;%p" var_escaped (loc, l)
+    (if m then " mutable" else "") ctyp t
 ;
 
 value cons_decl pc (_, c, tl) =
