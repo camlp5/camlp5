@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.3 2010/09/23 10:22:11 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.4 2010/09/23 10:23:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -188,7 +188,7 @@ and print_simple_out_type ppf =
              fprintf ppf " %s type %s = %a" sep s print_out_type t)
           n tyl;
         fprintf ppf ")@]"
-       }
+      }
     END
   | x ->
       IFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
