@@ -376,12 +376,25 @@ let rev_extract_comment strm =
         Stream.junk strm__; find_lparen_aft_star (Buff.store len '*') strm__
     | Some '"' ->
         Stream.junk strm__; insert_string (Buff.store len '"') strm__
+    | Some '\'' ->
+        Stream.junk strm__; insert_char (Buff.store len '\'') strm__
     | Some x -> Stream.junk strm__; insert (Buff.store len x) strm__
     | _ -> len
   and insert_string len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '"' -> Stream.junk strm__; insert (Buff.store len '"') strm__
     | Some x -> Stream.junk strm__; insert_string (Buff.store len x) strm__
+    | _ -> len
+  and insert_char len (strm__ : _ Stream.t) =
+    match Stream.peek strm__ with
+      Some c1 ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some c2 ->
+            Stream.junk strm__;
+            insert (Buff.store (Buff.store len c1) c2) strm__
+        | _ -> raise (Stream.Error "")
+        end
     | _ -> len
   and find_star_bef_rparen_in_comm len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
