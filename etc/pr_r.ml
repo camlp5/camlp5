@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.11 2010/09/22 20:31:35 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.12 2010/09/23 17:22:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -932,7 +932,7 @@ EXTEND_PRINTER
                                expr_wh e1 patt p
                                (match wo with
                                 [ <:vala< Some e >> ->
-                                    curr {(pc) with bef = " when"} e
+                                    curr {(pc) with bef = " when "} e
                                 | _ -> "" ])))
                         (fun () -> None)
                    with

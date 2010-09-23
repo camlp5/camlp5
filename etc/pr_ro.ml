@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.11 2010/09/22 19:12:02 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.12 2010/09/23 17:26:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -516,8 +516,8 @@ EXTEND_PRINTER
       | <:class_str_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
       | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
-          pprintf pc "value%s%s %s =@;%p" (if ovf then "!" else "")
-            (if mf then " mutable" else "") s expr e
+          pprintf pc "value%s%s %p =@;%p" (if ovf then "!" else "")
+            (if mf then " mutable" else "") var_escaped s expr e
       | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ >> ->
           pprintf pc "value virtual%s %s :@;%p"
             (if mf then " mutable" else "") s ctyp t
