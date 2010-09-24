@@ -323,13 +323,11 @@ let comment ctx bp =
         let buf = Plexing.Lexbuf.add '"' buf in comment buf strm__
     | Some '\'' ->
         Stream.junk strm__;
-        begin match
-          begin try
-            Some (char ctx bp (Plexing.Lexbuf.add '\'' buf) strm__)
-          with Stream.Failure -> None
-          end
-        with
-          Some buf -> comment buf strm__
+        begin match Stream.peek strm__ with
+          Some c ->
+            Stream.junk strm__;
+            comment (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '\'' buf))
+              strm__
         | _ -> comment (Plexing.Lexbuf.add '\'' buf) strm__
         end
     | _ ->
