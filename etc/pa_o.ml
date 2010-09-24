@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.16 2010/09/22 19:12:02 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.17 2010/09/24 08:24:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -595,10 +595,10 @@ EXTEND
       | "assert"; e = SELF -> <:expr< assert $e$ >>
       | "lazy"; e = SELF -> <:expr< lazy ($e$) >> ]
     | "." LEFTA
-      [ e1 = SELF; "."; "("; e2 = SELF; ")" ->
-          <:expr< $e1$ .( $e2$ ) >>
-      | e1 = SELF; "."; "("; op = operator_rparen ->
+      [ e1 = SELF; "."; "("; op = operator_rparen ->
           <:expr< $e1$ .( $lid:op$ ) >>
+      | e1 = SELF; "."; "("; e2 = SELF; ")" ->
+          <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
       | e = SELF; "."; "{"; el = V (LIST1 expr LEVEL "+" SEP ","); "}" ->
           <:expr< $e$ .{ $_list:el$ } >>
