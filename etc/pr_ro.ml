@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.12 2010/09/23 17:26:29 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.13 2010/09/24 09:08:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -275,15 +275,6 @@ EXTEND_PRINTER
           pprintf pc "?{%p =@;%p}" patt p expr e
       | <:patt< ?{$p$} >> ->
           pprintf pc "?{%p}" patt p
-
-(*
-      | <:patt< ?{$p$ = $e$} >> ->
-          pprintf pc "?(%p =@;%p)" patt p expr e
-      | <:patt< ?{$p$} >> ->
-          pprintf pc "?(%p)" patt p
-      | <:patt< ?{$p1$ = ?{$p2$ = $e$}} >> ->
-          pprintf pc "?%p:@;<0 1>@[<1>(%p =@ %p)@]" patt p1 patt p2 expr e
-*)
 
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.6 2010/09/24 08:11:01 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.7 2010/09/24 09:08:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -160,8 +160,8 @@ value comment ctx bp =
     | "(*" comment! comment!
     | "(" comment!
     | "\"" (string ctx bp)! [ -> $add "\"" ] comment!
+    | "'*)"
     | "'" _ comment!
-    | "'" comment!
     | (any ctx) comment!
     | -> err ctx (bp, $pos) "comment not terminated" ]
 ;
@@ -227,9 +227,7 @@ value rec antiquot_loc ctx bp =
 ;
 
 value dollar ctx bp buf strm =
-  if no_quotations.val then
-    ("", "$")
-  else if ctx.dollar_for_antiquotation then
+  if not no_quotations.val && ctx.dollar_for_antiquotation then
     ("ANTIQUOT", antiquot ctx bp buf strm)
   else if force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc ctx bp buf strm)

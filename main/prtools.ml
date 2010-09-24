@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 6.2 2010/09/23 15:08:49 deraugla Exp $ *)
+(* $Id: prtools.ml,v 6.3 2010/09/24 09:08:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -396,7 +396,8 @@ value rev_extract_comment strm =
     | [: :] -> len ]
   and insert_char len =
     parser
-    [ [: `c1; `c2; a = insert (Buff.store (Buff.store len c1) c2) ! :] -> a
+    [ [: `'*'; a = find_lparen_aft_star (Buff.store len '*') ! :] -> a
+    | [: `c; a = insert (Buff.store len c) ! :] -> a
     | [: :] -> len ]
   and find_star_bef_rparen_in_comm len =
     parser

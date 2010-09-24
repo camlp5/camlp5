@@ -387,14 +387,9 @@ let rev_extract_comment strm =
     | _ -> len
   and insert_char len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some c1 ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c2 ->
-            Stream.junk strm__;
-            insert (Buff.store (Buff.store len c1) c2) strm__
-        | _ -> raise (Stream.Error "")
-        end
+      Some '*' ->
+        Stream.junk strm__; find_lparen_aft_star (Buff.store len '*') strm__
+    | Some c -> Stream.junk strm__; insert (Buff.store len c) strm__
     | _ -> len
   and find_star_bef_rparen_in_comm len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with

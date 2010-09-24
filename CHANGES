@@ -1,6 +1,7 @@
 Camlp5 Version 6.00:
 --------------------
 
+* [24 Sep 10] Fixed many bugs of parsing comments (typically about quotes).
 * [23 Sep 10] Fixed bug in pretty printing comments containing '"'.
 * [22 Sep 10] Fixed bug bad result of unary minus functions.
 * [22 Sep 10] Fixed bug in printing parameters of types of 'with constraint'.
