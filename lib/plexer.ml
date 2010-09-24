@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.7 2010/09/24 09:08:45 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.8 2010/09/24 11:04:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -161,6 +161,7 @@ value comment ctx bp =
     | "(" comment!
     | "\"" (string ctx bp)! [ -> $add "\"" ] comment!
     | "'*)"
+    | "'*" comment!
     | "'" _ comment!
     | (any ctx) comment!
     | -> err ctx (bp, $pos) "comment not terminated" ]

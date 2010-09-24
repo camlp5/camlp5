@@ -332,7 +332,10 @@ let comment ctx bp =
                   Stream.junk strm__;
                   Plexing.Lexbuf.add ')'
                     (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '\'' buf))
-              | _ -> raise (Stream.Error "")
+              | _ ->
+                  comment
+                    (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '\'' buf))
+                    strm__
               end
           | Some c ->
               Stream.junk strm__;
@@ -1340,15 +1343,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 691, 25)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 692, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 691, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 692, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 691, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 692, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 692, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 693, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 692, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 693, 37)));
        Plexing.tok_comm = None}
   in
   let glex =

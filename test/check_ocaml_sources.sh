@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.17 2010/09/22 19:36:54 deraugla Exp $
+# $Id: check_ocaml_sources.sh,v 6.18 2010/09/24 11:04:54 deraugla Exp $
 
 dir='../ocaml/trunk'
 suff=ml
@@ -23,7 +23,7 @@ while getopts ":d:hi" name; do
   case "$name" in
   'd') dir="$OPTARG"; getfiles;;
   'h') usage; exit 0;;
-  'i') suff=mli;;
+  'i') suff=mli; getfiles;;
   '?') echo "Invalid option -$OPTARG"; echo "Use option -h for help"; exit 2;;
   esac
 done
