@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.12 2010/09/23 17:22:19 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.13 2010/09/25 04:46:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -858,6 +858,18 @@ value with_constraint pc wc =
     END ]
 ;
 
+value is_unary =
+  fun
+  [ "-" | "-." | "~-" | "~-." -> True
+  | _ -> False ]
+;
+
+value unary expr pc x =
+  match x with
+  [ <:expr< $lid:f$ $_$ >> when is_unary f -> pprintf pc "(%p)" expr x
+  | x -> pprintf pc "%p" expr x ]
+;
+
 EXTEND_PRINTER
   pr_expr:
     [ "top"
@@ -1102,8 +1114,10 @@ EXTEND_PRINTER
           in
           right_operator pc 0 unfold next z ]
     | "unary"
-      [ <:expr< - $x$ >> -> pprintf pc "-%p" curr x
-      | <:expr< -. $x$ >> -> pprintf pc "-.%p" curr x ]
+      [ <:expr< - $x$ >> -> pprintf pc "-%p" (unary curr) x
+      | <:expr< -. $x$ >> -> pprintf pc "-.%p" (unary curr) x
+      | <:expr< ~- $x$ >> -> pprintf pc "~-%p" (unary curr) x
+      | <:expr< ~-. $x$ >> -> pprintf pc "~-.%p" (unary curr) x ]
     | "apply"
       [ <:expr< assert $e$ >> ->
           pprintf pc "assert@;%p" next e
