@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.13 2010/09/24 09:08:45 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.14 2010/09/26 06:58:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -291,7 +291,7 @@ EXTEND_PRINTER
           class_object pc (csp, csl) ]
     | "label"
       [ <:expr< ~{$p$ = $e$} >> ->
-          pprintf pc "~{%p = %p}" patt p expr e
+          pprintf pc "@[~{%p =@;%p}@]" patt p expr e
       | <:expr< ~{$p$} >> ->
           pprintf pc "~{%p}" patt p
       | <:expr< ?{$p$ = $e$} >> ->
