@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.16 2010/09/26 11:36:01 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.17 2010/09/26 18:37:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -288,6 +288,44 @@ pr_expr_fun_args.val :=
         ([p :: pl], e)
       else ([], z)
   | z -> ([], z) ]
+;
+
+(* copied from prtools.ml while improving the algorithm which works bad *)
+value flatten_sequence e =
+  let rec get_sequence =
+    fun
+    [ <:expr< do { $list:el$ } >> -> Some el
+    | <:expr< let $flag:rf$ $list:pel$ in $e$ >> as se ->
+        match get_sequence e with
+        [ Some [e :: el] ->
+            let e =
+              let loc =
+                let loc1 = MLast.loc_of_expr se in
+                let loc2 = MLast.loc_of_expr e in
+                Ploc.encl loc1 loc2
+              in
+              <:expr< let $flag:rf$ $list:pel$ in $e$ >>
+            in
+            Some [e :: el]
+        | None | _ -> None ]
+    | _ -> None ]
+  in
+  match get_sequence e with
+  [ Some el ->
+      let rec list_of_sequence =
+        fun
+        [ [e :: el] ->
+            match e with
+            [ <:expr:< let $flag:_$ $list:_$ in $_$ >> when el <> [] ->
+                [<:expr< do {$e$} >> :: list_of_sequence el]
+            | _ ->
+                match get_sequence e with
+                [ Some el1 -> list_of_sequence (el1 @ el)
+                | None -> [e :: list_of_sequence el] ] ]
+        | [] -> [] ]
+      in
+      Some (list_of_sequence el)
+  | None -> None ]
 ;
 
 value sequencify e =
