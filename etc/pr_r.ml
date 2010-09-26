@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.13 2010/09/25 04:46:16 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.14 2010/09/26 06:21:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -26,7 +26,7 @@ value flag_where_after_let_eq = ref True;
 value flag_where_after_match = ref True;
 value flag_where_after_lparen = ref True;
 value flag_where_after_field_eq = ref False;
-value flag_where_in_sequences = ref False;
+value flag_where_in_sequences = ref True;
 value flag_where_after_then = ref True;
 value flag_where_after_value_eq = ref True;
 value flag_where_after_arrow = ref True;
@@ -335,49 +335,6 @@ and expr_wh pc e =
   | None -> expr pc e ]
 ;
 
-(* Pretty printing improvement (optional):
-   - print the sequence beginner at end of previous lines,
-     therefore printing the sequence with one tabulation less
-   - example:
-          value f x =
-            do {
-              ...
-            }
-     is printed :
-          value f x = do {
-            ...
-          }
- *)
-value sequence_box bef pc el =
-  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  pprintf pc "%p do {@;%p@ }" bef ()
-    (vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) el
-;
-
-value sequence pc el =
-  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh) pc el
-;
-
-(* Pretty printing improvements (optional):
-   - prints "field x = e" instead of "field = fun x -> e" in a record
-   - if vertical and "e" is a sequence, put the "do {" at after the "="
-   Cancellation of all these improvements could be done by changing calls
-   to this function to a call to "binding expr" above.
-*)
-value record_binding pc (p, e) =
-  let (pl, e) = expr_fun_args e in
-  let pl = [p :: pl] in
-  let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
-  match sequencify e with
-  [ Some el ->
-      horiz_vertic
-        (fun () -> pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e)
-        (fun () -> pprintf pc "%p = do {@;%p@ }" (hlist patt) pl sequence el)
-  | None ->
-      pprintf pc "%p =@;%p" (hlist patt) pl (comm_expr expr_wh) e ]
-;
-
 (* Pretty printing improvements (optional):
    - prints "let f x = e" instead of "let f = fun x -> e"
    - if vertical and "e" is a sequence, put the "do {" at after the "="
@@ -435,17 +392,68 @@ value value_or_let_binding flag_where sequ pc (p, e) =
              pprintf pc "@[<a>%p@;%p@ @]" patt_eq () (comm_expr expr_wh) e ])
 ;
 
-value value_binding pc pe =
-  let sequ pc bef el = sequence_box bef pc el in
-  value_or_let_binding flag_where_after_value_eq sequ pc pe
+(* should not be used any more: rather use 'sequence_box' below *)
+value sequence pc el =
+  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh) pc el
 ;
 
-value let_binding pc pe =
+(* Pretty printing improvement (optional):
+   - print the sequence beginner at end of previous lines,
+     therefore printing the sequence with one tabulation less
+       example:
+            value f x =
+              do {
+                ...
+              }
+       is printed :
+            value f x = do {
+              ...
+            }
+   - may change a 'let' into a 'where' for the last statement of
+     the sequence.
+ *)
+value rec sequence_box bef pc el =
+  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  pprintf pc "%p do {@;%p@ }" bef ()
+    (vlistl (semi_after (comm_expr expr_no_where)) (comm_expr expr_wh)) el
+
+and expr_no_where pc =
+  fun
+  [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+      let curr = expr_no_where in
+      let expr_wh = expr_no_where in
+      gen_let curr expr_wh pc (rf, pel, e)
+  | e -> pprintf pc "%p" expr e ]
+
+and gen_let curr expr_wh pc (rf, pel, e) =
+  horiz_vertic_if (not flag_horiz_let_in.val)
+    (fun () ->
+       pprintf pc "let %s%p in %p" (if rf then "rec " else "")
+         (hlist2 let_binding (and_before let_binding)) pel
+         curr e)
+    (fun () ->
+       if flag_horiz_let_in.val then
+         pprintf pc "let %s%pin@ %p" (if rf then "rec " else "")
+           (vlist2 let_binding (and_before let_binding)) pel
+           (comm_expr expr_wh) e
+       else
+         pprintf pc "@[<b>let %s%pin@ %p@]"
+           (if rf then "rec " else "")
+           (vlist2 let_binding (and_before let_binding)) pel
+           (comm_expr expr_wh) e)
+
+and let_binding pc pe =
   let sequ pc bef el =
     if pc.aft = "" then sequence_box bef pc el
     else pprintf pc "%p@ " (sequence_box bef) el
   in
   value_or_let_binding flag_where_after_let_eq sequ pc pe
+;
+
+value value_binding pc pe =
+  let sequ pc bef el = sequence_box bef pc el in
+  value_or_let_binding flag_where_after_value_eq sequ pc pe
 ;
 
 value match_assoc force_vertic pc (p, w, e) =
@@ -461,12 +469,31 @@ value match_assoc force_vertic pc (p, w, e) =
     (fun () -> pprintf pc "%p %p" patt_arrow (p, w) (comm_expr expr) e)
     (fun () ->
        match sequencify e with
-       [ Some el ->
-           pprintf pc "@[<i>%p do {@;%p@ }@]" force_vertic patt_arrow (p, w)
-             sequence el
+       [ Some el -> sequence_box (fun pc () -> patt_arrow pc (p, w)) pc el
        | None ->
            pprintf pc "@[<i>%p@;%p@]" force_vertic patt_arrow (p, w)
              (comm_expr expr_wh) e ])
+;
+
+(* Pretty printing improvements (optional):
+   - prints "field x = e" instead of "field = fun x -> e" in a record
+   - if vertical and "e" is a sequence, put the "do {" at after the "="
+   Cancellation of all these improvements could be done by changing calls
+   to this function to a call to "binding expr" above.
+*)
+value record_binding pc (p, e) =
+  let (pl, e) = expr_fun_args e in
+  let pl = [p :: pl] in
+  let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
+  match sequencify e with
+  [ Some el ->
+      horiz_vertic
+        (fun () -> pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e)
+        (fun () ->
+           sequence_box (fun pc () -> pprintf pc "%p =" (hlist patt) pl) pc
+             el)
+  | None ->
+      pprintf pc "%p =@;%p" (hlist patt) pl (comm_expr expr_wh) e ]
 ;
 
 value match_assoc_sh force_vertic pc pwe =
@@ -984,30 +1011,13 @@ EXTEND_PRINTER
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
       | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
-          let expr_wh = if flag_where_after_in.val then expr_wh else curr in
-          horiz_vertic_if (not flag_horiz_let_in.val)
-            (fun () ->
-               match flatten_sequence ge with
-               [ Some el ->
-                   let loc = MLast.loc_of_expr ge in
-                   curr pc <:expr< do { $list:el$ } >>
-               | None ->
-                   pprintf pc "let %s%p in %p" (if rf then "rec " else "")
-                     (hlist2 let_binding (and_before let_binding)) pel
-                     curr e ])
-            (fun () ->
-               match flatten_sequence ge with
-               [ Some el -> curr pc <:expr< do { $list:el$ } >>
-               | None ->
-                   if flag_horiz_let_in.val then
-                     pprintf pc "let %s%pin@ %p" (if rf then "rec " else "")
-                       (vlist2 let_binding (and_before let_binding)) pel
-                       (comm_expr expr_wh) e
-                   else
-                     pprintf pc "@[<b>let %s%pin@ %p@]"
-                       (if rf then "rec " else "")
-                       (vlist2 let_binding (and_before let_binding)) pel
-                       (comm_expr expr_wh) e ])
+          match flatten_sequence ge with
+          [ Some el -> curr pc <:expr< do { $list:el$ } >>
+          | None ->
+              let expr_wh =
+                if flag_where_after_in.val then expr_wh else curr
+              in
+              gen_let curr expr_wh pc (rf, pel, e) ]
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
