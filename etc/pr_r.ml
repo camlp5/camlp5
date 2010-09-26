@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.14 2010/09/26 06:21:11 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.15 2010/09/26 06:50:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -667,9 +667,7 @@ value if_then force_vertic curr pc (e1, e2) =
     (fun () ->
        let if_e1_then pc () = pprintf pc "@[<3>if %p@]@ then" curr e1 in
        match sequencify e2 with
-       [ Some el ->
-           pprintf pc "@[<i>%p do {@;%p@ }@]" force_vertic if_e1_then ()
-             sequence el
+       [ Some el -> sequence_box if_e1_then pc el
        | None ->
            pprintf pc "@[<i>%p@;%p@]" force_vertic if_e1_then ()
              (comm_expr expr_wh) e2 ])
