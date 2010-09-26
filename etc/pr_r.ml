@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.15 2010/09/26 06:50:16 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.16 2010/09/26 11:36:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -384,7 +384,7 @@ value value_or_let_binding flag_where sequ pc (p, e) =
          pprintf pc "%p =" (plistl patt patt_tycon 4) pl
        in
        match sequencify e with
-       [ Some el -> sequ pc patt_eq el
+       [ Some el -> sequ patt_eq pc el
        | None ->
            if pc.aft = "" then
              pprintf pc "%p@;%p" patt_eq () (comm_expr expr_wh) e
@@ -424,7 +424,7 @@ and expr_no_where pc =
       let curr = expr_no_where in
       let expr_wh = expr_no_where in
       gen_let curr expr_wh pc (rf, pel, e)
-  | e -> pprintf pc "%p" expr e ]
+  | e -> expr pc e ]
 
 and gen_let curr expr_wh pc (rf, pel, e) =
   horiz_vertic_if (not flag_horiz_let_in.val)
@@ -444,7 +444,7 @@ and gen_let curr expr_wh pc (rf, pel, e) =
            (comm_expr expr_wh) e)
 
 and let_binding pc pe =
-  let sequ pc bef el =
+  let sequ bef pc el =
     if pc.aft = "" then sequence_box bef pc el
     else pprintf pc "%p@ " (sequence_box bef) el
   in
@@ -452,8 +452,7 @@ and let_binding pc pe =
 ;
 
 value value_binding pc pe =
-  let sequ pc bef el = sequence_box bef pc el in
-  value_or_let_binding flag_where_after_value_eq sequ pc pe
+  value_or_let_binding flag_where_after_value_eq sequence_box pc pe
 ;
 
 value match_assoc force_vertic pc (p, w, e) =
