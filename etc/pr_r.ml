@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.18 2010/09/27 20:24:06 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.19 2010/09/28 04:07:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -316,37 +316,6 @@ value flatten_sequence e =
   | sel -> Some (List.rev sel) ]
 ;
 
-(* copied from prtools.ml while improving the algorithm which works bad *)
-value flatten_sequence e =
-  let rec get_sequence =
-    fun
-    [ <:expr< do { $list:el$ } >> -> Some el
-    | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
-        match get_sequence e with
-        [ Some [e :: el] ->
-            let e = <:expr< let $flag:rf$ $list:pel$ in $e$ >> in
-            Some [e :: el]
-        | None | _ -> None ]
-    | _ -> None ]
-  in
-  match get_sequence e with
-  [ Some el ->
-      let rec list_of_sequence =
-        fun
-        [ [e :: el] ->
-            match e with
-            [ <:expr:< let $flag:_$ $list:_$ in $_$ >> when el <> [] ->
-                [(<:expr< do {$e$} >>, True) :: list_of_sequence el]
-            | _ ->
-                match get_sequence e with
-                [ Some el1 -> list_of_sequence (el1 @ el)
-                | None -> [(e, False) :: list_of_sequence el] ] ]
-        | [] -> [] ]
-      in
-      Some (list_of_sequence el)
-  | None -> None ]
-;
-
 value sequencify e =
   if not flag_sequ_begin_at_eol.val then None else flatten_sequence e
 ;
@@ -378,14 +347,16 @@ value rec where_binding pc (p, e, body) =
   let (pl, body) = expr_fun_args body in
   let pl = [p :: pl] in
   match sequencify body with
-  [ Some el ->
+  [ Some sel ->
       let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-      let comm_expr expr_wh pc (e, enclose) =
-        if enclose then pprintf pc "(%p)" (comm_expr expr_wh) e
-        else comm_expr expr_wh pc e
+      let comm_expr expr pc se =
+        match se with
+        [ SE_let rf pel -> let_up_to_in pc (rf, pel)
+        | SE_closed e -> pprintf pc "@[<1>(%p)@]" (comm_expr expr) e
+        | SE_other e -> comm_expr expr pc e ]
       in
       pprintf pc "%p@ where rec %p = do {@;%p@ }" expr e (hlist patt) pl
-        (hvlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) el
+        (hvlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) sel
   | None ->
       pprintf pc "%p@ where rec %p =@;%p" expr e (hlist patt) pl
         (comm_expr expr) body ]
@@ -394,7 +365,6 @@ and expr_wh pc e =
   match can_be_displayed_as_where e with
   [ Some (p, e, body) -> where_binding pc (p, e, body)
   | None -> expr pc e ]
-;
 
 (* Pretty printing improvements (optional):
    - prints "let f x = e" instead of "let f = fun x -> e"
@@ -408,7 +378,7 @@ and expr_wh pc e =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value value_or_let_binding flag_where sequ pc (p, e) =
+and value_or_let_binding flag_where sequ pc (p, e) =
   let expr_wh = if flag_where.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
@@ -445,23 +415,12 @@ value value_or_let_binding flag_where sequ pc (p, e) =
          pprintf pc "%p =" (plistl patt patt_tycon 4) pl
        in
        match sequencify e with
-       [ Some el -> sequ patt_eq pc el
+       [ Some sel -> sequ patt_eq pc sel
        | None ->
            if pc.aft = "" then
              pprintf pc "%p@;%p" patt_eq () (comm_expr expr_wh) e
            else
              pprintf pc "@[<a>%p@;%p@ @]" patt_eq () (comm_expr expr_wh) e ])
-;
-
-(* should not be used any more: rather use 'sequence_box' below *)
-value sequence pc el =
-  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-      let comm_expr expr_wh pc (e, enclose) =
-        if enclose then pprintf pc "(%p)" (comm_expr expr_wh) e
-        else comm_expr expr_wh pc e
-      in
-  vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh) pc el
-;
 
 (* Pretty printing improvement (optional):
    - print the sequence beginner at end of previous lines,
@@ -478,14 +437,16 @@ value sequence pc el =
    - may change a 'let' into a 'where' for the last statement of
      the sequence.
  *)
-value rec sequence_box bef pc el =
+and sequence_box bef pc sel =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-      let comm_expr expr_wh pc (e, enclose) =
-        if enclose then pprintf pc "(%p)" (comm_expr expr_wh) e
-        else comm_expr expr_wh pc e
-      in
+  let comm_expr expr pc se =
+    match se with
+    [ SE_let rf pel -> let_up_to_in pc (rf, pel)
+    | SE_closed e -> pprintf pc "@[<1>(%p)@]" (comm_expr expr) e
+    | SE_other e -> comm_expr expr pc e ]
+  in
   pprintf pc "%p do {@;%p@ }" bef ()
-    (vlistl (semi_after (comm_expr expr_no_where)) (comm_expr expr_wh)) el
+    (vlistl (semi_after (comm_expr expr_no_where)) (comm_expr expr_wh)) sel
 
 and expr_no_where pc =
   fun
@@ -497,25 +458,28 @@ and expr_no_where pc =
 
 and gen_let curr expr_wh pc (rf, pel, e) =
   horiz_vertic_if (not flag_horiz_let_in.val)
-    (fun () ->
-       pprintf pc "let %s%p in %p" (if rf then "rec " else "")
-         (hlist2 let_binding (and_before let_binding)) pel
-         curr e)
+    (fun () -> pprintf pc "%p %p" let_up_to_in (rf, pel) curr e)
     (fun () ->
        if flag_horiz_let_in.val then
-         pprintf pc "let %s%pin@ %p" (if rf then "rec " else "")
-           (vlist2 let_binding (and_before let_binding)) pel
-           (comm_expr expr_wh) e
+         pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh) e
        else
-         pprintf pc "@[<b>let %s%pin@ %p@]"
-           (if rf then "rec " else "")
-           (vlist2 let_binding (and_before let_binding)) pel
-           (comm_expr expr_wh) e)
+         pprintf pc "@[<b>%p@ %p@]" let_up_to_in (rf, pel) (comm_expr expr_wh)
+           e)
+
+and let_up_to_in pc (rf, pel) =
+  let pc = {(pc) with aft = ""} in
+  horiz_vertic
+    (fun () ->
+       pprintf pc "let %s%p in" (if rf then "rec " else "")
+         (hlist2 let_binding (and_before let_binding)) pel)
+    (fun () ->
+       pprintf pc "@[let %s%p@ in@]" (if rf then "rec " else "")
+         (vlist2 let_binding (and_before let_binding)) pel)
 
 and let_binding pc pe =
-  let sequ bef pc el =
-    if pc.aft = "" then sequence_box bef pc el
-    else pprintf pc "%p@ " (sequence_box bef) el
+  let sequ bef pc sel =
+    if pc.aft = "" then sequence_box bef pc sel
+    else pprintf pc "%p@ " (sequence_box bef) sel
   in
   value_or_let_binding flag_where_after_let_eq sequ pc pe
 ;
@@ -749,9 +713,7 @@ value else_if_then force_vertic curr pc (e1, e2) =
     (fun () ->
        let if_e1_then pc () = pprintf pc "@[<a>else if@;%p@ then@]" curr e1 in
        match sequencify e2 with
-       [ Some el ->
-           pprintf pc "@[<i>%p do {@;%p@ }@]" force_vertic if_e1_then ()
-             sequence el
+       [ Some sel -> sequence_box if_e1_then pc sel
        | None ->
            pprintf pc "@[<i>%p@;%p@]" force_vertic if_e1_then ()
              (comm_expr expr_wh) e2 ])
@@ -773,8 +735,7 @@ value ending_else force_vertic curr pc e3 =
        pprintf pc "else %p" curr e3)
     (fun () ->
        match sequencify e3 with
-       [ Some el ->
-           pprintf pc "@[<i>else do {@;%p@ }@]" force_vertic sequence el
+       [ Some sel -> sequence_box (fun pc () -> pprintf pc "else") pc sel
        | None ->
            pprintf pc "@[<i>else@;%p@]" force_vertic (comm_expr expr_wh) e3 ])
 ;
@@ -1004,9 +965,9 @@ EXTEND_PRINTER
                 (fun () ->
                    let pl = List.map (fun p -> (p, "")) pl in
                    match sequencify e1 with
-                   [ Some el ->
-                       pprintf pc "fun %p -> do {@;%p@ }" (plist patt 4) pl
-                         sequence el
+                   [ Some sel ->
+                       sequence_box (fun pc () -> pprintf pc "fun %p ->"
+                         (plist patt 4) pl) pc sel
                    | None ->
                        pprintf pc "fun %p ->@;%p" (plist patt 4) pl curr e1 ])
           | [] -> pprintf pc "fun []"
@@ -1046,9 +1007,10 @@ EXTEND_PRINTER
                        pprintf pc "%s@;%p" s1 curr e
                    | None ->
                        match sequencify e1 with
-                       [ Some el ->
-                           pprintf pc "%s do {@;%p@ }@ with %p" op sequence el
-                             (match_assoc False) (p, wo, e)
+                       [ Some sel ->
+                           pprintf pc "%p@ with %p"
+                             (sequence_box (fun pc () -> pprintf pc "%s" op))
+                             sel (match_assoc False) (p, wo, e)
                        | None ->
                            pprintf pc "@[<a>%s@;%p@ with %p@]" op expr_wh e1
                              (match_assoc False) (p, wo, e) ] ])
@@ -1076,72 +1038,79 @@ EXTEND_PRINTER
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
-      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> (*as ge*) ->
-(*
+      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
           match flatten_sequence ge with
-          [ Some el -> curr pc <:expr< do { $list:el$ } >>
+          [ Some sel -> sequence_box (fun pc () -> pprintf pc "") pc sel
           | None ->
-*)
               let expr_wh =
                 if flag_where_after_in.val then expr_wh else curr
               in
-              gen_let curr expr_wh pc (rf, pel, e) (*]*)
+              gen_let curr expr_wh pc (rf, pel, e) ]
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
       | <:expr< do { $list:el$ } >> as ge ->
-          let el =
+          let sel =
             match flatten_sequence ge with
-            [ Some el -> el
-            | None -> List.map (fun e -> (e, False)) el ]
+            [ Some sel -> sel
+            | None -> List.map (fun e -> SE_other e) el ]
           in
-      let comm_expr expr_wh pc (e, enclose) =
-        if enclose then pprintf pc "(%p)" (comm_expr expr_wh) e
-        else comm_expr expr_wh pc e
-      in
+          let comm_expr expr pc =
+            fun
+            [ SE_let rf pel -> let_up_to_in pc (rf, pel)
+            | SE_closed e -> pprintf pc "@[<1>(%p)@]" (comm_expr expr) e
+            | SE_other e -> comm_expr expr pc e ]
+          in
           pprintf pc "@[<a>do {@;%p@ }@]"
-            (hvlistl (semi_after (comm_expr curr)) (comm_expr curr)) el
+            (hvlistl (semi_after (comm_expr curr)) (comm_expr curr)) sel
       | <:expr< while $e1$ do { $list:el$ } >> ->
-          let el =
+          let sel =
             match el with
             [ [e] ->
                 match sequencify e with
-                [ Some el -> el
-                | None -> List.map (fun e -> (e, False)) el ]
-            | _ -> List.map (fun e -> (e, False)) el ]
+                [ Some sel -> sel
+                | None -> List.map (fun e -> SE_other e) el ]
+            | _ -> List.map (fun e -> SE_other e) el ]
           in
-      let curr1 pc (e, enclose) =
-        if enclose then pprintf pc "(%p)" curr e
-        else curr pc e
-      in
-      let expr1 pc (e, enclose) =
-        if enclose then pprintf pc "(%p)" expr e
-        else expr pc e
-      in
+          let curr1 pc =
+            fun
+            [ SE_let rf pel -> let_up_to_in pc (rf, pel)
+            | SE_closed e -> pprintf pc "@[<1>(%p)@]" curr e
+            | SE_other e -> curr pc e ]
+          in
+          let expr1 pc =
+            fun
+            [ SE_let rf pel -> let_up_to_in pc (rf, pel)
+            | SE_closed e -> pprintf pc "@[<1>(%p)@]" (comm_expr expr) e
+            | SE_other e -> comm_expr expr pc e ]
+
+          in
           pprintf pc "@[<a>while@;%p@ do {@]@;%p@ }" curr e1
-            (vlistl (semi_after expr1) curr1) el
+            (vlistl (semi_after expr1) curr1) sel
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
-          let el =
+          let sel =
             match el with
             [ [e] ->
                 match sequencify e with
-                [ Some el -> el
-                | None -> List.map (fun e -> (e, False)) el ]
-            | _ -> List.map (fun e -> (e, False)) el ]
+                [ Some sel -> sel
+                | None -> List.map (fun e -> SE_other e) el ]
+            | _ -> List.map (fun e -> SE_other e) el ]
           in
-      let curr1 pc (e, enclose) =
-        if enclose then pprintf pc "(%p)" curr e
-        else curr pc e
-      in
+          let curr1 pc =
+            fun
+            [ SE_let rf pel -> let_up_to_in pc (rf, pel)
+            | SE_closed e -> pprintf pc "@[<1>(%p)@]" curr e
+            | SE_other e -> curr pc e ]
+          in
           horiz_vertic
             (fun () ->
                pprintf pc "for %s = %p %s %p do { %p }" v curr e1
                  (if d then "to" else "downto") curr e2
-                 (hlistl (semi_after curr1) curr1) el)
+                 (hlistl (semi_after curr1) curr1) sel)
             (fun () ->
                pprintf pc "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do {@]@;%p@ }@]"
                  v curr e1 (if d then "to" else "downto") curr e2
-                 (vlist (semi_after curr1)) el) ]
+                 (vlist (semi_after curr1)) sel) ]
     | "assign"
       [ <:expr< $x$ := $y$ >> -> operator pc next expr 2 ":=" x y ]
     | "or"
