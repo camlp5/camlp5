@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.19 2010/09/28 04:07:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.20 2010/09/28 07:51:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -439,14 +439,34 @@ and value_or_let_binding flag_where sequ pc (p, e) =
  *)
 and sequence_box bef pc sel =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  let comm_expr expr pc se =
-    match se with
-    [ SE_let rf pel -> let_up_to_in pc (rf, pel)
-    | SE_closed e -> pprintf pc "@[<1>(%p)@]" (comm_expr expr) e
-    | SE_other e -> comm_expr expr pc e ]
-  in
   pprintf pc "%p do {@;%p@ }" bef ()
-    (vlistl (semi_after (comm_expr expr_no_where)) (comm_expr expr_wh)) sel
+    (fun pc sel ->
+       loop pc sel where rec loop pc =
+         fun
+         [ [SE_let rf pel; SE_other e] ->
+             let disp_as_where =
+               if flag_where_in_sequences.val then
+                 let loc = Ploc.dummy in
+                 let e = <:expr< let $flag:rf$ $list:pel$ in $e$ >> in
+                 can_be_displayed_as_where e
+               else None
+             in
+             match disp_as_where with
+             [ Some (p, e, body) -> where_binding pc (p, e, body)
+             | None ->
+                 pprintf pc "@[<b>%p@ %p@]" let_up_to_in (rf, pel)
+                   (comm_expr expr_wh) e ]
+         | [SE_other e] -> comm_expr expr_wh pc e
+         | [SE_let rf pel :: sel] ->
+             pprintf pc "@[<b>%p@ %p@]" let_up_to_in (rf, pel) loop sel
+         | [SE_closed e :: sel] ->
+             pprintf pc "@[<b>@[<1>(%p);@]@ %p@]" (comm_expr expr_wh) e loop
+               sel
+         | [SE_other e :: sel] ->
+             pprintf pc "@[<b>%p;@ %p@]" (comm_expr expr_wh) e loop sel
+         | [] ->
+             pprintf pc "" ])
+    sel
 
 and expr_no_where pc =
   fun
