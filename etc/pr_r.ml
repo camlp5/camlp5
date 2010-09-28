@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.20 2010/09/28 07:51:16 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.21 2010/09/28 07:58:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -323,9 +323,9 @@ value sequencify e =
 (* Pretty printing improvement (optional):
    - test a "let" binding can be displayed as "where"
  *)
-value can_be_displayed_as_where e =
-  match e with
-  [ <:expr< let rec $p$ = $body$ in $e$ >> ->
+value let_expr_can_be_displayed_as_where rf pel e =
+  match pel with
+  [ [(p, body)] ->
       let e1 =
         loop e where rec loop =
           fun
@@ -337,6 +337,13 @@ value can_be_displayed_as_where e =
          <:expr< fun [ $list:_$ ] >>) ->
           if f = g then Some (p, e, body) else None
       | _ -> None ]
+  | [_ :: _] | [] -> None ]
+;
+
+value can_be_displayed_as_where e =
+  match e with
+  [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+      let_expr_can_be_displayed_as_where rf pel e
   | _ -> None ]
 ;
 
@@ -446,9 +453,7 @@ and sequence_box bef pc sel =
          [ [SE_let rf pel; SE_other e] ->
              let disp_as_where =
                if flag_where_in_sequences.val then
-                 let loc = Ploc.dummy in
-                 let e = <:expr< let $flag:rf$ $list:pel$ in $e$ >> in
-                 can_be_displayed_as_where e
+                 let_expr_can_be_displayed_as_where rf pel e
                else None
              in
              match disp_as_where with
@@ -1058,14 +1063,16 @@ EXTEND_PRINTER
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
-      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
+      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> (*as ge*) ->
+(*
           match flatten_sequence ge with
           [ Some sel -> sequence_box (fun pc () -> pprintf pc "") pc sel
           | None ->
+*)
               let expr_wh =
                 if flag_where_after_in.val then expr_wh else curr
               in
-              gen_let curr expr_wh pc (rf, pel, e) ]
+              gen_let curr expr_wh pc (rf, pel, e) (* ] *)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
