@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.25 2010/09/25 04:46:16 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.26 2010/09/28 12:11:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -564,7 +564,7 @@ value else_if_then force_vertic curr pc (e1, e2) =
            curr e2)
     (fun () ->
        pprintf pc "@[<i>else if@;%q@ then@]@;%p" force_vertic curr e1 ""
-         (comm_expr expr1) e2)
+         ((*comm_expr*) expr1) e2)
 ;
 
 value loop_else_if_no_else force_vertic curr pc eel =
@@ -974,7 +974,13 @@ EXTEND_PRINTER
                else
                  pprintf pc "let%s %qin@ %p" (if rf then " rec" else "")
                    (vlist2 let_binding (and_before let_binding)) pel ""
-                   expr_with_comm_except_if_sequence e)
+                   (if Ploc.first_pos loc =
+                       Ploc.first_pos (MLast.loc_of_expr e)
+                    then
+                      (* comes from a 'where' in revised syntax *)
+                      expr
+                    else expr_with_comm_except_if_sequence)
+                  e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
