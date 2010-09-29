@@ -18,21 +18,6 @@ let make_loc fname line_nb bol_pos (bp, ep) comm =
    comm = comm}
 ;;
 
-let warned = ref true;;
-let warning_deprecated_since_6_00 name =
-  if not !warned then
-    begin
-      Printf.eprintf "<W> %s deprecated since version 6.00" name;
-      warned := true
-    end
-;;
-
-let make line_nb bol_pos (bp, ep) =
-  let _ = warning_deprecated_since_6_00 "Ploc.make" in
-  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
-   comm = ""}
-;;
-
 let make_unlined (bp, ep) =
   {fname = ""; line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
 ;;
@@ -189,4 +174,19 @@ let raise loc exc =
 type 'a vala =
     VaAnt of string
   | VaVal of 'a
+;;
+
+let warned = ref true;;
+let warning_deprecated_since_6_00 name =
+  if not !warned then
+    begin
+      Printf.eprintf "<W> %s deprecated since version 6.00" name;
+      warned := true
+    end
+;;
+
+let make line_nb bol_pos (bp, ep) =
+  let _ = warning_deprecated_since_6_00 "Ploc.make" in
+  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
+   comm = ""}
 ;;

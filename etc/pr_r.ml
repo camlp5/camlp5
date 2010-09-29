@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.26 2010/09/29 09:45:05 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.27 2010/09/29 12:47:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1702,10 +1702,18 @@ module Buff =
   end
 ;
 
+value first_loc_of_ast =
+  fun
+  [ [(_, loc) :: _] -> loc
+  | [] -> Ploc.dummy ]
+;
+
 value apply_printer f ast = do {
-  if Pcaml.input_file.val = "-" then sep.val := Some "\n"
+  let loc = first_loc_of_ast ast in
+  let fname = Ploc.file_name loc in
+  if fname = "-" || fname = "" then sep.val := Some "\n"
   else do {
-    let ic = open_in_bin Pcaml.input_file.val in
+    let ic = open_in_bin fname in
     let src =
       loop 0 where rec loop len =
         match try Some (input_char ic) with [ End_of_file -> None ] with

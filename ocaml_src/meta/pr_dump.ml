@@ -10,8 +10,15 @@ let open_out_file () =
   | None -> pervasives_set_binary_mode_out stdout true; stdout
 ;;
 
+let first_loc_of_ast =
+  function
+    (_, loc) :: _ -> loc
+  | [] -> Ploc.dummy
+;;
+
 let interf ast =
-  let fname = !(Pcaml.input_file) in
+  let loc = first_loc_of_ast ast in
+  let fname = Ploc.file_name loc in
   let pt = Ast2pt.interf fname (List.map fst ast) in
   let oc = open_out_file () in
   output_string oc Pconfig.ast_intf_magic_number;
@@ -24,7 +31,8 @@ let interf ast =
 ;;
 
 let implem ast =
-  let fname = !(Pcaml.input_file) in
+  let loc = first_loc_of_ast ast in
+  let fname = Ploc.file_name loc in
   let pt = Ast2pt.implem fname (List.map fst ast) in
   let oc = open_out_file () in
   output_string oc Pconfig.ast_impl_magic_number;
