@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.17 2010/09/24 08:24:24 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.18 2010/09/29 02:32:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -622,8 +622,8 @@ EXTEND
       | s = V FLOAT -> <:expr< $_flo:s$ >>
       | s = V STRING -> <:expr< $_str:s$ >>
       | c = V CHAR -> <:expr< $_chr:c$ >>
-      | UIDENT "True" -> <:expr< $uid:" True"$ >>
-      | UIDENT "False" -> <:expr< $uid:" False"$ >>
+      | UIDENT "True" -> <:expr< True_ >>
+      | UIDENT "False" -> <:expr< False_ >>
       | i = V LIDENT -> <:expr< $_lid:i$ >>
       | i = V UIDENT -> <:expr< $_uid:i$ >>
       | "false" -> <:expr< False >>
@@ -758,8 +758,8 @@ EXTEND
       | s = V FLOAT -> <:patt< $_flo:s$ >>
       | s = V STRING -> <:patt< $_str:s$ >>
       | s = V CHAR -> <:patt< $_chr:s$ >>
-      | UIDENT "True" -> <:patt< $uid:" True"$ >>
-      | UIDENT "False" -> <:patt< $uid:" False"$ >>
+      | UIDENT "True" -> <:patt< True_ >>
+      | UIDENT "False" -> <:patt< False_ >>
       | "false" -> <:patt< False >>
       | "true" -> <:patt< True >>
       | "["; "]" -> <:patt< [] >>
@@ -847,8 +847,8 @@ EXTEND
   ;
   cons_ident:
     [ [ i = V UIDENT "uid" "" -> i
-      | UIDENT "True" -> <:vala< " True" >>
-      | UIDENT "False" -> <:vala< " False" >> ] ]
+      | UIDENT "True" -> <:vala< "True_" >>
+      | UIDENT "False" -> <:vala< "False_" >> ] ]
   ;
   label_declarations:
     [ [ ld = label_declaration; ";"; ldl = SELF -> [ld :: ldl]

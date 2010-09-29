@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.26 2010/09/28 12:11:41 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.27 2010/09/29 02:32:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -147,8 +147,8 @@ value cons_escaped pc (loc, v) =
     match v with
     [ "True" -> "true"
     | "False" -> "false"
-    | " True" -> "True"
-    | " False" -> "False"
+    | "True_" -> "True"
+    | "False_" -> "False"
     | _ -> v ]
   in
   pprintf pc "%s" x
@@ -974,12 +974,16 @@ EXTEND_PRINTER
                else
                  pprintf pc "let%s %qin@ %p" (if rf then " rec" else "")
                    (vlist2 let_binding (and_before let_binding)) pel ""
+(*
                    (if Ploc.first_pos loc =
                        Ploc.first_pos (MLast.loc_of_expr e)
                     then
                       (* comes from a 'where' in revised syntax *)
                       expr
                     else expr_with_comm_except_if_sequence)
+*)
+                   expr_with_comm_except_if_sequence
+(**)
                   e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me

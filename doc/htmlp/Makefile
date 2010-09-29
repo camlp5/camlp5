@@ -1,23 +1,24 @@
-# $Id: Makefile,v 6.1 2010/09/15 16:00:19 deraugla Exp $
+# $Id: Makefile,v 6.2 2010/09/29 02:32:05 deraugla Exp $
 
 H=../html
 OBJS=$H/index.html $H/about.html $H/ast_strict.html $H/ast_transi.html $H/bparsers.html $H/commands.html $H/conclusion.html $H/directives.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pprintf.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/q_ast.html $H/quot.html $H/redef.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
 RSS=$H/rss/camlp5.rss
 INDEX=index.html
+NO_PR_DIR=--no-print-directory
 
 all: $(OBJS) $(RSS)
 
 info:
-	@$(MAKE) --no-print-directory camlp5.info H=.
+	@$(MAKE) $(NO_PR_DIR) camlp5.info H=.
 
 tex:
-	@$(MAKE) --no-print-directory camlp5.dvi H=.
+	@$(MAKE) $(NO_PR_DIR) camlp5.dvi H=.
 
 ps:
-	@$(MAKE) --no-print-directory camlp5.ps H=.
+	@$(MAKE) $(NO_PR_DIR) camlp5.ps H=.
 
 pdf:
-	@$(MAKE) --no-print-directory camlp5.pdf H=.
+	@$(MAKE) $(NO_PR_DIR) camlp5.pdf H=.
 
 camlp5.info: html2texi $(OBJS)
 	./html2texi > camlp5.texi

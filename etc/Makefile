@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.1 2010/09/15 16:00:21 deraugla Exp $
+# $Id: Makefile,v 6.2 2010/09/29 02:32:06 deraugla Exp $
 
 include ../config/Makefile
 
@@ -18,33 +18,33 @@ opt: $(COPT) mkcamlp5.opt.sh
 # these ones must be compiled with new created camlp5:
 
 pa_lisp.cmo pa_lisp.cmx: pa_lisp.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pa_scheme.cmo pa_scheme.cmx: pa_scheme.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pa_extfold.cmo pa_extfold.cmx: pa_extfold.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_r.cmo pr_r.cmx: pr_r.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_ro.cmo pr_ro.cmx: pr_ro.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_rp.cmo pr_rp.cmx: pr_rp.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_o.cmo pr_o.cmx: pr_o.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_op.cmo pr_op.cmx: pr_op.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_scheme.cmo pr_scheme.cmx: pr_scheme.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_schemep.cmo pr_schemep.cmx: pr_schemep.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_extend.cmo pr_extend.cmx: pr_extend.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_extfun.cmo pr_extfun.cmx: pr_extfun.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 pr_extprint.cmo pr_extprint.cmx: pr_extprint.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 q_phony.cmo q_phony.cmx: q_phony.ml
-	$(MAKE) --no-print-directory -f Makefile.withnew $@
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 
 META: META.tpl
 	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(LIBDIR)/camlp5|" META.tpl > META
@@ -69,13 +69,13 @@ mkcamlp5.opt.sh: mkcamlp5.opt.sh.tpl
 	sed -e "s!LIBDIR!$(LIBDIR)!g" mkcamlp5.opt.sh.tpl > mkcamlp5.opt.sh
 
 bootstrap_scheme:
-	@$(MAKE) --no-print-directory bootstrap_l L=scheme
+	@$(MAKE) $(NO_PR_DIR) bootstrap_l L=scheme
 compare_scheme:
-	@$(MAKE) --no-print-directory compare_l L=scheme
+	@$(MAKE) $(NO_PR_DIR) compare_l L=scheme
 bootstrap_lisp:
-	@$(MAKE) --no-print-directory bootstrap_l L=lisp
+	@$(MAKE) $(NO_PR_DIR) bootstrap_l L=lisp
 compare_lisp:
-	@$(MAKE) --no-print-directory compare_l L=lisp
+	@$(MAKE) $(NO_PR_DIR) compare_l L=lisp
 
 bootstrap_l:
 	ocamlrun$(EXE) ../boot/camlp5 ./pa_$Lr.cmo -I ../boot pa_extend.cmo ./pr_r.cmo ./pr_extend.cmo ./pr_rp.cmo ./q_phony.cmo pa_$L.ml > tmp

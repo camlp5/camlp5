@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.23 2010/09/28 12:11:41 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.24 2010/09/29 02:32:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -161,15 +161,7 @@ value var_escaped pc (loc, v) =
   else lprintf pc "%s" v
 ;
 
-value cons_escaped pc v =
-  let x =
-    match v with
-    [ " True" -> "True_"
-    | " False" -> "False_"
-    | _ -> v ]
-  in
-  pprintf pc "%s" x
-;
+value cons_escaped pc s = pprintf pc "%s" s;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 THEN
   value with_bef = Pprintf.with_bef;

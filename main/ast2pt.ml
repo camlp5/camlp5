@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.13 2010/09/22 19:12:02 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.14 2010/09/29 02:32:06 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -129,8 +129,8 @@ value mkintconst loc s c =
 value conv_con = do {
   let t = Hashtbl.create 73 in
   List.iter (fun (s, s') -> Hashtbl.add t s s')
-    [("True", "true"); ("False", "false"); (" True", "True");
-     (" False", "False")];
+    [("True", "true"); ("False", "false"); ("True_", "True");
+     ("False_", "False")];
   fun s -> try Hashtbl.find t s with [ Not_found -> s ]
 };
 

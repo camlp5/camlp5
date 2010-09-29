@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.2 2010/09/29 02:32:05 deraugla Exp $
+# $Id: configure,v 6.3 2010/09/29 02:33:48 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -209,7 +209,7 @@ else
   WARNERR=""
 fi
 
-if make -f config/Makefile.check --no-print-directory >/dev/null; then
+if make -f config/Makefile.check --no-print-directory >/dev/null 2>&1; then
   NO_PR_DIR=--no-print-directory
 else
   NO_PR_DIR=

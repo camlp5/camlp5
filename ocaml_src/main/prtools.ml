@@ -378,6 +378,9 @@ let rev_extract_comment strm =
         Stream.junk strm__; insert_string (Buff.store len '"') strm__
     | Some '\'' ->
         Stream.junk strm__; insert_char (Buff.store len '\'') strm__
+    | Some '\t' ->
+        Stream.junk strm__;
+        insert (Buff.mstore len (String.make 8 ' ')) strm__
     | Some x -> Stream.junk strm__; insert (Buff.store len x) strm__
     | _ -> len
   and insert_string len (strm__ : _ Stream.t) =
