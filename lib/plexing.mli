@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexing.mli,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: plexing.mli,v 6.2 2010/09/29 07:31:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Lexing for Camlp5 grammars.
@@ -67,7 +67,7 @@ and lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function)
       function (see below) for this tokens stream. *)
 
 and location_function = int -> Ploc.t;
-  (**>The type of a function giving the location of a token in the
+  (** The type of a function giving the location of a token in the
       source from the token number in the stream (starting from zero). *)
 
 value lexer_text : pattern -> string;
