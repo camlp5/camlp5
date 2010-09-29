@@ -36,9 +36,13 @@ let ocaml_pmty_typeof = None;;
 
 let ocaml_ptype_abstract = Ptype_private;;
 
-let ocaml_ptype_record ltl priv = Ptype_record (ltl, priv);;
+let ocaml_ptype_record ltl priv =
+  let priv = if priv then Private else Public in Ptype_record (ltl, priv)
+;;
 
-let ocaml_ptype_variant ctl priv = Ptype_variant (ctl, priv);;
+let ocaml_ptype_variant ctl priv =
+  let priv = if priv then Private else Public in Ptype_variant (ctl, priv)
+;;
 
 let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
 

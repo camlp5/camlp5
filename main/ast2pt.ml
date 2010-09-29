@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.14 2010/09/29 02:32:06 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.15 2010/09/29 18:15:46 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -382,9 +382,9 @@ value mktvariant ctl priv =
 value type_decl tl priv cl =
   fun
   [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> ->
-      mktype loc tl cl (mktrecord ltl pf) priv (Some (ctyp t))
+      mktype loc tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
   | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> ->
-      mktype loc tl cl (mktvariant ctl pf) priv (Some (ctyp t))
+      mktype loc tl cl (mktvariant ctl (uv pf)) priv (Some (ctyp t))
   | TyRec loc ltl ->
       mktype loc tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl ->

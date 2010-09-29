@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.4 2010/09/21 05:48:06 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.5 2010/09/29 18:15:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -105,11 +105,13 @@ value ocaml_ptype_record ltl priv =
     IFDEF OCAML_VERSION <= OCAML_3_06 THEN
       Ptype_record ltl
     ELSE
+      let priv = if priv then Private else Public in
       Ptype_record ltl priv
     END
   ELSIFDEF OCAML_VERSION >= OCAML_3_11 THEN
     Ptype_record ltl
   ELSE
+    let priv = if priv then Private else Public in
     Ptype_record ltl priv
   END
 ;
@@ -120,11 +122,13 @@ value ocaml_ptype_variant ctl priv =
     IFDEF OCAML_VERSION <= OCAML_3_06 THEN
       Ptype_variant ctl
     ELSE
+      let priv = if priv then Private else Public in
       Ptype_variant ctl priv
     END
   ELSIFDEF OCAML_VERSION >= OCAML_3_11 THEN
     Ptype_variant ctl
   ELSE
+    let priv = if priv then Private else Public in
     Ptype_variant ctl priv
   END
 ;

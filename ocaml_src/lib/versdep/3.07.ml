@@ -38,12 +38,12 @@ let ocaml_ptype_abstract = Ptype_abstract;;
 
 let ocaml_ptype_record ltl priv =
   let ltl = List.map (fun (n, m, t, _) -> n, m, t) ltl in
-  Ptype_record (ltl, priv)
+  let priv = if priv then Private else Public in Ptype_record (ltl, priv)
 ;;
 
 let ocaml_ptype_variant ctl priv =
   let ctl = List.map (fun (c, tl, _) -> c, tl) ctl in
-  Ptype_variant (ctl, priv)
+  let priv = if priv then Private else Public in Ptype_variant (ctl, priv)
 ;;
 
 let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;

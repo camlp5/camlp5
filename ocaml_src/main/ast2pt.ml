@@ -383,9 +383,9 @@ let mktvariant ctl priv =
 let type_decl tl priv cl =
   function
     TyMan (loc, t, pf, MLast.TyRec (_, ltl)) ->
-      mktype loc tl cl (mktrecord ltl pf) priv (Some (ctyp t))
+      mktype loc tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
   | TyMan (loc, t, pf, MLast.TySum (_, ctl)) ->
-      mktype loc tl cl (mktvariant ctl pf) priv (Some (ctyp t))
+      mktype loc tl cl (mktvariant ctl (uv pf)) priv (Some (ctyp t))
   | TyRec (loc, ltl) -> mktype loc tl cl (mktrecord (uv ltl) false) priv None
   | TySum (loc, ctl) -> mktype loc tl cl (mktvariant (uv ctl) false) priv None
   | t ->
