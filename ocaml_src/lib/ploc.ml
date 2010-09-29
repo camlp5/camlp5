@@ -31,7 +31,11 @@ let bol_pos loc = loc.bol_pos;;
 let comment loc = loc.comm;;
 
 let with_bp_ep l bp ep =
-  {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep}
+  {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep; comm = l.comm}
+;;
+let with_ep l ep =
+  {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp; ep = ep;
+   comm = l.comm}
 ;;
 
 let encl loc1 loc2 =

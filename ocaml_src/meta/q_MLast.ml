@@ -18,17 +18,17 @@ let antiquot k loc s f =
   in
   let shift_ep = String.length "$" in
   let loc =
-    Ploc.make (Ploc.line_nb loc) (Ploc.bol_pos loc)
-      (Ploc.first_pos loc + shift_bp, Ploc.last_pos loc - shift_ep)
+    Ploc.make_loc (Ploc.line_nb loc) (Ploc.bol_pos loc)
+      (Ploc.first_pos loc + shift_bp, Ploc.last_pos loc - shift_ep) ""
   in
   try loc, Grammar.Entry.parse f (Stream.of_string s) with
     Ploc.Exc (loc1, exc) ->
       let shift = Ploc.first_pos loc in
       let loc =
-        Ploc.make (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
+        Ploc.make_loc (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
           (if Ploc.line_nb loc1 = 1 then Ploc.bol_pos loc
            else shift + Ploc.bol_pos loc1)
-          (shift + Ploc.first_pos loc1, shift + Ploc.last_pos loc1)
+          (shift + Ploc.first_pos loc1, shift + Ploc.last_pos loc1) ""
       in
       raise (Ploc.Exc (loc, exc))
 ;;

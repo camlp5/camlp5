@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.2 2010/09/29 04:26:54 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.3 2010/09/29 04:31:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -39,7 +39,12 @@ value comment loc = loc.comm;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_bp_ep l bp ep =
-    {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep}
+    {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep;
+     comm = l.comm}
+  ;
+  value with_ep l ep =
+    {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp; ep = ep;
+     comm = l.comm}
   ;
 END;
 

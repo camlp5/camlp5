@@ -25,10 +25,10 @@ let eval_anti entry loc typ str =
     with Ploc.Exc (loc1, exc) ->
       let shift = Ploc.first_pos loc in
       let loc =
-        Ploc.make (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
+        Ploc.make_loc (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
           (if Ploc.line_nb loc1 = 1 then Ploc.bol_pos loc
            else shift + Ploc.bol_pos loc1)
-          (shift + Ploc.first_pos loc1, shift + Ploc.last_pos loc1)
+          (shift + Ploc.first_pos loc1, shift + Ploc.last_pos loc1) ""
       in
       raise (Ploc.Exc (loc, exc))
   in

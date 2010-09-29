@@ -36,11 +36,11 @@ let anti_loc qloc sh loc loc1 =
   if line_nb_qloc < 0 || line_nb_loc < 0 || line_nb_loc1 < 0 then
     Ploc.make_unlined (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1)
   else
-    Ploc.make (line_nb_qloc + line_nb_loc + line_nb_loc1 - 2)
+    Ploc.make_loc (line_nb_qloc + line_nb_loc + line_nb_loc1 - 2)
       (if line_nb_loc1 = 1 then
          if line_nb_loc = 1 then Ploc.bol_pos qloc else sh1 + Ploc.bol_pos loc
        else sh2 + Ploc.bol_pos loc1)
-      (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1)
+      (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1) ""
 ;;
 
 let rec ctyp floc sh =

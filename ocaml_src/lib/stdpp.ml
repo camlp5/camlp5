@@ -7,7 +7,7 @@ type location = Ploc.t;;
 exception Exc_located of location * exn;;
 let raise_with_loc = Ploc.raise;;
 
-let make_lined_loc = Ploc.make;;
+let make_lined_loc lin bol (bp, ep) = Ploc.make_loc lin bol (bp, ep) "";;
 let make_loc = Ploc.make_unlined;;
 let dummy_loc = Ploc.dummy;;
 

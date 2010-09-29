@@ -115,10 +115,10 @@ let expand_quotation gloc expander shift name str =
               Ploc.make_unlined
                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
             else
-              Ploc.make (gloc_line_nb + loc_line_nb - 1)
+              Ploc.make_loc (gloc_line_nb + loc_line_nb - 1)
                 (if loc_line_nb = 1 then Ploc.bol_pos gloc
                  else shift + Ploc.bol_pos loc)
-                (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
+                (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc) ""
           in
           raise (Ploc.Exc (loc, exc1))
       | exc ->
