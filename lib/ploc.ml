@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.5 2010/09/29 09:45:05 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.6 2010/09/29 12:22:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -16,21 +16,6 @@ type t =
 value make_loc fname line_nb bol_pos (bp, ep) comm =
   {fname = fname; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
    comm = comm}
-;
-
-value warned = ref True;
-value warning_deprecated_since_6_00 name =
-  if not warned.val then do {
-    Printf.eprintf "<W> %s deprecated since version 6.00" name;
-    warned.val := True
-  }
-  else ()
-;
-
-value make line_nb bol_pos (bp, ep) =
-  let _ = warning_deprecated_since_6_00 "Ploc.make" in
-  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
-   comm = ""}
 ;
 
 value make_unlined (bp, ep) =
@@ -190,4 +175,19 @@ value raise loc exc =
 type vala 'a =
   [ VaAnt of string
   | VaVal of 'a ]
+;
+
+value warned = ref True;
+value warning_deprecated_since_6_00 name =
+  if not warned.val then do {
+    Printf.eprintf "<W> %s deprecated since version 6.00" name;
+    warned.val := True
+  }
+  else ()
+;
+
+value make line_nb bol_pos (bp, ep) =
+  let _ = warning_deprecated_since_6_00 "Ploc.make" in
+  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
+   comm = ""}
 ;

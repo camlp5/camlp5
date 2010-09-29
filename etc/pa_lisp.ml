@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 6.1 2010/09/15 16:00:21 deraugla Exp $
+;; $Id: pa_lisp.ml,v 6.2 2010/09/29 12:22:10 deraugla Exp $
 ;; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -147,7 +147,8 @@
                (lexer2
                 (lambda (kwt (, s _ _))
                   (let (((, t loc) (lexer kwt s)))
-                    (, t (Ploc.make_unlined loc))))))
+                    (, t
+                       (Ploc.make_loc Plexing.input_file.val 0 0 loc ""))))))
            ({}
             (Plexing.tok_func (Plexing.lexer_func_of_parser (lexer2 kwt)))
             (Plexing.tok_using (lexer_using kwt))

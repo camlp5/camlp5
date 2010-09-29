@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: depend.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
+# $Id: depend.sh,v 6.2 2010/09/29 12:22:11 deraugla Exp $
 
 ARGS1="pr_depend.cmo --"
 FILE=
@@ -24,7 +24,7 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   shift; shift
   ARGS2=`echo $* | sed -e "s/[()*]//g"`
 else
-  COMM="../boot/main -nolib -I ../boot -I ../etc pa_o.cmo"
+  COMM="../boot/camlp5 -nolib -I ../boot -I ../etc pa_o.cmo"
   ARGS2=
 fi
 

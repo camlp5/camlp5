@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 6.1 2010/09/15 16:00:21 deraugla Exp $
+; $Id: pa_scheme.ml,v 6.2 2010/09/29 12:22:10 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -272,7 +272,7 @@
   ((kwt (Hashtbl.create 89))
    ((lexer2 kwt (values s _ _))
     (let (((values t loc) (lexer kwt s)))
-     (values t (Ploc.make_unlined loc)))))
+     (values t (Ploc.make_loc Plexing.input_file.val -1 0 loc "")))))
   {(Plexing.tok_func (Plexing.lexer_func_of_parser (lexer2 kwt)))
    (Plexing.tok_using (lexer_using kwt)) (Plexing.tok_removing (lambda))
    (Plexing.tok_match Plexing.default_match) (Plexing.tok_text lexer_text)

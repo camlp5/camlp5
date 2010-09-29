@@ -86,7 +86,11 @@ value rec lexer kwt =
   | [: `('0'..'9' as c); n = number (Buff.store 0 c) :] ep -> (n, (bp, ep))
   | [: `x; s = ident (Buff.store 0 x) :] ep ->
       let con =
-        try do { (Hashtbl.find kwt s : unit); "" } with
+        try do {
+          (Hashtbl.find kwt s : unit);
+          ""
+        }
+        with
         [ Not_found ->
             match x with
             [ 'A'..'Z' -> "UIDENT"
@@ -140,7 +144,7 @@ value lexer_gmake () =
   let kwt = Hashtbl.create 89
   and lexer2 kwt (s, _, _) =
     let (t, loc) = lexer kwt s in
-    (t, Ploc.make_unlined loc)
+    (t, Ploc.make_loc Plexing.input_file.val 0 0 loc "")
   in
   {Plexing.tok_func = Plexing.lexer_func_of_parser (lexer2 kwt);
    Plexing.tok_using = lexer_using kwt; Plexing.tok_removing = fun [];
@@ -367,7 +371,7 @@ and label_expr_se loc =
 and expr_ident_se loc s =
   if s.[0] = '<' then <:expr< $lid:s$ >>
   else
-    let rec loop ibeg i =
+    loop 0 0 where rec loop ibeg i =
       if i = String.length s then
         if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
         else
@@ -380,8 +384,6 @@ and expr_ident_se loc s =
         else
           Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "expr expected")
       else loop ibeg (i + 1)
-    in
-    loop 0 0
 and parser_cases_se loc =
   fun
   [ [] -> <:expr< raise Stream.Failure >>

@@ -58,7 +58,11 @@ value rec ident len =
 
 value identifier kwt s =
   let con =
-    try do { (Hashtbl.find kwt s : unit); "" } with
+    try do {
+      (Hashtbl.find kwt s : unit);
+      ""
+    }
+    with
     [ Not_found ->
         match s.[0] with
         [ 'A'..'Z' -> "UIDENT"
@@ -296,7 +300,7 @@ value lexer_gmake () =
   let kwt = Hashtbl.create 89
   and lexer2 kwt (s, _, _) =
     let (t, loc) = lexer kwt s in
-    (t, Ploc.make_unlined loc)
+    (t, Ploc.make_loc Plexing.input_file.val (-1) 0 loc "")
   in
   {Plexing.tok_func = Plexing.lexer_func_of_parser (lexer2 kwt);
    Plexing.tok_using = lexer_using kwt; Plexing.tok_removing = fun [];

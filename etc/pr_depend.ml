@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.2 2010/09/20 12:29:06 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.3 2010/09/29 12:22:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -198,6 +198,7 @@ and sig_item =
   | <:sig_item< open $[s :: _]$ >> -> addmodule s
   | <:sig_item< type $list:tdl$ >> -> list type_decl tdl
   | SgVal _ _ t -> ctyp t
+  | <:sig_item< # $_$ $_$ >> -> ()
   | x -> not_impl "sig_item" x ]
 and module_expr =
   fun
@@ -334,10 +335,17 @@ value print_depend target_file deps =
 
 (* Main *)
 
+value file_name_of_ast =
+  fun
+  [ [(_, loc) :: _] -> Ploc.file_name loc
+  | [] -> "-" ]
+;
+
 value depend_sig ast = do {
   fset.val := StrSet.empty;
   List.iter (fun (si, _) -> sig_item si) ast;
-  let basename = Filename.chop_suffix Pcaml.input_file.val ".mli" in
+  let fname = file_name_of_ast ast in
+  let basename = Filename.chop_suffix fname ".mli" in
   let (byt_deps, _) = StrSet.fold find_depend fset.val ([], []) in
   let byt_deps = list_sort compare byt_deps in
   print_depend (basename ^ ".cmi") byt_deps
@@ -346,15 +354,16 @@ value depend_sig ast = do {
 value depend_str ast = do {
   fset.val := StrSet.empty;
   List.iter (fun (si, _) -> str_item si) ast;
+  let fname = file_name_of_ast ast in
   let basename =
-    if Filename.check_suffix Pcaml.input_file.val ".ml" then
-      Filename.chop_suffix Pcaml.input_file.val ".ml"
+    if Filename.check_suffix fname ".ml" then
+      Filename.chop_suffix fname ".ml"
     else
       try
-        let len = String.rindex Pcaml.input_file.val '.' in
-        String.sub Pcaml.input_file.val 0 len
+        let len = String.rindex fname '.' in
+        String.sub fname 0 len
       with
-      [ Failure _ | Not_found -> Pcaml.input_file.val ]
+      [ Failure _ | Not_found -> fname ]
   in
   let init_deps =
     if Sys.file_exists (basename ^ ".mli") then
