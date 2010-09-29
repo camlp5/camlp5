@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexing.mli,v 6.2 2010/09/29 07:31:00 deraugla Exp $ *)
+(* $Id: plexing.mli,v 6.3 2010/09/29 09:45:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Lexing for Camlp5 grammars.
@@ -121,6 +121,7 @@ value eval_string : Ploc.t -> string -> string;
        return [s] *)
 
 value restore_lexing_info : ref (option (int * int));
+value input_file : ref string;
 value line_nb : ref (ref int);
 value bol_pos : ref (ref int);
    (** Special variables used to reinitialize line numbers and position

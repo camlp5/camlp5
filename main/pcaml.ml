@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.2 2010/09/29 04:26:54 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.3 2010/09/29 09:45:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -58,7 +58,7 @@ value rec skip_to_eol cs =
 ;
 value sync = ref skip_to_eol;
 
-value input_file = ref "";
+value input_file = Plexing.input_file;
 value output_file = ref None;
 
 value warning_default_function loc txt = do {
@@ -118,7 +118,8 @@ value expand_quotation gloc expander shift name str = do {
                Ploc.make_unlined
                  (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
              else
-               Ploc.make_loc (gloc_line_nb + loc_line_nb - 1)
+               Ploc.make_loc (Ploc.file_name loc)
+                 (gloc_line_nb + loc_line_nb - 1)
                  (if loc_line_nb = 1 then Ploc.bol_pos gloc
                   else shift + Ploc.bol_pos loc)
                  (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc) ""

@@ -1045,7 +1045,8 @@ let func kwd_table glexr =
        (fun () ->
           line_nb := !(!(Plexing.line_nb)); bol_pos := !(!(Plexing.bol_pos)));
      make_lined_loc =
-       fun loc comm -> Ploc.make_loc !line_nb !bol_pos loc comm}
+       fun loc comm ->
+         Ploc.make_loc !(Plexing.input_file) !line_nb !bol_pos loc comm}
   in
   Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;

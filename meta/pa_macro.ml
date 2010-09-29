@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 6.1 2010/09/15 16:00:25 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 6.2 2010/09/29 09:45:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -509,7 +509,7 @@ EXTEND
       | "ELSE"; e = expr -> e ] ]
   ;
   expr: LEVEL "simple"
-    [ [ LIDENT "__FILE__" -> <:expr< $str:Pcaml.input_file.val$ >>
+    [ [ LIDENT "__FILE__" -> <:expr< $str:Ploc.file_name loc$ >>
       | LIDENT "__LOCATION__" ->
           let bp = string_of_int (Ploc.first_pos loc) in
           let ep = string_of_int (Ploc.last_pos loc) in

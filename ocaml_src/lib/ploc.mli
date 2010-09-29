@@ -21,8 +21,8 @@ val raise : t -> exn -> 'a;;
 
 (* making locations *)
 
-val make_loc : int -> int -> int * int -> string -> t;;
-   (** [Ploc.make_loc line_nb bol_pos (bp, ep) comm] creates a location
+val make_loc : string -> int -> int -> int * int -> string -> t;;
+   (** [Ploc.make_loc fname line_nb bol_pos (bp, ep) comm] creates a location
        starting at line number [line_nb], where the position of the beginning
        of the line is [bol_pos] and between the positions [bp] (included) and
        [ep] excluded. And [comm] is the comment before the location. The
@@ -37,6 +37,8 @@ val dummy : t;;
 
 (* getting location info *)
 
+val file_name : t -> string;;
+   (** [Ploc.file_name loc] returns the file name of the location. *)
 val first_pos : t -> int;;
    (** [Ploc.first_pos loc] returns the position of the begin of the location
        in number of characters since the beginning of the stream. *)
@@ -82,12 +84,12 @@ val name : string ref;;
        and in the predefined quotations for OCaml syntax trees. Default:
        ["loc"] *)
 
-val get : string -> t -> int * int * int * int * int;;
-   (** [Ploc.get fname loc] returns in order: 1/ the line number of
-       the begin of the location, 2/ its column, 3/ the line number
-       of the first character not in the location, 4/ its column and
-       5/ the length of the location. The parameter [fname] is the
-       file where the location occurs. *)
+val get : t -> int * int * int * int * int;;
+   (** [Ploc.get loc] returns in order: 1/ the line number of the begin
+       of the location, 2/ its column, 3/ the line number of the first
+       character not in the location, 4/ its column and 5/ the length
+       of the location. The file where the location occurs (if any) may
+       be read during this operation. *)
 
 val from_file : string -> t -> string * int * int * int;;
    (** [Ploc.from_file fname loc] reads the file [fname] up to the

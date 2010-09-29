@@ -786,7 +786,7 @@ Grammar.extend
       [Gramext.Stoken ("LIDENT", "__FILE__")],
       Gramext.action
         (fun _ (loc : Ploc.t) ->
-           (MLast.ExStr (loc, !(Pcaml.input_file)) : 'expr))]];
+           (MLast.ExStr (loc, Ploc.file_name loc) : 'expr))]];
     Grammar.Entry.obj (patt : 'patt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "IFNDEF");

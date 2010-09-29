@@ -4,10 +4,18 @@
 
 (* #load "pa_macro.cmo" *)
 
-type t = { line_nb : int; bol_pos : int; bp : int; ep : int; comm : string };;
+type t =
+  { fname : string;
+    line_nb : int;
+    bol_pos : int;
+    bp : int;
+    ep : int;
+    comm : string }
+;;
 
-let make_loc line_nb bol_pos (bp, ep) comm =
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = comm}
+let make_loc fname line_nb bol_pos (bp, ep) comm =
+  {fname = fname; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
+   comm = comm}
 ;;
 
 let warned = ref true;;
@@ -21,15 +29,19 @@ let warning_deprecated_since_6_00 name =
 
 let make line_nb bol_pos (bp, ep) =
   let _ = warning_deprecated_since_6_00 "Ploc.make" in
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
+  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
+   comm = ""}
 ;;
 
 let make_unlined (bp, ep) =
-  {line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
+  {fname = ""; line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
 ;;
 
-let dummy = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""};;
+let dummy =
+  {fname = ""; line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""}
+;;
 
+let file_name loc = loc.fname;;
 let first_pos loc = loc.bp;;
 let last_pos loc = loc.ep;;
 let line_nb loc = loc.line_nb;;
@@ -37,11 +49,12 @@ let bol_pos loc = loc.bol_pos;;
 let comment loc = loc.comm;;
 
 let with_bp_ep l bp ep =
-  {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep; comm = l.comm}
+  {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp;
+   ep = ep; comm = l.comm}
 ;;
 let with_ep l ep =
-  {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp; ep = ep;
-   comm = l.comm}
+  {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp;
+   ep = ep; comm = l.comm}
 ;;
 
 let encl loc1 loc2 =
@@ -148,15 +161,15 @@ let second_line fname ep0 (line, bp) ep =
   loop line bp bp
 ;;
 
-let get fname loc =
-  if fname = "" || fname = "-" then
+let get loc =
+  if loc.fname = "" || loc.fname = "-" then
     loc.line_nb, loc.bp - loc.bol_pos, loc.line_nb, loc.ep - loc.bol_pos,
     loc.ep - loc.bp
   else
     let (bl, bc, ec) =
       loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos
     in
-    let (el, eep) = second_line fname ec (bl, loc.bp) loc.ep in
+    let (el, eep) = second_line loc.fname ec (bl, loc.bp) loc.ep in
     bl, bc, el, eep, ec - bc
 ;;
 

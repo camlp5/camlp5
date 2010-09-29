@@ -59,7 +59,7 @@ let rec skip_to_eol cs =
 ;;
 let sync = ref skip_to_eol;;
 
-let input_file = ref "";;
+let input_file = Plexing.input_file;;
 let output_file = ref None;;
 
 let warning_default_function loc txt =
@@ -115,7 +115,8 @@ let expand_quotation gloc expander shift name str =
               Ploc.make_unlined
                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
             else
-              Ploc.make_loc (gloc_line_nb + loc_line_nb - 1)
+              Ploc.make_loc (Ploc.file_name loc)
+                (gloc_line_nb + loc_line_nb - 1)
                 (if loc_line_nb = 1 then Ploc.bol_pos gloc
                  else shift + Ploc.bol_pos loc)
                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc) ""

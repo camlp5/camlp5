@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 6.2 2010/09/16 12:46:17 deraugla Exp $ *)
+(* $Id: main.ml,v 6.3 2010/09/29 09:45:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -17,12 +17,13 @@ value string_of_loc fname line bp ep =
 ;
 
 value print_location loc =
-  if Pcaml.input_file.val <> "-" then
-    let (fname, line, bp, ep) = Ploc.from_file Pcaml.input_file.val loc in
+  let fname = Ploc.file_name loc in
+  let bp = Ploc.first_pos loc in
+  let ep = Ploc.last_pos loc in
+  if fname <> "-" then
+    let line = Ploc.line_nb loc in
     eprintf "%s" (string_of_loc fname line bp ep)
   else
-    let bp = Ploc.first_pos loc in
-    let ep = Ploc.last_pos loc in
     eprintf "At location %d-%d\n" bp ep
 ;
 

@@ -1,19 +1,21 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.4 2010/09/29 04:42:14 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.5 2010/09/29 09:45:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
 
 type t =
-  { line_nb : int;
+  { fname : string;
+    line_nb : int;
     bol_pos : int;
     bp : int;
     ep : int;
     comm : string }
 ;
 
-value make_loc line_nb bol_pos (bp, ep) comm =
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = comm}
+value make_loc fname line_nb bol_pos (bp, ep) comm =
+  {fname = fname; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
+   comm = comm}
 ;
 
 value warned = ref True;
@@ -27,15 +29,19 @@ value warning_deprecated_since_6_00 name =
 
 value make line_nb bol_pos (bp, ep) =
   let _ = warning_deprecated_since_6_00 "Ploc.make" in
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
+  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
+   comm = ""}
 ;
 
 value make_unlined (bp, ep) =
-  {line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
+  {fname = ""; line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
 ;
 
-value dummy = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""};
+value dummy =
+  {fname = ""; line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""}
+;
 
+value file_name loc = loc.fname;
 value first_pos loc = loc.bp;
 value last_pos loc = loc.ep;
 value line_nb loc = loc.line_nb;
@@ -44,12 +50,12 @@ value comment loc = loc.comm;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_bp_ep l bp ep =
-    {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep;
-     comm = l.comm}
+    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp;
+     ep = ep; comm = l.comm}
   ;
   value with_ep l ep =
-    {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp; ep = ep;
-     comm = l.comm}
+    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp;
+     ep = ep; comm = l.comm}
   ;
 END;
 
@@ -148,8 +154,8 @@ value second_line fname ep0 (line, bp) ep = do {
     }
 };
 
-value get fname loc = do {
-  if fname = "" || fname = "-" then do {
+value get loc = do {
+  if loc.fname = "" || loc.fname = "-" then do {
     (loc.line_nb, loc.bp - loc.bol_pos, loc.line_nb, loc.ep - loc.bol_pos,
      loc.ep - loc.bp)
   }
@@ -157,7 +163,7 @@ value get fname loc = do {
     let (bl, bc, ec) =
       (loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos)
     in
-    let (el, eep) = second_line fname ec (bl, loc.bp) loc.ep in
+    let (el, eep) = second_line loc.fname ec (bl, loc.bp) loc.ep in
     (bl, bc, el, eep, ec - bc)
   }
 };

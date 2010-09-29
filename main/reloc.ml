@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.8 2010/09/29 04:26:54 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.9 2010/09/29 09:45:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -47,7 +47,7 @@ value anti_loc qloc sh loc loc1 =
     Ploc.make_unlined
       (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1)
   else
-    Ploc.make_loc
+    Ploc.make_loc (Ploc.file_name loc)
       (line_nb_qloc + line_nb_loc + line_nb_loc1 - 2)
       (if line_nb_loc1 = 1 then
          if line_nb_loc = 1 then Ploc.bol_pos qloc

@@ -199,6 +199,7 @@ let default_match =
         if con = p_con && prm = p_prm then prm else raise Stream.Failure
 ;;
 
+let input_file = ref "";;
 let line_nb = ref (ref 0);;
 let bol_pos = ref (ref 0);;
 let restore_lexing_info = ref None;;

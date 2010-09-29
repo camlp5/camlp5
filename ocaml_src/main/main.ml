@@ -16,12 +16,13 @@ let string_of_loc fname line bp ep =
 ;;
 
 let print_location loc =
-  if !(Pcaml.input_file) <> "-" then
-    let (fname, line, bp, ep) = Ploc.from_file !(Pcaml.input_file) loc in
+  let fname = Ploc.file_name loc in
+  let bp = Ploc.first_pos loc in
+  let ep = Ploc.last_pos loc in
+  if fname <> "-" then
+    let line = Ploc.line_nb loc in
     eprintf "%s" (string_of_loc fname line bp ep)
-  else
-    let bp = Ploc.first_pos loc in
-    let ep = Ploc.last_pos loc in eprintf "At location %d-%d\n" bp ep
+  else eprintf "At location %d-%d\n" bp ep
 ;;
 
 let print_warning loc s =

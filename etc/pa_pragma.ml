@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pragma.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 6.3 2010/09/29 09:45:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -1117,7 +1117,7 @@ and eval_match loc env e pel =
   | None ->
       raise
         (Match_failure
-           (Pcaml.input_file.val, Ploc.line_nb loc,
+           (Ploc.file_name loc, Ploc.line_nb loc,
             Ploc.first_pos loc - Ploc.bol_pos loc)) ]
 
 and eval_try loc env e pel =
@@ -1199,7 +1199,7 @@ and eval_fun loc env pel =
     | None ->
         raise
           (Match_failure
-             (Pcaml.input_file.val, Ploc.line_nb loc,
+             (Ploc.file_name loc, Ploc.line_nb loc,
               Ploc.first_pos loc - Ploc.bol_pos loc)) ]
   in
   {ctyp = t; expr = Obj.repr e; patt = no_patt loc}

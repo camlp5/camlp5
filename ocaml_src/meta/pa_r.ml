@@ -112,7 +112,7 @@ let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 let mklabdecl loc i mf t = loc, i, mf, t;;
 let mkident i : string = i;;
 
-let warned = ref false;;
+let warned = ref true;;
 let warning_deprecated_since_6_00 loc =
   if not !warned then
     begin

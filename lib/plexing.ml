@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexing.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: plexing.ml,v 6.2 2010/09/29 09:45:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pattern = (string * string);
@@ -207,6 +207,7 @@ value default_match =
         if con = p_con && prm = p_prm then prm else raise Stream.Failure ]
 ;
 
+value input_file = ref "";
 value line_nb = ref (ref 0);
 value bol_pos = ref (ref 0);
 value restore_lexing_info = ref None;

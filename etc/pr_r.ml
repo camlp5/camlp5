@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.25 2010/09/29 04:26:54 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.26 2010/09/29 09:45:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -148,9 +148,9 @@ value not_impl name pc x =
 
 value expand_lprintf pc loc f =
   if flag_add_locations.val then do {
-    let (bl, bc, el, ec, len) = Ploc.get Pcaml.input_file.val loc in
+    let (bl, bc, el, ec, len) = Ploc.get loc in
     pprintf pc "@[(*loc: [\"%s\": %d:%d-%d %d-%d] *)@ %p@]"
-      Pcaml.input_file.val bl bc (bc + len) el ec (fun pc () -> f pc) ()
+      (Ploc.file_name loc) bl bc (bc + len) el ec (fun pc () -> f pc) ()
   }
   else f pc
 ;

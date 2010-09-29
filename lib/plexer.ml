@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.9 2010/09/29 04:26:54 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.10 2010/09/29 09:45:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -452,7 +452,7 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     [ Some (line_nb, bol_pos) -> do {
         s_line_nb.val := line_nb;
         s_bol_pos.val := bol_pos;
-        Plexing.restore_lexing_info.val := None
+        Plexing.restore_lexing_info.val := None;
       }
     | None -> () ];
     Plexing.line_nb.val := s_line_nb;
@@ -495,7 +495,7 @@ value func kwd_table glexr =
        bol_pos.val := Plexing.bol_pos.val.val;
      };
      make_lined_loc loc comm =
-       Ploc.make_loc line_nb.val bol_pos.val loc comm}
+       Ploc.make_loc Plexing.input_file.val line_nb.val bol_pos.val loc comm}
   in
   Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;

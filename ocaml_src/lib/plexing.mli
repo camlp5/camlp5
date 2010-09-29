@@ -33,7 +33,7 @@ type 'te lexer =
     mutable tok_comm : Ploc.t list option }
 and 'te lexer_func = char Stream.t -> 'te Stream.t * location_function
 and location_function = int -> Ploc.t;;
-  (**>The type of a function giving the location of a token in the
+  (** The type of a function giving the location of a token in the
       source from the token number in the stream (starting from zero). *)
 
 val lexer_text : pattern -> string;;
@@ -87,6 +87,7 @@ val eval_string : Ploc.t -> string -> string;;
        return [s] *)
 
 val restore_lexing_info : (int * int) option ref;;
+val input_file : string ref;;
 val line_nb : int ref ref;;
 val bol_pos : int ref ref;;
    (** Special variables used to reinitialize line numbers and position
