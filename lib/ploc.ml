@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.3 2010/09/29 04:31:45 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.4 2010/09/29 04:42:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -16,12 +16,17 @@ value make_loc line_nb bol_pos (bp, ep) comm =
   {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = comm}
 ;
 
-value make line_nb bol_pos (bp, ep) =
-  let _ = do {
-    Printf.eprintf "<W> Ploc.make deprecated since version 6.00\n";
-    flush stderr
+value warned = ref True;
+value warning_deprecated_since_6_00 name =
+  if not warned.val then do {
+    Printf.eprintf "<W> %s deprecated since version 6.00" name;
+    warned.val := True
   }
-  in 
+  else ()
+;
+
+value make line_nb bol_pos (bp, ep) =
+  let _ = warning_deprecated_since_6_00 "Ploc.make" in
   {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
 ;
 

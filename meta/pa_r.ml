@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.16 2010/09/22 19:12:02 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.17 2010/09/29 04:42:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -111,7 +111,7 @@ value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 value mklabdecl loc i mf t = (loc, i, mf, t);
 value mkident i : string = i;
 
-value warned = ref False;
+value warned = ref True;
 value warning_deprecated_since_6_00 loc =
   if not warned.val then do {
     Pcaml.warning.val loc "syntax deprecated since version 6.00";

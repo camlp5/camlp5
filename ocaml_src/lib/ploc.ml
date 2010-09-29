@@ -10,11 +10,17 @@ let make_loc line_nb bol_pos (bp, ep) comm =
   {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = comm}
 ;;
 
+let warned = ref true;;
+let warning_deprecated_since_6_00 name =
+  if not !warned then
+    begin
+      Printf.eprintf "<W> %s deprecated since version 6.00" name;
+      warned := true
+    end
+;;
+
 let make line_nb bol_pos (bp, ep) =
-  let _ =
-    Printf.eprintf "<W> Ploc.make deprecated since version 6.00\n";
-    flush stderr
-  in
+  let _ = warning_deprecated_since_6_00 "Ploc.make" in
   {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
 ;;
 
