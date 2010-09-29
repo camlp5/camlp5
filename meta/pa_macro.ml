@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 6.2 2010/09/29 09:45:06 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 6.3 2010/09/29 14:00:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -392,7 +392,7 @@ value apply_directive loc n dp =
   with
   [ Some f -> f (Pcaml.unvala dp)
   | None ->
-      let msg = sprintf "unknown directive #%s" n in 
+      let msg = sprintf "unknown directive #%s" n in
       Ploc.raise loc (Stream.Error msg) ]
 ;
 

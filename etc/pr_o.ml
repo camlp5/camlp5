@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.29 2010/09/29 12:47:51 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.30 2010/09/29 14:00:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -225,8 +225,8 @@ value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 value expr1 = Eprinter.apply_level pr_expr "expr1";
 
-value comm_bef pc loc =
-  if flag_comments_in_phrases.val then Prtools.comm_bef pc loc else ""
+value comm_bef ind loc =
+  if flag_comments_in_phrases.val then Prtools.comm_bef ind loc else ""
 ;
 
 (* expression with adding the possible comment before *)
@@ -1686,18 +1686,20 @@ value first_loc_of_ast =
 value apply_printer f ast = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
-  if fname = "-" || fname = "" then sep.val := Some "\n"
-  else do {
-    let ic = open_in_bin fname in
-    let src =
-      loop 0 where rec loop len =
-        match try Some (input_char ic) with [ End_of_file -> None ] with
-        [ Some c -> loop (Buff.store len c)
-        | None -> Buff.get len ]
-    in
-    Prtools.source.val := src;
-    close_in ic
-  };
+  let src =
+    if fname = "-" || fname = "" then do { sep.val := Some "\n"; "" }
+    else do {
+      let ic = open_in_bin fname in
+      let src =
+        loop 0 where rec loop len =
+          match try Some (input_char ic) with [ End_of_file -> None ] with
+          [ Some c -> loop (Buff.store len c)
+          | None -> Buff.get len ]
+      in
+      close_in ic;
+      src
+    }
+  in
   let oc =
     match Pcaml.output_file.val with
     [ Some f -> open_out_bin f
@@ -1714,16 +1716,15 @@ value apply_printer f ast = do {
         (fun (first, last_pos) (si, loc) -> do {
            let bp = Ploc.first_pos loc in
            let ep = Ploc.last_pos loc in
-           copy_source Prtools.source.val oc first last_pos bp;
+           copy_source src oc first last_pos bp;
            flush oc;
-           set_comm_min_pos bp;
            let k = if flag_semi_semi.val then ";;" else "" in
            output_string oc (f {ind = 0; bef = ""; aft = k; dang = ""} si);
            (False, ep)
          })
         (True, 0) ast
     in
-    copy_to_end Prtools.source.val oc first last_pos;
+    copy_to_end src oc first last_pos;
     flush oc
   }
   with exn -> do {

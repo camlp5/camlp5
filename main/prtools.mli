@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
+(* $Id: prtools.mli,v 6.2 2010/09/29 14:00:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pr_context =
@@ -15,13 +15,6 @@ value comm_bef : int -> MLast.loc -> string;
    (** [comm_bef ind loc] get the comment from the source just before the
        given location [loc]. May be reindented using [ind]. Returns the
        empty string if no comment found. *)
-
-value source : ref string;
-   (** The initial source string, which must be set by the pretty printing
-       kit. Used by [comm_bef] above. *)
-value set_comm_min_pos : int -> unit;
-   (** Set the minimum position of the source where comments can be found,
-       (to prevent possible duplication of comments). *)
 
 (* meta functions to treat lists *)
 

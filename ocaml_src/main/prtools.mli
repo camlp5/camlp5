@@ -16,13 +16,6 @@ val comm_bef : int -> MLast.loc -> string;;
        given location [loc]. May be reindented using [ind]. Returns the
        empty string if no comment found. *)
 
-val source : string ref;;
-   (** The initial source string, which must be set by the pretty printing
-       kit. Used by [comm_bef] above. *)
-val set_comm_min_pos : int -> unit;;
-   (** Set the minimum position of the source where comments can be found,
-       (to prevent possible duplication of comments). *)
-
 (* meta functions to treat lists *)
 
 val hlist : 'a pr_fun -> 'a list pr_fun;;

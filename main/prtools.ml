@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 6.4 2010/09/29 02:32:06 deraugla Exp $ *)
+(* $Id: prtools.ml,v 6.5 2010/09/29 14:00:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -369,99 +369,15 @@ module Buff =
   end
 ;
 
-value rev_extract_comment strm =
-  let rec find_comm len =
-    parser
-    [ [: `' '; a = find_comm (Buff.store len ' ') ! :] -> a
-    | [: `'\t'; a = find_comm (Buff.mstore len (String.make 8 ' ')) ! :] -> a
-    | [: `'\n'; a = find_comm (Buff.store len '\n') ! :] -> a
-    | [: `')'; a = find_star_bef_rparen (Buff.store len ')') ! :] -> a
-    | [: :] -> 0 ]
-  and find_star_bef_rparen len =
-    parser
-    [ [: `'*'; a = insert (Buff.store len '*') ! :] -> a
-    | [: :] -> 0 ]
-  and insert len =
-    parser
-    [ [: `')'; a = find_star_bef_rparen_in_comm (Buff.store len ')') ! :] -> a
-    | [: `'*'; a = find_lparen_aft_star (Buff.store len '*') ! :] -> a
-    | [: `'"'; a = insert_string (Buff.store len '"') ! :] -> a
-    | [: `'''; a = insert_char (Buff.store len ''') ! :] -> a
-    | [: `'\t'; a = insert (Buff.mstore len (String.make 8 ' ')) ! :] -> a
-    | [: `x; a = insert (Buff.store len x) ! :] -> a
-    | [: :] -> len ]
-  and insert_string len =
-    parser
-    [ [: `'"'; a = insert (Buff.store len '"') ! :] -> a
-    | [: `x; a = insert_string (Buff.store len x) ! :] -> a
-    | [: :] -> len ]
-  and insert_char len =
-    parser
-    [ [: `'*'; a = find_lparen_aft_star (Buff.store len '*') ! :] -> a
-    | [: `c; a = insert (Buff.store len c) ! :] -> a
-    | [: :] -> len ]
-  and find_star_bef_rparen_in_comm len =
-    parser
-    [ [: `'*'; len = insert (Buff.store len '*'); a = insert len ! :] -> a
-    | [: a = insert len :] -> a ]
-  and find_lparen_aft_star len =
-    parser
-    [ [: `'('; a = while_space (Buff.store len '(') :] -> a
-    | [: a = insert len :] -> a ]
-  and while_space len =
-    parser
-    [ [: `' '; a = while_space (Buff.store len ' ') ! :] -> a
-    | [: `'\t'; a = while_space (Buff.mstore len (String.make 8 ' ')) :] -> a
-    | [: `'\n'; a = while_space (Buff.store len '\n') ! :] -> a
-    | [: `')'; a = find_star_bef_rparen_again len ! :] -> a
-    | [: :] -> len ]
-  and find_star_bef_rparen_again len =
-    parser
-    [ [: `'*'; a = insert (Buff.mstore len ")*") ! :] -> a
-    | [: :] -> len ]
-  in
-  let len = find_comm 0 strm in
-  let s = Buff.get len in
-  loop (len - 1) 0 0 where rec loop i nl_bef ind_bef =
-    if i <= 0 then ("", 0, 0)
-    else if s.[i] = '\n' then loop (i - 1) (nl_bef + 1) ind_bef
-    else if s.[i] = ' ' then loop (i - 1) nl_bef (ind_bef + 1)
+value comment_info s =
+  loop 0 0 0 where rec loop i nl_bef ind_bef =
+    if i >= String.length s then ("", 0, 0)
+    else if s.[i] = '\n' then loop (i + 1) (nl_bef + 1) ind_bef
+    else if s.[i] = ' ' then loop (i + 1) nl_bef (ind_bef + 1)
     else do {
-      let s = String.sub s 0 (i + 1) in
-      for i = 0 to String.length s / 2 - 1 do {
-        let t = s.[i] in
-        s.[i] := s.[String.length s - i - 1];
-        s.[String.length s - i - 1] := t;
-      };
+      let s = String.sub s i (String.length s - i) in
       (s, nl_bef, ind_bef)
     }
-;
-
-value source = ref "";
-value comm_min_pos = ref 0;
-
-value set_comm_min_pos bp = comm_min_pos.val := bp;
-
-value rev_read_comment_in_file bp ep =
-  let strm =
-    Stream.from
-      (fun i ->
-         let j = bp - i - 1 in
-         if j < comm_min_pos.val || j >= String.length source.val then None
-         else Some source.val.[j])
-  in
-  let (s, nl_bef, ind_bef) = rev_extract_comment strm in
-  if s = "" then
-    (* heuristic to find the possible comment before 'begin' or left
-       parenthesis *)
-    loop 0 where rec loop i =
-      match strm with parser
-      [ [: `'(' when i = 0 :] -> rev_extract_comment strm
-      | [: `c when c = "begin".[4-i] :] ->
-          if i = String.length "begin" - 1 then rev_extract_comment strm
-          else loop (i + 1)
-      | [: :] -> (s, nl_bef, ind_bef) ]
-  else (s, nl_bef, ind_bef)
 ;
 
 value adjust_comment_indentation ind s nl_bef ind_bef =
@@ -499,9 +415,7 @@ value adjust_comment_indentation ind s nl_bef ind_bef =
 ;
 
 value comm_bef ind loc =
-  let bp = Ploc.first_pos loc in
-  let ep = Ploc.last_pos loc in
-  let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in
+  let (s, nl_bef, ind_bef) = comment_info (Ploc.comment loc) in
   adjust_comment_indentation ind s nl_bef ind_bef
 ;
 

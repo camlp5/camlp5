@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 6.2 2010/09/29 12:47:52 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 6.3 2010/09/29 14:00:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1468,18 +1468,20 @@ value first_loc_of_ast =
 value apply_printer f ast = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
-  if fname = "-" then sep.val := Some "\n"
-  else do {
-    let ic = open_in_bin fname in
-    let src =
-      loop 0 where rec loop len =
-        match try Some (input_char ic) with [ End_of_file -> None ] with
-        [ Some c -> loop (Buff.store len c)
-        | None -> Buff.get len ]
-    in
-    Prtools.source.val := src;
-    close_in ic
-  };
+  let src =
+    if fname = "-" then do { sep.val := Some "\n"; "" }
+    else do {
+      let ic = open_in_bin fname in
+      let src =
+        loop 0 where rec loop len =
+          match try Some (input_char ic) with [ End_of_file -> None ] with
+          [ Some c -> loop (Buff.store len c)
+          | None -> Buff.get len ]
+      in
+      close_in ic;
+      src
+    }
+  in
   let oc =
     match Pcaml.output_file.val with
     [ Some f -> open_out_bin f
@@ -1496,14 +1498,14 @@ value apply_printer f ast = do {
         (fun (first, last_pos) (si, loc) -> do {
            let bp = Ploc.first_pos loc in
            let ep = Ploc.last_pos loc in
-           copy_source Prtools.source.val oc first last_pos bp;
+           copy_source src oc first last_pos bp;
            flush oc;
            output_string oc (f {ind = 0; bef = ""; aft = ""; dang = ""} si);
            (False, ep)
          })
         (True, 0) ast
     in
-    copy_to_end Prtools.source.val oc first last_pos;
+    copy_to_end src oc first last_pos;
     flush oc
   }
   with exn -> do {
