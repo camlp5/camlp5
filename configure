@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.1 2010/09/15 16:00:18 deraugla Exp $
+# $Id: configure,v 6.2 2010/09/29 02:32:05 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -209,6 +209,12 @@ else
   WARNERR=""
 fi
 
+if make -f config/Makefile.check --no-print-directory >/dev/null; then
+  NO_PR_DIR=--no-print-directory
+else
+  NO_PR_DIR=
+fi
+
 VERSION="$(grep "value version =" main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
 (
@@ -222,6 +228,7 @@ echo VERSION=$VERSION
 echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
 echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo WARNERR=\"$WARNERR\"
+echo NO_PR_DIR=$NO_PR_DIR
 echo OLIBDIR=$OLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
