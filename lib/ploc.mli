@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: ploc.mli,v 6.2 2010/09/29 04:26:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Locations and some pervasive type and value. *)
@@ -21,12 +21,12 @@ value raise : t -> exn -> 'a;
 
 (* making locations *)
 
-value make : int -> int -> (int * int) -> t;
-   (** [Ploc.make line_nb bol_pos (bp, ep)] creates a location starting
-       at line number [line_nb], where the position of the beginning of the
-       line is [bol_pos] and between the positions [bp] (included) and [ep]
-       excluded. The positions are in number of characters since the begin
-       of the stream. *)
+value make_loc : int -> int -> (int * int) -> string -> t;
+   (** [Ploc.make_loc line_nb bol_pos (bp, ep) comm] creates a location
+       starting at line number [line_nb], where the position of the beginning
+       of the line is [bol_pos] and between the positions [bp] (included) and
+       [ep] excluded. And [comm] is the comment before the location. The
+       positions are in number of characters since the begin of the stream. *)
 value make_unlined : (int * int) -> t;
    (** [Ploc.make_unlined] is like [Ploc.make] except that the line number
        is not provided (to be used e.g. when the line number is unknown. *)
@@ -53,6 +53,8 @@ value bol_pos : t -> int;
        of the location in number of characters since the beginning of
        the stream, or [0] if the location does not contain a line number
        (i.e. built with [Ploc.make_unlined]. *)
+value comment : t -> string;
+   (** [Ploc.comment loc] returns the comment before the location. *)
 
 (* combining locations *)
 
@@ -109,3 +111,9 @@ value call_with : ref 'a -> 'a -> ('b -> 'c) -> 'b -> 'c;
        then call [f a], and resets [r] to its initial value. If [f a] raises
        an exception, its initial value is also reset and the exception is
        re-raised. The result is the result of [f a]. *)
+
+(**/**)
+
+value make : int -> int -> (int * int) -> t;
+   (** deprecated function since version 6.00; use [make_loc] instead
+       with the empty string *)

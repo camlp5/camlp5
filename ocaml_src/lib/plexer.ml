@@ -933,6 +933,8 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                         (Plexing.Lexbuf.get buf)
 ;;
 
+let get_comment buf strm = Plexing.Lexbuf.get buf;;
+
 let rec next_token ctx buf (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
@@ -952,6 +954,7 @@ let rec next_token ctx buf (strm__ : _ Stream.t) =
   | Some '#' when bp = !(!(Plexing.bol_pos)) ->
       Stream.junk strm__;
       let s = strm__ in
+      let comm = get_comment buf () in
       if linedir 1 s then
         let buf = any_to_nl (Plexing.Lexbuf.add '#' buf) s in
         incr !(Plexing.line_nb);
@@ -960,7 +963,7 @@ let rec next_token ctx buf (strm__ : _ Stream.t) =
         ctx.after_space <- true;
         next_token ctx buf s
       else
-        let loc = ctx.make_lined_loc (bp, bp + 1) (Plexing.Lexbuf.get buf) in
+        let loc = ctx.make_lined_loc (bp, bp + 1) comm in
         keyword_or_error ctx (bp, bp + 1) "#", loc
   | Some '(' ->
       Stream.junk strm__;
@@ -979,23 +982,21 @@ let rec next_token ctx buf (strm__ : _ Stream.t) =
           keyword_or_error ctx (bp, ep) "(", loc
       end
   | _ ->
-      match
-        try
-          Some (next_token_after_spaces ctx bp Plexing.Lexbuf.empty strm__)
-        with Stream.Failure -> None
-      with
-        Some tok ->
-          let ep = Stream.count strm__ in
-          let loc =
-            ctx.make_lined_loc (bp, max (bp + 1) ep) (Plexing.Lexbuf.get buf)
-          in
-          tok, loc
-      | _ ->
-          let _ = Stream.empty strm__ in
-          let loc =
-            ctx.make_lined_loc (bp, bp + 1) (Plexing.Lexbuf.get buf)
-          in
-          ("EOI", ""), loc
+      let comm = get_comment buf strm__ in
+      try
+        match
+          try
+            Some (next_token_after_spaces ctx bp Plexing.Lexbuf.empty strm__)
+          with Stream.Failure -> None
+        with
+          Some tok ->
+            let ep = Stream.count strm__ in
+            let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) comm in
+            tok, loc
+        | _ ->
+            let _ = Stream.empty strm__ in
+            let loc = ctx.make_lined_loc (bp, bp + 1) comm in ("EOI", ""), loc
+      with Stream.Failure -> raise (Stream.Error "")
 ;;
 
 let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
@@ -1043,7 +1044,8 @@ let func kwd_table glexr =
      set_line_nb =
        (fun () ->
           line_nb := !(!(Plexing.line_nb)); bol_pos := !(!(Plexing.bol_pos)));
-     make_lined_loc = fun loc comm -> Ploc.make !line_nb !bol_pos loc}
+     make_lined_loc =
+       fun loc comm -> Ploc.make_loc !line_nb !bol_pos loc comm}
   in
   Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;
@@ -1343,15 +1345,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 692, 25)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 696, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 692, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 696, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 692, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 696, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 693, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 697, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 693, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 697, 37)));
        Plexing.tok_comm = None}
   in
   let glex =

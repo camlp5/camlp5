@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.8 2010/09/24 11:04:53 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.9 2010/09/29 04:26:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -398,6 +398,8 @@ value next_token_after_spaces ctx bp =
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
+value get_comment buf strm = $buf;
+
 value rec next_token ctx buf =
   parser bp
   [ [: `('\n' | '\r' as c); s :] ep -> do {
@@ -412,6 +414,7 @@ value rec next_token ctx buf =
       next_token ctx ($add c) s
     }
   | [: `'#' when bp = Plexing.bol_pos.val.val; s :] ->
+      let comm = get_comment buf () in
       if linedir 1 s then do {
         let buf = any_to_nl ($add '#') s in
         incr Plexing.line_nb.val;
@@ -421,7 +424,7 @@ value rec next_token ctx buf =
         next_token ctx buf s
       }
       else
-        let loc = ctx.make_lined_loc (bp, bp + 1) $buf in
+        let loc = ctx.make_lined_loc (bp, bp + 1) comm in
         (keyword_or_error ctx (bp, bp + 1) "#", loc)
   | [: `'(';
        a =
@@ -434,11 +437,12 @@ value rec next_token ctx buf =
          | [: :] ep ->
              let loc = ctx.make_lined_loc (bp, ep) $buf in
              (keyword_or_error ctx (bp, ep) "(", loc) ] ! :] -> a
-  | [: tok = next_token_after_spaces ctx bp $empty :] ep ->
-      let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) $buf in
+  | [: comm = get_comment buf;
+       tok = next_token_after_spaces ctx bp $empty :] ep ->
+      let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) comm in
       (tok, loc)
-  | [: _ = Stream.empty :] ->
-      let loc = ctx.make_lined_loc (bp, bp + 1) $buf in
+  | [: comm = get_comment buf; _ = Stream.empty :] ->
+      let loc = ctx.make_lined_loc (bp, bp + 1) comm in
       (("EOI", ""), loc) ]
 ;
 
@@ -491,7 +495,7 @@ value func kwd_table glexr =
        bol_pos.val := Plexing.bol_pos.val.val;
      };
      make_lined_loc loc comm =
-       Ploc.make line_nb.val bol_pos.val loc}
+       Ploc.make_loc line_nb.val bol_pos.val loc comm}
   in
   Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;

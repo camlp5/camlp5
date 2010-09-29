@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.24 2010/09/29 02:32:06 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.25 2010/09/29 04:26:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -231,7 +231,8 @@ value comm_bef pc loc =
 
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
-  let ccc = comm_bef pc (MLast.loc_of_expr z) in
+  let loc = MLast.loc_of_expr z in
+  let ccc = comm_bef pc loc in
   sprintf "%s%s" ccc (expr pc z)
 ;
 

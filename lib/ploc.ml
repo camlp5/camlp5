@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.2 2010/09/29 04:26:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -8,21 +8,34 @@ type t =
   { line_nb : int;
     bol_pos : int;
     bp : int;
-    ep : int }
+    ep : int;
+    comm : string }
+;
+
+value make_loc line_nb bol_pos (bp, ep) comm =
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = comm}
 ;
 
 value make line_nb bol_pos (bp, ep) =
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
+  let _ = do {
+    Printf.eprintf "<W> Ploc.make deprecated since version 6.00\n";
+    flush stderr
+  }
+  in 
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
 ;
 
-value make_unlined (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};
+value make_unlined (bp, ep) =
+  {line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
+;
 
-value dummy = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0};
+value dummy = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""};
 
 value first_pos loc = loc.bp;
 value last_pos loc = loc.ep;
 value line_nb loc = loc.line_nb;
 value bol_pos loc = loc.bol_pos;
+value comment loc = loc.comm;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_bp_ep l bp ep =
@@ -31,7 +44,8 @@ IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
 END;
 
 value encl loc1 loc2 =
-  {(loc1) with bp = min loc1.bp loc2.bp; ep = max loc1.ep loc2.ep}
+  if loc1.bp < loc2.bp then {(loc1) with ep = max loc1.ep loc2.ep}
+  else {(loc2) with ep = max loc1.ep loc2.ep}
 ;
 value shift sh loc = {(loc) with bp = sh + loc.bp; ep = sh + loc.ep};
 value sub loc sh len = {(loc) with bp = loc.bp + sh; ep = loc.bp + sh + len};

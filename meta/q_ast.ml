@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.9 2010/09/21 05:48:07 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.10 2010/09/29 04:26:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -28,12 +28,12 @@ value eval_anti entry loc typ str =
     [ Ploc.Exc loc1 exc ->
         let shift = Ploc.first_pos loc in
         let loc =
-          Ploc.make
+          Ploc.make_loc
             (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
             (if Ploc.line_nb loc1 = 1 then Ploc.bol_pos loc
              else shift + Ploc.bol_pos loc1)
             (shift + Ploc.first_pos loc1,
-             shift + Ploc.last_pos loc1)
+             shift + Ploc.last_pos loc1) ""
           in
           raise (Ploc.Exc loc exc) ]
   in

@@ -4,27 +4,39 @@
 
 (* #load "pa_macro.cmo" *)
 
-type t = { line_nb : int; bol_pos : int; bp : int; ep : int };;
+type t = { line_nb : int; bol_pos : int; bp : int; ep : int; comm : string };;
 
-let make line_nb bol_pos (bp, ep) =
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
+let make_loc line_nb bol_pos (bp, ep) comm =
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = comm}
 ;;
 
-let make_unlined (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};;
+let make line_nb bol_pos (bp, ep) =
+  let _ =
+    Printf.eprintf "<W> Ploc.make deprecated since version 6.00\n";
+    flush stderr
+  in
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
+;;
 
-let dummy = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0};;
+let make_unlined (bp, ep) =
+  {line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
+;;
+
+let dummy = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""};;
 
 let first_pos loc = loc.bp;;
 let last_pos loc = loc.ep;;
 let line_nb loc = loc.line_nb;;
 let bol_pos loc = loc.bol_pos;;
+let comment loc = loc.comm;;
 
 let with_bp_ep l bp ep =
   {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep}
 ;;
 
 let encl loc1 loc2 =
-  with_bp_ep loc1 (min loc1.bp loc2.bp) (max loc1.ep loc2.ep)
+  if loc1.bp < loc2.bp then with_ep loc1 (max loc1.ep loc2.ep)
+  else with_ep loc2 (max loc1.ep loc2.ep)
 ;;
 let shift sh loc = with_bp_ep loc (sh + loc.bp) (sh + loc.ep);;
 let sub loc sh len = with_bp_ep loc (loc.bp + sh) (loc.bp + sh + len);;
