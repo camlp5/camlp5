@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.30 2010/09/29 14:00:51 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.31 2010/09/29 14:30:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1201,6 +1201,7 @@ EXTEND_PRINTER
       | <:expr:< ?{$_$} >> | <:expr:< ~{$_$} >> | <:expr:< ~{$_$ = $_$} >> ->
           error loc ("labels not pretty printed (in expr)")
       | <:expr:< do { $list:el$ } >> ->
+          let pc = {(pc) with dang = ""} in
           pprintf pc "@[<a>begin@;%p@ end@]"
             (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
       | <:expr< $_$ $_$ >> | <:expr< $_$ . $_$ >> | <:expr< $_$ .( $_$ ) >> |
@@ -1714,9 +1715,10 @@ value apply_printer f ast = do {
     let (first, last_pos) =
       List.fold_left
         (fun (first, last_pos) (si, loc) -> do {
-           let bp = Ploc.first_pos loc in
            let ep = Ploc.last_pos loc in
-           copy_source src oc first last_pos bp;
+           match sep.val with
+           [ Some str -> if first then () else output_string_eval oc str
+           | None -> output_string oc (Ploc.comment loc) ];
            flush oc;
            let k = if flag_semi_semi.val then ";;" else "" in
            output_string oc (f {ind = 0; bef = ""; aft = k; dang = ""} si);

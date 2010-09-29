@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.28 2010/09/29 14:00:51 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.29 2010/09/29 14:30:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1739,9 +1739,10 @@ value apply_printer f ast = do {
     let (first, last_pos) =
       List.fold_left
         (fun (first, last_pos) (si, loc) -> do {
-           let bp = Ploc.first_pos loc in
            let ep = Ploc.last_pos loc in
-           copy_source src oc first last_pos bp;
+           match sep.val with
+           [ Some str -> if first then () else output_string_eval oc str
+           | None -> output_string oc (Ploc.comment loc) ];
            flush oc;
            output_string oc (f {ind = 0; bef = ""; aft = ";"; dang = ""} si);
            (False, ep)
