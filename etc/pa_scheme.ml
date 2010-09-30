@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 6.2 2010/09/29 12:22:10 deraugla Exp $
+; $Id: pa_scheme.ml,v 6.3 2010/09/30 14:25:50 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -35,10 +35,10 @@
 
 ; Lexer
 
-(definerec skip_to_eol
+(definerec (skip_to_eol len)
  (parser
-  (((` (or '\n' '\r'))) ())
-  (((` _) (a skip_to_eol) !) a)))
+  (((` (as (or '\n' '\r') c))) (Buff.store len c))
+  (((` c) (a (skip_to_eol (Buff.store len c))) !) a)))
 
 (define no_ident ['(' ')' '[' ']' '{' '}' ' ' '\t' '\n' '\r' ';' '.'])
 
@@ -178,15 +178,8 @@
     (Failure "antiquotation not terminated")))))
 
 (definerec*
- ((lexer kwt)
+ ((next_token_after_spaces kwt)
   (parser bp
-   (((` (or '\t' '\r')) (a (lexer kwt)) !) a)
-   (((` ' ') (a (after_space kwt)) !) a)
-   (((` ';') (_ skip_to_eol) (a (lexer kwt)) !) a)
-   (((` '\n') s)
-    (if Sys.interactive.val
-     (values (values "NL" "") (values bp (+ bp 1)))
-     (lexer kwt s)))
    (((` '(')) (values (values "" "(") (values bp (+ bp 1))))
    (((` ')')) (values (values "" ")") (values bp (+ bp 1))))
    (((` '[')) (values (values "" "[") (values bp (+ bp 1))))
@@ -208,10 +201,6 @@
    (((` c) (len (ident (Buff.store 0 c)))) ep
     (values (identifier kwt (Buff.get len)) (values bp ep)))
    (() (values (values "EOI" "") (values bp (+ bp 1))))))
- ((after_space kwt)
-  (parser
-   (((` '.')) ep (values (values "SPACEDOT" "") (values (- ep 1) ep)))
-   (((a (lexer kwt))) a)))
  ((dollar bp kwt strm)
   (if Plexer.force_antiquot_loc.val
    (values "ANTIQUOT_LOC" (antiquot_loc bp 0 strm))
@@ -250,6 +239,29 @@
    (((` '>')) (Buff.get len))
    (((a (quotation (Buff.store len '>')))) a))))
 
+(define (get_buff len _) (Buff.get len))
+
+(definerec*
+ ((lexer len kwt)
+  (parser bp
+   (((` (as (or '\t' '\r') c)) (a (lexer (Buff.store len c) kwt)) !) a)
+   (((` ' ') (a (after_space (Buff.store len ' ') kwt)) !) a)
+   (((` ';') (len (skip_to_eol (Buff.store len ';'))) (a (lexer len kwt)) !)
+    a)
+   (((` '\n') s)
+    (let ((len (Buff.store len '\n')))
+     (if Sys.interactive.val
+      (values (Buff.get len) (values (values "NL" "") (values bp (+ bp 1))))
+      (lexer len kwt s))))
+   (((comm (get_buff len)) (a (next_token_after_spaces kwt)))
+    (values comm a))))
+ ((after_space len kwt)
+  (parser
+   (((` '.')) ep
+    (values (Buff.get len)
+     (values (values "SPACEDOT" "") (values (- ep 1) ep))))
+   (((a (lexer len kwt))) a))))
+
 (define (lexer_using kwt (values con prm))
  (match con
   ((or "CHAR" "DOT" "EOI" "INT" "INT_l" "INT_L" "INT_n" "FLOAT" "LIDENT" "NL"
@@ -271,8 +283,8 @@
  (let
   ((kwt (Hashtbl.create 89))
    ((lexer2 kwt (values s _ _))
-    (let (((values t loc) (lexer kwt s)))
-     (values t (Ploc.make_loc Plexing.input_file.val -1 0 loc "")))))
+    (let (((values comm (values t loc)) (lexer 0 kwt s)))
+     (values t (Ploc.make_loc Plexing.input_file.val 1 0 loc comm)))))
   {(Plexing.tok_func (Plexing.lexer_func_of_parser (lexer2 kwt)))
    (Plexing.tok_using (lexer_using kwt)) (Plexing.tok_removing (lambda))
    (Plexing.tok_match Plexing.default_match) (Plexing.tok_text lexer_text)
@@ -1125,7 +1137,8 @@
         (sel (values False sel))))
       (tl (List.map ctyp_se sel)))
      <:poly_variant< ` $s$ of $flag:a$ $list:tl$ >>))
-   (se (let ((t (ctyp_se se))) <:poly_variant< $t$ >>))))
+   (se (let* ((t (ctyp_se se)) (loc (loc_of_sexpr se)))
+       <:poly_variant< $t$ >>))))
  (label_declaration_se
   (lambda_match
    ((Sexpr loc [(Slid _ lab) (Slid _ "mutable") se])

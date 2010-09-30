@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.16 2010/09/30 09:47:52 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.17 2010/09/30 14:25:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1155,11 +1155,12 @@ EXTEND
   poly_variant:
     [ [ "`"; i = SV ident "" ->
           Qast.Node "PvTag"
-            [i; Qast.VaVal (Qast.Bool True); Qast.VaVal (Qast.List [])]
+            [Qast.Loc; i; Qast.VaVal (Qast.Bool True);
+             Qast.VaVal (Qast.List [])]
       | "`"; i = SV ident ""; "of"; ao = SV (FLAG "&");
         l = SV (LIST1 ctyp SEP "&") ->
-          Qast.Node "PvTag" [i; ao; l]
-      | t = ctyp -> Qast.Node "PvInh" [t] ] ]
+          Qast.Node "PvTag" [Qast.Loc; i; ao; l]
+      | t = ctyp -> Qast.Node "PvInh" [Qast.Loc; t] ] ]
   ;
   name_tag:
     [ [ "`"; i = ident -> i ] ]

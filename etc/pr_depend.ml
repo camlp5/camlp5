@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.3 2010/09/29 12:22:11 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.4 2010/09/30 14:25:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -66,7 +66,7 @@ and label_decl (_, _, _, t) = ctyp t
 and variant =
   fun
   [ <:poly_variant< ` $_$ of $flag:_$ $list:tl$ >> -> list ctyp tl
-  | PvInh t -> ctyp t
+  | <:poly_variant< $t$ >> -> ctyp t
   | IFDEF STRICT THEN
       _ -> failwith "Pr_depend.variant"
     END ]

@@ -2371,7 +2371,8 @@ Grammar.extend
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) (loc : Ploc.t) -> (MLast.PvInh t : 'poly_variant));
+        (fun (t : 'ctyp) (loc : Ploc.t) ->
+           (MLast.PvInh (loc, t) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e));
        Gramext.Stoken ("", "of"); Gramext.Sflag (Gramext.Stoken ("", "&"));
@@ -2380,12 +2381,12 @@ Grammar.extend
           Gramext.Stoken ("", "&"), false)],
       Gramext.action
         (fun (l : 'ctyp list) (ao : bool) _ (i : 'ident) _ (loc : Ploc.t) ->
-           (MLast.PvTag (i, ao, l) : 'poly_variant));
+           (MLast.PvTag (loc, i, ao, l) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'ident) _ (loc : Ploc.t) ->
-           (MLast.PvTag (i, true, []) : 'poly_variant))]];
+           (MLast.PvTag (loc, i, true, []) : 'poly_variant))]];
     Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "`");

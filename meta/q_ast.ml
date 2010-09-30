@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.11 2010/09/29 09:45:06 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.12 2010/09/30 14:25:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -149,10 +149,10 @@ module Meta_make (C : MetaSig) =
         END ]
     and poly_variant =
       fun
-      [ PvTag s b lt ->
+      [ PvTag loc s b lt ->
           C.node_no_loc "PvTag"
             [C.vala C.string s; C.vala C.bool b; C.vala (C.list ctyp) lt]
-      | PvInh t -> C.node_no_loc "PvInh" [ctyp t] ]
+      | PvInh loc t -> C.node_no_loc "PvInh" [ctyp t] ]
     and patt =
       fun
       [ PaAcc _ p1 p2 -> C.node "PaAcc" [patt p1; patt p2]

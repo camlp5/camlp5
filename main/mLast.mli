@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.7 2010/09/21 05:48:06 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.8 2010/09/30 14:25:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -56,8 +56,8 @@ type ctyp =
       TyXtr of loc and string and option (V ctyp)
     END ]
 and poly_variant =
-  [ PvTag of V string and V bool and V (list ctyp)
-  | PvInh of ctyp ]
+  [ PvTag of loc and V string and V bool and V (list ctyp)
+  | PvInh of loc and ctyp ]
 and patt =
   [ PaAcc of loc and patt and patt
   | PaAli of loc and patt and patt

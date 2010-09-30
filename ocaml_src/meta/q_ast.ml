@@ -143,10 +143,10 @@ module Meta_make (C : MetaSig) =
              C.option (C.option (C.vala (C.list C.string))) ools]
     and poly_variant =
       function
-        PvTag (s, b, lt) ->
+        PvTag (loc, s, b, lt) ->
           C.node_no_loc "PvTag"
             [C.vala C.string s; C.vala C.bool b; C.vala (C.list ctyp) lt]
-      | PvInh t -> C.node_no_loc "PvInh" [ctyp t]
+      | PvInh (loc, t) -> C.node_no_loc "PvInh" [ctyp t]
     and patt =
       function
         PaAcc (_, p1, p2) -> C.node "PaAcc" [patt p1; patt p2]

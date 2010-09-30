@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.18 2010/09/29 02:32:06 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.19 2010/09/30 14:25:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1150,7 +1150,7 @@ EXTEND
       | "`"; i = V ident ""; "of"; ao = V (FLAG "&");
         l = V (LIST1 ctyp SEP "&") ->
           <:poly_variant< `$_:i$ of $_flag:ao$ $_list:l$ >>
-      | t = ctyp -> MLast.PvInh t ] ]
+      | t = ctyp -> <:poly_variant< $t$ >> ] ]
   ;
   name_tag:
     [ [ "`"; i = ident -> i ] ]

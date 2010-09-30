@@ -281,8 +281,8 @@ let rec ctyp =
       let catl =
         List.map
           (function
-             PvTag (c, a, t) -> Left (uv c, uv a, List.map ctyp (uv t))
-           | PvInh t -> Right (ctyp t))
+             PvTag (loc, c, a, t) -> Left (uv c, uv a, List.map ctyp (uv t))
+           | PvInh (loc, t) -> Right (ctyp t))
           (uv catl)
       in
       let (clos, sl) =

@@ -39,10 +39,10 @@ value rename_id s =
 
 (* Lexer *)
 
-value rec skip_to_eol =
+value rec skip_to_eol len =
   parser
-  [ [: `'\n' | '\r' :] -> ()
-  | [: `_; a = skip_to_eol ! :] -> a ]
+  [ [: `('\n' | '\r' as c) :] -> Buff.store len c
+  | [: `c; a = skip_to_eol (Buff.store len c) ! :] -> a ]
 ;
 
 value no_ident =
@@ -208,14 +208,9 @@ value rec antiquot_loc bp len =
         (Failure "antiquotation not terminated") ]
 ;
 
-value rec lexer kwt =
+value rec next_token_after_spaces kwt =
   parser bp
-  [ [: `'\t' | '\r'; a = lexer kwt ! :] -> a
-  | [: `' '; a = after_space kwt ! :] -> a
-  | [: `';'; _ = skip_to_eol; a = lexer kwt ! :] -> a
-  | [: `'\n'; s :] ->
-      if Sys.interactive.val then (("NL", ""), (bp, bp + 1)) else lexer kwt s
-  | [: `'(' :] -> (("", "("), (bp, bp + 1))
+  [ [: `'(' :] -> (("", "("), (bp, bp + 1))
   | [: `')' :] -> (("", ")"), (bp, bp + 1))
   | [: `'[' :] -> (("", "["), (bp, bp + 1))
   | [: `']' :] -> (("", "]"), (bp, bp + 1))
@@ -236,10 +231,6 @@ value rec lexer kwt =
   | [: `c; len = ident (Buff.store 0 c) :] ep ->
       (identifier kwt (Buff.get len), (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
-and after_space kwt =
-  parser
-  [ [: `'.' :] ep -> (("SPACEDOT", ""), (ep - 1, ep))
-  | [: a = lexer kwt :] -> a ]
 and dollar bp kwt strm =
   if Plexer.force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc bp 0 strm)
@@ -276,6 +267,25 @@ and quotation_greater len =
   | [: a = quotation (Buff.store len '>') :] -> a ]
 ;
 
+value get_buff len _ = Buff.get len;
+
+value rec lexer len kwt =
+  parser bp
+  [ [: `('\t' | '\r' as c); a = lexer (Buff.store len c) kwt ! :] -> a
+  | [: `' '; a = after_space (Buff.store len ' ') kwt ! :] -> a
+  | [: `';'; len = skip_to_eol (Buff.store len ';'); a = lexer len kwt ! :] ->
+      a
+  | [: `'\n'; s :] ->
+      let len = Buff.store len '\n' in
+      if Sys.interactive.val then (Buff.get len, (("NL", ""), (bp, bp + 1)))
+      else lexer len kwt s
+  | [: comm = get_buff len; a = next_token_after_spaces kwt :] -> (comm, a) ]
+and after_space len kwt =
+  parser
+  [ [: `'.' :] ep -> (Buff.get len, (("SPACEDOT", ""), (ep - 1, ep)))
+  | [: a = lexer len kwt :] -> a ]
+;
+
 value lexer_using kwt (con, prm) =
   match con with
   [ "CHAR" | "DOT" | "EOI" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
@@ -299,8 +309,8 @@ value lexer_text (con, prm) =
 value lexer_gmake () =
   let kwt = Hashtbl.create 89
   and lexer2 kwt (s, _, _) =
-    let (t, loc) = lexer kwt s in
-    (t, Ploc.make_loc Plexing.input_file.val (-1) 0 loc "")
+    let (comm, (t, loc)) = lexer 0 kwt s in
+    (t, Ploc.make_loc Plexing.input_file.val 1 0 loc comm)
   in
   {Plexing.tok_func = Plexing.lexer_func_of_parser (lexer2 kwt);
    Plexing.tok_using = lexer_using kwt; Plexing.tok_removing = fun [];
@@ -1277,6 +1287,7 @@ and variant_declaration_se =
       <:poly_variant< ` $s$ of $flag:a$ $list:tl$ >>
   | se ->
       let t = ctyp_se se in
+      let loc = loc_of_sexpr se in
       <:poly_variant< $t$ >> ]
 and label_declaration_se =
   fun

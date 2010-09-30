@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.15 2010/09/29 18:15:46 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.16 2010/09/30 14:25:51 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -273,8 +273,8 @@ value rec ctyp =
       let catl =
         List.map
           (fun
-           [ PvTag c a t -> Left (uv c, uv a, List.map ctyp (uv t))
-           | PvInh t -> Right (ctyp t) ])
+           [ PvTag loc c a t -> Left (uv c, uv a, List.map ctyp (uv t))
+           | PvInh loc t -> Right (ctyp t) ])
           (uv catl)
       in
       let (clos, sl) =

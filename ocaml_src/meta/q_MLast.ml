@@ -5795,7 +5795,7 @@ Grammar.extend
      [[Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) (loc : Ploc.t) ->
-           (Qast.Node ("PvInh", [t]) : 'poly_variant));
+           (Qast.Node ("PvInh", [Qast.Loc; t]) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Sfacto
          (Gramext.srules
@@ -5853,7 +5853,7 @@ Grammar.extend
                   (Qast.VaVal (Qast.VaAnt ("list", loc, a)) : 'e__185))])],
       Gramext.action
         (fun (l : 'e__185) (ao : 'e__184) _ (i : 'e__183) _ (loc : Ploc.t) ->
-           (Qast.Node ("PvTag", [i; ao; l]) : 'poly_variant));
+           (Qast.Node ("PvTag", [Qast.Loc; i; ao; l]) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Sfacto
          (Gramext.srules
@@ -5873,7 +5873,8 @@ Grammar.extend
         (fun (i : 'e__182) _ (loc : Ploc.t) ->
            (Qast.Node
               ("PvTag",
-               [i; Qast.VaVal (Qast.Bool true); Qast.VaVal (Qast.List [])]) :
+               [Qast.Loc; i; Qast.VaVal (Qast.Bool true);
+                Qast.VaVal (Qast.List [])]) :
             'poly_variant))]];
     Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e), None,
     [None, None,
