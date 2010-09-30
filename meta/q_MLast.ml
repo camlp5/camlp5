@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.17 2010/09/30 14:25:52 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.18 2010/09/30 15:05:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -62,6 +62,9 @@ module Qast =
     value patt_node m n =
       if m = "" then <:patt< $uid:n$ >> else <:patt< $uid:m$ . $uid:n$ >>
     ;
+    value patt_label m n =
+      if m = "" then <:patt< $lid:n$ >> else <:patt< $uid:m$ . $lid:n$ >>
+    ;
     value rec to_expr m =
       fun
       [ Node n al ->
@@ -97,7 +100,7 @@ module Qast =
                 <:expr< $anti:ee$ >>
             | _ -> <:expr< Ploc.VaVal $e$ >> ]
           else e ]
-    and to_expr_label m (l, e) = (patt_node m l, to_expr m e);
+    and to_expr_label m (l, e) = (patt_label m l, to_expr m e);
     value rec to_patt m =
       fun
       [ Node n al ->
@@ -132,7 +135,7 @@ module Qast =
                 <:patt< $anti:pp$ >>
             | _ -> <:patt< Ploc.VaVal $p$ >> ]
           else p ]
-    and to_patt_label m (l, a) = (patt_node m l, to_patt m a);
+    and to_patt_label m (l, a) = (patt_label m l, to_patt m a);
   end
 ;
 

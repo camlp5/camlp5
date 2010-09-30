@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.17 2010/09/22 19:34:26 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.18 2010/09/30 15:05:03 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -52,26 +52,25 @@ MLast.TyVrn (loc, lpv, Some (Some (Ploc.VaVal ls)));;
 MLast.TyVrn (loc, lpv, Some (Some ls));;
 MLast.TyVrn (loc, lpv, Some ols);;
 MLast.TyVrn (loc, lpv, ools);;
-MLast.PvTag (Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal []);;
-MLast.PvTag (Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal lt);;
-MLast.PvTag (Ploc.VaVal s, Ploc.VaVal true, lt);;
-MLast.PvTag (Ploc.VaVal s, Ploc.VaVal false, Ploc.VaVal lt);;
-MLast.PvTag (Ploc.VaVal s, Ploc.VaVal false, lt);;
-MLast.PvTag (Ploc.VaVal s, Ploc.VaVal b, Ploc.VaVal lt);;
-MLast.PvTag (Ploc.VaVal s, Ploc.VaVal b, lt);;
-MLast.PvTag (Ploc.VaVal s, b, Ploc.VaVal lt);;
-MLast.PvTag (Ploc.VaVal s, b, lt);;
-MLast.PvTag (s, Ploc.VaVal true, Ploc.VaVal []);;
-MLast.PvTag (s, Ploc.VaVal true, Ploc.VaVal lt);;
-MLast.PvTag (s, Ploc.VaVal true, lt);;
-MLast.PvTag (s, Ploc.VaVal false, Ploc.VaVal lt);;
-MLast.PvTag (s, Ploc.VaVal false, lt);;
-MLast.PvTag (s, Ploc.VaVal b, Ploc.VaVal lt);;
-MLast.PvTag (s, Ploc.VaVal b, lt);;
-MLast.PvTag (s, b, Ploc.VaVal lt);;
-MLast.PvTag (s, b, lt);;
-MLast.PvInh t;;
-
+MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal []);;
+MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal lt);;
+MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal true, lt);;
+MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal false, Ploc.VaVal lt);;
+MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal false, lt);;
+MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal b, Ploc.VaVal lt);;
+MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal b, lt);;
+MLast.PvTag (loc, Ploc.VaVal s, b, Ploc.VaVal lt);;
+MLast.PvTag (loc, Ploc.VaVal s, b, lt);;
+MLast.PvTag (loc, s, Ploc.VaVal true, Ploc.VaVal []);;
+MLast.PvTag (loc, s, Ploc.VaVal true, Ploc.VaVal lt);;
+MLast.PvTag (loc, s, Ploc.VaVal true, lt);;
+MLast.PvTag (loc, s, Ploc.VaVal false, Ploc.VaVal lt);;
+MLast.PvTag (loc, s, Ploc.VaVal false, lt);;
+MLast.PvTag (loc, s, Ploc.VaVal b, Ploc.VaVal lt);;
+MLast.PvTag (loc, s, Ploc.VaVal b, lt);;
+MLast.PvTag (loc, s, b, Ploc.VaVal lt);;
+MLast.PvTag (loc, s, b, lt);;
+MLast.PvInh (loc, t);;
 <:patt< $p1$ . $p2$ >>;;
 MLast.PaAli (loc, p1, p2);;
 MLast.PaAnt (loc, p);;

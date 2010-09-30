@@ -61,6 +61,10 @@ module Qast =
       if m = "" then MLast.PaUid (loc, n)
       else MLast.PaAcc (loc, MLast.PaUid (loc, m), MLast.PaUid (loc, n))
     ;;
+    let patt_label m n =
+      if m = "" then MLast.PaLid (loc, n)
+      else MLast.PaAcc (loc, MLast.PaUid (loc, m), MLast.PaLid (loc, n))
+    ;;
     let rec to_expr m =
       function
         Node (n, al) ->
@@ -116,7 +120,7 @@ module Qast =
                       MLast.ExUid (loc, "VaVal")),
                    e)
           else e
-    and to_expr_label m (l, e) = patt_node m l, to_expr m e;;
+    and to_expr_label m (l, e) = patt_label m l, to_expr m e;;
     let rec to_patt m =
       function
         Node (n, al) ->
@@ -171,7 +175,7 @@ module Qast =
                       MLast.PaUid (loc, "VaVal")),
                    p)
           else p
-    and to_patt_label m (l, a) = patt_node m l, to_patt m a;;
+    and to_patt_label m (l, a) = patt_label m l, to_patt m a;;
   end
 ;;
 
@@ -861,7 +865,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 291, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 294, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1513,7 +1517,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 361, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 364, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
