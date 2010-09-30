@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.17 2010/09/29 04:42:14 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.18 2010/09/30 16:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -877,18 +877,22 @@ EXTEND
   GLOBAL: interf implem use_file top_phrase expr patt;
   interf:
     [ [ "#"; n = V LIDENT; dp = OPT expr; ";" ->
-          ([(<:sig_item< # $_lid:n$ $opt:dp$ >>, loc)], True)
-      | si = sig_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
-      | EOI -> ([], False) ] ]
+          ([(<:sig_item< # $_lid:n$ $opt:dp$ >>, loc)], None)
+      | si = sig_item_semi; (sil, stopped) = SELF ->
+          ([si :: sil], stopped)
+      | EOI ->
+          ([], Some loc) ] ]
   ;
   sig_item_semi:
     [ [ si = sig_item; ";" -> (si, loc) ] ]
   ;
   implem:
     [ [ "#"; n = V LIDENT; dp = OPT expr; ";" ->
-          ([(<:str_item< # $_lid:n$ $opt:dp$ >>, loc)], True)
-      | si = str_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
-      | EOI -> ([], False) ] ]
+          ([(<:str_item< # $_lid:n$ $opt:dp$ >>, loc)], None)
+      | si = str_item_semi; (sil, stopped) = SELF ->
+          ([si :: sil], stopped)
+      | EOI ->
+          ([], Some loc) ] ]
   ;
   str_item_semi:
     [ [ si = str_item; ";" -> (si, loc) ] ]

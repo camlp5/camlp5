@@ -19,6 +19,8 @@ let gram =
      Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None}
 ;;
 
+type status = Ploc.t option;;
+
 let interf = Grammar.Entry.create gram "interf";;
 let implem = Grammar.Entry.create gram "implem";;
 let top_phrase = Grammar.Entry.create gram "top_phrase";;

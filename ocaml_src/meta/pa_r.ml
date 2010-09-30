@@ -2702,7 +2702,7 @@ Grammar.extend
    [Grammar.Entry.obj (interf : 'interf Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("EOI", "")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ([], false : 'interf));
+      Gramext.action (fun _ (loc : Ploc.t) -> ([], Some loc : 'interf));
       [Gramext.Snterm
          (Grammar.Entry.obj (sig_item_semi : 'sig_item_semi Grammar.Entry.e));
        Gramext.Sself],
@@ -2715,7 +2715,7 @@ Grammar.extend
        Gramext.Stoken ("", ";")],
       Gramext.action
         (fun _ (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
-           ([MLast.SgDir (loc, n, dp), loc], true : 'interf))]];
+           ([MLast.SgDir (loc, n, dp), loc], None : 'interf))]];
     Grammar.Entry.obj (sig_item_semi : 'sig_item_semi Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
@@ -2727,7 +2727,7 @@ Grammar.extend
     Grammar.Entry.obj (implem : 'implem Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("EOI", "")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ([], false : 'implem));
+      Gramext.action (fun _ (loc : Ploc.t) -> ([], Some loc : 'implem));
       [Gramext.Snterm
          (Grammar.Entry.obj (str_item_semi : 'str_item_semi Grammar.Entry.e));
        Gramext.Sself],
@@ -2740,7 +2740,7 @@ Grammar.extend
        Gramext.Stoken ("", ";")],
       Gramext.action
         (fun _ (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
-           ([MLast.StDir (loc, n, dp), loc], true : 'implem))]];
+           ([MLast.StDir (loc, n, dp), loc], None : 'implem))]];
     Grammar.Entry.obj (str_item_semi : 'str_item_semi Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm

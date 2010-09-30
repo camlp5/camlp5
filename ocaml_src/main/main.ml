@@ -68,37 +68,39 @@ let rec parse_file pa getdir useast =
   let clear () = if name = "-" then () else close_in ic in
   let phr =
     try
-      let rec loop () =
-        let (pl, stopped) = pa cs in
-        if stopped then
-          let lexing_info = !(!(Plexing.line_nb)), !(!(Plexing.bol_pos)) in
-          let pl =
-            let rpl = List.rev pl in
-            match getdir rpl with
-              Some x ->
-                begin match x with
-                  loc1, "use", Some (MLast.ExStr (_, s)) ->
-                    list_rev_append rpl
-                      [useast loc1 s (use_file pa getdir useast s), loc1]
-                | loc, x, eo ->
-                    begin match
-                      begin try Some (Pcaml.find_directive x) with
-                        Not_found -> None
-                      end
-                    with
-                      Some f -> f eo
-                    | None ->
-                        let msg = sprintf "unknown directive #%s" x in
-                        Ploc.raise loc (Stream.Error msg)
-                    end;
-                    pl
-                end
-            | None -> pl
-          in
-          Plexing.restore_lexing_info := Some lexing_info; pl @ loop ()
-        else pl
+      let rec loop rev_pl =
+        let (pl, status) = pa cs in
+        match status with
+          None ->
+            let lexing_info = !(!(Plexing.line_nb)), !(!(Plexing.bol_pos)) in
+            let pl =
+              let rpl = List.rev pl in
+              match getdir rpl with
+                Some x ->
+                  begin match x with
+                    loc1, "use", Some (MLast.ExStr (_, s)) ->
+                      let (pl, eloc) = use_file pa getdir useast s in
+                      list_rev_append rpl [useast loc1 s pl, loc1]
+                  | loc, x, eo ->
+                      begin match
+                        begin try Some (Pcaml.find_directive x) with
+                          Not_found -> None
+                        end
+                      with
+                        Some f -> f eo
+                      | None ->
+                          let msg = sprintf "unknown directive #%s" x in
+                          Ploc.raise loc (Stream.Error msg)
+                      end;
+                      pl
+                  end
+              | None -> pl
+            in
+            Plexing.restore_lexing_info := Some lexing_info;
+            loop (List.rev_append pl rev_pl)
+        | Some loc -> List.rev (List.rev_append pl rev_pl), loc
       in
-      loop ()
+      loop []
     with x -> clear (); raise x
   in
   clear (); phr

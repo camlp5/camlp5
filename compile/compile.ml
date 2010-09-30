@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
+(* $Id: compile.ml,v 6.3 2010/09/30 16:22:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -618,7 +618,7 @@ value compile () =
     >>
   in
   let loc = Ploc.dummy in
-  ([(si1, loc); (si2, loc)], False)
+  ([(si1, loc); (si2, loc)], Some loc)
 ;
 
 Pcaml.parse_implem.val := fun _ -> compile ();

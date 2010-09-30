@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_dump.ml,v 6.2 2010/09/29 12:47:52 deraugla Exp $ *)
+(* $Id: pr_dump.ml,v 6.3 2010/09/30 16:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Versdep;
@@ -16,7 +16,7 @@ value first_loc_of_ast =
   | [] -> Ploc.dummy ]
 ;
 
-value interf ast = do {
+value interf (ast, eoi_loc) = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   let pt = Ast2pt.interf fname (List.map fst ast) in
@@ -30,7 +30,7 @@ value interf ast = do {
   | None -> () ]
 };
 
-value implem ast = do {
+value implem (ast, eoi_loc) = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   let pt = Ast2pt.implem fname (List.map fst ast) in

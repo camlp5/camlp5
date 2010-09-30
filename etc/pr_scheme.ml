@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 6.3 2010/09/29 14:00:52 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 6.4 2010/09/30 16:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1465,7 +1465,7 @@ value first_loc_of_ast =
   | [] -> Ploc.dummy ]
 ;
 
-value apply_printer f ast = do {
+value apply_printer f (ast, eoi_loc) = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   let src =

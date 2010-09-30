@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.mli,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 6.2 2010/09/30 16:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -13,10 +13,12 @@ value syntax_name : ref string;
 
 (** {6 Parsers} *)
 
+type status = option Ploc.t;
+
 value parse_interf :
-  ref (Stream.t char -> (list (MLast.sig_item * MLast.loc) * bool));
+  ref (Stream.t char -> (list (MLast.sig_item * MLast.loc) * status));
 value parse_implem :
-  ref (Stream.t char -> (list (MLast.str_item * MLast.loc) * bool));
+  ref (Stream.t char -> (list (MLast.str_item * MLast.loc) * status));
    (** Called when parsing an interface (mli file) or an implementation
        (ml file) to build the syntax tree; the returned list contains the
        phrases (signature items or structure items) and their locations;
@@ -32,8 +34,8 @@ value parse_implem :
 value gram : Grammar.g;
    (** Grammar variable of the OCaml language *)
 
-value interf : Grammar.Entry.e (list (MLast.sig_item * MLast.loc) * bool);
-value implem : Grammar.Entry.e (list (MLast.str_item * MLast.loc) * bool);
+value interf : Grammar.Entry.e (list (MLast.sig_item * MLast.loc) * status);
+value implem : Grammar.Entry.e (list (MLast.str_item * MLast.loc) * status);
 value top_phrase : Grammar.Entry.e (option MLast.str_item);
 value use_file : Grammar.Entry.e (list MLast.str_item * bool);
 value module_type : Grammar.Entry.e MLast.module_type;
@@ -88,8 +90,10 @@ value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;
 
 (** {6 Printers} *)
 
-value print_interf : ref (list (MLast.sig_item * MLast.loc) -> unit);
-value print_implem : ref (list (MLast.str_item * MLast.loc) -> unit);
+value print_interf :
+  ref ((list (MLast.sig_item * MLast.loc) * MLast.loc) -> unit);
+value print_implem :
+  ref ((list (MLast.str_item * MLast.loc) * MLast.loc) -> unit);
 
 value pr_expr : Eprinter.t MLast.expr;
 value pr_patt : Eprinter.t MLast.patt;

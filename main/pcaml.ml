@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.4 2010/09/30 14:25:52 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.5 2010/09/30 16:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -17,6 +17,8 @@ value gram =
      Plexing.tok_match = fun []; Plexing.tok_text _ = "";
      Plexing.tok_comm = None}
 ;
+
+type status = option Ploc.t;
 
 value interf = Grammar.Entry.create gram "interf";
 value implem = Grammar.Entry.create gram "implem";

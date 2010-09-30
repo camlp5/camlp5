@@ -16,7 +16,7 @@ let first_loc_of_ast =
   | [] -> Ploc.dummy
 ;;
 
-let interf ast =
+let interf (ast, eoi_loc) =
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   let pt = Ast2pt.interf fname (List.map fst ast) in
@@ -30,7 +30,7 @@ let interf ast =
   | None -> ()
 ;;
 
-let implem ast =
+let implem (ast, eoi_loc) =
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   let pt = Ast2pt.implem fname (List.map fst ast) in

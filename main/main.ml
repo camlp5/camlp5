@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 6.3 2010/09/29 09:45:05 deraugla Exp $ *)
+(* $Id: main.ml,v 6.4 2010/09/30 16:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -76,38 +76,40 @@ value rec parse_file pa getdir useast = do {
   let clear () = if name = "-" then () else close_in ic in
   let phr =
     try
-      loop () where rec loop () =
-        let (pl, stopped) = pa cs in
-        if stopped then do {
-          let lexing_info =
-            (Plexing.line_nb.val.val, Plexing.bol_pos.val.val)
-          in
-          let pl =
-            let rpl = List.rev pl in
-            match getdir rpl with
-            [ Some x ->
-                match x with
-                [ (loc1, "use", Some <:expr< $str:s$ >>) ->
-                    list_rev_append rpl
-                      [(useast loc1 <:vala< s >>
-                          <:vala< use_file pa getdir useast s >>, loc1)]
-                | (loc, x, eo) -> do {
-                    match
-                      try Some (Pcaml.find_directive x) with
-                      [ Not_found -> None ]
-                    with
-                    [ Some f -> f eo
-                    | None ->
-                        let msg = sprintf "unknown directive #%s" x in
-                        Ploc.raise loc (Stream.Error msg) ];
-                    pl
-                  } ]
-            | None -> pl ]
-          in
-          Plexing.restore_lexing_info.val := Some lexing_info;
-          pl @ loop ()
-        }
-        else pl
+      loop [] where rec loop rev_pl =
+        let (pl, status) = pa cs in
+        match status with
+        [ None -> do {
+            let lexing_info =
+              (Plexing.line_nb.val.val, Plexing.bol_pos.val.val)
+            in
+            let pl =
+              let rpl = List.rev pl in
+              match getdir rpl with
+              [ Some x ->
+                  match x with
+                  [ (loc1, "use", Some <:expr< $str:s$ >>) ->
+                      let (pl, eloc) = use_file pa getdir useast s in
+                      list_rev_append rpl
+                        [(useast loc1 <:vala< s >> <:vala< pl >>, loc1)]
+                  | (loc, x, eo) -> do {
+                      match
+                        try Some (Pcaml.find_directive x) with
+                        [ Not_found -> None ]
+                      with
+                      [ Some f -> f eo
+                      | None ->
+                          let msg = sprintf "unknown directive #%s" x in
+                          Ploc.raise loc (Stream.Error msg) ];
+                      pl
+                    } ]
+              | None -> pl ]
+            in
+            Plexing.restore_lexing_info.val := Some lexing_info;
+            loop (List.rev_append pl rev_pl)
+          }
+        | Some loc ->
+            (List.rev (List.rev_append pl rev_pl), loc) ]
     with x -> do { clear (); raise x }
   in
   clear ();

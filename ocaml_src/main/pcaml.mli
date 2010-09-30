@@ -13,10 +13,12 @@ val syntax_name : string ref;;
 
 (** {6 Parsers} *)
 
+type status = Ploc.t option;;
+
 val parse_interf :
-  (char Stream.t -> (MLast.sig_item * MLast.loc) list * bool) ref;;
+  (char Stream.t -> (MLast.sig_item * MLast.loc) list * status) ref;;
 val parse_implem :
-  (char Stream.t -> (MLast.str_item * MLast.loc) list * bool) ref;;
+  (char Stream.t -> (MLast.str_item * MLast.loc) list * status) ref;;
    (** Called when parsing an interface (mli file) or an implementation
        (ml file) to build the syntax tree; the returned list contains the
        phrases (signature items or structure items) and their locations;
@@ -32,8 +34,8 @@ val parse_implem :
 val gram : Grammar.g;;
    (** Grammar variable of the OCaml language *)
 
-val interf : ((MLast.sig_item * MLast.loc) list * bool) Grammar.Entry.e;;
-val implem : ((MLast.str_item * MLast.loc) list * bool) Grammar.Entry.e;;
+val interf : ((MLast.sig_item * MLast.loc) list * status) Grammar.Entry.e;;
+val implem : ((MLast.str_item * MLast.loc) list * status) Grammar.Entry.e;;
 val top_phrase : MLast.str_item option Grammar.Entry.e;;
 val use_file : (MLast.str_item list * bool) Grammar.Entry.e;;
 val module_type : MLast.module_type Grammar.Entry.e;;
@@ -88,8 +90,10 @@ val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;
 
 (** {6 Printers} *)
 
-val print_interf : ((MLast.sig_item * MLast.loc) list -> unit) ref;;
-val print_implem : ((MLast.str_item * MLast.loc) list -> unit) ref;;
+val print_interf :
+  ((MLast.sig_item * MLast.loc) list * MLast.loc -> unit) ref;;
+val print_implem :
+  ((MLast.str_item * MLast.loc) list * MLast.loc -> unit) ref;;
 
 val pr_expr : MLast.expr Eprinter.t;;
 val pr_patt : MLast.patt Eprinter.t;;

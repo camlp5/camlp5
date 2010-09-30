@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.33 2010/09/30 16:18:18 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.34 2010/09/30 16:26:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1620,91 +1620,7 @@ value output_string_eval oc s =
       | (c, _) -> do { output_char oc c; loop (i + 1) } ]
 ;
 
-(*
-value input_source src bp len =
-  let len = min (max 0 len) (String.length src) in
-  String.sub src bp len
-;
-
-value copy_source src oc first bp ep =
-  match sep.val with
-  [ Some str ->
-      if first then ()
-      else if ep == String.length src then output_string oc "\n"
-      else output_string_eval oc str
-  | None ->
-      let s = input_source src bp (ep - bp) in
-(*
-Masked part of code because the 'comment' below does not work for
-stdlib/arg.ml in ocaml sources, resulting a printing of half a comment.
-Another solution has to be found.
-      let s =
-        if first then s
-        else
-          (* generally, what is before the first newline belongs to the
-             previous phrase and should have been treated (included, perhaps)
-             previously *)
-          try
-            let i = String.index s '\n' in
-            String.sub s i (String.length s - i)
-          with
-          [ Not_found -> s ]
-      in
-*)
-      output_string oc s ]
-;
-
-value copy_to_end src oc first bp =
-  let ilen = String.length src in
-  if bp < ilen then copy_source src oc first bp ilen
-  else output_string oc "\n"
-;
-
-module Buff =
-  struct
-    value buff = ref (String.create 80);
-    value store len x = do {
-      if len >= String.length buff.val then
-        buff.val := buff.val ^ String.create (String.length buff.val)
-      else ();
-      buff.val.[len] := x;
-      succ len
-    };
-    value mstore len s =
-      add_rec len 0 where rec add_rec len i =
-        if i == String.length s then len
-        else add_rec (store len s.[i]) (succ i)
-    ;
-    value get len = String.sub buff.val 0 len;
-  end
-;
-
-value first_loc_of_ast =
-  fun
-  [ [(_, loc) :: _] -> loc
-  | [] -> Ploc.dummy ]
-;
-*)
-
 value apply_printer f (ast, eoi_loc) = do {
-(*
-  let loc = first_loc_of_ast ast in
-  let fname = Ploc.file_name loc in
-  let src =
-    if fname = "-" || fname = "" then do { sep.val := Some "\n"; "" }
-    else do {
-      let ic = open_in_bin fname in
-      let src =
-        loop 0 where rec loop len =
-          match try Some (input_char ic) with [ End_of_file -> None ] with
-          [ Some c -> loop (Buff.store len c)
-          | None -> Buff.get len ]
-      in
-      close_in ic;
-      src
-    }
-  in
-*)
   let oc =
     match Pcaml.output_file.val with
     [ Some f -> open_out_bin f
@@ -1716,23 +1632,19 @@ value apply_printer f (ast, eoi_loc) = do {
     | None -> () ]
   in
   try do {
-    let (_(*first*), _(*last_pos*)) =
+    let _ =
       List.fold_left
-        (fun (first, last_pos) (si, loc) -> do {
-           let ep = Ploc.last_pos loc in
+        (fun first (si, loc) -> do {
            match sep.val with
            [ Some str -> if first then () else output_string_eval oc str
            | None -> output_string oc (Ploc.comment loc) ];
            flush oc;
            let k = if flag_semi_semi.val then ";;" else "" in
            output_string oc (f {ind = 0; bef = ""; aft = k; dang = ""} si);
-           (False, ep)
+           False
          })
-        (True, 0) ast
+        True ast
     in
-(*
-    copy_to_end src oc first last_pos;
-*)
     output_string oc (Ploc.comment eoi_loc);
     flush oc
   }
