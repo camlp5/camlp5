@@ -97,8 +97,8 @@ let rec parse_file pa getdir useast =
               | None -> pl
             in
             Plexing.restore_lexing_info := Some lexing_info;
-            loop (List.rev_append pl rev_pl)
-        | Some loc -> List.rev (List.rev_append pl rev_pl), loc
+            loop (list_rev_append pl rev_pl)
+        | Some loc -> List.rev (list_rev_append pl rev_pl), loc
       in
       loop []
     with x -> clear (); raise x

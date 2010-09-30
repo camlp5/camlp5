@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 6.4 2010/09/30 16:18:19 deraugla Exp $ *)
+(* $Id: main.ml,v 6.5 2010/09/30 17:43:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -106,10 +106,10 @@ value rec parse_file pa getdir useast = do {
               | None -> pl ]
             in
             Plexing.restore_lexing_info.val := Some lexing_info;
-            loop (List.rev_append pl rev_pl)
+            loop (list_rev_append pl rev_pl)
           }
         | Some loc ->
-            (List.rev (List.rev_append pl rev_pl), loc) ]
+            (List.rev (list_rev_append pl rev_pl), loc) ]
     with x -> do { clear (); raise x }
   in
   clear ();
