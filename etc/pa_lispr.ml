@@ -27,10 +27,10 @@ module Buff =
 
 (* Lexer *)
 
-value rec skip_to_eol =
+value rec skip_to_eol len =
   parser
-  [ [: `'\n' | '\r' :] -> ()
-  | [: `_; s :] -> skip_to_eol s ]
+  [ [: `('\n' | '\r' as c) :] -> Buff.store len c
+  | [: `c; s :] -> skip_to_eol (Buff.store len c) s ]
 ;
 
 value no_ident = ['('; ')'; ' '; '\t'; '\n'; '\r'; ';'];
@@ -74,11 +74,9 @@ value quote =
   | [: `x; s :] -> char_or_quote_id x s ]
 ;
 
-value rec lexer kwt =
+value rec next_token_after_spaces kwt =
   parser bp
-  [ [: `' ' | '\t' | '\n' | '\r'; s :] -> lexer kwt s
-  | [: `';'; a = semi kwt bp :] -> a
-  | [: `'(' :] -> (("", "("), (bp, bp + 1))
+  [ [: `'(' :] -> (("", "("), (bp, bp + 1))
   | [: `')' :] -> (("", ")"), (bp, bp + 1))
   | [: `'"'; s = string 0 :] ep -> (("STRING", s), (bp, ep))
   | [: `'''; tok = quote :] ep -> (tok, (bp, ep))
@@ -98,10 +96,6 @@ value rec lexer kwt =
       in
       ((con, s), (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
-and semi kwt bp =
-  parser
-  [ [: `';'; _ = skip_to_eol; s :] -> lexer kwt s
-  | [: :] ep -> (("", ";"), (bp, ep)) ]
 and less =
   parser
   [ [: `':'; lab = label 0; `'<' ? "'<' expected"; q = quotation 0 :] ->
@@ -120,6 +114,20 @@ and quotation_greater len =
   parser
   [ [: `'>' :] -> Buff.get len
   | [: a = quotation (Buff.store len '>') :] -> a ]
+;
+
+value get_buff len _ = Buff.get len;
+
+value rec lexer len kwt =
+  parser bp
+  [ [: `(' ' | '\t' | '\n' | '\r' as c); s :] ->
+      lexer (Buff.store len c) kwt s
+  | [: `';'; a = semi (Buff.store len ';') kwt bp :] -> a
+  | [: comm = get_buff len; a = next_token_after_spaces kwt :] -> (comm, a) ]
+and semi len kwt bp =
+  parser
+  [ [: `';'; len = skip_to_eol (Buff.store len ';'); s :] -> lexer len kwt s
+  | [: :] ep -> (Buff.get len, (("", ";"), (bp, ep))) ]
 ;
 
 value lexer_using kwt (con, prm) =
@@ -143,8 +151,8 @@ value lexer_text (con, prm) =
 value lexer_gmake () =
   let kwt = Hashtbl.create 89
   and lexer2 kwt (s, _, _) =
-    let (t, loc) = lexer kwt s in
-    (t, Ploc.make_loc Plexing.input_file.val 0 0 loc "")
+    let (comm, (t, loc)) = lexer 0 kwt s in
+    (t, Ploc.make_loc Plexing.input_file.val 0 0 loc comm)
   in
   {Plexing.tok_func = Plexing.lexer_func_of_parser (lexer2 kwt);
    Plexing.tok_using = lexer_using kwt; Plexing.tok_removing = fun [];

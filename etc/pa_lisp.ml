@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 6.2 2010/09/29 12:22:10 deraugla Exp $
+;; $Id: pa_lisp.ml,v 6.3 2010/09/30 15:28:27 deraugla Exp $
 ;; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -23,9 +23,10 @@
 ;; Lexer
 
 (value rec skip_to_eol
-       (parser
-        (((` (or '\n' '\r'))) ())
-        (((` _) s) (skip_to_eol s))))
+       (lambda len
+        (parser
+         (((` (as (or '\n' '\r') c))) (Buff.store len c))
+         (((` c) s) (skip_to_eol (Buff.store len c) s)))))
 
 (value no_ident (list '(' ')' ' ' '\t' '\n' '\r' ';'))
 
@@ -74,11 +75,9 @@
         (((` x) s) (char_or_quote_id x s))))
 
 (value rec
- lexer
+ next_token_after_spaces
  (lambda kwt
    (parser bp
-           (((` (or ' ' '\t' '\n' '\r')) s) (lexer kwt s))
-           (((` ';') (a (semi kwt bp))) a)
            (((` '(')) (, (, "" "(") (, bp (+ bp 1))))
            (((` ')')) (, (, "" ")") (, bp (+ bp 1))))
            (((` '"') (s (string 0))) ep (, (, "STRING" s) (, bp ep)))
@@ -94,11 +93,6 @@
                                     ((_) "LIDENT"))))))
               (, (, con s) (, bp ep))))
            (() (, (, "EOI" "") (, bp (+ bp 1))))))
- semi
- (lambda (kwt bp)
-   (parser
-    (((` ';') (_ skip_to_eol) s) (lexer kwt s))
-    (() ep (, (, "" ";") (, bp ep)))))
  less
  (parser
   (((` ':') (lab (label 0)) (? (` '<') "'<' expected") (q (quotation 0)))
@@ -121,6 +115,21 @@
    (parser
     (((` '>')) (Buff.get len))
     (((a (quotation (Buff.store len '>')))) a))))
+
+(value get_buff (lambda (len _) (Buff.get len)))
+
+(value rec
+ lexer
+ (lambda (len kwt)
+  (parser bp
+   (((` (as (or ' ' '\t' '\n' '\r') c)) s) (lexer (Buff.store len c) kwt s))
+   (((` ';') (a (semi (Buff.store len ';') kwt bp))) a)
+   (((comm  (get_buff len)) (a (next_token_after_spaces kwt))) (, comm a))))
+ semi
+ (lambda (len kwt bp)
+   (parser
+    (((` ';') (len (skip_to_eol (Buff.store len ';'))) s) (lexer len kwt s))
+    (() ep (, (Buff.get len) (, (, "" ";") (, bp ep)))))))
 
 (value lexer_using
        (lambda (kwt (, con prm))
@@ -146,9 +155,9 @@
          (let ((kwt (Hashtbl.create 89))
                (lexer2
                 (lambda (kwt (, s _ _))
-                  (let (((, t loc) (lexer kwt s)))
+                  (let (((, comm (, t loc)) (lexer 0 kwt s)))
                     (, t
-                       (Ploc.make_loc Plexing.input_file.val 0 0 loc ""))))))
+                       (Ploc.make_loc Plexing.input_file.val 0 0 loc comm))))))
            ({}
             (Plexing.tok_func (Plexing.lexer_func_of_parser (lexer2 kwt)))
             (Plexing.tok_using (lexer_using kwt))
