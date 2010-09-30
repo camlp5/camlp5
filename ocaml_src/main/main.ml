@@ -21,7 +21,8 @@ let print_location loc =
   let ep = Ploc.last_pos loc in
   if fname <> "-" then
     let line = Ploc.line_nb loc in
-    eprintf "%s" (string_of_loc fname line bp ep)
+    let bol = Ploc.bol_pos loc in
+    eprintf "%s" (string_of_loc fname line (bp - bol) (ep - bol))
   else eprintf "At location %d-%d\n" bp ep
 ;;
 
