@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.31 2010/09/29 14:30:52 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.32 2010/09/30 10:08:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -225,19 +225,19 @@ value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 value expr1 = Eprinter.apply_level pr_expr "expr1";
 
-value comm_bef ind loc =
-  if flag_comments_in_phrases.val then Prtools.comm_bef ind loc else ""
+value comm_bef pc loc =
+  if flag_comments_in_phrases.val then Prtools.comm_bef pc.ind loc else ""
 ;
 
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
-  let ccc = comm_bef pc.ind (MLast.loc_of_expr z) in
+  let ccc = comm_bef pc (MLast.loc_of_expr z) in
   sprintf "%s%s" ccc (expr pc z)
 ;
 
 (* couple pattern/anytype with adding the possible comment before *)
 value comm_patt_any f pc z =
-  let ccc = comm_bef pc.ind (MLast.loc_of_patt (fst z)) in
+  let ccc = comm_bef pc (MLast.loc_of_patt (fst z)) in
   sprintf "%s%s" ccc (f pc z)
 ;
 
