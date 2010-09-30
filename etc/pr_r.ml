@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.30 2010/09/30 09:47:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.31 2010/09/30 16:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1645,6 +1645,7 @@ value output_string_eval oc s =
       | (c, _) -> do { output_char oc c; loop (i + 1) } ]
 ;
 
+(*
 value input_source src bp len =
   let len = min (max 0 len) (String.length src) in
   String.sub src bp len
@@ -1708,8 +1709,10 @@ value first_loc_of_ast =
   [ [(_, loc) :: _] -> loc
   | [] -> Ploc.dummy ]
 ;
+*)
 
-value apply_printer f ast = do {
+value apply_printer f (ast, eoi_loc) = do {
+(*
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   let src =
@@ -1726,6 +1729,7 @@ value apply_printer f ast = do {
       src
     }
   in
+*)
   let oc =
     match Pcaml.output_file.val with
     [ Some f -> open_out_bin f
@@ -1737,7 +1741,7 @@ value apply_printer f ast = do {
     | None -> () ]
   in
   try do {
-    let (first, last_pos) =
+    let (_(*first*), _(*last_pos*)) =
       List.fold_left
         (fun (first, last_pos) (si, loc) -> do {
            let ep = Ploc.last_pos loc in
@@ -1750,7 +1754,10 @@ value apply_printer f ast = do {
          })
         (True, 0) ast
     in
+(*
     copy_to_end src oc first last_pos;
+*)
+    output_string oc (Ploc.comment eoi_loc);
     flush oc
   }
   with exn -> do {

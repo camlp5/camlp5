@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 6.3 2010/09/30 15:28:27 deraugla Exp $
+;; $Id: pa_lisp.ml,v 6.4 2010/09/30 16:18:18 deraugla Exp $
 ;; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -653,7 +653,8 @@
 
 EXTEND
   implem :
-    [ [ st = LIST0 [ s = str_item -> (, s loc) ]; EOI -> (, st False) ] ]
+    [ [ st = LIST0 [ s = str_item -> (, s loc) ];
+        eoi_loc = [ EOI -> loc ] -> (, st (Some eoi_loc)) ] ]
   ;
   top_phrase :
     [ [ se = sexpr -> (Some (top_phrase_se se))

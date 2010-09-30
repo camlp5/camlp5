@@ -619,7 +619,8 @@ value atom = Grammar.Entry.create gram "atom";
 
 EXTEND
   implem:
-    [ [ st = LIST0 [ s = str_item -> (s, loc) ]; EOI -> (st, False) ] ]
+    [ [ st = LIST0 [ s = str_item -> (s, loc) ]; eoi_loc = [ EOI -> loc ] ->
+          (st, Some eoi_loc) ] ]
   ;
   top_phrase:
     [ [ se = sexpr -> Some (top_phrase_se se)

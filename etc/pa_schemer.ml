@@ -1449,22 +1449,22 @@ EXTEND
   implem:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
-          ([(<:str_item< # $lid:n$ $opt:dp$ >>, loc)], True)
+          ([(<:str_item< # $lid:n$ $opt:dp$ >>, loc)], None)
       | si = str_item; x = SELF ->
           let (sil, stopped) = x in
           let loc = MLast.loc_of_str_item si in
           ([(si, loc) :: sil], stopped)
-      | EOI -> ([], False) ] ]
+      | EOI -> ([], Some loc) ] ]
   ;
   interf:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
-          ([(<:sig_item< # $lid:n$ $opt:dp$ >>, loc)], True)
+          ([(<:sig_item< # $lid:n$ $opt:dp$ >>, loc)], None)
       | si = sig_item; x = SELF ->
           let (sil, stopped) = x in
           let loc = MLast.loc_of_sig_item si in
           ([(si, loc) :: sil], stopped)
-      | EOI -> ([], False) ] ]
+      | EOI -> ([], Some loc) ] ]
   ;
   top_phrase:
     [ [ "#"; se = sexpr ->

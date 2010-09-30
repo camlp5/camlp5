@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_sml.ml,v 6.1 2010/09/15 16:00:22 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 6.2 2010/09/30 16:18:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -349,7 +349,7 @@ EXTEND
     [ [ x = interdec; EOI -> x ] ]
   ;
   interf:
-    [ [ x = LIST1 [ s = sig_item; OPT ";" -> (s, loc) ] -> (x, False) ] ]
+    [ [ x = LIST1 [ s = sig_item; OPT ";" -> (s, loc) ] -> (x, Some loc) ] ]
   ;
   top_phrase:
     [ [ ph = phrase; ";" -> Some ph
@@ -964,7 +964,7 @@ EXTEND
           not_impl loc "fctb 2" ] ]
   ;
   interdec:
-    [ [ x = LIST1 [ s = str_item; OPT ";" -> (s, loc) ] -> (x, False)
+    [ [ x = LIST1 [ s = str_item; OPT ";" -> (s, loc) ] -> (x, Some loc)
       | x = expr; OPT ";" -> not_impl loc "interdec 2" ] ]
   ;
 END;

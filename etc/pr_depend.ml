@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.4 2010/09/30 14:25:51 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.5 2010/09/30 16:18:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -341,7 +341,7 @@ value file_name_of_ast =
   | [] -> "-" ]
 ;
 
-value depend_sig ast = do {
+value depend_sig (ast, eoi_loc) = do {
   fset.val := StrSet.empty;
   List.iter (fun (si, _) -> sig_item si) ast;
   let fname = file_name_of_ast ast in
@@ -351,7 +351,7 @@ value depend_sig ast = do {
   print_depend (basename ^ ".cmi") byt_deps
 };
 
-value depend_str ast = do {
+value depend_str (ast, eoi_loc) = do {
   fset.val := StrSet.empty;
   List.iter (fun (si, _) -> str_item si) ast;
   let fname = file_name_of_ast ast in

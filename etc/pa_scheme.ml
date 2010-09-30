@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 6.3 2010/09/30 14:25:50 deraugla Exp $
+; $Id: pa_scheme.ml,v 6.4 2010/09/30 16:18:18 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -1278,22 +1278,22 @@ EXTEND
   implem :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
-             (values [(values <:str_item< # $lid:n$ $opt:dp$ >> loc)] True))
+             (values [(values <:str_item< # $lid:n$ $opt:dp$ >> loc)] None))
       | si = str_item / x = SELF ->
           (let* (((values sil stopped) x)
                  (loc (MLast.loc_of_str_item si)))
              (values [(values si loc) . sil] stopped))
-      | EOI -> (values [] False) ] ]
+      | EOI -> (values [] (Some loc)) ] ]
   /
   interf :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
-             (values [(values <:sig_item< # $lid:n$ $opt:dp$ >> loc)] True))
+             (values [(values <:sig_item< # $lid:n$ $opt:dp$ >> loc)] None))
       | si = sig_item / x = SELF ->
           (let* (((values sil stopped) x)
                  (loc (MLast.loc_of_sig_item si)))
              (values [(values si loc) . sil] stopped))
-      | EOI -> (values [] False) ] ]
+      | EOI -> (values [] (Some loc)) ] ]
   /
   top_phrase :
     [ [ "#" / se = sexpr ->
