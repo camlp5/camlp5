@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 6.4 2010/09/30 16:18:18 deraugla Exp $
+; $Id: pa_scheme.ml,v 6.5 2010/09/30 20:41:55 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -1021,7 +1021,7 @@
      {(MLast.tdNam <:vala< n >>) (MLast.tdPrm <:vala< tpl >>)
       (MLast.tdPrv <:vala< False >>) (MLast.tdDef (ctyp_se se2))
       (MLast.tdCon <:vala< [] >>)}))
-   (se (error se "type_declaration"))))
+   (se (error se "type_decl"))))
  (type_declaration_list_se
   (lambda_match
    ([se1 se2 . sel]
@@ -1039,7 +1039,7 @@
         (MLast.tdCon <:vala< [] >>)}))
      [td . (type_declaration_list_se sel)]))
    ([] [])
-   ([se . _] (error se "type_declaration"))))
+   ([se . _] (error se "type_decl"))))
  ((type_param_se se)
   (match se
    ((when (Slid _ s) (&& (>= (String.length s) 2) (= s.[0] ''')))
@@ -1261,7 +1261,7 @@
  (Grammar.Unsafe.clear_entry module_type)
  (Grammar.Unsafe.clear_entry with_constr)
  (Grammar.Unsafe.clear_entry let_binding)
- (Grammar.Unsafe.clear_entry type_declaration)
+ (Grammar.Unsafe.clear_entry type_decl)
  (Grammar.Unsafe.clear_entry class_type)
  (Grammar.Unsafe.clear_entry class_expr)
  (Grammar.Unsafe.clear_entry class_sig_item)

@@ -532,7 +532,7 @@ and type_declaration_list_se =
       in
       [td :: type_declaration_list_se sel]
   | [] -> []
-  | [se :: _] -> error se "type_declaration" ]
+  | [se :: _] -> error se "type_decl" ]
 and type_parameter_se =
   fun
   [ Satom _ Alid s when String.length s >= 2 && s.[0] = ''' ->

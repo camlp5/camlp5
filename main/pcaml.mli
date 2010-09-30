@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.mli,v 6.2 2010/09/30 16:18:19 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 6.3 2010/09/30 20:41:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -49,7 +49,7 @@ value patt : Grammar.Entry.e MLast.patt;
 value ipatt : Grammar.Entry.e MLast.patt;
 value ctyp : Grammar.Entry.e MLast.ctyp;
 value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr);
-value type_declaration : Grammar.Entry.e MLast.type_decl;
+value type_decl : Grammar.Entry.e MLast.type_decl;
 value match_case :
   Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);
 value constructor_declaration :

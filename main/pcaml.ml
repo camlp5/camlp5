@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.6 2010/09/30 19:43:29 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.7 2010/09/30 20:41:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -35,7 +35,7 @@ value patt = Grammar.Entry.create gram "patt";
 value ipatt = Grammar.Entry.create gram "ipatt";
 value ctyp = Grammar.Entry.create gram "ctyp";
 value let_binding = Grammar.Entry.create gram "let_binding";
-value type_declaration = Grammar.Entry.create gram "type_declaration";
+value type_decl = Grammar.Entry.create gram "type_declaration";
 value match_case = Grammar.Entry.create gram "match_case";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";

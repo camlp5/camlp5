@@ -198,7 +198,7 @@ let class_str_item = Grammar.Entry.create gram "class_str_item";;
 
 let ipatt = Grammar.Entry.create gram "ipatt";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
-let type_declaration = Grammar.Entry.create gram "type_declaration";;
+let type_decl = Grammar.Entry.create gram "type_decl";;
 let match_case = Grammar.Entry.create gram "match_case";;
 let constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration"
@@ -325,7 +325,7 @@ Grammar.extend
    and _ = (class_sig_item : 'class_sig_item Grammar.Entry.e)
    and _ = (class_str_item : 'class_str_item Grammar.Entry.e)
    and _ = (let_binding : 'let_binding Grammar.Entry.e)
-   and _ = (type_declaration : 'type_declaration Grammar.Entry.e)
+   and _ = (type_decl : 'type_decl Grammar.Entry.e)
    and _ =
      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
    and _ = (label_declaration : 'label_declaration Grammar.Entry.e)
@@ -686,10 +686,10 @@ Grammar.extend
             [[Gramext.Slist1sep
                 (Gramext.Snterm
                    (Grammar.Entry.obj
-                      (type_declaration : 'type_declaration Grammar.Entry.e)),
+                      (type_decl : 'type_decl Grammar.Entry.e)),
                  Gramext.Stoken ("", "and"), false)],
              Gramext.action
-               (fun (a : 'type_declaration list) (loc : Ploc.t) ->
+               (fun (a : 'type_decl list) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.List a) : 'e__13));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
@@ -1341,10 +1341,10 @@ Grammar.extend
             [[Gramext.Slist1sep
                 (Gramext.Snterm
                    (Grammar.Entry.obj
-                      (type_declaration : 'type_declaration Grammar.Entry.e)),
+                      (type_decl : 'type_decl Grammar.Entry.e)),
                  Gramext.Stoken ("", "and"), false)],
              Gramext.action
-               (fun (a : 'type_declaration list) (loc : Ploc.t) ->
+               (fun (a : 'type_decl list) (loc : Ploc.t) ->
                   (Qast.VaVal (Qast.List a) : 'e__40));
              [Gramext.Stoken ("ANTIQUOT", "_list")],
              Gramext.action
@@ -3719,8 +3719,7 @@ Grammar.extend
       Gramext.action
         (fun (p : 'ipatt) _ (i : 'patt_label_ident) (loc : Ploc.t) ->
            (Qast.Tuple [i; p] : 'label_ipatt))]];
-    Grammar.Entry.obj (type_declaration : 'type_declaration Grammar.Entry.e),
-    None,
+    Grammar.Entry.obj (type_decl : 'type_decl Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Sfacto
          (Gramext.srules
@@ -3793,7 +3792,7 @@ Grammar.extend
            (Qast.Record
               ["tdNam", n; "tdPrm", tpl; "tdPrv", pf; "tdDef", tk;
                "tdCon", cl] :
-            'type_declaration))]];
+            'type_decl))]];
     Grammar.Entry.obj (type_patt : 'type_patt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Sfacto
@@ -7025,7 +7024,7 @@ let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item_eoi" in
 let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
 let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
-let type_declaration_eoi = Grammar.Entry.create gram "type_declaration_eoi" in
+let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
 Grammar.extend
   [Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
    [None, None,
@@ -7125,17 +7124,13 @@ Grammar.extend
      Gramext.action
        (fun _ (x : 'poly_variant) (loc : Ploc.t) ->
           (x : 'poly_variant_eoi))]];
-   Grammar.Entry.obj
-     (type_declaration_eoi : 'type_declaration_eoi Grammar.Entry.e),
-   None,
+   Grammar.Entry.obj (type_decl_eoi : 'type_decl_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
-        (Grammar.Entry.obj
-           (type_declaration : 'type_declaration Grammar.Entry.e));
+        (Grammar.Entry.obj (type_decl : 'type_decl Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'type_declaration) (loc : Ploc.t) ->
-          (x : 'type_declaration_eoi))]]];
+       (fun _ (x : 'type_decl) (loc : Ploc.t) -> (x : 'type_decl_eoi))]]];
 List.iter (fun (q, f) -> Quotation.add q (f q))
   ["sig_item", apply_entry sig_item_eoi; "str_item", apply_entry str_item_eoi;
    "ctyp", apply_entry ctyp_eoi; "patt", apply_entry patt_eoi;
@@ -7147,7 +7142,7 @@ List.iter (fun (q, f) -> Quotation.add q (f q))
    "class_str_item", apply_entry class_str_item_eoi;
    "with_constr", apply_entry with_constr_eoi;
    "poly_variant", apply_entry poly_variant_eoi;
-   "type_decl", apply_entry type_declaration_eoi];;
+   "type_decl", apply_entry type_decl_eoi];;
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
 Grammar.extend

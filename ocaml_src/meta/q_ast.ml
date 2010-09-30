@@ -718,11 +718,10 @@ Grammar.extend
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj
-           (Pcaml.type_declaration :
-            'Pcaml__type_declaration Grammar.Entry.e));
+           (Pcaml.type_decl : 'Pcaml__type_decl Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'Pcaml__type_declaration) (loc : Ploc.t) ->
+       (fun _ (x : 'Pcaml__type_decl) (loc : Ploc.t) ->
           (x : 'type_decl_eoi))]]];;
 
 (* *)
@@ -835,9 +834,12 @@ lex.Plexing.tok_match <-
   | "V LIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc prm in
-           if kind = "lid" || kind = anti_anti "lid" then prm
-           else raise Stream.Failure
+           if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+             raise Stream.Failure
+           else
+             let kind = check_anti_loc prm in
+             if kind = "lid" || kind = anti_anti "lid" then prm
+             else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIST", "" ->
       (function
@@ -880,9 +882,12 @@ lex.Plexing.tok_match <-
   | "V STRING", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc prm in
-           if kind = "str" || kind = anti_anti "str" then prm
-           else raise Stream.Failure
+           if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+             raise Stream.Failure
+           else
+             let kind = check_anti_loc prm in
+             if kind = "str" || kind = anti_anti "str" then prm
+             else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V TILDEIDENT", "" ->
       (function
@@ -911,9 +916,12 @@ lex.Plexing.tok_match <-
   | "V UIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc prm in
-           if kind = "uid" || kind = anti_anti "uid" then prm
-           else raise Stream.Failure
+           if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+             raise Stream.Failure
+           else
+             let kind = check_anti_loc prm in
+             if kind = "uid" || kind = anti_anti "uid" then prm
+             else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | tok -> tok_match tok;;
 

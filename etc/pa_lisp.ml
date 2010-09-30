@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 6.4 2010/09/30 16:18:18 deraugla Exp $
+;; $Id: pa_lisp.ml,v 6.5 2010/09/30 20:41:54 deraugla Exp $
 ;; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -558,7 +558,7 @@
                     (MLast.tdCon <:vala< empty >>))))
           (list td :: (type_declaration_list_se sel)))))
   ((list) (list))
-  ((list se :: _) (error se "type_declaration")))
+  ((list se :: _) (error se "type_decl")))
  type_parameter_se
  (lambda_match
   ((Satom _ Alid s) (&& (>= (String.length s) 2) (= ([] s 0) '''))

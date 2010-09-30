@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pragma.ml,v 6.3 2010/09/29 09:45:04 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 6.4 2010/09/30 20:41:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -1011,10 +1011,10 @@ value val_tab = do {
         {ctyp = <:ctyp< bool >>;
          expr = Obj.repr True;
          patt = std_patt True});
-     ("type_declaration",
+     ("type_decl",
       fun loc ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.type_decl >>;
-         expr = Obj.repr Pcaml.type_declaration;
+         expr = Obj.repr Pcaml.type_decl;
          patt = no_patt loc})];
   ht
 };

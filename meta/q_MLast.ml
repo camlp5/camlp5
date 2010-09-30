@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.18 2010/09/30 15:05:02 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.19 2010/09/30 20:41:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -158,7 +158,7 @@ value class_str_item = Grammar.Entry.create gram "class_str_item";
 
 value ipatt = Grammar.Entry.create gram "ipatt";
 value let_binding = Grammar.Entry.create gram "let_binding";
-value type_declaration = Grammar.Entry.create gram "type_declaration";
+value type_decl = Grammar.Entry.create gram "type_decl";
 value match_case = Grammar.Entry.create gram "match_case";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";
@@ -262,8 +262,8 @@ value warning_deprecated_since_6_00 loc =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr signature
     structure class_type class_expr class_sig_item class_str_item let_binding
-    type_declaration constructor_declaration label_declaration match_case
-    ipatt with_constr poly_variant;
+    type_decl constructor_declaration label_declaration match_case ipatt
+    with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
@@ -303,7 +303,7 @@ EXTEND
       | "module"; "type"; i = SV UIDENT; mt = mod_type_fun_binding ->
           Qast.Node "StMty" [Qast.Loc; i; mt]
       | "open"; i = SV mod_ident "list" "" -> Qast.Node "StOpn" [Qast.Loc; i]
-      | "type"; tdl = SV (LIST1 type_declaration SEP "and") ->
+      | "type"; tdl = SV (LIST1 type_decl SEP "and") ->
           Qast.Node "StTyp" [Qast.Loc; tdl]
       | "value"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and") ->
           Qast.Node "StVal" [Qast.Loc; r; l]
@@ -374,7 +374,7 @@ EXTEND
       | "module"; "type"; i = SV UIDENT; "="; mt = module_type ->
           Qast.Node "SgMty" [Qast.Loc; i; mt]
       | "open"; i = SV mod_ident "list" "" -> Qast.Node "SgOpn" [Qast.Loc; i]
-      | "type"; tdl = SV (LIST1 type_declaration SEP "and") ->
+      | "type"; tdl = SV (LIST1 type_decl SEP "and") ->
           Qast.Node "SgTyp" [Qast.Loc; tdl]
       | "value"; i = SV LIDENT; ":"; t = ctyp ->
           Qast.Node "SgVal" [Qast.Loc; i; t]
@@ -861,7 +861,7 @@ EXTEND
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt -> Qast.Tuple [i; p] ] ]
   ;
-  type_declaration:
+  type_decl:
     [ [ n = SV type_patt "tp"; tpl = SV (LIST0 type_parameter); "=";
         pf = SV (FLAG "private") "priv"; tk = ctyp;
         cl = SV (LIST0 constrain) ->
@@ -1461,7 +1461,7 @@ let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item_eoi" in
 let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
 let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
-let type_declaration_eoi = Grammar.Entry.create gram "type_declaration_eoi" in
+let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
 do {
   EXTEND
     sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
@@ -1477,7 +1477,7 @@ do {
     class_str_item_eoi: [ [ x = class_str_item; EOI -> x ] ];
     with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
     poly_variant_eoi: [ [ x = poly_variant; EOI -> x ] ];
-    type_declaration_eoi: [ [ x = type_declaration; EOI -> x ] ];
+    type_decl_eoi: [ [ x = type_decl; EOI -> x ] ];
   END;
   List.iter (fun (q, f) -> Quotation.add q (f q))
     [("sig_item", apply_entry sig_item_eoi);
@@ -1493,7 +1493,7 @@ do {
      ("class_str_item", apply_entry class_str_item_eoi);
      ("with_constr", apply_entry with_constr_eoi);
      ("poly_variant", apply_entry poly_variant_eoi);
-     ("type_decl", apply_entry type_declaration_eoi)];
+     ("type_decl", apply_entry type_decl_eoi)];
 };
 
 do {

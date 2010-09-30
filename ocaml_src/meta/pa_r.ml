@@ -29,7 +29,7 @@ Grammar.Unsafe.clear_entry patt;
 Grammar.Unsafe.clear_entry ipatt;
 Grammar.Unsafe.clear_entry ctyp;
 Grammar.Unsafe.clear_entry let_binding;
-Grammar.Unsafe.clear_entry type_declaration;
+Grammar.Unsafe.clear_entry type_decl;
 Grammar.Unsafe.clear_entry constructor_declaration;
 Grammar.Unsafe.clear_entry label_declaration;
 Grammar.Unsafe.clear_entry match_case;
@@ -136,7 +136,7 @@ Grammar.extend
    and _ = (class_sig_item : 'class_sig_item Grammar.Entry.e)
    and _ = (class_str_item : 'class_str_item Grammar.Entry.e)
    and _ = (let_binding : 'let_binding Grammar.Entry.e)
-   and _ = (type_declaration : 'type_declaration Grammar.Entry.e)
+   and _ = (type_decl : 'type_decl Grammar.Entry.e)
    and _ =
      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
    and _ = (label_declaration : 'label_declaration Grammar.Entry.e)
@@ -332,11 +332,10 @@ Grammar.extend
       [Gramext.Stoken ("", "type");
        Gramext.Slist1sep
          (Gramext.Snterm
-            (Grammar.Entry.obj
-               (type_declaration : 'type_declaration Grammar.Entry.e)),
+            (Grammar.Entry.obj (type_decl : 'type_decl Grammar.Entry.e)),
           Gramext.Stoken ("", "and"), false)],
       Gramext.action
-        (fun (tdl : 'type_declaration list) _ (loc : Ploc.t) ->
+        (fun (tdl : 'type_decl list) _ (loc : Ploc.t) ->
            (MLast.StTyp (loc, tdl) : 'str_item));
       [Gramext.Stoken ("", "open");
        Gramext.Snterm
@@ -559,11 +558,10 @@ Grammar.extend
       [Gramext.Stoken ("", "type");
        Gramext.Slist1sep
          (Gramext.Snterm
-            (Grammar.Entry.obj
-               (type_declaration : 'type_declaration Grammar.Entry.e)),
+            (Grammar.Entry.obj (type_decl : 'type_decl Grammar.Entry.e)),
           Gramext.Stoken ("", "and"), false)],
       Gramext.action
-        (fun (tdl : 'type_declaration list) _ (loc : Ploc.t) ->
+        (fun (tdl : 'type_decl list) _ (loc : Ploc.t) ->
            (MLast.SgTyp (loc, tdl) : 'sig_item));
       [Gramext.Stoken ("", "open");
        Gramext.Snterm
@@ -1519,8 +1517,7 @@ Grammar.extend
       Gramext.action
         (fun (p : 'ipatt) _ (i : 'patt_label_ident) (loc : Ploc.t) ->
            (i, p : 'label_ipatt))]];
-    Grammar.Entry.obj (type_declaration : 'type_declaration Grammar.Entry.e),
-    None,
+    Grammar.Entry.obj (type_decl : 'type_decl Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
          (Grammar.Entry.obj (type_patt : 'type_patt Grammar.Entry.e));
@@ -1539,7 +1536,7 @@ Grammar.extend
              (tpl : 'type_parameter list) (n : 'type_patt) (loc : Ploc.t) ->
            ({MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = pf;
              MLast.tdDef = tk; MLast.tdCon = cl} :
-            'type_declaration))]];
+            'type_decl))]];
     Grammar.Entry.obj (type_patt : 'type_patt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("LIDENT", "")],

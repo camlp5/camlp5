@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.11 2010/09/20 04:39:16 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.12 2010/09/30 20:41:54 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -213,7 +213,6 @@ value gen_ast loc tdl =
 
 EXTEND
   Pcaml.str_item:
-    [ [ "type"; tdl = LIST1 Pcaml.type_declaration SEP "and" ->
-          gen_ast loc tdl ] ]
+    [ [ "type"; tdl = LIST1 Pcaml.type_decl SEP "and" -> gen_ast loc tdl ] ]
   ;
 END;

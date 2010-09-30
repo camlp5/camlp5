@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.13 2010/09/30 15:05:02 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.14 2010/09/30 20:41:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -636,7 +636,7 @@ EXTEND
   class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
   class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
   class_sig_item_eoi: [ [ x = Pcaml.class_sig_item; EOI -> x ] ];
-  type_decl_eoi: [ [ x = Pcaml.type_declaration; EOI -> x ] ];
+  type_decl_eoi: [ [ x = Pcaml.type_decl; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
@@ -790,9 +790,12 @@ lex.Plexing.tok_match :=
   | ("V LIDENT", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc prm in
-          if kind = "lid" || kind = anti_anti "lid" then prm
-          else raise Stream.Failure
+          if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+            raise Stream.Failure
+          else
+            let kind = check_anti_loc prm in
+            if kind = "lid" || kind = anti_anti "lid" then prm
+            else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | ("V LIST", "") ->
       fun
@@ -836,16 +839,18 @@ lex.Plexing.tok_match :=
   | ("V STRING", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc prm in
-          if kind = "str" || kind = anti_anti "str" then prm
-          else raise Stream.Failure
+          if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+            raise Stream.Failure
+          else
+            let kind = check_anti_loc prm in
+            if kind = "str" || kind = anti_anti "str" then prm
+            else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | ("V TILDEIDENT", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
           if prm <> "" && prm.[0] = '~' then
-            if prm.[String.length prm - 1] = ':' then
-              raise Stream.Failure
+            if prm.[String.length prm - 1] = ':' then raise Stream.Failure
             else
               let prm = String.sub prm 1 (String.length prm - 1) in
               let kind = check_anti_loc prm in
@@ -868,9 +873,12 @@ lex.Plexing.tok_match :=
   | ("V UIDENT", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc prm in
-          if kind = "uid" || kind = anti_anti "uid" then prm
-          else raise Stream.Failure
+          if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+            raise Stream.Failure
+          else
+            let kind = check_anti_loc prm in
+            if kind = "uid" || kind = anti_anti "uid" then prm
+            else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | tok -> tok_match tok ]
 ;

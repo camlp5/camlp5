@@ -1155,7 +1155,7 @@ and type_declaration_se =
       {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
        MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
        MLast.tdCon = <:vala< [] >>}
-  | se -> error se "type_declaration" ]
+  | se -> error se "type_decl" ]
 and type_declaration_list_se =
   fun
   [ [se1; se2 :: sel] ->
@@ -1174,7 +1174,7 @@ and type_declaration_list_se =
       in
       [td :: type_declaration_list_se sel]
   | [] -> []
-  | [se :: _] -> error se "type_declaration" ]
+  | [se :: _] -> error se "type_decl" ]
 and type_param_se se =
   match se with
   [ Slid _ s when String.length s >= 2 && s.[0] = ''' ->
@@ -1431,7 +1431,7 @@ do {
   Grammar.Unsafe.clear_entry module_type;
   Grammar.Unsafe.clear_entry with_constr;
   Grammar.Unsafe.clear_entry let_binding;
-  Grammar.Unsafe.clear_entry type_declaration;
+  Grammar.Unsafe.clear_entry type_decl;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry class_sig_item;

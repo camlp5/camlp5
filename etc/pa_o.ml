@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.20 2010/09/30 16:18:18 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.21 2010/09/30 20:41:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -29,7 +29,7 @@ do {
   Grammar.Unsafe.clear_entry patt;
   Grammar.Unsafe.clear_entry ctyp;
   Grammar.Unsafe.clear_entry let_binding;
-  Grammar.Unsafe.clear_entry type_declaration;
+  Grammar.Unsafe.clear_entry type_decl;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
@@ -342,7 +342,7 @@ value quotation_content s = do {
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
-    let_binding type_declaration constructor_declaration label_declaration
+    let_binding type_decl constructor_declaration label_declaration
     match_case with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
@@ -384,7 +384,7 @@ EXTEND
           <:str_item< module type $_uid:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" ->
           <:str_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
+      | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_list:tdl$ >>
       | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
@@ -461,7 +461,7 @@ EXTEND
           <:sig_item< module type $_uid:i$ = 'abstract >>
       | "open"; i = V mod_ident "list" "" ->
           <:sig_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
+      | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
       | "val"; i = V LIDENT "lid" ""; ":"; t = ctyp ->
           <:sig_item< value $_lid:i$ : $t$ >>
@@ -801,7 +801,7 @@ EXTEND
       | i = LIDENT -> <:patt< $lid:i$ >> ] ]
   ;
   (* Type declaration *)
-  type_declaration:
+  type_decl:
     [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
         tk = type_kind; cl = V (LIST0 constrain) ->
           <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ >>

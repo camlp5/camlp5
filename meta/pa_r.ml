@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.18 2010/09/30 16:18:19 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.19 2010/09/30 20:41:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -30,7 +30,7 @@ do {
   Grammar.Unsafe.clear_entry ipatt;
   Grammar.Unsafe.clear_entry ctyp;
   Grammar.Unsafe.clear_entry let_binding;
-  Grammar.Unsafe.clear_entry type_declaration;
+  Grammar.Unsafe.clear_entry type_decl;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
@@ -123,7 +123,7 @@ value warning_deprecated_since_6_00 loc =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
-    let_binding type_declaration constructor_declaration label_declaration
+    let_binding type_decl constructor_declaration label_declaration
     match_case ipatt with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
@@ -159,7 +159,7 @@ EXTEND
       | "module"; "type"; i = V UIDENT "uid" ""; mt = mod_type_fun_binding ->
           <:str_item< module type $_uid:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
+      | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_list:tdl$ >>
       | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           <:str_item< value $_flag:r$ $_list:l$ >>
@@ -227,7 +227,7 @@ EXTEND
       | "module"; "type"; i = V UIDENT "uid" ""; "="; mt = module_type ->
           <:sig_item< module type $_uid:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:sig_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
+      | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ->
           <:sig_item< value $_lid:i$ : $t$ >>
@@ -490,7 +490,7 @@ EXTEND
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt -> (i, p) ] ]
   ;
-  type_declaration:
+  type_decl:
     [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter); "=";
         pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ->
           <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ >> ] ]
