@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 6.3 2010/09/29 09:45:05 deraugla Exp $ *)
+(* $Id: ploc.mli,v 6.4 2010/09/30 09:47:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Locations and some pervasive type and value. *)
@@ -105,7 +105,7 @@ type vala 'a =
   | VaVal of 'a ]
 ;
    (** Encloser of many abstract syntax tree nodes types, in "strict" mode.
-       Thhis allow the system of antiquotations of abstract syntax tree
+       This allow the system of antiquotations of abstract syntax tree
        quotations to work when using the quotation kit [q_ast.cmo]. *)
 
 value call_with : ref 'a -> 'a -> ('b -> 'c) -> 'b -> 'c;

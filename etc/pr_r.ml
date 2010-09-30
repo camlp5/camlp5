@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.29 2010/09/29 14:30:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.30 2010/09/30 09:47:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -238,7 +238,8 @@ value comm_expr expr pc z =
 
 (* couple pattern/anytype with adding the possible comment before *)
 value comm_patt_any f pc z =
-  let ccc = comm_bef pc (MLast.loc_of_patt (fst z)) in
+  let loc = MLast.loc_of_patt (fst z) in
+  let ccc = comm_bef pc loc in
   sprintf "%s%s" ccc (f pc z)
 ;
 

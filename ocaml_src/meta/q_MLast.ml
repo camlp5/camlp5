@@ -57,7 +57,7 @@ module Qast =
       if m = "" then MLast.ExUid (loc, n)
       else MLast.ExAcc (loc, MLast.ExUid (loc, m), MLast.ExUid (loc, n))
     ;;
-    let patt m n =
+    let patt_node m n =
       if m = "" then MLast.PaUid (loc, n)
       else MLast.PaAcc (loc, MLast.PaUid (loc, m), MLast.PaUid (loc, n))
     ;;
@@ -116,15 +116,12 @@ module Qast =
                       MLast.ExUid (loc, "VaVal")),
                    e)
           else e
-    and to_expr_label m (l, a) =
-      MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
-      to_expr m a
-    ;;
+    and to_expr_label m (l, e) = patt_node m l, to_expr m e;;
     let rec to_patt m =
       function
         Node (n, al) ->
           List.fold_left (fun e a -> MLast.PaApp (loc, e, to_patt m a))
-            (patt m n) al
+            (patt_node m n) al
       | List al ->
           List.fold_right
             (fun a p ->
@@ -174,10 +171,7 @@ module Qast =
                       MLast.PaUid (loc, "VaVal")),
                    p)
           else p
-    and to_patt_label m (l, a) =
-      MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
-      to_patt m a
-    ;;
+    and to_patt_label m (l, a) = patt_node m l, to_patt m a;;
   end
 ;;
 

@@ -105,7 +105,7 @@ type 'a vala =
   | VaVal of 'a
 ;;
    (** Encloser of many abstract syntax tree nodes types, in "strict" mode.
-       Thhis allow the system of antiquotations of abstract syntax tree
+       This allow the system of antiquotations of abstract syntax tree
        quotations to work when using the quotation kit [q_ast.cmo]. *)
 
 val call_with : 'a ref -> 'a -> ('b -> 'c) -> 'b -> 'c;;
