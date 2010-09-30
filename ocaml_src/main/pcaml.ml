@@ -94,8 +94,10 @@ let quotation_location () =
 let expand_quotation gloc expander shift name str =
   let new_warning =
     let warn = !warning in
-    let shift = Ploc.first_pos gloc + shift in
-    fun loc txt -> warn (Ploc.shift shift loc) txt
+    fun loc txt ->
+      let bp = Ploc.first_pos loc in
+      let ep = Ploc.last_pos loc in
+      let loc = Ploc.sub gloc (shift + bp) (ep - bp) in warn loc txt
   in
   let restore =
     let old_warning = !warning in

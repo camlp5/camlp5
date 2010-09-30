@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.5 2010/09/30 16:18:19 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.6 2010/09/30 19:43:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -94,8 +94,11 @@ value quotation_location () =
 value expand_quotation gloc expander shift name str = do {
   let new_warning =
     let warn = warning.val in
-    let shift = Ploc.first_pos gloc + shift in
-    fun loc txt -> warn (Ploc.shift shift loc) txt
+    fun loc txt ->
+      let bp = Ploc.first_pos loc in
+      let ep = Ploc.last_pos loc in
+      let loc = Ploc.sub gloc (shift + bp) (ep - bp) in
+      warn loc txt
   in
   let restore =
     let old_warning = warning.val in
