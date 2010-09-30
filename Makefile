@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2010/09/29 02:32:05 deraugla Exp $
+# $Id: Makefile,v 6.3 2010/09/30 07:34:05 deraugla Exp $
 
 include config/Makefile
 
@@ -57,6 +57,7 @@ clean::
 	$(MAKE) clean_hot clean_cold
 	rm -f boot/*.cm[oi] boot/camlp5*
 	rm -rf boot/SAVED
+	cd test; $(MAKE) clean
 
 scratch: clean
 
