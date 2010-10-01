@@ -1709,6 +1709,7 @@ Grammar.extend
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'mod_ident))]];
+    (* Objects and Classes *)
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "class"); Gramext.Stoken ("", "type");
@@ -2301,6 +2302,7 @@ Grammar.extend
       Gramext.action
         (fun (l : 'class_longident) _ (m : string) (loc : Ploc.t) ->
            (mkident m :: l : 'class_longident))]];
+    (* Labels *)
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.After "arrow"),
     [None, Some Gramext.NonA,

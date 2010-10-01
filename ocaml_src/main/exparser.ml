@@ -505,6 +505,7 @@ let cparser loc bpo pc =
   let pc = left_factorize pc in
   let e = parser_cases loc pc in
   let e =
+    let loc = Ploc.with_comment loc "" in
     match bpo with
       Some bp ->
         MLast.ExLet
@@ -520,6 +521,7 @@ let cparser loc bpo pc =
     | None -> e
   in
   let p =
+    let loc = Ploc.with_comment loc "" in
     MLast.PaTyc
       (loc, MLast.PaLid (loc, strm_n),
        MLast.TyApp
@@ -547,6 +549,7 @@ let cparser_match loc me bpo pc =
   let iloc = Ploc.with_comment loc "" in
   let pc = parser_cases iloc pc in
   let e =
+    let loc = iloc in
     match bpo with
       Some bp ->
         MLast.ExLet
@@ -565,6 +568,7 @@ let cparser_match loc me bpo pc =
     MLast.ExLid (_, x) when x = strm_n -> e
   | _ ->
       let p =
+        let loc = iloc in
         if is_not_bound strm_n e then MLast.PaAny loc
         else MLast.PaLid (loc, strm_n)
       in

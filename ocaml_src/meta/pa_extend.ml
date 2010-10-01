@@ -1677,6 +1677,7 @@ let text_of_entry loc gmod e =
              MLast.TyLid (loc, "e")),
           MLast.TyQuo (loc, x.tvar)))
   in
+  let loc = Ploc.with_comment loc "" in
   let pos =
     match e.pos with
       Some pos -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), pos)
@@ -1813,8 +1814,10 @@ let let_in_of_extend loc gmod functor_version gl el args =
 let text_of_extend loc gmod gl el f =
   let el = List.map entry_of_a el in
   let gl = option_map (List.map mk_name2) gl in
+  let iloc = Ploc.with_comment loc "" in
   if !split_ext then
     let args =
+      let loc = iloc in
       List.map
         (fun e ->
            let (ent, pos, txt) = text_of_entry e.name.loc gmod e in
@@ -1845,10 +1848,11 @@ let text_of_extend loc gmod gl el f =
                 (loc, MLast.ExLid (loc, "aux"), MLast.ExUid (loc, "()"))))
         el
     in
-    let args = MLast.ExSeq (loc, args) in
+    let args = let loc = iloc in MLast.ExSeq (loc, args) in
     let_in_of_extend loc gmod false gl el args
   else
     let args =
+      let loc = iloc in
       List.fold_right
         (fun e el ->
            let (ent, pos, txt) = text_of_entry e.name.loc gmod e in
@@ -1863,12 +1867,14 @@ let text_of_extend loc gmod gl el f =
                    MLast.ExLid (loc, "obj")),
                 ent)
            in
-           let e = MLast.ExTup (loc, [ent; pos; txt]) in
+           let e =
+             let loc = e.name.loc in MLast.ExTup (loc, [ent; pos; txt])
+           in
            MLast.ExApp
              (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), e), el))
         el (MLast.ExUid (loc, "[]"))
     in
-    let args = let_in_of_extend loc gmod false gl el args in
+    let args = let_in_of_extend iloc gmod false gl el args in
     MLast.ExApp (loc, f, args)
 ;;
 

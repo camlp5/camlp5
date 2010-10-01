@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.33 2010/10/01 10:18:23 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.34 2010/10/01 13:12:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -995,7 +995,8 @@ EXTEND_PRINTER
                        sequence_box (fun pc () -> pprintf pc "fun %p ->"
                          (plist patt 4) pl) pc sel
                    | None ->
-                       pprintf pc "fun %p ->@;%p" (plist patt 4) pl curr e1 ])
+                       pprintf pc "fun %p ->@;%p" (plist patt 4) pl
+                         (comm_expr curr) e1 ])
           | [] -> pprintf pc "fun []"
           | pwel -> pprintf pc "@[<b>fun@ %p@]" match_assoc_list pwel ]
       | <:expr< try $e1$ with [ $list:pwel$ ] >> |

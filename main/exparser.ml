@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: exparser.ml,v 6.2 2010/10/01 12:31:07 deraugla Exp $ *)
+(* $Id: exparser.ml,v 6.3 2010/10/01 13:12:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -353,11 +353,15 @@ value cparser loc bpo pc =
   let pc = left_factorize pc in
   let e = parser_cases loc pc in
   let e =
+    let loc = Ploc.with_comment loc "" in
     match bpo with
     [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $e$ >>
     | None -> e ]
   in
-  let p = <:patt< ($lid:strm_n$ : Stream.t _) >> in
+  let p =
+    let loc = Ploc.with_comment loc "" in
+    <:patt< ($lid:strm_n$ : Stream.t _) >>
+  in
   <:expr< fun $p$ -> $e$ >>
 ;
 
@@ -373,6 +377,7 @@ value cparser_match loc me bpo pc =
   let iloc = Ploc.with_comment loc "" in
   let pc = parser_cases iloc pc in
   let e =
+    let loc = iloc in
     match bpo with
     [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>
     | None -> pc ]
@@ -381,6 +386,7 @@ value cparser_match loc me bpo pc =
   [ <:expr< $lid:x$ >> when x = strm_n -> e
   | _ ->
       let p =
+        let loc = iloc in
         if is_not_bound strm_n e then <:patt< _ >>
         else <:patt< $lid:strm_n$ >>
       in

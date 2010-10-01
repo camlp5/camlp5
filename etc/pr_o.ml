@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.37 2010/10/01 12:10:46 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.38 2010/10/01 13:12:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -874,9 +874,10 @@ EXTEND_PRINTER
               let pl = List.map (fun p -> (p, "")) pl in
               if List.mem pc.dang ["|"; ";"] then
                 pprintf pc "(fun %p ->@;<1 3>%q)" (plist simple_patt 4) pl
-                  expr e1 ""
+                  (comm_expr expr) e1 ""
               else
-                pprintf pc "fun %p ->@;%p" (plist simple_patt 4) pl expr e1
+                pprintf pc "fun %p ->@;%p" (plist simple_patt 4) pl
+                  (comm_expr expr) e1
           | [] ->
               let loc = MLast.loc_of_expr ge in
               if List.mem pc.dang ["|"; ";"] then
@@ -1174,7 +1175,7 @@ EXTEND_PRINTER
           [ Some _ -> pprintf pc "@[<1>(%q)@]" expr z ""
           | None ->
               let xl = List.map (fun x -> (x, ";")) xl in
-              pprintf pc "@[<1>[%p]@]" (plist expr1 0) xl ]
+              pprintf pc "@[<1>[%p]@]" (plist (comm_expr expr1) 0) xl ]
       | <:expr< ($e$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       | <:expr< (module $me$ : $mt$) >> ->

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extend.ml,v 6.3 2010/09/19 09:56:36 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 6.4 2010/10/01 13:12:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -882,6 +882,7 @@ value text_of_entry loc gmod e =
     let loc = e.name.loc in
     <:expr< ($x.expr$ : $uid:gmod$.Entry.e '$x.tvar$) >>
   in
+  let loc = Ploc.with_comment loc "" in
   let pos =
     match e.pos with
     [ Some pos -> <:expr< Some $pos$ >>
@@ -969,8 +970,10 @@ value let_in_of_extend loc gmod functor_version gl el args =
 value text_of_extend loc gmod gl el f =
   let el = List.map entry_of_a el in
   let gl = option_map (List.map mk_name2) gl in
+  let iloc = Ploc.with_comment loc "" in
   if split_ext.val then
     let args =
+      let loc = iloc in
       List.map
         (fun e ->
            let (ent, pos, txt) = text_of_entry e.name.loc gmod e in
@@ -979,19 +982,26 @@ value text_of_extend loc gmod gl el f =
            <:expr< let aux () = $f$ [$e$] in aux () >>)
         el
     in
-    let args = <:expr< do { $list:args$ } >> in
+    let args =
+      let loc = iloc in
+      <:expr< do { $list:args$ } >>
+    in
     let_in_of_extend loc gmod False gl el args
   else
     let args =
+      let loc = iloc in
       List.fold_right
         (fun e el ->
            let (ent, pos, txt) = text_of_entry e.name.loc gmod e in
            let ent = <:expr< $uid:gmod$.Entry.obj $ent$ >> in
-           let e = <:expr< ($ent$, $pos$, $txt$) >> in
+           let e =
+             let loc = e.name.loc in
+             <:expr< ($ent$, $pos$, $txt$) >>
+           in
            <:expr< [$e$ :: $el$] >>)
         el <:expr< [] >>
     in
-    let args = let_in_of_extend loc gmod False gl el args in
+    let args = let_in_of_extend iloc gmod False gl el args in
     <:expr< $f$ $args$ >>
 ;
 

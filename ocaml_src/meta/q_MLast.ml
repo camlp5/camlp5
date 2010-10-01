@@ -4215,6 +4215,7 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (Qast.List [mkident i] : 'mod_ident))]];
+    (* Objects and Classes *)
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "class"); Gramext.Stoken ("", "type");
@@ -5656,6 +5657,7 @@ Grammar.extend
       Gramext.action
         (fun (l : 'class_longident) _ (m : string) (loc : Ploc.t) ->
            (Qast.Cons (mkident m, l) : 'class_longident))]];
+    (* Labels *)
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.After "arrow"),
     [None, Some Gramext.NonA,
@@ -6766,6 +6768,7 @@ Grammar.extend
       [Gramext.Stoken ("", "to")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Bool true : 'direction_flag))]];
+    (* Antiquotations for local entries *)
     Grammar.Entry.obj (a_ti : 'a_ti Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT", "")],

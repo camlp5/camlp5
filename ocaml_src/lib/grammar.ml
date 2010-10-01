@@ -892,17 +892,15 @@ let rec start_parser_of_levels entry clevn =
           match levs with
             [] ->
               (fun levn strm ->
+                 (* this code should be there but is commented to preserve
+                    compatibility with previous versions... with this code,
+                    the grammar entry e: [[ "x"; a = e | "y" ]] should fail
+                    because it should be: e: [RIGHTA[ "x"; a = e | "y" ]]...
+                 if levn > clevn then match strm with parser []
+                 else
+                 *)
                  let (strm__ : _ Stream.t) = strm in
-                 let bp =
-                   (* this code should be there but is commented to preserve
-                      compatibility with previous versions... with this code,
-                      the grammar entry e: [[ "x"; a = e | "y" ]] should fail
-                      because it should be: e: [RIGHTA[ "x"; a = e | "y" ]]...
-                   if levn > clevn then match strm with parser []
-                   else
-                   *)
-                   Stream.count strm__
-                 in
+                 let bp = Stream.count strm__ in
                  let act = p2 strm__ in
                  let ep = Stream.count strm__ in
                  let a = app act (loc_of_token_interval bp ep) in
