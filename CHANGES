@@ -36,7 +36,7 @@ Camlp5 Version 6.00:
       to use "declare .. end".
 * [30 Aug 10] pa_macro.cmo: added ability to use ELSIFDEF and ELSIFNDEF
   in expressions, structure items and signature items.
-* [27 Aug 10] Fixed bug in pa_macro.cmo A AND B computed B AND B = B.
+* [27 Aug 10] Fixed bug in pa_macro.cmo A AND B computed B AND B.
 * [26 Aug 10] Fixed wrong behaviour: char '"' was printed '\"'.
 * [25 Aug 10] Added option -no-opt in configure, not to use .opt versions
   of OCaml compilers.
