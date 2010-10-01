@@ -145,11 +145,6 @@ let parse_quotation_result entry loc shift name str =
       let exc1 = Qerror (name, ctx, exc) in Ploc.raise loc exc1
 ;;
 
-let loc_with_comment loc comm =
-  Ploc.make_loc (Ploc.file_name loc) (Ploc.line_nb loc) (Ploc.bol_pos loc)
-    (Ploc.first_pos loc, Ploc.last_pos loc) comm
-;;
-
 let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
   let (name, locate) =
     let len = String.length name in
@@ -186,7 +181,7 @@ let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
     fun _ ->
       match !evaluated with
         Some loc -> loc
-      | None -> evaluated := Some (loc_with_comment loc ""); loc
+      | None -> evaluated := Some (Ploc.with_comment loc ""); loc
   in
   reloc floc shift ast
 ;;

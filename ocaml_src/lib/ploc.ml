@@ -41,6 +41,10 @@ let with_ep l ep =
   {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp;
    ep = ep; comm = l.comm}
 ;;
+let with_comm l comm =
+  {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp;
+   ep = l.ep; comm = comm}
+;;
 
 let encl loc1 loc2 =
   if loc1.bp < loc2.bp then with_ep loc1 (max loc1.ep loc2.ep)

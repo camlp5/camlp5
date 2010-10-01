@@ -101,19 +101,18 @@ and no_raising_failure_fun =
 ;;
 
 let rec subst v e =
-  let loc = MLast.loc_of_expr e in
   match e with
-    MLast.ExLid (_, x) ->
+    MLast.ExLid (loc, x) ->
       let x = if x = v then strm_n else x in MLast.ExLid (loc, x)
   | MLast.ExUid (_, _) -> e
   | MLast.ExInt (_, _, "") -> e
   | MLast.ExChr (_, _) -> e
   | MLast.ExStr (_, _) -> e
   | MLast.ExAcc (_, _, _) -> e
-  | MLast.ExLet (_, rf, pel, e) ->
+  | MLast.ExLet (loc, rf, pel, e) ->
       MLast.ExLet (loc, rf, List.map (subst_pe v) pel, subst v e)
-  | MLast.ExApp (_, e1, e2) -> MLast.ExApp (loc, subst v e1, subst v e2)
-  | MLast.ExTup (_, el) -> MLast.ExTup (loc, List.map (subst v) el)
+  | MLast.ExApp (loc, e1, e2) -> MLast.ExApp (loc, subst v e1, subst v e2)
+  | MLast.ExTup (loc, el) -> MLast.ExTup (loc, List.map (subst v) el)
   | _ -> raise Not_found
 and subst_pe v (p, e) =
   match p with
@@ -132,9 +131,7 @@ let rec perhaps_bound s =
 
 let wildcard_if_not_bound p e =
   match p with
-    MLast.PaLid (_, s) ->
-      if perhaps_bound s e then p
-      else let loc = MLast.loc_of_patt p in MLast.PaAny loc
+    MLast.PaLid (loc, s) -> if perhaps_bound s e then p else MLast.PaAny loc
   | _ -> p
 ;;
 
@@ -547,7 +544,8 @@ let rec is_not_bound s =
 
 let cparser_match loc me bpo pc =
   let pc = left_factorize pc in
-  let pc = parser_cases loc pc in
+  let iloc = Ploc.with_comment loc "" in
+  let pc = parser_cases iloc pc in
   let e =
     match bpo with
       Some bp ->

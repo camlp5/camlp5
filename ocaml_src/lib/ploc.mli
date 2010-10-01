@@ -76,6 +76,8 @@ val after : t -> int -> int -> t;;
    (** [Ploc.after loc sh len] is the location just after loc (starting at
        the end position of [loc]) shifted with [sh] characters and of length
        [len]. *)
+val with_comment : t -> string -> t;;
+   (** Change the comment part of the given location *)
 
 (* miscellaneous *)
 
