@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.34 2010/10/01 13:12:19 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.35 2010/10/01 13:38:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1269,7 +1269,7 @@ EXTEND_PRINTER
               let expr2 pc x = pprintf pc "%p ::@ %p" expr x expr y in
               pprintf pc "@[<1>[%p]@]" (plistl expr expr2 0) xl
           | None ->
-              pprintf pc "@[<1>[%p]@]" (plist expr 0) xl ]
+              pprintf pc "[%p]" (plist (comm_expr expr) 1) xl ]
       | <:expr< ($e$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       |  <:expr< (module $me$ : $mt$) >> ->
