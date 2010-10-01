@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 6.5 2010/09/29 14:00:52 deraugla Exp $ *)
+(* $Id: prtools.ml,v 6.6 2010/10/01 09:42:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -414,8 +414,17 @@ value adjust_comment_indentation ind s nl_bef ind_bef =
         loop olen i
 ;
 
+value eight_chars = String.make 8 ' ';
+value expand_tabs s =
+  loop 0 0 where rec loop len i =
+    if i = String.length s then Buff.get len
+    else if s.[i] = '\t' then loop (Buff.mstore len eight_chars) (i + 1)
+    else loop (Buff.store len s.[i]) (i + 1)
+;
+
 value comm_bef ind loc =
-  let (s, nl_bef, ind_bef) = comment_info (Ploc.comment loc) in
+  let s = expand_tabs (Ploc.comment loc) in
+  let (s, nl_bef, ind_bef) = comment_info s in
   adjust_comment_indentation ind s nl_bef ind_bef
 ;
 

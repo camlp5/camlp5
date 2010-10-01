@@ -402,8 +402,19 @@ let adjust_comment_indentation ind s nl_bef ind_bef =
     loop olen 0
 ;;
 
+let eight_chars = String.make 8 ' ';;
+let expand_tabs s =
+  let rec loop len i =
+    if i = String.length s then Buff.get len
+    else if s.[i] = '\t' then loop (Buff.mstore len eight_chars) (i + 1)
+    else loop (Buff.store len s.[i]) (i + 1)
+  in
+  loop 0 0
+;;
+
 let comm_bef ind loc =
-  let (s, nl_bef, ind_bef) = comment_info (Ploc.comment loc) in
+  let s = expand_tabs (Ploc.comment loc) in
+  let (s, nl_bef, ind_bef) = comment_info s in
   adjust_comment_indentation ind s nl_bef ind_bef
 ;;
 
