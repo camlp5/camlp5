@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 6.6 2010/10/01 09:42:48 deraugla Exp $ *)
+(* $Id: prtools.ml,v 6.7 2010/10/01 11:57:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -372,7 +372,7 @@ module Buff =
 value comment_info s =
   loop 0 0 0 where rec loop i nl_bef ind_bef =
     if i >= String.length s then ("", 0, 0)
-    else if s.[i] = '\n' then loop (i + 1) (nl_bef + 1) ind_bef
+    else if s.[i] = '\n' then loop (i + 1) (nl_bef + 1) 0
     else if s.[i] = ' ' then loop (i + 1) nl_bef (ind_bef + 1)
     else do {
       let s = String.sub s i (String.length s - i) in

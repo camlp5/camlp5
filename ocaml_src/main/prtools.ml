@@ -355,7 +355,7 @@ module Buff =
 let comment_info s =
   let rec loop i nl_bef ind_bef =
     if i >= String.length s then "", 0, 0
-    else if s.[i] = '\n' then loop (i + 1) (nl_bef + 1) ind_bef
+    else if s.[i] = '\n' then loop (i + 1) (nl_bef + 1) 0
     else if s.[i] = ' ' then loop (i + 1) nl_bef (ind_bef + 1)
     else let s = String.sub s i (String.length s - i) in s, nl_bef, ind_bef
   in
