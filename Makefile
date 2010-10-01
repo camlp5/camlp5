@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.3 2010/09/30 07:34:05 deraugla Exp $
+# $Id: Makefile,v 6.4 2010/10/01 15:35:48 deraugla Exp $
 
 include config/Makefile
 
@@ -31,9 +31,13 @@ ocaml_src/lib/versdep.ml:
 
 boot/camlp5$(EXE): $(COLD_FILES)
 	cd ocaml_stuff; $(MAKE)
-	$(MAKE) clean_cold library_cold compile_cold
+	$(MAKE) clean_cold
+	$(MAKE) library_cold
+	$(MAKE) compile_cold
 	$(MAKE) promote_cold
-	$(MAKE) clean_cold clean_hot library
+	$(MAKE) clean_cold
+	$(MAKE) clean_hot
+	$(MAKE) library
 
 clean_hot:
 	cd ocaml_stuff; $(MAKE) clean
@@ -97,7 +101,12 @@ cleanboot:
 
 # Core and core bootstrap
 
-coreboot: backup promote clean_hot core compare
+coreboot:
+	$(MAKE) backup
+	$(MAKE) promote
+	$(MAKE) clean_hot
+	$(MAKE) core
+	$(MAKE) compare
 
 core: boot/camlp5$(EXE)
 	cd ocaml_stuff; $(MAKE) all
@@ -111,20 +120,24 @@ clean_core:
 
 world:
 	$(MAKE) core
-	$(MAKE) coreboot all
+	$(MAKE) coreboot
+	$(MAKE) all
 
 world.opt:
 	$(MAKE) core
-	$(MAKE) coreboot all opt opt.opt
+	$(MAKE) coreboot
+	$(MAKE) all
+	$(MAKE) opt
+	$(MAKE) opt.opt
 
 library:
 	cd ocaml_stuff; $(MAKE)
-	cd lib; $(MAKE) all promote
+	cd lib; $(MAKE) all; $(MAKE) promote
 
 # Cold start using pure Objective Caml sources
 
 library_cold:
-	cd ocaml_src/lib; $(MAKE) all promote
+	cd ocaml_src/lib; $(MAKE) all; $(MAKE) promote
 
 compile_cold:
 	cd ocaml_src; set -e; \
