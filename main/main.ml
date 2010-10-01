@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 6.6 2010/09/30 19:12:31 deraugla Exp $ *)
+(* $Id: main.ml,v 6.7 2010/10/01 04:50:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -23,7 +23,7 @@ value print_location loc =
   if fname <> "-" then
     let line = Ploc.line_nb loc in
     let bol = Ploc.bol_pos loc in
-    eprintf "%s" (string_of_loc fname line (bp - bol) (ep - bol))
+    eprintf "%s" (string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
   else
     eprintf "At location %d-%d\n" bp ep
 ;
