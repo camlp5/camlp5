@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.36 2010/10/01 11:57:39 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.37 2010/10/01 12:10:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -972,16 +972,16 @@ EXTEND_PRINTER
                else
                  pprintf pc "let%s %qin@ %p" (if rf then " rec" else "")
                    (vlist2 let_binding (and_before let_binding)) pel ""
-(*
+(**)
                    (if Ploc.first_pos loc =
                        Ploc.first_pos (MLast.loc_of_expr e)
                     then
                       (* comes from a 'where' in revised syntax *)
                       expr
                     else expr_with_comm_except_if_sequence)
-*)
+(*
                    expr_with_comm_except_if_sequence
-(**)
+*)
                   e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me

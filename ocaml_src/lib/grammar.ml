@@ -893,13 +893,6 @@ let rec start_parser_of_levels entry clevn =
             [] ->
               (fun levn strm ->
                  let (strm__ : _ Stream.t) = strm in
-                 (* this code should be there but is commented to preserve
-                    compatibility with previous versions... with this code,
-                    the grammar entry e: [[ "x"; a = e | "y" ]] should fail
-                    because it should be: e: [RIGHTA[ "x"; a = e | "y" ]]...
-                 if levn > clevn then match strm with parser []
-                 else
-                 *)
                  let bp =
                    (* this code should be there but is commented to preserve
                       compatibility with previous versions... with this code,

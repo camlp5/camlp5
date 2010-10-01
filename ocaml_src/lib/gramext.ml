@@ -116,10 +116,6 @@ let rec eq_symbol s1 s2 =
         | DeadEnd, DeadEnd -> true
         | _ -> false
       in
-      (* The only goal of the node 'Sfacto' is to allow tree comparison
-         (therefore factorization) without looking at the semantic
-         actions; allow factorization of rules like "SV foo" which are
-         actually expanded into a tree. *)
       eq_tree t1 t2
   | _ -> s1 = s2
 ;;

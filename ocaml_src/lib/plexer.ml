@@ -1346,7 +1346,7 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 696, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 696, 25)));
        Plexing.tok_using =
          (fun _ -> raise (Match_failure ("plexer.ml", 696, 45)));
        Plexing.tok_removing =
