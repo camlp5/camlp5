@@ -49,6 +49,7 @@ let encl loc1 loc2 =
 let shift sh loc = with_bp_ep loc (sh + loc.bp) (sh + loc.ep);;
 let sub loc sh len = with_bp_ep loc (loc.bp + sh) (loc.bp + sh + len);;
 let after loc sh len = with_bp_ep loc (loc.ep + sh) (loc.ep + sh + len);;
+let with_comment loc comm = with_comm loc comm;;
 
 let name = ref "loc";;
 

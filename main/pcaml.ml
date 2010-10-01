@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.7 2010/09/30 20:41:55 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.8 2010/10/01 12:31:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -155,11 +155,6 @@ value parse_quotation_result entry loc shift name str =
       Ploc.raise loc exc1 ]
 ;
 
-value loc_with_comment loc comm =
-  Ploc.make_loc (Ploc.file_name loc) (Ploc.line_nb loc) (Ploc.bol_pos loc)
-    (Ploc.first_pos loc, Ploc.last_pos loc) comm
-;
-
 value handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
   let (name, locate) =
     let len = String.length name in
@@ -197,7 +192,7 @@ value handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
       match evaluated.val with
       [ Some loc -> loc
       | None -> do {
-          evaluated.val := Some (loc_with_comment loc "");
+          evaluated.val := Some (Ploc.with_comment loc "");
           loc
         } ]
   in

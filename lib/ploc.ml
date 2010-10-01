@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.6 2010/09/29 12:22:11 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.7 2010/10/01 12:31:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -53,6 +53,7 @@ value sub loc sh len = {(loc) with bp = loc.bp + sh; ep = loc.bp + sh + len};
 value after loc sh len =
   {(loc) with bp = loc.ep + sh; ep = loc.ep + sh + len}
 ;
+value with_comment loc comm = {(loc) with comm = comm};
 
 value name = ref "loc";
 

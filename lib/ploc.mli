@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 6.4 2010/09/30 09:47:52 deraugla Exp $ *)
+(* $Id: ploc.mli,v 6.5 2010/10/01 12:31:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Locations and some pervasive type and value. *)
@@ -76,6 +76,8 @@ value after : t -> int -> int -> t;
    (** [Ploc.after loc sh len] is the location just after loc (starting at
        the end position of [loc]) shifted with [sh] characters and of length
        [len]. *)
+value with_comment : t -> string -> t;
+   (** Change the comment part of the given location *)
 
 (* miscellaneous *)
 

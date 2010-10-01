@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: exparser.ml,v 6.1 2010/09/15 16:00:24 deraugla Exp $ *)
+(* $Id: exparser.ml,v 6.2 2010/10/01 12:31:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -83,9 +83,8 @@ and no_raising_failure_fun =
 ;
 
 value rec subst v e =
-  let loc = MLast.loc_of_expr e in
   match e with
-  [ <:expr< $lid:x$ >> ->
+  [ <:expr:< $lid:x$ >> ->
       let x = if x = v then strm_n else x in
       <:expr< $lid:x$ >>
   | <:expr< $uid:_$ >> -> e
@@ -93,10 +92,10 @@ value rec subst v e =
   | <:expr< $chr:_$ >> -> e
   | <:expr< $str:_$ >> -> e
   | <:expr< $_$ . $_$ >> -> e
-  | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+  | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       <:expr< let $flag:rf$ $list:List.map (subst_pe v) pel$ in $subst v e$ >>
-  | <:expr< $e1$ $e2$ >> -> <:expr< $subst v e1$ $subst v e2$ >>
-  | <:expr< ( $list:el$ ) >> -> <:expr< ( $list:List.map (subst v) el$ ) >>
+  | <:expr:< $e1$ $e2$ >> -> <:expr< $subst v e1$ $subst v e2$ >>
+  | <:expr:< ( $list:el$ ) >> -> <:expr< ( $list:List.map (subst v) el$ ) >>
   | _ -> raise Not_found ]
 and subst_pe v (p, e) =
   match p with
@@ -115,11 +114,7 @@ value rec perhaps_bound s =
 
 value wildcard_if_not_bound p e =
   match p with
-  [ <:patt< $lid:s$ >> ->
-      if perhaps_bound s e then p
-      else
-        let loc = MLast.loc_of_patt p in
-        <:patt< _ >>
+  [ <:patt:< $lid:s$ >> -> if perhaps_bound s e then p else <:patt< _ >>
   | _ -> p ]
 ;
 
@@ -375,7 +370,8 @@ value rec is_not_bound s =
 
 value cparser_match loc me bpo pc =
   let pc = left_factorize pc in
-  let pc = parser_cases loc pc in
+  let iloc = Ploc.with_comment loc "" in
+  let pc = parser_cases iloc pc in
   let e =
     match bpo with
     [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>
