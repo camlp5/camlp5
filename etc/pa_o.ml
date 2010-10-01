@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.21 2010/09/30 20:41:54 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.22 2010/10/01 13:46:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -339,6 +339,20 @@ value quotation_content s = do {
     else loop (i + 1)
 };
 
+value concat_comm loc e =
+  let loc =
+    Ploc.with_comment loc
+      (Ploc.comment loc ^ Ploc.comment (MLast.loc_of_expr e))
+  in
+  let floc =
+    let first = ref True in
+    fun loc1 ->
+      if first.val then do {first.val := False; loc}
+      else loc1
+  in
+  Reloc.expr floc 0 e
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
@@ -644,7 +658,7 @@ EXTEND
       | "("; el = V e_phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ")" -> <:expr< $e$ >>
-      | "begin"; e = SELF; "end" -> <:expr< $e$ >>
+      | "begin"; e = SELF; "end" -> concat_comm loc <:expr< $e$ >>
       | "begin"; "end" -> <:expr< () >>
       | x = QUOTATION ->
           let con = quotation_content x in
