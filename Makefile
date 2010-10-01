@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.4 2010/10/01 15:35:48 deraugla Exp $
+# $Id: Makefile,v 6.5 2010/10/01 18:20:27 deraugla Exp $
 
 include config/Makefile
 
@@ -23,7 +23,7 @@ out: boot/camlp5$(EXE)
 opt:
 	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
 
-opt.opt:
+opt.opt: opt
 	cd compile; $(MAKE) opt
 
 ocaml_src/lib/versdep.ml:
@@ -69,7 +69,12 @@ always:
 
 # Normal bootstrap
 
-bootstrap: backup promote clean_hot all compare
+bootstrap:
+	$(MAKE) backup
+	$(MAKE) promote
+	$(MAKE) clean_hot
+	$(MAKE) all
+	$(MAKE) compare
 
 backup:
 	mkdir boot.new
