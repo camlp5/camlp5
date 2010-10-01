@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.34 2010/09/30 16:26:31 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.35 2010/10/01 10:18:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1145,9 +1145,9 @@ EXTEND_PRINTER
             else lel
           in
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          pprintf pc "@[<1>{%p}@]"
+          pprintf pc "@[{%p}@]"
             (plistl (comm_patt_any (record_binding False))
-               (comm_patt_any (record_binding True)) 0)
+               (comm_patt_any (record_binding True)) 1)
             lxl
       | <:expr< {($e$) with $list:lel$} >> as z -> do {
           if flag_compatible_old_versions_of_ocaml.val then do {
@@ -1156,9 +1156,9 @@ EXTEND_PRINTER
           else do {
             let dot_expr = Eprinter.apply_level pr_expr "dot" in
             let lxl = List.map (fun lx -> (lx, ";")) lel in
-            pprintf pc "@[<1>@[{%p with @]%p}@]" dot_expr e
+            pprintf pc "@[{%p with @]%p}" dot_expr e
               (plistl (comm_patt_any (record_binding False))
-                 (comm_patt_any (record_binding True)) 0)
+                 (comm_patt_any (record_binding True)) 1)
               lxl
           }
         }

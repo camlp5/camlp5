@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.32 2010/09/30 16:26:31 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.33 2010/10/01 10:18:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1249,12 +1249,12 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p)@]" (plist expr 0) el
       | <:expr< {$list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          pprintf pc "@[<1>{%p}@]" (plist (comm_patt_any record_binding) 0)
+          pprintf pc "@[{%p}@]" (plist (comm_patt_any record_binding) 1)
             lxl
       | <:expr< {($e$) with $list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          pprintf pc "@[<1>{(%p) with@ %p}@]" expr e
-            (plist (comm_patt_any record_binding) 0) lxl
+          pprintf pc "@[{(%p) with@ %p}@]" expr e
+            (plist (comm_patt_any record_binding) 1) lxl
       | <:expr< [| $list:el$ |] >> ->
           if el = [] then pprintf pc "[| |]"
           else
