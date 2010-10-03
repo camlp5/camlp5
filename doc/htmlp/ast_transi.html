@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.28 2010/09/22 02:20:45 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.29 2010/10/03 00:17:20 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -518,7 +518,7 @@
   p -> e
 </pre>
 
-  <p>is represented by:</p>
+<p>is represented by:</p>
 
 <pre>
   (p, None, e)
@@ -1700,27 +1700,27 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>PvTag s True []</tt></td>
+    <td><tt>PvTag loc s True []</tt></td>
     <td align="center"><tt>`$s$</tt></td>
     <td>constructor</td>
   </tr>
   <tr>
-    <td><tt>PvTag s True lt</tt></td>
+    <td><tt>PvTag loc s True lt</tt></td>
     <td align="center"><tt>`$s$ of &amp; $list:lt$</tt></td>
     <td>constructor</td>
   </tr>
   <tr>
-    <td><tt>PvTag s False lt</tt></td>
+    <td><tt>PvTag loc s False lt</tt></td>
     <td align="center"><tt>`$s$ of $list:lt$</tt></td>
     <td>constructor</td>
   </tr>
   <tr>
-    <td><tt>PvTag s b lt</tt></td>
+    <td><tt>PvTag loc s b lt</tt></td>
     <td align="center"><tt>`$s$ of $flag:b$ $list:lt$</tt></td>
     <td>constructor</td>
   </tr>
   <tr>
-    <td><tt>PvInh t</tt></td>
+    <td><tt>PvInh loc t</tt></td>
     <td align="center"><tt>$t$</tt></td>
     <td>type</td>
   </tr>
