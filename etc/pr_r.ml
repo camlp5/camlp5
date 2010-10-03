@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.42 2010/10/03 20:47:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.43 2010/10/03 20:58:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -370,27 +370,8 @@ value can_be_displayed_as_where e =
   | _ -> None ]
 ;
 
-(* Pretty printing improvement (optional):
-   - display a "let" binding with the "where" construct
-*)
-value rec where_binding pc (rf, p, e, body) =
-  let (pl, body) = expr_fun_args body in
-  let pl = [p :: pl] in
-  match sequencify body with
-  [ Some sel ->
-      let bef pc () =
-        pprintf pc "%p@ where%s %p =" expr e (if rf then " rec" else "")
-          (hlist patt) pl
-      in
-      sequence_box bef pc sel
-  | None ->
-      pprintf pc "%p@ where%s %p =@;%p" expr e (if rf then " rec" else "")
-        (hlist patt) pl (comm_expr expr) body ]
-
-and expr_wh pc e =
-  match can_be_displayed_as_where e with
-  [ Some params -> where_binding pc params
-  | None -> expr pc e ]
+value forward_expr_wh = ref (fun []);
+value expr_wh pc e = forward_expr_wh.val pc e;
 
 (* Pretty printing improvements (optional):
    - prints "let f x = e" instead of "let f = fun x -> e"
@@ -404,7 +385,7 @@ and expr_wh pc e =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-and value_or_let_binding sequ pc (p, e) =
+value value_or_let_binding sequ pc (p, e) =
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
@@ -447,6 +428,7 @@ and value_or_let_binding sequ pc (p, e) =
              pprintf pc "%p@;%p" patt_eq () (comm_expr expr_wh) e
            else
              pprintf pc "@[<a>%p@;%p@ @]" patt_eq () (comm_expr expr_wh) e ])
+;
 
 (* Pretty printing improvement (optional):
    - print the sequence beginner at end of previous lines,
@@ -463,7 +445,7 @@ and value_or_let_binding sequ pc (p, e) =
    - may change a 'let' into a 'where' for the last statement of
      the sequence.
  *)
-and sequence_box bef pc sel =
+value rec sequence_box bef pc sel =
   pprintf pc "%p do {@;%p@ }" bef () hvlistseq sel
 
 and hvlistseq pc sel =
@@ -514,7 +496,31 @@ and let_up_to_in pc (rf, pel) =
     (fun () ->
        pprintf pc "let %s%pin" (if rf then "rec " else "")
          (vlist2 let_binding (and_before let_binding)) pel)
+
+(* Pretty printing improvement (optional):
+   - display a "let" binding with the "where" construct
+*)
+and where_binding pc (rf, p, e, body) =
+  let (pl, body) = expr_fun_args body in
+  let pl = [p :: pl] in
+  match sequencify body with
+  [ Some sel ->
+      let bef pc () =
+        pprintf pc "%p@ where%s %p =" expr e (if rf then " rec" else "")
+          (hlist patt) pl
+      in
+      sequence_box bef pc sel
+  | None ->
+      pprintf pc "%p@ where%s %p =@;%p" expr e (if rf then " rec" else "")
+        (hlist patt) pl (comm_expr expr) body ]
 ;
+
+value expr_wh pc e =
+  match can_be_displayed_as_where e with
+  [ Some params -> where_binding pc params
+  | None -> expr pc e ]
+;
+forward_expr_wh.val := expr_wh;
 
 value value_binding pc pe = value_or_let_binding sequence_box pc pe;
 
