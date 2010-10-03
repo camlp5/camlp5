@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.41 2010/10/03 12:15:47 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.42 2010/10/03 14:50:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -902,6 +902,11 @@ EXTEND_PRINTER
               let pl = [p1 :: pl] in
               let simple_patt = Eprinter.apply_level pr_patt "simple" in
               let pl = List.map (fun p -> (p, "")) pl in
+              let comm_expr expr =
+                match e1 with
+                [ <:expr< do { $list:_$ } >> -> expr
+                | _ -> comm_expr expr ]
+              in
               if List.mem pc.dang ["|"; ";"] then
                 pprintf pc "(fun %p ->@;<1 3>%q)" (plist simple_patt 4) pl
                   (comm_expr expr) e1 ""
