@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.39 2010/10/03 19:06:04 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.40 2010/10/03 19:30:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -409,8 +409,8 @@ and expr_wh pc e =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-and value_or_let_binding flag_where sequ pc (p, e) =
-  let expr_wh = if flag_where.val then expr_wh else expr in
+and value_or_let_binding sequ pc (p, e) =
+  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
     else
@@ -501,6 +501,13 @@ and vlistseq pc sel =
         pprintf pc "" ]
 
 and let_up_to_in pc (rf, pel) =
+  let let_binding pc pe =
+    let sequ bef pc sel =
+      if pc.aft = "" then sequence_box bef pc sel
+      else pprintf pc "%p@ " (sequence_box bef) sel
+    in
+    value_or_let_binding sequ pc pe
+  in
   let pc = {(pc) with aft = ""} in
   horiz_vertic_if True
     (fun () ->
@@ -509,18 +516,9 @@ and let_up_to_in pc (rf, pel) =
     (fun () ->
        pprintf pc "let %s%pin" (if rf then "rec " else "")
          (vlist2 let_binding (and_before let_binding)) pel)
-
-and let_binding pc pe =
-  let sequ bef pc sel =
-    if pc.aft = "" then sequence_box bef pc sel
-    else pprintf pc "%p@ " (sequence_box bef) sel
-  in
-  value_or_let_binding flag_where_after_let_eq sequ pc pe
 ;
 
-value value_binding pc pe =
-  value_or_let_binding flag_where_after_value_eq sequence_box pc pe
-;
+value value_binding pc pe = value_or_let_binding sequence_box pc pe;
 
 value match_assoc force_vertic pc (p, w, e) =
   let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
