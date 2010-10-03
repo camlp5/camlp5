@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.22 2010/10/01 13:46:11 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.23 2010/10/03 12:47:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -657,7 +657,7 @@ EXTEND
       | "("; op = operator_rparen -> <:expr< $lid:op$ >>
       | "("; el = V e_phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
-      | "("; e = SELF; ")" -> <:expr< $e$ >>
+      | "("; e = SELF; ")" -> concat_comm loc <:expr< $e$ >>
       | "begin"; e = SELF; "end" -> concat_comm loc <:expr< $e$ >>
       | "begin"; "end" -> <:expr< () >>
       | x = QUOTATION ->

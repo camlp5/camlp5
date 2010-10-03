@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.36 2010/10/03 12:15:47 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.37 2010/10/03 12:42:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1155,7 +1155,7 @@ EXTEND_PRINTER
             fun
             [ SE_let loc rf pel -> let_up_to_in pc (rf, pel)
             | SE_closed e -> pprintf pc "@[<1>(%p)@]" curr e
-            | SE_other e -> curr pc e ]
+            | SE_other e -> comm_expr curr pc e ]
           in
           horiz_vertic
             (fun () ->
