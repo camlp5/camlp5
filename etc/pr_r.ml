@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.38 2010/10/03 18:59:39 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.39 2010/10/03 19:06:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1096,18 +1096,7 @@ EXTEND_PRINTER
             [ Some sel -> sel
             | None -> List.map (fun e -> SE_other e) el ]
           in
-(*
-          let comm_expr expr pc =
-            fun
-            [ SE_let loc rf pel -> let_up_to_in pc (rf, pel)
-            | SE_closed e -> pprintf pc "@[<1>(%p)@]" (comm_expr expr) e
-            | SE_other e -> comm_expr expr pc e ]
-          in
-          pprintf pc "@[<a>do {@;%p@ }@]"
-            (hvlistl (semi_after (comm_expr curr)) (comm_expr curr)) sel
-*)
           pprintf pc "@[<a>do {@;%p@ }@]" vlistseq sel
-(**)
       | <:expr< while $e1$ do { $list:el$ } >> ->
           let sel =
             match el with
