@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.41 2010/10/03 20:08:55 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.42 2010/10/03 20:47:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -378,16 +378,11 @@ value rec where_binding pc (rf, p, e, body) =
   let pl = [p :: pl] in
   match sequencify body with
   [ Some sel ->
-      let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-      let comm_expr expr pc se =
-        match se with
-        [ SE_let loc rf pel -> let_up_to_in pc (rf, pel)
-        | SE_closed e -> pprintf pc "@[<1>(%p)@]" (comm_expr expr) e
-        | SE_other e -> comm_expr expr pc e ]
+      let bef pc () =
+        pprintf pc "%p@ where%s %p =" expr e (if rf then " rec" else "")
+          (hlist patt) pl
       in
-      pprintf pc "%p@ where%s %p = do {@;%p@ }" expr e
-        (if rf then " rec" else "") (hlist patt) pl
-        (hvlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) sel
+      sequence_box bef pc sel
   | None ->
       pprintf pc "%p@ where%s %p =@;%p" expr e (if rf then " rec" else "")
         (hlist patt) pl (comm_expr expr) body ]
@@ -469,10 +464,11 @@ and value_or_let_binding sequ pc (p, e) =
      the sequence.
  *)
 and sequence_box bef pc sel =
-  pprintf pc "%p do {@;%p@ }" bef () vlistseq sel
+  pprintf pc "%p do {@;%p@ }" bef () hvlistseq sel
 
-and vlistseq pc sel =
+and hvlistseq pc sel =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  let force_vertic = not (Pretty.horizontally ()) in
   loop pc sel where rec loop pc =
     fun
     [ [SE_let loc rf pel; SE_other e] ->
@@ -486,17 +482,19 @@ and vlistseq pc sel =
             sprintf "%s%s" (comm_bef pc loc) (where_binding pc params)
         | None ->
             sprintf "%s%s" (comm_bef pc loc)
-              (pprintf pc "@[<b>%p@ %p@]" (let_up_to_in) (rf, pel)
-                 (comm_expr expr_wh) e) ]
+              (pprintf pc "@[<i>%p@ %p@]" force_vertic (let_up_to_in)
+                 (rf, pel) (comm_expr expr_wh) e) ]
     | [SE_let loc rf pel :: sel] ->
         sprintf "%s%s" (comm_bef pc loc)
-          (pprintf pc "@[<b>%p@ %p@]" let_up_to_in (rf, pel) loop sel)
+          (pprintf pc "@[<i>%p@ %p@]" force_vertic let_up_to_in (rf, pel)
+            loop sel)
     | [SE_closed e :: sel] ->
-        pprintf pc "@[<b>@[<1>(%p);@]@ %p@]" (comm_expr expr_wh) e loop
-          sel
+        pprintf pc "@[<i>@[<1>(%p);@]@ %p@]" force_vertic (comm_expr expr_wh)
+          e loop sel
     | [SE_other e] -> comm_expr expr_wh pc e
     | [SE_other e :: sel] ->
-        pprintf pc "@[<b>%p;@ %p@]" (comm_expr expr_wh) e loop sel
+        pprintf pc "@[<i>%p;@ %p@]" force_vertic (comm_expr expr_wh) e loop
+          sel
     | [] ->
         pprintf pc "" ]
 
@@ -1094,7 +1092,7 @@ EXTEND_PRINTER
             [ Some sel -> sel
             | None -> List.map (fun e -> SE_other e) el ]
           in
-          pprintf pc "@[<a>do {@;%p@ }@]" vlistseq sel
+          pprintf pc "@[<a>do {@;%p@ }@]" hvlistseq sel
       | <:expr< while $e1$ do { $list:el$ } >> ->
           let sel =
             match el with
