@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.40 2010/10/03 19:30:45 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.41 2010/10/03 20:08:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -488,13 +488,13 @@ and vlistseq pc sel =
             sprintf "%s%s" (comm_bef pc loc)
               (pprintf pc "@[<b>%p@ %p@]" (let_up_to_in) (rf, pel)
                  (comm_expr expr_wh) e) ]
-    | [SE_other e] -> comm_expr expr_wh pc e
     | [SE_let loc rf pel :: sel] ->
         sprintf "%s%s" (comm_bef pc loc)
           (pprintf pc "@[<b>%p@ %p@]" let_up_to_in (rf, pel) loop sel)
     | [SE_closed e :: sel] ->
         pprintf pc "@[<b>@[<1>(%p);@]@ %p@]" (comm_expr expr_wh) e loop
           sel
+    | [SE_other e] -> comm_expr expr_wh pc e
     | [SE_other e :: sel] ->
         pprintf pc "@[<b>%p;@ %p@]" (comm_expr expr_wh) e loop sel
     | [] ->
