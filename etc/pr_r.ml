@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.35 2010/10/01 13:38:03 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.36 2010/10/03 12:15:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -229,11 +229,33 @@ value comm_bef pc loc =
   if flag_comments_in_phrases.val then Prtools.comm_bef pc.ind loc else ""
 ;
 
+value only_spaces s =
+  loop 0 where rec loop i =
+    if i = String.length s then True
+    else if s.[i] = ' ' then loop (i + 1)
+    else False
+;
+
+value strip_heading_spaces s =
+  loop 0 where rec loop i =
+    if i = String.length s then ""
+    else if s.[i] = ' ' then loop (i + 1)
+    else String.sub s i (String.length s - i)
+;
+
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
   let loc = MLast.loc_of_expr z in
   let ccc = comm_bef pc loc in
-  sprintf "%s%s" ccc (expr pc z)
+  if ccc = "" then expr pc z
+  else if only_spaces pc.bef then sprintf "%s%s" ccc (expr pc z)
+  else
+    expr
+      {(pc) with
+       bef =
+         sprintf "%s%s%s" pc.bef (strip_heading_spaces ccc)
+           (String.make (String.length pc.bef) ' ')}
+     z
 ;
 
 (* couple pattern/anytype with adding the possible comment before *)
