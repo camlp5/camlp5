@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.37 2010/10/03 12:42:04 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.38 2010/10/03 18:59:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -499,20 +499,6 @@ and vlistseq pc sel =
         pprintf pc "@[<b>%p;@ %p@]" (comm_expr expr_wh) e loop sel
     | [] ->
         pprintf pc "" ]
-
-and expr_no_where pc =
-  fun
-  [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
-      let curr = expr_no_where in
-      let expr_wh = expr_no_where in
-      gen_let curr expr_wh pc (rf, pel, e)
-  | e -> expr pc e ]
-
-and gen_let curr expr_wh pc (rf, pel, e) =
-  horiz_vertic_if (not flag_horiz_let_in.val)
-    (fun () -> pprintf pc "%p %p" let_up_to_in (rf, pel) curr e)
-    (fun () ->
-       pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh) e)
 
 and let_up_to_in pc (rf, pel) =
   let pc = {(pc) with aft = ""} in
@@ -1096,7 +1082,11 @@ EXTEND_PRINTER
               let expr_wh =
                 if flag_where_after_in.val then expr_wh else curr
               in
-              gen_let curr expr_wh pc (rf, pel, e) (* ] *)
+              horiz_vertic_if (not flag_horiz_let_in.val)
+                (fun () -> pprintf pc "%p %p" let_up_to_in (rf, pel) curr e)
+                (fun () ->
+                   pprintf pc "%p@ %p" let_up_to_in (rf, pel)
+                     (comm_expr expr_wh) e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
