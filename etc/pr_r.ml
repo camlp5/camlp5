@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.47 2010/10/04 09:55:48 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.48 2010/10/04 11:42:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -346,7 +346,7 @@ value sequencify e =
 (* Pretty printing improvement (optional):
    - test a "let" binding can be displayed as "where"
  *)
-value let_expr_can_be_displayed_as_where rf pel e =
+value can_be_displayed_as_where rf pel e =
   match pel with
   [ [(p, body)] ->
       let e1 =
@@ -361,13 +361,6 @@ value let_expr_can_be_displayed_as_where rf pel e =
           if f = g then Some (rf, p, e, body) else None
       | _ -> None ]
   | [_ :: _] | [] -> None ]
-;
-
-value can_be_displayed_as_where e =
-  match e with
-  [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
-      let_expr_can_be_displayed_as_where rf pel e
-  | _ -> None ]
 ;
 
 value forward_expr_wh = ref (fun []);
@@ -456,7 +449,7 @@ and hvlistseq pc sel =
     [ [SE_let loc rf pel; SE_other e] ->
         let disp_as_where =
           if flag_where_in_sequences.val then
-            let_expr_can_be_displayed_as_where rf pel e
+            can_be_displayed_as_where rf pel e
           else None
         in
         match disp_as_where with
@@ -516,7 +509,12 @@ and where_binding pc (rf, p, e, body) =
 ;
 
 value expr_wh pc e =
-  match can_be_displayed_as_where e with
+  match
+    match e with
+    [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+        can_be_displayed_as_where rf pel e
+    | _ -> None ]
+  with
   [ Some params -> where_binding pc params
   | None -> expr pc e ]
 ;
