@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.43 2010/10/03 20:58:11 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.44 2010/10/04 03:00:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -464,7 +464,7 @@ and hvlistseq pc sel =
             sprintf "%s%s" (comm_bef pc loc) (where_binding pc params)
         | None ->
             sprintf "%s%s" (comm_bef pc loc)
-              (pprintf pc "@[<i>%p@ %p@]" force_vertic (let_up_to_in)
+              (pprintf pc "@[<i>%p@ %p@]" force_vertic let_up_to_in
                  (rf, pel) (comm_expr expr_wh) e) ]
     | [SE_let loc rf pel :: sel] ->
         sprintf "%s%s" (comm_bef pc loc)
@@ -1075,20 +1075,13 @@ EXTEND_PRINTER
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
-      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> (*as ge*) ->
-(*
-          match flatten_sequence ge with
-          [ Some sel -> sequence_box (fun pc () -> pprintf pc "") pc sel
-          | None ->
-*)
-              let expr_wh =
-                if flag_where_after_in.val then expr_wh else curr
-              in
-              horiz_vertic_if (not flag_horiz_let_in.val)
-                (fun () -> pprintf pc "%p %p" let_up_to_in (rf, pel) curr e)
-                (fun () ->
-                   pprintf pc "%p@ %p" let_up_to_in (rf, pel)
-                     (comm_expr expr_wh) e)
+      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
+          let expr_wh = if flag_where_after_in.val then expr_wh else curr in
+          horiz_vertic_if (not flag_horiz_let_in.val)
+            (fun () -> pprintf pc "%p %p" let_up_to_in (rf, pel) curr e)
+            (fun () ->
+               pprintf pc "%p@ %p" let_up_to_in (rf, pel)
+                 (comm_expr expr_wh) e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
