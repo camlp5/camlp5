@@ -337,11 +337,9 @@ let comment ctx bp =
                     (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '\'' buf))
                     strm__
               end
-          | Some c ->
-              Stream.junk strm__;
-              comment (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '\'' buf))
-                strm__
-          | _ -> raise Stream.Failure
+          | _ ->
+              let buf = any ctx (Plexing.Lexbuf.add '\'' buf) strm__ in
+              comment buf strm__
         with Stream.Failure -> raise (Stream.Error "")
         end
     | _ ->
