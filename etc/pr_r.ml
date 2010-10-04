@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.46 2010/10/04 09:49:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.47 2010/10/04 09:55:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1114,21 +1114,19 @@ EXTEND_PRINTER
                 | None -> List.map (fun e -> SE_other e) el ]
             | _ -> List.map (fun e -> SE_other e) el ]
           in
-          let curr1 pc =
-            fun
-            [ SE_let loc rf pel -> let_up_to_in pc (rf, pel)
-            | SE_closed e -> pprintf pc "@[<1>(%p)@]" curr e
-            | SE_other e -> comm_expr curr pc e ]
-          in
           horiz_vertic
             (fun () ->
-               pprintf pc "for %s = %p %s %p do { %p }" v curr e1
-                 (if d then "to" else "downto") curr e2
-                 (hlistl (semi_after curr1) curr1) sel)
+               let bef pc () =
+                 pprintf pc "for %s = %p %s %p " v curr e1
+                   (if d then "to" else "downto") curr e2
+               in
+               pprintf pc "%pdo {@;%p@ }" bef () hvlistseq sel)
             (fun () ->
-               pprintf pc "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do {@]@;%p@ }@]"
-                 v curr e1 (if d then "to" else "downto") curr e2
-                 (vlist (semi_after curr1)) sel) ]
+               let bef pc () =
+                 pprintf pc "@[<a>for %s = %p %s@;<1 4>%p@ @]"
+                   v curr e1 (if d then "to" else "downto") curr e2
+               in
+               pprintf pc "%pdo {@;%p@ }" bef () hvlistseq sel) ]
     | "assign"
       [ <:expr< $x$ := $y$ >> -> operator pc next expr 2 ":=" x y ]
     | "or"
