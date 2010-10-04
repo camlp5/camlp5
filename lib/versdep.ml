@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.5 2010/09/29 18:15:46 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.6 2010/10/04 09:18:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -647,8 +647,10 @@ IFDEF OCAML_VERSION <= OCAML_3_04 THEN
         }
     ;
   end;
-ELSE
+ELSIFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
   value printf_ksprintf = Printf.kprintf;
+ELSE
+  value printf_ksprintf = Printf.ksprintf;
 END;
 
 value string_contains =
