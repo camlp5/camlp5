@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.1 2010/09/15 16:00:30 deraugla Exp $
+# $Id: Makefile,v 6.2 2010/10/04 14:16:39 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -12,7 +12,7 @@ all:
         done
 
 opt:
-	cd $(OVERSION)/utils; $(MAKE) opt
+	cd $(OVERSION)/utils; $(MAKE) opt; cd ../..
 
 clean:
 	set -e; \

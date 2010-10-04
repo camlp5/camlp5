@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.6 2010/10/04 09:18:35 deraugla Exp $
+# $Id: Makefile,v 6.7 2010/10/04 14:16:39 deraugla Exp $
 
 include config/Makefile
 
@@ -17,20 +17,20 @@ DESTDIR=
 all: out
 
 out: boot/camlp5$(EXE)
-	cd ocaml_stuff; $(MAKE)
+	cd ocaml_stuff; $(MAKE); cd ..
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done
 
 opt:
 	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
 
 opt.opt: opt
-	cd compile; $(MAKE) opt
+	cd compile; $(MAKE) opt; cd ..
 
 ocaml_src/lib/versdep.ml:
 	@echo "Please run 'configure' first"; exit 2
 
 boot/camlp5$(EXE): $(COLD_FILES)
-	cd ocaml_stuff; $(MAKE)
+	cd ocaml_stuff; $(MAKE); cd ..
 	$(MAKE) clean_cold
 	$(MAKE) library_cold
 	$(MAKE) compile_cold
@@ -40,28 +40,28 @@ boot/camlp5$(EXE): $(COLD_FILES)
 	$(MAKE) library
 
 clean_hot:
-	cd ocaml_stuff; $(MAKE) clean
-	for i in $(DIRS) compile; do (cd $$i; $(MAKE) clean); done
+	cd ocaml_stuff; $(MAKE) clean; cd ..
+	for i in $(DIRS) compile; do (cd $$i; $(MAKE) clean; cd ..); done
 
 depend:
-	cd etc; $(MAKE) pr_depend.cmo
-	cd ocaml_stuff; $(MAKE) depend
-	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend); done
+	cd etc; $(MAKE) pr_depend.cmo; cd ..
+	cd ocaml_stuff; $(MAKE) depend; cd ..
+	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
 install:
 	for i in $(DIRS) compile; do \
-	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR)); \
+	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
 	done
 
 uninstall:
 	rm -rf "$(LIBDIR)/camlp5"
-	cd "$(BINDIR)"; rm -f *camlp5* odyl ocpp
+	cd "$(BINDIR)"; rm -f *camlp5* odyl ocpp; cd ..
 
 clean::
 	$(MAKE) clean_hot clean_cold
 	rm -f boot/*.cm[oi] boot/camlp5*
 	rm -rf boot/SAVED
-	cd test; $(MAKE) clean
+	cd test; $(MAKE) clean; cd ..
 
 scratch: clean
 
@@ -89,11 +89,11 @@ restore:
 	mv boot.new boot
 
 promote:
-	for i in $(FDIRS); do (cd $$i; $(MAKE) promote); done
+	for i in $(FDIRS); do (cd $$i; $(MAKE) promote; cd ..); done
 
 compare:
 	@if (for i in $(FDIRS); do \
-		if (cd $$i; $(MAKE) compare 2>/dev/null); then :; \
+		if (cd $$i; $(MAKE) compare 2>/dev/null; cd ..); then :; \
 		else exit 1; fi; \
 	     done); \
 	then echo "Fixpoint reached, bootstrap succeeded."; \
@@ -114,11 +114,11 @@ coreboot:
 	$(MAKE) compare
 
 core: boot/camlp5$(EXE)
-	cd ocaml_stuff; $(MAKE) all
+	cd ocaml_stuff; $(MAKE) all; cd ..
 	set -e; for i in $(FDIRS); do cd $$i; $(MAKE) all; cd ..; done
 
 clean_core:
-	for i in $(FDIRS); do (cd $$i; $(MAKE) clean); done
+	for i in $(FDIRS); do (cd $$i; $(MAKE) clean; cd ..); done
 
 
 # Everything in one command
@@ -136,39 +136,39 @@ world.opt:
 	$(MAKE) opt.opt
 
 library:
-	cd ocaml_stuff; $(MAKE)
-	cd lib; $(MAKE) all
-	cd lib; $(MAKE) promote
+	cd ocaml_stuff; $(MAKE); cd ..
+	cd lib; $(MAKE) all; cd ..
+	cd lib; $(MAKE) promote; cd ..
 
 # Cold start using pure Objective Caml sources
 
 library_cold:
-	cd ocaml_src/lib; $(MAKE) all
-	cd ocaml_src/lib; $(MAKE) promote
+	cd ocaml_src/lib; $(MAKE) all; cd ../..
+	cd ocaml_src/lib; $(MAKE) promote; cd ../..
 
 compile_cold:
 	cd ocaml_src; set -e; \
 	for i in $(FDIRS); do \
 	  cd $$i; $(MAKE) all; cd ..; \
-	done
+	done; cd ..
 
 promote_cold:
 	for i in $(FDIRS); do \
-		(cd ocaml_src/$$i; $(MAKE) promote); \
+		(cd ocaml_src/$$i; $(MAKE) promote; cd ../..); \
 	done
 
 clean_cold:
 	for i in $(FDIRS); do \
-		(cd ocaml_src/$$i; $(MAKE) clean); \
+		(cd ocaml_src/$$i; $(MAKE) clean; cd ../..); \
 	done
 
 # Stealing some Ocaml compiler sources
 
 steal:
-	cd ocaml_stuff; $(MAKE) steal
+	cd ocaml_stuff; $(MAKE) steal; cd ..
 
 compare_stolen:
-	cd ocaml_stuff; $(MAKE) compare_stolen
+	cd ocaml_stuff; $(MAKE) compare_stolen; cd ..
 
 # Bootstrap the sources
 
