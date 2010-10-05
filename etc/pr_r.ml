@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.50 2010/10/05 08:54:03 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.51 2010/10/05 09:28:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1081,8 +1081,8 @@ EXTEND_PRINTER
           horiz_vertic_if (not flag_horiz_let_in.val)
             (fun () -> pprintf pc "%p %p" let_up_to_in (rf, pel) curr e)
             (fun () ->
-               pprintf pc "%p@ %p" let_up_to_in (rf, pel)
-                 (comm_expr expr_wh) e)
+               pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh)
+                 e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
