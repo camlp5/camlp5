@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.51 2010/10/05 09:28:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.52 2010/10/05 12:50:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -477,7 +477,7 @@ and hvlistseq pc sel =
 and let_up_to_in pc (rf, pel) =
   let let_binding pc pe =
     let sequ bef pc sel =
-      if pc.aft = "" then sequence_box bef pc sel
+      if pc.aft = "" then pprintf pc "%p" (sequence_box bef) sel
       else pprintf pc "%p@ " (sequence_box bef) sel
     in
     value_or_let_binding sequ pc pe
