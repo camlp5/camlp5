@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.49 2010/10/04 19:51:36 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.50 2010/10/05 08:54:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -378,7 +378,7 @@ value expr_wh pc e = forward_expr_wh.val pc e;
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value value_or_let_binding sequ pc (p, e) =
+value value_or_let_binding sequence_box pc (p, e) =
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
@@ -415,7 +415,8 @@ value value_or_let_binding sequ pc (p, e) =
          pprintf pc "%p =" (plistl patt patt_tycon 4) pl
        in
        match sequencify e with
-       [ Some sel -> sequ (fun pc () -> pprintf pc "%p " patt_eq ()) pc sel
+       [ Some sel ->
+           sequence_box (fun pc () -> pprintf pc "%p " patt_eq ()) pc sel
        | None ->
            if pc.aft = "" then
              pprintf pc "%p@;%p" patt_eq () (comm_expr expr_wh) e
