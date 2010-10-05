@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.53 2010/10/05 19:30:39 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.54 2010/10/05 19:36:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -410,8 +410,8 @@ value value_or_let_binding sequence_box pc (p, e) =
          pprintf pc "%p =" (plistl patt patt_tycon 4) pl
        in
        match sequencify e with
-       [ Some sel ->
-           sequence_box (fun pc () -> pprintf pc "%p " patt_eq ()) pc sel
+       [ Some se ->
+           sequence_box (fun pc () -> pprintf pc "%p " patt_eq ()) pc se
        | None ->
            if pc.aft = "" then
              pprintf pc "%p@;%p" patt_eq () (comm_expr expr_wh) e
@@ -434,13 +434,13 @@ value value_or_let_binding sequence_box pc (p, e) =
    - may change a 'let' into a 'where' for the last statement of
      the sequence.
  *)
-value rec sequence_box bef pc sel =
-  pprintf pc "%pdo {@;%p@ }" bef () hvseq sel
+value rec sequence_box bef pc se =
+  pprintf pc "%pdo {@;%p@ }" bef () hvseq se
 
-and hvseq pc sel =
+and hvseq pc se =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
   let force_vertic = not (Pretty.horizontally ()) in
-  loop pc sel where rec loop pc =
+  loop pc se where rec loop pc =
     fun
     [ SE_let loc rf pel (SE_other e None) ->
         let disp_as_where =
@@ -469,9 +469,9 @@ and hvseq pc sel =
 
 and let_up_to_in pc (rf, pel) =
   let let_binding pc pe =
-    let sequ bef pc sel =
-      if pc.aft = "" then pprintf pc "%p" (sequence_box bef) sel
-      else pprintf pc "%p@ " (sequence_box bef) sel
+    let sequ bef pc se =
+      if pc.aft = "" then pprintf pc "%p" (sequence_box bef) se
+      else pprintf pc "%p@ " (sequence_box bef) se
     in
     value_or_let_binding sequ pc pe
   in
@@ -491,12 +491,12 @@ and where_binding pc (rf, p, e, body) =
   let (pl, body) = expr_fun_args body in
   let pl = [p :: pl] in
   match sequencify body with
-  [ Some sel ->
+  [ Some se ->
       let bef pc () =
         pprintf pc "%p@ where%s %p = " expr e (if rf then " rec" else "")
           (hlist patt) pl
       in
-      sequence_box bef pc sel
+      sequence_box bef pc se
   | None ->
       pprintf pc "%p@ where%s %p =@;%p" expr e (if rf then " rec" else "")
         (hlist patt) pl (comm_expr expr) body ]
@@ -742,8 +742,8 @@ value else_if_then force_vertic curr pc (e1, e2) =
     (fun () ->
        let if_e1_then pc () = pprintf pc "@[<a>else if@;%p@ then@]" curr e1 in
        match sequencify e2 with
-       [ Some sel ->
-           sequence_box (fun pc () -> pprintf pc "%p " if_e1_then ()) pc sel
+       [ Some se ->
+           sequence_box (fun pc () -> pprintf pc "%p " if_e1_then ()) pc se
        | None ->
            pprintf pc "@[<i>%p@;%p@]" force_vertic if_e1_then ()
              (comm_expr expr_wh) e2 ])
@@ -765,7 +765,7 @@ value ending_else force_vertic curr pc e3 =
        pprintf pc "else %p" curr e3)
     (fun () ->
        match sequencify e3 with
-       [ Some sel -> sequence_box (fun pc () -> pprintf pc "else ") pc sel
+       [ Some se -> sequence_box (fun pc () -> pprintf pc "else ") pc se
        | None ->
            pprintf pc "@[<i>else@;%p@]" force_vertic (comm_expr expr_wh) e3 ])
 ;
@@ -995,9 +995,9 @@ EXTEND_PRINTER
                 (fun () ->
                    let pl = List.map (fun p -> (p, "")) pl in
                    match sequencify e1 with
-                   [ Some sel ->
+                   [ Some se ->
                        sequence_box (fun pc () -> pprintf pc "fun %p -> "
-                         (plist patt 4) pl) pc sel
+                         (plist patt 4) pl) pc se
                    | None ->
                        pprintf pc "fun %p ->@;%p" (plist patt 4) pl
                          (comm_expr curr) e1 ])
@@ -1038,10 +1038,10 @@ EXTEND_PRINTER
                        pprintf pc "%s@;%p" s1 curr e
                    | None ->
                        match sequencify e1 with
-                       [ Some sel ->
+                       [ Some se ->
                            pprintf pc "%p@ with %p"
                              (sequence_box (fun pc () -> pprintf pc "%s " op))
-                             sel (match_assoc False) (p, wo, e)
+                             se (match_assoc False) (p, wo, e)
                        | None ->
                            pprintf pc "@[<a>%s@;%p@ with %p@]" op expr_wh e1
                              (match_assoc False) (p, wo, e) ] ])
