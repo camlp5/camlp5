@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.55 2010/10/06 09:07:50 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.56 2010/10/06 09:12:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -312,18 +312,18 @@ value rec seq_of_expr e =
   [ <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
   | <:expr< do { $list:[e :: el]$ } >> ->
-      seq_of_expr_list e el
+      seq_of_expr_ne_list e el
   | e ->
       SE_other e None ]
-and seq_of_expr_list e1 el =
+and seq_of_expr_ne_list e1 el =
   match el with
   [ [] -> SE_other e1 None
   | [e2 :: el] ->
       match e1 with
       [ <:expr< let $flag:_$ $list:_$ in $_$ >> ->
-          SE_closed e1 (seq_of_expr_list e2 el)
+          SE_closed e1 (seq_of_expr_ne_list e2 el)
       | e1 ->
-          SE_other e1 (Some (seq_of_expr_list e2 el)) ] ]
+          SE_other e1 (Some (seq_of_expr_ne_list e2 el)) ] ]
 ;
 
 value rec true_sequence =
@@ -1088,14 +1088,14 @@ EXTEND_PRINTER
           let se =
             match el with
             [ [] -> SE_other ge None
-            | [e :: el] -> seq_of_expr_list e el ]
+            | [e :: el] -> seq_of_expr_ne_list e el ]
           in
           sequence_box (fun pc () -> pprintf pc "") pc se
       | <:expr:< while $e1$ do { $list:el$ } >> ->
           let se =
             match el with
             [ [] -> SE_other <:expr< do { $list:[]$ } >> None
-            | [e :: el] -> seq_of_expr_list e el ]
+            | [e :: el] -> seq_of_expr_ne_list e el ]
           in
           let bef pc () = pprintf pc "while@;%p@ " curr e1 in
           pprintf pc "%pdo {@;%p@ }" bef () hvseq se
@@ -1103,7 +1103,7 @@ EXTEND_PRINTER
           let se =
             match el with
             [ [] -> SE_other <:expr< do { $list:[]$ } >> None
-            | [e :: el] -> seq_of_expr_list e el ]
+            | [e :: el] -> seq_of_expr_ne_list e el ]
           in
           horiz_vertic
             (fun () ->
