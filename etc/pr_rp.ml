@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 6.2 2010/10/05 09:43:38 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 6.3 2010/10/06 16:37:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -134,6 +134,7 @@ value parser_case force_vertic pc (sp, po, e) =
              pprintf pc "[: %p :]%p -> %p" stream_patt sp ident_option po
                expr e)
         (fun () ->
+(**)
            match flatten_sequence e with
            [ Some el ->
                sequence_box
@@ -144,7 +145,15 @@ value parser_case force_vertic pc (sp, po, e) =
            | None ->
                pprintf pc "[: %p :]%s ->@;%p" stream_patt sp
                  (ident_option {(pc) with bef = ""; aft = ""} po)
-                 expr e ]) ]
+                 expr e ]
+(*
+     pprintf pc "%p%p"
+       (fun pc () ->
+          pprintf pc "@[<i>[: %p :]%p ->@;@]" (not (Pretty.horizontally ()))
+            stream_patt sp (fun pc () -> ident_option pc po) ())
+       () expr e
+*)
+) ]
 ;
 
 value parser_case_sh force_vertic pc spe =
