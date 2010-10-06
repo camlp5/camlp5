@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.54 2010/10/05 19:36:51 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.55 2010/10/06 09:07:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -307,18 +307,23 @@ type seq =
   | SE_other of MLast.expr and option seq ]
 ;
 
-value rec soe e =
+value rec seq_of_expr e =
   match e with
-  [ <:expr:< let $flag:rf$ $list:pel$ in $e$ >> -> SE_let loc rf pel (soe e)
-  | <:expr< do { $list:[e :: el]$ } >> -> soel e el
-  | e -> SE_other e None ]
-and soel e1 el =
+  [ <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
+      SE_let loc rf pel (seq_of_expr e)
+  | <:expr< do { $list:[e :: el]$ } >> ->
+      seq_of_expr_list e el
+  | e ->
+      SE_other e None ]
+and seq_of_expr_list e1 el =
   match el with
   [ [] -> SE_other e1 None
   | [e2 :: el] ->
       match e1 with
-      [ <:expr< let $flag:_$ $list:_$ in $_$ >> -> SE_closed e1 (soel e2 el)
-      | e1 -> SE_other e1 (Some (soel e2 el)) ] ]
+      [ <:expr< let $flag:_$ $list:_$ in $_$ >> ->
+          SE_closed e1 (seq_of_expr_list e2 el)
+      | e1 ->
+          SE_other e1 (Some (seq_of_expr_list e2 el)) ] ]
 ;
 
 value rec true_sequence =
@@ -330,7 +335,7 @@ value rec true_sequence =
 ;
 
 value flatten_sequence e =
-  let se = soe e in
+  let se = seq_of_expr e in
   if true_sequence se then Some se else None
 ;
 
@@ -1083,14 +1088,14 @@ EXTEND_PRINTER
           let se =
             match el with
             [ [] -> SE_other ge None
-            | [e :: el] -> soel e el ]
+            | [e :: el] -> seq_of_expr_list e el ]
           in
           sequence_box (fun pc () -> pprintf pc "") pc se
       | <:expr:< while $e1$ do { $list:el$ } >> ->
           let se =
             match el with
             [ [] -> SE_other <:expr< do { $list:[]$ } >> None
-            | [e :: el] -> soel e el ]
+            | [e :: el] -> seq_of_expr_list e el ]
           in
           let bef pc () = pprintf pc "while@;%p@ " curr e1 in
           pprintf pc "%pdo {@;%p@ }" bef () hvseq se
@@ -1098,7 +1103,7 @@ EXTEND_PRINTER
           let se =
             match el with
             [ [] -> SE_other <:expr< do { $list:[]$ } >> None
-            | [e :: el] -> soel e el ]
+            | [e :: el] -> seq_of_expr_list e el ]
           in
           horiz_vertic
             (fun () ->
