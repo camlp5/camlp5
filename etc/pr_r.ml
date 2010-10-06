@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.56 2010/10/06 09:12:24 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.57 2010/10/06 10:05:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -308,22 +308,28 @@ type seq =
 ;
 
 value rec seq_of_expr e =
-  match e with
-  [ <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
-      SE_let loc rf pel (seq_of_expr e)
-  | <:expr< do { $list:[e :: el]$ } >> ->
+  match e with 
+  [ <:expr< do { $list:[e :: el]$ } >> ->
       seq_of_expr_ne_list e el
+  | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
+      SE_let loc rf pel (seq_of_expr e)
   | e ->
       SE_other e None ]
 and seq_of_expr_ne_list e1 el =
-  match el with
-  [ [] -> SE_other e1 None
-  | [e2 :: el] ->
-      match e1 with
-      [ <:expr< let $flag:_$ $list:_$ in $_$ >> ->
-          SE_closed e1 (seq_of_expr_ne_list e2 el)
-      | e1 ->
-          SE_other e1 (Some (seq_of_expr_ne_list e2 el)) ] ]
+  match e1 with
+  [ <:expr< do { $list:[e2 :: el]$ } >> ->
+      seq_of_expr_ne_list e2 el
+  | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
+      match el with
+      [ [] -> SE_let loc rf pel (seq_of_expr e)
+      | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
+  | e1 ->
+      let seo =
+        match el with
+        [ [] -> None
+        | [e2 :: el] -> Some (seq_of_expr_ne_list e2 el) ]
+      in
+      SE_other e1 seo ]
 ;
 
 value rec true_sequence =
@@ -1057,67 +1063,56 @@ EXTEND_PRINTER
                      pwel)
                 (fun () ->
                    match sequencify e1 with
-                   [ Some el ->
-                       pprintf pc "%p@ %p"
-                         (fun pc () ->
-                            horiz_vertic
-                              (fun () ->
-                                 pprintf pc "%s %p with" op expr_wh e1)
-                              (fun () ->
-                                 pprintf pc "%p@ with"
-                                   (sequence_box
-                                      (fun pc () ->
-                                         horiz_vertic (fun _ -> sprintf "\n")
-                                           (fun () -> pprintf pc "%s " op)))
-                                   el))
-                         () match_assoc_list pwel
+                   [ Some se ->
+                       horiz_vertic
+                         (fun () ->
+                            pprintf pc "%s %p with@ %p" op expr_wh e1
+                              match_assoc_list pwel)
+                         (fun () ->
+                            pprintf pc "%p@ with@ %p"
+                              (sequence_box
+                                 (fun pc () ->
+                                    horiz_vertic (fun _ -> sprintf "\n")
+                                      (fun () -> pprintf pc "%s " op)))
+                              se match_assoc_list pwel)
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
-      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
-          let expr_wh = if flag_where_after_in.val then expr_wh else curr in
-          horiz_vertic_if (not flag_horiz_let_in.val)
-            (fun () -> pprintf pc "%p %p" let_up_to_in (rf, pel) curr e)
-            (fun () ->
-               pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh)
-                 e)
+      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
+          match flatten_sequence ge with
+          [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
+          | None ->
+              let expr_wh =
+                if flag_where_after_in.val then expr_wh else curr
+              in
+              pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh)
+                e ]
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
-      | <:expr< do { $list:el$ } >> as ge ->
-          let se =
-            match el with
-            [ [] -> SE_other ge None
-            | [e :: el] -> seq_of_expr_ne_list e el ]
-          in
-          sequence_box (fun pc () -> pprintf pc "") pc se
+      | <:expr< do { $list:el$ } >> ->
+          match el with
+          [ [] -> pprintf pc "do {}"
+          | [e :: el] ->
+              let se = seq_of_expr_ne_list e el in
+              pprintf pc "do {@;%p@ }" hvseq se ]
       | <:expr:< while $e1$ do { $list:el$ } >> ->
-          let se =
-            match el with
-            [ [] -> SE_other <:expr< do { $list:[]$ } >> None
-            | [e :: el] -> seq_of_expr_ne_list e el ]
-          in
           let bef pc () = pprintf pc "while@;%p@ " curr e1 in
-          pprintf pc "%pdo {@;%p@ }" bef () hvseq se
+          match el with
+          [ [] -> pprintf pc "%pdo {}" bef ()
+          | [e :: el] ->
+              let se = seq_of_expr_ne_list e el in
+              pprintf pc "%pdo {@;%p@ }" bef () hvseq se ]
       | <:expr:< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
-          let se =
-            match el with
-            [ [] -> SE_other <:expr< do { $list:[]$ } >> None
-            | [e :: el] -> seq_of_expr_ne_list e el ]
+          let bef pc () =
+            pprintf pc "@[<a>for %s = %p %s@;<1 4>%p@ @]" v curr e1
+              (if d then "to" else "downto") curr e2
           in
-          horiz_vertic
-            (fun () ->
-               let bef pc () =
-                 pprintf pc "for %s = %p %s %p " v curr e1
-                   (if d then "to" else "downto") curr e2
-               in
-               pprintf pc "%pdo {@;%p@ }" bef () hvseq se)
-            (fun () ->
-               let bef pc () =
-                 pprintf pc "@[<a>for %s = %p %s@;<1 4>%p@ @]" v curr e1
-                   (if d then "to" else "downto") curr e2
-               in
-               pprintf pc "%pdo {@;%p@ }" bef () hvseq se) ]
+          match el with
+          [ [] -> pprintf pc "%pdo {}" bef ()
+          | [e :: el] ->
+              let se = seq_of_expr_ne_list e el in
+              pprintf pc "@[<a>%pdo {@;%p@ }@]" bef () hvseq se ] ]
     | "assign"
       [ <:expr< $x$ := $y$ >> -> operator pc next expr 2 ":=" x y ]
     | "or"
