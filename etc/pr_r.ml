@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.58 2010/10/06 15:47:48 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.59 2010/10/06 19:52:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -538,9 +538,12 @@ value match_assoc force_vertic pc (p, w, e) =
     (fun () -> pprintf pc "%p %p" patt_arrow (p, w) (comm_expr expr) e)
     (fun () ->
        match sequencify e with
-       [ Some el ->
-           sequence_box (fun pc () -> pprintf pc "%p " patt_arrow (p, w)) pc
-             el
+       [ Some se ->
+           sequence_box
+             (fun pc () ->
+                if Pretty.horizontally () then "\n"
+                else pprintf pc "%p " patt_arrow (p, w)) pc
+             se
        | None ->
            pprintf pc "@[<i>%p@;%p@]" force_vertic patt_arrow (p, w)
              (comm_expr expr_wh) e ])
