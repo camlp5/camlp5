@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 6.3 2010/10/06 16:37:33 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 6.4 2010/10/06 18:51:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -202,7 +202,7 @@ value print_match_with_parser pc e =
   match e with
   [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
-      pprintf pc "match %p with parser%p" expr e1 parser_body pa
+      pprintf pc "@[match %p with parser@]%p" expr e1 parser_body pa
   | e -> expr pc e ]
 ;
 
