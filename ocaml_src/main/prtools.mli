@@ -82,16 +82,6 @@ val hvlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
 
 val tab : int -> string;;
 
-val flatten_sequence : MLast.expr -> MLast.expr list option;;
-   (** [flatten_sequence e]. If [e] is an expression representing a sequence,
-       return the list of expressions of the sequence. If some of these
-       expressions are already sequences, they are expanded in the list.
-       If that list contains expressions of the form let..in sequence, this
-       sub-sequence is also flattened with the let..in spplies only to the
-       first expression of the sequence. If [e] is a let..in sequence, it
-       works the same way. If [e] is not a sequence nor a let..in sequence,
-       return None. *)
-
 val expand_module_prefix :
   string -> (MLast.patt * 'a) list -> (MLast.patt * 'a) list ->
     (MLast.patt * 'a) list;;

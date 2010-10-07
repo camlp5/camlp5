@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 6.2 2010/09/29 14:00:52 deraugla Exp $ *)
+(* $Id: prtools.mli,v 6.3 2010/10/07 13:06:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pr_context =
@@ -81,16 +81,6 @@ value hvlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
 (* miscellaneous *)
 
 value tab : int -> string;
-
-value flatten_sequence : MLast.expr -> option (list MLast.expr);
-   (** [flatten_sequence e]. If [e] is an expression representing a sequence,
-       return the list of expressions of the sequence. If some of these
-       expressions are already sequences, they are expanded in the list.
-       If that list contains expressions of the form let..in sequence, this
-       sub-sequence is also flattened with the let..in spplies only to the
-       first expression of the sequence. If [e] is a let..in sequence, it
-       works the same way. If [e] is not a sequence nor a let..in sequence,
-       return None. *)
 
 value expand_module_prefix :
   string -> list (MLast.patt * 'a) -> list (MLast.patt * 'a) ->

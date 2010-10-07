@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 6.4 2010/10/06 18:51:36 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 6.5 2010/10/07 13:06:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -66,10 +66,6 @@ value stream pc e =
 
 (* Parsers *)
 
-value sequence_box bef expr pc el =
-  pprintf pc "%pdo {@;%p@ }" bef () (vlistl (semi_after expr) expr) el
-;
-
 value ident_option pc =
   fun
   [ Some s -> pprintf pc " %s" s
@@ -119,11 +115,11 @@ value parser_case force_vertic pc (sp, po, e) =
            if force_vertic then sprintf "\n"
            else pprintf pc "[: :]%p -> %p" ident_option po expr e)
         (fun () ->
-           match flatten_sequence e with
-           [ Some el ->
-               sequence_box
+           match Pr_r.flatten_sequence e with
+           [ Some se ->
+               Pr_r.sequence_box
                  (fun pc () -> pprintf pc "[: :]%p -> " ident_option po)
-                 expr pc el
+                 pc se
            | None ->
                pprintf pc "[: :]%p ->@;%p" ident_option po expr e ])
   | _ ->
@@ -134,26 +130,17 @@ value parser_case force_vertic pc (sp, po, e) =
              pprintf pc "[: %p :]%p -> %p" stream_patt sp ident_option po
                expr e)
         (fun () ->
-(**)
-           match flatten_sequence e with
-           [ Some el ->
-               sequence_box
+           match Pr_r.flatten_sequence e with
+           [ Some se ->
+               Pr_r.sequence_box
                  (fun pc () ->
                     pprintf pc "[: %p :]%p -> " stream_patt sp ident_option
                       po)
-                 expr pc el
+                    pc se
            | None ->
                pprintf pc "[: %p :]%s ->@;%p" stream_patt sp
                  (ident_option {(pc) with bef = ""; aft = ""} po)
-                 expr e ]
-(*
-     pprintf pc "%p%p"
-       (fun pc () ->
-          pprintf pc "@[<i>[: %p :]%p ->@;@]" (not (Pretty.horizontally ()))
-            stream_patt sp (fun pc () -> ident_option pc po) ())
-       () expr e
-*)
-) ]
+                 expr e ]) ]
 ;
 
 value parser_case_sh force_vertic pc spe =

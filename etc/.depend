@@ -16,8 +16,8 @@ pa_mkast.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_mkast.cmx: ../main/mLast.cmi ../main/pcaml.cmx
 pa_mktest.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_mktest.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_o.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_o.cmx: ../main/mLast.cmi ../main/pcaml.cmx
+pa_o.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi
+pa_o.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx
 pa_oop.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_oop.cmx: ../main/mLast.cmi ../main/pcaml.cmx
 pa_op.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
@@ -55,9 +55,9 @@ pr_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
 pr_ro.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
 pr_ro.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
 pr_rp.cmo: ../main/mLast.cmi ../main/parserify.cmi ../main/pcaml.cmi \
-    ../main/prtools.cmi
+    ../main/prtools.cmi pr_r.cmo
 pr_rp.cmx: ../main/mLast.cmi ../main/parserify.cmx ../main/pcaml.cmx \
-    ../main/prtools.cmx
+    ../main/prtools.cmx pr_r.cmx
 pr_scheme.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
 pr_scheme.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
 pr_schemep.cmo: ../main/mLast.cmi ../main/parserify.cmi ../main/pcaml.cmi \

@@ -420,46 +420,6 @@ let comm_bef ind loc =
 
 let no_constructors_arity = ref false;;
 
-(* For pretty printing improvement:
-   - if e is a "sequence" or a "let..in sequence", get "the list of its
-     expressions", which is flattened (merging sequences inside sequences
-     and changing "let..in do {e1; .. en}" into "do {let..in e1; .. en}",
-     and return Some "the resulting expression list".
-   - otherwise return None *)
-let flatten_sequence e =
-  let rec get_sequence =
-    function
-      MLast.ExSeq (_, el) -> Some el
-    | MLast.ExLet (_, rf, pel, e) as se ->
-        begin match get_sequence e with
-          Some (e :: el) ->
-            let e =
-              let loc =
-                let loc1 = MLast.loc_of_expr se in
-                let loc2 = MLast.loc_of_expr e in Ploc.encl loc1 loc2
-              in
-              MLast.ExLet (loc, rf, pel, e)
-            in
-            Some (e :: el)
-        | None | _ -> None
-        end
-    | _ -> None
-  in
-  match get_sequence e with
-    Some el ->
-      let rec list_of_sequence =
-        function
-          e :: el ->
-            begin match get_sequence e with
-              Some el1 -> list_of_sequence (el1 @ el)
-            | None -> e :: list_of_sequence el
-            end
-        | [] -> []
-      in
-      Some (list_of_sequence el)
-  | None -> None
-;;
-
 let expand_module_prefix m =
   let rec loop rev_lel =
     function
