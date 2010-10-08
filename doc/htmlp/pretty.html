@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pretty.html,v 6.2 2010/10/06 19:53:48 deraugla Exp $ -->
+  <!-- $Id: pretty.html,v 6.3 2010/10/08 19:55:15 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Pretty print</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -193,7 +193,7 @@
 
 <pre>
   horiz_vertic
-    (fun () -> "\n")
+    (fun () -> sprintf "\n")
     (fun () -> ... (* your normal pretty print *))
 </pre>
 
