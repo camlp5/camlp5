@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.19 2010/10/28 14:55:55 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.20 2010/10/28 15:14:12 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -200,6 +200,7 @@ MLast.ExOlb (loc, p, oe);;
 MLast.ExOvr (loc, Ploc.VaVal lse);;
 MLast.ExOvr (loc, lse);;
 <:expr< (module $me$) >>;;
+<:expr< (module $me$ : $mt$) >>;;
 <:expr< {$list:lpe$} >>;;
 MLast.ExRec (loc, Ploc.VaVal lpe, Some e);;
 MLast.ExRec (loc, Ploc.VaVal lpe, oe);;

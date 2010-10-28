@@ -199,6 +199,7 @@ MLast.ExOlb loc p oe;
 MLast.ExOvr loc (Ploc.VaVal lse);
 MLast.ExOvr loc lse;
 MLast.ExPck loc me;
+MLast.ExPck loc (MLast.MeTyc loc me mt);
 MLast.ExRec loc (Ploc.VaVal lpe) None;
 MLast.ExRec loc (Ploc.VaVal lpe) (Some e);
 MLast.ExRec loc (Ploc.VaVal lpe) oe;

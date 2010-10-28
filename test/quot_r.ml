@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.34 2010/10/28 14:55:55 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.35 2010/10/28 15:14:12 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -339,6 +339,7 @@ MLast.ExCoe loc e ot1 t2;
 
 (* module packing *)
 <:expr< (module $me$) >>;
+<:expr< (module $me$ : $mt$) >>;
 
 (* record *)
 <:expr< {$list:lpe$} >>;
