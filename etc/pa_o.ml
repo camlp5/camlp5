@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.23 2010/10/03 12:47:04 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.24 2010/10/28 14:55:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -369,6 +369,8 @@ EXTEND
     | [ i = mod_expr_ident -> i
       | "("; "val"; e = expr; ":"; mt = module_type; ")" ->
          <:module_expr< (value $e$ : $mt$) >>
+      | "("; "val"; e = expr; ")" ->
+         <:module_expr< (value $e$) >>
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "("; me = SELF; ")" -> <:module_expr< $me$ >> ] ]
@@ -654,6 +656,8 @@ EXTEND
       | "("; ")" -> <:expr< () >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
           <:expr< (module $me$ : $mt$) >>
+      | "("; "module"; me = module_expr; ")" ->
+          <:expr< (module $me$) >>
       | "("; op = operator_rparen -> <:expr< $lid:op$ >>
       | "("; el = V e_phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
@@ -788,7 +792,11 @@ EXTEND
       | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
-      | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
+      | "("; "type"; s = V LIDENT; ")" -> <:patt< (type $_lid:s$) >>
+      | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
+          <:patt< (module $me$ : $mt$) >>
+      | "("; "module"; me = module_expr; ")" ->
+          <:patt< (module $me$) >>
       | "_" -> <:patt< _ >>
       | x = QUOTATION ->
           let con = quotation_content x in

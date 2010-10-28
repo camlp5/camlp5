@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.33 2010/09/22 02:14:01 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.34 2010/10/28 14:55:55 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -199,6 +199,8 @@ MLast.TyVrn loc lpv ools;
 <:patt< $uid:s$ >>;
 <:patt< $_uid:s$ >>;
 
+<:patt< (module $me$) >>;
+
 (* variant *)
 <:patt< ` $s$ >>;
 <:patt< ` $_:s$ >>;
@@ -336,7 +338,7 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< {< $_list:lse$ >} >>;
 
 (* module packing *)
-<:expr< (module $me$ : $mt$) >>;
+<:expr< (module $me$) >>;
 
 (* record *)
 <:expr< {$list:lpe$} >>;
@@ -543,7 +545,7 @@ MLast.ExRec loc lpe oe;
 <:module_expr< $_uid:s$ >>;
 
 (* module unpacking *)
-<:module_expr< (value $e$ : $mt$) >>;
+<:module_expr< (value $e$) >>;
 
 (* str_item: Structure items, i.e. phrases in a ".ml" file or "struct" *)
 (* str_item:   elements. *)

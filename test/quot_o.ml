@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.18 2010/09/30 15:05:03 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.19 2010/10/28 14:55:55 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -116,6 +116,7 @@ MLast.PaOlb (loc, p, oe);;
 <:patt< # $_list:ls$ >>;;
 <:patt< $uid:s$ >>;;
 <:patt< $_uid:s$ >>;;
+<:patt< (module $me$) >>;;
 MLast.PaVrn (loc, Ploc.VaVal s);;
 MLast.PaVrn (loc, s);;
 
@@ -198,7 +199,7 @@ MLast.ExOlb (loc, p, Ploc.VaVal oe);;
 MLast.ExOlb (loc, p, oe);;
 MLast.ExOvr (loc, Ploc.VaVal lse);;
 MLast.ExOvr (loc, lse);;
-<:expr< (module $me$ : $mt$) >>;;
+<:expr< (module $me$) >>;;
 <:expr< {$list:lpe$} >>;;
 MLast.ExRec (loc, Ploc.VaVal lpe, Some e);;
 MLast.ExRec (loc, Ploc.VaVal lpe, oe);;
@@ -317,7 +318,7 @@ MLast.MeStr (loc, lsi);;
 MLast.MeTyc (loc, me, mt);;
 MLast.MeUid (loc, Ploc.VaVal s);;
 MLast.MeUid (loc, s);;
-MLast.MeUnp (loc, e, mt);;
+<:module_expr< (val $e$) >>;;
 MLast.StCls (loc, Ploc.VaVal lcice);;
 MLast.StCls (loc, lcice);;
 MLast.StClt (loc, Ploc.VaVal lcict);;
