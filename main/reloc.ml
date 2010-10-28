@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.11 2010/10/28 11:38:02 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.12 2010/10/28 14:44:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -209,7 +209,7 @@ and patt floc sh =
         PaUid loc x1
     | PaUnp loc x1 ->
         let loc = floc loc in
-        PaUnp loc (self x1)
+        PaUnp loc (module_expr floc sh x1)
     | PaVrn loc x1 ->
         let loc = floc loc in
         PaVrn loc x1

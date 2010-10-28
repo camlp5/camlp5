@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.20 2010/10/28 11:38:02 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.21 2010/10/28 14:44:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -137,6 +137,8 @@ EXTEND
       [ i = V UIDENT -> <:module_expr< $_uid:i$ >>
       | "("; "value"; e = expr; ":"; mt = module_type; ")" ->
          <:module_expr< (value $e$ : $mt$) >>
+      | "("; "value"; e = expr; ")" ->
+         <:module_expr< (value $e$) >>
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "("; me = SELF; ")" -> <:module_expr< $me$ >> ] ]
@@ -361,11 +363,9 @@ EXTEND
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
-(*
           <:expr< (module $me$ : $mt$) >>
-*)
-MLast.ExPck loc (MLast.MeTyc loc me mt)
-(**)
+      | "("; "module"; me = module_expr; ")" ->
+          <:expr< (module $me$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" -> mktupexp loc e el
       | "("; e = SELF; ")" -> <:expr< $e$ >>
@@ -459,6 +459,10 @@ MLast.ExPck loc (MLast.MeTyc loc me mt)
       | p = patt -> <:patt< $p$ >>
       | pl = V (LIST1 patt SEP ",") -> <:patt< ($_list:pl$) >>
       | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
+      | "module"; me = module_expr; ":"; mt = module_type ->
+          <:patt< (module $me$ : $mt$) >>
+      | "module"; me = module_expr ->
+          <:patt< (module $me$) >>
       | -> <:patt< () >> ] ]
   ;
   cons_patt_opt:
@@ -489,6 +493,10 @@ MLast.ExPck loc (MLast.MeTyc loc me mt)
       | p = ipatt -> <:patt< $p$ >>
       | pl = V (LIST1 ipatt SEP ",") -> <:patt< ( $_list:pl$) >>
       | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
+      | "module"; me = module_expr; ":"; mt = module_type ->
+          <:patt< (module $me$ : $mt$) >>
+      | "module"; me = module_expr ->
+          <:patt< (module $me$) >>
       | -> <:patt< () >> ] ]
   ;
   label_ipatt:

@@ -73,7 +73,7 @@ and patt =
   | PaTyc of loc * patt * ctyp
   | PaTyp of loc * string list
   | PaUid of loc * string
-  | PaUnp of loc * patt
+  | PaUnp of loc * module_expr
   | PaVrn of loc * string
 and expr =
     ExAcc of loc * expr * expr

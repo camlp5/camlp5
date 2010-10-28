@@ -276,6 +276,12 @@ Grammar.extend
            (MLast.MeTyc (loc, me, mt) : 'module_expr));
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", "value");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (e : 'expr) _ _ (loc : Ploc.t) ->
+           (MLast.MeUnp (loc, e) : 'module_expr));
+      [Gramext.Stoken ("", "("); Gramext.Stoken ("", "value");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
@@ -1071,6 +1077,13 @@ Grammar.extend
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", "module");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (me : 'module_expr) _ _ (loc : Ploc.t) ->
+           (MLast.ExPck (loc, me) : 'expr));
+      [Gramext.Stoken ("", "("); Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
@@ -1383,6 +1396,21 @@ Grammar.extend
      [[],
       Gramext.action
         (fun (loc : Ploc.t) -> (MLast.PaUid (loc, "()") : 'paren_patt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'module_expr) _ (loc : Ploc.t) ->
+           (MLast.PaUnp (loc, me) : 'paren_patt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", ":");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_type) _ (me : 'module_expr) _ (loc : Ploc.t) ->
+           (MLast.PaUnp (loc, MLast.MeTyc (loc, me, mt)) : 'paren_patt));
       [Gramext.Stoken ("", "type"); Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (s : string) _ (loc : Ploc.t) ->
@@ -1476,6 +1504,21 @@ Grammar.extend
      [[],
       Gramext.action
         (fun (loc : Ploc.t) -> (MLast.PaUid (loc, "()") : 'paren_ipatt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'module_expr) _ (loc : Ploc.t) ->
+           (MLast.PaUnp (loc, me) : 'paren_ipatt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", ":");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_type) _ (me : 'module_expr) _ (loc : Ploc.t) ->
+           (MLast.PaUnp (loc, MLast.MeTyc (loc, me, mt)) : 'paren_ipatt));
       [Gramext.Stoken ("", "type"); Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (s : string) _ (loc : Ploc.t) ->

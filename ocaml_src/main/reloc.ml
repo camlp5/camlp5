@@ -140,7 +140,8 @@ and patt floc sh =
         let loc = floc loc in PaTyc (loc, self x1, ctyp floc sh x2)
     | PaTyp (loc, x1) -> let loc = floc loc in PaTyp (loc, x1)
     | PaUid (loc, x1) -> let loc = floc loc in PaUid (loc, x1)
-    | PaUnp (loc, x1) -> let loc = floc loc in PaUnp (loc, self x1)
+    | PaUnp (loc, x1) ->
+        let loc = floc loc in PaUnp (loc, module_expr floc sh x1)
     | PaVrn (loc, x1) -> let loc = floc loc in PaVrn (loc, x1)
   in
   self

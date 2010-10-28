@@ -1,6 +1,7 @@
 Camlp5 Version 6.00:
 --------------------
 
+* [28 Oct 10] Updated compatibility with OCaml trunk version (3.13.0).
 * [01 Oct 10] Make compilation with "make -j" (parallel make) work.
 * [29 Sep 10] Fixed bug when using constructors named 'True' and 'False'.
 * [24 Sep 10] Fixed many bugs of parsing comments (typically about quotes).

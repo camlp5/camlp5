@@ -116,7 +116,7 @@ let ocaml_pexp_object = None;;
 
 let ocaml_pexp_open = None;;
 
-let ocaml_pexp_pack me pt_opt = None;;
+let ocaml_pexp_pack = None;;
 
 let ocaml_pexp_poly = None;;
 
@@ -154,7 +154,7 @@ let ocaml_pstr_recmodule = None;;
 
 let ocaml_class_infos = None;;
 
-let ocaml_pmod_unpack e pt_opt = None;;
+let ocaml_pmod_unpack = None;;
 
 let ocaml_pcf_cstr = None;;
 

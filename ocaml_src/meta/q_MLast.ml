@@ -492,6 +492,12 @@ Grammar.extend
            (Qast.Node ("MeTyc", [Qast.Loc; me; mt]) : 'module_expr));
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", "value");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (e : 'expr) _ _ (loc : Ploc.t) ->
+           (Qast.Node ("MeUnp", [Qast.Loc; e]) : 'module_expr));
+      [Gramext.Stoken ("", "("); Gramext.Stoken ("", "value");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
@@ -871,7 +877,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 297, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 298, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1523,7 +1529,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 367, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 368, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -2658,6 +2664,13 @@ Grammar.extend
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", "module");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (me : 'module_expr) _ _ (loc : Ploc.t) ->
+           (Qast.Node ("ExPck", [Qast.Loc; me]) : 'expr));
+      [Gramext.Stoken ("", "("); Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
@@ -3436,6 +3449,23 @@ Grammar.extend
         (fun (loc : Ploc.t) ->
            (Qast.Node ("PaUid", [Qast.Loc; Qast.VaVal (Qast.Str "()")]) :
             'paren_patt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'module_expr) _ (loc : Ploc.t) ->
+           (Qast.Node ("PaUnp", [Qast.Loc; me]) : 'paren_patt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", ":");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_type) _ (me : 'module_expr) _ (loc : Ploc.t) ->
+           (Qast.Node
+              ("PaUnp", [Qast.Loc; Qast.Node ("MeTyc", [Qast.Loc; me; mt])]) :
+            'paren_patt));
       [Gramext.Stoken ("", "type");
        Gramext.Sfacto
          (Gramext.srules
@@ -3648,6 +3678,23 @@ Grammar.extend
       Gramext.action
         (fun (loc : Ploc.t) ->
            (Qast.Node ("PaUid", [Qast.Loc; Qast.VaVal (Qast.Str "()")]) :
+            'paren_ipatt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'module_expr) _ (loc : Ploc.t) ->
+           (Qast.Node ("PaUnp", [Qast.Loc; me]) : 'paren_ipatt));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", ":");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_type) _ (me : 'module_expr) _ (loc : Ploc.t) ->
+           (Qast.Node
+              ("PaUnp", [Qast.Loc; Qast.Node ("MeTyc", [Qast.Loc; me; mt])]) :
             'paren_ipatt));
       [Gramext.Stoken ("", "type");
        Gramext.Sfacto

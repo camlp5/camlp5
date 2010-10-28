@@ -86,11 +86,7 @@ let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
 let ocaml_pexp_open = Some (fun li e -> Pexp_open (li, e));;
 
-let ocaml_pexp_pack me pt_opt =
-  match pt_opt with
-    Some pt -> Some (Pexp_pack (me, pt))
-  | None -> None
-;;
+let ocaml_pexp_pack = Some (Left (fun me pt -> Pexp_pack (me, pt)));;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
@@ -145,11 +141,7 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc; pci_variance = variance})
 ;;
 
-let ocaml_pmod_unpack e pt_opt =
-  match pt_opt with
-    Some pt -> Some (Pmod_unpack (e, pt))
-  | None -> None
-;;
+let ocaml_pmod_unpack = Some (Left (fun e pt -> Pmod_unpack (e, pt)));;
 
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
 

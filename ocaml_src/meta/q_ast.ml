@@ -173,7 +173,7 @@ module Meta_make (C : MetaSig) =
       | PaTyc (_, p, t) -> C.node "PaTyc" [patt p; ctyp t]
       | PaTyp (_, ls) -> C.node "PaTyp" [C.vala (C.list C.string) ls]
       | PaUid (_, s) -> C.node "PaUid" [C.vala C.string s]
-      | PaUnp (_, p) -> C.node "PaUnp" [patt p]
+      | PaUnp (_, me) -> C.node "PaUnp" [module_expr me]
       | PaVrn (_, s) -> C.node "PaVrn" [C.vala C.string s]
     and expr =
       function

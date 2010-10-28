@@ -625,13 +625,13 @@ let rec patt =
   | PaUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
       mkpat loc (Ppat_construct (Lident (conv_con (uv s)), None, ca))
-  | PaUnp (loc, p) ->
+  | PaUnp (loc, me) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->
           let (s, pt_opt) =
-            match p with
-              PaUid (_, s) -> s, None
-            | PaTyc (_, PaUid (_, s), TyPck (loc, mt)) ->
+            match me with
+              MeUid (_, s) -> s, None
+            | MeTyc (_, MeUid (_, s), mt) ->
                 let pt = package_of_module_type loc mt in s, Some pt
             | _ -> error loc "syntax error"
           in
@@ -1049,15 +1049,31 @@ let rec expr =
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here 2"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExPck (loc, me) ->
-      let (me, pt_opt) =
-        match me with
-          MeTyc (loc, me, mt) ->
-            let pt = package_of_module_type loc mt in me, Some pt
-        | me -> me, None
-      in
-      begin match ocaml_pexp_pack (module_expr me) pt_opt with
-        Some e -> mkexp loc e
-      | None -> error loc "no (such) module package in this ocaml version"
+      begin match ocaml_pexp_pack with
+        Some (Left pexp_pack) ->
+          begin match me with
+            MeTyc (loc1, me, mt) ->
+              let pt = package_of_module_type loc mt in
+              mkexp loc (pexp_pack (module_expr me) pt)
+          | me -> error loc "no such module pack in this ocaml version"
+          end
+      | Some (Right (pexp_pack, ptyp_package)) ->
+          let (me, pt_opt) =
+            match me with
+              MeTyc (_, me, mt) ->
+                let pt = package_of_module_type loc mt in me, Some pt
+            | me -> me, None
+          in
+          let e = pexp_pack (module_expr me) in
+          let e =
+            match pt_opt with
+              Some pt ->
+                Pexp_constraint
+                  (mkexp loc e, Some (mktyp loc (ptyp_package pt)), None)
+            | None -> e
+          in
+          mkexp loc e
+      | None -> error loc "no module pack in this ocaml version"
       end
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
@@ -1243,15 +1259,16 @@ and module_expr =
       mkmod loc (Pmod_constraint (module_expr me, module_type mt))
   | MeUid (loc, s) -> mkmod loc (Pmod_ident (Lident (uv s)))
   | MeUnp (loc, e) ->
-      let (e, pt_opt) =
-        match e with
-          ExTyc (_, e, TyPck (loc, mt)) ->
-            let pt = package_of_module_type loc mt in e, Some pt
-        | e -> e, None
-      in
-      match ocaml_pmod_unpack (expr e) pt_opt with
-        Some me -> mkmod loc me
-      | None -> error loc "no (such) module unpack in this ocaml version"
+      match ocaml_pmod_unpack with
+        Some (Left pmod_unpack) ->
+          begin match e with
+            ExTyc (loc, e, TyPck (_, mt)) ->
+              let pt = package_of_module_type loc mt in
+              mkmod loc (pmod_unpack (expr e) pt)
+          | e -> error loc "no such module unpack in this ocaml version"
+          end
+      | Some (Right pmod_unpack) -> mkmod loc (pmod_unpack (expr e))
+      | None -> error loc "no module unpack in this ocaml version"
 and str_item s l =
   match s with
     StCls (loc, cd) ->
