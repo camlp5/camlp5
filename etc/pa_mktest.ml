@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.13 2010/10/28 15:14:12 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.14 2010/10/28 19:31:52 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -133,18 +133,6 @@ value expr_of_cons_decl (loc, c, tl) = do {
                   el)
                gel)
           [""; "l"; "L"; "n"] []
-    | "ExPck" ->
-        List.fold_right
-          (fun e el ->
-             let el =
-               match e with
-               [ <:expr< $f$ me >> ->
-                   [<:expr< $f$ me >>;
-                    <:expr< $f$ (MLast.MeTyc loc me mt) >> :: el]
-               | _ -> [e :: el] ]
-             in
-             el)
-          el []
     | "PvTag" ->
         List.fold_right
           (fun e el ->

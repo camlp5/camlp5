@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 6.11 2010/10/28 15:14:11 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 6.12 2010/10/28 19:31:52 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -735,7 +735,10 @@
   <dt>- module packing</dt>
   <dd>
     <tt style="color:blue">&lt;:expr&lt; (module $me$) >></tt><br/>
-    <tt style="color:red">MLast.ExPck loc me</tt>
+    <tt style="color:red">MLast.ExPck loc me None</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:expr&lt; (module $me$ : $mt$) >></tt><br/>
+    <tt style="color:red">MLast.ExPck loc me (Some mt)</tt>
   </dd>
 </dl>
 <dl class="nodelist">
@@ -1110,6 +1113,22 @@
     <br/><br/>
     <tt style="color:blue">&lt;:patt&lt; $_uid:s$ >></tt><br/>
     <tt style="color:red">MLast.PaUid loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- module unpacking</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; (module $uid:s$) >></tt><br/>
+    <tt style="color:red">MLast.PaUnp loc (Ploc.VaVal s) None</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:patt&lt; (module $uid:s$ : $mt$) >></tt><br/>
+    <tt style="color:red">MLast.PaUnp loc (Ploc.VaVal s) (Some mt)</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:patt&lt; (module $_uid:s$) >></tt><br/>
+    <tt style="color:red">MLast.PaUnp loc s None</tt>
+    <br/><br/>
+    <tt style="color:blue">&lt;:patt&lt; (module $_uid:s$ : $mt$) >></tt><br/>
+    <tt style="color:red">MLast.PaUnp loc s (Some mt)</tt>
   </dd>
 </dl>
 <dl class="nodelist">
@@ -1942,8 +1961,11 @@
 <dl class="nodelist">
   <dt>- module unpacking</dt>
   <dd>
+    <tt style="color:blue">&lt;:module_expr&lt; (value $e$) >></tt><br/>
+    <tt style="color:red">MLast.MeUnp loc e None</tt>
+    <br/><br/>
     <tt style="color:blue">&lt;:module_expr&lt; (value $e$ : $mt$) >></tt><br/>
-    <tt style="color:red">MLast.MeUnp loc e mt</tt>
+    <tt style="color:red">MLast.MeUnp loc e (Some mt)</tt>
   </dd>
 </dl>
 <dl class="nodelist">

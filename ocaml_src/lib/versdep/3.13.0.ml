@@ -145,7 +145,9 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc; pci_variance = variance})
 ;;
 
-let ocaml_pmod_unpack = Some (Right (fun e -> Pmod_unpack e));;
+let ocaml_pmod_unpack =
+  Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))
+;;
 
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
 

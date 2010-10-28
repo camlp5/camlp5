@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.18 2010/10/28 14:44:35 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.19 2010/10/28 19:31:52 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -612,25 +612,15 @@ value rec patt =
   | PaUid loc s ->
       let ca = not Prtools.no_constructors_arity.val in
       mkpat loc (Ppat_construct (Lident (conv_con (uv s))) None ca)
-  | PaUnp loc me ->
+  | PaUnp loc s mto ->
       match ocaml_ppat_unpack with
       [ Some (ppat_unpack, ptyp_package) ->
-          let (s, pt_opt) =
-            match me with
-            [ MeUid _ s -> (s, None)
-            | MeTyc _ (MeUid _ s) mt ->
-                let pt = package_of_module_type loc mt in
-                (s, Some pt)
-            | _ -> error loc "syntax error" ]
-          in
-          let p = ppat_unpack (uv s) in
-          let p =
-            match pt_opt with
-            [ Some pt ->
-                Ppat_constraint (mkpat loc p) (mktyp loc (ptyp_package pt))
-            | None -> p ]
-          in
-          mkpat loc p
+          let p = mkpat loc (ppat_unpack (uv s)) in
+          match mto with
+          [ Some mt ->
+              let pt = package_of_module_type loc mt in
+              mkpat loc (Ppat_constraint p (mktyp loc (ptyp_package pt)))
+          | None -> p ]
       | None -> error loc "no unpack pattern in this ocaml version" ]
   | PaVrn loc s ->
       match ocaml_ppat_variant with
@@ -904,26 +894,20 @@ value rec expr =
       | None -> error loc "no object in this ocaml version" ]
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here 2"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
-  | ExPck loc me ->
+  | ExPck loc me mto ->
       match ocaml_pexp_pack with
       [ Some (Left pexp_pack) ->
-          match me with
-          [ MeTyc loc1 me mt ->
+          match mto with
+          [ Some mt ->
               let pt = package_of_module_type loc mt in
               mkexp loc (pexp_pack (module_expr me) pt)
-          | me -> error loc "no such module pack in this ocaml version" ]
+          | None -> error loc "no such module pack in this ocaml version" ]
       | Some (Right (pexp_pack, ptyp_package)) ->
-          let (me, pt_opt) =
-            match me with
-            [ MeTyc _ me mt ->
-                let pt = package_of_module_type loc mt in
-                (me, Some pt)
-            | me -> (me, None) ]
-          in
           let e = pexp_pack (module_expr me) in
           let e =
-            match pt_opt with
-            [ Some pt ->
+            match mto with
+            [ Some mt ->
+                let pt = package_of_module_type loc mt in
                 Pexp_constraint (mkexp loc e)
                   (Some (mktyp loc (ptyp_package pt))) None
             | None -> e ]
@@ -1113,16 +1097,25 @@ and module_expr =
   | MeTyc loc me mt ->
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
   | MeUid loc s -> mkmod loc (Pmod_ident (Lident (uv s)))
-  | MeUnp loc e ->
+  | MeUnp loc e mto ->
       match ocaml_pmod_unpack with
       [ Some (Left pmod_unpack) ->
-          match e with
-          [ ExTyc loc e (TyPck _ mt) ->
+          match mto with
+          [ Some mt ->
               let pt = package_of_module_type loc mt in
               mkmod loc (pmod_unpack (expr e) pt)
-          | e -> error loc "no such module unpack in this ocaml version" ]
-      | Some (Right pmod_unpack) ->
-          mkmod loc (pmod_unpack (expr e))
+          | None -> error loc "no such module unpack in this ocaml version" ]
+      | Some (Right (pmod_unpack, ptyp_package)) ->
+          let e =
+            match mto with
+            [ Some mt ->
+                let pt = package_of_module_type loc mt in
+                let t = mktyp loc (ptyp_package pt) in
+                mkexp loc (Pexp_constraint (expr e) (Some t) None)
+            | None -> 
+                expr e ]
+          in
+          mkmod loc (pmod_unpack e)
       | None -> error loc "no module unpack in this ocaml version" ]
   | IFDEF STRICT THEN
       MeXtr loc _ _ -> error loc "bad ast MeXtr"

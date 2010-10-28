@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.21 2010/10/28 14:44:36 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.22 2010/10/28 19:31:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -459,10 +459,10 @@ EXTEND
       | p = patt -> <:patt< $p$ >>
       | pl = V (LIST1 patt SEP ",") -> <:patt< ($_list:pl$) >>
       | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
-      | "module"; me = module_expr; ":"; mt = module_type ->
-          <:patt< (module $me$ : $mt$) >>
-      | "module"; me = module_expr ->
-          <:patt< (module $me$) >>
+      | "module"; s = V UIDENT; ":"; mt = module_type ->
+          <:patt< (module $_uid:s$ : $mt$) >>
+      | "module"; s = V UIDENT ->
+          <:patt< (module $_uid:s$) >>
       | -> <:patt< () >> ] ]
   ;
   cons_patt_opt:
@@ -493,10 +493,10 @@ EXTEND
       | p = ipatt -> <:patt< $p$ >>
       | pl = V (LIST1 ipatt SEP ",") -> <:patt< ( $_list:pl$) >>
       | "type"; s = V LIDENT -> <:patt< (type $_lid:s$) >>
-      | "module"; me = module_expr; ":"; mt = module_type ->
-          <:patt< (module $me$ : $mt$) >>
-      | "module"; me = module_expr ->
-          <:patt< (module $me$) >>
+      | "module"; s  = V UIDENT; ":"; mt = module_type ->
+          <:patt< (module $_uid:s$ : $mt$) >>
+      | "module"; s = V UIDENT ->
+          <:patt< (module $_uid:s$) >>
       | -> <:patt< () >> ] ]
   ;
   label_ipatt:

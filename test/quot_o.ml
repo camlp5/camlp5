@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.20 2010/10/28 15:14:12 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.21 2010/10/28 19:31:54 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -116,7 +116,12 @@ MLast.PaOlb (loc, p, oe);;
 <:patt< # $_list:ls$ >>;;
 <:patt< $uid:s$ >>;;
 <:patt< $_uid:s$ >>;;
-<:patt< (module $me$) >>;;
+<:patt< (module $uid:s$) >>;;
+<:patt< (module $uid:s$ : $mt$) >>;;
+MLast.PaUnp (loc, Ploc.VaVal s, omt);;
+<:patt< (module $_uid:s$) >>;;
+<:patt< (module $_uid:s$ : $mt$) >>;;
+MLast.PaUnp (loc, s, omt);;
 MLast.PaVrn (loc, Ploc.VaVal s);;
 MLast.PaVrn (loc, s);;
 
@@ -201,6 +206,7 @@ MLast.ExOvr (loc, Ploc.VaVal lse);;
 MLast.ExOvr (loc, lse);;
 <:expr< (module $me$) >>;;
 <:expr< (module $me$ : $mt$) >>;;
+MLast.ExPck (loc, me, omt);;
 <:expr< {$list:lpe$} >>;;
 MLast.ExRec (loc, Ploc.VaVal lpe, Some e);;
 MLast.ExRec (loc, Ploc.VaVal lpe, oe);;
@@ -320,6 +326,8 @@ MLast.MeTyc (loc, me, mt);;
 MLast.MeUid (loc, Ploc.VaVal s);;
 MLast.MeUid (loc, s);;
 <:module_expr< (val $e$) >>;;
+<:module_expr< (val $e$ : $mt$) >>;;
+MLast.MeUnp (loc, e, omt);;
 MLast.StCls (loc, Ploc.VaVal lcice);;
 MLast.StCls (loc, lcice);;
 MLast.StClt (loc, Ploc.VaVal lcict);;

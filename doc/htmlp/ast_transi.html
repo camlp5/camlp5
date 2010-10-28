@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 6.29 2010/10/03 00:17:20 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 6.30 2010/10/28 19:31:52 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -430,7 +430,12 @@
     <td>override</td>
   </tr>
   <tr>
-    <td><tt>ExPck loc me mt</tt></td>
+    <td><tt>ExPck loc me None</tt></td>
+    <td align="center"><tt>(module $me$)</tt></td>
+    <td>module packing</td>
+  </tr>
+  <tr>
+    <td><tt>ExPck loc me (Some mt)</tt></td>
     <td align="center"><tt>(module $me$ : $mt$)</tt></td>
     <td>module packing</td>
   </tr>
@@ -691,6 +696,16 @@
     <td><tt>PaUid loc s</tt></td>
     <td align="center"><tt>$uid:s$</tt></td>
     <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>PaUnp loc s None</tt></td>
+    <td align="center"><tt>(module $uid:s$)</tt></td>
+    <td>module unpacking</td>
+  </tr>
+  <tr>
+    <td><tt>PaUnp loc s (Some mt)</tt></td>
+    <td align="center"><tt>(module $uid:s$ : $mt$)</tt></td>
+    <td>module unpacking</td>
   </tr>
   <tr>
     <td><tt>PaVrn loc s</tt></td>
@@ -1129,7 +1144,12 @@
     <td>uppercase identifier</td>
   </tr>
   <tr>
-    <td><tt>MeUnp loc e mt</tt></td>
+    <td><tt>MeUnp loc e None</tt></td>
+    <td align="center"><tt>(value $e$)</tt></td>
+    <td>module unpacking</td>
+  </tr>
+  <tr>
+    <td><tt>MeUnp loc e (Some mt)</tt></td>
     <td align="center"><tt>(value $e$ : $mt$)</tt></td>
     <td>module unpacking</td>
   </tr>

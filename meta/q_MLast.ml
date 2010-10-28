@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.21 2010/10/28 14:44:36 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.22 2010/10/28 19:31:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -275,11 +275,9 @@ EXTEND
     | "simple"
       [ i = SV UIDENT -> Qast.Node "MeUid" [Qast.Loc; i]
       | "("; "value"; e = expr; ":"; mt = module_type; ")" ->
-          Qast.Node "MeUnp"
-            [Qast.Loc;
-             Qast.Node "ExTyc"
-               [Qast.Loc; e; Qast.Node "TyPck" [Qast.Loc; mt]]]
-      | "("; "value"; e = expr; ")" -> Qast.Node "MeUnp" [Qast.Loc; e]
+          Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option (Some mt)]
+      | "("; "value"; e = expr; ")" ->
+          Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option None]
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "("; me = SELF; ")" -> me ] ]
@@ -714,9 +712,9 @@ EXTEND
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option (Some e)]
       | "("; ")" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
-          Qast.Node "ExPck" [Qast.Loc; Qast.Node "MeTyc" [Qast.Loc; me; mt]]
+          Qast.Node "ExPck" [Qast.Loc; me; Qast.Option (Some mt)]
       | "("; "module"; me = module_expr; ")" ->
-          Qast.Node "ExPck" [Qast.Loc; me]
+          Qast.Node "ExPck" [Qast.Loc; me; Qast.Option None]
       | "("; e = SELF; ":"; t = ctyp; ")" ->
           Qast.Node "ExTyc" [Qast.Loc; e; t]
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" ->
@@ -832,9 +830,10 @@ EXTEND
       | p = patt -> p
       | pl = SV (LIST1 patt SEP ",") -> Qast.Node "PaTup" [Qast.Loc; pl]
       | "type"; s = SV LIDENT -> Qast.Node "PaNty" [Qast.Loc; s]
-      | "module"; me = module_expr; ":"; mt = module_type ->
-          Qast.Node "PaUnp" [Qast.Loc; Qast.Node "MeTyc" [Qast.Loc; me; mt]]
-      | "module"; me = module_expr -> Qast.Node "PaUnp" [Qast.Loc; me]
+      | "module"; s = SV UIDENT; ":"; mt = module_type ->
+          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option (Some mt)]
+      | "module"; s = SV UIDENT ->
+          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
       | -> Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   cons_patt_opt:
@@ -865,9 +864,10 @@ EXTEND
       | p = ipatt -> p
       | pl = SV (LIST1 ipatt SEP ",") -> Qast.Node "PaTup" [Qast.Loc; pl]
       | "type"; s = SV LIDENT -> Qast.Node "PaNty" [Qast.Loc; s]
-      | "module"; me = module_expr; ":"; mt = module_type ->
-          Qast.Node "PaUnp" [Qast.Loc; Qast.Node "MeTyc" [Qast.Loc; me; mt]]
-      | "module"; me = module_expr -> Qast.Node "PaUnp" [Qast.Loc; me]
+      | "module"; s = SV UIDENT; ":"; mt = module_type ->
+          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option (Some mt)]
+      | "module"; s = SV UIDENT ->
+          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
       | -> Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   label_ipatt:

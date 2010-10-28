@@ -73,7 +73,7 @@ and patt =
   | PaTyc of loc * patt * ctyp
   | PaTyp of loc * string list
   | PaUid of loc * string
-  | PaUnp of loc * module_expr
+  | PaUnp of loc * string * module_type option
   | PaVrn of loc * string
 and expr =
     ExAcc of loc * expr * expr
@@ -101,7 +101,7 @@ and expr =
   | ExObj of loc * patt option * class_str_item list
   | ExOlb of loc * patt * expr option
   | ExOvr of loc * (string * expr) list
-  | ExPck of loc * module_expr
+  | ExPck of loc * module_expr * module_type option
   | ExRec of loc * (patt * expr) list * expr option
   | ExSeq of loc * expr list
   | ExSnd of loc * expr * string
@@ -149,7 +149,7 @@ and module_expr =
   | MeStr of loc * str_item list
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string
-  | MeUnp of loc * expr
+  | MeUnp of loc * expr * module_type option
 and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list

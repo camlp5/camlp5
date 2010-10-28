@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.8 2010/10/28 14:44:35 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.9 2010/10/28 19:31:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -393,7 +393,7 @@ value ocaml_pmod_unpack =
   ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
     Some (Left (fun e pt -> Pmod_unpack e pt))
   ELSE
-    Some (Right (fun e -> Pmod_unpack e))
+    Some (Right (fun e -> Pmod_unpack e, fun pt -> Ptyp_package pt))
   END
 ;
 
