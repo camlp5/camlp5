@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.6 2010/10/04 09:18:35 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.7 2010/10/28 11:38:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -271,8 +271,16 @@ value ocaml_pexp_open =
 ;
 
 value ocaml_pexp_pack =
-  IFDEF OCAML_VERSION < OCAML_3_12 THEN None
-  ELSE Some (fun me pt -> Pexp_pack me pt) END
+  IFDEF OCAML_VERSION < OCAML_3_12 THEN
+    fun me pt_opt -> None
+  ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+    fun me pt_opt ->
+      match pt_opt with
+      [ Some pt -> Some (Pexp_pack me pt)
+      | None -> None ]
+  ELSE
+    fun me pt_opt -> Some (Pexp_pack me)
+  END
 ;
 
 value ocaml_pexp_poly =
@@ -319,6 +327,11 @@ value ocaml_ppat_record lpl =
 value ocaml_ppat_type =
   IFDEF OCAML_VERSION <= OCAML_2_99 THEN None
   ELSE Some (fun sl -> Ppat_type sl) END
+;
+
+value ocaml_ppat_unpack =
+  IFDEF OCAML_VERSION < OCAML_3_13_0 THEN None
+  ELSE Some (fun s -> Ppat_unpack s, fun pt -> Ptyp_package pt) END
 ;
 
 value ocaml_ppat_variant =
@@ -380,8 +393,15 @@ value ocaml_class_infos =
 ;
 
 value ocaml_pmod_unpack =
-  IFDEF OCAML_VERSION < OCAML_3_12 THEN None
-  ELSE Some (fun e pt -> Pmod_unpack e pt) END
+  IFDEF OCAML_VERSION < OCAML_3_12 THEN fun e pt_opt -> None
+  ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+    fun e pt_opt ->
+      match pt_opt with
+      [ Some pt -> Some (Pmod_unpack e pt)
+      | None -> None ]
+  ELSE
+    fun e pt_opt -> Some (Pmod_unpack e)
+  END
 ;
 
 value ocaml_pcf_cstr =

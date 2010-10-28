@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.7 2010/10/04 14:16:39 deraugla Exp $
+# $Id: Makefile,v 6.8 2010/10/28 11:38:01 deraugla Exp $
 
 include config/Makefile
 
@@ -93,7 +93,8 @@ promote:
 
 compare:
 	@if (for i in $(FDIRS); do \
-		if (cd $$i; $(MAKE) compare 2>/dev/null; cd ..); then :; \
+		cd $$i; \
+		if $(MAKE) compare 2>/dev/null; then cd ..; \
 		else exit 1; fi; \
 	     done); \
 	then echo "Fixpoint reached, bootstrap succeeded."; \

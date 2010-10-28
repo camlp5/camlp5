@@ -86,7 +86,7 @@ let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
 let ocaml_pexp_open = Some (fun li e -> Pexp_open (li, e));;
 
-let ocaml_pexp_pack = Some (fun me pt -> Pexp_pack (me, pt));;
+let ocaml_pexp_pack me pt_opt = Some (Pexp_pack me);;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
@@ -109,6 +109,10 @@ let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
 let ocaml_ppat_record lpl = Ppat_record (lpl, Closed);;
 
 let ocaml_ppat_type = Some (fun sl -> Ppat_type sl);;
+
+let ocaml_ppat_unpack =
+  Some ((fun s -> Ppat_unpack s), (fun pt -> Ptyp_package pt))
+;;
 
 let ocaml_ppat_variant =
   let ppat_variant_pat =
@@ -139,7 +143,7 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc; pci_variance = variance})
 ;;
 
-let ocaml_pmod_unpack = Some (fun e pt -> Pmod_unpack (e, pt));;
+let ocaml_pmod_unpack e pt_opt = Some (Pmod_unpack e);;
 
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
 

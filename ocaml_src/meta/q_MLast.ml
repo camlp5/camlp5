@@ -498,7 +498,13 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (mt : 'module_type) _ (e : 'expr) _ _ (loc : Ploc.t) ->
-           (Qast.Node ("MeUnp", [Qast.Loc; e; mt]) : 'module_expr));
+           (Qast.Node
+              ("MeUnp",
+               [Qast.Loc;
+                Qast.Node
+                  ("ExTyc",
+                   [Qast.Loc; e; Qast.Node ("TyPck", [Qast.Loc; mt])])]) :
+            'module_expr));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("UIDENT", "")],
@@ -865,7 +871,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 294, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 297, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1517,7 +1523,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 364, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 367, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -2658,7 +2664,9 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (mt : 'module_type) _ (me : 'module_expr) _ _ (loc : Ploc.t) ->
-           (Qast.Node ("ExPck", [Qast.Loc; me; mt]) : 'expr));
+           (Qast.Node
+              ("ExPck", [Qast.Loc; Qast.Node ("MeTyc", [Qast.Loc; me; mt])]) :
+            'expr));
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ _ (loc : Ploc.t) ->

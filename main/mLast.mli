@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.8 2010/09/30 14:25:52 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.9 2010/10/28 11:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -81,6 +81,7 @@ and patt =
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and V (list string)
   | PaUid of loc and V string
+  | PaUnp of loc and patt
   | PaVrn of loc and V string
   | IFDEF STRICT THEN
       PaXtr of loc and string and option (V patt)
@@ -111,7 +112,7 @@ and expr =
   | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and patt and V (option expr)
   | ExOvr of loc and V (list (string * expr))
-  | ExPck of loc and module_expr and module_type
+  | ExPck of loc and module_expr
   | ExRec of loc and V (list (patt * expr)) and option expr
   | ExSeq of loc and V (list expr)
   | ExSnd of loc and expr and V string
@@ -168,7 +169,7 @@ and module_expr =
   | MeStr of loc and V (list str_item)
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string
-  | MeUnp of loc and expr and module_type
+  | MeUnp of loc and expr
   | IFDEF STRICT THEN
       MeXtr of loc and string and option (V module_expr)
     END ]

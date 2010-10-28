@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.14 2010/09/30 20:41:55 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.15 2010/10/28 11:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -179,6 +179,7 @@ module Meta_make (C : MetaSig) =
       | PaTyc _ p t -> C.node "PaTyc" [patt p; ctyp t]
       | PaTyp _ ls -> C.node "PaTyp" [C.vala (C.list C.string) ls]
       | PaUid _ s -> C.node "PaUid" [C.vala C.string s]
+      | PaUnp _ p -> C.node "PaUnp" [patt p]
       | PaVrn _ s -> C.node "PaVrn" [C.vala C.string s]
       | IFDEF STRICT THEN
           PaXtr loc s _ -> C.xtr_or_anti loc (fun r -> C.node "PaAnt" [r]) s
@@ -235,7 +236,7 @@ module Meta_make (C : MetaSig) =
       | ExOvr _ lse ->
           C.node "ExOvr"
             [C.vala (C.list (fun (s, e) -> C.tuple [C.string s; expr e])) lse]
-      | ExPck _ me mt -> C.node "ExPck" [module_expr me; module_type mt]
+      | ExPck _ me -> C.node "ExPck" [module_expr me]
       | ExRec _ lpe oe ->
           C.node "ExRec"
             [C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe;
@@ -335,7 +336,7 @@ module Meta_make (C : MetaSig) =
       | MeStr _ lsi -> C.node "MeStr" [C.vala (C.list str_item) lsi]
       | MeTyc _ me mt -> C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid _ s -> C.node "MeUid" [C.vala C.string s]
-      | MeUnp _ e mt -> C.node "MeUnp" [expr e; module_type mt]
+      | MeUnp _ e -> C.node "MeUnp" [expr e]
       | IFDEF STRICT THEN
           MeXtr loc s _ -> C.xtr loc s
         END ]

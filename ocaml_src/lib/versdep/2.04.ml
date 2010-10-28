@@ -107,7 +107,7 @@ let ocaml_pexp_object = None;;
 
 let ocaml_pexp_open = None;;
 
-let ocaml_pexp_pack = None;;
+let ocaml_pexp_pack me pt_opt = None;;
 
 let ocaml_pexp_poly = None;;
 
@@ -122,6 +122,8 @@ let ocaml_ppat_lazy = None;;
 let ocaml_ppat_record lpl = Ppat_record lpl;;
 
 let ocaml_ppat_type = None;;
+
+let ocaml_ppat_unpack = None;;
 
 let ocaml_ppat_variant = None;;
 
@@ -144,7 +146,7 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc})
 ;;
 
-let ocaml_pmod_unpack = None;;
+let ocaml_pmod_unpack e pt_opt = None;;
 
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
 

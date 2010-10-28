@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.19 2010/09/30 20:41:55 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.20 2010/10/28 11:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -275,7 +275,10 @@ EXTEND
     | "simple"
       [ i = SV UIDENT -> Qast.Node "MeUid" [Qast.Loc; i]
       | "("; "value"; e = expr; ":"; mt = module_type; ")" ->
-          Qast.Node "MeUnp" [Qast.Loc; e; mt]
+          Qast.Node "MeUnp"
+            [Qast.Loc;
+             Qast.Node "ExTyc"
+               [Qast.Loc; e; Qast.Node "TyPck" [Qast.Loc; mt]]]
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "("; me = SELF; ")" -> me ] ]
@@ -710,7 +713,7 @@ EXTEND
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option (Some e)]
       | "("; ")" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
-          Qast.Node "ExPck" [Qast.Loc; me; mt]
+          Qast.Node "ExPck" [Qast.Loc; Qast.Node "MeTyc" [Qast.Loc; me; mt]]
       | "("; e = SELF; ":"; t = ctyp; ")" ->
           Qast.Node "ExTyc" [Qast.Loc; e; t]
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" ->

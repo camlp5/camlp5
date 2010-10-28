@@ -282,7 +282,8 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (mt : 'module_type) _ (e : 'expr) _ _ (loc : Ploc.t) ->
-           (MLast.MeUnp (loc, e, mt) : 'module_expr));
+           (MLast.MeUnp (loc, MLast.ExTyc (loc, e, MLast.TyPck (loc, mt))) :
+            'module_expr));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
@@ -1076,7 +1077,7 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (mt : 'module_type) _ (me : 'module_expr) _ _ (loc : Ploc.t) ->
-           (MLast.ExPck (loc, me, mt) : 'expr));
+           (MLast.ExPck (loc, MLast.MeTyc (loc, me, mt)) : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ _ (loc : Ploc.t) -> (MLast.ExUid (loc, "()") : 'expr));

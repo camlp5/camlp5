@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.16 2010/09/30 14:25:51 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.17 2010/10/28 11:38:01 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -612,6 +612,26 @@ value rec patt =
   | PaUid loc s ->
       let ca = not Prtools.no_constructors_arity.val in
       mkpat loc (Ppat_construct (Lident (conv_con (uv s))) None ca)
+  | PaUnp loc p ->
+      match ocaml_ppat_unpack with
+      [ Some (ppat_unpack, ptyp_package) ->
+          let (s, pt_opt) =
+            match p with
+            [ PaUid _ s -> (s, None)
+            | PaTyc _ (PaUid _ s) (TyPck loc mt) ->
+                let pt = package_of_module_type loc mt in
+                (s, Some pt)
+            | _ -> error loc "syntax error" ]
+          in
+          let p = ppat_unpack (uv s) in
+          let p =
+            match pt_opt with
+            [ Some pt ->
+               Ppat_constraint (mkpat loc p) (mktyp loc (ptyp_package pt))
+            | None -> p ]
+          in
+          mkpat loc p
+      | None -> error loc "no unpack pattern in this ocaml version" ]
   | PaVrn loc s ->
       match ocaml_ppat_variant with
       [ Some (_, ppat_variant) -> mkpat loc (ppat_variant (uv s, None))
@@ -884,12 +904,17 @@ value rec expr =
       | None -> error loc "no object in this ocaml version" ]
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here 2"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
-  | ExPck loc me mt ->
-      match ocaml_pexp_pack with
-      [ Some pexp_pack ->
-          let pt = package_of_module_type loc mt in
-          mkexp loc (pexp_pack (module_expr me) pt)
-      | None -> error loc "no '(module ... : ...)' in this ocaml version" ]
+  | ExPck loc me ->
+      let (me, pt_opt) =
+        match me with
+        [ MeTyc loc me mt ->
+            let pt = package_of_module_type loc mt in
+            (me, Some pt)
+        | me -> (me, None) ]
+      in
+      match ocaml_pexp_pack (module_expr me) pt_opt with
+      [ Some e -> mkexp loc e
+      | None -> error loc "no (such) module package in this ocaml version" ]
   | ExRec loc lel eo ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
@@ -1073,12 +1098,17 @@ and module_expr =
   | MeTyc loc me mt ->
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
   | MeUid loc s -> mkmod loc (Pmod_ident (Lident (uv s)))
-  | MeUnp loc e mt ->
-      match ocaml_pmod_unpack with
-      [ Some pmod_unpack ->
-          let pt = package_of_module_type loc mt in
-          mkmod loc (pmod_unpack (expr e) pt)
-      | None -> error loc "no module unpack in this ocaml version" ]
+  | MeUnp loc e ->
+      let (e, pt_opt) =
+        match e with
+        [ ExTyc _ e (TyPck loc mt) ->
+            let pt = package_of_module_type loc mt in
+            (e, Some pt)
+        | e -> (e, None) ]
+      in
+      match ocaml_pmod_unpack (expr e) pt_opt with
+      [ Some me -> mkmod loc me
+      | None -> error loc "no (such) module unpack in this ocaml version" ]
   | IFDEF STRICT THEN
       MeXtr loc _ _ -> error loc "bad ast MeXtr"
     END ]

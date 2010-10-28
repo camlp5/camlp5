@@ -140,6 +140,7 @@ and patt floc sh =
         let loc = floc loc in PaTyc (loc, self x1, ctyp floc sh x2)
     | PaTyp (loc, x1) -> let loc = floc loc in PaTyp (loc, x1)
     | PaUid (loc, x1) -> let loc = floc loc in PaUid (loc, x1)
+    | PaUnp (loc, x1) -> let loc = floc loc in PaUnp (loc, self x1)
     | PaVrn (loc, x1) -> let loc = floc loc in PaVrn (loc, x1)
   in
   self
@@ -217,9 +218,8 @@ and expr floc sh =
     | ExOvr (loc, x1) ->
         let loc = floc loc in
         ExOvr (loc, vala_map (List.map (fun (x1, x2) -> x1, self x2)) x1)
-    | ExPck (loc, x1, x2) ->
-        let loc = floc loc in
-        ExPck (loc, module_expr floc sh x1, module_type floc sh x2)
+    | ExPck (loc, x1) ->
+        let loc = floc loc in ExPck (loc, module_expr floc sh x1)
     | ExRec (loc, x1, x2) ->
         let loc = floc loc in
         ExRec
@@ -345,9 +345,7 @@ and module_expr floc sh =
     | MeTyc (loc, x1, x2) ->
         let loc = floc loc in MeTyc (loc, self x1, module_type floc sh x2)
     | MeUid (loc, x1) -> let loc = floc loc in MeUid (loc, x1)
-    | MeUnp (loc, x1, x2) ->
-        let loc = floc loc in
-        MeUnp (loc, expr floc sh x1, module_type floc sh x2)
+    | MeUnp (loc, x1) -> let loc = floc loc in MeUnp (loc, expr floc sh x1)
   in
   self
 and str_item floc sh =

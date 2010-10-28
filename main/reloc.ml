@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.10 2010/09/30 14:25:52 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.11 2010/10/28 11:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -207,6 +207,9 @@ and patt floc sh =
     | PaUid loc x1 ->
         let loc = floc loc in
         PaUid loc x1
+    | PaUnp loc x1 ->
+        let loc = floc loc in
+        PaUnp loc (self x1)
     | PaVrn loc x1 ->
         let loc = floc loc in
         PaVrn loc x1
@@ -307,9 +310,9 @@ and expr floc sh =
     | ExOvr loc x1 ->
         let loc = floc loc in
         ExOvr loc (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1)
-    | ExPck loc x1 x2 ->
+    | ExPck loc x1 ->
         let loc = floc loc in
-        ExPck loc (module_expr floc sh x1) (module_type floc sh x2)
+        ExPck loc (module_expr floc sh x1)
     | ExRec loc x1 x2 ->
         let loc = floc loc in
         ExRec loc
@@ -478,9 +481,9 @@ and module_expr floc sh =
     | MeUid loc x1 ->
         let loc = floc loc in
         MeUid loc x1
-    | MeUnp loc x1 x2 ->
+    | MeUnp loc x1 ->
         let loc = floc loc in
-        MeUnp loc (expr floc sh x1) (module_type floc sh x2)
+        MeUnp loc (expr floc sh x1)
     | IFDEF STRICT THEN
         MeXtr loc x1 x2 ->
           let loc = floc loc in

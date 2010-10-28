@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.19 2010/09/30 20:41:55 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.20 2010/10/28 11:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -361,7 +361,11 @@ EXTEND
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
+(*
           <:expr< (module $me$ : $mt$) >>
+*)
+MLast.ExPck loc (MLast.MeTyc loc me mt)
+(**)
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" -> mktupexp loc e el
       | "("; e = SELF; ")" -> <:expr< $e$ >>
