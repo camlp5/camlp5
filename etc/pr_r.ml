@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.60 2010/10/29 01:25:20 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.61 2010/10/29 01:38:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -305,6 +305,7 @@ pr_expr_fun_args.val :=
 
 type seq =
   [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr) and seq
+  | SE_let_module of Ploc.t and string and MLast.module_expr and seq
   | SE_closed of MLast.expr and seq
   | SE_other of MLast.expr and option seq ]
 ;
@@ -315,6 +316,8 @@ value rec seq_of_expr e =
       seq_of_expr_ne_list e el
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
+  | <:expr:< let module $uid:s$ = $me$ in $e$ >> ->
+      SE_let_module loc s me (seq_of_expr e)
   | e ->
       SE_other e None ]
 and seq_of_expr_ne_list e1 el =
@@ -324,6 +327,10 @@ and seq_of_expr_ne_list e1 el =
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       match el with
       [ [] -> SE_let loc rf pel (seq_of_expr e)
+      | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
+  | <:expr:< let module $uid:s$ = $me$ in $e$ >> ->
+      match el with
+      [ [] -> SE_let_module loc s me (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
   | e1 ->
       let seo =
@@ -337,6 +344,7 @@ and seq_of_expr_ne_list e1 el =
 value rec true_sequence =
   fun
   [ SE_let _ _ _ s -> true_sequence s
+  | SE_let_module _ _ _ s -> true_sequence s
   | SE_closed _ _ -> True
   | SE_other _ (Some _) -> True
   | SE_other _ None  -> False ]
@@ -472,6 +480,10 @@ and hvseq pc se =
         sprintf "%s%s" (comm_bef pc loc)
           (pprintf pc "@[<i>%p@ %p@]" force_vertic let_up_to_in (rf, pel)
             loop se)
+    | SE_let_module loc s me se ->
+        sprintf "%s%s" (comm_bef pc loc)
+          (pprintf pc "@[<i>%p@ %p@]" force_vertic let_module_up_to_in
+            (s, me) loop se)
     | SE_closed e se ->
         pprintf pc "@[<i>@[<1>(%p);@]@ %p@]" force_vertic (comm_expr expr_wh)
           e loop se
@@ -496,6 +508,8 @@ and let_up_to_in pc (rf, pel) =
     (fun () ->
        pprintf pc "let %s%pin" (if rf then "rec " else "")
          (vlist2 let_binding (and_before let_binding)) pel)
+and let_module_up_to_in pc (s, me) =
+  pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
 
 (* Pretty printing improvement (optional):
    - display a "let" binding with the "where" construct
@@ -1096,9 +1110,11 @@ EXTEND_PRINTER
               in
               pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh)
                 e ]
-      | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
-          pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
-            curr e
+      | <:expr< let module $uid:s$ = $me$ in $e$ >> as ge ->
+          match flatten_sequence ge with
+          [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
+          | None ->
+              pprintf pc "%p@ %p" let_module_up_to_in (s, me) curr e ]
       | <:expr< do { $list:el$ } >> ->
           match el with
           [ [] -> pprintf pc "do {}"

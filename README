@@ -29,7 +29,8 @@ DOCUMENTATION
 DEVELOPPERS
 
   The file DEVEL gives information for people who want to make changes
-  in Camlp5, or who are just curious of how it is implemented.
+  in Camlp5, or who are just curious of how it is implemented. The same
+  explanations are also in the chapter "Camlp5 sources" in the documentation.
 
 PROBLEMS
 
