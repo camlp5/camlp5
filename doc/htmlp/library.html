@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 6.1 2010/09/15 16:00:20 deraugla Exp $ -->
+  <!-- $Id: library.html,v 6.2 2010/10/29 01:25:19 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -55,13 +55,14 @@
 <h3>making locations</h3>
 
 <dl>
-  <dt><tt>value make : int -> int -> (int * int) -> t;</tt></dt>
-  <dd>"<tt>Ploc.make line_nb bol_pos (bp, ep)</tt>" creates a
-    location starting at line number "<tt>line_nb</tt>", where the
-    position of the beginning of the line is "<tt>bol_pos</tt>" and
-    between the positions "<tt>bp</tt>" (included) and "<tt>ep</tt>"
-    excluded. The positions are in number of characters since the
-    begin of the stream.</dd>
+  <dt><tt>value make_loc : string -> int -> int -> (int * int) -> string -> t;</tt></dt>
+  <dd>"<tt>Ploc.make_loc fname line_nb bol_pos (bp, ep) comm</tt>"
+    creates a location starting at line number "<tt>line_nb</tt>",
+    where the position of the beginning of the line is
+    "<tt>bol_pos</tt>" and between the positions "<tt>bp</tt>"
+    (included) and "<tt>ep</tt>" excluded. And "<tt>comm</tt>" is the
+    comment before the location. The positions are in number of
+    characters since the begin of the stream.</dd>
   <dt><tt>value make_unlined : (int * int) -> t;</tt></dt>
   <dd>"<tt>Ploc.make_unlined</tt>" is like "<tt>Ploc.make</tt>" except
     that the line number is not provided (to be used e.g. when the
@@ -77,6 +78,9 @@
 <h3>getting location info</h3>
 
 <dl>
+  <dt><tt>value file_name : t -> string;</tt></dt>
+  <dd>"<tt>Ploc.file_name loc</tt>" returns the file name of the
+    location.</dd>
   <dt><tt>value first_pos : t -> int;</tt></dt>
   <dd>"<tt>Ploc.first_pos loc</tt>" returns the initial position
     of the location in number of characters since the beginning of the
@@ -95,6 +99,9 @@
     since the beginning of the stream, or "<tt>0</tt>" if the location
     does not contain a line number (i.e. built the with
     "<tt>Ploc.make_unlined</tt>" above).</dd>
+  <dt><tt>value comment : t -> string;</tt></dt>
+  <dd>"<tt>Ploc.comment loc</tt>" returns the comment before the
+    location.</dd>
 </dl>
 
 <h3>combining locations</h3>
@@ -118,6 +125,8 @@
   <dd>"<tt>Ploc.after loc sh len</tt>" is the location just after loc
     (starting at the end position of "<tt>loc</tt>") shifted with
     "<tt>sh</tt>" characters and of length "<tt>len</tt>".</dd>
+  <dt><tt>value with_comment : t -> string -> t;</tt></dt>
+  <dd>Change the comment part of the given location</dd>
 </dl>
 
 <h3>miscellaneous</h3>

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.59 2010/10/06 19:52:49 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.60 2010/10/29 01:25:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -85,7 +85,9 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< (type $lid__$) >> -> True
+  | <:patt< (type $lid:_$) >> -> True
+  | <:patt< (module $uid:_$ : $_$) >> -> True
+  | <:patt< (module $uid:_$) >> -> True
   | <:patt< ~{$p$ $opt:_$} >> -> is_irrefut_patt p
   | <:patt< ?{$p$ $opt:_$} >> -> is_irrefut_patt p
   | _ -> False ]
@@ -1250,6 +1252,8 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       |  <:expr< (module $me$ : $mt$) >> ->
           pprintf pc "@[<1>(module %p :@ %p)@]" module_expr me module_type mt
+      |  <:expr< (module $me$) >> ->
+          pprintf pc "(module %p)" module_expr me
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
@@ -1340,6 +1344,10 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
       | <:patt< (type $lid:s$) >> ->
           pprintf pc "(type %s)" s
+      | <:patt< (module $uid:s$ : $mt$) >> ->
+          pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
+      | <:patt< (module $uid:s$) >> ->
+          pprintf pc "(module %s)" s
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
@@ -1564,6 +1572,8 @@ EXTEND_PRINTER
           pprintf pc "%s" s
       | <:module_expr< (value $e$ : $mt$) >> ->
           pprintf pc "@[<1>(value %p :@ %p)@]" expr e module_type mt
+      | <:module_expr< (value $e$) >> ->
+          pprintf pc "(value %p)" expr e
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |
