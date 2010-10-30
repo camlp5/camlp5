@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.3 2010/09/29 02:33:48 deraugla Exp $
+# $Id: configure,v 6.4 2010/10/30 15:45:40 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -34,12 +34,12 @@ while : ; do
         prefix=$2; shift;;
     -bindir|--bindir)
         bindir=$2; shift;;
+    -libdir|--libdir)
+        libdir=$2; shift;;
+    -mandir|--mandir)
+        mandir=$2; shift;;
     -no-opt|--no-opt)
         noopt=1;;
-    -mandir|--mandir)
-        mandir=$2; shift;;
-    -mandir|--mandir)
-        mandir=$2; shift;;
     -transitional|--transitional)
         mode=T;;
     -strict|--strict)
