@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.22 2010/10/28 19:31:52 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.23 2010/11/03 18:19:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -850,9 +850,9 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ "~"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
+      [ "~"; "{"; p = ipatt; eo = V (OPT fun_binding); "}" ->
           <:expr< ~{$p$ $_opt:eo$ } >>
-      | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
+      | "?"; "{"; p = ipatt; eo = V (OPT fun_binding); "}" ->
           <:expr< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; e = SELF ->
           let _ = warning_deprecated_since_6_00 loc in

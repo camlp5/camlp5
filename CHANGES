@@ -1,6 +1,8 @@
 Camlp5 Version 6.00:
 --------------------
 
+* [03 Nov 10] Added in revised syntax for labels ~{lab x = y} as shortcut
+  for ~{lab = fun x -> y}.
 * [30 Oct 10] Fixed bug in 'configure': option -libdir did not work.
 
 Camlp5 Version 6.00:
