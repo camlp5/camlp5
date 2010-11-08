@@ -1,8 +1,9 @@
 Camlp5 Version 6.02:
 --------------------
 
-* [08 Nov 10] Fixed bug in pa_o: !Foo.bar was interpreted as (!Foo).bar
-  instead of !(Foo.bar).
+* [08 Nov 10] Fixed bugs 1/ in pa_o: !Foo.bar was interpreted as (!Foo).bar
+  instead of !(Foo.bar) 2/ in top/camlp5_top.cma: the file ast2pt.cmo was
+  missing.
 
 Camlp5 Version 6.01:
 --------------------

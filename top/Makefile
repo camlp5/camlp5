@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.1 2010/09/15 16:00:49 deraugla Exp $
+# $Id: Makefile,v 6.2 2010/11/08 18:07:02 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -12,7 +12,7 @@ ROBJS=$(CAMLP5_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
 OOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)
 SOBJS=$(CAMLP5_OBJS) ../etc/pa_scheme.cmo $(CTOP)
 OOOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
-OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtools.cmo ../main/pcaml.cmo camlp5_top.cmo
+OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtools.cmo ../main/pcaml.cmo ../main/ast2pt.cmo camlp5_top.cmo
 
 TARGET=camlp5o.cma camlp5r.cma camlp5sch.cma camlp5_top.cma
 
