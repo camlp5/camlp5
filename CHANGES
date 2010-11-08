@@ -1,4 +1,7 @@
-Camlp5 Version 6.00:
+Camlp5 Version 6.02:
+--------------------
+
+Camlp5 Version 6.01:
 --------------------
 
 * [03 Nov 10] Added in revised syntax for labels ~{lab x = y} as shortcut
