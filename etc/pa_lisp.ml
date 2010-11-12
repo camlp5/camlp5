@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 6.5 2010/09/30 20:41:54 deraugla Exp $
+;; $Id: pa_lisp.ml,v 6.6 2010/11/12 23:23:59 deraugla Exp $
 ;; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -601,7 +601,7 @@
  constructor_declaration_se
  (lambda_match
   ((Sexpr loc (list (Satom _ Auid ci) :: sel))
-   (, loc <:vala< ci >> <:vala< (List.map ctyp_se sel) >>))
+   (, loc <:vala< ci >> <:vala< (List.map ctyp_se sel) >> None))
   (se
    (error se "constructor_declaration"))))
 

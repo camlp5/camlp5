@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 6.2 2010/09/30 20:41:54 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 6.3 2010/11/12 23:23:59 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -130,7 +130,7 @@ value rec expr_of_type loc t =
       <:expr< error >> ]
 ;
 
-value expr_of_cons_decl (loc, c, tl) =
+value expr_of_cons_decl (loc, c, tl, rto) =
   let tl = Pcaml.unvala tl in
   let tnl = name_of_vars tl in
   let p =

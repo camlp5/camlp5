@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extend.ml,v 6.4 2010/10/01 13:12:19 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 6.5 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -238,6 +238,8 @@ module MetaAction =
           <:expr< MLast.ExAcc $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExApp loc e1 e2 ->
           <:expr< MLast.ExApp $mloc$ $mexpr e1$ $mexpr e2$ >>
+      | MLast.ExAsr loc e ->
+          <:expr< MLast.ExAsr $mloc$ $mexpr e$ >>
       | MLast.ExChr loc s -> <:expr< MLast.ExChr $mloc$ $mvala mstring s$ >>
       | MLast.ExFun loc pwel ->
           <:expr< MLast.ExFun $mloc$ $mvala (mlist mpwe) pwel$ >>

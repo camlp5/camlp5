@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.22 2010/10/28 19:31:53 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.23 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -250,6 +250,19 @@ value mktuptyp _ t tl =
 value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t];
 value mkident i = Qast.Str i;
 
+value generalized_type_of_type t =
+  let rec gen =
+    fun
+    [ Qast.Node "TyArr" [_; t1; t2] ->
+        let (tl, rt) = gen t2 in
+        ([t1 :: tl], rt)
+    | t ->
+        ([], t) ]
+  in
+  let (tl, rt) = gen t in
+  (Qast.List tl, rt)
+;
+
 value warned = ref False;
 value warning_deprecated_since_6_00 loc =
   if not warned.val then do {
@@ -290,9 +303,9 @@ EXTEND
       [ "declare"; st = SV (LIST0 [ s = str_item; ";" -> s ]); "end" ->
           Qast.Node "StDcl" [Qast.Loc; st]
       | "exception"; ctl = constructor_declaration; b = rebind_exn ->
-          let (_, c, tl) =
+          let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3] -> (xx1, xx2, xx3)
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
             | _ -> match () with [] ]
           in
           Qast.Node "StExc" [Qast.Loc; c; tl; b]
@@ -360,9 +373,9 @@ EXTEND
       [ "declare"; st = SV (LIST0 [ s = sig_item; ";" -> s ]); "end" ->
           Qast.Node "SgDcl" [Qast.Loc; st]
       | "exception"; ctl = constructor_declaration ->
-          let (_, c, tl) =
+          let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3] -> (xx1, xx2, xx3)
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
             | _ -> match () with [] ]
           in
           Qast.Node "SgExc" [Qast.Loc; c; tl]
@@ -892,7 +905,8 @@ EXTEND
       | "+"; "'"; i = SV ident "" ->
           Qast.Tuple [i; Qast.Option (Some (Qast.Bool True))]
       | "-"; "'"; i = SV ident "" ->
-          Qast.Tuple [i; Qast.Option (Some (Qast.Bool False))] ] ]
+          Qast.Tuple [i; Qast.Option (Some (Qast.Bool False))]
+      | "_" -> Qast.Tuple [Qast.VaVal (Qast.Str ""); Qast.Option None] ] ]
   ;
   ctyp:
     [ "top" LEFTA
@@ -927,9 +941,13 @@ EXTEND
   ;
   constructor_declaration:
     [ [ ci = SV UIDENT; "of"; cal = SV (LIST1 ctyp SEP "and") ->
-          Qast.Tuple [Qast.Loc; ci; cal]
+          Qast.Tuple [Qast.Loc; ci; cal; Qast.Option None]
+      | ci = SV UIDENT; ":"; t = ctyp ->
+          let (tl, rt) = generalized_type_of_type t in
+          Qast.Tuple [Qast.Loc; ci; Qast.VaVal tl; Qast.Option (Some rt)]
       | ci = SV UIDENT ->
-          Qast.Tuple [Qast.Loc; ci; Qast.VaVal (Qast.List [])] ] ]
+          Qast.Tuple
+            [Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None] ] ]
   ;
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
@@ -1291,9 +1309,9 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ "~"; "{"; p = patt_tcon; eo = SV (OPT [ "="; e = expr -> e ]); "}" ->
+      [ "~"; "{"; p = ipatt_tcon; eo = SV (OPT fun_binding); "}" ->
           Qast.Node "ExLab" [Qast.Loc; p; eo]
-      | "?"; "{"; p = patt_tcon; eo = SV (OPT [ "="; e = expr -> e ]); "}" ->
+      | "?"; "{"; p = ipatt_tcon; eo = SV (OPT fun_binding); "}" ->
           Qast.Node "ExOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; e = SELF ->
           let _ = warning_deprecated_since_6_00 loc in

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.23 2010/11/03 18:19:17 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.24 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -111,6 +111,15 @@ value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 value mklabdecl loc i mf t = (loc, i, mf, t);
 value mkident i : string = i;
 
+value rec generalized_type_of_type =
+  fun
+  [ <:ctyp< $t1$ -> $t2$ >> ->
+      let (tl, rt) = generalized_type_of_type t2 in
+      ([t1 :: tl], rt)
+  | t ->
+      ([], t) ]
+;
+
 value warned = ref True;
 value warning_deprecated_since_6_00 loc =
   if not warned.val then do {
@@ -150,7 +159,8 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = str_item; ";" -> s ]); "end" ->
           <:str_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
+      | "exception"; (_, c, tl, _) = constructor_declaration;
+        b = rebind_exn ->
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ->
@@ -217,7 +227,7 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" -> s ]); "end" ->
           <:sig_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl) = constructor_declaration ->
+      | "exception"; (_, c, tl, _) = constructor_declaration ->
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ->
@@ -516,7 +526,8 @@ EXTEND
   type_parameter:
     [ [ "'"; i = V ident "" -> (i, None)
       | "+"; "'"; i = V ident "" -> (i, Some True)
-      | "-"; "'"; i = V ident "" -> (i, Some False) ] ]
+      | "-"; "'"; i = V ident "" -> (i, Some False)
+      | "_" -> (<:vala< "" >>, None) ] ]
   ;
   ctyp:
     [ "top"
@@ -551,9 +562,12 @@ EXTEND
   ;
   constructor_declaration:
     [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp SEP "and") ->
-          (loc, ci, cal)
+          (loc, ci, cal, None)
+      | ci = V UIDENT "uid" ""; ":"; t = ctyp ->
+          let (tl, rt) = generalized_type_of_type t in
+          (loc, ci, <:vala< tl >>, Some rt)
       | ci = V UIDENT "uid" "" ->
-          (loc, ci, <:vala< [] >>) ] ]
+          (loc, ci, <:vala< [] >>, None) ] ]
   ;
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
@@ -850,9 +864,9 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ "~"; "{"; p = ipatt; eo = V (OPT fun_binding); "}" ->
+      [ "~"; "{"; p = ipatt_tcon; eo = V (OPT fun_binding); "}" ->
           <:expr< ~{$p$ $_opt:eo$ } >>
-      | "?"; "{"; p = ipatt; eo = V (OPT fun_binding); "}" ->
+      | "?"; "{"; p = ipatt_tcon; eo = V (OPT fun_binding); "}" ->
           <:expr< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; e = SELF ->
           let _ = warning_deprecated_since_6_00 loc in

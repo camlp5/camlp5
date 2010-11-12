@@ -126,15 +126,15 @@ module Meta_make (C : MetaSig) =
                   (fun (_, s, b, t) ->
                      C.tuple [C.loc_v (); C.string s; C.bool b; ctyp t]))
                llsbt]
-      | TySum (_, llslt) ->
+      | TySum (_, llsltot) ->
           C.node "TySum"
             [C.vala
                (C.list
-                  (fun (_, s, lt) ->
+                  (fun (_, s, lt, ot) ->
                      C.tuple
                        [C.loc_v (); C.vala C.string s;
-                        C.vala (C.list ctyp) lt]))
-               llslt]
+                        C.vala (C.list ctyp) lt; C.option ctyp ot]))
+               llsltot]
       | TyTup (_, lt) -> C.node "TyTup" [C.vala (C.list ctyp) lt]
       | TyUid (_, s) -> C.node "TyUid" [C.vala C.string s]
       | TyVrn (_, lpv, ools) ->

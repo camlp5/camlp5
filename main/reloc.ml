@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.13 2010/10/28 19:31:52 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.14 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -112,8 +112,9 @@ value rec ctyp floc sh =
         TySum loc
           (vala_map
              (List.map
-                (fun (loc, x1, x2) ->
-                   (floc loc, x1, vala_map (List.map self) x2)))
+                (fun (loc, x1, x2, x3) ->
+                   (floc loc, x1, vala_map (List.map self) x2,
+                    option_map self x3)))
              x1)
     | TyTup loc x1 ->
         let loc = floc loc in

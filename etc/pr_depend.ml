@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.6 2010/11/05 02:36:40 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.7 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -61,7 +61,7 @@ value rec ctyp =
   | <:ctyp< [ > $list:sbtll$ ] >> -> list variant sbtll
   | <:ctyp< [ < $list:sbtll$ > $list:_$ ] >> -> list variant sbtll
   | x -> not_impl "ctyp" x ]
-and constr_decl (_, _, tl) = list ctyp (Pcaml.unvala tl)
+and constr_decl (_, _, tl, rto) = list ctyp (Pcaml.unvala tl)
 and label_decl (_, _, _, t) = ctyp t
 and variant =
   fun

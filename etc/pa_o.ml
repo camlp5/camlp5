@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.26 2010/11/08 17:51:48 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.27 2010/11/12 23:23:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -385,7 +385,8 @@ EXTEND
   ;
   str_item:
     [ "top"
-      [ "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
+      [ "exception"; (_, c, tl, _) = constructor_declaration;
+        b = rebind_exn ->
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ->
@@ -458,7 +459,7 @@ EXTEND
   ;
   sig_item:
     [ "top"
-      [ "exception"; (_, c, tl) = constructor_declaration ->
+      [ "exception"; (_, c, tl, _) = constructor_declaration ->
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ->
@@ -861,12 +862,24 @@ EXTEND
   type_parameter:
     [ [ "'"; i = V ident "" -> (i, None)
       | "+"; "'"; i = V ident "" -> (i, Some True)
-      | "-"; "'"; i = V ident "" -> (i, Some False) ] ]
+      | "-"; "'"; i = V ident "" -> (i, Some False)
+      | "_" -> (<:vala< "" >>, None) ] ]
   ;
   constructor_declaration:
     [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
-          (loc, ci, cal)
-      | ci = cons_ident -> (loc, ci, <:vala< [] >>) ] ]
+          (loc, ci, cal, None)
+      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*");
+        "->"; t = ctyp ->
+          (loc, ci, cal, Some t)
+      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
+          let t =
+            match cal with
+            [ <:vala< [t] >> -> t
+            | <:vala< tl >> -> <:ctyp< ($list:tl$) >>
+            | _ -> assert False ]
+          in
+          (loc, ci, <:vala< [] >>, Some t)
+      | ci = cons_ident -> (loc, ci, <:vala< [] >>, None) ] ]
   ;
   cons_ident:
     [ [ i = V UIDENT "uid" "" -> i

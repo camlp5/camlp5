@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 6.4 2010/11/12 16:29:40 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 6.5 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -516,10 +516,17 @@ EXTEND
           <:expr< ($int:bp$, $int:ep$) >> ] ]
   ;
   patt:
-    [ [ "IFDEF"; e = dexpr; "THEN"; p1 = SELF; "ELSE"; p2 = SELF; "END" ->
+    [ [ "IFDEF"; e = dexpr; "THEN"; p1 = SELF; p2 = else_patt; "END" ->
           if e then p1 else p2
-      | "IFNDEF"; e = dexpr; "THEN"; p1 = SELF; "ELSE"; p2 = SELF; "END" ->
+      | "IFNDEF"; e = dexpr; "THEN"; p1 = SELF; p2 = else_patt; "END" ->
           if e then p2 else p1 ] ]
+  ;
+  else_patt:
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; p1 = patt; p2 = else_patt ->
+          if e then p1 else p2
+      | "ELSIFNDEF"; e = dexpr; "THEN"; p1 = patt; p2 = else_patt ->
+          if not e then p1 else p2
+      | "ELSE"; p = patt -> p ] ]
   ;
   constructor_declaration: FIRST
     [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
@@ -542,14 +549,25 @@ EXTEND
           if e then y else x ] ]
   ;
   match_case: FIRST
-    [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then x else Grammar.skip_item x
-      | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
+    [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; y = else_match_case; "END" ->
           if e then x else y
+      | "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
+          if e then x else Grammar.skip_item x
+      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; y = else_match_case; "END" ->
+          if not e then x else y
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then Grammar.skip_item x else x
-      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
-          if e then y else x ] ]
+          if not e then x else Grammar.skip_item x ] ]
+  ;
+  else_match_case:
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; x = match_case; y = else_match_case ->
+          if e then x else y
+      | "ELSIFDEF"; e = dexpr; "THEN"; x = match_case ->
+          if e then x else Grammar.skip_item x
+      | "ELSIFNDEF"; e = dexpr; "THEN"; x = match_case; y = else_match_case ->
+          if not e then x else y
+      | "ELSIFNDEF"; e = dexpr; "THEN"; x = match_case ->
+          if not e then x else Grammar.skip_item x
+      | "ELSE"; x = match_case -> x ] ]
   ;
   dexpr:
     [ [ x = SELF; "OR"; y = SELF -> x || y ]

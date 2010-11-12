@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_sml.ml,v 6.2 2010/09/30 16:18:18 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 6.3 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -187,8 +187,9 @@ value extract_label_types loc tn tal cdol =
                 MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>}
              in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
-             ([(loc, <:vala< c >>, <:vala< tl >>) :: cdl], [aux_def :: aux])
-         | None -> ([(loc, <:vala< c >>, <:vala< tl >>) :: cdl], aux) ])
+             ([(loc, <:vala< c >>, <:vala< tl >>, None) :: cdl],
+                [aux_def :: aux])
+         | None -> ([(loc, <:vala< c >>, <:vala< tl >>, None) :: cdl], aux) ])
       cdol ([], [])
   in
   let td1 =
@@ -647,7 +648,8 @@ EXTEND
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 =
             List.map
-              (fun (loc, c, tl, _) -> (loc, <:vala< c>>, <:vala< tl >>)) x4
+              (fun (loc, c, tl, _) -> (loc, <:vala< c>>, <:vala< tl >>, None))
+              x4
           in
           {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;

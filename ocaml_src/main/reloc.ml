@@ -82,8 +82,9 @@ let rec ctyp floc sh =
           (loc,
            vala_map
              (List.map
-                (fun (loc, x1, x2) ->
-                   floc loc, x1, vala_map (List.map self) x2))
+                (fun (loc, x1, x2, x3) ->
+                   floc loc, x1, vala_map (List.map self) x2,
+                   option_map self x3))
              x1)
     | TyTup (loc, x1) ->
         let loc = floc loc in TyTup (loc, vala_map (List.map self) x1)

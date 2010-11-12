@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.43 2010/10/29 01:25:19 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.44 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -505,7 +505,7 @@ value label_decl pc (_, l, m, t) =
   pprintf pc "%s%s :@;%p" (if m then "mutable " else "") l ctyp t
 ;
 
-value cons_decl pc (loc, c, tl) =
+value cons_decl pc (loc, c, tl, rto) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then cons_escaped pc (loc, c)
@@ -517,7 +517,7 @@ value cons_decl pc (loc, c, tl) =
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl) ->
+    (fun (_, _, tl, rto) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])

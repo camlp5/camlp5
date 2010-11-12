@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.61 2010/10/29 01:38:02 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.62 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -635,12 +635,13 @@ value rec make_patt_list =
 ;
 
 value type_var pc (tv, vari) =
-  pprintf pc "%s'%s"
+  let tv = Pcaml.unvala tv in
+  pprintf pc "%s%s"
     (match vari with
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
-    (Pcaml.unvala tv)
+    (if tv = "" then "_" else "'" ^ tv)
 ;
 
 value type_constraint pc (t1, t2) =
@@ -680,18 +681,29 @@ value label_decl pc (loc, l, m, t) =
     (if m then " mutable" else "") ctyp t
 ;
 
-value cons_decl pc (_, c, tl) =
+value cons_decl pc (_, c, tl, rto) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
-  if tl = [] then cons_escaped pc c
-  else
-    let tl = List.map (fun t -> (t, " and")) tl in
-    pprintf pc "%p of@;<1 4>%p" cons_escaped c (plist ctyp 2) tl
+  if tl = [] then do {
+    match rto with
+    [ Some rt -> pprintf pc "%p : %p" cons_escaped c ctyp rt
+    | None -> cons_escaped pc c ]
+  }
+  else do {
+    match rto with
+    [ Some rt ->
+        let loc = Ploc.dummy in
+        let t = List.fold_right (fun t rt -> <:ctyp< $t$ -> $rt$ >>) tl rt in
+        pprintf pc "%p :@;<1 4>%p" cons_escaped c ctyp t
+    | None ->
+        let tl = List.map (fun t -> (t, " and")) tl in
+        pprintf pc "%p of@;<1 4>%p" cons_escaped c (plist ctyp 2) tl ]
+  }
 ;
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl) ->
+    (fun (_, _, tl, _) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.10 2010/11/12 16:29:40 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.11 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -70,7 +70,7 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
       {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
        ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
   ELSIFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
-    let params = List.map (fun s -> Some s) params in
+    let params = List.map (fun s -> if s = "" then None else Some s) params in
     Some
       {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
        ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -124,22 +124,39 @@ value ocaml_ptype_record ltl priv =
 ;
 
 value ocaml_ptype_variant ctl priv =
-  IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
-    let ctl = List.map (fun (c, tl, _) -> (c, tl)) ctl in
-    IFDEF OCAML_VERSION <= OCAML_3_06 THEN
-      Ptype_variant ctl
-    ELSE
-      let priv = if priv then Private else Public in
-      Ptype_variant ctl priv
-    END
-  ELSIFDEF OCAML_VERSION < OCAML_3_11 THEN
-    let priv = if priv then Private else Public in
-    Ptype_variant ctl priv
-  ELSIFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
-    let ctl = List.map (fun (a, b, c) -> (a, b, None, c)) ctl in
-    Ptype_variant ctl
+  IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
+    Some (Ptype_variant ctl)
   ELSE
-    Ptype_variant ctl
+    try
+      IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
+        let ctl =
+          List.map
+            (fun (c, tl, rto, loc) ->
+               if rto <> None then raise Exit else (c, tl))
+            ctl
+        in
+        IFDEF OCAML_VERSION <= OCAML_3_06 THEN
+          Some (Ptype_variant ctl)
+        ELSE
+          let priv = if priv then Private else Public in
+          Some (Ptype_variant ctl priv)
+        END
+      ELSE
+        let ctl =
+          List.map
+            (fun (c, tl, rto, loc) ->
+               if rto <> None then raise Exit else (c, tl, loc))
+            ctl
+        in
+        IFDEF OCAML_VERSION < OCAML_3_11 THEN
+          let priv = if priv then Private else Public in
+          Some (Ptype_variant ctl priv)
+        ELSE
+          Some (Ptype_variant ctl)
+        END
+      END
+    with
+    [ Exit -> None ]
   END
 ;
 

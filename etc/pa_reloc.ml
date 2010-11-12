@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 6.3 2010/09/30 20:41:54 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 6.4 2010/11/12 23:24:00 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -71,7 +71,7 @@ value rec expr_of_type gtn use_self loc t =
       Some (<:expr< error >>, use_self) ]
 ;
 
-value expr_of_cons_decl gtn use_self (loc, c, tl) =
+value expr_of_cons_decl gtn use_self (loc, c, tl, rto) =
   let tl = Pcaml.unvala tl in
   let (p, _) =
     let p = <:patt< $_uid:c$ >> in

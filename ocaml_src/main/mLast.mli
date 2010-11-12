@@ -43,7 +43,7 @@ type ctyp =
   | TyPol of loc * string list * ctyp
   | TyQuo of loc * string
   | TyRec of loc * (loc * string * bool * ctyp) list
-  | TySum of loc * (loc * string * ctyp list) list
+  | TySum of loc * (loc * string * ctyp list * ctyp option) list
   | TyTup of loc * ctyp list
   | TyUid of loc * string
   | TyVrn of loc * poly_variant list * string list option option

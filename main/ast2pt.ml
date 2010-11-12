@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.20 2010/11/12 16:29:40 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.21 2010/11/12 23:24:00 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -369,14 +369,23 @@ value mktrecord ltl priv =
   ocaml_ptype_record ltl priv
 ;
 
-value mktvariant ctl priv =
+value option_map f =
+  fun
+  [ Some x -> Some (f x)
+  | None -> None ]
+;
+
+value mktvariant loc ctl priv =
   let ctl =
     List.map
-      (fun (loc, c, tl) ->
-         (conv_con (uv c), List.map ctyp (uv tl), mkloc loc))
+      (fun (loc, c, tl, rto) ->
+         (conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
+          mkloc loc))
       ctl
   in
-  ocaml_ptype_variant ctl priv
+  match ocaml_ptype_variant ctl priv with
+  [ Some x -> x
+  | None -> error loc "no generalized data types in this ocaml version" ]
 ;
 
 value type_decl tl priv cl =
@@ -384,11 +393,11 @@ value type_decl tl priv cl =
   [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> ->
       mktype loc tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
   | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> ->
-      mktype loc tl cl (mktvariant ctl (uv pf)) priv (Some (ctyp t))
+      mktype loc tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
   | TyRec loc ltl ->
       mktype loc tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl ->
-      mktype loc tl cl (mktvariant (uv ctl) False) priv None
+      mktype loc tl cl (mktvariant loc (uv ctl) False) priv None
   | t ->
       let m =
         match t with

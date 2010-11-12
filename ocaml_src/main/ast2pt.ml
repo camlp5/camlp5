@@ -371,13 +371,23 @@ let mktrecord ltl priv =
   ocaml_ptype_record ltl priv
 ;;
 
-let mktvariant ctl priv =
+let option_map f =
+  function
+    Some x -> Some (f x)
+  | None -> None
+;;
+
+let mktvariant loc ctl priv =
   let ctl =
     List.map
-      (fun (loc, c, tl) -> conv_con (uv c), List.map ctyp (uv tl), mkloc loc)
+      (fun (loc, c, tl, rto) ->
+         conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
+         mkloc loc)
       ctl
   in
-  ocaml_ptype_variant ctl priv
+  match ocaml_ptype_variant ctl priv with
+    Some x -> x
+  | None -> error loc "no generalized data types in this ocaml version"
 ;;
 
 let type_decl tl priv cl =
@@ -385,9 +395,10 @@ let type_decl tl priv cl =
     TyMan (loc, t, pf, MLast.TyRec (_, ltl)) ->
       mktype loc tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
   | TyMan (loc, t, pf, MLast.TySum (_, ctl)) ->
-      mktype loc tl cl (mktvariant ctl (uv pf)) priv (Some (ctyp t))
+      mktype loc tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
   | TyRec (loc, ltl) -> mktype loc tl cl (mktrecord (uv ltl) false) priv None
-  | TySum (loc, ctl) -> mktype loc tl cl (mktvariant (uv ctl) false) priv None
+  | TySum (loc, ctl) ->
+      mktype loc tl cl (mktvariant loc (uv ctl) false) priv None
   | t ->
       let m =
         match t with

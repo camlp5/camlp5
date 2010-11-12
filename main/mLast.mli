@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.11 2010/10/28 19:31:52 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.12 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -47,7 +47,7 @@ type ctyp =
   | TyPol of loc and V (list string) and ctyp
   | TyQuo of loc and V string
   | TyRec of loc and V (list (loc * string * bool * ctyp))
-  | TySum of loc and V (list (loc * V string * V (list ctyp)))
+  | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp))
   | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
   | TyVrn of loc and V (list poly_variant) and

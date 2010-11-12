@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 6.4 2010/09/30 16:18:19 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 6.5 2010/11/12 23:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -111,7 +111,7 @@ pr_expr_fun_args.val :=
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl) ->
+    (fun (_, _, tl, rto) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])
@@ -258,7 +258,7 @@ value match_assoc pc (p, we, e) =
   plistf 0 (paren pc "") list
 ;
 
-value constr_decl pc (_, c, tl) =
+value constr_decl pc (_, c, tl, rto) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   match tl with

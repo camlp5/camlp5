@@ -1,8 +1,8 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.5 2010/11/12 16:29:41 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.6 2010/11/12 23:24:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-IFDEF OCAML_VERSION >= OCAML_3_03 AND OCAML_VERSION <> OCAML_3_13_0_gadt THEN
+IFDEF OCAML_VERSION >= OCAML_3_03 THEN
 
 open Format;
 open Outcometree;
@@ -190,34 +190,44 @@ and print_simple_out_type ppf =
         fprintf ppf ")@]"
       }
     END
-  | x ->
-      IFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
-        match x with
-        [ Otyp_sum constrs _ ->
-            fprintf ppf "@[<hv>[ %a ]@]"
-              (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
-              constrs
-        | Otyp_record lbls _ ->
-            fprintf ppf "@[<hv 2>{ %a }@]"
-              (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
-        | _ -> assert False ]
-      ELSE
-        match x with
-        [ Otyp_sum constrs ->
-            fprintf ppf "@[<hv>[ %a ]@]"
-              (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
-              constrs
-        | Otyp_record lbls ->
-            fprintf ppf "@[<hv 2>{ %a }@]"
-              (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
-        | _ -> assert False ]
-      END ]
+  | IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
+      Otyp_sum constrs ->
+        fprintf ppf "@[<hv>[ %a ]@]"
+          (print_list print_out_constr_gadt_opt
+             (fun ppf -> fprintf ppf "@ | "))
+          constrs
+    ELSIFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
+      Otyp_sum constrs _ ->
+        fprintf ppf "@[<hv>[ %a ]@]"
+          (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
+          constrs
+    ELSE
+      Otyp_sum constrs ->
+        fprintf ppf "@[<hv>[ %a ]@]"
+          (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
+          constrs
+    END
+  | IFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
+      Otyp_record lbls _ ->
+        fprintf ppf "@[<hv 2>{ %a }@]"
+          (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
+    ELSE
+      Otyp_record lbls ->
+        fprintf ppf "@[<hv 2>{ %a }@]"
+          (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
+    END ]
 and print_out_constr ppf (name, tyl) =
   match tyl with
   [ [] -> fprintf ppf "%s" name
   | _ ->
       fprintf ppf "@[<2>%s of@ %a@]" name
         (print_typlist print_out_type " and") tyl ]
+and print_out_constr_gadt_opt ppf (name, tyl, rto) =
+  match rto with
+  [ Some rt ->
+      let t = List.fold_right (fun t1 t2 -> Otyp_arrow "" t1 t2) tyl rt in
+      print_out_type ppf t
+  | None -> print_out_constr ppf (name, tyl) ]
 and print_out_label ppf (name, mut, arg) =
   fprintf ppf "@[<2>%s :@ %s%a@]" name (if mut then "mutable " else "")
     print_out_type arg

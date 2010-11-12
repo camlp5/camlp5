@@ -112,6 +112,13 @@ let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 let mklabdecl loc i mf t = loc, i, mf, t;;
 let mkident i : string = i;;
 
+let rec generalized_type_of_type =
+  function
+    MLast.TyArr (_, t1, t2) ->
+      let (tl, rt) = generalized_type_of_type t2 in t1 :: tl, rt
+  | t -> [], t
+;;
+
 let warned = ref true;;
 let warning_deprecated_since_6_00 loc =
   if not !warned then
@@ -389,7 +396,7 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (rebind_exn : 'rebind_exn Grammar.Entry.e))],
       Gramext.action
-        (fun (b : 'rebind_exn) (_, c, tl : 'constructor_declaration) _
+        (fun (b : 'rebind_exn) (_, c, tl, _ : 'constructor_declaration) _
              (loc : Ploc.t) ->
            (MLast.StExc (loc, c, tl, b) : 'str_item));
       [Gramext.Stoken ("", "declare");
@@ -613,7 +620,7 @@ Grammar.extend
             (constructor_declaration :
              'constructor_declaration Grammar.Entry.e))],
       Gramext.action
-        (fun (_, c, tl : 'constructor_declaration) _ (loc : Ploc.t) ->
+        (fun (_, c, tl, _ : 'constructor_declaration) _ (loc : Ploc.t) ->
            (MLast.SgExc (loc, c, tl) : 'sig_item));
       [Gramext.Stoken ("", "declare");
        Gramext.Slist0
@@ -1589,7 +1596,9 @@ Grammar.extend
     Grammar.Entry.obj (type_parameter : 'type_parameter Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Stoken ("", "-"); Gramext.Stoken ("", "'");
+     [[Gramext.Stoken ("", "_")],
+      Gramext.action (fun _ (loc : Ploc.t) -> ("", None : 'type_parameter));
+      [Gramext.Stoken ("", "-"); Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'ident) _ _ (loc : Ploc.t) ->
@@ -1705,14 +1714,21 @@ Grammar.extend
      [[Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (ci : string) (loc : Ploc.t) ->
-           (loc, ci, [] : 'constructor_declaration));
+           (loc, ci, [], None : 'constructor_declaration));
+      [Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ":");
+       Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
+      Gramext.action
+        (fun (t : 'ctyp) _ (ci : string) (loc : Ploc.t) ->
+           (let (tl, rt) = generalized_type_of_type t in
+            loc, ci, tl, Some rt :
+            'constructor_declaration));
       [Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", "of");
        Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
           Gramext.Stoken ("", "and"), false)],
       Gramext.action
         (fun (cal : 'ctyp list) _ (ci : string) (loc : Ploc.t) ->
-           (loc, ci, cal : 'constructor_declaration))]];
+           (loc, ci, cal, None : 'constructor_declaration))]];
     Grammar.Entry.obj
       (label_declaration : 'label_declaration Grammar.Entry.e),
     None,
@@ -2665,22 +2681,26 @@ Grammar.extend
             MLast.ExLab (loc, MLast.PaLid (loc, i), Some e) :
             'expr));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("", "{");
-       Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e));
+       Gramext.Snterm
+         (Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e));
        Gramext.Sopt
          (Gramext.Snterm
             (Grammar.Entry.obj (fun_binding : 'fun_binding Grammar.Entry.e)));
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (eo : 'fun_binding option) (p : 'ipatt) _ _ (loc : Ploc.t) ->
+        (fun _ (eo : 'fun_binding option) (p : 'ipatt_tcon) _ _
+             (loc : Ploc.t) ->
            (MLast.ExOlb (loc, p, eo) : 'expr));
       [Gramext.Stoken ("", "~"); Gramext.Stoken ("", "{");
-       Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e));
+       Gramext.Snterm
+         (Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e));
        Gramext.Sopt
          (Gramext.Snterm
             (Grammar.Entry.obj (fun_binding : 'fun_binding Grammar.Entry.e)));
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (eo : 'fun_binding option) (p : 'ipatt) _ _ (loc : Ploc.t) ->
+        (fun _ (eo : 'fun_binding option) (p : 'ipatt_tcon) _ _
+             (loc : Ploc.t) ->
            (MLast.ExLab (loc, p, eo) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),

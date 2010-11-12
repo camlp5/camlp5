@@ -1,6 +1,9 @@
 Camlp5 Version 6.02:
 --------------------
 
+* [12 Nov 10] Added compatibility with OCaml GADT version.
+* [12 Nov 10] pa_macro: added ability to use ELSIFDEF in match cases (the
+  ending ELSE part being still optional).
 * [08 Nov 10] Fixed bugs 1/ in pa_o: !Foo.bar was interpreted as (!Foo).bar
   instead of !(Foo.bar) 2/ in top/camlp5_top.cma: the file ast2pt.cmo was
   missing.

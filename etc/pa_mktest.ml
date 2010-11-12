@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mktest.ml,v 6.14 2010/10/28 19:31:52 deraugla Exp $ *)
+(* $Id: pa_mktest.ml,v 6.15 2010/11/12 23:23:59 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mktest.cmo etc/pr_r.cmo -flag D -impl main/mLast.mli
@@ -106,7 +106,7 @@ value rec expr_list_of_type loc f n =
       f <:expr< $lid:n$ >> ]
 ;
 
-value expr_of_cons_decl (loc, c, tl) = do {
+value expr_of_cons_decl (loc, c, tl, rto) = do {
   let c = Pcaml.unvala c in
   if String.length c = 5 && String.sub c 2 3 = "Xtr" then []
   else do {

@@ -37,7 +37,14 @@ let ocaml_ptype_record ltl priv =
 ;;
 
 let ocaml_ptype_variant ctl priv =
-  let ctl = List.map (fun (c, tl, _) -> c, tl) ctl in Ptype_variant ctl
+  try
+    let ctl =
+      List.map
+        (fun (c, tl, rto, loc) -> if rto <> None then raise Exit else c, tl)
+        ctl
+    in
+    Some (Ptype_variant ctl)
+  with Exit -> None
 ;;
 
 let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
