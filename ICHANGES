@@ -4,6 +4,11 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 6.02:
 --------------------
 
+* [12 Nov 10] In 'make steal' (resp. 'make compare_stolen'), build
+  (resp. compare) now 'config.ml' with 'utils/config.mlp' instead of
+  'utils/config.ml' (this file not being existent any more after
+  a 'make clean' in the OCaml sources).
+
 Camlp5 Version 6.01:
 --------------------
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2010/10/04 14:16:39 deraugla Exp $
+# $Id: Makefile,v 6.3 2010/11/12 13:44:23 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -42,7 +42,7 @@ real_steal:
 	cp common/parsing/.cvsignore $(OVERSION)/parsing/.
 	cp common/parsing/.depend $(OVERSION)/parsing/.
 	(echo "let ocaml_version = \"$(OVERSION)\""; \
-	 grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
+	 grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp | \
 	 sed -e 's/^and/let/') > $(OVERSION)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
 	$(MAKE) copy_steal FILE=parsing/asttypes.mli
@@ -70,7 +70,7 @@ real_compare_stolen:
 	@echo =================================================
 	@echo pconfig.ml
 	@(echo "let ocaml_version = \"$(OVERSION)\""; \
-	  grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml) | \
+	  grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp) | \
 	sed -e 's/^and/let/' | diff $(OVERSION)/utils/pconfig.ml -; exit 0
 	@echo =================================================
 	@echo asttypes.mli
