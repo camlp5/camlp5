@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.8 2010/10/28 11:38:01 deraugla Exp $
+# $Id: Makefile,v 6.9 2010/11/12 13:25:16 deraugla Exp $
 
 include config/Makefile
 
@@ -144,8 +144,8 @@ library:
 # Cold start using pure Objective Caml sources
 
 library_cold:
-	cd ocaml_src/lib; $(MAKE) all; cd ../..
-	cd ocaml_src/lib; $(MAKE) promote; cd ../..
+	set -e; cd ocaml_src/lib; $(MAKE) all; cd ../..
+	set -e; cd ocaml_src/lib; $(MAKE) promote; cd ../..
 
 compile_cold:
 	cd ocaml_src; set -e; \
