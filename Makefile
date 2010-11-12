@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.9 2010/11/12 13:25:16 deraugla Exp $
+# $Id: Makefile,v 6.10 2010/11/12 16:29:40 deraugla Exp $
 
 include config/Makefile
 
@@ -137,9 +137,9 @@ world.opt:
 	$(MAKE) opt.opt
 
 library:
-	cd ocaml_stuff; $(MAKE); cd ..
-	cd lib; $(MAKE) all; cd ..
-	cd lib; $(MAKE) promote; cd ..
+	set -e; cd ocaml_stuff; $(MAKE); cd ..
+	set -e; cd lib; $(MAKE) all; cd ..
+	set -e; cd lib; $(MAKE) promote; cd ..
 
 # Cold start using pure Objective Caml sources
 
@@ -262,8 +262,8 @@ bootstrap_all_versdep:
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
-	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
-	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
+	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
+	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
 	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
@@ -276,8 +276,8 @@ compare_all_versdep:
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
-	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
-	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
+	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
+	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
 	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \

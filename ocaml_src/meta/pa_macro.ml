@@ -128,7 +128,7 @@ let oversion =
   let v = String.copy Pconfig.ocaml_version in
   for i = 0 to String.length v - 1 do
     match v.[i] with
-      '0'..'9' -> ()
+      '0'..'9' | 'a'..'z' | 'A'..'Z' -> ()
     | _ -> v.[i] <- '_'
   done;
   v
@@ -948,6 +948,8 @@ Grammar.extend
       Gramext.action (fun _ (loc : Ploc.t) -> ((>=) : 'op));
       [Gramext.Stoken ("", ">")],
       Gramext.action (fun _ (loc : Ploc.t) -> ((>) : 'op));
+      [Gramext.Stoken ("", "<>")],
+      Gramext.action (fun _ (loc : Ploc.t) -> ((<>) : 'op));
       [Gramext.Stoken ("", "=")],
       Gramext.action (fun _ (loc : Ploc.t) -> ((=) : 'op));
       [Gramext.Stoken ("", "<")],

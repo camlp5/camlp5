@@ -1,8 +1,8 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.4 2010/09/23 10:23:08 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.5 2010/11/12 16:29:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-IFDEF OCAML_VERSION >= OCAML_3_03 THEN
+IFDEF OCAML_VERSION >= OCAML_3_03 AND OCAML_VERSION <> OCAML_3_13_0_gadt THEN
 
 open Format;
 open Outcometree;

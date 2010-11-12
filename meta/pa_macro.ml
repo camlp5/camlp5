@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 6.3 2010/09/29 14:00:52 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 6.4 2010/11/12 16:29:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -128,7 +128,7 @@ value oversion = do {
   let v = String.copy Pconfig.ocaml_version in
   for i = 0 to String.length v - 1 do {
     match v.[i] with
-    [ '0'..'9' -> ()
+    [ '0'..'9' | 'a'..'z' | 'A'..'Z' -> ()
     | _ -> v.[i] := '_' ];
   };
   v
@@ -563,6 +563,7 @@ EXTEND
     [ [ "<=" -> \<=
       | "<" -> \<
       | "=" -> \=
+      | "<>" -> \<>
       | ">" -> \>
       | ">=" -> \>= ] ]
   ;

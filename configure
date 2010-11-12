@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.4 2010/10/30 15:45:40 deraugla Exp $
+# $Id: configure,v 6.5 2010/11/12 16:29:40 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -7,6 +7,7 @@ libdir=''
 mandir=''
 mode=T
 noopt=0
+oversion=''
 
 if [ -f myconfig ]; then
   . ./myconfig
@@ -40,6 +41,8 @@ while : ; do
         mandir=$2; shift;;
     -no-opt|--no-opt)
         noopt=1;;
+    -oversion|--oversion)
+        oversion=$2; shift;;
     -transitional|--transitional)
         mode=T;;
     -strict|--strict)
@@ -61,6 +64,8 @@ while : ; do
         echo "        <dir>/bin, <dir>/lib/ocaml, <dir>/man."
         echo "  -no-opt, --no-opt"
         echo "        do not use .opt versions of ocaml compilers"
+        echo "  -oversion <name>"
+        echo "        specify an OCaml version on ocaml_stuff directory"
         echo "  -transitional, --transitional"
         echo "        compile in transitional mode"
         echo "  -strict, --strict"
@@ -120,7 +125,9 @@ fi
 
 # Check versions
 
-oversion=$(ocamlc -v | head -1 | sed 's/^.*version //')
+if [ "$oversion" = "" ]; then
+  oversion=$(ocamlc -v | head -1 | sed 's/^.*version //')
+fi
 OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 
 if [ -d "ocaml_stuff/$OVERSION" -a -f "ocaml_src/lib/versdep/$OVERSION.ml" ]
@@ -129,6 +136,12 @@ else
   echo
   echo "Sorry: the compatibility with ocaml version \"$oversion\""
   echo "is not yet implemented. Please report."
+  echo
+  if [ -d "ocaml_stuff/$OVERSION" ]; then
+    echo "Information: file ocaml_src/lib/versdep/$OVERSION.ml is missing."
+  else
+    echo "Information: directory ocaml_stuff/$OVERSION is missing."
+  fi
   echo
   echo "Configuration failed."
   # to give the ability to do "make steal":

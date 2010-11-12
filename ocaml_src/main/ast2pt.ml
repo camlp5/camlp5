@@ -87,7 +87,7 @@ let mklazy loc e =
   | None ->
       let ghpat = mkpat loc in
       let ghexp = mkexp loc in
-      let void_pat = ghpat (Ppat_construct (Lident "()", None, false)) in
+      let void_pat = ghpat (ocaml_ppat_construct (Lident "()") None false) in
       let f = ghexp (ocaml_pexp_function "" None [void_pat, e]) in
       let delayed = Ldot (Lident "Lazy", "Delayed") in
       let df = ghexp (Pexp_construct (delayed, Some f, false)) in
@@ -529,9 +529,8 @@ let rec patt =
           MLast.PaUid (_, i), il ->
             begin match p2 with
               MLast.PaUid (_, s) ->
-                Ppat_construct
-                  (mkli (conv_con s) (i :: il), None,
-                   not !(Prtools.no_constructors_arity))
+                ocaml_ppat_construct (mkli (conv_con s) (i :: il)) None
+                  (not !(Prtools.no_constructors_arity))
             | _ -> error (loc_of_patt p2) "bad access pattern"
             end
         | _ -> error (loc_of_patt p2) "bad pattern"
@@ -550,19 +549,20 @@ let rec patt =
   | PaApp (loc, _, _) as f ->
       let (f, al) = patt_fa [] f in
       let al = List.map patt al in
-      begin match (patt f).ppat_desc with
-        Ppat_construct (li, None, _) ->
+      let p = (patt f).ppat_desc in
+      begin match ocaml_ppat_construct_args p with
+        Some (li, None, _) ->
           if !(Prtools.no_constructors_arity) then
             let a =
               match al with
                 [a] -> a
               | _ -> mkpat loc (Ppat_tuple al)
             in
-            mkpat loc (Ppat_construct (li, Some a, false))
+            mkpat loc (ocaml_ppat_construct li (Some a) false)
           else
             let a = mkpat loc (Ppat_tuple al) in
-            mkpat loc (Ppat_construct (li, Some a, true))
-      | p ->
+            mkpat loc (ocaml_ppat_construct li (Some a) true)
+      | Some _ | None ->
           match ocaml_ppat_variant with
             Some (ppat_variant_pat, ppat_variant) ->
               begin match ppat_variant_pat p with
@@ -624,7 +624,7 @@ let rec patt =
       end
   | PaUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
-      mkpat loc (Ppat_construct (Lident (conv_con (uv s)), None, ca))
+      mkpat loc (ocaml_ppat_construct (Lident (conv_con (uv s))) None ca)
   | PaUnp (loc, s, mto) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->
