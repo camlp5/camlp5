@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.62 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.63 2010/11/13 07:35:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -641,7 +641,9 @@ value type_var pc (tv, vari) =
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
-    (if tv = "" then "_" else "'" ^ tv)
+    (match tv with
+     [ Some v -> "'" ^ v
+     | None -> "_" ])
 ;
 
 value type_constraint pc (t1, t2) =

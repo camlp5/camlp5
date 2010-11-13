@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_sml.ml,v 6.3 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 6.4 2010/11/13 07:35:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -44,7 +44,9 @@ value get_seq =
   | e -> [e] ]
 ;
 
-value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
+value mem_tvar s tpl =
+  List.exists (fun (t, _) -> Pcaml.unvala t = Some s) tpl
+;
 
 value choose_tvar tpl =
   let rec find_alpha v =
@@ -383,8 +385,11 @@ EXTEND
   tyvarseq: [ [ -> not_impl loc "tyvarseq" ] ];
 
   tyvar_pc:
-    [ [ "'"; x1 = V LIDENT -> [(x1, None)]
-      | "'"; x1 = V LIDENT; ","; l = tyvar_pc -> [(x1, None) :: l] ] ]
+    [ [ "'"; x1 = V tyvar -> [(x1, None)]
+      | "'"; x1 = V tyvar; ","; l = tyvar_pc -> [(x1, None) :: l] ] ]
+  ;
+  tyvar:
+    [ [ v = LIDENT -> Some v ] ]
   ;
   id:
     [ [ x1 = idd -> x1
@@ -657,7 +662,7 @@ EXTEND
            MLast.tdCon = <:vala< [] >>} ] ]
   ;
   tyvars:
-    [ [ "'"; x1 = V LIDENT -> [(x1, None)]
+    [ [ "'"; x1 = V tyvar -> [(x1, None)]
       | "("; x1 = tyvar_pc; ")" -> x1
       | -> [] ] ]
   ;

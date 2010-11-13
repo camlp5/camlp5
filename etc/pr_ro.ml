@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.14 2010/09/26 06:58:56 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.15 2010/11/13 07:35:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -96,12 +96,15 @@ value and_before elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 
 value type_var pc (tv, vari) =
-  pprintf pc "%s'%s"
+  let tv = Pcaml.unvala tv in
+  pprintf pc "%s%s"
     (match vari with
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
-    (Pcaml.unvala tv)
+    (match tv with
+     [ Some v -> "'" ^ v
+     | None -> "_" ])
 ;
 
 value class_type_params pc ctp =

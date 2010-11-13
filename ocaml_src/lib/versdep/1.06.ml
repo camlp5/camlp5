@@ -17,20 +17,38 @@ let ocaml_location (fname, lnum, bolp, bp, ep) =
   {Location.loc_start = bp; Location.loc_end = ep}
 ;;
 
+let list_map_check f l =
+  let rec loop rev_l =
+    function
+      x :: l ->
+        begin match f x with
+          Some s -> loop (s :: rev_l) l
+        | None -> None
+        end
+    | [] -> Some (List.rev rev_l)
+  in
+  loop [] l
+;;
+
 let ocaml_type_declaration params cl tk pf tm loc variance =
-  try
-    let cl =
-      List.map
-        (fun (t1, t2, loc) ->
-           match t1.ptyp_desc with
-             Ptyp_var s -> s, t2, loc
-           | _ -> raise Exit)
-        cl
-    in
-    Some
-      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-       ptype_manifest = tm; ptype_loc = loc}
-  with Exit -> None
+  match list_map_check (fun s_opt -> s_opt) params with
+    Some params ->
+      let cl_opt =
+        list_map_check
+          (fun (t1, t2, loc) ->
+             match t1.ptyp_desc with
+               Ptyp_var s -> Some (s, t2, loc)
+             | _ -> None)
+          cl
+      in
+      begin match cl_opt with
+        Some cl ->
+          Right
+            {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+             ptype_manifest = tm; ptype_loc = loc}
+      | None -> Left "no such 'with' constraint in this ocaml version"
+      end
+  | None -> Left "no '_' type param in this ocaml version"
 ;;
 
 let ocaml_class_type = None;;

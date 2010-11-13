@@ -197,6 +197,8 @@ Grammar.extend
      grammar_entry_create "constrain"
    and type_parameter : 'type_parameter Grammar.Entry.e =
      grammar_entry_create "type_parameter"
+   and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
+     grammar_entry_create "simple_type_parameter"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
    and mod_ident : 'mod_ident Grammar.Entry.e =
      grammar_entry_create "mod_ident"
@@ -1596,22 +1598,41 @@ Grammar.extend
     Grammar.Entry.obj (type_parameter : 'type_parameter Grammar.Entry.e),
     None,
     [None, None,
+     [[Gramext.Snterm
+         (Grammar.Entry.obj
+            (simple_type_parameter :
+             'simple_type_parameter Grammar.Entry.e))],
+      Gramext.action
+        (fun (p : 'simple_type_parameter) (loc : Ploc.t) ->
+           (p, None : 'type_parameter));
+      [Gramext.Stoken ("", "-");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (simple_type_parameter :
+             'simple_type_parameter Grammar.Entry.e))],
+      Gramext.action
+        (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
+           (p, Some false : 'type_parameter));
+      [Gramext.Stoken ("", "+");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (simple_type_parameter :
+             'simple_type_parameter Grammar.Entry.e))],
+      Gramext.action
+        (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
+           (p, Some true : 'type_parameter))]];
+    Grammar.Entry.obj
+      (simple_type_parameter : 'simple_type_parameter Grammar.Entry.e),
+    None,
+    [None, None,
      [[Gramext.Stoken ("", "_")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ("", None : 'type_parameter));
-      [Gramext.Stoken ("", "-"); Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ _ (loc : Ploc.t) ->
-           (i, Some false : 'type_parameter));
-      [Gramext.Stoken ("", "+"); Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'ident) _ _ (loc : Ploc.t) ->
-           (i, Some true : 'type_parameter));
+        (fun _ (loc : Ploc.t) -> (None : 'simple_type_parameter));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ (loc : Ploc.t) -> (i, None : 'type_parameter))]];
+        (fun (i : 'ident) _ (loc : Ploc.t) ->
+           (Some i : 'simple_type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,
     [Some "top", Some Gramext.LeftA,
      [[Gramext.Sself; Gramext.Stoken ("", "==");

@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 6.6 2010/11/12 23:24:00 deraugla Exp $
+; $Id: pa_scheme.ml,v 6.7 2010/11/13 07:35:45 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -1044,14 +1044,14 @@
   (match se
    ((when (Slid _ s) (&& (>= (String.length s) 2) (= s.[0] ''')))
     (let ((s (String.sub s 1 (- (String.length s) 1))))
-     (values <:vala< s >> None)))
+     (values <:vala< (Some s) >> None)))
    ((when (Slid _ s) (&& (>= (String.length s) 3) (= s.[1] ''')))
     (let
      ((vara
        (if (= s.[0] '+') (Some True)
         (if (= s.[0] '-') (Some False) (error se "type_param"))))
       (s (String.sub s 2 (- (String.length s) 2))))
-     (values <:vala< s >> vara)))
+     (values <:vala< (Some s) >> vara)))
    (se (error se "type_param"))))
  (ctyp_se
   (lambda_match

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.18 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.19 2010/11/13 07:35:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -88,7 +88,7 @@ module Meta_make (C : MetaSig) =
   struct
     open MLast;
     value type_var (s, tv) =
-      C.tuple [C.vala C.string s; C.option C.bool tv]
+      C.tuple [C.vala (C.option C.string) s; C.option C.bool tv]
     ;
     value record_label lab =
       let loc = Ploc.dummy in

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.12 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.13 2010/11/13 07:35:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -21,7 +21,7 @@ END;
 
 type v 'a = V 'a;
 
-type type_var = (V string * option bool);
+type type_var = (V (option string) * option bool);
 
 type class_infos 'a =
   { ciLoc : loc;

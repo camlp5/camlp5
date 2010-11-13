@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.21 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.22 2010/11/13 07:35:45 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -349,8 +349,8 @@ value mktype loc tl cl tk pf tm =
   let variance = List.map variance_of_var var_list in
   let params = List.map uv params in
   match ocaml_type_declaration params cl tk pf tm (mkloc loc) variance with
-  [ Some td -> td
-  | None -> error loc "no such type declaration in this ocaml version" ]
+  [ Right td -> td
+  | Left msg -> error loc msg ]
 ;
 
 value mkmutable m = if m then Mutable else Immutable;
@@ -402,7 +402,7 @@ value type_decl tl priv cl =
       let m =
         match t with
         [ <:ctyp< '$s$ >> ->
-            if List.exists (fun (t, _) -> s = uv t) tl then Some (ctyp t)
+            if List.exists (fun (t, _) -> Some s = uv t) tl then Some (ctyp t)
             else None
         | _ -> Some (ctyp t) ]
       in
@@ -478,17 +478,17 @@ value mkwithc =
       | None -> error loc "no with module := in this ocaml version" ]
   | WcTyp loc id tpl pf ct ->
       match type_decl_of_with_type loc tpl (uv pf) ct with
-      [ Some td -> (long_id_of_string_list loc (uv id), Pwith_type td)
-      | None -> error loc "no such with constraint in this ocaml version" ]
+      [ Right td -> (long_id_of_string_list loc (uv id), Pwith_type td)
+      | Left msg -> error loc msg ]
   | WcTys loc id tpl t ->
       match ocaml_pwith_typesubst with
       [ Some pwith_typesubst ->
           match type_decl_of_with_type loc tpl False t with
-          [ Some td ->
+          [ Right td ->
               let li = long_id_of_string_list loc (uv id) in
               (li, pwith_typesubst td)
-          | None ->
-              error loc "no such with constraint in this ocaml version" ]
+          | Left msg ->
+              error loc msg ]
       | None -> error loc "no with type := in this ocaml version" ] ]
 ;
 
@@ -664,14 +664,27 @@ value rec sep_expr_acc l =
   | e -> [(loc_of_expr e, [], e) :: l] ]
 ;
 
+value list_map_check f l =
+  loop [] l where rec loop rev_l =
+    fun
+    [ [x :: l] ->
+        match f x with
+        [ Some s -> loop [s :: rev_l] l
+        | None -> None ]
+    | [] -> Some (List.rev rev_l) ]
+;
+
 value class_info class_expr ci =
   let (params, var_list) = List.split (uv (snd ci.ciPrm)) in
   let variance = List.map variance_of_var var_list in
   match ocaml_class_infos with
   [ Some class_infos ->
-      class_infos (if uv ci.ciVir then Virtual else Concrete)
-        (List.map uv params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
-        (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
+      match list_map_check uv params with
+      [ Some params ->
+          class_infos (if uv ci.ciVir then Virtual else Concrete)
+            (params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
+            (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
+      | None -> error ci.ciLoc "no '_' type parameter allowed" ]
   | None -> error ci.ciLoc "no class_info in this ocaml version" ]
 ;
 

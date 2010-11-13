@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.44 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.45 2010/11/13 07:35:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -451,12 +451,15 @@ value rec make_patt_list =
 ;
 
 value type_var pc (loc, (tv, vari)) =
-  pprintf pc "%s'%s"
+  let tv = Pcaml.unvala tv in
+  pprintf pc "%s%s"
     (match vari with
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
-    (Pcaml.unvala tv)
+    (match tv with
+     [ Some v -> "'" ^ v
+     | None -> "_" ])
 ;
 
 value type_constraint pc (t1, t2) =
@@ -472,7 +475,9 @@ value type_params pc (loc, tvl) =
       pprintf pc "(%p) " (hlistl (comma_after type_var) type_var) tvl ]
 ;
 
-value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
+value mem_tvar s tpl =
+  List.exists (fun (t, _) -> Pcaml.unvala t = Some s) tpl
+;
 
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =

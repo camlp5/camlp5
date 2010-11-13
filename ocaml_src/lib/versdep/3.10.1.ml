@@ -22,10 +22,26 @@ let ocaml_location (fname, lnum, bolp, bp, ep) =
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
+let list_map_check f l =
+  let rec loop rev_l =
+    function
+      x :: l ->
+        begin match f x with
+          Some s -> loop (s :: rev_l) l
+        | None -> None
+        end
+    | [] -> Some (List.rev rev_l)
+  in
+  loop [] l
+;;
+
 let ocaml_type_declaration params cl tk pf tm loc variance =
-  Some
-    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-     ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
+  match list_map_check (fun s_opt -> s_opt) params with
+    Some params ->
+      Right
+        {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+         ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
+  | None -> Left "no '_' type param in this ocaml version"
 ;;
 
 let ocaml_class_type = Some (fun d loc -> {pcty_desc = d; pcty_loc = loc});;

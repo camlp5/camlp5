@@ -84,7 +84,9 @@ module type MetaSig =
 module Meta_make (C : MetaSig) =
   struct
     open MLast;;
-    let type_var (s, tv) = C.tuple [C.vala C.string s; C.option C.bool tv];;
+    let type_var (s, tv) =
+      C.tuple [C.vala (C.option C.string) s; C.option C.bool tv]
+    ;;
     let record_label lab =
       let loc = Ploc.dummy in
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, lab))

@@ -235,7 +235,8 @@ and dollar bp kwt strm =
   if Plexer.force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc bp 0 strm)
   else
-    match strm with parser [: len = ident (Buff.store 0 '$') :] -> identifier kwt (Buff.get len)
+    match strm with parser
+      [: len = ident (Buff.store 0 '$') :] -> identifier kwt (Buff.get len)
 and sharp bp kwt =
   parser
   [ [: `'(' :] -> ("", "#(")
@@ -1179,14 +1180,14 @@ and type_param_se se =
   match se with
   [ Slid _ s when String.length s >= 2 && s.[0] = ''' ->
       let s = String.sub s 1 (String.length s - 1) in
-      (<:vala< s >>, None)
+      (<:vala< (Some s) >>, None)
   | Slid _ s when String.length s >= 3 && s.[1] = ''' ->
       let vara =
         if s.[0] = '+' then Some True
         else if s.[0] = '-' then Some False
         else error se "type_param"
       and s = String.sub s 2 (String.length s - 2) in
-      (<:vala< s >>, vara)
+      (<:vala< (Some s) >>, vara)
   | se -> error se "type_param" ]
 and ctyp_se =
   fun

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.27 2010/11/12 23:23:59 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.28 2010/11/13 07:35:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -312,7 +312,9 @@ value get_seq =
   | e -> [e] ]
 ;
 
-value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
+value mem_tvar s tpl =
+  List.exists (fun (t, _) -> Pcaml.unvala t = Some s) tpl
+;
 
 value choose_tvar tpl =
   let rec find_alpha v =
@@ -860,10 +862,13 @@ EXTEND
       | "("; tpl = LIST1 type_parameter SEP ","; ")" -> tpl ] ]
   ;
   type_parameter:
-    [ [ "'"; i = V ident "" -> (i, None)
-      | "+"; "'"; i = V ident "" -> (i, Some True)
-      | "-"; "'"; i = V ident "" -> (i, Some False)
-      | "_" -> (<:vala< "" >>, None) ] ]
+    [ [ "+"; p = V simple_type_parameter -> (p, Some True)
+      | "-"; p = V simple_type_parameter -> (p, Some False)
+      | p = V simple_type_parameter -> (p, None) ] ]
+  ;
+  simple_type_parameter:
+    [ [ "'"; i = ident -> Some i
+      | "_" -> None ] ]
   ;
   constructor_declaration:
     [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->

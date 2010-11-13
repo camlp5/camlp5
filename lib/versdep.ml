@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.11 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.12 2010/11/13 07:35:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -45,41 +45,56 @@ value ocaml_location (fname, lnum, bolp, bp, ep) =
   END
 ;
 
+value list_map_check f l =
+  loop [] l where rec loop rev_l =
+    fun
+    [ [x :: l] ->
+        match f x with
+        [ Some s -> loop [s :: rev_l] l
+        | None -> None ]
+    | [] -> Some (List.rev rev_l) ]
+;
+
 value ocaml_type_declaration params cl tk pf tm loc variance =
-  IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-    try
-      let cl =
-        List.map
-          (fun (t1, t2, loc) ->
-             match t1.ptyp_desc with
-             [ Ptyp_var s -> (s, t2, loc)
-             | _ -> raise Exit ])
-          cl
-      in
-      Some
-        {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-         ptype_manifest = tm; ptype_loc = loc}
-     with
-     [ Exit -> None ]
-  ELSIFDEF OCAML_VERSION <= OCAML_3_00 THEN
-    Some
-      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-       ptype_manifest = tm; ptype_loc = loc}
-  ELSIFDEF OCAML_VERSION < OCAML_3_11 THEN
-    Some
-      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-       ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
-  ELSIFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
-    let params = List.map (fun s -> if s = "" then None else Some s) params in
-    Some
+  IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
+    Right
       {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
        ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
        ptype_variance = variance}
   ELSE
-    Some
-      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-       ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-       ptype_variance = variance}
+    match list_map_check (fun s_opt -> s_opt) params with
+    [ Some params ->
+        IFDEF OCAML_VERSION <= OCAML_1_07 THEN
+          let cl_opt =
+            list_map_check
+              (fun (t1, t2, loc) ->
+                 match t1.ptyp_desc with
+                 [ Ptyp_var s -> Some (s, t2, loc)
+                 | _ -> None ])
+              cl
+          in
+          match cl_opt with
+          [ Some cl ->
+              Right
+                {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+                 ptype_manifest = tm; ptype_loc = loc}
+          | None ->
+               Left "no such 'with' constraint in this ocaml version" ]
+        ELSIFDEF OCAML_VERSION <= OCAML_3_00 THEN
+          Right
+            {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+             ptype_manifest = tm; ptype_loc = loc}
+        ELSIFDEF OCAML_VERSION < OCAML_3_11 THEN
+          Right
+            {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+             ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
+        ELSE
+          Right
+            {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+             ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+             ptype_variance = variance}
+        END
+    | None -> Left "no '_' type param in this ocaml version" ]
   END
 ;
 
