@@ -1176,7 +1176,13 @@ and label_expr =
       | _ -> error loc "ExOlb case not impl"
       end
   | e -> "", expr e
-and mkpe (p, e) = patt p, expr e
+and mkpe (p, e) =
+  let (p, e) =
+    match e with
+      ExTyc (loc, e, (TyPol (_, _, _) as t)) -> PaTyc (loc, p, t), e
+    | _ -> p, e
+  in
+  patt p, expr e
 and mkpwe (p, w, e) = patt p, when_expr e (uv w)
 and when_expr e =
   function

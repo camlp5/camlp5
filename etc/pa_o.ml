@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.28 2010/11/13 07:35:45 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.29 2010/11/13 12:06:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -676,7 +676,7 @@ EXTEND
     [ [ p = val_ident; e = fun_binding -> (p, e)
       | p = patt; "="; e = expr -> (p, e)
       | p = patt; ":"; t = poly_type; "="; e = expr ->
-          (p, <:expr< ($e$ : $t$) >>) ] ]
+          (<:patt< ($p$ : $t$) >>, e) ] ]
   ;
   val_ident:
     [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>

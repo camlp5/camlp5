@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.22 2010/11/13 07:35:45 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.23 2010/11/13 12:06:17 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -1019,7 +1019,13 @@ and label_expr =
           ("?" ^ uv lab, expr e)
       | _ -> error loc "ExOlb case not impl" ]
   | e -> ("", expr e) ]
-and mkpe (p, e) = (patt p, expr e)
+and mkpe (p, e) =
+  let (p, e) =
+    match e with
+    [ ExTyc loc e (TyPol _ _ _ as t) -> (PaTyc loc p t, e)
+    | _ -> (p, e) ]
+  in
+  (patt p, expr e)
 and mkpwe (p, w, e) = (patt p, when_expr e (uv w))
 and when_expr e =
   fun
