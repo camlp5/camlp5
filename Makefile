@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.10 2010/11/12 16:29:40 deraugla Exp $
+# $Id: Makefile,v 6.11 2010/11/13 13:26:39 deraugla Exp $
 
 include config/Makefile
 
@@ -49,6 +49,7 @@ depend:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
 install:
+	rm -rf "$(DESTDIR)$(LIBDIR)/camlp5"
 	for i in $(DIRS) compile; do \
 	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
 	done
