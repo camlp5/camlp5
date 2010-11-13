@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.45 2010/11/13 07:35:45 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.46 2010/11/13 13:12:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -513,11 +513,22 @@ value label_decl pc (_, l, m, t) =
 value cons_decl pc (loc, c, tl, rto) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
-  if tl = [] then cons_escaped pc (loc, c)
-  else
+  if tl = [] then do {
+    match rto with
+    [ Some rt -> pprintf pc "%p : %p" cons_escaped (loc, c) ctyp rt
+    | None -> cons_escaped pc (loc, c) ]
+  }
+  else do {
     let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
     let tl = List.map (fun t -> (t, " *")) tl in
-    pprintf pc "%p of@;<1 4>%p" cons_escaped (loc, c) (plist ctyp_apply 2) tl
+    match rto with
+    [ Some rt ->
+        pprintf pc "%p :@;<1 4>%p -> %p" cons_escaped (loc, c)
+          (plist ctyp_apply 2) tl ctyp rt
+    | None ->
+        pprintf pc "%p of@;<1 4>%p" cons_escaped (loc, c) (plist ctyp_apply 2)
+          tl ]
+  }
 ;
 
 value has_cons_with_params vdl =
