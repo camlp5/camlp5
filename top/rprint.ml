@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.6 2010/11/12 23:24:03 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.7 2010/11/13 18:42:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -226,7 +226,7 @@ and print_out_constr_gadt_opt ppf (name, tyl, rto) =
   match rto with
   [ Some rt ->
       let t = List.fold_right (fun t1 t2 -> Otyp_arrow "" t1 t2) tyl rt in
-      print_out_type ppf t
+      fprintf ppf "%s : %a" name print_out_type t
   | None -> print_out_constr ppf (name, tyl) ]
 and print_out_label ppf (name, mut, arg) =
   fprintf ppf "@[<2>%s :@ %s%a@]" name (if mut then "mutable " else "")

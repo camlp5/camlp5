@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.29 2010/11/13 12:06:16 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.30 2010/11/13 18:42:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -330,6 +330,31 @@ value choose_tvar tpl =
   match find_alpha 'a' with
   [ Some x -> x
   | None -> make_n 1 ]
+;
+
+value not_impl name x = do {
+  let desc =
+    if Obj.is_block (Obj.repr x) then
+      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
+    else "int_val = " ^ string_of_int (Obj.magic x)
+  in
+  print_newline ();
+  failwith ("pa_o: not impl " ^ name ^ " " ^ desc)
+};
+
+value varify_constructors var_names =
+  let rec loop t =
+    let t =
+      match t with
+      [ <:ctyp:< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
+      | <:ctyp:< $t1$ $t2$ >> -> <:ctyp:< $loop t1$ $loop t2$ >>
+      | <:ctyp:< $lid:s$ >> ->
+          if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
+      | t -> not_impl "ctyp" t ]
+    in
+    t
+  in
+  loop
 ;
 
 value quotation_content s = do {
@@ -686,7 +711,17 @@ EXTEND
     [ RIGHTA
       [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "="; e = expr -> <:expr< $e$ >>
-      | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
+      | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >>
+      | ":"; "type"; nt = LIST1 LIDENT; "."; ct = ctyp; "="; e = expr ->
+          let e = <:expr< ($e$ : $ct$) >> in
+          let e =
+            List.fold_right (fun s e -> <:expr< fun (type $s$) ->  $e$ >>)
+              nt e
+          in
+          let ct = varify_constructors nt ct in
+          let tp = List.map (fun s -> "&" ^ s) nt in
+          let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
+          <:expr< ($e$ : $ct$) >> ] ]
   ;
   match_case:
     [ [ x1 = patt; w = V (OPT [ "when"; e = expr -> e ]); "->"; x2 = expr ->
@@ -700,28 +735,9 @@ EXTEND
   lbl_expr:
     [ [ i = patt_label_ident; "="; e = expr LEVEL "expr1" -> (i, e) ] ]
   ;
-(*
-  expr1_semi_list:
-    [ [ e = expr LEVEL "expr1"; ";"; el = SELF -> [e :: el]
-      | e = expr LEVEL "expr1"; ";" -> [e]
-      | e = expr LEVEL "expr1" -> [e] ] ]
-  ;
-*)
-(*
-  expr1_semi_list:
-    [ [ rev_el = expr1_semi_rev_list -> List.rev rev_el ] ]
-  ;
-  expr1_semi_rev_list:
-    [ [ rev_el = SELF; ";"; e = expr LEVEL "expr1" -> [e :: rev_el]
-      | rev_el = SELF; ";" -> rev_el
-      | e = expr LEVEL "expr1" -> [e] ] ]
-  ;
-*)
-(**)
   expr1_semi_list:
     [ [ el = LIST1 (expr LEVEL "expr1") SEP ";" OPT_SEP -> el ] ]
   ;
-(**)
   fun_def:
     [ RIGHTA
       [ p = patt LEVEL "simple"; (eo, e) = SELF ->
