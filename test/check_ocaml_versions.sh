@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 6.5 2010/11/12 23:24:03 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 6.6 2010/11/14 17:01:42 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -27,7 +27,7 @@ exclude () {
   e="$OPTARG"
   vers1=""
   for i in $vers; do
-    if [ "$i" != "$e" ]; then vers1="$vers1$i "; fi
+    if [ "$i" "<" "$e" ]; then :; else vers1="$vers1$i "; fi
   done
   vers="$vers1"
 }
@@ -36,7 +36,7 @@ usage () {
   echo "Usage: check_ocaml_versions.sh <options>"
   echo "<options> are:"
   echo "  -d <dir>    Change directory of versions"
-  echo "  -e <vers>   Exclude that version (can be used several times)."
+  echo "  -e <vers>   Exclude all versions before that version"
   echo "  -h          Display this list of options"
   echo "  -n          No opt (only bytecode)"
   echo "  -t          Camlp5 transitional mode"
