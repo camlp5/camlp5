@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.23 2010/11/13 12:06:17 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.24 2010/11/14 11:20:25 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -264,6 +264,7 @@ value rec ctyp =
        match ocaml_ptyp_poly with
        [ Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
        | None -> error loc "no poly types in that ocaml version" ]
+  | TyPot loc pl t -> error loc "'type id . t' not allowed here"
   | TyQuo loc s -> mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
@@ -710,6 +711,31 @@ value neg_string n =
   else "-" ^ n
 ;
 
+value not_impl name x = do {
+  let desc =
+    if Obj.is_block (Obj.repr x) then
+      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
+    else "int_val = " ^ string_of_int (Obj.magic x)
+  in
+  print_newline ();
+  failwith ("ast2pt: not impl " ^ name ^ " " ^ desc)
+};
+
+value varify_constructors var_names =
+  let rec loop t =
+    let t =
+      match t with
+      [ <:ctyp:< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
+      | <:ctyp:< $t1$ $t2$ >> -> <:ctyp:< $loop t1$ $loop t2$ >>
+      | <:ctyp:< $lid:s$ >> ->
+          if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
+      | t -> not_impl "ctyp" t ]
+    in
+    t
+  in
+  loop
+;
+
 value rec expr =
   fun
   [ ExAcc loc x <:expr< val >> ->
@@ -1023,9 +1049,26 @@ and mkpe (p, e) =
   let (p, e) =
     match e with
     [ ExTyc loc e (TyPol _ _ _ as t) -> (PaTyc loc p t, e)
+    | ExTyc loc e (TyPot _ _ _ as t) -> (PaTyc loc p t, e)
     | _ -> (p, e) ]
   in
+  let (p, e) =
+    match p with
+    [ PaTyc loc p (TyPot loc1 nt ct) -> expand_gadt_type loc p loc1 nt ct e
+    | p -> (p, e) ]
+  in
   (patt p, expr e)
+and expand_gadt_type loc p loc1 nt ct e =
+  let nt = uv nt in
+  let e = <:expr< ($e$ : $ct$) >> in
+  let e =
+    List.fold_right (fun s e -> <:expr< fun (type $s$) ->  $e$ >>)
+      nt e
+  in
+  let ct = varify_constructors nt ct in
+  let tp = List.map (fun s -> "&" ^ s) nt in
+  let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
+  (<:patt< ($p$ : $ct$) >>, e)
 and mkpwe (p, w, e) = (patt p, when_expr e (uv w))
 and when_expr e =
   fun

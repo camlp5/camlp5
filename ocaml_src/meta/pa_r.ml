@@ -1646,7 +1646,13 @@ Grammar.extend
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
            (MLast.TyAli (loc, t1, t2) : 'ctyp))];
      None, Some Gramext.LeftA,
-     [[Gramext.Stoken ("", "!");
+     [[Gramext.Stoken ("", "type");
+       Gramext.Slist1 (Gramext.Stoken ("LIDENT", ""));
+       Gramext.Stoken ("", "."); Gramext.Sself],
+      Gramext.action
+        (fun (t : 'ctyp) _ (pl : string list) _ (loc : Ploc.t) ->
+           (MLast.TyPot (loc, pl, t) : 'ctyp));
+      [Gramext.Stoken ("", "!");
        Gramext.Slist1
          (Gramext.Snterm
             (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e)));

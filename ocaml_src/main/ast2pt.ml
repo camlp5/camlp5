@@ -272,6 +272,7 @@ let rec ctyp =
         Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
       | None -> error loc "no poly types in that ocaml version"
       end
+  | TyPot (loc, pl, t) -> error loc "'type id . t' not allowed here"
   | TyQuo (loc, s) -> mktyp loc (Ptyp_var (uv s))
   | TyRec (loc, _) -> error loc "record type not allowed here"
   | TySum (loc, _) -> error loc "sum type not allowed here"
@@ -853,6 +854,30 @@ let neg_string n =
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
 ;;
 
+let not_impl name x =
+  let desc =
+    if Obj.is_block (Obj.repr x) then
+      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
+    else "int_val = " ^ string_of_int (Obj.magic x)
+  in
+  print_newline (); failwith ("ast2pt: not impl " ^ name ^ " " ^ desc)
+;;
+
+let varify_constructors var_names =
+  let rec loop t =
+    let t =
+      match t with
+        MLast.TyArr (loc, t1, t2) -> MLast.TyArr (loc, loop t1, loop t2)
+      | MLast.TyApp (loc, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
+      | MLast.TyLid (loc, s) ->
+          if List.mem s var_names then MLast.TyQuo (loc, "&" ^ s) else t
+      | t -> not_impl "ctyp" t
+    in
+    t
+  in
+  loop
+;;
+
 let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
@@ -1180,9 +1205,26 @@ and mkpe (p, e) =
   let (p, e) =
     match e with
       ExTyc (loc, e, (TyPol (_, _, _) as t)) -> PaTyc (loc, p, t), e
+    | ExTyc (loc, e, (TyPot (_, _, _) as t)) -> PaTyc (loc, p, t), e
     | _ -> p, e
   in
+  let (p, e) =
+    match p with
+      PaTyc (loc, p, TyPot (loc1, nt, ct)) ->
+        expand_gadt_type loc p loc1 nt ct e
+    | p -> p, e
+  in
   patt p, expr e
+and expand_gadt_type loc p loc1 nt ct e =
+  let nt = uv nt in
+  let e = MLast.ExTyc (loc, e, ct) in
+  let e =
+    List.fold_right
+      (fun s e -> MLast.ExFun (loc, [MLast.PaNty (loc, s), None, e])) nt e
+  in
+  let ct = varify_constructors nt ct in
+  let tp = List.map (fun s -> "&" ^ s) nt in
+  let ct = MLast.TyPol (loc, tp, ct) in MLast.PaTyc (loc, p, ct), e
 and mkpwe (p, w, e) = patt p, when_expr e (uv w)
 and when_expr e =
   function

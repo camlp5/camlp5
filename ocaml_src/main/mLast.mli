@@ -41,6 +41,7 @@ type ctyp =
   | TyOlb of loc * string * ctyp
   | TyPck of loc * module_type
   | TyPol of loc * string list * ctyp
+  | TyPot of loc * string list * ctyp
   | TyQuo of loc * string
   | TyRec of loc * (loc * string * bool * ctyp) list
   | TySum of loc * (loc * string * ctyp list * ctyp option) list

@@ -120,6 +120,8 @@ module Meta_make (C : MetaSig) =
       | TyPck (_, mt) -> C.node "TyPck" [module_type mt]
       | TyPol (_, ls, t) ->
           C.node "TyPol" [C.vala (C.list C.string) ls; ctyp t]
+      | TyPot (_, ls, t) ->
+          C.node "TyPot" [C.vala (C.list C.string) ls; ctyp t]
       | TyQuo (_, s) -> C.node "TyQuo" [C.vala C.string s]
       | TyRec (_, llsbt) ->
           C.node "TyRec"

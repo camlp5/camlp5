@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.24 2010/11/13 07:35:46 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.25 2010/11/14 11:20:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -919,7 +919,9 @@ EXTEND
       [ t1 = SELF; "as"; t2 = SELF -> Qast.Node "TyAli" [Qast.Loc; t1; t2] ]
     | LEFTA
       [ "!"; pl = SV (LIST1 typevar); "."; t = SELF ->
-          Qast.Node "TyPol" [Qast.Loc; pl; t] ]
+          Qast.Node "TyPol" [Qast.Loc; pl; t]
+      | "type"; pl = SV (LIST1 LIDENT); "."; t = SELF ->
+          Qast.Node "TyPot" [Qast.Loc; pl; t] ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2] ]
     | "apply" LEFTA

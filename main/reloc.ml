@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.14 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.15 2010/11/14 11:20:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -98,6 +98,9 @@ value rec ctyp floc sh =
     | TyPol loc x1 x2 ->
         let loc = floc loc in
         TyPol loc x1 (self x2)
+    | TyPot loc x1 x2 ->
+        let loc = floc loc in
+        TyPot loc x1 (self x2)
     | TyQuo loc x1 ->
         let loc = floc loc in
         TyQuo loc x1

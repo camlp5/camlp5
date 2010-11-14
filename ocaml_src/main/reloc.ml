@@ -68,6 +68,7 @@ let rec ctyp floc sh =
     | TyPck (loc, x1) ->
         let loc = floc loc in TyPck (loc, module_type floc sh x1)
     | TyPol (loc, x1, x2) -> let loc = floc loc in TyPol (loc, x1, self x2)
+    | TyPot (loc, x1, x2) -> let loc = floc loc in TyPot (loc, x1, self x2)
     | TyQuo (loc, x1) -> let loc = floc loc in TyQuo (loc, x1)
     | TyRec (loc, x1) ->
         let loc = floc loc in

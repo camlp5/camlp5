@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.25 2010/11/13 07:35:45 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.26 2010/11/14 11:20:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -542,7 +542,9 @@ EXTEND
       [ t1 = SELF; "as"; t2 = SELF -> <:ctyp< $t1$ as $t2$ >> ]
     | LEFTA
       [ "!"; pl = V (LIST1 typevar); "."; t = ctyp ->
-          <:ctyp< ! $_list:pl$ . $t$ >> ]
+          <:ctyp< ! $_list:pl$ . $t$ >>
+      | "type"; pl = V (LIST1 LIDENT); "."; t = ctyp ->
+          <:ctyp< type $_list:pl$ . $t$ >> ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "apply" LEFTA

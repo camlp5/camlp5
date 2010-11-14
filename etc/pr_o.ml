@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.46 2010/11/13 13:12:58 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.47 2010/11/14 11:20:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -715,6 +715,7 @@ value flatten_sequ e =
   | None -> None ]
 ;
 
+value lident pc s = pprintf pc "%s" s;
 value string pc s = pprintf pc "\"%s\"" s;
 
 value external_decl pc (loc, n, t, sl) =
@@ -2092,7 +2093,9 @@ EXTEND_PRINTER
     [ "as"
       [ <:ctyp< $t1$ as $t2$ >> -> pprintf pc "%p@[ as %p@]" curr t1 next t2 ]
     | "poly"
-      [ <:ctyp< ! $list:_$ . $_$ >> as z -> poly_type pc z ] ]
+      [ <:ctyp< ! $list:_$ . $_$ >> as z -> poly_type pc z
+      | <:ctyp:< type $list:pl$ . $t$ >> ->
+          pprintf pc "type %p .@;%p" (hlist lident) pl ctyp t ] ]
   ;
   pr_ctyp: AFTER "arrow"
     [ "label"

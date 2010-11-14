@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.30 2010/11/13 18:42:24 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.31 2010/11/14 11:20:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -330,31 +330,6 @@ value choose_tvar tpl =
   match find_alpha 'a' with
   [ Some x -> x
   | None -> make_n 1 ]
-;
-
-value not_impl name x = do {
-  let desc =
-    if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  print_newline ();
-  failwith ("pa_o: not impl " ^ name ^ " " ^ desc)
-};
-
-value varify_constructors var_names =
-  let rec loop t =
-    let t =
-      match t with
-      [ <:ctyp:< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
-      | <:ctyp:< $t1$ $t2$ >> -> <:ctyp:< $loop t1$ $loop t2$ >>
-      | <:ctyp:< $lid:s$ >> ->
-          if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
-      | t -> not_impl "ctyp" t ]
-    in
-    t
-  in
-  loop
 ;
 
 value quotation_content s = do {
@@ -711,17 +686,7 @@ EXTEND
     [ RIGHTA
       [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "="; e = expr -> <:expr< $e$ >>
-      | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >>
-      | ":"; "type"; nt = LIST1 LIDENT; "."; ct = ctyp; "="; e = expr ->
-          let e = <:expr< ($e$ : $ct$) >> in
-          let e =
-            List.fold_right (fun s e -> <:expr< fun (type $s$) ->  $e$ >>)
-              nt e
-          in
-          let ct = varify_constructors nt ct in
-          let tp = List.map (fun s -> "&" ^ s) nt in
-          let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
-          <:expr< ($e$ : $ct$) >> ] ]
+      | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
   ;
   match_case:
     [ [ x1 = patt; w = V (OPT [ "when"; e = expr -> e ]); "->"; x2 = expr ->
@@ -1174,7 +1139,9 @@ EXTEND
     [ [ "'"; i = ident -> i ] ]
   ;
   poly_type:
-    [ [ test_typevar_list_dot; tpl = LIST1 typevar; "."; t2 = ctyp ->
+    [ [ "type"; nt = LIST1 LIDENT; "."; ct = ctyp ->
+          <:ctyp< type $list:nt$ . $ct$ >>
+      | test_typevar_list_dot; tpl = LIST1 typevar; "."; t2 = ctyp ->
           <:ctyp< ! $list:tpl$ . $t2$ >>
       | t = ctyp -> t ] ]
   ;

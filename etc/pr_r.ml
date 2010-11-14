@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.63 2010/11/13 07:35:45 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.64 2010/11/14 11:20:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -878,9 +878,9 @@ value expr_short pc x =
 
 (* definitions of printers *)
 
-value typevar pc tv = pprintf pc "'%s" tv;
-
 value string pc s = pprintf pc "\"%s\"" s;
+value lident pc s = pprintf pc "%s" s;
+value typevar pc tv = pprintf pc "'%s" tv;
 
 value external_decl pc (loc, n, t, sl) =
   pprintf pc "external %p :@;%p = %s" var_escaped (loc, n) ctyp t
@@ -1421,7 +1421,9 @@ EXTEND_PRINTER
           pprintf pc "%p@ as %p" curr t1 next t2 ]
     | "poly"
       [ <:ctyp< ! $list:pl$ . $t$ >> ->
-          pprintf pc "! %p .@;%p" (hlist typevar) pl ctyp t ]
+          pprintf pc "! %p .@;%p" (hlist typevar) pl ctyp t
+      | <:ctyp:< type $list:pl$ . $t$ >> ->
+          pprintf pc "type %p .@;%p" (hlist lident) pl ctyp t ]
     | "arrow"
       [ <:ctyp< $_$ -> $_$ >> as z ->
           let unfold =
