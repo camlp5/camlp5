@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.36 2010/10/28 19:31:54 deraugla Exp $ *)
+(* $Id: quot_r.ml,v 6.37 2010/11/14 17:09:00 deraugla Exp $ *)
 
 (* ctyp: Type expressions of the language. *)
 
@@ -51,6 +51,10 @@
 <:ctyp< ! $list:ls$ . $t$ >>;
 <:ctyp< ! $_list:ls$ . $t$ >>;
 
+(* polymorph for gadt *)
+<:ctyp< type $list:ls$ . $t$ >>;
+<:ctyp< type $_list:ls$ . $t$ >>;
+
 (* variable *)
 <:ctyp< '$s$ >>;
 <:ctyp< '$_:s$ >>;
@@ -60,8 +64,8 @@
 <:ctyp< { $_list:llsbt$ } >>;
 
 (* sum *)
-<:ctyp< [ $list:llslt$ ] >>;
-<:ctyp< [ $_list:llslt$ ] >>;
+<:ctyp< [ $list:llsltt$ ] >>;
+<:ctyp< [ $_list:llsltt$ ] >>;
 
 (* t-uple *)
 <:ctyp< ( $list:lt$ ) >>;

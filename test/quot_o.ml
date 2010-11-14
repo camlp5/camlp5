@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.21 2010/10/28 19:31:54 deraugla Exp $ *)
+(* $Id: quot_o.ml,v 6.22 2010/11/14 17:09:00 deraugla Exp $ *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;
@@ -28,12 +28,14 @@ MLast.TyOlb (loc, s, t);;
 MLast.TyPck (loc, mt);;
 MLast.TyPol (loc, Ploc.VaVal ls, t);;
 MLast.TyPol (loc, ls, t);;
+MLast.TyPot (loc, Ploc.VaVal ls, t);;
+MLast.TyPot (loc, ls, t);;
 MLast.TyQuo (loc, Ploc.VaVal s);;
 MLast.TyQuo (loc, s);;
 MLast.TyRec (loc, Ploc.VaVal llsbt);;
 MLast.TyRec (loc, llsbt);;
-MLast.TySum (loc, Ploc.VaVal llslt);;
-MLast.TySum (loc, llslt);;
+MLast.TySum (loc, Ploc.VaVal llsltt);;
+MLast.TySum (loc, llsltt);;
 MLast.TyTup (loc, Ploc.VaVal lt);;
 MLast.TyTup (loc, lt);;
 <:ctyp< $uid:s$ >>;;
