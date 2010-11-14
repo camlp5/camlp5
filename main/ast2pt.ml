@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.24 2010/11/14 11:20:25 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.25 2010/11/14 16:55:12 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -711,29 +711,15 @@ value neg_string n =
   else "-" ^ n
 ;
 
-value not_impl name x = do {
-  let desc =
-    if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  print_newline ();
-  failwith ("ast2pt: not impl " ^ name ^ " " ^ desc)
-};
-
 value varify_constructors var_names =
-  let rec loop t =
-    let t =
-      match t with
-      [ <:ctyp:< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
-      | <:ctyp:< $t1$ $t2$ >> -> <:ctyp:< $loop t1$ $loop t2$ >>
-      | <:ctyp:< $lid:s$ >> ->
-          if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
-      | t -> not_impl "ctyp" t ]
-    in
-    t
-  in
-  loop
+  loop where rec loop =
+    fun
+    [ <:ctyp:< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
+    | <:ctyp:< $t1$ $t2$ >> -> <:ctyp:< $loop t1$ $loop t2$ >>
+    | <:ctyp:< ($list:tl$) >> -> <:ctyp:< ($list:List.map loop tl$) >>
+    | <:ctyp:< $lid:s$ >> as t ->
+        if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
+    | t -> t ]
 ;
 
 value rec expr =

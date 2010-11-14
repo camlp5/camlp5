@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.5 2010/11/12 16:29:40 deraugla Exp $
+# $Id: configure,v 6.6 2010/11/14 16:55:12 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -126,7 +126,11 @@ fi
 # Check versions
 
 if [ "$oversion" = "" ]; then
-  oversion=$(ocamlc -v | head -1 | sed 's/^.*version //')
+  oversion=$(ocamlc -v | head -1 | sed 's/^.*version //; s/ .*$//')
+fi
+if [ "$oversion" = "3.13.0+gadt" ]; then
+  # ad hoc for gadt
+  oversion="3.13.0-gadt"
 fi
 OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 

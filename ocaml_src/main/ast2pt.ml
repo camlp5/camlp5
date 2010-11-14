@@ -854,26 +854,15 @@ let neg_string n =
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
 ;;
 
-let not_impl name x =
-  let desc =
-    if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  print_newline (); failwith ("ast2pt: not impl " ^ name ^ " " ^ desc)
-;;
-
 let varify_constructors var_names =
-  let rec loop t =
-    let t =
-      match t with
-        MLast.TyArr (loc, t1, t2) -> MLast.TyArr (loc, loop t1, loop t2)
-      | MLast.TyApp (loc, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
-      | MLast.TyLid (loc, s) ->
-          if List.mem s var_names then MLast.TyQuo (loc, "&" ^ s) else t
-      | t -> not_impl "ctyp" t
-    in
-    t
+  let rec loop =
+    function
+      MLast.TyArr (loc, t1, t2) -> MLast.TyArr (loc, loop t1, loop t2)
+    | MLast.TyApp (loc, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
+    | MLast.TyTup (loc, tl) -> MLast.TyTup (loc, List.map loop tl)
+    | MLast.TyLid (loc, s) as t ->
+        if List.mem s var_names then MLast.TyQuo (loc, "&" ^ s) else t
+    | t -> t
   in
   loop
 ;;
