@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.32 2010/11/16 16:33:34 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.33 2010/11/16 16:48:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -873,7 +873,7 @@ EXTEND
           let t =
             match cal with
             [ <:vala< [t] >> -> t
-            | <:vala< tl >> -> <:ctyp< ($list:tl$) >>
+            | <:vala< [t :: tl] >> -> <:ctyp< ($list:[t :: tl]$) >>
             | _ -> assert False ]
           in
           (loc, ci, <:vala< [] >>, Some t)
