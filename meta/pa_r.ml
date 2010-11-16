@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.27 2010/11/16 03:37:26 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.28 2010/11/16 10:31:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -118,6 +118,17 @@ value rec generalized_type_of_type =
       ([t1 :: tl], rt)
   | t ->
       ([], t) ]
+;
+
+value start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;
+
+(* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
+value greek_token =
+  Grammar.Entry.of_parser gram "greek_token"
+    (parser [: `("LIDENT", x) when start_with x "α" :] -> x)
 ;
 
 value warned = ref True;
@@ -554,6 +565,7 @@ EXTEND
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >> ]
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
+      | i = greek_token -> <:ctyp< '$i$ >>
       | "_" -> <:ctyp< _ >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>
       | i = V UIDENT -> <:ctyp< $_uid:i$ >>

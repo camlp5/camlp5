@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.8 2010/11/16 03:37:26 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.9 2010/11/16 10:31:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -133,6 +133,25 @@ value utf8 =
   String.lowercase (String.sub s (slen - ulen) ulen) = utf8_str
 ;
 
+(* Type variables in Greek *)
+
+value greek_tab = [| "α"; "β"; "γ"; "δ"; "ε" |];
+value index_tab = [| ""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉" |];
+
+value try_greek s = do {
+  if utf8 then do {
+    if String.length s = 1 then do {
+      let c = Char.code s.[0] - Char.code 'a' in
+      let g = greek_tab.(c mod Array.length greek_tab) in
+      let n = c / Array.length greek_tab in
+      if n < Array.length index_tab then ("", g ^ index_tab.(n))
+      else ("'", s)
+    }
+    else ("'", s)
+  }
+  else ("'", s)
+};
+
 (* Types *)
 
 value rec print_out_type ppf =
@@ -154,18 +173,7 @@ and print_out_type_2 ppf =
 and print_simple_out_type ppf =
   fun
   [ Otyp_var ng s ->
-      let (q, s) =
-        if utf8 then do {
-          match s with
-          [ "a" -> ("", "α")
-          | "b" -> ("", "β")
-          | "c" -> ("", "γ")
-          | "d" -> ("", "δ")
-          | "e" -> ("", "ε")
-          | _ -> ("'", s) ]
-        }
-        else ("'", s)
-      in
+      let (q, s) = try_greek s in
       fprintf ppf "%s%s%s" q (if ng then "_" else "") s
   | Otyp_constr id [] -> fprintf ppf "@[%a@]" print_ident id
   | Otyp_tuple tyl ->
@@ -441,8 +449,9 @@ and print_out_type_decl kwd ppf x =
   in
   let print_constraints ppf params = List.iter (constrain ppf) params in
   let type_parameter ppf (ty, (co, cn)) =
-    fprintf ppf "%s'%s" (if not cn then "+" else if not co then "-" else "")
-      ty
+    let (q, ty) = try_greek ty in
+    fprintf ppf "%s%s%s" (if not cn then "+" else if not co then "-" else "")
+      q ty
   in
   let type_defined ppf =
     match args with
