@@ -119,6 +119,20 @@ let rec generalized_type_of_type =
   | t -> [], t
 ;;
 
+let start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;;
+
+(* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
+let greek_token =
+  Grammar.Entry.of_parser gram "greek_token"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some ("LIDENT", x) when start_with x "α" -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
 let warned = ref true;;
 let warning_deprecated_since_6_00 loc =
   if not !warned then
@@ -1661,7 +1675,11 @@ Grammar.extend
         (fun (t : 'ctyp) _ (pl : 'typevar list) _ (loc : Ploc.t) ->
            (MLast.TyPol (loc, pl, t) : 'ctyp))];
      Some "arrow", Some Gramext.RightA,
-     [[Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
+     [[Gramext.Sself; Gramext.Stoken ("", "→"); Gramext.Sself],
+      Gramext.action
+        (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
+           (MLast.TyArr (loc, t1, t2) : 'ctyp));
+      [Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
       Gramext.action
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
            (MLast.TyArr (loc, t1, t2) : 'ctyp))];
@@ -1729,6 +1747,11 @@ Grammar.extend
         (fun (i : string) (loc : Ploc.t) -> (MLast.TyLid (loc, i) : 'ctyp));
       [Gramext.Stoken ("", "_")],
       Gramext.action (fun _ (loc : Ploc.t) -> (MLast.TyAny loc : 'ctyp));
+      [Gramext.Snterm
+         (Grammar.Entry.obj (greek_token : 'greek_token Grammar.Entry.e))],
+      Gramext.action
+        (fun (i : 'greek_token) (loc : Ploc.t) ->
+           (MLast.TyQuo (loc, i) : 'ctyp));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action

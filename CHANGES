@@ -1,8 +1,11 @@
-Camlp5 Version 6.03:
---------------------
+Camlp5 Version 6.02.0:
+----------------------
 
 * [16 Nov 10] Fixed bug in pa_o.ml: !foo.(bar) was interpreted as !(foo.(bar))
-  instead of (!foo).(bar).
+  instead of (!foo).(bar). Fixed compilation bug in pa_o.ml in transitional
+  mode.
+* [16 Nov 10] Added parsing and printing utf8 greek letters and arrow in
+  revised syntax.
 
 Camlp5 Version 6.02:
 --------------------
