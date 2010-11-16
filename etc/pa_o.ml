@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.31 2010/11/14 11:20:25 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.32 2010/11/16 16:33:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -613,8 +613,6 @@ EXTEND
               | _ -> <:expr< $e1$ $e2$ >> ] ]
       | "assert"; e = SELF -> <:expr< assert $e$ >>
       | "lazy"; e = SELF -> <:expr< lazy ($e$) >> ]
-    | "!"
-      [ "!"; e = SELF -> <:expr< $e$ . val >> ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
           <:expr< $e1$ .( $lid:op$ ) >>
@@ -631,7 +629,8 @@ EXTEND
           in
           loop e1 e2 ]
     | "~-" NONA
-      [ "~-"; e = SELF -> <:expr< ~- $e$ >>
+      [ "!"; e = SELF -> <:expr< $e$ . val >>
+      | "~-"; e = SELF -> <:expr< ~- $e$ >>
       | "~-."; e = SELF -> <:expr< ~-. $e$ >>
       | f = prefixop; e = SELF -> <:expr< $lid:f$ $e$ >> ]
     | "simple" LEFTA
@@ -644,8 +643,7 @@ EXTEND
       | c = V CHAR -> <:expr< $_chr:c$ >>
       | UIDENT "True" -> <:expr< True_ >>
       | UIDENT "False" -> <:expr< False_ >>
-      | i = V LIDENT -> <:expr< $_lid:i$ >>
-      | i = V UIDENT -> <:expr< $_uid:i$ >>
+      | i = expr_ident -> i
       | "false" -> <:expr< False >>
       | "true" -> <:expr< True >>
       | "["; "]" -> <:expr< [] >>
@@ -709,6 +707,20 @@ EXTEND
           (None, <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >>)
       | eo = OPT [ "when"; e = expr -> e ]; "->"; e = expr ->
           (eo, <:expr< $e$ >>) ] ]
+  ;
+  expr_ident:
+    [ RIGHTA
+      [ i = V LIDENT -> <:expr< $_lid:i$ >>
+      | i = V UIDENT -> <:expr< $_uid:i$ >>
+      | i = V UIDENT; "."; j = SELF ->
+          let rec loop m =
+            fun
+            [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
+            | e -> <:expr< $m$ . $e$ >> ]
+          in
+          loop <:expr< $_uid:i$ >> j
+      | i = V UIDENT; "."; "("; j = operator_rparen ->
+          <:expr< $_uid:i$ . $lid:j$ >> ] ]
   ;
   (* Patterns *)
   patt:

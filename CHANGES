@@ -1,6 +1,9 @@
 Camlp5 Version 6.03:
 --------------------
 
+* [16 Nov 10] Fixed bug in pa_o.ml: !foo.(bar) was interpreted as !(foo.(bar))
+  instead of (!foo).(bar).
+
 Camlp5 Version 6.02:
 --------------------
 
