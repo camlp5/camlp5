@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.7 2010/11/13 18:42:24 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.8 2010/11/16 03:37:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -117,6 +117,22 @@ value pr_present =
   print_list (fun ppf s -> fprintf ppf "`%s" s) (fun ppf -> fprintf ppf "@ ")
 ;
 
+value default_lang =
+  try Sys.getenv "LC_ALL" with
+  [ Not_found ->
+      try Sys.getenv "LC_MESSAGES" with
+      [ Not_found -> try Sys.getenv "LANG" with [ Not_found -> "" ] ] ]
+;
+
+value utf8 =
+  let s = default_lang in
+  let utf8_str = "utf-8" in
+  let slen = String.length s in
+  let ulen = String.length utf8_str in
+  slen >= ulen &&
+  String.lowercase (String.sub s (slen - ulen) ulen) = utf8_str
+;
+
 (* Types *)
 
 value rec print_out_type ppf =
@@ -126,8 +142,8 @@ value rec print_out_type ppf =
 and print_out_type_1 ppf =
   fun
   [ Otyp_arrow lab ty1 ty2 ->
-      fprintf ppf "@[%s%a ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
-        print_out_type_2 ty1 print_out_type_1 ty2
+      fprintf ppf "@[%s%a %s@ %a@]" (if lab <> "" then lab ^ ":" else "")
+        print_out_type_2 ty1 (if utf8 then "→" else "->") print_out_type_1 ty2
   | ty -> print_out_type_2 ppf ty ]
 and print_out_type_2 ppf =
   fun
@@ -137,7 +153,20 @@ and print_out_type_2 ppf =
   | ty -> print_simple_out_type ppf ty ]
 and print_simple_out_type ppf =
   fun
-  [ Otyp_var ng s -> fprintf ppf "'%s%s" (if ng then "_" else "") s
+  [ Otyp_var ng s ->
+      let (q, s) =
+        if utf8 then do {
+          match s with
+          [ "a" -> ("", "α")
+          | "b" -> ("", "β")
+          | "c" -> ("", "γ")
+          | "d" -> ("", "δ")
+          | "e" -> ("", "ε")
+          | _ -> ("'", s) ]
+        }
+        else ("'", s)
+      in
+      fprintf ppf "%s%s%s" q (if ng then "_" else "") s
   | Otyp_constr id [] -> fprintf ppf "@[%a@]" print_ident id
   | Otyp_tuple tyl ->
       fprintf ppf "@[<1>(%a)@]" (print_typlist print_out_type " *") tyl
