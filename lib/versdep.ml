@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.12 2010/11/13 07:35:45 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.13 2010/11/16 20:10:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -353,18 +353,12 @@ value ocaml_ppat_array =
 ;
 
 value ocaml_ppat_construct li po chk_arity  =
-  IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
-    Ppat_construct li po chk_arity None
-  ELSE Ppat_construct li po chk_arity END
+  Ppat_construct li po chk_arity
 ;
 
 value ocaml_ppat_construct_args =
   fun
-  [ IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
-      Ppat_construct li po chk_arity _ -> Some (li, po, chk_arity)
-    ELSE
-      Ppat_construct li po chk_arity -> Some (li, po, chk_arity)
-    END
+  [ Ppat_construct li po chk_arity -> Some (li, po, chk_arity)
   | _ -> None ]
 ;
 
@@ -374,8 +368,7 @@ value ocaml_ppat_lazy =
 ;
 
 value ocaml_ppat_record lpl =
-  IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN Ppat_record lpl Closed None
-  ELSIFDEF OCAML_VERSION >= OCAML_3_12 THEN Ppat_record lpl Closed
+  IFDEF OCAML_VERSION >= OCAML_3_12 THEN Ppat_record lpl Closed
   ELSE Ppat_record lpl END
 ;
 

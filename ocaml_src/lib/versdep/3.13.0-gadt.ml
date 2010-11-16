@@ -120,18 +120,18 @@ let ocaml_pexp_variant =
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct li po chk_arity =
-  Ppat_construct (li, po, chk_arity, None)
+  Ppat_construct (li, po, chk_arity)
 ;;
 
 let ocaml_ppat_construct_args =
   function
-    Ppat_construct (li, po, chk_arity, _) -> Some (li, po, chk_arity)
+    Ppat_construct (li, po, chk_arity) -> Some (li, po, chk_arity)
   | _ -> None
 ;;
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
 
-let ocaml_ppat_record lpl = Ppat_record (lpl, Closed, None);;
+let ocaml_ppat_record lpl = Ppat_record (lpl, Closed);;
 
 let ocaml_ppat_type = Some (fun sl -> Ppat_type sl);;
 
