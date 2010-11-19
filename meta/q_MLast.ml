@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.26 2010/11/19 10:25:20 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.27 2010/11/19 15:49:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -948,6 +948,7 @@ EXTEND
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Qast.Option (Some i)
+      | i = greek_token -> Qast.Option (Some i)
       | "_" -> Qast.Option None ] ]
   ;
   ctyp:

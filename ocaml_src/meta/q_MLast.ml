@@ -4064,6 +4064,11 @@ Grammar.extend
      [[Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Option None : 'simple_type_parameter));
+      [Gramext.Snterm
+         (Grammar.Entry.obj (greek_token : 'greek_token Grammar.Entry.e))],
+      Gramext.action
+        (fun (i : 'greek_token) (loc : Ploc.t) ->
+           (Qast.Option (Some i) : 'simple_type_parameter));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action

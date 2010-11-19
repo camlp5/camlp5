@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.29 2010/11/19 10:25:20 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.30 2010/11/19 15:49:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -569,6 +569,7 @@ EXTEND
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Some i
+      | i = greek_token -> Some i
       | "_" -> None ] ]
   ;
   ctyp:
