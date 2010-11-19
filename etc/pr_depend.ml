@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.8 2010/11/19 09:04:03 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.9 2010/11/19 09:05:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -222,6 +222,7 @@ and str_item =
   | <:str_item< exception $uid:_$ of $list:tl$ = $list:_$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
   | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
+  | <:str_item< include $me$ >> -> module_expr me
   | <:str_item< module $flag:_$ $list:nel$ >> ->
       list (fun (_, me) -> module_expr me) nel
   | <:str_item< module type $uid:_$ = $mt$ >> -> module_type mt
