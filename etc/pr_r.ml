@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.64 2010/11/14 11:20:25 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.65 2010/11/19 10:25:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -634,6 +634,46 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
+value default_lang =
+  try Sys.getenv "LC_ALL" with
+  [ Not_found ->
+      try Sys.getenv "LC_MESSAGES" with
+      [ Not_found -> try Sys.getenv "LANG" with [ Not_found -> "" ] ] ]
+;
+
+value utf8 =
+  let s = default_lang in
+  let utf8_str = "utf-8" in
+  let slen = String.length s in
+  let ulen = String.length utf8_str in
+  slen >= ulen &&
+  String.lowercase (String.sub s (slen - ulen) ulen) = utf8_str
+;
+
+value start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;
+
+(* Type variables in Greek *)
+
+value greek_tab = [| "α"; "β"; "γ"; "δ"; "ε" |];
+value index_tab = [| ""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉" |];
+
+value try_greek s = do {
+  if utf8 then do {
+    if String.length s = 1 then do {
+      let c = Char.code s.[0] - Char.code 'a' in
+      let g = greek_tab.(c mod Array.length greek_tab) in
+      let n = c / Array.length greek_tab in
+      if n < Array.length index_tab then ("", g ^ index_tab.(n))
+      else ("'", s)
+    }
+    else ("'", s)
+  }
+  else ("'", s)
+};
+
 value type_var pc (tv, vari) =
   let tv = Pcaml.unvala tv in
   pprintf pc "%s%s"
@@ -642,7 +682,9 @@ value type_var pc (tv, vari) =
      | Some False -> "-"
      | None -> "" ])
     (match tv with
-     [ Some v -> "'" ^ v
+     [ Some s ->
+         let (q, s) = try_greek s in
+         q ^ s
      | None -> "_" ])
 ;
 
@@ -880,7 +922,10 @@ value expr_short pc x =
 
 value string pc s = pprintf pc "\"%s\"" s;
 value lident pc s = pprintf pc "%s" s;
-value typevar pc tv = pprintf pc "'%s" tv;
+value typevar pc tv =
+  let (q, s) = try_greek tv in
+  pprintf pc "%s%s" q s
+;
 
 value external_decl pc (loc, n, t, sl) =
   pprintf pc "external %p :@;%p = %s" var_escaped (loc, n) ctyp t
@@ -1472,7 +1517,7 @@ EXTEND_PRINTER
       | <:ctyp< $uid:t$ >> ->
           pprintf pc "%s" t
       | <:ctyp:< ' $s$ >> ->
-          pprintf pc "'%p" var_escaped (loc, s)
+          pprintf pc "%p" typevar s
       | <:ctyp< _ >> ->
           pprintf pc "_"
       | <:ctyp< ?$i$: $t$ >> | <:ctyp< ~$_$: $t$ >> ->

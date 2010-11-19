@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.25 2010/11/14 11:20:26 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.26 2010/11/19 10:25:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -261,6 +261,45 @@ value generalized_type_of_type t =
   in
   let (tl, rt) = gen t in
   (Qast.List tl, rt)
+;
+
+value start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;
+
+value greek_tab = ["α"; "β"; "γ"; "δ"; "ε"];
+value index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];
+value ascii_of_greek s =
+  loop 0 greek_tab where rec loop i =
+    fun
+    [ [g :: gl] -> do {
+        if start_with s g then do {
+          let c1 = Char.chr (Char.code 'a' + i) in
+          let glen = String.length g in
+          let rest = String.sub s glen (String.length s - glen) in
+          loop 0 index_tab where rec loop i =
+            fun
+            [ [k :: kl] -> do {
+                if rest = k then do {
+                  let s2 = if i = 0 then "" else string_of_int i in
+                  String.make 1 c1 ^ s2
+                }
+                else loop (i + 1) kl
+              }
+            | [] -> s ]
+        }
+        else loop (i + 1) gl
+      }
+    | [] -> s ]
+;
+
+(* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
+value greek_token =
+  Grammar.Entry.of_parser gram "greek_token"
+    (parser
+       [: `("LIDENT", x) when List.exists (start_with x) greek_tab :] ->
+          Qast.Str (ascii_of_greek x))
 ;
 
 value warned = ref False;
@@ -923,13 +962,15 @@ EXTEND
       | "type"; pl = SV (LIST1 LIDENT); "."; t = SELF ->
           Qast.Node "TyPot" [Qast.Loc; pl; t] ]
     | "arrow" RIGHTA
-      [ t1 = SELF; "->"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2] ]
+      [ t1 = SELF; "->"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2]
+      | t1 = SELF; "→"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2] ]
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF -> Qast.Node "TyApp" [Qast.Loc; t1; t2] ]
     | LEFTA
       [ t1 = SELF; "."; t2 = SELF -> Qast.Node "TyAcc" [Qast.Loc; t1; t2] ]
     | "simple"
       [ "'"; i = SV ident "" -> Qast.Node "TyQuo" [Qast.Loc; i]
+      | i = greek_token -> Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal i]
       | "_" -> Qast.Node "TyAny" [Qast.Loc]
       | i = SV LIDENT -> Qast.Node "TyLid" [Qast.Loc; i]
       | i = SV UIDENT -> Qast.Node "TyUid" [Qast.Loc; i]

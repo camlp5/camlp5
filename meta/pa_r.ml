@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.28 2010/11/16 10:31:51 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.29 2010/11/19 10:25:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -125,10 +125,38 @@ value start_with s s_ini =
   String.length s >= len && String.sub s 0 len = s_ini
 ;
 
+value greek_tab = ["α"; "β"; "γ"; "δ"; "ε"];
+value index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];
+value ascii_of_greek s =
+  loop 0 greek_tab where rec loop i =
+    fun
+    [ [g :: gl] -> do {
+        if start_with s g then do {
+          let c1 = Char.chr (Char.code 'a' + i) in
+          let glen = String.length g in
+          let rest = String.sub s glen (String.length s - glen) in
+          loop 0 index_tab where rec loop i =
+            fun
+            [ [k :: kl] -> do {
+                if rest = k then do {
+                  let s2 = if i = 0 then "" else string_of_int i in
+                  String.make 1 c1 ^ s2
+                }
+                else loop (i + 1) kl
+              }
+            | [] -> s ]
+        }
+        else loop (i + 1) gl
+      }
+    | [] -> s ]
+;
+
 (* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
 value greek_token =
   Grammar.Entry.of_parser gram "greek_token"
-    (parser [: `("LIDENT", x) when start_with x "α" :] -> x)
+    (parser
+       [: `("LIDENT", x) when List.exists (start_with x) greek_tab :] ->
+          ascii_of_greek x)
 ;
 
 value warned = ref True;
