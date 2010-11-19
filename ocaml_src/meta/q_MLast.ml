@@ -311,6 +311,49 @@ let generalized_type_of_type t =
   let (tl, rt) = gen t in Qast.List tl, rt
 ;;
 
+let start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;;
+
+let greek_tab = ["α"; "β"; "γ"; "δ"; "ε"];;
+let index_tab =
+  [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"]
+;;
+let ascii_of_greek s =
+  let rec loop i =
+    function
+      g :: gl ->
+        if start_with s g then
+          let c1 = Char.chr (Char.code 'a' + i) in
+          let glen = String.length g in
+          let rest = String.sub s glen (String.length s - glen) in
+          let rec loop i =
+            function
+              k :: kl ->
+                if rest = k then
+                  let s2 = if i = 0 then "" else string_of_int i in
+                  String.make 1 c1 ^ s2
+                else loop (i + 1) kl
+            | [] -> s
+          in
+          loop 0 index_tab
+        else loop (i + 1) gl
+    | [] -> s
+  in
+  loop 0 greek_tab
+;;
+
+(* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
+let greek_token =
+  Grammar.Entry.of_parser gram "greek_token"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some ("LIDENT", x) when List.exists (start_with x) greek_tab ->
+           Stream.junk strm__; Qast.Str (ascii_of_greek x)
+       | _ -> raise Stream.Failure)
+;;
+
 let warned = ref false;;
 let warning_deprecated_since_6_00 loc =
   if not !warned then
@@ -885,7 +928,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 309, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 348, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1537,7 +1580,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 379, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 418, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -4095,7 +4138,11 @@ Grammar.extend
         (fun (t : 'ctyp) _ (pl : 'e__118) _ (loc : Ploc.t) ->
            (Qast.Node ("TyPol", [Qast.Loc; pl; t]) : 'ctyp))];
      Some "arrow", Some Gramext.RightA,
-     [[Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
+     [[Gramext.Sself; Gramext.Stoken ("", "→"); Gramext.Sself],
+      Gramext.action
+        (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
+           (Qast.Node ("TyArr", [Qast.Loc; t1; t2]) : 'ctyp));
+      [Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
       Gramext.action
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
            (Qast.Node ("TyArr", [Qast.Loc; t1; t2]) : 'ctyp))];
@@ -4249,6 +4296,11 @@ Grammar.extend
       [Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Node ("TyAny", [Qast.Loc]) : 'ctyp));
+      [Gramext.Snterm
+         (Grammar.Entry.obj (greek_token : 'greek_token Grammar.Entry.e))],
+      Gramext.action
+        (fun (i : 'greek_token) (loc : Ploc.t) ->
+           (Qast.Node ("TyQuo", [Qast.Loc; Qast.VaVal i]) : 'ctyp));
       [Gramext.Stoken ("", "'");
        Gramext.Sfacto
          (Gramext.srules
