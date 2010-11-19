@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.7 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.8 2010/11/19 09:04:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -192,6 +192,7 @@ and sig_item =
   [ <:sig_item< declare $list:sil$ end >> -> list sig_item sil
   | <:sig_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
   | SgExt _ _ t _ -> ctyp t
+  | <:sig_item< include $mt$ >> -> module_type mt
   | <:sig_item< module $flag:_$ $list:ntl$ >> ->
       list (fun (_, mt) -> module_type mt) ntl
   | SgMty _ _ mt -> module_type mt
