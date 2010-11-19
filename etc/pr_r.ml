@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.65 2010/11/19 10:25:19 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.66 2010/11/19 10:51:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -687,6 +687,8 @@ value type_var pc (tv, vari) =
          q ^ s
      | None -> "_" ])
 ;
+
+value arrow () = if utf8 then "→" else "->";
 
 value type_constraint pc (t1, t2) =
   pprintf pc " constraint %p =@;%p" ctyp t1 ctyp t2
@@ -1473,7 +1475,7 @@ EXTEND_PRINTER
       [ <:ctyp< $_$ -> $_$ >> as z ->
           let unfold =
             fun
-            [ <:ctyp< $x$ -> $y$ >> -> Some (x, " ->", y)
+            [ <:ctyp< $x$ -> $y$ >> -> Some (x, " " ^ arrow (), y)
             | _ -> None ]
           in
           right_operator pc 2 unfold next z ]
