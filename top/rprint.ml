@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.10 2010/11/20 02:52:20 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.11 2010/11/20 19:15:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -195,8 +195,8 @@ and print_simple_out_type ppf =
         | Ovar_name id tyl ->
             fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id ]
       in
-      fprintf ppf "%s[|%s@[<hv>@[<hv>%a@]%a|]@]" (if non_gen then "_" else "")
-        (if closed then if tags = None then " " else "< "
+      fprintf ppf "%s[%s@[<hv>@[<hv>%a@]%a ]@]" (if non_gen then "_" else "")
+        (if closed then if tags = None then "= " else "< "
          else if tags = None then "> "
          else "? ")
         print_fields poly_variants
