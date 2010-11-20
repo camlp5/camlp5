@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.9 2010/11/16 10:31:51 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.10 2010/11/20 02:52:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -156,7 +156,9 @@ value try_greek s = do {
 
 value rec print_out_type ppf =
   fun
-  [ Otyp_alias ty s -> fprintf ppf "@[%a as '%s@]" print_out_type ty s
+  [ Otyp_alias ty s ->
+      let (q, s) = try_greek s in
+      fprintf ppf "@[%a as %s%s@]" print_out_type ty q s
   | ty -> print_out_type_1 ppf ty ]
 and print_out_type_1 ppf =
   fun
