@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.27 2010/11/19 15:49:44 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.28 2010/11/21 17:17:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1356,20 +1356,28 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ "~"; "{"; p = ipatt_tcon; eo = SV (OPT fun_binding); "}" ->
-          Qast.Node "ExLab" [Qast.Loc; p; eo]
+      [ "~"; "{"; lpeo = SV (LIST1 ipatt_tcon_fun_binding SEP ";"); "}" ->
+          Qast.Node "ExLab" [Qast.Loc; lpeo]
       | "?"; "{"; p = ipatt_tcon; eo = SV (OPT fun_binding); "}" ->
           Qast.Node "ExOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; e = SELF ->
           let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "ExLab"
-            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
-             Qast.VaVal (Qast.Option (Some e))]
+            [Qast.Loc;
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple
+                     [Qast.Node "PaLid" [Qast.Loc; i];
+                      Qast.VaVal (Qast.Option (Some e))]])]
       | i = SV TILDEIDENT "~" a_ti ->
           let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "ExLab"
-            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
-             Qast.VaVal (Qast.Option None)]
+            [Qast.Loc;
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple
+                     [Qast.Node "PaLid" [Qast.Loc; i];
+                      Qast.VaVal (Qast.Option None)]])]
       | i = SV QUESTIONIDENTCOLON "?:" a_qic; e = SELF ->
           let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "ExOlb"
@@ -1380,6 +1388,9 @@ EXTEND
           Qast.Node "ExOlb"
             [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
              Qast.VaVal (Qast.Option None)] ] ]
+  ;
+  ipatt_tcon_fun_binding:
+    [ [ p = ipatt_tcon; eo = SV (OPT fun_binding) -> Qast.Tuple [p; eo] ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = SV ident "" -> Qast.Node "ExVrn" [Qast.Loc; s] ] ]

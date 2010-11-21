@@ -188,9 +188,15 @@ and expr floc sh =
     | ExIfe (loc, x1, x2, x3) ->
         let loc = floc loc in ExIfe (loc, self x1, self x2, self x3)
     | ExInt (loc, x1, x2) -> let loc = floc loc in ExInt (loc, x1, x2)
-    | ExLab (loc, x1, x2) ->
+    | ExLab (loc, x1) ->
         let loc = floc loc in
-        ExLab (loc, patt floc sh x1, vala_map (option_map self) x2)
+        ExLab
+          (loc,
+           vala_map
+             (List.map
+                (fun (x1, x2) ->
+                   patt floc sh x1, vala_map (option_map self) x2))
+             x1)
     | ExLaz (loc, x1) -> let loc = floc loc in ExLaz (loc, self x1)
     | ExLet (loc, x1, x2, x3) ->
         let loc = floc loc in

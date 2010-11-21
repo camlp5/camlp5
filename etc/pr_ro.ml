@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.15 2010/11/13 07:35:45 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.16 2010/11/21 17:17:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -219,6 +219,12 @@ value variant_decl_list char pc pvl =
            (vlist2 variant_decl (bar_before variant_decl)) pvl)
 ;
 
+value ipatt_tcon_fun_binding pc (p, eo) =
+  match Pcaml.unvala eo with
+  [ Some e -> pprintf pc "%p =@;%p" patt p expr e
+  | None -> patt pc p ]
+;
+
 value rec class_longident pc cl =
   match cl with
   [ [] -> pprintf pc ""
@@ -293,10 +299,9 @@ EXTEND_PRINTER
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
-      [ <:expr< ~{$p$ = $e$} >> ->
-          pprintf pc "@[~{%p =@;%p}@]" patt p expr e
-      | <:expr< ~{$p$} >> ->
-          pprintf pc "~{%p}" patt p
+      [ <:expr< ~{$list:lpoe$} >> ->
+          let lpoe = List.map (fun poe -> (poe, ";")) lpoe in
+          pprintf pc "@[~{%p}@]" (plist ipatt_tcon_fun_binding 1) lpoe
       | <:expr< ?{$p$ = $e$} >> ->
           pprintf pc "@[<2>?{%p =@;%p}@]" patt p curr e
       | <:expr< ?{$p$} >> ->

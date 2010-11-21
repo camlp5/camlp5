@@ -207,7 +207,13 @@ module Meta_make (C : MetaSig) =
                lpoee]
       | ExIfe (_, e1, e2, e3) -> C.node "ExIfe" [expr e1; expr e2; expr e3]
       | ExInt (_, s1, s2) -> C.node "ExInt" [C.vala C.string s1; C.string s2]
-      | ExLab (_, p, oe) -> C.node "ExLab" [patt p; C.vala (C.option expr) oe]
+      | ExLab (_, lpoe) ->
+          C.node "ExLab"
+            [C.vala
+               (C.list
+                  (fun (p, oe) ->
+                     C.tuple [patt p; C.vala (C.option expr) oe]))
+               lpoe]
       | ExLaz (_, e) -> C.node "ExLaz" [expr e]
       | ExLet (_, b, lpe, e) ->
           C.node "ExLet"

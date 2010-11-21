@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.25 2010/11/14 16:55:12 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.26 2010/11/21 17:17:45 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -768,7 +768,7 @@ value rec expr =
             | _ -> f ]
         | _ -> f ]
       in
-      let al = List.map label_expr al in
+      let al = List.rev (List.fold_left label_expr [] al) in
       match (expr f).pexp_desc with
       [ Pexp_construct li None _ ->
           let al = List.map snd al in
@@ -897,7 +897,7 @@ value rec expr =
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
   | ExInt loc s c ->
       mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
-  | ExLab loc _ _ -> error loc "labeled expression not allowed here 1"
+  | ExLab loc _ -> error loc "labeled expression not allowed here 1"
   | ExLaz loc e -> mklazy loc (expr e)
   | ExLet loc rf pel e ->
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
@@ -1008,18 +1008,21 @@ value rec expr =
   | IFDEF STRICT THEN
       ExXtr loc _ _ -> error loc "bad ast ExXtr"
     END ]
-and label_expr =
+and label_expr rev_al =
   fun
-  [ ExLab loc p eo ->
-      match p with
-      [ PaLid loc lab ->
-          let e =
-            match uv eo with
-            [ Some e -> e
-            | None -> ExLid loc lab ]
-          in
-          (uv lab, expr e)
-      | _ -> error loc "ExLab case not impl" ]
+  [ ExLab loc lpeo ->
+      List.fold_left
+        (fun rev_al (p, eo) ->
+          match p with
+          [ PaLid loc lab ->
+              let e =
+                match uv eo with
+                [ Some e -> e
+                | None -> ExLid loc lab ]
+              in
+              [(uv lab, expr e) :: rev_al]
+          | _ -> error loc "ExLab case not impl" ])
+        rev_al (uv lpeo)
   | ExOlb loc p eo ->
       match p with
       [ PaLid loc lab ->
@@ -1028,9 +1031,9 @@ and label_expr =
             [ Some e -> e
             | None -> ExLid loc lab ]
           in
-          ("?" ^ uv lab, expr e)
+          [("?" ^ uv lab, expr e) :: rev_al]
       | _ -> error loc "ExOlb case not impl" ]
-  | e -> ("", expr e) ]
+  | e -> [("", expr e) :: rev_al] ]
 and mkpe (p, e) =
   let (p, e) =
     match e with
@@ -1314,7 +1317,7 @@ and class_expr =
       match ocaml_pcl_apply with
       [ Some pcl_apply ->
           let (ce, el) = class_expr_fa [] c in
-          let el = List.map label_expr el in
+          let el = List.rev (List.fold_left label_expr [] el) in
           mkpcl loc (pcl_apply (class_expr ce) el)
       | None -> error loc "no class expr desc in this ocaml version" ]
   | CeCon loc id tl ->

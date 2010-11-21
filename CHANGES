@@ -1,6 +1,8 @@
 Camlp5 Version 6.02.1:
 ----------------------
 
+* [21 Nov 10] Revised syntax: added syntax multi labels, ~{x=y; z=t}
+  equivalent to ~{x=y} ~{z=t}
 * [16 Nov 10] Updated compatibility with OCaml version 3.13.0-gadt.
 
 Camlp5 Version 6.02.0:

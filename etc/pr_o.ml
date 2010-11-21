@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.47 2010/11/14 11:20:25 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.48 2010/11/21 17:17:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -2077,13 +2077,18 @@ value poly_type pc =
   | t -> ctyp pc t ]
 ;
 
+value label_ipatt expr pc (p, oe) =
+  match Pcaml.unvala oe with
+  [ Some e -> pprintf pc "~%p:%p" patt p expr e
+  | None -> patt pc p ]
+;
+
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
-      [ <:expr< ~{$p$ = $e$} >> ->
-          pprintf pc "~%p:%p" patt p curr e
-      | <:expr< ~{$p$} >> ->
-          pprintf pc "~%p" patt p
+      [ <:expr< ~{$list:lpoe$} >> ->
+          let lpoe = List.map (fun poe -> (poe, "")) lpoe in
+          pprintf pc "%p" (plist (label_ipatt curr) 1) lpoe
       | <:expr< ?{$p$ = $e$} >> ->
           pprintf pc "?%p:%p" patt p curr e
       | <:expr< ?{$p$} >> ->

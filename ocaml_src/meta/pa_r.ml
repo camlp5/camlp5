@@ -284,6 +284,8 @@ Grammar.extend
      grammar_entry_create "ipatt_tcon"
    and patt_option_label : 'patt_option_label Grammar.Entry.e =
      grammar_entry_create "patt_option_label"
+   and ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e =
+     grammar_entry_create "ipatt_tcon_fun_binding"
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
    in
@@ -2756,13 +2758,13 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (let _ = warning_deprecated_since_6_00 loc in
-            MLast.ExLab (loc, MLast.PaLid (loc, i), None) :
+            MLast.ExLab (loc, [MLast.PaLid (loc, i), None]) :
             'expr));
       [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
         (fun (e : 'expr) (i : string) (loc : Ploc.t) ->
            (let _ = warning_deprecated_since_6_00 loc in
-            MLast.ExLab (loc, MLast.PaLid (loc, i), Some e) :
+            MLast.ExLab (loc, [MLast.PaLid (loc, i), Some e]) :
             'expr));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("", "{");
        Gramext.Snterm
@@ -2776,16 +2778,29 @@ Grammar.extend
              (loc : Ploc.t) ->
            (MLast.ExOlb (loc, p, eo) : 'expr));
       [Gramext.Stoken ("", "~"); Gramext.Stoken ("", "{");
-       Gramext.Snterm
+       Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (ipatt_tcon_fun_binding :
+                'ipatt_tcon_fun_binding Grammar.Entry.e)),
+          Gramext.Stoken ("", ";"), false);
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (lpeo : 'ipatt_tcon_fun_binding list) _ _ (loc : Ploc.t) ->
+           (MLast.ExLab (loc, lpeo) : 'expr))]];
+    Grammar.Entry.obj
+      (ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Snterm
          (Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e));
        Gramext.Sopt
          (Gramext.Snterm
-            (Grammar.Entry.obj (fun_binding : 'fun_binding Grammar.Entry.e)));
-       Gramext.Stoken ("", "}")],
+            (Grammar.Entry.obj
+               (fun_binding : 'fun_binding Grammar.Entry.e)))],
       Gramext.action
-        (fun _ (eo : 'fun_binding option) (p : 'ipatt_tcon) _ _
-             (loc : Ploc.t) ->
-           (MLast.ExLab (loc, p, eo) : 'expr))]];
+        (fun (eo : 'fun_binding option) (p : 'ipatt_tcon) (loc : Ploc.t) ->
+           (p, eo : 'ipatt_tcon_fun_binding))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
     [None, None,
