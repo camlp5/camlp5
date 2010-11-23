@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.67 2010/11/21 17:17:45 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.68 2010/11/23 15:48:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -657,7 +657,10 @@ value start_with s s_ini =
 
 (* Type variables in Greek *)
 
-value greek_tab = [| "α"; "β"; "γ"; "δ"; "ε" |];
+value greek_tab =
+  [| "α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
+     "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω" |]
+;
 value index_tab = [| ""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉" |];
 
 value try_greek s = do {

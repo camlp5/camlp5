@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.28 2010/11/21 17:17:45 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.29 2010/11/23 15:48:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -268,7 +268,10 @@ value start_with s s_ini =
   String.length s >= len && String.sub s 0 len = s_ini
 ;
 
-value greek_tab = ["α"; "β"; "γ"; "δ"; "ε"];
+value greek_tab =
+  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
+   "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
+;
 value index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];
 value ascii_of_greek s =
   loop 0 greek_tab where rec loop i =

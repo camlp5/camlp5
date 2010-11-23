@@ -316,7 +316,10 @@ let start_with s s_ini =
   String.length s >= len && String.sub s 0 len = s_ini
 ;;
 
-let greek_tab = ["α"; "β"; "γ"; "δ"; "ε"];;
+let greek_tab =
+  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ";
+   "ν"; "ξ"; "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
+;;
 let index_tab =
   [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"]
 ;;
@@ -930,7 +933,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 348, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 351, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1582,7 +1585,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 418, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 421, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

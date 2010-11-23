@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.11 2010/11/20 19:15:28 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.12 2010/11/23 15:48:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -135,7 +135,10 @@ value utf8 =
 
 (* Type variables in Greek *)
 
-value greek_tab = [| "α"; "β"; "γ"; "δ"; "ε" |];
+value greek_tab =
+  [| "α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
+     "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω" |]
+;
 value index_tab = [| ""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉" |];
 
 value try_greek s = do {
