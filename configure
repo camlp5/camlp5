@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.7 2010/11/19 10:37:22 deraugla Exp $
+# $Id: configure,v 6.8 2010/11/26 23:54:51 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -204,7 +204,7 @@ OPT=
 if [ "$noopt" = "0" ] && ocamlc.opt > /dev/null 2>&1 &&
    ocamlopt.opt > /dev/null 2>&1
 then
-    oversion_opt=$(ocamlopt.opt -v | head -1 | sed 's/^.*version //')
+    oversion_opt=$(ocamlopt.opt -v | head -1 | sed 's/^.*version //; s/ .*$//')
     if [ "$oversion" = "$oversion_opt" ]; then
       OPT=.opt
     fi
