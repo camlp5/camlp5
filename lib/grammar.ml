@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 6.3 2010/09/19 10:23:07 deraugla Exp $ *)
+(* $Id: grammar.ml,v 6.4 2010/12/05 01:10:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_fstream.cmo";
@@ -1737,7 +1737,7 @@ module Entry =
        edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
     ;
     external obj : e 'a -> Gramext.g_entry te = "%identity";
-    value print e = printf "%a@." print_entry (obj e);
+    value print ppf e = fprintf ppf "%a@." print_entry (obj e);
     value find e s = find_entry (obj e) s;
   end
 ;
@@ -1799,7 +1799,7 @@ module type S =
         value parse_token : e 'a -> Stream.t te -> 'a;
         value name : e 'a -> string;
         value of_parser : string -> (Stream.t te -> 'a) -> e 'a;
-        value print : e 'a -> unit;
+        value print : Format.formatter -> e 'a -> unit;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
       end
     ;
@@ -1871,7 +1871,7 @@ module GMake (L : GLexerType) =
            bcontinue _ _ _ = bparser [];
            edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
         ;
-        value print e = printf "%a@." print_entry (obj e);
+        value print ppf e = fprintf ppf "%a@." print_entry (obj e);
       end
     ;
     module Unsafe =

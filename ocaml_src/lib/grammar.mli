@@ -43,7 +43,7 @@ module Entry :
     val parse_parsable : 'a e -> parsable -> 'a;;
     val name : 'a e -> string;;
     val of_parser : g -> string -> (token Stream.t -> 'a) -> 'a e;;
-    val print : 'a e -> unit;;
+    val print : Format.formatter -> 'a e -> unit;;
     val find : 'a e -> string -> Obj.t e;;
     external obj : 'a e -> token Gramext.g_entry = "%identity";;
   end
@@ -144,7 +144,7 @@ module type S =
         val parse_token : 'a e -> te Stream.t -> 'a;;
         val name : 'a e -> string;;
         val of_parser : string -> (te Stream.t -> 'a) -> 'a e;;
-        val print : 'a e -> unit;;
+        val print : Format.formatter -> 'a e -> unit;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
       end
     ;;

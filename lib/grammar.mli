@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: grammar.mli,v 6.2 2010/12/05 01:10:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Extensible grammars.
@@ -43,7 +43,7 @@ module Entry :
     value parse_parsable : e 'a -> parsable -> 'a;
     value name : e 'a -> string;
     value of_parser : g -> string -> (Stream.t token -> 'a) -> e 'a;
-    value print : e 'a -> unit;
+    value print : Format.formatter -> e 'a -> unit;
     value find : e 'a -> string -> e Obj.t;
     external obj : e 'a -> Gramext.g_entry token = "%identity";
   end
@@ -149,7 +149,7 @@ module type S =
         value parse_token : e 'a -> Stream.t te -> 'a;
         value name : e 'a -> string;
         value of_parser : string -> (Stream.t te -> 'a) -> e 'a;
-        value print : e 'a -> unit;
+        value print : Format.formatter -> e 'a -> unit;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
       end
     ;

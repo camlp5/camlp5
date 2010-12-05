@@ -1882,7 +1882,7 @@ module Entry =
        edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
     ;;
     external obj : 'a e -> te Gramext.g_entry = "%identity";;
-    let print e = printf "%a@." print_entry (obj e);;
+    let print ppf e = fprintf ppf "%a@." print_entry (obj e);;
     let find e s = find_entry (obj e) s;;
   end
 ;;
@@ -1937,7 +1937,7 @@ module type S =
         val parse_token : 'a e -> te Stream.t -> 'a;;
         val name : 'a e -> string;;
         val of_parser : string -> (te Stream.t -> 'a) -> 'a e;;
-        val print : 'a e -> unit;;
+        val print : Format.formatter -> 'a e -> unit;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
       end
     ;;
@@ -2010,7 +2010,7 @@ module GMake (L : GLexerType) =
            bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
            edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
         ;;
-        let print e = printf "%a@." print_entry (obj e);;
+        let print ppf e = fprintf ppf "%a@." print_entry (obj e);;
       end
     ;;
     module Unsafe =
