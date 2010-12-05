@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.11 2010/11/13 13:26:39 deraugla Exp $
+# $Id: Makefile,v 6.12 2010/12/05 00:58:48 deraugla Exp $
 
 include config/Makefile
 
@@ -296,10 +296,9 @@ untouch_sources:
 
 promote_sources:
 	$(MAKE) mv_cvs FROM=ocaml_src TO=ocaml_src.new
-	for i in $(FDIRS); do \
+	for i in $(FDIRS) lib/versdep; do \
 	  $(MAKE) mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
-	mv ocaml_src/lib/versdep/CVS ocaml_src.new/lib/versdep/.
 	mv ocaml_src/tools ocaml_src.new/.
 	mv ocaml_src ocaml_src.new/SAVED
 	mv ocaml_src.new ocaml_src
@@ -308,10 +307,9 @@ unpromote_sources:
 	mv ocaml_src ocaml_src.new
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
-	for i in $(FDIRS); do \
+	for i in $(FDIRS) lib/versdep; do \
 	  $(MAKE) mv_cvs FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
-	mv ocaml_src.new/lib/versdep/CVS ocaml_src/lib/versdep/.
 	$(MAKE) mv_cvs FROM=ocaml_src.new TO=ocaml_src
 
 clean_sources:

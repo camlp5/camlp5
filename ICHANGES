@@ -1,8 +1,11 @@
 Internal, very small, undocumented, or invisible changes
 ********************************************************
 
-Camlp5 Version 6.03:
---------------------
+Camlp5 Version 6.02.1:
+----------------------
+
+* [05 Dec 01] Fixed pb in 'make bootstrap_sources': failed if it was
+  not a CVS working directory.
 
 Camlp5 Version 6.02:
 --------------------
