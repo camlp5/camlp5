@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.48 2010/11/21 17:17:45 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.49 2010/12/06 10:31:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -2080,7 +2080,7 @@ value poly_type pc =
 value label_ipatt expr pc (p, oe) =
   match Pcaml.unvala oe with
   [ Some e -> pprintf pc "~%p:%p" patt p expr e
-  | None -> patt pc p ]
+  | None -> pprintf pc "~%p" patt p ]
 ;
 
 EXTEND_PRINTER
