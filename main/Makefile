@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2010/11/12 23:24:00 deraugla Exp $
+# $Id: Makefile,v 6.3 2011/01/18 01:18:28 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -34,7 +34,7 @@ camlp5.cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o camlp5.cmxa
 
 crc.cmo: $(CAMLP5_OBJS_0)
-	OTOP=$(OTOP) OVERSION=$(OVERSION) OLIBDIR=$(OLIBDIR) $(TOP)/tools/mkcrc.sh
+	OTOP=$(OTOP) OVERSION=$(OVERSION) OLIBDIR="$(OLIBDIR)" $(TOP)/tools/mkcrc.sh
 	$(OCAMLC) -c -impl crc.tmp
 
 clean::
