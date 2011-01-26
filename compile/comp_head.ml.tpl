@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: comp_head.ml.tpl,v 6.2 2010/09/19 08:51:16 deraugla Exp $ *)
+(* $Id: comp_head.ml.tpl,v 6.3 2011/01/26 12:31:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -78,7 +78,7 @@ module P =
       (if prev_symb = "" then "" else " after " ^ prev_symb) ^ " (in [" ^
       entry ^ "])"
     ;
-    value lexer = Plexer.gmake ();
+    value lexer = lazy (Plexer.gmake ());
   end
 ;
 

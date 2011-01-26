@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 6.3 2010/09/30 16:22:19 deraugla Exp $ *)
+(* $Id: compile.ml,v 6.4 2011/01/26 12:31:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -613,7 +613,8 @@ value compile () =
   let si2 =
     let list = list_sort compare keywords.val in
     <:str_item<
-      List.iter (fun kw -> P.lexer.Plexing.tok_using ("", kw))
+      let lexer = Lazy.force P.lexer in
+      List.iter (fun kw -> lexer.Plexing.tok_using ("", kw))
         $expr_list list$
     >>
   in
