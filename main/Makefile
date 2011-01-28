@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.3 2011/01/18 01:18:28 deraugla Exp $
+# $Id: Makefile,v 6.4 2011/01/28 08:51:53 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -70,8 +70,8 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5"
 	cp $(CAMLP5) "$(DESTDIR)$(BINDIR)/."
-	cp mLast.mli quotation.mli pcaml.mli prtools.mli "$(DESTDIR)$(LIBDIR)/camlp5/."
-	cp mLast.cmi quotation.cmi pcaml.cmi prtools.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp mLast.mli quotation.mli pcaml.mli prtools.mli reloc.mli "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp mLast.cmi quotation.cmi pcaml.cmi prtools.cmi reloc.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
 	cp camlp5.cma "$(DESTDIR)$(LIBDIR)/camlp5/."
 	if test -f camlp5.cmxa; then \
 	  cp camlp5.cmxa "$(DESTDIR)$(LIBDIR)/camlp5/."; \

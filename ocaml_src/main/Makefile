@@ -34,7 +34,7 @@ camlp5.cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o camlp5.cmxa
 
 crc.cmo: $(CAMLP5_OBJS_0)
-	OTOP=$(OTOP) OVERSION=$(OVERSION) OLIBDIR=$(OLIBDIR) $(TOP)/tools/mkcrc.sh
+	OTOP=$(OTOP) OVERSION=$(OVERSION) OLIBDIR="$(OLIBDIR)" $(TOP)/tools/mkcrc.sh
 	$(OCAMLC) -c -impl crc.tmp
 
 clean::
@@ -70,8 +70,8 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5"
 	cp $(CAMLP5) "$(DESTDIR)$(BINDIR)/."
-	cp mLast.mli quotation.mli pcaml.mli prtools.mli "$(DESTDIR)$(LIBDIR)/camlp5/."
-	cp mLast.cmi quotation.cmi pcaml.cmi prtools.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp mLast.mli quotation.mli pcaml.mli prtools.mli reloc.mli "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp mLast.cmi quotation.cmi pcaml.cmi prtools.cmi reloc.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
 	cp camlp5.cma "$(DESTDIR)$(LIBDIR)/camlp5/."
 	if test -f camlp5.cmxa; then \
 	  cp camlp5.cmxa "$(DESTDIR)$(LIBDIR)/camlp5/."; \

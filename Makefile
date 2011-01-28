@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.12 2010/12/05 00:58:48 deraugla Exp $
+# $Id: Makefile,v 6.13 2011/01/28 08:51:53 deraugla Exp $
 
 include config/Makefile
 
@@ -193,10 +193,7 @@ new_sources:
 	cd etc; $(MAKE) $(PR_O)
 	@-for i in $(FDIRS); do \
 	  (mkdir ocaml_src.new/$$i; cd ocaml_src.new/$$i; \
-	   echo ============================================; \
-	   echo ocaml_src.new/$$i/Makefile; \
-	   sed 's/# $$Id.*\$$/# $(TXTGEN)/' ../../$$i/Makefile | \
-	   sed 's-^TOP=..$$-TOP=../..-' > Makefile; \
+	   $(MAKE) $(NO_PR_DIR) new_source DIR=$$i FILE=$$j; \
 	   echo ============================================; \
 	   echo ocaml_src.new/$$i/.depend; \
 	   cp ../../$$i/.depend .); \
@@ -220,21 +217,22 @@ new_source:
 	fi; \
 	echo ============================================; \
 	echo ocaml_src.new/$$DIR/$$k; \
-	../tools/conv.sh $(PR_O) $$opt $$FILE | \
-	sed 's/$$Id.*\$$/$(TXTGEN)/' > \
+	if [ "$$k" = "Makefile" ]; then \
+	  sed 's/# $$Id.*\$$/# $(TXTGEN)/' Makefile | \
+	  sed 's-^TOP=..$$-TOP=../..-'; \
+	else \
+	  ../tools/conv.sh $(PR_O) $$opt $$FILE | \
+	  sed 's/$$Id.*\$$/$(TXTGEN)/'; \
+	fi > \
 	../ocaml_src.new/$$DIR/$$k
 
 compare_sources:
 	cd etc; $(MAKE) $(PR_O)
 	@-for i in $(FDIRS); do \
-	  (cd ocaml_src/$$i; \
-	   echo ============================================; \
-	   echo ocaml_src/$$i/Makefile; \
-	   sed 's/# $$Id.*\$$/# $(TXTGEN)/' ../../$$i/Makefile | \
-	   sed 's-^TOP=..$$-TOP=../..-' | diff Makefile -; \
+	   $(MAKE) $(NO_PR_DIR) compare_source DIR=$$i FILE=Makefile; \
 	   echo ============================================; \
 	   echo ocaml_src/$$i/.depend; \
-	   diff $(DIFF_OPT) . ../../$$i/.depend); \
+	   (cd ocaml_src/$$i; diff $(DIFF_OPT) . ../../$$i/.depend); \
 	 done
 	@-for i in $(FDIRS); do \
           files="$$(cd $$i; ls *.ml*)"; \
@@ -252,8 +250,13 @@ compare_source:
 	fi; \
 	echo ============================================; \
 	echo ocaml_src/$$DIR/$$k; \
-	../tools/conv.sh $(PR_O) $$opt $$FILE | \
-	sed 's/$$Id.*\$$/$(TXTGEN)/' | \
+	if [ "$$k" = "Makefile" ]; then \
+	  sed 's/# $$Id.*\$$/# $(TXTGEN)/' Makefile | \
+	  sed 's-^TOP=..$$-TOP=../..-'; \
+	else \
+	  ../tools/conv.sh $(PR_O) $$opt $$FILE | \
+	  sed 's/$$Id.*\$$/$(TXTGEN)/'; \
+	fi | \
 	diff $(DIFF_OPT) ../ocaml_src/$$DIR/$$k - || :
 
 bootstrap_all_versdep:

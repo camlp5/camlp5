@@ -1,7 +1,9 @@
 Camlp5 Version 6.02.2:
 ----------------------
 
-* [26 Jan 10] Fixed bug in camlp5o.opt: did not accept '$' as token.
+* [28 Jan 11] Added installed module 'Reloc': relocations and equalities
+  over syntax trees.
+* [26 Jan 11] Fixed bug in camlp5o.opt: did not accept '$' as token.
 * [18 Jan 11] Fixed bug: private flags in type manifest were not correctly
   treated.
 * [06 Dec 10] Fixed bug in pr_o.cmo: label expressions were not correctly
