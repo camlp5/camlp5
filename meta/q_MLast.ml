@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.30 2011/02/04 17:47:46 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.31 2011/02/04 18:00:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1248,16 +1248,11 @@ EXTEND
   name_tag:
     [ [ "`"; i = ident -> i ] ]
   ;
-  patt_tcon:
-    [ [ p = patt -> p
-      | p = patt; ":"; t = ctyp -> Qast.Node "PaTyc" [Qast.Loc; p; t] ] ]
-  ;
   patt: LEVEL "simple"
     [ [ "`"; s = SV ident "" -> Qast.Node "PaVrn" [Qast.Loc; s]
       | "#"; sl = SV mod_ident "list" "" -> Qast.Node "PaTyp" [Qast.Loc; sl]
-      | "~"; "{"; p = patt_tcon; po = SV (OPT [ "="; p = patt -> p ]); "}" ->
-          Qast.Node "PaLab"
-            [Qast.Loc; Qast.VaVal (Qast.List [Qast.Tuple [p; po]])]
+      | "~"; "{"; lppo = SV (LIST1 patt_tcon_opt_eq_patt SEP ";"); "}" ->
+          Qast.Node "PaLab" [Qast.Loc; lppo]
       | "?"; "{"; p = patt_tcon; eo = SV (OPT [ "="; e = expr -> e ]); "}" ->
           Qast.Node "PaOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
@@ -1282,14 +1277,17 @@ EXTEND
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
   ;
-  ipatt_tcon:
-    [ [ p = ipatt -> p
-      | p = ipatt; ":"; t = ctyp -> Qast.Node "PaTyc" [Qast.Loc; p; t] ] ]
+  patt_tcon_opt_eq_patt:
+    [ [ p = patt_tcon; po = SV (OPT [ "="; p = patt -> p ]) ->
+          Qast.Tuple [p; po] ] ]
+  ;
+  patt_tcon:
+    [ [ p = patt -> p
+      | p = patt; ":"; t = ctyp -> Qast.Node "PaTyc" [Qast.Loc; p; t] ] ]
   ;
   ipatt:
-    [ [ "~"; "{"; p = ipatt_tcon; po = SV (OPT [ "="; p = patt -> p ]); "}" ->
-          Qast.Node "PaLab"
-            [Qast.Loc; Qast.VaVal (Qast.List [Qast.Tuple [p; po]])]
+    [ [ "~"; "{"; lppo = SV (LIST1 ipatt_tcon_opt_eq_patt SEP ";"); "}" ->
+          Qast.Node "PaLab" [Qast.Loc; lppo]
       | "?"; "{"; p = ipatt_tcon; eo = SV (OPT [ "="; e = expr -> e ]); "}" ->
           Qast.Node "PaOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
@@ -1313,6 +1311,14 @@ EXTEND
       | p = patt_option_label ->
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
+  ;
+  ipatt_tcon_opt_eq_patt:
+    [ [ p = ipatt_tcon; po = SV (OPT [ "="; p = patt -> p ]) ->
+          Qast.Tuple [p; po] ] ]
+  ;
+  ipatt_tcon:
+    [ [ p = ipatt -> p
+      | p = ipatt; ":"; t = ctyp -> Qast.Node "PaTyc" [Qast.Loc; p; t] ] ]
   ;
   patt_option_label:
     [ [ i = SV QUESTIONIDENTCOLON "?:" a_qic; "("; j = SV LIDENT; ":";

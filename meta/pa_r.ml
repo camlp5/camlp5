@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.32 2010/11/23 15:48:12 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.33 2011/02/04 18:00:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -849,18 +849,13 @@ EXTEND
   name_tag:
     [ [ "`"; i = ident -> i ] ]
   ;
-  patt_tcon:
-    [ [ p = patt -> p
-      | p = patt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >> ] ]
-  ;
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:patt< ` $_:s$ >>
       | "#"; sl = V mod_ident "list" "" -> <:patt< # $_:sl$ >>
-      | "~"; "{"; p = patt_tcon; po = V (OPT [ "="; p = patt -> p ]); "}" ->
-          <:patt< ~{$p$ $_opt:po$ } >>
+      | "~"; "{"; lppo = V (LIST1 patt_tcon_opt_eq_patt SEP ";"); "}" ->
+          <:patt< ~{$_list:lppo$} >>
       | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
           <:patt< ?{$p$ $_opt:eo$ } >>
-
       | i = V TILDEIDENTCOLON; p = SELF ->
           let _ = warning_deprecated_since_6_00 loc in
           <:patt< ~{$_lid:i$ = $p$} >>
@@ -871,13 +866,16 @@ EXTEND
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
   ;
-  ipatt_tcon:
-    [ [ p = ipatt -> p
-      | p = ipatt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >> ] ]
+  patt_tcon_opt_eq_patt:
+    [ [ p = patt_tcon; po = V (OPT [ "="; p = patt -> p ]) -> (p, po) ] ]
+  ;
+  patt_tcon:
+    [ [ p = patt -> p
+      | p = patt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >> ] ]
   ;
   ipatt:
-    [ [ "~"; "{"; p = ipatt_tcon; po = V (OPT [ "="; p = patt -> p ]); "}" ->
-          <:patt< ~{$p$ $_opt:po$ } >>
+    [ [ "~"; "{"; lppo = V (LIST1 ipatt_tcon_opt_eq_patt SEP ";"); "}" ->
+          <:patt< ~{$_list:lppo$} >>
       | "?"; "{"; p = ipatt_tcon; eo = V (OPT [ "="; e = expr -> e ]); "}" ->
           <:patt< ?{$p$ $_opt:eo$ } >>
 
@@ -890,6 +888,13 @@ EXTEND
       | p = patt_option_label ->
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
+  ;
+  ipatt_tcon_opt_eq_patt:
+    [ [ p = ipatt_tcon; po = V (OPT [ "="; p = patt -> p ]) -> (p, po) ] ]
+  ;
+  ipatt_tcon:
+    [ [ p = ipatt -> p
+      | p = ipatt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >> ] ]
   ;
   patt_option_label:
     [ [ i = V QUESTIONIDENTCOLON; "("; j = V LIDENT; ":"; t = ctyp; "=";
