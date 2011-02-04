@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.27 2011/01/18 01:02:43 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.28 2011/02/04 17:47:46 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -594,7 +594,7 @@ value rec patt =
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
   | PaInt loc s c -> mkpat loc (Ppat_constant (mkintconst loc (uv s) c))
   | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float (uv s)))
-  | PaLab loc _ _ -> error loc "labeled pattern not allowed here"
+  | PaLab loc _ -> error loc "labeled pattern not allowed here"
   | PaLaz loc p ->
       match ocaml_ppat_lazy with
       [ Some ppat_lazy -> mkpat loc (ppat_lazy (patt p))
@@ -852,20 +852,24 @@ value rec expr =
       mkexp loc (Pexp_for (uv i) (expr e1) (expr e2) df (expr e3))
   | ExFun loc pel ->
       match uv pel with
-      [ [(PaLab _ p po, w, e)] ->
-          let lab =
-            match p with
-            [ PaLid _ lab -> uv lab
-            | PaTyc _ (PaLid _ lab) _ -> uv lab
-            | _ -> error loc "not impl label for that patt 1" ]
-          in
-          let p =
-            match uv po with
-            [ Some p -> p
-            | None -> p ]
-          in
-          mkexp loc
-            (ocaml_pexp_function lab None [(patt p, when_expr e (uv w))])
+      [ [(PaLab ploc lppo, w, e)] ->
+          match uv lppo with
+          [ [(p, po)] -> do {
+              let lab =
+                match p with
+                [ PaLid _ lab -> uv lab
+                | PaTyc _ (PaLid _ lab) _ -> uv lab
+                | _ -> error loc "not impl label for that patt 1" ]
+              in
+              let p =
+                match uv po with
+                [ Some p -> p
+                | None -> p ]
+              in
+              mkexp loc
+                (ocaml_pexp_function lab None [(patt p, when_expr e (uv w))])
+            }
+          | [] | [_ :: _] -> error ploc "case multi lab not yet impl" ]
       | [(PaNty loc s, w, e)] ->
           match ocaml_pexp_newtype with
           [ Some newtype ->
@@ -1329,20 +1333,24 @@ and class_expr =
             (pcl_constr
                (long_id_of_string_list loc (uv id)) (List.map ctyp (uv tl)))
       | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc (PaLab _ p po) ce ->
+  | CeFun loc (PaLab ploc lppo) ce ->
       match ocaml_pcl_fun with
       [ Some pcl_fun ->
-          let _ =
-            match uv po with
-            [ Some _ -> error loc "label not implemented in that case 1"
-            | None -> None ]
-          in
-          let lab =
-            match p with
-            [ PaLid _ s -> uv s
-            | p -> error loc "label not implemented in that case 2" ]
-          in
-          mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
+          match uv lppo with
+          [ [(p, po)] -> do {
+              let _ =
+                match uv po with
+                [ Some _ -> error loc "label not implemented in that case 1"
+                | None -> None ]
+              in
+              let lab =
+                match p with
+                [ PaLid _ s -> uv s
+                | p -> error loc "label not implemented in that case 2" ]
+              in
+              mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
+          }
+        | [] | [_ :: _] -> error ploc "case class multi lab not yet impl" ]
       | None -> error loc "no class expr desc in this ocaml version" ]
   | CeFun loc (PaOlb _ p eo) ce ->
       match ocaml_pcl_fun with

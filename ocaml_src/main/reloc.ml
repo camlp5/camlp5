@@ -119,9 +119,14 @@ and patt floc sh =
     | PaChr (loc, x1) -> let loc = floc loc in PaChr (loc, x1)
     | PaFlo (loc, x1) -> let loc = floc loc in PaFlo (loc, x1)
     | PaInt (loc, x1, x2) -> let loc = floc loc in PaInt (loc, x1, x2)
-    | PaLab (loc, x1, x2) ->
+    | PaLab (loc, x1) ->
         let loc = floc loc in
-        PaLab (loc, self x1, vala_map (option_map self) x2)
+        PaLab
+          (loc,
+           vala_map
+             (List.map
+                (fun (x1, x2) -> self x1, vala_map (option_map self) x2))
+             x1)
     | PaLaz (loc, x1) -> let loc = floc loc in PaLaz (loc, self x1)
     | PaLid (loc, x1) -> let loc = floc loc in PaLid (loc, x1)
     | PaNty (loc, x1) -> let loc = floc loc in PaNty (loc, x1)

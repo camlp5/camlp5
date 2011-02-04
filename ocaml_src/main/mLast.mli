@@ -61,7 +61,7 @@ and patt =
   | PaChr of loc * string
   | PaFlo of loc * string
   | PaInt of loc * string * string
-  | PaLab of loc * patt * patt option
+  | PaLab of loc * (patt * patt option) list
   | PaLaz of loc * patt
   | PaLid of loc * string
   | PaNty of loc * string

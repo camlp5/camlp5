@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.29 2010/11/23 15:48:12 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.30 2011/02/04 17:47:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1256,19 +1256,28 @@ EXTEND
     [ [ "`"; s = SV ident "" -> Qast.Node "PaVrn" [Qast.Loc; s]
       | "#"; sl = SV mod_ident "list" "" -> Qast.Node "PaTyp" [Qast.Loc; sl]
       | "~"; "{"; p = patt_tcon; po = SV (OPT [ "="; p = patt -> p ]); "}" ->
-          Qast.Node "PaLab" [Qast.Loc; p; po]
+          Qast.Node "PaLab"
+            [Qast.Loc; Qast.VaVal (Qast.List [Qast.Tuple [p; po]])]
       | "?"; "{"; p = patt_tcon; eo = SV (OPT [ "="; e = expr -> e ]); "}" ->
           Qast.Node "PaOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
           let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
-            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
-             Qast.VaVal (Qast.Option (Some p))]
+            [Qast.Loc;
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple
+                     [Qast.Node "PaLid" [Qast.Loc; i];
+                      Qast.VaVal (Qast.Option (Some p))]])]
       | i = SV TILDEIDENT "~" a_ti ->
           let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
-            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
-             Qast.VaVal (Qast.Option None)]
+            [Qast.Loc;
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple
+                     [Qast.Node "PaLid" [Qast.Loc; i];
+                      Qast.VaVal (Qast.Option None)]])]
       | p = patt_option_label ->
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
@@ -1279,19 +1288,28 @@ EXTEND
   ;
   ipatt:
     [ [ "~"; "{"; p = ipatt_tcon; po = SV (OPT [ "="; p = patt -> p ]); "}" ->
-          Qast.Node "PaLab" [Qast.Loc; p; po]
+          Qast.Node "PaLab"
+            [Qast.Loc; Qast.VaVal (Qast.List [Qast.Tuple [p; po]])]
       | "?"; "{"; p = ipatt_tcon; eo = SV (OPT [ "="; e = expr -> e ]); "}" ->
           Qast.Node "PaOlb" [Qast.Loc; p; eo]
       | i = SV TILDEIDENTCOLON "~:" a_tic; p = SELF ->
           let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
-            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
-             Qast.VaVal (Qast.Option (Some p))]
+            [Qast.Loc;
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple
+                     [Qast.Node "PaLid" [Qast.Loc; i];
+                      Qast.VaVal (Qast.Option (Some p))]])]
       | i = SV TILDEIDENT "~" a_ti ->
           let _ = warning_deprecated_since_6_00 loc in
           Qast.Node "PaLab"
-            [Qast.Loc; Qast.Node "PaLid" [Qast.Loc; i];
-             Qast.VaVal (Qast.Option None)]
+            [Qast.Loc;
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple
+                     [Qast.Node "PaLid" [Qast.Loc; i];
+                      Qast.VaVal (Qast.Option None)]])]
       | p = patt_option_label ->
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]

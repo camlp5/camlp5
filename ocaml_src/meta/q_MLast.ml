@@ -6178,8 +6178,12 @@ Grammar.extend
            (let _ = warning_deprecated_since_6_00 loc in
             Qast.Node
               ("PaLab",
-               [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
-                Qast.VaVal (Qast.Option None)]) :
+               [Qast.Loc;
+                Qast.VaVal
+                  (Qast.List
+                     [Qast.Tuple
+                        [Qast.Node ("PaLid", [Qast.Loc; i]);
+                         Qast.VaVal (Qast.Option None)]])]) :
             'patt));
       [Gramext.Sfacto
          (Gramext.srules
@@ -6205,8 +6209,12 @@ Grammar.extend
            (let _ = warning_deprecated_since_6_00 loc in
             Qast.Node
               ("PaLab",
-               [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
-                Qast.VaVal (Qast.Option (Some p))]) :
+               [Qast.Loc;
+                Qast.VaVal
+                  (Qast.List
+                     [Qast.Tuple
+                        [Qast.Node ("PaLid", [Qast.Loc; i]);
+                         Qast.VaVal (Qast.Option (Some p))]])]) :
             'patt));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("", "{");
        Gramext.Snterm
@@ -6261,7 +6269,10 @@ Grammar.extend
        Gramext.Stoken ("", "}")],
       Gramext.action
         (fun _ (po : 'e__195) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
-           (Qast.Node ("PaLab", [Qast.Loc; p; po]) : 'patt));
+           (Qast.Node
+              ("PaLab",
+               [Qast.Loc; Qast.VaVal (Qast.List [Qast.Tuple [p; po]])]) :
+            'patt));
       [Gramext.Stoken ("", "#");
        Gramext.Sfacto
          (Gramext.srules
@@ -6347,8 +6358,12 @@ Grammar.extend
            (let _ = warning_deprecated_since_6_00 loc in
             Qast.Node
               ("PaLab",
-               [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
-                Qast.VaVal (Qast.Option None)]) :
+               [Qast.Loc;
+                Qast.VaVal
+                  (Qast.List
+                     [Qast.Tuple
+                        [Qast.Node ("PaLid", [Qast.Loc; i]);
+                         Qast.VaVal (Qast.Option None)]])]) :
             'ipatt));
       [Gramext.Sfacto
          (Gramext.srules
@@ -6374,8 +6389,12 @@ Grammar.extend
            (let _ = warning_deprecated_since_6_00 loc in
             Qast.Node
               ("PaLab",
-               [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
-                Qast.VaVal (Qast.Option (Some p))]) :
+               [Qast.Loc;
+                Qast.VaVal
+                  (Qast.List
+                     [Qast.Tuple
+                        [Qast.Node ("PaLid", [Qast.Loc; i]);
+                         Qast.VaVal (Qast.Option (Some p))]])]) :
             'ipatt));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("", "{");
        Gramext.Snterm
@@ -6430,7 +6449,10 @@ Grammar.extend
        Gramext.Stoken ("", "}")],
       Gramext.action
         (fun _ (po : 'e__201) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
-           (Qast.Node ("PaLab", [Qast.Loc; p; po]) : 'ipatt))]];
+           (Qast.Node
+              ("PaLab",
+               [Qast.Loc; Qast.VaVal (Qast.List [Qast.Tuple [p; po]])]) :
+            'ipatt))]];
     Grammar.Entry.obj
       (patt_option_label : 'patt_option_label Grammar.Entry.e),
     None,

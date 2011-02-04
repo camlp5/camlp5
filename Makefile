@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.13 2011/01/28 08:51:53 deraugla Exp $
+# $Id: Makefile,v 6.14 2011/02/04 17:47:46 deraugla Exp $
 
 include config/Makefile
 
@@ -192,11 +192,11 @@ bootstrap_source:
 new_sources:
 	cd etc; $(MAKE) $(PR_O)
 	@-for i in $(FDIRS); do \
-	  (mkdir ocaml_src.new/$$i; cd ocaml_src.new/$$i; \
-	   $(MAKE) $(NO_PR_DIR) new_source DIR=$$i FILE=$$j; \
+	   mkdir ocaml_src.new/$$i; \
+	   $(MAKE) $(NO_PR_DIR) new_source DIR=$$i FILE=Makefile; \
 	   echo ============================================; \
 	   echo ocaml_src.new/$$i/.depend; \
-	   cp ../../$$i/.depend .); \
+           (cd ocaml_src.new/$$i; cp ../../$$i/.depend .); \
 	 done
 	@-mkdir ocaml_src.new/lib/versdep
 	@-(cd ocaml_src/lib/versdep; \

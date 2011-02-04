@@ -2554,13 +2554,13 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (let _ = warning_deprecated_since_6_00 loc in
-            MLast.PaLab (loc, MLast.PaLid (loc, i), None) :
+            MLast.PaLab (loc, [MLast.PaLid (loc, i), None]) :
             'patt));
       [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
         (fun (p : 'patt) (i : string) (loc : Ploc.t) ->
            (let _ = warning_deprecated_since_6_00 loc in
-            MLast.PaLab (loc, MLast.PaLid (loc, i), Some p) :
+            MLast.PaLab (loc, [MLast.PaLid (loc, i), Some p]) :
             'patt));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("", "{");
        Gramext.Snterm
@@ -2589,7 +2589,7 @@ Grammar.extend
        Gramext.Stoken ("", "}")],
       Gramext.action
         (fun _ (po : 'e__11 option) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
-           (MLast.PaLab (loc, p, po) : 'patt));
+           (MLast.PaLab (loc, [p, po]) : 'patt));
       [Gramext.Stoken ("", "#");
        Gramext.Snterm
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
@@ -2623,13 +2623,13 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (let _ = warning_deprecated_since_6_00 loc in
-            MLast.PaLab (loc, MLast.PaLid (loc, i), None) :
+            MLast.PaLab (loc, [MLast.PaLid (loc, i), None]) :
             'ipatt));
       [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
         (fun (p : 'ipatt) (i : string) (loc : Ploc.t) ->
            (let _ = warning_deprecated_since_6_00 loc in
-            MLast.PaLab (loc, MLast.PaLid (loc, i), Some p) :
+            MLast.PaLab (loc, [MLast.PaLid (loc, i), Some p]) :
             'ipatt));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("", "{");
        Gramext.Snterm
@@ -2658,7 +2658,7 @@ Grammar.extend
        Gramext.Stoken ("", "}")],
       Gramext.action
         (fun _ (po : 'e__13 option) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
-           (MLast.PaLab (loc, p, po) : 'ipatt))]];
+           (MLast.PaLab (loc, [p, po]) : 'ipatt))]];
     Grammar.Entry.obj
       (patt_option_label : 'patt_option_label Grammar.Entry.e),
     None,

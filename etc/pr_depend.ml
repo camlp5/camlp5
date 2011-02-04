@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.10 2010/11/21 17:17:45 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.11 2011/02/04 17:47:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -87,8 +87,8 @@ value rec patt =
   | <:patt< [| $list:pl$ |] >> -> list patt pl
   | PaChr _ _ -> ()
   | PaInt _ _ _ -> ()
-  | PaLab _ _ po -> option patt (Pcaml.unvala po)
-  | PaLid _ _ -> ()
+  | <:patt< ~{$_$ $opt:po$} >> -> option patt po
+  | <:patt< $lid:_$ >> -> ()
   | <:patt< ?{$_$ = $e$} >> -> expr e
   | <:patt< ?{$_$} >> -> ()
   | <:patt< $p1$ | $p2$ >> -> do { patt p1; patt p2 }
