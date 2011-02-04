@@ -1001,23 +1001,21 @@ let rec expr =
   | ExFun (loc, pel) ->
       begin match uv pel with
         [PaLab (ploc, lppo), w, e] ->
-          begin match uv lppo with
-            [p, po] ->
-              let lab =
-                match p with
-                  PaLid (_, lab) -> uv lab
-                | PaTyc (_, PaLid (_, lab), _) -> uv lab
-                | _ -> error loc "not impl label for that patt 1"
-              in
-              let p =
-                match uv po with
-                  Some p -> p
-                | None -> p
-              in
-              mkexp loc
-                (ocaml_pexp_function lab None [patt p, when_expr e (uv w)])
-          | [] | _ :: _ -> error ploc "case multi lab not yet impl"
-          end
+          List.fold_right
+            (fun (p, po) e ->
+               let lab =
+                 match p with
+                   PaLid (_, lab) -> uv lab
+                 | PaTyc (_, PaLid (_, lab), _) -> uv lab
+                 | _ -> error loc "not impl label for that patt 1"
+               in
+               let p =
+                 match uv po with
+                   Some p -> p
+                 | None -> p
+               in
+               mkexp loc (ocaml_pexp_function lab None [patt p, e]))
+            (uv lppo) (when_expr e (uv w))
       | [PaNty (loc, s), w, e] ->
           begin match ocaml_pexp_newtype with
             Some newtype ->

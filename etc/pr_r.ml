@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.69 2011/02/04 17:47:46 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.70 2011/02/04 18:34:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -88,7 +88,8 @@ value rec is_irrefut_patt =
   | <:patt< (type $lid:_$) >> -> True
   | <:patt< (module $uid:_$ : $_$) >> -> True
   | <:patt< (module $uid:_$) >> -> True
-  | <:patt< ~{$p$ $opt:_$} >> -> is_irrefut_patt p
+  | <:patt< ~{$list:lppo$} >> ->
+      List.for_all (fun (p, _) -> is_irrefut_patt p) lppo
   | <:patt< ?{$p$ $opt:_$} >> -> is_irrefut_patt p
   | _ -> False ]
 ;

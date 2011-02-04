@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 6.16 2010/11/21 17:17:45 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 6.17 2011/02/04 18:34:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -225,6 +225,12 @@ value ipatt_tcon_fun_binding pc (p, eo) =
   | None -> patt pc p ]
 ;
 
+value ipatt_tcon_opt_eq_patt pc (p, po) =
+  match Pcaml.unvala po with
+  [ Some p2 -> pprintf pc "%p =@;%p" patt p patt p2
+  | None -> patt pc p ]
+;
+
 value rec class_longident pc cl =
   match cl with
   [ [] -> pprintf pc ""
@@ -271,8 +277,9 @@ value sig_method_or_method_virtual pc virt priv s t =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ~{$p1$ = $p2$} >> ->
-          pprintf pc "~{%p =@;%p}" patt p1 curr p2
+    [ [ <:patt< ~{$list:lpop$} >> ->
+          let lpoe = List.map (fun pop -> (pop, ";")) lpop in
+          pprintf pc "@[~{%p}@]" (plist ipatt_tcon_opt_eq_patt 1) lpoe
       | <:patt< ~{$p$} >> ->
           pprintf pc "~{%p}" patt p
 

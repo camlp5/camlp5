@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.49 2010/12/06 10:31:00 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.50 2011/02/04 18:34:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -78,7 +78,7 @@ value rec is_irrefut_patt =
   | <:patt< (type $lid:_$) >> -> True
   | <:patt< (module $uid:_$ : $_$) >> -> True
   | <:patt< (module $uid:_$) >> -> True
-  | <:patt< ~{$_$ $opt:_$} >> -> True
+  | <:patt< ~{$list:_$} >> -> True
   | <:patt< ?{$_$ $opt:_$} >> -> True
   | _ -> False ]
 ;
@@ -1958,13 +1958,17 @@ value simple_expr = Eprinter.apply_level pr_expr "simple";
 
 (* *)
 
+value label_ipatt_eq_patt curr pc (p, op) =
+  match Pcaml.unvala op with
+  [ Some p2 -> pprintf pc "~%p:%p" patt p curr p2
+  | None -> pprintf pc "~%p" patt p ]
+;
+
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ~{$p1$ = $p2$} >> ->
-          pprintf pc "~%p:%p" patt p1 curr p2
-      | <:patt< ~{$p$} >> ->
-          pprintf pc "~%p" patt p
-
+    [ [ <:patt< ~{$list:lpop$} >> ->
+          let lpop = List.map (fun poe -> (poe, "")) lpop in
+          pprintf pc "%p" (plist (label_ipatt_eq_patt curr) 1) lpop
       | <:patt< ?{$lid:p$ : $t$} >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
       | <:patt< ?{$lid:p$ : $t$ = $e$} >> ->

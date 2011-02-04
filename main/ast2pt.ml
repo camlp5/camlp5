@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.28 2011/02/04 17:47:46 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.29 2011/02/04 18:34:50 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -853,23 +853,22 @@ value rec expr =
   | ExFun loc pel ->
       match uv pel with
       [ [(PaLab ploc lppo, w, e)] ->
-          match uv lppo with
-          [ [(p, po)] -> do {
-              let lab =
-                match p with
-                [ PaLid _ lab -> uv lab
-                | PaTyc _ (PaLid _ lab) _ -> uv lab
-                | _ -> error loc "not impl label for that patt 1" ]
-              in
-              let p =
-                match uv po with
-                [ Some p -> p
-                | None -> p ]
-              in
-              mkexp loc
-                (ocaml_pexp_function lab None [(patt p, when_expr e (uv w))])
-            }
-          | [] | [_ :: _] -> error ploc "case multi lab not yet impl" ]
+          List.fold_right
+            (fun (p, po) e -> do {
+               let lab =
+                 match p with
+                 [ PaLid _ lab -> uv lab
+                 | PaTyc _ (PaLid _ lab) _ -> uv lab
+                 | _ -> error loc "not impl label for that patt 1" ]
+               in
+               let p =
+                 match uv po with
+                 [ Some p -> p
+                 | None -> p ]
+               in
+               mkexp loc (ocaml_pexp_function lab None [(patt p, e)])
+             })
+           (uv lppo) (when_expr e (uv w))
       | [(PaNty loc s, w, e)] ->
           match ocaml_pexp_newtype with
           [ Some newtype ->
