@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mapAst.ml,v 6.2 2011/02/16 19:21:53 deraugla Exp $ *)
+(* $Id: pa_mapAst.ml,v 6.3 2011/02/16 19:45:52 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mapAst.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -8,9 +8,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
-(*
 Pcaml.strict_mode.val := True;
-*)
 
 value param_f = "f";
 value field_of_constr = String.uncapitalize;
@@ -50,7 +48,8 @@ value rec expr_of_type gtn use_self loc t =
           (fun (rev_el, n, use_self) t ->
              let (e, n, use_self) =
                match t with
-               [ <:ctyp< loc >> -> (<:expr< floc loc >>, n, use_self)
+               [ <:ctyp< loc >> ->
+                   (<:expr< $lid:param_f$.mloc loc >>, n, use_self)
                | _ ->
                    let x = "x" ^ string_of_int n in
                    let e = <:expr< $lid:x$ >> in
@@ -126,7 +125,8 @@ value expr_of_cons_decl gtn use_self (loc, c, tl, rto) =
                let e = <:expr< $lid:x$ >> in
                let (e2, n, use_self) =
                  match t with
-                 [ <:ctyp< loc >> -> (<:expr< loc >>, n, use_self)
+                 [ <:ctyp< loc >> ->
+                     (<:expr< $lid:param_f$.mloc loc >>, n, use_self)
                  | _ ->
                      let (e, use_self) =
                        match expr_of_type gtn use_self loc t with
@@ -247,6 +247,8 @@ value gen_mapast loc tdl =
   [ [{MLast.tdNam = <:vala< (_, <:vala< "ctyp" >>) >>} :: _] ->
       let td =
         let rev_ldl = List.fold_left ldl_of_td [] tdl in
+        let ld_loc = (loc, "mloc", False, <:ctyp< loc → loc >>) in
+        let rev_ldl = [ld_loc :: rev_ldl] in
         let td =
           let ls = (loc, <:vala< "map" >>) in
           <:type_decl< $tp:ls$ = {$list:List.rev rev_ldl$} >>
@@ -255,6 +257,8 @@ value gen_mapast loc tdl =
       in
       let vd =
         let rev_pel = List.fold_left lel_of_td [] tdl in
+        let pe_loc = (<:patt< mloc >>, <:expr< fun loc -> loc >>) in
+        let rev_pel = [pe_loc :: rev_pel] in
         let loc = Ploc.with_comment loc "\n" in
         <:str_item< value def = {$list:List.rev rev_pel$} >>
       in
