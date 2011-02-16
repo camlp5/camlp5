@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mapAst.ml,v 6.3 2011/02/16 19:45:52 deraugla Exp $ *)
+(* $Id: pa_mapAst.ml,v 6.4 2011/02/16 20:39:55 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mapAst.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -74,7 +74,8 @@ value rec expr_of_type gtn use_self loc t =
             [ <:ctyp< list >> -> <:expr< List.map >>
             | <:ctyp< option >> -> <:expr< option_map >>
             | <:ctyp< Ploc.vala >> -> <:expr< vala_map >>
-            | <:ctyp< $lid:n$ >> -> <:expr< $lid:n^"_map"$ floc >>
+            | <:ctyp< $lid:n$ >> ->
+                <:expr< $lid:n^"_map"$ $lid:param_f$.mloc >>
             | _ -> <:expr< error >> ]
           in
           Some (<:expr< $f$ $e$ >>, use_self)
@@ -106,15 +107,19 @@ value expr_of_cons_decl gtn use_self (loc, c, tl, rto) =
     [ "ExAnt" ->
          let e =
            <:expr<
-             let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
-             expr new_floc sh x1 >>
+             let new_mloc loc1 =
+               $lid:param_f$.anti_loc ($lid:param_f$.mloc loc) loc loc1
+             in
+             expr {($lid:param_f$) with mloc = new_mloc} x1 >>
          in
          (e, use_self)
     | "PaAnt" ->
          let e =
            <:expr<
-             let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
-             patt new_floc sh x1 >>
+             let new_mloc loc1 =
+               $lid:param_f$.anti_loc ($lid:param_f$.mloc loc) loc loc1
+             in
+             patt {($lid:param_f$) with mloc = new_mloc} x1 >>
          in
          (e, use_self)
     | _ ->
@@ -248,9 +253,12 @@ value gen_mapast loc tdl =
       let td =
         let rev_ldl = List.fold_left ldl_of_td [] tdl in
         let ld_loc = (loc, "mloc", False, <:ctyp< loc → loc >>) in
-        let rev_ldl = [ld_loc :: rev_ldl] in
+        let ld_anti_loc =
+          (loc, "anti_loc", False, <:ctyp< loc → loc → loc → loc >>)
+        in
+        let rev_ldl = [ld_anti_loc; ld_loc :: rev_ldl] in
         let td =
-          let ls = (loc, <:vala< "map" >>) in
+          let ls = (loc, <:vala< "map_f" >>) in
           <:type_decl< $tp:ls$ = {$list:List.rev rev_ldl$} >>
         in
         <:str_item< type $list:[td]$ >>
@@ -258,9 +266,12 @@ value gen_mapast loc tdl =
       let vd =
         let rev_pel = List.fold_left lel_of_td [] tdl in
         let pe_loc = (<:patt< mloc >>, <:expr< fun loc -> loc >>) in
-        let rev_pel = [pe_loc :: rev_pel] in
+        let pe_anti_loc =
+          (<:patt< anti_loc >>, <:expr< fun qloc loc loc1 -> qloc >>)
+        in
+        let rev_pel = [pe_anti_loc; pe_loc :: rev_pel] in
         let loc = Ploc.with_comment loc "\n" in
-        <:str_item< value def = {$list:List.rev rev_pel$} >>
+        <:str_item< value rec def = {$list:List.rev rev_pel$} >>
       in
       let pel =
         List.map

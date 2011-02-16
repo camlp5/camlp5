@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.3 2011/02/16 19:45:52 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.4 2011/02/16 20:39:55 deraugla Exp $ *)
 
 #load "pa_macro.cmo";
 
@@ -21,7 +21,15 @@ value vala_map f =
   END
 ;
 
-type map =
+value class_infos_map mloc f x =
+  {ciLoc = mloc x.ciLoc; ciVir = x.ciVir;
+   ciPrm =
+     let (x1, x2) = x.ciPrm in
+     (mloc x1, x2);
+   ciNam = x.ciNam; ciExp = f x.ciExp}
+;
+
+type map_f =
   { tyAcc : loc → ctyp → ctyp → ctyp;
     tyAli : loc → ctyp → ctyp → ctyp;
     tyAny : loc → ctyp;
@@ -254,10 +262,11 @@ type map =
       loc → Ploc.vala bool → Ploc.vala string → ctyp → class_str_item;
     crVir :
       loc → Ploc.vala bool → Ploc.vala string → ctyp → class_str_item;
-    mloc : loc → loc }
+    mloc : loc → loc;
+    anti_loc : loc → loc → loc → loc }
 ;
 
-value def =
+value rec def =
   {tyAcc loc x1 x2 = TyAcc loc x1 x2; tyAli loc x1 x2 = TyAli loc x1 x2;
    tyAny loc = TyAny loc; tyApp loc x1 x2 = TyApp loc x1 x2;
    tyArr loc x1 x2 = TyArr loc x1 x2; tyCls loc x1 = TyCls loc x1;
@@ -344,7 +353,8 @@ value def =
    crMth loc x1 x2 x3 x4 x5 = CrMth loc x1 x2 x3 x4 x5;
    crVal loc x1 x2 x3 x4 = CrVal loc x1 x2 x3 x4;
    crVav loc x1 x2 x3 = CrVav loc x1 x2 x3;
-   crVir loc x1 x2 x3 = CrVir loc x1 x2 x3; mloc loc = loc}
+   crVir loc x1 x2 x3 = CrVir loc x1 x2 x3; mloc loc = loc;
+   anti_loc qloc loc loc1 = qloc}
 ;
 
 value rec ctyp f =
@@ -398,8 +408,8 @@ and patt f =
     [ PaAcc loc x1 x2 -> f.paAcc (f.mloc loc) (self x1) (self x2)
     | PaAli loc x1 x2 -> f.paAli (f.mloc loc) (self x1) (self x2)
     | PaAnt loc x1 ->
-        let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
-        patt new_floc sh x1
+        let new_mloc loc1 = f.anti_loc (f.mloc loc) loc loc1 in
+        patt {(f) with mloc = new_mloc} x1
     | PaAny loc -> f.paAny (f.mloc loc)
     | PaApp loc x1 x2 -> f.paApp (f.mloc loc) (self x1) (self x2)
     | PaArr loc x1 -> f.paArr (f.mloc loc) (vala_map (List.map self) x1)
@@ -437,8 +447,8 @@ and patt f =
     fun
     [ ExAcc loc x1 x2 -> f.exAcc (f.mloc loc) (self x1) (self x2)
     | ExAnt loc x1 ->
-        let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
-        expr new_floc sh x1
+        let new_mloc loc1 = f.anti_loc (f.mloc loc) loc loc1 in
+        expr {(f) with mloc = new_mloc} x1
     | ExApp loc x1 x2 -> f.exApp (f.mloc loc) (self x1) (self x2)
     | ExAre loc x1 x2 -> f.exAre (f.mloc loc) (self x1) (self x2)
     | ExArr loc x1 -> f.exArr (f.mloc loc) (vala_map (List.map self) x1)
@@ -540,10 +550,10 @@ and patt f =
     fun
     [ SgCls loc x1 ->
         f.sgCls (f.mloc loc)
-          (vala_map (List.map (class_infos_map floc (class_type f))) x1)
+          (vala_map (List.map (class_infos_map f.mloc (class_type f))) x1)
     | SgClt loc x1 ->
         f.sgClt (f.mloc loc)
-          (vala_map (List.map (class_infos_map floc (class_type f))) x1)
+          (vala_map (List.map (class_infos_map f.mloc (class_type f))) x1)
     | SgDcl loc x1 -> f.sgDcl (f.mloc loc) (vala_map (List.map self) x1)
     | SgDir loc x1 x2 ->
         f.sgDir (f.mloc loc) x1 (vala_map (option_map (expr f)) x2)
@@ -590,10 +600,10 @@ and module_expr f =
     fun
     [ StCls loc x1 ->
         f.stCls (f.mloc loc)
-          (vala_map (List.map (class_infos_map floc (class_expr f))) x1)
+          (vala_map (List.map (class_infos_map f.mloc (class_expr f))) x1)
     | StClt loc x1 ->
         f.stClt (f.mloc loc)
-          (vala_map (List.map (class_infos_map floc (class_type f))) x1)
+          (vala_map (List.map (class_infos_map f.mloc (class_type f))) x1)
     | StDcl loc x1 -> f.stDcl (f.mloc loc) (vala_map (List.map self) x1)
     | StDir loc x1 x2 ->
         f.stDir (f.mloc loc) x1 (vala_map (option_map (expr f)) x2)
