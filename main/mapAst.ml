@@ -1,7 +1,19 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.1 2011/02/16 19:06:26 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.2 2011/02/16 19:21:53 deraugla Exp $ *)
+
+#load "pa_macro.cmo";
 
 open MLast;
+
+value vala_map f =
+  IFNDEF STRICT THEN
+    fun x -> f x
+  ELSE
+    fun
+    [ Ploc.VaAnt s -> Ploc.VaAnt s
+    | Ploc.VaVal x -> Ploc.VaVal (f x) ]
+  END
+;
 
 type map =
   { tyAcc : loc → ctyp → ctyp → ctyp;
@@ -240,59 +252,93 @@ type map =
 ;
 
 value def =
-  {tyAcc loc x1 x2 = e; tyAli loc x1 x2 = e; tyAny loc = e;
-   tyApp loc x1 x2 = e; tyArr loc x1 x2 = e; tyCls loc x1 = e;
-   tyLab loc x1 x2 = e; tyLid loc x1 = e; tyMan loc x1 x2 x3 = e;
-   tyObj loc x1 x2 = e; tyOlb loc x1 x2 = e; tyPck loc x1 = e;
-   tyPol loc x1 x2 = e; tyPot loc x1 x2 = e; tyQuo loc x1 = e;
-   tyRec loc x1 = e; tySum loc x1 = e; tyTup loc x1 = e; tyUid loc x1 = e;
-   tyVrn loc x1 x2 = e; tyXtr loc x1 x2 = e; pvTag loc x1 x2 x3 = e;
-   pvInh loc x1 = e; paAcc loc x1 x2 = e; paAli loc x1 x2 = e;
-   paAnt loc x1 = e; paAny loc = e; paApp loc x1 x2 = e; paArr loc x1 = e;
-   paChr loc x1 = e; paFlo loc x1 = e; paInt loc x1 x2 = e; paLab loc x1 = e;
-   paLaz loc x1 = e; paLid loc x1 = e; paNty loc x1 = e; paOlb loc x1 x2 = e;
-   paOrp loc x1 x2 = e; paRec loc x1 = e; paRng loc x1 x2 = e;
-   paStr loc x1 = e; paTup loc x1 = e; paTyc loc x1 x2 = e; paTyp loc x1 = e;
-   paUid loc x1 = e; paUnp loc x1 x2 = e; paVrn loc x1 = e;
-   paXtr loc x1 x2 = e; exAcc loc x1 x2 = e; exAnt loc x1 = e;
-   exApp loc x1 x2 = e; exAre loc x1 x2 = e; exArr loc x1 = e;
-   exAsr loc x1 = e; exAss loc x1 x2 = e; exBae loc x1 x2 = e;
-   exChr loc x1 = e; exCoe loc x1 x2 x3 = e; exFlo loc x1 = e;
-   exFor loc x1 x2 x3 x4 x5 = e; exFun loc x1 = e; exIfe loc x1 x2 x3 = e;
-   exInt loc x1 x2 = e; exLab loc x1 = e; exLaz loc x1 = e;
-   exLet loc x1 x2 x3 = e; exLid loc x1 = e; exLmd loc x1 x2 x3 = e;
-   exMat loc x1 x2 = e; exNew loc x1 = e; exObj loc x1 x2 = e;
-   exOlb loc x1 x2 = e; exOvr loc x1 = e; exPck loc x1 x2 = e;
-   exRec loc x1 x2 = e; exSeq loc x1 = e; exSnd loc x1 x2 = e;
-   exSte loc x1 x2 = e; exStr loc x1 = e; exTry loc x1 x2 = e;
-   exTup loc x1 = e; exTyc loc x1 x2 = e; exUid loc x1 = e; exVrn loc x1 = e;
-   exWhi loc x1 x2 = e; exXtr loc x1 x2 = e; mtAcc loc x1 x2 = e;
-   mtApp loc x1 x2 = e; mtFun loc x1 x2 x3 = e; mtLid loc x1 = e;
-   mtQuo loc x1 = e; mtSig loc x1 = e; mtTyo loc x1 = e; mtUid loc x1 = e;
-   mtWit loc x1 x2 = e; mtXtr loc x1 x2 = e; sgCls loc x1 = e;
-   sgClt loc x1 = e; sgDcl loc x1 = e; sgDir loc x1 x2 = e;
-   sgExc loc x1 x2 = e; sgExt loc x1 x2 x3 = e; sgInc loc x1 = e;
-   sgMod loc x1 x2 = e; sgMty loc x1 x2 = e; sgOpn loc x1 = e;
-   sgTyp loc x1 = e; sgUse loc x1 x2 = e; sgVal loc x1 x2 = e;
-   sgXtr loc x1 x2 = e; wcMod loc x1 x2 = e; wcMos loc x1 x2 = e;
-   wcTyp loc x1 x2 x3 x4 = e; wcTys loc x1 x2 x3 = e; meAcc loc x1 x2 = e;
-   meApp loc x1 x2 = e; meFun loc x1 x2 x3 = e; meStr loc x1 = e;
-   meTyc loc x1 x2 = e; meUid loc x1 = e; meUnp loc x1 x2 = e;
-   meXtr loc x1 x2 = e; stCls loc x1 = e; stClt loc x1 = e; stDcl loc x1 = e;
-   stDir loc x1 x2 = e; stExc loc x1 x2 x3 = e; stExp loc x1 = e;
-   stExt loc x1 x2 x3 = e; stInc loc x1 = e; stMod loc x1 x2 = e;
-   stMty loc x1 x2 = e; stOpn loc x1 = e; stTyp loc x1 = e;
-   stUse loc x1 x2 = e; stVal loc x1 x2 = e; stXtr loc x1 x2 = e;
-   ctAcc loc x1 x2 = e; ctApp loc x1 x2 = e; ctCon loc x1 x2 = e;
-   ctFun loc x1 x2 = e; ctIde loc x1 = e; ctSig loc x1 x2 = e;
-   ctXtr loc x1 x2 = e; cgCtr loc x1 x2 = e; cgDcl loc x1 = e;
-   cgInh loc x1 = e; cgMth loc x1 x2 x3 = e; cgVal loc x1 x2 x3 = e;
-   cgVir loc x1 x2 x3 = e; ceApp loc x1 x2 = e; ceCon loc x1 x2 = e;
-   ceFun loc x1 x2 = e; ceLet loc x1 x2 x3 = e; ceStr loc x1 x2 = e;
-   ceTyc loc x1 x2 = e; ceXtr loc x1 x2 = e; crCtr loc x1 x2 = e;
-   crDcl loc x1 = e; crInh loc x1 x2 = e; crIni loc x1 = e;
-   crMth loc x1 x2 x3 x4 x5 = e; crVal loc x1 x2 x3 x4 = e;
-   crVav loc x1 x2 x3 = e; crVir loc x1 x2 x3 = e}
+  {tyAcc loc x1 x2 = TyAcc loc x1 x2; tyAli loc x1 x2 = TyAli loc x1 x2;
+   tyAny loc = TyAny loc; tyApp loc x1 x2 = TyApp loc x1 x2;
+   tyArr loc x1 x2 = TyArr loc x1 x2; tyCls loc x1 = TyCls loc x1;
+   tyLab loc x1 x2 = TyLab loc x1 x2; tyLid loc x1 = TyLid loc x1;
+   tyMan loc x1 x2 x3 = TyMan loc x1 x2 x3; tyObj loc x1 x2 = TyObj loc x1 x2;
+   tyOlb loc x1 x2 = TyOlb loc x1 x2; tyPck loc x1 = TyPck loc x1;
+   tyPol loc x1 x2 = TyPol loc x1 x2; tyPot loc x1 x2 = TyPot loc x1 x2;
+   tyQuo loc x1 = TyQuo loc x1; tyRec loc x1 = TyRec loc x1;
+   tySum loc x1 = TySum loc x1; tyTup loc x1 = TyTup loc x1;
+   tyUid loc x1 = TyUid loc x1; tyVrn loc x1 x2 = TyVrn loc x1 x2;
+   tyXtr loc x1 x2 = TyXtr loc x1 x2; pvTag loc x1 x2 x3 = PvTag loc x1 x2 x3;
+   pvInh loc x1 = PvInh loc x1; paAcc loc x1 x2 = PaAcc loc x1 x2;
+   paAli loc x1 x2 = PaAli loc x1 x2; paAnt loc x1 = PaAnt loc x1;
+   paAny loc = PaAny loc; paApp loc x1 x2 = PaApp loc x1 x2;
+   paArr loc x1 = PaArr loc x1; paChr loc x1 = PaChr loc x1;
+   paFlo loc x1 = PaFlo loc x1; paInt loc x1 x2 = PaInt loc x1 x2;
+   paLab loc x1 = PaLab loc x1; paLaz loc x1 = PaLaz loc x1;
+   paLid loc x1 = PaLid loc x1; paNty loc x1 = PaNty loc x1;
+   paOlb loc x1 x2 = PaOlb loc x1 x2; paOrp loc x1 x2 = PaOrp loc x1 x2;
+   paRec loc x1 = PaRec loc x1; paRng loc x1 x2 = PaRng loc x1 x2;
+   paStr loc x1 = PaStr loc x1; paTup loc x1 = PaTup loc x1;
+   paTyc loc x1 x2 = PaTyc loc x1 x2; paTyp loc x1 = PaTyp loc x1;
+   paUid loc x1 = PaUid loc x1; paUnp loc x1 x2 = PaUnp loc x1 x2;
+   paVrn loc x1 = PaVrn loc x1; paXtr loc x1 x2 = PaXtr loc x1 x2;
+   exAcc loc x1 x2 = ExAcc loc x1 x2; exAnt loc x1 = ExAnt loc x1;
+   exApp loc x1 x2 = ExApp loc x1 x2; exAre loc x1 x2 = ExAre loc x1 x2;
+   exArr loc x1 = ExArr loc x1; exAsr loc x1 = ExAsr loc x1;
+   exAss loc x1 x2 = ExAss loc x1 x2; exBae loc x1 x2 = ExBae loc x1 x2;
+   exChr loc x1 = ExChr loc x1; exCoe loc x1 x2 x3 = ExCoe loc x1 x2 x3;
+   exFlo loc x1 = ExFlo loc x1;
+   exFor loc x1 x2 x3 x4 x5 = ExFor loc x1 x2 x3 x4 x5;
+   exFun loc x1 = ExFun loc x1; exIfe loc x1 x2 x3 = ExIfe loc x1 x2 x3;
+   exInt loc x1 x2 = ExInt loc x1 x2; exLab loc x1 = ExLab loc x1;
+   exLaz loc x1 = ExLaz loc x1; exLet loc x1 x2 x3 = ExLet loc x1 x2 x3;
+   exLid loc x1 = ExLid loc x1; exLmd loc x1 x2 x3 = ExLmd loc x1 x2 x3;
+   exMat loc x1 x2 = ExMat loc x1 x2; exNew loc x1 = ExNew loc x1;
+   exObj loc x1 x2 = ExObj loc x1 x2; exOlb loc x1 x2 = ExOlb loc x1 x2;
+   exOvr loc x1 = ExOvr loc x1; exPck loc x1 x2 = ExPck loc x1 x2;
+   exRec loc x1 x2 = ExRec loc x1 x2; exSeq loc x1 = ExSeq loc x1;
+   exSnd loc x1 x2 = ExSnd loc x1 x2; exSte loc x1 x2 = ExSte loc x1 x2;
+   exStr loc x1 = ExStr loc x1; exTry loc x1 x2 = ExTry loc x1 x2;
+   exTup loc x1 = ExTup loc x1; exTyc loc x1 x2 = ExTyc loc x1 x2;
+   exUid loc x1 = ExUid loc x1; exVrn loc x1 = ExVrn loc x1;
+   exWhi loc x1 x2 = ExWhi loc x1 x2; exXtr loc x1 x2 = ExXtr loc x1 x2;
+   mtAcc loc x1 x2 = MtAcc loc x1 x2; mtApp loc x1 x2 = MtApp loc x1 x2;
+   mtFun loc x1 x2 x3 = MtFun loc x1 x2 x3; mtLid loc x1 = MtLid loc x1;
+   mtQuo loc x1 = MtQuo loc x1; mtSig loc x1 = MtSig loc x1;
+   mtTyo loc x1 = MtTyo loc x1; mtUid loc x1 = MtUid loc x1;
+   mtWit loc x1 x2 = MtWit loc x1 x2; mtXtr loc x1 x2 = MtXtr loc x1 x2;
+   sgCls loc x1 = SgCls loc x1; sgClt loc x1 = SgClt loc x1;
+   sgDcl loc x1 = SgDcl loc x1; sgDir loc x1 x2 = SgDir loc x1 x2;
+   sgExc loc x1 x2 = SgExc loc x1 x2; sgExt loc x1 x2 x3 = SgExt loc x1 x2 x3;
+   sgInc loc x1 = SgInc loc x1; sgMod loc x1 x2 = SgMod loc x1 x2;
+   sgMty loc x1 x2 = SgMty loc x1 x2; sgOpn loc x1 = SgOpn loc x1;
+   sgTyp loc x1 = SgTyp loc x1; sgUse loc x1 x2 = SgUse loc x1 x2;
+   sgVal loc x1 x2 = SgVal loc x1 x2; sgXtr loc x1 x2 = SgXtr loc x1 x2;
+   wcMod loc x1 x2 = WcMod loc x1 x2; wcMos loc x1 x2 = WcMos loc x1 x2;
+   wcTyp loc x1 x2 x3 x4 = WcTyp loc x1 x2 x3 x4;
+   wcTys loc x1 x2 x3 = WcTys loc x1 x2 x3; meAcc loc x1 x2 = MeAcc loc x1 x2;
+   meApp loc x1 x2 = MeApp loc x1 x2; meFun loc x1 x2 x3 = MeFun loc x1 x2 x3;
+   meStr loc x1 = MeStr loc x1; meTyc loc x1 x2 = MeTyc loc x1 x2;
+   meUid loc x1 = MeUid loc x1; meUnp loc x1 x2 = MeUnp loc x1 x2;
+   meXtr loc x1 x2 = MeXtr loc x1 x2; stCls loc x1 = StCls loc x1;
+   stClt loc x1 = StClt loc x1; stDcl loc x1 = StDcl loc x1;
+   stDir loc x1 x2 = StDir loc x1 x2; stExc loc x1 x2 x3 = StExc loc x1 x2 x3;
+   stExp loc x1 = StExp loc x1; stExt loc x1 x2 x3 = StExt loc x1 x2 x3;
+   stInc loc x1 = StInc loc x1; stMod loc x1 x2 = StMod loc x1 x2;
+   stMty loc x1 x2 = StMty loc x1 x2; stOpn loc x1 = StOpn loc x1;
+   stTyp loc x1 = StTyp loc x1; stUse loc x1 x2 = StUse loc x1 x2;
+   stVal loc x1 x2 = StVal loc x1 x2; stXtr loc x1 x2 = StXtr loc x1 x2;
+   ctAcc loc x1 x2 = CtAcc loc x1 x2; ctApp loc x1 x2 = CtApp loc x1 x2;
+   ctCon loc x1 x2 = CtCon loc x1 x2; ctFun loc x1 x2 = CtFun loc x1 x2;
+   ctIde loc x1 = CtIde loc x1; ctSig loc x1 x2 = CtSig loc x1 x2;
+   ctXtr loc x1 x2 = CtXtr loc x1 x2; cgCtr loc x1 x2 = CgCtr loc x1 x2;
+   cgDcl loc x1 = CgDcl loc x1; cgInh loc x1 = CgInh loc x1;
+   cgMth loc x1 x2 x3 = CgMth loc x1 x2 x3;
+   cgVal loc x1 x2 x3 = CgVal loc x1 x2 x3;
+   cgVir loc x1 x2 x3 = CgVir loc x1 x2 x3; ceApp loc x1 x2 = CeApp loc x1 x2;
+   ceCon loc x1 x2 = CeCon loc x1 x2; ceFun loc x1 x2 = CeFun loc x1 x2;
+   ceLet loc x1 x2 x3 = CeLet loc x1 x2 x3; ceStr loc x1 x2 = CeStr loc x1 x2;
+   ceTyc loc x1 x2 = CeTyc loc x1 x2; ceXtr loc x1 x2 = CeXtr loc x1 x2;
+   crCtr loc x1 x2 = CrCtr loc x1 x2; crDcl loc x1 = CrDcl loc x1;
+   crInh loc x1 x2 = CrInh loc x1 x2; crIni loc x1 = CrIni loc x1;
+   crMth loc x1 x2 x3 x4 x5 = CrMth loc x1 x2 x3 x4 x5;
+   crVal loc x1 x2 x3 x4 = CrVal loc x1 x2 x3 x4;
+   crVav loc x1 x2 x3 = CrVav loc x1 x2 x3;
+   crVir loc x1 x2 x3 = CrVir loc x1 x2 x3}
 ;
 
 value rec ctyp f =

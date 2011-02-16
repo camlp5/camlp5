@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mapAst.ml,v 6.1 2011/02/16 19:06:26 deraugla Exp $ *)
+(* $Id: pa_mapAst.ml,v 6.2 2011/02/16 19:21:53 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mapAst.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -15,12 +15,20 @@ Pcaml.strict_mode.val := True;
 value param_f = "f";
 value field_of_constr = String.uncapitalize;
 
-value patt_of_type gtn loc n t =
+value patt_of_type loc n t =
   let x = "x" ^ string_of_int n in
   let p = <:patt< $lid:x$ >> in
   match t with
   [ <:ctyp< loc >> -> (<:patt< loc >>, n)
   | _ -> (p, n + 1) ]
+;
+
+value expr_param_of_type loc n t =
+  let x = "x" ^ string_of_int n in
+  let e = <:expr< $lid:x$ >> in
+  match t with
+  [ <:ctyp< loc >> -> (<:expr< loc >>, n)
+  | _ -> (e, n + 1) ]
 ;
 
 value rec expr_of_type gtn use_self loc t =
@@ -33,7 +41,7 @@ value rec expr_of_type gtn use_self loc t =
       let (rev_pl, _) =
         List.fold_left
           (fun (rev_pl, n) t ->
-             let (p, n) = patt_of_type gtn loc n t in
+             let (p, n) = patt_of_type loc n t in
              ([p :: rev_pl], n))
           ([], 1) tl
       in
@@ -195,15 +203,25 @@ value ldl_of_td tdl =
           tdl ] ]
 ;
 
-value expr_of_map_field loc gtn tl = do {
+value expr_of_map_field loc c tl = do {
   let (rev_pl, _) =
     List.fold_left
       (fun (rev_pl, n) t ->
-         let (p, n) = patt_of_type gtn loc n t in
+         let (p, n) = patt_of_type loc n t in
          ([p :: rev_pl], n))
       ([], 1) tl
   in
-  let e = <:expr< e >> in
+  let (rev_el, _) =
+    List.fold_left
+      (fun (rev_el, n) t ->
+         let (e, n) = expr_param_of_type loc n t in
+         ([e :: rev_el], n))
+      ([], 1) tl
+  in
+  let e =
+    List.fold_right (fun e1 e2 -> <:expr< $e2$ $e1$ >>) rev_el
+      <:expr< $uid:c$ >>
+  in
   List.fold_left (fun e p -> <:expr< fun $p$ -> $e$ >>) e rev_pl
 };
 
@@ -212,11 +230,11 @@ value lel_of_td tdl =
   [ <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >> ->
       match t with
       [ <:ctyp< [$list:cdl$] >> ->
-          let gtn = snd (Pcaml.unvala ls) in
           List.fold_left
             (fun tdl (loc, c, tl, rto) ->
-               let f = field_of_constr (Pcaml.unvala c) in
-               let e = expr_of_map_field loc gtn (Pcaml.unvala tl) in
+               let c = Pcaml.unvala c in
+               let f = field_of_constr c in
+               let e = expr_of_map_field loc c (Pcaml.unvala tl) in
                let td = (<:patt< $lid:f$ >>, e) in
                [td :: tdl])
             tdl cdl
