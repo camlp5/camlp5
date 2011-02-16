@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mapAst.ml,v 6.4 2011/02/16 20:39:55 deraugla Exp $ *)
+(* $Id: pa_mapAst.ml,v 6.5 2011/02/16 21:07:13 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mapAst.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -183,7 +183,19 @@ value expr_of_type_decl loc tn td =
 ;
 
 value type_of_map_field loc t tl = do {
-  List.fold_right (fun t1 t2 -> <:ctyp< $t1$ → $t2$ >>) tl t
+  List.fold_right
+    (fun t1 t2 ->
+       let t1 =
+         tr_vala t1 where rec tr_vala =
+           fun
+           [ <:ctyp:< Ploc.vala $t$ >> -> <:ctyp< v $tr_vala t$ >>
+           | <:ctyp:< $t1$ $t2$ >> -> <:ctyp< $t1$ $tr_vala t2$ >>
+           | <:ctyp:< ($list:tl$) >> ->
+               <:ctyp< ($list:List.map tr_vala tl$) >>
+           | t -> t ]
+       in
+       <:ctyp< $t1$ → $t2$ >>)
+    tl t
 };
 
 value ldl_of_td tdl =

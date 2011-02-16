@@ -165,7 +165,7 @@ let greek_token =
        | _ -> raise Stream.Failure)
 ;;
 
-let warned = ref true;;
+let warned = ref false;;
 let warning_deprecated_since_6_00 loc =
   if not !warned then
     begin

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.4 2011/02/16 20:39:55 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.5 2011/02/16 21:07:13 deraugla Exp $ *)
 
 #load "pa_macro.cmo";
 
@@ -35,233 +35,184 @@ type map_f =
     tyAny : loc → ctyp;
     tyApp : loc → ctyp → ctyp → ctyp;
     tyArr : loc → ctyp → ctyp → ctyp;
-    tyCls : loc → Ploc.vala (list string) → ctyp;
-    tyLab : loc → Ploc.vala string → ctyp → ctyp;
-    tyLid : loc → Ploc.vala string → ctyp;
-    tyMan : loc → ctyp → Ploc.vala bool → ctyp → ctyp;
-    tyObj :
-      loc → Ploc.vala (list (string * ctyp)) → Ploc.vala bool → ctyp;
-    tyOlb : loc → Ploc.vala string → ctyp → ctyp;
+    tyCls : loc → v (list string) → ctyp;
+    tyLab : loc → v string → ctyp → ctyp;
+    tyLid : loc → v string → ctyp;
+    tyMan : loc → ctyp → v bool → ctyp → ctyp;
+    tyObj : loc → v (list (string * ctyp)) → v bool → ctyp;
+    tyOlb : loc → v string → ctyp → ctyp;
     tyPck : loc → module_type → ctyp;
-    tyPol : loc → Ploc.vala (list string) → ctyp → ctyp;
-    tyPot : loc → Ploc.vala (list string) → ctyp → ctyp;
-    tyQuo : loc → Ploc.vala string → ctyp;
-    tyRec : loc → Ploc.vala (list (loc * string * bool * ctyp)) → ctyp;
+    tyPol : loc → v (list string) → ctyp → ctyp;
+    tyPot : loc → v (list string) → ctyp → ctyp;
+    tyQuo : loc → v string → ctyp;
+    tyRec : loc → v (list (loc * string * bool * ctyp)) → ctyp;
     tySum :
-      loc →
-        Ploc.vala
-          (list
-             (loc * Ploc.vala string * Ploc.vala (list ctyp) *
-              option ctyp)) →
+      loc → v (list (loc * v string * v (list ctyp) * option ctyp)) →
         ctyp;
-    tyTup : loc → Ploc.vala (list ctyp) → ctyp;
-    tyUid : loc → Ploc.vala string → ctyp;
+    tyTup : loc → v (list ctyp) → ctyp;
+    tyUid : loc → v string → ctyp;
     tyVrn :
-      loc → Ploc.vala (list poly_variant) →
-        option (option (Ploc.vala (list string))) → ctyp;
-    tyXtr : loc → string → option (Ploc.vala ctyp) → ctyp;
-    pvTag :
-      loc → Ploc.vala string → Ploc.vala bool →
-        Ploc.vala (list ctyp) → poly_variant;
+      loc → v (list poly_variant) → option (option (v (list string))) →
+        ctyp;
+    tyXtr : loc → string → option (v ctyp) → ctyp;
+    pvTag : loc → v string → v bool → v (list ctyp) → poly_variant;
     pvInh : loc → ctyp → poly_variant;
     paAcc : loc → patt → patt → patt;
     paAli : loc → patt → patt → patt;
     paAnt : loc → patt → patt;
     paAny : loc → patt;
     paApp : loc → patt → patt → patt;
-    paArr : loc → Ploc.vala (list patt) → patt;
-    paChr : loc → Ploc.vala string → patt;
-    paFlo : loc → Ploc.vala string → patt;
-    paInt : loc → Ploc.vala string → string → patt;
-    paLab :
-      loc → Ploc.vala (list (patt * Ploc.vala (option patt))) → patt;
+    paArr : loc → v (list patt) → patt;
+    paChr : loc → v string → patt;
+    paFlo : loc → v string → patt;
+    paInt : loc → v string → string → patt;
+    paLab : loc → v (list (patt * v (option patt))) → patt;
     paLaz : loc → patt → patt;
-    paLid : loc → Ploc.vala string → patt;
-    paNty : loc → Ploc.vala string → patt;
-    paOlb : loc → patt → Ploc.vala (option expr) → patt;
+    paLid : loc → v string → patt;
+    paNty : loc → v string → patt;
+    paOlb : loc → patt → v (option expr) → patt;
     paOrp : loc → patt → patt → patt;
-    paRec : loc → Ploc.vala (list (patt * patt)) → patt;
+    paRec : loc → v (list (patt * patt)) → patt;
     paRng : loc → patt → patt → patt;
-    paStr : loc → Ploc.vala string → patt;
-    paTup : loc → Ploc.vala (list patt) → patt;
+    paStr : loc → v string → patt;
+    paTup : loc → v (list patt) → patt;
     paTyc : loc → patt → ctyp → patt;
-    paTyp : loc → Ploc.vala (list string) → patt;
-    paUid : loc → Ploc.vala string → patt;
-    paUnp : loc → Ploc.vala string → option module_type → patt;
-    paVrn : loc → Ploc.vala string → patt;
-    paXtr : loc → string → option (Ploc.vala patt) → patt;
+    paTyp : loc → v (list string) → patt;
+    paUid : loc → v string → patt;
+    paUnp : loc → v string → option module_type → patt;
+    paVrn : loc → v string → patt;
+    paXtr : loc → string → option (v patt) → patt;
     exAcc : loc → expr → expr → expr;
     exAnt : loc → expr → expr;
     exApp : loc → expr → expr → expr;
     exAre : loc → expr → expr → expr;
-    exArr : loc → Ploc.vala (list expr) → expr;
+    exArr : loc → v (list expr) → expr;
     exAsr : loc → expr → expr;
     exAss : loc → expr → expr → expr;
-    exBae : loc → expr → Ploc.vala (list expr) → expr;
-    exChr : loc → Ploc.vala string → expr;
+    exBae : loc → expr → v (list expr) → expr;
+    exChr : loc → v string → expr;
     exCoe : loc → expr → option ctyp → ctyp → expr;
-    exFlo : loc → Ploc.vala string → expr;
+    exFlo : loc → v string → expr;
     exFor :
-      loc → Ploc.vala string → expr → expr → Ploc.vala bool →
-        Ploc.vala (list expr) → expr;
-    exFun :
-      loc → Ploc.vala (list (patt * Ploc.vala (option expr) * expr)) →
+      loc → v string → expr → expr → v bool → v (list expr) →
         expr;
+    exFun : loc → v (list (patt * v (option expr) * expr)) → expr;
     exIfe : loc → expr → expr → expr → expr;
-    exInt : loc → Ploc.vala string → string → expr;
-    exLab :
-      loc → Ploc.vala (list (patt * Ploc.vala (option expr))) → expr;
+    exInt : loc → v string → string → expr;
+    exLab : loc → v (list (patt * v (option expr))) → expr;
     exLaz : loc → expr → expr;
-    exLet :
-      loc → Ploc.vala bool → Ploc.vala (list (patt * expr)) → expr →
-        expr;
-    exLid : loc → Ploc.vala string → expr;
-    exLmd : loc → Ploc.vala string → module_expr → expr → expr;
+    exLet : loc → v bool → v (list (patt * expr)) → expr → expr;
+    exLid : loc → v string → expr;
+    exLmd : loc → v string → module_expr → expr → expr;
     exMat :
-      loc → expr →
-        Ploc.vala (list (patt * Ploc.vala (option expr) * expr)) → expr;
-    exNew : loc → Ploc.vala (list string) → expr;
-    exObj :
-      loc → Ploc.vala (option patt) → Ploc.vala (list class_str_item) →
-        expr;
-    exOlb : loc → patt → Ploc.vala (option expr) → expr;
-    exOvr : loc → Ploc.vala (list (string * expr)) → expr;
+      loc → expr → v (list (patt * v (option expr) * expr)) → expr;
+    exNew : loc → v (list string) → expr;
+    exObj : loc → v (option patt) → v (list class_str_item) → expr;
+    exOlb : loc → patt → v (option expr) → expr;
+    exOvr : loc → v (list (string * expr)) → expr;
     exPck : loc → module_expr → option module_type → expr;
-    exRec : loc → Ploc.vala (list (patt * expr)) → option expr → expr;
-    exSeq : loc → Ploc.vala (list expr) → expr;
-    exSnd : loc → expr → Ploc.vala string → expr;
+    exRec : loc → v (list (patt * expr)) → option expr → expr;
+    exSeq : loc → v (list expr) → expr;
+    exSnd : loc → expr → v string → expr;
     exSte : loc → expr → expr → expr;
-    exStr : loc → Ploc.vala string → expr;
+    exStr : loc → v string → expr;
     exTry :
-      loc → expr →
-        Ploc.vala (list (patt * Ploc.vala (option expr) * expr)) → expr;
-    exTup : loc → Ploc.vala (list expr) → expr;
+      loc → expr → v (list (patt * v (option expr) * expr)) → expr;
+    exTup : loc → v (list expr) → expr;
     exTyc : loc → expr → ctyp → expr;
-    exUid : loc → Ploc.vala string → expr;
-    exVrn : loc → Ploc.vala string → expr;
-    exWhi : loc → expr → Ploc.vala (list expr) → expr;
-    exXtr : loc → string → option (Ploc.vala expr) → expr;
+    exUid : loc → v string → expr;
+    exVrn : loc → v string → expr;
+    exWhi : loc → expr → v (list expr) → expr;
+    exXtr : loc → string → option (v expr) → expr;
     mtAcc : loc → module_type → module_type → module_type;
     mtApp : loc → module_type → module_type → module_type;
-    mtFun :
-      loc → Ploc.vala string → module_type → module_type →
-        module_type;
-    mtLid : loc → Ploc.vala string → module_type;
-    mtQuo : loc → Ploc.vala string → module_type;
-    mtSig : loc → Ploc.vala (list sig_item) → module_type;
+    mtFun : loc → v string → module_type → module_type → module_type;
+    mtLid : loc → v string → module_type;
+    mtQuo : loc → v string → module_type;
+    mtSig : loc → v (list sig_item) → module_type;
     mtTyo : loc → module_expr → module_type;
-    mtUid : loc → Ploc.vala string → module_type;
-    mtWit :
-      loc → module_type → Ploc.vala (list with_constr) → module_type;
-    mtXtr : loc → string → option (Ploc.vala module_type) → module_type;
-    sgCls : loc → Ploc.vala (list (class_infos class_type)) → sig_item;
-    sgClt : loc → Ploc.vala (list (class_infos class_type)) → sig_item;
-    sgDcl : loc → Ploc.vala (list sig_item) → sig_item;
-    sgDir : loc → Ploc.vala string → Ploc.vala (option expr) → sig_item;
-    sgExc : loc → Ploc.vala string → Ploc.vala (list ctyp) → sig_item;
-    sgExt :
-      loc → Ploc.vala string → ctyp → Ploc.vala (list string) →
-        sig_item;
+    mtUid : loc → v string → module_type;
+    mtWit : loc → module_type → v (list with_constr) → module_type;
+    mtXtr : loc → string → option (v module_type) → module_type;
+    sgCls : loc → v (list (class_infos class_type)) → sig_item;
+    sgClt : loc → v (list (class_infos class_type)) → sig_item;
+    sgDcl : loc → v (list sig_item) → sig_item;
+    sgDir : loc → v string → v (option expr) → sig_item;
+    sgExc : loc → v string → v (list ctyp) → sig_item;
+    sgExt : loc → v string → ctyp → v (list string) → sig_item;
     sgInc : loc → module_type → sig_item;
-    sgMod :
-      loc → Ploc.vala bool →
-        Ploc.vala (list (Ploc.vala string * module_type)) → sig_item;
-    sgMty : loc → Ploc.vala string → module_type → sig_item;
-    sgOpn : loc → Ploc.vala (list string) → sig_item;
-    sgTyp : loc → Ploc.vala (list type_decl) → sig_item;
-    sgUse :
-      loc → Ploc.vala string → Ploc.vala (list (sig_item * loc)) →
-        sig_item;
-    sgVal : loc → Ploc.vala string → ctyp → sig_item;
-    sgXtr : loc → string → option (Ploc.vala sig_item) → sig_item;
-    wcMod : loc → Ploc.vala (list string) → module_expr → with_constr;
-    wcMos : loc → Ploc.vala (list string) → module_expr → with_constr;
+    sgMod : loc → v bool → v (list (v string * module_type)) → sig_item;
+    sgMty : loc → v string → module_type → sig_item;
+    sgOpn : loc → v (list string) → sig_item;
+    sgTyp : loc → v (list type_decl) → sig_item;
+    sgUse : loc → v string → v (list (sig_item * loc)) → sig_item;
+    sgVal : loc → v string → ctyp → sig_item;
+    sgXtr : loc → string → option (v sig_item) → sig_item;
+    wcMod : loc → v (list string) → module_expr → with_constr;
+    wcMos : loc → v (list string) → module_expr → with_constr;
     wcTyp :
-      loc → Ploc.vala (list string) → Ploc.vala (list type_var) →
-        Ploc.vala bool → ctyp → with_constr;
+      loc → v (list string) → v (list type_var) → v bool → ctyp →
+        with_constr;
     wcTys :
-      loc → Ploc.vala (list string) → Ploc.vala (list type_var) →
-        ctyp → with_constr;
+      loc → v (list string) → v (list type_var) → ctyp → with_constr;
     meAcc : loc → module_expr → module_expr → module_expr;
     meApp : loc → module_expr → module_expr → module_expr;
-    meFun :
-      loc → Ploc.vala string → module_type → module_expr →
-        module_expr;
-    meStr : loc → Ploc.vala (list str_item) → module_expr;
+    meFun : loc → v string → module_type → module_expr → module_expr;
+    meStr : loc → v (list str_item) → module_expr;
     meTyc : loc → module_expr → module_type → module_expr;
-    meUid : loc → Ploc.vala string → module_expr;
+    meUid : loc → v string → module_expr;
     meUnp : loc → expr → option module_type → module_expr;
-    meXtr : loc → string → option (Ploc.vala module_expr) → module_expr;
-    stCls : loc → Ploc.vala (list (class_infos class_expr)) → str_item;
-    stClt : loc → Ploc.vala (list (class_infos class_type)) → str_item;
-    stDcl : loc → Ploc.vala (list str_item) → str_item;
-    stDir : loc → Ploc.vala string → Ploc.vala (option expr) → str_item;
+    meXtr : loc → string → option (v module_expr) → module_expr;
+    stCls : loc → v (list (class_infos class_expr)) → str_item;
+    stClt : loc → v (list (class_infos class_type)) → str_item;
+    stDcl : loc → v (list str_item) → str_item;
+    stDir : loc → v string → v (option expr) → str_item;
     stExc :
-      loc → Ploc.vala string → Ploc.vala (list ctyp) →
-        Ploc.vala (list string) → str_item;
+      loc → v string → v (list ctyp) → v (list string) → str_item;
     stExp : loc → expr → str_item;
-    stExt :
-      loc → Ploc.vala string → ctyp → Ploc.vala (list string) →
-        str_item;
+    stExt : loc → v string → ctyp → v (list string) → str_item;
     stInc : loc → module_expr → str_item;
-    stMod :
-      loc → Ploc.vala bool →
-        Ploc.vala (list (Ploc.vala string * module_expr)) → str_item;
-    stMty : loc → Ploc.vala string → module_type → str_item;
-    stOpn : loc → Ploc.vala (list string) → str_item;
-    stTyp : loc → Ploc.vala (list type_decl) → str_item;
-    stUse :
-      loc → Ploc.vala string → Ploc.vala (list (str_item * loc)) →
-        str_item;
-    stVal :
-      loc → Ploc.vala bool → Ploc.vala (list (patt * expr)) → str_item;
-    stXtr : loc → string → option (Ploc.vala str_item) → str_item;
+    stMod : loc → v bool → v (list (v string * module_expr)) → str_item;
+    stMty : loc → v string → module_type → str_item;
+    stOpn : loc → v (list string) → str_item;
+    stTyp : loc → v (list type_decl) → str_item;
+    stUse : loc → v string → v (list (str_item * loc)) → str_item;
+    stVal : loc → v bool → v (list (patt * expr)) → str_item;
+    stXtr : loc → string → option (v str_item) → str_item;
     ctAcc : loc → class_type → class_type → class_type;
     ctApp : loc → class_type → class_type → class_type;
-    ctCon : loc → class_type → Ploc.vala (list ctyp) → class_type;
+    ctCon : loc → class_type → v (list ctyp) → class_type;
     ctFun : loc → ctyp → class_type → class_type;
-    ctIde : loc → Ploc.vala string → class_type;
+    ctIde : loc → v string → class_type;
     ctSig :
-      loc → Ploc.vala (option ctyp) → Ploc.vala (list class_sig_item) →
-        class_type;
-    ctXtr : loc → string → option (Ploc.vala class_type) → class_type;
+      loc → v (option ctyp) → v (list class_sig_item) → class_type;
+    ctXtr : loc → string → option (v class_type) → class_type;
     cgCtr : loc → ctyp → ctyp → class_sig_item;
-    cgDcl : loc → Ploc.vala (list class_sig_item) → class_sig_item;
+    cgDcl : loc → v (list class_sig_item) → class_sig_item;
     cgInh : loc → class_type → class_sig_item;
-    cgMth :
-      loc → Ploc.vala bool → Ploc.vala string → ctyp → class_sig_item;
-    cgVal :
-      loc → Ploc.vala bool → Ploc.vala string → ctyp → class_sig_item;
-    cgVir :
-      loc → Ploc.vala bool → Ploc.vala string → ctyp → class_sig_item;
+    cgMth : loc → v bool → v string → ctyp → class_sig_item;
+    cgVal : loc → v bool → v string → ctyp → class_sig_item;
+    cgVir : loc → v bool → v string → ctyp → class_sig_item;
     ceApp : loc → class_expr → expr → class_expr;
-    ceCon :
-      loc → Ploc.vala (list string) → Ploc.vala (list ctyp) →
-        class_expr;
+    ceCon : loc → v (list string) → v (list ctyp) → class_expr;
     ceFun : loc → patt → class_expr → class_expr;
     ceLet :
-      loc → Ploc.vala bool → Ploc.vala (list (patt * expr)) →
-        class_expr → class_expr;
+      loc → v bool → v (list (patt * expr)) → class_expr → class_expr;
     ceStr :
-      loc → Ploc.vala (option patt) → Ploc.vala (list class_str_item) →
-        class_expr;
+      loc → v (option patt) → v (list class_str_item) → class_expr;
     ceTyc : loc → class_expr → class_type → class_expr;
-    ceXtr : loc → string → option (Ploc.vala class_expr) → class_expr;
+    ceXtr : loc → string → option (v class_expr) → class_expr;
     crCtr : loc → ctyp → ctyp → class_str_item;
-    crDcl : loc → Ploc.vala (list class_str_item) → class_str_item;
-    crInh :
-      loc → class_expr → Ploc.vala (option string) → class_str_item;
+    crDcl : loc → v (list class_str_item) → class_str_item;
+    crInh : loc → class_expr → v (option string) → class_str_item;
     crIni : loc → expr → class_str_item;
     crMth :
-      loc → Ploc.vala bool → Ploc.vala bool → Ploc.vala string →
-        Ploc.vala (option ctyp) → expr → class_str_item;
+      loc → v bool → v bool → v string → v (option ctyp) → expr →
+        class_str_item;
     crVal :
-      loc → Ploc.vala bool → Ploc.vala bool → Ploc.vala string →
-        expr → class_str_item;
-    crVav :
-      loc → Ploc.vala bool → Ploc.vala string → ctyp → class_str_item;
-    crVir :
-      loc → Ploc.vala bool → Ploc.vala string → ctyp → class_str_item;
+      loc → v bool → v bool → v string → expr → class_str_item;
+    crVav : loc → v bool → v string → ctyp → class_str_item;
+    crVir : loc → v bool → v string → ctyp → class_str_item;
     mloc : loc → loc;
     anti_loc : loc → loc → loc → loc }
 ;

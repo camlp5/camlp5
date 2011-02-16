@@ -66,6 +66,15 @@ compare_reloc:
 	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
 	./mkreloc.sh | diff -c reloc.ml -
 
+bootstrap_mapAst:
+	cd ../etc; $(MAKE) pa_mapAst.cmo pr_r.cmo
+	./mkmapAst.sh > tmp
+	mv tmp mapAst.ml
+
+compare_mapAst:
+	cd ../etc; $(MAKE) pa_mapAst.cmo pr_r.cmo
+	./mkmapAst.sh | diff -c mapAst.ml -
+
 install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5"
