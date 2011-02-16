@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.4 2011/01/28 08:51:53 deraugla Exp $
+# $Id: Makefile,v 6.5 2011/02/16 19:06:26 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -65,6 +65,15 @@ bootstrap_reloc:
 compare_reloc:
 	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
 	./mkreloc.sh | diff -c reloc.ml -
+
+bootstrap_mapAst:
+	cd ../etc; $(MAKE) pa_mapAst.cmo pr_r.cmo
+	./mkmapAst.sh > tmp
+	mv tmp mapAst.ml
+
+compare_mapAst:
+	cd ../etc; $(MAKE) pa_mapAst.cmo pr_r.cmo
+	./mkmapAst.sh | diff -c mapAst.ml -
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
