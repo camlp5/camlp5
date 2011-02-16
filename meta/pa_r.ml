@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.33 2011/02/04 18:00:15 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.34 2011/02/16 17:34:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -162,7 +162,7 @@ value greek_token =
           ascii_of_greek x)
 ;
 
-value warned = ref True;
+value warned = ref False;
 value warning_deprecated_since_6_00 loc =
   if not warned.val then do {
     Pcaml.warning.val loc "syntax deprecated since version 6.00";

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.70 2011/02/04 18:34:50 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.71 2011/02/16 17:35:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -1540,8 +1540,15 @@ EXTEND_PRINTER
           pprintf pc "#%s %p" s expr e
       | <:str_item< declare $list:sil$ end >> ->
           if flag_expand_declare.val then
+            let str_item_fst pc (si, is_last) =
+              if is_last then str_item pc si else semi_after str_item pc si
+            in
+            let str_item_with_comm pc (si, is_last) =
+              let ccc = Ploc.comment (MLast.loc_of_str_item si) in
+              sprintf "%s%s" ccc (str_item_fst pc (si, is_last))
+            in
             if sil = [] then pc.bef
-            else vlistl (semi_after str_item) str_item pc sil
+            else vlist3 str_item_fst str_item_with_comm pc sil
           else if sil = [] then pprintf pc "declare end"
           else
             horiz_vertic
