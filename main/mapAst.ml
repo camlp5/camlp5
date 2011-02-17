@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.8 2011/02/17 09:17:07 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.9 2011/02/17 10:20:50 deraugla Exp $ *)
 
 #load "pa_macro.cmo";
 
@@ -298,330 +298,330 @@ value rec def =
 value rec ctyp f =
   self where rec self =
     fun
-    [ TyAcc loc x1 x2 -> f.tyAcc (f.mloc loc) (self x1) (self x2)
-    | TyAli loc x1 x2 -> f.tyAli (f.mloc loc) (self x1) (self x2)
-    | TyAny loc -> f.tyAny (f.mloc loc)
-    | TyApp loc x1 x2 -> f.tyApp (f.mloc loc) (self x1) (self x2)
-    | TyArr loc x1 x2 -> f.tyArr (f.mloc loc) (self x1) (self x2)
-    | TyCls loc x1 -> f.tyCls (f.mloc loc) x1
-    | TyLab loc x1 x2 -> f.tyLab (f.mloc loc) x1 (self x2)
-    | TyLid loc x1 -> f.tyLid (f.mloc loc) x1
-    | TyMan loc x1 x2 x3 -> f.tyMan (f.mloc loc) (self x1) x2 (self x3)
-    | TyObj loc x1 x2 ->
+    [ TyAcc loc x1 x2 → f.tyAcc (f.mloc loc) (self x1) (self x2)
+    | TyAli loc x1 x2 → f.tyAli (f.mloc loc) (self x1) (self x2)
+    | TyAny loc → f.tyAny (f.mloc loc)
+    | TyApp loc x1 x2 → f.tyApp (f.mloc loc) (self x1) (self x2)
+    | TyArr loc x1 x2 → f.tyArr (f.mloc loc) (self x1) (self x2)
+    | TyCls loc x1 → f.tyCls (f.mloc loc) x1
+    | TyLab loc x1 x2 → f.tyLab (f.mloc loc) x1 (self x2)
+    | TyLid loc x1 → f.tyLid (f.mloc loc) x1
+    | TyMan loc x1 x2 x3 → f.tyMan (f.mloc loc) (self x1) x2 (self x3)
+    | TyObj loc x1 x2 →
         f.tyObj (f.mloc loc)
-          (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1) x2
-    | TyOlb loc x1 x2 -> f.tyOlb (f.mloc loc) x1 (self x2)
-    | TyPck loc x1 -> f.tyPck (f.mloc loc) (module_type f x1)
-    | TyPol loc x1 x2 -> f.tyPol (f.mloc loc) x1 (self x2)
-    | TyPot loc x1 x2 -> f.tyPot (f.mloc loc) x1 (self x2)
-    | TyQuo loc x1 -> f.tyQuo (f.mloc loc) x1
-    | TyRec loc x1 ->
+          (vala_map (List.map (fun (x1, x2) → (x1, self x2))) x1) x2
+    | TyOlb loc x1 x2 → f.tyOlb (f.mloc loc) x1 (self x2)
+    | TyPck loc x1 → f.tyPck (f.mloc loc) (module_type f x1)
+    | TyPol loc x1 x2 → f.tyPol (f.mloc loc) x1 (self x2)
+    | TyPot loc x1 x2 → f.tyPot (f.mloc loc) x1 (self x2)
+    | TyQuo loc x1 → f.tyQuo (f.mloc loc) x1
+    | TyRec loc x1 →
         f.tyRec (f.mloc loc)
           (vala_map
              (List.map
-                (fun (loc, x1, x2, x3) -> (f.mloc loc, x1, x2, self x3)))
+                (fun (loc, x1, x2, x3) → (f.mloc loc, x1, x2, self x3)))
              x1)
-    | TySum loc x1 ->
+    | TySum loc x1 →
         f.tySum (f.mloc loc)
           (vala_map
              (List.map
-                (fun (loc, x1, x2, x3) ->
+                (fun (loc, x1, x2, x3) →
                    (f.mloc loc, x1, vala_map (List.map self) x2,
                     option_map self x3)))
              x1)
-    | TyTup loc x1 -> f.tyTup (f.mloc loc) (vala_map (List.map self) x1)
-    | TyUid loc x1 -> f.tyUid (f.mloc loc) x1
-    | TyVrn loc x1 x2 ->
+    | TyTup loc x1 → f.tyTup (f.mloc loc) (vala_map (List.map self) x1)
+    | TyUid loc x1 → f.tyUid (f.mloc loc) x1
+    | TyVrn loc x1 x2 →
         f.tyVrn (f.mloc loc) (vala_map (List.map (poly_variant f)) x1) x2
-    | TyXtr loc x1 x2 ->
+    | TyXtr loc x1 x2 →
         f.tyXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and poly_variant f =
   fun
-  [ PvTag loc x1 x2 x3 ->
+  [ PvTag loc x1 x2 x3 →
       f.pvTag (f.mloc loc) x1 x2 (vala_map (List.map (ctyp f)) x3)
-  | PvInh loc x1 -> f.pvInh (f.mloc loc) (ctyp f x1) ]
+  | PvInh loc x1 → f.pvInh (f.mloc loc) (ctyp f x1) ]
 and patt f =
   self where rec self =
     fun
-    [ PaAcc loc x1 x2 -> f.paAcc (f.mloc loc) (self x1) (self x2)
-    | PaAli loc x1 x2 -> f.paAli (f.mloc loc) (self x1) (self x2)
-    | PaAnt loc x1 ->
+    [ PaAcc loc x1 x2 → f.paAcc (f.mloc loc) (self x1) (self x2)
+    | PaAli loc x1 x2 → f.paAli (f.mloc loc) (self x1) (self x2)
+    | PaAnt loc x1 →
         let new_mloc loc1 = f.anti_loc (f.mloc loc) loc loc1 in
         patt {(f) with mloc = new_mloc} x1
-    | PaAny loc -> f.paAny (f.mloc loc)
-    | PaApp loc x1 x2 -> f.paApp (f.mloc loc) (self x1) (self x2)
-    | PaArr loc x1 -> f.paArr (f.mloc loc) (vala_map (List.map self) x1)
-    | PaChr loc x1 -> f.paChr (f.mloc loc) x1
-    | PaFlo loc x1 -> f.paFlo (f.mloc loc) x1
-    | PaInt loc x1 x2 -> f.paInt (f.mloc loc) x1 x2
-    | PaLab loc x1 ->
+    | PaAny loc → f.paAny (f.mloc loc)
+    | PaApp loc x1 x2 → f.paApp (f.mloc loc) (self x1) (self x2)
+    | PaArr loc x1 → f.paArr (f.mloc loc) (vala_map (List.map self) x1)
+    | PaChr loc x1 → f.paChr (f.mloc loc) x1
+    | PaFlo loc x1 → f.paFlo (f.mloc loc) x1
+    | PaInt loc x1 x2 → f.paInt (f.mloc loc) x1 x2
+    | PaLab loc x1 →
         f.paLab (f.mloc loc)
           (vala_map
              (List.map
-                (fun (x1, x2) -> (self x1, vala_map (option_map self) x2)))
+                (fun (x1, x2) → (self x1, vala_map (option_map self) x2)))
              x1)
-    | PaLaz loc x1 -> f.paLaz (f.mloc loc) (self x1)
-    | PaLid loc x1 -> f.paLid (f.mloc loc) x1
-    | PaNty loc x1 -> f.paNty (f.mloc loc) x1
-    | PaOlb loc x1 x2 ->
+    | PaLaz loc x1 → f.paLaz (f.mloc loc) (self x1)
+    | PaLid loc x1 → f.paLid (f.mloc loc) x1
+    | PaNty loc x1 → f.paNty (f.mloc loc) x1
+    | PaOlb loc x1 x2 →
         f.paOlb (f.mloc loc) (self x1) (vala_map (option_map (expr f)) x2)
-    | PaOrp loc x1 x2 -> f.paOrp (f.mloc loc) (self x1) (self x2)
-    | PaRec loc x1 ->
+    | PaOrp loc x1 x2 → f.paOrp (f.mloc loc) (self x1) (self x2)
+    | PaRec loc x1 →
         f.paRec (f.mloc loc)
-          (vala_map (List.map (fun (x1, x2) -> (self x1, self x2))) x1)
-    | PaRng loc x1 x2 -> f.paRng (f.mloc loc) (self x1) (self x2)
-    | PaStr loc x1 -> f.paStr (f.mloc loc) x1
-    | PaTup loc x1 -> f.paTup (f.mloc loc) (vala_map (List.map self) x1)
-    | PaTyc loc x1 x2 -> f.paTyc (f.mloc loc) (self x1) (ctyp f x2)
-    | PaTyp loc x1 -> f.paTyp (f.mloc loc) x1
-    | PaUid loc x1 -> f.paUid (f.mloc loc) x1
-    | PaUnp loc x1 x2 ->
+          (vala_map (List.map (fun (x1, x2) → (self x1, self x2))) x1)
+    | PaRng loc x1 x2 → f.paRng (f.mloc loc) (self x1) (self x2)
+    | PaStr loc x1 → f.paStr (f.mloc loc) x1
+    | PaTup loc x1 → f.paTup (f.mloc loc) (vala_map (List.map self) x1)
+    | PaTyc loc x1 x2 → f.paTyc (f.mloc loc) (self x1) (ctyp f x2)
+    | PaTyp loc x1 → f.paTyp (f.mloc loc) x1
+    | PaUid loc x1 → f.paUid (f.mloc loc) x1
+    | PaUnp loc x1 x2 →
         f.paUnp (f.mloc loc) x1 (option_map (module_type f) x2)
-    | PaVrn loc x1 -> f.paVrn (f.mloc loc) x1
-    | PaXtr loc x1 x2 ->
+    | PaVrn loc x1 → f.paVrn (f.mloc loc) x1
+    | PaXtr loc x1 x2 →
         f.paXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and expr f =
   self where rec self =
     fun
-    [ ExAcc loc x1 x2 -> f.exAcc (f.mloc loc) (self x1) (self x2)
-    | ExAnt loc x1 ->
+    [ ExAcc loc x1 x2 → f.exAcc (f.mloc loc) (self x1) (self x2)
+    | ExAnt loc x1 →
         let new_mloc loc1 = f.anti_loc (f.mloc loc) loc loc1 in
         expr {(f) with mloc = new_mloc} x1
-    | ExApp loc x1 x2 -> f.exApp (f.mloc loc) (self x1) (self x2)
-    | ExAre loc x1 x2 -> f.exAre (f.mloc loc) (self x1) (self x2)
-    | ExArr loc x1 -> f.exArr (f.mloc loc) (vala_map (List.map self) x1)
-    | ExAsr loc x1 -> f.exAsr (f.mloc loc) (self x1)
-    | ExAss loc x1 x2 -> f.exAss (f.mloc loc) (self x1) (self x2)
-    | ExBae loc x1 x2 ->
+    | ExApp loc x1 x2 → f.exApp (f.mloc loc) (self x1) (self x2)
+    | ExAre loc x1 x2 → f.exAre (f.mloc loc) (self x1) (self x2)
+    | ExArr loc x1 → f.exArr (f.mloc loc) (vala_map (List.map self) x1)
+    | ExAsr loc x1 → f.exAsr (f.mloc loc) (self x1)
+    | ExAss loc x1 x2 → f.exAss (f.mloc loc) (self x1) (self x2)
+    | ExBae loc x1 x2 →
         f.exBae (f.mloc loc) (self x1) (vala_map (List.map self) x2)
-    | ExChr loc x1 -> f.exChr (f.mloc loc) x1
-    | ExCoe loc x1 x2 x3 ->
+    | ExChr loc x1 → f.exChr (f.mloc loc) x1
+    | ExCoe loc x1 x2 x3 →
         f.exCoe (f.mloc loc) (self x1) (option_map (ctyp f) x2) (ctyp f x3)
-    | ExFlo loc x1 -> f.exFlo (f.mloc loc) x1
-    | ExFor loc x1 x2 x3 x4 x5 ->
+    | ExFlo loc x1 → f.exFlo (f.mloc loc) x1
+    | ExFor loc x1 x2 x3 x4 x5 →
         f.exFor (f.mloc loc) x1 (self x2) (self x3) x4
           (vala_map (List.map self) x5)
-    | ExFun loc x1 ->
+    | ExFun loc x1 →
         f.exFun (f.mloc loc)
           (vala_map
              (List.map
-                (fun (x1, x2, x3) ->
+                (fun (x1, x2, x3) →
                    (patt f x1, vala_map (option_map self) x2, self x3)))
              x1)
-    | ExIfe loc x1 x2 x3 -> f.exIfe (f.mloc loc) (self x1) (self x2) (self x3)
-    | ExInt loc x1 x2 -> f.exInt (f.mloc loc) x1 x2
-    | ExLab loc x1 ->
+    | ExIfe loc x1 x2 x3 → f.exIfe (f.mloc loc) (self x1) (self x2) (self x3)
+    | ExInt loc x1 x2 → f.exInt (f.mloc loc) x1 x2
+    | ExLab loc x1 →
         f.exLab (f.mloc loc)
           (vala_map
              (List.map
-                (fun (x1, x2) -> (patt f x1, vala_map (option_map self) x2)))
+                (fun (x1, x2) → (patt f x1, vala_map (option_map self) x2)))
              x1)
-    | ExLaz loc x1 -> f.exLaz (f.mloc loc) (self x1)
-    | ExLet loc x1 x2 x3 ->
+    | ExLaz loc x1 → f.exLaz (f.mloc loc) (self x1)
+    | ExLet loc x1 x2 x3 →
         f.exLet (f.mloc loc) x1
-          (vala_map (List.map (fun (x1, x2) -> (patt f x1, self x2))) x2)
+          (vala_map (List.map (fun (x1, x2) → (patt f x1, self x2))) x2)
           (self x3)
-    | ExLid loc x1 -> f.exLid (f.mloc loc) x1
-    | ExLmd loc x1 x2 x3 ->
+    | ExLid loc x1 → f.exLid (f.mloc loc) x1
+    | ExLmd loc x1 x2 x3 →
         f.exLmd (f.mloc loc) x1 (module_expr f x2) (self x3)
-    | ExMat loc x1 x2 ->
+    | ExMat loc x1 x2 →
         f.exMat (f.mloc loc) (self x1)
           (vala_map
              (List.map
-                (fun (x1, x2, x3) ->
+                (fun (x1, x2, x3) →
                    (patt f x1, vala_map (option_map self) x2, self x3)))
              x2)
-    | ExNew loc x1 -> f.exNew (f.mloc loc) x1
-    | ExObj loc x1 x2 ->
+    | ExNew loc x1 → f.exNew (f.mloc loc) x1
+    | ExObj loc x1 x2 →
         f.exObj (f.mloc loc) (vala_map (option_map (patt f)) x1)
           (vala_map (List.map (class_str_item f)) x2)
-    | ExOlb loc x1 x2 ->
+    | ExOlb loc x1 x2 →
         f.exOlb (f.mloc loc) (patt f x1) (vala_map (option_map self) x2)
-    | ExOvr loc x1 ->
+    | ExOvr loc x1 →
         f.exOvr (f.mloc loc)
-          (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1)
-    | ExPck loc x1 x2 ->
+          (vala_map (List.map (fun (x1, x2) → (x1, self x2))) x1)
+    | ExPck loc x1 x2 →
         f.exPck (f.mloc loc) (module_expr f x1)
           (option_map (module_type f) x2)
-    | ExRec loc x1 x2 ->
+    | ExRec loc x1 x2 →
         f.exRec (f.mloc loc)
-          (vala_map (List.map (fun (x1, x2) -> (patt f x1, self x2))) x1)
+          (vala_map (List.map (fun (x1, x2) → (patt f x1, self x2))) x1)
           (option_map self x2)
-    | ExSeq loc x1 -> f.exSeq (f.mloc loc) (vala_map (List.map self) x1)
-    | ExSnd loc x1 x2 -> f.exSnd (f.mloc loc) (self x1) x2
-    | ExSte loc x1 x2 -> f.exSte (f.mloc loc) (self x1) (self x2)
-    | ExStr loc x1 -> f.exStr (f.mloc loc) x1
-    | ExTry loc x1 x2 ->
+    | ExSeq loc x1 → f.exSeq (f.mloc loc) (vala_map (List.map self) x1)
+    | ExSnd loc x1 x2 → f.exSnd (f.mloc loc) (self x1) x2
+    | ExSte loc x1 x2 → f.exSte (f.mloc loc) (self x1) (self x2)
+    | ExStr loc x1 → f.exStr (f.mloc loc) x1
+    | ExTry loc x1 x2 →
         f.exTry (f.mloc loc) (self x1)
           (vala_map
              (List.map
-                (fun (x1, x2, x3) ->
+                (fun (x1, x2, x3) →
                    (patt f x1, vala_map (option_map self) x2, self x3)))
              x2)
-    | ExTup loc x1 -> f.exTup (f.mloc loc) (vala_map (List.map self) x1)
-    | ExTyc loc x1 x2 -> f.exTyc (f.mloc loc) (self x1) (ctyp f x2)
-    | ExUid loc x1 -> f.exUid (f.mloc loc) x1
-    | ExVrn loc x1 -> f.exVrn (f.mloc loc) x1
-    | ExWhi loc x1 x2 ->
+    | ExTup loc x1 → f.exTup (f.mloc loc) (vala_map (List.map self) x1)
+    | ExTyc loc x1 x2 → f.exTyc (f.mloc loc) (self x1) (ctyp f x2)
+    | ExUid loc x1 → f.exUid (f.mloc loc) x1
+    | ExVrn loc x1 → f.exVrn (f.mloc loc) x1
+    | ExWhi loc x1 x2 →
         f.exWhi (f.mloc loc) (self x1) (vala_map (List.map self) x2)
-    | ExXtr loc x1 x2 ->
+    | ExXtr loc x1 x2 →
         f.exXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and module_type f =
   self where rec self =
     fun
-    [ MtAcc loc x1 x2 -> f.mtAcc (f.mloc loc) (self x1) (self x2)
-    | MtApp loc x1 x2 -> f.mtApp (f.mloc loc) (self x1) (self x2)
-    | MtFun loc x1 x2 x3 -> f.mtFun (f.mloc loc) x1 (self x2) (self x3)
-    | MtLid loc x1 -> f.mtLid (f.mloc loc) x1
-    | MtQuo loc x1 -> f.mtQuo (f.mloc loc) x1
-    | MtSig loc x1 ->
+    [ MtAcc loc x1 x2 → f.mtAcc (f.mloc loc) (self x1) (self x2)
+    | MtApp loc x1 x2 → f.mtApp (f.mloc loc) (self x1) (self x2)
+    | MtFun loc x1 x2 x3 → f.mtFun (f.mloc loc) x1 (self x2) (self x3)
+    | MtLid loc x1 → f.mtLid (f.mloc loc) x1
+    | MtQuo loc x1 → f.mtQuo (f.mloc loc) x1
+    | MtSig loc x1 →
         f.mtSig (f.mloc loc) (vala_map (List.map (sig_item f)) x1)
-    | MtTyo loc x1 -> f.mtTyo (f.mloc loc) (module_expr f x1)
-    | MtUid loc x1 -> f.mtUid (f.mloc loc) x1
-    | MtWit loc x1 x2 ->
+    | MtTyo loc x1 → f.mtTyo (f.mloc loc) (module_expr f x1)
+    | MtUid loc x1 → f.mtUid (f.mloc loc) x1
+    | MtWit loc x1 x2 →
         f.mtWit (f.mloc loc) (self x1)
           (vala_map (List.map (with_constr f)) x2)
-    | MtXtr loc x1 x2 ->
+    | MtXtr loc x1 x2 →
         f.mtXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and sig_item f =
   self where rec self =
     fun
-    [ SgCls loc x1 ->
+    [ SgCls loc x1 →
         f.sgCls (f.mloc loc)
           (vala_map (List.map (class_infos_map f.mloc (class_type f))) x1)
-    | SgClt loc x1 ->
+    | SgClt loc x1 →
         f.sgClt (f.mloc loc)
           (vala_map (List.map (class_infos_map f.mloc (class_type f))) x1)
-    | SgDcl loc x1 -> f.sgDcl (f.mloc loc) (vala_map (List.map self) x1)
-    | SgDir loc x1 x2 ->
+    | SgDcl loc x1 → f.sgDcl (f.mloc loc) (vala_map (List.map self) x1)
+    | SgDir loc x1 x2 →
         f.sgDir (f.mloc loc) x1 (vala_map (option_map (expr f)) x2)
-    | SgExc loc x1 x2 ->
+    | SgExc loc x1 x2 →
         f.sgExc (f.mloc loc) x1 (vala_map (List.map (ctyp f)) x2)
-    | SgExt loc x1 x2 x3 -> f.sgExt (f.mloc loc) x1 (ctyp f x2) x3
-    | SgInc loc x1 -> f.sgInc (f.mloc loc) (module_type f x1)
-    | SgMod loc x1 x2 ->
+    | SgExt loc x1 x2 x3 → f.sgExt (f.mloc loc) x1 (ctyp f x2) x3
+    | SgInc loc x1 → f.sgInc (f.mloc loc) (module_type f x1)
+    | SgMod loc x1 x2 →
         f.sgMod (f.mloc loc) x1
-          (vala_map (List.map (fun (x1, x2) -> (x1, module_type f x2))) x2)
-    | SgMty loc x1 x2 -> f.sgMty (f.mloc loc) x1 (module_type f x2)
-    | SgOpn loc x1 -> f.sgOpn (f.mloc loc) x1
-    | SgTyp loc x1 ->
+          (vala_map (List.map (fun (x1, x2) → (x1, module_type f x2))) x2)
+    | SgMty loc x1 x2 → f.sgMty (f.mloc loc) x1 (module_type f x2)
+    | SgOpn loc x1 → f.sgOpn (f.mloc loc) x1
+    | SgTyp loc x1 →
         f.sgTyp (f.mloc loc) (vala_map (List.map (type_decl f)) x1)
-    | SgUse loc x1 x2 ->
+    | SgUse loc x1 x2 →
         f.sgUse (f.mloc loc) x1
-          (vala_map (List.map (fun (x1, loc) -> (self x1, f.mloc loc))) x2)
-    | SgVal loc x1 x2 -> f.sgVal (f.mloc loc) x1 (ctyp f x2)
-    | SgXtr loc x1 x2 ->
+          (vala_map (List.map (fun (x1, loc) → (self x1, f.mloc loc))) x2)
+    | SgVal loc x1 x2 → f.sgVal (f.mloc loc) x1 (ctyp f x2)
+    | SgXtr loc x1 x2 →
         f.sgXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and with_constr f =
   fun
-  [ WcMod loc x1 x2 -> f.wcMod (f.mloc loc) x1 (module_expr f x2)
-  | WcMos loc x1 x2 -> f.wcMos (f.mloc loc) x1 (module_expr f x2)
-  | WcTyp loc x1 x2 x3 x4 -> f.wcTyp (f.mloc loc) x1 x2 x3 (ctyp f x4)
-  | WcTys loc x1 x2 x3 -> f.wcTys (f.mloc loc) x1 x2 (ctyp f x3) ]
+  [ WcMod loc x1 x2 → f.wcMod (f.mloc loc) x1 (module_expr f x2)
+  | WcMos loc x1 x2 → f.wcMos (f.mloc loc) x1 (module_expr f x2)
+  | WcTyp loc x1 x2 x3 x4 → f.wcTyp (f.mloc loc) x1 x2 x3 (ctyp f x4)
+  | WcTys loc x1 x2 x3 → f.wcTys (f.mloc loc) x1 x2 (ctyp f x3) ]
 and module_expr f =
   self where rec self =
     fun
-    [ MeAcc loc x1 x2 -> f.meAcc (f.mloc loc) (self x1) (self x2)
-    | MeApp loc x1 x2 -> f.meApp (f.mloc loc) (self x1) (self x2)
-    | MeFun loc x1 x2 x3 ->
+    [ MeAcc loc x1 x2 → f.meAcc (f.mloc loc) (self x1) (self x2)
+    | MeApp loc x1 x2 → f.meApp (f.mloc loc) (self x1) (self x2)
+    | MeFun loc x1 x2 x3 →
         f.meFun (f.mloc loc) x1 (module_type f x2) (self x3)
-    | MeStr loc x1 ->
+    | MeStr loc x1 →
         f.meStr (f.mloc loc) (vala_map (List.map (str_item f)) x1)
-    | MeTyc loc x1 x2 -> f.meTyc (f.mloc loc) (self x1) (module_type f x2)
-    | MeUid loc x1 -> f.meUid (f.mloc loc) x1
-    | MeUnp loc x1 x2 ->
+    | MeTyc loc x1 x2 → f.meTyc (f.mloc loc) (self x1) (module_type f x2)
+    | MeUid loc x1 → f.meUid (f.mloc loc) x1
+    | MeUnp loc x1 x2 →
         f.meUnp (f.mloc loc) (expr f x1) (option_map (module_type f) x2)
-    | MeXtr loc x1 x2 ->
+    | MeXtr loc x1 x2 →
         f.meXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and str_item f =
   self where rec self =
     fun
-    [ StCls loc x1 ->
+    [ StCls loc x1 →
         f.stCls (f.mloc loc)
           (vala_map (List.map (class_infos_map f.mloc (class_expr f))) x1)
-    | StClt loc x1 ->
+    | StClt loc x1 →
         f.stClt (f.mloc loc)
           (vala_map (List.map (class_infos_map f.mloc (class_type f))) x1)
-    | StDcl loc x1 -> f.stDcl (f.mloc loc) (vala_map (List.map self) x1)
-    | StDir loc x1 x2 ->
+    | StDcl loc x1 → f.stDcl (f.mloc loc) (vala_map (List.map self) x1)
+    | StDir loc x1 x2 →
         f.stDir (f.mloc loc) x1 (vala_map (option_map (expr f)) x2)
-    | StExc loc x1 x2 x3 ->
+    | StExc loc x1 x2 x3 →
         f.stExc (f.mloc loc) x1 (vala_map (List.map (ctyp f)) x2) x3
-    | StExp loc x1 -> f.stExp (f.mloc loc) (expr f x1)
-    | StExt loc x1 x2 x3 -> f.stExt (f.mloc loc) x1 (ctyp f x2) x3
-    | StInc loc x1 -> f.stInc (f.mloc loc) (module_expr f x1)
-    | StMod loc x1 x2 ->
+    | StExp loc x1 → f.stExp (f.mloc loc) (expr f x1)
+    | StExt loc x1 x2 x3 → f.stExt (f.mloc loc) x1 (ctyp f x2) x3
+    | StInc loc x1 → f.stInc (f.mloc loc) (module_expr f x1)
+    | StMod loc x1 x2 →
         f.stMod (f.mloc loc) x1
-          (vala_map (List.map (fun (x1, x2) -> (x1, module_expr f x2))) x2)
-    | StMty loc x1 x2 -> f.stMty (f.mloc loc) x1 (module_type f x2)
-    | StOpn loc x1 -> f.stOpn (f.mloc loc) x1
-    | StTyp loc x1 ->
+          (vala_map (List.map (fun (x1, x2) → (x1, module_expr f x2))) x2)
+    | StMty loc x1 x2 → f.stMty (f.mloc loc) x1 (module_type f x2)
+    | StOpn loc x1 → f.stOpn (f.mloc loc) x1
+    | StTyp loc x1 →
         f.stTyp (f.mloc loc) (vala_map (List.map (type_decl f)) x1)
-    | StUse loc x1 x2 ->
+    | StUse loc x1 x2 →
         f.stUse (f.mloc loc) x1
-          (vala_map (List.map (fun (x1, loc) -> (self x1, f.mloc loc))) x2)
-    | StVal loc x1 x2 ->
+          (vala_map (List.map (fun (x1, loc) → (self x1, f.mloc loc))) x2)
+    | StVal loc x1 x2 →
         f.stVal (f.mloc loc) x1
-          (vala_map (List.map (fun (x1, x2) -> (patt f x1, expr f x2))) x2)
-    | StXtr loc x1 x2 ->
+          (vala_map (List.map (fun (x1, x2) → (patt f x1, expr f x2))) x2)
+    | StXtr loc x1 x2 →
         f.stXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and type_decl f x =
-  {tdNam = vala_map (fun (loc, x1) -> (f.mloc loc, x1)) x.tdNam;
+  {tdNam = vala_map (fun (loc, x1) → (f.mloc loc, x1)) x.tdNam;
    tdPrm = x.tdPrm; tdPrv = x.tdPrv; tdDef = ctyp f x.tdDef;
    tdCon =
-     vala_map (List.map (fun (x1, x2) -> (ctyp f x1, ctyp f x2))) x.tdCon}
+     vala_map (List.map (fun (x1, x2) → (ctyp f x1, ctyp f x2))) x.tdCon}
 and class_type f =
   self where rec self =
     fun
-    [ CtAcc loc x1 x2 -> f.ctAcc (f.mloc loc) (self x1) (self x2)
-    | CtApp loc x1 x2 -> f.ctApp (f.mloc loc) (self x1) (self x2)
-    | CtCon loc x1 x2 ->
+    [ CtAcc loc x1 x2 → f.ctAcc (f.mloc loc) (self x1) (self x2)
+    | CtApp loc x1 x2 → f.ctApp (f.mloc loc) (self x1) (self x2)
+    | CtCon loc x1 x2 →
         f.ctCon (f.mloc loc) (self x1) (vala_map (List.map (ctyp f)) x2)
-    | CtFun loc x1 x2 -> f.ctFun (f.mloc loc) (ctyp f x1) (self x2)
-    | CtIde loc x1 -> f.ctIde (f.mloc loc) x1
-    | CtSig loc x1 x2 ->
+    | CtFun loc x1 x2 → f.ctFun (f.mloc loc) (ctyp f x1) (self x2)
+    | CtIde loc x1 → f.ctIde (f.mloc loc) x1
+    | CtSig loc x1 x2 →
         f.ctSig (f.mloc loc) (vala_map (option_map (ctyp f)) x1)
           (vala_map (List.map (class_sig_item f)) x2)
-    | CtXtr loc x1 x2 ->
+    | CtXtr loc x1 x2 →
         f.ctXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and class_sig_item f =
   self where rec self =
     fun
-    [ CgCtr loc x1 x2 -> f.cgCtr (f.mloc loc) (ctyp f x1) (ctyp f x2)
-    | CgDcl loc x1 -> f.cgDcl (f.mloc loc) (vala_map (List.map self) x1)
-    | CgInh loc x1 -> f.cgInh (f.mloc loc) (class_type f x1)
-    | CgMth loc x1 x2 x3 -> f.cgMth (f.mloc loc) x1 x2 (ctyp f x3)
-    | CgVal loc x1 x2 x3 -> f.cgVal (f.mloc loc) x1 x2 (ctyp f x3)
-    | CgVir loc x1 x2 x3 -> f.cgVir (f.mloc loc) x1 x2 (ctyp f x3) ]
+    [ CgCtr loc x1 x2 → f.cgCtr (f.mloc loc) (ctyp f x1) (ctyp f x2)
+    | CgDcl loc x1 → f.cgDcl (f.mloc loc) (vala_map (List.map self) x1)
+    | CgInh loc x1 → f.cgInh (f.mloc loc) (class_type f x1)
+    | CgMth loc x1 x2 x3 → f.cgMth (f.mloc loc) x1 x2 (ctyp f x3)
+    | CgVal loc x1 x2 x3 → f.cgVal (f.mloc loc) x1 x2 (ctyp f x3)
+    | CgVir loc x1 x2 x3 → f.cgVir (f.mloc loc) x1 x2 (ctyp f x3) ]
 and class_expr f =
   self where rec self =
     fun
-    [ CeApp loc x1 x2 -> f.ceApp (f.mloc loc) (self x1) (expr f x2)
-    | CeCon loc x1 x2 ->
+    [ CeApp loc x1 x2 → f.ceApp (f.mloc loc) (self x1) (expr f x2)
+    | CeCon loc x1 x2 →
         f.ceCon (f.mloc loc) x1 (vala_map (List.map (ctyp f)) x2)
-    | CeFun loc x1 x2 -> f.ceFun (f.mloc loc) (patt f x1) (self x2)
-    | CeLet loc x1 x2 x3 ->
+    | CeFun loc x1 x2 → f.ceFun (f.mloc loc) (patt f x1) (self x2)
+    | CeLet loc x1 x2 x3 →
         f.ceLet (f.mloc loc) x1
-          (vala_map (List.map (fun (x1, x2) -> (patt f x1, expr f x2))) x2)
+          (vala_map (List.map (fun (x1, x2) → (patt f x1, expr f x2))) x2)
           (self x3)
-    | CeStr loc x1 x2 ->
+    | CeStr loc x1 x2 →
         f.ceStr (f.mloc loc) (vala_map (option_map (patt f)) x1)
           (vala_map (List.map (class_str_item f)) x2)
-    | CeTyc loc x1 x2 -> f.ceTyc (f.mloc loc) (self x1) (class_type f x2)
-    | CeXtr loc x1 x2 ->
+    | CeTyc loc x1 x2 → f.ceTyc (f.mloc loc) (self x1) (class_type f x2)
+    | CeXtr loc x1 x2 →
         f.ceXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and class_str_item f =
   self where rec self =
     fun
-    [ CrCtr loc x1 x2 -> f.crCtr (f.mloc loc) (ctyp f x1) (ctyp f x2)
-    | CrDcl loc x1 -> f.crDcl (f.mloc loc) (vala_map (List.map self) x1)
-    | CrInh loc x1 x2 -> f.crInh (f.mloc loc) (class_expr f x1) x2
-    | CrIni loc x1 -> f.crIni (f.mloc loc) (expr f x1)
-    | CrMth loc x1 x2 x3 x4 x5 ->
+    [ CrCtr loc x1 x2 → f.crCtr (f.mloc loc) (ctyp f x1) (ctyp f x2)
+    | CrDcl loc x1 → f.crDcl (f.mloc loc) (vala_map (List.map self) x1)
+    | CrInh loc x1 x2 → f.crInh (f.mloc loc) (class_expr f x1) x2
+    | CrIni loc x1 → f.crIni (f.mloc loc) (expr f x1)
+    | CrMth loc x1 x2 x3 x4 x5 →
         f.crMth (f.mloc loc) x1 x2 x3 (vala_map (option_map (ctyp f)) x4)
           (expr f x5)
-    | CrVal loc x1 x2 x3 x4 -> f.crVal (f.mloc loc) x1 x2 x3 (expr f x4)
-    | CrVav loc x1 x2 x3 -> f.crVav (f.mloc loc) x1 x2 (ctyp f x3)
-    | CrVir loc x1 x2 x3 -> f.crVir (f.mloc loc) x1 x2 (ctyp f x3) ]
+    | CrVal loc x1 x2 x3 x4 → f.crVal (f.mloc loc) x1 x2 x3 (expr f x4)
+    | CrVav loc x1 x2 x3 → f.crVav (f.mloc loc) x1 x2 (ctyp f x3)
+    | CrVir loc x1 x2 x3 → f.crVir (f.mloc loc) x1 x2 (ctyp f x3) ]
 ;
 

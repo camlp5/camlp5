@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.31 2011/02/04 18:00:15 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.32 2011/02/17 10:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -347,8 +347,8 @@ EXTEND
       | "exception"; ctl = constructor_declaration; b = rebind_exn ->
           let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
-            | _ -> match () with [] ]
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
+            | _ → match () with [] ]
           in
           Qast.Node "StExc" [Qast.Loc; c; tl; b]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
@@ -417,8 +417,8 @@ EXTEND
       | "exception"; ctl = constructor_declaration ->
           let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
-            | _ -> match () with [] ]
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
+            | _ → match () with [] ]
           in
           Qast.Node "SgExc" [Qast.Loc; c; tl]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
@@ -966,8 +966,7 @@ EXTEND
       | "type"; pl = SV (LIST1 LIDENT); "."; t = SELF ->
           Qast.Node "TyPot" [Qast.Loc; pl; t] ]
     | "arrow" RIGHTA
-      [ t1 = SELF; "->"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2]
-      | t1 = SELF; "→"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2] ]
+      [ t1 = SELF; "->"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2] ]
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF -> Qast.Node "TyApp" [Qast.Loc; t1; t2] ]
     | LEFTA
