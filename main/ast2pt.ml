@@ -1,8 +1,7 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.29 2011/02/04 18:34:50 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.30 2011/02/17 09:17:06 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
-#load "pa_macro.cmo";
 
 open Parsetree;
 open Longident;
@@ -289,9 +288,7 @@ value rec ctyp =
       match ocaml_ptyp_variant catl clos sl with
       [ Some t -> mktyp loc t
       | None -> error loc "no variant type or inherit in this ocaml version" ]
-  | IFDEF STRICT THEN
-      TyXtr loc _ _ -> error loc "bad ast TyXtr"
-    END ]
+  | TyXtr loc _ _ -> error loc "bad ast TyXtr" ]
 and meth_list loc fl v =
   match fl with
   [ [] -> if uv v then [mkfield loc Pfield_var] else []
@@ -639,9 +636,7 @@ value rec patt =
       match ocaml_ppat_variant with
       [ Some (_, ppat_variant) -> mkpat loc (ppat_variant (uv s, None))
       | None -> error loc "no variant in this ocaml version" ]
-  | IFDEF STRICT THEN
-      PaXtr loc _ _ -> error loc "bad ast PaXtr"
-    END ]
+  | PaXtr loc _ _ -> error loc "bad ast PaXtr" ]
 and mklabpat (lab, p) = (patt_label_long_id lab, patt p);
 
 value rec expr_fa al =
@@ -1010,9 +1005,7 @@ value rec expr =
   | ExWhi loc e1 el ->
       let e2 = <:expr< do { $list:uv el$ } >> in
       mkexp loc (Pexp_while (expr e1) (expr e2))
-  | IFDEF STRICT THEN
-      ExXtr loc _ _ -> error loc "bad ast ExXtr"
-    END ]
+  | ExXtr loc _ _ -> error loc "bad ast ExXtr" ]
 and label_expr rev_al =
   fun
   [ ExLab loc lpeo ->
@@ -1097,9 +1090,7 @@ and module_type =
   | MtUid loc s -> mkmty loc (Pmty_ident (Lident (uv s)))
   | MtWit loc mt wcl ->
       mkmty loc (Pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
-  | IFDEF STRICT THEN
-      MtXtr loc _ _ -> error loc "bad ast MtXtr"
-    END ]
+  | MtXtr loc _ _ -> error loc "bad ast MtXtr" ]
 and sig_item s l =
   match s with
   [ SgCls loc cd ->
@@ -1148,9 +1139,7 @@ and sig_item s l =
         (fun () -> List.fold_right (fun (si, _) -> sig_item si) (uv sl) l) ()
   | SgVal loc n t ->
       [mksig loc (Psig_value (uv n) (mkvalue_desc t [])) :: l]
-  | IFDEF STRICT THEN
-      SgXtr loc _ _ -> error loc "bad ast SgXtr"
-    END ]
+  | SgXtr loc _ _ -> error loc "bad ast SgXtr" ]
 and module_expr =
   fun
   [ MeAcc loc _ _ as f -> mkmod loc (Pmod_ident (module_expr_long_id f))
@@ -1183,9 +1172,7 @@ and module_expr =
           in
           mkmod loc (pmod_unpack e)
       | None -> error loc "no module unpack in this ocaml version" ]
-  | IFDEF STRICT THEN
-      MeXtr loc _ _ -> error loc "bad ast MeXtr"
-    END ]
+  | MeXtr loc _ _ -> error loc "bad ast MeXtr" ]
 and str_item s l =
   match s with
   [ StCls loc cd ->
@@ -1253,9 +1240,7 @@ and str_item s l =
         (fun () -> List.fold_right (fun (si, _) -> str_item si) (uv sl) l) ()
   | StVal loc rf pel ->
       [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l]
-  | IFDEF STRICT THEN
-      StXtr loc _ _ -> error loc "bad ast StXtr"
-    END ]
+  | StXtr loc _ _ -> error loc "bad ast StXtr" ]
 and class_type =
   fun
   [ CtAcc loc _ _ | CtApp loc _ _ | CtIde loc _ as ct ->
@@ -1297,9 +1282,7 @@ and class_type =
           let cil = List.fold_right class_sig_item (uv ctfl) [] in
           mkcty loc (pcty_signature (ctyp t, cil))
       | None -> error loc "no class type desc in this ocaml version" ]
-  | IFDEF STRICT THEN
-      CtXtr loc _ _ -> error loc "bad ast CtXtr"
-    END ]
+  | CtXtr loc _ _ -> error loc "bad ast CtXtr" ]
 and class_sig_item c l =
   match c with
   [ CgCtr loc t1 t2 ->
@@ -1394,9 +1377,7 @@ and class_expr =
       [ Some pcl_constraint ->
           mkpcl loc (pcl_constraint (class_expr ce) (class_type ct))
       | None -> error loc "no class expr desc in this ocaml version" ]
-  | IFDEF STRICT THEN
-      CeXtr loc _ _ -> error loc "bad ast CeXtr"
-    END ]
+  | CeXtr loc _ _ -> error loc "bad ast CeXtr" ]
 and class_str_item c l =
   match c with
   [ CrCtr loc t1 t2 ->

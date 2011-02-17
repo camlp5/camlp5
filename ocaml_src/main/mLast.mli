@@ -48,6 +48,7 @@ type ctyp =
   | TyTup of loc * ctyp list
   | TyUid of loc * string
   | TyVrn of loc * poly_variant list * string list option option
+  | TyXtr of loc * string * ctyp option
 and poly_variant =
     PvTag of loc * string * bool * ctyp list
   | PvInh of loc * ctyp
@@ -76,6 +77,7 @@ and patt =
   | PaUid of loc * string
   | PaUnp of loc * string * module_type option
   | PaVrn of loc * string
+  | PaXtr of loc * string * patt option
 and expr =
     ExAcc of loc * expr * expr
   | ExAnt of loc * expr
@@ -114,6 +116,7 @@ and expr =
   | ExUid of loc * string
   | ExVrn of loc * string
   | ExWhi of loc * expr * expr list
+  | ExXtr of loc * string * expr option
 and module_type =
     MtAcc of loc * module_type * module_type
   | MtApp of loc * module_type * module_type
@@ -124,6 +127,7 @@ and module_type =
   | MtTyo of loc * module_expr
   | MtUid of loc * string
   | MtWit of loc * module_type * with_constr list
+  | MtXtr of loc * string * module_type option
 and sig_item =
     SgCls of loc * class_type class_infos list
   | SgClt of loc * class_type class_infos list
@@ -138,6 +142,7 @@ and sig_item =
   | SgTyp of loc * type_decl list
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp
+  | SgXtr of loc * string * sig_item option
 and with_constr =
     WcMod of loc * string list * module_expr
   | WcMos of loc * string list * module_expr
@@ -151,6 +156,7 @@ and module_expr =
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string
   | MeUnp of loc * expr * module_type option
+  | MeXtr of loc * string * module_expr option
 and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list
@@ -166,6 +172,7 @@ and str_item =
   | StTyp of loc * type_decl list
   | StUse of loc * string * (str_item * loc) list
   | StVal of loc * bool * (patt * expr) list
+  | StXtr of loc * string * str_item option
 and type_decl =
   { tdNam : loc * string;
     tdPrm : type_var list;
@@ -179,6 +186,7 @@ and class_type =
   | CtFun of loc * ctyp * class_type
   | CtIde of loc * string
   | CtSig of loc * ctyp option * class_sig_item list
+  | CtXtr of loc * string * class_type option
 and class_sig_item =
     CgCtr of loc * ctyp * ctyp
   | CgDcl of loc * class_sig_item list
@@ -193,6 +201,7 @@ and class_expr =
   | CeLet of loc * bool * (patt * expr) list * class_expr
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
+  | CeXtr of loc * string * class_expr option
 and class_str_item =
     CrCtr of loc * ctyp * ctyp
   | CrDcl of loc * class_str_item list

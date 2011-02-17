@@ -145,6 +145,8 @@ module Meta_make (C : MetaSig) =
           C.node "TyVrn"
             [C.vala (C.list poly_variant) lpv;
              C.option (C.option (C.vala (C.list C.string))) ools]
+      | TyXtr (_, s, ot) ->
+          C.node "TyXtr" [C.string s; C.option (C.vala ctyp) ot]
     and poly_variant =
       function
         PvTag (_, s, b, lt) ->
@@ -186,6 +188,8 @@ module Meta_make (C : MetaSig) =
       | PaUnp (_, s, omt) ->
           C.node "PaUnp" [C.vala C.string s; C.option module_type omt]
       | PaVrn (_, s) -> C.node "PaVrn" [C.vala C.string s]
+      | PaXtr (_, s, op) ->
+          C.node "PaXtr" [C.string s; C.option (C.vala patt) op]
     and expr =
       function
         ExAcc (_, e1, e2) -> C.node "ExAcc" [expr e1; expr e2]
@@ -268,6 +272,8 @@ module Meta_make (C : MetaSig) =
       | ExUid (_, s) -> C.node "ExUid" [C.vala C.string s]
       | ExVrn (_, s) -> C.node "ExVrn" [C.vala C.string s]
       | ExWhi (_, e, le) -> C.node "ExWhi" [expr e; C.vala (C.list expr) le]
+      | ExXtr (_, s, oe) ->
+          C.node "ExXtr" [C.string s; C.option (C.vala expr) oe]
     and module_type =
       function
         MtAcc (_, mt1, mt2) ->
@@ -283,6 +289,8 @@ module Meta_make (C : MetaSig) =
       | MtUid (_, s) -> C.node "MtUid" [C.vala C.string s]
       | MtWit (_, mt, lwc) ->
           C.node "MtWit" [module_type mt; C.vala (C.list with_constr) lwc]
+      | MtXtr (_, s, omt) ->
+          C.node "MtXtr" [C.string s; C.option (C.vala module_type) omt]
     and sig_item =
       function
         SgCls (_, lcict) ->
@@ -316,6 +324,8 @@ module Meta_make (C : MetaSig) =
                (C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]))
                lsil]
       | SgVal (_, s, t) -> C.node "SgVal" [C.vala C.string s; ctyp t]
+      | SgXtr (_, s, osi) ->
+          C.node "SgXtr" [C.string s; C.option (C.vala sig_item) osi]
     and with_constr =
       function
         WcMod (_, ls, me) ->
@@ -342,6 +352,8 @@ module Meta_make (C : MetaSig) =
       | MeTyc (_, me, mt) -> C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid (_, s) -> C.node "MeUid" [C.vala C.string s]
       | MeUnp (_, e, omt) -> C.node "MeUnp" [expr e; C.option module_type omt]
+      | MeXtr (_, s, ome) ->
+          C.node "MeXtr" [C.string s; C.option (C.vala module_expr) ome]
     and str_item =
       function
         StCls (_, lcice) ->
@@ -381,6 +393,8 @@ module Meta_make (C : MetaSig) =
           C.node "StVal"
             [C.vala C.bool b;
              C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe]
+      | StXtr (_, s, osi) ->
+          C.node "StXtr" [C.string s; C.option (C.vala str_item) osi]
     and type_decl x =
       C.record
         [record_label "tdNam",
@@ -402,6 +416,8 @@ module Meta_make (C : MetaSig) =
       | CtSig (_, ot, lcsi) ->
           C.node "CtSig"
             [C.vala (C.option ctyp) ot; C.vala (C.list class_sig_item) lcsi]
+      | CtXtr (_, s, oct) ->
+          C.node "CtXtr" [C.string s; C.option (C.vala class_type) oct]
     and class_sig_item =
       function
         CgCtr (_, t1, t2) -> C.node "CgCtr" [ctyp t1; ctyp t2]
@@ -430,6 +446,8 @@ module Meta_make (C : MetaSig) =
           C.node "CeStr"
             [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]
       | CeTyc (_, ce, ct) -> C.node "CeTyc" [class_expr ce; class_type ct]
+      | CeXtr (_, s, oce) ->
+          C.node "CeXtr" [C.string s; C.option (C.vala class_expr) oce]
     and class_str_item =
       function
         CrCtr (_, t1, t2) -> C.node "CrCtr" [ctyp t1; ctyp t2]

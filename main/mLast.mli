@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.16 2011/02/04 17:47:46 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.17 2011/02/17 09:17:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -53,9 +53,7 @@ type ctyp =
   | TyUid of loc and V string
   | TyVrn of loc and V (list poly_variant) and
       option (option (V (list string)))
-  | IFDEF STRICT THEN
-      TyXtr of loc and string and option (V ctyp)
-    END ]
+  | TyXtr of loc and string and option (V ctyp) ]
 and poly_variant =
   [ PvTag of loc and V string and V bool and V (list ctyp)
   | PvInh of loc and ctyp ]
@@ -84,9 +82,7 @@ and patt =
   | PaUid of loc and V string
   | PaUnp of loc and V string and option module_type
   | PaVrn of loc and V string
-  | IFDEF STRICT THEN
-      PaXtr of loc and string and option (V patt)
-    END ]
+  | PaXtr of loc and string and option (V patt) ]
 and expr =
   [ ExAcc of loc and expr and expr
   | ExAnt of loc and expr
@@ -125,9 +121,7 @@ and expr =
   | ExUid of loc and V string
   | ExVrn of loc and V string
   | ExWhi of loc and expr and V (list expr)
-  | IFDEF STRICT THEN
-      ExXtr of loc and string and option (V expr)
-    END ]
+  | ExXtr of loc and string and option (V expr) ]
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
@@ -138,9 +132,7 @@ and module_type =
   | MtTyo of loc and module_expr
   | MtUid of loc and V string
   | MtWit of loc and module_type and V (list with_constr)
-  | IFDEF STRICT THEN
-      MtXtr of loc and string and option (V module_type)
-    END ]
+  | MtXtr of loc and string and option (V module_type) ]
 and sig_item =
   [ SgCls of loc and V (list (class_infos class_type))
   | SgClt of loc and V (list (class_infos class_type))
@@ -155,9 +147,7 @@ and sig_item =
   | SgTyp of loc and V (list type_decl)
   | SgUse of loc and V string and V (list (sig_item * loc))
   | SgVal of loc and V string and ctyp
-  | IFDEF STRICT THEN
-      SgXtr of loc and string and option (V sig_item)
-    END ]
+  | SgXtr of loc and string and option (V sig_item) ]
 and with_constr =
   [ WcMod of loc and V (list string) and module_expr
   | WcMos of loc and V (list string) and module_expr
@@ -171,9 +161,7 @@ and module_expr =
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string
   | MeUnp of loc and expr and option module_type
-  | IFDEF STRICT THEN
-      MeXtr of loc and string and option (V module_expr)
-    END ]
+  | MeXtr of loc and string and option (V module_expr) ]
 and str_item =
   [ StCls of loc and V (list (class_infos class_expr))
   | StClt of loc and V (list (class_infos class_type))
@@ -189,9 +177,7 @@ and str_item =
   | StTyp of loc and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr))
-  | IFDEF STRICT THEN
-      StXtr of loc and string and option (V str_item)
-    END ]
+  | StXtr of loc and string and option (V str_item) ]
 and type_decl =
   { tdNam : V (loc * V string);
     tdPrm : V (list type_var);
@@ -205,9 +191,7 @@ and class_type =
   | CtFun of loc and ctyp and class_type
   | CtIde of loc and V string
   | CtSig of loc and V (option ctyp) and V (list class_sig_item)
-  | IFDEF STRICT THEN
-      CtXtr of loc and string and option (V class_type)
-    END ]
+  | CtXtr of loc and string and option (V class_type) ]
 and class_sig_item =
   [ CgCtr of loc and ctyp and ctyp
   | CgDcl of loc and V (list class_sig_item)
@@ -222,9 +206,7 @@ and class_expr =
   | CeLet of loc and V bool and V (list (patt * expr)) and class_expr
   | CeStr of loc and V (option patt) and V (list class_str_item)
   | CeTyc of loc and class_expr and class_type
-  | IFDEF STRICT THEN
-      CeXtr of loc and string and option (V class_expr)
-    END ]
+  | CeXtr of loc and string and option (V class_expr) ]
 and class_str_item =
   [ CrCtr of loc and ctyp and ctyp
   | CrDcl of loc and V (list class_str_item)

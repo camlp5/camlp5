@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 6.3 2010/11/12 23:23:59 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 6.4 2011/02/17 09:17:06 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -247,6 +247,8 @@ value gen_ast loc tdl =
           end >>
   | _ -> <:str_item< type $list:tdl$ >> ]
 ;
+
+Grammar.warning_verbose.val := False;
 
 EXTEND
   Pcaml.str_item:

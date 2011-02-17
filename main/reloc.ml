@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.17 2011/02/04 17:47:46 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.18 2011/02/17 09:17:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -128,11 +128,9 @@ value rec ctyp floc sh =
     | TyVrn loc x1 x2 ->
         let loc = floc loc in
         TyVrn loc (vala_map (List.map (poly_variant floc sh)) x1) x2
-    | IFDEF STRICT THEN
-        TyXtr loc x1 x2 ->
-          let loc = floc loc in
-          TyXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | TyXtr loc x1 x2 ->
+        let loc = floc loc in
+        TyXtr loc x1 (option_map (vala_map self) x2) ]
 and poly_variant floc sh =
   fun
   [ PvTag loc x1 x2 x3 ->
@@ -221,11 +219,9 @@ and patt floc sh =
     | PaVrn loc x1 ->
         let loc = floc loc in
         PaVrn loc x1
-    | IFDEF STRICT THEN
-        PaXtr loc x1 x2 ->
-          let loc = floc loc in
-          PaXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | PaXtr loc x1 x2 ->
+        let loc = floc loc in
+        PaXtr loc x1 (option_map (vala_map self) x2) ]
 and expr floc sh =
   self where rec self =
     fun
@@ -368,11 +364,9 @@ and expr floc sh =
     | ExWhi loc x1 x2 ->
         let loc = floc loc in
         ExWhi loc (self x1) (vala_map (List.map self) x2)
-    | IFDEF STRICT THEN
-        ExXtr loc x1 x2 ->
-          let loc = floc loc in
-          ExXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | ExXtr loc x1 x2 ->
+        let loc = floc loc in
+        ExXtr loc x1 (option_map (vala_map self) x2) ]
 and module_type floc sh =
   self where rec self =
     fun
@@ -403,11 +397,9 @@ and module_type floc sh =
     | MtWit loc x1 x2 ->
         let loc = floc loc in
         MtWit loc (self x1) (vala_map (List.map (with_constr floc sh)) x2)
-    | IFDEF STRICT THEN
-        MtXtr loc x1 x2 ->
-          let loc = floc loc in
-          MtXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | MtXtr loc x1 x2 ->
+        let loc = floc loc in
+        MtXtr loc x1 (option_map (vala_map self) x2) ]
 and sig_item floc sh =
   self where rec self =
     fun
@@ -455,11 +447,9 @@ and sig_item floc sh =
     | SgVal loc x1 x2 ->
         let loc = floc loc in
         SgVal loc x1 (ctyp floc sh x2)
-    | IFDEF STRICT THEN
-        SgXtr loc x1 x2 ->
-          let loc = floc loc in
-          SgXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | SgXtr loc x1 x2 ->
+        let loc = floc loc in
+        SgXtr loc x1 (option_map (vala_map self) x2) ]
 and with_constr floc sh =
   fun
   [ WcMod loc x1 x2 ->
@@ -498,11 +488,9 @@ and module_expr floc sh =
     | MeUnp loc x1 x2 ->
         let loc = floc loc in
         MeUnp loc (expr floc sh x1) (option_map (module_type floc sh) x2)
-    | IFDEF STRICT THEN
-        MeXtr loc x1 x2 ->
-          let loc = floc loc in
-          MeXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | MeXtr loc x1 x2 ->
+        let loc = floc loc in
+        MeXtr loc x1 (option_map (vala_map self) x2) ]
 and str_item floc sh =
   self where rec self =
     fun
@@ -556,11 +544,9 @@ and str_item floc sh =
           (vala_map
              (List.map (fun (x1, x2) -> (patt floc sh x1, expr floc sh x2)))
              x2)
-    | IFDEF STRICT THEN
-        StXtr loc x1 x2 ->
-          let loc = floc loc in
-          StXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | StXtr loc x1 x2 ->
+        let loc = floc loc in
+        StXtr loc x1 (option_map (vala_map self) x2) ]
 and type_decl floc sh x =
   {tdNam = vala_map (fun (loc, x1) -> (floc loc, x1)) x.tdNam;
    tdPrm = x.tdPrm; tdPrv = x.tdPrv; tdDef = ctyp floc sh x.tdDef;
@@ -589,11 +575,9 @@ and class_type floc sh =
         let loc = floc loc in
         CtSig loc (vala_map (option_map (ctyp floc sh)) x1)
           (vala_map (List.map (class_sig_item floc sh)) x2)
-    | IFDEF STRICT THEN
-        CtXtr loc x1 x2 ->
-          let loc = floc loc in
-          CtXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | CtXtr loc x1 x2 ->
+        let loc = floc loc in
+        CtXtr loc x1 (option_map (vala_map self) x2) ]
 and class_sig_item floc sh =
   self where rec self =
     fun
@@ -641,11 +625,9 @@ and class_expr floc sh =
     | CeTyc loc x1 x2 ->
         let loc = floc loc in
         CeTyc loc (self x1) (class_type floc sh x2)
-    | IFDEF STRICT THEN
-        CeXtr loc x1 x2 ->
-          let loc = floc loc in
-          CeXtr loc x1 (option_map (vala_map self) x2)
-      END ]
+    | CeXtr loc x1 x2 ->
+        let loc = floc loc in
+        CeXtr loc x1 (option_map (vala_map self) x2) ]
 and class_str_item floc sh =
   self where rec self =
     fun

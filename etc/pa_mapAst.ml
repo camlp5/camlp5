@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mapAst.ml,v 6.5 2011/02/16 21:07:13 deraugla Exp $ *)
+(* $Id: pa_mapAst.ml,v 6.6 2011/02/17 09:17:06 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mapAst.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -307,6 +307,8 @@ value gen_mapast loc tdl =
 ;
 
 open Pcaml;
+
+Grammar.warning_verbose.val := False;
 
 EXTEND
   str_item:

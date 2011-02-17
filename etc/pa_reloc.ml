@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 6.4 2010/11/12 23:24:00 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 6.5 2011/02/17 09:17:06 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -185,6 +185,8 @@ value gen_reloc loc tdl =
       <:str_item< value rec $list:pel$ >>
   | _ -> <:str_item< type $list:tdl$ >> ]
 ;
+
+Grammar.warning_verbose.val := False;
 
 EXTEND
   Pcaml.str_item:

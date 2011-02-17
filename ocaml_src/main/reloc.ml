@@ -93,6 +93,8 @@ let rec ctyp floc sh =
     | TyVrn (loc, x1, x2) ->
         let loc = floc loc in
         TyVrn (loc, vala_map (List.map (poly_variant floc sh)) x1, x2)
+    | TyXtr (loc, x1, x2) ->
+        let loc = floc loc in TyXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and poly_variant floc sh =
@@ -151,6 +153,8 @@ and patt floc sh =
         let loc = floc loc in
         PaUnp (loc, x1, option_map (module_type floc sh) x2)
     | PaVrn (loc, x1) -> let loc = floc loc in PaVrn (loc, x1)
+    | PaXtr (loc, x1, x2) ->
+        let loc = floc loc in PaXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and expr floc sh =
@@ -267,6 +271,8 @@ and expr floc sh =
     | ExWhi (loc, x1, x2) ->
         let loc = floc loc in
         ExWhi (loc, self x1, vala_map (List.map self) x2)
+    | ExXtr (loc, x1, x2) ->
+        let loc = floc loc in ExXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and module_type floc sh =
@@ -289,6 +295,8 @@ and module_type floc sh =
     | MtWit (loc, x1, x2) ->
         let loc = floc loc in
         MtWit (loc, self x1, vala_map (List.map (with_constr floc sh)) x2)
+    | MtXtr (loc, x1, x2) ->
+        let loc = floc loc in MtXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and sig_item floc sh =
@@ -335,6 +343,8 @@ and sig_item floc sh =
            vala_map (List.map (fun (x1, loc) -> self x1, floc loc)) x2)
     | SgVal (loc, x1, x2) ->
         let loc = floc loc in SgVal (loc, x1, ctyp floc sh x2)
+    | SgXtr (loc, x1, x2) ->
+        let loc = floc loc in SgXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and with_constr floc sh =
@@ -365,6 +375,8 @@ and module_expr floc sh =
     | MeUnp (loc, x1, x2) ->
         let loc = floc loc in
         MeUnp (loc, expr floc sh x1, option_map (module_type floc sh) x2)
+    | MeXtr (loc, x1, x2) ->
+        let loc = floc loc in MeXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and str_item floc sh =
@@ -416,6 +428,8 @@ and str_item floc sh =
           (loc, x1,
            vala_map
              (List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2)) x2)
+    | StXtr (loc, x1, x2) ->
+        let loc = floc loc in StXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and type_decl floc sh x =
@@ -442,6 +456,8 @@ and class_type floc sh =
         CtSig
           (loc, vala_map (option_map (ctyp floc sh)) x1,
            vala_map (List.map (class_sig_item floc sh)) x2)
+    | CtXtr (loc, x1, x2) ->
+        let loc = floc loc in CtXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and class_sig_item floc sh =
@@ -485,6 +501,8 @@ and class_expr floc sh =
            vala_map (List.map (class_str_item floc sh)) x2)
     | CeTyc (loc, x1, x2) ->
         let loc = floc loc in CeTyc (loc, self x1, class_type floc sh x2)
+    | CeXtr (loc, x1, x2) ->
+        let loc = floc loc in CeXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and class_str_item floc sh =

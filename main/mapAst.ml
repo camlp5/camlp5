@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.7 2011/02/17 03:43:44 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.8 2011/02/17 09:17:07 deraugla Exp $ *)
 
 #load "pa_macro.cmo";
 
@@ -333,10 +333,8 @@ value rec ctyp f =
     | TyUid loc x1 -> f.tyUid (f.mloc loc) x1
     | TyVrn loc x1 x2 ->
         f.tyVrn (f.mloc loc) (vala_map (List.map (poly_variant f)) x1) x2
-    | IFDEF STRICT THEN
-        TyXtr loc x1 x2 ->
-          f.tyXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | TyXtr loc x1 x2 ->
+        f.tyXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and poly_variant f =
   fun
   [ PvTag loc x1 x2 x3 ->
@@ -380,10 +378,8 @@ and patt f =
     | PaUnp loc x1 x2 ->
         f.paUnp (f.mloc loc) x1 (option_map (module_type f) x2)
     | PaVrn loc x1 -> f.paVrn (f.mloc loc) x1
-    | IFDEF STRICT THEN
-        PaXtr loc x1 x2 ->
-          f.paXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | PaXtr loc x1 x2 ->
+        f.paXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and expr f =
   self where rec self =
     fun
@@ -468,10 +464,8 @@ and expr f =
     | ExVrn loc x1 -> f.exVrn (f.mloc loc) x1
     | ExWhi loc x1 x2 ->
         f.exWhi (f.mloc loc) (self x1) (vala_map (List.map self) x2)
-    | IFDEF STRICT THEN
-        ExXtr loc x1 x2 ->
-          f.exXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | ExXtr loc x1 x2 ->
+        f.exXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and module_type f =
   self where rec self =
     fun
@@ -487,10 +481,8 @@ and module_type f =
     | MtWit loc x1 x2 ->
         f.mtWit (f.mloc loc) (self x1)
           (vala_map (List.map (with_constr f)) x2)
-    | IFDEF STRICT THEN
-        MtXtr loc x1 x2 ->
-          f.mtXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | MtXtr loc x1 x2 ->
+        f.mtXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and sig_item f =
   self where rec self =
     fun
@@ -518,10 +510,8 @@ and sig_item f =
         f.sgUse (f.mloc loc) x1
           (vala_map (List.map (fun (x1, loc) -> (self x1, f.mloc loc))) x2)
     | SgVal loc x1 x2 -> f.sgVal (f.mloc loc) x1 (ctyp f x2)
-    | IFDEF STRICT THEN
-        SgXtr loc x1 x2 ->
-          f.sgXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | SgXtr loc x1 x2 ->
+        f.sgXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and with_constr f =
   fun
   [ WcMod loc x1 x2 -> f.wcMod (f.mloc loc) x1 (module_expr f x2)
@@ -541,10 +531,8 @@ and module_expr f =
     | MeUid loc x1 -> f.meUid (f.mloc loc) x1
     | MeUnp loc x1 x2 ->
         f.meUnp (f.mloc loc) (expr f x1) (option_map (module_type f) x2)
-    | IFDEF STRICT THEN
-        MeXtr loc x1 x2 ->
-          f.meXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | MeXtr loc x1 x2 ->
+        f.meXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and str_item f =
   self where rec self =
     fun
@@ -575,10 +563,8 @@ and str_item f =
     | StVal loc x1 x2 ->
         f.stVal (f.mloc loc) x1
           (vala_map (List.map (fun (x1, x2) -> (patt f x1, expr f x2))) x2)
-    | IFDEF STRICT THEN
-        StXtr loc x1 x2 ->
-          f.stXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | StXtr loc x1 x2 ->
+        f.stXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and type_decl f x =
   {tdNam = vala_map (fun (loc, x1) -> (f.mloc loc, x1)) x.tdNam;
    tdPrm = x.tdPrm; tdPrv = x.tdPrv; tdDef = ctyp f x.tdDef;
@@ -596,10 +582,8 @@ and class_type f =
     | CtSig loc x1 x2 ->
         f.ctSig (f.mloc loc) (vala_map (option_map (ctyp f)) x1)
           (vala_map (List.map (class_sig_item f)) x2)
-    | IFDEF STRICT THEN
-        CtXtr loc x1 x2 ->
-          f.ctXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | CtXtr loc x1 x2 ->
+        f.ctXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and class_sig_item f =
   self where rec self =
     fun
@@ -624,10 +608,8 @@ and class_expr f =
         f.ceStr (f.mloc loc) (vala_map (option_map (patt f)) x1)
           (vala_map (List.map (class_str_item f)) x2)
     | CeTyc loc x1 x2 -> f.ceTyc (f.mloc loc) (self x1) (class_type f x2)
-    | IFDEF STRICT THEN
-        CeXtr loc x1 x2 ->
-          f.ceXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
-      END ]
+    | CeXtr loc x1 x2 ->
+        f.ceXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
 and class_str_item f =
   self where rec self =
     fun
