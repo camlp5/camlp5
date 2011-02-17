@@ -11,9 +11,20 @@ exception GiveUp;;
 let line_length = ref 78;;
 let horiz_ctx = ref false;;
 
+let utf8_string_length s =
+  let rec loop i len =
+    if i = String.length s then len
+    else
+      let c = Char.code s.[i] in
+      if c < 0b1000_0000 || c >= 0b1100_0000 then loop (i + 1) (len + 1)
+      else loop (i + 1) len
+  in
+  loop 0 0
+;;
+
 let after_print s =
   if !horiz_ctx then
-    if string_contains s '\n' || String.length s > !line_length then
+    if string_contains s '\n' || utf8_string_length s > !line_length then
       raise GiveUp
     else s
   else s

@@ -1,6 +1,8 @@
 Camlp5 Version 6.02.2:
 ----------------------
 
+* [17 Feb 11] Pretty module now considers strings as utf8 encoded (impacts
+  computation of strings lengths).
 * [04 Feb 11] Revised syntax: completed syntax multi labels, ~{x=y; z=t}
   (equivalent to ~{x=y} ~{z=t}) in patterns (in 6.02.1 was implemented
   only in expressions).

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pretty.ml,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
+(* $Id: pretty.ml,v 6.2 2011/02/17 03:14:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -11,9 +11,18 @@ exception GiveUp;
 value line_length = ref 78;
 value horiz_ctx = ref False;
 
+value utf8_string_length s =
+  loop 0 0 where rec loop i len =
+    if i = String.length s then len
+    else
+      let c = Char.code s.[i] in
+      if c < 0b1000_0000 || c >= 0b1100_0000 then loop (i + 1) (len + 1)
+      else loop (i + 1) len
+;
+
 value after_print s =
   if horiz_ctx.val then
-    if string_contains s '\n' || String.length s > line_length.val then
+    if string_contains s '\n' || utf8_string_length s > line_length.val then
       raise GiveUp
     else s
   else s

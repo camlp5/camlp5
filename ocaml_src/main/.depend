@@ -19,6 +19,9 @@ main.cmo: $(OTOP)/utils/pconfig.cmi ../odyl/odyl_main.cmi \
     argl.cmi ast2pt.cmi mLast.cmi pcaml.cmi
 main.cmx: $(OTOP)/utils/pconfig.cmx ../odyl/odyl_main.cmx \
     argl.cmx ast2pt.cmx mLast.cmi pcaml.cmx
+mapAst.cmo: mLast.cmi mapAst.cmi
+mapAst.cmx: mLast.cmi mapAst.cmi
+mapAst.cmi: mLast.cmi
 parserify.cmo: mLast.cmi parserify.cmi prtools.cmi
 parserify.cmx: mLast.cmi parserify.cmi prtools.cmx
 parserify.cmi: mLast.cmi
