@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.11 2010/10/04 20:14:58 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.12 2011/02/17 10:14:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
@@ -56,6 +56,16 @@ value misc_letter buf strm =
 value misc_punct buf strm =
   if utf8_lexing.val then
     match strm with lexer [ '\226' _ _ ]
+  else
+    match strm with parser []
+;
+
+value utf8_equiv ctx bp buf strm =
+  if utf8_lexing.val then
+    match strm with lexer
+    [ "→" -> keyword_or_error ctx (bp, $pos) "->"
+    | "≤" -> keyword_or_error ctx (bp, $pos) "<="
+    | "≥" -> keyword_or_error ctx (bp, $pos) ">=" ]
   else
     match strm with parser []
 ;
@@ -393,6 +403,7 @@ value next_token_after_spaces ctx bp =
       keyword_or_error ctx (bp, $pos) id
   | ";;" -> keyword_or_error ctx (bp, $pos) ";;"
   | ";" -> keyword_or_error ctx (bp, $pos) ";"
+  | (utf8_equiv ctx bp)
   | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "\\"/ ident3! -> ("LIDENT", $buf)
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]

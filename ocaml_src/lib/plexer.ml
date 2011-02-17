@@ -86,6 +86,42 @@ let misc_punct buf strm =
   else let (_ : _ Stream.t) = strm in raise Stream.Failure
 ;;
 
+let utf8_equiv ctx bp buf strm =
+  if !utf8_lexing then
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some '\226' ->
+        Stream.junk strm__;
+        begin try
+          match Stream.peek strm__ with
+            Some '\134' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some '\146' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__) "->"
+              | _ -> raise (Stream.Error "")
+              end
+          | Some '\137' ->
+              Stream.junk strm__;
+              begin try
+                match Stream.peek strm__ with
+                  Some '\164' ->
+                    Stream.junk strm__;
+                    keyword_or_error ctx (bp, Stream.count strm__) "<="
+                | Some '\165' ->
+                    Stream.junk strm__;
+                    keyword_or_error ctx (bp, Stream.count strm__) ">="
+                | _ -> raise Stream.Failure
+              with Stream.Failure -> raise (Stream.Error "")
+              end
+          | _ -> raise Stream.Failure
+        with Stream.Failure -> raise (Stream.Error "")
+        end
+    | _ -> raise Stream.Failure
+  else let (_ : _ Stream.t) = strm in raise Stream.Failure
+;;
+
 let rec ident buf (strm__ : _ Stream.t) =
   match
     try
@@ -912,23 +948,26 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
               | _ -> keyword_or_error ctx (bp, Stream.count strm__) ";"
               end
           | _ ->
-              match
-                try Some (misc_punct buf strm__) with Stream.Failure -> None
-              with
-                Some buf ->
-                  let buf = ident2 buf strm__ in
-                  keyword_or_error ctx (bp, Stream.count strm__)
-                    (Plexing.Lexbuf.get buf)
-              | _ ->
-                  match Stream.peek strm__ with
-                    Some '\\' ->
-                      Stream.junk strm__;
-                      let buf = ident3 buf strm__ in
-                      "LIDENT", Plexing.Lexbuf.get buf
-                  | _ ->
-                      let buf = any ctx buf strm__ in
+              try utf8_equiv ctx bp buf strm__ with
+                Stream.Failure ->
+                  match
+                    try Some (misc_punct buf strm__) with
+                      Stream.Failure -> None
+                  with
+                    Some buf ->
+                      let buf = ident2 buf strm__ in
                       keyword_or_error ctx (bp, Stream.count strm__)
                         (Plexing.Lexbuf.get buf)
+                  | _ ->
+                      match Stream.peek strm__ with
+                        Some '\\' ->
+                          Stream.junk strm__;
+                          let buf = ident3 buf strm__ in
+                          "LIDENT", Plexing.Lexbuf.get buf
+                      | _ ->
+                          let buf = any ctx buf strm__ in
+                          keyword_or_error ctx (bp, Stream.count strm__)
+                            (Plexing.Lexbuf.get buf)
 ;;
 
 let get_comment buf strm = Plexing.Lexbuf.get buf;;
@@ -1344,15 +1383,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 696, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 707, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 696, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 707, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 696, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 707, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 697, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 708, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 697, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 708, 37)));
        Plexing.tok_comm = None}
   in
   let glex =

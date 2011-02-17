@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.34 2011/02/16 17:34:45 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.35 2011/02/17 10:14:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -13,6 +13,7 @@ Pcaml.no_constructors_arity.val := False;
 do {
   let odfa = Plexer.dollar_for_antiquotation.val in
   Plexer.dollar_for_antiquotation.val := False;
+  Plexer.utf8_lexing.val := True;
   Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
   Plexer.dollar_for_antiquotation.val := odfa;
   Grammar.Unsafe.clear_entry interf;
@@ -589,8 +590,7 @@ EXTEND
       | "type"; pl = V (LIST1 LIDENT); "."; t = ctyp ->
           <:ctyp< type $_list:pl$ . $t$ >> ]
     | "arrow" RIGHTA
-      [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >>
-      | t1 = SELF; "→"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
+      [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t1$ $t2$ >> ]
     | LEFTA

@@ -12,6 +12,7 @@ Pcaml.no_constructors_arity := false;;
 
 let odfa = !(Plexer.dollar_for_antiquotation) in
 Plexer.dollar_for_antiquotation := false;
+Plexer.utf8_lexing := true;
 Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
 Plexer.dollar_for_antiquotation := odfa;
 Grammar.Unsafe.clear_entry interf;
@@ -1716,11 +1717,7 @@ Grammar.extend
         (fun (t : 'ctyp) _ (pl : 'typevar list) _ (loc : Ploc.t) ->
            (MLast.TyPol (loc, pl, t) : 'ctyp))];
      Some "arrow", Some Gramext.RightA,
-     [[Gramext.Sself; Gramext.Stoken ("", "→"); Gramext.Sself],
-      Gramext.action
-        (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
-           (MLast.TyArr (loc, t1, t2) : 'ctyp));
-      [Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
+     [[Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
       Gramext.action
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
            (MLast.TyArr (loc, t1, t2) : 'ctyp))];

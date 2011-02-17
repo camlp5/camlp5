@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.71 2011/02/16 17:35:55 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.72 2011/02/17 10:14:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -276,6 +276,24 @@ value patt_as pc z =
 
 (* utilities specific to pr_r *)
 
+value default_lang =
+  try Sys.getenv "LC_ALL" with
+  [ Not_found ->
+      try Sys.getenv "LC_MESSAGES" with
+      [ Not_found -> try Sys.getenv "LANG" with [ Not_found -> "" ] ] ]
+;
+
+value utf8 =
+  let s = default_lang in
+  let utf8_str = "utf-8" in
+  let slen = String.length s in
+  let ulen = String.length utf8_str in
+  slen >= ulen &&
+  String.lowercase (String.sub s (slen - ulen) ulen) = utf8_str
+;
+
+value arrow () = if utf8 then "→" else "->";
+
 (* Basic displaying of a 'binding' (let, value, expr or patt record field).
    The pretty printing is done correctly, but there are no syntax shortcuts
    (e.g. "let f = fun x -> y" is *not* shortened as "let f x = y"), nor
@@ -548,8 +566,10 @@ value match_assoc force_vertic pc (p, w, e) =
   let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   let patt_arrow pc (p, w) =
     match w with
-    [ <:vala< Some e >> -> pprintf pc "%p@ @[when@;%p ->@]" patt_as p expr e
-    | _ -> pprintf pc "%p ->" patt_as p ]
+    [ <:vala< Some e >> ->
+        pprintf pc "%p@ @[when@;%p %s@]" patt_as p expr e (arrow ())
+    | _ ->
+        pprintf pc "%p %s" patt_as p (arrow ()) ]
   in
   horiz_vertic_if force_vertic
     (fun () -> pprintf pc "%p %p" patt_arrow (p, w) (comm_expr expr) e)
@@ -635,22 +655,6 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
-value default_lang =
-  try Sys.getenv "LC_ALL" with
-  [ Not_found ->
-      try Sys.getenv "LC_MESSAGES" with
-      [ Not_found -> try Sys.getenv "LANG" with [ Not_found -> "" ] ] ]
-;
-
-value utf8 =
-  let s = default_lang in
-  let utf8_str = "utf-8" in
-  let slen = String.length s in
-  let ulen = String.length utf8_str in
-  slen >= ulen &&
-  String.lowercase (String.sub s (slen - ulen) ulen) = utf8_str
-;
-
 value start_with s s_ini =
   let len = String.length s_ini in
   String.length s >= len && String.sub s 0 len = s_ini
@@ -691,8 +695,6 @@ value type_var pc (tv, vari) =
          q ^ s
      | None -> "_" ])
 ;
-
-value arrow () = if utf8 then "→" else "->";
 
 value type_constraint pc (t1, t2) =
   pprintf pc " constraint %p =@;%p" ctyp t1 ctyp t2
@@ -1013,8 +1015,8 @@ value sig_module_or_module_type pref defc pc (m, mt) =
 ;
 
 value str_or_sig_functor pc s mt module_expr_or_type met =
-  pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ ->@;%p" s module_type mt
-    module_expr_or_type met
+  pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ %s@;%p" s module_type mt
+    (arrow ()) module_expr_or_type met
 ;
 
 value con_typ_pat pc (loc, sl, tpl) =
@@ -1090,7 +1092,8 @@ EXTEND_PRINTER
               let (pl, e1) = expr_fun_args e1 in
               let pl = [p1 :: pl] in
               horiz_vertic
-                (fun () -> pprintf pc "fun %p -> %p" (hlist patt) pl curr e1)
+                (fun () ->
+                   pprintf pc "fun %p %s %p" (hlist patt) pl (arrow ()) curr e1)
                 (fun () ->
                    let pl = List.map (fun p -> (p, "")) pl in
                    match sequencify e1 with
@@ -1098,7 +1101,7 @@ EXTEND_PRINTER
                        sequence_box (fun pc () -> pprintf pc "fun %p -> "
                          (plist patt 4) pl) pc se
                    | None ->
-                       pprintf pc "fun %p ->@;%p" (plist patt 4) pl
+                       pprintf pc "fun %p %s@;%p" (plist patt 4) pl (arrow ())
                          (comm_expr curr) e1 ])
           | [] -> pprintf pc "fun []"
           | pwel -> pprintf pc "@[<b>fun@ %p@]" match_assoc_list pwel ]
