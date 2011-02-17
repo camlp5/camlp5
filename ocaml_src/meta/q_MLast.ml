@@ -935,7 +935,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 351, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 351, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1587,7 +1587,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 421, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 421, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -4150,11 +4150,7 @@ Grammar.extend
         (fun (t : 'ctyp) _ (pl : 'e__118) _ (loc : Ploc.t) ->
            (Qast.Node ("TyPol", [Qast.Loc; pl; t]) : 'ctyp))];
      Some "arrow", Some Gramext.RightA,
-     [[Gramext.Sself; Gramext.Stoken ("", "→"); Gramext.Sself],
-      Gramext.action
-        (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
-           (Qast.Node ("TyArr", [Qast.Loc; t1; t2]) : 'ctyp));
-      [Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
+     [[Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
       Gramext.action
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
            (Qast.Node ("TyArr", [Qast.Loc; t1; t2]) : 'ctyp))];
