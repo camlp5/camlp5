@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.5 2011/02/16 21:07:13 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.6 2011/02/17 03:19:47 deraugla Exp $ *)
 
 #load "pa_macro.cmo";
 
@@ -47,13 +47,11 @@ type map_f =
     tyQuo : loc → v string → ctyp;
     tyRec : loc → v (list (loc * string * bool * ctyp)) → ctyp;
     tySum :
-      loc → v (list (loc * v string * v (list ctyp) * option ctyp)) →
-        ctyp;
+      loc → v (list (loc * v string * v (list ctyp) * option ctyp)) → ctyp;
     tyTup : loc → v (list ctyp) → ctyp;
     tyUid : loc → v string → ctyp;
     tyVrn :
-      loc → v (list poly_variant) → option (option (v (list string))) →
-        ctyp;
+      loc → v (list poly_variant) → option (option (v (list string))) → ctyp;
     tyXtr : loc → string → option (v ctyp) → ctyp;
     pvTag : loc → v string → v bool → v (list ctyp) → poly_variant;
     pvInh : loc → ctyp → poly_variant;
@@ -93,9 +91,7 @@ type map_f =
     exChr : loc → v string → expr;
     exCoe : loc → expr → option ctyp → ctyp → expr;
     exFlo : loc → v string → expr;
-    exFor :
-      loc → v string → expr → expr → v bool → v (list expr) →
-        expr;
+    exFor : loc → v string → expr → expr → v bool → v (list expr) → expr;
     exFun : loc → v (list (patt * v (option expr) * expr)) → expr;
     exIfe : loc → expr → expr → expr → expr;
     exInt : loc → v string → string → expr;
@@ -104,8 +100,7 @@ type map_f =
     exLet : loc → v bool → v (list (patt * expr)) → expr → expr;
     exLid : loc → v string → expr;
     exLmd : loc → v string → module_expr → expr → expr;
-    exMat :
-      loc → expr → v (list (patt * v (option expr) * expr)) → expr;
+    exMat : loc → expr → v (list (patt * v (option expr) * expr)) → expr;
     exNew : loc → v (list string) → expr;
     exObj : loc → v (option patt) → v (list class_str_item) → expr;
     exOlb : loc → patt → v (option expr) → expr;
@@ -116,8 +111,7 @@ type map_f =
     exSnd : loc → expr → v string → expr;
     exSte : loc → expr → expr → expr;
     exStr : loc → v string → expr;
-    exTry :
-      loc → expr → v (list (patt * v (option expr) * expr)) → expr;
+    exTry : loc → expr → v (list (patt * v (option expr) * expr)) → expr;
     exTup : loc → v (list expr) → expr;
     exTyc : loc → expr → ctyp → expr;
     exUid : loc → v string → expr;
@@ -151,10 +145,8 @@ type map_f =
     wcMod : loc → v (list string) → module_expr → with_constr;
     wcMos : loc → v (list string) → module_expr → with_constr;
     wcTyp :
-      loc → v (list string) → v (list type_var) → v bool → ctyp →
-        with_constr;
-    wcTys :
-      loc → v (list string) → v (list type_var) → ctyp → with_constr;
+      loc → v (list string) → v (list type_var) → v bool → ctyp → with_constr;
+    wcTys : loc → v (list string) → v (list type_var) → ctyp → with_constr;
     meAcc : loc → module_expr → module_expr → module_expr;
     meApp : loc → module_expr → module_expr → module_expr;
     meFun : loc → v string → module_type → module_expr → module_expr;
@@ -167,8 +159,7 @@ type map_f =
     stClt : loc → v (list (class_infos class_type)) → str_item;
     stDcl : loc → v (list str_item) → str_item;
     stDir : loc → v string → v (option expr) → str_item;
-    stExc :
-      loc → v string → v (list ctyp) → v (list string) → str_item;
+    stExc : loc → v string → v (list ctyp) → v (list string) → str_item;
     stExp : loc → expr → str_item;
     stExt : loc → v string → ctyp → v (list string) → str_item;
     stInc : loc → module_expr → str_item;
@@ -184,8 +175,7 @@ type map_f =
     ctCon : loc → class_type → v (list ctyp) → class_type;
     ctFun : loc → ctyp → class_type → class_type;
     ctIde : loc → v string → class_type;
-    ctSig :
-      loc → v (option ctyp) → v (list class_sig_item) → class_type;
+    ctSig : loc → v (option ctyp) → v (list class_sig_item) → class_type;
     ctXtr : loc → string → option (v class_type) → class_type;
     cgCtr : loc → ctyp → ctyp → class_sig_item;
     cgDcl : loc → v (list class_sig_item) → class_sig_item;
@@ -196,10 +186,8 @@ type map_f =
     ceApp : loc → class_expr → expr → class_expr;
     ceCon : loc → v (list string) → v (list ctyp) → class_expr;
     ceFun : loc → patt → class_expr → class_expr;
-    ceLet :
-      loc → v bool → v (list (patt * expr)) → class_expr → class_expr;
-    ceStr :
-      loc → v (option patt) → v (list class_str_item) → class_expr;
+    ceLet : loc → v bool → v (list (patt * expr)) → class_expr → class_expr;
+    ceStr : loc → v (option patt) → v (list class_str_item) → class_expr;
     ceTyc : loc → class_expr → class_type → class_expr;
     ceXtr : loc → string → option (v class_expr) → class_expr;
     crCtr : loc → ctyp → ctyp → class_str_item;
@@ -209,8 +197,7 @@ type map_f =
     crMth :
       loc → v bool → v bool → v string → v (option ctyp) → expr →
         class_str_item;
-    crVal :
-      loc → v bool → v bool → v string → expr → class_str_item;
+    crVal : loc → v bool → v bool → v string → expr → class_str_item;
     crVav : loc → v bool → v string → ctyp → class_str_item;
     crVir : loc → v bool → v string → ctyp → class_str_item;
     mloc : loc → loc;
