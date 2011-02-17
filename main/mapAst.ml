@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.6 2011/02/17 03:19:47 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.7 2011/02/17 03:43:44 deraugla Exp $ *)
 
 #load "pa_macro.cmo";
 
@@ -333,9 +333,11 @@ value rec ctyp f =
     | TyUid loc x1 -> f.tyUid (f.mloc loc) x1
     | TyVrn loc x1 x2 ->
         f.tyVrn (f.mloc loc) (vala_map (List.map (poly_variant f)) x1) x2
-    | TyXtr loc x1 x2 ->
-          f.tyXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and poly_variant f =
+    | IFDEF STRICT THEN
+        TyXtr loc x1 x2 ->
+          f.tyXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and poly_variant f =
   fun
   [ PvTag loc x1 x2 x3 ->
       f.pvTag (f.mloc loc) x1 x2 (vala_map (List.map (ctyp f)) x3)
@@ -378,9 +380,11 @@ and patt f =
     | PaUnp loc x1 x2 ->
         f.paUnp (f.mloc loc) x1 (option_map (module_type f) x2)
     | PaVrn loc x1 -> f.paVrn (f.mloc loc) x1
-    | PaXtr loc x1 x2 ->
-          f.paXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and expr f =
+    | IFDEF STRICT THEN
+        PaXtr loc x1 x2 ->
+          f.paXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and expr f =
   self where rec self =
     fun
     [ ExAcc loc x1 x2 -> f.exAcc (f.mloc loc) (self x1) (self x2)
@@ -464,9 +468,11 @@ and patt f =
     | ExVrn loc x1 -> f.exVrn (f.mloc loc) x1
     | ExWhi loc x1 x2 ->
         f.exWhi (f.mloc loc) (self x1) (vala_map (List.map self) x2)
-    | ExXtr loc x1 x2 ->
-          f.exXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and module_type f =
+    | IFDEF STRICT THEN
+        ExXtr loc x1 x2 ->
+          f.exXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and module_type f =
   self where rec self =
     fun
     [ MtAcc loc x1 x2 -> f.mtAcc (f.mloc loc) (self x1) (self x2)
@@ -481,9 +487,11 @@ and patt f =
     | MtWit loc x1 x2 ->
         f.mtWit (f.mloc loc) (self x1)
           (vala_map (List.map (with_constr f)) x2)
-    | MtXtr loc x1 x2 ->
-          f.mtXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and sig_item f =
+    | IFDEF STRICT THEN
+        MtXtr loc x1 x2 ->
+          f.mtXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and sig_item f =
   self where rec self =
     fun
     [ SgCls loc x1 ->
@@ -510,9 +518,11 @@ and patt f =
         f.sgUse (f.mloc loc) x1
           (vala_map (List.map (fun (x1, loc) -> (self x1, f.mloc loc))) x2)
     | SgVal loc x1 x2 -> f.sgVal (f.mloc loc) x1 (ctyp f x2)
-    | SgXtr loc x1 x2 ->
-          f.sgXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and with_constr f =
+    | IFDEF STRICT THEN
+        SgXtr loc x1 x2 ->
+          f.sgXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and with_constr f =
   fun
   [ WcMod loc x1 x2 -> f.wcMod (f.mloc loc) x1 (module_expr f x2)
   | WcMos loc x1 x2 -> f.wcMos (f.mloc loc) x1 (module_expr f x2)
@@ -531,9 +541,11 @@ and module_expr f =
     | MeUid loc x1 -> f.meUid (f.mloc loc) x1
     | MeUnp loc x1 x2 ->
         f.meUnp (f.mloc loc) (expr f x1) (option_map (module_type f) x2)
-    | MeXtr loc x1 x2 ->
-          f.meXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and str_item f =
+    | IFDEF STRICT THEN
+        MeXtr loc x1 x2 ->
+          f.meXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and str_item f =
   self where rec self =
     fun
     [ StCls loc x1 ->
@@ -563,9 +575,11 @@ and module_expr f =
     | StVal loc x1 x2 ->
         f.stVal (f.mloc loc) x1
           (vala_map (List.map (fun (x1, x2) -> (patt f x1, expr f x2))) x2)
-    | StXtr loc x1 x2 ->
-          f.stXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and type_decl f x =
+    | IFDEF STRICT THEN
+        StXtr loc x1 x2 ->
+          f.stXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and type_decl f x =
   {tdNam = vala_map (fun (loc, x1) -> (f.mloc loc, x1)) x.tdNam;
    tdPrm = x.tdPrm; tdPrv = x.tdPrv; tdDef = ctyp f x.tdDef;
    tdCon =
@@ -582,9 +596,11 @@ and class_type f =
     | CtSig loc x1 x2 ->
         f.ctSig (f.mloc loc) (vala_map (option_map (ctyp f)) x1)
           (vala_map (List.map (class_sig_item f)) x2)
-    | CtXtr loc x1 x2 ->
-          f.ctXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and class_sig_item f =
+    | IFDEF STRICT THEN
+        CtXtr loc x1 x2 ->
+          f.ctXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and class_sig_item f =
   self where rec self =
     fun
     [ CgCtr loc x1 x2 -> f.cgCtr (f.mloc loc) (ctyp f x1) (ctyp f x2)
@@ -608,9 +624,11 @@ and class_expr f =
         f.ceStr (f.mloc loc) (vala_map (option_map (patt f)) x1)
           (vala_map (List.map (class_str_item f)) x2)
     | CeTyc loc x1 x2 -> f.ceTyc (f.mloc loc) (self x1) (class_type f x2)
-    | CeXtr loc x1 x2 ->
-          f.ceXtr (f.mloc loc) x1 (option_map (vala_map self) x2) ]
-          and class_str_item f =
+    | IFDEF STRICT THEN
+        CeXtr loc x1 x2 ->
+          f.ceXtr (f.mloc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and class_str_item f =
   self where rec self =
     fun
     [ CrCtr loc x1 x2 -> f.crCtr (f.mloc loc) (ctyp f x1) (ctyp f x2)
