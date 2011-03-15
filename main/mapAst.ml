@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mapAst.ml,v 6.9 2011/02/17 10:20:50 deraugla Exp $ *)
+(* $Id: mapAst.ml,v 6.10 2011/03/15 11:00:42 deraugla Exp $ *)
 
 #load "pa_macro.cmo";
 
@@ -203,6 +203,12 @@ type map_f =
     mloc : loc → loc;
     anti_loc : loc → loc → loc → loc }
 ;
+
+value with_mloc f mloc = do {
+  let f : map_f = Obj.magic (Array.copy (Obj.magic (f : map_f))) in
+  f.mloc := mloc;
+  f
+};
 
 value rec def =
   {tyAcc loc x1 x2 = TyAcc loc x1 x2; tyAli loc x1 x2 = TyAli loc x1 x2;
