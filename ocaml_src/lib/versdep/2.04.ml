@@ -13,7 +13,7 @@ type ('a, 'b) choice =
 
 let sys_ocaml_version = "2.04";;
 
-let ocaml_location (fname, lnum, bolp, bp, ep) =
+let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
   {Location.loc_start = bp; Location.loc_end = ep;
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;

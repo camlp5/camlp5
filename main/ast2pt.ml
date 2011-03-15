@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.30 2011/02/17 09:17:06 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.31 2011/03/15 12:12:40 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -59,7 +59,9 @@ value mkloc loc =
   let ep = Ploc.last_pos loc in
   let lnum = Ploc.line_nb loc in
   let bolp = Ploc.bol_pos loc in
-  ocaml_location (glob_fname.val, lnum, bolp, bp, ep)
+  let lnuml = Ploc.line_nb_last loc in
+  let bolpl = Ploc.bol_pos_last loc in
+  ocaml_location (glob_fname.val, lnum, bolp, lnuml, bolpl, bp, ep)
 ;
 
 value mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};

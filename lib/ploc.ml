@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.8 2010/10/01 12:34:02 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.9 2011/03/15 12:12:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -8,22 +8,27 @@ type t =
   { fname : string;
     line_nb : int;
     bol_pos : int;
+    line_nb_last : int;
+    bol_pos_last : int;
     bp : int;
     ep : int;
     comm : string }
 ;
 
 value make_loc fname line_nb bol_pos (bp, ep) comm =
-  {fname = fname; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
-   comm = comm}
+  {fname = fname; line_nb = line_nb; bol_pos = bol_pos;
+   line_nb_last = line_nb; bol_pos_last = bol_pos;
+   bp = bp; ep = ep; comm = comm}
 ;
 
 value make_unlined (bp, ep) =
-  {fname = ""; line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
+  {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
+   bp = bp; ep = ep; comm = ""}
 ;
 
 value dummy =
-  {fname = ""; line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""}
+  {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
+   bp = 0; ep = 0; comm = ""}
 ;
 
 value file_name loc = loc.fname;
@@ -31,26 +36,38 @@ value first_pos loc = loc.bp;
 value last_pos loc = loc.ep;
 value line_nb loc = loc.line_nb;
 value bol_pos loc = loc.bol_pos;
+value line_nb_last loc = loc.line_nb_last;
+value bol_pos_last loc = loc.bol_pos_last;
 value comment loc = loc.comm;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_bp_ep l bp ep =
-    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp;
-     ep = ep; comm = l.comm}
-  ;
-  value with_ep l ep =
-    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp;
+    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
+     line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = bp;
      ep = ep; comm = l.comm}
   ;
   value with_comm l comm =
-    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos; bp = l.bp;
+    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
+     line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = l.bp;
      ep = l.ep; comm = comm}
   ;
 END;
 
 value encl loc1 loc2 =
-  if loc1.bp < loc2.bp then {(loc1) with ep = max loc1.ep loc2.ep}
-  else {(loc2) with ep = max loc1.ep loc2.ep}
+  if loc1.bp < loc2.bp then
+    if loc1.ep < loc2.ep then
+      {fname = loc1.fname; line_nb = loc1.line_nb; bol_pos = loc1.bol_pos;
+       line_nb_last = loc2.line_nb_last; bol_pos_last = loc2.bol_pos_last;
+       bp = loc1.bp; ep = loc2.ep; comm = loc1.comm}
+    else
+      loc1
+  else
+    if loc2.ep < loc1.ep then
+      {fname = loc2.fname; line_nb = loc2.line_nb; bol_pos = loc2.bol_pos;
+       line_nb_last = loc1.line_nb_last; bol_pos_last = loc1.bol_pos_last;
+       bp = loc2.bp; ep = loc1.ep; comm = loc2.comm}
+    else
+      loc2
 ;
 value shift sh loc = {(loc) with bp = sh + loc.bp; ep = sh + loc.ep};
 value sub loc sh len = {(loc) with bp = loc.bp + sh; ep = loc.bp + sh + len};
@@ -193,6 +210,6 @@ value warning_deprecated_since_6_00 name =
 
 value make line_nb bol_pos (bp, ep) =
   let _ = warning_deprecated_since_6_00 "Ploc.make" in
-  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep;
-   comm = ""}
+  {fname = ""; line_nb = line_nb; bol_pos = bol_pos; line_nb_last = line_nb;
+   bol_pos_last = bol_pos; bp = bp; ep = ep; comm = ""}
 ;

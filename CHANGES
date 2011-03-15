@@ -1,6 +1,8 @@
 Camlp5 Version 6.02.2:
 ----------------------
 
+* [15 Mar 11] Fixed differences of locations between OCaml and camlp5o (e.g.
+  in .annot files)
 * [17 Feb 11] Pretty module now considers strings as utf8 encoded (impacts
   computation of strings lengths).
 * [04 Feb 11] Revised syntax: completed syntax multi labels, ~{x=y; z=t}

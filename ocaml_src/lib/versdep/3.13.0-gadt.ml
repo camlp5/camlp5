@@ -13,12 +13,13 @@ type ('a, 'b) choice =
 
 let sys_ocaml_version = "3.13.0-gadt";;
 
-let ocaml_location (fname, lnum, bolp, bp, ep) =
-  let loc_at n =
+let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
+  let loc_at n lnum bolp =
     {Lexing.pos_fname = if lnum = -1 then "" else fname;
      Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
   in
-  {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
+  {Location.loc_start = loc_at bp lnum bolp;
+   Location.loc_end = loc_at ep lnuml bolpl;
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 

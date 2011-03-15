@@ -55,6 +55,10 @@ val bol_pos : t -> int;;
        of the location in number of characters since the beginning of
        the stream, or [0] if the location does not contain a line number
        (i.e. built with [Ploc.make_unlined]. *)
+val line_nb_last : t -> int;;
+val bol_pos_last : t -> int;;
+   (** Return the line number and the position of the beginning of the line
+       of the last position. *)
 val comment : t -> string;;
    (** [Ploc.comment loc] returns the comment before the location. *)
 

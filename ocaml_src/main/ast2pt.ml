@@ -59,7 +59,9 @@ let mkloc loc =
   let ep = Ploc.last_pos loc in
   let lnum = Ploc.line_nb loc in
   let bolp = Ploc.bol_pos loc in
-  ocaml_location (!glob_fname, lnum, bolp, bp, ep)
+  let lnuml = Ploc.line_nb_last loc in
+  let bolpl = Ploc.bol_pos_last loc in
+  ocaml_location (!glob_fname, lnum, bolp, lnuml, bolpl, bp, ep)
 ;;
 
 let mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};;

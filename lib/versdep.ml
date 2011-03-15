@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.13 2010/11/16 20:10:12 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.14 2011/03/15 12:12:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -29,18 +29,19 @@ value sys_ocaml_version =
   ELSE Sys.ocaml_version END
 ;
 
-value ocaml_location (fname, lnum, bolp, bp, ep) =
+value ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
   IFDEF OCAML_VERSION <= OCAML_2_02 THEN
     {Location.loc_start = bp; Location.loc_end = ep}
   ELSIFDEF OCAML_VERSION <= OCAML_3_06 THEN
     {Location.loc_start = bp; Location.loc_end = ep;
      Location.loc_ghost = bp = 0 && ep = 0}
   ELSE
-    let loc_at n =
+    let loc_at n lnum bolp =
       {Lexing.pos_fname = if lnum = -1 then "" else fname;
        Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
     in
-    {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
+    {Location.loc_start = loc_at bp lnum bolp;
+     Location.loc_end = loc_at ep lnuml bolpl;
      Location.loc_ghost = bp = 0 && ep = 0}
   END
 ;
