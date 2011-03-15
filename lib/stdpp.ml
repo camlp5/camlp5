@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: stdpp.ml,v 6.4 2010/11/16 16:56:40 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2010 *)
+(* $Id: stdpp.ml,v 6.5 2011/03/15 13:49:11 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2011 *)
 
 type location = Ploc.t;
 

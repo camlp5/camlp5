@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: odyl_main.ml,v 6.1 2010/09/15 16:00:48 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2010 *)
+(* $Id: odyl_main.ml,v 6.2 2011/03/15 13:49:16 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2011 *)
 
 value go = ref (fun () -> ());
 value name = ref "odyl";

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mktrans.sh,v 6.15 2010/09/20 10:11:10 deraugla Exp $
+# $Id: mktrans.sh,v 6.16 2011/03/15 13:49:07 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -12,8 +12,8 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: mktrans.sh,v 6.15 2010/09/20 10:11:10 deraugla Exp $ -->
-  <!-- Copyright (c) INRIA 2007-2010 -->
+  <!-- $Id: mktrans.sh,v 6.16 2011/03/15 13:49:07 deraugla Exp $ -->
+  <!-- Copyright (c) INRIA 2007-2011 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />

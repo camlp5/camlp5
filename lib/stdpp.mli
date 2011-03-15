@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: stdpp.mli,v 6.1 2010/09/15 16:00:23 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2010 *)
+(* $Id: stdpp.mli,v 6.2 2011/03/15 13:49:11 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2011 *)
 
 (** Module deprecated since Camlp5 version 5.00. Use now module Ploc.
     Compatibility assumed. *)

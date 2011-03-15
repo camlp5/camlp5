@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.12 2010/11/23 15:48:13 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2010 *)
+(* $Id: rprint.ml,v 6.13 2011/03/15 13:49:16 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2011 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
 

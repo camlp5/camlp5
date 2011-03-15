@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.11 2011/02/04 17:47:46 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2010 *)
+(* $Id: pr_depend.ml,v 6.12 2011/03/15 13:49:10 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";

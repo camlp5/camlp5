@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: plexing.ml,v 6.2 2010/09/29 09:45:05 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2010 *)
+(* $Id: plexing.ml,v 6.3 2011/03/15 13:49:11 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2011 *)
 
 type pattern = (string * string);
 
