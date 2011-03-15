@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.31 2011/03/15 12:12:40 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.32 2011/03/15 12:36:08 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -178,10 +178,14 @@ value long_id_class_type loc ct =
         let li1 = longident ct1 in
         let li2 = longident ct2 in
         Lapply li1 li2
-    | CtAcc loc ct1 ct2 ->
+    | CtAcc loc ct1 ct2  ->
         let li1 = longident ct1 in
         let li2 = longident ct2 in
-        Lapply li1 li2
+        loop li1 li2 where rec loop li1 =
+          fun
+          [ Lident s -> Ldot li1 s
+          | Lapply li21 li22 -> error loc "long_id_of_class_type bad ast"
+          | Ldot li2 s -> Ldot (loop li1 li2) s ]
     | _ -> error loc "long_id_of_class_type case not impl" ]
 ;
 

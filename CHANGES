@@ -1,6 +1,8 @@
 Camlp5 Version 6.02.2:
 ----------------------
 
+* [15 Mar 11] Fixed bug: bad AST generated for class identifier prefixed
+  by a module.
 * [15 Mar 11] Fixed differences of locations between OCaml and camlp5o (e.g.
   in .annot files)
 * [17 Feb 11] Pretty module now considers strings as utf8 encoded (impacts

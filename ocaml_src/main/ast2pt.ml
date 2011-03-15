@@ -188,7 +188,14 @@ let long_id_class_type loc ct =
         let li2 = longident ct2 in Lapply (li1, li2)
     | CtAcc (loc, ct1, ct2) ->
         let li1 = longident ct1 in
-        let li2 = longident ct2 in Lapply (li1, li2)
+        let li2 = longident ct2 in
+        let rec loop li1 =
+          function
+            Lident s -> Ldot (li1, s)
+          | Lapply (li21, li22) -> error loc "long_id_of_class_type bad ast"
+          | Ldot (li2, s) -> Ldot (loop li1 li2, s)
+        in
+        loop li1 li2
     | _ -> error loc "long_id_of_class_type case not impl"
   in
   longident ct
