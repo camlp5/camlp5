@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.51 2011/03/15 13:49:10 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.52 2011/03/16 16:52:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #directory ".";
@@ -1363,7 +1363,7 @@ EXTEND_PRINTER
       | <:patt< _ >> -> pprintf pc "_"
       | <:patt:< ?{$_$} >> | <:patt:< ?{$_$ = $_$} >> | <:patt:< ?{$_$} >> |
         <:patt:< ?{$_$ = ?{$_$ = $_$}} >> | <:patt:< ?{$_$ = $_$} >> |
-        <:patt:< ~{$_$} >> | <:patt:< ~{$_$ = $_$} >> ->
+        <:patt:< ~{$list:_$} >> ->
           error loc "labels not pretty printed (in patt)"
       | <:patt< `$s$ >> ->
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"

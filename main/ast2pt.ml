@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.32 2011/03/15 12:36:08 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.33 2011/03/16 16:52:42 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1326,15 +1326,15 @@ and class_expr =
       [ Some pcl_fun ->
           match uv lppo with
           [ [(p, po)] -> do {
-              let _ =
-                match uv po with
-                [ Some _ -> error loc "label not implemented in that case 1"
-                | None -> None ]
-              in
               let lab =
                 match p with
                 [ PaLid _ s -> uv s
                 | p -> error loc "label not implemented in that case 2" ]
+              in
+              let p =
+                match uv po with
+                [ Some p -> p
+                | None -> p ]
               in
               mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
           }

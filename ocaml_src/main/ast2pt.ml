@@ -1522,15 +1522,15 @@ and class_expr =
         Some pcl_fun ->
           begin match uv lppo with
             [p, po] ->
-              let _ =
-                match uv po with
-                  Some _ -> error loc "label not implemented in that case 1"
-                | None -> None
-              in
               let lab =
                 match p with
                   PaLid (_, s) -> uv s
                 | p -> error loc "label not implemented in that case 2"
+              in
+              let p =
+                match uv po with
+                  Some p -> p
+                | None -> p
               in
               mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
           | [] | _ :: _ -> error ploc "case class multi lab not yet impl"
