@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.33 2011/03/16 16:52:42 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.34 2011/03/17 16:58:27 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -725,6 +725,13 @@ value varify_constructors var_names =
     | t -> t ]
 ;
 
+value label_of_patt =
+  fun
+  [ PaLid _ s -> uv s
+  | PaTyc _ (PaLid _ s) _ -> uv s
+  | p -> error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
+;
+
 value rec expr =
   fun
   [ ExAcc loc x <:expr< val >> ->
@@ -856,12 +863,7 @@ value rec expr =
       [ [(PaLab ploc lppo, w, e)] ->
           List.fold_right
             (fun (p, po) e -> do {
-               let lab =
-                 match p with
-                 [ PaLid _ lab -> uv lab
-                 | PaTyc _ (PaLid _ lab) _ -> uv lab
-                 | _ -> error loc "not impl label for that patt 1" ]
-               in
+               let lab = label_of_patt p in
                let p =
                  match uv po with
                  [ Some p -> p
@@ -878,12 +880,7 @@ value rec expr =
               | None -> mkexp loc (newtype (uv s) (expr e)) ]
           | None -> error loc "(type ..) not in this ocaml version" ]
       | [(PaOlb loc p eo, w, e)] ->
-          let lab =
-            match p with
-            [ PaLid _ lab -> uv lab
-            | PaTyc _ (PaLid _ lab) _ -> uv lab
-            | _ -> error loc "not impl label for that patt 2" ]
-          in
+          let lab = label_of_patt p in
           let (p, eo) =
             match uv eo with
             [ Some (ExOlb _ p eo) -> (p, eo)
@@ -1326,11 +1323,7 @@ and class_expr =
       [ Some pcl_fun ->
           match uv lppo with
           [ [(p, po)] -> do {
-              let lab =
-                match p with
-                [ PaLid _ s -> uv s
-                | p -> error loc "label not implemented in that case 2" ]
-              in
+              let lab = label_of_patt p in
               let p =
                 match uv po with
                 [ Some p -> p
@@ -1343,11 +1336,7 @@ and class_expr =
   | CeFun loc (PaOlb _ p eo) ce ->
       match ocaml_pcl_fun with
       [ Some pcl_fun ->
-          let lab =
-            match p with
-            [ PaLid _ s -> uv s
-            | p -> error loc "label not implemented in that case 4" ]
-          in
+          let lab = label_of_patt p in
           let (p, eo) =
             match uv eo with
             [ Some (ExOlb _ p eo) -> (p, eo)

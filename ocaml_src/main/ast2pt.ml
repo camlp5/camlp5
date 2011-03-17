@@ -881,6 +881,13 @@ let varify_constructors var_names =
   loop
 ;;
 
+let label_of_patt =
+  function
+    PaLid (_, s) -> uv s
+  | PaTyc (_, PaLid (_, s), _) -> uv s
+  | p -> error (MLast.loc_of_patt p) "label_of_patt; case not impl"
+;;
+
 let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
@@ -1015,12 +1022,7 @@ let rec expr =
         [PaLab (ploc, lppo), w, e] ->
           List.fold_right
             (fun (p, po) e ->
-               let lab =
-                 match p with
-                   PaLid (_, lab) -> uv lab
-                 | PaTyc (_, PaLid (_, lab), _) -> uv lab
-                 | _ -> error loc "not impl label for that patt 1"
-               in
+               let lab = label_of_patt p in
                let p =
                  match uv po with
                    Some p -> p
@@ -1038,12 +1040,7 @@ let rec expr =
           | None -> error loc "(type ..) not in this ocaml version"
           end
       | [PaOlb (loc, p, eo), w, e] ->
-          let lab =
-            match p with
-              PaLid (_, lab) -> uv lab
-            | PaTyc (_, PaLid (_, lab), _) -> uv lab
-            | _ -> error loc "not impl label for that patt 2"
-          in
+          let lab = label_of_patt p in
           let (p, eo) =
             match uv eo with
               Some (ExOlb (_, p, eo)) -> p, eo
@@ -1522,11 +1519,7 @@ and class_expr =
         Some pcl_fun ->
           begin match uv lppo with
             [p, po] ->
-              let lab =
-                match p with
-                  PaLid (_, s) -> uv s
-                | p -> error loc "label not implemented in that case 2"
-              in
+              let lab = label_of_patt p in
               let p =
                 match uv po with
                   Some p -> p
@@ -1540,11 +1533,7 @@ and class_expr =
   | CeFun (loc, PaOlb (_, p, eo), ce) ->
       begin match ocaml_pcl_fun with
         Some pcl_fun ->
-          let lab =
-            match p with
-              PaLid (_, s) -> uv s
-            | p -> error loc "label not implemented in that case 4"
-          in
+          let lab = label_of_patt p in
           let (p, eo) =
             match uv eo with
               Some (ExOlb (_, p, eo)) -> p, eo
