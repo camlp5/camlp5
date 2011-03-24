@@ -1,6 +1,7 @@
 Camlp5 Version 6.02.3:
 ----------------------
 
+* [24 Mar 11] Fixed bug: M.(a+b) was refused in normal syntax.
 * [16 Mar 11] Fixed bug: incorrect compilation of label patterns of the
   form ~a:b (or ~{a = b} in revised syntax) in class declarations.
 * [16 Mar 11] Fixed bug: error while printing label patterns ~a:b with

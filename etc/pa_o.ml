@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.34 2011/03/15 13:49:08 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.35 2011/03/24 15:31:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_extend.cmo";
@@ -720,7 +720,9 @@ EXTEND
           in
           loop <:expr< $_uid:i$ >> j
       | i = V UIDENT; "."; "("; j = operator_rparen ->
-          <:expr< $_uid:i$ . $lid:j$ >> ] ]
+          <:expr< $_uid:i$ . $lid:j$ >>
+      | i = V UIDENT; "."; "("; e = expr; ")" ->
+          <:expr< $_uid:i$ . ( $e$ ) >> ] ]
   ;
   (* Patterns *)
   patt:
