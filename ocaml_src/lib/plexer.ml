@@ -35,6 +35,18 @@ let keyword_or_error ctx loc s =
       else "", s
 ;;
 
+let rev_implode l =
+  let s = String.create (List.length l) in
+  let rec loop i =
+    function
+      c :: l -> String.unsafe_set s i c; loop (i - 1) l
+    | [] -> s
+  in
+  loop (String.length s - 1) l
+;;
+
+let implode l = rev_implode (List.rev l);;
+
 let stream_peek_nth n strm =
   let rec loop n =
     function
@@ -49,17 +61,20 @@ let utf8_lexing = ref false;;
 
 let misc_letter buf strm =
   if !utf8_lexing then
+    match Stream.peek strm with
+      Some c ->
+        if Char.code c >= 128 then
+          match implode (Stream.npeek 3 strm) with
+            "→" | "≤" | "≥" -> raise Stream.Failure
+          | _ -> Stream.junk strm; Plexing.Lexbuf.add c buf
+        else raise Stream.Failure
+    | None -> raise Stream.Failure
+  else
     let (strm__ : _ Stream.t) = strm in
     match Stream.peek strm__ with
       Some ('\128'..'\225' as c) ->
         Stream.junk strm__; Plexing.Lexbuf.add c buf
     | Some ('\227'..'\255' as c) ->
-        Stream.junk strm__; Plexing.Lexbuf.add c buf
-    | _ -> raise Stream.Failure
-  else
-    let (strm__ : _ Stream.t) = strm in
-    match Stream.peek strm__ with
-      Some ('\128'..'\255' as c) ->
         Stream.junk strm__; Plexing.Lexbuf.add c buf
     | _ -> raise Stream.Failure
 ;;
@@ -1383,15 +1398,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 707, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 724, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 707, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 724, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 707, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 724, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 708, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 725, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 708, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 725, 37)));
        Plexing.tok_comm = None}
   in
   let glex =

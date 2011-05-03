@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.13 2011/03/15 13:49:11 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.14 2011/05/03 12:39:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_lexer.cmo";
@@ -36,6 +36,16 @@ value keyword_or_error ctx loc s =
       else ("", s) ]
 ;
 
+value rev_implode l =
+  let s = String.create (List.length l) in
+  loop (String.length s - 1) l where rec loop i =
+    fun
+    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+    | [] -> s ]
+;
+
+value implode l = rev_implode (List.rev l);
+
 value stream_peek_nth n strm =
   loop n (Stream.npeek n strm) where rec loop n =
     fun
@@ -48,9 +58,16 @@ value utf8_lexing = ref False;
 
 value misc_letter buf strm =
   if utf8_lexing.val then
-    match strm with lexer [ '\128'-'\225' | '\227'-'\255' ]
+    match Stream.peek strm with
+    [ Some c ->
+        if Char.code c >= 128 then
+          match implode (Stream.npeek 3 strm) with
+          [ "→" | "≤" | "≥" -> raise Stream.Failure
+          | _ -> do { Stream.junk strm; $add c } ]
+        else raise Stream.Failure
+    | None -> raise Stream.Failure ]
   else
-    match strm with lexer [ '\128'-'\255' ]
+    match strm with lexer [ '\128'-'\225' | '\227'-'\255' ]
 ;
 
 value misc_punct buf strm =
