@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.20 2011/03/15 13:49:11 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.21 2011/05/21 13:22:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_macro.cmo";
@@ -7,7 +7,7 @@
 
 open Printf;
 
-value version = "6.02.3-exp";
+value version = "6.02.3";
 value syntax_name = ref "";
 
 value gram =
