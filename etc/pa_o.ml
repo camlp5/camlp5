@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.35 2011/03/24 15:31:50 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.36 2011/09/20 09:35:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_extend.cmo";
@@ -771,6 +771,9 @@ EXTEND
       | s = V INT_L -> <:patt< $_int64:s$ >>
       | s = V INT_n -> <:patt< $_nativeint:s$ >>
       | "-"; s = INT -> <:patt< $int:"-" ^ s$ >>
+      | "-"; s = INT_l -> <:patt< $int32:"-" ^ s$ >>
+      | "-"; s = INT_L -> <:patt< $int64:"-" ^ s$ >>
+      | "-"; s = INT_n -> <:patt< $nativeint:"-" ^ s$ >>
       | "-"; s = FLOAT -> <:patt< $flo:"-" ^ s$ >>
       | s = V FLOAT -> <:patt< $_flo:s$ >>
       | s = V STRING -> <:patt< $_str:s$ >>
