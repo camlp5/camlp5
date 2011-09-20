@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.15 2011/03/15 13:49:11 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.16 2011/09/20 10:10:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 open Parsetree;
@@ -368,8 +368,9 @@ value ocaml_ppat_lazy =
   ELSE None END
 ;
 
-value ocaml_ppat_record lpl =
-  IFDEF OCAML_VERSION >= OCAML_3_12 THEN Ppat_record lpl Closed
+value ocaml_ppat_record lpl closed =
+  IFDEF OCAML_VERSION >= OCAML_3_12 THEN
+    Ppat_record lpl (if closed then Closed else Open)
   ELSE Ppat_record lpl END
 ;
 

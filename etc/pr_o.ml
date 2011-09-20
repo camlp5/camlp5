@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.52 2011/03/16 16:52:42 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.53 2011/09/20 10:10:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #directory ".";
@@ -1322,8 +1322,17 @@ EXTEND_PRINTER
           pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:patt< {$list:lpl$} >> ->
+          let (lpl, closed) =
+            List.fold_right
+              (fun lp (lpl, closed) ->
+                 match lp with
+                 [ (<:patt< _ >>, <:patt< _ >>) -> (lpl, True)
+                 | lp -> ([lp :: lpl], closed) ])
+              lpl ([], False)
+          in
           let lxl = List.map (fun lx -> (lx, ";")) lpl in
-          pprintf pc "@[<1>{%p}@]" (plist (binding patt) 0) lxl
+          pprintf pc "@[<1>{%p%s}@]" (plist (binding patt) 0) lxl
+            (if closed then "; _" else "")
       | <:patt< [| $list:pl$ |] >> ->
           if pl = [] then pprintf pc "[| |]"
           else

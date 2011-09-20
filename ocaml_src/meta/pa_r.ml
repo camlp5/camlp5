@@ -1524,7 +1524,10 @@ Grammar.extend
              (loc : Ploc.t) ->
            (MLast.PaAcc (loc, p1, p2) : 'patt_label_ident))];
      Some "simple", Some Gramext.RightA,
-     [[Gramext.Stoken ("LIDENT", "")],
+     [[Gramext.Stoken ("", "_")],
+      Gramext.action
+        (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'patt_label_ident));
+      [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (MLast.PaLid (loc, i) : 'patt_label_ident));

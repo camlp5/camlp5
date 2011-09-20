@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.36 2011/09/20 09:35:09 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.37 2011/09/20 10:10:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_extend.cmo";
@@ -815,7 +815,8 @@ EXTEND
       | le = lbl_patt -> [le] ] ]
   ;
   lbl_patt:
-    [ [ i = patt_label_ident; "="; p = patt -> (i, p) ] ]
+    [ [ i = patt_label_ident; "="; p = patt -> (i, p)
+      | "_" -> (<:patt< _ >>, <:patt< _ >>) ] ]
   ;
   patt_label_ident:
     [ LEFTA

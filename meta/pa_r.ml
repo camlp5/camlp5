@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.36 2011/03/15 13:49:12 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.37 2011/09/20 10:10:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_extend.cmo";
@@ -530,7 +530,8 @@ EXTEND
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple" RIGHTA
       [ i = V UIDENT -> <:patt< $_uid:i$ >>
-      | i = V LIDENT -> <:patt< $_lid:i$ >> ] ]
+      | i = V LIDENT -> <:patt< $_lid:i$ >>
+      | "_" -> <:patt< _ >> ] ]
   ;
   ipatt:
     [ [ "{"; lpl = V (LIST1 label_ipatt SEP ";"); "}" ->

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.34 2011/03/17 16:58:27 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.35 2011/09/20 10:10:25 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -614,7 +614,15 @@ value rec patt =
           mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters" ]
   | PaRec loc lpl ->
-      mkpat loc (ocaml_ppat_record (List.map mklabpat (uv lpl)))
+      let (lpl, closed) =
+        List.fold_right
+          (fun lp (lpl, closed) ->
+             match lp with
+             [ (PaAny _, PaAny _) -> (lpl, True)
+             | lp -> ([lp :: lpl], closed) ])
+          (uv lpl) ([], False)
+      in
+      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) closed)
   | PaStr loc s ->
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))

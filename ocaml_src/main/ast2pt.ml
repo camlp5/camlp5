@@ -634,7 +634,15 @@ let rec patt =
       | _ -> error loc "range pattern allowed only for characters"
       end
   | PaRec (loc, lpl) ->
-      mkpat loc (ocaml_ppat_record (List.map mklabpat (uv lpl)))
+      let (lpl, closed) =
+        List.fold_right
+          (fun lp (lpl, closed) ->
+             match lp with
+               PaAny _, PaAny _ -> lpl, true
+             | lp -> lp :: lpl, closed)
+          (uv lpl) ([], false)
+      in
+      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) closed)
   | PaStr (loc, s) ->
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))

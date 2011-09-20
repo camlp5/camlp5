@@ -145,7 +145,9 @@ let ocaml_ppat_construct_args =
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
 
-let ocaml_ppat_record lpl = Ppat_record (lpl, Closed);;
+let ocaml_ppat_record lpl closed =
+  Ppat_record (lpl, (if closed then Closed else Open))
+;;
 
 let ocaml_ppat_type = Some (fun sl -> Ppat_type sl);;
 
