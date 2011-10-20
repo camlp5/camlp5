@@ -39,6 +39,7 @@ let list_map_check f l =
 let ocaml_type_declaration params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->
+      let params = List.map (fun os -> Some os) params in
       Right
         {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
          ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -61,7 +62,7 @@ let ocaml_ptype_variant ctl priv =
     let ctl =
       List.map
         (fun (c, tl, rto, loc) ->
-           if rto <> None then raise Exit else c, tl, loc)
+           if rto <> None then raise Exit else c, tl, None, loc)
         ctl
     in
     Some (Ptype_variant ctl)

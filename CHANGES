@@ -1,6 +1,7 @@
 Camlp5 Version 6.02.3:
 ----------------------
 
+* [20 Oct 11] Updated compatibility with OCaml current version 3.13.0.
 * [20 Sep 11] Added missing syntax "_" in ending patt records (rev: "_ = _").
 * [20 Sep 11] Fixed bug pattern -1L was refused in normal syntax.
 * [21 May 11] Fixed bug impacting files using q_ast.cmo extension (bad ast).

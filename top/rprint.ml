@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.13 2011/03/15 13:49:16 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.14 2011/10/20 13:59:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -232,7 +232,7 @@ and print_simple_out_type ppf =
         fprintf ppf ")@]"
       }
     END
-  | IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
+  | IFDEF OCAML_VERSION >= OCAML_3_13_0 THEN
       Otyp_sum constrs ->
         fprintf ppf "@[<hv>[ %a ]@]"
           (print_list print_out_constr_gadt_opt

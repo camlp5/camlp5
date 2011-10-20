@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.16 2011/09/20 10:10:25 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.17 2011/10/20 13:59:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 open Parsetree;
@@ -89,7 +89,13 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
+        ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+          Right
+            {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+             ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+             ptype_variance = variance}
         ELSE
+          let params = List.map (fun os -> Some os) params in
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -157,19 +163,31 @@ value ocaml_ptype_variant ctl priv =
           let priv = if priv then Private else Public in
           Some (Ptype_variant ctl priv)
         END
-      ELSE
+      ELSIFDEF OCAML_VERSION < OCAML_3_11 THEN
         let ctl =
           List.map
             (fun (c, tl, rto, loc) ->
                if rto <> None then raise Exit else (c, tl, loc))
             ctl
         in
-        IFDEF OCAML_VERSION < OCAML_3_11 THEN
           let priv = if priv then Private else Public in
           Some (Ptype_variant ctl priv)
-        ELSE
+      ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+        let ctl =
+          List.map
+            (fun (c, tl, rto, loc) ->
+               if rto <> None then raise Exit else (c, tl, loc))
+            ctl
+        in
           Some (Ptype_variant ctl)
-        END
+      ELSE
+        let ctl =
+          List.map
+            (fun (c, tl, rto, loc) ->
+               if rto <> None then raise Exit else (c, tl, None, loc))
+            ctl
+        in
+          Some (Ptype_variant ctl)
       END
     with
     [ Exit -> None ]
