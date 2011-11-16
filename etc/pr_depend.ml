@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.12 2011/03/15 13:49:10 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.13 2011/11/16 10:22:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #load "pa_macro.cmo";
@@ -341,17 +341,19 @@ value print_depend target_file deps =
 value file_name_of_ast =
   fun
   [ [(_, loc) :: _] -> Ploc.file_name loc
-  | [] -> "-" ]
+  | [] -> Plexing.input_file.val ]
 ;
 
 value depend_sig (ast, eoi_loc) = do {
   fset.val := StrSet.empty;
   List.iter (fun (si, _) -> sig_item si) ast;
   let fname = file_name_of_ast ast in
-  let basename = Filename.chop_suffix fname ".mli" in
-  let (byt_deps, _) = StrSet.fold find_depend fset.val ([], []) in
-  let byt_deps = list_sort compare byt_deps in
-  print_depend (basename ^ ".cmi") byt_deps
+  if Filename.check_suffix fname ".mli" then
+    let basename = Filename.chop_suffix fname ".mli" in
+    let (byt_deps, _) = StrSet.fold find_depend fset.val ([], []) in
+    let byt_deps = list_sort compare byt_deps in
+    print_depend (basename ^ ".cmi") byt_deps
+  else ()
 };
 
 value depend_str (ast, eoi_loc) = do {
