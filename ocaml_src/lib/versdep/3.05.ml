@@ -18,6 +18,12 @@ let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
+let ocaml_id_or_li_of_string_list loc sl =
+  match List.rev sl with
+    [s] -> Some s
+  | _ -> None
+;;
+
 let list_map_check f l =
   let rec loop rev_l =
     function

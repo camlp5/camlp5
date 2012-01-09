@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.35 2011/09/20 10:10:25 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.36 2012/01/09 14:15:26 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -317,16 +317,19 @@ and package_of_module_type loc mt =
           List.map
             (fun
              [ WcTyp loc id tpl pf ct -> do {
-                 let li =
+                 let id_or_li =
                    match uv id with
-                   [ [id] -> id
-                   | _ -> error loc "simple identifier expected" ]
+                   [ [] -> error loc "bad ast"
+                   | sl ->
+                       match ocaml_id_or_li_of_string_list loc sl with
+                       [ Some li -> li
+                       | None -> error loc "simple identifier expected" ] ]
                  in
                  if uv tpl <> [] then
                    error loc "no type parameters allowed here"
                  else ();
                  if uv pf then error loc "no 'private' allowed here" else ();
-                 (li, ctyp ct)
+                 (id_or_li, ctyp ct)
                }
              | WcTys loc id tpl t ->
                  error loc "package type with 'type :=' no allowed"

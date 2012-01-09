@@ -23,6 +23,20 @@ let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
+let ocaml_id_or_li_of_string_list loc sl =
+  let mkli s =
+    let rec loop f =
+      function
+        i :: il -> loop (fun s -> Ldot (f i, s)) il
+      | [] -> f s
+    in
+    loop (fun s -> Lident s)
+  in
+  match List.rev sl with
+    [] -> None
+  | s :: sl -> Some (mkli s (List.rev sl))
+;;
+
 let list_map_check f l =
   let rec loop rev_l =
     function
@@ -114,7 +128,7 @@ let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
 let ocaml_pexp_open = Some (fun li e -> Pexp_open (li, e));;
 
-let ocaml_pexp_pack =
+let ocaml_pexp_pack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun me -> Pexp_pack me), (fun pt -> Ptyp_package pt)))
 ;;
 
@@ -185,7 +199,7 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc; pci_variance = variance})
 ;;
 
-let ocaml_pmod_unpack =
+let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))
 ;;
 

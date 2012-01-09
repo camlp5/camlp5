@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.17 2011/10/20 13:59:59 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.18 2012/01/09 14:15:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 open Parsetree;
@@ -43,6 +43,24 @@ value ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
     {Location.loc_start = loc_at bp lnum bolp;
      Location.loc_end = loc_at ep lnuml bolpl;
      Location.loc_ghost = bp = 0 && ep = 0}
+  END
+;
+
+value ocaml_id_or_li_of_string_list loc sl =
+  IFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+    match List.rev sl with
+    [ [s] -> Some s
+    | _ -> None ]
+  ELSE
+    let mkli s =
+      loop (fun s -> Lident s) where rec loop f =
+        fun
+        [ [i :: il] -> loop (fun s -> Ldot (f i) s) il
+        | [] -> f s ]
+    in
+    match List.rev sl with
+    [ [] -> None
+    | [s :: sl] -> Some (mkli s (List.rev sl)) ]
   END
 ;
 
@@ -336,7 +354,8 @@ value ocaml_pexp_pack =
   ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
     Some (Left (fun me pt -> Pexp_pack me pt))
   ELSE
-    Some (Right (fun me -> Pexp_pack me, fun pt -> Ptyp_package pt))
+    (Some (Right (fun me -> Pexp_pack me, fun pt -> Ptyp_package pt)) :
+     option (choice ('a -> 'b -> 'c) 'd))
   END
 ;
 
@@ -465,7 +484,8 @@ value ocaml_pmod_unpack =
   ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
     Some (Left (fun e pt -> Pmod_unpack e pt))
   ELSE
-    Some (Right (fun e -> Pmod_unpack e, fun pt -> Ptyp_package pt))
+    (Some (Right (fun e -> Pmod_unpack e, fun pt -> Ptyp_package pt)) :
+     option (choice ('a -> 'b -> 'c) 'd))
   END
 ;
 

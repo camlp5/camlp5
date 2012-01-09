@@ -1,5 +1,7 @@
-Camlp5 Version 6.02.4:
-----------------------
+Camlp5 Version 6.03:
+--------------------
+
+* [09 Jan 11] Updated compatibility with OCaml trunk version (3.13.0).
 
 Camlp5 Version 6.02.3:
 ----------------------

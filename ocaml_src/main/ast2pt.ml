@@ -329,15 +329,18 @@ and package_of_module_type loc mt =
           List.map
             (function
                WcTyp (loc, id, tpl, pf, ct) ->
-                 let li =
+                 let id_or_li =
                    match uv id with
-                     [id] -> id
-                   | _ -> error loc "simple identifier expected"
+                     [] -> error loc "bad ast"
+                   | sl ->
+                       match ocaml_id_or_li_of_string_list loc sl with
+                         Some li -> li
+                       | None -> error loc "simple identifier expected"
                  in
                  if uv tpl <> [] then
                    error loc "no type parameters allowed here";
                  if uv pf then error loc "no 'private' allowed here";
-                 li, ctyp ct
+                 id_or_li, ctyp ct
              | WcTys (loc, id, tpl, t) ->
                  error loc "package type with 'type :=' no allowed"
              | WcMod (loc, _, _) ->

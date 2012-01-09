@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_extprint.ml,v 6.2 2011/03/15 13:49:10 deraugla Exp $ *)
+(* $Id: pr_extprint.ml,v 6.3 2012/01/09 14:15:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2011 *)
 
 #directory ".";
@@ -163,7 +163,7 @@ value extend pc =
       with
       [ Not_found ->
           let expr = Eprinter.apply_level pr_expr "dot" in
-          pprintf pc "Eprinter.extend@;%p@ %p@ %p@" expr pr expr pos
+          pprintf pc "Eprinter.extend@;%p@ %p@ %p" expr pr expr pos
             expr body ]
   | <:expr< do { $list:el$ } >> as e ->
       try
