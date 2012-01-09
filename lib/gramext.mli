@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: gramext.mli,v 6.3 2011/03/15 13:49:11 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2011 *)
+(* $Id: gramext.mli,v 6.4 2012/01/09 14:22:21 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2012 *)
 
 type parser_t 'a = Stream.t 'a -> Obj.t;
 type bparser_t 'a = Fstream.bp 'a Obj.t;

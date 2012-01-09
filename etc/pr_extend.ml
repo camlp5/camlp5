@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: pr_extend.ml,v 6.3 2011/03/15 13:49:10 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2011 *)
+(* $Id: pr_extend.ml,v 6.4 2012/01/09 14:22:21 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
 #load "q_MLast.cmo";

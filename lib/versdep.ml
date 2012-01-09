@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.18 2012/01/09 14:15:26 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2011 *)
+(* $Id: versdep.ml,v 6.19 2012/01/09 14:22:21 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
 open Longident;

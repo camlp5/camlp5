@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkstri.sh,v 6.15 2011/03/15 13:49:07 deraugla Exp $
+# $Id: mkstri.sh,v 6.16 2012/01/09 14:22:20 deraugla Exp $
 
 top=../..
 file=$top/test/quot_r.ml
@@ -12,8 +12,8 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: mkstri.sh,v 6.15 2011/03/15 13:49:07 deraugla Exp $ -->
-  <!-- Copyright (c) INRIA 2007-2011 -->
+  <!-- $Id: mkstri.sh,v 6.16 2012/01/09 14:22:20 deraugla Exp $ -->
+  <!-- Copyright (c) INRIA 2007-2012 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />

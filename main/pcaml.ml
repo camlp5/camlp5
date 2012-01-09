@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.23 2012/01/09 14:19:02 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2011 *)
+(* $Id: pcaml.ml,v 6.24 2012/01/09 14:22:21 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
 #load "pa_extend.cmo";

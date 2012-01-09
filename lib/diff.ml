@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: diff.ml,v 6.2 2011/03/15 13:49:10 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2011 *)
+(* $Id: diff.ml,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2012 *)
 
 (* Parts of Code of GNU diff (analyze.c) translated from C to OCaml
    and adjusted. Basic algorithm described by Eugene W.Myers in:

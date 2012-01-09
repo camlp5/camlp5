@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: parserify.mli,v 6.2 2011/03/15 13:49:11 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2011 *)
+(* $Id: parserify.mli,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2012 *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)

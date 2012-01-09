@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.14 2011/05/03 12:39:40 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2011 *)
+(* $Id: plexer.ml,v 6.15 2012/01/09 14:22:21 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_lexer.cmo";
 
