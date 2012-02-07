@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 6.9 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: main.ml,v 6.10 2012/02/07 19:53:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";
@@ -17,6 +17,11 @@ value string_of_loc fname line bp ep =
 ;
 
 value print_location loc =
+  let loc =
+    if Ploc.file_name loc = "" then
+      Ploc.make_loc Pcaml.input_file.val 1 0 (0, 1) ""
+    else loc
+  in
   let fname = Ploc.file_name loc in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
