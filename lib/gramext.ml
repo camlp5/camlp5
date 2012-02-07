@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 6.4 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: gramext.ml,v 6.5 2012/02/07 20:06:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Printf;
@@ -173,10 +173,6 @@ value insert_tree entry_name gsymbols action tree =
               Some t
           | None -> None ]
     | LocAct _ _ | DeadEnd -> None ]
-  and insert_new =
-    fun
-    [ [s :: sl] -> Node {node = s; son = insert_new sl; brother = DeadEnd}
-    | [] -> LocAct action [] ]
   in
   insert gsymbols tree
 ;

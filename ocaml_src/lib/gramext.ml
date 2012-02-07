@@ -172,10 +172,6 @@ let insert_tree entry_name gsymbols action tree =
           | None -> None
           end
     | LocAct (_, _) | DeadEnd -> None
-  and insert_new =
-    function
-      s :: sl -> Node {node = s; son = insert_new sl; brother = DeadEnd}
-    | [] -> LocAct (action, [])
   in
   insert gsymbols tree
 ;;
