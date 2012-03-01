@@ -1,11 +1,11 @@
 #!/bin/sh
-# $Id: configure,v 6.9 2012/03/01 03:33:18 deraugla Exp $
+# $Id: configure,v 6.10 2012/03/01 07:35:07 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
-mode=T
+mode=S
 camlp5n=camlp5
 noopt=0
 oversion=''
