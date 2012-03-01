@@ -1,7 +1,9 @@
 Camlp5 Version 6.04:
 --------------------
 
-* [01 Mar 12] Added option -name in configure to change command name.
+* [01 Mar 12] Added option -name in configure to change command name
+  useful to have transitional and strict versions installed with
+  different names. Default: camlp5.
 
 Camlp5 Version 6.03:
 --------------------

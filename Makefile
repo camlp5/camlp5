@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.15 2012/03/01 03:33:18 deraugla Exp $
+# $Id: Makefile,v 6.16 2012/03/01 03:47:38 deraugla Exp $
 
 include config/Makefile
 
@@ -57,6 +57,7 @@ install:
 uninstall:
 	rm -rf "$(LIBDIR)/$(CAMLP5N)"
 	cd "$(BINDIR)"; rm -f *$(CAMLP5N)* odyl ocpp; cd ..
+	cd "$(MANDIR)/man1"; rm -f *$(CAMLP5N)* odyl ocpp; cd ../..
 
 clean::
 	$(MAKE) clean_hot clean_cold
