@@ -1,7 +1,12 @@
+Camlp5 Version 6.04:
+--------------------
+
+* [01 Mar 12] Added option -name in configure to change command name.
+
 Camlp5 Version 6.03:
 --------------------
 
-* [09 Jan 11] Updated compatibility with OCaml trunk version (3.13.0).
+* [09 Jan 12] Updated compatibility with OCaml trunk version (3.13.0).
 
 Camlp5 Version 6.02.3:
 ----------------------

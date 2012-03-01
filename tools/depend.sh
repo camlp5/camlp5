@@ -1,10 +1,12 @@
 #!/bin/sh
-# $Id: depend.sh,v 6.2 2010/09/29 12:22:11 deraugla Exp $
+# $Id: depend.sh,v 6.3 2012/03/01 03:33:19 deraugla Exp $
 
 ARGS1="pr_depend.cmo --"
 FILE=
+CAMLP5N=camlp5
 while test "" != "$1"; do
   case $1 in
+  -name) CAMLP5N="$2"; shift;;
   *.ml*) FILE=$1;;
   *) ARGS1="$ARGS1 $1";;
   esac
@@ -15,16 +17,17 @@ head -1 $FILE >/dev/null || exit 1
 
 set - `head -1 $FILE`
 if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
-  WHAT="$2"
+  if [ "$2" = "camlp5r" ]; then WHAT="${CAMLP5N}r"
+  else WHAT="${CAMLP5N}"; fi
   case "$WHAT" in
-  camlp5) COMM="../main/$WHAT -nolib -I ../meta -I ../etc";;
-  camlp5r) COMM="../meta/$WHAT -nolib -I ../meta -I ../etc";;
+  ${CAMLP5N}) COMM="../main/$WHAT -nolib -I ../meta -I ../etc";;
+  ${CAMLP5N}r) COMM="../meta/$WHAT -nolib -I ../meta -I ../etc";;
   *) echo "internal error: bad value of WHAT" 1>&2; exit 2;;
   esac
   shift; shift
   ARGS2=`echo $* | sed -e "s/[()*]//g"`
 else
-  COMM="../boot/camlp5 -nolib -I ../boot -I ../etc pa_o.cmo"
+  COMM="../boot/${CAMLP5N} -nolib -I ../boot -I ../etc pa_o.cmo"
   ARGS2=
 fi
 

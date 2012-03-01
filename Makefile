@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.14 2011/02/04 17:47:46 deraugla Exp $
+# $Id: Makefile,v 6.15 2012/03/01 03:33:18 deraugla Exp $
 
 include config/Makefile
 
@@ -16,7 +16,7 @@ DESTDIR=
 
 all: out
 
-out: boot/camlp5$(EXE)
+out: boot/$(CAMLP5N)$(EXE)
 	cd ocaml_stuff; $(MAKE); cd ..
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done
 
@@ -29,7 +29,7 @@ opt.opt: opt
 ocaml_src/lib/versdep.ml:
 	@echo "Please run 'configure' first"; exit 2
 
-boot/camlp5$(EXE): $(COLD_FILES)
+boot/$(CAMLP5N)$(EXE): $(COLD_FILES)
 	cd ocaml_stuff; $(MAKE); cd ..
 	$(MAKE) clean_cold
 	$(MAKE) library_cold
@@ -49,18 +49,18 @@ depend:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
 install:
-	rm -rf "$(DESTDIR)$(LIBDIR)/camlp5"
+	rm -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	for i in $(DIRS) compile; do \
 	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
 	done
 
 uninstall:
-	rm -rf "$(LIBDIR)/camlp5"
-	cd "$(BINDIR)"; rm -f *camlp5* odyl ocpp; cd ..
+	rm -rf "$(LIBDIR)/$(CAMLP5N)"
+	cd "$(BINDIR)"; rm -f *$(CAMLP5N)* odyl ocpp; cd ..
 
 clean::
 	$(MAKE) clean_hot clean_cold
-	rm -f boot/*.cm[oi] boot/camlp5*
+	rm -f boot/*.cm[oi] boot/$(CAMLP5N)*
 	rm -rf boot/SAVED
 	cd test; $(MAKE) clean; cd ..
 
@@ -115,7 +115,7 @@ coreboot:
 	$(MAKE) core
 	$(MAKE) compare
 
-core: boot/camlp5$(EXE)
+core: boot/$(CAMLP5N)$(EXE)
 	cd ocaml_stuff; $(MAKE) all; cd ..
 	set -e; for i in $(FDIRS); do cd $$i; $(MAKE) all; cd ..; done
 
@@ -221,7 +221,7 @@ new_source:
 	  sed 's/# $$Id.*\$$/# $(TXTGEN)/' Makefile | \
 	  sed 's-^TOP=..$$-TOP=../..-'; \
 	else \
-	  ../tools/conv.sh $(PR_O) $$opt $$FILE | \
+	  ../tools/conv.sh $(PR_O) $$opt -name $(CAMLP5N) $$FILE | \
 	  sed 's/$$Id.*\$$/$(TXTGEN)/'; \
 	fi > \
 	../ocaml_src.new/$$DIR/$$k
@@ -254,7 +254,7 @@ compare_source:
 	  sed 's/# $$Id.*\$$/# $(TXTGEN)/' Makefile | \
 	  sed 's-^TOP=..$$-TOP=../..-'; \
 	else \
-	  ../tools/conv.sh $(PR_O) $$opt $$FILE | \
+	  ../tools/conv.sh $(PR_O) $$opt -name $(CAMLP5N) $$FILE | \
 	  sed 's/$$Id.*\$$/$(TXTGEN)/'; \
 	fi | \
 	diff $(DIFF_OPT) ../ocaml_src/$$DIR/$$k - || :
@@ -269,7 +269,7 @@ bootstrap_all_versdep:
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
-	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
+	  ../tools/conv.sh $(PR_O) $$opt -name $(CAMLP5N) versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
@@ -283,7 +283,7 @@ compare_all_versdep:
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
-	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
+	  ../tools/conv.sh $(PR_O) $$opt -name $(CAMLP5N) versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 

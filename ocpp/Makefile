@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.1 2010/09/15 16:00:48 deraugla Exp $
+# $Id: Makefile,v 6.2 2012/03/01 03:33:19 deraugla Exp $
 
 include ../config/Makefile
 
@@ -19,8 +19,8 @@ clean::
 	rm -f ocpp$(EXE)
 
 install:
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5" "$(DESTDIR)$(BINDIR)"
-	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/camlp5/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
+	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp ocpp$(EXE) "$(DESTDIR)$(BINDIR)/ocpp5$(EXE)"
 
 depend:

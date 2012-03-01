@@ -9,19 +9,19 @@ OBJS=q_MLast.cmo q_ast.cmo pa_r.cmo pa_rp.cmo pa_macro.cmo pa_fstream.cmo pa_ext
 CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh
-COUT=$(OBJS) camlp5r$(EXE)
-COPT=$(OBJS:.cmo=.cmx) camlp5r.opt
+COUT=$(OBJS) $(CAMLP5N)r$(EXE)
+COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)r.opt
 
 all: $(COUT)
 opt: $(COPT)
 
-camlp5r$(EXE): ../main/camlp5$(EXE) $(CAMLP5RM)
-	rm -f camlp5r$(EXE)
-	cd ../main; $(MAKE) CAMLP5=../meta/camlp5r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
+$(CAMLP5N)r$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5RM)
+	rm -f $(CAMLP5N)r$(EXE)
+	cd ../main; $(MAKE) CAMLP5=../meta/$(CAMLP5N)r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
 
-camlp5r.opt: $(CAMLP5RMX)
-	rm -f camlp5r.opt
-	cd ../main; $(MAKE) optp5 CAMLP5OPT=../meta/camlp5r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
+$(CAMLP5N)r.opt: $(CAMLP5RMX)
+	rm -f $(CAMLP5N)r.opt
+	cd ../main; $(MAKE) optp5 CAMLP5OPT=../meta/$(CAMLP5N)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
 	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(COUT) $(COPT)
@@ -30,7 +30,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.ml); do \
-	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
@@ -61,17 +61,17 @@ compare_q_ast:
 	./mk_q_ast.sh | diff -c q_ast.ml -
 
 install:
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5" "$(DESTDIR)$(BINDIR)"
-	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/camlp5/."
-	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
-	cp camlp5r$(EXE) "$(DESTDIR)$(BINDIR)/."
-	if test -f camlp5r.opt; then \
-	  cp camlp5r.opt "$(DESTDIR)$(BINDIR)/."; \
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
+	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(CAMLP5N)r$(EXE) "$(DESTDIR)$(BINDIR)/."
+	if test -f $(CAMLP5N)r.opt; then \
+	  cp $(CAMLP5N)r.opt "$(DESTDIR)$(BINDIR)/."; \
 	fi
 	if test -f pa_r.cmx; then \
-	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
+	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  for i in $(OBJS:.cmo=); do \
-	     cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
+	     cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  done; \
 	fi
 

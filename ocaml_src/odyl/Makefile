@@ -32,7 +32,7 @@ odyl_main.cmx: odyl_main.ml
 odyl_config.ml:
 	echo "let standard_library =" > odyl_config.ml
 	echo "  try Sys.getenv \"CAMLP5LIB\" with" >> odyl_config.ml
-	echo "    Not_found -> \"$(LIBDIR)/camlp5\"" | \
+	echo "    Not_found -> \"$(LIBDIR)/$(CAMLP5N)\"" | \
 	sed -e 's|\\|/|g' >> odyl_config.ml
 
 clean::
@@ -43,7 +43,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
@@ -52,11 +52,11 @@ promote:
 compare:
 
 install:
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5" "$(DESTDIR)$(BINDIR)"
-	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/camlp5/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
+	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	if test -f odyl.cmxa; then \
-	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/camlp5/."; \
-	  cp odyl$(EXT_LIB) odyl$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
+	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
+	  cp odyl$(EXT_LIB) odyl$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	fi
 
 include .depend

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
+# $Id: camlp5_comm.sh,v 6.2 2012/03/01 03:33:19 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
@@ -17,13 +17,14 @@ head -1 $FILE >/dev/null || exit 1
 
 set - `head -1 $FILE`
 if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
-  WHAT="$2"
+  if [ "$2" = "camlp5r" ]; then WHAT="${CAMLP5N}r"
+  else WHAT="${CAMLP5N}"; fi
   case "$COMPWITH/$WHAT" in
   old/*)
     COMM="ocamlrun$EXE ../boot/$WHAT$EXE -nolib -I ../boot";;
-  new/camlp5)
+  new/${CAMLP5N})
     COMM="ocamlrun$EXE ../main/$WHAT$EXE -nolib -I ../meta -I ../etc";;
-  new/camlp5r)
+  new/${CAMLP5N}r)
     COMM="ocamlrun$EXE ../meta/$WHAT$EXE -nolib -I ../meta -I ../etc";;
   *)
     echo "internal error: bad value of COMPWITH/WHAT" 1>&2; exit 2;;

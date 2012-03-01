@@ -170,15 +170,17 @@ let print_usage_list l =
 ;;
 
 let usage ini_sl ext_sl =
+  let name = Filename.basename Sys.argv.(0) in
   eprintf "\
-Usage: camlp5 [load-options] [--] [other-options]
+Usage: %s [load-options] [--] [other-options]
 Load options:
   -I directory  Add directory in search patch for object files.
   -where        Print camlp5 library directory and exit.
   -nolib        No automatic search for object files in library directory.
   <object-file> Load this file in Camlp5 core.
 Other options:
-  <file>        Parse this file.\n";
+  <file>        Parse this file.\n"
+    name;
   print_usage_list ini_sl;
   let rec loop =
     function

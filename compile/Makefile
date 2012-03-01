@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2011/01/26 12:31:48 deraugla Exp $
+# $Id: Makefile,v 6.3 2012/03/01 03:33:18 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -12,29 +12,29 @@ COMP_OPT=-e "Grammar.Entry.obj Pcaml.interf" -e "Grammar.Entry.obj Pcaml.implem"
 
 all: out
 
-out: camlp5$D.fast
-opt: camlp5$D.fast.opt
+out: $(CAMLP5N)$D.fast
+opt: $(CAMLP5N)$D.fast.opt
 
-camlp5$D.fast: pa_$D_fast.cmo
-	rm -f camlp5$D.fast
-	cd ../main; $(MAKE) CAMLP5=../compile/camlp5$D.fast CAMLP5M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
+$(CAMLP5N)$D.fast: pa_$D_fast.cmo
+	rm -f $(CAMLP5N)$D.fast
+	cd ../main; $(MAKE) CAMLP5=../compile/$(CAMLP5N)$D.fast CAMLP5M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
 
-camlp5$D.fast.opt: pa_$D_fast.cmx
-	rm -f camlp5$D.fast.opt
-	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/camlp5$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
+$(CAMLP5N)$D.fast.opt: pa_$D_fast.cmx
+	rm -f $(CAMLP5N)$D.fast.opt
+	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$(CAMLP5N)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
 	cat $(SRC) | sed -e "s/Plexer.gmake ()/Lazy.force P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | grep -v '#load' | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 $D_fast.ml.tmp: compile.cmo $(SRC)
-	EXE=$(EXE) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
+	EXE=$(EXE) ./compile.sh $(COMP_OPT) -name $(CAMLP5N) $(SRC) > $D_fast.ml.tmp
 
 install:
-	if test -f camlp5o.fast.opt; then \
-	  cp camlp5o.fast.opt "$(DESTDIR)$(BINDIR)/camlp5o.opt"; \
+	if test -f $(CAMLP5N)o.fast.opt; then \
+	  cp $(CAMLP5N)o.fast.opt "$(DESTDIR)$(BINDIR)/$(CAMLP5N)o.opt"; \
 	fi
 	if test -f pa_o_fast.cmx; then \
-	  cp pa_o_fast.cmx pa_o_fast.o "$(DESTDIR)$(LIBDIR)/camlp5/."; \
+	  cp pa_o_fast.cmx pa_o_fast.o "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	fi
 
 clean::
@@ -45,7 +45,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in *.ml; do \
-	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 

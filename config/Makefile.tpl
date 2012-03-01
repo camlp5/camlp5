@@ -1,6 +1,6 @@
-# $Id: Makefile.tpl,v 6.1 2010/09/15 16:00:19 deraugla Exp $
+# $Id: Makefile.tpl,v 6.2 2012/03/01 03:33:18 deraugla Exp $
 
-CAMLP5_COMM=OPT=$(OPT) EXE=$(EXE) MODE=$(MODE) COMPWITH=$(COMPWITH) ../tools/camlp5_comm.sh
+CAMLP5_COMM=OPT=$(OPT) EXE=$(EXE) MODE=$(MODE) COMPWITH=$(COMPWITH) CAMLP5N=$(CAMLP5N) ../tools/camlp5_comm.sh
 OCAMLC=@OPT=$(OPT) EXE=$(EXE) ../tools/ocamlc.sh
 OCAMLOPT=@OPT=$(OPT) EXE=$(EXE) ../tools/ocamlopt.sh
 OCAMLCFLAGS=

@@ -16,6 +16,11 @@ let string_of_loc fname line bp ep =
 ;;
 
 let print_location loc =
+  let loc =
+    if Ploc.file_name loc = "" then
+      Ploc.make_loc !(Pcaml.input_file) 1 0 (0, 1) ""
+    else loc
+  in
   let fname = Ploc.file_name loc in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in

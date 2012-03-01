@@ -1,51 +1,51 @@
 .TH CAMLP5 1  "" "INRIA"
 .SH NAME
-camlp5 - Pre-Precessor-Pretty-Printer for OCaml
+camlp5n - Pre-Precessor-Pretty-Printer for OCaml
 .br
-mkcamlp5 - Create custom camlp5
+mkcamlp5n - Create custom camlp5n
 .br
-mkcamlp5.opt - Create custom camlp5 (native code)
+mkcamlp5n.opt - Create custom camlp5n (native code)
 .br
 ocpp5 - Universal preprocessor
 
 .SH SYNOPSIS
-.B camlp5
+.B camlp5n
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp5o
+.B camlp5no
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp5r
+.B camlp5nr
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp5sch
+.B camlp5nsch
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp5o.cma
+.B camlp5no.cma
 .br
-.B camlp5r.cma
+.B camlp5nr.cma
 .br
-.B camlp5sch.cma
+.B camlp5nsch.cma
 .br
-.B mkcamlp5
+.B mkcamlp5n
 .br
-.B mkcamlp5.opt
+.B mkcamlp5n.opt
 .br
 .B ocpp5
 [
@@ -54,51 +54,51 @@ load-options
 file
 .LP
 .br
-.B camlp5o.opt
+.B camlp5no.opt
 [--] [
 other-options
 ]
 .br
-.B camlp5r.opt
+.B camlp5nr.opt
 [--] [
 other-options
 ]
 
 .SH DESCRIPTION
-.B camlp5
+.B camlp5n
 is a Pre-Processor-Pretty-Printer for OCaml, parsing a source
 file and printing some result on standard output.
 .LP
-.B camlp5o,
-.B camlp5r
+.B camlp5no,
+.B camlp5nr
 and
-.B camlp5sch
+.B camlp5nsch
 are versions of
-.B camlp5
+.B camlp5n
 with some files already loaded (see further).
 .LP
-.B camlp5o.cma,
-.B camlp5r.cma
+.B camlp5no.cma,
+.B camlp5nr.cma
 and
-.B camlp5sch.cma
-are files to be loaded in ocaml toplevel to use the camlp5 machinery
+.B camlp5nsch.cma
+are files to be loaded in ocaml toplevel to use the camlp5n machinery
 .LP
-.B mkcamlp5
+.B mkcamlp5n
 and
-.B mkcamlp5.opt
-creates camlp5 executables with almost the same options than
+.B mkcamlp5n.opt
+creates camlp5n executables with almost the same options than
 ocamlmktop. See further.
 .LP
 .B ocpp5
 is an universal preprocessor, treating any kind of source file,
 generating the same text with the possible quotations expanded.
 .LP
-.B camlp5o.opt
+.B camlp5no.opt
 and
-.B camlp5r.opt
-are versions of camlp5o and camlp5r compiled by the native-code compiler
+.B camlp5nr.opt
+are versions of camlp5no and camlp5nr compiled by the native-code compiler
 ocamlopt. They are faster but not extensible. And they are not available
-in all installations of camlp5.
+in all installations of camlp5n.
 
 .SH LOAD OPTIONS
 
@@ -116,17 +116,17 @@ may end the load options.
 Add
 .I directory
 in the search path for files loaded. Unless the option \-nolib is used,
-the camlp5 library directory is appended to the path. Warning: there is
+the camlp5n library directory is appended to the path. Warning: there is
 no automatic search in the current directory: add "\-I ." for this.
 .TP
 .B \-where
-Print camlp5 library directory name and exit.
+Print camlp5n library directory name and exit.
 .TP
 .B \-nolib
-No automatic search for objects files in camlp5 library directory.
+No automatic search for objects files in camlp5n library directory.
 .TP
 .BI object-file
-The file is loaded in camlp5 core.
+The file is loaded in camlp5n core.
 
 .SH OTHER OPTIONS
 
@@ -198,7 +198,7 @@ Added by pa_macro.cmo: define the ident.
 Added by pa_macro.cmo: undefine the ident.
 
 .SH "PROVIDED FILES"
-These files are installed in the directory LIBDIR/camlp5.
+These files are installed in the directory LIBDIR/camlp5n.
 
 .LP
 Parsing files:
@@ -249,58 +249,58 @@ Quotation expanders:
 .fi
 .LP
 The command
-.B camlp5o
+.B camlp5no
 is a shortcut for:
 .nf
 .ta 1c
-	camlp5 pa_o.cmo pa_op.cmo pr_dump.cmo
+	camlp5n pa_o.cmo pa_op.cmo pr_dump.cmo
 .fi
 .LP
 The command
-.B camlp5r
+.B camlp5nr
 is a shortcut for:
 .nf
 .ta 1c
-	camlp5 pa_r.cmo pa_rp.cmo pr_dump.cmo
+	camlp5n pa_r.cmo pa_rp.cmo pr_dump.cmo
 .fi
 .LP
 The command
-.B camlp5sch
+.B camlp5nsch
 is a shortcut for:
 .nf
 .ta 1c
-	camlp5 pa_scheme.cmo pr_dump.cmo
+	camlp5n pa_scheme.cmo pr_dump.cmo
 .fi
 .LP
 .LP
 The file
-.B camlp5o.cma
-can be loaded in the toplevel to start camlp5 with OCaml syntax.
+.B camlp5no.cma
+can be loaded in the toplevel to start camlp5n with OCaml syntax.
 .LP
 The file
-.B camlp5r.cma
-can be loaded in the toplevel to start camlp5 with revised syntax.
+.B camlp5nr.cma
+can be loaded in the toplevel to start camlp5n with revised syntax.
 .LP
 The file
-.B camlp5sch.cma
-can be loaded in the toplevel to start camlp5 with Scheme syntax.
+.B camlp5nsch.cma
+can be loaded in the toplevel to start camlp5n with Scheme syntax.
 
 .SH "MKCAMLP5"
 
-.B mkcamlp5
+.B mkcamlp5n
 and
-.B mkcamlp5.opt
-creates camlp5 executables with almost the same options than
+.B mkcamlp5n.opt
+creates camlp5n executables with almost the same options than
 ocamlmktop. The version
-.B mkcamlp5.opt
+.B mkcamlp5n.opt
 can create native code executables, faster but not extensible.
 .LP
-For mkcamlp5, the interfaces to be visible must be explicitly added in
+For mkcamlp5n, the interfaces to be visible must be explicitly added in
 the command line as ".cmi" files. For example, how to add the the
 OCaml module "str":
 .nf
 .ta 1c
-	mkcamlp5 \-custom str.cmi str.cma \-cclib \-lstr \-o camlp5str
+	mkcamlp5n \-custom str.cmi str.cma \-cclib \-lstr \-o camlp5nstr
 .fi
 .LP
 
@@ -330,9 +330,9 @@ tokens) and the possible stalling (number of tokens tests).
 Set the maximum stalling value.
 
 .SH "FILES"
-Library directory of camlp5 in the present installation:
+Library directory of camlp5n in the present installation:
 .br
-LIBDIR/camlp5
+LIBDIR/camlp5n
 
 .SH "SEE ALSO"
 Camlp5 - Reference Manual

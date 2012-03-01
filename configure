@@ -1,11 +1,12 @@
 #!/bin/sh
-# $Id: configure,v 6.8 2010/11/26 23:54:51 deraugla Exp $
+# $Id: configure,v 6.9 2012/03/01 03:33:18 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
 mode=T
+camlp5n=camlp5
 noopt=0
 oversion=''
 
@@ -47,6 +48,8 @@ while : ; do
         mode=T;;
     -strict|--strict)
         mode=S;;
+    -name|--name)
+        camlp5n=$2; shift;;
     -help|--help)
         echo "Usage: configure [options]"
         echo "Options:"
@@ -70,6 +73,8 @@ while : ; do
         echo "        compile in transitional mode"
         echo "  -strict, --strict"
         echo "        compile in strict mode"
+        echo "  -name <name>, --name <name>"
+        echo "        Camlp5 name (default: camlp5)"
         echo "  -help, --help"
         echo "        this message"
        exit 0;;
@@ -112,6 +117,11 @@ case "$mandir" in
   /*) ;;
   "") ;;
    *) echo "The -mandir directory must be absolute." 1>&2; exit 2;;
+esac
+case "$camlp5n" in
+  /*) ;;
+  "") echo "Camlp5 name must not be empty." 1>&2; exit 2;;
+   *) ;;
 esac
 
 # Check Ocaml
@@ -249,6 +259,7 @@ fi
 echo BINDIR=$BINDIR
 echo LIBDIR=$LIBDIR
 echo MANDIR=$MANDIR
+echo CAMLP5N=$camlp5n
 ) > config/Makefile.cnf
 
 rm -f config/Makefile

@@ -3,13 +3,11 @@ argl.cmx: argl.cmi
 ast2pt.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmi ast2pt.cmi mLast.cmi \
-    prtools.cmi
+    $(OTOP)/utils/pconfig.cmi ast2pt.cmi mLast.cmi prtools.cmi
 ast2pt.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi \
-    prtools.cmx
+    $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi prtools.cmx
 ast2pt.cmi: $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/parsetree.cmi mLast.cmi
 exparser.cmo: exparser.cmi mLast.cmi reloc.cmi
@@ -19,9 +17,6 @@ main.cmo: $(OTOP)/utils/pconfig.cmi ../odyl/odyl_main.cmi \
     argl.cmi ast2pt.cmi mLast.cmi pcaml.cmi
 main.cmx: $(OTOP)/utils/pconfig.cmx ../odyl/odyl_main.cmx \
     argl.cmx ast2pt.cmx mLast.cmi pcaml.cmx
-mapAst.cmo: mLast.cmi mapAst.cmi
-mapAst.cmx: mLast.cmi mapAst.cmi
-mapAst.cmi: mLast.cmi
 parserify.cmo: mLast.cmi parserify.cmi prtools.cmi
 parserify.cmx: mLast.cmi parserify.cmi prtools.cmx
 parserify.cmi: mLast.cmi

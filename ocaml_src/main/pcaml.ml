@@ -7,7 +7,7 @@
 
 open Printf;;
 
-let version = "6.03";;
+let version = "6.04-exp";;
 let syntax_name = ref "";;
 
 let gram =
@@ -427,7 +427,7 @@ add_option "-mode"
         "S" -> strict_mode := true
       | "T" -> strict_mode := false
       | _ -> failwith "bad mode; use option -help for details"))
-  "<mode> Set strict (S) or transitional (T) mode.";;
+  "<mode> Set strict (S) or transitional (T) mode (bootstrapping only).";;
 
 add_option "-pmode"
   (Arg.Unit

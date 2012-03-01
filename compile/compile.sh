@@ -3,12 +3,14 @@
 ARGS=
 FILES=
 ENTRIES=
+CAMLP5N=camlp5
 while test "" != "$1"; do
 	case $1 in
         -e)
            shift;
            if test "$ENTRIES" != ""; then ENTRIES="$ENTRIES; "; fi
            ENTRIES="$ENTRIES$1";;
+        -name) CAMLP5N="$2"; shift;;
 	*.ml*) FILES="$FILES $1";;
 	*) ARGS="$ARGS $1";;
 	esac
@@ -20,12 +22,12 @@ echo "Compile.entries.val := [$ENTRIES];" >> tmp.ml
 > tmp.mli
 echo "ocamlc -c tmp.mli" 1>&2
 ocamlc -c tmp.mli
-echo "ocamlrun$EXE ../meta/camlp5r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo" 1>&2
-ocamlrun$EXE ../meta/camlp5r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
+echo "ocamlrun$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo" 1>&2
+ocamlrun$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
 echo "ocamlc -I ../lib -I ../main -c -impl tmp.ppo" 1>&2
 ocamlc -I ../lib -I ../main -c -impl tmp.ppo
 echo "rm tmp.ppo" 1>&2
 rm tmp.ppo
-echo "ocamlrun$EXE ../main/camlp5$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2
-ocamlrun$EXE ../main/camlp5$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
+echo "ocamlrun$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2
+ocamlrun$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
 rm tmp.*
