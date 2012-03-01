@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.26 2012/01/09 15:06:03 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.27 2012/03/01 01:45:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -484,7 +484,7 @@ add_option "-mode"
       [ "S" -> strict_mode.val := True
       | "T" -> strict_mode.val := False
       | _ -> failwith "bad mode; use option -help for details" ]))
-  "<mode> Set strict (S) or transitional (T) mode.";
+  "<mode> Set strict (S) or transitional (T) mode (bootstrapping only).";
 
 add_option "-pmode"
   (Arg.Unit
