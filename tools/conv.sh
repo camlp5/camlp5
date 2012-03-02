@@ -27,8 +27,8 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   esac
   shift; shift
   ARGS=`echo $* | sed -e "s/[()*]//g"`
-  if [ "$CAMLP5DEF" != "" ]; then
-    CAMLP5DEF=`echo $CAMLP5DEF | tr a-z A-Z`
+  if [ "$VERSDIR" != "" ]; then
+    OPTS="$OPTS -D`echo $VERSDIR | tr a-z A-Z`"
   fi
   $COMM $ARGS $OPTS -flag MZ $FILE
 else
