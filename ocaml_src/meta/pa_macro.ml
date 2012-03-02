@@ -136,7 +136,7 @@ let oversion =
 
 let defined_from_varenv () =
   match try Some (Sys.getenv "CAMLP5DEF") with Not_found -> None with
-    Some d -> [(d, MvNone)]
+    Some d -> [d, MvNone]
   | None -> []
 ;;
 
