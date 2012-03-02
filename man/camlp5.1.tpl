@@ -1,6 +1,6 @@
 .TH CAMLP5 1  "" "INRIA"
 .SH NAME
-camlp5n - Pre-Precessor-Pretty-Printer for OCaml
+camlp5n - Pre-Precessor-Pretty-Printer for ocamln
 .br
 mkcamlp5n - Create custom camlp5n
 .br
@@ -81,13 +81,13 @@ with some files already loaded (see further).
 .B camlp5nr.cma
 and
 .B camlp5nsch.cma
-are files to be loaded in ocaml toplevel to use the camlp5n machinery
+are files to be loaded in ocamln toplevel to use the camlp5n machinery
 .LP
 .B mkcamlp5n
 and
 .B mkcamlp5n.opt
 creates camlp5n executables with almost the same options than
-ocamlmktop. See further.
+ocamlnmktop. See further.
 .LP
 .B ocpp5
 is an universal preprocessor, treating any kind of source file,
@@ -97,7 +97,7 @@ generating the same text with the possible quotations expanded.
 and
 .B camlp5nr.opt
 are versions of camlp5no and camlp5nr compiled by the native-code compiler
-ocamlopt. They are faster but not extensible. And they are not available
+ocamlnopt. They are faster but not extensible. And they are not available
 in all installations of camlp5n.
 
 .SH LOAD OPTIONS
@@ -235,7 +235,7 @@ Printing files:
 	pr_extend.cmo: try to rebuild EXTEND statements
 	pr_extfun.cmo: try to rebuild extfun statements
 	pr_extprint.cmo: try to rebuild EXTEND_PRINTER statements
-	pr_dump.cmo: dump syntax tree for ocaml compiler
+	pr_dump.cmo: dump syntax tree for ocamln compiler
 	pr_depend.cmo: file dependencies
 	pr_null.cmo: no output
 .fi
@@ -291,7 +291,7 @@ can be loaded in the toplevel to start camlp5n with Scheme syntax.
 and
 .B mkcamlp5n.opt
 creates camlp5n executables with almost the same options than
-ocamlmktop. The version
+ocamlnmktop. The version
 .B mkcamlp5n.opt
 can create native code executables, faster but not extensible.
 .LP
@@ -337,7 +337,7 @@ LIBDIR/camlp5n
 .SH "SEE ALSO"
 Camlp5 - Reference Manual
 .br
-ocamlc(1), ocaml(1), ocamlmktop(1).
+ocamlnc(1), ocamln(1), ocamlnmktop(1).
 
 .SH AUTHOR
 Daniel de Rauglaudre, INRIA Rocquencourt.

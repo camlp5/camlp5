@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.12 2012/03/02 18:49:56 deraugla Exp $
+# $Id: configure,v 6.13 2012/03/02 19:14:36 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -7,6 +7,7 @@ libdir=''
 mandir=''
 mode=S
 camlp5n=camlp5
+ocamln=ocaml
 noopt=0
 oversion=''
 
@@ -48,6 +49,8 @@ while : ; do
         mode=T;;
     -strict|--strict)
         mode=S;;
+    -oname|--oname)
+        ocamln=$2; shift;;
     -name|--name)
         camlp5n=$2; shift;;
     -help|--help)
@@ -73,6 +76,8 @@ while : ; do
         echo "        compile in transitional mode"
         echo "  -strict, --strict"
         echo "        compile in strict mode"
+        echo "  -oname <name>, --oname <name>"
+        echo "        OCaml name (default: ocaml)"
         echo "  -name <name>, --name <name>"
         echo "        Camlp5 name (default: camlp5)"
         echo "  -help, --help"
@@ -125,9 +130,6 @@ case "$camlp5n" in
 esac
 
 # Check Ocaml
-
-ocamln=jocaml
-ocamln=ocaml
 
 ocamlc=${ocamln}c
 ocamlopt=${ocamln}opt

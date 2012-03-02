@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2012/03/01 03:33:18 deraugla Exp $
+# $Id: Makefile,v 6.3 2012/03/02 19:14:36 deraugla Exp $
 
 include ../config/Makefile
 
@@ -24,4 +24,4 @@ install:
 	done
 
 $(CAMLP5N).1: camlp5.1.tpl
-	sed -e "s'LIBDIR'$(LIBDIR)'g" -e "s/camlp5n/$(CAMLP5N)/g" camlp5.1.tpl > $(CAMLP5N).1
+	sed -e "s'LIBDIR'$(LIBDIR)'g" -e "s/camlp5n/$(CAMLP5N)/g" -e "s/ocamln/$(OCAMLN)/g" camlp5.1.tpl > $(CAMLP5N).1
