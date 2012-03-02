@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 6.3 2012/03/02 16:03:59 deraugla Exp $
+# $Id: camlp5_comm.sh,v 6.4 2012/03/02 18:49:57 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
@@ -21,18 +21,18 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   else WHAT="${CAMLP5N}"; fi
   case "$COMPWITH/$WHAT" in
   old/*)
-    COMM="$OCR$EXE ../boot/$WHAT$EXE -nolib -I ../boot";;
+    COMM="${OCAMLN}run$EXE ../boot/$WHAT$EXE -nolib -I ../boot";;
   new/${CAMLP5N})
-    COMM="$OCR$EXE ../main/$WHAT$EXE -nolib -I ../meta -I ../etc";;
+    COMM="${OCAMLN}run$EXE ../main/$WHAT$EXE -nolib -I ../meta -I ../etc";;
   new/${CAMLP5N}r)
-    COMM="$OCR$EXE ../meta/$WHAT$EXE -nolib -I ../meta -I ../etc";;
+    COMM="${OCAMLN}run$EXE ../meta/$WHAT$EXE -nolib -I ../meta -I ../etc";;
   *)
     echo "internal error: bad value of COMPWITH/WHAT" 1>&2; exit 2;;
   esac
   shift; shift
   ARGS2=`echo $* | sed -e "s/[()*]//g"`
-  if [ "$OCC" != "ocamlc" ]; then
-    d=`echo $OCC | tr a-z A-Z`
+  if [ "$OCAMLN" != "ocaml" ]; then
+    d=`echo $OCAMLN | tr a-z A-Z`
     export CAMLP5DEF="$d"
   fi
   if test "$QUIET" = "no"; then echo $COMM $ARGS2 $ARGS1 $FILE; fi

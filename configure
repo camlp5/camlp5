@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.11 2012/03/02 16:03:59 deraugla Exp $
+# $Id: configure,v 6.12 2012/03/02 18:49:56 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -126,16 +126,16 @@ esac
 
 # Check Ocaml
 
-ocamlc=jocamlc
-ocamlopt=jocamlopt
-ocamlrun=jocamlrun
-ocamlc=ocamlc
-ocamlopt=ocamlopt
-ocamlrun=ocamlrun
+ocamln=jocaml
+ocamln=ocaml
 
-if $ocamlc -v >/dev/null 2>&1; then :
+ocamlc=${ocamln}c
+ocamlopt=${ocamln}opt
+ocamlrun=${ocamln}run
+
+if ${ocamln}c -v >/dev/null 2>&1; then :
 else
-    echo "You need the command" $ocamlc "accessible in the path!"
+    echo "You need the command" ${ocamln}c "accessible in the path!"
     echo "Configuration script failed!"
     exit 1
 fi
@@ -143,12 +143,12 @@ fi
 # Check versions
 
 if [ "$oversion" = "" ]; then
-  oversion=$($ocamlc -v | head -1 | sed 's/^.*version //; s/ .*$//')
+  oversion=$(${ocamln}c -v | head -1 | sed 's/^.*version //; s/ .*$//')
 fi
 OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 
 verspfx=
-if [ "$ocamlc" != "ocamlc" ]; then verspfx=/$ocamlc; fi
+if [ "$ocamln" != "ocaml" ]; then verspfx=/$ocamln; fi
 
 if [ -d "ocaml_stuff$verspfx/$OVERSION" -a \
      -f "ocaml_src/lib/versdep$verspfx/$OVERSION.ml" ]
@@ -167,6 +167,7 @@ else
   echo "Configuration failed."
   # to give the ability to do "make steal":
   echo "OVERSION=$OVERSION" > config/Makefile
+  echo "VERSDIR=$verspfx" >> config/Makefile
   exit 2
 fi
 
@@ -259,14 +260,11 @@ echo EXT_OBJ=$EXT_OBJ
 echo EXT_LIB=$EXT_LIB
 echo OVERSION=$OVERSION
 echo VERSION=$VERSION
-echo VERSPFX=$verspfx
+echo VERSDIR=$verspfx
 echo "OTOP=\$(TOP)/ocaml_stuff$verspfx/$OVERSION"
 echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo WARNERR=\"$WARNERR\"
 echo NO_PR_DIR=$NO_PR_DIR
-echo OCC=$ocamlc
-echo OCOPT=$ocamlopt
-echo OCR=$ocamlrun
 echo OLIBDIR=$OLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
@@ -274,6 +272,7 @@ fi
 echo BINDIR=$BINDIR
 echo LIBDIR=$LIBDIR
 echo MANDIR=$MANDIR
+echo OCAMLN=$ocamln
 echo CAMLP5N=$camlp5n
 ) > config/Makefile.cnf
 

@@ -24,7 +24,7 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   if [ "$2" = "camlp5r" ]; then WHAT="${CAMLP5N}r"; else WHAT="${CAMLP5N}"; fi
   case "$WHAT" in
   ${CAMLP5N}r)
-    COMM="$OCR$EXE $DIR/../meta/$WHAT -nolib -I $DIR/../meta $INCL $DIR/../etc/$PR_O";;
+    COMM="${OCAMLN}run$EXE $DIR/../meta/$WHAT -nolib -I $DIR/../meta $INCL $DIR/../etc/$PR_O";;
   *) echo "not impl $WHAT" 1>&2; exit 2;;
   esac
   shift; shift

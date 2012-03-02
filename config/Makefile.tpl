@@ -1,8 +1,8 @@
-# $Id: Makefile.tpl,v 6.3 2012/03/02 16:03:59 deraugla Exp $
+# $Id: Makefile.tpl,v 6.4 2012/03/02 18:49:56 deraugla Exp $
 
-CAMLP5_COMM=OPT=$(OPT) EXE=$(EXE) OCC=$(OCC) OCR=$(OCR) MODE=$(MODE) COMPWITH=$(COMPWITH) CAMLP5N=$(CAMLP5N) ../tools/camlp5_comm.sh
-OCAMLC=@OPT=$(OPT) EXE=$(EXE) OCC=$(OCC) ../tools/ocamlc.sh
-OCAMLOPT=@OPT=$(OPT) EXE=$(EXE) OCOPT=$(OCOPT) ../tools/ocamlopt.sh
+CAMLP5_COMM=OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) MODE=$(MODE) COMPWITH=$(COMPWITH) CAMLP5N=$(CAMLP5N) ../tools/camlp5_comm.sh
+OCAMLC=@OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) ../tools/ocamlc.sh
+OCAMLOPT=@OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) ../tools/ocamlopt.sh
 OCAMLCFLAGS=
 MKDIR=mkdir -p
 TEST_DIR=test `basename "$<"` = "$<" || { echo "File \"$<\" needs to be recompiled."; echo "Please run 'make' in directory '$$(dirname "$<")' first."; exit 1; }

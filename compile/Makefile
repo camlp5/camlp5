@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.3 2012/03/01 03:33:18 deraugla Exp $
+# $Id: Makefile,v 6.4 2012/03/02 18:49:56 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -27,7 +27,7 @@ pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
 	cat $(SRC) | sed -e "s/Plexer.gmake ()/Lazy.force P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | grep -v '#load' | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 $D_fast.ml.tmp: compile.cmo $(SRC)
-	EXE=$(EXE) ./compile.sh $(COMP_OPT) -name $(CAMLP5N) $(SRC) > $D_fast.ml.tmp
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) EXE=$(EXE) ./compile.sh $(COMP_OPT)  $(SRC) > $D_fast.ml.tmp
 
 install:
 	if test -f $(CAMLP5N)o.fast.opt; then \

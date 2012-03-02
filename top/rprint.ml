@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.15 2012/01/09 14:22:25 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.16 2012/03/02 18:49:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -232,7 +232,7 @@ and print_simple_out_type ppf =
         fprintf ppf ")@]"
       }
     END
-  | IFDEF OCAML_VERSION >= OCAML_3_13_0 THEN
+  | IFDEF OCAML_VERSION >= OCAML_3_13_0 AND NOT JOCAML THEN
       Otyp_sum constrs ->
         fprintf ppf "@[<hv>[ %a ]@]"
           (print_list print_out_constr_gadt_opt
@@ -257,6 +257,10 @@ and print_simple_out_type ppf =
       Otyp_record lbls ->
         fprintf ppf "@[<hv 2>{ %a }@]"
           (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
+    END
+  | IFDEF JOCAML THEN
+      Otyp_proc ->
+        failwith "Rprint: Otyp_proc not impl"
     END ]
 and print_out_constr ppf (name, tyl) =
   match tyl with
