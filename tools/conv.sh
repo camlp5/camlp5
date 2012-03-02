@@ -5,7 +5,6 @@ INCL=
 FILE=
 OPTS="-mode T"
 PR_O=$1
-CAMLP5N=camlp5
 DEF=
 shift
 while test "" != "$1"; do
@@ -28,8 +27,8 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   esac
   shift; shift
   ARGS=`echo $* | sed -e "s/[()*]//g"`
-  if [ "$CAMLP5DEF" != "" ]; then
-    CAMLP5DEF=`echo $CAMLP5DEF | tr a-z A-Z`
+  if [ "$OCAMLN" != "ocaml" ]; then
+    export CAMLP5DEF=`echo $OCAMLN | tr a-z A-Z`
   fi
   $COMM $ARGS $OPTS -flag MZ $FILE
 else

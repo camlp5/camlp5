@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.18 2012/03/02 19:00:40 deraugla Exp $
+# $Id: Makefile,v 6.19 2012/03/02 19:28:53 deraugla Exp $
 
 include config/Makefile
 
@@ -247,7 +247,7 @@ compare_sources:
 compare_source:
 	@cd $$DIR; k=$$FILE; opt=""; \
 	if [ "$$k" = "versdep.ml" ]; then \
-	  k=versdep/$(OVERSION).ml; \
+	  k=versdep$(VERSDIR)/$(OVERSION).ml; \
 	fi; \
 	echo ============================================; \
 	echo ocaml_src/$$DIR/$$k; \
