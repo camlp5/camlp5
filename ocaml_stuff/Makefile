@@ -1,23 +1,24 @@
-# $Id: Makefile,v 6.3 2010/11/12 13:44:23 deraugla Exp $
+# $Id: Makefile,v 6.4 2012/03/02 16:03:59 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
 
-DIRS=$(OVERSION)/utils $(OVERSION)/parsing
+VERSDIR=.$(VERSPFX)/$(OVERSION)
+DIRS=$(VERSDIR)/utils $(VERSDIR)/parsing
 
 all:
 	set -e; \
 	for i in $(DIRS); do \
-	  cd $$i; $(MAKE) all EXE=$(EXE); cd ../..; \
+	  (cd $$i; $(MAKE) all EXE=$(EXE) OCC=$(OCC)); \
         done
 
 opt:
-	cd $(OVERSION)/utils; $(MAKE) opt; cd ../..
+	cd $(VERSDIR)/utils; $(MAKE) opt; cd ../..
 
 clean:
 	set -e; \
 	for i in $(DIRS); do \
-	  cd $$i; $(MAKE) clean EXE=$(EXE); cd ../..; \
+	  (cd $$i; $(MAKE) clean EXE=$(EXE)); \
 	done
 
 depend:
@@ -30,20 +31,20 @@ steal:
 	@$(MAKE) real_steal OCAML_SRC="$$(cd ..; cd $(OCAML_SRC); pwd)"
 
 real_steal:
-	mkdir -p "$(OVERSION)"
-	cd "$(OVERSION)"; mkdir -p utils parsing
-	cp common/utils/pconfig.mli $(OVERSION)/utils/.
+	mkdir -p "$(VERSDIR)"
+	cd "$(VERSDIR)"; mkdir -p utils parsing
+	cp common/utils/pconfig.mli $(VERSDIR)/utils/.
 	sed 's/\$$Id.*\$$/Id/' common/utils/Makefile > \
-	  $(OVERSION)/utils/Makefile
-	cp common/utils/.cvsignore $(OVERSION)/utils/.
-	cp common/utils/.depend $(OVERSION)/utils/.
+	  $(VERSDIR)/utils/Makefile
+	cp common/utils/.cvsignore $(VERSDIR)/utils/.
+	cp common/utils/.depend $(VERSDIR)/utils/.
 	sed 's/\$$Id.*\$$/Id/' common/parsing/Makefile > \
-	  $(OVERSION)/parsing/Makefile
-	cp common/parsing/.cvsignore $(OVERSION)/parsing/.
-	cp common/parsing/.depend $(OVERSION)/parsing/.
+	  $(VERSDIR)/parsing/Makefile
+	cp common/parsing/.cvsignore $(VERSDIR)/parsing/.
+	cp common/parsing/.depend $(VERSDIR)/parsing/.
 	(echo "let ocaml_version = \"$(OVERSION)\""; \
 	 grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp | \
-	 sed -e 's/^and/let/') > $(OVERSION)/utils/pconfig.ml
+	 sed -e 's/^and/let/') > $(VERSDIR)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
 	$(MAKE) copy_steal FILE=parsing/asttypes.mli
 	$(MAKE) copy_steal FILE=parsing/location.mli
@@ -53,7 +54,7 @@ real_steal:
 copy_steal:
 	if [ -f "$(OCAML_SRC)/$(FILE)" ]; then \
 	  sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/$(FILE); \
-	fi > $(OVERSION)/$(FILE)
+	fi > $(VERSDIR)/$(FILE)
 
 compare_stolen:
 	@if test "$(OCAML_SRC)" = ""; then \
@@ -66,25 +67,25 @@ real_compare_stolen:
 	@echo warnings.mli
 	@if [ -f "$(OCAML_SRC)/utils/warnings.mli" ]; then \
            sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/utils/warnings.mli | \
-	   diff $(OVERSION)/utils/warnings.mli -; exit 0; fi
+	   diff $(VERSDIR)/utils/warnings.mli -; exit 0; fi
 	@echo =================================================
 	@echo pconfig.ml
 	@(echo "let ocaml_version = \"$(OVERSION)\""; \
 	  grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp) | \
-	sed -e 's/^and/let/' | diff $(OVERSION)/utils/pconfig.ml -; exit 0
+	sed -e 's/^and/let/' | diff $(VERSDIR)/utils/pconfig.ml -; exit 0
 	@echo =================================================
 	@echo asttypes.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/asttypes.mli | \
-	diff $(OVERSION)/parsing/asttypes.mli -; exit 0
+	diff $(VERSDIR)/parsing/asttypes.mli -; exit 0
 	@echo =================================================
 	@echo location.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/location.mli | \
-	diff $(OVERSION)/parsing/location.mli -; exit 0
+	diff $(VERSDIR)/parsing/location.mli -; exit 0
 	@echo =================================================
 	@echo longident.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/longident.mli | \
-	diff $(OVERSION)/parsing/longident.mli -; exit 0
+	diff $(VERSDIR)/parsing/longident.mli -; exit 0
 	@echo =================================================
 	@echo parsetree.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/parsetree.mli | \
-	diff $(OVERSION)/parsing/parsetree.mli -; exit 0
+	diff $(VERSDIR)/parsing/parsetree.mli -; exit 0

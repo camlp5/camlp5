@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.1 2010/09/15 16:00:48 deraugla Exp $
+# $Id: Makefile,v 6.2 2012/03/02 16:03:59 deraugla Exp $
 
 FILES=warnings.cmi pconfig.cmo
 INCL=
@@ -16,12 +16,12 @@ depend:
 .SUFFIXES: .mli .cmi .ml .cmo .cmx
 
 .mli.cmi:
-	ocamlc $(INCL) -c $<
+	$(OCC) $(INCL) -c $<
 
 .ml.cmo:
-	ocamlc $(INCL) -c $<
+	$(OCC) $(INCL) -c $<
 
 .ml.cmx:
-	ocamlopt $(INCL) -c $<
+	$(OCOPT) $(INCL) -c $<
 
 include .depend

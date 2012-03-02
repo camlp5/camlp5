@@ -134,11 +134,18 @@ let oversion =
   v
 ;;
 
+let defined_from_varenv () =
+  match try Some (Sys.getenv "CAMLP5DEF") with Not_found -> None with
+    Some d -> [(d, MvNone)]
+  | None -> []
+;;
+
 let defined =
   ref
-    ["CAMLP5", MvNone; "CAMLP5_4_02", MvNone; "CAMLP5_5_00", MvNone;
-     "CAMLP5_6_00", MvNone; "CAMLP5_6_02_1", MvNone;
-     "OCAML_" ^ oversion, MvNone]
+    (("CAMLP5", MvNone) :: ("CAMLP5_4_02", MvNone) ::
+     ("CAMLP5_5_00", MvNone) :: ("CAMLP5_6_00", MvNone) ::
+     ("CAMLP5_6_02_1", MvNone) :: ("OCAML_" ^ oversion, MvNone) ::
+     defined_from_varenv ())
 ;;
 
 let defined_version loc =
@@ -541,16 +548,16 @@ Grammar.extend
          (Grammar.Entry.obj
             (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
       Gramext.action
-        (fun (def : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, def) : 'str_macro_def));
+        (fun (ome : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+           (SdDef (i, ome) : 'str_macro_def));
       [Gramext.Stoken ("", "DEFINE");
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
             (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (def : 'opt_macro_expr) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, def) : 'str_macro_def))]];
+        (fun (ome : 'opt_macro_expr) (i : 'uident) _ (loc : Ploc.t) ->
+           (SdDef (i, ome) : 'str_macro_def))]];
     Grammar.Entry.obj (else_str : 'else_str Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Ploc.t) -> (SdNop : 'else_str));
@@ -620,16 +627,16 @@ Grammar.extend
          (Grammar.Entry.obj
             (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
       Gramext.action
-        (fun (def : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, def) : 'sig_macro_def));
+        (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+           (SdDef (i, omt) : 'sig_macro_def));
       [Gramext.Stoken ("", "DEFINE");
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
             (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
       Gramext.action
-        (fun (def : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, def) : 'sig_macro_def))]];
+        (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+           (SdDef (i, omt) : 'sig_macro_def))]];
     Grammar.Entry.obj (else_sig : 'else_sig Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Ploc.t) -> (SdNop : 'else_sig));

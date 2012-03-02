@@ -1,5 +1,5 @@
 #!/bin/sh -e
 
-COMM=ocamlopt$OPT
+COMM=$OCOPT$OPT
 echo $COMM $*
 $COMM $*

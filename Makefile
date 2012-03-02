@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.16 2012/03/01 03:47:38 deraugla Exp $
+# $Id: Makefile,v 6.17 2012/03/02 16:03:59 deraugla Exp $
 
 include config/Makefile
 
@@ -263,30 +263,40 @@ compare_source:
 bootstrap_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
 	@cd lib; \
-	for i in ../ocaml_src/lib/versdep/*.ml; do \
+	for i in ../ocaml_src/lib/versdep/*.ml \
+	    ../ocaml_src/lib/versdep/*/*.ml; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
-	  ../tools/conv.sh $(PR_O) $$opt -name $(CAMLP5N) versdep.ml | \
+	  OCR=$(OCR) EXE=$(EXE) ../tools/conv.sh $(PR_O) $$opt \
+	    -name $(CAMLP5N) versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
 compare_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
-	@cd lib; \
-	for i in ../ocaml_src/lib/versdep/*.ml; do \
-	  echo ============================================; \
-	  echo $$i; \
-	  j=$$(echo $$(basename $$i) | \
-	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
-	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
-	  opt="-U$$k -D$$j -flag R"; \
-	  ../tools/conv.sh $(PR_O) $$opt -name $(CAMLP5N) versdep.ml | \
-	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
+	@-for i in ocaml_src/lib/versdep/*.ml; do \
+	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i; \
+	done; \
+	for i in ocaml_src/lib/versdep/*/*.ml; do \
+	  export CAMLP5DEF=$$(basename $$(dirname $$i)); \
+	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i; \
 	done
+
+compare_versdep:
+	@cd lib; \
+	echo ============================================; \
+	echo $$i; \
+	j=$$(echo $$(basename $$i) | \
+	  sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
+	k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
+	opt="-U$$k -D$$j -flag R"; \
+	OCR=$(OCR) EXE=$(EXE) ../tools/conv.sh $(PR_O) $$opt \
+	  -name $(CAMLP5N) versdep.ml | \
+	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff ../$$i -
 
 untouch_sources:
 	@-cd ocaml_src; \

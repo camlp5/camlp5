@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.19 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.20 2012/03/02 16:03:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -47,7 +47,7 @@ value ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
 ;
 
 value ocaml_id_or_li_of_string_list loc sl =
-  IFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+  IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAMLC THEN
     match List.rev sl with
     [ [s] -> Some s
     | _ -> None ]
@@ -107,7 +107,7 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
-        ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+        ELSIFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAMLC THEN
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -190,7 +190,7 @@ value ocaml_ptype_variant ctl priv =
         in
           let priv = if priv then Private else Public in
           Some (Ptype_variant ctl priv)
-      ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
+      ELSIFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAMLC THEN
         let ctl =
           List.map
             (fun (c, tl, rto, loc) ->
@@ -417,7 +417,7 @@ value ocaml_ppat_type =
 ;
 
 value ocaml_ppat_unpack =
-  IFDEF OCAML_VERSION < OCAML_3_13_0 THEN None
+  IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAMLC THEN None
   ELSE Some (fun s -> Ppat_unpack s, fun pt -> Ptyp_package pt) END
 ;
 

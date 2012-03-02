@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.10 2012/03/01 07:35:07 deraugla Exp $
+# $Id: configure,v 6.11 2012/03/02 16:03:59 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -126,9 +126,16 @@ esac
 
 # Check Ocaml
 
-if ocamlc -v >/dev/null 2>&1; then :
+ocamlc=jocamlc
+ocamlopt=jocamlopt
+ocamlrun=jocamlrun
+ocamlc=ocamlc
+ocamlopt=ocamlopt
+ocamlrun=ocamlrun
+
+if $ocamlc -v >/dev/null 2>&1; then :
 else
-    echo "You need the command ocamlc accessible in the path!"
+    echo "You need the command" $ocamlc "accessible in the path!"
     echo "Configuration script failed!"
     exit 1
 fi
@@ -136,21 +143,25 @@ fi
 # Check versions
 
 if [ "$oversion" = "" ]; then
-  oversion=$(ocamlc -v | head -1 | sed 's/^.*version //; s/ .*$//')
+  oversion=$($ocamlc -v | head -1 | sed 's/^.*version //; s/ .*$//')
 fi
 OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 
-if [ -d "ocaml_stuff/$OVERSION" -a -f "ocaml_src/lib/versdep/$OVERSION.ml" ]
+verspfx=
+if [ "$ocamlc" != "ocamlc" ]; then verspfx=/$ocamlc; fi
+
+if [ -d "ocaml_stuff$verspfx/$OVERSION" -a \
+     -f "ocaml_src/lib/versdep$verspfx/$OVERSION.ml" ]
 then :
 else
   echo
   echo "Sorry: the compatibility with ocaml version \"$oversion\""
   echo "is not yet implemented. Please report."
   echo
-  if [ -d "ocaml_stuff/$OVERSION" ]; then
-    echo "Information: file ocaml_src/lib/versdep/$OVERSION.ml is missing."
+  if [ -d "ocaml_stuff$verspfx/$OVERSION" ]; then
+    echo "Information: file ocaml_src/lib/versdep$verspfx/$OVERSION.ml is missing."
   else
-    echo "Information: directory ocaml_stuff/$OVERSION is missing."
+    echo "Information: directory ocaml_stuff$verspfx/$OVERSION is missing."
   fi
   echo
   echo "Configuration failed."
@@ -161,9 +172,9 @@ fi
 
 # Evaluate installation directories
 
-ocamlc_where=$(ocamlc -where 2>/dev/null)
+ocamlc_where=$($ocamlc -where 2>/dev/null)
 if [ "$?" != "0" ]; then
-  ocamlc_where=$(ocamlc -v | tail -1 | sed -e 's/^.*: //')
+  ocamlc_where=$($ocamlc -v | tail -1 | sed -e 's/^.*: //')
 fi
 
 x=$ocamlc_where
@@ -193,7 +204,7 @@ if test "$bindir" != ""; then
 elif test "$prefix" != ""; then
     BINDIR='$(PREFIX)/bin'
 else
-    BINDIR=$(dirname "$(which ocamlc)")
+    BINDIR=$(dirname "$(which $ocamlc)")
 fi
 if test "$libdir" != ""; then
     LIBDIR=$libdir
@@ -211,10 +222,10 @@ else
 fi
 
 OPT=
-if [ "$noopt" = "0" ] && ocamlc.opt > /dev/null 2>&1 &&
-   ocamlopt.opt > /dev/null 2>&1
+if [ "$noopt" = "0" ] && $ocamlc.opt > /dev/null 2>&1 &&
+   $ocamlopt.opt > /dev/null 2>&1
 then
-    oversion_opt=$(ocamlopt.opt -v | head -1 | sed 's/^.*version //; s/ .*$//')
+    oversion_opt=$($ocamlopt.opt -v | head -1 | sed 's/^.*version //; s/ .*$//')
     if [ "$oversion" = "$oversion_opt" ]; then
       OPT=.opt
     fi
@@ -226,7 +237,7 @@ else
   OCAMLC_W_Y=""
 fi
 
-if [ "$(ocamlc -warn-error A 2>&1)" = "" ]; then
+if [ "$($ocamlc -warn-error A 2>&1)" = "" ]; then
   WARNERR="-warn-error A"
 else
   WARNERR=""
@@ -248,10 +259,14 @@ echo EXT_OBJ=$EXT_OBJ
 echo EXT_LIB=$EXT_LIB
 echo OVERSION=$OVERSION
 echo VERSION=$VERSION
-echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
+echo VERSPFX=$verspfx
+echo "OTOP=\$(TOP)/ocaml_stuff$verspfx/$OVERSION"
 echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo WARNERR=\"$WARNERR\"
 echo NO_PR_DIR=$NO_PR_DIR
+echo OCC=$ocamlc
+echo OCOPT=$ocamlopt
+echo OCR=$ocamlrun
 echo OLIBDIR=$OLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
@@ -268,7 +283,7 @@ echo >> config/Makefile
 cat config/Makefile.cnf >> config/Makefile
 
 cd ocaml_src/lib
-cp "versdep/$OVERSION.ml" versdep.ml
+cp "versdep$verspfx/$OVERSION.ml" versdep.ml
 cd ../..
 
 echo

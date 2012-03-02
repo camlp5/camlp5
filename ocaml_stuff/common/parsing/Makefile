@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.1 2010/09/15 16:00:47 deraugla Exp $
+# $Id: Makefile,v 6.2 2012/03/02 16:03:59 deraugla Exp $
 
 FILES=asttypes.cmi location.cmi longident.cmi parsetree.cmi
 INCL=-I ../utils
@@ -14,6 +14,6 @@ depend:
 .SUFFIXES: .mli .cmi
 
 .mli.cmi:
-	ocamlc $(INCL) -c $<
+	$(OCC) $(INCL) -c $<
 
 include .depend

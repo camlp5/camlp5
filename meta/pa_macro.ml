@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 6.9 2012/01/09 14:22:22 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 6.10 2012/03/02 16:03:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -134,11 +134,17 @@ value oversion = do {
   v
 };
 
+value defined_from_varenv () =
+  match try Some (Sys.getenv "CAMLP5DEF") with [ Not_found -> None ] with
+  [ Some d -> [(d, MvNone)]
+  | None -> [] ]
+;
+
 value defined =
   ref
     [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone); ("CAMLP5_5_00", MvNone);
      ("CAMLP5_6_00", MvNone); ("CAMLP5_6_02_1", MvNone);
-     ("OCAML_" ^ oversion, MvNone)]
+     ("OCAML_" ^ oversion, MvNone) :: defined_from_varenv ()]
 ;
 
 value defined_version loc =
@@ -437,8 +443,8 @@ EXTEND
           | SdNop -> <:sig_item< declare end >> ] ] ]
   ;
   str_macro_def:
-    [ [ "DEFINE"; i = uident; def = opt_macro_expr -> SdDef i def
-      | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
+    [ [ "DEFINE"; i = uident; ome = opt_macro_expr -> SdDef i ome
+      | "DEFINE_TYPE"; i = uident; ome = opt_macro_type -> SdDef i ome
       | "UNDEF"; i = uident -> SdUnd i
       | "IFDEF"; e = dexpr; "THEN"; d1 = structure_or_macro;
         d2 = else_str; "END" ->
@@ -456,8 +462,8 @@ EXTEND
       | -> SdNop ] ]
   ;
   sig_macro_def:
-    [ [ "DEFINE"; i = uident; def = opt_macro_type -> SdDef i def
-      | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
+    [ [ "DEFINE"; i = uident; omt = opt_macro_type -> SdDef i omt
+      | "DEFINE_TYPE"; i = uident; omt = opt_macro_type -> SdDef i omt
       | "UNDEF"; i = uident -> SdUnd i
       | "IFDEF"; e = dexpr; "THEN"; d1 = signature_or_macro;
         d2 = else_sig; "END" ->
