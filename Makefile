@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.20 2012/03/02 20:37:49 deraugla Exp $
+# $Id: Makefile,v 6.21 2012/03/02 20:59:41 deraugla Exp $
 
 include config/Makefile
 
@@ -248,6 +248,9 @@ compare_source:
 	@cd $$DIR; k=$$FILE; opt=""; \
 	if [ "$$k" = "versdep.ml" ]; then \
 	  k=versdep$(VERSDIR)/$(OVERSION).ml; \
+	  VERSDIR="$(OCAMLN)"; \
+	else \
+	  VERSDIR=""; \
 	fi; \
 	echo ============================================; \
 	echo ocaml_src/$$DIR/$$k; \
@@ -255,7 +258,8 @@ compare_source:
 	  sed 's/# $$Id.*\$$/# $(TXTGEN)/' Makefile | \
 	  sed 's-^TOP=..$$-TOP=../..-'; \
 	else \
-	  OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt $$FILE | \
+	  OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) VERSDIR=$$VERSDIR \
+	    ../tools/conv.sh $(PR_O) $$opt $$FILE | \
 	  sed 's/$$Id.*\$$/$(TXTGEN)/'; \
 	fi | \
 	diff $(DIFF_OPT) ../ocaml_src/$$DIR/$$k - || :
@@ -272,7 +276,7 @@ bootstrap_all_versdep:
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
 	  OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt \
-	    -name $(CAMLP5N) versdep.ml | \
+	    versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
@@ -283,7 +287,8 @@ compare_all_versdep:
 	done; \
 	for i in ocaml_src/lib/versdep/*/*.ml; do \
 	  VERSDIR="$$(basename $$(dirname $$i))" \
-	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i VERSDIR="$$(basename $$(dirname $$i))"; \
+	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i \
+	    VERSDIR="$$(basename $$(dirname $$i))"; \
 	done
 
 compare_versdep:
@@ -294,8 +299,8 @@ compare_versdep:
 	  sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
 	k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
 	opt="-U$$k -D$$j -flag R"; \
-	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) VERSDIR=$(VERSDIR) ../tools/conv.sh $(PR_O) $$opt \
-	  -name $(CAMLP5N) versdep.ml | \
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) VERSDIR=$(VERSDIR) \
+	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff ../$$i -
 
 untouch_sources:
