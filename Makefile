@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.22 2012/03/03 01:38:07 deraugla Exp $
+# $Id: Makefile,v 6.23 2012/03/03 01:53:43 deraugla Exp $
 
 include config/Makefile
 
@@ -286,7 +286,7 @@ bootstrap_versdep:
 	opt="-U$$k -U$$m -D$$j -D$$n"; \
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt \
 	  versdep.ml | \
-	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -
+	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > ../$$i -
 
 compare_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
