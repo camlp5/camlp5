@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.54 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.55 2012/03/03 08:25:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -244,6 +244,17 @@ value strip_heading_spaces s =
     else if s.[i] = ' ' then loop (i + 1)
     else String.sub s i (String.length s - i)
 ;
+
+value strip_char c s = do {
+  let s = String.copy s in
+  loop 0 0 where rec loop i j =
+    if i = String.length s then String.sub s 0 j
+    else if s.[i] = '_' then loop (i + 1) j
+    else do {
+      s.[j] := s.[i];
+      loop (i + 1) (j + 1)
+    }
+};
 
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
@@ -1237,6 +1248,10 @@ EXTEND_PRINTER
       | <:expr< (module $me$) >> ->
           pprintf pc "(module %p)" module_expr me
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
+          let s =
+            if flag_compatible_old_versions_of_ocaml.val then strip_char '_' s
+            else s
+          in
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
       | <:expr< $int32:s$ >> ->
