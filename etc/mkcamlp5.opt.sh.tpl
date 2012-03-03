@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: mkcamlp5.opt.sh.tpl,v 6.1 2010/09/15 16:00:21 deraugla Exp $
+# $Id: mkcamlp5.opt.sh.tpl,v 6.2 2012/03/03 02:47:04 deraugla Exp $
 
-OLIB=`ocamlc -where`
-LIB=LIBDIR/camlp5
+OLIB=`OCAMLNc -where`
+LIB=LIBDIR/CAMLP5N
 
 INTERFACES=
 OPTS=
@@ -11,11 +11,11 @@ while test "" != "$1"; do
     case $1 in
     -I) INCL="$INCL -I $2"; shift;;
     -help)
-        echo "Usage: mkcamlp5.opt [options] [files]"
+        echo "Usage: mkCAMLP5N.opt [options] [files]"
         echo "Options:"
         echo "  -I <dir>   Add directory in search patch for object files"
         echo
-        echo "All options of ocamlopt are also available"
+        echo "All options of OCAMLNopt are also available"
         echo
         echo "Files:"
         echo "  .cmx file  Load this file in core"
@@ -27,4 +27,4 @@ while test "" != "$1"; do
 done
 
 set -e
-ocamlopt -I $LIB odyl.cmxa camlp5.cmxa $INCL $OPTS odyl.cmx -linkall
+OCAMLNopt -I $LIB odyl.cmxa CAMLP5N.cmxa $INCL $OPTS odyl.cmx -linkall

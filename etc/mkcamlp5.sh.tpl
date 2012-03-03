@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: mkcamlp5.sh.tpl,v 6.1 2010/09/15 16:00:21 deraugla Exp $
+# $Id: mkcamlp5.sh.tpl,v 6.2 2012/03/03 02:47:04 deraugla Exp $
 
-OLIB=`ocamlc -where`
-LIB=LIBDIR/camlp5
+OLIB=`OCAMLNc -where`
+LIB=LIBDIR/CAMLP5N
 
 INTERFACES=
 OPTS=
@@ -11,11 +11,11 @@ while test "" != "$1"; do
     case $1 in
     -I) INCL="$INCL -I $2"; shift;;
     -help)
-        echo "Usage: mkcamlp5 [options] [files]"
+        echo "Usage: mkCAMLP5N [options] [files]"
         echo "Options:"
         echo "  -I <dir>   Add directory in search patch for object files"
         echo
-        echo "All options of ocamlc are also available"
+        echo "All options of OCAMLNc are also available"
         echo
         echo "Files:"
         echo "  .cmi file  Add visible interface for possible future loading"
@@ -41,5 +41,5 @@ set -e
 trap 'rm -f $CRC.ml $CRC.cmi $CRC.cmo' 0 2
 $OLIB/extract_crc -I $OLIB $INCL $INTERFACES > $CRC.ml
 echo "let _ = Dynlink.add_available_units crc_unit_list" >> $CRC.ml
-ocamlc -I $LIB odyl.cma camlp5.cma $CRC.ml $INCL $OPTS odyl.cmo -linkall
+OCAMLNc -I $LIB odyl.cma CAMLP5N.cma $CRC.ml $INCL $OPTS odyl.cmo -linkall
 rm -f $CRC.ml $CRC.cmi $CRC.cmo

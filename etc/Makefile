@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.6 2012/03/01 03:33:18 deraugla Exp $
+# $Id: Makefile,v 6.7 2012/03/03 02:47:04 deraugla Exp $
 
 include ../config/Makefile
 
@@ -63,10 +63,10 @@ $(CAMLP5N)o.opt: $(CAMLP5OMX)
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../etc/$(CAMLP5N)o.opt CAMLP5M="-I ../etc $(CAMLP5OMX)"
 
 mk$(CAMLP5N).sh: mkcamlp5.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" mkcamlp5.sh.tpl > mk$(CAMLP5N).sh
+	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s!OCAMLN!$(OCAMLN)!g" -e "s!CAMLP5N!$(CAMLP5N)!g" mkcamlp5.sh.tpl > mk$(CAMLP5N).sh
 
 mk$(CAMLP5N).opt.sh: mkcamlp5.opt.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" mkcamlp5.opt.sh.tpl > mk$(CAMLP5N).opt.sh
+	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s!OCAMLN!$(OCAMLN)!g" -e "s!CAMLP5N!$(CAMLP5N)!g" mkcamlp5.opt.sh.tpl > mk$(CAMLP5N).opt.sh
 
 bootstrap_scheme:
 	@$(MAKE) $(NO_PR_DIR) bootstrap_l L=scheme
