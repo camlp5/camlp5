@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 6.10 2012/03/02 16:03:59 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 6.11 2012/03/03 01:38:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -134,17 +134,16 @@ value oversion = do {
   v
 };
 
-value defined_from_varenv () =
-  match try Some (Sys.getenv "CAMLP5DEF") with [ Not_found -> None ] with
-  [ Some d -> [(d, MvNone)]
-  | None -> [] ]
+value oname =
+  if Pconfig.ocaml_name = "ocaml" then []
+  else [(String.uppercase Pconfig.ocaml_name, MvNone)]
 ;
 
 value defined =
   ref
     [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone); ("CAMLP5_5_00", MvNone);
      ("CAMLP5_6_00", MvNone); ("CAMLP5_6_02_1", MvNone);
-     ("OCAML_" ^ oversion, MvNone) :: defined_from_varenv ()]
+     ("OCAML_" ^ oversion, MvNone) :: oname]
 ;
 
 value defined_version loc =

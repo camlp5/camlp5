@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 6.4 2012/03/02 18:49:57 deraugla Exp $
+# $Id: camlp5_comm.sh,v 6.5 2012/03/03 01:38:08 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
@@ -31,10 +31,6 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   esac
   shift; shift
   ARGS2=`echo $* | sed -e "s/[()*]//g"`
-  if [ "$OCAMLN" != "ocaml" ]; then
-    d=`echo $OCAMLN | tr a-z A-Z`
-    export CAMLP5DEF="$d"
-  fi
   if test "$QUIET" = "no"; then echo $COMM $ARGS2 $ARGS1 $FILE; fi
   $COMM $ARGS2 $ARGS1 $FILE
 else

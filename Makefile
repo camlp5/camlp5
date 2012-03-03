@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.21 2012/03/02 20:59:41 deraugla Exp $
+# $Id: Makefile,v 6.22 2012/03/03 01:38:07 deraugla Exp $
 
 include config/Makefile
 
@@ -266,29 +266,36 @@ compare_source:
 
 bootstrap_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
-	@cd lib; \
-	for i in ../ocaml_src/lib/versdep/*.ml \
-	    ../ocaml_src/lib/versdep/*/*.ml; do \
-	  echo ============================================; \
-	  echo $$i; \
-	  j=$$(echo $$(basename $$i) | \
-	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
-	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
-	  opt="-U$$k -D$$j -flag R"; \
-	  OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt \
-	    versdep.ml | \
-	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
+	@-for i in ocaml_src/lib/versdep/*.ml; do \
+	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
+	done; \
+	for i in ocaml_src/lib/versdep/*/*.ml; do \
+	  n="$$(basename $$(dirname $$i))"; \
+	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=$$n; \
 	done
+
+bootstrap_versdep:
+	@cd lib; \
+	echo ============================================; \
+	echo $$i; \
+	j=$$(echo $$(basename $$i) | \
+	     sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
+	k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
+	m=$$(echo $(OCAMLN) | tr a-z A-Z); \
+	n=$$(echo $$n | tr a-z A-Z); \
+	opt="-U$$k -U$$m -D$$j -D$$n"; \
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt \
+	  versdep.ml | \
+	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -
 
 compare_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
 	@-for i in ocaml_src/lib/versdep/*.ml; do \
-	  VERSDIR='' $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i; \
+	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i n=ocaml; \
 	done; \
 	for i in ocaml_src/lib/versdep/*/*.ml; do \
-	  VERSDIR="$$(basename $$(dirname $$i))" \
-	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i \
-	    VERSDIR="$$(basename $$(dirname $$i))"; \
+	  n="$$(basename $$(dirname $$i))"; \
+	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i n=$$n; \
 	done
 
 compare_versdep:
@@ -298,8 +305,10 @@ compare_versdep:
 	j=$$(echo $$(basename $$i) | \
 	  sed -e 's/^/OCAML_/;s/.ml//' -e 's/[.-]/_/g'); \
 	k=$$(echo OCAML_$(OVERSION) | sed -e 's/[.-]/_/g'); \
-	opt="-U$$k -D$$j -flag R"; \
-	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) VERSDIR=$(VERSDIR) \
+	m=$$(echo $(OCAMLN) | tr a-z A-Z); \
+	n=$$(echo $$n | tr a-z A-Z); \
+	opt="-U$$k -U$$m -D$$j -D$$n"; \
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) \
 	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff ../$$i -
 

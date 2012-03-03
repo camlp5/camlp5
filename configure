@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.13 2012/03/02 19:14:36 deraugla Exp $
+# $Id: configure,v 6.14 2012/03/03 01:38:08 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -169,7 +169,7 @@ else
   echo "Configuration failed."
   # to give the ability to do "make steal":
   echo "OVERSION=$OVERSION" > config/Makefile
-  echo "VERSDIR=$verspfx" >> config/Makefile
+  echo "OCAMLN=$ocamln" >> config/Makefile
   exit 2
 fi
 

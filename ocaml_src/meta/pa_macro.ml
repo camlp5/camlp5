@@ -134,18 +134,16 @@ let oversion =
   v
 ;;
 
-let defined_from_varenv () =
-  match try Some (Sys.getenv "CAMLP5DEF") with Not_found -> None with
-    Some d -> [d, MvNone]
-  | None -> []
+let oname =
+  if Pconfig.ocaml_name = "ocaml" then []
+  else [String.uppercase Pconfig.ocaml_name, MvNone]
 ;;
 
 let defined =
   ref
     (("CAMLP5", MvNone) :: ("CAMLP5_4_02", MvNone) ::
      ("CAMLP5_5_00", MvNone) :: ("CAMLP5_6_00", MvNone) ::
-     ("CAMLP5_6_02_1", MvNone) :: ("OCAML_" ^ oversion, MvNone) ::
-     defined_from_varenv ())
+     ("CAMLP5_6_02_1", MvNone) :: ("OCAML_" ^ oversion, MvNone) :: oname)
 ;;
 
 let defined_version loc =
