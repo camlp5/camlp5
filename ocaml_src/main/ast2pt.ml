@@ -96,7 +96,21 @@ let mklazy loc e =
       ghexp (ocaml_pexp_apply r ["", df])
 ;;
 
+let strip_char c s =
+  match try Some (String.index s c) with Not_found -> None with
+    Some _ ->
+      let s = String.copy s in
+      let rec loop i j =
+        if i = String.length s then String.sub s 0 j
+        else if s.[i] = '_' then loop (i + 1) j
+        else begin s.[j] <- s.[i]; loop (i + 1) (j + 1) end
+      in
+      loop 0 0
+  | None -> s
+;;
+
 let mkintconst loc s c =
+  let s = strip_char '_' s in
   match c with
     "" ->
       begin match (try Some (int_of_string s) with Failure _ -> None) with
@@ -637,15 +651,15 @@ let rec patt =
       | _ -> error loc "range pattern allowed only for characters"
       end
   | PaRec (loc, lpl) ->
-      let (lpl, closed) =
+      let (lpl, is_closed) =
         List.fold_right
-          (fun lp (lpl, closed) ->
+          (fun lp (lpl, is_closed) ->
              match lp with
                PaAny _, PaAny _ -> lpl, true
-             | lp -> lp :: lpl, closed)
+             | lp -> lp :: lpl, is_closed)
           (uv lpl) ([], false)
       in
-      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) closed)
+      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
   | PaStr (loc, s) ->
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))

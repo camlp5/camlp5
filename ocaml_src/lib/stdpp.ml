@@ -4,7 +4,6 @@
 
 type location = Ploc.t;;
 
-exception Exc_located = Ploc.Exc;;
 let raise_with_loc = Ploc.raise;;
 
 let make_lined_loc lin bol (bp, ep) = Ploc.make_loc "" lin bol (bp, ep) "";;

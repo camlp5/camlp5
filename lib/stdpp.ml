@@ -1,10 +1,9 @@
 (* camlp5r *)
-(* $Id: stdpp.ml,v 6.6 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 6.7 2012/03/03 09:06:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 type location = Ploc.t;
 
-exception Exc_located = Ploc.Exc;
 value raise_with_loc = Ploc.raise;
 
 value make_lined_loc lin bol (bp, ep) = Ploc.make_loc "" lin bol (bp, ep) "";

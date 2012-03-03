@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.36 2012/01/09 14:15:26 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.37 2012/03/03 09:06:40 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -97,7 +97,22 @@ value mklazy loc e =
     } ]
 ;
 
+value strip_char c s = do {
+  match try Some (String.index s c) with [ Not_found -> None ] with
+  [ Some _ ->
+      let s = String.copy s in
+      loop 0 0 where rec loop i j =
+        if i = String.length s then String.sub s 0 j
+        else if s.[i] = '_' then loop (i + 1) j
+        else do {
+          s.[j] := s.[i];
+          loop (i + 1) (j + 1)
+        }
+  | None -> s ]
+};
+
 value mkintconst loc s c =
+  let s = strip_char '_' s in
   match c with
   [ "" ->
       match try Some (int_of_string s) with [ Failure _ -> None ] with
@@ -617,15 +632,15 @@ value rec patt =
           mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters" ]
   | PaRec loc lpl ->
-      let (lpl, closed) =
+      let (lpl, is_closed) =
         List.fold_right
-          (fun lp (lpl, closed) ->
+          (fun lp (lpl, is_closed) ->
              match lp with
              [ (PaAny _, PaAny _) -> (lpl, True)
-             | lp -> ([lp :: lpl], closed) ])
+             | lp -> ([lp :: lpl], is_closed) ])
           (uv lpl) ([], False)
       in
-      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) closed)
+      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
   | PaStr loc s ->
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
