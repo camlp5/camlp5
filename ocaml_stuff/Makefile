@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.6 2012/03/03 01:38:08 deraugla Exp $
+# $Id: Makefile,v 6.7 2012/03/03 02:23:24 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -9,7 +9,9 @@ DIRS=$(VERSSDIR)/utils $(VERSSDIR)/parsing
 all:
 	set -e; \
 	for i in $(DIRS); do \
-	  (cd $$i; $(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN)); \
+	  cwd=`pwd`; \
+	  cd $$i; $(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN); \
+	  cd $$cwd; \
         done
 
 opt:

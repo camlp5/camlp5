@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.23 2012/03/03 01:53:43 deraugla Exp $
+# $Id: Makefile,v 6.24 2012/03/03 02:23:24 deraugla Exp $
 
 include config/Makefile
 
@@ -17,7 +17,7 @@ DESTDIR=
 all: out
 
 out: boot/$(CAMLP5N)$(EXE)
-	cd ocaml_stuff; $(MAKE); cd ..
+	set -e; cd ocaml_stuff; $(MAKE); cd ..
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done
 
 opt:
@@ -30,7 +30,7 @@ ocaml_src/lib/versdep.ml:
 	@echo "Please run 'configure' first"; exit 2
 
 boot/$(CAMLP5N)$(EXE): $(COLD_FILES)
-	cd ocaml_stuff; $(MAKE); cd ..
+	set -e; cd ocaml_stuff; $(MAKE); cd ..
 	$(MAKE) clean_cold
 	$(MAKE) library_cold
 	$(MAKE) compile_cold
