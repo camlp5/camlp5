@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 6.6 2010/11/14 17:01:42 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 6.7 2012/03/04 10:43:18 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -91,8 +91,8 @@ for i in $vers; do
   fi
   echo "+++++ make clean"
   make clean
-  echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man"
-  ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man
+  echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man/man1"
+  ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man/man1
   sed -i -e 's/ graph//' -e 's/ labltk//' -e 's/ num / /' config/Makefile
   sed -i -e 's/define HAS_MEMMOVE/undef HAS_MEMMOVE/' config/s.h
   if [ "$DOOPT" = "0" ]; then
