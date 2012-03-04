@@ -1,13 +1,13 @@
 Camlp5 Version 6.05:
 --------------------
 
+* [02 Mar 12] Added compatibility with JoCaml trunk.
 * [02 Mar 12] Added option -oname in configure to change ocaml
   command name. The bytecode compiler, native compiler and bytecode
   runtime are respectively <oname>c, <oname>opt and <oname>run.
   The default is 'ocaml', implying that the executables are ocamlc,
   ocamlopt and ocamlrun. Setting it to 'jocaml', fo example, use
   jocamlc, jocamlopt and jocamlrun.
-* [02 Mar 12] Updated compatibility with JoCaml trunk.
 
 Camlp5 Version 6.04:
 --------------------
