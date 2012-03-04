@@ -15,8 +15,9 @@ INSTALL UNDER UNIX
 2. Then, to make everything, do:
      make world.opt
 
-   Faster compilation with option -j (see manual page of 'make', for
-   information). For example, if you have a computer with 4 cores:
+   Faster compilation, in parallel, with option -j (see manual page
+   of 'make', for information). For example, if you have a computer
+   with 4 cores:
      make -j4 world.opt
 
     Alternatively, you can decompose the operations into:

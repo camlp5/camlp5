@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 6.7 2012/03/04 10:43:18 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 6.8 2012/03/04 11:48:10 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -125,10 +125,10 @@ for i in $vers; do
   ./configure $MODE
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
-    time make -j world
+    time make -j2 world
   else
     echo "+++++ time make world.opt"
-    time make -j world.opt
+    time make -j2 world.opt
   fi
   echo "+++++ make install"
   make install
