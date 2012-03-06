@@ -1,5 +1,5 @@
-(* camlp5r *)
-(* $Id: pa_o.ml,v 6.38 2012/01/09 14:22:21 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo *)
+(* $Id: pa_o.ml,v 6.39 2012/03/06 10:26:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -1272,6 +1272,14 @@ EXTEND
       | p = labeled_patt; cfd = SELF ->
           <:class_expr< fun $p$ -> $cfd$ >> ] ]
   ;
+END;
+
+IFDEF JOCAML THEN
+  EXTEND
+    expr: LEVEL "expr1"
+      [ [ "def" -> Ploc.raise loc (Failure "jocaml 'def' not implemented") ] ]
+    ;
+  END;
 END;
 
 (* Main entry points *)
