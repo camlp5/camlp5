@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.23 2012/03/06 14:57:58 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.24 2012/03/06 15:14:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -667,7 +667,12 @@ value jocaml_pexp_def =
 ;
 
 value jocaml_pexp_reply =
-  IFDEF JOCAML THEN None
+  IFDEF JOCAML THEN
+    let pexp_reply loc e (sloc, s) =
+      let ji = {pjident_desc = s; pjident_loc = sloc} in
+      Pexp_reply e ji
+    in
+    Some pexp_reply
   ELSE (None : option (_ -> _ -> _ -> _)) END
 ;
 

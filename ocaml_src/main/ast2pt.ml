@@ -1173,9 +1173,15 @@ let rec expr =
           | None -> None
         in
         mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
-  | ExRpl (loc, elo, e) ->
+  | ExRpl (loc, eo, (sloc, s)) ->
       begin match jocaml_pexp_reply with
-        Some pexp_reply -> pexp_reply loc elo e
+        Some pexp_reply ->
+          let e =
+            match eo with
+              Some e -> expr e
+            | None -> mkexp loc (Pexp_construct (Lident "()", None, false))
+          in
+          mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, s))
       | None -> error loc "no 'reply' in this ocaml version"
       end
   | ExSeq (loc, el) ->

@@ -107,7 +107,7 @@ and expr =
   | ExOvr of loc * (string * expr) list
   | ExPck of loc * module_expr * module_type option
   | ExRec of loc * (patt * expr) list * expr option
-  | ExRpl of loc * expr option * string
+  | ExRpl of loc * expr option * (loc * string)
   | ExSeq of loc * expr list
   | ExSnd of loc * expr * string
   | ExSte of loc * expr * expr

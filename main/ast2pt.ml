@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.39 2012/03/06 14:57:58 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.40 2012/03/06 15:14:38 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1008,9 +1008,16 @@ value rec expr =
           | None -> None ]
         in
         mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
-  | ExRpl loc elo e ->
+  | ExRpl loc eo (sloc, s) ->
       match jocaml_pexp_reply with
-      [ Some pexp_reply -> pexp_reply loc elo e
+      [ Some pexp_reply ->
+          let e =
+            match eo with
+            [ Some e -> expr e
+            | None ->
+                mkexp loc (Pexp_construct (Lident "()") None False) ]
+          in
+          mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, s))
       | None -> error loc "no 'reply' in this ocaml version" ]
   | ExSeq loc el ->
       loop (uv el) where rec loop =

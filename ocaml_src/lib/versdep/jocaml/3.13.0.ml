@@ -277,7 +277,12 @@ let jocaml_pstr_def =
 
 let jocaml_pexp_def = None;;
 
-let jocaml_pexp_reply = None;;
+let jocaml_pexp_reply =
+  let pexp_reply loc e (sloc, s) =
+    let ji = {pjident_desc = s; pjident_loc = sloc} in Pexp_reply (e, ji)
+  in
+  Some pexp_reply
+;;
 
 let arg_rest =
   function
