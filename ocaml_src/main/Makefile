@@ -59,12 +59,12 @@ compare:
 
 bootstrap_reloc:
 	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
-	./mkreloc.sh > tmp
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ./mkreloc.sh > tmp
 	mv tmp reloc.ml
 
 compare_reloc:
 	cd ../etc; $(MAKE) pa_reloc.cmo pr_r.cmo
-	./mkreloc.sh | diff -c reloc.ml -
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ./mkreloc.sh | diff -c reloc.ml -
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.21 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.22 2012/03/06 11:00:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -274,6 +274,17 @@ and expr floc sh =
     | ExInt loc x1 x2 →
         let loc = floc loc in
         ExInt loc x1 x2
+    | ExJdf loc x1 x2 →
+        let loc = floc loc in
+        ExJdf loc
+          (List.map
+             (List.map
+                (fun (x1, x2) →
+                   (List.map
+                      (fun (x1, x2) → (x1, option_map (patt floc sh) x2)) x1,
+                    self x2)))
+             x1)
+          (self x2)
     | ExLab loc x1 →
         let loc = floc loc in
         ExLab loc

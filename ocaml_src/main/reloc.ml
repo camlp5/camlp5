@@ -197,6 +197,18 @@ and expr floc sh =
     | ExIfe (loc, x1, x2, x3) ->
         let loc = floc loc in ExIfe (loc, self x1, self x2, self x3)
     | ExInt (loc, x1, x2) -> let loc = floc loc in ExInt (loc, x1, x2)
+    | ExJdf (loc, x1, x2) ->
+        let loc = floc loc in
+        ExJdf
+          (loc,
+           List.map
+             (List.map
+                (fun (x1, x2) ->
+                   List.map (fun (x1, x2) -> x1, option_map (patt floc sh) x2)
+                     x1,
+                   self x2))
+             x1,
+           self x2)
     | ExLab (loc, x1) ->
         let loc = floc loc in
         ExLab

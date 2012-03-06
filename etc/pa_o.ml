@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pa_o.ml,v 6.39 2012/03/06 10:26:49 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.40 2012/03/06 11:00:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -1276,8 +1276,19 @@ END;
 
 IFDEF JOCAML THEN
   EXTEND
+    GLOBAL: expr;
     expr: LEVEL "expr1"
-      [ [ "def" -> Ploc.raise loc (Failure "jocaml 'def' not implemented") ] ]
+      [ [ "def"; jal = LIST1 joinautomaton SEP "and"; "in"; e = expr ->
+            MLast.ExJdf loc jal e ] ]
+    ;
+    joinautomaton:
+      [ [ jcl = LIST1 joinclause SEP "or" -> jcl ] ]
+    ;
+    joinclause:
+      [ [ jpl = LIST1 joinpattern SEP "&"; "="; e = expr -> (jpl, e) ] ]
+    ;
+    joinpattern:
+      [ [ ji = LIDENT; "("; op = OPT patt; ")" -> (ji, op) ] ]
     ;
   END;
 END;

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2012/03/01 03:33:18 deraugla Exp $
+# $Id: Makefile,v 6.3 2012/03/06 11:00:53 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -44,21 +44,21 @@ compare:
 
 bootstrap_q_MLast:
 	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
-	./mk_q_MLast.sh > tmp
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ./mk_q_MLast.sh > tmp
 	mv tmp q_MLast.ml
 
 compare_q_MLast:
 	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
-	./mk_q_MLast.sh | diff -c q_MLast.ml -
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ./mk_q_MLast.sh | diff -c q_MLast.ml -
 
 bootstrap_q_ast:
 	cd ../etc; $(MAKE) pr_r.cmo pa_mkast.cmo
-	./mk_q_ast.sh > tmp
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ./mk_q_ast.sh > tmp
 	mv tmp q_ast.ml
 
 compare_q_ast:
 	cd ../etc; $(MAKE) pr_r.cmo pa_mkast.cmo
-	./mk_q_ast.sh | diff -c q_ast.ml -
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ./mk_q_ast.sh | diff -c q_ast.ml -
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"

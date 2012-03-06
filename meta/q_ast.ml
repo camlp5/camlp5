@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 6.27 2012/01/09 14:22:22 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 6.28 2012/03/06 11:00:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -215,6 +215,19 @@ module Meta_make (C : MetaSig) =
                lpoee]
       | ExIfe _ e1 e2 e3 → C.node "ExIfe" [expr e1; expr e2; expr e3]
       | ExInt _ s1 s2 → C.node "ExInt" [C.vala C.string s1; C.string s2]
+      | ExJdf _ lllsope e →
+          C.node "ExJdf"
+            [C.list
+               (C.list
+                  (fun (lsop, e) →
+                     C.tuple
+                       [C.list
+                          (fun (s, op) →
+                             C.tuple [C.string s; C.option patt op])
+                          lsop;
+                        expr e]))
+               lllsope;
+             expr e]
       | ExLab _ lpoe →
           C.node "ExLab"
             [C.vala

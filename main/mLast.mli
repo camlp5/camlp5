@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.19 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.20 2012/03/06 11:00:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -99,6 +99,7 @@ and expr =
   | ExFun of loc and V (list (patt * V (option expr) * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
+  | ExJdf of loc and list (list (list (string * option patt) * expr)) and expr
   | ExLab of loc and V (list (patt * V (option expr)))
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr)) and expr

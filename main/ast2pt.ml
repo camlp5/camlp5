@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.37 2012/03/03 09:06:40 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.38 2012/03/06 11:00:53 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -926,6 +926,7 @@ value rec expr =
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
   | ExInt loc s c ->
       mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
+  | ExJdf loc jl e -> error loc "'def' not yet implemented"
   | ExLab loc _ -> error loc "labeled expression not allowed here 1"
   | ExLaz loc e -> mklazy loc (expr e)
   | ExLet loc rf pel e ->
