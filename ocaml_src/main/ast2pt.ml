@@ -1126,6 +1126,11 @@ let rec expr =
       end
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here 2"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
+  | ExPar (loc, e1, e2) ->
+      begin match jocaml_pexp_par with
+        Some pexp_par -> mkexp loc (pexp_par (expr e1) (expr e2))
+      | None -> error loc "no '&' in this ocaml version"
+      end
   | ExPck (loc, me, mto) ->
       begin match ocaml_pexp_pack with
         Some (Left pexp_pack) ->
@@ -1196,6 +1201,11 @@ let rec expr =
       in
       loop (uv el)
   | ExSnd (loc, e, s) -> mkexp loc (Pexp_send (expr e, uv s))
+  | ExSpw (loc, e) ->
+      begin match jocaml_pexp_spawn with
+        Some pexp_spawn -> mkexp loc (pexp_spawn (expr e))
+      | None -> error loc "no 'spawn' in this ocaml version"
+      end
   | ExSte (loc, e1, e2) ->
       mkexp loc
         (ocaml_pexp_apply

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pa_o.ml,v 6.43 2012/03/06 16:39:16 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.44 2012/03/06 19:07:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -1275,6 +1275,8 @@ EXTEND
 END;
 
 IFDEF JOCAML THEN
+  DELETE_RULE expr: SELF; "or"; SELF END;
+  DELETE_RULE expr: SELF; "&"; SELF END;
   EXTEND
     GLOBAL: str_item expr;
     str_item: 
@@ -1283,16 +1285,23 @@ IFDEF JOCAML THEN
     ;
     expr: LEVEL "expr1"
       [ [ "def"; jal = LIST1 joinautomaton SEP "and"; "in"; e = expr ->
-            MLast.ExJdf loc jal e
+            MLast.ExJdf loc (List.rev jal) e
         | "reply"; elo = OPT expr; "to"; ji = joinident ->
             MLast.ExRpl loc elo ji ] ]
     ;
+    expr: BEFORE ":="
+      [ [ "spawn"; e = SELF -> MLast.ExSpw loc e ] ]
+    ;
+    expr: LEVEL "&&"
+      [ [ e1 = SELF; "&"; e2 = SELF -> MLast.ExPar loc e1 e2 ] ]
+    ;
     joinautomaton:
       [ [ jcl = LIST1 joinclause SEP "or" ->
-            {MLast.jcLoc = loc; MLast.jcVal = jcl} ] ]
+            {MLast.jcLoc = loc; MLast.jcVal = List.rev jcl} ] ]
     ;
     joinclause:
-      [ [ jpl = LIST1 joinpattern SEP "&"; "="; e = expr -> (loc, jpl, e) ] ]
+      [ [ jpl = LIST1 joinpattern SEP "&"; "="; e = expr ->
+            (loc, List.rev jpl, e) ] ]
     ;
     joinpattern:
       [ [ ji = joinident; "("; op = OPT patt; ")" -> (loc, ji, op) ] ]
@@ -1301,7 +1310,6 @@ IFDEF JOCAML THEN
       [ [ i = LIDENT -> (loc, i) ] ]
     ;
   END;
-  DELETE_RULE expr: SELF; "or"; SELF END;
 END;
 
 (* Main entry points *)

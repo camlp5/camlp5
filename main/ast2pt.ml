@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.41 2012/03/06 16:39:16 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.42 2012/03/06 19:07:10 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -964,6 +964,10 @@ value rec expr =
       | None -> error loc "no object in this ocaml version" ]
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here 2"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
+  | ExPar loc e1 e2 ->
+       match jocaml_pexp_par with
+       [ Some pexp_par -> mkexp loc (pexp_par (expr e1) (expr e2))
+       | None -> error loc "no '&' in this ocaml version" ]
   | ExPck loc me mto ->
       match ocaml_pexp_pack with
       [ Some (Left pexp_pack) ->
@@ -1030,6 +1034,10 @@ value rec expr =
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
   | ExSnd loc e s -> mkexp loc (Pexp_send (expr e) (uv s))
+  | ExSpw loc e ->
+      match jocaml_pexp_spawn with
+      [ Some pexp_spawn -> mkexp loc (pexp_spawn (expr e))
+      | None -> error loc "no 'spawn' in this ocaml version" ]
   | ExSte loc e1 e2 ->
       mkexp loc
         (ocaml_pexp_apply

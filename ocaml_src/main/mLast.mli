@@ -105,10 +105,12 @@ and expr =
   | ExObj of loc * patt option * class_str_item list
   | ExOlb of loc * patt * expr option
   | ExOvr of loc * (string * expr) list
+  | ExPar of loc * expr * expr
   | ExPck of loc * module_expr * module_type option
   | ExRec of loc * (patt * expr) list * expr option
   | ExRpl of loc * expr option * (loc * string)
   | ExSeq of loc * expr list
+  | ExSpw of loc * expr
   | ExSnd of loc * expr * string
   | ExSte of loc * expr * expr
   | ExStr of loc * string

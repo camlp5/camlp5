@@ -242,7 +242,11 @@ let jocaml_pstr_def : (_ -> _) option = None;;
 
 let jocaml_pexp_def : (_ -> _ -> _) option = None;;
 
+let jocaml_pexp_par : (_ -> _ -> _) option = None;;
+
 let jocaml_pexp_reply : (_ -> _ -> _ -> _) option = None;;
+
+let jocaml_pexp_spawn : (_ -> _) option = None;;
 
 let arg_rest =
   function

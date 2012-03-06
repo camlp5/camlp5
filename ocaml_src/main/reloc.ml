@@ -240,6 +240,8 @@ and expr floc sh =
     | ExOvr (loc, x1) ->
         let loc = floc loc in
         ExOvr (loc, vala_map (List.map (fun (x1, x2) -> x1, self x2)) x1)
+    | ExPar (loc, x1, x2) ->
+        let loc = floc loc in ExPar (loc, self x1, self x2)
     | ExPck (loc, x1, x2) ->
         let loc = floc loc in
         ExPck
@@ -255,6 +257,7 @@ and expr floc sh =
         ExRpl (loc, option_map self x1, (fun (loc, x1) -> floc loc, x1) x2)
     | ExSeq (loc, x1) ->
         let loc = floc loc in ExSeq (loc, vala_map (List.map self) x1)
+    | ExSpw (loc, x1) -> let loc = floc loc in ExSpw (loc, self x1)
     | ExSnd (loc, x1, x2) -> let loc = floc loc in ExSnd (loc, self x1, x2)
     | ExSte (loc, x1, x2) ->
         let loc = floc loc in ExSte (loc, self x1, self x2)

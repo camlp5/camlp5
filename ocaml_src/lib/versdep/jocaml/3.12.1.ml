@@ -268,12 +268,16 @@ let jocaml_pexp_def =
   Some (fun jcl e -> Pexp_def (List.map joinclause jcl, e))
 ;;
 
+let jocaml_pexp_par = Some (fun e1 e2 -> Pexp_par (e1, e2));;
+
 let jocaml_pexp_reply =
   let pexp_reply loc e (sloc, s) =
     let ji = {pjident_desc = s; pjident_loc = sloc} in Pexp_reply (e, ji)
   in
   Some pexp_reply
 ;;
+
+let jocaml_pexp_spawn = Some (fun e -> Pexp_spawn e);;
 
 let arg_rest =
   function

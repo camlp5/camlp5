@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.24 2012/03/06 15:14:38 deraugla Exp $ *)
+(* $Id: reloc.ml,v 6.25 2012/03/06 19:07:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -320,6 +320,9 @@ and expr floc sh =
     | ExOvr loc x1 →
         let loc = floc loc in
         ExOvr loc (vala_map (List.map (fun (x1, x2) → (x1, self x2))) x1)
+    | ExPar loc x1 x2 →
+        let loc = floc loc in
+        ExPar loc (self x1) (self x2)
     | ExPck loc x1 x2 →
         let loc = floc loc in
         ExPck loc (module_expr floc sh x1)
@@ -335,6 +338,9 @@ and expr floc sh =
     | ExSeq loc x1 →
         let loc = floc loc in
         ExSeq loc (vala_map (List.map self) x1)
+    | ExSpw loc x1 →
+        let loc = floc loc in
+        ExSpw loc (self x1)
     | ExSnd loc x1 x2 →
         let loc = floc loc in
         ExSnd loc (self x1) x2
