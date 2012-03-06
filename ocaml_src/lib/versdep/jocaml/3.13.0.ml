@@ -249,33 +249,28 @@ let split_or_patterns_with_bindings = false;;
 
 let has_records_with_with = true;;
 
-let jocaml_pstr_def =
-  let pstr_def jcl =
-    let jcl =
-      List.map
-        (fun (loc, jc) ->
-           let jc =
-             List.map
-               (fun (loc, (jpl, e)) ->
-                  let jpl =
-                    List.map
-                      (fun (locp, (loci, s), p) ->
-                         let ji = {pjident_desc = s; pjident_loc = loci} in
-                         {pjpat_desc = ji, p; pjpat_loc = locp})
-                      jpl
-                  in
-                  {pjclause_desc = jpl, e; pjclause_loc = loc})
-               jc
-           in
-           {pjauto_desc = jc; pjauto_loc = loc})
-        jcl
-    in
-    Pstr_def jcl
+let joinclause (loc, jc) =
+  let jc =
+    List.map
+      (fun (loc, (jpl, e)) ->
+         let jpl =
+           List.map
+             (fun (locp, (loci, s), p) ->
+                let ji = {pjident_desc = s; pjident_loc = loci} in
+                {pjpat_desc = ji, p; pjpat_loc = locp})
+             jpl
+         in
+         {pjclause_desc = jpl, e; pjclause_loc = loc})
+      jc
   in
-  Some pstr_def
+  {pjauto_desc = jc; pjauto_loc = loc}
 ;;
 
-let jocaml_pexp_def = None;;
+let jocaml_pstr_def = Some (fun jcl -> Pstr_def (List.map joinclause jcl));;
+
+let jocaml_pexp_def =
+  Some (fun jcl e -> Pexp_def (List.map joinclause jcl, e))
+;;
 
 let jocaml_pexp_reply =
   let pexp_reply loc e (sloc, s) =

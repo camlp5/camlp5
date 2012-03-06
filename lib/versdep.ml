@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.24 2012/03/06 15:14:38 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.25 2012/03/06 16:39:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -633,37 +633,33 @@ value has_records_with_with =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN False ELSE True END
 ;
 
-value jocaml_pstr_def =
-  IFDEF JOCAML THEN
-    let pstr_def jcl =
-      let jcl =
-        List.map
-          (fun (loc, jc) ->
-             let jc =
-               List.map
-                 (fun (loc, (jpl, e)) ->
-                    let jpl =
-                      List.map
-                        (fun (locp, (loci, s), p) ->
-                           let ji = {pjident_desc = s; pjident_loc = loci} in
-                           {pjpat_desc = (ji, p); pjpat_loc = locp})
-                        jpl
-                    in
-                    {pjclause_desc = (jpl, e); pjclause_loc = loc})
-                 jc
-             in
-             {pjauto_desc = jc; pjauto_loc = loc})
-          jcl
-      in
-      Pstr_def jcl
+IFDEF JOCAML THEN
+  value joinclause (loc, jc) =
+    let jc =
+      List.map
+        (fun (loc, (jpl, e)) ->
+           let jpl =
+             List.map
+               (fun (locp, (loci, s), p) ->
+                  let ji = {pjident_desc = s; pjident_loc = loci} in
+                  {pjpat_desc = (ji, p); pjpat_loc = locp})
+               jpl
+           in
+           {pjclause_desc = (jpl, e); pjclause_loc = loc})
+        jc
     in
-    Some pstr_def
+    {pjauto_desc = jc; pjauto_loc = loc}
+  ;
+END;
+
+value jocaml_pstr_def =
+  IFDEF JOCAML THEN Some (fun jcl -> Pstr_def (List.map joinclause jcl))
   ELSE (None : option (_ -> _)) END
 ;
 
 value jocaml_pexp_def =
-  IFDEF JOCAML THEN None
-  ELSE (None : option (_ -> _ -> _ -> _)) END
+  IFDEF JOCAML THEN Some (fun jcl e -> Pexp_def (List.map joinclause jcl) e)
+  ELSE (None : option (_ -> _ -> _)) END
 ;
 
 value jocaml_pexp_reply =

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.40 2012/03/06 15:14:38 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.41 2012/03/06 16:39:16 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -928,8 +928,10 @@ value rec expr =
       mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
   | ExJdf loc jl e ->
       match jocaml_pexp_def with
-      [ Some pexp_def -> pexp_def loc jl e
-      | None -> error loc "no 'def' in this ocaml version" ]
+      [ Some pexp_def ->
+          mkexp loc (pexp_def (List.map mkjoinclause jl) (expr e))
+      | None ->
+          error loc "no 'def in' in this ocaml version" ]
   | ExLab loc _ -> error loc "labeled expression not allowed here 1"
   | ExLaz loc e -> mklazy loc (expr e)
   | ExLet loc rf pel e ->
@@ -1076,6 +1078,26 @@ and label_expr rev_al =
           [("?" ^ uv lab, expr e) :: rev_al]
       | _ -> error loc "ExOlb case not impl" ]
   | e -> [("", expr e) :: rev_al] ]
+and mkjoinclause jc =
+  let jcval =
+    List.map
+      (fun (loc, jpl, e) ->
+         let jpl =
+           List.map
+             (fun (locp, (loc, s), jp) ->
+                let p =
+                  match jp with
+                  [ Some p -> patt p
+                  | None ->
+                      mkpat loc (Ppat_construct (Lident "()") None False) ]
+                in
+                (mkloc locp, (mkloc loc, s), p))
+             jpl
+         in
+         (mkloc loc, (jpl, expr e)))
+      jc.jcVal
+  in
+  (mkloc jc.jcLoc, jcval)
 and mkpe (p, e) =
   let (p, e) =
     match e with
@@ -1232,32 +1254,7 @@ and str_item s l =
   | StDef loc jcl ->
       match jocaml_pstr_def with
       [ Some pstr_def ->
-          let jcl =
-            List.map
-              (fun jc ->
-                 let jcval =
-                   List.map
-                     (fun (loc, jpl, e) ->
-                        let jpl =
-                          List.map
-                            (fun (locp, (loc, s), jp) ->
-                               let p =
-                                 match jp with
-                                 [ Some p -> patt p
-                                 | None ->
-                                     mkpat loc
-                                       (Ppat_construct (Lident "()") None
-                                          False) ]
-                               in
-                               (mkloc locp, (mkloc loc, s), p))
-                            jpl
-                        in
-                        (mkloc loc, (jpl, expr e)))
-                     jc.jcVal
-                 in
-                 (mkloc jc.jcLoc, jcval))
-              jcl
-          in
+          let jcl = List.map mkjoinclause jcl in
           [mkstr loc (pstr_def jcl)]
       | None -> error loc "no 'def' in this ocaml version" ]
   | StDir loc _ _ -> l

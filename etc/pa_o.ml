@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pa_o.ml,v 6.42 2012/03/06 15:14:37 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.43 2012/03/06 16:39:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -1301,6 +1301,7 @@ IFDEF JOCAML THEN
       [ [ i = LIDENT -> (loc, i) ] ]
     ;
   END;
+  DELETE_RULE expr: SELF; "or"; SELF END;
 END;
 
 (* Main entry points *)
