@@ -1085,7 +1085,11 @@ let rec expr =
   | ExIfe (loc, e1, e2, e3) ->
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, Some (expr e3)))
   | ExInt (loc, s, c) -> mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
-  | ExJdf (loc, jl, e) -> error loc "'def' not yet implemented"
+  | ExJdf (loc, jl, e) ->
+      begin match jocaml_pexp_def with
+        Some pexp_def -> pexp_def loc jl e
+      | None -> error loc "no 'def' in this ocaml version"
+      end
   | ExLab (loc, _) -> error loc "labeled expression not allowed here 1"
   | ExLaz (loc, e) -> mklazy loc (expr e)
   | ExLet (loc, rf, pel, e) ->
@@ -1169,6 +1173,11 @@ let rec expr =
           | None -> None
         in
         mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
+  | ExRpl (loc, elo, e) ->
+      begin match jocaml_pexp_reply with
+        Some pexp_reply -> pexp_reply loc elo e
+      | None -> error loc "no 'reply' in this ocaml version"
+      end
   | ExSeq (loc, el) ->
       let rec loop =
         function
@@ -1389,6 +1398,38 @@ and str_item s l =
       | None -> error loc "no class type in this ocaml version"
       end
   | StDcl (loc, sl) -> List.fold_right str_item (uv sl) l
+  | StDef (loc, jcl) ->
+      begin match jocaml_pstr_def with
+        Some pstr_def ->
+          let jcl =
+            List.map
+              (fun jc ->
+                 let jcval =
+                   List.map
+                     (fun (loc, jpl, e) ->
+                        let jpl =
+                          List.map
+                            (fun (locp, (loc, s), jp) ->
+                               let p =
+                                 match jp with
+                                   Some p -> patt p
+                                 | None ->
+                                     mkpat loc
+                                       (Ppat_construct
+                                          (Lident "()", None, false))
+                               in
+                               mkloc locp, (mkloc loc, s), p)
+                            jpl
+                        in
+                        mkloc loc, (jpl, expr e))
+                     jc.jcVal
+                 in
+                 mkloc jc.jcLoc, jcval)
+              jcl
+          in
+          [mkstr loc (pstr_def jcl)]
+      | None -> error loc "no 'def' in this ocaml version"
+      end
   | StDir (loc, _, _) -> l
   | StExc (loc, n, tl, sl) ->
       let si =

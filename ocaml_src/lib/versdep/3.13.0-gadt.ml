@@ -246,6 +246,12 @@ let split_or_patterns_with_bindings = false;;
 
 let has_records_with_with = true;;
 
+let jocaml_pstr_def : (_ -> _) option = None;;
+
+let jocaml_pexp_def : (_ -> _ -> _ -> _) option = None;;
+
+let jocaml_pexp_reply : (_ -> _ -> _ -> _) option = None;;
+
 let arg_rest =
   function
     Arg.Rest r -> Some r

@@ -215,19 +215,7 @@ module Meta_make (C : MetaSig) =
                lpoee]
       | ExIfe (_, e1, e2, e3) -> C.node "ExIfe" [expr e1; expr e2; expr e3]
       | ExInt (_, s1, s2) -> C.node "ExInt" [C.vala C.string s1; C.string s2]
-      | ExJdf (_, lllsope, e) ->
-          C.node "ExJdf"
-            [C.list
-               (C.list
-                  (fun (lsop, e) ->
-                     C.tuple
-                       [C.list
-                          (fun (s, op) ->
-                             C.tuple [C.string s; C.option patt op])
-                          lsop;
-                        expr e]))
-               lllsope;
-             expr e]
+      | ExJdf (_, lx, e) -> C.node "ExJdf" [C.list joinclause lx; expr e]
       | ExLab (_, lpoe) ->
           C.node "ExLab"
             [C.vala
@@ -266,6 +254,7 @@ module Meta_make (C : MetaSig) =
           C.node "ExRec"
             [C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe;
              C.option expr oe]
+      | ExRpl (_, oe, s) -> C.node "ExRpl" [C.option expr oe; C.string s]
       | ExSeq (_, le) -> C.node "ExSeq" [C.vala (C.list expr) le]
       | ExSnd (_, e, s) -> C.node "ExSnd" [expr e; C.vala C.string s]
       | ExSte (_, e1, e2) -> C.node "ExSte" [expr e1; expr e2]
@@ -368,6 +357,7 @@ module Meta_make (C : MetaSig) =
       | StClt (_, lcict) ->
           C.node "StClt" [C.vala (C.list (class_infos class_type)) lcict]
       | StDcl (_, lsi) -> C.node "StDcl" [C.vala (C.list str_item) lsi]
+      | StDef (_, lx) -> C.node "StDef" [C.list joinclause lx]
       | StDir (_, s, oe) ->
           C.node "StDir" [C.vala C.string s; C.vala (C.option expr) oe]
       | StExc (_, s, lt, ls) ->
@@ -401,6 +391,23 @@ module Meta_make (C : MetaSig) =
             [C.vala C.bool b;
              C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe]
       | StXtr (loc, s, _) -> C.xtr loc s
+    and joinclause x =
+      C.record
+        [record_label "jcLoc", C.loc_v ();
+         record_label "jcVal",
+         C.list
+           (fun (_, lllsop, e) ->
+              C.tuple
+                [C.loc_v ();
+                 C.list
+                   (fun (_, ls, op) ->
+                      C.tuple
+                        [C.loc_v ();
+                         (fun (_, s) -> C.tuple [C.loc_v (); C.string s]) ls;
+                         C.option patt op])
+                   lllsop;
+                 expr e])
+           x.jcVal]
     and type_decl x =
       C.record
         [record_label "tdNam",

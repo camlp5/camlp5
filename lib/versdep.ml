@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.22 2012/03/03 09:06:39 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.23 2012/03/06 14:57:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -631,6 +631,44 @@ value split_or_patterns_with_bindings =
 
 value has_records_with_with =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN False ELSE True END
+;
+
+value jocaml_pstr_def =
+  IFDEF JOCAML THEN
+    let pstr_def jcl =
+      let jcl =
+        List.map
+          (fun (loc, jc) ->
+             let jc =
+               List.map
+                 (fun (loc, (jpl, e)) ->
+                    let jpl =
+                      List.map
+                        (fun (locp, (loci, s), p) ->
+                           let ji = {pjident_desc = s; pjident_loc = loci} in
+                           {pjpat_desc = (ji, p); pjpat_loc = locp})
+                        jpl
+                    in
+                    {pjclause_desc = (jpl, e); pjclause_loc = loc})
+                 jc
+             in
+             {pjauto_desc = jc; pjauto_loc = loc})
+          jcl
+      in
+      Pstr_def jcl
+    in
+    Some pstr_def
+  ELSE (None : option (_ -> _)) END
+;
+
+value jocaml_pexp_def =
+  IFDEF JOCAML THEN None
+  ELSE (None : option (_ -> _ -> _ -> _)) END
+;
+
+value jocaml_pexp_reply =
+  IFDEF JOCAML THEN None
+  ELSE (None : option (_ -> _ -> _ -> _)) END
 ;
 
 value arg_rest =

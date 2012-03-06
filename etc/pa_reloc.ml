@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 6.5 2011/02/17 09:17:06 deraugla Exp $ *)
+(* $Id: pa_reloc.ml,v 6.6 2012/03/06 14:57:58 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -23,6 +23,7 @@ value rec expr_of_type gtn use_self loc t =
   [ <:ctyp< $lid:tn$ >> ->
       if tn = gtn then Some (<:expr< self >>, True)
       else if List.mem tn ["bool"; "string"; "type_var"] then None
+      else if tn = "loc" then Some (<:expr< floc >>, use_self)
       else Some (<:expr< $lid:tn$ floc sh >>, use_self)
   | <:ctyp< ($list:tl$) >> ->
       let (rev_pl, _) =

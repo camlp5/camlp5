@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 6.4 2011/02/17 09:17:06 deraugla Exp $ *)
+(* $Id: pa_mkast.ml,v 6.5 2012/03/06 14:57:58 deraugla Exp $ *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli
@@ -190,8 +190,11 @@ value expr_of_type_decl loc td =
           (fun (loc, l, mf, t) ->
              let e = <:expr< x.$lid:l$ >> in
              let e =
-               let f = expr_of_type loc t in
-               apply loc f e
+               match t with
+               [ <:ctyp< loc >> -> <:expr< C.loc_v () >>
+               | _ ->
+                   let f = expr_of_type loc t in
+                   apply loc f e ]
              in
              (<:expr< record_label $str:l$ >>, e))
           ldl

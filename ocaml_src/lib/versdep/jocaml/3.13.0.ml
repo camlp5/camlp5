@@ -249,6 +249,36 @@ let split_or_patterns_with_bindings = false;;
 
 let has_records_with_with = true;;
 
+let jocaml_pstr_def =
+  let pstr_def jcl =
+    let jcl =
+      List.map
+        (fun (loc, jc) ->
+           let jc =
+             List.map
+               (fun (loc, (jpl, e)) ->
+                  let jpl =
+                    List.map
+                      (fun (locp, (loci, s), p) ->
+                         let ji = {pjident_desc = s; pjident_loc = loci} in
+                         {pjpat_desc = ji, p; pjpat_loc = locp})
+                      jpl
+                  in
+                  {pjclause_desc = jpl, e; pjclause_loc = loc})
+               jc
+           in
+           {pjauto_desc = jc; pjauto_loc = loc})
+        jcl
+    in
+    Pstr_def jcl
+  in
+  Some pstr_def
+;;
+
+let jocaml_pexp_def = None;;
+
+let jocaml_pexp_reply = None;;
+
 let arg_rest =
   function
     Arg.Rest r -> Some r

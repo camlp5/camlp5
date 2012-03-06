@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.20 2012/03/06 11:00:53 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.21 2012/03/06 14:57:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -99,7 +99,7 @@ and expr =
   | ExFun of loc and V (list (patt * V (option expr) * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
-  | ExJdf of loc and list (list (list (string * option patt) * expr)) and expr
+  | ExJdf of loc and list joinclause and expr
   | ExLab of loc and V (list (patt * V (option expr)))
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr)) and expr
@@ -112,6 +112,7 @@ and expr =
   | ExOvr of loc and V (list (string * expr))
   | ExPck of loc and module_expr and option module_type
   | ExRec of loc and V (list (patt * expr)) and option expr
+  | ExRpl of loc and option expr and string
   | ExSeq of loc and V (list expr)
   | ExSnd of loc and expr and V string
   | ExSte of loc and expr and expr
@@ -167,6 +168,7 @@ and str_item =
   [ StCls of loc and V (list (class_infos class_expr))
   | StClt of loc and V (list (class_infos class_type))
   | StDcl of loc and V (list str_item)
+  | StDef of loc and list joinclause
   | StDir of loc and V string and V (option expr)
   | StExc of loc and V string and V (list ctyp) and V (list string)
   | StExp of loc and expr
@@ -179,6 +181,9 @@ and str_item =
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr))
   | StXtr of loc and string and option (V str_item) ]
+and joinclause =
+  { jcLoc : loc;
+    jcVal : list (loc * list (loc * (loc * string) * option patt) * expr) }
 and type_decl =
   { tdNam : V (loc * V string);
     tdPrm : V (list type_var);

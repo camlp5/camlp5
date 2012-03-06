@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.24 2012/03/03 02:23:24 deraugla Exp $
+# $Id: Makefile,v 6.25 2012/03/06 14:57:58 deraugla Exp $
 
 include config/Makefile
 
@@ -202,6 +202,9 @@ new_sources:
 	@-mkdir ocaml_src.new/lib/versdep
 	@-(cd ocaml_src/lib/versdep; \
 	   cp *.ml ../../../ocaml_src.new/lib/versdep/.)
+	@-mkdir ocaml_src.new/lib/versdep/jocaml
+	@-(cd ocaml_src/lib/versdep/jocaml; \
+	   cp *.ml ../../../../ocaml_src.new/lib/versdep/jocaml)
 	@-for i in $(FDIRS); do \
           files="$$(cd $$i; ls *.ml*)"; \
 	  for j in $$files; do \
@@ -214,7 +217,10 @@ new_sources:
 new_source:
 	@cd $$DIR; k=$$FILE; opt=""; \
 	if [ "$$k" = "versdep.ml" ]; then \
-	  k=versdep/$(OVERSION).ml; \
+	  k=versdep$(VERSDIR)/$(OVERSION).ml; \
+	  VERSDIR="$(OCAMLN)"; \
+	else \
+	  VERSDIR=""; \
 	fi; \
 	echo ============================================; \
 	echo ocaml_src.new/$$DIR/$$k; \
@@ -222,7 +228,8 @@ new_source:
 	  sed 's/# $$Id.*\$$/# $(TXTGEN)/' Makefile | \
 	  sed 's-^TOP=..$$-TOP=../..-'; \
 	else \
-	  OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) ../tools/conv.sh $(PR_O) $$opt $$FILE | \
+	  OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) VERSDIR=$$VERSDIR \
+	    ../tools/conv.sh $(PR_O) $$opt $$FILE | \
 	  sed 's/$$Id.*\$$/$(TXTGEN)/'; \
 	fi > \
 	../ocaml_src.new/$$DIR/$$k
@@ -324,7 +331,7 @@ untouch_sources:
 
 promote_sources:
 	$(MAKE) mv_cvs FROM=ocaml_src TO=ocaml_src.new
-	for i in $(FDIRS) lib/versdep; do \
+	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
 	  $(MAKE) mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
@@ -335,7 +342,7 @@ unpromote_sources:
 	mv ocaml_src ocaml_src.new
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
-	for i in $(FDIRS) lib/versdep; do \
+	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
 	  $(MAKE) mv_cvs FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
 	$(MAKE) mv_cvs FROM=ocaml_src.new TO=ocaml_src

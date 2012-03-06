@@ -248,6 +248,12 @@ let split_or_patterns_with_bindings = true;;
 
 let has_records_with_with = false;;
 
+let jocaml_pstr_def : (_ -> _) option = None;;
+
+let jocaml_pexp_def : (_ -> _ -> _ -> _) option = None;;
+
+let jocaml_pexp_reply : (_ -> _ -> _ -> _) option = None;;
+
 let arg_rest _ = None;;
 
 let arg_set_string _ = None;;
