@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.42 2012/03/06 19:07:10 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.43 2012/03/06 19:37:09 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -923,7 +923,12 @@ value rec expr =
           in
           mkexp loc (ocaml_pexp_function "" None (List.map mkpwe pel)) ]
   | ExIfe loc e1 e2 e3 ->
-      mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
+      let e3o =
+        match e3 with
+        [ <:expr< () >> -> None
+        | _ -> Some (expr e3) ]
+      in
+      mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) e3o)
   | ExInt loc s c ->
       mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
   | ExJdf loc jl e ->

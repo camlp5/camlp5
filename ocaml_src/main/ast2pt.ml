@@ -1083,7 +1083,12 @@ let rec expr =
           mkexp loc (ocaml_pexp_function "" None (List.map mkpwe pel))
       end
   | ExIfe (loc, e1, e2, e3) ->
-      mkexp loc (Pexp_ifthenelse (expr e1, expr e2, Some (expr e3)))
+      let e3o =
+        match e3 with
+          MLast.ExUid (_, "()") -> None
+        | _ -> Some (expr e3)
+      in
+      mkexp loc (Pexp_ifthenelse (expr e1, expr e2, e3o))
   | ExInt (loc, s, c) -> mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
   | ExJdf (loc, jl, e) ->
       begin match jocaml_pexp_def with
