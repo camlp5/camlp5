@@ -1443,7 +1443,7 @@ and str_item s l =
   | StDef (loc, jcl) ->
       begin match jocaml_pstr_def with
         Some pstr_def ->
-          let jcl = List.map mkjoinclause jcl in [mkstr loc (pstr_def jcl)]
+          let jcl = List.map mkjoinclause jcl in mkstr loc (pstr_def jcl) :: l
       | None -> error loc "no 'def' in this ocaml version"
       end
   | StDir (loc, _, _) -> l

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.43 2012/03/06 19:37:09 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.44 2012/03/07 09:14:25 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1268,7 +1268,7 @@ and str_item s l =
       match jocaml_pstr_def with
       [ Some pstr_def ->
           let jcl = List.map mkjoinclause jcl in
-          [mkstr loc (pstr_def jcl)]
+          [mkstr loc (pstr_def jcl) :: l]
       | None -> error loc "no 'def' in this ocaml version" ]
   | StDir loc _ _ -> l
   | StExc loc n tl sl ->
