@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.5 2012/03/06 10:26:49 deraugla Exp $
+# $Id: Makefile,v 6.6 2012/03/07 08:55:31 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -24,7 +24,7 @@ $(CAMLP5N)$D.fast.opt: pa_$D_fast.cmx
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$(CAMLP5N)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
-	cat $(SRC) | sed -e "s/Plexer.gmake ()/Lazy.force P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | grep -v '#load' | grep -v "^IFDEF" | grep -v "^END" | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
+	cat $(SRC) | sed -e "s/Plexer.gmake ()/Lazy.force P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | grep -v '#load' | grep -v "^IFDEF" | grep -v "^END" | grep -v DELETE_RULE | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 $D_fast.ml.tmp: compile.cmo $(SRC)
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) EXE=$(EXE) ./compile.sh $(COMP_OPT)  $(SRC) > $D_fast.ml.tmp
