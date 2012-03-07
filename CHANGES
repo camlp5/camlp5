@@ -1,7 +1,9 @@
 Camlp5 Version 6.06:
 --------------------
 
-* [02 Mar 12] Added compatibility with JoCaml 3.12.0 and 3.12.1.
+* [02 Mar 12] Added compatibility with JoCaml 3.12.0 and 3.12.1. Completed
+  with all JoCaml statements in ocaml syntax. Todo: revised syntax, pretty
+  print, AST quotations.
 
 Camlp5 Version 6.05:
 --------------------

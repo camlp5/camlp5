@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.55 2012/03/03 08:25:33 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.56 2012/03/07 01:15:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1287,7 +1287,7 @@ EXTEND_PRINTER
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< let module $uid:_$ = $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
-        <:expr< try $_$ with [ $list:_$ ] >> as z ->
+        <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ as z ->
           pprintf pc "@[<1>(%q)@]" expr z "" ] ]
   ;
   pr_patt:
@@ -1691,6 +1691,34 @@ EXTEND_PRINTER
       | z ->
           error (MLast.loc_of_module_type z)
             (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z))) ] ]
+  ;
+END;
+
+value or_before elem pc x = pprintf pc "or %p" elem x;
+value amp_after elem pc x = pprintf pc "%p &" elem x;
+
+value option elem pc x =
+  match x with
+  [ Some x -> elem pc x
+  | None -> pprintf pc "" ]
+;
+
+value joinpattern pc (loc, (_, ji), op) =
+  pprintf pc "%s (%p)" ji (option patt) op
+;
+value joinclause pc (loc, jpl, e) =
+  pprintf pc "%p = %p" (hlistl (amp_after joinpattern) joinpattern) jpl
+    expr e
+;
+value joinautomaton pc jc =
+  pprintf pc "%p" (hlist2 joinclause (or_before joinclause)) jc.MLast.jcVal
+;
+
+EXTEND_PRINTER
+  pr_expr: LEVEL "expr1"
+    [ [ MLast.ExJdf loc jcl e ->
+          pprintf pc "def %p in %p"
+            (hlist2 joinautomaton (and_before joinautomaton)) jcl expr e ] ]
   ;
 END;
 
