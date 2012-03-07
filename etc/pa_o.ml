@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pa_o.ml,v 6.45 2012/03/06 19:13:11 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.46 2012/03/07 09:46:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -1286,8 +1286,10 @@ IFDEF JOCAML THEN
     expr: LEVEL "expr1"
       [ [ "def"; jal = LIST1 joinautomaton SEP "and"; "in";
           e = expr LEVEL "top"->
-            MLast.ExJdf loc (List.rev jal) e
-        | "reply"; elo = OPT expr; "to"; ji = joinident ->
+            MLast.ExJdf loc (List.rev jal) e ] ]
+    ;
+    expr: LEVEL "apply"
+      [ [ "reply"; elo = OPT expr; "to"; ji = joinident ->
             MLast.ExRpl loc elo ji ] ]
     ;
     expr: BEFORE ":="
