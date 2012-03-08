@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.56 2012/03/07 01:15:55 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.57 2012/03/08 10:43:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1287,8 +1287,12 @@ EXTEND_PRINTER
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< let module $uid:_$ = $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
-        <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ as z ->
-          pprintf pc "@[<1>(%q)@]" expr z "" ] ]
+        <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ |
+        MLast.ExRpl _ _ _ | MLast.ExSpw _ _ | MLast.ExPar _ _ _ as z ->
+          pprintf pc "@[<1>(%q)@]" expr z ""
+      | z ->
+          Ploc.raise (MLast.loc_of_expr z)
+            (Failure (sprintf "pr_expr %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_patt:
     [ "top"
@@ -1694,6 +1698,7 @@ EXTEND_PRINTER
   ;
 END;
 
+value space_before elem pc x = pprintf pc " %p" elem x;
 value or_before elem pc x = pprintf pc "or %p" elem x;
 value amp_after elem pc x = pprintf pc "%p &" elem x;
 
@@ -1715,10 +1720,25 @@ value joinautomaton pc jc =
 ;
 
 EXTEND_PRINTER
+  pr_str_item:
+    [ [ MLast.StDef loc jcl ->
+          pprintf pc "def %p"
+            (hlist2 joinautomaton (and_before joinautomaton)) jcl ] ]
+  ;
   pr_expr: LEVEL "expr1"
     [ [ MLast.ExJdf loc jcl e ->
           pprintf pc "def %p in %p"
             (hlist2 joinautomaton (and_before joinautomaton)) jcl expr e ] ]
+  ;
+  pr_expr: LEVEL "apply"
+    [ [ MLast.ExRpl loc eo (_, s) ->
+          pprintf pc "reply%p in %s" (option (space_before expr)) eo s ] ]
+  ;
+  pr_expr: BEFORE "assign"
+    [ [ MLast.ExSpw loc e -> pprintf pc "spawn %p" next e ] ]
+  ;
+  pr_expr: LEVEL "and"
+    [ [ MLast.ExPar loc e1 e2 -> pprintf pc "%p & %p" next e1 curr e2 ] ]
   ;
 END;
 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 6.4 2012/03/08 10:43:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -72,6 +72,17 @@ value extend pr pos levs =
               if lab = pr_lev.pr_label then
                 let pr_levs = List.fold_right add_lev levs pr_levs in
                 [pr_lev :: pr_levs]
+              else [pr_lev :: loop pr_levs]
+          | [] -> failwith ("level " ^ lab ^ " not found") ]
+      in
+      pr.pr_levels := levels
+  | Some (Before lab) ->
+      let levels =
+        loop pr.pr_levels where rec loop =
+          fun
+          [ [pr_lev :: pr_levs] ->
+              if lab = pr_lev.pr_label then
+                List.fold_right add_lev levs [pr_lev :: pr_levs]
               else [pr_lev :: loop pr_levs]
           | [] -> failwith ("level " ^ lab ^ " not found") ]
       in
