@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: extfun.ml,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: extfun.ml,v 6.4 2012/03/08 14:01:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (* Extensible Functions *)
@@ -84,6 +84,13 @@ value print ef =
 
 (*** Extension ***)
 
+value compare_patt p1 p2 =
+  match (p1, p2) with
+  [ (Evar _, _) -> 1
+  | (_, Evar _) -> -1
+  | _ -> compare p1 p2 ]
+;
+
 value insert_matching matchings (patt, has_when, expr) =
   let m1 = {patt = patt; has_when = has_when; expr = expr} in
   loop matchings where rec loop =
@@ -92,7 +99,7 @@ value insert_matching matchings (patt, has_when, expr) =
         if m1.has_when && not m.has_when then [m1 :: gml]
         else if not m1.has_when && m.has_when then [m :: loop ml]
         else
-          let c = compare m1.patt m.patt in
+          let c = compare_patt m1.patt m.patt in
           if c < 0 then [m1 :: gml]
           else if c > 0 then [m :: loop ml]
           else if m.has_when then [m1 :: gml]

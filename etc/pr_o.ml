@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.57 2012/03/08 10:43:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.58 2012/03/08 14:01:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1735,10 +1735,12 @@ EXTEND_PRINTER
           pprintf pc "reply%p in %s" (option (space_before expr)) eo s ] ]
   ;
   pr_expr: BEFORE "assign"
-    [ [ MLast.ExSpw loc e -> pprintf pc "spawn %p" next e ] ]
+    [ [ MLast.ExSpw loc e ->
+          pprintf pc "spawn %p" next e ] ]
   ;
   pr_expr: LEVEL "and"
-    [ [ MLast.ExPar loc e1 e2 -> pprintf pc "%p & %p" next e1 curr e2 ] ]
+    [ [ MLast.ExPar loc e1 e2 ->
+          pprintf pc "%p & %p" next e1 curr e2 ] ]
   ;
 END;
 
