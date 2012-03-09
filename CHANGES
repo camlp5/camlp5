@@ -1,8 +1,10 @@
 Camlp5 Version 6.06:
 --------------------
 
-* [02 Mar 12] Added compatibility with JoCaml 3.12.0 and 3.12.1. Completed
-  with all JoCaml statements in ocaml syntax. Todo: pretty print.
+* [09 Mar 12] Added compatibility with (incoming) OCaml 4.00.0.
+* [02 Mar 12] Added compatibility with JoCaml 3.12.0 and 3.12.1.
+* [02 Mar 12] Completed with all JoCaml statements in ocaml syntax.
+  Todo: pretty print.
 
 Camlp5 Version 6.05:
 --------------------
