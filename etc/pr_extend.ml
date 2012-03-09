@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_extend.ml,v 6.4 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 6.5 2012/03/09 14:01:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -272,7 +272,7 @@ value position pc pos =
   [ None -> pprintf pc ""
   | Some Gramext.First -> pprintf pc " FIRST"
   | Some Gramext.Last -> pprintf pc " LAST"
-  | Some (Gramext.Before s) -> pprintf pc " BEFORE"
+  | Some (Gramext.Before s) -> pprintf pc " BEFORE %p" string s
   | Some (Gramext.After s) -> pprintf pc " AFTER %p" string s
   | Some (Gramext.Like s) -> pprintf pc " LIKE %p" string s
   | Some (Gramext.Level s) -> pprintf pc " LEVEL %p" string s ]

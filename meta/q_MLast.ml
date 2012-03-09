@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.36 2012/03/09 12:43:14 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.37 2012/03/09 14:01:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -1428,6 +1428,40 @@ EXTEND
     [ [ "to" -> Qast.Bool True
       | "downto" -> Qast.Bool False ] ]
   ;
+  str_item:
+    [ [ "def"; jal = SV (LIST1 joinautomaton SEP "and") ->
+          Qast.Node "StDef" [Qast.Loc; jal] ] ]
+  ;
+  expr: LEVEL "top"
+    [ [ "def"; jal = SV (LIST1 joinautomaton SEP "and"); "in";
+        e = expr LEVEL "top" ->
+          Qast.Node "ExJdf" [Qast.Loc; jal; e] ] ]
+  ;
+  expr: LEVEL "apply"
+    [ [ "reply"; eo = SV (OPT expr); "to"; ji = joinident ->
+          Qast.Node "ExRpl" [Qast.Loc; eo; ji] ] ]
+  ;
+  expr: BEFORE ":="
+    [ [ "spawn"; e = SELF -> Qast.Node "ExSpw" [Qast.Loc; e] ] ]
+  ;
+  expr: LEVEL "&&"
+    [ [ e1 = SELF; "&"; e2 = SELF -> Qast.Node "ExPar" [Qast.Loc; e1; e2] ] ]
+  ;
+  joinautomaton:
+    [ [ jcl = SV (LIST1 joinclause SEP "or") ->
+          Qast.Record [("jcLoc", Qast.Loc); ("jcVal", jcl)] ] ]
+  ;
+  joinclause:
+    [ [ jpl = SV (LIST1 joinpattern SEP "&"); "="; e = expr ->
+          Qast.Tuple [Qast.Loc; jpl; e] ] ]
+  ;
+  joinpattern:
+    [ [ ji = joinident; "("; op = SV (OPT patt); ")" ->
+          Qast.Tuple [Qast.Loc; ji; op] ] ]
+  ;
+  joinident:
+    [ [ i = SV LIDENT -> Qast.Tuple [Qast.Loc; i] ] ]
+  ;
   (* -- end copy from pa_r to q_MLast -- *)
   a_ti:
     [ [ "~"; a = ANTIQUOT -> Qast.VaAnt "~" loc a ] ]
@@ -1440,6 +1474,9 @@ EXTEND
   ;
   a_qic:
     [ [ "?"; a = ANTIQUOT; ":" -> Qast.VaAnt "?" loc a ] ]
+  ;
+  joinident:
+    [ [ a = ANTIQUOT "jid" -> Qast.VaAnt "jid" loc a ] ]
   ;
 END;
 

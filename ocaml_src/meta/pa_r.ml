@@ -2899,7 +2899,7 @@ Grammar.extend
          (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), "top")],
       Gramext.action
         (fun (e : 'expr) _ (jal : 'joinautomaton list) _ (loc : Ploc.t) ->
-           (MLast.ExJdf (loc, List.rev jal, e) : 'expr))]];
+           (MLast.ExJdf (loc, jal, e) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "apply"),
     [None, None,
@@ -2934,8 +2934,7 @@ Grammar.extend
           Gramext.Stoken ("", "or"), false)],
       Gramext.action
         (fun (jcl : 'joinclause list) (loc : Ploc.t) ->
-           ({MLast.jcLoc = loc; MLast.jcVal = List.rev jcl} :
-            'joinautomaton))]];
+           ({MLast.jcLoc = loc; MLast.jcVal = jcl} : 'joinautomaton))]];
     Grammar.Entry.obj (joinclause : 'joinclause Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Slist1sep
@@ -2946,7 +2945,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) _ (jpl : 'joinpattern list) (loc : Ploc.t) ->
-           (loc, List.rev jpl, e : 'joinclause))]];
+           (loc, jpl, e : 'joinclause))]];
     Grammar.Entry.obj (joinpattern : 'joinpattern Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm

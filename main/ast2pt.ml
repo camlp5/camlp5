@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.44 2012/03/07 09:14:25 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.45 2012/03/09 14:01:54 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -934,7 +934,7 @@ value rec expr =
   | ExJdf loc jl e ->
       match jocaml_pexp_def with
       [ Some pexp_def ->
-          mkexp loc (pexp_def (List.map mkjoinclause jl) (expr e))
+          mkexp loc (pexp_def (List.rev_map mkjoinclause (uv jl)) (expr e))
       | None ->
           error loc "no 'def in' in this ocaml version" ]
   | ExLab loc _ -> error loc "labeled expression not allowed here 1"
@@ -1023,12 +1023,11 @@ value rec expr =
       match jocaml_pexp_reply with
       [ Some pexp_reply ->
           let e =
-            match eo with
+            match uv eo with
             [ Some e -> expr e
-            | None ->
-                mkexp loc (Pexp_construct (Lident "()") None False) ]
+            | None -> mkexp loc (Pexp_construct (Lident "()") None False) ]
           in
-          mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, s))
+          mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, uv s))
       | None -> error loc "no 'reply' in this ocaml version" ]
   | ExSeq loc el ->
       loop (uv el) where rec loop =
@@ -1093,22 +1092,23 @@ and label_expr rev_al =
   | e -> [("", expr e) :: rev_al] ]
 and mkjoinclause jc =
   let jcval =
-    List.map
+    List.rev_map
       (fun (loc, jpl, e) ->
          let jpl =
-           List.map
-             (fun (locp, (loc, s), jp) ->
+           List.rev_map
+             (fun (locp, locs, jp) ->
+                let (loc, s) = locs in
                 let p =
-                  match jp with
+                  match uv jp with
                   [ Some p -> patt p
                   | None ->
                       mkpat loc (Ppat_construct (Lident "()") None False) ]
                 in
-                (mkloc locp, (mkloc loc, s), p))
-             jpl
+                (mkloc locp, (mkloc loc, uv s), p))
+             (uv jpl)
          in
          (mkloc loc, (jpl, expr e)))
-      jc.jcVal
+      (uv jc.jcVal)
   in
   (mkloc jc.jcLoc, jcval)
 and mkpe (p, e) =
@@ -1267,7 +1267,7 @@ and str_item s l =
   | StDef loc jcl ->
       match jocaml_pstr_def with
       [ Some pstr_def ->
-          let jcl = List.map mkjoinclause jcl in
+          let jcl = List.map mkjoinclause (uv jcl) in
           [mkstr loc (pstr_def jcl) :: l]
       | None -> error loc "no 'def' in this ocaml version" ]
   | StDir loc _ _ -> l

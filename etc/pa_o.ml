@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pa_o.ml,v 6.47 2012/03/08 10:43:30 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.48 2012/03/09 14:01:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -1280,37 +1280,37 @@ IFDEF JOCAML THEN
   EXTEND
     GLOBAL: str_item expr;
     str_item: 
-      [ [ "def"; jal = LIST1 joinautomaton SEP "and" ->
-            MLast.StDef loc jal ] ]
+      [ [ "def"; jal = V (LIST1 joinautomaton SEP "and") ->
+            <:str_item< def $_list:jal$ >> ] ]
     ;
-    expr: LEVEL "expr1"
-      [ [ "def"; jal = LIST1 joinautomaton SEP "and"; "in";
+    expr: LEVEL "top"
+      [ [ "def"; jal = V (LIST1 joinautomaton SEP "and"); "in";
           e = expr LEVEL "top"->
-            MLast.ExJdf loc (List.rev jal) e ] ]
+            <:expr< def $_list:jal$ in $e$ >> ] ]
     ;
     expr: LEVEL "apply"
-      [ [ "reply"; eo = OPT expr; "to"; ji = joinident ->
-            MLast.ExRpl loc eo ji ] ]
+      [ [ "reply"; eo = V (OPT expr); "to"; ji = joinident ->
+            <:expr< reply $_opt:eo$ to $jid:ji$ >> ] ]
     ;
     expr: BEFORE ":="
-      [ [ "spawn"; e = SELF -> MLast.ExSpw loc e ] ]
+      [ [ "spawn"; e = SELF -> <:expr< spawn $e$ >> ] ]
     ;
     expr: LEVEL "&&"
-      [ [ e1 = SELF; "&"; e2 = SELF -> MLast.ExPar loc e1 e2 ] ]
+      [ [ e1 = SELF; "&"; e2 = SELF -> <:expr< $e1$ & $e2$ >> ] ]
     ;
     joinautomaton:
-      [ [ jcl = LIST1 joinclause SEP "or" ->
-            {MLast.jcLoc = loc; MLast.jcVal = List.rev jcl} ] ]
+      [ [ jcl = V (LIST1 joinclause SEP "or") ->
+            {MLast.jcLoc = loc; MLast.jcVal = jcl} ] ]
     ;
     joinclause:
-      [ [ jpl = LIST1 joinpattern SEP "&"; "="; e = expr ->
-            (loc, List.rev jpl, e) ] ]
+      [ [ jpl = V (LIST1 joinpattern SEP "&"); "="; e = expr ->
+            (loc, jpl, e) ] ]
     ;
     joinpattern:
-      [ [ ji = joinident; "("; op = OPT patt; ")" -> (loc, ji, op) ] ]
+      [ [ ji = joinident; "("; op = V (OPT patt); ")" -> (loc, ji, op) ] ]
     ;
     joinident:
-      [ [ i = LIDENT -> (loc, i) ] ]
+      [ [ i = V LIDENT -> (loc, i) ] ]
     ;
   END;
 END;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.59 2012/03/09 12:43:14 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.60 2012/03/09 14:01:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1709,37 +1709,38 @@ value option elem pc x =
 ;
 
 value joinpattern pc (loc, (_, ji), op) =
-  pprintf pc "%s (%p)" ji (option patt) op
+  pprintf pc "%s (%p)" (Pcaml.unvala ji) (option patt) (Pcaml.unvala op)
 ;
 value joinclause pc (loc, jpl, e) =
-  pprintf pc "%p = %p" (hlistl (amp_after joinpattern) joinpattern) jpl
-    expr e
+  pprintf pc "%p = %p" (hlistl (amp_after joinpattern) joinpattern)
+    (Pcaml.unvala jpl) expr e
 ;
 value joinautomaton pc jc =
-  pprintf pc "%p" (hlist2 joinclause (or_before joinclause)) jc.MLast.jcVal
+  pprintf pc "%p" (hlist2 joinclause (or_before joinclause))
+    (Pcaml.unvala jc.MLast.jcVal)
 ;
 
 EXTEND_PRINTER
   pr_str_item:
-    [ [ MLast.StDef loc jcl ->
+    [ [ <:str_item< def $list:jcl$ >> ->
           pprintf pc "def %p"
             (hlist2 joinautomaton (and_before joinautomaton)) jcl ] ]
   ;
   pr_expr: LEVEL "expr1"
-    [ [ MLast.ExJdf loc jcl e ->
+    [ [ <:expr< def $list:jcl$ in $e$ >> ->
           pprintf pc "def %p in %p"
             (hlist2 joinautomaton (and_before joinautomaton)) jcl expr e ] ]
   ;
   pr_expr: LEVEL "apply"
-    [ [ MLast.ExRpl loc eo (_, s) ->
+    [ [ <:expr< reply $opt:eo$ to $s$ >> ->
           pprintf pc "reply%p in %s" (option (space_before expr)) eo s ] ]
   ;
   pr_expr: BEFORE "assign"
-    [ [ MLast.ExSpw loc e ->
+    [ [ <:expr< spawn $e$ >> ->
           pprintf pc "spawn %p" next e ] ]
   ;
   pr_expr: LEVEL "and"
-    [ [ MLast.ExPar loc e1 e2 ->
+    [ [ <:expr< $e1$ & $e2$ >> ->
           pprintf pc "%p & %p" next e1 curr e2 ] ]
   ;
 END;
