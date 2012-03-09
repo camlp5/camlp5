@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.24 2012/03/09 14:01:54 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.25 2012/03/09 14:54:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -186,8 +186,9 @@ and str_item =
 and joinclause =
   { jcLoc : loc;
     jcVal :
-      V (list (loc * V (list (loc * (loc * V string) * V (option patt))) *
-      expr)) }
+      V (list
+           (loc * V (list (loc * (loc * V string) * V (option patt))) *
+            expr)) }
 and type_decl =
   { tdNam : V (loc * V string);
     tdPrm : V (list type_var);
