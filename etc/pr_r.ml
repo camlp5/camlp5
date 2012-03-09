@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.74 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.75 2012/03/09 10:07:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -239,6 +239,13 @@ value only_spaces s =
     else False
 ;
 
+value has_newlines s =
+  loop 0 where rec loop i =
+    if i = String.length s then False
+    else if s.[i] = '\n' then True
+    else loop (i + 1)
+;
+
 value strip_heading_spaces s =
   loop 0 where rec loop i =
     if i = String.length s then ""
@@ -246,19 +253,29 @@ value strip_heading_spaces s =
     else String.sub s i (String.length s - i)
 ;
 
+value strip_one_heading_space s =
+  if String.length s > 0 && s.[0] = ' ' then
+    String.sub s 1 (String.length s - 1)
+  else s
+;
+
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
   let loc = MLast.loc_of_expr z in
   let ccc = comm_bef pc loc in
   if ccc = "" then expr pc z
-  else if only_spaces pc.bef then sprintf "%s%s" ccc (expr pc z)
-  else
+  else if only_spaces ccc then
+    sprintf "%s%s" ccc (expr pc z)
+  else if has_newlines ccc then
     expr
       {(pc) with
        bef =
          sprintf "%s%s%s" pc.bef (strip_heading_spaces ccc)
            (String.make (String.length pc.bef) ' ')}
      z
+  else
+    expr
+      {(pc) with bef = sprintf "%s%s" pc.bef (strip_one_heading_space ccc)} z
 ;
 
 (* couple pattern/anytype with adding the possible comment before *)
