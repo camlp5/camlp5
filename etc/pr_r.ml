@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.75 2012/03/09 10:07:19 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.76 2012/03/09 11:03:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -275,7 +275,10 @@ value comm_expr expr pc z =
      z
   else
     expr
-      {(pc) with bef = sprintf "%s%s" pc.bef (strip_one_heading_space ccc)} z
+      {(pc) with
+       bef = sprintf "%s%s" pc.bef (strip_one_heading_space ccc);
+       aft = sprintf "%s%s" pc.aft (Ploc.comment_last loc)}
+      z
 ;
 
 (* couple pattern/anytype with adding the possible comment before *)
@@ -657,10 +660,10 @@ value match_assoc_list pc pwel =
 value rec make_expr_list =
   fun
   [ <:expr< [$x$ :: $y$] >> ->
-      let (xl, c) = make_expr_list y in
-      ([x :: xl], c)
-  | <:expr< [] >> -> ([], None)
-  | x -> ([], Some x) ]
+      let (xl, c, last_comm) = make_expr_list y in
+      ([x :: xl], c, last_comm)
+  | <:expr:< [] >> -> ([], None, Ploc.comment_last loc)
+  | x -> ([], Some x, "") ]
 ;
 
 value rec make_patt_list =
@@ -1341,14 +1344,15 @@ EXTEND_PRINTER
             let el = List.map (fun e -> (e, ";")) el in
             pprintf pc "@[<3>[| %p |]@]" (plist expr 0) el
       | <:expr< [$_$ :: $_$] >> as z ->
-          let (xl, y) = make_expr_list z in
+          let (xl, y, last_comm) = make_expr_list z in
           let xl = List.map (fun x -> (x, ";")) xl in
           match y with
           [ Some y ->
               let expr2 pc x = pprintf pc "%p ::@ %p" expr x expr y in
               pprintf pc "@[<1>[%p]@]" (plistl expr expr2 0) xl
           | None ->
-              pprintf pc "@[<1>[%p]@]" (plist (comm_expr expr) 0) xl ]
+              pprintf pc "@[<1>[%p%s]@]" (plist (comm_expr expr) 0) xl
+                last_comm ]
       | <:expr< ($e$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       |  <:expr< (module $me$ : $mt$) >> ->

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.11 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.12 2012/03/09 11:03:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -12,23 +12,24 @@ type t =
     bol_pos_last : int;
     bp : int;
     ep : int;
-    comm : string }
+    comm : string;
+    ecomm : string }
 ;
 
 value make_loc fname line_nb bol_pos (bp, ep) comm =
   {fname = fname; line_nb = line_nb; bol_pos = bol_pos;
    line_nb_last = line_nb; bol_pos_last = bol_pos;
-   bp = bp; ep = ep; comm = comm}
+   bp = bp; ep = ep; comm = comm; ecomm = ""}
 ;
 
 value make_unlined (bp, ep) =
   {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
-   bp = bp; ep = ep; comm = ""}
+   bp = bp; ep = ep; comm = ""; ecomm = ""}
 ;
 
 value dummy =
   {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
-   bp = 0; ep = 0; comm = ""}
+   bp = 0; ep = 0; comm = ""; ecomm = ""}
 ;
 
 value file_name loc = loc.fname;
@@ -39,6 +40,7 @@ value bol_pos loc = loc.bol_pos;
 value line_nb_last loc = loc.line_nb_last;
 value bol_pos_last loc = loc.bol_pos_last;
 value comment loc = loc.comm;
+value comment_last loc = loc.ecomm;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_bp_ep l bp ep =
@@ -58,14 +60,14 @@ value encl loc1 loc2 =
     if loc1.ep < loc2.ep then
       {fname = loc1.fname; line_nb = loc1.line_nb; bol_pos = loc1.bol_pos;
        line_nb_last = loc2.line_nb_last; bol_pos_last = loc2.bol_pos_last;
-       bp = loc1.bp; ep = loc2.ep; comm = loc1.comm}
+       bp = loc1.bp; ep = loc2.ep; comm = loc1.comm; ecomm = loc2.comm}
     else
       loc1
   else
     if loc2.ep < loc1.ep then
       {fname = loc2.fname; line_nb = loc2.line_nb; bol_pos = loc2.bol_pos;
        line_nb_last = loc1.line_nb_last; bol_pos_last = loc1.bol_pos_last;
-       bp = loc2.bp; ep = loc1.ep; comm = loc2.comm}
+       bp = loc2.bp; ep = loc1.ep; comm = loc2.comm; ecomm = loc1.comm}
     else
       loc2
 ;
@@ -211,5 +213,5 @@ value warning_deprecated_since_6_00 name =
 value make line_nb bol_pos (bp, ep) =
   let _ = warning_deprecated_since_6_00 "Ploc.make" in
   {fname = ""; line_nb = line_nb; bol_pos = bol_pos; line_nb_last = line_nb;
-   bol_pos_last = bol_pos; bp = bp; ep = ep; comm = ""}
+   bol_pos_last = bol_pos; bp = bp; ep = ep; comm = ""; ecomm = ""}
 ;

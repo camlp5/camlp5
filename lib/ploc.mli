@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 6.8 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: ploc.mli,v 6.9 2012/03/09 11:03:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (** Locations and some pervasive type and value. *)
@@ -61,6 +61,8 @@ value bol_pos_last : t -> int;
        of the last position. *)
 value comment : t -> string;
    (** [Ploc.comment loc] returns the comment before the location. *)
+value comment_last : t -> string;
+   (** [Ploc.comment loc] returns the last comment of the location. *)
 
 (* combining locations *)
 
