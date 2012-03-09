@@ -4,6 +4,7 @@
 
 (* #load "pa_extend.cmo" *)
 (* #load "q_MLast.cmo" *)
+(* #load "pa_macro.cmo" *)
 
 open Pcaml;;
 
@@ -172,6 +173,8 @@ let warning_deprecated_since_6_00 loc =
       warned := true
     end
 ;;
+
+(* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
@@ -2846,7 +2849,126 @@ Grammar.extend
      [[Gramext.Stoken ("", "downto")],
       Gramext.action (fun _ (loc : Ploc.t) -> (false : 'direction_flag));
       [Gramext.Stoken ("", "to")],
-      Gramext.action (fun _ (loc : Ploc.t) -> (true : 'direction_flag))]]]);;
+      Gramext.action (fun _ (loc : Ploc.t) -> (true : 'direction_flag))]];
+    (* -- cut 1 begin -- *)
+    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
+    [None, None, []]]);;
+
+Grammar.extend
+  (let _ = (str_item : 'str_item Grammar.Entry.e)
+   and _ = (expr : 'expr Grammar.Entry.e) in
+   let grammar_entry_create s =
+     Grammar.create_local_entry (Grammar.of_entry str_item) s
+   in
+   let joinautomaton : 'joinautomaton Grammar.Entry.e =
+     grammar_entry_create "joinautomaton"
+   and joinclause : 'joinclause Grammar.Entry.e =
+     grammar_entry_create "joinclause"
+   and joinpattern : 'joinpattern Grammar.Entry.e =
+     grammar_entry_create "joinpattern"
+   and joinident : 'joinident Grammar.Entry.e =
+     grammar_entry_create "joinident"
+   in
+   [(* -- cut 1 end -- *)
+    Grammar.
+    Entry.
+    obj
+      (str_item : 'str_item Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("", "def");
+       Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (joinautomaton : 'joinautomaton Grammar.Entry.e)),
+          Gramext.Stoken ("", "and"), false)],
+      Gramext.action
+        (fun (jal : 'joinautomaton list) _ (loc : Ploc.t) ->
+           (MLast.StDef (loc, jal) : 'str_item))]];
+    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
+    Some (Gramext.Level "top"),
+    [None, None,
+     [[Gramext.Stoken ("", "def");
+       Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (joinautomaton : 'joinautomaton Grammar.Entry.e)),
+          Gramext.Stoken ("", "and"), false);
+       Gramext.Stoken ("", "in");
+       Gramext.Snterml
+         (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), "top")],
+      Gramext.action
+        (fun (e : 'expr) _ (jal : 'joinautomaton list) _ (loc : Ploc.t) ->
+           (MLast.ExJdf (loc, List.rev jal, e) : 'expr))]];
+    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
+    Some (Gramext.Level "apply"),
+    [None, None,
+     [[Gramext.Stoken ("", "reply");
+       Gramext.Sopt
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)));
+       Gramext.Stoken ("", "to");
+       Gramext.Snterm
+         (Grammar.Entry.obj (joinident : 'joinident Grammar.Entry.e))],
+      Gramext.action
+        (fun (ji : 'joinident) _ (eo : 'expr option) _ (loc : Ploc.t) ->
+           (MLast.ExRpl (loc, eo, ji) : 'expr))]];
+    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
+    Some (Gramext.Before ":="),
+    [None, None,
+     [[Gramext.Stoken ("", "spawn"); Gramext.Sself],
+      Gramext.action
+        (fun (e : 'expr) _ (loc : Ploc.t) ->
+           (MLast.ExSpw (loc, e) : 'expr))]];
+    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
+    Some (Gramext.Level "&&"),
+    [None, None,
+     [[Gramext.Sself; Gramext.Stoken ("", "&"); Gramext.Sself],
+      Gramext.action
+        (fun (e2 : 'expr) _ (e1 : 'expr) (loc : Ploc.t) ->
+           (MLast.ExPar (loc, e1, e2) : 'expr))]];
+    Grammar.Entry.obj (joinautomaton : 'joinautomaton Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (joinclause : 'joinclause Grammar.Entry.e)),
+          Gramext.Stoken ("", "or"), false)],
+      Gramext.action
+        (fun (jcl : 'joinclause list) (loc : Ploc.t) ->
+           ({MLast.jcLoc = loc; MLast.jcVal = List.rev jcl} :
+            'joinautomaton))]];
+    Grammar.Entry.obj (joinclause : 'joinclause Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (joinpattern : 'joinpattern Grammar.Entry.e)),
+          Gramext.Stoken ("", "&"), false);
+       Gramext.Stoken ("", "=");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (e : 'expr) _ (jpl : 'joinpattern list) (loc : Ploc.t) ->
+           (loc, List.rev jpl, e : 'joinclause))]];
+    Grammar.Entry.obj (joinpattern : 'joinpattern Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Snterm
+         (Grammar.Entry.obj (joinident : 'joinident Grammar.Entry.e));
+       Gramext.Stoken ("", "(");
+       Gramext.Sopt
+         (Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e)));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (op : 'patt option) _ (ji : 'joinident) (loc : Ploc.t) ->
+           (loc, ji, op : 'joinpattern))]];
+    Grammar.Entry.obj (joinident : 'joinident Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("LIDENT", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (loc, i : 'joinident))]];
+    (* -- cut 2 begin -- *)
+    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
+    [None, None, []]]);;
+
+(* -- cut 2 end -- *)
+(* -- end copy from pa_r to q_MLast -- *)
 
 let quotation_content s =
   let rec loop i =

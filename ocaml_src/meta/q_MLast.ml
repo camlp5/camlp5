@@ -364,6 +364,8 @@ let warning_deprecated_since_6_00 loc =
     end
 ;;
 
+(* -- begin copy from pa_r to q_MLast -- *)
+
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
    and _ = (str_item : 'str_item Grammar.Entry.e)
@@ -486,7 +488,7 @@ Grammar.extend
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
    and a_ti : 'a_ti Grammar.Entry.e =
-     (* Antiquotations for local entries *)
+     (* -- end copy from pa_r to q_MLast -- *)
      grammar_entry_create "a_ti"
    and a_tic : 'a_tic Grammar.Entry.e = grammar_entry_create "a_tic"
    and a_qi : 'a_qi Grammar.Entry.e = grammar_entry_create "a_qi"
@@ -935,7 +937,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 351, 20))
+              | _ -> raise (Match_failure ("q_MLast.ml", 353, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1587,7 +1589,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 421, 20))
+              | _ -> raise (Match_failure ("q_MLast.ml", 423, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -7117,7 +7119,7 @@ Grammar.extend
       [Gramext.Stoken ("", "to")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Bool true : 'direction_flag))]];
-    (* Antiquotations for local entries *)
+    (* -- end copy from pa_r to q_MLast -- *)
     Grammar.Entry.obj (a_ti : 'a_ti Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT", "")],

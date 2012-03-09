@@ -1,9 +1,10 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.38 2012/01/09 14:22:22 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.39 2012/03/09 12:43:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
+#load "pa_macro.cmo";
 
 open Pcaml;
 
@@ -171,6 +172,8 @@ value warning_deprecated_since_6_00 loc =
   }
   else ()
 ;
+
+(* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
@@ -947,7 +950,54 @@ EXTEND
     [ [ "to" -> True
       | "downto" -> False ] ]
   ;
+  (* -- cut 1 begin -- *)
+  expr: [[]];
 END;
+
+IFDEF JOCAML THEN
+  EXTEND
+    GLOBAL: str_item expr;
+    (* -- cut 1 end -- *)
+    str_item: 
+      [ [ "def"; jal = LIST1 joinautomaton SEP "and" ->
+            MLast.StDef loc jal ] ]
+    ;
+    expr: LEVEL "top"
+      [ [ "def"; jal = LIST1 joinautomaton SEP "and"; "in";
+          e = expr LEVEL "top"->
+            MLast.ExJdf loc (List.rev jal) e ] ]
+    ;
+    expr: LEVEL "apply"
+      [ [ "reply"; eo = OPT expr; "to"; ji = joinident ->
+            MLast.ExRpl loc eo ji ] ]
+    ;
+    expr: BEFORE ":="
+      [ [ "spawn"; e = SELF -> MLast.ExSpw loc e ] ]
+    ;
+    expr: LEVEL "&&"
+      [ [ e1 = SELF; "&"; e2 = SELF -> MLast.ExPar loc e1 e2 ] ]
+    ;
+    joinautomaton:
+      [ [ jcl = LIST1 joinclause SEP "or" ->
+            {MLast.jcLoc = loc; MLast.jcVal = List.rev jcl} ] ]
+    ;
+    joinclause:
+      [ [ jpl = LIST1 joinpattern SEP "&"; "="; e = expr ->
+            (loc, List.rev jpl, e) ] ]
+    ;
+    joinpattern:
+      [ [ ji = joinident; "("; op = OPT patt; ")" -> (loc, ji, op) ] ]
+    ;
+    joinident:
+      [ [ i = LIDENT -> (loc, i) ] ]
+    ;
+    (* -- cut 2 begin -- *)
+    expr: [[]];
+  END;
+END;
+
+(* -- cut 2 end -- *)
+(* -- end copy from pa_r to q_MLast -- *)
 
 value quotation_content s = do {
   loop 0 where rec loop i =

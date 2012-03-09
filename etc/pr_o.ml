@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.58 2012/03/08 14:01:06 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.59 2012/03/09 12:43:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1934,7 +1934,7 @@ value class_decl pc ci =
     [ <:class_expr< ($ce$ : $ct$) >> -> (ce, Some ct)
     | ce -> (ce, None) ]
   in
-  let def pc () =
+  let cdef pc () =
     horiz_vertic
       (fun () ->
          pprintf pc "%s%p%s%s%p%p ="
@@ -1955,7 +1955,7 @@ value class_decl pc ci =
          in
          pprintf pc "%p%p =" (plistl patt patt 4) pl class_type_opt ct_opt)
   in
-  pprintf pc "@[%p@;%p@]" def () class_expr ce
+  pprintf pc "@[%p@;%p@]" cdef () class_expr ce
 ;
 
 value variant_decl pc pv =

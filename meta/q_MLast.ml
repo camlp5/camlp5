@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.35 2012/01/09 14:22:22 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.36 2012/03/09 12:43:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -313,6 +313,8 @@ value warning_deprecated_since_6_00 loc =
   }
   else ()
 ;
+
+(* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr signature
@@ -1426,7 +1428,7 @@ EXTEND
     [ [ "to" -> Qast.Bool True
       | "downto" -> Qast.Bool False ] ]
   ;
-  (* Antiquotations for local entries *)
+  (* -- end copy from pa_r to q_MLast -- *)
   a_ti:
     [ [ "~"; a = ANTIQUOT -> Qast.VaAnt "~" loc a ] ]
   ;

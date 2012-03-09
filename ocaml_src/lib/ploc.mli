@@ -61,6 +61,8 @@ val bol_pos_last : t -> int;;
        of the last position. *)
 val comment : t -> string;;
    (** [Ploc.comment loc] returns the comment before the location. *)
+val comment_last : t -> string;;
+   (** [Ploc.comment loc] returns the last comment of the location. *)
 
 (* combining locations *)
 

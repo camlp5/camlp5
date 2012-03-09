@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.12 2012/03/09 11:03:05 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.13 2012/03/09 12:43:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -46,12 +46,12 @@ IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_bp_ep l bp ep =
     {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
      line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = bp;
-     ep = ep; comm = l.comm}
+     ep = ep; comm = l.comm; ecomm = l.ecomm}
   ;
   value with_comm l comm =
     {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
      line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = l.bp;
-     ep = l.ep; comm = comm}
+     ep = l.ep; comm = comm; ecomm = l.ecomm}
   ;
 END;
 

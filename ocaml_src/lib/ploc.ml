@@ -12,23 +12,24 @@ type t =
     bol_pos_last : int;
     bp : int;
     ep : int;
-    comm : string }
+    comm : string;
+    ecomm : string }
 ;;
 
 let make_loc fname line_nb bol_pos (bp, ep) comm =
   {fname = fname; line_nb = line_nb; bol_pos = bol_pos;
    line_nb_last = line_nb; bol_pos_last = bol_pos; bp = bp; ep = ep;
-   comm = comm}
+   comm = comm; ecomm = ""}
 ;;
 
 let make_unlined (bp, ep) =
   {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
-   bp = bp; ep = ep; comm = ""}
+   bp = bp; ep = ep; comm = ""; ecomm = ""}
 ;;
 
 let dummy =
   {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
-   bp = 0; ep = 0; comm = ""}
+   bp = 0; ep = 0; comm = ""; ecomm = ""}
 ;;
 
 let file_name loc = loc.fname;;
@@ -39,16 +40,17 @@ let bol_pos loc = loc.bol_pos;;
 let line_nb_last loc = loc.line_nb_last;;
 let bol_pos_last loc = loc.bol_pos_last;;
 let comment loc = loc.comm;;
+let comment_last loc = loc.ecomm;;
 
 let with_bp_ep l bp ep =
   {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
    line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = bp;
-   ep = ep; comm = l.comm}
+   ep = ep; comm = l.comm; ecomm = l.ecomm}
 ;;
 let with_comm l comm =
   {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
    line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = l.bp;
-   ep = l.ep; comm = comm}
+   ep = l.ep; comm = comm; ecomm = l.ecomm}
 ;;
 
 let encl loc1 loc2 =
@@ -56,12 +58,12 @@ let encl loc1 loc2 =
     if loc1.ep < loc2.ep then
       {fname = loc1.fname; line_nb = loc1.line_nb; bol_pos = loc1.bol_pos;
        line_nb_last = loc2.line_nb_last; bol_pos_last = loc2.bol_pos_last;
-       bp = loc1.bp; ep = loc2.ep; comm = loc1.comm}
+       bp = loc1.bp; ep = loc2.ep; comm = loc1.comm; ecomm = loc2.comm}
     else loc1
   else if loc2.ep < loc1.ep then
     {fname = loc2.fname; line_nb = loc2.line_nb; bol_pos = loc2.bol_pos;
      line_nb_last = loc1.line_nb_last; bol_pos_last = loc1.bol_pos_last;
-     bp = loc2.bp; ep = loc1.ep; comm = loc2.comm}
+     bp = loc2.bp; ep = loc1.ep; comm = loc2.comm; ecomm = loc1.comm}
   else loc2
 ;;
 let shift sh loc = with_bp_ep loc (sh + loc.bp) (sh + loc.ep);;
@@ -207,5 +209,5 @@ let warning_deprecated_since_6_00 name =
 let make line_nb bol_pos (bp, ep) =
   let _ = warning_deprecated_since_6_00 "Ploc.make" in
   {fname = ""; line_nb = line_nb; bol_pos = bol_pos; line_nb_last = line_nb;
-   bol_pos_last = bol_pos; bp = bp; ep = ep; comm = ""}
+   bol_pos_last = bol_pos; bp = bp; ep = ep; comm = ""; ecomm = ""}
 ;;
