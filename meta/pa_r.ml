@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.40 2012/03/09 14:01:54 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.41 2012/03/09 15:22:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -954,7 +954,7 @@ EXTEND
   expr: [[]];
 END;
 
-IFDEF JOCAML THEN
+IFDEF JOCAML OR COMPATIBLE_WITH_OLD_OCAML THEN
   EXTEND
     GLOBAL: str_item expr;
     (* -- cut 1 end -- *)
