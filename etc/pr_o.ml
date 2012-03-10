@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.60 2012/03/09 14:01:54 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.61 2012/03/10 00:19:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1712,12 +1712,17 @@ value joinpattern pc (loc, (_, ji), op) =
   pprintf pc "%s (%p)" (Pcaml.unvala ji) (option patt) (Pcaml.unvala op)
 ;
 value joinclause pc (loc, jpl, e) =
-  pprintf pc "%p = %p" (hlistl (amp_after joinpattern) joinpattern)
-    (Pcaml.unvala jpl) expr e
+   pprintf pc "@[%p =@]@;%p" (hlistl (amp_after joinpattern) joinpattern)
+     (Pcaml.unvala jpl) expr e
 ;
 value joinautomaton pc jc =
-  pprintf pc "%p" (hlist2 joinclause (or_before joinclause))
-    (Pcaml.unvala jc.MLast.jcVal)
+  horiz_vertic
+    (fun () ->
+       pprintf pc "%p" (hlist2 joinclause (or_before joinclause))
+         (Pcaml.unvala jc.MLast.jcVal))
+    (fun () ->
+       pprintf pc "%p" (vlist2 joinclause (or_before joinclause))
+         (Pcaml.unvala jc.MLast.jcVal))
 ;
 
 EXTEND_PRINTER
@@ -1728,8 +1733,14 @@ EXTEND_PRINTER
   ;
   pr_expr: LEVEL "expr1"
     [ [ <:expr< def $list:jcl$ in $e$ >> ->
-          pprintf pc "def %p in %p"
-            (hlist2 joinautomaton (and_before joinautomaton)) jcl expr e ] ]
+          horiz_vertic
+            (fun () ->
+               pprintf pc "def %p in %p"
+                 (hlist2 joinautomaton (and_before joinautomaton)) jcl expr e)
+            (fun () ->
+               pprintf pc "@[<a>def %p@ in@]@ %p"
+                 (vlist2 joinautomaton (and_before joinautomaton)) jcl
+                 expr e) ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< reply $opt:eo$ to $s$ >> ->
@@ -1741,7 +1752,9 @@ EXTEND_PRINTER
   ;
   pr_expr: LEVEL "and"
     [ [ <:expr< $e1$ & $e2$ >> ->
-          pprintf pc "%p & %p" next e1 curr e2 ] ]
+          horiz_vertic
+            (fun () -> pprintf pc "%p & %p" next e1 curr e2)
+            (fun () -> pprintf pc "%p &@ %p" next e1 curr e2) ] ]
   ;
 END;
 
