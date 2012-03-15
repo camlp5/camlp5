@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: stdpp.mli,v 6.4 2012/03/03 09:06:39 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 6.5 2012/03/15 07:05:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (** Module deprecated since Camlp5 version 5.00. Use now module Ploc.
@@ -7,6 +7,10 @@
 
 type location = Ploc.t;
 
+(*
+exception Exc_located of location and exn;
+   Exception removed: replace it with [Ploc.Exc] in your programs.
+*)
 value raise_with_loc : location -> exn -> 'a;
    (** Use now [Ploc.raise] *)
 

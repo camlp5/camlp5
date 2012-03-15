@@ -7,6 +7,10 @@
 
 type location = Ploc.t;;
 
+(*
+exception Exc_located of location and exn;
+   Exception removed: replace it with [Ploc.Exc] in your programs.
+*)
 val raise_with_loc : location -> exn -> 'a;;
    (** Use now [Ploc.raise] *)
 
