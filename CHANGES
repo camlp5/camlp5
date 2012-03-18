@@ -1,6 +1,8 @@
 Camlp5 Version 6.06:
 --------------------
 
+* [18 Mar 12] Fixed bug in pr_o: [(let module M = ... in x); y] was
+  displayed without parentheses.
 * [14 Mar 12] Added compatibility with OCaml 3.12.2.
 * [09 Mar 12] Added compatibility with (incoming) OCaml 4.00.0.
 * [02 Mar 12] Added compatibility with JoCaml 3.12.0 and 3.12.1.

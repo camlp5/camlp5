@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 6.61 2012/03/10 00:19:48 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 6.62 2012/03/18 09:00:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1050,8 +1050,12 @@ EXTEND_PRINTER
 *)
                   e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
-          pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
-            curr e
+          if pc.dang = ";" then
+            pprintf pc "(@[<a>let module %s =@;%p@ in@]@ %p)" s module_expr me
+              curr e
+          else
+            pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
+              curr e
       | <:expr:< while $e1$ do { $list:el$ } >> ->
           pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
             (hvlistl (semi_after expr) curr) el
