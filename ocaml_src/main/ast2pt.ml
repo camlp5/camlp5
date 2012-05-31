@@ -88,11 +88,13 @@ let mklazy loc e =
   | None ->
       let ghpat = mkpat loc in
       let ghexp = mkexp loc in
-      let void_pat = ghpat (ocaml_ppat_construct (Lident "()") None false) in
+      let void_pat =
+        ghpat (ocaml_ppat_construct (Lident "()") (mkloc loc) None false)
+      in
       let f = ghexp (ocaml_pexp_function "" None [void_pat, e]) in
       let delayed = Ldot (Lident "Lazy", "Delayed") in
-      let df = ghexp (Pexp_construct (delayed, Some f, false)) in
-      let r = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "ref"))) in
+      let df = ghexp (ocaml_pexp_construct delayed (Some f) false) in
+      let r = ghexp (ocaml_pexp_ident (Ldot (Lident "Pervasives", "ref"))) in
       ghexp (ocaml_pexp_apply r ["", df])
 ;;
 
@@ -252,7 +254,7 @@ let rec ctyp =
     TyAcc (loc, _, _) as f ->
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
-      else mktyp loc (Ptyp_constr (li, []))
+      else mktyp loc (ocaml_ptyp_constr li [])
   | TyAli (loc, t1, t2) ->
       let (t, i) =
         match t1, t2 with
@@ -266,7 +268,7 @@ let rec ctyp =
       let (f, al) = ctyp_fa [] f in
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li (List.map ctyp al) [])
-      else mktyp loc (Ptyp_constr (li, List.map ctyp al))
+      else mktyp loc (ocaml_ptyp_constr li (List.map ctyp al))
   | TyArr (loc, TyLab (loc1, lab, t1), t2) ->
       mktyp loc (ocaml_ptyp_arrow (uv lab) (ctyp t1) (ctyp t2))
   | TyArr (loc, TyOlb (loc1, lab, t1), t2) ->
@@ -279,7 +281,7 @@ let rec ctyp =
   | TyCls (loc, id) ->
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
-  | TyLid (loc, s) -> mktyp loc (Ptyp_constr (Lident (uv s), []))
+  | TyLid (loc, s) -> mktyp loc (ocaml_ptyp_constr (Lident (uv s)) [])
   | TyMan (loc, _, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
   | TyPck (loc, mt) ->
@@ -299,7 +301,7 @@ let rec ctyp =
   | TyRec (loc, _) -> error loc "record type not allowed here"
   | TySum (loc, _) -> error loc "sum type not allowed here"
   | TyTup (loc, tl) -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
-  | TyUid (loc, s) -> mktyp loc (Ptyp_constr (Lident (uv s), []))
+  | TyUid (loc, s) -> mktyp loc (ocaml_ptyp_constr (Lident (uv s)) [])
   | TyVrn (loc, catl, ool) ->
       let catl =
         List.map
@@ -366,7 +368,8 @@ and package_of_module_type loc mt =
         mt, with_con
     | _ -> mt, []
   in
-  let li = module_type_long_id mt in li, with_con
+  let li = module_type_long_id mt in
+  ocaml_package_type li with_con
 ;;
 
 let variance_of_var =
@@ -433,14 +436,15 @@ let type_decl tl priv cl =
       let m =
         match t with
           MLast.TyQuo (_, s) ->
-            if List.exists (fun (t, _) -> Some s = uv t) tl then Some (ctyp t)
+            if List.exists (fun (t, _) -> Some s = uv t) tl then
+              Some (ctyp t)
             else None
         | _ -> Some (ctyp t)
       in
       mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m
 ;;
 
-let mkvalue_desc t p = {pval_type = ctyp t; pval_prim = p};;
+let mkvalue_desc t p = ocaml_value_description (ctyp t) p;;
 
 let option f =
   function
@@ -503,12 +507,13 @@ let type_decl_of_with_type loc tpl pf ct =
 let mkwithc =
   function
     WcMod (loc, id, m) ->
-      long_id_of_string_list loc (uv id), Pwith_module (module_expr_long_id m)
+      long_id_of_string_list loc (uv id),
+      ocaml_pwith_module (mkloc loc) (module_expr_long_id m)
   | WcMos (loc, id, m) ->
       begin match ocaml_pwith_modsubst with
         Some pwith_modsubst ->
           long_id_of_string_list loc (uv id),
-          pwith_modsubst (module_expr_long_id m)
+          pwith_modsubst (mkloc loc) (module_expr_long_id m)
       | None -> error loc "no with module := in this ocaml version"
       end
   | WcTyp (loc, id, tpl, pf, ct) ->
@@ -567,10 +572,11 @@ let rec patt =
     PaAcc (loc, p1, p2) ->
       let p =
         match patt_long_id [] p1 with
-          MLast.PaUid (_, i), il ->
+          MLast.PaUid (iloc, i), il ->
             begin match p2 with
               MLast.PaUid (_, s) ->
-                ocaml_ppat_construct (mkli (conv_con s) (i :: il)) None
+                ocaml_ppat_construct (mkli (conv_con s) (i :: il))
+                  (mkloc iloc) None
                   (not !(Prtools.no_constructors_arity))
             | _ -> error (loc_of_patt p2) "bad access pattern"
             end
@@ -578,13 +584,13 @@ let rec patt =
       in
       mkpat loc p
   | PaAli (loc, p1, p2) ->
-      let (p, i) =
+      let (p, i, iloc) =
         match p1, p2 with
-          p, MLast.PaLid (_, s) -> p, s
-        | MLast.PaLid (_, s), p -> p, s
+          p, MLast.PaLid (loc, s) -> p, s, loc
+        | MLast.PaLid (loc, s), p -> p, s, loc
         | _ -> error loc "incorrect alias pattern"
       in
-      mkpat loc (Ppat_alias (patt p, i))
+      mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
   | PaAnt (_, p) -> patt p
   | PaAny loc -> mkpat loc Ppat_any
   | PaApp (loc, _, _) as f ->
@@ -592,17 +598,17 @@ let rec patt =
       let al = List.map patt al in
       let p = (patt f).ppat_desc in
       begin match ocaml_ppat_construct_args p with
-        Some (li, None, _) ->
+        Some (li, li_loc, None, _) ->
           if !(Prtools.no_constructors_arity) then
             let a =
               match al with
                 [a] -> a
               | _ -> mkpat loc (Ppat_tuple al)
             in
-            mkpat loc (ocaml_ppat_construct li (Some a) false)
+            mkpat loc (ocaml_ppat_construct li li_loc (Some a) false)
           else
             let a = mkpat loc (Ppat_tuple al) in
-            mkpat loc (ocaml_ppat_construct li (Some a) true)
+            mkpat loc (ocaml_ppat_construct li li_loc (Some a) true)
       | Some _ | None ->
           match ocaml_ppat_variant with
             Some (ppat_variant_pat, ppat_variant) ->
@@ -639,7 +645,7 @@ let rec patt =
         Some ppat_lazy -> mkpat loc (ppat_lazy (patt p))
       | None -> error loc "lazy patterns not in this version"
       end
-  | PaLid (loc, s) -> mkpat loc (Ppat_var (uv s))
+  | PaLid (loc, s) -> mkpat loc (ocaml_ppat_var (mkloc loc) (uv s))
   | PaNty (loc, s) -> error loc "new type not allowed here"
   | PaOlb (loc, _, _) -> error loc "labeled pattern not allowed here"
   | PaOrp (loc, p1, p2) -> mkpat loc (Ppat_or (patt p1, patt p2))
@@ -668,16 +674,18 @@ let rec patt =
   | PaTyp (loc, sl) ->
       begin match ocaml_ppat_type with
         Some ppat_type ->
-          mkpat loc (ppat_type (long_id_of_string_list loc (uv sl)))
+          mkpat loc
+            (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
       | None -> error loc "no #type in this ocaml version"
       end
   | PaUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
-      mkpat loc (ocaml_ppat_construct (Lident (conv_con (uv s))) None ca)
+      mkpat loc
+        (ocaml_ppat_construct (Lident (conv_con (uv s))) (mkloc loc) None ca)
   | PaUnp (loc, s, mto) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->
-          let p = mkpat loc (ppat_unpack (uv s)) in
+          let p = mkpat loc (ppat_unpack (mkloc loc) (uv s)) in
           begin match mto with
             Some mt ->
               let pt = package_of_module_type loc mt in
@@ -692,7 +700,8 @@ let rec patt =
       | None -> error loc "no variant in this ocaml version"
       end
   | PaXtr (loc, _, _) -> error loc "bad ast PaXtr"
-and mklabpat (lab, p) = patt_label_long_id lab, patt p;;
+and mklabpat (lab, p) =
+  patt_label_long_id lab, mkloc (loc_of_patt lab), patt p;;
 
 let rec expr_fa al =
   function
@@ -917,15 +926,16 @@ let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
       mkexp loc
-        (ocaml_pexp_apply (mkexp loc (Pexp_ident (Lident "!"))) ["", expr x])
+        (ocaml_pexp_apply
+           (mkexp loc (ocaml_pexp_ident (Lident "!"))) ["", expr x])
   | ExAcc (loc, _, _) as e ->
       let (e, l) =
         match sep_expr_acc [] e with
           (loc, ml, MLast.ExUid (_, s)) :: l ->
             let ca = not !(Prtools.no_constructors_arity) in
-            mkexp loc (Pexp_construct (mkli s ml, None, ca)), l
+            mkexp loc (ocaml_pexp_construct (mkli s ml) None ca), l
         | (loc, ml, MLast.ExLid (_, s)) :: l ->
-            mkexp loc (Pexp_ident (mkli s ml)), l
+            mkexp loc (ocaml_pexp_ident (mkli s ml)), l
         | (_, [], e) :: l -> expr e, l
         | _ -> error loc "bad ast"
       in
@@ -935,7 +945,7 @@ let rec expr =
              match e2 with
                MLast.ExLid (_, s) ->
                  let loc = Ploc.encl loc1 loc2 in
-                 loc, mkexp loc (Pexp_field (e1, mkli (conv_lab s) ml))
+                 loc, mkexp loc (ocaml_pexp_field e1 (mkli (conv_lab s) ml))
              | _ -> error (loc_of_expr e2) "lowercase identifier expected")
           (loc, e) l
       in
@@ -999,7 +1009,7 @@ let rec expr =
       | _ ->
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (Pexp_ident (array_function "Array" "get")))
+               (mkexp loc (ocaml_pexp_ident (array_function "Array" "get")))
                ["", expr e1; "", expr e2])
       end
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr (uv el)))
@@ -1007,7 +1017,7 @@ let rec expr =
       begin match e with
         ExAcc (loc, x, MLast.ExLid (_, "val")) ->
           mkexp loc
-            (ocaml_pexp_apply (mkexp loc (Pexp_ident (Lident ":=")))
+            (ocaml_pexp_apply (mkexp loc (ocaml_pexp_ident (Lident ":=")))
                ["", expr x; "", expr v])
       | ExAcc (loc, _, _) ->
           begin match (expr e).pexp_desc with
@@ -1017,14 +1027,14 @@ let rec expr =
       | ExAre (_, e1, e2) ->
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (Pexp_ident (array_function "Array" "set")))
+               (mkexp loc (ocaml_pexp_ident (array_function "Array" "set")))
                ["", expr e1; "", expr e2; "", expr v])
       | ExBae (loc, e, el) -> expr (bigarray_set loc e (uv el) v)
-      | MLast.ExLid (_, lab) -> mkexp loc (Pexp_setinstvar (lab, expr v))
+      | ExLid (_, lab) -> mkexp loc (ocaml_pexp_setinstvar lab (expr v))
       | ExSte (_, e1, e2) ->
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (Pexp_ident (array_function "String" "set")))
+               (mkexp loc (ocaml_pexp_ident (array_function "String" "set")))
                ["", expr e1; "", expr e2; "", expr v])
       | _ -> error loc "bad left part of assignment"
       end
@@ -1041,7 +1051,7 @@ let rec expr =
   | ExFor (loc, i, e1, e2, df, el) ->
       let e3 = MLast.ExSeq (loc, uv el) in
       let df = if uv df then Upto else Downto in
-      mkexp loc (Pexp_for (uv i, expr e1, expr e2, df, expr e3))
+      mkexp loc (ocaml_pexp_for (uv i) (expr e1) (expr e2) df (expr e3))
   | ExFun (loc, pel) ->
       begin match uv pel with
         [PaLab (ploc, lppo), w, e] ->
@@ -1100,7 +1110,7 @@ let rec expr =
   | ExLaz (loc, e) -> mklazy loc (expr e)
   | ExLet (loc, rf, pel, e) ->
       mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe (uv pel), expr e))
-  | ExLid (loc, s) -> mkexp loc (Pexp_ident (Lident (uv s)))
+  | ExLid (loc, s) -> mkexp loc (ocaml_pexp_ident (Lident (uv s)))
   | ExLmd (loc, i, me, e) ->
       begin match ocaml_pexp_letmodule with
         Some pexp_letmodule ->
@@ -1116,7 +1126,8 @@ let rec expr =
       in
       mkexp loc (Pexp_match (expr e, List.map mkpwe pel))
   | ExNew (loc, id) ->
-      mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
+      mkexp loc
+        (ocaml_pexp_new (mkloc loc) (long_id_of_string_list loc (uv id)))
   | ExObj (loc, po, cfl) ->
       begin match ocaml_pexp_object with
         Some pexp_object ->
@@ -1126,11 +1137,12 @@ let rec expr =
             | None -> PaAny loc
           in
           let cil = List.fold_right class_str_item (uv cfl) [] in
-          mkexp loc (pexp_object (patt p, cil))
+          mkexp loc (pexp_object (ocaml_class_structure (patt p) cil))
       | None -> error loc "no object in this ocaml version"
       end
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here 2"
-  | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
+  | ExOvr (loc, iel) ->
+      mkexp loc (ocaml_pexp_override (List.map mkideexp (uv iel)))
   | ExPar (loc, e1, e2) ->
       begin match jocaml_pexp_par with
         Some pexp_par -> mkexp loc (pexp_par (expr e1) (expr e2))
@@ -1190,7 +1202,8 @@ let rec expr =
           let e =
             match uv eo with
               Some e -> expr e
-            | None -> mkexp loc (Pexp_construct (Lident "()", None, false))
+            | None ->
+                mkexp loc (ocaml_pexp_construct (Lident "()") None false)
           in
           mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, uv s))
       | None -> error loc "no 'reply' in this ocaml version"
@@ -1214,7 +1227,7 @@ let rec expr =
   | ExSte (loc, e1, e2) ->
       mkexp loc
         (ocaml_pexp_apply
-           (mkexp loc (Pexp_ident (array_function "String" "get")))
+           (mkexp loc (ocaml_pexp_ident (array_function "String" "get")))
            ["", expr e1; "", expr e2])
   | ExStr (loc, s) ->
       mkexp loc
@@ -1226,7 +1239,7 @@ let rec expr =
       mkexp loc (Pexp_constraint (expr e, Some (ctyp t), None))
   | ExUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
-      mkexp loc (Pexp_construct (Lident (conv_con (uv s)), None, ca))
+      mkexp loc (ocaml_pexp_construct (Lident (conv_con (uv s))) None ca)
   | ExVrn (loc, s) ->
       begin match ocaml_pexp_variant with
         Some (_, pexp_variant) -> mkexp loc (pexp_variant (uv s, None))
@@ -1275,7 +1288,9 @@ and mkjoinclause jc =
                   match uv jp with
                     Some p -> patt p
                   | None ->
-                      mkpat loc (Ppat_construct (Lident "()", None, false))
+                      mkpat loc
+                        (ocaml_ppat_construct (Lident "()") (mkloc loc) None
+                           false)
                 in
                 mkloc locp, (mkloc loc, uv s), p)
              (uv jpl)
@@ -1313,7 +1328,8 @@ and when_expr e =
   function
     Some w -> mkexp (loc_of_expr e) (Pexp_when (expr w, expr e))
   | None -> expr e
-and mklabexp (lab, e) = patt_label_long_id lab, expr e
+and mklabexp (lab, e) =
+  patt_label_long_id lab, mkloc (loc_of_patt lab), expr e
 and mkideexp (ide, e) = ide, expr e
 and mktype_decl td =
   let priv = if uv td.tdPrv then Private else Public in
@@ -1327,11 +1343,15 @@ and mktype_decl td =
   uv (snd (uv td.tdNam)), type_decl (uv td.tdPrm) priv cl td.tdDef
 and module_type =
   function
-    MtAcc (loc, _, _) as f -> mkmty loc (Pmty_ident (module_type_long_id f))
-  | MtApp (loc, _, _) as f -> mkmty loc (Pmty_ident (module_type_long_id f))
+    MtAcc (loc, _, _) as f ->
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
+  | MtApp (loc, _, _) as f ->
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun (loc, n, nt, mt) ->
-      mkmty loc (Pmty_functor (uv n, module_type nt, module_type mt))
-  | MtLid (loc, s) -> mkmty loc (Pmty_ident (Lident (uv s)))
+      mkmty loc
+        (ocaml_pmty_functor (mkloc loc) (uv n) (module_type nt)
+           (module_type mt))
+  | MtLid (loc, s) -> mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtQuo (loc, _) -> error loc "abstract module type not allowed here"
   | MtSig (loc, sl) ->
       mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
@@ -1340,9 +1360,9 @@ and module_type =
         Some pmty_typeof -> mkmty loc (pmty_typeof (module_expr me))
       | None -> error loc "no 'module type of ..' in this ocaml version"
       end
-  | MtUid (loc, s) -> mkmty loc (Pmty_ident (Lident (uv s)))
+  | MtUid (loc, s) -> mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtWit (loc, mt, wcl) ->
-      mkmty loc (Pmty_with (module_type mt, List.map mkwithc (uv wcl)))
+      mkmty loc (ocaml_pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | MtXtr (loc, _, _) -> error loc "bad ast MtXtr"
 and sig_item s l =
   match s with
@@ -1359,15 +1379,15 @@ and sig_item s l =
   | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
   | SgExc (loc, n, tl) ->
-      mksig loc (Psig_exception (uv n, List.map ctyp (uv tl))) :: l
+      mksig loc (ocaml_psig_exception (uv n) (List.map ctyp (uv tl))) :: l
   | SgExt (loc, n, t, p) ->
-      mksig loc (Psig_value (uv n, mkvalue_desc t (uv p))) :: l
+      mksig loc (ocaml_psig_value (uv n) (mkvalue_desc t (uv p))) :: l
   | SgInc (loc, mt) -> mksig loc (Psig_include (module_type mt)) :: l
   | SgMod (loc, rf, ntl) ->
       if not (uv rf) then
         List.fold_right
           (fun (n, mt) l ->
-             mksig loc (Psig_module (uv n, module_type mt)) :: l)
+             mksig loc (ocaml_psig_module (uv n) (module_type mt)) :: l)
           (uv ntl) l
       else
         begin match ocaml_psig_recmodule with
@@ -1384,28 +1404,30 @@ and sig_item s l =
           MtQuo (_, _) -> Pmodtype_abstract
         | _ -> Pmodtype_manifest (module_type mt)
       in
-      mksig loc (Psig_modtype (uv n, si)) :: l
+      mksig loc (ocaml_psig_modtype (uv n) si) :: l
   | SgOpn (loc, id) ->
-      mksig loc (Psig_open (long_id_of_string_list loc (uv id))) :: l
+      mksig loc (ocaml_psig_open (long_id_of_string_list loc (uv id))) :: l
   | SgTyp (loc, tdl) ->
-      mksig loc (Psig_type (List.map mktype_decl (uv tdl))) :: l
+      mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l
   | SgUse (loc, fn, sl) ->
       Ploc.call_with glob_fname (uv fn)
         (fun () -> List.fold_right (fun (si, _) -> sig_item si) (uv sl) l) ()
-  | SgVal (loc, n, t) -> mksig loc (Psig_value (uv n, mkvalue_desc t [])) :: l
+  | SgVal (loc, n, t) ->
+      mksig loc (ocaml_psig_value (uv n) (mkvalue_desc t [])) :: l
   | SgXtr (loc, _, _) -> error loc "bad ast SgXtr"
 and module_expr =
   function
-    MeAcc (loc, _, _) as f -> mkmod loc (Pmod_ident (module_expr_long_id f))
+    MeAcc (loc, _, _) as f ->
+      mkmod loc (ocaml_pmod_ident (module_expr_long_id f))
   | MeApp (loc, me1, me2) ->
       mkmod loc (Pmod_apply (module_expr me1, module_expr me2))
   | MeFun (loc, n, mt, me) ->
-      mkmod loc (Pmod_functor (uv n, module_type mt, module_expr me))
+      mkmod loc (ocaml_pmod_functor (uv n) (module_type mt) (module_expr me))
   | MeStr (loc, sl) ->
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc (loc, me, mt) ->
       mkmod loc (Pmod_constraint (module_expr me, module_type mt))
-  | MeUid (loc, s) -> mkmod loc (Pmod_ident (Lident (uv s)))
+  | MeUid (loc, s) -> mkmod loc (ocaml_pmod_ident (Lident (uv s)))
   | MeUnp (loc, e, mto) ->
       begin match ocaml_pmod_unpack with
         Some (Left pmod_unpack) ->
@@ -1452,7 +1474,7 @@ and str_item s l =
   | StExc (loc, n, tl, sl) ->
       let si =
         match uv tl, uv sl with
-          tl, [] -> Pstr_exception (uv n, List.map ctyp tl)
+          tl, [] -> ocaml_pstr_exception (uv n) (List.map ctyp tl)
         | [], sl ->
             begin match ocaml_pstr_exn_rebind with
               Some pstr_exn_rebind ->
@@ -1464,7 +1486,7 @@ and str_item s l =
       mkstr loc si :: l
   | StExp (loc, e) -> mkstr loc (Pstr_eval (expr e)) :: l
   | StExt (loc, n, t, p) ->
-      mkstr loc (Pstr_primitive (uv n, mkvalue_desc t (uv p))) :: l
+      mkstr loc (ocaml_pstr_primitive (uv n) (mkvalue_desc t (uv p))) :: l
   | StInc (loc, me) ->
       begin match ocaml_pstr_include with
         Some pstr_include -> mkstr loc (pstr_include (module_expr me)) :: l
@@ -1474,7 +1496,7 @@ and str_item s l =
       if not (uv rf) then
         List.fold_right
           (fun (n, me) l ->
-             mkstr loc (Pstr_module (uv n, module_expr me)) :: l)
+             mkstr loc (ocaml_pstr_module (uv n) (module_expr me)) :: l)
           (uv nel) l
       else
         begin match ocaml_pstr_recmodule with
@@ -1495,11 +1517,12 @@ and str_item s l =
             mkstr loc (pstr_recmodule nel) :: l
         | None -> error loc "no recursive module in this ocaml version"
         end
-  | StMty (loc, n, mt) -> mkstr loc (Pstr_modtype (uv n, module_type mt)) :: l
+  | StMty (loc, n, mt) ->
+      mkstr loc (ocaml_pstr_modtype (uv n) (module_type mt)) :: l
   | StOpn (loc, id) ->
-      mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l
+      mkstr loc (ocaml_pstr_open (long_id_of_string_list loc (uv id))) :: l
   | StTyp (loc, tdl) ->
-      mkstr loc (Pstr_type (List.map mktype_decl (uv tdl))) :: l
+      mkstr loc (ocaml_pstr_type (List.map mktype_decl (uv tdl))) :: l
   | StUse (loc, fn, sl) ->
       Ploc.call_with glob_fname (uv fn)
         (fun () -> List.fold_right (fun (si, _) -> str_item si) (uv sl) l) ()
@@ -1570,13 +1593,17 @@ and class_sig_item c l =
   match c with
     CgCtr (loc, t1, t2) ->
       begin match ocaml_pctf_cstr with
-        Some pctf_cstr -> pctf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l
+        Some pctf_cstr ->
+           let loc = mkloc loc in
+           ocaml_class_type_field loc (pctf_cstr (ctyp t1, ctyp t2, loc)) :: l
       | None -> error loc "no class constraint in this ocaml version"
       end
   | CgDcl (loc, cl) -> List.fold_right class_sig_item (uv cl) l
-  | CgInh (loc, ct) -> Pctf_inher (class_type ct) :: l
+  | CgInh (loc, ct) ->
+      ocaml_class_type_field (mkloc loc) (Pctf_inher (class_type ct)) :: l
   | CgMth (loc, pf, s, t) ->
-      Pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc) :: l
+      ocaml_class_type_field (mkloc loc)
+        (Pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) :: l
   | CgVal (loc, b, s, t) ->
       ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc) :: l
   | CgVir (loc, b, s, t) ->
