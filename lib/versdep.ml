@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.26 2012/03/06 19:07:10 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.27 2012/06/01 01:43:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -44,6 +44,26 @@ value ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
      Location.loc_end = loc_at ep lnuml bolpl;
      Location.loc_ghost = bp = 0 && ep = 0}
   END
+;
+
+IFDEF OCAML_VERSION >= OCAML_4_00 THEN
+value loc_none =
+  let loc =
+    {Lexing.pos_fname = "_none_"; pos_lnum = 1; pos_bol = 0; pos_cnum = -1}
+  in
+  {Location.loc_start = loc;
+   Location.loc_end = loc;
+   Location.loc_ghost = True}
+;
+END;
+
+value mkloc loc txt =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN txt
+  ELSE {Location.txt = txt; loc = loc} END
+;
+value mknoloc txt =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN txt
+  ELSE mkloc loc_none txt END
 ;
 
 value ocaml_id_or_li_of_string_list loc sl =
@@ -491,7 +511,9 @@ value ocaml_pmod_unpack =
 
 value ocaml_pcf_cstr =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc)) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
+    Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc))
+  ELSE Some (fun (t1, t2, loc) -> Pcf_constr (t1, t2)) END
 ;
 
 value ocaml_pcf_inher =
@@ -513,7 +535,8 @@ value ocaml_pcf_meth (s, pf, ovf, e, loc) =
   let pf = if pf then Private else Public in
   IFDEF OCAML_VERSION >= OCAML_3_12 THEN
     let ovf = if ovf then Override else Fresh in
-    Pcf_meth (s, pf, ovf, e, loc) 
+    IFDEF OCAML_VERSION < OCAML_4_00 THEN Pcf_meth (s, pf, ovf, e, loc)
+    ELSE Pcf_meth (mkloc loc s, pf, ovf, e) END
   ELSE Pcf_meth (s, pf, e, loc) END
 ;
 
@@ -522,7 +545,8 @@ value ocaml_pcf_val (s, mf, ovf, e, loc) =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN Pcf_val (s, Public, mf, Some e, loc)
   ELSIFDEF OCAML_VERSION >= OCAML_3_12 THEN
     let ovf = if ovf then Override else Fresh in
-    Pcf_val (s, mf, ovf, e, loc)
+    IFDEF OCAML_VERSION < OCAML_4_00 THEN Pcf_val (s, mf, ovf, e, loc)
+    ELSE Pcf_val (mkloc loc s, mf, ovf, e) END
   ELSE Pcf_val (s, mf, e,  loc) END
 ;
 
