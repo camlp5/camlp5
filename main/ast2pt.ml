@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.45 2012/03/09 14:01:54 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.46 2012/06/01 02:56:42 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -16,8 +16,8 @@ let oi =
     if i = String.length ov then i
     else
       match ov.[i] with
-      [ ' ' | '+' -> i
-      | _ -> loop (i + 1) ]
+      [ ' ' | '+' → i
+      | _ → loop (i + 1) ]
 in
 let ov = String.sub ov 0 oi in
 if ov <> Pconfig.ocaml_version then do {
@@ -43,13 +43,11 @@ value get_tag x =
 value error loc str = Ploc.raise loc (Failure str);
 
 value char_of_char_token loc s =
-  try Plexing.eval_char s with
-  [ Failure _ as exn -> Ploc.raise loc exn ]
+  try Plexing.eval_char s with [ Failure _ as exn → Ploc.raise loc exn ]
 ;
 
 value string_of_string_token loc s =
-  try Plexing.eval_string loc s with
-  [ Failure _ as exn -> Ploc.raise loc exn ]
+  try Plexing.eval_string loc s with [ Failure _ as exn → Ploc.raise loc exn ]
 ;
 
 value glob_fname = ref "";
@@ -74,86 +72,84 @@ value mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};
 value mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};
 value mkcty loc d =
   match ocaml_class_type with
-  [ Some class_type -> class_type d (mkloc loc)
-  | None -> error loc "no class type in this ocaml version" ]
+  [ Some class_type → class_type d (mkloc loc)
+  | None → error loc "no class type in this ocaml version" ]
 ;
 value mkpcl loc d =
   match ocaml_class_expr with
-  [ Some class_expr -> class_expr d (mkloc loc)
-  | None -> error loc "no class expr in this ocaml version" ]
+  [ Some class_expr → class_expr d (mkloc loc)
+  | None → error loc "no class expr in this ocaml version" ]
 ;
 value mklazy loc e =
   match ocaml_pexp_lazy with
-  [ Some pexp_lazy -> mkexp loc (pexp_lazy e)
-  | None -> do {
+  [ Some pexp_lazy → mkexp loc (pexp_lazy e)
+  | None →
       let ghpat = mkpat loc in
       let ghexp = mkexp loc in
-      let void_pat = ghpat (ocaml_ppat_construct (Lident "()") None False) in
+      let void_pat =
+        ghpat (ocaml_ppat_construct (Lident "()") (mkloc loc) None False)
+      in
       let f = ghexp (ocaml_pexp_function "" None [(void_pat, e)]) in
       let delayed = Ldot (Lident "Lazy") "Delayed" in
-      let df = ghexp (Pexp_construct delayed (Some f) False) in
-      let r = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "ref")) in
-      ghexp (ocaml_pexp_apply r [("", df)])
-    } ]
+      let df = ghexp (ocaml_pexp_construct delayed (Some f) False) in
+      let r = ghexp (ocaml_pexp_ident (Ldot (Lident "Pervasives") "ref")) in
+      ghexp (ocaml_pexp_apply r [("", df)]) ]
 ;
 
-value strip_char c s = do {
-  match try Some (String.index s c) with [ Not_found -> None ] with
-  [ Some _ ->
+value strip_char c s =
+  match try Some (String.index s c) with [ Not_found → None ] with
+  [ Some _ →
       let s = String.copy s in
       loop 0 0 where rec loop i j =
         if i = String.length s then String.sub s 0 j
         else if s.[i] = '_' then loop (i + 1) j
-        else do {
-          s.[j] := s.[i];
-          loop (i + 1) (j + 1)
-        }
-  | None -> s ]
-};
+        else do { s.[j] := s.[i]; loop (i + 1) (j + 1) }
+  | None → s ]
+;
 
 value mkintconst loc s c =
   let s = strip_char '_' s in
   match c with
-  [ "" ->
-      match try Some (int_of_string s) with [ Failure _ -> None ] with
-      [ Some i -> Const_int i
-      | None -> error loc "too big integer value" ]
-  | "l" ->
+  [ "" →
+      match try Some (int_of_string s) with [ Failure _ → None ] with
+      [ Some i → Const_int i
+      | None → error loc "too big integer value" ]
+  | "l" →
       match ocaml_const_int32 with
-      [ Some const_int32 ->
-          match try Some (const_int32 s) with [ Failure _ -> None ] with
-          [ Some i32 -> i32
-          | None -> error loc "too big 32 bits integer value" ]
-      | None -> error loc "no int32 in this ocaml version" ]
-  | "L" ->
+      [ Some const_int32 →
+          match try Some (const_int32 s) with [ Failure _ → None ] with
+          [ Some i32 → i32
+          | None → error loc "too big 32 bits integer value" ]
+      | None → error loc "no int32 in this ocaml version" ]
+  | "L" →
       match ocaml_const_int64 with
-      [ Some const_int64 ->
-          match try Some (const_int64 s) with [ Failure _ -> None ] with
-          [ Some i64 -> i64
-          | None -> error loc "too big 64 bits integer value" ]
-      | None -> error loc "no int64 in this ocaml version" ]
-  | "n" ->
+      [ Some const_int64 →
+          match try Some (const_int64 s) with [ Failure _ → None ] with
+          [ Some i64 → i64
+          | None → error loc "too big 64 bits integer value" ]
+      | None → error loc "no int64 in this ocaml version" ]
+  | "n" →
       match ocaml_const_nativeint with
-      [ Some const_nativeint ->
-          match try Some (const_nativeint s) with [ Failure _ -> None ] with
-          [ Some ni -> ni
-          | None -> error loc "too big native int integer value" ]
-      | None -> error loc "no native int in this ocaml version" ]
-  | _ -> error loc "special int not implemented" ]
+      [ Some const_nativeint →
+          match try Some (const_nativeint s) with [ Failure _ → None ] with
+          [ Some ni → ni
+          | None → error loc "too big native int integer value" ]
+      | None → error loc "no native int in this ocaml version" ]
+  | _ → error loc "special int not implemented" ]
 ;
 
 value conv_con = do {
   let t = Hashtbl.create 73 in
-  List.iter (fun (s, s') -> Hashtbl.add t s s')
+  List.iter (fun (s, s') → Hashtbl.add t s s')
     [("True", "true"); ("False", "false"); ("True_", "True");
      ("False_", "False")];
-  fun s -> try Hashtbl.find t s with [ Not_found -> s ]
+  fun s → try Hashtbl.find t s with [ Not_found → s ]
 };
 
 value conv_lab = do {
   let t = Hashtbl.create 73 in
-  List.iter (fun (s, s') -> Hashtbl.add t s s') [("val", "contents")];
-  fun s -> try Hashtbl.find t s with [ Not_found -> s ]
+  List.iter (fun (s, s') → Hashtbl.add t s s') [("val", "contents")];
+  fun s → try Hashtbl.find t s with [ Not_found → s ]
 };
 
 value array_function str name =
@@ -162,183 +158,183 @@ value array_function str name =
 
 value uv c =
   match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> invalid_arg "Ast2pt.uv" ]
+  [ (<:vala< c >>, "") → c
+  | _ → invalid_arg "Ast2pt.uv" ]
 ;
 
 value mkrf =
   fun
-  [ True -> Recursive
-  | False -> Nonrecursive ]
+  [ True → Recursive
+  | False → Nonrecursive ]
 ;
 
 value mkli s =
-  loop (fun s -> Lident s) where rec loop f =
+  loop (fun s → Lident s) where rec loop f =
     fun
-    [ [i :: il] -> loop (fun s -> Ldot (f i) s) il
-    | [] -> f s ]
+    [ [i :: il] → loop (fun s → Ldot (f i) s) il
+    | [] → f s ]
 ;
 
 value long_id_of_string_list loc sl =
   match List.rev sl with
-  [ [] -> error loc "bad ast"
-  | [s :: sl] -> mkli s (List.rev sl) ]
+  [ [] → error loc "bad ast"
+  | [s :: sl] → mkli s (List.rev sl) ]
 ;
 
 value long_id_class_type loc ct =
   longident ct where rec longident =
     fun
-    [ CtIde loc s -> Lident (uv s)
-    | CtApp loc ct1 ct2 ->
+    [ CtIde loc s → Lident (uv s)
+    | CtApp loc ct1 ct2 →
         let li1 = longident ct1 in
         let li2 = longident ct2 in
         Lapply li1 li2
-    | CtAcc loc ct1 ct2  ->
+    | CtAcc loc ct1 ct2 →
         let li1 = longident ct1 in
         let li2 = longident ct2 in
         loop li1 li2 where rec loop li1 =
           fun
-          [ Lident s -> Ldot li1 s
-          | Lapply li21 li22 -> error loc "long_id_of_class_type bad ast"
-          | Ldot li2 s -> Ldot (loop li1 li2) s ]
-    | _ -> error loc "long_id_of_class_type case not impl" ]
+          [ Lident s → Ldot li1 s
+          | Lapply li21 li22 → error loc "long_id_of_class_type bad ast"
+          | Ldot li2 s → Ldot (loop li1 li2) s ]
+    | _ → error loc "long_id_of_class_type case not impl" ]
 ;
 
 value rec ctyp_fa al =
   fun
-  [ TyApp _ f a -> ctyp_fa [a :: al] f
-  | f -> (f, al) ]
+  [ TyApp _ f a → ctyp_fa [a :: al] f
+  | f → (f, al) ]
 ;
 
 value rec ctyp_long_id =
   fun
-  [ <:ctyp< $m$.$lid:s$ >> ->
+  [ <:ctyp< $m$.$lid:s$ >> →
       let (is_cls, li) = ctyp_long_id m in
       (is_cls, Ldot li s)
-  | <:ctyp< $m$.$uid:s$ >> ->
+  | <:ctyp< $m$.$uid:s$ >> →
       let (is_cls, li) = ctyp_long_id m in
       (is_cls, Ldot li s)
-  | <:ctyp< $m1$ $m2$ >> ->
+  | <:ctyp< $m1$ $m2$ >> →
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
-  | <:ctyp< $uid:s$ >> -> (False, Lident s)
-  | <:ctyp< $lid:s$ >> -> (False, Lident s)
-  | TyCls loc sl -> (True, long_id_of_string_list loc (uv sl))
-  | t -> error (loc_of_ctyp t) "incorrect type" ]
+  | <:ctyp< $uid:s$ >> → (False, Lident s)
+  | <:ctyp< $lid:s$ >> → (False, Lident s)
+  | TyCls loc sl → (True, long_id_of_string_list loc (uv sl))
+  | t → error (loc_of_ctyp t) "incorrect type" ]
 ;
 
 value rec module_type_long_id =
   fun
-  [ <:module_type< $m$ . $uid:s$ >> -> Ldot (module_type_long_id m) s
-  | <:module_type< $m$ . $lid:s$ >> -> Ldot (module_type_long_id m) s
-  | MtApp _ m1 m2 -> Lapply (module_type_long_id m1) (module_type_long_id m2)
-  | <:module_type< $lid:s$ >> -> Lident s
-  | <:module_type< $uid:s$ >> -> Lident s
-  | t -> error (loc_of_module_type t) "bad module type long ident" ]
+  [ <:module_type< $m$ . $uid:s$ >> → Ldot (module_type_long_id m) s
+  | <:module_type< $m$ . $lid:s$ >> → Ldot (module_type_long_id m) s
+  | MtApp _ m1 m2 → Lapply (module_type_long_id m1) (module_type_long_id m2)
+  | <:module_type< $lid:s$ >> → Lident s
+  | <:module_type< $uid:s$ >> → Lident s
+  | t → error (loc_of_module_type t) "bad module type long ident" ]
 ;
 
 value rec ctyp =
   fun
-  [ TyAcc loc _ _ as f ->
+  [ TyAcc loc _ _ as f →
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
-      else mktyp loc (Ptyp_constr li [])
-  | TyAli loc t1 t2 ->
+      else mktyp loc (ocaml_ptyp_constr li [])
+  | TyAli loc t1 t2 →
       let (t, i) =
         match (t1, t2) with
-        [ (t, <:ctyp< '$s$ >>) -> (t, s)
-        | (<:ctyp< '$s$ >>, t) -> (t, s)
-        | _ -> error loc "incorrect alias type" ]
+        [ (t, <:ctyp< '$s$ >>) → (t, s)
+        | (<:ctyp< '$s$ >>, t) → (t, s)
+        | _ → error loc "incorrect alias type" ]
       in
       mktyp loc (Ptyp_alias (ctyp t) i)
-  | TyAny loc -> mktyp loc Ptyp_any
-  | TyApp loc _ _ as f ->
+  | TyAny loc → mktyp loc Ptyp_any
+  | TyApp loc _ _ as f →
       let (f, al) = ctyp_fa [] f in
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li (List.map ctyp al) [])
-      else mktyp loc (Ptyp_constr li (List.map ctyp al))
-  | TyArr loc (TyLab loc1 lab t1) t2 ->
+      else mktyp loc (ocaml_ptyp_constr li (List.map ctyp al))
+  | TyArr loc (TyLab loc1 lab t1) t2 →
       mktyp loc (ocaml_ptyp_arrow (uv lab) (ctyp t1) (ctyp t2))
-  | TyArr loc (TyOlb loc1 lab t1) t2 ->
+  | TyArr loc (TyOlb loc1 lab t1) t2 →
       let t1 =
         let loc = loc1 in
         <:ctyp< option $t1$ >>
       in
       mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
-  | TyArr loc t1 t2 -> mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
-  | TyObj loc fl v -> mktyp loc (Ptyp_object (meth_list loc (uv fl) v))
-  | TyCls loc id ->
+  | TyArr loc t1 t2 → mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
+  | TyObj loc fl v → mktyp loc (Ptyp_object (meth_list loc (uv fl) v))
+  | TyCls loc id →
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
-  | TyLab loc _ _ -> error loc "labeled type not allowed here"
-  | TyLid loc s -> mktyp loc (Ptyp_constr (Lident (uv s)) [])
-  | TyMan loc _ _ _ -> error loc "type manifest not allowed here"
-  | TyOlb loc lab _ -> error loc "labeled type not allowed here"
-  | TyPck loc mt ->
+  | TyLab loc _ _ → error loc "labeled type not allowed here"
+  | TyLid loc s → mktyp loc (ocaml_ptyp_constr (Lident (uv s)) [])
+  | TyMan loc _ _ _ → error loc "type manifest not allowed here"
+  | TyOlb loc lab _ → error loc "labeled type not allowed here"
+  | TyPck loc mt →
       match ocaml_ptyp_package with
-      [ Some ptyp_package ->
+      [ Some ptyp_package →
           let pt = package_of_module_type loc mt in
           mktyp loc (ptyp_package pt)
-      | None -> error loc "no package type in this ocaml version" ]
-  | TyPol loc pl t ->
-       match ocaml_ptyp_poly with
-       [ Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
-       | None -> error loc "no poly types in that ocaml version" ]
-  | TyPot loc pl t -> error loc "'type id . t' not allowed here"
-  | TyQuo loc s -> mktyp loc (Ptyp_var (uv s))
-  | TyRec loc _ -> error loc "record type not allowed here"
-  | TySum loc _ -> error loc "sum type not allowed here"
-  | TyTup loc tl -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
-  | TyUid loc s -> mktyp loc (Ptyp_constr (Lident (uv s)) [])
-  | TyVrn loc catl ool ->
+      | None → error loc "no package type in this ocaml version" ]
+  | TyPol loc pl t →
+      match ocaml_ptyp_poly with
+      [ Some ptyp_poly → mktyp loc (ptyp_poly (uv pl) (ctyp t))
+      | None → error loc "no poly types in that ocaml version" ]
+  | TyPot loc pl t → error loc "'type id . t' not allowed here"
+  | TyQuo loc s → mktyp loc (Ptyp_var (uv s))
+  | TyRec loc _ → error loc "record type not allowed here"
+  | TySum loc _ → error loc "sum type not allowed here"
+  | TyTup loc tl → mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
+  | TyUid loc s → mktyp loc (ocaml_ptyp_constr (Lident (uv s)) [])
+  | TyVrn loc catl ool →
       let catl =
         List.map
           (fun
-           [ PvTag loc c a t -> Left (uv c, uv a, List.map ctyp (uv t))
-           | PvInh loc t -> Right (ctyp t) ])
+           [ PvTag loc c a t → Left (uv c, uv a, List.map ctyp (uv t))
+           | PvInh loc t → Right (ctyp t) ])
           (uv catl)
       in
       let (clos, sl) =
         match ool with
-        [ None -> (True, None)
-        | Some ol ->
+        [ None → (True, None)
+        | Some ol →
             match ol with
-            [ None -> (False, None)
-            | Some sl -> (True, Some (uv sl)) ] ]
+            [ None → (False, None)
+            | Some sl → (True, Some (uv sl)) ] ]
       in
       match ocaml_ptyp_variant catl clos sl with
-      [ Some t -> mktyp loc t
-      | None -> error loc "no variant type or inherit in this ocaml version" ]
-  | TyXtr loc _ _ -> error loc "bad ast TyXtr" ]
+      [ Some t → mktyp loc t
+      | None → error loc "no variant type or inherit in this ocaml version" ]
+  | TyXtr loc _ _ → error loc "bad ast TyXtr" ]
 and meth_list loc fl v =
   match fl with
-  [ [] -> if uv v then [mkfield loc Pfield_var] else []
-  | [(lab, t) :: fl] ->
+  [ [] → if uv v then [mkfield loc Pfield_var] else []
+  | [(lab, t) :: fl] →
       [mkfield loc (Pfield lab (add_polytype t)) :: meth_list loc fl v] ]
 and add_polytype t =
   match ocaml_ptyp_poly with
-  [ Some ptyp_poly ->
+  [ Some ptyp_poly →
       match t with
-      [ MLast.TyPol loc pl t -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
-      | _ ->
+      [ MLast.TyPol loc pl t → mktyp loc (ptyp_poly (uv pl) (ctyp t))
+      | _ →
           let loc = MLast.loc_of_ctyp t in
           mktyp loc (ptyp_poly [] (ctyp t)) ]
-  | None -> ctyp t ]
+  | None → ctyp t ]
 and package_of_module_type loc mt =
   let (mt, with_con) =
     match mt with
-    [ <:module_type< $mt$ with $list:with_con$ >> ->
+    [ <:module_type< $mt$ with $list:with_con$ >> →
         let with_con =
           List.map
             (fun
-             [ WcTyp loc id tpl pf ct -> do {
+             [ WcTyp loc id tpl pf ct → do {
                  let id_or_li =
                    match uv id with
-                   [ [] -> error loc "bad ast"
-                   | sl ->
+                   [ [] → error loc "bad ast"
+                   | sl →
                        match ocaml_id_or_li_of_string_list loc sl with
-                       [ Some li -> li
-                       | None -> error loc "simple identifier expected" ] ]
+                       [ Some li → li
+                       | None → error loc "simple identifier expected" ] ]
                  in
                  if uv tpl <> [] then
                    error loc "no type parameters allowed here"
@@ -346,24 +342,24 @@ and package_of_module_type loc mt =
                  if uv pf then error loc "no 'private' allowed here" else ();
                  (id_or_li, ctyp ct)
                }
-             | WcTys loc id tpl t ->
+             | WcTys loc id tpl t →
                  error loc "package type with 'type :=' no allowed"
-             | WcMod loc _ _ | WcMos loc _ _ ->
+             | WcMod loc _ _ | WcMos loc _ _ →
                  error loc "package type with 'module' no allowed" ])
             with_con
         in
         (mt, with_con)
-    | _ -> (mt, []) ]
+    | _ → (mt, []) ]
   in
   let li = module_type_long_id mt in
-  (li, with_con)
+  ocaml_package_type li with_con
 ;
 
 value variance_of_var =
   fun
-  [ Some False -> (False, True)
-  | Some True -> (True, False)
-  | None -> (False, False) ]
+  [ Some False → (False, True)
+  | Some True → (True, False)
+  | None → (False, False) ]
 ;
 
 value mktype loc tl cl tk pf tm =
@@ -371,8 +367,8 @@ value mktype loc tl cl tk pf tm =
   let variance = List.map variance_of_var var_list in
   let params = List.map uv params in
   match ocaml_type_declaration params cl tk pf tm (mkloc loc) variance with
-  [ Right td -> td
-  | Left msg -> error loc msg ]
+  [ Right td → td
+  | Left msg → error loc msg ]
 ;
 
 value mkmutable m = if m then Mutable else Immutable;
@@ -381,7 +377,7 @@ value mkprivate m = if m then Private else Public;
 value mktrecord ltl priv =
   let ltl =
     List.map
-      (fun (loc, n, m, t) ->
+      (fun (loc, n, m, t) →
          let loc = mkloc loc in
          let m = mkmutable m in
          let t = add_polytype t in
@@ -393,90 +389,90 @@ value mktrecord ltl priv =
 
 value option_map f =
   fun
-  [ Some x -> Some (f x)
-  | None -> None ]
+  [ Some x → Some (f x)
+  | None → None ]
 ;
 
 value mktvariant loc ctl priv =
   let ctl =
     List.map
-      (fun (loc, c, tl, rto) ->
+      (fun (loc, c, tl, rto) →
          (conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
           mkloc loc))
       ctl
   in
   match ocaml_ptype_variant ctl priv with
-  [ Some x -> x
-  | None -> error loc "no generalized data types in this ocaml version" ]
+  [ Some x → x
+  | None → error loc "no generalized data types in this ocaml version" ]
 ;
 
 value type_decl tl priv cl =
   fun
-  [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> ->
+  [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> →
       let priv = if uv pf then Private else Public in
       mktype loc tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
-  | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> ->
+  | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> →
       let priv = if uv pf then Private else Public in
       mktype loc tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
-  | TyRec loc ltl ->
+  | TyRec loc ltl →
       mktype loc tl cl (mktrecord (uv ltl) False) priv None
-  | TySum loc ctl ->
+  | TySum loc ctl →
       mktype loc tl cl (mktvariant loc (uv ctl) False) priv None
-  | t ->
+  | t →
       let m =
         match t with
-        [ <:ctyp< '$s$ >> ->
-            if List.exists (fun (t, _) -> Some s = uv t) tl then Some (ctyp t)
+        [ <:ctyp< '$s$ >> →
+            if List.exists (fun (t, _) → Some s = uv t) tl then Some (ctyp t)
             else None
-        | _ -> Some (ctyp t) ]
+        | _ → Some (ctyp t) ]
       in
       mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m ]
 ;
 
-value mkvalue_desc t p = {pval_type = ctyp t; pval_prim = p};
+value mkvalue_desc t p = ocaml_value_description (ctyp t) p;
 
 value option f =
   fun
-  [ Some x -> Some (f x)
-  | None -> None ]
+  [ Some x → Some (f x)
+  | None → None ]
 ;
 
 value rec same_type_expr ct ce =
   match (ct, ce) with
-  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) -> s1 = s2
-  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) -> s1 = s2
-  | (<:ctyp< $t1$.$t2$ >>, <:expr< $e1$.$e2$ >>) ->
+  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) → s1 = s2
+  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) → s1 = s2
+  | (<:ctyp< $t1$.$t2$ >>, <:expr< $e1$.$e2$ >>) →
       same_type_expr t1 e1 && same_type_expr t2 e2
-  | _ -> False ]
+  | _ → False ]
 ;
 
 value rec common_id loc t e =
   match (t, e) with
-  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 -> Lident s1
-  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) when s1 = s2 -> Lident s1
-  | (<:ctyp< $t1$.$lid:s1$ >>, <:expr< $e1$.$lid:s2$ >>) when s1 = s2 ->
+  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 → Lident s1
+  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) when s1 = s2 → Lident s1
+  | (<:ctyp< $t1$.$lid:s1$ >>, <:expr< $e1$.$lid:s2$ >>) when s1 = s2 →
       Ldot (common_id loc t1 e1) s1
-  | (<:ctyp< $t1$.$uid:s1$ >>, <:expr< $e1$.$uid:s2$ >>) when s1 = s2 ->
+  | (<:ctyp< $t1$.$uid:s1$ >>, <:expr< $e1$.$uid:s2$ >>) when s1 = s2 →
       Ldot (common_id loc t1 e1) s1
-  | _ -> error loc "this expression should repeat the class id inherited" ]
+  | _ → error loc "this expression should repeat the class id inherited" ]
 ;
 
 value rec type_id loc t =
   match t with
-  [ <:ctyp< $lid:s1$ >> -> Lident s1
-  | <:ctyp< $uid:s1$ >> -> Lident s1
-  | <:ctyp< $t1$.$lid:s1$ >> -> Ldot (type_id loc t1) s1
-  | <:ctyp< $t1$.$uid:s1$ >> -> Ldot (type_id loc t1) s1
-  | _ -> error loc "type identifier expected" ]
+  [ <:ctyp< $lid:s1$ >> → Lident s1
+  | <:ctyp< $uid:s1$ >> → Lident s1
+  | <:ctyp< $t1$.$lid:s1$ >> → Ldot (type_id loc t1) s1
+  | <:ctyp< $t1$.$uid:s1$ >> → Ldot (type_id loc t1) s1
+  | _ → error loc "type identifier expected" ]
 ;
 
 value rec module_expr_long_id =
   fun
-  [ <:module_expr< $me1$ ( $me2$ ) >> ->
+  [ <:module_expr< $me1$ ( $me2$ ) >> →
       Lapply (module_expr_long_id me1) (module_expr_long_id me2)
-  | <:module_expr< $m$ . $uid:s$ >> -> Ldot (module_expr_long_id m) s
-  | <:module_expr< $uid:s$ >> -> Lident s
-  | t -> error (loc_of_module_expr t) "bad module expr long ident" ]
+  | <:module_expr< $m$ . $uid:s$ >> → Ldot (module_expr_long_id m) s
+  | <:module_expr< $uid:s$ >> → Lident s
+  | t → error (loc_of_module_expr t) "bad module expr long ident" ]
 ;
 
 value type_decl_of_with_type loc tpl pf ct =
@@ -491,35 +487,35 @@ value type_decl_of_with_type loc tpl pf ct =
 
 value mkwithc =
   fun
-  [ WcMod loc id m ->
+  [ WcMod loc id m →
       (long_id_of_string_list loc (uv id),
-       Pwith_module (module_expr_long_id m))
-  | WcMos loc id m ->
+       ocaml_pwith_module (mkloc loc) (module_expr_long_id m))
+  | WcMos loc id m →
       match ocaml_pwith_modsubst with
-      [ Some pwith_modsubst ->
+      [ Some pwith_modsubst →
           (long_id_of_string_list loc (uv id),
-           pwith_modsubst (module_expr_long_id m))
-      | None -> error loc "no with module := in this ocaml version" ]
-  | WcTyp loc id tpl pf ct ->
+           pwith_modsubst (mkloc loc) (module_expr_long_id m))
+      | None → error loc "no with module := in this ocaml version" ]
+  | WcTyp loc id tpl pf ct →
       match type_decl_of_with_type loc tpl (uv pf) ct with
-      [ Right td -> (long_id_of_string_list loc (uv id), Pwith_type td)
-      | Left msg -> error loc msg ]
-  | WcTys loc id tpl t ->
+      [ Right td → (long_id_of_string_list loc (uv id), Pwith_type td)
+      | Left msg → error loc msg ]
+  | WcTys loc id tpl t →
       match ocaml_pwith_typesubst with
-      [ Some pwith_typesubst ->
+      [ Some pwith_typesubst →
           match type_decl_of_with_type loc tpl False t with
-          [ Right td ->
+          [ Right td →
               let li = long_id_of_string_list loc (uv id) in
               (li, pwith_typesubst td)
-          | Left msg ->
+          | Left msg →
               error loc msg ]
-      | None -> error loc "no with type := in this ocaml version" ] ]
+      | None → error loc "no with type := in this ocaml version" ] ]
 ;
 
 value rec patt_fa al =
   fun
-  [ PaApp _ f a -> patt_fa [a :: al] f
-  | f -> (f, al) ]
+  [ PaApp _ f a → patt_fa [a :: al] f
+  | f → (f, al) ]
 ;
 
 value rec mkrangepat loc c1 c2 =
@@ -533,421 +529,423 @@ value rec mkrangepat loc c1 c2 =
 
 value rec patt_long_id il =
   fun
-  [ <:patt< $p$.$uid:i$ >> -> patt_long_id [i :: il] p
-  | p -> (p, il) ]
+  [ <:patt< $p$.$uid:i$ >> → patt_long_id [i :: il] p
+  | p → (p, il) ]
 ;
 
 value rec patt_label_long_id =
   fun
-  [ <:patt< $m$.$lid:s$ >> -> Ldot (patt_label_long_id m) (conv_lab s)
-  | <:patt< $m$.$uid:s$ >> -> Ldot (patt_label_long_id m) s
-  | <:patt< $uid:s$ >> -> Lident s
-  | <:patt< $lid:s$ >> -> Lident (conv_lab s)
-  | p -> error (loc_of_patt p) "bad label" ]
+  [ <:patt< $m$.$lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
+  | <:patt< $m$.$uid:s$ >> → Ldot (patt_label_long_id m) s
+  | <:patt< $uid:s$ >> → Lident s
+  | <:patt< $lid:s$ >> → Lident (conv_lab s)
+  | p → error (loc_of_patt p) "bad label" ]
 ;
 
-value int_of_string_l loc s = try int_of_string s with e -> Ploc.raise loc e;
+value int_of_string_l loc s = try int_of_string s with e → Ploc.raise loc e;
 
 value rec patt =
   fun
-  [ PaAcc loc p1 p2 ->
+  [ PaAcc loc p1 p2 →
       let p =
         match patt_long_id [] p1 with
-        [ (<:patt< $uid:i$ >>, il) ->
+        [ (<:patt< $uid:i$ >>, il) →
             match p2 with
-            [ <:patt< $uid:s$ >> ->
-                ocaml_ppat_construct (mkli (conv_con s) [i :: il]) None
-                  (not Prtools.no_constructors_arity.val)
-            | _ -> error (loc_of_patt p2) "bad access pattern" ]
-        | _ -> error (loc_of_patt p2) "bad pattern" ]
+            [ <:patt< $uid:s$ >> →
+                ocaml_ppat_construct (mkli (conv_con s) [i :: il])
+                  (mkloc iloc) None (not Prtools.no_constructors_arity.val)
+            | _ → error (loc_of_patt p2) "bad access pattern" ]
+        | _ → error (loc_of_patt p2) "bad pattern" ]
       in
       mkpat loc p
-  | PaAli loc p1 p2 ->
-      let (p, i) =
+  | PaAli loc p1 p2 →
+      let (p, i, iloc) =
         match (p1, p2) with
-        [ (p, <:patt< $lid:s$ >>) -> (p, s)
-        | (<:patt< $lid:s$ >>, p) -> (p, s)
-        | _ -> error loc "incorrect alias pattern" ]
+        [ (p, <:patt< $lid:s$ >>) → (p, s, loc)
+        | (<:patt< $lid:s$ >>, p) → (p, s, loc)
+        | _ → error loc "incorrect alias pattern" ]
       in
-      mkpat loc (Ppat_alias (patt p) i)
-  | PaAnt _ p -> patt p
-  | PaAny loc -> mkpat loc Ppat_any
-  | PaApp loc _ _ as f ->
+      mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
+  | PaAnt _ p → patt p
+  | PaAny loc → mkpat loc Ppat_any
+  | PaApp loc _ _ as f →
       let (f, al) = patt_fa [] f in
       let al = List.map patt al in
       let p = (patt f).ppat_desc in
       match ocaml_ppat_construct_args p with
-      [ Some (li, None, _) ->
+      [ Some (li, li_loc, None, _) →
           if Prtools.no_constructors_arity.val then
             let a =
               match al with
-              [ [a] -> a
-              | _ -> mkpat loc (Ppat_tuple al) ]
+              [ [a] → a
+              | _ → mkpat loc (Ppat_tuple al) ]
             in
-            mkpat loc (ocaml_ppat_construct li (Some a) False)
+            mkpat loc (ocaml_ppat_construct li li_loc (Some a) False)
           else
             let a = mkpat loc (Ppat_tuple al) in
-            mkpat loc (ocaml_ppat_construct li (Some a) True)
-      | Some _ | None ->
+            mkpat loc (ocaml_ppat_construct li li_loc (Some a) True)
+      | Some _ | None →
           match ocaml_ppat_variant with
-          [ Some (ppat_variant_pat, ppat_variant) ->
+          [ Some (ppat_variant_pat, ppat_variant) →
               match ppat_variant_pat p with
-              [ Some (s, None) ->
+              [ Some (s, None) →
                   let a =
                     match al with
-                    [ [a] -> a
-                    | _ -> mkpat loc (Ppat_tuple al) ]
+                    [ [a] → a
+                    | _ → mkpat loc (Ppat_tuple al) ]
                   in
                   mkpat loc (ppat_variant (s, Some a))
-              | Some _ | None ->
+              | Some _ | None →
                   error (loc_of_patt f)
                     ("this is not a constructor, " ^
                      "it cannot be applied in a pattern") ]
-          | None ->
+          | None →
               error (loc_of_patt f)
                 ("this is not a constructor, " ^
                  "it cannot be applied in a pattern") ] ]
-  | PaArr loc pl ->
+  | PaArr loc pl →
       match ocaml_ppat_array with
-      [ Some ppat_array -> mkpat loc (ppat_array (List.map patt (uv pl)))
-      | None -> error loc "no array patterns in this ocaml version" ]
-  | PaChr loc s ->
+      [ Some ppat_array → mkpat loc (ppat_array (List.map patt (uv pl)))
+      | None → error loc "no array patterns in this ocaml version" ]
+  | PaChr loc s →
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
-  | PaInt loc s c -> mkpat loc (Ppat_constant (mkintconst loc (uv s) c))
-  | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float (uv s)))
-  | PaLab loc _ -> error loc "labeled pattern not allowed here"
-  | PaLaz loc p ->
+  | PaInt loc s c → mkpat loc (Ppat_constant (mkintconst loc (uv s) c))
+  | PaFlo loc s → mkpat loc (Ppat_constant (Const_float (uv s)))
+  | PaLab loc _ → error loc "labeled pattern not allowed here"
+  | PaLaz loc p →
       match ocaml_ppat_lazy with
-      [ Some ppat_lazy -> mkpat loc (ppat_lazy (patt p))
-      | None -> error loc "lazy patterns not in this version" ]
-  | PaLid loc s -> mkpat loc (Ppat_var (uv s))
-  | PaNty loc s -> error loc "new type not allowed here"
-  | PaOlb loc _ _ -> error loc "labeled pattern not allowed here"
-  | PaOrp loc p1 p2 -> mkpat loc (Ppat_or (patt p1) (patt p2))
-  | PaRng loc p1 p2 ->
+      [ Some ppat_lazy → mkpat loc (ppat_lazy (patt p))
+      | None → error loc "lazy patterns not in this version" ]
+  | PaLid loc s → mkpat loc (ocaml_ppat_var (mkloc loc) (uv s))
+  | PaNty loc s → error loc "new type not allowed here"
+  | PaOlb loc _ _ → error loc "labeled pattern not allowed here"
+  | PaOrp loc p1 p2 → mkpat loc (Ppat_or (patt p1) (patt p2))
+  | PaRng loc p1 p2 →
       match (p1, p2) with
-      [ (PaChr loc1 c1, PaChr loc2 c2) ->
+      [ (PaChr loc1 c1, PaChr loc2 c2) →
           let c1 = char_of_char_token loc1 (uv c1) in
           let c2 = char_of_char_token loc2 (uv c2) in
           mkrangepat loc c1 c2
-      | _ -> error loc "range pattern allowed only for characters" ]
-  | PaRec loc lpl ->
+      | _ → error loc "range pattern allowed only for characters" ]
+  | PaRec loc lpl →
       let (lpl, is_closed) =
         List.fold_right
-          (fun lp (lpl, is_closed) ->
+          (fun lp (lpl, is_closed) →
              match lp with
-             [ (PaAny _, PaAny _) -> (lpl, True)
-             | lp -> ([lp :: lpl], is_closed) ])
+             [ (PaAny _, PaAny _) → (lpl, True)
+             | lp → ([lp :: lpl], is_closed) ])
           (uv lpl) ([], False)
       in
       mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
-  | PaStr loc s ->
+  | PaStr loc s →
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
-  | PaTup loc pl -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
-  | PaTyc loc p t -> mkpat loc (Ppat_constraint (patt p) (ctyp t))
-  | PaTyp loc sl ->
+  | PaTup loc pl → mkpat loc (Ppat_tuple (List.map patt (uv pl)))
+  | PaTyc loc p t → mkpat loc (Ppat_constraint (patt p) (ctyp t))
+  | PaTyp loc sl →
       match ocaml_ppat_type with
-      [ Some ppat_type ->
-          mkpat loc (ppat_type (long_id_of_string_list loc (uv sl)))
-      | None -> error loc "no #type in this ocaml version" ]
-  | PaUid loc s ->
+      [ Some ppat_type →
+          mkpat loc
+            (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
+      | None → error loc "no #type in this ocaml version" ]
+  | PaUid loc s →
       let ca = not Prtools.no_constructors_arity.val in
-      mkpat loc (ocaml_ppat_construct (Lident (conv_con (uv s))) None ca)
-  | PaUnp loc s mto ->
+      mkpat loc
+        (ocaml_ppat_construct (Lident (conv_con (uv s))) (mkloc loc) None ca)
+  | PaUnp loc s mto →
       match ocaml_ppat_unpack with
-      [ Some (ppat_unpack, ptyp_package) ->
-          let p = mkpat loc (ppat_unpack (uv s)) in
+      [ Some (ppat_unpack, ptyp_package) →
+          let p = mkpat loc (ppat_unpack (mkloc loc) (uv s)) in
           match mto with
-          [ Some mt ->
+          [ Some mt →
               let pt = package_of_module_type loc mt in
               mkpat loc (Ppat_constraint p (mktyp loc (ptyp_package pt)))
-          | None -> p ]
-      | None -> error loc "no unpack pattern in this ocaml version" ]
-  | PaVrn loc s ->
+          | None → p ]
+      | None → error loc "no unpack pattern in this ocaml version" ]
+  | PaVrn loc s →
       match ocaml_ppat_variant with
-      [ Some (_, ppat_variant) -> mkpat loc (ppat_variant (uv s, None))
-      | None -> error loc "no variant in this ocaml version" ]
-  | PaXtr loc _ _ -> error loc "bad ast PaXtr" ]
-and mklabpat (lab, p) = (patt_label_long_id lab, patt p);
+      [ Some (_, ppat_variant) → mkpat loc (ppat_variant (uv s, None))
+      | None → error loc "no variant in this ocaml version" ]
+  | PaXtr loc _ _ → error loc "bad ast PaXtr" ]
+and mklabpat (lab, p) =
+  (patt_label_long_id lab, mkloc (loc_of_patt lab), patt p)
+;
 
 value rec expr_fa al =
   fun
-  [ ExApp _ f a -> expr_fa [a :: al] f
-  | f -> (f, al) ]
+  [ ExApp _ f a → expr_fa [a :: al] f
+  | f → (f, al) ]
 ;
 
 value rec class_expr_fa al =
   fun
-  [ CeApp _ ce a -> class_expr_fa [a :: al] ce
-  | ce -> (ce, al) ]
+  [ CeApp _ ce a → class_expr_fa [a :: al] ce
+  | ce → (ce, al) ]
 ;
 
 value rec sep_expr_acc l =
   fun
-  [ <:expr< $e1$.$e2$ >> -> sep_expr_acc (sep_expr_acc l e2) e1
-  | <:expr< $uid:s$ >> as e ->
+  [ <:expr< $e1$.$e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
+  | <:expr< $uid:s$ >> as e →
       let loc = MLast.loc_of_expr e in
       match l with
-      [ [] -> [(loc, [], e)]
-      | [(loc2, sl, e) :: l] -> [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
-  | e -> [(loc_of_expr e, [], e) :: l] ]
+      [ [] → [(loc, [], e)]
+      | [(loc2, sl, e) :: l] → [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
+  | e → [(loc_of_expr e, [], e) :: l] ]
 ;
 
 value list_map_check f l =
   loop [] l where rec loop rev_l =
     fun
-    [ [x :: l] ->
+    [ [x :: l] →
         match f x with
-        [ Some s -> loop [s :: rev_l] l
-        | None -> None ]
-    | [] -> Some (List.rev rev_l) ]
+        [ Some s → loop [s :: rev_l] l
+        | None → None ]
+    | [] → Some (List.rev rev_l) ]
 ;
 
 value class_info class_expr ci =
   let (params, var_list) = List.split (uv (snd ci.ciPrm)) in
   let variance = List.map variance_of_var var_list in
   match ocaml_class_infos with
-  [ Some class_infos ->
+  [ Some class_infos →
       match list_map_check uv params with
-      [ Some params ->
+      [ Some params →
           class_infos (if uv ci.ciVir then Virtual else Concrete)
-            (params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
-            (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
-      | None -> error ci.ciLoc "no '_' type parameter allowed" ]
-  | None -> error ci.ciLoc "no class_info in this ocaml version" ]
+            (params, mkloc (fst ci.ciPrm)) (uv ci.ciNam) (class_expr ci.ciExp)
+            (mkloc ci.ciLoc) variance
+      | None → error ci.ciLoc "no '_' type parameter allowed" ]
+  | None → error ci.ciLoc "no class_info in this ocaml version" ]
 ;
 
 value bigarray_get loc e el =
   match el with
-  [ [c1] -> <:expr< Bigarray.Array1.get $e$ $c1$ >>
-  | [c1; c2] -> <:expr< Bigarray.Array2.get $e$ $c1$ $c2$ >>
-  | [c1; c2; c3] -> <:expr< Bigarray.Array3.get $e$ $c1$ $c2$ $c3$ >>
-  | _ -> <:expr< Bigarray.Genarray.get $e$ [| $list:el$ |] >> ]
+  [ [c1] → <:expr< Bigarray.Array1.get $e$ $c1$ >>
+  | [c1; c2] → <:expr< Bigarray.Array2.get $e$ $c1$ $c2$ >>
+  | [c1; c2; c3] → <:expr< Bigarray.Array3.get $e$ $c1$ $c2$ $c3$ >>
+  | _ → <:expr< Bigarray.Genarray.get $e$ [| $list:el$ |] >> ]
 ;
 
 value bigarray_set loc e el v =
   match el with
-  [ [c1] -> <:expr< Bigarray.Array1.set $e$ $c1$ $v$ >>
-  | [c1; c2] -> <:expr< Bigarray.Array2.set $e$ $c1$ $c2$ $v$ >>
-  | [c1; c2; c3] -> <:expr< Bigarray.Array3.set $e$ $c1$ $c2$ $c3$ $v$ >>
-  | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
+  [ [c1] → <:expr< Bigarray.Array1.set $e$ $c1$ $v$ >>
+  | [c1; c2] → <:expr< Bigarray.Array2.set $e$ $c1$ $c2$ $v$ >>
+  | [c1; c2; c3] → <:expr< Bigarray.Array3.set $e$ $c1$ $c2$ $c3$ $v$ >>
+  | _ → <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
 ;
 
 value neg_string n =
   let len = String.length n in
-  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
-  else "-" ^ n
+  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
 ;
 
 value varify_constructors var_names =
   loop where rec loop =
     fun
-    [ <:ctyp:< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
-    | <:ctyp:< $t1$ $t2$ >> -> <:ctyp:< $loop t1$ $loop t2$ >>
-    | <:ctyp:< ($list:tl$) >> -> <:ctyp:< ($list:List.map loop tl$) >>
-    | <:ctyp:< $lid:s$ >> as t ->
+    [ <:ctyp:< $t1$ → $t2$ >> → <:ctyp< $loop t1$ → $loop t2$ >>
+    | <:ctyp:< $t1$ $t2$ >> → <:ctyp:< $loop t1$ $loop t2$ >>
+    | <:ctyp:< ($list:tl$) >> → <:ctyp:< ($list:List.map loop tl$) >>
+    | <:ctyp:< $lid:s$ >> as t →
         if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
-    | t -> t ]
+    | t → t ]
 ;
 
 value label_of_patt =
   fun
-  [ PaLid _ s -> uv s
-  | PaTyc _ (PaLid _ s) _ -> uv s
-  | p -> error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
+  [ PaLid _ s → uv s
+  | PaTyc _ (PaLid _ s) _ → uv s
+  | p → error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
 ;
 
 value rec expr =
   fun
-  [ ExAcc loc x <:expr< val >> ->
+  [ ExAcc loc x <:expr< val >> →
       mkexp loc
-        (ocaml_pexp_apply (mkexp loc (Pexp_ident (Lident "!")))
+        (ocaml_pexp_apply (mkexp loc (ocaml_pexp_ident (Lident "!")))
            [("", expr x)])
-  | ExAcc loc _ _ as e ->
+  | ExAcc loc _ _ as e →
       let (e, l) =
         match sep_expr_acc [] e with
-        [ [(loc, ml, <:expr< $uid:s$ >>) :: l] ->
+        [ [(loc, ml, <:expr< $uid:s$ >>) :: l] →
             let ca = not Prtools.no_constructors_arity.val in
-            (mkexp loc (Pexp_construct (mkli s ml) None ca), l)
-        | [(loc, ml, <:expr< $lid:s$ >>) :: l] ->
-            (mkexp loc (Pexp_ident (mkli s ml)), l)
-        | [(_, [], e) :: l] -> (expr e, l)
-        | _ -> error loc "bad ast" ]
+            (mkexp loc (ocaml_pexp_construct (mkli s ml) None ca), l)
+        | [(loc, ml, <:expr< $lid:s$ >>) :: l] →
+            (mkexp loc (ocaml_pexp_ident (mkli s ml)), l)
+        | [(_, [], e) :: l] → (expr e, l)
+        | _ → error loc "bad ast" ]
       in
       let (_, e) =
         List.fold_left
-          (fun (loc1, e1) (loc2, ml, e2) ->
+          (fun (loc1, e1) (loc2, ml, e2) →
              match e2 with
-             [ <:expr< $lid:s$ >> ->
+             [ <:expr< $lid:s$ >> →
                  let loc = Ploc.encl loc1 loc2 in
-                 (loc, mkexp loc (Pexp_field e1 (mkli (conv_lab s) ml)))
-             | _ -> error (loc_of_expr e2) "lowercase identifier expected" ])
+                 (loc, mkexp loc (ocaml_pexp_field e1 (mkli (conv_lab s) ml)))
+             | _ → error (loc_of_expr e2) "lowercase identifier expected" ])
           (loc, e) l
       in
       e
-  | ExAnt _ e -> expr e
-  | ExApp loc (ExLid _ <:vala< "-" >>) (ExInt _ s c) ->
+  | ExAnt _ e → expr e
+  | ExApp loc (ExLid _ <:vala< "-" >>) (ExInt _ s c) →
       let s = neg_string (uv s) in
       mkexp loc (Pexp_constant (mkintconst loc s c))
-  | ExApp loc (ExLid _ <:vala< "-" | "-." >>) (ExFlo _ s) ->
+  | ExApp loc (ExLid _ <:vala< "-" | "-." >>) (ExFlo _ s) →
       let s = neg_string (uv s) in
       mkexp loc (Pexp_constant (Const_float s))
-  | ExApp loc _ _ as f ->
+  | ExApp loc _ _ as f →
       let (f, al) = expr_fa [] f in
       let f =
         match (f, al) with
-        [ (ExLid loc s, [_]) ->
+        [ (ExLid loc s, [_]) →
             let s = uv s in
             match s with
-            [ "-" | "-." -> ExLid loc <:vala< "~" ^ s >>
-            | _ -> f ]
-        | _ -> f ]
+            [ "-" | "-." → ExLid loc <:vala< "~" ^ s >>
+            | _ → f ]
+        | _ → f ]
       in
       let al = List.rev (List.fold_left label_expr [] al) in
       match (expr f).pexp_desc with
-      [ Pexp_construct li None _ ->
+      [ Pexp_construct li None _ →
           let al = List.map snd al in
           if Prtools.no_constructors_arity.val then
             let a =
               match al with
-              [ [a] -> a
-              | _ -> mkexp loc (Pexp_tuple al) ]
+              [ [a] → a
+              | _ → mkexp loc (Pexp_tuple al) ]
             in
             mkexp loc (Pexp_construct li (Some a) False)
           else
             let a = mkexp loc (Pexp_tuple al) in
             mkexp loc (Pexp_construct li (Some a) True)
-      | e ->
+      | e →
           match ocaml_pexp_variant with
-          [ Some (pexp_variant_pat, pexp_variant) ->
+          [ Some (pexp_variant_pat, pexp_variant) →
               match pexp_variant_pat e with
-              [ Some (s, None) ->
+              [ Some (s, None) →
                   let al = List.map snd al in
                   let a =
                     match al with
-                    [ [a] -> a
-                    | _ -> mkexp loc (Pexp_tuple al) ]
+                    [ [a] → a
+                    | _ → mkexp loc (Pexp_tuple al) ]
                   in
                   mkexp loc (pexp_variant (s, Some a))
-              | Some _ | None ->
+              | Some _ | None →
                   mkexp loc (ocaml_pexp_apply (expr f) al) ]
-          | None -> mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
-  | ExAre loc e1 e2 ->
+          | None → mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
+  | ExAre loc e1 e2 →
       match e1 with
-      [ <:expr< $uid:m$ >> ->
+      [ <:expr< $uid:m$ >> →
           match ocaml_pexp_open with
-          [ Some pexp_open ->
+          [ Some pexp_open →
               let li = Lident m in
               mkexp loc (pexp_open li (expr e2))
-          | None -> error loc "no expression open in this ocaml version" ]
-      | _ ->
+          | None → error loc "no expression open in this ocaml version" ]
+      | _ →
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (Pexp_ident (array_function "Array" "get")))
+               (mkexp loc (ocaml_pexp_ident (array_function "Array" "get")))
                [("", expr e1); ("", expr e2)]) ]
-  | ExArr loc el -> mkexp loc (Pexp_array (List.map expr (uv el)))
-  | ExAss loc e v ->
+  | ExArr loc el → mkexp loc (Pexp_array (List.map expr (uv el)))
+  | ExAss loc e v →
       match e with
-      [ ExAcc loc x <:expr< val >> ->
+      [ ExAcc loc x <:expr< val >> →
           mkexp loc
-            (ocaml_pexp_apply (mkexp loc (Pexp_ident (Lident ":=")))
+            (ocaml_pexp_apply (mkexp loc (ocaml_pexp_ident (Lident ":=")))
                [("", expr x); ("", expr v)])
-      | ExAcc loc _ _ ->
+      | ExAcc loc _ _ →
           match (expr e).pexp_desc with
-          [ Pexp_field e lab -> mkexp loc (Pexp_setfield e lab (expr v))
-          | _ -> error loc "bad record access" ]
-      | ExAre _ e1 e2 ->
+          [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
+          | _ → error loc "bad record access" ]
+      | ExAre _ e1 e2 →
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (Pexp_ident (array_function "Array" "set")))
+               (mkexp loc (ocaml_pexp_ident (array_function "Array" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
-      | ExBae loc e el -> expr (bigarray_set loc e (uv el) v)
-      | <:expr< $lid:lab$ >> -> mkexp loc (Pexp_setinstvar lab (expr v))
-      | ExSte _ e1 e2 ->
+      | ExBae loc e el → expr (bigarray_set loc e (uv el) v)
+      | ExLid _ lab → mkexp loc (ocaml_pexp_setinstvar lab (expr v))
+      | ExSte _ e1 e2 →
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (Pexp_ident (array_function "String" "set")))
+               (mkexp loc (ocaml_pexp_ident (array_function "String" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
-      | _ -> error loc "bad left part of assignment" ]
-  | ExAsr loc <:expr< False >> ->
+      | _ → error loc "bad left part of assignment" ]
+  | ExAsr loc <:expr< False >> →
       mkexp loc (ocaml_pexp_assertfalse glob_fname.val (mkloc loc))
-  | ExAsr loc e ->
+  | ExAsr loc e →
       mkexp loc (ocaml_pexp_assert glob_fname.val (mkloc loc) (expr e))
-  | ExBae loc e el -> expr (bigarray_get loc e (uv el))
-  | ExChr loc s ->
+  | ExBae loc e el → expr (bigarray_get loc e (uv el))
+  | ExChr loc s →
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
-  | ExCoe loc e t1 t2 ->
+  | ExCoe loc e t1 t2 →
       mkexp loc (Pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
-  | ExFlo loc s -> mkexp loc (Pexp_constant (Const_float (uv s)))
-  | ExFor loc i e1 e2 df el ->
+  | ExFlo loc s → mkexp loc (Pexp_constant (Const_float (uv s)))
+  | ExFor loc i e1 e2 df el →
       let e3 = <:expr< do { $list:uv el$ } >> in
       let df = if uv df then Upto else Downto in
-      mkexp loc (Pexp_for (uv i) (expr e1) (expr e2) df (expr e3))
-  | ExFun loc pel ->
+      mkexp loc (ocaml_pexp_for (uv i) (expr e1) (expr e2) df (expr e3))
+  | ExFun loc pel →
       match uv pel with
-      [ [(PaLab ploc lppo, w, e)] ->
+      [ [(PaLab ploc lppo, w, e)] →
           List.fold_right
-            (fun (p, po) e -> do {
+            (fun (p, po) e →
                let lab = label_of_patt p in
                let p =
                  match uv po with
-                 [ Some p -> p
-                 | None -> p ]
+                 [ Some p → p
+                 | None → p ]
                in
-               mkexp loc (ocaml_pexp_function lab None [(patt p, e)])
-             })
+               mkexp loc (ocaml_pexp_function lab None [(patt p, e)]))
            (uv lppo) (when_expr e (uv w))
-      | [(PaNty loc s, w, e)] ->
+      | [(PaNty loc s, w, e)] →
           match ocaml_pexp_newtype with
-          [ Some newtype ->
+          [ Some newtype →
               match uv w with
-              [ Some _ -> error loc "(type ..) not allowed with 'when'"
-              | None -> mkexp loc (newtype (uv s) (expr e)) ]
-          | None -> error loc "(type ..) not in this ocaml version" ]
-      | [(PaOlb loc p eo, w, e)] ->
+              [ Some _ → error loc "(type ..) not allowed with 'when'"
+              | None → mkexp loc (newtype (uv s) (expr e)) ]
+          | None → error loc "(type ..) not in this ocaml version" ]
+      | [(PaOlb loc p eo, w, e)] →
           let lab = label_of_patt p in
           let (p, eo) =
             match uv eo with
-            [ Some (ExOlb _ p eo) -> (p, eo)
-            | Some _ | None -> (p, eo) ]
+            [ Some (ExOlb _ p eo) → (p, eo)
+            | Some _ | None → (p, eo) ]
           in
           mkexp loc
             (ocaml_pexp_function ("?" ^ lab) (option expr (uv eo))
                [(patt p, when_expr e (uv w))])
-      | pel ->
+      | pel →
           let pel =
             if split_or_patterns_with_bindings then
               Prtools.do_split_or_patterns_with_bindings pel
             else pel
           in
           mkexp loc (ocaml_pexp_function "" None (List.map mkpwe pel)) ]
-  | ExIfe loc e1 e2 e3 ->
+  | ExIfe loc e1 e2 e3 →
       let e3o =
         match e3 with
-        [ <:expr< () >> -> None
-        | _ -> Some (expr e3) ]
+        [ <:expr< () >> → None
+        | _ → Some (expr e3) ]
       in
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) e3o)
-  | ExInt loc s c ->
+  | ExInt loc s c →
       mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
-  | ExJdf loc jl e ->
+  | ExJdf loc jl e →
       match jocaml_pexp_def with
-      [ Some pexp_def ->
+      [ Some pexp_def →
           mkexp loc (pexp_def (List.rev_map mkjoinclause (uv jl)) (expr e))
-      | None ->
+      | None →
           error loc "no 'def in' in this ocaml version" ]
-  | ExLab loc _ -> error loc "labeled expression not allowed here 1"
-  | ExLaz loc e -> mklazy loc (expr e)
-  | ExLet loc rf pel e ->
+  | ExLab loc _ → error loc "labeled expression not allowed here 1"
+  | ExLaz loc e → mklazy loc (expr e)
+  | ExLet loc rf pel e →
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
-  | ExLid loc s -> mkexp loc (Pexp_ident (Lident (uv s)))
-  | ExLmd loc i me e ->
+  | ExLid loc s → mkexp loc (ocaml_pexp_ident (Lident (uv s)))
+  | ExLmd loc i me e →
       match ocaml_pexp_letmodule with
-      [ Some pexp_letmodule ->
+      [ Some pexp_letmodule →
           mkexp loc (pexp_letmodule (uv i) (module_expr me) (expr e))
-      | None -> error loc "no 'let module' in this ocaml version" ]
-  | ExMat loc e pel ->
+      | None → error loc "no 'let module' in this ocaml version" ]
+  | ExMat loc e pel →
       let pel = uv pel in
       let pel =
         if split_or_patterns_with_bindings then
@@ -955,154 +953,159 @@ value rec expr =
         else pel
       in
       mkexp loc (Pexp_match (expr e) (List.map mkpwe pel))
-  | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
-  | ExObj loc po cfl ->
+  | ExNew loc id →
+      mkexp loc
+        (ocaml_pexp_new (mkloc loc) (long_id_of_string_list loc (uv id)))
+  | ExObj loc po cfl →
       match ocaml_pexp_object with
-      [ Some pexp_object ->
+      [ Some pexp_object →
           let p =
             match uv po with
-            [ Some p -> p
-            | None -> PaAny loc ]
+            [ Some p → p
+            | None → PaAny loc ]
           in
           let cil = List.fold_right class_str_item (uv cfl) [] in
-          mkexp loc (pexp_object (patt p, cil))
-      | None -> error loc "no object in this ocaml version" ]
-  | ExOlb loc _ _ -> error loc "labeled expression not allowed here 2"
-  | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
-  | ExPar loc e1 e2 ->
-       match jocaml_pexp_par with
-       [ Some pexp_par -> mkexp loc (pexp_par (expr e1) (expr e2))
-       | None -> error loc "no '&' in this ocaml version" ]
-  | ExPck loc me mto ->
+          mkexp loc (pexp_object (ocaml_class_structure (patt p) cil))
+      | None → error loc "no object in this ocaml version" ]
+  | ExOlb loc _ _ → error loc "labeled expression not allowed here 2"
+  | ExOvr loc iel →
+      mkexp loc (ocaml_pexp_override (List.map mkideexp (uv iel)))
+  | ExPar loc e1 e2 →
+      match jocaml_pexp_par with
+      [ Some pexp_par → mkexp loc (pexp_par (expr e1) (expr e2))
+      | None → error loc "no '&' in this ocaml version" ]
+  | ExPck loc me mto →
       match ocaml_pexp_pack with
-      [ Some (Left pexp_pack) ->
+      [ Some (Left pexp_pack) →
           match mto with
-          [ Some mt ->
+          [ Some mt →
               let pt = package_of_module_type loc mt in
               mkexp loc (pexp_pack (module_expr me) pt)
-          | None -> error loc "no such module pack in this ocaml version" ]
-      | Some (Right (pexp_pack, ptyp_package)) ->
+          | None → error loc "no such module pack in this ocaml version" ]
+      | Some (Right (pexp_pack, ptyp_package)) →
           let e = pexp_pack (module_expr me) in
           let e =
             match mto with
-            [ Some mt ->
+            [ Some mt →
                 let pt = package_of_module_type loc mt in
                 Pexp_constraint (mkexp loc e)
                   (Some (mktyp loc (ptyp_package pt))) None
-            | None -> e ]
+            | None → e ]
           in
           mkexp loc e
-      | None -> error loc "no module pack in this ocaml version" ]
-  | ExRec loc lel eo ->
+      | None → error loc "no module pack in this ocaml version" ]
+  | ExRec loc lel eo →
       let lel = uv lel in
       if lel = [] then error loc "empty record"
       else if eo <> None && not has_records_with_with then
         match eo with
-        [ Some e ->
+        [ Some e →
             match Prtools.record_without_with loc e lel with
-            [ Some e -> expr e
-            | None -> error loc "cannot convert record" ]
-        | None -> assert False ]
+            [ Some e → expr e
+            | None → error loc "cannot convert record" ]
+        | None → assert False ]
       else
         let lel =
           if module_prefix_can_be_in_first_record_label_only then lel
-          else do {
+          else
             match lel with
-            [ [((PaAcc _ (PaUid _ m) _ as p), e) :: rest] ->
+            [ [((PaAcc _ (PaUid _ m) _ as p), e) :: rest] →
                 Prtools.expand_module_prefix (uv m) [(p, e)] rest
-            | _ -> lel ]
-          }
+            | _ → lel ]
         in
         let eo =
           match eo with
-          [ Some e -> Some (expr e)
-          | None -> None ]
+          [ Some e → Some (expr e)
+          | None → None ]
         in
         mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
-  | ExRpl loc eo (sloc, s) ->
+  | ExRpl loc eo (sloc, s) →
       match jocaml_pexp_reply with
-      [ Some pexp_reply ->
+      [ Some pexp_reply →
           let e =
             match uv eo with
-            [ Some e -> expr e
-            | None -> mkexp loc (Pexp_construct (Lident "()") None False) ]
+            [ Some e → expr e
+            | None →
+                mkexp loc (ocaml_pexp_construct (Lident "()") None False) ]
           in
           mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, uv s))
-      | None -> error loc "no 'reply' in this ocaml version" ]
-  | ExSeq loc el ->
+      | None → error loc "no 'reply' in this ocaml version" ]
+  | ExSeq loc el →
       loop (uv el) where rec loop =
         fun
-        [ [] -> expr <:expr< () >>
-        | [e] -> expr e
-        | [e :: el] ->
+        [ [] → expr <:expr< () >>
+        | [e] → expr e
+        | [e :: el] →
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
-  | ExSnd loc e s -> mkexp loc (Pexp_send (expr e) (uv s))
-  | ExSpw loc e ->
+  | ExSnd loc e s → mkexp loc (Pexp_send (expr e) (uv s))
+  | ExSpw loc e →
       match jocaml_pexp_spawn with
-      [ Some pexp_spawn -> mkexp loc (pexp_spawn (expr e))
-      | None -> error loc "no 'spawn' in this ocaml version" ]
-  | ExSte loc e1 e2 ->
+      [ Some pexp_spawn → mkexp loc (pexp_spawn (expr e))
+      | None → error loc "no 'spawn' in this ocaml version" ]
+  | ExSte loc e1 e2 →
       mkexp loc
         (ocaml_pexp_apply
-           (mkexp loc (Pexp_ident (array_function "String" "get")))
+           (mkexp loc (ocaml_pexp_ident (array_function "String" "get")))
            [("", expr e1); ("", expr e2)])
-  | ExStr loc s ->
+  | ExStr loc s →
       mkexp loc
         (Pexp_constant (Const_string (string_of_string_token loc (uv s))))
-  | ExTry loc e pel -> mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
-  | ExTup loc el -> mkexp loc (Pexp_tuple (List.map expr (uv el)))
-  | ExTyc loc e t -> mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
-  | ExUid loc s ->
+  | ExTry loc e pel → mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
+  | ExTup loc el → mkexp loc (Pexp_tuple (List.map expr (uv el)))
+  | ExTyc loc e t → mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
+  | ExUid loc s →
       let ca = not Prtools.no_constructors_arity.val in
-      mkexp loc (Pexp_construct (Lident (conv_con (uv s))) None ca)
-  | ExVrn loc s ->
+      mkexp loc (ocaml_pexp_construct (Lident (conv_con (uv s))) None ca)
+  | ExVrn loc s →
       match ocaml_pexp_variant with
-      [ Some (_, pexp_variant) -> mkexp loc (pexp_variant (uv s, None))
-      | None -> error loc "no variants in this ocaml version" ]
-  | ExWhi loc e1 el ->
+      [ Some (_, pexp_variant) → mkexp loc (pexp_variant (uv s, None))
+      | None → error loc "no variants in this ocaml version" ]
+  | ExWhi loc e1 el →
       let e2 = <:expr< do { $list:uv el$ } >> in
       mkexp loc (Pexp_while (expr e1) (expr e2))
-  | ExXtr loc _ _ -> error loc "bad ast ExXtr" ]
+  | ExXtr loc _ _ → error loc "bad ast ExXtr" ]
 and label_expr rev_al =
   fun
-  [ ExLab loc lpeo ->
+  [ ExLab loc lpeo →
       List.fold_left
-        (fun rev_al (p, eo) ->
-          match p with
-          [ PaLid loc lab ->
-              let e =
-                match uv eo with
-                [ Some e -> e
-                | None -> ExLid loc lab ]
-              in
-              [(uv lab, expr e) :: rev_al]
-          | _ -> error loc "ExLab case not impl" ])
+        (fun rev_al (p, eo) →
+           match p with
+           [ PaLid loc lab →
+               let e =
+                 match uv eo with
+                 [ Some e → e
+                 | None → ExLid loc lab ]
+               in
+               [(uv lab, expr e) :: rev_al]
+           | _ → error loc "ExLab case not impl" ])
         rev_al (uv lpeo)
-  | ExOlb loc p eo ->
+  | ExOlb loc p eo →
       match p with
-      [ PaLid loc lab ->
+      [ PaLid loc lab →
           let e =
             match uv eo with
-            [ Some e -> e
-            | None -> ExLid loc lab ]
+            [ Some e → e
+            | None → ExLid loc lab ]
           in
           [("?" ^ uv lab, expr e) :: rev_al]
-      | _ -> error loc "ExOlb case not impl" ]
-  | e -> [("", expr e) :: rev_al] ]
+      | _ → error loc "ExOlb case not impl" ]
+  | e → [("", expr e) :: rev_al] ]
 and mkjoinclause jc =
   let jcval =
     List.rev_map
-      (fun (loc, jpl, e) ->
+      (fun (loc, jpl, e) →
          let jpl =
            List.rev_map
-             (fun (locp, locs, jp) ->
+             (fun (locp, locs, jp) →
                 let (loc, s) = locs in
                 let p =
                   match uv jp with
-                  [ Some p -> patt p
-                  | None ->
-                      mkpat loc (Ppat_construct (Lident "()") None False) ]
+                  [ Some p → patt p
+                  | None →
+                      mkpat loc
+                        (ocaml_ppat_construct (Lident "()") (mkloc loc) None
+                           False) ]
                 in
                 (mkloc locp, (mkloc loc, uv s), p))
              (uv jpl)
@@ -1114,39 +1117,40 @@ and mkjoinclause jc =
 and mkpe (p, e) =
   let (p, e) =
     match e with
-    [ ExTyc loc e (TyPol _ _ _ as t) -> (PaTyc loc p t, e)
-    | ExTyc loc e (TyPot _ _ _ as t) -> (PaTyc loc p t, e)
-    | _ -> (p, e) ]
+    [ ExTyc loc e (TyPol _ _ _ as t) → (PaTyc loc p t, e)
+    | ExTyc loc e (TyPot _ _ _ as t) → (PaTyc loc p t, e)
+    | _ → (p, e) ]
   in
   let (p, e) =
     match p with
-    [ PaTyc loc p (TyPot loc1 nt ct) -> expand_gadt_type loc p loc1 nt ct e
-    | p -> (p, e) ]
+    [ PaTyc loc p (TyPot loc1 nt ct) → expand_gadt_type loc p loc1 nt ct e
+    | p → (p, e) ]
   in
   (patt p, expr e)
 and expand_gadt_type loc p loc1 nt ct e =
   let nt = uv nt in
   let e = <:expr< ($e$ : $ct$) >> in
   let e =
-    List.fold_right (fun s e -> <:expr< fun (type $s$) ->  $e$ >>)
+    List.fold_right (fun s e → <:expr< fun (type $s$) →  $e$ >>)
       nt e
   in
   let ct = varify_constructors nt ct in
-  let tp = List.map (fun s -> "&" ^ s) nt in
+  let tp = List.map (fun s → "&" ^ s) nt in
   let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
   (<:patt< ($p$ : $ct$) >>, e)
 and mkpwe (p, w, e) = (patt p, when_expr e (uv w))
 and when_expr e =
   fun
-  [ Some w -> mkexp (loc_of_expr e) (Pexp_when (expr w) (expr e))
-  | None -> expr e ]
-and mklabexp (lab, e) = (patt_label_long_id lab, expr e)
+  [ Some w → mkexp (loc_of_expr e) (Pexp_when (expr w) (expr e))
+  | None → expr e ]
+and mklabexp (lab, e) =
+  (patt_label_long_id lab, mkloc (loc_of_patt lab), expr e)
 and mkideexp (ide, e) = (ide, expr e)
 and mktype_decl td =
   let priv = if uv td.tdPrv then Private else Public in
   let cl =
     List.map
-      (fun (t1, t2) ->
+      (fun (t1, t2) →
          let loc = Ploc.encl (loc_of_ctyp t1) (loc_of_ctyp t2) in
          (ctyp t1, ctyp t2, mkloc loc))
       (uv td.tdCon)
@@ -1154,159 +1158,163 @@ and mktype_decl td =
   (uv (snd (uv td.tdNam)), type_decl (uv td.tdPrm) priv cl td.tdDef)
 and module_type =
   fun
-  [ MtAcc loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))
-  | MtApp loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))
-  | MtFun loc n nt mt ->
-      mkmty loc (Pmty_functor (uv n) (module_type nt) (module_type mt))
-  | MtLid loc s -> mkmty loc (Pmty_ident (Lident (uv s)))
-  | MtQuo loc _ -> error loc "abstract module type not allowed here"
-  | MtSig loc sl ->
+  [ MtAcc loc _ _ as f →
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
+  | MtApp loc _ _ as f →
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
+  | MtFun loc n nt mt →
+      mkmty loc
+        (ocaml_pmty_functor (mkloc loc) (uv n) (module_type nt)
+           (module_type mt))
+  | MtLid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
+  | MtQuo loc _ → error loc "abstract module type not allowed here"
+  | MtSig loc sl →
       mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
-  | MtTyo loc me ->
+  | MtTyo loc me →
       match ocaml_pmty_typeof with
-      [ Some pmty_typeof -> mkmty loc (pmty_typeof (module_expr me))
-      | None -> error loc "no 'module type of ..' in this ocaml version" ]
-  | MtUid loc s -> mkmty loc (Pmty_ident (Lident (uv s)))
-  | MtWit loc mt wcl ->
-      mkmty loc (Pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
-  | MtXtr loc _ _ -> error loc "bad ast MtXtr" ]
+      [ Some pmty_typeof → mkmty loc (pmty_typeof (module_expr me))
+      | None → error loc "no 'module type of ..' in this ocaml version" ]
+  | MtUid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
+  | MtWit loc mt wcl →
+      mkmty loc (ocaml_pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
+  | MtXtr loc _ _ → error loc "bad ast MtXtr" ]
 and sig_item s l =
   match s with
-  [ SgCls loc cd ->
+  [ SgCls loc cd →
       [mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l]
-  | SgClt loc ctd ->
+  | SgClt loc ctd →
       match ocaml_psig_class_type with
-      [ Some psig_class_type ->
+      [ Some psig_class_type →
           [mksig loc
-             (psig_class_type (List.map (class_info class_type) (uv ctd)))
-           :: l]
-      | None -> error loc "no class type in this ocaml version" ]
-  | SgDcl loc sl -> List.fold_right sig_item (uv sl) l
-  | SgDir loc _ _ -> l
-  | SgExc loc n tl ->
-      [mksig loc (Psig_exception (uv n) (List.map ctyp (uv tl))) :: l]
-  | SgExt loc n t p ->
-      [mksig loc (Psig_value (uv n) (mkvalue_desc t (uv p))) :: l]
-  | SgInc loc mt -> [mksig loc (Psig_include (module_type mt)) :: l]
-  | SgMod loc rf ntl ->
+             (psig_class_type (List.map (class_info class_type) (uv ctd))) ::
+           l]
+      | None → error loc "no class type in this ocaml version" ]
+  | SgDcl loc sl → List.fold_right sig_item (uv sl) l
+  | SgDir loc _ _ → l
+  | SgExc loc n tl →
+      [mksig loc (ocaml_psig_exception (uv n) (List.map ctyp (uv tl))) :: l]
+  | SgExt loc n t p →
+      [mksig loc (ocaml_psig_value (uv n) (mkvalue_desc t (uv p))) :: l]
+  | SgInc loc mt → [mksig loc (Psig_include (module_type mt)) :: l]
+  | SgMod loc rf ntl →
       if not (uv rf) then
         List.fold_right
-          (fun (n, mt) l ->
-             [mksig loc (Psig_module (uv n) (module_type mt)) :: l])
+          (fun (n, mt) l →
+             [mksig loc (ocaml_psig_module (uv n) (module_type mt)) :: l])
           (uv ntl) l
       else
         match ocaml_psig_recmodule with
-        [ Some psig_recmodule ->
+        [ Some psig_recmodule →
             let ntl =
-              List.map (fun (n, mt) -> (uv n, module_type mt)) (uv ntl)
+              List.map (fun (n, mt) → (uv n, module_type mt)) (uv ntl)
             in
             [mksig loc (psig_recmodule ntl) :: l]
-        | None -> error loc "no recursive module in this ocaml version" ]
-  | SgMty loc n mt ->
+        | None → error loc "no recursive module in this ocaml version" ]
+  | SgMty loc n mt →
       let si =
         match mt with
-        [ MtQuo _ _ -> Pmodtype_abstract
-        | _ -> Pmodtype_manifest (module_type mt) ]
+        [ MtQuo _ _ → Pmodtype_abstract
+        | _ → Pmodtype_manifest (module_type mt) ]
       in
-      [mksig loc (Psig_modtype (uv n) si) :: l]
-  | SgOpn loc id ->
-      [mksig loc (Psig_open (long_id_of_string_list loc (uv id))) :: l]
-  | SgTyp loc tdl ->
-      [mksig loc (Psig_type (List.map mktype_decl (uv tdl))) :: l]
-  | SgUse loc fn sl ->
+      [mksig loc (ocaml_psig_modtype (uv n) si) :: l]
+  | SgOpn loc id →
+      [mksig loc (ocaml_psig_open (long_id_of_string_list loc (uv id))) :: l]
+  | SgTyp loc tdl →
+      [mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l]
+  | SgUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
-        (fun () -> List.fold_right (fun (si, _) -> sig_item si) (uv sl) l) ()
-  | SgVal loc n t ->
-      [mksig loc (Psig_value (uv n) (mkvalue_desc t [])) :: l]
-  | SgXtr loc _ _ -> error loc "bad ast SgXtr" ]
+        (fun () → List.fold_right (fun (si, _) → sig_item si) (uv sl) l) ()
+  | SgVal loc n t →
+      [mksig loc (ocaml_psig_value (uv n) (mkvalue_desc t [])) :: l]
+  | SgXtr loc _ _ → error loc "bad ast SgXtr" ]
 and module_expr =
   fun
-  [ MeAcc loc _ _ as f -> mkmod loc (Pmod_ident (module_expr_long_id f))
-  | MeApp loc me1 me2 ->
+  [ MeAcc loc _ _ as f → mkmod loc (ocaml_pmod_ident (module_expr_long_id f))
+  | MeApp loc me1 me2 →
       mkmod loc (Pmod_apply (module_expr me1) (module_expr me2))
-  | MeFun loc n mt me ->
-      mkmod loc (Pmod_functor (uv n) (module_type mt) (module_expr me))
-  | MeStr loc sl ->
+  | MeFun loc n mt me →
+      mkmod loc (ocaml_pmod_functor (uv n) (module_type mt) (module_expr me))
+  | MeStr loc sl →
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
-  | MeTyc loc me mt ->
+  | MeTyc loc me mt →
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
-  | MeUid loc s -> mkmod loc (Pmod_ident (Lident (uv s)))
-  | MeUnp loc e mto ->
+  | MeUid loc s → mkmod loc (ocaml_pmod_ident (Lident (uv s)))
+  | MeUnp loc e mto →
       match ocaml_pmod_unpack with
-      [ Some (Left pmod_unpack) ->
+      [ Some (Left pmod_unpack) →
           match mto with
-          [ Some mt ->
+          [ Some mt →
               let pt = package_of_module_type loc mt in
               mkmod loc (pmod_unpack (expr e) pt)
-          | None -> error loc "no such module unpack in this ocaml version" ]
-      | Some (Right (pmod_unpack, ptyp_package)) ->
+          | None → error loc "no such module unpack in this ocaml version" ]
+      | Some (Right (pmod_unpack, ptyp_package)) →
           let e =
             match mto with
-            [ Some mt ->
+            [ Some mt →
                 let pt = package_of_module_type loc mt in
                 let t = mktyp loc (ptyp_package pt) in
                 mkexp loc (Pexp_constraint (expr e) (Some t) None)
-            | None -> 
+            | None →
                 expr e ]
           in
           mkmod loc (pmod_unpack e)
-      | None -> error loc "no module unpack in this ocaml version" ]
-  | MeXtr loc _ _ -> error loc "bad ast MeXtr" ]
+      | None → error loc "no module unpack in this ocaml version" ]
+  | MeXtr loc _ _ → error loc "bad ast MeXtr" ]
 and str_item s l =
   match s with
-  [ StCls loc cd ->
+  [ StCls loc cd →
       [mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l]
-  | StClt loc ctd ->
+  | StClt loc ctd →
       match ocaml_pstr_class_type with
-      [ Some pstr_class_type ->
+      [ Some pstr_class_type →
           [mkstr loc
              (pstr_class_type (List.map (class_info class_type) (uv ctd))) ::
-             l]
-      | None -> error loc "no class type in this ocaml version" ]
-  | StDcl loc sl -> List.fold_right str_item (uv sl) l
-  | StDef loc jcl ->
+           l]
+      | None → error loc "no class type in this ocaml version" ]
+  | StDcl loc sl → List.fold_right str_item (uv sl) l
+  | StDef loc jcl →
       match jocaml_pstr_def with
-      [ Some pstr_def ->
+      [ Some pstr_def →
           let jcl = List.map mkjoinclause (uv jcl) in
           [mkstr loc (pstr_def jcl) :: l]
-      | None -> error loc "no 'def' in this ocaml version" ]
-  | StDir loc _ _ -> l
-  | StExc loc n tl sl ->
+      | None → error loc "no 'def' in this ocaml version" ]
+  | StDir loc _ _ → l
+  | StExc loc n tl sl →
       let si =
         match (uv tl, uv sl) with
-        [ (tl, []) -> Pstr_exception (uv n) (List.map ctyp tl)
-        | ([], sl) ->
+        [ (tl, []) → ocaml_pstr_exception (uv n) (List.map ctyp tl)
+        | ([], sl) →
             match ocaml_pstr_exn_rebind with
-            [ Some pstr_exn_rebind ->
+            [ Some pstr_exn_rebind →
                 pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
-            | None ->
+            | None →
                 error loc "no exception renaming in this ocaml version" ]
-        | _ -> error loc "renamed exception should not have parameters" ]
+        | _ → error loc "renamed exception should not have parameters" ]
       in
       [mkstr loc si :: l]
-  | StExp loc e -> [mkstr loc (Pstr_eval (expr e)) :: l]
-  | StExt loc n t p ->
-      [mkstr loc (Pstr_primitive (uv n) (mkvalue_desc t (uv p))) :: l]
-  | StInc loc me ->
+  | StExp loc e → [mkstr loc (Pstr_eval (expr e)) :: l]
+  | StExt loc n t p →
+      [mkstr loc (ocaml_pstr_primitive (uv n) (mkvalue_desc t (uv p))) :: l]
+  | StInc loc me →
       match ocaml_pstr_include with
-      [ Some pstr_include -> [mkstr loc (pstr_include (module_expr me)) :: l]
-      | None -> error loc "no include in this ocaml version" ]
-  | StMod loc rf nel ->
+      [ Some pstr_include → [mkstr loc (pstr_include (module_expr me)) :: l]
+      | None → error loc "no include in this ocaml version" ]
+  | StMod loc rf nel →
       if not (uv rf) then
         List.fold_right
-          (fun (n, me) l ->
-             [mkstr loc (Pstr_module (uv n) (module_expr me)) :: l])
+          (fun (n, me) l →
+             [mkstr loc (ocaml_pstr_module (uv n) (module_expr me)) :: l])
           (uv nel) l
       else
         match ocaml_pstr_recmodule with
-        [ Some pstr_recmodule ->
+        [ Some pstr_recmodule →
             let nel =
               List.map
-                (fun (n, me) ->
+                (fun (n, me) →
                    let (me, mt) =
                      match me with
-                     [ MeTyc _ me mt -> (me, mt)
-                     | _ ->
+                     [ MeTyc _ me mt → (me, mt)
+                     | _ →
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints" ]
                    in
@@ -1314,180 +1322,204 @@ and str_item s l =
                 (uv nel)
             in
             [mkstr loc (pstr_recmodule nel) :: l]
-        | None -> error loc "no recursive module in this ocaml version" ]
-  | StMty loc n mt -> [mkstr loc (Pstr_modtype (uv n) (module_type mt)) :: l]
-  | StOpn loc id ->
-      [mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l]
-  | StTyp loc tdl ->
-      [mkstr loc (Pstr_type (List.map mktype_decl (uv tdl))) :: l]
-  | StUse loc fn sl ->
+        | None → error loc "no recursive module in this ocaml version" ]
+  | StMty loc n mt →
+      [mkstr loc (ocaml_pstr_modtype (uv n) (module_type mt)) :: l]
+  | StOpn loc id →
+      [mkstr loc (ocaml_pstr_open (long_id_of_string_list loc (uv id))) :: l]
+  | StTyp loc tdl →
+      [mkstr loc (ocaml_pstr_type (List.map mktype_decl (uv tdl))) :: l]
+  | StUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
-        (fun () -> List.fold_right (fun (si, _) -> str_item si) (uv sl) l) ()
-  | StVal loc rf pel ->
+        (fun () → List.fold_right (fun (si, _) → str_item si) (uv sl) l) ()
+  | StVal loc rf pel →
       [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l]
-  | StXtr loc _ _ -> error loc "bad ast StXtr" ]
+  | StXtr loc _ _ → error loc "bad ast StXtr" ]
 and class_type =
   fun
-  [ CtAcc loc _ _ | CtApp loc _ _ | CtIde loc _ as ct ->
+  [ CtAcc loc _ _ | CtApp loc _ _ | CtIde loc _ as ct →
       let li = long_id_class_type loc ct in
       match ocaml_pcty_constr with
-      [ Some pcty_constr -> mkcty loc (pcty_constr li [])
-      | None -> error loc "no class type desc in this ocaml version" ]
-  | CtCon loc ct tl ->
+      [ Some pcty_constr → mkcty loc (pcty_constr li [])
+      | None → error loc "no class type desc in this ocaml version" ]
+  | CtCon loc ct tl →
       let li = long_id_class_type loc ct in
       match ocaml_pcty_constr with
-      [ Some pcty_constr -> mkcty loc (pcty_constr li (List.map ctyp (uv tl)))
-      | None -> error loc "no class type desc in this ocaml version" ]
-  | CtFun loc (TyLab _ lab t) ct ->
+      [ Some pcty_constr → mkcty loc (pcty_constr li (List.map ctyp (uv tl)))
+      | None → error loc "no class type desc in this ocaml version" ]
+  | CtFun loc (TyLab _ lab t) ct →
       match ocaml_pcty_fun with
-      [ Some pcty_fun ->
+      [ Some pcty_fun →
           mkcty loc (pcty_fun (uv lab) (ctyp t) (class_type ct))
-      | None -> error loc "no class type desc in this ocaml version" ]
-  | CtFun loc (TyOlb loc1 lab t) ct ->
+      | None → error loc "no class type desc in this ocaml version" ]
+  | CtFun loc (TyOlb loc1 lab t) ct →
       match ocaml_pcty_fun with
-      [ Some pcty_fun ->
+      [ Some pcty_fun →
           let t =
             let loc = loc1 in
             <:ctyp< option $t$ >>
           in
           mkcty loc (pcty_fun ("?" ^ uv lab) (ctyp t) (class_type ct))
-      | None -> error loc "no class type desc in this ocaml version" ]
-  | CtFun loc t ct ->
+      | None → error loc "no class type desc in this ocaml version" ]
+  | CtFun loc t ct →
       match ocaml_pcty_fun with
-      [ Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
-      | None -> error loc "no class type desc in this ocaml version" ]
-  | CtSig loc t_o ctfl ->
+      [ Some pcty_fun → mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
+      | None → error loc "no class type desc in this ocaml version" ]
+  | CtSig loc t_o ctfl →
       match ocaml_pcty_signature with
-      [ Some pcty_signature ->
+      [ Some pcty_signature →
           let t =
             match uv t_o with
-            [ Some t -> t
-            | None -> TyAny loc ]
+            [ Some t → t
+            | None → TyAny loc ]
           in
           let cil = List.fold_right class_sig_item (uv ctfl) [] in
           mkcty loc (pcty_signature (ctyp t, cil))
-      | None -> error loc "no class type desc in this ocaml version" ]
-  | CtXtr loc _ _ -> error loc "bad ast CtXtr" ]
+      | None → error loc "no class type desc in this ocaml version" ]
+  | CtXtr loc _ _ → error loc "bad ast CtXtr" ]
 and class_sig_item c l =
   match c with
-  [ CgCtr loc t1 t2 ->
+  [ CgCtr loc t1 t2 →
       match ocaml_pctf_cstr with
-      [ Some pctf_cstr ->  [pctf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
-      | None -> error loc "no class constraint in this ocaml version" ]
-  | CgDcl loc cl -> List.fold_right class_sig_item (uv cl) l
-  | CgInh loc ct -> [Pctf_inher (class_type ct) :: l]
-  | CgMth loc pf s t ->
-      [Pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc) ::
+      [ Some pctf_cstr →
+          let loc = mkloc loc in
+          [ocaml_class_type_field loc (pctf_cstr (ctyp t1, ctyp t2, loc)) ::
+           l]
+      | None → error loc "no class constraint in this ocaml version" ]
+  | CgDcl loc cl → List.fold_right class_sig_item (uv cl) l
+  | CgInh loc ct →
+      [ocaml_class_type_field (mkloc loc) (Pctf_inher (class_type ct)) :: l]
+  | CgMth loc pf s t →
+      [ocaml_class_type_field (mkloc loc)
+         (ocaml_pctf_meth
+            (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) ::
        l]
-  | CgVal loc b s t ->
-      [ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc) :: l]
-  | CgVir loc b s t ->
-      [Pctf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) ::
+  | CgVal loc b s t →
+      [ocaml_class_type_field (mkloc loc)
+         (ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc)) ::
+       l]
+  | CgVir loc b s t →
+      [ocaml_class_type_field (mkloc loc)
+         (ocaml_pctf_virt
+            (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
        l] ]
 and class_expr =
   fun
-  [ CeApp loc _ _ as c ->
+  [ CeApp loc _ _ as c →
       match ocaml_pcl_apply with
-      [ Some pcl_apply ->
+      [ Some pcl_apply →
           let (ce, el) = class_expr_fa [] c in
           let el = List.rev (List.fold_left label_expr [] el) in
           mkpcl loc (pcl_apply (class_expr ce) el)
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeCon loc id tl ->
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeCon loc id tl →
       match ocaml_pcl_constr with
-      [ Some pcl_constr ->
+      [ Some pcl_constr →
           mkpcl loc
-            (pcl_constr
-               (long_id_of_string_list loc (uv id)) (List.map ctyp (uv tl)))
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc (PaLab ploc lppo) ce ->
+            (pcl_constr (long_id_of_string_list loc (uv id))
+               (List.map ctyp (uv tl)))
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeFun loc (PaLab ploc lppo) ce →
       match ocaml_pcl_fun with
-      [ Some pcl_fun ->
+      [ Some pcl_fun →
           match uv lppo with
-          [ [(p, po)] -> do {
+          [ [(p, po)] →
               let lab = label_of_patt p in
               let p =
                 match uv po with
-                [ Some p -> p
-                | None -> p ]
+                [ Some p → p
+                | None → p ]
               in
               mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
-          }
-        | [] | [_ :: _] -> error ploc "case class multi lab not yet impl" ]
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc (PaOlb _ p eo) ce ->
+          | [] | [_ :: _] → error ploc "case class multi lab not yet impl" ]
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeFun loc (PaOlb _ p eo) ce →
       match ocaml_pcl_fun with
-      [ Some pcl_fun ->
+      [ Some pcl_fun →
           let lab = label_of_patt p in
           let (p, eo) =
             match uv eo with
-            [ Some (ExOlb _ p eo) -> (p, eo)
-            | Some _ | None -> (p, eo) ]
+            [ Some (ExOlb _ p eo) → (p, eo)
+            | Some _ | None → (p, eo) ]
           in
           mkpcl loc
             (pcl_fun ("?" ^ lab) (option expr (uv eo)) (patt p)
                (class_expr ce))
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc p ce ->
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeFun loc p ce →
       match ocaml_pcl_fun with
-      [ Some pcl_fun -> mkpcl loc (pcl_fun "" None (patt p) (class_expr ce))
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeLet loc rf pel ce ->
+      [ Some pcl_fun → mkpcl loc (pcl_fun "" None (patt p) (class_expr ce))
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeLet loc rf pel ce →
       match ocaml_pcl_let with
-      [ Some pcl_let ->
+      [ Some pcl_let →
           mkpcl loc
             (pcl_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (class_expr ce))
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeStr loc po cfl ->
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeStr loc po cfl →
       match ocaml_pcl_structure with
-      [ Some pcl_structure ->
+      [ Some pcl_structure →
           let p =
             match uv po with
-            [ Some p -> p
-            | None -> PaAny loc ]
+            [ Some p → p
+            | None → PaAny loc ]
           in
           let cil = List.fold_right class_str_item (uv cfl) [] in
-          mkpcl loc (pcl_structure (patt p, cil))
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeTyc loc ce ct ->
+          mkpcl loc (pcl_structure (ocaml_class_structure (patt p) cil))
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeTyc loc ce ct →
       match ocaml_pcl_constraint with
-      [ Some pcl_constraint ->
+      [ Some pcl_constraint →
           mkpcl loc (pcl_constraint (class_expr ce) (class_type ct))
-      | None -> error loc "no class expr desc in this ocaml version" ]
-  | CeXtr loc _ _ -> error loc "bad ast CeXtr" ]
+      | None → error loc "no class expr desc in this ocaml version" ]
+  | CeXtr loc _ _ → error loc "bad ast CeXtr" ]
 and class_str_item c l =
   match c with
-  [ CrCtr loc t1 t2 ->
+  [ CrCtr loc t1 t2 →
       match ocaml_pcf_cstr with
-      [ Some pcf_cstr -> [pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
-      | None -> error loc "no constraint in this ocaml version" ]
-  | CrDcl loc cl -> List.fold_right class_str_item (uv cl) l
-  | CrInh loc ce pb -> [ocaml_pcf_inher (class_expr ce) (uv pb) :: l]
-  | CrIni loc e ->
+      [ Some pcf_cstr →
+          let loc = mkloc loc in
+          [ocaml_class_field loc (pcf_cstr (ctyp t1, ctyp t2, loc)) :: l]
+      | None → error loc "no constraint in this ocaml version" ]
+  | CrDcl loc cl → List.fold_right class_str_item (uv cl) l
+  | CrInh loc ce pb →
+      [ocaml_class_field (mkloc loc)
+         (ocaml_pcf_inher (class_expr ce) (uv pb)) ::
+       l]
+  | CrIni loc e →
       match ocaml_pcf_init with
-      [ Some pcf_init -> [pcf_init (expr e) :: l]
-      | None -> error loc "no initializer in this ocaml version" ]
-  | CrMth loc ovf pf s ot e ->
+      [ Some pcf_init →
+          [ocaml_class_field (mkloc loc) (pcf_init (expr e)) :: l]
+      | None → error loc "no initializer in this ocaml version" ]
+  | CrMth loc ovf pf s ot e →
       let e =
         match ocaml_pexp_poly with
-        [ Some pexp_poly ->
-            let t = option (fun t -> add_polytype t) (uv ot) in
+        [ Some pexp_poly →
+            let t = option (fun t → add_polytype t) (uv ot) in
             mkexp loc (pexp_poly (expr e) t)
-        | None ->
+        | None →
             if uv ot = None then expr e
             else error loc "no method with label in this ocaml version" ]
       in
-      [ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l]
-  | CrVal loc ovf mf s e ->
-      [ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l]
-  | CrVav loc mf s t ->
+      [ocaml_class_field (mkloc loc)
+         (ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc)) ::
+       l]
+  | CrVal loc ovf mf s e →
+      [ocaml_class_field (mkloc loc)
+         (ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc)) ::
+       l]
+  | CrVav loc mf s t →
       match ocaml_pcf_valvirt with
-      [ Some pcf_valvirt ->
-          [pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc) :: l]
-      | None ->
-          error loc "no virtual value in this ocaml version" ]
-  | CrVir loc b s t ->
-      [Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l] ]
+      [ Some pcf_valvirt →
+          [ocaml_class_field (mkloc loc)
+             (pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc)) ::
+           l]
+      | None → error loc "no virtual value in this ocaml version" ]
+  | CrVir loc b s t →
+      [ocaml_class_field (mkloc loc)
+         (ocaml_pcf_virt
+            (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
+       l] ]
 ;
 
 value interf fname ast = do {
@@ -1502,32 +1534,32 @@ value implem fname ast = do {
 
 value directive loc =
   fun
-  [ None -> Pdir_none
-  | Some <:expr< $str:s$ >> -> Pdir_string s
-  | Some <:expr< $int:i$ >> -> Pdir_int (int_of_string_l loc i)
-  | Some <:expr< True >> ->
+  [ None → Pdir_none
+  | Some <:expr< $str:s$ >> → Pdir_string s
+  | Some <:expr< $int:i$ >> → Pdir_int (int_of_string_l loc i)
+  | Some <:expr< True >> →
       match ocaml_pdir_bool with
-      [ Some pdir_bool -> pdir_bool True
-      | None -> error loc "no such kind of directive in this ocaml version" ]
-  | Some <:expr< False >> ->
+      [ Some pdir_bool → pdir_bool True
+      | None → error loc "no such kind of directive in this ocaml version" ]
+  | Some <:expr< False >> →
       match ocaml_pdir_bool with
-      [ Some pdir_bool -> pdir_bool False
-      | None -> error loc "no such kind of directive in this ocaml version" ]
-  | Some e ->
+      [ Some pdir_bool → pdir_bool False
+      | None → error loc "no such kind of directive in this ocaml version" ]
+  | Some e →
       let sl =
         loop e where rec loop =
           fun
-          [ <:expr< $lid:i$ >> -> [i]
-          | <:expr< $uid:i$ >> -> [i]
-          | <:expr< $e$.$lid:i$ >> -> loop e @ [i]
-          | <:expr< $e$.$uid:i$ >> -> loop e @ [i]
-          | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
+          [ <:expr< $lid:i$ >> → [i]
+          | <:expr< $uid:i$ >> → [i]
+          | <:expr< $e$.$lid:i$ >> → loop e @ [i]
+          | <:expr< $e$.$uid:i$ >> → loop e @ [i]
+          | e → Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
       in
       Pdir_ident (long_id_of_string_list loc sl) ]
 ;
 
 value phrase =
   fun
-  [ StDir loc d dp -> Ptop_dir (uv d) (directive loc (uv dp))
-  | si -> Ptop_def (str_item si []) ]
+  [ StDir loc d dp → Ptop_dir (uv d) (directive loc (uv dp))
+  | si → Ptop_def (str_item si []) ]
 ;

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.27 2012/06/01 01:43:01 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.28 2012/06/01 02:56:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -339,6 +339,10 @@ value ocaml_pexp_assert fname loc e =
   ELSE Pexp_assert e END
 ;
 
+value ocaml_pexp_construct li po chk_arity =
+  Pexp_construct (mknoloc li) po chk_arity
+;
+
 value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_function pel
   ELSE Pexp_function lab eo pel END
@@ -348,6 +352,8 @@ value ocaml_pexp_lazy =
   IFDEF OCAML_VERSION <= OCAML_3_04 THEN None
   ELSE Some (fun e -> Pexp_lazy e) END
 ;
+
+value ocaml_pexp_ident li = Pexp_ident (mknoloc li);
 
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
@@ -410,8 +416,12 @@ value ocaml_ppat_array =
   ELSE Some (fun pl -> Ppat_array pl) END
 ;
 
-value ocaml_ppat_construct li po chk_arity  =
-  Ppat_construct li po chk_arity
+value ocaml_ppat_construct li li_loc po chk_arity  =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN txt
+    Ppat_construct li po chk_arity
+  ELSE
+    Ppat_construct (mkloc li_loc li) po chk_arity
+  END
 ;
 
 value ocaml_ppat_construct_args =
@@ -555,7 +565,8 @@ value ocaml_pcf_valvirt =
   ELSE
     let ocaml_pcf (s, mf, t, loc) =
       let mf = if mf then Mutable else Immutable in
-      Pcf_valvirt (s, mf, t, loc)
+      IFDEF OCAML_VERSION < OCAML_4_00 THEN Pcf_valvirt (s, mf, t, loc)
+      ELSE Pcf_valvirt (mkloc loc s, mf, t) END
     in
     Some ocaml_pcf
   END
@@ -602,13 +613,17 @@ value ocaml_pcl_structure =
 
 value ocaml_pctf_cstr =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc)) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
+    Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc))
+  ELSE
+    Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2)) END
 ;
 
 value ocaml_pctf_val (s, mf, t, loc) =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN Pctf_val (s, Public, mf, Some t, loc)
-  ELSIFDEF OCAML_VERSION >= OCAML_3_10 THEN Pctf_val (s, mf, Concrete, t, loc)
-  ELSE Pctf_val (s, mf, Some t, loc) END
+  ELSIFDEF OCAML_VERSION < OCAML_3_10 THEN Pctf_val (s, mf, Some t, loc)
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_val (s, mf, Concrete, t, loc)
+  ELSE Pctf_val (s, mf, Concrete, t) END
 ;
 
 value ocaml_pcty_constr =
@@ -627,7 +642,17 @@ value ocaml_pcty_fun =
 
 value ocaml_pcty_signature =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun (t, cil) -> Pcty_signature (t, cil)) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
+    Some (fun (t, cil) -> Pcty_signature (t, cil))
+  ELSE
+    let f (t, ctfl) =
+      let cs =
+        {pcsig_self = t; pcsig_fields = ctfl; pcsig_loc = t.ptyp_loc}
+      in
+      Pcty_signature cs
+    in
+    Some f
+  END
 ;
 
 value ocaml_pdir_bool =

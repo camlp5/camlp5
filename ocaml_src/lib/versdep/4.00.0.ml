@@ -32,7 +32,7 @@ let loc_none =
    Location.loc_ghost = true}
 ;;
 
-let mkloc loc txt = { txt; loc };;
+let mkloc loc txt = { Location.txt = txt; loc = loc };;
 let mknoloc txt = mkloc loc_none txt;;
 
 let ocaml_id_or_li_of_string_list loc sl =
