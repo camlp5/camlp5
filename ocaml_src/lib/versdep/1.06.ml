@@ -197,7 +197,8 @@ let ocaml_pexp_pack = None;;
 let ocaml_pexp_poly = None;;
 
 let ocaml_pexp_record lel eo =
-  function
+  let lel = List.map (fun (li, loc, e) -> mkloc loc li, e) lel in
+  match eo with
     Some _ -> invalid_arg "ocaml_pexp_record"
   | None -> Pexp_record lel
 ;;

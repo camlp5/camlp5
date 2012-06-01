@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.32 2012/06/01 12:58:27 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.33 2012/06/01 18:34:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -440,12 +440,12 @@ value ocaml_pexp_poly =
 ;
 
 value ocaml_pexp_record lel eo =
+  let lel = List.map (fun (li, loc, e) → (mkloc loc li, e)) lel in
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-    fun
+    match eo with
     [ Some _ -> invalid_arg "ocaml_pexp_record"
     | None -> Pexp_record lel ]
   ELSE
-    let lel = List.map (fun (li, loc, e) → (mkloc loc li, e)) lel in
     Pexp_record lel eo
   END
 ;

@@ -1101,7 +1101,7 @@ let rec expr =
   | ExJdf (loc, jl, e) ->
       begin match jocaml_pexp_def with
         Some pexp_def ->
-          mkexp loc (pexp_def (List.rev_map mkjoinclause (uv jl)) (expr e))
+          mkexp loc (pexp_def (list_rev_map mkjoinclause (uv jl)) (expr e))
       | None -> error loc "no 'def in' in this ocaml version"
       end
   | ExLab (loc, _) -> error loc "labeled expression not allowed here 1"
@@ -1276,10 +1276,10 @@ and label_expr rev_al =
   | e -> ("", expr e) :: rev_al
 and mkjoinclause jc =
   let jcval =
-    List.rev_map
+    list_rev_map
       (fun (loc, jpl, e) ->
          let jpl =
-           List.rev_map
+           list_rev_map
              (fun (locp, locs, jp) ->
                 let (loc, s) = locs in
                 let p =
