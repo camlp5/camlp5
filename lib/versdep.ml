@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.28 2012/06/01 02:56:42 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.29 2012/06/01 03:03:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -222,7 +222,7 @@ value ocaml_ptype_variant ctl priv =
         let ctl =
           List.map
             (fun (c, tl, rto, loc) ->
-               if rto <> None then raise Exit else (c, tl, None, loc))
+               if rto <> None then raise Exit else (mknoloc c, tl, None, loc))
             ctl
         in
           Some (Ptype_variant ctl)
@@ -239,8 +239,10 @@ value ocaml_ptyp_arrow lab t1 t2 =
 
 value ocaml_ptyp_class li tl ll =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Ptyp_class li tl
-  ELSE Ptyp_class li tl ll END
+  ELSE Ptyp_class (mknoloc li) tl ll END
 ;
+
+value ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li) tl;
 
 value ocaml_ptyp_package =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
@@ -277,6 +279,10 @@ value ocaml_ptyp_variant catl clos sl_opt =
     in
     Some (Ptyp_variant catl clos sl_opt)
   END
+;
+
+value ocaml_package_type li ltl =
+  (mknoloc li, List.map (fun (li, t) → (mkloc t.ptyp_loc li, t)) ltl)
 ;
 
 value ocaml_const_int32 =
