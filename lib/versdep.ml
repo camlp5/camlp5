@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.31 2012/06/01 09:55:29 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.32 2012/06/01 12:58:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -95,13 +95,19 @@ value list_map_check f l =
 ;
 
 value ocaml_value_description t p =
-  IFDEF OCAML_VERSION < OCAML_4_00 THEN (t, p)
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN {pval_type = t; pval_prim = p}
   ELSE {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc} END
 ;
 
-value ocaml_class_type_field loc ctfd = {pctf_desc = ctfd; pctf_loc = loc};
+value ocaml_class_type_field loc ctfd =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN ctfd
+  ELSE {pctf_desc = ctfd; pctf_loc = loc} END
+;
 
-value ocaml_class_field loc cfd = {pcf_desc = cfd; pcf_loc = loc};
+value ocaml_class_field loc cfd =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN cfd
+  ELSE {pcf_desc = cfd; pcf_loc = loc} END
+;
 
 value ocaml_type_declaration params cl tk pf tm loc variance =
   IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
@@ -162,7 +168,10 @@ value ocaml_class_expr =
   ELSE Some (fun d loc -> {pcl_desc = d; pcl_loc = loc}) END
 ;
 
-value ocaml_class_structure p cil = {pcstr_pat = p; pcstr_fields = cil};
+value ocaml_class_structure p cil =
+  IFDEF OCAML_VERSION <= OCAML_4_00 THEN (p, cil)
+  ELSE {pcstr_pat = p; pcstr_fields = cil} END
+;
 
 value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
@@ -435,7 +444,6 @@ value ocaml_pexp_record lel eo =
     fun
     [ Some _ -> invalid_arg "ocaml_pexp_record"
     | None -> Pexp_record lel ]
-  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN fun eo -> Pexp_record lel eo
   ELSE
     let lel = List.map (fun (li, loc, e) → (mkloc loc li, e)) lel in
     Pexp_record lel eo
@@ -465,7 +473,7 @@ value ocaml_ppat_array =
 ;
 
 value ocaml_ppat_construct li li_loc po chk_arity  =
-  IFDEF OCAML_VERSION < OCAML_4_00 THEN txt
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN
     Ppat_construct li po chk_arity
   ELSE
     Ppat_construct (mkloc li_loc li) po chk_arity
@@ -486,10 +494,9 @@ value ocaml_ppat_lazy =
 ;
 
 value ocaml_ppat_record lpl is_closed =
-  IFDEF OCAML_VERSION >= OCAML_3_12 THEN
-    let lpl = List.map (fun (li, loc, p) → (mkloc loc li, p)) lpl in
-    Ppat_record lpl (if is_closed then Closed else Open)
-  ELSE Ppat_record lpl END
+  let lpl = List.map (fun (li, loc, p) → (mkloc loc li, p)) lpl in
+  IFDEF OCAML_VERSION < OCAML_3_12 THEN Ppat_record lpl
+  ELSE Ppat_record lpl (if is_closed then Closed else Open) END
 ;
 
 value ocaml_ppat_type =
@@ -678,7 +685,10 @@ value ocaml_pcf_valvirt =
   END
 ;
 
-value ocaml_pcf_virt (s, pf, t, loc) = Pcf_virt (mkloc loc s, pf, t);
+value ocaml_pcf_virt (s, pf, t, loc) =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN Pcf_virt (s, pf, t, loc)
+  ELSE Pcf_virt (mkloc loc s, pf, t) END
+;
 
 value ocaml_pcl_apply =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
@@ -727,7 +737,10 @@ value ocaml_pctf_cstr =
     Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2)) END
 ;
 
-value ocaml_pctf_meth (s, pf, t, loc) = Pctf_meth (s, pf, t);
+value ocaml_pctf_meth (s, pf, t, loc) =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_meth (s, pf, t, loc)
+  ELSE Pctf_meth (s, pf, t) END
+;
 
 value ocaml_pctf_val (s, mf, t, loc) =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN Pctf_val (s, Public, mf, Some t, loc)
@@ -736,7 +749,10 @@ value ocaml_pctf_val (s, mf, t, loc) =
   ELSE Pctf_val (s, mf, Concrete, t) END
 ;
 
-value ocaml_pctf_virt (s, pf, t, loc) = Pctf_virt (s, pf, t);
+value ocaml_pctf_virt (s, pf, t, loc) =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_virt (s, pf, t, loc)
+  ELSE Pctf_virt (s, pf, t) END
+;
 
 value ocaml_pcty_constr =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
