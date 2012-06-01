@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.46 2012/06/01 02:56:42 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.47 2012/06/01 08:34:49 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -549,11 +549,11 @@ value rec patt =
   [ PaAcc loc p1 p2 →
       let p =
         match patt_long_id [] p1 with
-        [ (<:patt< $uid:i$ >>, il) →
+        [ (<:patt:< $uid:i$ >>, il) →
             match p2 with
             [ <:patt< $uid:s$ >> →
                 ocaml_ppat_construct (mkli (conv_con s) [i :: il])
-                  (mkloc iloc) None (not Prtools.no_constructors_arity.val)
+                  (mkloc loc) None (not Prtools.no_constructors_arity.val)
             | _ → error (loc_of_patt p2) "bad access pattern" ]
         | _ → error (loc_of_patt p2) "bad pattern" ]
       in

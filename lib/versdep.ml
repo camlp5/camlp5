@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.29 2012/06/01 03:03:52 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.30 2012/06/01 08:34:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -94,6 +94,11 @@ value list_map_check f l =
     | [] -> Some (List.rev rev_l) ]
 ;
 
+value ocaml_value_description t p =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN (t, p)
+  ELSE {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc} END
+;
+
 value ocaml_type_declaration params cl tk pf tm loc variance =
   IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
     Right
@@ -133,7 +138,7 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
              ptype_variance = variance}
         ELSE
-          let params = List.map (fun os -> Some os) params in
+          let params = List.map (fun os -> Some (mknoloc os)) params in
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -175,11 +180,14 @@ value ocaml_ptype_record ltl priv =
       let priv = if priv then Private else Public in
       Ptype_record ltl priv
     END
-  ELSIFDEF OCAML_VERSION >= OCAML_3_11 THEN
-    Ptype_record ltl
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_3_11 THEN
     let priv = if priv then Private else Public in
     Ptype_record ltl priv
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
+    Ptype_record ltl
+  ELSE
+    Ptype_record
+      (List.map (fun (s, mf, ct, loc) → (mkloc loc s, mf, ct, loc)) ltl)
   END
 ;
 
@@ -417,6 +425,8 @@ value ocaml_pexp_variant =
   END
 ;
 
+value ocaml_ppat_alias p i iloc = Ppat_alias p (mkloc iloc i);
+
 value ocaml_ppat_array =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSE Some (fun pl -> Ppat_array pl) END
@@ -432,7 +442,9 @@ value ocaml_ppat_construct li li_loc po chk_arity  =
 
 value ocaml_ppat_construct_args =
   fun
-  [ Ppat_construct li po chk_arity -> Some (li, po, chk_arity)
+  [ Ppat_construct li po chk_arity ->
+      IFDEF OCAML_VERSION < OCAML_4_00 THEN Some (li, 0, po, chk_arity)
+      ELSE Some (li.txt, li.loc, po, chk_arity) END 
   | _ -> None ]
 ;
 
@@ -443,19 +455,22 @@ value ocaml_ppat_lazy =
 
 value ocaml_ppat_record lpl is_closed =
   IFDEF OCAML_VERSION >= OCAML_3_12 THEN
+    let lpl = List.map (fun (li, loc, p) → (mkloc loc li, p)) lpl in
     Ppat_record lpl (if is_closed then Closed else Open)
   ELSE Ppat_record lpl END
 ;
 
 value ocaml_ppat_type =
   IFDEF OCAML_VERSION <= OCAML_2_99 THEN None
-  ELSE Some (fun sl -> Ppat_type sl) END
+  ELSE Some (fun loc li -> Ppat_type (mkloc loc li)) END
 ;
 
 value ocaml_ppat_unpack =
   IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN None
   ELSE Some (fun s -> Ppat_unpack s, fun pt -> Ptyp_package pt) END
 ;
+
+value ocaml_ppat_var loc s = Ppat_var (mkloc loc s);
 
 value ocaml_ppat_variant =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN None
@@ -668,8 +683,10 @@ value ocaml_pdir_bool =
 
 value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
-  ELSE Some (fun me -> Pwith_modsubst me) END
+  ELSE Some (fun loc me -> Pwith_modsubst (mkloc loc me)) END
 ;
+
+value ocaml_pwith_module loc me = Pwith_module (mkloc loc me);
 
 value ocaml_pwith_typesubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
