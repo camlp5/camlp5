@@ -1603,11 +1603,15 @@ and class_sig_item c l =
       ocaml_class_type_field (mkloc loc) (Pctf_inher (class_type ct)) :: l
   | CgMth (loc, pf, s, t) ->
       ocaml_class_type_field (mkloc loc)
-        (Pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) :: l
+        (ocaml_pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc))
+        :: l
   | CgVal (loc, b, s, t) ->
-      ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc) :: l
+      ocaml_class_type_field (mkloc loc)
+        (ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc)) :: l
   | CgVir (loc, b, s, t) ->
-      Pctf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
+      ocaml_class_type_field (mkloc loc)
+        (ocaml_pctf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc))
+        :: l
 and class_expr =
   function
     CeApp (loc, _, _) as c ->
@@ -1677,7 +1681,7 @@ and class_expr =
             | None -> PaAny loc
           in
           let cil = List.fold_right class_str_item (uv cfl) [] in
-          mkpcl loc (pcl_structure (patt p, cil))
+          mkpcl loc (pcl_structure (ocaml_class_structure (patt p) cil))
       | None -> error loc "no class expr desc in this ocaml version"
       end
   | CeTyc (loc, ce, ct) ->
@@ -1691,14 +1695,18 @@ and class_str_item c l =
   match c with
     CrCtr (loc, t1, t2) ->
       begin match ocaml_pcf_cstr with
-        Some pcf_cstr -> pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l
+        Some pcf_cstr ->
+          let loc = mkloc loc in
+          ocaml_class_field loc (pcf_cstr (ctyp t1, ctyp t2, loc)) :: l
       | None -> error loc "no constraint in this ocaml version"
       end
   | CrDcl (loc, cl) -> List.fold_right class_str_item (uv cl) l
-  | CrInh (loc, ce, pb) -> ocaml_pcf_inher (class_expr ce) (uv pb) :: l
+  | CrInh (loc, ce, pb) ->
+      ocaml_class_field (mkloc loc)
+        (ocaml_pcf_inher (class_expr ce) (uv pb)) :: l
   | CrIni (loc, e) ->
       begin match ocaml_pcf_init with
-        Some pcf_init -> pcf_init (expr e) :: l
+        Some pcf_init -> ocaml_class_field (mkloc loc) (pcf_init (expr e)) :: l
       | None -> error loc "no initializer in this ocaml version"
       end
   | CrMth (loc, ovf, pf, s, ot, e) ->
@@ -1711,16 +1719,22 @@ and class_str_item c l =
             if uv ot = None then expr e
             else error loc "no method with label in this ocaml version"
       in
-      ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc) :: l
+      ocaml_class_field (mkloc loc)
+        (ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc)) :: l
   | CrVal (loc, ovf, mf, s, e) ->
-      ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc) :: l
+      ocaml_class_field (mkloc loc)
+        (ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc)) :: l
   | CrVav (loc, mf, s, t) ->
       begin match ocaml_pcf_valvirt with
-        Some pcf_valvirt -> pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc) :: l
+        Some pcf_valvirt ->
+          ocaml_class_field (mkloc loc)
+            (pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc)) :: l
       | None -> error loc "no virtual value in this ocaml version"
       end
   | CrVir (loc, b, s, t) ->
-      Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
+      ocaml_class_field (mkloc loc)
+        (ocaml_pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc))
+        :: l
 ;;
 
 let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;

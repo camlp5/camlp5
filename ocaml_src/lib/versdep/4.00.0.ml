@@ -59,6 +59,10 @@ let ocaml_class_type_field loc ctfd =
    {pctf_desc = ctfd; pctf_loc = loc}
 ;;
 
+let ocaml_class_field loc cfd =
+   {pcf_desc = cfd; pcf_loc = loc}
+;;
+
 let ocaml_type_declaration params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->
@@ -319,26 +323,30 @@ let ocaml_pcf_init = Some (fun e -> Pcf_init e);;
 let ocaml_pcf_meth (s, pf, ovf, e, loc) =
   let pf = if pf then Private else Public in
   let ovf = if ovf then Override else Fresh in
-  Pcf_meth (mkloc loc s, pf, ovf, e)
+  Pcf_meth (mkloc s loc, pf, ovf, e)
 ;;
 
 let ocaml_pcf_val (s, mf, ovf, e, loc) =
   let mf = if mf then Mutable else Immutable in
   let ovf = if ovf then Override else Fresh in
-  Pcf_val (mkloc loc s, mf, ovf, e)
+  Pcf_val (mkloc s loc, mf, ovf, e)
+;;
+
+let ocaml_pcf_virt (s, pf, t, loc) =
+  Pcf_virt (mkloc s loc, pf, t)
 ;;
 
 let ocaml_pcf_valvirt =
   let ocaml_pcf (s, mf, t, loc) =
     let mf = if mf then Mutable else Immutable in
-    Pcf_valvirt (mkloc loc s, mf, t)
+    Pcf_valvirt (mkloc s loc, mf, t)
   in
   Some ocaml_pcf
 ;;
 
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
 
-let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (li, ctl));;
+let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (mknoloc li, ctl));;
 
 let ocaml_pcl_constraint = Some (fun ce ct -> Pcl_constraint (ce, ct));;
 
@@ -350,7 +358,11 @@ let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 
 let ocaml_pctf_cstr = Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2));;
 
+let ocaml_pctf_meth (s, pf, t, loc) = Pctf_meth (s, pf, t);;
+
 let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Concrete, t);;
+
+let ocaml_pctf_virt (s, pf, t, loc) = Pctf_virt (s, pf, t);;
 
 let ocaml_pcty_constr = Some (fun li ltl -> Pcty_constr (mknoloc li, ltl));;
 
