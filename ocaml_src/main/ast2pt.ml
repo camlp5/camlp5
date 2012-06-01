@@ -368,8 +368,7 @@ and package_of_module_type loc mt =
         mt, with_con
     | _ -> mt, []
   in
-  let li = module_type_long_id mt in
-  ocaml_package_type li with_con
+  let li = module_type_long_id mt in ocaml_package_type li with_con
 ;;
 
 let variance_of_var =
@@ -436,8 +435,7 @@ let type_decl tl priv cl =
       let m =
         match t with
           MLast.TyQuo (_, s) ->
-            if List.exists (fun (t, _) -> Some s = uv t) tl then
-              Some (ctyp t)
+            if List.exists (fun (t, _) -> Some s = uv t) tl then Some (ctyp t)
             else None
         | _ -> Some (ctyp t)
       in
@@ -572,12 +570,11 @@ let rec patt =
     PaAcc (loc, p1, p2) ->
       let p =
         match patt_long_id [] p1 with
-          MLast.PaUid (iloc, i), il ->
+          MLast.PaUid (loc, i), il ->
             begin match p2 with
               MLast.PaUid (_, s) ->
-                ocaml_ppat_construct (mkli (conv_con s) (i :: il))
-                  (mkloc iloc) None
-                  (not !(Prtools.no_constructors_arity))
+                ocaml_ppat_construct (mkli (conv_con s) (i :: il)) (mkloc loc)
+                  None (not !(Prtools.no_constructors_arity))
             | _ -> error (loc_of_patt p2) "bad access pattern"
             end
         | _ -> error (loc_of_patt p2) "bad pattern"
@@ -586,8 +583,8 @@ let rec patt =
   | PaAli (loc, p1, p2) ->
       let (p, i, iloc) =
         match p1, p2 with
-          p, MLast.PaLid (loc, s) -> p, s, loc
-        | MLast.PaLid (loc, s), p -> p, s, loc
+          p, MLast.PaLid (_, s) -> p, s, loc
+        | MLast.PaLid (_, s), p -> p, s, loc
         | _ -> error loc "incorrect alias pattern"
       in
       mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
@@ -701,7 +698,8 @@ let rec patt =
       end
   | PaXtr (loc, _, _) -> error loc "bad ast PaXtr"
 and mklabpat (lab, p) =
-  patt_label_long_id lab, mkloc (loc_of_patt lab), patt p;;
+  patt_label_long_id lab, mkloc (loc_of_patt lab), patt p
+;;
 
 let rec expr_fa al =
   function
@@ -926,8 +924,8 @@ let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
       mkexp loc
-        (ocaml_pexp_apply
-           (mkexp loc (ocaml_pexp_ident (Lident "!"))) ["", expr x])
+        (ocaml_pexp_apply (mkexp loc (ocaml_pexp_ident (Lident "!")))
+           ["", expr x])
   | ExAcc (loc, _, _) as e ->
       let (e, l) =
         match sep_expr_acc [] e with
@@ -1030,7 +1028,7 @@ let rec expr =
                (mkexp loc (ocaml_pexp_ident (array_function "Array" "set")))
                ["", expr e1; "", expr e2; "", expr v])
       | ExBae (loc, e, el) -> expr (bigarray_set loc e (uv el) v)
-      | ExLid (_, lab) -> mkexp loc (ocaml_pexp_setinstvar lab (expr v))
+      | MLast.ExLid (_, lab) -> mkexp loc (ocaml_pexp_setinstvar lab (expr v))
       | ExSte (_, e1, e2) ->
           mkexp loc
             (ocaml_pexp_apply
@@ -1594,8 +1592,8 @@ and class_sig_item c l =
     CgCtr (loc, t1, t2) ->
       begin match ocaml_pctf_cstr with
         Some pctf_cstr ->
-           let loc = mkloc loc in
-           ocaml_class_type_field loc (pctf_cstr (ctyp t1, ctyp t2, loc)) :: l
+          let loc = mkloc loc in
+          ocaml_class_type_field loc (pctf_cstr (ctyp t1, ctyp t2, loc)) :: l
       | None -> error loc "no class constraint in this ocaml version"
       end
   | CgDcl (loc, cl) -> List.fold_right class_sig_item (uv cl) l
@@ -1603,15 +1601,18 @@ and class_sig_item c l =
       ocaml_class_type_field (mkloc loc) (Pctf_inher (class_type ct)) :: l
   | CgMth (loc, pf, s, t) ->
       ocaml_class_type_field (mkloc loc)
-        (ocaml_pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc))
-        :: l
+        (ocaml_pctf_meth
+           (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) ::
+      l
   | CgVal (loc, b, s, t) ->
       ocaml_class_type_field (mkloc loc)
-        (ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc)) :: l
+        (ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc)) ::
+      l
   | CgVir (loc, b, s, t) ->
       ocaml_class_type_field (mkloc loc)
-        (ocaml_pctf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc))
-        :: l
+        (ocaml_pctf_virt
+           (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
+      l
 and class_expr =
   function
     CeApp (loc, _, _) as c ->
@@ -1703,10 +1704,12 @@ and class_str_item c l =
   | CrDcl (loc, cl) -> List.fold_right class_str_item (uv cl) l
   | CrInh (loc, ce, pb) ->
       ocaml_class_field (mkloc loc)
-        (ocaml_pcf_inher (class_expr ce) (uv pb)) :: l
+        (ocaml_pcf_inher (class_expr ce) (uv pb)) ::
+      l
   | CrIni (loc, e) ->
       begin match ocaml_pcf_init with
-        Some pcf_init -> ocaml_class_field (mkloc loc) (pcf_init (expr e)) :: l
+        Some pcf_init ->
+          ocaml_class_field (mkloc loc) (pcf_init (expr e)) :: l
       | None -> error loc "no initializer in this ocaml version"
       end
   | CrMth (loc, ovf, pf, s, ot, e) ->
@@ -1720,21 +1723,25 @@ and class_str_item c l =
             else error loc "no method with label in this ocaml version"
       in
       ocaml_class_field (mkloc loc)
-        (ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc)) :: l
+        (ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc)) ::
+      l
   | CrVal (loc, ovf, mf, s, e) ->
       ocaml_class_field (mkloc loc)
-        (ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc)) :: l
+        (ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc)) ::
+      l
   | CrVav (loc, mf, s, t) ->
       begin match ocaml_pcf_valvirt with
         Some pcf_valvirt ->
           ocaml_class_field (mkloc loc)
-            (pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc)) :: l
+            (pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc)) ::
+          l
       | None -> error loc "no virtual value in this ocaml version"
       end
   | CrVir (loc, b, s, t) ->
       ocaml_class_field (mkloc loc)
-        (ocaml_pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc))
-        :: l
+        (ocaml_pcf_virt
+           (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
+      l
 ;;
 
 let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;

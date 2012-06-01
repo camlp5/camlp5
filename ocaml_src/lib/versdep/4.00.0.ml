@@ -25,14 +25,14 @@ let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
 
 let loc_none =
   let loc =
-    {Lexing.pos_fname = "_none_"; pos_lnum = 1; pos_bol = 0; pos_cnum = -1}
+    {Lexing.pos_fname = "_none_"; Lexing.pos_lnum = 1; Lexing.pos_bol = 0;
+     Lexing.pos_cnum = -1}
   in
-  {Location.loc_start = loc;
-   Location.loc_end = loc;
+  {Location.loc_start = loc; Location.loc_end = loc;
    Location.loc_ghost = true}
 ;;
 
-let mkloc loc txt = { Location.txt = txt; loc = loc };;
+let mkloc loc txt = {Location.txt = txt; Location.loc = loc};;
 let mknoloc txt = mkloc loc_none txt;;
 
 let ocaml_id_or_li_of_string_list loc sl =
@@ -63,16 +63,12 @@ let list_map_check f l =
 ;;
 
 let ocaml_value_description t p =
-   {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
+  {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
 ;;
 
-let ocaml_class_type_field loc ctfd =
-   {pctf_desc = ctfd; pctf_loc = loc}
-;;
+let ocaml_class_type_field loc ctfd = {pctf_desc = ctfd; pctf_loc = loc};;
 
-let ocaml_class_field loc cfd =
-   {pcf_desc = cfd; pcf_loc = loc}
-;;
+let ocaml_class_field loc cfd = {pcf_desc = cfd; pcf_loc = loc};;
 
 let ocaml_type_declaration params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
@@ -94,20 +90,20 @@ let ocaml_class_structure p cil = {pcstr_pat = p; pcstr_fields = cil};;
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
 let ocaml_pmty_functor sloc s mt1 mt2 =
-  Pmty_functor (mkloc sloc s, mt1, mt2);;
+  Pmty_functor (mkloc sloc s, mt1, mt2)
+;;
 
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
 
 let ocaml_pmty_with mt lcl =
-  let lcl = List.map (fun (s, c) -> mknoloc s, c) lcl in
-  Pmty_with (mt, lcl)
+  let lcl = List.map (fun (s, c) -> mknoloc s, c) lcl in Pmty_with (mt, lcl)
 ;;
 
 let ocaml_ptype_abstract = Ptype_abstract;;
 
 let ocaml_ptype_record ltl priv =
   Ptype_record
-    (List.map (fun (s, mf, ct, loc) -> (mkloc loc s, mf, ct, loc)) ltl)
+    (List.map (fun (s, mf, ct, loc) -> mkloc loc s, mf, ct, loc) ltl)
 ;;
 
 let ocaml_ptype_variant ctl priv =
@@ -143,8 +139,8 @@ let ocaml_ptyp_variant catl clos sl_opt =
   Some (Ptyp_variant (catl, clos, sl_opt))
 ;;
 
-let ocaml_package_type li ltl : package_type =
-  (mknoloc li, List.map (fun (li, t) -> (mkloc t.ptyp_loc li, t)) ltl)
+let ocaml_package_type li ltl =
+  mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
 ;;
 
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
@@ -167,13 +163,13 @@ let ocaml_pexp_construct li po chk_arity =
 
 let ocaml_pexp_field e li = Pexp_field (e, mknoloc li);;
 
-let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
-
 let ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i, e1, e2, df, e);;
 
-let ocaml_pexp_ident li = Pexp_ident (mknoloc li);;
+let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
+
+let ocaml_pexp_ident li = Pexp_ident (mknoloc li);;
 
 let ocaml_pexp_letmodule =
   Some (fun i me e -> Pexp_letmodule (mknoloc i, me, e))
@@ -185,12 +181,11 @@ let ocaml_pexp_newtype = Some (fun s e -> Pexp_newtype (s, e));;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
-let ocaml_pexp_override sel =
-  let sel = List.map (fun (s, e) -> mknoloc s, e) sel in
-  Pexp_override sel
-;;
-
 let ocaml_pexp_open = Some (fun li e -> Pexp_open (mknoloc li, e));;
+
+let ocaml_pexp_override sel =
+  let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
+;;
 
 let ocaml_pexp_pack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun me -> Pexp_pack me), (fun pt -> Ptyp_package pt)))
@@ -199,7 +194,7 @@ let ocaml_pexp_pack : ('a -> 'b -> 'c, 'd) choice option =
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
 let ocaml_pexp_record lel eo =
-  let lel = List.map (fun (li, loc, e) -> (mkloc loc li, e)) lel in
+  let lel = List.map (fun (li, loc, e) -> mkloc loc li, e) lel in
   Pexp_record (lel, eo)
 ;;
 
@@ -232,7 +227,7 @@ let ocaml_ppat_construct_args =
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
 
 let ocaml_ppat_record lpl is_closed =
-  let lpl = List.map (fun (li, loc, p) -> (mkloc loc li, p)) lpl in
+  let lpl = List.map (fun (li, loc, p) -> mkloc loc li, p) lpl in
   Ppat_record (lpl, (if is_closed then Closed else Open))
 ;;
 
@@ -273,8 +268,7 @@ let ocaml_psig_recmodule =
 ;;
 
 let ocaml_psig_type stl =
-  let stl = List.map (fun (s, t) -> mknoloc s, t) stl in
-  Psig_type stl
+  let stl = List.map (fun (s, t) -> mknoloc s, t) stl in Psig_type stl
 ;;
 
 let ocaml_psig_value s vd = Psig_value (mknoloc s, vd);;
@@ -284,7 +278,8 @@ let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 let ocaml_pstr_exception s ed = Pstr_exception (mknoloc s, ed);;
 
 let ocaml_pstr_exn_rebind =
-  Some (fun s sl -> Pstr_exn_rebind (mknoloc s, mknoloc sl));;
+  Some (fun s li -> Pstr_exn_rebind (mknoloc s, mknoloc li))
+;;
 
 let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
 
@@ -304,16 +299,14 @@ let ocaml_pstr_recmodule =
 ;;
 
 let ocaml_pstr_type stl =
-  let stl = List.map (fun (s, t) -> mknoloc s, t) stl in
-  Pstr_type stl
+  let stl = List.map (fun (s, t) -> mknoloc s, t) stl in Pstr_type stl
 ;;
 
 let ocaml_class_infos =
   Some
     (fun virt (sl, sloc) name expr loc variance ->
-       let params = (List.map (fun s -> mkloc loc s) sl, sloc) in
-       let name = mkloc loc name in
-       {pci_virt = virt; pci_params = params; pci_name = name;
+       let params = List.map (fun s -> mkloc loc s) sl, sloc in
+       {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
         pci_expr = expr; pci_loc = loc; pci_variance = variance})
 ;;
 
@@ -343,10 +336,6 @@ let ocaml_pcf_val (s, mf, ovf, e, loc) =
   Pcf_val (mkloc loc s, mf, ovf, e)
 ;;
 
-let ocaml_pcf_virt (s, pf, t, loc) =
-  Pcf_virt (mkloc loc s, pf, t)
-;;
-
 let ocaml_pcf_valvirt =
   let ocaml_pcf (s, mf, t, loc) =
     let mf = if mf then Mutable else Immutable in
@@ -354,6 +343,8 @@ let ocaml_pcf_valvirt =
   in
   Some ocaml_pcf
 ;;
+
+let ocaml_pcf_virt (s, pf, t, loc) = Pcf_virt (mkloc loc s, pf, t);;
 
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
 
@@ -389,7 +380,9 @@ let ocaml_pcty_signature =
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 
-let ocaml_pwith_modsubst = Some (fun loc me -> Pwith_modsubst (mkloc loc me));;
+let ocaml_pwith_modsubst =
+  Some (fun loc me -> Pwith_modsubst (mkloc loc me))
+;;
 
 let ocaml_pwith_module loc me = Pwith_module (mkloc loc me);;
 

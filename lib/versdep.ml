@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.30 2012/06/01 08:34:49 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.31 2012/06/01 09:55:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -99,6 +99,10 @@ value ocaml_value_description t p =
   ELSE {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc} END
 ;
 
+value ocaml_class_type_field loc ctfd = {pctf_desc = ctfd; pctf_loc = loc};
+
+value ocaml_class_field loc cfd = {pcf_desc = cfd; pcf_loc = loc};
+
 value ocaml_type_declaration params cl tk pf tm loc variance =
   IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
     Right
@@ -158,9 +162,20 @@ value ocaml_class_expr =
   ELSE Some (fun d loc -> {pcl_desc = d; pcl_loc = loc}) END
 ;
 
+value ocaml_class_structure p cil = {pcstr_pat = p; pcstr_fields = cil};
+
+value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
+
+value ocaml_pmty_functor sloc s mt1 mt2 = Pmty_functor (mkloc sloc s) mt1 mt2;
+
 value ocaml_pmty_typeof =
   IFDEF OCAML_VERSION < OCAML_3_12 THEN None
   ELSE Some (fun me -> Pmty_typeof me) END
+;
+
+value ocaml_pmty_with mt lcl =
+  let lcl = List.map (fun (s, c) → (mknoloc s, c)) lcl in
+  Pmty_with mt lcl
 ;
 
 value ocaml_ptype_abstract =
@@ -357,6 +372,10 @@ value ocaml_pexp_construct li po chk_arity =
   Pexp_construct (mknoloc li) po chk_arity
 ;
 
+value ocaml_pexp_field e li = Pexp_field e (mknoloc li);
+
+value ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i) e1 e2 df e;
+
 value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_function pel
   ELSE Pexp_function lab eo pel END
@@ -371,8 +390,10 @@ value ocaml_pexp_ident li = Pexp_ident (mknoloc li);
 
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun i me e -> Pexp_letmodule i me e) END
+  ELSE Some (fun i me e -> Pexp_letmodule (mknoloc i) me e) END
 ;
+
+value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
 
 value ocaml_pexp_newtype =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
@@ -386,7 +407,12 @@ value ocaml_pexp_object =
 
 value ocaml_pexp_open =
   IFDEF OCAML_VERSION < OCAML_3_12 THEN None
-  ELSE Some (fun li e -> Pexp_open li e) END
+  ELSE Some (fun li e -> Pexp_open (mknoloc li) e) END
+;
+
+value ocaml_pexp_override sel =
+  let sel = List.map (fun (s, e) → (mknoloc s, e)) sel in
+  Pexp_override sel
 ;
 
 value ocaml_pexp_pack =
@@ -404,13 +430,19 @@ value ocaml_pexp_poly =
   ELSE Some (fun e t -> Pexp_poly e t) END
 ;
 
-value ocaml_pexp_record lel =
+value ocaml_pexp_record lel eo =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN
     fun
     [ Some _ -> invalid_arg "ocaml_pexp_record"
     | None -> Pexp_record lel ]
-  ELSE fun eo -> Pexp_record lel eo END
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN fun eo -> Pexp_record lel eo
+  ELSE
+    let lel = List.map (fun (li, loc, e) → (mkloc loc li, e)) lel in
+    Pexp_record lel eo
+  END
 ;
+
+value ocaml_pexp_setinstvar s e = Pexp_setinstvar (mknoloc s) e;
 
 value ocaml_pexp_variant =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN None
@@ -467,7 +499,9 @@ value ocaml_ppat_type =
 
 value ocaml_ppat_unpack =
   IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN None
-  ELSE Some (fun s -> Ppat_unpack s, fun pt -> Ptyp_package pt) END
+  ELSE
+    Some (fun loc s -> Ppat_unpack (mkloc loc s), fun pt -> Ptyp_package pt)
+  END
 ;
 
 value ocaml_ppat_var loc s = Ppat_var (mkloc loc s);
@@ -490,19 +524,42 @@ value ocaml_psig_class_type =
   ELSE Some (fun ctl -> Psig_class_type ctl) END
 ;
 
+value ocaml_psig_exception s ed = Psig_exception (mknoloc s) ed;
+
+value ocaml_psig_module s mt = Psig_module (mknoloc s) mt;
+
+value ocaml_psig_modtype s mtd = Psig_modtype (mknoloc s) mtd;
+
+value ocaml_psig_open li = Psig_open (mknoloc li);
+
 value ocaml_psig_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
-  ELSE Some (fun ntl -> Psig_recmodule ntl) END
+  ELSE
+    let f ntl =
+      let ntl = List.map (fun (s, mt) → (mknoloc s, mt)) ntl in
+      Psig_recmodule ntl
+    in
+    Some f
+  END
 ;
+
+value ocaml_psig_type stl =
+  let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
+  Psig_type stl
+;
+
+value ocaml_psig_value s vd = Psig_value (mknoloc s) vd;
 
 value ocaml_pstr_class_type =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSE Some (fun ctl -> Pstr_class_type ctl) END
 ;
 
+value ocaml_pstr_exception s ed = Pstr_exception (mknoloc s) ed;
+
 value ocaml_pstr_exn_rebind =
   IFDEF OCAML_VERSION <= OCAML_2_99 THEN None
-  ELSE Some (fun s sl -> Pstr_exn_rebind s sl) END
+  ELSE Some (fun s li -> Pstr_exn_rebind (mknoloc s) (mknoloc li)) END
 ;
 
 value ocaml_pstr_include =
@@ -510,9 +567,32 @@ value ocaml_pstr_include =
   ELSE Some (fun me -> Pstr_include me) END
 ;
 
+value ocaml_pstr_modtype s mt = Pstr_modtype (mknoloc s) mt;
+
+value ocaml_pstr_module s me = Pstr_module (mknoloc s) me;
+
+value ocaml_pstr_open li = Pstr_open (mknoloc li);
+
+value ocaml_pstr_primitive s vd = Pstr_primitive (mknoloc s) vd;
+
 value ocaml_pstr_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
-  ELSE Some (fun nel -> Pstr_recmodule nel) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
+    Some (fun nel -> Pstr_recmodule nel)
+  ELSE
+    let f nel =
+      Pstr_recmodule (List.map (fun (s, mt, me) → (mknoloc s, mt, me)) nel)
+    in
+    Some f
+  END
+;
+
+value ocaml_pstr_type stl = 
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN Pstr_type stl
+  ELSE
+    let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
+    Pstr_type stl
+  END
 ;
 
 value ocaml_class_infos =
@@ -524,11 +604,16 @@ value ocaml_class_infos =
           pci_expr = expr; pci_loc = loc})
   ELSE
     Some
-      (fun virt params name expr loc variance ->
-        {pci_virt = virt; pci_params = params; pci_name = name;
+      (fun virt (sl, sloc) name expr loc variance ->
+        let params = (List.map (fun s → mkloc loc s) sl, sloc) in
+        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
          pci_expr = expr; pci_loc = loc; pci_variance = variance})
   END
 ;
+
+value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
+
+value ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s) mt me;
 
 value ocaml_pmod_unpack =
   IFDEF OCAML_VERSION < OCAML_3_12 THEN None
@@ -593,6 +678,8 @@ value ocaml_pcf_valvirt =
   END
 ;
 
+value ocaml_pcf_virt (s, pf, t, loc) = Pcf_virt (mkloc loc s, pf, t);
+
 value ocaml_pcl_apply =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSIFDEF OCAML_VERSION <= OCAML_2_04 THEN
@@ -604,7 +691,7 @@ value ocaml_pcl_apply =
 
 value ocaml_pcl_constr =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun li ctl -> Pcl_constr li ctl) END
+  ELSE Some (fun li ctl -> Pcl_constr (mknoloc li) ctl) END
 ;
 
 value ocaml_pcl_constraint =
@@ -640,6 +727,8 @@ value ocaml_pctf_cstr =
     Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2)) END
 ;
 
+value ocaml_pctf_meth (s, pf, t, loc) = Pctf_meth (s, pf, t);
+
 value ocaml_pctf_val (s, mf, t, loc) =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN Pctf_val (s, Public, mf, Some t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_3_10 THEN Pctf_val (s, mf, Some t, loc)
@@ -647,9 +736,11 @@ value ocaml_pctf_val (s, mf, t, loc) =
   ELSE Pctf_val (s, mf, Concrete, t) END
 ;
 
+value ocaml_pctf_virt (s, pf, t, loc) = Pctf_virt (s, pf, t);
+
 value ocaml_pcty_constr =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun li ltl -> Pcty_constr li ltl) END
+  ELSE Some (fun li ltl -> Pcty_constr (mknoloc li) ltl) END
 ;
 
 value ocaml_pcty_fun =

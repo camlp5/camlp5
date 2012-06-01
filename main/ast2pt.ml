@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.47 2012/06/01 08:34:49 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.48 2012/06/01 09:55:29 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -862,7 +862,7 @@ value rec expr =
                (mkexp loc (ocaml_pexp_ident (array_function "Array" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | ExBae loc e el → expr (bigarray_set loc e (uv el) v)
-      | ExLid _ lab → mkexp loc (ocaml_pexp_setinstvar lab (expr v))
+      | <:expr< $lid:lab$ >> → mkexp loc (ocaml_pexp_setinstvar lab (expr v))
       | ExSte _ e1 e2 →
           mkexp loc
             (ocaml_pexp_apply
