@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 6.8 2012/03/04 11:48:10 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 6.9 2012/06/04 09:01:03 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -114,6 +114,7 @@ for i in $vers; do
     time make world.opt
   fi
   echo "+++++ make install"
+  rm -rf $TOP/usr/lib/ocaml
   make install
   echo "+++++ make clean"
   make clean
