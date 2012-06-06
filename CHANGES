@@ -1,3 +1,8 @@
+Camlp5 Version 6.07:
+--------------------
+
+* [06 Jun 12] Fixed bug: open record patterns {a=b;c=d;_} did not work.
+
 Camlp5 Version 6.06:
 --------------------
 

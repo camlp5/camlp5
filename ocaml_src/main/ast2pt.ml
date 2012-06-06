@@ -658,9 +658,9 @@ let rec patt =
         List.fold_right
           (fun lp (lpl, is_closed) ->
              match lp with
-               PaAny _, PaAny _ -> lpl, true
+               PaAny _, PaAny _ -> lpl, false
              | lp -> lp :: lpl, is_closed)
-          (uv lpl) ([], false)
+          (uv lpl) ([], true)
       in
       mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
   | PaStr (loc, s) ->

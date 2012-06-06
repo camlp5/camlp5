@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.49 2012/06/01 18:34:02 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.50 2012/06/06 09:36:54 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -632,9 +632,9 @@ value rec patt =
         List.fold_right
           (fun lp (lpl, is_closed) →
              match lp with
-             [ (PaAny _, PaAny _) → (lpl, True)
+             [ (PaAny _, PaAny _) → (lpl, False)
              | lp → ([lp :: lpl], is_closed) ])
-          (uv lpl) ([], False)
+          (uv lpl) ([], True)
       in
       mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
   | PaStr loc s →
