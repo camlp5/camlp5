@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 6.9 2012/06/04 09:01:03 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 6.10 2012/06/08 01:31:39 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -84,6 +84,7 @@ for i in $vers; do
   grep -v 'cd ocamldoc' | grep -v 'cd camlp4' |
   sed -e 's/ ocamlbuild.byte / /g' |  sed -e 's/ ocamlbuild.native / /g' |
   grep -v '$(MAKE) ocamlbuildlib.native'  > tmp
+  mv Makefile Makefile.bak
   mv tmp Makefile
   touch config/Makefile
   if [ "$i" = "1.05" -o "$i" = "1.06" ]; then
@@ -117,6 +118,7 @@ for i in $vers; do
   rm -rf $TOP/usr/lib/ocaml
   make install
   echo "+++++ make clean"
+  mv Makefile.bak Makefile
   make clean
   echo "+++++ cd $CAMLP5DIR"
   cd $CAMLP5DIR
