@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 6.15 2012/03/06 09:57:07 deraugla Exp $
+# $Id: configure,v 6.16 2012/07/01 01:27:07 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -188,6 +188,11 @@ if test "$x" = ""; then win=false; else win=true; fi
 x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
 if test "$x" = ""; then win32=false; else win32=true; fi
 OLIBDIR="$y"
+if [ "$OVERSION" "<" "4.00" ]; then
+  OCLIBDIR="$y"
+else
+  OCLIBDIR="$y/compiler-libs"
+fi
 
 if test "$win" = "true"; then
     EXE=.exe
@@ -269,6 +274,7 @@ echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo WARNERR=\"$WARNERR\"
 echo NO_PR_DIR=$NO_PR_DIR
 echo OLIBDIR=$OLIBDIR
+echo OCLIBDIR=$OCLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
 fi
