@@ -1,3 +1,9 @@
+Camlp5 Version 6.08:
+--------------------
+
+* [08 Oct 12] Fixed bug: parsing greek letters as type variable in
+  constructor declaration did not work when building Camlp5.
+
 Camlp5 Version 6.07:
 --------------------
 
