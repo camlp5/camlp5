@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.37 2012/03/09 14:01:54 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.38 2012/10/08 17:41:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -286,23 +286,15 @@ value ascii_of_greek s =
             [ [k :: kl] -> do {
                 if rest = k then do {
                   let s2 = if i = 0 then "" else string_of_int i in
-                  String.make 1 c1 ^ s2
+                  Qast.Str (String.make 1 c1 ^ s2)
                 }
                 else loop (i + 1) kl
               }
-            | [] -> s ]
+            | [] -> Qast.Str s ]
         }
         else loop (i + 1) gl
       }
-    | [] -> s ]
-;
-
-(* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
-value greek_token =
-  Grammar.Entry.of_parser gram "greek_token"
-    (parser
-       [: `("LIDENT", x) when List.exists (start_with x) greek_tab :] ->
-          Qast.Str (ascii_of_greek x))
+    | [] -> Qast.Str s ]
 ;
 
 value warned = ref False;
@@ -954,7 +946,7 @@ EXTEND
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Qast.Option (Some i)
-      | i = greek_token -> Qast.Option (Some i)
+      | i = GREEK -> Qast.Option (Some (ascii_of_greek i))
       | "_" -> Qast.Option None ] ]
   ;
   ctyp:
@@ -976,7 +968,8 @@ EXTEND
       [ t1 = SELF; "."; t2 = SELF -> Qast.Node "TyAcc" [Qast.Loc; t1; t2] ]
     | "simple"
       [ "'"; i = SV ident "" -> Qast.Node "TyQuo" [Qast.Loc; i]
-      | i = greek_token -> Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal i]
+      | i = GREEK ->
+          Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal (ascii_of_greek i)]
       | "_" -> Qast.Node "TyAny" [Qast.Loc]
       | i = SV LIDENT -> Qast.Node "TyLid" [Qast.Loc; i]
       | i = SV UIDENT -> Qast.Node "TyUid" [Qast.Loc; i]

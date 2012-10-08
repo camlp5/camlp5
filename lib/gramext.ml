@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 6.5 2012/02/07 20:06:45 deraugla Exp $ *)
+(* $Id: gramext.ml,v 6.6 2012/10/08 17:41:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Printf;
@@ -125,6 +125,9 @@ value is_before s1 s2 =
   | (Stoken (_, s), Stoken (_, "")) when s <> "" -> True
   | (Stoken _, Stoken _) -> False
   | (Stoken _, _) -> True
+  | (Svala _ (Stoken (_, s)), Svala _ (Stoken (_, ""))) when s <> "" -> True
+  | (Svala _ (Stoken _), Svala _ (Stoken _)) -> False
+  | (Svala _ (Stoken _), _) -> True
   | _ -> False ]
 ;
 

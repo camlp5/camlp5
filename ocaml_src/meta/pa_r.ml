@@ -155,16 +155,6 @@ let ascii_of_greek s =
   loop 0 greek_tab
 ;;
 
-(* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
-let greek_token =
-  Grammar.Entry.of_parser gram "greek_token"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("LIDENT", x) when List.exists (start_with x) greek_tab ->
-           Stream.junk strm__; ascii_of_greek x
-       | _ -> raise Stream.Failure)
-;;
-
 let warned = ref false;;
 let warning_deprecated_since_6_00 loc =
   if not !warned then
@@ -1685,11 +1675,10 @@ Grammar.extend
      [[Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (None : 'simple_type_parameter));
-      [Gramext.Snterm
-         (Grammar.Entry.obj (greek_token : 'greek_token Grammar.Entry.e))],
+      [Gramext.Stoken ("GREEK", "")],
       Gramext.action
-        (fun (i : 'greek_token) (loc : Ploc.t) ->
-           (Some i : 'simple_type_parameter));
+        (fun (i : string) (loc : Ploc.t) ->
+           (Some (ascii_of_greek i) : 'simple_type_parameter));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
@@ -1791,11 +1780,10 @@ Grammar.extend
         (fun (i : string) (loc : Ploc.t) -> (MLast.TyLid (loc, i) : 'ctyp));
       [Gramext.Stoken ("", "_")],
       Gramext.action (fun _ (loc : Ploc.t) -> (MLast.TyAny loc : 'ctyp));
-      [Gramext.Snterm
-         (Grammar.Entry.obj (greek_token : 'greek_token Grammar.Entry.e))],
+      [Gramext.Stoken ("GREEK", "")],
       Gramext.action
-        (fun (i : 'greek_token) (loc : Ploc.t) ->
-           (MLast.TyQuo (loc, i) : 'ctyp));
+        (fun (i : string) (loc : Ploc.t) ->
+           (MLast.TyQuo (loc, ascii_of_greek i) : 'ctyp));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action

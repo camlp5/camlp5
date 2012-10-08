@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.41 2012/03/09 15:22:46 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.42 2012/10/08 17:41:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -154,14 +154,6 @@ value ascii_of_greek s =
         else loop (i + 1) gl
       }
     | [] -> s ]
-;
-
-(* should be added in lib/plexer.ml, perhaps, as a new token GREEK? *)
-value greek_token =
-  Grammar.Entry.of_parser gram "greek_token"
-    (parser
-       [: `("LIDENT", x) when List.exists (start_with x) greek_tab :] ->
-          ascii_of_greek x)
 ;
 
 value warned = ref False;
@@ -577,7 +569,7 @@ EXTEND
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Some i
-      | i = greek_token -> Some i
+      | i = GREEK -> Some (ascii_of_greek i)
       | "_" -> None ] ]
   ;
   ctyp:
@@ -601,7 +593,7 @@ EXTEND
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >> ]
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
-      | i = greek_token -> <:ctyp< '$i$ >>
+      | i = GREEK -> <:ctyp< '$ascii_of_greek i$ >>
       | "_" -> <:ctyp< _ >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>
       | i = V UIDENT -> <:ctyp< $_uid:i$ >>
