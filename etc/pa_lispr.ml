@@ -4,9 +4,9 @@
 
 open Pcaml;
 
-type choice 'a 'b =
-  [ Left of 'a
-  | Right of 'b ]
+type choice α β =
+  [ Left of α
+  | Right of β ]
 ;
 
 (* Buffer *)
@@ -89,10 +89,10 @@ value rec next_token_after_spaces kwt =
           ""
         }
         with
-        [ Not_found ->
+        [ Not_found →
             match x with
-            [ 'A'..'Z' -> "UIDENT"
-            | _ -> "LIDENT" ] ]
+            [ 'A'..'Z' → "UIDENT"
+            | _ → "LIDENT" ] ]
       in
       ((con, s), (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
@@ -132,11 +132,10 @@ and semi len kwt bp =
 
 value lexer_using kwt (con, prm) =
   match con with
-  [ "CHAR" | "EOI" | "INT" | "LIDENT" | "QUOT" | "STRING" | "UIDENT" -> ()
-  | "ANTIQUOT" | "ANTIQUOT_LOC" -> ()
-  | "" ->
-      try Hashtbl.find kwt prm with [ Not_found -> Hashtbl.add kwt prm () ]
-  | _ ->
+  [ "CHAR" | "EOI" | "INT" | "LIDENT" | "QUOT" | "STRING" | "UIDENT" → ()
+  | "ANTIQUOT" | "ANTIQUOT_LOC" → ()
+  | "" → try Hashtbl.find kwt prm with [ Not_found → Hashtbl.add kwt prm () ]
+  | _ →
       raise
         (Plexing.Error
            ("the constructor \"" ^ con ^ "\" is not recognized by Plexer")) ]
@@ -171,30 +170,30 @@ and atom = [ Alid | Auid | Aint | Achar | Astring ];
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
 value error se err =
   let loc =
-    match se with [ Satom loc _ _ | Sexpr loc _ | Squot loc _ _ -> loc ]
+    match se with [ Satom loc _ _ | Sexpr loc _ | Squot loc _ _ → loc ]
   in
   error_loc loc err
 ;
 
 value expr_id loc s =
   match s.[0] with
-  [ 'A'..'Z' -> <:expr< $uid:s$ >>
-  | _ -> <:expr< $lid:s$ >> ]
+  [ 'A'..'Z' → <:expr< $uid:s$ >>
+  | _ → <:expr< $lid:s$ >> ]
 ;
 
 value patt_id loc s =
   match s.[0] with
-  [ 'A'..'Z' -> <:patt< $uid:s$ >>
-  | _ -> <:patt< $lid:s$ >> ]
+  [ 'A'..'Z' → <:patt< $uid:s$ >>
+  | _ → <:patt< $lid:s$ >> ]
 ;
 
 value ctyp_id loc s =
   match s.[0] with
-  [ ''' ->
+  [ ''' →
       let s = String.sub s 1 (String.length s - 1) in
       <:ctyp< '$s$ >>
-  | 'A'..'Z' -> <:ctyp< $uid:s$ >>
-  | _ -> <:ctyp< $lid:s$ >> ]
+  | 'A'..'Z' → <:ctyp< $uid:s$ >>
+  | _ → <:ctyp< $lid:s$ >> ]
 ;
 
 value strm_n = "strm__";
@@ -203,179 +202,179 @@ value junk_fun loc = <:expr< Stream.junk >>;
 
 value rec module_expr_se =
   fun
-  [ Sexpr loc [Satom _ Alid "struct" :: sl] ->
+  [ Sexpr loc [Satom _ Alid "struct" :: sl] →
       let mel = List.map str_item_se sl in
       <:module_expr< struct $list:mel$ end >>
-  | Satom loc Auid s -> <:module_expr< $uid:s$ >>
-  | se -> error se "module expr" ]
+  | Satom loc Auid s → <:module_expr< $uid:s$ >>
+  | se → error se "module expr" ]
 and str_item_se se =
   match se with
-  [ Satom loc _ _ | Squot loc _ _ ->
+  [ Satom loc _ _ | Squot loc _ _ →
       let e = expr_se se in
       <:str_item< $exp:e$ >>
-  | Sexpr loc [Satom _ Alid "module"; Satom _ Auid i; se] ->
+  | Sexpr loc [Satom _ Alid "module"; Satom _ Auid i; se] →
       let mb = module_binding_se se in
       <:str_item< module $uid:i$ = $mb$ >>
-  | Sexpr loc [Satom _ Alid "open"; Satom _ Auid s] ->
+  | Sexpr loc [Satom _ Alid "open"; Satom _ Auid s] →
       let s = [s] in
       <:str_item< open $s$ >>
-  | Sexpr loc [Satom _ Alid "type" :: sel] ->
+  | Sexpr loc [Satom _ Alid "type" :: sel] →
       let tdl = type_declaration_list_se sel in
       <:str_item< type $list:tdl$ >>
-  | Sexpr loc [Satom _ Alid "value" :: sel] ->
+  | Sexpr loc [Satom _ Alid "value" :: sel] →
       let (r, sel) =
         match sel with
-        [ [Satom _ Alid "rec" :: sel] -> (True, sel)
-        | _ -> (False, sel) ]
+        [ [Satom _ Alid "rec" :: sel] → (True, sel)
+        | _ → (False, sel) ]
       in
       let lbs = value_binding_se sel in
       <:str_item< value $flag:r$ $list:lbs$ >>
-  | Sexpr loc _ ->
+  | Sexpr loc _ →
       let e = expr_se se in
       <:str_item< $exp:e$ >> ]
 and value_binding_se =
   fun
-  [ [se1; se2 :: sel] -> [(ipatt_se se1, expr_se se2) :: value_binding_se sel]
-  | [] -> []
-  | [se :: _] -> error se "value_binding" ]
+  [ [se1; se2 :: sel] → [(ipatt_se se1, expr_se se2) :: value_binding_se sel]
+  | [] → []
+  | [se :: _] → error se "value_binding" ]
 and module_binding_se se = module_expr_se se
 and expr_se =
   fun
-  [ Satom loc (Alid | Auid) s -> expr_ident_se loc s
-  | Satom loc Aint s -> <:expr< $int:s$ >>
-  | Satom loc Achar s -> <:expr< $chr:s$ >>
-  | Satom loc Astring s -> <:expr< $str:s$ >>
-  | Sexpr loc [] -> <:expr< () >>
-  | Sexpr loc [Satom _ Alid "if"; se; se1] ->
+  [ Satom loc (Alid | Auid) s → expr_ident_se loc s
+  | Satom loc Aint s → <:expr< $int:s$ >>
+  | Satom loc Achar s → <:expr< $chr:s$ >>
+  | Satom loc Astring s → <:expr< $str:s$ >>
+  | Sexpr loc [] → <:expr< () >>
+  | Sexpr loc [Satom _ Alid "if"; se; se1] →
       let e = expr_se se in
       let e1 = expr_se se1 in
       <:expr< if $e$ then $e1$ else () >>
-  | Sexpr loc [Satom _ Alid "if"; se; se1; se2] ->
+  | Sexpr loc [Satom _ Alid "if"; se; se1; se2] →
       let e = expr_se se in
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
       <:expr< if $e$ then $e1$ else $e2$ >>
-  | Sexpr loc [Satom loc1 Alid "lambda"] -> <:expr< fun [] >>
-  | Sexpr loc [Satom loc1 Alid "lambda"; sep :: sel] ->
+  | Sexpr loc [Satom loc1 Alid "lambda"] → <:expr< fun [] >>
+  | Sexpr loc [Satom loc1 Alid "lambda"; sep :: sel] →
       let e = progn_se loc1 sel in
       match ipatt_opt_se sep with
-      [ Left p -> <:expr< fun $p$ -> $e$ >>
-      | Right (se, sel) ->
+      [ Left p → <:expr< fun $p$ -> $e$ >>
+      | Right (se, sel) →
           List.fold_right
-            (fun se e ->
+            (fun se e →
                let p = ipatt_se se in
                <:expr< fun $p$ -> $e$ >>)
             [se :: sel] e ]
-  | Sexpr loc [Satom _ Alid "lambda_match" :: sel] ->
+  | Sexpr loc [Satom _ Alid "lambda_match" :: sel] →
       let pel = List.map (match_case loc) sel in
       <:expr< fun [ $list:pel$ ] >>
-  | Sexpr loc [Satom _ Alid "let" :: sel] ->
+  | Sexpr loc [Satom _ Alid "let" :: sel] →
       let (r, sel) =
         match sel with
-        [ [Satom _ Alid "rec" :: sel] -> (True, sel)
-        | _ -> (False, sel) ]
+        [ [Satom _ Alid "rec" :: sel] → (True, sel)
+        | _ → (False, sel) ]
       in
       match sel with
-      [ [Sexpr _ sel1 :: sel2] ->
+      [ [Sexpr _ sel1 :: sel2] →
           let lbs = List.map let_binding_se sel1 in
           let e = progn_se loc sel2 in
           <:expr< let $flag:r$ $list:lbs$ in $e$ >>
-      | [se :: _] -> error se "let_binding"
-      | _ -> error_loc loc "let_binding" ]
-  | Sexpr loc [Satom _ Alid "let*" :: sel] ->
+      | [se :: _] → error se "let_binding"
+      | _ → error_loc loc "let_binding" ]
+  | Sexpr loc [Satom _ Alid "let*" :: sel] →
       match sel with
-      [ [Sexpr _ sel1 :: sel2] ->
+      [ [Sexpr _ sel1 :: sel2] →
           List.fold_right
-            (fun se ek ->
+            (fun se ek →
                let (p, e) = let_binding_se se in
                <:expr< let $p$ = $e$ in $ek$ >>)
             sel1 (progn_se loc sel2)
-      | [se :: _] -> error se "let_binding"
-      | _ -> error_loc loc "let_binding" ]
-  | Sexpr loc [Satom _ Alid "match"; se :: sel] ->
+      | [se :: _] → error se "let_binding"
+      | _ → error_loc loc "let_binding" ]
+  | Sexpr loc [Satom _ Alid "match"; se :: sel] →
       let e = expr_se se in
       let pel = List.map (match_case loc) sel in
       <:expr< match $e$ with [ $list:pel$ ] >>
-  | Sexpr loc [Satom _ Alid "parser" :: sel] ->
+  | Sexpr loc [Satom _ Alid "parser" :: sel] →
       let e =
         match sel with
-        [ [(Satom _ _ _ as se) :: sel] ->
+        [ [(Satom _ _ _ as se) :: sel] →
             let p = patt_se se in
             let pc = parser_cases_se loc sel in
             <:expr< let $p$ = Stream.count $lid:strm_n$ in $pc$ >>
-        | _ -> parser_cases_se loc sel ]
+        | _ → parser_cases_se loc sel ]
       in
       <:expr< fun ($lid:strm_n$ : Stream.t _) -> $e$ >>
-  | Sexpr loc [Satom _ Alid "try"; se :: sel] ->
+  | Sexpr loc [Satom _ Alid "try"; se :: sel] →
       let e = expr_se se in
       let pel = List.map (match_case loc) sel in
       <:expr< try $e$ with [ $list:pel$ ] >>
-  | Sexpr loc [Satom _ Alid "progn" :: sel] ->
+  | Sexpr loc [Satom _ Alid "progn" :: sel] →
       let el = List.map expr_se sel in
       <:expr< do { $list:el$ } >>
-  | Sexpr loc [Satom _ Alid "while"; se :: sel] ->
+  | Sexpr loc [Satom _ Alid "while"; se :: sel] →
       let e = expr_se se in
       let el = List.map expr_se sel in
       <:expr< while $e$ do { $list:el$ } >>
-  | Sexpr loc [Satom _ Alid ":="; se1; se2] ->
+  | Sexpr loc [Satom _ Alid ":="; se1; se2] →
       let e2 = expr_se se2 in
       match expr_se se1 with
-      [ <:expr< $uid:"()"$ $e1$ $i$ >> -> <:expr< $e1$.($i$) := $e2$ >>
-      | e1 -> <:expr< $e1$ := $e2$ >> ]
-  | Sexpr loc [Satom _ Alid "[]"; se1; se2] ->
+      [ <:expr< $uid:"()"$ $e1$ $i$ >> → <:expr< $e1$.($i$) := $e2$ >>
+      | e1 → <:expr< $e1$ := $e2$ >> ]
+  | Sexpr loc [Satom _ Alid "[]"; se1; se2] →
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
       <:expr< $e1$.[$e2$] >>
-  | Sexpr loc [Satom _ Alid "," :: sel] ->
+  | Sexpr loc [Satom _ Alid "," :: sel] →
       let el = List.map expr_se sel in
       <:expr< ( $list:el$ ) >>
-  | Sexpr loc [Satom _ Alid "{}" :: sel] ->
+  | Sexpr loc [Satom _ Alid "{}" :: sel] →
       let lel = List.map (label_expr_se loc) sel in
       <:expr< { $list:lel$ } >>
-  | Sexpr loc [Satom _ Alid ":"; se1; se2] ->
+  | Sexpr loc [Satom _ Alid ":"; se1; se2] →
       let e = expr_se se1 in
       let t = ctyp_se se2 in
       <:expr< ( $e$ : $t$ ) >>
-  | Sexpr loc [Satom _ Alid "list" :: sel] ->
+  | Sexpr loc [Satom _ Alid "list" :: sel] →
       loop sel where rec loop =
         fun
-        [ [] -> <:expr< [] >>
-        | [se1; Satom _ Alid "::"; se2] ->
+        [ [] → <:expr< [] >>
+        | [se1; Satom _ Alid "::"; se2] →
             let e = expr_se se1 in
             let el = expr_se se2 in
             <:expr< [$e$ :: $el$] >>
-        | [se :: sel] ->
+        | [se :: sel] →
             let e = expr_se se in
             let el = loop sel in
             <:expr< [$e$ :: $el$] >> ]
-  | Sexpr loc [se :: sel] ->
+  | Sexpr loc [se :: sel] →
       List.fold_left
-        (fun e se ->
+        (fun e se →
            let e1 = expr_se se in
            <:expr< $e$ $e1$ >>)
         (expr_se se) sel
-  | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt) ]
+  | Squot loc typ txt → Pcaml.handle_expr_quotation loc (typ, txt) ]
 and progn_se loc =
   fun
-  [ [] -> <:expr< () >>
-  | [se] -> expr_se se
-  | sel ->
+  [ [] → <:expr< () >>
+  | [se] → expr_se se
+  | sel →
       let el = List.map expr_se sel in
       <:expr< do { $list:el$ } >> ]
 and let_binding_se =
   fun
-  [ Sexpr loc [se1; se2] -> (ipatt_se se1, expr_se se2)
-  | se -> error se "let_binding" ]
+  [ Sexpr loc [se1; se2] → (ipatt_se se1, expr_se se2)
+  | se → error se "let_binding" ]
 and match_case loc =
   fun
-  [ Sexpr _ [se1; se2] -> (patt_se se1, <:vala< None >>, expr_se se2)
-  | Sexpr _ [se1; sew; se2] ->
+  [ Sexpr _ [se1; se2] → (patt_se se1, <:vala< None >>, expr_se se2)
+  | Sexpr _ [se1; sew; se2] →
       (patt_se se1, <:vala< (Some (expr_se sew)) >>, expr_se se2)
-  | se -> error se "match_case" ]
+  | se → error se "match_case" ]
 and label_expr_se loc =
   fun
-  [ Sexpr _ [se1; se2] -> (patt_se se1, expr_se se2)
-  | se -> error se "label_expr" ]
+  [ Sexpr _ [se1; se2] → (patt_se se1, expr_se se2)
+  | se → error se "label_expr" ]
 and expr_ident_se loc s =
   if s.[0] = '<' then <:expr< $lid:s$ >>
   else
@@ -394,35 +393,35 @@ and expr_ident_se loc s =
       else loop ibeg (i + 1)
 and parser_cases_se loc =
   fun
-  [ [] -> <:expr< raise Stream.Failure >>
-  | [Sexpr loc [Sexpr _ spsel :: act] :: sel] ->
+  [ [] → <:expr< raise Stream.Failure >>
+  | [Sexpr loc [Sexpr _ spsel :: act] :: sel] →
       let ekont _ = parser_cases_se loc sel in
       let act =
         match act with
-        [ [se] -> expr_se se
-        | [sep; se] ->
+        [ [se] → expr_se se
+        | [sep; se] →
             let p = patt_se sep in
             let e = expr_se se in
             <:expr< let $p$ = Stream.count $lid:strm_n$ in $e$ >>
-        | _ -> error_loc loc "parser_case" ]
+        | _ → error_loc loc "parser_case" ]
       in
       stream_pattern_se loc act ekont spsel
-  | [se :: _] -> error se "parser_case" ]
+  | [se :: _] → error se "parser_case" ]
 and stream_pattern_se loc act ekont =
   fun
-  [ [] -> act
-  | [se :: sel] ->
+  [ [] → act
+  | [se :: sel] →
       let ckont err = <:expr< raise (Stream.Error $err$) >> in
       let skont = stream_pattern_se loc act ckont sel in
       stream_pattern_component skont ekont <:expr< "" >> se ]
 and stream_pattern_component skont ekont err =
   fun
-  [ Sexpr loc [Satom _ Alid "`"; se :: wol] ->
+  [ Sexpr loc [Satom _ Alid "`"; se :: wol] →
       let wo =
         match wol with
-        [ [se] -> Some (expr_se se)
-        | [] -> None
-        | _ -> error_loc loc "stream_pattern_component" ]
+        [ [se] → Some (expr_se se)
+        | [] → None
+        | _ → error_loc loc "stream_pattern_component" ]
       in
       let e = peek_fun loc in
       let p = patt_se se in
@@ -431,7 +430,7 @@ and stream_pattern_component skont ekont err =
       <:expr< match $e$ $lid:strm_n$ with
        [ Some $p$ $opt:wo$ -> do { $j$ $lid:strm_n$ ; $skont$ }
        | _ -> $k$ ] >>
-  | Sexpr loc [se1; se2] ->
+  | Sexpr loc [se1; se2] →
       let p = patt_se se1 in
       let e =
         let e = expr_se se2 in
@@ -439,54 +438,54 @@ and stream_pattern_component skont ekont err =
       in
       let k = ekont err in
       <:expr< match $e$ with [ Some $p$ -> $skont$ | _ -> $k$ ] >>
-  | Sexpr loc [Satom _ Alid "?"; se1; se2] ->
+  | Sexpr loc [Satom _ Alid "?"; se1; se2] →
       stream_pattern_component skont ekont (expr_se se2) se1
-  | Satom loc Alid s -> <:expr< let $lid:s$ = $lid:strm_n$ in $skont$ >>
-  | se -> error se "stream_pattern_component" ]
+  | Satom loc Alid s → <:expr< let $lid:s$ = $lid:strm_n$ in $skont$ >>
+  | se → error se "stream_pattern_component" ]
 and patt_se =
   fun
-  [ Satom loc Alid "_" -> <:patt< _ >>
-  | Satom loc (Alid | Auid) s -> patt_ident_se loc s
-  | Satom loc Aint s -> <:patt< $int:s$ >>
-  | Satom loc Achar s -> <:patt< $chr:s$ >>
-  | Satom loc Astring s -> <:patt< $str:s$ >>
-  | Sexpr loc [Satom _ Alid "or"; se :: sel] ->
+  [ Satom loc Alid "_" → <:patt< _ >>
+  | Satom loc (Alid | Auid) s → patt_ident_se loc s
+  | Satom loc Aint s → <:patt< $int:s$ >>
+  | Satom loc Achar s → <:patt< $chr:s$ >>
+  | Satom loc Astring s → <:patt< $str:s$ >>
+  | Sexpr loc [Satom _ Alid "or"; se :: sel] →
       List.fold_left
-        (fun p se ->
+        (fun p se →
            let p1 = patt_se se in
            <:patt< $p$ | $p1$ >>)
         (patt_se se) sel
-  | Sexpr loc [Satom _ Alid "range"; se1; se2] ->
+  | Sexpr loc [Satom _ Alid "range"; se1; se2] →
       let p1 = patt_se se1 in
       let p2 = patt_se se2 in
       <:patt< $p1$ .. $p2$ >>
-  | Sexpr loc [Satom _ Alid "," :: sel] ->
+  | Sexpr loc [Satom _ Alid "," :: sel] →
       let pl = List.map patt_se sel in
       <:patt< ( $list:pl$ ) >>
-  | Sexpr loc [Satom _ Alid "as"; se1; se2] ->
+  | Sexpr loc [Satom _ Alid "as"; se1; se2] →
       let p1 = patt_se se1 in
       let p2 = patt_se se2 in
       <:patt< ($p1$ as $p2$) >>
-  | Sexpr loc [Satom _ Alid "list" :: sel] ->
+  | Sexpr loc [Satom _ Alid "list" :: sel] →
       loop sel where rec loop =
         fun
-        [ [] -> <:patt< [] >>
-        | [se1; Satom _ Alid "::"; se2] ->
+        [ [] → <:patt< [] >>
+        | [se1; Satom _ Alid "::"; se2] →
             let p = patt_se se1 in
             let pl = patt_se se2 in
             <:patt< [$p$ :: $pl$] >>
-        | [se :: sel] ->
+        | [se :: sel] →
             let p = patt_se se in
             let pl = loop sel in
             <:patt< [$p$ :: $pl$] >> ]
-  | Sexpr loc [se :: sel] ->
+  | Sexpr loc [se :: sel] →
       List.fold_left
-        (fun p se ->
+        (fun p se →
            let p1 = patt_se se in
            <:patt< $p$ $p1$ >>)
         (patt_se se) sel
-  | Sexpr loc [] -> <:patt< () >>
-  | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt) ]
+  | Sexpr loc [] → <:patt< () >>
+  | Squot loc typ txt → Pcaml.handle_patt_quotation loc (typ, txt) ]
 and patt_ident_se loc s =
   loop 0 0 where rec loop ibeg i =
     if i = String.length s then
@@ -501,27 +500,27 @@ and patt_ident_se loc s =
     else loop ibeg (i + 1)
 and ipatt_se se =
   match ipatt_opt_se se with
-  [ Left p -> p
-  | Right (se, _) -> error se "ipatt" ]
+  [ Left p → p
+  | Right (se, _) → error se "ipatt" ]
 and ipatt_opt_se =
   fun
-  [ Satom loc Alid "_" -> Left <:patt< _ >>
-  | Satom loc Alid s -> Left <:patt< $lid:s$ >>
-  | Sexpr loc [Satom _ Alid "," :: sel] ->
+  [ Satom loc Alid "_" → Left <:patt< _ >>
+  | Satom loc Alid s → Left <:patt< $lid:s$ >>
+  | Sexpr loc [Satom _ Alid "," :: sel] →
       let pl = List.map ipatt_se sel in
       Left <:patt< ( $list:pl$ ) >>
-  | Sexpr loc [] -> Left <:patt< () >>
-  | Sexpr loc [se :: sel] -> Right (se, sel)
-  | se -> error se "ipatt" ]
+  | Sexpr loc [] → Left <:patt< () >>
+  | Sexpr loc [se :: sel] → Right (se, sel)
+  | se → error se "ipatt" ]
 and type_declaration_list_se =
   fun
-  [ [se1; se2 :: sel] ->
+  [ [se1; se2 :: sel] →
       let (n1, loc1, tpl) =
         match se1 with
-        [ Sexpr _ [Satom loc Alid n :: sel] ->
+        [ Sexpr _ [Satom loc Alid n :: sel] →
             (n, loc, List.map type_parameter_se sel)
-        | Satom loc Alid n -> (n, loc, [])
-        | se -> error se "type declaration" ]
+        | Satom loc Alid n → (n, loc, [])
+        | se → error se "type declaration" ]
       in
       let empty = [] in
       let n = (loc1, <:vala< n1 >>) in
@@ -531,27 +530,27 @@ and type_declaration_list_se =
          MLast.tdCon = <:vala< empty >>}
       in
       [td :: type_declaration_list_se sel]
-  | [] -> []
-  | [se :: _] -> error se "type_decl" ]
+  | [] → []
+  | [se :: _] → error se "type_decl" ]
 and type_parameter_se =
   fun
-  [ Satom _ Alid s when String.length s >= 2 && s.[0] = ''' ->
+  [ Satom _ Alid s when String.length s >= 2 && s.[0] = ''' →
       let s = String.sub s 1 (String.length s - 1) in
       (<:vala< (Some s) >>, None)
-  | se -> error se "type_parameter" ]
+  | se → error se "type_parameter" ]
 and ctyp_se =
   fun
-  [ Sexpr loc [Satom _ Alid "sum" :: sel] ->
+  [ Sexpr loc [Satom _ Alid "sum" :: sel] →
       let cdl = List.map constructor_declaration_se sel in
       <:ctyp< [ $list:cdl$ ] >>
-  | Sexpr loc [se :: sel] ->
+  | Sexpr loc [se :: sel] →
       List.fold_left
-        (fun t se ->
+        (fun t se →
            let t2 = ctyp_se se in
            <:ctyp< $t$ $t2$ >>)
         (ctyp_se se) sel
-  | Satom loc (Alid | Auid) s -> ctyp_ident_se loc s
-  | se -> error se "ctyp" ]
+  | Satom loc (Alid | Auid) s → ctyp_ident_se loc s
+  | se → error se "ctyp" ]
 and ctyp_ident_se loc s =
   loop 0 0 where rec loop ibeg i =
     if i = String.length s then
@@ -566,22 +565,22 @@ and ctyp_ident_se loc s =
     else loop ibeg (i + 1)
 and constructor_declaration_se =
   fun
-  [ Sexpr loc [Satom _ Auid ci :: sel] ->
+  [ Sexpr loc [Satom _ Auid ci :: sel] →
       (loc, <:vala< ci >>, <:vala< (List.map ctyp_se sel) >>, None)
-  | se -> error se "constructor_declaration" ]
+  | se → error se "constructor_declaration" ]
 ;
 
 value top_phrase_se se =
   match se with
-  [ Satom loc _ _ | Squot loc _ _ -> str_item_se se
-  | Sexpr loc [Satom _ Alid s :: sl] ->
+  [ Satom loc _ _ | Squot loc _ _ → str_item_se se
+  | Sexpr loc [Satom _ Alid s :: sl] →
       if s.[0] = '#' then
         let n = String.sub s 1 (String.length s - 1) in
         match sl with
-        [ [Satom _ Astring s] -> <:str_item< # $lid:n$ $str:s$ >>
-        | _ -> match () with [] ]
+        [ [Satom _ Astring s] → <:str_item< # $lid:n$ $str:s$ >>
+        | _ → match () with [] ]
       else str_item_se se
-  | Sexpr loc _ -> str_item_se se ]
+  | Sexpr loc _ → str_item_se se ]
 ;
 
 (* Parser *)

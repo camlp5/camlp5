@@ -2,11 +2,6 @@ pa_extend.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_extend.cmx: ../main/mLast.cmi ../main/pcaml.cmx
 pa_extend_m.cmo: ../main/mLast.cmi pa_extend.cmo
 pa_extend_m.cmx: ../main/mLast.cmi pa_extend.cmx
-pa_extyacc.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_extyacc.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_extyacc1.cmo: pa_extyacc.cmo ../main/mLast.cmi ../main/pcaml.cmi
-pa_extyacc2.cmo: pa_extyacc1.cmo ../main/mLast.cmi ../main/pcaml.cmi
-pa_extyacc2.cmx: ../main/mLast.cmi ../main/pcaml.cmx
 pa_fstream.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_fstream.cmx: ../main/mLast.cmi ../main/pcaml.cmx
 pa_lexer.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
