@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.16 2012/10/08 17:41:09 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.17 2012/10/09 03:51:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_lexer.cmo";
@@ -389,7 +389,7 @@ value next_token_after_spaces ctx bp =
   [ 'A'-'Z' ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
-  | greek_letter ident! -> ("GREEK", $buf)
+  | greek_letter ident! -> ("GIDENT", $buf)
   | [ 'a'-'z' | '_' | misc_letter ] ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
@@ -646,7 +646,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
             else Hashtbl.add ident_table p_prm p_con ]
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "CHAR" | "STRING" | "QUOTATION" | "GREEK" |
+    "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->

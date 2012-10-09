@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.42 2012/10/08 17:41:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.43 2012/10/09 03:51:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -569,7 +569,7 @@ EXTEND
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Some i
-      | i = GREEK -> Some (ascii_of_greek i)
+      | i = GIDENT -> Some (ascii_of_greek i)
       | "_" -> None ] ]
   ;
   ctyp:
@@ -593,7 +593,7 @@ EXTEND
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >> ]
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
-      | i = GREEK -> <:ctyp< '$ascii_of_greek i$ >>
+      | i = GIDENT -> <:ctyp< '$ascii_of_greek i$ >>
       | "_" -> <:ctyp< _ >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>
       | i = V UIDENT -> <:ctyp< $_uid:i$ >>

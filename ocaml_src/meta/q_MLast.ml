@@ -4076,7 +4076,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Option None : 'simple_type_parameter));
-      [Gramext.Stoken ("GREEK", "")],
+      [Gramext.Stoken ("GIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (Qast.Option (Some (ascii_of_greek i)) : 'simple_type_parameter));
@@ -4308,7 +4308,7 @@ Grammar.extend
       [Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Node ("TyAny", [Qast.Loc]) : 'ctyp));
-      [Gramext.Stoken ("GREEK", "")],
+      [Gramext.Stoken ("GIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (Qast.Node ("TyQuo", [Qast.Loc; Qast.VaVal (ascii_of_greek i)]) :

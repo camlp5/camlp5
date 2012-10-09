@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.38 2012/10/08 17:41:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.39 2012/10/09 03:51:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -946,7 +946,7 @@ EXTEND
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Qast.Option (Some i)
-      | i = GREEK -> Qast.Option (Some (ascii_of_greek i))
+      | i = GIDENT -> Qast.Option (Some (ascii_of_greek i))
       | "_" -> Qast.Option None ] ]
   ;
   ctyp:
@@ -968,7 +968,7 @@ EXTEND
       [ t1 = SELF; "."; t2 = SELF -> Qast.Node "TyAcc" [Qast.Loc; t1; t2] ]
     | "simple"
       [ "'"; i = SV ident "" -> Qast.Node "TyQuo" [Qast.Loc; i]
-      | i = GREEK ->
+      | i = GIDENT ->
           Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal (ascii_of_greek i)]
       | "_" -> Qast.Node "TyAny" [Qast.Loc]
       | i = SV LIDENT -> Qast.Node "TyLid" [Qast.Loc; i]

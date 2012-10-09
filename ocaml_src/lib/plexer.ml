@@ -757,7 +757,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
         try Some (greek_letter buf strm__) with Stream.Failure -> None
       with
         Some buf ->
-          let buf = ident buf strm__ in "GREEK", Plexing.Lexbuf.get buf
+          let buf = ident buf strm__ in "GIDENT", Plexing.Lexbuf.get buf
       | _ ->
           match
             try
@@ -1341,7 +1341,7 @@ let using_token kwd_table ident_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "CHAR" | "STRING" | "QUOTATION" | "GREEK" | "ANTIQUOT" | "ANTIQUOT_LOC" |
+    "CHAR" | "STRING" | "QUOTATION" | "GIDENT" | "ANTIQUOT" | "ANTIQUOT_LOC" |
     "EOI" ->
       ()
   | _ ->
