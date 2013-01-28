@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 6.7 2013/01/28 04:29:17 deraugla Exp $ *)
+(* $Id: gramext.ml,v 6.8 2013/01/28 09:27:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Printf;
@@ -119,16 +119,14 @@ value rec eq_symbol s1 s2 =
 ;
 
 value is_before s1 s2 =
+  let s1 = match s1 with [ Svala _ s -> s | _ -> s1 ] in
+  let s2 = match s2 with [ Svala _ s -> s | _ -> s2 ] in
   match (s1, s2) with
   [ (Stoken ("ANY", _), _) -> False
   | (_, Stoken ("ANY", _)) -> True
   | (Stoken (_, s), Stoken (_, "")) when s <> "" -> True
   | (Stoken _, Stoken _) -> False
   | (Stoken _, _) -> True
-  | (Svala _ _, Stoken _) -> False
-  | (Svala _ (Stoken (_, s)), Svala _ (Stoken (_, ""))) when s <> "" -> True
-  | (Svala _ (Stoken _), Svala _ (Stoken _)) -> False
-  | (Svala _ (Stoken _), _) -> True
   | _ -> False ]
 ;
 

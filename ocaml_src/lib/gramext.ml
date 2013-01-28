@@ -121,16 +121,22 @@ let rec eq_symbol s1 s2 =
 ;;
 
 let is_before s1 s2 =
+  let s1 =
+    match s1 with
+      Svala (_, s) -> s
+    | _ -> s1
+  in
+  let s2 =
+    match s2 with
+      Svala (_, s) -> s
+    | _ -> s2
+  in
   match s1, s2 with
     Stoken ("ANY", _), _ -> false
   | _, Stoken ("ANY", _) -> true
   | Stoken (_, s), Stoken (_, "") when s <> "" -> true
   | Stoken _, Stoken _ -> false
   | Stoken _, _ -> true
-  | Svala (_, _), Stoken _ -> false
-  | Svala (_, Stoken (_, s)), Svala (_, Stoken (_, "")) when s <> "" -> true
-  | Svala (_, Stoken _), Svala (_, Stoken _) -> false
-  | Svala (_, Stoken _), _ -> true
   | _ -> false
 ;;
 

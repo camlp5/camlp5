@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 6.4 2012/01/09 14:22:20 deraugla Exp $ -->
+  <!-- $Id: library.html,v 6.5 2013/01/28 09:27:12 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2012 -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -820,6 +820,12 @@ module Entry =
 <p>The function "<tt>Grammar.Entry.print</tt>" displays the current
   contents of an entry. Interesting for debugging, to look at the
   result of a syntax extension, to see the names of the levels.</p>
+
+<p>Try, for example, in the OCaml toplevel:</p>
+
+<pre>
+  Grammar.Entry.print Format.std_formatter Pcaml.expr
+</pre>
 
 <p>The display does not include the patterns nor the semantic actions,
   whose sources are not recorded in the grammar entries data.</p>
