@@ -127,6 +127,7 @@ let is_before s1 s2 =
   | Stoken (_, s), Stoken (_, "") when s <> "" -> true
   | Stoken _, Stoken _ -> false
   | Stoken _, _ -> true
+  | Svala (_, _), Stoken _ -> false
   | Svala (_, Stoken (_, s)), Svala (_, Stoken (_, "")) when s <> "" -> true
   | Svala (_, Stoken _), Svala (_, Stoken _) -> false
   | Svala (_, Stoken _), _ -> true
