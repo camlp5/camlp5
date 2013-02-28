@@ -1,6 +1,8 @@
 Camlp5 Version 6.08:
 --------------------
 
+* [28 Feb 13] Now accept identifiers starting with a greek letter as
+  variable names.
 * [28 Jan 13] Fixed bug: DEFINE FOO=32 while using pa_macro.cmo did not work
   due to a bad order in grammar insertion.
 * [08 Oct 12] Fixed bug: parsing greek letters as type variable in

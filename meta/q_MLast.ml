@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.39 2012/10/09 03:51:48 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.40 2013/02/28 17:27:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -748,6 +748,7 @@ EXTEND
       | s = SV STRING -> Qast.Node "ExStr" [Qast.Loc; s]
       | s = SV CHAR -> Qast.Node "ExChr" [Qast.Loc; s]
       | i = SV LIDENT -> Qast.Node "ExLid" [Qast.Loc; i]
+      | i = SV GIDENT -> Qast.Node "ExLid" [Qast.Loc; i]
       | i = SV UIDENT -> Qast.Node "ExUid" [Qast.Loc; i]
       | "["; "]" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
@@ -841,6 +842,7 @@ EXTEND
       [ p1 = SELF; "."; p2 = SELF -> Qast.Node "PaAcc" [Qast.Loc; p1; p2] ]
     | "simple"
       [ s = SV LIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
+      | s = SV GIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
       | s = SV UIDENT -> Qast.Node "PaUid" [Qast.Loc; s]
       | s = SV INT -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
       | s = SV INT_l -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "l"]
@@ -905,6 +907,7 @@ EXTEND
           Qast.Node "PaRec" [Qast.Loc; lpl]
       | "("; p = paren_ipatt; ")" -> p
       | s = SV LIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
+      | s = SV GIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
       | "_" -> Qast.Node "PaAny" [Qast.Loc] ] ]
   ;
   paren_ipatt:

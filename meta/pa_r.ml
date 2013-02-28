@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.43 2012/10/09 03:51:48 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.44 2013/02/28 17:27:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -399,6 +399,7 @@ EXTEND
       | s = V STRING -> <:expr< $_str:s$ >>
       | s = V CHAR -> <:expr< $_chr:s$ >>
       | i = V LIDENT -> <:expr< $_lid:i$ >>
+      | i = V GIDENT -> <:expr< $_lid:i$ >>
       | i = V UIDENT -> <:expr< $_uid:i$ >>
       | "["; "]" -> <:expr< [] >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
@@ -478,6 +479,7 @@ EXTEND
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple"
       [ s = V LIDENT -> <:patt< $_lid:s$ >>
+      | s = V GIDENT -> <:patt< $_lid:s$ >>
       | s = V UIDENT -> <:patt< $_uid:s$ >>
       | s = V INT -> <:patt< $_int:s$ >>
       | s = V INT_l -> <:patt< $_int32:s$ >>
@@ -533,6 +535,7 @@ EXTEND
           <:patt< { $_list:lpl$ } >>
       | "("; p = paren_ipatt; ")" -> p
       | s = V LIDENT -> <:patt< $_lid:s$ >>
+      | s = V GIDENT -> <:patt< $_lid:s$ >>
       | "_" -> <:patt< _ >> ] ]
   ;
   paren_ipatt:

@@ -1189,6 +1189,9 @@ Grammar.extend
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (MLast.ExUid (loc, i) : 'expr));
+      [Gramext.Stoken ("GIDENT", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (MLast.ExLid (loc, i) : 'expr));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (MLast.ExLid (loc, i) : 'expr));
@@ -1440,6 +1443,9 @@ Grammar.extend
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) -> (MLast.PaUid (loc, s) : 'patt));
+      [Gramext.Stoken ("GIDENT", "")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) -> (MLast.PaLid (loc, s) : 'patt));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) -> (MLast.PaLid (loc, s) : 'patt))]];
@@ -1532,6 +1538,9 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "_")],
       Gramext.action (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'ipatt));
+      [Gramext.Stoken ("GIDENT", "")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) -> (MLast.PaLid (loc, s) : 'ipatt));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) -> (MLast.PaLid (loc, s) : 'ipatt));
