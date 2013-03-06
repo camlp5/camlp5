@@ -8,6 +8,8 @@ INSTALL UNDER UNIX
    or:
      ./configure --strict
 
+   The default is strict.
+
    To compile with jocaml, add option '--oname jocaml'.
 
    All other options of 'configure' can be displayed with its option --help.
