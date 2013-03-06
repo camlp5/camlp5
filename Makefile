@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.26 2012/06/02 13:23:39 deraugla Exp $
+# $Id: Makefile,v 6.27 2013/03/06 09:42:04 deraugla Exp $
 
 include config/Makefile
 
@@ -14,7 +14,13 @@ DIFF_OPT=
 # by "make install DESTDIR=..."
 DESTDIR=
 
-all: out
+all:
+	@echo "Please refer to the installation instructions in file INSTALL."
+	@echo "If you've just unpacked the distribution, something like"
+	@echo "	./configure"
+	@echo "	make world.opt"
+	@echo "	make install"
+	@echo "should work. But see the file INSTALL for more details."
 
 out: boot/$(CAMLP5N)$(EXE)
 	set -e; cd ocaml_stuff; $(MAKE); cd ..

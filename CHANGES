@@ -1,6 +1,8 @@
 Camlp5 Version 6.08:
 --------------------
 
+* [06 Mar 13] Now 'make' displays a message how to compile. The old
+  behaviour of 'make' must be now 'make out'.
 * [28 Feb 13] Now accept identifiers starting with a greek letter as
   variable names.
 * [28 Jan 13] Fixed bug: DEFINE FOO=32 while using pa_macro.cmo did not work

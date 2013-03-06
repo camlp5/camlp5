@@ -23,7 +23,7 @@ INSTALL UNDER UNIX
      make -j4 world.opt
 
     Alternatively, you can decompose the operations into:
-       make
+       make out
     Then, to make camlp5 check itself:
        make bootstrap
     Further, to make the native-code library:
