@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.28 2013/03/06 10:07:49 deraugla Exp $
+# $Id: Makefile,v 6.29 2013/03/06 10:08:18 deraugla Exp $
 
 include config/Makefile
 
@@ -14,9 +14,7 @@ DIFF_OPT=
 # by "make install DESTDIR=..."
 DESTDIR=
 
-all: out
-
-fuck:
+all:
 	@echo "Please refer to the installation instructions in file INSTALL."
 	@echo "If you've just unpacked the distribution, something like"
 	@echo "	./configure"
