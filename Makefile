@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.27 2013/03/06 09:42:04 deraugla Exp $
+# $Id: Makefile,v 6.28 2013/03/06 10:07:49 deraugla Exp $
 
 include config/Makefile
 
@@ -14,7 +14,9 @@ DIFF_OPT=
 # by "make install DESTDIR=..."
 DESTDIR=
 
-all:
+all: out
+
+fuck:
 	@echo "Please refer to the installation instructions in file INSTALL."
 	@echo "If you've just unpacked the distribution, something like"
 	@echo "	./configure"
@@ -81,7 +83,7 @@ bootstrap:
 	$(MAKE) backup
 	$(MAKE) promote
 	$(MAKE) clean_hot
-	$(MAKE) all
+	$(MAKE) out
 	$(MAKE) compare
 
 backup:
@@ -135,12 +137,12 @@ clean_core:
 world:
 	$(MAKE) core
 	$(MAKE) coreboot
-	$(MAKE) all
+	$(MAKE) out
 
 world.opt:
 	$(MAKE) core
 	$(MAKE) coreboot
-	$(MAKE) all
+	$(MAKE) out
 	$(MAKE) opt
 	$(MAKE) opt.opt
 
