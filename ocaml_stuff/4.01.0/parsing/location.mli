@@ -10,8 +10,6 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* Id *)
-
 (* Source code locations (ranges of positions), used in parsetree. *)
 
 open Format
@@ -77,4 +75,3 @@ val show_filename: string -> string
 
 
 val absname: bool ref
-
