@@ -1781,5 +1781,5 @@ let directive loc =
 let phrase =
   function
     StDir (loc, d, dp) -> Ptop_dir (uv d, directive loc (uv dp))
-  | si -> Ptop_def (str_item si [])
+  | si -> glob_fname := !(Plexing.input_file); Ptop_def (str_item si [])
 ;;

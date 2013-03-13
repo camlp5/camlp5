@@ -7,7 +7,7 @@
 
 open Printf;;
 
-let version = "6.08";;
+let version = "6.09-exp";;
 let syntax_name = ref "";;
 
 let gram =
@@ -436,3 +436,6 @@ add_option "-pmode"
         flush stderr;
         exit 0))
   "Print the current mode and exit.";;
+
+add_option "-dquot" (Arg.Set_string Quotation.default)
+  "<name> Set default quotation.";;
