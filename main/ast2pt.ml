@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.50 2012/06/06 09:36:54 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.51 2013/03/13 07:52:28 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1561,5 +1561,8 @@ value directive loc =
 value phrase =
   fun
   [ StDir loc d dp → Ptop_dir (uv d) (directive loc (uv dp))
-  | si → Ptop_def (str_item si []) ]
+  | si → do {
+      glob_fname.val := Plexing.input_file.val;
+      Ptop_def (str_item si [])
+    } ]
 ;

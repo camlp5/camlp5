@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 6.4 2013/03/13 07:23:23 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 6.5 2013/03/13 07:52:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -108,6 +108,7 @@ value toplevel_phrase cs = do {
     flush stderr
   }
   else ();
+  Pcaml.input_file.val := Toploop.input_name.val;
   match Grammar.Entry.parse Pcaml.top_phrase cs with
   [ Some phr -> Ast2pt.phrase phr
   | None -> raise End_of_file ]

@@ -1,6 +1,8 @@
 Camlp5 Version 6.09:
 --------------------
 
+* [13 Mar 13] Fixed bug: in toplevel, the highlighting of errors did not
+  work.
 * [13 Mar 13] Added option '-dquot' to specify the default quotation name.
   and the ability to use "#option" directive with two parameters. Therefore,
   we can use either (e.g.):
