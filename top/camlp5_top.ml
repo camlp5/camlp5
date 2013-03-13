@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 6.3 2012/01/09 14:22:25 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 6.4 2013/03/13 07:23:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -48,7 +48,7 @@ value highlight_locations lb loc1 loc2 =
 ;
 
 value print_location lb loc =
-  if String.length Toploop.input_name.val = 0 then
+  if List.mem Toploop.input_name.val [""; "//toplevel//"] then
     highlight_locations lb loc (-1, -1)
   else
     IFDEF OCAML_VERSION <= OCAML_2_99 THEN
