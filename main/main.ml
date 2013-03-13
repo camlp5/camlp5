@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 6.10 2012/02/07 19:53:43 deraugla Exp $ *)
+(* $Id: main.ml,v 6.11 2013/03/13 06:48:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";
@@ -221,6 +221,10 @@ Pcaml.add_directive "option"
   (fun
    [ Some <:expr< $str:s$ >> ->
        match parse_options [s] with
+       [ Some 0 | None -> ()
+       | Some x -> failwith "bad option" ]
+   | Some <:expr< $str:s1$ $str:s2$ >> ->
+       match parse_options [s1; s2] with
        [ Some 0 | None -> ()
        | Some x -> failwith "bad option" ]
    | Some _ | None -> raise Not_found ])

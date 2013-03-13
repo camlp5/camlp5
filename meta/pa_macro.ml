@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 6.11 2012/03/03 01:38:08 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 6.12 2013/03/13 06:48:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -143,7 +143,7 @@ value defined =
   ref
     [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone); ("CAMLP5_5_00", MvNone);
      ("CAMLP5_6_00", MvNone); ("CAMLP5_6_02_1", MvNone);
-     ("OCAML_" ^ oversion, MvNone) :: oname]
+     ("CAMLP5_6_09", MvNone); ("OCAML_" ^ oversion, MvNone) :: oname]
 ;
 
 value defined_version loc =

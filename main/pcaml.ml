@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.37 2013/03/06 16:35:10 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.38 2013/03/13 06:48:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -495,3 +495,6 @@ add_option "-pmode"
         exit 0
       }))
   "Print the current mode and exit.";
+
+add_option "-dquot" (Arg.Set_string Quotation.default)
+  "<name> Set default quotation.";
