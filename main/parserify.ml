@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: parserify.ml,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: parserify.ml,v 6.4 2013/03/14 20:09:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";
@@ -69,6 +69,20 @@ value err =
   | e -> SpoQues e ]
 ;
 
+value rec simpl =
+  fun
+  [ <:expr<
+      match try Some $f$ with [ Stream.Failure -> None ] with
+      [ Some $lid:s1$ -> $lid:s2$
+      | _ -> raise Stream.Failure ]
+    >> as e ->
+      if s1 = s2 then f else e
+  | <:expr< match $e$ with [ Some $p1$ → $e1$ | _ → $e2$ ] >> →
+      <:expr< match $e$ with [ Some $p1$ → $e1$ | _ → $simpl e2$ ] >>
+  | e →
+      e ]
+;
+
 value rec unstream_pattern_kont =
   fun
   [ <:expr<
@@ -118,6 +132,15 @@ value rec unstream_pattern_kont =
       let (sp, epo, e) = unstream_pattern_kont e in
       let sp = [(SpTrm loc p <:vala< None >>, err e2) :: sp] in
       (sp, epo, e)
+  | <:expr<
+      match try Some ($f$ strm__) with [ Stream.Failure → None ] with
+      [ Some $lid:s1$ → $lid:s2$
+      | _ → raise Stream.Failure ]
+    >> as e →
+      if s1 = s2 then
+        ([(SpNtr loc <:patt< a >> f, SpoBang)], None, <:expr< a >>)
+      else
+        ([], None, e)
   | <:expr< match Stream.peek strm__ with [ $list:_$ ] >> |
     <:expr<
       match try Some ($_$ strm__) with [ Stream.Failure -> None ] with
@@ -186,6 +209,19 @@ value rec unparser_cases_list =
       in
       let spel = unparser_cases_list e2 in
       [spe :: spel]
+  | <:expr<
+      match try Some $f$ with [ Stream.Failure -> None ] with
+      [ Some $p1$ -> $e1$
+      | _ -> $e2$ ]
+    >> ->
+      let e =
+        <:expr<
+          match try Some $simpl f$ with [ Stream.Failure -> None ] with
+          [ Some $p1$ -> $simpl e1$
+          | _ -> $simpl e2$ ]
+        >>
+      in
+      [([], None, e)]
   | <:expr< try $f$ strm__ with [ Stream.Failure -> $e$ ] >> ->
       let spe = ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< a >>) in
       let spel = unparser_cases_list e in
