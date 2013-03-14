@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: exparser.ml,v 6.5 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: exparser.ml,v 6.6 2013/03/14 15:43:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";
@@ -104,6 +104,7 @@ and subst_pe v (p, e) =
 ;
 
 value optim = ref True;
+Pcaml.add_option "-no-pa-opt" (Arg.Clear optim) "No parsers optimization.";
 
 value rec perhaps_bound s =
   fun
@@ -350,7 +351,7 @@ value left_factorize rl =
 (* Converting into AST *)
 
 value cparser loc bpo pc =
-  let pc = left_factorize pc in
+  let pc = if optim.val then left_factorize pc else pc in
   let e = parser_cases loc pc in
   let e =
     let loc = Ploc.with_comment loc "" in
@@ -373,7 +374,7 @@ value rec is_not_bound s =
 ;
 
 value cparser_match loc me bpo pc =
-  let pc = left_factorize pc in
+  let pc = if optim.val then left_factorize pc else pc in
   let iloc = Ploc.with_comment loc "" in
   let pc = parser_cases iloc pc in
   let e =
