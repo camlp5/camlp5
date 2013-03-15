@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 6.10 2013/03/15 09:30:47 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 6.11 2013/03/15 15:15:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -177,7 +177,7 @@ value parser_body pc (po, spel) =
         spel ]
 ;
 
-(**)
+(*
 value err =
   fun
   [ <:expr< "" >> -> SpoNoth
@@ -277,7 +277,7 @@ value unparser_body e =
   let spel = unparser_cases_list e in
   (po, spel)
 ;
-(**)
+*)
 
 value print_parser pc e =
   match e with
