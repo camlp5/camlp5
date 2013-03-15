@@ -1,6 +1,7 @@
 Camlp5 Version 6.09:
 --------------------
 
+* [15 Mar 13] Updated of ocaml version 4.00.2.
 * [13 Mar 13] Fixed bug: in toplevel, the highlighting of errors did not
   work.
 * [13 Mar 13] Added option '-dquot' to specify the default quotation name.

@@ -1,0 +1,4 @@
+pconfig.cmo : pconfig.cmi
+pconfig.cmx : pconfig.cmi
+pconfig.cmi :
+warnings.cmi :
