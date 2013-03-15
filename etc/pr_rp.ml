@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 6.7 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 6.8 2013/03/15 04:35:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -177,6 +177,83 @@ value parser_body pc (po, spel) =
         spel ]
 ;
 
+(*
+value err =
+  fun
+  [ <:expr< "" >> -> SpoNoth
+  | e -> SpoQues e ]
+;
+
+value rec unstream_pattern_kont ge =
+  match ge with
+  [ <:expr<
+      match Stream.peek strm__ with
+      [ Some $p1$ → do { Stream.junk strm__; $e1$ }
+      | _ → raise (Stream.Error $e2$) ]
+    >> →
+      let (sp, epo, e) = unstream_pattern_kont e1 in
+      let sp = [(SpTrm loc p1 <:vala< None >>, err e2) :: sp] in
+      (sp, epo, e)
+  | <:expr<
+      match try Some ($f$ strm__) with [ Stream.Failure → None ] with
+      [ Some $p1$ → $e1$
+      | _ → raise Stream.Failure ]
+    >> →
+      let f =
+        match (p1, e1) with
+        [ (<:patt< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 → f
+        | _ → <:expr< fun (strm__ : Stream.t _) -> $ge$ >> ]
+      in
+      ([(SpNtr loc <:patt< a >> f, SpoBang)], None, <:expr< a >>)
+  | e ->
+      ([], None, e) ]
+;  
+
+value rec unparser_cases_list ge =
+  match ge with
+  [ <:expr<
+      match Stream.peek strm__ with
+      [ Some $p1$ → do { Stream.junk strm__; $e1$ }
+      | _ → $e2$ ]
+    >> →
+      let spe =
+        let (sp, epo, e) = unstream_pattern_kont e1 in
+        let sp = [(SpTrm loc p1 <:vala< None >>, SpoNoth) :: sp] in
+        (sp, epo, e)
+      in
+      let spel = unparser_cases_list e2 in
+      [spe :: spel]
+  | <:expr<
+      match try Some ($f$ strm__) with [ Stream.Failure → None ] with
+      [ Some $p1$ → $e1$
+      | _ → $e2$ ]
+    >> →
+      let spe =
+        let (sp, epo, e) = unstream_pattern_kont e1 in
+        let sp = [(SpNtr loc p1 f, SpoNoth) :: sp] in
+        (sp, epo, e)
+      in
+      let spel = unparser_cases_list e2 in
+      [spe :: spel]
+  | <:expr< raise Stream.Failure >> ->
+      []
+  | e ->
+      [([], None, e)] ]
+;
+
+value unparser_body e =
+  let (po, e) =
+    match e with
+    [ <:expr< let $lid:bp$ = Stream.count $lid:strm_n$ in $e$ >> ->
+        (Some bp, e)
+    | _ ->
+        (None, e) ]
+  in
+  let spel = unparser_cases_list e in
+  (po, spel)
+;
+*)
+
 value print_parser pc e =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
@@ -187,10 +264,11 @@ value print_parser pc e =
 
 value print_match_with_parser pc e =
   match e with
-  [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
+  [ <:expr< let ($_$ : Stream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
       pprintf pc "@[match %p with parser@]%p" expr e1 parser_body pa
-  | e -> expr pc e ]
+  | e ->
+      expr pc e ]
 ;
 
 (* Printers extensions *)
@@ -203,7 +281,7 @@ EXTEND_PRINTER
   pr_expr: LEVEL "top"
     [ [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
           print_parser pc e
-      | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
+      | <:expr< let ($_$ : Stream.t _) = $_$ in $_$ >> as e ->
           print_match_with_parser pc e ] ]
   ;
   pr_expr: LEVEL "apply"
