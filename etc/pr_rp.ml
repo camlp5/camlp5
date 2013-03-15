@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 6.8 2013/03/15 04:35:26 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 6.9 2013/03/15 05:34:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -267,6 +267,13 @@ value print_match_with_parser pc e =
   [ <:expr< let ($_$ : Stream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
       pprintf pc "@[match %p with parser@]%p" expr e1 parser_body pa
+  | <:expr<
+      match Stream.peek strm__ with
+      [ Some $_$ → do { Stream.junk strm__; $_$ }
+      | _ → $_$ ]
+    >> as e →
+      let pa = unparser_body e in
+      pprintf pc "@[match strm__ with parser@]%p" parser_body pa
   | e ->
       expr pc e ]
 ;
@@ -282,6 +289,12 @@ EXTEND_PRINTER
     [ [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
           print_parser pc e
       | <:expr< let ($_$ : Stream.t _) = $_$ in $_$ >> as e ->
+          print_match_with_parser pc e
+      | <:expr<
+          match Stream.peek strm__ with
+          [ Some $_$ → do { Stream.junk strm__; $_$ }
+          | _ → $_$ ]
+        >> as e →
           print_match_with_parser pc e ] ]
   ;
   pr_expr: LEVEL "apply"
