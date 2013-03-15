@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 6.9 2013/03/15 05:34:14 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 6.10 2013/03/15 09:30:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -177,7 +177,7 @@ value parser_body pc (po, spel) =
         spel ]
 ;
 
-(*
+(**)
 value err =
   fun
   [ <:expr< "" >> -> SpoNoth
@@ -195,16 +195,41 @@ value rec unstream_pattern_kont ge =
       let sp = [(SpTrm loc p1 <:vala< None >>, err e2) :: sp] in
       (sp, epo, e)
   | <:expr<
+      match try Some $f$ with [ Stream.Failure -> None ] with
+      [ Some $p1$ -> $e1$
+      | _ -> raise (Stream.Error $e2$) ]
+    >> ->
+      let f =
+        match f with
+        [ <:expr< $f$ strm__ >> -> f
+        | _ -> <:expr< fun (strm__ : Stream.t _) -> $f$ >> ]
+      in
+      let (sp, epo, e) = unstream_pattern_kont e1 in
+      let sp =[(SpNtr loc p1 f, err e2) :: sp] in
+      (sp, epo, e)
+  | <:expr<
       match try Some ($f$ strm__) with [ Stream.Failure → None ] with
       [ Some $p1$ → $e1$
       | _ → raise Stream.Failure ]
     >> →
-      let f =
+      let p1_eq_e1 =
         match (p1, e1) with
-        [ (<:patt< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 → f
-        | _ → <:expr< fun (strm__ : Stream.t _) -> $ge$ >> ]
+        [ (<:patt< $lid:s1$ >>, <:expr< $lid:s2$ >>) → s1 = s2
+        | _ → False ]
       in
-      ([(SpNtr loc <:patt< a >> f, SpoBang)], None, <:expr< a >>)
+      if p1_eq_e1 then
+        ([(SpNtr loc <:patt< a >> f, SpoBang)], None, <:expr< a >>)
+      else
+        let (sp, epo, e) = unstream_pattern_kont e1 in
+        ([(SpNtr loc p1 f, SpoBang) :: sp], epo, e)
+  | <:expr<
+      match try Some $e1$ with [ Stream.Failure → None ] with
+      [ Some $p1$ → $e2$
+      | _ → raise Stream.Failure ]
+    >> →
+      let f = <:expr< fun (strm__ : Stream.t _) -> $e1$ >> in
+      let (sp, epo, e) = unstream_pattern_kont e2 in
+      ([(SpNtr loc p1 f, SpoBang) :: sp], epo, e)
   | e ->
       ([], None, e) ]
 ;  
@@ -252,7 +277,7 @@ value unparser_body e =
   let spel = unparser_cases_list e in
   (po, spel)
 ;
-*)
+(**)
 
 value print_parser pc e =
   match e with
