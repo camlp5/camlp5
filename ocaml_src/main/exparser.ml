@@ -121,6 +121,7 @@ and subst_pe v (p, e) =
 ;;
 
 let optim = ref true;;
+Pcaml.add_option "-no-pa-opt" (Arg.Clear optim) "No parsers optimization.";;
 
 let rec perhaps_bound s =
   function
@@ -502,7 +503,7 @@ let left_factorize rl =
 (* Converting into AST *)
 
 let cparser loc bpo pc =
-  let pc = left_factorize pc in
+  let pc = if !optim then left_factorize pc else pc in
   let e = parser_cases loc pc in
   let e =
     let loc = Ploc.with_comment loc "" in
@@ -545,7 +546,7 @@ let rec is_not_bound s =
 ;;
 
 let cparser_match loc me bpo pc =
-  let pc = left_factorize pc in
+  let pc = if !optim then left_factorize pc else pc in
   let iloc = Ploc.with_comment loc "" in
   let pc = parser_cases iloc pc in
   let e =

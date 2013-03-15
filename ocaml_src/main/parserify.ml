@@ -77,6 +77,35 @@ let err =
   | e -> SpoQues e
 ;;
 
+let rec simpl =
+  function
+    MLast.ExMat
+      (_,
+       MLast.ExTry
+         (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), f),
+          [MLast.PaAcc
+             (_, MLast.PaUid (_, "Stream"), MLast.PaUid (_, "Failure")),
+           None, MLast.ExUid (_, "None")]),
+       [MLast.PaApp (_, MLast.PaUid (_, "Some"), MLast.PaLid (_, s1)), None,
+        MLast.ExLid (_, s2);
+        MLast.PaAny _, None,
+        MLast.ExApp
+          (_, MLast.ExLid (_, "raise"),
+           MLast.ExAcc
+             (_, MLast.ExUid (_, "Stream"),
+              MLast.ExUid (_, "Failure")))]) as e ->
+      if s1 = s2 then f else e
+  | MLast.ExMat
+      (_, e,
+       [MLast.PaApp (_, MLast.PaUid (_, "Some"), p1), None, e1;
+        MLast.PaAny _, None, e2]) ->
+      MLast.ExMat
+        (loc, e,
+         [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p1), None, e1;
+          MLast.PaAny loc, None, simpl e2])
+  | e -> e
+;;
+
 let rec unstream_pattern_kont =
   function
     MLast.ExLet
@@ -160,6 +189,44 @@ let rec unstream_pattern_kont =
   | MLast.ExLet (_, false, [p, MLast.ExLid (_, "strm__")], e) ->
       let (sp, epo, e) = unstream_pattern_kont e in
       (SpStr (loc, p), SpoNoth) :: sp, epo, e
+  | MLast.ExMat
+      (_,
+       MLast.ExTry
+         (_,
+          MLast.ExApp
+            (_, MLast.ExUid (_, "Some"),
+             MLast.ExApp (_, f, MLast.ExLid (_, "strm__"))),
+          [MLast.PaAcc
+             (_, MLast.PaUid (_, "Stream"), MLast.PaUid (_, "Failure")),
+           None, MLast.ExUid (_, "None")]),
+       [MLast.PaApp (_, MLast.PaUid (_, "Some"), MLast.PaLid (_, s1)), None,
+        MLast.ExLid (_, s2);
+        MLast.PaAny _, None,
+        MLast.ExApp
+          (_, MLast.ExLid (_, "raise"),
+           MLast.ExAcc
+             (_, MLast.ExUid (_, "Stream"),
+              MLast.ExUid (_, "Failure")))]) as e ->
+      if s1 = s2 then
+        [SpNtr (loc, MLast.PaLid (loc, "a"), f), SpoBang], None,
+        MLast.ExLid (loc, "a")
+      else [], None, e
+  | MLast.ExMat
+      (_,
+       MLast.ExTry
+         (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), e1),
+          [MLast.PaAcc
+             (_, MLast.PaUid (_, "Stream"), MLast.PaUid (_, "Failure")),
+           None, MLast.ExUid (_, "None")]),
+       [MLast.PaApp (_, MLast.PaUid (_, "Some"), MLast.PaLid (_, s)), None,
+        e2;
+        MLast.PaAny _, None,
+        MLast.ExApp
+          (_, MLast.ExLid (_, "raise"),
+           MLast.ExAcc
+             (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure")))]) ->
+      let e = MLast.ExLet (loc, false, [MLast.PaLid (loc, s), e1], e2) in
+      unstream_pattern_kont e
   | MLast.ExLet (_, false, [p, e1], e2) as ge ->
       if contains_strm__ e1 then
         let (f, err) =
@@ -377,6 +444,28 @@ let rec unparser_cases_list =
         let sp = (SpNtr (loc, p1, f), SpoNoth) :: sp in sp, epo, e
       in
       let spel = unparser_cases_list e2 in spe :: spel
+  | MLast.ExMat
+      (_,
+       MLast.ExTry
+         (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), f),
+          [MLast.PaAcc
+             (_, MLast.PaUid (_, "Stream"), MLast.PaUid (_, "Failure")),
+           None, MLast.ExUid (_, "None")]),
+       [MLast.PaApp (_, MLast.PaUid (_, "Some"), p1), None, e1;
+        MLast.PaAny _, None, e2]) ->
+      let e =
+        MLast.ExMat
+          (loc,
+           MLast.ExTry
+             (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), simpl f),
+              [MLast.PaAcc
+                 (loc, MLast.PaUid (loc, "Stream"),
+                  MLast.PaUid (loc, "Failure")),
+               None, MLast.ExUid (loc, "None")]),
+           [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p1), None, simpl e1;
+            MLast.PaAny loc, None, simpl e2])
+      in
+      [[], None, e]
   | MLast.ExTry
       (_, MLast.ExApp (_, f, MLast.ExLid (_, "strm__")),
        [MLast.PaAcc
