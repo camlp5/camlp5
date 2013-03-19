@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.33 2012/06/01 18:34:02 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.34 2013/03/19 14:29:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -381,7 +381,7 @@ value ocaml_pexp_construct li po chk_arity =
   Pexp_construct (mknoloc li) po chk_arity
 ;
 
-value ocaml_pexp_field e li = Pexp_field e (mknoloc li);
+value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
 
 value ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i) e1 e2 df e;
 

@@ -503,7 +503,7 @@ let left_factorize rl =
 (* Converting into AST *)
 
 let cparser loc bpo pc =
-  let pc = if !optim then left_factorize pc else pc in
+  let pc = left_factorize pc in
   let e = parser_cases loc pc in
   let e =
     let loc = Ploc.with_comment loc "" in
@@ -546,7 +546,7 @@ let rec is_not_bound s =
 ;;
 
 let cparser_match loc me bpo pc =
-  let pc = if !optim then left_factorize pc else pc in
+  let pc = left_factorize pc in
   let iloc = Ploc.with_comment loc "" in
   let pc = parser_cases iloc pc in
   let e =

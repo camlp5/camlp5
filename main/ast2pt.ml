@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.51 2013/03/13 07:52:28 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.52 2013/03/19 14:29:57 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -446,26 +446,6 @@ value rec same_type_expr ct ce =
   | _ → False ]
 ;
 
-value rec common_id loc t e =
-  match (t, e) with
-  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 → Lident s1
-  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) when s1 = s2 → Lident s1
-  | (<:ctyp< $t1$.$lid:s1$ >>, <:expr< $e1$.$lid:s2$ >>) when s1 = s2 →
-      Ldot (common_id loc t1 e1) s1
-  | (<:ctyp< $t1$.$uid:s1$ >>, <:expr< $e1$.$uid:s2$ >>) when s1 = s2 →
-      Ldot (common_id loc t1 e1) s1
-  | _ → error loc "this expression should repeat the class id inherited" ]
-;
-
-value rec type_id loc t =
-  match t with
-  [ <:ctyp< $lid:s1$ >> → Lident s1
-  | <:ctyp< $uid:s1$ >> → Lident s1
-  | <:ctyp< $t1$.$lid:s1$ >> → Ldot (type_id loc t1) s1
-  | <:ctyp< $t1$.$uid:s1$ >> → Ldot (type_id loc t1) s1
-  | _ → error loc "type identifier expected" ]
-;
-
 value rec module_expr_long_id =
   fun
   [ <:module_expr< $me1$ ( $me2$ ) >> →
@@ -780,7 +760,9 @@ value rec expr =
              match e2 with
              [ <:expr< $lid:s$ >> →
                  let loc = Ploc.encl loc1 loc2 in
-                 (loc, mkexp loc (ocaml_pexp_field e1 (mkli (conv_lab s) ml)))
+                 let li = mkli (conv_lab s) ml in
+                 let e = ocaml_pexp_field (mkloc loc) e1 li in
+                 (loc, mkexp loc e)
              | _ → error (loc_of_expr e2) "lowercase identifier expected" ])
           (loc, e) l
       in
@@ -862,7 +844,7 @@ value rec expr =
                (mkexp loc (ocaml_pexp_ident (array_function "Array" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | ExBae loc e el → expr (bigarray_set loc e (uv el) v)
-      | <:expr< $lid:lab$ >> → mkexp loc (ocaml_pexp_setinstvar lab (expr v))
+      | ExLid _ lab → mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
       | ExSte _ e1 e2 →
           mkexp loc
             (ocaml_pexp_apply

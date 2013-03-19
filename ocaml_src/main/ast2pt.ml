@@ -459,30 +459,6 @@ let rec same_type_expr ct ce =
   | _ -> false
 ;;
 
-let rec common_id loc t e =
-  match t, e with
-    MLast.TyLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 -> Lident s1
-  | MLast.TyUid (_, s1), MLast.ExUid (_, s2) when s1 = s2 -> Lident s1
-  | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)),
-    MLast.ExAcc (_, e1, MLast.ExLid (_, s2))
-    when s1 = s2 ->
-      Ldot (common_id loc t1 e1, s1)
-  | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)),
-    MLast.ExAcc (_, e1, MLast.ExUid (_, s2))
-    when s1 = s2 ->
-      Ldot (common_id loc t1 e1, s1)
-  | _ -> error loc "this expression should repeat the class id inherited"
-;;
-
-let rec type_id loc t =
-  match t with
-    MLast.TyLid (_, s1) -> Lident s1
-  | MLast.TyUid (_, s1) -> Lident s1
-  | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)) -> Ldot (type_id loc t1, s1)
-  | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)) -> Ldot (type_id loc t1, s1)
-  | _ -> error loc "type identifier expected"
-;;
-
 let rec module_expr_long_id =
   function
     MLast.MeApp (_, me1, me2) ->
@@ -943,7 +919,9 @@ let rec expr =
              match e2 with
                MLast.ExLid (_, s) ->
                  let loc = Ploc.encl loc1 loc2 in
-                 loc, mkexp loc (ocaml_pexp_field e1 (mkli (conv_lab s) ml))
+                 let li = mkli (conv_lab s) ml in
+                 let e = ocaml_pexp_field (mkloc loc) e1 li in
+                 loc, mkexp loc e
              | _ -> error (loc_of_expr e2) "lowercase identifier expected")
           (loc, e) l
       in
@@ -1028,7 +1006,7 @@ let rec expr =
                (mkexp loc (ocaml_pexp_ident (array_function "Array" "set")))
                ["", expr e1; "", expr e2; "", expr v])
       | ExBae (loc, e, el) -> expr (bigarray_set loc e (uv el) v)
-      | MLast.ExLid (_, lab) -> mkexp loc (ocaml_pexp_setinstvar lab (expr v))
+      | ExLid (_, lab) -> mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
       | ExSte (_, e1, e2) ->
           mkexp loc
             (ocaml_pexp_apply
