@@ -1,6 +1,7 @@
 Camlp5 Version 6.09:
 --------------------
 
+* [19 Mar 13] Fixed bug no locations built in some cases of constructors.
 * [15 Mar 13] Updated of ocaml version 4.00.2.
 * [13 Mar 13] Fixed bug: in toplevel, the highlighting of errors did not
   work.

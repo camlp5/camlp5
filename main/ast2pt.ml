@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.52 2013/03/19 14:29:57 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.53 2013/03/19 15:25:22 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -91,7 +91,8 @@ value mklazy loc e =
       in
       let f = ghexp (ocaml_pexp_function "" None [(void_pat, e)]) in
       let delayed = Ldot (Lident "Lazy") "Delayed" in
-      let df = ghexp (ocaml_pexp_construct delayed (Some f) False) in
+      let cloc = mkloc loc in
+      let df = ghexp (ocaml_pexp_construct cloc delayed (Some f) False) in
       let r = ghexp (ocaml_pexp_ident (Ldot (Lident "Pervasives") "ref")) in
       ghexp (ocaml_pexp_apply r [("", df)]) ]
 ;
@@ -748,7 +749,8 @@ value rec expr =
         match sep_expr_acc [] e with
         [ [(loc, ml, <:expr< $uid:s$ >>) :: l] →
             let ca = not Prtools.no_constructors_arity.val in
-            (mkexp loc (ocaml_pexp_construct (mkli s ml) None ca), l)
+            let cloc = mkloc loc in
+            (mkexp loc (ocaml_pexp_construct cloc (mkli s ml) None ca), l)
         | [(loc, ml, <:expr< $lid:s$ >>) :: l] →
             (mkexp loc (ocaml_pexp_ident (mkli s ml)), l)
         | [(_, [], e) :: l] → (expr e, l)
@@ -1008,7 +1010,9 @@ value rec expr =
             match uv eo with
             [ Some e → expr e
             | None →
-                mkexp loc (ocaml_pexp_construct (Lident "()") None False) ]
+                let cloc = mkloc sloc in
+                let e = ocaml_pexp_construct cloc (Lident "()") None False in
+                mkexp loc e ]
           in
           mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, uv s))
       | None → error loc "no 'reply' in this ocaml version" ]
@@ -1038,7 +1042,8 @@ value rec expr =
   | ExTyc loc e t → mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid loc s →
       let ca = not Prtools.no_constructors_arity.val in
-      mkexp loc (ocaml_pexp_construct (Lident (conv_con (uv s))) None ca)
+      let cloc = mkloc loc in
+      mkexp loc (ocaml_pexp_construct cloc (Lident (conv_con (uv s))) None ca)
   | ExVrn loc s →
       match ocaml_pexp_variant with
       [ Some (_, pexp_variant) → mkexp loc (pexp_variant (uv s, None))

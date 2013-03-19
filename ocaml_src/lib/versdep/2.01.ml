@@ -152,8 +152,8 @@ let ocaml_pexp_assert fname loc e =
   Pexp_ifthenelse (not_try_e, raise_af, None)
 ;;
 
-let ocaml_pexp_construct li po chk_arity =
-  Pexp_construct (mknoloc li, po, chk_arity)
+let ocaml_pexp_construct loc li po chk_arity =
+  Pexp_construct (mkloc loc li, po, chk_arity)
 ;;
 
 let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
