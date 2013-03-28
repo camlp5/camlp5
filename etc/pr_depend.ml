@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.15 2013/03/22 09:51:18 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.16 2013/03/28 09:01:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -99,6 +99,7 @@ value rec patt =
   | <:patt< ($list:pl$) >> -> list patt pl
   | <:patt< ($p$ : $t$) >> -> do { patt p; ctyp t }
   | <:patt< $uid:_$ >> -> ()
+  | <:patt< (module $_$ : $mt$) >> -> module_type mt
   | PaVrn _ _ -> ()
   | x -> not_impl "patt" x ]
 and patt_module =
