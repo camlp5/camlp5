@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.40 2013/02/28 17:27:54 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.41 2013/04/19 08:43:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -263,39 +263,7 @@ value generalized_type_of_type t =
   (Qast.List tl, rt)
 ;
 
-value start_with s s_ini =
-  let len = String.length s_ini in
-  String.length s >= len && String.sub s 0 len = s_ini
-;
-
-value greek_tab =
-  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
-   "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
-;
-value index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];
-value ascii_of_greek s =
-  loop 0 greek_tab where rec loop i =
-    fun
-    [ [g :: gl] -> do {
-        if start_with s g then do {
-          let c1 = Char.chr (Char.code 'a' + i) in
-          let glen = String.length g in
-          let rest = String.sub s glen (String.length s - glen) in
-          loop 0 index_tab where rec loop i =
-            fun
-            [ [k :: kl] -> do {
-                if rest = k then do {
-                  let s2 = if i = 0 then "" else string_of_int i in
-                  Qast.Str (String.make 1 c1 ^ s2)
-                }
-                else loop (i + 1) kl
-              }
-            | [] -> Qast.Str s ]
-        }
-        else loop (i + 1) gl
-      }
-    | [] -> Qast.Str s ]
-;
+value greek_ascii_equiv s = Qast.Str (Pcaml.greek_ascii_equiv s);
 
 value warned = ref False;
 value warning_deprecated_since_6_00 loc =
@@ -949,7 +917,7 @@ EXTEND
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Qast.Option (Some i)
-      | i = GIDENT -> Qast.Option (Some (ascii_of_greek i))
+      | i = GIDENT -> Qast.Option (Some (greek_ascii_equiv i))
       | "_" -> Qast.Option None ] ]
   ;
   ctyp:
@@ -972,7 +940,7 @@ EXTEND
     | "simple"
       [ "'"; i = SV ident "" -> Qast.Node "TyQuo" [Qast.Loc; i]
       | i = GIDENT ->
-          Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal (ascii_of_greek i)]
+          Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal (greek_ascii_equiv i)]
       | "_" -> Qast.Node "TyAny" [Qast.Loc]
       | i = SV LIDENT -> Qast.Node "TyLid" [Qast.Loc; i]
       | i = SV UIDENT -> Qast.Node "TyUid" [Qast.Loc; i]

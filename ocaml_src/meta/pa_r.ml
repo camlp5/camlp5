@@ -121,40 +121,6 @@ let rec generalized_type_of_type =
   | t -> [], t
 ;;
 
-let start_with s s_ini =
-  let len = String.length s_ini in
-  String.length s >= len && String.sub s 0 len = s_ini
-;;
-
-let greek_tab =
-  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ"; "ο";
-   "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
-;;
-let index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];;
-let ascii_of_greek s =
-  let rec loop i =
-    function
-      g :: gl ->
-        if start_with s g then
-          let c1 = Char.chr (Char.code 'a' + i) in
-          let glen = String.length g in
-          let rest = String.sub s glen (String.length s - glen) in
-          let rec loop i =
-            function
-              k :: kl ->
-                if rest = k then
-                  let s2 = if i = 0 then "" else string_of_int i in
-                  String.make 1 c1 ^ s2
-                else loop (i + 1) kl
-            | [] -> s
-          in
-          loop 0 index_tab
-        else loop (i + 1) gl
-    | [] -> s
-  in
-  loop 0 greek_tab
-;;
-
 let warned = ref false;;
 let warning_deprecated_since_6_00 loc =
   if not !warned then
@@ -1687,7 +1653,7 @@ Grammar.extend
       [Gramext.Stoken ("GIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
-           (Some (ascii_of_greek i) : 'simple_type_parameter));
+           (Some (greek_ascii_equiv i) : 'simple_type_parameter));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
@@ -1792,7 +1758,7 @@ Grammar.extend
       [Gramext.Stoken ("GIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
-           (MLast.TyQuo (loc, ascii_of_greek i) : 'ctyp));
+           (MLast.TyQuo (loc, greek_ascii_equiv i) : 'ctyp));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action

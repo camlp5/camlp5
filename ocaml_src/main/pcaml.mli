@@ -138,6 +138,10 @@ val eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;;
 
 (** {6 Other} *)
 
+val greek_ascii_equiv : string -> string;;
+   (* Gives an ascii equivalent to a greek letter representing a type
+      parameter. E.g. 'a' for 'α', 'b' for 'β', and so on. *)
+
 val strict_mode : bool ref;;
    (* [True] if the current mode is "strict", [False] if "transitional" *)
 

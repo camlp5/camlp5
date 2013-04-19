@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.38 2013/03/13 06:48:13 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.39 2013/04/19 08:43:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -448,6 +448,42 @@ value eq_class_sig_item = Reloc.eq_class_sig_item;
 value eq_class_str_item = Reloc.eq_class_str_item;
 value eq_class_type = Reloc.eq_class_type;
 value eq_class_expr = Reloc.eq_class_expr;
+
+(* Greek Ascii equivalence for type parameters *)
+
+value start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;
+
+value greek_tab =
+  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ";
+   "ο"; "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
+;
+value index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];
+value greek_ascii_equiv s =
+  loop 0 greek_tab where rec loop i =
+    fun
+    [ [g :: gl] -> do {
+        if start_with s g then do {
+          let c1 = Char.chr (Char.code 'a' + i) in
+          let glen = String.length g in
+          let rest = String.sub s glen (String.length s - glen) in
+          loop 0 index_tab where rec loop i =
+            fun
+            [ [k :: kl] -> do {
+                if rest = k then do {
+                  let s2 = if i = 0 then "" else string_of_int i in
+                  String.make 1 c1 ^ s2
+                }
+                else loop (i + 1) kl
+              }
+            | [] -> s ]
+        }
+        else loop (i + 1) gl
+      }
+    | [] -> s ]
+;
 
 (* Mode transitional or strict *)
 

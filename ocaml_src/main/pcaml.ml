@@ -413,6 +413,42 @@ let eq_class_str_item = Reloc.eq_class_str_item;;
 let eq_class_type = Reloc.eq_class_type;;
 let eq_class_expr = Reloc.eq_class_expr;;
 
+(* Greek Ascii equivalence for type parameters *)
+
+let start_with s s_ini =
+  let len = String.length s_ini in
+  String.length s >= len && String.sub s 0 len = s_ini
+;;
+
+let greek_tab =
+  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ"; "ο";
+   "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
+;;
+let index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];;
+let greek_ascii_equiv s =
+  let rec loop i =
+    function
+      g :: gl ->
+        if start_with s g then
+          let c1 = Char.chr (Char.code 'a' + i) in
+          let glen = String.length g in
+          let rest = String.sub s glen (String.length s - glen) in
+          let rec loop i =
+            function
+              k :: kl ->
+                if rest = k then
+                  let s2 = if i = 0 then "" else string_of_int i in
+                  String.make 1 c1 ^ s2
+                else loop (i + 1) kl
+            | [] -> s
+          in
+          loop 0 index_tab
+        else loop (i + 1) gl
+    | [] -> s
+  in
+  loop 0 greek_tab
+;;
+
 (* Mode transitional or strict *)
 
 let strict_mode = ref false;;

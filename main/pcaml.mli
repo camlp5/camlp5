@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.mli,v 6.6 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 6.7 2013/04/19 08:43:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -140,6 +140,10 @@ value eq_class_type : MLast.class_type -> MLast.class_type -> bool;
 value eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;
 
 (** {6 Other} *)
+
+value greek_ascii_equiv : string → string;
+   (* Gives an ascii equivalent to a greek letter representing a type
+      parameter. E.g. 'a' for 'α', 'b' for 'β', and so on. *)
 
 value strict_mode : ref bool;
    (* [True] if the current mode is "strict", [False] if "transitional" *)

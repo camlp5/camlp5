@@ -311,39 +311,7 @@ let generalized_type_of_type t =
   let (tl, rt) = gen t in Qast.List tl, rt
 ;;
 
-let start_with s s_ini =
-  let len = String.length s_ini in
-  String.length s >= len && String.sub s 0 len = s_ini
-;;
-
-let greek_tab =
-  ["α"; "β"; "γ"; "δ"; "ε"; "ζ"; "η"; "θ"; "ι"; "κ"; "λ"; "μ"; "ν"; "ξ"; "ο";
-   "π"; "ρ"; "σ"; "τ"; "υ"; "φ"; "χ"; "ψ"; "ω"]
-;;
-let index_tab = [""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉"];;
-let ascii_of_greek s =
-  let rec loop i =
-    function
-      g :: gl ->
-        if start_with s g then
-          let c1 = Char.chr (Char.code 'a' + i) in
-          let glen = String.length g in
-          let rest = String.sub s glen (String.length s - glen) in
-          let rec loop i =
-            function
-              k :: kl ->
-                if rest = k then
-                  let s2 = if i = 0 then "" else string_of_int i in
-                  Qast.Str (String.make 1 c1 ^ s2)
-                else loop (i + 1) kl
-            | [] -> Qast.Str s
-          in
-          loop 0 index_tab
-        else loop (i + 1) gl
-    | [] -> Qast.Str s
-  in
-  loop 0 greek_tab
-;;
+let greek_ascii_equiv s = Qast.Str (Pcaml.greek_ascii_equiv s);;
 
 let warned = ref false;;
 let warning_deprecated_since_6_00 loc =
@@ -936,7 +904,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 345, 20))
+              | _ -> raise (Match_failure ("q_MLast.ml", 313, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1588,7 +1556,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 415, 20))
+              | _ -> raise (Match_failure ("q_MLast.ml", 383, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -4106,7 +4074,8 @@ Grammar.extend
       [Gramext.Stoken ("GIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
-           (Qast.Option (Some (ascii_of_greek i)) : 'simple_type_parameter));
+           (Qast.Option (Some (greek_ascii_equiv i)) :
+            'simple_type_parameter));
       [Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
@@ -4338,7 +4307,8 @@ Grammar.extend
       [Gramext.Stoken ("GIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
-           (Qast.Node ("TyQuo", [Qast.Loc; Qast.VaVal (ascii_of_greek i)]) :
+           (Qast.Node
+              ("TyQuo", [Qast.Loc; Qast.VaVal (greek_ascii_equiv i)]) :
             'ctyp));
       [Gramext.Stoken ("", "'");
        Gramext.Sfacto
