@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.45 2013/04/19 08:43:39 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.46 2013/04/20 03:33:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -285,6 +285,9 @@ EXTEND
       | "fun"; p = ipatt; e = fun_def -> <:expr< fun $p$ -> $e$ >>
       | "match"; e = SELF; "with"; "["; l = V (LIST0 match_case SEP "|");
         "]" ->
+          <:expr< match $e$ with [ $_list:l$ ] >>
+      | "match"; e = SELF; "with"; "|"; l = V (LIST0 match_case SEP "|");
+        "end" ->
           <:expr< match $e$ with [ $_list:l$ ] >>
       | "match"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           <:expr< match $e$ with $p1$ -> $e1$ >>

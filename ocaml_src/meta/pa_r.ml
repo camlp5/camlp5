@@ -781,6 +781,16 @@ Grammar.extend
         (fun (e1 : 'expr) _ (p1 : 'ipatt) _ (e : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExMat (loc, e, [p1, None, e1]) : 'expr));
       [Gramext.Stoken ("", "match"); Gramext.Sself;
+       Gramext.Stoken ("", "with"); Gramext.Stoken ("", "|");
+       Gramext.Slist0sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e)),
+          Gramext.Stoken ("", "|"), false);
+       Gramext.Stoken ("", "end")],
+      Gramext.action
+        (fun _ (l : 'match_case list) _ _ (e : 'expr) _ (loc : Ploc.t) ->
+           (MLast.ExMat (loc, e, l) : 'expr));
+      [Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "[");
        Gramext.Slist0sep
          (Gramext.Snterm
