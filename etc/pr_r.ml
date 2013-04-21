@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.77 2012/03/09 14:01:54 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.78 2013/04/21 01:30:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -71,8 +71,13 @@ value has_special_chars s =
   if String.length s = 0 then False
   else
     match s.[0] with
-    [ '0'..'9' | 'A'..'Z' | 'a'..'z' | '_' -> False
-    | _ -> True ]
+    | '0'..'9' | 'A'..'Z' | 'a'..'z' | '_' -> False
+    | _ ->
+        match (greek_ascii_equiv s).[0] with
+        | 'A'..'Z' | 'a'..'z' → False
+        | _ → True
+        end
+    end
 ;
 
 value rec is_irrefut_patt =
