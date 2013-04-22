@@ -1,6 +1,8 @@
 Camlp5 Version 6.09:
 --------------------
 
+* [22 Apr 13] Accept now "match with | | ... end" in revised syntax, with
+  a required "|" in the first case, as alternative syntax for match.
 * [19 Mar 13] Fixed bug no locations built in some cases of constructors.
 * [15 Mar 13] Updated of ocaml version 4.00.2.
 * [13 Mar 13] Fixed bug: in toplevel, the highlighting of errors did not
