@@ -440,7 +440,7 @@ let greek_ascii_equiv s =
                   let s2 = if i = 0 then "" else string_of_int i in
                   String.make 1 c1 ^ s2
                 else loop (i + 1) kl
-            | [] -> s
+            | [] -> String.make 1 c1 ^ rest
           in
           loop 0 index_tab
         else loop (i + 1) gl

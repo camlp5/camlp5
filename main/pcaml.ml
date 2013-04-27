@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 6.39 2013/04/19 08:43:39 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 6.40 2013/04/27 01:52:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -478,7 +478,7 @@ value greek_ascii_equiv s =
                 }
                 else loop (i + 1) kl
               }
-            | [] -> s ]
+            | [] -> String.make 1 c1 ^ rest ]
         }
         else loop (i + 1) gl
       }
