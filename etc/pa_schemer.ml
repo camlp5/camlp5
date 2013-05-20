@@ -41,8 +41,14 @@ value rename_id s =
 
 value rec skip_to_eol len =
   parser
-  [ [: `('\n' | '\r' as c) :] -> Buff.store len c
-  | [: `c; a = skip_to_eol (Buff.store len c) ! :] -> a ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some ('\n' | '\r' as c) → do { Stream.junk strm__; Buff.store len c }
+      | Some c → do {
+          Stream.junk strm__;
+          skip_to_eol (Buff.store len c) strm__
+        }
+      | _ → raise Stream.Failure ]
 ;
 
 value no_ident =
@@ -51,9 +57,13 @@ value no_ident =
 
 value rec ident len =
   parser
-  [ [: `x when not (List.mem x no_ident); a = ident (Buff.store len x) ! :] ->
-      a
-  | [: :] -> len ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some x when not (List.mem x no_ident) → do {
+          Stream.junk strm__;
+          ident (Buff.store len x) strm__
+        }
+      | _ → len ]
 ;
 
 value identifier kwt s =
@@ -73,49 +83,74 @@ value identifier kwt s =
 
 value rec string len =
   parser
-  [ [: `'"' :] -> Buff.get len
-  | [: `'\\'; `c; a = string (Buff.store (Buff.store len '\\') c) ! :] -> a
-  | [: `x; a = string (Buff.store len x) ! :] -> a ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some '"' → do { Stream.junk strm__; Buff.get len }
+      | Some '\\' → do {
+          Stream.junk strm__;
+          match strm__ with parser
+          [ [: `c :] -> string (Buff.store (Buff.store len '\\') c) strm__
+          | [: :] -> raise (Stream.Error "") ]
+        }
+      | Some x → do { Stream.junk strm__; string (Buff.store len x) strm__ }
+      | _ → raise Stream.Failure ]
 ;
 
 value rec end_exponent_part_under len =
   parser
-  [ [: `('0'..'9' as c);
-       a = end_exponent_part_under (Buff.store len c) ! :] ->
-      a
+  [ [: `('0'..'9' as c) :] ->
+      end_exponent_part_under (Buff.store len c) strm__
   | [: :] -> ("FLOAT", Buff.get len) ]
 ;
 
 value end_exponent_part len =
   parser
-  [ [: `('0'..'9' as c);
-       a = end_exponent_part_under (Buff.store len c) ! :] ->
-      a
+  [ [: `('0'..'9' as c) :] ->
+      end_exponent_part_under (Buff.store len c) strm__
   | [: :] -> raise (Stream.Error "ill-formed floating-point constant") ]
 ;
 
 value exponent_part len =
   parser
-  [ [: `('+' | '-' as c); a = end_exponent_part (Buff.store len c) ! :] -> a
-  | [: a = end_exponent_part len :] -> a ]
+  [ [: `('+' | '-' as c) :] -> end_exponent_part (Buff.store len c) strm__
+  | [: :] -> end_exponent_part len strm__ ]
 ;
 
 value rec decimal_part len =
   parser
-  [ [: `('0'..'9' as c); a = decimal_part (Buff.store len c) ! :] -> a
-  | [: `'e' | 'E'; a = exponent_part (Buff.store len 'E') ! :] -> a
-  | [: :] -> ("FLOAT", Buff.get len) ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some ('0'..'9' as c) → do {
+          Stream.junk strm__;
+          decimal_part (Buff.store len c) strm__
+        }
+      | Some ('e' | 'E') → do {
+          Stream.junk strm__;
+          exponent_part (Buff.store len 'E') strm__
+        }
+      | _ → ("FLOAT", Buff.get len) ]
 ;
 
 value rec number len =
   parser
-  [ [: `('0'..'9' as c); a = number (Buff.store len c) ! :] -> a
-  | [: `'.'; a = decimal_part (Buff.store len '.') ! :] -> a
-  | [: `'e' | 'E'; a = exponent_part (Buff.store len 'E') ! :] -> a
-  | [: `'l' :] -> ("INT_l", Buff.get len)
-  | [: `'L' :] -> ("INT_L", Buff.get len)
-  | [: `'n' :] -> ("INT_n", Buff.get len)
-  | [: :] -> ("INT", Buff.get len) ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some ('0'..'9' as c) → do {
+          Stream.junk strm__;
+          number (Buff.store len c) strm__
+        }
+      | Some '.' → do {
+          Stream.junk strm__;
+          decimal_part (Buff.store len '.') strm__
+        }
+      | Some ('e' | 'E') → do {
+          Stream.junk strm__;
+          exponent_part (Buff.store len 'E') strm__
+        }
+      | Some 'l' → do { Stream.junk strm__; ("INT_l", Buff.get len) }
+      | Some 'L' → do { Stream.junk strm__; ("INT_L", Buff.get len) }
+      | Some 'n' → do { Stream.junk strm__; ("INT_n", Buff.get len) }
+      | _ → ("INT", Buff.get len) ]
 ;
 
 value binary = parser [: `('0'..'1' as c) :] -> c;
@@ -126,28 +161,49 @@ value hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as c) :] -> c;
 
 value rec digits_under kind len =
   parser
-  [ [: d = kind; a = digits_under kind (Buff.store len d) ! :] -> a
-  | [: `'_'; a = digits_under kind (Buff.store len '_') ! :] -> a
-  | [: `'l' :] -> ("INT_l", Buff.get len)
-  | [: `'L' :] -> ("INT_L", Buff.get len)
-  | [: `'n' :] -> ("INT_n", Buff.get len)
-  | [: :] -> ("INT", Buff.get len) ]
+  [ [: d = kind :] -> digits_under kind (Buff.store len d) strm__
+  | [: :] ->
+      match Stream.peek strm__ with
+      [ Some '_' → do {
+          Stream.junk strm__;
+          digits_under kind (Buff.store len '_') strm__
+        }
+      | Some 'l' → do { Stream.junk strm__; ("INT_l", Buff.get len) }
+      | Some 'L' → do { Stream.junk strm__; ("INT_L", Buff.get len) }
+      | Some 'n' → do { Stream.junk strm__; ("INT_n", Buff.get len) }
+      | _ → ("INT", Buff.get len) ] ]
 ;
 
 value digits kind bp len =
   parser
-  [ [: d = kind; a = digits_under kind (Buff.store len d) :] -> a
-  | [: :] ep ->
+  [ [: d = kind :] ->
+      try digits_under kind (Buff.store len d) strm__ with
+      [ Stream.Failure → raise (Stream.Error "") ]
+  | [: :] ->
+      let ep = Stream.count strm__ in
       Ploc.raise (Ploc.make_unlined (bp, ep))
         (Failure "ill-formed integer constant") ]
 ;
 
 value base_number kwt bp len =
   parser
-  [ [: `'b' | 'B'; a = digits binary bp (Buff.store len 'b') ! :] -> a
-  | [: `'o' | 'O'; a = digits octal bp (Buff.store len 'o') ! :] -> a
-  | [: `'x' | 'X'; a = digits hexa bp (Buff.store len 'x') ! :] -> a
-  | [: len = ident (Buff.store 0 '#') :] -> identifier kwt (Buff.get len) ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some ('b' | 'B') → do {
+          Stream.junk strm__;
+          digits binary bp (Buff.store len 'b') strm__
+        }
+      | Some ('o' | 'O') → do {
+          Stream.junk strm__;
+          digits octal bp (Buff.store len 'o') strm__
+        }
+      | Some ('x' | 'X') → do {
+          Stream.junk strm__;
+          digits hexa bp (Buff.store len 'x') strm__
+        }
+      | _ →
+          let len = ident (Buff.store 0 '#') strm__ in
+          identifier kwt (Buff.get len) ]
 ;
 
 value rec operator len =
@@ -159,7 +215,9 @@ value rec operator len =
 value char_or_quote_id x =
   parser
   [ [: `''' :] -> ("CHAR", String.make 1 x)
-  | [: s :] ep ->
+  | [: :] ->
+      let s = strm__ in
+      let ep = Stream.count strm__ in
       if List.mem x no_ident then
         Ploc.raise (Ploc.make_unlined (ep - 2, ep - 1))
           (Stream.Error "bad quote")
@@ -171,120 +229,294 @@ value char_or_quote_id x =
 
 value rec char len =
   parser
-  [ [: `''' :] -> len
-  | [: `x; a = char (Buff.store len x) ! :] -> a ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some ''' → do { Stream.junk strm__; len }
+      | Some x → do { Stream.junk strm__; char (Buff.store len x) strm__ }
+      | _ → raise Stream.Failure ]
 ;
 
 value quote =
   parser
-  [ [: `'\\'; `c; len = char (Buff.store (Buff.store 0 '\\') c) :] ->
-      ("CHAR", Buff.get len)
-  | [: `x; a = char_or_quote_id x ! :] -> a ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some '\\' → do {
+          Stream.junk strm__;
+          match strm__ with parser
+          [ [: `c :] ->
+              let len =
+                try char (Buff.store (Buff.store 0 '\\') c) strm__ with
+                [ Stream.Failure → raise (Stream.Error "") ]
+              in
+              ("CHAR", Buff.get len)
+          | [: :] -> raise (Stream.Error "") ]
+        }
+      | Some x → do { Stream.junk strm__; char_or_quote_id x strm__ }
+      | _ → raise Stream.Failure ]
 ;
 
 value rec antiquot_rest bp len =
   parser
-  [ [: `'$' :] -> len
-  | [: `x; a = antiquot_rest bp (Buff.store len x) :] -> a
-  | [: :] ep ->
-      Ploc.raise (Ploc.make_unlined (bp, ep))
-        (Failure "antiquotation not terminated") ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some '$' → do { Stream.junk strm__; len }
+      | Some x → do {
+          Stream.junk strm__;
+          try antiquot_rest bp (Buff.store len x) strm__ with
+          [ Stream.Failure → raise (Stream.Error "") ]
+        }
+      | _ →
+          let ep = Stream.count strm__ in
+          Ploc.raise (Ploc.make_unlined (bp, ep))
+            (Failure "antiquotation not terminated") ]
 ;
 
 value antiloc d1 d2 s = Printf.sprintf "%d,%d:%s" d1 d2 s;
 
 value rec antiquot_loc bp len =
   parser
-  [ [: `'$' :] ep -> antiloc bp ep (":" ^ Buff.get len)
-  | [: `('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c);
-       a = antiquot_loc bp (Buff.store len c) :] ->
-      a
-  | [: `':'; len = antiquot_rest bp (Buff.store len ':') :] ep ->
-      antiloc bp ep (Buff.get len)
-  | [: `c; len = antiquot_rest bp (Buff.store len c) :] ep ->
-      antiloc bp ep (":" ^ Buff.get len)
-  | [: :] ep ->
-      Ploc.raise (Ploc.make_unlined (bp, ep))
-        (Failure "antiquotation not terminated") ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some '$' → do {
+          Stream.junk strm__;
+          let ep = Stream.count strm__ in
+          antiloc bp ep (":" ^ Buff.get len)
+        }
+      | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) → do {
+          Stream.junk strm__;
+          try antiquot_loc bp (Buff.store len c) strm__ with
+          [ Stream.Failure → raise (Stream.Error "") ]
+        }
+      | Some ':' → do {
+          Stream.junk strm__;
+          let len =
+            try antiquot_rest bp (Buff.store len ':') strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          antiloc bp ep (Buff.get len)
+        }
+      | Some c → do {
+          Stream.junk strm__;
+          let len =
+            try antiquot_rest bp (Buff.store len c) strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          antiloc bp ep (":" ^ Buff.get len)
+        }
+      | _ →
+          let ep = Stream.count strm__ in
+          Ploc.raise (Ploc.make_unlined (bp, ep))
+            (Failure "antiquotation not terminated") ]
 ;
 
 value rec next_token_after_spaces kwt =
   parser bp
-  [ [: `'(' :] -> (("", "("), (bp, bp + 1))
-  | [: `')' :] -> (("", ")"), (bp, bp + 1))
-  | [: `'[' :] -> (("", "["), (bp, bp + 1))
-  | [: `']' :] -> (("", "]"), (bp, bp + 1))
-  | [: `'{' :] -> (("", "{"), (bp, bp + 1))
-  | [: `'}' :] -> (("", "}"), (bp, bp + 1))
-  | [: `'.' :] -> (("DOT", ""), (bp, bp + 1))
-  | [: `'"'; s = string 0 :] ep -> (("STRING", s), (bp, ep))
-  | [: `'''; tok = quote :] ep -> (tok, (bp, ep))
-  | [: `'<'; tok = less kwt :] ep -> (tok, (bp, ep))
-  | [: `'-'; tok = minus bp kwt :] ep -> (tok, (bp, ep))
-  | [: `'#'; tok = sharp bp kwt :] ep -> (tok, (bp, ep))
-  | [: `('0'..'9' as c); tok = number (Buff.store 0 c) :] ep ->
-      (tok, (bp, ep))
-  | [: `('+' | '*' | '/' | '~' as c); len = ident (Buff.store 0 c);
-       len = operator len :] ep ->
-      (identifier kwt (Buff.get len), (bp, ep))
-  | [: `'$'; tok = dollar bp kwt :] ep -> (tok, (bp, ep))
-  | [: `c; len = ident (Buff.store 0 c) :] ep ->
-      (identifier kwt (Buff.get len), (bp, ep))
-  | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some '(' → do { Stream.junk strm__; (("", "("), (bp, bp + 1)) }
+      | Some ')' → do { Stream.junk strm__; (("", ")"), (bp, bp + 1)) }
+      | Some '[' → do { Stream.junk strm__; (("", "["), (bp, bp + 1)) }
+      | Some ']' → do { Stream.junk strm__; (("", "]"), (bp, bp + 1)) }
+      | Some '{' → do { Stream.junk strm__; (("", "{"), (bp, bp + 1)) }
+      | Some '}' → do { Stream.junk strm__; (("", "}"), (bp, bp + 1)) }
+      | Some '.' → do { Stream.junk strm__; (("DOT", ""), (bp, bp + 1)) }
+      | Some '"' → do {
+          Stream.junk strm__;
+          let s =
+            try string 0 strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (("STRING", s), (bp, ep))
+        }
+      | Some ''' → do {
+          Stream.junk strm__;
+          let tok =
+            try quote strm__ with [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (tok, (bp, ep))
+        }
+      | Some '<' → do {
+          Stream.junk strm__;
+          let tok =
+            try less kwt strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (tok, (bp, ep))
+        }
+      | Some '-' → do {
+          Stream.junk strm__;
+          let tok =
+            try minus bp kwt strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (tok, (bp, ep))
+        }
+      | Some '#' → do {
+          Stream.junk strm__;
+          let tok =
+            try sharp bp kwt strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (tok, (bp, ep))
+        }
+      | Some ('0'..'9' as c) → do {
+          Stream.junk strm__;
+          let tok =
+            try number (Buff.store 0 c) strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (tok, (bp, ep))
+        }
+      | Some ('+' | '*' | '/' | '~' as c) → do {
+          Stream.junk strm__;
+          let len =
+            try ident (Buff.store 0 c) strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let len =
+            try operator len strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (identifier kwt (Buff.get len), (bp, ep))
+        }
+      | Some '$' → do {
+          Stream.junk strm__;
+          let tok =
+            try dollar bp kwt strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (tok, (bp, ep))
+        }
+      | Some c → do {
+          Stream.junk strm__;
+          let len =
+            try ident (Buff.store 0 c) strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          let ep = Stream.count strm__ in
+          (identifier kwt (Buff.get len), (bp, ep))
+        }
+      | _ → (("EOI", ""), (bp, bp + 1)) ]
 and dollar bp kwt strm =
   if Plexer.force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc bp 0 strm)
   else
     match strm with parser
-      [: len = ident (Buff.store 0 '$') :] -> identifier kwt (Buff.get len)
+      [: :] ->
+        let len = ident (Buff.store 0 '$') strm__ in
+        identifier kwt (Buff.get len)
 and sharp bp kwt =
   parser
   [ [: `'(' :] -> ("", "#(")
-  | [: a = base_number kwt bp (Buff.store 0 '0') :] -> a ]
+  | [: :] -> base_number kwt bp (Buff.store 0 '0') strm__ ]
 and minus bp kwt =
   parser
-  [ [: `'.' :] -> identifier kwt "-."
-  | [: `('0'..'9' as c); a = number (Buff.store (Buff.store 0 '-') c) :] -> a
-  | [: `'#'; a = base_number kwt bp (Buff.mstore 0 "-0") :] -> a
-  | [: len = ident (Buff.store 0 '-') :] -> identifier kwt (Buff.get len) ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some '.' → do { Stream.junk strm__; identifier kwt "-." }
+      | Some ('0'..'9' as c) → do {
+          Stream.junk strm__;
+          try number (Buff.store (Buff.store 0 '-') c) strm__ with
+          [ Stream.Failure → raise (Stream.Error "") ]
+        }
+      | Some '#' → do {
+          Stream.junk strm__;
+          try base_number kwt bp (Buff.mstore 0 "-0") strm__ with
+          [ Stream.Failure → raise (Stream.Error "") ]
+        }
+      | _ →
+          let len = ident (Buff.store 0 '-') strm__ in
+          identifier kwt (Buff.get len) ]
 and less kwt =
   parser
-  [ [: `':'; lab = label 0; `'<' ? "'<' expected"; q = quotation 0 :] ->
-      ("QUOT", lab ^ ":" ^ q)
-  | [: len = ident (Buff.store 0 '<') :] -> identifier kwt (Buff.get len) ]
+  [ [: `':' :] ->
+      let lab =
+        try label 0 strm__ with [ Stream.Failure → raise (Stream.Error "") ]
+      in
+      match strm__ with parser
+      [ [: `'<' :] ->
+          let q =
+            try quotation 0 strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          ("QUOT", lab ^ ":" ^ q)
+      | [: :] -> raise (Stream.Error "'<' expected") ]
+  | [: :] ->
+      let len = ident (Buff.store 0 '<') strm__ in
+      identifier kwt (Buff.get len) ]
 and label len =
   parser
-  [ [: `('a'..'z' | 'A'..'Z' | '_' as c); a = label (Buff.store len c) ! :] ->
-      a
+  [ [: `('a'..'z' | 'A'..'Z' | '_' as c) :] -> label (Buff.store len c) strm__
   | [: :] -> Buff.get len ]
 and quotation len =
   parser
-  [ [: `'>'; a = quotation_greater len ! :] -> a
-  | [: `x; a = quotation (Buff.store len x) ! :] -> a
-  | [: :] -> failwith "quotation not terminated" ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some '>' → do { Stream.junk strm__; quotation_greater len strm__ }
+      | Some x → do {
+          Stream.junk strm__;
+          quotation (Buff.store len x) strm__
+        }
+      | _ → failwith "quotation not terminated" ]
 and quotation_greater len =
   parser
   [ [: `'>' :] -> Buff.get len
-  | [: a = quotation (Buff.store len '>') :] -> a ]
+  | [: :] -> quotation (Buff.store len '>') strm__ ]
 ;
 
 value get_buff len _ = Buff.get len;
 
 value rec lexer len kwt =
   parser bp
-  [ [: `('\t' | '\r' as c); a = lexer (Buff.store len c) kwt ! :] -> a
-  | [: `' '; a = after_space (Buff.store len ' ') kwt ! :] -> a
-  | [: `';'; len = skip_to_eol (Buff.store len ';'); a = lexer len kwt ! :] ->
-      a
-  | [: `'\n'; s :] ->
-      let len = Buff.store len '\n' in
-      if Sys.interactive.val then (Buff.get len, (("NL", ""), (bp, bp + 1)))
-      else lexer len kwt s
-  | [: comm = get_buff len; a = next_token_after_spaces kwt :] -> (comm, a) ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some ('\t' | '\r' as c) → do {
+          Stream.junk strm__;
+          lexer (Buff.store len c) kwt strm__
+        }
+      | Some ' ' → do {
+          Stream.junk strm__;
+          after_space (Buff.store len ' ') kwt strm__
+        }
+      | Some ';' → do {
+          Stream.junk strm__;
+          let len =
+            try skip_to_eol (Buff.store len ';') strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          lexer len kwt strm__
+        }
+      | Some '\n' → do {
+          Stream.junk strm__;
+          let s = strm__ in
+          let len = Buff.store len '\n' in
+          if Sys.interactive.val then
+            (Buff.get len, (("NL", ""), (bp, bp + 1)))
+          else lexer len kwt s
+        }
+      | _ →
+          let comm = get_buff len strm__ in
+          let a =
+            try next_token_after_spaces kwt strm__ with
+            [ Stream.Failure → raise (Stream.Error "") ]
+          in
+          (comm, a) ]
 and after_space len kwt =
   parser
-  [ [: `'.' :] ep -> (Buff.get len, (("SPACEDOT", ""), (ep - 1, ep)))
-  | [: a = lexer len kwt :] -> a ]
+  [ [: `'.' :] ->
+      let ep = Stream.count strm__ in
+      (Buff.get len, (("SPACEDOT", ""), (ep - 1, ep)))
+  | [: :] -> lexer len kwt strm__ ]
 ;
 
 value lexer_using kwt (con, prm) =

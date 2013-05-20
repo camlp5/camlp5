@@ -30,34 +30,49 @@ module Buff =
 value rec skip_to_eol len =
   parser
   [ [: `('\n' | '\r' as c) :] -> Buff.store len c
-  | [: `c; s :] -> skip_to_eol (Buff.store len c) s ]
+  | [: `c :] ->
+      let s = strm__ in
+      skip_to_eol (Buff.store len c) s ]
 ;
 
 value no_ident = ['('; ')'; ' '; '\t'; '\n'; '\r'; ';'];
 
 value rec ident len =
   parser
-  [ [: `x when not (List.mem x no_ident); s :] -> ident (Buff.store len x) s
-  | [: :] -> Buff.get len ]
+    [: :] ->
+      match Stream.peek strm__ with
+      [ Some x when not (List.mem x no_ident) → do {
+          Stream.junk strm__;
+          let s = strm__ in
+          ident (Buff.store len x) s
+        }
+      | _ → Buff.get len ]
 ;
 
 value rec string len =
   parser
   [ [: `'"' :] -> Buff.get len
-  | [: `'\\'; `c; s :] -> string (Buff.store (Buff.store len '\\') c) s
-  | [: `x; s :] -> string (Buff.store len x) s ]
+  | [: `'\\'; `c :] ->
+      let s = strm__ in
+      string (Buff.store (Buff.store len '\\') c) s
+  | [: `x :] ->
+      let s = strm__ in
+      string (Buff.store len x) s ]
 ;
 
 value rec number len =
   parser
-  [ [: `('0'..'9' as c); s :] -> number (Buff.store len c) s
+  [ [: `('0'..'9' as c) :] ->
+      let s = strm__ in
+      number (Buff.store len c) s
   | [: :] -> ("INT", Buff.get len) ]
 ;
 
 value char_or_quote_id x =
   parser
   [ [: `''' :] -> ("CHAR", String.make 1 x)
-  | [: s :] ->
+  | [: :] ->
+      let s = strm__ in
       let len = Buff.store (Buff.store 0 ''') x in
       ("LIDENT", ident len s) ]
 ;
@@ -65,24 +80,37 @@ value char_or_quote_id x =
 value rec char len =
   parser
   [ [: `''' :] -> len
-  | [: `x; s :] -> char (Buff.store len x) s ]
+  | [: `x :] ->
+      let s = strm__ in
+      char (Buff.store len x) s ]
 ;
 
 value quote =
   parser
   [ [: `'\\'; len = char (Buff.store 0 '\\') :] -> ("CHAR", Buff.get len)
-  | [: `x; s :] -> char_or_quote_id x s ]
+  | [: `x :] ->
+      let s = strm__ in
+      char_or_quote_id x s ]
 ;
 
 value rec next_token_after_spaces kwt =
   parser bp
   [ [: `'(' :] -> (("", "("), (bp, bp + 1))
   | [: `')' :] -> (("", ")"), (bp, bp + 1))
-  | [: `'"'; s = string 0 :] ep -> (("STRING", s), (bp, ep))
-  | [: `'''; tok = quote :] ep -> (tok, (bp, ep))
-  | [: `'<'; tok = less :] ep -> (tok, (bp, ep))
-  | [: `('0'..'9' as c); n = number (Buff.store 0 c) :] ep -> (n, (bp, ep))
-  | [: `x; s = ident (Buff.store 0 x) :] ep ->
+  | [: `'"'; s = string 0 :] ->
+      let ep = Stream.count strm__ in
+      (("STRING", s), (bp, ep))
+  | [: `'''; tok = quote :] ->
+      let ep = Stream.count strm__ in
+      (tok, (bp, ep))
+  | [: `'<'; tok = less :] ->
+      let ep = Stream.count strm__ in
+      (tok, (bp, ep))
+  | [: `('0'..'9' as c); n = number (Buff.store 0 c) :] ->
+      let ep = Stream.count strm__ in
+      (n, (bp, ep))
+  | [: `x; s = ident (Buff.store 0 x) :] ->
+      let ep = Stream.count strm__ in
       let con =
         try do {
           (Hashtbl.find kwt s : unit);
@@ -103,12 +131,18 @@ and less =
   | [: :] -> ("LIDENT", "<") ]
 and label len =
   parser
-  [ [: `('a'..'z' | 'A'..'Z' | '_' as c); s :] -> label (Buff.store len c) s
+  [ [: `('a'..'z' | 'A'..'Z' | '_' as c) :] ->
+      let s = strm__ in
+      label (Buff.store len c) s
   | [: :] -> Buff.get len ]
 and quotation len =
   parser
-  [ [: `'>'; s :] -> quotation_greater len s
-  | [: `x; s :] -> quotation (Buff.store len x) s
+  [ [: `'>' :] ->
+      let s = strm__ in
+      quotation_greater len s
+  | [: `x :] ->
+      let s = strm__ in
+      quotation (Buff.store len x) s
   | [: :] -> failwith "quotation not terminated" ]
 and quotation_greater len =
   parser
@@ -120,14 +154,19 @@ value get_buff len _ = Buff.get len;
 
 value rec lexer len kwt =
   parser bp
-  [ [: `(' ' | '\t' | '\n' | '\r' as c); s :] ->
+  [ [: `(' ' | '\t' | '\n' | '\r' as c) :] ->
+      let s = strm__ in
       lexer (Buff.store len c) kwt s
   | [: `';'; a = semi (Buff.store len ';') kwt bp :] -> a
   | [: comm = get_buff len; a = next_token_after_spaces kwt :] -> (comm, a) ]
 and semi len kwt bp =
   parser
-  [ [: `';'; len = skip_to_eol (Buff.store len ';'); s :] -> lexer len kwt s
-  | [: :] ep -> (Buff.get len, (("", ";"), (bp, ep))) ]
+  [ [: `';'; len = skip_to_eol (Buff.store len ';') :] ->
+      let s = strm__ in
+      lexer len kwt s
+  | [: :] ->
+      let ep = Stream.count strm__ in
+      (Buff.get len, (("", ";"), (bp, ep))) ]
 ;
 
 value lexer_using kwt (con, prm) =
