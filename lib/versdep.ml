@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.35 2013/03/19 15:25:22 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.36 2013/06/10 15:57:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -416,7 +416,11 @@ value ocaml_pexp_object =
 
 value ocaml_pexp_open =
   IFDEF OCAML_VERSION < OCAML_3_12 THEN None
-  ELSE Some (fun li e -> Pexp_open (mknoloc li) e) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_01 THEN
+    Some (fun li e -> Pexp_open (mknoloc li) e)
+  ELSE
+    Some (fun li e -> Pexp_open Fresh (mknoloc li) e)
+  END
 ;
 
 value ocaml_pexp_override sel =
@@ -537,7 +541,10 @@ value ocaml_psig_module s mt = Psig_module (mknoloc s) mt;
 
 value ocaml_psig_modtype s mtd = Psig_modtype (mknoloc s) mtd;
 
-value ocaml_psig_open li = Psig_open (mknoloc li);
+value ocaml_psig_open li =
+  IFDEF OCAML_VERSION < OCAML_4_01 THEN Psig_open (mknoloc li)
+  ELSE Psig_open Fresh (mknoloc li) END
+;
 
 value ocaml_psig_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
@@ -578,7 +585,10 @@ value ocaml_pstr_modtype s mt = Pstr_modtype (mknoloc s) mt;
 
 value ocaml_pstr_module s me = Pstr_module (mknoloc s) me;
 
-value ocaml_pstr_open li = Pstr_open (mknoloc li);
+value ocaml_pstr_open li =
+  IFDEF OCAML_VERSION < OCAML_4_01 THEN Pstr_open (mknoloc li)
+  ELSE Pstr_open Fresh (mknoloc li) END
+;
 
 value ocaml_pstr_primitive s vd = Pstr_primitive (mknoloc s) vd;
 

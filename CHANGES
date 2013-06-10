@@ -1,6 +1,7 @@
 Camlp5 Version 6.09:
 --------------------
 
+* [10 Jun 13] Updated of ocaml version 4.01.0.
 * [22 Apr 13] Accept now "match with | | ... end" in revised syntax, with
   a required "|" in the first case, as alternative syntax for match.
 * [19 Apr 13] Added function 'Pcaml.value greek_ascii_equiv' giving
