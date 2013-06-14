@@ -1,16 +1,24 @@
-Camlp5 Version 6.09:
+Camlp5 Version 6.10:
 --------------------
 
 * [14 Jun 13] (experimental) Now, in revised syntax, a "." followed by
   a newline is interpreted as a ";", allowing to end phrases with ".".
-* [10 Jun 13] Updated of ocaml version 4.01.0.
+  Drawback: will syntax error when writing a record/module access in two
+  lines ending the first one with "." like:
+     foo.
+     bar
+* [10 Jun 13] Updated for ocaml version 4.01.0.
+
+Camlp5 Version 6.09:
+--------------------
+
 * [22 Apr 13] Accept now "match with | | ... end" in revised syntax, with
   a required "|" in the first case, as alternative syntax for match.
 * [19 Apr 13] Added function 'Pcaml.value greek_ascii_equiv' giving
   an ascii equivalent to a greek (utf8) letter representing a type
   parameter. E.g. 'a' for 'α', 'b' for 'β', and so on.
 * [19 Mar 13] Fixed bug no locations built in some cases of constructors.
-* [15 Mar 13] Updated of ocaml version 4.00.2.
+* [15 Mar 13] Updated for ocaml version 4.00.2.
 * [13 Mar 13] Fixed bug: in toplevel, the highlighting of errors did not
   work.
 * [13 Mar 13] Added option '-dquot' to specify the default quotation name.
