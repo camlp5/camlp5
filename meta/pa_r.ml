@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.46 2013/04/20 03:33:21 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.47 2013/06/14 03:03:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -13,9 +13,12 @@ Pcaml.no_constructors_arity.val := False;
 
 do {
   let odfa = Plexer.dollar_for_antiquotation.val in
+  let odni = Plexer.dot_newline_is.val in
   Plexer.dollar_for_antiquotation.val := False;
   Plexer.utf8_lexing.val := True;
+  Plexer.dot_newline_is.val := ";";
   Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
+  Plexer.dot_newline_is.val := odni;
   Plexer.dollar_for_antiquotation.val := odfa;
   Grammar.Unsafe.clear_entry interf;
   Grammar.Unsafe.clear_entry implem;

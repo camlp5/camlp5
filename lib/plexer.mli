@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.mli,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: plexer.mli,v 6.4 2013/06/14 03:03:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (** This module contains the lexer used for ocaml syntax (revised and
@@ -66,6 +66,15 @@ value specific_space_dot : ref bool;
        which have spaces before return the keyword " ." (space dot) and
        the ones which don't have spaces before return the keyword "."
        (dot alone). *)
+
+value dot_newline_is : ref string;
+   (** experimental
+       Specific interpretation for a dot "." followed by a newline;
+       by default, it is just a dot. Setting another value makes
+       the lexer interpret it as this value. For example, in
+       revised syntax (pa_r.ml) setting it to ";" allows to end
+       phrases with a dot, instead of a semicolon. In normal syntax,
+       the same can be done by setting it with ";;". *)
 
 value no_quotations : ref bool;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the

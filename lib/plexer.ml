@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 6.17 2012/10/09 03:51:48 deraugla Exp $ *)
+(* $Id: plexer.ml,v 6.18 2013/06/14 03:03:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_lexer.cmo";
@@ -11,6 +11,7 @@ value error_on_unknown_keywords = ref False;
 
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
+value dot_newline_is = ref ".";
 
 value force_antiquot_loc = ref False;
 
@@ -18,6 +19,7 @@ type context =
   { after_space : mutable bool;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
+    dot_newline_is : string;
     find_kwd : string -> string;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
@@ -433,6 +435,13 @@ value next_token_after_spaces ctx bp =
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" -> keyword_or_error ctx (bp, $pos) $buf
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
+  | ".\n" -> do {
+      incr Plexing.line_nb.val;
+      Plexing.bol_pos.val.val := $pos;
+      ctx.set_line_nb ();
+      ctx.after_space := True;
+      keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
+    }
   | "." ->
       let id =
         if ctx.specific_space_dot && ctx.after_space then " ." else "."
@@ -530,6 +539,7 @@ value func kwd_table glexr =
     {after_space = False;
      dollar_for_antiquotation = dollar_for_antiquotation.val;
      specific_space_dot = specific_space_dot.val;
+     dot_newline_is = dot_newline_is.val;
      find_kwd = Hashtbl.find kwd_table;
      line_cnt bp1 c =
        match c with

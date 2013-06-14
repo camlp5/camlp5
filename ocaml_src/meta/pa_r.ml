@@ -12,9 +12,12 @@ Pcaml.syntax_name := "Revised";;
 Pcaml.no_constructors_arity := false;;
 
 let odfa = !(Plexer.dollar_for_antiquotation) in
+let odni = !(Plexer.dot_newline_is) in
 Plexer.dollar_for_antiquotation := false;
 Plexer.utf8_lexing := true;
+Plexer.dot_newline_is := ";";
 Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
+Plexer.dot_newline_is := odni;
 Plexer.dollar_for_antiquotation := odfa;
 Grammar.Unsafe.clear_entry interf;
 Grammar.Unsafe.clear_entry implem;

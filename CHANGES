@@ -1,6 +1,8 @@
 Camlp5 Version 6.09:
 --------------------
 
+* [14 Jun 13] (experimental) Now, in revised syntax, a "." followed by
+  a newline is interpreted as a ";", allowing to end phrases with ".".
 * [10 Jun 13] Updated of ocaml version 4.01.0.
 * [22 Apr 13] Accept now "match with | | ... end" in revised syntax, with
   a required "|" in the first case, as alternative syntax for match.
