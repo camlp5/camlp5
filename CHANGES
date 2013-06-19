@@ -1,13 +1,13 @@
 Camlp5 Version 6.10:
 --------------------
 
+* [19 Jun 13] Updated for ocaml version 4.01.0
 * [14 Jun 13] (experimental) Now, in revised syntax, a "." followed by
   a newline is interpreted as a ";", allowing to end phrases with ".".
   Drawback: will syntax error when writing a record/module access in two
   lines ending the first one with "." like:
      foo.
      bar
-* [10 Jun 13] Updated for ocaml version 4.01.0.
 
 Camlp5 Version 6.09:
 --------------------
