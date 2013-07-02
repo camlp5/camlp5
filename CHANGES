@@ -1,6 +1,10 @@
 Camlp5 Version 6.11:
 --------------------
 
+* [02 Jul 13] Fixed bug toplevel with revised syntax; "= 'a" was missing
+  in output in that example:
+    # module type A = sig module type S = 'a; end;
+    module type A = sig module type S; end
 * [02 Jul 13] Now accept lowercase ident for module types, like ocaml does.
   Accepted also in revised syntax.
 
