@@ -372,12 +372,12 @@ Grammar.extend
         (fun (i : 'mod_ident) _ (loc : Ploc.t) ->
            (MLast.StOpn (loc, i) : 'str_item));
       [Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
-       Gramext.Stoken ("UIDENT", "");
+       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
             (mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (mt : 'mod_type_fun_binding) (i : string) _ _ (loc : Ploc.t) ->
+        (fun (mt : 'mod_type_fun_binding) (i : 'ident) _ _ (loc : Ploc.t) ->
            (MLast.StMty (loc, i, mt) : 'str_item));
       [Gramext.Stoken ("", "module");
        Gramext.Sflag (Gramext.Stoken ("", "rec"));
@@ -598,11 +598,12 @@ Grammar.extend
         (fun (i : 'mod_ident) _ (loc : Ploc.t) ->
            (MLast.SgOpn (loc, i) : 'sig_item));
       [Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
-       Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", "=");
+       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e));
+       Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
       Gramext.action
-        (fun (mt : 'module_type) _ (i : string) _ _ (loc : Ploc.t) ->
+        (fun (mt : 'module_type) _ (i : 'ident) _ _ (loc : Ploc.t) ->
            (MLast.SgMty (loc, i, mt) : 'sig_item));
       [Gramext.Stoken ("", "module");
        Gramext.Sflag (Gramext.Stoken ("", "rec"));

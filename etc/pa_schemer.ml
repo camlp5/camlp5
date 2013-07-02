@@ -773,7 +773,7 @@ and sig_item_se =
   | Sexpr loc [Slid _ "moduletype"; se1; se2] →
       let s = anti_uid_or_error se1 in
       let mt = module_type_se se2 in
-      <:sig_item< module type $_uid:s$ = $mt$ >>
+      <:sig_item< module type $_:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] →
       let s = anti_longident_se se in
       <:sig_item< open $_:s$ >>
@@ -838,7 +838,7 @@ and str_item_se se =
   | Sexpr loc [Slid _ "moduletype"; se1; se2] →
       let s = anti_uid_or_error se1 in
       let mt = module_type_se se2 in
-      <:str_item< module type $_uid:s$ = $mt$ >>
+      <:str_item< module type $_:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] →
       let s = anti_longident_se se in
       <:str_item< open $_:s$ >>

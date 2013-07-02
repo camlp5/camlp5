@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 6.78 2013/04/21 01:30:23 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 6.79 2013/07/02 16:12:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1596,7 +1596,7 @@ EXTEND_PRINTER
           let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
-      | <:str_item< module type $uid:m$ = $mt$ >> ->
+      | <:str_item< module type $m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
@@ -1647,7 +1647,7 @@ EXTEND_PRINTER
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
             (sig_module_or_module_type "and" ':') pc mdl
-      | <:sig_item< module type $uid:m$ = $mt$ >> ->
+      | <:sig_item< module type $m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)

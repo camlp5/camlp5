@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 6.16 2013/03/28 09:01:15 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 6.17 2013/07/02 16:12:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -228,7 +228,7 @@ and str_item =
   | <:str_item< include $me$ >> -> module_expr me
   | <:str_item< module $flag:_$ $list:nel$ >> ->
       list (fun (_, me) -> module_expr me) nel
-  | <:str_item< module type $uid:_$ = $mt$ >> -> module_type mt
+  | <:str_item< module type $_$ = $mt$ >> -> module_type mt
   | <:str_item< open $[s :: _]$ >> -> addmodule s
   | <:str_item< type $list:tdl$ >> -> list type_decl tdl
   | <:str_item< value $flag:_$ $list:pel$ >> -> list let_binding pel

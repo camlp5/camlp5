@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 6.42 2013/04/20 03:33:21 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 6.43 2013/07/02 16:12:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -319,7 +319,7 @@ EXTEND
       | "include"; me = module_expr -> Qast.Node "StInc" [Qast.Loc; me]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") ->
           Qast.Node "StMod" [Qast.Loc; r; l]
-      | "module"; "type"; i = SV UIDENT; mt = mod_type_fun_binding ->
+      | "module"; "type"; i = SV ident ""; mt = mod_type_fun_binding ->
           Qast.Node "StMty" [Qast.Loc; i; mt]
       | "open"; i = SV mod_ident "list" "" -> Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; tdl = SV (LIST1 type_decl SEP "and") ->
@@ -390,7 +390,7 @@ EXTEND
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") ->
           Qast.Node "SgMod" [Qast.Loc; rf; l]
-      | "module"; "type"; i = SV UIDENT; "="; mt = module_type ->
+      | "module"; "type"; i = SV ident ""; "="; mt = module_type ->
           Qast.Node "SgMty" [Qast.Loc; i; mt]
       | "open"; i = SV mod_ident "list" "" -> Qast.Node "SgOpn" [Qast.Loc; i]
       | "type"; tdl = SV (LIST1 type_decl SEP "and") ->

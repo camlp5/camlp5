@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 6.8 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 6.9 2013/07/02 16:12:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";
@@ -1081,7 +1081,7 @@ EXTEND_PRINTER
           plistbf 0 (paren pc "module")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "")]
-      | <:str_item< module type $uid:s$ = $mt$ >> ->
+      | <:str_item< module type $s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
       | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->
           plistbf 0 (paren pc "external")
@@ -1124,7 +1124,7 @@ EXTEND_PRINTER
           plistbf 0 (paren pc "module")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_type pc mt, "")]
-      | <:sig_item< module type $uid:s$ = $mt$ >> ->
+      | <:sig_item< module type $s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
       | <:sig_item< open $i$ >> ->
           plistb longident 0 (paren pc "open") [(i, "")]

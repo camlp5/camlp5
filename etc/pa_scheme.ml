@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 6.9 2012/01/09 14:22:21 deraugla Exp $
+; $Id: pa_scheme.ml,v 6.10 2013/07/02 16:12:43 deraugla Exp $
 ; Copyright (c) INRIA 2007-2012
 
 (open Pcaml)
@@ -488,7 +488,7 @@
      <:sig_item< module $flag:rf$ $_list:lmb$ >>))
    ((Sexpr loc [(Slid _ "moduletype") se1 se2])
     (let* ((s (anti_uid_or_error se1)) (mt (module_type_se se2)))
-     <:sig_item< module type $_uid:s$ = $mt$ >>))
+     <:sig_item< module type $_:s$ = $mt$ >>))
    ((Sexpr loc [(Slid _ "open") se])
     (let ((s (anti_longident_se se))) <:sig_item< open $_:s$ >>))
    ((Sexpr loc [(Slid _ "type") . sel])
@@ -543,7 +543,7 @@
      <:str_item< module $flag:rf$ $_list:lmb$ >>))
    ((Sexpr loc [(Slid _ "moduletype") se1 se2])
     (let* ((s (anti_uid_or_error se1)) (mt (module_type_se se2)))
-     <:str_item< module type $_uid:s$ = $mt$ >>))
+     <:str_item< module type $_:s$ = $mt$ >>))
    ((Sexpr loc [(Slid _ "open") se])
     (let ((s (anti_longident_se se))) <:str_item< open $_:s$ >>))
    ((Sexpr loc [(Slid _ "type") . sel])

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_sml.ml,v 6.6 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 6.7 2013/07/02 16:12:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -808,7 +808,7 @@ EXTEND
   ;
   sigb:
     [ [ x1 = ident; "="; x2 = module_type ->
-          <:str_item< module type $uid:x1$ = $x2$ >> ] ]
+          <:str_item< module type $x1$ = $x2$ >> ] ]
   ;
   fsig:
     [ [ ":"; x1 = ident -> not_impl loc "fsig 1"

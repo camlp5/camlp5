@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 6.47 2013/06/14 03:03:31 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 6.48 2013/07/02 16:12:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -175,8 +175,8 @@ EXTEND
       | "include"; me = module_expr -> <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V UIDENT "uid" ""; mt = mod_type_fun_binding ->
-          <:str_item< module type $_uid:i$ = $mt$ >>
+      | "module"; "type"; i = V ident ""; mt = mod_type_fun_binding ->
+          <:str_item< module type $_:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_list:tdl$ >>
@@ -243,8 +243,8 @@ EXTEND
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") ->
           <:sig_item< module $_flag:rf$ $_list:l$ >>
-      | "module"; "type"; i = V UIDENT "uid" ""; "="; mt = module_type ->
-          <:sig_item< module type $_uid:i$ = $mt$ >>
+      | "module"; "type"; i = V ident ""; "="; mt = module_type ->
+          <:sig_item< module type $_:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>

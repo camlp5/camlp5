@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_lefteval.ml,v 6.3 2012/01/09 14:22:20 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 6.4 2013/07/02 16:12:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";
@@ -205,7 +205,7 @@ and str_item x =
   | <:str_item< $exp:e$ >> -> <:str_item< $exp:expr e$ >>
   | <:str_item< open $_$ >> | <:str_item< type $list:_$ >> |
     <:str_item< exception $uid:_$ of $list:_$ = $_$ >> |
-    <:str_item< module type $uid:_$ = $_$ >> |
+    <:str_item< module type $_$ = $_$ >> |
     <:str_item< # $lid:_$ $opt:_$ >> ->
       x
   | x -> not_impl "str_item" x ]
