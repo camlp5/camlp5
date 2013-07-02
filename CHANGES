@@ -1,6 +1,7 @@
 Camlp5 Version 6.11:
 --------------------
 
+* [02 Jul 13] Added 'MLast.loc_of_with_constr'.
 * [02 Jul 13] Fixed bug toplevel with revised syntax; "= 'a" was missing
   in output in that example:
     # module type A = sig module type S = 'a; end;

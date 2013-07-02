@@ -228,6 +228,7 @@ external loc_of_module_type : module_type -> loc = "%field0";;
 external loc_of_module_expr : module_expr -> loc = "%field0";;
 external loc_of_sig_item : sig_item -> loc = "%field0";;
 external loc_of_str_item : str_item -> loc = "%field0";;
+external loc_of_with_constr : with_constr -> loc = "%field0";;
 
 external loc_of_class_type : class_type -> loc = "%field0";;
 external loc_of_class_sig_item : class_sig_item -> loc = "%field0";;

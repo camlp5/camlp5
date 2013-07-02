@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 6.25 2012/03/09 14:54:20 deraugla Exp $ *)
+(* $Id: mLast.mli,v 6.26 2013/07/02 16:31:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -237,6 +237,7 @@ external loc_of_module_type : module_type -> loc = "%field0";
 external loc_of_module_expr : module_expr -> loc = "%field0";
 external loc_of_sig_item : sig_item -> loc = "%field0";
 external loc_of_str_item : str_item -> loc = "%field0";
+external loc_of_with_constr : with_constr -> loc = "%field0";
 
 external loc_of_class_type : class_type -> loc = "%field0";
 external loc_of_class_sig_item : class_sig_item -> loc = "%field0";

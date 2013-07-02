@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.16 2012/03/02 18:49:57 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.17 2013/07/02 16:27:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -394,7 +394,7 @@ and print_out_sig_item ppf =
   [ Osig_exception id tyl ->
       fprintf ppf "@[<2>exception %a@]" print_out_constr (id, tyl)
   | Osig_modtype name Omty_abstract ->
-      fprintf ppf "@[<2>module type %s@]" name
+      fprintf ppf "@[<2>module type %s = 'a@]" name
   | Osig_modtype name mty ->
       fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
   | IFDEF OCAML_VERSION <= OCAML_3_07 THEN
