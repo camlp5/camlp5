@@ -986,19 +986,17 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                     Some '.' ->
                       Stream.junk strm__;
                       keyword_or_error ctx (bp, Stream.count strm__) ".."
-                  | Some '\n' ->
-                      Stream.junk strm__;
-                      incr !(Plexing.line_nb);
-                      !(Plexing.bol_pos) := Stream.count strm__;
-                      ctx.set_line_nb ();
-                      ctx.after_space <- true;
-                      keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
                   | _ ->
-                      let id =
-                        if ctx.specific_space_dot && ctx.after_space then " ."
-                        else "."
-                      in
-                      keyword_or_error ctx (bp, Stream.count strm__) id
+                      match Stream.npeek 1 strm__ with
+                        ['\n'] ->
+                          keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
+                      | _ ->
+                          let id =
+                            if ctx.specific_space_dot && ctx.after_space then
+                              " ."
+                            else "."
+                          in
+                          keyword_or_error ctx (bp, Stream.count strm__) id
                   end
               | Some ';' ->
                   Stream.junk strm__;
@@ -1445,15 +1443,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 754, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 748, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 754, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 748, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 754, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 748, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 755, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 749, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 755, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 749, 37)));
        Plexing.tok_comm = None}
   in
   let glex =
