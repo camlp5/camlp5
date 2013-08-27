@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pa_o.ml,v 6.51 2013/08/27 11:19:38 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.52 2013/08/27 14:17:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -356,6 +356,13 @@ value concat_comm loc e =
   Reloc.expr floc 0 e
 ;
 
+value expr_of_patt p =
+  let loc = MLast.loc_of_patt p in
+  match p with
+  [ <:patt< $lid:x$ >> -> <:expr< $lid:x$ >>
+  | _ -> Ploc.raise loc (Stream.Error "identifier expected") ]
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
@@ -698,7 +705,7 @@ EXTEND
   ;
   lbl_expr:
     [ [ i = patt_label_ident; "="; e = expr LEVEL "expr1" -> (i, e)
-      | i = LIDENT -> (<:patt< $lid:i$ >>, <:expr< $lid:i$ >>) ] ]
+      | i = patt_label_ident -> (i, expr_of_patt i) ] ]
   ;
   expr1_semi_list:
     [ [ el = LIST1 (expr LEVEL "expr1") SEP ";" OPT_SEP -> el ] ]
@@ -818,7 +825,7 @@ EXTEND
   ;
   lbl_patt:
     [ [ i = patt_label_ident; "="; p = patt -> (i, p)
-      | i = LIDENT -> (<:patt< $lid:i$ >>, <:patt< $lid:i$ >>)
+      | i = patt_label_ident -> (i, i)
       | "_" -> (<:patt< _ >>, <:patt< _ >>) ] ]
   ;
   patt_label_ident:
