@@ -1,6 +1,9 @@
 Camlp5 Version 6.12:
 --------------------
 
+* [27 Aug 13] Fixed bug in normal syntax: "let f { x } = ..." and "{ x }"
+  were refused.
+
 Camlp5 Version 6.11:
 --------------------
 
