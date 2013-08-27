@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pa_o.ml,v 6.52 2013/08/27 14:17:22 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 6.53 2013/08/27 15:52:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";
@@ -532,6 +532,8 @@ EXTEND
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
+      | "let"; "open"; m = V UIDENT; "in"; e = expr LEVEL "top" ->
+          <:expr< $_uid:m$ . ($e$) >>
       | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
           <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = patt LEVEL "simple"; (eo, e) = fun_def ->
