@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 6.4 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: grammar.mli,v 6.5 2013/09/06 12:32:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (** Extensible grammars.
@@ -200,6 +200,10 @@ value warning_verbose : ref bool;
 value strict_parsing : ref bool;
    (** Flag to apply strict parsing, without trying to recover errors;
        default = [False] *)
+
+value utf8_print : ref bool;
+   (** Flag to consider strings as utf8-encoded when printing them;
+       default = [True] *)
 
 value print_entry : Format.formatter -> Gramext.g_entry 'te -> unit;
    (** General printer for all kinds of entries (obj entries) *)

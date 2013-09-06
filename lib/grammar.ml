@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 6.6 2012/01/09 14:22:21 deraugla Exp $ *)
+(* $Id: grammar.ml,v 6.7 2013/09/06 12:32:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_fstream.cmo";
@@ -17,7 +17,32 @@ value rec flatten_tree =
       List.map (fun l -> [n :: l]) (flatten_tree s) @ flatten_tree b ]
 ;
 
-value print_str ppf s = fprintf ppf "\"%s\"" (String.escaped s);
+value utf8_print = ref True;
+
+value utf8_string_escaped s =
+  let b = Buffer.create (String.length s) in
+  loop 0 where rec loop i =
+    if i = String.length s then Buffer.contents b
+    else do {
+      match s.[i] with
+      | '"' → Buffer.add_string b "\\\""
+      | '\\' → Buffer.add_string b "\\\\"
+      | '\n' → Buffer.add_string b "\\n"
+      | '\t' → Buffer.add_string b "\\t"
+      | '\r' → Buffer.add_string b "\\r"
+      | '\b' → Buffer.add_string b "\\b"
+      | c → Buffer.add_char b c
+      end;
+      loop (i + 1)
+    }
+;
+
+value string_escaped s =
+  if utf8_print.val then utf8_string_escaped s
+  else String.escaped s
+;
+
+value print_str ppf s = fprintf ppf "\"%s\"" (string_escaped s);
 
 value rec print_symbol ppf =
   fun

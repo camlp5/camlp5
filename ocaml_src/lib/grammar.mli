@@ -196,6 +196,10 @@ val strict_parsing : bool ref;;
    (** Flag to apply strict parsing, without trying to recover errors;
        default = [False] *)
 
+val utf8_print : bool ref;;
+   (** Flag to consider strings as utf8-encoded when printing them;
+       default = [True] *)
+
 val print_entry : Format.formatter -> 'te Gramext.g_entry -> unit;;
    (** General printer for all kinds of entries (obj entries) *)
 

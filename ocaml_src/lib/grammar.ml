@@ -17,7 +17,34 @@ let rec flatten_tree =
       List.map (fun l -> n :: l) (flatten_tree s) @ flatten_tree b
 ;;
 
-let print_str ppf s = fprintf ppf "\"%s\"" (String.escaped s);;
+let utf8_print = ref true;;
+
+let utf8_string_escaped s =
+  let b = Buffer.create (String.length s) in
+  let rec loop i =
+    if i = String.length s then Buffer.contents b
+    else
+      begin
+        begin match s.[i] with
+          '"' -> Buffer.add_string b "\\\""
+        | '\\' -> Buffer.add_string b "\\\\"
+        | '\n' -> Buffer.add_string b "\\n"
+        | '\t' -> Buffer.add_string b "\\t"
+        | '\r' -> Buffer.add_string b "\\r"
+        | '\b' -> Buffer.add_string b "\\b"
+        | c -> Buffer.add_char b c
+        end;
+        loop (i + 1)
+      end
+  in
+  loop 0
+;;
+
+let string_escaped s =
+  if !utf8_print then utf8_string_escaped s else String.escaped s
+;;
+
+let print_str ppf s = fprintf ppf "\"%s\"" (string_escaped s);;
 
 let rec print_symbol ppf =
   function
