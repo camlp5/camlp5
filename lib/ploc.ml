@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 6.13 2012/03/09 12:43:14 deraugla Exp $ *)
+(* $Id: ploc.ml,v 6.14 2013/12/19 16:19:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";
@@ -23,12 +23,12 @@ value make_loc fname line_nb bol_pos (bp, ep) comm =
 ;
 
 value make_unlined (bp, ep) =
-  {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
+  {fname = ""; line_nb = 1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
    bp = bp; ep = ep; comm = ""; ecomm = ""}
 ;
 
 value dummy =
-  {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
+  {fname = ""; line_nb = 1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
    bp = 0; ep = 0; comm = ""; ecomm = ""}
 ;
 

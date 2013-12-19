@@ -1,6 +1,9 @@
 Camlp5 Version 6.12:
 --------------------
 
+* [19 Dec 13] Dummy line numbers are now 1 instead of -1 to prevent
+  errors that sometimes happen later at assembling phase.
+* [19 Dec 13] Fixed problem in top/Makefile when OCLIBDIR contains spaces.
 * [06 Sep 13] Added flag Grammar.utf8_print to print grammars entries
   (with Grammar.Entry.print) displaying strings in utf-8 (default: True).
   Usefull e.g. for Coq in command 'Print Grammar constr' when using utf8.

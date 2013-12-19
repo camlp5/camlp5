@@ -1,9 +1,9 @@
-# $Id: Makefile,v 6.6 2013/03/15 18:30:46 deraugla Exp $
+# $Id: Makefile,v 6.7 2013/12/19 16:19:41 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
 
-INCLUDES=-I ../main -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OCLIBDIR)
+INCLUDES=-I ../main -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I "$(OCLIBDIR)"
 OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 
 CAMLP5_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/versdep.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/fstream.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/diff.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/pretty.cmo ../boot/pprintf.cmo ../boot/eprinter.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtools.cmo ../main/ast2pt.cmo ../main/pcaml.cmo ../main/exparser.cmo ../boot/stdpp.cmo ../boot/token.cmo

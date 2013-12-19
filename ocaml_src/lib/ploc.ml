@@ -23,12 +23,12 @@ let make_loc fname line_nb bol_pos (bp, ep) comm =
 ;;
 
 let make_unlined (bp, ep) =
-  {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
+  {fname = ""; line_nb = 1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
    bp = bp; ep = ep; comm = ""; ecomm = ""}
 ;;
 
 let dummy =
-  {fname = ""; line_nb = -1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
+  {fname = ""; line_nb = 1; bol_pos = 0; line_nb_last = -1; bol_pos_last = 0;
    bp = 0; ep = 0; comm = ""; ecomm = ""}
 ;;
 
