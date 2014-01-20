@@ -1,6 +1,12 @@
 Internal, very small, undocumented, or invisible changes
 ********************************************************
 
+Camlp5 Version 6.12:
+--------------------
+* [20 Jan 14] Removed W3C icon image (in documentation) that should
+  not be in Camlp5 distribution (violates Debian guidelines, in
+  particular).
+
 Camlp5 Version 6.02.1:
 ----------------------
 
