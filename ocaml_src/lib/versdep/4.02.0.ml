@@ -164,13 +164,28 @@ let ocaml_const_nativeint =
   Some (fun s -> Const_nativeint (Nativeint.of_string s))
 ;;
 
-let mkexp loc e = {pexp_desc = e; pexp_loc = loc; pexp_attributes = []};;
-let mkpat loc p = {ppat_desc = p; ppat_loc = loc; ppat_attributes = []};;
+let ocaml_mktyp loc x =
+  {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []}
+;;
+let ocaml_mkpat loc x =
+  {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
+;;
+let ocaml_mkexp loc x =
+  {pexp_desc = x; pexp_loc = loc; pexp_attributes = []}
+;;
+let ocaml_mkmty loc x =
+  {pmty_desc = x; pmty_loc = loc; pmty_attributes = []}
+;;
+let ocaml_mkmod loc x =
+  {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
+;;
+let ocaml_mkfield loc lab x = ocaml_mktyp loc x;;
+let ocaml_mkfield_var loc = ocaml_mktyp loc x;;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 
 let ocaml_pexp_assertfalse fname loc =
-  Pexp_assert (mkexp loc (Pexp_construct (mkloc loc (Lident "False"), None)));;
+  Pexp_assert (ocaml_mkexp loc (Pexp_construct (mkloc loc (Lident "False"), None)));;
 
 let ocaml_pexp_assert fname loc e = Pexp_assert e;;
 
@@ -180,7 +195,7 @@ let ocaml_pexp_construct loc li po chk_arity =
 
 let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
 
-let ocaml_pexp_for i e1 e2 df e = Pexp_for (mkpat loc_none (Ppat_construct (mknoloc (Lident i), None)), e1, e2, df, e);;
+let ocaml_pexp_for i e1 e2 df e = Pexp_for (ocaml_mkpat loc_none (Ppat_construct (mknoloc (Lident i), None)), e1, e2, df, e);;
 
 let ocaml_pexp_function lab eo pel =
   let cl = List.map (fun (p, e) -> {pc_lhs = p; pc_guard = eo; pc_rhs = e}) pel in

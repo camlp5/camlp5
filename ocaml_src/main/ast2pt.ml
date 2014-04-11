@@ -64,14 +64,16 @@ let mkloc loc =
   ocaml_location (!glob_fname, lnum, bolp, lnuml, bolpl, bp, ep)
 ;;
 
-let mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};;
-let mkpat loc d = {ppat_desc = d; ppat_loc = mkloc loc};;
-let mkexp loc d = {pexp_desc = d; pexp_loc = mkloc loc};;
-let mkmty loc d = {pmty_desc = d; pmty_loc = mkloc loc};;
+let mktyp loc d = ocaml_mktyp (mkloc loc) d;;
+let mkpat loc d = ocaml_mkpat (mkloc loc) d;;
+let mkexp loc d = ocaml_mkexp (mkloc loc) d;;
+let mkmty loc d = ocaml_mkmty (mkloc loc) d;;
 let mksig loc d = {psig_desc = d; psig_loc = mkloc loc};;
-let mkmod loc d = {pmod_desc = d; pmod_loc = mkloc loc};;
+let mkmod loc d = ocaml_mkmod (mkloc loc) d;;
 let mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};;
-let mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};;
+let mkfield loc d = ocaml_mkfield (mkloc loc) d;;
+let mkfield_var loc = ocaml_mkfield_var (mkloc loc);;
+
 let mkcty loc d =
   match ocaml_class_type with
     Some class_type -> class_type d (mkloc loc)
@@ -326,9 +328,8 @@ let rec ctyp =
   | TyXtr (loc, _, _) -> error loc "bad ast TyXtr"
 and meth_list loc fl v =
   match fl with
-    [] -> if uv v then [mkfield loc Pfield_var] else []
-  | (lab, t) :: fl ->
-      mkfield loc (Pfield (lab, add_polytype t)) :: meth_list loc fl v
+    [] -> if uv v then [mkfield_var loc] else []
+  | (lab, t) :: fl -> mkfield loc lab (add_polytype t) :: meth_list loc fl v
 and add_polytype t =
   match ocaml_ptyp_poly with
     Some ptyp_poly ->

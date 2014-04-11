@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.53 2013/03/19 15:25:22 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.54 2014/04/11 18:40:46 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -62,14 +62,16 @@ value mkloc loc =
   ocaml_location (glob_fname.val, lnum, bolp, lnuml, bolpl, bp, ep)
 ;
 
-value mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};
-value mkpat loc d = {ppat_desc = d; ppat_loc = mkloc loc};
-value mkexp loc d = {pexp_desc = d; pexp_loc = mkloc loc};
-value mkmty loc d = {pmty_desc = d; pmty_loc = mkloc loc};
+value mktyp loc d = ocaml_mktyp (mkloc loc) d;
+value mkpat loc d = ocaml_mkpat (mkloc loc) d;
+value mkexp loc d = ocaml_mkexp (mkloc loc) d;
+value mkmty loc d = ocaml_mkmty (mkloc loc) d;
 value mksig loc d = {psig_desc = d; psig_loc = mkloc loc};
-value mkmod loc d = {pmod_desc = d; pmod_loc = mkloc loc};
+value mkmod loc d = ocaml_mkmod (mkloc loc) d;
 value mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};
-value mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};
+value mkfield loc d = ocaml_mkfield (mkloc loc) d;
+value mkfield_var loc = ocaml_mkfield_var (mkloc loc);
+
 value mkcty loc d =
   match ocaml_class_type with
   [ Some class_type → class_type d (mkloc loc)
@@ -309,9 +311,9 @@ value rec ctyp =
   | TyXtr loc _ _ → error loc "bad ast TyXtr" ]
 and meth_list loc fl v =
   match fl with
-  [ [] → if uv v then [mkfield loc Pfield_var] else []
+  [ [] → if uv v then [mkfield_var loc] else []
   | [(lab, t) :: fl] →
-      [mkfield loc (Pfield lab (add_polytype t)) :: meth_list loc fl v] ]
+      [mkfield loc lab (add_polytype t) :: meth_list loc fl v] ]
 and add_polytype t =
   match ocaml_ptyp_poly with
   [ Some ptyp_poly →

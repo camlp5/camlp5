@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.36 2013/06/10 15:57:21 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.37 2014/04/11 18:40:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -276,6 +276,11 @@ value ocaml_ptyp_class li tl ll =
 
 value ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li) tl;
 
+value ocaml_ptyp_object ml =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_object ml
+  ELSE Ptyp_object ml Closed END
+;
+
 value ocaml_ptyp_package =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
   ELSE Some (fun pt -> Ptyp_package pt) END
@@ -330,6 +335,37 @@ value ocaml_const_int64 =
 value ocaml_const_nativeint =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
   ELSE Some (fun s -> Const_nativeint (Nativeint.of_string s)) END
+;
+
+value ocaml_mktyp loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ptyp_desc = x; ptyp_loc = loc}
+  ELSE {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []} END
+;
+value ocaml_mkpat loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ppat_desc = x; ppat_loc = loc}
+  ELSE {ppat_desc = x; ppat_loc = loc; ppat_attributes = []} END
+;
+value ocaml_mkexp loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pexp_desc = x; pexp_loc = loc}
+  ELSE {pexp_desc = x; pexp_loc = loc; pexp_attributes = []} END
+;
+value ocaml_mkmty loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmty_desc = x; pmty_loc = loc}
+  ELSE {pmty_desc = x; pmty_loc = loc; pmty_attributes = []} END
+;
+value ocaml_mkmod loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmod_desc = x; pmod_loc = loc}
+  ELSE {pmod_desc = x; pmod_loc = loc; pmod_attributes = []} END
+;
+value ocaml_mkfield loc lab x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    {pfield_desc = Pfield lab x; pfield_loc = loc}
+  ELSE ocaml_mktyp loc x END
+;
+value ocaml_mkfield_var loc =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    {pfield_desc = Pfield_var; pfield_loc = loc}
+  ELSE ocaml_mktyp loc x END
 ;
 
 value ocaml_pexp_apply f lel =
