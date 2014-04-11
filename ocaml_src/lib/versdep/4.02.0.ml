@@ -179,8 +179,8 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield loc lab x = ocaml_mktyp loc x;;
-let ocaml_mkfield_var loc = ocaml_mktyp loc x;;
+let ocaml_mkfield loc lab = ocaml_mktyp loc (Ptyp_object [lab] Closed);;
+let ocaml_mkfield_var loc = ocaml_mktyp loc (Ptyp_object [] Closed;;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 

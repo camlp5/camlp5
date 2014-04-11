@@ -329,7 +329,7 @@ let rec ctyp =
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then [mkfield_var loc] else []
-  | (lab, t) :: fl -> mkfield loc lab (add_polytype t) :: meth_list loc fl v
+  | (lab, t) :: fl -> mkfield loc (lab, add_polytype t) :: meth_list loc fl v
 and add_polytype t =
   match ocaml_ptyp_poly with
     Some ptyp_poly ->

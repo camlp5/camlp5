@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.54 2014/04/11 18:40:46 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.55 2014/04/11 19:01:47 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -313,7 +313,7 @@ and meth_list loc fl v =
   match fl with
   [ [] → if uv v then [mkfield_var loc] else []
   | [(lab, t) :: fl] →
-      [mkfield loc lab (add_polytype t) :: meth_list loc fl v] ]
+      [mkfield loc (lab, add_polytype t) :: meth_list loc fl v] ]
 and add_polytype t =
   match ocaml_ptyp_poly with
   [ Some ptyp_poly →
