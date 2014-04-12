@@ -495,7 +495,9 @@ let mkwithc =
       end
   | WcTyp (loc, id, tpl, pf, ct) ->
       begin match type_decl_of_with_type loc tpl (uv pf) ct with
-        Right td -> long_id_of_string_list loc (uv id), Pwith_type td
+        Right td ->
+          long_id_of_string_list loc (uv id),
+          ocaml_pwith_type (mkloc loc) ("", td)
       | Left msg -> error loc msg
       end
   | WcTys (loc, id, tpl, t) ->
