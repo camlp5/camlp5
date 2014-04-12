@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.57 2014/04/12 12:48:21 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.58 2014/04/12 17:11:13 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -624,7 +624,8 @@ value rec patt =
       mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
   | PaStr loc s →
       mkpat loc
-        (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
+        (Ppat_constant
+           (ocaml_const_string (string_of_string_token loc (uv s))))
   | PaTup loc pl → mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc loc p t → mkpat loc (Ppat_constraint (patt p) (ctyp t))
   | PaTyp loc sl →
@@ -1040,7 +1041,8 @@ value rec expr =
            [("", expr e1); ("", expr e2)])
   | ExStr loc s →
       mkexp loc
-        (Pexp_constant (Const_string (string_of_string_token loc (uv s))))
+        (Pexp_constant
+           (ocaml_const_string (string_of_string_token loc (uv s))))
   | ExTry loc e pel → mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
   | ExTup loc el → mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc loc e t → mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)

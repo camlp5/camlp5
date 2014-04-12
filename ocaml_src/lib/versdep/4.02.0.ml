@@ -172,6 +172,8 @@ let ocaml_package_type li ltl =
   mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
 ;;
 
+let ocaml_const_string s = Const_string (s, None);;
+
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
 
 let ocaml_const_int64 = Some (fun s -> Const_int64 (Int64.of_string s));;
@@ -356,7 +358,16 @@ let ocaml_pstr_type stl =
 let ocaml_class_infos =
   Some
     (fun virt (sl, sloc) name expr loc variance ->
-       let params = List.map (fun s -> mkloc loc s, variance) sl in
+       let _ =
+         if List.length sl <> List.length variance then
+           failwith "internal error: ocaml_class_infos"
+         else ()
+       in
+       let params =
+         List.map2
+           (fun os va -> mkloc loc os, variance_of_bool_bool va)
+           sl variance
+       in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
         pci_expr = expr; pci_loc = loc; pci_attributes = []})
 ;;

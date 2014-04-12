@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.40 2014/04/12 12:48:21 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.41 2014/04/12 17:11:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -320,6 +320,11 @@ value ocaml_ptyp_variant catl clos sl_opt =
 
 value ocaml_package_type li ltl =
   (mknoloc li, List.map (fun (li, t) → (mkloc t.ptyp_loc li, t)) ltl)
+;
+
+value ocaml_const_string s =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
+  ELSE Const_string (s, None) END
 ;
 
 value ocaml_const_int32 =

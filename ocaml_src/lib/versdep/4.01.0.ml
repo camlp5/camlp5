@@ -145,6 +145,8 @@ let ocaml_package_type li ltl =
   mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
 ;;
 
+let ocaml_const_string s = Const_string s;;
+
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
 
 let ocaml_const_int64 = Some (fun s -> Const_int64 (Int64.of_string s));;
