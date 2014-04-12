@@ -952,8 +952,8 @@ let rec expr =
         | _ -> f
       in
       let al = List.rev (List.fold_left label_expr [] al) in
-      begin match (expr f).pexp_desc with
-        Pexp_construct (li, None, _) ->
+      begin match ocaml_pexp_construct_args (expr f).pexp_desc with
+        Some (li, li_loc, None, _) ->
           let al = List.map snd al in
           if !(Prtools.no_constructors_arity) then
             let a =
@@ -961,11 +961,12 @@ let rec expr =
                 [a] -> a
               | _ -> mkexp loc (Pexp_tuple al)
             in
-            mkexp loc (Pexp_construct (li, Some a, false))
+            mkexp loc (ocaml_pexp_construct li_loc li (Some a) false)
           else
             let a = mkexp loc (Pexp_tuple al) in
-            mkexp loc (Pexp_construct (li, Some a, true))
-      | e ->
+            mkexp loc (ocaml_pexp_construct li_loc li (Some a) true)
+      | Some _ | None ->
+          let e = (expr f).pexp_desc in
           match ocaml_pexp_variant with
             Some (pexp_variant_pat, pexp_variant) ->
               begin match pexp_variant_pat e with

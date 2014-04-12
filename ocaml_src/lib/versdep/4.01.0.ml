@@ -175,6 +175,12 @@ let ocaml_pexp_construct loc li po chk_arity =
   Pexp_construct (mkloc loc li, po, chk_arity)
 ;;
 
+let ocaml_pexp_construct_args =
+  function
+    Pexp_construct (li, po, chk_arity) -> Some (li.txt, li.loc, po, chk_arity)
+  | _ -> None
+;;
+
 let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
 
 let ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i, e1, e2, df, e);;
