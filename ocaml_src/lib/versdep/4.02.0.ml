@@ -74,10 +74,26 @@ let ocaml_class_type_field loc ctfd =
 let ocaml_class_field loc cfd =
   {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []};;
 
+let variance_of_bool_bool =
+  function
+    false, true -> Contravariant
+  | true, false -> Covariant
+  | _ -> Invariant
+;;
+
 let ocaml_type_declaration params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->
-      let params = List.map (fun os -> Some (mknoloc os), variance) params in
+      let _ =
+        if List.length params <> List.length variance then
+          failwith "internal error: ocaml_type_declaration"
+        else ()
+      in
+      let params =
+        List.map2
+          (fun os va -> Some (mknoloc os), variance_of_bool_bool va)
+          params variance
+      in
       Right
         {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
          ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
