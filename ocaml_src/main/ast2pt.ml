@@ -1301,7 +1301,7 @@ and mkpe (p, e) =
         expand_gadt_type loc p loc1 nt ct e
     | p -> p, e
   in
-  patt p, expr e
+  ocaml_value_binding (patt p) (expr e)
 and expand_gadt_type loc p loc1 nt ct e =
   let nt = uv nt in
   let e = MLast.ExTyc (loc, e, ct) in

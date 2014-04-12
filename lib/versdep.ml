@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.43 2014/04/12 19:29:16 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.44 2014/04/12 20:31:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -534,6 +534,11 @@ value ocaml_pexp_variant =
     let pexp_variant (lab, eo) = Pexp_variant lab eo in
     Some (pexp_variant_pat, pexp_variant)
   END
+;
+
+value ocaml_value_binding p e =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN (p, e)
+  ELSE {pvb_pat = p; pvb_expr = e; pvb_attributes = []} END
 ;
 
 value ocaml_ppat_alias p i iloc = Ppat_alias p (mkloc iloc i);

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.60 2014/04/12 19:29:16 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.61 2014/04/12 20:31:23 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1121,7 +1121,7 @@ and mkpe (p, e) =
     [ PaTyc loc p (TyPot loc1 nt ct) → expand_gadt_type loc p loc1 nt ct e
     | p → (p, e) ]
   in
-  (patt p, expr e)
+  ocaml_value_binding (patt p) (expr e)
 and expand_gadt_type loc p loc1 nt ct e =
   let nt = uv nt in
   let e = <:expr< ($e$ : $ct$) >> in

@@ -277,6 +277,10 @@ let ocaml_pexp_variant =
   Some (pexp_variant_pat, pexp_variant)
 ;;
 
+let ocaml_value_binding p e =
+  {pvb_pat = p; pvb_expr = e; pvb_attributes = []}
+;;
+
 let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;

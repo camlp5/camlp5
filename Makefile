@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.29 2013/03/06 10:08:18 deraugla Exp $
+# $Id: Makefile,v 6.30 2014/04/12 20:31:23 deraugla Exp $
 
 include config/Makefile
 
@@ -196,8 +196,7 @@ bootstrap_source:
 	rmdir ocaml_src.new/$$DIR
 	rmdir ocaml_src.new
 
-new_sources:
-	cd etc; $(MAKE) $(PR_O)
+new_sources: oprinter
 	@-for i in $(FDIRS); do \
 	   mkdir ocaml_src.new/$$i; \
 	   $(MAKE) $(NO_PR_DIR) new_source DIR=$$i FILE=Makefile; \
@@ -240,8 +239,7 @@ new_source:
 	fi > \
 	../ocaml_src.new/$$DIR/$$k
 
-compare_sources:
-	cd etc; $(MAKE) $(PR_O)
+compare_sources: oprinter
 	@-for i in $(FDIRS); do \
 	   $(MAKE) $(NO_PR_DIR) compare_source DIR=$$i FILE=Makefile; \
 	   echo ============================================; \
@@ -277,8 +275,7 @@ compare_source:
 	fi | \
 	diff $(DIFF_OPT) ../ocaml_src/$$DIR/$$k - || :
 
-bootstrap_all_versdep:
-	cd etc; $(MAKE) $(PR_O)
+bootstrap_all_versdep: oprinter
 	@-for i in ocaml_src/lib/versdep/*.ml; do \
 	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
 	done; \
@@ -301,8 +298,7 @@ bootstrap_versdep:
 	  versdep.ml | \
 	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > ../$$i -
 
-compare_all_versdep:
-	cd etc; $(MAKE) $(PR_O)
+compare_all_versdep: oprinter
 	@-for i in ocaml_src/lib/versdep/*.ml; do \
 	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i n=ocaml; \
 	done; \
@@ -324,6 +320,9 @@ compare_versdep:
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) \
 	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff ../$$i -
+
+oprinter:
+	cd etc; $(MAKE) $(PR_O)
 
 untouch_sources:
 	@-cd ocaml_src; \
