@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.61 2014/04/12 20:31:23 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.62 2014/04/12 22:55:31 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -886,7 +886,7 @@ value rec expr =
                  | None → p ]
                in
                mkexp loc (ocaml_pexp_function lab None [(patt p, e)]))
-           (uv lppo) (when_expr e (uv w))
+           (uv lppo) (when_expr e (option expr (uv w)))
       | [(PaNty loc s, w, e)] →
           match ocaml_pexp_newtype with
           [ Some newtype →
@@ -903,7 +903,7 @@ value rec expr =
           in
           mkexp loc
             (ocaml_pexp_function ("?" ^ lab) (option expr (uv eo))
-               [(patt p, when_expr e (uv w))])
+               [mkpwe (p, w, e)])
       | pel →
           let pel =
             if split_or_patterns_with_bindings then
@@ -1133,10 +1133,10 @@ and expand_gadt_type loc p loc1 nt ct e =
   let tp = List.map (fun s → "&" ^ s) nt in
   let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
   (<:patt< ($p$ : $ct$) >>, e)
-and mkpwe (p, w, e) = (patt p, when_expr e (uv w))
+and mkpwe (p, w, e) = (patt p, when_expr e (option expr (uv w)))
 and when_expr e =
   fun
-  [ Some w → mkexp (loc_of_expr e) (Pexp_when (expr w) (expr e))
+  [ Some w → mkexp (loc_of_expr e) (Pexp_when w (expr e))
   | None → expr e ]
 and mklabexp (lab, e) =
   (patt_label_long_id lab, mkloc (loc_of_patt lab), expr e)

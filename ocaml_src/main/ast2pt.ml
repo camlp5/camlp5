@@ -1049,7 +1049,7 @@ let rec expr =
                  | None -> p
                in
                mkexp loc (ocaml_pexp_function lab None [patt p, e]))
-            (uv lppo) (when_expr e (uv w))
+            (uv lppo) (when_expr e (option expr (uv w)))
       | [PaNty (loc, s), w, e] ->
           begin match ocaml_pexp_newtype with
             Some newtype ->
@@ -1068,7 +1068,7 @@ let rec expr =
           in
           mkexp loc
             (ocaml_pexp_function ("?" ^ lab) (option expr (uv eo))
-               [patt p, when_expr e (uv w)])
+               [mkpwe (p, w, e)])
       | pel ->
           let pel =
             if split_or_patterns_with_bindings then
@@ -1312,10 +1312,10 @@ and expand_gadt_type loc p loc1 nt ct e =
   let ct = varify_constructors nt ct in
   let tp = List.map (fun s -> "&" ^ s) nt in
   let ct = MLast.TyPol (loc, tp, ct) in MLast.PaTyc (loc, p, ct), e
-and mkpwe (p, w, e) = patt p, when_expr e (uv w)
+and mkpwe (p, w, e) = patt p, when_expr e (option expr (uv w))
 and when_expr e =
   function
-    Some w -> mkexp (loc_of_expr e) (Pexp_when (expr w, expr e))
+    Some w -> mkexp (loc_of_expr e) (Pexp_when (w, expr e))
   | None -> expr e
 and mklabexp (lab, e) =
   patt_label_long_id lab, mkloc (loc_of_patt lab), expr e
