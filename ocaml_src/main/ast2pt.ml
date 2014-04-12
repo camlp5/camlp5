@@ -1030,7 +1030,8 @@ let rec expr =
   | ExChr (loc, s) ->
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
   | ExCoe (loc, e, t1, t2) ->
-      mkexp loc (Pexp_constraint (expr e, option ctyp t1, Some (ctyp t2)))
+      mkexp loc
+        (ocaml_pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
   | ExFlo (loc, s) -> mkexp loc (Pexp_constant (Const_float (uv s)))
   | ExFor (loc, i, e1, e2, df, el) ->
       let e3 = MLast.ExSeq (loc, uv el) in

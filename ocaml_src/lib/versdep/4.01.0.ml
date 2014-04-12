@@ -171,6 +171,8 @@ let ocaml_pexp_assertfalse fname loc = Pexp_assertfalse;;
 
 let ocaml_pexp_assert fname loc e = Pexp_assert e;;
 
+let ocaml_pexp_constraint e ot1 ot2 = Pexp_constraint (e, ot1, ot2);;
+
 let ocaml_pexp_construct loc li po chk_arity =
   Pexp_construct (mkloc loc li, po, chk_arity)
 ;;

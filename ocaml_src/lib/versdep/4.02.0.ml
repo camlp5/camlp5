@@ -207,6 +207,15 @@ let ocaml_pexp_assertfalse fname loc =
 
 let ocaml_pexp_assert fname loc e = Pexp_assert e;;
 
+let ocaml_pexp_constraint e ot1 ot2 =
+  match ot2 with
+    Some t2 -> Pexp_coerce (e, ot1, t2)
+  | None ->
+      match ot1 with
+        Some t1 -> Pexp_constraint (e, t1)
+      | None -> failwith "internal error: ocaml_pexp_constraint"
+;;
+
 let ocaml_pexp_construct loc li po chk_arity =
   Pexp_construct (mkloc loc li, po)
 ;;

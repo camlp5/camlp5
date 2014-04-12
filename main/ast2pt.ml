@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.59 2014/04/12 18:37:00 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.60 2014/04/12 19:29:16 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -867,7 +867,8 @@ value rec expr =
   | ExChr loc s →
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
   | ExCoe loc e t1 t2 →
-      mkexp loc (Pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
+      mkexp loc
+        (ocaml_pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
   | ExFlo loc s → mkexp loc (Pexp_constant (Const_float (uv s)))
   | ExFor loc i e1 e2 df el →
       let e3 = <:expr< do { $list:uv el$ } >> in

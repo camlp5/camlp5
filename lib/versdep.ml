@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.42 2014/04/12 18:36:59 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.43 2014/04/12 19:29:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -416,6 +416,20 @@ value ocaml_pexp_assert fname loc e =
     let not_try_e = ghexp (ocaml_pexp_apply not_ [("", try_e)]) in
     Pexp_ifthenelse not_try_e raise_af None
   ELSE Pexp_assert e END
+;
+
+value ocaml_pexp_constraint e ot1 ot2 =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_constraint e ot1 ot2
+  ELSE
+    match ot2 with
+    | Some t2 -> Pexp_coerce e ot1 t2
+    | None ->
+        match ot1 with
+        | Some t1 -> Pexp_constraint e t1
+        | None -> failwith "internal error: ocaml_pexp_constraint"
+        end
+    end
+  END
 ;
 
 value ocaml_pexp_construct loc li po chk_arity =
