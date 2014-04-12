@@ -270,7 +270,7 @@ let ocaml_ppat_construct li li_loc po chk_arity =
 
 let ocaml_ppat_construct_args =
   function
-    Ppat_construct (li, po) -> Some (li.txt, li.loc, po)
+    Ppat_construct (li, po) -> Some (li.txt, li.loc, po, 0)
   | _ -> None
 ;;
 
