@@ -396,6 +396,8 @@ let ocaml_pwith_modsubst =
   Some (fun loc me -> Pwith_modsubst (mkloc loc me))
 ;;
 
+let ocaml_pwith_type loc (i, td) = Pwith_type td;;
+
 let ocaml_pwith_module loc me = Pwith_module (mkloc loc me);;
 
 let ocaml_pwith_typesubst = Some (fun td -> Pwith_typesubst td);;

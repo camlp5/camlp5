@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.56 2014/04/12 03:23:49 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.57 2014/04/12 12:48:21 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -481,7 +481,9 @@ value mkwithc =
       | None → error loc "no with module := in this ocaml version" ]
   | WcTyp loc id tpl pf ct →
       match type_decl_of_with_type loc tpl (uv pf) ct with
-      [ Right td → (long_id_of_string_list loc (uv id), Pwith_type td)
+      [ Right td ->
+          (long_id_of_string_list loc (uv id),
+           ocaml_pwith_type (mkloc loc) ("", td))
       | Left msg → error loc msg ]
   | WcTys loc id tpl t →
       match ocaml_pwith_typesubst with
