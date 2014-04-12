@@ -134,7 +134,7 @@ let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 
 let ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li, tl);;
 
-let ocaml_ptyp_object ml = Ptyp_object (ml, Closed);;
+let ocaml_ptyp_object (ml : (string * core_type) list) = Ptyp_object (ml, Closed);;
 
 let ocaml_ptyp_package = Some (fun pt -> Ptyp_package pt);;
 
@@ -179,8 +179,8 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield loc lab = ocaml_mktyp loc (Ptyp_object [lab] Closed);;
-let ocaml_mkfield_var loc = ocaml_mktyp loc (Ptyp_object [] Closed;;
+let ocaml_mkfield loc (s, t) fl = (s, t) :: fl;;
+let ocaml_mkfield_var loc = [];;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 

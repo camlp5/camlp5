@@ -158,10 +158,10 @@ let ocaml_mkpat loc x = {ppat_desc = x; ppat_loc = loc};;
 let ocaml_mkexp loc x = {pexp_desc = x; pexp_loc = loc};;
 let ocaml_mkmty loc x = {pmty_desc = x; pmty_loc = loc};;
 let ocaml_mkmod loc x = {pmod_desc = x; pmod_loc = loc};;
-let ocaml_mkfield loc (lab, x) =
-  {pfield_desc = Pfield (lab, x); pfield_loc = loc}
+let ocaml_mkfield loc (lab, x) fl =
+  {pfield_desc = Pfield (lab, x); pfield_loc = loc} :: fl
 ;;
-let ocaml_mkfield_var loc = {pfield_desc = Pfield_var; pfield_loc = loc};;
+let ocaml_mkfield_var loc = [{pfield_desc = Pfield_var; pfield_loc = loc}];;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 

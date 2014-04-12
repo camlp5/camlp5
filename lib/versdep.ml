@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.38 2014/04/11 19:01:47 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.39 2014/04/12 03:23:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -357,15 +357,15 @@ value ocaml_mkmod loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmod_desc = x; pmod_loc = loc}
   ELSE {pmod_desc = x; pmod_loc = loc; pmod_attributes = []} END
 ;
-value ocaml_mkfield loc (lab, x) =
+value ocaml_mkfield loc (lab, x) fl =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    {pfield_desc = Pfield lab x; pfield_loc = loc}
-  ELSE ocaml_mktyp loc (Ptyp_object [(lab, x)]) END
+    [{pfield_desc = Pfield lab x; pfield_loc = loc} :: fl]
+  ELSE [(lab, x) :: fl] END
 ;
 value ocaml_mkfield_var loc =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    {pfield_desc = Pfield_var; pfield_loc = loc}
-  ELSE ocaml_mktyp loc x END
+    [{pfield_desc = Pfield_var; pfield_loc = loc}]
+  ELSE [] END
 ;
 
 value ocaml_pexp_apply f lel =

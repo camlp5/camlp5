@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.55 2014/04/11 19:01:47 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.56 2014/04/12 03:23:49 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -69,7 +69,7 @@ value mkmty loc d = ocaml_mkmty (mkloc loc) d;
 value mksig loc d = {psig_desc = d; psig_loc = mkloc loc};
 value mkmod loc d = ocaml_mkmod (mkloc loc) d;
 value mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};
-value mkfield loc d = ocaml_mkfield (mkloc loc) d;
+value mkfield loc d fl = ocaml_mkfield (mkloc loc) d fl;
 value mkfield_var loc = ocaml_mkfield_var (mkloc loc);
 
 value mkcty loc d =
@@ -266,7 +266,7 @@ value rec ctyp =
       in
       mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
   | TyArr loc t1 t2 → mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
-  | TyObj loc fl v → mktyp loc (Ptyp_object (meth_list loc (uv fl) v))
+  | TyObj loc fl v → mktyp loc (ocaml_ptyp_object (meth_list loc (uv fl) v))
   | TyCls loc id →
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab loc _ _ → error loc "labeled type not allowed here"
@@ -311,9 +311,9 @@ value rec ctyp =
   | TyXtr loc _ _ → error loc "bad ast TyXtr" ]
 and meth_list loc fl v =
   match fl with
-  [ [] → if uv v then [mkfield_var loc] else []
+  [ [] → if uv v then mkfield_var loc else []
   | [(lab, t) :: fl] →
-      [mkfield loc (lab, add_polytype t) :: meth_list loc fl v] ]
+      mkfield loc (lab, add_polytype t) (meth_list loc fl v) ]
 and add_polytype t =
   match ocaml_ptyp_poly with
   [ Some ptyp_poly →
