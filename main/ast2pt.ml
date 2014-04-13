@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.62 2014/04/12 22:55:31 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.63 2014/04/13 08:38:29 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -877,16 +877,16 @@ value rec expr =
   | ExFun loc pel →
       match uv pel with
       [ [(PaLab ploc lppo, w, e)] →
-          List.fold_right
-            (fun (p, po) e →
-               let lab = label_of_patt p in
-               let p =
-                 match uv po with
-                 [ Some p → p
-                 | None → p ]
-               in
-               mkexp loc (ocaml_pexp_function lab None [(patt p, e)]))
-           (uv lppo) (when_expr e (option expr (uv w)))
+          match uv lppo with
+          [ [(p, po)] →
+              let lab = label_of_patt p in
+              let p =
+                match uv po with
+                [ Some p → p
+                | None → p ]
+              in
+              mkexp loc (ocaml_pexp_function lab None [mkpwe (p, w, e)])
+          | _ → error loc "bad AST" ]
       | [(PaNty loc s, w, e)] →
           match ocaml_pexp_newtype with
           [ Some newtype →

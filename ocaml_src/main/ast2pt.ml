@@ -1040,16 +1040,17 @@ let rec expr =
   | ExFun (loc, pel) ->
       begin match uv pel with
         [PaLab (ploc, lppo), w, e] ->
-          List.fold_right
-            (fun (p, po) e ->
-               let lab = label_of_patt p in
-               let p =
-                 match uv po with
-                   Some p -> p
-                 | None -> p
-               in
-               mkexp loc (ocaml_pexp_function lab None [patt p, e]))
-            (uv lppo) (when_expr e (option expr (uv w)))
+          begin match uv lppo with
+            [p, po] ->
+              let lab = label_of_patt p in
+              let p =
+                match uv po with
+                  Some p -> p
+                | None -> p
+              in
+              mkexp loc (ocaml_pexp_function lab None [mkpwe (p, w, e)])
+          | _ -> error loc "bad AST"
+          end
       | [PaNty (loc, s), w, e] ->
           begin match ocaml_pexp_newtype with
             Some newtype ->
