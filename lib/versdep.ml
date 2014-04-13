@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.45 2014/04/13 15:06:30 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.46 2014/04/13 15:22:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -453,14 +453,27 @@ value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
 value ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i) e1 e2 df e;
 
 value ocaml_case (p, wo, loc, e) =
-  match wo with
-  [ Some w -> (p, ocaml_mkexp loc (Pexp_when w e))
-  | None -> (p, e) ]
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    match wo with
+    | Some w -> (p, ocaml_mkexp loc (Pexp_when w e))
+    | None -> (p, e)
+    end
+  ELSE
+    {pc_lhs = p; pc_guard = wo; pc_rhs = e}
+  END
 ;
 
 value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_function pel
-  ELSE Pexp_function lab eo pel END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_function lab eo pel
+  ELSE
+    if lab = "" && eo = None then Pexp_function pel
+    else
+      match pel with
+      | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun lab eo p e
+      | _ -> failwith "internal error: bad ast in ocaml_pexp_function"
+      end
+  END
 ;
 
 value ocaml_pexp_lazy =
