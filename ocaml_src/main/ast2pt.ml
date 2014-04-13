@@ -1150,8 +1150,8 @@ let rec expr =
             match mto with
               Some mt ->
                 let pt = package_of_module_type loc mt in
-                Pexp_constraint
-                  (mkexp loc e, Some (mktyp loc (ptyp_package pt)), None)
+                ocaml_pexp_constraint (mkexp loc e)
+                  (Some (mktyp loc (ptyp_package pt))) None
             | None -> e
           in
           mkexp loc e
@@ -1226,7 +1226,7 @@ let rec expr =
       mkexp loc (Pexp_try (expr e, List.map mkpwe (uv pel)))
   | ExTup (loc, el) -> mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc (loc, e, t) ->
-      mkexp loc (Pexp_constraint (expr e, Some (ctyp t), None))
+      mkexp loc (ocaml_pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
       let cloc = mkloc loc in
@@ -1431,7 +1431,7 @@ and module_expr =
               Some mt ->
                 let pt = package_of_module_type loc mt in
                 let t = mktyp loc (ptyp_package pt) in
-                mkexp loc (Pexp_constraint (expr e, Some t, None))
+                mkexp loc (ocaml_pexp_constraint (expr e) (Some t) None)
             | None -> expr e
           in
           mkmod loc (pmod_unpack e)

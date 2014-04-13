@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.65 2014/04/13 15:06:30 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.66 2014/04/13 16:57:08 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -980,7 +980,7 @@ value rec expr =
             match mto with
             [ Some mt →
                 let pt = package_of_module_type loc mt in
-                Pexp_constraint (mkexp loc e)
+                ocaml_pexp_constraint (mkexp loc e)
                   (Some (mktyp loc (ptyp_package pt))) None
             | None → e ]
           in
@@ -1048,7 +1048,8 @@ value rec expr =
            (ocaml_const_string (string_of_string_token loc (uv s))))
   | ExTry loc e pel → mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
   | ExTup loc el → mkexp loc (Pexp_tuple (List.map expr (uv el)))
-  | ExTyc loc e t → mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
+  | ExTyc loc e t →
+      mkexp loc (ocaml_pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid loc s →
       let ca = not Prtools.no_constructors_arity.val in
       let cloc = mkloc loc in
@@ -1246,7 +1247,7 @@ and module_expr =
             [ Some mt →
                 let pt = package_of_module_type loc mt in
                 let t = mktyp loc (ptyp_package pt) in
-                mkexp loc (Pexp_constraint (expr e) (Some t) None)
+                mkexp loc (ocaml_pexp_constraint (expr e) (Some t) None)
             | None →
                 expr e ]
           in
