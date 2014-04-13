@@ -1313,11 +1313,10 @@ and expand_gadt_type loc p loc1 nt ct e =
   let ct = varify_constructors nt ct in
   let tp = List.map (fun s -> "&" ^ s) nt in
   let ct = MLast.TyPol (loc, tp, ct) in MLast.PaTyc (loc, p, ct), e
-and mkpwe (p, w, e) = patt p, when_expr e (option expr (uv w))
-and when_expr e =
-  function
-    Some w -> mkexp (loc_of_expr e) (Pexp_when (w, expr e))
-  | None -> expr e
+and mkpwe (p, w, e) =
+  match option expr (uv w) with
+    Some w -> patt p, mkexp (loc_of_expr e) (Pexp_when (w, expr e))
+  | None -> patt p, expr e
 and mklabexp (lab, e) =
   patt_label_long_id lab, mkloc (loc_of_patt lab), expr e
 and mkideexp (ide, e) = ide, expr e

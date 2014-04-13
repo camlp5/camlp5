@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.63 2014/04/13 08:38:29 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.64 2014/04/13 08:46:31 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1133,11 +1133,11 @@ and expand_gadt_type loc p loc1 nt ct e =
   let tp = List.map (fun s → "&" ^ s) nt in
   let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
   (<:patt< ($p$ : $ct$) >>, e)
-and mkpwe (p, w, e) = (patt p, when_expr e (option expr (uv w)))
-and when_expr e =
-  fun
-  [ Some w → mkexp (loc_of_expr e) (Pexp_when w (expr e))
-  | None → expr e ]
+and mkpwe (p, w, e) =
+  match option expr (uv w) with
+  | Some w → (patt p, mkexp (loc_of_expr e) (Pexp_when w (expr e)))
+  | None → (patt p, expr e)
+  end
 and mklabexp (lab, e) =
   (patt_label_long_id lab, mkloc (loc_of_patt lab), expr e)
 and mkideexp (ide, e) = (ide, expr e)
