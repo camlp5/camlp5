@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.64 2014/04/13 08:46:31 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.65 2014/04/13 15:06:30 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -91,7 +91,8 @@ value mklazy loc e =
       let void_pat =
         ghpat (ocaml_ppat_construct (Lident "()") (mkloc loc) None False)
       in
-      let f = ghexp (ocaml_pexp_function "" None [(void_pat, e)]) in
+      let pwe = ocaml_case (void_pat, None, mkloc loc, e) in
+      let f = ghexp (ocaml_pexp_function "" None [pwe]) in
       let delayed = Ldot (Lident "Lazy") "Delayed" in
       let cloc = mkloc loc in
       let df = ghexp (ocaml_pexp_construct cloc delayed (Some f) False) in
@@ -1134,10 +1135,7 @@ and expand_gadt_type loc p loc1 nt ct e =
   let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
   (<:patt< ($p$ : $ct$) >>, e)
 and mkpwe (p, w, e) =
-  match option expr (uv w) with
-  | Some w → (patt p, mkexp (loc_of_expr e) (Pexp_when w (expr e)))
-  | None → (patt p, expr e)
-  end
+  ocaml_case (patt p, option expr (uv w), mkloc (loc_of_expr e), expr e)
 and mklabexp (lab, e) =
   (patt_label_long_id lab, mkloc (loc_of_patt lab), expr e)
 and mkideexp (ide, e) = (ide, expr e)

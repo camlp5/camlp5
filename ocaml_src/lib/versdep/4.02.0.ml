@@ -230,9 +230,18 @@ let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
 
 let ocaml_pexp_for i e1 e2 df e = Pexp_for (ocaml_mkpat loc_none (Ppat_construct (mknoloc (Lident i), None)), e1, e2, df, e);;
 
-let ocaml_pexp_function lab eo pel =
-  let cl = List.map (fun (p, e) -> {pc_lhs = p; pc_guard = eo; pc_rhs = e}) pel in
-  Pexp_function cl;;
+let ocaml_pexp_function lab eo pwel =
+  if lab = "" && eo = None then
+    let cl = 
+      List.map (fun (p, eo, e) -> {pc_lhs = p; pc_guard = eo; pc_rhs = e})
+        pwel
+     in
+    Pexp_function cl
+  else
+    match pwel with
+      [(p, None, e)] -> Pexp_fun (lab, eo, p, e)
+    | _ -> failwith "internal error: bad ast in ocaml_pexp_function"
+;;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 

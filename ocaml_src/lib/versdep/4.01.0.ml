@@ -187,6 +187,12 @@ let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
 
 let ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i, e1, e2, df, e);;
 
+let ocaml_case (p, wo, loc, e) =
+  match wo with
+    Some w -> p, ocaml_mkexp loc (Pexp_when (w, e))
+  | None -> p, e
+;;
+
 let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;

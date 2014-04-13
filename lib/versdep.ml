@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.44 2014/04/12 20:31:23 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.45 2014/04/13 15:06:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -451,6 +451,12 @@ value ocaml_pexp_construct_args =
 value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
 
 value ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i) e1 e2 df e;
+
+value ocaml_case (p, wo, loc, e) =
+  match wo with
+  [ Some w -> (p, ocaml_mkexp loc (Pexp_when w e))
+  | None -> (p, e) ]
+;
 
 value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_function pel

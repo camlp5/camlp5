@@ -93,7 +93,8 @@ let mklazy loc e =
       let void_pat =
         ghpat (ocaml_ppat_construct (Lident "()") (mkloc loc) None false)
       in
-      let f = ghexp (ocaml_pexp_function "" None [void_pat, e]) in
+      let pwe = ocaml_case (void_pat, None, mkloc loc, e) in
+      let f = ghexp (ocaml_pexp_function "" None [pwe]) in
       let delayed = Ldot (Lident "Lazy", "Delayed") in
       let cloc = mkloc loc in
       let df = ghexp (ocaml_pexp_construct cloc delayed (Some f) false) in
@@ -1314,9 +1315,7 @@ and expand_gadt_type loc p loc1 nt ct e =
   let tp = List.map (fun s -> "&" ^ s) nt in
   let ct = MLast.TyPol (loc, tp, ct) in MLast.PaTyc (loc, p, ct), e
 and mkpwe (p, w, e) =
-  match option expr (uv w) with
-    Some w -> patt p, mkexp (loc_of_expr e) (Pexp_when (w, expr e))
-  | None -> patt p, expr e
+  ocaml_case (patt p, option expr (uv w), mkloc (loc_of_expr e), expr e)
 and mklabexp (lab, e) =
   patt_label_long_id lab, mkloc (loc_of_patt lab), expr e
 and mkideexp (ide, e) = ide, expr e
