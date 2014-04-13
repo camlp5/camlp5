@@ -116,7 +116,7 @@ let ocaml_pmty_functor sloc s mt1 mt2 =
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
 
 let ocaml_pmty_with mt lcl =
-  let lcl = List.map (fun (s, c) -> Pwith_type (mknoloc s, c)) lcl in
+  let lcl = List.map snd lcl in
   Pmty_with (mt, lcl)
 ;;
 
