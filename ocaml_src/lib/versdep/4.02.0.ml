@@ -110,7 +110,7 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
 let ocaml_pmty_functor sloc s mt1 mt2 =
-  Pmty_functor (mkloc sloc s, mt1, mt2)
+  Pmty_functor (mkloc sloc s, Some mt1, mt2)
 ;;
 
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
