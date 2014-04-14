@@ -1,6 +1,7 @@
 Camlp5 Version 6.12:
 --------------------
 
+* [14 Apr 14] Updated for ocaml version 4.01.1
 * [19 Dec 13] Dummy line numbers are now 1 instead of -1 to prevent
   errors that sometimes happen later at assembling phase.
 * [19 Dec 13] Fixed problem in top/Makefile when OCLIBDIR contains spaces.

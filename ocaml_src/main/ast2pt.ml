@@ -955,7 +955,7 @@ let rec expr =
       begin match ocaml_pexp_construct_args (expr f).pexp_desc with
         Some (li, li_loc, None, _) ->
           let al = List.map snd al in
-          if !(Prtools.no_constructor_arity) then
+          if !(Prtools.no_constructors_arity) then
             let a =
               match al with
                 [a] -> a
@@ -963,12 +963,12 @@ let rec expr =
             in
             mkexp loc (ocaml_pexp_construct li_loc li (Some a) false)
           else
-(**)
-            mkexp_ocaml_pexp_construct_arity (mkloc loc) li_loc li a
 (*
+            mkexp_ocaml_pexp_construct_arity (mkloc loc) li_loc li a
+*)
             let a = mkexp loc (Pexp_tuple al) in
             mkexp loc (ocaml_pexp_construct li_loc li (Some a) true)
-*)
+(**)
       | Some _ | None ->
           let e = (expr f).pexp_desc in
           match ocaml_pexp_variant with
