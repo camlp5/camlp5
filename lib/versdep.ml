@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.58 2014/04/14 19:20:42 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.59 2014/04/14 23:20:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -610,11 +610,11 @@ value ocaml_ppat_array =
   ELSE Some (fun pl -> Ppat_array pl) END
 ;
 
-value ocaml_ppat_construct li li_loc po chk_arity  =
+value ocaml_ppat_construct loc li po chk_arity  =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN
     Ppat_construct li po chk_arity
   ELSE
-    Ppat_construct (mkloc li_loc li) po chk_arity
+    Ppat_construct (mkloc loc li) po chk_arity
   END
 ;
 
@@ -624,6 +624,20 @@ value ocaml_ppat_construct_args =
       IFDEF OCAML_VERSION < OCAML_4_00 THEN Some (li, 0, po, chk_arity)
       ELSE Some (li.txt, li.loc, po, chk_arity) END 
   | _ -> None ]
+;
+
+value mkpat_ocaml_ppat_construct_arity loc li_loc li al =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let a = ocaml_mkpat loc (Ppat_tuple al) in
+    ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) True)
+  ELSE
+    let a =
+      match al with
+      [ [a] -> a
+      | _ -> ocaml_mkpat loc (Ppat_tuple al) ]
+    in
+    ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) True)
+  END
 ;
 
 value ocaml_ppat_lazy =

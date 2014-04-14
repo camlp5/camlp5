@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.75 2014/04/14 18:04:50 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.76 2014/04/14 23:20:47 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -89,7 +89,7 @@ value mklazy loc e =
       let ghpat = mkpat loc in
       let ghexp = mkexp loc in
       let void_pat =
-        ghpat (ocaml_ppat_construct (Lident "()") (mkloc loc) None False)
+        ghpat (ocaml_ppat_construct (mkloc loc) (Lident "()") None False)
       in
       let pwe = ocaml_case (void_pat, None, mkloc loc, e) in
       let f = ghexp (ocaml_pexp_function "" None [pwe]) in
@@ -538,8 +538,8 @@ value rec patt =
         [ (<:patt:< $uid:i$ >>, il) →
             match p2 with
             [ <:patt< $uid:s$ >> →
-                ocaml_ppat_construct (mkli (conv_con s) [i :: il])
-                  (mkloc loc) None (not Prtools.no_constructors_arity.val)
+                ocaml_ppat_construct (mkloc loc) (mkli (conv_con s) [i :: il])
+                  None (not Prtools.no_constructors_arity.val)
             | _ → error (loc_of_patt p2) "bad access pattern" ]
         | _ → error (loc_of_patt p2) "bad pattern" ]
       in
@@ -560,15 +560,14 @@ value rec patt =
       let p = (patt f).ppat_desc in
       match ocaml_ppat_construct_args p with
       [ Some (li, li_loc, None, _) →
-          let chk_arity = not Prtools.no_constructors_arity.val in
-          let a =
-            if chk_arity then mkpat loc (Ppat_tuple al)
-            else
+          if Prtools.no_constructors_arity.val then
+            let a =
               match al with
-              [  [a] -> a
+              [ [a] -> a
               | _ -> mkpat loc (Ppat_tuple al) ]
-          in
-          mkpat loc (ocaml_ppat_construct li li_loc (Some a) chk_arity)
+            in
+            mkpat loc (ocaml_ppat_construct li_loc li (Some a) False)
+          else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li al
       | Some _ | None →
           match ocaml_ppat_variant with
           [ Some (ppat_variant_pat, ppat_variant) →
@@ -637,7 +636,7 @@ value rec patt =
   | PaUid loc s →
       let ca = not Prtools.no_constructors_arity.val in
       mkpat loc
-        (ocaml_ppat_construct (Lident (conv_con (uv s))) (mkloc loc) None ca)
+        (ocaml_ppat_construct (mkloc loc) (Lident (conv_con (uv s))) None ca)
   | PaUnp loc s mto →
       match ocaml_ppat_unpack with
       [ Some (ppat_unpack, ptyp_package) →
@@ -1099,7 +1098,7 @@ and mkjoinclause jc =
                   [ Some p → patt p
                   | None →
                       mkpat loc
-                        (ocaml_ppat_construct (Lident "()") (mkloc loc) None
+                        (ocaml_ppat_construct (mkloc loc) (Lident "()") None
                            False) ]
                 in
                 (mkloc locp, (mkloc loc, uv s), p))

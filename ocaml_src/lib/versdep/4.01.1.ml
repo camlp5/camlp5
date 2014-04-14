@@ -251,14 +251,19 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
-let ocaml_ppat_construct li li_loc po chk_arity =
-  Ppat_construct (mkloc li_loc li, po, chk_arity)
+let ocaml_ppat_construct loc li po chk_arity =
+  Ppat_construct (mkloc loc li, po, chk_arity)
 ;;
 
 let ocaml_ppat_construct_args =
   function
     Ppat_construct (li, po, chk_arity) -> Some (li.txt, li.loc, po, chk_arity)
   | _ -> None
+;;
+
+let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
+  let a = ocaml_mkpat loc (Ppat_tuple al) in
+  ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) true)
 ;;
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
