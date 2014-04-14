@@ -88,11 +88,9 @@ let ocaml_type_declaration params cl tk pf tm loc variance =
       let _ =
         if List.length params <> List.length variance then
           failwith "internal error: ocaml_type_declaration"
-        else ()
       in
       let params =
-        List.map2
-          (fun os va -> Some (mknoloc os), variance_of_bool_bool va)
+        List.map2 (fun os va -> Some (mknoloc os), variance_of_bool_bool va)
           params variance
       in
       Right

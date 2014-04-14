@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.56 2014/04/14 18:48:10 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.57 2014/04/14 19:00:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -166,12 +166,27 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
              ptype_variance = variance}
-        ELSE
+        ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
           let params = List.map (fun os -> Some (mknoloc os)) params in
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
              ptype_variance = variance}
+        ELSE
+          let _ =
+            if List.length params <> List.length variance then
+              failwith "internal error: ocaml_type_declaration"
+            else ()
+          in
+          let params =
+            List.map2
+              (fun os va -> (Some (mknoloc os), variance_of_bool_bool va))
+              params variance
+          in
+          Right
+            {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+             ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+             ptype_name = mkloc loc ""; ptype_attributes = []}
         END
     | None -> Left "no '_' type param in this ocaml version" ]
   END
