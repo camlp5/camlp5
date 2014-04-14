@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.73 2014/04/14 14:30:28 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.74 2014/04/14 17:57:22 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -796,15 +796,15 @@ value rec expr =
       match ocaml_pexp_construct_args (expr f).pexp_desc with
       [ Some (li, li_loc, None, _) →
           let al = List.map snd al in
-          let chk_arity = not Prtools.no_constructors_arity.val in
-          let a =
-            if chk_arity then mkexp loc (Pexp_tuple al)
-            else
+          if Prtools.no_constructors_arity.val then
+            let a =
               match al with
               [ [a] -> a
               | _ -> mkexp loc (Pexp_tuple al) ]
-          in
-          mkexp loc (ocaml_pexp_construct li_loc li (Some a) chk_arity)
+            in
+            mkexp loc (ocaml_pexp_construct li_loc li (Some a) false)
+          else
+            mkexp_ocaml_pexp_construct_arity (mkloc loc) li_loc li al
       | Some _ | None →
           let e = (expr f).pexp_desc in
           match ocaml_pexp_variant with

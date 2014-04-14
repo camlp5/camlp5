@@ -962,13 +962,7 @@ let rec expr =
               | _ -> mkexp loc (Pexp_tuple al)
             in
             mkexp loc (ocaml_pexp_construct li_loc li (Some a) false)
-          else
-(*
-            mkexp_ocaml_pexp_construct_arity (mkloc loc) li_loc li a
-*)
-            let a = mkexp loc (Pexp_tuple al) in
-            mkexp loc (ocaml_pexp_construct li_loc li (Some a) true)
-(**)
+          else mkexp_ocaml_pexp_construct_arity (mkloc loc) li_loc li al
       | Some _ | None ->
           let e = (expr f).pexp_desc in
           match ocaml_pexp_variant with
