@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.59 2014/04/14 23:20:47 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.60 2014/04/14 23:27:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -203,12 +203,18 @@ value ocaml_class_type =
 
 value ocaml_class_expr =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun d loc -> {pcl_desc = d; pcl_loc = loc}) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Some (fun d loc -> {pcl_desc = d; pcl_loc = loc})
+  ELSE
+    Some (fun d loc -> {pcl_desc = d; pcl_loc = loc; pcl_attributes = []})
+  END
 ;
 
 value ocaml_class_structure p cil =
   IFDEF OCAML_VERSION <= OCAML_4_00 THEN (p, cil)
-  ELSE {pcstr_pat = p; pcstr_fields = cil} END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    {pcstr_pat = p; pcstr_fields = cil}
+  ELSE {pcstr_self = p; pcstr_fields = cil} END
 ;
 
 value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
@@ -221,8 +227,12 @@ value ocaml_pmty_typeof =
 ;
 
 value ocaml_pmty_with mt lcl =
-  let lcl = List.map (fun (s, c) → (mknoloc s, c)) lcl in
-  Pmty_with mt lcl
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let lcl = List.map (fun (s, c) → (mknoloc s, c)) lcl in
+    Pmty_with mt lcl
+  ELSE
+    let lcl = List.map snd lcl in Pmty_with (mt, lcl)
+  END
 ;
 
 value ocaml_ptype_abstract =
