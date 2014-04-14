@@ -330,6 +330,8 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception s ed = Psig_exception {pcd_name = mknoloc s; pcd_args =ed; pcd_res = None; pcd_loc = loc_none; pcd_attributes = []};;
 
+let ocaml_psig_include mt = Psig_include (mt, []);;
+
 let ocaml_psig_module s mt = Psig_module {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = []; pmd_loc = loc_none};;
 
 let ocaml_psig_modtype s mtd = Psig_modtype {pmtd_name =mknoloc s; pmtd_type = mtd; pmtd_attributes = []; pmtd_loc = loc_none};;

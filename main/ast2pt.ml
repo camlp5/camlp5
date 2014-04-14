@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.66 2014/04/13 16:57:08 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.67 2014/04/14 00:53:23 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1189,7 +1189,7 @@ and sig_item s l =
       [mksig loc (ocaml_psig_exception (uv n) (List.map ctyp (uv tl))) :: l]
   | SgExt loc n t p →
       [mksig loc (ocaml_psig_value (uv n) (mkvalue_desc t (uv p))) :: l]
-  | SgInc loc mt → [mksig loc (Psig_include (module_type mt)) :: l]
+  | SgInc loc mt → [mksig loc (ocaml_psig_include (module_type mt)) :: l]
   | SgMod loc rf ntl →
       if not (uv rf) then
         List.fold_right

@@ -283,6 +283,8 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception s ed = Psig_exception (mknoloc s, ed);;
 
+let ocaml_psig_include mt = Psig_include mt;;
+
 let ocaml_psig_module s mt = Psig_module (mknoloc s, mt);;
 
 let ocaml_psig_modtype s mtd = Psig_modtype (mknoloc s, mtd);;
