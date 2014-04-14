@@ -91,7 +91,7 @@ let mklazy loc e =
       let ghpat = mkpat loc in
       let ghexp = mkexp loc in
       let void_pat =
-        ghpat (ocaml_ppat_construct (Lident "()") (mkloc loc) None false)
+        ghpat (ocaml_ppat_construct (mkloc loc) (Lident "()") None false)
       in
       let pwe = ocaml_case (void_pat, None, mkloc loc, e) in
       let f = ghexp (ocaml_pexp_function "" None [pwe]) in
@@ -555,7 +555,7 @@ let rec patt =
           MLast.PaUid (loc, i), il ->
             begin match p2 with
               MLast.PaUid (_, s) ->
-                ocaml_ppat_construct (mkli (conv_con s) (i :: il)) (mkloc loc)
+                ocaml_ppat_construct (mkloc loc) (mkli (conv_con s) (i :: il))
                   None (not !(Prtools.no_constructors_arity))
             | _ -> error (loc_of_patt p2) "bad access pattern"
             end
@@ -578,15 +578,14 @@ let rec patt =
       let p = (patt f).ppat_desc in
       begin match ocaml_ppat_construct_args p with
         Some (li, li_loc, None, _) ->
-          let chk_arity = not !(Prtools.no_constructors_arity) in
-          let a =
-            if chk_arity then mkpat loc (Ppat_tuple al)
-            else
+          if !(Prtools.no_constructors_arity) then
+            let a =
               match al with
                 [a] -> a
               | _ -> mkpat loc (Ppat_tuple al)
-          in
-          mkpat loc (ocaml_ppat_construct li li_loc (Some a) chk_arity)
+            in
+            mkpat loc (ocaml_ppat_construct li_loc li (Some a) false)
+          else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li al
       | Some _ | None ->
           match ocaml_ppat_variant with
             Some (ppat_variant_pat, ppat_variant) ->
@@ -660,7 +659,7 @@ let rec patt =
   | PaUid (loc, s) ->
       let ca = not !(Prtools.no_constructors_arity) in
       mkpat loc
-        (ocaml_ppat_construct (Lident (conv_con (uv s))) (mkloc loc) None ca)
+        (ocaml_ppat_construct (mkloc loc) (Lident (conv_con (uv s))) None ca)
   | PaUnp (loc, s, mto) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->
@@ -1277,7 +1276,7 @@ and mkjoinclause jc =
                     Some p -> patt p
                   | None ->
                       mkpat loc
-                        (ocaml_ppat_construct (Lident "()") (mkloc loc) None
+                        (ocaml_ppat_construct (mkloc loc) (Lident "()") None
                            false)
                 in
                 mkloc locp, (mkloc loc, uv s), p)
