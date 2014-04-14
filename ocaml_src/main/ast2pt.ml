@@ -1590,7 +1590,8 @@ and class_sig_item c l =
       end
   | CgDcl (loc, cl) -> List.fold_right class_sig_item (uv cl) l
   | CgInh (loc, ct) ->
-      ocaml_class_type_field (mkloc loc) (Pctf_inher (class_type ct)) :: l
+      ocaml_class_type_field (mkloc loc) (ocaml_pctf_inher (class_type ct)) ::
+      l
   | CgMth (loc, pf, s, t) ->
       ocaml_class_type_field (mkloc loc)
         (ocaml_pctf_meth

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.52 2014/04/14 09:08:16 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.53 2014/04/14 11:25:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -883,6 +883,11 @@ value ocaml_pctf_cstr =
     Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc))
   ELSE
     Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2)) END
+;
+
+value ocaml_pctf_inher ct =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pctf_inher ct
+  ELSE Pctf_inherit ct END
 ;
 
 value ocaml_pctf_meth (s, pf, t, loc) =

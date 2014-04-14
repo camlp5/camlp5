@@ -401,6 +401,8 @@ let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 
 let ocaml_pctf_cstr = Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2));;
 
+let ocaml_pctf_inher ct = Pctf_inher ct;;
+
 let ocaml_pctf_meth (s, pf, t, loc) = Pctf_meth (s, pf, t);;
 
 let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Concrete, t);;

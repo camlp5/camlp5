@@ -453,7 +453,9 @@ let ocaml_pcf_valvirt =
   Some ocaml_pcf
 ;;
 
-let ocaml_pcf_virt (s, pf, t, loc) = Pcf_val (mkloc loc s, pf, Cfk_virtual t);;
+let ocaml_pcf_virt (s, pf, t, loc) =
+  Pcf_val (mkloc loc s, Immutable, Cfk_virtual t)
+;;
 
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
 
@@ -469,11 +471,13 @@ let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 
 let ocaml_pctf_cstr = Some (fun (t1, t2, loc) -> Pctf_constraint (t1, t2));;
 
+let ocaml_pctf_inher ct = Pctf_inherit ct;;
+
 let ocaml_pctf_meth (s, pf, t, loc) = Pctf_method (s, pf, Concrete, t);;
 
 let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Concrete, t);;
 
-let ocaml_pctf_virt (s, pf, t, loc) = Pctf_val (s, pf, Virtual, t);;
+let ocaml_pctf_virt (s, pf, t, loc) = Pctf_val (s, Immutable, Virtual, t);;
 
 let ocaml_pcty_constr = Some (fun li ltl -> Pcty_constr (mknoloc li, ltl));;
 

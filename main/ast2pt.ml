@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.71 2014/04/14 09:08:16 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.72 2014/04/14 11:25:03 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1385,7 +1385,8 @@ and class_sig_item c l =
       | None → error loc "no class constraint in this ocaml version" ]
   | CgDcl loc cl → List.fold_right class_sig_item (uv cl) l
   | CgInh loc ct →
-      [ocaml_class_type_field (mkloc loc) (Pctf_inher (class_type ct)) :: l]
+      [ocaml_class_type_field (mkloc loc)
+         (ocaml_pctf_inher (class_type ct)) :: l]
   | CgMth loc pf s t →
       [ocaml_class_type_field (mkloc loc)
          (ocaml_pctf_meth
