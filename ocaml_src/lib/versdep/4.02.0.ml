@@ -100,7 +100,9 @@ let ocaml_type_declaration params cl tk pf tm loc variance =
   | None -> Left "no '_' type param in this ocaml version"
 ;;
 
-let ocaml_class_type = Some (fun d loc -> {pcty_desc = d; pcty_loc = loc; pcty_attributes = []});;
+let ocaml_class_type =
+  Some (fun d loc -> {pcty_desc = d; pcty_loc = loc; pcty_attributes = []})
+;;
 
 let ocaml_class_expr = Some (fun d loc -> {pcl_desc = d; pcl_loc = loc; pcl_attributes = []});;
 
