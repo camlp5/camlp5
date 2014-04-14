@@ -70,6 +70,8 @@ let ocaml_class_type_field loc ctfd = {pctf_desc = ctfd; pctf_loc = loc};;
 
 let ocaml_class_field loc cfd = {pcf_desc = cfd; pcf_loc = loc};;
 
+(* *)
+
 let ocaml_type_declaration params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->

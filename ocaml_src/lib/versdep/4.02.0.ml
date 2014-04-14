@@ -68,11 +68,12 @@ let ocaml_value_description t p =
 ;;
 
 let ocaml_class_type_field loc ctfd =
-  {pctf_desc = ctfd; pctf_loc = loc;
-   pctf_attributes = []};;
+  {pctf_desc = ctfd; pctf_loc = loc; pctf_attributes = []}
+;;
 
 let ocaml_class_field loc cfd =
-  {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []};;
+  {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []}
+;;
 
 let variance_of_bool_bool =
   function

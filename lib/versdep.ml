@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.55 2014/04/14 18:04:50 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.56 2014/04/14 18:48:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -96,18 +96,37 @@ value list_map_check f l =
 
 value ocaml_value_description t p =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN {pval_type = t; pval_prim = p}
-  ELSE {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc} END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
+  ELSE
+    {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc;
+     pval_name = mkloc t.ptyp_loc ""; pval_attributes = []}
+  END
 ;
 
 value ocaml_class_type_field loc ctfd =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN ctfd
-  ELSE {pctf_desc = ctfd; pctf_loc = loc} END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    {pctf_desc = ctfd; pctf_loc = loc}
+  ELSE
+    {pctf_desc = ctfd; pctf_loc = loc; pctf_attributes = []}
+  END
 ;
 
 value ocaml_class_field loc cfd =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN cfd
-  ELSE {pcf_desc = cfd; pcf_loc = loc} END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pcf_desc = cfd; pcf_loc = loc}
+  ELSE {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []} END
 ;
+
+IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
+  value variance_of_bool_bool =
+    fun
+    [ (False, True) -> Contravariant
+    | (True, False) -> Covariant
+    | _ -> Invariant ]
+  ;
+END;
 
 value ocaml_type_declaration params cl tk pf tm loc variance =
   IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN

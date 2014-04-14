@@ -61,6 +61,8 @@ let ocaml_class_type_field loc ctfd = ctfd;;
 
 let ocaml_class_field loc cfd = cfd;;
 
+(* *)
+
 let ocaml_type_declaration params cl tk pf tm loc variance =
   Right
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;

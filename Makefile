@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.30 2014/04/12 20:31:23 deraugla Exp $
+# $Id: Makefile,v 6.31 2014/04/14 18:48:10 deraugla Exp $
 
 include config/Makefile
 
@@ -319,7 +319,7 @@ compare_versdep:
 	opt="-U$$k -U$$m -D$$j -D$$n"; \
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) \
 	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
-	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff ../$$i -
+	sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $(DIFF_OPT) ../$$i -
 
 oprinter:
 	cd etc; $(MAKE) $(PR_O)
