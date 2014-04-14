@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.54 2014/04/14 17:57:22 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.55 2014/04/14 18:04:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -450,7 +450,7 @@ value ocaml_pexp_construct_args =
 
 value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   let a = ocaml_mkexp loc (Pexp_tuple al) in
-  ocaml_mkexp loc (ocaml_pexp_construct li_loc li (Some a) true)
+  ocaml_mkexp loc (ocaml_pexp_construct li_loc li (Some a) True)
 ;
 
 value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);

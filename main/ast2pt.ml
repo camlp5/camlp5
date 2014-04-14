@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.74 2014/04/14 17:57:22 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.75 2014/04/14 18:04:50 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -802,7 +802,7 @@ value rec expr =
               [ [a] -> a
               | _ -> mkexp loc (Pexp_tuple al) ]
             in
-            mkexp loc (ocaml_pexp_construct li_loc li (Some a) false)
+            mkexp loc (ocaml_pexp_construct li_loc li (Some a) False)
           else
             mkexp_ocaml_pexp_construct_arity (mkloc loc) li_loc li al
       | Some _ | None →
