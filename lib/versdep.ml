@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.48 2014/04/14 01:39:31 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.49 2014/04/14 01:51:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -742,7 +742,10 @@ value ocaml_class_infos =
 
 value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
 
-value ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s) mt me;
+value ocaml_pmod_functor s mt me =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmod_functor (mknoloc s) mt me
+  ELSE Pmod_functor (mknoloc s) (Some mt) me END
+;
 
 value ocaml_pmod_unpack =
   IFDEF OCAML_VERSION < OCAML_3_12 THEN None
