@@ -578,16 +578,15 @@ let rec patt =
       let p = (patt f).ppat_desc in
       begin match ocaml_ppat_construct_args p with
         Some (li, li_loc, None, _) ->
-          if !(Prtools.no_constructors_arity) then
-            let a =
+          let chk_arity = not !(Prtools.no_constructors_arity) in
+          let a =
+            if chk_arity then mkpat loc (Ppat_tuple al)
+            else
               match al with
                 [a] -> a
               | _ -> mkpat loc (Ppat_tuple al)
-            in
-            mkpat loc (ocaml_ppat_construct li li_loc (Some a) false)
-          else
-            let a = mkpat loc (Ppat_tuple al) in
-            mkpat loc (ocaml_ppat_construct li li_loc (Some a) true)
+          in
+          mkpat loc (ocaml_ppat_construct li li_loc (Some a) chk_arity)
       | Some _ | None ->
           match ocaml_ppat_variant with
             Some (ppat_variant_pat, ppat_variant) ->
@@ -956,16 +955,15 @@ let rec expr =
       begin match ocaml_pexp_construct_args (expr f).pexp_desc with
         Some (li, li_loc, None, _) ->
           let al = List.map snd al in
-          if !(Prtools.no_constructors_arity) then
-            let a =
+          let chk_arity = not !(Prtools.no_constructors_arity) in
+          let a =
+            if chk_arity then mkexp loc (Pexp_tuple al)
+            else
               match al with
                 [a] -> a
               | _ -> mkexp loc (Pexp_tuple al)
-            in
-            mkexp loc (ocaml_pexp_construct li_loc li (Some a) false)
-          else
-            let a = mkexp loc (Pexp_tuple al) in
-            mkexp loc (ocaml_pexp_construct li_loc li (Some a) true)
+          in
+          mkexp loc (ocaml_pexp_construct li_loc li (Some a) chk_arity)
       | Some _ | None ->
           let e = (expr f).pexp_desc in
           match ocaml_pexp_variant with

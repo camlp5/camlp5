@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.72 2014/04/14 11:25:03 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.73 2014/04/14 14:30:28 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -560,16 +560,15 @@ value rec patt =
       let p = (patt f).ppat_desc in
       match ocaml_ppat_construct_args p with
       [ Some (li, li_loc, None, _) →
-          if Prtools.no_constructors_arity.val then
-            let a =
+          let chk_arity = not Prtools.no_constructors_arity.val in
+          let a =
+            if chk_arity then mkpat loc (Ppat_tuple al)
+            else
               match al with
-              [ [a] → a
-              | _ → mkpat loc (Ppat_tuple al) ]
-            in
-            mkpat loc (ocaml_ppat_construct li li_loc (Some a) False)
-          else
-            let a = mkpat loc (Ppat_tuple al) in
-            mkpat loc (ocaml_ppat_construct li li_loc (Some a) True)
+              [  [a] -> a
+              | _ -> mkpat loc (Ppat_tuple al) ]
+          in
+          mkpat loc (ocaml_ppat_construct li li_loc (Some a) chk_arity)
       | Some _ | None →
           match ocaml_ppat_variant with
           [ Some (ppat_variant_pat, ppat_variant) →
@@ -797,16 +796,15 @@ value rec expr =
       match ocaml_pexp_construct_args (expr f).pexp_desc with
       [ Some (li, li_loc, None, _) →
           let al = List.map snd al in
-          if Prtools.no_constructors_arity.val then
-            let a =
+          let chk_arity = not Prtools.no_constructors_arity.val in
+          let a =
+            if chk_arity then mkexp loc (Pexp_tuple al)
+            else
               match al with
-              [ [a] → a
-              | _ → mkexp loc (Pexp_tuple al) ]
-            in
-            mkexp loc (ocaml_pexp_construct li_loc li (Some a) False)
-          else
-            let a = mkexp loc (Pexp_tuple al) in
-            mkexp loc (ocaml_pexp_construct li_loc li (Some a) True)
+              [ [a] -> a
+              | _ -> mkexp loc (Pexp_tuple al) ]
+          in
+          mkexp loc (ocaml_pexp_construct li_loc li (Some a) chk_arity)
       | Some _ | None →
           let e = (expr f).pexp_desc in
           match ocaml_pexp_variant with
