@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.60 2014/04/14 23:27:15 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.61 2014/04/14 23:50:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -257,9 +257,16 @@ value ocaml_ptype_record ltl priv =
     Ptype_record ltl priv
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
     Ptype_record ltl
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Ptype_record
       (List.map (fun (s, mf, ct, loc) → (mkloc loc s, mf, ct, loc)) ltl)
+  ELSE
+    Ptype_record
+      (List.map
+         (fun (s, mf, ct, loc) ->
+            {pld_name = mkloc loc s; pld_mutable = mf; pld_type = ct;
+             pld_loc = loc; pld_attributes = []})
+         ltl)
   END
 ;
 
@@ -298,7 +305,7 @@ value ocaml_ptype_variant ctl priv =
             ctl
         in
           Some (Ptype_variant ctl)
-      ELSE
+      ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
         let ctl =
           List.map
             (fun (c, tl, rto, loc) ->
@@ -306,6 +313,17 @@ value ocaml_ptype_variant ctl priv =
             ctl
         in
           Some (Ptype_variant ctl)
+      ELSE
+        let ctl =
+          List.map
+            (fun (c, tl, rto, loc) ->
+               if rto <> None then raise Exit
+               else
+                 {pcd_name = mknoloc c; pcd_args = tl; pcd_res = None;
+                  pcd_loc = loc; pcd_attributes = []})
+            ctl
+        in
+        Some (Ptype_variant ctl)
       END
     with
     [ Exit -> None ]
@@ -319,7 +337,8 @@ value ocaml_ptyp_arrow lab t1 t2 =
 
 value ocaml_ptyp_class li tl ll =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Ptyp_class li tl
-  ELSE Ptyp_class (mknoloc li) tl ll END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_class (mknoloc li) tl ll
+  ELSE Ptyp_class (mknoloc li) tl END
 ;
 
 value ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li) tl;
@@ -439,7 +458,11 @@ value ocaml_pexp_assertfalse fname loc =
     let bucket = ghexp (Pexp_construct excep (Some triple) False) in
     let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "raise")) in
     ocaml_pexp_apply raise_ [("", bucket)]
-  ELSE Pexp_assertfalse END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_assertfalse
+  ELSE
+    Pexp_assert
+      (ocaml_mkexp loc (Pexp_construct (mkloc loc (Lident "False")) None))
+  END
 ;
 
 value ocaml_pexp_assert fname loc e =
@@ -481,7 +504,11 @@ value ocaml_pexp_constraint e ot1 ot2 =
 ;
 
 value ocaml_pexp_construct loc li po chk_arity =
-  Pexp_construct (mkloc loc li) po chk_arity
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Pexp_construct (mkloc loc li) po chk_arity
+  ELSE
+    Pexp_construct (mkloc loc li) po
+  END
 ;
 
 value ocaml_pexp_construct_args =
@@ -503,7 +530,14 @@ value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
 
 value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
 
-value ocaml_pexp_for i e1 e2 df e = Pexp_for (mknoloc i) e1 e2 df e;
+value ocaml_pexp_for i e1 e2 df e =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_for (mknoloc i) e1 e2 df e
+  ELSE
+    Pexp_for
+      (ocaml_mkpat loc_none (Ppat_construct (mknoloc (Lident i), None)))
+      e1 e2 df e
+  END
+;
 
 value ocaml_case (p, wo, loc, e) =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
