@@ -1387,12 +1387,12 @@ and sig_item s l =
         | None -> error loc "no recursive module in this ocaml version"
         end
   | SgMty (loc, n, mt) ->
-      let si =
+      let mto =
         match mt with
-          MtQuo (_, _) -> Pmodtype_abstract
-        | _ -> Pmodtype_manifest (module_type mt)
+          MtQuo (_, _) -> None
+        | _ -> Some (module_type mt)
       in
-      mksig loc (ocaml_psig_modtype (uv n) si) :: l
+      mksig loc (ocaml_psig_modtype (mkloc loc) (uv n) mto) :: l
   | SgOpn (loc, id) ->
       mksig loc (ocaml_psig_open (long_id_of_string_list loc (uv id))) :: l
   | SgTyp (loc, tdl) ->

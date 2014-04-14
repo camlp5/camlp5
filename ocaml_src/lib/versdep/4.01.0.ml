@@ -287,7 +287,14 @@ let ocaml_psig_include mt = Psig_include mt;;
 
 let ocaml_psig_module s mt = Psig_module (mknoloc s, mt);;
 
-let ocaml_psig_modtype s mtd = Psig_modtype (mknoloc s, mtd);;
+let ocaml_psig_modtype loc s mto =
+  let mtd =
+    match mto with
+      None -> Pmodtype_abstract
+    | Some t -> Pmodtype_manifest t
+  in
+  Psig_modtype (mknoloc s, mtd)
+;;
 
 let ocaml_psig_open li = Psig_open (Fresh, mknoloc li);;
 

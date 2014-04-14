@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.67 2014/04/14 00:53:23 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.68 2014/04/14 01:39:31 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -1205,12 +1205,13 @@ and sig_item s l =
             [mksig loc (psig_recmodule ntl) :: l]
         | None → error loc "no recursive module in this ocaml version" ]
   | SgMty loc n mt →
-      let si =
+      let mto =
         match mt with
-        [ MtQuo _ _ → Pmodtype_abstract
-        | _ → Pmodtype_manifest (module_type mt) ]
+        | MtQuo _ _ -> None
+        | _ -> Some (module_type mt)
+        end
       in
-      [mksig loc (ocaml_psig_modtype (uv n) si) :: l]
+      [mksig loc (ocaml_psig_modtype (mkloc loc) (uv n) mto) :: l]
   | SgOpn loc id →
       [mksig loc (ocaml_psig_open (long_id_of_string_list loc (uv id))) :: l]
   | SgTyp loc tdl →

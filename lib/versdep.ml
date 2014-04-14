@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.47 2014/04/14 00:53:23 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.48 2014/04/14 01:39:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -635,7 +635,23 @@ value ocaml_psig_include mt =
 
 value ocaml_psig_module s mt = Psig_module (mknoloc s) mt;
 
-value ocaml_psig_modtype s mtd = Psig_modtype (mknoloc s) mtd;
+value ocaml_psig_modtype loc s mto =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let mtd =
+      match mto with
+      | None -> Pmodtype_abstract
+      | Some t -> Pmodtype_manifest t
+      end
+    in
+    Psig_modtype (mknoloc s) mtd
+  ELSE
+    let pmtd =
+      {pmtd_name = mkloc loc s; pmtd_type = mto; pmtd_attributes = [];
+       pmtd_loc = loc}
+    in
+    Psig_modtype pmtd
+  END
+;
 
 value ocaml_psig_open li =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN Psig_open (mknoloc li)

@@ -334,7 +334,13 @@ let ocaml_psig_include mt = Psig_include (mt, []);;
 
 let ocaml_psig_module s mt = Psig_module {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = []; pmd_loc = loc_none};;
 
-let ocaml_psig_modtype s mtd = Psig_modtype {pmtd_name =mknoloc s; pmtd_type = mtd; pmtd_attributes = []; pmtd_loc = loc_none};;
+let ocaml_psig_modtype loc s mto =
+  let pmtd =
+    {pmtd_name = mkloc loc s; pmtd_type = mto; pmtd_attributes = [];
+     pmtd_loc = loc}
+  in
+  Psig_modtype pmtd
+;;
 
 let ocaml_psig_open li = Psig_open (Fresh, mknoloc li, []);;
 
