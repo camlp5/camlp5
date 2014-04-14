@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.49 2014/04/14 01:51:09 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.50 2014/04/14 02:16:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -679,6 +679,11 @@ value ocaml_psig_value s vd = Psig_value (mknoloc s) vd;
 value ocaml_pstr_class_type =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSE Some (fun ctl -> Pstr_class_type ctl) END
+;
+
+value ocaml_pstr_eval e =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_eval e
+  ELSE Pstr_eval e [] END
 ;
 
 value ocaml_pstr_exception s ed = Pstr_exception (mknoloc s) ed;

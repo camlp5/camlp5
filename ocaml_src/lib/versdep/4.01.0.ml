@@ -314,6 +314,8 @@ let ocaml_psig_value s vd = Psig_value (mknoloc s, vd);;
 
 let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 
+let ocaml_pstr_eval e = Pstr_eval e;;
+
 let ocaml_pstr_exception s ed = Pstr_exception (mknoloc s, ed);;
 
 let ocaml_pstr_exn_rebind =
