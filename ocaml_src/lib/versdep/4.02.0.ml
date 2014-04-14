@@ -373,7 +373,13 @@ let ocaml_pstr_include = Some (fun me -> Pstr_include (me, []));;
 
 let ocaml_pstr_modtype s mt = Pstr_modtype (mt);;
 
-let ocaml_pstr_module s me = Pstr_module (me);;
+let ocaml_pstr_module loc s me =
+  let mb =
+    {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+     pmb_loc = loc}
+  in
+  Pstr_module mb
+;;
 
 let ocaml_pstr_open li = Pstr_open (Fresh, mknoloc li, []);;
 

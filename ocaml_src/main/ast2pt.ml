@@ -1484,7 +1484,8 @@ and str_item s l =
       if not (uv rf) then
         List.fold_right
           (fun (n, me) l ->
-             mkstr loc (ocaml_pstr_module (uv n) (module_expr me)) :: l)
+             let m = ocaml_pstr_module (mkloc loc) (uv n) (module_expr me) in
+             mkstr loc m :: l)
           (uv nel) l
       else
         begin match ocaml_pstr_recmodule with

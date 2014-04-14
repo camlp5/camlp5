@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.50 2014/04/14 02:16:47 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.51 2014/04/14 08:27:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -700,7 +700,16 @@ value ocaml_pstr_include =
 
 value ocaml_pstr_modtype s mt = Pstr_modtype (mknoloc s) mt;
 
-value ocaml_pstr_module s me = Pstr_module (mknoloc s) me;
+value ocaml_pstr_module loc s me =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_module (mkloc loc s) me
+  ELSE
+    let mb =
+      {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+       pmb_loc = loc}
+    in
+    Pstr_module mb
+  END
+;
 
 value ocaml_pstr_open li =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN Pstr_open (mknoloc li)
