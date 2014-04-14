@@ -1507,7 +1507,8 @@ and str_item s l =
         | None -> error loc "no recursive module in this ocaml version"
         end
   | StMty (loc, n, mt) ->
-      mkstr loc (ocaml_pstr_modtype (uv n) (module_type mt)) :: l
+      let m = ocaml_pstr_modtype (mkloc loc) (uv n) (module_type mt) in
+      mkstr loc m :: l
   | StOpn (loc, id) ->
       mkstr loc (ocaml_pstr_open (long_id_of_string_list loc (uv id))) :: l
   | StTyp (loc, tdl) ->

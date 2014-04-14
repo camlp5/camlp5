@@ -324,7 +324,7 @@ let ocaml_pstr_exn_rebind =
 
 let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
 
-let ocaml_pstr_modtype s mt = Pstr_modtype (mknoloc s, mt);;
+let ocaml_pstr_modtype loc s mt = Pstr_modtype (mkloc loc s, mt);;
 
 let ocaml_pstr_module loc s me = Pstr_module (mkloc loc s, me);;
 
