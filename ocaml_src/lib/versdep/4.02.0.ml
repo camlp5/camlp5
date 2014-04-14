@@ -233,11 +233,11 @@ let ocaml_pexp_for i e1 e2 df e = Pexp_for (ocaml_mkpat loc_none (Ppat_construct
 let ocaml_case (p, wo, loc, e) = {pc_lhs = p; pc_guard = wo; pc_rhs = e};;
 
 let ocaml_pexp_function lab eo pel =
-  if lab = "" && eo = None then Pexp_function pel
-  else
-    match pel with
-      [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun (lab, eo, p, e)
-    | _ -> failwith "internal error: bad ast in ocaml_pexp_function"
+  match pel with
+    [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun (lab, eo, p, e)
+  | pel ->
+      if lab = "" && eo = None then Pexp_function pel
+      else failwith "internal error: bad ast in ocaml_pexp_function"
 ;;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
