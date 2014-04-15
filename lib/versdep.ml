@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.77 2014/04/15 16:37:19 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.78 2014/04/15 17:03:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -1200,7 +1200,7 @@ value ocaml_pwith_modsubst =
 
 value ocaml_pwith_type loc (i, td) =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pwith_type td
-  ELSE Pwith_type (mkloc loc (Lident i)) td END
+  ELSE Pwith_type (mkloc loc i) td END
 ;
 
 value ocaml_pwith_module loc me =

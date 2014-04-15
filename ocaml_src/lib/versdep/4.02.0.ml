@@ -552,7 +552,7 @@ let ocaml_pwith_modsubst =
   Some (fun loc me -> Pwith_modsubst (mkloc loc "", mkloc loc me))
 ;;
 
-let ocaml_pwith_type loc (i, td) = Pwith_type (mkloc loc (Lident i), td);;
+let ocaml_pwith_type loc (i, td) = Pwith_type (mkloc loc i, td);;
 
 let ocaml_pwith_module loc me =
   Pwith_module (mkloc loc (Lident ""), mkloc loc me)

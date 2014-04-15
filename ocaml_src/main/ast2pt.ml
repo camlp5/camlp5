@@ -473,14 +473,14 @@ let rec module_expr_long_id =
   | t -> error (loc_of_module_expr t) "bad module expr long ident"
 ;;
 
-let type_decl_of_with_type loc tpl pf ct =
+let type_decl_of_with_type loc tn tpl pf ct =
   let (params, var_list) = List.split (uv tpl) in
   let variance = List.map variance_of_var var_list in
   let params = List.map uv params in
   let ct = Some (ctyp ct) in
   let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
   let pf = if pf then Private else Public in
-  ocaml_type_declaration "" params [] tk pf ct (mkloc loc) variance
+  ocaml_type_declaration tn params [] tk pf ct (mkloc loc) variance
 ;;
 
 let mkwithc =
@@ -496,16 +496,15 @@ let mkwithc =
       | None -> error loc "no with module := in this ocaml version"
       end
   | WcTyp (loc, id, tpl, pf, ct) ->
-      begin match type_decl_of_with_type loc tpl (uv pf) ct with
-        Right td ->
-          long_id_of_string_list loc (uv id),
-          ocaml_pwith_type (mkloc loc) ("", td)
+      let li = long_id_of_string_list loc (uv id) in
+      begin match type_decl_of_with_type loc "" tpl (uv pf) ct with
+        Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
       | Left msg -> error loc msg
       end
   | WcTys (loc, id, tpl, t) ->
       match ocaml_pwith_typesubst with
         Some pwith_typesubst ->
-          begin match type_decl_of_with_type loc tpl false t with
+          begin match type_decl_of_with_type loc "" tpl false t with
             Right td ->
               let li = long_id_of_string_list loc (uv id) in
               li, pwith_typesubst td

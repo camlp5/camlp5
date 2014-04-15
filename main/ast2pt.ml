@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.78 2014/04/15 16:35:18 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.79 2014/04/15 17:03:56 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -459,14 +459,14 @@ value rec module_expr_long_id =
   | t → error (loc_of_module_expr t) "bad module expr long ident" ]
 ;
 
-value type_decl_of_with_type loc tpl pf ct =
+value type_decl_of_with_type loc tn tpl pf ct =
   let (params, var_list) = List.split (uv tpl) in
   let variance = List.map variance_of_var var_list in
   let params = List.map uv params in
   let ct = Some (ctyp ct) in
   let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
   let pf = if pf then Private else Public in
-  ocaml_type_declaration "" params [] tk pf ct (mkloc loc) variance
+  ocaml_type_declaration tn params [] tk pf ct (mkloc loc) variance
 ;
 
 value mkwithc =
@@ -481,15 +481,14 @@ value mkwithc =
            pwith_modsubst (mkloc loc) (module_expr_long_id m))
       | None → error loc "no with module := in this ocaml version" ]
   | WcTyp loc id tpl pf ct →
-      match type_decl_of_with_type loc tpl (uv pf) ct with
-      [ Right td ->
-          (long_id_of_string_list loc (uv id),
-           ocaml_pwith_type (mkloc loc) ("", td))
+      let li = long_id_of_string_list loc (uv id) in
+      match type_decl_of_with_type loc "" tpl (uv pf) ct with
+      [ Right td -> (li, ocaml_pwith_type (mkloc loc) (li, td))
       | Left msg → error loc msg ]
   | WcTys loc id tpl t →
       match ocaml_pwith_typesubst with
       [ Some pwith_typesubst →
-          match type_decl_of_with_type loc tpl False t with
+          match type_decl_of_with_type loc "" tpl False t with
           [ Right td →
               let li = long_id_of_string_list loc (uv id) in
               (li, pwith_typesubst td)
