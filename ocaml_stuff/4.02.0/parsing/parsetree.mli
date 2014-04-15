@@ -518,7 +518,7 @@ and class_field =
     {
      pcf_desc: class_field_desc;
      pcf_loc: Location.t;
-     pcf_attributes: attributes; (* ... [@id1] [@id2] *)
+     pcf_attributes: attributes; (* ... [@@id1] [@@id2] *)
     }
 
 and class_field_desc =
@@ -640,8 +640,8 @@ and open_description =
      popen_override: override_flag;
      popen_attributes: attributes;
     }
-(* open! X - popen_override = Override (silences the 'used identifier shadowing'
-                                        warning)
+(* open! X - popen_override = Override (silences the 'used identifier
+                              shadowing' warning)
    open  X - popen_override = Fresh
  *)
 
