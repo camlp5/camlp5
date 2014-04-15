@@ -17,14 +17,19 @@ open Asttypes
 (** {2 Extension points} *)
 
 type attribute = string loc * payload
-      (* [@id ARG]
-         [@@id ARG]
+       (* [@id ARG]
+          [@@id ARG]
+
+          Metadata containers passed around within the AST.
+          The compiler ignores unknown attributes.
        *)
 
 and extension = string loc * payload
       (* [%id ARG]
          [%%id ARG]
-       *)
+
+         Sub-language placeholder -- rejected by the typechecker.
+      *)
 
 and attributes = attribute list
 
@@ -115,7 +120,12 @@ and row_field =
            [`A of T]              ( false, [T] )
            [`A of T1 & .. & Tn]   ( false, [T1;...Tn] )
            [`A of & T1 & .. & Tn] ( true,  [T1;...Tn] )
-         *)
+
+          - The 2nd field is true if the tag contains a
+            constant (empty) constructor.
+          - '&' occurs when several types are used for the same constructor
+            (see 4.2 in the manual)
+        *)
   | Rinherit of core_type
         (* [ T ] *)
 
@@ -169,7 +179,8 @@ and pattern_desc =
         (* lazy P *)
   | Ppat_unpack of string loc
         (* (module P)
-           Note: (module P : S) is represented as Ppat_constraint(Ppat_unpack, Ptyp_package)
+           Note: (module P : S) is represented as
+           Ppat_constraint(Ppat_unpack, Ptyp_package)
          *)
   | Ppat_extension of extension
         (* [%id] *)
@@ -266,7 +277,8 @@ and expression_desc =
         (* let module M = ME in E *)
   | Pexp_assert of expression
         (* assert E
-           Note: "assert false" is treated in a special way by the type-checker. *)
+           Note: "assert false" is treated in a special way by the
+           type-checker. *)
   | Pexp_lazy of expression
         (* lazy E *)
   | Pexp_poly of expression * core_type option
@@ -284,7 +296,9 @@ and expression_desc =
            (module ME : S) is represented as
            Pexp_constraint(Pexp_pack, Ptyp_package S) *)
   | Pexp_open of override_flag * Longident.t loc * expression
-        (* let open M in E *)
+        (* let open M in E
+           let! open M in E 
+        *)
   | Pexp_extension of extension
         (* [%id] *)
 
@@ -371,6 +385,14 @@ and constructor_declaration =
   | C: T0                  (args = [], res = Some T0)
   | C: T1 * ... * Tn -> T0 (res = Some T0)
 *)
+
+and exception_rebind =
+    {
+     pexrb_name: string loc;
+     pexrb_lid: Longident.t loc;
+     pexrb_attributes: attributes;
+    }
+(* exception C = M.X *)
 
 (** {2 Class language} *)
 
@@ -579,18 +601,16 @@ and signature_item_desc =
   | Psig_modtype of module_type_declaration
         (* module type S = MT
            module type S *)
-  | Psig_open of override_flag * Longident.t loc * attributes
+  | Psig_open of open_description
         (* open X *)
-  | Psig_include of module_type * attributes
+  | Psig_include of include_description
         (* include MT *)
   | Psig_class of class_description list
         (* class c1 : ... and ... and cn : ... *)
   | Psig_class_type of class_type_declaration list
         (* class type ct1 = ... and ... and ctn = ... *)
   | Psig_attribute of attribute
-        (* [@@id]
-           (not attached to another item, i.e. after ";;" or at the beginning
-           of the signature) *)
+        (* [@@@id] *)
   | Psig_extension of extension * attributes
         (* [%%id] *)
 
@@ -613,6 +633,29 @@ and module_type_declaration =
 (* S = MT
    S       (abstract module type declaration, pmtd_type = None)
 *)
+
+and open_description =
+    {
+     popen_lid: Longident.t loc;
+     popen_override: override_flag;
+     popen_attributes: attributes;
+    }
+(* open! X - popen_override = Override (silences the 'used identifier shadowing'
+                                        warning)
+   open  X - popen_override = Fresh
+ *)
+
+and 'a include_infos =
+    {
+     pincl_mod: 'a;
+     pincl_attributes: attributes;
+    }
+
+and include_description = module_type include_infos
+(* include MT *)
+
+and include_declaration = module_expr include_infos
+(* include ME *)
 
 and with_constraint =
   | Pwith_type of Longident.t loc * type_declaration
@@ -673,7 +716,7 @@ and structure_item_desc =
         (* type t1 = ... and ... and tn = ... *)
   | Pstr_exception of constructor_declaration
         (* exception C of T *)
-  | Pstr_exn_rebind of string loc * Longident.t loc * attributes
+  | Pstr_exn_rebind of exception_rebind
         (* exception C = M.X *)
   | Pstr_module of module_binding
         (* module X = ME *)
@@ -681,18 +724,16 @@ and structure_item_desc =
         (* module rec X1 = ME1 and ... and Xn = MEn *)
   | Pstr_modtype of module_type_declaration
         (* module type S = MT *)
-  | Pstr_open of override_flag * Longident.t loc * attributes
+  | Pstr_open of open_description
         (* open X *)
   | Pstr_class of class_declaration list
         (* class c1 = ... and ... and cn = ... *)
   | Pstr_class_type of class_type_declaration list
         (* class type ct1 = ... and ... and ctn = ... *)
-  | Pstr_include of module_expr * attributes
+  | Pstr_include of include_declaration
         (* include ME *)
   | Pstr_attribute of attribute
-        (* [@@id]
-           (not attached to another item, i.e. after ";;" or at the beginning
-           of the structure) *)
+        (* [@@@id] *)
   | Pstr_extension of extension * attributes
         (* [%%id] *)
 
@@ -719,6 +760,7 @@ and module_binding =
 type toplevel_phrase =
   | Ptop_def of structure
   | Ptop_dir of string * directive_argument
+     (* #use, #load ... *)
 
 and directive_argument =
   | Pdir_none
