@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.68 2014/04/15 10:10:55 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.69 2014/04/15 11:32:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -881,15 +881,28 @@ value ocaml_pstr_open li =
   ELSE Pstr_open Fresh (mknoloc li) [] END
 ;
 
-value ocaml_pstr_primitive s vd = Pstr_primitive (mknoloc s) vd;
+value ocaml_pstr_primitive s vd =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_primitive (mknoloc s) vd
+  ELSE Pstr_primitive vd END
+;
 
 value ocaml_pstr_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
     Some (fun nel -> Pstr_recmodule nel)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let f nel =
       Pstr_recmodule (List.map (fun (s, mt, me) → (mknoloc s, mt, me)) nel)
+    in
+    Some f
+  ELSE
+    let f nel =
+      Pstr_recmodule
+        (List.map
+           (fun (s, mt, me) ->
+              {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
+               pmb_loc = loc_none})
+           nel)
     in
     Some f
   END
