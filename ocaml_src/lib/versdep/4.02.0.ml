@@ -364,7 +364,9 @@ let ocaml_psig_exception s ed =
      pcd_attributes = []}
 ;;
 
-let ocaml_psig_include mt = Psig_include (mt, []);;
+let ocaml_psig_include mt =
+  Psig_include {pincl_mod = mt; pincl_attributes = []}
+;;
 
 let ocaml_psig_module s mt =
   Psig_module
@@ -380,7 +382,11 @@ let ocaml_psig_modtype loc s mto =
   Psig_modtype pmtd
 ;;
 
-let ocaml_psig_open li = Psig_open (Fresh, mknoloc li, []);;
+let ocaml_psig_open li =
+  Psig_open
+    {popen_lid = mknoloc li; popen_override = Fresh;
+     popen_attributes = []}
+;;
 
 let ocaml_psig_recmodule =
   let f ntl =
@@ -413,10 +419,16 @@ let ocaml_pstr_exception s ed =
 ;;
 
 let ocaml_pstr_exn_rebind =
-  Some (fun s li -> Pstr_exn_rebind (mknoloc s, mknoloc li, []))
+  Some
+    (fun s li ->
+       Pstr_exn_rebind
+         {pexrb_name = mknoloc s; pexrb_lid = mknoloc li;
+          pexrb_attributes = []})
 ;;
 
-let ocaml_pstr_include = Some (fun me -> Pstr_include (me, []));;
+let ocaml_pstr_include =
+  Some (fun me -> Pstr_include {pincl_mod = me; pincl_attributes = []})
+;;
 
 let ocaml_pstr_modtype loc s mt =
   let pmtd =
@@ -434,7 +446,11 @@ let ocaml_pstr_module loc s me =
   Pstr_module mb
 ;;
 
-let ocaml_pstr_open li = Pstr_open (Fresh, mknoloc li, []);;
+let ocaml_pstr_open li =
+  Pstr_open
+    {popen_lid = mknoloc li; popen_override = Fresh;
+     popen_attributes = []}
+;;
 
 let ocaml_pstr_primitive s vd = Pstr_primitive vd;;
 
