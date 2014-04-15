@@ -63,7 +63,7 @@ let ocaml_class_field loc cfd = cfd;;
 
 (* *)
 
-let ocaml_type_declaration params cl tk pf tm loc variance =
+let ocaml_type_declaration tn params cl tk pf tm loc variance =
   Right
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -225,7 +225,7 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
-let ocaml_ppat_construct li li_loc po chk_arity =
+let ocaml_ppat_construct loc li po chk_arity =
   Ppat_construct (li, po, chk_arity)
 ;;
 
@@ -233,6 +233,11 @@ let ocaml_ppat_construct_args =
   function
     Ppat_construct (li, po, chk_arity) -> Some (li, 0, po, chk_arity)
   | _ -> None
+;;
+
+let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
+  let a = ocaml_mkpat loc (Ppat_tuple al) in
+  ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) true)
 ;;
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
