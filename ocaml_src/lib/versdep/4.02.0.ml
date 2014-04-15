@@ -214,7 +214,7 @@ let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 
 let ocaml_pexp_assertfalse fname loc =
   Pexp_assert
-    (ocaml_mkexp loc (Pexp_construct (mkloc loc (Lident "False"), None)))
+    (ocaml_mkexp loc (Pexp_construct (mkloc loc (Lident "false"), None)))
 ;;
 
 let ocaml_pexp_assert fname loc e = Pexp_assert e;;

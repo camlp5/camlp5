@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.80 2014/04/15 18:35:53 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.81 2014/04/15 18:38:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -482,7 +482,7 @@ value ocaml_pexp_assertfalse fname loc =
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_assertfalse
   ELSE
     Pexp_assert
-      (ocaml_mkexp loc (Pexp_construct (mkloc loc (Lident "False")) None))
+      (ocaml_mkexp loc (Pexp_construct (mkloc loc (Lident "false")) None))
   END
 ;
 
