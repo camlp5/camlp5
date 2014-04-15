@@ -154,9 +154,7 @@ let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 
 let ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li, tl);;
 
-let ocaml_ptyp_object (ml : (string * core_type) list) =
-  Ptyp_object (ml, Closed)
-;;
+let ocaml_ptyp_object ml = Ptyp_object (ml, Closed);;
 
 let ocaml_ptyp_package = Some (fun pt -> Ptyp_package pt);;
 
@@ -203,7 +201,7 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield loc (s, t) fl = (s, t) :: fl;;
+let ocaml_mkfield loc (lab, x) fl = (lab, x) :: fl;;
 let ocaml_mkfield_var loc = [];;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
@@ -236,8 +234,7 @@ let ocaml_pexp_construct_args =
 
 let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   let a = ocaml_mkexp loc (Pexp_tuple al) in
-  {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true;
-   pexp_loc = loc;
+  {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
    pexp_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
 ;;
 
@@ -322,8 +319,7 @@ let ocaml_ppat_construct_args =
 
 let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
-  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true;
-   ppat_loc = loc;
+  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
    ppat_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
 ;;
 
@@ -380,8 +376,7 @@ let ocaml_psig_modtype loc s mto =
 
 let ocaml_psig_open li =
   Psig_open
-    {popen_lid = mknoloc li; popen_override = Fresh;
-     popen_attributes = []}
+    {popen_lid = mknoloc li; popen_override = Fresh; popen_attributes = []}
 ;;
 
 let ocaml_psig_recmodule =
@@ -444,8 +439,7 @@ let ocaml_pstr_module loc s me =
 
 let ocaml_pstr_open li =
   Pstr_open
-    {popen_lid = mknoloc li; popen_override = Fresh;
-     popen_attributes = []}
+    {popen_lid = mknoloc li; popen_override = Fresh; popen_attributes = []}
 ;;
 
 let ocaml_pstr_primitive s vd = Pstr_primitive vd;;

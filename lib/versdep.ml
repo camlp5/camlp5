@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.73 2014/04/15 15:32:02 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.74 2014/04/15 15:50:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -219,7 +219,10 @@ value ocaml_class_structure p cil =
 
 value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
-value ocaml_pmty_functor sloc s mt1 mt2 = Pmty_functor (mkloc sloc s) mt1 mt2;
+value ocaml_pmty_functor sloc s mt1 mt2 =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmty_functor (mkloc sloc s) mt1 mt2
+  ELSE Pmty_functor (mkloc sloc s) (Some mt1) mt2 END
+;
 
 value ocaml_pmty_typeof =
   IFDEF OCAML_VERSION < OCAML_3_12 THEN None
@@ -373,6 +376,15 @@ value ocaml_ptyp_variant catl clos sl_opt =
       Some (Ptyp_variant catl clos sl)
     with
     [ Exit -> None ]
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let catl =
+      List.map
+        (fun
+         [ Left (c, a, tl) -> Rtag c a tl
+         | Right t -> Rinherit t ])
+        catl
+    in
+    Some (Ptyp_variant catl clos sl_opt)
   ELSE
     let catl =
       List.map
@@ -381,6 +393,7 @@ value ocaml_ptyp_variant catl clos sl_opt =
          | Right t -> Rinherit t ])
         catl
     in
+    let clos = if clos then Closed else Open in
     Some (Ptyp_variant catl clos sl_opt)
   END
 ;
@@ -525,7 +538,13 @@ value ocaml_pexp_construct_args =
 
 value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   let a = ocaml_mkexp loc (Pexp_tuple al) in
-  ocaml_mkexp loc (ocaml_pexp_construct li_loc li (Some a) True)
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    ocaml_mkexp loc (ocaml_pexp_construct li_loc li (Some a) True)
+  ELSE
+    {pexp_desc = ocaml_pexp_construct li_loc li (Some a) True;
+     pexp_loc = loc;
+     pexp_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
+  END
 ;
 
 value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
@@ -554,12 +573,12 @@ value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_function pel
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_function lab eo pel
   ELSE
-    if lab = "" && eo = None then Pexp_function pel
-    else
-      match pel with
-      | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun lab eo p e
-      | _ -> failwith "internal error: bad ast in ocaml_pexp_function"
-      end
+    match pel with
+    | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun (lab, eo, p, e)
+    | pel ->
+        if lab = "" && eo = None then Pexp_function pel
+        else failwith "internal error: bad ast in ocaml_pexp_function"
+    end
   END
 ;
 
@@ -683,12 +702,10 @@ value mkpat_ocaml_ppat_construct_arity loc li_loc li al =
     let a = ocaml_mkpat loc (Ppat_tuple al) in
     ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) True)
   ELSE
-    let a =
-      match al with
-      [ [a] -> a
-      | _ -> ocaml_mkpat loc (Ppat_tuple al) ]
-    in
-    ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) True)
+    let a = ocaml_mkpat loc (Ppat_tuple al) in
+    {ppat_desc = ocaml_ppat_construct li_loc li (Some a) True;
+     ppat_loc = loc;
+     ppat_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
   END
 ;
 
