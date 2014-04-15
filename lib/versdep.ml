@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.78 2014/04/15 17:03:56 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.79 2014/04/15 18:33:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -358,7 +358,15 @@ value ocaml_ptyp_package =
 
 value ocaml_ptyp_poly =
   IFDEF OCAML_VERSION <= OCAML_3_04 THEN None
-  ELSE Some (fun cl t -> Ptyp_poly cl t) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Some (fun cl t -> Ptyp_poly cl t)
+  ELSE
+    Some
+      (fun cl t ->
+         match cl with
+         [ [] -> t.ptyp_desc
+         | _ -> Ptyp_poly (cl, t) ])
+  END
 ;
 
 value ocaml_ptyp_variant catl clos sl_opt =
@@ -551,11 +559,7 @@ value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
 
 value ocaml_pexp_for i e1 e2 df e =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_for (mknoloc i) e1 e2 df e
-  ELSE
-    Pexp_for
-      (ocaml_mkpat loc_none (Ppat_construct (mknoloc (Lident i)) None))
-      e1 e2 df e
-  END
+  ELSE Pexp_for (ocaml_mkpat loc_none (Ppat_var (mknoloc i))) e1 e2 df e END
 ;
 
 value ocaml_case (p, wo, loc, e) =
