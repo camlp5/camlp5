@@ -72,7 +72,7 @@ let ocaml_class_field loc cfd = {pcf_desc = cfd; pcf_loc = loc};;
 
 (* *)
 
-let ocaml_type_declaration params cl tk pf tm loc variance =
+let ocaml_type_declaration tn params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->
       let params = List.map (fun os -> Some (mknoloc os)) params in

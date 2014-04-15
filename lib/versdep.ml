@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.62 2014/04/15 00:35:18 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.63 2014/04/15 00:38:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -657,17 +657,25 @@ value ocaml_ppat_array =
 value ocaml_ppat_construct loc li po chk_arity  =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN
     Ppat_construct li po chk_arity
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Ppat_construct (mkloc loc li) po chk_arity
+  ELSE
+    Ppat_construct (mkloc loc li) po
   END
 ;
 
 value ocaml_ppat_construct_args =
-  fun
-  [ Ppat_construct li po chk_arity ->
-      IFDEF OCAML_VERSION < OCAML_4_00 THEN Some (li, 0, po, chk_arity)
-      ELSE Some (li.txt, li.loc, po, chk_arity) END 
-  | _ -> None ]
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    fun
+    [ Ppat_construct li po chk_arity ->
+        IFDEF OCAML_VERSION < OCAML_4_00 THEN Some (li, 0, po, chk_arity)
+        ELSE Some (li.txt, li.loc, po, chk_arity) END 
+    | _ -> None ]
+  ELSE
+    fun
+    [ Ppat_construct li po -> Some (li.txt, li.loc, po, 0)
+    | _ -> None ]
+  END
 ;
 
 value mkpat_ocaml_ppat_construct_arity loc li_loc li al =

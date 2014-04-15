@@ -82,7 +82,7 @@ let variance_of_bool_bool =
   | _ -> Invariant
 ;;
 
-let ocaml_type_declaration params cl tk pf tm loc variance =
+let ocaml_type_declaration tn params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->
       let _ =
@@ -96,7 +96,7 @@ let ocaml_type_declaration params cl tk pf tm loc variance =
       Right
         {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
          ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-         ptype_name = mkloc loc ""; ptype_attributes = []}
+         ptype_name = mkloc loc tn; ptype_attributes = []}
   | None -> Left "no '_' type param in this ocaml version"
 ;;
 

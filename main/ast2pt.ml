@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.76 2014/04/14 23:20:47 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 6.77 2014/04/15 00:35:18 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -366,11 +366,11 @@ value variance_of_var =
   | None → (False, False) ]
 ;
 
-value mktype loc tl cl tk pf tm =
+value mktype loc tn tl cl tk pf tm =
   let (params, var_list) = List.split tl in
   let variance = List.map variance_of_var var_list in
   let params = List.map uv params in
-  match ocaml_type_declaration params cl tk pf tm (mkloc loc) variance with
+  match ocaml_type_declaration tn params cl tk pf tm (mkloc loc) variance with
   [ Right td → td
   | Left msg → error loc msg ]
 ;
@@ -410,18 +410,18 @@ value mktvariant loc ctl priv =
   | None → error loc "no generalized data types in this ocaml version" ]
 ;
 
-value type_decl tl priv cl =
+value type_decl tn tl priv cl =
   fun
   [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> →
       let priv = if uv pf then Private else Public in
-      mktype loc tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
+      mktype loc tn tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
   | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> →
       let priv = if uv pf then Private else Public in
-      mktype loc tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
+      mktype loc tn tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
   | TyRec loc ltl →
-      mktype loc tl cl (mktrecord (uv ltl) False) priv None
+      mktype loc tn tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl →
-      mktype loc tl cl (mktvariant loc (uv ctl) False) priv None
+      mktype loc tn tl cl (mktvariant loc (uv ctl) False) priv None
   | t →
       let m =
         match t with
@@ -430,7 +430,7 @@ value type_decl tl priv cl =
             else None
         | _ → Some (ctyp t) ]
       in
-      mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m ]
+      mktype (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 ;
 
 value mkvalue_desc t p = ocaml_value_description (ctyp t) p;
@@ -466,7 +466,7 @@ value type_decl_of_with_type loc tpl pf ct =
   let ct = Some (ctyp ct) in
   let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
   let pf = if pf then Private else Public in
-  ocaml_type_declaration params [] tk pf ct (mkloc loc) variance
+  ocaml_type_declaration "" params [] tk pf ct (mkloc loc) variance
 ;
 
 value mkwithc =
@@ -1146,7 +1146,8 @@ and mktype_decl td =
          (ctyp t1, ctyp t2, mkloc loc))
       (uv td.tdCon)
   in
-  (uv (snd (uv td.tdNam)), type_decl (uv td.tdPrm) priv cl td.tdDef)
+  let tn = uv (snd (uv td.tdNam)) in
+  (tn, type_decl tn (uv td.tdPrm) priv cl td.tdDef)
 and module_type =
   fun
   [ MtAcc loc _ _ as f →
