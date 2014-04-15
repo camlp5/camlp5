@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.79 2014/04/15 18:33:14 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.80 2014/04/15 18:35:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -365,7 +365,7 @@ value ocaml_ptyp_poly =
       (fun cl t ->
          match cl with
          [ [] -> t.ptyp_desc
-         | _ -> Ptyp_poly (cl, t) ])
+         | _ -> Ptyp_poly cl t ])
   END
 ;
 
