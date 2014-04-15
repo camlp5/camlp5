@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.74 2014/04/15 15:50:58 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.75 2014/04/15 16:02:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -574,7 +574,7 @@ value ocaml_pexp_function lab eo pel =
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_function lab eo pel
   ELSE
     match pel with
-    | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun (lab, eo, p, e)
+    | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun lab eo p e
     | pel ->
         if lab = "" && eo = None then Pexp_function pel
         else failwith "internal error: bad ast in ocaml_pexp_function"
