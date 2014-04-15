@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.76 2014/04/15 16:35:18 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.77 2014/04/15 16:37:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -100,7 +100,7 @@ value ocaml_value_description vn t p =
     {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
   ELSE
     {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc;
-     pval_name = mkloc t.ptyp_loc ""; pval_attributes = []}
+     pval_name = mkloc t.ptyp_loc vn; pval_attributes = []}
   END
 ;
 

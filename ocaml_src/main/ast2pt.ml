@@ -447,7 +447,7 @@ let type_decl tn tl priv cl =
       mktype (loc_of_ctyp t) tn tl cl Ptype_abstract priv m
 ;;
 
-let mkvalue_desc t p = ocaml_value_description (ctyp t) p;;
+let mkvalue_desc vn t p = ocaml_value_description vn (ctyp t) p;;
 
 let option f =
   function
@@ -1367,7 +1367,8 @@ and sig_item s l =
   | SgExc (loc, n, tl) ->
       mksig loc (ocaml_psig_exception (uv n) (List.map ctyp (uv tl))) :: l
   | SgExt (loc, n, t, p) ->
-      mksig loc (ocaml_psig_value (uv n) (mkvalue_desc t (uv p))) :: l
+      let vn = uv n in
+      mksig loc (ocaml_psig_value vn (mkvalue_desc vn t (uv p))) :: l
   | SgInc (loc, mt) -> mksig loc (ocaml_psig_include (module_type mt)) :: l
   | SgMod (loc, rf, ntl) ->
       if not (uv rf) then
@@ -1399,7 +1400,8 @@ and sig_item s l =
       Ploc.call_with glob_fname (uv fn)
         (fun () -> List.fold_right (fun (si, _) -> sig_item si) (uv sl) l) ()
   | SgVal (loc, n, t) ->
-      mksig loc (ocaml_psig_value (uv n) (mkvalue_desc t [])) :: l
+      let vn = uv n in
+      mksig loc (ocaml_psig_value vn (mkvalue_desc vn t [])) :: l
   | SgXtr (loc, _, _) -> error loc "bad ast SgXtr"
 and module_expr =
   function
@@ -1472,7 +1474,8 @@ and str_item s l =
       mkstr loc si :: l
   | StExp (loc, e) -> mkstr loc (ocaml_pstr_eval (expr e)) :: l
   | StExt (loc, n, t, p) ->
-      mkstr loc (ocaml_pstr_primitive (uv n) (mkvalue_desc t (uv p))) :: l
+      let vn = uv n in
+      mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc vn t (uv p))) :: l
   | StInc (loc, me) ->
       begin match ocaml_pstr_include with
         Some pstr_include -> mkstr loc (pstr_include (module_expr me)) :: l

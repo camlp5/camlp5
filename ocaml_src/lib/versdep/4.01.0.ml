@@ -62,7 +62,7 @@ let list_map_check f l =
   loop [] l
 ;;
 
-let ocaml_value_description t p =
+let ocaml_value_description vn t p =
   {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
 ;;
 

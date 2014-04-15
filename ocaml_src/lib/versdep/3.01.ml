@@ -42,7 +42,7 @@ let list_map_check f l =
   loop [] l
 ;;
 
-let ocaml_value_description t p = {pval_type = t; pval_prim = p};;
+let ocaml_value_description vn t p = {pval_type = t; pval_prim = p};;
 
 let ocaml_class_type_field loc ctfd = ctfd;;
 
