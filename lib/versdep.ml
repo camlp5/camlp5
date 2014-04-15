@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.61 2014/04/14 23:50:44 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.62 2014/04/15 00:35:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -128,7 +128,7 @@ IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
   ;
 END;
 
-value ocaml_type_declaration params cl tk pf tm loc variance =
+value ocaml_type_declaration tn params cl tk pf tm loc variance =
   IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
     Right
       {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
