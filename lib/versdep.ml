@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.75 2014/04/15 16:02:12 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.76 2014/04/15 16:35:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -94,7 +94,7 @@ value list_map_check f l =
     | [] -> Some (List.rev rev_l) ]
 ;
 
-value ocaml_value_description t p =
+value ocaml_value_description vn t p =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN {pval_type = t; pval_prim = p}
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
