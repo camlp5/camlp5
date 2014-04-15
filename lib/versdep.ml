@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.67 2014/04/15 01:30:39 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.68 2014/04/15 10:10:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -829,16 +829,28 @@ value ocaml_pstr_eval e =
   ELSE Pstr_eval e [] END
 ;
 
-value ocaml_pstr_exception s ed = Pstr_exception (mknoloc s) ed;
+value ocaml_pstr_exception s ed =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_exception (mknoloc s) ed
+  ELSE
+    Pstr_exception
+      {pcd_name = mknoloc s; pcd_args = ed; pcd_res = None;
+       pcd_loc = loc_none; pcd_attributes = []}
+  END
+;
 
 value ocaml_pstr_exn_rebind =
   IFDEF OCAML_VERSION <= OCAML_2_99 THEN None
-  ELSE Some (fun s li -> Pstr_exn_rebind (mknoloc s) (mknoloc li)) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Some (fun s li -> Pstr_exn_rebind (mknoloc s) (mknoloc li))
+  ELSE
+    Some (fun s li -> Pstr_exn_rebind (mknoloc s, mknoloc li, []))
+  END
 ;
 
 value ocaml_pstr_include =
   IFDEF OCAML_VERSION <= OCAML_3_00 THEN None
-  ELSE Some (fun me -> Pstr_include me) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Some (fun me -> Pstr_include me)
+  ELSE Some (fun me -> Pstr_include me []) END
 ;
 
 value ocaml_pstr_modtype loc s mt =
@@ -865,7 +877,8 @@ value ocaml_pstr_module loc s me =
 
 value ocaml_pstr_open li =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN Pstr_open (mknoloc li)
-  ELSE Pstr_open Fresh (mknoloc li) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_open Fresh (mknoloc li)
+  ELSE Pstr_open Fresh (mknoloc li) [] END
 ;
 
 value ocaml_pstr_primitive s vd = Pstr_primitive (mknoloc s) vd;
