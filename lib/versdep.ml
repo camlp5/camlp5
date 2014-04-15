@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.69 2014/04/15 11:32:17 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.70 2014/04/15 12:06:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -231,7 +231,7 @@ value ocaml_pmty_with mt lcl =
     let lcl = List.map (fun (s, c) → (mknoloc s, c)) lcl in
     Pmty_with mt lcl
   ELSE
-    let lcl = List.map snd lcl in Pmty_with (mt, lcl)
+    let lcl = List.map snd lcl in Pmty_with mt lcl
   END
 ;
 
@@ -391,7 +391,7 @@ value ocaml_package_type li ltl =
 
 value ocaml_const_string s =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
-  ELSE Const_string (s, None) END
+  ELSE Const_string s None END
 ;
 
 value ocaml_const_int32 =
@@ -534,7 +534,7 @@ value ocaml_pexp_for i e1 e2 df e =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_for (mknoloc i) e1 e2 df e
   ELSE
     Pexp_for
-      (ocaml_mkpat loc_none (Ppat_construct (mknoloc (Lident i), None)))
+      (ocaml_mkpat loc_none (Ppat_construct (mknoloc (Lident i)) None))
       e1 e2 df e
   END
 ;

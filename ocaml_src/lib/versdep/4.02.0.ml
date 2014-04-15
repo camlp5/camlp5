@@ -235,12 +235,10 @@ let ocaml_pexp_construct_args =
 ;;
 
 let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
-  let a =
-    match al with
-      [a] -> a
-    | _ -> ocaml_mkexp loc (Pexp_tuple al)
-  in
-  ocaml_mkexp loc (ocaml_pexp_construct li_loc li (Some a) true)
+  let a = ocaml_mkexp loc (Pexp_tuple al) in
+  {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true;
+   pexp_loc = loc;
+   pexp_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
 ;;
 
 let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
