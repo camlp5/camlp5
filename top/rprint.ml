@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 6.17 2013/07/02 16:27:48 deraugla Exp $ *)
+(* $Id: rprint.ml,v 6.18 2014/04/15 18:59:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
@@ -339,9 +339,15 @@ value rec print_out_class_type ppf =
               (print_typlist print_out_type ",") tyl ]
       in
       fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
-  | Octy_fun lab ty cty ->
+  | IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Octy_fun lab ty cty ->
       fprintf ppf "@[%s[ %a ] ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type ty print_out_class_type cty
+    ELSE
+    Octy_arrow lab ty cty ->
+      fprintf ppf "@[%s[ %a ] ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
+        print_out_type ty print_out_class_type cty
+    END
   | Octy_signature self_ty csil ->
       let pr_param ppf =
         fun
@@ -379,9 +385,22 @@ value rec print_out_module_type ppf =
   | Omty_signature sg ->
       fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" print_out_signature sg
   | Omty_functor name mty_arg mty_res ->
-      fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
-        print_out_module_type mty_arg print_out_module_type mty_res
-  | Omty_abstract -> () ]
+      IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+        fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
+          print_out_module_type mty_arg print_out_module_type mty_res
+      ELSE
+        match mty_arg with
+        [ Some mty_arg ->
+            fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
+              print_out_module_type mty_arg print_out_module_type mty_res
+        | None ->
+            fprintf ppf "@[<2>functor@ (%s) ->@ %a@]" name
+              print_out_module_type mty_res ]
+      END
+  | Omty_abstract -> ()
+  | IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
+    Omty_alias oi -> fprintf ppf "<rprint.ml: Omty_alias not impl>"
+    END ]
 and print_out_signature ppf =
   fun
   [ [] -> ()
