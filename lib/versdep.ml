@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.71 2014/04/15 12:21:58 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.72 2014/04/15 14:40:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -1043,7 +1043,9 @@ value ocaml_pcf_valvirt =
     let ocaml_pcf (s, mf, t, loc) =
       let mf = if mf then Mutable else Immutable in
       IFDEF OCAML_VERSION < OCAML_4_00 THEN Pcf_valvirt (s, mf, t, loc)
-      ELSE Pcf_valvirt (mkloc loc s, mf, t) END
+      ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+        Pcf_valvirt (mkloc loc s, mf, t)
+      ELSE Pcf_val (mkloc loc s, mf, Cfk_virtual t) END
     in
     Some ocaml_pcf
   END
