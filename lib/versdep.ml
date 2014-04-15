@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.72 2014/04/15 14:40:02 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.73 2014/04/15 15:32:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -1053,7 +1053,8 @@ value ocaml_pcf_valvirt =
 
 value ocaml_pcf_virt (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pcf_virt (s, pf, t, loc)
-  ELSE Pcf_virt (mkloc loc s, pf, t) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pcf_virt (mkloc loc s, pf, t)
+  ELSE Pcf_val (mkloc loc s, Immutable, Cfk_virtual t) END
 ;
 
 value ocaml_pcl_apply =
@@ -1099,8 +1100,11 @@ value ocaml_pctf_cstr =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
     Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc))
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2))
   ELSE
-    Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2)) END
+    Some (fun (t1, t2, loc) -> Pctf_constraint (t1, t2))
+  END
 ;
 
 value ocaml_pctf_inher ct =
@@ -1110,7 +1114,8 @@ value ocaml_pctf_inher ct =
 
 value ocaml_pctf_meth (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_meth (s, pf, t, loc)
-  ELSE Pctf_meth (s, pf, t) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pctf_meth (s, pf, t)
+  ELSE Pctf_method (s, pf, Concrete, t) END
 ;
 
 value ocaml_pctf_val (s, mf, t, loc) =
@@ -1122,7 +1127,8 @@ value ocaml_pctf_val (s, mf, t, loc) =
 
 value ocaml_pctf_virt (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_virt (s, pf, t, loc)
-  ELSE Pctf_virt (s, pf, t) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pctf_virt (s, pf, t)
+  ELSE Pctf_val (s, Immutable, Virtual, t) END
 ;
 
 value ocaml_pcty_constr =
@@ -1135,8 +1141,11 @@ value ocaml_pcty_fun =
     None
   ELSIFDEF OCAML_VERSION <= OCAML_2_04 THEN
     Some (fun lab t ct -> Pcty_fun t ct)
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Some (fun lab t ct -> Pcty_fun lab t ct)
   ELSE
-    Some (fun lab t ct -> Pcty_fun lab t ct) END
+    Some (fun lab t ct -> Pcty_arrow lab t ct)
+  END
 ;
 
 value ocaml_pcty_signature =
@@ -1146,7 +1155,11 @@ value ocaml_pcty_signature =
   ELSE
     let f (t, ctfl) =
       let cs =
-        {pcsig_self = t; pcsig_fields = ctfl; pcsig_loc = t.ptyp_loc}
+        IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+          {pcsig_self = t; pcsig_fields = ctfl; pcsig_loc = t.ptyp_loc}
+        ELSE
+          {pcsig_self = t; pcsig_fields = ctfl}
+        END
       in
       Pcty_signature cs
     in
@@ -1161,15 +1174,22 @@ value ocaml_pdir_bool =
 
 value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
-  ELSE Some (fun loc me -> Pwith_modsubst (mkloc loc me)) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Some (fun loc me -> Pwith_modsubst (mkloc loc me))
+  ELSE
+    Some (fun loc me -> Pwith_modsubst (mkloc loc "") (mkloc loc me))
+  END
 ;
 
 value ocaml_pwith_type loc (i, td) =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pwith_type td
-  ELSE Pwith_type (mkloc loc (Lident i), td) END
+  ELSE Pwith_type (mkloc loc (Lident i)) td END
 ;
 
-value ocaml_pwith_module loc me = Pwith_module (mkloc loc me);
+value ocaml_pwith_module loc me =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pwith_module (mkloc loc me)
+  ELSE Pwith_module (mkloc loc (Lident "")) (mkloc loc me) END
+;
 
 value ocaml_pwith_typesubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None

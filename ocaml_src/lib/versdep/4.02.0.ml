@@ -321,12 +321,10 @@ let ocaml_ppat_construct_args =
 ;;
 
 let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
-  let a =
-    match al with
-      [a] -> a
-    | _ -> ocaml_mkpat loc (Ppat_tuple al)
-  in
-  ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) true)
+  let a = ocaml_mkpat loc (Ppat_tuple al) in
+  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true;
+   ppat_loc = loc;
+   ppat_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
 ;;
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
