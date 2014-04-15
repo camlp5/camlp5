@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.63 2014/04/15 00:38:52 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.64 2014/04/15 00:57:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -735,14 +735,28 @@ value ocaml_psig_class_type =
   ELSE Some (fun ctl -> Psig_class_type ctl) END
 ;
 
-value ocaml_psig_exception s ed = Psig_exception (mknoloc s) ed;
+value ocaml_psig_exception s ed =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mknoloc s) ed
+  ELSE
+    Psig_exception
+      {pcd_name = mknoloc s; pcd_args = ed; pcd_res = None;
+       pcd_loc = loc_none; pcd_attributes = []}
+  END
+;
 
 value ocaml_psig_include mt =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_include mt
   ELSE Psig_include mt [] END
 ;
 
-value ocaml_psig_module s mt = Psig_module (mknoloc s) mt;
+value ocaml_psig_module s mt =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_module (mknoloc s) mt
+  ELSE
+    Psig_module
+      {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
+       pmd_loc = loc_none}
+  END
+;
 
 value ocaml_psig_modtype loc s mto =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
@@ -764,7 +778,8 @@ value ocaml_psig_modtype loc s mto =
 
 value ocaml_psig_open li =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN Psig_open (mknoloc li)
-  ELSE Psig_open Fresh (mknoloc li) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_open Fresh (mknoloc li)
+  ELSE Psig_open Fresh ( mknoloc li) [] END
 ;
 
 value ocaml_psig_recmodule =
