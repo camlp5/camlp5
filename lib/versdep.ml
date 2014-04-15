@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.66 2014/04/15 01:10:59 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.67 2014/04/15 01:30:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -186,7 +186,7 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-             ptype_name = mkloc loc ""; ptype_attributes = []}
+             ptype_name = mkloc loc tn; ptype_attributes = []}
         END
     | None -> Left "no '_' type param in this ocaml version" ]
   END
