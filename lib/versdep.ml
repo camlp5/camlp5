@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 6.64 2014/04/15 00:57:20 deraugla Exp $ *)
+(* $Id: versdep.ml,v 6.65 2014/04/15 01:02:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Parsetree;
@@ -784,9 +784,21 @@ value ocaml_psig_open li =
 
 value ocaml_psig_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let f ntl =
       let ntl = List.map (fun (s, mt) → (mknoloc s, mt)) ntl in
+      Psig_recmodule ntl
+    in
+    Some f
+  ELSE
+    let f ntl =
+      let ntl =
+        List.map
+          (fun (s, mt) ->
+             {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
+              pmd_loc = loc_none})
+          ntl
+      in
       Psig_recmodule ntl
     in
     Some f
@@ -794,8 +806,12 @@ value ocaml_psig_recmodule =
 ;
 
 value ocaml_psig_type stl =
-  let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
-  Psig_type stl
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
+    Psig_type stl
+  ELSE
+    let stl = List.map (fun (s, t) -> t) stl in Psig_type stl
+  END
 ;
 
 value ocaml_psig_value s vd = Psig_value (mknoloc s) vd;
