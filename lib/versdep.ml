@@ -770,12 +770,12 @@ value ocaml_psig_include mt =
   ELSE Psig_include {pincl_mod = mt; pincl_attributes = []} END
 ;
 
-value ocaml_psig_module s mt =
+value ocaml_psig_module loc s mt =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_module (mknoloc s) mt
   ELSE
     Psig_module
-      {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
-       pmd_loc = loc_none}
+      {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
+       pmd_loc = loc}
   END
 ;
 

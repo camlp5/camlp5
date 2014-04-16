@@ -364,10 +364,10 @@ let ocaml_psig_include mt =
   Psig_include {pincl_mod = mt; pincl_attributes = []}
 ;;
 
-let ocaml_psig_module s mt =
+let ocaml_psig_module loc s mt =
   Psig_module
-    {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
-     pmd_loc = loc_none}
+    {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
+     pmd_loc = loc}
 ;;
 
 let ocaml_psig_modtype loc s mto =

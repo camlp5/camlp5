@@ -1194,7 +1194,8 @@ and sig_item s l =
       if not (uv rf) then
         List.fold_right
           (fun (n, mt) l →
-             [mksig loc (ocaml_psig_module (uv n) (module_type mt)) :: l])
+             [mksig loc
+                (ocaml_psig_module (mkloc loc) (uv n) (module_type mt)) :: l])
           (uv ntl) l
       else
         match ocaml_psig_recmodule with

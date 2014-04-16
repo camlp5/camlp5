@@ -271,7 +271,7 @@ let ocaml_psig_exception loc s ed = Psig_exception (mkloc loc s, ed);;
 
 let ocaml_psig_include mt = Psig_include mt;;
 
-let ocaml_psig_module s mt = Psig_module (mknoloc s, mt);;
+let ocaml_psig_module loc s mt = Psig_module (mknoloc s, mt);;
 
 let ocaml_psig_modtype loc s mto =
   let mtd =
