@@ -95,8 +95,6 @@ for i in $vers; do
   if [ "$i" = "1.05" -o "$i" = "1.06" ]; then
     sed -i -e '/fpu_control.h/d;/setfpucw/d' byterun/floats.c
   fi
-  echo "+++++ make clean"
-  make clean
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man/man1" $config_extra_opt
   ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man/man1 $config_extra_opt
   sed -i -e 's/ graph//' -e 's/ labltk//' -e 's/ num / /' config/Makefile

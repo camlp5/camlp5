@@ -155,7 +155,7 @@ let ocaml_pexp_construct loc li po chk_arity =
 
 let ocaml_pexp_construct_args =
   function
-    Pexp_construct (li, po, chk_arity) -> Some (li.txt, li.loc, po, chk_arity)
+    Pexp_construct (li, po, chk_arity) -> Some (li, 0, po, chk_arity)
   | _ -> None
 ;;
 

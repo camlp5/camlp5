@@ -533,7 +533,11 @@ value ocaml_pexp_construct loc li po chk_arity =
 ;
 
 value ocaml_pexp_construct_args =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+  IFDEF OCAML_VERSION < OCAML_4_00_0 THEN
+    fun
+    [ Pexp_construct li po chk_arity -> Some (li, 0, po, chk_arity)
+    | _ -> None ]
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     fun
     [ Pexp_construct li po chk_arity -> Some (li.txt, li.loc, po, chk_arity)
     | _ -> None ]
