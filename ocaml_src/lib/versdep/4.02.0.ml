@@ -140,7 +140,7 @@ let ocaml_ptype_variant ctl priv =
         (fun (c, tl, rto, loc) ->
            if rto <> None then raise Exit
            else
-             {pcd_name = mknoloc c; pcd_args = tl; pcd_res = None;
+             {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
               pcd_loc = loc; pcd_attributes = []})
         ctl
     in
