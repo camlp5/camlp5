@@ -1749,20 +1749,19 @@ let implem fname ast = glob_fname := fname; List.fold_right str_item ast [];;
 
 let directive loc =
   function
-    None -> Pdir_none
-  | Some (MLast.ExStr (_, s)) -> Pdir_string s
-  | Some (MLast.ExInt (_, i, "")) -> Pdir_int (int_of_string_l loc i)
-  | Some (MLast.ExUid (_, "True")) ->
+    MLast.ExStr (_, s) -> Pdir_string s
+  | MLast.ExInt (_, i, "") -> Pdir_int (int_of_string_l loc i)
+  | MLast.ExUid (_, "True") ->
       begin match ocaml_pdir_bool with
         Some pdir_bool -> pdir_bool true
       | None -> error loc "no such kind of directive in this ocaml version"
       end
-  | Some (MLast.ExUid (_, "False")) ->
+  | MLast.ExUid (_, "False") ->
       begin match ocaml_pdir_bool with
         Some pdir_bool -> pdir_bool false
       | None -> error loc "no such kind of directive in this ocaml version"
       end
-  | Some e ->
+  | e ->
       let sl =
         let rec loop =
           function
@@ -1777,8 +1776,10 @@ let directive loc =
       Pdir_ident (long_id_of_string_list loc sl)
 ;;
 
+let directive_args loc d = ocaml_directive loc directive d;;
+
 let phrase =
   function
-    StDir (loc, d, dp) -> Ptop_dir (uv d, directive loc (uv dp))
+    StDir (loc, d, dp) -> Ptop_dir (uv d, directive_args loc (uv dp))
   | si -> glob_fname := !(Plexing.input_file); Ptop_def (str_item si [])
 ;;

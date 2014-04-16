@@ -541,7 +541,7 @@ and class_field_desc =
   | Pcf_initializer of expression
         (* initializer E *)
   | Pcf_extension of extension
-        (* [%id] *)
+        (* [%%id] *)
 
 and class_field_kind =
   | Cfk_virtual of core_type
@@ -759,11 +759,10 @@ and module_binding =
 
 type toplevel_phrase =
   | Ptop_def of structure
-  | Ptop_dir of string * directive_argument
+  | Ptop_dir of string * directive_argument list
      (* #use, #load ... *)
 
 and directive_argument =
-  | Pdir_none
   | Pdir_string of string
   | Pdir_int of int
   | Pdir_ident of Longident.t

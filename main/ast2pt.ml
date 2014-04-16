@@ -1535,18 +1535,17 @@ value implem fname ast = do {
 
 value directive loc =
   fun
-  [ None → Pdir_none
-  | Some <:expr< $str:s$ >> → Pdir_string s
-  | Some <:expr< $int:i$ >> → Pdir_int (int_of_string_l loc i)
-  | Some <:expr< True >> →
+  [ <:expr< $str:s$ >> → Pdir_string s
+  | <:expr< $int:i$ >> → Pdir_int (int_of_string_l loc i)
+  | <:expr< True >> →
       match ocaml_pdir_bool with
       [ Some pdir_bool → pdir_bool True
       | None → error loc "no such kind of directive in this ocaml version" ]
-  | Some <:expr< False >> →
+  | <:expr< False >> →
       match ocaml_pdir_bool with
       [ Some pdir_bool → pdir_bool False
       | None → error loc "no such kind of directive in this ocaml version" ]
-  | Some e →
+  | e →
       let sl =
         loop e where rec loop =
           fun
@@ -1559,9 +1558,11 @@ value directive loc =
       Pdir_ident (long_id_of_string_list loc sl) ]
 ;
 
+value directive_args loc d = ocaml_directive loc directive d;
+
 value phrase =
   fun
-  [ StDir loc d dp → Ptop_dir (uv d) (directive loc (uv dp))
+  [ StDir loc d dp → Ptop_dir (uv d) (directive_args loc (uv dp))
   | si → do {
       glob_fname.val := Plexing.input_file.val;
       Ptop_def (str_item si [])

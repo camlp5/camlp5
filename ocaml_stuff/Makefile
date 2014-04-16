@@ -38,11 +38,11 @@ real_steal:
 	cp common/utils/pconfig.mli $(VERSSDIR)/utils/.
 	sed 's/\$$Id.*\$$/Id/' common/utils/Makefile > \
 	  $(VERSSDIR)/utils/Makefile
-	cp common/utils/.cvsignore $(VERSSDIR)/utils/.
+	cp common/utils/.gitignore $(VERSSDIR)/utils/.
 	cp common/utils/.depend $(VERSSDIR)/utils/.
 	sed 's/\$$Id.*\$$/Id/' common/parsing/Makefile > \
 	  $(VERSSDIR)/parsing/Makefile
-	cp common/parsing/.cvsignore $(VERSSDIR)/parsing/.
+	cp common/parsing/.gitignore $(VERSSDIR)/parsing/.
 	cp common/parsing/.depend $(VERSSDIR)/parsing/.
 	(echo "let ocaml_version = \"$(OVERSION)\""; \
 	 echo "let ocaml_name = \"$(OCAMLN)\""; \

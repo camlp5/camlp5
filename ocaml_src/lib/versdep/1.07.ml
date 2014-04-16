@@ -398,6 +398,12 @@ let split_or_patterns_with_bindings = true;;
 
 let has_records_with_with = false;;
 
+let ocaml_directive loc directive d =
+  match d with
+    Some d -> directive loc d
+  | None -> Pdir_none
+;;
+
 (* *)
 
 let jocaml_pstr_def : (_ -> _) option = None;;
