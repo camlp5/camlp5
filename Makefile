@@ -86,13 +86,13 @@ bootstrap:
 
 backup:
 	mkdir boot.new
-	$(MAKE) mv_cvs FROM=boot TO=boot.new
+	$(MAKE) mv_git FROM=boot TO=boot.new
 	mv boot boot.new/SAVED
 	mv boot.new boot
 
 restore:
 	mv boot/SAVED boot.new
-	$(MAKE) mv_cvs FROM=boot TO=boot.new
+	$(MAKE) mv_git FROM=boot TO=boot.new
 	rm -rf boot
 	mv boot.new boot
 
@@ -335,9 +335,9 @@ untouch_sources:
 	done
 
 promote_sources:
-	$(MAKE) mv_cvs FROM=ocaml_src TO=ocaml_src.new
+	$(MAKE) mv_git FROM=ocaml_src TO=ocaml_src.new
 	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
-	  $(MAKE) mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
+	  $(MAKE) mv_git FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
 	mv ocaml_src ocaml_src.new/SAVED
@@ -348,9 +348,9 @@ unpromote_sources:
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
 	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
-	  $(MAKE) mv_cvs FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
+	  $(MAKE) mv_git FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
-	$(MAKE) mv_cvs FROM=ocaml_src.new TO=ocaml_src
+	$(MAKE) mv_git FROM=ocaml_src.new TO=ocaml_src
 
 clean_sources:
 	rm -rf ocaml_src/SAVED/SAVED
@@ -368,4 +368,7 @@ mv_svn:
 	test ! -d $(FROM)/.svn || mv $(FROM)/.svn $(TO)/.
 	test ! -f $(FROM)/.cvsignore || mv $(FROM)/.cvsignore $(TO)/.
 
-.PHONY: install
+mv_git:
+	test ! -f $(FROM)/.gitignore || mv $(FROM)/.gitignore $(TO)/.
+
+PHONY: install
