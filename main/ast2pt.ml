@@ -243,7 +243,7 @@ value rec ctyp =
   [ TyAcc loc _ _ as f →
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
-      else mktyp loc (ocaml_ptyp_constr li [])
+      else mktyp loc (ocaml_ptyp_constr (mkloc loc) li [])
   | TyAli loc t1 t2 →
       let (t, i) =
         match (t1, t2) with
@@ -257,7 +257,7 @@ value rec ctyp =
       let (f, al) = ctyp_fa [] f in
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li (List.map ctyp al) [])
-      else mktyp loc (ocaml_ptyp_constr li (List.map ctyp al))
+      else mktyp loc (ocaml_ptyp_constr (mkloc loc) li (List.map ctyp al))
   | TyArr loc (TyLab loc1 lab t1) t2 →
       mktyp loc (ocaml_ptyp_arrow (uv lab) (ctyp t1) (ctyp t2))
   | TyArr loc (TyOlb loc1 lab t1) t2 →
@@ -271,7 +271,7 @@ value rec ctyp =
   | TyCls loc id →
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab loc _ _ → error loc "labeled type not allowed here"
-  | TyLid loc s → mktyp loc (ocaml_ptyp_constr (Lident (uv s)) [])
+  | TyLid loc s → mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
   | TyMan loc _ _ _ → error loc "type manifest not allowed here"
   | TyOlb loc lab _ → error loc "labeled type not allowed here"
   | TyPck loc mt →
@@ -289,7 +289,7 @@ value rec ctyp =
   | TyRec loc _ → error loc "record type not allowed here"
   | TySum loc _ → error loc "sum type not allowed here"
   | TyTup loc tl → mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
-  | TyUid loc s → mktyp loc (ocaml_ptyp_constr (Lident (uv s)) [])
+  | TyUid loc s → mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
   | TyVrn loc catl ool →
       let catl =
         List.map
@@ -1183,7 +1183,9 @@ and sig_item s l =
   | SgDcl loc sl → List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ → l
   | SgExc loc n tl →
-      [mksig loc (ocaml_psig_exception (uv n) (List.map ctyp (uv tl))) :: l]
+      [mksig loc
+         (ocaml_psig_exception (mkloc loc) (uv n) (List.map ctyp (uv tl))) ::
+       l]
   | SgExt loc n t p →
       let vn = uv n in
       [mksig loc (ocaml_psig_value vn (mkvalue_desc vn t (uv p))) :: l]

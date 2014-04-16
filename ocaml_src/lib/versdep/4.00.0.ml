@@ -75,7 +75,7 @@ let ocaml_class_field loc cfd = {pcf_desc = cfd; pcf_loc = loc};;
 let ocaml_type_declaration tn params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->
-      let params = List.map (fun os -> Some (mknoloc os)) params in
+      let params = List.map (fun os -> Some (mkloc loc os)) params in
       Right
         {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
          ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -124,7 +124,7 @@ let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
 
 let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl, ll);;
 
-let ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li, tl);;
+let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
 let ocaml_ptyp_object ml = Ptyp_object ml;;
 
@@ -293,7 +293,7 @@ let ocaml_ppat_variant =
 
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
-let ocaml_psig_exception s ed = Psig_exception (mknoloc s, ed);;
+let ocaml_psig_exception loc s ed = Psig_exception (mkloc loc s, ed);;
 
 let ocaml_psig_include mt = Psig_include mt;;
 

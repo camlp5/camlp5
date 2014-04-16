@@ -90,7 +90,7 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
           failwith "internal error: ocaml_type_declaration"
       in
       let params =
-        List.map2 (fun os va -> Some (mknoloc os), variance_of_bool_bool va)
+        List.map2 (fun os va -> Some (mkloc loc os), variance_of_bool_bool va)
           params variance
       in
       Right
@@ -152,7 +152,7 @@ let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
 
 let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 
-let ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li, tl);;
+let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
 let ocaml_ptyp_object ml = Ptyp_object (ml, Closed);;
 
@@ -354,9 +354,9 @@ let ocaml_ppat_variant =
 
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
-let ocaml_psig_exception s ed =
+let ocaml_psig_exception loc s ed =
   Psig_exception
-    {pcd_name = mknoloc s; pcd_args = ed; pcd_res = None; pcd_loc = loc_none;
+    {pcd_name = mkloc loc s; pcd_args = ed; pcd_res = None; pcd_loc = loc;
      pcd_attributes = []}
 ;;
 

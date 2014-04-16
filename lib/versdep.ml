@@ -167,7 +167,7 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
              ptype_variance = variance}
         ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-          let params = List.map (fun os -> Some (mknoloc os)) params in
+          let params = List.map (fun os -> Some (mkloc loc os)) params in
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -180,7 +180,7 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
           in
           let params =
             List.map2
-              (fun os va -> (Some (mknoloc os), variance_of_bool_bool va))
+              (fun os va -> (Some (mkloc loc os), variance_of_bool_bool va))
               params variance
           in
           Right
@@ -344,7 +344,7 @@ value ocaml_ptyp_class li tl ll =
   ELSE Ptyp_class (mknoloc li) tl END
 ;
 
-value ocaml_ptyp_constr li tl = Ptyp_constr (mknoloc li) tl;
+value ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li) tl;
 
 value ocaml_ptyp_object ml =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_object ml
@@ -756,12 +756,12 @@ value ocaml_psig_class_type =
   ELSE Some (fun ctl -> Psig_class_type ctl) END
 ;
 
-value ocaml_psig_exception s ed =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mknoloc s) ed
+value ocaml_psig_exception loc s ed =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mkloc loc s) ed
   ELSE
     Psig_exception
-      {pcd_name = mknoloc s; pcd_args = ed; pcd_res = None;
-       pcd_loc = loc_none; pcd_attributes = []}
+      {pcd_name = mkloc loc s; pcd_args = ed; pcd_res = None;
+       pcd_loc = loc; pcd_attributes = []}
   END
 ;
 
