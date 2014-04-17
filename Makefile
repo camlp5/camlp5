@@ -371,4 +371,4 @@ mv_svn:
 mv_git:
 	test ! -f $(FROM)/.gitignore || mv $(FROM)/.gitignore $(TO)/.
 
-PHONY: install
+.PHONY: install
