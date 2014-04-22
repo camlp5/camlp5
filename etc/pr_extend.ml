@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_extend.ml,v 6.5 2012/03/09 14:01:54 deraugla Exp $ *)
+(* pr_extend.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";

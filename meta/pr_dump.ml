@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_dump.ml,v 6.5 2012/01/09 14:22:22 deraugla Exp $ *)
+(* pr_dump.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Versdep;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: odyl_main.mli,v 6.1 2010/09/15 16:00:48 deraugla Exp $ *)
+(* odyl_main.mli,v *)
 
 exception Error of string and string;
 

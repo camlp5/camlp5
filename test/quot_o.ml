@@ -1,4 +1,4 @@
-(* $Id: quot_o.ml,v 6.22 2010/11/14 17:09:00 deraugla Exp $ *)
+(* quot_o.ml,v *)
 
 <:ctyp< $t1$ . $t2$ >>;;
 MLast.TyAli (loc, t1, t2);;

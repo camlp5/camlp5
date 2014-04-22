@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 6.1 2010/09/15 16:00:19 deraugla Exp $
+# htmlp2html,v
 
 FILE=$1
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.mli,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* reloc.mli,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 value expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;

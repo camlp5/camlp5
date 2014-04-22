@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.mli,v 6.4 2013/06/14 03:03:31 deraugla Exp $ *)
+(* plexer.mli,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (** This module contains the lexer used for ocaml syntax (revised and

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: exparser.mli,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* exparser.mli,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (* expand parser ast into normal one *)

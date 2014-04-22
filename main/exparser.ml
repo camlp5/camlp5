@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: exparser.ml,v 6.7 2013/03/15 16:17:17 deraugla Exp $ *)
+(* exparser.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";

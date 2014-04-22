@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: mkcrc.sh,v 6.1 2010/09/15 16:00:49 deraugla Exp $
+# mkcrc.sh,v
 
 V=$OVERSION
 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_fstream.ml,v 6.1 2010/09/15 16:00:25 deraugla Exp $ *)
+(* pa_fstream.ml,v *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";

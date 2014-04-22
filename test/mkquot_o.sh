@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkquot_o.sh,v 6.2 2010/09/16 08:32:02 deraugla Exp $
+# mkquot_o.sh,v
 
 head -n2 quot_o.ml
 ../meta/camlp5r -nolib -I ../meta ../etc/pa_mktest.cmo ../etc/pr_o.cmo -flag M -impl ../main/mLast.mli |

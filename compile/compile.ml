@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 6.6 2012/01/09 14:22:20 deraugla Exp $ *)
+(* compile.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";

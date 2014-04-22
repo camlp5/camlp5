@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 6.79 2014/04/15 17:03:56 deraugla Exp $ *)
+(* ast2pt.ml,v *)
 
 #load "q_MLast.cmo";
 

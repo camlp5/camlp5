@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: argl.ml,v 6.2 2012/03/01 03:33:18 deraugla Exp $ *)
+(* argl.ml,v *)
 
 open Printf;
 open Versdep;

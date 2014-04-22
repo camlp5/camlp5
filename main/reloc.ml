@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 6.26 2012/03/09 14:01:54 deraugla Exp $ *)
+(* reloc.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkcamlp5.sh.tpl,v 6.2 2012/03/03 02:47:04 deraugla Exp $
+# mkcamlp5.sh.tpl,v
 
 OLIB=`OCAMLNc -where`
 LIB=LIBDIR/CAMLP5N

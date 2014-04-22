@@ -1,4 +1,4 @@
-(* $Id: quot_r.ml,v 6.37 2010/11/14 17:09:00 deraugla Exp $ *)
+(* quot_r.ml,v *)
 
 (* ctyp: Type expressions of the language. *)
 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 6.4 2012/03/08 10:43:30 deraugla Exp $ *)
+(* eprinter.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";

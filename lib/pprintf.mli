@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pprintf.mli,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* pprintf.mli,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (** Definitions for pprintf statement.

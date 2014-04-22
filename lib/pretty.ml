@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pretty.ml,v 6.4 2012/01/09 14:22:21 deraugla Exp $ *)
+(* pretty.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_macro.cmo";

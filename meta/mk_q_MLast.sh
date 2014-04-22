@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mk_q_MLast.sh,v 6.4 2012/03/09 15:22:46 deraugla Exp $
+# mk_q_MLast.sh,v
 
 IFILE=pa_r.ml
 OFILE=q_MLast.ml

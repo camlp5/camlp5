@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_phony.ml,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* q_phony.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #directory ".";

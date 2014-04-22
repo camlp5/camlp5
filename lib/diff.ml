@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: diff.ml,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* diff.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (* Parts of Code of GNU diff (analyze.c) translated from C to OCaml

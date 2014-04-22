@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 6.5 2012/01/09 14:22:21 deraugla Exp $ *)
+(* prtools.mli,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 type pr_context =

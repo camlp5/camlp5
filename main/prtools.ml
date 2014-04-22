@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 6.10 2012/01/09 14:22:21 deraugla Exp $ *)
+(* prtools.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";

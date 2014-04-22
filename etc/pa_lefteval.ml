@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_lefteval.ml,v 6.4 2013/07/02 16:12:43 deraugla Exp $ *)
+(* pa_lefteval.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";

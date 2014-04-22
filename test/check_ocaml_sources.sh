@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: check_ocaml_sources.sh,v 6.18 2010/09/24 11:04:54 deraugla Exp $
+# check_ocaml_sources.sh,v
 
 dir='../ocaml/trunk'
 suff=ml

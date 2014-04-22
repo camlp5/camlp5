@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 6.7 2013/09/06 12:32:59 deraugla Exp $ *)
+(* grammar.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_fstream.cmo";

@@ -1,4 +1,4 @@
-(* $Id: lib.sml,v 6.1 2010/09/15 16:00:21 deraugla Exp $ *)
+(* lib.sml,v *)
 
 datatype 'a option = SOME of 'a | NONE
 exception Fail of string

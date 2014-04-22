@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: parserify.ml,v 6.5 2013/03/14 21:34:32 deraugla Exp $ *)
+(* parserify.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "q_MLast.cmo";

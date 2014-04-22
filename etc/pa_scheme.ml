@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 6.10 2013/07/02 16:12:43 deraugla Exp $
+; pa_scheme.ml,v
 ; Copyright (c) INRIA 2007-2012
 
 (open Pcaml)

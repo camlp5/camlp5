@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 6.54 2013/10/08 09:35:02 deraugla Exp $ *)
+(* pa_o.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 #load "pa_extend.cmo";

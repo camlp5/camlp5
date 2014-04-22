@@ -1,4 +1,4 @@
-# $Id: Makefile,v 6.2 2012/03/01 03:33:19 deraugla Exp $
+# Makefile,v
 
 TOP=..
 include $(TOP)/config/Makefile

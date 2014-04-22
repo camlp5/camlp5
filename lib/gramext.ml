@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 6.8 2013/01/28 09:27:12 deraugla Exp $ *)
+(* gramext.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 open Printf;

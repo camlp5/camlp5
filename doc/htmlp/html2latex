@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 6.4 2012/01/09 14:22:20 deraugla Exp $
+# html2latex,v
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"

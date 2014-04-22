@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 6.9 2012/01/09 14:22:20 deraugla Exp $
+;; pa_lisp.ml,v
 ;; Copyright (c) INRIA 2007-2012
 
 (open Pcaml)

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_mkast.ml,v 6.5 2012/03/06 14:57:58 deraugla Exp $ *)
+(* pa_mkast.ml,v *)
 
 (*
    meta/camlp5r etc/pa_mkast.cmo etc/pr_r.cmo -impl main/mLast.mli

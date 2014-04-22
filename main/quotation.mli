@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: quotation.mli,v 6.3 2012/01/09 14:22:21 deraugla Exp $ *)
+(* quotation.mli,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 (** Quotation operations. *)

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: apply.sh,v 6.1 2010/09/15 16:00:48 deraugla Exp $
+# apply.sh,v
 
 ARGS1=
 ARGS2=

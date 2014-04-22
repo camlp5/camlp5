@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ocpp.ml,v 6.3 2012/01/09 14:22:25 deraugla Exp $ *)
+(* ocpp.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
 value buff = ref (String.create 80);

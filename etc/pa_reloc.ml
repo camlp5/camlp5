@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_reloc.ml,v 6.6 2012/03/06 14:57:58 deraugla Exp $ *)
+(* pa_reloc.ml,v *)
 
 (*
    meta/camlp5r etc/pa_reloc.cmo etc/pr_r.cmo -impl main/mLast.mli
