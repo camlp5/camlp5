@@ -1289,6 +1289,7 @@ and mkjoinclause jc =
   in
   mkloc jc.jcLoc, jcval
 and mkpe (p, e) =
+  let loc = Ploc.encl (loc_of_patt p) (loc_of_expr e) in
   let (p, e) =
     match e with
       ExTyc (loc, e, (TyPol (_, _, _) as t)) -> PaTyc (loc, p, t), e
@@ -1301,7 +1302,7 @@ and mkpe (p, e) =
         expand_gadt_type loc p loc1 nt ct e
     | p -> p, e
   in
-  ocaml_value_binding (patt p) (expr e)
+  ocaml_value_binding (mkloc loc) (patt p) (expr e)
 and expand_gadt_type loc p loc1 nt ct e =
   let nt = uv nt in
   let e = MLast.ExTyc (loc, e, ct) in
@@ -1372,7 +1373,8 @@ and sig_item s l =
   | SgExt (loc, n, t, p) ->
       let vn = uv n in
       mksig loc (ocaml_psig_value vn (mkvalue_desc vn t (uv p))) :: l
-  | SgInc (loc, mt) -> mksig loc (ocaml_psig_include (module_type mt)) :: l
+  | SgInc (loc, mt) ->
+      mksig loc (ocaml_psig_include (mkloc loc) (module_type mt)) :: l
   | SgMod (loc, rf, ntl) ->
       if not (uv rf) then
         List.fold_right
@@ -1398,7 +1400,9 @@ and sig_item s l =
       in
       mksig loc (ocaml_psig_modtype (mkloc loc) (uv n) mto) :: l
   | SgOpn (loc, id) ->
-      mksig loc (ocaml_psig_open (long_id_of_string_list loc (uv id))) :: l
+      mksig loc
+        (ocaml_psig_open (mkloc loc) (long_id_of_string_list loc (uv id))) ::
+      l
   | SgTyp (loc, tdl) ->
       mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l
   | SgUse (loc, fn, sl) ->
@@ -1471,7 +1475,8 @@ and str_item s l =
         | [], sl ->
             begin match ocaml_pstr_exn_rebind with
               Some pstr_exn_rebind ->
-                pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
+                pstr_exn_rebind (mkloc loc) (uv n)
+                  (long_id_of_string_list loc sl)
             | None -> error loc "no exception renaming in this ocaml version"
             end
         | _ -> error loc "renamed exception should not have parameters"
@@ -1483,7 +1488,8 @@ and str_item s l =
       mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc vn t (uv p))) :: l
   | StInc (loc, me) ->
       begin match ocaml_pstr_include with
-        Some pstr_include -> mkstr loc (pstr_include (module_expr me)) :: l
+        Some pstr_include ->
+          mkstr loc (pstr_include (mkloc loc) (module_expr me)) :: l
       | None -> error loc "no include in this ocaml version"
       end
   | StMod (loc, rf, nel) ->
@@ -1516,7 +1522,9 @@ and str_item s l =
       let m = ocaml_pstr_modtype (mkloc loc) (uv n) (module_type mt) in
       mkstr loc m :: l
   | StOpn (loc, id) ->
-      mkstr loc (ocaml_pstr_open (long_id_of_string_list loc (uv id))) :: l
+      mkstr loc
+        (ocaml_pstr_open (mkloc loc) (long_id_of_string_list loc (uv id))) ::
+      l
   | StTyp (loc, tdl) ->
       mkstr loc (ocaml_pstr_type (List.map mktype_decl (uv tdl))) :: l
   | StUse (loc, fn, sl) ->

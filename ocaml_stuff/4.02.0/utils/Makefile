@@ -1,4 +1,4 @@
-# Id
+# Makefile,v
 
 FILES=warnings.cmi pconfig.cmo
 INCL=

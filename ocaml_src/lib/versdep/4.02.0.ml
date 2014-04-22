@@ -303,8 +303,8 @@ let ocaml_pexp_variant =
   Some (pexp_variant_pat, pexp_variant)
 ;;
 
-let ocaml_value_binding p e =
-  {pvb_pat = p; pvb_expr = e; pvb_attributes = []}
+let ocaml_value_binding loc p e =
+  {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = []}
 ;;
 
 let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
@@ -360,8 +360,8 @@ let ocaml_psig_exception loc s ed =
      pcd_attributes = []}
 ;;
 
-let ocaml_psig_include mt =
-  Psig_include {pincl_mod = mt; pincl_attributes = []}
+let ocaml_psig_include loc mt =
+  Psig_include {pincl_mod = mt; pincl_loc = loc; pincl_attributes = []}
 ;;
 
 let ocaml_psig_module loc s mt =
@@ -378,9 +378,10 @@ let ocaml_psig_modtype loc s mto =
   Psig_modtype pmtd
 ;;
 
-let ocaml_psig_open li =
+let ocaml_psig_open loc li =
   Psig_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_attributes = []}
+    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
+     popen_attributes = []}
 ;;
 
 let ocaml_psig_recmodule =
@@ -415,14 +416,16 @@ let ocaml_pstr_exception s ed =
 
 let ocaml_pstr_exn_rebind =
   Some
-    (fun s li ->
+    (fun loc s li ->
        Pstr_exn_rebind
-         {pexrb_name = mknoloc s; pexrb_lid = mknoloc li;
+         {pexrb_name = mknoloc s; pexrb_lid = mknoloc li; pexrb_loc = loc;
           pexrb_attributes = []})
 ;;
 
 let ocaml_pstr_include =
-  Some (fun me -> Pstr_include {pincl_mod = me; pincl_attributes = []})
+  Some
+    (fun loc me ->
+       Pstr_include {pincl_mod = me; pincl_loc = loc; pincl_attributes = []})
 ;;
 
 let ocaml_pstr_modtype loc s mt =
@@ -441,9 +444,10 @@ let ocaml_pstr_module loc s me =
   Pstr_module mb
 ;;
 
-let ocaml_pstr_open li =
+let ocaml_pstr_open loc li =
   Pstr_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_attributes = []}
+    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
+     popen_attributes = []}
 ;;
 
 let ocaml_pstr_primitive s vd = Pstr_primitive vd;;

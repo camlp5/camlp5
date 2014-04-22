@@ -669,9 +669,9 @@ value ocaml_pexp_variant =
   END
 ;
 
-value ocaml_value_binding p e =
+value ocaml_value_binding loc p e =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN (p, e)
-  ELSE {pvb_pat = p; pvb_expr = e; pvb_attributes = []} END
+  ELSE {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = []} END
 ;
 
 value ocaml_ppat_alias p i iloc = Ppat_alias p (mkloc iloc i);
@@ -769,9 +769,11 @@ value ocaml_psig_exception loc s ed =
   END
 ;
 
-value ocaml_psig_include mt =
+value ocaml_psig_include loc mt =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_include mt
-  ELSE Psig_include {pincl_mod = mt; pincl_attributes = []} END
+  ELSE
+    Psig_include {pincl_mod = mt; pincl_loc = loc; pincl_attributes = []}
+  END
 ;
 
 value ocaml_psig_module loc s mt =
@@ -801,12 +803,12 @@ value ocaml_psig_modtype loc s mto =
   END
 ;
 
-value ocaml_psig_open li =
-  IFDEF OCAML_VERSION < OCAML_4_01 THEN Psig_open (mknoloc li)
-  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_open Fresh (mknoloc li)
+value ocaml_psig_open loc li =
+  IFDEF OCAML_VERSION < OCAML_4_01 THEN Psig_open (mkloc loc li)
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_open Fresh (mkloc loc li)
   ELSE
     Psig_open
-      {popen_lid = mknoloc li; popen_override = Fresh;
+      {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
        popen_attributes = []}
   END
 ;
@@ -870,21 +872,25 @@ value ocaml_pstr_exception s ed =
 value ocaml_pstr_exn_rebind =
   IFDEF OCAML_VERSION <= OCAML_2_99 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun s li -> Pstr_exn_rebind (mknoloc s) (mknoloc li))
+    Some (fun loc s li -> Pstr_exn_rebind (mkloc loc s) (mkloc loc li))
   ELSE
     Some
-      (fun s li ->
+      (fun loc s li ->
          Pstr_exn_rebind
-           {pexrb_name = mknoloc s; pexrb_lid = mknoloc li;
+           {pexrb_name = mknoloc s; pexrb_lid = mknoloc li; pexrb_loc = loc;
             pexrb_attributes = []})
   END
 ;
 
 value ocaml_pstr_include =
   IFDEF OCAML_VERSION <= OCAML_3_00 THEN None
-  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Some (fun me -> Pstr_include me)
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Some (fun loc me -> Pstr_include me)
   ELSE
-    Some (fun me -> Pstr_include {pincl_mod = me; pincl_attributes = []})
+    Some
+      (fun loc me ->
+         Pstr_include
+           {pincl_mod = me; pincl_loc = loc; pincl_attributes = []})
   END
 ;
 
@@ -910,12 +916,12 @@ value ocaml_pstr_module loc s me =
   END
 ;
 
-value ocaml_pstr_open li =
+value ocaml_pstr_open loc li =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN Pstr_open (mknoloc li)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_open Fresh (mknoloc li)
   ELSE
     Pstr_open
-      {popen_lid = mknoloc li; popen_override = Fresh;
+      {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
        popen_attributes = []}
   END
 ;

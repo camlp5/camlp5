@@ -219,7 +219,7 @@ let ocaml_pexp_variant =
   Some (pexp_variant_pat, pexp_variant)
 ;;
 
-let ocaml_value_binding p e = p, e;;
+let ocaml_value_binding loc p e = p, e;;
 
 let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 
@@ -269,7 +269,7 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception loc s ed = Psig_exception (mkloc loc s, ed);;
 
-let ocaml_psig_include mt = Psig_include mt;;
+let ocaml_psig_include loc mt = Psig_include mt;;
 
 let ocaml_psig_module loc s mt = Psig_module (mknoloc s, mt);;
 
@@ -282,7 +282,7 @@ let ocaml_psig_modtype loc s mto =
   Psig_modtype (mknoloc s, mtd)
 ;;
 
-let ocaml_psig_open li = Psig_open (mknoloc li);;
+let ocaml_psig_open loc li = Psig_open (mkloc loc li);;
 
 let ocaml_psig_recmodule =
   let f ntl =
@@ -305,16 +305,16 @@ let ocaml_pstr_eval e = Pstr_eval e;;
 let ocaml_pstr_exception s ed = Pstr_exception (mknoloc s, ed);;
 
 let ocaml_pstr_exn_rebind =
-  Some (fun s li -> Pstr_exn_rebind (mknoloc s, mknoloc li))
+  Some (fun loc s li -> Pstr_exn_rebind (mkloc loc s, mkloc loc li))
 ;;
 
-let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
+let ocaml_pstr_include = Some (fun loc me -> Pstr_include me);;
 
 let ocaml_pstr_modtype loc s mt = Pstr_modtype (mkloc loc s, mt);;
 
 let ocaml_pstr_module loc s me = Pstr_module (mkloc loc s, me);;
 
-let ocaml_pstr_open li = Pstr_open (mknoloc li);;
+let ocaml_pstr_open loc li = Pstr_open (mknoloc li);;
 
 let ocaml_pstr_primitive s vd = Pstr_primitive (mknoloc s, vd);;
 
