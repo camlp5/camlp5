@@ -1239,20 +1239,6 @@ value has_records_with_with =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN False ELSE True END
 ;
 
-value ocaml_directive loc directive d =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    match d with
-    | Some d -> directive loc d
-    | None -> Pdir_none
-    end
-  ELSE
-    match d with
-    | Some d -> [directive loc d]
-    | None -> []
-    end
-  END
-;
-
 IFDEF JOCAML THEN
   value joinclause (loc, jc) =
     let jc =

@@ -408,12 +408,6 @@ let split_or_patterns_with_bindings = false;;
 
 let has_records_with_with = true;;
 
-let ocaml_directive loc directive d =
-  match d with
-    Some d -> directive loc d
-  | None -> Pdir_none
-;;
-
 let joinclause (loc, jc) =
   let jc =
     List.map

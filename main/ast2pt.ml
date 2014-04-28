@@ -1566,7 +1566,12 @@ value directive loc =
       Pdir_ident (long_id_of_string_list loc sl) ]
 ;
 
-value directive_args loc d = ocaml_directive loc directive d;
+value directive_args loc d =
+  match d with
+  | Some d -> directive loc d
+  | None -> Pdir_none
+  end
+;
 
 value phrase =
   fun

@@ -1784,7 +1784,11 @@ let directive loc =
       Pdir_ident (long_id_of_string_list loc sl)
 ;;
 
-let directive_args loc d = ocaml_directive loc directive d;;
+let directive_args loc d =
+  match d with
+    Some d -> directive loc d
+  | None -> Pdir_none
+;;
 
 let phrase =
   function
