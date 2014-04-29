@@ -39,10 +39,10 @@ value keyword_or_error ctx loc s =
 ;
 
 value rev_implode l =
-  let s = String.create (List.length l) in
+  let s = string_create (List.length l) in
   loop (String.length s - 1) l where rec loop i =
     fun
-    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+    [ [c :: l] -> do { string_unsafe_set s i c; loop (i - 1) l }
     | [] -> s ]
 ;
 

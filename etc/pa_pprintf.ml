@@ -7,6 +7,7 @@
 #load "q_MLast.cmo";
 
 open Pcaml;
+open Versdep;
 
 (** Types and Functions for the [pprintf] statement *)
 
@@ -33,7 +34,7 @@ type tree =
 ;
 
 value implode l =
-  let s = String.create (List.length l) in
+  let s = string_create (List.length l) in
   loop 0 l where rec loop i =
     fun
     [ [c :: l] -> do { String.set s i c; loop (i + 1) l }

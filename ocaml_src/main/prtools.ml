@@ -6,6 +6,7 @@
 (* #load "pa_macro.cmo" *)
 
 open Pretty;;
+open Versdep;;
 
 type pr_context =
   Pprintf.pr_context =
@@ -334,10 +335,10 @@ let rec plistbf sh pc xl =
 
 module Buff =
   struct
-    let buff = ref (String.create 80);;
+    let buff = ref (string_create 80);;
     let store len x =
       if len >= String.length !buff then
-        buff := !buff ^ String.create (String.length !buff);
+        buff := !buff ^ string_create (String.length !buff);
       !buff.[len] <- x;
       succ len
     ;;

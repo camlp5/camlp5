@@ -1445,10 +1445,10 @@ value copy_to_end src oc first bp =
 
 module Buff =
   struct
-    value buff = ref (String.create 80);
+    value buff = ref (string_create 80);
     value store len x = do {
       if len >= String.length buff.val then
-        buff.val := buff.val ^ String.create (String.length buff.val)
+        buff.val := buff.val ^ string_create (String.length buff.val)
       else ();
       buff.val.[len] := x;
       succ len

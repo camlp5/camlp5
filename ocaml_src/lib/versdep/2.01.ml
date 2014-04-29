@@ -468,3 +468,7 @@ let printf_ksprintf kont fmt =
 ;;
 
 let string_contains s c = s <> "" && String.contains s c;;
+
+let string_create = Bytes.create;;
+
+let string_unsafe_set = Bytes.unsafe_set;;

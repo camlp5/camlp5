@@ -2,6 +2,8 @@
 (* plexing.ml,v *)
 (* Copyright (c) INRIA 2007-2012 *)
 
+open Versdep;
+
 type pattern = (string * string);
 
 exception Error of string;
@@ -87,10 +89,10 @@ value lexer_func_of_ocamllex lexfun cs =
 
 (* Char and string tokens to real chars and string *)
 
-value buff = ref (String.create 80);
+value buff = ref (string_create 80);
 value store len x = do {
   if len >= String.length buff.val then
-    buff.val := buff.val ^ String.create (String.length buff.val)
+    buff.val := buff.val ^ string_create (String.length buff.val)
   else ();
   buff.val.[len] := x;
   succ len
@@ -215,10 +217,10 @@ value restore_lexing_info = ref None;
 (* The lexing buffer used by pa_lexer.cmo *)
 
 value rev_implode l =
-  let s = String.create (List.length l) in
+  let s = string_create (List.length l) in
   loop (String.length s - 1) l where rec loop i =
     fun
-    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+    [ [c :: l] -> do { string_unsafe_set s i c; loop (i - 1) l }
     | [] -> s ]
 ;
 

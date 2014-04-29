@@ -6,6 +6,8 @@
 
 #load "pa_extend.cmo";
 
+open Versdep;
+
 value lexlex cs = (cs, fun i -> Plexing.make_loc (i, i + 1));
 
 value next_char s i =
@@ -100,7 +102,7 @@ value keyword_or_uident id =
 ;
 
 value implode l =
-  let s = String.create (List.length l) in
+  let s = string_create (List.length l) in
   loop 0 l where rec loop i =
     fun
     [ [c :: l] -> do { String.unsafe_set s i c; loop (i + 1) l }

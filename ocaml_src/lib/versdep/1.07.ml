@@ -483,3 +483,7 @@ let string_contains s c =
   in
   loop 0
 ;;
+
+let string_create = String.create;;
+
+let string_unsafe_set = String.unsafe_set;;

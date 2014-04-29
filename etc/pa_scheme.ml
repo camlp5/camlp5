@@ -4,6 +4,7 @@
 
 (open Pcaml)
 (open Exparser)
+(open Versdep)
 
 (type (choice 'a 'b)
  (sum
@@ -14,11 +15,11 @@
 
 (module Buff
  (struct
-  (define buff (ref (String.create 80)))
+  (define buff (ref (string_create 80)))
   (define (store len x)
    (begin
     (if (>= len (String.length buff.val))
-     (:= buff.val (^ buff.val (String.create (String.length buff.val)))))
+     (:= buff.val (^ buff.val (string_create (String.length buff.val)))))
     (:= buff.val.[len] x)
     (succ len)))
   (define (mstore len s)

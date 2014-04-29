@@ -1426,3 +1426,13 @@ value string_contains =
     String.contains
   END
 ;
+
+value string_create =
+  IFDEF OCAML_VERSION <= OCAML_2_00 THEN String.create
+  ELSE Bytes.create END
+;
+
+value string_unsafe_set =
+  IFDEF OCAML_VERSION <= OCAML_2_00 THEN String.unsafe_set
+  ELSE Bytes.unsafe_set END
+;

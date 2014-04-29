@@ -455,3 +455,7 @@ let printf_ksprintf kont fmt =
 ;;
 
 let string_contains = String.contains;;
+
+let string_create = Bytes.create;;
+
+let string_unsafe_set = Bytes.unsafe_set;;

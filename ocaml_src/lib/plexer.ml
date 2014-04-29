@@ -38,10 +38,10 @@ let keyword_or_error ctx loc s =
 ;;
 
 let rev_implode l =
-  let s = String.create (List.length l) in
+  let s = string_create (List.length l) in
   let rec loop i =
     function
-      c :: l -> String.unsafe_set s i c; loop (i - 1) l
+      c :: l -> string_unsafe_set s i c; loop (i - 1) l
     | [] -> s
   in
   loop (String.length s - 1) l

@@ -3,6 +3,7 @@
 ;; Copyright (c) INRIA 2007-2012
 
 (open Pcaml)
+(open Versdep)
 
 (type (choice 'a 'b) (sum (Left 'a) (Right 'b)))
 
@@ -10,12 +11,12 @@
 
 (module Buff
  (struct
-  (value buff (ref (String.create 80)))
+  (value buff (ref (string_create 80)))
   (value store (lambda (len x)
                  (if (>= len (String.length buff.val))
                      (:= buff.val
                          (^ buff.val
-                            (String.create (String.length buff.val)))))
+                            (string_create (String.length buff.val)))))
                  (:= ([] buff.val len) x)
                  (succ len)))
   (value get (lambda len (String.sub buff.val 0 len)))))
