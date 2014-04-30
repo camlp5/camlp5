@@ -397,7 +397,7 @@ value ocaml_ptyp_variant catl clos sl_opt =
     let catl =
       List.map
         (fun
-         [ Left (c, a, tl) -> Rtag c a tl
+         [ Left (c, a, tl) -> Rtag c [] a tl
          | Right t -> Rinherit t ])
         catl
     in
