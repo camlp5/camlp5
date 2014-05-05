@@ -66,7 +66,7 @@ and core_type_desc =
            T tconstr
            (T1, ..., Tn) tconstr
          *)
-  | Ptyp_object of (string * core_type) list * closed_flag
+  | Ptyp_object of (string * attributes * core_type) list * closed_flag
         (* < l1:T1; ...; ln:Tn >     (flag = Closed)
            < l1:T1; ...; ln:Tn; .. > (flag = Open)
          *)
@@ -184,6 +184,8 @@ and pattern_desc =
            Note: (module P : S) is represented as
            Ppat_constraint(Ppat_unpack, Ptyp_package)
          *)
+  | Ppat_exception of pattern
+        (* exception P *)
   | Ppat_extension of extension
         (* [%id] *)
 

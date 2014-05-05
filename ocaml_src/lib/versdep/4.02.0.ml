@@ -174,7 +174,9 @@ let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 
 let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
-let ocaml_ptyp_object ml = Ptyp_object (ml, Closed);;
+let ocaml_ptyp_object ml =
+  let ml = List.map (fun (s, t) -> s, [], t) ml in Ptyp_object (ml, Closed)
+;;
 
 let ocaml_ptyp_package = Some (fun pt -> Ptyp_package pt);;
 
