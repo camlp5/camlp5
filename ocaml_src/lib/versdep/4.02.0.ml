@@ -75,6 +75,24 @@ let ocaml_class_field loc cfd =
   {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []}
 ;;
 
+let ocaml_mktyp loc x =
+  {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []}
+;;
+let ocaml_mkpat loc x =
+  {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
+;;
+let ocaml_mkexp loc x =
+  {pexp_desc = x; pexp_loc = loc; pexp_attributes = []}
+;;
+let ocaml_mkmty loc x =
+  {pmty_desc = x; pmty_loc = loc; pmty_attributes = []}
+;;
+let ocaml_mkmod loc x =
+  {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
+;;
+let ocaml_mkfield loc (lab, x) fl = (lab, x) :: fl;;
+let ocaml_mkfield_var loc = [];;
+
 let variance_of_bool_bool =
   function
     false, true -> Contravariant
@@ -90,7 +108,9 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
           failwith "internal error: ocaml_type_declaration"
       in
       let params =
-        List.map2 (fun os va -> Some (mkloc loc os), variance_of_bool_bool va)
+        List.map2
+          (fun os va ->
+             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
           params variance
       in
       Right
@@ -191,24 +211,6 @@ let ocaml_const_int64 = Some (fun s -> Const_int64 (Int64.of_string s));;
 let ocaml_const_nativeint =
   Some (fun s -> Const_nativeint (Nativeint.of_string s))
 ;;
-
-let ocaml_mktyp loc x =
-  {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []}
-;;
-let ocaml_mkpat loc x =
-  {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
-;;
-let ocaml_mkexp loc x =
-  {pexp_desc = x; pexp_loc = loc; pexp_attributes = []}
-;;
-let ocaml_mkmty loc x =
-  {pmty_desc = x; pmty_loc = loc; pmty_attributes = []}
-;;
-let ocaml_mkmod loc x =
-  {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
-;;
-let ocaml_mkfield loc (lab, x) fl = (lab, x) :: fl;;
-let ocaml_mkfield_var loc = [];;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 
@@ -356,8 +358,8 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception loc s ed =
   Psig_exception
-    {pcd_name = mkloc loc s; pcd_args = ed; pcd_res = None; pcd_loc = loc;
-     pcd_attributes = []}
+    {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
+     pext_loc = loc; pext_attributes = []}
 ;;
 
 let ocaml_psig_include loc mt =
@@ -408,18 +410,18 @@ let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 
 let ocaml_pstr_eval e = Pstr_eval (e, []);;
 
-let ocaml_pstr_exception s ed =
+let ocaml_pstr_exception loc s ed =
   Pstr_exception
-    {pcd_name = mknoloc s; pcd_args = ed; pcd_res = None; pcd_loc = loc_none;
-     pcd_attributes = []}
+    {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
+     pext_loc = loc; pext_attributes = []}
 ;;
 
 let ocaml_pstr_exn_rebind =
   Some
     (fun loc s li ->
-       Pstr_exn_rebind
-         {pexrb_name = mknoloc s; pexrb_lid = mknoloc li; pexrb_loc = loc;
-          pexrb_attributes = []})
+       Pstr_exception
+         {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
+          pext_loc = loc; pext_attributes = []})
 ;;
 
 let ocaml_pstr_include =
@@ -476,8 +478,10 @@ let ocaml_class_infos =
            failwith "internal error: ocaml_class_infos"
        in
        let params =
-         List.map2 (fun os va -> mkloc loc os, variance_of_bool_bool va) sl
-           variance
+         List.map2
+           (fun os va ->
+              ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+           sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
         pci_expr = expr; pci_loc = loc; pci_attributes = []})

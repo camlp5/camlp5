@@ -1471,7 +1471,7 @@ and str_item s l =
   | StExc (loc, n, tl, sl) ->
       let si =
         match uv tl, uv sl with
-          tl, [] -> ocaml_pstr_exception (uv n) (List.map ctyp tl)
+          tl, [] -> ocaml_pstr_exception (mkloc loc) (uv n) (List.map ctyp tl)
         | [], sl ->
             begin match ocaml_pstr_exn_rebind with
               Some pstr_exn_rebind ->

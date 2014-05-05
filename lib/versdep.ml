@@ -119,6 +119,37 @@ value ocaml_class_field loc cfd =
   ELSE {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []} END
 ;
 
+value ocaml_mktyp loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ptyp_desc = x; ptyp_loc = loc}
+  ELSE {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []} END
+;
+value ocaml_mkpat loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ppat_desc = x; ppat_loc = loc}
+  ELSE {ppat_desc = x; ppat_loc = loc; ppat_attributes = []} END
+;
+value ocaml_mkexp loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pexp_desc = x; pexp_loc = loc}
+  ELSE {pexp_desc = x; pexp_loc = loc; pexp_attributes = []} END
+;
+value ocaml_mkmty loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmty_desc = x; pmty_loc = loc}
+  ELSE {pmty_desc = x; pmty_loc = loc; pmty_attributes = []} END
+;
+value ocaml_mkmod loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmod_desc = x; pmod_loc = loc}
+  ELSE {pmod_desc = x; pmod_loc = loc; pmod_attributes = []} END
+;
+value ocaml_mkfield loc (lab, x) fl =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    [{pfield_desc = Pfield lab x; pfield_loc = loc} :: fl]
+  ELSE [(lab, x) :: fl] END
+;
+value ocaml_mkfield_var loc =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    [{pfield_desc = Pfield_var; pfield_loc = loc}]
+  ELSE [] END
+;
+
 IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
   value variance_of_bool_bool =
     fun
@@ -180,7 +211,8 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
           in
           let params =
             List.map2
-              (fun os va -> (Some (mkloc loc os), variance_of_bool_bool va))
+              (fun os va ->
+                 (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va))
               params variance
           in
           Right
@@ -428,37 +460,6 @@ value ocaml_const_int64 =
 value ocaml_const_nativeint =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
   ELSE Some (fun s -> Const_nativeint (Nativeint.of_string s)) END
-;
-
-value ocaml_mktyp loc x =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ptyp_desc = x; ptyp_loc = loc}
-  ELSE {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []} END
-;
-value ocaml_mkpat loc x =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ppat_desc = x; ppat_loc = loc}
-  ELSE {ppat_desc = x; ppat_loc = loc; ppat_attributes = []} END
-;
-value ocaml_mkexp loc x =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pexp_desc = x; pexp_loc = loc}
-  ELSE {pexp_desc = x; pexp_loc = loc; pexp_attributes = []} END
-;
-value ocaml_mkmty loc x =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmty_desc = x; pmty_loc = loc}
-  ELSE {pmty_desc = x; pmty_loc = loc; pmty_attributes = []} END
-;
-value ocaml_mkmod loc x =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmod_desc = x; pmod_loc = loc}
-  ELSE {pmod_desc = x; pmod_loc = loc; pmod_attributes = []} END
-;
-value ocaml_mkfield loc (lab, x) fl =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    [{pfield_desc = Pfield lab x; pfield_loc = loc} :: fl]
-  ELSE [(lab, x) :: fl] END
-;
-value ocaml_mkfield_var loc =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    [{pfield_desc = Pfield_var; pfield_loc = loc}]
-  ELSE [] END
 ;
 
 value ocaml_pexp_apply f lel =
@@ -764,8 +765,8 @@ value ocaml_psig_exception loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mkloc loc s) ed
   ELSE
     Psig_exception
-      {pcd_name = mkloc loc s; pcd_args = ed; pcd_res = None;
-       pcd_loc = loc; pcd_attributes = []}
+      {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
+       pext_loc = loc; pext_attributes = []}
   END
 ;
 
@@ -860,12 +861,12 @@ value ocaml_pstr_eval e =
   ELSE Pstr_eval e [] END
 ;
 
-value ocaml_pstr_exception s ed =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_exception (mknoloc s) ed
+value ocaml_pstr_exception loc s ed =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_exception (mkloc loc s) ed
   ELSE
     Pstr_exception
-      {pcd_name = mknoloc s; pcd_args = ed; pcd_res = None;
-       pcd_loc = loc_none; pcd_attributes = []}
+      {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
+       pext_loc = loc; pext_attributes = []}
   END
 ;
 
@@ -876,9 +877,9 @@ value ocaml_pstr_exn_rebind =
   ELSE
     Some
       (fun loc s li ->
-         Pstr_exn_rebind
-           {pexrb_name = mknoloc s; pexrb_lid = mknoloc li; pexrb_loc = loc;
-            pexrb_attributes = []})
+         Pstr_exception
+           {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
+            pext_loc = loc; pext_attributes = []})
   END
 ;
 
@@ -985,8 +986,10 @@ value ocaml_class_infos =
            else ()
          in
          let params =
-           List.map2 (fun os va -> (mkloc loc os, variance_of_bool_bool va))
-             sl variance
+           List.map2
+            (fun os va ->
+               (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va))
+            sl variance
          in
          {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
           pci_expr = expr; pci_loc = loc; pci_attributes = []})
@@ -1428,11 +1431,11 @@ value string_contains =
 ;
 
 value string_create =
-  IFDEF OCAML_VERSION <= OCAML_2_00 THEN String.create
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.create
   ELSE Bytes.create END
 ;
 
 value string_unsafe_set =
-  IFDEF OCAML_VERSION <= OCAML_2_00 THEN String.unsafe_set
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.unsafe_set
   ELSE Bytes.unsafe_set END
 ;

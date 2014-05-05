@@ -53,6 +53,16 @@ let ocaml_class_type_field loc ctfd = ctfd;;
 
 let ocaml_class_field loc cfd = cfd;;
 
+let ocaml_mktyp loc x = {ptyp_desc = x; ptyp_loc = loc};;
+let ocaml_mkpat loc x = {ppat_desc = x; ppat_loc = loc};;
+let ocaml_mkexp loc x = {pexp_desc = x; pexp_loc = loc};;
+let ocaml_mkmty loc x = {pmty_desc = x; pmty_loc = loc};;
+let ocaml_mkmod loc x = {pmod_desc = x; pmod_loc = loc};;
+let ocaml_mkfield loc (lab, x) fl =
+  {pfield_desc = Pfield (lab, x); pfield_loc = loc} :: fl
+;;
+let ocaml_mkfield_var loc = [{pfield_desc = Pfield_var; pfield_loc = loc}];;
+
 (* *)
 
 let ocaml_type_declaration tn params cl tk pf tm loc variance =
@@ -135,16 +145,6 @@ let ocaml_const_int64 = Some (fun s -> Const_int64 (Int64.of_string s));;
 let ocaml_const_nativeint =
   Some (fun s -> Const_nativeint (Nativeint.of_string s))
 ;;
-
-let ocaml_mktyp loc x = {ptyp_desc = x; ptyp_loc = loc};;
-let ocaml_mkpat loc x = {ppat_desc = x; ppat_loc = loc};;
-let ocaml_mkexp loc x = {pexp_desc = x; pexp_loc = loc};;
-let ocaml_mkmty loc x = {pmty_desc = x; pmty_loc = loc};;
-let ocaml_mkmod loc x = {pmod_desc = x; pmod_loc = loc};;
-let ocaml_mkfield loc (lab, x) fl =
-  {pfield_desc = Pfield (lab, x); pfield_loc = loc} :: fl
-;;
-let ocaml_mkfield_var loc = [{pfield_desc = Pfield_var; pfield_loc = loc}];;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 
@@ -303,7 +303,7 @@ let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 
 let ocaml_pstr_eval e = Pstr_eval e;;
 
-let ocaml_pstr_exception s ed = Pstr_exception (mknoloc s, ed);;
+let ocaml_pstr_exception loc s ed = Pstr_exception (mkloc loc s, ed);;
 
 let ocaml_pstr_exn_rebind =
   Some (fun loc s li -> Pstr_exn_rebind (mkloc loc s, mkloc loc li))
@@ -478,6 +478,6 @@ let printf_ksprintf = Printf.ksprintf;;
 
 let string_contains = String.contains;;
 
-let string_create = Bytes.create;;
+let string_create = String.create;;
 
-let string_unsafe_set = Bytes.unsafe_set;;
+let string_unsafe_set = String.unsafe_set;;

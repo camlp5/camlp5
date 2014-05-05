@@ -212,6 +212,9 @@ and print_simple_out_type ppf =
   | Otyp_manifest ty1 ty2 ->
       fprintf ppf "@[<2>%a ==@ %a@]" print_out_type ty1 print_out_type ty2
   | Otyp_abstract -> fprintf ppf "'abstract"
+  | IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
+    Otyp_open -> fprintf ppf "open"
+    END
   | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
   | IFDEF OCAML_VERSION >= OCAML_3_05 THEN
@@ -410,8 +413,10 @@ and print_out_signature ppf =
         print_out_signature items ]
 and print_out_sig_item ppf =
   fun
-  [ Osig_exception id tyl ->
+  [ IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Osig_exception id tyl ->
       fprintf ppf "@[<2>exception %a@]" print_out_constr (id, tyl)
+    END
   | Osig_modtype name Omty_abstract ->
       fprintf ppf "@[<2>module type %s = 'a@]" name
   | Osig_modtype name mty ->
@@ -467,8 +472,11 @@ and print_out_type_decl kwd ppf x =
     IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
       let (name, args, ty, priv) = x in
       (name, args, ty, priv, [])
-    ELSE
+    ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
       x
+    ELSE
+      (x.otype_name, x.otype_params, x.otype_type, x.otype_private,
+       x.otype_cstrs)
     END
   in
   let constrain ppf (ty, ty') =
