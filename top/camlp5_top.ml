@@ -190,5 +190,6 @@ Pcaml.warning.val :=
     ELSE
       Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
         (IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN Warnings.Other txt
-         ELSE Warnings.Camlp4 txt END)
+         ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Warnings.Camlp4 txt
+         ELSE Warnings.Preprocessor txt END)
     END;
