@@ -109,7 +109,7 @@ let strip_char c s =
       let rec loop i j =
         if i = String.length s then String.sub s 0 j
         else if s.[i] = '_' then loop (i + 1) j
-        else begin s.[j] <- s.[i]; loop (i + 1) (j + 1) end
+        else begin string_set s j s.[i]; loop (i + 1) (j + 1) end
       in
       loop 0 0
   | None -> s

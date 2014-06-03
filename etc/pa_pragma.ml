@@ -999,7 +999,7 @@ value val_tab = do {
      ("String.set",
       fun loc ->
         {ctyp = <:ctyp< string -> int -> char -> unit >>;
-         expr = Obj.repr String.set;
+         expr = Obj.repr string_set;
          patt = no_patt loc});
      ("String.sub",
       fun loc ->

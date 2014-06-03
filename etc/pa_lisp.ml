@@ -17,7 +17,7 @@
                      (:= buff.val
                          (^ buff.val
                             (string_create (String.length buff.val)))))
-                 (:= ([] buff.val len) x)
+                 (string_set buff.val len x)
                  (succ len)))
   (value get (lambda len (String.sub buff.val 0 len)))))
 

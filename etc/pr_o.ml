@@ -251,7 +251,7 @@ value strip_char c s = do {
     if i = String.length s then String.sub s 0 j
     else if s.[i] = '_' then loop (i + 1) j
     else do {
-      s.[j] := s.[i];
+      string_set s j s.[i];
       loop (i + 1) (j + 1)
     }
 };

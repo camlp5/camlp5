@@ -19,7 +19,7 @@ module Buff =
       if len >= String.length buff.val then
         buff.val := buff.val ^ string_create (String.length buff.val)
       else ();
-      buff.val.[len] := x;
+      string_set buff.val len x;
       succ len
     };
     value get len = String.sub buff.val 0 len;

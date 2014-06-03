@@ -20,7 +20,7 @@
    (begin
     (if (>= len (String.length buff.val))
      (:= buff.val (^ buff.val (string_create (String.length buff.val)))))
-    (:= buff.val.[len] x)
+    (string_set buff.val len x)
     (succ len)))
   (define (mstore len s)
    (letrec

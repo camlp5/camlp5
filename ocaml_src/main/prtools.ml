@@ -339,7 +339,7 @@ module Buff =
     let store len x =
       if len >= String.length !buff then
         buff := !buff ^ string_create (String.length !buff);
-      !buff.[len] <- x;
+      string_set !buff len x;
       succ len
     ;;
     let mstore len s =

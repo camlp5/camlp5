@@ -103,6 +103,7 @@ Added statements:
 
 open Pcaml;
 open Printf;
+open Versdep;
 
 type macro_value =
   [ MvExpr of list string and MLast.expr
@@ -129,7 +130,7 @@ value oversion = do {
   for i = 0 to String.length v - 1 do {
     match v.[i] with
     [ '0'..'9' | 'a'..'z' | 'A'..'Z' -> ()
-    | _ -> v.[i] := '_' ];
+    | _ -> string_set v i '_' ];
   };
   v
 };

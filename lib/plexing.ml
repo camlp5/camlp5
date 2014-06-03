@@ -77,7 +77,8 @@ value lexer_func_of_ocamllex lexfun cs =
   let lb =
     Lexing.from_function
       (fun s n ->
-         try do { s.[0] := Stream.next cs; 1 } with [ Stream.Failure -> 0 ])
+         try do { string_set s 0 (Stream.next cs); 1 } with
+         [ Stream.Failure -> 0 ])
   in
   let next_token_loc _ =
     let tok = lexfun lb in
@@ -94,7 +95,7 @@ value store len x = do {
   if len >= String.length buff.val then
     buff.val := buff.val ^ string_create (String.length buff.val)
   else ();
-  buff.val.[len] := x;
+  string_set buff.val len x;
   succ len
 };
 value get_buff len = String.sub buff.val 0 len;

@@ -72,7 +72,8 @@ let lexer_func_of_parser next_token_loc cs =
 let lexer_func_of_ocamllex lexfun cs =
   let lb =
     Lexing.from_function
-      (fun s n -> try s.[0] <- Stream.next cs; 1 with Stream.Failure -> 0)
+      (fun s n ->
+         try string_set s 0 (Stream.next cs); 1 with Stream.Failure -> 0)
   in
   let next_token_loc _ =
     let tok = lexfun lb in
@@ -88,7 +89,7 @@ let buff = ref (string_create 80);;
 let store len x =
   if len >= String.length !buff then
     buff := !buff ^ string_create (String.length !buff);
-  !buff.[len] <- x;
+  string_set !buff len x;
   succ len
 ;;
 let get_buff len = String.sub !buff 0 len;;

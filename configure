@@ -246,8 +246,8 @@ else
   OCAMLC_W_Y=""
 fi
 
-if [ "$($ocamlc -warn-error A-3 2>&1)" = "" ]; then
-  WARNERR="-warn-error A-3"
+if [ "$($ocamlc -warn-error A 2>&1)" = "" ]; then
+  WARNERR="-warn-error A"
 else
   WARNERR=""
 fi

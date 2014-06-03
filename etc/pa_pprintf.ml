@@ -37,7 +37,7 @@ value implode l =
   let s = string_create (List.length l) in
   loop 0 l where rec loop i =
     fun
-    [ [c :: l] -> do { String.set s i c; loop (i + 1) l }
+    [ [c :: l] -> do { string_set s i c; loop (i + 1) l }
     | [] -> s ]
 ;
 

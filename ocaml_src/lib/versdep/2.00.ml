@@ -479,3 +479,5 @@ let string_contains s c =
 let string_create = String.create;;
 
 let string_unsafe_set = String.unsafe_set;;
+
+let string_set = String.set;;
