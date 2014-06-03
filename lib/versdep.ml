@@ -1444,6 +1444,6 @@ value string_unsafe_set =
 ;
 
 value string_set =
-  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.set
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.set
   ELSE Bytes.set END
 ;
