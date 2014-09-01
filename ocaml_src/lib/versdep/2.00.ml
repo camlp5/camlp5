@@ -476,8 +476,12 @@ let string_contains s c =
   loop 0
 ;;
 
+let string_copy = String.copy;;
+
 let string_create = String.create;;
 
 let string_unsafe_set = String.unsafe_set;;
 
 let string_set = String.set;;
+
+let array_create = Array.create;;

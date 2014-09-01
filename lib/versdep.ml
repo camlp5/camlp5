@@ -1433,6 +1433,11 @@ value string_contains =
   END
 ;
 
+value string_copy =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.copy
+  ELSE Bytes.copy END
+;
+
 value string_create =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.create
   ELSE Bytes.create END
@@ -1446,4 +1451,9 @@ value string_unsafe_set =
 value string_set =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.set
   ELSE Bytes.set END
+;
+
+value array_create =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Array.create
+  ELSE Array.make END
 ;

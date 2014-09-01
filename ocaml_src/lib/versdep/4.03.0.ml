@@ -650,8 +650,12 @@ let printf_ksprintf = Printf.ksprintf;;
 
 let string_contains = String.contains;;
 
+let string_copy = Bytes.copy;;
+
 let string_create = Bytes.create;;
 
 let string_unsafe_set = Bytes.unsafe_set;;
 
 let string_set = Bytes.set;;
+
+let array_create = Array.make;;

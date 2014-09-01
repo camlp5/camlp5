@@ -126,7 +126,7 @@ value rec list_remove x =
 ;
 
 value oversion = do {
-  let v = String.copy Pconfig.ocaml_version in
+  let v = string_copy Pconfig.ocaml_version in
   for i = 0 to String.length v - 1 do {
     match v.[i] with
     [ '0'..'9' | 'a'..'z' | 'A'..'Z' -> ()

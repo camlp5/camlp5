@@ -31,7 +31,7 @@ let lexer_text (con, prm) =
 ;;
 
 let locerr () = failwith "Lexer: location function";;
-let loct_create () = ref (Array.create 1024 None), ref false;;
+let loct_create () = ref (array_create 1024 None), ref false;;
 let loct_func (loct, ov) i =
   match
     if i < 0 || i >= Array.length !loct then
@@ -45,7 +45,7 @@ let loct_add (loct, ov) i loc =
   if i >= Array.length !loct then
     let new_tmax = Array.length !loct * 2 in
     if new_tmax < Sys.max_array_length then
-      let new_loct = Array.create new_tmax None in
+      let new_loct = array_create new_tmax None in
       Array.blit !loct 0 new_loct 0 (Array.length !loct);
       loct := new_loct;
       !loct.(i) <- Some loc

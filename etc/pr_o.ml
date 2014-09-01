@@ -246,7 +246,7 @@ value strip_heading_spaces s =
 ;
 
 value strip_char c s = do {
-  let s = String.copy s in
+  let s = string_copy s in
   loop 0 0 where rec loop i j =
     if i = String.length s then String.sub s 0 j
     else if s.[i] = '_' then loop (i + 1) j

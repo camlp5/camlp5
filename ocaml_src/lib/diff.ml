@@ -6,6 +6,8 @@
    and adjusted. Basic algorithm described by Eugene W.Myers in:
      "An O(ND) Difference Algorithm and Its Variations" *)
 
+open Versdep;;
+
 exception DiagReturn of int;;
 
 let diag fd bd sh xv yv xoff xlim yoff ylim =
@@ -135,7 +137,7 @@ let make_indexer a b =
     (fun i e ->
        try b.(i) <- Hashtbl.find htb e with Not_found -> Hashtbl.add htb e e)
     b;
-  let ai = Array.create n 0 in
+  let ai = array_create n 0 in
   let k =
     let rec loop i k =
       if i = n then k

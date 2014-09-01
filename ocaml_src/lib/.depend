@@ -1,5 +1,5 @@
-diff.cmo: diff.cmi
-diff.cmx: diff.cmi
+diff.cmo: diff.cmi versdep.cmo
+diff.cmx: diff.cmi versdep.cmx
 eprinter.cmo: eprinter.cmi extfun.cmi pprintf.cmi
 eprinter.cmx: eprinter.cmi extfun.cmx pprintf.cmx
 eprinter.cmi: extfun.cmi pprintf.cmi
