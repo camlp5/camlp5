@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* token.mli,v *)
-(* Copyright (c) INRIA 2007-2012 *)
+(* Copyright (c) INRIA 2007-2014 *)
 
 (** Module deprecated since Camlp5 version 5.00. Use now module Plexing.
     Compatibility assumed. *)

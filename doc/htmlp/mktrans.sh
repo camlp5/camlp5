@@ -13,7 +13,7 @@ echo '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <!-- mktrans.sh,v -->
-  <!-- Copyright (c) INRIA 2007-2012 -->
+  <!-- Copyright (c) INRIA 2007-2014 -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />

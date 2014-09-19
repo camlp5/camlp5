@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* plexing.mli,v *)
-(* Copyright (c) INRIA 2007-2012 *)
+(* Copyright (c) INRIA 2007-2014 *)
 
 (** Lexing for Camlp5 grammars.
 

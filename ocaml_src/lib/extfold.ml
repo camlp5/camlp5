@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* extfold.ml,v *)
-(* Copyright (c) INRIA 2007-2012 *)
+(* Copyright (c) INRIA 2007-2014 *)
 
 type ('te, 'a, 'b) t =
   'te Gramext.g_entry -> 'te Gramext.g_symbol list -> ('te Stream.t -> 'a) ->
