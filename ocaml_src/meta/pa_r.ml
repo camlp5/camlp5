@@ -173,6 +173,8 @@ Grammar.extend
      grammar_entry_create "mod_decl_binding"
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
+   and closed_case_list : 'closed_case_list Grammar.Entry.e =
+     grammar_entry_create "closed_case_list"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
      grammar_entry_create "cons_expr_opt"
    and dummy : 'dummy Grammar.Entry.e = grammar_entry_create "dummy"
@@ -768,14 +770,11 @@ Grammar.extend
         (fun (mc : 'match_case) _ (e : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExTry (loc, e, [mc]) : 'expr));
       [Gramext.Stoken ("", "try"); Gramext.Sself; Gramext.Stoken ("", "with");
-       Gramext.Stoken ("", "[");
-       Gramext.Slist0sep
-         (Gramext.Snterm
-            (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"), false);
-       Gramext.Stoken ("", "]")],
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (closed_case_list : 'closed_case_list Grammar.Entry.e))],
       Gramext.action
-        (fun _ (l : 'match_case list) _ _ (e : 'expr) _ (loc : Ploc.t) ->
+        (fun (l : 'closed_case_list) _ (e : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExTry (loc, e, l) : 'expr));
       [Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with");
@@ -785,24 +784,12 @@ Grammar.extend
         (fun (e1 : 'expr) _ (p1 : 'ipatt) _ (e : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExMat (loc, e, [p1, None, e1]) : 'expr));
       [Gramext.Stoken ("", "match"); Gramext.Sself;
-       Gramext.Stoken ("", "with"); Gramext.Stoken ("", "|");
-       Gramext.Slist0sep
-         (Gramext.Snterm
-            (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"), false);
-       Gramext.Stoken ("", "end")],
+       Gramext.Stoken ("", "with");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (closed_case_list : 'closed_case_list Grammar.Entry.e))],
       Gramext.action
-        (fun _ (l : 'match_case list) _ _ (e : 'expr) _ (loc : Ploc.t) ->
-           (MLast.ExMat (loc, e, l) : 'expr));
-      [Gramext.Stoken ("", "match"); Gramext.Sself;
-       Gramext.Stoken ("", "with"); Gramext.Stoken ("", "[");
-       Gramext.Slist0sep
-         (Gramext.Snterm
-            (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"), false);
-       Gramext.Stoken ("", "]")],
-      Gramext.action
-        (fun _ (l : 'match_case list) _ _ (e : 'expr) _ (loc : Ploc.t) ->
+        (fun (l : 'closed_case_list) _ (e : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExMat (loc, e, l) : 'expr));
       [Gramext.Stoken ("", "fun");
        Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e));
@@ -811,14 +798,12 @@ Grammar.extend
       Gramext.action
         (fun (e : 'fun_def) (p : 'ipatt) _ (loc : Ploc.t) ->
            (MLast.ExFun (loc, [p, None, e]) : 'expr));
-      [Gramext.Stoken ("", "fun"); Gramext.Stoken ("", "[");
-       Gramext.Slist0sep
-         (Gramext.Snterm
-            (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e)),
-          Gramext.Stoken ("", "|"), false);
-       Gramext.Stoken ("", "]")],
+      [Gramext.Stoken ("", "fun");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (closed_case_list : 'closed_case_list Grammar.Entry.e))],
       Gramext.action
-        (fun _ (l : 'match_case list) _ _ (loc : Ploc.t) ->
+        (fun (l : 'closed_case_list) _ (loc : Ploc.t) ->
            (MLast.ExFun (loc, l) : 'expr));
       [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "module");
        Gramext.Stoken ("UIDENT", "");
@@ -1200,6 +1185,27 @@ Grammar.extend
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
            (MLast.ExInt (loc, s, "") : 'expr))]];
+    Grammar.Entry.obj (closed_case_list : 'closed_case_list Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("", "|");
+       Gramext.Slist0sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e)),
+          Gramext.Stoken ("", "|"), false);
+       Gramext.Stoken ("", "end")],
+      Gramext.action
+        (fun _ (l : 'match_case list) _ (loc : Ploc.t) ->
+           (l : 'closed_case_list));
+      [Gramext.Stoken ("", "[");
+       Gramext.Slist0sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e)),
+          Gramext.Stoken ("", "|"), false);
+       Gramext.Stoken ("", "]")],
+      Gramext.action
+        (fun _ (l : 'match_case list) _ (loc : Ploc.t) ->
+           (l : 'closed_case_list))]];
     Grammar.Entry.obj (cons_expr_opt : 'cons_expr_opt Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Ploc.t) -> (None : 'cons_expr_opt));

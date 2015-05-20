@@ -283,18 +283,13 @@ EXTEND
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
-      | "fun"; "["; l = V (LIST0 match_case SEP "|"); "]" ->
-          <:expr< fun [ $_list:l$ ] >>
+      | "fun"; l = closed_case_list -> <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = ipatt; e = fun_def -> <:expr< fun $p$ -> $e$ >>
-      | "match"; e = SELF; "with"; "["; l = V (LIST0 match_case SEP "|");
-        "]" ->
-          <:expr< match $e$ with [ $_list:l$ ] >>
-      | "match"; e = SELF; "with"; "|"; l = V (LIST0 match_case SEP "|");
-        "end" ->
+      | "match"; e = SELF; "with"; l = closed_case_list ->
           <:expr< match $e$ with [ $_list:l$ ] >>
       | "match"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           <:expr< match $e$ with $p1$ -> $e1$ >>
-      | "try"; e = SELF; "with"; "["; l = V (LIST0 match_case SEP "|"); "]" ->
+      | "try"; e = SELF; "with"; l = closed_case_list ->
           <:expr< try $e$ with [ $_list:l$ ] >>
       | "try"; e = SELF; "with"; mc = match_case ->
           <:expr< try $e$ with [ $list:[mc]$ ] >>
@@ -391,6 +386,10 @@ EXTEND
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" -> mktupexp loc e el
       | "("; e = SELF; ")" -> <:expr< $e$ >>
       | "("; el = V (LIST1 expr SEP ","); ")" -> <:expr< ($_list:el$) >> ] ]
+  ;
+  closed_case_list:
+    [ [ "["; l = V (LIST0 match_case SEP "|"); "]" -> l
+      | "|"; l = V (LIST0 match_case SEP "|"); "end" -> l ] ]
   ;
   cons_expr_opt:
     [ [ "::"; e = expr -> Some e

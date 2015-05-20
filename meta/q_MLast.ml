@@ -432,18 +432,13 @@ EXTEND
       | "let"; "module"; m = SV UIDENT; mb = mod_fun_binding; "in";
         e = SELF ->
           Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
-      | "fun"; "["; l = SV (LIST0 match_case SEP "|"); "]" ->
-          Qast.Node "ExFun" [Qast.Loc; l]
+      | "fun"; l = closed_case_list -> Qast.Node "ExFun" [Qast.Loc; l]
       | "fun"; p = ipatt; e = fun_def ->
           Qast.Node "ExFun"
             [Qast.Loc;
              Qast.VaVal
                (Qast.List [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]
-      | "match"; e = SELF; "with"; "["; l = SV (LIST0 match_case SEP "|");
-        "]" ->
-          Qast.Node "ExMat" [Qast.Loc; e; l]
-      | "match"; e = SELF; "with"; "|"; l = SV (LIST0 match_case SEP "|");
-        "end" ->
+      | "match"; e = SELF; "with"; l = closed_case_list ->
           Qast.Node "ExMat" [Qast.Loc; e; l]
       | "match"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           Qast.Node "ExMat"
@@ -451,8 +446,7 @@ EXTEND
              Qast.VaVal
                (Qast.List
                   [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]
-      | "try"; e = SELF; "with"; "["; l = SV (LIST0 match_case SEP "|");
-        "]" ->
+      | "try"; e = SELF; "with"; l = closed_case_list ->
           Qast.Node "ExTry" [Qast.Loc; e; l]
       | "try"; e = SELF; "with"; mc = match_case ->
           Qast.Node "ExTry" [Qast.Loc; e; Qast.VaVal (Qast.List [mc])]
@@ -743,6 +737,10 @@ EXTEND
       | "("; e = SELF; ")" -> e
       | "("; el = SV (LIST1 expr SEP ","); ")" ->
           Qast.Node "ExTup" [Qast.Loc; el] ] ]
+  ;
+  closed_case_list:
+    [ [ "["; l = SV (LIST0 match_case SEP "|"); "]" -> l
+      | "|"; l = SV (LIST0 match_case SEP "|"); "end" -> l ] ]
   ;
   cons_expr_opt:
     [ [ "::"; e = expr -> Qast.Option (Some e)

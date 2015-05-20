@@ -1,7 +1,10 @@
 Camlp5 Version 6.13:
 --------------------
 
-* [12 May 15] Upgraded for ocaml version 4.02.2
+* [20 Apr 15] Accept 'fun/try' case list like the change of 22nd Apr 13
+  on 'match' in revised syntax, allowing them to write "|" .. "end" or
+  "[" .. "]", both being accepted.
+* [12 May 15] Updated for ocaml version 4.02.2
 
 Camlp5 Version 6.12:
 --------------------
