@@ -285,7 +285,7 @@ value find_in_path path name =
 ;
 
 value find_depend modname (byt_deps, opt_deps) =
-  let name = String.uncapitalize modname in
+  let name = string_uncapitalize modname in
   try
     let filename = find_in_path load_path.val (name ^ ".mli") in
     let basename = Filename.chop_suffix filename ".mli" in

@@ -62,6 +62,8 @@ let list_map_check f l =
   loop [] l
 ;;
 
+(* *)
+
 let ocaml_value_description vn t p =
   {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc;
    pval_name = mkloc t.ptyp_loc vn; pval_attributes = []}
@@ -648,13 +650,23 @@ let pervasives_set_binary_mode_out = Pervasives.set_binary_mode_out;;
 
 let printf_ksprintf = Printf.ksprintf;;
 
+let char_uppercase = Char.uppercase;;
+
+let string_capitalize = String.capitalize;;
+
 let string_contains = String.contains;;
 
 let string_copy = Bytes.copy;;
 
 let string_create = Bytes.create;;
 
+let string_lowercase = String.lowercase;;
+
 let string_unsafe_set = Bytes.unsafe_set;;
+
+let string_uncapitalize = String.uncapitalize;;
+
+let string_uppercase = String.uppercase;;
 
 let string_set = Bytes.set;;
 

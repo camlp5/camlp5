@@ -314,7 +314,7 @@ value utf8 =
   let slen = String.length s in
   let ulen = String.length utf8_str in
   slen >= ulen &&
-  String.lowercase (String.sub s (slen - ulen) ulen) = utf8_str
+  string_lowercase (String.sub s (slen - ulen) ulen) = utf8_str
 ;
 
 value arrow () = if utf8 then "→" else "->";
@@ -1787,7 +1787,7 @@ value apply_printer f (ast, eoi_loc) = do {
 Pcaml.print_interf.val := apply_printer sig_item;
 Pcaml.print_implem.val := apply_printer str_item;
 
-value is_uppercase c = Char.uppercase c = c;
+value is_uppercase c = char_uppercase c = c;
 
 value set_flags s =
   loop 0 where rec loop i =

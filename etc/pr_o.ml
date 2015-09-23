@@ -1814,7 +1814,7 @@ value apply_printer f (ast, eoi_loc) = do {
 Pcaml.print_interf.val := apply_printer sig_item;
 Pcaml.print_implem.val := apply_printer str_item;
 
-value is_uppercase c = Char.uppercase c = c;
+value is_uppercase c = char_uppercase c = c;
 
 value set_flags s =
   loop 0 where rec loop i =

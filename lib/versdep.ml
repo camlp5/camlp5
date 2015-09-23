@@ -94,6 +94,10 @@ value list_map_check f l =
     | [] -> Some (List.rev rev_l) ]
 ;
 
+IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
+  value labelled lab = if lab = "" then Nolabel else Labelled lab;
+END;
+
 value ocaml_value_description vn t p =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN {pval_type = t; pval_prim = p}
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
@@ -354,8 +358,14 @@ value ocaml_ptype_variant ctl priv =
             (fun (c, tl, rto, loc) ->
                if rto <> None then raise Exit
                else
-                 {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-                  pcd_loc = loc; pcd_attributes = []})
+                 IFDEF OCAML_VERSION < OCAML_4_03_0 THEN
+                   {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
+                    pcd_loc = loc; pcd_attributes = []}
+                 ELSE
+                   let tl = Pcstr_tuple tl in
+                   {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
+                    pcd_loc = loc; pcd_attributes = []}
+                 END)
             ctl
         in
         Some (Ptype_variant ctl)
@@ -367,7 +377,8 @@ value ocaml_ptype_variant ctl priv =
 
 value ocaml_ptyp_arrow lab t1 t2 =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Ptyp_arrow t1 t2
-  ELSE Ptyp_arrow lab t1 t2 END
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Ptyp_arrow lab t1 t2
+  ELSE Ptyp_arrow (labelled lab) t1 t2 END
 ;
 
 value ocaml_ptyp_class li tl ll =
@@ -467,7 +478,8 @@ value ocaml_const_nativeint =
 
 value ocaml_pexp_apply f lel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_apply f (List.map snd lel)
-  ELSE Pexp_apply f lel END
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pexp_apply f lel
+  ELSE Pexp_apply f (List.map (fun (l, e) -> (labelled l, e)) lel) END
 ;
 
 value ocaml_pexp_assertfalse fname loc =
@@ -586,7 +598,9 @@ value ocaml_pexp_function lab eo pel =
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_function lab eo pel
   ELSE
     match pel with
-    | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun lab eo p e
+    | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
+        IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pexp_fun lab eo p e
+        ELSE Pexp_fun (labelled lab) eo p e END
     | pel ->
         if lab = "" && eo = None then Pexp_function pel
         else failwith "internal error: bad ast in ocaml_pexp_function"
@@ -766,9 +780,13 @@ value ocaml_psig_class_type =
 
 value ocaml_psig_exception loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mkloc loc s) ed
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
+       pext_loc = loc; pext_attributes = []}
+  ELSE
+    Psig_exception
+      {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
   END
 ;
@@ -844,8 +862,10 @@ value ocaml_psig_type stl =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
     Psig_type stl
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     let stl = List.map (fun (s, t) -> t) stl in Psig_type stl
+  ELSE
+    let stl = List.map (fun (s, t) -> t) stl in Psig_type Recursive stl
   END
 ;
 
@@ -866,9 +886,13 @@ value ocaml_pstr_eval e =
 
 value ocaml_pstr_exception loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_exception (mkloc loc s) ed
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
+       pext_loc = loc; pext_attributes = []}
+  ELSE
+    Pstr_exception
+      {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
   END
 ;
@@ -962,8 +986,10 @@ value ocaml_pstr_type stl =
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
     Pstr_type stl
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     let stl = List.map (fun (s, t) -> t) stl in Pstr_type stl
+  ELSE
+    let stl = List.map (fun (s, t) -> t) stl in Pstr_type Recursive stl
   END
 ;
 
@@ -1098,8 +1124,12 @@ value ocaml_pcl_apply =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
   ELSIFDEF OCAML_VERSION <= OCAML_2_04 THEN
     Some (fun ce lel -> Pcl_apply ce (List.map snd lel))
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     Some (fun ce lel -> Pcl_apply ce lel)
+  ELSE
+    Some
+      (fun ce lel ->
+         Pcl_apply ce (List.map (fun (l, e) -> (labelled l, e)) lel))
   END
 ;
 
@@ -1118,8 +1148,10 @@ value ocaml_pcl_fun =
     None
   ELSIFDEF OCAML_VERSION <= OCAML_2_04 THEN
     Some (fun lab ceo p ce -> Pcl_fun p ce)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     Some (fun lab ceo p ce -> Pcl_fun lab ceo p ce)
+  ELSE
+    Some (fun lab ceo p ce -> Pcl_fun (labelled lab) ceo p ce)
   END
 ;
 
@@ -1180,8 +1212,10 @@ value ocaml_pcty_fun =
     Some (fun lab t ct -> Pcty_fun t ct)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Some (fun lab t ct -> Pcty_fun lab t ct)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     Some (fun lab t ct -> Pcty_arrow lab t ct)
+  ELSE
+    Some (fun lab t ct -> Pcty_arrow (labelled lab) t ct)
   END
 ;
 
@@ -1419,6 +1453,16 @@ ELSE
   value printf_ksprintf = Printf.ksprintf;
 END;
 
+value char_uppercase =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Char.uppercase
+  ELSE Char.uppercase_ascii END
+;
+
+value string_capitalize =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.capitalize
+  ELSE String.capitalize_ascii END
+;
+
 value string_contains =
   IFDEF OCAML_VERSION <= OCAML_2_00 THEN
     fun s c ->
@@ -1443,9 +1487,24 @@ value string_create =
   ELSE Bytes.create END
 ;
 
+value string_lowercase =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.lowercase
+  ELSE String.lowercase_ascii END
+;
+
 value string_unsafe_set =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.unsafe_set
   ELSE Bytes.unsafe_set END
+;
+
+value string_uncapitalize =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.uncapitalize
+  ELSE String.uncapitalize_ascii END
+;
+
+value string_uppercase =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.uppercase
+  ELSE String.uppercase_ascii END
 ;
 
 value string_set =

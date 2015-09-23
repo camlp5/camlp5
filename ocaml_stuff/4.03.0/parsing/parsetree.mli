@@ -36,7 +36,7 @@ and attributes = attribute list
 and payload =
   | PStr of structure
   | PTyp of core_type  (* : T *)
-  | PPat of pattern * expression option  (* : P  or  : P when E *)
+  | PPat of pattern * expression option  (* ? P  or  ? P when E *)
 
 (** {2 Core language} *)
 
@@ -54,13 +54,16 @@ and core_type_desc =
         (*  _ *)
   | Ptyp_var of string
         (* 'a *)
-  | Ptyp_arrow of label * core_type * core_type
-        (* T1 -> T2       (label = "")
-           ~l:T1 -> T2    (label = "l")
-           ?l:T1 -> T2    (label = "?l")
+  | Ptyp_arrow of arg_label * core_type * core_type
+        (* T1 -> T2       Simple
+           ~l:T1 -> T2    Labelled
+           ?l:T1 -> T2    Otional
          *)
   | Ptyp_tuple of core_type list
-        (* T1 * ... * Tn   (n >= 2) *)
+        (* T1 * ... * Tn
+
+           Invariant: n >= 2
+        *)
   | Ptyp_constr of Longident.t loc * core_type list
         (* tconstr
            T tconstr
@@ -155,7 +158,10 @@ and pattern_desc =
            Other forms of interval are recognized by the parser
            but rejected by the type-checker. *)
   | Ppat_tuple of pattern list
-        (* (P1, ..., Pn)   (n >= 2) *)
+        (* (P1, ..., Pn)
+
+           Invariant: n >= 2
+        *)
   | Ppat_construct of Longident.t loc * pattern option
         (* C                None
            C P              Some P
@@ -168,6 +174,8 @@ and pattern_desc =
   | Ppat_record of (Longident.t loc * pattern) list * closed_flag
         (* { l1=P1; ...; ln=Pn }     (flag = Closed)
            { l1=P1; ...; ln=Pn; _}   (flag = Open)
+
+           Invariant: n > 0
          *)
   | Ppat_array of pattern list
         (* [| P1; ...; Pn |] *)
@@ -211,28 +219,33 @@ and expression_desc =
          *)
   | Pexp_function of case list
         (* function P1 -> E1 | ... | Pn -> En *)
-  | Pexp_fun of label * expression option * pattern * expression
-        (* fun P -> E1                          (lab = "", None)
-           fun ~l:P -> E1                       (lab = "l", None)
-           fun ?l:P -> E1                       (lab = "?l", None)
-           fun ?l:(P = E0) -> E1                (lab = "?l", Some E0)
+  | Pexp_fun of arg_label * expression option * pattern * expression
+        (* fun P -> E1                          (Simple, None)
+           fun ~l:P -> E1                       (Labelled l, None)
+           fun ?l:P -> E1                       (Optional l, None)
+           fun ?l:(P = E0) -> E1                (Optional l, Some E0)
 
            Notes:
-           - If E0 is provided, lab must start with '?'.
+           - If E0 is provided, only Optional is allowed.
            - "fun P1 P2 .. Pn -> E1" is represented as nested Pexp_fun.
            - "let f P = E" is represented using Pexp_fun.
          *)
-  | Pexp_apply of expression * (label * expression) list
+  | Pexp_apply of expression * (arg_label * expression) list
         (* E0 ~l1:E1 ... ~ln:En
            li can be empty (non labeled argument) or start with '?'
            (optional argument).
+
+           Invariant: n > 0
          *)
   | Pexp_match of expression * case list
         (* match E0 with P1 -> E1 | ... | Pn -> En *)
   | Pexp_try of expression * case list
         (* try E0 with P1 -> E1 | ... | Pn -> En *)
   | Pexp_tuple of expression list
-        (* (E1, ..., En)   (n >= 2) *)
+        (* (E1, ..., En)
+
+           Invariant: n >= 2
+        *)
   | Pexp_construct of Longident.t loc * expression option
         (* C                None
            C E              Some E
@@ -245,6 +258,8 @@ and expression_desc =
   | Pexp_record of (Longident.t loc * expression) list * expression option
         (* { l1=P1; ...; ln=Pn }     (None)
            { E0 with l1=P1; ...; ln=Pn }   (Some E0)
+
+           Invariant: n > 0
          *)
   | Pexp_field of expression * Longident.t loc
         (* E.l *)
@@ -327,8 +342,6 @@ and value_description =
 (*
   val x: T                            (prim = [])
   external x: T = "s1" ... "sn"       (prim = ["s1";..."sn"])
-
-  Note: when used under Pstr_primitive, prim cannot be empty
 *)
 
 (* Type declarations *)
@@ -360,7 +373,9 @@ and type_declaration =
 and type_kind =
   | Ptype_abstract
   | Ptype_variant of constructor_declaration list
+        (* Invariant: non-empty list *)
   | Ptype_record of label_declaration list
+        (* Invariant: non-empty list *)
   | Ptype_open
 
 and label_declaration =
@@ -375,21 +390,29 @@ and label_declaration =
 (*  { ...; l: T; ... }            (mutable=Immutable)
     { ...; mutable l: T; ... }    (mutable=Mutable)
 
-    Note: T can be a Pexp_poly.
+    Note: T can be a Ptyp_poly.
 *)
 
 and constructor_declaration =
     {
      pcd_name: string loc;
-     pcd_args: core_type list;
+     pcd_args: constructor_arguments;
      pcd_res: core_type option;
      pcd_loc: Location.t;
      pcd_attributes: attributes; (* C [@id1] [@id2] of ... *)
     }
+
+and constructor_arguments =
+  | Pcstr_tuple of core_type list
+  | Pcstr_record of label_declaration list
+
 (*
-  | C of T1 * ... * Tn     (res = None)
-  | C: T0                  (args = [], res = Some T0)
-  | C: T1 * ... * Tn -> T0 (res = Some T0)
+  | C of T1 * ... * Tn     (res = None,    args = Pcstr_tuple [])
+  | C: T0                  (res = Some T0, args = [])
+  | C: T1 * ... * Tn -> T0 (res = Some T0, args = Pcstr_tuple)
+  | C of {...}             (res = None,    args = Pcstr_record)
+  | C: {...} -> T0         (res = Some T0, args = Pcstr_record)
+  | C of {...} as t        (res = None,    args = Pcstr_record)
 *)
 
 and type_extension =
@@ -413,7 +436,7 @@ and extension_constructor =
     }
 
 and extension_constructor_kind =
-    Pext_decl of core_type list * core_type option
+    Pext_decl of constructor_arguments * core_type option
       (*
          | C of T1 * ... * Tn     ([T1; ...; Tn], None)
          | C: T0                  ([], Some T0)
@@ -441,10 +464,10 @@ and class_type_desc =
            ['a1, ..., 'an] c *)
   | Pcty_signature of class_signature
         (* object ... end *)
-  | Pcty_arrow of label * core_type * class_type
-        (* T -> CT       (label = "")
-           ~l:T -> CT    (label = "l")
-           ?l:T -> CT    (label = "?l")
+  | Pcty_arrow of arg_label * core_type * class_type
+        (* T -> CT       Simple
+           ~l:T -> CT    Labelled l
+           ?l:T -> CT    Optional l
          *)
   | Pcty_extension of extension
         (* [%id] *)
@@ -473,7 +496,7 @@ and class_type_field_desc =
   | Pctf_method  of (string * private_flag * virtual_flag * core_type)
         (* method x: T
 
-           Note: T can be a Pexp_poly.
+           Note: T can be a Ptyp_poly.
          *)
   | Pctf_constraint  of (core_type * core_type)
         (* constraint T1 = T2 *)
@@ -517,16 +540,18 @@ and class_expr_desc =
            ['a1, ..., 'an] c *)
   | Pcl_structure of class_structure
         (* object ... end *)
-  | Pcl_fun of label * expression option * pattern * class_expr
-        (* fun P -> CE                          (lab = "", None)
-           fun ~l:P -> CE                       (lab = "l", None)
-           fun ?l:P -> CE                       (lab = "?l", None)
-           fun ?l:(P = E0) -> CE                (lab = "?l", Some E0)
+  | Pcl_fun of arg_label * expression option * pattern * class_expr
+        (* fun P -> CE                          (Simple, None)
+           fun ~l:P -> CE                       (Labelled l, None)
+           fun ?l:P -> CE                       (Optional l, None)
+           fun ?l:(P = E0) -> CE                (Optional l, Some E0)
          *)
-  | Pcl_apply of class_expr * (label * expression) list
+  | Pcl_apply of class_expr * (arg_label * expression) list
         (* CE ~l1:E1 ... ~ln:En
            li can be empty (non labeled argument) or start with '?'
            (optional argument).
+
+           Invariant: n > 0
          *)
   | Pcl_let of rec_flag * value_binding list * class_expr
         (* let P1 = E1 and ... and Pn = EN in CE      (flag = Nonrecursive)
@@ -624,7 +649,7 @@ and signature_item_desc =
           val x: T
           external x: T = "s1" ... "sn"
          *)
-  | Psig_type of type_declaration list
+  | Psig_type of rec_flag * type_declaration list
         (* type t1 = ... and ... and tn = ... *)
   | Psig_typext of type_extension
         (* type t1 += ... *)
@@ -749,8 +774,9 @@ and structure_item_desc =
            let rec P1 = E1 and ... and Pn = EN   (flag = Recursive)
          *)
   | Pstr_primitive of value_description
-        (* external x: T = "s1" ... "sn" *)
-  | Pstr_type of type_declaration list
+        (*  val x: T
+            external x: T = "s1" ... "sn" *)
+  | Pstr_type of rec_flag * type_declaration list
         (* type t1 = ... and ... and tn = ... *)
   | Pstr_typext of type_extension
         (* type t1 += ... *)

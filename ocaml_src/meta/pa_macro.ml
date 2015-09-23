@@ -137,7 +137,7 @@ let oversion =
 
 let oname =
   if Pconfig.ocaml_name = "ocaml" then []
-  else [String.uppercase Pconfig.ocaml_name, MvNone]
+  else [string_uppercase Pconfig.ocaml_name, MvNone]
 ;;
 
 let defined =

@@ -62,6 +62,8 @@ let list_map_check f l =
   loop [] l
 ;;
 
+let labelled lab = if lab = "" then Nolabel else Labelled lab;;
+
 let ocaml_value_description vn t p =
   {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc;
    pval_name = mkloc t.ptyp_loc vn; pval_attributes = []}
@@ -160,6 +162,7 @@ let ocaml_ptype_variant ctl priv =
         (fun (c, tl, rto, loc) ->
            if rto <> None then raise Exit
            else
+             let tl = Pcstr_tuple tl in
              {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
               pcd_loc = loc; pcd_attributes = []})
         ctl
@@ -168,7 +171,7 @@ let ocaml_ptype_variant ctl priv =
   with Exit -> None
 ;;
 
-let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (labelled lab, t1, t2);;
 
 let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 
@@ -214,7 +217,9 @@ let ocaml_const_nativeint =
   Some (fun s -> Const_nativeint (Nativeint.of_string s))
 ;;
 
-let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
+let ocaml_pexp_apply f lel =
+  Pexp_apply (f, List.map (fun (l, e) -> labelled l, e) lel)
+;;
 
 let ocaml_pexp_assertfalse fname loc =
   Pexp_assert
@@ -258,7 +263,8 @@ let ocaml_case (p, wo, loc, e) = {pc_lhs = p; pc_guard = wo; pc_rhs = e};;
 
 let ocaml_pexp_function lab eo pel =
   match pel with
-    [{pc_lhs = p; pc_guard = None; pc_rhs = e}] -> Pexp_fun (lab, eo, p, e)
+    [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
+      Pexp_fun (labelled lab, eo, p, e)
   | pel ->
       if lab = "" && eo = None then Pexp_function pel
       else failwith "internal error: bad ast in ocaml_pexp_function"
@@ -360,7 +366,7 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception loc s ed =
   Psig_exception
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
+    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
      pext_loc = loc; pext_attributes = []}
 ;;
 
@@ -403,7 +409,7 @@ let ocaml_psig_recmodule =
 ;;
 
 let ocaml_psig_type stl =
-  let stl = List.map (fun (s, t) -> t) stl in Psig_type stl
+  let stl = List.map (fun (s, t) -> t) stl in Psig_type (Recursive, stl)
 ;;
 
 let ocaml_psig_value s vd = Psig_value vd;;
@@ -414,7 +420,7 @@ let ocaml_pstr_eval e = Pstr_eval (e, []);;
 
 let ocaml_pstr_exception loc s ed =
   Pstr_exception
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
+    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
      pext_loc = loc; pext_attributes = []}
 ;;
 
@@ -469,7 +475,7 @@ let ocaml_pstr_recmodule =
 ;;
 
 let ocaml_pstr_type stl =
-  let stl = List.map (fun (s, t) -> t) stl in Pstr_type stl
+  let stl = List.map (fun (s, t) -> t) stl in Pstr_type (Recursive, stl)
 ;;
 
 let ocaml_class_infos =
@@ -527,13 +533,18 @@ let ocaml_pcf_virt (s, pf, t, loc) =
   Pcf_val (mkloc loc s, Immutable, Cfk_virtual t)
 ;;
 
-let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
+let ocaml_pcl_apply =
+  Some
+    (fun ce lel -> Pcl_apply (ce, List.map (fun (l, e) -> labelled l, e) lel))
+;;
 
 let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (mknoloc li, ctl));;
 
 let ocaml_pcl_constraint = Some (fun ce ct -> Pcl_constraint (ce, ct));;
 
-let ocaml_pcl_fun = Some (fun lab ceo p ce -> Pcl_fun (lab, ceo, p, ce));;
+let ocaml_pcl_fun =
+  Some (fun lab ceo p ce -> Pcl_fun (labelled lab, ceo, p, ce))
+;;
 
 let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
 
@@ -551,7 +562,7 @@ let ocaml_pctf_virt (s, pf, t, loc) = Pctf_val (s, Immutable, Virtual, t);;
 
 let ocaml_pcty_constr = Some (fun li ltl -> Pcty_constr (mknoloc li, ltl));;
 
-let ocaml_pcty_fun = Some (fun lab t ct -> Pcty_arrow (lab, t, ct));;
+let ocaml_pcty_fun = Some (fun lab t ct -> Pcty_arrow (labelled lab, t, ct));;
 
 let ocaml_pcty_signature =
   let f (t, ctfl) =
@@ -648,13 +659,23 @@ let pervasives_set_binary_mode_out = Pervasives.set_binary_mode_out;;
 
 let printf_ksprintf = Printf.ksprintf;;
 
+let char_uppercase = Char.uppercase_ascii;;
+
+let string_capitalize = String.capitalize_ascii;;
+
 let string_contains = String.contains;;
 
 let string_copy = Bytes.copy;;
 
 let string_create = Bytes.create;;
 
+let string_lowercase = String.lowercase_ascii;;
+
 let string_unsafe_set = Bytes.unsafe_set;;
+
+let string_uncapitalize = String.uncapitalize_ascii;;
+
+let string_uppercase = String.uppercase_ascii;;
 
 let string_set = Bytes.set;;
 

@@ -6,6 +6,7 @@
 #load "q_MLast.cmo";
 
 open Pcaml;
+open Versdep;
 
 value ocaml_records = ref False;
 
@@ -342,7 +343,7 @@ value idd =
   Grammar.Entry.of_parser Pcaml.gram "ID" p
 ;
 
-value uncap s = String.uncapitalize s;
+value uncap s = string_uncapitalize s;
 
 EXTEND
   GLOBAL: implem interf top_phrase use_file sig_item str_item ctyp patt expr
@@ -531,7 +532,7 @@ EXTEND
       | "~"; x1 = expr -> <:expr< - $x1$ >> ]
     | [ x1 = LIDENT ->
           match x1 with
-          [ "true" | "false" -> <:expr< $uid:String.capitalize x1$ >>
+          [ "true" | "false" -> <:expr< $uid:string_capitalize x1$ >>
           | "nil" -> <:expr< [] >>
           | _ -> <:expr< $lid:x1$ >> ]
       | x1 = UIDENT -> <:expr< $uid:x1$ >>

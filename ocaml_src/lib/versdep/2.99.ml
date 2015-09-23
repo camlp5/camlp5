@@ -42,6 +42,8 @@ let list_map_check f l =
   loop [] l
 ;;
 
+(* *)
+
 let ocaml_value_description vn t p = {pval_type = t; pval_prim = p};;
 
 let ocaml_class_type_field loc ctfd = ctfd;;
@@ -491,13 +493,23 @@ let printf_ksprintf kont fmt =
   doprn [] 0
 ;;
 
+let char_uppercase = Char.uppercase;;
+
+let string_capitalize = String.capitalize;;
+
 let string_contains = String.contains;;
 
 let string_copy = String.copy;;
 
 let string_create = String.create;;
 
+let string_lowercase = String.lowercase;;
+
 let string_unsafe_set = String.unsafe_set;;
+
+let string_uncapitalize = String.uncapitalize;;
+
+let string_uppercase = String.uppercase;;
 
 let string_set = String.set;;
 

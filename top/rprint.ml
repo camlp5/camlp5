@@ -7,6 +7,11 @@ IFDEF OCAML_VERSION >= OCAML_3_03 THEN
 open Format;
 open Outcometree;
 
+value string_lowercase =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.lowercase
+  ELSE String.lowercase_ascii END
+;
+
 exception Ellipsis;
 value cautious f ppf arg =
   try f ppf arg with [ Ellipsis -> fprintf ppf "..." ]
@@ -130,7 +135,7 @@ value utf8 =
   let slen = String.length s in
   let ulen = String.length utf8_str in
   slen >= ulen &&
-  String.lowercase (String.sub s (slen - ulen) ulen) = utf8_str
+  string_lowercase (String.sub s (slen - ulen) ulen) = utf8_str
 ;
 
 (* Type variables in Greek *)
@@ -260,6 +265,9 @@ and print_simple_out_type ppf =
       Otyp_record lbls ->
         fprintf ppf "@[<hv 2>{ %a }@]"
           (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
+    END
+  | IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
+      Otyp_attribute _ _ -> ()
     END
   | IFDEF JOCAML THEN
       Otyp_proc ->
