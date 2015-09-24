@@ -95,7 +95,11 @@ value list_map_check f l =
 ;
 
 IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
-  value labelled lab = if lab = "" then Nolabel else Labelled lab;
+  value labelled lab =
+    if lab = "" then Nolabel
+    else if lab.[0] = '?' then
+      Optional (String.sub lab 1 (String.length lab - 1))
+    else Labelled lab;
 END;
 
 value ocaml_value_description vn t p =

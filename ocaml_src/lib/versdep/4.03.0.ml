@@ -62,7 +62,12 @@ let list_map_check f l =
   loop [] l
 ;;
 
-let labelled lab = if lab = "" then Nolabel else Labelled lab;;
+let labelled lab =
+  if lab = "" then Nolabel
+  else if lab.[0] = '?' then
+    Optional (String.sub lab 1 (String.length lab - 1))
+  else Labelled lab
+;;
 
 let ocaml_value_description vn t p =
   {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc;
