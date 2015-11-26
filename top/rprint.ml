@@ -63,7 +63,7 @@ value print_out_value ppf tree =
     | Oval_char c -> fprintf ppf "'%s'" (Char.escaped c)
     | Oval_string s ->
         try fprintf ppf "\"%s\"" (String.escaped s) with
-        [ Invalid_argument "String.create" -> fprintf ppf "<huge string>" ]
+        [ Invalid_argument _ -> fprintf ppf "<huge string>" ]
     | Oval_list tl ->
         fprintf ppf "@[<1>[%a]@]" (print_tree_list print_tree ";") tl
     | Oval_array tl ->
@@ -447,19 +447,38 @@ and print_out_sig_item ppf =
         print_out_type_decl (if rs = Orec_next then "and" else "type" )
           ppf td
     END
-  | Osig_value name ty prims ->
-      let kwd = if prims = [] then "value" else "external" in
-      let pr_prims ppf =
-        fun
-        [ [] -> ()
-        | [s :: sl] ->
-            do {
-              fprintf ppf "@ = \"%s\"" s;
-              List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
-            } ]
-      in
-      fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
-        print_out_type ty pr_prims prims
+  | IFDEF OCAML_VERSION < OCAML_4_03 THEN
+      Osig_value name ty prims ->
+        let kwd = if prims = [] then "value" else "external" in
+        let pr_prims ppf =
+          fun
+          [ [] -> ()
+          | [s :: sl] ->
+              do {
+                fprintf ppf "@ = \"%s\"" s;
+                List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
+              } ]
+        in
+        fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
+          print_out_type ty pr_prims prims
+    ELSE
+      Osig_value ovd ->
+        let name = ovd.oval_name in
+        let ty = ovd.oval_type in
+        let prims = ovd.oval_prims in
+        let kwd = if prims = [] then "value" else "external" in
+        let pr_prims ppf =
+          fun
+          [ [] -> ()
+          | [s :: sl] ->
+              do {
+                fprintf ppf "@ = \"%s\"" s;
+                List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
+              } ]
+        in
+        fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
+          print_out_type ty pr_prims prims
+      END
   | x ->
       IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
         failwith "Rprint.print_out_sig_item: not implemented case"

@@ -64,6 +64,11 @@ type t =
   | No_cmi_file of string                   (* 49 *)
   | Bad_docstring of bool                   (* 50 *)
   | Expect_tailcall                         (* 51 *)
+  | Fragile_literal_pattern                 (* 52 *)
+  | Misplaced_attribute of string           (* 53 *)
+  | Duplicated_attribute of string          (* 54 *)
+  | Inlining_impossible of string           (* 55 *)
+  | Unreachable_case                        (* 56 *)
 ;;
 
 val parse_options : bool -> string -> unit;;
