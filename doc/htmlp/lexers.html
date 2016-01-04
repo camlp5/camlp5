@@ -76,8 +76,10 @@
 <pre>
           expression ::= lexer
                lexer ::= "lexer" "[" rules "]"
-               rules ::= rules rule
+               rules ::= ne-rules rule
                        | &lt;nothing&gt;
+            ne-rules ::= ne-rules "|" rule
+                       | rule
                 rule ::= symbols [ "-&gt;" action ]
              symbols ::= symbols symbol err
                        | &lt;nothing&gt;
