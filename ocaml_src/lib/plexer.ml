@@ -1310,41 +1310,25 @@ let error_no_respect_rules p_con p_prm =
         " does not respect Plexer rules"))
 ;;
 
-let error_ident_and_keyword p_con p_prm =
-  raise
-    (Plexing.Error
-       ("the token \"" ^ p_prm ^ "\" is used as " ^ p_con ^
-        " and as keyword"))
-;;
-
-let using_token kwd_table ident_table (p_con, p_prm) =
+let using_token kwd_table (p_con, p_prm) =
   match p_con with
     "" ->
       if not (hashtbl_mem kwd_table p_prm) then
-        if check_keyword p_prm then
-          if hashtbl_mem ident_table p_prm then
-            error_ident_and_keyword (Hashtbl.find ident_table p_prm) p_prm
-          else Hashtbl.add kwd_table p_prm p_prm
+        if check_keyword p_prm then Hashtbl.add kwd_table p_prm p_prm
         else error_no_respect_rules p_con p_prm
   | "LIDENT" ->
       if p_prm = "" then ()
       else
         begin match p_prm.[0] with
           'A'..'Z' -> error_no_respect_rules p_con p_prm
-        | _ ->
-            if hashtbl_mem kwd_table p_prm then
-              error_ident_and_keyword p_con p_prm
-            else Hashtbl.add ident_table p_prm p_con
+        | _ -> ()
         end
   | "UIDENT" ->
       if p_prm = "" then ()
       else
         begin match p_prm.[0] with
           'a'..'z' -> error_no_respect_rules p_con p_prm
-        | _ ->
-            if hashtbl_mem kwd_table p_prm then
-              error_ident_and_keyword p_con p_prm
-            else Hashtbl.add ident_table p_prm p_con
+        | _ -> ()
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
@@ -1357,11 +1341,9 @@ let using_token kwd_table ident_table (p_con, p_prm) =
            ("the constructor \"" ^ p_con ^ "\" is not recognized by Plexer"))
 ;;
 
-let removing_token kwd_table ident_table (p_con, p_prm) =
+let removing_token kwd_table (p_con, p_prm) =
   match p_con with
     "" -> Hashtbl.remove kwd_table p_prm
-  | "LIDENT" | "UIDENT" ->
-      if p_prm <> "" then Hashtbl.remove ident_table p_prm
   | _ -> ()
 ;;
 
@@ -1434,30 +1416,43 @@ let tok_match =
         (function
            "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
          | _ -> raise Stream.Failure)
+  | "LIDENT", p_prm ->
+      (* also treats the case when a LIDENT is also a keyword *)
+      (fun (con, prm) ->
+         if con = "LIDENT" then
+           if p_prm = "" || prm = p_prm then prm else raise Stream.Failure
+         else if con = "" && prm = p_prm then prm
+         else raise Stream.Failure)
+  | "UIDENT", p_prm ->
+      (* also treats the case when a UIDENT is also a keyword *)
+      (fun (con, prm) ->
+         if con = "UIDENT" then
+           if p_prm = "" || prm = p_prm then prm else raise Stream.Failure
+         else if con = "" && prm = p_prm then prm
+         else raise Stream.Failure)
   | tok -> Plexing.default_match tok
 ;;
 
 let gmake () =
   let kwd_table = Hashtbl.create 301 in
-  let id_table = Hashtbl.create 301 in
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 748, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 743, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 748, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 743, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 748, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 743, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 749, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 744, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 749, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 744, 37)));
        Plexing.tok_comm = None}
   in
   let glex =
     {Plexing.tok_func = func kwd_table glexr;
-     Plexing.tok_using = using_token kwd_table id_table;
-     Plexing.tok_removing = removing_token kwd_table id_table;
+     Plexing.tok_using = using_token kwd_table;
+     Plexing.tok_removing = removing_token kwd_table;
      Plexing.tok_match = tok_match; Plexing.tok_text = text;
      Plexing.tok_comm = None}
   in

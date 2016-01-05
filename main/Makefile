@@ -5,7 +5,7 @@ include $(TOP)/config/Makefile
 
 SHELL=/bin/sh
 
-INCLUDES=-I ../odyl -I $(TOP)/boot -I $(OTOP)/utils -I $(OTOP)/parsing
+INCLUDES=-I ../odyl -I $(TOP)/boot -I $(TOP)/lib -I $(OTOP)/utils -I $(OTOP)/parsing
 OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 CAMLP5_OBJS_0=$(TOP)/boot/versdep.cmo $(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo prtools.cmo ast2pt.cmo reloc.cmo pcaml.cmo exparser.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo

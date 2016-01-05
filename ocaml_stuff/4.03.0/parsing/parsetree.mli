@@ -14,6 +14,12 @@
 
 open Asttypes
 
+type constant =
+    PConst_int of string * char option
+  | PConst_char of char
+  | PConst_string of string * string option
+  | PConst_float of string * char option
+
 (** {2 Extension points} *)
 
 type attribute = string loc * payload
@@ -35,6 +41,7 @@ and attributes = attribute list
 
 and payload =
   | PStr of structure
+  | PSig of signature (* : SIG *)
   | PTyp of core_type  (* : T *)
   | PPat of pattern * expression option  (* ? P  or  ? P when E *)
 
@@ -833,6 +840,6 @@ type toplevel_phrase =
 and directive_argument =
   | Pdir_none
   | Pdir_string of string
-  | Pdir_int of int
+  | Pdir_int of string * char option
   | Pdir_ident of Longident.t
   | Pdir_bool of bool

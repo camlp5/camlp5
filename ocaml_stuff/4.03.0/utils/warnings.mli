@@ -61,7 +61,7 @@ type t =
   | Bad_env_variable of string * string     (* 46 *)
   | Attribute_payload of string * string    (* 47 *)
   | Eliminated_optional_arguments of string list (* 48 *)
-  | No_cmi_file of string                   (* 49 *)
+  | No_cmi_file of string * string option   (* 49 *)
   | Bad_docstring of bool                   (* 50 *)
   | Expect_tailcall                         (* 51 *)
   | Fragile_literal_pattern                 (* 52 *)
@@ -69,6 +69,8 @@ type t =
   | Duplicated_attribute of string          (* 54 *)
   | Inlining_impossible of string           (* 55 *)
   | Unreachable_case                        (* 56 *)
+  | Ambiguous_pattern of string list        (* 57 *)
+  | No_cmx_file of string                   (* 58 *)
 ;;
 
 val parse_options : bool -> string -> unit;;
@@ -84,6 +86,7 @@ val print : formatter -> t -> unit;;
 exception Errors of int;;
 
 val check_fatal : unit -> unit;;
+val reset_fatal: unit -> unit
 
 val help_warnings: unit -> unit
 

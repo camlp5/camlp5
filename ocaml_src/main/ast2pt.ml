@@ -155,6 +155,15 @@ let mkintconst loc s c =
   | _ -> error loc "special int not implemented"
 ;;
 
+let pconst_of_const =
+  function
+    Const_int i -> ocaml_pconst_int i
+  | Const_char c -> ocaml_pconst_char c
+  | Const_string (s, so) -> ocaml_pconst_string s so
+  | Const_float s -> ocaml_pconst_float s
+  | _ -> failwith "pconstant of constant"
+;;
+
 let conv_con =
   let t = Hashtbl.create 73 in
   List.iter (fun (s, s') -> Hashtbl.add t s s')
@@ -523,11 +532,11 @@ let rec patt_fa al =
 
 let rec mkrangepat loc c1 c2 =
   if c1 > c2 then mkrangepat loc c2 c1
-  else if c1 = c2 then mkpat loc (Ppat_constant (Const_char c1))
+  else if c1 = c2 then mkpat loc (Ppat_constant (ocaml_pconst_char c1))
   else
     mkpat loc
       (Ppat_or
-         (mkpat loc (Ppat_constant (Const_char c1)),
+         (mkpat loc (Ppat_constant (ocaml_pconst_char c1)),
           mkrangepat loc (Char.chr (Char.code c1 + 1)) c2))
 ;;
 
@@ -615,9 +624,11 @@ let rec patt =
       | None -> error loc "no array patterns in this ocaml version"
       end
   | PaChr (loc, s) ->
-      mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
-  | PaInt (loc, s, c) -> mkpat loc (Ppat_constant (mkintconst loc (uv s) c))
-  | PaFlo (loc, s) -> mkpat loc (Ppat_constant (Const_float (uv s)))
+      mkpat loc
+        (Ppat_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
+  | PaInt (loc, s, c) ->
+      mkpat loc (Ppat_constant (pconst_of_const (mkintconst loc (uv s) c)))
+  | PaFlo (loc, s) -> mkpat loc (Ppat_constant (ocaml_pconst_float (uv s)))
   | PaLab (loc, _) -> error loc "labeled pattern not allowed here"
   | PaLaz (loc, p) ->
       begin match ocaml_ppat_lazy with
@@ -648,7 +659,7 @@ let rec patt =
   | PaStr (loc, s) ->
       mkpat loc
         (Ppat_constant
-           (ocaml_const_string (string_of_string_token loc (uv s))))
+           (ocaml_pconst_string (string_of_string_token loc (uv s)) None))
   | PaTup (loc, pl) -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc (loc, p, t) -> mkpat loc (Ppat_constraint (patt p, ctyp t))
   | PaTyp (loc, sl) ->
@@ -937,9 +948,10 @@ let rec expr =
   | ExAnt (_, e) -> expr e
   | ExApp (loc, ExLid (_, "-"), ExInt (_, s, c)) ->
       let s = neg_string (uv s) in
-      mkexp loc (Pexp_constant (mkintconst loc s c))
+      mkexp loc (Pexp_constant (pconst_of_const (mkintconst loc s c)))
   | ExApp (loc, ExLid (_, ("-" | "-.")), ExFlo (_, s)) ->
-      let s = neg_string (uv s) in mkexp loc (Pexp_constant (Const_float s))
+      let s = neg_string (uv s) in
+      mkexp loc (Pexp_constant (ocaml_pconst_float s))
   | ExApp (loc, _, _) as f ->
       let (f, al) = expr_fa [] f in
       let f =
@@ -1027,11 +1039,12 @@ let rec expr =
       mkexp loc (ocaml_pexp_assert !glob_fname (mkloc loc) (expr e))
   | ExBae (loc, e, el) -> expr (bigarray_get loc e (uv el))
   | ExChr (loc, s) ->
-      mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
+      mkexp loc
+        (Pexp_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
   | ExCoe (loc, e, t1, t2) ->
       mkexp loc
         (ocaml_pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
-  | ExFlo (loc, s) -> mkexp loc (Pexp_constant (Const_float (uv s)))
+  | ExFlo (loc, s) -> mkexp loc (Pexp_constant (ocaml_pconst_float (uv s)))
   | ExFor (loc, i, e1, e2, df, el) ->
       let e3 = MLast.ExSeq (loc, uv el) in
       let df = if uv df then Upto else Downto in
@@ -1084,7 +1097,8 @@ let rec expr =
         | _ -> Some (expr e3)
       in
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, e3o))
-  | ExInt (loc, s, c) -> mkexp loc (Pexp_constant (mkintconst loc (uv s) c))
+  | ExInt (loc, s, c) ->
+      mkexp loc (Pexp_constant (pconst_of_const (mkintconst loc (uv s) c)))
   | ExJdf (loc, jl, e) ->
       begin match jocaml_pexp_def with
         Some pexp_def ->
@@ -1219,7 +1233,7 @@ let rec expr =
   | ExStr (loc, s) ->
       mkexp loc
         (Pexp_constant
-           (ocaml_const_string (string_of_string_token loc (uv s))))
+           (ocaml_pconst_string (string_of_string_token loc (uv s)) None))
   | ExTry (loc, e, pel) ->
       mkexp loc (Pexp_try (expr e, List.map mkpwe (uv pel)))
   | ExTup (loc, el) -> mkexp loc (Pexp_tuple (List.map expr (uv el)))
@@ -1758,7 +1772,7 @@ let implem fname ast = glob_fname := fname; List.fold_right str_item ast [];;
 let directive loc =
   function
     MLast.ExStr (_, s) -> Pdir_string s
-  | MLast.ExInt (_, i, "") -> Pdir_int (int_of_string_l loc i)
+  | MLast.ExInt (_, i, "") -> ocaml_pdir_int i (int_of_string_l loc i)
   | MLast.ExUid (_, "True") ->
       begin match ocaml_pdir_bool with
         Some pdir_bool -> pdir_bool true

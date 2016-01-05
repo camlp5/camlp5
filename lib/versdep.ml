@@ -460,9 +460,27 @@ value ocaml_package_type li ltl =
   (mknoloc li, List.map (fun (li, t) → (mkloc t.ptyp_loc li, t)) ltl)
 ;
 
+value ocaml_pconst_char c =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_char c
+  ELSE PConst_char c END
+;
+value ocaml_pconst_int i =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_int i
+  ELSE PConst_int (string_of_int i) None END
+;
+value ocaml_pconst_float s =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_float s
+  ELSE PConst_float s None END
+;
+
 value ocaml_const_string s =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSE Const_string s None END
+;
+value ocaml_pconst_string s so =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
+  ELSE PConst_string s so END
 ;
 
 value ocaml_const_int32 =
@@ -1245,6 +1263,10 @@ value ocaml_pcty_signature =
 value ocaml_pdir_bool =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN None
   ELSE Some (fun b -> Pdir_bool b) END
+;
+value ocaml_pdir_int i s =
+  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pdir_int s
+  ELSE Pdir_int i None END
 ;
 
 value ocaml_pwith_modsubst =

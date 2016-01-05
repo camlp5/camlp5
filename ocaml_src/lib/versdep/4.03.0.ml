@@ -212,7 +212,12 @@ let ocaml_package_type li ltl =
   mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
 ;;
 
+let ocaml_pconst_char c = PConst_char c;;
+let ocaml_pconst_int i = PConst_int (string_of_int i, None);;
+let ocaml_pconst_float s = PConst_float (s, None);;
+
 let ocaml_const_string s = Const_string (s, None);;
+let ocaml_pconst_string s so = PConst_string (s, so);;
 
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
 
@@ -577,6 +582,7 @@ let ocaml_pcty_signature =
 ;;
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
+let ocaml_pdir_int i s = Pdir_int (i, None);;
 
 let ocaml_pwith_modsubst =
   Some (fun loc me -> Pwith_modsubst (mkloc loc "", mkloc loc me))
