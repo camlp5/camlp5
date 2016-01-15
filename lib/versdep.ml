@@ -1139,7 +1139,7 @@ value ocaml_pcf_valvirt =
 value ocaml_pcf_virt (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pcf_virt (s, pf, t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pcf_virt (mkloc loc s, pf, t)
-  ELSE Pcf_val (mkloc loc s, Immutable, Cfk_virtual t) END
+  ELSE Pcf_method (mkloc loc s, pf, Cfk_virtual t) END
 ;
 
 value ocaml_pcl_apply =

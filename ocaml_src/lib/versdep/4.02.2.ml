@@ -531,7 +531,7 @@ let ocaml_pcf_valvirt =
 ;;
 
 let ocaml_pcf_virt (s, pf, t, loc) =
-  Pcf_val (mkloc loc s, Immutable, Cfk_virtual t)
+  Pcf_method (mkloc loc s, pf, Cfk_virtual t)
 ;;
 
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;

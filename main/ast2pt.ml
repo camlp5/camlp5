@@ -270,10 +270,6 @@ value rec ctyp =
   | TyArr loc (TyLab loc1 lab t1) t2 →
       mktyp loc (ocaml_ptyp_arrow (uv lab) (ctyp t1) (ctyp t2))
   | TyArr loc (TyOlb loc1 lab t1) t2 →
-      let t1 =
-        let loc = loc1 in
-        <:ctyp< option $t1$ >>
-      in
       mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
   | TyArr loc t1 t2 → mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
   | TyObj loc fl v → mktyp loc (ocaml_ptyp_object (meth_list loc (uv fl) v))
