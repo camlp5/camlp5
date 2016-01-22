@@ -212,12 +212,12 @@ let ocaml_package_type li ltl =
   mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
 ;;
 
-let ocaml_pconst_char c = PConst_char c;;
-let ocaml_pconst_int i = PConst_int (string_of_int i, None);;
-let ocaml_pconst_float s = PConst_float (s, None);;
+let ocaml_pconst_char c = Pconst_char c;;
+let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
+let ocaml_pconst_float s = Pconst_float (s, None);;
 
 let ocaml_const_string s = Const_string (s, None);;
-let ocaml_pconst_string s so = PConst_string (s, so);;
+let ocaml_pconst_string s so = Pconst_string (s, so);;
 
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
 

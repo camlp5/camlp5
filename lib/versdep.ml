@@ -462,15 +462,15 @@ value ocaml_package_type li ltl =
 
 value ocaml_pconst_char c =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_char c
-  ELSE PConst_char c END
+  ELSE Pconst_char c END
 ;
 value ocaml_pconst_int i =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_int i
-  ELSE PConst_int (string_of_int i) None END
+  ELSE Pconst_integer (string_of_int i) None END
 ;
 value ocaml_pconst_float s =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_float s
-  ELSE PConst_float s None END
+  ELSE Pconst_float s None END
 ;
 
 value ocaml_const_string s =
@@ -480,7 +480,7 @@ value ocaml_const_string s =
 value ocaml_pconst_string s so =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
-  ELSE PConst_string s so END
+  ELSE Pconst_string s so END
 ;
 
 value ocaml_const_int32 =
