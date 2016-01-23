@@ -102,6 +102,18 @@ IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
     else Labelled lab;
 END;
 
+IFDEF OCAML_VERSION > OCAML_2_04 AND OCAML_VERSION < OCAML_4_03_0 THEN
+  value mkopt t lab =
+    if lab = "" then t
+    else if lab.[0] = '?' then
+      {ptyp_desc =
+         Ptyp_constr (mknoloc (Ldot (Lident "*predef*") "option")) [t];
+       ptyp_loc = loc_none;
+       ptyp_attributes = []}
+    else t
+  ;
+END;
+
 value ocaml_value_description vn t p =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN {pval_type = t; pval_prim = p}
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
@@ -381,7 +393,7 @@ value ocaml_ptype_variant ctl priv =
 
 value ocaml_ptyp_arrow lab t1 t2 =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Ptyp_arrow t1 t2
-  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Ptyp_arrow lab t1 t2
+  ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Ptyp_arrow lab (mkopt t1 lab) t2
   ELSE Ptyp_arrow (labelled lab) t1 t2 END
 ;
 

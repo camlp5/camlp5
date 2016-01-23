@@ -1,6 +1,7 @@
 Camlp5 Version 6.15:
 --------------------
 
+* [23 Jan 16] Fixed bug on optional types (ocaml 4.02).
 * [15 Jan 16] Fixed bug on methods wrongly interpreted as vals.
 * [05 Jan 16] Updated for ocaml trunk 4.03.0
   (git version be2a7e2f830911b331657b8cfa462f5219dfec5b)
