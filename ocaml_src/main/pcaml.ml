@@ -7,7 +7,7 @@
 
 open Printf;;
 
-let version = "6.15";;
+let version = "6.16-exp";;
 let syntax_name = ref "";;
 
 let gram =
