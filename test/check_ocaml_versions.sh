@@ -3,8 +3,8 @@
 
 TOP=$HOME/work
 DEST=$TOP/usr
-OCAMLSDIR=$TOP/ocaml/release
-CAMLP5DIR=$TOP/camlp5
+OCAMLSDIR=$TOP/ocaml_src/release
+CAMLP5DIR=$TOP/camlp5_src/camlp5
 MODE=--strict
 DOOPT=1
 ARCH64=0
@@ -16,7 +16,7 @@ PATH=$(pwd)/bin:$PATH
 getvers () {
   cd "$OCAMLSDIR"
   if [ "$ARCH64" = "0" ]; then
-    vers="$(ls | grep -v csl | grep -v '^1.0[0-5]')"
+    vers="$(git tag | grep -v csl | grep -v '^1.0[0-5]')"
   else
     vers="$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6]')"
   fi
@@ -78,8 +78,12 @@ echo $vers
 for i in $vers; do
   echo =====================
   echo date: $(date) version: $i
-  echo "+++++ cd $OCAMLSDIR/$i"
-  cd $OCAMLSDIR/$i
+  echo "+++++ cd $OCAMLSDIR"
+  cd $OCAMLSDIR
+  echo "+++++ git reset --hard"
+  git reset --hard
+  echo "+++++ git co tags/$i"
+  git co tags/$i
   if [ "$i" "<" "4.00" ]; then
     sed -e 's/ camlp4o[a-z]* / /g' Makefile | grep -v partial-install.sh |
     grep -v 'cd ocamldoc' | grep -v 'cd camlp4' |
@@ -89,16 +93,18 @@ for i in $vers; do
     mv tmp Makefile
     touch config/Makefile
     config_extra_opt=
-  else
+  elif [ "$i" "<" "4.02.0" ]; then
     config_extra_opt="-no-camlp4"
+  else
+    config_extra_opt=
   fi
   if [ "$i" = "1.05" -o "$i" = "1.06" ]; then
     sed -i -e '/fpu_control.h/d;/setfpucw/d' byterun/floats.c
   fi
   echo "+++++ make clean"
   make clean
-  echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man/man1" $config_extra_opt
-  ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man/man1 $config_extra_opt
+  echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man/man1" --no-ocamldoc $config_extra_opt
+  ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man/man1 --no-ocamldoc $config_extra_opt
   sed -i -e 's/ graph//' -e 's/ labltk//' -e 's/ num / /' config/Makefile
   sed -i -e 's/define HAS_MEMMOVE/undef HAS_MEMMOVE/' config/s.h
   if [ "$DOOPT" = "0" ]; then

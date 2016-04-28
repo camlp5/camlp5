@@ -1,6 +1,9 @@
 Camlp5 Version 6.16:
 --------------------
 
+* [28 Apr 16] Fixed problems of compatibility with previous versions of
+  ocaml.
+
 Camlp5 Version 6.15:
 --------------------
 

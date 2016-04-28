@@ -1,70 +1,156 @@
-pa_extfold.cmo: ../main/pcaml.cmi
-pa_extfold.cmx: ../main/pcaml.cmx
-pa_extfun.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_extfun.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_extprint.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_extprint.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_lefteval.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_lefteval.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_lex.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
-pa_lex.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_lisp.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_lisp.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_lispr.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_lispr.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_mkast.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_mkast.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_mktest.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_mktest.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_o.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi
-pa_o.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx
-pa_oop.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_oop.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_op.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
-pa_op.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_pprintf.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_pprintf.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_pragma.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
-pa_pragma.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_reloc.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_reloc.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pa_scheme.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
-pa_scheme.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_schemer.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
-pa_schemer.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_sml.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pa_sml.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pr_depend.cmo: ../main/mLast.cmi ../main/pcaml.cmi
-pr_depend.cmx: ../main/mLast.cmi ../main/pcaml.cmx
-pr_extend.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
-pr_extend.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
-pr_extfun.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
-pr_extfun.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
-pr_extprint.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
-pr_extprint.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
+elexer.cmo: ../lib/gramext.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
+    ../lib/versdep.cmo
+elexer.cmx: ../lib/gramext.cmx ../lib/plexing.cmx ../lib/ploc.cmx \
+    ../lib/versdep.cmx
+pa_extfold.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../main/pcaml.cmi
+pa_extfold.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../main/pcaml.cmx
+pa_extfun.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../main/mLast.cmi ../main/pcaml.cmi
+pa_extfun.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx
+pa_extprint.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../main/mLast.cmi ../main/pcaml.cmi
+pa_extprint.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx
+pa_lefteval.cmo: ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi
+pa_lefteval.cmx: ../lib/ploc.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_lex.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
+pa_lex.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_lisp.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
+pa_lisp.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_lispr.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
+pa_lispr.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_mkast.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
+pa_mkast.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_mktest.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
+pa_mktest.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_o.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
+    ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi
+pa_o.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
+    ../lib/ploc.cmx ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx
+pa_oop.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../main/mLast.cmi ../main/pcaml.cmi
+pa_oop.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx
+pa_op.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
+pa_op.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_pprintf.cmo: ../lib/fstream.cmi ../lib/gramext.cmi ../lib/grammar.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
+pa_pprintf.cmx: ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_pragma.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/exparser.cmi ../main/mLast.cmi \
+    ../main/pcaml.cmi
+pa_pragma.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/exparser.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx
+pa_reloc.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+    ../main/mLast.cmi ../main/pcaml.cmi
+pa_reloc.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx
+pa_scheme.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
+    ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
+    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
+pa_scheme.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
+    ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
+    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_schemer.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
+    ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
+    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
+pa_schemer.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
+    ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
+    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_sml.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
+    ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi \
+    ../main/pcaml.cmi
+pa_sml.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
+    ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx
+pr_depend.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
+    ../main/mLast.cmi ../main/pcaml.cmi
+pr_depend.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx
+pr_extend.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/gramext.cmi \
+    ../lib/plexing.cmi ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi \
+    ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
+pr_extend.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/gramext.cmx \
+    ../lib/plexing.cmx ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
+pr_extfun.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
+    ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi ../main/pcaml.cmi \
+    ../main/prtools.cmi
+pr_extfun.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
+    ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi ../main/pcaml.cmx \
+    ../main/prtools.cmx
+pr_extprint.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
+    ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi ../main/pcaml.cmi \
+    ../main/prtools.cmi
+pr_extprint.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
+    ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi ../main/pcaml.cmx \
+    ../main/prtools.cmx
 pr_null.cmo: ../main/pcaml.cmi
 pr_null.cmx: ../main/pcaml.cmx
-pr_o.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
-pr_o.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
-pr_op.cmo: ../main/mLast.cmi ../main/parserify.cmi ../main/pcaml.cmi \
+pr_o.cmo: ../lib/diff.cmi ../lib/eprinter.cmi ../lib/extfun.cmi \
+    ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi ../lib/versdep.cmo \
+    ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
+pr_o.cmx: ../lib/diff.cmx ../lib/eprinter.cmx ../lib/extfun.cmx \
+    ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx ../lib/versdep.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
+pr_op.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
+    ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi \
+    ../main/parserify.cmi ../main/pcaml.cmi ../main/prtools.cmi
+pr_op.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
+    ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi \
+    ../main/parserify.cmx ../main/pcaml.cmx ../main/prtools.cmx
+pr_r.cmo: ../lib/diff.cmi ../lib/eprinter.cmi ../lib/extfun.cmi \
+    ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi ../lib/versdep.cmo \
+    ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
+pr_r.cmx: ../lib/diff.cmx ../lib/eprinter.cmx ../lib/extfun.cmx \
+    ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx ../lib/versdep.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
+pr_ro.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
+    ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi ../main/pcaml.cmi \
     ../main/prtools.cmi
-pr_op.cmx: ../main/mLast.cmi ../main/parserify.cmx ../main/pcaml.cmx \
+pr_ro.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
+    ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi ../main/pcaml.cmx \
     ../main/prtools.cmx
-pr_r.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
-pr_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
-pr_ro.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
-pr_ro.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
-pr_rp.cmo: ../main/mLast.cmi ../main/parserify.cmi ../main/pcaml.cmi \
-    ../main/prtools.cmi pr_r.cmo
-pr_rp.cmx: ../main/mLast.cmi ../main/parserify.cmx ../main/pcaml.cmx \
-    ../main/prtools.cmx pr_r.cmx
-pr_scheme.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
-pr_scheme.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx
-pr_schemep.cmo: ../main/mLast.cmi ../main/parserify.cmi ../main/pcaml.cmi \
-    ../main/prtools.cmi
-pr_schemep.cmx: ../main/mLast.cmi ../main/parserify.cmx ../main/pcaml.cmx \
-    ../main/prtools.cmx
-q_phony.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi \
+pr_rp.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
+    ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi \
+    ../main/parserify.cmi ../main/pcaml.cmi ../main/prtools.cmi pr_r.cmo
+pr_rp.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
+    ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi \
+    ../main/parserify.cmx ../main/pcaml.cmx ../main/prtools.cmx pr_r.cmx
+pr_scheme.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
+    ../lib/pprintf.cmi ../lib/pretty.cmi ../lib/versdep.cmo ../main/mLast.cmi \
+    ../main/pcaml.cmi ../main/prtools.cmi
+pr_scheme.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
+    ../lib/pprintf.cmx ../lib/pretty.cmx ../lib/versdep.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx ../main/prtools.cmx
+pr_schemep.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
+    ../lib/pretty.cmi ../main/mLast.cmi ../main/parserify.cmi \
+    ../main/pcaml.cmi ../main/prtools.cmi
+pr_schemep.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
+    ../lib/pretty.cmx ../main/mLast.cmi ../main/parserify.cmx \
+    ../main/pcaml.cmx ../main/prtools.cmx
+q_phony.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/gramext.cmi \
+    ../lib/grammar.cmi ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi \
+    ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi \
     ../main/quotation.cmi
-q_phony.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx \
+q_phony.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/gramext.cmx \
+    ../lib/grammar.cmx ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx \
     ../main/quotation.cmx

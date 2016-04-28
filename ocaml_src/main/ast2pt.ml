@@ -155,15 +155,6 @@ let mkintconst loc s c =
   | _ -> error loc "special int not implemented"
 ;;
 
-let pconst_of_const =
-  function
-    Const_int i -> ocaml_pconst_int i
-  | Const_char c -> ocaml_pconst_char c
-  | Const_string (s, so) -> ocaml_pconst_string s so
-  | Const_float s -> ocaml_pconst_float s
-  | _ -> failwith "pconstant of constant"
-;;
-
 let conv_con =
   let t = Hashtbl.create 73 in
   List.iter (fun (s, s') -> Hashtbl.add t s s')

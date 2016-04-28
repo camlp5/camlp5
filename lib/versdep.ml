@@ -102,7 +102,7 @@ IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
     else Labelled lab;
 END;
 
-IFDEF OCAML_VERSION > OCAML_2_04 AND OCAML_VERSION < OCAML_4_03_0 THEN
+IFDEF OCAML_VERSION > OCAML_4_02 AND OCAML_VERSION < OCAML_4_03_0 THEN
   value mkopt t lab =
     if lab = "" then t
     else if lab.[0] = '?' then
@@ -393,6 +393,7 @@ value ocaml_ptype_variant ctl priv =
 
 value ocaml_ptyp_arrow lab t1 t2 =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Ptyp_arrow t1 t2
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_arrow lab t1 t2
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Ptyp_arrow lab (mkopt t1 lab) t2
   ELSE Ptyp_arrow (labelled lab) t1 t2 END
 ;
@@ -493,6 +494,19 @@ value ocaml_pconst_string s so =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
   ELSE Pconst_string s so END
+;
+
+value pconst_of_const =
+  fun
+  [ Const_int i -> ocaml_pconst_int i
+  | Const_char c -> ocaml_pconst_char c
+  | IFDEF OCAML_VERSION < OCAML_4_02 THEN
+      Const_string s -> ocaml_pconst_string s None
+    ELSE
+      Const_string s so -> ocaml_pconst_string s so
+    END
+  | Const_float s -> ocaml_pconst_float s
+  | _ -> failwith "pconstant of constant" ]
 ;
 
 value ocaml_const_int32 =

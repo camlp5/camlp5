@@ -64,14 +64,7 @@ let list_map_check f l =
 
 (* *)
 
-let mkopt t lab =
-  if lab = "" then t
-  else if lab.[0] = '?' then
-    {ptyp_desc =
-      Ptyp_constr (mknoloc (Ldot (Lident "*predef*", "option")), [t]);
-     ptyp_loc = loc_none; ptyp_attributes = []}
-  else t
-;;
+(* *)
 
 let ocaml_value_description vn t p =
   {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
@@ -141,7 +134,7 @@ let ocaml_ptype_variant ctl priv =
   with Exit -> None
 ;;
 
-let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, mkopt t1 lab, t2);;
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
 
 let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl, ll);;
 
@@ -174,6 +167,15 @@ let ocaml_pconst_float s = Const_float s;;
 
 let ocaml_const_string s = Const_string s;;
 let ocaml_pconst_string s so = Const_string s;;
+
+let pconst_of_const =
+  function
+    Const_int i -> ocaml_pconst_int i
+  | Const_char c -> ocaml_pconst_char c
+  | Const_string s -> ocaml_pconst_string s None
+  | Const_float s -> ocaml_pconst_float s
+  | _ -> failwith "pconstant of constant"
+;;
 
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
 

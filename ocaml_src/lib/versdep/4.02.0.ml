@@ -222,6 +222,15 @@ let ocaml_pconst_float s = Const_float s;;
 let ocaml_const_string s = Const_string (s, None);;
 let ocaml_pconst_string s so = Const_string (s, so);;
 
+let pconst_of_const =
+  function
+    Const_int i -> ocaml_pconst_int i
+  | Const_char c -> ocaml_pconst_char c
+  | Const_string (s, so) -> ocaml_pconst_string s so
+  | Const_float s -> ocaml_pconst_float s
+  | _ -> failwith "pconstant of constant"
+;;
+
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
 
 let ocaml_const_int64 = Some (fun s -> Const_int64 (Int64.of_string s));;
