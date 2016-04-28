@@ -44,7 +44,13 @@ let list_map_check f l =
 
 (* *)
 
-(* *)
+let mkopt t lab =
+  if lab = "" then t
+  else if lab.[0] = '?' then
+    {ptyp_desc = Ptyp_constr (mknoloc (Lident "option"), [t]);
+     ptyp_loc = loc_none}
+  else t
+;;
 
 let ocaml_value_description vn t p = {pval_type = t; pval_prim = p};;
 
@@ -108,7 +114,7 @@ let ocaml_ptype_variant ctl priv =
   with Exit -> None
 ;;
 
-let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, mkopt t1 lab, t2);;
 
 let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl, ll);;
 
