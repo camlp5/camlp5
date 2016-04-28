@@ -23,7 +23,14 @@ let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
-(* *)
+let loc_none =
+  let loc =
+    {Lexing.pos_fname = "_none_"; Lexing.pos_lnum = 1; Lexing.pos_bol = 0;
+     Lexing.pos_cnum = -1}
+  in
+  {Location.loc_start = loc; Location.loc_end = loc;
+   Location.loc_ghost = true}
+;;
 
 let mkloc loc txt = txt;;
 let mknoloc txt = txt;;

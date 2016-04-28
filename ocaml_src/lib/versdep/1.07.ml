@@ -150,7 +150,6 @@ let pconst_of_const =
   | Const_char c -> ocaml_pconst_char c
   | Const_string s -> ocaml_pconst_string s None
   | Const_float s -> ocaml_pconst_float s
-  | _ -> failwith "pconstant of constant"
 ;;
 
 let ocaml_const_int32 = None;;

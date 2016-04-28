@@ -46,7 +46,7 @@ value ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
   END
 ;
 
-IFDEF OCAML_VERSION >= OCAML_4_00 THEN
+IFDEF OCAML_VERSION >= OCAML_3_01_1 THEN
 value loc_none =
   let loc =
     {Lexing.pos_fname = "_none_"; pos_lnum = 1; pos_bol = 0; pos_cnum = -1}
@@ -102,7 +102,7 @@ IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
     else Labelled lab;
 END;
 
-IFDEF OCAML_VERSION > OCAML_2_04 AND OCAML_VERSION < OCAML_4_03_0 THEN
+IFDEF OCAML_VERSION > OCAML_3_01_1 AND OCAML_VERSION < OCAML_4_03_0 THEN
   value mkopt t lab =
     if lab = "" then t
     else if lab.[0] = '?' then
@@ -401,7 +401,8 @@ value ocaml_ptype_variant ctl priv =
 ;
 
 value ocaml_ptyp_arrow lab t1 t2 =
-  IFDEF OCAML_VERSION <= OCAML_2_04 THEN Ptyp_arrow t1 t2
+  IFDEF OCAML_VERSION < OCAML_3_00 THEN Ptyp_arrow t1 t2
+  ELSIFDEF OCAML_VERSION <= OCAML_3_01 THEN Ptyp_arrow lab t1 t2
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Ptyp_arrow lab (mkopt t1 lab) t2
   ELSE Ptyp_arrow (labelled lab) t1 t2 END
 ;
@@ -514,7 +515,9 @@ value pconst_of_const =
       Const_string s so -> ocaml_pconst_string s so
     END
   | Const_float s -> ocaml_pconst_float s
-  | _ -> failwith "pconstant of constant" ]
+  | IFDEF OCAML_VERSION > OCAML_3_01 THEN
+    _ -> failwith "pconstant of constant"
+    END]
 ;
 
 value ocaml_const_int32 =

@@ -473,5 +473,5 @@ add_option "-pmode"
         exit 0))
   "Print the current mode and exit.";;
 
-add_option "-dquot" (Arg.Set_string Quotation.default)
+add_option "-dquot" (Arg.String (fun s -> Quotation.default := s))
   "<name> Set default quotation.";;
