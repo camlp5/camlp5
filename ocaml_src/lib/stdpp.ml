@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* stdpp.ml,v *)
-(* Copyright (c) INRIA 2007-2014 *)
+(* Copyright (c) INRIA 2007-2016 *)
 
 type location = Ploc.t;;
 

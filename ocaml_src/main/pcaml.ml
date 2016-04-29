@@ -1,13 +1,13 @@
 (* camlp5r *)
 (* pcaml.ml,v *)
-(* Copyright (c) INRIA 2007-2014 *)
+(* Copyright (c) INRIA 2007-2016 *)
 
 (* #load "pa_macro.cmo" *)
 (* #load "pa_extend.cmo" *)
 
 open Printf;;
 
-let version = "6.16";;
+let version = "6.17-exp";;
 let syntax_name = ref "";;
 
 let gram =

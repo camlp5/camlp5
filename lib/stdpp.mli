@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* stdpp.mli,v *)
-(* Copyright (c) INRIA 2007-2014 *)
+(* Copyright (c) INRIA 2007-2016 *)
 
 (** Module deprecated since Camlp5 version 5.00. Use now module Ploc.
     Compatibility assumed. *)

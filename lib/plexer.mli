@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* plexer.mli,v *)
-(* Copyright (c) INRIA 2007-2014 *)
+(* Copyright (c) INRIA 2007-2016 *)
 
 (** This module contains the lexer used for ocaml syntax (revised and
     normal). *)

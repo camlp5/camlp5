@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo *)
 (* rprint.ml,v *)
-(* Copyright (c) INRIA 2007-2014 *)
+(* Copyright (c) INRIA 2007-2016 *)
 
 IFDEF OCAML_VERSION >= OCAML_3_03 THEN
 

@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* diff.mli,v *)
-(* Copyright (c) INRIA 2007-2014 *)
+(* Copyright (c) INRIA 2007-2016 *)
 
 (** Differences between two arrays. *)
 

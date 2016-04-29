@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* elexer.ml,v *)
-(* Copyright (c) INRIA 2007-2014 *)
+(* Copyright (c) INRIA 2007-2016 *)
 
 (* lexer written with extensible grammars; experimental *)
 
