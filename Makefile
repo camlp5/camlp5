@@ -109,6 +109,13 @@ compare:
 	else echo "Fixpoint not reached, try one more bootstrapping cycle."; \
 	fi
 
+compare_test:
+	@(for i in $(FDIRS); do \
+		cd $$i; \
+		if $(MAKE) compare 2>/dev/null; then cd ..; \
+		else exit 1; fi; \
+	done)
+
 cleanboot:
 	rm -rf boot/SAVED/SAVED
 
@@ -134,12 +141,12 @@ clean_core:
 
 world:
 	$(MAKE) core
-	$(MAKE) coreboot
+	$(MAKE) compare_test || $(MAKE) coreboot
 	$(MAKE) out
 
 world.opt:
 	$(MAKE) core
-	$(MAKE) coreboot
+	$(MAKE) compare_test || $(MAKE) coreboot
 	$(MAKE) out
 	$(MAKE) opt
 	$(MAKE) opt.opt
