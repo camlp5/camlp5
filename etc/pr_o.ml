@@ -1991,16 +1991,26 @@ value variant_decl pc pv =
     END ]
 ;
 
-value variant_decl_list char loc pc pvl =
+value bquote_ident pc s = pprintf pc "`%s" s;
+
+value variant_decl_list char loc pc pvl sl =
   if pvl = [] then pprintf pc "[%s ]" char
   else
     horiz_vertic
       (fun () ->
-         pprintf pc "[%s %p ]" char
-           (hlist2 variant_decl (bar_before variant_decl)) pvl)
+         pprintf pc "[%s %p%p ]" char
+           (hlist2 variant_decl (bar_before variant_decl)) pvl
+           (fun pc → fun
+            | [] → pprintf pc ""
+            | sl → pprintf pc " > %p" (hlist bquote_ident) sl
+            end) sl)
       (fun () ->
-         pprintf pc "[%s %p ]" char
-           (vlist2 variant_decl (bar_before variant_decl)) pvl)
+         pprintf pc "[%s %p%p ]" char
+           (vlist2 variant_decl (bar_before variant_decl)) pvl
+           (fun pc → fun
+            | [] → pprintf pc ""
+            | sl → pprintf pc " > %p" (hlist bquote_ident) sl
+            end) sl)
 ;
 
 value rec class_longident pc cl =
@@ -2122,13 +2132,13 @@ EXTEND_PRINTER
       | <:ctyp< # $list:id$ >> ->
           pprintf pc "#%p" class_longident id
       | <:ctyp:< [ = $list:pvl$ ] >> ->
-          variant_decl_list "" loc pc pvl
+          variant_decl_list "" loc pc pvl []
       | <:ctyp:< [ > $list:pvl$ ] >> ->
-          variant_decl_list ">" loc pc pvl
+          variant_decl_list ">" loc pc pvl []
       | <:ctyp:< [ < $list:pvl$ ] >> ->
-          variant_decl_list "<" loc pc pvl
-      | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
-          not_impl "variants 4" pc pvl
+          variant_decl_list "<" loc pc pvl []
+      | <:ctyp:< [ < $list:pvl$ > $list:vdl$ ] >> ->
+          variant_decl_list "<" loc pc pvl vdl
       | <:ctyp< $_$ as $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" ctyp z
       | z ->

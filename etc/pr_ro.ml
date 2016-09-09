@@ -207,16 +207,26 @@ value variant_decl pc pv =
     END ]
 ;
 
-value variant_decl_list char pc pvl =
+value bquote_ident pc s = pprintf pc "`%s" s;
+
+value variant_decl_list char pc pvl sl =
   if pvl = [] then pprintf pc "[ %c ]" char
   else
     Pretty.horiz_vertic
       (fun () ->
-         pprintf pc "[ %c %p ]" char
-           (hlist2 variant_decl (bar_before variant_decl)) pvl)
+         pprintf pc "[ %c %p%p ]" char
+           (hlist2 variant_decl (bar_before variant_decl)) pvl
+           (fun pc → fun
+            | [] → pprintf pc ""
+            | sl → pprintf pc " > %p" (hlist bquote_ident) sl
+            end) sl)
       (fun () ->
-         pprintf pc "[ %c@   %p ]" char
-           (vlist2 variant_decl (bar_before variant_decl)) pvl)
+         pprintf pc "[ %c@   %p%p ]" char
+           (vlist2 variant_decl (bar_before variant_decl)) pvl
+           (fun pc → fun
+            | [] → pprintf pc ""
+            | sl → pprintf pc " > %p" (hlist bquote_ident) sl
+            end) sl)
 ;
 
 value ipatt_tcon_fun_binding pc (p, eo) =
@@ -348,13 +358,13 @@ EXTEND_PRINTER
       | <:ctyp< # $list:id$ >> ->
           pprintf pc "#%p" class_longident id
       | <:ctyp< [ = $list:pvl$ ] >> ->
-          variant_decl_list '=' pc pvl
+          variant_decl_list '=' pc pvl []
       | <:ctyp< [ > $list:pvl$ ] >> ->
-          variant_decl_list '>' pc pvl
+          variant_decl_list '>' pc pvl []
       | <:ctyp< [ < $list:pvl$ ] >> ->
-          variant_decl_list '<' pc pvl
-      | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
-          not_impl "variants 4" pc pvl
+          variant_decl_list '<' pc pvl []
+      | <:ctyp< [ < $list:pvl$ > $list:sl$ ] >> ->
+          variant_decl_list '<' pc pvl sl
       | <:ctyp< $_$ as $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" ctyp z
       | z ->
