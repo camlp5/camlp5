@@ -773,7 +773,7 @@ value ocaml_ppat_construct_args =
     fun
     [ Ppat_construct li po chk_arity ->
         IFDEF OCAML_VERSION < OCAML_4_00 THEN Some (li, 0, po, chk_arity)
-        ELSE Some (li.txt, li.loc, po, chk_arity) END 
+        ELSE Some (li.txt, li.loc, po, chk_arity) END
     | _ -> None ]
   ELSE
     fun
@@ -1256,7 +1256,7 @@ value ocaml_pctf_val (s, mf, t, loc) =
 value ocaml_pctf_virt (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_virt (s, pf, t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pctf_virt (s, pf, t)
-  ELSE Pctf_val (s, Immutable, Virtual, t) END
+  ELSE Pctf_method (s, pf, Virtual, t) END
 ;
 
 value ocaml_pcty_constr =
