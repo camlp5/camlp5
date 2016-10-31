@@ -1323,7 +1323,8 @@ and str_item s l =
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints" ]
                    in
-                   (uv n, module_type mt, module_expr me))
+                   (uv n, module_type mt, ocaml_mkmod (mkloc loc)
+                      (ocaml_pmod_constraint (module_expr me) (module_type mt)) ) )
                 (uv nel)
             in
             [mkstr loc (pstr_recmodule nel) :: l]

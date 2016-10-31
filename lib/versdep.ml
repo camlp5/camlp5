@@ -1031,7 +1031,7 @@ value ocaml_pstr_recmodule =
     let f nel =
       Pstr_recmodule
         (List.map
-           (fun (s, mt, me) ->
+           (fun (s, ___mt, me) ->
               {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
                pmb_loc = loc_none})
            nel)
@@ -1082,6 +1082,11 @@ value ocaml_class_infos =
          {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
           pci_expr = expr; pci_loc = loc; pci_attributes = []})
   END
+;
+
+value ocaml_pmod_constraint me mt =
+  (* TODO: check for ocaml < 4.01 *)
+  Pmod_constraint me mt
 ;
 
 value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
