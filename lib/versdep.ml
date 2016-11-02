@@ -415,11 +415,11 @@ value ocaml_ptyp_class li tl ll =
 
 value ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li) tl;
 
-value ocaml_ptyp_object ml =
+value ocaml_ptyp_object ml is_open =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_object ml
   ELSE
     let ml = List.map (fun (s, t) -> (s, [], t)) ml in
-    Ptyp_object ml Closed
+    Ptyp_object ml (if is_open then Open else Closed)
   END
 ;
 
@@ -1040,7 +1040,7 @@ value ocaml_pstr_recmodule =
   END
 ;
 
-value ocaml_pstr_type stl = 
+value ocaml_pstr_type stl =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pstr_type stl
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
