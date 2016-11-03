@@ -95,7 +95,7 @@ value list_map_check f l =
 ;
 
 IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
-  value labelled lab =
+  value conv_labelled lab =
     if lab = "" then Nolabel
     else if lab.[0] = '?' then
       Optional (String.sub lab 1 (String.length lab - 1))
@@ -404,7 +404,7 @@ value ocaml_ptyp_arrow lab t1 t2 =
   IFDEF OCAML_VERSION < OCAML_3_00 THEN Ptyp_arrow t1 t2
   ELSIFDEF OCAML_VERSION <= OCAML_3_01 THEN Ptyp_arrow lab t1 t2
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Ptyp_arrow lab (mkopt t1 lab) t2
-  ELSE Ptyp_arrow (labelled lab) t1 t2 END
+  ELSE Ptyp_arrow (conv_labelled lab) t1 t2 END
 ;
 
 value ocaml_ptyp_class li tl ll =
@@ -538,7 +538,7 @@ value ocaml_const_nativeint =
 value ocaml_pexp_apply f lel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_apply f (List.map snd lel)
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pexp_apply f lel
-  ELSE Pexp_apply f (List.map (fun (l, e) -> (labelled l, e)) lel) END
+  ELSE Pexp_apply f (List.map (fun (l, e) -> (conv_labelled l, e)) lel) END
 ;
 
 value ocaml_pexp_assertfalse fname loc =
@@ -659,7 +659,7 @@ value ocaml_pexp_function lab eo pel =
     match pel with
     | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
         IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pexp_fun lab eo p e
-        ELSE Pexp_fun (labelled lab) eo p e END
+        ELSE Pexp_fun (conv_labelled lab) eo p e END
     | pel ->
         if lab = "" && eo = None then Pexp_function pel
         else failwith "internal error: bad ast in ocaml_pexp_function"
@@ -1193,7 +1193,7 @@ value ocaml_pcl_apply =
   ELSE
     Some
       (fun ce lel ->
-         Pcl_apply ce (List.map (fun (l, e) -> (labelled l, e)) lel))
+         Pcl_apply ce (List.map (fun (l, e) -> (conv_labelled l, e)) lel))
   END
 ;
 
@@ -1215,7 +1215,7 @@ value ocaml_pcl_fun =
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     Some (fun lab ceo p ce -> Pcl_fun lab ceo p ce)
   ELSE
-    Some (fun lab ceo p ce -> Pcl_fun (labelled lab) ceo p ce)
+    Some (fun lab ceo p ce -> Pcl_fun (conv_labelled lab) ceo p ce)
   END
 ;
 
@@ -1273,13 +1273,14 @@ value ocaml_pcty_fun =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN
     None
   ELSIFDEF OCAML_VERSION <= OCAML_2_04 THEN
-    Some (fun lab t ct -> Pcty_fun t ct)
+    Some (fun lab t _ ct -> Pcty_fun t ct)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun lab t ct -> Pcty_fun lab t ct)
+    Some (fun lab t _ ct -> Pcty_fun lab t ct)
+    (* In 4.02.* Pcty_fun was renamed to Pcty_arrow *)
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
-    Some (fun lab t ct -> Pcty_arrow lab t ct)
+    Some (fun lab t _ ct -> Pcty_arrow lab t ct)
   ELSE
-    Some (fun lab t ct -> Pcty_arrow (labelled lab) t ct)
+    Some (fun lab _ t ct -> Pcty_arrow (conv_labelled lab) t ct)
   END
 ;
 

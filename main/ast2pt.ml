@@ -1360,20 +1360,20 @@ and class_type =
   | CtFun loc (TyLab _ lab t) ct →
       match ocaml_pcty_fun with
       [ Some pcty_fun →
-          mkcty loc (pcty_fun (uv lab) (ctyp t) (class_type ct))
+          mkcty loc (pcty_fun (uv lab) (ctyp t) (ctyp t) (class_type ct))
       | None → error loc "no class type desc in this ocaml version" ]
-  | CtFun loc (TyOlb loc1 lab t) ct →
+  | CtFun loc (TyOlb loc1 lab oldt) ct →
       match ocaml_pcty_fun with
       [ Some pcty_fun →
           let t =
             let loc = loc1 in
-            <:ctyp< option $t$ >>
+            <:ctyp< option $oldt$ >>
           in
-          mkcty loc (pcty_fun ("?" ^ uv lab) (ctyp t) (class_type ct))
+          mkcty loc (pcty_fun ("?" ^ uv lab) (ctyp t) (ctyp oldt) (class_type ct))
       | None → error loc "no class type desc in this ocaml version" ]
   | CtFun loc t ct →
       match ocaml_pcty_fun with
-      [ Some pcty_fun → mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
+      [ Some pcty_fun → mkcty loc (pcty_fun "" (ctyp t) (ctyp t) (class_type ct))
       | None → error loc "no class type desc in this ocaml version" ]
   | CtSig loc t_o ctfl →
       match ocaml_pcty_signature with
