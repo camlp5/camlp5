@@ -1326,9 +1326,9 @@ value ocaml_pwith_type loc (i, td) =
   ELSE Pwith_type (mkloc loc i) td END
 ;
 
-value ocaml_pwith_module loc me =
+value ocaml_pwith_module loc mname me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pwith_module (mkloc loc me)
-  ELSE Pwith_module (mkloc loc (Lident "")) (mkloc loc me) END
+  ELSE Pwith_module (mkloc loc mname) (mkloc loc me) END
 ;
 
 value ocaml_pwith_typesubst =
