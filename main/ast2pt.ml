@@ -10,6 +10,24 @@ open Versdep;
 
 open MLast;
 
+value string_split_dot s =
+  let rec helper acc left =
+    try
+      let i = String.index_from s left '.' in
+      let head = String.sub s left (i-left) in
+      helper [head::acc] (i+1)
+    with [ Not_found -> List.rev [ (String.sub s left (String.length s - left)) :: acc] ]
+  in
+  if s="" then [] else helper [] 0;
+
+(* value () =
+  do {
+    assert (string_split_dot "Asdf.Asdf.Asdf" = ["Asdf"; "Asdf"; "Asdf"]);
+    assert (string_split_dot "A.A.A" = ["A"; "A"; "A"]);
+    assert (string_split_dot "A" = ["A"]);
+    assert (string_split_dot "" = []);
+  }; *)
+
 let ov = sys_ocaml_version in
 let oi =
   loop 0 where rec loop i =
@@ -838,8 +856,11 @@ value rec expr =
       [ <:expr< $uid:m$ >> →
           match ocaml_pexp_open with
           [ Some pexp_open →
-              let li = Lident m in
-              mkexp loc (pexp_open li (expr e2))
+              match ocaml_id_or_li_of_string_list loc (string_split_dot m) with
+              [ Some li -> mkexp loc (pexp_open li (expr e2))
+              | None ->
+                  error loc (Printf.sprintf "Can't constuct ident from string '%s'" m)
+              ]
           | None → error loc "no expression open in this ocaml version" ]
       | _ →
           mkexp loc

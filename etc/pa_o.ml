@@ -533,8 +533,9 @@ EXTEND
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
-      | "let"; "open"; m = V UIDENT; "in"; e = expr LEVEL "top" ->
-          <:expr< $_uid:m$ . ($e$) >>
+      | "let"; "open"; m = uident_dot_list; "in"; e = expr LEVEL "top" ->
+          let mpath = <:vala< String.concat "." m>> in
+          <:expr< $_uid:mpath$ . ($e$) >>
       | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
           <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = patt LEVEL "simple"; (eo, e) = fun_def ->
@@ -945,6 +946,11 @@ EXTEND
     [ RIGHTA
       [ i = UIDENT -> [i]
       | i = LIDENT -> [i]
+      | i = UIDENT; "."; j = SELF -> [i :: j] ] ]
+  ;
+  uident_dot_list:
+    [ RIGHTA
+      [ i = UIDENT -> [ i ]
       | i = UIDENT; "."; j = SELF -> [i :: j] ] ]
   ;
   (* Miscellaneous *)
