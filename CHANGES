@@ -1,6 +1,7 @@
 Camlp5 Version 6.17:
 --------------------
 
+* [24 Jul 16] Added compatibility with ocaml 4.04.0 and 4.04.1.
 * [09 Sep 16] Added pretty print of type [< ... ] when ended with "> `ident".
 * [24 Jul 16] Added compatibility with ocaml 4.03.1.
 
