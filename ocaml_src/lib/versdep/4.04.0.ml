@@ -62,7 +62,7 @@ let list_map_check f l =
   loop [] l
 ;;
 
-let labelled lab =
+let conv_labelled lab =
   if lab = "" then Nolabel
   else if lab.[0] = '?' then
     Optional (String.sub lab 1 (String.length lab - 1))
@@ -178,14 +178,15 @@ let ocaml_ptype_variant ctl priv =
   with Exit -> None
 ;;
 
-let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (labelled lab, t1, t2);;
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (conv_labelled lab, t1, t2);;
 
 let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 
 let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
-let ocaml_ptyp_object ml =
-  let ml = List.map (fun (s, t) -> s, [], t) ml in Ptyp_object (ml, Closed)
+let ocaml_ptyp_object ml is_open =
+  let ml = List.map (fun (s, t) -> s, [], t) ml in
+  Ptyp_object (ml, (if is_open then Open else Closed))
 ;;
 
 let ocaml_ptyp_package = Some (fun pt -> Ptyp_package pt);;
@@ -239,7 +240,7 @@ let ocaml_const_nativeint =
 ;;
 
 let ocaml_pexp_apply f lel =
-  Pexp_apply (f, List.map (fun (l, e) -> labelled l, e) lel)
+  Pexp_apply (f, List.map (fun (l, e) -> conv_labelled l, e) lel)
 ;;
 
 let ocaml_pexp_assertfalse fname loc =
@@ -285,7 +286,7 @@ let ocaml_case (p, wo, loc, e) = {pc_lhs = p; pc_guard = wo; pc_rhs = e};;
 let ocaml_pexp_function lab eo pel =
   match pel with
     [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
-      Pexp_fun (labelled lab, eo, p, e)
+      Pexp_fun (conv_labelled lab, eo, p, e)
   | pel ->
       if lab = "" && eo = None then Pexp_function pel
       else failwith "internal error: bad ast in ocaml_pexp_function"
@@ -487,7 +488,7 @@ let ocaml_pstr_recmodule =
   let f nel =
     Pstr_recmodule
       (List.map
-         (fun (s, mt, me) ->
+         (fun (s, ___mt, me) ->
             {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
              pmb_loc = loc_none})
          nel)
@@ -514,6 +515,11 @@ let ocaml_class_infos =
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
         pci_expr = expr; pci_loc = loc; pci_attributes = []})
+;;
+
+let ocaml_pmod_constraint me mt =
+  (* TODO: check for ocaml < 4.01 *)
+  Pmod_constraint (me, mt)
 ;;
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
@@ -556,7 +562,8 @@ let ocaml_pcf_virt (s, pf, t, loc) =
 
 let ocaml_pcl_apply =
   Some
-    (fun ce lel -> Pcl_apply (ce, List.map (fun (l, e) -> labelled l, e) lel))
+    (fun ce lel ->
+       Pcl_apply (ce, List.map (fun (l, e) -> conv_labelled l, e) lel))
 ;;
 
 let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (mknoloc li, ctl));;
@@ -564,7 +571,7 @@ let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (mknoloc li, ctl));;
 let ocaml_pcl_constraint = Some (fun ce ct -> Pcl_constraint (ce, ct));;
 
 let ocaml_pcl_fun =
-  Some (fun lab ceo p ce -> Pcl_fun (labelled lab, ceo, p, ce))
+  Some (fun lab ceo p ce -> Pcl_fun (conv_labelled lab, ceo, p, ce))
 ;;
 
 let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
@@ -579,11 +586,13 @@ let ocaml_pctf_meth (s, pf, t, loc) = Pctf_method (s, pf, Concrete, t);;
 
 let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Concrete, t);;
 
-let ocaml_pctf_virt (s, pf, t, loc) = Pctf_val (s, Immutable, Virtual, t);;
+let ocaml_pctf_virt (s, pf, t, loc) = Pctf_method (s, pf, Virtual, t);;
 
 let ocaml_pcty_constr = Some (fun li ltl -> Pcty_constr (mknoloc li, ltl));;
 
-let ocaml_pcty_fun = Some (fun lab t ct -> Pcty_arrow (labelled lab, t, ct));;
+let ocaml_pcty_fun =
+  Some (fun lab _ t ct -> Pcty_arrow (conv_labelled lab, t, ct))
+;;
 
 let ocaml_pcty_signature =
   let f (t, ctfl) =
@@ -601,8 +610,8 @@ let ocaml_pwith_modsubst =
 
 let ocaml_pwith_type loc (i, td) = Pwith_type (mkloc loc i, td);;
 
-let ocaml_pwith_module loc me =
-  Pwith_module (mkloc loc (Lident ""), mkloc loc me)
+let ocaml_pwith_module loc mname me =
+  Pwith_module (mkloc loc mname, mkloc loc me)
 ;;
 
 let ocaml_pwith_typesubst = Some (fun td -> Pwith_typesubst td);;
