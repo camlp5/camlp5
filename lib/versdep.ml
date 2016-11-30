@@ -95,7 +95,7 @@ value list_map_check f l =
 ;
 
 IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
-  value labelled lab =
+  value conv_labelled lab =
     if lab = "" then Nolabel
     else if lab.[0] = '?' then
       Optional (String.sub lab 1 (String.length lab - 1))
@@ -404,7 +404,7 @@ value ocaml_ptyp_arrow lab t1 t2 =
   IFDEF OCAML_VERSION < OCAML_3_00 THEN Ptyp_arrow t1 t2
   ELSIFDEF OCAML_VERSION <= OCAML_3_01 THEN Ptyp_arrow lab t1 t2
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Ptyp_arrow lab (mkopt t1 lab) t2
-  ELSE Ptyp_arrow (labelled lab) t1 t2 END
+  ELSE Ptyp_arrow (conv_labelled lab) t1 t2 END
 ;
 
 value ocaml_ptyp_class li tl ll =
@@ -415,11 +415,11 @@ value ocaml_ptyp_class li tl ll =
 
 value ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li) tl;
 
-value ocaml_ptyp_object ml =
+value ocaml_ptyp_object ml is_open =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_object ml
   ELSE
     let ml = List.map (fun (s, t) -> (s, [], t)) ml in
-    Ptyp_object ml Closed
+    Ptyp_object ml (if is_open then Open else Closed)
   END
 ;
 
@@ -538,7 +538,7 @@ value ocaml_const_nativeint =
 value ocaml_pexp_apply f lel =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN Pexp_apply f (List.map snd lel)
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pexp_apply f lel
-  ELSE Pexp_apply f (List.map (fun (l, e) -> (labelled l, e)) lel) END
+  ELSE Pexp_apply f (List.map (fun (l, e) -> (conv_labelled l, e)) lel) END
 ;
 
 value ocaml_pexp_assertfalse fname loc =
@@ -659,7 +659,7 @@ value ocaml_pexp_function lab eo pel =
     match pel with
     | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
         IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pexp_fun lab eo p e
-        ELSE Pexp_fun (labelled lab) eo p e END
+        ELSE Pexp_fun (conv_labelled lab) eo p e END
     | pel ->
         if lab = "" && eo = None then Pexp_function pel
         else failwith "internal error: bad ast in ocaml_pexp_function"
@@ -773,7 +773,7 @@ value ocaml_ppat_construct_args =
     fun
     [ Ppat_construct li po chk_arity ->
         IFDEF OCAML_VERSION < OCAML_4_00 THEN Some (li, 0, po, chk_arity)
-        ELSE Some (li.txt, li.loc, po, chk_arity) END 
+        ELSE Some (li.txt, li.loc, po, chk_arity) END
     | _ -> None ]
   ELSE
     fun
@@ -1031,7 +1031,7 @@ value ocaml_pstr_recmodule =
     let f nel =
       Pstr_recmodule
         (List.map
-           (fun (s, mt, me) ->
+           (fun (s, ___mt, me) ->
               {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
                pmb_loc = loc_none})
            nel)
@@ -1040,7 +1040,7 @@ value ocaml_pstr_recmodule =
   END
 ;
 
-value ocaml_pstr_type stl = 
+value ocaml_pstr_type stl =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pstr_type stl
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
@@ -1082,6 +1082,11 @@ value ocaml_class_infos =
          {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
           pci_expr = expr; pci_loc = loc; pci_attributes = []})
   END
+;
+
+value ocaml_pmod_constraint me mt =
+  (* TODO: check for ocaml < 4.01 *)
+  Pmod_constraint me mt
 ;
 
 value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
@@ -1188,7 +1193,7 @@ value ocaml_pcl_apply =
   ELSE
     Some
       (fun ce lel ->
-         Pcl_apply ce (List.map (fun (l, e) -> (labelled l, e)) lel))
+         Pcl_apply ce (List.map (fun (l, e) -> (conv_labelled l, e)) lel))
   END
 ;
 
@@ -1210,7 +1215,7 @@ value ocaml_pcl_fun =
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     Some (fun lab ceo p ce -> Pcl_fun lab ceo p ce)
   ELSE
-    Some (fun lab ceo p ce -> Pcl_fun (labelled lab) ceo p ce)
+    Some (fun lab ceo p ce -> Pcl_fun (conv_labelled lab) ceo p ce)
   END
 ;
 
@@ -1256,7 +1261,7 @@ value ocaml_pctf_val (s, mf, t, loc) =
 value ocaml_pctf_virt (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_virt (s, pf, t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pctf_virt (s, pf, t)
-  ELSE Pctf_val (s, Immutable, Virtual, t) END
+  ELSE Pctf_method (s, pf, Virtual, t) END
 ;
 
 value ocaml_pcty_constr =
@@ -1268,13 +1273,14 @@ value ocaml_pcty_fun =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN
     None
   ELSIFDEF OCAML_VERSION <= OCAML_2_04 THEN
-    Some (fun lab t ct -> Pcty_fun t ct)
+    Some (fun lab t _ ct -> Pcty_fun t ct)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun lab t ct -> Pcty_fun lab t ct)
+    Some (fun lab t _ ct -> Pcty_fun lab t ct)
+    (* In 4.02.* Pcty_fun was renamed to Pcty_arrow *)
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
-    Some (fun lab t ct -> Pcty_arrow lab t ct)
+    Some (fun lab t _ ct -> Pcty_arrow lab t ct)
   ELSE
-    Some (fun lab t ct -> Pcty_arrow (labelled lab) t ct)
+    Some (fun lab _ t ct -> Pcty_arrow (conv_labelled lab) t ct)
   END
 ;
 
@@ -1320,9 +1326,9 @@ value ocaml_pwith_type loc (i, td) =
   ELSE Pwith_type (mkloc loc i) td END
 ;
 
-value ocaml_pwith_module loc me =
+value ocaml_pwith_module loc mname me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pwith_module (mkloc loc me)
-  ELSE Pwith_module (mkloc loc (Lident "")) (mkloc loc me) END
+  ELSE Pwith_module (mkloc loc mname) (mkloc loc me) END
 ;
 
 value ocaml_pwith_typesubst =

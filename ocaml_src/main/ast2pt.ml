@@ -10,6 +10,25 @@ open Versdep;;
 
 open MLast;;
 
+let string_split_dot s =
+  let rec helper acc left =
+    try
+      let i = String.index_from s left '.' in
+      let head = String.sub s left (i - left) in helper (head :: acc) (i + 1)
+    with Not_found ->
+      List.rev (String.sub s left (String.length s - left) :: acc)
+  in
+  if s = "" then [] else helper [] 0
+;;
+
+(* value () =
+  do {
+    assert (string_split_dot "Asdf.Asdf.Asdf" = ["Asdf"; "Asdf"; "Asdf"]);
+    assert (string_split_dot "A.A.A" = ["A"; "A"; "A"]);
+    assert (string_split_dot "A" = ["A"]);
+    assert (string_split_dot "" = []);
+  }; *)
+
 let ov = sys_ocaml_version in
 let oi =
   let rec loop i =
@@ -279,7 +298,7 @@ let rec ctyp =
       mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
   | TyArr (loc, t1, t2) -> mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
   | TyObj (loc, fl, v) ->
-      mktyp loc (ocaml_ptyp_object (meth_list loc (uv fl) v))
+      mktyp loc (ocaml_ptyp_object (meth_list loc (uv fl) v) (uv v))
   | TyCls (loc, id) ->
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
@@ -485,8 +504,8 @@ let type_decl_of_with_type loc tn tpl pf ct =
 let mkwithc =
   function
     WcMod (loc, id, m) ->
-      long_id_of_string_list loc (uv id),
-      ocaml_pwith_module (mkloc loc) (module_expr_long_id m)
+      let mname = long_id_of_string_list loc (uv id) in
+      mname, ocaml_pwith_module (mkloc loc) mname (module_expr_long_id m)
   | WcMos (loc, id, m) ->
       begin match ocaml_pwith_modsubst with
         Some pwith_modsubst ->
@@ -495,21 +514,32 @@ let mkwithc =
       | None -> error loc "no with module := in this ocaml version"
       end
   | WcTyp (loc, id, tpl, pf, ct) ->
-      let li = long_id_of_string_list loc (uv id) in
-      begin match type_decl_of_with_type loc "" tpl (uv pf) ct with
-        Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
-      | Left msg -> error loc msg
+      begin match uv id with
+        [] -> error loc "Empty list as type name is not allowed there"
+      | xs ->
+          (* Last element of this list is actual declaration. List begins from
+             optional module path. We pass actual name to make type declaration
+             and a whole list to make With_type constraint.
+             See Parsetree.with_constaint type in compiler sources for more
+             details *)
+          let li = long_id_of_string_list loc xs in
+          let tname = List.hd (List.rev xs) in
+          match type_decl_of_with_type loc tname tpl (uv pf) ct with
+            Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
+          | Left msg -> error loc msg
       end
   | WcTys (loc, id, tpl, t) ->
-      match ocaml_pwith_typesubst with
-        Some pwith_typesubst ->
-          begin match type_decl_of_with_type loc "" tpl false t with
+      match ocaml_pwith_typesubst, uv id with
+        None, _ -> error loc "no with type := in this ocaml version"
+      | Some pwith_typesubst, [tname] ->
+          begin match type_decl_of_with_type loc tname tpl false t with
             Right td ->
               let li = long_id_of_string_list loc (uv id) in
               li, pwith_typesubst td
           | Left msg -> error loc msg
           end
-      | None -> error loc "no with type := in this ocaml version"
+      | Some _, _ ->
+          error loc "Cannot generate with constraint for long type name"
 ;;
 
 let rec patt_fa al =
@@ -986,7 +1016,14 @@ let rec expr =
         MLast.ExUid (_, m) ->
           begin match ocaml_pexp_open with
             Some pexp_open ->
-              let li = Lident m in mkexp loc (pexp_open li (expr e2))
+              begin match
+                ocaml_id_or_li_of_string_list loc (string_split_dot m)
+              with
+                Some li -> mkexp loc (pexp_open li (expr e2))
+              | None ->
+                  error loc
+                    (Printf.sprintf "Can't constuct ident from string '%s'" m)
+              end
           | None -> error loc "no expression open in this ocaml version"
           end
       | _ ->
@@ -1514,7 +1551,10 @@ and str_item s l =
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints"
                    in
-                   uv n, module_type mt, module_expr me)
+                   uv n, module_type mt,
+                   ocaml_mkmod (mkloc loc)
+                     (ocaml_pmod_constraint (module_expr me)
+                        (module_type mt)))
                 (uv nel)
             in
             mkstr loc (pstr_recmodule nel) :: l
@@ -1564,22 +1604,24 @@ and class_type =
   | CtFun (loc, TyLab (_, lab, t), ct) ->
       begin match ocaml_pcty_fun with
         Some pcty_fun ->
-          mkcty loc (pcty_fun (uv lab) (ctyp t) (class_type ct))
+          mkcty loc (pcty_fun (uv lab) (ctyp t) (ctyp t) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version"
       end
-  | CtFun (loc, TyOlb (loc1, lab, t), ct) ->
+  | CtFun (loc, TyOlb (loc1, lab, oldt), ct) ->
       begin match ocaml_pcty_fun with
         Some pcty_fun ->
           let t =
             let loc = loc1 in
-            MLast.TyApp (loc, MLast.TyLid (loc, "option"), t)
+            MLast.TyApp (loc, MLast.TyLid (loc, "option"), oldt)
           in
-          mkcty loc (pcty_fun ("?" ^ uv lab) (ctyp t) (class_type ct))
+          mkcty loc
+            (pcty_fun ("?" ^ uv lab) (ctyp t) (ctyp oldt) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version"
       end
   | CtFun (loc, t, ct) ->
       begin match ocaml_pcty_fun with
-        Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
+        Some pcty_fun ->
+          mkcty loc (pcty_fun "" (ctyp t) (ctyp t) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version"
       end
   | CtSig (loc, t_o, ctfl) ->
