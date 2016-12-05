@@ -346,6 +346,8 @@ let ocaml_pstr_type stl = Pstr_type stl;;
 
 let ocaml_class_infos = None;;
 
+let ocaml_pmod_constraint loc me mt = me;;
+
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
 let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, mt, me);;

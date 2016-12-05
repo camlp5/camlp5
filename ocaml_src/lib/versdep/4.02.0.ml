@@ -514,6 +514,10 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc; pci_attributes = []})
 ;;
 
+let ocaml_pmod_constraint loc me mt =
+  ocaml_mkmod loc (Pmod_constraint (me, mt))
+;;
+
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
 let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, Some mt, me);;

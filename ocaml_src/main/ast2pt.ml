@@ -1509,12 +1509,12 @@ and str_item s l =
                 (fun (n, me) ->
                    let (me, mt) =
                      match me with
-                       MeTyc (_, me, mt) -> me, mt
+                       MeTyc (_, me, mt) -> module_expr me, module_type mt
                      | _ ->
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints"
                    in
-                   uv n, module_type mt, module_expr me)
+                   uv n, mt, ocaml_pmod_constraint (mkloc loc) me mt)
                 (uv nel)
             in
             mkstr loc (pstr_recmodule nel) :: l

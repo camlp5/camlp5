@@ -1084,6 +1084,11 @@ value ocaml_class_infos =
   END
 ;
 
+value ocaml_pmod_constraint loc me mt =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN me
+  ELSE ocaml_mkmod loc (Pmod_constraint me mt) END
+;
+
 value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
 
 value ocaml_pmod_functor s mt me =
