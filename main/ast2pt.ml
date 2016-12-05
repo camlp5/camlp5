@@ -263,7 +263,8 @@ value rec ctyp =
   | TyArr loc (TyOlb loc1 lab t1) t2 →
       mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
   | TyArr loc t1 t2 → mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
-  | TyObj loc fl v → mktyp loc (ocaml_ptyp_object (meth_list loc (uv fl) v))
+  | TyObj loc fl v →
+      mktyp loc (ocaml_ptyp_object (meth_list loc (uv fl) v) (uv v))
   | TyCls loc id →
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab loc _ _ → error loc "labeled type not allowed here"
