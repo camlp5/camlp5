@@ -182,7 +182,7 @@ value class_decl pc ci =
          let pc =
            {(pc) with
             bef =
-              sprintf "%s%s%s%s " pc.bef 
+              sprintf "%s%s%s%s " pc.bef
                 (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
                 (Pcaml.unvala ci.MLast.ciNam)
                 (class_type_params Pprintf.empty_pc

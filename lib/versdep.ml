@@ -773,7 +773,7 @@ value ocaml_ppat_construct_args =
     fun
     [ Ppat_construct li po chk_arity ->
         IFDEF OCAML_VERSION < OCAML_4_00 THEN Some (li, 0, po, chk_arity)
-        ELSE Some (li.txt, li.loc, po, chk_arity) END 
+        ELSE Some (li.txt, li.loc, po, chk_arity) END
     | _ -> None ]
   ELSE
     fun
@@ -1040,7 +1040,7 @@ value ocaml_pstr_recmodule =
   END
 ;
 
-value ocaml_pstr_type stl = 
+value ocaml_pstr_type stl =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pstr_type stl
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in

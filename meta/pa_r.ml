@@ -924,7 +924,7 @@ IFDEF JOCAML OR COMPATIBLE_WITH_OLD_OCAML THEN
   EXTEND
     GLOBAL: str_item expr;
     (* -- cut 1 end -- *)
-    str_item: 
+    str_item:
       [ [ "def"; jal = V (LIST1 joinautomaton SEP "and") ->
             <:str_item< def $_list:jal$ >> ] ]
     ;

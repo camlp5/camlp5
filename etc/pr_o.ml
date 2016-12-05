@@ -1474,7 +1474,7 @@ EXTEND_PRINTER
                        pprintf pc "%p(%p)(%p)" mod_fun t1 mod_param t2
                          mod_param t3
                    | _ -> error loc "type dot 3" ]
-               
+
                | <:ctyp< $uid:m1$.$uid:m2$.$uid:m3$ >> ->
                    pprintf pc "%s.%s.%s" m1 m2 m3
                | <:ctyp< $uid:m1$.$uid:m2$ >> ->
@@ -1965,7 +1965,7 @@ value class_decl pc ci =
          let pc =
            {(pc) with
             bef =
-              sprintf "%s%s%s%s " pc.bef 
+              sprintf "%s%s%s%s " pc.bef
                 (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
                 (class_type_params Pprintf.empty_pc
                    (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm)))

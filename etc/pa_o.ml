@@ -1292,7 +1292,7 @@ IFDEF JOCAML THEN
   DELETE_RULE expr: SELF; "&"; SELF END;
   EXTEND
     GLOBAL: str_item expr;
-    str_item: 
+    str_item:
       [ [ "def"; jal = V (LIST1 joinautomaton SEP "and") ->
             <:str_item< def $_list:jal$ >> ] ]
     ;

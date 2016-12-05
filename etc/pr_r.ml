@@ -355,7 +355,7 @@ type seq =
 ;
 
 value rec seq_of_expr e =
-  match e with 
+  match e with
   [ <:expr< do { $list:[e :: el]$ } >> ->
       seq_of_expr_ne_list e el
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->

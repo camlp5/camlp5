@@ -232,7 +232,7 @@ value rec unstream_pattern_kont ge =
       ([(SpNtr loc p1 f, SpoBang) :: sp], epo, e)
   | e ->
       ([], None, e) ]
-;  
+;
 
 value rec unparser_cases_list ge =
   match ge with
