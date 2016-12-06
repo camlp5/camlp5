@@ -485,8 +485,8 @@ let type_decl_of_with_type loc tn tpl pf ct =
 let mkwithc =
   function
     WcMod (loc, id, m) ->
-      long_id_of_string_list loc (uv id),
-      ocaml_pwith_module (mkloc loc) (module_expr_long_id m)
+      let mname = long_id_of_string_list loc (uv id) in
+      mname, ocaml_pwith_module (mkloc loc) mname (module_expr_long_id m)
   | WcMos (loc, id, m) ->
       begin match ocaml_pwith_modsubst with
         Some pwith_modsubst ->
@@ -495,10 +495,19 @@ let mkwithc =
       | None -> error loc "no with module := in this ocaml version"
       end
   | WcTyp (loc, id, tpl, pf, ct) ->
-      let li = long_id_of_string_list loc (uv id) in
-      begin match type_decl_of_with_type loc "" tpl (uv pf) ct with
-        Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
-      | Left msg -> error loc msg
+      begin match uv id with
+        [] -> error loc "Empty list as type name is not allowed there"
+      | xs ->
+          (* Last element of this list is actual declaration. List begins from
+             optional module path. We pass actual name to make type declaration
+             and a whole list to make With_type constraint.
+             See Parsetree.with_constaint type in compiler sources for more
+             details *)
+          let li = long_id_of_string_list loc xs in
+          let tname = List.hd (List.rev xs) in
+          match type_decl_of_with_type loc tname tpl (uv pf) ct with
+            Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
+          | Left msg -> error loc msg
       end
   | WcTys (loc, id, tpl, t) ->
       match ocaml_pwith_typesubst with
