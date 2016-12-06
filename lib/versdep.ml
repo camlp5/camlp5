@@ -1273,13 +1273,13 @@ value ocaml_pcty_fun =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN
     None
   ELSIFDEF OCAML_VERSION <= OCAML_2_04 THEN
-    Some (fun lab t ct -> Pcty_fun t ct)
+    Some (fun lab t ot ct -> Pcty_fun ot ct)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun lab t ct -> Pcty_fun lab t ct)
+    Some (fun lab t ot ct -> Pcty_fun lab ot ct)
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
-    Some (fun lab t ct -> Pcty_arrow lab t ct)
+    Some (fun lab t ot ct -> Pcty_arrow lab (mkopt t lab) ct)
   ELSE
-    Some (fun lab t ct -> Pcty_arrow (labelled lab) t ct)
+    Some (fun lab t ot ct -> Pcty_arrow (labelled lab) t ct)
   END
 ;
 

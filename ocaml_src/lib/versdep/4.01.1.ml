@@ -450,7 +450,7 @@ let ocaml_pctf_virt (s, pf, t, loc) = Pctf_virt (s, pf, t);;
 
 let ocaml_pcty_constr = Some (fun li ltl -> Pcty_constr (mknoloc li, ltl));;
 
-let ocaml_pcty_fun = Some (fun lab t ct -> Pcty_fun (lab, t, ct));;
+let ocaml_pcty_fun = Some (fun lab t ot ct -> Pcty_fun (lab, ot, ct));;
 
 let ocaml_pcty_signature =
   let f (t, ctfl) =
