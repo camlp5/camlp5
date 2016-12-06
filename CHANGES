@@ -1,6 +1,8 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [06 Dec 16] Fixed bug dumping module definitions with constraints.
+  Bug notified by Kakadu.
 * [06 Dec 16] Fixed bug extra option word during pr_dump for optional args.
   Bug notified by Kakadu.
   Ex: "class t : ?name:string -> object end"
