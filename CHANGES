@@ -1,8 +1,20 @@
+Camlp5 Version 6.18:
+--------------------
+
+* [06 Dec 16] Fixed bug extra option word during pr_dump for optional args.
+  Bug notified by Kakadu.
+  Ex: "class t : ?name:string -> object end"
+* [05 Dec 16] Fixed bug dumping of open object types. Bug notified by Kakadu.
+  Ex: "type t = <f:int; .. >"
+* [05 Dec 16] Fixed bug dump parsetree without throughing away module type
+  annotation. Bug notified by Kakadu.
+  Ex: "module rec A : sig end = struct end"
+
 Camlp5 Version 6.17:
 --------------------
 
-* [24 Jul 16] Added compatibility with ocaml 4.04.0 and 4.04.1.
 * [09 Sep 16] Added pretty print of type [< ... ] when ended with "> `ident".
+* [24 Jul 16] Added compatibility with ocaml 4.04.0 and 4.04.1.
 * [24 Jul 16] Added compatibility with ocaml 4.03.1.
 
 Camlp5 Version 6.16:
