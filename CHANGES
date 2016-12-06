@@ -3,6 +3,10 @@ Camlp5 Version 6.18:
 
 * [06 Dec 16] Fixed bug dumping module definitions with constraints.
   Bug notified by Kakadu.
+  Ex:
+    module type Item = sig type t end
+    module type Sig = sig type t module Node : Item end
+    module Make (S : Sig) : Sig with module Node = S.Node and type t = S.t
 * [06 Dec 16] Fixed bug extra option word during pr_dump for optional args.
   Bug notified by Kakadu.
   Ex: "class t : ?name:string -> object end"
