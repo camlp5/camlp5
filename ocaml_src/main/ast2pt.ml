@@ -1113,6 +1113,12 @@ let rec expr =
           mkexp loc (pexp_letmodule (uv i) (module_expr me) (expr e))
       | None -> error loc "no 'let module' in this ocaml version"
       end
+  | ExLop (loc, me, e) ->
+      begin match ocaml_pexp_open with
+        Some pexp_open ->
+          let li = module_expr_long_id me in mkexp loc (pexp_open li (expr e))
+      | None -> error loc "no expression open in this ocaml version"
+      end
   | ExMat (loc, e, pel) ->
       let pel = uv pel in
       let pel =

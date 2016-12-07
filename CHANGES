@@ -1,6 +1,9 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [07 Dec 16] Fixed bug not separated idents were not allowed in
+  'let open' constructs. Bug notified by Kadadu.
+  Ex: "let open Mod1.Mod2.Mod3 in ..."
 * [06 Dec 16] Fixed bug dumping module definitions with constraints.
   Bug notified by Kakadu.
   Ex:

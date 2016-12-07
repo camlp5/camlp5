@@ -283,6 +283,8 @@ EXTEND
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
+      | "let"; "open"; m = module_expr; "in"; e = SELF ->
+          <:expr< let open $m$ in $e$ >>
       | "fun"; l = closed_case_list -> <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = ipatt; e = fun_def -> <:expr< fun $p$ -> $e$ >>
       | "match"; e = SELF; "with"; l = closed_case_list ->
@@ -406,6 +408,8 @@ EXTEND
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         el = SELF ->
           [<:expr< let module $_uid:m$ = $mb$ in $mksequence loc el$ >>]
+      | "let"; "open"; m = module_expr; "in"; el = SELF ->
+          [<:expr< let open $m$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF -> [e :: el]
       | e = expr; ";" -> [e]
       | e = expr -> [e] ] ]

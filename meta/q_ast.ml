@@ -231,6 +231,7 @@ module Meta_make (C : MetaSig) =
       | ExLid _ s → C.node "ExLid" [C.vala C.string s]
       | ExLmd _ s me e →
           C.node "ExLmd" [C.vala C.string s; module_expr me; expr e]
+      | ExLop _ me e → C.node "ExLop" [module_expr me; expr e]
       | ExMat _ e lpoee →
           C.node "ExMat"
             [expr e;

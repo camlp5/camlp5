@@ -427,6 +427,8 @@ EXTEND
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = expr ->
           <:str_item< let module $_uid:m$ = $mb$ in $e$ >>
+      | "let"; "open"; m = module_expr; "in"; e = expr ->
+          <:str_item< let open $m$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
@@ -533,8 +535,8 @@ EXTEND
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
-      | "let"; "open"; m = V UIDENT; "in"; e = expr LEVEL "top" ->
-          <:expr< $_uid:m$ . ($e$) >>
+      | "let"; "open"; m = module_expr; "in"; e = expr LEVEL "top" ->
+          <:expr< let open $m$ in $e$ >>
       | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
           <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = patt LEVEL "simple"; (eo, e) = fun_def ->

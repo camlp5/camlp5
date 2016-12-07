@@ -100,6 +100,7 @@ and expr =
   | ExLet of loc * bool * (patt * expr) list * expr
   | ExLid of loc * string
   | ExLmd of loc * string * module_expr * expr
+  | ExLop of loc * module_expr * expr
   | ExMat of loc * expr * (patt * expr option * expr) list
   | ExNew of loc * string list
   | ExObj of loc * patt option * class_str_item list

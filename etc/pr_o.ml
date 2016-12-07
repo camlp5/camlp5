@@ -1056,6 +1056,11 @@ EXTEND_PRINTER
           else
             pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
               curr e
+      | <:expr< let open $m$ in $e$ >> ->
+          if pc.dang = ";" then
+            pprintf pc "(@[<a>let open %p@ in@]@ %p)" module_expr m curr e
+          else
+            pprintf pc "@[<a>let open %p@ in@]@ %p" module_expr m curr e
       | <:expr:< while $e1$ do { $list:el$ } >> ->
           pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
             (hvlistl (semi_after expr) curr) el
@@ -1290,6 +1295,7 @@ EXTEND_PRINTER
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< let module $uid:_$ = $_$ in $_$ >> |
+        <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ |
         MLast.ExRpl _ _ _ | MLast.ExSpw _ _ | MLast.ExPar _ _ _ as z ->

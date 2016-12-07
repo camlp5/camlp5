@@ -1986,6 +1986,13 @@ Grammar.extend
       Gramext.action
         (fun (l : 'closed_case_list) _ (loc : Ploc.t) ->
            (Qast.Node ("ExFun", [Qast.Loc; l]) : 'expr));
+      [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "open");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", "in"); Gramext.Sself],
+      Gramext.action
+        (fun (e : 'expr) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
+           (Qast.Node ("ExLop", [Qast.Loc; m; e]) : 'expr));
       [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "module");
        Gramext.Sfacto
          (Gramext.srules
@@ -2985,6 +2992,15 @@ Grammar.extend
       Gramext.action
         (fun (el : 'sequence) _ (e : 'expr) (loc : Ploc.t) ->
            (Qast.Cons (e, el) : 'sequence));
+      [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "open");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", "in"); Gramext.Sself],
+      Gramext.action
+        (fun (el : 'sequence) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
+           (Qast.List
+              [Qast.Node ("ExLop", [Qast.Loc; m; mksequence Qast.Loc el])] :
+            'sequence));
       [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "module");
        Gramext.Sfacto
          (Gramext.srules

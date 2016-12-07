@@ -805,6 +805,13 @@ Grammar.extend
       Gramext.action
         (fun (l : 'closed_case_list) _ (loc : Ploc.t) ->
            (MLast.ExFun (loc, l) : 'expr));
+      [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "open");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", "in"); Gramext.Sself],
+      Gramext.action
+        (fun (e : 'expr) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
+           (MLast.ExLop (loc, m, e) : 'expr));
       [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "module");
        Gramext.Stoken ("UIDENT", "");
        Gramext.Snterm
@@ -1227,6 +1234,13 @@ Grammar.extend
       Gramext.action
         (fun (el : 'sequence) _ (e : 'expr) (loc : Ploc.t) ->
            (e :: el : 'sequence));
+      [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "open");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e));
+       Gramext.Stoken ("", "in"); Gramext.Sself],
+      Gramext.action
+        (fun (el : 'sequence) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
+           ([MLast.ExLop (loc, m, mksequence loc el)] : 'sequence));
       [Gramext.Stoken ("", "let"); Gramext.Stoken ("", "module");
        Gramext.Stoken ("UIDENT", "");
        Gramext.Snterm
