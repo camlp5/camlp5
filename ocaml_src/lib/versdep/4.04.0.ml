@@ -584,7 +584,7 @@ let ocaml_pctf_meth (s, pf, t, loc) = Pctf_method (s, pf, Concrete, t);;
 
 let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Concrete, t);;
 
-let ocaml_pctf_virt (s, pf, t, loc) = Pctf_val (s, Immutable, Virtual, t);;
+let ocaml_pctf_virt (s, pf, t, loc) = Pctf_method (s, pf, Virtual, t);;
 
 let ocaml_pcty_constr = Some (fun li ltl -> Pcty_constr (mknoloc li, ltl));;
 
