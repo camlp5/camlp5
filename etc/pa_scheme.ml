@@ -18,8 +18,9 @@
   (define buff (ref (string_create 80)))
   (define (store len x)
    (begin
-    (if (>= len (String.length buff.val))
-     (:= buff.val (^ buff.val (string_create (String.length buff.val)))))
+    (if (>= len (string_length buff.val))
+     (:= buff.val
+        (string_cat buff.val (string_create (string_length buff.val)))))
     (string_set buff.val len x)
     (succ len)))
   (define (mstore len s)
@@ -27,7 +28,7 @@
     (((add_rec len i)
       (if (== i (String.length s)) len (add_rec (store len s.[i]) (succ i)))))
     (add_rec len 0)))
-  (define (get len) (String.sub buff.val 0 len))))
+  (define (get len) (bytes_to_string (string_sub buff.val 0 len)))))
 
 (define (rename_id s)
  (if (&& (> (String.length s) 0) (= s.[(- (String.length s) 1)] '#'))

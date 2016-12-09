@@ -101,18 +101,18 @@ value mklazy loc e =
 ;
 
 value strip_char c s =
-  match try Some (String.index s c) with [ Not_found → None ] with
+  match try Some (string_index s c) with [ Not_found → None ] with
   [ Some _ →
       let s = string_copy s in
       loop 0 0 where rec loop i j =
-        if i = String.length s then String.sub s 0 j
-        else if s.[i] = '_' then loop (i + 1) j
-        else do { string_set s j s.[i]; loop (i + 1) (j + 1) }
+        if i = string_length s then string_sub s 0 j
+        else if string_get s i = '_' then loop (i + 1) j
+        else do { string_set s j (string_get s i); loop (i + 1) (j + 1) }
   | None → s ]
 ;
 
 value mkintconst loc s c =
-  let s = strip_char '_' s in
+  let s = bytes_to_string (strip_char '_' (bytes_of_string s)) in
   match c with
   [ "" →
       match try Some (int_of_string s) with [ Failure _ → None ] with

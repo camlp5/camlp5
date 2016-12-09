@@ -246,12 +246,12 @@ value strip_heading_spaces s =
 ;
 
 value strip_char c s = do {
-  let s = string_copy s in
-  loop 0 0 where rec loop i j =
-    if i = String.length s then String.sub s 0 j
-    else if s.[i] = '_' then loop (i + 1) j
+  let s = string_copy (bytes_of_string s) in
+  bytes_to_string (loop 0 0) where rec loop i j =
+    if i = string_length s then string_sub s 0 j
+    else if string_get s i = '_' then loop (i + 1) j
     else do {
-      string_set s j s.[i];
+      string_set s j (string_get s i);
       loop (i + 1) (j + 1)
     }
 };

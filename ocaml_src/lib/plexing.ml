@@ -87,12 +87,12 @@ let lexer_func_of_ocamllex lexfun cs =
 
 let buff = ref (string_create 80);;
 let store len x =
-  if len >= String.length !buff then
-    buff := !buff ^ string_create (String.length !buff);
+  if len >= string_length !buff then
+    buff := string_cat !buff (string_create (string_length !buff));
   string_set !buff len x;
   succ len
 ;;
-let get_buff len = String.sub !buff 0 len;;
+let get_buff len = string_sub !buff 0 len;;
 
 let valch x = Char.code x - Char.code '0';;
 let valch_a x = Char.code x - Char.code 'a' + 10;;
@@ -187,7 +187,7 @@ let eval_string loc s =
       in
       loop len i
   in
-  loop 0 0
+  bytes_to_string (loop 0 0)
 ;;
 
 let default_match =
@@ -216,7 +216,7 @@ let rev_implode l =
       c :: l -> string_unsafe_set s i c; loop (i - 1) l
     | [] -> s
   in
-  loop (String.length s - 1) l
+  bytes_to_string (loop (string_length s - 1) l)
 ;;
 
 module Lexbuf :

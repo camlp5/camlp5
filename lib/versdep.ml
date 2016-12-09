@@ -1526,6 +1526,16 @@ value char_uppercase =
   ELSE Char.uppercase_ascii END
 ;
 
+value bytes_of_string s =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN s
+  ELSE Bytes.of_string s END
+;
+
+value bytes_to_string s =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN s
+  ELSE Bytes.to_string s END
+;
+
 value string_capitalize =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.capitalize
   ELSE String.capitalize_ascii END
@@ -1545,6 +1555,11 @@ value string_contains =
   END
 ;
 
+value string_cat s1 s2 =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN s1 ^ s2
+  ELSE Bytes.cat s1 s2 END
+;
+
 value string_copy =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.copy
   ELSE Bytes.copy END
@@ -1553,6 +1568,21 @@ value string_copy =
 value string_create =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.create
   ELSE Bytes.create END
+;
+
+value string_get =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.get
+  ELSE Bytes.get END
+;
+
+value string_index =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.index
+  ELSE Bytes.index END
+;
+
+value string_length =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.length
+  ELSE Bytes.length END
 ;
 
 value string_lowercase =
@@ -1578,6 +1608,11 @@ value string_uppercase =
 value string_set =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.set
   ELSE Bytes.set END
+;
+
+value string_sub =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN String.sub
+  ELSE Bytes.sub END
 ;
 
 value array_create =

@@ -40,7 +40,7 @@ value keyword_or_error ctx loc s =
 
 value rev_implode l =
   let s = string_create (List.length l) in
-  loop (String.length s - 1) l where rec loop i =
+  bytes_to_string (loop (string_length s - 1) l) where rec loop i =
     fun
     [ [c :: l] -> do { string_unsafe_set s i c; loop (i - 1) l }
     | [] -> s ]

@@ -7,6 +7,7 @@
 
 open Parsetree;
 open Lexing;
+open Versdep;
 
 value highlight_locations lb loc1 loc2 =
   let loc1 = (Ploc.first_pos loc1, Ploc.last_pos loc1) in
@@ -16,7 +17,7 @@ value highlight_locations lb loc1 loc2 =
     let pos_at_bol = ref 0 in
     print_string "Toplevel input:\n# ";
     for pos = 0 to lb.lex_buffer_len - pos0 - 1 do {
-      let c = lb.lex_buffer.[pos+pos0] in
+      let c = string_get lb.lex_buffer (pos+pos0) in
       if c = '\n' then do {
         if pos_at_bol.val <= fst loc1 && snd loc1 <= pos then do {
           print_string "\n  ";
@@ -73,7 +74,7 @@ value wrap f shfn lb =
            };
            if lb.lex_curr_pos >= lb.lex_buffer_len then None
            else do {
-             let c = lb.lex_buffer.[lb.lex_curr_pos] in
+             let c = string_get lb.lex_buffer lb.lex_curr_pos in
              lb.lex_curr_pos := lb.lex_curr_pos + 1;
              Some c
            }

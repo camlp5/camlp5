@@ -16,13 +16,14 @@ module Buff =
   struct
     value buff = ref (string_create 80);
     value store len x = do {
-      if len >= String.length buff.val then
-        buff.val := buff.val ^ string_create (String.length buff.val)
+      if len >= string_length buff.val then
+        buff.val :=
+          string_cat buff.val (string_create (string_length buff.val))
       else ();
       string_set buff.val len x;
       succ len
     };
-    value get len = String.sub buff.val 0 len;
+    value get len = bytes_to_string (string_sub buff.val 0 len);
   end
 ;
 

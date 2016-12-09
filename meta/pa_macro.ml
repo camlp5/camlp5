@@ -126,13 +126,13 @@ value rec list_remove x =
 ;
 
 value oversion = do {
-  let v = string_copy Pconfig.ocaml_version in
-  for i = 0 to String.length v - 1 do {
-    match v.[i] with
+  let v = string_copy (bytes_of_string Pconfig.ocaml_version) in
+  for i = 0 to string_length v - 1 do {
+    match string_get v i with
     [ '0'..'9' | 'a'..'z' | 'A'..'Z' -> ()
     | _ -> string_set v i '_' ];
   };
-  v
+  bytes_to_string v
 };
 
 value oname =

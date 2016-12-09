@@ -683,13 +683,25 @@ let printf_ksprintf = Printf.ksprintf;;
 
 let char_uppercase = Char.uppercase;;
 
+let bytes_of_string s = Bytes.of_string s;;
+
+let bytes_to_string s = Bytes.to_string s;;
+
 let string_capitalize = String.capitalize;;
 
 let string_contains = String.contains;;
 
+let string_cat s1 s2 = Bytes.cat s1 s2;;
+
 let string_copy = Bytes.copy;;
 
 let string_create = Bytes.create;;
+
+let string_get = Bytes.get;;
+
+let string_index = Bytes.index;;
+
+let string_length = Bytes.length;;
 
 let string_lowercase = String.lowercase;;
 
@@ -700,5 +712,7 @@ let string_uncapitalize = String.uncapitalize;;
 let string_uppercase = String.uppercase;;
 
 let string_set = Bytes.set;;
+
+let string_sub = Bytes.sub;;
 
 let array_create = Array.make;;

@@ -44,7 +44,7 @@ let rev_implode l =
       c :: l -> string_unsafe_set s i c; loop (i - 1) l
     | [] -> s
   in
-  loop (String.length s - 1) l
+  bytes_to_string (loop (string_length s - 1) l)
 ;;
 
 let implode l = rev_implode (List.rev l);;

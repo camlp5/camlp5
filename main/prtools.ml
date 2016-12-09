@@ -355,8 +355,9 @@ module Buff =
   struct
     value buff = ref (string_create 80);
     value store len x = do {
-      if len >= String.length buff.val then
-        buff.val := buff.val ^ string_create (String.length buff.val)
+      if len >= string_length buff.val then
+        buff.val :=
+          string_cat buff.val (string_create (string_length buff.val))
       else ();
       string_set buff.val len x;
       succ len
@@ -366,7 +367,7 @@ module Buff =
         if i == String.length s then len
         else add_rec (store len s.[i]) (succ i)
     ;
-    value get len = String.sub buff.val 0 len;
+    value get len = string_sub buff.val 0 len;
   end
 ;
 
@@ -392,7 +393,7 @@ value adjust_comment_indentation ind s nl_bef ind_bef =
     let ind_bef = if nl_bef > 0 then ind_bef else ind in
     let len = i_bef_ind + 1 in
     let olen = Buff.mstore 0 (String.make ind ' ') in
-    loop olen 0 where rec loop olen i =
+    bytes_to_string (loop olen 0) where rec loop olen i =
       if i = len then Buff.get olen
       else
         let olen = Buff.store olen s.[i] in
@@ -417,7 +418,7 @@ value adjust_comment_indentation ind s nl_bef ind_bef =
 
 value eight_chars = String.make 8 ' ';
 value expand_tabs s =
-  loop 0 0 where rec loop len i =
+  bytes_to_string (loop 0 0) where rec loop len i =
     if i = String.length s then Buff.get len
     else if s.[i] = '\t' then loop (Buff.mstore len eight_chars) (i + 1)
     else loop (Buff.store len s.[i]) (i + 1)

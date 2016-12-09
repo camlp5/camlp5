@@ -13,13 +13,13 @@
  (struct
   (value buff (ref (string_create 80)))
   (value store (lambda (len x)
-                 (if (>= len (String.length buff.val))
+                 (if (>= len (string_length buff.val))
                      (:= buff.val
-                         (^ buff.val
-                            (string_create (String.length buff.val)))))
+                         (string_cat buff.val
+                            (string_create (string_length buff.val)))))
                  (string_set buff.val len x)
                  (succ len)))
-  (value get (lambda len (String.sub buff.val 0 len)))))
+  (value get (lambda len (bytes_to_string (string_sub buff.val 0 len))))))
 
 ;; Lexer
 

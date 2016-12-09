@@ -92,13 +92,13 @@ value lexer_func_of_ocamllex lexfun cs =
 
 value buff = ref (string_create 80);
 value store len x = do {
-  if len >= String.length buff.val then
-    buff.val := buff.val ^ string_create (String.length buff.val)
+  if len >= string_length buff.val then
+    buff.val := string_cat buff.val (string_create (string_length buff.val))
   else ();
   string_set buff.val len x;
   succ len
 };
-value get_buff len = String.sub buff.val 0 len;
+value get_buff len = string_sub buff.val 0 len;
 
 value valch x = Char.code x - Char.code '0';
 value valch_a x = Char.code x - Char.code 'a' + 10;
@@ -175,7 +175,7 @@ value eval_char s =
 ;
 
 value eval_string loc s =
-  loop 0 0 where rec loop len i =
+  bytes_to_string (loop 0 0) where rec loop len i =
     if i = String.length s then get_buff len
     else
       let (len, i) =
@@ -219,7 +219,7 @@ value restore_lexing_info = ref None;
 
 value rev_implode l =
   let s = string_create (List.length l) in
-  loop (String.length s - 1) l where rec loop i =
+  bytes_to_string (loop (string_length s - 1) l) where rec loop i =
     fun
     [ [c :: l] -> do { string_unsafe_set s i c; loop (i - 1) l }
     | [] -> s ]
