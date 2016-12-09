@@ -1,6 +1,7 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [09 Dec 16] Fixed bug: make uninstall did not take DESTDIR into account.
 * [07 Dec 16] Fixed bug virtual methods in signatures generated syntax
   tree of virtual val. Bug notified by Kakadu.
   Ex: "class foo : object method virtual bar : bool end"

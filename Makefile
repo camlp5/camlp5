@@ -61,9 +61,9 @@ install:
 	done
 
 uninstall:
-	rm -rf "$(LIBDIR)/$(CAMLP5N)"
-	cd "$(BINDIR)"; rm -f *$(CAMLP5N)* odyl ocpp; cd ..
-	cd "$(MANDIR)/man1"; rm -f *$(CAMLP5N)* odyl ocpp; cd ../..
+	rm -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
+	cd "$(DESTDIR)$(BINDIR)"; rm -f *$(CAMLP5N)* odyl ocpp; cd ..
+	cd "$(DESTDIR)$(MANDIR)/man1"; rm -f *$(CAMLP5N)* odyl ocpp; cd ../..
 
 clean::
 	$(MAKE) clean_hot clean_cold
