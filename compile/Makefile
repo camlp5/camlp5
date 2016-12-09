@@ -37,6 +37,17 @@ install:
 	  cp pa_o_fast.cmx pa_o_fast.o "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	fi
 
+remove:
+	if test -f "$(DESTDIR)$(BINDIR)/$(CAMLP5N)o.opt"; then \
+	  rm "$(DESTDIR)$(BINDIR)/$(CAMLP5N)o.opt"; \
+	fi
+	if test -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_o_fast.cmx"; then \
+	  cp pa_o_fast.cmx  "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_o_fast.cmx"; \
+	fi
+	if test -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_o_fast.o"; then \
+	  cp pa_o_fast.cmx  "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_o_fast.o"; \
+	fi
+
 clean::
 	rm -f *.cm* *.pp[io] *.[oa] *.lib *.obj *.bak .*.bak *.out *.opt
 	rm -f *.fast tmp.* pa_*_fast.ml *_fast.ml.tmp
