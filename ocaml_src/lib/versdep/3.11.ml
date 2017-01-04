@@ -11,6 +11,12 @@ type ('a, 'b) choice =
   | Right of 'b
 ;;
 
+let option_map f x =
+  match x with
+    Some x -> Some (f x)
+  | None -> None
+;;
+
 let sys_ocaml_version = Sys.ocaml_version;;
 
 let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
@@ -132,7 +138,7 @@ let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl, ll);;
 
 let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
-let ocaml_ptyp_object ml is_open = Ptyp_object ml;;
+let ocaml_ptyp_object loc ml is_open = Ptyp_object ml;;
 
 let ocaml_ptyp_package = None;;
 
@@ -240,6 +246,8 @@ let ocaml_pexp_record lel eo =
   let lel = List.map (fun (li, loc, e) -> mkloc loc li, e) lel in
   Pexp_record (lel, eo)
 ;;
+
+let ocaml_pexp_send loc e s = Pexp_send (e, s);;
 
 let ocaml_pexp_setinstvar s e = Pexp_setinstvar (mknoloc s, e);;
 
@@ -372,7 +380,7 @@ let ocaml_pmod_unpack = None;;
 
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
 
-let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
+let ocaml_pcf_inher loc ce pb = Pcf_inher (ce, pb);;
 
 let ocaml_pcf_init = Some (fun e -> Pcf_init e);;
 

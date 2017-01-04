@@ -1,7 +1,9 @@
 Camlp5 Version 6.18:
 --------------------
 
-* [09 Dec 16] Now compatible with ocaml compiled with option -safe-string.
+* [04 Jan 17] Updated for ocaml trunk 4.05.0
+* [09 Dec 16] Fixed bug: was not compatible with ocaml compiled with
+  option -safe-string.
 * [09 Dec 16] Fixed bug: make uninstall did not take DESTDIR into account.
 * [07 Dec 16] Fixed bug virtual methods in signatures generated syntax
   tree of virtual val. Bug notified by Kakadu.

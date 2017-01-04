@@ -197,11 +197,17 @@ and print_simple_out_type ppf =
       in
       let print_fields ppf =
         fun
-        [ Ovar_fields fields ->
+        | Ovar_fields fields ->
             print_list print_poly_variant
               (fun ppf -> fprintf ppf "@;<1 -2>| ") ppf fields
-        | Ovar_name id tyl ->
-            fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id ]
+        | IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
+          Ovar_name id tyl ->
+            fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id
+          ELSE
+          Ovar_typ ty ->
+            fprintf ppf "%a@ " print_simple_out_type ty
+          END
+        end
       in
       fprintf ppf "%s[%s@[<hv>@[<hv>%a@]%a ]@]" (if non_gen then "_" else "")
         (if closed then if tags = None then "= " else "< "

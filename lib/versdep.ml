@@ -11,6 +11,13 @@ type choice 'a 'b =
   | Right of 'b ]
 ;
 
+value option_map f x =
+  match x with
+  | Some x -> Some (f x)
+  | None -> None
+  end
+;
+
 value sys_ocaml_version =
   IFDEF OCAML_1_06 THEN "1.06"
   ELSIFDEF OCAML_1_07 THEN "1.07"
@@ -415,10 +422,13 @@ value ocaml_ptyp_class li tl ll =
 
 value ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li) tl;
 
-value ocaml_ptyp_object ml is_open =
+value ocaml_ptyp_object loc ml is_open =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_object ml
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     let ml = List.map (fun (s, t) -> (s, [], t)) ml in
+    Ptyp_object ml (if is_open then Open else Closed)
+  ELSE
+    let ml = List.map (fun (s, t) -> (mkloc loc s, [], t)) ml in
     Ptyp_object ml (if is_open then Open else Closed)
   END
 ;
@@ -432,12 +442,18 @@ value ocaml_ptyp_poly =
   IFDEF OCAML_VERSION <= OCAML_3_04 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Some (fun cl t -> Ptyp_poly cl t)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     Some
-      (fun cl t ->
+      (fun loc cl t ->
          match cl with
          [ [] -> t.ptyp_desc
          | _ -> Ptyp_poly cl t ])
+  ELSE
+    Some
+      (fun loc cl t ->
+         match cl with
+         [ [] -> t.ptyp_desc
+         | _ -> Ptyp_poly (List.map (mkloc loc) cl) t ])
   END
 ;
 
@@ -683,7 +699,11 @@ value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
 
 value ocaml_pexp_newtype =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
-  ELSE Some (fun s e -> Pexp_newtype s e) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
+    Some (fun loc s e -> Pexp_newtype s e)
+  ELSE
+    Some (fun loc s e -> Pexp_newtype (mkloc loc s) e)
+  END
 ;
 
 value ocaml_pexp_object =
@@ -729,6 +749,11 @@ value ocaml_pexp_record lel eo =
   ELSE
     Pexp_record lel eo
   END
+;
+
+value ocaml_pexp_send loc e s =
+  IFDEF OCAML_VERSION < OCAML_4_05_0 THEN Pexp_send e s
+  ELSE Pexp_send e (mkloc loc s) END
 ;
 
 value ocaml_pexp_setinstvar s e = Pexp_setinstvar (mknoloc s) e;
@@ -1119,13 +1144,15 @@ value ocaml_pcf_cstr =
 
 value ocaml_pcf_inher =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-    fun (id, cl, el, loc) pb -> Pcf_inher (id, cl, el, pb, loc)
+    fun _ (id, cl, el, loc) pb -> Pcf_inher (id, cl, el, pb, loc)
   ELSIFDEF OCAML_VERSION < OCAML_3_12 THEN
-    fun ce pb -> Pcf_inher ce pb
+    fun loc ce pb -> Pcf_inher ce pb
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    fun ce pb -> Pcf_inher Fresh ce pb
+    fun loc ce pb -> Pcf_inher Fresh ce pb
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
+    fun loc ce pb -> Pcf_inherit Fresh ce pb
   ELSE
-    fun ce pb -> Pcf_inherit Fresh ce pb
+    fun loc ce pb -> Pcf_inherit Fresh ce (option_map (mkloc loc) pb)
   END
 ;
 
@@ -1248,20 +1275,23 @@ value ocaml_pctf_inher ct =
 value ocaml_pctf_meth (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_meth (s, pf, t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pctf_meth (s, pf, t)
-  ELSE Pctf_method (s, pf, Concrete, t) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN Pctf_method (s, pf, Concrete, t)
+  ELSE Pctf_method (mkloc loc s, pf, Concrete, t) END
 ;
 
 value ocaml_pctf_val (s, mf, t, loc) =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN Pctf_val (s, Public, mf, Some t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_3_10 THEN Pctf_val (s, mf, Some t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_val (s, mf, Concrete, t, loc)
-  ELSE Pctf_val (s, mf, Concrete, t) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN Pctf_val (s, mf, Concrete, t)
+  ELSE Pctf_val (mkloc loc s, mf, Concrete, t) END
 ;
 
 value ocaml_pctf_virt (s, pf, t, loc) =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_virt (s, pf, t, loc)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pctf_virt (s, pf, t)
-  ELSE Pctf_method (s, pf, Virtual, t) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN Pctf_method (s, pf, Virtual, t)
+  ELSE Pctf_method (mkloc loc s, pf, Virtual, t) END
 ;
 
 value ocaml_pcty_constr =

@@ -279,7 +279,8 @@ let rec ctyp =
       mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
   | TyArr (loc, t1, t2) -> mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
   | TyObj (loc, fl, v) ->
-      mktyp loc (ocaml_ptyp_object (meth_list loc (uv fl) v) (uv v))
+      mktyp loc
+        (ocaml_ptyp_object (mkloc loc) (meth_list loc (uv fl) v) (uv v))
   | TyCls (loc, id) ->
       mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
@@ -296,7 +297,7 @@ let rec ctyp =
       end
   | TyPol (loc, pl, t) ->
       begin match ocaml_ptyp_poly with
-        Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
+        Some ptyp_poly -> mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
       | None -> error loc "no poly types in that ocaml version"
       end
   | TyPot (loc, pl, t) -> error loc "'type id . t' not allowed here"
@@ -335,9 +336,11 @@ and add_polytype t =
   match ocaml_ptyp_poly with
     Some ptyp_poly ->
       begin match t with
-        MLast.TyPol (loc, pl, t) -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
+        MLast.TyPol (loc, pl, t) ->
+          mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
       | _ ->
-          let loc = MLast.loc_of_ctyp t in mktyp loc (ptyp_poly [] (ctyp t))
+          let loc = MLast.loc_of_ctyp t in
+          mktyp loc (ptyp_poly (mkloc loc) [] (ctyp t))
       end
   | None -> ctyp t
 and package_of_module_type loc mt =
@@ -1065,7 +1068,7 @@ let rec expr =
             Some newtype ->
               begin match uv w with
                 Some _ -> error loc "(type ..) not allowed with 'when'"
-              | None -> mkexp loc (newtype (uv s) (expr e))
+              | None -> mkexp loc (newtype (mkloc loc) (uv s) (expr e))
               end
           | None -> error loc "(type ..) not in this ocaml version"
           end
@@ -1222,7 +1225,8 @@ let rec expr =
             mkexp loc (Pexp_sequence (expr e, loop el))
       in
       loop (uv el)
-  | ExSnd (loc, e, s) -> mkexp loc (Pexp_send (expr e, uv s))
+  | ExSnd (loc, e, s) ->
+      mkexp loc (ocaml_pexp_send (mkloc loc) (expr e) (uv s))
   | ExSpw (loc, e) ->
       begin match jocaml_pexp_spawn with
         Some pexp_spawn -> mkexp loc (pexp_spawn (expr e))
@@ -1732,7 +1736,7 @@ and class_str_item c l =
   | CrDcl (loc, cl) -> List.fold_right class_str_item (uv cl) l
   | CrInh (loc, ce, pb) ->
       ocaml_class_field (mkloc loc)
-        (ocaml_pcf_inher (class_expr ce) (uv pb)) ::
+        (ocaml_pcf_inher (mkloc loc) (class_expr ce) (uv pb)) ::
       l
   | CrIni (loc, e) ->
       begin match ocaml_pcf_init with
