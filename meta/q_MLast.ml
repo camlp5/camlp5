@@ -984,6 +984,10 @@ EXTEND
       | i = LIDENT -> Qast.List [mkident i]
       | i = UIDENT; "."; j = SELF -> Qast.Cons (mkident i) j ] ]
   ;
+  direction_flag:
+    [ [ "to" -> Qast.Bool True
+      | "downto" -> Qast.Bool False ] ]
+  ;
   (* Objects and Classes *)
   str_item:
     [ [ "class"; cd = SV (LIST1 class_declaration SEP "and") ->
@@ -1392,10 +1396,6 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = SV ident "" -> Qast.Node "ExVrn" [Qast.Loc; s] ] ]
-  ;
-  direction_flag:
-    [ [ "to" -> Qast.Bool True
-      | "downto" -> Qast.Bool False ] ]
   ;
   str_item:
     [ [ "def"; jal = SV (LIST1 joinautomaton SEP "and") ->

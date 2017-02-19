@@ -607,6 +607,10 @@ EXTEND
       | i = LIDENT -> [mkident i]
       | i = UIDENT; "."; j = SELF -> [mkident i :: j] ] ]
   ;
+  direction_flag:
+    [ [ "to" -> True
+      | "downto" -> False ] ]
+  ;
   (* Objects and Classes *)
   str_item:
     [ [ "class"; cd = V (LIST1 class_declaration SEP "and") ->
@@ -915,10 +919,6 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
-  ;
-  direction_flag:
-    [ [ "to" -> True
-      | "downto" -> False ] ]
   ;
   (* -- cut 1 begin -- *)
   expr: [[]];
