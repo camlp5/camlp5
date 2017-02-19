@@ -988,6 +988,9 @@ EXTEND
     [ [ "to" -> Qast.Bool True
       | "downto" -> Qast.Bool False ] ]
   ;
+  typevar:
+    [ [ "'"; i = ident -> i ] ]
+  ;
   (* Objects and Classes *)
   str_item:
     [ [ "class"; cd = SV (LIST1 class_declaration SEP "and") ->
@@ -1175,9 +1178,6 @@ EXTEND
   ;
   field:
     [ [ lab = LIDENT; ":"; t = ctyp -> Qast.Tuple [mkident lab; t] ] ]
-  ;
-  typevar:
-    [ [ "'"; i = ident -> i ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF -> Qast.Cons (mkident m) l

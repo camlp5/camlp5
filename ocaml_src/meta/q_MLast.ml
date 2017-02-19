@@ -400,6 +400,9 @@ Grammar.extend
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
    and mod_ident : 'mod_ident Grammar.Entry.e =
      grammar_entry_create "mod_ident"
+   and direction_flag : 'direction_flag Grammar.Entry.e =
+     grammar_entry_create "direction_flag"
+   and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
    and class_declaration : 'class_declaration Grammar.Entry.e =
      grammar_entry_create "class_declaration"
    and class_fun_binding : 'class_fun_binding Grammar.Entry.e =
@@ -427,7 +430,6 @@ Grammar.extend
    and field_expr : 'field_expr Grammar.Entry.e =
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
-   and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
    and class_longident : 'class_longident Grammar.Entry.e =
      grammar_entry_create "class_longident"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
@@ -445,8 +447,6 @@ Grammar.extend
      grammar_entry_create "patt_option_label"
    and ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon_fun_binding"
-   and direction_flag : 'direction_flag Grammar.Entry.e =
-     grammar_entry_create "direction_flag"
    and joinautomaton : 'joinautomaton Grammar.Entry.e =
      grammar_entry_create "joinautomaton"
    and joinclause : 'joinclause Grammar.Entry.e =
@@ -4465,6 +4465,20 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (Qast.List [mkident i] : 'mod_ident))]];
+    Grammar.Entry.obj (direction_flag : 'direction_flag Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("", "downto")],
+      Gramext.action
+        (fun _ (loc : Ploc.t) -> (Qast.Bool false : 'direction_flag));
+      [Gramext.Stoken ("", "to")],
+      Gramext.action
+        (fun _ (loc : Ploc.t) -> (Qast.Bool true : 'direction_flag))]];
+    Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "'");
+       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+      Gramext.action (fun (i : 'ident) _ (loc : Ploc.t) -> (i : 'typevar))]];
     (* Objects and Classes *)
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [None, None,
@@ -5890,11 +5904,6 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) _ (lab : string) (loc : Ploc.t) ->
            (Qast.Tuple [mkident lab; t] : 'field))]];
-    Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
-      Gramext.action (fun (i : 'ident) _ (loc : Ploc.t) -> (i : 'typevar))]];
     Grammar.Entry.obj (class_longident : 'class_longident Grammar.Entry.e),
     None,
     [None, None,
@@ -7105,15 +7114,6 @@ Grammar.extend
       Gramext.action
         (fun (s : 'e__230) _ (loc : Ploc.t) ->
            (Qast.Node ("ExVrn", [Qast.Loc; s]) : 'expr))]];
-    Grammar.Entry.obj (direction_flag : 'direction_flag Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Stoken ("", "downto")],
-      Gramext.action
-        (fun _ (loc : Ploc.t) -> (Qast.Bool false : 'direction_flag));
-      [Gramext.Stoken ("", "to")],
-      Gramext.action
-        (fun _ (loc : Ploc.t) -> (Qast.Bool true : 'direction_flag))]];
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "def");

@@ -611,6 +611,9 @@ EXTEND
     [ [ "to" -> True
       | "downto" -> False ] ]
   ;
+  typevar:
+    [ [ "'"; i = ident -> i ] ]
+  ;
   (* Objects and Classes *)
   str_item:
     [ [ "class"; cd = V (LIST1 class_declaration SEP "and") ->
@@ -789,9 +792,6 @@ EXTEND
   ;
   field:
     [ [ lab = LIDENT; ":"; t = ctyp -> (mkident lab, t) ] ]
-  ;
-  typevar:
-    [ [ "'"; i = ident -> i ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF -> [mkident m :: l]
