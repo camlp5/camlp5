@@ -688,7 +688,7 @@ value ocaml_pexp_lazy =
   ELSE Some (fun e -> Pexp_lazy e) END
 ;
 
-value ocaml_pexp_ident li = Pexp_ident (mknoloc li);
+value ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);
 
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None

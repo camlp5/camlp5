@@ -221,7 +221,7 @@ let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 
-let ocaml_pexp_ident li = Pexp_ident (mknoloc li);;
+let ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);;
 
 let ocaml_pexp_letmodule =
   Some (fun i me e -> Pexp_letmodule (mknoloc i, me, e))

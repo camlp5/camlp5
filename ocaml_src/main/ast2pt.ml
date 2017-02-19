@@ -98,7 +98,9 @@ let mklazy loc e =
       let delayed = Ldot (Lident "Lazy", "Delayed") in
       let cloc = mkloc loc in
       let df = ghexp (ocaml_pexp_construct cloc delayed (Some f) false) in
-      let r = ghexp (ocaml_pexp_ident (Ldot (Lident "Pervasives", "ref"))) in
+      let r =
+        ghexp (ocaml_pexp_ident cloc (Ldot (Lident "Pervasives", "ref")))
+      in
       ghexp (ocaml_pexp_apply r ["", df])
 ;;
 
@@ -918,7 +920,8 @@ let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
       mkexp loc
-        (ocaml_pexp_apply (mkexp loc (ocaml_pexp_ident (Lident "!")))
+        (ocaml_pexp_apply
+           (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
            ["", expr x])
   | ExAcc (loc, _, _) as e ->
       let (e, l) =
@@ -928,7 +931,7 @@ let rec expr =
             let cloc = mkloc loc in
             mkexp loc (ocaml_pexp_construct cloc (mkli s ml) None ca), l
         | (loc, ml, MLast.ExLid (_, s)) :: l ->
-            mkexp loc (ocaml_pexp_ident (mkli s ml)), l
+            mkexp loc (ocaml_pexp_ident (mkloc loc) (mkli s ml)), l
         | (_, [], e) :: l -> expr e, l
         | _ -> error loc "bad ast"
       in
@@ -1002,17 +1005,21 @@ let rec expr =
           | None -> error loc "no expression open in this ocaml version"
           end
       | _ ->
+          let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (ocaml_pexp_ident (array_function "Array" "get")))
+               (mkexp loc
+                  (ocaml_pexp_ident cloc (array_function "Array" "get")))
                ["", expr e1; "", expr e2])
       end
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss (loc, e, v) ->
       begin match e with
         ExAcc (loc, x, MLast.ExLid (_, "val")) ->
+          let cloc = mkloc loc in
           mkexp loc
-            (ocaml_pexp_apply (mkexp loc (ocaml_pexp_ident (Lident ":=")))
+            (ocaml_pexp_apply
+               (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
                ["", expr x; "", expr v])
       | ExAcc (loc, _, _) ->
           begin match (expr e).pexp_desc with
@@ -1020,16 +1027,20 @@ let rec expr =
           | _ -> error loc "bad record access"
           end
       | ExAre (_, e1, e2) ->
+          let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (ocaml_pexp_ident (array_function "Array" "set")))
+               (mkexp loc
+                  (ocaml_pexp_ident cloc (array_function "Array" "set")))
                ["", expr e1; "", expr e2; "", expr v])
       | ExBae (loc, e, el) -> expr (bigarray_set loc e (uv el) v)
       | ExLid (_, lab) -> mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
       | ExSte (_, e1, e2) ->
+          let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
-               (mkexp loc (ocaml_pexp_ident (array_function "String" "set")))
+               (mkexp loc
+                  (ocaml_pexp_ident cloc (array_function "String" "set")))
                ["", expr e1; "", expr e2; "", expr v])
       | _ -> error loc "bad left part of assignment"
       end
@@ -1109,7 +1120,7 @@ let rec expr =
   | ExLaz (loc, e) -> mklazy loc (expr e)
   | ExLet (loc, rf, pel, e) ->
       mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe (uv pel), expr e))
-  | ExLid (loc, s) -> mkexp loc (ocaml_pexp_ident (Lident (uv s)))
+  | ExLid (loc, s) -> mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident (uv s)))
   | ExLmd (loc, i, me, e) ->
       begin match ocaml_pexp_letmodule with
         Some pexp_letmodule ->
@@ -1233,9 +1244,10 @@ let rec expr =
       | None -> error loc "no 'spawn' in this ocaml version"
       end
   | ExSte (loc, e1, e2) ->
+      let cloc = mkloc loc in
       mkexp loc
         (ocaml_pexp_apply
-           (mkexp loc (ocaml_pexp_ident (array_function "String" "get")))
+           (mkexp loc (ocaml_pexp_ident cloc (array_function "String" "get")))
            ["", expr e1; "", expr e2])
   | ExStr (loc, s) ->
       mkexp loc

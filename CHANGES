@@ -1,6 +1,9 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [19 Feb 17] Fixed bug: locations of all identifiers were missing
+  resulting of error messages giving "<none>" as source file name
+  and no line and column number in the source.
 * [04 Jan 17] Updated for ocaml trunk 4.05.0
 * [09 Dec 16] Fixed bug: was not compatible with ocaml compiled with
   option -safe-string.
