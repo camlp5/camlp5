@@ -1,6 +1,7 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [07 Apr 17] Updated for ocaml trunk 4.06.0
 * [19 Feb 17] Fixed bug: locations of all identifiers were missing
   resulting of error messages giving "<none>" as source file name
   and no line and column number in the source.
