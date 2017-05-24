@@ -724,14 +724,14 @@ value tok_match =
       fun (con, prm) ->
         if con = "LIDENT" then
           if p_prm = "" || prm = p_prm then prm else raise Stream.Failure
-	else
+        else
           if con = "" && prm = p_prm then prm else raise Stream.Failure
   | ("UIDENT", p_prm) ->
       (* also treats the case when a UIDENT is also a keyword *)
       fun (con, prm) ->
         if con = "UIDENT" then
           if p_prm = "" || prm = p_prm then prm else raise Stream.Failure
-	else
+        else
           if con = "" && prm = p_prm then prm else raise Stream.Failure
   | tok -> Plexing.default_match tok ]
 ;

@@ -97,7 +97,7 @@ value mklazy loc e =
       let cloc = mkloc loc in
       let df = ghexp (ocaml_pexp_construct cloc delayed (Some f) False) in
       let r =
-	ghexp (ocaml_pexp_ident cloc (Ldot (Lident "Pervasives") "ref"))
+        ghexp (ocaml_pexp_ident cloc (Ldot (Lident "Pervasives") "ref"))
       in
       ghexp (ocaml_pexp_apply r [("", df)]) ]
 ;
@@ -760,7 +760,7 @@ value rec expr =
   [ ExAcc loc x <:expr< val >> →
       mkexp loc
         (ocaml_pexp_apply
-	   (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
+           (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
            [("", expr x)])
   | ExAcc loc _ _ as e →
       let (e, l) =
@@ -843,40 +843,40 @@ value rec expr =
               mkexp loc (pexp_open li (expr e2))
           | None → error loc "no expression open in this ocaml version" ]
       | _ →
-	  let cloc = mkloc loc in
+          let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc
-		  (ocaml_pexp_ident cloc (array_function "Array" "get")))
+                  (ocaml_pexp_ident cloc (array_function "Array" "get")))
                [("", expr e1); ("", expr e2)]) ]
   | ExArr loc el → mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v →
       match e with
       [ ExAcc loc x <:expr< val >> →
-	  let cloc = mkloc loc in
+          let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
-	       (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
+               (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
                [("", expr x); ("", expr v)])
       | ExAcc loc _ _ →
           match (expr e).pexp_desc with
           [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
           | _ → error loc "bad record access" ]
       | ExAre _ e1 e2 →
-	  let cloc = mkloc loc in
+          let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc
-		  (ocaml_pexp_ident cloc (array_function "Array" "set")))
+                  (ocaml_pexp_ident cloc (array_function "Array" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | ExBae loc e el → expr (bigarray_set loc e (uv el) v)
       | ExLid _ lab → mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
       | ExSte _ e1 e2 →
-	  let cloc = mkloc loc in
+          let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc
-		  (ocaml_pexp_ident cloc (array_function "String" "set")))
+                  (ocaml_pexp_ident cloc (array_function "String" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | _ → error loc "bad left part of assignment" ]
   | ExAsr loc <:expr< False >> →
@@ -1391,13 +1391,13 @@ and class_type =
   | CtFun loc (TyLab _ lab t) ct →
       match ocaml_pcty_fun with
       [ Some pcty_fun →
-	  let ty = ctyp t in
+          let ty = ctyp t in
           mkcty loc (pcty_fun (uv lab) ty ty (class_type ct))
       | None → error loc "no class type desc in this ocaml version" ]
   | CtFun loc (TyOlb loc1 lab t) ct →
       match ocaml_pcty_fun with
       [ Some pcty_fun →
-	  let ty = ctyp t in
+          let ty = ctyp t in
           let ot = let loc = loc1 in ctyp <:ctyp< option $t$ >> in
           let pcty = pcty_fun ("?" ^ uv lab) ty ot (class_type ct) in
           mkcty loc pcty
@@ -1405,8 +1405,8 @@ and class_type =
   | CtFun loc t ct →
       match ocaml_pcty_fun with
       [ Some pcty_fun →
-	  let ty = ctyp t in
-	  mkcty loc (pcty_fun "" ty ty (class_type ct))
+          let ty = ctyp t in
+          mkcty loc (pcty_fun "" ty ty (class_type ct))
       | None → error loc "no class type desc in this ocaml version" ]
   | CtSig loc t_o ctfl →
       match ocaml_pcty_signature with

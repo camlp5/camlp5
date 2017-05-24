@@ -594,8 +594,8 @@ value rec parser_of_tree entry nlevn alevn =
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn s son in
           parser bp
-	    [: a = ps;
-	       act = p1 bp a ? tree_failed entry a s son :] -> app act a
+            [: a = ps;
+               act = p1 bp a ? tree_failed entry a s son :] -> app act a
       | Some (rev_tokl, (last_tok, svala), son) ->
           let lt =
             let t = Stoken last_tok in
@@ -606,7 +606,7 @@ value rec parser_of_tree entry nlevn alevn =
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
           parser_of_token_list entry s son p1 (parser []) rev_tokl
-	    (last_tok, svala) ]
+            (last_tok, svala) ]
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
         match s with
@@ -625,14 +625,14 @@ value rec parser_of_tree entry nlevn alevn =
             let hd_strm = Stream.npeek 1 strm in
             match try Some (ps strm) with [ Stream.Failure -> None ] with
             | Some a ->
-		match
-		  try Some (p1 bp a strm) with [ Stream.Failure -> None ]
-		with
-		| Some act -> app act a
-		| None -> p2 [: Stream.of_list hd_strm; strm :]
+                match
+                  try Some (p1 bp a strm) with [ Stream.Failure -> None ]
+                with
+                | Some act -> app act a
+                | None -> p2 [: Stream.of_list hd_strm; strm :]
                 end
             | None -> p2 strm
-	    end
+            end
       | Some (rev_tokl, (last_tok, vala), son) ->
           let lt =
             let t = Stoken last_tok in
@@ -644,9 +644,9 @@ value rec parser_of_tree entry nlevn alevn =
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
           let p1 =
-	    parser_of_token_list entry lt son p1 p2 rev_tokl
-	      (last_tok, vala)
-	  in
+            parser_of_token_list entry lt son p1 p2 rev_tokl
+              (last_tok, vala)
+          in
           parser
           [ [: a = p1 :] -> a
           | [: a = p2 :] -> a ] ] ]
@@ -672,16 +672,16 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
             in
             fun (strm : Stream.t _) ->
               let bp = Stream.count strm in
-	      let hd_strm = Stream.npeek n strm in
+              let hd_strm = Stream.npeek n strm in
               let a = ps strm in
-	      match
-	        try Some (p1 bp a strm) with [ Stream.Failure -> None ]
-	      with
-	      | Some act -> app act a
-	      | None ->
-	          let _r = p2 [: Stream.of_list hd_strm; strm :] in
-		  raise (Stream.Error (tree_failed entry a s son))
-	      end
+              match
+                try Some (p1 bp a strm) with [ Stream.Failure -> None ]
+              with
+              | Some act -> app act a
+              | None ->
+                  let _r = p2 [: Stream.of_list hd_strm; strm :] in
+                  raise (Stream.Error (tree_failed entry a s son))
+              end
         | _ ->
             let ps strm =
               match peek_nth n strm with
