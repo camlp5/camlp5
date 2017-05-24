@@ -619,7 +619,8 @@ let rec parser_of_tree entry nlevn alevn =
           in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          parser_of_token_list entry s son p1 tokl
+          parser_of_token_list entry s son p1
+            (fun (strm__ : _ Stream.t) -> raise Stream.Failure) tokl
       end
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
@@ -654,17 +655,17 @@ let rec parser_of_tree entry nlevn alevn =
               Some ls -> Svala (ls, t)
             | None -> t
           in
+          let p2 = parser_of_tree entry nlevn alevn bro in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          let p1 = parser_of_token_list entry s son p1 tokl in
-          let p2 = parser_of_tree entry nlevn alevn bro in
+          let p1 = parser_of_token_list entry lt son p1 p2 tokl in
           fun (strm__ : _ Stream.t) ->
             try p1 strm__ with Stream.Failure -> p2 strm__
 and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Stream.t) =
   try p1 strm__ with
     Stream.Failure ->
       recover parser_of_tree entry nlevn alevn bp a s son strm__
-and parser_of_token_list entry s son p1 tokl =
+and parser_of_token_list entry s son p1 p2 tokl =
   let rec loop n =
     function
       (tok, vala) :: tokl ->
@@ -678,15 +679,17 @@ and parser_of_token_list entry s son p1 tokl =
                   for i = 1 to n do Stream.junk strm done; Obj.repr r
               | None -> raise Stream.Failure
             in
-            (fun (strm__ : _ Stream.t) ->
-               let bp = Stream.count strm__ in
-               let a = ps strm__ in
-               let act =
-                 try p1 bp a strm__ with
-                   Stream.Failure ->
-                     raise (Stream.Error (tree_failed entry a s son))
-               in
-               app act a)
+            (fun (strm : _ Stream.t) ->
+               let bp = Stream.count strm in
+               let hd_strm = Stream.npeek n strm in
+               let a = ps strm in
+               match try Some (p1 bp a strm) with Stream.Failure -> None with
+                 Some act -> app act a
+               | None ->
+                   let _r =
+                     p2 (Stream.lapp (fun _ -> Stream.of_list hd_strm) strm)
+                   in
+                   raise (Stream.Error (tree_failed entry a s son)))
         | _ ->
             let ps strm =
               match peek_nth n strm with
