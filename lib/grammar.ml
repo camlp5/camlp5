@@ -246,15 +246,15 @@ value rec name_of_symbol entry =
   | _ -> "???" ]
 ;
 
-value rec get_token_list entry tokl last_tok tree =
+value rec get_token_list entry rev_tokl last_tok tree =
   match tree with
   [ Node {node = Stoken tok; son = son; brother = DeadEnd} ->
-      get_token_list entry [last_tok :: tokl] (tok, None) son
+      get_token_list entry [last_tok :: rev_tokl] (tok, None) son
   | Node {node = Svala ls (Stoken tok); son = son; brother = DeadEnd} ->
-      get_token_list entry [last_tok :: tokl] (tok, Some ls) son
+      get_token_list entry [last_tok :: rev_tokl] (tok, Some ls) son
   | _ ->
-      if tokl = [] then None
-      else Some (List.rev [last_tok :: tokl], last_tok, tree) ]
+      if rev_tokl = [] then None
+      else Some (rev_tokl, last_tok, tree) ]
 ;
 
 value rec name_of_symbol_failed entry =
@@ -293,12 +293,12 @@ and name_of_tree_failed entry =
             | Node _ -> txt ^ " or " ^ name_of_tree_failed entry bro ]
           in
           txt
-      | Some (tokl, last_tok, son) ->
+      | Some (rev_tokl, last_tok, son) ->
           List.fold_left
             (fun s (tok, _) ->
                (if s = "" then "" else s ^ " ") ^
                entry.egram.glexer.Plexing.tok_text tok)
-            "" tokl ]
+            "" (List.rev [last_tok :: rev_tokl]) ]
   | DeadEnd | LocAct _ _ -> "???" ]
 ;
 
@@ -596,7 +596,7 @@ value rec parser_of_tree entry nlevn alevn =
           parser bp
 	    [: a = ps;
 	       act = p1 bp a ? tree_failed entry a s son :] -> app act a
-      | Some (tokl, (last_tok, svala), son) ->
+      | Some (rev_tokl, (last_tok, svala), son) ->
           let lt =
             let t = Stoken last_tok in
             match svala with
@@ -605,7 +605,8 @@ value rec parser_of_tree entry nlevn alevn =
           in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          parser_of_token_list entry s son p1 (parser []) tokl ]
+          parser_of_token_list entry s son p1 (parser []) rev_tokl
+	    (last_tok, svala) ]
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
         match s with
@@ -632,7 +633,7 @@ value rec parser_of_tree entry nlevn alevn =
                 end
             | None -> p2 strm
 	    end
-      | Some (tokl, (last_tok, vala), son) ->
+      | Some (rev_tokl, (last_tok, vala), son) ->
           let lt =
             let t = Stoken last_tok in
             match vala with
@@ -642,7 +643,10 @@ value rec parser_of_tree entry nlevn alevn =
           let p2 = parser_of_tree entry nlevn alevn bro in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          let p1 = parser_of_token_list entry lt son p1 p2 tokl in
+          let p1 =
+	    parser_of_token_list entry lt son p1 p2 rev_tokl
+	      (last_tok, vala)
+	  in
           parser
           [ [: a = p1 :] -> a
           | [: a = p2 :] -> a ] ] ]
@@ -650,8 +654,8 @@ and parser_cont p1 entry nlevn alevn s son bp a =
   parser
   [ [: a = p1 :] -> a
   | [: a = recover parser_of_tree entry nlevn alevn bp a s son :] -> a ]
-and parser_of_token_list entry s son p1 p2 tokl =
-  loop 1 tokl where rec loop n =
+and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
+  loop 1 (List.rev [last_tok :: rev_tokl]) where rec loop n =
     fun
     [ [(tok, vala) :: tokl] ->
         let tematch = token_ematch entry.egram tok vala in

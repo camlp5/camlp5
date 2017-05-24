@@ -246,15 +246,13 @@ let rec name_of_symbol entry =
   | _ -> "???"
 ;;
 
-let rec get_token_list entry tokl last_tok tree =
+let rec get_token_list entry rev_tokl last_tok tree =
   match tree with
     Node {node = Stoken tok; son = son; brother = DeadEnd} ->
-      get_token_list entry (last_tok :: tokl) (tok, None) son
+      get_token_list entry (last_tok :: rev_tokl) (tok, None) son
   | Node {node = Svala (ls, Stoken tok); son = son; brother = DeadEnd} ->
-      get_token_list entry (last_tok :: tokl) (tok, Some ls) son
-  | _ ->
-      if tokl = [] then None
-      else Some (List.rev (last_tok :: tokl), last_tok, tree)
+      get_token_list entry (last_tok :: rev_tokl) (tok, Some ls) son
+  | _ -> if rev_tokl = [] then None else Some (rev_tokl, last_tok, tree)
 ;;
 
 let rec name_of_symbol_failed entry =
@@ -293,12 +291,12 @@ and name_of_tree_failed entry =
             | Node _ -> txt ^ " or " ^ name_of_tree_failed entry bro
           in
           txt
-      | Some (tokl, last_tok, son) ->
+      | Some (rev_tokl, last_tok, son) ->
           List.fold_left
             (fun s (tok, _) ->
                (if s = "" then "" else s ^ " ") ^
                entry.egram.glexer.Plexing.tok_text tok)
-            "" tokl
+            "" (List.rev (last_tok :: rev_tokl))
       end
   | DeadEnd | LocAct (_, _) -> "???"
 ;;
@@ -610,7 +608,7 @@ let rec parser_of_tree entry nlevn alevn =
                    raise (Stream.Error (tree_failed entry a s son))
              in
              app act a)
-      | Some (tokl, (last_tok, svala), son) ->
+      | Some (rev_tokl, (last_tok, svala), son) ->
           let lt =
             let t = Stoken last_tok in
             match svala with
@@ -620,7 +618,8 @@ let rec parser_of_tree entry nlevn alevn =
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
           parser_of_token_list entry s son p1
-            (fun (strm__ : _ Stream.t) -> raise Stream.Failure) tokl
+            (fun (strm__ : _ Stream.t) -> raise Stream.Failure) rev_tokl
+            (last_tok, svala)
       end
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
@@ -648,7 +647,7 @@ let rec parser_of_tree entry nlevn alevn =
                      p2 (Stream.lapp (fun _ -> Stream.of_list hd_strm) strm)
                  end
              | None -> p2 strm)
-      | Some (tokl, (last_tok, vala), son) ->
+      | Some (rev_tokl, (last_tok, vala), son) ->
           let lt =
             let t = Stoken last_tok in
             match vala with
@@ -658,14 +657,16 @@ let rec parser_of_tree entry nlevn alevn =
           let p2 = parser_of_tree entry nlevn alevn bro in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          let p1 = parser_of_token_list entry lt son p1 p2 tokl in
+          let p1 =
+            parser_of_token_list entry lt son p1 p2 rev_tokl (last_tok, vala)
+          in
           fun (strm__ : _ Stream.t) ->
             try p1 strm__ with Stream.Failure -> p2 strm__
 and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Stream.t) =
   try p1 strm__ with
     Stream.Failure ->
       recover parser_of_tree entry nlevn alevn bp a s son strm__
-and parser_of_token_list entry s son p1 p2 tokl =
+and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
   let rec loop n =
     function
       (tok, vala) :: tokl ->
@@ -702,7 +703,7 @@ and parser_of_token_list entry s son p1 p2 tokl =
         end
     | [] -> invalid_arg "parser_of_token_list"
   in
-  loop 1 tokl
+  loop 1 (List.rev (last_tok :: rev_tokl))
 and parser_of_symbol entry nlevn =
   function
     Sfacto s -> parser_of_symbol entry nlevn s
