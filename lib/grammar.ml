@@ -543,6 +543,33 @@ value bcall_and_push ps al strm = do {
   | None -> None ]
 };
 
+value token_ematch gram tok vala =
+  let tematch = gram.glexer.Plexing.tok_match tok in
+  match vala with
+  | Some al ->
+      let pa =
+        match al with
+        [ [] ->
+            let t = "V " ^ fst tok in
+            gram.glexer.Plexing.tok_match (t, "")
+        | al ->
+            loop al where rec loop =
+              fun
+              [ [a :: al] ->
+                  let pa = gram.glexer.Plexing.tok_match ("V", a) in
+                  let pal = loop al in
+                  fun tok ->
+                    try pa tok with [ Stream.Failure -> pal tok ]
+              | [] -> fun tok -> raise Stream.Failure ] ]
+      in
+      fun tok ->
+        try Obj.repr (Ploc.VaAnt (Obj.magic (pa tok : string))) with
+        [ Stream.Failure -> Obj.repr (Ploc.VaVal (tematch tok)) ]
+  | None ->
+      fun tok -> Obj.repr (tematch tok : string)
+  end
+;
+
 value rec parser_of_tree entry nlevn alevn =
   fun
   [ DeadEnd -> parser []
@@ -616,31 +643,7 @@ and parser_of_token_list gram p1 tokl =
   loop 1 tokl where rec loop n =
     fun
     [ [(tok, vala) :: tokl] ->
-        let tematch =
-          let tematch = gram.glexer.Plexing.tok_match tok in
-          match vala with
-          [ Some al ->
-              let pa =
-                match al with
-                [ [] ->
-                    let t = "V " ^ fst tok in
-                    gram.glexer.Plexing.tok_match (t, "")
-                | al ->
-                    loop al where rec loop =
-                      fun
-                      [ [a :: al] ->
-                          let pa = gram.glexer.Plexing.tok_match ("V", a) in
-                          let pal = loop al in
-                          fun tok ->
-                            try pa tok with [ Stream.Failure -> pal tok ]
-                      | [] -> fun tok -> raise Stream.Failure ] ]
-              in
-              fun tok ->
-                try Obj.repr (Ploc.VaAnt (Obj.magic (pa tok : string))) with
-                [ Stream.Failure -> Obj.repr (Ploc.VaVal (tematch tok)) ]
-          | None ->
-              fun tok -> Obj.repr (tematch tok : string) ]
-        in
+        let tematch = token_ematch gram tok vala in
         match tokl with
         [ [] ->
             let ps strm =
