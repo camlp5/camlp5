@@ -605,7 +605,7 @@ value rec parser_of_tree entry nlevn alevn =
           in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          parser_of_token_list entry s son p1 tokl ]
+          parser_of_token_list entry s son p1 (parser []) tokl ]
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
         match s with
@@ -639,10 +639,10 @@ value rec parser_of_tree entry nlevn alevn =
             [ Some ls -> Svala ls t
             | None -> t ]
           in
+          let p2 = parser_of_tree entry nlevn alevn bro in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          let p1 = parser_of_token_list entry s son p1 tokl in
-          let p2 = parser_of_tree entry nlevn alevn bro in
+          let p1 = parser_of_token_list entry s son p1 p2 tokl in
           parser
           [ [: a = p1 :] -> a
           | [: a = p2 :] -> a ] ] ]
@@ -650,7 +650,7 @@ and parser_cont p1 entry nlevn alevn s son bp a =
   parser
   [ [: a = p1 :] -> a
   | [: a = recover parser_of_tree entry nlevn alevn bp a s son :] -> a ]
-and parser_of_token_list entry s son p1 tokl =
+and parser_of_token_list entry s son p1 p2 tokl =
   loop 1 tokl where rec loop n =
     fun
     [ [(tok, vala) :: tokl] ->
@@ -666,9 +666,18 @@ and parser_of_token_list entry s son p1 tokl =
                 }
               | None -> raise Stream.Failure ]
             in
-            parser bp
-	      [: a = ps;
-	         act = p1 bp a ? tree_failed entry a s son :] -> app act a
+            fun (strm : Stream.t _) ->
+              let bp = Stream.count strm in
+	      let hd_strm = Stream.npeek n strm in
+              let a = ps strm in
+	      match
+	        try Some (p1 bp a strm) with [ Stream.Failure -> None ]
+	      with
+	      | Some act -> app act a
+	      | None ->
+	          let _r = p2 [: Stream.of_list hd_strm; strm :] in
+		  raise (Stream.Error (tree_failed entry a s son))
+	      end
         | _ ->
             let ps strm =
               match peek_nth n strm with
