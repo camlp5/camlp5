@@ -572,6 +572,11 @@ let token_ematch gram (tok, vala) =
   | None -> fun tok -> Obj.repr (tematch tok : string)
 ;;
 
+type ('a, 'b) sum =
+    Inl of 'a
+  | Inr of 'b
+;;
+
 let rec parser_of_tree entry nlevn alevn =
   function
     DeadEnd -> (fun (strm__ : _ Stream.t) -> raise Stream.Failure)
@@ -667,7 +672,8 @@ and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Stream.t) =
     Stream.Failure ->
       recover parser_of_tree entry nlevn alevn bp a s son strm__
 and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
-  let plast n =
+  let plast =
+    let n = List.length rev_tokl + 1 in
     let tematch = token_ematch entry.egram last_tok in
     let ps strm =
       match peek_nth n strm with
@@ -681,10 +687,8 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
       let hd_strm = Stream.npeek n strm in
       let a = ps strm in
       match try Some (p1 bp a strm) with Stream.Failure -> None with
-        Some act -> app act a
-      | None ->
-          let _r = p2 (Stream.lapp (fun _ -> Stream.of_list hd_strm) strm) in
-          raise (Stream.Error (tree_failed entry a s son))
+        Some act -> Inl (app act a)
+      | None -> Inr (p2 (Stream.lapp (fun _ -> Stream.of_list hd_strm) strm))
   in
   let rec loop n =
     function
@@ -698,7 +702,12 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
         let p1 = loop (n + 1) tokl in
         (fun (strm__ : _ Stream.t) ->
            let a = ps strm__ in let act = p1 strm__ in app act a)
-    | [] -> plast n
+    | [] ->
+        fun (strm__ : _ Stream.t) ->
+          let a = plast strm__ in
+          match a with
+            Inl a -> a
+          | Inr a -> raise (Stream.Error (tree_failed entry a s son))
   in
   loop 1 (List.rev rev_tokl)
 and parser_of_symbol entry nlevn =
