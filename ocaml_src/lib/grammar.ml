@@ -640,7 +640,8 @@ let rec parser_of_tree entry nlevn alevn =
                Some a ->
                  let act =
                    try p1 bp a strm__ with
-                     Stream.Failure -> raise (Stream.Error "")
+                     Stream.Failure ->
+                       raise (Stream.Error (tree_failed entry a s son))
                  in
                  app act a
              | _ -> p2 strm__)

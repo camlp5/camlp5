@@ -620,7 +620,8 @@ value rec parser_of_tree entry nlevn alevn =
           let p1 = parser_cont p1 entry nlevn alevn s son in
           let p2 = parser_of_tree entry nlevn alevn bro in
           parser bp
-          [ [: a = ps; act = p1 bp a :] -> app act a
+          [ [: a = ps;
+	       act = p1 bp a ? tree_failed entry a s son :] -> app act a
           | [: a = p2 :] -> a ]
       | Some (tokl, (last_tok, vala), son) ->
           let lt =
