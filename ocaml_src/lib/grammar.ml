@@ -606,7 +606,8 @@ let rec parser_of_tree entry nlevn alevn =
              let a = ps strm__ in
              let act =
                try p1 bp a strm__ with
-                 Stream.Failure -> raise (Stream.Error "")
+                 Stream.Failure ->
+                   raise (Stream.Error (tree_failed entry a s son))
              in
              app act a)
       | Some (tokl, (last_tok, svala), son) ->
@@ -618,7 +619,7 @@ let rec parser_of_tree entry nlevn alevn =
           in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          parser_of_token_list entry.egram p1 tokl
+          parser_of_token_list entry s son p1 tokl
       end
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
@@ -652,20 +653,19 @@ let rec parser_of_tree entry nlevn alevn =
           in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          let p1 = parser_of_token_list entry.egram p1 tokl in
+          let p1 = parser_of_token_list entry s son p1 tokl in
           let p2 = parser_of_tree entry nlevn alevn bro in
           fun (strm__ : _ Stream.t) ->
             try p1 strm__ with Stream.Failure -> p2 strm__
 and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Stream.t) =
   try p1 strm__ with
     Stream.Failure ->
-      try recover parser_of_tree entry nlevn alevn bp a s son strm__ with
-        Stream.Failure -> raise (Stream.Error (tree_failed entry a s son))
-and parser_of_token_list gram p1 tokl =
+      recover parser_of_tree entry nlevn alevn bp a s son strm__
+and parser_of_token_list entry s son p1 tokl =
   let rec loop n =
     function
       (tok, vala) :: tokl ->
-        let tematch = token_ematch gram tok vala in
+        let tematch = token_ematch entry.egram tok vala in
         begin match tokl with
           [] ->
             let ps strm =
@@ -680,7 +680,8 @@ and parser_of_token_list gram p1 tokl =
                let a = ps strm__ in
                let act =
                  try p1 bp a strm__ with
-                   Stream.Failure -> raise (Stream.Error "")
+                   Stream.Failure ->
+                     raise (Stream.Error (tree_failed entry a s son))
                in
                app act a)
         | _ ->

@@ -593,7 +593,9 @@ value rec parser_of_tree entry nlevn alevn =
           let ps = parser_of_symbol entry nlevn s in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn s son in
-          parser bp [: a = ps; act = p1 bp a :] -> app act a
+          parser bp
+	    [: a = ps;
+	       act = p1 bp a ? tree_failed entry a s son :] -> app act a
       | Some (tokl, (last_tok, svala), son) ->
           let lt =
             let t = Stoken last_tok in
@@ -603,7 +605,7 @@ value rec parser_of_tree entry nlevn alevn =
           in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          parser_of_token_list entry.egram p1 tokl ]
+          parser_of_token_list entry s son p1 tokl ]
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
         match s with
@@ -629,7 +631,7 @@ value rec parser_of_tree entry nlevn alevn =
           in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          let p1 = parser_of_token_list entry.egram p1 tokl in
+          let p1 = parser_of_token_list entry s son p1 tokl in
           let p2 = parser_of_tree entry nlevn alevn bro in
           parser
           [ [: a = p1 :] -> a
@@ -637,13 +639,12 @@ value rec parser_of_tree entry nlevn alevn =
 and parser_cont p1 entry nlevn alevn s son bp a =
   parser
   [ [: a = p1 :] -> a
-  | [: a = recover parser_of_tree entry nlevn alevn bp a s son :] -> a
-  | [: :] -> raise (Stream.Error (tree_failed entry a s son)) ]
-and parser_of_token_list gram p1 tokl =
+  | [: a = recover parser_of_tree entry nlevn alevn bp a s son :] -> a ]
+and parser_of_token_list entry s son p1 tokl =
   loop 1 tokl where rec loop n =
     fun
     [ [(tok, vala) :: tokl] ->
-        let tematch = token_ematch gram tok vala in
+        let tematch = token_ematch entry.egram tok vala in
         match tokl with
         [ [] ->
             let ps strm =
@@ -655,7 +656,9 @@ and parser_of_token_list gram p1 tokl =
                 }
               | None -> raise Stream.Failure ]
             in
-            parser bp [: a = ps; act = p1 bp a :] -> app act a
+            parser bp
+	      [: a = ps;
+	         act = p1 bp a ? tree_failed entry a s son :] -> app act a
         | _ ->
             let ps strm =
               match peek_nth n strm with
