@@ -655,42 +655,44 @@ and parser_cont p1 entry nlevn alevn s son bp a =
   [ [: a = p1 :] -> a
   | [: a = recover parser_of_tree entry nlevn alevn bp a s son :] -> a ]
 and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
-  loop 1 (List.rev [last_tok :: rev_tokl]) where rec loop n =
+  let plast n =
+    let tematch = token_ematch entry.egram last_tok in
+    let ps strm =
+      match peek_nth n strm with
+      [ Some tok -> do {
+          let r = tematch tok in
+          for i = 1 to n do { Stream.junk strm };
+          Obj.repr r
+        }
+      | None -> raise Stream.Failure ]
+    in
+    fun (strm : Stream.t _) ->
+      let bp = Stream.count strm in
+      let hd_strm = Stream.npeek n strm in
+      let a = ps strm in
+      match
+        try Some (p1 bp a strm) with [ Stream.Failure -> None ]
+      with
+      | Some act -> app act a
+      | None ->
+          let _r = p2 [: Stream.of_list hd_strm; strm :] in
+          raise (Stream.Error (tree_failed entry a s son))
+      end
+  in
+  loop 1 (List.rev rev_tokl) where rec loop n =
     fun
-    [ [(tok, vala) :: tokl] ->
+    | [(tok, vala) :: tokl] ->
         let tematch = token_ematch entry.egram (tok, vala) in
-        match tokl with
-        [ [] ->
-            let ps strm =
-              match peek_nth n strm with
-              [ Some tok -> do {
-                  let r = tematch tok in
-                  for i = 1 to n do { Stream.junk strm };
-                  Obj.repr r
-                }
-              | None -> raise Stream.Failure ]
-            in
-            fun (strm : Stream.t _) ->
-              let bp = Stream.count strm in
-              let hd_strm = Stream.npeek n strm in
-              let a = ps strm in
-              match
-                try Some (p1 bp a strm) with [ Stream.Failure -> None ]
-              with
-              | Some act -> app act a
-              | None ->
-                  let _r = p2 [: Stream.of_list hd_strm; strm :] in
-                  raise (Stream.Error (tree_failed entry a s son))
-              end
-        | _ ->
-            let ps strm =
-              match peek_nth n strm with
-              [ Some tok -> tematch tok
-              | None -> raise Stream.Failure ]
-            in
-            let p1 = loop (n + 1) tokl in
-            parser [: a = ps; act = p1 ! :] -> app act a ]
-    | [] -> invalid_arg "parser_of_token_list" ]
+        let ps strm =
+          match peek_nth n strm with
+          [ Some tok -> tematch tok
+          | None -> raise Stream.Failure ]
+        in
+        let p1 = loop (n + 1) tokl in
+        parser [: a = ps; act = p1 ! :] -> app act a
+    | [] ->
+        plast n
+    end
 and parser_of_symbol entry nlevn =
   fun
   [ Sfacto s -> parser_of_symbol entry nlevn s
