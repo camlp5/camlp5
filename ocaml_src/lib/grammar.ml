@@ -547,7 +547,7 @@ let bcall_and_push ps al strm =
   | None -> None
 ;;
 
-let token_ematch gram tok vala =
+let token_ematch gram (tok, vala) =
   let tematch = gram.glexer.Plexing.tok_match tok in
   match vala with
     Some al ->
@@ -670,7 +670,7 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
   let rec loop n =
     function
       (tok, vala) :: tokl ->
-        let tematch = token_ematch entry.egram tok vala in
+        let tematch = token_ematch entry.egram (tok, vala) in
         begin match tokl with
           [] ->
             let ps strm =
