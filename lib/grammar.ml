@@ -642,7 +642,7 @@ value rec parser_of_tree entry nlevn alevn =
           let p2 = parser_of_tree entry nlevn alevn bro in
           let p1 = parser_of_tree entry nlevn alevn son in
           let p1 = parser_cont p1 entry nlevn alevn lt son in
-          let p1 = parser_of_token_list entry s son p1 p2 tokl in
+          let p1 = parser_of_token_list entry lt son p1 p2 tokl in
           parser
           [ [: a = p1 :] -> a
           | [: a = p2 :] -> a ] ] ]
