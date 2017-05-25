@@ -680,6 +680,50 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
       | None -> Inr (p2 [: Stream.of_list hd_strm; strm :])
       end
   in
+  match List.rev rev_tokl with
+  | [] ->
+      parser [: a = plast :] ->
+        match a with | Inl a -> a | Inr a -> a end
+  | [tok] ->
+      let tematch = token_ematch entry.egram tok in
+      let ps strm =
+        match peek_nth 1 strm with
+        [ Some tok -> tematch tok
+        | None -> raise Stream.Failure ]
+      in
+      let p1 = parser [: a = plast :] -> a in
+      parser [: a = ps; act = p1 ! :] ->
+        match act with
+        | Inl act -> app act a
+        | Inr a -> a
+        end
+  | [tok1; tok2] ->
+      let tematch = token_ematch entry.egram tok1 in
+      let ps strm =
+        match peek_nth 1 strm with
+        [ Some tok -> tematch tok
+        | None -> raise Stream.Failure ]
+      in
+      let p1 =
+        let tematch = token_ematch entry.egram tok2 in
+        let ps strm =
+          match peek_nth 2 strm with
+          [ Some tok -> tematch tok
+          | None -> raise Stream.Failure ]
+        in
+        let p1 = parser [: a = plast :] -> a in
+        parser [: a = ps; act = p1 ! :] ->
+          match act with
+          | Inl act -> Inl (app act a)
+          | Inr a -> Inr a
+          end
+      in
+      parser [: a = ps; act = p1 ! :] ->
+        match act with
+        | Inl act -> app act a
+        | Inr a -> a
+        end
+  | _ ->
   loop 1 (List.rev rev_tokl) where rec loop n =
     fun
     | [(tok, vala) :: tokl] ->
@@ -698,6 +742,7 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
           | Inr a -> raise (Stream.Error (tree_failed entry a s son))
           end
     end
+  end
 and parser_of_symbol entry nlevn =
   fun
   [ Sfacto s -> parser_of_symbol entry nlevn s
