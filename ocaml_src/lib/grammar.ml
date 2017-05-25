@@ -690,26 +690,47 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
         Some act -> Inl (app act a)
       | None -> Inr (p2 (Stream.lapp (fun _ -> Stream.of_list hd_strm) strm))
   in
-  let rec loop n =
-    function
-      (tok, vala) :: tokl ->
-        let tematch = token_ematch entry.egram (tok, vala) in
-        let ps strm =
-          match peek_nth n strm with
-            Some tok -> tematch tok
-          | None -> raise Stream.Failure
+  match List.rev rev_tokl with
+    [] ->
+      (fun (strm__ : _ Stream.t) ->
+         let a = plast strm__ in
+         match a with
+           Inl a -> a
+         | Inr a -> a)
+  | tok :: tokl ->
+      let tematch = token_ematch entry.egram tok in
+      let ps strm =
+        match peek_nth 1 strm with
+          Some tok -> tematch tok
+        | None -> raise Stream.Failure
+      in
+      let p1 =
+        let rec loop n =
+          function
+            [] -> plast
+          | tok :: tokl ->
+              let tematch = token_ematch entry.egram tok in
+              let ps strm =
+                match peek_nth n strm with
+                  Some tok -> tematch tok
+                | None -> raise Stream.Failure
+              in
+              let p1 = loop (n + 1) tokl in
+              fun (strm__ : _ Stream.t) ->
+                let a = ps strm__ in
+                let act = p1 strm__ in
+                match act with
+                  Inl act -> Inl (app act a)
+                | Inr a -> Inr a
         in
-        let p1 = loop (n + 1) tokl in
-        (fun (strm__ : _ Stream.t) ->
-           let a = ps strm__ in let act = p1 strm__ in app act a)
-    | [] ->
-        fun (strm__ : _ Stream.t) ->
-          let a = plast strm__ in
-          match a with
-            Inl a -> a
-          | Inr a -> raise (Stream.Error (tree_failed entry a s son))
-  in
-  loop 1 (List.rev rev_tokl)
+        loop 2 tokl
+      in
+      fun (strm__ : _ Stream.t) ->
+        let a = ps strm__ in
+        let act = p1 strm__ in
+        match act with
+          Inl act -> app act a
+        | Inr a -> a
 and parser_of_symbol entry nlevn =
   function
     Sfacto s -> parser_of_symbol entry nlevn s

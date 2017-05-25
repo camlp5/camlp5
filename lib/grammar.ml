@@ -684,38 +684,31 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
   | [] ->
       parser [: a = plast :] ->
         match a with | Inl a -> a | Inr a -> a end
-  | [tok] ->
+  | [tok :: tokl] ->
       let tematch = token_ematch entry.egram tok in
       let ps strm =
         match peek_nth 1 strm with
         [ Some tok -> tematch tok
         | None -> raise Stream.Failure ]
       in
-      parser [: a = ps; act = plast ! :] ->
-        match act with
-        | Inl act -> app act a
-        | Inr a -> a
-        end
-  | [tok1; tok2] ->
-      let tematch = token_ematch entry.egram tok1 in
-      let ps strm =
-        match peek_nth 1 strm with
-        | Some tok -> tematch tok
-        | None -> raise Stream.Failure
-	end
-      in
       let p1 =
-        let tematch = token_ematch entry.egram tok2 in
-        let ps strm =
-          match peek_nth 2 strm with
-          | Some tok -> tematch tok
-          | None -> raise Stream.Failure
-	  end
-        in
-        parser [: a = ps; act = plast ! :] ->
-          match act with
-          | Inl act -> Inl (app act a)
-          | Inr a -> Inr a
+        loop 2 tokl where rec loop n =
+          fun
+          | [] -> plast
+          | [tok :: tokl] ->
+              let tematch = token_ematch entry.egram tok in
+              let ps strm =
+                match peek_nth n strm with
+                | Some tok -> tematch tok
+                | None -> raise Stream.Failure
+                end
+              in
+              let p1 = loop (n + 1) tokl in
+              parser [: a = ps; act = p1 ! :] ->
+                match act with
+                | Inl act -> Inl (app act a)
+                | Inr a -> Inr a
+                end
           end
       in
       parser [: a = ps; act = p1 ! :] ->
@@ -723,65 +716,6 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
         | Inl act -> app act a
         | Inr a -> a
         end
-  | [tok1; tok2; tok3] ->
-      let tematch = token_ematch entry.egram tok1 in
-      let ps strm =
-        match peek_nth 1 strm with
-        [ Some tok -> tematch tok
-        | None -> raise Stream.Failure ]
-      in
-      let p1 =
-        let tematch = token_ematch entry.egram tok2 in
-        let ps strm =
-          match peek_nth 2 strm with
-          | Some tok -> tematch tok
-          | None -> raise Stream.Failure
-	  end
-        in
-	let p1 =
-	  let tematch = token_ematch entry.egram tok3 in
-	  let ps strm =
-	    match peek_nth 3 strm with
-	    | Some tok -> tematch tok
-	    | None -> raise Stream.Failure
-	    end
-	  in
-          parser [: a = ps; act = plast ! :] ->
-            match act with
-            | Inl act -> Inl (app act a)
-            | Inr a -> Inr a
-            end
-	in
-	parser [: a = ps; act = p1 ! :] ->
-	  match act with
-	  | Inl act -> Inl (app act a)
-	  | Inr a -> Inr a
-	  end
-      in
-      parser [: a = ps; act = p1 ! :] ->
-        match act with
-        | Inl act -> app act a
-        | Inr a -> a
-        end
-  | _ ->
-  loop 1 (List.rev rev_tokl) where rec loop n =
-    fun
-    | [(tok, vala) :: tokl] ->
-        let tematch = token_ematch entry.egram (tok, vala) in
-        let ps strm =
-          match peek_nth n strm with
-          [ Some tok -> tematch tok
-          | None -> raise Stream.Failure ]
-        in
-        let p1 = loop (n + 1) tokl in
-        parser [: a = ps; act = p1 ! :] -> app act a
-    | [] ->
-        parser [: a = plast :] ->
-          match a with
-          | Inl a -> a
-          | Inr a -> raise (Stream.Error (tree_failed entry a s son))
-          end
-    end
   end
 and parser_of_symbol entry nlevn =
   fun

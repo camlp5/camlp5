@@ -1,11 +1,12 @@
 Camlp5 Version 6.18:
 --------------------
 
-* [24 May 17] Improved grammar parsing: now able to treat
-     expr: [ [ "foo"; e = expr1 -> e | e = expr2 -> e ] ];
+* [25 May 17] Improved grammar parsing: now able to treat
+     expr: [ [ ... list of tokens ...; e = expr1 -> e | e = expr2 -> e ] ];
      expr1: [ [ "bar" -> 42 ] ];
-     expr2: [ [ "foo"; "any" -> 69 ] ];
-  when input is "foo any" (before was syntax error, expr1 expected).
+     expr2: [ [ ... same list of tokens ...; "any" -> 69 ] ];
+  when input is "... list of tokens ... any" (before was syntax error,
+  expr1 expected).
 * [28 Apr 17] Updated for ocaml 4.04.2 which was missing.
 * [07 Apr 17] Updated for ocaml trunk 4.06.0
 * [19 Feb 17] Fixed bug: locations of all identifiers were missing
