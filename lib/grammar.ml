@@ -691,13 +691,39 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
         [ Some tok -> tematch tok
         | None -> raise Stream.Failure ]
       in
-      let p1 = parser [: a = plast :] -> a in
-      parser [: a = ps; act = p1 ! :] ->
+      parser [: a = ps; act = plast ! :] ->
         match act with
         | Inl act -> app act a
         | Inr a -> a
         end
   | [tok1; tok2] ->
+      let tematch = token_ematch entry.egram tok1 in
+      let ps strm =
+        match peek_nth 1 strm with
+        | Some tok -> tematch tok
+        | None -> raise Stream.Failure
+	end
+      in
+      let p1 =
+        let tematch = token_ematch entry.egram tok2 in
+        let ps strm =
+          match peek_nth 2 strm with
+          | Some tok -> tematch tok
+          | None -> raise Stream.Failure
+	  end
+        in
+        parser [: a = ps; act = plast ! :] ->
+          match act with
+          | Inl act -> Inl (app act a)
+          | Inr a -> Inr a
+          end
+      in
+      parser [: a = ps; act = p1 ! :] ->
+        match act with
+        | Inl act -> app act a
+        | Inr a -> a
+        end
+  | [tok1; tok2; tok3] ->
       let tematch = token_ematch entry.egram tok1 in
       let ps strm =
         match peek_nth 1 strm with
@@ -708,15 +734,29 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
         let tematch = token_ematch entry.egram tok2 in
         let ps strm =
           match peek_nth 2 strm with
-          [ Some tok -> tematch tok
-          | None -> raise Stream.Failure ]
+          | Some tok -> tematch tok
+          | None -> raise Stream.Failure
+	  end
         in
-        let p1 = parser [: a = plast :] -> a in
-        parser [: a = ps; act = p1 ! :] ->
-          match act with
-          | Inl act -> Inl (app act a)
-          | Inr a -> Inr a
-          end
+	let p1 =
+	  let tematch = token_ematch entry.egram tok3 in
+	  let ps strm =
+	    match peek_nth 3 strm with
+	    | Some tok -> tematch tok
+	    | None -> raise Stream.Failure
+	    end
+	  in
+          parser [: a = ps; act = plast ! :] ->
+            match act with
+            | Inl act -> Inl (app act a)
+            | Inr a -> Inr a
+            end
+	in
+	parser [: a = ps; act = p1 ! :] ->
+	  match act with
+	  | Inl act -> Inl (app act a)
+	  | Inr a -> Inr a
+	  end
       in
       parser [: a = ps; act = p1 ! :] ->
         match act with
