@@ -631,7 +631,10 @@ value rec parser_of_tree entry nlevn alevn =
                   try Some (p1 bp a strm) with [ Stream.Failure -> None ]
                 with
                 | Some act -> app act a
-                | None -> p2 [: Stream.of_list hd_strm; strm :]
+                | None ->
+                    try p2 [: Stream.of_list hd_strm; strm :] with
+                    [ Stream.Failure ->
+                        raise (Stream.Error (tree_failed entry a s son)) ]
                 end
             | None -> p2 strm
             end
@@ -677,7 +680,10 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
         try Some (p1 bp a strm) with [ Stream.Failure -> None ]
       with
       | Some act -> Inl (app act a)
-      | None -> Inr (p2 [: Stream.of_list hd_strm; strm :])
+      | None ->
+          try Inr (p2 [: Stream.of_list hd_strm; strm :]) with
+          [ Stream.Failure ->
+              raise (Stream.Error (tree_failed entry a s son)) ]
       end
   in
   match List.rev rev_tokl with
