@@ -19,6 +19,11 @@ let gram =
      Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None}
 ;;
 
+(*
+Camlp5 can be parsed with backtracking:
+Grammar.set_algorithm gram Grammar.Backtracking;
+*)
+
 type status = Ploc.t option;;
 
 let interf = Grammar.Entry.create gram "interf";;

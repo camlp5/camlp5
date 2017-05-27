@@ -566,7 +566,8 @@ EXTEND
           if not e then x else Grammar.skip_item x ] ]
   ;
   else_match_case:
-    [ [ "ELSIFDEF"; e = dexpr; "THEN"; x = match_case; y = else_match_case ->
+    [ RIGHTA
+      [ "ELSIFDEF"; e = dexpr; "THEN"; x = match_case; y = else_match_case ->
           if e then x else y
       | "ELSIFDEF"; e = dexpr; "THEN"; x = match_case ->
           if e then x else Grammar.skip_item x

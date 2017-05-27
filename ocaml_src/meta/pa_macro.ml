@@ -958,7 +958,7 @@ Grammar.extend
            (if e then x else y : 'match_case))]];
     Grammar.Entry.obj (else_match_case : 'else_match_case Grammar.Entry.e),
     None,
-    [None, None,
+    [None, Some Gramext.RightA,
      [[Gramext.Stoken ("", "ELSE");
        Gramext.Snterm
          (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e))],
