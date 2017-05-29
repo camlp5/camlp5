@@ -1097,8 +1097,6 @@ and bparser_of_symbol entry next_levn =
       bparser
       [ [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
-  | Slist0sep symb sep True ->
-      failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1 s ->
       let ps = bcall_and_push (bparser_of_symbol entry next_levn s) in
       let rec loop al =
@@ -1107,8 +1105,8 @@ and bparser_of_symbol entry next_levn =
         | [: :] -> al ]
       in
       bparser [: al = ps []; a = loop al :] -> Obj.repr (List.rev a)
-  | Slist1sep symb sep True ->
-      failwith "LIST1 _ SEP _ OPT_SEP not implemented; please report"
+  | Slist0sep symb sep True ->
+      failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1sep symb sep False ->
       let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
       let pt = bparser_of_symbol entry next_levn sep in
@@ -1121,6 +1119,18 @@ and bparser_of_symbol entry next_levn =
                | [: a = bparse_top_symb entry symb :] -> [a :: al] ];
              a = kont al :] ->
             a
+        | [: :] -> al ]
+      in
+      bparser [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
+  | Slist1sep symb sep True ->
+      let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
+      let pt = bparser_of_symbol entry next_levn sep in
+      let rec kont al =
+        bparser
+        [ [: v = pt; al = ps al; al = kont al :] -> al
+        | [: v = pt; a = bparse_top_symb entry symb;
+             al = kont [a :: al] :] -> al
+        | [: v = pt :] -> al
         | [: :] -> al ]
       in
       bparser [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)

@@ -1188,8 +1188,6 @@ and bparser_of_symbol entry next_levn =
                      strm__)
                 strm__)
            (fun strm__ -> Fstream.b_act (Obj.repr []) strm__) strm__)
-  | Slist0sep (symb, sep, true) ->
-      failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1 s ->
       let ps = bcall_and_push (bparser_of_symbol entry next_levn s) in
       let rec loop al (strm__ : _ Fstream.t) =
@@ -1209,8 +1207,8 @@ and bparser_of_symbol entry next_levn =
                 (fun a strm__ -> Fstream.b_act (Obj.repr (List.rev a)) strm__)
                 strm__)
            strm__)
-  | Slist1sep (symb, sep, true) ->
-      failwith "LIST1 _ SEP _ OPT_SEP not implemented; please report"
+  | Slist0sep (symb, sep, true) ->
+      failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1sep (symb, sep, false) ->
       let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
       let pt = bparser_of_symbol entry next_levn sep in
@@ -1241,6 +1239,45 @@ and bparser_of_symbol entry next_levn =
                     strm__)
                strm__)
           (fun strm__ -> Fstream.b_act al strm__) strm__
+      in
+      (fun (strm__ : _ Fstream.t) ->
+         Fstream.b_seq (fun strm__ -> ps [] strm__)
+           (fun al strm__ ->
+              Fstream.b_seq (fun strm__ -> kont al strm__)
+                (fun a strm__ -> Fstream.b_act (Obj.repr (List.rev a)) strm__)
+                strm__)
+           strm__)
+  | Slist1sep (symb, sep, true) ->
+      let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
+      let pt = bparser_of_symbol entry next_levn sep in
+      let rec kont al (strm__ : _ Fstream.t) =
+        Fstream.b_or
+          (fun strm__ ->
+             Fstream.b_seq pt
+               (fun v strm__ ->
+                  Fstream.b_seq (fun strm__ -> ps al strm__)
+                    (fun al strm__ ->
+                       Fstream.b_seq (fun strm__ -> kont al strm__)
+                         Fstream.b_act strm__)
+                    strm__)
+               strm__)
+          (Fstream.b_or
+             (fun strm__ ->
+                Fstream.b_seq pt
+                  (fun v strm__ ->
+                     Fstream.b_seq
+                       (fun strm__ -> bparse_top_symb entry symb strm__)
+                       (fun a strm__ ->
+                          Fstream.b_seq (fun strm__ -> kont (a :: al) strm__)
+                            Fstream.b_act strm__)
+                       strm__)
+                  strm__)
+             (Fstream.b_or
+                (fun strm__ ->
+                   Fstream.b_seq pt (fun v strm__ -> Fstream.b_act al strm__)
+                     strm__)
+                (fun strm__ -> Fstream.b_act al strm__)))
+          strm__
       in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (fun strm__ -> ps [] strm__)
