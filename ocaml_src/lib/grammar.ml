@@ -1377,23 +1377,10 @@ and bparser_of_token entry tok =
       Some (tok, strm) ->
         begin try
           let r = f tok in
-          let _ =
-            if !backtrack_trace then
-              begin
-                Printf.eprintf " yes!!! \"%s\"\n" (snd (Obj.magic tok));
-                flush stderr
-              end
-          in
+          let _ = if !backtrack_trace then Printf.eprintf " yes!!!\n%!" in
           Fstream.b_act (Obj.repr r) strm
         with Stream.Failure ->
-          let _ =
-            if !backtrack_trace then
-              begin
-                Printf.eprintf " found (\"%s\", \"%s\")\n"
-                  (fst (Obj.magic tok)) (snd (Obj.magic tok));
-                flush stderr
-              end
-          in
+          let _ = if !backtrack_trace then Printf.eprintf " not found\n%!" in
           None
         end
     | None ->
@@ -1551,7 +1538,7 @@ let init_entry_functions entry =
              try
                let r = f lev strm in
                tind := t;
-               Printf.eprintf "%s<< start %s lev %d\n" !tind entry.ename lev;
+               Printf.eprintf "%s<< end %s lev %d\n" !tind entry.ename lev;
                flush stderr;
                r
              with e ->
@@ -1577,8 +1564,8 @@ let init_entry_functions entry =
             try
               let r = f lev bp a strm in
               tind := t;
-              Printf.eprintf "%s<< continue %s lev %d %d\n" !tind entry.ename
-                lev bp;
+              Printf.eprintf "%s<< end continue %s lev %d %d\n" !tind
+                entry.ename lev bp;
               flush stderr;
               r
             with e ->
@@ -1770,7 +1757,8 @@ let bparse_parsable entry p =
     | None -> raise Stream.Failure
   with
     Stream.Failure ->
-      let loc = get_loc () in restore (); Ploc.raise loc (Stream.Error "")
+      let loc = get_loc () in
+      restore (); Ploc.raise loc (Stream.Error "backtrack")
   | exc ->
       let loc = Stream.count cs, Stream.count cs + 1 in
       restore (); Ploc.raise (Ploc.make_unlined loc) exc

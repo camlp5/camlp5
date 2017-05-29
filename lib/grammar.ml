@@ -1220,21 +1220,14 @@ and bparser_of_token entry tok =
         try
           let r = f tok in
           let _ =
-            if backtrack_trace.val then do {
-              Printf.eprintf " yes!!! \"%s\"\n" (snd (Obj.magic tok));
-              flush stderr;
-            }
+            if backtrack_trace.val then Printf.eprintf " yes!!!\n%!"
             else ()
           in
           Fstream.b_act (Obj.repr r) strm
         with
         [ Stream.Failure ->
             let _ =
-              if backtrack_trace.val then do {
-                Printf.eprintf " found (\"%s\", \"%s\")\n"
-                  (fst (Obj.magic tok)) (snd (Obj.magic tok));
-                flush stderr;
-              }
+              if backtrack_trace.val then Printf.eprintf " not found\n%!"
               else ()
             in
             None ]
@@ -1366,8 +1359,7 @@ value init_entry_functions entry = do {
             try do {
               let r = f lev strm in
               tind.val := t;
-              Printf.eprintf "%s<< start %s lev %d\n" tind.val entry.ename
-                lev;
+              Printf.eprintf "%s<< end %s lev %d\n" tind.val entry.ename lev;
               flush stderr;
               r
             }
@@ -1398,7 +1390,7 @@ value init_entry_functions entry = do {
             try do {
               let r = f lev bp a strm in
               tind.val := t;
-              Printf.eprintf "%s<< continue %s lev %d %d\n" tind.val
+              Printf.eprintf "%s<< end continue %s lev %d %d\n" tind.val
                 entry.ename lev bp;
               flush stderr;
               r
@@ -1634,7 +1626,7 @@ value bparse_parsable entry p = do {
   [ Stream.Failure -> do {
       let loc = get_loc () in
       restore ();
-      Ploc.raise loc (Stream.Error "")
+      Ploc.raise loc (Stream.Error "backtrack")
     }
   | exc -> do {
       let loc = (Stream.count cs, Stream.count cs + 1) in
