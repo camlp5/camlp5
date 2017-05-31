@@ -1531,15 +1531,18 @@ type gen_parsable 'te =
 
 type parsable = gen_parsable token;
 
+value fstream_of_stream ts =
+  Fstream.from
+    (fun _ ->
+       match Stream.peek ts with
+       | None -> None
+       | x -> do { Stream.junk ts; x }
+       end)
+;
+
 value parsable g cs =
   let (ts, lf) = g.glexer.Plexing.tok_func cs in
-  let fts =
-    Fstream.from
-      (fun _ ->
-         match Stream.peek ts with
-         [ None -> None
-         | x -> do { Stream.junk ts; x } ])
-  in
+  let fts = fstream_of_stream ts in
   {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts; pa_loc_func = lf}
 ;
 
@@ -1791,7 +1794,16 @@ module Entry =
       parse_parsable_all entry parsable
     ;
     value parse_token (entry : e 'a) ts : 'a =
-      Obj.magic (entry.estart 0 ts : Obj.t)
+      match entry.egram.galgo with
+      | DefaultAlgorithm ->
+          if backtrack_parse.val then
+            failwith "not impl Entry.parse_token default backtrack"
+          else
+            Obj.magic (entry.estart 0 ts : Obj.t)
+      | Predictive -> Obj.magic (entry.estart 0 ts : Obj.t)
+      | Backtracking ->
+          failwith "not impl Entry.parse_token backtrack"
+      end
     ;
     value name e = e.ename;
     value of_parser g n (p : Stream.t te -> 'a) : e 'a =
@@ -1914,13 +1926,7 @@ module GMake (L : GLexerType) =
     value gram = gcreate L.lexer;
     value parsable cs =
       let (ts, lf) = L.lexer.Plexing.tok_func cs in
-      let fts =
-        Fstream.from
-          (fun _ ->
-             match Stream.peek ts with
-             [ None -> None
-             | x -> do { Stream.junk ts; x } ])
-      in
+      let fts = fstream_of_stream ts in
       {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts;
        pa_loc_func = lf}
     ;
@@ -1948,7 +1954,20 @@ module GMake (L : GLexerType) =
               Obj.magic (bparse_parsable e p : Obj.t) ]
         ;
         value parse_token (e : e 'a) ts : 'a =
-          Obj.magic (e.estart 0 ts : Obj.t)
+          match e.egram.galgo with
+          | DefaultAlgorithm ->
+              if backtrack_parse.val then
+                let fts = fstream_of_stream ts in
+		match e.bstart 0 fts with
+		| Some (a, _, _) -> Obj.magic a
+		| None -> raise Stream.Failure
+		end
+              else
+	        Obj.magic (e.estart 0 ts : Obj.t)
+          | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
+          | Backtracking ->
+	      failwith "not impl gram Entry.parse_token backtrack"
+          end
         ;
         value name e = e.ename;
         value of_parser n (p : Stream.t te -> 'a) : e 'a =
