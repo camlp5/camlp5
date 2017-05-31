@@ -1797,7 +1797,10 @@ let bparse_parsable entry p =
   with
     Stream.Failure ->
       let loc = get_loc () in
-      restore (); Ploc.raise loc (Stream.Error "backtrack parsing failed")
+      restore ();
+      Ploc.raise loc
+        (Stream.Error
+           (sprintf "backtrack parsing failed in [%s]" entry.ename))
   | exc ->
       let loc = Stream.count cs, Stream.count cs + 1 in
       restore (); Ploc.raise (Ploc.make_unlined loc) exc

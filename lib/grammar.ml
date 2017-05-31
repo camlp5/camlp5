@@ -1346,7 +1346,6 @@ value bcontinue_parser_of_entry entry =
 value init_entry_functions entry = do {
   entry.estart :=
     fun lev strm -> do {
-let _ = Printf.eprintf "*** init entry.estart %s\n%!" entry.ename in
       let f = start_parser_of_entry entry in
       entry.estart := f;
       f lev strm
