@@ -1,6 +1,7 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [31 May 17] Fixed bug backtrack parsing for function Entry.of_parser.
 * [25 May 17] Improved grammar parsing: now able to treat
      expr: [ [ ... list of tokens ...; e = expr1 -> e | e = expr2 -> e ] ];
      expr1: [ [ "bar" -> 42 ] ];

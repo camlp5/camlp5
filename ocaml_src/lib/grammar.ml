@@ -1795,7 +1795,7 @@ let bparse_parsable entry p =
   with
     Stream.Failure ->
       let loc = get_loc () in
-      restore (); Ploc.raise loc (Stream.Error "backtrack")
+      restore (); Ploc.raise loc (Stream.Error "backtrack parsing failed")
   | exc ->
       let loc = Stream.count cs, Stream.count cs + 1 in
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
@@ -2100,7 +2100,30 @@ module GMake (L : GLexerType) =
            estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
            econtinue =
              (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-           bstart = (fun _ (strm__ : _ Fstream.t) -> None);
+           bstart =
+             (fun _ fstrm ->
+                let ts =
+                  let fts = ref fstrm in
+                  Stream.from
+                    (fun _ ->
+                       match Fstream.next !fts with
+                         Some (v, fstrm) -> fts := fstrm; Some v
+                       | None -> None)
+                in
+                try
+                  let r : Obj.t = Obj.magic p ts in
+                  let fstrm =
+                    let rec loop fstrm i =
+                      if i = 0 then fstrm
+                      else
+                        match Fstream.next fstrm with
+                          Some (_, fstrm) -> loop fstrm (i - 1)
+                        | None -> failwith "internal error in Entry.of_parser"
+                    in
+                    loop fstrm (Stream.count ts)
+                  in
+                  Fstream.b_act r fstrm
+                with Stream.Failure -> None);
            bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
            edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
         ;;

@@ -1636,7 +1636,7 @@ value bparse_parsable entry p = do {
   [ Stream.Failure -> do {
       let loc = get_loc () in
       restore ();
-      Ploc.raise loc (Stream.Error "backtrack")
+      Ploc.raise loc (Stream.Error "backtrack parsing failed")
     }
   | exc -> do {
       let loc = (Stream.count cs, Stream.count cs + 1) in
@@ -1955,7 +1955,28 @@ module GMake (L : GLexerType) =
           {egram = gram; ename = n; elocal = False;
            estart _ = (Obj.magic p : Stream.t te -> Obj.t);
            econtinue _ _ _ = parser [];
-           bstart _ = bparser [];
+           bstart _ fstrm =
+             let ts =
+               let fts = ref fstrm in
+               Stream.from
+                 (fun _ ->
+                    match Fstream.next fts.val with
+                    [ Some (v, fstrm) -> do { fts.val := fstrm; Some v }
+                    | None -> None ])
+             in
+             try
+               let r = (Obj.magic p ts : Obj.t) in
+               let fstrm =
+                 loop fstrm (Stream.count ts) where rec loop fstrm i =
+                   if i = 0 then fstrm
+                   else
+                     match Fstream.next fstrm with
+                     [ Some (_, fstrm) -> loop fstrm (i - 1)
+                     | None -> failwith "internal error in Entry.of_parser" ]
+               in
+               Fstream.b_act r fstrm
+             with
+             [ Stream.Failure -> None ];
            bcontinue _ _ _ = bparser [];
            edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
         ;
