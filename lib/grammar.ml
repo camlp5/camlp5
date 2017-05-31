@@ -1346,6 +1346,7 @@ value bcontinue_parser_of_entry entry =
 value init_entry_functions entry = do {
   entry.estart :=
     fun lev strm -> do {
+let _ = Printf.eprintf "*** init entry.estart %s\n%!" entry.ename in
       let f = start_parser_of_entry entry in
       entry.estart := f;
       f lev strm
@@ -1639,7 +1640,9 @@ value bparse_parsable entry p = do {
   [ Stream.Failure -> do {
       let loc = get_loc () in
       restore ();
-      Ploc.raise loc (Stream.Error "backtrack parsing failed")
+      Ploc.raise loc
+        (Stream.Error
+           (sprintf "backtrack parsing failed in [%s]" entry.ename))
     }
   | exc -> do {
       let loc = (Stream.count cs, Stream.count cs + 1) in
@@ -1958,15 +1961,15 @@ module GMake (L : GLexerType) =
           | DefaultAlgorithm ->
               if backtrack_parse.val then
                 let fts = fstream_of_stream ts in
-		match e.bstart 0 fts with
-		| Some (a, _, _) -> Obj.magic a
-		| None -> raise Stream.Failure
-		end
+                match e.bstart 0 fts with
+                | Some (a, _, _) -> Obj.magic a
+                | None -> raise Stream.Failure
+                end
               else
-	        Obj.magic (e.estart 0 ts : Obj.t)
+                Obj.magic (e.estart 0 ts : Obj.t)
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
           | Backtracking ->
-	      failwith "not impl gram Entry.parse_token backtrack"
+              failwith "not impl gram Entry.parse_token backtrack"
           end
         ;
         value name e = e.ename;
