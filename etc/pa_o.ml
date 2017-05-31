@@ -666,7 +666,8 @@ EXTEND
           <:expr< [| $_list:el$ |] >>
       | "{"; test_label_eq; lel = V lbl_expr_list "list"; "}" ->
           <:expr< { $_list:lel$ } >>
-      | "{"; e = expr LEVEL "."; "with"; lel = V lbl_expr_list "list"; "}" ->
+      | "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
+        "}" ->
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
