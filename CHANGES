@@ -1,6 +1,8 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [01 Jun 17] Backtrack parsing seems to work well now. Camlp5 and Coq can
+  be compiled using it by setting CAMLP5PARAM=b.
 * [31 May 17] Fixed bug: Entry.parse_token did not accept backtrack parsing.
 * [31 May 17] Fixed ocaml parsing for case of record {foo () with ...}.
 * [31 May 17] Fixed bug backtrack parsing for function Entry.of_parser.

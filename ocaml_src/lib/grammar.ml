@@ -2062,6 +2062,24 @@ module type S =
   end
 ;;
 
+let bparse_token_stream entry fts =
+  let restore =
+    let old_max_fcount = !max_fcount in
+    let old_nb_ftry = !nb_ftry in
+    fun () -> max_fcount := old_max_fcount; nb_ftry := old_nb_ftry
+  in
+  max_fcount := 0;
+  nb_ftry := 0;
+  let r =
+    try
+      match entry.bstart 0 fts with
+        Some (a, _, _) -> Obj.magic a
+      | None -> raise Stream.Failure
+    with e -> restore (); raise e
+  in
+  restore (); r
+;;
+
 module GMake (L : GLexerType) =
   struct
     type te = L.te;;
@@ -2100,14 +2118,10 @@ module GMake (L : GLexerType) =
           match e.egram.galgo with
             DefaultAlgorithm ->
               if !backtrack_parse then
-                let fts = fstream_of_stream ts in
-                match e.bstart 0 fts with
-                  Some (a, _, _) -> Obj.magic a
-                | None -> raise Stream.Failure
+                bparse_token_stream e (fstream_of_stream ts)
               else Obj.magic (e.estart 0 ts : Obj.t)
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
-          | Backtracking ->
-              failwith "not impl gram Entry.parse_token backtrack"
+          | Backtracking -> bparse_token_stream e (fstream_of_stream ts)
         ;;
         let name e = e.ename;;
         let of_parser n (p : te Stream.t -> 'a) : 'a e =
