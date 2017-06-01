@@ -1031,11 +1031,7 @@ value brecover bparser_of_tree entry next_levn assoc_levn bp a s son =
   bparser
   [ [: t = btop_tree entry son;
        a = bparser_of_tree entry next_levn assoc_levn t :] ->
-      a
-(*
-  | [: :] -> raise (Stream.Error (tree_failed entry a s son))
-*)
-  ]
+      a ]
 ;
 
 value rec bparser_of_tree entry next_levn assoc_levn =
