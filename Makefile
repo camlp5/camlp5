@@ -14,13 +14,7 @@ DIFF_OPT=
 # by "make install DESTDIR=..."
 DESTDIR=
 
-all:
-	@echo "Please refer to the installation instructions in file INSTALL."
-	@echo "If you've just unpacked the distribution, something like"
-	@echo "	./configure"
-	@echo "	make world.opt"
-	@echo "	make install"
-	@echo "should work. But see the file INSTALL for more details."
+all: world.opt
 
 out: boot/$(CAMLP5N)$(EXE)
 	set -e; cd ocaml_stuff; $(MAKE); cd ..
