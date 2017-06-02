@@ -1030,31 +1030,31 @@ value btop_tree entry son strm =
 value brecover bparser_of_tree entry next_levn assoc_levn bp a s son =
   bparser
   [ [: t = btop_tree entry son;
-       a = bparser_of_tree entry next_levn assoc_levn t :] ->
+       a = bparser_of_tree entry next_levn assoc_levn (Some s) t :] ->
       a ]
 ;
 
-value rec bparser_of_tree entry next_levn assoc_levn =
+value rec bparser_of_tree entry next_levn assoc_levn prev_symb =
   fun
   [ DeadEnd -> bparser []
   | LocAct act _ -> bparser [: :] -> act
   | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
       bparser [: a = entry.bstart assoc_levn :] -> app act a
   | Node {node = Sself; son = LocAct act _; brother = bro} ->
-      let p2 = bparser_of_tree entry next_levn assoc_levn bro in
+      let p2 = bparser_of_tree entry next_levn assoc_levn prev_symb bro in
       bparser
       [ [: a = entry.bstart assoc_levn :] -> app act a
       | [: a = p2 :] -> a ]
   | Node {node = s; son = son; brother = DeadEnd} ->
-      let ps = bparser_of_symbol entry next_levn s in
-      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let p1 = bparser_of_tree entry next_levn assoc_levn (Some s) son in
       let p1 = bparser_cont p1 entry next_levn assoc_levn s son in
       bparser bp [: a = ps; act = p1 bp a :] -> app act a
   | Node {node = s; son = son; brother = bro} ->
-      let ps = bparser_of_symbol entry next_levn s in
-      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let p1 = bparser_of_tree entry next_levn assoc_levn (Some s) son in
       let p1 = bparser_cont p1 entry next_levn assoc_levn s son in
-      let p2 = bparser_of_tree entry next_levn assoc_levn bro in
+      let p2 = bparser_of_tree entry next_levn assoc_levn prev_symb bro in
       bparser bp
       [ [: a = ps; act = p1 bp a :] -> app act a
       | [: a = p2 :] -> a ] ]
@@ -1064,18 +1064,20 @@ and bparser_cont p1 entry next_levn assoc_levn s son bp a =
   | [: a =
          brecover bparser_of_tree entry next_levn assoc_levn bp a s son :] ->
         a ]
-and bparser_of_symbol entry next_levn =
+and bparser_of_symbol entry next_levn prev_symb =
   fun
-  [ Sfacto s -> bparser_of_symbol entry next_levn s
+  [ Sfacto s -> bparser_of_symbol entry next_levn prev_symb s
   | Smeta _ symbl act ->
       let act = Obj.magic act entry symbl in
       Obj.magic
         (List.fold_left
            (fun act symb ->
-              Obj.magic act (bparser_of_symbol entry next_levn symb))
+              Obj.magic act
+	        (bparser_of_symbol entry next_levn prev_symb symb))
            act symbl)
   | Slist0 s ->
-      let ps = bcall_and_push (bparser_of_symbol entry next_levn s) in
+      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let ps = bcall_and_push ps in
       let rec loop al =
         bparser
         [ [: al = ps al; a = loop al :] -> a
@@ -1083,8 +1085,9 @@ and bparser_of_symbol entry next_levn =
       in
       bparser [: a = loop [] :] -> Obj.repr (List.rev a)
   | Slist0sep symb sep False ->
-      let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
-      let pt = bparser_of_symbol entry next_levn sep in
+      let ps = bparser_of_symbol entry next_levn prev_symb symb in
+      let ps = bcall_and_push ps in
+      let pt = bparser_of_symbol entry next_levn (Some symb) sep in
       let rec kont al =
         bparser
         [ [: v = pt; al = ps al; a = kont al :] -> a
@@ -1094,7 +1097,8 @@ and bparser_of_symbol entry next_levn =
       [ [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
   | Slist1 s ->
-      let ps = bcall_and_push (bparser_of_symbol entry next_levn s) in
+      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let ps = bcall_and_push ps in
       let rec loop al =
         bparser
         [ [: al = ps al; a = loop al :] -> a
@@ -1104,44 +1108,47 @@ and bparser_of_symbol entry next_levn =
   | Slist0sep symb sep True ->
       failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1sep symb sep False ->
-      let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
-      let pt = bparser_of_symbol entry next_levn sep in
+      let ps = bparser_of_symbol entry next_levn prev_symb symb in
+      let ps = bcall_and_push ps in
+      let pt = bparser_of_symbol entry next_levn (Some symb) sep in
+      let pts = bparse_top_symb entry (Some sep) symb in
       let rec kont al =
         bparser
         [ [: v = pt;
              al =
                bparser
                [ [: a = ps al :] -> a
-               | [: a = bparse_top_symb entry symb :] -> [a :: al] ];
+               | [: a = pts :] -> [a :: al] ];
              a = kont al :] ->
             a
         | [: :] -> al ]
       in
       bparser [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
   | Slist1sep symb sep True ->
-      let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
-      let pt = bparser_of_symbol entry next_levn sep in
+      let ps = bparser_of_symbol entry next_levn prev_symb symb in
+      let ps = bcall_and_push ps in
+      let pt = bparser_of_symbol entry next_levn (Some symb) sep in
+      let pts = bparse_top_symb entry (Some sep) symb in
       let rec kont al =
         bparser
         [ [: v = pt; al = ps al; al = kont al :] -> al
-        | [: v = pt; a = bparse_top_symb entry symb;
-             al = kont [a :: al] :] -> al
+        | [: v = pt; a = pts; al = kont [a :: al] :] -> al
         | [: v = pt :] -> al
         | [: :] -> al ]
       in
       bparser [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
   | Sopt s ->
-      let ps = bparser_of_symbol entry next_levn s in
+      let ps = bparser_of_symbol entry next_levn prev_symb s in
       bparser
       [ [: a = ps :] -> Obj.repr (Some a)
       | [: :] -> Obj.repr None ]
   | Sflag s ->
-      let ps = bparser_of_symbol entry next_levn s in
+      let ps = bparser_of_symbol entry next_levn prev_symb s in
       bparser
       [ [: _ = ps :] -> Obj.repr True
       | [: :] -> Obj.repr False ]
   | Stree t ->
-      let pt = bparser_of_tree entry 1 0 t in
+      let pt = bparser_of_tree entry 1 0 prev_symb t in
       bparser bp
         [: a = pt :] ep ->
           let loc = loc_of_token_interval bp ep in
@@ -1160,20 +1167,20 @@ and bparser_of_symbol entry next_levn =
               | _ -> None ]
             in
             match t with
-            [ Some t -> bparser_of_token entry (t, "")
+            [ Some t -> bparser_of_token entry prev_symb (t, "")
             | None -> bparser [] ]
         | al ->
             loop al where rec loop =
               fun
               [ [a :: al] ->
-                  let pa = bparser_of_token entry ("V", a) in
+                  let pa = bparser_of_token entry prev_symb ("V", a) in
                   let pal = loop al in
                   bparser
                   [ [: a = pa :] -> a
                   | [: a = pal :] -> a ]
               | [] -> bparser [] ] ]
       in
-      let ps = bparser_of_symbol entry next_levn s in
+      let ps = bparser_of_symbol entry next_levn prev_symb s in
       bparser
       [ [: a = pa :] -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
       | [: a = ps :] -> Obj.repr (Ploc.VaVal a) ]
@@ -1181,8 +1188,8 @@ and bparser_of_symbol entry next_levn =
   | Snterml e l -> bparser [: a = e.bstart (level_number e l) :] -> a
   | Sself -> bparser [: a = entry.bstart 0 :] -> a
   | Snext -> bparser [: a = entry.bstart next_levn :] -> a
-  | Stoken tok -> bparser_of_token entry tok ]
-and bparser_of_token entry tok =
+  | Stoken tok -> bparser_of_token entry prev_symb tok ]
+and bparser_of_token entry prev_symb tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
   fun strm ->
     let _ =
@@ -1197,13 +1204,16 @@ and bparser_of_token entry tok =
       if backtrack_stalling_limit.val > 0 || backtrack_trace_try.val then
         let m =
           match max_fcount.val with
-          | Some (m, _) -> m
+          | Some (m, _, _) -> m
           | None -> 0
           end
         in
         if Fstream.count strm > m then do {
 	  let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
-          max_fcount.val := Some (Fstream.count strm, e);
+	  let p : option (g_symbol Obj.t) =
+	    Obj.magic (prev_symb : option (g_symbol _))
+	  in
+          max_fcount.val := Some (Fstream.count strm, e, p);
           nb_ftry.val := 0
         }
         else do {
@@ -1253,9 +1263,9 @@ and bparser_of_token entry tok =
           else ()
         in
         None ]
-and bparse_top_symb entry symb =
+and bparse_top_symb entry prev_symb symb =
   match btop_symb entry symb with
-  [ Some sy -> bparser_of_symbol entry 0 sy
+  [ Some sy -> bparser_of_symbol entry 0 prev_symb sy
   | None -> bparser [] ]
 ;
 
@@ -1274,7 +1284,7 @@ value rec bstart_parser_of_levels entry clevn =
             [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
-          let p2 = bparser_of_tree entry (succ clevn) alevn tree in
+          let p2 = bparser_of_tree entry (succ clevn) alevn None tree in
           match levs with
           [ [] ->
               fun levn strm ->
@@ -1313,7 +1323,7 @@ value rec bcontinue_parser_of_levels entry clevn =
             [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
-          let p2 = bparser_of_tree entry (succ clevn) alevn tree in
+          let p2 = bparser_of_tree entry (succ clevn) alevn None tree in
           fun levn bp a strm ->
             if levn > clevn then p1 levn bp a strm
             else
@@ -1643,8 +1653,13 @@ value bparse_parsable entry p = do {
       let loc = get_loc () in
       let mess =
         match max_fcount.val with
-	| Some (_, entry) -> sprintf "[%s] failed" entry.ename
-	| None -> sprintf "[%s] failed" entry.ename
+	| Some (_, entry, Some prev_symb) ->
+	    sprintf "[%s] failed after %s" entry.ename
+	      (name_of_symbol_failed entry prev_symb)
+	| Some (_, entry, None) ->
+	    sprintf "[%s] failed" entry.ename
+	| None ->
+	    sprintf "[%s] failed" entry.ename
 	end
       in
       restore ();
