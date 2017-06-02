@@ -1391,12 +1391,12 @@ and bparser_of_token entry tok =
       if !backtrack_stalling_limit > 0 || !backtrack_trace_try then
         let m =
           match !max_fcount with
-            Some (m, _, _) -> m
+            Some (m, _) -> m
           | None -> 0
         in
         if Fstream.count strm > m then
           let e : Obj.t g_entry = Obj.magic (entry : _ g_entry) in
-          max_fcount := Some (Fstream.count strm, e, tok); nb_ftry := 0
+          max_fcount := Some (Fstream.count strm, e); nb_ftry := 0
         else
           begin
             incr nb_ftry;
@@ -1805,7 +1805,7 @@ let bparse_parsable entry p =
       let loc = get_loc () in
       let mess =
         match !max_fcount with
-          Some (_, entry, tok) -> sprintf "[%s] failed" entry.ename
+          Some (_, entry) -> sprintf "[%s] failed" entry.ename
         | None -> sprintf "[%s] failed" entry.ename
       in
       restore (); Ploc.raise loc (Stream.Error mess)
