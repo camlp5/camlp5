@@ -993,7 +993,7 @@ loop 0 where rec loop i =
 ;
 
 value tind = ref "";
-value max_fcount = ref 0;
+value max_fcount = ref None;
 value nb_ftry = ref 0;
 
 value rec btop_symb entry =
@@ -1195,15 +1195,22 @@ and bparser_of_token entry tok =
     in
     let _ =
       if backtrack_stalling_limit.val > 0 || backtrack_trace_try.val then
-        if Fstream.count strm > max_fcount.val then do {
-          max_fcount.val := Fstream.count strm;
+        let m =
+          match max_fcount.val with
+          | Some (m, _, _) -> m
+          | None -> 0
+          end
+        in
+        if Fstream.count strm > m then do {
+	  let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
+          max_fcount.val := Some (Fstream.count strm, e, tok);
           nb_ftry.val := 0
         }
         else do {
           incr nb_ftry;
           if backtrack_trace_try.val then do {
-            Printf.eprintf "\rtokens read: %d; tokens tests: %d "
-              max_fcount.val nb_ftry.val;
+            Printf.eprintf "\rtokens read: %d; tokens tests: %d " m
+              nb_ftry.val;
             flush stderr;
           }
           else ();
@@ -1617,7 +1624,7 @@ value bparse_parsable entry p = do {
   in
   floc.val := fun_loc;
   token_count.val := 0;
-  max_fcount.val := 0;
+  max_fcount.val := None;
   nb_ftry.val := 0;
   if backtrack_trace_try.val then do {
     Printf.eprintf "\n";
@@ -1634,10 +1641,16 @@ value bparse_parsable entry p = do {
   with
   [ Stream.Failure -> do {
       let loc = get_loc () in
+      let mess =
+        match max_fcount.val with
+	| Some (_, entry, tok) ->
+	    sprintf "[%s] failed" entry.ename
+	| None ->
+	    sprintf "[%s] failed" entry.ename
+	end
+      in
       restore ();
-      Ploc.raise loc
-        (Stream.Error
-           (sprintf "backtrack parsing failed in [%s]" entry.ename))
+      Ploc.raise loc (Stream.Error mess)
     }
   | exc -> do {
       let loc = (Stream.count cs, Stream.count cs + 1) in
@@ -1665,7 +1678,7 @@ value bparse_parsable_all entry p = do {
   in
   floc.val := fun_loc;
   token_count.val := 0;
-  max_fcount.val := 0;
+  max_fcount.val := None;
   nb_ftry.val := 0;
   if backtrack_trace_try.val then do {
     Printf.eprintf "\n";
@@ -1926,7 +1939,7 @@ value bparse_token_stream entry fts = do {
       nb_ftry.val := old_nb_ftry;
     }
   in
-  max_fcount.val := 0;
+  max_fcount.val := None;
   nb_ftry.val := 0;
   let r =
     try

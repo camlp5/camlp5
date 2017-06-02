@@ -1037,7 +1037,7 @@ in
 loop 0;;
 
 let tind = ref "";;
-let max_fcount = ref 0;;
+let max_fcount = ref None;;
 let nb_ftry = ref 0;;
 
 let rec btop_symb entry =
@@ -1389,15 +1389,21 @@ and bparser_of_token entry tok =
     in
     let _ =
       if !backtrack_stalling_limit > 0 || !backtrack_trace_try then
-        if Fstream.count strm > !max_fcount then
-          begin max_fcount := Fstream.count strm; nb_ftry := 0 end
+        let m =
+          match !max_fcount with
+            Some (m, _, _) -> m
+          | None -> 0
+        in
+        if Fstream.count strm > m then
+          let e : Obj.t g_entry = Obj.magic (entry : _ g_entry) in
+          max_fcount := Some (Fstream.count strm, e, tok); nb_ftry := 0
         else
           begin
             incr nb_ftry;
             if !backtrack_trace_try then
               begin
-                Printf.eprintf "\rtokens read: %d; tokens tests: %d "
-                  !max_fcount !nb_ftry;
+                Printf.eprintf "\rtokens read: %d; tokens tests: %d " m
+                  !nb_ftry;
                 flush stderr
               end;
             if !backtrack_stalling_limit > 0 &&
@@ -1785,7 +1791,7 @@ let bparse_parsable entry p =
   in
   floc := fun_loc;
   token_count := 0;
-  max_fcount := 0;
+  max_fcount := None;
   nb_ftry := 0;
   if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
   try
@@ -1797,10 +1803,12 @@ let bparse_parsable entry p =
   with
     Stream.Failure ->
       let loc = get_loc () in
-      restore ();
-      Ploc.raise loc
-        (Stream.Error
-           (sprintf "backtrack parsing failed in [%s]" entry.ename))
+      let mess =
+        match !max_fcount with
+          Some (_, entry, tok) -> sprintf "[%s] failed" entry.ename
+        | None -> sprintf "[%s] failed" entry.ename
+      in
+      restore (); Ploc.raise loc (Stream.Error mess)
   | exc ->
       let loc = Stream.count cs, Stream.count cs + 1 in
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
@@ -1824,7 +1832,7 @@ let bparse_parsable_all entry p =
   in
   floc := fun_loc;
   token_count := 0;
-  max_fcount := 0;
+  max_fcount := None;
   nb_ftry := 0;
   if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
   try
@@ -2068,7 +2076,7 @@ let bparse_token_stream entry fts =
     let old_nb_ftry = !nb_ftry in
     fun () -> max_fcount := old_max_fcount; nb_ftry := old_nb_ftry
   in
-  max_fcount := 0;
+  max_fcount := None;
   nb_ftry := 0;
   let r =
     try
