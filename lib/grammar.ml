@@ -1654,12 +1654,12 @@ value bparse_parsable entry p = do {
       let mess =
         match max_fcount.val with
 	| Some (_, entry, Some prev_symb) ->
-	    sprintf "[%s] failed after %s" entry.ename
-	      (name_of_symbol_failed entry prev_symb)
+	    sprintf "failure after %s in [%s]"
+	      (name_of_symbol_failed entry prev_symb) entry.ename
 	| Some (_, entry, None) ->
-	    sprintf "[%s] failed" entry.ename
+	    sprintf "failure in [%s]" entry.ename
 	| None ->
-	    sprintf "[%s] failed" entry.ename
+	    sprintf "failure in [%s]" entry.ename
 	end
       in
       restore ();

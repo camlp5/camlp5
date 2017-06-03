@@ -1815,10 +1815,10 @@ let bparse_parsable entry p =
       let mess =
         match !max_fcount with
           Some (_, entry, Some prev_symb) ->
-            sprintf "[%s] failed after %s" entry.ename
-              (name_of_symbol_failed entry prev_symb)
-        | Some (_, entry, None) -> sprintf "[%s] failed" entry.ename
-        | None -> sprintf "[%s] failed" entry.ename
+            sprintf "failure after %s in [%s]"
+              (name_of_symbol_failed entry prev_symb) entry.ename
+        | Some (_, entry, None) -> sprintf "failure in [%s]" entry.ename
+        | None -> sprintf "failure in [%s]" entry.ename
       in
       restore (); Ploc.raise loc (Stream.Error mess)
   | exc ->
