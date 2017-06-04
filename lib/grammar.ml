@@ -2236,7 +2236,7 @@ module Entry =
       | Predictive ->
           Obj.magic (parse_parsable entry p : Obj.t)
       | Functional ->
-          failwith "parse_parsable: functional parsers not impl"
+          Obj.magic (fparse_parsable entry p : Obj.t)
       | Backtracking ->
           Obj.magic (bparse_parsable entry p : Obj.t) ]
     ;
@@ -2399,6 +2399,28 @@ value bparse_token_stream entry fts = do {
   restore (); r
 };
 
+value fparse_token_stream entry fts = do {
+  let restore =
+    let old_max_fcount = max_fcount.val in
+    let old_nb_ftry = nb_ftry.val in
+    fun () -> do {
+      max_fcount.val := old_max_fcount;
+      nb_ftry.val := old_nb_ftry;
+    }
+  in
+  max_fcount.val := None;
+  nb_ftry.val := 0;
+  let r =
+    try
+      match entry.fstart 0 fts with
+      | Some (a, _) -> Obj.magic a
+      | None -> raise Stream.Failure
+      end
+    with e -> do { restore (); raise e }
+  in
+  restore (); r
+};
+
 module GMake (L : GLexerType) =
   struct
     type te = L.te;
@@ -2427,14 +2449,15 @@ module GMake (L : GLexerType) =
           match gram.galgo with
           [ DefaultAlgorithm ->
               if functional_parse.val then
-                failwith "Entry.parse: func parsing not impl"
+                Obj.magic (fparse_parsable e p : Obj.t)
               else if backtrack_parse.val then
                 Obj.magic (bparse_parsable e p : Obj.t)
-              else Obj.magic (parse_parsable e p : Obj.t)
+              else
+                Obj.magic (parse_parsable e p : Obj.t)
           | Predictive ->
               Obj.magic (parse_parsable e p : Obj.t)
           | Functional ->
-              failwith "Entry.parse: functional parsing not impl"
+              Obj.magic (fparse_parsable e p : Obj.t)
           | Backtracking ->
               Obj.magic (bparse_parsable e p : Obj.t) ]
         ;
@@ -2442,13 +2465,13 @@ module GMake (L : GLexerType) =
           match e.egram.galgo with
           | DefaultAlgorithm ->
               if functional_parse.val then
-                failwith "Entry.parse_token: func parsing not impl"
+                fparse_token_stream e (fstream_of_stream ts)
               else if backtrack_parse.val then
                 bparse_token_stream e (fstream_of_stream ts)
               else
                 Obj.magic (e.estart 0 ts : Obj.t)
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
-          | Functional -> failwith "parse_token: func parsing not impl"
+          | Functional -> fparse_token_stream e (fstream_of_stream ts)
           | Backtracking -> bparse_token_stream e (fstream_of_stream ts)
           end
         ;
