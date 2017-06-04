@@ -3,9 +3,12 @@
 (* Copyright (c) INRIA 2007-2016 *)
 
 type 'a parser_t = 'a Stream.t -> Obj.t;;
+type 'a fparser_t = 'a Fstream.t -> (Obj.t * 'a Fstream.t) option;;
 type 'a bparser_t = ('a, Obj.t) Fstream.bp;;
 
-type parse_algorithm = Predictive | Backtracking | DefaultAlgorithm;;
+type parse_algorithm =
+  Predictive | Functional | Backtracking | DefaultAlgorithm
+;;
 
 type 'te grammar =
   { gtokens : (Plexing.pattern, int ref) Hashtbl.t;
@@ -19,6 +22,8 @@ type 'te g_entry =
     elocal : bool;
     mutable estart : int -> 'te parser_t;
     mutable econtinue : int -> int -> Obj.t -> 'te parser_t;
+    mutable fstart : int -> 'te fparser_t;
+    mutable fcontinue : int -> int -> Obj.t -> 'te fparser_t;
     mutable bstart : int -> 'te bparser_t;
     mutable bcontinue : int -> int -> Obj.t -> 'te bparser_t;
     mutable edesc : 'te g_desc }

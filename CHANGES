@@ -1,6 +1,9 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [04 Jun 17] Added limited backtracking (functional streams) to extensible
+  grammars. Can be set with "Grammar.parse_algorithm Functional" or by
+  setting the environment variable CAMLP5PARAM=f.
 * [01 Jun 17] Backtrack parsing seems to work well now. Camlp5 and Coq can
   be compiled using it by setting CAMLP5PARAM=b.
 * [31 May 17] Fixed bug: Entry.parse_token did not accept backtrack parsing.

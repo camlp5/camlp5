@@ -5,9 +5,11 @@
 open Printf;
 
 type parser_t 'a = Stream.t 'a -> Obj.t;
+type fparser_t 'a = Fstream.t 'a -> option (Obj.t * Fstream.t 'a);
 type bparser_t 'a = Fstream.bp 'a Obj.t;
 
-type parse_algorithm = [ Predictive | Backtracking | DefaultAlgorithm ];
+type parse_algorithm =
+  [ Predictive | Functional | Backtracking | DefaultAlgorithm ];
 
 type grammar 'te =
   { gtokens : Hashtbl.t Plexing.pattern (ref int);
@@ -21,6 +23,8 @@ type g_entry 'te =
     elocal : bool;
     estart : mutable int -> parser_t 'te;
     econtinue : mutable int -> int -> Obj.t -> parser_t 'te;
+    fstart : mutable int -> fparser_t 'te;
+    fcontinue : mutable int -> int -> Obj.t -> fparser_t 'te;
     bstart : mutable int -> bparser_t 'te;
     bcontinue : mutable int -> int -> Obj.t -> bparser_t 'te;
     edesc : mutable g_desc 'te }

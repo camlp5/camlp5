@@ -89,10 +89,12 @@ module Unsafe :
 (** {6 Parsing algorithm} *)
 
 type parse_algorithm =
-  Gramext.parse_algorithm = Predictive | Backtracking | DefaultAlgorithm
+  Gramext.parse_algorithm =
+    Predictive | Functional | Backtracking | DefaultAlgorithm
 ;;
    (** Type of algorithm used in grammar entries.
          [Predictive]: use imperative streams with predictive parsing
+         [Functional]: use functional streams with limited backtracking
          [Backtracking]: use functional streams with full backtracking
          [DefaultAlgorithm]: found in the variable [backtrack_parse] below.
        The default, when a grammar is created, is [DefaultAlgorithm]. *)
