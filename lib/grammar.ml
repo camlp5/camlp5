@@ -988,7 +988,7 @@ value ftop_tree entry son strm =
       match ftop_symb entry s with
       [ Some sy ->
           let r = Node {node = sy; brother = bro; son = son} in
-	  match strm with fparser [: :] -> r
+          match strm with fparser [: :] -> r
       | None ->
           None ]
   | LocAct _ _ | DeadEnd ->
@@ -1041,7 +1041,7 @@ and fparser_of_symbol entry next_levn prev_symb =
         (List.fold_left
            (fun act symb ->
               Obj.magic act
-	        (fparser_of_symbol entry next_levn prev_symb symb))
+                (fparser_of_symbol entry next_levn prev_symb symb))
            act symbl)
   | Slist0 s ->
       let ps = fparser_of_symbol entry next_levn prev_symb s in
@@ -1325,7 +1325,7 @@ value btop_tree entry son strm =
             }
             else ()
           in
-	  match strm with bparser [: :] -> r
+          match strm with bparser [: :] -> r
       | None ->
           None ]
   | LocAct _ _ | DeadEnd ->
@@ -1378,7 +1378,7 @@ and bparser_of_symbol entry next_levn prev_symb =
         (List.fold_left
            (fun act symb ->
               Obj.magic act
-	        (bparser_of_symbol entry next_levn prev_symb symb))
+                (bparser_of_symbol entry next_levn prev_symb symb))
            act symbl)
   | Slist0 s ->
       let ps = bparser_of_symbol entry next_levn prev_symb s in
@@ -1514,10 +1514,10 @@ and bparser_of_token entry prev_symb tok =
           end
         in
         if Fstream.count strm > m then do {
-	  let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
-	  let p : option (g_symbol Obj.t) =
-	    Obj.magic (prev_symb : option (g_symbol _))
-	  in
+          let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
+          let p : option (g_symbol Obj.t) =
+            Obj.magic (prev_symb : option (g_symbol _))
+          in
           max_fcount.val := Some (Fstream.count strm, e, p);
           nb_ftry.val := 0
         }
@@ -1551,7 +1551,7 @@ and bparser_of_token entry prev_symb tok =
             if backtrack_trace.val then Printf.eprintf " yes!!!\n%!"
             else ()
           in
-	  match strm with bparser [: :] -> Obj.repr r
+          match strm with bparser [: :] -> Obj.repr r
         with
         [ Stream.Failure ->
             let _ =
@@ -1978,14 +1978,14 @@ value fparse_parsable entry p = do {
       let loc = get_loc () in
       let mess =
         match max_fcount.val with
-	| Some (_, entry, Some prev_symb) ->
-	    sprintf "failure after %s in [%s]"
-	      (name_of_symbol_failed entry prev_symb) entry.ename
-	| Some (_, entry, None) ->
-	    sprintf "failure in [%s]" entry.ename
-	| None ->
-	    sprintf "failure in [%s]" entry.ename
-	end
+        | Some (_, entry, Some prev_symb) ->
+            sprintf "failure after %s in [%s]"
+              (name_of_symbol_failed entry prev_symb) entry.ename
+        | Some (_, entry, None) ->
+            sprintf "failure in [%s]" entry.ename
+        | None ->
+            sprintf "failure in [%s]" entry.ename
+        end
       in
       restore ();
       Ploc.raise loc (Stream.Error mess)
@@ -2044,14 +2044,14 @@ value bparse_parsable entry p = do {
       let loc = get_loc () in
       let mess =
         match max_fcount.val with
-	| Some (_, entry, Some prev_symb) ->
-	    sprintf "failure after %s in [%s]"
-	      (name_of_symbol_failed entry prev_symb) entry.ename
-	| Some (_, entry, None) ->
-	    sprintf "failure in [%s]" entry.ename
-	| None ->
-	    sprintf "failure in [%s]" entry.ename
-	end
+        | Some (_, entry, Some prev_symb) ->
+            sprintf "failure after %s in [%s]"
+              (name_of_symbol_failed entry prev_symb) entry.ename
+        | Some (_, entry, None) ->
+            sprintf "failure in [%s]" entry.ename
+        | None ->
+            sprintf "failure in [%s]" entry.ename
+        end
       in
       restore ();
       Ploc.raise loc (Stream.Error mess)
@@ -2228,11 +2228,11 @@ module Entry =
       match entry.egram.galgo with
       [ DefaultAlgorithm ->
           if functional_parse.val then
-	    Obj.magic (fparse_parsable entry p : Obj.t)
+            Obj.magic (fparse_parsable entry p : Obj.t)
           else if backtrack_parse.val then
             Obj.magic (bparse_parsable entry p : Obj.t)
           else
-	    Obj.magic (parse_parsable entry p : Obj.t)
+            Obj.magic (parse_parsable entry p : Obj.t)
       | Predictive ->
           Obj.magic (parse_parsable entry p : Obj.t)
       | Functional ->
@@ -2258,7 +2258,7 @@ module Entry =
           try Obj.magic [(parse_parsable entry p : Obj.t)] with
           [ Stream.Failure | Stream.Error _ -> [] ]
       | Functional ->
-	  failwith "parse_parsable_all: functional parsing not impl"
+          failwith "parse_parsable_all: functional parsing not impl"
       | Backtracking ->
           Obj.magic (bparse_parsable_all entry p : list Obj.t) ]
     ;
