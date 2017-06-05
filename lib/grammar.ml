@@ -891,7 +891,7 @@ value rec continue_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> succ clevn
+            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn ]
           in
           let p2 = parser_of_tree entry (succ clevn) alevn tree in
@@ -915,7 +915,7 @@ value rec start_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> succ clevn
+            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn ]
           in
           let p2 = parser_of_tree entry (succ clevn) alevn tree in
@@ -1184,7 +1184,7 @@ value rec fstart_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> succ clevn
+            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn ]
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn None tree in
@@ -1222,7 +1222,7 @@ value rec fcontinue_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> succ clevn
+            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn ]
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn None tree in
@@ -1586,7 +1586,7 @@ value rec bstart_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> succ clevn
+            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn ]
           in
           let p2 = bparser_of_tree entry (succ clevn) alevn None tree in
@@ -1625,7 +1625,7 @@ value rec bcontinue_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> succ clevn
+            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn ]
           in
           let p2 = bparser_of_tree entry (succ clevn) alevn None tree in
@@ -1809,11 +1809,15 @@ value delete_rule entry sl =
         };
       entry.fstart :=
         fun lev strm -> do {
-          failwith "delete_rule: fstart not impl";
+          let f = fstart_parser_of_entry entry in
+          entry.fstart := f;
+          f lev strm
         };
       entry.fcontinue :=
         fun lev bp a strm -> do {
-          failwith "delete_rule: fcontinue not impl";
+          let f = fcontinue_parser_of_entry entry in
+          entry.fcontinue := f;
+          f lev bp a strm
         };
       entry.bstart :=
         fun lev strm -> do {

@@ -32,8 +32,7 @@ EXTEND
       | -> [] ] ]
   ;
   stream_patt_kont:
-    [ RIGHTA
-      [ spc = stream_patt_comp_err -> [spc]
+    [ [ spc = stream_patt_comp_err -> [spc]
       | spc = stream_patt_comp_err; ";" -> [spc]
       | spc = stream_patt_comp_err; ";"; sp = stream_patt_kont -> [spc :: sp]
       | spc = stream_patt_let; sp = stream_patt_kont -> [spc :: sp] ] ]
@@ -68,8 +67,7 @@ EXTEND
           <:expr< $cstream loc sel$ >> ] ]
   ;
   stream_expr_comp_list:
-    [ RIGHTA
-      [ se = stream_expr_comp; ";"; sel = SELF -> [se :: sel]
+    [ [ se = stream_expr_comp; ";"; sel = SELF -> [se :: sel]
       | se = stream_expr_comp; ";" -> [se]
       | se = stream_expr_comp -> [se] ] ]
   ;

@@ -705,8 +705,7 @@ EXTEND
           (x1, w, x2) ] ]
   ;
   lbl_expr_list:
-    [ RIGHTA
-      [ le = lbl_expr; ";"; lel = SELF -> [le :: lel]
+    [ [ le = lbl_expr; ";"; lel = SELF -> [le :: lel]
       | le = lbl_expr; ";" -> [le]
       | le = lbl_expr -> [le] ] ]
   ;
@@ -821,14 +820,12 @@ EXTEND
           Pcaml.handle_patt_quotation loc con ] ]
   ;
   patt_semi_list:
-    [ RIGHTA
-      [ p = patt; ";"; pl = SELF -> [p :: pl]
+    [ [ p = patt; ";"; pl = SELF -> [p :: pl]
       | p = patt; ";" -> [p]
       | p = patt -> [p] ] ]
   ;
   lbl_patt_list:
-    [ RIGHTA
-      [ le = lbl_patt; ";"; lel = SELF -> [le :: lel]
+    [ [ le = lbl_patt; ";"; lel = SELF -> [le :: lel]
       | le = lbl_patt; ";" -> [le]
       | le = lbl_patt -> [le] ] ]
   ;
@@ -910,8 +907,7 @@ EXTEND
       | UIDENT "False" -> <:vala< "False_" >> ] ]
   ;
   label_declarations:
-    [ RIGHTA
-      [ ld = label_declaration; ";"; ldl = SELF -> [ld :: ldl]
+    [ [ ld = label_declaration; ";"; ldl = SELF -> [ld :: ldl]
       | ld = label_declaration; ";" -> [ld]
       | ld = label_declaration -> [ld] ] ]
   ;
