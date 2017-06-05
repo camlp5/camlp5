@@ -2255,8 +2255,7 @@ let parse_parsable entry p =
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
-let fparse_parsable entry p =
-  let efun = entry.fstart 0 in
+let bfparse_parsable entry p efun result =
   let fts = p.pa_tok_fstrm in
   let cs = p.pa_chr_strm in
   let fun_loc = p.pa_loc_func in
@@ -2284,13 +2283,7 @@ let fparse_parsable entry p =
   max_fcount := None;
   nb_ftry := 0;
   if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
-  try
-    let r = efun fts in
-    restore ();
-    match r with
-      Some (r, strm) -> p.pa_tok_fstrm <- strm; r
-    | None -> raise Stream.Failure
-  with
+  try let r = efun fts in restore (); result r with
     Stream.Failure ->
       let loc = get_loc () in
       let mess =
@@ -2307,56 +2300,24 @@ let fparse_parsable entry p =
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
+let fparse_parsable entry p =
+  let efun = entry.fstart 0 in
+  let result r =
+    match r with
+      Some (r, strm) -> p.pa_tok_fstrm <- strm; r
+    | None -> raise Stream.Failure
+  in
+  bfparse_parsable entry p efun result
+;;
+
 let bparse_parsable entry p =
   let efun = entry.bstart 0 in
-  let fts = p.pa_tok_fstrm in
-  let cs = p.pa_chr_strm in
-  let fun_loc = p.pa_loc_func in
-  let restore =
-    let old_floc = !floc in
-    let old_tc = !token_count in
-    let old_max_fcount = !max_fcount in
-    let old_nb_ftry = !nb_ftry in
-    fun () ->
-      floc := old_floc;
-      token_count := old_tc;
-      max_fcount := old_max_fcount;
-      nb_ftry := old_nb_ftry
-  in
-  let get_loc () =
-    try
-      let cnt = Fstream.count_unfrozen fts - 1 in
-      let loc = fun_loc cnt in
-      if !token_count - 1 <= cnt then loc
-      else Ploc.encl loc (fun_loc (!token_count - 1))
-    with Failure _ -> Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
-  in
-  floc := fun_loc;
-  token_count := 0;
-  max_fcount := None;
-  nb_ftry := 0;
-  if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
-  try
-    let r = efun fts in
-    restore ();
+  let result r =
     match r with
       Some (r, strm, _) -> p.pa_tok_fstrm <- strm; r
     | None -> raise Stream.Failure
-  with
-    Stream.Failure ->
-      let loc = get_loc () in
-      let mess =
-        match !max_fcount with
-          Some (_, entry, Some prev_symb) ->
-            sprintf "failure after %s in [%s]"
-              (name_of_symbol_failed entry prev_symb) entry.ename
-        | Some (_, entry, None) -> sprintf "failure in [%s]" entry.ename
-        | None -> sprintf "failure in [%s]" entry.ename
-      in
-      restore (); Ploc.raise loc (Stream.Error mess)
-  | exc ->
-      let loc = Stream.count cs, Stream.count cs + 1 in
-      restore (); Ploc.raise (Ploc.make_unlined loc) exc
+  in
+  bfparse_parsable entry p efun result
 ;;
 
 let bparse_parsable_all entry p =
