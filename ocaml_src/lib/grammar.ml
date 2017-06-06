@@ -2483,7 +2483,11 @@ let find_entry e s =
   | Dparser _ -> raise Not_found
 ;;
 
-let fparser_of_parser p fstrm =
+let bfparser_of_parser p fstrm return_value =
+  let shift_token_number = Fstream.count fstrm in
+  let old_floc = !floc in
+  let restore () = floc := old_floc in
+  floc := (fun i -> old_floc (shift_token_number + i));
   let ts =
     let fts = ref fstrm in
     Stream.from
@@ -2494,6 +2498,7 @@ let fparser_of_parser p fstrm =
   in
   try
     let r : Obj.t = Obj.magic p ts in
+    restore ();
     let fstrm =
       let rec loop fstrm i =
         if i = 0 then fstrm
@@ -2504,33 +2509,26 @@ let fparser_of_parser p fstrm =
       in
       loop fstrm (Stream.count ts)
     in
+    return_value r fstrm
+  with e ->
+    restore ();
+    match e with
+      Stream.Failure -> None
+    | _ -> raise e
+;;
+
+let fparser_of_parser p fstrm =
+  let return_value r fstrm =
     let (strm__ : _ Fstream.t) = fstrm in Some (r, strm__)
-  with Stream.Failure -> None
+  in
+  bfparser_of_parser p fstrm return_value
 ;;
 
 let bparser_of_parser p fstrm =
-  let ts =
-    let fts = ref fstrm in
-    Stream.from
-      (fun _ ->
-         match Fstream.next !fts with
-           Some (v, fstrm) -> fts := fstrm; Some v
-         | None -> None)
-  in
-  try
-    let r : Obj.t = Obj.magic p ts in
-    let fstrm =
-      let rec loop fstrm i =
-        if i = 0 then fstrm
-        else
-          match Fstream.next fstrm with
-            Some (_, fstrm) -> loop fstrm (i - 1)
-          | None -> failwith "internal error in Entry.of_parser"
-      in
-      loop fstrm (Stream.count ts)
-    in
+  let return_value r fstrm =
     let (strm__ : _ Fstream.t) = fstrm in Fstream.b_act r strm__
-  with Stream.Failure -> None
+  in
+  bfparser_of_parser p fstrm return_value
 ;;
 
 module Entry =

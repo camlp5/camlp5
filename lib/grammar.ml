@@ -2198,7 +2198,11 @@ value find_entry e s =
   | Dparser _ -> raise Not_found ]
 ;
 
-value fparser_of_parser p fstrm =
+value bfparser_of_parser p fstrm return_value = do {
+  let shift_token_number = Fstream.count fstrm in
+  let old_floc = floc.val in
+  let restore () = floc.val := old_floc in
+  floc.val := fun i -> old_floc (shift_token_number + i);
   let ts =
     let fts = ref fstrm in
     Stream.from
@@ -2207,8 +2211,9 @@ value fparser_of_parser p fstrm =
          [ Some (v, fstrm) -> do { fts.val := fstrm; Some v }
          | None -> None ])
   in
-  try
+  try do {
     let r = (Obj.magic p ts : Obj.t) in
+    restore ();
     let fstrm =
       loop fstrm (Stream.count ts) where rec loop fstrm i =
         if i = 0 then fstrm
@@ -2217,33 +2222,25 @@ value fparser_of_parser p fstrm =
           [ Some (_, fstrm) -> loop fstrm (i - 1)
           | None -> failwith "internal error in Entry.of_parser" ]
     in
-    match fstrm with fparser [: :] -> r
-  with
-  [ Stream.Failure -> None ]
+    return_value r fstrm
+  }
+  with e -> do {
+    restore ();
+    match e with
+    | Stream.Failure -> None
+    | _ -> raise e
+    end
+  }
+};
+
+value fparser_of_parser p fstrm =
+  let return_value r fstrm = match fstrm with fparser [: :] -> r in
+  bfparser_of_parser p fstrm return_value
 ;
 
 value bparser_of_parser p fstrm =
-  let ts =
-    let fts = ref fstrm in
-    Stream.from
-      (fun _ ->
-         match Fstream.next fts.val with
-         [ Some (v, fstrm) -> do { fts.val := fstrm; Some v }
-         | None -> None ])
-  in
-  try
-    let r = (Obj.magic p ts : Obj.t) in
-    let fstrm =
-      loop fstrm (Stream.count ts) where rec loop fstrm i =
-        if i = 0 then fstrm
-        else
-          match Fstream.next fstrm with
-          [ Some (_, fstrm) -> loop fstrm (i - 1)
-          | None -> failwith "internal error in Entry.of_parser" ]
-    in
-    match fstrm with bparser [: :] -> r
-  with
-  [ Stream.Failure -> None ]
+  let return_value r fstrm = match fstrm with bparser [: :] -> r in
+  bfparser_of_parser p fstrm return_value
 ;
 
 module Entry =
