@@ -966,7 +966,26 @@ value start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm ]
 ;
 
-(* version for functional parsers with limited backtracking *)
+value default_algorithm_var = ref DefaultAlgorithm;
+value set_default_algorithm algo = default_algorithm_var.val := algo;
+value default_algorithm () = default_algorithm_var.val;
+
+(* deprecated since 2017-06-06: use 'set_default_algorithm' instead *)
+value backtrack_parse = ref False;
+value warned_using_backtrack_parse = ref False;
+value compatible_deprecated_backtrack_parse () =
+  if backtrack_parse.val then do {
+    if not warned_using_backtrack_parse.val then do {
+      eprintf "<W> use of Grammar.backtrace_parse ";
+      eprintf "deprecated since 2017-06-06\n%!";
+      warned_using_backtrack_parse.val := True
+    }
+    else ();
+    backtrack_parse.val := False;
+    set_default_algorithm Backtracking
+  }
+  else ()
+;
 
 value backtrack_trace = ref False;
 value backtrack_stalling_limit = ref 10000;
@@ -975,7 +994,8 @@ value tind = ref "";
 value max_fcount = ref None;
 value nb_ftry = ref 0;
 
-value functional_parse = ref False;
+(* version for functional parsers (limited backtracking) *)
+
 value fcount = fparser bp [: :] → bp;
 
 value rec ftop_symb entry =
@@ -1228,7 +1248,7 @@ and fparser_of_token entry prev_symb tok =
               if backtrack_trace.val then Printf.eprintf " not found\n%!"
               else ()
             in
-	    None ]
+            None ]
     | None -> None ]
 and fparse_top_symb entry prev_symb symb =
   match ftop_symb entry symb with
@@ -1318,19 +1338,21 @@ value fcontinue_parser_of_entry entry =
   | Dparser p -> fun levn bp a -> fparser [] ]
 ;
 
-(* version for full backtracking parsers *)
-
-value backtrack_parse = ref False;
+(* version for backtracking parsers (full backtracking) *)
 
 let s = try Sys.getenv "CAMLP5PARAM" with [ Not_found -> "" ] in
 loop 0 where rec loop i =
   if i = String.length s then ()
   else if s.[i] = 'b' then do {
-    backtrack_parse.val := True;
+    set_default_algorithm Backtracking;
     loop (i + 1)
   }
   else if s.[i] = 'f' then do {
-    functional_parse.val := True;
+    set_default_algorithm Functional;
+    loop (i + 1)
+  }
+  else if s.[i] = 'p' then do {
+    set_default_algorithm Predictive;
     loop (i + 1)
   }
   else if s.[i] = 'l' && i + 1 < String.length s && s.[i+1] = '=' then do {
@@ -2235,14 +2257,17 @@ module Entry =
        bcontinue _ _ _ = bparser []; edesc = Dlevels []}
     ;
     value parse_parsable (entry : e 'a) p : 'a =
+      let _ = compatible_deprecated_backtrack_parse () in
       match entry.egram.galgo with
       [ DefaultAlgorithm ->
-          if functional_parse.val then
-            Obj.magic (fparse_parsable entry p : Obj.t)
-          else if backtrack_parse.val then
-            Obj.magic (bparse_parsable entry p : Obj.t)
-          else
-            Obj.magic (parse_parsable entry p : Obj.t)
+          match default_algorithm_var.val with
+          | Predictive | DefaultAlgorithm ->
+              Obj.magic (parse_parsable entry p : Obj.t)
+          | Backtracking ->
+              Obj.magic (bparse_parsable entry p : Obj.t)
+          | Functional ->
+              Obj.magic (fparse_parsable entry p : Obj.t)
+          end
       | Predictive ->
           Obj.magic (parse_parsable entry p : Obj.t)
       | Functional ->
@@ -2255,15 +2280,18 @@ module Entry =
       parse_parsable entry parsable
     ;
     value parse_parsable_all (entry : e 'a) p : 'a =
+      let _ = compatible_deprecated_backtrack_parse () in
       match entry.egram.galgo with
       [ DefaultAlgorithm ->
-          if functional_parse.val then
-            failwith "Entry.parse_parsable_all: func parsing not impl"
-          else if backtrack_parse.val then
-            Obj.magic (bparse_parsable_all entry p : list Obj.t)
-          else
-            try Obj.magic [(parse_parsable entry p : Obj.t)] with
-            [ Stream.Failure | Stream.Error _ -> [] ]
+          match default_algorithm_var.val with
+          | Predictive | DefaultAlgorithm ->
+              try Obj.magic [(parse_parsable entry p : Obj.t)] with
+              [ Stream.Failure | Stream.Error _ -> [] ]
+          | Backtracking ->
+             Obj.magic (bparse_parsable_all entry p : list Obj.t)
+          | Functional ->
+              failwith "Entry.parse_parsable_all: func parsing not impl"
+          end
       | Predictive ->
           try Obj.magic [(parse_parsable entry p : Obj.t)] with
           [ Stream.Failure | Stream.Error _ -> [] ]
@@ -2277,14 +2305,17 @@ module Entry =
       parse_parsable_all entry parsable
     ;
     value parse_token (entry : e 'a) ts : 'a =
+      let _ = compatible_deprecated_backtrack_parse () in
       match entry.egram.galgo with
       | DefaultAlgorithm ->
-          if functional_parse.val then
-            failwith "Entry.parse_token: func parsing not impl"
-          else if backtrack_parse.val then
-            failwith "not impl Entry.parse_token default backtrack"
-          else
-            Obj.magic (entry.estart 0 ts : Obj.t)
+          match default_algorithm_var.val with
+          | Predictive | DefaultAlgorithm ->
+              Obj.magic (entry.estart 0 ts : Obj.t)
+          | Backtracking ->
+              failwith "not impl Entry.parse_token default backtrack"
+          | Functional ->
+              failwith "Entry.parse_token: func parsing not impl"
+          end
       | Predictive -> Obj.magic (entry.estart 0 ts : Obj.t)
       | Functional ->
           failwith "not impl Entry.parse_token functional"
@@ -2456,14 +2487,17 @@ module GMake (L : GLexerType) =
         ;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
         value parse (e : e 'a) p : 'a =
+          let _ = compatible_deprecated_backtrack_parse () in
           match gram.galgo with
           [ DefaultAlgorithm ->
-              if functional_parse.val then
-                Obj.magic (fparse_parsable e p : Obj.t)
-              else if backtrack_parse.val then
-                Obj.magic (bparse_parsable e p : Obj.t)
-              else
-                Obj.magic (parse_parsable e p : Obj.t)
+              match default_algorithm_var.val with
+              | Predictive | DefaultAlgorithm ->
+                  Obj.magic (parse_parsable e p : Obj.t)
+              | Backtracking ->
+                  Obj.magic (bparse_parsable e p : Obj.t)
+              | Functional ->
+                  Obj.magic (fparse_parsable e p : Obj.t)
+              end
           | Predictive ->
               Obj.magic (parse_parsable e p : Obj.t)
           | Functional ->
@@ -2472,14 +2506,17 @@ module GMake (L : GLexerType) =
               Obj.magic (bparse_parsable e p : Obj.t) ]
         ;
         value parse_token (e : e 'a) ts : 'a =
+          let _ = compatible_deprecated_backtrack_parse () in
           match e.egram.galgo with
           | DefaultAlgorithm ->
-              if functional_parse.val then
-                fparse_token_stream e (fstream_of_stream ts)
-              else if backtrack_parse.val then
-                bparse_token_stream e (fstream_of_stream ts)
-              else
-                Obj.magic (e.estart 0 ts : Obj.t)
+              match default_algorithm_var.val with
+              | Predictive | DefaultAlgorithm ->
+                  Obj.magic (e.estart 0 ts : Obj.t)
+              | Backtracking ->
+                  bparse_token_stream e (fstream_of_stream ts)
+              | Functional ->
+                  fparse_token_stream e (fstream_of_stream ts)
+              end
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
           | Functional -> fparse_token_stream e (fstream_of_stream ts)
           | Backtracking -> bparse_token_stream e (fstream_of_stream ts)

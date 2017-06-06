@@ -101,11 +101,13 @@ type parse_algorithm = Gramext.parse_algorithm ==
 value set_algorithm : g -> parse_algorithm -> unit;
    (** Set the parsing algorithm for all entries of a given grammar. *)
 
-value backtrack_parse : ref bool;
-   (** If [True], the default parsing uses full backtracking. If [False],
-       it uses parsing with normal streams. If the environment variable
-       CAMLP5PARAM contains "b", the default is [True]; otherwise, the
-       default is [False]. *)
+value set_default_algorithm : parse_algorithm -> unit;
+   (** Set the default parsing algorithm for all grammars.
+       If the environment variable CAMLP5PARAM contains "b", the
+       default is [Backtracking]; if it contains 'f', the default is
+       [Functional]; if it contains 'p', the default is [Predictive]. *)
+value default_algorithm : unit -> parse_algorithm;
+   (** Return the current default algorithm. *)
 
 value backtrack_stalling_limit : ref int;
    (** Limitation of backtracking to prevent stalling in case of syntax
@@ -243,3 +245,7 @@ value symb_failed_txt :
   Gramext.g_entry 'te -> Gramext.g_symbol 'te -> Gramext.g_symbol 'te ->
     string;
 value create_local_entry : g -> string -> Entry.e 'a;
+
+(* deprecated since 2017-06-06 *)
+(* rather use "set_default_algorithm Backtracking" *)
+value backtrack_parse : ref bool;

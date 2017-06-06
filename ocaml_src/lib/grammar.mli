@@ -102,11 +102,13 @@ type parse_algorithm =
 val set_algorithm : g -> parse_algorithm -> unit;;
    (** Set the parsing algorithm for all entries of a given grammar. *)
 
-val backtrack_parse : bool ref;;
-   (** If [True], the default parsing uses full backtracking. If [False],
-       it uses parsing with normal streams. If the environment variable
-       CAMLP5PARAM contains "b", the default is [True]; otherwise, the
-       default is [False]. *)
+val set_default_algorithm : parse_algorithm -> unit;;
+   (** Set the default parsing algorithm for all grammars.
+       If the environment variable CAMLP5PARAM contains "b", the
+       default is [Backtracking]; if it contains 'f', the default is
+       [Functional]; if it contains 'p', the default is [Predictive]. *)
+val default_algorithm : unit -> parse_algorithm;;
+   (** Return the current default algorithm. *)
 
 val backtrack_stalling_limit : int ref;;
    (** Limitation of backtracking to prevent stalling in case of syntax
@@ -239,3 +241,7 @@ val symb_failed_txt :
   'te Gramext.g_entry -> 'te Gramext.g_symbol -> 'te Gramext.g_symbol ->
     string;;
 val create_local_entry : g -> string -> 'a Entry.e;;
+
+(* deprecated since 2017-06-06 *)
+(* rather use "set_default_algorithm Backtracking" *)
+val backtrack_parse : bool ref;;
