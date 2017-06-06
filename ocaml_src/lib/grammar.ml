@@ -2693,7 +2693,8 @@ module type S =
   end
 ;;
 
-let bparse_token_stream entry fts =
+let bparse_token_stream entry ts =
+  let fts = fstream_of_stream ts in
   let restore =
     let old_max_fcount = !max_fcount in
     let old_nb_ftry = !nb_ftry in
@@ -2711,7 +2712,8 @@ let bparse_token_stream entry fts =
   restore (); r
 ;;
 
-let fparse_token_stream entry fts =
+let fparse_token_stream entry ts =
+  let fts = fstream_of_stream ts in
   let restore =
     let old_max_fcount = !max_fcount in
     let old_nb_ftry = !nb_ftry in
@@ -2778,12 +2780,12 @@ module GMake (L : GLexerType) =
               begin match !default_algorithm_var with
                 Predictive | DefaultAlgorithm ->
                   Obj.magic (e.estart 0 ts : Obj.t)
-              | Backtracking -> bparse_token_stream e (fstream_of_stream ts)
-              | Functional -> fparse_token_stream e (fstream_of_stream ts)
+              | Backtracking -> bparse_token_stream e ts
+              | Functional -> fparse_token_stream e ts
               end
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
-          | Functional -> fparse_token_stream e (fstream_of_stream ts)
-          | Backtracking -> bparse_token_stream e (fstream_of_stream ts)
+          | Functional -> fparse_token_stream e ts
+          | Backtracking -> bparse_token_stream e ts
         ;;
         let name e = e.ename;;
         let of_parser n (p : te Stream.t -> 'a) : 'a e =

@@ -2418,7 +2418,8 @@ module type S =
   end
 ;
 
-value bparse_token_stream entry fts = do {
+value bparse_token_stream entry ts = do {
+  let fts = fstream_of_stream ts in
   let restore =
     let old_max_fcount = max_fcount.val in
     let old_nb_ftry = nb_ftry.val in
@@ -2440,7 +2441,8 @@ value bparse_token_stream entry fts = do {
   restore (); r
 };
 
-value fparse_token_stream entry fts = do {
+value fparse_token_stream entry ts = do {
+  let fts = fstream_of_stream ts in
   let restore =
     let old_max_fcount = max_fcount.val in
     let old_nb_ftry = nb_ftry.val in
@@ -2513,13 +2515,13 @@ module GMake (L : GLexerType) =
               | Predictive | DefaultAlgorithm ->
                   Obj.magic (e.estart 0 ts : Obj.t)
               | Backtracking ->
-                  bparse_token_stream e (fstream_of_stream ts)
+                  bparse_token_stream e ts
               | Functional ->
-                  fparse_token_stream e (fstream_of_stream ts)
+                  fparse_token_stream e ts
               end
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
-          | Functional -> fparse_token_stream e (fstream_of_stream ts)
-          | Backtracking -> bparse_token_stream e (fstream_of_stream ts)
+          | Functional -> fparse_token_stream e ts
+          | Backtracking -> bparse_token_stream e ts
           end
         ;
         value name e = e.ename;
