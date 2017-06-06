@@ -2211,26 +2211,27 @@ value bfparser_of_parser p fstrm return_value = do {
          [ Some (v, fstrm) -> do { fts.val := fstrm; Some v }
          | None -> None ])
   in
-  try do {
-    let r = (Obj.magic p ts : Obj.t) in
-    restore ();
-    let fstrm =
-      loop fstrm (Stream.count ts) where rec loop fstrm i =
-        if i = 0 then fstrm
-        else
-          match Fstream.next fstrm with
-          [ Some (_, fstrm) -> loop fstrm (i - 1)
-          | None -> failwith "internal error in Entry.of_parser" ]
-    in
-    return_value r fstrm
-  }
-  with e -> do {
-    restore ();
-    match e with
-    | Stream.Failure -> None
-    | _ -> raise e
-    end
-  }
+  let r =
+    try
+      let r = (Obj.magic p ts : Obj.t) in
+      let fstrm =
+        loop fstrm (Stream.count ts) where rec loop fstrm i =
+          if i = 0 then fstrm
+          else
+            match Fstream.next fstrm with
+            [ Some (_, fstrm) -> loop fstrm (i - 1)
+            | None -> failwith "internal error in Entry.of_parser" ]
+      in
+      return_value r fstrm
+    with e -> do {
+      restore ();
+      match e with
+      | Stream.Failure -> None
+      | _ -> raise e
+      end
+    }
+  in
+  do { restore (); r }
 };
 
 value fparser_of_parser p fstrm =
