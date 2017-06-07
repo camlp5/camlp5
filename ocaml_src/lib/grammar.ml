@@ -1075,15 +1075,14 @@ let ftop_tree entry son strm =
   | LocAct (_, _) | DeadEnd -> None
 ;;
 
-let frecover fparser_of_tree entry next_levn assoc_levn bp a s son
+let frecover fparser_of_tree entry next_levn assoc_levn bp a son
     (strm__ : _ Fstream.t) =
   match ftop_tree entry son strm__ with
-    Some (t, strm__) ->
-      fparser_of_tree entry next_levn assoc_levn (Some s) t strm__
+    Some (t, strm__) -> fparser_of_tree entry next_levn assoc_levn t strm__
   | _ -> None
 ;;
 
-let rec fparser_of_tree entry next_levn assoc_levn prev_symb =
+let rec fparser_of_tree entry next_levn assoc_levn =
   function
     DeadEnd -> (fun (strm__ : _ Fstream.t) -> None)
   | LocAct (act, _) -> (fun (strm__ : _ Fstream.t) -> Some (act, strm__))
@@ -1093,7 +1092,7 @@ let rec fparser_of_tree entry next_levn assoc_levn prev_symb =
            Some (a, strm__) -> Some (app act a, strm__)
          | _ -> None)
   | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
-      let p2 = fparser_of_tree entry next_levn assoc_levn prev_symb bro in
+      let p2 = fparser_of_tree entry next_levn assoc_levn bro in
       (fun (strm__ : _ Fstream.t) ->
          match
            match entry.fstart assoc_levn strm__ with
@@ -1103,9 +1102,9 @@ let rec fparser_of_tree entry next_levn assoc_levn prev_symb =
            Some _ as x -> x
          | None -> p2 strm__)
   | Node {node = s; son = son; brother = DeadEnd} ->
-      let ps = fparser_of_symbol entry next_levn prev_symb s in
-      let p1 = fparser_of_tree entry next_levn assoc_levn (Some s) son in
-      let p1 = fparser_cont p1 entry next_levn assoc_levn s son in
+      let ps = fparser_of_symbol entry next_levn s in
+      let p1 = fparser_of_tree entry next_levn assoc_levn son in
+      let p1 = fparser_cont p1 entry next_levn assoc_levn son in
       (fun (strm__ : _ Fstream.t) ->
          let bp = Fstream.count strm__ in
          match ps strm__ with
@@ -1116,10 +1115,10 @@ let rec fparser_of_tree entry next_levn assoc_levn prev_symb =
              end
          | _ -> None)
   | Node {node = s; son = son; brother = bro} ->
-      let ps = fparser_of_symbol entry next_levn prev_symb s in
-      let p1 = fparser_of_tree entry next_levn assoc_levn (Some s) son in
-      let p1 = fparser_cont p1 entry next_levn assoc_levn s son in
-      let p2 = fparser_of_tree entry next_levn assoc_levn prev_symb bro in
+      let ps = fparser_of_symbol entry next_levn s in
+      let p1 = fparser_of_tree entry next_levn assoc_levn son in
+      let p1 = fparser_cont p1 entry next_levn assoc_levn son in
+      let p2 = fparser_of_tree entry next_levn assoc_levn bro in
       fun (strm__ : _ Fstream.t) ->
         let bp = Fstream.count strm__ in
         match
@@ -1133,25 +1132,24 @@ let rec fparser_of_tree entry next_levn assoc_levn prev_symb =
         with
           Some _ as x -> x
         | None -> p2 strm__
-and fparser_cont p1 entry next_levn assoc_levn s son bp a
+and fparser_cont p1 entry next_levn assoc_levn son bp a
     (strm__ : _ Fstream.t) =
   match p1 strm__ with
     Some _ as x -> x
   | None ->
-      frecover fparser_of_tree entry next_levn assoc_levn bp a s son strm__
-and fparser_of_symbol entry next_levn prev_symb =
+      frecover fparser_of_tree entry next_levn assoc_levn bp a son strm__
+and fparser_of_symbol entry next_levn =
   function
-    Sfacto s -> fparser_of_symbol entry next_levn prev_symb s
+    Sfacto s -> fparser_of_symbol entry next_levn s
   | Smeta (_, symbl, act) ->
       let act = Obj.magic act entry symbl in
       Obj.magic
         (List.fold_left
            (fun act symb ->
-              Obj.magic act
-                (fparser_of_symbol entry next_levn prev_symb symb))
+              Obj.magic act (fparser_of_symbol entry next_levn symb))
            act symbl)
   | Slist0 s ->
-      let ps = fparser_of_symbol entry next_levn prev_symb s in
+      let ps = fparser_of_symbol entry next_levn s in
       let ps = fcall_and_push ps in
       let rec loop al (strm__ : _ Fstream.t) =
         match
@@ -1167,9 +1165,9 @@ and fparser_of_symbol entry next_levn prev_symb =
            Some (a, strm__) -> Some (Obj.repr (List.rev a), strm__)
          | _ -> None)
   | Slist0sep (symb, sep, false) ->
-      let ps = fparser_of_symbol entry next_levn prev_symb symb in
+      let ps = fparser_of_symbol entry next_levn symb in
       let ps = fcall_and_push ps in
-      let pt = fparser_of_symbol entry next_levn (Some symb) sep in
+      let pt = fparser_of_symbol entry next_levn sep in
       let rec kont al (strm__ : _ Fstream.t) =
         match
           match pt strm__ with
@@ -1196,7 +1194,7 @@ and fparser_of_symbol entry next_levn prev_symb =
            Some _ as x -> x
          | None -> Some (Obj.repr [], strm__))
   | Slist1 s ->
-      let ps = fparser_of_symbol entry next_levn prev_symb s in
+      let ps = fparser_of_symbol entry next_levn s in
       let ps = fcall_and_push ps in
       let rec loop al (strm__ : _ Fstream.t) =
         match
@@ -1218,10 +1216,10 @@ and fparser_of_symbol entry next_levn prev_symb =
   | Slist0sep (symb, sep, true) ->
       failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1sep (symb, sep, false) ->
-      let ps = fparser_of_symbol entry next_levn prev_symb symb in
+      let ps = fparser_of_symbol entry next_levn symb in
       let ps = fcall_and_push ps in
-      let pt = fparser_of_symbol entry next_levn (Some symb) sep in
-      let pts = fparse_top_symb entry (Some sep) symb in
+      let pt = fparser_of_symbol entry next_levn sep in
+      let pts = fparse_top_symb entry symb in
       let rec kont al (strm__ : _ Fstream.t) =
         match
           match pt strm__ with
@@ -1253,10 +1251,10 @@ and fparser_of_symbol entry next_levn prev_symb =
              end
          | _ -> None)
   | Slist1sep (symb, sep, true) ->
-      let ps = fparser_of_symbol entry next_levn prev_symb symb in
+      let ps = fparser_of_symbol entry next_levn symb in
       let ps = fcall_and_push ps in
-      let pt = fparser_of_symbol entry next_levn (Some symb) sep in
-      let pts = fparse_top_symb entry (Some sep) symb in
+      let pt = fparser_of_symbol entry next_levn sep in
+      let pts = fparse_top_symb entry symb in
       let rec kont al (strm__ : _ Fstream.t) =
         match
           match pt strm__ with
@@ -1297,7 +1295,7 @@ and fparser_of_symbol entry next_levn prev_symb =
              end
          | _ -> None)
   | Sopt s ->
-      let ps = fparser_of_symbol entry next_levn prev_symb s in
+      let ps = fparser_of_symbol entry next_levn s in
       (fun (strm__ : _ Fstream.t) ->
          match
            match ps strm__ with
@@ -1307,7 +1305,7 @@ and fparser_of_symbol entry next_levn prev_symb =
            Some _ as x -> x
          | None -> Some (Obj.repr None, strm__))
   | Sflag s ->
-      let ps = fparser_of_symbol entry next_levn prev_symb s in
+      let ps = fparser_of_symbol entry next_levn s in
       (fun (strm__ : _ Fstream.t) ->
          match
            match ps strm__ with
@@ -1317,7 +1315,7 @@ and fparser_of_symbol entry next_levn prev_symb =
            Some _ as x -> x
          | None -> Some (Obj.repr false, strm__))
   | Stree t ->
-      let pt = fparser_of_tree entry 1 0 prev_symb t in
+      let pt = fparser_of_tree entry 1 0 t in
       (fun (strm__ : _ Fstream.t) ->
          let bp = Fstream.count strm__ in
          match pt strm__ with
@@ -1341,14 +1339,14 @@ and fparser_of_symbol entry next_levn prev_symb =
               | _ -> None
             in
             begin match t with
-              Some t -> fparser_of_token entry prev_symb (t, "")
+              Some t -> fparser_of_token entry (t, "")
             | None -> fun (strm__ : _ Fstream.t) -> None
             end
         | al ->
             let rec loop =
               function
                 a :: al ->
-                  let pa = fparser_of_token entry prev_symb ("V", a) in
+                  let pa = fparser_of_token entry ("V", a) in
                   let pal = loop al in
                   (fun (strm__ : _ Fstream.t) ->
                      match pa strm__ with
@@ -1358,7 +1356,7 @@ and fparser_of_symbol entry next_levn prev_symb =
             in
             loop al
       in
-      let ps = fparser_of_symbol entry next_levn prev_symb s in
+      let ps = fparser_of_symbol entry next_levn s in
       (fun (strm__ : _ Fstream.t) ->
          match
            match pa strm__ with
@@ -1376,8 +1374,8 @@ and fparser_of_symbol entry next_levn prev_symb =
       (fun (strm__ : _ Fstream.t) -> e.fstart (level_number e l) strm__)
   | Sself -> (fun (strm__ : _ Fstream.t) -> entry.fstart 0 strm__)
   | Snext -> (fun (strm__ : _ Fstream.t) -> entry.fstart next_levn strm__)
-  | Stoken tok -> fparser_of_token entry prev_symb tok
-and fparser_of_token entry prev_symb tok =
+  | Stoken tok -> fparser_of_token entry tok
+and fparser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
   fun strm ->
     let _ =
@@ -1392,15 +1390,12 @@ and fparser_of_token entry prev_symb tok =
       if !backtrack_stalling_limit > 0 || !backtrack_trace_try then
         let m =
           match !max_fcount with
-            Some (m, _, _) -> m
+            Some (m, _) -> m
           | None -> 0
         in
         if Fstream.count strm > m then
           let e : Obj.t g_entry = Obj.magic (entry : _ g_entry) in
-          let p : Obj.t g_symbol option =
-            Obj.magic (prev_symb : _ g_symbol option)
-          in
-          max_fcount := Some (Fstream.count strm, e, p); nb_ftry := 0
+          max_fcount := Some (Fstream.count strm, e); nb_ftry := 0
         else
           begin
             incr nb_ftry;
@@ -1431,9 +1426,9 @@ and fparser_of_token entry prev_symb tok =
           None
         end
     | None -> None
-and fparse_top_symb entry prev_symb symb =
+and fparse_top_symb entry symb =
   match ftop_symb entry symb with
-    Some sy -> fparser_of_symbol entry 0 prev_symb sy
+    Some sy -> fparser_of_symbol entry 0 sy
   | None -> fun (strm__ : _ Fstream.t) -> None
 ;;
 
@@ -1450,7 +1445,7 @@ let rec fstart_parser_of_levels entry clevn =
               LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn
           in
-          let p2 = fparser_of_tree entry (succ clevn) alevn None tree in
+          let p2 = fparser_of_tree entry (succ clevn) alevn tree in
           match levs with
             [] ->
               (fun levn strm ->
@@ -1501,7 +1496,7 @@ let rec fcontinue_parser_of_levels entry clevn =
               LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn
           in
-          let p2 = fparser_of_tree entry (succ clevn) alevn None tree in
+          let p2 = fparser_of_tree entry (succ clevn) alevn tree in
           fun levn bp a strm ->
             if levn > clevn then p1 levn bp a strm
             else
@@ -1597,18 +1592,17 @@ let btop_tree entry son strm =
   | LocAct (_, _) | DeadEnd -> None
 ;;
 
-let brecover bparser_of_tree entry next_levn assoc_levn bp a s son
+let brecover bparser_of_tree entry next_levn assoc_levn bp a son
     (strm__ : _ Fstream.t) =
   Fstream.b_seq (fun strm__ -> btop_tree entry son strm__)
     (fun t strm__ ->
        Fstream.b_seq
-         (fun strm__ ->
-            bparser_of_tree entry next_levn assoc_levn (Some s) t strm__)
+         (fun strm__ -> bparser_of_tree entry next_levn assoc_levn t strm__)
          Fstream.b_act strm__)
     strm__
 ;;
 
-let rec bparser_of_tree entry next_levn assoc_levn prev_symb =
+let rec bparser_of_tree entry next_levn assoc_levn =
   function
     DeadEnd -> (fun (strm__ : _ Fstream.t) -> None)
   | LocAct (act, _) ->
@@ -1618,7 +1612,7 @@ let rec bparser_of_tree entry next_levn assoc_levn prev_symb =
          Fstream.b_seq (fun strm__ -> entry.bstart assoc_levn strm__)
            (fun a strm__ -> Fstream.b_act (app act a) strm__) strm__)
   | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
-      let p2 = bparser_of_tree entry next_levn assoc_levn prev_symb bro in
+      let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (fun strm__ ->
@@ -1626,9 +1620,9 @@ let rec bparser_of_tree entry next_levn assoc_levn prev_symb =
                 (fun a strm__ -> Fstream.b_act (app act a) strm__) strm__)
            (fun strm__ -> Fstream.b_seq p2 Fstream.b_act strm__) strm__)
   | Node {node = s; son = son; brother = DeadEnd} ->
-      let ps = bparser_of_symbol entry next_levn prev_symb s in
-      let p1 = bparser_of_tree entry next_levn assoc_levn (Some s) son in
-      let p1 = bparser_cont p1 entry next_levn assoc_levn s son in
+      let ps = bparser_of_symbol entry next_levn s in
+      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      let p1 = bparser_cont p1 entry next_levn assoc_levn son in
       (fun (strm__ : _ Fstream.t) ->
          let bp = Fstream.count strm__ in
          Fstream.b_seq ps
@@ -1637,10 +1631,10 @@ let rec bparser_of_tree entry next_levn assoc_levn prev_symb =
                 (fun act strm__ -> Fstream.b_act (app act a) strm__) strm__)
            strm__)
   | Node {node = s; son = son; brother = bro} ->
-      let ps = bparser_of_symbol entry next_levn prev_symb s in
-      let p1 = bparser_of_tree entry next_levn assoc_levn (Some s) son in
-      let p1 = bparser_cont p1 entry next_levn assoc_levn s son in
-      let p2 = bparser_of_tree entry next_levn assoc_levn prev_symb bro in
+      let ps = bparser_of_symbol entry next_levn s in
+      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      let p1 = bparser_cont p1 entry next_levn assoc_levn son in
+      let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       fun (strm__ : _ Fstream.t) ->
         let bp = Fstream.count strm__ in
         Fstream.b_or
@@ -1652,29 +1646,28 @@ let rec bparser_of_tree entry next_levn assoc_levn prev_symb =
                     strm__)
                strm__)
           (fun strm__ -> Fstream.b_seq p2 Fstream.b_act strm__) strm__
-and bparser_cont p1 entry next_levn assoc_levn s son bp a
+and bparser_cont p1 entry next_levn assoc_levn son bp a
     (strm__ : _ Fstream.t) =
   Fstream.b_or (fun strm__ -> Fstream.b_seq p1 Fstream.b_act strm__)
     (fun strm__ ->
        Fstream.b_seq
          (fun strm__ ->
-            brecover bparser_of_tree entry next_levn assoc_levn bp a s son
+            brecover bparser_of_tree entry next_levn assoc_levn bp a son
               strm__)
          Fstream.b_act strm__)
     strm__
-and bparser_of_symbol entry next_levn prev_symb =
+and bparser_of_symbol entry next_levn =
   function
-    Sfacto s -> bparser_of_symbol entry next_levn prev_symb s
+    Sfacto s -> bparser_of_symbol entry next_levn s
   | Smeta (_, symbl, act) ->
       let act = Obj.magic act entry symbl in
       Obj.magic
         (List.fold_left
            (fun act symb ->
-              Obj.magic act
-                (bparser_of_symbol entry next_levn prev_symb symb))
+              Obj.magic act (bparser_of_symbol entry next_levn symb))
            act symbl)
   | Slist0 s ->
-      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let ps = bparser_of_symbol entry next_levn s in
       let ps = bcall_and_push ps in
       let rec loop al (strm__ : _ Fstream.t) =
         Fstream.b_or
@@ -1691,9 +1684,9 @@ and bparser_of_symbol entry next_levn prev_symb =
            (fun a strm__ -> Fstream.b_act (Obj.repr (List.rev a)) strm__)
            strm__)
   | Slist0sep (symb, sep, false) ->
-      let ps = bparser_of_symbol entry next_levn prev_symb symb in
+      let ps = bparser_of_symbol entry next_levn symb in
       let ps = bcall_and_push ps in
-      let pt = bparser_of_symbol entry next_levn (Some symb) sep in
+      let pt = bparser_of_symbol entry next_levn sep in
       let rec kont al (strm__ : _ Fstream.t) =
         Fstream.b_or
           (fun strm__ ->
@@ -1719,7 +1712,7 @@ and bparser_of_symbol entry next_levn prev_symb =
                 strm__)
            (fun strm__ -> Fstream.b_act (Obj.repr []) strm__) strm__)
   | Slist1 s ->
-      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let ps = bparser_of_symbol entry next_levn s in
       let ps = bcall_and_push ps in
       let rec loop al (strm__ : _ Fstream.t) =
         Fstream.b_or
@@ -1741,10 +1734,10 @@ and bparser_of_symbol entry next_levn prev_symb =
   | Slist0sep (symb, sep, true) ->
       failwith "LIST0 _ SEP _ OPT_SEP not implemented; please report"
   | Slist1sep (symb, sep, false) ->
-      let ps = bparser_of_symbol entry next_levn prev_symb symb in
+      let ps = bparser_of_symbol entry next_levn symb in
       let ps = bcall_and_push ps in
-      let pt = bparser_of_symbol entry next_levn (Some symb) sep in
-      let pts = bparse_top_symb entry (Some sep) symb in
+      let pt = bparser_of_symbol entry next_levn sep in
+      let pts = bparse_top_symb entry symb in
       let rec kont al (strm__ : _ Fstream.t) =
         Fstream.b_or
           (fun strm__ ->
@@ -1779,10 +1772,10 @@ and bparser_of_symbol entry next_levn prev_symb =
                 strm__)
            strm__)
   | Slist1sep (symb, sep, true) ->
-      let ps = bparser_of_symbol entry next_levn prev_symb symb in
+      let ps = bparser_of_symbol entry next_levn symb in
       let ps = bcall_and_push ps in
-      let pt = bparser_of_symbol entry next_levn (Some symb) sep in
-      let pts = bparse_top_symb entry (Some sep) symb in
+      let pt = bparser_of_symbol entry next_levn sep in
+      let pts = bparse_top_symb entry symb in
       let rec kont al (strm__ : _ Fstream.t) =
         Fstream.b_or
           (fun strm__ ->
@@ -1819,7 +1812,7 @@ and bparser_of_symbol entry next_levn prev_symb =
                 strm__)
            strm__)
   | Sopt s ->
-      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let ps = bparser_of_symbol entry next_levn s in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (fun strm__ ->
@@ -1828,7 +1821,7 @@ and bparser_of_symbol entry next_levn prev_symb =
                 strm__)
            (fun strm__ -> Fstream.b_act (Obj.repr None) strm__) strm__)
   | Sflag s ->
-      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let ps = bparser_of_symbol entry next_levn s in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (fun strm__ ->
@@ -1836,7 +1829,7 @@ and bparser_of_symbol entry next_levn prev_symb =
                 (fun _ strm__ -> Fstream.b_act (Obj.repr true) strm__) strm__)
            (fun strm__ -> Fstream.b_act (Obj.repr false) strm__) strm__)
   | Stree t ->
-      let pt = bparser_of_tree entry 1 0 prev_symb t in
+      let pt = bparser_of_tree entry 1 0 t in
       (fun (strm__ : _ Fstream.t) ->
          let bp = Fstream.count strm__ in
          Fstream.b_seq pt
@@ -1859,14 +1852,14 @@ and bparser_of_symbol entry next_levn prev_symb =
               | _ -> None
             in
             begin match t with
-              Some t -> bparser_of_token entry prev_symb (t, "")
+              Some t -> bparser_of_token entry (t, "")
             | None -> fun (strm__ : _ Fstream.t) -> None
             end
         | al ->
             let rec loop =
               function
                 a :: al ->
-                  let pa = bparser_of_token entry prev_symb ("V", a) in
+                  let pa = bparser_of_token entry ("V", a) in
                   let pal = loop al in
                   (fun (strm__ : _ Fstream.t) ->
                      Fstream.b_or
@@ -1877,7 +1870,7 @@ and bparser_of_symbol entry next_levn prev_symb =
             in
             loop al
       in
-      let ps = bparser_of_symbol entry next_levn prev_symb s in
+      let ps = bparser_of_symbol entry next_levn s in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (fun strm__ ->
@@ -1907,8 +1900,8 @@ and bparser_of_symbol entry next_levn prev_symb =
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (fun strm__ -> entry.bstart next_levn strm__)
            Fstream.b_act strm__)
-  | Stoken tok -> bparser_of_token entry prev_symb tok
-and bparser_of_token entry prev_symb tok =
+  | Stoken tok -> bparser_of_token entry tok
+and bparser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
   fun strm ->
     let _ =
@@ -1923,15 +1916,12 @@ and bparser_of_token entry prev_symb tok =
       if !backtrack_stalling_limit > 0 || !backtrack_trace_try then
         let m =
           match !max_fcount with
-            Some (m, _, _) -> m
+            Some (m, _) -> m
           | None -> 0
         in
         if Fstream.count strm > m then
           let e : Obj.t g_entry = Obj.magic (entry : _ g_entry) in
-          let p : Obj.t g_symbol option =
-            Obj.magic (prev_symb : _ g_symbol option)
-          in
-          max_fcount := Some (Fstream.count strm, e, p); nb_ftry := 0
+          max_fcount := Some (Fstream.count strm, e); nb_ftry := 0
         else
           begin
             incr nb_ftry;
@@ -1968,9 +1958,9 @@ and bparser_of_token entry prev_symb tok =
             begin Printf.eprintf " eos\n"; flush stderr end
         in
         None
-and bparse_top_symb entry prev_symb symb =
+and bparse_top_symb entry symb =
   match btop_symb entry symb with
-    Some sy -> bparser_of_symbol entry 0 prev_symb sy
+    Some sy -> bparser_of_symbol entry 0 sy
   | None -> fun (strm__ : _ Fstream.t) -> None
 ;;
 
@@ -1992,7 +1982,7 @@ let rec bstart_parser_of_levels entry clevn =
               LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn
           in
-          let p2 = bparser_of_tree entry (succ clevn) alevn None tree in
+          let p2 = bparser_of_tree entry (succ clevn) alevn tree in
           match levs with
             [] ->
               (fun levn strm ->
@@ -2052,7 +2042,7 @@ let rec bcontinue_parser_of_levels entry clevn =
               LeftA | NonA -> if levs = [] then clevn else succ clevn
             | RightA -> clevn
           in
-          let p2 = bparser_of_tree entry (succ clevn) alevn None tree in
+          let p2 = bparser_of_tree entry (succ clevn) alevn tree in
           fun levn bp a strm ->
             if levn > clevn then p1 levn bp a strm
             else
@@ -2353,10 +2343,7 @@ let bfparse_parsable entry p efun result =
       let loc = get_loc () in
       let mess =
         match !max_fcount with
-          Some (_, entry, Some prev_symb) ->
-            sprintf "failure after %s in [%s]"
-              (name_of_symbol_failed entry prev_symb) entry.ename
-        | Some (_, entry, None) -> sprintf "failure in [%s]" entry.ename
+          Some (_, entry) -> sprintf "failure in [%s]" entry.ename
         | None -> sprintf "failure in [%s]" entry.ename
       in
       restore (); Ploc.raise loc (Stream.Error mess)
