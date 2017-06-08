@@ -1038,6 +1038,8 @@ let compatible_deprecated_backtrack_parse () =
     end
 ;;
 
+(* parsing with functional streams *)
+
 let backtrack_trace = ref false;;
 let backtrack_stalling_limit = ref 10000;;
 let backtrack_trace_try = ref false;;
@@ -1103,7 +1105,33 @@ let bfparser_of_token entry tok return_value =
         None
 ;;
 
-(* version for functional parsers (limited backtracking) *)
+let s = try Sys.getenv "CAMLP5PARAM" with Not_found -> "" in
+let rec loop i =
+  if i = String.length s then ()
+  else if s.[i] = 'b' then
+    begin set_default_algorithm Backtracking; loop (i + 1) end
+  else if s.[i] = 'f' then
+    begin set_default_algorithm Functional; loop (i + 1) end
+  else if s.[i] = 'p' then
+    begin set_default_algorithm Predictive; loop (i + 1) end
+  else if s.[i] = 'l' && i + 1 < String.length s && s.[i+1] = '=' then
+    let (n, i) =
+      let rec loop n i =
+        if i = String.length s then n, i
+        else if s.[i] >= '0' && s.[i] <= '9' then
+          loop (10 * n + Char.code s.[i] - Char.code '0') (i + 1)
+        else n, i
+      in
+      loop 0 (i + 2)
+    in
+    backtrack_stalling_limit := n; loop i
+  else if s.[i] = 't' then begin backtrack_trace := true; loop (i + 1) end
+  else if s.[i] = 'y' then begin backtrack_trace_try := true; loop (i + 1) end
+  else loop (i + 1)
+in
+loop 0;;
+
+(* version with functional streams and limited backtracking *)
 
 let fcount (strm__ : _ Fstream.t) =
   let bp = Fstream.count strm__ in Some (bp, strm__)
@@ -1547,33 +1575,7 @@ let fcontinue_parser_of_entry entry =
   | Dparser p -> fun levn bp a (strm__ : _ Fstream.t) -> None
 ;;
 
-(* version for backtracking parsers (full backtracking) *)
-
-let s = try Sys.getenv "CAMLP5PARAM" with Not_found -> "" in
-let rec loop i =
-  if i = String.length s then ()
-  else if s.[i] = 'b' then
-    begin set_default_algorithm Backtracking; loop (i + 1) end
-  else if s.[i] = 'f' then
-    begin set_default_algorithm Functional; loop (i + 1) end
-  else if s.[i] = 'p' then
-    begin set_default_algorithm Predictive; loop (i + 1) end
-  else if s.[i] = 'l' && i + 1 < String.length s && s.[i+1] = '=' then
-    let (n, i) =
-      let rec loop n i =
-        if i = String.length s then n, i
-        else if s.[i] >= '0' && s.[i] <= '9' then
-          loop (10 * n + Char.code s.[i] - Char.code '0') (i + 1)
-        else n, i
-      in
-      loop 0 (i + 2)
-    in
-    backtrack_stalling_limit := n; loop i
-  else if s.[i] = 't' then begin backtrack_trace := true; loop (i + 1) end
-  else if s.[i] = 'y' then begin backtrack_trace_try := true; loop (i + 1) end
-  else loop (i + 1)
-in
-loop 0;;
+(* version with functional streams and full backtracking *)
 
 let rec btop_symb entry =
   function
