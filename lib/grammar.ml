@@ -994,6 +994,79 @@ value tind = ref "";
 value max_fcount = ref None;
 value nb_ftry = ref 0;
 
+value bfparser_of_token entry tok return_value =
+  let f = entry.egram.glexer.Plexing.tok_match tok in
+  fun strm ->
+    let _ =
+      if backtrack_trace.val then do {
+        Printf.eprintf "%stesting (\"%s\", \"%s\") ..." tind.val (fst tok)
+          (snd tok);
+        flush stderr;
+      }
+      else ()
+    in
+    let _ =
+      if backtrack_stalling_limit.val > 0 || backtrack_trace_try.val then
+        let m =
+          match max_fcount.val with
+          | Some (m, _) -> m
+          | None -> 0
+          end
+        in
+        if Fstream.count strm > m then do {
+          let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
+          max_fcount.val := Some (Fstream.count strm, e);
+          nb_ftry.val := 0
+        }
+        else do {
+          incr nb_ftry;
+          if backtrack_trace_try.val then do {
+            Printf.eprintf "\rtokens read: %d; tokens tests: %d " m
+              nb_ftry.val;
+            flush stderr;
+          }
+          else ();
+          if backtrack_stalling_limit.val > 0 &&
+             nb_ftry.val >= backtrack_stalling_limit.val
+          then do {
+            if backtrack_trace_try.val then do {
+              Printf.eprintf "\n";
+              flush stderr;
+            }
+            else ();
+            raise Stream.Failure
+          }
+          else ()
+        }
+      else ()
+    in
+    match Fstream.next strm with
+    [ Some (tok, strm) ->
+        try
+          let r = f tok in
+          let _ =
+            if backtrack_trace.val then Printf.eprintf " yes!!!\n%!"
+            else ()
+          in
+	  return_value r strm
+        with
+        [ Stream.Failure ->
+            let _ =
+              if backtrack_trace.val then Printf.eprintf " not found\n%!"
+              else ()
+            in
+            None ]
+    | None ->
+        let _ =
+          if backtrack_trace.val then do {
+            Printf.eprintf " eos\n";
+            flush stderr;
+          }
+          else ()
+        in
+        None ]
+;
+
 (* version for functional parsers (limited backtracking) *)
 
 value fcount = fparser bp [: :] → bp;
@@ -1027,6 +1100,11 @@ value frecover fparser_of_tree entry next_levn assoc_levn bp a son =
   [ [: t = ftop_tree entry son;
        a = fparser_of_tree entry next_levn assoc_levn t :] ->
       a ]
+;
+
+value fparser_of_token entry tok =
+  let return_value r strm = match strm with fparser [: :] -> Obj.repr r in
+  bfparser_of_token entry tok return_value
 ;
 
 value rec fparser_of_tree entry next_levn assoc_levn =
@@ -1183,69 +1261,6 @@ and fparser_of_symbol entry next_levn =
   | Sself -> fparser [: a = entry.fstart 0 :] -> a
   | Snext -> fparser [: a = entry.fstart next_levn :] -> a
   | Stoken tok -> fparser_of_token entry tok ]
-and fparser_of_token entry tok =
-  let f = entry.egram.glexer.Plexing.tok_match tok in
-  fun strm ->
-    let _ =
-      if backtrack_trace.val then do {
-        Printf.eprintf "%stesting (\"%s\", \"%s\") ..." tind.val (fst tok)
-          (snd tok);
-        flush stderr;
-      }
-      else ()
-    in
-    let _ =
-      if backtrack_stalling_limit.val > 0 || backtrack_trace_try.val then
-        let m =
-          match max_fcount.val with
-          | Some (m, _) -> m
-          | None -> 0
-          end
-        in
-        if Fstream.count strm > m then do {
-          let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
-          max_fcount.val := Some (Fstream.count strm, e);
-          nb_ftry.val := 0
-        }
-        else do {
-          incr nb_ftry;
-          if backtrack_trace_try.val then do {
-            Printf.eprintf "\rtokens read: %d; tokens tests: %d " m
-              nb_ftry.val;
-            flush stderr;
-          }
-          else ();
-          if backtrack_stalling_limit.val > 0 &&
-             nb_ftry.val >= backtrack_stalling_limit.val
-          then do {
-            if backtrack_trace_try.val then do {
-              Printf.eprintf "\n";
-              flush stderr;
-            }
-            else ();
-            raise Stream.Failure
-          }
-          else ()
-        }
-      else ()
-    in
-    match Fstream.next strm with
-    [ Some (tok, strm) ->
-        try
-          let r = f tok in
-          let _ =
-            if backtrack_trace.val then Printf.eprintf " yes!!!\n%!"
-            else ()
-          in
-          match strm with fparser [: :] -> Obj.repr r
-        with
-        [ Stream.Failure ->
-            let _ =
-              if backtrack_trace.val then Printf.eprintf " not found\n%!"
-              else ()
-            in
-            None ]
-    | None -> None ]
 and fparse_top_symb entry symb =
   match ftop_symb entry symb with
   [ Some sy -> fparser_of_symbol entry 0 sy
@@ -1412,6 +1427,11 @@ value brecover bparser_of_tree entry next_levn assoc_levn bp a son =
       a ]
 ;
 
+value bparser_of_token entry tok =
+  let return_value r strm = match strm with bparser [: :] -> Obj.repr r in
+  bfparser_of_token entry tok return_value
+;
+
 value rec bparser_of_tree entry next_levn assoc_levn =
   fun
   [ DeadEnd -> bparser []
@@ -1565,77 +1585,6 @@ and bparser_of_symbol entry next_levn =
   | Sself -> bparser [: a = entry.bstart 0 :] -> a
   | Snext -> bparser [: a = entry.bstart next_levn :] -> a
   | Stoken tok -> bparser_of_token entry tok ]
-and bparser_of_token entry tok =
-  let f = entry.egram.glexer.Plexing.tok_match tok in
-  fun strm ->
-    let _ =
-      if backtrack_trace.val then do {
-        Printf.eprintf "%stesting (\"%s\", \"%s\") ..." tind.val (fst tok)
-          (snd tok);
-        flush stderr;
-      }
-      else ()
-    in
-    let _ =
-      if backtrack_stalling_limit.val > 0 || backtrack_trace_try.val then
-        let m =
-          match max_fcount.val with
-          | Some (m, _) -> m
-          | None -> 0
-          end
-        in
-        if Fstream.count strm > m then do {
-          let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
-          max_fcount.val := Some (Fstream.count strm, e);
-          nb_ftry.val := 0
-        }
-        else do {
-          incr nb_ftry;
-          if backtrack_trace_try.val then do {
-            Printf.eprintf "\rtokens read: %d; tokens tests: %d " m
-              nb_ftry.val;
-            flush stderr;
-          }
-          else ();
-          if backtrack_stalling_limit.val > 0 &&
-             nb_ftry.val >= backtrack_stalling_limit.val
-          then do {
-            if backtrack_trace_try.val then do {
-              Printf.eprintf "\n";
-              flush stderr;
-            }
-            else ();
-            raise Stream.Failure
-          }
-          else ()
-        }
-      else ()
-    in
-    match Fstream.next strm with
-    [ Some (tok, strm) ->
-        try
-          let r = f tok in
-          let _ =
-            if backtrack_trace.val then Printf.eprintf " yes!!!\n%!"
-            else ()
-          in
-          match strm with bparser [: :] -> Obj.repr r
-        with
-        [ Stream.Failure ->
-            let _ =
-              if backtrack_trace.val then Printf.eprintf " not found\n%!"
-              else ()
-            in
-            None ]
-    | None ->
-        let _ =
-          if backtrack_trace.val then do {
-            Printf.eprintf " eos\n";
-            flush stderr;
-          }
-          else ()
-        in
-        None ]
 and bparse_top_symb entry symb =
   match btop_symb entry symb with
   [ Some sy -> bparser_of_symbol entry 0 sy
