@@ -185,7 +185,10 @@ compare_stolen:
 bootstrap_sources:
 	rm -rf ocaml_src.new
 	mkdir ocaml_src.new
-	$(MAKE) new_sources untouch_sources promote_sources clean_sources
+	$(MAKE) new_sources
+	$(MAKE) untouch_sources
+	$(MAKE) promote_sources
+	$(MAKE) clean_sources
 
 bootstrap_source:
 	rm -rf ocaml_src.new
