@@ -2021,7 +2021,7 @@ value bfparse_parsable entry p efun result = do {
   in
   let get_loc () =
     try
-      let cnt = Fstream.count_unfrozen fts - 1 in
+      let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
       let loc = fun_loc cnt in
       if token_count.val - 1 <= cnt then loc
       else Ploc.encl loc (fun_loc (token_count.val - 1))
