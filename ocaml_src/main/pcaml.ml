@@ -330,26 +330,7 @@ let print_exn =
       Format.print_string "I/O error: "; Format.print_string msg
   | x ->
       Format.print_string "Uncaught exception: ";
-      Format.print_string
-        (Obj.magic (Obj.field (Obj.field (Obj.repr x) 0) 0));
-      if Obj.size (Obj.repr x) > 1 then
-        begin
-          Format.print_string " (";
-          for i = 1 to Obj.size (Obj.repr x) - 1 do
-            if i > 1 then Format.print_string ", ";
-            let arg = Obj.field (Obj.repr x) i in
-            if not (Obj.is_block arg) then
-              Format.print_int (Obj.magic arg : int)
-            else if Obj.tag arg = Obj.tag (Obj.repr "a") then
-              begin
-                Format.print_char '"';
-                Format.print_string (Obj.magic arg : string);
-                Format.print_char '"'
-              end
-            else Format.print_char '_'
-          done;
-          Format.print_char ')'
-        end
+      Format.print_string (Printexc.to_string x)
 ;;
 
 let report_error exn =

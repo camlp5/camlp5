@@ -88,15 +88,11 @@ let rec parse_file pa getdir useast =
                       let (pl, eloc) = use_file pa getdir useast s in
                       list_rev_append rpl [useast loc1 s pl, loc1]
                   | loc, x, eo ->
-                      begin match
-                        begin try Some (Pcaml.find_directive x) with
-                          Not_found -> None
-                        end
-                      with
-                        Some f -> f eo
-                      | None ->
-                          let msg = sprintf "unknown directive #%s" x in
-                          Ploc.raise loc (Stream.Error msg)
+                      begin try Pcaml.find_directive x eo with
+                        Not_found ->
+                          begin let msg = sprintf "unknown directive #%s" x in
+                            Ploc.raise loc (Stream.Error msg)
+                          end
                       end;
                       pl
                   end

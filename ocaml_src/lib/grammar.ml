@@ -2323,7 +2323,7 @@ let bfparse_parsable entry p efun return_value =
               let mess = err () in
               if mess = "" then sprintf "failure in [%s]" entry.ename
               else mess
-          | None -> sprintf "a failure in [%s]" entry.ename
+          | None -> sprintf "[%s] failed" entry.ename
         in
         restore (); Ploc.raise loc (Stream.Error mess)
     | exc ->
