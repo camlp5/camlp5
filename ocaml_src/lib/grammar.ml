@@ -1161,7 +1161,7 @@ let ftop_tree entry son strm =
   | LocAct (_, _) | DeadEnd -> None
 ;;
 
-let frecover fparser_of_tree entry next_levn assoc_levn bp a son
+let frecover fparser_of_tree entry next_levn assoc_levn son
     (strm__ : _ Fstream.t) =
   match ftop_tree entry son strm__ with
     Some (t, strm__) -> fparser_of_tree entry next_levn assoc_levn t strm__
@@ -1199,10 +1199,9 @@ let rec fparser_of_tree entry next_levn assoc_levn =
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
       let p1 = fparser_cont p1 entry next_levn assoc_levn son in
       (fun (strm__ : _ Fstream.t) ->
-         let bp = Fstream.count strm__ in
          match ps strm__ with
            Some (a, strm__) ->
-             begin match p1 bp a strm__ with
+             begin match p1 strm__ with
                Some (act, strm__) -> Some (app act a, strm__)
              | _ -> None
              end
@@ -1213,11 +1212,10 @@ let rec fparser_of_tree entry next_levn assoc_levn =
       let p1 = fparser_cont p1 entry next_levn assoc_levn son in
       let p2 = fparser_of_tree entry next_levn assoc_levn bro in
       fun (strm__ : _ Fstream.t) ->
-        let bp = Fstream.count strm__ in
         match
           match ps strm__ with
             Some (a, strm__) ->
-              begin match p1 bp a strm__ with
+              begin match p1 strm__ with
                 Some (act, strm__) -> Some (app act a, strm__)
               | _ -> None
               end
@@ -1225,12 +1223,10 @@ let rec fparser_of_tree entry next_levn assoc_levn =
         with
           Some _ as x -> x
         | None -> p2 strm__
-and fparser_cont p1 entry next_levn assoc_levn son bp a
-    (strm__ : _ Fstream.t) =
+and fparser_cont p1 entry next_levn assoc_levn son (strm__ : _ Fstream.t) =
   match p1 strm__ with
     Some _ as x -> x
-  | None ->
-      frecover fparser_of_tree entry next_levn assoc_levn bp a son strm__
+  | None -> frecover fparser_of_tree entry next_levn assoc_levn son strm__
 and fparser_of_symbol entry next_levn =
   function
     Sfacto s -> fparser_of_symbol entry next_levn s
@@ -1608,7 +1604,7 @@ let btop_tree entry son strm =
   | LocAct (_, _) | DeadEnd -> None
 ;;
 
-let brecover bparser_of_tree entry next_levn assoc_levn bp a son
+let brecover bparser_of_tree entry next_levn assoc_levn son
     (strm__ : _ Fstream.t) =
   Fstream.b_seq (fun strm__ -> btop_tree entry son strm__)
     (fun t strm__ ->
@@ -1647,10 +1643,9 @@ let rec bparser_of_tree entry next_levn assoc_levn =
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
       let p1 = bparser_cont p1 entry next_levn assoc_levn son in
       (fun (strm__ : _ Fstream.t) ->
-         let bp = Fstream.count strm__ in
          Fstream.b_seq ps
            (fun a strm__ ->
-              Fstream.b_seq (fun strm__ -> p1 bp a strm__)
+              Fstream.b_seq p1
                 (fun act strm__ -> Fstream.b_act (app act a) strm__) strm__)
            strm__)
   | Node {node = s; son = son; brother = bro} ->
@@ -1659,24 +1654,21 @@ let rec bparser_of_tree entry next_levn assoc_levn =
       let p1 = bparser_cont p1 entry next_levn assoc_levn son in
       let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       fun (strm__ : _ Fstream.t) ->
-        let bp = Fstream.count strm__ in
         Fstream.b_or
           (fun strm__ ->
              Fstream.b_seq ps
                (fun a strm__ ->
-                  Fstream.b_seq (fun strm__ -> p1 bp a strm__)
+                  Fstream.b_seq p1
                     (fun act strm__ -> Fstream.b_act (app act a) strm__)
                     strm__)
                strm__)
           (fun strm__ -> Fstream.b_seq p2 Fstream.b_act strm__) strm__
-and bparser_cont p1 entry next_levn assoc_levn son bp a
-    (strm__ : _ Fstream.t) =
+and bparser_cont p1 entry next_levn assoc_levn son (strm__ : _ Fstream.t) =
   Fstream.b_or (fun strm__ -> Fstream.b_seq p1 Fstream.b_act strm__)
     (fun strm__ ->
        Fstream.b_seq
          (fun strm__ ->
-            brecover bparser_of_tree entry next_levn assoc_levn bp a son
-              strm__)
+            brecover bparser_of_tree entry next_levn assoc_levn son strm__)
          Fstream.b_act strm__)
     strm__
 and bparser_of_symbol entry next_levn =

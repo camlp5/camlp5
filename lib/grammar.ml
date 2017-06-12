@@ -1135,11 +1135,10 @@ value ftop_tree entry son strm =
       None ]
 ;
 
-value frecover fparser_of_tree entry next_levn assoc_levn bp a son =
+value frecover fparser_of_tree entry next_levn assoc_levn son =
   fparser
   [ [: t = ftop_tree entry son;
-       a = fparser_of_tree entry next_levn assoc_levn t :] ->
-      a ]
+       a = fparser_of_tree entry next_levn assoc_levn t :] -> a ]
 ;
 
 value fparser_of_token entry tok =
@@ -1162,21 +1161,19 @@ value rec fparser_of_tree entry next_levn assoc_levn =
       let ps = fparser_of_symbol entry next_levn s in
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
       let p1 = fparser_cont p1 entry next_levn assoc_levn son in
-      fparser bp [: a = ps; act = p1 bp a :] -> app act a
+      fparser [: a = ps; act = p1 :] -> app act a
   | Node {node = s; son = son; brother = bro} ->
       let ps = fparser_of_symbol entry next_levn s in
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
       let p1 = fparser_cont p1 entry next_levn assoc_levn son in
       let p2 = fparser_of_tree entry next_levn assoc_levn bro in
-      fparser bp
-      [ [: a = ps; act = p1 bp a :] -> app act a
+      fparser
+      [ [: a = ps; act = p1 :] -> app act a
       | [: a = p2 :] -> a ] ]
-and fparser_cont p1 entry next_levn assoc_levn son bp a =
+and fparser_cont p1 entry next_levn assoc_levn son =
   fparser
   [ [: a = p1 :] -> a
-  | [: a =
-         frecover fparser_of_tree entry next_levn assoc_levn bp a son :] ->
-        a ]
+  | [: a = frecover fparser_of_tree entry next_levn assoc_levn son :] -> a ]
 and fparser_of_symbol entry next_levn =
   fun
   [ Sfacto s -> fparser_of_symbol entry next_levn s
@@ -1422,11 +1419,10 @@ value btop_tree entry son strm =
       None ]
 ;
 
-value brecover bparser_of_tree entry next_levn assoc_levn bp a son =
+value brecover bparser_of_tree entry next_levn assoc_levn son =
   bparser
   [ [: t = btop_tree entry son;
-       a = bparser_of_tree entry next_levn assoc_levn t :] ->
-      a ]
+       a = bparser_of_tree entry next_levn assoc_levn t :] -> a ]
 ;
 
 value bparser_of_token entry tok =
@@ -1449,20 +1445,19 @@ value rec bparser_of_tree entry next_levn assoc_levn =
       let ps = bparser_of_symbol entry next_levn s in
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
       let p1 = bparser_cont p1 entry next_levn assoc_levn son in
-      bparser bp [: a = ps; act = p1 bp a :] -> app act a
+      bparser [: a = ps; act = p1 :] -> app act a
   | Node {node = s; son = son; brother = bro} ->
       let ps = bparser_of_symbol entry next_levn s in
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
       let p1 = bparser_cont p1 entry next_levn assoc_levn son in
       let p2 = bparser_of_tree entry next_levn assoc_levn bro in
-      bparser bp
-      [ [: a = ps; act = p1 bp a :] -> app act a
+      bparser
+      [ [: a = ps; act = p1 :] -> app act a
       | [: a = p2 :] -> a ] ]
-and bparser_cont p1 entry next_levn assoc_levn son bp a =
+and bparser_cont p1 entry next_levn assoc_levn son =
   bparser
   [ [: a = p1 :] -> a
-  | [: a = brecover bparser_of_tree entry next_levn assoc_levn bp a son :] ->
-        a ]
+  | [: a = brecover bparser_of_tree entry next_levn assoc_levn son :] -> a ]
 and bparser_of_symbol entry next_levn =
   fun
   [ Sfacto s -> bparser_of_symbol entry next_levn s
