@@ -2021,7 +2021,7 @@ value bfparse_parsable entry p efun return_value = do {
               if mess = "" then sprintf "failure in [%s]" entry.ename
               else mess
           | None ->
-              sprintf "a failure in [%s]" entry.ename
+              sprintf "[%s] failed" entry.ename
           end
         in
         restore ();
