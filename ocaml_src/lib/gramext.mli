@@ -22,8 +22,8 @@ type 'te g_entry =
     elocal : bool;
     mutable estart : int -> 'te parser_t;
     mutable econtinue : int -> int -> Obj.t -> 'te parser_t;
-    mutable fstart : int -> 'te fparser_t;
-    mutable fcontinue : int -> int -> Obj.t -> 'te fparser_t;
+    mutable fstart : int -> err_fun -> 'te fparser_t;
+    mutable fcontinue : int -> int -> Obj.t -> err_fun -> 'te fparser_t;
     mutable bstart : int -> 'te bparser_t;
     mutable bcontinue : int -> int -> Obj.t -> 'te bparser_t;
     mutable edesc : 'te g_desc }
@@ -59,7 +59,7 @@ and 'te g_tree =
   | DeadEnd
 and 'te g_node =
   { node : 'te g_symbol; son : 'te g_tree; brother : 'te g_tree }
-;;
+and err_fun = unit -> string;;
 
 type position =
     First

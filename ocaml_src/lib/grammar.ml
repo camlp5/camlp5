@@ -530,9 +530,9 @@ let call_and_push ps al strm =
   let al = if !item_skipped then al else a :: al in item_skipped := false; al
 ;;
 
-let fcall_and_push ps al strm =
+let fcall_and_push ps al err strm =
   item_skipped := false;
-  match ps strm with
+  match ps err strm with
     Some (a, strm) ->
       let al = if !item_skipped then al else a :: al in
       item_skipped := false; Some (al, strm)
@@ -1047,9 +1047,17 @@ let tind = ref "";;
 let max_fcount = ref None;;
 let nb_ftry = ref 0;;
 
+let no_err () = "";;
+let ftree_failed entry prev_symb_result prev_symb tree () =
+  tree_failed entry prev_symb_result prev_symb tree
+;;
+let fsymb_failed entry prev_symb_result prev_symb symb () =
+  symb_failed entry prev_symb_result prev_symb symb
+;;
+
 let bfparser_of_token entry tok return_value =
   let f = entry.egram.glexer.Plexing.tok_match tok in
-  fun strm ->
+  fun err strm ->
     let _ =
       if !backtrack_trace then
         begin
@@ -1062,12 +1070,12 @@ let bfparser_of_token entry tok return_value =
       if !backtrack_stalling_limit > 0 || !backtrack_trace_try then
         let m =
           match !max_fcount with
-            Some (m, _) -> m
+            Some (m, _, _) -> m
           | None -> 0
         in
         if Fstream.count strm > m then
           let e : Obj.t g_entry = Obj.magic (entry : _ g_entry) in
-          max_fcount := Some (Fstream.count strm, e); nb_ftry := 0
+          max_fcount := Some (Fstream.count strm, e, err); nb_ftry := 0
         else
           begin
             incr nb_ftry;
@@ -1161,47 +1169,48 @@ let ftop_tree entry son strm =
   | LocAct (_, _) | DeadEnd -> None
 ;;
 
-let frecover fparser_of_tree entry next_levn assoc_levn son
+let frecover fparser_of_tree entry next_levn assoc_levn son err
     (strm__ : _ Fstream.t) =
   match ftop_tree entry son strm__ with
-    Some (t, strm__) -> fparser_of_tree entry next_levn assoc_levn t strm__
+    Some (t, strm__) ->
+      fparser_of_tree entry next_levn assoc_levn t err strm__
   | _ -> None
 ;;
 
-let fparser_of_token entry tok =
+let fparser_of_token entry tok err =
   let return_value r strm =
     let (strm__ : _ Fstream.t) = strm in Some (Obj.repr r, strm__)
   in
-  bfparser_of_token entry tok return_value
+  bfparser_of_token entry tok return_value err
 ;;
 
 let rec fparser_of_tree entry next_levn assoc_levn =
   function
-    DeadEnd -> (fun (strm__ : _ Fstream.t) -> None)
-  | LocAct (act, _) -> (fun (strm__ : _ Fstream.t) -> Some (act, strm__))
+    DeadEnd -> (fun err (strm__ : _ Fstream.t) -> None)
+  | LocAct (act, _) -> (fun err (strm__ : _ Fstream.t) -> Some (act, strm__))
   | Node {node = Sself; son = LocAct (act, _); brother = DeadEnd} ->
-      (fun (strm__ : _ Fstream.t) ->
-         match entry.fstart assoc_levn strm__ with
+      (fun err (strm__ : _ Fstream.t) ->
+         match entry.fstart assoc_levn err strm__ with
            Some (a, strm__) -> Some (app act a, strm__)
          | _ -> None)
   | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
       let p2 = fparser_of_tree entry next_levn assoc_levn bro in
-      (fun (strm__ : _ Fstream.t) ->
+      (fun err (strm__ : _ Fstream.t) ->
          match
-           match entry.fstart assoc_levn strm__ with
+           match entry.fstart assoc_levn err strm__ with
              Some (a, strm__) -> Some (app act a, strm__)
            | _ -> None
          with
            Some _ as x -> x
-         | None -> p2 strm__)
+         | None -> p2 err strm__)
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = fparser_of_symbol entry next_levn s in
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
       let p1 = fparser_cont p1 entry next_levn assoc_levn son in
-      (fun (strm__ : _ Fstream.t) ->
-         match ps strm__ with
+      (fun err (strm__ : _ Fstream.t) ->
+         match ps err strm__ with
            Some (a, strm__) ->
-             begin match p1 strm__ with
+             begin match p1 (ftree_failed entry a s son) strm__ with
                Some (act, strm__) -> Some (app act a, strm__)
              | _ -> None
              end
@@ -1211,26 +1220,28 @@ let rec fparser_of_tree entry next_levn assoc_levn =
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
       let p1 = fparser_cont p1 entry next_levn assoc_levn son in
       let p2 = fparser_of_tree entry next_levn assoc_levn bro in
-      fun (strm__ : _ Fstream.t) ->
+      fun err (strm__ : _ Fstream.t) ->
         match
-          match ps strm__ with
+          match ps err strm__ with
             Some (a, strm__) ->
-              begin match p1 strm__ with
+              begin match p1 (ftree_failed entry a s son) strm__ with
                 Some (act, strm__) -> Some (app act a, strm__)
               | _ -> None
               end
           | _ -> None
         with
           Some _ as x -> x
-        | None -> p2 strm__
-and fparser_cont p1 entry next_levn assoc_levn son (strm__ : _ Fstream.t) =
-  match p1 strm__ with
+        | None -> p2 err strm__
+and fparser_cont p1 entry next_levn assoc_levn son err
+    (strm__ : _ Fstream.t) =
+  match p1 err strm__ with
     Some _ as x -> x
-  | None -> frecover fparser_of_tree entry next_levn assoc_levn son strm__
+  | None -> frecover fparser_of_tree entry next_levn assoc_levn son err strm__
 and fparser_of_symbol entry next_levn =
   function
     Sfacto s -> fparser_of_symbol entry next_levn s
   | Smeta (_, symbl, act) ->
+      let _ = failwith "Smeta for fparser not impl" in
       let act = Obj.magic act entry symbl in
       Obj.magic
         (List.fold_left
@@ -1240,29 +1251,29 @@ and fparser_of_symbol entry next_levn =
   | Slist0 s ->
       let ps = fparser_of_symbol entry next_levn s in
       let ps = fcall_and_push ps in
-      let rec loop al (strm__ : _ Fstream.t) =
+      let rec loop al err (strm__ : _ Fstream.t) =
         match
-          match ps al strm__ with
-            Some (al, strm__) -> loop al strm__
+          match ps al err strm__ with
+            Some (al, strm__) -> loop al err strm__
           | _ -> None
         with
           Some _ as x -> x
         | None -> Some (al, strm__)
       in
-      (fun (strm__ : _ Fstream.t) ->
-         match loop [] strm__ with
+      (fun err (strm__ : _ Fstream.t) ->
+         match loop [] err strm__ with
            Some (a, strm__) -> Some (Obj.repr (List.rev a), strm__)
          | _ -> None)
   | Slist0sep (symb, sep, false) ->
       let ps = fparser_of_symbol entry next_levn symb in
       let ps = fcall_and_push ps in
       let pt = fparser_of_symbol entry next_levn sep in
-      let rec kont al (strm__ : _ Fstream.t) =
+      let rec kont al err (strm__ : _ Fstream.t) =
         match
-          match pt strm__ with
+          match pt err strm__ with
             Some (v, strm__) ->
-              begin match ps al strm__ with
-                Some (al, strm__) -> kont al strm__
+              begin match ps al (fsymb_failed entry v sep symb) strm__ with
+                Some (al, strm__) -> kont al err strm__
               | _ -> None
               end
           | _ -> None
@@ -1270,11 +1281,11 @@ and fparser_of_symbol entry next_levn =
           Some _ as x -> x
         | None -> Some (al, strm__)
       in
-      (fun (strm__ : _ Fstream.t) ->
+      (fun err (strm__ : _ Fstream.t) ->
          match
-           match ps [] strm__ with
+           match ps [] err strm__ with
              Some (al, strm__) ->
-               begin match kont al strm__ with
+               begin match kont al err strm__ with
                  Some (a, strm__) -> Some (Obj.repr (List.rev a), strm__)
                | _ -> None
                end
@@ -1285,19 +1296,19 @@ and fparser_of_symbol entry next_levn =
   | Slist1 s ->
       let ps = fparser_of_symbol entry next_levn s in
       let ps = fcall_and_push ps in
-      let rec loop al (strm__ : _ Fstream.t) =
+      let rec loop al err (strm__ : _ Fstream.t) =
         match
-          match ps al strm__ with
-            Some (al, strm__) -> loop al strm__
+          match ps al err strm__ with
+            Some (al, strm__) -> loop al err strm__
           | _ -> None
         with
           Some _ as x -> x
         | None -> Some (al, strm__)
       in
-      (fun (strm__ : _ Fstream.t) ->
-         match ps [] strm__ with
+      (fun err (strm__ : _ Fstream.t) ->
+         match ps [] err strm__ with
            Some (al, strm__) ->
-             begin match loop al strm__ with
+             begin match loop al err strm__ with
                Some (a, strm__) -> Some (Obj.repr (List.rev a), strm__)
              | _ -> None
              end
@@ -1309,21 +1320,21 @@ and fparser_of_symbol entry next_levn =
       let ps = fcall_and_push ps in
       let pt = fparser_of_symbol entry next_levn sep in
       let pts = fparse_top_symb entry symb in
-      let rec kont al (strm__ : _ Fstream.t) =
+      let rec kont al err (strm__ : _ Fstream.t) =
         match
-          match pt strm__ with
+          match pt err strm__ with
             Some (v, strm__) ->
               begin match
                 (fun (strm__ : _ Fstream.t) ->
-                   match ps al strm__ with
+                   match ps al (fsymb_failed entry v sep symb) strm__ with
                      Some _ as x -> x
                    | None ->
-                       match pts strm__ with
+                       match pts (fsymb_failed entry v sep symb) strm__ with
                          Some (a, strm__) -> Some (a :: al, strm__)
                        | _ -> None)
                   strm__
               with
-                Some (al, strm__) -> kont al strm__
+                Some (al, strm__) -> kont al err strm__
               | _ -> None
               end
           | _ -> None
@@ -1331,10 +1342,10 @@ and fparser_of_symbol entry next_levn =
           Some _ as x -> x
         | None -> Some (al, strm__)
       in
-      (fun (strm__ : _ Fstream.t) ->
-         match ps [] strm__ with
+      (fun err (strm__ : _ Fstream.t) ->
+         match ps [] err strm__ with
            Some (al, strm__) ->
-             begin match kont al strm__ with
+             begin match kont al err strm__ with
                Some (a, strm__) -> Some (Obj.repr (List.rev a), strm__)
              | _ -> None
              end
@@ -1344,12 +1355,12 @@ and fparser_of_symbol entry next_levn =
       let ps = fcall_and_push ps in
       let pt = fparser_of_symbol entry next_levn sep in
       let pts = fparse_top_symb entry symb in
-      let rec kont al (strm__ : _ Fstream.t) =
+      let rec kont al err (strm__ : _ Fstream.t) =
         match
-          match pt strm__ with
+          match pt err strm__ with
             Some (v, strm__) ->
-              begin match ps al strm__ with
-                Some (al, strm__) -> kont al strm__
+              begin match ps al err strm__ with
+                Some (al, strm__) -> kont al err strm__
               | _ -> None
               end
           | _ -> None
@@ -1357,10 +1368,10 @@ and fparser_of_symbol entry next_levn =
           Some _ as x -> x
         | None ->
             match
-              match pt strm__ with
+              match pt err strm__ with
                 Some (v, strm__) ->
-                  begin match pts strm__ with
-                    Some (a, strm__) -> kont (a :: al) strm__
+                  begin match pts err strm__ with
+                    Some (a, strm__) -> kont (a :: al) err strm__
                   | _ -> None
                   end
               | _ -> None
@@ -1368,26 +1379,26 @@ and fparser_of_symbol entry next_levn =
               Some _ as x -> x
             | None ->
                 match
-                  match pt strm__ with
+                  match pt err strm__ with
                     Some (v, strm__) -> Some (al, strm__)
                   | _ -> None
                 with
                   Some _ as x -> x
                 | None -> Some (al, strm__)
       in
-      (fun (strm__ : _ Fstream.t) ->
-         match ps [] strm__ with
+      (fun err (strm__ : _ Fstream.t) ->
+         match ps [] err strm__ with
            Some (al, strm__) ->
-             begin match kont al strm__ with
+             begin match kont al err strm__ with
                Some (a, strm__) -> Some (Obj.repr (List.rev a), strm__)
              | _ -> None
              end
          | _ -> None)
   | Sopt s ->
       let ps = fparser_of_symbol entry next_levn s in
-      (fun (strm__ : _ Fstream.t) ->
+      (fun err (strm__ : _ Fstream.t) ->
          match
-           match ps strm__ with
+           match ps err strm__ with
              Some (a, strm__) -> Some (Obj.repr (Some a), strm__)
            | _ -> None
          with
@@ -1395,9 +1406,9 @@ and fparser_of_symbol entry next_levn =
          | None -> Some (Obj.repr None, strm__))
   | Sflag s ->
       let ps = fparser_of_symbol entry next_levn s in
-      (fun (strm__ : _ Fstream.t) ->
+      (fun err (strm__ : _ Fstream.t) ->
          match
-           match ps strm__ with
+           match ps err strm__ with
              Some (_, strm__) -> Some (Obj.repr true, strm__)
            | _ -> None
          with
@@ -1405,9 +1416,9 @@ and fparser_of_symbol entry next_levn =
          | None -> Some (Obj.repr false, strm__))
   | Stree t ->
       let pt = fparser_of_tree entry 1 0 t in
-      (fun (strm__ : _ Fstream.t) ->
+      (fun err (strm__ : _ Fstream.t) ->
          let bp = Fstream.count strm__ in
-         match pt strm__ with
+         match pt err strm__ with
            Some (a, strm__) ->
              Some
                ((let ep = Fstream.count strm__ in
@@ -1429,7 +1440,7 @@ and fparser_of_symbol entry next_levn =
             in
             begin match t with
               Some t -> fparser_of_token entry (t, "")
-            | None -> fun (strm__ : _ Fstream.t) -> None
+            | None -> fun err (strm__ : _ Fstream.t) -> None
             end
         | al ->
             let rec loop =
@@ -1437,42 +1448,44 @@ and fparser_of_symbol entry next_levn =
                 a :: al ->
                   let pa = fparser_of_token entry ("V", a) in
                   let pal = loop al in
-                  (fun (strm__ : _ Fstream.t) ->
-                     match pa strm__ with
+                  (fun err (strm__ : _ Fstream.t) ->
+                     match pa err strm__ with
                        Some _ as x -> x
-                     | None -> pal strm__)
-              | [] -> fun (strm__ : _ Fstream.t) -> None
+                     | None -> pal err strm__)
+              | [] -> fun err (strm__ : _ Fstream.t) -> None
             in
             loop al
       in
       let ps = fparser_of_symbol entry next_levn s in
-      (fun (strm__ : _ Fstream.t) ->
+      (fun err (strm__ : _ Fstream.t) ->
          match
-           match pa strm__ with
+           match pa err strm__ with
              Some (a, strm__) ->
                Some (Obj.repr (Ploc.VaAnt (Obj.magic a : string)), strm__)
            | _ -> None
          with
            Some _ as x -> x
          | None ->
-             match ps strm__ with
+             match ps err strm__ with
                Some (a, strm__) -> Some (Obj.repr (Ploc.VaVal a), strm__)
              | _ -> None)
-  | Snterm e -> (fun (strm__ : _ Fstream.t) -> e.fstart 0 strm__)
+  | Snterm e -> (fun err (strm__ : _ Fstream.t) -> e.fstart 0 err strm__)
   | Snterml (e, l) ->
-      (fun (strm__ : _ Fstream.t) -> e.fstart (level_number e l) strm__)
-  | Sself -> (fun (strm__ : _ Fstream.t) -> entry.fstart 0 strm__)
-  | Snext -> (fun (strm__ : _ Fstream.t) -> entry.fstart next_levn strm__)
+      (fun err (strm__ : _ Fstream.t) ->
+         e.fstart (level_number e l) err strm__)
+  | Sself -> (fun err (strm__ : _ Fstream.t) -> entry.fstart 0 err strm__)
+  | Snext ->
+      (fun err (strm__ : _ Fstream.t) -> entry.fstart next_levn err strm__)
   | Stoken tok -> fparser_of_token entry tok
 and fparse_top_symb entry symb =
   match ftop_symb entry symb with
     Some sy -> fparser_of_symbol entry 0 sy
-  | None -> fun (strm__ : _ Fstream.t) -> None
+  | None -> fun err (strm__ : _ Fstream.t) -> None
 ;;
 
 let rec fstart_parser_of_levels entry clevn =
   function
-    [] -> (fun levn (strm__ : _ Fstream.t) -> None)
+    [] -> (fun levn err (strm__ : _ Fstream.t) -> None)
   | lev :: levs ->
       let p1 = fstart_parser_of_levels entry (succ clevn) levs in
       match lev.lprefix with
@@ -1486,44 +1499,46 @@ let rec fstart_parser_of_levels entry clevn =
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
           match levs with
             [] ->
-              (fun levn strm ->
+              (fun levn err strm ->
                  if levn > clevn then None
                  else
                    let (strm__ : _ Fstream.t) = strm in
                    let bp = Fstream.count strm__ in
-                   match p2 strm__ with
+                   match p2 err strm__ with
                      Some (act, strm__) ->
                        begin match fcount strm__ with
                          Some (ep, strm__) ->
                            entry.fcontinue levn bp
-                             (app act (loc_of_token_interval bp ep)) strm__
+                             (app act (loc_of_token_interval bp ep)) err
+                             strm__
                        | _ -> None
                        end
                    | _ -> None)
           | _ ->
-              fun levn strm ->
-                if levn > clevn then p1 levn strm
+              fun levn err strm ->
+                if levn > clevn then p1 levn err strm
                 else
                   let (strm__ : _ Fstream.t) = strm in
                   let bp = Fstream.count strm__ in
                   match
-                    match p2 strm__ with
+                    match p2 err strm__ with
                       Some (act, strm__) ->
                         begin match fcount strm__ with
                           Some (ep, strm__) ->
                             entry.fcontinue levn bp
-                              (app act (loc_of_token_interval bp ep)) strm__
+                              (app act (loc_of_token_interval bp ep)) err
+                              strm__
                         | _ -> None
                         end
                     | _ -> None
                   with
                     Some _ as x -> x
-                  | None -> p1 levn strm__
+                  | None -> p1 levn err strm__
 ;;
 
 let rec fcontinue_parser_of_levels entry clevn =
   function
-    [] -> (fun levn bp a (strm__ : _ Fstream.t) -> None)
+    [] -> (fun levn bp a err (strm__ : _ Fstream.t) -> None)
   | lev :: levs ->
       let p1 = fcontinue_parser_of_levels entry (succ clevn) levs in
       match lev.lsuffix with
@@ -1535,19 +1550,20 @@ let rec fcontinue_parser_of_levels entry clevn =
             | RightA -> clevn
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
-          fun levn bp a strm ->
-            if levn > clevn then p1 levn bp a strm
+          fun levn bp a err strm ->
+            if levn > clevn then p1 levn bp a err strm
             else
               let (strm__ : _ Fstream.t) = strm in
-              match p1 levn bp a strm__ with
+              match p1 levn bp a err strm__ with
                 Some _ as x -> x
               | None ->
-                  match p2 strm__ with
+                  match p2 err strm__ with
                     Some (act, strm__) ->
                       begin match fcount strm__ with
                         Some (ep, strm__) ->
                           entry.fcontinue levn bp
-                            (app act a (loc_of_token_interval bp ep)) strm__
+                            (app act a (loc_of_token_interval bp ep)) err
+                            strm__
                       | _ -> None
                       end
                   | _ -> None
@@ -1555,20 +1571,20 @@ let rec fcontinue_parser_of_levels entry clevn =
 
 let fstart_parser_of_entry entry =
   match entry.edesc with
-    Dlevels [] -> (fun _ (strm__ : _ Fstream.t) -> None)
+    Dlevels [] -> (fun _ err (strm__ : _ Fstream.t) -> None)
   | Dlevels elev -> fstart_parser_of_levels entry 0 elev
-  | Dparser p -> fun levn strm -> failwith "Dparser for Fstream"
+  | Dparser p -> fun levn err strm -> failwith "Dparser for Fstream"
 ;;
 
 let fcontinue_parser_of_entry entry =
   match entry.edesc with
     Dlevels elev ->
       let p = fcontinue_parser_of_levels entry 0 elev in
-      (fun levn bp a (strm__ : _ Fstream.t) ->
-         match p levn bp a strm__ with
+      (fun levn bp a err (strm__ : _ Fstream.t) ->
+         match p levn bp a err strm__ with
            Some _ as x -> x
          | None -> Some (a, strm__))
-  | Dparser p -> fun levn bp a (strm__ : _ Fstream.t) -> None
+  | Dparser p -> fun levn bp a err (strm__ : _ Fstream.t) -> None
 ;;
 
 (* version with functional streams and full backtracking *)
@@ -1618,7 +1634,7 @@ let bparser_of_token entry tok =
   let return_value r strm =
     let (strm__ : _ Fstream.t) = strm in Fstream.b_act (Obj.repr r) strm__
   in
-  bfparser_of_token entry tok return_value
+  bfparser_of_token entry tok return_value no_err
 ;;
 
 let rec bparser_of_tree entry next_levn assoc_levn =
@@ -2056,12 +2072,13 @@ let init_entry_functions entry =
        let f = continue_parser_of_entry entry in
        entry.econtinue <- f; f lev bp a strm);
   entry.fstart <-
-    (fun lev strm ->
-       let f = fstart_parser_of_entry entry in entry.fstart <- f; f lev strm);
+    (fun lev err strm ->
+       let f = fstart_parser_of_entry entry in
+       entry.fstart <- f; f lev err strm);
   entry.fcontinue <-
-    (fun lev bp a strm ->
+    (fun lev bp a err strm ->
        let f = fcontinue_parser_of_entry entry in
-       entry.fcontinue <- f; f lev bp a strm);
+       entry.fcontinue <- f; f lev bp a err strm);
   entry.bstart <-
     (fun lev strm ->
        let f = bstart_parser_of_entry entry in
@@ -2166,13 +2183,13 @@ let delete_rule entry sl =
            let f = continue_parser_of_entry entry in
            entry.econtinue <- f; f lev bp a strm);
       entry.fstart <-
-        (fun lev strm ->
+        (fun lev err strm ->
            let f = fstart_parser_of_entry entry in
-           entry.fstart <- f; f lev strm);
+           entry.fstart <- f; f lev err strm);
       entry.fcontinue <-
-        (fun lev bp a strm ->
+        (fun lev bp a err strm ->
            let f = fcontinue_parser_of_entry entry in
-           entry.fcontinue <- f; f lev bp a strm);
+           entry.fcontinue <- f; f lev bp a err strm);
       entry.bstart <-
         (fun lev strm ->
            let f = bstart_parser_of_entry entry in
@@ -2268,7 +2285,7 @@ let parse_parsable entry p =
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
-let bfparse_parsable entry p efun result =
+let bfparse_parsable entry p efun return_value =
   let fts = p.pa_tok_fstrm in
   let cs = p.pa_chr_strm in
   let fun_loc = p.pa_loc_func in
@@ -2296,38 +2313,44 @@ let bfparse_parsable entry p efun result =
   max_fcount := None;
   nb_ftry := 0;
   if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
-  try let r = efun fts in restore (); result r with
-    Stream.Failure ->
-      let loc = get_loc () in
-      let mess =
-        match !max_fcount with
-          Some (_, entry) -> sprintf "failure in [%s]" entry.ename
-        | None -> sprintf "failure in [%s]" entry.ename
-      in
-      restore (); Ploc.raise loc (Stream.Error mess)
-  | exc ->
-      let loc = Stream.count cs, Stream.count cs + 1 in
-      restore (); Ploc.raise (Ploc.make_unlined loc) exc
+  let r =
+    try return_value (efun no_err fts) with
+      Stream.Failure ->
+        let loc = get_loc () in
+        let mess =
+          match !max_fcount with
+            Some (_, entry, err) ->
+              let mess = err () in
+              if mess = "" then sprintf "failure in [%s]" entry.ename
+              else mess
+          | None -> sprintf "a failure in [%s]" entry.ename
+        in
+        restore (); Ploc.raise loc (Stream.Error mess)
+    | exc ->
+        let loc = Stream.count cs, Stream.count cs + 1 in
+        restore (); Ploc.raise (Ploc.make_unlined loc) exc
+  in
+  restore (); r
 ;;
 
 let fparse_parsable entry p =
   let efun = entry.fstart 0 in
-  let result r =
+  let return_value r =
     match r with
       Some (r, strm) -> p.pa_tok_fstrm <- strm; r
     | None -> raise Stream.Failure
   in
-  bfparse_parsable entry p efun result
+  bfparse_parsable entry p efun return_value
 ;;
 
 let bparse_parsable entry p =
-  let efun = entry.bstart 0 in
-  let result r =
+  let efun err = entry.bstart 0 in
+  let return_value r =
     match r with
       Some (r, strm, _) -> p.pa_tok_fstrm <- strm; r
     | None -> raise Stream.Failure
   in
-  bfparse_parsable entry p efun result
+  bfparse_parsable entry p efun return_value
 ;;
 
 let bparse_parsable_all entry p =
@@ -2464,7 +2487,7 @@ let bfparser_of_parser p fstrm return_value =
   restore (); r
 ;;
 
-let fparser_of_parser p fstrm =
+let fparser_of_parser p err fstrm =
   let return_value r fstrm =
     let (strm__ : _ Fstream.t) = fstrm in Some (r, strm__)
   in
@@ -2485,8 +2508,8 @@ module Entry =
     let create g n =
       {egram = g; ename = n; elocal = false; estart = empty_entry n;
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-       fstart = (fun _ (strm__ : _ Fstream.t) -> None);
-       fcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
+       fstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
+       fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
        bstart = (fun _ (strm__ : _ Fstream.t) -> None);
        bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
        edesc = Dlevels []}
@@ -2555,7 +2578,7 @@ module Entry =
        estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
        fstart = (fun _ -> fparser_of_parser p);
-       fcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
+       fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
        bstart = (fun _ -> bparser_of_parser p);
        bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
        edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
@@ -2571,8 +2594,8 @@ let of_entry e = e.egram;;
 let create_local_entry g n =
   {egram = g; ename = n; elocal = true; estart = empty_entry n;
    econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-   fstart = (fun _ (strm__ : _ Fstream.t) -> None);
-   fcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
+   fstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
+   fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
    bstart = (fun _ (strm__ : _ Fstream.t) -> None);
    bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None); edesc = Dlevels []}
 ;;
@@ -2657,7 +2680,7 @@ let bparse_token_stream entry ts =
   restore (); r
 ;;
 
-let fparse_token_stream entry ts =
+let fparse_token_stream entry err ts =
   let fts = fstream_of_stream ts in
   let restore =
     let old_max_fcount = !max_fcount in
@@ -2668,7 +2691,7 @@ let fparse_token_stream entry ts =
   nb_ftry := 0;
   let r =
     try
-      match entry.fstart 0 fts with
+      match entry.fstart 0 err fts with
         Some (a, _) -> Obj.magic a
       | None -> raise Stream.Failure
     with e -> restore (); raise e
@@ -2697,8 +2720,8 @@ module GMake (L : GLexerType) =
           {egram = gram; ename = n; elocal = false; estart = empty_entry n;
            econtinue =
              (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-           fstart = (fun _ (strm__ : _ Fstream.t) -> None);
-           fcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
+           fstart = (fun _ _ (strm__ : _ Fstream.t) -> None);
+           fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
            bstart = (fun _ (strm__ : _ Fstream.t) -> None);
            bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
            edesc = Dlevels []}
@@ -2726,10 +2749,10 @@ module GMake (L : GLexerType) =
                 Predictive | DefaultAlgorithm ->
                   Obj.magic (e.estart 0 ts : Obj.t)
               | Backtracking -> bparse_token_stream e ts
-              | Functional -> fparse_token_stream e ts
+              | Functional -> fparse_token_stream e no_err ts
               end
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
-          | Functional -> fparse_token_stream e ts
+          | Functional -> fparse_token_stream e no_err ts
           | Backtracking -> bparse_token_stream e ts
         ;;
         let name e = e.ename;;
@@ -2739,7 +2762,7 @@ module GMake (L : GLexerType) =
            econtinue =
              (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
            fstart = (fun _ -> fparser_of_parser p);
-           fcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
+           fcontinue = (fun _ _ _ _ (strm__ : _ Fstream.t) -> None);
            bstart = (fun _ -> bparser_of_parser p);
            bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
            edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
