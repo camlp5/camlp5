@@ -881,30 +881,6 @@ and parse_top_symb entry symb =
 
 value symb_failed_txt e s1 s2 = symb_failed e 0 s1 s2;
 
-value rec continue_parser_of_levels entry clevn =
-  fun
-  [ [] -> fun levn bp a -> parser []
-  | [lev :: levs] ->
-      let p1 = continue_parser_of_levels entry (succ clevn) levs in
-      match lev.lsuffix with
-      [ DeadEnd -> p1
-      | tree ->
-          let alevn =
-            match lev.assoc with
-            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
-            | RightA -> clevn ]
-          in
-          let p2 = parser_of_tree entry (succ clevn) alevn tree in
-          fun levn bp a strm ->
-            if levn > clevn then p1 levn bp a strm
-            else
-              match strm with parser
-              [ [: a = p1 levn bp a :] -> a
-              | [: act = p2 :] ep ->
-                  let a = app act a (loc_of_token_interval bp ep) in
-                  entry.econtinue levn bp a strm ] ] ]
-;
-
 value rec start_parser_of_levels entry clevn =
   fun
   [ [] -> fun levn -> parser []
@@ -942,6 +918,30 @@ value rec start_parser_of_levels entry clevn =
                       let a = app act (loc_of_token_interval bp ep) in
                       entry.econtinue levn bp a strm
                   | [: a = p1 levn :] -> a ] ] ] ]
+;
+
+value rec continue_parser_of_levels entry clevn =
+  fun
+  [ [] -> fun levn bp a -> parser []
+  | [lev :: levs] ->
+      let p1 = continue_parser_of_levels entry (succ clevn) levs in
+      match lev.lsuffix with
+      [ DeadEnd -> p1
+      | tree ->
+          let alevn =
+            match lev.assoc with
+            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
+            | RightA -> clevn ]
+          in
+          let p2 = parser_of_tree entry (succ clevn) alevn tree in
+          fun levn bp a strm ->
+            if levn > clevn then p1 levn bp a strm
+            else
+              match strm with parser
+              [ [: a = p1 levn bp a :] -> a
+              | [: act = p2 :] ep ->
+                  let a = app act a (loc_of_token_interval bp ep) in
+                  entry.econtinue levn bp a strm ] ] ]
 ;
 
 value continue_parser_of_entry entry =
