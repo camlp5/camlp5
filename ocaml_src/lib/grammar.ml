@@ -2312,6 +2312,18 @@ let parse_parsable entry p =
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
+let bfparse_token_stream entry_start ts =
+  let fts = fstream_of_stream ts in
+  let restore =
+    let old_max_fcount = !max_fcount in
+    let old_nb_ftry = !nb_ftry in
+    fun () -> max_fcount := old_max_fcount; nb_ftry := old_nb_ftry
+  in
+  max_fcount := None;
+  nb_ftry := 0;
+  let r = try entry_start fts with e -> restore (); raise e in restore (); r
+;;
+
 let bfparse_parsable entry p efun return_value =
   let fts = p.pa_tok_fstrm in
   let cs = p.pa_chr_strm in
@@ -2691,42 +2703,22 @@ module type S =
   end
 ;;
 
-let bparse_token_stream entry ts =
-  let fts = fstream_of_stream ts in
-  let restore =
-    let old_max_fcount = !max_fcount in
-    let old_nb_ftry = !nb_ftry in
-    fun () -> max_fcount := old_max_fcount; nb_ftry := old_nb_ftry
+let fparse_token_stream entry ts =
+  let entry_start fts =
+    match entry.fstart 0 no_err fts with
+      Some (a, _) -> Obj.magic a
+    | None -> raise Stream.Failure
   in
-  max_fcount := None;
-  nb_ftry := 0;
-  let r =
-    try
-      match entry.bstart 0 no_err fts with
-        Some (a, _, _) -> Obj.magic a
-      | None -> raise Stream.Failure
-    with e -> restore (); raise e
-  in
-  restore (); r
+  bfparse_token_stream entry_start ts
 ;;
 
-let fparse_token_stream entry ts =
-  let fts = fstream_of_stream ts in
-  let restore =
-    let old_max_fcount = !max_fcount in
-    let old_nb_ftry = !nb_ftry in
-    fun () -> max_fcount := old_max_fcount; nb_ftry := old_nb_ftry
+let bparse_token_stream entry ts =
+  let entry_start fts =
+    match entry.bstart 0 no_err fts with
+      Some (a, _, _) -> Obj.magic a
+    | None -> raise Stream.Failure
   in
-  max_fcount := None;
-  nb_ftry := 0;
-  let r =
-    try
-      match entry.fstart 0 no_err fts with
-        Some (a, _) -> Obj.magic a
-      | None -> raise Stream.Failure
-    with e -> restore (); raise e
-  in
-  restore (); r
+  bfparse_token_stream entry_start ts
 ;;
 
 module GMake (L : GLexerType) =

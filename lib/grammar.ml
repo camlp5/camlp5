@@ -1993,6 +1993,22 @@ value parse_parsable entry p = do {
     } ]
 };
 
+value bfparse_token_stream entry_start ts = do {
+  let fts = fstream_of_stream ts in
+  let restore =
+    let old_max_fcount = max_fcount.val in
+    let old_nb_ftry = nb_ftry.val in
+    fun () -> do {
+      max_fcount.val := old_max_fcount;
+      nb_ftry.val := old_nb_ftry;
+    }
+  in
+  max_fcount.val := None;
+  nb_ftry.val := 0;
+  let r = try entry_start fts with e -> do { restore (); raise e } in
+  restore (); r
+};
+
 value bfparse_parsable entry p efun return_value = do {
   let fts = p.pa_tok_fstrm in
   let cs = p.pa_chr_strm in
@@ -2396,51 +2412,25 @@ module type S =
   end
 ;
 
-value bparse_token_stream entry ts = do {
-  let fts = fstream_of_stream ts in
-  let restore =
-    let old_max_fcount = max_fcount.val in
-    let old_nb_ftry = nb_ftry.val in
-    fun () -> do {
-      max_fcount.val := old_max_fcount;
-      nb_ftry.val := old_nb_ftry;
-    }
+value fparse_token_stream entry ts =
+  let entry_start fts =
+    match entry.fstart 0 no_err fts with
+    | Some (a, _) -> Obj.magic a
+    | None -> raise Stream.Failure
+    end
   in
-  max_fcount.val := None;
-  nb_ftry.val := 0;
-  let r =
-    try
-      match entry.bstart 0 no_err fts with
-      | Some (a, _, _) -> Obj.magic a
-      | None -> raise Stream.Failure
-      end
-    with e -> do { restore (); raise e }
-  in
-  restore (); r
-};
+  bfparse_token_stream entry_start ts
+;
 
-value fparse_token_stream entry ts = do {
-  let fts = fstream_of_stream ts in
-  let restore =
-    let old_max_fcount = max_fcount.val in
-    let old_nb_ftry = nb_ftry.val in
-    fun () -> do {
-      max_fcount.val := old_max_fcount;
-      nb_ftry.val := old_nb_ftry;
-    }
+value bparse_token_stream entry ts =
+  let entry_start fts =
+    match entry.bstart 0 no_err fts with
+    | Some (a, _, _) -> Obj.magic a
+    | None -> raise Stream.Failure
+    end
   in
-  max_fcount.val := None;
-  nb_ftry.val := 0;
-  let r =
-    try
-      match entry.fstart 0 no_err fts with
-      | Some (a, _) -> Obj.magic a
-      | None -> raise Stream.Failure
-      end
-    with e -> do { restore (); raise e }
-  in
-  restore (); r
-};
+  bfparse_token_stream entry_start ts
+;
 
 module GMake (L : GLexerType) =
   struct
