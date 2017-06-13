@@ -26,8 +26,8 @@ type 'te g_entry =
     mutable econtinue : int -> int -> Obj.t -> 'te parser_t;
     mutable fstart : int -> err_fun -> 'te fparser_t;
     mutable fcontinue : int -> int -> Obj.t -> err_fun -> 'te fparser_t;
-    mutable bstart : int -> 'te bparser_t;
-    mutable bcontinue : int -> int -> Obj.t -> 'te bparser_t;
+    mutable bstart : int -> err_fun -> 'te bparser_t;
+    mutable bcontinue : int -> int -> Obj.t -> err_fun -> 'te bparser_t;
     mutable edesc : 'te g_desc }
 and 'te g_desc =
     Dlevels of 'te g_level list

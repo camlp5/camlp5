@@ -25,8 +25,8 @@ type g_entry 'te =
     econtinue : mutable int -> int -> Obj.t -> parser_t 'te;
     fstart : mutable int -> err_fun -> fparser_t 'te;
     fcontinue : mutable int -> int -> Obj.t -> err_fun -> fparser_t 'te;
-    bstart : mutable int -> bparser_t 'te;
-    bcontinue : mutable int -> int -> Obj.t -> bparser_t 'te;
+    bstart : mutable int -> err_fun -> bparser_t 'te;
+    bcontinue : mutable int -> int -> Obj.t -> err_fun -> bparser_t 'te;
     edesc : mutable g_desc 'te }
 and g_desc 'te =
   [ Dlevels of list (g_level 'te)
