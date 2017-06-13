@@ -1474,7 +1474,7 @@ value rec bparser_of_tree entry next_levn assoc_levn =
       let p1 = bparser_cont p1 entry next_levn assoc_levn son in
       fun err ->
         bparser [: a = ps err; act = p1 (ftree_failed entry a s son) :] ->
-	  app act a
+          app act a
   | Node {node = s; son = son; brother = bro} ->
       let ps = bparser_of_symbol entry next_levn s in
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
@@ -1516,7 +1516,7 @@ and bparser_of_symbol entry next_levn =
       let rec kont al err =
         bparser
         [ [: v = pt err; al = ps al (fsymb_failed entry v sep symb);
-	     a = kont al err :] -> a
+             a = kont al err :] -> a
         | [: :] -> al ]
       in
       fun err ->
@@ -2396,7 +2396,7 @@ module type S =
   end
 ;
 
-value bparse_token_stream entry err ts = do {
+value bparse_token_stream entry ts = do {
   let fts = fstream_of_stream ts in
   let restore =
     let old_max_fcount = max_fcount.val in
@@ -2410,7 +2410,7 @@ value bparse_token_stream entry err ts = do {
   nb_ftry.val := 0;
   let r =
     try
-      match entry.bstart 0 err fts with
+      match entry.bstart 0 no_err fts with
       | Some (a, _, _) -> Obj.magic a
       | None -> raise Stream.Failure
       end
@@ -2419,7 +2419,7 @@ value bparse_token_stream entry err ts = do {
   restore (); r
 };
 
-value fparse_token_stream entry err ts = do {
+value fparse_token_stream entry ts = do {
   let fts = fstream_of_stream ts in
   let restore =
     let old_max_fcount = max_fcount.val in
@@ -2433,7 +2433,7 @@ value fparse_token_stream entry err ts = do {
   nb_ftry.val := 0;
   let r =
     try
-      match entry.fstart 0 err fts with
+      match entry.fstart 0 no_err fts with
       | Some (a, _) -> Obj.magic a
       | None -> raise Stream.Failure
       end
@@ -2493,13 +2493,13 @@ module GMake (L : GLexerType) =
               | Predictive | DefaultAlgorithm ->
                   Obj.magic (e.estart 0 ts : Obj.t)
               | Backtracking ->
-                  bparse_token_stream e no_err ts
+                  bparse_token_stream e ts
               | Functional ->
-                  fparse_token_stream e no_err ts
+                  fparse_token_stream e ts
               end
           | Predictive -> Obj.magic (e.estart 0 ts : Obj.t)
-          | Functional -> fparse_token_stream e no_err ts
-          | Backtracking -> bparse_token_stream e no_err ts
+          | Functional -> fparse_token_stream e ts
+          | Backtracking -> bparse_token_stream e ts
           end
         ;
         value name e = e.ename;
