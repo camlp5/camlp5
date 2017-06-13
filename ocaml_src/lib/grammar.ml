@@ -1177,11 +1177,11 @@ let frecover fparser_of_tree entry next_levn assoc_levn son err
   | _ -> None
 ;;
 
-let fparser_of_token entry tok err =
+let fparser_of_token entry tok =
   let return_value r strm =
     let (strm__ : _ Fstream.t) = strm in Some (Obj.repr r, strm__)
   in
-  bfparser_of_token entry tok return_value err
+  bfparser_of_token entry tok return_value
 ;;
 
 let rec fparser_of_tree entry next_levn assoc_levn =
@@ -1631,11 +1631,11 @@ let brecover bparser_of_tree entry next_levn assoc_levn son err
     strm__
 ;;
 
-let bparser_of_token entry tok err =
+let bparser_of_token entry tok =
   let return_value r strm =
     let (strm__ : _ Fstream.t) = strm in Fstream.b_act (Obj.repr r) strm__
   in
-  bfparser_of_token entry tok return_value err
+  bfparser_of_token entry tok return_value
 ;;
 
 let rec bparser_of_tree entry next_levn assoc_levn =

@@ -1149,9 +1149,9 @@ value frecover fparser_of_tree entry next_levn assoc_levn son err =
        a = fparser_of_tree entry next_levn assoc_levn t err :] -> a ]
 ;
 
-value fparser_of_token entry tok err =
+value fparser_of_token entry tok =
   let return_value r strm = match strm with fparser [: :] -> Obj.repr r in
-  bfparser_of_token entry tok return_value err
+  bfparser_of_token entry tok return_value
 ;
 
 value rec fparser_of_tree entry next_levn assoc_levn =
@@ -1451,9 +1451,9 @@ value brecover bparser_of_tree entry next_levn assoc_levn son err =
        a = bparser_of_tree entry next_levn assoc_levn t err :] -> a ]
 ;
 
-value bparser_of_token entry tok err =
+value bparser_of_token entry tok =
   let return_value r strm = match strm with bparser [: :] -> Obj.repr r in
-  bfparser_of_token entry tok return_value err
+  bfparser_of_token entry tok return_value
 ;
 
 value rec bparser_of_tree entry next_levn assoc_levn =
