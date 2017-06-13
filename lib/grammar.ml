@@ -1993,19 +1993,53 @@ value parse_parsable entry p = do {
     } ]
 };
 
-value bfparse_token_stream entry_start ts = do {
+value bfparse_token_stream entry efun ts = do {
   let fts = fstream_of_stream ts in
+  let fun_loc = floc.val in
   let restore =
+    let old_tc = token_count.val in
     let old_max_fcount = max_fcount.val in
     let old_nb_ftry = nb_ftry.val in
     fun () -> do {
+      token_count.val := old_tc;
       max_fcount.val := old_max_fcount;
       nb_ftry.val := old_nb_ftry;
     }
   in
+  let get_loc () =
+    try
+      let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
+      let loc = fun_loc cnt in
+      if token_count.val - 1 <= cnt then loc
+      else Ploc.encl loc (fun_loc (token_count.val - 1))
+    with
+    [ Failure _ -> Ploc.dummy ]
+  in
+  token_count.val :=  0;
   max_fcount.val := None;
   nb_ftry.val := 0;
-  let r = try entry_start fts with e -> do { restore (); raise e } in
+  let r =
+    try efun fts with
+    [ Stream.Failure -> do {
+        let loc = get_loc () in
+        let mess =
+          match max_fcount.val with
+          | Some (_, entry, err) ->
+              let mess = err () in
+              if mess = "" then sprintf "failure in [%s]" entry.ename
+              else mess
+          | None ->
+              sprintf "[%s] failed" entry.ename
+          end
+        in
+        restore ();
+        Ploc.raise loc (Stream.Error mess)
+      }
+    | e -> do {
+        restore ();
+	raise e
+    } ]
+  in
   restore (); r
 };
 
@@ -2066,7 +2100,7 @@ value bfparse_parsable entry p efun return_value = do {
         Ploc.raise (Ploc.make_unlined loc) exc
       } ]
   in
-  do { restore (); r }
+  restore (); r
 };
 
 value fparse_parsable entry p =
@@ -2419,7 +2453,7 @@ value fparse_token_stream entry ts =
     | None -> raise Stream.Failure
     end
   in
-  bfparse_token_stream entry_start ts
+  bfparse_token_stream entry entry_start ts
 ;
 
 value bparse_token_stream entry ts =
@@ -2429,7 +2463,7 @@ value bparse_token_stream entry ts =
     | None -> raise Stream.Failure
     end
   in
-  bfparse_token_stream entry_start ts
+  bfparse_token_stream entry entry_start ts
 ;
 
 module GMake (L : GLexerType) =

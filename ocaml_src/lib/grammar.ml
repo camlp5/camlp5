@@ -2312,16 +2312,45 @@ let parse_parsable entry p =
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
-let bfparse_token_stream entry_start ts =
+let bfparse_token_stream entry efun ts =
   let fts = fstream_of_stream ts in
+  let fun_loc = !floc in
   let restore =
+    let old_tc = !token_count in
     let old_max_fcount = !max_fcount in
     let old_nb_ftry = !nb_ftry in
-    fun () -> max_fcount := old_max_fcount; nb_ftry := old_nb_ftry
+    fun () ->
+      token_count := old_tc;
+      max_fcount := old_max_fcount;
+      nb_ftry := old_nb_ftry
   in
+  let get_loc () =
+    try
+      let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
+      let loc = fun_loc cnt in
+      if !token_count - 1 <= cnt then loc
+      else Ploc.encl loc (fun_loc (!token_count - 1))
+    with Failure _ -> Ploc.dummy
+  in
+  token_count := 0;
   max_fcount := None;
   nb_ftry := 0;
-  let r = try entry_start fts with e -> restore (); raise e in restore (); r
+  let r =
+    try efun fts with
+      Stream.Failure ->
+        let loc = get_loc () in
+        let mess =
+          match !max_fcount with
+            Some (_, entry, err) ->
+              let mess = err () in
+              if mess = "" then sprintf "failure in [%s]" entry.ename
+              else mess
+          | None -> sprintf "[%s] failed" entry.ename
+        in
+        restore (); Ploc.raise loc (Stream.Error mess)
+    | e -> restore (); raise e
+  in
+  restore (); r
 ;;
 
 let bfparse_parsable entry p efun return_value =
@@ -2709,7 +2738,7 @@ let fparse_token_stream entry ts =
       Some (a, _) -> Obj.magic a
     | None -> raise Stream.Failure
   in
-  bfparse_token_stream entry_start ts
+  bfparse_token_stream entry entry_start ts
 ;;
 
 let bparse_token_stream entry ts =
@@ -2718,7 +2747,7 @@ let bparse_token_stream entry ts =
       Some (a, _, _) -> Obj.magic a
     | None -> raise Stream.Failure
   in
-  bfparse_token_stream entry_start ts
+  bfparse_token_stream entry entry_start ts
 ;;
 
 module GMake (L : GLexerType) =
