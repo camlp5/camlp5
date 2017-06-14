@@ -905,10 +905,13 @@ type parse_algorithm = Gramext.parse_algorithm ==
     Type of algorithm used in grammar entries.
     <ul>
       <li><tt>Imperative</tt>: use imperative streams</li>
+      <li><tt>Functional</tt>: use functional streams with limited
+        backtracking</li>
       <li><tt>Backtracking</tt>: use functional streams with full
         backtracking</li>
-      <li><tt>DefaultAlgorithm</tt>: found in the variable
-        "<tt>backtrack_parse</tt>" below.</li>
+      <li><tt>DefaultAlgorithm</tt>: use the general default algorithm
+	set by the function "<tt>set_default_algorithm</tt>" below, or
+	through the environment variable <tt>CAMLP5PARAM</tt>.</li>
     </ul>
     The default, when a grammar is created,
     is <tt>DefaultAlgorithm</tt>.
@@ -922,12 +925,20 @@ type parse_algorithm = Gramext.parse_algorithm ==
 </dl>
 
 <dl>
-  <dt><tt>value backtrack_parse : ref bool;</tt></dt>
+  <dt><tt>value set_default_algorithm : parse_algorithm -> unit;</tt></dt>
   <dd>
-    If <tt>True</tt>, the default parsing uses full backtracking. If
-    <tt>False</tt>, it uses parsing with normal streams. If the
+    Set the default parsing algorithm for all grammars.  If the
     environment variable CAMLP5PARAM contains "b", the default is
-    <tt>True</tt>; otherwise, the default is <tt>False</tt>.
+    <tt>Backtracking</tt>; if it contains 'f', the default is
+    <tt>Functional</tt>; if it contains 'p', the default is
+    <tt>Predictive</tt>.
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value default_algorithm : unit -> parse_algorithm;</tt></dt>
+  <dd>
+    Return the current default algorithm.
   </dd>
 </dl>
 
@@ -943,6 +954,14 @@ type parse_algorithm = Gramext.parse_algorithm ==
     overtakes the last reached token.) The default is 10000. If set
     to 0, there is no limit. Can be set by the environment variable
     CAMLP5PARAM by "l=value".
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value backtrack_parse : ref bool;</tt></dt>
+  <dd>
+    Deprecated since 2017-06-06; rather use "set_default_algorithm
+    Backtracking".
   </dd>
 </dl>
 
@@ -1015,6 +1034,18 @@ module type S =
 </dl>
 
 <h3>grammar flags</h3>
+
+<dl>
+  <dt><tt>value skip_item : 'a -> 'a;</tt></dt>
+  <dd>
+    <tt>Grammar.skip_item x</tt> can be called in a semantic action of
+    a grammar rule to ask the grammar to skip that item if it is
+    called in a list (LIST0 or LIST1). The function returns the item
+    itself (for typing reasons) but its value is ignored.  This
+    function is used to allow IFDEF and IFNDEF for cases of
+    constructor declarations and pattern matchings.
+  </dd>
+</dl>
 
 <dl>
   <dt><tt>value error_verbose : ref bool;</tt></dt>

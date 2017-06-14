@@ -95,7 +95,9 @@ type parse_algorithm = Gramext.parse_algorithm ==
          [Predictive]: use imperative streams with predictive parsing
          [Functional]: use functional streams with limited backtracking
          [Backtracking]: use functional streams with full backtracking
-         [DefaultAlgorithm]: found in the variable [backtrack_parse] below.
+         [DefaultAlgorithm]: use the general default algorithm set by the
+           function [set_default_algorithm] below or through the environment
+           variablefound in the variable CAMLP5PARAM.
        The default, when a grammar is created, is [DefaultAlgorithm]. *)
 
 value set_algorithm : g -> parse_algorithm -> unit;
