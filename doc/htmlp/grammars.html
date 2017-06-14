@@ -733,12 +733,16 @@ instead of "<tt>loc</tt>".</p>
   <dd>internally using <a href="parsers.html">normal parsers</a>, with
     a predictive (recursive descent without backtracking)
     algorithm.</dd>
+  <dt><tt>Grammar.Functional</tt></dt>
+  <dd>internally using <a href="fparsers.html">functional
+    parsers</a>, with a limited backtracking algorithm,</dd>
   <dt><tt>Grammar.Backtracking</tt></dt>
   <dd>internally using <a href="bparsers.html">backtracking
     parsers</a>, with a full backtracking algorithm,</dd>
   <dt><tt>Grammar.DefaultAlgorithm</tt></dt>
   <dd>the parsing algorithm is determined by the environment variable
     "CAMLP5PARAM". If this environment variable exists and contains
+    "f", the parsing algorithm is "functional"; if it it
     "b", the parsing algorithm is "backtracking". Otherwise it is
     "predictive".</dd>
 </dl>
@@ -767,12 +771,13 @@ instead of "<tt>loc</tt>".</p>
   accepted, all the symbols of the same rule must be accepted,
   otherwise the exception "Stream.Error" is raised.</p>
 
-<p>If the parsing algorithm is "<tt>Grammar.Backtracking</tt>", the
-  system internally uses <a href="bparsers.html">backtracking
-  parsers</a>. If no solution is found, the exception
-  "<tt>Stream.Error</tt>" is raised and the location of the error is
-  the location of the last unfrozen token, i.e. where the stream
-  advanced the farthest.</p>
+<p>If the parsing algorithm is "<tt>Grammar.Functional</tt>" (resp.
+  "<tt>Grammar.Backtracking</tt>"), the system internally
+  uses <a href="fparsers.html">functional parsers</a>
+  (resp <a href="bparsers.html">backtracking parsers</a>. If no
+  solution is found, the exception "<tt>Stream.Error</tt>" is raised
+  and the location of the error is the location of the last unfrozen
+  token, i.e. where the stream advanced the farthest.</p>
 
 <p>In extensible grammars, unlike stream parsers, before the
   "Stream.Error" exception, the system attempts to recover the error
