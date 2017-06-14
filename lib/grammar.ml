@@ -1993,9 +1993,7 @@ value parse_parsable entry p = do {
     } ]
 };
 
-value bfparse_token_stream entry efun ts = do {
-  let fts = fstream_of_stream ts in
-  let fun_loc = floc.val in
+value bfparse entry efun fun_loc default_loc restore2 fts = do {
   let restore =
     let old_tc = token_count.val in
     let old_max_fcount = max_fcount.val in
@@ -2004,6 +2002,7 @@ value bfparse_token_stream entry efun ts = do {
       token_count.val := old_tc;
       max_fcount.val := old_max_fcount;
       nb_ftry.val := old_nb_ftry;
+      restore2 ();
     }
   in
   let get_loc () =
@@ -2013,62 +2012,9 @@ value bfparse_token_stream entry efun ts = do {
       if token_count.val - 1 <= cnt then loc
       else Ploc.encl loc (fun_loc (token_count.val - 1))
     with
-    [ Failure _ -> Ploc.dummy ]
+    [ Failure _ -> default_loc ()
+    | e -> do { restore (); raise e } ]
   in
-  token_count.val :=  0;
-  max_fcount.val := None;
-  nb_ftry.val := 0;
-  let r =
-    try efun fts with
-    [ Stream.Failure -> do {
-        let loc = get_loc () in
-        let mess =
-          match max_fcount.val with
-          | Some (_, entry, err) ->
-              let mess = err () in
-              if mess = "" then sprintf "failure in [%s]" entry.ename
-              else mess
-          | None ->
-              sprintf "[%s] failed" entry.ename
-          end
-        in
-        restore ();
-        Ploc.raise loc (Stream.Error mess)
-      }
-    | e -> do {
-        restore ();
-	raise e
-    } ]
-  in
-  restore (); r
-};
-
-value bfparse_parsable entry p efun return_value = do {
-  let fts = p.pa_tok_fstrm in
-  let cs = p.pa_chr_strm in
-  let fun_loc = p.pa_loc_func in
-  let restore =
-    let old_floc = floc.val in
-    let old_tc = token_count.val in
-    let old_max_fcount = max_fcount.val in
-    let old_nb_ftry = nb_ftry.val in
-    fun () -> do {
-      floc.val := old_floc;
-      token_count.val := old_tc;
-      max_fcount.val := old_max_fcount;
-      nb_ftry.val := old_nb_ftry;
-    }
-  in
-  let get_loc () =
-    try
-      let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
-      let loc = fun_loc cnt in
-      if token_count.val - 1 <= cnt then loc
-      else Ploc.encl loc (fun_loc (token_count.val - 1))
-    with
-    [ Failure _ -> Ploc.make_unlined (Stream.count cs, Stream.count cs + 1) ]
-  in
-  floc.val := fun_loc;
   token_count.val := 0;
   max_fcount.val := None;
   nb_ftry.val := 0;
@@ -2078,7 +2024,7 @@ value bfparse_parsable entry p efun return_value = do {
   }
   else ();
   let r =
-    try return_value (efun no_err fts) with
+    try efun no_err fts with
     [ Stream.Failure -> do {
         let loc = get_loc () in
         let mess =
@@ -2095,32 +2041,72 @@ value bfparse_parsable entry p efun return_value = do {
         Ploc.raise loc (Stream.Error mess)
       }
     | exc -> do {
-        let loc = (Stream.count cs, Stream.count cs + 1) in
         restore ();
-        Ploc.raise (Ploc.make_unlined loc) exc
-      } ]
+        Ploc.raise (default_loc ()) exc
+    } ]
   in
   restore (); r
 };
 
+value bfparse_token_stream entry efun ts =
+  let fts = fstream_of_stream ts in
+  let fun_loc = floc.val in
+  let restore2 () = () in
+  let default_loc () = Ploc.dummy in
+  bfparse entry efun fun_loc default_loc restore2 fts
+;
+
+value bfparse_parsable entry p efun = do {
+  let fts = p.pa_tok_fstrm in
+  let cs = p.pa_chr_strm in
+  let fun_loc = p.pa_loc_func in
+  let restore2 =
+    let old_floc = floc.val in
+    fun () -> floc.val := old_floc
+  in
+  floc.val := fun_loc;
+  let default_loc () =
+    Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
+  in
+  bfparse entry efun fun_loc default_loc restore2 fts
+};
+
+value fparse_token_stream entry ts =
+  let efun err fts =
+    match entry.fstart 0 err fts with
+    | Some (a, _) -> Obj.magic a
+    | None -> raise Stream.Failure
+    end
+  in
+  bfparse_token_stream entry efun ts
+;
+
 value fparse_parsable entry p =
-  let efun = entry.fstart 0 in
-  let return_value r =
-    match r with
+  let efun err fts =
+    match entry.fstart 0 err fts with
     [ Some (r, strm) -> do { p.pa_tok_fstrm := strm; r }
     | None -> raise Stream.Failure ]
   in
-  bfparse_parsable entry p efun return_value
+  bfparse_parsable entry p efun
+;
+
+value bparse_token_stream entry ts =
+  let efun err fts =
+    match entry.bstart 0 err fts with
+    | Some (a, _, _) -> Obj.magic a
+    | None -> raise Stream.Failure
+    end
+  in
+  bfparse_token_stream entry efun ts
 ;
 
 value bparse_parsable entry p =
-  let efun = entry.bstart 0 in
-  let return_value r =
-    match r with
+  let efun err fts =
+    match entry.bstart 0 err fts with
     [ Some (r, strm, _) -> do { p.pa_tok_fstrm := strm; r }
     | None -> raise Stream.Failure ]
   in
-  bfparse_parsable entry p efun return_value
+  bfparse_parsable entry p efun
 ;
 
 value bparse_parsable_all entry p = do {
@@ -2444,26 +2430,6 @@ module type S =
         unit;
     value delete_rule : Entry.e 'a -> list (Gramext.g_symbol te) -> unit;
   end
-;
-
-value fparse_token_stream entry ts =
-  let entry_start fts =
-    match entry.fstart 0 no_err fts with
-    | Some (a, _) -> Obj.magic a
-    | None -> raise Stream.Failure
-    end
-  in
-  bfparse_token_stream entry entry_start ts
-;
-
-value bparse_token_stream entry ts =
-  let entry_start fts =
-    match entry.bstart 0 no_err fts with
-    | Some (a, _, _) -> Obj.magic a
-    | None -> raise Stream.Failure
-    end
-  in
-  bfparse_token_stream entry entry_start ts
 ;
 
 module GMake (L : GLexerType) =
