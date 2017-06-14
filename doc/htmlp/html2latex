@@ -15,6 +15,7 @@ FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5"
 \topmargin 0pt \textwidth 6.5in \textheight 8.5 in
 \usepackage{longtable}
 \usepackage{fancyhdr}
+\usepackage{hyperref}
 \fancyhead{}
 \fancyhead[LE,RO]{\leftmark}
 

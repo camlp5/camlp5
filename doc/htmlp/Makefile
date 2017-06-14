@@ -35,8 +35,8 @@ camlp5.tex: html2latex $(OBJS)
 camlp5.ps: camlp5.dvi
 	dvips -f- camlp5.dvi > camlp5.ps
 
-camlp5.pdf: camlp5.ps
-	ps2pdf camlp5.ps > camlp5.pdf
+camlp5.pdf: camlp5.tex
+	pdflatex camlp5.tex
 
 clean:
 	rm -f $(OBJS) $(RSS)
