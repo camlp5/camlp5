@@ -581,11 +581,6 @@ let token_ematch gram (tok, vala) =
   | None -> fun tok -> Obj.repr (tematch tok : string)
 ;;
 
-type ('a, 'b) sum =
-    Inl of 'a
-  | Inr of 'b
-;;
-
 let rec parser_of_tree entry nlevn alevn =
   function
     DeadEnd -> (fun (strm__ : _ Stream.t) -> raise Stream.Failure)
@@ -650,18 +645,13 @@ let rec parser_of_tree entry nlevn alevn =
           let p2 = parser_of_tree entry nlevn alevn bro in
           (fun (strm : _ Stream.t) ->
              let bp = Stream.count strm in
-             let hd_strm = Stream.npeek 1 strm in
              match try Some (ps strm) with Stream.Failure -> None with
                Some a ->
                  begin match
                    (try Some (p1 bp a strm) with Stream.Failure -> None)
                  with
                    Some act -> app act a
-                 | None ->
-                     try
-                       p2 (Stream.lapp (fun _ -> Stream.of_list hd_strm) strm)
-                     with Stream.Failure ->
-                       raise (Stream.Error (tree_failed entry a s son))
+                 | None -> raise (Stream.Error (tree_failed entry a s son))
                  end
              | None -> p2 strm)
       | Some (rev_tokl, (last_tok, vala), son) ->
@@ -696,23 +686,13 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
     in
     fun (strm : _ Stream.t) ->
       let bp = Stream.count strm in
-      let hd_strm = Stream.npeek n strm in
       let a = ps strm in
       match try Some (p1 bp a strm) with Stream.Failure -> None with
-        Some act -> Inl (app act a)
-      | None ->
-          try
-            Inr (p2 (Stream.lapp (fun _ -> Stream.of_list hd_strm) strm))
-          with Stream.Failure ->
-            raise (Stream.Error (tree_failed entry a s son))
+        Some act -> app act a
+      | None -> raise (Stream.Error (tree_failed entry a s son))
   in
   match List.rev rev_tokl with
-    [] ->
-      (fun (strm__ : _ Stream.t) ->
-         let a = plast strm__ in
-         match a with
-           Inl a -> a
-         | Inr a -> a)
+    [] -> (fun (strm__ : _ Stream.t) -> plast strm__)
   | tok :: tokl ->
       let tematch = token_ematch entry.egram tok in
       let ps strm =
@@ -733,20 +713,12 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
               in
               let p1 = loop (n + 1) tokl in
               fun (strm__ : _ Stream.t) ->
-                let a = ps strm__ in
-                let act = p1 strm__ in
-                match act with
-                  Inl act -> Inl (app act a)
-                | Inr a -> Inr a
+                let a = ps strm__ in let act = p1 strm__ in app act a
         in
         loop 2 tokl
       in
       fun (strm__ : _ Stream.t) ->
-        let a = ps strm__ in
-        let act = p1 strm__ in
-        match act with
-          Inl act -> app act a
-        | Inr a -> a
+        let a = ps strm__ in let act = p1 strm__ in app act a
 and parser_of_symbol entry nlevn =
   function
     Sfacto s -> parser_of_symbol entry nlevn s
