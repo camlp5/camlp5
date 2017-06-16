@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* gramext.mli,v *)
-(* Copyright (c) INRIA 2007-2016 *)
+(* Copyright (c) INRIA 2007-2017 *)
 
 type parser_t 'a = Stream.t 'a -> Obj.t;
 type fparser_t 'a = Fstream.t 'a -> option (Obj.t * Fstream.t 'a);

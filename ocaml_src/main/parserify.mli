@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* parserify.mli,v *)
-(* Copyright (c) INRIA 2007-2016 *)
+(* Copyright (c) INRIA 2007-2017 *)
 
 type spat_comp =
     SpTrm of MLast.loc * MLast.patt * MLast.expr option MLast.v

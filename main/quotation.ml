@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* quotation.ml,v *)
-(* Copyright (c) INRIA 2007-2016 *)
+(* Copyright (c) INRIA 2007-2017 *)
 
 type expander =
   [ ExStr of bool -> string -> string

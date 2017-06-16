@@ -1,6 +1,6 @@
 (* camlp5r *)
 (* fstream.ml,v *)
-(* Copyright (c) INRIA 2007-2016 *)
+(* Copyright (c) INRIA 2007-2017 *)
 
 type mlazy_c 'a =
   [ Lfun of unit -> 'a
