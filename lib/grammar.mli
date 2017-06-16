@@ -39,13 +39,15 @@ module Entry :
     value create : g -> string -> e 'a;
     value parse : e 'a -> Stream.t char -> 'a;
     value parse_all : e 'a -> Stream.t char -> list 'a;
-    value parse_token : e 'a -> Stream.t token -> 'a;
     value parse_parsable : e 'a -> parsable -> 'a;
     value name : e 'a -> string;
     value of_parser : g -> string -> (Stream.t token -> 'a) -> e 'a;
+    value parse_token_stream : e 'a -> Stream.t token -> 'a;
     value print : Format.formatter -> e 'a -> unit;
     value find : e 'a -> string -> e Obj.t;
     external obj : e 'a -> Gramext.g_entry token = "%identity";
+    (* deprecated since 2017-06-17 *)
+    value parse_token : e 'a -> Stream.t token -> 'a;
   end
 ;
    (** Module to handle entries.
@@ -56,14 +58,17 @@ module Entry :
           values while parsing with the entry [e]: may return more than one
           value when the parsing algorithm is [Backtracking]
 -      [Entry.parse_all e] returns the parser returning all possible values.
--      [Entry.parse_token e] returns the token parser of the entry [e].
 -      [Entry.parse_parsable e] returns the parsable parser of the entry [e].
 -      [Entry.name e] returns the name of the entry [e].
 -      [Entry.of_parser g n p] makes an entry from a token stream parser.
+-      [Entry.parse_token_stream e] returns the token stream parser of the
+          entry [e].
 -      [Entry.print e] displays the entry [e] using [Format].
 -      [Entry.find e s] finds the entry named [s] in the rules of [e].
 -      [Entry.obj e] converts an entry into a [Gramext.g_entry] allowing
-          to see what it holds. *)
+          to see what it holds.
+-      [Entry.parse_token]: deprecated since 2017-06-16; old name for
+          [Entry.parse_token_stream] *)
 
 value of_entry : Entry.e 'a -> g;
    (** Return the grammar associated with an entry. *)
@@ -151,11 +156,13 @@ module type S =
         type e 'a = 'y;
         value create : string -> e 'a;
         value parse : e 'a -> parsable -> 'a;
-        value parse_token : e 'a -> Stream.t te -> 'a;
         value name : e 'a -> string;
         value of_parser : string -> (Stream.t te -> 'a) -> e 'a;
+        value parse_token_stream : e 'a -> Stream.t te -> 'a;
         value print : Format.formatter -> e 'a -> unit;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
+	(* deprecated since 2017-06-17 *)
+        value parse_token : e 'a -> Stream.t te -> 'a;
       end
     ;
     module Unsafe :

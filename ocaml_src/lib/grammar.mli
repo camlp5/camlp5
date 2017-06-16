@@ -39,13 +39,14 @@ module Entry :
     val create : g -> string -> 'a e;;
     val parse : 'a e -> char Stream.t -> 'a;;
     val parse_all : 'a e -> char Stream.t -> 'a list;;
-    val parse_token : 'a e -> token Stream.t -> 'a;;
     val parse_parsable : 'a e -> parsable -> 'a;;
     val name : 'a e -> string;;
     val of_parser : g -> string -> (token Stream.t -> 'a) -> 'a e;;
+    val parse_token_stream : 'a e -> token Stream.t -> 'a;;
     val print : Format.formatter -> 'a e -> unit;;
     val find : 'a e -> string -> Obj.t e;;
     external obj : 'a e -> token Gramext.g_entry = "%identity";;
+    val parse_token : 'a e -> token Stream.t -> 'a;;
   end
 ;;
    (** Module to handle entries.
@@ -56,14 +57,17 @@ module Entry :
           values while parsing with the entry [e]: may return more than one
           value when the parsing algorithm is [Backtracking]
 -      [Entry.parse_all e] returns the parser returning all possible values.
--      [Entry.parse_token e] returns the token parser of the entry [e].
 -      [Entry.parse_parsable e] returns the parsable parser of the entry [e].
 -      [Entry.name e] returns the name of the entry [e].
 -      [Entry.of_parser g n p] makes an entry from a token stream parser.
+-      [Entry.parse_token_stream e] returns the token stream parser of the
+          entry [e].
 -      [Entry.print e] displays the entry [e] using [Format].
 -      [Entry.find e s] finds the entry named [s] in the rules of [e].
 -      [Entry.obj e] converts an entry into a [Gramext.g_entry] allowing
-          to see what it holds. *)
+          to see what it holds.
+-      [Entry.parse_token]: deprecated since 2017-06-16; old name for
+          [Entry.parse_token_stream] *)
 
 val of_entry : 'a Entry.e -> g;;
    (** Return the grammar associated with an entry. *)
@@ -147,11 +151,12 @@ module type S =
         type 'a e;;
         val create : string -> 'a e;;
         val parse : 'a e -> parsable -> 'a;;
-        val parse_token : 'a e -> te Stream.t -> 'a;;
         val name : 'a e -> string;;
         val of_parser : string -> (te Stream.t -> 'a) -> 'a e;;
+        val parse_token_stream : 'a e -> te Stream.t -> 'a;;
         val print : Format.formatter -> 'a e -> unit;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
+        val parse_token : 'a e -> te Stream.t -> 'a;;
       end
     ;;
     module Unsafe :

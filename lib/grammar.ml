@@ -2316,7 +2316,7 @@ module Entry =
       let parsable = parsable entry.egram cs in
       parse_parsable_all entry parsable
     ;
-    value parse_token (entry : e 'a) ts : 'a =
+    value parse_token_stream (entry : e 'a) ts : 'a =
       let _ = compatible_deprecated_backtrack_parse () in
       match entry.egram.galgo with
       | DefaultAlgorithm ->
@@ -2324,17 +2324,28 @@ module Entry =
           | Predictive | DefaultAlgorithm ->
               Obj.magic (entry.estart 0 ts : Obj.t)
           | Backtracking ->
-              failwith "not impl Entry.parse_token default backtrack"
+              failwith "not impl Entry.parse_token_stream default backtrack"
           | Functional ->
-              failwith "Entry.parse_token: func parsing not impl"
+              failwith "Entry.parse_token_stream: func parsing not impl"
           end
       | Predictive -> Obj.magic (entry.estart 0 ts : Obj.t)
       | Functional ->
-          failwith "not impl Entry.parse_token functional"
+          failwith "not impl Entry.parse_token_stream functional"
       | Backtracking ->
-          failwith "not impl Entry.parse_token backtrack"
+          failwith "not impl Entry.parse_token_stream backtrack"
       end
     ;
+    value warned_using_parse_token = ref False;
+    value parse_token (entry : e 'a) ts : 'a = do {
+      if not warned_using_parse_token.val then do {
+        eprintf "<W> use of Grammar.Entry.parse_token ";
+        eprintf "deprecated since 2017-06-16\n%!";
+        eprintf "use Grammar.Entry.parse_token_stream instead\n%! ";
+        warned_using_parse_token.val := True
+      }
+      else ();
+      parse_token_stream entry ts
+    };
     value name e = e.ename;
     value of_parser g n (p : Stream.t te -> 'a) : e 'a =
       {egram = g; ename = n; elocal = False;
@@ -2409,11 +2420,12 @@ module type S =
         type e 'a = 'x;
         value create : string -> e 'a;
         value parse : e 'a -> parsable -> 'a;
-        value parse_token : e 'a -> Stream.t te -> 'a;
         value name : e 'a -> string;
         value of_parser : string -> (Stream.t te -> 'a) -> e 'a;
+        value parse_token_stream : e 'a -> Stream.t te -> 'a;
         value print : Format.formatter -> e 'a -> unit;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
+        value parse_token : e 'a -> Stream.t te -> 'a;
       end
     ;
     module Unsafe :
@@ -2475,7 +2487,7 @@ module GMake (L : GLexerType) =
           | Backtracking ->
               Obj.magic (bparse_parsable e p : Obj.t) ]
         ;
-        value parse_token (e : e 'a) ts : 'a =
+        value parse_token_stream (e : e 'a) ts : 'a =
           let _ = compatible_deprecated_backtrack_parse () in
           match e.egram.galgo with
           | DefaultAlgorithm ->
@@ -2492,6 +2504,17 @@ module GMake (L : GLexerType) =
           | Backtracking -> bparse_token_stream e ts
           end
         ;
+        value warned_using_parse_token = ref False;
+        value parse_token (entry : e 'a) ts : 'a = do {
+          if not warned_using_parse_token.val then do {
+            eprintf "<W> use of Entry.parse_token ";
+            eprintf "deprecated since 2017-06-16\n%!";
+            eprintf "use Entry.parse_token_stream instead\n%! ";
+            warned_using_parse_token.val := True
+          }
+          else ();
+          parse_token_stream entry ts
+        };
         value name e = e.ename;
         value of_parser n (p : Stream.t te -> 'a) : e 'a =
           {egram = gram; ename = n; elocal = False;
