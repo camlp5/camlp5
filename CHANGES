@@ -1,6 +1,7 @@
 Camlp5 Version 6.18:
 --------------------
 
+* [16 Jun 17] Entry.parse_token has been renamed Entry.parse_token_stream.
 * [04 Jun 17] Added limited backtracking (functional streams) to extensible
   grammars. Can be set with "Grammar.parse_algorithm Functional" or by
   setting the environment variable CAMLP5PARAM=f.
