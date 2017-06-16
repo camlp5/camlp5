@@ -770,7 +770,7 @@ module Entry =
     value create : g -> string -> e 'a;
     value parse : e 'a -> Stream.t char -> 'a;
     value parse_all : e 'a -> Stream.t char -> list 'a;
-    value parse_token : e 'a -> Stream.t token -> 'a;
+    value parse_token_stream : e 'a -> Stream.t token -> 'a;
     value parse_parsable : e 'a -> parsable -> 'a;
     value name : e 'a -> string;
     value of_parser : g -> string -> (Stream.t token -> 'a) -> e 'a;
@@ -793,8 +793,8 @@ module Entry =
         parser returning all possible values while parsing with the
         entry "<tt>e</tt>": may return more than one value when the
         parsing algorithm is "<tt>Grammar.Backtracking</tt>".</li>
-      <li><tt>Grammar.Entry.parse_token e</tt> : returns the token
-        parser of the entry "<tt>e</tt>".</li>
+      <li><tt>Grammar.Entry.parse_token_stream e</tt> : returns the token
+        stream parser of the entry "<tt>e</tt>".</li>
       <li><tt>Grammar.Entry.parse_parsable e</tt> : returns the
         parsable parser of the entry "<tt>e</tt>".</li>
       <li><tt>Grammar.Entry.name e</tt> : returns the name of the
@@ -999,7 +999,7 @@ module type S =
         type e 'a = 'y;
         value create : string -> e 'a;
         value parse : e 'a -> parsable -> 'a;
-        value parse_token : e 'a -> Stream.t te -> 'a;
+        value parse_token_stream : e 'a -> Stream.t te -> 'a;
         value name : e 'a -> string;
         value of_parser : string -> (Stream.t te -> 'a) -> e 'a;
         value print : e 'a -> unit;
