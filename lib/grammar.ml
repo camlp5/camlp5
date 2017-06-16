@@ -2337,6 +2337,7 @@ module Entry =
     ;
     value warned_using_parse_token = ref False;
     value parse_token (entry : e 'a) ts : 'a = do {
+      (* commented: too often warned in Coq...
       if not warned_using_parse_token.val then do {
         eprintf "<W> use of Grammar.Entry.parse_token ";
         eprintf "deprecated since 2017-06-16\n%!";
@@ -2344,6 +2345,7 @@ module Entry =
         warned_using_parse_token.val := True
       }
       else ();
+      *)
       parse_token_stream entry ts
     };
     value name e = e.ename;
@@ -2506,6 +2508,7 @@ module GMake (L : GLexerType) =
         ;
         value warned_using_parse_token = ref False;
         value parse_token (entry : e 'a) ts : 'a = do {
+          (* commented: too often warned in Coq...
           if not warned_using_parse_token.val then do {
             eprintf "<W> use of Entry.parse_token ";
             eprintf "deprecated since 2017-06-16\n%!";
@@ -2513,6 +2516,7 @@ module GMake (L : GLexerType) =
             warned_using_parse_token.val := True
           }
           else ();
+	  *)
           parse_token_stream entry ts
         };
         value name e = e.ename;
