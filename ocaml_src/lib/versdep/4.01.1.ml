@@ -157,7 +157,7 @@ let ocaml_ptyp_object loc ml is_open = Ptyp_object ml;;
 
 let ocaml_ptyp_package = Some (fun pt -> Ptyp_package pt);;
 
-let ocaml_ptyp_poly = Some (fun cl t -> Ptyp_poly (cl, t));;
+let ocaml_ptyp_poly = Some (fun loc cl t -> Ptyp_poly (cl, t));;
 
 let ocaml_ptyp_variant catl clos sl_opt =
   let catl =

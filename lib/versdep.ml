@@ -441,7 +441,7 @@ value ocaml_ptyp_package =
 value ocaml_ptyp_poly =
   IFDEF OCAML_VERSION <= OCAML_3_04 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun cl t -> Ptyp_poly cl t)
+    Some (fun loc cl t -> Ptyp_poly cl t)
   ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     Some
       (fun loc cl t ->
