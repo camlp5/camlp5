@@ -7,7 +7,7 @@
 
 open Printf;
 
-value version = "7.00";
+value version = "7.01-exp";
 value syntax_name = ref "";
 
 value gram =
