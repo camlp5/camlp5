@@ -7,7 +7,7 @@
 
 open Printf;
 
-value version = "7.00-exp";
+value version = "7.00";
 value syntax_name = ref "";
 
 value gram =
@@ -19,8 +19,11 @@ value gram =
 ;
 
 (*
-Camlp5 can be parsed with backtracking:
+Camlp5 can be parsed with limited or full backtracking:
+Grammar.set_algorithm gram Grammar.Functional;
 Grammar.set_algorithm gram Grammar.Backtracking;
+or without any change in the code, by setting the environment
+variable CAMLP5PARAM to f or b.
 *)
 
 type status = option Ploc.t;

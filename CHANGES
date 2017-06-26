@@ -1,6 +1,9 @@
 Camlp5 Version 7.00:
 --------------------
 
+* [26 Jun 17] Release number is 7.00 instead of 6.18 because of big
+  improvements on extensible grammars which can use now limited and
+  full backtracking algorithms on demand.
 * [16 Jun 17] Entry.parse_token has been renamed Entry.parse_token_stream.
 * [04 Jun 17] Added limited backtracking (functional streams) to extensible
   grammars. Can be set with "Grammar.parse_algorithm Functional" or by
