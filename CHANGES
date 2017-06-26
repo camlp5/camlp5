@@ -1,8 +1,11 @@
 Camlp5 Version 7.01:
 --------------------
 
-* [26 Jun 17] Fixed bug: did not compile with OCaml versions
-  between 3.05 and 4.01.1, nor jocaml versions.
+* [26 Jun 17] Fixed bug in associativity of entry levels in extensible
+  grammars; was introduced by an old experiment, resulting a failure
+  in Coq test-suite/success/rewrite_strat.v.
+* [26 Jun 17] Fixed bug: compilation failed while using OCaml versions
+  between 3.05 and 4.01.1, and jocaml versions.
 
 Camlp5 Version 7.00:
 --------------------

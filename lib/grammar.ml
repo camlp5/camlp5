@@ -869,7 +869,7 @@ value rec start_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
+            [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
           let p2 = parser_of_tree entry (succ clevn) alevn tree in
@@ -908,7 +908,7 @@ value rec continue_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
+            [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
           let p2 = parser_of_tree entry (succ clevn) alevn tree in
@@ -1318,7 +1318,7 @@ value rec fstart_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
+            [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
@@ -1356,7 +1356,7 @@ value rec fcontinue_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
+            [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
@@ -1622,7 +1622,7 @@ value rec bstart_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
+            [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
           let p2 = bparser_of_tree entry (succ clevn) alevn tree in
@@ -1661,7 +1661,7 @@ value rec bcontinue_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA -> if levs = [] then clevn else succ clevn
+            [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
           let p2 = bparser_of_tree entry (succ clevn) alevn tree in
