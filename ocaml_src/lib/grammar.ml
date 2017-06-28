@@ -1135,6 +1135,11 @@ let ftop_tree entry son strm =
       begin match ftop_symb entry s with
         Some sy ->
           let r = Node {node = sy; brother = bro; son = son} in
+          let _ =
+            if !backtrack_trace then
+              Printf.eprintf "%srecovering pos %d\n%!" !tind
+                (Fstream.count strm)
+          in
           let (strm__ : _ Fstream.t) = strm in Some (r, strm__)
       | None -> None
       end
@@ -1581,10 +1586,8 @@ let btop_tree entry son strm =
           let r = Node {node = sy; brother = bro; son = son} in
           let _ =
             if !backtrack_trace then
-              begin
-                Printf.eprintf "recovering pos %d\n" (Fstream.count strm);
-                flush stderr
-              end
+              Printf.eprintf "%srecovering pos %d\n%!" !tind
+                (Fstream.count strm)
           in
           let (strm__ : _ Fstream.t) = strm in Fstream.b_act r strm__
       | None -> None
@@ -2062,6 +2065,67 @@ let bcontinue_parser_of_entry entry =
 
 (* Extend syntax *)
 
+let trace_entry_lev_name entry lev =
+  match entry.edesc with
+    Dlevels ll ->
+      if lev < List.length ll then
+        let glev = List.nth ll lev in
+        begin match glev.lname with
+          Some "" | None -> ()
+        | Some s -> Printf.eprintf " (\"%s\")" s
+        end
+  | Dparser _ -> ()
+;;
+
+let may_trace_start entry f =
+  if !backtrack_trace then
+    fun lev err strm ->
+      let t = !tind in
+      Printf.eprintf "%s>> start %s lev %d" !tind entry.ename lev;
+      trace_entry_lev_name entry lev;
+      Printf.eprintf "\n%!";
+      tind := !tind ^ " ";
+      try
+        let r = f lev err strm in
+        tind := t;
+        Printf.eprintf "%s<< end %s lev %d" !tind entry.ename lev;
+        trace_entry_lev_name entry lev;
+        Printf.eprintf "\n%!";
+        r
+      with e ->
+        tind := t;
+        Printf.eprintf "%sexception \"%s\"\n" !tind (Printexc.to_string e);
+        flush stderr;
+        raise e
+  else f
+;;
+
+let may_trace_continue entry f =
+  if !backtrack_trace then
+    fun lev bp a err strm ->
+      let t = !tind in
+      Printf.eprintf "%s>> continue %s lev %d bp %d pos %d" !tind entry.ename
+        lev bp (Fstream.count strm);
+      trace_entry_lev_name entry lev;
+      Printf.eprintf "\n%!";
+      tind := !tind ^ " ";
+      try
+        let r = f lev bp a err strm in
+        tind := t;
+        Printf.eprintf "%s<< end continue %s lev %d %d" !tind entry.ename lev
+          bp;
+        trace_entry_lev_name entry lev;
+        Printf.eprintf "\n%!";
+        r
+      with e ->
+        tind := t;
+        Printf.eprintf "%sexception \"%s\"" !tind (Printexc.to_string e);
+        trace_entry_lev_name entry lev;
+        Printf.eprintf "\n%!";
+        raise e
+  else f
+;;
+
 let init_entry_functions entry =
   entry.estart <-
     (fun lev strm ->
@@ -2073,62 +2137,20 @@ let init_entry_functions entry =
   entry.fstart <-
     (fun lev err strm ->
        let f = fstart_parser_of_entry entry in
-       entry.fstart <- f; f lev err strm);
+       let f = may_trace_start entry f in entry.fstart <- f; f lev err strm);
   entry.fcontinue <-
     (fun lev bp a err strm ->
        let f = fcontinue_parser_of_entry entry in
+       let f = may_trace_continue entry f in
        entry.fcontinue <- f; f lev bp a err strm);
   entry.bstart <-
     (fun lev err strm ->
        let f = bstart_parser_of_entry entry in
-       let f =
-         if !backtrack_trace then
-           fun lev err strm ->
-             let t = !tind in
-             Printf.eprintf "%s>> start %s lev %d\n" !tind entry.ename lev;
-             flush stderr;
-             tind := !tind ^ " ";
-             try
-               let r = f lev err strm in
-               tind := t;
-               Printf.eprintf "%s<< end %s lev %d\n" !tind entry.ename lev;
-               flush stderr;
-               r
-             with e ->
-               tind := t;
-               Printf.eprintf "%sexception \"%s\"\n" !tind
-                 (Printexc.to_string e);
-               flush stderr;
-               raise e
-         else f
-       in
-       entry.bstart <- f; f lev err strm);
+       let f = may_trace_start entry f in entry.bstart <- f; f lev err strm);
   entry.bcontinue <-
     fun lev bp a err strm ->
       let f = bcontinue_parser_of_entry entry in
-      let f =
-        if !backtrack_trace then
-          fun lev bp a err strm ->
-            let t = !tind in
-            Printf.eprintf "%s>> continue %s lev %d bp %d pos %d\n" !tind
-              entry.ename lev bp (Fstream.count strm);
-            flush stderr;
-            tind := !tind ^ " ";
-            try
-              let r = f lev bp a err strm in
-              tind := t;
-              Printf.eprintf "%s<< end continue %s lev %d %d\n" !tind
-                entry.ename lev bp;
-              flush stderr;
-              r
-            with e ->
-              tind := t;
-              Printf.eprintf "%sexception \"%s\"\n" !tind
-                (Printexc.to_string e);
-              flush stderr;
-              raise e
-        else f
-      in
+      let f = may_trace_continue entry f in
       entry.bcontinue <- f; f lev bp a err strm
 ;;
 
