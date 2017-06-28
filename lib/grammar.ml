@@ -1003,7 +1003,7 @@ value bfparser_of_token entry tok return_value =
         in
         if Fstream.count strm > m then do {
           if backtrack_trace.val then
-            Printf.eprintf "(token count max %d) %!" (Fstream.count strm)
+            Printf.eprintf " (token count max %d)%!" (Fstream.count strm)
           else ();
           let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
           max_fcount.val := Some (Fstream.count strm, e, err);
@@ -1011,7 +1011,7 @@ value bfparser_of_token entry tok return_value =
         }
         else do {
           if backtrack_trace.val then
-            Printf.eprintf "(token count %d) %!" (Fstream.count strm)
+            Printf.eprintf " (token count %d/%d)%!" (Fstream.count strm) m
           else ();
           incr nb_ftry;
           if backtrack_trace_try.val then do {
@@ -2031,6 +2031,10 @@ value bfparse entry efun fun_loc default_loc restore2 fts = do {
   in
   token_count.val := 0;
   max_fcount.val := None;
+  if backtrack_trace.val then
+    Printf.eprintf "%sbfparse [%s]: max token count reset\n%!" tind.val
+      entry.ename
+  else ();
   nb_ftry.val := 0;
   if backtrack_trace_try.val then do {
     Printf.eprintf "\n";
@@ -2149,6 +2153,10 @@ value bparse_parsable_all entry p = do {
   floc.val := fun_loc;
   token_count.val := 0;
   max_fcount.val := None;
+  if backtrack_trace.val then
+    Printf.eprintf "%sbparse_parsable_all [%s]: max token count reset\n%!"
+      tind.val entry.ename
+  else
   nb_ftry.val := 0;
   if backtrack_trace_try.val then do {
     Printf.eprintf "\n";
