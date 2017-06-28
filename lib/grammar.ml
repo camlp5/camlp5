@@ -1006,7 +1006,8 @@ value bfparser_of_token entry tok return_value =
             Printf.eprintf " (token count max %d)%!" (Fstream.count strm)
           else ();
           let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
-          max_fcount.val := Some (Fstream.count strm, e, err);
+          let cnt = Fstream.count strm in
+          max_fcount.val := Some (cnt, e, err);
           nb_ftry.val := 0
         }
         else do {
@@ -2036,26 +2037,16 @@ value bfparse entry efun fun_loc default_loc restore2 fts = do {
   let r =
     try efun no_err fts with
     [ Stream.Failure -> do {
-        let (loc, mess) =
+        let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
+        let loc = get_loc cnt in
+        let mess =
           match max_fcount.val with
           | Some (cnt, entry, err) ->
-(*
-let _ = Printf.eprintf "token cnt %d\n%!" cnt in
-let _ = Printf.eprintf "fstre cnt %d\n%!" (Fstream.count fts) in
-let _ = Printf.eprintf "funfr cnt %d\n%!" (Fstream.count_unfrozen fts - 1) in
-*)
-let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
-              let loc = get_loc cnt in
               let mess = err () in
-              let mess =
-                if mess = "" then sprintf "failure in [%s]" entry.ename
-                else mess
-              in
-              (loc, mess)
+              if mess = "" then sprintf "failure in [%s]" entry.ename
+              else mess
           | None ->
-              let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
-              let loc = get_loc cnt in
-              (loc, sprintf "[%s] failed" entry.ename)
+              sprintf "[%s] failed" entry.ename
           end
         in
         let mess =

@@ -1048,14 +1048,15 @@ let bfparser_of_token entry tok return_value =
         if Fstream.count strm > m then
           begin
             if !backtrack_trace then
-              Printf.eprintf "(token count max %d) %!" (Fstream.count strm);
+              Printf.eprintf " (token count max %d)%!" (Fstream.count strm);
             let e : Obj.t g_entry = Obj.magic (entry : _ g_entry) in
-            max_fcount := Some (Fstream.count strm, e, err); nb_ftry := 0
+            let cnt = Fstream.count strm in
+            max_fcount := Some (cnt, e, err); nb_ftry := 0
           end
         else
           begin
             if !backtrack_trace then
-              Printf.eprintf "(token count %d) %!" (Fstream.count strm);
+              Printf.eprintf " (token count %d/%d)%!" (Fstream.count strm) m;
             incr nb_ftry;
             if !backtrack_trace_try then
               begin
@@ -2315,17 +2316,11 @@ let parse_parsable entry p =
 let bfparse entry efun fun_loc default_loc restore2 fts =
   let restore =
     let old_tc = !token_count in
-    let old_max_fcount = !max_fcount in
     let old_nb_ftry = !nb_ftry in
-    fun () ->
-      token_count := old_tc;
-      max_fcount := old_max_fcount;
-      nb_ftry := old_nb_ftry;
-      restore2 ()
+    fun () -> token_count := old_tc; nb_ftry := old_nb_ftry; restore2 ()
   in
-  let get_loc () =
+  let get_loc cnt =
     try
-      let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
       let loc = fun_loc cnt in
       if !token_count - 1 <= cnt then loc
       else Ploc.encl loc (fun_loc (!token_count - 1))
@@ -2334,16 +2329,16 @@ let bfparse entry efun fun_loc default_loc restore2 fts =
     | e -> restore (); raise e
   in
   token_count := 0;
-  max_fcount := None;
   nb_ftry := 0;
   if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
   let r =
     try efun no_err fts with
       Stream.Failure ->
-        let loc = get_loc () in
+        let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
+        let loc = get_loc cnt in
         let mess =
           match !max_fcount with
-            Some (_, entry, err) ->
+            Some (cnt, entry, err) ->
               let mess = err () in
               if mess = "" then sprintf "failure in [%s]" entry.ename
               else mess
@@ -2366,6 +2361,8 @@ let bfparse_token_stream entry efun ts =
   let fun_loc = !floc in
   let restore2 () = () in
   let default_loc () = Ploc.dummy in
+  if !backtrack_trace then
+    Printf.eprintf "%sbfparse_token_stream [%s]\n%!" !tind entry.ename;
   bfparse entry efun fun_loc default_loc restore2 fts
 ;;
 
@@ -2373,11 +2370,18 @@ let bfparse_parsable entry p efun =
   let fts = p.pa_tok_fstrm in
   let cs = p.pa_chr_strm in
   let fun_loc = p.pa_loc_func in
-  let restore2 = let old_floc = !floc in fun () -> floc := old_floc in
+  let restore2 =
+    let old_floc = !floc in
+    let old_max_fcount = !max_fcount in
+    fun () -> floc := old_floc; max_fcount := old_max_fcount
+  in
   floc := fun_loc;
+  max_fcount := None;
   let default_loc () =
     Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
   in
+  if !backtrack_trace then
+    Printf.eprintf "%sbfparse_parsable [%s]\n%!" !tind entry.ename;
   bfparse entry efun fun_loc default_loc restore2 fts
 ;;
 
@@ -2436,7 +2440,10 @@ let bparse_parsable_all entry p =
   floc := fun_loc;
   token_count := 0;
   max_fcount := None;
-  nb_ftry := 0;
+  if !backtrack_trace then
+    Printf.eprintf "%sbparse_parsable_all [%s]: max token count reset\n%!"
+      !tind entry.ename
+  else nb_ftry := 0;
   if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
   try
     let rl =
