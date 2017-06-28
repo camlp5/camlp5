@@ -1002,11 +1002,17 @@ value bfparser_of_token entry tok return_value =
           end
         in
         if Fstream.count strm > m then do {
+          if backtrack_trace.val then
+            Printf.eprintf "(token count max %d) %!" (Fstream.count strm)
+          else ();
           let e : g_entry Obj.t = Obj.magic (entry : g_entry _) in
           max_fcount.val := Some (Fstream.count strm, e, err);
           nb_ftry.val := 0
         }
         else do {
+          if backtrack_trace.val then
+            Printf.eprintf "(token count %d) %!" (Fstream.count strm)
+          else ();
           incr nb_ftry;
           if backtrack_trace_try.val then do {
             Printf.eprintf "\rtokens read: %d; tokens tests: %d " m
@@ -2044,6 +2050,12 @@ value bfparse entry efun fun_loc default_loc restore2 fts = do {
           | None ->
               sprintf "[%s] failed" entry.ename
           end
+        in
+        let mess =
+          if backtrack_trace.val then
+            let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
+            mess ^ Printf.sprintf " (token count %d)" cnt
+          else mess
         in
         restore ();
         Ploc.raise loc (Stream.Error mess)
