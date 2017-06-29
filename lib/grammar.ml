@@ -2043,7 +2043,12 @@ value bfparse entry efun fun_loc default_loc restore2 fts = do {
           match max_fcount.val with
           | Some (cnt, entry, err) ->
               let mess = err () in
-              if mess = "" then sprintf "failure in [%s]" entry.ename
+              let mess =
+                if mess = "" then sprintf "failure in [%s]" entry.ename
+                else mess
+              in
+              if backtrack_trace.val then
+                mess ^ Printf.sprintf " (max token count %d)" cnt
               else mess
           | None ->
               sprintf "[%s] failed" entry.ename
@@ -2051,8 +2056,8 @@ value bfparse entry efun fun_loc default_loc restore2 fts = do {
         in
         let mess =
           if backtrack_trace.val then
-            let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
-            mess ^ Printf.sprintf " (token count %d)" cnt
+            mess ^ Printf.sprintf " (cnt %d) (cnt+unfrozen %d)"
+              token_count.val cnt
           else mess
         in
         restore ();
