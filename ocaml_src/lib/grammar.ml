@@ -2313,7 +2313,10 @@ let parse_parsable entry p =
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
-let bfparse entry efun fun_loc default_loc restore2 fts =
+let bfparse entry efun restore2 cs fun_loc fts =
+  let default_loc () =
+    Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
+  in
   let restore =
     let old_tc = !token_count in
     let old_nb_ftry = !nb_ftry in
@@ -2340,14 +2343,19 @@ let bfparse entry efun fun_loc default_loc restore2 fts =
           match !max_fcount with
             Some (cnt, entry, err) ->
               let mess = err () in
-              if mess = "" then sprintf "failure in [%s]" entry.ename
+              let mess =
+                if mess = "" then sprintf "failure in [%s]" entry.ename
+                else mess
+              in
+              if !backtrack_trace then
+                mess ^ Printf.sprintf " (max token count %d)" cnt
               else mess
           | None -> sprintf "[%s] failed" entry.ename
         in
         let mess =
           if !backtrack_trace then
-            let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
-            mess ^ Printf.sprintf " (token count %d)" cnt
+            mess ^
+            Printf.sprintf " (cnt %d) (cnt+unfrozen %d)" !token_count cnt
           else mess
         in
         restore (); Ploc.raise loc (Stream.Error mess)
@@ -2357,32 +2365,23 @@ let bfparse entry efun fun_loc default_loc restore2 fts =
 ;;
 
 let bfparse_token_stream entry efun ts =
-  let fts = fstream_of_stream ts in
-  let fun_loc = !floc in
   let restore2 () = () in
-  let default_loc () = Ploc.dummy in
   if !backtrack_trace then
     Printf.eprintf "%sbfparse_token_stream [%s]\n%!" !tind entry.ename;
-  bfparse entry efun fun_loc default_loc restore2 fts
+  bfparse entry efun restore2 Stream.sempty !floc (fstream_of_stream ts)
 ;;
 
 let bfparse_parsable entry p efun =
-  let fts = p.pa_tok_fstrm in
-  let cs = p.pa_chr_strm in
-  let fun_loc = p.pa_loc_func in
   let restore2 =
     let old_floc = !floc in
     let old_max_fcount = !max_fcount in
     fun () -> floc := old_floc; max_fcount := old_max_fcount
   in
-  floc := fun_loc;
+  floc := p.pa_loc_func;
   max_fcount := None;
-  let default_loc () =
-    Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
-  in
   if !backtrack_trace then
     Printf.eprintf "%sbfparse_parsable [%s]\n%!" !tind entry.ename;
-  bfparse entry efun fun_loc default_loc restore2 fts
+  bfparse entry efun restore2 p.pa_chr_strm p.pa_loc_func p.pa_tok_fstrm
 ;;
 
 let fparse_token_stream entry ts =
