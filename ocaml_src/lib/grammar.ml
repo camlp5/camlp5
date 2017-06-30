@@ -2313,8 +2313,9 @@ let parse_parsable entry p =
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
 ;;
 
-let bfparse entry efun restore2 cs fun_loc fts =
+let bfparse entry efun restore2 p =
   let default_loc () =
+    let cs = p.pa_chr_strm in
     Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
   in
   let restore =
@@ -2324,9 +2325,9 @@ let bfparse entry efun restore2 cs fun_loc fts =
   in
   let get_loc cnt =
     try
-      let loc = fun_loc cnt in
+      let loc = p.pa_loc_func cnt in
       if !token_count - 1 <= cnt then loc
-      else Ploc.encl loc (fun_loc (!token_count - 1))
+      else Ploc.encl loc (p.pa_loc_func (!token_count - 1))
     with
       Failure _ -> default_loc ()
     | e -> restore (); raise e
@@ -2335,6 +2336,7 @@ let bfparse entry efun restore2 cs fun_loc fts =
   nb_ftry := 0;
   if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
   let r =
+    let fts = p.pa_tok_fstrm in
     try efun no_err fts with
       Stream.Failure ->
         let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
@@ -2368,7 +2370,11 @@ let bfparse_token_stream entry efun ts =
   let restore2 () = () in
   if !backtrack_trace then
     Printf.eprintf "%sbfparse_token_stream [%s]\n%!" !tind entry.ename;
-  bfparse entry efun restore2 Stream.sempty !floc (fstream_of_stream ts)
+  let p =
+    {pa_chr_strm = Stream.sempty; pa_tok_strm = ts;
+     pa_tok_fstrm = fstream_of_stream ts; pa_loc_func = !floc}
+  in
+  bfparse entry efun restore2 p
 ;;
 
 let bfparse_parsable entry p efun =
@@ -2381,7 +2387,7 @@ let bfparse_parsable entry p efun =
   max_fcount := None;
   if !backtrack_trace then
     Printf.eprintf "%sbfparse_parsable [%s]\n%!" !tind entry.ename;
-  bfparse entry efun restore2 p.pa_chr_strm p.pa_loc_func p.pa_tok_fstrm
+  bfparse entry efun restore2 p
 ;;
 
 let fparse_token_stream entry ts =

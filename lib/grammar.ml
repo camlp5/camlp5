@@ -2008,8 +2008,9 @@ value parse_parsable entry p = do {
     } ]
 };
 
-value bfparse entry efun restore2 cs fun_loc fts = do {
+value bfparse entry efun restore2 p = do {
   let default_loc () =
+    let cs = p.pa_chr_strm in
     Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
   in
   let restore =
@@ -2023,9 +2024,9 @@ value bfparse entry efun restore2 cs fun_loc fts = do {
   in
   let get_loc cnt =
     try
-      let loc = fun_loc cnt in
+      let loc = p.pa_loc_func cnt in
       if token_count.val - 1 <= cnt then loc
-      else Ploc.encl loc (fun_loc (token_count.val - 1))
+      else Ploc.encl loc (p.pa_loc_func (token_count.val - 1))
     with
     [ Failure _ -> default_loc ()
     | e -> do { restore (); raise e } ]
@@ -2038,6 +2039,7 @@ value bfparse entry efun restore2 cs fun_loc fts = do {
   }
   else ();
   let r =
+    let fts = p.pa_tok_fstrm in
     try efun no_err fts with
     [ Stream.Failure -> do {
         let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
@@ -2079,7 +2081,13 @@ value bfparse_token_stream entry efun ts = do {
   if backtrack_trace.val then
     Printf.eprintf "%sbfparse_token_stream [%s]\n%!" tind.val entry.ename
   else ();
-  bfparse entry efun restore2 [: :] floc.val (fstream_of_stream ts)
+  let p =
+    {pa_chr_strm = [: :];
+     pa_tok_strm = ts;
+     pa_tok_fstrm = fstream_of_stream ts;
+     pa_loc_func = floc.val}
+  in
+  bfparse entry efun restore2 p
 };
 
 value bfparse_parsable entry p efun = do {
@@ -2096,7 +2104,7 @@ value bfparse_parsable entry p efun = do {
   if backtrack_trace.val then
     Printf.eprintf "%sbfparse_parsable [%s]\n%!" tind.val entry.ename
   else ();
-  bfparse entry efun restore2 p.pa_chr_strm p.pa_loc_func p.pa_tok_fstrm
+  bfparse entry efun restore2 p
 };
 
 value fparse_token_stream entry ts =
