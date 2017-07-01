@@ -1060,7 +1060,7 @@ let bfparser_of_token entry tok return_value =
             incr nb_ftry;
             if !backtrack_trace_try then
               begin
-                Printf.eprintf "\rtokens read: %d; tokens tests: %d " m
+                Printf.eprintf "\ntokens read: %d; tokens tests: %d" m
                   !nb_ftry;
                 flush stderr
               end;
@@ -1068,8 +1068,8 @@ let bfparser_of_token entry tok return_value =
                !nb_ftry >= !backtrack_stalling_limit
             then
               begin
-                if !backtrack_trace_try then
-                  begin Printf.eprintf "\n"; flush stderr end;
+                if !backtrack_trace || !backtrack_trace_try then
+                  Printf.eprintf " (stalling limit reached)\n%!";
                 raise Stream.Failure
               end
           end
@@ -1477,7 +1477,8 @@ let rec fstart_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-              LeftA | NonA -> succ clevn
+              LeftA | NonA ->
+                if lev.lsuffix = DeadEnd then clevn else succ clevn
             | RightA -> clevn
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
