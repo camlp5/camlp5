@@ -1,10 +1,6 @@
 Camlp5 Version 7.01:
 --------------------
 
-* [28 Jun 17] pa_o.ml (parser of ocaml normal syntax): added right
-  associativities in some entries to make it work with grammars with
-  limited backtracking algorithm, e.g. {a=b;c=d};; raised parse error.
-  Should not impact normal and full backtracking algorithms.
 * [26 Jun 17] Fixed bug in associativity of entry levels in extensible
   grammars; was introduced by an old experiment, resulting a failure
   in Coq test-suite/success/rewrite_strat.v.
