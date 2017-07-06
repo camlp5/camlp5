@@ -2,6 +2,7 @@
 # Copyright (c) INRIA 2007-2017
 
 DEP=../etc/pr_r.cmo quot_r.out.ml
+CAMLP5N=camlp5
 
 all: quot_r.mlt quot_r.mlu quot_o.mlu
 
@@ -22,7 +23,7 @@ quot_o:
 	mv tmp quot_o.ml
 
 quot_r.mlt: quot_r.ml ../meta/$(CAMLP5N)r ../meta/q_MLast.cmo $(DEP)
-	../meta/$(CAMLP5N)r ../meta/q_MLast.cmo ../etc/pr_r.cmo quot_r.ml | diff -I '(\*' -B quot_r.out.ml -
+	../meta/$(CAMLP5N)r ../meta/q_MLast.cmo ../etc/pr_r.cmo -sep '\n' quot_r.ml | diff -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
 quot_r.mlu: quot_r.ml ../meta/$(CAMLP5N)r ../meta/q_ast.cmo $(DEP)

@@ -31,6 +31,8 @@ value flag_where_after_then = ref True;
 value flag_where_after_value_eq = ref True;
 value flag_where_after_arrow = ref True;
 
+value sep = Pcaml.inter_phrases;
+
 do {
   Eprinter.clear pr_expr;
   Eprinter.clear pr_patt;
@@ -1065,6 +1067,22 @@ value con_typ_pat pc (loc, sl, tpl) =
     pprintf pc "%p %p" mod_ident (loc, sl) (hlist type_var) tpl
 ;
 
+value string_eval s =
+  let b = Buffer.create (String.length s) in
+  loop 0 where rec loop i =
+    if i == String.length s then Buffer.contents b
+    else if i == String.length s - 1 then do {
+      Buffer.add_char b s.[i];
+      Buffer.contents b
+    }
+    else do {
+      match (s.[i], s.[i + 1]) with
+      | ('\\', 'n') -> do { Buffer.add_char b '\n'; loop (i + 2) }
+      | (c, _) -> do { Buffer.add_char b c; loop (i + 1) }
+      end
+    }
+;
+
 value with_constraint pc wc =
   match wc with
   [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
@@ -1092,6 +1110,15 @@ value unary expr pc x =
   match x with
   [ <:expr< $lid:f$ $_$ >> when is_unary f -> pprintf pc "(%p)" expr x
   | x -> pprintf pc "%p" expr x ]
+;
+
+value rec nlist3 elem elem2 pc xl =
+  match xl with
+  [ [] -> invalid_arg "slist3"
+  | [x] -> elem pc (x, True)
+  | [x :: xl] ->
+      sprintf "%s%s" (elem {(pc) with aft = ""} (x, False))
+        (nlist3 elem2 elem2 {(pc) with bef = ""} xl) ]
 ;
 
 EXTEND_PRINTER
@@ -1590,11 +1617,20 @@ EXTEND_PRINTER
               if is_last then str_item pc si else semi_after str_item pc si
             in
             let str_item_with_comm pc (si, is_last) =
-              let ccc = Ploc.comment (MLast.loc_of_str_item si) in
+              let ccc =
+                match sep.val with
+                | Some str -> string_eval str
+                | None -> Ploc.comment (MLast.loc_of_str_item si)
+                end
+              in
               sprintf "%s%s" ccc (str_item_fst pc (si, is_last))
             in
             if sil = [] then pc.bef
-            else vlist3 str_item_fst str_item_with_comm pc sil
+            else
+              match sep.val with
+              | Some str -> nlist3 str_item_fst str_item_with_comm pc sil
+              | None -> vlist3 str_item_fst str_item_with_comm pc sil
+              end
           else if sil = [] then pprintf pc "declare end"
           else
             horiz_vertic
@@ -1756,18 +1792,6 @@ END;
 
 (* main part *)
 
-value sep = Pcaml.inter_phrases;
-
-value output_string_eval oc s =
-  loop 0 where rec loop i =
-    if i == String.length s then ()
-    else if i == String.length s - 1 then output_char oc s.[i]
-    else
-      match (s.[i], s.[i + 1]) with
-      [ ('\\', 'n') -> do { output_char oc '\n'; loop (i + 2) }
-      | (c, _) -> do { output_char oc c; loop (i + 1) } ]
-;
-
 value apply_printer f (ast, eoi_loc) = do {
   let oc =
     match Pcaml.output_file.val with
@@ -1784,8 +1808,10 @@ value apply_printer f (ast, eoi_loc) = do {
       List.fold_left
         (fun first (si, loc) -> do {
            match sep.val with
-           [ Some str -> if first then () else output_string_eval oc str
-           | None -> output_string oc (Ploc.comment loc) ];
+           [ Some str ->
+               if first then () else output_string oc (string_eval str)
+           | None ->
+               output_string oc (Ploc.comment loc) ];
            flush oc;
            output_string oc (f {ind = 0; bef = ""; aft = ";"; dang = ""} si);
            False

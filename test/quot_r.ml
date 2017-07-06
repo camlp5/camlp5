@@ -153,10 +153,8 @@ MLast.TyVrn loc lpv ools;
 <:patt< $_nativeint:s1$ >>;
 
 (* label *)
-<:patt< ~{$p1$} >>;
-<:patt< ~{$p1$ = $p2$} >>;
-<:patt< ~{$p1$ $opt:op2$} >>;
-<:patt< ~{$p1$ $_opt:op2$} >>;
+<:patt< ~{$list:lpp$} >>;
+<:patt< ~{$_list:lpp$} >>;
 
 (* lazy *)
 <:patt< lazy $p$ >>;
@@ -290,11 +288,13 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $nativeint:s1$ >>;
 <:expr< $_nativeint:s1$ >>;
 
+(* jocaml def *)
+<:expr< def $list:lx$ in $e$ >>;
+<:expr< def $_list:lx$ in $e$ >>;
+
 (* label *)
-<:expr< ~{$p$} >>;
-<:expr< ~{$p$ = $e$} >>;
-<:expr< ~{$p$ $opt:oe$} >>;
-<:expr< ~{$p$ $_opt:oe$} >>;
+<:expr< ~{$list:lpe$} >>;
+<:expr< ~{$_list:lpe$} >>;
 
 (* lazy *)
 <:expr< lazy $e$ >>;
@@ -318,6 +318,8 @@ MLast.ExCoe loc e ot1 t2;
 (* let module *)
 <:expr< let module $uid:s$ = $me$ in $e$ >>;
 <:expr< let module $_uid:s$ = $me$ in $e$ >>;
+(* let open *)
+<:expr< let open $me$ in $e$ >>;
 
 (* match <a href="#expr_2">(2)</a> *)
 <:expr< match $e$ with [ $list:lpee$ ] >>;
@@ -347,6 +349,9 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< {< $list:lse$ >} >>;
 <:expr< {< $_list:lse$ >} >>;
 
+(* jocaml & *)
+<:expr< $e1$ & $e2$ >>;
+
 (* module packing *)
 <:expr< (module $me$) >>;
 <:expr< (module $me$ : $mt$) >>;
@@ -359,6 +364,12 @@ MLast.ExRec loc (Ploc.VaVal lpe) oe;
 <:expr< {$_list:lpe$} >>;
 <:expr< {($e$) with $_list:lpe$} >>;
 MLast.ExRec loc lpe oe;
+
+(* jocaml reply *)
+<:expr< reply to $lid:ls$ >>;
+<:expr< reply $opt:oe$ to $lid:ls$ >>;
+<:expr< reply to $_lid:ls$ >>;
+<:expr< reply $_opt:oe$ to $_lid:ls$ >>;
 
 (* sequence *)
 <:expr< do { $list:le$ } >>;
