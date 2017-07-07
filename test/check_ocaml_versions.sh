@@ -5,6 +5,7 @@ TOP=$HOME/work
 DEST=$TOP/usr
 OCAMLSDIR=$TOP/ocaml_src/trunk
 CAMLP5DIR=$TOP/camlp5_src/master
+OCAMLWDIR=$TOP/camlp5_src/test_ocaml_version
 MODE=--strict
 DOOPT=1
 ARCH64=0
@@ -80,10 +81,14 @@ for i in $vers; do
   echo date: $(date) version: $i
   echo "+++++ cd $OCAMLSDIR"
   cd $OCAMLSDIR
-  echo "+++++ git reset --hard"
-  git reset --hard
-  echo "+++++ git co tags/$i"
-  git co tags/$i
+  echo "+++++ rm -rf $OCAMLWDIR"
+  rm -rf $OCAMLWDIR
+  echo "+++++ git worktree prune"
+  git worktree prune
+  echo "+++++ git worktree add $OCAMLWDIR tags/$i"
+  git worktree add $OCAMLWDIR tags/$i
+  echo "+++++ cd $OCAMLWDIR"
+  cd $OCAMLWDIR
   if [ "$i" "<" "4.00" ]; then
     sed -e 's/ camlp4o[a-z]* / /g' Makefile | grep -v partial-install.sh |
     grep -v 'cd ocamldoc' | grep -v 'cd camlp4' |
@@ -101,8 +106,6 @@ for i in $vers; do
   if [ "$i" = "1.05" -o "$i" = "1.06" ]; then
     sed -i -e '/fpu_control.h/d;/setfpucw/d' byterun/floats.c
   fi
-  echo "+++++ make clean"
-  make clean
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man/man1" $config_extra_opt
   ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man/man1 $config_extra_opt
   sed -i -e 's/ graph//' -e 's/ labltk//' -e 's/ num / /' config/Makefile
