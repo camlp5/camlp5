@@ -289,8 +289,10 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $_nativeint:s1$ >>;
 
 (* jocaml def *)
-<:expr< def $list:lx$ in $e$ >>;
-<:expr< def $_list:lx$ in $e$ >>;
+(* <:expr< def $list:lx$ in $e$ >>; *)
+(* <:expr< def $_list:lx$ in $e$ >>; *)
+MLast.ExJdf loc (Ploc.VaVal lx) e;
+MLast.ExJdf loc lx e;
 
 (* label *)
 <:expr< ~{$list:lpe$} >>;
@@ -350,7 +352,8 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< {< $_list:lse$ >} >>;
 
 (* jocaml & *)
-<:expr< $e1$ & $e2$ >>;
+(* <:expr< $e1$ & $e2$ >>; *)
+MLast.ExPar loc e1 e2;
 
 (* module packing *)
 <:expr< (module $me$) >>;
@@ -366,21 +369,30 @@ MLast.ExRec loc (Ploc.VaVal lpe) oe;
 MLast.ExRec loc lpe oe;
 
 (* jocaml reply *)
-<:expr< reply to $jid:ls$ >>;
-<:expr< reply to $_jid:ls$ >>;
-<:expr< reply $e$ to $jid:ls$ >>;
-<:expr< reply $e$ to $_jid:ls$ >>;
-<:expr< reply $opt:oe$ to $jid:ls$ >>;
-<:expr< reply $opt:oe$ to $_jid:ls$ >>;
-<:expr< reply $_opt:oe$ to $jid:ls$ >>;
-<:expr< reply $_opt:oe$ to $_jid:ls$ >>;
+(* <:expr< reply to $jid:ls$ >>; *)
+(* <:expr< reply to $_jid:ls$ >>; *)
+(* <:expr< reply $e$ to $jid:ls$ >>; *)
+(* <:expr< reply $e$ to $_jid:ls$ >>; *)
+(* <:expr< reply $opt:oe$ to $jid:ls$ >>; *)
+(* <:expr< reply $opt:oe$ to $_jid:ls$ >>; *)
+(* <:expr< reply $_opt:oe$ to $jid:ls$ >>; *)
+(* <:expr< reply $_opt:oe$ to $_jid:ls$ >>; *)
+MLast.ExRpl loc (Ploc.VaVal None) (Ploc.VaVal ls);
+MLast.ExRpl loc (Ploc.VaVal None) ls;
+MLast.ExRpl loc (Ploc.VaVal (Some e)) (Ploc.VaVal ls);
+MLast.ExRpl loc (Ploc.VaVal (Some e)) ls;
+MLast.ExRpl loc (Ploc.VaVal oe) (Ploc.VaVal ls);
+MLast.ExRpl loc (Ploc.VaVal oe) ls;
+MLast.ExRpl loc oe (Ploc.VaVal ls);
+MLast.ExRpl loc oe ls;
 
 (* sequence *)
 <:expr< do { $list:le$ } >>;
 <:expr< do { $_list:le$ } >>;
 
 (* jocaml spawn *)
-<:expr< spawn $e$ >>;
+(* <:expr< spawn $e$ >>; *)
+MLast.ExSpw loc e;
 
 (* method call *)
 <:expr< $e$ # $s$ >>;
@@ -595,8 +607,10 @@ MLast.MeUnp loc e omt;
 <:str_item< declare $_list:lsi$ end >>;
 
 (* jocaml def *)
-<:str_item< def $list:lx$ >>;
-<:str_item< def $_list:lx$ >>;
+(* <:str_item< def $list:lx$ >>; *)
+(* <:str_item< def $_list:lx$ >>; *)
+MLast.StDef loc (Ploc.VaVal lx);
+MLast.StDef loc lx;
 
 (* directive *)
 <:str_item< # $lid:s$ >>;
