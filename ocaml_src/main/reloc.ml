@@ -258,7 +258,7 @@ and expr floc sh =
         let loc = floc loc in
         ExRpl
           (loc, vala_map (option_map self) x1,
-           (fun (loc, x1) -> floc loc, x1) x2)
+           vala_map (fun (loc, x1) -> floc loc, x1) x2)
     | ExSeq (loc, x1) ->
         let loc = floc loc in ExSeq (loc, vala_map (List.map self) x1)
     | ExSpw (loc, x1) -> let loc = floc loc in ExSpw (loc, self x1)

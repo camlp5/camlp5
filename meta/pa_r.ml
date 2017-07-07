@@ -938,8 +938,8 @@ IFDEF JOCAML OR COMPATIBLE_WITH_OLD_OCAML THEN
             <:expr< def $_list:jal$ in $e$ >> ] ]
     ;
     expr: LEVEL "apply"
-      [ [ "reply"; eo = V (OPT expr); "to"; ji = joinident ->
-            <:expr< reply $_opt:eo$ to $jid:ji$ >> ] ]
+      [ [ "reply"; eo = V (OPT expr); "to"; ji = V joinident "jid" ->
+            <:expr< reply $_opt:eo$ to $_jid:ji$ >> ] ]
     ;
     expr: BEFORE ":="
       [ [ "spawn"; e = SELF -> <:expr< spawn $e$ >> ] ]

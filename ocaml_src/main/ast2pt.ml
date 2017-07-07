@@ -1212,7 +1212,8 @@ let rec expr =
           | None -> None
         in
         mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
-  | ExRpl (loc, eo, (sloc, s)) ->
+  | ExRpl (loc, eo, locs) ->
+      let (sloc, s) = uv locs in
       begin match jocaml_pexp_reply with
         Some pexp_reply ->
           let e =

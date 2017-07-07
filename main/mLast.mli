@@ -114,7 +114,7 @@ and expr =
   | ExPar of loc and expr and expr
   | ExPck of loc and module_expr and option module_type
   | ExRec of loc and V (list (patt * expr)) and option expr
-  | ExRpl of loc and V (option expr) and (loc * V string)
+  | ExRpl of loc and V (option expr) and V (loc * V string)
   | ExSeq of loc and V (list expr)
   | ExSpw of loc and expr
   | ExSnd of loc and expr and V string

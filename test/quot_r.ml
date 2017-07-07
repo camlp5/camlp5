@@ -366,10 +366,14 @@ MLast.ExRec loc (Ploc.VaVal lpe) oe;
 MLast.ExRec loc lpe oe;
 
 (* jocaml reply *)
-<:expr< reply to $lid:ls$ >>;
-<:expr< reply $opt:oe$ to $lid:ls$ >>;
-<:expr< reply to $_lid:ls$ >>;
-<:expr< reply $_opt:oe$ to $_lid:ls$ >>;
+<:expr< reply to $jid:ls$ >>;
+<:expr< reply to $_jid:ls$ >>;
+<:expr< reply $e$ to $jid:ls$ >>;
+<:expr< reply $e$ to $_jid:ls$ >>;
+<:expr< reply $opt:oe$ to $jid:ls$ >>;
+<:expr< reply $opt:oe$ to $_jid:ls$ >>;
+<:expr< reply $_opt:oe$ to $jid:ls$ >>;
+<:expr< reply $_opt:oe$ to $_jid:ls$ >>;
 
 (* sequence *)
 <:expr< do { $list:le$ } >>;

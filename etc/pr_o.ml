@@ -1754,7 +1754,7 @@ EXTEND_PRINTER
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< reply $opt:eo$ to $s$ >> ->
-          pprintf pc "reply%p in %s" (option (space_before expr)) eo s ] ]
+          pprintf pc "reply%p to %s" (option (space_before expr)) eo s ] ]
   ;
   pr_expr: BEFORE "assign"
     [ [ <:expr< spawn $e$ >> ->

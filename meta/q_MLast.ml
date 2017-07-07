@@ -1407,7 +1407,7 @@ EXTEND
           Qast.Node "ExJdf" [Qast.Loc; jal; e] ] ]
   ;
   expr: LEVEL "apply"
-    [ [ "reply"; eo = SV (OPT expr); "to"; ji = joinident ->
+    [ [ "reply"; eo = SV (OPT expr); "to"; ji = SV joinident "jid" ->
           Qast.Node "ExRpl" [Qast.Loc; eo; ji] ] ]
   ;
   expr: BEFORE ":="
@@ -1443,9 +1443,6 @@ EXTEND
   ;
   a_qic:
     [ [ "?"; a = ANTIQUOT; ":" -> Qast.VaAnt "?" loc a ] ]
-  ;
-  joinident:
-    [ [ a = ANTIQUOT "jid" -> Qast.VaAnt "jid" loc a ] ]
   ;
 END;
 
