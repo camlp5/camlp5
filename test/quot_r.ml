@@ -379,6 +379,9 @@ MLast.ExRec loc lpe oe;
 <:expr< do { $list:le$ } >>;
 <:expr< do { $_list:le$ } >>;
 
+(* jocaml spawn *)
+<:expr< spawn $e$ >>;
+
 (* method call *)
 <:expr< $e$ # $s$ >>;
 <:expr< $e$ # $_:s$ >>;
@@ -590,6 +593,10 @@ MLast.MeUnp loc e omt;
 (* declare *)
 <:str_item< declare $list:lsi$ end >>;
 <:str_item< declare $_list:lsi$ end >>;
+
+(* jocaml def *)
+<:str_item< def $list:lx$ >>;
+<:str_item< def $_list:lx$ >>;
 
 (* directive *)
 <:str_item< # $lid:s$ >>;
