@@ -15,12 +15,12 @@ INSTALL UNDER UNIX
    All other options of 'configure' can be displayed with its option --help.
 
 2. Then, to make everything, do:
-     make world.opt
+     make
 
    Faster compilation, in parallel, with option -j (see manual page
    of 'make', for information). For example, if you have a computer
    with 4 cores:
-     make -j4 world.opt
+     make -j4
 
     Alternatively, you can decompose the operations into:
        make out
