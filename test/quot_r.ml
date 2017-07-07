@@ -682,6 +682,9 @@ MLast.MeUnp loc e omt;
 <:str_item< value $_flag:b$ $list:lpe$ >>;
 <:str_item< value $_flag:b$ $_list:lpe$ >>;
 
+{MLast.jcLoc = loc; MLast.jcVal = Ploc.VaVal lllllspe};
+{MLast.jcLoc = loc; MLast.jcVal = lllllspe};
+
 (* type_decl: What is after 'type' or 'and' in a type declaration. *)
 
 <:type_decl< $tp:ls$ $list:ltv$ = private $t$ $list:ltt$ >>;
