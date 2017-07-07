@@ -1,7 +1,8 @@
 #!/bin/sh
-# check_ocaml_sources.sh,v
+# From top:
+# test/check_ocaml_sources.sh
 
-dir='../ocaml/trunk'
+dir='../../ocaml_src/trunk'
 suff=ml
 
 getfiles () {
