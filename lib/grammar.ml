@@ -1024,9 +1024,9 @@ value bfparser_of_token entry tok return_value =
           if backtrack_stalling_limit.val > 0 &&
              nb_ftry.val >= backtrack_stalling_limit.val
           then do {
-	    if backtrack_trace.val || backtrack_trace_try.val then
+            if backtrack_trace.val || backtrack_trace_try.val then
               Printf.eprintf " (stalling limit reached)\n%!"
-	    else ();
+            else ();
             raise Stream.Failure
           }
           else ()
@@ -1035,13 +1035,15 @@ value bfparser_of_token entry tok return_value =
     in
     match Fstream.next strm with
     [ Some (tok, strm) ->
-        try
+        try do {
           let r = f tok in
           let _ =
             if backtrack_trace.val then Printf.eprintf " yes!!!\n%!"
             else ()
           in
+          nb_ftry.val := 0;
           return_value r strm
+        }
         with
         [ Stream.Failure ->
             let _ =
@@ -1330,7 +1332,7 @@ value rec fstart_parser_of_levels entry clevn =
           let alevn =
             match lev.assoc with
             [ LeftA | NonA ->
-	        if lev.lsuffix = DeadEnd then clevn else succ clevn
+                if lev.lsuffix = DeadEnd then clevn else succ clevn
             | RightA -> clevn ]
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
