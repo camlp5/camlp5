@@ -1331,22 +1331,19 @@ value rec fstart_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-            [ LeftA | NonA ->
-                if lev.lsuffix = DeadEnd then clevn else succ clevn
+            [ LeftA | NonA -> succ clevn
             | RightA -> clevn ]
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
           match levs with
           [ [] ->
               fun levn err strm ->
-                if levn > clevn then None
-                else
-                  match strm with fparser bp
-                    [: act = p2 err; ep = fcount;
-                       a =
-                         entry.fcontinue levn bp
-                           (app act (loc_of_token_interval bp ep)) err :] ->
-                      a
+                match strm with fparser bp
+                  [: act = p2 err; ep = fcount;
+                     a =
+                       entry.fcontinue levn bp
+                         (app act (loc_of_token_interval bp ep)) err :] ->
+                    a
           | _ ->
               fun levn err strm ->
                 if levn > clevn then p1 levn err strm
@@ -1642,15 +1639,12 @@ value rec bstart_parser_of_levels entry clevn =
           match levs with
           [ [] ->
               fun levn err strm ->
-                if levn > clevn then
-                  match strm with bparser []
-                else
-                  match strm with bparser bp
-                    [: act = p2 err; ep = bcount;
-                       a =
-                         entry.bcontinue levn bp
-                           (app act (loc_of_token_interval bp ep)) err :] ->
-                      a
+                match strm with bparser bp
+                  [: act = p2 err; ep = bcount;
+                     a =
+                       entry.bcontinue levn bp
+                         (app act (loc_of_token_interval bp ep)) err :] ->
+                    a
           | _ ->
               fun levn err strm ->
                 if levn > clevn then p1 levn err strm

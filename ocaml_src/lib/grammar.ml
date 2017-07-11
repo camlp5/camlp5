@@ -1477,28 +1477,24 @@ let rec fstart_parser_of_levels entry clevn =
       | tree ->
           let alevn =
             match lev.assoc with
-              LeftA | NonA ->
-                if lev.lsuffix = DeadEnd then clevn else succ clevn
+              LeftA | NonA -> succ clevn
             | RightA -> clevn
           in
           let p2 = fparser_of_tree entry (succ clevn) alevn tree in
           match levs with
             [] ->
               (fun levn err strm ->
-                 if levn > clevn then None
-                 else
-                   let (strm__ : _ Fstream.t) = strm in
-                   let bp = Fstream.count strm__ in
-                   match p2 err strm__ with
-                     Some (act, strm__) ->
-                       begin match fcount strm__ with
-                         Some (ep, strm__) ->
-                           entry.fcontinue levn bp
-                             (app act (loc_of_token_interval bp ep)) err
-                             strm__
-                       | _ -> None
-                       end
-                   | _ -> None)
+                 let (strm__ : _ Fstream.t) = strm in
+                 let bp = Fstream.count strm__ in
+                 match p2 err strm__ with
+                   Some (act, strm__) ->
+                     begin match fcount strm__ with
+                       Some (ep, strm__) ->
+                         entry.fcontinue levn bp
+                           (app act (loc_of_token_interval bp ep)) err strm__
+                     | _ -> None
+                     end
+                 | _ -> None)
           | _ ->
               fun levn err strm ->
                 if levn > clevn then p1 levn err strm
@@ -1970,22 +1966,20 @@ let rec bstart_parser_of_levels entry clevn =
           match levs with
             [] ->
               (fun levn err strm ->
-                 if levn > clevn then let (_ : _ Fstream.t) = strm in None
-                 else
-                   let (strm__ : _ Fstream.t) = strm in
-                   let bp = Fstream.count strm__ in
-                   Fstream.b_seq (fun strm__ -> p2 err strm__)
-                     (fun act strm__ ->
-                        Fstream.b_seq bcount
-                          (fun ep strm__ ->
-                             Fstream.b_seq
-                               (fun strm__ ->
-                                  entry.bcontinue levn bp
-                                    (app act (loc_of_token_interval bp ep))
-                                    err strm__)
-                               Fstream.b_act strm__)
-                          strm__)
-                     strm__)
+                 let (strm__ : _ Fstream.t) = strm in
+                 let bp = Fstream.count strm__ in
+                 Fstream.b_seq (fun strm__ -> p2 err strm__)
+                   (fun act strm__ ->
+                      Fstream.b_seq bcount
+                        (fun ep strm__ ->
+                           Fstream.b_seq
+                             (fun strm__ ->
+                                entry.bcontinue levn bp
+                                  (app act (loc_of_token_interval bp ep)) err
+                                  strm__)
+                             Fstream.b_act strm__)
+                        strm__)
+                   strm__)
           | _ ->
               fun levn err strm ->
                 if levn > clevn then p1 levn err strm

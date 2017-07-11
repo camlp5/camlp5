@@ -1,6 +1,9 @@
 Camlp5 Version 7.02:
 --------------------
 
+* [11 Jul 17] Fixed problem of associativity in backtracking grammars,
+  preventing Coq to compile with CAMLP5PARAM=f or b.
+
 Camlp5 Version 7.01:
 --------------------
 
