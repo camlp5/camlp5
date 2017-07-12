@@ -3,8 +3,8 @@
 TOP=..
 include ../config/Makefile
 
-INCLUDES=-I ../main -I ../boot -I $(OTOPU) -I $(OTOPP) -I "$(OCLIBDIR)"
-OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
+INCLUDES=-I ../main -I ../boot -I $(OTOPU) -I $(OTOPP)
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES) -I "$(OCLIBDIR)"
 
 CAMLP5_OBJS=$(OTOPU)/pconfig.cmo ../boot/versdep.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/fstream.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/diff.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/pretty.cmo ../boot/pprintf.cmo ../boot/eprinter.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtools.cmo ../main/ast2pt.cmo ../main/pcaml.cmo ../main/exparser.cmo ../boot/stdpp.cmo ../boot/token.cmo
 CTOP=camlp5_top.cmo

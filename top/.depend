@@ -1,22 +1,6 @@
 camlp5_top.cmo: ../main/ast2pt.cmi ../main/mLast.cmi ../main/pcaml.cmi \
     $(OTOPP)/parsetree.cmi \
-    $(OTOPU)/warnings.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/topdirs.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/toploop.cmi
+    $(OTOPU)/warnings.cmi
 camlp5_top.cmx: ../main/ast2pt.cmx ../main/mLast.cmi ../main/pcaml.cmx \
     $(OTOPP)/parsetree.cmi \
-    $(OTOPU)/warnings.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/topdirs.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/toploop.cmi
-oprint.cmo: \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/outcometree.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/toploop.cmi
-oprint.cmx: \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/outcometree.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/toploop.cmi
-rprint.cmo: \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/outcometree.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/toploop.cmi
-rprint.cmx: \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/outcometree.cmi \
-    /home/pps/deraugla/work/usr/lib/ocaml/compiler-libs/toploop.cmi
+    $(OTOPU)/warnings.cmi
