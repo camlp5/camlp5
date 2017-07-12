@@ -163,8 +163,7 @@ value file_kind_of_name name =
 ;
 
 value print_version () = do {
-  eprintf "Camlp5 version %s (ocaml %s)\n" Pcaml.version
-    Pconfig.ocaml_version;
+  eprintf "Camlp5 version %s (ocaml %s)\n" Pcaml.version Pcaml.ocaml_version;
   flush stderr;
   exit 0
 };

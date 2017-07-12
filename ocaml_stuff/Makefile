@@ -44,8 +44,7 @@ real_steal:
 	  $(VERSSDIR)/parsing/Makefile
 	cp common/parsing/.gitignore $(VERSSDIR)/parsing/.
 	cp common/parsing/.depend $(VERSSDIR)/parsing/.
-	(echo "let ocaml_version = \"$(OVERSION)\""; \
-	 grep "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp | \
+	(grep "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp | \
 	 sed -e 's/^and/let/') > $(VERSSDIR)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
 	$(MAKE) copy_steal FILE=parsing/asttypes.mli
@@ -72,8 +71,7 @@ real_compare_stolen:
 	   diff $(VERSSDIR)/utils/warnings.mli -; exit 0; fi
 	@echo =================================================
 	@echo pconfig.ml
-	@(echo "let ocaml_version = \"$(OVERSION)\""; \
-	  grep "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp) | \
+	@(grep "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp) | \
 	sed -e 's/^and/let/' | diff $(VERSSDIR)/utils/pconfig.ml -; exit 0
 	@echo =================================================
 	@echo asttypes.mli

@@ -126,7 +126,7 @@ let rec list_remove x =
 ;;
 
 let oversion =
-  let v = string_copy (bytes_of_string Pconfig.ocaml_version) in
+  let v = string_copy (bytes_of_string Pcaml.ocaml_version) in
   for i = 0 to string_length v - 1 do
     match string_get v i with
       '0'..'9' | 'a'..'z' | 'A'..'Z' -> ()

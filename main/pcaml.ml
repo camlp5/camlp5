@@ -10,6 +10,17 @@ open Printf;
 value version = "7.02-exp";
 value syntax_name = ref "";
 
+value ocaml_version =
+  loop 0 where rec loop i =
+    if i = String.length Versdep.sys_ocaml_version then
+      Versdep.sys_ocaml_version
+    else
+      match Versdep.sys_ocaml_version.[i] with
+      | ' ' | '+' -> String.sub Versdep.sys_ocaml_version 0 i
+      | _ -> loop (i + 1)
+      end
+;
+
 value gram =
   Grammar.gcreate
     {Plexing.tok_func _ = failwith "no loaded parsing module";

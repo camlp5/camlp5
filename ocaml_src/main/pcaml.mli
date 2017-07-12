@@ -81,6 +81,9 @@ val quotation_location : unit -> Ploc.t;;
        [Failure] if not in the context of a quotation expander. *)
 val version : string;;
    (** The current version of Camlp5. *)
+val ocaml_version : string;;
+   (** The current version of OCaml, possibly truncated after space or '+':
+       e.g. if OCaml version is "4.05.0+beta3", it is "4.05.0" *)
 val add_option : string -> Arg.spec -> string -> unit;;
    (** Add an option to the command line options. *)
 val no_constructors_arity : bool ref;;

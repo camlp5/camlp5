@@ -10,12 +10,24 @@ open Printf;;
 let version = "7.02-exp";;
 let syntax_name = ref "";;
 
+let ocaml_version =
+  let rec loop i =
+    if i = String.length Versdep.sys_ocaml_version then
+      Versdep.sys_ocaml_version
+    else
+      match Versdep.sys_ocaml_version.[i] with
+        ' ' | '+' -> String.sub Versdep.sys_ocaml_version 0 i
+      | _ -> loop (i + 1)
+  in
+  loop 0
+;;
+
 let gram =
   Grammar.gcreate
     {Plexing.tok_func = (fun _ -> failwith "no loaded parsing module");
      Plexing.tok_using = (fun _ -> ()); Plexing.tok_removing = (fun _ -> ());
      Plexing.tok_match =
-       (fun _ -> raise (Match_failure ("pcaml.ml", 17, 25)));
+       (fun _ -> raise (Match_failure ("pcaml.ml", 28, 25)));
      Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None}
 ;;
 
