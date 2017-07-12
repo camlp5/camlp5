@@ -45,7 +45,6 @@ real_steal:
 	cp common/parsing/.gitignore $(VERSSDIR)/parsing/.
 	cp common/parsing/.depend $(VERSSDIR)/parsing/.
 	(echo "let ocaml_version = \"$(OVERSION)\""; \
-	 echo "let ocaml_name = \"$(OCAMLN)\""; \
 	 grep "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp | \
 	 sed -e 's/^and/let/') > $(VERSSDIR)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
@@ -74,7 +73,6 @@ real_compare_stolen:
 	@echo =================================================
 	@echo pconfig.ml
 	@(echo "let ocaml_version = \"$(OVERSION)\""; \
-	  echo "let ocaml_name = \"$(OCAMLN)\""; \
 	  grep "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp) | \
 	sed -e 's/^and/let/' | diff $(VERSSDIR)/utils/pconfig.ml -; exit 0
 	@echo =================================================
