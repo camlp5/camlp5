@@ -18,10 +18,10 @@ pa_lexer.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
     ../main/pcaml.cmx
 pa_macro.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
     ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi \
-    ../main/reloc.cmi $(OTOPU)/pconfig.cmi
+    ../main/reloc.cmi
 pa_macro.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
     ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx \
-    ../main/reloc.cmx $(OTOPU)/pconfig.cmx
+    ../main/reloc.cmx
 pa_r.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi
 pa_r.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \

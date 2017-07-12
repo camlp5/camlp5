@@ -278,6 +278,7 @@ if test "$prefix" != ""; then
   echo PREFIX=$prefix
 fi
 echo "OTOPP=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/parsing"
+echo "OTOPW=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/utils"
 echo "OTOPU=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/utils"
 echo BINDIR=$BINDIR
 echo LIBDIR=$LIBDIR
