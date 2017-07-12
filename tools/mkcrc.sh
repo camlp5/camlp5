@@ -39,8 +39,8 @@ then
   in_add_available_units >> $OFILE
   (cd ../lib; $OLIBDIR/extract_crc $MOD_5LIB) >> $OFILE
   in_add_available_units >> $OFILE
-  (cd $OTOP/parsing; $OLIBDIR/extract_crc $MOD_PARS) >> $OFILE
+  (cd $OTOPP; $OLIBDIR/extract_crc $MOD_PARS) >> $OFILE
   in_add_available_units >> $OFILE
-  (cd $OTOP/utils; $OLIBDIR/extract_crc $MOD_UTIL) >> $OFILE
+  (cd $OTOPU; $OLIBDIR/extract_crc $MOD_UTIL) >> $OFILE
   in_add_available_units >> $OFILE
 fi

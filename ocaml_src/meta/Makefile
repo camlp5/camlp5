@@ -3,7 +3,7 @@
 TOP=../..
 include $(TOP)/config/Makefile
 
-INCLUDES=-I ../main -I $(TOP)/boot -I $(TOP)/lib -I $(OTOP)/utils
+INCLUDES=-I ../main -I $(TOP)/boot -I $(TOP)/lib -I $(OTOPU)
 OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 OBJS=q_MLast.cmo q_ast.cmo pa_r.cmo pa_rp.cmo pa_macro.cmo pa_fstream.cmo pa_extend.cmo pa_extend_m.cmo pr_dump.cmo pa_lexer.cmo
 CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
@@ -31,7 +31,8 @@ depend:
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.ml); do \
 	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
-	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
+	  sed -e 's| $(OTOPP)| $$(OTOPP)|g' -e 's| $(OTOPU)| $$(OTOPU)|g' \
+	  >> .depend; \
 	done
 
 promote:

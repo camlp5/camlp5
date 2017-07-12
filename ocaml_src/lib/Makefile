@@ -3,7 +3,7 @@
 TOP=../..
 include $(TOP)/config/Makefile
 
-INCLUDES=-I $(OTOP)/parsing
+INCLUDES=-I $(OTOPP)
 OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 OBJS=versdep.cmo ploc.cmo plexing.cmo plexer.cmo fstream.cmo gramext.cmo grammar.cmo diff.cmo extfold.cmo extfun.cmo pretty.cmo pprintf.cmo eprinter.cmo stdpp.cmo token.cmo
 SHELL=/bin/sh
@@ -27,7 +27,8 @@ depend:
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
 	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
-	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
+	  sed -e 's| $(OTOPP)| $$(OTOPP)|g' -e 's| $(OTOPU)| $$(OTOPU)|g' \
+	  >> .depend; \
 	done
 
 promote:

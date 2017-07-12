@@ -46,7 +46,8 @@ depend:
 	> .depend
 	@export LC_ALL=C; for i in *.ml; do \
 	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
-	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
+	  sed -e 's| $(OTOPP)| $$(OTOPP)|g' -e 's| $(OTOPU)| $$(OTOPU)|g' \
+	  >> .depend; \
 	done
 
 include .depend

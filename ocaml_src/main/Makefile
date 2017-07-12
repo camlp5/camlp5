@@ -5,12 +5,12 @@ include $(TOP)/config/Makefile
 
 SHELL=/bin/sh
 
-INCLUDES=-I ../odyl -I $(TOP)/boot -I $(TOP)/lib -I $(OTOP)/utils -I $(OTOP)/parsing
+INCLUDES=-I ../odyl -I $(TOP)/boot -I $(TOP)/lib -I $(OTOPU) -I $(OTOPP)
 OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
-CAMLP5_OBJS_0=$(TOP)/boot/versdep.cmo $(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo prtools.cmo ast2pt.cmo reloc.cmo pcaml.cmo exparser.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo
+CAMLP5_OBJS_0=$(TOP)/boot/versdep.cmo $(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOPU)/pconfig.cmo quotation.cmo prtools.cmo ast2pt.cmo reloc.cmo pcaml.cmo exparser.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo
 CAMLP5_OBJS=$(CAMLP5_OBJS_0) crc.cmo main.cmo
-CAMLP5_XOBJS=../lib/versdep.cmx ../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/diff.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/pretty.cmx ../lib/pprintf.cmx ../lib/eprinter.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx prtools.cmx ast2pt.cmx reloc.cmx pcaml.cmx exparser.cmx parserify.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
+CAMLP5_XOBJS=../lib/versdep.cmx ../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/diff.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/pretty.cmx ../lib/pprintf.cmx ../lib/eprinter.cmx $(OTOPU)/pconfig.cmx quotation.cmx prtools.cmx ast2pt.cmx reloc.cmx pcaml.cmx exparser.cmx parserify.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
 OBJS=../odyl/odyl.cma $(CAMLP5N).cma
 CAMLP5M=
 
@@ -34,7 +34,7 @@ $(CAMLP5N).cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o $(CAMLP5N).cmxa
 
 crc.cmo: $(CAMLP5_OBJS_0)
-	OTOP=$(OTOP) OVERSION=$(OVERSION) OLIBDIR="$(OLIBDIR)" $(TOP)/tools/mkcrc.sh
+	OTOPP=$(OTOPP) OTOPU=$(OTOPU) OVERSION=$(OVERSION) OLIBDIR="$(OLIBDIR)" $(TOP)/tools/mkcrc.sh
 	$(OCAMLC) -c -impl crc.tmp
 
 clean::
@@ -46,7 +46,8 @@ depend:
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
 	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
-	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
+	  sed -e 's| $(OTOPP)| $$(OTOPP)|g' -e 's| $(OTOPU)| $$(OTOPU)|g' \
+	  >> .depend; \
 	done
 
 promote:
