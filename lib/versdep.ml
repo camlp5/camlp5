@@ -18,6 +18,8 @@ value option_map f x =
   end
 ;
 
+value ocaml_name = IFDEF JOCAML THEN "jocaml" ELSE "ocaml" END;
+
 value sys_ocaml_version =
   IFDEF OCAML_1_06 THEN "1.06"
   ELSIFDEF OCAML_1_07 THEN "1.07"

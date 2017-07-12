@@ -17,6 +17,8 @@ let option_map f x =
   | None -> None
 ;;
 
+let ocaml_name = "ocaml";;
+
 let sys_ocaml_version = "2.00";;
 
 let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =

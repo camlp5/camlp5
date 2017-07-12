@@ -136,8 +136,7 @@ let oversion =
 ;;
 
 let oname =
-  if Pconfig.ocaml_name = "ocaml" then []
-  else [string_uppercase Pconfig.ocaml_name, MvNone]
+  if ocaml_name = "ocaml" then [] else [string_uppercase ocaml_name, MvNone]
 ;;
 
 let defined =
