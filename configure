@@ -277,11 +277,10 @@ echo OCLIBDIR=$OCLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
 fi
-if test "$OVERSION" "<" "4.06.0"; then
+if test "$OVERSION" "<" "4.00.0"; then
   echo "OTOPP=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/parsing"
   echo "OTOPW=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/utils"
 else
-  # perhaps works since 4.00.0: to be tested
   echo "OTOPP=$OCLIBDIR"
   echo "OTOPW=$OCLIBDIR"
 fi

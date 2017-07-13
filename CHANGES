@@ -1,6 +1,12 @@
 Camlp5 Version 7.02:
 --------------------
 
+* [13 Jul 17] Compilation from OCaml version 4.00.0 now using parsetree
+  distributed with OCaml (-I +compiler-libs), no more the one copied from
+  OCaml sources (on ocaml_stuff directory). Set at "configure" time. (Not
+  fully implemented: the magic numbers are still read in ocaml_stuff
+  directory.) Is going to simplify Camlp5 update when new version of
+  OCaml is released.
 * [11 Jul 17] Fixed problem of associativity in backtracking grammars,
   preventing Coq to compile with CAMLP5PARAM=f or b.
 
