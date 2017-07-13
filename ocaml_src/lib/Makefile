@@ -3,8 +3,7 @@
 TOP=../..
 include $(TOP)/config/Makefile
 
-INCLUDES=-I $(OTOPP)
-OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
+OCAMLCFLAGS=$(WARNERR) -I $(OTOPP)
 OBJS=versdep.cmo ploc.cmo plexing.cmo plexer.cmo fstream.cmo gramext.cmo grammar.cmo diff.cmo extfold.cmo extfun.cmo pretty.cmo pprintf.cmo eprinter.cmo stdpp.cmo token.cmo
 SHELL=/bin/sh
 TARGET=gramlib.cma
@@ -26,9 +25,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  ../tools/depend.sh $(INCLUDES) -name $(CAMLP5N) $$i | \
-	  sed -e 's| $(OTOPP)| $$(OTOPP)|g' -e 's| $(OTOPU)| $$(OTOPU)|g' \
-	  >> .depend; \
+	  ../tools/depend.sh -name $(CAMLP5N) $$i >> .depend; \
 	done
 
 promote:

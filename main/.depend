@@ -1,17 +1,10 @@
 argl.cmo: ../lib/versdep.cmo argl.cmi
 argl.cmx: ../lib/versdep.cmx argl.cmi
-ast2pt.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
-    $(OTOPP)/asttypes.cmi \
-    $(OTOPP)/longident.cmi \
-    $(OTOPP)/parsetree.cmi ast2pt.cmi mLast.cmi \
-    prtools.cmi
-ast2pt.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
-    $(OTOPP)/asttypes.cmi \
-    $(OTOPP)/longident.cmi \
-    $(OTOPP)/parsetree.cmi ast2pt.cmi mLast.cmi \
-    prtools.cmx
-ast2pt.cmi: ../lib/ploc.cmi $(OTOPP)/location.cmi \
-    $(OTOPP)/parsetree.cmi mLast.cmi
+ast2pt.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo ast2pt.cmi \
+    mLast.cmi prtools.cmi
+ast2pt.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx ast2pt.cmi \
+    mLast.cmi prtools.cmx
+ast2pt.cmi: ../lib/ploc.cmi mLast.cmi
 exparser.cmo: ../lib/ploc.cmi exparser.cmi mLast.cmi pcaml.cmi reloc.cmi
 exparser.cmx: ../lib/ploc.cmx exparser.cmi mLast.cmi pcaml.cmx reloc.cmx
 exparser.cmi: mLast.cmi
