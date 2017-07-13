@@ -189,9 +189,9 @@ x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
 if test "$x" = ""; then win32=false; else win32=true; fi
 OLIBDIR="$y"
 if [ "$OVERSION" "<" "4.00" ]; then
-  OCLIBDIR="$y"
+  OCLIBDIR="."
 else
-  OCLIBDIR="$y/compiler-libs"
+  OCLIBDIR="+compiler-libs"
 fi
 
 if test "$win" = "true"; then
