@@ -7,12 +7,10 @@ VERSSDIR=.$(VERSDIR)/$(OVERSION)
 DIRS=$(VERSSDIR)/utils $(VERSSDIR)/parsing
 
 all:
-	set -e; \
-	for i in $(DIRS); do \
-	  cwd=`pwd`; \
-	  cd $$i; $(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN); \
-	  cd $$cwd; \
-        done
+	cd $(VERSSDIR)/utils; \
+	$(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN)
+	cd $(VERSSDIR)/parsing; \
+	$(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN)
 
 opt:
 	cd $(VERSSDIR)/utils; $(MAKE) OCAMLN=$(OCAMLN) opt; cd ../..
