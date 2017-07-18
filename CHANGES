@@ -1,6 +1,7 @@
 Camlp5 Version 7.02:
 --------------------
 
+* [18 Jul 17] Updated for ocaml future version 4.05.1.
 * [13 Jul 17] Compilation from OCaml version 4.00.0 now using parsetree
   distributed with OCaml (-I +compiler-libs), no more the one copied from
   OCaml sources (on ocaml_stuff directory). Set at "configure" time. (Not

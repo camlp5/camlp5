@@ -4,25 +4,33 @@ TOP=..
 include ../config/Makefile
 
 VERSSDIR=.$(VERSDIR)/$(OVERSION)
-DIRS=$(VERSSDIR)/utils $(VERSSDIR)/parsing
 
 all:
 	cd $(VERSSDIR)/utils; \
 	$(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN)
-	cd $(VERSSDIR)/parsing; \
-	$(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN)
+	if [ "$(OTOPP)" != "$(OCLIBDIR)" ]; then \
+	  cd $(VERSSDIR)/parsing; \
+	  $(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN); \
+	fi
 
 opt:
 	cd $(VERSSDIR)/utils; $(MAKE) OCAMLN=$(OCAMLN) opt; cd ../..
 
 clean:
-	set -e; \
-	for i in $(DIRS); do \
-	  (cd $$i; $(MAKE) clean EXE=$(EXE)); \
-	done
+	cd $(VERSSDIR)/utils; \
+	$(MAKE) clean EXE=$(EXE)
+	if [ "$(OTOPP)" != "$(OCLIBDIR)" ]; then \
+	  cd $(VERSSDIR)/parsing; \
+	  $(MAKE) clean EXE=$(EXE); \
+	fi
 
 depend:
-	set -e; for i in $(DIRS); do cd $$i; $(MAKE) depend; cd ../..; done
+	cd $(VERSSDIR)/utils; \
+	$(MAKE) depend
+	if [ "$(OTOPP)" != "$(OCLIBDIR)" ]; then \
+	  cd $(VERSSDIR)/parsing; \
+	  $(MAKE) depend; \
+	fi
 
 steal:
 	@if test "$(OCAML_SRC)" = ""; then \
