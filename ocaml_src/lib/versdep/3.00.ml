@@ -525,6 +525,8 @@ let printf_ksprintf kont fmt =
 
 let char_uppercase = Char.uppercase;;
 
+let bytes_modname = "String";;
+
 let bytes_of_string s = s;;
 
 let bytes_to_string s = s;;

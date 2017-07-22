@@ -693,6 +693,8 @@ let printf_ksprintf = Printf.ksprintf;;
 
 let char_uppercase = Char.uppercase;;
 
+let bytes_modname = "Bytes";;
+
 let bytes_of_string s = Bytes.of_string s;;
 
 let bytes_to_string s = Bytes.to_string s;;

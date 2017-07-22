@@ -1,6 +1,8 @@
 Camlp5 Version 7.02:
 --------------------
 
+* [22 Jul 17] Now "a.[i] := b" generates a call to Bytes.set instead
+  of String.set, as from ocaml version 4.02.0.
 * [18 Jul 17] Updated for ocaml future version 4.05.1.
 * [13 Jul 17] Compilation from OCaml version 4.00.0 now using parsetree
   distributed with OCaml (-I +compiler-libs), no more the one copied from

@@ -1558,6 +1558,11 @@ value char_uppercase =
   ELSE Char.uppercase_ascii END
 ;
 
+value bytes_modname =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN "String"
+  ELSE "Bytes" END
+;
+
 value bytes_of_string s =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN s
   ELSE Bytes.of_string s END

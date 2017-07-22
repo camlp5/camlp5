@@ -852,7 +852,8 @@ value rec expr =
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc
-                  (ocaml_pexp_ident cloc (array_function "String" "set")))
+                  (ocaml_pexp_ident cloc
+		     (array_function bytes_modname "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | _ → error loc "bad left part of assignment" ]
   | ExAsr loc <:expr< False >> →
