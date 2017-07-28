@@ -47,6 +47,7 @@ and a_symbol 'e 'p =
   | ASquot of loc and a_symbol 'e 'p
   | ASrules of loc and a_rules 'e 'p
   | ASself of loc
+  | AScut of loc
   | AStok of loc and string and option (a_string 'e)
   | ASvala of loc and a_symbol 'e 'p and list string
   | ASvala2 of loc and a_symbol 'e 'p and list string
@@ -80,6 +81,7 @@ type text 'e 'p =
   | TXrules of loc and string and list (rule 'e 'p)
   | TXself of loc
   | TXtok of loc and string and 'e
+  | TXcut of loc
   | TXvala of loc and list string and text 'e 'p ]
 and entry 'e 'p =
   { name : name 'e; pos : option 'e; levels : list (level 'e 'p) }
@@ -593,6 +595,7 @@ value rec make_expr gmod tvar =
       let rl = srules loc s rl "" in
       <:expr< Gramext.srules $make_expr_rules loc gmod rl ""$ >>
   | TXself loc -> <:expr< Gramext.Sself >>
+  | TXcut loc -> <:expr< Gramext.Scut >>
   | TXtok loc s e -> <:expr< Gramext.Stoken ($str:s$, $e$) >>
   | TXvala loc al t ->
       let al = make_list loc (fun s -> <:expr< $str:s$ >>) al in
@@ -789,6 +792,8 @@ value rec symbol_of_a =
        styp = STquo loc t}
   | ASself loc ->
       {used = []; text = TXself loc; styp = STself loc "SELF"}
+  | AScut loc ->
+      {used = []; text = TXcut loc; styp = STtyp <:ctyp< unit >>}
   | AStok loc s p ->
       let e =
         match p with
@@ -1165,6 +1170,8 @@ EXTEND
           ASnterm loc (i ^ "__" ^ fst e, v) lev
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           ASnterm loc n lev
+      | "/" ->
+          AScut loc
       | "("; s_t = SELF; ")" -> s_t ] ]
   ;
   pattern:

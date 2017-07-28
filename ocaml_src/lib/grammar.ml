@@ -66,7 +66,8 @@ let rec print_symbol ppf =
   | Snterml (e, l) ->
       fprintf ppf "%s%s@ LEVEL@ %a" e.ename (if e.elocal then "*" else "")
         print_str l
-  | Snterm _ | Snext | Sself | Stoken _ | Stree _ as s -> print_symbol1 ppf s
+  | Snterm _ | Snext | Sself | Scut | Stoken _ | Stree _ as s ->
+      print_symbol1 ppf s
 and print_meta ppf n sl =
   let rec loop i =
     function
@@ -87,6 +88,7 @@ and print_symbol1 ppf =
   | Snterm e -> fprintf ppf "%s%s" e.ename (if e.elocal then "*" else "")
   | Sself -> pp_print_string ppf "SELF"
   | Snext -> pp_print_string ppf "NEXT"
+  | Scut -> pp_print_string ppf "/"
   | Stoken ("", s) -> print_str ppf s
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
@@ -183,7 +185,7 @@ let iter_entry f e =
     | Slist1sep (s1, s2, _) -> do_symbol s1; do_symbol s2
     | Stree t -> do_tree t
     | Svala (_, s) -> do_symbol s
-    | Sself | Snext | Stoken _ -> ()
+    | Sself | Snext | Scut | Stoken _ -> ()
   in
   do_entry e
 ;;
@@ -223,7 +225,7 @@ let fold_entry f e init =
     | Slist1sep (s1, s2, _) -> do_symbol (do_symbol accu s1) s2
     | Stree t -> do_tree accu t
     | Svala (_, s) -> do_symbol accu s
-    | Sself | Snext | Stoken _ -> accu
+    | Sself | Snext | Scut | Stoken _ -> accu
   in
   do_entry init e
 ;;
@@ -886,6 +888,7 @@ and parser_of_symbol entry nlevn =
       (fun (strm__ : _ Stream.t) -> e.estart (level_number e l) strm__)
   | Sself -> (fun (strm__ : _ Stream.t) -> entry.estart 0 strm__)
   | Snext -> (fun (strm__ : _ Stream.t) -> entry.estart nlevn strm__)
+  | Scut -> (fun (strm__ : _ Stream.t) -> Obj.repr ())
   | Stoken tok -> parser_of_token entry tok
 and parser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
@@ -1187,6 +1190,16 @@ let rec fparser_of_tree entry next_levn assoc_levn =
          with
            Some _ as x -> x
          | None -> p2 err strm__)
+  | Node {node = Scut; son = son; brother = _} ->
+      let p1 = fparser_of_tree entry next_levn assoc_levn son in
+      (fun err (strm__ : _ Fstream.t) ->
+         match
+           match p1 err strm__ with
+             Some (act, strm__) -> Some (app act (), strm__)
+           | _ -> None
+         with
+           None -> raise Fstream.Cut
+         | x -> x)
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = fparser_of_symbol entry next_levn s in
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
@@ -1460,6 +1473,11 @@ and fparser_of_symbol entry next_levn =
   | Sself -> (fun err (strm__ : _ Fstream.t) -> entry.fstart 0 err strm__)
   | Snext ->
       (fun err (strm__ : _ Fstream.t) -> entry.fstart next_levn err strm__)
+  | Scut ->
+      (fun err (strm__ : _ Fstream.t) ->
+         match Some (Obj.repr (), strm__) with
+           None -> raise Fstream.Cut
+         | x -> x)
   | Stoken tok -> fparser_of_token entry tok
 and fparse_top_symb entry symb =
   match ftop_symb entry symb with
@@ -1637,6 +1655,15 @@ let rec bparser_of_tree entry next_levn assoc_levn =
               Fstream.b_seq (fun strm__ -> p2 err strm__) Fstream.b_act
                 strm__)
            strm__)
+  | Node {node = Scut; son = son; brother = _} ->
+      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      (fun err (strm__ : _ Fstream.t) ->
+         match
+           Fstream.b_seq (fun strm__ -> p1 err strm__)
+             (fun act strm__ -> Fstream.b_act (app act ()) strm__) strm__
+         with
+           None -> raise Fstream.Cut
+         | x -> x)
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = bparser_of_symbol entry next_levn s in
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
@@ -1937,6 +1964,11 @@ and bparser_of_symbol entry next_levn =
       (fun err (strm__ : _ Fstream.t) ->
          Fstream.b_seq (fun strm__ -> entry.bstart next_levn err strm__)
            Fstream.b_act strm__)
+  | Scut ->
+      (fun err (strm__ : _ Fstream.t) ->
+         match Fstream.b_act (Obj.repr ()) strm__ with
+           None -> raise Fstream.Cut
+         | x -> x)
   | Stoken tok -> bparser_of_token entry tok
 and bparse_top_symb entry symb =
   match btop_symb entry symb with
@@ -2333,7 +2365,7 @@ let bfparse entry efun restore2 p =
   let r =
     let fts = p.pa_tok_fstrm in
     try efun no_err fts with
-      Stream.Failure ->
+      Stream.Failure | Fstream.Cut ->
         let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
         let loc = get_loc cnt in
         let mess =
@@ -2491,7 +2523,7 @@ let find_entry e s =
     | Sflag s -> find_symbol s
     | Stree t -> find_tree t
     | Svala (_, s) -> find_symbol s
-    | Sself | Snext | Stoken _ -> None
+    | Sself | Snext | Scut | Stoken _ -> None
   and find_symbol_list =
     function
       s :: sl ->

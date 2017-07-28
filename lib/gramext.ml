@@ -50,6 +50,7 @@ and g_symbol 'te =
   | Sflag of g_symbol 'te
   | Sself
   | Snext
+  | Scut
   | Stoken of Plexing.pattern
   | Stree of g_tree 'te
   | Svala of list string and g_symbol 'te ]
@@ -82,7 +83,7 @@ value rec derive_eps =
   | Stree t -> tree_derive_eps t
   | Svala _ s -> derive_eps s
   | Smeta _ _ _ | Slist1 _ | Slist1sep _ _ _ | Snterm _ | Snterml _ _ |
-    Snext | Sself | Stoken _ ->
+    Snext | Sself | Scut | Stoken _ ->
       False ]
 and tree_derive_eps =
   fun
@@ -223,7 +224,7 @@ and token_exists_in_symbol f =
   | Stoken tok -> f tok
   | Stree t -> token_exists_in_tree f t
   | Svala _ sy -> token_exists_in_symbol f sy
-  | Snterm _ | Snterml _ _ | Snext | Sself -> False ]
+  | Snterm _ | Snterml _ _ | Snext | Sself | Scut -> False ]
 ;
 
 value insert_level entry_name e1 symbols action slev =
@@ -366,7 +367,7 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
   | Sflag s -> check_gram entry s
   | Stree t -> tree_check_gram entry t
   | Svala _ s -> check_gram entry s
-  | Snext | Sself | Stoken _ -> () ]
+  | Snext | Sself | Scut | Stoken _ -> () ]
 and tree_check_gram entry =
   fun
   [ Node {node = n; brother = bro; son = son} -> do {
@@ -415,7 +416,7 @@ value insert_tokens gram symbols =
         in
         incr r
       }
-    | Snterm _ | Snterml _ _ | Snext | Sself -> () ]
+    | Snterm _ | Snterml _ _ | Snext | Sself | Scut -> () ]
   and tinsert =
     fun
     [ Node {node = s; brother = bro; son = son} -> do {
@@ -551,7 +552,7 @@ value rec decr_keyw_use gram =
   | Sflag s -> decr_keyw_use gram s
   | Stree t -> decr_keyw_use_in_tree gram t
   | Svala _ s -> decr_keyw_use gram s
-  | Sself | Snext | Snterm _ | Snterml _ _ -> () ]
+  | Sself | Snext | Scut | Snterm _ | Snterml _ _ -> () ]
 and decr_keyw_use_in_tree gram =
   fun
   [ DeadEnd | LocAct _ _ -> ()

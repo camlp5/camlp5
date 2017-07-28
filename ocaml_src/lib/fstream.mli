@@ -28,6 +28,8 @@
    case of the previous rule is tested.
 *)
 
+exception Cut;;
+
 (** Functional streams *)
 
 type 'a t;;

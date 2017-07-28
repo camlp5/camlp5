@@ -44,6 +44,7 @@ and ('e, 'p) a_symbol =
   | ASquot of loc * ('e, 'p) a_symbol
   | ASrules of loc * ('e, 'p) a_rules
   | ASself of loc
+  | AScut of loc
   | AStok of loc * string * 'e a_string option
   | ASvala of loc * ('e, 'p) a_symbol * string list
   | ASvala2 of loc * ('e, 'p) a_symbol * string list * (string * 'e) option
@@ -74,6 +75,7 @@ type ('e, 'p) text =
   | TXrules of loc * string * ('e, 'p) rule list
   | TXself of loc
   | TXtok of loc * string * 'e
+  | TXcut of loc
   | TXvala of loc * string list * ('e, 'p) text
 and ('e, 'p) entry =
   { name : 'e name; pos : 'e option; levels : ('e, 'p) level list }
@@ -1250,6 +1252,9 @@ let rec make_expr gmod tvar =
   | TXself loc ->
       MLast.ExAcc
         (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sself"))
+  | TXcut loc ->
+      MLast.ExAcc
+        (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Scut"))
   | TXtok (loc, s, e) ->
       MLast.ExApp
         (loc,
@@ -1576,6 +1581,8 @@ let rec symbol_of_a =
       {used = used_of_rule_list rl; text = TXrules (loc, t, rl);
        styp = STquo (loc, t)}
   | ASself loc -> {used = []; text = TXself loc; styp = STself (loc, "SELF")}
+  | AScut loc ->
+      {used = []; text = TXcut loc; styp = STtyp (MLast.TyLid (loc, "unit"))}
   | AStok (loc, s, p) ->
       let e =
         match p with
@@ -2367,6 +2374,8 @@ Grammar.extend
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (s_t : 'symbol) _ (loc : Ploc.t) -> (s_t : 'symbol));
+      [Gramext.Stoken ("", "/")],
+      Gramext.action (fun _ (loc : Ploc.t) -> (AScut loc : 'symbol));
       [Gramext.Snterm (Grammar.Entry.obj (name : 'name Grammar.Entry.e));
        Gramext.Sopt
          (Gramext.srules

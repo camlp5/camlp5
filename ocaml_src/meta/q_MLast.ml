@@ -573,9 +573,9 @@ Grammar.extend
                    [[Gramext.Snterm
                        (Grammar.Entry.obj
                           (str_item : 'str_item Grammar.Entry.e));
-                     Gramext.Stoken ("", ";")],
+                     Gramext.Scut; Gramext.Stoken ("", ";")],
                     Gramext.action
-                      (fun _ (s : 'str_item) (loc : Ploc.t) ->
+                      (fun _ _ (s : 'str_item) (loc : Ploc.t) ->
                          (s : 'e__3))])],
              Gramext.action
                (fun (a : 'e__3 list) (loc : Ploc.t) ->

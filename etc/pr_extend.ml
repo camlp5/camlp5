@@ -51,6 +51,7 @@ type symbol =
   | Sflag of symbol
   | Sself
   | Snext
+  | Scut
   | Stoken of alt Plexing.pattern MLast.expr
   | Srules of list (list (option MLast.patt * symbol) * option MLast.expr)
   | Svala of list string and option string and symbol ]
@@ -202,6 +203,7 @@ and unsymbol =
   | <:expr< Gramext.Sflag $e$ >> -> Sflag (unsymbol e)
   | <:expr< Gramext.Sself >> -> Sself
   | <:expr< Gramext.Snext >> -> Snext
+  | <:expr< Gramext.Scut >> -> Scut
   | <:expr< Gramext.Stoken $e$ >> -> Stoken (untoken e)
   | <:expr< Gramext.srules $e$ >> -> Srules (rev_unlist unrule [] e)
   | <:expr< Gramext.Svala $ls$ $e$ >> ->
@@ -397,6 +399,7 @@ and simple_symbol pc sy =
   [ Snterm <:expr< $lid:s$ >> -> pprintf pc "%s" s
   | Sself -> pprintf pc "SELF"
   | Snext -> pprintf pc "NEXT"
+  | Scut -> pprintf pc "/"
   | Srules rl ->
       match check_slist rl with
       [ Some _ -> pprintf pc "(%p)" symbol sy

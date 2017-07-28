@@ -11,6 +11,7 @@ type spat_comp =
   | SpNtr of MLast.loc * MLast.patt * MLast.expr
   | SpStr of MLast.loc * MLast.patt
   | SpWhn of MLast.loc * MLast.expr
+  | SpCut of MLast.loc
 ;;
 type sexp_comp =
     SeTrm of MLast.loc * MLast.expr
@@ -70,6 +71,15 @@ let stream_pattern_component skont =
   | SpStr (loc, p) ->
       MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n)], skont)
   | SpWhn (loc, e) -> MLast.ExIfe (loc, e, skont, MLast.ExUid (loc, "None"))
+  | SpCut loc ->
+      MLast.ExMat
+        (loc, skont,
+         [MLast.PaUid (loc, "None"), None,
+          MLast.ExApp
+            (loc, MLast.ExLid (loc, "raise"),
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "Fstream"), MLast.ExUid (loc, "Cut")));
+          MLast.PaLid (loc, "x"), None, MLast.ExLid (loc, "x")])
 ;;
 
 let rec stream_pattern loc epo e =
@@ -320,6 +330,15 @@ let mstream_pattern_component m skont =
   | SpStr (loc, p) ->
       Ploc.raise loc (Stream.Error "not impl: stream_pattern_component 1")
   | SpWhn (loc, e) -> MLast.ExIfe (loc, e, skont, MLast.ExUid (loc, "None"))
+  | SpCut loc ->
+      MLast.ExMat
+        (loc, skont,
+         [MLast.PaUid (loc, "None"), None,
+          MLast.ExApp
+            (loc, MLast.ExLid (loc, "raise"),
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, m), MLast.ExUid (loc, "Cut")));
+          MLast.PaLid (loc, "x"), None, MLast.ExLid (loc, "x")])
 ;;
 
 let rec mstream_pattern loc m (spcl, epo, e) =
@@ -596,7 +615,10 @@ Grammar.extend
     Grammar.Entry.obj (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Stoken ("", "when");
+     [[Gramext.Stoken ("", "!")],
+      Gramext.action
+        (fun _ (loc : Ploc.t) -> (SpCut loc : 'stream_patt_comp));
+      [Gramext.Stoken ("", "when");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) _ (loc : Ploc.t) ->

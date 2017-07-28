@@ -300,7 +300,7 @@ EXTEND
       | "("; me = SELF; ")" -> me ] ]
   ;
   structure:
-    [ [ st = SV (LIST0 [ s = str_item; ";" -> s ]) -> st ] ]
+    [ [ st = SV (LIST0 [ s = str_item; /; ";" -> s ]) -> st ] ]
   ;
   str_item:
     [ "top"

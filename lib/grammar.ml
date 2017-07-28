@@ -64,7 +64,7 @@ value rec print_symbol ppf =
   | Snterml e l ->
       fprintf ppf "%s%s@ LEVEL@ %a" e.ename (if e.elocal then "*" else "")
         print_str l
-  | Snterm _ | Snext | Sself | Stoken _ | Stree _ as s ->
+  | Snterm _ | Snext | Sself | Scut | Stoken _ | Stree _ as s ->
       print_symbol1 ppf s ]
 and print_meta ppf n sl =
   loop 0 sl where rec loop i =
@@ -84,6 +84,7 @@ and print_symbol1 ppf =
   | Snterm e -> fprintf ppf "%s%s" e.ename (if e.elocal then "*" else "")
   | Sself -> pp_print_string ppf "SELF"
   | Snext -> pp_print_string ppf "NEXT"
+  | Scut -> pp_print_string ppf "/"
   | Stoken ("", s) -> print_str ppf s
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
@@ -179,7 +180,7 @@ value iter_entry f e =
     | Slist1sep s1 s2 _ -> do { do_symbol s1; do_symbol s2 }
     | Stree t -> do_tree t
     | Svala _ s -> do_symbol s
-    | Sself | Snext | Stoken _ -> () ]
+    | Sself | Snext | Scut | Stoken _ -> () ]
   in
   do_entry e
 ;
@@ -220,7 +221,7 @@ value fold_entry f e init =
     | Slist1sep s1 s2 _ -> do_symbol (do_symbol accu s1) s2
     | Stree t -> do_tree accu t
     | Svala _ s -> do_symbol accu s
-    | Sself | Snext | Stoken _ -> accu ]
+    | Sself | Snext | Scut | Stoken _ -> accu ]
   in
   do_entry init e
 ;
@@ -842,6 +843,7 @@ and parser_of_symbol entry nlevn =
   | Snterml e l -> parser [: a = e.estart (level_number e l) :] -> a
   | Sself -> parser [: a = entry.estart 0 :] -> a
   | Snext -> parser [: a = entry.estart nlevn :] -> a
+  | Scut -> parser [: :] -> Obj.repr ()
   | Stoken tok -> parser_of_token entry tok ]
 and parser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
@@ -1157,6 +1159,11 @@ value rec fparser_of_tree entry next_levn assoc_levn =
         fparser
         [ [: a = entry.fstart assoc_levn err :] -> app act a
         | [: a = p2 err :] -> a ]
+  | Node {node = Scut; son = son; brother = _} ->
+      let p1 = fparser_of_tree entry next_levn assoc_levn son in
+      fun err ->
+        fparser
+        [ [: !; act = p1 err :] -> app act () ]
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = fparser_of_symbol entry next_levn s in
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
@@ -1314,6 +1321,7 @@ and fparser_of_symbol entry next_levn =
       fun err -> fparser [: a = e.fstart (level_number e l) err :] -> a
   | Sself -> fun err -> fparser [: a = entry.fstart 0 err :] -> a
   | Snext -> fun err -> fparser [: a = entry.fstart next_levn err :] -> a
+  | Scut -> fun err -> fparser [: ! :] -> Obj.repr ()
   | Stoken tok -> fparser_of_token entry tok ]
 and fparse_top_symb entry symb =
   match ftop_symb entry symb with
@@ -1456,6 +1464,11 @@ value rec bparser_of_tree entry next_levn assoc_levn =
         bparser
         [ [: a = entry.bstart assoc_levn err :] -> app act a
         | [: a = p2 err :] -> a ]
+  | Node {node = Scut; son = son; brother = _} ->
+      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      fun err ->
+        bparser
+        [ [: !; act = p1 err :] -> app act () ]
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = bparser_of_symbol entry next_levn s in
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
@@ -1613,6 +1626,7 @@ and bparser_of_symbol entry next_levn =
       fun err -> bparser [: a = e.bstart (level_number e l) err :] -> a
   | Sself -> fun err -> bparser [: a = entry.bstart 0 err :] -> a
   | Snext -> fun err -> bparser [: a = entry.bstart next_levn err :] -> a
+  | Scut -> fun err -> bparser [: ! :] -> Obj.repr ()
   | Stoken tok -> bparser_of_token entry tok ]
 and bparse_top_symb entry symb =
   match btop_symb entry symb with
@@ -2036,7 +2050,7 @@ value bfparse entry efun restore2 p = do {
   let r =
     let fts = p.pa_tok_fstrm in
     try efun no_err fts with
-    [ Stream.Failure -> do {
+    [ Stream.Failure | Fstream.Cut -> do {
         let cnt = Fstream.count fts + Fstream.count_unfrozen fts - 1 in
         let loc = get_loc cnt in
         let mess =
@@ -2220,7 +2234,7 @@ value find_entry e s =
     | Sflag s -> find_symbol s
     | Stree t -> find_tree t
     | Svala _ s -> find_symbol s
-    | Sself | Snext | Stoken _ -> None ]
+    | Sself | Snext | Scut | Stoken _ -> None ]
   and find_symbol_list =
     fun
     [ [s :: sl] ->

@@ -323,9 +323,9 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Snterm
                 (Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e));
-              Gramext.Stoken ("", ";")],
+              Gramext.Scut; Gramext.Stoken ("", ";")],
              Gramext.action
-               (fun _ (s : 'str_item) (loc : Ploc.t) -> (s : 'e__1))])],
+               (fun _ _ (s : 'str_item) (loc : Ploc.t) -> (s : 'e__1))])],
       Gramext.action
         (fun (st : 'e__1 list) (loc : Ploc.t) -> (st : 'structure))]];
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
@@ -3037,9 +3037,9 @@ Grammar.extend
     [None, None,
      [[Gramext.Snterm
          (Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e));
-       Gramext.Stoken ("", ";")],
+       Gramext.Scut; Gramext.Stoken ("", ";")],
       Gramext.action
-        (fun _ (si : 'str_item) (loc : Ploc.t) ->
+        (fun _ _ (si : 'str_item) (loc : Ploc.t) ->
            (si, loc : 'str_item_semi))]];
     Grammar.Entry.obj (top_phrase : 'top_phrase Grammar.Entry.e), None,
     [None, None,

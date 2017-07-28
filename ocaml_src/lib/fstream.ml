@@ -2,6 +2,8 @@
 (* fstream.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
+exception Cut;;
+
 type 'a mlazy_c =
     Lfun of (unit -> 'a)
   | Lval of 'a

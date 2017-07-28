@@ -48,6 +48,7 @@ and g_symbol 'te =
   | Sflag of g_symbol 'te
   | Sself
   | Snext
+  | Scut
   | Stoken of Plexing.pattern
   | Stree of g_tree 'te
   | Svala of list string and g_symbol 'te ]

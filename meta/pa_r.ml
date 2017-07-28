@@ -160,7 +160,7 @@ EXTEND
       | "("; me = SELF; ")" -> <:module_expr< $me$ >> ] ]
   ;
   structure:
-    [ [ st = V (LIST0 [ s = str_item; ";" -> s ]) -> st ] ]
+    [ [ st = V (LIST0 [ s = str_item; /; ";" -> s ]) -> st ] ]
   ;
   str_item:
     [ "top"
@@ -1000,7 +1000,7 @@ EXTEND
           ([], Some loc) ] ]
   ;
   str_item_semi:
-    [ [ si = str_item; ";" -> (si, loc) ] ]
+    [ [ si = str_item; /; ";" -> (si, loc) ] ]
   ;
   top_phrase:
     [ [ ph = phrase -> Some ph

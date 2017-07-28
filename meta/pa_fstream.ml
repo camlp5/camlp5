@@ -10,7 +10,8 @@ type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
   | SpStr of MLast.loc and MLast.patt
-  | SpWhn of MLast.loc and MLast.expr ]
+  | SpWhn of MLast.loc and MLast.expr
+  | SpCut of MLast.loc ]
 ;
 type sexp_comp =
   [ SeTrm of MLast.loc and MLast.expr
@@ -57,7 +58,11 @@ value stream_pattern_component skont =
   | SpStr loc p ->
       <:expr< let $p$ = $lid:strm_n$ in $skont$ >>
   | SpWhn loc e ->
-      <:expr< if $e$ then $skont$ else None >> ]
+      <:expr< if $e$ then $skont$ else None >>
+  | SpCut loc ->
+      <:expr< match $skont$ with
+              [ None -> raise Fstream.Cut
+	      | x -> x ] >> ]
 ;
 
 value rec stream_pattern loc epo e =
@@ -178,7 +183,11 @@ value mstream_pattern_component m skont =
   | SpStr loc p ->
       Ploc.raise loc (Stream.Error "not impl: stream_pattern_component 1")
   | SpWhn loc e ->
-      <:expr< if $e$ then $skont$ else None >> ]
+      <:expr< if $e$ then $skont$ else None >>
+  | SpCut loc ->
+      <:expr< match $skont$ with
+              [ None -> raise $uid:m$.Cut
+	      | x -> x ] >> ]
 ;
 
 value rec mstream_pattern loc m (spcl, epo, e) =
@@ -279,7 +288,8 @@ EXTEND
     [ [ "`"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo
       | p = patt; "="; e = expr -> SpNtr loc p e
       | p = patt -> SpStr loc p
-      | "when"; e = expr -> SpWhn loc e ] ]
+      | "when"; e = expr -> SpWhn loc e
+      | "!" -> SpCut loc ] ]
   ;
   ipatt:
     [ [ i = LIDENT -> <:patt< $lid:i$ >> ] ]
