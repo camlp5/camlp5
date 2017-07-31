@@ -1040,7 +1040,7 @@ value bfparser_of_token entry tok return_value =
         try do {
           let r = f tok in
           let _ =
-            if backtrack_trace.val then Printf.eprintf " yes!!!\n%!"
+            if backtrack_trace.val then Printf.eprintf " yes \"%s\"\n%!" r
             else ()
           in
           nb_ftry.val := 0;

@@ -164,29 +164,29 @@ EXTEND
   ;
   str_item:
     [ "top"
-      [ "declare"; st = V (LIST0 [ s = str_item; ";" -> s ]); "end" ->
+      [ "declare"; /; st = V (LIST0 [ s = str_item; ";" -> s ]); "end" ->
           <:str_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl, _) = constructor_declaration;
+      | "exception"; /; (_, c, tl, _) = constructor_declaration;
         b = rebind_exn ->
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ >>
-      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+      | "external"; /; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ->
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
-      | "include"; me = module_expr -> <:str_item< include $me$ >>
-      | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
+      | "include"; /; me = module_expr -> <:str_item< include $me$ >>
+      | "module"; /; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V ident ""; mt = mod_type_fun_binding ->
+      | "module"; /; "type"; i = V ident ""; mt = mod_type_fun_binding ->
           <:str_item< module type $_:i$ = $mt$ >>
-      | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_decl SEP "and") ->
+      | "open"; /; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
+      | "type"; /; tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_list:tdl$ >>
-      | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
+      | "value"; /; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           <:str_item< value $_flag:r$ $_list:l$ >>
-      | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) ->
+      | "#"; /; n = V LIDENT "lid" ""; dp = V (OPT expr) ->
           <:str_item< # $_lid:n$ $_opt:dp$ >>
-      | "#"; s = V STRING; sil = V (LIST0 [ si = str_item -> (si, loc) ]) ->
+      | "#"; /; s = V STRING; sil = V (LIST0 [ si = str_item -> (si, loc) ]) ->
           <:str_item< # $_str:s$ $_list:sil$ >>
-      | e = expr -> <:str_item< $exp:e$ >> ] ]
+      | e = expr; / -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
     [ [ "="; a = V mod_ident "list" "" -> a
@@ -616,9 +616,10 @@ EXTEND
   ;
   (* Objects and Classes *)
   str_item:
-    [ [ "class"; cd = V (LIST1 class_declaration SEP "and") ->
+    [ [ "class"; /; cd = V (LIST1 class_declaration SEP "and") ->
           <:str_item< class $_list:cd$ >>
-      | "class"; "type"; ctd = V (LIST1 class_type_declaration SEP "and") ->
+      | "class"; /; "type";
+        ctd = V (LIST1 class_type_declaration SEP "and") ->
           <:str_item< class type $_list:ctd$ >> ] ]
   ;
   sig_item:
