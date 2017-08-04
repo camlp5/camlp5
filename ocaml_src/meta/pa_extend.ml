@@ -1989,32 +1989,32 @@ Grammar.extend
    [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.After "top"),
     [None, None,
-     [[Gramext.Stoken ("", "GDELETE_RULE");
+     [[Gramext.Stoken ("", "GDELETE_RULE"); Gramext.Scut;
        Gramext.Snterm
          (Grammar.Entry.obj
             (gdelete_rule_body : 'gdelete_rule_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'gdelete_rule_body) _ (loc : Ploc.t) -> (e : 'expr));
-      [Gramext.Stoken ("", "DELETE_RULE");
+        (fun _ (e : 'gdelete_rule_body) _ _ (loc : Ploc.t) -> (e : 'expr));
+      [Gramext.Stoken ("", "DELETE_RULE"); Gramext.Scut;
        Gramext.Snterm
          (Grammar.Entry.obj
             (delete_rule_body : 'delete_rule_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'delete_rule_body) _ (loc : Ploc.t) -> (e : 'expr));
-      [Gramext.Stoken ("", "GEXTEND");
+        (fun _ (e : 'delete_rule_body) _ _ (loc : Ploc.t) -> (e : 'expr));
+      [Gramext.Stoken ("", "GEXTEND"); Gramext.Scut;
        Gramext.Snterm
          (Grammar.Entry.obj (gextend_body : 'gextend_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'gextend_body) _ (loc : Ploc.t) -> (e : 'expr));
-      [Gramext.Stoken ("", "EXTEND");
+        (fun _ (e : 'gextend_body) _ _ (loc : Ploc.t) -> (e : 'expr));
+      [Gramext.Stoken ("", "EXTEND"); Gramext.Scut;
        Gramext.Snterm
          (Grammar.Entry.obj (extend_body : 'extend_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'extend_body) _ (loc : Ploc.t) -> (e : 'expr))]];
+        (fun _ (e : 'extend_body) _ _ (loc : Ploc.t) -> (e : 'expr))]];
     Grammar.Entry.obj (extend_body : 'extend_body Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm

@@ -1043,10 +1043,10 @@ value semi_sep =
 EXTEND
   GLOBAL: expr symbol;
   expr: AFTER "top"
-    [ [ "EXTEND"; e = extend_body; "END" -> e
-      | "GEXTEND"; e = gextend_body; "END" -> e
-      | "DELETE_RULE"; e = delete_rule_body; "END" -> e
-      | "GDELETE_RULE"; e = gdelete_rule_body; "END" -> e ] ]
+    [ [ "EXTEND"; /; e = extend_body; "END" -> e
+      | "GEXTEND"; /; e = gextend_body; "END" -> e
+      | "DELETE_RULE"; /; e = delete_rule_body; "END" -> e
+      | "GDELETE_RULE"; /; e = gdelete_rule_body; "END" -> e ] ]
   ;
   extend_body:
     [ [ f = efunction; sl = OPT global;
