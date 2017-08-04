@@ -304,34 +304,37 @@ EXTEND
   ;
   str_item:
     [ "top"
-      [ "declare"; st = SV (LIST0 [ s = str_item; ";" -> s ]); "end" ->
+      [ "declare"; /; st = SV (LIST0 [ s = str_item; ";" -> s ]); "end" ->
           Qast.Node "StDcl" [Qast.Loc; st]
-      | "exception"; ctl = constructor_declaration; b = rebind_exn ->
+      | "exception"; /; ctl = constructor_declaration; b = rebind_exn ->
           let (_, c, tl, _) =
             match ctl with
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
           Qast.Node "StExc" [Qast.Loc; c; tl; b]
-      | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
+      | "external"; /; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ->
           Qast.Node "StExt" [Qast.Loc; i; t; pd]
-      | "include"; me = module_expr -> Qast.Node "StInc" [Qast.Loc; me]
-      | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") ->
+      | "include"; /; me = module_expr -> Qast.Node "StInc" [Qast.Loc; me]
+      | "module"; /; r = SV (FLAG "rec");
+        l = SV (LIST1 mod_binding SEP "and") ->
           Qast.Node "StMod" [Qast.Loc; r; l]
-      | "module"; "type"; i = SV ident ""; mt = mod_type_fun_binding ->
+      | "module"; /; "type"; i = SV ident ""; mt = mod_type_fun_binding ->
           Qast.Node "StMty" [Qast.Loc; i; mt]
-      | "open"; i = SV mod_ident "list" "" -> Qast.Node "StOpn" [Qast.Loc; i]
-      | "type"; tdl = SV (LIST1 type_decl SEP "and") ->
+      | "open"; /; i = SV mod_ident "list" "" ->
+          Qast.Node "StOpn" [Qast.Loc; i]
+      | "type"; /; tdl = SV (LIST1 type_decl SEP "and") ->
           Qast.Node "StTyp" [Qast.Loc; tdl]
-      | "value"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and") ->
+      | "value"; /; r = SV (FLAG "rec");
+        l = SV (LIST1 let_binding SEP "and") ->
           Qast.Node "StVal" [Qast.Loc; r; l]
-      | "#"; n = SV LIDENT; dp = SV (OPT expr) ->
+      | "#"; /; n = SV LIDENT; dp = SV (OPT expr) ->
           Qast.Node "StDir" [Qast.Loc; n; dp]
-      | "#"; s = SV STRING;
+      | "#"; /; s = SV STRING;
         sil = SV (LIST0 [ si = str_item -> Qast.Tuple [si; Qast.Loc] ]) ->
           Qast.Node "StUse" [Qast.Loc; s; sil]
-      | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
+      | e = expr; / -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
   rebind_exn:
     [ [ "="; a = SV mod_ident "list" "" -> a
@@ -993,9 +996,10 @@ EXTEND
   ;
   (* Objects and Classes *)
   str_item:
-    [ [ "class"; cd = SV (LIST1 class_declaration SEP "and") ->
+    [ [ "class"; /; cd = SV (LIST1 class_declaration SEP "and") ->
           Qast.Node "StCls" [Qast.Loc; cd]
-      | "class"; "type"; ctd = SV (LIST1 class_type_declaration SEP "and") ->
+      | "class"; /; "type";
+        ctd = SV (LIST1 class_type_declaration SEP "and") ->
           Qast.Node "StClt" [Qast.Loc; ctd] ] ]
   ;
   sig_item:

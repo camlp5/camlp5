@@ -1081,7 +1081,9 @@ let bfparser_of_token entry tok return_value =
       Some (tok, strm) ->
         begin try
           let r = f tok in
-          let _ = if !backtrack_trace then Printf.eprintf " yes!!!\n%!" in
+          let _ =
+            if !backtrack_trace then Printf.eprintf " yes \"%s\"\n%!" r
+          in
           nb_ftry := 0; return_value r strm
         with Stream.Failure ->
           let _ = if !backtrack_trace then Printf.eprintf " not found\n%!" in
