@@ -67,6 +67,7 @@ type styp =
   | STquo of loc and string
   | STself of loc and string
   | STtyp of MLast.ctyp
+  | STnone
   | STvala of loc and styp ]
 ;
 
@@ -506,6 +507,7 @@ value rec make_ctyp styp tvar =
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else <:ctyp< '$tvar$ >>
   | STtyp t -> t
+  | STnone -> failwith "make_ctyp: internal error"
   | STvala loc t -> <:ctyp< Ploc.vala $make_ctyp t tvar$ >> ]
 ;
 
@@ -520,17 +522,21 @@ value text_of_action loc psl rtvar act tvar =
   let txt =
     List.fold_left
       (fun txt ps ->
-         match ps.pattern with
-         [ None -> <:expr< fun _ -> $txt$ >>
-         | Some p ->
-             let t = make_ctyp ps.symbol.styp tvar in
-             let p =
-               match p with
-               [ <:patt< ($list:pl$) >> when quotify.val ->
-                   <:patt< $lid:pname_of_ptuple pl$ >>
-               | _ -> p ]
-             in
-             <:expr< fun ($p$ : $t$) -> $txt$ >> ])
+         match ps.symbol.styp with
+         | STnone -> txt
+         | st ->
+             match ps.pattern with
+             [ None -> <:expr< fun _ -> $txt$ >>
+             | Some p ->
+                 let t = make_ctyp st tvar in
+                 let p =
+                   match p with
+                   [ <:patt< ($list:pl$) >> when quotify.val ->
+                       <:patt< $lid:pname_of_ptuple pl$ >>
+                   | _ -> p ]
+                 in
+                 <:expr< fun ($p$ : $t$) -> $txt$ >> ]
+             end)
       e psl
   in
   let txt =
@@ -793,7 +799,7 @@ value rec symbol_of_a =
   | ASself loc ->
       {used = []; text = TXself loc; styp = STself loc "SELF"}
   | AScut loc ->
-      {used = []; text = TXcut loc; styp = STtyp <:ctyp< unit >>}
+      {used = []; text = TXcut loc; styp = STnone}
   | AStok loc s p ->
       let e =
         match p with

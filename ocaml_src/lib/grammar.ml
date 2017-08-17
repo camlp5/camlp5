@@ -590,6 +590,8 @@ let rec parser_of_tree entry nlevn alevn =
   | Node {node = Sself; son = LocAct (act, _); brother = DeadEnd} ->
       (fun (strm__ : _ Stream.t) ->
          let a = entry.estart alevn strm__ in app act a)
+  | Node {node = Scut; son = son; brother = _} ->
+      parser_of_tree entry nlevn alevn son
   | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
       let p2 = parser_of_tree entry nlevn alevn bro in
       (fun (strm__ : _ Stream.t) ->
@@ -1195,11 +1197,7 @@ let rec fparser_of_tree entry next_levn assoc_levn =
   | Node {node = Scut; son = son; brother = _} ->
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
       (fun err (strm__ : _ Fstream.t) ->
-         match
-           match p1 err strm__ with
-             Some (act, strm__) -> Some (app act (), strm__)
-           | _ -> None
-         with
+         match p1 err strm__ with
            None -> raise Fstream.Cut
          | x -> x)
   | Node {node = s; son = son; brother = DeadEnd} ->
@@ -1661,8 +1659,7 @@ let rec bparser_of_tree entry next_levn assoc_levn =
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
       (fun err (strm__ : _ Fstream.t) ->
          match
-           Fstream.b_seq (fun strm__ -> p1 err strm__)
-             (fun act strm__ -> Fstream.b_act (app act ()) strm__) strm__
+           Fstream.b_seq (fun strm__ -> p1 err strm__) Fstream.b_act strm__
          with
            None -> raise Fstream.Cut
          | x -> x)

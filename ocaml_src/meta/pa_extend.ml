@@ -61,6 +61,7 @@ type styp =
   | STquo of loc * string
   | STself of loc * string
   | STtyp of MLast.ctyp
+  | STnone
   | STvala of loc * styp
 ;;
 
@@ -1014,6 +1015,7 @@ let rec make_ctyp styp tvar =
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else MLast.TyQuo (loc, tvar)
   | STtyp t -> t
+  | STnone -> failwith "make_ctyp: internal error"
   | STvala (loc, t) ->
       MLast.TyApp
         (loc,
@@ -1041,17 +1043,20 @@ let text_of_action loc psl rtvar act tvar =
   let txt =
     List.fold_left
       (fun txt ps ->
-         match ps.pattern with
-           None -> MLast.ExFun (loc, [MLast.PaAny loc, None, txt])
-         | Some p ->
-             let t = make_ctyp ps.symbol.styp tvar in
-             let p =
-               match p with
-                 MLast.PaTup (_, pl) when !quotify ->
-                   MLast.PaLid (loc, pname_of_ptuple pl)
-               | _ -> p
-             in
-             MLast.ExFun (loc, [MLast.PaTyc (loc, p, t), None, txt]))
+         match ps.symbol.styp with
+           STnone -> txt
+         | st ->
+             match ps.pattern with
+               None -> MLast.ExFun (loc, [MLast.PaAny loc, None, txt])
+             | Some p ->
+                 let t = make_ctyp st tvar in
+                 let p =
+                   match p with
+                     MLast.PaTup (_, pl) when !quotify ->
+                       MLast.PaLid (loc, pname_of_ptuple pl)
+                   | _ -> p
+                 in
+                 MLast.ExFun (loc, [MLast.PaTyc (loc, p, t), None, txt]))
       e psl
   in
   let txt =
@@ -1581,8 +1586,7 @@ let rec symbol_of_a =
       {used = used_of_rule_list rl; text = TXrules (loc, t, rl);
        styp = STquo (loc, t)}
   | ASself loc -> {used = []; text = TXself loc; styp = STself (loc, "SELF")}
-  | AScut loc ->
-      {used = []; text = TXcut loc; styp = STtyp (MLast.TyLid (loc, "unit"))}
+  | AScut loc -> {used = []; text = TXcut loc; styp = STnone}
   | AStok (loc, s, p) ->
       let e =
         match p with
@@ -1995,26 +1999,26 @@ Grammar.extend
             (gdelete_rule_body : 'gdelete_rule_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'gdelete_rule_body) _ _ (loc : Ploc.t) -> (e : 'expr));
+        (fun _ (e : 'gdelete_rule_body) _ (loc : Ploc.t) -> (e : 'expr));
       [Gramext.Stoken ("", "DELETE_RULE"); Gramext.Scut;
        Gramext.Snterm
          (Grammar.Entry.obj
             (delete_rule_body : 'delete_rule_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'delete_rule_body) _ _ (loc : Ploc.t) -> (e : 'expr));
+        (fun _ (e : 'delete_rule_body) _ (loc : Ploc.t) -> (e : 'expr));
       [Gramext.Stoken ("", "GEXTEND"); Gramext.Scut;
        Gramext.Snterm
          (Grammar.Entry.obj (gextend_body : 'gextend_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'gextend_body) _ _ (loc : Ploc.t) -> (e : 'expr));
+        (fun _ (e : 'gextend_body) _ (loc : Ploc.t) -> (e : 'expr));
       [Gramext.Stoken ("", "EXTEND"); Gramext.Scut;
        Gramext.Snterm
          (Grammar.Entry.obj (extend_body : 'extend_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'extend_body) _ _ (loc : Ploc.t) -> (e : 'expr))]];
+        (fun _ (e : 'extend_body) _ (loc : Ploc.t) -> (e : 'expr))]];
     Grammar.Entry.obj (extend_body : 'extend_body Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm

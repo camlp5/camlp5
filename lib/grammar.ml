@@ -588,6 +588,8 @@ value rec parser_of_tree entry nlevn alevn =
   | LocAct act _ -> parser [: :] -> act
   | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
       parser [: a = entry.estart alevn :] -> app act a
+  | Node {node = Scut; son = son; brother = _} ->
+      parser_of_tree entry nlevn alevn son
   | Node {node = Sself; son = LocAct act _; brother = bro} ->
       let p2 = parser_of_tree entry nlevn alevn bro in
       parser
@@ -1163,7 +1165,7 @@ value rec fparser_of_tree entry next_levn assoc_levn =
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
       fun err ->
         fparser
-        [ [: !; act = p1 err :] -> app act () ]
+        [ [: !; a = p1 err :] -> a ]
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = fparser_of_symbol entry next_levn s in
       let p1 = fparser_of_tree entry next_levn assoc_levn son in
@@ -1468,7 +1470,7 @@ value rec bparser_of_tree entry next_levn assoc_levn =
       let p1 = bparser_of_tree entry next_levn assoc_levn son in
       fun err ->
         bparser
-        [ [: !; act = p1 err :] -> app act () ]
+        [ [: !; a = p1 err :] -> a ]
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = bparser_of_symbol entry next_levn s in
       let p1 = bparser_of_tree entry next_levn assoc_levn son in

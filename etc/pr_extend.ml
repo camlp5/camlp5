@@ -173,6 +173,8 @@ value rec unrule =
 and unpsymbol_list pl e =
   match (pl, e) with
   [ ([], <:expr< [] >>) -> []
+  | (_, <:expr< [Gramext.Scut :: $el$] >>) ->
+      [(None, Scut) :: unpsymbol_list pl el]
   | ([p :: pl], <:expr< [$e$ :: $el$] >>) ->
       let op =
         match p with
