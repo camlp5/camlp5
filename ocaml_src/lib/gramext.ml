@@ -174,6 +174,9 @@ let insert_tree entry_name gsymbols action tree =
         if eq_symbol s s1 then
           let t = Node {node = s1; son = insert sl son; brother = bro} in
           Some t
+        else if s = Scut then
+          try_insert s sl (Node {node = s; son = tree; brother = DeadEnd})
+        else if s1 = Scut then try_insert s1 (s :: sl) tree
         else if is_before s1 s || derive_eps s && not (derive_eps s1) then
           let bro =
             match try_insert s sl bro with
