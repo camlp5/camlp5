@@ -425,7 +425,8 @@ EXTEND
               [ <:patt< _ >> -> <:str_item< $exp:e$ >>
               | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = expr ->
+      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+        e = expr ->
           <:str_item< let module $_uid:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = expr ->
           <:str_item< let open $m$ in $e$ >>
@@ -1351,7 +1352,7 @@ EXTEND
       | EOI -> ([], Some loc) ] ]
   ;
   str_item_semi:
-    [ [ si = str_item; OPT ";;" -> (si, loc) ] ]
+    [ [ /; si = str_item; OPT ";;" -> (si, loc) ] ]
   ;
   top_phrase:
     [ [ ph = phrase; ";;" -> Some ph

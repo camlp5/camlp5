@@ -570,10 +570,11 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Slist0
                 (Gramext.srules
-                   [[Gramext.Snterm
+                   [[Gramext.Scut;
+                     Gramext.Snterm
                        (Grammar.Entry.obj
                           (str_item : 'str_item Grammar.Entry.e));
-                     Gramext.Scut; Gramext.Stoken ("", ";")],
+                     Gramext.Stoken ("", ";")],
                     Gramext.action
                       (fun _ (s : 'str_item) (loc : Ploc.t) ->
                          (s : 'e__3))])],
@@ -591,12 +592,11 @@ Grammar.extend
       Gramext.action (fun (st : 'e__4) (loc : Ploc.t) -> (st : 'structure))]];
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [Some "top", None,
-     [[Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-       Gramext.Scut],
+     [[Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) (loc : Ploc.t) ->
            (Qast.Node ("StExp", [Qast.Loc; e]) : 'str_item));
-      [Gramext.Stoken ("", "#"); Gramext.Scut;
+      [Gramext.Stoken ("", "#");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("STRING", "")],
@@ -635,7 +635,7 @@ Grammar.extend
       Gramext.action
         (fun (sil : 'e__20) (s : 'e__18) _ (loc : Ploc.t) ->
            (Qast.Node ("StUse", [Qast.Loc; s; sil]) : 'str_item));
-      [Gramext.Stoken ("", "#"); Gramext.Scut;
+      [Gramext.Stoken ("", "#");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("LIDENT", "")],
@@ -677,7 +677,7 @@ Grammar.extend
       Gramext.action
         (fun (dp : 'e__17) (n : 'e__16) _ (loc : Ploc.t) ->
            (Qast.Node ("StDir", [Qast.Loc; n; dp]) : 'str_item));
-      [Gramext.Stoken ("", "value"); Gramext.Scut;
+      [Gramext.Stoken ("", "value");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
@@ -721,7 +721,7 @@ Grammar.extend
       Gramext.action
         (fun (l : 'e__15) (r : 'e__14) _ (loc : Ploc.t) ->
            (Qast.Node ("StVal", [Qast.Loc; r; l]) : 'str_item));
-      [Gramext.Stoken ("", "type"); Gramext.Scut;
+      [Gramext.Stoken ("", "type");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Slist1sep
@@ -743,7 +743,7 @@ Grammar.extend
       Gramext.action
         (fun (tdl : 'e__13) _ (loc : Ploc.t) ->
            (Qast.Node ("StTyp", [Qast.Loc; tdl]) : 'str_item));
-      [Gramext.Stoken ("", "open"); Gramext.Scut;
+      [Gramext.Stoken ("", "open");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
@@ -770,8 +770,7 @@ Grammar.extend
       Gramext.action
         (fun (i : 'e__12) _ (loc : Ploc.t) ->
            (Qast.Node ("StOpn", [Qast.Loc; i]) : 'str_item));
-      [Gramext.Stoken ("", "module"); Gramext.Scut;
-       Gramext.Stoken ("", "type");
+      [Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Snterm
@@ -792,7 +791,7 @@ Grammar.extend
       Gramext.action
         (fun (mt : 'mod_type_fun_binding) (i : 'e__11) _ _ (loc : Ploc.t) ->
            (Qast.Node ("StMty", [Qast.Loc; i; mt]) : 'str_item));
-      [Gramext.Stoken ("", "module"); Gramext.Scut;
+      [Gramext.Stoken ("", "module");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
@@ -836,13 +835,13 @@ Grammar.extend
       Gramext.action
         (fun (l : 'e__10) (r : 'e__9) _ (loc : Ploc.t) ->
            (Qast.Node ("StMod", [Qast.Loc; r; l]) : 'str_item));
-      [Gramext.Stoken ("", "include"); Gramext.Scut;
+      [Gramext.Stoken ("", "include");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
         (fun (me : 'module_expr) _ (loc : Ploc.t) ->
            (Qast.Node ("StInc", [Qast.Loc; me]) : 'str_item));
-      [Gramext.Stoken ("", "external"); Gramext.Scut;
+      [Gramext.Stoken ("", "external");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("LIDENT", "")],
@@ -886,7 +885,7 @@ Grammar.extend
       Gramext.action
         (fun (pd : 'e__8) _ (t : 'ctyp) _ (i : 'e__7) _ (loc : Ploc.t) ->
            (Qast.Node ("StExt", [Qast.Loc; i; t; pd]) : 'str_item));
-      [Gramext.Stoken ("", "exception"); Gramext.Scut;
+      [Gramext.Stoken ("", "exception");
        Gramext.Snterm
          (Grammar.Entry.obj
             (constructor_declaration :
@@ -903,7 +902,7 @@ Grammar.extend
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
-      [Gramext.Stoken ("", "declare"); Gramext.Scut;
+      [Gramext.Stoken ("", "declare");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Slist0
@@ -1543,7 +1542,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 386, 20))
+              | _ -> raise (Match_failure ("q_MLast.ml", 383, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -4483,8 +4482,7 @@ Grammar.extend
     (* Objects and Classes *)
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("", "class"); Gramext.Scut;
-       Gramext.Stoken ("", "type");
+     [[Gramext.Stoken ("", "class"); Gramext.Stoken ("", "type");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Slist1sep
@@ -4507,7 +4505,7 @@ Grammar.extend
       Gramext.action
         (fun (ctd : 'e__133) _ _ (loc : Ploc.t) ->
            (Qast.Node ("StClt", [Qast.Loc; ctd]) : 'str_item));
-      [Gramext.Stoken ("", "class"); Gramext.Scut;
+      [Gramext.Stoken ("", "class");
        Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Slist1sep
