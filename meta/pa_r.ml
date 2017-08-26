@@ -145,7 +145,7 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
         "->"; me = SELF ->
           <:module_expr< functor ( $_uid:i$ : $t$ ) -> $me$ >>
-      | "struct"; st = structure; "end" ->
+      | "struct"; st = structure; /; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF -> <:module_expr< $me1$ $me2$ >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]

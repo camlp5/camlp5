@@ -466,7 +466,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "struct");
        Gramext.Snterm
          (Grammar.Entry.obj (structure : 'structure Grammar.Entry.e));
-       Gramext.Stoken ("", "end")],
+       Gramext.Scut; Gramext.Stoken ("", "end")],
       Gramext.action
         (fun _ (st : 'structure) _ (loc : Ploc.t) ->
            (Qast.Node ("MeStr", [Qast.Loc; st]) : 'module_expr));
@@ -570,8 +570,7 @@ Grammar.extend
          (Gramext.srules
             [[Gramext.Slist0
                 (Gramext.srules
-                   [[Gramext.Scut;
-                     Gramext.Snterm
+                   [[Gramext.Snterm
                        (Grammar.Entry.obj
                           (str_item : 'str_item Grammar.Entry.e));
                      Gramext.Stoken ("", ";")],
@@ -898,7 +897,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 313, 20))
+              | _ -> raise (Match_failure ("q_MLast.ml", 314, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1542,7 +1541,7 @@ Grammar.extend
            (let (_, c, tl, _) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-              | _ -> raise (Match_failure ("q_MLast.ml", 383, 20))
+              | _ -> raise (Match_failure ("q_MLast.ml", 384, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

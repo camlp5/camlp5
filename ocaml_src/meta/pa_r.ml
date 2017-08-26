@@ -264,7 +264,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "struct");
        Gramext.Snterm
          (Grammar.Entry.obj (structure : 'structure Grammar.Entry.e));
-       Gramext.Stoken ("", "end")],
+       Gramext.Scut; Gramext.Stoken ("", "end")],
       Gramext.action
         (fun _ (st : 'structure) _ (loc : Ploc.t) ->
            (MLast.MeStr (loc, st) : 'module_expr));

@@ -285,7 +285,8 @@ EXTEND
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
           Qast.Node "MeFun" [Qast.Loc; i; t; me]
-      | "struct"; st = structure; "end" -> Qast.Node "MeStr" [Qast.Loc; st] ]
+      | "struct"; st = structure; /; "end" ->
+          Qast.Node "MeStr" [Qast.Loc; st] ]
     | [ me1 = SELF; me2 = SELF -> Qast.Node "MeApp" [Qast.Loc; me1; me2] ]
     | [ me1 = SELF; "."; me2 = SELF ->
           Qast.Node "MeAcc" [Qast.Loc; me1; me2] ]
@@ -300,7 +301,7 @@ EXTEND
       | "("; me = SELF; ")" -> me ] ]
   ;
   structure:
-    [ [ st = SV (LIST0 [ /; s = str_item; ";" -> s ]) -> st ] ]
+    [ [ st = SV (LIST0 [ s = str_item; ";" -> s ]) -> st ] ]
   ;
   str_item:
     [ "top"
