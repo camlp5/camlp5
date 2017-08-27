@@ -215,7 +215,7 @@ EXTEND
           <:module_type< functor ( $_uid:i$ : $t$ ) -> $mt$ >> ]
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]
-    | [ "sig"; sg = signature; "end" ->
+    | [ "sig"; sg = signature; /; "end" ->
           <:module_type< sig $_list:sg$ end >>
       | "module"; "type"; "of"; me = module_expr ->
           <:module_type< module type of $me$ >> ]
@@ -1001,7 +1001,7 @@ EXTEND
           ([], Some loc) ] ]
   ;
   str_item_semi:
-    [ [ /; si = str_item; ";" -> (si, loc) ] ]
+    [ [ si = str_item; ";" -> (si, loc) ] ]
   ;
   top_phrase:
     [ [ ph = phrase -> Some ph

@@ -359,7 +359,7 @@ EXTEND
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ]
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") ->
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
-    | [ "sig"; sg = signature; "end" -> Qast.Node "MtSig" [Qast.Loc; sg]
+    | [ "sig"; sg = signature; /; "end" -> Qast.Node "MtSig" [Qast.Loc; sg]
       | "module"; "type"; "of"; me = module_expr ->
           Qast.Node "MtTyo" [Qast.Loc; me] ]
     | [ m1 = SELF; m2 = SELF -> Qast.Node "MtApp" [Qast.Loc; m1; m2] ]

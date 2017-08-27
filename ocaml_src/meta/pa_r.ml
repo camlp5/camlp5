@@ -519,7 +519,7 @@ Grammar.extend
       [Gramext.Stoken ("", "sig");
        Gramext.Snterm
          (Grammar.Entry.obj (signature : 'signature Grammar.Entry.e));
-       Gramext.Stoken ("", "end")],
+       Gramext.Scut; Gramext.Stoken ("", "end")],
       Gramext.action
         (fun _ (sg : 'signature) _ (loc : Ploc.t) ->
            (MLast.MtSig (loc, sg) : 'module_type))];
@@ -3035,8 +3035,7 @@ Grammar.extend
            ([MLast.StDir (loc, n, dp), loc], None : 'implem))]];
     Grammar.Entry.obj (str_item_semi : 'str_item_semi Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Scut;
-       Gramext.Snterm
+     [[Gramext.Snterm
          (Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e));
        Gramext.Stoken ("", ";")],
       Gramext.action

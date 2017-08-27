@@ -1144,7 +1144,7 @@ Grammar.extend
       [Gramext.Stoken ("", "sig");
        Gramext.Snterm
          (Grammar.Entry.obj (signature : 'signature Grammar.Entry.e));
-       Gramext.Stoken ("", "end")],
+       Gramext.Scut; Gramext.Stoken ("", "end")],
       Gramext.action
         (fun _ (sg : 'signature) _ (loc : Ploc.t) ->
            (Qast.Node ("MtSig", [Qast.Loc; sg]) : 'module_type))];
