@@ -429,8 +429,11 @@ value ocaml_ptyp_object loc ml is_open =
   ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     let ml = List.map (fun (s, t) -> (s, [], t)) ml in
     Ptyp_object ml (if is_open then Open else Closed)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_06_0 THEN
     let ml = List.map (fun (s, t) -> (mkloc loc s, [], t)) ml in
+    Ptyp_object ml (if is_open then Open else Closed)
+  ELSE
+    let ml = List.map (fun (s, t) -> Otag (mkloc loc s) [] t) ml in
     Ptyp_object ml (if is_open then Open else Closed)
   END
 ;
@@ -459,7 +462,7 @@ value ocaml_ptyp_poly =
   END
 ;
 
-value ocaml_ptyp_variant catl clos sl_opt =
+value ocaml_ptyp_variant loc catl clos sl_opt =
   IFDEF OCAML_VERSION <= OCAML_2_04 THEN None
   ELSIFDEF OCAML_VERSION <= OCAML_3_02 THEN
     try
@@ -483,11 +486,21 @@ value ocaml_ptyp_variant catl clos sl_opt =
         catl
     in
     Some (Ptyp_variant catl clos sl_opt)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_06_0 THEN
     let catl =
       List.map
         (fun
          [ Left (c, a, tl) -> Rtag c [] a tl
+         | Right t -> Rinherit t ])
+        catl
+    in
+    let clos = if clos then Closed else Open in
+    Some (Ptyp_variant catl clos sl_opt)
+  ELSE
+    let catl =
+      List.map
+        (fun
+         [ Left (c, a, tl) -> Rtag (mkloc loc c) [] a tl
          | Right t -> Rinherit t ])
         catl
     in
@@ -1347,8 +1360,10 @@ value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Some (fun loc me -> Pwith_modsubst (mkloc loc me))
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_06_0 THEN
     Some (fun loc me -> Pwith_modsubst (mkloc loc "") (mkloc loc me))
+  ELSE
+    Some (fun loc me -> Pwith_modsubst (mkloc loc (Lident "")) (mkloc loc me))
   END
 ;
 
@@ -1364,7 +1379,11 @@ value ocaml_pwith_module loc mname me =
 
 value ocaml_pwith_typesubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
-  ELSE Some (fun td -> Pwith_typesubst td) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_06_0 THEN
+    Some (fun loc td -> Pwith_typesubst td)
+  ELSE
+    Some (fun loc td -> Pwith_typesubst (mkloc loc (Lident "")) td)
+ END
 ;
 
 value module_prefix_can_be_in_first_record_label_only =

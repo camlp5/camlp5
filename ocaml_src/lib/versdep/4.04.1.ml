@@ -207,7 +207,7 @@ let ocaml_ptyp_poly =
        | _ -> Ptyp_poly (cl, t))
 ;;
 
-let ocaml_ptyp_variant catl clos sl_opt =
+let ocaml_ptyp_variant loc catl clos sl_opt =
   let catl =
     List.map
       (function
@@ -622,7 +622,7 @@ let ocaml_pwith_module loc mname me =
   Pwith_module (mkloc loc mname, mkloc loc me)
 ;;
 
-let ocaml_pwith_typesubst = Some (fun td -> Pwith_typesubst td);;
+let ocaml_pwith_typesubst = Some (fun loc td -> Pwith_typesubst td);;
 
 let module_prefix_can_be_in_first_record_label_only = true;;
 

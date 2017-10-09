@@ -127,7 +127,7 @@ let ocaml_ptyp_package = None;;
 
 let ocaml_ptyp_poly = None;;
 
-let ocaml_ptyp_variant catl clos sl_opt = None;;
+let ocaml_ptyp_variant loc catl clos sl_opt = None;;
 
 let ocaml_package_type li ltl =
   mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl

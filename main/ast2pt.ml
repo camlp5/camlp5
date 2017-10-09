@@ -282,7 +282,7 @@ value rec ctyp =
             [ None → (False, None)
             | Some sl → (True, Some (uv sl)) ] ]
       in
-      match ocaml_ptyp_variant catl clos sl with
+      match ocaml_ptyp_variant (mkloc loc) catl clos sl with
       [ Some t → mktyp loc t
       | None → error loc "no variant type or inherit in this ocaml version" ]
   | TyXtr loc _ _ → error loc "bad ast TyXtr" ]
@@ -479,7 +479,7 @@ value mkwithc =
           match type_decl_of_with_type loc "" tpl False t with
           [ Right td →
               let li = long_id_of_string_list loc (uv id) in
-              (li, pwith_typesubst td)
+              (li, pwith_typesubst (mkloc loc) td)
           | Left msg →
               error loc msg ]
       | None → error loc "no with type := in this ocaml version" ] ]

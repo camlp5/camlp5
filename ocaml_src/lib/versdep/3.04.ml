@@ -141,7 +141,7 @@ let ocaml_ptyp_package = None;;
 
 let ocaml_ptyp_poly = None;;
 
-let ocaml_ptyp_variant catl clos sl_opt =
+let ocaml_ptyp_variant loc catl clos sl_opt =
   let catl =
     List.map
       (function

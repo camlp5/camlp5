@@ -1,6 +1,7 @@
 Camlp5 Version 7.02:
 --------------------
 
+* [07 Oct 17] Updated for ocaml version 4.06.0.
 * [22 Jul 17] Now "a.[i] := b" generates a call to Bytes.set instead
   of String.set, as from ocaml version 4.02.0.
 * [18 Jul 17] Updated for ocaml future version 4.05.1.

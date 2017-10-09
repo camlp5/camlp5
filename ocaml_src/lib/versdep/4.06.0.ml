@@ -193,7 +193,7 @@ let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
 let ocaml_ptyp_object loc ml is_open =
-  let ml = List.map (fun (s, t) -> mkloc loc s, [], t) ml in
+  let ml = List.map (fun (s, t) -> Otag (mkloc loc s, [], t)) ml in
   Ptyp_object (ml, (if is_open then Open else Closed))
 ;;
 
@@ -207,11 +207,11 @@ let ocaml_ptyp_poly =
        | _ -> Ptyp_poly (List.map (mkloc loc) cl, t))
 ;;
 
-let ocaml_ptyp_variant catl clos sl_opt =
+let ocaml_ptyp_variant loc catl clos sl_opt =
   let catl =
     List.map
       (function
-         Left (c, a, tl) -> Rtag (c, [], a, tl)
+         Left (c, a, tl) -> Rtag (mkloc loc c, [], a, tl)
        | Right t -> Rinherit t)
       catl
   in
@@ -619,7 +619,7 @@ let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 let ocaml_pdir_int i s = Pdir_int (i, None);;
 
 let ocaml_pwith_modsubst =
-  Some (fun loc me -> Pwith_modsubst (mkloc loc "", mkloc loc me))
+  Some (fun loc me -> Pwith_modsubst (mkloc loc (Lident ""), mkloc loc me))
 ;;
 
 let ocaml_pwith_type loc (i, td) = Pwith_type (mkloc loc i, td);;
@@ -628,7 +628,9 @@ let ocaml_pwith_module loc mname me =
   Pwith_module (mkloc loc mname, mkloc loc me)
 ;;
 
-let ocaml_pwith_typesubst = Some (fun td -> Pwith_typesubst td);;
+let ocaml_pwith_typesubst =
+  Some (fun loc td -> Pwith_typesubst (mkloc loc (Lident ""), td))
+;;
 
 let module_prefix_can_be_in_first_record_label_only = true;;
 
