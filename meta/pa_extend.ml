@@ -543,7 +543,7 @@ value text_of_action loc psl rtvar act tvar =
     if meta_action.val then <:expr< Obj.magic $MetaAction.mexpr txt$ >>
     else txt
   in
-  <:expr< Gramext.action $txt$ >>
+  <:expr< $txt$ >>
 ;
 
 value srules loc t rl tvar =
@@ -555,9 +555,15 @@ value srules loc t rl tvar =
     rl
 ;
 
+value is_cut =
+  fun
+  [ TXcut _ -> True
+  | _ -> False ]
+;
+
 value rec make_expr gmod tvar =
   fun
-  [ TXfacto loc t -> <:expr< Gramext.Sfacto $make_expr gmod tvar t$ >>
+  [ TXfacto loc t -> <:expr< $uid:gmod$.s_facto $make_expr gmod tvar t$ >>
   | TXmeta loc n tl e t ->
       let el =
         List.fold_right
@@ -565,58 +571,58 @@ value rec make_expr gmod tvar =
           <:expr< [] >>
       in
       <:expr<
-        Gramext.Smeta $str:n$ $el$ (Obj.repr ($e$ : $make_ctyp t tvar$)) >>
+        $uid:gmod$.s_meta $str:n$ $el$ (Obj.repr ($e$ : $make_ctyp t tvar$)) >>
   | TXlist loc min t ts ->
       let txt = make_expr gmod "" t in
       match (min, ts) with
-      [ (LML_0, None) -> <:expr< Gramext.Slist0 $txt$ >>
-      | (LML_1, None) -> <:expr< Gramext.Slist1 $txt$ >>
+      [ (LML_0, None) -> <:expr< $uid:gmod$.s_list0 $txt$ >>
+      | (LML_1, None) -> <:expr< $uid:gmod$.s_list1 $txt$ >>
       | (LML_0, Some (s, b)) ->
           let x = make_expr gmod tvar s in
           let b = if b then <:expr< True >> else <:expr< False >> in
-          <:expr< Gramext.Slist0sep $txt$ $x$ $b$ >>
+          <:expr< $uid:gmod$.s_list0sep $txt$ $x$ $b$ >>
       | (LML_1, Some (s, b)) ->
           let x = make_expr gmod tvar s in
           let b = if b then <:expr< True >> else <:expr< False >> in
-          <:expr< Gramext.Slist1sep $txt$ $x$ $b$ >> ]
-  | TXnext loc -> <:expr< Gramext.Snext >>
+          <:expr< $uid:gmod$.s_list1sep $txt$ $x$ $b$ >> ]
+  | TXnext loc -> <:expr< $uid:gmod$.s_next >>
   | TXnterm loc n lev ->
       match lev with
       [ Some lab ->
           <:expr<
-             Gramext.Snterml
-               ($uid:gmod$.Entry.obj
-                  ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$))
+             $uid:gmod$.s_nterml
+               ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$)
                $str:lab$ >>
       | None ->
-          if n.tvar = tvar then <:expr< Gramext.Sself >>
+          if n.tvar = tvar then <:expr< $uid:gmod$.s_self >>
           else
             <:expr<
-               Gramext.Snterm
-                 ($uid:gmod$.Entry.obj
-                    ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$)) >> ]
-  | TXopt loc t -> <:expr< Gramext.Sopt $make_expr gmod "" t$ >>
-  | TXflag loc t -> <:expr< Gramext.Sflag $make_expr gmod "" t$ >>
+               $uid:gmod$.s_nterm
+                 ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$) >> ]
+  | TXopt loc t -> <:expr< $uid:gmod$.s_opt $make_expr gmod "" t$ >>
+  | TXflag loc t -> <:expr< $uid:gmod$.s_flag $make_expr gmod "" t$ >>
   | TXrules loc s rl ->
       let rl = srules loc s rl "" in
-      <:expr< Gramext.srules $make_expr_rules loc gmod rl ""$ >>
-  | TXself loc -> <:expr< Gramext.Sself >>
-  | TXcut loc -> <:expr< Gramext.Scut >>
-  | TXtok loc s e -> <:expr< Gramext.Stoken ($str:s$, $e$) >>
+      <:expr< $uid:gmod$.s_rules $make_expr_rules loc gmod rl ""$ >>
+  | TXself loc -> <:expr< $uid:gmod$.s_self >>
+  | TXcut loc -> assert False
+  | TXtok loc s e -> <:expr< $uid:gmod$.s_token ($str:s$, $e$) >>
   | TXvala loc al t ->
       let al = make_list loc (fun s -> <:expr< $str:s$ >>) al in
-      <:expr< Gramext.Svala $al$ $make_expr gmod "" t$ >> ]
+      <:expr< $uid:gmod$.s_vala $al$ $make_expr gmod "" t$ >> ]
 and make_expr_rules loc gmod rl tvar =
   List.fold_left
     (fun txt (sl, ac) ->
        let sl =
-         List.fold_right
-           (fun t txt ->
-              let x = make_expr gmod tvar t in
-              <:expr< [$x$ :: $txt$] >>)
-           sl <:expr< [] >>
+         List.fold_left
+           (fun txt t ->
+              if is_cut t then <:expr< $uid:gmod$.r_cut $txt$ >>
+              else
+                let x = make_expr gmod tvar t in
+                <:expr< $uid:gmod$.r_next $txt$ $x$ >>)
+           <:expr< $uid:gmod$.r_stop >> sl
        in
-       <:expr< [($sl$, $ac$) :: $txt$] >>)
+       <:expr< [$uid:gmod$.production ($sl$, $ac$) :: $txt$] >>)
     <:expr< [] >> rl
 ;
 
@@ -882,9 +888,11 @@ value expr_of_delete_rule loc gmod n sl =
   let n = mk_name2 n in
   let sl = List.map symbol_of_a sl in
   let sl =
-    List.fold_right
-      (fun s e -> <:expr< [$make_expr gmod "" s.text$ :: $e$] >>) sl
-      <:expr< [] >>
+    List.fold_left
+      (fun e s ->
+        if is_cut s.text then <:expr< $uid:gmod$.r_cut $e$ >>
+        else <:expr< $uid:gmod$.r_next $e$ $make_expr gmod "" s.text$ >>)
+      <:expr< $uid:gmod$.r_stop >> sl
   in
   (<:expr< $n.expr$ >>, sl)
 ;
@@ -990,7 +998,6 @@ value text_of_extend loc gmod gl el f =
       List.map
         (fun e ->
            let (ent, pos, txt) = text_of_entry e.name.loc gmod e in
-           let ent = <:expr< $uid:gmod$.Entry.obj $ent$ >> in
            let e = <:expr< ($ent$, $pos$, $txt$) >> in
            <:expr< let aux () = $f$ [$e$] in aux () >>)
         el
@@ -1006,10 +1013,9 @@ value text_of_extend loc gmod gl el f =
       List.fold_right
         (fun e el ->
            let (ent, pos, txt) = text_of_entry e.name.loc gmod e in
-           let ent = <:expr< $uid:gmod$.Entry.obj $ent$ >> in
            let e =
              let loc = e.name.loc in
-             <:expr< ($ent$, $pos$, $txt$) >>
+             <:expr< $uid:gmod$.extension $ent$ $pos$ $txt$ >>
            in
            <:expr< [$e$ :: $el$] >>)
         el <:expr< [] >>
@@ -1026,7 +1032,7 @@ value text_of_functorial_extend loc gmod gl el =
       List.map
         (fun e ->
            let (ent, pos, txt) = text_of_entry e.name.loc gmod e in
-           let e = <:expr< $uid:gmod$.extend $ent$ $pos$ $txt$ >> in
+           let e = <:expr< $uid:gmod$.safe_extend $ent$ $pos$ $txt$ >> in
            if split_ext.val then <:expr< let aux () = $e$ in aux () >> else e)
         el
     in
@@ -1067,16 +1073,16 @@ EXTEND
   delete_rule_body:
     [ [ n = name; ":"; sl = LIST1 symbol SEP semi_sep ->
           let (e, b) = expr_of_delete_rule loc "Grammar" n sl in
-          <:expr< Grammar.delete_rule $e$ $b$ >> ] ]
+          <:expr< Grammar.safe_delete_rule $e$ $b$ >> ] ]
   ;
   gdelete_rule_body:
     [ [ g = UIDENT; n = name; ":"; sl = LIST1 symbol SEP semi_sep ->
           let (e, b) = expr_of_delete_rule loc g n sl in
-          <:expr< $uid:g$.delete_rule $e$ $b$ >> ] ]
+          <:expr< $uid:g$.safe_delete_rule $e$ $b$ >> ] ]
   ;
   efunction:
     [ [ UIDENT "FUNCTION"; ":"; f = qualid; semi_sep -> snd f
-      | -> <:expr< Grammar.extend >> ] ]
+      | -> <:expr< Grammar.safe_extend >> ] ]
   ;
   global:
     [ [ UIDENT "GLOBAL"; ":"; sl = LIST1 name; semi_sep -> sl ] ]
