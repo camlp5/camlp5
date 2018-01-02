@@ -546,8 +546,14 @@ value pconst_of_const =
       Const_string s so -> ocaml_pconst_string s so
     END
   | Const_float s -> ocaml_pconst_float s
-  | IFDEF OCAML_VERSION > OCAML_3_01 THEN
-    _ -> failwith "pconstant of constant"
+  | IFDEF OCAML_VERSION > OCAML_3_07 THEN
+    Const_int32 i32 -> Pconst_integer (Int32.to_string i32) (Some 'l')
+    END
+  | IFDEF OCAML_VERSION > OCAML_3_07 THEN
+    Const_int64 i64 -> Pconst_integer (Int64.to_string i64) (Some 'L')
+    END
+  | IFDEF OCAML_VERSION > OCAML_3_07 THEN
+    Const_nativeint ni -> Pconst_integer (Nativeint.to_string ni) (Some 'n')
     END]
 ;
 

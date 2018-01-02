@@ -1,6 +1,8 @@
 Camlp5 Version 7.04:
 --------------------
 
+* [02 Jan 18] Fixed missing treatment of native, 32 and 64 integers.
+
 Camlp5 Version 7.03:
 --------------------
 
