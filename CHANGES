@@ -1,6 +1,7 @@
 Camlp5 Version 7.04:
 --------------------
 
+* [19 Feb 18] Updated for ocaml version 4.06.1 and 4.06.2.
 * [02 Jan 18] Fixed missing treatment of native, 32 and 64 integers.
 
 Camlp5 Version 7.03:
