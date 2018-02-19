@@ -16,15 +16,15 @@ all: $(COUT)
 opt: $(COPT)
 
 $(CAMLP5N)r$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5RM)
-	rm -f $(CAMLP5N)r$(EXE)
+	$(RM) -f $(CAMLP5N)r$(EXE)
 	cd ../main; $(MAKE) CAMLP5=../meta/$(CAMLP5N)r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
 
 $(CAMLP5N)r.opt: $(CAMLP5RMX)
-	rm -f $(CAMLP5N)r.opt
+	$(RM) -f $(CAMLP5N)r.opt
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../meta/$(CAMLP5N)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
-	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(COUT) $(COPT)
+	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(COUT) $(COPT)
 
 depend:
 	cp .depend .depend.bak

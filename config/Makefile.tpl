@@ -5,6 +5,7 @@ OCAMLC=@OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) ../tools/ocamlc.sh
 OCAMLOPT=@OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) ../tools/ocamlopt.sh
 OCAMLCFLAGS=
 MKDIR=mkdir -p
+RM=/bin/rm
 TEST_DIR=test `basename "$<"` = "$<" || { echo "File \"$<\" needs to be recompiled."; echo "Please run 'make' in directory '$$(dirname "$<")' first."; exit 1; }
 COMPWITH=old
 
@@ -14,16 +15,16 @@ COMPWITH=old
 	@$(TEST_DIR)
 	@$(CAMLP5_COMM) $< -o $*.ppi
 	$(OCAMLC) $(OCAMLCFLAGS) -c -intf $*.ppi
-	rm -f $*.ppi
+	$(RM) -f $*.ppi
 
 .ml.cmo:
 	@$(TEST_DIR)
 	@$(CAMLP5_COMM) $< -o $*.ppo
 	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
-	rm -f $*.ppo
+	$(RM) -f $*.ppo
 
 .ml.cmx:
 	@$(TEST_DIR)
 	@$(CAMLP5_COMM) $< -o $*.ppo
 	$(OCAMLOPT) $(OCAMLCFLAGS) -c -impl $*.ppo
-	rm -f $*.ppo
+	$(RM) -f $*.ppo

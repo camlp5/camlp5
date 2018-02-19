@@ -49,20 +49,20 @@ depend:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
 install:
-	rm -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
+	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	for i in $(DIRS) compile; do \
 	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
 	done
 
 uninstall:
-	rm -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
-	cd "$(DESTDIR)$(BINDIR)"; rm -f *$(CAMLP5N)* odyl ocpp; cd ..
-	cd "$(DESTDIR)$(MANDIR)/man1"; rm -f *$(CAMLP5N)* odyl ocpp; cd ../..
+	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
+	cd "$(DESTDIR)$(BINDIR)"; $(RM) -f *$(CAMLP5N)* odyl ocpp; cd ..
+	cd "$(DESTDIR)$(MANDIR)/man1"; $(RM) -f *$(CAMLP5N)* odyl ocpp
 
 clean::
 	$(MAKE) clean_hot clean_cold
-	rm -f boot/*.cm[oi] boot/$(CAMLP5N)*
-	rm -rf boot/SAVED
+	$(RM) -f boot/*.cm[oi] boot/$(CAMLP5N)*
+	$(RM) -rf boot/SAVED
 	cd test; $(MAKE) clean; cd ..
 
 scratch: clean
@@ -87,7 +87,7 @@ backup:
 restore:
 	mv boot/SAVED boot.new
 	$(MAKE) mv_git FROM=boot TO=boot.new
-	rm -rf boot
+	$(RM) -rf boot
 	mv boot.new boot
 
 promote:
@@ -111,7 +111,7 @@ compare_test:
 	done)
 
 cleanboot:
-	rm -rf boot/SAVED/SAVED
+	$(RM) -rf boot/SAVED/SAVED
 
 
 # Core and core bootstrap
@@ -183,7 +183,7 @@ compare_stolen:
 # Bootstrap the sources
 
 bootstrap_sources:
-	rm -rf ocaml_src.new
+	$(RM) -rf ocaml_src.new
 	mkdir ocaml_src.new
 	$(MAKE) new_sources
 	$(MAKE) untouch_sources
@@ -191,7 +191,7 @@ bootstrap_sources:
 	$(MAKE) clean_sources
 
 bootstrap_source:
-	rm -rf ocaml_src.new
+	$(RM) -rf ocaml_src.new
 	mkdir -p ocaml_src.new/$$DIR
 	$(MAKE) new_source DIR=$$DIR FILE=$$FILE
 	mv ocaml_src.new/$$DIR/$$FILE ocaml_src/$$DIR/$$FILE
@@ -350,7 +350,7 @@ unpromote_sources:
 	$(MAKE) mv_git FROM=ocaml_src.new TO=ocaml_src
 
 clean_sources:
-	rm -rf ocaml_src/SAVED/SAVED
+	$(RM) -rf ocaml_src/SAVED/SAVED
 
 printer:
 	cd etc; $(MAKE) $(PR_O)

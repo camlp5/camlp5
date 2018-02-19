@@ -18,8 +18,8 @@ $(TARGET:.cma=.cmxa): $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(OBJS:.cmo=.cmx) -a -o $(TARGET:.cma=.cmxa)
 
 clean::
-	rm -f *.cm[ioax] *.cmxa *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak
-	rm -f $(TARGET)
+	$(RM) -f *.cm[ioax] *.cmxa *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak
+	$(RM) -f $(TARGET)
 
 depend:
 	cp .depend .depend.bak

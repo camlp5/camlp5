@@ -16,11 +16,11 @@ out: $(CAMLP5N)$D.fast
 opt: $(CAMLP5N)$D.fast.opt
 
 $(CAMLP5N)$D.fast: pa_$D_fast.cmo
-	rm -f $(CAMLP5N)$D.fast
+	$(RM) -f $(CAMLP5N)$D.fast
 	cd ../main; $(MAKE) CAMLP5=../compile/$(CAMLP5N)$D.fast CAMLP5M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
 
 $(CAMLP5N)$D.fast.opt: pa_$D_fast.cmx
-	rm -f $(CAMLP5N)$D.fast.opt
+	$(RM) -f $(CAMLP5N)$D.fast.opt
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$(CAMLP5N)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
@@ -38,8 +38,8 @@ install:
 	fi
 
 clean::
-	rm -f *.cm* *.pp[io] *.[oa] *.lib *.obj *.bak .*.bak *.out *.opt
-	rm -f *.fast tmp.* pa_*_fast.ml *_fast.ml.tmp
+	$(RM) -f *.cm* *.pp[io] *.[oa] *.lib *.obj *.bak .*.bak *.out *.opt
+	$(RM) -f *.fast tmp.* pa_*_fast.ml *_fast.ml.tmp
 
 depend:
 	cp .depend .depend.bak

@@ -2,11 +2,12 @@
 # Copyright (c) INRIA 2007-2017
 
 DEP=../etc/pr_r.cmo quot_r.out.ml
+RM=/bin/rm
 
 all: quot_r.mlt quot_r.mlu quot_o.mlu
 
 clean:
-	rm -f *.ml[tu]
+	$(RM) -f *.ml[tu]
 
 compare_quot:
 	./mkquot.sh | diff quot_r.out.ml -

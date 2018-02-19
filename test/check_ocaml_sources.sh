@@ -207,4 +207,4 @@ for i in $files; do
     main/camlp5 etc/pa_o.cmo meta/pr_dump.cmo -no_quot /tmp/t2.$suff > /dev/null
   fi
 done
-# rm -f /tmp/t1.$suff /tmp/t2.$suff /tmp/t3.$suff
+# /bin/rm -f /tmp/t1.$suff /tmp/t2.$suff /tmp/t3.$suff

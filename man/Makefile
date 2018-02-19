@@ -7,7 +7,7 @@ TARGET=$(CAMLP5N).1
 all: $(TARGET)
 
 clean::
-	rm -f $(TARGET)
+	$(RM) -f $(TARGET)
 
 depend:
 
@@ -17,10 +17,10 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(MANDIR)/man1"
 	-cp $(TARGET) "$(DESTDIR)$(MANDIR)/man1/."
 	for i in $(CAMLP5N)o.1 $(CAMLP5N)r.1 $(CAMLP5N)sch.1 mk$(CAMLP5N).1 ocpp5.1; do \
-	  cd "$(DESTDIR)$(MANDIR)/man1"; rm -f $$i; ln -s $(TARGET) $$i; \
+	  cd "$(DESTDIR)$(MANDIR)/man1"; $(RM) -f $$i; ln -s $(TARGET) $$i; \
 	done
 	for i in $(CAMLP5N)o.opt.1 $(CAMLP5N)r.opt.1 mk$(CAMLP5N).opt.1; do \
-	  cd "$(DESTDIR)$(MANDIR)/man1"; rm -f $$i; ln -s $(TARGET) $$i; \
+	  cd "$(DESTDIR)$(MANDIR)/man1"; $(RM) -f $$i; ln -s $(TARGET) $$i; \
 	done
 
 $(CAMLP5N).1: camlp5.1.tpl

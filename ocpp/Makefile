@@ -15,8 +15,8 @@ ocpp$(EXE): $(OBJS)
 	$(OCAMLC) $(LINKFLAGS) ../boot/versdep.cmo ../boot/ploc.cmo ../boot/stdpp.cmo ../main/quotation.cmo ../odyl/odyl.cma $(OBJS) ../odyl/odyl.cmo -linkall -o ocpp$(EXE)
 
 clean::
-	rm -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.out *.bak .*.bak
-	rm -f ocpp$(EXE)
+	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.out *.bak .*.bak
+	$(RM) -f ocpp$(EXE)
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"

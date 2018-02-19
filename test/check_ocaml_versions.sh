@@ -81,8 +81,8 @@ for i in $vers; do
   echo date: $(date) version: $i
   echo "+++++ cd $OCAMLSDIR"
   cd $OCAMLSDIR
-  echo "+++++ rm -rf $OCAMLWDIR"
-  rm -rf $OCAMLWDIR
+  echo "+++++ /bin/rm -rf $OCAMLWDIR"
+  /bin/rm -rf $OCAMLWDIR
   echo "+++++ git worktree prune"
   git worktree prune
   echo "+++++ git worktree add $OCAMLWDIR tags/$i"
@@ -129,7 +129,7 @@ for i in $vers; do
     time make world.opt
   fi
   echo "+++++ make install"
-  rm -rf $TOP/usr/lib/ocaml
+  /bin/rm -rf $TOP/usr/lib/ocaml
   make install
   echo "+++++ make clean"
   if [ -f "Makefile.bak" ]; then mv Makefile.bak Makefile; fi

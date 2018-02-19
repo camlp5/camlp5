@@ -27,7 +27,7 @@ odyl.cmxa: $(OBJS:.cmo=.cmx)
 odyl_main.cmx: odyl_main.ml
 	$(CAMLP5_COMM) -DOPT -o odyl_main.ppo odyl_main.ml
 	$(OCAMLOPT) -c -impl odyl_main.ppo
-	rm -f odyl_main.ppo
+	$(RM) -f odyl_main.ppo
 
 odyl_config.ml:
 	echo "let standard_library =" > odyl_config.ml
@@ -36,8 +36,8 @@ odyl_config.ml:
 	sed -e 's|\\|/|g' >> odyl_config.ml
 
 clean::
-	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
-	rm -f odyl_config.ml odyl$(EXE)
+	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
+	$(RM) -f odyl_config.ml odyl$(EXE)
 
 depend:
 	cp .depend .depend.bak

@@ -34,7 +34,7 @@ $(CAMLP5N)_top.cma: $(OBJS)
 	$(OCAMLC) $(OBJS) -a -o $(CAMLP5N)_top.cma
 
 clean::
-	rm -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)
+	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)
 
 depend:
 	cp .depend .depend.bak

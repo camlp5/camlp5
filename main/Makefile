@@ -38,8 +38,8 @@ crc.cmo: $(CAMLP5_OBJS_0)
 	$(OCAMLC) -c -impl crc.tmp
 
 clean::
-	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
-	rm -f $(CAMLP5) crc.tmp
+	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
+	$(RM) -f $(CAMLP5) crc.tmp
 
 depend:
 	cp .depend .depend.bak
