@@ -1,3 +1,9 @@
+Camlp5 Version 7.05:
+--------------------
+
+* [20 Feb 18] Changed "make install" and "make uninstall" so that they
+  do nothing if "configure" had failed.
+
 Camlp5 Version 7.04:
 --------------------
 

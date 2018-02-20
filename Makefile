@@ -49,12 +49,20 @@ depend:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
 install:
+	@if test -z "$(LIBDIR)"; then \
+	  echo "*** Variable LIBDIR not set"; exit 1; fi
+	@if test -z "$(CAMLP5N)"; then \
+	  echo "*** Variable CAMLP5N not set"; exit 1; fi
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	for i in $(DIRS) compile; do \
 	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
 	done
 
 uninstall:
+	@if test -z "$(LIBDIR)"; then \
+	  echo "*** Variable LIBDIR not set"; exit 1; fi
+	@if test -z "$(CAMLP5N)"; then \
+	  echo "*** Variable CAMLP5N not set"; exit 1; fi
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	cd "$(DESTDIR)$(BINDIR)"; $(RM) -f *$(CAMLP5N)* odyl ocpp; cd ..
 	cd "$(DESTDIR)$(MANDIR)/man1"; $(RM) -f *$(CAMLP5N)* odyl ocpp
