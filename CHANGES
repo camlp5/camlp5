@@ -1,6 +1,10 @@
 Camlp5 Version 7.05:
 --------------------
 
+* [22 Feb 18] Fixed compilation failure when compiled with ocaml
+  versions 3.08.0 to 4.02.4 due to the time when the constructor
+  Pconst_integer was created (at ocaml version 4.03.0 actually).
+* [22 Feb 18] Added compatibility with (old) ocaml version 4.03.3.
 * [20 Feb 18] Changed "make install" and "make uninstall" so that they
   do nothing if "configure" had failed.
 

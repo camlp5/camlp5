@@ -170,9 +170,9 @@ let pconst_of_const =
   | Const_char c -> ocaml_pconst_char c
   | Const_string s -> ocaml_pconst_string s None
   | Const_float s -> ocaml_pconst_float s
-  | Const_int32 i32 -> Pconst_integer (Int32.to_string i32, Some 'l')
-  | Const_int64 i64 -> Pconst_integer (Int64.to_string i64, Some 'L')
-  | Const_nativeint ni -> Pconst_integer (Nativeint.to_string ni, Some 'n')
+  | Const_int32 i32 -> Const_int32 i32
+  | Const_int64 i64 -> Const_int64 i64
+  | Const_nativeint ni -> Const_nativeint ni
 ;;
 
 let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
