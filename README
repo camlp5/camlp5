@@ -5,7 +5,7 @@ OVERVIEW
   It is compatible with all versions of ocaml from 1.07 to 4.06.2 (when
   they compile), and jocaml 3.12.0 to 3.12.1.
 
-  This Camlp5 version is 7.05-exp.
+  This Camlp5 version is 7.05.
 
 INSTALL
 
