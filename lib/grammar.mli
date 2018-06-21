@@ -73,6 +73,45 @@ module Entry :
 value of_entry : Entry.e 'a -> g;
    (** Return the grammar associated with an entry. *)
 
+type symbol 'self 'a = 'x;
+(** Type of grammar symbols. A type-safe wrapper around Gramext.symbol. The
+    first type argument is the type of the ambient entry, the second one is the
+    type of the produced value. *)
+
+type rule 'self 'f 'r = 'x;
+
+type production 'a = 'x;
+
+type extension = 'x;
+
+value s_facto : symbol 'self 'a -> symbol 'self 'a;
+(*   | Smeta of string and list (g_symbol 'te) and Obj.t *)
+value s_nterm : Entry.e 'a -> symbol 'self 'a;
+value s_nterml : Entry.e 'a -> string -> symbol 'self 'a;
+value s_list0 : symbol 'self 'a -> symbol 'self (list 'a);
+value s_list0sep : symbol 'self 'a -> symbol 'self 'b -> bool -> symbol 'self (list 'a);
+value s_list1 : symbol 'self 'a -> symbol 'self (list 'a);
+value s_list1sep : symbol 'self 'a -> symbol 'self 'b -> bool -> symbol 'self (list 'a);
+value s_opt : symbol 'self 'a -> symbol 'self (option 'a);
+value s_flag : symbol 'self 'a -> symbol 'self bool;
+value s_self : symbol 'self 'self;
+value s_next : symbol 'self 'self;
+value s_token : Plexing.pattern -> symbol 'self string;
+value s_rules : list (production 'a) -> symbol 'self 'a;
+value s_vala : list string -> symbol 'self 'a -> symbol 'self (Ploc.vala 'a);
+
+value r_stop : rule 'self 'r 'r;
+value r_next : rule 'self 'a 'r -> symbol 'self 'b -> rule 'self ('b -> 'a) 'r;
+value r_cut : rule 'self 'a 'r -> rule 'self 'a 'r;
+
+value production : (rule 'a 'f (Ploc.t -> 'a) * 'f) -> production 'a;
+
+value extension : Entry.e 'a -> option Gramext.position ->
+  list (option string * option Gramext.g_assoc * list (production 'a)) -> extension;
+
+value safe_extend : list extension -> unit;
+value safe_delete_rule : Entry.e 'a -> rule 'a 'f 'r -> unit;
+
 (** {6 Clearing grammars and entries} *)
 
 module Unsafe :
@@ -165,6 +204,38 @@ module type S =
         value parse_token : e 'a -> Stream.t te -> 'a;
       end
     ;
+
+    type symbol 'self 'a = 'x;
+    (** Type of grammar symbols. A type-safe wrapper around Gramext.symbol. The
+        first type argument is the type of the ambient entry, the second one is the
+        type of the produced value. *)
+
+    type rule 'self 'f 'r = 'x;
+
+    type production 'a = 'x;
+
+    value s_facto : symbol 'self 'a -> symbol 'self 'a;
+    (*   | Smeta of string and list (g_symbol 'te) and Obj.t *)
+    value s_nterm : Entry.e 'a -> symbol 'self 'a;
+    value s_nterml : Entry.e 'a -> string -> symbol 'self 'a;
+    value s_list0 : symbol 'self 'a -> symbol 'self (list 'a);
+    value s_list0sep : symbol 'self 'a -> symbol 'self 'b -> bool -> symbol 'self (list 'a);
+    value s_list1 : symbol 'self 'a -> symbol 'self (list 'a);
+    value s_list1sep : symbol 'self 'a -> symbol 'self 'b -> bool -> symbol 'self (list 'a);
+    value s_opt : symbol 'self 'a -> symbol 'self (option 'a);
+    value s_flag : symbol 'self 'a -> symbol 'self bool;
+    value s_self : symbol 'self 'self;
+    value s_next : symbol 'self 'self;
+    value s_token : Plexing.pattern -> symbol 'self string;
+    value s_rules : list (production 'a) -> symbol 'self 'a;
+    value s_vala : list string -> symbol 'self 'a -> symbol 'self (Ploc.vala 'a);
+
+    value r_stop : rule 'self 'r 'r;
+    value r_next : rule 'self 'a 'r -> symbol 'self 'b -> rule 'self ('b -> 'a) 'r;
+    value r_cut : rule 'self 'a 'r -> rule 'self 'a 'r;
+
+    value production : (rule 'a 'f (Ploc.t -> 'a) * 'f) -> production 'a;
+
     module Unsafe :
       sig
         value gram_reinit : Plexing.lexer te -> unit;
@@ -177,7 +248,14 @@ module type S =
           (option string * option Gramext.g_assoc *
            list (list (Gramext.g_symbol te) * Gramext.g_action)) ->
         unit;
+    value safe_extend :
+      Entry.e 'a -> option Gramext.position ->
+        list
+          (option string * option Gramext.g_assoc *
+            list (production 'a)) ->
+        unit;
     value delete_rule : Entry.e 'a -> list (Gramext.g_symbol te) -> unit;
+    value safe_delete_rule : Entry.e 'a -> rule 'a 'f 'r -> unit;
   end
 ;
    (** Signature type of the functor [Grammar.GMake]. The types and

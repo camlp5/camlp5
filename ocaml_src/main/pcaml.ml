@@ -208,17 +208,23 @@ let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
 
 let expr_eoi = Grammar.Entry.create gram "expr_eoi";;
 let patt_eoi = Grammar.Entry.create gram "patt_eoi";;
-Grammar.extend
-  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action (fun _ (x : 'expr) (loc : Ploc.t) -> (x : 'expr_eoi))]];
-   Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi))]]];;
+Grammar.safe_extend
+  [Grammar.extension (expr_eoi : 'expr_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          (fun _ (x : 'expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
+   Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]]];;
 
 let handle_expr_quotation loc x =
   handle_quotation loc fst fst true expr_eoi Reloc.expr x

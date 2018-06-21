@@ -72,6 +72,53 @@ module Entry :
 val of_entry : 'a Entry.e -> g;;
    (** Return the grammar associated with an entry. *)
 
+type ('self, 'a) symbol;;
+(** Type of grammar symbols. A type-safe wrapper around Gramext.symbol. The
+    first type argument is the type of the ambient entry, the second one is the
+    type of the produced value. *)
+
+type ('self, 'f, 'r) rule;;
+
+type 'a production;;
+
+type extension;;
+
+val s_facto : ('self, 'a) symbol -> ('self, 'a) symbol;;
+(*   | Smeta of string and list (g_symbol 'te) and Obj.t *)
+val s_nterm : 'a Entry.e -> ('self, 'a) symbol;;
+val s_nterml : 'a Entry.e -> string -> ('self, 'a) symbol;;
+val s_list0 : ('self, 'a) symbol -> ('self, 'a list) symbol;;
+val s_list0sep :
+  ('self, 'a) symbol -> ('self, 'b) symbol -> bool ->
+    ('self, 'a list) symbol;;
+val s_list1 : ('self, 'a) symbol -> ('self, 'a list) symbol;;
+val s_list1sep :
+  ('self, 'a) symbol -> ('self, 'b) symbol -> bool ->
+    ('self, 'a list) symbol;;
+val s_opt : ('self, 'a) symbol -> ('self, 'a option) symbol;;
+val s_flag : ('self, 'a) symbol -> ('self, bool) symbol;;
+val s_self : ('self, 'self) symbol;;
+val s_next : ('self, 'self) symbol;;
+val s_token : Plexing.pattern -> ('self, string) symbol;;
+val s_rules : 'a production list -> ('self, 'a) symbol;;
+val s_vala :
+  string list -> ('self, 'a) symbol -> ('self, 'a Ploc.vala) symbol;;
+
+val r_stop : ('self, 'r, 'r) rule;;
+val r_next :
+  ('self, 'a, 'r) rule -> ('self, 'b) symbol -> ('self, 'b -> 'a, 'r) rule;;
+val r_cut : ('self, 'a, 'r) rule -> ('self, 'a, 'r) rule;;
+
+val production : ('a, 'f, Ploc.t -> 'a) rule * 'f -> 'a production;;
+
+val extension :
+  'a Entry.e -> Gramext.position option ->
+    (string option * Gramext.g_assoc option * 'a production list) list ->
+    extension;;
+
+val safe_extend : extension list -> unit;;
+val safe_delete_rule : 'a Entry.e -> ('a, 'f, 'r) rule -> unit;;
+
 (** {6 Clearing grammars and entries} *)
 
 module Unsafe :
@@ -159,6 +206,34 @@ module type S =
         val parse_token : 'a e -> te Stream.t -> 'a;;
       end
     ;;
+    type ('self, 'a) symbol;;
+    type ('self, 'f, 'r) rule;;
+    type 'a production;;
+    val s_facto : ('self, 'a) symbol -> ('self, 'a) symbol;;
+    val s_nterm : 'a Entry.e -> ('self, 'a) symbol;;
+    val s_nterml : 'a Entry.e -> string -> ('self, 'a) symbol;;
+    val s_list0 : ('self, 'a) symbol -> ('self, 'a list) symbol;;
+    val s_list0sep :
+      ('self, 'a) symbol -> ('self, 'b) symbol -> bool ->
+        ('self, 'a list) symbol;;
+    val s_list1 : ('self, 'a) symbol -> ('self, 'a list) symbol;;
+    val s_list1sep :
+      ('self, 'a) symbol -> ('self, 'b) symbol -> bool ->
+        ('self, 'a list) symbol;;
+    val s_opt : ('self, 'a) symbol -> ('self, 'a option) symbol;;
+    val s_flag : ('self, 'a) symbol -> ('self, bool) symbol;;
+    val s_self : ('self, 'self) symbol;;
+    val s_next : ('self, 'self) symbol;;
+    val s_token : Plexing.pattern -> ('self, string) symbol;;
+    val s_rules : 'a production list -> ('self, 'a) symbol;;
+    val s_vala :
+      string list -> ('self, 'a) symbol -> ('self, 'a Ploc.vala) symbol;;
+    val r_stop : ('self, 'r, 'r) rule;;
+    val r_next :
+      ('self, 'a, 'r) rule -> ('self, 'b) symbol ->
+        ('self, 'b -> 'a, 'r) rule;;
+    val r_cut : ('self, 'a, 'r) rule -> ('self, 'a, 'r) rule;;
+    val production : ('a, 'f, Ploc.t -> 'a) rule * 'f -> 'a production;;
     module Unsafe :
       sig
         val gram_reinit : te Plexing.lexer -> unit;;
@@ -171,7 +246,12 @@ module type S =
            (te Gramext.g_symbol list * Gramext.g_action) list)
           list ->
         unit;;
+    val safe_extend :
+      'a Entry.e -> Gramext.position option ->
+        (string option * Gramext.g_assoc option * 'a production list) list ->
+        unit;;
     val delete_rule : 'a Entry.e -> te Gramext.g_symbol list -> unit;;
+    val safe_delete_rule : 'a Entry.e -> ('a, 'f, 'r) rule -> unit;;
   end
 ;;
    (** Signature type of the functor [Grammar.GMake]. The types and

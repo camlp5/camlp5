@@ -316,79 +316,90 @@ let incorrect_number loc l1 l2 =
 let define eo x =
   begin match eo with
     MvExpr ([], e) ->
-      Grammar.extend
-        [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
-         Some (Gramext.Level "simple"),
-         [None, None,
-          [[Gramext.Stoken ("UIDENT", x)],
-           Gramext.action
-             (fun _ (loc : Ploc.t) ->
-                (may_eval (Reloc.expr (fun _ -> loc) 0 e) : 'expr))]];
-         Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
-         Some (Gramext.Level "simple"),
-         [None, None,
-          [[Gramext.Stoken ("UIDENT", x)],
-           Gramext.action
-             (fun _ (loc : Ploc.t) ->
-                (let p = substp loc [] e in Reloc.patt (fun _ -> loc) 0 p :
-                 'patt))]]]
+      Grammar.safe_extend
+        [Grammar.extension (expr : 'expr Grammar.Entry.e)
+           (Some (Gramext.Level "simple"))
+           [None, None,
+            [Grammar.production
+               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)),
+                (fun _ (loc : Ploc.t) ->
+                   (may_eval (Reloc.expr (fun _ -> loc) 0 e) : 'expr)))]];
+         Grammar.extension (patt : 'patt Grammar.Entry.e)
+           (Some (Gramext.Level "simple"))
+           [None, None,
+            [Grammar.production
+               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)),
+                (fun _ (loc : Ploc.t) ->
+                   (let p = substp loc [] e in Reloc.patt (fun _ -> loc) 0 p :
+                    'patt)))]]]
   | MvExpr (sl, e) ->
-      Grammar.extend
-        [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
-         Some (Gramext.Level "apply"),
-         [None, None,
-          [[Gramext.Stoken ("UIDENT", x); Gramext.Sself],
-           Gramext.action
-             (fun (param : 'expr) _ (loc : Ploc.t) ->
-                (let el =
-                   match param with
-                     MLast.ExTup (_, el) -> el
-                   | e -> [e]
-                 in
-                 if List.length el = List.length sl then
-                   let env = List.combine sl el in
-                   let e = subst loc env e in
-                   may_eval (Reloc.expr (fun _ -> loc) 0 e)
-                 else incorrect_number loc el sl :
-                 'expr))]];
-         Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
-         Some (Gramext.Level "simple"),
-         [None, None,
-          [[Gramext.Stoken ("UIDENT", x); Gramext.Sself],
-           Gramext.action
-             (fun (param : 'patt) _ (loc : Ploc.t) ->
-                (let pl =
-                   match param with
-                     MLast.PaTup (_, pl) -> pl
-                   | p -> [p]
-                 in
-                 if List.length pl = List.length sl then
-                   let e = may_eval (Reloc.expr (fun _ -> loc) 0 e) in
-                   let env = List.combine sl pl in
-                   let p = substp loc env e in Reloc.patt (fun _ -> loc) 0 p
-                 else incorrect_number loc pl sl :
-                 'patt))]]]
+      Grammar.safe_extend
+        [Grammar.extension (expr : 'expr Grammar.Entry.e)
+           (Some (Gramext.Level "apply"))
+           [None, None,
+            [Grammar.production
+               (Grammar.r_next
+                  (Grammar.r_next Grammar.r_stop
+                     (Grammar.s_token ("UIDENT", x)))
+                  Grammar.s_self,
+                (fun (param : 'expr) _ (loc : Ploc.t) ->
+                   (let el =
+                      match param with
+                        MLast.ExTup (_, el) -> el
+                      | e -> [e]
+                    in
+                    if List.length el = List.length sl then
+                      let env = List.combine sl el in
+                      let e = subst loc env e in
+                      may_eval (Reloc.expr (fun _ -> loc) 0 e)
+                    else incorrect_number loc el sl :
+                    'expr)))]];
+         Grammar.extension (patt : 'patt Grammar.Entry.e)
+           (Some (Gramext.Level "simple"))
+           [None, None,
+            [Grammar.production
+               (Grammar.r_next
+                  (Grammar.r_next Grammar.r_stop
+                     (Grammar.s_token ("UIDENT", x)))
+                  Grammar.s_self,
+                (fun (param : 'patt) _ (loc : Ploc.t) ->
+                   (let pl =
+                      match param with
+                        MLast.PaTup (_, pl) -> pl
+                      | p -> [p]
+                    in
+                    if List.length pl = List.length sl then
+                      let e = may_eval (Reloc.expr (fun _ -> loc) 0 e) in
+                      let env = List.combine sl pl in
+                      let p = substp loc env e in
+                      Reloc.patt (fun _ -> loc) 0 p
+                    else incorrect_number loc pl sl :
+                    'patt)))]]]
   | MvType ([], t) ->
-      Grammar.extend
-        [Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
-         Some (Gramext.Level "simple"),
-         [None, None,
-          [[Gramext.Stoken ("UIDENT", x)],
-           Gramext.action (fun _ (loc : Ploc.t) -> (t : 'ctyp))]]]
+      Grammar.safe_extend
+        [Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
+           (Some (Gramext.Level "simple"))
+           [None, None,
+            [Grammar.production
+               (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)),
+                (fun _ (loc : Ploc.t) -> (t : 'ctyp)))]]]
   | MvType (sl, t) ->
-      Grammar.extend
-        [Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
-         Some (Gramext.Level "apply"),
-         [None, None,
-          [[Gramext.Stoken ("UIDENT", x); Gramext.Sself],
-           Gramext.action
-             (fun (param : 'ctyp) _ (loc : Ploc.t) ->
-                (let tl = [param] in
-                 if List.length tl = List.length sl then
-                   let env = List.combine sl tl in
-                   let t = substt loc env t in t
-                 else incorrect_number loc tl sl :
-                 'ctyp))]]]
+      Grammar.safe_extend
+        [Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
+           (Some (Gramext.Level "apply"))
+           [None, None,
+            [Grammar.production
+               (Grammar.r_next
+                  (Grammar.r_next Grammar.r_stop
+                     (Grammar.s_token ("UIDENT", x)))
+                  Grammar.s_self,
+                (fun (param : 'ctyp) _ (loc : Ploc.t) ->
+                   (let tl = [param] in
+                    if List.length tl = List.length sl then
+                      let env = List.combine sl tl in
+                      let t = substt loc env t in t
+                    else incorrect_number loc tl sl :
+                    'ctyp)))]]]
   | MvNone -> ()
   end;
   defined := (x, eo) :: !defined
@@ -399,16 +410,27 @@ let undef x =
     let eo = List.assoc x !defined in
     begin match eo with
       MvExpr ([], _) ->
-        Grammar.delete_rule expr [Gramext.Stoken ("UIDENT", x)];
-        Grammar.delete_rule patt [Gramext.Stoken ("UIDENT", x)]
+        Grammar.safe_delete_rule expr
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)));
+        Grammar.safe_delete_rule patt
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)))
     | MvExpr (_, _) ->
-        Grammar.delete_rule expr
-          [Gramext.Stoken ("UIDENT", x); Gramext.Sself];
-        Grammar.delete_rule patt [Gramext.Stoken ("UIDENT", x); Gramext.Sself]
+        Grammar.safe_delete_rule expr
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)))
+             Grammar.s_self);
+        Grammar.safe_delete_rule patt
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)))
+             Grammar.s_self)
     | MvType ([], _) ->
-        Grammar.delete_rule ctyp [Gramext.Stoken ("UIDENT", x)]
+        Grammar.safe_delete_rule ctyp
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)))
     | MvType (_, _) ->
-        Grammar.delete_rule ctyp [Gramext.Stoken ("UIDENT", x); Gramext.Sself]
+        Grammar.safe_delete_rule ctyp
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)))
+             Grammar.s_self)
     | MvNone -> ()
     end;
     defined := list_remove x !defined
@@ -424,7 +446,7 @@ let apply_directive loc n dp =
       Ploc.raise loc (Stream.Error msg)
 ;;
 
-Grammar.extend
+Grammar.safe_extend
   (let _ = (expr : 'expr Grammar.Entry.e)
    and _ = (patt : 'patt Grammar.Entry.e)
    and _ = (str_item : 'str_item Grammar.Entry.e)
@@ -461,589 +483,842 @@ Grammar.extend
    and dexpr : 'dexpr Grammar.Entry.e = grammar_entry_create "dexpr"
    and op : 'op Grammar.Entry.e = grammar_entry_create "op"
    and uident : 'uident Grammar.Entry.e = grammar_entry_create "uident" in
-   [Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e),
-    Some Gramext.First,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj
-            (str_macro_def : 'str_macro_def Grammar.Entry.e))],
-      Gramext.action
-        (fun (x : 'str_macro_def) (loc : Ploc.t) ->
-           (match x with
-              SdStr sil ->
-                let sil = Pcaml.unvala sil in
-                List.iter
-                  (function
-                     MLast.StDir (loc, n, dp) -> apply_directive loc n dp
-                   | _ -> ())
-                  sil;
-                begin match sil with
-                  [si] -> si
-                | sil -> MLast.StDcl (loc, sil)
-                end
-            | SdDef (x, eo) -> define eo x; MLast.StDcl (loc, [])
-            | SdUnd x -> undef x; MLast.StDcl (loc, [])
-            | SdNop -> MLast.StDcl (loc, []) :
-            'str_item))]];
-    Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e),
-    Some Gramext.First,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj
-            (sig_macro_def : 'sig_macro_def Grammar.Entry.e))],
-      Gramext.action
-        (fun (x : 'sig_macro_def) (loc : Ploc.t) ->
-           (match x with
-              SdStr sil ->
-                let sil = Pcaml.unvala sil in
-                List.iter
-                  (function
-                     MLast.SgDir (loc, n, dp) -> apply_directive loc n dp
-                   | _ -> ())
-                  sil;
-                begin match sil with
-                  [si] -> si
-                | sil -> MLast.SgDcl (loc, sil)
-                end
-            | SdDef (x, eo) -> define eo x; MLast.SgDcl (loc, [])
-            | SdUnd x -> undef x; MLast.SgDcl (loc, [])
-            | SdNop -> MLast.SgDcl (loc, []) :
-            'sig_item))]];
-    Grammar.Entry.obj (str_macro_def : 'str_macro_def Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_str : 'else_str Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if not e then d1 else d2 : 'str_macro_def));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_str : 'else_str Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then d1 else d2 : 'str_macro_def));
-      [Gramext.Stoken ("", "UNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'uident) _ (loc : Ploc.t) -> (SdUnd i : 'str_macro_def));
-      [Gramext.Stoken ("", "DEFINE_TYPE");
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
-      Gramext.action
-        (fun (ome : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, ome) : 'str_macro_def));
-      [Gramext.Stoken ("", "DEFINE");
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e))],
-      Gramext.action
-        (fun (ome : 'opt_macro_expr) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, ome) : 'str_macro_def))]];
-    Grammar.Entry.obj (else_str : 'else_str Grammar.Entry.e), None,
-    [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> (SdNop : 'else_str));
-      [Gramext.Stoken ("", "ELSE");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (structure_or_macro : 'structure_or_macro Grammar.Entry.e))],
-      Gramext.action
-        (fun (d1 : 'structure_or_macro) _ (loc : Ploc.t) -> (d1 : 'else_str));
-      [Gramext.Stoken ("", "ELSIFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if not e then d1 else d2 : 'else_str));
-      [Gramext.Stoken ("", "ELSIFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then d1 else d2 : 'else_str))]];
-    Grammar.Entry.obj (sig_macro_def : 'sig_macro_def Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_sig : 'else_sig Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if not e then d1 else d2 : 'sig_macro_def));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_sig : 'else_sig Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then d1 else d2 : 'sig_macro_def));
-      [Gramext.Stoken ("", "UNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'uident) _ (loc : Ploc.t) -> (SdUnd i : 'sig_macro_def));
-      [Gramext.Stoken ("", "DEFINE_TYPE");
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
-      Gramext.action
-        (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, omt) : 'sig_macro_def));
-      [Gramext.Stoken ("", "DEFINE");
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
-      Gramext.action
-        (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, omt) : 'sig_macro_def))]];
-    Grammar.Entry.obj (else_sig : 'else_sig Grammar.Entry.e), None,
-    [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> (SdNop : 'else_sig));
-      [Gramext.Stoken ("", "ELSE");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (signature_or_macro : 'signature_or_macro Grammar.Entry.e))],
-      Gramext.action
-        (fun (d1 : 'signature_or_macro) _ (loc : Ploc.t) -> (d1 : 'else_sig));
-      [Gramext.Stoken ("", "ELSIFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if not e then d1 else d2 : 'else_sig));
-      [Gramext.Stoken ("", "ELSIFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then d1 else d2 : 'else_sig))]];
-    Grammar.Entry.obj
-      (structure_or_macro : 'structure_or_macro Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj (structure : 'structure Grammar.Entry.e))],
-      Gramext.action
-        (fun (sil : 'structure) (loc : Ploc.t) ->
-           (SdStr sil : 'structure_or_macro));
-      [Gramext.Snterm
-         (Grammar.Entry.obj
-            (str_macro_def : 'str_macro_def Grammar.Entry.e))],
-      Gramext.action
-        (fun (d : 'str_macro_def) (loc : Ploc.t) ->
-           (d : 'structure_or_macro))]];
-    Grammar.Entry.obj
-      (signature_or_macro : 'signature_or_macro Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj (signature : 'signature Grammar.Entry.e))],
-      Gramext.action
-        (fun (sil : 'signature) (loc : Ploc.t) ->
-           (SdStr sil : 'signature_or_macro));
-      [Gramext.Snterm
-         (Grammar.Entry.obj
-            (sig_macro_def : 'sig_macro_def Grammar.Entry.e))],
-      Gramext.action
-        (fun (d : 'sig_macro_def) (loc : Ploc.t) ->
-           (d : 'signature_or_macro))]];
-    Grammar.Entry.obj (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e),
-    None,
-    [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_expr));
-      [Gramext.Stoken ("", "=");
-       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
-      Gramext.action
-        (fun (e : 'expr) _ (loc : Ploc.t) ->
-           (MvExpr ([], e) : 'opt_macro_expr));
-      [Gramext.Snterm
-         (Grammar.Entry.obj (macro_param : 'macro_param Grammar.Entry.e));
-       Gramext.Stoken ("", "=");
-       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
-      Gramext.action
-        (fun (e : 'expr) _ (pl : 'macro_param) (loc : Ploc.t) ->
-           (MvExpr (pl, e) : 'opt_macro_expr))]];
-    Grammar.Entry.obj (opt_macro_type : 'opt_macro_type Grammar.Entry.e),
-    None,
-    [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_type));
-      [Gramext.Stoken ("", "=");
-       Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
-      Gramext.action
-        (fun (t : 'ctyp) _ (loc : Ploc.t) ->
-           (MvType ([], t) : 'opt_macro_type));
-      [Gramext.Slist1 (Gramext.Stoken ("LIDENT", ""));
-       Gramext.Stoken ("", "=");
-       Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
-      Gramext.action
-        (fun (t : 'ctyp) _ (pl : string list) (loc : Ploc.t) ->
-           (MvType (pl, t) : 'opt_macro_type))]];
-    Grammar.Entry.obj (macro_param : 'macro_param Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "(");
-       Gramext.Slist1sep
-         (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","), false);
-       Gramext.Stoken ("", ")")],
-      Gramext.action
-        (fun _ (sl : string list) _ (loc : Ploc.t) -> (sl : 'macro_param));
-      [Gramext.Slist1 (Gramext.Stoken ("LIDENT", ""))],
-      Gramext.action
-        (fun (sl : string list) (loc : Ploc.t) -> (sl : 'macro_param))]];
-    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
-    Some (Gramext.Level "top"),
-    [None, None,
-     [[Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_expr : 'else_expr Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if not e then e1 else e2 : 'expr));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_expr : 'else_expr Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then e1 else e2 : 'expr))]];
-    Grammar.Entry.obj (else_expr : 'else_expr Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "ELSE");
-       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
-      Gramext.action (fun (e : 'expr) _ (loc : Ploc.t) -> (e : 'else_expr));
-      [Gramext.Stoken ("", "ELSIFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if not e then e1 else e2 : 'else_expr));
-      [Gramext.Stoken ("", "ELSIFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then e1 else e2 : 'else_expr))]];
-    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
-    Some (Gramext.Level "simple"),
-    [None, None,
-     [[Gramext.Stoken ("LIDENT", "__LOCATION__")],
-      Gramext.action
-        (fun _ (loc : Ploc.t) ->
-           (let bp = string_of_int (Ploc.first_pos loc) in
-            let ep = string_of_int (Ploc.last_pos loc) in
-            MLast.ExTup
-              (loc, [MLast.ExInt (loc, bp, ""); MLast.ExInt (loc, ep, "")]) :
-            'expr));
-      [Gramext.Stoken ("LIDENT", "__FILE__")],
-      Gramext.action
-        (fun _ (loc : Ploc.t) ->
-           (MLast.ExStr (loc, Ploc.file_name loc) : 'expr))]];
-    Grammar.Entry.obj (patt : 'patt Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_patt : 'else_patt Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then p2 else p1 : 'patt));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj (else_patt : 'else_patt Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then p1 else p2 : 'patt))]];
-    Grammar.Entry.obj (else_patt : 'else_patt Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "ELSE");
-       Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e))],
-      Gramext.action (fun (p : 'patt) _ (loc : Ploc.t) -> (p : 'else_patt));
-      [Gramext.Stoken ("", "ELSIFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if not e then p1 else p2 : 'else_patt));
-      [Gramext.Stoken ("", "ELSIFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then p1 else p2 : 'else_patt))]];
-    Grammar.Entry.obj
-      (constructor_declaration : 'constructor_declaration Grammar.Entry.e),
-    Some Gramext.First,
-    [None, None,
-     [[Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "ELSE"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (y : 'constructor_declaration) _ (x : 'constructor_declaration)
-             _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then y else x : 'constructor_declaration));
-      [Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then Grammar.skip_item x else x : 'constructor_declaration));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "ELSE"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (y : 'constructor_declaration) _ (x : 'constructor_declaration)
-             _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then x else y : 'constructor_declaration));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then x else Grammar.skip_item x :
-            'constructor_declaration))]];
-    Grammar.Entry.obj
-      (label_declaration : 'label_declaration Grammar.Entry.e),
-    Some Gramext.First,
-    [None, None,
-     [[Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "ELSE"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
-             (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then y else x : 'label_declaration));
-      [Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then Grammar.skip_item x else x : 'label_declaration));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "ELSE"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
-             (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then x else y : 'label_declaration));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then x else Grammar.skip_item x : 'label_declaration))]];
-    Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e),
-    Some Gramext.First,
-    [None, None,
-     [[Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if not e then x else Grammar.skip_item x : 'match_case));
-      [Gramext.Stoken ("", "IFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (else_match_case : 'else_match_case Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if not e then x else y : 'match_case));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then x else Grammar.skip_item x : 'match_case));
-      [Gramext.Stoken ("", "IFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN"); Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (else_match_case : 'else_match_case Grammar.Entry.e));
-       Gramext.Stoken ("", "END")],
-      Gramext.action
-        (fun _ (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then x else y : 'match_case))]];
-    Grammar.Entry.obj (else_match_case : 'else_match_case Grammar.Entry.e),
-    None,
-    [None, Some Gramext.RightA,
-     [[Gramext.Stoken ("", "ELSE");
-       Gramext.Snterm
-         (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e))],
-      Gramext.action
-        (fun (x : 'match_case) _ (loc : Ploc.t) -> (x : 'else_match_case));
-      [Gramext.Stoken ("", "ELSIFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e))],
-      Gramext.action
-        (fun (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if not e then x else Grammar.skip_item x : 'else_match_case));
-      [Gramext.Stoken ("", "ELSIFNDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if not e then x else y : 'else_match_case));
-      [Gramext.Stoken ("", "ELSIFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e))],
-      Gramext.action
-        (fun (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then x else Grammar.skip_item x : 'else_match_case));
-      [Gramext.Stoken ("", "ELSIFDEF");
-       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
-       Gramext.Stoken ("", "THEN");
-       Gramext.Snterm
-         (Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
-             (loc : Ploc.t) ->
-           (if e then x else y : 'else_match_case))]];
-    Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Sself; Gramext.Stoken ("", "OR"); Gramext.Sself],
-      Gramext.action
-        (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
-           (x || y : 'dexpr))];
-     None, None,
-     [[Gramext.Sself; Gramext.Stoken ("", "AND"); Gramext.Sself],
-      Gramext.action
-        (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
-           (x && y : 'dexpr))];
-     None, None,
-     [[Gramext.Stoken ("", "OCAML_VERSION");
-       Gramext.Snterm (Grammar.Entry.obj (op : 'op Grammar.Entry.e));
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
-      Gramext.action
-        (fun (y : 'uident) (f : 'op) _ (loc : Ploc.t) ->
-           (f (defined_version loc) y : 'dexpr))];
-     None, None,
-     [[Gramext.Stoken ("", "NOT"); Gramext.Sself],
-      Gramext.action (fun (x : 'dexpr) _ (loc : Ploc.t) -> (not x : 'dexpr))];
-     None, None,
-     [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
-      Gramext.action (fun _ (x : 'dexpr) _ (loc : Ploc.t) -> (x : 'dexpr));
-      [Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'uident) (loc : Ploc.t) -> (is_defined i : 'dexpr))]];
-    Grammar.Entry.obj (op : 'op Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", ">=")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ((>=) : 'op));
-      [Gramext.Stoken ("", ">")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ((>) : 'op));
-      [Gramext.Stoken ("", "<>")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ((<>) : 'op));
-      [Gramext.Stoken ("", "=")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ((=) : 'op));
-      [Gramext.Stoken ("", "<")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ((<) : 'op));
-      [Gramext.Stoken ("", "<=")],
-      Gramext.action (fun _ (loc : Ploc.t) -> ((<=) : 'op))]];
-    Grammar.Entry.obj (uident : 'uident Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("UIDENT", "")],
-      Gramext.action (fun (i : string) (loc : Ploc.t) -> (i : 'uident))]]]);;
+   [Grammar.extension (str_item : 'str_item Grammar.Entry.e)
+      (Some Gramext.First)
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (str_macro_def : 'str_macro_def Grammar.Entry.e)),
+           (fun (x : 'str_macro_def) (loc : Ploc.t) ->
+              (match x with
+                 SdStr sil ->
+                   let sil = Pcaml.unvala sil in
+                   List.iter
+                     (function
+                        MLast.StDir (loc, n, dp) -> apply_directive loc n dp
+                      | _ -> ())
+                     sil;
+                   begin match sil with
+                     [si] -> si
+                   | sil -> MLast.StDcl (loc, sil)
+                   end
+               | SdDef (x, eo) -> define eo x; MLast.StDcl (loc, [])
+               | SdUnd x -> undef x; MLast.StDcl (loc, [])
+               | SdNop -> MLast.StDcl (loc, []) :
+               'str_item)))]];
+    Grammar.extension (sig_item : 'sig_item Grammar.Entry.e)
+      (Some Gramext.First)
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (sig_macro_def : 'sig_macro_def Grammar.Entry.e)),
+           (fun (x : 'sig_macro_def) (loc : Ploc.t) ->
+              (match x with
+                 SdStr sil ->
+                   let sil = Pcaml.unvala sil in
+                   List.iter
+                     (function
+                        MLast.SgDir (loc, n, dp) -> apply_directive loc n dp
+                      | _ -> ())
+                     sil;
+                   begin match sil with
+                     [si] -> si
+                   | sil -> MLast.SgDcl (loc, sil)
+                   end
+               | SdDef (x, eo) -> define eo x; MLast.SgDcl (loc, [])
+               | SdUnd x -> undef x; MLast.SgDcl (loc, [])
+               | SdNop -> MLast.SgDcl (loc, []) :
+               'sig_item)))]];
+    Grammar.extension (str_macro_def : 'str_macro_def Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFNDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   (Grammar.s_nterm
+                      (structure_or_macro :
+                       'structure_or_macro Grammar.Entry.e)))
+                (Grammar.s_nterm (else_str : 'else_str Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then d1 else d2 : 'str_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   (Grammar.s_nterm
+                      (structure_or_macro :
+                       'structure_or_macro Grammar.Entry.e)))
+                (Grammar.s_nterm (else_str : 'else_str Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then d1 else d2 : 'str_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "UNDEF")))
+             (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           (fun (i : 'uident) _ (loc : Ploc.t) ->
+              (SdUnd i : 'str_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "DEFINE_TYPE")))
+                (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (opt_macro_type : 'opt_macro_type Grammar.Entry.e)),
+           (fun (ome : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+              (SdDef (i, ome) : 'str_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "DEFINE")))
+                (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e)),
+           (fun (ome : 'opt_macro_expr) (i : 'uident) _ (loc : Ploc.t) ->
+              (SdDef (i, ome) : 'str_macro_def)))]];
+    Grammar.extension (else_str : 'else_str Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_stop, (fun (loc : Ploc.t) -> (SdNop : 'else_str)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
+             (Grammar.s_nterm
+                (structure_or_macro : 'structure_or_macro Grammar.Entry.e)),
+           (fun (d1 : 'structure_or_macro) _ (loc : Ploc.t) ->
+              (d1 : 'else_str)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm
+                   (structure_or_macro :
+                    'structure_or_macro Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then d1 else d2 : 'else_str)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm
+                   (structure_or_macro :
+                    'structure_or_macro Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then d1 else d2 : 'else_str)))]];
+    Grammar.extension (sig_macro_def : 'sig_macro_def Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFNDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   (Grammar.s_nterm
+                      (signature_or_macro :
+                       'signature_or_macro Grammar.Entry.e)))
+                (Grammar.s_nterm (else_sig : 'else_sig Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then d1 else d2 : 'sig_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   (Grammar.s_nterm
+                      (signature_or_macro :
+                       'signature_or_macro Grammar.Entry.e)))
+                (Grammar.s_nterm (else_sig : 'else_sig Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then d1 else d2 : 'sig_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "UNDEF")))
+             (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           (fun (i : 'uident) _ (loc : Ploc.t) ->
+              (SdUnd i : 'sig_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "DEFINE_TYPE")))
+                (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (opt_macro_type : 'opt_macro_type Grammar.Entry.e)),
+           (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+              (SdDef (i, omt) : 'sig_macro_def)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "DEFINE")))
+                (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (opt_macro_type : 'opt_macro_type Grammar.Entry.e)),
+           (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+              (SdDef (i, omt) : 'sig_macro_def)))]];
+    Grammar.extension (else_sig : 'else_sig Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_stop, (fun (loc : Ploc.t) -> (SdNop : 'else_sig)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
+             (Grammar.s_nterm
+                (signature_or_macro : 'signature_or_macro Grammar.Entry.e)),
+           (fun (d1 : 'signature_or_macro) _ (loc : Ploc.t) ->
+              (d1 : 'else_sig)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm
+                   (signature_or_macro :
+                    'signature_or_macro Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then d1 else d2 : 'else_sig)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm
+                   (signature_or_macro :
+                    'signature_or_macro Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then d1 else d2 : 'else_sig)))]];
+    Grammar.extension
+      (structure_or_macro : 'structure_or_macro Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (structure : 'structure Grammar.Entry.e)),
+           (fun (sil : 'structure) (loc : Ploc.t) ->
+              (SdStr sil : 'structure_or_macro)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (str_macro_def : 'str_macro_def Grammar.Entry.e)),
+           (fun (d : 'str_macro_def) (loc : Ploc.t) ->
+              (d : 'structure_or_macro)))]];
+    Grammar.extension
+      (signature_or_macro : 'signature_or_macro Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (signature : 'signature Grammar.Entry.e)),
+           (fun (sil : 'signature) (loc : Ploc.t) ->
+              (SdStr sil : 'signature_or_macro)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (sig_macro_def : 'sig_macro_def Grammar.Entry.e)),
+           (fun (d : 'sig_macro_def) (loc : Ploc.t) ->
+              (d : 'signature_or_macro)))]];
+    Grammar.extension (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_stop,
+           (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")))
+             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           (fun (e : 'expr) _ (loc : Ploc.t) ->
+              (MvExpr ([], e) : 'opt_macro_expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (macro_param : 'macro_param Grammar.Entry.e)))
+                (Grammar.s_token ("", "=")))
+             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           (fun (e : 'expr) _ (pl : 'macro_param) (loc : Ploc.t) ->
+              (MvExpr (pl, e) : 'opt_macro_expr)))]];
+    Grammar.extension (opt_macro_type : 'opt_macro_type Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_stop,
+           (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_type)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")))
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           (fun (t : 'ctyp) _ (loc : Ploc.t) ->
+              (MvType ([], t) : 'opt_macro_type)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_list1 (Grammar.s_token ("LIDENT", ""))))
+                (Grammar.s_token ("", "=")))
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           (fun (t : 'ctyp) _ (pl : string list) (loc : Ploc.t) ->
+              (MvType (pl, t) : 'opt_macro_type)))]];
+    Grammar.extension (macro_param : 'macro_param Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                (Grammar.s_list1sep (Grammar.s_token ("LIDENT", ""))
+                   (Grammar.s_token ("", ",")) false))
+             (Grammar.s_token ("", ")")),
+           (fun _ (sl : string list) _ (loc : Ploc.t) ->
+              (sl : 'macro_param)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_list1 (Grammar.s_token ("LIDENT", ""))),
+           (fun (sl : string list) (loc : Ploc.t) -> (sl : 'macro_param)))]];
+    Grammar.extension (expr : 'expr Grammar.Entry.e)
+      (Some (Gramext.Level "top"))
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFNDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   Grammar.s_self)
+                (Grammar.s_nterm (else_expr : 'else_expr Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then e1 else e2 : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   Grammar.s_self)
+                (Grammar.s_nterm (else_expr : 'else_expr Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then e1 else e2 : 'expr)))]];
+    Grammar.extension (else_expr : 'else_expr Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
+             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           (fun (e : 'expr) _ (loc : Ploc.t) -> (e : 'else_expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then e1 else e2 : 'else_expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then e1 else e2 : 'else_expr)))]];
+    Grammar.extension (expr : 'expr Grammar.Entry.e)
+      (Some (Gramext.Level "simple"))
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_token ("LIDENT", "__LOCATION__")),
+           (fun _ (loc : Ploc.t) ->
+              (let bp = string_of_int (Ploc.first_pos loc) in
+               let ep = string_of_int (Ploc.last_pos loc) in
+               MLast.ExTup
+                 (loc,
+                  [MLast.ExInt (loc, bp, ""); MLast.ExInt (loc, ep, "")]) :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_token ("LIDENT", "__FILE__")),
+           (fun _ (loc : Ploc.t) ->
+              (MLast.ExStr (loc, Ploc.file_name loc) : 'expr)))]];
+    Grammar.extension (patt : 'patt Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFNDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   Grammar.s_self)
+                (Grammar.s_nterm (else_patt : 'else_patt Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then p2 else p1 : 'patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   Grammar.s_self)
+                (Grammar.s_nterm (else_patt : 'else_patt Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then p1 else p2 : 'patt)))]];
+    Grammar.extension (else_patt : 'else_patt Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
+             (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
+           (fun (p : 'patt) _ (loc : Ploc.t) -> (p : 'else_patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then p1 else p2 : 'else_patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then p1 else p2 : 'else_patt)))]];
+    Grammar.extension
+      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
+      (Some Gramext.First)
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "IFNDEF")))
+                            (Grammar.s_nterm
+                               (dexpr : 'dexpr Grammar.Entry.e)))
+                         (Grammar.s_token ("", "THEN")))
+                      Grammar.s_self)
+                   (Grammar.s_token ("", "ELSE")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (y : 'constructor_declaration) _
+                (x : 'constructor_declaration) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then y else x : 'constructor_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "IFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then Grammar.skip_item x else x :
+               'constructor_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "IFDEF")))
+                            (Grammar.s_nterm
+                               (dexpr : 'dexpr Grammar.Entry.e)))
+                         (Grammar.s_token ("", "THEN")))
+                      Grammar.s_self)
+                   (Grammar.s_token ("", "ELSE")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (y : 'constructor_declaration) _
+                (x : 'constructor_declaration) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then x else y : 'constructor_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "IFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then x else Grammar.skip_item x :
+               'constructor_declaration)))]];
+    Grammar.extension (label_declaration : 'label_declaration Grammar.Entry.e)
+      (Some Gramext.First)
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "IFNDEF")))
+                            (Grammar.s_nterm
+                               (dexpr : 'dexpr Grammar.Entry.e)))
+                         (Grammar.s_token ("", "THEN")))
+                      Grammar.s_self)
+                   (Grammar.s_token ("", "ELSE")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
+                (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then y else x : 'label_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "IFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then Grammar.skip_item x else x : 'label_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "IFDEF")))
+                            (Grammar.s_nterm
+                               (dexpr : 'dexpr Grammar.Entry.e)))
+                         (Grammar.s_token ("", "THEN")))
+                      Grammar.s_self)
+                   (Grammar.s_token ("", "ELSE")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
+                (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then x else y : 'label_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "IFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then x else Grammar.skip_item x : 'label_declaration)))]];
+    Grammar.extension (match_case : 'match_case Grammar.Entry.e)
+      (Some Gramext.First)
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "IFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if not e then x else Grammar.skip_item x : 'match_case)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFNDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   Grammar.s_self)
+                (Grammar.s_nterm
+                   (else_match_case : 'else_match_case Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then x else y : 'match_case)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "IFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                Grammar.s_self)
+             (Grammar.s_token ("", "END")),
+           (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then x else Grammar.skip_item x : 'match_case)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   Grammar.s_self)
+                (Grammar.s_nterm
+                   (else_match_case : 'else_match_case Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then x else y : 'match_case)))]];
+    Grammar.extension (else_match_case : 'else_match_case Grammar.Entry.e)
+      None
+      [None, Some Gramext.RightA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
+             (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)),
+           (fun (x : 'match_case) _ (loc : Ploc.t) ->
+              (x : 'else_match_case)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "ELSIFNDEF")))
+                   (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                (Grammar.s_token ("", "THEN")))
+             (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)),
+           (fun (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if not e then x else Grammar.skip_item x : 'else_match_case)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFNDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if not e then x else y : 'else_match_case)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "ELSIFDEF")))
+                   (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                (Grammar.s_token ("", "THEN")))
+             (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)),
+           (fun (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then x else Grammar.skip_item x : 'else_match_case)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "ELSIFDEF")))
+                      (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                   (Grammar.s_token ("", "THEN")))
+                (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
+                (loc : Ploc.t) ->
+              (if e then x else y : 'else_match_case)))]];
+    Grammar.extension (dexpr : 'dexpr Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_token ("", "OR")))
+             Grammar.s_self,
+           (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
+              (x || y : 'dexpr)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_token ("", "AND")))
+             Grammar.s_self,
+           (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
+              (x && y : 'dexpr)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "OCAML_VERSION")))
+                (Grammar.s_nterm (op : 'op Grammar.Entry.e)))
+             (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           (fun (y : 'uident) (f : 'op) _ (loc : Ploc.t) ->
+              (f (defined_version loc) y : 'dexpr)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "NOT")))
+             Grammar.s_self,
+           (fun (x : 'dexpr) _ (loc : Ploc.t) -> (not x : 'dexpr)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                Grammar.s_self)
+             (Grammar.s_token ("", ")")),
+           (fun _ (x : 'dexpr) _ (loc : Ploc.t) -> (x : 'dexpr)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           (fun (i : 'uident) (loc : Ploc.t) -> (is_defined i : 'dexpr)))]];
+    Grammar.extension (op : 'op Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ">=")),
+           (fun _ (loc : Ploc.t) -> ((>=) : 'op)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ">")),
+           (fun _ (loc : Ploc.t) -> ((>) : 'op)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<>")),
+           (fun _ (loc : Ploc.t) -> ((<>) : 'op)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")),
+           (fun _ (loc : Ploc.t) -> ((=) : 'op)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<")),
+           (fun _ (loc : Ploc.t) -> ((<) : 'op)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<=")),
+           (fun _ (loc : Ploc.t) -> ((<=) : 'op)))]];
+    Grammar.extension (uident : 'uident Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) -> (i : 'uident)))]]]);;
 
 Pcaml.add_option "-D" (Arg.String (define MvNone))
   "<string> Define for IFDEF instruction.";;
