@@ -1,6 +1,9 @@
 Camlp5 Version 7.06:
 --------------------
 
+* [19 Jun 18] Add support for OCaml 4.07.0
+* [19 Jun 18] Fix OPAM file [in particular avoid the filesystem deletion bug]
+
 Camlp5 Version 7.05:
 --------------------
 
