@@ -213,26 +213,22 @@ and safe_unsymbol =
   fun
   | <:expr< Grammar.s_facto $e$ >> -> safe_unsymbol e
   | <:expr< Grammar.s_nterm ($e$ : $_$) >> -> Snterm e
+  | <:expr< Grammar.s_nterml ($e$ : $_$) $str:s$ >> -> Snterml e s
+  | <:expr< Grammar.s_list0 $e$ >> -> Slist0 (safe_unsymbol e)
+  | <:expr< Grammar.s_list0sep $e1$ $e2$ $b$ >> ->
+      Slist0sep (safe_unsymbol e1) (safe_unsymbol e2) (unbool b)
+  | <:expr< Grammar.s_list1 $e$ >> -> Slist1 (safe_unsymbol e)
   | <:expr< Grammar.s_list1sep $e1$ $e2$ $b$ >> ->
       Slist1sep (safe_unsymbol e1) (safe_unsymbol e2) (unbool b)
   | <:expr< Grammar.s_opt $e$ >> -> Sopt (safe_unsymbol e)
+  | <:expr< Grammar.s_flag $e$ >> -> Sflag (safe_unsymbol e)
   | <:expr< Grammar.s_self >> -> Sself
+  | <:expr< Grammar.s_next >> -> Snext
   | <:expr< Grammar.s_token $e$ >> -> Stoken (untoken e)
   | <:expr< Grammar.s_rules $e$ >> -> Srules (rev_unlist unrule [] e)
-(*
-  | <:expr< Grammar.$lid:s$ $_$ $_$ $_$ >> ->
-      failwith ("safe_unsymbol 3 " ^ s ^ " not impl")
-  | <:expr< Grammar.$lid:s$ $_$ $_$ >> ->
-      failwith ("safe_unsymbol 2 " ^ s ^ " not impl")
-  | <:expr< Grammar.$lid:s$ $_$ >> ->
-      failwith ("safe_unsymbol 1 " ^ s ^ " not impl")
-  | <:expr< Grammar.$lid:s$ >> ->
-      failwith ("safe_unsymbol 0 " ^ s ^ " not impl")
-  | _ ->
-     failwith "safe_unsymbol"
-*)
-  | _ -> Sself
-(**)
+  | <:expr< Grammar.s_vala $ls$ $e$ >> ->
+      Svala (unlist unstring ls) None (safe_unsymbol e)
+  | _ -> raise Not_found
   end
 and unsymbol =
   fun
@@ -387,7 +383,7 @@ value rec rule force_vertic pc (sl, a) =
   [ None -> not_impl "rule 1" pc sl
   | Some a ->
       if sl = [] then
-        pprintf pc "@[<4>->%p %q@]" comment (MLast.loc_of_expr a)
+        pprintf pc "@[<4>→%p %q@]" comment (MLast.loc_of_expr a)
           (action expr) a "|"
       else
         match
@@ -395,7 +391,7 @@ value rec rule force_vertic pc (sl, a) =
             (fun () ->
                let s =
                  let pc = {(pc) with aft = ""} in
-                 pprintf pc "%p ->" (hlistl (semi_after psymbol) psymbol) sl
+                 pprintf pc "%p →" (hlistl (semi_after psymbol) psymbol) sl
                in
                Some s)
             (fun () -> None)
@@ -410,7 +406,7 @@ value rec rule force_vertic pc (sl, a) =
                  pprintf pc "%s@;<1 4>%q" s1 (action expr) a "|")
         | None ->
             let sl = List.map (fun s -> (s, ";")) sl in
-            pprintf pc "@[<2>%p ->@;%q@]" (plist psymbol 0) sl
+            pprintf pc "@[<2>%p →@;%q@]" (plist psymbol 0) sl
               (action expr) a "|" ] ]
 and psymbol pc (p, s) =
   match p with
