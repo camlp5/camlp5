@@ -175,9 +175,27 @@ value rec unrule =
         [ ([], None) -> let loc = Ploc.dummy in ([], Some <:expr< () >>)
         | x -> x ]
       in
-      let sl = unpsymbol_list (List.rev pl) e1 in
+      let e1 =
+        loop [] e1 where rec loop rel =
+          fun
+          [ <:expr< Grammar.r_next $el$ $e$ >> -> loop [e :: rel] el
+          | <:expr< Grammar.r_stop >> -> rel
+          | <:expr:< Grammar.r_cut $el$ >> -> loop [<:expr< cut >> :: rel] el
+          | _ -> raise Not_found ]
+      in
+      let sl = safe_unpsymbol_list (List.rev pl) e1 in
       (sl, a)
   | _ -> raise Not_found ]
+and safe_unpsymbol_list pl el =
+  match (pl, el) with
+  | ([], []) -> []
+  | (pl, [<:expr< cut >> :: el]) ->
+      [(None, Scut) :: safe_unpsymbol_list pl el]
+  | ([p :: pl], [e :: el]) ->
+      let op = match p with [ <:patt< _ >> -> None | _ -> Some p ] in
+      [(op, safe_unsymbol e) :: safe_unpsymbol_list pl el]
+  | _ -> raise Not_found
+  end
 and unpsymbol_list pl e =
   match (pl, e) with
   [ ([], <:expr< [] >>) -> []
@@ -191,6 +209,31 @@ and unpsymbol_list pl e =
       in
       [(op, unsymbol e) :: unpsymbol_list pl el]
   | _ -> raise Not_found ]
+and safe_unsymbol =
+  fun
+  | <:expr< Grammar.s_facto $e$ >> -> safe_unsymbol e
+  | <:expr< Grammar.s_nterm ($e$ : $_$) >> -> Snterm e
+  | <:expr< Grammar.s_list1sep $e1$ $e2$ $b$ >> ->
+      Slist1sep (safe_unsymbol e1) (safe_unsymbol e2) (unbool b)
+  | <:expr< Grammar.s_opt $e$ >> -> Sopt (safe_unsymbol e)
+  | <:expr< Grammar.s_self >> -> Sself
+  | <:expr< Grammar.s_token $e$ >> -> Stoken (untoken e)
+  | <:expr< Grammar.s_rules $e$ >> -> Srules (rev_unlist unrule [] e)
+(*
+  | <:expr< Grammar.$lid:s$ $_$ $_$ $_$ >> ->
+      failwith ("safe_unsymbol 3 " ^ s ^ " not impl")
+  | <:expr< Grammar.$lid:s$ $_$ $_$ >> ->
+      failwith ("safe_unsymbol 2 " ^ s ^ " not impl")
+  | <:expr< Grammar.$lid:s$ $_$ >> ->
+      failwith ("safe_unsymbol 1 " ^ s ^ " not impl")
+  | <:expr< Grammar.$lid:s$ >> ->
+      failwith ("safe_unsymbol 0 " ^ s ^ " not impl")
+  | _ ->
+     failwith "safe_unsymbol"
+*)
+  | _ -> Sself
+(**)
+  end
 and unsymbol =
   fun
   [ <:expr< Gramext.Sfacto $e$ >> -> unsymbol e
