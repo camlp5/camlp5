@@ -105,6 +105,7 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_lex.cmo"
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
 	cp mk$(CAMLP5N).sh "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
