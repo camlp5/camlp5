@@ -2269,12 +2269,12 @@ let warning_verbose = Gramext.warning_verbose;;
 type token = string * string;;
 type g = token Gramext.grammar;;
 
-type ('self, 'a) symbol = token Gramext.g_symbol;;
-type ('self, 'f, 'r) rule = ('self, Obj.t) symbol list;;
-type 'a production = ('a, Obj.t, Obj.t) rule * Gramext.g_action;;
-type extension =
+type ('self, 'a) ty_symbol = token Gramext.g_symbol;;
+type ('self, 'f, 'r) ty_rule = ('self, Obj.t) ty_symbol list;;
+type 'a ty_production = ('a, Obj.t, Obj.t) ty_rule * Gramext.g_action;;
+type ty_extension =
   token Gramext.g_entry * Gramext.position option *
-    (string option * Gramext.g_assoc option * Obj.t production list) list
+    (string option * Gramext.g_assoc option * Obj.t ty_production list) list
 ;;
 
 let s_facto s = Sfacto s;;
@@ -2289,23 +2289,24 @@ let s_flag s = Sflag s;;
 let s_self = Sself;;
 let s_next = Snext;;
 let s_token tok = Stoken tok;;
-let s_rules (t : Obj.t production list) = Gramext.srules (Obj.magic t);;
+let s_rules (t : Obj.t ty_production list) = Gramext.srules (Obj.magic t);;
 let s_vala sl s = Svala (sl, s);;
 
 let r_stop = [];;
 let r_next r s = r @ [s];;
 let r_cut r = r @ [Scut];;
 
-let production (p : ('a, 'f, Ploc.t -> 'a) rule * 'f) : 'a production =
+let production (p : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f) : 'a ty_production =
   Obj.magic p
 ;;
 let extension e pos
     (r :
-     (string option * Gramext.g_assoc option * Obj.t production list) list) : extension =
+     (string option * Gramext.g_assoc option * Obj.t ty_production list)
+       list) : ty_extension =
   e, pos, Obj.magic r
 ;;
 
-let safe_extend (l : extension list) = extend (Obj.magic l);;
+let safe_extend (l : ty_extension list) = extend (Obj.magic l);;
 
 let create_toktab () = Hashtbl.create 301;;
 let gcreate glexer =
@@ -2805,34 +2806,35 @@ module type S =
         val parse_token : 'a e -> te Stream.t -> 'a;;
       end
     ;;
-    type ('self, 'a) symbol;;
-    type ('self, 'f, 'r) rule;;
-    type 'a production;;
-    val s_facto : ('self, 'a) symbol -> ('self, 'a) symbol;;
-    val s_nterm : 'a Entry.e -> ('self, 'a) symbol;;
-    val s_nterml : 'a Entry.e -> string -> ('self, 'a) symbol;;
-    val s_list0 : ('self, 'a) symbol -> ('self, 'a list) symbol;;
+    type ('self, 'a) ty_symbol;;
+    type ('self, 'f, 'r) ty_rule;;
+    type 'a ty_production;;
+    val s_facto : ('self, 'a) ty_symbol -> ('self, 'a) ty_symbol;;
+    val s_nterm : 'a Entry.e -> ('self, 'a) ty_symbol;;
+    val s_nterml : 'a Entry.e -> string -> ('self, 'a) ty_symbol;;
+    val s_list0 : ('self, 'a) ty_symbol -> ('self, 'a list) ty_symbol;;
     val s_list0sep :
-      ('self, 'a) symbol -> ('self, 'b) symbol -> bool ->
-        ('self, 'a list) symbol;;
-    val s_list1 : ('self, 'a) symbol -> ('self, 'a list) symbol;;
+      ('self, 'a) ty_symbol -> ('self, 'b) ty_symbol -> bool ->
+        ('self, 'a list) ty_symbol;;
+    val s_list1 : ('self, 'a) ty_symbol -> ('self, 'a list) ty_symbol;;
     val s_list1sep :
-      ('self, 'a) symbol -> ('self, 'b) symbol -> bool ->
-        ('self, 'a list) symbol;;
-    val s_opt : ('self, 'a) symbol -> ('self, 'a option) symbol;;
-    val s_flag : ('self, 'a) symbol -> ('self, bool) symbol;;
-    val s_self : ('self, 'self) symbol;;
-    val s_next : ('self, 'self) symbol;;
-    val s_token : Plexing.pattern -> ('self, string) symbol;;
-    val s_rules : 'a production list -> ('self, 'a) symbol;;
+      ('self, 'a) ty_symbol -> ('self, 'b) ty_symbol -> bool ->
+        ('self, 'a list) ty_symbol;;
+    val s_opt : ('self, 'a) ty_symbol -> ('self, 'a option) ty_symbol;;
+    val s_flag : ('self, 'a) ty_symbol -> ('self, bool) ty_symbol;;
+    val s_self : ('self, 'self) ty_symbol;;
+    val s_next : ('self, 'self) ty_symbol;;
+    val s_token : Plexing.pattern -> ('self, string) ty_symbol;;
+    val s_rules : 'a ty_production list -> ('self, 'a) ty_symbol;;
     val s_vala :
-      string list -> ('self, 'a) symbol -> ('self, 'a Ploc.vala) symbol;;
-    val r_stop : ('self, 'r, 'r) rule;;
+      string list -> ('self, 'a) ty_symbol ->
+        ('self, 'a Ploc.vala) ty_symbol;;
+    val r_stop : ('self, 'r, 'r) ty_rule;;
     val r_next :
-      ('self, 'a, 'r) rule -> ('self, 'b) symbol ->
-        ('self, 'b -> 'a, 'r) rule;;
-    val r_cut : ('self, 'a, 'r) rule -> ('self, 'a, 'r) rule;;
-    val production : ('a, 'f, Ploc.t -> 'a) rule * 'f -> 'a production;;
+      ('self, 'a, 'r) ty_rule -> ('self, 'b) ty_symbol ->
+        ('self, 'b -> 'a, 'r) ty_rule;;
+    val r_cut : ('self, 'a, 'r) ty_rule -> ('self, 'a, 'r) ty_rule;;
+    val production : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f -> 'a ty_production;;
     module Unsafe :
       sig
         val gram_reinit : te Plexing.lexer -> unit;;
@@ -2847,10 +2849,11 @@ module type S =
         unit;;
     val safe_extend :
       'a Entry.e -> Gramext.position option ->
-        (string option * Gramext.g_assoc option * 'a production list) list ->
+        (string option * Gramext.g_assoc option * 'a ty_production list)
+          list ->
         unit;;
     val delete_rule : 'a Entry.e -> te Gramext.g_symbol list -> unit;;
-    val safe_delete_rule : 'a Entry.e -> ('a, 'r, 'f) rule -> unit;;
+    val safe_delete_rule : 'a Entry.e -> ('a, 'r, 'f) ty_rule -> unit;;
   end
 ;;
 
@@ -2938,9 +2941,9 @@ module GMake (L : GLexerType) =
         let print ppf e = fprintf ppf "%a@." print_entry (obj e);;
       end
     ;;
-    type ('self, 'a) symbol = te Gramext.g_symbol;;
-    type ('self, 'f, 'r) rule = ('self, Obj.t) symbol list;;
-    type 'a production = ('a, Obj.t, Obj.t) rule * Gramext.g_action;;
+    type ('self, 'a) ty_symbol = te Gramext.g_symbol;;
+    type ('self, 'f, 'r) ty_rule = ('self, Obj.t) ty_symbol list;;
+    type 'a ty_production = ('a, Obj.t, Obj.t) ty_rule * Gramext.g_action;;
     let s_facto s = Sfacto s;;
     let s_nterm e = Snterm e;;
     let s_nterml e l = Snterml (e, l);;
@@ -2953,12 +2956,15 @@ module GMake (L : GLexerType) =
     let s_self = Sself;;
     let s_next = Snext;;
     let s_token tok = Stoken tok;;
-    let s_rules (t : Obj.t production list) = Gramext.srules (Obj.magic t);;
+    let s_rules (t : Obj.t ty_production list) =
+      Gramext.srules (Obj.magic t)
+    ;;
     let s_vala sl s = Svala (sl, s);;
     let r_stop = [];;
     let r_next r s = r @ [s];;
     let r_cut r = r @ [Scut];;
-    let production (p : ('a, 'f, Ploc.t -> 'a) rule * 'f) : 'a production =
+    let production
+        (p : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f) : 'a ty_production =
       Obj.magic p
     ;;
     module Unsafe =
@@ -2970,7 +2976,7 @@ module GMake (L : GLexerType) =
     let extend = extend_entry;;
     let safe_extend e pos
         (r :
-         (string option * Gramext.g_assoc option * Obj.t production list)
+         (string option * Gramext.g_assoc option * Obj.t ty_production list)
            list) =
       extend e pos (Obj.magic r)
     ;;
