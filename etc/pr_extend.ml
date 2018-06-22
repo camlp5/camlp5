@@ -169,6 +169,14 @@ value rec unrule =
       in
       let sl = unpsymbol_list (List.rev pl) e1 in
       (sl, a)
+  | <:expr< Grammar.production ($e1$, $e2$) >> ->
+      let (pl, a) =
+        match unaction e2 with
+        [ ([], None) -> let loc = Ploc.dummy in ([], Some <:expr< () >>)
+        | x -> x ]
+      in
+      let sl = unpsymbol_list (List.rev pl) e1 in
+      (sl, a)
   | _ -> raise Not_found ]
 and unpsymbol_list pl e =
   match (pl, e) with
@@ -224,6 +232,10 @@ value unentry =
   fun
   [ <:expr<
       (Grammar.Entry.obj ($e$ : Grammar.Entry.e '$_$), $pos$, $ll$)
+    >> ->
+      (e, unposition pos, unlist unlevel ll)
+  | <:expr<
+      Grammar.extension ($e$ : Grammar.Entry.e '$_$) $pos$ $ll$
     >> ->
       (e, unposition pos, unlist unlevel ll)
   | _ -> raise Not_found ]
@@ -581,15 +593,23 @@ value extend pc e =
         pprintf pc "EXTEND@;%p@ END" extend_body ex
       with
       [ Not_found -> pprintf pc "Grammar.extend@;@[<1>(%p)@]" expr e ]
+  | <:expr< Grammar.safe_extend $e$ >> ->
+      try
+        let ex = unextend_body e in
+        pprintf pc "EXTEND@;%p@ END" extend_body ex
+      with
+      [ Not_found -> pprintf pc "Grammar.safe_extend@;@[<1>(%p)@]" expr e ]
   | e -> expr pc e ]
 ;
 
 EXTEND_PRINTER
   pr_expr: LEVEL "apply"
-    [ [ <:expr< Grammar.extend $_$ >> as e -> next pc e ] ]
+    [ [ <:expr< Grammar.extend $_$ >> as e -> next pc e
+      | <:expr< Grammar.safe_extend $_$ >> as e -> next pc e ] ]
   ;
   pr_expr: LEVEL "simple"
-    [ [ <:expr< Grammar.extend $_$ >> as e -> extend pc e ] ]
+    [ [ <:expr< Grammar.extend $_$ >> as e -> extend pc e
+      | <:expr< Grammar.safe_extend $_$ >> as e -> extend pc e ] ]
   ;
 END;
 
