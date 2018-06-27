@@ -83,7 +83,7 @@ value print_out_value ppf tree =
     | Oval_array tl ->
         fprintf ppf "@[<2>[|%a|]@]" (print_tree_list print_tree ";") tl
     | IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
-      val_constr (Oide_ident "true") [] -> fprintf ppf "True"
+      Oval_constr (Oide_ident "true") [] -> fprintf ppf "True"
       ELSE
       Oval_constr (Oide_ident {printed_name = "true"}) [] ->
         fprintf ppf "True"
@@ -264,7 +264,11 @@ and print_simple_out_type ppf =
     END
   | IFDEF OCAML_VERSION >= OCAML_3_12_0 THEN
       Otyp_module p n tyl -> do {
-        fprintf ppf "@[<1>(module %a" print_ident p;
+        IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+          fprintf ppf "@[<1>(module %s" p
+        ELSE
+          fprintf ppf "@[<1>(module %a" print_ident p
+        END;
         let first = ref True in
         List.iter2
           (fun s t ->
