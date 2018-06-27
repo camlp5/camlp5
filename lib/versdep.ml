@@ -900,10 +900,17 @@ value ocaml_psig_exception loc s ed =
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
+  ELSE
+    Psig_exception
+      {ptyexn_constructor =
+         {pext_name = mkloc loc s;
+	  pext_kind = Pext_decl (Pcstr_tuple ed) None;
+          pext_loc = loc; pext_attributes = []};
+       ptyexn_attributes = []}
   END
 ;
 
@@ -1006,10 +1013,17 @@ value ocaml_pstr_exception loc s ed =
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
+  ELSE
+    Pstr_exception
+      {ptyexn_constructor =
+         {pext_name = mkloc loc s;
+	  pext_kind = Pext_decl (Pcstr_tuple ed) None;
+          pext_loc = loc; pext_attributes = []};
+       ptyexn_attributes = []}
   END
 ;
 
@@ -1017,12 +1031,21 @@ value ocaml_pstr_exn_rebind =
   IFDEF OCAML_VERSION <= OCAML_2_99 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Some (fun loc s li -> Pstr_exn_rebind (mkloc loc s) (mkloc loc li))
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     Some
       (fun loc s li ->
          Pstr_exception
            {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
             pext_loc = loc; pext_attributes = []})
+  ELSE
+    Some
+      (fun loc s li ->
+         Pstr_exception
+           {ptyexn_constructor =
+              {pext_name = mkloc loc s;
+               pext_kind = Pext_rebind (mkloc loc li);
+               pext_loc = loc; pext_attributes = []};
+            ptyexn_attributes = []})
   END
 ;
 

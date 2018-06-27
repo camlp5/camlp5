@@ -17,9 +17,17 @@ value cautious f ppf arg =
   try f ppf arg with [ Ellipsis -> fprintf ppf "..." ]
 ;
 
+value print_out_name ppf s =
+  IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+    fprintf ppf "%s" s
+  ELSE
+    fprintf ppf "%s" s.printed_name
+  END
+;
+
 value rec print_ident ppf =
   fun
-  [ Oide_ident s -> fprintf ppf "%s" s
+  [ Oide_ident s -> print_out_name ppf s
   | Oide_dot id s -> fprintf ppf "%a.%s" print_ident id s
   | Oide_apply id1 id2 ->
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2 ]
@@ -74,8 +82,18 @@ value print_out_value ppf tree =
         fprintf ppf "@[<1>[%a]@]" (print_tree_list print_tree ";") tl
     | Oval_array tl ->
         fprintf ppf "@[<2>[|%a|]@]" (print_tree_list print_tree ";") tl
-    | Oval_constr (Oide_ident "true") [] -> fprintf ppf "True"
-    | Oval_constr (Oide_ident "false") [] -> fprintf ppf "False"
+    | IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+      val_constr (Oide_ident "true") [] -> fprintf ppf "True"
+      ELSE
+      Oval_constr (Oide_ident {printed_name = "true"}) [] ->
+        fprintf ppf "True"
+      END
+    | IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+      Oval_constr (Oide_ident "false") [] -> fprintf ppf "False"
+      ELSE
+      Oval_constr (Oide_ident {printed_name = "false"}) [] ->
+        fprintf ppf "False"
+      END
     | Oval_constr name [] -> print_ident ppf name
     | Oval_variant name None -> fprintf ppf "`%s" name
     | Oval_stuff s -> fprintf ppf "%s" s
@@ -92,8 +110,14 @@ value print_out_value ppf tree =
     | [(name, tree) :: fields] ->
         let name =
           match name with
-          [ Oide_ident "contents" -> Oide_ident "val"
-          | x -> x ]
+          | IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+            Oide_ident "contents" -> Oide_ident "val"
+            ELSE
+            Oide_ident {printed_name = "contents"} ->
+              Oide_ident {printed_name = "val"}
+            END
+          | x -> x
+          end
         in
         do {
           if not first then fprintf ppf ";@ " else ();
@@ -240,7 +264,7 @@ and print_simple_out_type ppf =
     END
   | IFDEF OCAML_VERSION >= OCAML_3_12_0 THEN
       Otyp_module p n tyl -> do {
-        fprintf ppf "@[<1>(module %s" p;
+        fprintf ppf "@[<1>(module %a" print_ident p;
         let first = ref True in
         List.iter2
           (fun s t ->

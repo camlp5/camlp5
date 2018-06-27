@@ -1,6 +1,7 @@
 Camlp5 Version 7.06:
 --------------------
 
+* [27 Jun 18] Updated for ocaml upcomming version 4.08.0.
 * [25 Jun 18] Camlp5 lib now installed in sub dir site-lib of ocaml lib
   instead of directly in ocaml lib, otherwise ocamlfind does not find it.
 * [19 Jun 18] Add support for OCaml 4.07.0
