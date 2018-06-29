@@ -62,7 +62,7 @@ value stream_pattern_component skont =
   | SpCut loc ->
       <:expr< match $skont$ with
               [ None -> raise Fstream.Cut
-	      | x -> x ] >> ]
+              | x -> x ] >> ]
 ;
 
 value rec stream_pattern loc epo e =
@@ -187,7 +187,7 @@ value mstream_pattern_component m skont =
   | SpCut loc ->
       <:expr< match $skont$ with
               [ None -> raise $uid:m$.Cut
-	      | x -> x ] >> ]
+              | x -> x ] >> ]
 ;
 
 value rec mstream_pattern loc m (spcl, epo, e) =

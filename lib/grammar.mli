@@ -200,7 +200,7 @@ module type S =
         value parse_token_stream : e 'a -> Stream.t te -> 'a;
         value print : Format.formatter -> e 'a -> unit;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
-	(* deprecated since 2017-06-17 *)
+        (* deprecated since 2017-06-17 *)
         value parse_token : e 'a -> Stream.t te -> 'a;
       end
     ;

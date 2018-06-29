@@ -908,7 +908,7 @@ value ocaml_psig_exception loc s ed =
     Psig_exception
       {ptyexn_constructor =
          {pext_name = mkloc loc s;
-	  pext_kind = Pext_decl (Pcstr_tuple ed) None;
+          pext_kind = Pext_decl (Pcstr_tuple ed) None;
           pext_loc = loc; pext_attributes = []};
        ptyexn_attributes = []}
   END
@@ -1021,7 +1021,7 @@ value ocaml_pstr_exception loc s ed =
     Pstr_exception
       {ptyexn_constructor =
          {pext_name = mkloc loc s;
-	  pext_kind = Pext_decl (Pcstr_tuple ed) None;
+          pext_kind = Pext_decl (Pcstr_tuple ed) None;
           pext_loc = loc; pext_attributes = []};
        ptyexn_attributes = []}
   END
