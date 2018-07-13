@@ -419,12 +419,14 @@ Grammar.safe_extend
               (MLast.StVal (loc, r, l) : 'str_item)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_flag (Grammar.s_token ("", "nonrec"))))
              (Grammar.s_list1sep
                 (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
-           (fun (tdl : 'type_decl list) _ (loc : Ploc.t) ->
-              (MLast.StTyp (loc, tdl) : 'str_item)));
+           (fun (tdl : 'type_decl list) (nrfl : bool) _ (loc : Ploc.t) ->
+              (MLast.StTyp (loc, nrfl, tdl) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))

@@ -387,7 +387,8 @@ module Meta_make (C : MetaSig) =
                lsme]
       | StMty (_, s, mt) -> C.node "StMty" [C.vala C.string s; module_type mt]
       | StOpn (_, ls) -> C.node "StOpn" [C.vala (C.list C.string) ls]
-      | StTyp (_, ltd) -> C.node "StTyp" [C.vala (C.list type_decl) ltd]
+      | StTyp (_, b, ltd) ->
+          C.node "StTyp" [C.vala C.bool b; C.vala (C.list type_decl) ltd]
       | StUse (_, s, lsil) ->
           C.node "StUse"
             [C.vala C.string s;

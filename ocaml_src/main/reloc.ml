@@ -430,9 +430,9 @@ and str_item floc sh =
     | StMty (loc, x1, x2) ->
         let loc = floc loc in StMty (loc, x1, module_type floc sh x2)
     | StOpn (loc, x1) -> let loc = floc loc in StOpn (loc, x1)
-    | StTyp (loc, x1) ->
+    | StTyp (loc, flg, x1) ->
         let loc = floc loc in
-        StTyp (loc, vala_map (List.map (type_decl floc sh)) x1)
+        StTyp (loc, flg, vala_map (List.map (type_decl floc sh)) x1)
     | StUse (loc, x1, x2) ->
         let loc = floc loc in
         StUse

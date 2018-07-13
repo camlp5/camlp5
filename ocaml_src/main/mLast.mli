@@ -175,7 +175,7 @@ and str_item =
   | StMod of loc * bool * (string * module_expr) list
   | StMty of loc * string * module_type
   | StOpn of loc * string list
-  | StTyp of loc * type_decl list
+  | StTyp of loc * bool * type_decl list
   | StUse of loc * string * (str_item * loc) list
   | StVal of loc * bool * (patt * expr) list
   | StXtr of loc * string * str_item option
