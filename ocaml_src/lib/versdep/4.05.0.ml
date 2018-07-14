@@ -508,8 +508,9 @@ let ocaml_pstr_recmodule =
   Some f
 ;;
 
-let ocaml_pstr_type stl =
-  let stl = List.map (fun (s, t) -> t) stl in Pstr_type (Recursive, stl)
+let ocaml_pstr_type nonrec_flg stl =
+  let stl = List.map (fun (s, t) -> t) stl in
+  Pstr_type ((if nonrec_flg then Nonrecursive else Recursive), stl)
 ;;
 
 let ocaml_class_infos =
