@@ -547,9 +547,9 @@ and str_item floc sh =
     | StOpn loc x1 →
         let loc = floc loc in
         StOpn loc x1
-    | StTyp loc flg x1 →
+    | StTyp loc x1 x2 →
         let loc = floc loc in
-        StTyp loc flg (vala_map (List.map (type_decl floc sh)) x1)
+        StTyp loc x1 (vala_map (List.map (type_decl floc sh)) x2)
     | StUse loc x1 x2 →
         let loc = floc loc in
         StUse loc x1

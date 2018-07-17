@@ -1089,7 +1089,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 313, 19))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 313, 20))
                in
                Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
                'str_item)));
@@ -1955,7 +1955,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 384, 19))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 384, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
                'sig_item)));
