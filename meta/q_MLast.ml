@@ -322,8 +322,9 @@ EXTEND
       | "module"; "type"; i = SV ident ""; mt = mod_type_fun_binding →
           Qast.Node "StMty" [Qast.Loc; i; mt]
       | "open"; i = SV mod_ident "list" "" → Qast.Node "StOpn" [Qast.Loc; i]
-      | "type"; tdl = SV (LIST1 type_decl SEP "and") →
-          Qast.Node "StTyp" [Qast.Loc; tdl]
+      | "type"; nrfl = SV (FLAG "nonrec");
+        tdl = SV (LIST1 type_decl SEP "and") →
+          Qast.Node "StTyp" [Qast.Loc; nrfl; tdl]
       | "value"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and") →
           Qast.Node "StVal" [Qast.Loc; r; l]
       | "#"; n = SV LIDENT; dp = SV (OPT expr) →

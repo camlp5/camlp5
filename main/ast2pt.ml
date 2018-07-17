@@ -1346,8 +1346,8 @@ and str_item s l =
       [mkstr loc
          (ocaml_pstr_open (mkloc loc) (long_id_of_string_list loc (uv id))) ::
        l]
-  | StTyp loc tdl →
-      [mkstr loc (ocaml_pstr_type (List.map mktype_decl (uv tdl))) :: l]
+  | StTyp loc flg tdl →
+      [mkstr loc (ocaml_pstr_type (uv flg) (List.map mktype_decl (uv tdl))) :: l]
   | StUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
         (fun () → List.fold_right (fun (si, _) → str_item si) (uv sl) l) ()

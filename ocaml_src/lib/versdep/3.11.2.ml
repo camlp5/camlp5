@@ -365,7 +365,7 @@ let ocaml_pstr_primitive s vd = Pstr_primitive (mknoloc s, vd);;
 
 let ocaml_pstr_recmodule = Some (fun nel -> Pstr_recmodule nel);;
 
-let ocaml_pstr_type stl = Pstr_type stl;;
+let ocaml_pstr_type is_nonrec stl = Pstr_type stl;;
 
 let ocaml_class_infos =
   Some

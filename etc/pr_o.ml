@@ -1560,8 +1560,8 @@ EXTEND_PRINTER
           sig_module_or_module_type "module type" False '=' pc (m, mt)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
-      | <:str_item:< type $list:tdl$ >> ->
-          pprintf pc "type %p"
+      | <:str_item:< type $flag:nonrf$ $list:tdl$ >> ->
+          pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl
       | <:str_item:< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic

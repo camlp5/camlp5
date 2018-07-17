@@ -1120,7 +1120,7 @@ value ocaml_pstr_recmodule =
   END
 ;
 
-value ocaml_pstr_type stl =
+value ocaml_pstr_type is_nonrec stl =
   IFDEF OCAML_VERSION < OCAML_4_00 THEN Pstr_type stl
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
@@ -1128,7 +1128,8 @@ value ocaml_pstr_type stl =
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     let stl = List.map (fun (s, t) -> t) stl in Pstr_type stl
   ELSE
-    let stl = List.map (fun (s, t) -> t) stl in Pstr_type Recursive stl
+    let stl = List.map (fun (s, t) -> t) stl in
+    Pstr_type (if is_nonrec then Nonrecursive else Recursive) stl
   END
 ;
 

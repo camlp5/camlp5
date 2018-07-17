@@ -388,7 +388,7 @@ let ocaml_pstr_recmodule =
   Some f
 ;;
 
-let ocaml_pstr_type stl =
+let ocaml_pstr_type is_nonrec stl =
   let stl = List.map (fun (s, t) -> mknoloc s, t) stl in Pstr_type stl
 ;;
 

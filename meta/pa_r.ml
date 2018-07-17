@@ -170,10 +170,10 @@ EXTEND
           <:str_item< module $_flag:r$ $_list:l$ >>
       | "module"; "type"; i = V ident ""; mt = mod_type_fun_binding →
           <:str_item< module type $_:i$ = $mt$ >>
-      | "open"; i = V mod_ident "list" "" → <:str_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_decl SEP "and") →
-          <:str_item< type $_list:tdl$ >>
-      | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") →
+      | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
+      | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
+          <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
+      | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           <:str_item< value $_flag:r$ $_list:l$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:str_item< # $_lid:n$ $_opt:dp$ >>

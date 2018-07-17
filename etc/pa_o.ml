@@ -412,8 +412,8 @@ EXTEND
           <:str_item< module type $_:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" ->
           <:str_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_decl SEP "and") ->
-          <:str_item< type $_list:tdl$ >>
+      | "type"; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
+          <:str_item< type $_flag:nr$ $_list:tdl$ >>
       | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
           let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
