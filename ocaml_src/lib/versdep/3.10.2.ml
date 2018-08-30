@@ -437,6 +437,9 @@ let ocaml_pcty_signature = Some (fun (t, cil) -> Pcty_signature (t, cil));;
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 let ocaml_pdir_int i s = Pdir_int s;;
+let ocaml_pdir_some x = x;;
+let ocaml_pdir_none = Pdir_none;;
+let ocaml_ptop_dir loc s da = Ptop_dir (s, da);;
 
 let ocaml_pwith_modsubst = None;;
 
@@ -520,7 +523,7 @@ let list_rev_map = List.rev_map;;
 
 let list_sort = List.sort;;
 
-let pervasives_set_binary_mode_out = Pervasives.set_binary_mode_out;;
+let pervasives_set_binary_mode_out = set_binary_mode_out;;
 
 let printf_ksprintf = Printf.ksprintf;;
 

@@ -413,6 +413,9 @@ let ocaml_pcty_signature = None;;
 
 let ocaml_pdir_bool = None;;
 let ocaml_pdir_int i s = Pdir_int s;;
+let ocaml_pdir_some x = x;;
+let ocaml_pdir_none = Pdir_none;;
+let ocaml_ptop_dir loc s da = Ptop_dir (s, da);;
 
 let ocaml_pwith_modsubst = None;;
 

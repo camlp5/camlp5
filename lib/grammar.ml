@@ -4,10 +4,12 @@
 
 #load "pa_fstream.cmo";
 
+value pervasives_stderr = stderr;
+
 open Gramext;
 open Format;
 
-value stderr = Pervasives.stderr;
+value stderr = pervasives_stderr;
 
 value rec flatten_tree =
   fun

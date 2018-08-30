@@ -180,7 +180,12 @@ value ocaml_mkmod loc x =
 value ocaml_mkfield loc (lab, x) fl =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     [{pfield_desc = Pfield lab x; pfield_loc = loc} :: fl]
-  ELSE [(lab, x) :: fl] END
+  ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+    [(lab, x) :: fl]
+  ELSE
+    [{pof_desc = Otag (mkloc loc lab) x; pof_loc = loc;
+      pof_attributes = []} :: fl]
+  END
 ;
 value ocaml_mkfield_var loc =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
@@ -432,8 +437,10 @@ value ocaml_ptyp_object loc ml is_open =
   ELSIFDEF OCAML_VERSION < OCAML_4_06_0 THEN
     let ml = List.map (fun (s, t) -> (mkloc loc s, [], t)) ml in
     Ptyp_object ml (if is_open then Open else Closed)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     let ml = List.map (fun (s, t) -> Otag (mkloc loc s) [] t) ml in
+    Ptyp_object ml (if is_open then Open else Closed)
+  ELSE
     Ptyp_object ml (if is_open then Open else Closed)
   END
 ;
@@ -496,13 +503,28 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
     in
     let clos = if clos then Closed else Open in
     Some (Ptyp_variant catl clos sl_opt)
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     let catl =
       List.map
         (fun
          [ Left (c, a, tl) -> Rtag (mkloc loc c) [] a tl
          | Right t -> Rinherit t ])
         catl
+    in
+    let clos = if clos then Closed else Open in
+    Some (Ptyp_variant catl clos sl_opt)
+  ELSE
+    let catl =
+      List.map
+        (fun c ->
+           let d =
+             match c with
+             | Left (c, a, tl) -> Rtag (mkloc loc c) a tl
+             | Right t -> Rinherit t
+             end
+         in
+	 {prf_desc = d; prf_loc = loc; prf_attributes = []})
+      catl
     in
     let clos = if clos then Closed else Open in
     Some (Ptyp_variant catl clos sl_opt)
@@ -678,7 +700,14 @@ value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   ELSE
     {pexp_desc = ocaml_pexp_construct li_loc li (Some a) True;
      pexp_loc = loc;
-     pexp_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
+     pexp_attributes =
+       IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+         [(mkloc loc "ocaml.explicit_arity", PStr [])]
+       ELSE
+         [{attr_name = mkloc loc "ocaml.explicit_arity";
+           attr_payload = PStr [];
+           attr_loc = loc}]
+       END}
   END
 ;
 
@@ -847,7 +876,14 @@ value mkpat_ocaml_ppat_construct_arity loc li_loc li al =
     let a = ocaml_mkpat loc (Ppat_tuple al) in
     {ppat_desc = ocaml_ppat_construct li_loc li (Some a) True;
      ppat_loc = loc;
-     ppat_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
+     ppat_attributes =
+       IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+         [(mkloc loc "ocaml.explicit_arity", PStr [])]
+       ELSE
+         [{attr_name = mkloc loc "ocaml.explicit_arity";
+           attr_payload = PStr [];
+           attr_loc = loc}]
+       END}
   END
 ;
 
@@ -910,7 +946,8 @@ value ocaml_psig_exception loc s ed =
          {pext_name = mkloc loc s;
           pext_kind = Pext_decl (Pcstr_tuple ed) None;
           pext_loc = loc; pext_attributes = []};
-       ptyexn_attributes = []}
+       ptyexn_attributes = [];
+       ptyexn_loc = loc}
   END
 ;
 
@@ -1023,7 +1060,8 @@ value ocaml_pstr_exception loc s ed =
          {pext_name = mkloc loc s;
           pext_kind = Pext_decl (Pcstr_tuple ed) None;
           pext_loc = loc; pext_attributes = []};
-       ptyexn_attributes = []}
+       ptyexn_attributes = [];
+       ptyexn_loc = loc}
   END
 ;
 
@@ -1045,7 +1083,8 @@ value ocaml_pstr_exn_rebind =
               {pext_name = mkloc loc s;
                pext_kind = Pext_rebind (mkloc loc li);
                pext_loc = loc; pext_attributes = []};
-            ptyexn_attributes = []})
+            ptyexn_attributes = [];
+	    ptyexn_loc = loc})
   END
 ;
 
@@ -1396,6 +1435,25 @@ value ocaml_pdir_int i s =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pdir_int s
   ELSE Pdir_int i None END
 ;
+value ocaml_pdir_some x =
+  IFDEF OCAML_VERSION < OCAML_4_08_0 THEN x ELSE Some x END
+;
+value ocaml_pdir_none =
+  IFDEF OCAML_VERSION < OCAML_4_08_0 THEN Pdir_none ELSE None END
+;
+value ocaml_ptop_dir loc s da =
+  IFDEF OCAML_VERSION < OCAML_4_08_0 THEN Ptop_dir s da
+  ELSE
+    Ptop_dir
+      {pdir_name = mkloc loc s;
+       pdir_arg =
+         match da with
+         | Some da -> Some {pdira_desc = da; pdira_loc = loc}
+         | None -> None
+         end;
+       pdir_loc = loc}
+  END
+;
 
 value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_3_12_0 THEN None
@@ -1578,7 +1636,7 @@ value list_sort =
 
 value pervasives_set_binary_mode_out =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN fun _ _ -> ()
-  ELSE Pervasives.set_binary_mode_out END
+  ELSE set_binary_mode_out END
 ;
 
 IFDEF OCAML_VERSION <= OCAML_3_04 THEN

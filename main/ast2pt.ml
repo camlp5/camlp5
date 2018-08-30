@@ -1581,14 +1581,15 @@ value directive loc =
 
 value directive_args loc d =
   match d with
-  | Some d -> directive loc d
-  | None -> Pdir_none
+  | Some d -> ocaml_pdir_some (directive loc d)
+  | None -> ocaml_pdir_none
   end
 ;
 
 value phrase =
   fun
-  [ StDir loc d dp → Ptop_dir (uv d) (directive_args loc (uv dp))
+  [ StDir loc d dp →
+      ocaml_ptop_dir (mkloc loc) (uv d) (directive_args loc (uv dp))
   | si → do {
       glob_fname.val := Plexing.input_file.val;
       Ptop_def (str_item si [])

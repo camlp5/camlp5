@@ -107,7 +107,10 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield loc (lab, x) fl = (lab, x) :: fl;;
+let ocaml_mkfield loc (lab, x) fl =
+  {pof_desc = Otag (mkloc loc lab, x); pof_loc = loc; pof_attributes = []} ::
+  fl
+;;
 let ocaml_mkfield_var loc = [];;
 
 let variance_of_bool_bool =
@@ -193,7 +196,6 @@ let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
 let ocaml_ptyp_object loc ml is_open =
-  let ml = List.map (fun (s, t) -> Otag (mkloc loc s, [], t)) ml in
   Ptyp_object (ml, (if is_open then Open else Closed))
 ;;
 
@@ -210,9 +212,13 @@ let ocaml_ptyp_poly =
 let ocaml_ptyp_variant loc catl clos sl_opt =
   let catl =
     List.map
-      (function
-         Left (c, a, tl) -> Rtag (mkloc loc c, [], a, tl)
-       | Right t -> Rinherit t)
+      (fun c ->
+         let d =
+           match c with
+             Left (c, a, tl) -> Rtag (mkloc loc c, a, tl)
+           | Right t -> Rinherit t
+         in
+         {prf_desc = d; prf_loc = loc; prf_attributes = []})
       catl
   in
   let clos = if clos then Closed else Open in
@@ -282,7 +288,9 @@ let ocaml_pexp_construct_args =
 let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   let a = ocaml_mkexp loc (Pexp_tuple al) in
   {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
-   pexp_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
+   pexp_attributes =
+     [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
+       attr_loc = loc}]}
 ;;
 
 let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
@@ -368,7 +376,9 @@ let ocaml_ppat_construct_args =
 let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
   {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
-   ppat_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
+   ppat_attributes =
+     [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
+       attr_loc = loc}]}
 ;;
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
@@ -403,7 +413,7 @@ let ocaml_psig_exception loc s ed =
     {ptyexn_constructor =
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
        pext_loc = loc; pext_attributes = []};
-     ptyexn_attributes = []}
+     ptyexn_attributes = []; ptyexn_loc = loc}
 ;;
 
 let ocaml_psig_include loc mt =
@@ -459,7 +469,7 @@ let ocaml_pstr_exception loc s ed =
     {ptyexn_constructor =
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
        pext_loc = loc; pext_attributes = []};
-     ptyexn_attributes = []}
+     ptyexn_attributes = []; ptyexn_loc = loc}
 ;;
 
 let ocaml_pstr_exn_rebind =
@@ -469,7 +479,7 @@ let ocaml_pstr_exn_rebind =
          {ptyexn_constructor =
            {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
             pext_loc = loc; pext_attributes = []};
-          ptyexn_attributes = []})
+          ptyexn_attributes = []; ptyexn_loc = loc})
 ;;
 
 let ocaml_pstr_include =
@@ -626,6 +636,18 @@ let ocaml_pcty_signature =
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 let ocaml_pdir_int i s = Pdir_int (i, None);;
+let ocaml_pdir_some x = Some x;;
+let ocaml_pdir_none = None;;
+let ocaml_ptop_dir loc s da =
+  Ptop_dir
+    {pdir_name = mkloc loc s;
+     pdir_arg =
+       begin match da with
+         Some da -> Some {pdira_desc = da; pdira_loc = loc}
+       | None -> None
+       end;
+     pdir_loc = loc}
+;;
 
 let ocaml_pwith_modsubst =
   Some (fun loc me -> Pwith_modsubst (mkloc loc (Lident ""), mkloc loc me))
@@ -711,7 +733,7 @@ let list_rev_map = List.rev_map;;
 
 let list_sort = List.sort;;
 
-let pervasives_set_binary_mode_out = Pervasives.set_binary_mode_out;;
+let pervasives_set_binary_mode_out = set_binary_mode_out;;
 
 let printf_ksprintf = Printf.ksprintf;;
 
