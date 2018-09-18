@@ -54,8 +54,12 @@ value print_location lb loc =
   else
     IFDEF OCAML_VERSION <= OCAML_2_99 THEN
       Toploop.print_location (Ast2pt.mkloc loc)
-    ELSE
-      Toploop.print_location Format.err_formatter (Ast2pt.mkloc loc)
+    ELSE do {
+      Format.fprintf Format.err_formatter "%s%!"
+        (Pcaml.string_of_loc Toploop.input_name.val (Ploc.line_nb loc)
+	   (Ploc.first_pos loc - Ploc.bol_pos loc)
+	   (Ploc.last_pos loc - Ploc.bol_pos loc));
+    }
     END
 ;
 

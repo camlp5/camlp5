@@ -1,6 +1,8 @@
 Camlp5 Version 7.07:
 --------------------
 
+* [18 Sep 18] Fixed bug: using camlp5 in ocaml toplevel, the errors locations
+  in files (with #use) where not displayed.
 * [30 Aug 18] Updated for ocaml version 4.07.1 and upcomming version 4.08.0.
 
 Camlp5 Version 7.06:

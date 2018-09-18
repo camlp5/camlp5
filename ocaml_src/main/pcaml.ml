@@ -299,7 +299,7 @@ let report_quotation_error name ctx =
 ;;
 
 let print_format str =
-  let rec flush ini cnt =
+  let flush ini cnt =
     if cnt > ini then Format.print_string (String.sub str ini (cnt - ini))
   in
   let rec loop ini cnt =

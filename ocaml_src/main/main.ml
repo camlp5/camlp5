@@ -7,14 +7,6 @@
 open Printf;;
 open Versdep;;
 
-let string_of_loc fname line bp ep =
-  match Sys.os_type with
-    "MacOS" ->
-      sprintf "File \"%s\"; line %d; characters %d to %d\n### " fname line bp
-        ep
-  | _ -> sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep
-;;
-
 let print_location loc =
   let loc =
     if Ploc.file_name loc = "" then
@@ -27,7 +19,8 @@ let print_location loc =
   if fname <> "-" then
     let line = Ploc.line_nb loc in
     let bol = Ploc.bol_pos loc in
-    eprintf "%s" (string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
+    eprintf "%s"
+      (Pcaml.string_of_loc fname line (bp - bol + 1) (ep - bol + 1))
   else eprintf "At location %d-%d\n" bp ep
 ;;
 

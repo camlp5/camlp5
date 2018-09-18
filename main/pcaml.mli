@@ -89,6 +89,9 @@ value add_option : string -> Arg.spec -> string -> unit;
    (** Add an option to the command line options. *)
 value no_constructors_arity : ref bool;
    (** [True]: dont generate constructor arity. *)
+value string_of_loc : string -> int -> int -> int -> string;
+   (** [string_of_loc fname line bp ep] returns the location string for
+       file [fname] at [line] and between character [bp] and [ep]. *)
 
 value handle_expr_quotation : MLast.loc -> (string * string) -> MLast.expr;
 value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;

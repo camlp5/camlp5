@@ -88,6 +88,9 @@ val add_option : string -> Arg.spec -> string -> unit;;
    (** Add an option to the command line options. *)
 val no_constructors_arity : bool ref;;
    (** [True]: dont generate constructor arity. *)
+val string_of_loc : string -> int -> int -> int -> string;;
+   (** [string_of_loc fname line bp ep] returns the location string for
+       file [fname] at [line] and between character [bp] and [ep]. *)
 
 val handle_expr_quotation : MLast.loc -> string * string -> MLast.expr;;
 val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;

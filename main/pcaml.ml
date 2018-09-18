@@ -303,7 +303,7 @@ value report_quotation_error name ctx = do {
 };
 
 value print_format str = do {
-  let rec flush ini cnt =
+  let flush ini cnt =
     if cnt > ini then Format.print_string (String.sub str ini (cnt - ini))
     else ()
   in
