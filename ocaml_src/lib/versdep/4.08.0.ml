@@ -93,13 +93,13 @@ let ocaml_class_field loc cfd =
 ;;
 
 let ocaml_mktyp loc x =
-  {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []}
+  {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = []; ptyp_attributes = []}
 ;;
 let ocaml_mkpat loc x =
-  {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
+  {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
 ;;
 let ocaml_mkexp loc x =
-  {pexp_desc = x; pexp_loc = loc; pexp_attributes = []}
+  {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}
 ;;
 let ocaml_mkmty loc x =
   {pmty_desc = x; pmty_loc = loc; pmty_attributes = []}
@@ -288,6 +288,7 @@ let ocaml_pexp_construct_args =
 let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   let a = ocaml_mkexp loc (Pexp_tuple al) in
   {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
+   pexp_loc_stack = [];
    pexp_attributes =
      [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
        attr_loc = loc}]}
@@ -376,6 +377,7 @@ let ocaml_ppat_construct_args =
 let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
   {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
+   ppat_loc_stack = [];
    ppat_attributes =
      [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
        attr_loc = loc}]}
