@@ -5,7 +5,7 @@ OCAMLC=@OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) ../tools/ocamlc.sh
 OCAMLOPT=@OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) ../tools/ocamlopt.sh
 OCAMLCFLAGS=
 MKDIR=mkdir -p
-RM=/bin/rm
+RM=rm
 TEST_DIR=test `basename "$<"` = "$<" || { echo "File \"$<\" needs to be recompiled."; echo "Please run 'make' in directory '$$(dirname "$<")' first."; exit 1; }
 COMPWITH=old
 

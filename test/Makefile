@@ -2,7 +2,7 @@
 # Copyright (c) INRIA 2007-2017
 
 DEP=../etc/pr_r.cmo quot_r.out.ml
-RM=/bin/rm
+RM=rm
 
 all: quot_r.mlt quot_r.mlu quot_o.mlu
 

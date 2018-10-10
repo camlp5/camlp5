@@ -4,6 +4,7 @@
 OLIB=`OCAMLNc -where`
 LIB=LIBDIR/CAMLP5N
 
+RM=rm -f
 INTERFACES=
 OPTS=
 INCL="-I ."
@@ -42,4 +43,4 @@ trap 'rm -f $CRC.ml $CRC.cmi $CRC.cmo' 0 2
 $OLIB/extract_crc -I $OLIB $INCL $INTERFACES > $CRC.ml
 echo "let _ = Dynlink.add_available_units crc_unit_list" >> $CRC.ml
 OCAMLNc -I $LIB odyl.cma CAMLP5N.cma $CRC.ml $INCL $OPTS odyl.cmo -linkall
-rm -f $CRC.ml $CRC.cmi $CRC.cmo
+$RM $CRC.ml $CRC.cmi $CRC.cmo

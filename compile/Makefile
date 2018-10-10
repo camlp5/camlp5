@@ -9,6 +9,7 @@ SRC=../etc/pa_o.ml ../etc/pa_op.ml
 D=o
 COMP_OPT=-strict_parsing
 COMP_OPT=-e "Grammar.Entry.obj Pcaml.interf" -e "Grammar.Entry.obj Pcaml.implem" -e "Grammar.Entry.obj Pcaml.top_phrase" -e "Grammar.Entry.obj Pcaml.use_file"
+RM=rm
 
 all: out
 
@@ -27,7 +28,7 @@ pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
 	cat $(SRC) | sed -e "s/Plexer.gmake ()/Lazy.force P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | grep -v '#load' | grep -v "^IFDEF" | grep -v "^END" | grep -v DELETE_RULE | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 $D_fast.ml.tmp: compile.cmo $(SRC)
-	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) EXE=$(EXE) ./compile.sh $(COMP_OPT)  $(SRC) > $D_fast.ml.tmp
+	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) EXE=$(EXE) RM=$(RM) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
 
 install:
 	if test -f $(CAMLP5N)o.fast.opt; then \

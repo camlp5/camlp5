@@ -9,6 +9,7 @@ OCAMLWDIR=$TOP/camlp5_src/test_ocaml_version
 MODE=--strict
 DOOPT=1
 ARCH64=0
+RM=rm
 
 wd=$(pwd)
 cd $DEST
@@ -81,8 +82,8 @@ for i in $vers; do
   echo date: $(date) version: $i
   echo "+++++ cd $OCAMLSDIR"
   cd $OCAMLSDIR
-  echo "+++++ /bin/rm -rf $OCAMLWDIR"
-  /bin/rm -rf $OCAMLWDIR
+  echo "+++++ $RM -rf $OCAMLWDIR"
+  $RM -rf $OCAMLWDIR
   echo "+++++ git worktree prune"
   git worktree prune
   echo "+++++ git worktree add $OCAMLWDIR tags/$i"
@@ -129,7 +130,7 @@ for i in $vers; do
     time make world.opt
   fi
   echo "+++++ make install"
-  /bin/rm -rf $TOP/usr/lib/ocaml
+  $RM -rf $TOP/usr/lib/ocaml
   make install
   echo "+++++ make clean"
   if [ -f "Makefile.bak" ]; then mv Makefile.bak Makefile; fi

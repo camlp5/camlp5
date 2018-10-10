@@ -4,6 +4,7 @@
 
 dir='../../ocaml_src/trunk'
 suff=ml
+RM=rm -f
 
 getfiles () {
   files="$(find $dir -type f -name "*.$suff" -print)"
@@ -207,4 +208,4 @@ for i in $files; do
     main/camlp5 etc/pa_o.cmo meta/pr_dump.cmo -no_quot /tmp/t2.$suff > /dev/null
   fi
 done
-# /bin/rm -f /tmp/t1.$suff /tmp/t2.$suff /tmp/t3.$suff
+# $RM -f /tmp/t1.$suff /tmp/t2.$suff /tmp/t3.$suff
