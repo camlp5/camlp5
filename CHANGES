@@ -1,6 +1,9 @@
 Camlp5 Version 7.08:
 --------------------
 
+* [21 Dec 18] In printer pr_o.cmo, comment does not get passed through
+  after "let in".
+
 Camlp5 Version 7.07:
 --------------------
 

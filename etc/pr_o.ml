@@ -1023,12 +1023,12 @@ EXTEND_PRINTER
                  pprintf pc "(let%s %q in %q)"
                    (if rf then " rec" else "")
                    (hlist2 let_binding (and_before let_binding)) pel ""
-                   expr e ""
+                   (comm_expr expr) e ""
                else
                  pprintf pc "let%s %q in %p"
                    (if rf then " rec" else "")
                    (hlist2 let_binding (and_before let_binding)) pel ""
-                   expr e)
+                   (comm_expr expr) e)
             (fun () ->
                if pc.dang = ";" then
                  pprintf pc "@[<a>begin let%s %qin@;%q@ end@]"
