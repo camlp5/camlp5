@@ -389,14 +389,15 @@ value rec any_to_nl =
 value rec rawstring1 (ofs, delim) ctx buf =
   parser bp [: `c ; strm :] -> do {
     ctx.line_cnt bp c;
+    let buf = $add c in
     if String.get delim ofs <> c then
-      rawstring1 (0, delim) ctx ($add c) strm
+      rawstring1 (0, delim) ctx buf strm
     else if ofs+1 < String.length delim then
-      rawstring1 (ofs+1, delim) ctx ($add c) strm
+      rawstring1 (ofs+1, delim) ctx buf strm
     else
       let s = $buf in
       let slen = String.length s in
-      ("STRING", String.escaped (String.sub s 0 (slen - String.length delim)))
+      ("STRING", String.escaped (String.sub s 0 (slen - (String.length delim))))
   }
 ;
 
@@ -411,13 +412,23 @@ value rec rawstring0 ctx bp buf =
   ]
 ;
 
+(*
+ * predicate checks that the stream contains "[:alpha:]+|", and it gets called
+ * when the main lexer has already seen a "{".  To check for at least one alpha,
+ * require that the offset of the "|" be > 1 (which means that offset 1 must be
+ * [:alpha:].
+ *
+ * The further check for alpha here is unnecessary, since the main lexer will NOT
+ * call this function in the case where the input is "{|" (because that's a valid
+ * token, and precedes the branch where this code is invoked.
+*)
 value raw_string_starter_p strm =
   let rec predrec n =
     match stream_peek_nth n strm with
       [ None -> False
       | Some ('a'..'z' | '_') ->
          predrec (n+1)
-      | Some '|' -> True
+      | Some '|' when n > 1 -> True
       | Some _ -> False ]
   in predrec 1
 ;
