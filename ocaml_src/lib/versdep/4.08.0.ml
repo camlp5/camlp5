@@ -325,7 +325,19 @@ let ocaml_pexp_newtype = Some (fun loc s e -> Pexp_newtype (mkloc loc s, e));;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
-let ocaml_pexp_open = Some (fun li e -> Pexp_open (Fresh, mknoloc li, e));;
+let ocaml_pexp_open = Some (fun li e ->
+  Pexp_open (
+    { popen_expr =
+      { pmod_desc = Pmod_ident (mknoloc li)
+      ; pmod_loc = loc_none
+      ; pmod_attributes = []
+      }
+    ; popen_override = Fresh
+    ; popen_loc = loc_none
+    ; popen_attributes = []
+    }
+    , e))
+;;
 
 let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
@@ -438,7 +450,7 @@ let ocaml_psig_modtype loc s mto =
 
 let ocaml_psig_open loc li =
   Psig_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
+    {popen_expr = mknoloc li; popen_override = Fresh; popen_loc = loc;
      popen_attributes = []}
 ;;
 
@@ -508,8 +520,15 @@ let ocaml_pstr_module loc s me =
 
 let ocaml_pstr_open loc li =
   Pstr_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
-     popen_attributes = []}
+    { popen_expr =
+      { pmod_desc = Pmod_ident (mknoloc li)
+      ; pmod_loc = loc_none
+      ; pmod_attributes = []
+      }
+    ; popen_override = Fresh
+    ; popen_loc = loc
+    ; popen_attributes = []
+    }
 ;;
 
 let ocaml_pstr_primitive s vd = Pstr_primitive vd;;
