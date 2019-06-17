@@ -95,7 +95,7 @@ and print_symbol1 ppf =
       fprintf ppf "(%a)" print_symbol s ]
 and print_rule ppf symbols = do {
   fprintf ppf "@[<hov 0>";
-  let _ =
+  let _ : _ -> _ =
     List.fold_left
       (fun sep symbol -> do {
          fprintf ppf "%t%a" sep print_symbol symbol;
@@ -107,7 +107,7 @@ and print_rule ppf symbols = do {
 }
 and print_level ppf pp_print_space rules = do {
   fprintf ppf "@[<hov 0>[ ";
-  let _ =
+  let _ : _ -> _ =
     List.fold_left
       (fun sep rule -> do {
          fprintf ppf "%t%a" sep print_rule rule;
@@ -119,7 +119,7 @@ and print_level ppf pp_print_space rules = do {
 };
 
 value print_levels ppf elev =
-  let _ =
+  let _ : _ -> _ =
     List.fold_left
       (fun sep lev -> do {
          let rules =
