@@ -100,48 +100,51 @@ and print_symbol1 ppf =
       fprintf ppf "(%a)" print_symbol s
 and print_rule ppf symbols =
   fprintf ppf "@[<hov 0>";
-  let _ : _ -> _ =
-    List.fold_left
-      (fun sep symbol ->
-         fprintf ppf "%t%a" sep print_symbol symbol;
-         fun ppf -> fprintf ppf ";@ ")
-      (fun ppf -> ()) symbols
+  let _ =
+    (List.fold_left
+       (fun sep symbol ->
+          fprintf ppf "%t%a" sep print_symbol symbol;
+          fun ppf -> fprintf ppf ";@ ")
+       (fun ppf -> ()) symbols :
+     _ -> _)
   in
   fprintf ppf "@]"
 and print_level ppf pp_print_space rules =
   fprintf ppf "@[<hov 0>[ ";
-  let _ : _ -> _ =
-    List.fold_left
-      (fun sep rule ->
-         fprintf ppf "%t%a" sep print_rule rule;
-         fun ppf -> fprintf ppf "%a| " pp_print_space ())
-      (fun ppf -> ()) rules
+  let _ =
+    (List.fold_left
+       (fun sep rule ->
+          fprintf ppf "%t%a" sep print_rule rule;
+          fun ppf -> fprintf ppf "%a| " pp_print_space ())
+       (fun ppf -> ()) rules :
+     _ -> _)
   in
   fprintf ppf " ]@]"
 ;;
 
 let print_levels ppf elev =
-  let _ : _ -> _ =
-    List.fold_left
-      (fun sep lev ->
-         let rules =
-           List.map (fun t -> Sself :: t) (flatten_tree lev.lsuffix) @
-           flatten_tree lev.lprefix
-         in
-         fprintf ppf "%t@[<hov 2>" sep;
-         begin match lev.lname with
-           Some n -> fprintf ppf "%a@;<1 2>" print_str n
-         | None -> ()
-         end;
-         begin match lev.assoc with
-           LeftA -> fprintf ppf "LEFTA"
-         | RightA -> fprintf ppf "RIGHTA"
-         | NonA -> fprintf ppf "NONA"
-         end;
-         fprintf ppf "@]@;<1 2>";
-         print_level ppf pp_force_newline rules;
-         fun ppf -> fprintf ppf "@,| ")
-      (fun ppf -> ()) elev
+  let _ =
+    (List.fold_left
+       (fun sep lev ->
+          let rules =
+            List.map (fun t -> Sself :: t) (flatten_tree lev.lsuffix) @
+            flatten_tree lev.lprefix
+          in
+          fprintf ppf "%t@[<hov 2>" sep;
+          begin match lev.lname with
+            Some n -> fprintf ppf "%a@;<1 2>" print_str n
+          | None -> ()
+          end;
+          begin match lev.assoc with
+            LeftA -> fprintf ppf "LEFTA"
+          | RightA -> fprintf ppf "RIGHTA"
+          | NonA -> fprintf ppf "NONA"
+          end;
+          fprintf ppf "@]@;<1 2>";
+          print_level ppf pp_force_newline rules;
+          fun ppf -> fprintf ppf "@,| ")
+       (fun ppf -> ()) elev :
+     _ -> _)
   in
   ()
 ;;

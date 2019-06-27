@@ -49,10 +49,7 @@ let path = ref ([] : string list);;
 
 let loadfile file =
   if not !initialized then
-    begin
-      begin Dynlink.allow_unsafe_modules true end;
-      initialized := true
-    end;
+    begin Dynlink.allow_unsafe_modules true; initialized := true end;
   let path =
     if !nolib then !path else Odyl_config.standard_library :: !path
   in
