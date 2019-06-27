@@ -413,14 +413,14 @@ value rec rawstring0 ctx bp buf =
 ;
 
 (*
- * predicate checks that the stream contains "[:alpha:]+|", and it gets called
- * when the main lexer has already seen a "{".  To check for at least one alpha,
- * require that the offset of the "|" be > 1 (which means that offset 1 must be
- * [:alpha:].
+ * predicate checks that the stream contains "[:alpha:]+|", and it gets
+ * called when the main lexer has already seen a "{".  To check for at least
+ * one alpha, require that the offset of the "|" be > 1 (which means that
+ * offset 1 must be [:alpha:].
  *
- * The further check for alpha here is unnecessary, since the main lexer will NOT
- * call this function in the case where the input is "{|" (because that's a valid
- * token, and precedes the branch where this code is invoked.
+ * The further check for alpha here is unnecessary, since the main lexer will
+ * NOT call this function in the case where the input is "{|" (because that's
+ * a valid token, and precedes the branch where this code is invoked.
 *)
 value raw_string_starter_p strm =
   let rec predrec n =

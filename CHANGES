@@ -1,6 +1,7 @@
 Camlp5 Version 7.08:
 --------------------
 
+* [27 Jun 19] Added raw string syntax (by Check Murthy).
 * [21 Dec 18] Fixed bug: in printer pr_o.cmo, comment did not get passed
   through after "let in".
 
