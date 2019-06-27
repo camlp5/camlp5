@@ -50,7 +50,7 @@ let path = ref ([] : string list);;
 let loadfile file =
   if not !initialized then
     begin
-      begin Dynlink.init (); Dynlink.allow_unsafe_modules true end;
+      begin Dynlink.allow_unsafe_modules true end;
       initialized := true
     end;
   let path =
