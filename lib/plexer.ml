@@ -386,6 +386,60 @@ value rec any_to_nl =
   | ]
 ;
 
+value rec rawstring1 (ofs, delim) ctx buf =
+  parser bp [: `c ; strm :] -> do {
+    ctx.line_cnt bp c;
+    let buf = $add c in
+    if String.get delim ofs <> c then
+      rawstring1 (0, delim) ctx buf strm
+    else if ofs+1 < String.length delim then
+      rawstring1 (ofs+1, delim) ctx buf strm
+    else
+      let s = $buf in
+      let slen = String.length s in
+      ("STRING", String.escaped (String.sub s 0 (slen - (String.length delim))))
+  }
+;
+
+value rec rawstring0 ctx bp buf =
+  parser bp [
+    [: `'|' ; strm :] -> do {
+      rawstring1 (0, "|" ^ $buf ^ "}") ctx $empty strm
+    }
+  | [: `('a'..'z' | '_' as c) ; strm :] -> do {
+      rawstring0 ctx bp ($add c) strm
+    }
+  ]
+;
+
+(*
+ * predicate checks that the stream contains "[:alpha:]+|", and it gets called
+ * when the main lexer has already seen a "{".  To check for at least one alpha,
+ * require that the offset of the "|" be > 1 (which means that offset 1 must be
+ * [:alpha:].
+ *
+ * The further check for alpha here is unnecessary, since the main lexer will NOT
+ * call this function in the case where the input is "{|" (because that's a valid
+ * token, and precedes the branch where this code is invoked.
+*)
+value raw_string_starter_p strm =
+  let rec predrec n =
+    match stream_peek_nth n strm with
+      [ None -> False
+      | Some ('a'..'z' | '_') ->
+         predrec (n+1)
+      | Some '|' when n > 1 -> True
+      | Some _ -> False ]
+  in predrec 1
+;
+
+value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
+  if not (raw_string_starter_p strm) then
+    keyword_or_error ctx loc "{"
+  else
+    rawstring0 ctx bp $empty strm
+;
+
 value next_token_after_spaces ctx bp =
   lexer
   [ 'A'-'Z' ident! ->
@@ -433,7 +487,7 @@ value next_token_after_spaces ctx bp =
   | "{|" -> keyword_or_error ctx (bp, $pos) $buf
   | "{<" -> keyword_or_error ctx (bp, $pos) $buf
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
-  | "{" -> keyword_or_error ctx (bp, $pos) $buf
+  | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
   | "." ?= [ "\n" ] -> keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
   | "." ->
