@@ -26,7 +26,7 @@ authors: ["Daniel de Rauglaudre"]
 homepage: "https://camlp5.github.io"
 license: "BSD-3-Clause"
 bug-reports: "https://github.com/camlp5/camlp5/issues"
-dev-repo: "https://github.com/camlp5/camlp5.git"
+dev-repo: "git+https://github.com/camlp5/camlp5.git"
 doc: "https://camlp5.github.io/doc/html"
 
 depends: [
