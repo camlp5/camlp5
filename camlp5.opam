@@ -30,7 +30,7 @@ dev-repo: "https://github.com/camlp5/camlp5.git"
 doc: "https://camlp5.github.io/doc/html"
 
 depends: [
-  "ocaml"       { >= "4.02" & <= "4.08" }
+  "ocaml"       { >= "4.02" & <= "4.08.0" }
 ]
 
 build: [
