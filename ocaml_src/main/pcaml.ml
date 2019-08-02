@@ -1,13 +1,13 @@
 (* camlp5r *)
 (* pcaml.ml,v *)
-(* Copyright (c) INRIA 2007-2018 *)
+(* Copyright (c) INRIA 2007-2019 *)
 
 (* #load "pa_macro.cmo" *)
 (* #load "pa_extend.cmo" *)
 
 open Printf;;
 
-let version = "7.08-exp";;
+let version = "7.08";;
 let syntax_name = ref "";;
 
 let ocaml_version =
