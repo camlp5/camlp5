@@ -1,6 +1,7 @@
 Camlp5 Version 7.08:
 --------------------
 
+* [02 Aug 19] Updated for (incoming) ocaml version 4.10.0.
 * [02 Aug 19] Updated for ocaml version 4.09.0.
 * [27 Jun 19] Updated for ocaml version 4.08.1.
 * [27 Jun 19] Updated for ocaml version 4.08.0 (by github user madroach).
