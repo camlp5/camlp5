@@ -1,5 +1,4 @@
 # Camlp5
-==========
 
 Camlp5 is a preprocessor-pretty-printer of ocaml.
 
@@ -9,12 +8,10 @@ they compile), and jocaml 3.12.0 to 3.12.1.
 This Camlp5 version is 7.09-exp.
 
 ## REQUIREMENTS
--------------------
 
 You need the ocaml compiler installed. It must be accessible in the path.
 
 ## INSTALLATION
-------------------
 
 1) First, run the "configure" script by typing:
 ```shell
@@ -55,7 +52,6 @@ or, if you install to a system location but are not an administrator
 ```
 
 ## Documentation
---------------------
 
 The directory doc/htmlp contains the sources of the full documentation.
 To build it, cd doc/htmlp, and:
@@ -66,20 +62,17 @@ To build it, cd doc/htmlp, and:
 * for its info version, type "make info", result camlp5.info*
 
 ## Developers
-----------------
 
 The file DEVEL gives information for people who want to make changes
 in Camlp5, or who are just curious of how it is implemented. The same
 explanations are also in the chapter "Camlp5 sources" in the documentation.
 
 ## Problems
--------------
 
 If you have problems to compile your source files with this version of
 Camlp5, the reason can be that there the new type 'location' is now
 abstract. Consider looking at the file UPGRADING.
 
 ## Author
------------
 
 Daniel de Rauglaudre <daniel.de_rauglaudre@inria.fr>
