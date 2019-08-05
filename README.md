@@ -7,11 +7,11 @@ they compile), and jocaml 3.12.0 to 3.12.1.
 
 This Camlp5 version is 7.09-exp.
 
-## REQUIREMENTS
+## Requirements
 
 You need the ocaml compiler installed. It must be accessible in the path.
 
-## INSTALLATION
+## Installation
 
 1) First, run the "configure" script by typing:
 ```shell
