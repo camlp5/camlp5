@@ -64,7 +64,9 @@ value loadfile file =
       [ Not_found -> raise (Error file "file not found in path") ]
     in
     try Dynlink.loadfile fname with
-    [ Dynlink.Error e -> raise (Error fname (Dynlink.error_message e)) ]
+    [ Dynlink.Error (Module_already_loaded _) ->
+        () (* ignore for compatibility *)
+    | Dynlink.Error e -> raise (Error fname (Dynlink.error_message e)) ]
   }
   END
 ;
