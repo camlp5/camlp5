@@ -64,9 +64,12 @@ value loadfile file =
       [ Not_found -> raise (Error file "file not found in path") ]
     in
     try Dynlink.loadfile fname with
-    [ Dynlink.Error (Module_already_loaded _) ->
+    | IFDEF OCAML_VERSION >= OCAML_4_08 AND NOT BOOTSTRAPPING_SOURCES THEN
+      Dynlink.Error (Module_already_loaded _) ->
         () (* ignore for compatibility *)
-    | Dynlink.Error e -> raise (Error fname (Dynlink.error_message e)) ]
+      END
+    | Dynlink.Error e -> raise (Error fname (Dynlink.error_message e))
+    end
   }
   END
 ;

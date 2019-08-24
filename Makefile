@@ -237,6 +237,9 @@ new_source:
 	else \
 	  VERSDIR=""; \
 	fi; \
+	if [ "$$k" = "odyl_main.ml" ]; then \
+	  opt="$$opt -DBOOTSTRAPPING_SOURCES"; \
+	fi; \
 	echo ============================================; \
 	echo ocaml_src.new/$$DIR/$$k; \
 	if [ "$$k" = "Makefile" ]; then \
@@ -270,6 +273,9 @@ compare_source:
 	  VERSDIR="$(OCAMLN)"; \
 	else \
 	  VERSDIR=""; \
+	fi; \
+	if [ "$$k" = "odyl_main.ml" ]; then \
+	  opt="$$opt -DBOOTSTRAPPING_SOURCES"; \
 	fi; \
 	echo ============================================; \
 	echo ocaml_src/$$DIR/$$k; \

@@ -58,8 +58,7 @@ let loadfile file =
       Not_found -> raise (Error (file, "file not found in path"))
   in
   try Dynlink.loadfile fname with
-    Dynlink.Error (Module_already_loaded _) -> ()
-  | Dynlink.Error e -> raise (Error (fname, Dynlink.error_message e))
+    Dynlink.Error e -> raise (Error (fname, Dynlink.error_message e))
 ;;
 
 let directory d = path := d :: !path;;

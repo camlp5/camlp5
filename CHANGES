@@ -1,6 +1,10 @@
 Camlp5 Version 7.10:
 --------------------
 
+* [24 Aug 19] Fixed problem of compatibility with ocaml versions less
+  than 4.08, lost after camlp5 version 7.08, making compilation of
+  camlp5 impossible. Due to dynamic loading.
+
 Camlp5 Version 7.09:
 --------------------
 
