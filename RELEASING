@@ -34,4 +34,5 @@ AFTER THE RELEASE
       Camlp5 Version 7.10:
       --------------------
 3. Push and commit with comment
-    "Starting version 7.10-exp after release 7.09."
+      "Starting version 7.10-exp after release 7.09."
+   (giving the right version numbers)
