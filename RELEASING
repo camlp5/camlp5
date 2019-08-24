@@ -1,0 +1,37 @@
+HOW TO MAKE A RELEASE (WHEN YOU ARE ADMINISTRATOR).
+
+1. Do a "make".
+2. Check that cold sources are bootstrapped: "make compare_sources"
+   If not ok, see how to update them in Camlp5 doc, chap "camlp5 sources".
+   Probably "make bootstrap_sources" makes the job.
+3. Edit main/pcaml.ml and change version name. In general, it suffices
+   to remove "-exp" (changing e.g. "7.09-exp" by just "7.09").
+4. Do the same thing in file ocaml_src/main/pcaml.ml (cold source).
+5. Edit file README.md, also update version number.
+6. Commit and push in github, commenting "Preparing for release #version."
+   where "#version" is the version number.
+7. Do a tag by typing "git tag relv" where "v" is the release number
+   with only the digits (e.g. 709 if release is 7.09, resulting rel709).
+8. Push tags by taping "git push --tags".
+9. Check if present in github camlp5/camlp5 "release".
+
+Then go to cloned directory camlp5.github.io and
+
+1. Copy CHANGES from camlp5 into CHANGES.txt
+2. Copy README.md from camlp5.
+3. Edit file index.html, change the version number, the release date
+   and the tar.gz link and name.
+4. Commit and push. After some minutes, the home dir of camlp5
+      https://camlp5.github.io/
+   should be done
+
+AFTER THE RELEASE
+
+1. Edit files main/pcaml.ml, ocaml_src/main/pcaml.ml and README.md to
+   reflect new preparing version, changing, e.g. "7.09" into "7.10-exp"
+   in these three files.
+2. Edit CHANGES to add new title for new version, e.g.
+      Camlp5 Version 7.10:
+      --------------------
+3. Push and commit with comment
+    "Starting version 7.10-exp after release 7.09."
