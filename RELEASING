@@ -4,8 +4,7 @@ HOW TO MAKE A RELEASE (WHEN YOU ARE ADMINISTRATOR).
    to remove "-exp" (changing e.g. "7.09-exp" by just "7.09").
 2. Do the same thing in file ocaml_src/main/pcaml.ml (cold source).
 3. Edit file README.md, also update version number.
-4. Commit and push in github, commenting "Preparing for release #version."
-   where "#version" is the version number.
+4. Commit and push in github.
 5. Do a tag by typing "git tag relv" where "v" is the release number
    with only the digits (e.g. 709 if release is 7.09, resulting rel709).
 6. Push tags by taping "git push --tags".
@@ -29,6 +28,5 @@ AFTER THE RELEASE
 2. Edit CHANGES to add new title for new version, e.g.
       Camlp5 Version 7.10:
       --------------------
-3. Push and commit with comment
-      "Starting version 7.10-exp after release 7.09."
-   (giving the right version numbers)
+3. Push and commit.
+
