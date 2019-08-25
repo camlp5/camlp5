@@ -5,7 +5,7 @@ Camlp5 is a preprocessor-pretty-printer of ocaml.
 It is compatible with all versions of ocaml from 1.07 to 4.10.0 (when
 they compile), and jocaml 3.12.0 to 3.12.1.
 
-This Camlp5 version is 7.10.
+This Camlp5 version is 7.11-exp.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ list and short description of each option.
 
 2) It creates a Makefile, which can be invoked by:
 ```shell
-   make world.opt
+   make
 ```
 
 Alternatively, you can decompose the operations into:

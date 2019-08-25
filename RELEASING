@@ -18,7 +18,7 @@ Then go to cloned directory camlp5.github.io and
    and the tar.gz link and name.
 4. Commit and push. After some minutes, the home dir of camlp5
       https://camlp5.github.io/
-   should be done
+   should be updated
 
 AFTER THE RELEASE
 
@@ -28,5 +28,4 @@ AFTER THE RELEASE
 2. Edit CHANGES to add new title for new version, e.g.
       Camlp5 Version 7.10:
       --------------------
-3. Push and commit.
-
+3. Commit and push.
