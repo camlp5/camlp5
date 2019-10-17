@@ -368,7 +368,7 @@ value mktrecord ltl priv =
   ocaml_ptype_record ltl priv
 ;
 
-value option_map f =
+value option f =
   fun
   [ Some x → Some (f x)
   | None → None ]
@@ -378,7 +378,7 @@ value mktvariant loc ctl priv =
   let ctl =
     List.map
       (fun (loc, c, tl, rto) →
-         (conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
+         (conv_con (uv c), List.map ctyp (uv tl), option ctyp rto,
           mkloc loc))
       ctl
   in
@@ -412,12 +412,6 @@ value type_decl tn tl priv cl =
 
 value mkvalue_desc vn t p = ocaml_value_description vn (ctyp t) p;
 
-value option f =
-  fun
-  [ Some x → Some (f x)
-  | None → None ]
-;
-
 value rec same_type_expr ct ce =
   match (ct, ce) with
   [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) → s1 = s2
@@ -450,7 +444,7 @@ value mkwithc =
   fun
   [ WcMod loc id m →
       let mname = long_id_of_string_list loc (uv id) in
-      (mname, ocaml_pwith_module (mkloc loc) mname (module_expr_long_id m)) 
+      (mname, ocaml_pwith_module (mkloc loc) mname (module_expr_long_id m))
   | WcMos loc id m →
       match ocaml_pwith_modsubst with
       [ Some pwith_modsubst →

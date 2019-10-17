@@ -383,7 +383,7 @@ let mktrecord ltl priv =
   ocaml_ptype_record ltl priv
 ;;
 
-let option_map f =
+let option f =
   function
     Some x -> Some (f x)
   | None -> None
@@ -393,8 +393,7 @@ let mktvariant loc ctl priv =
   let ctl =
     List.map
       (fun (loc, c, tl, rto) ->
-         conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
-         mkloc loc)
+         conv_con (uv c), List.map ctyp (uv tl), option ctyp rto, mkloc loc)
       ctl
   in
   match ocaml_ptype_variant ctl priv with
@@ -426,12 +425,6 @@ let type_decl tn tl priv cl =
 ;;
 
 let mkvalue_desc vn t p = ocaml_value_description vn (ctyp t) p;;
-
-let option f =
-  function
-    Some x -> Some (f x)
-  | None -> None
-;;
 
 let rec same_type_expr ct ce =
   match ct, ce with
