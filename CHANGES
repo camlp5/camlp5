@@ -1,6 +1,8 @@
 Camlp5 Version 7.11:
 --------------------
 
+* [29 Oct 19] Added compatibility with ocaml version 4.09.1.
+
 Camlp5 Version 7.10:
 --------------------
 
