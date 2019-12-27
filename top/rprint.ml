@@ -435,17 +435,21 @@ value rec print_out_module_type ppf =
   [ Omty_ident id -> fprintf ppf "%a" print_ident id
   | Omty_signature sg ->
       fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" print_out_signature sg
-  | Omty_functor name mty_arg mty_res ->
-      IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+  | IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Omty_functor name mty_arg mty_res ->
         fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
           print_out_module_type mty_arg print_out_module_type mty_res
-      ELSE
-        match mty_arg with
-        [ Some mty_arg ->
+    ELSE
+    Omty_functor mty_arg mty_res ->
+       match mty_arg with
+        [ Some (None, mty_arg) ->
+            fprintf ppf "@[<2>%a ->@ %a@]"
+              print_out_module_type mty_arg print_out_module_type mty_res
+        | Some (Some name, mty_arg) ->
             fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
               print_out_module_type mty_arg print_out_module_type mty_res
         | None ->
-            fprintf ppf "@[<2>functor@ (%s) ->@ %a@]" name
+            fprintf ppf "@[<2>functor@ () ->@ %a@]"
               print_out_module_type mty_res ]
       END
   | Omty_abstract -> ()
