@@ -308,7 +308,9 @@ value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
 value ocaml_pmty_functor sloc s mt1 mt2 =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmty_functor (mkloc sloc s) mt1 mt2
-  ELSE Pmty_functor (mkloc sloc s) (Some mt1) mt2 END
+  ELSE
+    Pmty_functor (mkloc sloc s) (Some mt1) mt2
+  END
 ;
 
 value ocaml_pmty_typeof =
@@ -764,7 +766,9 @@ value ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);
 
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun i me e -> Pexp_letmodule (mknoloc i) me e) END
+  ELSE
+    Some (fun i me e -> Pexp_letmodule (mknoloc i) me e)
+  END
 ;
 
 value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
@@ -1252,7 +1256,9 @@ value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
 
 value ocaml_pmod_functor s mt me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmod_functor (mknoloc s) mt me
-  ELSE Pmod_functor (mknoloc s) (Some mt) me END
+  ELSE
+    Pmod_functor (mknoloc s) (Some mt) me
+  END
 ;
 
 value ocaml_pmod_unpack =
