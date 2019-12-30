@@ -284,7 +284,7 @@ module Meta_make (C : MetaSig) =
       [ MtAcc _ mt1 mt2 → C.node "MtAcc" [module_type mt1; module_type mt2]
       | MtApp _ mt1 mt2 → C.node "MtApp" [module_type mt1; module_type mt2]
       | MtFun _ s mt1 mt2 →
-          C.node "MtFun" [C.vala C.string s; module_type mt1; module_type mt2]
+          C.node "MtFun" [C.vala C.string s; C.option module_type mt1; module_type mt2]
       | MtLid _ s → C.node "MtLid" [C.vala C.string s]
       | MtQuo _ s → C.node "MtQuo" [C.vala C.string s]
       | MtSig _ lsi → C.node "MtSig" [C.vala (C.list sig_item) lsi]
@@ -346,7 +346,7 @@ module Meta_make (C : MetaSig) =
       [ MeAcc _ me1 me2 → C.node "MeAcc" [module_expr me1; module_expr me2]
       | MeApp _ me1 me2 → C.node "MeApp" [module_expr me1; module_expr me2]
       | MeFun _ s mt me →
-          C.node "MeFun" [C.vala C.string s; module_type mt; module_expr me]
+          C.node "MeFun" [C.vala C.string s; C.option module_type mt; module_expr me]
       | MeStr _ lsi → C.node "MeStr" [C.vala (C.list str_item) lsi]
       | MeTyc _ me mt → C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid _ s → C.node "MeUid" [C.vala C.string s]

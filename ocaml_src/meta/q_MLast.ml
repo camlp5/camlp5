@@ -526,7 +526,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ (i : 'e__1) _ _
                 (loc : Ploc.t) ->
-              (Qast.Node ("MeFun", [Qast.Loc; i; t; me]) : 'module_expr)))];
+              (Qast.Node ("MeFun", [Qast.Loc; i; Qast.Option (Some t); me]) : 'module_expr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -1271,7 +1271,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : 'e__24) _
                 (loc : Ploc.t) ->
-              (Qast.Node ("MeFun", [Qast.Loc; m; mt; mb]) :
+              (Qast.Node ("MeFun", [Qast.Loc; m; Qast.Option (Some mt); mb]) :
                'mod_fun_binding)))]];
     Grammar.extension
       (mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e) None
@@ -1328,7 +1328,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt2 : 'mod_type_fun_binding) _ (mt1 : 'module_type) _
                 (m : 'e__25) _ (loc : Ploc.t) ->
-              (Qast.Node ("MtFun", [Qast.Loc; m; mt1; mt2]) :
+              (Qast.Node ("MtFun", [Qast.Loc; m; Qast.Option (Some mt1); mt2]) :
                'mod_type_fun_binding)))]];
     Grammar.extension (module_type : 'module_type Grammar.Entry.e) None
       [None, None,
@@ -1384,7 +1384,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ _ (t : 'module_type) _ (i : 'e__26) _ _
                 (loc : Ploc.t) ->
-              (Qast.Node ("MtFun", [Qast.Loc; i; t; mt]) : 'module_type)))];
+              (Qast.Node ("MtFun", [Qast.Loc; i; Qast.Option (Some t); mt]) : 'module_type)))];
        None, None,
        [Grammar.production
           (Grammar.r_next
@@ -2083,7 +2083,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_declaration) _ (t : 'module_type) _ (i : 'e__49)
                 _ (loc : Ploc.t) ->
-              (Qast.Node ("MtFun", [Qast.Loc; i; t; mt]) :
+              (Qast.Node ("MtFun", [Qast.Loc; i; Qast.Option (Some t); mt]) :
                'module_declaration)));
         Grammar.production
           (Grammar.r_next

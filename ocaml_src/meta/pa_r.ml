@@ -292,7 +292,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, i, t, me) : 'module_expr)))];
+              (MLast.MeFun (loc, i, (Some t), me) : 'module_expr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -564,7 +564,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, m, mt, mb) : 'mod_fun_binding)))]];
+              (MLast.MeFun (loc, m, (Some mt), mb) : 'mod_fun_binding)))]];
     Grammar.extension
       (mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e) None
       [None, None,
@@ -590,7 +590,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt2 : 'mod_type_fun_binding) _ (mt1 : 'module_type) _
                 (m : string) _ (loc : Ploc.t) ->
-              (MLast.MtFun (loc, m, mt1, mt2) : 'mod_type_fun_binding)))]];
+              (MLast.MtFun (loc, m, (Some mt1), mt2) : 'mod_type_fun_binding)))]];
     Grammar.extension (module_type : 'module_type Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -612,7 +612,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.MtFun (loc, i, t, mt) : 'module_type)))];
+              (MLast.MtFun (loc, i, (Some t), mt) : 'module_type)))];
        None, None,
        [Grammar.production
           (Grammar.r_next
@@ -852,7 +852,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_declaration) _ (t : 'module_type) _ (i : string)
                 _ (loc : Ploc.t) ->
-              (MLast.MtFun (loc, i, t, mt) : 'module_declaration)));
+              (MLast.MtFun (loc, i, (Some t), mt) : 'module_declaration)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ":")))

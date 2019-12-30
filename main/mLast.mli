@@ -130,7 +130,7 @@ and expr =
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
-  | MtFun of loc and V string and module_type and module_type
+  | MtFun of loc and V string and option module_type and module_type
   | MtLid of loc and V string
   | MtQuo of loc and V string
   | MtSig of loc and V (list sig_item)
@@ -161,7 +161,7 @@ and with_constr =
 and module_expr =
   [ MeAcc of loc and module_expr and module_expr
   | MeApp of loc and module_expr and module_expr
-  | MeFun of loc and V string and module_type and module_expr
+  | MeFun of loc and V string and option module_type and module_expr
   | MeStr of loc and V (list str_item)
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string

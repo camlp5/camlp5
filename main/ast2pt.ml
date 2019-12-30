@@ -725,6 +725,11 @@ value label_of_patt =
   | p → error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
 ;
 
+value map_option f =
+  fun
+  [ Some x -> Some (f x)
+  | None -> None ]
+;
 value rec expr =
   fun
   [ ExAcc loc x <:expr< val >> →
@@ -1160,7 +1165,7 @@ and module_type =
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun loc n nt mt →
       mkmty loc
-        (ocaml_pmty_functor (mkloc loc) (uv n) (module_type nt)
+        (ocaml_pmty_functor (mkloc loc) (uv n) (map_option module_type nt)
            (module_type mt))
   | MtLid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtQuo loc _ → error loc "abstract module type not allowed here"
@@ -1238,7 +1243,7 @@ and module_expr =
   | MeApp loc me1 me2 →
       mkmod loc (Pmod_apply (module_expr me1) (module_expr me2))
   | MeFun loc n mt me →
-      mkmod loc (ocaml_pmod_functor (uv n) (module_type mt) (module_expr me))
+      mkmod loc (ocaml_pmod_functor (uv n) (map_option module_type mt) (module_expr me))
   | MeStr loc sl →
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc loc me mt →

@@ -284,7 +284,7 @@ EXTEND
   module_expr:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF →
-          Qast.Node "MeFun" [Qast.Loc; i; t; me]
+          Qast.Node "MeFun" [Qast.Loc; i; Qast.Option (Some t); me]
       | "struct"; st = structure; /; "end" →
           Qast.Node "MeStr" [Qast.Loc; st] ]
     | [ me1 = SELF; me2 = SELF → Qast.Node "MeApp" [Qast.Loc; me1; me2] ]
@@ -344,7 +344,7 @@ EXTEND
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = SV UIDENT; ":"; mt = module_type; ")"; mb = SELF →
-          Qast.Node "MeFun" [Qast.Loc; m; mt; mb]
+          Qast.Node "MeFun" [Qast.Loc; m; Qast.Option (Some mt); mb]
       | ":"; mt = module_type; "="; me = module_expr →
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "="; me = module_expr → me ] ]
@@ -356,7 +356,7 @@ EXTEND
   ;
   module_type:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF →
-          Qast.Node "MtFun" [Qast.Loc; i; t; mt] ]
+          Qast.Node "MtFun" [Qast.Loc; i; Qast.Option (Some t); mt] ]
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") →
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
     | [ "sig"; sg = signature; /; "end" → Qast.Node "MtSig" [Qast.Loc; sg]
