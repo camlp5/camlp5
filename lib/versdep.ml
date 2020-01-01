@@ -308,7 +308,8 @@ value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
 value ocaml_pmty_functor sloc s mt1 mt2 =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmty_functor (mkloc sloc s) mt1 mt2
-  ELSE Pmty_functor (mkloc sloc s) (Some mt1) mt2 END
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN Pmty_functor (mkloc sloc s) (Some mt1) mt2
+  ELSE Pmty_functor (Named (mkloc sloc (Some s)) mt1) mt2 END
 ;
 
 value ocaml_pmty_typeof =
@@ -764,7 +765,8 @@ value ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);
 
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun i me e -> Pexp_letmodule (mknoloc i) me e) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN Some (fun i me e -> Pexp_letmodule (mknoloc i) me e)
+  ELSE Some (fun i me e -> Pexp_letmodule (mknoloc (Some i)) me e) END
 ;
 
 value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
@@ -929,8 +931,10 @@ value ocaml_ppat_type =
 
 value ocaml_ppat_unpack =
   IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN None
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     Some (fun loc s -> Ppat_unpack (mkloc loc s), fun pt -> Ptyp_package pt)
+  ELSE
+    Some (fun loc s -> Ppat_unpack (mkloc loc (Some s)), fun pt -> Ptyp_package pt)
   END
 ;
 
@@ -984,9 +988,13 @@ value ocaml_psig_include loc mt =
 
 value ocaml_psig_module loc s mt =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_module (mknoloc s) mt
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     Psig_module
       {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
+       pmd_loc = loc}
+  ELSE
+    Psig_module
+      {pmd_name = mkloc loc (Some s); pmd_type = mt; pmd_attributes = [];
        pmd_loc = loc}
   END
 ;
@@ -1031,12 +1039,24 @@ value ocaml_psig_recmodule =
       Psig_recmodule ntl
     in
     Some f
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     let f ntl =
       let ntl =
         List.map
           (fun (s, mt) ->
              {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
+              pmd_loc = loc_none})
+          ntl
+      in
+      Psig_recmodule ntl
+    in
+    Some f
+  ELSE
+    let f ntl =
+      let ntl =
+        List.map
+          (fun (s, mt) ->
+             {pmd_name = mknoloc (Some s); pmd_type = mt; pmd_attributes = [];
               pmd_loc = loc_none})
           ntl
       in
@@ -1141,9 +1161,15 @@ value ocaml_pstr_modtype loc s mt =
 
 value ocaml_pstr_module loc s me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_module (mkloc loc s) me
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     let mb =
       {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+       pmb_loc = loc}
+    in
+    Pstr_module mb
+  ELSE
+    let mb =
+      {pmb_name = mkloc loc (Some s); pmb_expr = me; pmb_attributes = [];
        pmb_loc = loc}
     in
     Pstr_module mb
@@ -1185,12 +1211,22 @@ value ocaml_pstr_recmodule =
       Pstr_recmodule (List.map (fun (s, mt, me) → (mknoloc s, mt, me)) nel)
     in
     Some f
-  ELSE
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     let f nel =
       Pstr_recmodule
         (List.map
            (fun (s, mt, me) ->
               {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
+               pmb_loc = loc_none})
+           nel)
+    in
+    Some f
+  ELSE
+    let f nel =
+      Pstr_recmodule
+        (List.map
+           (fun (s, mt, me) ->
+              {pmb_name = mknoloc (Some s); pmb_expr = me; pmb_attributes = [];
                pmb_loc = loc_none})
            nel)
     in
@@ -1252,7 +1288,8 @@ value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
 
 value ocaml_pmod_functor s mt me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmod_functor (mknoloc s) mt me
-  ELSE Pmod_functor (mknoloc s) (Some mt) me END
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN Pmod_functor (mknoloc s) (Some mt) me
+  ELSE Pmod_functor (Named (mknoloc (Some s)) mt) me END
 ;
 
 value ocaml_pmod_unpack =
@@ -1813,3 +1850,5 @@ value array_create =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Array.create
   ELSE Array.make END
 ;
+
+value uv_opt c = IFDEF OCAML_VERSION >= OCAML_4_10_0 THEN Some c ELSE c END;
