@@ -49,7 +49,7 @@ bootstrap_q_MLast:
 
 compare_q_MLast:
 	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
-	OCAMLN=$(OCAMLN) ./mk_q_MLast.sh | diff -c q_MLast.ml -
+	OCAMLN=$(OCAMLN) ./mk_q_MLast.sh | diff -Bwiu q_MLast.ml -
 
 bootstrap_q_ast:
 	cd ../etc; $(MAKE) pr_r.cmo pa_mkast.cmo

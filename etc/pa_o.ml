@@ -437,7 +437,7 @@ EXTEND
       | -> <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V UIDENT; me = mod_fun_binding -> (i, me) ] ]
+    [ [ i = V UIDENT; me = mod_fun_binding -> (Some i, me) ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
@@ -500,7 +500,7 @@ EXTEND
           <:sig_item< value $lid:i$ : $t$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V UIDENT; mt = module_declaration -> (i, mt) ] ]
+    [ [ i = V UIDENT; mt = module_declaration -> (Some i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA

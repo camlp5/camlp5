@@ -292,7 +292,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, i, t, me) : 'module_expr)))];
+              (MLast.MeFun (loc, Some (Some i, t), me) : 'module_expr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -527,7 +527,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)),
            (fun (me : 'mod_fun_binding) (i : string) (loc : Ploc.t) ->
-              (i, me : 'mod_binding)))]];
+              (Some i, me : 'mod_binding)))]];
     Grammar.extension (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)
       None
       [None, Some Gramext.RightA,
@@ -564,7 +564,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, m, mt, mb) : 'mod_fun_binding)))]];
+              (MLast.MeFun (loc, Some (Some m, mt), mb) : 'mod_fun_binding)))]];
     Grammar.extension
       (mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e) None
       [None, None,
@@ -590,7 +590,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt2 : 'mod_type_fun_binding) _ (mt1 : 'module_type) _
                 (m : string) _ (loc : Ploc.t) ->
-              (MLast.MtFun (loc, m, mt1, mt2) : 'mod_type_fun_binding)))]];
+              (MLast.MtFun (loc, Some (Some m, mt1), mt2) : 'mod_type_fun_binding)))]];
     Grammar.extension (module_type : 'module_type Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -612,7 +612,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.MtFun (loc, i, t, mt) : 'module_type)))];
+              (MLast.MtFun (loc, Some (Some i, t), mt) : 'module_type)))];
        None, None,
        [Grammar.production
           (Grammar.r_next
@@ -832,7 +832,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (module_declaration : 'module_declaration Grammar.Entry.e)),
            (fun (mt : 'module_declaration) (i : string) (loc : Ploc.t) ->
-              (i, mt : 'mod_decl_binding)))]];
+              (Some i, mt : 'mod_decl_binding)))]];
     Grammar.extension
       (module_declaration : 'module_declaration Grammar.Entry.e) None
       [None, Some Gramext.RightA,
@@ -852,7 +852,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_declaration) _ (t : 'module_type) _ (i : string)
                 _ (loc : Ploc.t) ->
-              (MLast.MtFun (loc, i, t, mt) : 'module_declaration)));
+              (MLast.MtFun (loc, Some (Some i,  t), mt) : 'module_declaration)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ":")))
@@ -1084,7 +1084,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.ExLmd (loc, m, mb, e) : 'expr)));
+              (MLast.ExLmd (loc, Some m, mb, e) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1742,7 +1742,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (el : 'sequence) _ (mb : 'mod_fun_binding) (m : string) _ _
                 (loc : Ploc.t) ->
-              ([MLast.ExLmd (loc, m, mb, mksequence loc el)] : 'sequence)));
+              ([MLast.ExLmd (loc, Some m, mb, mksequence loc el)] : 'sequence)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2020,7 +2020,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
              (Grammar.s_token ("UIDENT", "")),
            (fun (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, s, None) : 'paren_patt)));
+              (MLast.PaUnp (loc, Some s, None) : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2031,7 +2031,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
            (fun (mt : 'module_type) _ (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, s, Some mt) : 'paren_patt)));
+              (MLast.PaUnp (loc, Some s, Some mt) : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
@@ -2164,7 +2164,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
              (Grammar.s_token ("UIDENT", "")),
            (fun (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, s, None) : 'paren_ipatt)));
+              (MLast.PaUnp (loc, Some s, None) : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2175,7 +2175,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
            (fun (mt : 'module_type) _ (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, s, Some mt) : 'paren_ipatt)));
+              (MLast.PaUnp (loc, Some s, Some mt) : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))

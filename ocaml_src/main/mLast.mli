@@ -75,7 +75,7 @@ and patt =
   | PaTyc of loc * patt * ctyp
   | PaTyp of loc * string list
   | PaUid of loc * string
-  | PaUnp of loc * string * module_type option
+  | PaUnp of loc * string option * module_type option
   | PaVrn of loc * string
   | PaXtr of loc * string * patt option
 and expr =
@@ -99,7 +99,7 @@ and expr =
   | ExLaz of loc * expr
   | ExLet of loc * bool * (patt * expr) list * expr
   | ExLid of loc * string
-  | ExLmd of loc * string * module_expr * expr
+  | ExLmd of loc * string option * module_expr * expr
   | ExLop of loc * module_expr * expr
   | ExMat of loc * expr * (patt * expr option * expr) list
   | ExNew of loc * string list
@@ -125,7 +125,7 @@ and expr =
 and module_type =
     MtAcc of loc * module_type * module_type
   | MtApp of loc * module_type * module_type
-  | MtFun of loc * string * module_type * module_type
+  | MtFun of loc * (string option * module_type) option * module_type
   | MtLid of loc * string
   | MtQuo of loc * string
   | MtSig of loc * sig_item list
@@ -141,7 +141,7 @@ and sig_item =
   | SgExc of loc * string * ctyp list
   | SgExt of loc * string * ctyp * string list
   | SgInc of loc * module_type
-  | SgMod of loc * bool * (string * module_type) list
+  | SgMod of loc * bool * (string option * module_type) list
   | SgMty of loc * string * module_type
   | SgOpn of loc * string list
   | SgTyp of loc * type_decl list
@@ -156,7 +156,7 @@ and with_constr =
 and module_expr =
     MeAcc of loc * module_expr * module_expr
   | MeApp of loc * module_expr * module_expr
-  | MeFun of loc * string * module_type * module_expr
+  | MeFun of loc * (string option * module_type) option * module_expr
   | MeStr of loc * str_item list
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string
@@ -172,7 +172,7 @@ and str_item =
   | StExp of loc * expr
   | StExt of loc * string * ctyp * string list
   | StInc of loc * module_expr
-  | StMod of loc * bool * (string * module_expr) list
+  | StMod of loc * bool * (string option * module_expr) list
   | StMty of loc * string * module_type
   | StOpn of loc * string list
   | StTyp of loc * bool * type_decl list

@@ -44,6 +44,11 @@ let anti_loc qloc sh loc loc1 =
       (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1) ""
 ;;
 
+let map_option f =
+  function
+  | Some x -> Some (f x)
+  | None -> None
+;;
 let rec ctyp floc sh =
   let rec self =
     function
@@ -295,8 +300,9 @@ and module_type floc sh =
         let loc = floc loc in MtAcc (loc, self x1, self x2)
     | MtApp (loc, x1, x2) ->
         let loc = floc loc in MtApp (loc, self x1, self x2)
-    | MtFun (loc, x1, x2, x3) ->
-        let loc = floc loc in MtFun (loc, x1, self x2, self x3)
+    | MtFun (loc, arg, x3) ->
+      let arg = map_option (fun (idopt, m) -> (idopt, self m)) arg in
+        let loc = floc loc in MtFun (loc, arg, self x3)
     | MtLid (loc, x1) -> let loc = floc loc in MtLid (loc, x1)
     | MtQuo (loc, x1) -> let loc = floc loc in MtQuo (loc, x1)
     | MtSig (loc, x1) ->
@@ -377,8 +383,9 @@ and module_expr floc sh =
         let loc = floc loc in MeAcc (loc, self x1, self x2)
     | MeApp (loc, x1, x2) ->
         let loc = floc loc in MeApp (loc, self x1, self x2)
-    | MeFun (loc, x1, x2, x3) ->
-        let loc = floc loc in MeFun (loc, x1, module_type floc sh x2, self x3)
+    | MeFun (loc, arg, x3) ->
+      let arg = map_option (fun (idopt, m) -> (idopt, module_type floc sh m)) arg in
+        let loc = floc loc in MeFun (loc, arg, self x3)
     | MeStr (loc, x1) ->
         let loc = floc loc in
         MeStr (loc, vala_map (List.map (str_item floc sh)) x1)

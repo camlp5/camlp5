@@ -128,6 +128,16 @@ value warning_deprecated_since_6_00 loc =
   else ()
 ;
 
+value map_option f =
+  fun
+  [ Some x -> Some (f x)
+  | None -> None ]
+;
+value outSome =
+  fun
+  [ Some x ->  x
+  | None -> failwith "outSome" ]
+;
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -186,7 +196,7 @@ EXTEND
       | → <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V UIDENT; me = mod_fun_binding → (i, me) ] ]
+    [ [ i = V UIDENT; me = mod_fun_binding → (Some i, me) ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
@@ -249,7 +259,7 @@ EXTEND
           <:sig_item< # $_str:s$ $_list:sil$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V UIDENT; mt = module_declaration → (i, mt) ] ]
+    [ [ i = V UIDENT; mt = module_declaration → (Some i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA

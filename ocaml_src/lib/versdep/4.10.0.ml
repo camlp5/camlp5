@@ -152,8 +152,8 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
-let ocaml_pmty_functor sloc s mt1 mt2 =
-  Pmty_functor (mkloc sloc s, Some mt1, mt2)
+let ocaml_pmty_functor sloc (mt1 : Parsetree.functor_parameter) mt2 =
+  Pmty_functor (mt1, mt2)
 ;;
 
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
@@ -566,7 +566,7 @@ let ocaml_pmod_constraint loc me mt =
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, Some mt, me);;
+let ocaml_pmod_functor mt me = Pmod_functor (mt, me);;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))

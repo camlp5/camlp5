@@ -284,7 +284,9 @@ EXTEND
   module_expr:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF →
-          Qast.Node "MeFun" [Qast.Loc; i; t; me]
+          Qast.Node "MeFun"
+            [Qast.Loc;
+             Qast.Option (Some (Qast.Tuple [Qast.Option (Some i); t])); me]
       | "struct"; st = structure; /; "end" →
           Qast.Node "MeStr" [Qast.Loc; st] ]
     | [ me1 = SELF; me2 = SELF → Qast.Node "MeApp" [Qast.Loc; me1; me2] ]
@@ -309,8 +311,8 @@ EXTEND
       | "exception"; ctl = constructor_declaration; b = rebind_exn →
           let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
-            | _ → match () with [] ]
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
+            | _ -> match () with [] ]
           in
           Qast.Node "StExc" [Qast.Loc; c; tl; b]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
@@ -339,24 +341,31 @@ EXTEND
       | → Qast.VaVal (Qast.List []) ] ]
   ;
   mod_binding:
-    [ [ i = SV UIDENT; me = mod_fun_binding → Qast.Tuple [i; me] ] ]
+    [ [ i = SV UIDENT; me = mod_fun_binding →
+          Qast.Tuple [Qast.Option (Some i); me] ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = SV UIDENT; ":"; mt = module_type; ")"; mb = SELF →
-          Qast.Node "MeFun" [Qast.Loc; m; mt; mb]
+          Qast.Node "MeFun"
+            [Qast.Loc;
+             Qast.Option (Some (Qast.Tuple[Qast.Option (Some m); mt])); mb]
       | ":"; mt = module_type; "="; me = module_expr →
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "="; me = module_expr → me ] ]
   ;
   mod_type_fun_binding:
     [ [ "("; m = SV UIDENT; ":"; mt1 = module_type; ")"; mt2 = SELF →
-          Qast.Node "MtFun" [Qast.Loc; m; mt1; mt2]
+          Qast.Node "MtFun"
+          [Qast.Loc;
+           Qast.Option (Some (Qast.Tuple[Qast.Option (Some m); mt1])); mt2]
       | "="; mt = module_type → mt ] ]
   ;
   module_type:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF →
-          Qast.Node "MtFun" [Qast.Loc; i; t; mt] ]
+          Qast.Node "MtFun"
+            [Qast.Loc;
+             Qast.Option (Some (Qast.Tuple[Qast.Option (Some i); t])); mt] ]
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") →
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
     | [ "sig"; sg = signature; /; "end" → Qast.Node "MtSig" [Qast.Loc; sg]
@@ -380,8 +389,8 @@ EXTEND
       | "exception"; ctl = constructor_declaration →
           let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
-            | _ → match () with [] ]
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
+            | _ -> match () with [] ]
           in
           Qast.Node "SgExc" [Qast.Loc; c; tl]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
@@ -405,13 +414,17 @@ EXTEND
           Qast.Node "SgUse" [Qast.Loc; s; sil] ] ]
   ;
   mod_decl_binding:
-    [ [ i = SV UIDENT; mt = module_declaration → Qast.Tuple [i; mt] ] ]
+    [ [ i = SV UIDENT; mt = module_declaration →
+          Qast.Tuple [Qast.Option (Some i); mt] ] ]
   ;
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type → mt
       | "("; i = SV UIDENT; ":"; t = module_type; ")"; mt = SELF →
-          Qast.Node "MtFun" [Qast.Loc; i; t; mt] ] ]
+          Qast.Node "MtFun"
+            [Qast.Loc;
+             Qast.Option (Some (Qast.Tuple[Qast.Option (Some i); t]));
+             mt] ] ]
   ;
   with_constr:
     [ [ "type"; i = SV mod_ident "list" ""; tpl = SV (LIST0 type_parameter);
@@ -431,7 +444,7 @@ EXTEND
         "in"; x = SELF →
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
       | "let"; "module"; m = SV UIDENT; mb = mod_fun_binding; "in"; e = SELF →
-          Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
+          Qast.Node "ExLmd" [Qast.Loc; Qast.Option (Some m); mb; e]
       | "let"; "open"; m = module_expr; "in"; e = SELF →
           Qast.Node "ExLop" [Qast.Loc; m; e]
       | "fun"; l = closed_case_list → Qast.Node "ExFun" [Qast.Loc; l]
@@ -759,7 +772,8 @@ EXTEND
       | "let"; "module"; m = SV UIDENT; mb = mod_fun_binding; "in";
         el = SELF →
           Qast.List
-            [Qast.Node "ExLmd" [Qast.Loc; m; mb; mksequence Qast.Loc el]]
+            [Qast.Node "ExLmd"
+               [Qast.Loc; Qast.Option (Some m); mb; mksequence Qast.Loc el]]
       | "let"; "open"; m = module_expr; "in"; el = SELF →
           Qast.List [Qast.Node "ExLop" [Qast.Loc; m; mksequence Qast.Loc el]]
       | e = expr; ";"; el = SELF → Qast.Cons e el
@@ -854,9 +868,10 @@ EXTEND
       | pl = SV (LIST1 patt SEP ",") → Qast.Node "PaTup" [Qast.Loc; pl]
       | "type"; s = SV LIDENT → Qast.Node "PaNty" [Qast.Loc; s]
       | "module"; s = SV UIDENT; ":"; mt = module_type →
-          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option (Some mt)]
+          Qast.Node "PaUnp"
+          [Qast.Loc; Qast.Option (Some s); Qast.Option (Some mt)]
       | "module"; s = SV UIDENT →
-          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
+          Qast.Node "PaUnp" [Qast.Loc; Qast.Option (Some s); Qast.Option None]
       | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   cons_patt_opt:
@@ -890,9 +905,10 @@ EXTEND
       | pl = SV (LIST1 ipatt SEP ",") → Qast.Node "PaTup" [Qast.Loc; pl]
       | "type"; s = SV LIDENT → Qast.Node "PaNty" [Qast.Loc; s]
       | "module"; s = SV UIDENT; ":"; mt = module_type →
-          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option (Some mt)]
+          Qast.Node "PaUnp"
+          [Qast.Loc; Qast.Option (Some s); Qast.Option (Some mt)]
       | "module"; s = SV UIDENT →
-          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
+          Qast.Node "PaUnp" [Qast.Loc; Qast.Option (Some s); Qast.Option None]
       | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   label_ipatt:

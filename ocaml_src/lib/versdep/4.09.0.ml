@@ -402,8 +402,12 @@ let ocaml_ppat_record lpl is_closed =
 
 let ocaml_ppat_type = Some (fun loc li -> Ppat_type (mkloc loc li));;
 
+let mustSome symbol = function
+  Some x -> x
+| None -> failwith ("Some: "^symbol)
+;;
 let ocaml_ppat_unpack =
-  Some ((fun loc s -> Ppat_unpack (mkloc loc s)), (fun pt -> Ptyp_package pt))
+  Some ((fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s))), (fun pt -> Ptyp_package pt))
 ;;
 
 let ocaml_ppat_var loc s = Ppat_var (mkloc loc s);;
