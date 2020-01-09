@@ -1343,11 +1343,7 @@ and module_type =
   | MtApp (loc, _, _) as f ->
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun (loc, arg, mt) ->
-    let arg = match arg with
-      | None -> Unit
-      | Some (idopt, mt) ->
-        let idopt = map_option uv idopt in
-        Named (mknoloc idopt, module_type mt) in
+    let arg = map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt)) arg in
       mkmty loc
         (ocaml_pmty_functor (mkloc loc) arg
            (module_type mt))
@@ -1431,11 +1427,7 @@ and module_expr =
   | MeApp (loc, me1, me2) ->
       mkmod loc (Pmod_apply (module_expr me1, module_expr me2))
   | MeFun (loc, arg, me) ->
-    let arg = match arg with
-      | None -> Unit
-      | Some (idopt, mt) ->
-        let idopt = map_option uv idopt in
-        Named (mknoloc idopt, module_type mt) in
+    let arg = map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt)) arg in
       mkmod loc (ocaml_pmod_functor arg (module_expr me))
   | MeStr (loc, sl) ->
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))

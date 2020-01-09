@@ -439,6 +439,15 @@ value rec print_out_module_type ppf =
     Omty_functor name mty_arg mty_res ->
         fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
           print_out_module_type mty_arg print_out_module_type mty_res
+    ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    Omty_functor name mty_arg mty_res ->
+        match mty_arg with
+        [ Some mty_arg ->
+            fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
+              print_out_module_type mty_arg print_out_module_type mty_res
+        | None ->
+            fprintf ppf "@[<2>functor@ (%s) ->@ %a@]" name
+              print_out_module_type mty_res ]
     ELSE
     Omty_functor mty_arg mty_res ->
        match mty_arg with

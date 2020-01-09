@@ -152,7 +152,12 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
-let ocaml_pmty_functor sloc (mt1 : Parsetree.functor_parameter) mt2 =
+let ocaml_pmty_functor sloc mt1 mt2 =
+  let mt1 = match mt1 with
+    | None -> Unit
+    | Some (idopt, mt) ->
+      Named (mknoloc idopt, mt)
+  in
   Pmty_functor (mt1, mt2)
 ;;
 
@@ -456,7 +461,7 @@ let ocaml_psig_recmodule =
   let f ntl =
     let ntl =
       List.map
-        (fun (s, mt) ->
+        (fun ((s : string option), mt) ->
            {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
             pmd_loc = loc_none})
         ntl
@@ -508,7 +513,7 @@ let ocaml_pstr_modtype loc s mt =
   Pstr_modtype pmtd
 ;;
 
-let ocaml_pstr_module loc s me =
+let ocaml_pstr_module loc (s : string option) me =
   let mb =
     {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
      pmb_loc = loc}
@@ -530,7 +535,7 @@ let ocaml_pstr_recmodule =
   let f nel =
     Pstr_recmodule
       (List.map
-         (fun (s, mt, me) ->
+         (fun ((s : string option), mt, me) ->
             {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
              pmb_loc = loc_none})
          nel)
@@ -566,7 +571,14 @@ let ocaml_pmod_constraint loc me mt =
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor mt me = Pmod_functor (mt, me);;
+let ocaml_pmod_functor mt me =
+  let mt = match mt with
+    | None -> Unit
+    | Some (idopt, mt) ->
+      Named (mknoloc idopt, mt)
+  in
+  Pmod_functor (mt, me)
+;;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))
