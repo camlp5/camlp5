@@ -547,7 +547,7 @@ let ocaml_pmod_constraint loc me mt =
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
 let ocaml_pmod_functor mt me =
-  let (s,mt) = mustSome "ocaml_pmty_functor" mt in
+  let (s,mt) = mustSome "ocaml_pmod_functor" mt in
   let s = mustSome "ocaml_pmod_functor: s" s in
   Pmod_functor (mknoloc s, Some mt, me);;
 

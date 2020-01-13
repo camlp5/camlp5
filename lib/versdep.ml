@@ -1013,6 +1013,7 @@ value ocaml_psig_include loc mt =
 
 value ocaml_psig_module loc (s : option string) mt =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let s = mustSome "ocaml_psig_module" s in
     Psig_module (mknoloc s) mt
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
   let s = mustSome "ocaml_psig_module" s in
@@ -1190,7 +1191,9 @@ value ocaml_pstr_modtype loc s mt =
 ;
 
 value ocaml_pstr_module loc (s : option string) me =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_module (mkloc loc s) me
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let s = mustSome "ocaml_pstr_module" s in
+    Pstr_module (mkloc loc s) me
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     let s = mustSome "ocaml_pstr_module" s in
     let mb =
@@ -1239,7 +1242,9 @@ value ocaml_pstr_recmodule =
     Some (fun nel -> Pstr_recmodule nel)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let f nel =
-      Pstr_recmodule (List.map (fun ((s : option string), mt, me) → (mknoloc s, mt, me)) nel)
+      Pstr_recmodule (List.map (fun ((s : option string), mt, me) →
+                                let s = mustSome "ocaml_pstr_recmodule" s in
+                                 (mknoloc s, mt, me)) nel)
     in
     Some f
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
