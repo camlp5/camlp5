@@ -1045,6 +1045,8 @@ value text_of_functorial_extend loc gmod gl el =
 
 open Pcaml;
 value symbol = Grammar.Entry.create gram "symbol";
+value rule = Grammar.Entry.create gram "rule";
+value rule_list = Grammar.Entry.create gram "rule_list";
 value semi_sep =
   if syntax_name.val = "Scheme" then
     Grammar.Entry.of_parser gram "'/'" (parser [: `("", "/") :] -> ())
@@ -1053,7 +1055,7 @@ value semi_sep =
 ;
 
 EXTEND
-  GLOBAL: expr symbol;
+  GLOBAL: expr symbol rule rule_list;
   expr: AFTER "top"
     [ [ "EXTEND"; /; e = extend_body; "END" -> e
       | "GEXTEND"; /; e = gextend_body; "END" -> e

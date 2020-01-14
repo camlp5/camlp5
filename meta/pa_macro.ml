@@ -403,8 +403,9 @@ value apply_directive loc n dp =
       Ploc.raise loc (Stream.Error msg) ]
 ;
 
+value dexpr = Grammar.Entry.create gram "dexpr";
 EXTEND
-  GLOBAL: expr patt str_item sig_item constructor_declaration match_case
+  GLOBAL: dexpr expr patt str_item sig_item constructor_declaration match_case
     label_declaration;
   str_item: FIRST
     [ [ x = str_macro_def ->

@@ -20,12 +20,12 @@ parserify.cmo: ../lib/ploc.cmi ../lib/pretty.cmi ../lib/versdep.cmo mLast.cmi \
 parserify.cmx: ../lib/ploc.cmx ../lib/pretty.cmx ../lib/versdep.cmx mLast.cmi \
     parserify.cmi prtools.cmx
 parserify.cmi: mLast.cmi
-pcaml.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/gramext.cmi \
-    ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
-    mLast.cmi pcaml.cmi prtools.cmi quotation.cmi reloc.cmi
-pcaml.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/gramext.cmx \
-    ../lib/grammar.cmx ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
-    mLast.cmi pcaml.cmi prtools.cmx quotation.cmx reloc.cmx
+pcaml.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/grammar.cmi \
+    ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo mLast.cmi pcaml.cmi \
+    prtools.cmi quotation.cmi reloc.cmi
+pcaml.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/grammar.cmx \
+    ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx mLast.cmi pcaml.cmi \
+    prtools.cmx quotation.cmx reloc.cmx
 pcaml.cmi: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/grammar.cmi \
     ../lib/ploc.cmi mLast.cmi
 prtools.cmo: ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi \
