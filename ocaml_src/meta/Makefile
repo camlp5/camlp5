@@ -63,7 +63,7 @@ compare_q_ast:
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
-	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp pa_macro.cmi pa_macro_gram.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)r$(EXE) "$(DESTDIR)$(BINDIR)/."
 	if test -f $(CAMLP5N)r.opt; then \
 	  cp $(CAMLP5N)r.opt "$(DESTDIR)$(BINDIR)/."; \

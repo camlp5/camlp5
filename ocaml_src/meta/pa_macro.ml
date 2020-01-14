@@ -446,8 +446,10 @@ let apply_directive loc n dp =
       Ploc.raise loc (Stream.Error msg)
 ;;
 
+let dexpr = Grammar.Entry.create gram "dexpr";;
 Grammar.safe_extend
-  (let _ = (expr : 'expr Grammar.Entry.e)
+  (let _ = (dexpr : 'dexpr Grammar.Entry.e)
+   and _ = (expr : 'expr Grammar.Entry.e)
    and _ = (patt : 'patt Grammar.Entry.e)
    and _ = (str_item : 'str_item Grammar.Entry.e)
    and _ = (sig_item : 'sig_item Grammar.Entry.e)
@@ -456,7 +458,7 @@ Grammar.safe_extend
    and _ = (match_case : 'match_case Grammar.Entry.e)
    and _ = (label_declaration : 'label_declaration Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.create_local_entry (Grammar.of_entry expr) s
+     Grammar.create_local_entry (Grammar.of_entry dexpr) s
    in
    let str_macro_def : 'str_macro_def Grammar.Entry.e =
      grammar_entry_create "str_macro_def"
@@ -480,7 +482,6 @@ Grammar.safe_extend
      grammar_entry_create "else_patt"
    and else_match_case : 'else_match_case Grammar.Entry.e =
      grammar_entry_create "else_match_case"
-   and dexpr : 'dexpr Grammar.Entry.e = grammar_entry_create "dexpr"
    and op : 'op Grammar.Entry.e = grammar_entry_create "op"
    and uident : 'uident Grammar.Entry.e = grammar_entry_create "uident" in
    [Grammar.extension (str_item : 'str_item Grammar.Entry.e)
