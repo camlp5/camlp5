@@ -19,13 +19,13 @@ EXTEND
           {au_loc = loc; au_rules = List.concat rules} ] ]
   ;
   rule_or_ifdef0:
-    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=rule_or_ifdef_list ; e2=else_rule_or_ifdef ; "ENDIF" ->
+    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=rule_or_ifdef_list ; e2=else_rule_or_ifdef ; "END" ->
         if e then e1 else e2]
     | [ r=rule -> [r] ]
     ]
   ;
   rule_or_ifdef:
-    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=rule_or_ifdef_list ; e2=else_rule_or_ifdef ; "ENDIF" ->
+    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=rule_or_ifdef_list ; e2=else_rule_or_ifdef ; "END" ->
         if e then e1 else e2]
     | [ "|" ; r=rule -> [r] ]
     ]

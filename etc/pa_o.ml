@@ -381,7 +381,7 @@ EXTEND
       | "functor"; "("; ")";
         "->"; me = SELF ->
           <:module_expr< functor (  ) -> $me$ >>
-        ELSE ENDIF
+        ELSE END
       | "struct"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
