@@ -139,6 +139,12 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
         me = SELF →
           <:module_expr< functor ( $_uid:i$ : $t$ ) → $me$ >>
+      | "functor"; "("; "_" ; ":"; t = module_type; ")"; "->";
+        me = SELF →
+          <:module_expr< functor ( _ : $t$ ) → $me$ >>
+      | "functor"; "("; ")"; "->";
+        me = SELF →
+          <:module_expr< functor ( ) → $me$ >>
       | "struct"; st = structure; /; "end" →
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF → <:module_expr< $me1$ $me2$ >> ]
@@ -168,7 +174,7 @@ EXTEND
       | "include"; me = module_expr → <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V ident ""; mt = mod_type_fun_binding →
+      | "module"; "type"; i = V ident "";  "="; mt = module_type →
           <:str_item< module type $_:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
       | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
@@ -196,16 +202,17 @@ EXTEND
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr → <:module_expr< $me$ >> ] ]
   ;
-  mod_type_fun_binding:
-    [ [ "("; m = V UIDENT; ":"; mt1 = module_type; ")"; mt2 = SELF →
-          <:module_type< functor ( $_uid:m$ : $mt1$ ) → $mt2$ >>
-      | "="; mt = module_type →
-          <:module_type< $mt$ >> ] ]
-  ;
   module_type:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF →
           <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >> ]
+    | [ "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
+        mt = SELF →
+          <:module_type< functor ( _ : $t$ ) → $mt$ >> ]
+    | [ "functor"; "("; ")"; "->";
+        mt = SELF →
+          <:module_type< functor ( ) → $mt$ >> ]
+    | RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") →
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; /; "end" →

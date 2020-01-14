@@ -326,7 +326,7 @@ EXTEND
       | "include"; me = module_expr → Qast.Node "StInc" [Qast.Loc; me]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") →
           Qast.Node "StMod" [Qast.Loc; r; l]
-      | "module"; "type"; i = SV ident ""; mt = mod_type_fun_binding →
+      | "module"; "type"; i = SV ident ""; "="; mt = module_type →
           Qast.Node "StMty" [Qast.Loc; i; mt]
       | "open"; i = SV mod_ident "list" "" → Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; nrfl = SV (FLAG "nonrec");
@@ -351,20 +351,11 @@ EXTEND
   ;
   mod_fun_binding:
     [ RIGHTA
-      [ "("; m = SV UIDENT; ":"; mt = module_type; ")"; mb = SELF →
-          Qast.Node "MeFun"
-            [Qast.Loc;
-             Qast.Option (Some (Qast.Tuple[Qast.Option (Some m); mt])); mb]
+      [ "("; arg = functor_parameter ; ")"; mb = SELF →
+          Qast.Node "MeFun" [Qast.Loc; arg; mb]
       | ":"; mt = module_type; "="; me = module_expr →
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "="; me = module_expr → me ] ]
-  ;
-  mod_type_fun_binding:
-    [ [ "("; m = SV UIDENT; ":"; mt1 = module_type; ")"; mt2 = SELF →
-          Qast.Node "MtFun"
-          [Qast.Loc;
-           Qast.Option (Some (Qast.Tuple[Qast.Option (Some m); mt1])); mt2]
-      | "="; mt = module_type → mt ] ]
   ;
   module_type:
     [ [ "functor"; "("; arg = functor_parameter ; ")"; "->"; mt = SELF →
