@@ -1097,8 +1097,8 @@ let rec expr =
   | ExLmd (loc, i, me, e) ->
       begin match ocaml_pexp_letmodule with
         Some pexp_letmodule ->
-        mkexp loc
-          (pexp_letmodule (map_option uv i) (module_expr me) (expr e))
+          mkexp loc
+            (pexp_letmodule (map_option uv i) (module_expr me) (expr e))
       | None -> error loc "no 'let module' in this ocaml version"
       end
   | ExLop (loc, me, e) ->
@@ -1344,11 +1344,11 @@ and module_type =
   | MtApp (loc, _, _) as f ->
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun (loc, arg, mt) ->
-    let arg =
-      map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt))
-        arg
-    in
-    mkmty loc (ocaml_pmty_functor (mkloc loc) arg (module_type mt))
+      let arg =
+        map_option (fun (idopt, mt) -> map_option uv idopt, module_type mt)
+          arg
+      in
+      mkmty loc (ocaml_pmty_functor (mkloc loc) arg (module_type mt))
   | MtLid (loc, s) -> mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtQuo (loc, _) -> error loc "abstract module type not allowed here"
   | MtSig (loc, sl) ->
@@ -1431,11 +1431,11 @@ and module_expr =
   | MeApp (loc, me1, me2) ->
       mkmod loc (Pmod_apply (module_expr me1, module_expr me2))
   | MeFun (loc, arg, me) ->
-    let arg =
-      map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt))
-        arg
-    in
-    mkmod loc (ocaml_pmod_functor arg (module_expr me))
+      let arg =
+        map_option (fun (idopt, mt) -> map_option uv idopt, module_type mt)
+          arg
+      in
+      mkmod loc (ocaml_pmod_functor arg (module_expr me))
   | MeStr (loc, sl) ->
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc (loc, me, mt) ->
