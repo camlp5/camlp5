@@ -128,16 +128,6 @@ value warning_deprecated_since_6_00 loc =
   else ()
 ;
 
-value map_option f =
-  fun
-  [ Some x -> Some (f x)
-  | None -> None ]
-;
-value outSome =
-  fun
-  [ Some x ->  x
-  | None -> failwith "outSome" ]
-;
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND

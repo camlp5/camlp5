@@ -564,7 +564,8 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (Some m, mt), mb) : 'mod_fun_binding)))]];
+                (MLast.MeFun (loc, Some (Some m, mt), mb) :
+                   'mod_fun_binding)))]];
     Grammar.extension
       (mod_type_fun_binding : 'mod_type_fun_binding Grammar.Entry.e) None
       [None, None,
@@ -590,7 +591,8 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt2 : 'mod_type_fun_binding) _ (mt1 : 'module_type) _
                 (m : string) _ (loc : Ploc.t) ->
-              (MLast.MtFun (loc, Some (Some m, mt1), mt2) : 'mod_type_fun_binding)))]];
+                (MLast.MtFun (loc, Some (Some m, mt1), mt2) :
+                   'mod_type_fun_binding)))]];
     Grammar.extension (module_type : 'module_type Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -852,7 +854,8 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_declaration) _ (t : 'module_type) _ (i : string)
                 _ (loc : Ploc.t) ->
-              (MLast.MtFun (loc, Some (Some i,  t), mt) : 'module_declaration)));
+                (MLast.MtFun (loc, Some (Some i,  t), mt) :
+                   'module_declaration)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ":")))
@@ -1742,7 +1745,8 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (el : 'sequence) _ (mb : 'mod_fun_binding) (m : string) _ _
                 (loc : Ploc.t) ->
-              ([MLast.ExLmd (loc, Some m, mb, mksequence loc el)] : 'sequence)));
+                ([MLast.ExLmd (loc, Some m, mb, mksequence loc el)] :
+                   'sequence)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

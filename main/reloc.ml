@@ -56,11 +56,6 @@ value anti_loc qloc sh loc loc1 =
       (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1) ""
 ;
 
-value map_option f =
-  fun
-  [ Some x -> Some (f x)
-  | None -> None ]
-;
 value rec ctyp floc sh =
   self where rec self =
     fun
@@ -395,7 +390,7 @@ and module_type floc sh =
         let loc = floc loc in
         MtApp loc (self x1) (self x2)
     | MtFun loc arg x3 →
-      let arg = map_option (fun (idopt, m) -> (idopt, self m)) arg in
+      let arg = option_map (fun (idopt, m) -> (idopt, self m)) arg in
         let loc = floc loc in
         MtFun loc arg (self x3)
     | MtLid loc x1 →
@@ -493,7 +488,7 @@ and module_expr floc sh =
         let loc = floc loc in
         MeApp loc (self x1) (self x2)
     | MeFun loc arg x3 →
-      let arg = map_option (fun (idopt, m) -> (idopt, module_type floc sh m)) arg in
+      let arg = option_map (fun (idopt, m) -> (idopt, module_type floc sh m)) arg in
         let loc = floc loc in
         MeFun loc arg (self x3)
     | MeStr loc x1 →

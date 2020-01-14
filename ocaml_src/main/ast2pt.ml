@@ -529,7 +529,7 @@ let int_of_string_l loc s = try int_of_string s with e -> Ploc.raise loc e;;
 
 let map_option f =
   function
-  | Some x -> Some (f x)
+    Some x -> Some (f x)
   | None -> None
 ;;
 let rec patt =
@@ -650,7 +650,7 @@ let rec patt =
   | PaUnp (loc, s, mto) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->
-          let p = mkpat loc (ppat_unpack (mkloc loc) (uv s)) in
+          let p = mkpat loc (ppat_unpack (mkloc loc) (map_option uv s)) in
           begin match mto with
             Some mt ->
               let pt = package_of_module_type loc mt in
@@ -1097,7 +1097,8 @@ let rec expr =
   | ExLmd (loc, i, me, e) ->
       begin match ocaml_pexp_letmodule with
         Some pexp_letmodule ->
-          mkexp loc (pexp_letmodule (map_option uv i) (module_expr me) (expr e))
+        mkexp loc
+          (pexp_letmodule (map_option uv i) (module_expr me) (expr e))
       | None -> error loc "no 'let module' in this ocaml version"
       end
   | ExLop (loc, me, e) ->
@@ -1343,10 +1344,11 @@ and module_type =
   | MtApp (loc, _, _) as f ->
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun (loc, arg, mt) ->
-    let arg = map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt)) arg in
-      mkmty loc
-        (ocaml_pmty_functor (mkloc loc) arg
-           (module_type mt))
+    let arg =
+      map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt))
+        arg
+    in
+    mkmty loc (ocaml_pmty_functor (mkloc loc) arg (module_type mt))
   | MtLid (loc, s) -> mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtQuo (loc, _) -> error loc "abstract module type not allowed here"
   | MtSig (loc, sl) ->
@@ -1386,16 +1388,18 @@ and sig_item s l =
   | SgMod (loc, rf, ntl) ->
       if not (uv rf) then
         List.fold_right
-          (fun (n, mt) l ->
+          (fun (nopt, mt) l ->
              mksig loc
-               (ocaml_psig_module (mkloc loc) (uv n) (module_type mt)) ::
+               (ocaml_psig_module (mkloc loc) (map_option uv nopt)
+                  (module_type mt)) ::
              l)
           (uv ntl) l
       else
         begin match ocaml_psig_recmodule with
           Some psig_recmodule ->
             let ntl =
-              List.map (fun (n, mt) -> uv n, module_type mt) (uv ntl)
+              List.map (fun (nopt, mt) -> map_option uv nopt, module_type mt)
+                (uv ntl)
             in
             mksig loc (psig_recmodule ntl) :: l
         | None -> error loc "no recursive module in this ocaml version"
@@ -1427,8 +1431,11 @@ and module_expr =
   | MeApp (loc, me1, me2) ->
       mkmod loc (Pmod_apply (module_expr me1, module_expr me2))
   | MeFun (loc, arg, me) ->
-    let arg = map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt)) arg in
-      mkmod loc (ocaml_pmod_functor arg (module_expr me))
+    let arg =
+      map_option (fun (idopt, mt) -> (map_option uv idopt, module_type mt))
+        arg
+    in
+    mkmod loc (ocaml_pmod_functor arg (module_expr me))
   | MeStr (loc, sl) ->
       mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc (loc, me, mt) ->
@@ -1505,7 +1512,10 @@ and str_item s l =
       if not (uv rf) then
         List.fold_right
           (fun (nopt, me) l ->
-             let m = ocaml_pstr_module (mkloc loc) (map_option uv nopt) (module_expr me) in
+             let m =
+               ocaml_pstr_module (mkloc loc) (map_option uv nopt)
+                 (module_expr me)
+             in
              mkstr loc m :: l)
           (uv nel) l
       else
@@ -1521,7 +1531,8 @@ and str_item s l =
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints"
                    in
-                   map_option uv nopt, mt, ocaml_pmod_constraint (mkloc loc) me mt)
+                   map_option uv nopt, mt,
+                   ocaml_pmod_constraint (mkloc loc) me mt)
                 (uv nel)
             in
             mkstr loc (pstr_recmodule nel) :: l
