@@ -40,6 +40,7 @@ do {
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
+  Grammar.Unsafe.clear_entry closed_case_list;
   Grammar.Unsafe.clear_entry with_constr;
   Grammar.Unsafe.clear_entry poly_variant;
   Grammar.Unsafe.clear_entry class_type;
@@ -134,7 +135,7 @@ value warning_deprecated_since_6_00 loc =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr signature
     structure class_type class_expr class_sig_item class_str_item let_binding
-    type_decl constructor_declaration label_declaration match_case ipatt
+    type_decl constructor_declaration label_declaration match_case closed_case_list ipatt
     with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
