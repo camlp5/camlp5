@@ -406,7 +406,7 @@ value apply_directive loc n dp =
 value dexpr = Grammar.Entry.create gram "dexpr";
 EXTEND
   GLOBAL: dexpr expr patt str_item sig_item constructor_declaration match_case
-    label_declaration;
+    match_case_list closed_case_list label_declaration;
   str_item: FIRST
     [ [ x = str_macro_def ->
           match x with
@@ -523,7 +523,7 @@ EXTEND
           let ep = string_of_int (Ploc.last_pos loc) in
           <:expr< ($int:bp$, $int:ep$) >> ] ]
   ;
-  patt:
+  patt: FIRST
     [ [ "IFDEF"; e = dexpr; "THEN"; p1 = SELF; p2 = else_patt; "END" ->
           if e then p1 else p2
       | "IFNDEF"; e = dexpr; "THEN"; p1 = SELF; p2 = else_patt; "END" ->

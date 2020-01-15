@@ -764,11 +764,15 @@ value str_module pref pc (m, me) =
           let (mal, me) = loop me in
           ([Some(Some s, mt) :: mal], me)
       | <:module_expr< functor (_ : $mt$) -> $me$ >> ->
+          IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
           let (mal, me) = loop me in
           ([Some(None, mt) :: mal], me)
+          ELSE assert False END
       | <:module_expr< functor () -> $me$ >> ->
+          IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
           let (mal, me) = loop me in
           ([None :: mal], me)
+          ELSE assert False END
       | me -> ([], me) ]
   in
   let module_arg pc = fun [
@@ -813,11 +817,15 @@ value sig_module_or_module_type pref unfun defc pc (m, mt) =
             let (mal, mt) = loop mt2 in
             ([Some(Some s, mt1) :: mal], mt)
         | <:module_type< functor (_ : $mt1$) -> $mt2$ >> ->
+          IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
             let (mal, mt) = loop mt2 in
             ([Some(None, mt1) :: mal], mt)
+          ELSE assert False END
         | <:module_type< functor () -> $mt2$ >> ->
+          IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
             let (mal, mt) = loop mt2 in
             ([None :: mal], mt)
+          ELSE assert False END
         | mt -> ([], mt) ]
     else ([], mt)
   in
@@ -844,10 +852,16 @@ value str_or_sig_functor pc farg module_expr_or_type met =
   match farg with [
     Some (Some s, mt) -> pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ ->@;%p" s module_type mt
       module_expr_or_type met
-  | Some (None, mt) -> pprintf pc "functor@;@[(_ :@;<1 1>%p)@]@ ->@;%p" module_type mt
+  | Some (None, mt) ->
+    IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+    pprintf pc "functor@;@[(_ :@;<1 1>%p)@]@ ->@;%p" module_type mt
       module_expr_or_type met
-  | None -> pprintf pc "functor@;@[()@]@ ->@;%p"
+    ELSE assert False END
+  | None ->
+    IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+    pprintf pc "functor@;@[()@]@ ->@;%p"
       module_expr_or_type met
+    ELSE assert False END
   ]
 ;
 
@@ -1655,9 +1669,13 @@ EXTEND_PRINTER
       [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
           str_or_sig_functor pc (Some (Some s, mt)) module_expr me
       | <:module_expr< functor (_ : $mt$) -> $me$ >> ->
+        IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
           str_or_sig_functor pc (Some (None, mt)) module_expr me
+        ELSE assert False END
       | <:module_expr< functor () -> $me$ >> ->
+        IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
           str_or_sig_functor pc None module_expr me
+        ELSE assert False END
       | <:module_expr:< struct $list:sil$ end >> ->
           let str_item_sep =
             if flag_semi_semi.val then semi_semi_after str_item
@@ -1702,9 +1720,14 @@ EXTEND_PRINTER
           pprintf pc "(val %p)" expr e
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
-      | <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |
-      <:module_expr< functor (_ : $_$) -> $_$ >> |
-      <:module_expr< functor () -> $_$ >> |
+      | (IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+           <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |
+           <:module_expr< functor (_ : $_$) -> $_$ >> |
+           <:module_expr< functor () -> $_$ >>
+         ELSE
+           <:module_expr< functor ($uid:_$ : $_$) -> $_$ >>
+         END
+        ) |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
         <:module_expr< $_$ $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" module_expr z ] ]
@@ -1713,8 +1736,14 @@ EXTEND_PRINTER
     [ "top"
       [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
           str_or_sig_functor pc (Some (Some s, mt1)) module_type mt2
+      | <:module_type< functor (_ : $mt1$) -> $mt2$ >> ->
+        IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+          str_or_sig_functor pc (Some (None, mt1)) module_type mt2
+        ELSE assert False END
       | <:module_type< functor () -> $mt2$ >> ->
+        IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
           str_or_sig_functor pc None module_type mt2
+        ELSE assert False END
       | <:module_type:< sig $list:sil$ end >> ->
           let sig_item_sep =
             if flag_semi_semi.val then semi_semi_after sig_item
