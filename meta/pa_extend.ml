@@ -1047,6 +1047,8 @@ open Pcaml;
 value symbol = Grammar.Entry.create gram "symbol";
 value rule = Grammar.Entry.create gram "rule";
 value rule_list = Grammar.Entry.create gram "rule_list";
+value level_list = Grammar.Entry.create gram "level_list";
+value level = Grammar.Entry.create gram "level";
 value semi_sep =
   if syntax_name.val = "Scheme" then
     Grammar.Entry.of_parser gram "'/'" (parser [: `("", "/") :] -> ())
@@ -1055,7 +1057,7 @@ value semi_sep =
 ;
 
 EXTEND
-  GLOBAL: expr symbol rule rule_list;
+  GLOBAL: expr symbol rule rule_list level level_list;
   expr: AFTER "top"
     [ [ "EXTEND"; /; e = extend_body; "END" -> e
       | "GEXTEND"; /; e = gextend_body; "END" -> e

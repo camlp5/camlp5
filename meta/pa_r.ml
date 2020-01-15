@@ -5,6 +5,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
+#load "pa_macro_gram.cmo";
 
 open Pcaml;
 
@@ -139,12 +140,14 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
         me = SELF →
           <:module_expr< functor ( $_uid:i$ : $t$ ) → $me$ >>
+      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
       | "functor"; "("; "_" ; ":"; t = module_type; ")"; "->";
         me = SELF →
           <:module_expr< functor ( _ : $t$ ) → $me$ >>
       | "functor"; "("; ")"; "->";
         me = SELF →
           <:module_expr< functor ( ) → $me$ >>
+        ELSE END
       | "struct"; st = structure; /; "end" →
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF → <:module_expr< $me1$ $me2$ >> ]
@@ -205,14 +208,16 @@ EXTEND
   module_type:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF →
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >> ]
-    | [ "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
+          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
+      | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
         mt = SELF →
-          <:module_type< functor ( _ : $t$ ) → $mt$ >> ]
-    | [ "functor"; "("; ")"; "->";
+          <:module_type< functor ( _ : $t$ ) → $mt$ >>
+      | "functor"; "("; ")"; "->";
         mt = SELF →
           <:module_type< functor ( ) → $mt$ >> ]
-    | RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
+    | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
+    ELSE [] END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") →
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; /; "end" →

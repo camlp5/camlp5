@@ -1946,6 +1946,8 @@ open Pcaml;;
 let symbol = Grammar.Entry.create gram "symbol";;
 let rule = Grammar.Entry.create gram "rule";;
 let rule_list = Grammar.Entry.create gram "rule_list";;
+let level_list = Grammar.Entry.create gram "level_list";;
+let level = Grammar.Entry.create gram "level";;
 let semi_sep =
   if !syntax_name = "Scheme" then
     Grammar.Entry.of_parser gram "'/'"
@@ -1965,7 +1967,9 @@ Grammar.safe_extend
   (let _ = (expr : 'expr Grammar.Entry.e)
    and _ = (symbol : 'symbol Grammar.Entry.e)
    and _ = (rule : 'rule Grammar.Entry.e)
-   and _ = (rule_list : 'rule_list Grammar.Entry.e) in
+   and _ = (rule_list : 'rule_list Grammar.Entry.e)
+   and _ = (level : 'level Grammar.Entry.e)
+   and _ = (level_list : 'level_list Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in
@@ -1982,9 +1986,6 @@ Grammar.safe_extend
    and global : 'global Grammar.Entry.e = grammar_entry_create "global"
    and entry : 'entry Grammar.Entry.e = grammar_entry_create "entry"
    and position : 'position Grammar.Entry.e = grammar_entry_create "position"
-   and level_list : 'level_list Grammar.Entry.e =
-     grammar_entry_create "level_list"
-   and level : 'level Grammar.Entry.e = grammar_entry_create "level"
    and assoc : 'assoc Grammar.Entry.e = grammar_entry_create "assoc"
    and psymbol : 'psymbol Grammar.Entry.e = grammar_entry_create "psymbol"
    and sep_opt_sep : 'sep_opt_sep Grammar.Entry.e =
