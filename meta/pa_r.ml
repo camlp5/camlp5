@@ -209,12 +209,15 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF →
           <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
+      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
       | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
         mt = SELF →
           <:module_type< functor ( _ : $t$ ) → $mt$ >>
       | "functor"; "("; ")"; "->";
         mt = SELF →
-          <:module_type< functor ( ) → $mt$ >> ]
+          <:module_type< functor ( ) → $mt$ >>
+         ELSE END
+      ]
     | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
        RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
     ELSE [] END
