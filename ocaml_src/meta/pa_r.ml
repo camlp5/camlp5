@@ -555,6 +555,13 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")))
+             (Grammar.s_nterm
+                (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)),
+           (fun (me : 'mod_fun_binding) _ (loc : Ploc.t) ->
+              (None, me : 'mod_binding)));
+        Grammar.production
+          (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")))
              (Grammar.s_nterm
                 (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)),
@@ -580,6 +587,31 @@ Grammar.safe_extend
              (Grammar.s_nterm (module_expr : 'module_expr Grammar.Entry.e)),
            (fun (me : 'module_expr) _ (mt : 'module_type) _ (loc : Ploc.t) ->
               (MLast.MeTyc (loc, me, mt) : 'mod_fun_binding)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                (Grammar.s_token ("", ")")))
+             Grammar.s_self,
+           (fun (mb : 'mod_fun_binding) _ _ (loc : Ploc.t) ->
+              (MLast.MeFun (loc, None, mb) : 'mod_fun_binding)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "(")))
+                         (Grammar.s_token ("", "_")))
+                      (Grammar.s_token ("", ":")))
+                   (Grammar.s_nterm
+                      (module_type : 'module_type Grammar.Entry.e)))
+                (Grammar.s_token ("", ")")))
+             Grammar.s_self,
+           (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ _ _
+                (loc : Ploc.t) ->
+              (MLast.MeFun (loc, Some (None, mt), mb) : 'mod_fun_binding)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1117,6 +1149,22 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (e : 'expr) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
               (MLast.ExLop (loc, m, e) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "let")))
+                         (Grammar.s_token ("", "module")))
+                      (Grammar.s_token ("", "_")))
+                   (Grammar.s_nterm
+                      (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           (fun (e : 'expr) _ (mb : 'mod_fun_binding) _ _ _ (loc : Ploc.t) ->
+              (MLast.ExLmd (loc, None, mb, e) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1775,6 +1823,24 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (el : 'sequence) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
               ([MLast.ExLop (loc, m, mksequence loc el)] : 'sequence)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "let")))
+                         (Grammar.s_token ("", "module")))
+                      (Grammar.s_token ("", "_")))
+                   (Grammar.s_nterm
+                      (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           (fun (el : 'sequence) _ (mb : 'mod_fun_binding) _ _ _
+                (loc : Ploc.t) ->
+              ([MLast.ExLmd (loc, None, mb, mksequence loc el)] :
+               'sequence)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

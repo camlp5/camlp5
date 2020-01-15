@@ -1196,6 +1196,13 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")))
+             (Grammar.s_nterm
+                (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)),
+           (fun (me : 'mod_fun_binding) _ (loc : Ploc.t) ->
+              (Qast.Tuple [Qast.Option None; me] : 'mod_binding)));
+        Grammar.production
+          (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_facto
                    (Grammar.s_rules
@@ -1867,7 +1874,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 390, 19))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 393, 19))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
                'sig_item)));
@@ -1912,6 +1919,13 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")))
+             (Grammar.s_nterm
+                (module_declaration : 'module_declaration Grammar.Entry.e)),
+           (fun (mt : 'module_declaration) _ (loc : Ploc.t) ->
+              (Qast.Tuple [Qast.Option None; mt] : 'mod_decl_binding)));
+        Grammar.production
+          (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_facto
                    (Grammar.s_rules
@@ -1950,6 +1964,37 @@ Grammar.safe_extend
       (module_declaration : 'module_declaration Grammar.Entry.e) None
       [None, Some Gramext.RightA,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                (Grammar.s_token ("", ")")))
+             Grammar.s_self,
+           (fun (mt : 'module_declaration) _ _ (loc : Ploc.t) ->
+              (Qast.Node ("MtFun", [Qast.Loc; Qast.Option None; mt]) :
+               'module_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "(")))
+                         (Grammar.s_token ("", "_")))
+                      (Grammar.s_token ("", ":")))
+                   (Grammar.s_nterm
+                      (module_type : 'module_type Grammar.Entry.e)))
+                (Grammar.s_token ("", ")")))
+             Grammar.s_self,
+           (fun (mt : 'module_declaration) _ (t : 'module_type) _ _ _
+                (loc : Ploc.t) ->
+              (Qast.Node
+                 ("MtFun",
+                  [Qast.Loc;
+                   Qast.Option (Some (Qast.Tuple [Qast.Option None; t]));
+                   mt]) :
+               'module_declaration)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
@@ -2535,6 +2580,23 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (e : 'expr) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
               (Qast.Node ("ExLop", [Qast.Loc; m; e]) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "let")))
+                         (Grammar.s_token ("", "module")))
+                      (Grammar.s_token ("", "_")))
+                   (Grammar.s_nterm
+                      (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           (fun (e : 'expr) _ (mb : 'mod_fun_binding) _ _ _ (loc : Ploc.t) ->
+              (Qast.Node ("ExLmd", [Qast.Loc; Qast.Option None; mb; e]) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3866,6 +3928,28 @@ Grammar.safe_extend
               (Qast.List
                  [Qast.Node
                     ("ExLop", [Qast.Loc; m; mksequence Qast.Loc el])] :
+               'sequence)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "let")))
+                         (Grammar.s_token ("", "module")))
+                      (Grammar.s_token ("", "_")))
+                   (Grammar.s_nterm
+                      (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           (fun (el : 'sequence) _ (mb : 'mod_fun_binding) _ _ _
+                (loc : Ploc.t) ->
+              (Qast.List
+                 [Qast.Node
+                    ("ExLmd",
+                     [Qast.Loc; Qast.Option None; mb;
+                      mksequence Qast.Loc el])] :
                'sequence)));
         Grammar.production
           (Grammar.r_next

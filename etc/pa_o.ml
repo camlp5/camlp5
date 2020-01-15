@@ -452,6 +452,12 @@ EXTEND
     [ RIGHTA
       [ "("; m = UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
           <:module_expr< functor ( $uid:m$ : $mt$ ) -> $mb$ >>
+      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | "("; "_"; ":"; mt = module_type; ")"; mb = SELF ->
+          <:module_expr< functor ( _ : $mt$ ) -> $mb$ >>
+      | "("; ")"; mb = SELF ->
+          <:module_expr< functor (  ) -> $mb$ >>
+        ELSE END
       | ":"; mt = module_type; "="; me = module_expr ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]

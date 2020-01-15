@@ -195,12 +195,22 @@ EXTEND
       | → <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V UIDENT; me = mod_fun_binding → (Some i, me) ] ]
+    [ [ i = V UIDENT; me = mod_fun_binding → (Some i, me)
+      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | "_"; me = mod_fun_binding → (None, me)
+        ELSE END
+      ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = V UIDENT; ":"; mt = module_type; ")"; mb = SELF →
           <:module_expr< functor ( $_uid:m$ : $mt$ ) → $mb$ >>
+      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | "("; "_"; ":"; mt = module_type; ")"; mb = SELF →
+          <:module_expr< functor ( _ : $mt$ ) → $mb$ >>
+      | "("; ")"; mb = SELF →
+          <:module_expr< functor ( ) → $mb$ >>
+        ELSE END
       | ":"; mt = module_type; "="; me = module_expr →
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr → <:module_expr< $me$ >> ] ]
@@ -291,6 +301,10 @@ EXTEND
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF →
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
+      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | "let"; "module"; "_"; mb = mod_fun_binding; "in"; e = SELF →
+          <:expr< let module _ = $mb$ in $e$ >>
+        ELSE END
       | "let"; "open"; m = module_expr; "in"; e = SELF →
           <:expr< let open $m$ in $e$ >>
       | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
@@ -416,6 +430,11 @@ EXTEND
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         el = SELF →
           [<:expr< let module $_uid:m$ = $mb$ in $mksequence loc el$ >>]
+      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | "let"; "module"; "_"; mb = mod_fun_binding; "in";
+        el = SELF →
+          [<:expr< let module _ = $mb$ in $mksequence loc el$ >>]
+        ELSE END
       | "let"; "open"; m = module_expr; "in"; el = SELF →
           [<:expr< let open $m$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF → [e :: el]
