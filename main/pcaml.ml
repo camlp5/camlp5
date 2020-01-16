@@ -56,8 +56,6 @@ value ctyp = Grammar.Entry.create gram "ctyp";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_decl = Grammar.Entry.create gram "type_declaration";
 value match_case = Grammar.Entry.create gram "match_case";
-value match_case_list = Grammar.Entry.create gram "match_case_list";
-value closed_case_list = Grammar.Entry.create gram "closed_case_list";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";
 value label_declaration =

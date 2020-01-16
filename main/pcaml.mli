@@ -52,10 +52,6 @@ value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr);
 value type_decl : Grammar.Entry.e MLast.type_decl;
 value match_case :
   Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);
-value match_case_list :
-  Grammar.Entry.e (list (MLast.patt * MLast.v (option MLast.expr) * MLast.expr));
-value closed_case_list :
-  Grammar.Entry.e (Ploc.vala (list (MLast.patt * Ploc.vala (option MLast.expr) * MLast.expr)));
 value constructor_declaration :
   Grammar.Entry.e
     (MLast.loc * MLast.v string * MLast.v (list MLast.ctyp) *

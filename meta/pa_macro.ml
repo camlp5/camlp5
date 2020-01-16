@@ -406,7 +406,7 @@ value apply_directive loc n dp =
 value dexpr = Grammar.Entry.create gram "dexpr";
 EXTEND
   GLOBAL: dexpr expr patt str_item sig_item constructor_declaration match_case
-    match_case_list closed_case_list label_declaration;
+    label_declaration;
   str_item: FIRST
     [ [ x = str_macro_def ->
           match x with
