@@ -59,7 +59,7 @@
 (definerec (string len)
  (parser
   (((` '"')) (Buff.get len))
-  (((` '\\') (` c) (a (string (Buff.store (Buff.store len '\\') c))) h!) a)
+  (((` '\\') (` c) (a (string (Buff.store (Buff.store len '\\') c))) !) a)
   (((` x) (a (string (Buff.store len x))) !) a)))
 
 (definerec (end_exponent_part_under len)
