@@ -3,6 +3,7 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 #load "q_MLast.cmo";
+#load "pa_macro.cmo";
 
 value not_impl name x =
   let desc =
@@ -187,9 +188,13 @@ and module_expr x =
   [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
       <:module_expr< functor ($uid:s$ : $mt$) -> $module_expr me$ >>
   | <:module_expr< functor (_ : $mt$) -> $me$ >> ->
+    IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
       <:module_expr< functor (_ : $mt$) -> $module_expr me$ >>
+    ELSE assert False END
   | <:module_expr< functor () -> $me$ >> ->
+    IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
       <:module_expr< functor () -> $module_expr me$ >>
+    ELSE assert False END
   | <:module_expr< ($me$ : $mt$) >> ->
       <:module_expr< ($module_expr me$ : $mt$) >>
   | <:module_expr< struct $list:sil$ end >> ->
