@@ -1081,6 +1081,10 @@ EXTEND_PRINTER
           plistbf 0 (paren pc "module")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "")]
+      | <:str_item< module _ = $me$ >> ->
+          plistbf 0 (paren pc "module")
+            [(fun pc -> sprintf "%s_%s" pc.bef pc.aft, "");
+             (fun pc -> module_expr pc me, "")]
       | <:str_item< module type $s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
       | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->

@@ -539,12 +539,11 @@
     (let ((me (module_expr_se se))) <:str_item< include $me$ >>))
    ((Sexpr loc [(Slid _ "module") se1 se2])
       (let* (((values i mb) (str_module_se (Sexpr loc [se1 se2])))
-               (i2 (match i
-                            (None (Ploc.VaVal "_"))
-                            ((Some s) s)
-                   ))
-           )
-     <:str_item< module $_uid:i2$ = $mb$ >>))
+            )
+        (match i
+                 (None <:str_item< module _ = $mb$ >>)
+                 ((Some s) <:str_item< module $_uid:s$ = $mb$ >>)
+        )))
    ((Sexpr loc [(Slid _ (as (or "module*" "modulerec*") rf)) . sel])
     (let* ((rf (= rf "modulerec*")) (lmb (anti_list_map str_module_se sel)))
      <:str_item< module $flag:rf$ $_list:lmb$ >>))

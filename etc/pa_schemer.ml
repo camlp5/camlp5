@@ -832,8 +832,10 @@ and str_item_se se =
       <:str_item< include $me$ >>
   | Sexpr loc [Slid _ "module"; se1; se2] →
       let (i, mb) = str_module_se (Sexpr loc [se1; se2]) in
-      let i = match i with [ None -> Ploc.VaVal "_" | Some s -> s ] in
-      <:str_item< module $_uid:i$ = $mb$ >>
+        match i with [
+          None -> <:str_item< module _ = $mb$ >>
+        | Some s -> <:str_item< module $_uid:s$ = $mb$ >>
+        ]
   | Sexpr loc [Slid _ ("module*" | "modulerec*" as rf) :: sel] →
       let rf = rf = "modulerec*" in
       let (lmb :  Ploc.vala (list (option (Ploc.vala string)  * MLast.module_expr)) ) = anti_list_map str_module_se sel in
