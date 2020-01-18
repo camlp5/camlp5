@@ -4602,6 +4602,14 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
+             (Grammar.s_token ("", "_")),
+           (fun _ _ (loc : Ploc.t) ->
+              (Qast.Node
+                 ("PaUnp", [Qast.Loc; Qast.Option None; Qast.Option None]) :
+               'paren_patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
              (Grammar.s_facto
                 (Grammar.s_rules
                    [Grammar.production
@@ -4634,6 +4642,20 @@ Grammar.safe_extend
               (Qast.Node
                  ("PaUnp",
                   [Qast.Loc; Qast.Option (Some s); Qast.Option None]) :
+               'paren_patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "module")))
+                   (Grammar.s_token ("", "_")))
+                (Grammar.s_token ("", ":")))
+             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
+           (fun (mt : 'module_type) _ _ _ (loc : Ploc.t) ->
+              (Qast.Node
+                 ("PaUnp",
+                  [Qast.Loc; Qast.Option None; Qast.Option (Some mt)]) :
                'paren_patt)));
         Grammar.production
           (Grammar.r_next
@@ -4967,6 +4989,14 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
+             (Grammar.s_token ("", "_")),
+           (fun _ _ (loc : Ploc.t) ->
+              (Qast.Node
+                 ("PaUnp", [Qast.Loc; Qast.Option None; Qast.Option None]) :
+               'paren_ipatt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
              (Grammar.s_facto
                 (Grammar.s_rules
                    [Grammar.production
@@ -4999,6 +5029,20 @@ Grammar.safe_extend
               (Qast.Node
                  ("PaUnp",
                   [Qast.Loc; Qast.Option (Some s); Qast.Option None]) :
+               'paren_ipatt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "module")))
+                   (Grammar.s_token ("", "_")))
+                (Grammar.s_token ("", ":")))
+             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
+           (fun (mt : 'module_type) _ _ _ (loc : Ploc.t) ->
+              (Qast.Node
+                 ("PaUnp",
+                  [Qast.Loc; Qast.Option None; Qast.Option (Some mt)]) :
                'paren_ipatt)));
         Grammar.production
           (Grammar.r_next

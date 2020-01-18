@@ -513,8 +513,12 @@ EXTEND
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
       | "module"; s = V UIDENT; ":"; mt = module_type →
           <:patt< (module $_uid:s$ : $mt$) >>
+      | "module"; "_"; ":"; mt = module_type →
+          <:patt< (module _ : $mt$) >>
       | "module"; s = V UIDENT →
           <:patt< (module $_uid:s$) >>
+      | "module"; "_" →
+          <:patt< (module _) >>
       | → <:patt< () >> ] ]
   ;
   cons_patt_opt:
@@ -549,8 +553,12 @@ EXTEND
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
       | "module"; s  = V UIDENT; ":"; mt = module_type →
           <:patt< (module $_uid:s$ : $mt$) >>
+      | "module"; "_"; ":"; mt = module_type →
+          <:patt< (module _ : $mt$) >>
       | "module"; s = V UIDENT →
           <:patt< (module $_uid:s$) >>
+      | "module"; "_" →
+          <:patt< (module _) >>
       | → <:patt< () >> ] ]
   ;
   label_ipatt:

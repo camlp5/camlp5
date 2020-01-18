@@ -891,8 +891,13 @@ EXTEND
       | "module"; s = SV UIDENT; ":"; mt = module_type →
           Qast.Node "PaUnp"
           [Qast.Loc; Qast.Option (Some s); Qast.Option (Some mt)]
+      | "module"; "_"; ":" ; mt = module_type →
+          Qast.Node "PaUnp"
+          [Qast.Loc; Qast.Option None; Qast.Option (Some mt)]
       | "module"; s = SV UIDENT →
           Qast.Node "PaUnp" [Qast.Loc; Qast.Option (Some s); Qast.Option None]
+      | "module"; "_" →
+          Qast.Node "PaUnp" [Qast.Loc; Qast.Option None; Qast.Option None]
       | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   cons_patt_opt:
@@ -928,8 +933,13 @@ EXTEND
       | "module"; s = SV UIDENT; ":"; mt = module_type →
           Qast.Node "PaUnp"
           [Qast.Loc; Qast.Option (Some s); Qast.Option (Some mt)]
+      | "module"; "_"; ":" ; mt = module_type →
+          Qast.Node "PaUnp"
+          [Qast.Loc; Qast.Option None; Qast.Option (Some mt)]
       | "module"; s = SV UIDENT →
           Qast.Node "PaUnp" [Qast.Loc; Qast.Option (Some s); Qast.Option None]
+      | "module"; "_" →
+          Qast.Node "PaUnp" [Qast.Loc; Qast.Option None; Qast.Option None]
       | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   label_ipatt:
