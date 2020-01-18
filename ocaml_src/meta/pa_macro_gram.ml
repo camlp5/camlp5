@@ -12,6 +12,15 @@ open Pa_extend;;
 Grammar.Unsafe.clear_entry rule_list;;
 Grammar.Unsafe.clear_entry level_list;;
 
+let must_flatten_opts ll =
+  List.fold_right
+    (fun levs acc ->
+       match levs with
+         None -> acc
+       | Some v -> v @ acc)
+    ll []
+;;
+
 Grammar.safe_extend
   (let _ = (dexpr : 'dexpr Grammar.Entry.e)
    and _ = (rule : 'rule Grammar.Entry.e)
@@ -29,10 +38,12 @@ Grammar.safe_extend
      grammar_entry_create "rule_or_ifdef_list"
    and else_rule_or_ifdef : 'else_rule_or_ifdef Grammar.Entry.e =
      grammar_entry_create "else_rule_or_ifdef"
-   and level_or_ifdef : 'level_or_ifdef Grammar.Entry.e =
-     grammar_entry_create "level_or_ifdef"
-   and else_level_or_ifdef : 'else_level_or_ifdef Grammar.Entry.e =
-     grammar_entry_create "else_level_or_ifdef"
+   and level_or_ifdef_opt : 'level_or_ifdef_opt Grammar.Entry.e =
+     grammar_entry_create "level_or_ifdef_opt"
+   and levels_or_ifdef_opt : 'levels_or_ifdef_opt Grammar.Entry.e =
+     grammar_entry_create "levels_or_ifdef_opt"
+   and else_levels_or_ifdef_opt : 'else_levels_or_ifdef_opt Grammar.Entry.e =
+     grammar_entry_create "else_levels_or_ifdef_opt"
    in
    [Grammar.extension (rule_list : 'rule_list Grammar.Entry.e) None
       [None, None,
@@ -166,14 +177,49 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[")))
-                (Grammar.s_list0sep
+                (Grammar.s_list1sep
                    (Grammar.s_nterm
-                      (level_or_ifdef : 'level_or_ifdef Grammar.Entry.e))
+                      (level_or_ifdef_opt :
+                       'level_or_ifdef_opt Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
-           (fun _ (ll : 'level_or_ifdef list) _ (loc : Ploc.t) ->
-              (ll : 'level_list)))]];
-    Grammar.extension (level_or_ifdef : 'level_or_ifdef Grammar.Entry.e) None
+           (fun _ (ll : 'level_or_ifdef_opt list) _ (loc : Ploc.t) ->
+              (must_flatten_opts ll : 'level_list)))]];
+    Grammar.extension
+      (level_or_ifdef_opt : 'level_or_ifdef_opt Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "IFDEF")))
+                         (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
+                      (Grammar.s_token ("", "THEN")))
+                   (Grammar.s_nterm
+                      (levels_or_ifdef_opt :
+                       'levels_or_ifdef_opt Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (else_levels_or_ifdef_opt :
+                    'else_levels_or_ifdef_opt Grammar.Entry.e)))
+             (Grammar.s_token ("", "END")),
+           (fun _ (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt)
+                _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then e1 else e2 : 'level_or_ifdef_opt)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (level : 'level Grammar.Entry.e)),
+           (fun (l : 'level) (loc : Ploc.t) ->
+              (Some [l] : 'level_or_ifdef_opt)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_stop,
+           (fun (loc : Ploc.t) -> (None : 'level_or_ifdef_opt)))]];
+    Grammar.extension
+      (levels_or_ifdef_opt : 'levels_or_ifdef_opt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next
@@ -187,27 +233,35 @@ Grammar.safe_extend
                       (Grammar.s_token ("", "THEN")))
                    Grammar.s_self)
                 (Grammar.s_nterm
-                   (else_level_or_ifdef :
-                    'else_level_or_ifdef Grammar.Entry.e)))
+                   (else_levels_or_ifdef_opt :
+                    'else_levels_or_ifdef_opt Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
-           (fun _ (e2 : 'else_level_or_ifdef) (e1 : 'level_or_ifdef) _
-                (e : 'dexpr) _ (loc : Ploc.t) ->
-              (if e then e1 else e2 : 'level_or_ifdef)))];
+           (fun _ (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt)
+                _ (e : 'dexpr) _ (loc : Ploc.t) ->
+              (if e then e1 else e2 : 'levels_or_ifdef_opt)))];
        None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm (level : 'level Grammar.Entry.e)),
-           (fun (l : 'level) (loc : Ploc.t) -> (l : 'level_or_ifdef)))]];
+             (Grammar.s_list1sep
+                (Grammar.s_nterm (level : 'level Grammar.Entry.e))
+                (Grammar.s_token ("", "|")) false),
+           (fun (ll : 'level list) (loc : Ploc.t) ->
+              (Some ll : 'levels_or_ifdef_opt)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_stop,
+           (fun (loc : Ploc.t) -> (None : 'levels_or_ifdef_opt)))]];
     Grammar.extension
-      (else_level_or_ifdef : 'else_level_or_ifdef Grammar.Entry.e) None
+      (else_levels_or_ifdef_opt : 'else_levels_or_ifdef_opt Grammar.Entry.e)
+      None
       [None, None,
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm
-                (level_or_ifdef : 'level_or_ifdef Grammar.Entry.e)),
-           (fun (e : 'level_or_ifdef) _ (loc : Ploc.t) ->
-              (e : 'else_level_or_ifdef)));
+                (levels_or_ifdef_opt : 'levels_or_ifdef_opt Grammar.Entry.e)),
+           (fun (e : 'levels_or_ifdef_opt) _ (loc : Ploc.t) ->
+              (e : 'else_levels_or_ifdef_opt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -218,11 +272,12 @@ Grammar.safe_extend
                       (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm
-                   (level_or_ifdef : 'level_or_ifdef Grammar.Entry.e)))
+                   (levels_or_ifdef_opt :
+                    'levels_or_ifdef_opt Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (e2 : 'else_level_or_ifdef) (e1 : 'level_or_ifdef) _
+           (fun (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
-              (if not e then e1 else e2 : 'else_level_or_ifdef)));
+              (if not e then e1 else e2 : 'else_levels_or_ifdef_opt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -233,8 +288,9 @@ Grammar.safe_extend
                       (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm
-                   (level_or_ifdef : 'level_or_ifdef Grammar.Entry.e)))
+                   (levels_or_ifdef_opt :
+                    'levels_or_ifdef_opt Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (e2 : 'else_level_or_ifdef) (e1 : 'level_or_ifdef) _
+           (fun (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
-              (if e then e1 else e2 : 'else_level_or_ifdef)))]]]);;
+              (if e then e1 else e2 : 'else_levels_or_ifdef_opt)))]]]);;

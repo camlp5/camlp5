@@ -12,6 +12,15 @@ open Pa_extend;
 Grammar.Unsafe.clear_entry rule_list;
 Grammar.Unsafe.clear_entry level_list;
 
+value must_flatten_opts ll  =
+List.fold_right (fun levs acc ->
+    match levs with [
+      None -> acc
+    | Some v -> v @ acc
+    ]
+  ) ll []
+;
+
 EXTEND
   GLOBAL: dexpr rule rule_list level level_list;
   rule_list:
@@ -43,19 +52,27 @@ EXTEND
       | "ELSE"; e = rule_or_ifdef_list -> e ] ]
   ;
   level_list:
-    [ [ "["; ll = LIST0 level_or_ifdef SEP "|"; "]" -> ll ] ]
+    [ [ "["; ll = LIST1 level_or_ifdef_opt SEP "|"; "]" -> must_flatten_opts ll ] ]
   ;
-  level_or_ifdef:
-    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=level_or_ifdef ; e2=else_level_or_ifdef ; "END" ->
+  level_or_ifdef_opt:
+    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=levels_or_ifdef_opt ; e2=else_levels_or_ifdef_opt ; "END" ->
         if e then e1 else e2]
-    | [ l=level -> l ]
+    | [ l = level -> Some [l] ]
+    | [ -> None ]
     ]
   ;
-  else_level_or_ifdef:
-    [ [ "ELSIFDEF"; e = dexpr; "THEN"; e1 = level_or_ifdef ; e2 = else_level_or_ifdef ->
+  levels_or_ifdef_opt:
+    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=levels_or_ifdef_opt ; e2=else_levels_or_ifdef_opt ; "END" ->
+        if e then e1 else e2]
+    | [ ll = LIST1 level SEP "|" -> Some ll ]
+    | [ -> None ]
+    ]
+  ;
+  else_levels_or_ifdef_opt:
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; e1 = levels_or_ifdef_opt ; e2 = else_levels_or_ifdef_opt ->
           if e then e1 else e2
-      | "ELSIFNDEF"; e = dexpr; "THEN"; e1 = level_or_ifdef ; e2 = else_level_or_ifdef ->
+      | "ELSIFNDEF"; e = dexpr; "THEN"; e1 = levels_or_ifdef_opt ; e2 = else_levels_or_ifdef_opt ->
           if not e then e1 else e2
-      | "ELSE"; e = level_or_ifdef -> e ] ]
+      | "ELSE"; e = levels_or_ifdef_opt -> e ] ]
   ;
 END;
