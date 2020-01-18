@@ -1,11 +1,11 @@
 # Makefile,v
 # Copyright (c) INRIA 2007-2017
 
-DIFF=diff -Bwiu
+DIFF=diff -Bwi -u20
 DEP=../etc/pr_r.cmo quot_r.out.ml
 RM=rm
 
-all: quot_r.mlt quot_r.mlu quot_o.mlu
+all: quot_r.mlt quot_r.mlu #quot_o.mlu
 
 clean:
 	$(RM) -f *.ml[tu]
@@ -31,9 +31,9 @@ quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast.cmo $(DEP)
 	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo quot_r.ml | $(DIFF) -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
-quot_o.mlu: quot_o.ml ../etc/camlp5o ../meta/q_ast.cmo $(DEP)
-	../etc/camlp5o ../meta/q_ast.cmo ../etc/pr_r.cmo quot_o.ml | $(DIFF) -I '(\*' -B quot_r.out.ml -
-	@touch $@
+#quot_o.mlu: quot_o.ml ../etc/camlp5o ../meta/q_ast.cmo $(DEP)
+#	../etc/camlp5o ../meta/q_ast.cmo ../etc/pr_r.cmo quot_o.ml | $(DIFF) -I '(\*' -B quot_r.out.ml -
+#	@touch $@
 
 quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast.cmo $(DEP)
 	../etc/camlp5sch ../meta/q_ast.cmo ../etc/pr_r.cmo quot_sch.ml | $(DIFF) quot_r.out.ml -
