@@ -383,7 +383,7 @@ let mktrecord ltl priv =
   ocaml_ptype_record ltl priv
 ;;
 
-let option f =
+let option_map f =
   function
     Some x -> Some (f x)
   | None -> None
@@ -393,7 +393,8 @@ let mktvariant loc ctl priv =
   let ctl =
     List.map
       (fun (loc, c, tl, rto) ->
-         conv_con (uv c), List.map ctyp (uv tl), option ctyp rto, mkloc loc)
+         conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
+         mkloc loc)
       ctl
   in
   match ocaml_ptype_variant ctl priv with
@@ -527,11 +528,6 @@ let rec patt_label_long_id =
 
 let int_of_string_l loc s = try int_of_string s with e -> Ploc.raise loc e;;
 
-let map_option f =
-  function
-    Some x -> Some (f x)
-  | None -> None
-;;
 let rec patt =
   function
     PaAcc (loc, p1, p2) ->
@@ -650,7 +646,7 @@ let rec patt =
   | PaUnp (loc, s, mto) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->
-          let p = mkpat loc (ppat_unpack (mkloc loc) (map_option uv s)) in
+          let p = mkpat loc (ppat_unpack (mkloc loc) (option_map uv s)) in
           begin match mto with
             Some mt ->
               let pt = package_of_module_type loc mt in
@@ -1027,7 +1023,7 @@ let rec expr =
         (Pexp_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
   | ExCoe (loc, e, t1, t2) ->
       mkexp loc
-        (ocaml_pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
+        (ocaml_pexp_constraint (expr e) (option_map ctyp t1) (Some (ctyp t2)))
   | ExFlo (loc, s) -> mkexp loc (Pexp_constant (ocaml_pconst_float (uv s)))
   | ExFor (loc, i, e1, e2, df, el) ->
       let e3 = MLast.ExSeq (loc, uv el) in
@@ -1064,7 +1060,7 @@ let rec expr =
             | Some _ | None -> p, eo
           in
           mkexp loc
-            (ocaml_pexp_function ("?" ^ lab) (option expr (uv eo))
+            (ocaml_pexp_function ("?" ^ lab) (option_map expr (uv eo))
                [mkpwe (p, w, e)])
       | pel ->
           let pel =
@@ -1098,7 +1094,7 @@ let rec expr =
       begin match ocaml_pexp_letmodule with
         Some pexp_letmodule ->
           mkexp loc
-            (pexp_letmodule (map_option uv i) (module_expr me) (expr e))
+            (pexp_letmodule (option_map uv i) (module_expr me) (expr e))
       | None -> error loc "no 'let module' in this ocaml version"
       end
   | ExLop (loc, me, e) ->
@@ -1322,7 +1318,7 @@ and expand_gadt_type loc p loc1 nt ct e =
   let tp = List.map (fun s -> "&" ^ s) nt in
   let ct = MLast.TyPol (loc, tp, ct) in MLast.PaTyc (loc, p, ct), e
 and mkpwe (p, w, e) =
-  ocaml_case (patt p, option expr (uv w), mkloc (loc_of_expr e), expr e)
+  ocaml_case (patt p, option_map expr (uv w), mkloc (loc_of_expr e), expr e)
 and mklabexp (lab, e) =
   patt_label_long_id lab, mkloc (loc_of_patt lab), expr e
 and mkideexp (ide, e) = ide, expr e
@@ -1345,7 +1341,7 @@ and module_type =
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun (loc, arg, mt) ->
       let arg =
-        map_option (fun (idopt, mt) -> map_option uv idopt, module_type mt)
+        option_map (fun (idopt, mt) -> option_map uv idopt, module_type mt)
           arg
       in
       mkmty loc (ocaml_pmty_functor (mkloc loc) arg (module_type mt))
@@ -1390,7 +1386,7 @@ and sig_item s l =
         List.fold_right
           (fun (nopt, mt) l ->
              mksig loc
-               (ocaml_psig_module (mkloc loc) (map_option uv nopt)
+               (ocaml_psig_module (mkloc loc) (option_map uv nopt)
                   (module_type mt)) ::
              l)
           (uv ntl) l
@@ -1398,7 +1394,7 @@ and sig_item s l =
         begin match ocaml_psig_recmodule with
           Some psig_recmodule ->
             let ntl =
-              List.map (fun (nopt, mt) -> map_option uv nopt, module_type mt)
+              List.map (fun (nopt, mt) -> option_map uv nopt, module_type mt)
                 (uv ntl)
             in
             mksig loc (psig_recmodule ntl) :: l
@@ -1432,7 +1428,7 @@ and module_expr =
       mkmod loc (Pmod_apply (module_expr me1, module_expr me2))
   | MeFun (loc, arg, me) ->
       let arg =
-        map_option (fun (idopt, mt) -> map_option uv idopt, module_type mt)
+        option_map (fun (idopt, mt) -> option_map uv idopt, module_type mt)
           arg
       in
       mkmod loc (ocaml_pmod_functor arg (module_expr me))
@@ -1513,7 +1509,7 @@ and str_item s l =
         List.fold_right
           (fun (nopt, me) l ->
              let m =
-               ocaml_pstr_module (mkloc loc) (map_option uv nopt)
+               ocaml_pstr_module (mkloc loc) (option_map uv nopt)
                  (module_expr me)
              in
              mkstr loc m :: l)
@@ -1531,7 +1527,7 @@ and str_item s l =
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints"
                    in
-                   map_option uv nopt, mt,
+                   option_map uv nopt, mt,
                    ocaml_pmod_constraint (mkloc loc) me mt)
                 (uv nel)
             in
@@ -1593,7 +1589,7 @@ and class_type =
           let ty = ctyp t in
           let ot =
             let loc = loc1 in
-            ctyp (MLast.TyApp (loc, MLast.TyLid (loc, "option"), t))
+            ctyp (MLast.TyApp (loc, MLast.TyLid (loc, "option_map"), t))
           in
           let pcty = pcty_fun ("?" ^ uv lab) ty ot (class_type ct) in
           mkcty loc pcty
@@ -1689,7 +1685,7 @@ and class_expr =
             | Some _ | None -> p, eo
           in
           mkpcl loc
-            (pcl_fun ("?" ^ lab) (option expr (uv eo)) (patt p)
+            (pcl_fun ("?" ^ lab) (option_map expr (uv eo)) (patt p)
                (class_expr ce))
       | None -> error loc "no class expr desc in this ocaml version"
       end
@@ -1748,7 +1744,7 @@ and class_str_item c l =
       let e =
         match ocaml_pexp_poly with
           Some pexp_poly ->
-            let t = option (fun t -> add_polytype t) (uv ot) in
+            let t = option_map (fun t -> add_polytype t) (uv ot) in
             mkexp loc (pexp_poly (expr e) t)
         | None ->
             if uv ot = None then expr e
