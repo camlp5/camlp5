@@ -324,7 +324,11 @@ MLast.ExJdf loc lx e;
 <:expr< $_lid:s$ >>;
 
 (* let module *)
+#ifdef OCAML_VERSION_4_10_0
 <:expr< let module _ = $me$ in $e$ >>;
+#else
+MLast.ExLmd loc None me e;
+#endif
 <:expr< let module $uid:s$ = $me$ in $e$ >>;
 <:expr< let module $_uid:s$ = $me$ in $e$ >>;
 MLast.ExLmd loc os me e;
@@ -445,8 +449,13 @@ MLast.ExSpw loc e;
 <:module_type< $mt1$ $mt2$ >>;
 
 (* functor *)
+#ifdef OCAML_VERSION_4_10_0
 <:module_type< functor () -> $mt$ >>;
 <:module_type< functor (_ : $smtf2$) -> $mt$ >>;
+#else
+MLast.MtFun loc None mt;
+MLast.MtFun loc (Some (None, smtf2)) mt;
+#endif
 <:module_type< functor ($smtf1$ : $smtf2$) -> $mt$ >>;
 <:module_type< functor ($_:smtf1$ : $smtf2$) -> $mt$ >>;
 MLast.MtFun loc (Some (osmtf1, smtf2)) mt;
@@ -588,8 +597,13 @@ MLast.MtFun loc osmt mt;
 <:module_expr< $me1$ $me2$ >>;
 
 (* functor *)
+#ifdef OCAML_VERSION_4_10_0
 <:module_expr< functor () -> $me$ >>;
 <:module_expr< functor (_ : $smtf2$) -> $me$ >>;
+#else
+MLast.MeFun loc None me;
+MLast.MeFun loc (Some (None, smtf2)) me;
+#endif
 <:module_expr< functor ($smtf1$ : $smtf2$) -> $me$ >>;
 <:module_expr< functor ($_:smtf1$ : $smtf2$) -> $me$ >>;
 MLast.MeFun loc (Some (osmtf1, smtf2)) me;
