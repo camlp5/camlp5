@@ -374,14 +374,14 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
         "->"; me = SELF ->
           <:module_expr< functor ( $_uid:i$ : $t$ ) -> $me$ >>
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_"; ":"; t = module_type; ")";
         "->"; me = SELF ->
           <:module_expr< functor ( _ : $t$ ) -> $me$ >>
       | "functor"; "("; ")";
         "->"; me = SELF ->
           <:module_expr< functor (  ) -> $me$ >>
-        ELSE END
+        END
       | "struct"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
@@ -452,12 +452,12 @@ EXTEND
     [ RIGHTA
       [ "("; m = UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
           <:module_expr< functor ( $uid:m$ : $mt$ ) -> $mb$ >>
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "("; "_"; ":"; mt = module_type; ")"; mb = SELF ->
           <:module_expr< functor ( _ : $mt$ ) -> $mb$ >>
       | "("; ")"; mb = SELF ->
           <:module_expr< functor (  ) -> $mb$ >>
-        ELSE END
+        END
       | ":"; mt = module_type; "="; me = module_expr ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]
@@ -467,18 +467,18 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF ->
           <:module_type< functor ( $_uid:i$ : $t$ ) -> $mt$ >>
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
         mt = SELF ->
           <:module_type< functor ( _ : $t$ ) -> $mt$ >>
       | "functor"; "("; ")"; "->";
         mt = SELF ->
           <:module_type< functor ( ) -> $mt$ >>
-        ELSE END
+        END
       ]
-    | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+    | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
-      ELSE END
+      END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; "end" ->

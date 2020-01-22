@@ -140,14 +140,14 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
         me = SELF →
           <:module_expr< functor ( $_uid:i$ : $t$ ) → $me$ >>
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = module_type; ")"; "->";
         me = SELF →
           <:module_expr< functor ( _ : $t$ ) → $me$ >>
       | "functor"; "("; ")"; "->";
         me = SELF →
           <:module_expr< functor ( ) → $me$ >>
-        ELSE END
+        END
       | "struct"; st = structure; /; "end" →
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF → <:module_expr< $me1$ $me2$ >> ]
@@ -196,21 +196,21 @@ EXTEND
   ;
   mod_binding:
     [ [ i = V UIDENT; me = mod_fun_binding → (Some i, me)
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "_"; me = mod_fun_binding → (None, me)
-        ELSE END
+        END
       ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = V UIDENT; ":"; mt = module_type; ")"; mb = SELF →
           <:module_expr< functor ( $_uid:m$ : $mt$ ) → $mb$ >>
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "("; "_"; ":"; mt = module_type; ")"; mb = SELF →
           <:module_expr< functor ( _ : $mt$ ) → $mb$ >>
       | "("; ")"; mb = SELF →
           <:module_expr< functor ( ) → $mb$ >>
-        ELSE END
+        END
       | ":"; mt = module_type; "="; me = module_expr →
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr → <:module_expr< $me$ >> ] ]
@@ -219,18 +219,18 @@ EXTEND
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF →
           <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
         mt = SELF →
           <:module_type< functor ( _ : $t$ ) → $mt$ >>
       | "functor"; "("; ")"; "->";
         mt = SELF →
           <:module_type< functor ( ) → $mt$ >>
-         ELSE END
+         END
       ]
-    | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+    | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
        RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
-      ELSE END
+      END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") →
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; /; "end" →
@@ -301,10 +301,10 @@ EXTEND
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF →
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "let"; "module"; "_"; mb = mod_fun_binding; "in"; e = SELF →
           <:expr< let module _ = $mb$ in $e$ >>
-        ELSE END
+        END
       | "let"; "open"; m = module_expr; "in"; e = SELF →
           <:expr< let open $m$ in $e$ >>
       | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
@@ -430,11 +430,11 @@ EXTEND
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         el = SELF →
           [<:expr< let module $_uid:m$ = $mb$ in $mksequence loc el$ >>]
-      | IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "let"; "module"; "_"; mb = mod_fun_binding; "in";
         el = SELF →
           [<:expr< let module _ = $mb$ in $mksequence loc el$ >>]
-        ELSE END
+        END
       | "let"; "open"; m = module_expr; "in"; el = SELF →
           [<:expr< let open $m$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF → [e :: el]

@@ -188,13 +188,17 @@ and module_expr x =
   [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
       <:module_expr< functor ($uid:s$ : $mt$) -> $module_expr me$ >>
   | <:module_expr< functor (_ : $mt$) -> $me$ >> ->
-    IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pa_lefteval.ml: blank module-name in functor-expression is unsupported"
+    ELSE
       <:module_expr< functor (_ : $mt$) -> $module_expr me$ >>
-    ELSE assert False END
+    END
   | <:module_expr< functor () -> $me$ >> ->
-    IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pa_lefteval.ml: empty module-arg () in functor-expression is unsupported"
+    ELSE
       <:module_expr< functor () -> $module_expr me$ >>
-    ELSE assert False END
+    END
   | <:module_expr< ($me$ : $mt$) >> ->
       <:module_expr< ($module_expr me$ : $mt$) >>
   | <:module_expr< struct $list:sil$ end >> ->
