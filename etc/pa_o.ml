@@ -410,6 +410,12 @@ EXTEND
       [ i = SELF; "."; j = SELF -> <:module_expr< $i$ . $j$ >> ]
     | [ i = V UIDENT -> <:module_expr< $_uid:i$ >> ] ]
   ;
+  uidopt:
+    [ [ m = V UIDENT -> Some m
+      | "_" -> None
+      ]
+    ]
+ ;
   str_item:
     [ "top"
       [ "exception"; (_, c, tl, _) = constructor_declaration;
@@ -441,9 +447,9 @@ EXTEND
               [ <:patt< _ >> -> <:str_item< $exp:e$ >>
               | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
-          <:str_item< let module $_uid:m$ = $mb$ in $e$ >>
+          <:str_item< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = expr ->
           <:str_item< let open $m$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
@@ -567,9 +573,9 @@ EXTEND
       [ "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
           <:expr< let $_flag:o$ $_list:l$ in $x$ >>
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          <:expr< let module $_uid:m$ = $mb$ in $e$ >>
+          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = expr LEVEL "top" ->
           <:expr< let open $m$ in $e$ >>
       | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->

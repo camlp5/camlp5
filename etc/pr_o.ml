@@ -1111,24 +1111,14 @@ EXTEND_PRINTER
                    expr_with_comm_except_if_sequence
 *)
                   e)
-      | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
+      | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
+          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
           if pc.dang = ";" then
             pprintf pc "(@[<a>let module %s =@;%p@ in@]@ %p)" s module_expr me
               curr e
           else
             pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
               curr e
-      | <:expr< let module _ = $me$ in $e$ >> ->
-        IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_o.ml: pr_expr: blank module-name in let-module is unsupported"
-        ELSE
-          if pc.dang = ";" then
-            pprintf pc "(@[<a>let module _ =@;%p@ in@]@ %p)" module_expr me
-              curr e
-          else
-            pprintf pc "@[<a>let module _ =@;%p@ in@]@ %p" module_expr me
-              curr e
-        END
       | <:expr< let open $m$ in $e$ >> ->
           if pc.dang = ";" then
             pprintf pc "(@[<a>let open %p@ in@]@ %p)" module_expr m curr e
@@ -1367,8 +1357,7 @@ EXTEND_PRINTER
         <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
-        <:expr< let module $uid:_$ = $_$ in $_$ >> |
-        <:expr< let module _ = $_$ in $_$ >> |
+        <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
         <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ |

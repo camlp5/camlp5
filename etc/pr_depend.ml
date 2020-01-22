@@ -136,7 +136,7 @@ and expr =
       expr e
     }
   | ExLid _ _ -> ()
-  | <:expr< let module $uid:_$ = $me$ in $e$ >> -> do {
+  | <:expr< let module $uidopt:_$ = $me$ in $e$ >> -> do {
       module_expr me;
       expr e
     }

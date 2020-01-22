@@ -294,23 +294,19 @@ EXTEND
       | "module"; i = V mod_ident "list" ""; ":="; me = module_expr →
           <:with_constr< module $_:i$ := $me$ >> ] ]
   ;
+  uidopt:
+    [ [ m = V UIDENT -> Some m
+      | "_" -> None
+      ]
+    ]
+ ;
   expr:
     [ "top" RIGHTA
       [ "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF →
-(*
-          ExLmd loc (Ploc.VaVal (Some m)) mb e
-*)  
-          <:expr< let module $_uid:m$ = $mb$ in $e$ >>
-    | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "let"; "module"; "_"; mb = mod_fun_binding; "in"; e = SELF →
-(*
-          ExLmd loc (Ploc.VaVal None) mb e
-*)  
-          <:expr< let module _ = $mb$ in $e$ >>
-      END
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
+          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = SELF →
           <:expr< let open $m$ in $e$ >>
       | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
@@ -433,20 +429,9 @@ EXTEND
       [ "let"; rf = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and");
         "in"; el = SELF →
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
-(*
-          [ExLmd loc (Ploc.VaVal (Some m)) mb (mksequence loc el)]
-*)
-          [<:expr< let module $_uid:m$ = $mb$ in $mksequence loc el$ >>]
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "let"; "module"; "_"; mb = mod_fun_binding; "in";
-        el = SELF →
-(*
-          [ExLmd loc (Ploc.VaVal None) mb (mksequence loc el)]
-*)
-          [<:expr< let module _ = $mb$ in $mksequence loc el$ >>]
-        END
+          [<:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >>]
       | "let"; "open"; m = module_expr; "in"; el = SELF →
           [<:expr< let open $m$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF → [e :: el]

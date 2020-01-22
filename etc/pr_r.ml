@@ -366,14 +366,8 @@ value rec seq_of_expr e =
       seq_of_expr_ne_list e el
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
-  | <:expr:< let module $uid:s$ = $me$ in $e$ >> ->
-      SE_let_module loc (Some s) me (seq_of_expr e)
-  | <:expr:< let module _ = $me$ in $e$ >> ->
-      IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-        invalid_arg "pr_r.ml: seq_of_expr: blank module-name in let-module is unsupported"
-      ELSE
-        SE_let_module loc None me (seq_of_expr e)
-      END
+  | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
+      SE_let_module loc (option_map Pcaml.unvala s) me (seq_of_expr e)
   | <:expr:< let open $m$ in $e$ >> ->
       SE_let_open loc m (seq_of_expr e)
   | e ->
@@ -386,18 +380,10 @@ and seq_of_expr_ne_list e1 el =
       match el with
       [ [] -> SE_let loc rf pel (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | <:expr:< let module $uid:s$ = $me$ in $e$ >> ->
+  | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
       match el with
-      [ [] -> SE_let_module loc (Some s) me (seq_of_expr e)
+      [ [] -> SE_let_module loc (option_map Pcaml.unvala s) me (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | <:expr:< let module _ = $me$ in $e$ >> ->
-      IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-        invalid_arg "pr_r.ml: seq_of_expr_ne_list: blank module-name in let-module is unsupported"
-      ELSE
-      match el with
-      [ [] -> SE_let_module loc None me (seq_of_expr e)
-      | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-      END
   | <:expr:< let open $m$ in $e$ >> ->
       match el with
       [ [] -> SE_let_open loc m (seq_of_expr e)
@@ -1328,21 +1314,10 @@ EXTEND_PRINTER
               in
               pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh)
                 e ]
-      | <:expr< let module $uid:s$ = $me$ in $e$ >> as ge ->
+      | <:expr< let module $uidopt:s$ = $me$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
-          | None -> pprintf pc "%p@ %p" let_module_up_to_in (Some s, me) curr e ]
-
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-        | <:expr< let module _ = $me$ in $e$ >> ->
-          invalid_arg "pr_r.ml: pr_expr: blank module-name in let-module is unsupported"
-        ELSE
-        | <:expr< let module _ = $me$ in $e$ >> as ge ->
-          match flatten_sequence ge with
-          [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
-          | None -> pprintf pc "%p@ %p" let_module_up_to_in (None, me) curr e ]
-        END
-
+          | None -> pprintf pc "%p@ %p" let_module_up_to_in (option_map Pcaml.unvala s, me) curr e ]
       | <:expr< let open $m$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
@@ -1533,8 +1508,7 @@ EXTEND_PRINTER
         <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
-        <:expr< let module $uid:_$ = $_$ in $_$ >> |
-        <:expr< let module _ = $_$ in $_$ >> |
+        <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
         <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->

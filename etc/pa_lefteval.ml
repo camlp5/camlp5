@@ -157,8 +157,8 @@ value rec expr x =
       <:expr< try $expr e$ with [ $list:List.map match_assoc pwel$ ] >>
   | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
       <:expr< let $flag:rf$ $list:List.map let_binding pel$ in $expr e$ >>
-  | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
-      <:expr< let module $uid:s$ = $module_expr me$ in $expr e$ >>
+  | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
+      <:expr< let module $uidopt:s$ = $module_expr me$ in $expr e$ >>
   | <:expr< if $e1$ then $e2$ else $e3$ >> ->
       <:expr< if $expr e1$ then $expr e2$ else $expr e3$ >>
   | <:expr< while $e$ do { $list:el$ } >> ->
