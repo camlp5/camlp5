@@ -187,7 +187,7 @@ module Meta_make (C : MetaSig) =
       | PaUnp _ s omt →
           let c_vala x = C.vala C.string x in
           let c_vala_opt sopt = C.option c_vala sopt in
-          C.node "PaUnp" [c_vala_opt s; C.option module_type omt]
+          C.node "PaUnp" [C.vala c_vala_opt s; C.option module_type omt]
       | PaVrn _ s → C.node "PaVrn" [C.vala C.string s]
       | 
           PaXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "PaAnt" [r]) s ]

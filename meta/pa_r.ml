@@ -508,14 +508,10 @@ EXTEND
       | p = patt → <:patt< $p$ >>
       | pl = V (LIST1 patt SEP ",") → <:patt< ($_list:pl$) >>
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
-      | "module"; s = V UIDENT; ":"; mt = module_type →
-          <:patt< (module $_uid:s$ : $mt$) >>
-      | "module"; "_"; ":"; mt = module_type →
-          <:patt< (module _ : $mt$) >>
-      | "module"; s = V UIDENT →
-          <:patt< (module $_uid:s$) >>
-      | "module"; "_" →
-          <:patt< (module _) >>
+      | "module"; s = V uidopt "uidopt"; ":"; mt = module_type →
+          <:patt< (module $_uidopt:s$ : $mt$) >>
+      | "module"; s = V uidopt "uidopt" →
+          <:patt< (module $_uidopt:s$) >>
       | → <:patt< () >> ] ]
   ;
   cons_patt_opt:
@@ -548,14 +544,10 @@ EXTEND
       | p = ipatt → <:patt< $p$ >>
       | pl = V (LIST1 ipatt SEP ",") → <:patt< ( $_list:pl$) >>
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
-      | "module"; s  = V UIDENT; ":"; mt = module_type →
-          <:patt< (module $_uid:s$ : $mt$) >>
-      | "module"; "_"; ":"; mt = module_type →
-          <:patt< (module _ : $mt$) >>
-      | "module"; s = V UIDENT →
-          <:patt< (module $_uid:s$) >>
-      | "module"; "_" →
-          <:patt< (module _) >>
+      | "module"; s  = V uidopt "uidopt"; ":"; mt = module_type →
+          <:patt< (module $_uidopt:s$ : $mt$) >>
+      | "module"; s = V uidopt "uidopt" →
+          <:patt< (module $_uidopt:s$) >>
       | → <:patt< () >> ] ]
   ;
   label_ipatt:

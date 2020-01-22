@@ -94,10 +94,8 @@ value rec is_irrefut_patt =
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< (type $lid:_$) >> -> True
-  | <:patt< (module $uid:_$ : $_$) >> -> True
-  | <:patt< (module _ : $_$) >> -> True
-  | <:patt< (module $uid:_$) >> -> True
-  | <:patt< (module _) >> -> True
+  | <:patt< (module $uidopt:_$ : $_$) >> -> True
+  | <:patt< (module $uidopt:_$) >> -> True
   | <:patt< ~{$list:lppo$} >> ->
       List.for_all (fun (p, _) -> is_irrefut_patt p) lppo
   | <:patt< ?{$p$ $opt:_$} >> -> is_irrefut_patt p
@@ -1568,22 +1566,12 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
       | <:patt< (type $lid:s$) >> ->
           pprintf pc "(type %s)" s
-      | <:patt< (module $uid:s$ : $mt$) >> ->
+      | <:patt< (module $uidopt:s$ : $mt$) >> ->
+          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
           pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
-      | <:patt< (module _ : $mt$) >> ->
-        IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: pr_patt: blank module-name in module-pattern is unsupported"
-        ELSE
-          pprintf pc "@[<1>(module _ :@ %p)@]" module_type mt
-        END
-      | <:patt< (module $uid:s$) >> ->
+      | <:patt< (module $uidopt:s$) >> ->
+          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
           pprintf pc "(module %s)" s
-      | <:patt< (module _) >> ->
-        IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: pr_patt: blank module-name in module-pattern is unsupported"
-        ELSE
-          pprintf pc "(module _)"
-        END
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s

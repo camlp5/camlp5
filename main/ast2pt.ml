@@ -623,7 +623,7 @@ value rec patt =
   | PaUnp loc s mto →
       match ocaml_ppat_unpack with
       [ Some (ppat_unpack, ptyp_package) →
-          let p = mkpat loc (ppat_unpack (mkloc loc) (option_map uv s)) in
+          let p = mkpat loc (ppat_unpack (mkloc loc) (option_map uv (uv s))) in
           match mto with
           [ Some mt →
               let pt = package_of_module_type loc mt in

@@ -2108,37 +2108,20 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
-             (Grammar.s_token ("", "_")),
-           (fun _ _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, None, None) : 'paren_patt)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
-             (Grammar.s_token ("UIDENT", "")),
-           (fun (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, Some s, None) : 'paren_patt)));
+             (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)),
+           (fun (s : 'uidopt) _ (loc : Ploc.t) ->
+              (MLast.PaUnp (loc, s, None) : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "module")))
-                   (Grammar.s_token ("", "_")))
+                   (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (mt : 'module_type) _ _ _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, None, Some mt) : 'paren_patt)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "module")))
-                   (Grammar.s_token ("UIDENT", "")))
-                (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (mt : 'module_type) _ (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, Some s, Some mt) : 'paren_patt)));
+           (fun (mt : 'module_type) _ (s : 'uidopt) _ (loc : Ploc.t) ->
+              (MLast.PaUnp (loc, s, Some mt) : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
@@ -2269,37 +2252,20 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
-             (Grammar.s_token ("", "_")),
-           (fun _ _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, None, None) : 'paren_ipatt)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
-             (Grammar.s_token ("UIDENT", "")),
-           (fun (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, Some s, None) : 'paren_ipatt)));
+             (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)),
+           (fun (s : 'uidopt) _ (loc : Ploc.t) ->
+              (MLast.PaUnp (loc, s, None) : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "module")))
-                   (Grammar.s_token ("", "_")))
+                   (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (mt : 'module_type) _ _ _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, None, Some mt) : 'paren_ipatt)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "module")))
-                   (Grammar.s_token ("UIDENT", "")))
-                (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (mt : 'module_type) _ (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaUnp (loc, Some s, Some mt) : 'paren_ipatt)));
+           (fun (mt : 'module_type) _ (s : 'uidopt) _ (loc : Ploc.t) ->
+              (MLast.PaUnp (loc, s, Some mt) : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))

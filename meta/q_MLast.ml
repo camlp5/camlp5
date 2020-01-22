@@ -887,16 +887,11 @@ EXTEND
       | p = patt → p
       | pl = SV (LIST1 patt SEP ",") → Qast.Node "PaTup" [Qast.Loc; pl]
       | "type"; s = SV LIDENT → Qast.Node "PaNty" [Qast.Loc; s]
-      | "module"; s = SV UIDENT; ":"; mt = module_type →
+      | "module"; s = SV uidopt "uidopt"; ":"; mt = module_type →
           Qast.Node "PaUnp"
-          [Qast.Loc; Qast.Option (Some s); Qast.Option (Some mt)]
-      | "module"; "_"; ":" ; mt = module_type →
-          Qast.Node "PaUnp"
-          [Qast.Loc; Qast.Option None; Qast.Option (Some mt)]
-      | "module"; s = SV UIDENT →
-          Qast.Node "PaUnp" [Qast.Loc; Qast.Option (Some s); Qast.Option None]
-      | "module"; "_" →
-          Qast.Node "PaUnp" [Qast.Loc; Qast.Option None; Qast.Option None]
+          [Qast.Loc; s; Qast.Option (Some mt)]
+      | "module"; s = SV uidopt "uidopt" →
+          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
       | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   cons_patt_opt:
@@ -929,16 +924,11 @@ EXTEND
       | p = ipatt → p
       | pl = SV (LIST1 ipatt SEP ",") → Qast.Node "PaTup" [Qast.Loc; pl]
       | "type"; s = SV LIDENT → Qast.Node "PaNty" [Qast.Loc; s]
-      | "module"; s = SV UIDENT; ":"; mt = module_type →
+      | "module"; s = SV uidopt "uidopt"; ":"; mt = module_type →
           Qast.Node "PaUnp"
-          [Qast.Loc; Qast.Option (Some s); Qast.Option (Some mt)]
-      | "module"; "_"; ":" ; mt = module_type →
-          Qast.Node "PaUnp"
-          [Qast.Loc; Qast.Option None; Qast.Option (Some mt)]
-      | "module"; s = SV UIDENT →
-          Qast.Node "PaUnp" [Qast.Loc; Qast.Option (Some s); Qast.Option None]
-      | "module"; "_" →
-          Qast.Node "PaUnp" [Qast.Loc; Qast.Option None; Qast.Option None]
+          [Qast.Loc; s; Qast.Option (Some mt)]
+      | "module"; s = SV uidopt "uidopt" →
+          Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
       | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
   ;
   label_ipatt:

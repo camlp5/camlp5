@@ -80,7 +80,7 @@ and patt =
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and V (list string)
   | PaUid of loc and V string
-  | PaUnp of loc and option (V string) and option module_type
+  | PaUnp of loc and V (option (V string)) and option module_type
   | PaVrn of loc and V string
   | PaXtr of loc and string and option (V patt) ]
 and expr =

@@ -851,10 +851,10 @@ EXTEND
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "("; "type"; s = V LIDENT; ")" -> <:patt< (type $_lid:s$) >>
-      | "("; "module"; s = V UIDENT; ":"; mt = module_type; ")" ->
-          <:patt< (module $_uid:s$ : $mt$) >>
-      | "("; "module"; s = V UIDENT; ")" ->
-          <:patt< (module $_uid:s$) >>
+      | "("; "module"; s = V uidopt "uidopt"; ":"; mt = module_type; ")" ->
+          <:patt< (module $_uidopt:s$ : $mt$) >>
+      | "("; "module"; s = V uidopt "uidopt"; ")" ->
+          <:patt< (module $_uidopt:s$) >>
       | "_" -> <:patt< _ >>
       | x = QUOTATION ->
           let con = quotation_content x in
