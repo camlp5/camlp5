@@ -423,21 +423,9 @@ EXTEND
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type → mt
-      | "("; i = SV UIDENT; ":"; t = module_type; ")"; mt = SELF →
+      | arg = functor_parameter; mt = SELF →
           Qast.Node "MtFun"
-            [Qast.Loc;
-             Qast.Option (Some (Qast.Tuple[Qast.Option (Some i); t]));
-             mt]
-      | "("; "_"; ":"; t = module_type; ")"; mt = SELF →
-          Qast.Node "MtFun"
-            [Qast.Loc;
-             Qast.Option (Some (Qast.Tuple[Qast.Option None; t]));
-             mt]
-      | "("; ")"; mt = SELF →
-          Qast.Node "MtFun"
-            [Qast.Loc;
-             Qast.Option None;
-             mt]
+            [Qast.Loc; arg; mt]
       ] ]
   ;
   with_constr:
