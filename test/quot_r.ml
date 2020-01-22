@@ -204,15 +204,18 @@ MLast.TyVrn loc lpv ools;
 (* module unpacking *)
 <:patt< (module _) >>;
 <:patt< (module _ : $mt$) >>;
-MLast.PaUnp loc None omt;
+MLast.PaUnp loc (Ploc.VaVal None) omt;
 <:patt< (module $uid:s$) >>;
 <:patt< (module $uid:s$ : $mt$) >>;
-MLast.PaUnp loc (Some (Ploc.VaVal s)) omt;
+MLast.PaUnp loc (Ploc.VaVal (Some (Ploc.VaVal s))) omt;
 <:patt< (module $_uid:s$) >>;
 <:patt< (module $_uid:s$ : $mt$) >>;
-MLast.PaUnp loc (Some s) omt;
-MLast.PaUnp loc os None;
-MLast.PaUnp loc os (Some mt);
+MLast.PaUnp loc (Ploc.VaVal (Some s)) omt;
+<:patt< (module $uidopt:os$) >>;
+<:patt< (module $uidopt:os$ : $mt$)>>;
+MLast.PaUnp loc (Ploc.VaVal os) omt;
+<:patt< (module $_uidopt:os$) >>;
+<:patt< (module $_uidopt:os$ : $mt$)>>;
 MLast.PaUnp loc os omt;
 
 (* variant *)
@@ -327,11 +330,12 @@ MLast.ExJdf loc lx e;
 #ifdef OCAML_VERSION_4_10_0
 <:expr< let module _ = $me$ in $e$ >>;
 #else
-MLast.ExLmd loc None me e;
+MLast.ExLmd loc (Ploc.VaVal None) me e;
 #endif
 <:expr< let module $uid:s$ = $me$ in $e$ >>;
 <:expr< let module $_uid:s$ = $me$ in $e$ >>;
-MLast.ExLmd loc os me e;
+<:expr< let module $uidopt:os$ = $me$ in $e$ >>;
+<:expr< let module $_uidopt:os$ = $me$ in $e$ >>;
 (* let open *)
 <:expr< let open $me$ in $e$ >>;
 
