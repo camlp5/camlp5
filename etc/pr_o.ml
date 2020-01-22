@@ -213,6 +213,17 @@ value right_operator pc loc sh unfold next x =
         (fun () -> plist next sh pc xl) ]
 ;
 
+value uidopt_to_maybe_blank = fun [
+  Some s -> Pcaml.unvala s
+|  None ->
+  IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    invalid_arg "pr_o.ml: uidopt_to_blank: blank module-names not supported"
+  ELSE
+    "_"
+  END
+]
+;
+
 (*
  * Extensible printers
  *)
@@ -1110,7 +1121,7 @@ EXTEND_PRINTER
 *)
                   e)
       | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
-          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
+          let s = uidopt_to_maybe_blank s in
           if pc.dang = ";" then
             pprintf pc "(@[<a>let module %s =@;%p@ in@]@ %p)" s module_expr me
               curr e
@@ -1440,10 +1451,10 @@ EXTEND_PRINTER
       | <:patt< (type $lid:s$) >> ->
           pprintf pc "(type %s)" s
       | <:patt< (module $uidopt:s$ : $mt$) >> ->
-          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
+          let s = uidopt_to_maybe_blank s in
           pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
       | <:patt< (module $uidopt:s$) >> ->
-          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
+          let s = uidopt_to_maybe_blank s in
           pprintf pc "(module %s)" s
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s

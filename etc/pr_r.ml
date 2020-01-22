@@ -223,6 +223,17 @@ value right_operator pc sh unfold next x =
   | _ -> plist next sh pc xl ]
 ;
 
+value uidopt_to_maybe_blank = fun [
+  Some s -> Pcaml.unvala s
+|  None ->
+  IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    invalid_arg "pr_o.ml: uidopt_to_blank: blank module-names not supported"
+  ELSE
+    "_"
+  END
+]
+;
+
 (*
  * Extensible printers
  *)
@@ -352,7 +363,7 @@ pr_expr_fun_args.val :=
 
 type seq =
   [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr) and seq
-  | SE_let_module of Ploc.t and option string and MLast.module_expr and seq
+  | SE_let_module of Ploc.t and option (Ploc.vala string) and MLast.module_expr and seq
   | SE_let_open of Ploc.t and MLast.module_expr and seq
   | SE_closed of MLast.expr and seq
   | SE_other of MLast.expr and option seq ]
@@ -365,7 +376,7 @@ value rec seq_of_expr e =
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
   | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
-      SE_let_module loc (option_map Pcaml.unvala s) me (seq_of_expr e)
+      SE_let_module loc s me (seq_of_expr e)
   | <:expr:< let open $m$ in $e$ >> ->
       SE_let_open loc m (seq_of_expr e)
   | e ->
@@ -380,7 +391,7 @@ and seq_of_expr_ne_list e1 el =
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
   | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
       match el with
-      [ [] -> SE_let_module loc (option_map Pcaml.unvala s) me (seq_of_expr e)
+      [ [] -> SE_let_module loc s me (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
   | <:expr:< let open $m$ in $e$ >> ->
       match el with
@@ -568,15 +579,8 @@ and let_up_to_in pc (rf, pel) =
        pprintf pc "let %s%pin" (if rf then "rec " else "")
          (vlist2 let_binding (and_before let_binding)) pel)
 and let_module_up_to_in pc (s, me) =
-    match s with [
-      Some s -> pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
-    | None ->
-      IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-        invalid_arg "pr_r.ml: let_module_up_to_in: blank module-name in let-module is unsupported"
-      ELSE
-        pprintf pc "@[<a>let module _ =@;%p@ in@]" module_expr me
-      END
-]
+    let s = uidopt_to_maybe_blank s in
+    pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
 and let_open_up_to_in pc m =
   pprintf pc "@[<a>let open %p@ in@]" module_expr m
 
@@ -1315,7 +1319,7 @@ EXTEND_PRINTER
       | <:expr< let module $uidopt:s$ = $me$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
-          | None -> pprintf pc "%p@ %p" let_module_up_to_in (option_map Pcaml.unvala s, me) curr e ]
+          | None -> pprintf pc "%p@ %p" let_module_up_to_in (s, me) curr e ]
       | <:expr< let open $m$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
@@ -1567,7 +1571,7 @@ EXTEND_PRINTER
       | <:patt< (type $lid:s$) >> ->
           pprintf pc "(type %s)" s
       | <:patt< (module $uidopt:s$ : $mt$) >> ->
-          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
+          let s = uidopt_to_maybe_blank s in
           pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
       | <:patt< (module $uidopt:s$) >> ->
           let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in

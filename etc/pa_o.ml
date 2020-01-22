@@ -412,7 +412,9 @@ EXTEND
   ;
   uidopt:
     [ [ m = V UIDENT -> Some m
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "_" -> None
+        END
       ]
     ]
  ;
