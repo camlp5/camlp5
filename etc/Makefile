@@ -127,7 +127,7 @@ pr_extfun.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_extprint.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
 pr_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
-pr_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo pa_macro_print.cmo
 pr_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_scheme.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
