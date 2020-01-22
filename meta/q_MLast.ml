@@ -285,7 +285,7 @@ EXTEND
   functor_parameter:
    [ [ id = SV uidopt "uidopt"; ":"; t = module_type ->
                 Qast.Option (Some (Qast.Tuple [id; t]))
-     | [ ] -> Qast.Option None
+     | -> Qast.Option None
      ]
    ]
    ;
