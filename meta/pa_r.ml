@@ -300,11 +300,17 @@ EXTEND
         x = SELF →
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF →
+(*
+          ExLmd loc (Ploc.VaVal (Some m)) mb e
+*)  
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+    | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "let"; "module"; "_"; mb = mod_fun_binding; "in"; e = SELF →
+(*
+          ExLmd loc (Ploc.VaVal None) mb e
+*)  
           <:expr< let module _ = $mb$ in $e$ >>
-        END
+      END
       | "let"; "open"; m = module_expr; "in"; e = SELF →
           <:expr< let open $m$ in $e$ >>
       | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
@@ -429,10 +435,16 @@ EXTEND
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         el = SELF →
+(*
+          [ExLmd loc (Ploc.VaVal (Some m)) mb (mksequence loc el)]
+*)
           [<:expr< let module $_uid:m$ = $mb$ in $mksequence loc el$ >>]
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "let"; "module"; "_"; mb = mod_fun_binding; "in";
         el = SELF →
+(*
+          [ExLmd loc (Ploc.VaVal None) mb (mksequence loc el)]
+*)
           [<:expr< let module _ = $mb$ in $mksequence loc el$ >>]
         END
       | "let"; "open"; m = module_expr; "in"; el = SELF →

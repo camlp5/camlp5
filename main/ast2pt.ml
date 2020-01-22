@@ -926,7 +926,7 @@ value rec expr =
   | ExLmd loc i me e →
       match ocaml_pexp_letmodule with
       [ Some pexp_letmodule →
-          mkexp loc (pexp_letmodule (option_map uv i) (module_expr me) (expr e))
+          mkexp loc (pexp_letmodule (option_map uv (uv i)) (module_expr me) (expr e))
       | None → error loc "no 'let module' in this ocaml version" ]
   | ExLop loc me e →
       match ocaml_pexp_open with

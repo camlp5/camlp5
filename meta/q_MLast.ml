@@ -452,15 +452,19 @@ EXTEND
       | "module"; i = SV mod_ident "list" ""; ":="; me = module_expr →
           Qast.Node "WcMos" [Qast.Loc; i; me] ] ]
   ;
+  uidopt:
+    [ [ m = SV UIDENT -> Qast.Option (Some m)
+      | "_" -> Qast.Option None
+      ]
+    ]
+ ;
   expr:
     [ "top" RIGHTA
       [ "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
         "in"; x = SELF →
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
-      | "let"; "module"; m = SV UIDENT; mb = mod_fun_binding; "in"; e = SELF →
-          Qast.Node "ExLmd" [Qast.Loc; Qast.Option (Some m); mb; e]
-      | "let"; "module"; "_"; mb = mod_fun_binding; "in"; e = SELF →
-          Qast.Node "ExLmd" [Qast.Loc; Qast.Option None; mb; e]
+      | "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
+          Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
       | "let"; "open"; m = module_expr; "in"; e = SELF →
           Qast.Node "ExLop" [Qast.Loc; m; e]
       | "fun"; l = closed_case_list → Qast.Node "ExFun" [Qast.Loc; l]
@@ -785,16 +789,11 @@ EXTEND
         "in"; el = SELF →
           Qast.List
             [Qast.Node "ExLet" [Qast.Loc; rf; l; mksequence Qast.Loc el]]
-      | "let"; "module"; m = SV UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
           Qast.List
             [Qast.Node "ExLmd"
-               [Qast.Loc; Qast.Option (Some m); mb; mksequence Qast.Loc el]]
-      | "let"; "module"; "_"; mb = mod_fun_binding; "in";
-        el = SELF →
-          Qast.List
-            [Qast.Node "ExLmd"
-               [Qast.Loc; Qast.Option None; mb; mksequence Qast.Loc el]]
+               [Qast.Loc; m; mb; mksequence Qast.Loc el]]
       | "let"; "open"; m = module_expr; "in"; el = SELF →
           Qast.List [Qast.Node "ExLop" [Qast.Loc; m; mksequence Qast.Loc el]]
       | e = expr; ";"; el = SELF → Qast.Cons e el

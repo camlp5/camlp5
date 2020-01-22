@@ -1164,7 +1164,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) _ _ _ (loc : Ploc.t) ->
-              (MLast.ExLmd (loc, None, mb, e) : 'expr)));
+              (ExLmd (loc, None, mb, e) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1181,7 +1181,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.ExLmd (loc, Some m, mb, e) : 'expr)));
+              (ExLmd (loc, (Some m), mb, e) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1839,7 +1839,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (el : 'sequence) _ (mb : 'mod_fun_binding) _ _ _
                 (loc : Ploc.t) ->
-              ([MLast.ExLmd (loc, None, mb, mksequence loc el)] :
+              ([ExLmd (loc, None, mb, mksequence loc el)] :
                'sequence)));
         Grammar.production
           (Grammar.r_next
@@ -1857,7 +1857,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (el : 'sequence) _ (mb : 'mod_fun_binding) (m : string) _ _
                 (loc : Ploc.t) ->
-              ([MLast.ExLmd (loc, Some m, mb, mksequence loc el)] :
+              ([ExLmd (loc, (Some m), mb, mksequence loc el)] :
                'sequence)));
         Grammar.production
           (Grammar.r_next

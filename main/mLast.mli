@@ -104,7 +104,7 @@ and expr =
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr)) and expr
   | ExLid of loc and V string
-  | ExLmd of loc and option (V string) and module_expr and expr
+  | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and module_expr and expr
   | ExMat of loc and expr and V (list (patt * V (option expr) * expr))
   | ExNew of loc and V (list string)
