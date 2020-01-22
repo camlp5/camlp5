@@ -35,7 +35,7 @@ depend:
 	done
 
 promote:
-	cp $(COUT) pa_extend.cmi $(TOP)/boot/.
+	cp $(COUT) pa_extend.cmi pa_macro.cmi pa_macro_gram.cmi $(TOP)/boot/.
 
 compare:
 	@for j in $(COUT); do \

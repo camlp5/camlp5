@@ -1,9 +1,9 @@
 elexer.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo
 elexer.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx
 pa_extfold.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/pcaml.cmi
+    ../main/pcaml.cmi ../meta/pa_extend.cmo
 pa_extfold.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/pcaml.cmx
+    ../main/pcaml.cmx ../meta/pa_extend.cmx
 pa_extfun.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi ../main/pcaml.cmi
 pa_extfun.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
@@ -26,6 +26,10 @@ pa_lispr.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
 pa_lispr.cmx: ../lib/grammar.cmx ../lib/plexing.cmx ../lib/ploc.cmx \
     ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_macro_print.cmo: ../lib/grammar.cmi ../lib/ploc.cmi ../meta/pa_macro.cmo \
+    pa_extprint.cmo
+pa_macro_print.cmx: ../lib/grammar.cmx ../lib/ploc.cmx ../meta/pa_macro.cmx \
+    pa_extprint.cmx
 pa_mkast.cmo: ../lib/grammar.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
     ../main/mLast.cmi ../main/pcaml.cmi
 pa_mkast.cmx: ../lib/grammar.cmx ../lib/ploc.cmx ../lib/versdep.cmx \

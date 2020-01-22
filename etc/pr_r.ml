@@ -3,10 +3,11 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 #directory ".";
-#load "pa_macro.cmo";
 #load "q_MLast.cmo";
 #load "pa_extfun.cmo";
 #load "pa_extprint.cmo";
+#load "pa_macro.cmo";
+#load "pa_macro_print.cmo";
 #load "pa_pprintf.cmo";
 
 open Pretty;
@@ -1820,23 +1821,23 @@ EXTEND_PRINTER
           pprintf pc "(value %p)" expr e
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
-(*
       | <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
         <:module_expr< $_$ $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" module_expr z
-*)
-      | (IFDEF OCAML_VERSION = OCAML_4_10_0 THEN
-          <:module_expr< functor ($uid:_$ : $_$) -> $_$ >>
-        | <:module_expr< functor (_ : $_$) -> $_$ >>
-        | <:module_expr< functor () -> $_$ >>
+
+      (* no need to catch unsupported syntax here, since it's
+         caught in the printer above *)
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+        | <:module_expr< functor (_ : $_$) -> $_$ >> |
+          <:module_expr< functor () -> $_$ >> as z ->
+            pprintf pc "@[<1>(%p)@]" module_expr z
         ELSE
-          <:module_expr< functor ($uid:_$ : $_$) -> $_$ >>
+        | MLast.MeFun _ (Some (None, _)) _ |
+          MLast.MeFun _ None _ as z ->
+            pprintf pc "@[<1>(%p)@]" module_expr z
         END
-        ) |
-        <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
-        <:module_expr< $_$ $_$ >> as z ->
-          pprintf pc "@[<1>(%p)@]" module_expr z ] ]
+      ] ]
   ;
   pr_module_type:
     [ "top"
