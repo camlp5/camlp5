@@ -1343,8 +1343,8 @@ and module_type =
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun (loc, arg, mt) ->
       let arg =
-        option_map (fun (idopt, mt) -> option_map uv idopt, module_type mt)
-          arg
+        option_map
+          (fun (idopt, mt) -> option_map uv (uv idopt), module_type mt) arg
       in
       mkmty loc (ocaml_pmty_functor (mkloc loc) arg (module_type mt))
   | MtLid (loc, s) -> mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
@@ -1430,8 +1430,8 @@ and module_expr =
       mkmod loc (Pmod_apply (module_expr me1, module_expr me2))
   | MeFun (loc, arg, me) ->
       let arg =
-        option_map (fun (idopt, mt) -> option_map uv idopt, module_type mt)
-          arg
+        option_map
+          (fun (idopt, mt) -> option_map uv (uv idopt), module_type mt) arg
       in
       mkmod loc (ocaml_pmod_functor arg (module_expr me))
   | MeStr (loc, sl) ->

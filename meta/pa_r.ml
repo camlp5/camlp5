@@ -139,11 +139,17 @@ EXTEND
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
         me = SELF →
+          MeFun loc (Some (Ploc.VaVal (Some i), t)) me
+(*
           <:module_expr< functor ( $_uid:i$ : $t$ ) → $me$ >>
+*)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = module_type; ")"; "->";
         me = SELF →
+          MeFun loc (Some(Ploc.VaVal None, t)) me
+(*
           <:module_expr< functor ( _ : $t$ ) → $me$ >>
+*)
       | "functor"; "("; ")"; "->";
         me = SELF →
           <:module_expr< functor ( ) → $me$ >>
@@ -204,10 +210,16 @@ EXTEND
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = V UIDENT; ":"; mt = module_type; ")"; mb = SELF →
+          MeFun loc (Some (Ploc.VaVal (Some m), mt)) mb
+(*
           <:module_expr< functor ( $_uid:m$ : $mt$ ) → $mb$ >>
+*)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "("; "_"; ":"; mt = module_type; ")"; mb = SELF →
+           MeFun loc (Some (Ploc.VaVal None, mt)) mb
+(*
           <:module_expr< functor ( _ : $mt$ ) → $mb$ >>
+*)
       | "("; ")"; mb = SELF →
           <:module_expr< functor ( ) → $mb$ >>
         END
@@ -218,18 +230,29 @@ EXTEND
   module_type:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF →
+          MtFun loc (Some (Ploc.VaVal (Some i), t)) mt
+(*
           <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
+*)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
         mt = SELF →
+          MtFun loc (Some (Ploc.VaVal None, t)) mt
+(*
           <:module_type< functor ( _ : $t$ ) → $mt$ >>
+*)
       | "functor"; "("; ")"; "->";
         mt = SELF →
           <:module_type< functor ( ) → $mt$ >>
          END
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
+       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
+       MtFun loc (Some (Ploc.VaVal None, mt1)) mt2
+(*
+ <:module_type< $mt1$ → $mt2$ >>
+*)
+       ]
       END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") →
           <:module_type< $mt$ with $_list:wcl$ >> ]
@@ -280,7 +303,11 @@ EXTEND
     [ RIGHTA
       [ ":"; mt = module_type → <:module_type< $mt$ >>
       | "("; i = V UIDENT; ":"; t = module_type; ")"; mt = SELF →
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >> ] ]
+          MtFun loc (Some (Ploc.VaVal (Some i), t)) mt
+(*
+          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
+*)
+ ] ]
   ;
   with_constr:
     [ [ "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
@@ -301,7 +328,13 @@ EXTEND
         END
       ]
     ]
- ;
+  ;
+  functor_parameter:
+    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
+      | "("; ")" -> None
+      ]
+    ]
+  ;
   expr:
     [ "top" RIGHTA
       [ "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";

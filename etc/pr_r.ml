@@ -1847,7 +1847,7 @@ EXTEND_PRINTER
           <:module_expr< functor () -> $_$ >> as z ->
             pprintf pc "@[<1>(%p)@]" module_expr z
         ELSE
-        | MLast.MeFun _ (Some (None, _)) _ |
+        | MLast.MeFun _ (Some (Ploc.VaVal None, _)) _ |
           MLast.MeFun _ None _ as z ->
             pprintf pc "@[<1>(%p)@]" module_expr z
         END

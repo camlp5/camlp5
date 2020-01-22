@@ -492,7 +492,12 @@ EXTEND
         END
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      RIGHTA [ mt1=SELF ; "->" ; mt2=SELF -> <:module_type< $mt1$ → $mt2$ >> ]
+      RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
+        MtFun loc (Some (Ploc.VaVal None, mt1)) mt2
+(*
+        <:module_type< $mt1$ → $mt2$ >>
+*)
+     ]
       END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]

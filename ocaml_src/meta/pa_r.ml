@@ -173,6 +173,8 @@ Grammar.safe_extend
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
    and uidopt : 'uidopt Grammar.Entry.e = grammar_entry_create "uidopt"
+   and functor_parameter : 'functor_parameter Grammar.Entry.e =
+     grammar_entry_create "functor_parameter"
    and closed_case_list : 'closed_case_list Grammar.Entry.e =
      grammar_entry_create "closed_case_list"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
@@ -305,7 +307,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ _ _ _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (None, t), me) : 'module_expr)));
+              (MeFun (loc, Some ( None, t), me) : 'module_expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -326,7 +328,8 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (Some i, t), me) : 'module_expr)))];
+              (MeFun (loc, Some ( (Some i), t), me) :
+               'module_expr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -612,7 +615,8 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ _ _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (None, mt), mb) : 'mod_fun_binding)));
+              (MeFun (loc, Some ( None, mt), mb) :
+               'mod_fun_binding)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -629,7 +633,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (Some m, mt), mb) :
+              (MeFun (loc, Some ( (Some m), mt), mb) :
                'mod_fun_binding)))]];
     Grammar.extension (module_type : 'module_type Grammar.Entry.e) None
       [None, None,
@@ -665,7 +669,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ _ (t : 'module_type) _ _ _ _
                 (loc : Ploc.t) ->
-              (MLast.MtFun (loc, Some (None, t), mt) : 'module_type)));
+              (MtFun (loc, Some ( None, t), mt) : 'module_type)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -685,7 +689,8 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MLast.MtFun (loc, Some (Some i, t), mt) : 'module_type)))];
+              (MtFun (loc, Some ( (Some i), t), mt) :
+               'module_type)))];
        None, Some Gramext.RightA,
        [Grammar.production
           (Grammar.r_next
@@ -693,7 +698,8 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "->")))
              Grammar.s_self,
            (fun (mt2 : 'module_type) _ (mt1 : 'module_type) (loc : Ploc.t) ->
-              (MLast.MtFun (loc, Some (None, mt1), mt2) : 'module_type)))];
+              (MtFun (loc, Some ( None, mt1), mt2) :
+               'module_type)))];
        None, None,
        [Grammar.production
           (Grammar.r_next
@@ -933,7 +939,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_declaration) _ (t : 'module_type) _ (i : string)
                 _ (loc : Ploc.t) ->
-              (MLast.MtFun (loc, Some (Some i, t), mt) :
+              (MtFun (loc, Some ( (Some i), t), mt) :
                'module_declaration)));
         Grammar.production
           (Grammar.r_next
@@ -1010,6 +1016,28 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (m : string) (loc : Ploc.t) -> (Some m : 'uidopt)))]];
+    Grammar.extension (functor_parameter : 'functor_parameter Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_token ("", ")")),
+           (fun _ _ (loc : Ploc.t) -> (None : 'functor_parameter)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
+                   (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           (fun _ (t : 'module_type) _ (i : 'uidopt) _ (loc : Ploc.t) ->
+              (Some (i, t) : 'functor_parameter)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e) None
       [Some "top", Some Gramext.RightA,
        [Grammar.production

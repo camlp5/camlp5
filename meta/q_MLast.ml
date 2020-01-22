@@ -283,7 +283,7 @@ EXTEND
     type_decl constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant;
   functor_parameter:
-   [ [ id = [ i = SV UIDENT -> Qast.Option (Some i) | "_" -> Qast.Option None ]; ":"; t = module_type ->
+   [ [ id = SV uidopt "uidopt"; ":"; t = module_type ->
                 Qast.Option (Some (Qast.Tuple [id; t]))
      | [ ] -> Qast.Option None
      ]
