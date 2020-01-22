@@ -307,7 +307,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ _ _ _
                 (loc : Ploc.t) ->
-                (MeFun (loc, Some ( None, t), me) : 'module_expr)));
+              (MLast.MeFun (loc, Some (None, t), me) : 'module_expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -328,8 +328,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MeFun (loc, Some ( (Some i), t), me) :
-               'module_expr)))];
+              (MLast.MeFun (loc, Some (Some i, t), me) : 'module_expr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -615,8 +614,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ _ _
                 (loc : Ploc.t) ->
-              (MeFun (loc, Some ( None, mt), mb) :
-               'mod_fun_binding)));
+              (MLast.MeFun (loc, Some (None, mt), mb) : 'mod_fun_binding)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -633,7 +631,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
                 (loc : Ploc.t) ->
-              (MeFun (loc, Some ( (Some m), mt), mb) :
+              (MLast.MeFun (loc, Some (Some m, mt), mb) :
                'mod_fun_binding)))]];
     Grammar.extension (module_type : 'module_type Grammar.Entry.e) None
       [None, None,
@@ -697,8 +695,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "->")))
              Grammar.s_self,
            (fun (mt2 : 'module_type) _ (mt1 : 'module_type) (loc : Ploc.t) ->
-              (MtFun (loc, Some ( None, mt1), mt2) :
-               'module_type)))];
+              (MLast.MtFun (loc, Some (None, mt1), mt2) : 'module_type)))];
        None, None,
        [Grammar.production
           (Grammar.r_next

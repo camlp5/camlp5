@@ -139,17 +139,11 @@ EXTEND
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
         me = SELF →
-          MeFun loc (Some (Ploc.VaVal (Some i), t)) me
-(*
           <:module_expr< functor ( $_uid:i$ : $t$ ) → $me$ >>
-*)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = module_type; ")"; "->";
         me = SELF →
-          MeFun loc (Some(Ploc.VaVal None, t)) me
-(*
           <:module_expr< functor ( _ : $t$ ) → $me$ >>
-*)
       | "functor"; "("; ")"; "->";
         me = SELF →
           <:module_expr< functor ( ) → $me$ >>
@@ -210,16 +204,10 @@ EXTEND
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = V UIDENT; ":"; mt = module_type; ")"; mb = SELF →
-          MeFun loc (Some (Ploc.VaVal (Some m), mt)) mb
-(*
           <:module_expr< functor ( $_uid:m$ : $mt$ ) → $mb$ >>
-*)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "("; "_"; ":"; mt = module_type; ")"; mb = SELF →
-           MeFun loc (Some (Ploc.VaVal None, mt)) mb
-(*
           <:module_expr< functor ( _ : $mt$ ) → $mb$ >>
-*)
       | "("; ")"; mb = SELF →
           <:module_expr< functor ( ) → $mb$ >>
         END
@@ -242,10 +230,7 @@ EXTEND
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
        RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
-       MtFun loc (Some (Ploc.VaVal None, mt1)) mt2
-(*
- <:module_type< $mt1$ → $mt2$ >>
-*)
+         <:module_type< $mt1$ → $mt2$ >>
        ]
       END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") →
