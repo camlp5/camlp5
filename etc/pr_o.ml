@@ -78,7 +78,9 @@ value rec is_irrefut_patt =
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< (type $lid:_$) >> -> True
   | <:patt< (module $uid:_$ : $_$) >> -> True
+  | <:patt< (module _ : $_$) >> -> True
   | <:patt< (module $uid:_$) >> -> True
+  | <:patt< (module _) >> -> True
   | <:patt< ~{$list:_$} >> -> True
   | <:patt< ?{$_$ $opt:_$} >> -> True
   | _ -> False ]
@@ -1116,6 +1118,17 @@ EXTEND_PRINTER
           else
             pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
               curr e
+      | <:expr< let module _ = $me$ in $e$ >> ->
+        IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+          invalid_arg "pr_o.ml: pr_expr: blank module-name in let-module is unsupported"
+        ELSE
+          if pc.dang = ";" then
+            pprintf pc "(@[<a>let module _ =@;%p@ in@]@ %p)" module_expr me
+              curr e
+          else
+            pprintf pc "@[<a>let module _ =@;%p@ in@]@ %p" module_expr me
+              curr e
+        END
       | <:expr< let open $m$ in $e$ >> ->
           if pc.dang = ";" then
             pprintf pc "(@[<a>let open %p@ in@]@ %p)" module_expr m curr e
@@ -1355,6 +1368,7 @@ EXTEND_PRINTER
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< let module $uid:_$ = $_$ in $_$ >> |
+        <:expr< let module _ = $_$ in $_$ >> |
         <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ |
@@ -1440,8 +1454,20 @@ EXTEND_PRINTER
           pprintf pc "(type %s)" s
       | <:patt< (module $uid:s$ : $mt$) >> ->
           pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
+      | <:patt< (module _ : $mt$) >> ->
+        IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+          invalid_arg "pr_o.ml: pr_patt: blank module-name in module pattern is unsupported"
+        ELSE
+          pprintf pc "@[<1>(module _ :@ %p)@]" module_type mt
+        END
       | <:patt< (module $uid:s$) >> ->
           pprintf pc "(module %s)" s
+      | <:patt< (module _) >> ->
+        IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+          invalid_arg "pr_o.ml: pr_patt: blank module-name in module pattern is unsupported"
+        ELSE
+          pprintf pc "(module _)"
+        END
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
