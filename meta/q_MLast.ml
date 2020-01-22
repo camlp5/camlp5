@@ -283,14 +283,14 @@ EXTEND
     type_decl constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant;
   functor_parameter:
-   [ [ id = SV uidopt "uidopt"; ":"; t = module_type ->
+   [ [ "(" ; id = SV uidopt "uidopt"; ":"; t = module_type ; ")" ->
                 Qast.Option (Some (Qast.Tuple [id; t]))
-     | -> Qast.Option None
+     | "(" ; ")" -> Qast.Option None
      ]
    ]
    ;
   module_expr:
-    [ [ "functor"; "("; arg = functor_parameter ; ")"; "->"; me = SELF →
+    [ [ "functor"; arg = functor_parameter; "->"; me = SELF →
           Qast.Node "MeFun" [Qast.Loc; arg; me]
       | "struct"; st = structure; /; "end" →
           Qast.Node "MeStr" [Qast.Loc; st] ]
@@ -354,14 +354,14 @@ EXTEND
   ;
   mod_fun_binding:
     [ RIGHTA
-      [ "("; arg = functor_parameter ; ")"; mb = SELF →
+      [ arg = functor_parameter; mb = SELF →
           Qast.Node "MeFun" [Qast.Loc; arg; mb]
       | ":"; mt = module_type; "="; me = module_expr →
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "="; me = module_expr → me ] ]
   ;
   module_type:
-    [ [ "functor"; "("; arg = functor_parameter ; ")"; "->"; mt = SELF →
+    [ [ "functor"; arg = functor_parameter; "->"; mt = SELF →
           Qast.Node "MtFun" [Qast.Loc; arg; mt] ]
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") →
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]

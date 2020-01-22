@@ -466,34 +466,43 @@ Grammar.safe_extend
       None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop,
-           (fun (loc : Ploc.t) -> (Qast.Option None : 'functor_parameter)));
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_token ("", ")")),
+           (fun _ _ (loc : Ploc.t) ->
+              (Qast.Option None : 'functor_parameter)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_facto
-                      (Grammar.s_rules
-                         [Grammar.production
-                            (Grammar.r_next Grammar.r_stop
-                               (Grammar.s_nterm
-                                  (uidopt : 'uidopt Grammar.Entry.e)),
-                             (fun (a : 'uidopt) (loc : Ploc.t) ->
-                                (Qast.VaVal a : 'e__1)));
-                          Grammar.production
-                            (Grammar.r_next Grammar.r_stop
-                               (Grammar.s_token ("ANTIQUOT", "_uidopt")),
-                             (fun (a : string) (loc : Ploc.t) ->
-                                (Qast.VaAnt ("_uidopt", loc, a) : 'e__1)));
-                          Grammar.production
-                            (Grammar.r_next Grammar.r_stop
-                               (Grammar.s_token ("ANTIQUOT", "uidopt")),
-                             (fun (a : string) (loc : Ploc.t) ->
-                                (Qast.VaVal (Qast.VaAnt ("uidopt", loc, a)) :
-                                 'e__1)))])))
-                (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (t : 'module_type) _ (id : 'e__1) (loc : Ploc.t) ->
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_facto
+                         (Grammar.s_rules
+                            [Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_nterm
+                                     (uidopt : 'uidopt Grammar.Entry.e)),
+                                (fun (a : 'uidopt) (loc : Ploc.t) ->
+                                   (Qast.VaVal a : 'e__1)));
+                             Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("ANTIQUOT", "_uidopt")),
+                                (fun (a : string) (loc : Ploc.t) ->
+                                   (Qast.VaAnt ("_uidopt", loc, a) : 'e__1)));
+                             Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("ANTIQUOT", "uidopt")),
+                                (fun (a : string) (loc : Ploc.t) ->
+                                   (Qast.VaVal
+                                      (Qast.VaAnt ("uidopt", loc, a)) :
+                                    'e__1)))])))
+                   (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           (fun _ (t : 'module_type) _ (id : 'e__1) _ (loc : Ploc.t) ->
               (Qast.Option (Some (Qast.Tuple [id; t])) :
                'functor_parameter)))]];
     Grammar.extension (module_expr : 'module_expr Grammar.Entry.e) None
@@ -513,18 +522,14 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "functor")))
-                         (Grammar.s_token ("", "(")))
-                      (Grammar.s_nterm
-                         (functor_parameter :
-                          'functor_parameter Grammar.Entry.e)))
-                   (Grammar.s_token ("", ")")))
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "functor")))
+                   (Grammar.s_nterm
+                      (functor_parameter :
+                       'functor_parameter Grammar.Entry.e)))
                 (Grammar.s_token ("", "->")))
              Grammar.s_self,
-           (fun (me : 'module_expr) _ _ (arg : 'functor_parameter) _ _
+           (fun (me : 'module_expr) _ (arg : 'functor_parameter) _
                 (loc : Ploc.t) ->
               (Qast.Node ("MeFun", [Qast.Loc; arg; me]) : 'module_expr)))];
        None, None,
@@ -1233,15 +1238,11 @@ Grammar.safe_extend
               (Qast.Node ("MeTyc", [Qast.Loc; me; mt]) : 'mod_fun_binding)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                   (Grammar.s_nterm
-                      (functor_parameter :
-                       'functor_parameter Grammar.Entry.e)))
-                (Grammar.s_token ("", ")")))
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (functor_parameter : 'functor_parameter Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (mb : 'mod_fun_binding) _ (arg : 'functor_parameter) _
+           (fun (mb : 'mod_fun_binding) (arg : 'functor_parameter)
                 (loc : Ploc.t) ->
               (Qast.Node ("MeFun", [Qast.Loc; arg; mb]) :
                'mod_fun_binding)))]];
@@ -1251,18 +1252,14 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "functor")))
-                         (Grammar.s_token ("", "(")))
-                      (Grammar.s_nterm
-                         (functor_parameter :
-                          'functor_parameter Grammar.Entry.e)))
-                   (Grammar.s_token ("", ")")))
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "functor")))
+                   (Grammar.s_nterm
+                      (functor_parameter :
+                       'functor_parameter Grammar.Entry.e)))
                 (Grammar.s_token ("", "->")))
              Grammar.s_self,
-           (fun (mt : 'module_type) _ _ (arg : 'functor_parameter) _ _
+           (fun (mt : 'module_type) _ (arg : 'functor_parameter) _
                 (loc : Ploc.t) ->
               (Qast.Node ("MtFun", [Qast.Loc; arg; mt]) : 'module_type)))];
        None, None,
