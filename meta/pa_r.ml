@@ -230,17 +230,11 @@ EXTEND
   module_type:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF →
-          MtFun loc (Some (Ploc.VaVal (Some i), t)) mt
-(*
           <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
-*)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
         mt = SELF →
-          MtFun loc (Some (Ploc.VaVal None, t)) mt
-(*
           <:module_type< functor ( _ : $t$ ) → $mt$ >>
-*)
       | "functor"; "("; ")"; "->";
         mt = SELF →
           <:module_type< functor ( ) → $mt$ >>
@@ -303,10 +297,7 @@ EXTEND
     [ RIGHTA
       [ ":"; mt = module_type → <:module_type< $mt$ >>
       | "("; i = V UIDENT; ":"; t = module_type; ")"; mt = SELF →
-          MtFun loc (Some (Ploc.VaVal (Some i), t)) mt
-(*
           <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
-*)
  ] ]
   ;
   with_constr:

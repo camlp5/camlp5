@@ -371,7 +371,7 @@ EXTEND
     | [ m1 = SELF; m2 = SELF → Qast.Node "MtApp" [Qast.Loc; m1; m2] ]
     | [ m1 = SELF; "."; m2 = SELF → Qast.Node "MtAcc" [Qast.Loc; m1; m2] ]
     | "->" RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
-                    Qast.Node "MtFun" [Qast.Loc; Qast.Option (Some (Qast.Tuple [Qast.Option None; mt1])); mt2] ]
+                    Qast.Node "MtFun" [Qast.Loc; Qast.Option (Some (Qast.Tuple [Qast.VaVal (Qast.Option None); mt1])); mt2] ]
     | "simple"
       [ i = SV UIDENT → Qast.Node "MtUid" [Qast.Loc; i]
       | i = SV LIDENT → Qast.Node "MtLid" [Qast.Loc; i]

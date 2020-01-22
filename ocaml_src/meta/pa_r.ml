@@ -307,7 +307,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me : 'module_expr) _ _ (t : 'module_type) _ _ _ _
                 (loc : Ploc.t) ->
-              (MeFun (loc, Some ( None, t), me) : 'module_expr)));
+                (MeFun (loc, Some ( None, t), me) : 'module_expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -669,7 +669,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ _ (t : 'module_type) _ _ _ _
                 (loc : Ploc.t) ->
-              (MtFun (loc, Some ( None, t), mt) : 'module_type)));
+              (MLast.MtFun (loc, Some (None, t), mt) : 'module_type)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -689,8 +689,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ _ (t : 'module_type) _ (i : string) _ _
                 (loc : Ploc.t) ->
-              (MtFun (loc, Some ( (Some i), t), mt) :
-               'module_type)))];
+              (MLast.MtFun (loc, Some (Some i, t), mt) : 'module_type)))];
        None, Some Gramext.RightA,
        [Grammar.production
           (Grammar.r_next
@@ -939,7 +938,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_declaration) _ (t : 'module_type) _ (i : string)
                 _ (loc : Ploc.t) ->
-              (MtFun (loc, Some ( (Some i), t), mt) :
+              (MLast.MtFun (loc, Some (Some i, t), mt) :
                'module_declaration)));
         Grammar.production
           (Grammar.r_next
