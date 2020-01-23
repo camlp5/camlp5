@@ -829,17 +829,32 @@ value sig_module_or_module_type pref unfun defc pc (m, mt) =
     if unfun then
       loop mt where rec loop =
         fun
-        [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
+        [ 
+MLast.MtFun _ (Ploc.VaVal (Some (Ploc.VaVal (Some (Ploc.VaVal s)), mt1))) mt2
+(*
+<:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>
+*)
+ ->
             let (mal, mt) = loop mt2 in
             ([Some(Some s, mt1) :: mal], mt)
-        | <:module_type< functor (_ : $mt1$) -> $mt2$ >> ->
+        | 
+MLast.MtFun _ (Ploc.VaVal (Some (Ploc.VaVal None, mt1))) mt2
+(*
+<:module_type< functor (_ : $mt1$) -> $mt2$ >>
+*)
+ ->
           IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
           invalid_arg "pr_o.ml: sig_module_or_module_type: blank module-name in functor module-type is unsupported"
           ELSE
             let (mal, mt) = loop mt2 in
             ([Some(None, mt1) :: mal], mt)
           END
-        | <:module_type< functor () -> $mt2$ >> ->
+        | 
+MLast.MtFun _ (Ploc.VaVal None) mt2
+(*
+<:module_type< functor () -> $mt2$ >>
+*)
+ ->
           IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
           invalid_arg "pr_o.ml: sig_module_or_module_type: empty module-arg () in functor module-type is unsupported"
           ELSE
@@ -1771,15 +1786,30 @@ EXTEND_PRINTER
   ;
   pr_module_type:
     [ "top"
-      [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
+      [ 
+MLast.MtFun _ (Ploc.VaVal (Some (Ploc.VaVal (Some (Ploc.VaVal s)), mt1))) mt2
+(*
+<:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>
+*)
+ ->
           str_or_sig_functor pc (Some (Some s, mt1)) module_type mt2
-      | <:module_type< functor (_ : $mt1$) -> $mt2$ >> ->
+      | 
+MLast.MtFun _ (Ploc.VaVal (Some (Ploc.VaVal None, mt1))) mt2
+(*
+<:module_type< functor (_ : $mt1$) -> $mt2$ >>
+*)
+ ->
         IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
           invalid_arg "pr_o.ml: blank module-name in functor module-type is unsupported"
         ELSE
           str_or_sig_functor pc (Some (None, mt1)) module_type mt2
         END
-      | <:module_type< functor () -> $mt2$ >> ->
+      | 
+MLast.MtFun _ (Ploc.VaVal None) mt2
+(*
+<:module_type< functor () -> $mt2$ >>
+*)
+ ->
         IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
           invalid_arg "pr_o.ml: empty module-arg () in functor module-type is unsupported"
         ELSE

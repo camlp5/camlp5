@@ -130,7 +130,7 @@ and expr =
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
-  | MtFun of loc and (option (V (option (V string)) * module_type)) and module_type
+  | MtFun of loc and (V (option (V (option (V string)) * module_type))) and module_type
   | MtLid of loc and V string
   | MtQuo of loc and V string
   | MtSig of loc and V (list sig_item)

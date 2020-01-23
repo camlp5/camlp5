@@ -1159,7 +1159,7 @@ and module_type =
   | MtApp loc _ _ as f →
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun loc arg mt →
-    let arg = option_map (fun (idopt, mt) -> (option_map uv (uv idopt), module_type mt)) arg in
+    let arg = option_map (fun (idopt, mt) -> (option_map uv (uv idopt), module_type mt)) (uv arg) in
       mkmty loc
         (ocaml_pmty_functor (mkloc loc) arg
            (module_type mt))
