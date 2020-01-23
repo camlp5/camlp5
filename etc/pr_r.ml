@@ -1858,12 +1858,12 @@ EXTEND_PRINTER
       (* no need to catch unsupported syntax here, since it's
          caught in the printer above *)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-        | <:module_expr< functor (_ : $_$) -> $_$ >> |
-          <:module_expr< functor () -> $_$ >> as z ->
-            pprintf pc "@[<1>(%p)@]" module_expr z
-        ELSE
         | MLast.MeFun _ (Some (Ploc.VaVal None, _)) _ |
           MLast.MeFun _ None _ as z ->
+            pprintf pc "@[<1>(%p)@]" module_expr z
+        ELSE
+        | <:module_expr< functor (_ : $_$) -> $_$ >> |
+          <:module_expr< functor () -> $_$ >> as z ->
             pprintf pc "@[<1>(%p)@]" module_expr z
         END
       ] ]

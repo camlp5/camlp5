@@ -290,7 +290,7 @@ EXTEND
    ]
    ;
   module_expr:
-    [ [ "functor"; arg = functor_parameter; "->"; me = SELF →
+    [ [ "functor"; arg = SV functor_parameter "functor_parameter" "fp"; "->"; me = SELF →
           Qast.Node "MeFun" [Qast.Loc; arg; me]
       | "struct"; st = structure; /; "end" →
           Qast.Node "MeStr" [Qast.Loc; st] ]
@@ -354,7 +354,7 @@ EXTEND
   ;
   mod_fun_binding:
     [ RIGHTA
-      [ arg = functor_parameter; mb = SELF →
+      [ arg = SV functor_parameter "functor_parameter" "fp"; mb = SELF →
           Qast.Node "MeFun" [Qast.Loc; arg; mb]
       | ":"; mt = module_type; "="; me = module_expr →
           Qast.Node "MeTyc" [Qast.Loc; me; mt]

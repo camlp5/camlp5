@@ -161,7 +161,7 @@ and with_constr =
 and module_expr =
   [ MeAcc of loc and module_expr and module_expr
   | MeApp of loc and module_expr and module_expr
-  | MeFun of loc and (option (V (option (V string)) * module_type)) and module_expr
+  | MeFun of loc and (V (option (V (option (V string)) * module_type))) and module_expr
   | MeStr of loc and V (list str_item)
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string

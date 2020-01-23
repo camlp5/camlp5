@@ -488,7 +488,7 @@ and module_expr floc sh =
         let loc = floc loc in
         MeApp loc (self x1) (self x2)
     | MeFun loc arg x3 →
-      let arg = option_map (fun (idopt, m) -> (idopt, module_type floc sh m)) arg in
+      let arg = vala_map (option_map (fun (idopt, m) -> (idopt, module_type floc sh m))) arg in
         let loc = floc loc in
         MeFun loc arg (self x3)
     | MeStr loc x1 →
