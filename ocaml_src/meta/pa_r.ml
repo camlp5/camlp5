@@ -278,57 +278,16 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "functor")))
-                      (Grammar.s_token ("", "(")))
-                   (Grammar.s_token ("", ")")))
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "functor")))
+                   (Grammar.s_nterm
+                      (functor_parameter :
+                       'functor_parameter Grammar.Entry.e)))
                 (Grammar.s_token ("", "->")))
              Grammar.s_self,
-           (fun (me : 'module_expr) _ _ _ _ (loc : Ploc.t) ->
-              (MLast.MeFun (loc, None, me) : 'module_expr)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next
-                            (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "functor")))
-                               (Grammar.s_token ("", "(")))
-                            (Grammar.s_token ("", "_")))
-                         (Grammar.s_token ("", ":")))
-                      (Grammar.s_nterm
-                         (module_type : 'module_type Grammar.Entry.e)))
-                   (Grammar.s_token ("", ")")))
-                (Grammar.s_token ("", "->")))
-             Grammar.s_self,
-           (fun (me : 'module_expr) _ _ (t : 'module_type) _ _ _ _
+           (fun (me : 'module_expr) _ (arg : 'functor_parameter) _
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (None, t), me) : 'module_expr)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next
-                            (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "functor")))
-                               (Grammar.s_token ("", "(")))
-                            (Grammar.s_token ("UIDENT", "")))
-                         (Grammar.s_token ("", ":")))
-                      (Grammar.s_nterm
-                         (module_type : 'module_type Grammar.Entry.e)))
-                   (Grammar.s_token ("", ")")))
-                (Grammar.s_token ("", "->")))
-             Grammar.s_self,
-           (fun (me : 'module_expr) _ _ (t : 'module_type) _ (i : string) _ _
-                (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (Some i, t), me) : 'module_expr)))];
+              (MLast.MeFun (loc, arg, me) : 'module_expr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
