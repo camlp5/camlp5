@@ -202,8 +202,13 @@ MLast.TyVrn loc lpv ools;
 <:patt< $_uid:s$ >>;
 
 (* module unpacking *)
+#ifdef QMLAST
 <:patt< (module _) >>;
 <:patt< (module _ : $mt$) >>;
+#else
+MLast.PaUnp loc (Ploc.VaVal None) None;
+MLast.PaUnp loc (Ploc.VaVal None) (Some mt);
+#endif
 MLast.PaUnp loc (Ploc.VaVal None) omt;
 <:patt< (module $uid:s$) >>;
 <:patt< (module $uid:s$ : $mt$) >>;
@@ -457,8 +462,8 @@ MLast.ExSpw loc e;
 <:module_type< functor () -> $mt$ >>;
 <:module_type< functor (_ : $smtf2$) -> $mt$ >>;
 #else
-MLast.MtFun loc None mt;
-MLast.MtFun loc (Some (None, smtf2)) mt;
+MLast.MtFun loc (Ploc.VaVal None) mt;
+MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 #endif
 <:module_type< functor ($uid:smtf1$ : $smtf2$) -> $mt$ >>;
 <:module_type< functor ($_uid:smtf1$ : $smtf2$) -> $mt$ >>;
@@ -607,8 +612,8 @@ MLast.MtFun loc (Some (None, smtf2)) mt;
 <:module_expr< functor () -> $me$ >>;
 <:module_expr< functor (_ : $smtf2$) -> $me$ >>;
 #else
-MLast.MeFun loc None me;
-MLast.MeFun loc (Some (None, smtf2)) me;
+MLast.MeFun loc (Ploc.VaVal None) me;
+MLast.MeFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) me;
 #endif
 <:module_expr< functor ($uid:smtf1$ : $smtf2$) -> $me$ >>;
 <:module_expr< functor ($_uid:smtf1$ : $smtf2$) -> $me$ >>;
