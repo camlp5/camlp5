@@ -551,47 +551,13 @@ Grammar.safe_extend
               (MLast.MeTyc (loc, me, mt) : 'mod_fun_binding)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                (Grammar.s_token ("", ")")))
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (functor_parameter : 'functor_parameter Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (mb : 'mod_fun_binding) _ _ (loc : Ploc.t) ->
-              (MLast.MeFun (loc, None, mb) : 'mod_fun_binding)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "(")))
-                         (Grammar.s_token ("", "_")))
-                      (Grammar.s_token ("", ":")))
-                   (Grammar.s_nterm
-                      (module_type : 'module_type Grammar.Entry.e)))
-                (Grammar.s_token ("", ")")))
-             Grammar.s_self,
-           (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ _ _
+           (fun (mb : 'mod_fun_binding) (arg : 'functor_parameter)
                 (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (None, mt), mb) : 'mod_fun_binding)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "(")))
-                         (Grammar.s_token ("UIDENT", "")))
-                      (Grammar.s_token ("", ":")))
-                   (Grammar.s_nterm
-                      (module_type : 'module_type Grammar.Entry.e)))
-                (Grammar.s_token ("", ")")))
-             Grammar.s_self,
-           (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
-                (loc : Ploc.t) ->
-              (MLast.MeFun (loc, Some (Some m, mt), mb) :
-               'mod_fun_binding)))]];
+              (MLast.MeFun (loc, arg, mb) : 'mod_fun_binding)))]];
     Grammar.extension (module_type : 'module_type Grammar.Entry.e) None
       [None, None,
        [Grammar.production

@@ -1012,34 +1012,37 @@ value exception_decl pc (loc, e, tl, id) =
             (plist ctyp 0) tl mod_ident (loc, id) ] ]
 ;
 
+value functor_parameter_unvala arg =
+  match arg with [
+    None -> None
+  | Some (idopt, mt) -> Some (option_map Pcaml.unvala (Pcaml.unvala idopt), mt)
+  ]
+;
+
 value str_module pref pc (m, me) =
   let m = match m with [ None -> "_" | Some s -> s ] in
   let (mal, me) =
     loop me where rec loop =
       fun
-      [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
+      [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
           let (mal, me) = loop me in
-          ([Some(Some s, mt) :: mal], me)
-      | <:module_expr< functor (_ : $mt$) -> $me$ >> ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: str_module: blank module-name in functor-expression is unsupported"
-          ELSE
-          let (mal, me) = loop me in
-          ([Some(None, mt) :: mal], me)
-          END
-      | <:module_expr< functor () -> $me$ >> ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: str_module: empty module-arg () in functor-expression is unsupported"
-          ELSE
-          let (mal, me) = loop me in
-          ([None :: mal], me)
-          END
+          ([functor_parameter_unvala arg :: mal], me)
       | me -> ([], me) ]
   in
   let module_arg pc = fun [
     Some (Some s, mt) -> pprintf pc "(%s :@;<1 1>%p)" s module_type mt
-  | Some (None, mt) -> pprintf pc "(_ :@;<1 1>%p)" module_type mt
-  | None -> pprintf pc "()"
+  | Some (None, mt) ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: str_module_pref: blank module-name in functor module-type is unsupported"
+    ELSE
+      pprintf pc "(_ :@;<1 1>%p)" module_type mt
+    END
+  | None -> 
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: str_module_pref: empty module-arg () in functor-expression is unsupported"
+    ELSE
+      pprintf pc "()"
+    END
   ] in
   let (me, mto) =
     match me with
@@ -1073,34 +1076,24 @@ value sig_module_or_module_type pref defc pc ((m : option string), mt) =
   let (mal, mt) =
     loop mt where rec loop =
       fun
-      [ 
-<:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>
- ->
+      [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
           let (mal, mt) = loop mt2 in
-          ([Some(Some s, mt1) :: mal], mt)
-      | 
-<:module_type< functor (_ : $mt1$) -> $mt2$ >>
- ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: sig_module_or_module_type: blank module-name in functor module-type is unsupported"
-          ELSE
-          let (mal, mt) = loop mt2 in
-          ([Some(None, mt1) :: mal], mt)
-          END
-      | 
-<:module_type< functor () -> $mt2$ >>
- ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: sig_module_or_module_type: empty module-arg () in functor module-type is unsupported"
-          ELSE
-          let (mal, mt) = loop mt2 in
-          ([None :: mal], mt)
-          END
+          ([functor_parameter_unvala arg :: mal], mt)
       | mt -> ([], mt) ]
   in
   let module_arg pc = fun [
-    Some (Some s, mt) -> pprintf pc "(%s :@;<1 1>%p)" s module_type mt
-  | Some (None, mt) -> pprintf pc "(_ :@;<1 1>%p)" module_type mt
+    Some (Some s, mt) ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: sig_module_or_module_type: blank module-name in functor module-type is unsupported"
+    ELSE
+      pprintf pc "(%s :@;<1 1>%p)" s module_type mt
+    END
+  | Some (None, mt) ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: sig_module_or_module_type: empty module-arg () in functor module-type is unsupported"
+    ELSE
+      pprintf pc "(_ :@;<1 1>%p)" module_type mt
+    END
   | None -> pprintf pc "()"
   ] in
   let mal = List.map (fun ma -> (ma, "")) mal in
@@ -1798,20 +1791,8 @@ EXTEND_PRINTER
   ;
   pr_module_expr:
     [ "top"
-      [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
-          str_or_sig_functor pc (Some(Some s, mt)) module_expr me
-      | <:module_expr< functor (_ : $mt$) -> $me$ >> ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: blank module-name in functor-expression is unsupported"
-          ELSE
-          str_or_sig_functor pc (Some(None, mt)) module_expr me
-          END
-      | <:module_expr< functor () -> $me$ >> ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: empty module-arg () in functor-expression is unsupported"
-          ELSE
-          str_or_sig_functor pc None module_expr me
-          END
+      [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_expr me
       | <:module_expr< struct $list:sil$ end >> ->
           (* Heuristic : I don't like to print structs horizontally
              when alone in a line. *)
@@ -1841,46 +1822,16 @@ EXTEND_PRINTER
           pprintf pc "(value %p)" expr e
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
-      | <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |
+      | <:module_expr< functor $_fp:_$ -> $_$ >> |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
         <:module_expr< $_$ $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" module_expr z
-
-      (* no need to catch unsupported syntax here, since it's
-         caught in the printer above *)
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-        | MLast.MeFun _ (Some (Ploc.VaVal None, _)) _ |
-          MLast.MeFun _ None _ as z ->
-            pprintf pc "@[<1>(%p)@]" module_expr z
-        ELSE
-        | <:module_expr< functor (_ : $_$) -> $_$ >> |
-          <:module_expr< functor () -> $_$ >> as z ->
-            pprintf pc "@[<1>(%p)@]" module_expr z
-        END
       ] ]
   ;
   pr_module_type:
     [ "top"
-      [ 
-<:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>
- ->
-          str_or_sig_functor pc (Some(Some s, mt1)) module_type mt2
-      | 
-<:module_type< functor (_ : $mt1$) -> $mt2$ >>
- ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: blank module-name in functor module-type is unsupported"
-          ELSE
-          str_or_sig_functor pc (Some(None, mt1)) module_type mt2
-          END
-      | 
-<:module_type< functor () -> $mt2$ >>
- ->
-          IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-          invalid_arg "pr_r.ml: empty module-arg () in functor module-type is unsupported"
-          ELSE
-          str_or_sig_functor pc None module_type mt2
-          END
+      [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2
       | <:module_type< sig $list:sil$ end >> ->
          (* Heuristic : I don't like to print sigs horizontally
             when alone in a line. *)
