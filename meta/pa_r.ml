@@ -139,22 +139,13 @@ EXTEND
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
         me = SELF →
-(*
-        MeFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) me
-*)
           <:module_expr< functor ( $_uid:i$ : $t$ ) → $me$ >>
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = module_type; ")"; "->";
         me = SELF →
-(*
-        MeFun loc (Ploc.VaVal (Some (Ploc.VaVal None, t))) me
-*)
           <:module_expr< functor ( _ : $t$ ) → $me$ >>
       | "functor"; "("; ")"; "->";
         me = SELF →
-(*
-         MeFun loc (Ploc.VaVal None) me
-*)
           <:module_expr< functor ( ) → $me$ >>
         END
       | "struct"; st = structure; /; "end" →
@@ -213,20 +204,11 @@ EXTEND
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = V UIDENT; ":"; mt = module_type; ")"; mb = SELF →
-(*
-        MeFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some m), mt))) mb
-*)
           <:module_expr< functor ( $_uid:m$ : $mt$ ) → $mb$ >>
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "("; "_"; ":"; mt = module_type; ")"; mb = SELF →
-(*
-        MeFun loc (Ploc.VaVal (Some (Ploc.VaVal None, mt))) mb
-*)
           <:module_expr< functor ( _ : $mt$ ) → $mb$ >>
       | "("; ")"; mb = SELF →
-(*
-         MeFun loc (Ploc.VaVal None) mb
-*)
           <:module_expr< functor ( ) → $mb$ >>
         END
       | ":"; mt = module_type; "="; me = module_expr →
