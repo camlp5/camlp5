@@ -370,7 +370,7 @@ module Meta_make (C : MetaSig) =
             C.tuple [C.vala c_vala_opt sopt; module_type mt]
           in
           let c_arg arg = C.option c_tuple arg in
-          C.node "MeFun" [c_arg arg; module_expr me]
+          C.node "MeFun" [C.vala c_arg arg; module_expr me]
       | MeStr (_, lsi) -> C.node "MeStr" [C.vala (C.list str_item) lsi]
       | MeTyc (_, me, mt) -> C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid (_, s) -> C.node "MeUid" [C.vala C.string s]

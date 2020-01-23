@@ -1432,7 +1432,8 @@ and module_expr =
   | MeFun (loc, arg, me) ->
       let arg =
         option_map
-          (fun (idopt, mt) -> option_map uv (uv idopt), module_type mt) arg
+          (fun (idopt, mt) -> option_map uv (uv idopt), module_type mt)
+          (uv arg)
       in
       mkmod loc (ocaml_pmod_functor arg (module_expr me))
   | MeStr (loc, sl) ->
