@@ -460,8 +460,8 @@ MLast.ExSpw loc e;
 MLast.MtFun loc None mt;
 MLast.MtFun loc (Some (None, smtf2)) mt;
 #endif
-<:module_type< functor ($smtf1$ : $smtf2$) -> $mt$ >>;
-<:module_type< functor ($_:smtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor ($uid:smtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor ($_uid:smtf1$ : $smtf2$) -> $mt$ >>;
 <:module_type< functor ($uidopt:osmtf1$ : $smtf2$) -> $mt$ >>;
 <:module_type< functor ($_uidopt:osmtf1$ : $smtf2$) -> $mt$ >>;
 <:module_type< functor $fp:osmt$ -> $mt$ >>;
@@ -610,8 +610,8 @@ MLast.MtFun loc (Some (None, smtf2)) mt;
 MLast.MeFun loc None me;
 MLast.MeFun loc (Some (None, smtf2)) me;
 #endif
-<:module_expr< functor ($smtf1$ : $smtf2$) -> $me$ >>;
-<:module_expr< functor ($_:smtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor ($uid:smtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor ($_uid:smtf1$ : $smtf2$) -> $me$ >>;
 <:module_expr< functor ($uidopt:osmtf1$ : $smtf2$) -> $me$ >>;
 <:module_expr< functor ($_uidopt:osmtf1$ : $smtf2$) -> $me$ >>;
 <:module_expr< functor $fp:osmt$ -> $me$ >>;

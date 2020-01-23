@@ -12,7 +12,7 @@ RM=rm
 all: quot_r.mlt quot_r.mlu #quot_o.mlu
 
 clean:
-	$(RM) -f *.ml[tu]
+	$(RM) -f *.ml[tu] tmp.*
 
 compare_quot:
 	./mkquot.sh | $(DIFF) quot_r.out.ml -
@@ -28,14 +28,14 @@ quot_o:
 	mv tmp quot_o.ml
 
 quot_r.mlt: quot_r.ml ../meta/camlp5r ../meta/q_MLast.cmo $(DEP)
-	cpp -E -D$(OVERSION_NAME) quot_r.ml | \
-	../meta/camlp5r ../meta/q_MLast.cmo ../etc/pr_r.cmo -sep '\n' -impl - | \
+	cpp -E -D$(OVERSION_NAME) quot_r.ml > tmp.quot_r.ml
+	../meta/camlp5r ../meta/q_MLast.cmo ../etc/pr_r.cmo -sep '\n' tmp.quot_r.ml | \
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
 quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast.cmo $(DEP)
-	cpp -E -D$(OVERSION_NAME) quot_r.ml | \
-	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo -sep '\n' -impl - | \
+	cpp -E -D$(OVERSION_NAME) quot_r.ml > tmp.quot_r.ml
+	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo -sep '\n' tmp.quot_r.ml | \
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
