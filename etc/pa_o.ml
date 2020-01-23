@@ -463,14 +463,8 @@ EXTEND
   ;
   mod_fun_binding:
     [ RIGHTA
-      [ "("; m = UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
-          <:module_expr< functor ( $uid:m$ : $mt$ ) -> $mb$ >>
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "("; "_"; ":"; mt = module_type; ")"; mb = SELF ->
-          <:module_expr< functor ( _ : $mt$ ) -> $mb$ >>
-      | "("; ")"; mb = SELF ->
-          <:module_expr< functor (  ) -> $mb$ >>
-        END
+      [ arg = V functor_parameter "functor_parameter" "fp"; mb = SELF ->
+          <:module_expr< functor $_fp:arg$ -> $mb$ >>
       | ":"; mt = module_type; "="; me = module_expr ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]

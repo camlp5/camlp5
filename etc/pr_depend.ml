@@ -175,8 +175,11 @@ and match_case (p, w, e) = do { patt p; vala (option expr) w; expr e }
 and module_type =
   fun
   [ <:module_type< $uid:m$ . $_$ >> -> addmodule m
-  | <:module_type< functor ($uid:_$ : $mt1$) -> $mt2$ >> -> do {
+  | <:module_type< functor ($_uid:_$ : $mt1$) -> $mt2$ >> -> do {
       module_type mt1;
+      module_type mt2
+    }
+  | <:module_type< functor () -> $mt2$ >> -> do {
       module_type mt2
     }
   | <:module_type< sig $list:sil$ end >> -> list sig_item sil

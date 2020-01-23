@@ -185,12 +185,8 @@ and match_assoc (p, eo, e) = (p, map_vala (map_option expr) eo, expr e)
 and module_expr x =
   let loc = MLast.loc_of_module_expr x in
   match x with
-  [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
-      <:module_expr< functor ($uid:s$ : $mt$) -> $module_expr me$ >>
-  | <:module_expr< functor (_ : $mt$) -> $me$ >> ->
-      <:module_expr< functor (_ : $mt$) -> $module_expr me$ >>
-  | <:module_expr< functor () -> $me$ >> ->
-      <:module_expr< functor () -> $module_expr me$ >>
+  [ <:module_expr< functor $_fp:arg$ -> $me$ >> ->
+      <:module_expr< functor $_fp:arg$ -> $module_expr me$ >>
   | <:module_expr< ($me$ : $mt$) >> ->
       <:module_expr< ($module_expr me$ : $mt$) >>
   | <:module_expr< struct $list:sil$ end >> ->
