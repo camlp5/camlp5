@@ -361,7 +361,7 @@ EXTEND
       | "="; me = module_expr → me ] ]
   ;
   module_type:
-    [ [ "functor"; arg = functor_parameter; "->"; mt = SELF →
+    [ [ "functor"; arg = SV functor_parameter "functor_parameter" "fp"; "->"; mt = SELF →
           Qast.Node "MtFun" [Qast.Loc; arg; mt] ]
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") →
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
@@ -423,7 +423,7 @@ EXTEND
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type → mt
-      | arg = functor_parameter; mt = SELF →
+      | arg = SV functor_parameter "functor_parameter" "fp"; mt = SELF →
           Qast.Node "MtFun"
             [Qast.Loc; arg; mt]
       ] ]
