@@ -298,7 +298,7 @@ module Meta_make (C : MetaSig) =
             C.tuple [C.vala c_vala_opt sopt; module_type mt]
           in
           let c_arg arg = C.option c_tuple arg in
-          C.node "MtFun" [c_arg arg; module_type mt2]
+          C.node "MtFun" [C.vala c_arg arg; module_type mt2]
       | MtLid (_, s) -> C.node "MtLid" [C.vala C.string s]
       | MtQuo (_, s) -> C.node "MtQuo" [C.vala C.string s]
       | MtSig (_, lsi) -> C.node "MtSig" [C.vala (C.list sig_item) lsi]

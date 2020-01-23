@@ -296,7 +296,9 @@ and module_type floc sh =
     | MtApp (loc, x1, x2) ->
         let loc = floc loc in MtApp (loc, self x1, self x2)
     | MtFun (loc, arg, x3) ->
-        let arg = option_map (fun (idopt, m) -> idopt, self m) arg in
+        let arg =
+          vala_map (option_map (fun (idopt, m) -> idopt, self m)) arg
+        in
         let loc = floc loc in MtFun (loc, arg, self x3)
     | MtLid (loc, x1) -> let loc = floc loc in MtLid (loc, x1)
     | MtQuo (loc, x1) -> let loc = floc loc in MtQuo (loc, x1)

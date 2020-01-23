@@ -1344,7 +1344,8 @@ and module_type =
   | MtFun (loc, arg, mt) ->
       let arg =
         option_map
-          (fun (idopt, mt) -> option_map uv (uv idopt), module_type mt) arg
+          (fun (idopt, mt) -> option_map uv (uv idopt), module_type mt)
+          (uv arg)
       in
       mkmty loc (ocaml_pmty_functor (mkloc loc) arg (module_type mt))
   | MtLid (loc, s) -> mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
