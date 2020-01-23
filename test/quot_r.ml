@@ -327,7 +327,7 @@ MLast.ExJdf loc lx e;
 <:expr< $_lid:s$ >>;
 
 (* let module *)
-#ifdef OCAML_VERSION_4_10_0
+#ifdef OCAML_4_10_0
 <:expr< let module _ = $me$ in $e$ >>;
 #else
 MLast.ExLmd loc (Ploc.VaVal None) me e;
@@ -453,7 +453,7 @@ MLast.ExSpw loc e;
 <:module_type< $mt1$ $mt2$ >>;
 
 (* functor *)
-#ifdef OCAML_VERSION_4_10_0
+#ifdef OCAML_4_10_0
 <:module_type< functor () -> $mt$ >>;
 <:module_type< functor (_ : $smtf2$) -> $mt$ >>;
 #else
@@ -462,8 +462,10 @@ MLast.MtFun loc (Some (None, smtf2)) mt;
 #endif
 <:module_type< functor ($smtf1$ : $smtf2$) -> $mt$ >>;
 <:module_type< functor ($_:smtf1$ : $smtf2$) -> $mt$ >>;
-MLast.MtFun loc (Some (osmtf1, smtf2)) mt;
-MLast.MtFun loc osmt mt;
+<:module_type< functor ($uidopt:osmtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor ($_uidopt:osmtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor $fp:osmt$ -> $mt$ >>;
+<:module_type< functor $_fp:osmt$ -> $mt$ >>;
 
 (* lowercase identifier *)
 <:module_type< $lid:s$ >>;
@@ -601,7 +603,7 @@ MLast.MtFun loc osmt mt;
 <:module_expr< $me1$ $me2$ >>;
 
 (* functor *)
-#ifdef OCAML_VERSION_4_10_0
+#ifdef OCAML_4_10_0
 <:module_expr< functor () -> $me$ >>;
 <:module_expr< functor (_ : $smtf2$) -> $me$ >>;
 #else
@@ -610,8 +612,10 @@ MLast.MeFun loc (Some (None, smtf2)) me;
 #endif
 <:module_expr< functor ($smtf1$ : $smtf2$) -> $me$ >>;
 <:module_expr< functor ($_:smtf1$ : $smtf2$) -> $me$ >>;
-MLast.MeFun loc (Some (osmtf1, smtf2)) me;
-MLast.MeFun loc osmt me;
+<:module_expr< functor ($uidopt:osmtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor ($_uidopt:osmtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor $fp:osmt$ -> $me$ >>;
+<:module_expr< functor $_fp:osmt$ -> $me$ >>;
 
 (* struct *)
 <:module_expr< struct $list:lsi$ end >>;
