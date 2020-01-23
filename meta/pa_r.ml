@@ -218,31 +218,31 @@ EXTEND
   module_type:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
         mt = SELF →
-          MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
 (*
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
+          MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
 *)
+          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
         mt = SELF →
-         MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, t))) mt
 (*
-          <:module_type< functor ( _ : $t$ ) → $mt$ >>
+         MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, t))) mt
 *)
+          <:module_type< functor ( _ : $t$ ) → $mt$ >>
       | "functor"; "("; ")"; "->";
         mt = SELF →
-          MLast.MtFun loc (Ploc.VaVal None) mt
 (*
-          <:module_type< functor ( ) → $mt$ >>
+          MLast.MtFun loc (Ploc.VaVal None) mt
 *)
+          <:module_type< functor ( ) → $mt$ >>
          END
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
        RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
-         MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, mt1))) mt2
 (*
-         <:module_type< $mt1$ → $mt2$ >>
+         MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, mt1))) mt2
 *)
+         <:module_type< $mt1$ → $mt2$ >>
        ]
       END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") →
@@ -294,10 +294,10 @@ EXTEND
     [ RIGHTA
       [ ":"; mt = module_type → <:module_type< $mt$ >>
       | "("; i = V UIDENT; ":"; t = module_type; ")"; mt = SELF →
-          MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
 (*
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
+          MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
 *)
+          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
  ] ]
   ;
   with_constr:
