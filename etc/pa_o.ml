@@ -487,16 +487,10 @@ EXTEND
   module_type:
     [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp"; "->";
         mt = SELF ->
-(*
-          MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
-*)
           <:module_type< functor $_fp:arg$ -> $mt$ >>
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
-(*
-         MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, mt1))) mt2
-*)
         <:module_type< $mt1$ → $mt2$ >>
      ]
       END
@@ -554,9 +548,6 @@ EXTEND
     [ RIGHTA
       [ ":"; mt = module_type -> <:module_type< $mt$ >>
       | arg = V functor_parameter "functor_parameter" "fp"; mt = SELF ->
-(*
-          MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some (VaVal i)), t))) mt
-*)
           <:module_type< functor $_fp:arg$ -> $mt$ >>
       ] ]
   ;
