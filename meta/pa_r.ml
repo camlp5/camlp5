@@ -216,26 +216,12 @@ EXTEND
       | "="; me = module_expr → <:module_expr< $me$ >> ] ]
   ;
   module_type:
-    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
+    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp" ; "->";
         mt = SELF →
 (*
           MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
 *)
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
-        mt = SELF →
-(*
-         MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, t))) mt
-*)
-          <:module_type< functor ( _ : $t$ ) → $mt$ >>
-      | "functor"; "("; ")"; "->";
-        mt = SELF →
-(*
-          MLast.MtFun loc (Ploc.VaVal None) mt
-*)
-          <:module_type< functor ( ) → $mt$ >>
-         END
+          <:module_type< functor $_fp:arg$ → $mt$ >>
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
        RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
@@ -293,11 +279,11 @@ EXTEND
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type → <:module_type< $mt$ >>
-      | "("; i = V UIDENT; ":"; t = module_type; ")"; mt = SELF →
+      | arg = V functor_parameter "functor_parameter" "fp" ; mt = SELF →
 (*
           MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
 *)
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >>
+          <:module_type< functor $_fp:arg$ → $mt$ >>
  ] ]
   ;
   with_constr:

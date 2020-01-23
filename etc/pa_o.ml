@@ -370,6 +370,12 @@ EXTEND
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl constructor_declaration label_declaration
     match_case with_constr poly_variant;
+  functor_parameter:
+    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
+      | "("; ")" -> None
+      ]
+    ]
+  ;
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
         "->"; me = SELF ->
@@ -479,26 +485,12 @@ EXTEND
   ;
   (* Module types *)
   module_type:
-    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
+    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp"; "->";
         mt = SELF ->
 (*
           MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some i), t))) mt
 *)
-          <:module_type< functor ( $_uid:i$ : $t$ ) -> $mt$ >>
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "functor"; "("; "_" ; ":"; t = SELF; ")"; "->";
-        mt = SELF ->
-(*
-         MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, t))) mt
-*)
-          <:module_type< functor ( _ : $t$ ) -> $mt$ >>
-      | "functor"; "("; ")"; "->";
-        mt = SELF ->
-(*
-          MLast.MtFun loc (Ploc.VaVal None) mt
-*)
-          <:module_type< functor ( ) -> $mt$ >>
-        END
+          <:module_type< functor $_fp:arg$ -> $mt$ >>
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
@@ -561,11 +553,11 @@ EXTEND
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type -> <:module_type< $mt$ >>
-      | "("; i = UIDENT; ":"; t = module_type; ")"; mt = SELF ->
+      | arg = V functor_parameter "functor_parameter" "fp"; mt = SELF ->
 (*
           MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal (Some (VaVal i)), t))) mt
 *)
-          <:module_type< functor ( $uid:i$ : $t$ ) -> $mt$ >>
+          <:module_type< functor $_fp:arg$ -> $mt$ >>
       ] ]
   ;
   (* "with" constraints (additional type equations over signature
