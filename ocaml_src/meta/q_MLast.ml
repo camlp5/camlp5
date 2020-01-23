@@ -1369,8 +1369,11 @@ Grammar.safe_extend
               (Qast.Node
                  ("MtFun",
                   [Qast.Loc;
-                   Qast.Option
-                     (Some (Qast.Tuple [Qast.VaVal (Qast.Option None); mt1]));
+                   Qast.VaVal
+                     (Qast.Option
+                        (Some
+                           (Qast.Tuple
+                              [Qast.VaVal (Qast.Option None); mt1])));
                    mt2]) :
                'module_type)))];
        Some "simple", None,
