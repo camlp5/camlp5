@@ -12,7 +12,7 @@ RM=rm
 all: quot_r.mlt quot_r.mlu #quot_o.mlu
 
 clean:
-	$(RM) -f *.ml[tu] tmp.*
+	$(RM) -f *.ml[tu] tmp.* *.cm* *.byte
 
 compare_quot:
 	./mkquot.sh | $(DIFF) quot_r.out.ml -
@@ -46,3 +46,11 @@ quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast.cmo $(DEP)
 quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast.cmo $(DEP)
 	../etc/camlp5sch ../meta/q_ast.cmo ../etc/pr_r.cmo quot_sch.ml | $(DIFF) quot_r.out.ml -
 	@touch $W
+
+INCLUDES=-I ../main -I ../boot -I ../lib -I ../meta -I ../etc -I ../top
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
+COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
+o2r_test.byte: o2r_test.cmo
+	ocamlc $(INCLUDES) $(COMPILERLIBS) camlp5o.cma pr_r.cmo o2r_test.cmo -o o2r_test.byte
+
+o2r_test.cmo: o2r_test.ml
