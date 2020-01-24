@@ -550,7 +550,7 @@ and scan_symbol list =
   | Sflag s -> scan_symbol list s
   | Stree t -> scan_tree list t
   | Svala _ s -> scan_symbol list s
-  | Smeta _ _ _ | Sself | Snext | Scut | Stoken _ -> list ]
+  | Sself | Snext | Scut | Stoken _ -> list ]
 and scan_level list lev =
   let list = scan_tree list lev.lsuffix in
   let list = scan_tree list lev.lprefix in

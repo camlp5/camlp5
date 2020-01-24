@@ -37,7 +37,6 @@ and g_level 'te =
 and g_assoc = [ NonA | RightA | LeftA ]
 and g_symbol 'te =
   [ Sfacto of g_symbol 'te
-  | Smeta of string and list (g_symbol 'te) and Obj.t
   | Snterm of g_entry 'te
   | Snterml of g_entry 'te and string
   | Slist0 of g_symbol 'te

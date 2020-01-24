@@ -84,7 +84,6 @@ type 'a ty_production;;
 type ty_extension;;
 
 val s_facto : ('self, 'a) ty_symbol -> ('self, 'a) ty_symbol;;
-(*   | Smeta of string and list (g_symbol 'te) and Obj.t *)
 val s_nterm : 'a Entry.e -> ('self, 'a) ty_symbol;;
 val s_nterml : 'a Entry.e -> string -> ('self, 'a) ty_symbol;;
 val s_list0 : ('self, 'a) ty_symbol -> ('self, 'a list) ty_symbol;;

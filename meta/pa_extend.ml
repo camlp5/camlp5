@@ -42,8 +42,6 @@ and a_symbol 'e 'p =
   | ASnext of loc
   | ASnterm of loc and (string * 'e) and option string
   | ASopt of loc and a_symbol 'e 'p
-  | ASfold of loc and string and string and 'e and 'e and a_symbol 'e 'p
-      and option (a_symbol 'e 'p)
   | ASquot of loc and a_symbol 'e 'p
   | ASrules of loc and a_rules 'e 'p
   | ASself of loc
@@ -73,7 +71,6 @@ type styp =
 
 type text 'e 'p =
   [ TXfacto of loc and text 'e 'p
-  | TXmeta of loc and string and list (text 'e 'p) and 'e and styp
   | TXlist of loc and lmin_len and text 'e 'p and option (text 'e 'p * bool)
   | TXnext of loc
   | TXnterm of loc and name 'e and option string
@@ -564,14 +561,6 @@ value is_cut =
 value rec make_expr gmod tvar =
   fun
   [ TXfacto loc t -> <:expr< $uid:gmod$.s_facto $make_expr gmod tvar t$ >>
-  | TXmeta loc n tl e t ->
-      let el =
-        List.fold_right
-          (fun t el -> <:expr< [$make_expr gmod "" t$ :: $el$] >>) tl
-          <:expr< [] >>
-      in
-      <:expr<
-        $uid:gmod$.s_meta $str:n$ $el$ (Obj.repr ($e$ : $make_ctyp t tvar$)) >>
   | TXlist loc min t ts ->
       let txt = make_expr gmod "" t in
       match (min, ts) with
@@ -647,23 +636,6 @@ value slist loc min sep symb =
     | None -> None ]
   in
   TXlist loc min symb.text t
-;
-
-value sfold loc n foldfun f e s =
-  let styp = STquo loc (new_type_var ()) in
-  let e = <:expr< Extfold.$lid:foldfun$ $f$ $e$ >> in
-  let t = STapp loc (STapp loc (STtyp <:ctyp< Extfold.t _ >>) s.styp) styp in
-  {used = s.used; text = TXmeta loc n [s.text] e t; styp = styp}
-;
-
-value sfoldsep loc n foldfun f e s sep =
-  let styp = STquo loc (new_type_var ()) in
-  let e = <:expr< Extfold.$lid:foldfun$ $f$ $e$ >> in
-  let t =
-    STapp loc (STapp loc (STtyp <:ctyp< Extfold.tsep _ >>) s.styp) styp
-  in
-  {used = s.used @ sep.used; text = TXmeta loc n [s.text; sep.text] e t;
-   styp = styp}
 ;
 
 value mk_psymbol p s t =
@@ -766,11 +738,6 @@ value rec symbol_of_a =
       let text = TXflag loc s.text in
       let styp = STlid loc "bool" in
       {used = s.used; text = text; styp = styp}
-  | ASfold loc n foldfun f e s sep ->
-      let s = symbol_of_a s in
-      match sep with
-      [ Some sep -> sfoldsep loc n foldfun f e s (symbol_of_a sep)
-      | None -> sfold loc n foldfun f e s ]
   | ASkeyw loc s ->
       let text = TXtok loc "" (string_of_a s) in
       {used = []; text = text; styp = STlid loc "string"}

@@ -40,7 +40,6 @@ and 'te g_level =
 and g_assoc = NonA | RightA | LeftA
 and 'te g_symbol =
     Sfacto of 'te g_symbol
-  | Smeta of string * 'te g_symbol list * Obj.t
   | Snterm of 'te g_entry
   | Snterml of 'te g_entry * string
   | Slist0 of 'te g_symbol
@@ -83,8 +82,8 @@ let rec derive_eps =
   | Sfacto s -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Svala (_, s) -> derive_eps s
-  | Smeta (_, _, _) | Slist1 _ | Slist1sep (_, _, _) | Snterm _ |
-    Snterml (_, _) | Snext | Sself | Scut | Stoken _ ->
+  | Slist1 _ | Slist1sep (_, _, _) | Snterm _ | Snterml (_, _) | Snext |
+    Sself | Scut | Stoken _ ->
       false
 and tree_derive_eps =
   function
@@ -223,7 +222,6 @@ and token_exists_in_tree f =
 and token_exists_in_symbol f =
   function
     Sfacto sy -> token_exists_in_symbol f sy
-  | Smeta (_, syl, _) -> List.exists (token_exists_in_symbol f) syl
   | Slist0 sy -> token_exists_in_symbol f sy
   | Slist0sep (sy, sep, _) ->
       token_exists_in_symbol f sy || token_exists_in_symbol f sep
@@ -366,7 +364,6 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
           failwith "Grammar.extend error"
         end
   | Sfacto s -> check_gram entry s
-  | Smeta (_, sl, _) -> List.iter (check_gram entry) sl
   | Slist0sep (s, t, _) -> check_gram entry t; check_gram entry s
   | Slist1sep (s, t, _) -> check_gram entry t; check_gram entry s
   | Slist0 s -> check_gram entry s
@@ -399,7 +396,6 @@ let insert_tokens gram symbols =
   let rec insert =
     function
       Sfacto s -> insert s
-    | Smeta (_, sl, _) -> List.iter insert sl
     | Slist0 s -> insert s
     | Slist1 s -> insert s
     | Slist0sep (s, t, _) -> insert s; insert t
@@ -539,7 +535,6 @@ let rec decr_keyw_use gram =
           gram.glexer.Plexing.tok_removing tok
         end
   | Sfacto s -> decr_keyw_use gram s
-  | Smeta (_, sl, _) -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s
   | Slist1 s -> decr_keyw_use gram s
   | Slist0sep (s1, s2, _) -> decr_keyw_use gram s1; decr_keyw_use gram s2

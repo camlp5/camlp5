@@ -39,7 +39,6 @@ and g_level 'te =
 and g_assoc = [ NonA | RightA | LeftA ]
 and g_symbol 'te =
   [ Sfacto of g_symbol 'te
-  | Smeta of string and list (g_symbol 'te) and Obj.t
   | Snterm of g_entry 'te
   | Snterml of g_entry 'te and string
   | Slist0 of g_symbol 'te
@@ -82,7 +81,7 @@ value rec derive_eps =
   | Sfacto s -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Svala _ s -> derive_eps s
-  | Smeta _ _ _ | Slist1 _ | Slist1sep _ _ _ | Snterm _ | Snterml _ _ |
+  | Slist1 _ | Slist1sep _ _ _ | Snterm _ | Snterml _ _ |
     Snext | Sself | Scut | Stoken _ ->
       False ]
 and tree_derive_eps =
@@ -216,7 +215,6 @@ and token_exists_in_tree f =
 and token_exists_in_symbol f =
   fun
   [ Sfacto sy -> token_exists_in_symbol f sy
-  | Smeta _ syl _ -> List.exists (token_exists_in_symbol f) syl
   | Slist0 sy -> token_exists_in_symbol f sy
   | Slist0sep sy sep _ ->
       token_exists_in_symbol f sy || token_exists_in_symbol f sep
@@ -362,7 +360,6 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
       }
       else ()
   | Sfacto s -> check_gram entry s
-  | Smeta _ sl _ -> List.iter (check_gram entry) sl
   | Slist0sep s t _ -> do { check_gram entry t; check_gram entry s }
   | Slist1sep s t _ -> do { check_gram entry t; check_gram entry s }
   | Slist0 s -> check_gram entry s
@@ -398,7 +395,6 @@ value insert_tokens gram symbols =
   let rec insert =
     fun
     [ Sfacto s -> insert s
-    | Smeta _ sl _ -> List.iter insert sl
     | Slist0 s -> insert s
     | Slist1 s -> insert s
     | Slist0sep s t _ -> do { insert s; insert t }
@@ -547,7 +543,6 @@ value rec decr_keyw_use gram =
       else ()
     }
   | Sfacto s -> decr_keyw_use gram s
-  | Smeta _ sl _ -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s
   | Slist1 s -> decr_keyw_use gram s
   | Slist0sep s1 s2 _ -> do { decr_keyw_use gram s1; decr_keyw_use gram s2 }

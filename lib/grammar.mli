@@ -85,7 +85,6 @@ type ty_production 'a = 'x;
 type ty_extension = 'x;
 
 value s_facto : ty_symbol 'self 'a -> ty_symbol 'self 'a;
-(*   | Smeta of string and list (g_symbol 'te) and Obj.t *)
 value s_nterm : Entry.e 'a -> ty_symbol 'self 'a;
 value s_nterml : Entry.e 'a -> string -> ty_symbol 'self 'a;
 value s_list0 : ty_symbol 'self 'a -> ty_symbol 'self (list 'a);
@@ -215,7 +214,6 @@ module type S =
     type ty_production 'a = 'x;
 
     value s_facto : ty_symbol 'self 'a -> ty_symbol 'self 'a;
-    (*   | Smeta of string and list (g_symbol 'te) and Obj.t *)
     value s_nterm : Entry.e 'a -> ty_symbol 'self 'a;
     value s_nterml : Entry.e 'a -> string -> ty_symbol 'self 'a;
     value s_list0 : ty_symbol 'self 'a -> ty_symbol 'self (list 'a);

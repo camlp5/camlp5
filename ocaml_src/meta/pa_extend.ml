@@ -38,9 +38,6 @@ and ('e, 'p) a_symbol =
   | ASnext of loc
   | ASnterm of loc * (string * 'e) * string option
   | ASopt of loc * ('e, 'p) a_symbol
-  | ASfold of
-      loc * string * string * 'e * 'e * ('e, 'p) a_symbol *
-        ('e, 'p) a_symbol option
   | ASquot of loc * ('e, 'p) a_symbol
   | ASrules of loc * ('e, 'p) a_rules
   | ASself of loc
@@ -67,7 +64,6 @@ type styp =
 
 type ('e, 'p) text =
     TXfacto of loc * ('e, 'p) text
-  | TXmeta of loc * string * ('e, 'p) text list * 'e * styp
   | TXlist of loc * lmin_len * ('e, 'p) text * (('e, 'p) text * bool) option
   | TXnext of loc
   | TXnterm of loc * 'e name * string option
@@ -1093,32 +1089,6 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, gmod), MLast.ExLid (loc, "s_facto")),
          make_expr gmod tvar t)
-  | TXmeta (loc, n, tl, e, t) ->
-      let el =
-        List.fold_right
-          (fun t el ->
-             MLast.ExApp
-               (loc,
-                MLast.ExApp
-                  (loc, MLast.ExUid (loc, "::"), make_expr gmod "" t),
-                el))
-          tl (MLast.ExUid (loc, "[]"))
-      in
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExApp
-              (loc,
-               MLast.ExAcc
-                 (loc, MLast.ExUid (loc, gmod), MLast.ExLid (loc, "s_meta")),
-               MLast.ExStr (loc, n)),
-            el),
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Obj"), MLast.ExLid (loc, "repr")),
-            MLast.ExTyc (loc, e, make_ctyp t tvar)))
   | TXlist (loc, min, t, ts) ->
       let txt = make_expr gmod "" t in
       begin match min, ts with
@@ -1318,66 +1288,6 @@ let slist loc min sep symb =
   TXlist (loc, min, symb.text, t)
 ;;
 
-let sfold loc n foldfun f e s =
-  let styp = STquo (loc, new_type_var ()) in
-  let e =
-    MLast.ExApp
-      (loc,
-       MLast.ExApp
-         (loc,
-          MLast.ExAcc
-            (loc, MLast.ExUid (loc, "Extfold"), MLast.ExLid (loc, foldfun)),
-          f),
-       e)
-  in
-  let t =
-    STapp
-      (loc,
-       STapp
-         (loc,
-          STtyp
-            (MLast.TyApp
-               (loc,
-                MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Extfold"), MLast.TyLid (loc, "t")),
-                MLast.TyAny loc)),
-          s.styp),
-       styp)
-  in
-  {used = s.used; text = TXmeta (loc, n, [s.text], e, t); styp = styp}
-;;
-
-let sfoldsep loc n foldfun f e s sep =
-  let styp = STquo (loc, new_type_var ()) in
-  let e =
-    MLast.ExApp
-      (loc,
-       MLast.ExApp
-         (loc,
-          MLast.ExAcc
-            (loc, MLast.ExUid (loc, "Extfold"), MLast.ExLid (loc, foldfun)),
-          f),
-       e)
-  in
-  let t =
-    STapp
-      (loc,
-       STapp
-         (loc,
-          STtyp
-            (MLast.TyApp
-               (loc,
-                MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Extfold"),
-                   MLast.TyLid (loc, "tsep")),
-                MLast.TyAny loc)),
-          s.styp),
-       styp)
-  in
-  {used = s.used @ sep.used; text = TXmeta (loc, n, [s.text; sep.text], e, t);
-   styp = styp}
-;;
-
 let mk_psymbol p s t =
   let symb = {used = []; text = s; styp = t} in
   {pattern = Some p; symbol = symb}
@@ -1550,12 +1460,6 @@ let rec symbol_of_a =
       let text = TXflag (loc, s.text) in
       let styp = STlid (loc, "bool") in
       {used = s.used; text = text; styp = styp}
-  | ASfold (loc, n, foldfun, f, e, s, sep) ->
-      let s = symbol_of_a s in
-      begin match sep with
-        Some sep -> sfoldsep loc n foldfun f e s (symbol_of_a sep)
-      | None -> sfold loc n foldfun f e s
-      end
   | ASkeyw (loc, s) ->
       let text = TXtok (loc, "", string_of_a s) in
       {used = []; text = text; styp = STlid (loc, "string")}
