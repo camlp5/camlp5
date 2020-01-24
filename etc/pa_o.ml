@@ -372,7 +372,9 @@ EXTEND
     match_case with_constr poly_variant;
   functor_parameter:
     [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "("; ")" -> None
+        END
       ]
     ]
   ;
