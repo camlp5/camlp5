@@ -395,7 +395,7 @@ module Meta_make (C : MetaSig) =
             [C.vala C.bool b;
              C.vala
                (C.list
-                  (fun (sopt, me) → C.tuple [c_vala_opt sopt; module_expr me]))
+                  (fun (sopt, me) → C.tuple [C.vala c_vala_opt sopt; module_expr me]))
                lsme]
       | StMty _ s mt → C.node "StMty" [C.vala C.string s; module_type mt]
       | StOpn _ ls → C.node "StOpn" [C.vala (C.list C.string) ls]

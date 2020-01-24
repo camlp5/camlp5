@@ -517,18 +517,12 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")))
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
              (Grammar.s_nterm
                 (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)),
-           (fun (me : 'mod_fun_binding) _ (loc : Ploc.t) ->
-              (None, me : 'mod_binding)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")))
-             (Grammar.s_nterm
-                (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)),
-           (fun (me : 'mod_fun_binding) (i : string) (loc : Ploc.t) ->
-              (Some i, me : 'mod_binding)))]];
+           (fun (me : 'mod_fun_binding) (i : 'uidopt) (loc : Ploc.t) ->
+              (i, me : 'mod_binding)))]];
     Grammar.extension (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)
       None
       [None, Some Gramext.RightA,

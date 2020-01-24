@@ -461,7 +461,7 @@ EXTEND
       | -> <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V UIDENT; me = mod_fun_binding -> (Some i, me) ] ]
+    [ [ i = V uidopt "uidopt"; me = mod_fun_binding -> (i, me) ] ]
   ;
   mod_fun_binding:
     [ RIGHTA

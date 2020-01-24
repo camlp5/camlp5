@@ -832,13 +832,10 @@ and str_item_se se =
       <:str_item< include $me$ >>
   | Sexpr loc [Slid _ "module"; se1; se2] →
       let (i, mb) = str_module_se (Sexpr loc [se1; se2]) in
-        match i with [
-          None -> <:str_item< module _ = $mb$ >>
-        | Some s -> <:str_item< module $_uid:s$ = $mb$ >>
-        ]
+      <:str_item< module $_uidopt:i$ = $mb$ >>
   | Sexpr loc [Slid _ ("module*" | "modulerec*" as rf) :: sel] →
       let rf = rf = "modulerec*" in
-      let (lmb :  Ploc.vala (list (option (Ploc.vala string)  * MLast.module_expr)) ) = anti_list_map str_module_se sel in
+      let (lmb :  Ploc.vala (list (Ploc.vala (option (Ploc.vala string))  * MLast.module_expr)) ) = anti_list_map str_module_se sel in
       <:str_item< module $flag:rf$ $_list:lmb$ >>
   | Sexpr loc [Slid _ "moduletype"; se1; se2] →
       let s = anti_uid_or_error se1 in
@@ -875,7 +872,7 @@ and str_item_se se =
       <:str_item< $exp:e$ >> ]
 and str_module_se =
   fun
-  [ Sexpr loc [se1; se2] → ((Some (anti_uid_or_error se1), module_expr_se se2) : (option (Ploc.vala string)  * MLast.module_expr))
+  [ Sexpr loc [se1; se2] → ((Ploc.VaVal (Some (anti_uid_or_error se1)), module_expr_se se2) : (Ploc.vala (option (Ploc.vala string))  * MLast.module_expr))
   | se → error se "module binding" ]
 and sig_module_se =
   fun

@@ -346,10 +346,8 @@ EXTEND
       | → Qast.VaVal (Qast.List []) ] ]
   ;
   mod_binding:
-    [ [ i = SV UIDENT; me = mod_fun_binding →
-          Qast.Tuple [Qast.Option (Some i); me]
-      | "_"; me = mod_fun_binding →
-          Qast.Tuple [Qast.Option None; me]
+    [ [ i = SV uidopt "uidopt"; me = mod_fun_binding →
+          Qast.Tuple [i; me]
       ] ]
   ;
   mod_fun_binding:

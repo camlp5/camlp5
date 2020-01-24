@@ -177,7 +177,7 @@ and str_item =
   | StExp of loc and expr
   | StExt of loc and V string and ctyp and V (list string)
   | StInc of loc and module_expr
-  | StMod of loc and V bool and V (list (option (V string) * module_expr))
+  | StMod of loc and V bool and V (list (V (option (V string)) * module_expr))
   | StMty of loc and V string and module_type
   | StOpn of loc and V (list string)
   | StTyp of loc and V bool and V (list type_decl)

@@ -187,10 +187,7 @@ EXTEND
       | → <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V UIDENT; me = mod_fun_binding → (Some i, me)
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "_"; me = mod_fun_binding → (None, me)
-        END
+    [ [ i = V uidopt "uidopt"; me = mod_fun_binding → (i, me)
       ] ]
   ;
   mod_fun_binding:

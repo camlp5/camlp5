@@ -1513,7 +1513,7 @@ and str_item s l =
         List.fold_right
           (fun (nopt, me) l ->
              let m =
-               ocaml_pstr_module (mkloc loc) (option_map uv nopt)
+               ocaml_pstr_module (mkloc loc) (option_map uv (uv nopt))
                  (module_expr me)
              in
              mkstr loc m :: l)
@@ -1531,7 +1531,7 @@ and str_item s l =
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints"
                    in
-                   option_map uv nopt, mt,
+                   option_map uv (uv nopt), mt,
                    ocaml_pmod_constraint (mkloc loc) me mt)
                 (uv nel)
             in
