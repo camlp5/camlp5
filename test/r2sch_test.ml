@@ -14,6 +14,12 @@ let tests = "test pa_r -> pr_scheme" >::: [
 (define x 1)
 |}
           (pr (pa "do { 1; 2 }; 3 ; value x = 1 ;"))
+      ) ;
+    "simple module" >:: (fun _ ->
+        assert_equal ~msg:"not equal" ~printer:(fun x -> x)
+          {|(module M (struct (define x 1)))
+|}
+          (pr (pa "module M = struct value x = 1 ; end ;"))
       )
 ]
 
