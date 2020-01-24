@@ -9,10 +9,12 @@ DIFF=diff -Bwi -u20
 DEP=../etc/pr_r.cmo quot_r.out.ml
 RM=rm
 
-all: quot_r.mlt quot_r.mlu o2r_test
+all: quot_r.mlt quot_r.mlu
+
+all-ounit-tests: o2r_test r2sch_test
 
 clean:
-	$(RM) -f *.ml[tu] tmp.* *.cm* *.byte
+	$(RM) -f *.ml[tu] tmp.* *.cm* *.byte *.log *.cache *.ppo
 
 compare_quot:
 	./mkquot.sh | $(DIFF) quot_r.out.ml -
@@ -50,12 +52,19 @@ quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast.cmo $(DEP)
 INCLUDES=-I ../main -I ../lib -I ../meta -I ../etc -I ../top
 OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
-o2r_test.byte: o2r_test.ml testutil.cmo
-	ocamlfind ocamlc -package ounit2 -linkall -linkpkg $(COMPILERLIBS) ../top/camlp5o.cma ../etc/pr_r.cmo testutil.cmo o2r_test.ml -o o2r_test.byte
-#	ocamlfind ocamlc -package ounit2 -linkall -linkpkg o2r_test.ml -o o2r_test.byte
+
 
 testutil.cmo: testutil.ml
 
+o2r_test.byte: o2r_test.ml testutil.cmo
+	ocamlfind ocamlc -package ounit2 -linkall -linkpkg $(COMPILERLIBS) ../odyl/odyl.cma ../main/camlp5.cma ../etc/pa_o.cmo ../etc/pr_r.cmo testutil.cmo o2r_test.ml -o o2r_test.byte
+
 o2r_test:: o2r_test.byte
 	./o2r_test.byte
+
+r2sch_test.byte: r2sch_test.ml testutil.cmo
+	ocamlfind ocamlc -package ounit2 -linkall -linkpkg $(COMPILERLIBS) ../odyl/odyl.cma ../main/camlp5.cma ../meta/pa_r.cmo ../etc/pr_scheme.cmo testutil.cmo r2sch_test.ml -o r2sch_test.byte
+
+r2sch_test:: r2sch_test.byte
+	./r2sch_test.byte
 
