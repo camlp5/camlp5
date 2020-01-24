@@ -9,7 +9,7 @@ DIFF=diff -Bwi -u20
 DEP=../etc/pr_r.cmo quot_r.out.ml
 RM=rm
 
-all: quot_r.mlt quot_r.mlu #quot_o.mlu
+all: quot_r.mlt quot_r.mlu o2r_test
 
 clean:
 	$(RM) -f *.ml[tu] tmp.* *.cm* *.byte
@@ -47,10 +47,15 @@ quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast.cmo $(DEP)
 	../etc/camlp5sch ../meta/q_ast.cmo ../etc/pr_r.cmo quot_sch.ml | $(DIFF) quot_r.out.ml -
 	@touch $W
 
-INCLUDES=-I ../main -I ../boot -I ../lib -I ../meta -I ../etc -I ../top
+INCLUDES=-I ../main -I ../lib -I ../meta -I ../etc -I ../top
 OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
-o2r_test.byte: o2r_test.cmo
-	ocamlc $(INCLUDES) $(COMPILERLIBS) camlp5o.cma pr_r.cmo o2r_test.cmo -o o2r_test.byte
+o2r_test.byte: o2r_test.ml testutil.cmo
+	ocamlfind ocamlc -package ounit2 -linkall -linkpkg $(COMPILERLIBS) ../top/camlp5o.cma ../etc/pr_r.cmo testutil.cmo o2r_test.ml -o o2r_test.byte
+#	ocamlfind ocamlc -package ounit2 -linkall -linkpkg o2r_test.ml -o o2r_test.byte
 
-o2r_test.cmo: o2r_test.ml
+testutil.cmo: testutil.ml
+
+o2r_test:: o2r_test.byte
+	./o2r_test.byte
+

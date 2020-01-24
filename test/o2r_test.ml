@@ -1,20 +1,21 @@
-(* camlp5r *)
-(* o2r_test.ml,v *)
+open Testutil
 
-value pa s = let (ast, _) = Pcaml.parse_implem.val (Stream.of_string s) in ast ;
-Pcaml.inter_phrases.val := Some " ;\n" ;
-value sep = match Pcaml.inter_phrases.val with [ None -> "" | Some s -> s ] ;
-value pr l = 
-  let b = Buffer.create 23 in do {
-    List.iter (fun (ast, _) -> 
-      let s = Eprinter.apply Pcaml.pr_str_item Pprintf.empty_pc ast in do {
-        Buffer.add_string b s ;
-        Buffer.add_string b sep ;
-      }) l ;
-    Buffer.contents b
-  }
-;
-print_string (pr (pa "(1; 2);; 3 ;; let x = 1 ;;")) ;
+open OUnit2
+open OUnitTest
+
+let tests = "test pa_o -> pr_r" >::: [
+    "simplest" >:: (fun _ ->
+        assert_equal
+          {|do { 1; 2 } ;
+3 ;
+value x = 1 ;
+|}
+          (pr (pa "(1; 2);; 3 ;; let x = 1 ;;"))
+      )
+]
+
+let _ = run_test_tt_main tests ;;
+  
 (*
 ;;; Local Variables: ***
 ;;; mode:tuareg ***
