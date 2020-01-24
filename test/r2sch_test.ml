@@ -20,7 +20,13 @@ let tests = "test pa_r -> pr_scheme" >::: [
           {|(module M (struct (define x 1)))
 |}
           (pr (pa "module M = struct value x = 1 ; end ;"))
-      )
+      ) ;
+    "empty module" >:: (fun _ ->
+        assert_equal ~msg:"not equal" ~printer:(fun x -> x)
+          {|(module M (struct ))
+|}
+          (pr (pa "module M = struct end ;"))
+      ) ;
 ]
 
 let _ = run_test_tt_main tests ;;
