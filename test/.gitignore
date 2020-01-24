@@ -1,2 +1,4 @@
 *.ml[tu]
 tmp.*
+*.cm*
+*.byte
