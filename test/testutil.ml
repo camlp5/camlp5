@@ -21,7 +21,7 @@ value print_location loc =
     eprintf "At location %d-%d\n" bp ep
 ;
 
-value report_error =
+value report_error0 =
   fun
   [ Odyl_main.Error fname msg -> do {
       Format.print_string "Error while loading \"";
@@ -32,7 +32,7 @@ value report_error =
   | exc -> Pcaml.report_error exc ]
 ;
 
-value report_error_and_exit exc = do {
+value report_error exc = do {
   Format.set_formatter_out_channel stderr;
   Format.open_vbox 0;
   let exc =
@@ -40,9 +40,13 @@ value report_error_and_exit exc = do {
     [ Ploc.Exc loc exc -> do { print_location loc; exc }
     | _ -> exc ]
   in
-  report_error exc;
+  report_error0 exc;
   Format.close_box ();
   Format.print_newline ();
+};
+
+value report_error_and_exit exc = do {
+  report_error exc ;
   exit 2
 };
 
