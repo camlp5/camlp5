@@ -386,7 +386,29 @@
  (lambda_match
   ((Suid _ s) (let ((s (rename_id s))) <:vala< s >>))
   ((Suidv _ s) s)
-  ((Santi _ (or "" "_") s) <:vala< $s$ >>)
+  ((Santi _ (or "" "_") s) <:vala< s >>)
+  (se (error se "uppercase identifier"))))
+
+(define anti_uidopt_or_error
+ (lambda_match
+  ((Suid _ s)
+     (let* ((s (rename_id s))
+            (sopt (Some <:vala< s >>))
+           )
+       <:vala< sopt >>)
+  )
+  ((Suidv _ s)
+     (let ((sopt (Some s)))
+         <:vala< sopt >>)
+  )
+  ((Santi _ (or "" "_") s)
+     (let ((sopt (Some <:vala< s >>)))
+         <:vala< sopt >>)
+  )
+  ((Slid _ "_")
+     (let ((sopt None))
+     <:vala< sopt >>)
+  )
   (se (error se "uppercase identifier"))))
 
 (definerec*
@@ -725,8 +747,8 @@
      (_ (error_loc loc "let_binding"))))
    ((Sexpr loc [(Slid _ "letmodule") se1 se2 se3])
     (let*
-     ((s (anti_uid_or_error se1)) (me (module_expr_se se2)) (e (expr_se se3)))
-     <:expr< let module $_:s$ = $me$ in $e$ >>))
+     ((s (anti_uidopt_or_error se1)) (me (module_expr_se se2)) (e (expr_se se3)))
+     <:expr< let module $_uidopt:s$ = $me$ in $e$ >>))
    ((Sexpr loc [(Slid _ "match") se . sel])
     (let*
      ((e (expr_se se))

@@ -663,7 +663,25 @@ value anti_uid_or_error =
       let s = rename_id s in
       <:vala< s >>
   | Suidv _ s → s
-  | Santi _ ("" | "_") s → <:vala< $s$ >>
+  | Santi _ ("" | "_") s → <:vala< s >>
+  | se → error se "uppercase identifier" ]
+;
+
+value anti_uidopt_or_error =
+  fun
+  [ Suid _ s →
+      let s = rename_id s in
+      let sopt = Some <:vala< s >> in
+      <:vala< sopt >>
+  | Suidv _ s →
+      let sopt = Some s in
+      <:vala< sopt >>
+  | Santi _ ("" | "_") s →
+      let sopt = Some <:vala< s >> in
+      <:vala< sopt >>
+  | Slid _ "_" ->
+      let sopt = None in
+      <:vala< sopt >>
   | se → error se "uppercase identifier" ]
 ;
 
@@ -1038,10 +1056,10 @@ and expr_se =
       | [se :: _] → error se "let_binding"
       | _ → error_loc loc "let_binding" ]
   | Sexpr loc [Slid _ "letmodule"; se1; se2; se3] →
-      let s = anti_uid_or_error se1 in
+      let s = anti_uidopt_or_error se1 in
       let me = module_expr_se se2 in
       let e = expr_se se3 in
-      <:expr< let module $_:s$ = $me$ in $e$ >>
+      <:expr< let module $_uidopt:s$ = $me$ in $e$ >>
   | Sexpr loc [Slid _ "match"; se :: sel] →
       let e = expr_se se in
       let pel =

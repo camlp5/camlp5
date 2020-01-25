@@ -26,12 +26,24 @@ value x = 1 ;
 |}
           (pr (exn_wrap_result pa {|(module M (struct ))|}))
       );
+    "let-module nonblank" >:: (fun _ ->
+        assert_equal ~msg:"not equal" ~printer:(fun x -> x)
+          {|let module M = struct  end in 1 ;
+|}
+          (pr (exn_wrap_result pa {|(letmodule M (struct ) 1)|}))
+      );
+    "let-module blank" >:: (fun _ ->
+        assert_equal ~msg:"not equal" ~printer:(fun x -> x)
+          {|let module _ = struct  end in 1 ;
+|}
+          (pr (exn_wrap_result pa {|(letmodule _ (struct ) 1)|}))
+      );
 
 ]
 
 (* Run the tests in test suite *)
 let _ =
-if invoked_with "sch2r_test" then begin
+if invoked_with "sch2r_test.pa_scheme" || invoked_with "sch2r_test.pa_schemer" then begin
   run_test_tt_main ("all_tests" >::: [
         tests ;
     ])

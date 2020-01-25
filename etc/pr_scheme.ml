@@ -681,7 +681,8 @@ EXTEND_PRINTER
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
-      | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
+      | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
+        let s = match s with [ None -> "_" | Some uid -> Pcaml.unvala uid ] in
           plistbf 0 (paren pc "letmodule")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
