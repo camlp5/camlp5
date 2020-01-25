@@ -38,7 +38,12 @@ value x = 1 ;
 |}
           (pr (exn_wrap_result pa {|(letmodule _ (struct ) 1)|}))
       );
-
+    "let-open" >:: (fun _ ->
+        assert_equal ~msg:"not equal" ~printer:(fun x -> x)
+          {|let open M in 1 ;
+|}
+          (pr (exn_wrap_result pa {|(letopen M 1)|}))
+      );
 ]
 
 (* Run the tests in test suite *)

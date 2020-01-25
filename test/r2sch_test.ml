@@ -33,14 +33,12 @@ let tests = "test pa_r -> pr_scheme" >::: [
 |}
           (pr (pa "let module _ = struct end in 1 ;"))
       ) ;
-(*
     "let-open" >:: (fun _ ->
         assert_equal ~msg:"not equal" ~printer:(fun x -> x)
-          {|(module M (struct ))
+          {|(letopen M 1)
 |}
           (pr (pa "let open M in 1 ;"))
       ) ;
-*)
 ]
 
 let _ = run_test_tt_main tests ;;

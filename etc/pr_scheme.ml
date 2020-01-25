@@ -687,6 +687,10 @@ EXTEND_PRINTER
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
              (fun pc -> curr pc e, "")]
+      | <:expr< let open $uid:s$ in $e$ >> ->
+          plistbf 0 (paren pc "letopen")
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+             (fun pc -> curr pc e, "")]
       | <:expr< if $e1$ then $e2$ else () >> ->
           plistb curr 0 (paren pc "if") [(e1, ""); (e2, "")]
       | <:expr< if $e1$ then $e2$ else $e3$ >> ->
