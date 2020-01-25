@@ -19,12 +19,12 @@ cat $FILES | sed -e 's/Pcaml.parse_i.*$//' -e 's|/; ||g' |
 grep -v '#load' > tmp.ml
 echo "Compile.entries.val := [$ENTRIES];" >> tmp.ml
 > tmp.mli
-echo "${OCAMLN}c -c tmp.mli" 1>&2
-${OCAMLN}c -c tmp.mli
+echo "${OCAMLN}c -g -c tmp.mli" 1>&2
+${OCAMLN}c -g -c tmp.mli
 echo "${OCAMLN}run$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo pa_macro_gram.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo" 1>&2
 ${OCAMLN}run$EXE ../meta/${CAMLP5N}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo pa_macro_gram.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
-echo "${OCAMLN}c -I ../lib -I ../main -c -impl tmp.ppo" 1>&2
-${OCAMLN}c -I ../lib -I ../main -c -impl tmp.ppo
+echo "${OCAMLN}c -g -I ../lib -I ../main -c -impl tmp.ppo" 1>&2
+${OCAMLN}c -g -I ../lib -I ../main -c -impl tmp.ppo
 echo "${RM} tmp.ppo" 1>&2
 ${RM} tmp.ppo
 echo "${OCAMLN}run$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2

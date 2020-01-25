@@ -4,7 +4,7 @@ TOP=..
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../boot
-OCAMLCFLAGS=$(WARNERR) $(INCLUDES) -I "$(OCLIBDIR)" -I $(OTOPU) -I $(OTOPP)
+OCAMLCFLAGS=-g $(WARNERR) $(INCLUDES) -I "$(OCLIBDIR)" -I $(OTOPU) -I $(OTOPP)
 
 CAMLP5_OBJS=$(OTOPU)/pconfig.cmo ../boot/versdep.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/fstream.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/diff.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/pretty.cmo ../boot/pprintf.cmo ../boot/eprinter.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtools.cmo ../main/ast2pt.cmo ../main/pcaml.cmo ../main/exparser.cmo ../boot/stdpp.cmo ../boot/token.cmo
 CTOP=camlp5_top.cmo
@@ -19,19 +19,19 @@ TARGET=$(CAMLP5N)o.cma $(CAMLP5N)r.cma $(CAMLP5N)sch.cma $(CAMLP5N)_top.cma
 all: $(TARGET)
 
 $(CAMLP5N)oo.cma: $(OOOBJS)
-	$(OCAMLC) $(OOOBJS) -linkall -a -o $(CAMLP5N)oo.cma
+	$(OCAMLC) $(OOOBJS) -g -linkall -a -o $(CAMLP5N)oo.cma
 
 $(CAMLP5N)o.cma: $(OOBJS)
-	$(OCAMLC) $(OOBJS) -linkall -a -o $(CAMLP5N)o.cma
+	$(OCAMLC) $(OOBJS) -g -linkall -a -o $(CAMLP5N)o.cma
 
 $(CAMLP5N)r.cma: $(ROBJS)
-	$(OCAMLC) $(ROBJS) -linkall -a -o $(CAMLP5N)r.cma
+	$(OCAMLC) $(ROBJS) -g -linkall -a -o $(CAMLP5N)r.cma
 
 $(CAMLP5N)sch.cma: $(SOBJS)
-	$(OCAMLC) $(SOBJS) -linkall -a -o $(CAMLP5N)sch.cma
+	$(OCAMLC) $(SOBJS) -g -linkall -a -o $(CAMLP5N)sch.cma
 
 $(CAMLP5N)_top.cma: $(OBJS)
-	$(OCAMLC) $(OBJS) -a -o $(CAMLP5N)_top.cma
+	$(OCAMLC) $(OBJS) -g -a -o $(CAMLP5N)_top.cma
 
 clean::
 	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)

@@ -6,8 +6,8 @@ include $(TOP)/config/Makefile
 SHELL=/bin/sh
 
 INCLUDES=
-OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
-LINKFLAGS=$(INCLUDES)
+OCAMLCFLAGS=-g $(WARNERR) $(INCLUDES)
+LINKFLAGS=-g $(INCLUDES)
 
 OBJS=odyl_config.cmo odyl_main.cmo
 
@@ -16,7 +16,7 @@ all: odyl$(EXE)
 opt: odyl.cmxa odyl.cmx
 
 odyl$(EXE): odyl.cma odyl.cmo
-	$(OCAMLC) odyl.cma odyl.cmo -o odyl$(EXE)
+	$(OCAMLC) -g odyl.cma odyl.cmo -o odyl$(EXE)
 
 odyl.cma: $(OBJS)
 	$(OCAMLC) $(LINKFLAGS) dynlink.cma $(OBJS) -a -o odyl.cma
@@ -26,7 +26,7 @@ odyl.cmxa: $(OBJS:.cmo=.cmx)
 
 odyl_main.cmx: odyl_main.ml
 	$(CAMLP5_COMM) -DOPT -o odyl_main.ppo odyl_main.ml
-	$(OCAMLOPT) -c -impl odyl_main.ppo
+	$(OCAMLOPT) -g -c -impl odyl_main.ppo
 	$(RM) -f odyl_main.ppo
 
 odyl_config.ml:

@@ -54,11 +54,14 @@ all-ounit-tests: o2r_test.byte r2sch_test.byte sch2r_test.byte
 	./sch2r_test.byte
 
 INCLUDES=-I ../main -I ../lib -I ../meta -I ../etc -I ../top -I ../odyl
-OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
+OCAMLCFLAGS=-g $(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
 
 
 testutil.cmo: testutil.ml
+
+testutil2.cmo: testutil2.ml
+	ocamlfind ocamlc -package rresult,fmt -c testutil2.ml
 
 o2r_test.byte: o2r_test.ml testutil.cmo
 	ocamlfind ocamlc -package ounit2 -linkall -linkpkg $(COMPILERLIBS) -I ../main ../odyl/odyl.cma ../main/camlp5.cma ../etc/pa_o.cmo ../etc/pr_r.cmo testutil.cmo o2r_test.ml -o o2r_test.byte
@@ -66,5 +69,5 @@ o2r_test.byte: o2r_test.ml testutil.cmo
 r2sch_test.byte: r2sch_test.ml testutil.cmo
 	ocamlfind ocamlc -package ounit2 -linkall -linkpkg $(COMPILERLIBS) -I ../main ../odyl/odyl.cma ../main/camlp5.cma ../meta/pa_r.cmo ../etc/pr_scheme.cmo testutil.cmo r2sch_test.ml -o r2sch_test.byte
 
-sch2r_test.byte: sch2r_test.ml testutil.cmo
-	ocamlfind ocamlc -package ounit2 -linkall -linkpkg $(COMPILERLIBS) -I ../main ../odyl/odyl.cma ../main/camlp5.cma ../etc/pa_scheme.cmo ../etc/pr_r.cmo testutil.cmo sch2r_test.ml -o sch2r_test.byte
+sch2r_test.byte: sch2r_test.ml testutil.cmo testutil2.cmo
+	ocamlfind ocamlc -package ounit2,fmt,rresult -linkall -linkpkg $(COMPILERLIBS) -I ../main -I ../lib -I ../etc ../odyl/odyl.cma ../main/camlp5.cma ../etc/pa_schemer.cmo ../etc/pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.ml -o sch2r_test.byte

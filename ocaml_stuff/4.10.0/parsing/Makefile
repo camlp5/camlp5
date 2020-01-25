@@ -14,6 +14,6 @@ depend:
 .SUFFIXES: .mli .cmi
 
 .mli.cmi:
-	$(OCAMLN)c $(INCL) -c $<
+	$(OCAMLN)c -g $(INCL) -c $<
 
 include .depend
