@@ -16,7 +16,7 @@ while test "" != "$1"; do
 done
 
 cat $FILES | sed -e 's/Pcaml.parse_i.*$//' -e 's|/; ||g' |
-grep -v '#load' > tmp.ml
+perl -n -e 'print unless /^\s*#load/' > tmp.ml
 echo "Compile.entries.val := [$ENTRIES];" >> tmp.ml
 > tmp.mli
 echo "${OCAMLN}c -g -c tmp.mli" 1>&2
