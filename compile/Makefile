@@ -4,7 +4,7 @@ TOP=..
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../boot -I ../lib
-OCAMLCFLAGS=-g $(OCAMLC_W_Y) $(WARNERR) $(INCLUDES)
+OCAMLCFLAGS=$(DEBUG) $(OCAMLC_W_Y) $(WARNERR) $(INCLUDES)
 D=o
 SRC=../etc/pa_$(D).ml ../etc/pa_$(D)p.ml
 COMP_OPT=-strict_parsing
