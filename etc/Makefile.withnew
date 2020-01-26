@@ -3,7 +3,7 @@
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../meta -I ../lib
-OCAMLCFLAGS=-g $(WARNERR) $(INCLUDES)
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPWITH=new
 
 all:

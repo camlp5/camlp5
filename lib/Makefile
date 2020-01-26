@@ -3,7 +3,7 @@
 TOP=..
 include $(TOP)/config/Makefile
 
-OCAMLCFLAGS=-g $(WARNERR) -I $(OTOPP)
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) -I $(OTOPP)
 OBJS=versdep.cmo ploc.cmo plexing.cmo plexer.cmo fstream.cmo gramext.cmo grammar.cmo diff.cmo extfold.cmo extfun.cmo pretty.cmo pprintf.cmo eprinter.cmo stdpp.cmo token.cmo
 SHELL=/bin/sh
 TARGET=gramlib.cma
@@ -12,10 +12,10 @@ all: $(TARGET)
 opt: $(TARGET:.cma=.cmxa)
 
 $(TARGET): $(OBJS)
-	$(OCAMLC) -g $(OBJS) -a -o $(TARGET)
+	$(OCAMLC) $(DEBUG) $(OBJS) -a -o $(TARGET)
 
 $(TARGET:.cma=.cmxa): $(OBJS:.cmo=.cmx)
-	$(OCAMLOPT) -g $(OBJS:.cmo=.cmx) -a -o $(TARGET:.cma=.cmxa)
+	$(OCAMLOPT) $(DEBUG) $(OBJS:.cmo=.cmx) -a -o $(TARGET:.cma=.cmxa)
 
 clean::
 	$(RM) -f *.cm[ioax] *.cmxa *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak

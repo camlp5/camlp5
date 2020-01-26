@@ -5,8 +5,8 @@ include ../config/Makefile
 SHELL=/bin/sh
 
 INCLUDES=-I ../main -I ../boot -I ../odyl -I ../lib
-OCAMLCFLAGS=-g $(WARNERR) $(INCLUDES)
-LINKFLAGS=-g $(INCLUDES)
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
+LINKFLAGS=$(DEBUG) $(INCLUDES)
 OBJS=ocpp.cmo
 
 all: ocpp$(EXE)
