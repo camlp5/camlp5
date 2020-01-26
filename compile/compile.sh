@@ -29,4 +29,4 @@ echo "${RM} tmp.ppo" 1>&2
 ${RM} tmp.ppo
 echo "${OCAMLN}run$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2
 ${OCAMLN}run$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
-${RM} tmp.*
+#${RM} tmp.*
