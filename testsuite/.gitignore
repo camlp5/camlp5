@@ -1,0 +1,6 @@
+tmp.*
+*.cm*
+*.byte
+*.log
+*.cache
+*.ppo

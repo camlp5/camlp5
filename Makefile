@@ -48,6 +48,10 @@ depend:
 	cd ocaml_stuff; $(MAKE) depend; cd ..
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
+local-install: all
+	$(RM) -rf local-install && mkdir -p local-install/lib/ocaml
+	$(MAKE) DESTDIR=`pwd`/local-install/ LIBDIR=lib/ocaml BINDIR=bin MANDIR=man install
+
 install:
 	@if test -z "$(LIBDIR)"; then \
 	  echo "*** Variable LIBDIR not set"; exit 1; fi
@@ -55,7 +59,7 @@ install:
 	  echo "*** Variable CAMLP5N not set"; exit 1; fi
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	for i in $(DIRS) compile; do \
-	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
+	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR) LIBDIR=$(LIBDIR) BINDIR=$(BINDIR) MANDIR=$(MANDIR); cd ..); \
 	done
 
 uninstall:
@@ -71,6 +75,7 @@ clean::
 	$(MAKE) clean_hot clean_cold
 	$(RM) -f boot/*.cm[oi] boot/$(CAMLP5N)*
 	$(RM) -rf boot/SAVED
+	$(RM) -rf local-install
 	cd test; $(MAKE) clean; cd ..
 
 scratch: clean
