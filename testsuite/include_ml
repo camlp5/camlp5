@@ -1,9 +1,5 @@
 #use "topfind";;
-#directory "../lib";;
-#directory "../top";;
-#directory "../main";;
-#directory "../etc";;
-#directory "../odyl";;
+#directory "../local-install/lib/ocaml/camlp5";;
 #load "odyl.cma";;
 #load "camlp5.cma";;
 #require "ounit2";;
@@ -11,7 +7,8 @@
 #require "rresult";;
 #require "pcre";;
 
-#load "pa_schemer.cmo";;
+(* #load "pa_schemer.cmo";; *)
+#load "pa_r.cmo";;
 #load "pr_r.cmo";;
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
@@ -22,8 +19,6 @@ open Sch2r_test ;;
 open Testutil ;;
 open Testutil2 ;;
 
-#trace Pa_schemer.str_item_se ;;
-#trace Pa_schemer.expr_se ;;
 
 (*
 ;;; Local Variables: ***
