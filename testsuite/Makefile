@@ -7,11 +7,12 @@ include $(TOP)/config/Makefile
 DIFF=diff -Bwi -u20
 RM=rm
 
-all: o2r_test.byte r2sch_test.byte sch2r_test.pa_scheme.byte sch2r_test.pa_schemer.byte
+all: o2r_test.byte r2sch_test.byte sch2r_test.pa_scheme.byte sch2r_test.pa_schemer.byte extfun_test.byte
 	./o2r_test.byte
 	./r2sch_test.byte
 	./sch2r_test.pa_scheme.byte
 	./sch2r_test.pa_schemer.byte
+	./extfun_test.byte
 
 CAMLP5R=$(TOP)/local-install/bin/camlp5r
 CAMLP5LIB=$(TOP)/local-install/lib/ocaml/camlp5
@@ -30,6 +31,10 @@ testutil.cmo: testutil.ml
 
 testutil2.cmo: testutil2.ml
 	ocamlfind ocamlc $(DEBUG) -package $(PACKAGES) -c testutil2.ml
+
+extfun_test.byte: extfun_test.ml testutil.cmo pa_ounit2.cmo
+	$(CAMLP5R) -I $(CAMLP5LIB) -I . pa_ounit2.cmo -mode S -o extfun_test.ppo extfun_test.ml
+	ocamlfind ocamlc $(DEBUG) -package ounit2 -linkall -linkpkg $(COMPILERLIBS) -I $(CAMLP5LIB) odyl.cma camlp5.cma pa_o.cmo pr_r.cmo testutil.cmo -impl extfun_test.ppo -o extfun_test.byte
 
 o2r_test.byte: o2r_test.ml testutil.cmo pa_ounit2.cmo
 	$(CAMLP5R) -I $(CAMLP5LIB) -I . pa_ounit2.cmo -mode S -o o2r_test.ppo o2r_test.ml
