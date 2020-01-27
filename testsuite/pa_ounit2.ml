@@ -13,9 +13,9 @@ EXTEND
     [ [ e1 = SELF; ">:"; e2 = SELF →
         <:expr< OUnitTest.TestLabel $e1$ $e2$ >>
       | e1 = SELF; ">::"; e2 = SELF →
-        <:expr< OUnitTest.TestLabel($e1$, OUnitTest.TestCase OunitTest.Short  $e2$) >>
+        <:expr< OUnitTest.TestLabel $e1$ (OUnitTest.TestCase  OUnitTest.Short  $e2$) >>
       | e1 = SELF; ">:::"; e2 = SELF →
-        <:expr< OUnitTest.TestLabel($e1$, OUnitTest.TestList $e2$) >>
+        <:expr< OUnitTest.TestLabel $e1$ (OUnitTest.TestList $e2$) >>
       ] ]
   ;
 END;
