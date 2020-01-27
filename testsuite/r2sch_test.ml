@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* testutil.ml *)
+(* r2sch_test.ml *)
 #load "pa_ounit2.cmo";
 
 open Testutil ;
