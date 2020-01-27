@@ -502,8 +502,8 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (module_type : 'module_type Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
-           (fun _ (t : 'module_type) _ (id : 'e__1) _ (loc : Ploc.t) ->
-              (Qast.Option (Some (Qast.Tuple [id; t])) :
+           (fun _ (t : 'module_type) _ (i : 'e__1) _ (loc : Ploc.t) ->
+              (Qast.Option (Some (Qast.Tuple [i; t])) :
                'functor_parameter)))]];
     Grammar.extension (module_expr : 'module_expr Grammar.Entry.e) None
       [None, None,
@@ -1125,7 +1125,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 320, 19))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 319, 19))
                in
                Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
                'str_item)));
@@ -1341,6 +1341,23 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt : 'module_type) _ (arg : 'e__26) _ (loc : Ploc.t) ->
               (Qast.Node ("MtFun", [Qast.Loc; arg; mt]) : 'module_type)))];
+       Some "->", Some Gramext.RightA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_token ("", "->")))
+             Grammar.s_self,
+           (fun (mt2 : 'module_type) _ (mt1 : 'module_type) (loc : Ploc.t) ->
+              (Qast.Node
+                 ("MtFun",
+                  [Qast.Loc;
+                   Qast.VaVal
+                     (Qast.Option
+                        (Some
+                           (Qast.Tuple
+                              [Qast.VaVal (Qast.Option None); mt1])));
+                   mt2]) :
+               'module_type)))];
        None, None,
        [Grammar.production
           (Grammar.r_next
@@ -1406,23 +1423,6 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (m2 : 'module_type) _ (m1 : 'module_type) (loc : Ploc.t) ->
               (Qast.Node ("MtAcc", [Qast.Loc; m1; m2]) : 'module_type)))];
-       Some "->", Some Gramext.RightA,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_token ("", "->")))
-             Grammar.s_self,
-           (fun (mt2 : 'module_type) _ (mt1 : 'module_type) (loc : Ploc.t) ->
-              (Qast.Node
-                 ("MtFun",
-                  [Qast.Loc;
-                   Qast.VaVal
-                     (Qast.Option
-                        (Some
-                           (Qast.Tuple
-                              [Qast.VaVal (Qast.Option None); mt1])));
-                   mt2]) :
-               'module_type)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next
@@ -1928,7 +1928,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 391, 19))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 394, 19))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
                'sig_item)));

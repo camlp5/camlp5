@@ -6,3 +6,5 @@ r_fast.ml.tmp
 pa_o_fast.ml
 pa_r_fast.ml
 *.ppo
+tmp.*
+*.tmp

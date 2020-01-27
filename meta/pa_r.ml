@@ -136,6 +136,14 @@ EXTEND
     structure class_type class_expr class_sig_item class_str_item let_binding
     type_decl constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant;
+  functor_parameter:
+    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | "("; ")" -> None
+        END
+      ]
+    ]
+  ;
   module_expr:
     [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp"; "->";
         me = SELF →
@@ -204,7 +212,7 @@ EXTEND
           <:module_type< functor $_fp:arg$ → $mt$ >>
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
+       "->" RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
          <:module_type< $mt1$ → $mt2$ >>
        ]
       END
@@ -251,7 +259,9 @@ EXTEND
           <:sig_item< # $_str:s$ $_list:sil$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V UIDENT; mt = module_declaration → (Some i, mt) ] ]
+    [ [ i = V UIDENT; mt = module_declaration → (Some i, mt)
+      | "_" ; mt = module_declaration → (None, mt)
+      ] ]
   ;
   module_declaration:
     [ RIGHTA
@@ -276,14 +286,6 @@ EXTEND
     [ [ m = V UIDENT -> Some m
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "_" -> None
-        END
-      ]
-    ]
-  ;
-  functor_parameter:
-    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "("; ")" -> None
         END
       ]
     ]
