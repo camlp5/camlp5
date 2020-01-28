@@ -15,6 +15,7 @@ DIFF_OPT=-Bwiu
 DESTDIR=
 
 all: world.opt
+	$(MAKE) $(MAKEFLAGS) local-install
 
 out: boot/$(CAMLP5N)$(EXE)
 	set -e; cd ocaml_stuff; $(MAKE); cd ..
@@ -48,7 +49,7 @@ depend:
 	cd ocaml_stuff; $(MAKE) depend; cd ..
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
-local-install: all
+local-install::
 	$(RM) -rf local-install && mkdir -p local-install/lib/ocaml
 	$(MAKE) DESTDIR=`pwd`/local-install/ LIBDIR=lib/ocaml BINDIR=bin MANDIR=man install
 
