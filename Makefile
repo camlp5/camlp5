@@ -51,7 +51,8 @@ depend:
 
 local-install::
 	$(RM) -rf local-install && mkdir -p local-install/lib/ocaml
-	$(MAKE) DESTDIR=`pwd`/local-install/ LIBDIR=lib/ocaml BINDIR=bin MANDIR=man install
+	$(MAKE) DESTDIR=`pwd`/local-install/ LIBDIR=lib BINDIR=bin MANDIR=man install
+	perl -p -i -e 's,directory =.*,directory = "'`pwd`/local-install/lib/camlp5'",' local-install/lib/camlp5/META
 
 install:
 	@if test -z "$(LIBDIR)"; then \
@@ -77,7 +78,8 @@ clean::
 	$(RM) -f boot/*.cm[oi] boot/$(CAMLP5N)*
 	$(RM) -rf boot/SAVED
 	$(RM) -rf local-install
-	cd test; $(MAKE) clean; cd ..
+	$(MAKE) -C test clean
+	$(MAKE) -C testsuite clean
 
 scratch: clean
 
