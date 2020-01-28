@@ -1,5 +1,7 @@
 #use "topfind";;
 #directory "../local-install/lib/ocaml/camlp5";;
+#directory "+compiler-libs" ;;
+#load "ocamlcommon.cma" ;;
 #load "odyl.cma";;
 #load "camlp5.cma";;
 #require "ounit2";;

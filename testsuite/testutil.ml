@@ -57,6 +57,14 @@ value pr l =
   }
 ;
   
+value pa_original s =
+  let lb = Lexing.from_string s in
+  Parse.implementation lb
+;
+value pr_original st =
+  Pprintast.string_of_structure st
+;
+
 (*
 ;;; Local Variables: ***
 ;;; mode:tuareg ***

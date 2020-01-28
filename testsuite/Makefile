@@ -27,7 +27,7 @@ pa_ounit2.cmo: pa_ounit2.ml
 
 testutil.cmo: testutil.ml
 	$(CAMLP5R) -I $(CAMLP5LIB) -mode S -o testutil.ppo testutil.ml
-	ocamlfind ocamlc -warn-error A -I $(CAMLP5LIB) -c -impl testutil.ppo
+	ocamlfind ocamlc -warn-error A -I $(CAMLP5LIB) -I +compiler-libs -c -impl testutil.ppo
 
 testutil2.cmo: testutil2.ml
 	ocamlfind ocamlc $(DEBUG) -package $(PACKAGES) -c testutil2.ml
@@ -49,10 +49,10 @@ sch2r_test.cmo: sch2r_test.ml testutil.cmo testutil2.cmo pa_ounit2.cmo
 	ocamlfind ocamlc $(DEBUG) -package $(PACKAGES) -I $(CAMLP5LIB) -c -impl sch2r_test.ppo
 
 sch2r_test.pa_scheme.byte: sch2r_test.cmo testutil.cmo testutil2.cmo pa_ounit2.cmo
-	ocamlfind ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg -I $(CAMLP5LIB) odyl.cma camlp5.cma pa_scheme.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_scheme.byte
+	ocamlfind ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg $(COMPILERLIBS) -I $(CAMLP5LIB) odyl.cma camlp5.cma pa_scheme.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_scheme.byte
 
 sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo pa_ounit2.cmo
-	ocamlfind ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg -I $(CAMLP5LIB) odyl.cma camlp5.cma ../etc/pa_schemer.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
+	ocamlfind ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg $(COMPILERLIBS) -I $(CAMLP5LIB) odyl.cma camlp5.cma ../etc/pa_schemer.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
 
 clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo
