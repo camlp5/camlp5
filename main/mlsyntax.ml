@@ -67,3 +67,7 @@ value is_operator = do {
     try Hashtbl.find ht x with
     [ Not_found -> try Hashtbl.find ct x.[0] with _ -> False ]
 };
+
+value is_infix_operator op =
+  is_operator op && match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ]
+;

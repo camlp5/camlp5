@@ -1246,7 +1246,7 @@ EXTEND_PRINTER
       | <:expr:< $_$ $_$ >> as z ->
           let inf =
             match z with
-            [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n
+            [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n || Mlsyntax.is_infix_operator n
             | <:expr< [$_$ :: $_$] >> -> True
             | _ -> False ]
           in

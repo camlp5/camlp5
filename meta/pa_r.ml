@@ -437,7 +437,9 @@ EXTEND
       | "assert"; e = SELF → <:expr< assert $e$ >>
       | "lazy"; e = SELF → <:expr< lazy $e$ >> ]
     | "." LEFTA
-      [ e1 = SELF; "."; "("; e2 = SELF; ")" → <:expr< $e1$ .( $e2$ ) >>
+      [ e1 = SELF; "."; "("; op = operator_rparen ->
+          <:expr< $e1$ .( $lid:op$ ) >>
+      | e1 = SELF; "."; "("; e2 = SELF; ")" → <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" → <:expr< $e1$ .[ $e2$ ] >>
       | e = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →
           <:expr< $e$ . { $_list:el$ } >>
@@ -470,6 +472,7 @@ EXTEND
           <:expr< (module $me$ : $mt$) >>
       | "("; "module"; me = module_expr; ")" →
           <:expr< (module $me$) >>
+      | "("; op = operator_rparen -> <:expr< $lid:op$ >>
       | "("; e = SELF; ":"; t = ctyp; ")" → <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" → mktupexp loc e el
       | "("; e = SELF; ")" → <:expr< $e$ >>
@@ -560,6 +563,7 @@ EXTEND
       | "[|"; pl = V (LIST0 patt SEP ";"); "|]" → <:patt< [| $_list:pl$ |] >>
       | "{"; lpl = V (LIST1 label_patt SEP ";"); "}" →
           <:patt< { $_list:lpl$ } >>
+      | "("; op = operator_rparen -> <:patt< $lid:op$ >>
       | "("; p = paren_patt; ")" → p
       | "_" → <:patt< _ >> ] ]
   ;
@@ -592,7 +596,8 @@ EXTEND
       | "_" → <:patt< _ >> ] ]
   ;
   ipatt:
-    [ [ "{"; lpl = V (LIST1 label_ipatt SEP ";"); "}" →
+    [ [ "("; op = operator_rparen -> <:patt< $lid:op$ >>
+      | "{"; lpl = V (LIST1 label_ipatt SEP ";"); "}" →
           <:patt< { $_list:lpl$ } >>
       | "("; p = paren_ipatt; ")" → p
       | s = V LIDENT → <:patt< $_lid:s$ >>
