@@ -1,5 +1,5 @@
 #use "topfind";;
-#directory "../local-install/lib/ocaml/camlp5";;
+#directory "../local-install/lib/camlp5";;
 #directory "+compiler-libs" ;;
 #load "ocamlcommon.cma" ;;
 #load "odyl.cma";;
@@ -10,8 +10,9 @@
 #require "pcre";;
 
 (* #load "pa_schemer.cmo";; *)
-#load "pa_r.cmo";;
-#load "pr_r.cmo";;
+#directory "../etc";;
+#load "pa_o.cmo";;
+#load "pr_o.cmo";;
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
 #load "sch2r_test.cmo";;
