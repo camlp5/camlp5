@@ -8,6 +8,7 @@
 #load "pa_macro_gram.cmo";
 
 open Pcaml;
+open Mlsyntax;
 
 Pcaml.syntax_name.val := "Revised";
 Pcaml.no_constructors_arity.val := False;
@@ -105,6 +106,69 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
+value operator_rparen =
+  Grammar.Entry.of_parser gram "operator_rparen"
+    (fun strm ->
+       match Stream.npeek 2 strm with
+       [ [("", s); ("", ")")] when is_operator s -> do {
+           Stream.junk strm;
+           Stream.junk strm;
+           s
+         }
+       | _ -> raise Stream.Failure ])
+;
+
+value check_not_part_of_patt =
+  Grammar.Entry.of_parser gram "check_not_part_of_patt"
+    (fun strm ->
+       let tok =
+         match Stream.npeek 4 strm with
+         [ [("LIDENT", _); tok :: _] -> tok
+         | [("", "("); ("", s); ("", ")"); tok] when is_operator s -> tok
+         | _ -> raise Stream.Failure ]
+       in
+       match tok with
+       [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
+       | _ -> () ])
+;
+
+value prefixop =
+  Grammar.Entry.of_parser gram "prefixop"
+    (parser
+       [: `(_, x) when is_prefixop x :] -> x)
+;
+
+value infixop0 =
+  Grammar.Entry.of_parser gram "infixop0"
+    (parser
+       [: `(_, x) when is_infixop0 x :] -> x)
+;
+
+
+value infixop1 =
+  Grammar.Entry.of_parser gram "infixop1"
+    (parser
+       [: `(_, x) when is_infixop1 x :] -> x)
+;
+
+value infixop2 =
+  Grammar.Entry.of_parser gram "infixop2"
+    (parser
+       [: `(_, x) when is_infixop2 x :] -> x)
+;
+
+value infixop3 =
+  Grammar.Entry.of_parser gram "infixop3"
+    (parser
+       [: `(_, x) when is_infixop3 x :] -> x)
+;
+
+value infixop4 =
+  Grammar.Entry.of_parser gram "infixop4"
+    (parser
+       [: `(_, x) when is_infixop4 x :] -> x)
+;
+
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
 value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
@@ -174,6 +238,9 @@ EXTEND
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+      | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) →
+          <:str_item< external $lid:i$ : $t$ = $_list:pd$ >>
       | "include"; me = module_expr → <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
@@ -242,6 +309,9 @@ EXTEND
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+      | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) →
+          <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
       | "include"; mt = module_type → <:sig_item< include $mt$ >>
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") →
@@ -253,6 +323,8 @@ EXTEND
           <:sig_item< type $_list:tdl$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp →
           <:sig_item< value $_lid:i$ : $t$ >>
+      | "value"; "("; i = operator_rparen; ":"; t = ctyp →
+          <:sig_item< value $lid:i$ : $t$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →

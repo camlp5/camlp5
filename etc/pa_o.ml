@@ -76,19 +76,6 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
-value is_operator = do {
-  let ht = Hashtbl.create 73 in
-  let ct = Hashtbl.create 73 in
-  List.iter (fun x -> Hashtbl.add ht x True)
-    ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"];
-  List.iter (fun x -> Hashtbl.add ct x True)
-    ['!'; '&'; '*'; '+'; '-'; '/'; ':'; '<'; '='; '>'; '@'; '^'; '|'; '~';
-     '?'; '%'; '.'; '$'];
-  fun x ->
-    try Hashtbl.find ht x with
-    [ Not_found -> try Hashtbl.find ct x.[0] with _ -> False ]
-};
-
 value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
