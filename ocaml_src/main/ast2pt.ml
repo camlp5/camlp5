@@ -1389,7 +1389,7 @@ and sig_item s l =
         List.fold_right
           (fun (nopt, mt) l ->
              mksig loc
-               (ocaml_psig_module (mkloc loc) (option_map uv nopt)
+               (ocaml_psig_module (mkloc loc) (option_map uv (uv nopt))
                   (module_type mt)) ::
              l)
           (uv ntl) l
@@ -1397,7 +1397,8 @@ and sig_item s l =
         begin match ocaml_psig_recmodule with
           Some psig_recmodule ->
             let ntl =
-              List.map (fun (nopt, mt) -> option_map uv nopt, module_type mt)
+              List.map
+                (fun (nopt, mt) -> option_map uv (uv nopt), module_type mt)
                 (uv ntl)
             in
             mksig loc (psig_recmodule ntl) :: l

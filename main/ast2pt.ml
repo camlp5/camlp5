@@ -1202,13 +1202,13 @@ and sig_item s l =
         List.fold_right
           (fun (nopt, mt) l →
              [mksig loc
-                (ocaml_psig_module (mkloc loc) (option_map uv nopt) (module_type mt)) :: l])
+                (ocaml_psig_module (mkloc loc) (option_map uv (uv nopt)) (module_type mt)) :: l])
           (uv ntl) l
       else
         match ocaml_psig_recmodule with
         [ Some psig_recmodule →
             let ntl =
-              List.map (fun (nopt, mt) → (option_map uv nopt, module_type mt)) (uv ntl)
+              List.map (fun (nopt, mt) → (option_map uv (uv nopt), module_type mt)) (uv ntl)
             in
             [mksig loc (psig_recmodule ntl) :: l]
         | None → error loc "no recursive module in this ocaml version" ]

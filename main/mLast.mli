@@ -146,7 +146,7 @@ and sig_item =
   | SgExc of loc and V string and V (list ctyp)
   | SgExt of loc and V string and ctyp and V (list string)
   | SgInc of loc and module_type
-  | SgMod of loc and V bool and V (list (option (V string) * module_type))
+  | SgMod of loc and V bool and V (list (V (option (V string)) * module_type))
   | SgMty of loc and V string and module_type
   | SgOpn of loc and V (list string)
   | SgTyp of loc and V (list type_decl)

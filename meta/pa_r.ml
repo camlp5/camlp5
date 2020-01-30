@@ -331,9 +331,7 @@ EXTEND
           <:sig_item< # $_str:s$ $_list:sil$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V UIDENT; mt = module_declaration → (Some i, mt)
-      | "_" ; mt = module_declaration → (None, mt)
-      ] ]
+    [ [ i = V uidopt "uidopt"; mt = module_declaration → (i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA

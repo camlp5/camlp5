@@ -1677,7 +1677,7 @@ EXTEND_PRINTER
             in
             vlistl sig_item_sep sig_item pc sil
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
-          let mdl = List.map (fun (m, mt) -> (map_option Pcaml.unvala m, mt)) mdl in
+          let mdl = List.map (fun (m, mt) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) True ':')
             (sig_module_or_module_type "and" True ':') pc mdl
