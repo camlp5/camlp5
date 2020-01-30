@@ -791,11 +791,12 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")))
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
              (Grammar.s_nterm
                 (module_declaration : 'module_declaration Grammar.Entry.e)),
-           (fun (mt : 'module_declaration) (i : string) (loc : Ploc.t) ->
-              (Some i, mt : 'mod_decl_binding)))]];
+           (fun (mt : 'module_declaration) (i : 'uidopt) (loc : Ploc.t) ->
+              (i, mt : 'mod_decl_binding)))]];
     Grammar.extension
       (module_declaration : 'module_declaration Grammar.Entry.e) None
       [None, Some Gramext.RightA,
