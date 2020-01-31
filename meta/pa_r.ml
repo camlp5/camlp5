@@ -169,6 +169,12 @@ value infixop4 =
        [: `(_, x) when is_infixop4 x :] -> x)
 ;
 
+value hashop =
+  Grammar.Entry.of_parser gram "hashop"
+    (parser
+       [: `(_, x) when is_hashop x :] -> x)
+;
+
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
 value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
@@ -861,7 +867,9 @@ EXTEND
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = V lident "lid" "" →
-          <:expr< $e$ # $_lid:lab$ >> ] ]
+          <:expr< $e$ # $_lid:lab$ >>
+      | e = SELF; op = hashop ; e2 = SELF -> <:expr< $lid:op$ $e$ $e2$ >>
+      ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" →

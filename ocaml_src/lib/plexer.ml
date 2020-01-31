@@ -1083,6 +1083,13 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                               Stream.junk strm__;
                               let buf = ident3 buf strm__ in
                               "LIDENT", Plexing.Lexbuf.get buf
+                          | Some '#' ->
+                              Stream.junk strm__;
+                              let buf =
+                                ident2 (Plexing.Lexbuf.add '#' buf) strm__
+                              in
+                              keyword_or_error ctx (bp, Stream.count strm__)
+                                (Plexing.Lexbuf.get buf)
                           | _ ->
                               let buf = any ctx buf strm__ in
                               keyword_or_error ctx (bp, Stream.count strm__)
@@ -1498,15 +1505,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 797, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 798, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 797, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 798, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 797, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 798, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 798, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 799, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 798, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 799, 37)));
        Plexing.tok_comm = None}
   in
   let glex =

@@ -994,6 +994,11 @@ value external_decl pc (loc, n, t, sl) =
     (hlist string {(pc) with bef = ""; aft = ""} sl)
 ;
 
+value external_decl_original pc (loc, n, t, sl) =
+  pprintf pc "external ( %s ) :@;%p = %s" n ctyp t
+    (hlist string {(pc) with bef = ""; aft = ""} sl)
+;
+
 value exception_decl pc (loc, e, tl, id) =
   match id with
   [ [] ->
@@ -1490,6 +1495,8 @@ EXTEND_PRINTER
       | <:expr< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
+      | <:expr:< $lid:s$ >> when Mlsyntax.is_operator s ->
+          pprintf pc "( %s )" s
       | <:expr:< $lid:s$ >> ->
           var_escaped pc (loc, s)
       | <:expr< $uid:s$ >> ->
@@ -1587,6 +1594,8 @@ EXTEND_PRINTER
       | <:patt< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
+      | <:patt:< $lid:s$ >> when Mlsyntax.is_operator s ->
+          pprintf pc "( %s )" s
       | <:patt:< $lid:s$ >> ->
           var_escaped pc (loc, s)
       | <:patt< $uid:s$ >> ->
@@ -1716,7 +1725,10 @@ EXTEND_PRINTER
       | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ >> ->
           exception_decl pc (loc, e, tl, id)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (loc, n, t, sl)
+          if Mlsyntax.is_operator n then
+            external_decl_original pc (loc, n, t, sl)
+          else
+            external_decl pc (loc, n, t, sl)
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1781,6 +1793,8 @@ EXTEND_PRINTER
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
+      | <:sig_item:< value $lid:s$ : $t$ >> when Mlsyntax.is_operator s ->
+          pprintf pc "value ( %s ) :@;%p" s ctyp t
       | <:sig_item:< value $lid:s$ : $t$ >> ->
           pprintf pc "value %p :@;%p" var_escaped (loc, s) ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->

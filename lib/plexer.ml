@@ -500,6 +500,7 @@ value next_token_after_spaces ctx bp =
   | (utf8_equiv ctx bp)
   | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "\\"/ ident3! -> ("LIDENT", $buf)
+  | "#" ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 

@@ -3,6 +3,21 @@
 
 open Printf;
 
+value list_of_stream strm =
+  let rec lrec acc = parser [
+    [: `(("EOI",_) as e) :] -> List.rev [ e::acc ]
+  | [: `e ; strm :] -> lrec [ e::acc ] strm
+  | [: :] -> List.rev acc
+  ] in
+  lrec [] strm
+;
+
+value lex_string gram s =
+  let lexer = Grammar.glexer gram in
+  let (strm, _) = lexer.Plexing.tok_func (Stream.of_string s) in
+  list_of_stream strm
+;
+
 value print_location loc =
   let loc =
     if Ploc.file_name loc = "" then

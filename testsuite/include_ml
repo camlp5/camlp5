@@ -11,8 +11,8 @@
 
 (* #load "pa_schemer.cmo";; *)
 #directory "../etc";;
-#load "pa_o.cmo";;
-#load "pr_o.cmo";;
+#load "pa_r.cmo";;
+#load "pr_r.cmo";;
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
 #load "sch2r_test.cmo";;

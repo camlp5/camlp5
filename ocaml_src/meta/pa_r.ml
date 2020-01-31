@@ -8,6 +8,7 @@
 (* #load "pa_macro_gram.cmo" *)
 
 open Pcaml;;
+open Mlsyntax;;
 
 Pcaml.syntax_name := "Revised";;
 Pcaml.no_constructors_arity := false;;
@@ -109,6 +110,78 @@ let mklistpat loc last =
           (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), loop false pl)
   in
   loop true
+;;
+
+let operator_rparen =
+  Grammar.Entry.of_parser gram "operator_rparen"
+    (fun strm ->
+       match Stream.npeek 2 strm with
+         ["", s; "", ")"] when is_operator s ->
+           Stream.junk strm; Stream.junk strm; s
+       | _ -> raise Stream.Failure)
+;;
+
+let check_not_part_of_patt =
+  Grammar.Entry.of_parser gram "check_not_part_of_patt"
+    (fun strm ->
+       let tok =
+         match Stream.npeek 4 strm with
+           ("LIDENT", _) :: tok :: _ -> tok
+         | ["", "("; "", s; "", ")"; tok] when is_operator s -> tok
+         | _ -> raise Stream.Failure
+       in
+       match tok with
+         "", ("," | "as" | "|" | "::") -> raise Stream.Failure
+       | _ -> ())
+;;
+
+let prefixop =
+  Grammar.Entry.of_parser gram "prefixop"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some (_, x) when is_prefixop x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
+let infixop0 =
+  Grammar.Entry.of_parser gram "infixop0"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some (_, x) when is_infixop0 x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
+
+let infixop1 =
+  Grammar.Entry.of_parser gram "infixop1"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some (_, x) when is_infixop1 x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
+let infixop2 =
+  Grammar.Entry.of_parser gram "infixop2"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some (_, x) when is_infixop2 x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
+let infixop3 =
+  Grammar.Entry.of_parser gram "infixop3"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some (_, x) when is_infixop3 x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
+let infixop4 =
+  Grammar.Entry.of_parser gram "infixop4"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some (_, x) when is_infixop4 x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
 ;;
 
 let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
@@ -486,6 +559,26 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "external")))
+                            (Grammar.s_token ("", "(")))
+                         (Grammar.s_nterm
+                            (operator_rparen :
+                             'operator_rparen Grammar.Entry.e)))
+                      (Grammar.s_token ("", ":")))
+                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                (Grammar.s_token ("", "=")))
+             (Grammar.s_list1 (Grammar.s_token ("STRING", ""))),
+           (fun (pd : string list) _ (t : 'ctyp) _ (i : 'operator_rparen) _ _
+                (loc : Ploc.t) ->
+              (MLast.StExt (loc, i, t, pd) : 'str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "external")))
                          (Grammar.s_token ("LIDENT", "")))
@@ -713,6 +806,20 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "value")))
+                      (Grammar.s_token ("", "(")))
+                   (Grammar.s_nterm
+                      (operator_rparen : 'operator_rparen Grammar.Entry.e)))
+                (Grammar.s_token ("", ":")))
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           (fun (t : 'ctyp) _ (i : 'operator_rparen) _ _ (loc : Ploc.t) ->
+              (MLast.SgVal (loc, i, t) : 'sig_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "value")))
                    (Grammar.s_token ("LIDENT", "")))
@@ -765,6 +872,26 @@ Grammar.safe_extend
              (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
            (fun (mt : 'module_type) _ (loc : Ploc.t) ->
               (MLast.SgInc (loc, mt) : 'sig_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "external")))
+                            (Grammar.s_token ("", "(")))
+                         (Grammar.s_nterm
+                            (operator_rparen :
+                             'operator_rparen Grammar.Entry.e)))
+                      (Grammar.s_token ("", ":")))
+                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                (Grammar.s_token ("", "=")))
+             (Grammar.s_list1 (Grammar.s_token ("STRING", ""))),
+           (fun (pd : string list) _ (t : 'ctyp) _ (i : 'operator_rparen) _ _
+                (loc : Ploc.t) ->
+              (MLast.SgExt (loc, i, t, pd) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1444,7 +1571,17 @@ Grammar.safe_extend
                 Grammar.s_self)
              (Grammar.s_token ("", ")")),
            (fun _ (e2 : 'expr) _ _ (e1 : 'expr) (loc : Ploc.t) ->
-              (MLast.ExAre (loc, e1, e2) : 'expr)))];
+              (MLast.ExAre (loc, e1, e2) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", ".")))
+                (Grammar.s_token ("", "(")))
+             (Grammar.s_nterm
+                (operator_rparen : 'operator_rparen Grammar.Entry.e)),
+           (fun (op : 'operator_rparen) _ _ (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExAre (loc, e1, MLast.ExLid (loc, op)) : 'expr)))];
        Some "~-", Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
@@ -1504,6 +1641,13 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            (fun _ (t : 'ctyp) _ (e : 'expr) _ (loc : Ploc.t) ->
               (MLast.ExTyc (loc, e, t) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_nterm
+                (operator_rparen : 'operator_rparen Grammar.Entry.e)),
+           (fun (op : 'operator_rparen) _ (loc : Ploc.t) ->
+              (MLast.ExLid (loc, op) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1888,6 +2032,13 @@ Grammar.safe_extend
            (fun _ (p : 'paren_patt) _ (loc : Ploc.t) -> (p : 'patt)));
         Grammar.production
           (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_nterm
+                (operator_rparen : 'operator_rparen Grammar.Entry.e)),
+           (fun (op : 'operator_rparen) _ (loc : Ploc.t) ->
+              (MLast.PaLid (loc, op) : 'patt)));
+        Grammar.production
+          (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "{")))
                 (Grammar.s_list1sep
@@ -2139,7 +2290,14 @@ Grammar.safe_extend
                    (Grammar.s_token ("", ";")) false))
              (Grammar.s_token ("", "}")),
            (fun _ (lpl : 'label_ipatt list) _ (loc : Ploc.t) ->
-              (MLast.PaRec (loc, lpl) : 'ipatt)))]];
+              (MLast.PaRec (loc, lpl) : 'ipatt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_nterm
+                (operator_rparen : 'operator_rparen Grammar.Entry.e)),
+           (fun (op : 'operator_rparen) _ (loc : Ploc.t) ->
+              (MLast.PaLid (loc, op) : 'ipatt)))]];
     Grammar.extension (paren_ipatt : 'paren_ipatt Grammar.Entry.e) None
       [None, None,
        [Grammar.production

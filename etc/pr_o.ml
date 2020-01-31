@@ -2182,7 +2182,10 @@ EXTEND_PRINTER
           class_object loc pc (csp, csl) ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]
+    [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s
+      | <:expr< $lid:op$ $e1$ $e2$ >> when Mlsyntax.is_hashop op ->
+        pprintf pc "%p % s@;<0 0>%p" curr e1 op curr e2
+      ] ]
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->

@@ -139,6 +139,12 @@ value infixop4 =
        [: `(_, x) when is_infixop4 x :] -> x)
 ;
 
+value hashop =
+  Grammar.Entry.of_parser gram "hashop"
+    (parser
+       [: `(_, x) when is_hashop x :] -> x)
+;
+
 value test_constr_decl =
   Grammar.Entry.of_parser gram "test_constr_decl"
     (fun strm ->
@@ -1112,7 +1118,9 @@ EXTEND
           <:expr< object $_opt:cspo$ $_list:cf$ end >> ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = V LIDENT "lid" -> <:expr< $e$ # $_lid:lab$ >> ] ]
+    [ [ e = SELF; "#"; lab = V LIDENT "lid" -> <:expr< $e$ # $_lid:lab$ >>
+      | e = SELF; op = hashop ; e2 = SELF -> <:expr< $lid:op$ $e$ $e2$ >>
+      ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->
