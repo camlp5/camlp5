@@ -80,7 +80,8 @@ value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
        match Stream.npeek 2 strm with
-       [ [("", s); ("", ")")] when is_operator s -> do {
+         [ [("", s); ("", ")")] when
+                is_operator s || is_letop s || is_andop s -> do {
            Stream.junk strm;
            Stream.junk strm;
            s
@@ -143,6 +144,18 @@ value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
        [: `(_, x) when is_hashop x :] -> x)
+;
+
+value letop =
+  Grammar.Entry.of_parser gram "letop"
+    (parser
+       [: `(_, x) when is_letop x :] -> x)
+;
+
+value andop =
+  Grammar.Entry.of_parser gram "andop"
+    (parser
+       [: `(_, x) when is_andop x :] -> x)
 ;
 
 value test_constr_decl =
@@ -316,6 +329,15 @@ value expr_of_patt p =
   match p with
   [ <:patt< $lid:x$ >> -> <:expr< $lid:x$ >>
   | _ -> Ploc.raise loc (Stream.Error "identifier expected") ]
+;
+
+value build_letop_binder loc letop b l e = do {
+  let (argpat, argexp) =
+    List.fold_left (fun (argpat, argexp) (andop, (pat, exp)) ->
+        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>))
+      b l in
+  <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
+  }
 ;
 
 EXTEND
@@ -506,6 +528,9 @@ EXTEND
       | "module"; i = V mod_ident ""; ":="; me = module_expr ->
           <:with_constr< module $_:i$ := $me$ >> ] ]
   ;
+  and_binding:
+  [ [ op = andop ; b = let_binding -> (op, b) ] ]
+  ;
   (* Core expressions *)
   expr:
     [ "top" RIGHTA
@@ -517,6 +542,11 @@ EXTEND
       [ "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
           <:expr< let $_flag:o$ $_list:l$ in $x$ >>
+
+      | letop = letop ; b = let_binding ; l = (LIST0 and_binding); "in";
+        x = expr LEVEL "top" ->
+          build_letop_binder loc letop b l x
+
       | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
           <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>

@@ -440,15 +440,36 @@ value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
     rawstring0 ctx bp $empty strm
 ;
 
+value dotsymbolchar = lexer
+  [ '!' | '$' | '%' | '&' | '*' | '+' | '-' | '/' | ':' | '=' | '>' | '?' | '@' | '^' | '|' ]
+;
+value rec dotsymbolchar_star = lexer
+  [ dotsymbolchar dotsymbolchar_star | ]
+;
+value kwdopchar = lexer
+  [ '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|' ]
+;
+
+value word_operators ctx id = lexer
+  [ [ kwdopchar dotsymbolchar_star ->
+      ("", id ^ $buf)
+    | -> try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+    ] ]
+;
+value keyword = fun ctx buf strm ->
+  let id = $buf in
+  if id = "let" || id = "and" then word_operators ctx id $empty strm
+  else
+    try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+;
+
 value next_token_after_spaces ctx bp =
   lexer
   [ 'A'-'Z' ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
   | greek_letter ident! -> ("GIDENT", $buf)
-  | [ 'a'-'z' | '_' | misc_letter ] ident! ->
-      let id = $buf in
-      try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+  | [ 'a'-'z' | '_' | misc_letter ] ident! (keyword ctx)
   | '1'-'9' number!
   | "0" [ 'o' | 'O' ] (digits octal)!
   | "0" [ 'x' | 'X' ] (digits hexa)!
