@@ -180,6 +180,8 @@ value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
 value and_before elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 
+value andop_before elem pc ((andop, _) as x) = pprintf pc "%s %p" andop elem x;
+
 value operator pc left right sh (loc, op) x y =
   let op = if op = "" then "" else " " ^ op in
   pprintf pc "%p%s@;%p" left x op right y
@@ -383,6 +385,9 @@ value let_binding pc (p, e) =
       pprintf pc "@[<a>%p =@;%q@;<0 0>@]"
         (plistl simple_patt (patt_tycon tyo) 4) pl
         expr_with_comm_except_if_sequence e "" ]
+;
+
+value letop_binding pc (_, (p, e)) = let_binding pc (p, e)
 ;
 
 value match_assoc force_vertic pc ((p, w, e), is_last) =
@@ -1086,28 +1091,34 @@ EXTEND_PRINTER
                  pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr e1
                    (match_assoc_list loc) pwel ]
       | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
+          let letop = "let" in
+          let andop = "and" in
+          let pel = List.map (fun x -> (andop, x)) pel in
           horiz_vertic
             (fun () ->
                if not flag_horiz_let_in.val then sprintf "\n"
                else if pc.dang = ";" then
-                 pprintf pc "(let%s %q in %q)"
+                 pprintf pc "(%s%s %q in %q)"
+                   letop
                    (if rf then " rec" else "")
-                   (hlist2 let_binding (and_before let_binding)) pel ""
+                   (hlist2 letop_binding (andop_before letop_binding)) pel ""
                    (comm_expr expr) e ""
                else
-                 pprintf pc "let%s %q in %p"
+                 pprintf pc "%s%s %q in %p"
+                   letop
                    (if rf then " rec" else "")
-                   (hlist2 let_binding (and_before let_binding)) pel ""
+                   (hlist2 letop_binding (andop_before letop_binding)) pel ""
                    (comm_expr expr) e)
             (fun () ->
                if pc.dang = ";" then
-                 pprintf pc "@[<a>begin let%s %qin@;%q@ end@]"
+                 pprintf pc "@[<a>begin %s%s %qin@;%q@ end@]"
+                   letop
                    (if rf then " rec" else "")
-                   (vlist2 let_binding (and_before let_binding)) pel ""
+                   (vlist2 letop_binding (andop_before letop_binding)) pel ""
                    expr_with_comm_except_if_sequence e ""
                else
-                 pprintf pc "let%s %qin@ %p" (if rf then " rec" else "")
-                   (vlist2 let_binding (and_before let_binding)) pel ""
+                 pprintf pc "%s%s %qin@ %p" letop (if rf then " rec" else "")
+                   (vlist2 letop_binding (andop_before letop_binding)) pel ""
 (**)
                    (if Ploc.first_pos loc =
                        Ploc.first_pos (MLast.loc_of_expr e)
