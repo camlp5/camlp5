@@ -184,6 +184,14 @@ let infixop4 =
        | _ -> raise Stream.Failure)
 ;;
 
+let hashop =
+  Grammar.Entry.of_parser gram "hashop"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some (_, x) when is_hashop x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
 let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
 let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
 let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
@@ -3372,6 +3380,15 @@ Grammar.safe_extend
       (Some (Gramext.Level "."))
       [None, None,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_nterm (hashop : 'hashop Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'expr) (op : 'hashop) (e : 'expr) (loc : Ploc.t) ->
+              (MLast.ExApp
+                 (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e), e2) :
+               'expr)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "#")))

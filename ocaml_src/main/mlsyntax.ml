@@ -15,6 +15,24 @@ let symbolchar =
   loop
 ;;
 
+let dotsymbolchar_star =
+  let list =
+    ['!'; '$'; '%'; '&'; '*'; '+'; '-'; '/'; ':'; '='; '>'; '?'; '@'; '^';
+     '|']
+  in
+  let rec loop s i =
+    if i == String.length s then true
+    else if List.mem s.[i] list then loop s (i + 1)
+    else false
+  in
+  loop
+;;
+
+let kwdopchar =
+  let list = ['$'; '&'; '*'; '+'; '-'; '/'; '<'; '='; '>'; '@'; '^'; '|'] in
+  fun s i -> if i == String.length s then true else List.mem s.[i] list
+;;
+
 let is_prefixop =
   let list = ['!'; '?'; '~'] in
   let excl = ["!="; "??"; "?!"] in
@@ -70,6 +88,16 @@ let is_operator0 =
   fun x ->
     try Hashtbl.find ht x with
       Not_found -> try Hashtbl.find ct x.[0] with _ -> false
+;;
+
+let is_andop s =
+  String.length s > 3 && String.sub s 0 3 = "and" && kwdopchar s 3 &&
+  dotsymbolchar_star s 4
+;;
+
+let is_letop s =
+  String.length s > 3 && String.sub s 0 3 = "let" && kwdopchar s 3 &&
+  dotsymbolchar_star s 4
 ;;
 
 let is_operator s = is_operator0 s || is_hashop s;;

@@ -803,6 +803,48 @@ let keyword_or_error_or_rawstring ctx bp (loc, s) buf strm =
   else rawstring0 ctx bp Plexing.Lexbuf.empty strm
 ;;
 
+let dotsymbolchar buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some
+      ('!' | '$' | '%' | '&' | '*' | '+' | '-' | '/' | ':' | '=' | '>' | '?' |
+       '@' | '^' | '|' as c) ->
+      Stream.junk strm__; Plexing.Lexbuf.add c buf
+  | _ -> raise Stream.Failure
+;;
+let rec dotsymbolchar_star buf (strm__ : _ Stream.t) =
+  match try Some (dotsymbolchar buf strm__) with Stream.Failure -> None with
+    Some buf ->
+      begin try dotsymbolchar_star buf strm__ with
+        Stream.Failure -> raise (Stream.Error "")
+      end
+  | _ -> buf
+;;
+let kwdopchar buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some
+      ('$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' |
+       '|' as c) ->
+      Stream.junk strm__; Plexing.Lexbuf.add c buf
+  | _ -> raise Stream.Failure
+;;
+
+let word_operators ctx id buf (strm__ : _ Stream.t) =
+  match try Some (kwdopchar buf strm__) with Stream.Failure -> None with
+    Some buf ->
+      let buf =
+        try dotsymbolchar_star buf strm__ with
+          Stream.Failure -> raise (Stream.Error "")
+      in
+      "", id ^ Plexing.Lexbuf.get buf
+  | _ -> try "", ctx.find_kwd id with Not_found -> "LIDENT", id
+;;
+let keyword ctx buf strm =
+  let id = Plexing.Lexbuf.get buf in
+  if id = "let" || id = "and" then
+    word_operators ctx id Plexing.Lexbuf.empty strm
+  else try "", ctx.find_kwd id with Not_found -> "LIDENT", id
+;;
+
 let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('A'..'Z' as c) ->
@@ -828,8 +870,9 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
           with
             Some buf ->
               let buf = ident buf strm__ in
-              let id = Plexing.Lexbuf.get buf in
-              (try "", ctx.find_kwd id with Not_found -> "LIDENT", id)
+              begin try keyword ctx buf strm__ with
+                Stream.Failure -> raise (Stream.Error "")
+              end
           | _ ->
               match Stream.peek strm__ with
                 Some ('1'..'9' as c) ->
@@ -1505,15 +1548,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 798, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 819, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 798, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 819, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 798, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 819, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 799, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 820, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 799, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 820, 37)));
        Plexing.tok_comm = None}
   in
   let glex =
