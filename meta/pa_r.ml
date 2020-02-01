@@ -110,7 +110,7 @@ value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
        match Stream.npeek 2 strm with
-       [ [("", s); ("", ")")] when is_operator s -> do {
+       [ [("", s); ("", ")")] when is_operator s || is_letop s || is_andop s -> do {
            Stream.junk strm;
            Stream.junk strm;
            s
@@ -135,44 +135,56 @@ value check_not_part_of_patt =
 value prefixop =
   Grammar.Entry.of_parser gram "prefixop"
     (parser
-       [: `(_, x) when is_prefixop x :] -> x)
+       [: `("", x) when is_prefixop x :] -> x)
 ;
 
 value infixop0 =
   Grammar.Entry.of_parser gram "infixop0"
     (parser
-       [: `(_, x) when is_infixop0 x :] -> x)
+       [: `("", x) when is_infixop0 x :] -> x)
 ;
 
 
 value infixop1 =
   Grammar.Entry.of_parser gram "infixop1"
     (parser
-       [: `(_, x) when is_infixop1 x :] -> x)
+       [: `("", x) when is_infixop1 x :] -> x)
 ;
 
 value infixop2 =
   Grammar.Entry.of_parser gram "infixop2"
     (parser
-       [: `(_, x) when is_infixop2 x :] -> x)
+       [: `("", x) when is_infixop2 x :] -> x)
 ;
 
 value infixop3 =
   Grammar.Entry.of_parser gram "infixop3"
     (parser
-       [: `(_, x) when is_infixop3 x :] -> x)
+       [: `("", x) when is_infixop3 x :] -> x)
 ;
 
 value infixop4 =
   Grammar.Entry.of_parser gram "infixop4"
     (parser
-       [: `(_, x) when is_infixop4 x :] -> x)
+       [: `("", x) when is_infixop4 x :] -> x)
 ;
 
 value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
-       [: `(_, x) when is_hashop x :] -> x)
+       [: `("", x) when is_hashop x :] -> x)
+;
+
+value letop =
+  Grammar.Entry.of_parser gram "letop"
+    (parser
+       [: `("", x) when is_letop x :] -> x)
+;
+
+value andop =
+  Grammar.Entry.of_parser gram "andop"
+    (parser
+       [: `("", x) when is_andop x :] -> x)
 ;
 
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
@@ -197,6 +209,15 @@ value warning_deprecated_since_6_00 loc =
     warned.val := True
   }
   else ()
+;
+
+value build_letop_binder loc letop b l e = do {
+  let (argpat, argexp) =
+    List.fold_left (fun (argpat, argexp) (andop, (pat, exp)) ->
+        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>))
+      b l in
+  <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
+  }
 ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -366,11 +387,19 @@ EXTEND
       ]
     ]
   ;
+  and_binding:
+  [ [ op = andop ; b = let_binding -> (op, b) ] ]
+  ;
   expr:
     [ "top" RIGHTA
       [ "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
+
+      | letop = letop ; b = let_binding ; l = (LIST0 and_binding); "in";
+        x = expr LEVEL "top" ->
+          build_letop_binder loc letop b l x
+
       | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
           <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = SELF →

@@ -116,7 +116,7 @@ let operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
        match Stream.npeek 2 strm with
-         ["", s; "", ")"] when is_operator s ->
+         ["", s; "", ")"] when is_operator s || is_letop s || is_andop s ->
            Stream.junk strm; Stream.junk strm; s
        | _ -> raise Stream.Failure)
 ;;
@@ -139,7 +139,7 @@ let prefixop =
   Grammar.Entry.of_parser gram "prefixop"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some (_, x) when is_prefixop x -> Stream.junk strm__; x
+         Some ("", x) when is_prefixop x -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -147,7 +147,7 @@ let infixop0 =
   Grammar.Entry.of_parser gram "infixop0"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some (_, x) when is_infixop0 x -> Stream.junk strm__; x
+         Some ("", x) when is_infixop0 x -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -156,7 +156,7 @@ let infixop1 =
   Grammar.Entry.of_parser gram "infixop1"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some (_, x) when is_infixop1 x -> Stream.junk strm__; x
+         Some ("", x) when is_infixop1 x -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -164,7 +164,7 @@ let infixop2 =
   Grammar.Entry.of_parser gram "infixop2"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some (_, x) when is_infixop2 x -> Stream.junk strm__; x
+         Some ("", x) when is_infixop2 x -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -172,7 +172,7 @@ let infixop3 =
   Grammar.Entry.of_parser gram "infixop3"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some (_, x) when is_infixop3 x -> Stream.junk strm__; x
+         Some ("", x) when is_infixop3 x -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -180,7 +180,7 @@ let infixop4 =
   Grammar.Entry.of_parser gram "infixop4"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some (_, x) when is_infixop4 x -> Stream.junk strm__; x
+         Some ("", x) when is_infixop4 x -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -188,7 +188,23 @@ let hashop =
   Grammar.Entry.of_parser gram "hashop"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some (_, x) when is_hashop x -> Stream.junk strm__; x
+         Some ("", x) when is_hashop x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
+let letop =
+  Grammar.Entry.of_parser gram "letop"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some ("", x) when is_letop x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
+let andop =
+  Grammar.Entry.of_parser gram "andop"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some ("", x) when is_andop x -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -213,6 +229,20 @@ let warning_deprecated_since_6_00 loc =
       !(Pcaml.warning) loc "syntax deprecated since version 6.00";
       warned := true
     end
+;;
+
+let build_letop_binder loc letop b l e =
+  let (argpat, argexp) =
+    List.fold_left
+      (fun (argpat, argexp) (andop, (pat, exp)) ->
+         MLast.PaTup (loc, [argpat; pat]),
+         MLast.ExApp
+           (loc, MLast.ExApp (loc, MLast.ExLid (loc, andop), argexp), exp))
+      b l
+  in
+  MLast.ExApp
+    (loc, MLast.ExApp (loc, MLast.ExLid (loc, letop), argexp),
+     MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -256,6 +286,8 @@ Grammar.safe_extend
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
    and uidopt : 'uidopt Grammar.Entry.e = grammar_entry_create "uidopt"
+   and and_binding : 'and_binding Grammar.Entry.e =
+     grammar_entry_create "and_binding"
    and closed_case_list : 'closed_case_list Grammar.Entry.e =
      grammar_entry_create "closed_case_list"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
@@ -1041,6 +1073,15 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (m : string) (loc : Ploc.t) -> (Some m : 'uidopt)))]];
+    Grammar.extension (and_binding : 'and_binding Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (andop : 'andop Grammar.Entry.e)))
+             (Grammar.s_nterm (let_binding : 'let_binding Grammar.Entry.e)),
+           (fun (b : 'let_binding) (op : 'andop) (loc : Ploc.t) ->
+              (op, b : 'and_binding)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e) None
       [Some "top", Some Gramext.RightA,
        [Grammar.production
@@ -1206,6 +1247,23 @@ Grammar.safe_extend
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'uidopt) _ _
                 (loc : Ploc.t) ->
               (MLast.ExLmd (loc, m, mb, e) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_nterm (letop : 'letop Grammar.Entry.e)))
+                      (Grammar.s_nterm
+                         (let_binding : 'let_binding Grammar.Entry.e)))
+                   (Grammar.s_list0
+                      (Grammar.s_nterm
+                         (and_binding : 'and_binding Grammar.Entry.e))))
+                (Grammar.s_token ("", "in")))
+             (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "top"),
+           (fun (x : 'expr) _ (l : 'and_binding list) (b : 'let_binding)
+                (letop : 'letop) (loc : Ploc.t) ->
+              (build_letop_binder loc letop b l x : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

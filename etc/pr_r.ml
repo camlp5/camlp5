@@ -194,6 +194,8 @@ value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
 value and_before elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 
+value andop_before elem pc ((andop,_) as x) = pprintf pc "%s %p" andop elem x;
+
 value operator pc left right sh op x y =
   let op = if op = "" then "" else " " ^ op in
   pprintf pc "%p%s@;%p" left x op right y
@@ -539,12 +541,14 @@ and hvseq pc se =
         [ Some params ->
             sprintf "%s%s" (comm_bef pc loc) (where_binding pc params)
         | None ->
+           let pel = List.map (fun x -> ("and",x)) pel in
             sprintf "%s%s" (comm_bef pc loc)
-              (pprintf pc "@[<i>%p@ %p@]" force_vertic let_up_to_in
+              (pprintf pc "@[<i>%p@ %p@]" force_vertic (letop_up_to_in "let")
                  (rf, pel) (comm_expr expr_wh) e) ]
     | SE_let loc rf pel se ->
+       let pel = List.map (fun x -> ("and",x)) pel in
         sprintf "%s%s" (comm_bef pc loc)
-          (pprintf pc "@[<i>%p@ %p@]" force_vertic let_up_to_in (rf, pel)
+          (pprintf pc "@[<i>%p@ %p@]" force_vertic (letop_up_to_in "let") (rf, pel)
             loop se)
     | SE_let_module loc s me se ->
         sprintf "%s%s" (comm_bef pc loc)
@@ -562,8 +566,8 @@ and hvseq pc se =
           se
     | SE_other e None -> comm_expr expr_wh pc e ]
 
-and let_up_to_in pc (rf, pel) =
-  let let_binding pc pe =
+and letop_up_to_in letop pc (rf, pel) =
+  let letop_binding pc (_,pe) =
     let sequ bef pc se =
       if pc.aft = "" then pprintf pc "%p" (sequence_box bef) se
       else pprintf pc "%p@ " (sequence_box bef) se
@@ -573,11 +577,11 @@ and let_up_to_in pc (rf, pel) =
   let pc = {(pc) with aft = ""} in
   horiz_vertic_if True
     (fun () ->
-       pprintf pc "let %s%p in" (if rf then "rec " else "")
-         (hlist2 let_binding (and_before let_binding)) pel)
+       pprintf pc "%s %s%p in" letop (if rf then "rec " else "")
+         (hlist2 letop_binding (andop_before letop_binding)) pel)
     (fun () ->
-       pprintf pc "let %s%pin" (if rf then "rec " else "")
-         (vlist2 let_binding (and_before let_binding)) pel)
+       pprintf pc "%s %s%pin" letop (if rf then "rec " else "")
+         (vlist2 letop_binding (andop_before letop_binding)) pel)
 and let_module_up_to_in pc (s, me) =
     let s = uidopt_to_maybe_blank s in
     pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
@@ -1318,8 +1322,20 @@ EXTEND_PRINTER
               let expr_wh =
                 if flag_where_after_in.val then expr_wh else curr
               in
-              pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh)
+              let pel = List.map (fun x -> ("and",x)) pel in
+              pprintf pc "%p@ %p" (letop_up_to_in "let") (rf, pel) (comm_expr expr_wh)
                 e ]
+      | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >>
+           when Mlsyntax.is_letop letop ->
+        let rec deconstruct_ands acc = fun [
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when Mlsyntax.is_andop andop ->
+                deconstruct_ands [ (andop, (pat2, e2)) :: acc ] (pat1, e1)
+            | (pat, exp) -> [ ("andop_unused", (pat, exp))::acc ]
+        ] in
+        let pel = deconstruct_ands [] (bindpat, arg) in
+        pprintf pc "%p@ %p" (letop_up_to_in letop) (False, pel)
+          curr body
+
       | <:expr< let module $uidopt:s$ = $me$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se

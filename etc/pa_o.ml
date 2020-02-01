@@ -106,56 +106,56 @@ value check_not_part_of_patt =
 value prefixop =
   Grammar.Entry.of_parser gram "prefixop"
     (parser
-       [: `(_, x) when is_prefixop x :] -> x)
+       [: `("", x) when is_prefixop x :] -> x)
 ;
 
 value infixop0 =
   Grammar.Entry.of_parser gram "infixop0"
     (parser
-       [: `(_, x) when is_infixop0 x :] -> x)
+       [: `("", x) when is_infixop0 x :] -> x)
 ;
 
 
 value infixop1 =
   Grammar.Entry.of_parser gram "infixop1"
     (parser
-       [: `(_, x) when is_infixop1 x :] -> x)
+       [: `("", x) when is_infixop1 x :] -> x)
 ;
 
 value infixop2 =
   Grammar.Entry.of_parser gram "infixop2"
     (parser
-       [: `(_, x) when is_infixop2 x :] -> x)
+       [: `("", x) when is_infixop2 x :] -> x)
 ;
 
 value infixop3 =
   Grammar.Entry.of_parser gram "infixop3"
     (parser
-       [: `(_, x) when is_infixop3 x :] -> x)
+       [: `("", x) when is_infixop3 x :] -> x)
 ;
 
 value infixop4 =
   Grammar.Entry.of_parser gram "infixop4"
     (parser
-       [: `(_, x) when is_infixop4 x :] -> x)
+       [: `("", x) when is_infixop4 x :] -> x)
 ;
 
 value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
-       [: `(_, x) when is_hashop x :] -> x)
+       [: `("", x) when is_hashop x :] -> x)
 ;
 
 value letop =
   Grammar.Entry.of_parser gram "letop"
     (parser
-       [: `(_, x) when is_letop x :] -> x)
+       [: `("", x) when is_letop x :] -> x)
 ;
 
 value andop =
   Grammar.Entry.of_parser gram "andop"
     (parser
-       [: `(_, x) when is_andop x :] -> x)
+       [: `("", x) when is_andop x :] -> x)
 ;
 
 value test_constr_decl =
