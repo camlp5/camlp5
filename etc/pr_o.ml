@@ -937,6 +937,45 @@ value map_option f =
   | None -> None ]
 ;
 
+value pr_letlike letop pc loc rf pel e =
+  horiz_vertic
+    (fun () ->
+      if not flag_horiz_let_in.val then sprintf "\n"
+      else if pc.dang = ";" then
+        pprintf pc "(%s%s %q in %q)"
+          letop
+          (if rf then " rec" else "")
+          (hlist2 letop_binding (andop_before letop_binding)) pel ""
+          (comm_expr expr) e ""
+      else
+        pprintf pc "%s%s %q in %p"
+          letop
+          (if rf then " rec" else "")
+          (hlist2 letop_binding (andop_before letop_binding)) pel ""
+          (comm_expr expr) e)
+    (fun () ->
+      if pc.dang = ";" then
+        pprintf pc "@[<a>begin %s%s %qin@;%q@ end@]"
+          letop
+          (if rf then " rec" else "")
+          (vlist2 letop_binding (andop_before letop_binding)) pel ""
+          expr_with_comm_except_if_sequence e ""
+      else
+        pprintf pc "%s%s %qin@ %p" letop (if rf then " rec" else "")
+          (vlist2 letop_binding (andop_before letop_binding)) pel ""
+          (**)
+          (if Ploc.first_pos loc =
+                Ploc.first_pos (MLast.loc_of_expr e)
+           then
+             (* comes from a 'where' in revised syntax *)
+             expr
+           else expr_with_comm_except_if_sequence)
+          (*
+                   expr_with_comm_except_if_sequence
+           *)
+          e)
+;
+
 EXTEND_PRINTER
   pr_expr:
     [ "top"
@@ -1090,46 +1129,23 @@ EXTEND_PRINTER
               else
                  pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr e1
                    (match_assoc_list loc) pwel ]
-      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
-          let letop = "let" in
-          let andop = "and" in
-          let pel = List.map (fun x -> (andop, x)) pel in
-          horiz_vertic
-            (fun () ->
-               if not flag_horiz_let_in.val then sprintf "\n"
-               else if pc.dang = ";" then
-                 pprintf pc "(%s%s %q in %q)"
-                   letop
-                   (if rf then " rec" else "")
-                   (hlist2 letop_binding (andop_before letop_binding)) pel ""
-                   (comm_expr expr) e ""
-               else
-                 pprintf pc "%s%s %q in %p"
-                   letop
-                   (if rf then " rec" else "")
-                   (hlist2 letop_binding (andop_before letop_binding)) pel ""
-                   (comm_expr expr) e)
-            (fun () ->
-               if pc.dang = ";" then
-                 pprintf pc "@[<a>begin %s%s %qin@;%q@ end@]"
-                   letop
-                   (if rf then " rec" else "")
-                   (vlist2 letop_binding (andop_before letop_binding)) pel ""
-                   expr_with_comm_except_if_sequence e ""
-               else
-                 pprintf pc "%s%s %qin@ %p" letop (if rf then " rec" else "")
-                   (vlist2 letop_binding (andop_before letop_binding)) pel ""
-(**)
-                   (if Ploc.first_pos loc =
-                       Ploc.first_pos (MLast.loc_of_expr e)
-                    then
-                      (* comes from a 'where' in revised syntax *)
-                      expr
-                    else expr_with_comm_except_if_sequence)
-(*
-                   expr_with_comm_except_if_sequence
-*)
-                  e)
+      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as e0 ->
+        let andop = "and" in
+        let pel = List.map (fun x -> (andop, x)) pel in
+        let loc = MLast.loc_of_expr e0 in
+          pr_letlike "let" pc loc rf pel e
+
+      | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
+           when Mlsyntax.is_letop letop ->
+        let loc = MLast.loc_of_expr e0 in
+        let rec deconstruct_ands acc = fun [
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when Mlsyntax.is_andop andop ->
+                deconstruct_ands [ (andop, (pat2, e2)) :: acc ] (pat1, e1)
+            | (pat, exp) -> [ ("andop_unused", (pat, exp))::acc ]
+        ] in
+        let pel = deconstruct_ands [] (bindpat, arg) in
+          pr_letlike letop pc loc False pel body
+
       | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
           let s = uidopt_to_maybe_blank s in
           if pc.dang = ";" then
