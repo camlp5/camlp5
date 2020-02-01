@@ -1,5 +1,6 @@
 (* camlp5r *)
 (* sch2r_test.ml *)
+#load "pa_macro.cmo";
 #load "pa_ounit2.cmo";
 
 open Testutil ;
@@ -35,12 +36,17 @@ value x = 1 ;
 |foo}
           (pr (exn_wrap_result pa {foo|(letmodule M (struct ) 1)|foo}))
                                    ]);
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    "unused" >:: (fun _ -> ())
+ELSE
     "let-module blank" >:: (fun [ _ ->
         assert_equal ~{msg="not equal"} ~{printer=(fun [ x -> x ])}
           {foo|let module _ = struct  end in 1 ;
 |foo}
           (pr (exn_wrap_result pa {foo|(letmodule _ (struct ) 1)|foo}))
-                                ]);
+                                ])
+END
+;
     "let-open" >:: (fun [ _ ->
         assert_equal ~{msg="not equal"} ~{printer=(fun [ x -> x ])}
           {foo|let open M in 1 ;
