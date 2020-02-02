@@ -8,7 +8,7 @@
 #load "pa_macro_gram.cmo";
 
 open Pcaml;
-open Mlsyntax;
+open Mlsyntax.Original;
 
 Pcaml.syntax_name.val := "OCaml";
 Pcaml.no_constructors_arity.val := True;

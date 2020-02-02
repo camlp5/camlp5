@@ -14,6 +14,7 @@ open Pretty;
 open Pcaml;
 open Prtools;
 open Versdep;
+open Mlsyntax.Original;
 
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
@@ -1136,10 +1137,10 @@ EXTEND_PRINTER
           pr_letlike "let" pc loc rf pel e
 
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
-           when Mlsyntax.is_letop letop ->
+           when is_letop letop ->
         let loc = MLast.loc_of_expr e0 in
         let rec deconstruct_ands acc = fun [
-              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when Mlsyntax.is_andop andop ->
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
                 deconstruct_ands [ (andop, (pat2, e2)) :: acc ] (pat1, e1)
             | (pat, exp) -> [ ("andop_unused", (pat, exp))::acc ]
         ] in
@@ -1200,7 +1201,7 @@ EXTEND_PRINTER
           [ "!=" | "<" | "<=" | "<>" | "=" | "==" | ">" | ">=" ->
               operator pc next next 0 (loc, op) x y
           | _ ->
-            if Mlsyntax.is_infixop0 op then
+            if is_infixop0 op then
               operator pc next next 0 (loc, op) x y
             else next pc z ] ]
     | "concat"
@@ -1208,7 +1209,7 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ["^"; "@"] || Mlsyntax.is_infixop1 op then Some (x, " " ^ op, y) else None
+                if List.mem op ["^"; "@"] || is_infixop1 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           let loc = MLast.loc_of_expr z in
@@ -1233,7 +1234,7 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ops || Mlsyntax.is_infixop2 op then Some (x, " " ^ op, y) else None
+                if List.mem op ops || is_infixop2 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           let loc = MLast.loc_of_expr z in
@@ -1244,7 +1245,7 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ops || Mlsyntax.is_infixop3 op then Some (x, " " ^ op, y) else None
+                if List.mem op ops || is_infixop3 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           let loc = MLast.loc_of_expr z in
@@ -1255,7 +1256,7 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ops || Mlsyntax.is_infixop4 op then Some (x, " " ^ op, y) else None
+                if List.mem op ops || is_infixop4 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           let loc = MLast.loc_of_expr z in
@@ -1273,7 +1274,7 @@ EXTEND_PRINTER
       | <:expr:< $_$ $_$ >> as z ->
           let inf =
             match z with
-            [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n || Mlsyntax.is_infix_operator n
+            [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n || is_infix_operator n
             | <:expr< [$_$ :: $_$] >> -> True
             | _ -> False ]
           in
@@ -2210,7 +2211,7 @@ EXTEND_PRINTER
   ;
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s
-      | <:expr< $lid:op$ $e1$ $e2$ >> when Mlsyntax.is_hashop op ->
+      | <:expr< $lid:op$ $e1$ $e2$ >> when is_hashop op ->
         pprintf pc "%p % s@;<0 0>%p" curr e1 op curr e2
       ] ]
   ;

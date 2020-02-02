@@ -1,7 +1,6 @@
 (* camlp5r *)
 (* r2sch_test.ml *)
 #load "pa_macro.cmo";
-#load "pa_ounit2.cmo";
 
 open Testutil ;
 open OUnit2 ;
@@ -16,19 +15,19 @@ value tests = "test pa_r -> pr_scheme" >::: [
 3
 (define x 1)
 |foo}
-          (pr (pa "do { 1; 2 }; 3 ; value x = 1 ;"))
+          (pr (pa1 "do { 1; 2 }; 3 ; value x = 1 ;"))
                          ]) ;
     "simple module" >:: (fun [ _ ->
         assert_equal ~{msg="not equal"} ~{printer=(fun [x -> x])}
           {foo|(module M (struct (define x 1)))
 |foo}
-          (pr (pa "module M = struct value x = 1 ; end ;"))
+          (pr (pa1 "module M = struct value x = 1 ; end ;"))
                              ]) ;
     "empty module" >:: (fun [ _ ->
         assert_equal ~{msg="not equal"} ~{printer=(fun [ x -> x])}
           {foo|(module M (struct ))
 |foo}
-          (pr (pa "module M = struct end ;"))
+          (pr (pa1 "module M = struct end ;"))
                             ]) ;
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     "unused" >:: (fun _ -> ()) 
@@ -37,7 +36,7 @@ ELSE
         assert_equal ~{msg="not equal"} ~{printer=(fun [x -> x])}
           {foo|(letmodule _ (struct ) 1)
 |foo}
-          (pr (pa "let module _ = struct end in 1 ;"))
+          (pr (pa1 "let module _ = struct end in 1 ;"))
                                 ])
 END
     ;
@@ -45,7 +44,7 @@ END
         assert_equal ~{msg="not equal"} ~{printer=(fun [x -> x])}
           {foo|(letopen M 1)
 |foo}
-          (pr (pa "let open M in 1 ;"))
+          (pr (pa1 "let open M in 1 ;"))
                         ])
   ]
  ;

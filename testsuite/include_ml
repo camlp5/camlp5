@@ -8,17 +8,18 @@
 #require "fmt";;
 #require "rresult";;
 #require "pcre";;
+#require "bos";;
 
 (* #load "pa_schemer.cmo";; *)
 #directory "../etc";;
 #load "pa_r.cmo";;
 #load "pr_r.cmo";;
+#load "pa_extend.cmo";;
+#load "q_MLast.cmo";;
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
-#load "sch2r_test.cmo";;
 
 open OUnit2 ;;
-open Sch2r_test ;;
 open Testutil ;;
 open Testutil2 ;;
 

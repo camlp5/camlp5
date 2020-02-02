@@ -1,6 +1,5 @@
 (* camlp5r *)
 (* extfun_test.ml *)
-#load "pa_ounit2.cmo";
 #load "pa_extfun.cmo";
 
 open Testutil;

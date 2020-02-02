@@ -14,6 +14,7 @@ open Pretty;
 open Pcaml;
 open Prtools;
 open Versdep;
+open Mlsyntax.Revised;
 
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
@@ -1326,9 +1327,9 @@ EXTEND_PRINTER
               pprintf pc "%p@ %p" (letop_up_to_in "let") (rf, pel) (comm_expr expr_wh)
                 e ]
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >>
-           when Mlsyntax.is_letop letop ->
+           when is_letop letop ->
         let rec deconstruct_ands acc = fun [
-              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when Mlsyntax.is_andop andop ->
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
                 deconstruct_ands [ (andop, (pat2, e2)) :: acc ] (pat1, e1)
             | (pat, exp) -> [ ("andop_unused", (pat, exp))::acc ]
         ] in
@@ -1511,7 +1512,7 @@ EXTEND_PRINTER
       | <:expr< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
-      | <:expr:< $lid:s$ >> when Mlsyntax.is_operator s ->
+      | <:expr:< $lid:s$ >> when is_operator s ->
           pprintf pc "( %s )" s
       | <:expr:< $lid:s$ >> ->
           var_escaped pc (loc, s)
@@ -1610,7 +1611,7 @@ EXTEND_PRINTER
       | <:patt< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
-      | <:patt:< $lid:s$ >> when Mlsyntax.is_operator s ->
+      | <:patt:< $lid:s$ >> when is_operator s ->
           pprintf pc "( %s )" s
       | <:patt:< $lid:s$ >> ->
           var_escaped pc (loc, s)
@@ -1741,7 +1742,7 @@ EXTEND_PRINTER
       | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ >> ->
           exception_decl pc (loc, e, tl, id)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
-          if Mlsyntax.is_operator n then
+          if is_operator n then
             external_decl_original pc (loc, n, t, sl)
           else
             external_decl pc (loc, n, t, sl)
@@ -1809,7 +1810,7 @@ EXTEND_PRINTER
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
-      | <:sig_item:< value $lid:s$ : $t$ >> when Mlsyntax.is_operator s ->
+      | <:sig_item:< value $lid:s$ : $t$ >> when is_operator s ->
           pprintf pc "value ( %s ) :@;%p" s ctyp t
       | <:sig_item:< value $lid:s$ : $t$ >> ->
           pprintf pc "value %p :@;%p" var_escaped (loc, s) ctyp t

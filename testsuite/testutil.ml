@@ -58,7 +58,18 @@ value wrap_err f arg =
 try f arg with exc -> report_error_and_exit exc
 ;
 
-value pa s = let (ast, _) = Pcaml.parse_implem.val (Stream.of_string s) in ast ;
+value pa strm = let (ast, _) = Pcaml.parse_implem.val strm in ast ;
+value pa1 s = let ast = pa (Stream.of_string s) in ast ;
+value pa_all s =
+  let strm = Stream.of_string s in
+  let rec pall = parser [
+    [: x = pa ; strm :] ->
+    if x = [] then [] else
+      x @ (pall strm)
+  | [: :] -> [] ] in
+  pall strm
+;
+
 Pcaml.inter_phrases.val := Some " ;\n" ;
 value pr l = 
   let sep = match Pcaml.inter_phrases.val with [ None -> "" | Some s -> s ] in

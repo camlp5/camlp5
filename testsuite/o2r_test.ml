@@ -1,6 +1,5 @@
 (* camlp5r *)
 (* o2r_test.ml *)
-#load "pa_ounit2.cmo";
 
 open Testutil;
 
@@ -14,7 +13,7 @@ value tests = "test pa_o -> pr_r" >::: [
 3 ;
 value x = 1 ;
 |foo}
-          (pr (pa "(1; 2);; 3 ;; let x = 1 ;;"))
+          (pr (pa1 "(1; 2);; 3 ;; let x = 1 ;;"))
                         ])
 ]
 ;

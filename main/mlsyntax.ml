@@ -32,6 +32,8 @@ value kwdopchar =
     else List.mem s.[i] list
 ;
 
+module Original = struct
+
 value is_prefixop =
   let list = ['!'; '?'; '~'] in
   let excl = ["!="; "??"; "?!"] in
@@ -116,3 +118,28 @@ value is_operator s =
 value is_infix_operator op =
   is_operator op && match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ]
 ;
+
+end ;
+
+module Revised = struct
+include Original ;
+
+value is_infixop0 =
+  let list = ['='; '<'; '>'; '|'; '&'; '$'] in
+  let excl = ["<-"; "||"; "&&"] in
+  fun x ->
+    not (List.mem x excl) && (String.length x >= 2) &&
+    List.mem x.[0] list && symbolchar x 1
+;
+
+value is_operator0 s = s <> "$" && is_operator s ;
+
+value is_operator s =
+  is_operator0 s || (is_hashop s)
+;
+
+value is_infix_operator op =
+  is_operator op && match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ]
+;
+
+end ;
