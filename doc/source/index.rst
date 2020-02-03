@@ -7,16 +7,18 @@ Welcome to Camlp5's documentation!
 ==================================
 
 .. toctree::
-   :maxdepth: 6
+   :maxdepth: 2
    :caption: Contents:
 
    introduction
    strict
    pptools
    patools
+   prtools
+   langext
    q_ast
    ml_ast
-   library
+   appendix
 
 Indices and tables
 ==================
