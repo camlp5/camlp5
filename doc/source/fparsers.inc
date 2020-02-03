@@ -135,3 +135,7 @@ possible to reuse that same stream to call another parser, and hope to
 get the right position of the error, if another error happens, since
 it may test less terminals than the first parser. Use a fresh stream
 in this case, if possible.
+
+.. ;;; Local Variables: ***
+.. ;;; mode:rst ***
+.. ;;; End: ***

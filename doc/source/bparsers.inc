@@ -171,3 +171,6 @@ showing the interest of the backtracking:
    ["C"; "A"; "C"]; ["C"; "B"; "A"]; ["C"; "B"; "B"]; ["C"; "B"; "C"];
    ["C"; "C"; "A"]; ["C"; "C"; "B"]; ["C"; "C"; "C"]]
 
+.. ;;; Local Variables: ***
+.. ;;; mode:rst ***
+.. ;;; End: ***

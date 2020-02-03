@@ -638,3 +638,7 @@ A second alternative is to use the :ref:`backtracking-parsers`. They
 use the same stream type as the functional parsers, but they test more
 cases than them. They have the same advantages and drawbacks than the
 functional parsers.
+
+.. ;;; Local Variables: ***
+.. ;;; mode:rst ***
+.. ;;; End: ***

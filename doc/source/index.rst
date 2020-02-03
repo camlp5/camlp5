@@ -16,8 +16,6 @@ Welcome to Camlp5's documentation!
    patools
    prtools
    langext
-   q_ast
-   ml_ast
    appendix
 
 Indices and tables

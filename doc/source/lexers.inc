@@ -309,3 +309,7 @@ To see the equivalent code with stream parsers, use:
 ::
 
   camlp5r pa_lexer.cmo pr_r.cmo pr_rp.cmo bar.ml
+
+.. ;;; Local Variables: ***
+.. ;;; mode:rst ***
+.. ;;; End: ***

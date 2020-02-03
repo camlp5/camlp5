@@ -1102,3 +1102,7 @@ Examples:
   $ ./calc '(47+2)/3'
   (47+2)/3 = 16
 
+
+.. ;;; Local Variables: ***
+.. ;;; mode:rst ***
+.. ;;; End: ***
