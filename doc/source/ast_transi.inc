@@ -670,3 +670,7 @@ Polymorphic variants.
   ``PvTag loc s False lt``,  ```$s$ of $list:lt$``,  constructor
   ``PvTag loc s b lt``,  ```$s$ of $flag:b$ $list:lt$``,  constructor
   ``PvInh loc t``,  ``$t$``,  type
+
+.. ;;; Local Variables: ***
+.. ;;; mode:rst ***
+.. ;;; End: ***

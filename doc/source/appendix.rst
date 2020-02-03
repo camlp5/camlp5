@@ -19,6 +19,11 @@ Library
 
 bargle
 
+.. _library-plexer-module:
+
+Plexer Module
+==============
+
 .. _library_grammar_module:
 
 Grammar Module

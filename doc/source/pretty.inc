@@ -1,5 +1,5 @@
 
-.. _pretty-print:
+.. _pretty:
 
 ************
 Pretty print

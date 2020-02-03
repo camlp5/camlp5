@@ -9,7 +9,7 @@ Language Extensions
 .. include:: q_ast.inc
 .. include:: pcaml.inc
 .. include:: directives.inc
-.. include:: synext.inc
+.. include:: syntext.inc
 .. include:: opretty.inc
 .. include:: redef.inc
 .. include:: quot.inc

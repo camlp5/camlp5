@@ -53,7 +53,7 @@ The result of ``pprintf`` is always a string. There is no versions
 applying to files or buffers.
 
 The strings built by ``pprintf`` are concatenated by the function
-``Pretty.sprintf`` (see the chapter entitled :ref:`pretty-print`)
+``Pretty.sprintf`` (see the chapter entitled :ref:`pretty`)
 which controls the line length and prevents overflowing.
 
 Printing context
@@ -235,7 +235,7 @@ resulting string holds in the line, and another one to possibly recall
 this function to print it in several lines. In the two cases, the
 printing context given as parameter is different.
 
-It uses the functions defined in the :ref:`pretty-print` module.
+It uses the functions defined in the :ref:`pretty` module.
 
 Example: the following statement:
 
@@ -623,7 +623,7 @@ behaviour of ``pprintf`` is not what is desired by the programmer.
 Relation with the Camlp5 extensible printers
 ============================================
 
-The extensible printers of Camlp5 (see :ref:`extensible-printers`) use
+The extensible printers of Camlp5 (see :ref:`printers`) use
 the type ``pr_context`` of ``pprintf``. It is therefore possible to
 use ``pprintf`` in the semantic actions of the extensible printers.  But
 it is not mandatory. An extensible printer can just use the ``Pretty``

@@ -1,4 +1,4 @@
-.. _extensible-printers:
+.. _printers:
 
 *******************
 Extensible printers
