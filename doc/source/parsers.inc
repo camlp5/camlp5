@@ -1,5 +1,5 @@
 
-.. _stream-parsers:
+.. _parsers:
 
 **************
 Stream parsers

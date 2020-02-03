@@ -92,7 +92,7 @@ previous section.
 
 The first one, ``q_MLast.cmo`` requires that the contents of the
 quotation be in :ref:`revsynt` without any syntax extension (even the
-:ref:`stream-parsers`). It works in transitional and in strict modes.
+:ref:`parsers`). It works in transitional and in strict modes.
 
 The second one, ``q_ast.cmo`` requires that the contents of the
 quotation be in the current user syntax (normal, revised, lisp,

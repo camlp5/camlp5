@@ -2,6 +2,13 @@
 Language Extensions
 ###################
 
+
+.. |br| raw:: html
+
+   <br/>
+
+.. |nbsp| unicode:: U+00A0
+
 .. include:: locations.inc
 .. include:: ml_ast.inc
 .. include:: ast_transi.inc

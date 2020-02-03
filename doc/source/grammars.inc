@@ -635,7 +635,7 @@ rules) indicated in the next sections.
 However, it is possible to change the parsing algorithm, by calling
 the function ``Grammar.set_algorithm``. The possible values are:
 
-- ``Grammar.Predictive``: internally using :ref:`stream-parsers`, with
+- ``Grammar.Predictive``: internally using :ref:`parsers`, with
   a predictive (recursive descent without backtracking) algorithm.
 - ``Grammar.Functional``: internally using :ref:`functional-parsers`,
   with a limited backtracking algorithm,
@@ -661,7 +661,7 @@ exception "Ploc.Exc" giving the location of the error together with
 the exception itself.
 
 If the parsing algorithm is ``Grammar.Predictive``, the system
-internally uses :ref:`stream-parsers`. Two exceptions may happen:
+internally uses :ref:`parsers`. Two exceptions may happen:
 ``Stream.Failure`` or ``Stream.Error``. ``Stream.Failure`` indicates
 that the parsing just could not start. ``Stream.Error`` indicates that
 the parsing started but failed further.

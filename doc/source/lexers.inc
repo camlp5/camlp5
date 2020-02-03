@@ -8,7 +8,7 @@ Stream lexers
 The file ``pa_lexer.cmo`` is a Camlp5 syntax extension kit for parsers
 of streams of the type ``char``. This syntax is shorter and more
 readable than its equivalent version written with
-:ref:`stream-parsers`. Like classical parsers, they use recursive
+:ref:`parsers`. Like classical parsers, they use recursive
 descendant parsing. They are also pure syntax sugar, and each lexer
 written with this syntax can be written using normal parsers syntax.
 
@@ -140,7 +140,7 @@ stream. When called, it tries to match the stream against its first
 rule. If it fails, it tries its second rule, and so on, up to its last
 rule. If the last rule fails, the lexer fails by raising the exception
 ``Stream.Failure``. All of this is the usual behaviour of
-:ref:`stream-parsers`.
+:ref:`parsers`.
 
 In a rule, when a character is matched, it is inserted into the lexing
 buffer, except if the "no record" feature is used (see further).
@@ -184,7 +184,7 @@ which can be:
   exception ``Stream.Error`` is raised with that string as
   parameter. Without this indicator, it is raised with the empty
   string. This is the same behaviour than with classical
-  :ref:`stream-parsers`.
+  :ref:`parsers`.
 - The character ``!`` (exclamation mark), which is just an indicator
   to let the syntax expander optimize the code. If the programmer is
   sure that the symbol never fails (i.e. never raises

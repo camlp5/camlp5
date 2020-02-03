@@ -6,7 +6,7 @@ Backtracking parsers
 ********************
 
 Backtracking parsers are a second alternative of
-:ref:`stream-parsers` and :ref:`functional-parsers`.
+:ref:`parsers` and :ref:`functional-parsers`.
 
 Backtracking parsers are close to functional parsers: they use the
 same stream type, ``Fstream.t``, and their syntax is almost

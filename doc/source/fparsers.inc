@@ -5,7 +5,7 @@
 Functional parsers
 ******************
 
-Purely functional parsers are an alternative of :ref:`stream-parsers`
+Purely functional parsers are an alternative of :ref:`parsers`
 where the used stream type is a lazy non-destructive type. These
 streams are lazy values, as in classical stream parsers, but the
 values are not removed as long as the parsing advances.

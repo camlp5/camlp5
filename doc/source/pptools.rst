@@ -40,7 +40,7 @@ parsing. Streams are actually lazy lists. At each step, the head of
 the list is compared against a stream pattern. There are three kinds
 of streams parsers:
 
-- The imperative :ref:`stream-parsers` , where the elements are removed from
+- The imperative :ref:`parsers` , where the elements are removed from
   the stream as long as they are parsed. Parsers return either:
 
   - A value, in case of success,
