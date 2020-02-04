@@ -125,7 +125,7 @@ and expr =
 and module_type =
     MtAcc of loc * module_type * module_type
   | MtApp of loc * module_type * module_type
-  | MtFun of loc * (string option * module_type) option * module_type
+  | MtFun of loc * functor_parameter * module_type
   | MtLid of loc * string
   | MtQuo of loc * string
   | MtSig of loc * sig_item list
@@ -133,6 +133,7 @@ and module_type =
   | MtUid of loc * string
   | MtWit of loc * module_type * with_constr list
   | MtXtr of loc * string * module_type option
+and functor_parameter = (string option * module_type) option
 and sig_item =
     SgCls of loc * class_type class_infos list
   | SgClt of loc * class_type class_infos list
@@ -156,7 +157,7 @@ and with_constr =
 and module_expr =
     MeAcc of loc * module_expr * module_expr
   | MeApp of loc * module_expr * module_expr
-  | MeFun of loc * (string option * module_type) option * module_expr
+  | MeFun of loc * functor_parameter * module_expr
   | MeStr of loc * str_item list
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string

@@ -895,7 +895,8 @@ and str_module_se =
   | se → error se "module binding" ]
 and sig_module_se =
   fun
-  [ Sexpr loc [se1; se2] → (Ploc.VaVal (Some (anti_uid_or_error se1)), module_type_se se2)
+  [ Sexpr loc [se1; se2] →
+      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_type_se se2)
   | se → error se "module binding" ]
 and expr_se =
   fun
