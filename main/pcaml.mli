@@ -38,6 +38,7 @@ value interf : Grammar.Entry.e (list (MLast.sig_item * MLast.loc) * status);
 value implem : Grammar.Entry.e (list (MLast.str_item * MLast.loc) * status);
 value top_phrase : Grammar.Entry.e (option MLast.str_item);
 value use_file : Grammar.Entry.e (list MLast.str_item * bool);
+value functor_parameter : Grammar.Entry.e MLast.functor_parameter;
 value module_type : Grammar.Entry.e MLast.module_type;
 value module_expr : Grammar.Entry.e MLast.module_expr;
 value signature : Grammar.Entry.e (MLast.v (list MLast.sig_item));
