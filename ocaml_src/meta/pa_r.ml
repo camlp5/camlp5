@@ -24,6 +24,7 @@ Grammar.Unsafe.clear_entry interf;
 Grammar.Unsafe.clear_entry implem;
 Grammar.Unsafe.clear_entry top_phrase;
 Grammar.Unsafe.clear_entry use_file;
+Grammar.Unsafe.clear_entry functor_parameter;
 Grammar.Unsafe.clear_entry module_type;
 Grammar.Unsafe.clear_entry module_expr;
 Grammar.Unsafe.clear_entry sig_item;
@@ -142,6 +143,7 @@ Grammar.safe_extend
    and _ = (ctyp : 'ctyp Grammar.Entry.e)
    and _ = (patt : 'patt Grammar.Entry.e)
    and _ = (expr : 'expr Grammar.Entry.e)
+   and _ = (functor_parameter : 'functor_parameter Grammar.Entry.e)
    and _ = (module_type : 'module_type Grammar.Entry.e)
    and _ = (module_expr : 'module_expr Grammar.Entry.e)
    and _ = (signature : 'signature Grammar.Entry.e)

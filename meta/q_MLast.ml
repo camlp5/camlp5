@@ -278,10 +278,10 @@ value warning_deprecated_since_6_00 loc =
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
-  GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type module_expr signature
-    structure class_type class_expr class_sig_item class_str_item let_binding
-    type_decl constructor_declaration label_declaration match_case ipatt
-    with_constr poly_variant;
+  GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
+    module_expr signature structure class_type class_expr class_sig_item
+    class_str_item let_binding type_decl constructor_declaration
+    label_declaration match_case ipatt with_constr poly_variant;
   functor_parameter:
    [ [ "(" ; i = SV uidopt "uidopt"; ":"; t = module_type ; ")" →
                 Qast.Option (Some (Qast.Tuple [i; t]))
@@ -315,8 +315,8 @@ EXTEND
       | "exception"; ctl = constructor_declaration; b = rebind_exn →
           let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
-            | _ -> match () with [] ]
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
+            | _ → match () with [] ]
           in
           Qast.Node "StExc" [Qast.Loc; c; tl; b]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
@@ -390,8 +390,8 @@ EXTEND
       | "exception"; ctl = constructor_declaration →
           let (_, c, tl, _) =
             match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] -> (xx1, xx2, xx3, xx4)
-            | _ -> match () with [] ]
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
+            | _ → match () with [] ]
           in
           Qast.Node "SgExc" [Qast.Loc; c; tl]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
@@ -416,8 +416,7 @@ EXTEND
   ;
   mod_decl_binding:
     [ [ i = SV uidopt "uidopt"; mt = module_declaration →
-          Qast.Tuple [i; mt]
-      ] ]
+          Qast.Tuple [i; mt] ] ]
   ;
   module_declaration:
     [ RIGHTA
@@ -440,7 +439,7 @@ EXTEND
   uidopt:
     [ [ m = SV UIDENT → Qast.Option (Some m)
       | "_" → Qast.Option None ] ]
- ;
+  ;
   expr:
     [ "top" RIGHTA
       [ "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
@@ -776,7 +775,7 @@ EXTEND
       | "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
           Qast.List
-          [Qast.Node "ExLmd" [Qast.Loc; m; mb; mksequence Qast.Loc el]]
+            [Qast.Node "ExLmd" [Qast.Loc; m; mb; mksequence Qast.Loc el]]
       | "let"; "open"; m = module_expr; "in"; el = SELF →
           Qast.List [Qast.Node "ExLop" [Qast.Loc; m; mksequence Qast.Loc el]]
       | e = expr; ";"; el = SELF → Qast.Cons e el

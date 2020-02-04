@@ -38,6 +38,7 @@ val interf : ((MLast.sig_item * MLast.loc) list * status) Grammar.Entry.e;;
 val implem : ((MLast.str_item * MLast.loc) list * status) Grammar.Entry.e;;
 val top_phrase : MLast.str_item option Grammar.Entry.e;;
 val use_file : (MLast.str_item list * bool) Grammar.Entry.e;;
+val functor_parameter : MLast.functor_parameter Grammar.Entry.e;;
 val module_type : MLast.module_type Grammar.Entry.e;;
 val module_expr : MLast.module_expr Grammar.Entry.e;;
 val signature : MLast.sig_item list MLast.v Grammar.Entry.e;;
