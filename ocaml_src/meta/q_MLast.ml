@@ -502,8 +502,8 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (module_type : 'module_type Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
-           (fun _ (t : 'module_type) _ (id : 'e__1) _ (loc : Ploc.t) ->
-              (Qast.Option (Some (Qast.Tuple [id; t])) :
+           (fun _ (t : 'module_type) _ (i : 'e__1) _ (loc : Ploc.t) ->
+              (Qast.Option (Some (Qast.Tuple [i; t])) :
                'functor_parameter)))]];
     Grammar.extension (module_expr : 'module_expr Grammar.Entry.e) None
       [None, None,
@@ -1125,7 +1125,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 320, 19))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 319, 20))
                in
                Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
                'str_item)));
@@ -1928,7 +1928,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 391, 19))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 388, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
                'sig_item)));

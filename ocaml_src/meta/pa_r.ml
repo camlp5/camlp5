@@ -24,6 +24,7 @@ Grammar.Unsafe.clear_entry interf;
 Grammar.Unsafe.clear_entry implem;
 Grammar.Unsafe.clear_entry top_phrase;
 Grammar.Unsafe.clear_entry use_file;
+Grammar.Unsafe.clear_entry functor_parameter;
 Grammar.Unsafe.clear_entry module_type;
 Grammar.Unsafe.clear_entry module_expr;
 Grammar.Unsafe.clear_entry sig_item;
@@ -142,6 +143,7 @@ Grammar.safe_extend
    and _ = (ctyp : 'ctyp Grammar.Entry.e)
    and _ = (patt : 'patt Grammar.Entry.e)
    and _ = (expr : 'expr Grammar.Entry.e)
+   and _ = (functor_parameter : 'functor_parameter Grammar.Entry.e)
    and _ = (module_type : 'module_type Grammar.Entry.e)
    and _ = (module_expr : 'module_expr Grammar.Entry.e)
    and _ = (signature : 'signature Grammar.Entry.e)
@@ -173,8 +175,6 @@ Grammar.safe_extend
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
    and uidopt : 'uidopt Grammar.Entry.e = grammar_entry_create "uidopt"
-   and functor_parameter : 'functor_parameter Grammar.Entry.e =
-     grammar_entry_create "functor_parameter"
    and closed_case_list : 'closed_case_list Grammar.Entry.e =
      grammar_entry_create "closed_case_list"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
@@ -261,7 +261,29 @@ Grammar.safe_extend
    and ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon_fun_binding"
    in
-   [Grammar.extension (module_expr : 'module_expr Grammar.Entry.e) None
+   [Grammar.extension (functor_parameter : 'functor_parameter Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_token ("", ")")),
+           (fun _ _ (loc : Ploc.t) -> (None : 'functor_parameter)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
+                   (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           (fun _ (t : 'module_type) _ (i : 'uidopt) _ (loc : Ploc.t) ->
+              (Some (i, t) : 'functor_parameter)))]];
+    Grammar.extension (module_expr : 'module_expr Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next
@@ -884,28 +906,6 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (m : string) (loc : Ploc.t) -> (Some m : 'uidopt)))]];
-    Grammar.extension (functor_parameter : 'functor_parameter Grammar.Entry.e)
-      None
-      [None, None,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-             (Grammar.s_token ("", ")")),
-           (fun _ _ (loc : Ploc.t) -> (None : 'functor_parameter)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "(")))
-                      (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
-                   (Grammar.s_token ("", ":")))
-                (Grammar.s_nterm
-                   (module_type : 'module_type Grammar.Entry.e)))
-             (Grammar.s_token ("", ")")),
-           (fun _ (t : 'module_type) _ (i : 'uidopt) _ (loc : Ploc.t) ->
-              (Some (i, t) : 'functor_parameter)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e) None
       [Some "top", Some Gramext.RightA,
        [Grammar.production
