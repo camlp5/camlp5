@@ -3,6 +3,10 @@ Camlp5 Version 7.11:
 
 * [29 Oct 19] Added compatibility with ocaml version 4.08.2.
 * [29 Oct 19] Added compatibility with ocaml version 4.09.1.
+* [03 Feb 20] Added compatibility with ocaml version 4.10+beta2.
+
+* This release supports blank module-names in binders as well as
+  generative functors.
 
 Camlp5 Version 7.10:
 --------------------
