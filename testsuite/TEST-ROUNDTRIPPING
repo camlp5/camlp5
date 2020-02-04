@@ -1,0 +1,139 @@
+#!/usr/bin/perl
+
+use strict ;
+use Data::Dumper ;
+use Carp::Assert ;
+use File::Basename;
+use File::Find ;
+use File::Spec ;
+use File::stat ;
+use IPC::System::Simple qw(systemx runx capturex $EXITVAL);
+use String::ShellQuote ;
+
+our $verbose = 1 ;
+our $continue_error = 0 ;
+
+{
+  my $top= ".." ;
+  my $workdir = "workdir" ;
+  my @revised_dirs = (qw(lib main meta etc top odyl ocpp compile)) ;
+
+  v_systemx("rm", "-rf", $workdir) ;
+  roundtrip_package($workdir, {
+    'location' => '..',
+    'package' => 'camlp5.7.11',
+	'dirs' => [ qw(lib main meta etc top odyl ocpp compile) ],
+	'files' => [],
+	'exclude' => [
+	  'lib/versdep.ml',
+	],
+		    }
+      );
+}
+
+sub roundtrip_package {
+  my $workroot = shift ;
+  my $h = shift ;
+  my %package = %{ $h };
+
+  my $location = $package{'location'} ;
+  my $workdir = $workroot."/".$package{'package'} ;
+  my @dirs = @{ $package{'dirs'} };
+  my @files = @{  $package{'files'} } ;
+
+  my %exclude ;
+  {
+    my @l = @{ $package{'exclude'} } ;
+    foreach my $f (@l) {
+      $exclude{$f} = 1 ;
+    }
+  }
+
+  v_systemx("rm", "-rf", $workdir) ;
+  v_systemx("mkdir", "-p", "$workdir/roundtrip", "$workdir/wanted") ;
+
+  {
+    my @newfiles ;
+    my $perfile = sub {
+      my $f = $File::Find::name ;
+      if ($f =~ /\.ml$/ || $f =~ /\.mli$/) {
+	push(@newfiles, $f) ;
+      }
+    } ;
+
+    find( { wanted => $perfile, no_chdir => 1 }, 
+	  (map { $location."/".$_ } @dirs) ) ;
+
+    @newfiles = map { $_ =~ s,^$location/,,; $_ } @newfiles ;
+
+    push(@files, @newfiles) ;
+  }
+
+  foreach my $f (@files) {
+    next if exists $exclude{$f} ;
+
+    my $bangf = $f ;
+    $bangf =~ s,/,!,g ;
+
+    my $srcf = "$location/".$f ;
+    my $resultf = "$workdir/roundtrip/".$bangf ;
+    my $wantedf = "$workdir/wanted/".$bangf ;
+
+    v_systemx("cp", "-n", $srcf, $wantedf) ;
+
+    roundtrip1(mode => 'revised',
+	       'src-filename' => $srcf,
+	       'result-filename' => $resultf,
+	       'wanted-filename' => $wantedf,
+	) ;
+    my $code ;
+    if ($continue_error) {
+      $code = v_systemx([0..1], "diff", "-Bwiu", $resultf, $wantedf) ;
+    }
+    else {
+      $code = v_systemx("diff", "-Bwiu", $resultf, $wantedf) ;
+    }
+    if (0 == $code) {
+      v_systemx("rm", "-f", $resultf, $wantedf);
+    }
+  }
+}
+
+sub roundtrip1 {
+  my %args = @_ ;
+  my $mode = $args{'mode'} ;
+  my $srcf = $args{'src-filename'} ;
+  my $resultf = $args{'result-filename'} ;
+  my $wantedf = $args{'wanted-filename'} ;
+
+  print "$srcf -> $resultf\n";
+  v_systemx("./REVISED-ROUNDTRIP",$srcf, $resultf) ;
+}
+
+sub v_systemx {
+  my $codes ;
+  $codes = shift if (ref($_[0]) eq 'ARRAY') ;
+  my @cmd = @_ ;
+  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
+
+  if ($codes) {
+    return runx($codes, @cmd) ;
+  }
+  else {
+    return runx(@cmd) ;
+  }
+}
+
+sub v_capturex {
+  my $codes ;
+  $codes = shift if (ref($_[0]) eq 'ARRAY') ;
+  my @cmd = @_ ;
+  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
+
+  if ($codes) {
+    return capturex($codes, @cmd) ;
+  }
+  else {
+    return capturex(@cmd) ;
+  }
+}

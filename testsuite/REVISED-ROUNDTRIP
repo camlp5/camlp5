@@ -1,0 +1,10 @@
+#!/bin/bash
+
+TOP=".."
+export PATH=${TOP}/local-install/bin:${PATH}
+export OCAMLPATH=${TOP}/local-install/lib:${OCAMLPATH}
+OCAMLFIND=ocamlfind
+CAMLP5LIB=`${OCAMLFIND} query camlp5`
+CAMLP5R="${TOP}/local-install/bin/camlp5r -I ${CAMLP5LIB}"
+
+LANG=C ${CAMLP5R} pa_macro.cmo pr_r.cmo pr_rp.cmo pr_extend.cmo $1 > $2
