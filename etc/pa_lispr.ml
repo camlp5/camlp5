@@ -659,36 +659,36 @@ value atom = Grammar.Entry.create gram "atom";
 
 EXTEND
   implem:
-    [ [ st = LIST0 [ s = str_item -> (s, loc) ]; eoi_loc = [ EOI -> loc ] ->
+    [ [ st = LIST0 [ s = str_item → (s, loc) ]; eoi_loc = [ EOI → loc ] →
           (st, Some eoi_loc) ] ]
   ;
   top_phrase:
-    [ [ se = sexpr -> Some (top_phrase_se se)
-      | EOI -> None ] ]
+    [ [ se = sexpr → Some (top_phrase_se se)
+      | EOI → None ] ]
   ;
   use_file:
-    [ [ l = LIST0 sexpr; EOI -> (List.map top_phrase_se l, False) ] ]
+    [ [ l = LIST0 sexpr; EOI → (List.map top_phrase_se l, False) ] ]
   ;
   str_item:
-    [ [ se = sexpr -> str_item_se se
-      | e = expr -> <:str_item< $exp:e$ >> ] ]
+    [ [ se = sexpr → str_item_se se
+      | e = expr → <:str_item< $exp:e$ >> ] ]
   ;
   expr:
     [ "top"
-      [ se = sexpr -> expr_se se ] ]
+      [ se = sexpr → expr_se se ] ]
   ;
   patt:
-    [ [ se = sexpr -> patt_se se ] ]
+    [ [ se = sexpr → patt_se se ] ]
   ;
   sexpr:
-    [ [ "("; sl = LIST0 sexpr; ")" -> Sexpr loc sl
-      | a = atom -> Satom loc Alid a
-      | s = LIDENT -> Satom loc Alid s
-      | s = UIDENT -> Satom loc Auid s
-      | s = INT -> Satom loc Aint s
-      | s = CHAR -> Satom loc Achar s
-      | s = STRING -> Satom loc Astring s
-      | s = QUOT ->
+    [ [ "("; sl = LIST0 sexpr; ")" → Sexpr loc sl
+      | a = atom → Satom loc Alid a
+      | s = LIDENT → Satom loc Alid s
+      | s = UIDENT → Satom loc Auid s
+      | s = INT → Satom loc Aint s
+      | s = CHAR → Satom loc Achar s
+      | s = STRING → Satom loc Astring s
+      | s = QUOT →
           let i = String.index s ':' in
           let typ = String.sub s 0 i in
           let txt = String.sub s (i + 1) (String.length s - i - 1) in
@@ -697,10 +697,10 @@ EXTEND
           else Squot loc typ txt ] ]
   ;
   atom:
-    [ [ "_" -> "_"
-      | "," -> ","
-      | "=" -> "="
-      | ":" -> ":"
-      | "." -> "." ] ]
+    [ [ "_" → "_"
+      | "," → ","
+      | "=" → "="
+      | ":" → ":"
+      | "." → "." ] ]
   ;
 END;
