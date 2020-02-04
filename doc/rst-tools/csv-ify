@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+
+{
+  my @l = <STDIN> ;
+  my $txt = join('', @l) ;
+
+  $txt =~ s| *<tr>(.*?)</tr>| dorow($1) |gse ;
+
+  print $txt ;
+}
+
+sub dorow {
+  my $s = shift ;
+  
+  $s =~ s| *<td(?:.*?)>(.*?)</td>\n|  $1,|gm ;
+  $s =~ s|, *$||s ;
+  $s =~ s,\n,,gs;
+  return $s ;
+}
+
+sub stripnl {
+  my $s = shift;
+  $s =~ s,\n,,gs ;
+  return $s 
+}
+
+sub striplws {
+  my $s = shift;
+  $s =~ s,\n *,\n,gs ;
+  return $s 
+}
+
+sub header {
+  my $pre = shift ;
+  my $post = shift ;
+  my $txt = shift ;
+  my $len = length($txt) ;
+  return  ($pre x $len) . "\n" . $txt . "\n" . ($post x $len) ;
+}
