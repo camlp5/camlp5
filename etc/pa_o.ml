@@ -530,7 +530,7 @@ EXTEND
           <:sig_item< value $lid:i$ : $t$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V UIDENT; mt = module_declaration -> (Some i, mt) ] ]
+    [ [ i = V uidopt "uidopt"; mt = module_declaration -> (i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA

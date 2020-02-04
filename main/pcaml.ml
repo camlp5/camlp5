@@ -7,7 +7,7 @@
 
 open Printf;
 
-value version = "7.11-exp";
+value version = "7.11";
 value syntax_name = ref "";
 
 value ocaml_version =
@@ -47,6 +47,7 @@ value signature = Grammar.Entry.create gram "signature";
 value structure = Grammar.Entry.create gram "structure";
 value sig_item = Grammar.Entry.create gram "sig_item";
 value str_item = Grammar.Entry.create gram "str_item";
+value functor_parameter = Grammar.Entry.create gram "functor_parameter";
 value module_type = Grammar.Entry.create gram "module_type";
 value module_expr = Grammar.Entry.create gram "module_expr";
 value expr = Grammar.Entry.create gram "expr";

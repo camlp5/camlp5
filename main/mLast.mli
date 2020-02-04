@@ -130,7 +130,7 @@ and expr =
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
-  | MtFun of loc and (V (option (V (option (V string)) * module_type))) and module_type
+  | MtFun of loc and (V functor_parameter) and module_type
   | MtLid of loc and V string
   | MtQuo of loc and V string
   | MtSig of loc and V (list sig_item)
@@ -138,6 +138,7 @@ and module_type =
   | MtUid of loc and V string
   | MtWit of loc and module_type and V (list with_constr)
   | MtXtr of loc and string and option (V module_type) ]
+and functor_parameter = option (V (option (V string)) * module_type)
 and sig_item =
   [ SgCls of loc and V (list (class_infos class_type))
   | SgClt of loc and V (list (class_infos class_type))
@@ -146,7 +147,7 @@ and sig_item =
   | SgExc of loc and V string and V (list ctyp)
   | SgExt of loc and V string and ctyp and V (list string)
   | SgInc of loc and module_type
-  | SgMod of loc and V bool and V (list (option (V string) * module_type))
+  | SgMod of loc and V bool and V (list (V (option (V string)) * module_type))
   | SgMty of loc and V string and module_type
   | SgOpn of loc and V (list string)
   | SgTyp of loc and V (list type_decl)
@@ -161,7 +162,7 @@ and with_constr =
 and module_expr =
   [ MeAcc of loc and module_expr and module_expr
   | MeApp of loc and module_expr and module_expr
-  | MeFun of loc and (V (option (V (option (V string)) * module_type))) and module_expr
+  | MeFun of loc and (V functor_parameter) and module_expr
   | MeStr of loc and V (list str_item)
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string
