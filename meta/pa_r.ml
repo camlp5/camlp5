@@ -25,6 +25,7 @@ do {
   Grammar.Unsafe.clear_entry implem;
   Grammar.Unsafe.clear_entry top_phrase;
   Grammar.Unsafe.clear_entry use_file;
+  Grammar.Unsafe.clear_entry functor_parameter;
   Grammar.Unsafe.clear_entry module_type;
   Grammar.Unsafe.clear_entry module_expr;
   Grammar.Unsafe.clear_entry sig_item;
@@ -132,10 +133,18 @@ value warning_deprecated_since_6_00 loc =
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
-  GLOBAL: sig_item str_item ctyp patt expr module_type module_expr signature
+  GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type module_expr signature
     structure class_type class_expr class_sig_item class_str_item let_binding
     type_decl constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant;
+  functor_parameter:
+    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | "("; ")" -> None
+        END
+      ]
+    ]
+  ;
   module_expr:
     [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp"; "->";
         me = SELF →
@@ -276,14 +285,6 @@ EXTEND
     [ [ m = V UIDENT -> Some m
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "_" -> None
-        END
-      ]
-    ]
-  ;
-  functor_parameter:
-    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
-      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
-      | "("; ")" -> None
         END
       ]
     ]
