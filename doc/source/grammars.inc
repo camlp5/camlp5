@@ -459,6 +459,8 @@ The entry is scanned for a rule matching the giving symbol list. When
 found, the rule is removed. If no rule is found, the exception
 ``Not_found`` is raised.
 
+.. _grammars-extensions-fold0-and-fold1:
+
 Extensions FOLD0 and FOLD1
 ==========================
 
@@ -541,6 +543,8 @@ and tested:
 
   # sum 3;4;5 end;
   - : int = 12
+
+.. _grammars-machinery:
 
 Grammar machinery
 =================
@@ -637,10 +641,10 @@ the function ``Grammar.set_algorithm``. The possible values are:
 
 - ``Grammar.Predictive``: internally using :ref:`parsers`, with
   a predictive (recursive descent without backtracking) algorithm.
-- ``Grammar.Functional``: internally using :ref:`functional-parsers`,
+- ``Grammar.Functional``: internally using :ref:`fparsers`,
   with a limited backtracking algorithm,
 - ``Grammar.Backtracking``: internally using
-  :ref:`backtracking-parsers`, with a full backtracking algorithm,
+  :ref:`bparsers`, with a full backtracking algorithm,
 - ``Grammar.DefaultAlgorithm``: the parsing algorithm is determined by
   the environment variable ``CAMLP5PARAM``. If this environment variable
   exists and contains ``f``, the parsing algorithm is "functional"; if
@@ -672,7 +676,7 @@ the exception ``Stream.Error`` is raised.
 
 If the parsing algorithm is ``Grammar.Functional`` (resp.
 ``Grammar.Backtracking``), the system internally uses
-:ref:`functional-parsers` (resp :ref:`backtracking-parsers`). If no
+:ref:`fparsers` (resp :ref:`bparsers`). If no
 solution is found, the exception ``Stream.Error`` is raised and the
 location of the error is the location of the last unfrozen token,
 i.e. where the stream advanced the farthest.

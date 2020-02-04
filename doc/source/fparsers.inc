@@ -1,5 +1,5 @@
 
-.. _functional-parsers:
+.. _fparsers:
 
 ******************
 Functional parsers

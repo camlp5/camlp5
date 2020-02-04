@@ -71,7 +71,7 @@ entries, to be sure that no possible previous loaded grammars
 remain.
 
 If using the same lexer (provided in Camlp5 library
-module :ref:`Plexer<library-plexer-module>`), it is
+module :ref:`Plexer<library_plexer_module>`), it is
 done by:
 
 ::

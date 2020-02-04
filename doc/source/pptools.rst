@@ -53,7 +53,7 @@ of streams parsers:
     one or several elements have been removed from the stream,
     indicating that nothing can to be done to make up the error.
 
-- The :ref:`functional-parsers` where the elements are not removed
+- The :ref:`fparsers` where the elements are not removed
   from the stream during the parsing. These parsers return a value of
   type ``option``, i.e either:
 
@@ -61,7 +61,7 @@ of streams parsers:
 
   - ``None``, in case of failure.
 
-- The :ref:`backtracking-parsers` which are like the functional stream
+- The :ref:`bparsers` which are like the functional stream
   parsers but with a backtracking algorithm, testing all
   possibilities. These parsers also return a value of type ``option``
   different from the functional stream parsers, i.e either:

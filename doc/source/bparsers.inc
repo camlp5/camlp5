@@ -1,12 +1,12 @@
 
-.. _backtracking-parsers:
+.. _bparsers:
 
 ********************
 Backtracking parsers
 ********************
 
 Backtracking parsers are a second alternative of
-:ref:`parsers` and :ref:`functional-parsers`.
+:ref:`parsers` and :ref:`fparsers`.
 
 Backtracking parsers are close to functional parsers: they use the
 same stream type, ``Fstream.t``, and their syntax is almost
@@ -115,7 +115,7 @@ calling the function ``Fstream.bparse_all``.
 Syntax errors
 -------------
 
-Like for :ref:`functional-parsers`, in case of syntax error, the error
+Like for :ref:`fparsers`, in case of syntax error, the error
 position can be found by using the function
 ``Fstream.count_unfrozen``, the token in error being the last unfrozen
 element of the stream.

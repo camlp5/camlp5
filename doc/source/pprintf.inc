@@ -612,7 +612,7 @@ for each case or all with newlines after the patterns.
 It is what is done in the option ``-flag E`` added by the pretty
 printing kits ``pr_r.cmo`` (pretty print in revised syntax) and
 ``pr_o.cmo`` (pretty print in normal syntax). See chapter
-:ref:`commands_and_files` or type ``camlp5 pr_r.cmo -help`` or
+:ref:`commands` or type ``camlp5 pr_r.cmo -help`` or
 ``camlp5 pr_o.cmo -help``.
 
 Another difference is that the internal behaviour of this printing

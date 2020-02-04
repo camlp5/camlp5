@@ -620,7 +620,7 @@ means that some terminals have been consumed from the stream, which
 are definitively lost, and therefore that are no more possible parser
 cases to try.
 
-An alternative is to use :ref:`functional-parsers` which use a new
+An alternative is to use :ref:`fparsers` which use a new
 stream type, lazy but not destructive. Their advantage is that they
 use a limited backtrack: the case of ``if..then..else..`` and the
 shorter ``if..then..`` work without having to left factorize the parser
@@ -632,9 +632,9 @@ possible to know the location of the error in the input, as the
 initial stream has not been modified: the system would indicate a
 failure at the first character of the first line: this is a general
 drawback of backtracking parsers. See the solutions found to this
-problem in the chapter about :ref:`functional-parsers`.
+problem in the chapter about :ref:`fparsers`.
 
-A second alternative is to use the :ref:`backtracking-parsers`. They
+A second alternative is to use the :ref:`bparsers`. They
 use the same stream type as the functional parsers, but they test more
 cases than them. They have the same advantages and drawbacks than the
 functional parsers.
