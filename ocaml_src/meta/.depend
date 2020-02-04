@@ -22,6 +22,10 @@ pa_macro.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
 pa_macro.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
     ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx \
     ../main/reloc.cmx
+pa_macro_gram.cmo: ../lib/grammar.cmi ../lib/ploc.cmi pa_extend.cmo \
+    pa_macro.cmo
+pa_macro_gram.cmx: ../lib/grammar.cmx ../lib/ploc.cmx pa_extend.cmx \
+    pa_macro.cmx
 pa_r.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi
 pa_r.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \

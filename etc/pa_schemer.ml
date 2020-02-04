@@ -832,7 +832,7 @@ and str_item_se se =
       <:str_item< include $me$ >>
   | Sexpr loc [Slid _ "module"; se1; se2] →
       let (i, mb) = str_module_se (Sexpr loc [se1; se2]) in
-      <:str_item< module $_uid:i$ = $mb$ >>
+      <:str_item< module $_uidopt:i$ = $mb$ >>
   | Sexpr loc [Slid _ ("module*" | "modulerec*" as rf) :: sel] →
       let rf = rf = "modulerec*" in
       let lmb = anti_list_map str_module_se sel in
@@ -872,11 +872,13 @@ and str_item_se se =
       <:str_item< $exp:e$ >> ]
 and str_module_se =
   fun
-  [ Sexpr loc [se1; se2] → (anti_uid_or_error se1, module_expr_se se2)
+  [ Sexpr loc [se1; se2] →
+      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_expr_se se2)
   | se → error se "module binding" ]
 and sig_module_se =
   fun
-  [ Sexpr loc [se1; se2] → (anti_uid_or_error se1, module_type_se se2)
+  [ Sexpr loc [se1; se2] →
+      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_type_se se2)
   | se → error se "module binding" ]
 and expr_se =
   fun
@@ -1682,106 +1684,106 @@ EXTEND
   GLOBAL: implem interf top_phrase use_file expr patt ctyp str_item sig_item
     module_expr module_type with_constr sexpr;
   implem:
-    [ [ "#"; se = sexpr ->
+    [ [ "#"; se = sexpr →
           let (n, dp) = directive_se se in
           ([(<:str_item< # $lid:n$ $opt:dp$ >>, loc)], None)
-      | si = str_item; x = SELF ->
+      | si = str_item; x = SELF →
           let (sil, stopped) = x in
           let loc = MLast.loc_of_str_item si in
           ([(si, loc) :: sil], stopped)
-      | EOI -> ([], Some loc) ] ]
+      | EOI → ([], Some loc) ] ]
   ;
   interf:
-    [ [ "#"; se = sexpr ->
+    [ [ "#"; se = sexpr →
           let (n, dp) = directive_se se in
           ([(<:sig_item< # $lid:n$ $opt:dp$ >>, loc)], None)
-      | si = sig_item; x = SELF ->
+      | si = sig_item; x = SELF →
           let (sil, stopped) = x in
           let loc = MLast.loc_of_sig_item si in
           ([(si, loc) :: sil], stopped)
-      | EOI -> ([], Some loc) ] ]
+      | EOI → ([], Some loc) ] ]
   ;
   top_phrase:
-    [ [ "#"; se = sexpr ->
+    [ [ "#"; se = sexpr →
           let (n, dp) = directive_se se in
           Some <:str_item< # $lid:n$ $opt:dp$ >>
-      | se = sexpr -> Some (str_item_se se)
-      | EOI -> None ] ]
+      | se = sexpr → Some (str_item_se se)
+      | EOI → None ] ]
   ;
   use_file:
-    [ [ "#"; se = sexpr ->
+    [ [ "#"; se = sexpr →
           let (n, dp) = directive_se se in
           ([<:str_item< # $lid:n$ $opt:dp$ >>], True)
-      | si = str_item; x = SELF ->
+      | si = str_item; x = SELF →
           let (sil, stopped) = x in
           ([si :: sil], stopped)
-      | EOI -> ([], False) ] ]
+      | EOI → ([], False) ] ]
   ;
   expr:
     [ "top"
-      [ se = sexpr -> expr_se se ] ]
+      [ se = sexpr → expr_se se ] ]
   ;
   patt:
-    [ [ se = sexpr -> patt_se se ] ]
+    [ [ se = sexpr → patt_se se ] ]
   ;
   ctyp:
-    [ [ se = sexpr -> ctyp_se se ] ]
+    [ [ se = sexpr → ctyp_se se ] ]
   ;
   str_item:
-    [ [ se = sexpr -> str_item_se se
-      | e = expr -> <:str_item< $exp:e$ >> ] ]
+    [ [ se = sexpr → str_item_se se
+      | e = expr → <:str_item< $exp:e$ >> ] ]
   ;
   sig_item:
-    [ [ se = sexpr -> sig_item_se se ] ]
+    [ [ se = sexpr → sig_item_se se ] ]
   ;
   module_expr:
-    [ [ se = sexpr -> module_expr_se se ] ]
+    [ [ se = sexpr → module_expr_se se ] ]
   ;
   module_type:
-    [ [ se = sexpr -> module_type_se se ] ]
+    [ [ se = sexpr → module_type_se se ] ]
   ;
   with_constr:
-    [ [ se = sexpr -> with_constr_se se ] ]
+    [ [ se = sexpr → with_constr_se se ] ]
   ;
   sexpr:
-    [ [ se1 = SELF; DOT; se2 = SELF -> Sacc loc se1 se2 ]
-    | [ "("; sl = LIST0 sexpr; ")" -> Sexpr loc sl
-      | "["; sl = LIST0 sexpr; "]" -> Slist loc sl
-      | "{"; sl = LIST0 sexpr; "}" -> Srec loc sl
-      | "#("; sl = V (LIST0 sexpr); ")" -> Sarr loc sl
-      | a = pa_extend_keyword -> Slid loc a
-      | s = V LIDENT ->
+    [ [ se1 = SELF; DOT; se2 = SELF → Sacc loc se1 se2 ]
+    | [ "("; sl = LIST0 sexpr; ")" → Sexpr loc sl
+      | "["; sl = LIST0 sexpr; "]" → Slist loc sl
+      | "{"; sl = LIST0 sexpr; "}" → Srec loc sl
+      | "#("; sl = V (LIST0 sexpr); ")" → Sarr loc sl
+      | a = pa_extend_keyword → Slid loc a
+      | s = V LIDENT →
           Pcaml.vala_mapa (fun s → Slid loc s)
             (fun s → Slidv loc <:vala< $s$ >>) s
-      | s = V UIDENT ->
+      | s = V UIDENT →
           Pcaml.vala_mapa (fun s → Suid loc s)
             (fun s → Suidv loc <:vala< $s$ >>) s
-      | s = V INT -> Sint loc s
-      | s = V INT_l -> Sint_l loc s
-      | s = V INT_L -> Sint_L loc s
-      | s = V INT_n -> Sint_n loc s
-      | s = V FLOAT -> Sfloat loc s
-      | s = V CHAR -> Schar loc s
-      | s = V STRING -> Sstring loc s
-      | s = SPACEDOT -> Slid loc "."
-      | s = QUOT ->
+      | s = V INT → Sint loc s
+      | s = V INT_l → Sint_l loc s
+      | s = V INT_L → Sint_L loc s
+      | s = V INT_n → Sint_n loc s
+      | s = V FLOAT → Sfloat loc s
+      | s = V CHAR → Schar loc s
+      | s = V STRING → Sstring loc s
+      | s = SPACEDOT → Slid loc "."
+      | s = QUOT →
           let i = String.index s ':' in
           let typ = String.sub s 0 i in
           let txt = String.sub s (i + 1) (String.length s - i - 1) in
           Squot loc typ txt
-      | s = ANTIQUOT_LOC -> Santi loc "" s
-      | s = ANTIQUOT_LOC "_" -> Santi loc "_" s
-      | s = ANTIQUOT_LOC "list" -> Santi loc "list" s
-      | s = ANTIQUOT_LOC "_list" -> Santi loc "_list" s
-      | NL; s = SELF -> s
-      | NL -> raise Stream.Failure ] ]
+      | s = ANTIQUOT_LOC → Santi loc "" s
+      | s = ANTIQUOT_LOC "_" → Santi loc "_" s
+      | s = ANTIQUOT_LOC "list" → Santi loc "list" s
+      | s = ANTIQUOT_LOC "_list" → Santi loc "_list" s
+      | NL; s = SELF → s
+      | NL → raise Stream.Failure ] ]
   ;
   pa_extend_keyword:
-    [ [ "_" -> "_"
-      | "," -> ","
-      | "=" -> "="
-      | ":" -> ":"
-      | "/" -> "/"
-      | "#" -> "#" ] ]
+    [ [ "_" → "_"
+      | "," → ","
+      | "=" → "="
+      | ":" → ":"
+      | "/" → "/"
+      | "#" → "#" ] ]
   ;
 END;

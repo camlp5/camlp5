@@ -16,6 +16,11 @@ let option_map f x =
     Some x -> Some (f x)
   | None -> None
 ;;
+let mustSome symbol =
+  function
+    Some x -> x
+  | None -> failwith ("Some: " ^ symbol)
+;;
 
 let ocaml_name = "ocaml";;
 
@@ -152,7 +157,10 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
-let ocaml_pmty_functor sloc s mt1 mt2 =
+
+let ocaml_pmty_functor sloc mt1 mt2 =
+  let (s, mt1) = mustSome "ocaml_pmty_functor" mt1 in
+  let s = mustSome "ocaml_pmty_functor: s" s in
   Pmty_functor (mkloc sloc s, Some mt1, mt2)
 ;;
 
@@ -316,7 +324,9 @@ let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 let ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);;
 
 let ocaml_pexp_letmodule =
-  Some (fun i me e -> Pexp_letmodule (mknoloc i, me, e))
+  Some
+    (fun i me e ->
+       Pexp_letmodule (mknoloc (mustSome "ocaml_pexp_letmodule" i), me, e))
 ;;
 
 let ocaml_pexp_new loc li = Pexp_new (mkloc loc li);;
@@ -403,7 +413,9 @@ let ocaml_ppat_record lpl is_closed =
 let ocaml_ppat_type = Some (fun loc li -> Ppat_type (mkloc loc li));;
 
 let ocaml_ppat_unpack =
-  Some ((fun loc s -> Ppat_unpack (mkloc loc s)), (fun pt -> Ptyp_package pt))
+  Some
+    ((fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s))),
+     (fun pt -> Ptyp_package pt))
 ;;
 
 let ocaml_ppat_var loc s = Ppat_var (mkloc loc s);;
@@ -432,7 +444,8 @@ let ocaml_psig_include loc mt =
   Psig_include {pincl_mod = mt; pincl_loc = loc; pincl_attributes = []}
 ;;
 
-let ocaml_psig_module loc s mt =
+let ocaml_psig_module loc (s : string option) mt =
+  let s = mustSome "ocaml_psig_module" s in
   Psig_module
     {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
      pmd_loc = loc}
@@ -456,7 +469,8 @@ let ocaml_psig_recmodule =
   let f ntl =
     let ntl =
       List.map
-        (fun (s, mt) ->
+        (fun ((s : string option), mt) ->
+           let s = mustSome "ocaml_psig_recmodule" s in
            {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
             pmd_loc = loc_none})
         ntl
@@ -508,7 +522,8 @@ let ocaml_pstr_modtype loc s mt =
   Pstr_modtype pmtd
 ;;
 
-let ocaml_pstr_module loc s me =
+let ocaml_pstr_module loc (s : string option) me =
+  let s = mustSome "ocaml_pstr_module" s in
   let mb =
     {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
      pmb_loc = loc}
@@ -530,7 +545,8 @@ let ocaml_pstr_recmodule =
   let f nel =
     Pstr_recmodule
       (List.map
-         (fun (s, mt, me) ->
+         (fun ((s : string option), mt, me) ->
+            let s = mustSome "ocaml_pstr_recmodule" s in
             {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
              pmb_loc = loc_none})
          nel)
@@ -566,7 +582,11 @@ let ocaml_pmod_constraint loc me mt =
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, Some mt, me);;
+let ocaml_pmod_functor mt me =
+  let (s, mt) = mustSome "ocaml_pmod_functor" mt in
+  let s = mustSome "ocaml_pmod_functor: s" s in
+  Pmod_functor (mknoloc s, Some mt, me)
+;;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
   Some (Right ((fun e -> Pmod_unpack e), (fun pt -> Ptyp_package pt)))

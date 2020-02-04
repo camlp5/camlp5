@@ -185,7 +185,9 @@ module Meta_make (C : MetaSig) =
       | PaTyp _ ls → C.node "PaTyp" [C.vala (C.list C.string) ls]
       | PaUid _ s → C.node "PaUid" [C.vala C.string s]
       | PaUnp _ s omt →
-          C.node "PaUnp" [C.vala C.string s; C.option module_type omt]
+          let c_vala x = C.vala C.string x in
+          let c_vala_opt sopt = C.option c_vala sopt in
+          C.node "PaUnp" [C.vala c_vala_opt s; C.option module_type omt]
       | PaVrn _ s → C.node "PaVrn" [C.vala C.string s]
       | 
           PaXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "PaAnt" [r]) s ]
@@ -230,7 +232,9 @@ module Meta_make (C : MetaSig) =
              expr e]
       | ExLid _ s → C.node "ExLid" [C.vala C.string s]
       | ExLmd _ s me e →
-          C.node "ExLmd" [C.vala C.string s; module_expr me; expr e]
+          let c_vala x = C.vala C.string x in
+          let c_vala_opt sopt = C.option c_vala sopt in
+          C.node "ExLmd" [C.vala c_vala_opt s; module_expr me; expr e]
       | ExLop _ me e → C.node "ExLop" [module_expr me; expr e]
       | ExMat _ e lpoee →
           C.node "ExMat"
@@ -283,8 +287,13 @@ module Meta_make (C : MetaSig) =
       fun
       [ MtAcc _ mt1 mt2 → C.node "MtAcc" [module_type mt1; module_type mt2]
       | MtApp _ mt1 mt2 → C.node "MtApp" [module_type mt1; module_type mt2]
-      | MtFun _ s mt1 mt2 →
-          C.node "MtFun" [C.vala C.string s; module_type mt1; module_type mt2]
+      | MtFun _ arg mt2 →
+          let c_vala x = C.vala C.string x in
+          let c_vala_opt sopt = C.option c_vala sopt in
+          let c_tuple (sopt, mt) =
+            C.tuple [C.vala c_vala_opt sopt; module_type mt] in
+          let c_arg arg = C.option c_tuple arg in
+            C.node "MtFun" [C.vala c_arg arg; module_type mt2]
       | MtLid _ s → C.node "MtLid" [C.vala C.string s]
       | MtQuo _ s → C.node "MtQuo" [C.vala C.string s]
       | MtSig _ lsi → C.node "MtSig" [C.vala (C.list sig_item) lsi]
@@ -310,11 +319,13 @@ module Meta_make (C : MetaSig) =
             [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls]
       | SgInc _ mt → C.node "SgInc" [module_type mt]
       | SgMod _ b lsmt →
+          let c_vala x = C.vala C.string x in
+          let c_vala_opt sopt = C.option c_vala sopt in
           C.node "SgMod"
             [C.vala C.bool b;
              C.vala
                (C.list
-                  (fun (s, mt) → C.tuple [C.vala C.string s; module_type mt]))
+                  (fun (sopt, mt) → C.tuple [C.vala c_vala_opt sopt; module_type mt]))
                lsmt]
       | SgMty _ s mt → C.node "SgMty" [C.vala C.string s; module_type mt]
       | SgOpn _ ls → C.node "SgOpn" [C.vala (C.list C.string) ls]
@@ -345,8 +356,13 @@ module Meta_make (C : MetaSig) =
       fun
       [ MeAcc _ me1 me2 → C.node "MeAcc" [module_expr me1; module_expr me2]
       | MeApp _ me1 me2 → C.node "MeApp" [module_expr me1; module_expr me2]
-      | MeFun _ s mt me →
-          C.node "MeFun" [C.vala C.string s; module_type mt; module_expr me]
+      | MeFun _ arg me →
+          let c_vala x = C.vala C.string x in
+          let c_vala_opt sopt = C.option c_vala sopt in
+          let c_tuple (sopt, mt) =
+            C.tuple [C.vala c_vala_opt sopt; module_type mt] in
+          let c_arg arg = C.option c_tuple arg in
+          C.node "MeFun" [C.vala c_arg arg; module_expr me]
       | MeStr _ lsi → C.node "MeStr" [C.vala (C.list str_item) lsi]
       | MeTyc _ me mt → C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid _ s → C.node "MeUid" [C.vala C.string s]
@@ -373,11 +389,13 @@ module Meta_make (C : MetaSig) =
             [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls]
       | StInc _ me → C.node "StInc" [module_expr me]
       | StMod _ b lsme →
+          let c_vala x = C.vala C.string x in
+          let c_vala_opt sopt = C.option c_vala sopt in
           C.node "StMod"
             [C.vala C.bool b;
              C.vala
                (C.list
-                  (fun (s, me) → C.tuple [C.vala C.string s; module_expr me]))
+                  (fun (sopt, me) → C.tuple [C.vala c_vala_opt sopt; module_expr me]))
                lsme]
       | StMty _ s mt → C.node "StMty" [C.vala C.string s; module_type mt]
       | StOpn _ ls → C.node "StOpn" [C.vala (C.list C.string) ls]

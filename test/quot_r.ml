@@ -202,12 +202,26 @@ MLast.TyVrn loc lpv ools;
 <:patt< $_uid:s$ >>;
 
 (* module unpacking *)
+#ifdef QMLAST
+<:patt< (module _) >>;
+<:patt< (module _ : $mt$) >>;
+#else
+MLast.PaUnp loc (Ploc.VaVal None) None;
+MLast.PaUnp loc (Ploc.VaVal None) (Some mt);
+#endif
+MLast.PaUnp loc (Ploc.VaVal None) omt;
 <:patt< (module $uid:s$) >>;
 <:patt< (module $uid:s$ : $mt$) >>;
-MLast.PaUnp loc (Ploc.VaVal s) omt;
+MLast.PaUnp loc (Ploc.VaVal (Some (Ploc.VaVal s))) omt;
 <:patt< (module $_uid:s$) >>;
 <:patt< (module $_uid:s$ : $mt$) >>;
-MLast.PaUnp loc s omt;
+MLast.PaUnp loc (Ploc.VaVal (Some s)) omt;
+<:patt< (module $uidopt:os$) >>;
+<:patt< (module $uidopt:os$ : $mt$)>>;
+MLast.PaUnp loc (Ploc.VaVal os) omt;
+<:patt< (module $_uidopt:os$) >>;
+<:patt< (module $_uidopt:os$ : $mt$)>>;
+MLast.PaUnp loc os omt;
 
 (* variant *)
 <:patt< ` $s$ >>;
@@ -318,8 +332,15 @@ MLast.ExJdf loc lx e;
 <:expr< $_lid:s$ >>;
 
 (* let module *)
+#ifdef OCAML_4_10_0
+<:expr< let module _ = $me$ in $e$ >>;
+#else
+MLast.ExLmd loc (Ploc.VaVal None) me e;
+#endif
 <:expr< let module $uid:s$ = $me$ in $e$ >>;
 <:expr< let module $_uid:s$ = $me$ in $e$ >>;
+<:expr< let module $uidopt:os$ = $me$ in $e$ >>;
+<:expr< let module $_uidopt:os$ = $me$ in $e$ >>;
 (* let open *)
 <:expr< let open $me$ in $e$ >>;
 
@@ -377,13 +398,17 @@ MLast.ExRec loc lpe oe;
 (* <:expr< reply $opt:oe$ to $_jid:ls$ >>; *)
 (* <:expr< reply $_opt:oe$ to $jid:ls$ >>; *)
 (* <:expr< reply $_opt:oe$ to $_jid:ls$ >>; *)
-MLast.ExRpl loc (Ploc.VaVal None) (Ploc.VaVal ls);
+MLast.ExRpl loc (Ploc.VaVal None) (Ploc.VaVal (loc, Ploc.VaVal lsf2));
+MLast.ExRpl loc (Ploc.VaVal None) (Ploc.VaVal (loc, lsf2));
 MLast.ExRpl loc (Ploc.VaVal None) ls;
-MLast.ExRpl loc (Ploc.VaVal (Some e)) (Ploc.VaVal ls);
+MLast.ExRpl loc (Ploc.VaVal (Some e)) (Ploc.VaVal (loc, Ploc.VaVal lsf2));
+MLast.ExRpl loc (Ploc.VaVal (Some e)) (Ploc.VaVal (loc, lsf2));
 MLast.ExRpl loc (Ploc.VaVal (Some e)) ls;
-MLast.ExRpl loc (Ploc.VaVal oe) (Ploc.VaVal ls);
+MLast.ExRpl loc (Ploc.VaVal oe) (Ploc.VaVal (loc, Ploc.VaVal lsf2));
+MLast.ExRpl loc (Ploc.VaVal oe) (Ploc.VaVal (loc, lsf2));
 MLast.ExRpl loc (Ploc.VaVal oe) ls;
-MLast.ExRpl loc oe (Ploc.VaVal ls);
+MLast.ExRpl loc oe (Ploc.VaVal (loc, Ploc.VaVal lsf2));
+MLast.ExRpl loc oe (Ploc.VaVal (loc, lsf2));
 MLast.ExRpl loc oe ls;
 
 (* sequence *)
@@ -433,8 +458,19 @@ MLast.ExSpw loc e;
 <:module_type< $mt1$ $mt2$ >>;
 
 (* functor *)
-<:module_type< functor ($s$ : $mt1$) -> $mt2$ >>;
-<:module_type< functor ($_:s$ : $mt1$) -> $mt2$ >>;
+#ifdef OCAML_4_10_0
+<:module_type< functor () -> $mt$ >>;
+<:module_type< functor (_ : $smtf2$) -> $mt$ >>;
+#else
+MLast.MtFun loc (Ploc.VaVal None) mt;
+MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
+#endif
+<:module_type< functor ($uid:smtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor ($_uid:smtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor ($uidopt:osmtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor ($_uidopt:osmtf1$ : $smtf2$) -> $mt$ >>;
+<:module_type< functor $fp:osmt$ -> $mt$ >>;
+<:module_type< functor $_fp:osmt$ -> $mt$ >>;
 
 (* lowercase identifier *)
 <:module_type< $lid:s$ >>;
@@ -572,8 +608,19 @@ MLast.ExSpw loc e;
 <:module_expr< $me1$ $me2$ >>;
 
 (* functor *)
-<:module_expr< functor ($s$ : $mt$) -> $me$ >>;
-<:module_expr< functor ($_:s$ : $mt$) -> $me$ >>;
+#ifdef OCAML_4_10_0
+<:module_expr< functor () -> $me$ >>;
+<:module_expr< functor (_ : $smtf2$) -> $me$ >>;
+#else
+MLast.MeFun loc (Ploc.VaVal None) me;
+MLast.MeFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) me;
+#endif
+<:module_expr< functor ($uid:smtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor ($_uid:smtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor ($uidopt:osmtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor ($_uidopt:osmtf1$ : $smtf2$) -> $me$ >>;
+<:module_expr< functor $fp:osmt$ -> $me$ >>;
+<:module_expr< functor $_fp:osmt$ -> $me$ >>;
 
 (* struct *)
 <:module_expr< struct $list:lsi$ end >>;
@@ -675,8 +722,14 @@ MLast.StDef loc lx;
 <:str_item< open $_list:ls$ >>;
 
 (* type declaration *)
+<:str_item< type nonrec $list:ltd$ >>;
+<:str_item< type nonrec $_list:ltd$ >>;
 <:str_item< type $list:ltd$ >>;
 <:str_item< type $_list:ltd$ >>;
+<:str_item< type $flag:b$ $list:ltd$ >>;
+<:str_item< type $flag:b$ $_list:ltd$ >>;
+<:str_item< type $_flag:b$ $list:ltd$ >>;
+<:str_item< type $_flag:b$ $_list:ltd$ >>;
 
 (* ... internal use ... <a href="#t_str_item_1">(1)</a> *)
 <:str_item< # $str:s$ $list:lsil$ >>;
@@ -701,22 +754,39 @@ MLast.StDef loc lx;
 
 (* type_decl: What is after 'type' or 'and' in a type declaration. *)
 
-<:type_decl< $tp:ls$ $list:ltv$ = private $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $list:ltv$ = private $t$ $_list:ltt$ >>;
-<:type_decl< $tp:ls$ $list:ltv$ = $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $list:ltv$ = $t$ $_list:ltt$ >>;
-<:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >>;
-<:type_decl< $tp:ls$ $list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = private $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = private $t$ $_list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = $t$ $_list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = $priv:b$ $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = $priv:b$ $t$ $_list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
-<:type_decl< $tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = private $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = private $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = $priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = private $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = private $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = $priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = $priv:b$ $t$ $_list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
+
+<:type_decl< $_lid:lsf2$ $list:ltv$ = private $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ = private $t$ $_list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ = $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ = $t$ $_list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ = $priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ = $priv:b$ $t$ $_list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = private $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = private $t$ $_list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = $t$ $_list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = $priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = $priv:b$ $t$ $_list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = $_priv:b$ $t$ $list:ltt$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
 <:type_decl< $_tp:ls$ $list:ltv$ = private $t$ $list:ltt$ >>;
 <:type_decl< $_tp:ls$ $list:ltv$ = private $t$ $_list:ltt$ >>;
 <:type_decl< $_tp:ls$ $list:ltv$ = $t$ $list:ltt$ >>;

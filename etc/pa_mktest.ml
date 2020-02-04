@@ -82,28 +82,49 @@ value rec add_o n =
   | _ -> n ]
 ;
 
-value rec expr_list_of_type loc f n =
+value rec expr_list_of_type_gen loc f n =
   fun
   [ <:ctyp< Ploc.vala $t$ >> ->
-      expr_list_of_type loc (fun e -> f <:expr< Ploc.VaVal $e$ >>) n t @
+      expr_list_of_type_gen loc (fun e -> f <:expr< Ploc.VaVal $e$ >>) n t @
       let n = add_o n t in
       f <:expr< $lid:n$ >>
   | <:ctyp< bool >> ->
       f <:expr< True >> @
       f <:expr< False >> @
       f <:expr< $lid:n$ >>
+  | <:ctyp< loc >> ->
+      f <:expr< loc >>
+  | <:ctyp<( $t1$ * $t2$ )>> ->
+    let l1 = expr_list_of_type_gen loc (fun x -> [x]) (n^"f1") t1 in
+    let l2 = expr_list_of_type_gen loc (fun x -> [x]) (n^"f2") t2 in
+    if List.length l1 = 1 && List.length l2 = 1 then
+      let e1 = List.hd l1 in
+      let e2 = List.hd l2 in
+      f <:expr< ($e1$, $e2$) >>
+    else
+      let (pairs : list MLast.expr) = List.concat (List.map (fun e1 -> List.map (fun e2 -> <:expr< ($e1$, $e2$) >>) l2) l1) in
+      List.concat (List.map f pairs)
   | <:ctyp< option $t$ >> ->
       f <:expr< None >> @
       match t with
       [ <:ctyp< Ploc.vala (list $t$) >> ->
           let f _ = f <:expr< Some (Ploc.VaVal []) >> in
-          expr_list_of_type loc f n t
+          expr_list_of_type_gen loc f n t
       | _ -> [] ] @
-      expr_list_of_type loc (fun e -> f <:expr< Some $e$ >>) n t @
+      expr_list_of_type_gen loc (fun e -> f <:expr< Some $e$ >>) n t @
       let n = add_o ("o" ^ n) t in
       f <:expr< $lid:n$ >>
   | _ ->
       f <:expr< $lid:n$ >> ]
+;
+
+value expr_list_of_type loc (f : MLast.expr -> list MLast.expr) n ty =
+  expr_list_of_type_gen loc f n ty
+;
+
+value patt_expr_list_of_type loc (f : MLast.expr -> list (list (MLast.patt * MLast.expr))) n ty =
+  let el = expr_list_of_type loc (fun x -> [x]) n ty in
+  List.concat (List.map f el)
 ;
 
 value expr_of_cons_decl (loc, c, tl, rto) = do {
@@ -192,7 +213,7 @@ value expr_list_of_type_decl loc td =
               let p = <:patt< MLast.$lid:l$ >> in
               let pell = loop ldnl in
               let f e = List.map (fun pel -> [(p, e) :: pel]) pell in
-              expr_list_of_type loc f n t
+              patt_expr_list_of_type loc f n t
           | [] -> [[]] ]
       in
       List.map (fun pel -> <:expr< {$list:pel$} >>) pell

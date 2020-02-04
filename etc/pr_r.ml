@@ -3,10 +3,11 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 #directory ".";
-#load "pa_macro.cmo";
 #load "q_MLast.cmo";
 #load "pa_extfun.cmo";
 #load "pa_extprint.cmo";
+#load "pa_macro.cmo";
+#load "pa_macro_print.cmo";
 #load "pa_pprintf.cmo";
 
 open Pretty;
@@ -93,8 +94,8 @@ value rec is_irrefut_patt =
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< (type $lid:_$) >> -> True
-  | <:patt< (module $uid:_$ : $_$) >> -> True
-  | <:patt< (module $uid:_$) >> -> True
+  | <:patt< (module $uidopt:_$ : $_$) >> -> True
+  | <:patt< (module $uidopt:_$) >> -> True
   | <:patt< ~{$list:lppo$} >> ->
       List.for_all (fun (p, _) -> is_irrefut_patt p) lppo
   | <:patt< ?{$p$ $opt:_$} >> -> is_irrefut_patt p
@@ -220,6 +221,17 @@ value right_operator pc sh unfold next x =
   match xl with
   [ [(x, _)] -> next pc x
   | _ -> plist next sh pc xl ]
+;
+
+value uidopt_to_maybe_blank = fun [
+  Some s -> Pcaml.unvala s
+|  None ->
+  IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    invalid_arg "pr_o.ml: uidopt_to_blank: blank module-names not supported"
+  ELSE
+    "_"
+  END
+]
 ;
 
 (*
@@ -351,7 +363,7 @@ pr_expr_fun_args.val :=
 
 type seq =
   [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr) and seq
-  | SE_let_module of Ploc.t and string and MLast.module_expr and seq
+  | SE_let_module of Ploc.t and option (Ploc.vala string) and MLast.module_expr and seq
   | SE_let_open of Ploc.t and MLast.module_expr and seq
   | SE_closed of MLast.expr and seq
   | SE_other of MLast.expr and option seq ]
@@ -363,7 +375,7 @@ value rec seq_of_expr e =
       seq_of_expr_ne_list e el
   | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
       SE_let loc rf pel (seq_of_expr e)
-  | <:expr:< let module $uid:s$ = $me$ in $e$ >> ->
+  | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
       SE_let_module loc s me (seq_of_expr e)
   | <:expr:< let open $m$ in $e$ >> ->
       SE_let_open loc m (seq_of_expr e)
@@ -377,7 +389,7 @@ and seq_of_expr_ne_list e1 el =
       match el with
       [ [] -> SE_let loc rf pel (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | <:expr:< let module $uid:s$ = $me$ in $e$ >> ->
+  | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
       match el with
       [ [] -> SE_let_module loc s me (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
@@ -567,7 +579,8 @@ and let_up_to_in pc (rf, pel) =
        pprintf pc "let %s%pin" (if rf then "rec " else "")
          (vlist2 let_binding (and_before let_binding)) pel)
 and let_module_up_to_in pc (s, me) =
-  pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
+    let s = uidopt_to_maybe_blank s in
+    pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
 and let_open_up_to_in pc m =
   pprintf pc "@[<a>let open %p@ in@]" module_expr m
 
@@ -999,16 +1012,38 @@ value exception_decl pc (loc, e, tl, id) =
             (plist ctyp 0) tl mod_ident (loc, id) ] ]
 ;
 
+value functor_parameter_unvala arg =
+  match arg with [
+    None -> None
+  | Some (idopt, mt) -> Some (option_map Pcaml.unvala (Pcaml.unvala idopt), mt)
+  ]
+;
+
 value str_module pref pc (m, me) =
+  let m = match m with [ None -> "_" | Some s -> s ] in
   let (mal, me) =
     loop me where rec loop =
       fun
-      [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
+      [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
           let (mal, me) = loop me in
-          ([(s, mt) :: mal], me)
+          ([functor_parameter_unvala arg :: mal], me)
       | me -> ([], me) ]
   in
-  let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
+  let module_arg pc = fun [
+    Some (Some s, mt) -> pprintf pc "(%s :@;<1 1>%p)" s module_type mt
+  | Some (None, mt) ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: str_module_pref: blank module-name in functor module-type is unsupported"
+    ELSE
+      pprintf pc "(_ :@;<1 1>%p)" module_type mt
+    END
+  | None -> 
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: str_module_pref: empty module-arg () in functor-expression is unsupported"
+    ELSE
+      pprintf pc "()"
+    END
+  ] in
   let (me, mto) =
     match me with
     [ <:module_expr< ($me$ : $mt$) >> -> (me, Some mt)
@@ -1036,16 +1071,31 @@ value str_module pref pc (m, me) =
           mal module_expr me ]
 ;
 
-value sig_module_or_module_type pref defc pc (m, mt) =
+value sig_module_or_module_type pref defc pc ((m : option string), mt) =
+  let m = match m with [ None -> "_" | Some s -> s ] in
   let (mal, mt) =
     loop mt where rec loop =
       fun
-      [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
+      [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
           let (mal, mt) = loop mt2 in
-          ([(s, mt1) :: mal], mt)
+          ([functor_parameter_unvala arg :: mal], mt)
       | mt -> ([], mt) ]
   in
-  let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
+  let module_arg pc = fun [
+    Some (Some s, mt) ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: sig_module_or_module_type: blank module-name in functor module-type is unsupported"
+    ELSE
+      pprintf pc "(%s :@;<1 1>%p)" s module_type mt
+    END
+  | Some (None, mt) ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+      invalid_arg "pr_r.ml: sig_module_or_module_type: empty module-arg () in functor module-type is unsupported"
+    ELSE
+      pprintf pc "(_ :@;<1 1>%p)" module_type mt
+    END
+  | None -> pprintf pc "()"
+  ] in
   let mal = List.map (fun ma -> (ma, "")) mal in
   if pc.aft = "" then
     pprintf pc "%s %s%p %c@;%p" pref m (plistb module_arg 2) mal defc
@@ -1055,9 +1105,25 @@ value sig_module_or_module_type pref defc pc (m, mt) =
       defc module_type mt
 ;
 
-value str_or_sig_functor pc s mt module_expr_or_type met =
-  pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ %s@;%p" s module_type mt
-    (arrow ()) module_expr_or_type met
+value str_or_sig_functor pc farg module_expr_or_type met =
+  match farg with [
+    Some (Some s, mt) -> pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ %s@;%p" s module_type mt
+      (arrow ()) module_expr_or_type met
+  | Some (None, mt) ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    invalid_arg "pr_r.ml: str_or_sig_functor: blank module-name in functor-expression is unsupported"
+    ELSE
+    pprintf pc "functor@;@[(_ :@;<1 1>%p)@]@ %s@;%p" module_type mt
+      (arrow ()) module_expr_or_type met
+    END
+  | None ->
+    IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    invalid_arg "pr_r.ml: str_or_sig_functor: empty module-arg () in functor-expression is unsupported"
+    ELSE
+    pprintf pc "functor@;@[()@]@ %s@;%p"
+      (arrow ()) module_expr_or_type met
+    END
+  ]
 ;
 
 value con_typ_pat pc (loc, sl, tpl) =
@@ -1119,6 +1185,11 @@ value rec nlist3 elem elem2 pc xl =
   | [x :: xl] ->
       sprintf "%s%s" (elem {(pc) with aft = ""} (x, False))
         (nlist3 elem2 elem2 {(pc) with bef = ""} xl) ]
+;
+value map_option f =
+  fun
+  [ Some x -> Some (f x)
+  | None -> None ]
 ;
 
 EXTEND_PRINTER
@@ -1244,7 +1315,7 @@ EXTEND_PRINTER
               in
               pprintf pc "%p@ %p" let_up_to_in (rf, pel) (comm_expr expr_wh)
                 e ]
-      | <:expr< let module $uid:s$ = $me$ in $e$ >> as ge ->
+      | <:expr< let module $uidopt:s$ = $me$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
           | None -> pprintf pc "%p@ %p" let_module_up_to_in (s, me) curr e ]
@@ -1438,7 +1509,7 @@ EXTEND_PRINTER
         <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
-        <:expr< let module $uid:_$ = $_$ in $_$ >> |
+        <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
         <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->
@@ -1498,9 +1569,11 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
       | <:patt< (type $lid:s$) >> ->
           pprintf pc "(type %s)" s
-      | <:patt< (module $uid:s$ : $mt$) >> ->
+      | <:patt< (module $uidopt:s$ : $mt$) >> ->
+          let s = uidopt_to_maybe_blank s in
           pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
-      | <:patt< (module $uid:s$) >> ->
+      | <:patt< (module $uidopt:s$) >> ->
+          let s = match s with [ None -> "_" | Some s -> Pcaml.unvala s ] in
           pprintf pc "(module %s)" s
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
@@ -1647,11 +1720,11 @@ EXTEND_PRINTER
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
-          let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
+          let mdl = List.map (fun (m, mt) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $m$ = $mt$ >> ->
-          sig_module_or_module_type "module type" '=' pc (m, mt)
+          sig_module_or_module_type "module type" '=' pc (Some m, mt)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:str_item< type $flag:nonrf$ $list:tdl$ >> ->
@@ -1698,12 +1771,12 @@ EXTEND_PRINTER
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
-          let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
+          let mdl = List.map (fun (m, mt) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
             (sig_module_or_module_type "and" ':') pc mdl
       | <:sig_item< module type $m$ = $mt$ >> ->
-          sig_module_or_module_type "module type" '=' pc (m, mt)
+          sig_module_or_module_type "module type" '=' pc (Some m, mt)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
@@ -1718,8 +1791,8 @@ EXTEND_PRINTER
   ;
   pr_module_expr:
     [ "top"
-      [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
-          str_or_sig_functor pc s mt module_expr me
+      [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_expr me
       | <:module_expr< struct $list:sil$ end >> ->
           (* Heuristic : I don't like to print structs horizontally
              when alone in a line. *)
@@ -1749,15 +1822,16 @@ EXTEND_PRINTER
           pprintf pc "(value %p)" expr e
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
-      | <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |
+      | <:module_expr< functor $_fp:_$ -> $_$ >> |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
         <:module_expr< $_$ $_$ >> as z ->
-          pprintf pc "@[<1>(%p)@]" module_expr z ] ]
+          pprintf pc "@[<1>(%p)@]" module_expr z
+      ] ]
   ;
   pr_module_type:
     [ "top"
-      [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
-          str_or_sig_functor pc s mt1 module_type mt2
+      [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2
       | <:module_type< sig $list:sil$ end >> ->
          (* Heuristic : I don't like to print sigs horizontally
             when alone in a line. *)

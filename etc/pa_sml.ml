@@ -108,8 +108,8 @@ value apply_bind loc e bl =
         loop_let e [(p1, e1)] list
     | [<:str_item< value rec $p1$ = $e1$ >> :: list] ->
         loop_letrec e [(p1, e1)] list
-    | [<:str_item< module $uid:s$ = $me$ >> :: list] ->
-        let e = <:expr< let module $uid:s$ = $me$ in $e$ >> in
+    | [<:str_item< module $uid:s_argle$ = $me$ >> :: list] ->
+        let e = <:expr< let module $uid:s_argle$ = $me$ in $e$ >> in
         loop e list
     | [si :: list] ->
         raise Exit ]
@@ -725,7 +725,7 @@ EXTEND
     [ [ x = spec -> x ] ]
   ;
   strspec:
-    [ [ x1 = ident; ":"; x2 = module_type; x3 = LIST0 sharing_def ->
+    [ [ x1_argle = ident; ":"; x2 = module_type; x3 = LIST0 sharing_def ->
           let x2 =
             List.fold_left
               (fun mt sdl ->
@@ -736,7 +736,7 @@ EXTEND
                           let (m1, m2) =
                             match m2 with
                             [ <:module_expr< $uid:x$ . $_$ >> ->
-                                if x = x1 then (m2, m1) else (m1, m2)
+                                if x = x1_argle then (m2, m1) else (m1, m2)
                             | _ -> (m1, m2) ]
                           in
                           let m1 =
@@ -751,7 +751,7 @@ EXTEND
                    sdl mt)
               x2 x3
           in
-          <:sig_item< module $uid:x1$ : $x2$ >> ] ]
+          <:sig_item< module $uid:x1_argle$ : $x2$ >> ] ]
   ;
   sharing_def:
     [ [ "sharing"; x3 = LIST1 sharespec SEP "and" -> x3 ] ]

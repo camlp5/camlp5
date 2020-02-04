@@ -538,8 +538,10 @@
    ((Sexpr loc [(Slid _ "include") se])
     (let ((me (module_expr_se se))) <:str_item< include $me$ >>))
    ((Sexpr loc [(Slid _ "module") se1 se2])
-    (let (((values i mb) (str_module_se (Sexpr loc [se1 se2]))))
-     <:str_item< module $_uid:i$ = $mb$ >>))
+      (let* (((values i mb) (str_module_se (Sexpr loc [se1 se2])))
+            )
+        <:str_item< module $_uidopt:i$ = $mb$ >>
+        ))
    ((Sexpr loc [(Slid _ (as (or "module*" "modulerec*") rf)) . sel])
     (let* ((rf (= rf "modulerec*")) (lmb (anti_list_map str_module_se sel)))
      <:str_item< module $flag:rf$ $_list:lmb$ >>))
@@ -572,12 +574,12 @@
  (str_module_se
   (lambda_match
    ((Sexpr loc [se1 se2])
-    (values (anti_uid_or_error se1) (module_expr_se se2)))
+    (values (Ploc.VaVal (Some (anti_uid_or_error se1))) (module_expr_se se2)))
    (se (error se "module binding"))))
  (sig_module_se
   (lambda_match
    ((Sexpr loc [se1 se2])
-    (values (anti_uid_or_error se1) (module_type_se se2)))
+    (values (Ploc.VaVal (Some (anti_uid_or_error se1))) (module_type_se se2)))
    (se (error se "module binding"))))
  (expr_se
   (lambda_match

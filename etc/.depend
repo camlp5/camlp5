@@ -1,11 +1,9 @@
-elexer.cmo: ../lib/gramext.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
-    ../lib/versdep.cmo
-elexer.cmx: ../lib/gramext.cmx ../lib/plexing.cmx ../lib/ploc.cmx \
-    ../lib/versdep.cmx
+elexer.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo
+elexer.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx
 pa_extfold.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/pcaml.cmi
+    ../main/pcaml.cmi ../meta/pa_extend.cmo
 pa_extfold.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/pcaml.cmx
+    ../main/pcaml.cmx ../meta/pa_extend.cmx
 pa_extfun.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi ../main/pcaml.cmi
 pa_extfun.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
@@ -20,22 +18,26 @@ pa_lex.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
 pa_lex.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
     ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_lisp.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
-    ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
-pa_lisp.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
-    ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_lispr.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
-    ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
-pa_lispr.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
-    ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_mkast.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+pa_lisp.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
-pa_mkast.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+pa_lisp.cmx: ../lib/grammar.cmx ../lib/plexing.cmx ../lib/ploc.cmx \
     ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_mktest.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
+pa_lispr.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
-pa_mktest.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
+pa_lispr.cmx: ../lib/grammar.cmx ../lib/plexing.cmx ../lib/ploc.cmx \
     ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_macro_print.cmo: ../lib/grammar.cmi ../lib/ploc.cmi ../meta/pa_macro.cmo \
+    pa_extprint.cmo
+pa_macro_print.cmx: ../lib/grammar.cmx ../lib/ploc.cmx ../meta/pa_macro.cmx \
+    pa_extprint.cmx
+pa_mkast.cmo: ../lib/grammar.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
+    ../main/mLast.cmi ../main/pcaml.cmi
+pa_mkast.cmx: ../lib/grammar.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx
+pa_mktest.cmo: ../lib/grammar.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
+    ../main/mLast.cmi ../main/pcaml.cmi
+pa_mktest.cmx: ../lib/grammar.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
+    ../main/mLast.cmi ../main/pcaml.cmx
 pa_o.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi
 pa_o.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
@@ -58,22 +60,22 @@ pa_pragma.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
 pa_pragma.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
     ../lib/ploc.cmx ../lib/versdep.cmx ../main/exparser.cmx ../main/mLast.cmi \
     ../main/pcaml.cmx
-pa_reloc.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/mLast.cmi ../main/pcaml.cmi
-pa_reloc.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/mLast.cmi ../main/pcaml.cmx
-pa_scheme.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
-    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
-pa_scheme.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
-    ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
-    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
-pa_schemer.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo \
-    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
-pa_schemer.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
-    ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx \
-    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_reloc.cmo: ../lib/grammar.cmi ../lib/ploc.cmi ../main/mLast.cmi \
+    ../main/pcaml.cmi
+pa_reloc.cmx: ../lib/grammar.cmx ../lib/ploc.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx
+pa_scheme.cmo: ../lib/grammar.cmi ../lib/plexer.cmi ../lib/plexing.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/exparser.cmi ../main/mLast.cmi \
+    ../main/pcaml.cmi
+pa_scheme.cmx: ../lib/grammar.cmx ../lib/plexer.cmx ../lib/plexing.cmx \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/exparser.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx
+pa_schemer.cmo: ../lib/grammar.cmi ../lib/plexer.cmi ../lib/plexing.cmi \
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/exparser.cmi ../main/mLast.cmi \
+    ../main/pcaml.cmi
+pa_schemer.cmx: ../lib/grammar.cmx ../lib/plexer.cmx ../lib/plexing.cmx \
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/exparser.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx
 pa_sml.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi \
     ../main/pcaml.cmi

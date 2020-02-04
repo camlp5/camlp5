@@ -151,8 +151,11 @@ value text_of_extprint loc el =
 
 (** Syntax extensions *)
 
+value print_rule = Grammar.Entry.create gram "print_rule";
+value print_rule_list = Grammar.Entry.create gram "print_rule_list";
+
 EXTEND
-  GLOBAL: expr;
+  GLOBAL: expr print_rule print_rule_list;
   expr: AFTER "top"
     [ [ "EXTEND_PRINTER"; e = extprint_body; "END" -> e ] ]
   ;
@@ -167,14 +170,14 @@ EXTEND
     [ [ "["; ll = LIST0 level SEP "|"; "]" -> ll ] ]
   ;
   level:
-    [ [ lab = OPT STRING; rules = rule_list ->
+    [ [ lab = OPT STRING; rules = print_rule_list ->
           {label = lab; rules = rules} ] ]
   ;
-  rule_list:
+  print_rule_list:
     [ [ "["; "]" -> []
-      | "["; rules = LIST1 rule SEP "|"; "]" -> rules ] ]
+      | "["; rules = LIST1 print_rule SEP "|"; "]" -> rules ] ]
   ;
-  rule:
+  print_rule:
     [ [ p = patt_as; wo = OPT [ "when"; e = expr -> e ]; "->"; e = expr ->
           (p, wo, e) ] ]
   ;

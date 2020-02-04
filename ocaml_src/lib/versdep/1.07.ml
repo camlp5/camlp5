@@ -16,6 +16,11 @@ let option_map f x =
     Some x -> Some (f x)
   | None -> None
 ;;
+let mustSome symbol =
+  function
+    Some x -> x
+  | None -> failwith ("Some: " ^ symbol)
+;;
 
 let ocaml_name = "ocaml";;
 
@@ -100,7 +105,10 @@ let ocaml_class_structure p cil = p, cil;;
 
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
-let ocaml_pmty_functor sloc s mt1 mt2 =
+
+let ocaml_pmty_functor sloc mt1 mt2 =
+  let (s, mt1) = mustSome "ocaml_pmty_functor" mt1 in
+  let s = mustSome "ocaml_pmty_functor: s" s in
   Pmty_functor (mkloc sloc s, mt1, mt2)
 ;;
 
@@ -311,7 +319,9 @@ let ocaml_psig_exception loc s ed = Psig_exception (mkloc loc s, ed);;
 
 let ocaml_psig_include loc mt = Psig_include mt;;
 
-let ocaml_psig_module loc s mt = Psig_module (mknoloc s, mt);;
+let ocaml_psig_module loc (s : string option) mt =
+  let s = mustSome "ocaml_psig_module" s in Psig_module (mknoloc s, mt)
+;;
 
 let ocaml_psig_modtype loc s mto =
   let mtd =
@@ -344,7 +354,9 @@ let ocaml_pstr_include = None;;
 
 let ocaml_pstr_modtype loc s mt = Pstr_modtype (mkloc loc s, mt);;
 
-let ocaml_pstr_module loc s me = Pstr_module (mkloc loc s, me);;
+let ocaml_pstr_module loc (s : string option) me =
+  let s = mustSome "ocaml_pstr_module" s in Pstr_module (mkloc loc s, me)
+;;
 
 let ocaml_pstr_open loc li = Pstr_open (mknoloc li);;
 
@@ -360,7 +372,11 @@ let ocaml_pmod_constraint loc me mt = me;;
 
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
-let ocaml_pmod_functor s mt me = Pmod_functor (mknoloc s, mt, me);;
+let ocaml_pmod_functor mt me =
+  let (s, mt) = mustSome "ocaml_pmod_functor" mt in
+  let s = mustSome "ocaml_pmod_functor: s" s in
+  Pmod_functor (mknoloc s, mt, me)
+;;
 
 let ocaml_pmod_unpack = None;;
 

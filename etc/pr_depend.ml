@@ -136,7 +136,7 @@ and expr =
       expr e
     }
   | ExLid _ _ -> ()
-  | <:expr< let module $uid:_$ = $me$ in $e$ >> -> do {
+  | <:expr< let module $uidopt:_$ = $me$ in $e$ >> -> do {
       module_expr me;
       expr e
     }
@@ -175,8 +175,11 @@ and match_case (p, w, e) = do { patt p; vala (option expr) w; expr e }
 and module_type =
   fun
   [ <:module_type< $uid:m$ . $_$ >> -> addmodule m
-  | <:module_type< functor ($uid:_$ : $mt1$) -> $mt2$ >> -> do {
+  | <:module_type< functor ($_uidopt:_$ : $mt1$) -> $mt2$ >> -> do {
       module_type mt1;
+      module_type mt2
+    }
+  | <:module_type< functor () -> $mt2$ >> -> do {
       module_type mt2
     }
   | <:module_type< sig $list:sil$ end >> -> list sig_item sil
@@ -208,7 +211,7 @@ and module_expr =
   fun
   [ <:module_expr< $_$ . $uid:m$ >> -> addmodule m
   | <:module_expr< $me1$ $me2$ >> -> do { module_expr me1; module_expr me2 }
-  | <:module_expr< functor ($uid:_$ : $mt$) -> $me$ >> -> do {
+  | <:module_expr< functor ($_uidopt:_$ : $mt$) -> $me$ >> -> do {
       module_type mt;
       module_expr me
     }

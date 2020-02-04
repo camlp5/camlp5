@@ -5,6 +5,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
+#load "pa_macro_gram.cmo";
 
 open Pcaml;
 
@@ -24,6 +25,7 @@ do {
   Grammar.Unsafe.clear_entry implem;
   Grammar.Unsafe.clear_entry top_phrase;
   Grammar.Unsafe.clear_entry use_file;
+  Grammar.Unsafe.clear_entry functor_parameter;
   Grammar.Unsafe.clear_entry module_type;
   Grammar.Unsafe.clear_entry module_expr;
   Grammar.Unsafe.clear_entry sig_item;
@@ -131,14 +133,22 @@ value warning_deprecated_since_6_00 loc =
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
-  GLOBAL: sig_item str_item ctyp patt expr module_type module_expr signature
+  GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type module_expr signature
     structure class_type class_expr class_sig_item class_str_item let_binding
     type_decl constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant;
+  functor_parameter:
+    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | "("; ")" -> None
+        END
+      ]
+    ]
+  ;
   module_expr:
-    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")"; "->";
+    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp"; "->";
         me = SELF →
-          <:module_expr< functor ( $_uid:i$ : $t$ ) → $me$ >>
+          <:module_expr< functor $_fp:arg$ → $me$ >>
       | "struct"; st = structure; /; "end" →
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF → <:module_expr< $me1$ $me2$ >> ]
@@ -168,7 +178,7 @@ EXTEND
       | "include"; me = module_expr → <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V ident ""; mt = mod_type_fun_binding →
+      | "module"; "type"; i = V ident "";  "="; mt = module_type →
           <:str_item< module type $_:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
       | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
@@ -186,26 +196,27 @@ EXTEND
       | → <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V UIDENT; me = mod_fun_binding → (i, me) ] ]
+    [ [ i = V uidopt "uidopt"; me = mod_fun_binding → (i, me)
+      ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
-      [ "("; m = V UIDENT; ":"; mt = module_type; ")"; mb = SELF →
-          <:module_expr< functor ( $_uid:m$ : $mt$ ) → $mb$ >>
+      [ arg = V functor_parameter "functor_parameter" "fp"; mb = SELF →
+          <:module_expr< functor $_fp:arg$ → $mb$ >>
       | ":"; mt = module_type; "="; me = module_expr →
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr → <:module_expr< $me$ >> ] ]
   ;
-  mod_type_fun_binding:
-    [ [ "("; m = V UIDENT; ":"; mt1 = module_type; ")"; mt2 = SELF →
-          <:module_type< functor ( $_uid:m$ : $mt1$ ) → $mt2$ >>
-      | "="; mt = module_type →
-          <:module_type< $mt$ >> ] ]
-  ;
   module_type:
-    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
+    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp" ; "->";
         mt = SELF →
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >> ]
+          <:module_type< functor $_fp:arg$ → $mt$ >>
+      ]
+    | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
+         <:module_type< $mt1$ → $mt2$ >>
+       ]
+      END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") →
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; /; "end" →
@@ -249,13 +260,14 @@ EXTEND
           <:sig_item< # $_str:s$ $_list:sil$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V UIDENT; mt = module_declaration → (i, mt) ] ]
+    [ [ i = V uidopt "uidopt"; mt = module_declaration → (i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type → <:module_type< $mt$ >>
-      | "("; i = V UIDENT; ":"; t = module_type; ")"; mt = SELF →
-          <:module_type< functor ( $_uid:i$ : $t$ ) → $mt$ >> ] ]
+      | arg = V functor_parameter "functor_parameter" "fp" ; mt = SELF →
+          <:module_type< functor $_fp:arg$ → $mt$ >>
+ ] ]
   ;
   with_constr:
     [ [ "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
@@ -269,13 +281,21 @@ EXTEND
       | "module"; i = V mod_ident "list" ""; ":="; me = module_expr →
           <:with_constr< module $_:i$ := $me$ >> ] ]
   ;
+  uidopt:
+    [ [ m = V UIDENT -> Some m
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | "_" -> None
+        END
+      ]
+    ]
+  ;
   expr:
     [ "top" RIGHTA
       [ "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF →
-          <:expr< let module $_uid:m$ = $mb$ in $e$ >>
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
+          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = SELF →
           <:expr< let open $m$ in $e$ >>
       | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
@@ -398,9 +418,9 @@ EXTEND
       [ "let"; rf = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and");
         "in"; el = SELF →
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
-          [<:expr< let module $_uid:m$ = $mb$ in $mksequence loc el$ >>]
+          [<:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >>]
       | "let"; "open"; m = module_expr; "in"; el = SELF →
           [<:expr< let open $m$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF → [e :: el]
@@ -477,10 +497,10 @@ EXTEND
       | p = patt → <:patt< $p$ >>
       | pl = V (LIST1 patt SEP ",") → <:patt< ($_list:pl$) >>
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
-      | "module"; s = V UIDENT; ":"; mt = module_type →
-          <:patt< (module $_uid:s$ : $mt$) >>
-      | "module"; s = V UIDENT →
-          <:patt< (module $_uid:s$) >>
+      | "module"; s = V uidopt "uidopt"; ":"; mt = module_type →
+          <:patt< (module $_uidopt:s$ : $mt$) >>
+      | "module"; s = V uidopt "uidopt" →
+          <:patt< (module $_uidopt:s$) >>
       | → <:patt< () >> ] ]
   ;
   cons_patt_opt:
@@ -513,10 +533,10 @@ EXTEND
       | p = ipatt → <:patt< $p$ >>
       | pl = V (LIST1 ipatt SEP ",") → <:patt< ( $_list:pl$) >>
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
-      | "module"; s  = V UIDENT; ":"; mt = module_type →
-          <:patt< (module $_uid:s$ : $mt$) >>
-      | "module"; s = V UIDENT →
-          <:patt< (module $_uid:s$) >>
+      | "module"; s  = V uidopt "uidopt"; ":"; mt = module_type →
+          <:patt< (module $_uidopt:s$ : $mt$) >>
+      | "module"; s = V uidopt "uidopt" →
+          <:patt< (module $_uidopt:s$) >>
       | → <:patt< () >> ] ]
   ;
   label_ipatt:

@@ -5,6 +5,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
+#load "pa_macro_gram.cmo";
 
 open Pcaml;
 
@@ -369,14 +370,29 @@ EXTEND
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl constructor_declaration label_declaration
     match_case with_constr poly_variant;
+  functor_parameter:
+    [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | "("; ")" -> None
+        END
+      ]
+    ]
+  ;
   module_expr:
-    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
+    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp";
         "->"; me = SELF ->
-          <:module_expr< functor ( $_uid:i$ : $t$ ) -> $me$ >>
+          <:module_expr< functor $_fp:arg$ -> $me$ >>
       | "struct"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
-    | [ me1 = SELF; "("; me2 = SELF; ")" -> <:module_expr< $me1$ $me2$ >> ]
+    | [ me1 = SELF; "("; me2 = SELF; ")" -> <:module_expr< $me1$ $me2$ >>
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | me1 = SELF; "("; ")" -> <:module_expr< $me1$ (struct end) >>
+        END
+      ]
+
+
+
     | [ i = mod_expr_ident -> i
       | "("; "val"; e = expr; ":"; mt = module_type; ")" ->
          <:module_expr< (value $e$ : $mt$) >>
@@ -394,6 +410,14 @@ EXTEND
       [ i = SELF; "."; j = SELF -> <:module_expr< $i$ . $j$ >> ]
     | [ i = V UIDENT -> <:module_expr< $_uid:i$ >> ] ]
   ;
+  uidopt:
+    [ [ m = V UIDENT -> Some m
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | "_" -> None
+        END
+      ]
+    ]
+ ;
   str_item:
     [ "top"
       [ "exception"; (_, c, tl, _) = constructor_declaration;
@@ -425,9 +449,9 @@ EXTEND
               [ <:patt< _ >> -> <:str_item< $exp:e$ >>
               | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
-          <:str_item< let module $_uid:m$ = $mb$ in $e$ >>
+          <:str_item< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = expr ->
           <:str_item< let open $m$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
@@ -437,21 +461,27 @@ EXTEND
       | -> <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V UIDENT; me = mod_fun_binding -> (i, me) ] ]
+    [ [ i = V uidopt "uidopt"; me = mod_fun_binding -> (i, me) ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
-      [ "("; m = UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
-          <:module_expr< functor ( $uid:m$ : $mt$ ) -> $mb$ >>
+      [ arg = V functor_parameter "functor_parameter" "fp"; mb = SELF ->
+          <:module_expr< functor $_fp:arg$ -> $mb$ >>
       | ":"; mt = module_type; "="; me = module_expr ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]
   ;
   (* Module types *)
   module_type:
-    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
+    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp"; "->";
         mt = SELF ->
-          <:module_type< functor ( $_uid:i$ : $t$ ) -> $mt$ >> ]
+          <:module_type< functor $_fp:arg$ -> $mt$ >>
+      ]
+    | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
+        <:module_type< $mt1$ → $mt2$ >>
+     ]
+      END
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; "end" ->
@@ -500,13 +530,14 @@ EXTEND
           <:sig_item< value $lid:i$ : $t$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V UIDENT; mt = module_declaration -> (i, mt) ] ]
+    [ [ i = V uidopt "uidopt"; mt = module_declaration -> (i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type -> <:module_type< $mt$ >>
-      | "("; i = UIDENT; ":"; t = module_type; ")"; mt = SELF ->
-          <:module_type< functor ( $uid:i$ : $t$ ) -> $mt$ >> ] ]
+      | arg = V functor_parameter "functor_parameter" "fp"; mt = SELF ->
+          <:module_type< functor $_fp:arg$ -> $mt$ >>
+      ] ]
   ;
   (* "with" constraints (additional type equations over signature
      components) *)
@@ -533,9 +564,9 @@ EXTEND
       [ "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
           <:expr< let $_flag:o$ $_list:l$ in $x$ >>
-      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          <:expr< let module $_uid:m$ = $mb$ in $e$ >>
+          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = expr LEVEL "top" ->
           <:expr< let open $m$ in $e$ >>
       | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
@@ -811,10 +842,10 @@ EXTEND
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "("; "type"; s = V LIDENT; ")" -> <:patt< (type $_lid:s$) >>
-      | "("; "module"; s = V UIDENT; ":"; mt = module_type; ")" ->
-          <:patt< (module $_uid:s$ : $mt$) >>
-      | "("; "module"; s = V UIDENT; ")" ->
-          <:patt< (module $_uid:s$) >>
+      | "("; "module"; s = V uidopt "uidopt"; ":"; mt = module_type; ")" ->
+          <:patt< (module $_uidopt:s$ : $mt$) >>
+      | "("; "module"; s = V uidopt "uidopt"; ")" ->
+          <:patt< (module $_uidopt:s$) >>
       | "_" -> <:patt< _ >>
       | x = QUOTATION ->
           let con = quotation_content x in
@@ -1289,7 +1320,8 @@ EXTEND
       | p = labeled_patt; cfd = SELF ->
           <:class_expr< fun $p$ -> $cfd$ >> ] ]
   ;
-END;
+END
+;
 
 IFDEF JOCAML THEN
   DELETE_RULE expr: SELF; "or"; SELF END;

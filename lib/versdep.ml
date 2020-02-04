@@ -17,6 +17,11 @@ value option_map f x =
   | None -> None
   end
 ;
+value mustSome symbol = fun [
+  Some x -> x
+| None -> failwith ("Some: "^symbol)
+]
+;
 
 value ocaml_name = IFDEF JOCAML THEN "jocaml" ELSE "ocaml" END;
 
@@ -306,9 +311,27 @@ value ocaml_class_structure p cil =
 
 value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
-value ocaml_pmty_functor sloc s mt1 mt2 =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmty_functor (mkloc sloc s) mt1 mt2
-  ELSE Pmty_functor (mkloc sloc s) (Some mt1) mt2 END
+
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_pmty_functor sloc mt1 mt2 =
+  let (s,mt1) = mustSome "ocaml_pmty_functor" mt1 in
+  let s = mustSome "ocaml_pmty_functor: s" s in
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Pmty_functor (mkloc sloc s) mt1 mt2
+  ELSE
+    Pmty_functor (mkloc sloc s) (Some mt1) mt2
+  END
+;
+ELSE
+value ocaml_pmty_functor sloc mt1 mt2 =
+    let mt1 = match mt1 with [
+    None -> Unit
+  | Some (idopt, mt) ->
+    Named (mknoloc idopt) mt
+    ] in
+    Pmty_functor mt1 mt2
+;
+END
 ;
 
 value ocaml_pmty_typeof =
@@ -764,7 +787,11 @@ value ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);
 
 value ocaml_pexp_letmodule =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
-  ELSE Some (fun i me e -> Pexp_letmodule (mknoloc i) me e) END
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    Some (fun i me e -> Pexp_letmodule (mknoloc (mustSome "ocaml_pexp_letmodule" i)) me e)
+  ELSE
+    Some (fun i me e -> Pexp_letmodule (mknoloc i) me e)
+  END
 ;
 
 value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
@@ -929,6 +956,8 @@ value ocaml_ppat_type =
 
 value ocaml_ppat_unpack =
   IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN None
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    Some (fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s)), fun pt -> Ptyp_package pt)
   ELSE
     Some (fun loc s -> Ppat_unpack (mkloc loc s), fun pt -> Ptyp_package pt)
   END
@@ -982,8 +1011,15 @@ value ocaml_psig_include loc mt =
   END
 ;
 
-value ocaml_psig_module loc s mt =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_module (mknoloc s) mt
+value ocaml_psig_module loc (s : option string) mt =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let s = mustSome "ocaml_psig_module" s in
+    Psig_module (mknoloc s) mt
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+  let s = mustSome "ocaml_psig_module" s in
+    Psig_module
+      {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
+       pmd_loc = loc}
   ELSE
     Psig_module
       {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
@@ -1027,7 +1063,22 @@ value ocaml_psig_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let f ntl =
-      let ntl = List.map (fun (s, mt) → (mknoloc s, mt)) ntl in
+      let ntl = List.map (fun ((s : option string), mt) ->
+          let s = mustSome "ocaml_psig_recmodule" s in
+          (mknoloc s, mt)) ntl in
+      Psig_recmodule ntl
+    in
+    Some f
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    let f ntl =
+      let ntl =
+        List.map
+          (fun ((s : option string), mt) ->
+             let s = mustSome "ocaml_psig_recmodule" s in
+             {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
+              pmd_loc = loc_none})
+          ntl
+      in
       Psig_recmodule ntl
     in
     Some f
@@ -1139,8 +1190,17 @@ value ocaml_pstr_modtype loc s mt =
   END
 ;
 
-value ocaml_pstr_module loc s me =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_module (mkloc loc s) me
+value ocaml_pstr_module loc (s : option string) me =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let s = mustSome "ocaml_pstr_module" s in
+    Pstr_module (mkloc loc s) me
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    let s = mustSome "ocaml_pstr_module" s in
+    let mb =
+      {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+       pmb_loc = loc}
+    in
+    Pstr_module mb
   ELSE
     let mb =
       {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
@@ -1182,14 +1242,27 @@ value ocaml_pstr_recmodule =
     Some (fun nel -> Pstr_recmodule nel)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let f nel =
-      Pstr_recmodule (List.map (fun (s, mt, me) → (mknoloc s, mt, me)) nel)
+      Pstr_recmodule (List.map (fun ((s : option string), mt, me) →
+                                let s = mustSome "ocaml_pstr_recmodule" s in
+                                 (mknoloc s, mt, me)) nel)
+    in
+    Some f
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    let f nel =
+      Pstr_recmodule
+        (List.map
+           (fun ((s : option string), mt, me) ->
+              let s = mustSome "ocaml_pstr_recmodule" s in
+              {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
+               pmb_loc = loc_none})
+           nel)
     in
     Some f
   ELSE
     let f nel =
       Pstr_recmodule
         (List.map
-           (fun (s, mt, me) ->
+           (fun ((s : option string), mt, me) ->
               {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
                pmb_loc = loc_none})
            nel)
@@ -1250,9 +1323,26 @@ value ocaml_pmod_constraint loc me mt =
 
 value ocaml_pmod_ident li = Pmod_ident (mknoloc li);
 
-value ocaml_pmod_functor s mt me =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pmod_functor (mknoloc s) mt me
-  ELSE Pmod_functor (mknoloc s) (Some mt) me END
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_pmod_functor mt me =
+  let (s,mt) = mustSome "ocaml_pmod_functor" mt in
+  let s = mustSome "ocaml_pmod_functor: s" s in
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Pmod_functor (mknoloc s) mt me
+  ELSE
+    Pmod_functor (mknoloc s) (Some mt) me
+  END
+;
+ELSE
+value ocaml_pmod_functor mt me =
+    let mt = match mt with [
+    None -> Unit
+  | Some (idopt, mt) ->
+    Named (mknoloc idopt) mt
+    ] in
+    Pmod_functor mt me
+;
+END
 ;
 
 value ocaml_pmod_unpack =
