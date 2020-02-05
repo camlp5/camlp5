@@ -19,5 +19,6 @@ pr_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 q_phony.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+papr_phony_macro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 
 include .depend
