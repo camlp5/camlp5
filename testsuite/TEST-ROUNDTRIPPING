@@ -25,7 +25,18 @@ our $continue_error = 0 ;
 	'dirs' => [ qw(lib main meta etc top odyl ocpp compile) ],
 	'files' => [],
 	'exclude' => [
-	  'lib/versdep.ml',
+#	  'lib/versdep.ml',
+	  'lib/eprinter.ml',
+	  'lib/pprintf.ml',
+	  'lib/pprintf.mli',
+	  'lib/plexer.ml',
+	  'lib/ploc.ml',
+	  'lib/extfold.ml',
+#	  'lib/grammar.ml',
+	  "main/pcaml.mli",
+	  "main/prtools.ml",
+	  "main/mLast.mli",
+	  "main/reloc.ml",
 	],
 		    }
       );
@@ -86,17 +97,46 @@ sub roundtrip_package {
 	       'result-filename' => $resultf,
 	       'wanted-filename' => $wantedf,
 	) ;
-    my $code ;
-    if ($continue_error) {
-      $code = v_systemx([0..1], "diff", "-Bwiu", $resultf, $wantedf) ;
-    }
-    else {
-      $code = v_systemx("diff", "-Bwiu", $resultf, $wantedf) ;
-    }
+    v_systemx("./normalize-code.pl", $resultf, $resultf.".NORMALIZED") ;
+    v_systemx("./normalize-code.pl", $wantedf, $wantedf.".NORMALIZED") ;
+    my $code = extended_diff($resultf.".NORMALIZED", $wantedf.".NORMALIZED"); ;
     if (0 == $code) {
-      v_systemx("rm", "-f", $resultf, $wantedf);
+      v_systemx("rm", "-f", $resultf, $resultf.".NORMALIZED", $wantedf, $wantedf.".NORMALIZED");
     }
   }
+}
+
+sub extended_diff {
+  my $f1 = shift ;
+  my $f2 = shift ;
+
+  my @cmd = ("diff", "-Bwiu", $f1, $f2) ;
+  my $diff_output = v_capturex([0..1], @cmd) ;
+  return 0 if (0 == $EXITVAL) ;
+
+  my $wdiff_output = v_capturex([0..1], "wdiff", "-3", $f1, $f2) ;
+  return 1 if (0 == $EXITVAL) ;
+
+  if (wordeq($f1, $f2)) {
+    print "== $f1 <-> $f2\n" ;
+    print "WHITE SPACE DIFFERENCES\n" ;
+  }
+  else {
+    print $diff_output ;
+  }
+  return 1 ;
+}
+
+sub wordeq {
+  my $f1 = shift ;
+  my $f2 = shift ;
+
+  my $txt1 = f_read($f1) ;
+  my $txt2 = f_read($f2) ;
+
+  $txt1 =~ s,\s,,gs ;
+  $txt2 =~ s,\s,,gs ;
+  return ($txt1 eq $txt2) ;
 }
 
 sub roundtrip1 {
@@ -106,7 +146,7 @@ sub roundtrip1 {
   my $resultf = $args{'result-filename'} ;
   my $wantedf = $args{'wanted-filename'} ;
 
-  print "$srcf -> $resultf\n";
+  print "$srcf -> $resultf\n" if $main::verbose ;
   v_systemx("./REVISED-ROUNDTRIP",$srcf, $resultf) ;
 }
 
@@ -136,4 +176,25 @@ sub v_capturex {
   else {
     return capturex(@cmd) ;
   }
+}
+
+sub v_system {
+  my $cmd = shift;
+  print STDERR "<<$cmd>>\n" if ($main::verbose);
+  system $cmd;
+}
+
+sub f_read {
+  my $f = shift;
+  open(F,"<$f") || die "cannot open $f for reading";
+  my @l = <F>;
+  close(F);
+  return (wantarray ? @l : join('', @l)) ;
+}
+
+sub f_write {
+  my $f = shift;
+  open(F,">$f") || die "cannot open $f for writing";
+  print F @_;
+  close(F);
 }
