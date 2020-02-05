@@ -7,12 +7,14 @@ include $(TOP)/config/Makefile
 DIFF=diff -Bwi -u20
 RM=rm
 
-all: o2r_test.byte r2sch_test.byte sch2r_test.pa_scheme.byte sch2r_test.pa_schemer.byte extfun_test.byte
+all-tests: all
 	./o2r_test.byte
 	./r2sch_test.byte
 	./sch2r_test.pa_scheme.byte
 	./sch2r_test.pa_schemer.byte
 	./extfun_test.byte
+
+all: o2r_test.byte r2sch_test.byte sch2r_test.pa_scheme.byte sch2r_test.pa_schemer.byte extfun_test.byte roundtrip_lexer.byte
 
 OCAMLFIND=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: ocamlfind
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
@@ -28,8 +30,14 @@ pa_ounit2.cmo: pa_ounit2.ml
 testutil.cmo: testutil.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl testutil.ml
 
+roundtrip_lexer.cmo: roundtrip_lexer.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl roundtrip_lexer.ml
+
 testutil2.cmo: testutil2.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -c testutil2.ml
+
+roundtrip_lexer.byte: roundtrip_lexer.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg gramlib.cma roundtrip_lexer.cmo -o roundtrip_lexer.byte
 
 extfun_test.byte: extfun_test.ml testutil.cmo
 	$(CAMLP5R) -I . -mode S -o extfun_test.ppo extfun_test.ml
@@ -54,7 +62,7 @@ sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg odyl.cma camlp5.cma ../etc/pa_schemer.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
 
 setup:
-	opam install rresult fmt pcre ounit2
+	opam install rresult fmt pcre ounit2 bos
 
 clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo

@@ -18,6 +18,27 @@ value lex_string gram s =
   list_of_stream strm
 ;
 
+value lex_string_loc s =
+  let lexer = Plexer.gmake() in
+  let (strm, locfun) = lexer.Plexing.tok_func (Stream.of_string s) in
+  let rec tolist acc i =
+    match Stream.peek strm with [
+      None -> List.rev acc
+    | Some (("EOI",_) as p) -> do {
+      Stream.junk strm ;
+      List.rev [("", p) :: acc]
+    }
+    | Some p -> do {
+        Stream.junk strm ;
+        let loc = locfun i in
+        let comm = Ploc.comment loc in
+        tolist [(comm, p) :: acc] (i+1)
+      }
+   ]
+  in
+  tolist [] 0
+;
+
 value print_location loc =
   let loc =
     if Ploc.file_name loc = "" then

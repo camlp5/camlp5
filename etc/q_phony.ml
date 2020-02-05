@@ -12,22 +12,30 @@ open Pcaml;
 
 value t = ref "";
 
+value make_quot name s =
+if name = "" then "<<" ^ s ^ ">>"
+else if String.length s > 0 && s.[0] = '@' then
+   "<:" ^ name ^ ":<" ^ (String.sub s 1 (String.length s - 1)) ^ ">>"
+else "<:" ^ name ^ "<" ^ s ^ ">>"
+;
+
+value expr_fun = fun s ->
+        let t = make_quot t.val s
+        in
+        let loc = Ploc.dummy in
+<:expr< $uid:t$ >> ;
+
+value patt_fun = fun s ->
+        let t = make_quot t.val s
+        in
+        let loc = Ploc.dummy in
+        <:patt< $uid:t$ >> ;
+
+
 Quotation.add ""
   (Quotation.ExAst
-     (fun s ->
-        let t =
-          if t.val = "" then "<<" ^ s ^ ">>"
-          else "<:" ^ t.val ^ "<" ^ s ^ ">>"
-        in
-        let loc = Ploc.dummy in
-        <:expr< $uid:t$ >>,
-      fun s ->
-        let t =
-          if t.val = "" then "<<" ^ s ^ ">>"
-          else "<:" ^ t.val ^ "<" ^ s ^ ">>"
-        in
-        let loc = Ploc.dummy in
-        <:patt< $uid:t$ >>))
+     (expr_fun,
+      patt_fun))
 ;
 
 Quotation.default.val := "";
