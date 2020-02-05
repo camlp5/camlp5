@@ -10,7 +10,7 @@ use File::stat ;
 use IPC::System::Simple qw(systemx runx capturex $EXITVAL);
 use String::ShellQuote ;
 
-our $verbose = 1 ;
+our $verbose = 0 ;
 our $continue_error = 0 ;
 
 {
@@ -25,14 +25,15 @@ our $continue_error = 0 ;
 	'dirs' => [ qw(lib main meta etc top odyl ocpp compile) ],
 	'files' => [],
 	'exclude' => [
-#	  'lib/versdep.ml',
+	  'lib/versdep.ml',
 	  'lib/eprinter.ml',
 	  'lib/pprintf.ml',
 	  'lib/pprintf.mli',
 	  'lib/plexer.ml',
+	  'lib/plexing.ml',
 	  'lib/ploc.ml',
-	  'lib/extfold.ml',
-#	  'lib/grammar.ml',
+#	  'lib/extfold.ml',
+	  'lib/grammar.ml',
 	  "main/pcaml.mli",
 	  "main/prtools.ml",
 	  "main/mLast.mli",
