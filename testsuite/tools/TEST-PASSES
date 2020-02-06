@@ -92,11 +92,15 @@ our %packages = (
       )
       or die("Error in command line arguments\n");
 
+  push(@dopackages, @ARGV) ;
+
   die "tool $tool1 not recognized"
       unless exists $tools{$tool1} ;
 
   die "tool $tool2 not recognized"
       unless exists $tools{$tool2} ;
+
+  die "must specify packages" unless @dopackages ;
 
   foreach my $pkgna (@dopackages) {
     die "package $pkgna not recognized"
