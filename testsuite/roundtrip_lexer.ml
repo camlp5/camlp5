@@ -1,32 +1,60 @@
 (* camlp5r *)
 (* roundtrip_lexer.ml,v *)
 
-value lex_stream is =
-  let lexer = Plexer.gmake() in
-  let (strm, locfun) = lexer.Plexing.tok_func is in
-  let rec tolist acc i =
-    match Stream.peek strm with [
-      None -> List.rev acc
-    | Some (("EOI",_) as p) -> do {
-      Stream.junk strm ;
-      List.rev [("", p) :: acc]
-    }
-    | Some p -> do {
-        Stream.junk strm ;
-        let loc = locfun i in
-        let comm = Ploc.comment loc in
-        tolist [(comm, p) :: acc] (i+1)
-      }
-   ]
-  in
-  tolist [] 0
+type d_op_t = [
+    DOP_le |
+    DOP_lt |
+    DOP_eq |
+    DOP_gt |
+    DOP_ge
+  ]
 ;
 
-value pp_stream l =
-List.iter (fun (comm, (_, tok)) -> do {
-  print_string comm ;
-  print_string tok
-}) l ;
+type d_version_t = string
+;
+
+type dexpr = [
+    DE_uident of Ploc.t and string
+  | DE_version_op of Ploc.t and (Ploc.t * d_op_t) and (Ploc.t * d_version_t)
+  | DE_parens of Ploc.t and dexpr and Ploc.t
+  | DE_not of Ploc.t and dexpr
+  | DE_and of dexpr and Ploc.t and dexpr
+  | DE_or of dexpr and Ploc.t and dexpr
+  ]
+;
+
+value lex_stream1 is =
+  let lexer = Plexer.gmake() in
+  let (strm, locfun) = lexer.Plexing.tok_func is in
+  let rec addloc i =
+    parser
+      [
+        [: `(("EOI",_) as p) :] -> [: `("",p) :]
+      | [: `p ; strm :] ->
+         let comm = i |> locfun |> Ploc.comment in
+         [: `(comm,p) ; addloc (i+1) strm :]
+      ] in
+  addloc 0 strm
+;
+
+value pp_stream1 strm =
+  let rec pp1 =
+    parser
+      [
+        [: `(comm,("STRING",tok)) ; strm :] -> do {
+          print_string comm ;
+          Printf.printf "\"%s\"" tok ;
+          pp1 strm
+        }
+      | [: `(comm,(_,tok)) ; strm :] -> do {
+          print_string comm ;
+          print_string tok ;
+          pp1 strm
+        }
+      | [: :] -> ()
+      ] in
+  pp1 strm
+;
 
 value rec sep_last = fun [
     [] -> failwith "sep_last"
@@ -54,8 +82,10 @@ value invoked_with ?{flag} cmdna =
 ;
 
 value roundtrip_lexer () =
- let cs = Stream.of_channel stdin in
- cs |> lex_stream |> pp_stream
+  let cs = Stream.of_channel stdin in do {
+    cs |> lex_stream1 |> pp_stream1 ;
+    print_newline()
+  }
 ;
 
 (* Run the tests in test suite *)
