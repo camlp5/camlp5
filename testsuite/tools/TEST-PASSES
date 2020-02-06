@@ -24,7 +24,7 @@ our %tools = (
 	'command' => sub {
 	  return ('tools/ROUNDTRIP-pa_r-pr_r', @_) ;
     },
-  ),
+  },
 
   'cp' =>
   {
@@ -32,31 +32,31 @@ our %tools = (
 	'command' => sub {
 	  return ('/bin/cp', @_) ;
     },
-  ),
+  },
 
   'lexer-passthru' => {
     'name' => 'lexer-passthru',
 	'command' => sub {
-	  return ("./roundtrip-lexer","-mode","lexer-passthru", @_) ;
+	  return ("./roundtrip_lexer.byte","-mode","lexer-passthru", @_) ;
     },
-  ),
+  },
 
   'lexer-pa-pr' => {
     'name' => 'lexer-pa-pr',
 	'command' => sub {
-	  return ("./roundtrip-lexer","-mode","parse-pp", @_) ;
+	  return ("./roundtrip_lexer.byte","-mode","parse-pp", @_) ;
     },
-  ),
+  },
 
   'ifdef-eval' => {
     'name' => 'ifdef-eval',
 	'command' => sub {
-	  return ("./roundtrip-lexer","-mode","ifdef-eval", @_) ;
+	  return ("./roundtrip_lexer.byte","-mode","ifdef-eval", @_) ;
     },
-  ),
-    } ;
+  },
+    ) ;
 
-%packages = (
+our %packages = (
   'camlp5.7.11' =>
   {
     'package' => 'camlp5.7.11',
@@ -93,14 +93,14 @@ our %tools = (
       or die("Error in command line arguments\n");
 
   die "tool $tool1 not recognized"
-      unless exists $tools{$tools1} ;
+      unless exists $tools{$tool1} ;
 
   die "tool $tool2 not recognized"
-      unless exists $tools{$tools2} ;
+      unless exists $tools{$tool2} ;
 
   foreach my $pkgna (@dopackages) {
-    die "package $pkg not recognized"
-	unless exists $packages{$pkg} ;
+    die "package $pkgna not recognized"
+	unless exists $packages{$pkgna} ;
   }
 
   my $workdir = "workdir" ;
@@ -126,7 +126,7 @@ sub runtest_package {
   my %tool2 = %{ $tool2h };
   my $tool2name = $tool2{'name'} ;
 
-  my %pkgh = %{ $pkg };
+  my %pkg = %{ $pkgh };
   my $location = $pkg{'location'} ;
   my $workdir = $workroot."/".$pkg{'package'} ;
   my @dirs = @{ $pkg{'dirs'} };
@@ -135,17 +135,17 @@ sub runtest_package {
   my %exclude ;
   {
     my @l = () ;
-    push (@l, @{ $pkg->{'exclude'}->{$tool1name} })
-	if (exists $pkg->{'exclude'}->{$tool1name}) ;
-    push (@l, @{ $pkg->{'exclude'}->{$tool2name} })
-	if (exists $pkg->{'exclude'}->{$tool2name}) ;
+    push (@l, @{ $pkg{'exclude'}->{$tool1name} })
+	if (exists $pkg{'exclude'}->{$tool1name}) ;
+    push (@l, @{ $pkg{'exclude'}->{$tool2name} })
+	if (exists $pkg{'exclude'}->{$tool2name}) ;
     foreach my $f (@l) {
       $exclude{$f} = 1 ;
     }
   }
 
   v_systemx("rm", "-rf", $workdir) ;
-  v_systemx("mkdir", "-p", "$workdir/$tool1name", "$workdir/tool2name") ;
+  v_systemx("mkdir", "-p", "$workdir/$tool1name", "$workdir/$tool2name") ;
 
   {
     my @newfiles ;
@@ -176,7 +176,7 @@ sub runtest_package {
 
     runtool(tool => \%tool1,
 	       'src-filename' => $srcf,
-	       'dst-filename' => $tooloutf,
+	       'dst-filename' => $tool1outf,
 	) ;
     runtool(tool => \%tool2,
 	       'src-filename' => $srcf,
