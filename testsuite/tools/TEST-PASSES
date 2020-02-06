@@ -1,0 +1,285 @@
+#!/usr/bin/perl
+
+use strict ;
+use Data::Dumper ;
+use Carp::Assert ;
+use File::Basename;
+use File::Find ;
+use File::Spec ;
+use File::stat ;
+use Getopt::Long;
+use IPC::System::Simple qw(systemx runx capturex $EXITVAL);
+use String::ShellQuote ;
+
+our $verbose = 0 ;
+our $continue_error = 0 ;
+our @dopackages ;
+our $tool1 ;
+our $tool2 ;
+
+our %tools = (
+  'roundtrip-revised' =>
+  {
+    'name' => 'roundtrip-revised',
+	'command' => sub {
+	  return ('tools/ROUNDTRIP-pa_r-pr_r', @_) ;
+    },
+  ),
+
+  'cp' =>
+  {
+    'name' => 'cp',
+	'command' => sub {
+	  return ('/bin/cp', @_) ;
+    },
+  ),
+
+  'lexer-passthru' => {
+    'name' => 'lexer-passthru',
+	'command' => sub {
+	  return ("./roundtrip-lexer","-mode","lexer-passthru", @_) ;
+    },
+  ),
+
+  'lexer-pa-pr' => {
+    'name' => 'lexer-pa-pr',
+	'command' => sub {
+	  return ("./roundtrip-lexer","-mode","parse-pp", @_) ;
+    },
+  ),
+
+  'ifdef-eval' => {
+    'name' => 'ifdef-eval',
+	'command' => sub {
+	  return ("./roundtrip-lexer","-mode","ifdef-eval", @_) ;
+    },
+  ),
+    } ;
+
+%packages = (
+  'camlp5.7.11' =>
+  {
+    'package' => 'camlp5.7.11',
+    'location' => '..',
+	'dirs' => [ qw(lib main meta etc top odyl ocpp compile) ],
+	'files' => [],
+	'exclude' => {
+	  'roundtrip-pa_r-pr_r' => [
+	    'lib/versdep.ml',
+	    'lib/eprinter.ml',
+	    'lib/pprintf.ml',
+	    'lib/pprintf.mli',
+	    'lib/plexer.ml',
+	    'lib/plexing.ml',
+	    'lib/ploc.ml',
+	    #	  'lib/extfold.ml',
+	    'lib/grammar.ml',
+	    "main/pcaml.mli",
+	    "main/prtools.ml",
+	    "main/mLast.mli",
+	    "main/reloc.ml",
+	      ],
+    },
+  },
+    ) ;
+
+{
+
+  GetOptions("tool1=s" => \$tool1,
+	     "tool2=s" => \$tool2,
+	     "package=s{}" => \@dopackages,
+	     "verbose" => \$verbose,
+      )
+      or die("Error in command line arguments\n");
+
+  die "tool $tool1 not recognized"
+      unless exists $tools{$tools1} ;
+
+  die "tool $tool2 not recognized"
+      unless exists $tools{$tools2} ;
+
+  foreach my $pkgna (@dopackages) {
+    die "package $pkg not recognized"
+	unless exists $packages{$pkg} ;
+  }
+
+  my $workdir = "workdir" ;
+
+  v_systemx("rm", "-rf", $workdir) ;
+  foreach my $pkgna (@dopackages) {
+    runtest_package($workdir,
+		    $tools{$tool1},
+		    $tools{$tool2},
+		    $packages{$pkgna});
+  }
+}
+
+sub runtest_package {
+  my $workroot = shift ;
+  my $tool1h = shift ;
+  my $tool2h = shift ;
+  my $pkgh = shift ;
+
+  my %tool1 = %{ $tool1h };
+  my $tool1name = $tool1{'name'} ;
+
+  my %tool2 = %{ $tool2h };
+  my $tool2name = $tool2{'name'} ;
+
+  my %pkgh = %{ $pkg };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$pkg{'package'} ;
+  my @dirs = @{ $pkg{'dirs'} };
+  my @files = @{  $pkg{'files'} } ;
+
+  my %exclude ;
+  {
+    my @l = () ;
+    push (@l, @{ $pkg->{'exclude'}->{$tool1name} })
+	if (exists $pkg->{'exclude'}->{$tool1name}) ;
+    push (@l, @{ $pkg->{'exclude'}->{$tool2name} })
+	if (exists $pkg->{'exclude'}->{$tool2name}) ;
+    foreach my $f (@l) {
+      $exclude{$f} = 1 ;
+    }
+  }
+
+  v_systemx("rm", "-rf", $workdir) ;
+  v_systemx("mkdir", "-p", "$workdir/$tool1name", "$workdir/tool2name") ;
+
+  {
+    my @newfiles ;
+    my $perfile = sub {
+      my $f = $File::Find::name ;
+      if ($f =~ /\.ml$/ || $f =~ /\.mli$/) {
+	push(@newfiles, $f) ;
+      }
+    } ;
+
+    find( { wanted => $perfile, no_chdir => 1 }, 
+	  (map { $location."/".$_ } @dirs) ) ;
+
+    @newfiles = map { $_ =~ s,^$location/,,; $_ } @newfiles ;
+
+    push(@files, @newfiles) ;
+  }
+
+  foreach my $f (@files) {
+    next if exists $exclude{$f} ;
+
+    my $bangf = $f ;
+    $bangf =~ s,/,!,g ;
+
+    my $srcf = "$location/".$f ;
+    my $tool1outf = "$workdir/$tool1name/".$bangf ;
+    my $tool2outf = "$workdir/$tool2name/".$bangf ;
+
+    runtool(tool => \%tool1,
+	       'src-filename' => $srcf,
+	       'dst-filename' => $tooloutf,
+	) ;
+    runtool(tool => \%tool2,
+	       'src-filename' => $srcf,
+	       'dst-filename' => $tool2outf,
+	) ;
+    v_systemx("./normalize-code.pl", $tool1outf, $tool1outf.".NORMALIZED") ;
+    v_systemx("./normalize-code.pl", $tool2outf, $tool2outf.".NORMALIZED") ;
+    my $code = extended_diff($tool1outf.".NORMALIZED", $tool1outf.".NORMALIZED"); ;
+    if (0 == $code) {
+      v_systemx("rm", "-f", $tool1outf, $tool1outf.".NORMALIZED", $tool1outf, $tool1outf.".NORMALIZED");
+    }
+  }
+}
+
+sub extended_diff {
+  my $f1 = shift ;
+  my $f2 = shift ;
+
+  my @cmd = ("diff", "-Bwiu", $f1, $f2) ;
+  my $diff_output = v_capturex([0..1], @cmd) ;
+  return 0 if (0 == $EXITVAL) ;
+
+  my $wdiff_output = v_capturex([0..1], "wdiff", "-3", $f1, $f2) ;
+  return 1 if (0 == $EXITVAL) ;
+
+  if (wordeq($f1, $f2)) {
+    print "== $f1 <-> $f2\n" ;
+    print "WHITE SPACE DIFFERENCES\n" ;
+  }
+  else {
+    print $diff_output ;
+  }
+  return 1 ;
+}
+
+sub wordeq {
+  my $f1 = shift ;
+  my $f2 = shift ;
+
+  my $txt1 = f_read($f1) ;
+  my $txt2 = f_read($f2) ;
+
+  $txt1 =~ s,\s,,gs ;
+  $txt2 =~ s,\s,,gs ;
+  return ($txt1 eq $txt2) ;
+}
+
+sub runtool {
+  my %args = @_ ;
+  my $tool = $args{'tool'} ;
+  my $srcf = $args{'src-filename'} ;
+  my $dstf = $args{'dst-filename'} ;
+
+  print "$tool->{'name'}: $srcf -> $dstf\n" if $main::verbose ;
+  my @cmd = &{ $tool->{'command'}, }($srcf, $dstf) ;
+  v_systemx(@cmd) ;
+}
+
+sub v_systemx {
+  my $codes ;
+  $codes = shift if (ref($_[0]) eq 'ARRAY') ;
+  my @cmd = @_ ;
+  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
+
+  if ($codes) {
+    return runx($codes, @cmd) ;
+  }
+  else {
+    return runx(@cmd) ;
+  }
+}
+
+sub v_capturex {
+  my $codes ;
+  $codes = shift if (ref($_[0]) eq 'ARRAY') ;
+  my @cmd = @_ ;
+  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
+
+  if ($codes) {
+    return capturex($codes, @cmd) ;
+  }
+  else {
+    return capturex(@cmd) ;
+  }
+}
+
+sub v_system {
+  my $cmd = shift;
+  print STDERR "<<$cmd>>\n" if ($main::verbose);
+  system $cmd;
+}
+
+sub f_read {
+  my $f = shift;
+  open(F,"<$f") || die "cannot open $f for reading";
+  my @l = <F>;
+  close(F);
+  return (wantarray ? @l : join('', @l)) ;
+}
+
+sub f_write {
+  my $f = shift;
+  open(F,">$f") || die "cannot open $f for writing";
+  print F @_;
+  close(F);
+}
