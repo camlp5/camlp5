@@ -3,9 +3,9 @@
 
 open Printf;
 
-value list_of_stream strm =
+value list_of_stream_eof eoftok strm =
   let rec lrec acc = parser [
-    [: `(("EOI",_) as e) :] -> List.rev [ e::acc ]
+    [: `e when e = eoftok :] -> List.rev [ e::acc ]
   | [: `e ; strm :] -> lrec [ e::acc ] strm
   | [: :] -> List.rev acc
   ] in
@@ -15,7 +15,7 @@ value list_of_stream strm =
 value lex_string gram s =
   let lexer = Grammar.glexer gram in
   let (strm, _) = lexer.Plexing.tok_func (Stream.of_string s) in
-  list_of_stream strm
+  list_of_stream_eof ("EOI","") strm
 ;
 
 value lex_string_loc s =
