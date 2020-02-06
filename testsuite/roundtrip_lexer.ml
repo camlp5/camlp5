@@ -314,18 +314,18 @@ value lex_stream1 is =
   addloc 0 strm
 ;
 
-value pp_stream1 strm =
+value pp_stream1 oc strm =
   let rec pp1 =
     parser
       [
         [: `(loc,("STRING",tok)) ; strm :] -> do {
-          print_string (Ploc.comment loc) ;
-          Printf.printf "\"%s\"" tok ;
+          output_string oc (Ploc.comment loc) ;
+          Printf.fprintf oc "\"%s\"" tok ;
           pp1 strm
         }
       | [: `(loc,(_,tok)) ; strm :] -> do {
-          print_string (Ploc.comment loc) ;
-          print_string tok ;
+          output_string oc (Ploc.comment loc) ;
+          output_string oc tok ;
           pp1 strm
         }
       | [: :] -> ()
@@ -358,8 +358,8 @@ value invoked_with ?{flag} cmdna =
       List.exists ((=) flag'') (List.tl argv) ]
 ;
 
-value ifile = ref "-" ;
-value mode = ref "lexer" ;
+value files = ref [] ;
+value mode = ref "lexer-passturn" ;
 value env = ref [("OCAML_VERSION", Some ocaml_version)] ;
 
 value set_mode s = mode.val := s ;
@@ -378,27 +378,38 @@ value un_def s =
 
 value roundtrip_lexer () = do {
     Arg.(parse [
-             ("-mode",(Symbol ["lexer";"parse-pp";"eval"] set_mode)," choose mode") ;
+             ("-mode",(Symbol ["lexer-passthru";"parse-pp";"ifdef-eval"] set_mode)," choose mode") ;
              ("-D", String add_def, " add def") ;
              ("-U", String un_def, " un def")
       ]
-      (fun s -> ifile.val := s)
+      (fun s -> files.val := [ s :: files.val ])
       "roundtrip_lexer: usage") ;
-    let ic = if ifile.val = "-" then stdin else open_in ifile.val in
+      let open_or opener ifminus = fun [
+        "-" -> ifminus | f -> opener f
+      ] in
+      let (ic, oc) = match List.rev files.val with [
+        [] -> (stdin, stdout)
+      | [ifile] -> (open_or open_in stdin ifile,
+                    stdout)
+      | [ifile; ofile] -> (open_or open_in stdin ifile,
+                           open_or open_out stdout ofile)
+      | _ -> failwith "too many filenames provided"
+      ] in
     let cs = Stream.of_channel ic in
-    if mode.val = "lexer" then
-      cs |> lex_stream1 |> pp_stream1
+    if mode.val = "lexer-passthru" then
+      cs |> lex_stream1 |> pp_stream1 oc
     else if mode.val = "parse-pp" then
-      cs |> lex_stream1 |> DorT.lift |> DorT.unlift |> pp_stream1
-    else if mode.val = "eval" then
-      cs |> lex_stream1 |> DorT.lift |> DorT.eval env.val |> DorT.unlift |> pp_stream1
+      cs |> lex_stream1 |> DorT.lift |> DorT.unlift |> pp_stream1 oc
+    else if mode.val = "ifdef-eval" then
+      cs |> lex_stream1 |> DorT.lift |> DorT.eval env.val |> DorT.unlift |> pp_stream1 oc
     else assert False
     ;
-    print_newline()
+    output_string oc "\n" ;
+    close_out oc ;
+    close_in ic
   }
 ;
 
-(* Run the tests in test suite *)
 value _ =
 if invoked_with "roundtrip_lexer" then
   roundtrip_lexer ()
