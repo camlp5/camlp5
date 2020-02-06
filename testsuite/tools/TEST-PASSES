@@ -174,23 +174,29 @@ sub runtest_package {
     my $bangf = $f ;
     $bangf =~ s,/,!,g ;
 
-    my $srcf = "$location/".$f ;
-    my $tool1outf = "$workdir/$tool1name/".$bangf ;
-    my $tool2outf = "$workdir/$tool2name/".$bangf ;
+    my $origf = "$location/".$f ;
+    my $tool1srcf = "$workdir/$tool1name/".$bangf ;
+    my $tool2srcf = "$workdir/$tool2name/".$bangf ;
+    my $tool1outf = "$workdir/$tool1name/".$bangf.".OUT" ;
+    my $tool2outf = "$workdir/$tool2name/".$bangf.".OUT" ;
 
+    v_systemx("cp", $origf, $tool1srcf) ;
     runtool(tool => \%tool1,
-	       'src-filename' => $srcf,
+	       'src-filename' => $tool1srcf,
 	       'dst-filename' => $tool1outf,
 	) ;
+
+    v_systemx("cp", $origf, $tool2srcf) ;
     runtool(tool => \%tool2,
-	       'src-filename' => $srcf,
+	       'src-filename' => $tool2srcf,
 	       'dst-filename' => $tool2outf,
 	) ;
     v_systemx("./normalize-code.pl", $tool1outf, $tool1outf.".NORMALIZED") ;
     v_systemx("./normalize-code.pl", $tool2outf, $tool2outf.".NORMALIZED") ;
     my $code = extended_diff($tool1outf.".NORMALIZED", $tool1outf.".NORMALIZED"); ;
     if (0 == $code) {
-      v_systemx("rm", "-f", $tool1outf, $tool1outf.".NORMALIZED", $tool2outf, $tool2outf.".NORMALIZED");
+      v_systemx("rm", "-f", $tool1srcf, $tool1outf, $tool1outf.".NORMALIZED",
+		            $tool2srcf, $tool2outf, $tool2outf.".NORMALIZED");
     }
   }
 }
