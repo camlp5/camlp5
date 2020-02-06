@@ -19,8 +19,7 @@ type d_op_t = [
   ]
 ;
 
-
-type d_version_t = string
+type d_version_t = [ DVERSION of string ]
 ;
 
 value ocaml_version = "OCAML_4_10_0" ;
@@ -37,17 +36,18 @@ type dexpr = [
   ]
 ;
 
-type token = (Ploc.t * (string * string)) ;
+type base_token = (Ploc.t * (string * string)) ;
 
 type ifdef_t = [
   DEF_ifdef of bool and (*IFDEF*) Ploc.t and dexpr and (*THEN*) Ploc.t and tokens and else_t and (*END*) Ploc.t
   ]
 and else_t = [
-  DEF_end of Ploc.t
+  DEF_none
 | DEF_else of (*ELSE*) Ploc.t and tokens
 | DEF_elsifdef of bool and (*ELSIFDEF*) Ploc.t and dexpr and (*THEN*) Ploc.t and tokens and else_t
   ]
-and tokens = list token
+and tokens = list t
+and t = [ L of ifdef_t | R of base_token ]
 ;
 
 module PA = struct
@@ -67,7 +67,7 @@ value pa_d_op =
 value pa_d_version =
   parser
     [
-      [: `(loc,("UIDENT",vs)) when is_version vs  :] -> (loc, vs)
+      [: `(loc,("UIDENT",vs)) when is_version vs  :] -> (loc, DVERSION vs)
     ]
 ;
 
@@ -107,34 +107,51 @@ value tokens_until termlist =
   trec []
 ;
 
+value keywords = ["IFDEF"; "IFNDEF"; "ELSE"; "THEN" ; "END"; "ELSIFDEF"; "ELSIFNDEF"] ;
+
 value rec pa_ifdef =
   parser
     [
       [: `(loc1,("UIDENT","IFDEF")) ; de = pa_dexpr ; `(loc2,("UIDENT","THEN")) ;
-          l = (tokens_until [("UIDENT","END"); ("UIDENT","ELSE"); ("UIDENT","ELSIFDEF"); ("UIDENT","ELSIFNDEF")]) ;
+          l = pa_t_list ;
           e = pa_else ; `(loc3,("UIDENT","END")) :] ->
       DEF_ifdef True loc1 de loc2 l e loc3
     | [: `(loc1,("UIDENT","IFNDEF")) ; de = pa_dexpr ; `(loc2,("UIDENT","THEN")) ;
-          l = tokens_until [("UIDENT","END"); ("UIDENT","ELSE"); ("UIDENT","ELSIFDEF"); ("UIDENT","ELSIFNDEF")] ;
+          l = pa_t_list ;
           e = pa_else ; `(loc3,("UIDENT","END")) :] ->
       DEF_ifdef False loc1 de loc2 l e loc3
     ]
 and pa_else =
   parser
     [
-      [: `(loc1,("UIDENT","END")) :] ->
-      DEF_end loc1
-    | [: `(loc1,("UIDENT","ELSE")) ; l = tokens_until [("UIDENT","END")] :] ->
+      [: `(loc1,("UIDENT","ELSE")) ; l = pa_t_list :] ->
       DEF_else loc1 l
     | [: `(loc1,("UIDENT","ELSIFDEF")) ; de = pa_dexpr ; `(loc2,("UIDENT","THEN")) ;
-          l = tokens_until [("UIDENT","END"); ("UIDENT","ELSE"); ("UIDENT","ELSIFDEF"); ("UIDENT","ELSIFNDEF")] ;
+          l = pa_t_list ;
           e = pa_else :] ->
       DEF_elsifdef True loc1 de loc2 l e
     | [: `(loc1,("UIDENT","ELSIFNDEF")) ; de = pa_dexpr ; `(loc2,("UIDENT","THEN")) ;
-          l = tokens_until [("UIDENT","END"); ("UIDENT","ELSE"); ("UIDENT","ELSIFDEF"); ("UIDENT","ELSIFNDEF")] ;
+          l = pa_t_list ;
           e = pa_else :] ->
       DEF_elsifdef False loc1 de loc2 l e
+    | [: :] ->
+      DEF_none
     ]
+and pa_t =
+  parser
+    [
+      [: d = pa_ifdef :] -> L d
+    | [: `((_,("UIDENT",t)) as p) when not(List.mem t keywords) ; strm :] -> R p
+    | [: `((_,(ty,_)) as p) when (ty <> "UIDENT") ; strm :] -> R p
+    ]
+and pa_t_list strm =
+  let rec parec acc =
+    parser
+      [
+        [: e = pa_t ; strm :] -> parec [ e :: acc ] strm
+      | [: :] -> List.rev acc
+      ]
+  in parec [] strm
 ;
 
 end ;
@@ -152,7 +169,7 @@ value pp_d_op (loc,d_op) =
   ] in
   [: `(loc,("",s)) :]
 ;
-value pp_d_version (loc,s) = [: `(loc,("UIDENT",s)) :] ;
+value pp_d_version = fun [ (loc, (DVERSION s)) -> [: `(loc,("UIDENT",s)) :] ] ;
 
 value rec pp_dexpr =
   fun [
@@ -171,25 +188,29 @@ value rec pp_def =
       DEF_ifdef b loc1 de loc2 l e loc3 ->
       let starter = if b then "IFDEF" else "IFNDEF" in
       [: `(loc1,("UIDENT",starter)) ; pp_dexpr de ; `(loc2,("UIDENT","THEN")) ;
-          stream_of_list l ;
+          pp_t_list l ;
           pp_else e ; `(loc3,("UIDENT","END")) :]
     ]
 and pp_else =
   fun [
-      DEF_end loc -> [: `(loc,("UIDENT","END")) :]
-    | DEF_else loc l -> [: `(loc,("UIDENT","ELSE")) ; stream_of_list l :]
+      DEF_none -> [: :]
+    | DEF_else loc l -> [: `(loc,("UIDENT","ELSE")) ; pp_t_list l :]
     | DEF_elsifdef b loc1 de loc2 l e ->
       let starter = if b then "ELSIFDEF" else "ELSIFNDEF" in
        [: `(loc1,("UIDENT",starter)) ; pp_dexpr de ; `(loc2,("UIDENT","THEN")) ;
-          stream_of_list l ;
+          pp_t_list l ;
           pp_else e :]
+    ]
+and pp_t_list =
+  fun [
+      [] -> [: :]
+    | [(L def) :: tl] -> [: pp_def def ; pp_t_list tl :]
+    | [(R tok) :: tl] -> [: `tok ; pp_t_list tl :]
     ]
 ;
 end ;
 
 module DorT = struct
-
-type t = [ L of ifdef_t | R of token ] ;
 
 value lift =
   let rec trec =
@@ -213,6 +234,55 @@ value unlift =
   in
   trec
 ;
+
+value eval_op op = fun [
+ (DVERSION vers) ->
+ match op with [
+     DOP_le -> ocaml_version <= vers
+   | DOP_lt -> ocaml_version < vers
+   | DOP_eq  -> ocaml_version = vers
+   | DOP_ne  -> ocaml_version <> vers
+   | DOP_gt  -> ocaml_version > vers
+   | DOP_ge -> ocaml_version >= vers
+   ]
+]
+;
+
+value eval_dexpr env =
+  let rec evrec = 
+    fun 
+      [
+        DE_uident _ id -> List.mem_assoc id env
+      | DE_version_op _ (_, op) (_, vers) ->
+         eval_op op vers
+      | DE_parens _ de _ -> evrec de
+      | DE_not _ de -> not (evrec de)
+      | DE_and de1 _ de2 -> (evrec de1) && (evrec de2)
+      | DE_or de1 _ de2 -> (evrec de1) || (evrec de2)
+      ] in
+  evrec
+;
+
+(*
+value eval_def env =
+  fun [
+      DEF_ifdef b _ de _ then_tokens elses _ ->
+      if eval_dexpr env de then
+    ]
+;
+
+value eval env =
+  let rec erec =
+    parser
+      [
+        [: `R tok ; strm :] -> [: `R tok ; erec strm :]
+      | [: `L def ; strm :] ->
+         [: eval_def env def ; erec strm :]
+      | [: :] -> [: :]
+      ]
+  in
+  erec
+ *)
 end ;
 
 value lex_stream1 is =

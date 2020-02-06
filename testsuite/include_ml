@@ -28,6 +28,8 @@ open OUnit2 ;;
 open Testutil ;;
 open Testutil2 ;;
 
+#load "roundtrip_lexer.cmo";;
+open Roundtrip_lexer ;;
 
 (*
 ;;; Local Variables: ***
