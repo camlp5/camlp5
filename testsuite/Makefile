@@ -63,6 +63,7 @@ sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 
 setup:
 	opam install rresult fmt pcre ounit2 bos
+	sudo apt-get install libstring-shellquote-perl
 
 clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo
