@@ -186,7 +186,7 @@ sub runtest_package {
     v_systemx("./normalize-code.pl", $tool2outf, $tool2outf.".NORMALIZED") ;
     my $code = extended_diff($tool1outf.".NORMALIZED", $tool1outf.".NORMALIZED"); ;
     if (0 == $code) {
-      v_systemx("rm", "-f", $tool1outf, $tool1outf.".NORMALIZED", $tool1outf, $tool1outf.".NORMALIZED");
+      v_systemx("rm", "-f", $tool1outf, $tool1outf.".NORMALIZED", $tool2outf, $tool2outf.".NORMALIZED");
     }
   }
 }

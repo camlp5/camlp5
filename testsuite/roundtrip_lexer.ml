@@ -300,7 +300,8 @@ value eval env =
 ;
 end ;
 
-value lex_stream1 is =
+value lex_stream1 is = do {
+  Plexer.dollar_for_antiquotation.val := False ;
   let lexer = Plexer.gmake() in
   let (strm, locfun) = lexer.Plexing.tok_func is in
   let rec addloc i =
@@ -308,10 +309,11 @@ value lex_stream1 is =
       [
         [: `(("EOI",_) as p) :] -> [: `(Ploc.dummy,p) :]
       | [: `p ; strm :] ->
-         let loc = i |> locfun in
-         [: `(loc,p) ; addloc (i+1) strm :]
+        let loc = i |> locfun in
+        [: `(loc,p) ; addloc (i+1) strm :]
       ] in
   addloc 0 strm
+}
 ;
 
 value pp_stream1 oc strm =

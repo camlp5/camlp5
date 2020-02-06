@@ -16,9 +16,9 @@
 
 #load "pa_r.cmo";;
 #load "pr_r.cmo";;
+(*
 #load "pa_extend.cmo";;
 #load "q_MLast.cmo";;
-(*
 #load "q_phony.cmo";;
  *)
 #load "testutil.cmo";;
