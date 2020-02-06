@@ -187,9 +187,11 @@ and pp_else =
 ;
 end ;
 
-type def_or_token = [ L of ifdef_t | R of token ] ;
+module DorT = struct
 
-value transduce_def_or_token =
+type t = [ L of ifdef_t | R of token ] ;
+
+value lift =
   let rec trec =
     parser
       [
@@ -200,7 +202,7 @@ value transduce_def_or_token =
   in trec
 ;
 
-value pp_def_or_token =
+value unlift =
   let rec trec =
     parser
       [
@@ -211,7 +213,7 @@ value pp_def_or_token =
   in
   trec
 ;
-
+end ;
 
 value lex_stream1 is =
   let lexer = Plexer.gmake() in
@@ -302,7 +304,7 @@ value roundtrip_lexer () = do {
     if mode.val = "lexer" then
       cs |> lex_stream1 |> pp_stream1
     else if mode.val = "parse-pp" then
-      cs |> lex_stream1 |> transduce_def_or_token |> pp_def_or_token |> pp_stream1
+      cs |> lex_stream1 |> DorT.lift |> DorT.unlift |> pp_stream1
     else assert False
     ;
     print_newline()
