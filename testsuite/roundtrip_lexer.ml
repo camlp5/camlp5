@@ -263,26 +263,41 @@ value eval_dexpr env =
   evrec
 ;
 
-(*
-value eval_def env =
+value rec eval_def env =
   fun [
       DEF_ifdef b _ de _ then_tokens elses _ ->
       if eval_dexpr env de then
+        eval_t_list env then_tokens
+      else match elses with [
+        DEF_none -> [: :]
+      | DEF_else _ else_tokens -> eval_t_list env else_tokens
+      | DEF_elsifdef b _ de _ l elses ->
+         eval_def env (DEF_ifdef b Ploc.dummy de Ploc.dummy l elses Ploc.dummy)
+             ]
     ]
+
+and eval_t env = fun [
+  R tok -> [: `R tok :]
+| L def -> eval_def env def
+]
+
+and eval_t_list env =
+  let rec evrec = fun [
+      [] -> [: :]
+    | [h :: tl] -> [: eval_t env h ; evrec tl :]
+  ]
+  in
+  evrec
 ;
 
 value eval env =
-  let rec erec =
-    parser
-      [
-        [: `R tok ; strm :] -> [: `R tok ; erec strm :]
-      | [: `L def ; strm :] ->
-         [: eval_def env def ; erec strm :]
-      | [: :] -> [: :]
-      ]
-  in
-  erec
- *)
+  let rec evrec = parser
+    [
+      [: `h ; strm :] -> [: eval_t env h ; evrec strm :]
+    | [: :] -> [: :]
+    ]
+  in evrec
+;
 end ;
 
 value lex_stream1 is =
@@ -375,6 +390,8 @@ value roundtrip_lexer () = do {
       cs |> lex_stream1 |> pp_stream1
     else if mode.val = "parse-pp" then
       cs |> lex_stream1 |> DorT.lift |> DorT.unlift |> pp_stream1
+    else if mode.val = "eval" then
+      cs |> lex_stream1 |> DorT.lift |> DorT.eval env.val |> DorT.unlift |> pp_stream1
     else assert False
     ;
     print_newline()
