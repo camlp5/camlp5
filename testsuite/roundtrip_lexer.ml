@@ -24,7 +24,7 @@ type d_version_t = [ DVERSION of string ]
 
 value ocaml_version = "OCAML_4_10_0" ;
 
-value is_version s = Pcre.pmatch ~{pat="^OCAML_[0-9_]+$"} s ;
+value is_version s = Pcre.pmatch ~{pat="^OCAML_[0-9_]+(?:_[0-9a-zA-Z]+)$"} s ;
 
 type dexpr = [
     DE_uident of Ploc.t and string
