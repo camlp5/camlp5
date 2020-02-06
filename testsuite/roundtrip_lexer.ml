@@ -19,6 +19,39 @@ type d_op_t = [
   ]
 ;
 
+
+type d_version_t = string
+;
+
+value ocaml_version = "OCAML_4_10_0" ;
+
+value is_version s = Pcre.pmatch ~{pat="^OCAML_[0-9_]+$"} s ;
+
+type dexpr = [
+    DE_uident of Ploc.t and string
+  | DE_version_op of Ploc.t and (Ploc.t * d_op_t) and (Ploc.t * d_version_t)
+  | DE_parens of Ploc.t and dexpr and Ploc.t
+  | DE_not of Ploc.t and dexpr
+  | DE_and of dexpr and Ploc.t and dexpr
+  | DE_or of dexpr and Ploc.t and dexpr
+  ]
+;
+
+type token = (Ploc.t * (string * string)) ;
+
+type ifdef_t = [
+  DEF_ifdef of bool and (*IFDEF*) Ploc.t and dexpr and (*THEN*) Ploc.t and tokens and else_t and (*END*) Ploc.t
+  ]
+and else_t = [
+  DEF_end of Ploc.t
+| DEF_else of (*ELSE*) Ploc.t and tokens
+| DEF_elsifdef of bool and (*ELSIFDEF*) Ploc.t and dexpr and (*THEN*) Ploc.t and tokens and else_t
+  ]
+and tokens = list token
+;
+
+module PA = struct
+
 value pa_d_op =
   parser
     [
@@ -31,42 +64,11 @@ value pa_d_op =
     ]
 ;
 
-value pp_d_op (loc,d_op) =
-  let s = match d_op with [
-        DOP_le -> "<="
-      | DOP_lt -> "<"
-      | DOP_eq -> "="
-      | DOP_ne -> "<>"
-      | DOP_gt -> ">"
-      | DOP_ge -> ">="
-  ] in
-  [: `(loc,("",s)) :]
-;
-
-type d_version_t = string
-;
-
-value pp_d_version (loc,s) = [: `(loc,("UIDENT",s)) :] ;
-
-value ocaml_version = "OCAML_4_10_0" ;
-
-value is_version s = Pcre.pmatch ~{pat="^OCAML_[0-9_]+$"} s ;
-
 value pa_d_version =
   parser
     [
       [: `(loc,("UIDENT",vs)) when is_version vs  :] -> (loc, vs)
     ]
-;
-
-type dexpr = [
-    DE_uident of Ploc.t and string
-  | DE_version_op of Ploc.t and (Ploc.t * d_op_t) and (Ploc.t * d_version_t)
-  | DE_parens of Ploc.t and dexpr and Ploc.t
-  | DE_not of Ploc.t and dexpr
-  | DE_and of dexpr and Ploc.t and dexpr
-  | DE_or of dexpr and Ploc.t and dexpr
-  ]
 ;
 
 value rec pa_dexpr0 =
@@ -91,19 +93,6 @@ and pa_dexpr2 = parser
  ;
 
 value pa_dexpr = pa_dexpr2
-;
-
-type token = (Ploc.t * (string * string)) ;
-
-type ifdef_t = [
-  DEF_ifdef of bool and (*IFDEF*) Ploc.t and dexpr and (*THEN*) Ploc.t and tokens and else_t and (*END*) Ploc.t
-  ]
-and else_t = [
-  DEF_end of Ploc.t
-| DEF_else of (*ELSE*) Ploc.t and tokens
-| DEF_elsifdef of bool and (*ELSIFDEF*) Ploc.t and dexpr and (*THEN*) Ploc.t and tokens and else_t
-  ]
-and tokens = list token
 ;
 
 value tokens_until termlist =
@@ -148,6 +137,23 @@ and pa_else =
     ]
 ;
 
+end ;
+
+module PP = struct
+
+value pp_d_op (loc,d_op) =
+  let s = match d_op with [
+        DOP_le -> "<="
+      | DOP_lt -> "<"
+      | DOP_eq -> "="
+      | DOP_ne -> "<>"
+      | DOP_gt -> ">"
+      | DOP_ge -> ">="
+  ] in
+  [: `(loc,("",s)) :]
+;
+value pp_d_version (loc,s) = [: `(loc,("UIDENT",s)) :] ;
+
 value rec pp_dexpr =
   fun [
       DE_uident loc id -> [: `(loc,("UIDENT", id)) :]
@@ -179,6 +185,7 @@ and pp_else =
           pp_else e :]
     ]
 ;
+end ;
 
 type def_or_token = [ L of ifdef_t | R of token ] ;
 
@@ -186,7 +193,7 @@ value transduce_def_or_token =
   let rec trec =
     parser
       [
-        [: d = pa_ifdef ; strm :] -> [: `L d ; trec strm :]
+        [: d = PA.pa_ifdef ; strm :] -> [: `L d ; trec strm :]
       | [: `t ; strm :] -> [: `R t ; trec strm :]
       | [: :] -> [: :]
       ]
@@ -198,7 +205,7 @@ value pp_def_or_token =
     parser
       [
         [: `R tok ; strm :] -> [: `tok ; trec strm :]
-      | [: `L def ; strm :] -> [: pp_def def ; trec strm :]
+      | [: `L def ; strm :] -> [: PP.pp_def def ; trec strm :]
       | [: :] -> [: :]
       ]
   in
@@ -266,11 +273,27 @@ value invoked_with ?{flag} cmdna =
 
 value ifile = ref "-" ;
 value mode = ref "lexer" ;
+value env = ref [("OCAML_VERSION", Some ocaml_version)] ;
+
 value set_mode s = mode.val := s ;
+
+value add_def s =
+  if List.mem_assoc s env.val then
+    failwith (Printf.sprintf "%s already defined" s)
+  else
+    env.val := [(s,None) :: env.val] ;
+
+value un_def s =
+  if not (List.mem_assoc s env.val) then
+    failwith (Printf.sprintf "%s not defined" s)
+  else
+    env.val := List.remove_assoc s env.val ;
 
 value roundtrip_lexer () = do {
     Arg.(parse [
-             ("-mode",(Symbol ["lexer";"parse-pp";"eval"] set_mode)," choose mode")
+             ("-mode",(Symbol ["lexer";"parse-pp";"eval"] set_mode)," choose mode") ;
+             ("-D", String add_def, " add def") ;
+             ("-U", String un_def, " un def")
       ]
       (fun s -> ifile.val := s)
       "roundtrip_lexer: usage") ;
