@@ -6,6 +6,8 @@
   my $txt = f_read($src) ;
   $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
   $txt =~ s,→,->,gs ;
+  $txt =~ s,declare end;,,gm ;
+  $txt =~ s,;(?:\s*;)*,;,gs ;
   f_write($dst, $txt) ; 
 }
 

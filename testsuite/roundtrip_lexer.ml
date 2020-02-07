@@ -325,6 +325,11 @@ value pp_stream1 oc strm =
           Printf.fprintf oc "\"%s\"" tok ;
           pp1 strm
         }
+      | [: `(loc,("CHAR",tok)) ; strm :] -> do {
+          output_string oc (Ploc.comment loc) ;
+          Printf.fprintf oc "'%s'" tok ;
+          pp1 strm
+        }
       | [: `(loc,(_,tok)) ; strm :] -> do {
           output_string oc (Ploc.comment loc) ;
           output_string oc tok ;
