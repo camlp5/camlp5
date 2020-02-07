@@ -240,11 +240,17 @@ sub runtest_package {
     my $tool2outf = "$workdir/$tool2name/".$bangf.".OUT" ;
     push(@generated_files, $tool1srcf, $tool2srcf,  $tool1outf, $tool2outf) ;
 
+    my $all_tool_patch = "patches/$pkg{'package'}/ALL/".$bangf.".PATCH" ;
+
     v_systemx("cp", $origf, $tool1srcf) ;
     my $patch1 = "patches/$pkg{'package'}/$tool1name/".$bangf.".PATCH" ;
     if (-r $patch1) {
       print "PATCHING $tool1srcf\n";
       v_systemx("patch",$tool1srcf, $patch1) ;
+    }
+    elsif (-r $all_tool_patch) {
+      print "PATCHING $tool1srcf\n";
+      v_systemx("patch",$tool1srcf, $all_tool_patch) ;
     }
     my $code ;
     $code = runtool(tool => \%tool1,
@@ -261,6 +267,10 @@ sub runtest_package {
     if (-r $patch2) {
       print "PATCHING $tool2srcf\n";
       v_systemx("patch",$tool2srcf, $patch2) ;
+    }
+    elsif (-r $all_tool_patch) {
+      print "PATCHING $tool2srcf\n";
+      v_systemx("patch",$tool2srcf, $all_tool_patch) ;
     }
     $code = runtool(tool => \%tool2,
 		    'src-filename' => $tool2srcf,
