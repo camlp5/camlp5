@@ -1,0 +1,25 @@
+diff --git a/etc/q_phony.ml b/etc/q_phony.ml
+index 58a66ec0..d21d672f 100644
+--- a/etc/q_phony.ml
++++ b/etc/q_phony.ml
+@@ -15,17 +15,17 @@ value t = ref "";
+ value make_quot name s =
+ if name = "" then "<<" ^ s ^ ">>"
+ else if String.length s > 0 && s.[0] = '@' then
+-   "<:" ^ name ^ ":<" ^ (String.sub s 1 (String.length s - 1)) ^ ">>"
++   "<:" ^ name ^ ":<" ^ String.sub s 1 (String.length s - 1) ^ ">>"
+ else "<:" ^ name ^ "<" ^ s ^ ">>"
+ ;
+ 
+-value expr_fun = fun s ->
++value expr_fun s =
+         let t = make_quot t.val s
+         in
+         let loc = Ploc.dummy in
+ <:expr< $uid:t$ >> ;
+ 
+-value patt_fun = fun s ->
++value patt_fun s =
+         let t = make_quot t.val s
+         in
+         let loc = Ploc.dummy in

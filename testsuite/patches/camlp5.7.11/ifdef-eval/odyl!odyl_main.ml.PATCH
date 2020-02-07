@@ -1,0 +1,44 @@
+diff --git a/odyl/odyl_main.ml b/odyl/odyl_main.ml
+index 1e1bc01a..6f25c3e3 100644
+--- a/odyl/odyl_main.ml
++++ b/odyl/odyl_main.ml
+@@ -28,14 +28,12 @@ value find_in_path path name =
+   if Filename.basename name <> name then
+     if Sys.file_exists name then name else raise Not_found
+   else
+-    let rec try_dir =
++    try_dir path where rec try_dir =
+       fun
+       [ [] -> raise Not_found
+       | [dir :: rem] ->
+           let fullname = Filename.concat dir name in
+           if Sys.file_exists fullname then fullname else try_dir rem ]
+-    in
+-    try_dir path
+ ;
+ 
+ exception Error of string and string;
+@@ -50,7 +48,7 @@ value loadfile file =
+   ELSE do {
+     if not initialized.val then do {
+       IFDEF OPT THEN ()
+-      ELSE do { Dynlink.allow_unsafe_modules True }
++      ELSE Dynlink.allow_unsafe_modules True
+       END;
+       initialized.val := True
+     }
+@@ -64,12 +62,12 @@ value loadfile file =
+       [ Not_found -> raise (Error file "file not found in path") ]
+     in
+     try Dynlink.loadfile fname with
+-    | IFDEF OCAML_VERSION >= OCAML_4_08 AND NOT BOOTSTRAPPING_SOURCES THEN
++    [ IFDEF OCAML_VERSION >= OCAML_4_08 AND NOT BOOTSTRAPPING_SOURCES THEN
+       Dynlink.Error (Module_already_loaded _) ->
+         () (* ignore for compatibility *)
+       END
+     | Dynlink.Error e -> raise (Error fname (Dynlink.error_message e))
+-    end
++    ]
+   }
+   END
+ ;

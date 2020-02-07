@@ -20,9 +20,9 @@
 #load "pa_extend.cmo";;
 (*
 #load "q_MLast.cmo";;
- *)
 #load "q_phony.cmo";;
  *)
+*)
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
 

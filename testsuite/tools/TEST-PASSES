@@ -69,7 +69,6 @@ our %packages = (
 	  'roundtrip-pa_r-pr_r' => [
 	      ],
 	  'roundtrip-revised' => [
-# 
 	    "lib/ploc.ml",
 	    "lib/pprintf.ml",
 	    "lib/plexer.ml",
@@ -78,6 +77,49 @@ our %packages = (
 	    "main/pcaml.mli",
 	    "meta/pa_macro.ml",
 	    "meta/pa_r.ml",
+# this sucker shows a big in pr_r
+	    "meta/q_MLast.ml",
+	    "etc/elexer.ml",
+# wrong syntax (LISP)
+	    "etc/pa_lisp.ml",
+# wrong syntax (Scheme)
+	    "etc/pa_scheme.ml",
+# unimplemented AST printer
+	    "etc/pa_mkast.ml",
+# unimplemented fparser printer
+	    "etc/pa_pprintf.ml",
+# unimplemented AST printer
+	    "etc/pa_reloc.ml",
+# pretty-printing for stream parsers isn't up to snuff
+	    "etc/pa_sml.ml",
+# uses pprintf, but nothing exists to rebuild pprintf (pr_pprintf)
+# applies to all these printers
+	    "etc/pr_extend.ml",
+	    "etc/pr_extfun.ml",
+	    "etc/pr_extprint.ml",
+	    "etc/pr_op.ml",
+	    "etc/pr_ro.ml",
+	    "etc/pr_rp.ml",
+	    "etc/pr_schemep.ml",
+	    "etc/pr_scheme.ml",
+	    "etc/pr_o.ml",
+	    "etc/pr_r.ml",
+	    "etc/papr_phony_macro.ml",
+# unimplemented AST printer
+	    "etc/pa_mktest.ml",
+# unimplemented printer for stream-parsers
+	    "etc/pa_o.ml",
+# TODO: use GITIGNORE to ignore temporary files
+	    "compile/tmp.o_concat.ml",
+	    "compile/tmp.ml",
+	    "compile/tmp.mli",
+	    "compile/pa_o_fast.ml",
+# another instance of pr_r bug
+	    "top/rprint.ml",
+# unimplemented printer for stream-parsers
+	    "ocpp/ocpp.ml",
+# this seems like original syntax -- skip
+	    "odyl/odyl_config.ml",
 	      ],
     },
   },
@@ -199,6 +241,11 @@ sub runtest_package {
     push(@generated_files, $tool1srcf, $tool2srcf,  $tool1outf, $tool2outf) ;
 
     v_systemx("cp", $origf, $tool1srcf) ;
+    my $patch1 = "patches/$pkg{'package'}/$tool1name/".$bangf.".PATCH" ;
+    if (-r $patch1) {
+      print "PATCHING $tool1srcf\n";
+      v_systemx("patch",$tool1srcf, $patch1) ;
+    }
     my $code ;
     $code = runtool(tool => \%tool1,
 		    'src-filename' => $tool1srcf,
@@ -210,6 +257,11 @@ sub runtest_package {
       next ;
     }
     v_systemx("cp", $origf, $tool2srcf) ;
+    my $patch2 = "patches/$pkg{'package'}/$tool2name/".$bangf.".PATCH" ;
+    if (-r $patch2) {
+      print "PATCHING $tool2srcf\n";
+      v_systemx("patch",$tool2srcf, $patch2) ;
+    }
     $code = runtool(tool => \%tool2,
 		    'src-filename' => $tool2srcf,
 		    'dst-filename' => $tool2outf,

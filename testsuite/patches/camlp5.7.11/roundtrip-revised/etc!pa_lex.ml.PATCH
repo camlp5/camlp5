@@ -1,0 +1,18 @@
+diff --git a/etc/pa_lex.ml b/etc/pa_lex.ml
+index 9d70b811..1a8d759c 100644
+--- a/etc/pa_lex.ml
++++ b/etc/pa_lex.ml
+@@ -232,11 +232,12 @@ EXTEND
+   ;
+   expr: LEVEL "simple"
+     [ [ "$"; LIDENT "add"; s = STRING ->
+-          loop (accum_chars loc gcl.val) 0 where rec loop v i =
++          let rec loop v i =
+             if i = String.length s then v
+             else
+               let (c, i) = next_char s i in
+               loop (add_char loc <:expr< $chr:c$ >> v) i
++          in loop (accum_chars loc gcl.val) 0
+       | "$"; LIDENT "add"; e = simple_expr ->
+           add_char loc e (accum_chars loc gcl.val)
+       | "$"; LIDENT "buf" ->

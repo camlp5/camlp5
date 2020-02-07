@@ -1,0 +1,31 @@
+diff --git a/meta/pa_extend.ml b/meta/pa_extend.ml
+index d69ca2dc..48a40c7c 100644
+--- a/meta/pa_extend.ml
++++ b/meta/pa_extend.ml
+@@ -520,7 +520,7 @@ value text_of_action loc psl rtvar act tvar =
+     List.fold_left
+       (fun txt ps ->
+          match ps.symbol.styp with
+-         | STnone -> txt
++         [ STnone -> txt
+          | st ->
+              match ps.pattern with
+              [ None -> <:expr< fun _ -> $txt$ >>
+@@ -533,7 +533,7 @@ value text_of_action loc psl rtvar act tvar =
+                    | _ -> p ]
+                  in
+                  <:expr< fun ($p$ : $t$) -> $txt$ >> ]
+-             end)
++             ])
+       e psl
+   in
+   let txt =
+@@ -1109,7 +1109,7 @@ EXTEND
+           {ap_loc = loc; ap_patt = None; ap_symb = s} ] ]
+   ;
+   sep_opt_sep:
+-    [ [ sep = UIDENT "SEP"; t = symbol; b = FLAG [ UIDENT "OPT_SEP" ] ->
++    [ [ sep = UIDENT "SEP"; t = symbol; b = FLAG [ x = UIDENT "OPT_SEP" -> x ] ->
+           (t, b) ] ]
+   ;
+   symbol:

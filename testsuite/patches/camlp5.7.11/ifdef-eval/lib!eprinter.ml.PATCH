@@ -1,0 +1,22 @@
+diff --git a/lib/eprinter.ml b/lib/eprinter.ml
+index 53261fed..ff970c9a 100644
+--- a/lib/eprinter.ml
++++ b/lib/eprinter.ml
+@@ -116,7 +116,7 @@ value make name = do {
+ 
+ value clear pr = do {
+   pr.pr_levels := [];
+-  pr.pr_fun := pr_fun pr.pr_name pr;
++  pr.pr_fun := pr_fun pr.pr_name pr
+ };
+ 
+ value apply_level pr lname pc z = pr.pr_fun lname pc z;
+@@ -127,7 +127,7 @@ value print pr =
+     (fun lev -> do {
+        Printf.printf "level \"%s\"\n" lev.pr_label;
+        Extfun.print lev.pr_rules;
+-       flush stdout;
++       flush stdout
+      })
+     pr.pr_levels
+ ;

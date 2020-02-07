@@ -1,0 +1,36 @@
+diff --git a/meta/pa_macro_gram.ml b/meta/pa_macro_gram.ml
+index abca281e..c4fdb9e1 100644
+--- a/meta/pa_macro_gram.ml
++++ b/meta/pa_macro_gram.ml
+@@ -45,9 +45,9 @@ EXTEND
+     ]
+   ;
+   else_rule_or_ifdef:
+-    [ [ "ELSIFDEF"; e = dexpr; "THEN"; e1 = rule_or_ifdef_list ; e2 = else_rule_or_ifdef ->
++    [ [ "ELSIFDEF"; e = dexpr; "THEN"; e1 = rule_or_ifdef_list ; e2 = SELF ->
+           if e then e1 else e2
+-      | "ELSIFNDEF"; e = dexpr; "THEN"; e1 = rule_or_ifdef_list ; e2 = else_rule_or_ifdef ->
++      | "ELSIFNDEF"; e = dexpr; "THEN"; e1 = rule_or_ifdef_list ; e2 = SELF ->
+           if not e then e1 else e2
+       | "ELSE"; e = rule_or_ifdef_list -> e ] ]
+   ;
+@@ -62,16 +62,16 @@ EXTEND
+     ]
+   ;
+   levels_or_ifdef_opt:
+-    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=levels_or_ifdef_opt ; e2=else_levels_or_ifdef_opt ; "END" ->
++    [ [ "IFDEF" ; e=dexpr ; "THEN" ; e1=SELF ; e2=else_levels_or_ifdef_opt ; "END" ->
+         if e then e1 else e2]
+     | [ ll = LIST1 level SEP "|" -> Some ll ]
+     | [ -> None ]
+     ]
+   ;
+   else_levels_or_ifdef_opt:
+-    [ [ "ELSIFDEF"; e = dexpr; "THEN"; e1 = levels_or_ifdef_opt ; e2 = else_levels_or_ifdef_opt ->
++    [ [ "ELSIFDEF"; e = dexpr; "THEN"; e1 = levels_or_ifdef_opt ; e2 = SELF ->
+           if e then e1 else e2
+-      | "ELSIFNDEF"; e = dexpr; "THEN"; e1 = levels_or_ifdef_opt ; e2 = else_levels_or_ifdef_opt ->
++      | "ELSIFNDEF"; e = dexpr; "THEN"; e1 = levels_or_ifdef_opt ; e2 = SELF ->
+           if not e then e1 else e2
+       | "ELSE"; e = levels_or_ifdef_opt -> e ] ]
+   ;

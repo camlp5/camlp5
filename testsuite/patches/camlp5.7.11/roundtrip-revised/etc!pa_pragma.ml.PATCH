@@ -1,0 +1,62 @@
+diff --git a/etc/pa_pragma.ml b/etc/pa_pragma.ml
+index 0033701a..00057e71 100644
+--- a/etc/pa_pragma.ml
++++ b/etc/pa_pragma.ml
+@@ -285,33 +285,33 @@ value val_tab = do {
+       fun loc ->
+         let a = ty_var () in
+         {ctyp = <:ctyp< $a$ -> $a$ -> bool >>;
+-         expr = Obj.repr \<;
++         expr = Obj.repr (<);
+          patt = no_patt loc});
+      ("=",
+       fun loc ->
+         let t = ty_var () in
+         {ctyp = <:ctyp< $t$ -> $t$ -> bool >>;
+-         expr = Obj.repr \=;
++         expr = Obj.repr (=);
+          patt = no_patt loc});
+      ("*",
+       fun loc ->
+         {ctyp = <:ctyp< int -> int -> int >>;
+-         expr = Obj.repr \*;
++         expr = Obj.repr ( * );
+          patt = no_patt loc});
+      ("+",
+       fun loc ->
+         {ctyp = <:ctyp< int -> int -> int >>;
+-         expr = Obj.repr \+;
++         expr = Obj.repr (+);
+          patt = no_patt loc});
+      ("-",
+       fun loc ->
+         {ctyp = <:ctyp< int -> int -> int >>;
+-         expr = Obj.repr \-;
++         expr = Obj.repr (-);
+          patt = no_patt loc});
+      ("^",
+       fun loc ->
+         {ctyp = <:ctyp< string -> string -> string >>;
+-         expr = Obj.repr \^;
++         expr = Obj.repr (^);
+          patt = no_patt loc});
+      ("[]",
+       fun loc ->
+@@ -1307,7 +1307,7 @@ and eval_expr_apply loc env e1 e2 =
+     let unify_ok =
+       match (eval_type loc t11, eval_type loc v2.ctyp) with
+       [ (<:ctyp< format $tf1$ $_$ $tf3$ >>, <:ctyp< string >>) ->
+-          let s = (Obj.magic v2.expr : string) in
++          let s : string = Obj.magic v2.expr in
+           match try Some (String.index s '%') with [ Not_found -> None ] with
+           [ Some i ->
+               if i + 1 = String.length s then failwith "% at end of format"
+@@ -1346,7 +1346,7 @@ value pragma =
+   fun
+   [ Some e -> do {
+       vars.val := [];
+-      eval_unit_expr (MLast.loc_of_expr e) e;
++      eval_unit_expr (MLast.loc_of_expr e) e
+     }
+   | None -> failwith "bad directive" ]
+ ;
