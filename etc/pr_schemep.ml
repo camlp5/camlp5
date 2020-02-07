@@ -7,7 +7,9 @@
 #load "pa_extfun.cmo";
 #load "pa_extprint.cmo";
 #load "pa_macro.cmo";
+#load "pa_pprintf.cmo";
 
+open Exparser;
 open Parserify;
 open Pcaml;
 open Pretty;
@@ -66,6 +68,12 @@ value ident_option =
   fun
   [ Some s -> sprintf " %s" s
   | None -> "" ]
+;
+
+value patt_option pc =
+  fun
+  [ Some s -> patt pc s
+  | None -> pprintf pc "" ]
 ;
 
 IFDEF OCAML_VERSION <= OCAML_1_07 THEN
@@ -174,10 +182,10 @@ value parser_case force_vertic pc (sp, po, e) =
         (fun () ->
            if force_vertic then sprintf "\n"
            else
-             sprintf "%s(()%s %s)%s" pc.bef (ident_option po)
+             sprintf "%s(()%s %s)%s" pc.bef (patt_option pc po)
                (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
-           let s1 = sprintf "%s(()%s" pc.bef (ident_option po) in
+           let s1 = sprintf "%s(()%s" pc.bef (patt_option pc po) in
            let s2 =
              expr
                {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
@@ -192,13 +200,13 @@ value parser_case force_vertic pc (sp, po, e) =
            else
              sprintf "%s((%s)%s %s)%s" pc.bef
                (stream_patt {(pc) with bef = ""; aft = ""} sp)
-               (ident_option po) (expr {(pc) with bef = ""; aft = ""} e)
+               (patt_option pc po) (expr {(pc) with bef = ""; aft = ""} e)
                pc.aft)
         (fun () ->
            let s1 =
              stream_patt
                {(pc) with ind = pc.ind + 2; bef = sprintf "%s((" pc.bef;
-                aft = sprintf ")%s" (ident_option po)}
+                aft = sprintf ")%s" (patt_option pc po)}
                sp
            in
            let s2 =
@@ -250,7 +258,7 @@ value print_parser pc e =
           match po with
           [ Some s ->
               plistbf 0 pc
-                [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+                [(fun pc -> sprintf "%s%s%s" pc.bef (patt pc s) pc.aft, "");
                  (fun pc -> parser_body pc spel, "")]
           | None ->
               plistbf 0 pc [(fun pc -> parser_body pc spel, "")] ] ]
@@ -264,7 +272,7 @@ value print_match_with_parser pc e =
       let fl =
         let fl = [(fun pc -> parser_body pc spel, "")] in
         match po with
-        [ Some s -> [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") :: fl]
+        [ Some s -> [(fun pc -> sprintf "%s%s%s" pc.bef (patt pc s) pc.aft, "") :: fl]
         | None -> fl ]
       in
       plistbf 0

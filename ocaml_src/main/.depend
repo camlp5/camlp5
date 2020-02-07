@@ -7,7 +7,7 @@ ast2pt.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx ast2pt.cmi \
 ast2pt.cmi: ../lib/ploc.cmi mLast.cmi
 exparser.cmo: ../lib/ploc.cmi exparser.cmi mLast.cmi pcaml.cmi reloc.cmi
 exparser.cmx: ../lib/ploc.cmx exparser.cmi mLast.cmi pcaml.cmx reloc.cmx
-exparser.cmi: mLast.cmi
+exparser.cmi: ../lib/ploc.cmi mLast.cmi
 mLast.cmi: ../lib/ploc.cmi
 main.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../odyl/odyl_main.cmi argl.cmi ast2pt.cmi mLast.cmi \
@@ -15,11 +15,11 @@ main.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
 main.cmx: ../lib/grammar.cmx ../lib/plexing.cmx ../lib/ploc.cmx \
     ../lib/versdep.cmx ../odyl/odyl_main.cmx argl.cmx ast2pt.cmx mLast.cmi \
     pcaml.cmx
-parserify.cmo: ../lib/ploc.cmi ../lib/pretty.cmi ../lib/versdep.cmo mLast.cmi \
-    parserify.cmi prtools.cmi
-parserify.cmx: ../lib/ploc.cmx ../lib/pretty.cmx ../lib/versdep.cmx mLast.cmi \
-    parserify.cmi prtools.cmx
-parserify.cmi: mLast.cmi
+parserify.cmo: ../lib/ploc.cmi ../lib/pretty.cmi ../lib/versdep.cmo \
+    exparser.cmi mLast.cmi parserify.cmi prtools.cmi
+parserify.cmx: ../lib/ploc.cmx ../lib/pretty.cmx ../lib/versdep.cmx \
+    exparser.cmx mLast.cmi parserify.cmi prtools.cmx
+parserify.cmi: exparser.cmi mLast.cmi
 pcaml.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/grammar.cmi \
     ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo mLast.cmi pcaml.cmi \
     prtools.cmi quotation.cmi reloc.cmi

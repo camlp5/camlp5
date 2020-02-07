@@ -9,20 +9,12 @@
 open Pretty;
 open Prtools;
 open Versdep;
+open Exparser ;
 
-type spat_comp =
-  [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)
-  | SpNtr of MLast.loc and MLast.patt and MLast.expr
-  | SpLet of MLast.loc and MLast.patt and MLast.expr
-  | SpLhd of MLast.loc and list (list MLast.patt)
-  | SpStr of MLast.loc and MLast.patt ]
+type spat_comp = Exparser.spat_comp
 ;
 
-type spat_comp_opt =
-  [ SpoNoth
-  | SpoBang
-  | SpoQues of MLast.expr ]
-;
+type spat_comp_opt = Exparser.spat_comp_opt ;
 
 (* Rebuilding syntax tree *)
 
@@ -104,7 +96,7 @@ value rec unstream_pattern_kont =
       let (sp, epo, e) = unstream_pattern_kont e in
       ([(SpNtr loc p f, err e2) :: sp], epo, e)
   | <:expr< let $lid:p$ = Stream.count strm__ in $e$ >> ->
-      ([], Some p, e)
+      ([], Some <:patt< $lid:p$ >>, e)
   | <:expr< let $p$ = strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
       ([(SpStr loc p, SpoNoth) :: sp], epo, e)
@@ -181,7 +173,7 @@ value rec unparser_cases_list =
       let spe2 = ([], None, <:expr< raise $e2$ >>) in
       [spe1; spe2]
   | <:expr< let $lid:p$ = Stream.count strm__ in $e$ >> ->
-      [([], Some p, e)]
+      [([], Some <:patt< $lid:p$ >>, e)]
   | <:expr< let $p$ = $f$ strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
       [([(SpNtr loc p f, SpoNoth) :: sp], epo, e)]
@@ -257,7 +249,7 @@ value unparser_body e =
   let (po, e) =
     match e with
     [ <:expr< let $lid:bp$ = Stream.count $lid:strm_n$ in $e$ >> ->
-        (Some bp, e)
+        (Some <:patt< $lid:bp$ >>, e)
     | _ -> (None, e) ]
   in
   let spel = unparser_cases_list e in

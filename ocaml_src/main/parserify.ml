@@ -9,20 +9,11 @@
 open Pretty;;
 open Prtools;;
 open Versdep;;
+open Exparser;;
 
-type spat_comp =
-    SpTrm of MLast.loc * MLast.patt * MLast.expr option MLast.v
-  | SpNtr of MLast.loc * MLast.patt * MLast.expr
-  | SpLet of MLast.loc * MLast.patt * MLast.expr
-  | SpLhd of MLast.loc * MLast.patt list list
-  | SpStr of MLast.loc * MLast.patt
-;;
+type spat_comp = Exparser.spat_comp;;
 
-type spat_comp_opt =
-    SpoNoth
-  | SpoBang
-  | SpoQues of MLast.expr
-;;
+type spat_comp_opt = Exparser.spat_comp_opt;;
 
 (* Rebuilding syntax tree *)
 
@@ -185,7 +176,7 @@ let rec unstream_pattern_kont =
              (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
            MLast.ExLid (_, "strm__"))],
        e) ->
-      [], Some p, e
+      [], Some (MLast.PaLid (loc, p)), e
   | MLast.ExLet (_, false, [p, MLast.ExLid (_, "strm__")], e) ->
       let (sp, epo, e) = unstream_pattern_kont e in
       (SpStr (loc, p), SpoNoth) :: sp, epo, e
@@ -390,7 +381,7 @@ let rec unparser_cases_list =
              (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
            MLast.ExLid (_, "strm__"))],
        e) ->
-      [[], Some p, e]
+      [[], Some (MLast.PaLid (loc, p)), e]
   | MLast.ExLet
       (_, false, [p, MLast.ExApp (_, f, MLast.ExLid (_, "strm__"))], e) ->
       let (sp, epo, e) = unstream_pattern_kont e in
@@ -538,7 +529,7 @@ let unparser_body e =
                (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
              MLast.ExLid (_, strm_n))],
          e) ->
-        Some bp, e
+        Some (MLast.PaLid (loc, bp)), e
     | _ -> None, e
   in
   let spel = unparser_cases_list e in po, spel

@@ -9,6 +9,7 @@
 #load "pa_pprintf.cmo";
 #load "pa_macro.cmo";
 
+open Exparser;
 open Parserify;
 open Pcaml;
 open Pretty;

@@ -8,7 +8,7 @@
 (* #load "pa_macro_gram.cmo" *)
 
 open Pcaml;;
-open Mlsyntax;;
+open Mlsyntax.Revised;;
 
 Pcaml.syntax_name := "Revised";;
 Pcaml.no_constructors_arity := false;;
@@ -275,9 +275,7 @@ Grammar.safe_extend
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
-   let functor_parameter : 'functor_parameter Grammar.Entry.e =
-     grammar_entry_create "functor_parameter"
-   and rebind_exn : 'rebind_exn Grammar.Entry.e =
+   let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
@@ -1328,6 +1326,15 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_nterm (infixop0 : 'infixop0 Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'expr) (op : 'infixop0) (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExApp
+                 (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "!=")))
              Grammar.s_self,
            (fun (e2 : 'expr) _ (e1 : 'expr) (loc : Ploc.t) ->
@@ -1401,6 +1408,15 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_nterm (infixop1 : 'infixop1 Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'expr) (op : 'infixop1) (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExApp
+                 (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "@")))
              Grammar.s_self,
            (fun (e2 : 'expr) _ (e1 : 'expr) (loc : Ploc.t) ->
@@ -1418,6 +1434,15 @@ Grammar.safe_extend
                'expr)))];
        Some "+", Some Gramext.LeftA,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_nterm (infixop2 : 'infixop2 Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'expr) (op : 'infixop2) (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExApp
+                 (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
+               'expr)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "-.")))
@@ -1455,6 +1480,15 @@ Grammar.safe_extend
                'expr)))];
        Some "*", Some Gramext.LeftA,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_nterm (infixop3 : 'infixop3 Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'expr) (op : 'infixop3) (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExApp
+                 (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
+               'expr)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "mod")))
@@ -1528,6 +1562,15 @@ Grammar.safe_extend
                'expr)))];
        Some "**", Some Gramext.RightA,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_nterm (infixop4 : 'infixop4 Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e2 : 'expr) (op : 'infixop4) (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExApp
+                 (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
+               'expr)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "lsr")))
@@ -1652,6 +1695,13 @@ Grammar.safe_extend
               (MLast.ExAre (loc, e1, MLast.ExLid (loc, op)) : 'expr)))];
        Some "~-", Some Gramext.NonA,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (prefixop : 'prefixop Grammar.Entry.e)))
+             Grammar.s_self,
+           (fun (e : 'expr) (f : 'prefixop) (loc : Ploc.t) ->
+              (MLast.ExApp (loc, MLast.ExLid (loc, f), e) : 'expr)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "~-.")))
              Grammar.s_self,
