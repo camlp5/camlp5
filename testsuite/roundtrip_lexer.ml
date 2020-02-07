@@ -266,7 +266,7 @@ value eval_dexpr env =
 value rec eval_def env =
   fun [
       DEF_ifdef b _ de _ then_tokens elses _ ->
-      if eval_dexpr env de then
+      if b = eval_dexpr env de then
         eval_t_list env then_tokens
       else match elses with [
         DEF_none -> [: :]
@@ -316,6 +316,8 @@ value lex_stream1 is = do {
 }
 ;
 
+value quot_re = Pcre.(regexp ~{flags=[`DOTALL]} "^([^:@]*)([:@])(.*)$") ;
+
 value pp_stream1 oc strm =
   let rec pp1 =
     parser
@@ -328,6 +330,18 @@ value pp_stream1 oc strm =
       | [: `(loc,("CHAR",tok)) ; strm :] -> do {
           output_string oc (Ploc.comment loc) ;
           Printf.fprintf oc "'%s'" tok ;
+          pp1 strm
+        }
+      | [: `(loc,("QUOTATION",qstring)) ; strm :] -> do {
+          output_string oc (Ploc.comment loc) ;
+          let (qname, qbody) =
+            try let strs = Pcre.(extract ~{rex=quot_re} qstring) in
+                if strs.(2) = "@" then
+                  (strs.(1)^":", strs.(3))
+                else (strs.(1), strs.(3))
+            with Not_found -> ("", qstring) in
+          let qname = if qname <> "" then ":"^qname else qname in
+          Printf.fprintf oc "<%s<%s>>" qname qbody ;
           pp1 strm
         }
       | [: `(loc,(_,tok)) ; strm :] -> do {

@@ -4,6 +4,7 @@
   my $src = shift @ARGV ;
   my $dst = shift @ARGV ;
   my $txt = f_read($src) ;
+  $txt =~ s|^#load.*$||gm ;
   $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
   $txt =~ s,→,->,gs ;
   $txt =~ s,declare end;,,gm ;

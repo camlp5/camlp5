@@ -53,7 +53,7 @@ our %tools = (
   'ifdef-eval' => {
     'name' => 'ifdef-eval',
 	'command' => sub {
-	  return ("./roundtrip_lexer.byte","-mode","ifdef-eval", @_) ;
+	  return ("./roundtrip_lexer.byte","-D", "STRICT", "-mode","ifdef-eval", @_) ;
     },
   },
     ) ;
@@ -68,6 +68,17 @@ our %packages = (
 	'exclude' => {
 	  'roundtrip-pa_r-pr_r' => [
 	      ],
+	  'roundtrip-revised' => [
+# 
+	    "lib/ploc.ml",
+	    "lib/pprintf.ml",
+	    "lib/plexer.ml",
+	    "lib/grammar.ml",
+	    "main/mLast.mli",
+	    "main/pcaml.mli",
+	    "meta/pa_macro.ml",
+	    "meta/pa_r.ml",
+	      ],
     },
   },
     ) ;
@@ -80,6 +91,7 @@ our %packages = (
 	     "only-files=s{}" => \@onlyfiles,
 	     "verbose" => \$verbose,
 	     "preserve" => \$preserve,
+	     "continue-on-error" => \$continue_error,
       )
       or die("Error in command line arguments\n");
 
@@ -100,7 +112,6 @@ our %packages = (
 
   my $workdir = "workdir" ;
 
-  v_systemx("rm", "-rf", $workdir) ;
   foreach my $pkgna (@dopackages) {
     my $pkgh = $packages{$pkgna} ;
     $pkgh->{'onlyfiles'} = [ @onlyfiles ] if @onlyfiles ; 
@@ -175,32 +186,51 @@ sub runtest_package {
     next if exists $exclude{$f} ;
     next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
 
+    print "==== $f ====\n";
     my $bangf = $f ;
     $bangf =~ s,/,!,g ;
 
+    my @generated_files = () ;
     my $origf = "$location/".$f ;
     my $tool1srcf = "$workdir/$tool1name/".$bangf ;
     my $tool2srcf = "$workdir/$tool2name/".$bangf ;
     my $tool1outf = "$workdir/$tool1name/".$bangf.".OUT" ;
     my $tool2outf = "$workdir/$tool2name/".$bangf.".OUT" ;
+    push(@generated_files, $tool1srcf, $tool2srcf,  $tool1outf, $tool2outf) ;
 
     v_systemx("cp", $origf, $tool1srcf) ;
-    runtool(tool => \%tool1,
-	       'src-filename' => $tool1srcf,
-	       'dst-filename' => $tool1outf,
+    my $code ;
+    $code = runtool(tool => \%tool1,
+		    'src-filename' => $tool1srcf,
+		    'dst-filename' => $tool1outf,
 	) ;
 
+    if ($code != 0) {
+      warn "aborting processing of $f" ;
+      next ;
+    }
     v_systemx("cp", $origf, $tool2srcf) ;
-    runtool(tool => \%tool2,
-	       'src-filename' => $tool2srcf,
-	       'dst-filename' => $tool2outf,
+    $code = runtool(tool => \%tool2,
+		    'src-filename' => $tool2srcf,
+		    'dst-filename' => $tool2outf,
 	) ;
+    if ($code != 0) {
+      warn "aborting processing of $f" ;
+      next ;
+    }
     v_systemx("tools/normalize-code.pl", $tool1outf, $tool1outf.".NORMALIZED") ;
     v_systemx("tools/normalize-code.pl", $tool2outf, $tool2outf.".NORMALIZED") ;
-    my $code = extended_diff($tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED"); ;
+    push(@generated_files, $tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED") ;
+
+    my $errordir = "$workdir/$tool1name!$tool2name.ERRORS" ;
+    v_systemx("mkdir", "-p", $errordir) ;
+    my $errorbase = "$errordir/$bangf" ;
+    my $code = extended_diff($tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED",
+	'errorbase' => $errorbase,
+        'generated-files' => \@generated_files,
+	) ;
     if (0 == $code && !$preserve) {
-      v_systemx("rm", "-f", $tool1srcf, $tool1outf, $tool1outf.".NORMALIZED",
-		            $tool2srcf, $tool2outf, $tool2outf.".NORMALIZED");
+      v_systemx("rm", "-f", @generated_files);
     }
   }
 }
@@ -208,12 +238,18 @@ sub runtest_package {
 sub extended_diff {
   my $f1 = shift ;
   my $f2 = shift ;
+  my %args = @_ ;
 
   my @cmd = ("diff", "-Bwiu", $f1, $f2) ;
   my $diff_output = v_capturex([0..1], @cmd) ;
   return 0 if (0 == $EXITVAL) ;
 
   my $wdiff_output = v_capturex([0..1], "wdiff", "-3", $f1, $f2) ;
+  if (exists $args{'errorbase'}) {
+    f_write("$args{'errorbase'}.DIFF", $diff_output) ;
+    f_write("$args{'errorbase'}.WDIFF", $wdiff_output) ;
+    push(@{ $args{'generated-files'} }, "$args{'errorbase'}.DIFF", "$args{'errorbase'}.WDIFF") ;
+  }
   return 1 if (0 == $EXITVAL) ;
 
   if (wordeq($f1, $f2)) {
@@ -246,7 +282,17 @@ sub runtool {
 
   print "$tool->{'name'}: $srcf -> $dstf\n" if $main::verbose ;
   my @cmd = &{ $tool->{'command'}, }($srcf, $dstf) ;
-  v_systemx(@cmd) ;
+  my $code = v_systemx([0..2], @cmd) ;
+  if ($code != 0) {
+    if (!$continue_error) {
+      die ("command <<".join(' ', @cmd).">> died with $@") ;
+    }
+    else {
+      warn ("command <<".join(' ', @cmd).">> died with $@") ;
+      return $code ;
+    }
+  }
+  return 0 ;
 }
 
 sub v_systemx {
