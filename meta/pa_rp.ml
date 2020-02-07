@@ -14,15 +14,15 @@ EXTEND
   GLOBAL: expr ipatt;
   expr: LEVEL "top"
     [ [ "parser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|"; "]" ->
-          <:expr< $cparser loc po pcl$ >>
+          <:expr< $cparser loc (po, pcl)$ >>
       | "parser"; po = OPT ipatt; pc = parser_case ->
-          <:expr< $cparser loc po [pc]$ >>
+          <:expr< $cparser loc (po, [pc])$ >>
       | "match"; e = SELF; "with"; "parser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
-          <:expr< $cparser_match loc e po pcl$ >>
+          <:expr< $cparser_match loc e (po, pcl)$ >>
       | "match"; e = SELF; "with"; "parser"; po = OPT ipatt;
         pc = parser_case ->
-          <:expr< $cparser_match loc e po [pc]$ >> ] ]
+          <:expr< $cparser_match loc e (po, [pc])$ >> ] ]
   ;
   parser_case:
     [ [ "[:"; sp = stream_patt; ":]"; po = OPT ipatt; "->"; e = expr ->

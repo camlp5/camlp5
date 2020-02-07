@@ -23,18 +23,15 @@ type spat_comp_opt =
   | SpoQues of MLast.expr ]
 ;
 
+type spat_parser_ast =
+  (option MLast.patt *
+   list (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr))
+;
+
 value strm_n : string;
 
-value cparser :
-  MLast.loc -> option MLast.patt ->
-    list
-      (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr) ->
-    MLast.expr;
+value cparser : MLast.loc -> spat_parser_ast -> MLast.expr;
 
-value cparser_match :
-  MLast.loc -> MLast.expr -> option MLast.patt ->
-    list
-      (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr) ->
-    MLast.expr;
+value cparser_match : MLast.loc -> MLast.expr -> spat_parser_ast -> MLast.expr;
 
 value cstream : MLast.loc -> list sexp_comp -> MLast.expr;

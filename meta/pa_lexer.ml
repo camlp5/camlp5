@@ -45,11 +45,11 @@ value conv_rules loc rl =
 ;
 
 value mk_lexer loc rl =
-  cparser loc None (conv_rules loc rl)
+  cparser loc (None, (conv_rules loc rl))
 ;
 
 value mk_lexer_match loc e rl =
-  cparser_match loc e None (conv_rules loc rl)
+  cparser_match loc e (None, (conv_rules loc rl))
 ;
 
 (* group together consecutive rules just containing one character *)
@@ -110,7 +110,7 @@ value make_rules loc rl sl cl errk =
         else
           let s =
             let b = accum_chars loc cl in
-            let e = cparser loc None [([], None, b)] in
+            let e = cparser loc (None, [([], None, b)]) in
             (SpNtr loc <:patt< $lid:var ()$ >> e, SpoBang)
           in
           [s :: sl]

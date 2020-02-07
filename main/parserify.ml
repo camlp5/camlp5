@@ -11,10 +11,9 @@ open Prtools;
 open Versdep;
 open Exparser ;
 
-type spat_comp = Exparser.spat_comp
-;
-
+type spat_comp = Exparser.spat_comp;
 type spat_comp_opt = Exparser.spat_comp_opt ;
+type spat_parser_ast = Exparser.spat_parser_ast ;
 
 (* Rebuilding syntax tree *)
 

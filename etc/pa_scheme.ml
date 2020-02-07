@@ -768,7 +768,7 @@
         ([(as (Slid _ _) se) . sel] (values (Some (patt_se se)) sel))
         (sel (values None sel))))
       (pcl (List.map parser_case_se sel)))
-     (Exparser.cparser loc po pcl)))
+     (Exparser.cparser loc (values po pcl))))
    ((Sexpr loc [(Slid _ "match_with_parser") se . sel])
     (let*
      ((e (expr_se se))
@@ -777,7 +777,7 @@
         ([(as (Slid _ _) se) . sel] (values (Some (patt_se se)) sel))
         (sel (values None sel))))
       (pcl (List.map parser_case_se sel)))
-     (Exparser.cparser_match loc e po pcl)))
+     (Exparser.cparser_match loc e (values po pcl))))
    ((Sexpr loc [(Slid _ "try") se . sel])
     (let*
      ((e (expr_se se))

@@ -1081,7 +1081,7 @@ and expr_se =
         | sel → (None, sel) ]
       in
       let pcl = List.map parser_case_se sel in
-      Exparser.cparser loc po pcl
+      Exparser.cparser loc (po, pcl)
   | Sexpr loc [Slid _ "match_with_parser"; se :: sel] →
       let e = expr_se se in
       let (po, sel) =
@@ -1090,7 +1090,7 @@ and expr_se =
         | sel → (None, sel) ]
       in
       let pcl = List.map parser_case_se sel in
-      Exparser.cparser_match loc e po pcl
+      Exparser.cparser_match loc e (po, pcl)
   | Sexpr loc [Slid _ "try"; se :: sel] →
       let e = expr_se se in
       let pel =

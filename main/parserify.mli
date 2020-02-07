@@ -6,8 +6,7 @@ type spat_comp = Exparser.spat_comp ;
 
 type spat_comp_opt = Exparser.spat_comp_opt ;
 
-value unparser_body :
-  MLast.expr ->
-    (option MLast.patt *
-     list (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr))
+type spat_parser_ast = Exparser.spat_parser_ast ;
+
+value unparser_body : MLast.expr -> spat_parser_ast
 ;

@@ -22,6 +22,11 @@ type spat_comp_opt =
   | SpoQues of MLast.expr ]
 ;
 
+type spat_parser_ast =
+  (option MLast.patt *
+   list (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr))
+;
+
 value strm_n = "strm__";
 value peek_fun loc = <:expr< Stream.peek >>;
 value junk_fun loc = <:expr< Stream.junk >>;
@@ -350,7 +355,7 @@ value left_factorize rl =
 
 (* Converting into AST *)
 
-value cparser loc bpo pc =
+value cparser loc (bpo, pc) =
   let pc = left_factorize pc in
   let e = parser_cases loc pc in
   let e =
@@ -373,7 +378,7 @@ value rec is_not_bound s =
   | _ -> False ]
 ;
 
-value cparser_match loc me bpo pc =
+value cparser_match loc me (bpo, pc) =
   let pc = left_factorize pc in
   let iloc = Ploc.with_comment loc "" in
   let pc = parser_cases iloc pc in
