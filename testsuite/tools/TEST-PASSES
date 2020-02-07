@@ -225,7 +225,7 @@ sub runtest_package {
   }
 
   foreach my $f (@files) {
-    next if exists $exclude{$f} ;
+    next if exists $exclude{$f} && !int(%onlyfiles);
     next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
 
     print "==== $f ====\n";
