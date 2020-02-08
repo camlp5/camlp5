@@ -76,7 +76,6 @@ our %packages = (
 	    "main/mLast.mli",
 	    "main/pcaml.mli",
 	    "meta/pa_macro.ml",
-	    "meta/q_MLast.ml",
 	    "etc/elexer.ml",
 # wrong syntax (LISP)
 	    "etc/pa_lisp.ml",
