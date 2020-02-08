@@ -212,13 +212,12 @@ value warning_deprecated_since_6_00 loc =
   else ()
 ;
 
-value build_letop_binder loc letop b l e = do {
+value build_letop_binder loc letop b l e =
   let (argpat, argexp) =
     List.fold_left (fun (argpat, argexp) (andop, (pat, exp)) ->
         (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>))
       b l in
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
-  }
 ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -397,7 +396,7 @@ EXTEND
         x = SELF →
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
 
-      | letop = letop ; b = let_binding ; l = (LIST0 and_binding); "in";
+      | letop = letop ; b = let_binding ; l = LIST0 and_binding; "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
@@ -695,9 +694,9 @@ EXTEND
     | "as" LEFTA
       [ t1 = SELF; "as"; t2 = SELF → <:ctyp< $t1$ as $t2$ >> ]
     | LEFTA
-      [ "!"; pl = V (LIST1 typevar); "."; t = ctyp →
+      [ "!"; pl = V (LIST1 typevar); "."; t = SELF →
           <:ctyp< ! $_list:pl$ . $t$ >>
-      | "type"; pl = V (LIST1 LIDENT); "."; t = ctyp →
+      | "type"; pl = V (LIST1 LIDENT); "."; t = SELF →
           <:ctyp< type $_list:pl$ . $t$ >> ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF → <:ctyp< $t1$ → $t2$ >> ]
@@ -1108,14 +1107,14 @@ END;
 (* -- cut 2 end -- *)
 (* -- end copy from pa_r to q_MLast -- *)
 
-value quotation_content s = do {
+value quotation_content s =
   loop 0 where rec loop i =
     if i = String.length s then ("", s)
     else if s.[i] = ':' || s.[i] = '@' then
       let i = i + 1 in
       (String.sub s 0 i, String.sub s i (String.length s - i))
     else loop (i + 1)
-};
+;
 
 EXTEND
   GLOBAL: interf implem use_file top_phrase expr patt;

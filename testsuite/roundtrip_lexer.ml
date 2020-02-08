@@ -107,7 +107,7 @@ value tokens_until termlist =
   trec []
 ;
 
-value keywords = ["IFDEF"; "IFNDEF"; "ELSE"; "THEN" ; "END"; "ELSIFDEF"; "ELSIFNDEF"] ;
+value keywords = ["IFDEF"; "IFNDEF"; "ELSE"; "THEN" ; "END"; "ELSIFDEF"; "ELSIFNDEF"; "EXTEND"] ;
 
 value rec pa_ifdef =
   parser
@@ -148,7 +148,11 @@ and pa_t_list strm =
   let rec parec acc =
     parser
       [
-        [: e = pa_t ; strm :] -> parec [ e :: acc ] strm
+        [: `((_,("UIDENT","EXTEND")) as p_extend) ;
+            l = pa_t_list ;
+            `((_,("UIDENT","END")) as p_end) ; strm :] ->
+          parec ((List.rev ([R p_extend] @ l @ [R p_end])) @ acc) strm
+      | [: e = pa_t ; strm :] -> parec [ e :: acc ] strm
       | [: :] -> List.rev acc
       ]
   in parec [] strm

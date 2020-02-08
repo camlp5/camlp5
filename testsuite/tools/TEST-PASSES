@@ -241,9 +241,22 @@ sub runtest_package {
     push(@generated_files, $tool1srcf, $tool2srcf,  $tool1outf, $tool2outf) ;
 
     my $all_tool_patch = "patches/$pkg{'package'}/ALL/".$bangf.".PATCH" ;
-
-    v_systemx("cp", $origf, $tool1srcf) ;
     my $patch1 = "patches/$pkg{'package'}/$tool1name/".$bangf.".PATCH" ;
+    my $patch2 = "patches/$pkg{'package'}/$tool2name/".$bangf.".PATCH" ;
+
+    my $all_tool_input = "patches/$pkg{'package'}/ALL/".$bangf.".INPUT" ;
+    my $patch_input1 = "patches/$pkg{'package'}/$tool1name/".$bangf.".INPUT" ;
+    my $patch_input2 = "patches/$pkg{'package'}/$tool2name/".$bangf.".INPUT" ;
+
+    if (-r $all_tool_input) {
+      v_systemx("cp", $all_tool_input, $tool1srcf) ;
+    }
+    elsif (-r $patch_input1) {
+      v_systemx("cp", $patch_input1, $tool1srcf) ;
+    }
+    else {
+      v_systemx("cp", $origf, $tool1srcf) ;
+    }
     if (-r $patch1) {
       print "PATCHING $tool1srcf\n";
       v_systemx("patch",$tool1srcf, $patch1) ;
@@ -262,8 +275,16 @@ sub runtest_package {
       warn "aborting processing of $f" ;
       next ;
     }
-    v_systemx("cp", $origf, $tool2srcf) ;
-    my $patch2 = "patches/$pkg{'package'}/$tool2name/".$bangf.".PATCH" ;
+
+    if (-r $all_tool_input) {
+      v_systemx("cp", $all_tool_input, $tool2srcf) ;
+    }
+    elsif (-r $patch_input2) {
+      v_systemx("cp", $patch_input2, $tool2srcf) ;
+    }
+    else {
+      v_systemx("cp", $origf, $tool2srcf) ;
+    }
     if (-r $patch2) {
       print "PATCHING $tool2srcf\n";
       v_systemx("patch",$tool2srcf, $patch2) ;
@@ -307,14 +328,16 @@ sub extended_diff {
   return 0 if (0 == $EXITVAL) ;
 
   my $wdiff_output = v_capturex([0..1], "wdiff", "-3", $f1, $f2) ;
+  my $wdiff_full_output = v_capturex([0..1], "wdiff", $f1, $f2) ;
   if (exists $args{'errorbase'}) {
     f_write("$args{'errorbase'}.DIFF", $diff_output) ;
     f_write("$args{'errorbase'}.WDIFF", $wdiff_output) ;
-    push(@{ $args{'generated-files'} }, "$args{'errorbase'}.DIFF", "$args{'errorbase'}.WDIFF") ;
+    f_write("$args{'errorbase'}.WDIFF-FULL", $wdiff_full_output) ;
+    push(@{ $args{'generated-files'} }, "$args{'errorbase'}.DIFF", "$args{'errorbase'}.WDIFF", "$args{'errorbase'}.WDIFF-FULL") ;
   }
   return 1 if (0 == $EXITVAL) ;
 
-  if (wordeq($f1, $f2)) {
+  if (wordeq($f1, $f2, 'generated-files' => $args{'generated-files'})) {
     print "== $f1 <-> $f2\n" ;
     print "WHITE SPACE DIFFERENCES\n" ;
   }
@@ -327,13 +350,23 @@ sub extended_diff {
 sub wordeq {
   my $f1 = shift ;
   my $f2 = shift ;
+  my %args = @_ ;
 
   my $txt1 = f_read($f1) ;
   my $txt2 = f_read($f2) ;
 
   $txt1 =~ s,\s,,gs ;
   $txt2 =~ s,\s,,gs ;
-  return ($txt1 eq $txt2) ;
+  if ($txt1 eq $txt2) {
+    return 1 ;
+  }
+  else {
+    f_write("$f1.NO-WS", $txt1) ;
+    f_write("$f2.NO-WS", $txt2) ;
+    push(@{ $args{'generated-files'} }, "$f1.NO-WS", "$f2.NO-WS") ;
+
+    return 0 ;
+  }
 }
 
 sub runtool {
