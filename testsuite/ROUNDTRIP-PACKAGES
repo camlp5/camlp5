@@ -1,0 +1,43 @@
+---
+camlp5.7.11:
+  dirs:
+    - lib
+    - main
+    - meta
+    - etc
+    - top
+    - odyl
+    - ocpp
+    - compile
+  exclude:
+    roundtrip-pa_r-pr_r: []
+    roundtrip-revised:
+      - lib/plexer.ml
+      - lib/grammar.ml
+      - main/mLast.mli
+      - main/pcaml.mli
+      - meta/pa_macro.ml
+      - etc/elexer.ml
+      - etc/pa_lisp.ml
+      - etc/pa_scheme.ml
+      - etc/pa_mkast.ml
+      - etc/pa_pprintf.ml
+      - etc/pa_reloc.ml
+      - etc/pa_sml.ml
+      - etc/pr_extend.ml
+      - etc/pr_extfun.ml
+      - etc/pr_extprint.ml
+      - etc/pr_op.ml
+      - etc/pr_ro.ml
+      - etc/pr_rp.ml
+      - etc/pr_schemep.ml
+      - etc/pr_scheme.ml
+      - etc/pr_o.ml
+      - etc/pr_r.ml
+      - etc/papr_phony_macro.ml
+      - etc/pa_mktest.ml
+  files: []
+  location: ..
+  package: camlp5.7.11
+ocaml:
+  package: ocaml

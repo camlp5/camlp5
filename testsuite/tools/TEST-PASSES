@@ -10,6 +10,7 @@ use File::stat ;
 use Getopt::Long;
 use IPC::System::Simple qw(systemx runx capturex $EXITVAL);
 use String::ShellQuote ;
+use YAML::Tiny;
 
 our $verbose = 0 ;
 our $preserve = 0 ;
@@ -18,6 +19,7 @@ our @dopackages ;
 our @onlyfiles ;
 our $tool1 ;
 our $tool2 ;
+our $packages_file ;
 
 our %tools = (
   'roundtrip-revised' =>
@@ -58,69 +60,9 @@ our %tools = (
   },
     ) ;
 
-our %packages = (
-  'camlp5.7.11' =>
-  {
-    'package' => 'camlp5.7.11',
-    'location' => '..',
-	'dirs' => [ qw(lib main meta etc top odyl ocpp compile) ],
-	'files' => [],
-	'exclude' => {
-	  'roundtrip-pa_r-pr_r' => [
-	      ],
-	  'roundtrip-revised' => [
-# has "lexer", for which no printers yet
-	    "lib/plexer.ml",
-# fparsers, bparsers (ugh): no printers for these yet
-	    "lib/grammar.ml",
-# uses DEFINE_TYPE
-	    "main/mLast.mli",
-	    "main/pcaml.mli",
-# uses DELETE_RULE, no printers
-	    "meta/pa_macro.ml",
-# uses extensible grammars, doesn't print back out
-	    "etc/elexer.ml",
-# wrong syntax (LISP)
-	    "etc/pa_lisp.ml",
-# wrong syntax (Scheme)
-	    "etc/pa_scheme.ml",
-# unimplemented AST printer
-	    "etc/pa_mkast.ml",
-# unimplemented fparser printer
-	    "etc/pa_pprintf.ml",
-# unimplemented AST printer
-	    "etc/pa_reloc.ml",
-# pretty-printing for grammar EXTEND not up to snuff
-	    "etc/pa_sml.ml",
-# uses pprintf, but nothing exists to rebuild pprintf (pr_pprintf)
-# applies to all these printers
-	    "etc/pr_extend.ml",
-	    "etc/pr_extfun.ml",
-	    "etc/pr_extprint.ml",
-	    "etc/pr_op.ml",
-	    "etc/pr_ro.ml",
-	    "etc/pr_rp.ml",
-	    "etc/pr_schemep.ml",
-	    "etc/pr_scheme.ml",
-	    "etc/pr_o.ml",
-	    "etc/pr_r.ml",
-	    "etc/papr_phony_macro.ml",
-# unimplemented AST printer
-	    "etc/pa_mktest.ml",
-## TODO: use GITIGNORE to ignore temporary files
-#	    "compile/tmp.o_concat.ml",
-#	    "compile/tmp.ml",
-#	    "compile/tmp.mli",
-#	    "compile/pa_o_fast.ml",
-## this seems like original syntax -- skip
-#	    "odyl/odyl_config.ml",
-	      ],
-    },
-  },
-    ) ;
+our %packages ;
 
 {
-
   GetOptions("tool1=s" => \$tool1,
 	     "tool2=s" => \$tool2,
 	     "package=s{}" => \@dopackages,
@@ -128,6 +70,7 @@ our %packages = (
 	     "verbose" => \$verbose,
 	     "preserve" => \$preserve,
 	     "continue-on-error" => \$continue_error,
+	     "packages-file=s" => \$packages_file,
       )
       or die("Error in command line arguments\n");
 
@@ -139,7 +82,13 @@ our %packages = (
   die "tool $tool2 not recognized"
       unless exists $tools{$tool2} ;
 
+  die "must specify packages-file"
+      unless defined $packages_file ;
+
   die "must specify packages" unless @dopackages ;
+
+  my $yaml = YAML::Tiny->read($packages_file) ;
+  %packages = %{ $yaml->[0] } ;
 
   foreach my $pkgna (@dopackages) {
     die "package $pkgna not recognized"
@@ -302,7 +251,7 @@ sub runtest_package {
     my $errordir = "$workdir/$tool1name!$tool2name.ERRORS" ;
     v_systemx("mkdir", "-p", $errordir) ;
     my $errorbase = "$errordir/$bangf" ;
-    my $code = extended_diff($tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED",
+    $code = extended_diff($tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED",
 	'errorbase' => $errorbase,
         'generated-files' => \@generated_files,
 	) ;
