@@ -12,18 +12,33 @@ camlp5.7.11:
   exclude:
     roundtrip-pa_r-pr_r: []
     roundtrip-revised:
+# has "lexer", for which no printers yet
       - lib/plexer.ml
+# fparsers, bparsers (ugh): no printers for these yet
       - lib/grammar.ml
+# uses DEFINE_TYPE
       - main/mLast.mli
       - main/pcaml.mli
+# uses DELETE_RULE, no printers
       - meta/pa_macro.ml
+# uses extensible grammars, doesn't print back out
       - etc/elexer.ml
+# wrong syntax (LISP)
       - etc/pa_lisp.ml
+# wrong syntax (Scheme)
       - etc/pa_scheme.ml
+# unimplemented AST printer
       - etc/pa_mkast.ml
+# unimplemented fparser printer
       - etc/pa_pprintf.ml
+# unimplemented AST printer
       - etc/pa_reloc.ml
+# pretty-printing for grammar EXTEND not up to snuff
       - etc/pa_sml.ml
+# UGH, this has all sorts of (raw) parsers that need to be converted to pretty form
+      - etc/pa_schemer.ml
+# uses pprintf, but nothing exists to rebuild pprintf (pr_pprintf)
+# applies to all these printers
       - etc/pr_extend.ml
       - etc/pr_extfun.ml
       - etc/pr_extprint.ml
@@ -35,7 +50,15 @@ camlp5.7.11:
       - etc/pr_o.ml
       - etc/pr_r.ml
       - etc/papr_phony_macro.ml
+# unimplemented AST printer
       - etc/pa_mktest.ml
+# TODO: use GITIGNORE to ignore temporary files
+      - compile/tmp.o_concat.ml
+      - compile/tmp.ml
+      - compile/tmp.mli
+      - compile/pa_o_fast.ml
+# this seems like original syntax -- skip
+      - odyl/odyl_config.ml
   files: []
   location: ..
   package: camlp5.7.11
