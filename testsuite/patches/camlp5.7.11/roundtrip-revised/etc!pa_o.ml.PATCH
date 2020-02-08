@@ -1,0 +1,54 @@
+diff --git a/etc/pa_o.ml b/etc/pa_o.ml
+index 29834c31..a6053577 100644
+--- a/etc/pa_o.ml
++++ b/etc/pa_o.ml
+@@ -301,14 +301,14 @@ value choose_tvar tpl =
+   | None -> make_n 1 ]
+ ;
+ 
+-value quotation_content s = do {
++value quotation_content s =
+   loop 0 where rec loop i =
+     if i = String.length s then ("", s)
+     else if s.[i] = ':' || s.[i] = '@' then
+       let i = i + 1 in
+       (String.sub s 0 i, String.sub s i (String.length s - i))
+     else loop (i + 1)
+-};
++;
+ 
+ value concat_comm loc e =
+   let loc =
+@@ -331,13 +331,12 @@ value expr_of_patt p =
+   | _ -> Ploc.raise loc (Stream.Error "identifier expected") ]
+ ;
+ 
+-value build_letop_binder loc letop b l e = do {
++value build_letop_binder loc letop b l e =
+   let (argpat, argexp) =
+     List.fold_left (fun (argpat, argexp) (andop, (pat, exp)) ->
+         (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>))
+       b l in
+   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
+-  }
+ ;
+ 
+ EXTEND
+@@ -543,7 +542,7 @@ EXTEND
+         x = expr LEVEL "top" ->
+           <:expr< let $_flag:o$ $_list:l$ in $x$ >>
+ 
+-      | letop = letop ; b = let_binding ; l = (LIST0 and_binding); "in";
++      | letop = letop ; b = let_binding ; l = LIST0 and_binding; "in";
+         x = expr LEVEL "top" ->
+           build_letop_binder loc letop b l x
+ 
+@@ -647,7 +646,7 @@ EXTEND
+       | e1 = SELF; "."; "("; e2 = SELF; ")" ->
+           <:expr< $e1$ .( $e2$ ) >>
+       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
+-      | e = SELF; "."; "{"; el = V (LIST1 expr LEVEL "+" SEP ","); "}" ->
++      | e = SELF; "."; "{"; el = V (LIST1 (expr LEVEL "+") SEP ","); "}" ->
+           <:expr< $e$ .{ $_list:el$ } >>
+       | e1 = SELF; "."; e2 = SELF ->
+           let rec loop m =
