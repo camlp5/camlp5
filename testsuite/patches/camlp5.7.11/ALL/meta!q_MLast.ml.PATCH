@@ -1,0 +1,63 @@
+diff --git a/meta/q_MLast.ml b/meta/q_MLast.ml
+index fbcf1fae..9e6f2062 100644
+--- a/meta/q_MLast.ml
++++ b/meta/q_MLast.ml
+@@ -1490,7 +1490,7 @@ EXTEND
+   ;
+   expr: LEVEL "simple"
+     [ [ a = ANTIQUOT "exp" -> Qast.VaAnt "exp" loc a
+-      | a = ANTIQUOT "" -> Qast.VaAnt "" loc a
++      | a = ANTIQUOT -> Qast.VaAnt "" loc a
+       | a = ANTIQUOT "xtr" -> antiquot_xtr loc "ExXtr" a
+       | a = ANTIQUOT "anti" ->
+           Qast.Node "ExAnt" [Qast.Loc; Qast.VaAnt "anti" loc a] ] ]
+@@ -1533,7 +1533,7 @@ END;
+ value quot_mod = ref [];
+ value any_quot_mod = ref "MLast";
+ 
+-value set_qmod s = do {
++value set_qmod s =
+   match try Some (String.index s ',') with [ Not_found -> None ] with
+   [ Some i ->
+       let q = String.sub s 0 i in
+@@ -1541,7 +1541,7 @@ value set_qmod s = do {
+       quot_mod.val := [(q, m) :: quot_mod.val]
+   | None ->
+       any_quot_mod.val := s ]
+-};
++;
+ 
+ Pcaml.add_directive "qmod"
+   (fun
+@@ -1580,6 +1580,7 @@ value apply_entry e q =
+   Quotation.ExAst (expr, patt)
+ ;
+ 
++do {
+ let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in
+ let str_item_eoi = Grammar.Entry.create gram "str_item_eoi" in
+ let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
+@@ -1594,7 +1595,6 @@ let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
+ let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
+ let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
+ let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
+-do {
+   EXTEND
+     sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
+     str_item_eoi: [ [ x = str_item; EOI -> x ] ];
+@@ -1625,7 +1625,7 @@ do {
+      ("class_str_item", apply_entry class_str_item_eoi);
+      ("with_constr", apply_entry with_constr_eoi);
+      ("poly_variant", apply_entry poly_variant_eoi);
+-     ("type_decl", apply_entry type_decl_eoi)];
++     ("type_decl", apply_entry type_decl_eoi)]
+ };
+ 
+ do {
+@@ -1677,5 +1677,5 @@ do {
+     Ploc.call_with Plexer.force_antiquot_loc True
+       (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
+   in
+-  Quotation.add "vala" (Quotation.ExAst (expr, patt));
++  Quotation.add "vala" (Quotation.ExAst (expr, patt))
+ };
