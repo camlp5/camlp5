@@ -1,6 +1,12 @@
 #!/usr/bin/perl
 
 {
+  my $syntax ;
+  if ($ARGV[0] eq '-syntax') {
+    shift @ARGV ;
+    $syntax = shift @ARGV ;
+  }
+
   my $src = shift @ARGV ;
   my $dst = shift @ARGV ;
   my $txt = f_read($src) ;
@@ -8,7 +14,12 @@
   $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
   $txt =~ s,→,->,gs ;
   $txt =~ s,declare end;,,gm ;
-  $txt =~ s,;(?:\s*;)*,;,gs ;
+  if ($syntax eq 'revised') {
+    $txt =~ s,;(?:\s*;)*,;,gs ;
+  }
+  else {
+    $txt =~ s,;;,,gs ;
+  }
   f_write($dst, $txt) ; 
 }
 

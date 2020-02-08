@@ -1,5 +1,6 @@
 ---
 camlp5.7.11:
+  syntax: revised
   dirs:
     - lib
     - main
@@ -62,5 +63,17 @@ camlp5.7.11:
   files: []
   location: ..
   package: camlp5.7.11
+camlp5.7.11-ORIGINAL:
+  syntax: original
+  dirs:
+    - ocaml_src
+    - ocaml_stuff
+  exclude:
+    roundtrip-pa_r-pr_r: []
+    roundtrip-revised: []
+  files: []
+  location: ..
+  package: camlp5.7.11-ORIGINAL
 ocaml:
+  syntax: original
   package: ocaml

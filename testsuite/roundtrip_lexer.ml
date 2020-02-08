@@ -336,6 +336,11 @@ value pp_stream1 oc strm =
           Printf.fprintf oc "'%s'" tok ;
           pp1 strm
         }
+      | [: `(loc,("QUESTIONIDENTCOLON",tok)) ; strm :] -> do {
+          output_string oc (Ploc.comment loc) ;
+          Printf.fprintf oc "?%s:" tok ;
+          pp1 strm
+        }
       | [: `(loc,("QUOTATION",qstring)) ; strm :] -> do {
           output_string oc (Ploc.comment loc) ;
           let (qname, qbody) =
@@ -384,7 +389,7 @@ value invoked_with ?{flag} cmdna =
 ;
 
 value files = ref [] ;
-value mode = ref "lexer-passturn" ;
+value mode = ref "lexer-passthru" ;
 value env = ref [("OCAML_VERSION", Some ocaml_version)] ;
 
 value set_mode s = mode.val := s ;

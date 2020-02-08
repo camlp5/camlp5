@@ -30,6 +30,14 @@ our %tools = (
     },
   },
 
+  'roundtrip-original' =>
+  {
+    'name' => 'roundtrip-original',
+	'command' => sub {
+	  return ('tools/ROUNDTRIP-pa_o-pr_o', @_) ;
+    },
+  },
+
   'cp' =>
   {
     'name' => 'cp',
@@ -246,16 +254,22 @@ sub runtest_package {
       warn "aborting processing of $f" ;
       next ;
     }
-    v_systemx("tools/normalize-code.pl", $tool1outf, $tool1outf.".NORMALIZED") ;
-    v_systemx("tools/normalize-code.pl", $tool2outf, $tool2outf.".NORMALIZED") ;
+    v_systemx("tools/normalize-code.pl",
+	      "-syntax", $pkg{'syntax'},
+	      $tool1outf, $tool1outf.".NORMALIZED") ;
+    v_systemx("tools/normalize-code.pl",
+	      "-syntax", $pkg{'syntax'},
+	      $tool2outf, $tool2outf.".NORMALIZED") ;
     push(@generated_files, $tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED") ;
 
     my $errordir = "$workdir/$tool1name!$tool2name.ERRORS" ;
     v_systemx("mkdir", "-p", $errordir) ;
     my $errorbase = "$errordir/$bangf" ;
+    my $preserve = $main::preserve ;
     $code = extended_diff($tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED",
 	'errorbase' => $errorbase,
         'generated-files' => \@generated_files,
+        'preserve' => \$preserve,
 	) ;
     if (0 == $code) {
       print "OK $f\n";
@@ -264,6 +278,7 @@ sub runtest_package {
       }
     } else {
       print "NOT OK $f\n";
+      die "stopping due to errors in $f" unless $main::continue_error ;
     }
   }
 }
@@ -295,12 +310,14 @@ sub extended_diff {
   if ($wdiff_ok) {
     print "== $f1 <-> $f2\n" ;
     print "WDIFF SAYS OK\n" ;
-    return 1 ;
+    ${ $args{'preserve'} } = 1 ;
+    return 0 ;
   }
   if ($wordeq_ok) {
     print "== $f1 <-> $f2\n" ;
     print "WHITE SPACE DIFFERENCES from wordeq\n" ;
-    return 1 ;
+    ${ $args{'preserve'} } = 1 ;
+    return 0 ;
   }
 
   print $diff_output ;
