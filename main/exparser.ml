@@ -186,7 +186,11 @@ value stream_pattern_component skont ckont =
   | SpStr loc p ->
       try
         match p with
-        [ <:patt< $lid:v$ >> -> subst v skont
+        [ <:patt< $lid:v$ >> ->
+          <:expr< let $lid:v$ = strm__ in $skont$ >>
+(*
+ subst v skont
+*)
         | _ -> raise Not_found ]
       with
       [ Not_found -> <:expr< let $p$ = $lid:strm_n$ in $skont$ >> ] ]

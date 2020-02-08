@@ -141,8 +141,8 @@ and pa_t =
   parser
     [
       [: d = pa_ifdef :] -> L d
-    | [: `((_,("UIDENT",t)) as p) when not(List.mem t keywords) ; strm :] -> R p
-    | [: `((_,(ty,_)) as p) when (ty <> "UIDENT") ; strm :] -> R p
+    | [: `((_,("UIDENT",t)) as p) when not(List.mem t keywords) :] -> R p
+    | [: `((_,(ty,_)) as p) when (ty <> "UIDENT") :] -> R p
     ]
 and pa_t_list strm =
   let rec parec acc =

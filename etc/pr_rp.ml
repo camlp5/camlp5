@@ -271,14 +271,14 @@ value print_parser pc e =
 value print_match_with_parser pc e =
   match e with
   [ <:expr< let ($_$ : Stream.t _) = $e1$ in $e2$ >> ->
-      let pa = unparser_body e2 in
+      let pa = Parserify.unparser_body e2 in
       pprintf pc "@[match %p with parser@]%p" expr e1 parser_body pa
   | <:expr<
       match Stream.peek strm__ with
       [ Some $_$ → do { Stream.junk strm__; $_$ }
       | _ → $_$ ]
     >> as e →
-      let pa = unparser_body e in
+      let pa = Parserify.unparser_body e in
       pprintf pc "@[match strm__ with parser@]%p" parser_body pa
   | e ->
       expr pc e ]

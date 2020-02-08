@@ -69,13 +69,16 @@ our %packages = (
 	  'roundtrip-pa_r-pr_r' => [
 	      ],
 	  'roundtrip-revised' => [
-	    "lib/ploc.ml",
-	    "lib/pprintf.ml",
+# has "lexer", for which no printers yet
 	    "lib/plexer.ml",
+# fparsers, bparsers (ugh): no printers for these yet
 	    "lib/grammar.ml",
+# uses DEFINE_TYPE
 	    "main/mLast.mli",
 	    "main/pcaml.mli",
+# uses DELETE_RULE, no printers
 	    "meta/pa_macro.ml",
+# uses extensible grammars, doesn't print back out
 	    "etc/elexer.ml",
 # wrong syntax (LISP)
 	    "etc/pa_lisp.ml",
@@ -104,18 +107,15 @@ our %packages = (
 	    "etc/papr_phony_macro.ml",
 # unimplemented AST printer
 	    "etc/pa_mktest.ml",
-# unimplemented printer for stream-parsers
-# TODO: use GITIGNORE to ignore temporary files
-	    "compile/tmp.o_concat.ml",
-	    "compile/tmp.ml",
-	    "compile/tmp.mli",
-	    "compile/pa_o_fast.ml",
-# another instance of pr_r bug
-	    "top/rprint.ml",
-# unimplemented printer for stream-parsers
-	    "ocpp/ocpp.ml",
-# this seems like original syntax -- skip
-	    "odyl/odyl_config.ml",
+## TODO: use GITIGNORE to ignore temporary files
+#	    "compile/tmp.o_concat.ml",
+#	    "compile/tmp.ml",
+#	    "compile/tmp.mli",
+#	    "compile/pa_o_fast.ml",
+## unimplemented printer for stream-parsers
+#	    "ocpp/ocpp.ml",
+## this seems like original syntax -- skip
+#	    "odyl/odyl_config.ml",
 	      ],
     },
   },
@@ -308,8 +308,13 @@ sub runtest_package {
 	'errorbase' => $errorbase,
         'generated-files' => \@generated_files,
 	) ;
-    if (0 == $code && !$preserve) {
-      v_systemx("rm", "-f", @generated_files);
+    if (0 == $code) {
+      print "OK $f\n";
+      if (!$preserve) {
+	v_systemx("rm", "-f", @generated_files);
+      }
+    } else {
+      print "NOT OK $f\n";
     }
   }
 }
@@ -321,25 +326,35 @@ sub extended_diff {
 
   my @cmd = ("diff", "-Bwiu", $f1, $f2) ;
   my $diff_output = v_capturex([0..1], @cmd) ;
-  return 0 if (0 == $EXITVAL) ;
+  my $diff_ok = (0 == $EXITVAL) ;
 
   my $wdiff_output = v_capturex([0..1], "wdiff", "-3", $f1, $f2) ;
   my $wdiff_full_output = v_capturex([0..1], "wdiff", $f1, $f2) ;
+  my $wdiff_ok = (0 == $EXITVAL) ;
+
   if (exists $args{'errorbase'}) {
     f_write("$args{'errorbase'}.DIFF", $diff_output) ;
     f_write("$args{'errorbase'}.WDIFF", $wdiff_output) ;
     f_write("$args{'errorbase'}.WDIFF-FULL", $wdiff_full_output) ;
     push(@{ $args{'generated-files'} }, "$args{'errorbase'}.DIFF", "$args{'errorbase'}.WDIFF", "$args{'errorbase'}.WDIFF-FULL") ;
   }
-  return 1 if (0 == $EXITVAL) ;
 
-  if (wordeq($f1, $f2, 'generated-files' => $args{'generated-files'})) {
+  my $wordeq_ok = wordeq($f1, $f2, 'generated-files' => $args{'generated-files'}) ;
+
+  if ($diff_ok) { return 0 ; }
+
+  if ($wdiff_ok) {
     print "== $f1 <-> $f2\n" ;
-    print "WHITE SPACE DIFFERENCES\n" ;
+    print "WDIFF SAYS OK\n" ;
+    return 1 ;
   }
-  else {
-    print $diff_output ;
+  if ($wordeq_ok) {
+    print "== $f1 <-> $f2\n" ;
+    print "WHITE SPACE DIFFERENCES from wordeq\n" ;
+    return 1 ;
   }
+
+  print $diff_output ;
   return 1 ;
 }
 

@@ -28,6 +28,8 @@ type spat_parser_ast =
    list (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr))
 ;
 
+value optim : ref bool ;
+
 value strm_n : string;
 
 value cparser : MLast.loc -> spat_parser_ast -> MLast.expr;

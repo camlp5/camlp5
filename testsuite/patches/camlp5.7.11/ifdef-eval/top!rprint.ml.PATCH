@@ -1,0 +1,109 @@
+--- top/rprint.ml	2020-02-07 21:45:45.006996809 -0800
++++ testsuite/patches/camlp5.7.11/ifdef-eval/top!rprint.ml.INPUT	2020-02-07 21:43:34.078708294 -0800
+@@ -3,7 +3,7 @@
+ (* Copyright (c) INRIA 2007-2017 *)
+ 
+ IFDEF OCAML_VERSION >= OCAML_3_03 THEN
+-
++declare
+ open Format;
+ open Outcometree;
+ 
+@@ -107,19 +107,18 @@
+   and print_fields first ppf =
+     fun
+     [ [] -> ()
+-    | [(name, tree) :: fields] ->
++    | [(name, tree) :: fields] -> do {
+         let name =
+           match name with
+-          | IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
++          [ IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+             Oide_ident "contents" -> Oide_ident "val"
+             ELSE
+             Oide_ident {printed_name = "contents"} ->
+               Oide_ident {printed_name = "val"}
+             END
+           | x -> x
+-          end
++          ]
+         in
+-        do {
+           if not first then fprintf ppf ";@ " else ();
+           fprintf ppf "@[<1>%a=@,%a@]" print_ident name (cautious print_tree)
+             tree;
+@@ -176,19 +175,17 @@
+ ;
+ value index_tab = [| ""; "₁"; "₂"; "₃"; "₄"; "₅"; "₆"; "₇"; "₈"; "₉" |];
+ 
+-value try_greek s = do {
+-  if utf8 then do {
+-    if String.length s = 1 then do {
++value try_greek s =
++  if utf8 then
++    if String.length s = 1 then
+       let c = Char.code s.[0] - Char.code 'a' in
+       let g = greek_tab.(c mod Array.length greek_tab) in
+       let n = c / Array.length greek_tab in
+       if n < Array.length index_tab then ("", g ^ index_tab.(n))
+       else ("'", s)
+-    }
+     else ("'", s)
+-  }
+   else ("'", s)
+-};
++;
+ 
+ (* Types *)
+ 
+@@ -227,7 +224,7 @@
+       in
+       let print_fields ppf =
+         fun
+-        | Ovar_fields fields ->
++        [ Ovar_fields fields ->
+             print_list print_poly_variant
+               (fun ppf -> fprintf ppf "@;<1 -2>| ") ppf fields
+         | IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
+@@ -237,7 +234,7 @@
+           Ovar_typ ty ->
+             fprintf ppf "%a@ " print_simple_out_type ty
+           END
+-        end
++        ]
+       in
+       fprintf ppf "%s[%s@[<hv>@[<hv>%a@]%a ]@]" (if non_gen then "_" else "")
+         (if closed then if tags = None then "= " else "< "
+@@ -309,7 +306,7 @@
+   | IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
+       Otyp_attribute _ _ -> ()
+     END
+-  | IFDEF JOCAML THEN
++   IFDEF JOCAML THEN
+       Otyp_proc ->
+         failwith "Rprint: Otyp_proc not impl"
+     END ]
+@@ -478,7 +475,7 @@
+     Osig_exception id tyl ->
+       fprintf ppf "@[<2>exception %a@]" print_out_constr (id, tyl)
+     END
+-  | Osig_modtype name Omty_abstract ->
++   Osig_modtype name Omty_abstract ->
+       fprintf ppf "@[<2>module type %s = 'a@]" name
+   | Osig_modtype name mty ->
+       fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
+@@ -620,11 +617,14 @@
+ Toploop.print_out_value.val := print_out_value;
+ Toploop.print_out_type.val := print_out_type;
+ IFDEF OCAML_VERSION >= OCAML_3_05 THEN
++declare
+   Toploop.print_out_class_type.val := print_out_class_type;
+   Toploop.print_out_module_type.val := print_out_module_type;
+   Toploop.print_out_signature.val := print_out_signature;
++end;
+ END;
+ Toploop.print_out_sig_item.val := print_out_sig_item;
+ Toploop.print_out_phrase.val := print_out_phrase;
+ 
++end;
+ END;
