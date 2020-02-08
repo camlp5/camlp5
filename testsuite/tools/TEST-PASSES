@@ -112,8 +112,6 @@ our %packages = (
 #	    "compile/tmp.ml",
 #	    "compile/tmp.mli",
 #	    "compile/pa_o_fast.ml",
-## unimplemented printer for stream-parsers
-#	    "ocpp/ocpp.ml",
 ## this seems like original syntax -- skip
 #	    "odyl/odyl_config.ml",
 	      ],
