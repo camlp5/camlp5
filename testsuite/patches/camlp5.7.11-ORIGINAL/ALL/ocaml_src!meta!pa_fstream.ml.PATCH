@@ -1,0 +1,10 @@
+--- ../ocaml_src/meta/pa_fstream.ml	2020-01-21 21:41:30.449905653 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_src!meta!pa_fstream.ml.INPUT	2020-02-08 12:06:19.345270669 -0800
+@@ -459,6 +459,7 @@
+   MLast.ExFun (loc, [p, None, e])
+ ;;
+ 
++let _ =
+ Grammar.safe_extend
+   (let _ = (expr : 'expr Grammar.Entry.e) in
+    let grammar_entry_create s =

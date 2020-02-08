@@ -17,6 +17,7 @@ our $preserve = 0 ;
 our $continue_error = 0 ;
 our @dopackages ;
 our @onlyfiles ;
+our $tool ;
 our $tool1 ;
 our $tool2 ;
 our $packages_file ;
@@ -35,6 +36,15 @@ our %tools = (
     'name' => 'roundtrip-original',
 	'command' => sub {
 	  return ('tools/ROUNDTRIP-pa_o-pr_o', @_) ;
+    },
+  },
+
+
+  'roundtrip-original-streams' =>
+  {
+    'name' => 'roundtrip-original-streams',
+	'command' => sub {
+	  return ('tools/ROUNDTRIP-pa_op-pr_op', @_) ;
     },
   },
 
@@ -71,47 +81,117 @@ our %tools = (
 our %packages ;
 
 {
-  GetOptions("tool1=s" => \$tool1,
-	     "tool2=s" => \$tool2,
-	     "package=s{}" => \@dopackages,
-	     "only-files=s{}" => \@onlyfiles,
-	     "verbose" => \$verbose,
-	     "preserve" => \$preserve,
-	     "continue-on-error" => \$continue_error,
-	     "packages-file=s" => \$packages_file,
+  GetOptions(
+    "tool=s" => \$tool,
+    "tool1=s" => \$tool1,
+    "tool2=s" => \$tool2,
+    "package=s{}" => \@dopackages,
+    "only-files=s{}" => \@onlyfiles,
+    "verbose" => \$verbose,
+    "preserve" => \$preserve,
+    "continue-on-error" => \$continue_error,
+    "packages-file=s" => \$packages_file,
       )
       or die("Error in command line arguments\n");
-
-  push(@dopackages, @ARGV) ;
-
-  die "tool $tool1 not recognized"
-      unless exists $tools{$tool1} ;
-
-  die "tool $tool2 not recognized"
-      unless exists $tools{$tool2} ;
 
   die "must specify packages-file"
       unless defined $packages_file ;
 
-  die "must specify packages" unless @dopackages ;
-
   my $yaml = YAML::Tiny->read($packages_file) ;
   %packages = %{ $yaml->[0] } ;
 
-  foreach my $pkgna (@dopackages) {
-    die "package $pkgna not recognized"
-	unless exists $packages{$pkgna} ;
+    my $workdir = "workdir" ;
+
+  if ($ARGV[0] eq 'override-file') {
+    shift @ARGV ;
+    die "tool $tool not recognized"
+	unless $tool eq 'ALL' || exists $tools{$tool} ;
+
+    die "must specify a single package"
+	unless 1 == int(@dopackages) ;
+    die "must specify files"
+	unless int(@onlyfiles) ;
+
+    foreach my $file (@onlyfiles) {
+      my $pkgna = $dopackages[0] ;
+      my $pkgh = $packages{$pkgna} ;
+      my %pkg = %{ $pkgh };
+
+      my $fullsrcname = "$pkg{'location'}/$file" ;
+      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	  unless (-r $fullsrcname) ;
+      my $bangf = $file ;
+      $bangf =~ s,/,!,g ;
+      my $inputname = "patches/$pkg{'package'}/$tool/$bangf.INPUT" ;
+      die "overridden input file $inputname already exists"
+	  unless (!(-r $inputname)) ;
+
+      v_systemx("mkdir", "-p", "patches/$pkg{'package'}/$tool") ;
+      v_systemx("cp", $fullsrcname, $inputname) ;
+    }
   }
+  elsif ($ARGV[0] eq 'override-to-patch') {
+    shift @ARGV ;
+    die "tool $tool not recognized"
+	unless $tool eq 'ALL' || exists $tools{$tool} ;
 
-  my $workdir = "workdir" ;
+    die "must specify a single package"
+	unless 1 == int(@dopackages) ;
+    die "must specify files"
+	unless int(@onlyfiles) ;
 
-  foreach my $pkgna (@dopackages) {
-    my $pkgh = $packages{$pkgna} ;
-    $pkgh->{'onlyfiles'} = [ @onlyfiles ] if @onlyfiles ; 
-    runtest_package($workdir,
-		    $tools{$tool1},
-		    $tools{$tool2},
-		    $pkgh);
+    foreach my $file (@onlyfiles) {
+      my $pkgna = $dopackages[0] ;
+      my $pkgh = $packages{$pkgna} ;
+      my %pkg = %{ $pkgh };
+
+      my $fullsrcname = "$pkg{'location'}/$file" ;
+      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	  unless (-r $fullsrcname) ;
+      my $bangf = $file ;
+      $bangf =~ s,/,!,g ;
+      my $inputname = "patches/$pkg{'package'}/$tool/$bangf.INPUT" ;
+      die "overridden input file $inputname does not exist"
+	  unless (-r $inputname) ;
+
+      my $patchname = "patches/$pkg{'package'}/$tool/$bangf.PATCH" ;
+      die "patch file $patchname alrady exists"
+	  unless (!(-r $patchname)) ;
+
+      my $diff_output = v_capturex([1], "diff", "-Bwiu", $fullsrcname, $inputname) ;
+      f_write($patchname, $diff_output) ;
+      v_systemx("mv",$inputname,"$inputname-MOVED") ;
+    }
+  }
+  else {
+    die "tool $tool1 not recognized"
+	unless exists $tools{$tool1} ;
+
+    die "tool $tool2 not recognized"
+	unless exists $tools{$tool2} ;
+
+    push(@dopackages, @ARGV) ;
+
+    die "must specify packages" unless @dopackages ;
+
+    foreach my $pkgna (@dopackages) {
+      die "package $pkgna not recognized"
+	  unless exists $packages{$pkgna} ;
+    }
+
+    if (@onlyfiles) {
+      die "can only specify a single package if also specifying --only-files"
+	  unless 1 == int(@dopackages) ;
+    }
+
+    foreach my $pkgna (@dopackages) {
+      my $pkgh = $packages{$pkgna} ;
+      $pkgh->{'onlyfiles'} = [ @onlyfiles ] if @onlyfiles ; 
+      runtest_package($workdir,
+		      $tools{$tool1},
+		      $tools{$tool2},
+		      $pkgh);
+    }
   }
 }
 

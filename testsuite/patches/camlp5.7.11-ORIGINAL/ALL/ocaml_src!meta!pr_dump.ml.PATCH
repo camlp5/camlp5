@@ -1,0 +1,10 @@
+--- ../ocaml_src/meta/pr_dump.ml	2020-01-21 21:41:30.449905653 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_src!meta!pr_dump.ml.INPUT	2020-02-08 12:08:17.713318993 -0800
+@@ -44,5 +44,5 @@
+   | None -> ()
+ ;;
+ 
+-Pcaml.print_interf := interf;;
+-Pcaml.print_implem := implem;;
++let _ = Pcaml.print_interf := interf;;
++let _ = Pcaml.print_implem := implem;;

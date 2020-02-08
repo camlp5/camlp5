@@ -1,0 +1,10 @@
+--- ../ocaml_src/main/exparser.ml	2020-01-21 21:41:30.449905653 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_src!main!exparser.ml.INPUT	2020-02-08 11:52:20.807437318 -0800
+@@ -121,6 +121,7 @@
+ ;;
+ 
+ let optim = ref true;;
++let _ =
+ Pcaml.add_option "-no-pa-opt" (Arg.Clear optim) "No parsers optimization.";;
+ 
+ let rec perhaps_bound s =

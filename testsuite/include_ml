@@ -13,16 +13,22 @@
 (* #load "pa_schemer.cmo";; *)
 #directory "../etc";;
 #directory "../meta";;
+#directory "../main";;
 
 (*
-#load "pa_r.cmo";;
-#load "pr_r.cmo";;
-#load "pa_extend.cmo";;
+#load "pa_o.cmo";;
+#load "pa_op.cmo";;
+#load "pr_o.cmo";;
+#load "pr_op.cmo";;
+*)
+
 (*
+#load "pa_extend.cmo";;
 #load "q_MLast.cmo";;
 #load "q_phony.cmo";;
  *)
-*)
+Exparser.optim := false ;;
+
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
 
@@ -32,6 +38,7 @@ open Testutil2 ;;
 
 #load "roundtrip_lexer.cmo";;
 open Roundtrip_lexer ;;
+
 
 (*
 ;;; Local Variables: ***

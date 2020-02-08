@@ -1,0 +1,11 @@
+--- ../ocaml_src/odyl/odyl_main.ml	2020-01-21 21:41:30.449905653 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_src!odyl!odyl_main.ml.INPUT	2020-02-08 11:39:33.027614696 -0800
+@@ -23,7 +23,7 @@
+   loop 1
+ ;;
+ 
+-Arg.current := first_arg_no_load () - 1;;
++let _ = Arg.current := first_arg_no_load () - 1;;
+ 
+ (* Load files in core *)
+ 

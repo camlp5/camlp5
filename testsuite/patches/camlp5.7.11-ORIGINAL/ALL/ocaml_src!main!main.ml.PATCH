@@ -1,0 +1,32 @@
+--- ../ocaml_src/main/main.ml	2020-01-21 21:41:30.449905653 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_src!main!main.ml.INPUT	2020-02-08 11:59:26.807909129 -0800
+@@ -49,11 +49,13 @@
+   report_error exc; Format.close_box (); Format.print_newline (); exit 2
+ ;;
+ 
++let _ =
+ Pcaml.add_directive "load"
+   (function
+      Some (MLast.ExStr (_, s)) -> Odyl_main.loadfile s
+    | Some _ | None -> raise Not_found);;
+ 
++let _ =
+ Pcaml.add_directive "directory"
+   (function
+      Some (MLast.ExStr (_, s)) -> Odyl_main.directory s
+@@ -179,6 +181,7 @@
+       Some 2
+ ;;
+ 
++let _ =
+ Pcaml.add_directive "option"
+   (function
+      Some (MLast.ExStr (_, s)) ->
+@@ -219,5 +222,7 @@
+   with exc -> report_error_and_exit exc
+ ;;
+ 
++let _ =
+ Odyl_main.name := "camlp5";;
++let _ =
+ Odyl_main.go := go;;

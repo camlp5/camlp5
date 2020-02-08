@@ -1,0 +1,8 @@
+--- ../ocaml_src/odyl/odyl.ml	2020-01-21 21:41:30.449905653 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_src!odyl!odyl.ml.INPUT	2020-02-08 11:51:02.931244529 -0800
+@@ -37,4 +37,4 @@
+       exit 2
+ ;;
+ 
+-Printexc.catch main ();;
++let _ = Printexc.catch main ();;
