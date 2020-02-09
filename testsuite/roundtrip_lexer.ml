@@ -341,6 +341,21 @@ value pp_stream1 oc strm =
           Printf.fprintf oc "?%s:" tok ;
           pp1 strm
         }
+      | [: `(loc,("QUESTIONIDENT",tok)) ; strm :] -> do {
+          output_string oc (Ploc.comment loc) ;
+          Printf.fprintf oc "?%s" tok ;
+          pp1 strm
+        }
+      | [: `(loc,("TILDEIDENTCOLON",tok)) ; strm :] -> do {
+          output_string oc (Ploc.comment loc) ;
+          Printf.fprintf oc "~%s:" tok ;
+          pp1 strm
+        }
+      | [: `(loc,("TILDEIDENT",tok)) ; strm :] -> do {
+          output_string oc (Ploc.comment loc) ;
+          Printf.fprintf oc "~%s" tok ;
+          pp1 strm
+        }
       | [: `(loc,("QUOTATION",qstring)) ; strm :] -> do {
           output_string oc (Ploc.comment loc) ;
           let (qname, qbody) =
