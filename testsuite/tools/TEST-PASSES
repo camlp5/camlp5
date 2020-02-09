@@ -33,6 +33,14 @@ our %tools = (
     },
   },
 
+  'roundtrip-official' =>
+  {
+    'name' => 'roundtrip-official',
+	'command' => sub {
+	  return ('tools/ROUNDTRIP-pa_o-pr_official', @_) ;
+    },
+  },
+
   'roundtrip-original' =>
   {
     'name' => 'roundtrip-original',
@@ -40,7 +48,6 @@ our %tools = (
 	  return ('tools/ROUNDTRIP-pa_o-pr_o', @_) ;
     },
   },
-
 
   'roundtrip-original-streams' =>
   {
