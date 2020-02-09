@@ -9,7 +9,7 @@ use String::ShellQuote ;
 our $verbose = 0 ;
 our $syntax ;
 
-our $ocamlformat = "/home/chet/Hack/Ocaml/GENERIC/4.09.0/bin/ocamlformat" ;
+our $ocamlformat = $ENV{'HOME'}."/Hack/Ocaml/GENERIC/4.09.0/bin/ocamlformat" ;
 
 {
   GetOptions(
