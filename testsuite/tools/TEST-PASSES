@@ -110,9 +110,9 @@ our %packages ;
     die "must specify a single package"
 	unless 1 == int(@dopackages) ;
     die "must specify files"
-	unless int(@onlyfiles) ;
+	unless int(@onlyfiles) || int(@ARGV) ;
 
-    foreach my $file (@onlyfiles) {
+    foreach my $file (@ARGV, @onlyfiles) {
       my $pkgna = $dopackages[0] ;
       my $pkgh = $packages{$pkgna} ;
       my %pkg = %{ $pkgh };
@@ -138,9 +138,9 @@ our %packages ;
     die "must specify a single package"
 	unless 1 == int(@dopackages) ;
     die "must specify files"
-	unless int(@onlyfiles) ;
+	unless int(@onlyfiles) || int(@ARGV) ;
 
-    foreach my $file (@onlyfiles) {
+    foreach my $file (@ARGV, @onlyfiles) {
       my $pkgna = $dopackages[0] ;
       my $pkgh = $packages{$pkgna} ;
       my %pkg = %{ $pkgh };

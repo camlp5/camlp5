@@ -1,0 +1,11 @@
+--- ../ocaml_stuff/4.00.2/utils/warnings.mli	2020-01-21 21:41:30.425905928 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_stuff!4.00.2!utils!warnings.mli.INPUT	2020-02-08 14:39:37.183796150 -0800
+@@ -15,7 +15,7 @@
+ open Format
+ 
+ type t =
+-  | Comment_start                           (*  1 *)
++    Comment_start                           (*  1 *)
+   | Comment_not_end                         (*  2 *)
+   | Deprecated                              (*  3 *)
+   | Fragile_match of string                 (*  4 *)
