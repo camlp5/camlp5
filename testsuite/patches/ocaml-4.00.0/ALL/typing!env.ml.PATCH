@@ -1,0 +1,12 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/env.ml	2012-07-13 01:49:06.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/typing!env.ml.INPUT	2020-02-09 11:05:06.813315366 -0800
+@@ -258,8 +258,7 @@
+     ps_filename: string;
+     ps_flags: pers_flags list }
+ 
+-let persistent_structures =
+-  (Hashtbl.create 17 : (string, pers_struct option) Hashtbl.t)
++let persistent_structures : (string, pers_struct option) Hashtbl.t = Hashtbl.create 17
+ 
+ (* Consistency between persistent structures *)
+ 

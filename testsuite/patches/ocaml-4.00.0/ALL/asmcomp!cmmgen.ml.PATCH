@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/cmmgen.ml	2012-03-14 02:26:54.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/asmcomp!cmmgen.ml.INPUT	2020-02-09 10:58:24.765688652 -0800
+@@ -839,7 +839,7 @@
+ 
+ (* Translate an expression *)
+ 
+-let functions = (Queue.create() : ufunction Queue.t)
++let functions : ufunction Queue.t = Queue.create()
+ 
+ let rec transl = function
+     Uvar id ->

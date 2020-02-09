@@ -276,7 +276,10 @@ sub runtest_package {
     my $tool2srcf = "$workdir/$tool2name/".$bangf ;
     my $tool1outf = "$workdir/$tool1name/".$bangf.".OUT" ;
     my $tool2outf = "$workdir/$tool2name/".$bangf.".OUT" ;
-    push(@generated_files, $tool1srcf, $tool2srcf,  $tool1outf, $tool2outf) ;
+    push(@generated_files, $tool1srcf, $tool2srcf,
+	 $tool1outf, $tool2outf,
+	 $tool1outf.".2", $tool2outf.".2",
+	) ;
 
     my @silent ;
     push(@silent, "-s") unless $main::verbose ;
@@ -382,7 +385,7 @@ sub runtest_package {
     my $errordir = "$workdir/$tool1name!$tool2name.ERRORS" ;
     v_systemx("mkdir", "-p", $errordir) ;
     my $errorbase = "$errordir/$bangf" ;
-    my $preserve = $main::preserve ;
+    my $preserve = $main::preserve || int(%onlyfiles) ;
     $code = extended_diff($tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED",
 	'errorbase' => $errorbase,
         'generated-files' => \@generated_files,

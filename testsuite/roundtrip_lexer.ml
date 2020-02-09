@@ -322,42 +322,52 @@ value lex_stream1 is = do {
 
 value quot_re = Pcre.(regexp ~{flags=[`DOTALL]} "^([^:@]*)([:@])(.*)$") ;
 
+value nonws_re = Pcre.(regexp ~{flags=[`DOTALL]} ".*\\S") ;
+value nl_re = Pcre.(regexp ~{flags=[`DOTALL]} ".*\n") ;
+
+value strip_comments = ref False ;
+
 value pp_stream1 oc strm =
+  let comment loc =
+    let s = Ploc.comment loc in
+    if strip_comments.val && Pcre.pmatch ~{rex=nonws_re} s then
+      if Pcre.pmatch ~{rex=nl_re} s then "\n" else " "
+    else s in
   let rec pp1 =
     parser
       [
         [: `(loc,("STRING",tok)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           Printf.fprintf oc "\"%s\"" tok ;
           pp1 strm
         }
       | [: `(loc,("CHAR",tok)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           Printf.fprintf oc "'%s'" tok ;
           pp1 strm
         }
       | [: `(loc,("QUESTIONIDENTCOLON",tok)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           Printf.fprintf oc "?%s:" tok ;
           pp1 strm
         }
       | [: `(loc,("QUESTIONIDENT",tok)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           Printf.fprintf oc "?%s" tok ;
           pp1 strm
         }
       | [: `(loc,("TILDEIDENTCOLON",tok)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           Printf.fprintf oc "~%s:" tok ;
           pp1 strm
         }
       | [: `(loc,("TILDEIDENT",tok)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           Printf.fprintf oc "~%s" tok ;
           pp1 strm
         }
       | [: `(loc,("QUOTATION",qstring)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           let (qname, qbody) =
             try let strs = Pcre.(extract ~{rex=quot_re} qstring) in
                 if strs.(2) = "@" then
@@ -368,8 +378,28 @@ value pp_stream1 oc strm =
           Printf.fprintf oc "<%s<%s>>" qname qbody ;
           pp1 strm
         }
+     | [: `(loc,("INT",tok)) ; strm :] -> do {
+          output_string oc (comment loc) ;
+          Printf.fprintf oc "%s" tok ;
+          pp1 strm
+        }
+     | [: `(loc,("INT_l",tok)) ; strm :] -> do {
+          output_string oc (comment loc) ;
+          Printf.fprintf oc "%sl" tok ;
+          pp1 strm
+        }
+      | [: `(loc,("INT_L",tok)) ; strm :] -> do {
+          output_string oc (comment loc) ;
+          Printf.fprintf oc "%sL" tok ;
+          pp1 strm
+        }
+      | [: `(loc,("INT_n",tok)) ; strm :] -> do {
+          output_string oc (comment loc) ;
+          Printf.fprintf oc "%sn" tok ;
+          pp1 strm
+        }
       | [: `(loc,(_,tok)) ; strm :] -> do {
-          output_string oc (Ploc.comment loc) ;
+          output_string oc (comment loc) ;
           output_string oc tok ;
           pp1 strm
         }
@@ -425,7 +455,8 @@ value roundtrip_lexer () = do {
     Arg.(parse [
              ("-mode",(Symbol ["lexer-passthru";"parse-pp";"ifdef-eval"] set_mode)," choose mode") ;
              ("-D", String add_def, " add def") ;
-             ("-U", String un_def, " un def")
+             ("-U", String un_def, " un def");
+             ("-strip-comments", Set strip_comments, " strip comments")
       ]
       (fun s -> files.val := [ s :: files.val ])
       "roundtrip_lexer: usage") ;

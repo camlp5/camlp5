@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/cmm.ml	2012-02-21 09:41:02.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/asmcomp!cmm.ml.INPUT	2020-02-09 10:57:07.124844741 -0800
+@@ -19,7 +19,7 @@
+ 
+ type machtype = machtype_component array
+ 
+-let typ_void = ([||] : machtype_component array)
++let typ_void : machtype_component array = [||]
+ let typ_addr = [|Addr|]
+ let typ_int = [|Int|]
+ let typ_float = [|Float|]

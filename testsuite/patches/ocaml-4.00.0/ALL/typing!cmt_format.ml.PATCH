@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/cmt_format.ml	2012-07-12 08:28:11.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/typing!cmt_format.ml.INPUT	2020-02-09 11:11:07.284952222 -0800
+@@ -908,7 +908,7 @@
+ 
+ exception Error of error
+ 
+-let input_cmt ic = (input_value ic : cmt_infos)
++let input_cmt ic : cmt_infos = input_value ic
+ 
+ let output_cmt oc cmt =
+   output_string oc Config.cmt_magic_number;

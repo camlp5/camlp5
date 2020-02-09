@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/typemod.ml	2012-07-20 18:19:45.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/typing!typemod.ml.INPUT	2020-02-09 11:09:40.922168215 -0800
+@@ -1103,7 +1103,7 @@
+   in
+   if !Clflags.annotations then
+     (* moved to genannot *)
+-    List.iter (function {pstr_loc = l} -> Stypes.record_phrase l) sstr;
++    List.iter (fun {pstr_loc = l} -> Stypes.record_phrase l) sstr;
+   let previous_saved_types = Cmt_format.get_saved_types () in
+   let (items, sg, final_env) = type_struct env sstr in
+   let str = { str_items = items; str_type = sg; str_final_env = final_env } in

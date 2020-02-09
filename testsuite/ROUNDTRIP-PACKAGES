@@ -88,6 +88,30 @@ ocaml-4.00.0:
     - ocamldoc
     - driver
     - parsing
+    - stdlib
+    - ocamlbuild
+    - otherlibs
+    - lex
+  exclude:
+    roundtrip-original:
+    - ocamldoc/odoc_sig.ml
+  files: []
+ocaml-4.09.0:
+  syntax: original
+  package: ocaml-4.09.0
+  location: /home/chet/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
+  dirs:
+    - utils
+    - asmcomp
+    - typing
+    - debugger
+    - testsuite
+    - bytecomp
+    - tools
+    - toplevel
+    - ocamldoc
+    - driver
+    - parsing
     - camlp4
     - stdlib
     - ocamlbuild

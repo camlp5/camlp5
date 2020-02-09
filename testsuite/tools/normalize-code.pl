@@ -33,14 +33,18 @@ our $ocamlformat = "/home/chet/Hack/Ocaml/GENERIC/4.09.0/bin/ocamlformat" ;
     my $tyflag = "--impl" ;
     $tyflag = "--intf" if ($src =~ m/\.mli/) ;
 
-    my $txt = f_read($src) ;
-    $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
+    my $txt = v_capturex("./roundtrip_lexer.byte",
+			 "-mode","lexer-passthru",
+			 "-strip-comments",
+			 $src) ;
+#    my $txt = f_read($src) ;
+#    $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
     $txt =~ s,→,->,gs ;
-    f_write($src, $txt) ;
+    f_write($src.".2", $txt) ;
 
     my $txt = v_capturex($ocamlformat, 
 			 "--enable-outside-detected-project", "--no-comment-check",
-			 $tyflag, $src) ;
+			 $tyflag, $src.".2") ;
     f_write($dst, $txt) ; 
   }
 }

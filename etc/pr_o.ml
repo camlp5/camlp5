@@ -510,7 +510,7 @@ value mem_tvar s tpl =
 
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
-    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv,
+    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon)
   in
   match te with
@@ -520,18 +520,27 @@ value type_decl pc td =
   | _ ->
       let loc = MLast.loc_of_ctyp te in
       if pc.aft = "" then
-        pprintf pc "%p%p =@;%p%p" type_params (loc, Pcaml.unvala tp)
-          var_escaped (loc, Pcaml.unvala tn) ctyp te
+        pprintf pc "%p%p =@;%s%p%p"
+          type_params (loc, Pcaml.unvala tp)
+          var_escaped (loc, Pcaml.unvala tn)
+          (if pf then "private " else "")
+          ctyp te
           (hlist type_constraint) (Pcaml.unvala cl)
       else
         horiz_vertic
           (fun () ->
-             pprintf pc "%p%p = %p%p" type_params (loc, Pcaml.unvala tp)
-               var_escaped (loc, Pcaml.unvala tn) ctyp te
+             pprintf pc "%p%p = %s%p%p"
+               type_params (loc, Pcaml.unvala tp)
+               var_escaped (loc, Pcaml.unvala tn)
+               (if pf then "private " else "")
+               ctyp te
                (hlist type_constraint) (Pcaml.unvala cl))
           (fun () ->
-             pprintf pc "@[<a>%p%p =@;%p%p@ @]" type_params
-               (loc, Pcaml.unvala tp) var_escaped (loc, Pcaml.unvala tn) ctyp
+             pprintf pc "@[<a>%p%p =@;%s%p%p@ @]"
+               type_params
+               (loc, Pcaml.unvala tp) var_escaped (loc, Pcaml.unvala tn)
+               (if pf then "private " else "")
+               ctyp
                te (hlist type_constraint) (Pcaml.unvala cl)) ]
 ;
 
@@ -1241,7 +1250,7 @@ EXTEND_PRINTER
           left_operator pc loc 0 unfold next z ]
     | "mul"
       [ z ->
-          let ops = ["*"; "*."; "/"; "/."; "land"; "lor"; "lxor"; "mod"] in
+          let ops = ["*"; "*."; "/"; "/."; "%" ; "land"; "lor"; "lxor"; "mod"] in
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
