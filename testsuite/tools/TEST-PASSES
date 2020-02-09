@@ -312,8 +312,13 @@ sub runtest_package {
 	) ;
 
     if ($code != 0) {
-      warn "aborting processing of $f" ;
-      next ;
+      warn "aborting processing of $f: $@" ;
+      if ($main::continue_error) {
+	next ;
+      }
+      else {
+	die "aborting entire test" ;
+      }
     }
 
     if (-r $all_tool_input) {
@@ -338,17 +343,40 @@ sub runtest_package {
 		    'dst-filename' => $tool2outf,
 	) ;
     if ($code != 0) {
-      warn "aborting processing of $f" ;
-      next ;
+      warn "aborting processing of $f: $@" ;
+      if ($main::continue_error) {
+	next ;
+      }
+      else {
+	die "aborting entire test" ;
+      }
     }
-    v_systemx("tools/normalize-code.pl",
+    v_systemx([0..1], "tools/normalize-code.pl",
 	      @main::verbose_passthru, 
 	      "-syntax", $pkg{'syntax'},
 	      $tool1outf, $tool1outf.".NORMALIZED") ;
-    v_systemx("tools/normalize-code.pl",
+    if (0 != $EXITVAL) {
+      warn "normalize of $tool1outf: $@" ;
+      if ($main::continue_error) {
+	next ;
+      }
+      else {
+	die "aborting entire test" ;
+      }
+    }
+    v_systemx([0..1], "tools/normalize-code.pl",
 	      @main::verbose_passthru, 
 	      "-syntax", $pkg{'syntax'},
 	      $tool2outf, $tool2outf.".NORMALIZED") ;
+    if (0 != $EXITVAL) {
+      warn "normalize of $tool2outf: $@" ;
+      if ($main::continue_error) {
+	next ;
+      }
+      else {
+	die "aborting entire test" ;
+      }
+    }
     push(@generated_files, $tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED") ;
 
     my $errordir = "$workdir/$tool1name!$tool2name.ERRORS" ;
