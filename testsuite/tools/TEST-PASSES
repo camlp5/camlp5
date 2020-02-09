@@ -12,7 +12,9 @@ use IPC::System::Simple qw(systemx runx capturex $EXITVAL);
 use String::ShellQuote ;
 use YAML::Tiny;
 
+our $quiet = 0 ;
 our $verbose = 0 ;
+our @verbose_passthru = () ;
 our $preserve = 0 ;
 our $continue_error = 0 ;
 our @dopackages ;
@@ -87,12 +89,17 @@ our %packages ;
     "tool2=s" => \$tool2,
     "package=s{}" => \@dopackages,
     "only-files=s{}" => \@onlyfiles,
+    "quiet" => \$quiet,
     "verbose" => \$verbose,
     "preserve" => \$preserve,
     "continue-on-error" => \$continue_error,
     "packages-file=s" => \$packages_file,
       )
       or die("Error in command line arguments\n");
+
+  @verbose_passthru = ("--verbose") if $verbose ;
+
+  $quiet = 0 if $verbose ;
 
   die "must specify packages-file"
       unless defined $packages_file ;
@@ -259,7 +266,7 @@ sub runtest_package {
     next if exists $exclude{$f} && !int(%onlyfiles);
     next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
 
-    print "==== $f ====\n";
+    print "==== $f ====\n" unless $main::quiet;
     my $bangf = $f ;
     $bangf =~ s,/,!,g ;
 
@@ -335,9 +342,11 @@ sub runtest_package {
       next ;
     }
     v_systemx("tools/normalize-code.pl",
+	      @main::verbose_passthru, 
 	      "-syntax", $pkg{'syntax'},
 	      $tool1outf, $tool1outf.".NORMALIZED") ;
     v_systemx("tools/normalize-code.pl",
+	      @main::verbose_passthru, 
 	      "-syntax", $pkg{'syntax'},
 	      $tool2outf, $tool2outf.".NORMALIZED") ;
     push(@generated_files, $tool1outf.".NORMALIZED", $tool2outf.".NORMALIZED") ;
@@ -352,7 +361,7 @@ sub runtest_package {
         'preserve' => \$preserve,
 	) ;
     if (0 == $code) {
-      print "OK $f\n";
+      print "OK $f\n" unless $main::quiet ;
       if (!$preserve) {
 	v_systemx("rm", "-f", @generated_files);
       }
@@ -388,14 +397,14 @@ sub extended_diff {
   if ($diff_ok) { return 0 ; }
 
   if ($wdiff_ok) {
-    print "== $f1 <-> $f2\n" ;
-    print "WDIFF SAYS OK\n" ;
+    print "== $f1 <-> $f2\n" unless $main::quiet ;
+    print "WDIFF SAYS OK\n" unless $main::quiet ;
     ${ $args{'preserve'} } = 1 ;
     return 0 ;
   }
   if ($wordeq_ok) {
-    print "== $f1 <-> $f2\n" ;
-    print "WHITE SPACE DIFFERENCES from wordeq\n" ;
+    print "== $f1 <-> $f2\n" unless $main::quiet ;
+    print "WHITE SPACE DIFFERENCES from wordeq\n" unless $main::quiet ;
     ${ $args{'preserve'} } = 1 ;
     return 0 ;
   }

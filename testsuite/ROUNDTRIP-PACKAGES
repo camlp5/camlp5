@@ -11,7 +11,6 @@ camlp5.7.11:
     - ocpp
     - compile
   exclude:
-    roundtrip-pa_r-pr_r: []
     roundtrip-revised:
 # has "lexer", for which no printers yet
       - lib/plexer.ml
@@ -69,11 +68,31 @@ camlp5.7.11-ORIGINAL:
     - ocaml_src
     - ocaml_stuff
   exclude:
-    roundtrip-pa_r-pr_r: []
-    roundtrip-revised: []
+    roundtrip-original: []
   files: []
   location: ..
   package: camlp5.7.11-ORIGINAL
-ocaml:
+ocaml-4.00.0:
   syntax: original
-  package: ocaml
+  package: ocaml-4.00.0
+  location: /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
+  dirs:
+    - utils
+    - asmcomp
+    - typing
+    - debugger
+    - testsuite
+    - bytecomp
+    - tools
+    - toplevel
+    - ocamldoc
+    - driver
+    - parsing
+    - camlp4
+    - stdlib
+    - ocamlbuild
+    - otherlibs
+    - lex
+  exclude:
+    roundtrip-original: []
+  files: []
