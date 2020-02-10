@@ -95,6 +95,7 @@ ocaml-4.00.0:
   exclude:
     roundtrip-original:
     - ocamldoc/odoc_sig.ml
+    - otherlibs/labltk/builtin/builtin_GetBitmap.ml
   files: []
 ocaml-4.09.0:
   syntax: original
