@@ -117,6 +117,20 @@ our %tools = (
     },
   },
 
+  'cowardly-arrow' => {
+    'name' => 'cowardly-arrow',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s,→,->,gs ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
   'lexer-passthru' => {
     'name' => 'lexer-passthru',
 	'command' => sub {

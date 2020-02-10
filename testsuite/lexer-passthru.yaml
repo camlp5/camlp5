@@ -5,8 +5,10 @@ recipes:
     steps:
       - cp
       - cowardly-comment-stripper
+      - cowardly-arrow
   lexer-passthru:
     name: lexer-passthru
     steps:
       - lexer-passthru
       - cowardly-comment-stripper
+      - cowardly-arrow
