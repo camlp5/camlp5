@@ -34,6 +34,7 @@ our $profile_file ;
 #     so the files it constructs will be <base-name>.<number>
 # (4) 'step-name'
 # (5) 'output-filename': the output filename
+# (6) 'file-type': "-intf" or "-impl" -- suitable for passing to ocaml/camlp5 tools.
 #
 # RETURNS: code -- typically zero, but maybe nonzero to indicate error
 
@@ -45,8 +46,9 @@ our %tools = (
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_r-pr_r', "cp", $inputf, $outputf) ;
+      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_r-pr_r', $filetype, $inputf, $outputf) ;
       return $code ;
     },
   },
@@ -59,7 +61,7 @@ our %tools = (
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_official', "cp", $inputf, $outputf) ;
+      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_official', $inputf, $outputf) ;
       return $code ;
     },
   },
@@ -72,7 +74,7 @@ our %tools = (
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_o', "cp", $inputf, $outputf) ;
+      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_o', $inputf, $outputf) ;
       return $code ;
     },
   },
@@ -85,7 +87,7 @@ our %tools = (
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_op-pr_op', "cp", $inputf, $outputf) ;
+      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_op-pr_op', $inputf, $outputf) ;
       return $code ;
     },
   },
@@ -112,6 +114,22 @@ our %tools = (
 
 	  my $txt = f_read($inputf) ;
 	  $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:multi-semi:declare-end:directives' => {
+    'name' => 'nuke:multi-semi:declare-end:directives',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|^#load.*$||gm ;
+	  $txt =~ s,declare end;,,gm ;
+	  $txt =~ s,;(?:\s*;)*,;,gs ;
 	  f_write($outputf, $txt) ;
 	  return 0 ;
     },
@@ -372,6 +390,10 @@ sub runtest_package {
     print "==== $f ====\n" unless $main::quiet;
     my $bangf = $f ;
     $bangf =~ s,/,!,g ;
+    my $filetype ;
+    if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
+    elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
+    else { die "unrecognized filetype $f" ; }
 
     my @generated_files = () ;
     my $origf = "$location/".$f ;
@@ -410,6 +432,7 @@ sub runtest_package {
 	  'base-name' => $stepbase ,
 	  'step-number' => $stepi ,
 	  'step-name' => $stepname ,
+	  'file-type' => $filetype ,
 	) ;
 
 	if ($code != 0) {

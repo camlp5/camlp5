@@ -1,0 +1,16 @@
+---
+recipes:
+  ifdef-eval:
+    name: ifdef-eval
+    steps:
+      - ifdef-eval
+      - cowardly-comment-stripper
+      - cowardly-arrow
+      - nuke:multi-semi:declare-end:directives
+  roundtrip-revised:
+    name: roundtrip-revised
+    steps:
+      - roundtrip-revised
+      - cowardly-comment-stripper
+      - cowardly-arrow
+      - nuke:multi-semi:declare-end:directives

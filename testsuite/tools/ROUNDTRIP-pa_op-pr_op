@@ -7,4 +7,4 @@ OCAMLFIND=ocamlfind
 CAMLP5LIB=`${OCAMLFIND} query camlp5`
 CAMLP5="${TOP}/local-install/bin/camlp5r -I ${CAMLP5LIB}"
 
-LANG=C ${CAMLP5} pa_o.cmo pa_op.cmo pr_o.cmo pr_op.cmo -no-pa-opt $1 > $2
+LANG=C ${CAMLP5} pa_o.cmo pa_op.cmo pr_o.cmo pr_op.cmo -no-pa-opt $1 $2 > $3

@@ -12,10 +12,10 @@ EXAMPLES
 == Revised Syntax
 
 tools/TEST-PASSES --profile-file lexer-passthru.yaml --packages-file ROUNDTRIP-PACKAGES camlp5.7.11
-tools/TEST-PASSES --packages-file ROUNDTRIP-PACKAGES --tool1 cp --tool2 lexer-pa-pr camlp5.7.11
+tools/TEST-PASSES --profile-file lexer-pa-pr.yaml --packages-file ROUNDTRIP-PACKAGES camlp5.7.11
+tools/TEST-PASSES --profile-file roundtrip-revised.yaml --packages-file ROUNDTRIP-PACKAGES camlp5.7.11
 
-tools/TEST-PASSES --packages-file ROUNDTRIP-PACKAGES --tool1 cp --tool2 lexer-passthru --continue-on-error camlp5.7.11
-tools/TEST-PASSES --packages-file ROUNDTRIP-PACKAGES --tool1 cp --tool2 lexer-pa-pr --continue-on-error camlp5.7.11
+
 tools/TEST-PASSES --packages-file ROUNDTRIP-PACKAGES --tool1 ifdef-eval --tool2 roundtrip-revised --continue-on-error camlp5.7.11
 
 == Original syntax
