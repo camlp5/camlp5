@@ -23,6 +23,7 @@ our $tool ;
 our $tool1 ;
 our $tool2 ;
 our $packages_file ;
+our $profile_file ;
 
 # step takes as arguments:
 #
@@ -102,6 +103,20 @@ our %tools = (
     },
   },
 
+  'cowardly-comment-stripper' => {
+    'name' => 'cowardly-comment-stripper',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
   'lexer-passthru' => {
     'name' => 'lexer-passthru',
 	'command' => sub {
@@ -139,8 +154,6 @@ our %tools = (
   },
     ) ;
 
-our %packages ;
-
 {
   GetOptions(
     "tool=s" => \$tool,
@@ -153,6 +166,7 @@ our %packages ;
     "preserve" => \$preserve,
     "continue-on-error" => \$continue_error,
     "packages-file=s" => \$packages_file,
+    "profile-file=s" => \$profile_file,
       )
       or die("Error in command line arguments\n");
 
@@ -163,17 +177,22 @@ our %packages ;
   die "must specify packages-file"
       unless defined $packages_file ;
 
-  my $yaml = YAML::Tiny->read($packages_file) ;
-  %packages = %{ $yaml->[0] } ;
+  my %packages ;
+  {
+    my $yaml = YAML::Tiny->read($packages_file) ;
+    %packages = %{ $yaml->[0] } ;
+  }
+
+  die "must specify profile-file"
+      unless defined $profile_file ;
+
+  my %profile ;
+  {
+    my $yaml = YAML::Tiny->read($profile_file) ;
+    %profile = %{ $yaml->[0] } ;
+  }
 
     my $workdir = "workdir" ;
-
-  my %profile = (
-    'recipes' => {
-      $tool1 => { name => $tool1, steps => [ $tool1 ] },
-      $tool2 => { name => $tool2, steps => [ $tool2 ] },
-    } ,
-      ) ;
 
   if ($ARGV[0] eq 'override-file') {
     shift @ARGV ;
@@ -580,6 +599,12 @@ sub v_system {
   my $cmd = shift;
   print STDERR "<<$cmd>>\n" if ($main::verbose);
   system $cmd;
+}
+
+sub onlynl {
+  my $s = shift ;
+  $s =~ s,[^\n],,gs;
+  return $s;
 }
 
 sub f_read {

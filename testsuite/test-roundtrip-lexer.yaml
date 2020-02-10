@@ -1,0 +1,12 @@
+---
+recipes:
+  cp:
+    name: cp
+    steps:
+      - cp
+      - cowardly-comment-stripper
+  lexer-passthru:
+    name: lexer-passthru
+    steps:
+      - lexer-passthru
+      - cowardly-comment-stripper
