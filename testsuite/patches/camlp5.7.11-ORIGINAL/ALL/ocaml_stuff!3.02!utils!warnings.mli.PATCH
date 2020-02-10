@@ -1,0 +1,11 @@
+--- ../ocaml_stuff/3.02/utils/warnings.mli	2020-01-21 21:41:30.413906065 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_stuff!3.02!utils!warnings.mli.INPUT	2020-02-10 12:15:31.855791555 -0800
+@@ -15,7 +15,7 @@
+ open Format
+ 
+ type t =                             (* A is all *)
+-  | Comment of string                (* C *)
++    Comment of string                (* C *)
+   | Partial_application              (* F *)
+   | Method_override of string list   (* M *)
+   | Partial_match of string          (* P *)

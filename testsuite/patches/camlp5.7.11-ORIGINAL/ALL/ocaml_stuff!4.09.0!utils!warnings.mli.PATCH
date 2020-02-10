@@ -1,0 +1,25 @@
+--- ../ocaml_stuff/4.09.0/utils/warnings.mli	2020-01-21 21:41:30.429905882 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_stuff!4.09.0!utils!warnings.mli.INPUT	2020-02-10 12:14:33.555920394 -0800
+@@ -23,11 +23,11 @@
+ type loc = {
+   loc_start: Lexing.position;
+   loc_end: Lexing.position;
+-  loc_ghost: bool;
++  loc_ghost: bool
+ }
+ 
+ type t =
+-  | Comment_start                           (*  1 *)
++    Comment_start                           (*  1 *)
+   | Comment_not_end                         (*  2 *)
+ (*| Deprecated --> alert "deprecated" *)    (*  3 *)
+   | Fragile_match of string                 (*  4 *)
+@@ -118,7 +118,7 @@
+   { id : string
+   ; message : string
+   ; is_error : bool
+-  ; sub_locs : (loc * string) list;
++  ; sub_locs : (loc * string) list
+   }
+ 
+ val report : t -> [ `Active of reporting_information | `Inactive ]
