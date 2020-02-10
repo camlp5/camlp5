@@ -1,0 +1,11 @@
+---
+maquette:
+  syntax: original
+  dirs:
+    - .
+  exclude:
+    roundtrip-revised: []
+  files: []
+  location: maquette/files
+  patches: maquette/patches
+  package: maquette
