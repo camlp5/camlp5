@@ -44,6 +44,7 @@ our %tools = (
   'roundtrip-revised' =>
   {
     'name' => 'roundtrip-revised',
+    'syntax' => 'revised',
     'command' => sub {
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
@@ -58,6 +59,7 @@ our %tools = (
   'roundtrip-official' =>
   {
     'name' => 'roundtrip-official',
+    'syntax' => 'original',
     'command' => sub {
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
@@ -72,6 +74,7 @@ our %tools = (
   'roundtrip-original' =>
   {
     'name' => 'roundtrip-original',
+    'syntax' => 'original',
     'command' => sub {
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
@@ -86,6 +89,7 @@ our %tools = (
   'roundtrip-original-streams' =>
   {
     'name' => 'roundtrip-original-streams',
+    'syntax' => 'original',
     'command' => sub {
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
@@ -405,6 +409,12 @@ sub runtest_package {
     foreach my $s (@l) { $used_steps{$s} = 1 ; }
   }
 
+  foreach my $stepna (keys %used_steps) {
+    if (exists $tools{$stepna}->{'syntax'}) {
+      die "package syntax <<$pkg{'syntax'}>> <> tool step <<$stepna>> syntax <<$tools{$stepna}->{'syntax'}>>"
+	  unless $pkg{'syntax'} eq $tools{$stepna}->{'syntax'} ;
+    }
+  }
   my %exclude ;
   {
     my @l = () ;
@@ -455,6 +465,8 @@ sub runtest_package {
 
     my @generated_files = () ;
     my $origf = "$location/".$f ;
+
+    print "SRC: $origf\n" if $main::verbose ;
 
     # so we know if any step failed
     my $failure = 0 ;
