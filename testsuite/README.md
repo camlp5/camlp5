@@ -14,6 +14,7 @@ EXAMPLES
 tools/TEST-PASSES --profile-file profiles/lexer-passthru.yaml --packages-file packages/roundtrip.yaml camlp5.7.11
 tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/roundtrip.yaml camlp5.7.11
 tools/TEST-PASSES --profile-file profiles/roundtrip-revised.yaml --packages-file packages/roundtrip.yaml camlp5.7.11
+tools/TEST-PASSES --profile-file profiles/roundtrip-revised.yaml --packages-file packages/maquette.yaml maquette
 
 
 == Original syntax
