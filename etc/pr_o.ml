@@ -2154,8 +2154,9 @@ value typevar pc tv = pprintf pc "'%s" tv;
 
 value class_object loc pc (csp, csl) =
   let class_str_item_sep =
+(*
     if flag_semi_semi.val then semi_semi_after class_str_item
-    else class_str_item
+    else *) class_str_item
   in
   horiz_vertic
     (fun () ->
@@ -2376,8 +2377,8 @@ EXTEND_PRINTER
             ct
       | <:class_type:< object $opt:cst$ $list:csi$ end >> ->
           let class_sig_item_sep =
-            if flag_semi_semi.val then semi_semi_after class_sig_item
-            else class_sig_item
+            (* if flag_semi_semi.val then semi_semi_after class_sig_item
+            else *) class_sig_item
           in
           horiz_vertic
             (fun () ->
