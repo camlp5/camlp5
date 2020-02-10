@@ -6,11 +6,13 @@ recipes:
       - cp
       - cowardly-comment-stripper
       - cowardly-arrow
-      - nuke:mli-ending-double-semi
+      - ocamlformat
+#      - nuke:mli-ending-double-semi
   roundtrip-original:
     name: roundtrip-original
     steps:
       - roundtrip-original
       - cowardly-comment-stripper
       - cowardly-arrow
-      - nuke:mli-ending-double-semi
+      - ocamlformat
+#      - nuke:mli-ending-double-semi

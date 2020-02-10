@@ -21,8 +21,4 @@ tools/TEST-PASSES --profile-file profiles/roundtrip-revised.yaml --packages-file
 tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file ROUNDTRIP-PACKAGES camlp5.7.11-ORIGINAL
 tools/TEST-PASSES --profile-file profiles/roundtrip-original.yaml --packages-file ROUNDTRIP-PACKAGES camlp5.7.11-ORIGINAL
 
-NOTE: maybe this is illegitimate, since IFDEF isn't usable in original syntax?
-
-tools/TEST-PASSES --packages-file ROUNDTRIP-PACKAGES --tool1 cp --tool2 lexer-pa-pr --continue-on-error camlp5.7.11-ORIGINAL
-
-tools/TEST-PASSES --packages-file ROUNDTRIP-PACKAGES --tool1 ifdef-eval --tool2 roundtrip-original --continue-on-error camlp5.7.11-ORIGINAL
+tools/TEST-PASSES --profile-file profiles/roundtrip-original.yaml --packages-file ROUNDTRIP-PACKAGES ocaml-4.00.0

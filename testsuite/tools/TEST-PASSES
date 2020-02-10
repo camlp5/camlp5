@@ -38,6 +38,8 @@ our $profile_file ;
 #
 # RETURNS: code -- typically zero, but maybe nonzero to indicate error
 
+our $ocamlformat = $ENV{'HOME'}."/Hack/Ocaml/GENERIC/4.09.0/bin/ocamlformat" ;
+
 our %tools = (
   'roundtrip-revised' =>
   {
@@ -117,6 +119,22 @@ our %tools = (
 
 	  my $txt = f_read($inputf) ;
 	  $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'ocamlformat' => {
+    'name' => 'ocamlformat',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+	  my $filetype = $args{'file-type'} ;
+
+	  my $txt = v_capturex($ocamlformat, 
+			       "--enable-outside-detected-project", "--no-comment-check",
+			       "-".$filetype, $inputf) ;
 	  f_write($outputf, $txt) ;
 	  return 0 ;
     },
