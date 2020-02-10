@@ -416,6 +416,7 @@ sub runtest_package {
     push(@files, @newfiles) ;
   }
 
+  @files = sort @files ;
   foreach my $f (@files) {
     next if exists $exclude{$f} && !int(%onlyfiles);
     next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
