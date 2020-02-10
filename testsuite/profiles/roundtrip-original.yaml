@@ -1,0 +1,14 @@
+---
+recipes:
+  cp:
+    name: cp
+    steps:
+      - cp
+      - cowardly-comment-stripper
+      - cowardly-arrow
+  roundtrip-original:
+    name: roundtrip-original
+    steps:
+      - roundtrip-original
+      - cowardly-comment-stripper
+      - cowardly-arrow
