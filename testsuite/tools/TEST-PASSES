@@ -128,6 +128,22 @@ our %tools = (
     },
   },
 
+  'brave-comment-stripper' => {
+    'name' => 'brave-comment-stripper',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = v_capturex("./roundtrip_lexer.byte",
+			       "-mode","lexer-passthru",
+			       "-strip-comments",
+			       $inputf) ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
   'ocamlformat' => {
     'name' => 'ocamlformat',
 	'command' => sub {

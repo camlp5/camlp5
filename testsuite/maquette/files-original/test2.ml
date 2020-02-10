@@ -21,3 +21,12 @@ module M = struct
   let g x = x
 
 end ;;
+
+(* argle 
+
+(* bargle
+
+*)
+
+( argle ;;
+*)
