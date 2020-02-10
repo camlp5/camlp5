@@ -284,8 +284,7 @@ our %tools = (
       my $fullsrcname = "$pkg{'location'}/$file" ;
       die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
 	  unless (-r $fullsrcname) ;
-      my $bangf = $file ;
-      $bangf =~ s,/,!,g ;
+      my $bangf = bang_escape($file) ;
       my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
       my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
       die "overridden input file $inputname already exists"
@@ -313,8 +312,7 @@ our %tools = (
       my $fullsrcname = "$pkg{'location'}/$file" ;
       die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
 	  unless (-r $fullsrcname) ;
-      my $bangf = $file ;
-      $bangf =~ s,/,!,g ;
+      my $bangf = bang_escape($file) ;
       my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
       my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
       die "overridden input file $inputname does not exist"
@@ -370,6 +368,13 @@ our %tools = (
 		      $pkgh);
     }
   }
+}
+
+sub bang_escape {
+  my $f = shift ;
+  $f =~ s,^\./,,;
+  $f =~ s,/,!,g ;
+  return $f ;
 }
 
 sub runtest_package {
@@ -442,8 +447,7 @@ sub runtest_package {
     next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
 
     print "==== $f ====\n" unless $main::quiet;
-    my $bangf = $f ;
-    $bangf =~ s,/,!,g ;
+    my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
     elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
