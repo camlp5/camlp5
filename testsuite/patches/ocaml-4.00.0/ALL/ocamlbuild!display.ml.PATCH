@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamlbuild/display.ml	2012-05-02 03:02:53.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamlbuild!display.ml.INPUT	2020-02-10 14:15:36.031603519 -0800
+@@ -320,8 +320,6 @@
+         end;
+       redraw_sophisticated ds
+     end
+-  else
+-    ()
+ ;;
+ (* ***)
+ (*** set_target_sophisticated *)

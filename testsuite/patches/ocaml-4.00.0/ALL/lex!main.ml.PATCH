@@ -1,0 +1,27 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/lex/main.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/lex!main.ml.INPUT	2020-02-10 14:13:50.216398550 -0800
+@@ -43,13 +43,13 @@
+    "-version",  Arg.Unit print_version_string, " Print version and exit";
+    "-vnum",  Arg.Unit print_version_num, " Print version number and exit";
+   ]
++;;
+ 
+-let _ =
+   Arg.parse
+     specs
+     (fun name -> source_name := Some name)
+     usage
+-
++;;
+ 
+ let main () =
+ 
+@@ -120,5 +120,7 @@
+         raise exn
+     end;
+     exit 3
++;;
+ 
+-let _ = (* Printexc.catch *) main (); exit 0
++(* Printexc.catch *) main (); exit 0
++;;

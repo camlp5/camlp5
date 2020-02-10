@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/bytecomp/simplif.ml	2012-02-20 09:45:10.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/bytecomp!simplif.ml.INPUT	2020-02-10 13:50:46.314633796 -0800
+@@ -293,7 +293,7 @@
+ 
+   (* First pass: count the occurrences of all let-bound identifiers *)
+ 
+-  let occ = (Hashtbl.create 83: (Ident.t, int ref) Hashtbl.t) in
++  let occ: (Ident.t, int ref) Hashtbl.t = Hashtbl.create 83 in
+   (* The global table [occ] associates to each let-bound identifier
+      the number of its uses (as a reference):
+      - 0 if never used

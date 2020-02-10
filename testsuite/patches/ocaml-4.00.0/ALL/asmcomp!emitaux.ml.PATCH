@@ -1,0 +1,12 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/emitaux.ml	2012-07-11 08:26:15.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/asmcomp!emitaux.ml.INPUT	2020-02-10 13:39:26.688424156 -0800
+@@ -212,8 +212,7 @@
+ (* Emit debug information *)
+ 
+ (* This assoc list is expected to be very short *)
+-let file_pos_nums =
+-  (ref [] : (string * int) list ref)
++let file_pos_nums : (string * int) list ref = ref []
+ 
+ (* Number of files *)
+ let file_pos_num_cnt = ref 1
