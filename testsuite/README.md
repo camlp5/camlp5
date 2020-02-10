@@ -23,3 +23,5 @@ tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file packa
 tools/TEST-PASSES --profile-file profiles/roundtrip-original.yaml --packages-file packages/roundtrip.yaml camlp5.7.11-ORIGINAL
 
 tools/TEST-PASSES --profile-file profiles/roundtrip-original.yaml --packages-file packages/roundtrip.yaml ocaml-4.00.0
+
+tools/TEST-PASSES --profile-file profiles/roundtrip-original.yaml --packages-file packages/maquette.yaml maquette-original
