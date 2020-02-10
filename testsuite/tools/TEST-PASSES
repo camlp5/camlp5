@@ -152,6 +152,22 @@ our %tools = (
     },
   },
 
+  'nuke:mli-ending-double-semi' => {
+    'name' => 'nuke:mli-ending-double-semi',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+	  my $filetype = $args{'file-type'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s,;;$,,gm if $filetype eq '-intf' ;
+	  $txt =~ s,;;(\s*\(\*)?,$1,gs ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
   'cowardly-arrow' => {
     'name' => 'cowardly-arrow',
 	'command' => sub {

@@ -1,0 +1,360 @@
+--- ../ocaml_stuff/4.02.1/parsing/parsetree.mli	2020-01-21 21:41:30.425905928 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_stuff!4.02.1!parsing!parsetree.mli.INPUT	2020-02-10 11:36:42.260899407 -0800
+@@ -34,7 +34,7 @@
+ and attributes = attribute list
+ 
+ and payload =
+-  | PStr of structure
++    PStr of structure
+   | PTyp of core_type  (* : T *)
+   | PPat of pattern * expression option  (* : P  or  : P when E *)
+ 
+@@ -46,11 +46,11 @@
+     {
+      ptyp_desc: core_type_desc;
+      ptyp_loc: Location.t;
+-     ptyp_attributes: attributes; (* ... [@id1] [@id2] *)
++     ptyp_attributes: attributes (* ... [@id1] [@id2] *)
+     }
+ 
+ and core_type_desc =
+-  | Ptyp_any
++    Ptyp_any 
+         (*  _ *)
+   | Ptyp_var of string
+         (* 'a *)
+@@ -118,7 +118,7 @@
+        *)
+ 
+ and row_field =
+-  | Rtag of label * attributes * bool * core_type list
++    Rtag  of label * attributes * bool * core_type list
+         (* [`A]                   ( true,  [] )
+            [`A of T]              ( false, [T] )
+            [`A of T1 & .. & Tn]   ( false, [T1;...Tn] )
+@@ -140,11 +140,11 @@
+     {
+      ppat_desc: pattern_desc;
+      ppat_loc: Location.t;
+-     ppat_attributes: attributes; (* ... [@id1] [@id2] *)
++     ppat_attributes: attributes (* ... [@id1] [@id2] *)
+     }
+ 
+ and pattern_desc =
+-  | Ppat_any
++    Ppat_any 
+         (* _ *)
+   | Ppat_var of string loc
+         (* x *)
+@@ -203,11 +203,11 @@
+     {
+      pexp_desc: expression_desc;
+      pexp_loc: Location.t;
+-     pexp_attributes: attributes; (* ... [@id1] [@id2] *)
++     pexp_attributes: attributes (* ... [@id1] [@id2] *)
+     }
+ 
+ and expression_desc =
+-  | Pexp_ident of Longident.t loc
++    Pexp_ident of Longident.t loc
+         (* x
+            M.x
+          *)
+@@ -325,7 +325,7 @@
+     {
+      pc_lhs: pattern;
+      pc_guard: expression option;
+-     pc_rhs: expression;
++     pc_rhs: expression
+     }
+ 
+ (* Value descriptions *)
+@@ -336,7 +336,7 @@
+      pval_type: core_type;
+      pval_prim: string list;
+      pval_attributes: attributes;  (* ... [@@id1] [@@id2] *)
+-     pval_loc: Location.t;
++     pval_loc: Location.t
+     }
+ 
+ (*
+@@ -359,7 +359,7 @@
+      ptype_private: private_flag;   (* = private ... *)
+      ptype_manifest: core_type option;  (* = T *)
+      ptype_attributes: attributes;   (* ... [@@id1] [@@id2] *)
+-     ptype_loc: Location.t;
++     ptype_loc: Location.t
+     }
+ 
+ (*
+@@ -373,7 +373,7 @@
+ *)
+ 
+ and type_kind =
+-  | Ptype_abstract
++    Ptype_abstract
+   | Ptype_variant of constructor_declaration list
+         (* Invariant: non-empty list *)
+   | Ptype_record of label_declaration list
+@@ -386,7 +386,7 @@
+      pld_mutable: mutable_flag;
+      pld_type: core_type;
+      pld_loc: Location.t;
+-     pld_attributes: attributes; (* l [@id1] [@id2] : T *)
++     pld_attributes: attributes (* l [@id1] [@id2] : T *)
+     }
+ 
+ (*  { ...; l: T; ... }            (mutable=Immutable)
+@@ -401,7 +401,7 @@
+      pcd_args: core_type list;
+      pcd_res: core_type option;
+      pcd_loc: Location.t;
+-     pcd_attributes: attributes; (* C [@id1] [@id2] of ... *)
++     pcd_attributes: attributes (* C [@id1] [@id2] of ... *)
+     }
+ (*
+   | C of T1 * ... * Tn     (res = None)
+@@ -415,7 +415,7 @@
+      ptyext_params: (core_type * variance) list;
+      ptyext_constructors: extension_constructor list;
+      ptyext_private: private_flag;
+-     ptyext_attributes: attributes;   (* ... [@@id1] [@@id2] *)
++     ptyext_attributes: attributes   (* ... [@@id1] [@@id2] *)
+     }
+ (*
+   type t += ...
+@@ -426,7 +426,7 @@
+      pext_name: string loc;
+      pext_kind : extension_constructor_kind;
+      pext_loc : Location.t;
+-     pext_attributes: attributes; (* C [@id1] [@id2] of ... *)
++     pext_attributes: attributes (* C [@id1] [@id2] of ... *)
+     }
+ 
+ and extension_constructor_kind =
+@@ -449,11 +449,11 @@
+     {
+      pcty_desc: class_type_desc;
+      pcty_loc: Location.t;
+-     pcty_attributes: attributes; (* ... [@id1] [@id2] *)
++     pcty_attributes: attributes (* ... [@id1] [@id2] *)
+     }
+ 
+ and class_type_desc =
+-  | Pcty_constr of Longident.t loc * core_type list
++    Pcty_constr of Longident.t loc * core_type list
+         (* c
+            ['a1, ..., 'an] c *)
+   | Pcty_signature of class_signature
+@@ -469,7 +469,7 @@
+ and class_signature =
+     {
+      pcsig_self: core_type;
+-     pcsig_fields: class_type_field list;
++     pcsig_fields: class_type_field list
+     }
+ (* object('selfpat) ... end
+    object ... end             (self = Ptyp_any)
+@@ -479,11 +479,11 @@
+     {
+      pctf_desc: class_type_field_desc;
+      pctf_loc: Location.t;
+-     pctf_attributes: attributes; (* ... [@@id1] [@@id2] *)
++     pctf_attributes: attributes (* ... [@@id1] [@@id2] *)
+     }
+ 
+ and class_type_field_desc =
+-  | Pctf_inherit of class_type
++    Pctf_inherit of class_type
+         (* inherit CT *)
+   | Pctf_val of (string * mutable_flag * virtual_flag * core_type)
+         (* val x: T *)
+@@ -506,7 +506,7 @@
+      pci_name: string loc;
+      pci_expr: 'a;
+      pci_loc: Location.t;
+-     pci_attributes: attributes;  (* ... [@@id1] [@@id2] *)
++     pci_attributes: attributes  (* ... [@@id1] [@@id2] *)
+     }
+ (* class c = ...
+    class ['a1,...,'an] c = ...
+@@ -525,11 +525,11 @@
+     {
+      pcl_desc: class_expr_desc;
+      pcl_loc: Location.t;
+-     pcl_attributes: attributes; (* ... [@id1] [@id2] *)
++     pcl_attributes: attributes (* ... [@id1] [@id2] *)
+     }
+ 
+ and class_expr_desc =
+-  | Pcl_constr of Longident.t loc * core_type list
++    Pcl_constr of Longident.t loc * core_type list
+         (* c
+            ['a1, ..., 'an] c *)
+   | Pcl_structure of class_structure
+@@ -559,7 +559,7 @@
+ and class_structure =
+     {
+      pcstr_self: pattern;
+-     pcstr_fields: class_field list;
++     psctr_fields: class_field list
+     }
+ (* object(selfpat) ... end
+    object ... end           (self = Ppat_any)
+@@ -569,11 +569,11 @@
+     {
+      pcf_desc: class_field_desc;
+      pcf_loc: Location.t;
+-     pcf_attributes: attributes; (* ... [@@id1] [@@id2] *)
++     pcf_attributes: attributes (* ... [@@id1] [@@id2] *)
+     }
+ 
+ and class_field_desc =
+-  | Pcf_inherit of override_flag * class_expr * string option
++    Pcf_inherit of override_flag * class_expr * string option
+         (* inherit CE
+            inherit CE as x
+            inherit! CE
+@@ -597,7 +597,7 @@
+         (* [%%id] *)
+ 
+ and class_field_kind =
+-  | Cfk_virtual of core_type
++    Cfk_virtual of core_type
+   | Cfk_concrete of override_flag * expression
+ 
+ and class_declaration = class_expr class_infos
+@@ -610,11 +610,11 @@
+     {
+      pmty_desc: module_type_desc;
+      pmty_loc: Location.t;
+-     pmty_attributes: attributes; (* ... [@id1] [@id2] *)
++     pmty_attributes: attributes (* ... [@id1] [@id2] *)
+     }
+ 
+ and module_type_desc =
+-  | Pmty_ident of Longident.t loc
++    Pmty_ident of Longident.t loc
+         (* S *)
+   | Pmty_signature of signature
+         (* sig ... end *)
+@@ -634,11 +634,11 @@
+ and signature_item =
+     {
+      psig_desc: signature_item_desc;
+-     psig_loc: Location.t;
++     psig_loc: Location.t
+     }
+ 
+ and signature_item_desc =
+-  | Psig_value of value_description
++    Psig_value of value_description
+         (*
+           val x: T
+           external x: T = "s1" ... "sn"
+@@ -674,7 +674,7 @@
+      pmd_name: string loc;
+      pmd_type: module_type;
+      pmd_attributes: attributes; (* ... [@@id1] [@@id2] *)
+-     pmd_loc: Location.t;
++     pmd_loc: Location.t
+     }
+ (* S : MT *)
+ 
+@@ -683,7 +683,7 @@
+      pmtd_name: string loc;
+      pmtd_type: module_type option;
+      pmtd_attributes: attributes; (* ... [@@id1] [@@id2] *)
+-     pmtd_loc: Location.t;
++     pmtd_loc: Location.t
+     }
+ (* S = MT
+    S       (abstract module type declaration, pmtd_type = None)
+@@ -694,7 +694,7 @@
+      popen_lid: Longident.t loc;
+      popen_override: override_flag;
+      popen_loc: Location.t;
+-     popen_attributes: attributes;
++     popen_attributes: attributes
+     }
+ (* open! X - popen_override = Override (silences the 'used identifier
+                               shadowing' warning)
+@@ -705,7 +705,7 @@
+     {
+      pincl_mod: 'a;
+      pincl_loc: Location.t;
+-     pincl_attributes: attributes;
++     pincl_attributes: attributes
+     }
+ 
+ and include_description = module_type include_infos
+@@ -715,7 +715,7 @@
+ (* include ME *)
+ 
+ and with_constraint =
+-  | Pwith_type of Longident.t loc * type_declaration
++    Pwith_type of Longident.t loc * type_declaration
+         (* with type X.t = ...
+ 
+            Note: the last component of the longident must match
+@@ -733,11 +733,11 @@
+     {
+      pmod_desc: module_expr_desc;
+      pmod_loc: Location.t;
+-     pmod_attributes: attributes; (* ... [@id1] [@id2] *)
++     pmod_attributes: attributes (* ... [@id1] [@id2] *)
+     }
+ 
+ and module_expr_desc =
+-  | Pmod_ident of Longident.t loc
++    Pmod_ident of Longident.t loc
+         (* X *)
+   | Pmod_structure of structure
+         (* struct ... end *)
+@@ -757,11 +757,11 @@
+ and structure_item =
+     {
+      pstr_desc: structure_item_desc;
+-     pstr_loc: Location.t;
++     pstr_loc: Location.t
+     }
+ 
+ and structure_item_desc =
+-  | Pstr_eval of expression * attributes
++    Pstr_eval of expression * attributes
+         (* E *)
+   | Pstr_value of rec_flag * value_binding list
+         (* let P1 = E1 and ... and Pn = EN       (flag = Nonrecursive)
+@@ -800,7 +800,7 @@
+     pvb_pat: pattern;
+     pvb_expr: expression;
+     pvb_attributes: attributes;
+-    pvb_loc: Location.t;
++    pvb_loc: Location.t
+   }
+ 
+ and module_binding =
+@@ -808,7 +808,7 @@
+      pmb_name: string loc;
+      pmb_expr: module_expr;
+      pmb_attributes: attributes;
+-     pmb_loc: Location.t;
++     pmb_loc: Location.t
+     }
+ (* X = ME *)
+ 
+@@ -817,12 +817,12 @@
+ (* Toplevel phrases *)
+ 
+ type toplevel_phrase =
+-  | Ptop_def of structure
++    Ptop_def of structure
+   | Ptop_dir of string * directive_argument
+      (* #use, #load ... *)
+ 
+ and directive_argument =
+-  | Pdir_none
++    Pdir_none
+   | Pdir_string of string
+   | Pdir_int of int
+   | Pdir_ident of Longident.t
