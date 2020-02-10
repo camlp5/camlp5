@@ -1,0 +1,29 @@
+--- ../ocaml_stuff/4.02.2/parsing/location.mli	2020-01-21 21:41:30.425905928 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_stuff!4.02.2!parsing!location.mli.INPUT	2020-02-10 11:52:15.041855917 -0800
+@@ -17,7 +17,7 @@
+ type t = {
+   loc_start: Lexing.position;
+   loc_end: Lexing.position;
+-  loc_ghost: bool;
++  loc_ghost: bool
+ }
+ 
+ (* Note on the use of Lexing.position in this module.
+@@ -70,7 +70,7 @@
+ 
+ type 'a loc = {
+   txt : 'a;
+-  loc : t;
++  loc : t
+ }
+ 
+ val mknoloc : 'a -> 'a loc
+@@ -96,7 +96,7 @@
+     loc: t;
+     msg: string;
+     sub: error list;
+-    if_highlight: string; (* alternative message if locations are highlighted *)
++    if_highlight: string (* alternative message if locations are highlighted *)
+   }
+ 
+ exception Error of error
