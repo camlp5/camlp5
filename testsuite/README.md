@@ -18,7 +18,7 @@ tools/TEST-PASSES --profile-file profiles/roundtrip-revised.yaml --packages-file
 
 == Original syntax
 
-tools/TEST-PASSES --profile-file profiles/lexer-passthru.yaml --packages-file ROUNDTRIP-PACKAGES camlp5.7.11-ORIGINAL
+tools/TEST-PASSES --profile-file profiles/roundtrip-original.yaml --packages-file ROUNDTRIP-PACKAGES camlp5.7.11-ORIGINAL
 
 NOTE: maybe this is illegitimate, since IFDEF isn't usable in original syntax?
 

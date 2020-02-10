@@ -60,8 +60,9 @@ our %tools = (
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_official', $inputf, $outputf) ;
+      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_official', $filetype, $inputf, $outputf) ;
       return $code ;
     },
   },
@@ -73,8 +74,9 @@ our %tools = (
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_o', $inputf, $outputf) ;
+      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_o', $filetype, $inputf, $outputf) ;
       return $code ;
     },
   },
@@ -86,8 +88,9 @@ our %tools = (
       my %args = @_ ;
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_op-pr_op', $inputf, $outputf) ;
+      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_op-pr_op', $filetype, $inputf, $outputf) ;
       return $code ;
     },
   },
@@ -130,6 +133,20 @@ our %tools = (
 	  $txt =~ s|^#load.*$||gm ;
 	  $txt =~ s,declare end;,,gm ;
 	  $txt =~ s,;(?:\s*;)*,;,gs ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:ending-double-semi' => {
+    'name' => 'nuke:ending-double-semi',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s,;;$,,gm ;
 	  f_write($outputf, $txt) ;
 	  return 0 ;
     },
