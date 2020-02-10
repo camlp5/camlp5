@@ -232,17 +232,6 @@ our %tools = (
     %packages = %{ $yaml->[0] } ;
   }
 
-  die "must specify profile-file"
-      unless defined $profile_file ;
-
-  my %profile ;
-  {
-    my $yaml = YAML::Tiny->read($profile_file) ;
-    %profile = %{ $yaml->[0] } ;
-  }
-
-    my $workdir = "workdir" ;
-
   if ($ARGV[0] eq 'override-file') {
     shift @ARGV ;
     die "tool $tool not recognized"
@@ -305,6 +294,17 @@ our %tools = (
     }
   }
   else {
+    die "must specify profile-file"
+	unless defined $profile_file ;
+
+    my %profile ;
+    {
+      my $yaml = YAML::Tiny->read($profile_file) ;
+      %profile = %{ $yaml->[0] } ;
+    }
+
+    my $workdir = "workdir" ;
+
     foreach my $recna (keys %{ $profile{'recipes'} }) {
       my %recipe = %{ $profile{'recipes'}->{$recna} } ;
       foreach my $t (@{ $recipe{'steps'} }) {

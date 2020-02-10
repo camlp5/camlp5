@@ -1,0 +1,7 @@
+--- ../ocaml_stuff/4.07.1/utils/pconfig.ml	2020-01-21 21:41:30.429905882 -0800
++++ patches/camlp5.7.11-ORIGINAL/ALL/ocaml_stuff!4.07.1!utils!pconfig.ml.INPUT	2020-02-09 22:28:10.175332247 -0800
+@@ -1,2 +1,2 @@
+-let ast_impl_magic_number = "Caml1999M023"
+-let ast_intf_magic_number = "Caml1999N023"
++let ast_impl_magic_number = "Caml1999M023" ;;
++let ast_intf_magic_number = "Caml1999N023" ;;
