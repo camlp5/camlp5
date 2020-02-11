@@ -1,0 +1,16 @@
+---
+recipes:
+  cp:
+    name: cp
+    steps:
+      - cp
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat
+  roundtrip-official:
+    name: roundtrip-official
+    steps:
+      - roundtrip-official
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat
