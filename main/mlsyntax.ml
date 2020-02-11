@@ -66,8 +66,9 @@ value is_infixop2 =
 
 value is_infixop3 =
   let list = ['*'; '/'; '%'] in
+  let excl = ["**"] in
   fun x ->
-    String.length x >= 2 && List.mem x.[0] list &&
+    not (List.mem x excl) && String.length x >= 2 && List.mem x.[0] list &&
     symbolchar x 1
 ;
 
