@@ -1,0 +1,20 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/typing-gadts/yallop_bugs.ml	2011-11-24 01:02:48.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!typing-gadts!yallop_bugs.ml.INPUT	2020-02-11 20:44:13.594410332 -0800
+@@ -7,7 +7,7 @@
+     let module M =
+       (functor (T : sig type 'a t end) ->
+        struct
+-         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
++         let f = function (Refl : (a T.t, b T.t) eq) -> (x :> b)
+        end)
+         (struct type 'a t = unit end)
+     in M.f Refl
+@@ -22,7 +22,7 @@
+     let bad_proof (type a) =
+       (Refl : (< m : a>, <m : a>) eq :> (<m : a>, < >) eq) in
+     let downcast : type a. (a, < >) eq -> < > -> a =
+-      fun (type a) (Refl : (a, < >) eq) (s : < >) -> (s :> a) in
++      fun (type a) -> function (Refl : (a, < >) eq) -> fun (s : < >) -> (s :> a) in
+     (downcast bad_proof ((object method m = x end) :> < >)) # m
+ ;;
+ 

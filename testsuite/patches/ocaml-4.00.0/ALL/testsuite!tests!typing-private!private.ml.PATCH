@@ -1,0 +1,25 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/typing-private/private.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!typing-private!private.ml.INPUT	2020-02-11 20:57:51.046043306 -0800
+@@ -6,11 +6,11 @@
+ 
+ module F0 : sig type t = private int end = Foobar;;
+ 
+-let f (x : F0.t) = (x : Foobar.t);; (* fails *)
++let f (x : F0.t) : Foobar.t = x;; (* fails *)
+ 
+ module F = Foobar;;
+ 
+-let f (x : F.t) = (x : Foobar.t);;
++let f (x : F.t) : Foobar.t = x;;
+ 
+ module M = struct type t = <m:int> end;;
+ module M1 : sig type t = private <m:int; ..> end = M;;
+@@ -27,7 +27,7 @@
+ module M6 : sig type t = private < n:int; .. > end = M1;; (* fails *)
+ 
+ module Bar : sig type t = private Foobar.t val f : int -> t end =
+-  struct type t = int let f (x : int) = (x : t) end;; (* must fail *)
++  struct type t = int let f (x : int) : t = x end;; (* must fail *)
+ 
+ module M : sig
+   type t = private T of int
