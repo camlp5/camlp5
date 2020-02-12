@@ -1,0 +1,20 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/compiler/compile.ml	2012-02-10 08:15:24.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!compiler!compile.ml.INPUT	2020-02-11 14:30:59.084714265 -0800
+@@ -273,7 +273,7 @@
+   | [] -> fatal_error "empty type"
+   | x::l ->
+       w ("C" ^ x.ml_name);
+-      List.iter l ~f: (function x ->
++      List.iter l ~f: (fun x ->
+         w sep;
+         w ("C" ^ x.ml_name))
+ 
+@@ -305,7 +305,7 @@
+       (sort_components typdef.constructors);
+     w' ("]\n\n");
+     (* The subset of constructors for each subtype *)
+-    List.iter ~f:(function (s,l) ->
++    List.iter ~f:(fun (s,l) ->
+       w' ("let "^name^"_"^s^"_table = [");
+       write_constructor_set ~w:w' ~sep:"; " (sort_components l);
+       w' ("]\n\n"))

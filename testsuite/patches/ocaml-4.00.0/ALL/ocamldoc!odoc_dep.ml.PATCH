@@ -1,0 +1,17 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamldoc/odoc_dep.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamldoc!odoc_dep.ml.INPUT	2020-02-11 13:49:19.139714265 -0800
+@@ -114,14 +114,10 @@
+              node.near <- S.remove child node.near ;
+              node.far <- List.filter (fun (ch,_) -> ch <> child) node.far
+             )
+-          else
+-            ()
+         )
+         node.near;
+       if node.reflex then
+         node.near <- S.add node.id node.near
+-      else
+-        ()
+ 
+     let kernel graph =
+       (* compute transitive closure *)

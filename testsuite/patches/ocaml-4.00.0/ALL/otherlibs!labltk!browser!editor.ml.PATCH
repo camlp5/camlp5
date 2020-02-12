@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/browser/editor.ml	2012-05-30 06:29:48.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!browser!editor.ml.INPUT	2020-02-11 13:54:48.129714265 -0800
+@@ -199,7 +199,7 @@
+               block_start := Lexing.lexeme_end buffer :: !block_start
+           | END ->
+               if !block_start = [] then
+-                if !after then pend := pos else ()
++                (if !after then pend := pos)
+               else block_start := List.tl !block_start
+           | EOF ->
+               pend := pos

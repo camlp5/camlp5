@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/bytecomp/translcore.ml	2012-07-10 01:33:16.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/bytecomp!translcore.ml.INPUT	2020-02-11 10:26:31.418675585 -0800
+@@ -597,7 +597,7 @@
+   | Texp_function (_, pat_expr_list, partial) ->
+       let ((kind, params), body) =
+         event_function e
+-          (function repr ->
++          (fun repr ->
+             let pl = push_defaults e.exp_loc [] pat_expr_list partial in
+             transl_function e.exp_loc !Clflags.native_code repr partial pl)
+       in

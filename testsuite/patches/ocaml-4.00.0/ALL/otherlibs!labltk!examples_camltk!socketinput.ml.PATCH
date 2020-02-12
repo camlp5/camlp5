@@ -1,0 +1,17 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/examples_camltk/socketinput.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!examples_camltk!socketinput.ml.INPUT	2020-02-11 16:01:11.955714265 -0800
+@@ -14,8 +14,8 @@
+ (*                                                                     *)
+ (***********************************************************************)
+ open Camltk
++;;
+ 
+-let _ =
+   let top_w = opentk () in
+   let text0_w = Text.create top_w [] in
+   let entry0_w = Entry.create top_w [] in
+@@ -40,3 +40,4 @@
+   bind entry0_w [([], KeyPressDetail "Return")] (BindSet ([], send));
+   pack [text0_w; entry0_w; button0_w][Side Side_Top; Fill Fill_X; Expand true];
+   mainLoop ()
++;;

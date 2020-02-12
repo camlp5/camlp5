@@ -1,0 +1,10 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/compiler/pp.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!compiler!pp.ml.INPUT	2020-02-11 14:32:05.054714265 -0800
+@@ -14,7 +14,6 @@
+ (*                                                                     *)
+ (***********************************************************************)
+ 
+-let _ =
+   try
+     let code_list = Ppparse.parse_channel stdin in
+     List.iter (Ppexec.exec (fun _ -> ()) print_string) code_list

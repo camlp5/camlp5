@@ -1,0 +1,24 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamlbuild/ocaml_dependencies.ml	2010-01-22 04:48:24.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/ocamlbuild!ocaml_dependencies.ml.INPUT	2020-02-11 13:39:48.926714265 -0800
+@@ -199,16 +199,16 @@
+       if sys_file_exists fn && not (List.mem fn !needed) then begin
+         if List.mem fn !seen then raise (Circular_dependencies (!seen, fn));
+         seen := fn :: !seen;
+-        Resources.iter begin fun f ->
++        Resources.iter (fun f ->
+           if sys_file_exists f then
+-            if Filename.check_suffix f ".cmi" then
++            if Filename.check_suffix f ".cmi" then (
+               let f' = caml_obj_ext_of_cmi f in
+               if f' <> fn then
+                 if sys_file_exists f' then aux f'
+-                else if pack_mode then aux f else ()
+-              else ()
++                else if pack_mode then aux f
++            )
+             else aux f
+-        end (dependencies_of fn);
++        ) (dependencies_of fn);
+         needed := fn :: !needed
+       end
+     in

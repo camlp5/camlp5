@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/debugger/debugcom.ml	2012-02-23 11:54:44.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/debugger!debugcom.ml.INPUT	2020-02-11 10:42:56.178675585 -0800
+@@ -85,7 +85,7 @@
+   Input_handling.execute_with_other_controller
+     Input_handling.exit_main_loop
+     !conn
+-    (function () ->
++    (fun () ->
+        Input_handling.main_loop ();
+        let summary =
+          match input_char !conn.io_in with

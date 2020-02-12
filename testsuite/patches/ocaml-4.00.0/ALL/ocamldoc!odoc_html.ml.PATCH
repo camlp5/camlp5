@@ -1,0 +1,44 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamldoc/odoc_html.ml	2012-05-07 02:41:28.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamldoc!odoc_html.ml.INPUT	2020-02-11 13:50:23.687714265 -0800
+@@ -291,7 +291,7 @@
+     method html_of_custom_text b s t = ()
+ 
+     method html_of_Target b ~target ~code =
+-      if String.lowercase target = "html" then bs b code else ()
++      if String.lowercase target = "html" then bs b code
+ 
+     method html_of_Raw b s = bs b (self#escape s)
+ 
+@@ -1592,14 +1592,10 @@
+       (
+        if a.att_virtual then
+          bs b ((self#keyword "virtual")^ " ")
+-       else
+-         ()
+       );
+       (
+        if a.att_mutable then
+          bs b ((self#keyword Odoc_messages.mutab)^ " ")
+-       else
+-         ()
+       );(
+        match a.att_value.val_code with
+          None -> bs b (Name.simple a.att_value.val_name)
+@@ -1784,8 +1780,6 @@
+          else
+            self#html_of_info_first_sentence
+         ) b m.m_info
+-      else
+-        ()
+ 
+     (** Print html code for a module type. *)
+     method html_of_modtype b ?(info=true) ?(complete=true) ?(with_link=true) mt =
+@@ -1813,8 +1807,6 @@
+          else
+            self#html_of_info_first_sentence
+         ) b mt.mt_info
+-      else
+-        ()
+ 
+     (** Print html code for an included module. *)
+     method html_of_included_module b im =
