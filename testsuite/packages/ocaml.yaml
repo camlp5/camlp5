@@ -64,6 +64,7 @@ ocaml-4.00.0:
     - otherlibs/labltk/frx/frx_fileinput.ml
     - otherlibs/labltk/frx/frx_lbutton.mli
     - otherlibs/labltk/frx/frx_toplevel.mli
+    - testsuite/tests/warnings/w01.ml
   files: []
 ocaml-4.09.0:
   syntax: original

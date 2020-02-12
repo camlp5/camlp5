@@ -1,0 +1,23 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/typing-poly/poly.ml	2012-05-31 22:24:38.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!typing-poly!poly.ml.INPUT	2020-02-11 22:02:58.029034761 -0800
+@@ -172,9 +172,9 @@
+ let c = new circle p0 ~r:2
+ let d = c#distance cp
+ ;;
+-let f (x : < m : 'a. 'a -> 'a >) = (x : < m : 'b. 'b -> 'b >)
++let f (x : < m : 'a. 'a -> 'a >) : < m : 'b. 'b -> 'b > = x
+ ;;
+-let f (x : < m : 'a. 'a -> 'a list >) = (x : < m : 'b. 'b -> 'c >)
++let f (x : < m : 'a. 'a -> 'a list >) : < m : 'b. 'b -> 'c > = x
+ ;;
+ 
+ class id = object
+@@ -271,7 +271,7 @@
+ fun (x : <m:'a.<p:'a;..> >) -> x#m;;
+ 
+ type sum = T of < id: 'a. 'a -> 'a > ;;
+-fun (T x) -> x#id;;
++function T x -> x#id;;
+ 
+ type record = { r: < id: 'a. 'a -> 'a > } ;;
+ fun x -> x.r#id;;
