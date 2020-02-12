@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/tools/typedtreeIter.ml	2012-07-10 01:33:16.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/tools!typedtreeIter.ml.INPUT	2020-02-11 21:13:31.387786470 -0800
+@@ -226,7 +226,7 @@
+ 
+     and iter_expression exp =
+       Iter.enter_expression exp;
+-      List.iter (function (cstr, _) ->
++      List.iter (fun (cstr, _) ->
+         match cstr with
+           Texp_constraint (cty1, cty2) ->
+             option iter_core_type cty1; option iter_core_type cty2

@@ -1,0 +1,17 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/tools/scrapelabels.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/tools!scrapelabels.ml.INPUT	2020-02-11 21:13:07.207655560 -0800
+@@ -255,8 +255,8 @@
+     close_out oc
+   end
+   else prerr_endline ("No changes in " ^ name)
++;;
+ 
+-let _ =
+   let files = ref [] and intf = ref false
+   and keepstd = ref false and keepmore = ref false in
+   Arg.parse
+@@ -287,3 +287,4 @@
+       prerr_endline ("Processing " ^ name);
+       Printexc.catch (convert_file ~intf:!intf) name
+     end
++;;

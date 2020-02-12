@@ -1,0 +1,17 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/oprint.ml	2011-12-27 18:22:38.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/typing!oprint.ml.INPUT	2020-02-11 21:25:22.261230252 -0800
+@@ -452,10 +452,11 @@
+ and print_out_label ppf (name, mut, arg) =
+   fprintf ppf "@[<2>%s%s :@ %a@];" (if mut then "mutable " else "") name
+     !out_type arg
++;;
+ 
+-let _ = out_module_type := print_out_module_type
+-let _ = out_signature := print_out_signature
+-let _ = out_sig_item := print_out_sig_item
++out_module_type := print_out_module_type ;;
++out_signature := print_out_signature ;;
++out_sig_item := print_out_sig_item ;;
+ 
+ (* Phrases *)
+ 

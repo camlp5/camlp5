@@ -1,0 +1,33 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/typetexp.ml	2012-05-31 00:41:37.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/typing!typetexp.ml.INPUT	2020-02-11 21:31:47.161028951 -0800
+@@ -602,7 +602,7 @@
+   used_variables := Tbl.empty;
+   fun () ->
+     List.iter
+-      (function (loc, t1, t2) ->
++      (fun (loc, t1, t2) ->
+         try unify env t1 t2 with Unify trace ->
+           raise (Error(loc, Type_mismatch trace)))
+       !r
+@@ -684,17 +684,17 @@
+       fprintf ppf "Unbound row variable in #%a" longident lid
+   | Type_mismatch trace ->
+       Printtyp.unification_error true trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "This type")
+         ppf
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "should be an instance of type")
+   | Alias_type_mismatch trace ->
+       Printtyp.unification_error true trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "This alias is bound to type")
+         ppf
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but is used as an instance of type")
+   | Present_has_conjunction l ->
+       fprintf ppf "The present constructor %s has a conjunctive type" l

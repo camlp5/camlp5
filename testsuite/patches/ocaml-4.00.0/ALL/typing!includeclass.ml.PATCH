@@ -1,0 +1,44 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/includeclass.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/typing!includeclass.ml.INPUT	2020-02-11 21:24:41.837227598 -0800
+@@ -52,9 +52,9 @@
+   | CM_Type_parameter_mismatch trace ->
+       fprintf ppf "@[%a@]"
+       (Printtyp.unification_error false trace
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "A type parameter has type"))
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "but is expected to have type")
+   | CM_Class_type_mismatch (cty1, cty2) ->
+       fprintf ppf
+@@ -63,23 +63,23 @@
+   | CM_Parameter_mismatch trace ->
+       fprintf ppf "@[%a@]"
+       (Printtyp.unification_error false trace
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "A parameter has type"))
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "but is expected to have type")
+   | CM_Val_type_mismatch (lab, trace) ->
+       fprintf ppf "@[%a@]"
+       (Printtyp.unification_error false trace
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "The instance variable %s@ has type" lab))
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "but is expected to have type")
+   | CM_Meth_type_mismatch (lab, trace) ->
+       fprintf ppf "@[%a@]"
+       (Printtyp.unification_error false trace
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "The method %s@ has type" lab))
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "but is expected to have type")
+   | CM_Non_mutable_value lab ->
+       fprintf ppf

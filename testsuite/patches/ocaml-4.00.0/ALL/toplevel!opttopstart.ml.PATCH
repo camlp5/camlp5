@@ -1,0 +1,8 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/toplevel/opttopstart.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/toplevel!opttopstart.ml.INPUT	2020-02-11 21:17:33.908713328 -0800
+@@ -12,4 +12,4 @@
+ 
+ (* $Id: opttopstart.ml 11156 2011-07-27 14:17:02Z doligez $ *)
+ 
+-let _ = Opttopmain.main()
++Opttopmain.main() ;;

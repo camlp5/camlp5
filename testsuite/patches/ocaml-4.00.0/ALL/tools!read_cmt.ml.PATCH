@@ -1,0 +1,17 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/tools/read_cmt.ml	2012-05-30 06:29:48.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/tools!read_cmt.ml.INPUT	2020-02-11 21:12:51.963568748 -0800
+@@ -59,8 +59,8 @@
+       ) (List.sort compare cmt.cmt_imports);
+       Printf.printf "%!";
+       ()
++;;
+ 
+-let _ =
+   Clflags.annotations := true;
+ 
+   Arg.parse arg_list  (fun filename ->
+@@ -79,3 +79,4 @@
+     end
+   ) arg_usage
+ 
++;;
