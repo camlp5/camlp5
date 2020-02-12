@@ -152,9 +152,10 @@ our %tools = (
 	  my $outputf = $args{'output-filename'} ;
 	  my $filetype = $args{'file-type'} ;
 
-	  my $txt = v_capturex($ocamlformat, 
+	  my $txt = v_capturex([0..1], $ocamlformat, 
 			       "--enable-outside-detected-project", "--no-comment-check",
 			       "-".$filetype, $inputf) ;
+	  if (0 != $EXITVAL) { return $EXITVAL ; }
 	  f_write($outputf, $txt) ;
 	  return 0 ;
     },
@@ -468,7 +469,7 @@ sub runtest_package {
   }
 
   @files = sort @files ;
-  foreach my $f (@files) {
+  F: foreach my $f (@files) {
     next if exists $exclude{$f} && !int(%onlyfiles);
     next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
 
@@ -524,8 +525,8 @@ sub runtest_package {
 
 	if ($code != 0) {
 	  warn "aborting processing of $f recipe $recna at step $stepname: $@" ;
+	  print "NOT OK $f\n";
 	  if ($main::continue_error) {
-	    delete $recipe_outputs{$recna} ;
 	    $failure = 1 ;
 	    next RECIPE;
 	  }
@@ -542,6 +543,11 @@ sub runtest_package {
 
     assert (2 == @recipes) ;
     my ($rec1name, $rec2name) = sort @recipes ;
+    if ($failure) {
+      warn "skipping diff b/c one of the recipes failed" ;
+      next F ;
+    }
+
     my $errordir = "$workdir/$rec1name!$rec2name.ERRORS" ;
     v_systemx("mkdir", "-p", $errordir) ;
     my $errorbase = "$errordir/$bangf" ;
