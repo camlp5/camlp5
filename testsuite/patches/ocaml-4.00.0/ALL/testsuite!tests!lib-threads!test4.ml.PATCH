@@ -1,0 +1,17 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-threads/test4.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-threads!test4.ml.INPUT	2020-02-11 20:13:30.598923436 -0800
+@@ -8,8 +8,8 @@
+     print_int(fib n); print_newline();
+     Mutex.unlock output_lock
+   done
++;;
+ 
+-let _ =
+   Thread.create fibtask 28;
+   Thread.delay 1.0;
+   while true do
+@@ -18,3 +18,4 @@
+     print_string ">> "; print_string l; print_newline();
+     Mutex.unlock output_lock
+   done
++;;

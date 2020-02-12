@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-threads/test1.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-threads!test1.ml.INPUT	2020-02-11 20:12:36.978388052 -0800
+@@ -58,6 +58,7 @@
+   if n < 10000 then consume ()
+ 
+ let t1 = Thread.create produce 0
+-let _ = consume ()
++;;
+ 
++consume ()
+ ;;

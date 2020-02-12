@@ -1,0 +1,13 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-systhreads/testfork.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-systhreads!testfork.ml.INPUT	2020-02-11 20:11:44.733831268 -0800
+@@ -26,7 +26,8 @@
+       Thread.delay 2.0;
+       print_string "Parent is exiting."; print_newline();
+       exit 0
++;;
+ 
+-let _ = main()
+-
++main()
++;;
+       
