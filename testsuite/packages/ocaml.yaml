@@ -2,7 +2,7 @@
 ocaml-4.00.0:
   syntax: original
   package: ocaml-4.00.0
-  location: /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
+  location: /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
   dirs:
     - utils
     - asmcomp
@@ -60,11 +60,15 @@ ocaml-4.00.0:
     - otherlibs/labltk/builtin/text_tag_bind.mli
     - otherlibs/labltk/builtin/winfo_contained.ml
     - otherlibs/labltk/builtin/winfo_contained.mli
+    - otherlibs/labltk/examples_labltk/taquin.ml
+    - otherlibs/labltk/frx/frx_fileinput.ml
+    - otherlibs/labltk/frx/frx_lbutton.mli
+    - otherlibs/labltk/frx/frx_toplevel.mli
   files: []
 ocaml-4.09.0:
   syntax: original
   package: ocaml-4.09.0
-  location: /home/chetsky/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
+  location: /home/chet/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
   dirs:
     - utils
     - asmcomp

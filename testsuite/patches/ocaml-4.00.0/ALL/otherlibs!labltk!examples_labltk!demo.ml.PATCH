@@ -1,0 +1,18 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/examples_labltk/demo.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!examples_labltk!demo.ml.INPUT	2020-02-11 16:41:47.684712215 -0800
+@@ -21,9 +21,8 @@
+ (* First, open these modules for convenience *)
+ open StdLabels
+ open Tk
+-
++;;
+ (* Dummy let *)
+-let _ =
+ 
+ (* Initialize Tk *)
+ let top = openTk () in
+@@ -164,3 +163,4 @@
+ 
+ (* Main Loop *)
+ Printexc.print mainLoop ()
++;;

@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/frx/frx_dialog.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!frx!frx_dialog.ml.INPUT	2020-02-11 16:58:19.021690349 -0800
+@@ -27,7 +27,7 @@
+   let t = Toplevel.create_named w name [Class "Dialog"] in
+     Wm.title_set t title;
+     Wm.iconname_set t "Dialog";
+-    Wm.protocol_set t "WM_DELETE_WINDOW" (function () -> ());
++    Wm.protocol_set t "WM_DELETE_WINDOW" (fun () -> ());
+     (* Wm.transient_set t (Winfo.toplevel w); *)
+   let ftop =
+    Frame.create_named t "top" [Relief Raised; BorderWidth (Pixels 1)]

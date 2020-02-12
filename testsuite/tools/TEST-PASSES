@@ -460,6 +460,8 @@ sub runtest_package {
       }
     } ;
 
+    die "package $pkg{'package'} has location $location not found in filesystem"
+	unless (-d $location) ;
     find( { wanted => $perfile, no_chdir => 1 }, 
 	  (map { $location."/".$_ } @dirs) ) ;
 
