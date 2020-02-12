@@ -125,7 +125,7 @@ and expr =
 and module_type =
     MtAcc of loc * module_type * module_type
   | MtApp of loc * module_type * module_type
-  | MtFun of loc * functor_parameter * module_type
+  | MtFun of loc * (string option * module_type) option * module_type
   | MtLid of loc * string
   | MtQuo of loc * string
   | MtSig of loc * sig_item list
@@ -157,7 +157,7 @@ and with_constr =
 and module_expr =
     MeAcc of loc * module_expr * module_expr
   | MeApp of loc * module_expr * module_expr
-  | MeFun of loc * functor_parameter * module_expr
+  | MeFun of loc * (string option * module_type) option * module_expr
   | MeStr of loc * str_item list
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string
@@ -215,13 +215,13 @@ and class_expr =
 and class_str_item =
     CrCtr of loc * ctyp * ctyp
   | CrDcl of loc * class_str_item list
-  | CrInh of loc * class_expr * string option
+  | CrInh of loc * override_flag * class_expr * string option
   | CrIni of loc * expr
   | CrMth of loc * bool * bool * string * ctyp option * expr
   | CrVal of loc * bool * bool * string * expr
   | CrVav of loc * bool * string * ctyp
   | CrVir of loc * bool * string * ctyp
-;;
+and override_flag = Fresh | Override;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;

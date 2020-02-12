@@ -2438,6 +2438,13 @@ EXTEND_PRINTER
                [ Some s -> pprintf pc " as %s" s
                | None -> pprintf pc "" ])
             pb
+      | <:class_str_item< inherit! $ce$ $opt:pb$ >> ->
+          pprintf pc "inherit!@;%p@[%p@]" class_expr ce
+            (fun pc ->
+               fun
+               [ Some s -> pprintf pc " as %s" s
+               | None -> pprintf pc "" ])
+            pb
       | <:class_str_item< initializer $e$ >> ->
           pprintf pc "initializer@;%p" expr e
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->

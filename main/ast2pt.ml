@@ -1500,9 +1500,13 @@ and class_str_item c l =
           [ocaml_class_field loc (pcf_cstr (ctyp t1, ctyp t2, loc)) :: l]
       | None → error loc "no constraint in this ocaml version" ]
   | CrDcl loc cl → List.fold_right class_str_item (uv cl) l
-  | CrInh loc ce pb →
+  | CrInh loc ovflag ce pb →
+      let ovflag = match ovflag with [
+        MLast.Fresh -> Asttypes.Fresh
+      | MLast.Override -> Asttypes.Override
+      ] in
       [ocaml_class_field (mkloc loc)
-         (ocaml_pcf_inher (mkloc loc) (class_expr ce) (uv pb)) ::
+         (ocaml_pcf_inher (mkloc loc) ovflag (class_expr ce) (uv pb)) ::
        l]
   | CrIni loc e →
       match ocaml_pcf_init with

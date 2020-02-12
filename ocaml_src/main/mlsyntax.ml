@@ -61,7 +61,10 @@ module Original =
     ;;
     let is_infixop3 =
       let list = ['*'; '/'; '%'] in
-      fun x -> String.length x >= 2 && List.mem x.[0] list && symbolchar x 1
+      let excl = ["**"] in
+      fun x ->
+        not (List.mem x excl) && String.length x >= 2 &&
+        List.mem x.[0] list && symbolchar x 1
     ;;
     let is_infixop4 x =
       String.length x >= 3 && x.[0] == '*' && x.[1] == '*' && symbolchar x 2

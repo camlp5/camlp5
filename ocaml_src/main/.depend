@@ -7,7 +7,7 @@ ast2pt.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx ast2pt.cmi \
 ast2pt.cmi: ../lib/ploc.cmi mLast.cmi
 exparser.cmo: ../lib/ploc.cmi exparser.cmi mLast.cmi pcaml.cmi reloc.cmi
 exparser.cmx: ../lib/ploc.cmx exparser.cmi mLast.cmi pcaml.cmx reloc.cmx
-exparser.cmi: ../lib/ploc.cmi mLast.cmi
+exparser.cmi: mLast.cmi
 mLast.cmi: ../lib/ploc.cmi
 main.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../odyl/odyl_main.cmi argl.cmi ast2pt.cmi mLast.cmi \

@@ -564,8 +564,8 @@ let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
 
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_constraint (t1, t2));;
 
-let ocaml_pcf_inher loc ce pb =
-  Pcf_inherit (Fresh, ce, option_map (mkloc loc) pb)
+let ocaml_pcf_inher loc ovflag ce pb =
+  Pcf_inherit (ovflag, ce, option_map (mkloc loc) pb)
 ;;
 
 let ocaml_pcf_init = Some (fun e -> Pcf_initializer e);;

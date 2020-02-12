@@ -130,7 +130,7 @@ and expr =
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
-  | MtFun of loc and (V functor_parameter) and module_type
+  | MtFun of loc and (V (option (V (option (V string)) * module_type))) and module_type
   | MtLid of loc and V string
   | MtQuo of loc and V string
   | MtSig of loc and V (list sig_item)
@@ -138,6 +138,11 @@ and module_type =
   | MtUid of loc and V string
   | MtWit of loc and module_type and V (list with_constr)
   | MtXtr of loc and string and option (V module_type) ]
+(* NOTE WELL that this type is here for documentation: the places in MtFun and MeFun
+   where this type should appear ..... in those places, the type is substituted in
+   directly, so that the automated test will work.  What a PITA.
+   TODO: Chet, fix this (by fixing the automated test!)
+*)
 and functor_parameter = option (V (option (V string)) * module_type)
 and sig_item =
   [ SgCls of loc and V (list (class_infos class_type))
@@ -162,7 +167,7 @@ and with_constr =
 and module_expr =
   [ MeAcc of loc and module_expr and module_expr
   | MeApp of loc and module_expr and module_expr
-  | MeFun of loc and (V functor_parameter) and module_expr
+  | MeFun of loc and (V (option (V (option (V string)) * module_type))) and module_expr
   | MeStr of loc and V (list str_item)
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string
@@ -223,13 +228,14 @@ and class_expr =
 and class_str_item =
   [ CrCtr of loc and ctyp and ctyp
   | CrDcl of loc and V (list class_str_item)
-  | CrInh of loc and class_expr and V (option string)
+  | CrInh of loc and override_flag and class_expr and V (option string)
   | CrIni of loc and expr
   | CrMth of loc and V bool and V bool and V string and V (option ctyp) and
       expr
   | CrVal of loc and V bool and V bool and V string and expr
   | CrVav of loc and V bool and V string and ctyp
   | CrVir of loc and V bool and V string and ctyp ]
+and override_flag = [ Fresh | Override ]
 ;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";

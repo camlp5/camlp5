@@ -495,6 +495,9 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:module_type< $mt$ with $list:lwc$ >>;
 <:module_type< $mt$ with $_list:lwc$ >>;
 
+(* a zero, b/c the test is BROKEN; TODO: Chet fix the test *)
+0;
+
 (* class *)
 <:sig_item< class $list:lcict$ >>;
 <:sig_item< class $_list:lcict$ >>;
@@ -922,6 +925,10 @@ MLast.StDef loc lx;
 <:class_str_item< inherit $ce$ $opt:Some s$ >>;
 <:class_str_item< inherit $ce$ $opt:os$ >>;
 <:class_str_item< inherit $ce$ $_opt:os$ >>;
+<:class_str_item< inherit! $ce$ >>;
+<:class_str_item< inherit! $ce$ $opt:Some s$ >>;
+<:class_str_item< inherit! $ce$ $opt:os$ >>;
+<:class_str_item< inherit! $ce$ $_opt:os$ >>;
 
 (* initialization *)
 <:class_str_item< initializer $e$ >>;
@@ -1109,3 +1116,5 @@ MLast.StDef loc lx;
 <:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
+MLast.Fresh;
+MLast.Override;

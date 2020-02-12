@@ -114,6 +114,9 @@ value rec expr_list_of_type_gen loc f n =
       expr_list_of_type_gen loc (fun e -> f <:expr< Some $e$ >>) n t @
       let n = add_o ("o" ^ n) t in
       f <:expr< $lid:n$ >>
+  | <:ctyp< override_flag >> ->
+      f <:expr< MLast.Fresh >> @
+      f <:expr< MLast.Override >>
   | _ ->
       f <:expr< $lid:n$ >> ]
 ;

@@ -670,9 +670,9 @@ and class_str_item floc sh =
     | CrDcl loc x1 →
         let loc = floc loc in
         CrDcl loc (vala_map (List.map self) x1)
-    | CrInh loc x1 x2 →
+    | CrInh loc ovf x1 x2 →
         let loc = floc loc in
-        CrInh loc (class_expr floc sh x1) x2
+        CrInh loc ovf (class_expr floc sh x1) x2
     | CrIni loc x1 →
         let loc = floc loc in
         CrIni loc (expr floc sh x1)

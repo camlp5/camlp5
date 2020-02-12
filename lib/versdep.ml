@@ -1368,15 +1368,15 @@ value ocaml_pcf_cstr =
 
 value ocaml_pcf_inher =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-    fun _ (id, cl, el, loc) pb -> Pcf_inher (id, cl, el, pb, loc)
+    fun _ _ (id, cl, el, loc) pb -> Pcf_inher (id, cl, el, pb, loc)
   ELSIFDEF OCAML_VERSION < OCAML_3_12 THEN
-    fun loc ce pb -> Pcf_inher ce pb
+    fun loc _ ce pb -> Pcf_inher ce pb
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    fun loc ce pb -> Pcf_inher Fresh ce pb
+    fun loc ovflag ce pb -> Pcf_inher ovflag ce pb
   ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
-    fun loc ce pb -> Pcf_inherit Fresh ce pb
+    fun loc ovflag ce pb -> Pcf_inherit ovflag ce pb
   ELSE
-    fun loc ce pb -> Pcf_inherit Fresh ce (option_map (mkloc loc) pb)
+    fun loc ovflag ce pb -> Pcf_inherit ovflag ce (option_map (mkloc loc) pb)
   END
 ;
 

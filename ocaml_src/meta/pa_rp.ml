@@ -52,7 +52,7 @@ Grammar.safe_extend
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
            (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
                 (loc : Ploc.t) ->
-              (cparser_match loc e po [pc] : 'expr)));
+              (cparser_match loc e (po, [pc]) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -76,7 +76,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
                 (e : 'expr) _ (loc : Ploc.t) ->
-              (cparser_match loc e po pcl : 'expr)));
+              (cparser_match loc e (po, pcl) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -86,7 +86,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
            (fun (pc : 'parser_case) (po : 'ipatt option) _ (loc : Ploc.t) ->
-              (cparser loc po [pc] : 'expr)));
+              (cparser loc (po, [pc]) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -104,7 +104,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
                 (loc : Ploc.t) ->
-              (cparser loc po pcl : 'expr)))]];
+              (cparser loc (po, pcl) : 'expr)))]];
     Grammar.extension (parser_case : 'parser_case Grammar.Entry.e) None
       [None, None,
        [Grammar.production

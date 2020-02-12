@@ -382,7 +382,9 @@ let ocaml_pmod_unpack = None;;
 
 let ocaml_pcf_cstr = None;;
 
-let ocaml_pcf_inher _ (id, cl, el, loc) pb = Pcf_inher (id, cl, el, pb, loc);;
+let ocaml_pcf_inher _ _ (id, cl, el, loc) pb =
+  Pcf_inher (id, cl, el, pb, loc)
+;;
 
 let ocaml_pcf_init = None;;
 

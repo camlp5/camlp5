@@ -770,10 +770,12 @@ let rec rawstring0 ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '|' ->
       Stream.junk strm__;
+      let strm = strm__ in
       rawstring1 (0, "|" ^ Plexing.Lexbuf.get buf ^ "}") ctx
-        Plexing.Lexbuf.empty strm__
+        Plexing.Lexbuf.empty strm
   | Some ('a'..'z' | '_' as c) ->
-      Stream.junk strm__; rawstring0 ctx bp (Plexing.Lexbuf.add c buf) strm__
+      Stream.junk strm__;
+      let strm = strm__ in rawstring0 ctx bp (Plexing.Lexbuf.add c buf) strm
   | _ -> raise Stream.Failure
 ;;
 

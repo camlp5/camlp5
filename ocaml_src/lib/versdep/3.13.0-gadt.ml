@@ -411,7 +411,7 @@ let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
 
 let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
 
-let ocaml_pcf_inher loc ce pb = Pcf_inher (Fresh, ce, pb);;
+let ocaml_pcf_inher loc ovflag ce pb = Pcf_inher (ovflag, ce, pb);;
 
 let ocaml_pcf_init = Some (fun e -> Pcf_init e);;
 

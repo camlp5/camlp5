@@ -3159,6 +3159,19 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "inherit")))
+                   (Grammar.s_token ("", "!")))
+                (Grammar.s_nterm (class_expr : 'class_expr Grammar.Entry.e)))
+             (Grammar.s_opt
+                (Grammar.s_nterm (as_lident : 'as_lident Grammar.Entry.e))),
+           (fun (pb : 'as_lident option) (ce : 'class_expr) _ _
+                (loc : Ploc.t) ->
+              (MLast.CrInh (loc, MLast.Override, ce, pb) : 'class_str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_token ("", "inherit")))
                 (Grammar.s_nterm (class_expr : 'class_expr Grammar.Entry.e)))
@@ -3166,7 +3179,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (as_lident : 'as_lident Grammar.Entry.e))),
            (fun (pb : 'as_lident option) (ce : 'class_expr) _
                 (loc : Ploc.t) ->
-              (MLast.CrInh (loc, ce, pb) : 'class_str_item)));
+              (MLast.CrInh (loc, MLast.Fresh, ce, pb) : 'class_str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

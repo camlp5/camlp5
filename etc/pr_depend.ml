@@ -257,7 +257,7 @@ and class_expr =
   | x -> not_impl "class_expr" x ]
 and class_str_item =
   fun
-  [ CrInh _ ce _ -> class_expr ce
+  [ CrInh _ _ ce _ -> class_expr ce
   | CrIni _ e -> expr e
   | <:class_str_item< method $priv:_$ $lid:_$ = $e$ >> -> expr e
   | <:class_str_item< method $priv:_$ $lid:_$ : $t$ = $e$ >> -> do {

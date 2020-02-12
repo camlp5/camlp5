@@ -22,6 +22,11 @@ type spat_comp_opt =
   | SpoQues of MLast.expr
 ;;
 
+type spat_parser_ast =
+  MLast.patt option *
+    ((spat_comp * spat_comp_opt) list * MLast.patt option * MLast.expr) list
+;;
+
 let strm_n = "strm__";;
 let peek_fun loc =
   MLast.ExAcc (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "peek"))
@@ -258,7 +263,10 @@ let stream_pattern_component skont ckont =
   | SpStr (loc, p) ->
       try
         match p with
-          MLast.PaLid (_, v) -> subst v skont
+          MLast.PaLid (_, v) ->
+            MLast.ExLet
+              (loc, false,
+               [MLast.PaLid (loc, v), MLast.ExLid (loc, "strm__")], skont)
         | _ -> raise Not_found
       with Not_found ->
         MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n)], skont)
@@ -502,7 +510,7 @@ let left_factorize rl =
 
 (* Converting into AST *)
 
-let cparser loc bpo pc =
+let cparser loc (bpo, pc) =
   let pc = left_factorize pc in
   let e = parser_cases loc pc in
   let e =
@@ -545,7 +553,7 @@ let rec is_not_bound s =
   | _ -> false
 ;;
 
-let cparser_match loc me bpo pc =
+let cparser_match loc me (bpo, pc) =
   let pc = left_factorize pc in
   let iloc = Ploc.with_comment loc "" in
   let pc = parser_cases iloc pc in

@@ -94,12 +94,13 @@ let from_file fname loc =
       let rec a_line_dir str n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
           Some '\n' -> Stream.junk strm__; loop str n
-        | Some _ -> Stream.junk strm__; a_line_dir str n (col + 1) strm__
+        | Some _ ->
+            Stream.junk strm__; let s = strm__ in a_line_dir str n (col + 1) s
         | _ -> raise Stream.Failure
       in
       let rec spaces col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
-          Some ' ' -> Stream.junk strm__; spaces (col + 1) strm__
+          Some ' ' -> Stream.junk strm__; let s = strm__ in spaces (col + 1) s
         | _ -> col
       in
       let rec check_string str n col (strm__ : _ Stream.t) =
@@ -110,23 +111,29 @@ let from_file fname loc =
               try spaces (col + 1) strm__ with
                 Stream.Failure -> raise (Stream.Error "")
             in
-            a_line_dir str n col strm__
+            let s = strm__ in a_line_dir str n col s
         | Some c when c <> '\n' ->
             Stream.junk strm__;
-            check_string (str ^ String.make 1 c) n (col + 1) strm__
+            let s = strm__ in
+            check_string (str ^ String.make 1 c) n (col + 1) s
         | _ -> not_a_line_dir col strm__
       in
       let check_quote n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
-          Some '"' -> Stream.junk strm__; check_string "" n (col + 1) strm__
+          Some '"' ->
+            Stream.junk strm__;
+            let s = strm__ in check_string "" n (col + 1) s
         | _ -> not_a_line_dir col strm__
       in
       let rec check_num n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
           Some ('0'..'9' as c) ->
             Stream.junk strm__;
-            check_num (10 * n + Char.code c - Char.code '0') (col + 1) strm__
-        | _ -> let col = spaces col strm__ in check_quote n col strm__
+            let s = strm__ in
+            check_num (10 * n + Char.code c - Char.code '0') (col + 1) s
+        | _ ->
+            let col = spaces col strm__ in
+            let s = strm__ in check_quote n col s
       in
       let begin_line (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
@@ -136,7 +143,7 @@ let from_file fname loc =
               try spaces 1 strm__ with
                 Stream.Failure -> raise (Stream.Error "")
             in
-            check_num 0 col strm__
+            let s = strm__ in check_num 0 col s
         | _ -> not_a_line_dir 0 strm__
       in
       begin_line strm
