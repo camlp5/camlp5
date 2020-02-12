@@ -1,0 +1,19 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/basic-more/testrandom.ml	2012-04-10 07:05:38.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!basic-more!testrandom.ml.INPUT	2020-02-11 17:32:07.439120400 -0800
+@@ -1,6 +1,6 @@
+ open Random
++;;
+ 
+-let _ =
+   for i = 0 to 20 do
+     print_int (int 1000); print_char ' '
+   done;
+@@ -8,5 +8,6 @@
+   for i = 0 to 20 do
+     print_float (float 1000.); print_char ' '
+   done
+-
+-let _ = exit 0
++;;
++exit 0
++;;

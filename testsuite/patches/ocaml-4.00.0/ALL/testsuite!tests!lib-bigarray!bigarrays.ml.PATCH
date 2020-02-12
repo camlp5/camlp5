@@ -1,0 +1,29 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-bigarray/bigarrays.ml	2012-05-06 01:23:37.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-bigarray!bigarrays.ml.INPUT	2020-02-11 17:40:50.104387042 -0800
+@@ -24,10 +24,9 @@
+  end else begin
+    printf " %d..." test_number
+  end
+-
++;;
+ (* One-dimensional arrays *)
+ 
+-let _ =
+   testing_function "------ Array1 --------";
+   testing_function "create/set/get";
+   let test_setget kind vals =
+@@ -764,12 +763,13 @@
+   Sys.remove mapped_file;
+ 
+   ()
++;;
+                   
+ (********* End of test *********)
+ 
+-let _ =
+   print_newline();
+   if !error_occurred then begin
+     prerr_endline "************* TEST FAILED ****************"; exit 2
+   end else
+     exit 0
++;;

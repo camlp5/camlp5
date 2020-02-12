@@ -1,0 +1,61 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/support/protocol.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!support!protocol.ml.INPUT	2020-02-11 17:17:20.076397688 -0800
+@@ -109,15 +109,15 @@
+    "" -> raise (Invalid_argument "cTKtoCAMLwidget")
+  | s -> Widget.get_atom s
+ 
+-let callback_naming_table =
+-   (Hashtbl.create 401 : (int, callback_buffer -> unit) Hashtbl.t)
++let callback_naming_table : (int, callback_buffer -> unit) Hashtbl.t =
++  Hashtbl.create 401
+ 
+-let callback_memo_table =
+-   (Hashtbl.create 401 : (any widget, int) Hashtbl.t)
++let callback_memo_table : (any widget, int) Hashtbl.t =
++   Hashtbl.create 401
+ 
+ let new_function_id =
+   let counter = ref 0 in
+-  function () -> incr counter;  !counter
++  fun () -> incr counter;  !counter
+ 
+ let string_of_cbid = string_of_int
+ 
+@@ -150,10 +150,10 @@
+ let destroy_hooks = ref []
+ let add_destroy_hook f =
+   destroy_hooks := f :: !destroy_hooks
++;;
+ 
+-let _ =
+   add_destroy_hook (fun w -> remove_callbacks w; Widget.remove w)
+-
++;;
+ let install_cleanup () =
+   let call_destroy_hooks = function
+       [wname] ->
+@@ -176,7 +176,7 @@
+     List.iter (fun x -> prerr_string " "; prerr_string x) args;
+     prerr_newline()
+     end;
+-  (Hashtbl.find callback_naming_table id) args;
++  Hashtbl.find callback_naming_table id args;
+   if !debug then prerr_endline "<<-"
+ 
+ let protected_dispatch id args =
+@@ -185,11 +185,11 @@
+   with e ->
+     Printf.eprintf "Uncaught exception: %s\n" (Printexc.to_string e);
+     flush stderr
+-
+-let _ = Callback.register "camlcb" protected_dispatch
+-
++;;
++Callback.register "camlcb" protected_dispatch
++;;
+ (* Make sure the C variables are initialised *)
+-let _ = callback_init ()
++callback_init () ;;
+ 
+ (* Different version of initialisation functions *)
+ let default_display_name = ref ""

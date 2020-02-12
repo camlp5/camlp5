@@ -1,0 +1,21 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-hashtbl/htbl.ml	2012-05-15 07:21:39.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-hashtbl!htbl.ml.INPUT	2020-02-11 17:43:53.625483881 -0800
+@@ -172,10 +172,10 @@
+     d.(i) <- (mklist (Random.int 16), i)
+   done;
+   d
+-
++;;
+ (* The test *)
+ 
+-let _ =
++
+   printf "-- Random integers, large range\n%!";
+   TI1.test (random_integers 100_000 1_000_000);
+   printf "-- Random integers, narrow range\n%!";
+@@ -190,4 +190,4 @@
+   TSP.test (pair_data d);
+   printf "-- Lists of strings\n%!";
+   TSL.test (list_data d)
+-
++;;

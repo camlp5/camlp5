@@ -1,0 +1,15 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/threads/thread.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!threads!thread.ml.INPUT	2020-02-11 17:20:17.125376381 -0800
+@@ -132,10 +132,11 @@
+ 
+ let preempt signal =
+   if !critical_section then () else thread_request_reschedule()
++;;
+ 
+ (* Initialization of the scheduler *)
+ 
+-let _ =
+   thread_initialize();
+   Sys.set_signal Sys.sigvtalrm (Sys.Signal_handle preempt);
+   thread_initialize_preemption()
++;;

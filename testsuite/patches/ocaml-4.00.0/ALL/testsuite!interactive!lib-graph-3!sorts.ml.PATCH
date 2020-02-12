@@ -1,0 +1,12 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/interactive/lib-graph-3/sorts.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!interactive!lib-graph-3!sorts.ml.INPUT	2020-02-11 17:28:45.722211165 -0800
+@@ -222,7 +222,8 @@
+              "Mergesort", merge_sort, sx, h+2*sy, sx, sy |]
+           100 1000;
+   close_graph()
++;;
+ 
+-let _ = if !Sys.interactive then () else begin animate(); exit 0 end
++if !Sys.interactive then () else begin animate(); exit 0 end
+ 
+ ;;

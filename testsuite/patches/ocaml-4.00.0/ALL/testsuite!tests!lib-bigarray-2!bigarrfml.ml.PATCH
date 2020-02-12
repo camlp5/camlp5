@@ -1,0 +1,18 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-bigarray-2/bigarrfml.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-bigarray-2!bigarrfml.ml.INPUT	2020-02-11 17:40:02.179128190 -0800
+@@ -30,8 +30,8 @@
+ external c_printtab : (float, float64_elt, c_layout) Array2.t -> unit = "c_printtab"
+ external fortran_filltab : unit -> (float, float32_elt, fortran_layout) Array2.t = "fortran_filltab"
+ external fortran_printtab : (float, float32_elt, fortran_layout) Array2.t -> unit = "fortran_printtab"
++;;
+ 
+-let _ =
+ 
+   let make_array2 kind layout ind0 dim1 dim2 fromint =
+     let a = Array2.create kind layout dim1 dim2 in
+@@ -60,4 +60,5 @@
+   test 2 a.{2,1} 201.0;
+   test 3 a.{1,2} 102.0;
+   test 4 a.{5,4} 504.0;
++;;
+ 

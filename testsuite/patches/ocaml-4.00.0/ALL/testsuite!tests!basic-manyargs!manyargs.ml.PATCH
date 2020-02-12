@@ -1,0 +1,22 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/basic-manyargs/manyargs.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!basic-manyargs!manyargs.ml.INPUT	2020-02-11 17:31:10.899299369 -0800
+@@ -28,15 +28,16 @@
+   print_string "tail3:\n";
+   print_string "o = "; print_int o; print_newline();
+   print_string "---"; print_newline()
++;;
+ 
+-let _ =
+   manyargs 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15;
+   manyargs_tail1 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15;
+   manyargs_tail2 0 1;
+   manyargs_tail3 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+-
++;;
+ external manyargs_ext: int -> int -> int -> int -> int -> int -> int -> int -> int -> int -> int -> int = "manyargs_argv" "manyargs"
++;;
+ 
+-let _ =
+   print_string "external:\n"; flush stdout;
+   manyargs_ext 1 2 3 4 5 6 7 8 9 10 11
++;;

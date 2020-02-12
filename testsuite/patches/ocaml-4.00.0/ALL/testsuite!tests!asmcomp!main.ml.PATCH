@@ -1,0 +1,9 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/asmcomp/main.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!asmcomp!main.ml.INPUT	2020-02-11 17:29:13.089325656 -0800
+@@ -56,5 +56,5 @@
+      "-dlinear", Arg.Set dump_linear, ""
+     ] compile_file usage
+ 
+-let _ = (*Printexc.catch*) main (); exit 0
++(*Printexc.catch*) main (); exit 0 ;;
+ 

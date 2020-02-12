@@ -1,0 +1,21 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-hashtbl/hfun.ml	2011-05-29 02:52:27.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-hashtbl!hfun.ml.INPUT	2020-02-11 17:43:14.852378838 -0800
+@@ -4,8 +4,8 @@
+      - equal values hash equally, esp NaNs. *)
+ 
+ open Printf
++;;
+ 
+-let _ =
+   printf "-- Strings:\n";
+   printf "\"\"\t\t%08x\n" (Hashtbl.hash "");
+   printf "\"Hello world\"\t%08x\n" (Hashtbl.hash "Hello world");
+@@ -39,7 +39,7 @@
+   printf "[10..0]\t\t%08x\n" (Hashtbl.hash [10;9;8;7;6;5;4;3;2;1;0]);
+ 
+   ()
+-
++;;
+ 
+ 
+ 

@@ -1,0 +1,14 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/support/slave.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!support!slave.ml.INPUT	2020-02-11 17:18:16.300240391 -0800
+@@ -39,9 +39,10 @@
+   Dynlink.add_interfaces [] [];
+   let s = register_callback Widget.dummy dynload in
+   tcl_command (sprintf "proc caml::run {l} {camlcb %s l}" s)
++;;
+ 
+-let _ =
+   Printexc.print init ()
++;;
+ 
+ (* A typical master program would then
+  *   caml::run foo.cmo

@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/stdlib/printexc.ml	2011-09-08 01:34:43.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/stdlib!printexc.ml.INPUT	2020-02-11 17:28:21.441464111 -0800
+@@ -60,7 +60,7 @@
+             sprintf locfmt file line char (char+6) "Undefined recursive module"
+         | _ ->
+             let x = Obj.repr x in
+-            let constructor = (Obj.magic(Obj.field (Obj.field x 0) 0) : string) in
++            let constructor : string = Obj.magic(Obj.field (Obj.field x 0) 0) in
+             constructor ^ (fields x) in
+   conv !printers
+ 

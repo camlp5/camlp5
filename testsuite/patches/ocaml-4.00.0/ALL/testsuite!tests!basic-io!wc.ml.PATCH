@@ -1,0 +1,17 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/basic-io/wc.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!basic-io!wc.ml.INPUT	2020-02-11 17:30:49.799481451 -0800
+@@ -38,8 +38,8 @@
+ let count name =
+   count_file name;
+   print_result ()
++;;
+ 
+-let _ =
+ try
+   if Array.length Sys.argv <= 1 then
+     count_channel stdin                (* No command-line arguments *)
+@@ -52,3 +52,4 @@
+   print_string "I/O error: ";
+   print_string s;
+   print_newline()
++;;
