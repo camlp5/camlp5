@@ -21,7 +21,7 @@ for v in     4.00.0 \
     4.08.0 \
     4.08.1 \
     4.09.0 \
-    ocaml-variants.4.10.0+beta1 \
+    ocaml-variants.4.10.0+rc1 \
 	     ;
     do
     testsuite/tools/TRIP-TEST $v
