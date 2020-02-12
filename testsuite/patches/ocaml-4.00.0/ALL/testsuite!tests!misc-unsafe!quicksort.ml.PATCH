@@ -1,0 +1,10 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/misc-unsafe/quicksort.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!misc-unsafe!quicksort.ml.INPUT	2020-02-11 20:22:12.942831290 -0800
+@@ -88,5 +88,6 @@
+ let main () =
+   test_sort qsort 500000;
+   test_sort qsort2 500000
++;;
+ 
+-let _ = main(); exit 0
++main(); exit 0 ;;
