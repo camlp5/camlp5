@@ -9,3 +9,5 @@ let _ = (q --> QCLASS (Atom (u.[i], u.[i]))) q' in 2 ;;
 a --> b ;;
 
 let used = !!free t in 1 ;;
+
+(a + b) c ;;

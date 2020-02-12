@@ -14,7 +14,7 @@ all-tests: all
 	./sch2r_test.pa_schemer.byte
 	./extfun_test.byte
 
-all: o2r_test.byte r2sch_test.byte sch2r_test.pa_scheme.byte sch2r_test.pa_schemer.byte extfun_test.byte roundtrip_lexer.byte
+all: o2r_test.byte r2sch_test.byte sch2r_test.pa_scheme.byte sch2r_test.pa_schemer.byte extfun_test.byte roundtrip_lexer.byte papr_official.byte
 
 OCAMLFIND=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: ocamlfind
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
@@ -30,14 +30,20 @@ pa_ounit2.cmo: pa_ounit2.ml
 testutil.cmo: testutil.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl testutil.ml
 
-roundtrip_lexer.cmo: roundtrip_lexer.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl roundtrip_lexer.ml
-
 testutil2.cmo: testutil2.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -c testutil2.ml
 
+roundtrip_lexer.cmo: roundtrip_lexer.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl roundtrip_lexer.ml
+
 roundtrip_lexer.byte: roundtrip_lexer.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg gramlib.cma roundtrip_lexer.cmo -o roundtrip_lexer.byte
+
+papr_official.cmo: papr_official.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl papr_official.ml
+
+papr_official.byte: papr_official.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg gramlib.cma papr_official.cmo -o papr_official.byte
 
 extfun_test.byte: extfun_test.ml testutil.cmo
 	$(CAMLP5R) -I . -mode S -o extfun_test.ppo extfun_test.ml

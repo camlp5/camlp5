@@ -1,0 +1,16 @@
+---
+recipes:
+  cp:
+    name: cp
+    steps:
+      - cp
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat
+  papr-official:
+    name: papr-official
+    steps:
+      - papr-official
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat

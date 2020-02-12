@@ -1,0 +1,16 @@
+---
+recipes:
+  roundtrip-official:
+    name: roundtrip-official
+    steps:
+      - roundtrip-official
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat
+  papr-official:
+    name: papr-official
+    steps:
+      - papr-official
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat

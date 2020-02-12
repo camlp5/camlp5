@@ -71,6 +71,21 @@ our %tools = (
     },
   },
 
+  'papr-official' =>
+  {
+    'name' => 'papr-official',
+    'syntax' => 'original',
+    'command' => sub {
+      my %args = @_ ;
+      my $inputf = $args{'input-filename'} ;
+      my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
+      
+      my $code = v_systemx([0..2], './papr_official.byte', $filetype, $inputf, $outputf) ;
+      return $code ;
+    },
+  },
+
   'roundtrip-original' =>
   {
     'name' => 'roundtrip-original',
