@@ -150,7 +150,7 @@ our %tools = (
 	  my $inputf = $args{'input-filename'} ;
 	  my $outputf = $args{'output-filename'} ;
 
-	  my $txt = v_capturex("./roundtrip_lexer.byte",
+	  my $txt = v_capturex([0], "./roundtrip_lexer.byte",
 			       "-mode","lexer-passthru",
 			       "-strip-comments",
 			       $inputf) ;
@@ -358,7 +358,7 @@ our %tools = (
       die "patch file $patchname alrady exists"
 	  unless (!(-r $patchname)) ;
 
-      my $diff_output = v_capturex([1], "diff", "-Bwiu", $fullsrcname, $inputname) ;
+      my $diff_output = v_capturex([0..1], "diff", "-Bwiu", $fullsrcname, $inputname) ;
       f_write($patchname, $diff_output) ;
       v_systemx("mv",$inputname,"$inputname-MOVED") ;
     }
@@ -765,17 +765,13 @@ sub v_systemx {
 }
 
 sub v_capturex {
-  my $codes ;
-  $codes = shift if (ref($_[0]) eq 'ARRAY') ;
+  die "v_capturex: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
+  my $codes = shift ;
   my @cmd = @_ ;
+
   print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
 
-  if ($codes) {
-    return capturex($codes, @cmd) ;
-  }
-  else {
-    return capturex(@cmd) ;
-  }
+  return capturex($codes, @cmd) ;
 }
 
 sub v_system {
