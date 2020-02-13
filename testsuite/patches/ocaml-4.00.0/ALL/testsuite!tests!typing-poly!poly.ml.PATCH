@@ -1,5 +1,5 @@
 --- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/typing-poly/poly.ml	2012-05-31 22:24:38.000000000 -0700
-+++ patches/ocaml-4.00.0/ALL/testsuite!tests!typing-poly!poly.ml.INPUT	2020-02-11 22:02:58.029034761 -0800
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!typing-poly!poly.ml.INPUT	2020-02-12 22:12:14.764980558 -0800
 @@ -172,9 +172,9 @@
  let c = new circle p0 ~r:2
  let d = c#distance cp
@@ -21,3 +21,21 @@
  
  type record = { r: < id: 'a. 'a -> 'a > } ;;
  fun x -> x.r#id;;
+@@ -494,7 +494,7 @@
+ type foo' =   <m: 'a. 'a * 'a foo>
+ type 'a bar = <m: 'b. 'a * <m: 'c. 'c * 'a bar> >
+ type bar' =   <m: 'a. 'a * 'a bar >
+-let f (x : foo') = (x : bar');;
++let f (x : foo') : bar' = x;;
+ 
+ fun (x : <m : 'a. 'a * ('a * <m : 'a. 'a * 'foo> as 'foo)>) ->
+   (x : <m : 'b. 'b * ('b * <m : 'c. 'c * ('c * 'bar)>)> as 'bar);;
+@@ -641,7 +641,7 @@
+   type 'par t = 'par
+   let ident v = v
+   class alias = object method alias : 'a . 'a t -> 'a = ident end
+-  let f (x : <m : 'a. 'a t>) = (x : <m : 'a. 'a>)
++  let f (x : <m : 'a. 'a t>) : <m : 'a. 'a> = x
+ end;;
+ 
+ (* PR#5560 *)

@@ -1,3 +1,3 @@
 
-value diff = ((x /. ax) ** 2.0)
+value diff = (x /. ax) ** 2.0
 ;

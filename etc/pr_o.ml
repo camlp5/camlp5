@@ -515,8 +515,9 @@ value type_decl pc td =
   in
   match te with
   [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
-      pprintf pc "%p%p" type_params (loc, Pcaml.unvala tp)
+      pprintf pc "%p%p%p" type_params (loc, Pcaml.unvala tp)
         var_escaped (loc, Pcaml.unvala tn)
+        (hlist type_constraint) (Pcaml.unvala cl)
   | _ ->
       let loc = MLast.loc_of_ctyp te in
       if pc.aft = "" then
