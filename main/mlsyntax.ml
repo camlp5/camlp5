@@ -42,12 +42,34 @@ value is_prefixop =
     List.mem x.[0] list && symbolchar x 1
 ;
 
-value is_infixop0 =
-  let list = ['='; '<'; '>'; '|'; '&'; '$'] in
-  let excl = ["<-"; "||"; "&&"] in
+value is_infixop0_0 =
+  let list = ['&'] in
+  let excl = ["&&"] in
+  fun x ->
+    not (List.mem x excl) && (String.length x >= 2) &&
+    List.mem x.[0] list && symbolchar x 1
+;
+
+value is_infixop0_1 =
+  let list = ['|'] in
+  let excl = ["||"] in
+  fun x ->
+    not (List.mem x excl) && (String.length x >= 2) &&
+    List.mem x.[0] list && symbolchar x 1
+;
+
+value is_infixop0_2 =
+  let list = ['='; '<'; '>'; '$'] in
+  let excl = ["<-"] in
   fun x ->
     not (List.mem x excl) && (x = "$" || String.length x >= 2) &&
     List.mem x.[0] list && symbolchar x 1
+;
+
+value is_infixop0 s =
+   is_infixop0_0 s
+|| is_infixop0_1 s
+|| is_infixop0_2 s
 ;
 
 value is_infixop1 =

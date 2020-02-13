@@ -1189,7 +1189,9 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ["||"; "or"] then Some (x, " "^op, y) else None
+                if List.mem op ["||"; "or"] || is_infixop0_0 op then
+                   Some (x, " "^op, y)
+                else None
             | _ -> None ]
           in
           let loc = MLast.loc_of_expr z in
@@ -1199,7 +1201,9 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ["&&"; "&"] then Some (x, " "^op, y) else None
+                if List.mem op ["&&"; "&"] || is_infixop0_1 op then
+                  Some (x, " "^op, y)
+                else None
             | _ -> None ]
           in
           let loc = MLast.loc_of_expr z in
@@ -1210,7 +1214,7 @@ EXTEND_PRINTER
           [ "!=" | "<" | "<=" | "<>" | "=" | "==" | ">" | ">=" ->
               operator pc next next 0 (loc, op) x y
           | _ ->
-            if is_infixop0 op then
+            if is_infixop0_2 op then
               operator pc next next 0 (loc, op) x y
             else next pc z ] ]
     | "concat"

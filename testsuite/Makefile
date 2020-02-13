@@ -27,6 +27,9 @@ PACKAGES=rresult,fmt,pcre,ounit2,compiler-libs.common,camlp5
 pa_ounit2.cmo: pa_ounit2.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl pa_ounit2.ml
 
+test.cmo: test.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),camlp5.quotations -syntax camlp5r -warn-error A -c -i -impl test.ml
+
 testutil.cmo: testutil.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl testutil.ml
 
