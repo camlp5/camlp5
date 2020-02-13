@@ -51,8 +51,40 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_r-pr_r', $filetype, $inputf, $outputf) ;
+      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_r-pr_r', $filetype, $inputf, $outputf]) ;
       return $code ;
+    },
+  },
+
+  'roundtrip-revised.byte' =>
+  {
+    'name' => 'roundtrip-revised.byte',
+    'syntax' => 'revised',
+    'command' => sub {
+      my %args = @_ ;
+      my $inputf = $args{'input-filename'} ;
+      my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
+      
+      v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.byte', $filetype, $inputf],
+	  'output-filename' => $outputf) ;
+      return $EXITVAL ;
+    },
+  },
+
+  'roundtrip-revised.opt' =>
+  {
+    'name' => 'roundtrip-revised.opt',
+    'syntax' => 'revised',
+    'command' => sub {
+      my %args = @_ ;
+      my $inputf = $args{'input-filename'} ;
+      my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
+      
+      v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.opt', $filetype, $inputf],
+	  'output-filename' => $outputf) ;
+      return $EXITVAL ;
     },
   },
 
@@ -66,7 +98,7 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_official', $filetype, $inputf, $outputf) ;
+      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_o-pr_official', $filetype, $inputf, $outputf]) ;
       return $code ;
     },
   },
@@ -81,7 +113,7 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], './papr_official.byte', $filetype, $inputf, $outputf) ;
+      my $code = v_systemx([0..2], ['./papr_official.byte', $filetype, $inputf, $outputf]) ;
       return $code ;
     },
   },
@@ -96,7 +128,7 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_o-pr_o', $filetype, $inputf, $outputf) ;
+      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_o-pr_o', $filetype, $inputf, $outputf]) ;
       return $code ;
     },
   },
@@ -111,7 +143,7 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], 'tools/ROUNDTRIP-pa_op-pr_op', $filetype, $inputf, $outputf) ;
+      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_op-pr_op', $filetype, $inputf, $outputf]) ;
       return $code ;
     },
   },
@@ -124,7 +156,7 @@ our %tools = (
       my $inputf = $args{'input-filename'} ;
       my $outputf = $args{'output-filename'} ;
       
-      my $code = v_systemx([0..2], "cp", $inputf, $outputf) ;
+      my $code = v_systemx([0..2], ["cp", $inputf, $outputf]) ;
       return $code ;
     },
   },
@@ -150,11 +182,12 @@ our %tools = (
 	  my $inputf = $args{'input-filename'} ;
 	  my $outputf = $args{'output-filename'} ;
 
-	  my $txt = v_capturex([0], "./roundtrip_lexer.byte",
+	  my $txt = v_capturex([0],
+			       [ "./roundtrip_lexer.byte",
 			       "-mode","lexer-passthru",
 			       "-strip-comments",
-			       $inputf) ;
-	  f_write($outputf, $txt) ;
+				 $inputf],
+	      'output-filename' => $outputf) ;
 	  return 0 ;
     },
   },
@@ -167,9 +200,10 @@ our %tools = (
 	  my $outputf = $args{'output-filename'} ;
 	  my $filetype = $args{'file-type'} ;
 
-	  my $txt = v_capturex([0..1], $ocamlformat, 
+	  my $txt = v_capturex([0..1],
+			       [$ocamlformat, 
 			       "--enable-outside-detected-project", "--no-comment-check",
-			       "-".$filetype, $inputf) ;
+			       "-".$filetype, $inputf]) ;
 	  if (0 != $EXITVAL) { return $EXITVAL ; }
 	  f_write($outputf, $txt) ;
 	  return 0 ;
@@ -243,7 +277,7 @@ our %tools = (
 	  my $inputf = $args{'input-filename'} ;
 	  my $outputf = $args{'output-filename'} ;
 
-	  my $code = v_systemx([0..2], "./roundtrip_lexer.byte","-mode","lexer-passthru", $inputf, $outputf) ;
+	  my $code = v_systemx([0..2], ["./roundtrip_lexer.byte","-mode","lexer-passthru", $inputf, $outputf]) ;
 	  return $code ;
     },
   },
@@ -255,7 +289,7 @@ our %tools = (
 	  my $inputf = $args{'input-filename'} ;
 	  my $outputf = $args{'output-filename'} ;
 
-	  my $code = v_systemx([0..2], "./roundtrip_lexer.byte","-mode","parse-pp", $inputf, $outputf) ;
+	  my $code = v_systemx([0..2], ["./roundtrip_lexer.byte","-mode","parse-pp", $inputf, $outputf]) ;
 	  return $code ;
     },
   },
@@ -267,7 +301,7 @@ our %tools = (
 	  my $inputf = $args{'input-filename'} ;
 	  my $outputf = $args{'output-filename'} ;
 
-	  my $code = v_systemx([0..2], "./roundtrip_lexer.byte","-D", "STRICT", "-mode","ifdef-eval", $inputf, $outputf) ;
+	  my $code = v_systemx([0..2], ["./roundtrip_lexer.byte","-D", "STRICT", "-mode","ifdef-eval", $inputf, $outputf]) ;
 	  return $code ;
     },
   },
@@ -326,8 +360,8 @@ our %tools = (
       die "overridden input file $inputname already exists"
 	  unless (!(-r $inputname)) ;
 
-      v_systemx("mkdir", "-p", "$patchdir/$tool") ;
-      v_systemx("cp", $fullsrcname, $inputname) ;
+      v_systemx([0], ["mkdir", "-p", "$patchdir/$tool"]) ;
+      v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
     }
   }
   elsif ($ARGV[0] eq 'override-to-patch') {
@@ -358,9 +392,9 @@ our %tools = (
       die "patch file $patchname alrady exists"
 	  unless (!(-r $patchname)) ;
 
-      my $diff_output = v_capturex([0..1], "diff", "-Bwiu", $fullsrcname, $inputname) ;
-      f_write($patchname, $diff_output) ;
-      v_systemx("mv",$inputname,"$inputname-MOVED") ;
+      my $diff_output = v_capturex([0..1], ["diff", "-Bwiu", $fullsrcname, $inputname],
+				   'output-filename' => $patchname) ;
+      v_systemx([0], ["mv",$inputname,"$inputname-MOVED"]) ;
     }
   }
   elsif ($ARGV[0] eq 'patch-to-override') {
@@ -395,8 +429,8 @@ our %tools = (
       die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
 	  unless (-r $fullsrcname) ;
 
-      v_systemx("cp", $fullsrcname, $inputname) ;
-      v_systemx("patch", $inputname, $patchname) ;
+      v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
+      v_systemx([0], ["patch", $inputname, $patchname]) ;
     }
   }
   else {
@@ -498,8 +532,8 @@ sub runtest_package {
   }
 
   foreach my $recna (keys %{ $profile{'recipes'} }) {
-    v_systemx("rm", "-rf", "$workdir/$recna") ;
-    v_systemx("mkdir", "-p", "$workdir/$recna") ;
+    v_systemx([0], ["rm", "-rf", "$workdir/$recna"]) ;
+    v_systemx([0], ["mkdir", "-p", "$workdir/$recna"]) ;
   }
 
   {
@@ -602,7 +636,7 @@ sub runtest_package {
     }
 
     my $errordir = "$workdir/$rec1name!$rec2name.ERRORS" ;
-    v_systemx("mkdir", "-p", $errordir) ;
+    v_systemx([0], ["mkdir", "-p", $errordir]) ;
     my $errorbase = "$errordir/$bangf" ;
     my $preserve = $main::preserve || int(%onlyfiles) ;
     my $code = extended_diff($recipe_outputs{$rec1name}, $recipe_outputs{$rec2name},
@@ -613,7 +647,7 @@ sub runtest_package {
     if (0 == $code) {
       print "OK $f\n" unless $main::quiet ;
       if (!$preserve) {
-	v_systemx("rm", "-f", @generated_files);
+	v_systemx([0], ["rm", "-f", @generated_files]);
       }
     } else {
       print "NOT OK $f\n";
@@ -647,22 +681,22 @@ sub generate_input {
   die "both PATCH & INPUT exist for package=$pkgna recipe=$recna file=$inputf"
       if ((-r $recipe_input) && (-r $recipe_patch)) ;
 
-  v_systemx([0], "cp", $inputf, $outputf) ;
+  v_systemx([0], ["cp", $inputf, $outputf]) ;
 
   my @silent ;
   push(@silent, "-s") unless $main::verbose ;
 
   if (-r $recipe_patch) {
-    v_systemx([0], "patch", @silent, $outputf, $recipe_patch) ;
+    v_systemx([0], ["patch", @silent, $outputf, $recipe_patch]) ;
   }
   elsif (-r $recipe_input) {
-    v_systemx([0], "cp", $recipe_input, $outputf) ;
+    v_systemx([0], ["cp", $recipe_input, $outputf]) ;
   }
   elsif (-r $all_patch) {
-    v_systemx([0], "patch", @silent, $outputf, $all_patch) ;
+    v_systemx([0], ["patch", @silent, $outputf, $all_patch]) ;
   }
   elsif (-r $all_input) {
-    v_systemx([0], "cp", $all_input, $outputf) ;
+    v_systemx([0], ["cp", $all_input, $outputf]) ;
   }
 }
 
@@ -671,20 +705,21 @@ sub extended_diff {
   my $f2 = shift ;
   my %args = @_ ;
 
+  assert (exists $args{'errorbase'}) ;
   my @cmd = ("diff", "-Bwiu", $f1, $f2) ;
-  my $diff_output = v_capturex([0..1], @cmd) ;
+  my $diff_output = v_capturex([0..1], [@cmd],
+			       'output-filename' => "$args{'errorbase'}.DIFF") ;
+
   my $diff_ok = (0 == $EXITVAL) ;
 
-  my $wdiff_output = v_capturex([0..1], "wdiff", "-3", $f1, $f2) ;
-  my $wdiff_full_output = v_capturex([0..1], "wdiff", $f1, $f2) ;
+  v_capturex([0..1], ["wdiff", "-3", $f1, $f2],
+	     'output-filename' => "$args{'errorbase'}.WDIFF") ;
+
+  v_capturex([0..1], ["wdiff", $f1, $f2],
+	     'output-filename' => "$args{'errorbase'}.WDIFF-FULL") ;
   my $wdiff_ok = (0 == $EXITVAL) ;
 
-  if (exists $args{'errorbase'}) {
-    f_write("$args{'errorbase'}.DIFF", $diff_output) ;
-    f_write("$args{'errorbase'}.WDIFF", $wdiff_output) ;
-    f_write("$args{'errorbase'}.WDIFF-FULL", $wdiff_full_output) ;
-    push(@{ $args{'generated-files'} }, "$args{'errorbase'}.DIFF", "$args{'errorbase'}.WDIFF", "$args{'errorbase'}.WDIFF-FULL") ;
-  }
+  push(@{ $args{'generated-files'} }, "$args{'errorbase'}.DIFF", "$args{'errorbase'}.WDIFF", "$args{'errorbase'}.WDIFF-FULL") ;
 
   my $wordeq_ok = wordeq($f1, $f2, 'generated-files' => $args{'generated-files'}) ;
 
@@ -737,7 +772,7 @@ sub runtool {
 
   print "$tool->{'name'}: $srcf -> $dstf\n" if $main::verbose ;
   my @cmd = &{ $tool->{'command'}, }($srcf, $dstf) ;
-  my $code = v_systemx([0..2], @cmd) ;
+  my $code = v_systemx([0..2], [@cmd]) ;
   if ($code != 0) {
     if (!$continue_error) {
       die ("command <<".join(' ', @cmd).">> died with $@") ;
@@ -751,27 +786,30 @@ sub runtool {
 }
 
 sub v_systemx {
-  my $codes ;
-  $codes = shift if (ref($_[0]) eq 'ARRAY') ;
-  my @cmd = @_ ;
+  die "v_systemx: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
+  my $codes = shift ;
+  my @cmd = @{ shift @_ } ;
+  my %args = @_ ;
+
   print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
 
-  if ($codes) {
-    return runx($codes, @cmd) ;
-  }
-  else {
-    return runx(@cmd) ;
-  }
+  return runx($codes, @cmd) ;
 }
 
 sub v_capturex {
   die "v_capturex: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
   my $codes = shift ;
-  my @cmd = @_ ;
+  my @cmd = @{ shift @_ } ;
+  my %args = @_ ;
 
   print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
 
-  return capturex($codes, @cmd) ;
+  my $txt = capturex($codes, @cmd) ;
+
+  if (exists $args{'output-filename'}) {
+    f_write($args{'output-filename'}, $txt) ;
+  }
+  return $txt ;
 }
 
 sub v_system {
