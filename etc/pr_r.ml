@@ -1182,9 +1182,9 @@ value is_unary =
   | _ -> False ]
 ;
 
-value unary expr pc x =
+value unary op_pred expr pc x =
   match x with
-  [ <:expr< $lid:f$ $_$ >> when is_unary f -> pprintf pc "(%p)" expr x
+  [ <:expr< $lid:f$ $_$ >> when op_pred f -> pprintf pc "(%p)" expr x
   | x -> pprintf pc "%p" expr x ]
 ;
 
@@ -1390,16 +1390,16 @@ EXTEND_PRINTER
           right_operator pc 0 unfold next z ]
     | "less"
       [ <:expr< $lid:op$ $x$ $y$ >> as z ->
-          match op with
-          [ "!=" | "<" | "<=" | "<>" | "=" | "==" | ">" | ">=" ->
+          let ops = ["!=" ; "<" ; "<=" ; "<>" ; "=" ; "==" ; ">" ; ">="] in
+          if List.mem op ops || is_infixop0 op then
               operator pc next next 0 op x y
-          | _ -> next pc z ] ]
+          else next pc z ]
     | "concat"
       [ z ->
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ["^"; "@"] then Some (x, " " ^ op, y) else None
+                if List.mem op ["^"; "@"] || is_infixop1 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           right_operator pc 0 unfold next z ]
@@ -1409,7 +1409,7 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ops then Some (x, " " ^ op, y) else None
+                if List.mem op ops || is_infixop2 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           left_operator pc 0 unfold next z ]
@@ -1419,7 +1419,7 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ops then Some (x, " " ^ op, y) else None
+                if List.mem op ops || is_infixop3 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           left_operator pc 0 unfold next z ]
@@ -1429,15 +1429,17 @@ EXTEND_PRINTER
           let unfold =
             fun
             [ <:expr< $lid:op$ $x$ $y$ >> ->
-                if List.mem op ops then Some (x, " " ^ op, y) else None
+                if List.mem op ops || is_infixop4 op then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
           right_operator pc 0 unfold next z ]
-    | "unary"
-      [ <:expr< - $x$ >> -> pprintf pc "-%p" (unary curr) x
-      | <:expr< -. $x$ >> -> pprintf pc "-.%p" (unary curr) x
-      | <:expr< ~- $x$ >> -> pprintf pc "~-%p" (unary curr) x
-      | <:expr< ~-. $x$ >> -> pprintf pc "~-.%p" (unary curr) x ]
+    | "unary_minus"
+      [ <:expr< $lid:op$ $x$ >> as z ->
+        let ops = ["-" ; "-."] in
+        let in_ops x = List.mem x ops in
+        if in_ops op then
+          pprintf pc "%s%p" op (unary in_ops curr) x
+        else next pc z ]
     | "apply"
       [ <:expr< assert $e$ >> ->
           pprintf pc "assert@;%p" next e
@@ -1446,7 +1448,8 @@ EXTEND_PRINTER
       | <:expr< $_$ $_$ >> as z ->
           let inf =
             match z with
-            [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n
+            [ <:expr< $lid:n$ $_$ $_$ >> when is_infix n || is_infix_operator n -> True
+            |  <:expr< $lid:n$ $_$ >> when is_unary n || is_prefixop n -> True
             | <:expr< [$_$ :: $_$] >> -> True
             | _ -> False ]
           in
@@ -1468,6 +1471,12 @@ EXTEND_PRINTER
       | <:expr< $e$ .{ $list:el$ } >> ->
           let el = List.map (fun e -> (e, ",")) el in
           pprintf pc "%p.{%p}" curr e (plist expr_short 0) el ]
+    | "~-"
+      [ <:expr< $lid:op$ $x$ >> as z ->
+        let in_ops x = is_prefixop x in
+        if in_ops op then
+          pprintf pc "%s%p" op (unary in_ops curr) x
+        else next pc z ]
     | "simple"
       [ <:expr< ($list:el$) >> ->
           let el = List.map (fun e -> (e, ",")) el in
