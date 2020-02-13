@@ -145,7 +145,6 @@ value infixop0 =
        [: `("", x) when is_infixop0 x :] -> x)
 ;
 
-
 value infixop1 =
   Grammar.Entry.of_parser gram "infixop1"
     (parser
