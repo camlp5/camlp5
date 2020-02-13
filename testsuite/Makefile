@@ -23,7 +23,9 @@ all: \
 	roundtrip_lexer.byte \
 	papr_official.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
-	tools/ROUNDTRIP-pa_r-pr_r.opt
+	tools/ROUNDTRIP-pa_r-pr_r.opt \
+	tools/ROUNDTRIP-pa_o-pr_o.byte \
+	tools/ROUNDTRIP-pa_o-pr_o.opt
 
 OCAMLFIND=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: ocamlfind
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
@@ -85,6 +87,12 @@ tools/ROUNDTRIP-pa_r-pr_r.byte:
 
 tools/ROUNDTRIP-pa_r-pr_r.opt:
 	$(MKCAMLP5).opt pa_r.cmx pa_rp.cmx pa_macro.cmx q_phony.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx pr_extend.cmx -o $@
+
+tools/ROUNDTRIP-pa_o-pr_o.byte:
+	$(MKCAMLP5) pa_o.cmo pr_o.cmo -o $@
+
+tools/ROUNDTRIP-pa_o-pr_o.opt:
+	$(MKCAMLP5).opt pa_o.cmx pr_o.cmx -o $@
 
 setup:
 	opam install rresult fmt pcre ounit2 bos

@@ -1,0 +1,18 @@
+---
+recipes:
+  cp:
+    name: cp
+    steps:
+      - cp
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat
+#      - nuke:mli-ending-double-semi
+  roundtrip-original:
+    name: roundtrip-original
+    steps:
+      - roundtrip-original.opt
+      - brave-comment-stripper
+      - cowardly-arrow
+      - ocamlformat
+#      - nuke:mli-ending-double-semi

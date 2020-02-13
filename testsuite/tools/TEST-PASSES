@@ -51,8 +51,12 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_r-pr_r', $filetype, $inputf, $outputf]) ;
-      return $code ;
+      v_capturex([0..2],
+		 ['tools/ROUNDTRIP-pa_r-pr_r', "-no-pa-opt", $filetype, $inputf],
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
+      return $EXITVAL ;
     },
   },
 
@@ -66,7 +70,8 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.byte', $filetype, $inputf],
+      v_capturex([0..2],
+		 ['tools/ROUNDTRIP-pa_r-pr_r.byte', "-no-pa-opt", $filetype, $inputf],
 		 'output-filename' => $outputf,
 		 'ENV'=> { 'LANG' => 'C' },
 	  ) ;
@@ -84,7 +89,7 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.opt', $filetype, $inputf],
+      v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.opt', "-no-pa-opt", $filetype, $inputf],
 		 'output-filename' => $outputf,
 		 'ENV'=> { 'LANG' => 'C' },
 	  ) ;
@@ -102,8 +107,12 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_o-pr_official', $filetype, $inputf, $outputf]) ;
-      return $code ;
+      v_capturex([0..2],
+		 ['tools/ROUNDTRIP-pa_o-pr_official', "-no-pa-opt", $filetype, $inputf],
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
+      return $EXITVAL ;
     },
   },
 
@@ -117,8 +126,12 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], ['./papr_official.byte', $filetype, $inputf, $outputf]) ;
-      return $code ;
+      v_capturex([0..2],
+		 ['./papr_official.byte', $filetype, $inputf],
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
+      return $EXITVAL ;
     },
   },
 
@@ -132,8 +145,50 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_o-pr_o', $filetype, $inputf, $outputf]) ;
-      return $code ;
+      v_capturex([0..2],
+		 ['tools/ROUNDTRIP-pa_o-pr_o', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
+      return $EXITVAL ;
+    },
+  },
+
+  'roundtrip-original.byte' =>
+  {
+    'name' => 'roundtrip-original.byte',
+    'syntax' => 'original',
+    'command' => sub {
+      my %args = @_ ;
+      my $inputf = $args{'input-filename'} ;
+      my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
+      
+      v_capturex([0..2],
+		 ['tools/ROUNDTRIP-pa_o-pr_o.byte', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
+      return $EXITVAL ;
+    },
+  },
+
+  'roundtrip-original.opt' =>
+  {
+    'name' => 'roundtrip-original.opt',
+    'syntax' => 'original',
+    'command' => sub {
+      my %args = @_ ;
+      my $inputf = $args{'input-filename'} ;
+      my $outputf = $args{'output-filename'} ;
+      my $filetype = $args{'file-type'} ;
+      
+      v_capturex([0..2],
+		 ['tools/ROUNDTRIP-pa_o-pr_o.opt', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
+      return $EXITVAL ;
     },
   },
 
@@ -147,8 +202,12 @@ our %tools = (
       my $outputf = $args{'output-filename'} ;
       my $filetype = $args{'file-type'} ;
       
-      my $code = v_systemx([0..2], ['tools/ROUNDTRIP-pa_op-pr_op', $filetype, $inputf, $outputf]) ;
-      return $code ;
+      v_capturex([0..2],
+		 ['tools/ROUNDTRIP-pa_op-pr_op', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
+      return $EXITVAL ;
     },
   },
 

@@ -1,4 +1,4 @@
-value x = 1 ;
+value x = ((1)) ;
 
 type t = {
   a : int ;
