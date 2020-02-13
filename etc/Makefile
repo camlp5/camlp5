@@ -12,8 +12,8 @@ SHELL=/bin/sh
 COUT=$(OBJS) $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE)
 COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)o.opt
 
-all: $(COUT) mk$(CAMLP5N).sh META
-opt: $(COPT) mk$(CAMLP5N).opt.sh
+all: $(COUT) META
+opt: $(COPT)
 
 # these ones must be compiled with new created camlp5:
 
@@ -66,12 +66,6 @@ $(CAMLP5N)o.opt: $(CAMLP5OMX)
 	$(RM) -f $(CAMLP5N)o.opt
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../etc/$(CAMLP5N)o.opt CAMLP5M="-I ../etc $(CAMLP5OMX)"
 
-mk$(CAMLP5N).sh: mkcamlp5.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s!OCAMLN!$(OCAMLN)!g" -e "s!CAMLP5N!$(CAMLP5N)!g" mkcamlp5.sh.tpl > mk$(CAMLP5N).sh
-
-mk$(CAMLP5N).opt.sh: mkcamlp5.opt.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s!OCAMLN!$(OCAMLN)!g" -e "s!CAMLP5N!$(CAMLP5N)!g" mkcamlp5.opt.sh.tpl > mk$(CAMLP5N).opt.sh
-
 bootstrap_scheme:
 	@$(MAKE) $(NO_PR_DIR) bootstrap_l L=scheme
 compare_scheme:
@@ -92,7 +86,7 @@ compare_l:
 
 clean::
 	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
-	$(RM) -f mk$(CAMLP5N).sh mk$(CAMLP5N).opt.sh $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE)
+	$(RM) -f $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE)
 	$(RM) -f META
 
 depend:
@@ -112,7 +106,7 @@ install:
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
-	cp mk$(CAMLP5N).sh "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
+	cp mk$(CAMLP5N).pl "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	if test -f pa_o.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
@@ -120,7 +114,7 @@ install:
 	    cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  done; \
 	  cp $(CAMLP5N)o.opt "$(DESTDIR)$(BINDIR)/."; \
-	  cp mk$(CAMLP5N).opt.sh "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
+	  cp mk$(CAMLP5N).pl "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
 	  chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
 	fi
 

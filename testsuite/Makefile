@@ -14,10 +14,20 @@ all-tests: all
 	./sch2r_test.pa_schemer.byte
 	./extfun_test.byte
 
-all: o2r_test.byte r2sch_test.byte sch2r_test.pa_scheme.byte sch2r_test.pa_schemer.byte extfun_test.byte roundtrip_lexer.byte papr_official.byte
+all: \
+	o2r_test.byte \
+	r2sch_test.byte \
+	sch2r_test.pa_scheme.byte \
+	sch2r_test.pa_schemer.byte \
+	extfun_test.byte \
+	roundtrip_lexer.byte \
+	papr_official.byte \
+	tools/ROUNDTRIP-pa_r-pr_r.byte \
+	tools/ROUNDTRIP-pa_r-pr_r.opt
 
 OCAMLFIND=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: ocamlfind
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
+MKCAMLP5=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: $(TOP)/local-install/bin/mkcamlp5
 CAMLP5R=$(TOP)/local-install/bin/camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
@@ -70,9 +80,15 @@ sch2r_test.pa_scheme.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg odyl.cma camlp5.cma ../etc/pa_schemer.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
 
+tools/ROUNDTRIP-pa_r-pr_r.byte:
+	$(MKCAMLP5) pa_r.cmo pa_rp.cmo pa_macro.cmo q_phony.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_extend.cmo -o $@
+
+tools/ROUNDTRIP-pa_r-pr_r.opt:
+	$(MKCAMLP5).opt pa_r.cmx pa_rp.cmx pa_macro.cmx q_phony.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx pr_extend.cmx -o $@
+
 setup:
 	opam install rresult fmt pcre ounit2 bos
 	sudo apt-get install libstring-shellquote-perl
 
 clean:
-	$(RM) -f *.cm* *.byte *.log *.cache *.ppo
+	$(RM) -f *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt

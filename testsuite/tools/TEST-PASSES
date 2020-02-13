@@ -67,7 +67,9 @@ our %tools = (
       my $filetype = $args{'file-type'} ;
       
       v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.byte', $filetype, $inputf],
-	  'output-filename' => $outputf) ;
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
       return $EXITVAL ;
     },
   },
@@ -83,7 +85,9 @@ our %tools = (
       my $filetype = $args{'file-type'} ;
       
       v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.opt', $filetype, $inputf],
-	  'output-filename' => $outputf) ;
+		 'output-filename' => $outputf,
+		 'ENV'=> { 'LANG' => 'C' },
+	  ) ;
       return $EXITVAL ;
     },
   },
@@ -804,7 +808,16 @@ sub v_capturex {
 
   print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
 
-  my $txt = capturex($codes, @cmd) ;
+  my $txt ;
+  if (exists $args{'ENV'}) {
+    my %newenv = %{ $args{'ENV'} } ;
+    local %ENV = (%ENV, %newenv) ;
+
+    $txt = capturex($codes, @cmd) ;
+  }
+  else {
+    $txt = capturex($codes, @cmd) ;
+  }
 
   if (exists $args{'output-filename'}) {
     f_write($args{'output-filename'}, $txt) ;
