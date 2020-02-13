@@ -43,18 +43,18 @@ value is_prefixop =
 ;
 
 value is_infixop0_0 =
-  let list = ['&'] in
-  let excl = ["&&"] in
+  let list = ['|'] in
+  let excl = ["||"] in
   fun x ->
-    not (List.mem x excl) && (String.length x >= 2) &&
+    not (List.mem x excl) && String.length x >= 2 &&
     List.mem x.[0] list && symbolchar x 1
 ;
 
 value is_infixop0_1 =
-  let list = ['|'] in
-  let excl = ["||"] in
+  let list = ['&'] in
+  let excl = ["&&"] in
   fun x ->
-    not (List.mem x excl) && (String.length x >= 2) &&
+    not (List.mem x excl) && String.length x >= 2 &&
     List.mem x.[0] list && symbolchar x 1
 ;
 
@@ -122,24 +122,24 @@ value is_operator0 = do {
 
 value is_andop s =
   String.length s > 3 &&
-  (String.sub s 0 3 = "and") &&
+  String.sub s 0 3 = "and" &&
   kwdopchar s 3 &&
   dotsymbolchar_star s 4
 ;
 
 value is_letop s =
   String.length s > 3 &&
-  (String.sub s 0 3 = "let") &&
+  String.sub s 0 3 = "let" &&
   kwdopchar s 3 &&
   dotsymbolchar_star s 4
 ;
 
 value is_operator s =
-  is_operator0 s || (is_hashop s)
+  is_operator0 s || is_hashop s
 ;
 
 value is_infix_operator op =
-  is_operator op && match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ]
+  is_operator op && (match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ])
 ;
 
 end ;
@@ -151,18 +151,18 @@ value is_infixop0 =
   let list = ['='; '<'; '>'; '|'; '&'; '$'] in
   let excl = ["<-"; "||"; "&&"] in
   fun x ->
-    not (List.mem x excl) && (String.length x >= 2) &&
+    not (List.mem x excl) && String.length x >= 2 &&
     List.mem x.[0] list && symbolchar x 1
 ;
 
 value is_operator0 s = s <> "$" && is_operator s ;
 
 value is_operator s =
-  is_operator0 s || (is_hashop s)
+  is_operator0 s || is_hashop s
 ;
 
 value is_infix_operator op =
-  is_operator op && match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ]
+  is_operator op && (match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ])
 ;
 
 end ;

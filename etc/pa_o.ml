@@ -109,10 +109,22 @@ value prefixop =
        [: `("", x) when is_prefixop x :] -> x)
 ;
 
-value infixop0 =
-  Grammar.Entry.of_parser gram "infixop0"
+value infixop0_0 =
+  Grammar.Entry.of_parser gram "infixop0_0"
     (parser
-       [: `("", x) when is_infixop0 x :] -> x)
+       [: `("", x) when is_infixop0_0 x :] -> x)
+;
+
+value infixop0_1 =
+  Grammar.Entry.of_parser gram "infixop0_1"
+    (parser
+       [: `("", x) when is_infixop0_1 x :] -> x)
+;
+
+value infixop0_2 =
+  Grammar.Entry.of_parser gram "infixop0_2"
+    (parser
+       [: `("", x) when is_infixop0_2 x :] -> x)
 ;
 
 
@@ -581,10 +593,12 @@ EXTEND
       | e1 = SELF; "<-"; e2 = expr LEVEL "expr1" -> <:expr< $e1$ := $e2$ >> ]
     | "||" RIGHTA
       [ e1 = SELF; "or"; e2 = SELF -> <:expr< $lid:"or"$ $e1$ $e2$ >>
-      | e1 = SELF; "||"; e2 = SELF -> <:expr< $e1$ || $e2$ >> ]
+      | e1 = SELF; "||"; e2 = SELF -> <:expr< $e1$ || $e2$ >>
+      | e1 = SELF; op = infixop0_0; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "&&" RIGHTA
       [ e1 = SELF; "&"; e2 = SELF -> <:expr< $lid:"&"$ $e1$ $e2$ >>
-      | e1 = SELF; "&&"; e2 = SELF -> <:expr< $e1$ && $e2$ >> ]
+      | e1 = SELF; "&&"; e2 = SELF -> <:expr< $e1$ && $e2$ >>
+      | e1 = SELF; op = infixop0_1; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "<" LEFTA
       [ e1 = SELF; "<"; e2 = SELF -> <:expr< $e1$ < $e2$ >>
       | e1 = SELF; ">"; e2 = SELF -> <:expr< $e1$ > $e2$ >>
@@ -594,7 +608,7 @@ EXTEND
       | e1 = SELF; "<>"; e2 = SELF -> <:expr< $e1$ <> $e2$ >>
       | e1 = SELF; "=="; e2 = SELF -> <:expr< $e1$ == $e2$ >>
       | e1 = SELF; "!="; e2 = SELF -> <:expr< $e1$ != $e2$ >>
-      | e1 = SELF; op = infixop0; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
+      | e1 = SELF; op = infixop0_2; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "^" RIGHTA
       [ e1 = SELF; "^"; e2 = SELF -> <:expr< $e1$ ^ $e2$ >>
       | e1 = SELF; "@"; e2 = SELF -> <:expr< $e1$ @ $e2$ >>

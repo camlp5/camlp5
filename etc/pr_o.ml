@@ -1210,13 +1210,9 @@ EXTEND_PRINTER
           right_operator pc loc 0 unfold next z ]
     | "less"
       [ <:expr:< $lid:op$ $x$ $y$ >> as z ->
-          match op with
-          [ "!=" | "<" | "<=" | "<>" | "=" | "==" | ">" | ">=" ->
+        if List.mem op ["!="; "<"; "<="; "<>"; "="; "=="; ">"; ">="] || is_infixop0_2 op then
               operator pc next next 0 (loc, op) x y
-          | _ ->
-            if is_infixop0_2 op then
-              operator pc next next 0 (loc, op) x y
-            else next pc z ] ]
+        else next pc z ]
     | "concat"
       [ z ->
           let unfold =
@@ -1275,10 +1271,12 @@ EXTEND_PRINTER
           let loc = MLast.loc_of_expr z in
           right_operator pc loc 0 unfold next z ]
     | "unary"
-      [ <:expr< - $x$ >> -> pprintf pc "-%p" (unary curr) x
-      | <:expr< -. $x$ >> -> pprintf pc "-.%p" (unary curr) x
-      | <:expr< ~- $x$ >> -> pprintf pc "~-%p" (unary curr) x
-      | <:expr< ~-. $x$ >> -> pprintf pc "~-.%p" (unary curr) x ]
+      [ <:expr< $lid:op$ $x$ >> as z ->
+        let ops = ["-" ; "-." ; "~."; "~-."] in
+        if List.mem op ops || is_prefixop op then
+          pprintf pc "%s%p" op (unary curr) x
+        else next pc z
+      ]
     | "apply"
       [ <:expr< assert $e$ >> ->
           pprintf pc "assert@;%p" next e
@@ -1309,7 +1307,11 @@ EXTEND_PRINTER
             | _ ->
                 let unfold =
                   fun
-                  [ <:expr< $x$ $y$ >> -> Some (x, "", y)
+                  [
+                     <:expr< [$_$ :: $_$] >> -> None
+                  |  <:expr< $lid:n$ $_$ $_$ >> when is_infix n || is_infix_operator n -> None
+                  |  <:expr< $lid:n$ $_$ >> when is_unary n || is_prefixop n -> None
+                  |  <:expr< $x$ $y$ >> -> Some (x, "", y)
                   | e -> None ]
                 in
                 left_operator pc loc 2 unfold next z ] ]

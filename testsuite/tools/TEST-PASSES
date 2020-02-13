@@ -363,6 +363,42 @@ our %tools = (
       v_systemx("mv",$inputname,"$inputname-MOVED") ;
     }
   }
+  elsif ($ARGV[0] eq 'patch-to-override') {
+    shift @ARGV ;
+    die "tool $tool not recognized"
+	unless $tool eq 'ALL' || exists $tools{$tool} ;
+
+    die "must specify a single package"
+	unless 1 == int(@dopackages) ;
+    die "must specify files"
+	unless int(@onlyfiles) || int(@ARGV) ;
+
+    foreach my $file (@ARGV, @onlyfiles) {
+      my $pkgna = $dopackages[0] ;
+      my $pkgh = $packages{$pkgna} ;
+      my %pkg = %{ $pkgh };
+
+      my $fullsrcname = "$pkg{'location'}/$file" ;
+      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	  unless (-r $fullsrcname) ;
+      my $bangf = bang_escape($file) ;
+      my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+      my $patchname = "$patchdir/$tool/$bangf.PATCH" ;
+      die "patch file $patchname does not exist"
+	  unless (-r $patchname) ;
+
+      my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
+      die "input file $inputname alrady exists"
+	  unless (!(-r $inputname)) ;
+
+      my $fullsrcname = "$pkg{'location'}/$file" ;
+      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	  unless (-r $fullsrcname) ;
+
+      v_systemx("cp", $fullsrcname, $inputname) ;
+      v_systemx("patch", $inputname, $patchname) ;
+    }
+  }
   else {
     die "must specify profile-file"
 	unless defined $profile_file ;
