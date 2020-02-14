@@ -3,6 +3,8 @@ recipes:
   ifdef-eval:
     name: ifdef-eval
     steps:
+      - nuke:revised-load
+      - nuke:revised-qmod
       - ifdef-eval
       - cowardly-comment-stripper
       - cowardly-arrow

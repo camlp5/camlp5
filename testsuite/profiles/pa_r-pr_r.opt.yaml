@@ -3,6 +3,8 @@ recipes:
   ifdef-eval:
     name: ifdef-eval
     steps:
+      - nuke:revised-load
+      - nuke:revised-qmod
       - ifdef-eval
       - cowardly-comment-stripper
       - cowardly-arrow
@@ -10,6 +12,8 @@ recipes:
   roundtrip-revised:
     name: roundtrip-revised
     steps:
+      - nuke:revised-load
+      - nuke:revised-qmod
       - roundtrip-revised.opt
       - cowardly-comment-stripper
       - cowardly-arrow

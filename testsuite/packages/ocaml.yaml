@@ -22,6 +22,7 @@ ocaml-4.00.0:
   exclude:
     roundtrip-original.*:
     - ocamldoc/odoc_sig.ml
+    - otherlibs/labltk/builtin/builtina_empty.ml
     - otherlibs/labltk/builtin/builtin_bind.ml
     - otherlibs/labltk/builtin/builtin_bindtags.ml
     - otherlibs/labltk/builtin/builtinf_bind.ml

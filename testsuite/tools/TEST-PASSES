@@ -125,8 +125,8 @@ our %tools = (
 
 	  my $txt = f_read($inputf) ;
 	  $txt =~ s|^#load.*$||gm ;
-	  $txt =~ s,declare end;,,gm ;
 	  $txt =~ s,;(?:\s*;)*,;,gs ;
+	  $txt =~ s,\s*declare\s*end\s*;,,gm ;
 	  f_write($outputf, $txt) ;
 	  return 0 ;
     },
