@@ -651,6 +651,7 @@ sub run_package {
 
       print "== $f : recipe $recna\n" unless $main::quiet;
     
+      my $inputf = "$recbase.0-$steps[0].INPUT" ;
       {
 	my $laststep = int(@steps) - 1 ;
 	my $laststepname = $steps[$laststep] ;
@@ -662,16 +663,18 @@ sub run_package {
 	}
 	else {
 	  my @toremove = <$recbase.*> ;
+	  for(my $i = 0 ; $i < @toremove ; $i++) {
+	    if ($inputf eq $toremove[$i]) {
+	      splice @toremove, $i, 1 ;
+	      $i-- ;
+	    }
+	  }
 	  if (@toremove) { 
 	    print "CLEAN/REDO\n" unless $main::quiet ;
 	    v_systemx([0], ["rm", "-f", @toremove]) ;
 	  }
 	}
       }
-      
-
-      my $inputf = "$recbase.0-$steps[0].INPUT" ;
-      my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
 
       for (my $stepi = 0 ; $stepi < @steps ; $stepi++) {
 	my $stepname = $steps[$stepi] ;
