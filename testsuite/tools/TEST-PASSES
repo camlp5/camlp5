@@ -146,6 +146,20 @@ our %tools = (
     },
   },
 
+  'nuke:revised-qmod' => {
+    'name' => 'nuke:revised-load',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|^#qmod.*$||gm ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
   'nuke:ending-double-semi' => {
     'name' => 'nuke:ending-double-semi',
 	'command' => sub {
@@ -469,7 +483,9 @@ sub runtest_package {
     foreach my $epat (@exclude_patterns) {
       STEPS: foreach my $stepna (keys %used_steps) {
 	if ($stepna =~ /^${epat}$/) {
-	  push (@l, @{ $pkg{'exclude'}->{$epat} }) ;
+	  my @exclude_files = @{ $pkg{'exclude'}->{$epat} } ;
+	  print "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n" if $main::verbose ;
+	  push (@l, @exclude_files) ;
 	  last STEPS ;
 	}
       }

@@ -7,9 +7,12 @@ recipes:
       - cowardly-comment-stripper
       - cowardly-arrow
       - nuke:multi-semi:declare-end:directives
+      - nuke:revised-qmod
   roundtrip-revised:
     name: roundtrip-revised
     steps:
+      - nuke:revised-load
+      - nuke:revised-qmod
       - roundtrip-revised
       - cowardly-comment-stripper
       - cowardly-arrow

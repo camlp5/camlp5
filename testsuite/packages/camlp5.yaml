@@ -68,7 +68,11 @@ camlp5.7.11-ORIGINAL:
     - ocaml_src
     - ocaml_stuff
   exclude:
-    roundtrip-original: []
+    roundtrip-original:
+      - ocaml_stuff/1.06/utils/warnings.mli
+      - ocaml_stuff/1.06/utils/warnings.mli
+      - ocaml_stuff/1.07/utils/warnings.mli
+      - ocaml_stuff/2.00/utils/warnings.mli
   files: []
   location: ..
   package: camlp5.7.11-ORIGINAL
