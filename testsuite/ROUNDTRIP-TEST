@@ -14,3 +14,5 @@
 /usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
 /usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.byte.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
 /usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
+
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.09.0
