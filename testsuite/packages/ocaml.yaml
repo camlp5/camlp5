@@ -70,7 +70,7 @@ ocaml-4.00.0:
 ocaml-4.09.0:
   syntax: original
   package: ocaml-4.09.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
+  location: /home/chet/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.09.0
   dirs:
     - utils
     - asmcomp
