@@ -504,7 +504,8 @@ sub package_run_files {
       STEPS: foreach my $stepna (keys %used_steps) {
 	if ($stepna =~ /^${epat}$/) {
 	  my @exclude_files = @{ $pkg{'exclude'}->{$epat} } ;
-	  print "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n" if $main::verbose ;
+	  print "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n" 
+	      if $main::verbose && @exclude_files;
 	  push (@l, @exclude_files) ;
 	  last STEPS ;
 	}
@@ -650,6 +651,25 @@ sub run_package {
 
       print "== $f : recipe $recna\n" unless $main::quiet;
     
+      {
+	my $laststep = int(@steps) - 1 ;
+	my $laststepname = $steps[$laststep] ;
+	my $laststepbase = "$recbase.$laststep-$laststepname" ;
+	my $lastoutput = "$laststepbase.OUTPUT" ;
+	if (-r $lastoutput) {
+	  print "SKIP\n" unless $main::quiet ;
+	  next RECIPE ;
+	}
+	else {
+	  my @toremove = <$recbase.*> ;
+	  if (@toremove) { 
+	    print "CLEAN/REDO\n" unless $main::quiet ;
+	    v_systemx([0], ["rm", "-f", @toremove]) ;
+	  }
+	}
+      }
+      
+
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
       my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
 
@@ -731,6 +751,7 @@ sub diff_package {
 
     my $errordir = "$workdir/diff/$rec1name!$rec2name.ERRORS" ;
     my $errorbase = "$errordir/$bangf" ;
+	v_systemx([0], ["rm", "-f", <$errorbase.*>]) ;
     my $code = extended_diff($recipe_outputs{$rec1name}, $recipe_outputs{$rec2name},
 	'errorbase' => $errorbase,
 	) ;

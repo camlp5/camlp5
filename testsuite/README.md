@@ -11,17 +11,17 @@ EXAMPLES
 
 == Revised Syntax
 
-tools/TEST-PASSES --profile-file profiles/lexer-passthru.yaml --packages-file packages/camlp5.yaml camlp5.7.11
-tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml camlp5.7.11
-tools/TEST-PASSES --profile-file profiles/pa_r-pr_r.yaml --packages-file packages/camlp5.yaml camlp5.7.11
-tools/TEST-PASSES --profile-file profiles/pa_r-pr_r.yaml --packages-file packages/maquette.yaml maquette
+tools/TEST-PASSES --profile-file profiles/lexer-passthru.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+tools/TEST-PASSES --profile-file profiles/pa_r-pr_r.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+tools/TEST-PASSES --profile-file profiles/pa_r-pr_r.yaml --packages-file packages/maquette.yaml run-full maquette
 
 
 == Original syntax
 
-tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml camlp5.7.11-ORIGINAL
-tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/camlp5.yaml camlp5.7.11-ORIGINAL
+tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
+tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
 
-tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/ocaml.yaml ocaml-4.00.0
+tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
 
-tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/maquette.yaml maquette-original
+tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/maquette.yaml run-full maquette-original
