@@ -2,6 +2,7 @@
 
 use strict ;
 use Data::Dumper ;
+use Carp ;
 use Carp::Assert ;
 use File::Basename;
 use File::Find ;
@@ -15,7 +16,6 @@ use YAML::Tiny;
 our $quiet = 0 ;
 our $verbose = 0 ;
 our @verbose_passthru = () ;
-our $preserve = 0 ;
 our $continue_error = 0 ;
 our @dopackages ;
 our @onlyfiles ;
@@ -275,18 +275,18 @@ sub generate_step {
     "only-files=s{}" => \@onlyfiles,
     "quiet" => \$quiet,
     "verbose" => \$verbose,
-    "preserve" => \$preserve,
     "continue-on-error" => \$continue_error,
     "packages-file=s" => \$packages_file,
     "profile-file=s" => \$profile_file,
       )
-      or die("Error in command line arguments\n");
+      or croak("Error in command line arguments\n");
 
+  $Carp::Verbose = 1 if $verbose ;
   @verbose_passthru = ("--verbose") if $verbose ;
 
   $quiet = 0 if $verbose ;
 
-  die "must specify packages-file"
+  croak "must specify packages-file"
       unless defined $packages_file ;
 
   my %packages ;
@@ -295,142 +295,162 @@ sub generate_step {
     %packages = %{ $yaml->[0] } ;
   }
 
-  if ($ARGV[0] eq 'override-file') {
-    shift @ARGV ;
-    die "tool $tool not recognized"
-	unless $tool eq 'ALL' || exists $tools{$tool} ;
+  my $cmds = shift @ARGV ;
+  $cmds = "clean,setup,run,diff" if $cmds eq 'run-full' ;
+  my @cmd = split(/,/, $cmds) ;
+  foreach my $cmd (@cmd) {
+    if ($cmd eq 'override-file') {
+      croak "tool $tool not recognized"
+	  unless $tool eq 'ALL' || exists $tools{$tool} ;
 
-    die "must specify a single package"
-	unless 1 == int(@dopackages) ;
-    die "must specify files"
-	unless int(@onlyfiles) || int(@ARGV) ;
+      croak "must specify a single package"
+	  unless 1 == int(@dopackages) ;
+      croak "must specify files"
+	  unless int(@onlyfiles) || int(@ARGV) ;
 
-    foreach my $file (@ARGV, @onlyfiles) {
-      my $pkgna = $dopackages[0] ;
-      my $pkgh = $packages{$pkgna} ;
-      my %pkg = %{ $pkgh };
+      foreach my $file (@ARGV, @onlyfiles) {
+	my $pkgna = $dopackages[0] ;
+	my $pkgh = $packages{$pkgna} ;
+	my %pkg = %{ $pkgh };
 
-      my $fullsrcname = "$pkg{'location'}/$file" ;
-      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
-	  unless (-r $fullsrcname) ;
-      my $bangf = bang_escape($file) ;
-      my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
-      my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
-      die "overridden input file $inputname already exists"
-	  unless (!(-r $inputname)) ;
+	my $fullsrcname = "$pkg{'location'}/$file" ;
+	croak "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	    unless (-r $fullsrcname) ;
+	my $bangf = bang_escape($file) ;
+	my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+	my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
+	croak "overridden input file $inputname already exists"
+	    unless (!(-r $inputname)) ;
 
-      v_systemx([0], ["mkdir", "-p", "$patchdir/$tool"]) ;
-      v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
-    }
-  }
-  elsif ($ARGV[0] eq 'override-to-patch') {
-    shift @ARGV ;
-    die "tool $tool not recognized"
-	unless $tool eq 'ALL' || exists $tools{$tool} ;
-
-    die "must specify a single package"
-	unless 1 == int(@dopackages) ;
-    die "must specify files"
-	unless int(@onlyfiles) || int(@ARGV) ;
-
-    foreach my $file (@ARGV, @onlyfiles) {
-      my $pkgna = $dopackages[0] ;
-      my $pkgh = $packages{$pkgna} ;
-      my %pkg = %{ $pkgh };
-
-      my $fullsrcname = "$pkg{'location'}/$file" ;
-      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
-	  unless (-r $fullsrcname) ;
-      my $bangf = bang_escape($file) ;
-      my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
-      my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
-      die "overridden input file $inputname does not exist"
-	  unless (-r $inputname) ;
-
-      my $patchname = "$patchdir/$tool/$bangf.PATCH" ;
-      die "patch file $patchname alrady exists"
-	  unless (!(-r $patchname)) ;
-
-      my $diff_output = v_capturex([0..1], ["diff", "-Bwiu", $fullsrcname, $inputname],
-				   'output-filename' => $patchname) ;
-      v_systemx([0], ["mv",$inputname,"$inputname-MOVED"]) ;
-    }
-  }
-  elsif ($ARGV[0] eq 'patch-to-override') {
-    shift @ARGV ;
-    die "tool $tool not recognized"
-	unless $tool eq 'ALL' || exists $tools{$tool} ;
-
-    die "must specify a single package"
-	unless 1 == int(@dopackages) ;
-    die "must specify files"
-	unless int(@onlyfiles) || int(@ARGV) ;
-
-    foreach my $file (@ARGV, @onlyfiles) {
-      my $pkgna = $dopackages[0] ;
-      my $pkgh = $packages{$pkgna} ;
-      my %pkg = %{ $pkgh };
-
-      my $fullsrcname = "$pkg{'location'}/$file" ;
-      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
-	  unless (-r $fullsrcname) ;
-      my $bangf = bang_escape($file) ;
-      my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
-      my $patchname = "$patchdir/$tool/$bangf.PATCH" ;
-      die "patch file $patchname does not exist"
-	  unless (-r $patchname) ;
-
-      my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
-      die "input file $inputname alrady exists"
-	  unless (!(-r $inputname)) ;
-
-      my $fullsrcname = "$pkg{'location'}/$file" ;
-      die "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
-	  unless (-r $fullsrcname) ;
-
-      v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
-      v_systemx([0], ["patch", $inputname, $patchname]) ;
-    }
-  }
-  else {
-    die "must specify profile-file"
-	unless defined $profile_file ;
-
-    my %profile ;
-    {
-      my $yaml = YAML::Tiny->read($profile_file) ;
-      %profile = %{ $yaml->[0] } ;
-    }
-
-    my $workdir = "workdir" ;
-
-    foreach my $recna (keys %{ $profile{'recipes'} }) {
-      my %recipe = %{ $profile{'recipes'}->{$recna} } ;
-      foreach my $t (@{ $recipe{'steps'} }) {
-	die "unrecognized step $t" unless exists $tools{$t} ;
+	v_systemx([0], ["mkdir", "-p", "$patchdir/$tool"]) ;
+	v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
       }
     }
+    elsif ($cmd eq 'override-to-patch') {
+      croak "tool $tool not recognized"
+	  unless $tool eq 'ALL' || exists $tools{$tool} ;
 
-    push(@dopackages, @ARGV) ;
-
-    die "must specify packages" unless @dopackages ;
-
-    foreach my $pkgna (@dopackages) {
-      die "package $pkgna not recognized"
-	  unless exists $packages{$pkgna} ;
-    }
-
-    if (@onlyfiles) {
-      die "can only specify a single package if also specifying --only-files"
+      croak "must specify a single package"
 	  unless 1 == int(@dopackages) ;
-    }
+      croak "must specify files"
+	  unless int(@onlyfiles) || int(@ARGV) ;
 
-    foreach my $pkgna (@dopackages) {
-      my $pkgh = $packages{$pkgna} ;
-      $pkgh->{'onlyfiles'} = [ @onlyfiles ] if @onlyfiles ; 
-      runtest_package($workdir,
+      foreach my $file (@ARGV, @onlyfiles) {
+	my $pkgna = $dopackages[0] ;
+	my $pkgh = $packages{$pkgna} ;
+	my %pkg = %{ $pkgh };
+
+	my $fullsrcname = "$pkg{'location'}/$file" ;
+	croak "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	    unless (-r $fullsrcname) ;
+	my $bangf = bang_escape($file) ;
+	my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+	my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
+	croak "overridden input file $inputname does not exist"
+	    unless (-r $inputname) ;
+
+	my $patchname = "$patchdir/$tool/$bangf.PATCH" ;
+	croak "patch file $patchname alrady exists"
+	    unless (!(-r $patchname)) ;
+
+	my $diff_output = v_capturex([0..1], ["diff", "-Bwiu", $fullsrcname, $inputname],
+				     'output-filename' => $patchname) ;
+	v_systemx([0], ["mv",$inputname,"$inputname-MOVED"]) ;
+      }
+    }
+    elsif ($cmd eq 'patch-to-override') {
+      croak "tool $tool not recognized"
+	  unless $tool eq 'ALL' || exists $tools{$tool} ;
+
+      croak "must specify a single package"
+	  unless 1 == int(@dopackages) ;
+      croak "must specify files"
+	  unless int(@onlyfiles) || int(@ARGV) ;
+
+      foreach my $file (@ARGV, @onlyfiles) {
+	my $pkgna = $dopackages[0] ;
+	my $pkgh = $packages{$pkgna} ;
+	my %pkg = %{ $pkgh };
+
+	my $fullsrcname = "$pkg{'location'}/$file" ;
+	croak "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	    unless (-r $fullsrcname) ;
+	my $bangf = bang_escape($file) ;
+	my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+	my $patchname = "$patchdir/$tool/$bangf.PATCH" ;
+	croak "patch file $patchname does not exist"
+	    unless (-r $patchname) ;
+
+	my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
+	croak "input file $inputname alrady exists"
+	    unless (!(-r $inputname)) ;
+
+	v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
+	v_systemx([0], ["patch", $inputname, $patchname]) ;
+      }
+    }
+    elsif ($cmd eq 'setup' || $cmd eq 'run' || $cmd eq 'diff' || $cmd eq 'clean') {
+      croak "must specify profile-file"
+	  unless defined $profile_file ;
+
+      my %profile ;
+      {
+	my $yaml = YAML::Tiny->read($profile_file) ;
+	%profile = %{ $yaml->[0] } ;
+      }
+
+      my $workdir = "workdir" ;
+
+      foreach my $recna (keys %{ $profile{'recipes'} }) {
+	my %recipe = %{ $profile{'recipes'}->{$recna} } ;
+	foreach my $t (@{ $recipe{'steps'} }) {
+	  croak "unrecognized step $t" unless exists $tools{$t} ;
+	}
+      }
+
+      push(@dopackages, @ARGV) ;
+      @ARGV = () ;
+
+      croak "must specify packages" unless @dopackages ;
+
+      foreach my $pkgna (@dopackages) {
+	croak "package $pkgna not recognized"
+	    unless exists $packages{$pkgna} ;
+      }
+
+      if (@onlyfiles) {
+	croak "can only specify a single package if also specifying --only-files"
+	    unless 1 == int(@dopackages) ;
+      }
+
+      foreach my $pkgna (@dopackages) {
+	my $pkgh = $packages{$pkgna} ;
+	$pkgh->{'onlyfiles'} = [ @onlyfiles ] if @onlyfiles ; 
+	if ($cmd eq 'setup') {
+	  setup_package($workdir,
+			\%profile,
+			$pkgh);
+	}
+	elsif ($cmd eq 'run') {
+	  run_package($workdir,
 		      \%profile,
 		      $pkgh);
+	}
+	elsif ($cmd eq 'diff') {
+	  diff_package($workdir,
+		       \%profile,
+		       $pkgh);
+	}
+	elsif ($cmd eq 'clean') {
+	  clean_package($workdir,
+			\%profile,
+			$pkgh);
+	}
+	else { croak "command $cmd unexpected" ; }
+      }
+    }
+    else {
+      croak "unrecognized command $cmd" ;
     }
   }
 }
@@ -442,7 +462,7 @@ sub bang_escape {
   return $f ;
 }
 
-sub runtest_package {
+sub package_run_files {
   my $workroot = shift ;
   my $profh = shift ;
   my $pkgh = shift ;
@@ -472,7 +492,7 @@ sub runtest_package {
 
   foreach my $stepna (keys %used_steps) {
     if (exists $tools{$stepna}->{'syntax'}) {
-      die "package syntax <<$pkg{'syntax'}>> <> tool step <<$stepna>> syntax <<$tools{$stepna}->{'syntax'}>>"
+      croak "package syntax <<$pkg{'syntax'}>> <> tool step <<$stepna>> syntax <<$tools{$stepna}->{'syntax'}>>"
 	  unless $pkg{'syntax'} eq $tools{$stepna}->{'syntax'} ;
     }
   }
@@ -496,11 +516,6 @@ sub runtest_package {
     }
   }
 
-  foreach my $recna (keys %{ $profile{'recipes'} }) {
-    v_systemx([0], ["rm", "-rf", "$workdir/$recna"]) ;
-    v_systemx([0], ["mkdir", "-p", "$workdir/$recna"]) ;
-  }
-
   {
     my @newfiles ;
     my $perfile = sub {
@@ -510,7 +525,7 @@ sub runtest_package {
       }
     } ;
 
-    die "package $pkg{'package'} has location $location not found in filesystem"
+    croak "package $pkg{'package'} has location $location not found in filesystem"
 	unless (-d $location) ;
     find( { wanted => $perfile, no_chdir => 1 }, 
 	  (map { $location."/".$_ } @dirs) ) ;
@@ -521,18 +536,62 @@ sub runtest_package {
   }
 
   @files = sort @files ;
+  my @ofiles ;
   F: foreach my $f (@files) {
     next if exists $exclude{$f} && !int(%onlyfiles);
     next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
+    push(@ofiles, $f) ;
+  }
+  return @ofiles ;
+}
 
-    print "==== $f ====\n" unless $main::quiet;
+sub clean_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  v_systemx([0], ["rm", "-rf", "$workdir"]) ;
+}
+
+sub setup_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  my @recipes = keys %{ $profile{'recipes'} } ;
+  foreach my $recna (@recipes) {
+    v_systemx([0], ["mkdir", "-p", "$workdir/work/$recna"]) ;
+  }
+
+  assert (2 == @recipes) ;
+  foreach my $recna (@recipes) {
+    v_systemx([0], ["mkdir", "-p", "$workdir/diff/$recna"]) ;
+  }
+  my ($rec1name, $rec2name) = sort @recipes ;
+  my $errordir = "$workdir/diff/$rec1name!$rec2name.ERRORS" ;
+  foreach my $recna (@recipes) {
+    v_systemx([0], ["mkdir", "-p", "$workdir/diff/$recna"]) ;
+  }
+  v_systemx([0], ["mkdir", "-p", $errordir]) ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    print "==== SETUP $f ====\n" unless $main::quiet;
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
     elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
-    else { die "unrecognized filetype $f" ; }
+    else { croak "unrecognized filetype $f" ; }
 
-    my @generated_files = () ;
     my $origf = "$location/".$f ;
 
     print "SRC: $origf\n" if $main::verbose ;
@@ -540,15 +599,12 @@ sub runtest_package {
     # so we know if any step failed
     my $failure = 0 ;
 
-    my %recipe_outputs ;
     my @recipes = keys %{ $profile{'recipes'} } ;
     RECIPE: foreach my $recna (@recipes) {
       my %recipe = %{ $profile{'recipes'}->{$recna} } ;
-      my $recbase = "$workdir/$recna/".$bangf ;
+      my $recbase = "$workdir/work/$recna/".$bangf ;
       my @steps = @{ $recipe{'steps'} } ;
 
-      print "== $f : recipe $recna\n" unless $main::quiet;
-    
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
       my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
       generate_input(
@@ -559,6 +615,43 @@ sub runtest_package {
 	'patch-directory' => $patchdir,
 	'package-name' => $pkg{'package'},
 	  ) ;
+    }
+  }
+}
+
+sub run_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    print "==== RUN $f ====\n" unless $main::quiet;
+    my $bangf = bang_escape($f) ;
+    my $filetype ;
+    if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
+    elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
+    else { croak "unrecognized filetype $f" ; }
+
+    my $origf = "$location/".$f ;
+
+    print "SRC: $origf\n" if $main::verbose ;
+
+    my @recipes = keys %{ $profile{'recipes'} } ;
+    RECIPE: foreach my $recna (@recipes) {
+      my %recipe = %{ $profile{'recipes'}->{$recna} } ;
+      my $recbase = "$workdir/work/$recna/".$bangf ;
+      my @steps = @{ $recipe{'steps'} } ;
+
+      print "== $f : recipe $recna\n" unless $main::quiet;
+    
+      my $inputf = "$recbase.0-$steps[0].INPUT" ;
+      my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
 
       for (my $stepi = 0 ; $stepi < @steps ; $stepi++) {
 	my $stepname = $steps[$stepi] ;
@@ -579,44 +672,82 @@ sub runtest_package {
 	  warn "aborting processing of $f recipe $recna at step $stepname: $@" ;
 	  print "NOT OK $f\n";
 	  if ($main::continue_error) {
-	    $failure = 1 ;
 	    next RECIPE;
 	  }
 	  else {
-	    die "aborting entire test" ;
+	    croak "aborting entire test" ;
 	  }
 	}
 	# setup for next step
 	$inputf = $outputf;
-	$recipe_outputs{$recna} = $outputf ;
       }
-      push(@generated_files, <$recbase.*>) ;
+    }
+  }
+}
+
+sub diff_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    print "==== DIFF $f ====\n" unless $main::quiet;
+    my $bangf = bang_escape($f) ;
+    my $filetype ;
+    if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
+    elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
+    else { croak "unrecognized filetype $f" ; }
+
+    my $origf = "$location/".$f ;
+
+    print "SRC: $origf\n" if $main::verbose ;
+
+    my %recipe_outputs ;
+    my %recipe_base ;
+    my @recipes = keys %{ $profile{'recipes'} } ;
+    foreach my $recna (@recipes) {
+      my %recipe = %{ $profile{'recipes'}->{$recna} } ;
+      my $recbase = "$workdir/work/$recna/".$bangf ;
+      $recipe_base{$recna} = $recbase ;
+      my @steps = @{ $recipe{'steps'} } ;
+      
+      my $laststep = int(@steps)-1 ;
+      my $stepname = $steps[$laststep] ;
+      my $stepbase = "$recbase.$laststep-$stepname" ;
+      my $outputf = $stepbase.".OUTPUT" ;
+      die "aborting diff: output-file for recipe $recna <<$outputf>> does not exist"
+	  unless -r $outputf ;
+      $recipe_outputs{$recna} = $outputf ;
     }
 
     assert (2 == @recipes) ;
     my ($rec1name, $rec2name) = sort @recipes ;
-    if ($failure) {
-      warn "skipping diff b/c one of the recipes failed" ;
-      next F ;
-    }
 
-    my $errordir = "$workdir/$rec1name!$rec2name.ERRORS" ;
-    v_systemx([0], ["mkdir", "-p", $errordir]) ;
+    my $errordir = "$workdir/diff/$rec1name!$rec2name.ERRORS" ;
     my $errorbase = "$errordir/$bangf" ;
-    my $preserve = $main::preserve || int(%onlyfiles) ;
     my $code = extended_diff($recipe_outputs{$rec1name}, $recipe_outputs{$rec2name},
 	'errorbase' => $errorbase,
-        'generated-files' => \@generated_files,
-        'preserve' => \$preserve,
 	) ;
-    if (0 == $code) {
-      print "OK $f\n" unless $main::quiet ;
-      if (!$preserve) {
-	v_systemx([0], ["rm", "-f", @generated_files]);
+    if (0 != $code) {
+      foreach my $recna (@recipes) {
+	my $diffdir = "$workdir/diff/$recna" ;
+	my $diffbase = "$workdir/diff/$recna/".$bangf ;
+	v_systemx([0], ["rm", "-f", <$diffbase.*>]) ;
+	my @recfiles = <$recipe_base{$recna}.*> ;
+	v_systemx([0], ["ln", @recfiles, $diffdir]) ;
       }
+    }
+    if (0 == $code || 1 == $code) {
+      print "OK $f\n" unless $main::quiet ;
     } else {
       print "NOT OK $f\n";
-      die "stopping due to errors in $f" unless $main::continue_error ;
+      croak "stopping due to errors in $f" unless $main::continue_error ;
     }
   }
 }
@@ -640,10 +771,10 @@ sub generate_input {
   my $recipe_input = "$patchdir/$recna/$escf.INPUT" ;
   my $recipe_patch = "$patchdir/$recna/$escf.PATCH" ;
 
-  die "both PATCH & INPUT exist for package=$pkgna recipe=ALL file=$inputf"
+  croak "both PATCH & INPUT exist for package=$pkgna recipe=ALL file=$inputf"
       if ((-r $all_input) && (-r $all_patch)) ;
 
-  die "both PATCH & INPUT exist for package=$pkgna recipe=$recna file=$inputf"
+  croak "both PATCH & INPUT exist for package=$pkgna recipe=$recna file=$inputf"
       if ((-r $recipe_input) && (-r $recipe_patch)) ;
 
   v_systemx([0], ["cp", $inputf, $outputf]) ;
@@ -665,11 +796,16 @@ sub generate_input {
   }
 }
 
+# returns
+# 0 for OK
+# 1 for OK, but diffs
+# 2 NOT OK
 sub extended_diff {
   my $f1 = shift ;
   my $f2 = shift ;
   my %args = @_ ;
 
+  my @generated_files ;
   assert (exists $args{'errorbase'}) ;
   my @cmd = ("diff", "-Bwiu", $f1, $f2) ;
   my $diff_output = v_capturex([0..1], [@cmd],
@@ -684,27 +820,31 @@ sub extended_diff {
 	     'output-filename' => "$args{'errorbase'}.WDIFF-FULL") ;
   my $wdiff_ok = (0 == $EXITVAL) ;
 
-  push(@{ $args{'generated-files'} }, "$args{'errorbase'}.DIFF", "$args{'errorbase'}.WDIFF", "$args{'errorbase'}.WDIFF-FULL") ;
+  push(@generated_files,
+       "$args{'errorbase'}.DIFF",
+       "$args{'errorbase'}.WDIFF",
+       "$args{'errorbase'}.WDIFF-FULL") ;
 
-  my $wordeq_ok = wordeq($f1, $f2, 'generated-files' => $args{'generated-files'}) ;
+  my $wordeq_ok = wordeq($f1, $f2, 'generated-files' => \@generated_files) ;
 
-  if ($diff_ok) { return 0 ; }
+  if ($diff_ok) {
+    v_systemx([0], ["rm", "-rf", @generated_files]) ;
+    return 0 ;
+  }
 
   if ($wdiff_ok) {
-    print "== $f1 <-> $f2\n" unless $main::quiet ;
+    print "== DIFF $f1 <-> $f2\n" unless $main::quiet ;
     print "WDIFF SAYS OK\n" unless $main::quiet ;
-    ${ $args{'preserve'} } = 1 ;
-    return 0 ;
+    return 1 ;
   }
   if ($wordeq_ok) {
     print "== $f1 <-> $f2\n" unless $main::quiet ;
     print "WHITE SPACE DIFFERENCES from wordeq\n" unless $main::quiet ;
-    ${ $args{'preserve'} } = 1 ;
-    return 0 ;
+    return 1 ;
   }
 
   print $diff_output ;
-  return 1 ;
+  return 2 ;
 }
 
 sub wordeq {
@@ -740,10 +880,10 @@ sub runtool {
   my $code = v_systemx([0..2], [@cmd]) ;
   if ($code != 0) {
     if (!$continue_error) {
-      die ("command <<".join(' ', @cmd).">> died with $@") ;
+      croak ("command <<".join(' ', @cmd).">> croakd with $@") ;
     }
     else {
-      warn ("command <<".join(' ', @cmd).">> died with $@") ;
+      warn ("command <<".join(' ', @cmd).">> croakd with $@") ;
       return $code ;
     }
   }
@@ -751,7 +891,7 @@ sub runtool {
 }
 
 sub v_systemx {
-  die "v_systemx: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
+  croak "v_systemx: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
   my $codes = shift ;
   my @cmd = @{ shift @_ } ;
   my %args = @_ ;
@@ -762,7 +902,7 @@ sub v_systemx {
 }
 
 sub v_capturex {
-  die "v_capturex: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
+  croak "v_capturex: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
   my $codes = shift ;
   my @cmd = @{ shift @_ } ;
   my %args = @_ ;
@@ -788,12 +928,6 @@ sub v_capturex {
   return $txt ;
 }
 
-sub v_system {
-  my $cmd = shift;
-  print STDERR "<<$cmd>>\n" if ($main::verbose);
-  system $cmd;
-}
-
 sub onlynl {
   my $s = shift ;
   $s =~ s,[^\n],,gs;
@@ -802,7 +936,7 @@ sub onlynl {
 
 sub f_read {
   my $f = shift;
-  open(F,"<$f") || die "cannot open $f for reading";
+  open(F,"<$f") || croak "cannot open $f for reading";
   my @l = <F>;
   close(F);
   return (wantarray ? @l : join('', @l)) ;
@@ -810,7 +944,7 @@ sub f_read {
 
 sub f_write {
   my $f = shift;
-  open(F,">$f") || die "cannot open $f for writing";
+  open(F,">$f") || croak "cannot open $f for writing";
   print F @_;
   close(F);
 }

@@ -1,4 +1,5 @@
 ---
+name: lexer-pa-pr
 recipes:
   cp:
     name: cp

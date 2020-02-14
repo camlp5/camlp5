@@ -1,4 +1,5 @@
 ---
+name: lexer-passthru
 recipes:
   cp:
     name: cp

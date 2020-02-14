@@ -1,4 +1,5 @@
 ---
+name: pa_o-pr_official
 recipes:
   cp:
     name: cp
