@@ -83,10 +83,10 @@ sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg odyl.cma camlp5.cma ../etc/pa_schemer.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
 
 tools/ROUNDTRIP-pa_r-pr_r.byte:
-	$(MKCAMLP5) pa_r.cmo pa_rp.cmo pa_macro.cmo q_phony.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_extend.cmo -o $@
+	$(MKCAMLP5) pa_r.cmo pa_rp.cmo pa_macro.cmo pa_extend.cmo pa_extend_m.cmo pa_macro_gram.cmo q_phony.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_extend.cmo -o $@
 
 tools/ROUNDTRIP-pa_r-pr_r.opt:
-	$(MKCAMLP5).opt pa_r.cmx pa_rp.cmx pa_macro.cmx q_phony.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx pr_extend.cmx -o $@
+	$(MKCAMLP5).opt pa_r.cmx pa_rp.cmx pa_macro.cmx pa_extend.cmx pa_extend_m.cmx pa_macro_gram.cmx q_phony.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx pr_extend.cmx -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.byte:
 	$(MKCAMLP5) pa_o.cmo pr_o.cmo -o $@
