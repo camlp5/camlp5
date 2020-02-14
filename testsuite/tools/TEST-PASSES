@@ -41,175 +41,18 @@ our $profile_file ;
 our $ocamlformat = $ENV{'HOME'}."/Hack/Ocaml/GENERIC/4.09.0/bin/ocamlformat" ;
 
 our %tools = (
-  'roundtrip-revised' =>
-  {
-    'name' => 'roundtrip-revised',
-    'syntax' => 'revised',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['tools/ROUNDTRIP-pa_r-pr_r', "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
+  generate_step('roundtrip-revised', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r', "-no-pa-opt"]),
+  generate_step('roundtrip-revised.byte', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r.byte', "-no-pa-opt"]),
+  generate_step('roundtrip-revised.opt', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r.opt', "-no-pa-opt"]),
 
-  'roundtrip-revised.byte' =>
-  {
-    'name' => 'roundtrip-revised.byte',
-    'syntax' => 'revised',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['tools/ROUNDTRIP-pa_r-pr_r.byte', "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
+  generate_step('roundtrip-official', 'original', ['tools/ROUNDTRIP-pa_o-pr_official', "-no-pa-opt"]),
+  generate_step('papr-official', 'original', ['./papr_official.byte']),
 
-  'roundtrip-revised.opt' =>
-  {
-    'name' => 'roundtrip-revised.opt',
-    'syntax' => 'revised',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2], ['tools/ROUNDTRIP-pa_r-pr_r.opt', "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
+  generate_step('roundtrip-original', 'original', ['tools/ROUNDTRIP-pa_o-pr_o', "-flag", "M", "-no-pa-opt"]),
+  generate_step('roundtrip-original.byte', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.byte', "-flag", "M", "-no-pa-opt"]),
+  generate_step('roundtrip-original.opt', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.opt', "-flag", "M", "-no-pa-opt"]),
 
-  'roundtrip-official' =>
-  {
-    'name' => 'roundtrip-official',
-    'syntax' => 'original',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['tools/ROUNDTRIP-pa_o-pr_official', "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
-
-  'papr-official' =>
-  {
-    'name' => 'papr-official',
-    'syntax' => 'original',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['./papr_official.byte', $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
-
-  'roundtrip-original' =>
-  {
-    'name' => 'roundtrip-original',
-    'syntax' => 'original',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['tools/ROUNDTRIP-pa_o-pr_o', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
-
-  'roundtrip-original.byte' =>
-  {
-    'name' => 'roundtrip-original.byte',
-    'syntax' => 'original',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['tools/ROUNDTRIP-pa_o-pr_o.byte', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
-
-  'roundtrip-original.opt' =>
-  {
-    'name' => 'roundtrip-original.opt',
-    'syntax' => 'original',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['tools/ROUNDTRIP-pa_o-pr_o.opt', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
-
-  'roundtrip-original-streams' =>
-  {
-    'name' => 'roundtrip-original-streams',
-    'syntax' => 'original',
-    'command' => sub {
-      my %args = @_ ;
-      my $inputf = $args{'input-filename'} ;
-      my $outputf = $args{'output-filename'} ;
-      my $filetype = $args{'file-type'} ;
-      
-      v_capturex([0..2],
-		 ['tools/ROUNDTRIP-pa_op-pr_op', "-flag", "M", "-no-pa-opt", $filetype, $inputf],
-		 'output-filename' => $outputf,
-		 'ENV'=> { 'LANG' => 'C' },
-	  ) ;
-      return $EXITVAL ;
-    },
-  },
+  generate_step('roundtrip-original-streams', 'original', ['tools/ROUNDTRIP-pa_op-pr_op', "-flag", "M", "-no-pa-opt"]),
 
   'cp' =>
   {
@@ -284,6 +127,20 @@ our %tools = (
 	  $txt =~ s|^#load.*$||gm ;
 	  $txt =~ s,declare end;,,gm ;
 	  $txt =~ s,;(?:\s*;)*,;,gs ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:revised-load' => {
+    'name' => 'nuke:revised-load',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|^#load.*$||gm ;
 	  f_write($outputf, $txt) ;
 	  return 0 ;
     },
@@ -369,6 +226,31 @@ our %tools = (
     },
   },
     ) ;
+
+sub generate_step {
+  my $stepna = shift ;
+  my $syntax = shift ;
+  my @cmd = @{ shift @_ } ;
+
+  return (  $stepna =>
+	    {
+	      'name' => $stepna,
+		  'syntax' => $syntax,
+		  'command' => sub {
+		    my %args = @_ ;
+		    my $inputf = $args{'input-filename'} ;
+		    my $outputf = $args{'output-filename'} ;
+		    my $filetype = $args{'file-type'} ;
+		    
+		    v_capturex([0..2],
+			       [@cmd, $filetype, $inputf],
+			       'output-filename' => $outputf,
+			       'ENV'=> { 'LANG' => 'C' },
+			) ;
+		    return $EXITVAL ;
+	      },
+	    }) ;
+}
 
 {
   GetOptions(
@@ -583,10 +465,14 @@ sub runtest_package {
   my %exclude ;
   {
     my @l = () ;
-    foreach my $stepna (keys %used_steps) {
-      next unless exists $pkg{'exclude'}->{$stepna};
-
-      push (@l, @{ $pkg{'exclude'}->{$stepna} }) ;
+    my @exclude_patterns = keys %{ $pkg{'exclude'} } ;
+    foreach my $epat (@exclude_patterns) {
+      STEPS: foreach my $stepna (keys %used_steps) {
+	if ($stepna =~ /^${epat}$/) {
+	  push (@l, @{ $pkg{'exclude'}->{$epat} }) ;
+	  last STEPS ;
+	}
+      }
     }
 
     foreach my $f (@l) {
@@ -879,7 +765,9 @@ sub v_capturex {
   }
 
   if (exists $args{'output-filename'}) {
-    f_write($args{'output-filename'}, $txt) ;
+    if (length($txt) > 0 || exists $args{'empty-output-ok'}) {
+      f_write($args{'output-filename'}, $txt) ;
+    }
   }
   return $txt ;
 }

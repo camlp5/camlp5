@@ -20,7 +20,7 @@ ocaml-4.00.0:
     - otherlibs
     - lex
   exclude:
-    roundtrip-original:
+    roundtrip-original.*:
     - ocamldoc/odoc_sig.ml
     - otherlibs/labltk/builtin/builtin_bind.ml
     - otherlibs/labltk/builtin/builtin_bindtags.ml
