@@ -15,6 +15,7 @@ open Pcaml;
 open Prtools;
 open Printf;
 open Pretty;
+open Mlsyntax.Revised;
 
 value not_impl name pc x =
   let desc =
@@ -325,7 +326,10 @@ EXTEND_PRINTER
           pprintf pc "?{%p}" patt p ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]
+    [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s
+      | <:expr< $lid:op$ $e1$ $e2$ >> when is_hashop op ->
+          pprintf pc "%p %s@;<0 0>%p" curr e1 op next e2
+      ] ]
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->

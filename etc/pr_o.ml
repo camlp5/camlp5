@@ -2237,7 +2237,7 @@ EXTEND_PRINTER
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s
       | <:expr< $lid:op$ $e1$ $e2$ >> when is_hashop op ->
-        pprintf pc "%p % s@;<0 0>%p" curr e1 op curr e2
+        pprintf pc "%p %s@;<0 0>%p" curr e1 op next e2
       ] ]
   ;
   pr_expr: LEVEL "simple"
