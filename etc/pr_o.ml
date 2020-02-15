@@ -1412,6 +1412,7 @@ EXTEND_PRINTER
           let pc = {(pc) with dang = ""} in
           pprintf pc "@[<a>begin@;%p@ end@]"
             (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
+      | <:expr< lazy $e$ >> -> pprintf pc "lazy@;%p" curr e
       | <:expr< $_$ $_$ >> | <:expr< $_$ . $_$ >> | <:expr< $_$ .( $_$ ) >> |
         <:expr< $_$ .[ $_$ ] >> | <:expr< $_$ .{ $_$ } >> |
         <:expr< assert $_$ >> | <:expr< lazy $_$ >> | <:expr< ($list:_$) >> |
@@ -1476,7 +1477,9 @@ EXTEND_PRINTER
       [ <:patt< $x$ . $y$ >> ->
           pprintf pc "%p.%p" curr x curr y ]
     | "simple"
-      [ <:patt< {$list:lpl$} >> ->
+      [ 
+        <:patt< lazy $p$ >> -> pprintf pc "lazy@;%p" curr p
+      | <:patt< {$list:lpl$} >> ->
           let (lpl, closed) =
             List.fold_right
               (fun lp (lpl, closed) ->

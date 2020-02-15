@@ -175,7 +175,7 @@ value stream_peek_nth n strm =
   loop n (Stream.npeek n strm) where rec loop n =
     fun
     [ [] -> None
-    | [x] -> if n == 1 then Some x else None
+    | [x] -> if n == 1 then Some (x : (string * string)) else None
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
@@ -323,10 +323,11 @@ value concat_comm loc e =
   Reloc.expr floc 0 e
 ;
 
-value expr_of_patt p =
+value rec expr_of_patt p =
   let loc = MLast.loc_of_patt p in
   match p with
   [ <:patt< $lid:x$ >> -> <:expr< $lid:x$ >>
+  | <:patt< $uid:_$ . $p$ >> -> expr_of_patt p
   | _ -> Ploc.raise loc (Stream.Error "identifier expected") ]
 ;
 
@@ -339,11 +340,14 @@ value build_letop_binder loc letop b l e = do {
   }
 ;
 
+value lbl_expr = Grammar.Entry.create Pcaml.gram "lbl_expr";
+value lbl_expr_list = Grammar.Entry.create Pcaml.gram "lbl_expr_list";
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl constructor_declaration label_declaration
-    match_case with_constr poly_variant;
+    match_case with_constr poly_variant lbl_expr lbl_expr_list;
   functor_parameter:
     [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
@@ -569,6 +573,11 @@ EXTEND
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e in
           <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
+      | "for"; "("; i = operator_rparen; "="; e1 = SELF; df = V direction_flag "to";
+        e2 = SELF; "do"; e = V SELF "list"; "done" ->
+          let i = Ploc.VaVal i in
+          let el = Pcaml.vala_map get_seq e in
+          <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
       | "while"; e1 = SELF; "do"; e2 = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e2 in
           <:expr< while $e1$ do { $_list:el$ } >> ]
@@ -702,7 +711,8 @@ EXTEND
     [ [ p = val_ident; e = fun_binding -> (p, e)
       | p = patt; "="; e = expr -> (p, e)
       | p = patt; ":"; t = poly_type; "="; e = expr ->
-          (<:patt< ($p$ : $t$) >>, e) ] ]
+          (<:patt< ($p$ : $t$) >>, e)
+      ] ]
   ;
   val_ident:
     [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>
@@ -712,7 +722,10 @@ EXTEND
     [ RIGHTA
       [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "="; e = expr -> <:expr< $e$ >>
-      | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
+      | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >>
+      | ":"; t1 = poly_type; ":>"; t2 = poly_type ; "="; e = expr -> <:expr< ( ( $e$ : $t1$ ) :> $t2$ ) >>
+      | ":>"; t = poly_type; "="; e = expr -> <:expr< ($e$ :> $t$) >>
+      ] ]
   ;
   match_case:
     [ [ x1 = patt; w = V (OPT [ "when"; e = expr -> e ]); "->"; x2 = expr ->
@@ -751,12 +764,18 @@ EXTEND
       | i = V UIDENT; "."; "("; j = operator_rparen ->
           <:expr< $_uid:i$ . $lid:j$ >>
       | i = V UIDENT; "."; "("; e = expr; ")" ->
-          <:expr< $_uid:i$ . ( $e$ ) >> ] ]
+          <:expr< $_uid:i$ . ( $e$ ) >>
+      | i = V UIDENT; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
+          <:expr< $_uid:i$ . ({ $_list:lel$ }) >>
+ ] ]
+
   ;
   (* Patterns *)
   patt:
     [ LEFTA
-      [ p1 = SELF; "as"; i = LIDENT -> <:patt< ($p1$ as $lid:i$) >> ]
+      [ p1 = SELF; "as"; i = LIDENT -> <:patt< ($p1$ as $lid:i$) >>
+      | p1 = SELF; "as"; "("; i = operator_rparen  -> <:patt< ($p1$ as $lid:i$) >>
+      ]
     | LEFTA
       [ p1 = SELF; "|"; p2 = SELF -> <:patt< $p1$ | $p2$ >> ]
     | [ p = SELF; ","; pl = LIST1 NEXT SEP "," ->
@@ -792,6 +811,11 @@ EXTEND
       | "lazy"; p = SELF -> <:patt< lazy $p$ >> ]
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
+(*
+    | "lazy" [
+        "lazy"; p = SELF -> <:patt< lazy $p$ >>
+      ]
+*)
     | "simple"
       [ s = V LIDENT -> <:patt< $_lid:s$ >>
       | s = V UIDENT -> <:patt< $_uid:s$ >>
@@ -899,9 +923,15 @@ EXTEND
     [ [ "'"; i = ident -> Some i
       | "_" -> None ] ]
   ;
+  record_type:
+    [ [ "{"; ldl = V label_declarations "list"; "}" ->
+      <:ctyp< { $_list:ldl$ } >> ] ]
+  ;
   constructor_declaration:
     [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
           (loc, ci, cal, None)
+      | ci = cons_ident; "of"; cdrec = record_type ->
+          (loc, ci, Ploc.VaVal [cdrec], None)
       | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*");
         "->"; t = ctyp ->
           (loc, ci, cal, Some t)
@@ -1207,7 +1237,9 @@ EXTEND
     [ NONA
       [ i = V LIDENT; ":"; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
       | i = V QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
-      | i = V QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
+      | i = V QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
+      | "?" ; i = V LIDENT ; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
+    ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; OPT "|"; rfl = V (LIST1 poly_variant SEP "|"); "]" ->
@@ -1295,7 +1327,10 @@ EXTEND
       | i = V QUESTIONIDENTCOLON; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >>
       | i = V QUESTIONIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
-          <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >> ] ]
+          <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >>
+      | "?"; i = V LIDENT;   ":";  t = ctyp LEVEL "apply"; "->"; ct = SELF ->
+          <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >>
+      ] ]
   ;
   class_fun_binding:
     [ [ p = labeled_patt; cfb = SELF -> <:class_expr< fun $p$ -> $cfb$ >> ] ]

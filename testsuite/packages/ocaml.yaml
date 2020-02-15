@@ -2,7 +2,7 @@
 ocaml-4.00.0:
   syntax: original
   package: ocaml-4.00.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
   dirs:
     - utils
     - asmcomp
@@ -67,10 +67,10 @@ ocaml-4.00.0:
     - otherlibs/labltk/frx/frx_toplevel.mli
     - testsuite/tests/warnings/w01.ml
   files: []
-ocaml-4.09.0:
+ocaml-4.01.0:
   syntax: original
-  package: ocaml-4.09.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.09.0
+  package: ocaml-4.01.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0
   dirs:
     - utils
     - asmcomp
@@ -83,7 +83,152 @@ ocaml-4.09.0:
     - ocamldoc
     - driver
     - parsing
-    - camlp4
+    - stdlib
+    - ocamlbuild
+    - otherlibs
+    - lex
+  exclude:
+    roundtrip-original.*:
+      - ocamlbuild/testsuite/external.ml
+      - ocamlbuild/testsuite/findlibonly.ml
+      - ocamlbuild/testsuite/findlibonly_test_header.ml
+      - ocamlbuild/testsuite/internal.ml
+      - ocamlbuild/testsuite/internal_test_header.ml
+      - ocamlbuild/testsuite/level0.ml
+      - otherlibs/labltk/builtin/builtin_bind.ml
+      - otherlibs/labltk/builtin/builtin_bindtags.ml
+      - otherlibs/labltk/builtin/builtinf_bind.ml
+      - otherlibs/labltk/builtin/builtinf_GetPixel.ml
+      - otherlibs/labltk/builtin/builtin_GetBitmap.ml
+      - otherlibs/labltk/builtin/builtin_GetCursor.ml
+      - otherlibs/labltk/builtin/builtin_GetPixel.ml
+      - otherlibs/labltk/builtin/builtini_bind.ml
+      - otherlibs/labltk/builtin/builtini_bindtags.ml
+      - otherlibs/labltk/builtin/builtini_GetBitmap.ml
+      - otherlibs/labltk/builtin/builtini_GetCursor.ml
+      - otherlibs/labltk/builtin/builtini_GetPixel.ml
+      - otherlibs/labltk/builtin/builtini_index.ml
+      - otherlibs/labltk/builtin/builtin_index.ml
+      - otherlibs/labltk/builtin/builtini_palette.ml
+      - otherlibs/labltk/builtin/builtini_ScrollValue.ml
+      - otherlibs/labltk/builtin/builtini_text.ml
+      - otherlibs/labltk/builtin/builtin_palette.ml
+      - otherlibs/labltk/builtin/builtin_ScrollValue.ml
+      - otherlibs/labltk/builtin/builtin_text.ml
+      - otherlibs/labltk/builtin/canvas_bind.ml
+      - otherlibs/labltk/builtin/canvas_bind.mli
+      - otherlibs/labltk/builtin/dialog.ml
+      - otherlibs/labltk/builtin/dialog.mli
+      - otherlibs/labltk/builtin/image.ml
+      - otherlibs/labltk/builtin/image.mli
+      - otherlibs/labltk/builtin/optionmenu.ml
+      - otherlibs/labltk/builtin/optionmenu.mli
+      - otherlibs/labltk/builtin/rawimg.ml
+      - otherlibs/labltk/builtin/selection_handle_set.ml
+      - otherlibs/labltk/builtin/selection_handle_set.mli
+      - otherlibs/labltk/builtin/selection_own_set.ml
+      - otherlibs/labltk/builtin/selection_own_set.mli
+      - otherlibs/labltk/builtin/text_tag_bind.ml
+      - otherlibs/labltk/builtin/text_tag_bind.mli
+      - otherlibs/labltk/builtin/winfo_contained.ml
+      - otherlibs/labltk/builtin/winfo_contained.mli
+      - otherlibs/labltk/builtin/builtina_empty.ml
+      - otherlibs/labltk/examples_labltk/taquin.ml
+      - otherlibs/labltk/examples_camltk/taquin.ml
+      - otherlibs/labltk/frx/frx_fileinput.ml
+      - otherlibs/labltk/frx/frx_lbutton.mli
+      - otherlibs/labltk/frx/frx_toplevel.mli
+  files: []
+ocaml-4.02.0:
+  syntax: original
+  package: ocaml-4.02.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.02.0/.opam-switch/sources/ocaml-base-compiler.4.02.0
+  dirs:
+    - utils
+    - asmcomp
+    - typing
+    - debugger
+    - testsuite
+    - bytecomp
+    - tools
+    - toplevel
+    - ocamldoc
+    - driver
+    - parsing
+    - stdlib
+    - ocamlbuild
+    - otherlibs
+    - lex
+  exclude:
+    roundtrip-original.*:
+      - ocamlbuild/testsuite/external.ml
+      - ocamlbuild/testsuite/findlibonly.ml
+      - ocamlbuild/testsuite/findlibonly_test_header.ml
+      - ocamlbuild/testsuite/internal.ml
+      - ocamlbuild/testsuite/internal_test_header.ml
+  files: []
+ocaml-4.04.0:
+  syntax: original
+  package: ocaml-4.04.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.04.0/.opam-switch/sources/ocaml-base-compiler.4.04.0
+  dirs:
+    - utils
+    - asmcomp
+    - typing
+    - debugger
+    - testsuite
+    - bytecomp
+    - tools
+    - toplevel
+    - ocamldoc
+    - driver
+    - parsing
+    - stdlib
+    - ocamlbuild
+    - otherlibs
+    - lex
+  exclude:
+    roundtrip-original: []
+  files: []
+ocaml-4.07.0:
+  syntax: original
+  package: ocaml-4.07.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.07.0/.opam-switch/sources/ocaml-base-compiler.4.07.0
+  dirs:
+    - utils
+    - asmcomp
+    - typing
+    - debugger
+    - testsuite
+    - bytecomp
+    - tools
+    - toplevel
+    - ocamldoc
+    - driver
+    - parsing
+    - stdlib
+    - ocamlbuild
+    - otherlibs
+    - lex
+  exclude:
+    roundtrip-original: []
+  files: []
+ocaml-4.09.0:
+  syntax: original
+  package: ocaml-4.09.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.09.0
+  dirs:
+    - utils
+    - asmcomp
+    - typing
+    - debugger
+    - testsuite
+    - bytecomp
+    - tools
+    - toplevel
+    - ocamldoc
+    - driver
+    - parsing
     - stdlib
     - ocamlbuild
     - otherlibs

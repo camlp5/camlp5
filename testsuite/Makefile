@@ -64,9 +64,9 @@ extfun_test.byte: extfun_test.ml testutil.cmo
 	$(CAMLP5R) -I . -mode S -o extfun_test.ppo extfun_test.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg odyl.cma camlp5.cma pr_r.cmo testutil.cmo -impl extfun_test.ppo -o extfun_test.byte
 
-o2r_test.byte: o2r_test.ml testutil.cmo
+o2r_test.byte: o2r_test.ml testutil.cmo testutil2.cmo
 	$(CAMLP5R) -I . -mode S -o o2r_test.ppo o2r_test.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo pr_r.cmo testutil.cmo -impl o2r_test.ppo -o o2r_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo pr_r.cmo testutil.cmo testutil2.cmo -impl o2r_test.ppo -o o2r_test.byte
 
 r2sch_test.byte: r2sch_test.ml testutil.cmo
 	$(CAMLP5R) -I . -mode S -o r2sch_test.ppo r2sch_test.ml

@@ -2,6 +2,7 @@
 (* o2r_test.ml *)
 
 open Testutil;
+open Testutil2;
 
 open OUnit2;
 open OUnitTest;
@@ -18,8 +19,11 @@ value x = 1 ;
 ]
 ;
 
-value _ = run_test_tt_main tests ;
-  
+value _ =
+if invoked_with "o2r_test" then
+  run_test_tt_main tests
+else ()
+;  
 (*
 ;;; Local Variables: ***
 ;;; mode:tuareg ***
