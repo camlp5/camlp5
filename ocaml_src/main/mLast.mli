@@ -202,7 +202,7 @@ and class_sig_item =
   | CgDcl of loc * class_sig_item list
   | CgInh of loc * class_type
   | CgMth of loc * bool * string * ctyp
-  | CgVal of loc * bool * string * ctyp
+  | CgVal of loc * bool * bool * string * ctyp
   | CgVir of loc * bool * string * ctyp
 and class_expr =
     CeApp of loc * class_expr * expr

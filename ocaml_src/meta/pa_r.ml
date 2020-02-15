@@ -152,7 +152,6 @@ let infixop0 =
        | _ -> raise Stream.Failure)
 ;;
 
-
 let infixop1 =
   Grammar.Entry.of_parser gram "infixop1"
     (fun (strm__ : _ Stream.t) ->
@@ -3405,7 +3404,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t : 'ctyp) _ (l : 'lident) (mf : bool) _ (loc : Ploc.t) ->
-              (MLast.CgVal (loc, mf, l, t) : 'class_sig_item)));
+              (MLast.CgVal (loc, mf, false, l, t) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "inherit")))

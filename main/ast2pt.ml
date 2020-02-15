@@ -1412,9 +1412,9 @@ and class_sig_item c l =
          (ocaml_pctf_meth
             (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) ::
        l]
-  | CgVal loc b s t →
+  | CgVal loc mf vf s t →
       [ocaml_class_type_field (mkloc loc)
-         (ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc)) ::
+         (ocaml_pctf_val (uv s, mkmutable (uv mf), ctyp t, mkloc loc)) ::
        l]
   | CgVir loc b s t →
       [ocaml_class_type_field (mkloc loc)

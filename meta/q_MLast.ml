@@ -1137,9 +1137,9 @@ EXTEND
     [ [ "declare"; st = SV (LIST0 [ s = class_sig_item; ";" → s ]); "end" →
           Qast.Node "CgDcl" [Qast.Loc; st]
       | "inherit"; cs = class_type → Qast.Node "CgInh" [Qast.Loc; cs]
-      | "value"; mf = SV (FLAG "mutable"); l = SV lident "lid" ""; ":";
+      | "value"; mf = SV (FLAG "mutable"); vf = SV (FLAG "virtual"); l = SV lident "lid" ""; ":";
         t = ctyp →
-          Qast.Node "CgVal" [Qast.Loc; mf; l; t]
+          Qast.Node "CgVal" [Qast.Loc; mf; vf; l; t]
       | "method"; "virtual"; pf = SV (FLAG "private"); l = SV lident "lid" "";
         ":"; t = ctyp →
           Qast.Node "CgVir" [Qast.Loc; pf; l; t]

@@ -215,7 +215,8 @@ and class_sig_item =
   | CgDcl of loc and V (list class_sig_item)
   | CgInh of loc and class_type
   | CgMth of loc and V bool and V string and ctyp
-  | CgVal of loc and V bool and V string and ctyp
+    (* first mutable, then virtual *)
+  | CgVal of loc and V bool and V bool and V string and ctyp
   | CgVir of loc and V bool and V string and ctyp ]
 and class_expr =
   [ CeApp of loc and class_expr and expr

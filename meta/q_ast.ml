@@ -464,8 +464,8 @@ module Meta_make (C : MetaSig) =
       | CgInh _ ct → C.node "CgInh" [class_type ct]
       | CgMth _ b s t →
           C.node "CgMth" [C.vala C.bool b; C.vala C.string s; ctyp t]
-      | CgVal _ b s t →
-          C.node "CgVal" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CgVal _ mf vf s t →
+          C.node "CgVal" [C.vala C.bool mf; C.vala C.bool vf; C.vala C.string s; ctyp t]
       | CgVir _ b s t →
           C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t] ]
     and class_expr =

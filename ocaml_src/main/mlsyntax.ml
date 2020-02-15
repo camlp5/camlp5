@@ -42,12 +42,29 @@ module Original =
         not (List.mem x excl) && String.length x >= 2 &&
         List.mem x.[0] list && symbolchar x 1
     ;;
-    let is_infixop0 =
-      let list = ['='; '<'; '>'; '|'; '&'; '$'] in
-      let excl = ["<-"; "||"; "&&"] in
+    let is_infixop0_0 =
+      let list = ['|'] in
+      let excl = ["||"] in
+      fun x ->
+        not (List.mem x excl) && String.length x >= 2 &&
+        List.mem x.[0] list && symbolchar x 1
+    ;;
+    let is_infixop0_1 =
+      let list = ['&'] in
+      let excl = ["&&"] in
+      fun x ->
+        not (List.mem x excl) && String.length x >= 2 &&
+        List.mem x.[0] list && symbolchar x 1
+    ;;
+    let is_infixop0_2 =
+      let list = ['='; '<'; '>'; '$'] in
+      let excl = ["<-"] in
       fun x ->
         not (List.mem x excl) && (x = "$" || String.length x >= 2) &&
         List.mem x.[0] list && symbolchar x 1
+    ;;
+    let is_infixop0 s =
+      is_infixop0_0 s || is_infixop0_1 s || is_infixop0_2 s
     ;;
     let is_infixop1 =
       let list = ['@'; '^'] in
@@ -109,12 +126,15 @@ module Original =
 module Revised =
   struct
     include Original;;
-    let is_infixop0 =
-      let list = ['='; '<'; '>'; '|'; '&'; '$'] in
-      let excl = ["<-"; "||"; "&&"] in
+    let is_infixop0_2 =
+      let list = ['='; '<'; '>'; '$'] in
+      let excl = ["<-"] in
       fun x ->
         not (List.mem x excl) && String.length x >= 2 &&
         List.mem x.[0] list && symbolchar x 1
+    ;;
+    let is_infixop0 s =
+      is_infixop0_0 s || is_infixop0_1 s || is_infixop0_2 s
     ;;
     let is_operator0 s = s <> "$" && is_operator s;;
     let is_operator s = is_operator0 s || is_hashop s;;
