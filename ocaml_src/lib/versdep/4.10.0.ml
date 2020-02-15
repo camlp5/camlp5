@@ -647,7 +647,7 @@ let ocaml_pctf_meth (s, pf, t, loc) =
   Pctf_method (mkloc loc s, pf, Concrete, t)
 ;;
 
-let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (mkloc loc s, mf, Concrete, t);;
+let ocaml_pctf_val (s, mf, vf, t, loc) = Pctf_val (mkloc loc s, mf, vf, t);;
 
 let ocaml_pctf_virt (s, pf, t, loc) =
   Pctf_method (mkloc loc s, pf, Virtual, t)

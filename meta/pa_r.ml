@@ -877,9 +877,9 @@ EXTEND
     [ [ "declare"; st = V (LIST0 [ s = class_sig_item; ";" → s ]); "end" →
           <:class_sig_item< declare $_list:st$ end >>
       | "inherit"; cs = class_type → <:class_sig_item< inherit $cs$ >>
-      | "value"; mf = V (FLAG "mutable"); l = V lident "lid" ""; ":";
+      | "value"; mf = V (FLAG "mutable"); vf = V (FLAG "virtual"); l = V lident "lid" ""; ":";
         t = ctyp →
-          <:class_sig_item< value $_flag:mf$ $_lid:l$ : $t$ >>
+          <:class_sig_item< value $_flag:mf$ $_flag:vf$  $_lid:l$ : $t$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
         ":"; t = ctyp →
           <:class_sig_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>

@@ -3397,14 +3397,17 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "value")))
-                      (Grammar.s_flag (Grammar.s_token ("", "mutable"))))
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "value")))
+                         (Grammar.s_flag (Grammar.s_token ("", "mutable"))))
+                      (Grammar.s_flag (Grammar.s_token ("", "virtual"))))
                    (Grammar.s_nterm (lident : 'lident Grammar.Entry.e)))
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) _ (l : 'lident) (mf : bool) _ (loc : Ploc.t) ->
-              (MLast.CgVal (loc, mf, false, l, t) : 'class_sig_item)));
+           (fun (t : 'ctyp) _ (l : 'lident) (vf : bool) (mf : bool) _
+                (loc : Ploc.t) ->
+              (MLast.CgVal (loc, mf, vf, l, t) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "inherit")))

@@ -1503,12 +1503,18 @@ value ocaml_pctf_meth (s, pf, t, loc) =
   ELSE Pctf_method (mkloc loc s, pf, Concrete, t) END
 ;
 
-value ocaml_pctf_val (s, mf, t, loc) =
-  IFDEF OCAML_VERSION <= OCAML_1_07 THEN Pctf_val (s, Public, mf, Some t, loc)
-  ELSIFDEF OCAML_VERSION < OCAML_3_10 THEN Pctf_val (s, mf, Some t, loc)
-  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN Pctf_val (s, mf, Concrete, t, loc)
-  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN Pctf_val (s, mf, Concrete, t)
-  ELSE Pctf_val (mkloc loc s, mf, Concrete, t) END
+value ocaml_pctf_val (s, mf, vf, t, loc) =
+  IFDEF OCAML_VERSION <= OCAML_1_07 THEN
+    Pctf_val (s, Public, mf, Some t, loc)
+  ELSIFDEF OCAML_VERSION < OCAML_3_10 THEN
+    Pctf_val (s, mf, Some t, loc)
+  ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
+    do { assert (vf = Concrete); Pctf_val (s, mf, Concrete, t, loc) }
+  ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
+    do { asserrt (vf = Concrete); Pctf_val (s, mf, Concrete, t) }
+  ELSE
+    Pctf_val (mkloc loc s, mf, vf, t)
+  END
 ;
 
 value ocaml_pctf_virt (s, pf, t, loc) =
