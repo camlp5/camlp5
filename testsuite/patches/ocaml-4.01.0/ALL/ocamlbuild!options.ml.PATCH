@@ -1,0 +1,21 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/ocamlbuild/options.ml	2013-08-24 13:46:22.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/ocamlbuild!options.ml.INPUT	2020-02-15 21:23:52.753807516 -0800
+@@ -64,7 +64,7 @@
+     in
+     let choices = if core_tool then choices @ choices' else choices' @ choices in
+     try
+-      match (List.find (fun choice -> not (choice () = None)) choices) () with
++      match List.find (fun choice -> not (choice () = None)) choices () with
+         Some cmd -> cmd
+       | None -> raise Not_found
+     with Not_found -> failwith (Printf.sprintf "Can't find tool: %s" cmd)
+@@ -145,8 +145,7 @@
+ let add_to' rxs x =
+   if x <> dummy then
+     rxs := [x] :: !rxs
+-  else
+-    ()
++
+ let set_cmd rcmd = String (fun s -> rcmd := Sh s)
+ let set_build_dir s =
+   make_links := false;

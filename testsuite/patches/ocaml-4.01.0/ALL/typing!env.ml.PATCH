@@ -1,0 +1,31 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/typing/env.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/typing!env.ml.INPUT	2020-02-15 23:59:11.427807516 -0800
+@@ -276,8 +276,8 @@
+     ps_filename: string;
+     ps_flags: pers_flags list }
+ 
+-let persistent_structures =
+-  (Hashtbl.create 17 : (string, pers_struct option) Hashtbl.t)
++let persistent_structures : (string, pers_struct option) Hashtbl.t =
++  Hashtbl.create 17
+ 
+ (* Consistency between persistent structures *)
+ 
+@@ -1269,14 +1269,14 @@
+     let comps = components_of_module f.fcomp_env f.fcomp_subst p mty in
+     Hashtbl.add f.fcomp_cache p2 comps;
+     comps
+-
++;;
+ (* Define forward functions *)
+ 
+-let _ =
++
+   components_of_module' := components_of_module;
+   components_of_functor_appl' := components_of_functor_appl;
+   components_of_module_maker' := components_of_module_maker
+-
++;;
+ (* Insertion of bindings by identifier *)
+ 
+ let add_value ?check id desc env =

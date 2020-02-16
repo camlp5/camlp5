@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/ocamlbuild/testsuite/ocamlbuild_test.ml	2013-08-24 13:46:22.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/ocamlbuild!testsuite!ocamlbuild_test.ml.INPUT	2020-02-15 21:26:43.776807516 -0800
+@@ -452,7 +452,7 @@
+         if failing_msg = msg then
+           Printf.printf "\x1b[0;32m\x1b[1m[PASSED]\x1b[0m \x1b[1m%-20s\x1b[0;36m%s.\n\x1b[m%!" name description
+         else
+-          Printf.printf "\x1b[0;31m\x1b[1m[FAILED]\x1b[0m \x1b[1m%-20s\x1b[0;33m%s.\n\x1b[m%!" name ((Printf.sprintf "Failure with not matching message:\n%s\n!=\n%s\n") msg failing_msg)
++          Printf.printf "\x1b[0;31m\x1b[1m[FAILED]\x1b[0m \x1b[1m%-20s\x1b[0;33m%s.\n\x1b[m%!" name (Printf.sprintf "Failure with not matching message:\n%s\n!=\n%s\n" msg failing_msg)
+       end;
+     | _ ->
+       let errors = List.concat (List.map (Match.match_with_fs ~root:full_name) matching) in

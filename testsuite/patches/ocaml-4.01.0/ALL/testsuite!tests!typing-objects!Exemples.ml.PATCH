@@ -1,0 +1,39 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/typing-objects/Exemples.ml	2012-07-17 08:31:12.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!typing-objects!Exemples.ml.INPUT	2020-02-15 23:37:12.854807516 -0800
+@@ -274,17 +274,17 @@
+ class calculator () = object (self)
+   val mutable arg = 0.
+   val mutable acc = 0.
+-  val mutable equals = function s -> s#arg
++  val mutable equals = fun s -> s#arg
+   method arg = arg
+   method acc = acc
+   method enter n = arg <- n; self
+   method add =
+     acc <- equals self;
+-    equals <- (function s -> s#acc +. s#arg);
++    equals <- (fun s -> s#acc +. s#arg);
+     self
+   method sub =
+     acc <- equals self;
+-    equals <- (function s -> s#acc -. s#arg);
++    equals <- (fun s -> s#acc -. s#arg);
+     self
+   method equals = equals self
+ end;;
+@@ -296,12 +296,12 @@
+ class calculator () = object (self)
+   val mutable arg = 0.
+   val mutable acc = 0.
+-  val mutable equals = function s -> s#arg
++  val mutable equals = fun s -> s#arg
+   method arg = arg
+   method acc = acc
+   method enter n = arg <- n; self
+-  method add = {< acc = equals self; equals = function s -> s#acc +. s#arg >}
+-  method sub = {< acc = equals self; equals = function s -> s#acc -. s#arg >}
++  method add = {< acc = equals self; equals = fun s -> s#acc +. s#arg >}
++  method sub = {< acc = equals self; equals = fun s -> s#acc -. s#arg >}
+   method equals = equals self
+ end;;
+ 

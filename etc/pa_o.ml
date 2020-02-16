@@ -48,6 +48,8 @@ do {
 Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 
+value error loc msg = Ploc.raise loc (Failure msg);
+
 value mklistexp loc last =
   loop True where rec loop top =
     fun
@@ -360,7 +362,7 @@ EXTEND
     [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp";
         "->"; me = SELF ->
           <:module_expr< functor $_fp:arg$ -> $me$ >>
-      | "struct"; st = structure; "end" ->
+      | "struct"; OPT ";;"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
     | [ me1 = SELF; "("; me2 = SELF; ")" -> <:module_expr< $me1$ $me2$ >>
@@ -869,7 +871,11 @@ EXTEND
   ;
   lbl_patt:
     [ [ i = patt_label_ident; "="; p = patt -> (i, p)
-      | i = patt_label_ident -> (i, i)
+      | i = patt_label_ident ->
+        let rec loop = fun [
+          <:patt< $PaUid _ _$ . $p$ >> -> loop p
+        | p -> p
+        ] in (i, loop i)
       | "_" -> (<:patt< _ >>, <:patt< _ >>) ] ]
   ;
   patt_label_ident:
@@ -1138,11 +1144,20 @@ EXTEND
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
   ;
+  mut_virt:
+  [ [
+      "mutable" ; "virtual" -> (True, True)
+    | "mutable" -> (True, False)
+    | "virtual"; "mutable" -> (True, True)
+    | "virtual" -> (False, True)
+    | -> (False, False)
+    ] ]
+  ;
   class_sig_item:
     [ [ "inherit"; cs = class_signature ->
           <:class_sig_item< inherit $cs$ >>
-      | "val"; mf = V (FLAG "mutable"); l = V LIDENT "lid" ""; ":"; t = ctyp ->
-          <:class_sig_item< value $_flag:mf$ $_lid:l$ : $t$ >>
+      | "val"; (mf, vf) = mut_virt; l = V LIDENT "lid" ""; ":"; t = ctyp ->
+        <:class_sig_item< value $flag:mf$ $flag:vf$ $_lid:l$ : $t$ >>
       | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
         t = poly_type ->
           <:class_sig_item< method virtual private $_lid:l$ : $t$ >>

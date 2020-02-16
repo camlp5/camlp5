@@ -1,0 +1,12 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/backtrace/backtrace.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!backtrace!backtrace.ml.INPUT	2020-02-15 22:23:35.056807516 -0800
+@@ -23,7 +23,7 @@
+   with Error "a" -> print_string "a"; print_newline(); 0
+      | Error "b" as exn -> print_string "b"; print_newline(); raise exn
+      | Error "c" -> raise (Error "c")
+-
+-let _ =
++;;
+   Printexc.record_backtrace true;
+   ignore (g Sys.argv.(1))
++;;

@@ -1,0 +1,25 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/stdlib/printexc.ml	2013-07-11 05:34:31.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/stdlib!printexc.ml.INPUT	2020-02-15 22:19:18.659807516 -0800
+@@ -58,8 +58,8 @@
+             sprintf locfmt file line char (char+6) "Undefined recursive module"
+         | _ ->
+             let x = Obj.repr x in
+-            let constructor =
+-              (Obj.magic (Obj.field (Obj.field x 0) 0) : string) in
++            let constructor : string =
++              Obj.magic (Obj.field (Obj.field x 0) 0) in
+             constructor ^ (fields x) in
+   conv !printers
+ 
+@@ -91,9 +91,9 @@
+                     * int    (* start char *)
+                     * int    (* end char *)
+   | Unknown_location of bool (*is_raise*)
+-
++;;
+ (* to avoid warning *)
+-let _ = [Known_location (false, "", 0, 0, 0); Unknown_location false]
++[Known_location (false, "", 0, 0, 0); Unknown_location false] ;;
+ 
+ type backtrace = loc_info array
+ 

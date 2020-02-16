@@ -1,0 +1,60 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/tools/dumpobj.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/tools!dumpobj.ml.INPUT	2020-02-15 23:43:33.020807516 -0800
+@@ -56,7 +56,7 @@
+ 
+ (* Events (indexed by PC) *)
+ 
+-let event_table = (Hashtbl.create 253 : (int, debug_event) Hashtbl.t)
++let event_table : (int, debug_event) Hashtbl.t = Hashtbl.create 253
+ 
+ let relocate_event orig ev =
+   ev.ev_pos <- orig + ev.ev_pos;
+@@ -118,7 +118,7 @@
+     else if tag = Obj.double_tag then
+         printf "%.12g" (Obj.magic x : float)
+     else if tag = Obj.double_array_tag then begin
+-        let a = (Obj.magic x : float array) in
++        let a : float array = Obj.magic x in
+         printf "[|";
+         for i = 0 to Array.length a - 1 do
+           if i > 0 then printf ", ";
+@@ -488,11 +488,11 @@
+   end;
+   let cu_pos = input_binary_int ic in
+   seek_in ic cu_pos;
+-  let cu = (input_value ic : compilation_unit) in
++  let cu : compilation_unit = input_value ic in
+   reloc := cu.cu_reloc;
+   if cu.cu_debug > 0 then begin
+     seek_in ic cu.cu_debug;
+-    let evl = (input_value ic : debug_event list) in
++    let evl : debug_event list = input_value ic in
+     record_events 0 evl
+   end;
+   seek_in ic cu.cu_pos;
+@@ -517,7 +517,7 @@
+   let prim_size = Bytesections.seek_section ic "PRIM" in
+   primitives := read_primitive_table ic prim_size;
+   ignore(Bytesections.seek_section ic "DATA");
+-  let init_data = (input_value ic : Obj.t array) in
++  let init_data : Obj.t array = input_value ic in
+   globals := Array.create (Array.length init_data) Empty;
+   for i = 0 to Array.length init_data - 1 do
+     !globals.(i) <- Constant (init_data.(i))
+@@ -530,7 +530,7 @@
+     let num_eventlists = input_binary_int ic in
+     for _i = 1 to num_eventlists do
+       let orig = input_binary_int ic in
+-      let evl = (input_value ic : debug_event list) in
++      let evl : debug_event list = input_value ic in
+       record_events orig evl
+     done
+   with Not_found -> ()
+@@ -563,5 +563,5 @@
+ let main() =
+   Arg.parse arg_list arg_fun arg_usage;
+     exit 0
+-
+-let _ = main ()
++;;
++main () ;;

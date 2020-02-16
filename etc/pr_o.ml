@@ -240,6 +240,7 @@ value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
+value simple_patt = Eprinter.apply_level pr_patt "simple" ;
 value expr1 = Eprinter.apply_level pr_expr "expr1";
 
 value comm_bef pc loc =
@@ -365,7 +366,6 @@ value let_binding pc (p, e) =
     [ (<:patt< $lid:_$ >>, <:expr< ($e$ : $t$) >>) -> (e, Some t)
     | _ -> (e, None) ]
   in
-  let simple_patt = Eprinter.apply_level pr_patt "simple" in
   let patt_tycon tyo pc p =
     match tyo with
     [ Some t -> pprintf pc "%p : %p" simple_patt p ctyp t
@@ -1175,7 +1175,8 @@ EXTEND_PRINTER
             (hvlistl (semi_after expr) curr) el
       | <:expr:< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           pprintf pc
-            "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do@]@;%q@ done@]" v
+            "@[<a>@[<a>for %p = %p %s@;<1 4>%p@ do@]@;%q@ done@]"
+            var_escaped (loc,v)
             curr e1 (if d then "to" else "downto") curr e2
             (hvlistl (semi_after curr) curr) el "" ]
     | "tuple"
@@ -2097,7 +2098,7 @@ value class_decl pc ci =
            (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
            class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
            (Pcaml.unvala ci.MLast.ciNam) (if pl = [] then "" else " ")
-           (hlist patt) pl class_type_opt ct_opt)
+           (hlist simple_patt) pl class_type_opt ct_opt)
       (fun () ->
          let pl = List.map (fun p -> (p, "")) pl in
          let pc =
@@ -2440,8 +2441,10 @@ EXTEND_PRINTER
           sig_method_or_method_virtual pc " virtual" priv s t
       | <:class_sig_item< type $t1$ = $t2$ >> ->
           pprintf pc "constraint %p =@;%p" ctyp t1 ctyp t2
-      | <:class_sig_item:< value $flag:mf$ $lid:s$ : $t$ >> ->
-          pprintf pc "val%s %p :@;%p" (if mf then " mutable" else "")
+      | <:class_sig_item:< value $flag:mf$ $flag:vf$ $lid:s$ : $t$ >> ->
+          pprintf pc "val%s%s %p :@;%p"
+            (if mf then " mutable" else "")
+            (if vf then " virtual" else "")
             var_escaped (loc, s) ctyp t
       | z ->
           error (MLast.loc_of_class_sig_item z)

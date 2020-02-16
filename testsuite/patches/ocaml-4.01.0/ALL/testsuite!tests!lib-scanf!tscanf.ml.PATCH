@@ -1,0 +1,68 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/lib-scanf/tscanf.ml	2013-03-17 08:40:57.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!lib-scanf!tscanf.ml.INPUT	2020-02-15 22:46:52.242807516 -0800
+@@ -25,12 +25,12 @@
+ 
+ (* Testing space scanning. *)
+ let test0 () =
+-  (sscanf "" "" id) 1 +
+-  (sscanf "" " " id) 2 +
+-  (sscanf " " " " id) 3 +
+-  (sscanf "\t" " " id) 4 +
+-  (sscanf "\n" " " id) 5 +
+-  (sscanf "\n\t 6" " %d" id)
++  sscanf "" "" id 1 +
++  sscanf "" " " id 2 +
++  sscanf " " " " id 3 +
++  sscanf "\t" " " id 4 +
++  sscanf "\n" " " id 5 +
++  sscanf "\n\t 6" " %d" id
+ ;;
+ 
+ test (test0 () = 21)
+@@ -803,16 +803,16 @@
+ let rec scan_elems scan_elem accu ib =
+   kscanf ib (fun ib exc -> accu)
+     "%r"
+-    (function ib ->
++    (fun ib ->
+      scan_elem ib
+-       (function elem ->
++       (fun elem ->
+         let accu = elem :: accu in
+         bscanf ib
+           " %1[;] "
+           (function
+            | "" -> accu
+            | _ -> scan_elems scan_elem accu ib)))
+-    (function l -> l)
++    (fun l -> l)
+ ;;
+ 
+ let scan_list scan_elem ib =
+@@ -940,7 +940,7 @@
+ let rec read_elems read_elem accu ib =
+   kscanf ib (fun ib exc -> accu)
+     "%r %1[;] "
+-    (read_elem (function elem -> elem :: accu))
++    (read_elem (fun elem -> elem :: accu))
+     (fun accu s -> if s = "" then accu else read_elems read_elem accu ib)
+ ;;
+ 
+@@ -963,7 +963,7 @@
+ let rec read_elems read_elem accu ib =
+   kscanf ib (fun ib exc -> accu)
+     "%r "
+-    (read_elem (function elem -> elem :: accu))
++    (read_elem (fun elem -> elem :: accu))
+     (fun accu -> read_elems read_elem accu ib)
+ ;;
+ 
+@@ -1207,7 +1207,7 @@
+ and writer ib ob =
+   Scanf.bscanf ib "%s\n" (function
+     | "start" -> send_string ob "Hello World!"; reader ib ob
+-    | "stop" -> Scanf.bscanf ib "%i" (function i -> i)
++    | "stop" -> Scanf.bscanf ib "%i" (fun i -> i)
+     | s -> send_int ob (int_of_string s); reader ib ob);;
+ 
+ let go () =

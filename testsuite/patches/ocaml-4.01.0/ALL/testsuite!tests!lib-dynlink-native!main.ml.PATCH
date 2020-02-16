@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/lib-dynlink-native/main.ml	2013-04-04 08:27:13.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!lib-dynlink-native!main.ml.INPUT	2020-02-15 22:43:16.436807516 -0800
+@@ -37,7 +37,7 @@
+     Marshal.to_channel oc !Api.cbs [Marshal.Closures];
+     close_out oc;
+     let ic = open_in_bin "marshal.data" in
+-    let l = (Marshal.from_channel ic : (unit -> unit) list) in
++    let l : (unit -> unit) list = Marshal.from_channel ic in
+     close_in ic;
+     List.iter (fun f -> f()) l
+   with Failure s ->

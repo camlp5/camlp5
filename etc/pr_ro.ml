@@ -496,8 +496,10 @@ EXTEND_PRINTER
           sig_method_or_method_virtual pc " virtual" priv s t
       | <:class_sig_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
-      | <:class_sig_item< value $flag:mf$ $lid:s$ : $t$ >> ->
-          pprintf pc "value%s %p :@;%p" (if mf then " mutable" else "")
+      | <:class_sig_item< value $flag:mf$ $flag:vf$ $lid:s$ : $t$ >> ->
+          pprintf pc "value%s%s %p :@;%p"
+            (if mf then " mutable" else "")
+            (if mf then " virtual" else "")
             var_escaped s ctyp t
       | z ->
           error (MLast.loc_of_class_sig_item z)

@@ -1,0 +1,29 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/labltk/examples_labltk/tetris.ml	2013-02-27 09:45:59.000000000 -0800
++++ patches/ocaml-4.01.0/ALL/otherlibs!labltk!examples_labltk!tetris.ml.INPUT	2020-02-15 21:54:05.665807516 -0800
+@@ -365,7 +365,7 @@
+     done
+   done
+ 
+-let timer_ref = (ref None : Timer.t option ref)
++let timer_ref : Timer.t option ref = ref None
+ (* I know, this should be timer ref, but I'm not sure what should be
+    the initial value ... *)
+ 
+@@ -384,8 +384,8 @@
+     y= !c.y;
+     d= !c.d;
+     alive= !c.alive }
++;;
+ 
+-let _ =
+   let top = openTk () in
+   let lb = Label.create top
+   and fw = Frame.create top
+@@ -705,5 +705,5 @@
+   bind_game top;
+   Button.configure button ~command: game_init;
+   game_init ()
+-
+-let _ = Printexc.print mainLoop ()
++;;
++Printexc.print mainLoop () ;;

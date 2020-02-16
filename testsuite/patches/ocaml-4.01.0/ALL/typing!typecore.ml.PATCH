@@ -1,0 +1,88 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/typing/typecore.ml	2013-07-24 01:16:27.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/typing!typecore.ml.INPUT	2020-02-16 00:05:18.958807516 -0800
+@@ -767,7 +767,7 @@
+       ({txt=Longident.Lident s}, _)::_, Some labels when Hashtbl.mem labels s ->
+         (* Special case for rebuilt syntax trees *)
+         List.map
+-          (function lid, a -> match lid.txt with
++          (fun (lid, a) -> match lid.txt with
+             Longident.Lident s -> lid, Hashtbl.find labels s, a
+           | _ -> assert false)
+           lid_a_list
+@@ -3459,16 +3459,16 @@
+        longident lid expected provided
+   | Label_mismatch(lid, trace) ->
+       report_unification_error ppf env trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "The record field %a@ belongs to the type"
+                    longident lid)
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but is mixed here with fields of type")
+   | Pattern_type_clash trace ->
+       report_unification_error ppf env trace
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "This pattern matches values of type")
+-        (function ppf ->
++        (fun ppf ->
+           fprintf ppf "but a pattern was expected which matches values of type")
+   | Multiply_bound_variable name ->
+       fprintf ppf "Variable %s is bound several times in this matching" name
+@@ -3477,9 +3477,9 @@
+         (Ident.name id)
+   | Expr_type_clash trace ->
+       report_unification_error ppf env trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "This expression has type")
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but an expression was expected of type")
+   | Apply_non_function typ ->
+       reset_and_mark_loops typ;
+@@ -3523,13 +3523,13 @@
+   | Name_type_mismatch (kind, lid, tp, tpl) ->
+       let name = if kind = "record" then "field" else "constructor" in
+       report_ambiguous_type_error ppf env tp tpl
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "The %s %a@ belongs to the %s type"
+              name longident lid kind)
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "The %s %a@ belongs to one of the following %s types:"
+              name longident lid kind)
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but a %s was expected belonging to the %s type"
+              name kind)
+   | Incomplete_format s ->
+@@ -3563,12 +3563,12 @@
+       fprintf ppf "The instance variable %s is overridden several times" v
+   | Coercion_failure (ty, ty', trace, b) ->
+       report_unification_error ppf env trace
+-        (function ppf ->
++        (fun ppf ->
+            let ty, ty' = prepare_expansion (ty, ty') in
+            fprintf ppf
+              "This expression cannot be coerced to type@;<1 2>%a;@ it has type"
+            (type_expansion ty) ty')
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but is here used with type");
+       if b then
+         fprintf ppf ".@.@[<hov>%s@ %s@]"
+@@ -3629,9 +3629,9 @@
+         type_expr ty
+   | Recursive_local_constraint trace ->
+       report_unification_error ppf env trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "Recursive local constraint when unifying")
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "with")
+   | Unexpected_existential ->
+       fprintf ppf

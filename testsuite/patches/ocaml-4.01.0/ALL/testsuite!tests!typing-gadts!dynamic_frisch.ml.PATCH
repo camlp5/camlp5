@@ -1,0 +1,29 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/typing-gadts/dynamic_frisch.ml	2012-07-30 11:04:46.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!typing-gadts!dynamic_frisch.ml.INPUT	2020-02-15 23:16:47.537807516 -0800
+@@ -95,7 +95,7 @@
+         (* t = ('a, 'b) for some 'a and 'b *)
+     | Record {fields} ->
+         VRecord
+-          (List.map (fun (Field{field_type; label; get}) ->
++          (List.map (function (Field{field_type; label; get}) ->
+                        (label, variantize field_type (get x))) fields)
+ ;;
+ 
+@@ -140,7 +140,7 @@
+         if List.length fields <> List.length fl then raise VariantMismatch;
+         let builder = create_builder () in
+         List.iter2
+-          (fun (Field {label; field_type; set}) (lab, v) ->
++          (function (Field {label; field_type; set}) -> fun (lab, v) ->
+             if label <> lab then raise VariantMismatch;
+             set builder (devariantize field_type v)
+           )
+@@ -300,7 +300,7 @@
+ ;;
+ 
+ (* First attempt: represent 1-constructor variants using Conv *)
+-let wrap_A t = Conv ("`A", (fun (`A x) -> x), (fun x -> `A x), t);;
++let wrap_A t = Conv ("`A", (function (`A x) -> x), (fun x -> `A x), t);;
+ 
+ let ty a = Rec (wrap_A (Option (Pair (a, Var)))) ;;
+ let v = variantize Enil (ty Int);;

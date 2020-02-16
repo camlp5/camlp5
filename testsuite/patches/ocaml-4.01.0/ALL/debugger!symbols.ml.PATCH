@@ -1,0 +1,27 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/debugger/symbols.ml	2013-03-09 14:38:52.000000000 -0800
++++ patches/ocaml-4.01.0/ALL/debugger!symbols.ml.INPUT	2020-02-15 21:11:42.799807516 -0800
+@@ -22,12 +22,9 @@
+ 
+ let events =
+   ref ([] : debug_event list)
+-let events_by_pc =
+-  (Hashtbl.create 257 : (int, debug_event) Hashtbl.t)
+-let events_by_module =
+-  (Hashtbl.create 17 : (string, debug_event array) Hashtbl.t)
+-let all_events_by_module =
+-  (Hashtbl.create 17 : (string, debug_event list) Hashtbl.t)
++let events_by_pc : (int, debug_event) Hashtbl.t = Hashtbl.create 257
++let events_by_module : (string, debug_event array) Hashtbl.t = Hashtbl.create 17
++let all_events_by_module : (string, debug_event list) Hashtbl.t = Hashtbl.create 17
+ 
+ let relocate_event orig ev =
+   ev.ev_pos <- orig + ev.ev_pos;
+@@ -55,7 +52,7 @@
+   let eventlists = ref [] in
+   for i = 1 to num_eventlists do
+     let orig = input_binary_int ic in
+-    let evl = (input_value ic : debug_event list) in
++    let evl : debug_event list = input_value ic in
+     (* Relocate events in event list *)
+     List.iter (relocate_event orig) evl;
+     eventlists := evl :: !eventlists

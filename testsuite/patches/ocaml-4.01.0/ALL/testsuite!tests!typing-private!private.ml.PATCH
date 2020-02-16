@@ -1,0 +1,36 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/typing-private/private.ml	2013-07-30 19:18:46.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!typing-private!private.ml.INPUT	2020-02-15 23:41:38.813807516 -0800
+@@ -6,11 +6,11 @@
+ 
+ module F0 : sig type t = private int end = Foobar;;
+ 
+-let f (x : F0.t) = (x : Foobar.t);; (* fails *)
++let f (x : F0.t) : Foobar.t = x;; (* fails *)
+ 
+ module F = Foobar;;
+ 
+-let f (x : F.t) = (x : Foobar.t);;
++let f (x : F.t) : Foobar.t = x;;
+ 
+ module M = struct type t = <m:int> end;;
+ module M1 : sig type t = private <m:int; ..> end = M;;
+@@ -27,7 +27,7 @@
+ module M6 : sig type t = private < n:int; .. > end = M1;; (* fails *)
+ 
+ module Bar : sig type t = private Foobar.t val f : int -> t end =
+-  struct type t = int let f (x : int) = (x : t) end;; (* must fail *)
++  struct type t = int let f (x : int) : t = x end;; (* must fail *)
+ 
+ module M : sig
+   type t = private T of int
+@@ -97,8 +97,8 @@
+ (* PR#6090 *)
+ module Test = struct type t = private A end
+ module Test2 : module type of Test with type t = Test.t = Test;;
+-let f (x : Test.t) = (x : Test2.t);;
+-let f Test2.A = ();;
++let f (x : Test.t) : Test2.t = x;;
++let f = function Test2.A -> ();;
+ let a = Test2.A;; (* fail *)
+ (* The following should fail from a semantical point of view,
+    but allow it for backward compatibility *)

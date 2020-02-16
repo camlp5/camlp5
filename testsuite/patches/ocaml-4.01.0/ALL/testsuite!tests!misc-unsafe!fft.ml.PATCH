@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/misc-unsafe/fft.ml	2012-10-15 10:50:56.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!misc-unsafe!fft.ml.INPUT	2020-02-15 23:02:31.462807516 -0800
+@@ -181,6 +181,7 @@
+   then print_string "ok"
+   else print_string "ERROR";
+   print_newline()
++;;
+ 
+-let _ =
+   let np = ref 16 in for i = 1 to 16 do test !np; np := !np*2 done
++;;

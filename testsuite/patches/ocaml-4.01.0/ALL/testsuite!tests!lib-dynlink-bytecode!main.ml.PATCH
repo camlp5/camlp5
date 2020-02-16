@@ -1,0 +1,26 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/lib-dynlink-bytecode/main.ml	2013-04-04 08:27:13.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!lib-dynlink-bytecode!main.ml.INPUT	2020-02-15 22:42:46.984807516 -0800
+@@ -13,8 +13,8 @@
+ let f x = print_string "This is Main.f\n"; x
+ 
+ let () = Registry.register f
++;;
+ 
+-let _ =
+   Dynlink.init ();
+   Dynlink.allow_unsafe_modules true;
+   for i = 1 to Array.length Sys.argv - 1 do
+@@ -38,7 +38,7 @@
+     Marshal.to_channel oc (Registry.get_functions()) [Marshal.Closures];
+     close_out oc;
+     let ic = open_in_bin "marshal.data" in
+-    let l = (Marshal.from_channel ic : (int -> int) list) in
++    let l : (int -> int) list = Marshal.from_channel ic in
+     close_in ic;
+     List.iter
+       (fun f ->
+@@ -47,3 +47,4 @@
+       l
+   with Failure s ->
+     Printf.printf "Failure: %s\n" s
++;;

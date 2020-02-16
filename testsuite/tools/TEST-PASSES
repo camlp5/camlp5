@@ -607,6 +607,10 @@ sub setup_package {
       my @steps = @{ $recipe{'steps'} } ;
 
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
+      if (-r $inputf) {
+	print "REMOVING $inputf and all downstream files\n" unless $main::quiet ;
+	v_systemx([0], ["rm", <$recbase.*>]) ;
+      }
       my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
       generate_input(
 	'input-filename' => $origf ,

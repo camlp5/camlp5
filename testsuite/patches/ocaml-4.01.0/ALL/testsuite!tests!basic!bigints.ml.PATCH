@@ -1,0 +1,15 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/basic/bigints.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!basic!bigints.ml.INPUT	2020-02-15 22:28:50.374807516 -0800
+@@ -10,7 +10,6 @@
+ (*                                                                     *)
+ (***********************************************************************)
+ 
+-let _ =
+   match Sys.word_size with
+   | 32 ->
+      print_int (1 * 1000000000); print_newline();
+@@ -35,3 +34,4 @@
+      print_int (100000000 * 1000000000); print_newline();
+      print_int (1000000000 * 1000000000); print_newline()
+   | _ -> assert false
++;;
