@@ -97,7 +97,7 @@ tools/ROUNDTRIP-pa_o-pr_o.opt:
 
 setup:
 	opam install rresult fmt pcre ounit2 bos
-	sudo apt-get install libstring-shellquote-perl
+	sudo apt-get install libstring-shellquote-perl libdigest-md5-file-perl
 
 clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt

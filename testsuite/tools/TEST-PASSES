@@ -2,6 +2,7 @@
 
 use strict ;
 use Data::Dumper ;
+use Digest::MD5::File qw(file_md5_hex);
 use Carp ;
 use Carp::Assert ;
 use File::Basename;
@@ -24,6 +25,8 @@ our $tool1 ;
 our $tool2 ;
 our $packages_file ;
 our $profile_file ;
+our @patchindex_files ;
+our @patchindex_dirs ;
 
 # step takes as arguments:
 #
@@ -278,6 +281,8 @@ sub generate_step {
     "continue-on-error" => \$continue_error,
     "packages-file=s" => \$packages_file,
     "profile-file=s" => \$profile_file,
+    "patchindex-file=s{}" => \@patchindex_files,
+    "patchindex-directory=s{}" => \@patchindex_dirs,
       )
       or croak("Error in command line arguments\n");
 
@@ -389,7 +394,12 @@ sub generate_step {
 	v_systemx([0], ["patch", $inputname, $patchname]) ;
       }
     }
-    elsif ($cmd eq 'setup' || $cmd eq 'run' || $cmd eq 'diff' || $cmd eq 'clean') {
+    elsif ($cmd eq 'setup' ||
+	   $cmd eq 'run' ||
+	   $cmd eq 'diff' ||
+	   $cmd eq 'clean' ||
+	   $cmd eq 'create-patchindex' ||
+	   $cmd eq 'discover-patches') {
       croak "must specify profile-file"
 	  unless defined $profile_file ;
 
@@ -440,6 +450,16 @@ sub generate_step {
 	  diff_package($workdir,
 		       \%profile,
 		       $pkgh);
+	}
+	elsif ($cmd eq 'create-patchindex') {
+	  create_patchindex($workdir,
+			    \%profile,
+			    $pkgh);
+	}
+	elsif ($cmd eq 'discover-patches') {
+	  discover_patches($workdir,
+			    \%profile,
+			    $pkgh);
 	}
 	elsif ($cmd eq 'clean') {
 	  clean_package($workdir,
@@ -504,7 +524,7 @@ sub package_run_files {
       STEPS: foreach my $stepna (keys %used_steps) {
 	if ($stepna =~ /^${epat}$/) {
 	  my @exclude_files = @{ $pkg{'exclude'}->{$epat} } ;
-	  print "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n" 
+	  print STDERR "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n" 
 	      if $main::verbose && @exclude_files;
 	  push (@l, @exclude_files) ;
 	  last STEPS ;
@@ -586,7 +606,7 @@ sub setup_package {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
-    print "==== SETUP $f ====\n" unless $main::quiet;
+    print STDERR "==== SETUP $f ====\n" unless $main::quiet;
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
@@ -595,7 +615,7 @@ sub setup_package {
 
     my $origf = "$location/".$f ;
 
-    print "SRC: $origf\n" if $main::verbose ;
+    print STDERR "SRC: $origf\n" if $main::verbose ;
 
     # so we know if any step failed
     my $failure = 0 ;
@@ -608,7 +628,7 @@ sub setup_package {
 
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
       if (-r $inputf) {
-	print "REMOVING $inputf and all downstream files\n" unless $main::quiet ;
+	print STDERR "REMOVING $inputf and all downstream files\n" unless $main::quiet ;
 	v_systemx([0], ["rm", <$recbase.*>]) ;
       }
       my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
@@ -624,6 +644,94 @@ sub setup_package {
   }
 }
 
+sub create_patchindex {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  die "must specify exactly one patchindex-directory"
+      unless 1 == int(@patchindex_dirs) ;
+  my $pidir = $patchindex_dirs[0] ;
+  die "no such directory $pidir" unless (-d $pidir) ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+
+  my %patchindex = () ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    my $bangf = bang_escape($f) ;
+
+    my $origf = "$location/".$f ;
+
+    my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+    my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
+
+    next unless -r $all_patch ;
+    print STDERR "==== PATCHINDEX $f ====\n" unless $main::quiet;
+
+    my $digest = file_md5_hex($origf) ;
+    $patchindex{$digest} = {
+      'package' => $pkg{'package'},
+      'filename' => $f ,
+      'original-filename' => "$location/".$f ,
+      'escaped-filename' => $bangf ,
+      'digest' => $digest ,
+      'patch-filename' => $all_patch ,
+    } ;
+  }
+  my $yaml = new YAML::Tiny( \%patchindex ) ;
+  $yaml->write("$pidir/$pkg{'package'}.patchindex") ;
+}
+
+sub discover_patches {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+
+  foreach my $pidir (@patchindex_dirs) {
+    push(@patchindex_files, <$pidir/*.patchindex>) ;
+  }
+  my %patchindex = () ;
+  foreach my $pifile (@patchindex_files) {
+    my $yaml = YAML::Tiny->read($pifile) ;
+    my %newindex = %{ $yaml->[0] } ;
+    %patchindex = (%patchindex, %newindex) ;
+  }
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    my $bangf = bang_escape($f) ;
+
+    my $origf = "$location/".$f ;
+
+    my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+    my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
+
+    print STDERR "==== PATCHINDEX $f ====\n" unless $main::quiet;
+    my $digest = file_md5_hex($origf) ;
+    next unless exists $patchindex{$digest} ;
+
+    my %h = %{ $patchindex{$digest} } ;
+
+    # just in case we end up applying a patchindex on a package from
+    # which it was derived
+    next if $all_patch eq $h{'patch-filename'} ;
+
+    if (-r $all_patch) {
+      print STDERR "OVERWRITING patch $all_patch\n" unless $main::quiet ;
+    }
+      
+    v_systemx([0], ["cp", $h{'patch-filename'}, $all_patch]) ;
+  }
+}
+
 sub run_package {
   my $workroot = shift ;
   my $profh = shift ;
@@ -636,7 +744,7 @@ sub run_package {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
-    print "==== RUN $f ====\n" unless $main::quiet;
+    print STDERR "==== RUN $f ====\n" unless $main::quiet;
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
@@ -645,7 +753,7 @@ sub run_package {
 
     my $origf = "$location/".$f ;
 
-    print "SRC: $origf\n" if $main::verbose ;
+    print STDERR "SRC: $origf\n" if $main::verbose ;
 
     my @recipes = keys %{ $profile{'recipes'} } ;
     RECIPE: foreach my $recna (@recipes) {
@@ -653,7 +761,7 @@ sub run_package {
       my $recbase = "$workdir/work/$recna/".$bangf ;
       my @steps = @{ $recipe{'steps'} } ;
 
-      print "== $f : recipe $recna\n" unless $main::quiet;
+      print STDERR "== $f : recipe $recna\n" unless $main::quiet;
     
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
       {
@@ -662,7 +770,7 @@ sub run_package {
 	my $laststepbase = "$recbase.$laststep-$laststepname" ;
 	my $lastoutput = "$laststepbase.OUTPUT" ;
 	if (-r $lastoutput) {
-	  print "SKIP\n" unless $main::quiet ;
+	  print STDERR "SKIP\n" unless $main::quiet ;
 	  next RECIPE ;
 	}
 	else {
@@ -674,7 +782,7 @@ sub run_package {
 	    }
 	  }
 	  if (@toremove) { 
-	    print "CLEAN/REDO\n" unless $main::quiet ;
+	    print STDERR "CLEAN/REDO\n" unless $main::quiet ;
 	    v_systemx([0], ["rm", "-f", @toremove]) ;
 	  }
 	}
@@ -697,7 +805,7 @@ sub run_package {
 
 	if ($code != 0) {
 	  warn "aborting processing of $f recipe $recna at step $stepname: $@" ;
-	  print "NOT OK $f\n";
+	  print STDERR "NOT OK $f\n";
 	  if ($main::continue_error) {
 	    next RECIPE;
 	  }
@@ -724,7 +832,7 @@ sub diff_package {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
-    print "==== DIFF $f ====\n" unless $main::quiet;
+    print STDERR "==== DIFF $f ====\n" unless $main::quiet;
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
@@ -733,7 +841,7 @@ sub diff_package {
 
     my $origf = "$location/".$f ;
 
-    print "SRC: $origf\n" if $main::verbose ;
+    print STDERR "SRC: $origf\n" if $main::verbose ;
 
     my %recipe_outputs ;
     my %recipe_base ;
@@ -772,13 +880,14 @@ sub diff_package {
       }
     }
     if (0 == $code || 1 == $code) {
-      print "OK $f\n" unless $main::quiet ;
+      print STDERR "OK $f\n" unless $main::quiet ;
     } else {
-      print "NOT OK $f\n";
+      print STDERR "NOT OK $f\n";
       croak "stopping due to errors in $f" unless $main::continue_error ;
     }
   }
 }
+
 
 # if there is both a PATCH and an INPUT file, that's a crash-error
 # if there is a PATCH/INPUT for this recipe, use it
@@ -861,17 +970,17 @@ sub extended_diff {
   }
 
   if ($wdiff_ok) {
-    print "== DIFF $f1 <-> $f2\n" unless $main::quiet ;
-    print "WDIFF SAYS OK\n" unless $main::quiet ;
+    print STDERR "== DIFF $f1 <-> $f2\n" unless $main::quiet ;
+    print STDERR "WDIFF SAYS OK\n" unless $main::quiet ;
     return 1 ;
   }
   if ($wordeq_ok) {
-    print "== $f1 <-> $f2\n" unless $main::quiet ;
-    print "WHITE SPACE DIFFERENCES from wordeq\n" unless $main::quiet ;
+    print STDERR "== $f1 <-> $f2\n" unless $main::quiet ;
+    print STDERR "WHITE SPACE DIFFERENCES from wordeq\n" unless $main::quiet ;
     return 1 ;
   }
 
-  print $diff_output ;
+  print STDERR $diff_output ;
   return 2 ;
 }
 
@@ -903,7 +1012,7 @@ sub runtool {
   my $srcf = $args{'src-filename'} ;
   my $dstf = $args{'dst-filename'} ;
 
-  print "$tool->{'name'}: $srcf -> $dstf\n" if $main::verbose ;
+  print STDERR "$tool->{'name'}: $srcf -> $dstf\n" if $main::verbose ;
   my @cmd = &{ $tool->{'command'}, }($srcf, $dstf) ;
   my $code = v_systemx([0..2], [@cmd]) ;
   if ($code != 0) {

@@ -22,6 +22,8 @@ tools/TEST-PASSES --profile-file profiles/pa_r-pr_r.yaml --packages-file package
 tools/TEST-PASSES --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
 tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
 
-tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
+tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
 
-tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/maquette.yaml run-full maquette-original
+tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/ocaml.yaml create-patchindex --patchindex-file ocaml-4.00.0.patchindex ocaml-4.00.0
+
+tools/TEST-PASSES --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/maquette.yaml run-full maquette-original
