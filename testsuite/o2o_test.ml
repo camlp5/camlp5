@@ -23,6 +23,12 @@ let x = 1;;
           {foo|let _ = (a + b) c;;
 |foo}
           (pr (pa1 "(a + b) c;;"))
+                        ]);
+    "infix2" >:: (fun [ _ ->
+        assert_equal ~{printer=(fun (x:string) -> x)}
+          {foo|let _ = (a --> b) c;;
+|foo}
+          (pr (pa1 "(a --> b) c;;"))
                         ])
 ]
 ;
