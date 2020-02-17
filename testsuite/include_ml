@@ -36,8 +36,11 @@
 (*
 #load "pa_extend.cmo";;
 #load "q_MLast.cmo";;
+*)
+(*
 #load "q_phony.cmo";;
- *)
+*)
+
 Exparser.optim := false ;;
 
 #load "testutil.cmo";;

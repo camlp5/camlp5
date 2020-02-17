@@ -209,9 +209,11 @@ value ocaml_attribute_patt loc (name: string) p eopt =
     attr_loc = loc
   })
 ;
+
 (*
-value ocaml_addattr attr ({pexp_attributes = l} as e) =
-  {(e) with pexp_attributes = [ attr :: l]}
+
+value ocaml_expr_addattr attr ({pexp_attributes = l} as e) =
+  { (e) with pexp_attributes = l @ [attr] }
 ;
 *)
 
@@ -228,7 +230,6 @@ value ocaml_expr_addattr attr {
      pexp_attributes = pexp_attributes @ [attr]
     }
 ;
-
 
 value ocaml_mkexp loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pexp_desc = x; pexp_loc = loc}
