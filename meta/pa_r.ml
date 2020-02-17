@@ -22,6 +22,7 @@ do {
   Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
   Plexer.dot_newline_is.val := odni;
   Plexer.dollar_for_antiquotation.val := odfa;
+  Grammar.Unsafe.clear_entry attribute_body;
   Grammar.Unsafe.clear_entry interf;
   Grammar.Unsafe.clear_entry implem;
   Grammar.Unsafe.clear_entry top_phrase;
@@ -218,8 +219,6 @@ value build_letop_binder loc letop b l e =
       b l in
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
-
-value (attribute_body : Grammar.Entry.e (MLast.v string * MLast.payload)) = Grammar.Entry.create gram "attribute_body";
 
 (* -- begin copy from pa_r to q_MLast -- *)
 

@@ -24,7 +24,7 @@ value interf (ast, eoi_loc) = do {
   let pt = Ast2pt.interf fname (List.map fst ast) in
   let oc = open_out_file () in
   let fmt = Format.formatter_of_out_channel oc in
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+  IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     let _ = pt in
     ignore (error loc "compiler-libs not available in this version of ocaml")
   ELSE
@@ -43,7 +43,7 @@ value implem (ast, eoi_loc) = do {
   let pt = Ast2pt.implem fname (List.map fst ast) in
   let oc = open_out_file () in
   let fmt = Format.formatter_of_out_channel oc in
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+  IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     let _ = pt in
     ignore (error loc "compiler-libs not available in this version of ocaml")
   ELSE

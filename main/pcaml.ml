@@ -39,6 +39,7 @@ variable CAMLP5PARAM to f or b.
 
 type status = option Ploc.t;
 
+value attribute_body = Grammar.Entry.create gram "attribute_body";
 value interf = Grammar.Entry.create gram "interf";
 value implem = Grammar.Entry.create gram "implem";
 value top_phrase = Grammar.Entry.create gram "top_phrase";

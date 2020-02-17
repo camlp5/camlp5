@@ -34,6 +34,7 @@ value parse_implem :
 value gram : Grammar.g;
    (** Grammar variable of the OCaml language *)
 
+value attribute_body : Grammar.Entry.e (MLast.v string * MLast.payload);
 value interf : Grammar.Entry.e (list (MLast.sig_item * MLast.loc) * status);
 value implem : Grammar.Entry.e (list (MLast.str_item * MLast.loc) * status);
 value top_phrase : Grammar.Entry.e (option MLast.str_item);

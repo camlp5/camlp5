@@ -8,7 +8,12 @@ use String::ShellQuote ;
 
 my @toremove ;
 
-END { v_systemx("rm", "-f", @toremove) ; }
+END { systemx("rm", "-f", @toremove) ; }
+
+our $ocaml_version = capturex("ocamlc","-version") ;
+chomp $ocaml_version ;
+our $ocaml_lib = capturex("ocamlc","-where") ;
+chomp $ocaml_lib ;
 
 our $verbose ;
 
@@ -43,11 +48,22 @@ our $verbose ;
   my @link ;
   unless ($opt) {
     my $stringified = join('; ', map { '"'.$_.'"' ; } @interfaces) ;
-    my $txt = <<"EOF";
+    my $txt ;
+    if (($ocaml_version cmp "4.08.0") < 0) {
+      my $crcs = capturex("$ocaml_lib/extract_crc", "-I", $ocaml_lib, @interfaces) ;
+      print STDERR $crcs if $main::verbose ;
+      $txt = <<"EOF";
+$crcs
+let _ = Dynlink.add_available_units crc_unit_list
+EOF
+    }
+    else {
+    $txt = <<"EOF";
 Dynlink.set_allowed_units [
   $stringified
 ] ;;
 EOF
+    }
     push(@toremove, "link$$.ml", "link$$.cmi", "link$$.cmo", "link$$.cmx") ;
     f_write("link$$.ml", $txt) ;
     push(@link, "link$$.ml") ;

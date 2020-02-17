@@ -47,7 +47,7 @@ q_phony.cmo q_phony.cmx: q_phony.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 papr_phony_macro.cmo papr_phony_macro.cmx: papr_phony_macro.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
-pr_official.cmo: pr_official.ml
+pr_official.cmo pr_official.cmx: pr_official.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 
 META: META.tpl

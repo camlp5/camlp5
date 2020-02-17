@@ -19,6 +19,7 @@ do {
   Plexer.utf8_lexing.val := True;
   Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
   Plexer.dollar_for_antiquotation.val := odfa;
+  Grammar.Unsafe.clear_entry attribute_body;
   Grammar.Unsafe.clear_entry interf;
   Grammar.Unsafe.clear_entry implem;
   Grammar.Unsafe.clear_entry top_phrase;
@@ -344,8 +345,6 @@ value build_letop_binder loc letop b l e = do {
 
 value lbl_expr = Grammar.Entry.create Pcaml.gram "lbl_expr";
 value lbl_expr_list = Grammar.Entry.create Pcaml.gram "lbl_expr_list";
-
-value (attribute_body : Grammar.Entry.e (MLast.v string * MLast.payload)) = Grammar.Entry.create gram "attribute_body";
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
@@ -757,7 +756,7 @@ EXTEND
       [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "="; e = expr -> <:expr< $e$ >>
       | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >>
-      | ":"; t1 = poly_type; ":>"; t2 = poly_type ; "="; e = expr -> <:expr< ( ( $e$ : $t1$ ) :> $t2$ ) >>
+      | ":"; t = poly_type; ":>"; t2 = poly_type ; "="; e = expr -> <:expr< ( ( $e$ : $t$ ) :> $t2$ ) >>
       | ":>"; t = poly_type; "="; e = expr -> <:expr< ($e$ :> $t$) >>
       ] ]
   ;
