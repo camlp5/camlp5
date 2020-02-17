@@ -105,6 +105,13 @@ let ocaml_mktyp loc x =
 let ocaml_mkpat loc x =
   {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
 ;;
+
+let ocaml_attribute_implem _ _ _ = assert false;;
+let ocaml_attribute_interf _ _ _ = assert false;;
+let ocaml_attribute_type _ _ _ = assert false;;
+let ocaml_attribute_patt _ _ _ _ = assert false;;
+let ocaml_expr_addattr _ _ = assert false;;
+
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_attributes = []}
 ;;
@@ -607,7 +614,9 @@ let ocaml_pctf_inher ct = Pctf_inherit ct;;
 
 let ocaml_pctf_meth (s, pf, t, loc) = Pctf_method (s, pf, Concrete, t);;
 
-let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Concrete, t);;
+let ocaml_pctf_val (s, mf, vf, t, loc) =
+  assert (vf = Concrete); Pctf_val (s, mf, Concrete, t)
+;;
 
 let ocaml_pctf_virt (s, pf, t, loc) = Pctf_method (s, pf, Virtual, t);;
 

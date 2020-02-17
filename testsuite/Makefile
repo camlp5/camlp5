@@ -95,8 +95,10 @@ tools/ROUNDTRIP-pa_o-pr_o.byte:
 tools/ROUNDTRIP-pa_o-pr_o.opt:
 	$(MKCAMLP5).opt pa_o.cmx pr_o.cmx -o $@
 
-setup:
-	opam install rresult fmt pcre ounit2 bos
+setup-ocaml:
+	opam install -y rresult fmt pcre ounit2 bos
+
+setup: setup-ocaml
 	sudo apt-get install libstring-shellquote-perl libdigest-md5-file-perl
 
 clean:

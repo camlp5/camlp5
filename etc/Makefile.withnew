@@ -8,9 +8,6 @@ COMPWITH=new
 
 all:
 
-pr_official.cma: pr_official.cmo
-	$(OCAMLC) $(DEBUG) $(INCLUDES) -I +compiler-libs ocamlcommon.cma pr_official.cmo -a -o pr_official.cma
-
 pa_lisp.cmo: pa_lispr.cmo
 pa_scheme.cmo: pa_schemer.cmo
 pr_extend.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo

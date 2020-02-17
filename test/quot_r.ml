@@ -452,6 +452,12 @@ MLast.ExSpw loc e;
 <:expr< while $e$ do { $list:le$ } >>;
 <:expr< while $e$ do { $_list:le$ } >>;
 
+(* expr attributes *)
+(* CHET TODO: FIX THIS *)
+MLast.ExAtt loc e (Ploc.VaVal (Ploc.VaVal sxf1, sxf2));
+MLast.ExAtt loc e (Ploc.VaVal (sxf1, sxf2));
+MLast.ExAtt loc e sx;
+
 (* access *)
 <:module_type< $mt1$ . $mt2$ >>;
 (* application *)
@@ -857,6 +863,7 @@ MLast.StDef loc lx;
 <:class_sig_item< method $_flag:b$ $_lid:s$ : $t$ >>;
 
 (* value *)
+(*
 <:class_sig_item< value mutable $lid:s$ : $t$ >>;
 <:class_sig_item< value mutable $_lid:s$ : $t$ >>;
 <:class_sig_item< value $lid:s$ : $t$ >>;
@@ -865,6 +872,43 @@ MLast.StDef loc lx;
 <:class_sig_item< value $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $_lid:s$ : $t$ >>;
+*)
+
+<:class_sig_item< value mutable virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $_lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $_flag:b2$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< value virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value $lid:s$ : $t$ >>;
+<:class_sig_item< value $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $_flag:b2$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< value $flag:b1$ virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $_flag:b2$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< value $_flag:b1$ virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $_flag:b2$ $_lid:s$ : $t$ >>;
 
 (* virtual method *)
 <:class_sig_item< method virtual private $lid:s$ : $t$ >>;
@@ -1116,5 +1160,21 @@ MLast.StDef loc lx;
 <:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
+
+(* CHET TODO: FIX THESE, make them meaningful *)
 MLast.Fresh;
 MLast.Override;
+MLast.StAttr loc (Ploc.VaVal lsi);
+MLast.StAttr loc lsi;
+MLast.SiAttr loc (Ploc.VaVal lsi);
+MLast.SiAttr loc lsi;
+MLast.TyAttr loc (Ploc.VaVal t);
+MLast.TyAttr loc t;
+MLast.PaAttr loc (Ploc.VaVal p) None;
+MLast.PaAttr loc (Ploc.VaVal p) (Some (Ploc.VaVal e));
+MLast.PaAttr loc (Ploc.VaVal p) (Some e);
+MLast.PaAttr loc (Ploc.VaVal p) oe;
+MLast.PaAttr loc p None;
+MLast.PaAttr loc p (Some (Ploc.VaVal e));
+MLast.PaAttr loc p (Some e);
+MLast.PaAttr loc p oe;

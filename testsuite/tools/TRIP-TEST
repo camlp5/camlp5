@@ -28,7 +28,7 @@ else
 fi
 grep OVERSION config/Makefile.cnf
 {
-  (make -C test clean && make -C test clean all && make -C testsuite clean all) 2>&1 
+  (make -C test clean && make -C test clean all && make -C testsuite setup clean all) 2>&1 
   echo "test OK" 1>&2
 } | if (( $ENABLE_LOG ))
 then
