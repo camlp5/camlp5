@@ -20,8 +20,9 @@ value x = 1;
                         ]) ;
     "infix1" >:: (fun [ _ ->
         assert_equal ~{printer=(fun (x:string) -> x)}
-          {foo|(a + b) c|foo}
-          (pr (pa1 "(a + b) c"))
+          {foo|(a + b) c;
+|foo}
+          (pr (pa1 "(a + b) c;;"))
                         ])
 ]
 ;

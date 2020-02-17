@@ -1473,7 +1473,11 @@ EXTEND_PRINTER
           else
             let unfold =
               fun
-              [ <:expr< $x$ $y$ >> -> Some (x, "", y)
+              [ 
+                <:expr< [$_$ :: $_$] >> -> None
+              |  <:expr< $lid:n$ $_$ $_$ >> when is_infix n || is_infix_operator n -> None
+              |  <:expr< $lid:n$ $_$ >> when is_unary n || is_prefixop n -> None
+              | <:expr< $x$ $y$ >> -> Some (x, "", y)
               | e -> None ]
             in
             left_operator pc 2 unfold next z ]
