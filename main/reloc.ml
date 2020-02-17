@@ -224,7 +224,9 @@ and patt floc sh =
 and expr floc sh =
   self where rec self =
     fun
-    [ ExAcc loc x1 x2 →
+    [ ExAtt loc e attr ->
+       ExAtt loc (self e) attr
+    | ExAcc loc x1 x2 →
         let loc = floc loc in
         ExAcc loc (self x1) (self x2)
     | ExAnt loc x1 →

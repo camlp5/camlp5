@@ -168,6 +168,7 @@ value label_declaration =
 
 value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
+value attribute_body = Grammar.Entry.create gram "attribute_body";
 
 value mksequence2 _ =
   fun
@@ -281,7 +282,32 @@ EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
     module_expr signature structure class_type class_expr class_sig_item
     class_str_item let_binding type_decl constructor_declaration
-    label_declaration match_case ipatt with_constr poly_variant;
+    label_declaration match_case ipatt with_constr poly_variant attribute_body;
+  attribute_id:
+  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> Qast.VaVal (Qast.Str (String.concat "." l))
+    ] ]
+  ;
+  attribute_structure:
+    [ [ st = SV (LIST1 [ s = str_item; ";" → s ]) "structure" → st ] ]
+  ;
+  attribute_signature:
+    [ [ st = SV (LIST1 [ s = sig_item; ";" → s ]) "signature" → st ] ]
+  ;
+  attribute_body:
+  [ [ id = SV attribute_id "attrid" ; st = attribute_structure ->
+      Qast.Tuple [id; Qast.Node "StAttr" [Qast.Loc; st]]
+    | id = SV attribute_id "attrid" ->
+      Qast.Tuple [id; Qast.Node "StAttr" [Qast.Loc; Qast.VaVal (Qast.List [])]]
+    | id = SV attribute_id "attrid" ; ":" ; si = attribute_signature -> 
+      Qast.Tuple [id; Qast.Node "SiAttr" [Qast.Loc; si]]
+    | id = SV attribute_id "attrid" ; ":" ; ty = SV ctyp "type" -> 
+      Qast.Tuple [id; Qast.Node "TyAttr" [Qast.Loc; ty]]
+    | id = SV attribute_id "attrid" ; "?" ;  p = SV patt "patt" -> 
+      Qast.Tuple [id; Qast.Node "PaAttr" [Qast.Loc; p; Qast.Option None]]
+    | id = SV attribute_id "attrid" ; "?" ;  p = SV patt "patt"; "when"; e = SV expr "expr" -> 
+      Qast.Tuple [id; Qast.Node "PaAttr" [Qast.Loc; p; Qast.Option (Some e)]]
+    ] ]
+  ;
   functor_parameter:
    [ [ "(" ; i = SV uidopt "uidopt"; ":"; t = module_type ; ")" →
                 Qast.Option (Some (Qast.Tuple [i; t]))
@@ -570,6 +596,10 @@ EXTEND
                [Qast.Loc;
                 Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "@")]; e1];
              e2] ]
+    | "expr_attribute" LEFTA
+      [ e = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "ExAtt" [Qast.Loc; e; attr]
+      ]
     | "+" LEFTA
       [ e1 = SELF; "+"; e2 = SELF →
           Qast.Node "ExApp"
@@ -1582,6 +1612,7 @@ value apply_entry e q =
   Quotation.ExAst (expr, patt)
 ;
 
+let attribute_body_eoi = Grammar.Entry.create gram "attribute_body_eoi" in
 let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in
 let str_item_eoi = Grammar.Entry.create gram "str_item_eoi" in
 let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
@@ -1598,6 +1629,7 @@ let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
 let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
 do {
   EXTEND
+    attribute_body_eoi: [ [ x = attribute_body; EOI -> x ] ];
     sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
     str_item_eoi: [ [ x = str_item; EOI -> x ] ];
     ctyp_eoi: [ [ x = ctyp; EOI -> x ] ];
@@ -1614,7 +1646,8 @@ do {
     type_decl_eoi: [ [ x = type_decl; EOI -> x ] ];
   END;
   List.iter (fun (q, f) -> Quotation.add q (f q))
-    [("sig_item", apply_entry sig_item_eoi);
+    [("attribute_body", apply_entry attribute_body_eoi);
+     ("sig_item", apply_entry sig_item_eoi);
      ("str_item", apply_entry str_item_eoi);
      ("ctyp", apply_entry ctyp_eoi);
      ("patt", apply_entry patt_eoi);

@@ -192,7 +192,8 @@ module Meta_make (C : MetaSig) =
       | PaXtr (loc, s, _) -> C.xtr_or_anti loc (fun r -> C.node "PaAnt" [r]) s
     and expr =
       function
-        ExAcc (_, e1, e2) -> C.node "ExAcc" [expr e1; expr e2]
+        ExAtt (_, e, att) -> assert false
+      | ExAcc (_, e1, e2) -> C.node "ExAcc" [expr e1; expr e2]
       | ExAnt (_, e) -> C.node "ExAnt" [expr e]
       | ExApp (_, e1, e2) -> C.node "ExApp" [expr e1; expr e2]
       | ExAre (_, e1, e2) -> C.node "ExAre" [expr e1; expr e2]

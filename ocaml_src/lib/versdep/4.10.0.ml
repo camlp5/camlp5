@@ -103,6 +103,41 @@ let ocaml_mktyp loc x =
 let ocaml_mkpat loc x =
   {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
 ;;
+
+let ocaml_attribute_implem loc (name : string) sl =
+  Parsetree
+  .({attr_name = mkloc loc name; attr_payload = PStr sl; attr_loc = loc})
+;;
+let ocaml_attribute_interf loc (name : string) si =
+  Parsetree
+  .({attr_name = mkloc loc name; attr_payload = PSig si; attr_loc = loc})
+;;
+
+let ocaml_attribute_type loc (name : string) ty =
+  Parsetree
+  .({attr_name = mkloc loc name; attr_payload = PTyp ty; attr_loc = loc})
+;;
+
+let ocaml_attribute_patt loc (name : string) p eopt =
+  Parsetree
+  .({attr_name = mkloc loc name; attr_payload = PPat (p, eopt);
+   attr_loc = loc})
+;;
+(*
+value ocaml_addattr attr ({pexp_attributes = l} as e) =
+  {(e) with pexp_attributes = [ attr :: l]}
+;
+*)
+
+let ocaml_expr_addattr attr
+    {pexp_desc = pexp_desc; pexp_loc = pexp_loc;
+     pexp_loc_stack = pexp_loc_stack; pexp_attributes = pexp_attributes} =
+  {pexp_desc = pexp_desc; pexp_loc = pexp_loc;
+   pexp_loc_stack = pexp_loc_stack;
+   pexp_attributes = pexp_attributes @ [attr]}
+;;
+
+
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}
 ;;

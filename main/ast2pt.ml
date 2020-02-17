@@ -728,7 +728,10 @@ value label_of_patt =
 
 value rec expr =
   fun
-  [ ExAcc loc x <:expr< val >> →
+  [ 
+    ExAtt loc e a ->
+    ocaml_expr_addattr (attr (uv a)) (expr e)
+  | ExAcc loc x <:expr< val >> →
       mkexp loc
         (ocaml_pexp_apply
            (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
@@ -1543,6 +1546,23 @@ and class_str_item c l =
          (ocaml_pcf_virt
             (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
        l] ]
+and attr (id, payload) =
+  match payload with [
+    StAttr loc st ->
+      let st = List.fold_right str_item (uv st) [] in
+      ocaml_attribute_implem (mkloc loc) (uv id) st
+  | SiAttr loc si ->
+      let si = List.fold_right sig_item (uv si) [] in
+      ocaml_attribute_interf (mkloc loc) (uv id) si
+  | TyAttr loc ty ->
+      let ty = ctyp (uv ty) in
+      ocaml_attribute_type (mkloc loc) (uv id) ty
+  | PaAttr loc p eopt ->
+      let p = patt (uv p) in
+      let eopt = option_map uv eopt in
+      let eopt = option_map expr eopt in
+      ocaml_attribute_patt (mkloc loc) (uv id) p eopt
+  ]
 ;
 
 value interf fname ast = do {

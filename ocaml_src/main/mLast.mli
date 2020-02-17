@@ -122,6 +122,7 @@ and expr =
   | ExVrn of loc * string
   | ExWhi of loc * expr * expr list
   | ExXtr of loc * string * expr option
+  | ExAtt of loc * expr * (string * payload)
 and module_type =
     MtAcc of loc * module_type * module_type
   | MtApp of loc * module_type * module_type
@@ -221,7 +222,13 @@ and class_str_item =
   | CrVal of loc * bool * bool * string * expr
   | CrVav of loc * bool * string * ctyp
   | CrVir of loc * bool * string * ctyp
-and override_flag = Fresh | Override;;
+and override_flag = Fresh | Override
+and payload =
+    StAttr of loc * str_item list
+  | SiAttr of loc * sig_item list
+  | TyAttr of loc * ctyp
+  | PaAttr of loc * patt * expr option
+;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;

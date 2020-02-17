@@ -178,6 +178,58 @@ value ocaml_mkpat loc x =
     {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
   END
 ;
+
+value ocaml_attribute_implem loc (name: string) sl =
+  Parsetree.({
+    attr_name = mkloc loc name ;
+    attr_payload = PStr sl ;
+    attr_loc = loc
+  })
+;
+value ocaml_attribute_interf loc (name: string) si =
+  Parsetree.({
+    attr_name = mkloc loc name ;
+    attr_payload = PSig si ;
+    attr_loc = loc
+  })
+;
+
+value ocaml_attribute_type loc (name: string) ty =
+  Parsetree.({
+    attr_name = mkloc loc name ;
+    attr_payload = PTyp ty ;
+    attr_loc = loc
+  })
+;
+
+value ocaml_attribute_patt loc (name: string) p eopt =
+  Parsetree.({
+    attr_name = mkloc loc name ;
+    attr_payload = PPat p eopt ;
+    attr_loc = loc
+  })
+;
+(*
+value ocaml_addattr attr ({pexp_attributes = l} as e) =
+  {(e) with pexp_attributes = [ attr :: l]}
+;
+*)
+
+value ocaml_expr_addattr attr {
+     pexp_desc=pexp_desc;
+     pexp_loc=pexp_loc;
+     pexp_loc_stack=pexp_loc_stack;
+     pexp_attributes=pexp_attributes
+    } =
+  {
+     pexp_desc=pexp_desc;
+     pexp_loc=pexp_loc;
+     pexp_loc_stack=pexp_loc_stack;
+     pexp_attributes = pexp_attributes @ [attr]
+    }
+;
+
+
 value ocaml_mkexp loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pexp_desc = x; pexp_loc = loc}
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN

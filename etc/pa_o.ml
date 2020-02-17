@@ -345,11 +345,39 @@ value build_letop_binder loc letop b l e = do {
 value lbl_expr = Grammar.Entry.create Pcaml.gram "lbl_expr";
 value lbl_expr_list = Grammar.Entry.create Pcaml.gram "lbl_expr_list";
 
+value (attribute_body : Grammar.Entry.e (MLast.v string * MLast.payload)) = Grammar.Entry.create gram "attribute_body";
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl constructor_declaration label_declaration
-    match_case with_constr poly_variant lbl_expr lbl_expr_list;
+    match_case with_constr poly_variant lbl_expr lbl_expr_list attribute_body;
+  attribute_id:
+  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
+    ] ]
+  ;
+  attribute_structure:
+    [ [ st = V (LIST1 [ s = str_item; ";" → s ]) "structure" → st ] ]
+  ;
+  attribute_signature:
+    [ [ st = V (LIST1 [ s = sig_item; ";" → s ]) "signature" → st ] ]
+  ;
+  attribute_body:
+  [ [
+      id = V attribute_id "attrid" ; st = attribute_structure ->
+      <:attribute_body< $_attrid:id$ $_structure:st$ >>
+    | id = V attribute_id "attrid" ->
+      <:attribute_body< $_attrid:id$ >>
+    | id = V attribute_id "attrid" ; ":" ; si = attribute_signature -> 
+      <:attribute_body< $_attrid:id$ : $_signature:si$ >>
+    | id = V attribute_id "attrid" ; ":" ; ty = V ctyp "type" -> 
+      <:attribute_body< $_attrid:id$ : $_type:ty$ >>
+    | id = V attribute_id "attrid" ; "?" ;  p = V patt "patt" -> 
+      <:attribute_body< $_attrid:id$ ? $_patt:p$ >>
+    | id = V attribute_id "attrid" ; "?" ;  p = V patt "patt"; "when"; e = V expr "expr" -> 
+      <:attribute_body< $_attrid:id$ ? $_patt:p$ when $_expr:e$ >>
+    ] ]
+  ;
   functor_parameter:
     [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
@@ -609,6 +637,10 @@ EXTEND
       [ e1 = SELF; "^"; e2 = SELF -> <:expr< $e1$ ^ $e2$ >>
       | e1 = SELF; "@"; e2 = SELF -> <:expr< $e1$ @ $e2$ >>
       | e1 = SELF; op = infixop1; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
+    | "expr_attribute" LEFTA
+      [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:expr< $e1$ [@ $_attribute:attr$ ] >>
+      ]
     | RIGHTA
       [ e1 = SELF; "::"; e2 = SELF -> <:expr< [$e1$ :: $e2$] >> ]
     | "+" LEFTA

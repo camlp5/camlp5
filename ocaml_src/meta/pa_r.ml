@@ -245,6 +245,10 @@ let build_letop_binder loc letop b l e =
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
+let (attribute_body : (string MLast.v * MLast.payload) Grammar.Entry.e) =
+  Grammar.Entry.create gram "attribute_body"
+;;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -270,11 +274,18 @@ Grammar.safe_extend
    and _ = (match_case : 'match_case Grammar.Entry.e)
    and _ = (ipatt : 'ipatt Grammar.Entry.e)
    and _ = (with_constr : 'with_constr Grammar.Entry.e)
-   and _ = (poly_variant : 'poly_variant Grammar.Entry.e) in
+   and _ = (poly_variant : 'poly_variant Grammar.Entry.e)
+   and _ = (attribute_body : 'attribute_body Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
-   let rebind_exn : 'rebind_exn Grammar.Entry.e =
+   let attribute_id : 'attribute_id Grammar.Entry.e =
+     grammar_entry_create "attribute_id"
+   and attribute_structure : 'attribute_structure Grammar.Entry.e =
+     grammar_entry_create "attribute_structure"
+   and attribute_signature : 'attribute_signature Grammar.Entry.e =
+     grammar_entry_create "attribute_signature"
+   and rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
@@ -373,7 +384,122 @@ Grammar.safe_extend
    and ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon_fun_binding"
    in
-   [Grammar.extension (functor_parameter : 'functor_parameter Grammar.Entry.e)
+   [Grammar.extension (attribute_id : 'attribute_id Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_list1sep
+                (Grammar.s_rules
+                   [Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("UIDENT", "")),
+                       (fun (i : string) (loc : Ploc.t) -> (i : 'e__1)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("LIDENT", "")),
+                       (fun (i : string) (loc : Ploc.t) -> (i : 'e__1)))])
+                (Grammar.s_token ("", ".")) false),
+           (fun (l : 'e__1 list) (loc : Ploc.t) ->
+              (String.concat "." l : 'attribute_id)))]];
+    Grammar.extension
+      (attribute_structure : 'attribute_structure Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_list1
+                (Grammar.s_rules
+                   [Grammar.production
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_nterm
+                               (str_item : 'str_item Grammar.Entry.e)))
+                         (Grammar.s_token ("", ";")),
+                       (fun _ (s : 'str_item) (loc : Ploc.t) ->
+                          (s : 'e__2)))])),
+           (fun (st : 'e__2 list) (loc : Ploc.t) ->
+              (st : 'attribute_structure)))]];
+    Grammar.extension
+      (attribute_signature : 'attribute_signature Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_list1
+                (Grammar.s_rules
+                   [Grammar.production
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_nterm
+                               (sig_item : 'sig_item Grammar.Entry.e)))
+                         (Grammar.s_token ("", ";")),
+                       (fun _ (s : 'sig_item) (loc : Ploc.t) ->
+                          (s : 'e__3)))])),
+           (fun (st : 'e__3 list) (loc : Ploc.t) ->
+              (st : 'attribute_signature)))]];
+    Grammar.extension (attribute_body : 'attribute_body Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_nterm
+                            (attribute_id : 'attribute_id Grammar.Entry.e)))
+                      (Grammar.s_token ("", "?")))
+                   (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
+                (Grammar.s_token ("", "when")))
+             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           (fun (e : 'expr) _ (p : 'patt) _ (id : 'attribute_id)
+                (loc : Ploc.t) ->
+              (id, MLast.PaAttr (loc, p, Some e) : 'attribute_body)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (attribute_id : 'attribute_id Grammar.Entry.e)))
+                (Grammar.s_token ("", "?")))
+             (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
+           (fun (p : 'patt) _ (id : 'attribute_id) (loc : Ploc.t) ->
+              (id, MLast.PaAttr (loc, p, None) : 'attribute_body)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (attribute_id : 'attribute_id Grammar.Entry.e)))
+                (Grammar.s_token ("", ":")))
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           (fun (ty : 'ctyp) _ (id : 'attribute_id) (loc : Ploc.t) ->
+              (id, MLast.TyAttr (loc, ty) : 'attribute_body)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (attribute_id : 'attribute_id Grammar.Entry.e)))
+                (Grammar.s_token ("", ":")))
+             (Grammar.s_nterm
+                (attribute_signature : 'attribute_signature Grammar.Entry.e)),
+           (fun (si : 'attribute_signature) _ (id : 'attribute_id)
+                (loc : Ploc.t) ->
+              (id, MLast.SiAttr (loc, si) : 'attribute_body)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (attribute_id : 'attribute_id Grammar.Entry.e)),
+           (fun (id : 'attribute_id) (loc : Ploc.t) ->
+              (id, MLast.StAttr (loc, []) : 'attribute_body)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (attribute_id : 'attribute_id Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (attribute_structure : 'attribute_structure Grammar.Entry.e)),
+           (fun (st : 'attribute_structure) (id : 'attribute_id)
+                (loc : Ploc.t) ->
+              (id, MLast.StAttr (loc, st) : 'attribute_body)))]];
+    Grammar.extension (functor_parameter : 'functor_parameter Grammar.Entry.e)
       None
       [None, None,
        [Grammar.production
@@ -503,8 +629,8 @@ Grammar.safe_extend
                                (str_item : 'str_item Grammar.Entry.e)))
                          (Grammar.s_token ("", ";")),
                        (fun _ (s : 'str_item) (loc : Ploc.t) ->
-                          (s : 'e__1)))])),
-           (fun (st : 'e__1 list) (loc : Ploc.t) -> (st : 'structure)))]];
+                          (s : 'e__4)))])),
+           (fun (st : 'e__4 list) (loc : Ploc.t) -> (st : 'structure)))]];
     Grammar.extension (str_item : 'str_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
@@ -524,8 +650,8 @@ Grammar.safe_extend
                          (Grammar.s_nterm
                             (str_item : 'str_item Grammar.Entry.e)),
                        (fun (si : 'str_item) (loc : Ploc.t) ->
-                          (si, loc : 'e__3)))])),
-           (fun (sil : 'e__3 list) (s : string) _ (loc : Ploc.t) ->
+                          (si, loc : 'e__6)))])),
+           (fun (sil : 'e__6 list) (s : string) _ (loc : Ploc.t) ->
               (MLast.StUse (loc, s, sil) : 'str_item)));
         Grammar.production
           (Grammar.r_next
@@ -654,9 +780,9 @@ Grammar.safe_extend
                                   (str_item : 'str_item Grammar.Entry.e)))
                             (Grammar.s_token ("", ";")),
                           (fun _ (s : 'str_item) (loc : Ploc.t) ->
-                             (s : 'e__2)))])))
+                             (s : 'e__5)))])))
              (Grammar.s_token ("", "end")),
-           (fun _ (st : 'e__2 list) _ (loc : Ploc.t) ->
+           (fun _ (st : 'e__5 list) _ (loc : Ploc.t) ->
               (MLast.StDcl (loc, st) : 'str_item)))]];
     Grammar.extension (rebind_exn : 'rebind_exn Grammar.Entry.e) None
       [None, None,
@@ -814,8 +940,8 @@ Grammar.safe_extend
                                (sig_item : 'sig_item Grammar.Entry.e)))
                          (Grammar.s_token ("", ";")),
                        (fun _ (s : 'sig_item) (loc : Ploc.t) ->
-                          (s : 'e__4)))])),
-           (fun (st : 'e__4 list) (loc : Ploc.t) -> (st : 'signature)))]];
+                          (s : 'e__7)))])),
+           (fun (st : 'e__7 list) (loc : Ploc.t) -> (st : 'signature)))]];
     Grammar.extension (sig_item : 'sig_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
@@ -830,8 +956,8 @@ Grammar.safe_extend
                          (Grammar.s_nterm
                             (sig_item : 'sig_item Grammar.Entry.e)),
                        (fun (si : 'sig_item) (loc : Ploc.t) ->
-                          (si, loc : 'e__6)))])),
-           (fun (sil : 'e__6 list) (s : string) _ (loc : Ploc.t) ->
+                          (si, loc : 'e__9)))])),
+           (fun (sil : 'e__9 list) (s : string) _ (loc : Ploc.t) ->
               (MLast.SgUse (loc, s, sil) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
@@ -970,9 +1096,9 @@ Grammar.safe_extend
                                   (sig_item : 'sig_item Grammar.Entry.e)))
                             (Grammar.s_token ("", ";")),
                           (fun _ (s : 'sig_item) (loc : Ploc.t) ->
-                             (s : 'e__5)))])))
+                             (s : 'e__8)))])))
              (Grammar.s_token ("", "end")),
-           (fun _ (st : 'e__5 list) _ (loc : Ploc.t) ->
+           (fun _ (st : 'e__8 list) _ (loc : Ploc.t) ->
               (MLast.SgDcl (loc, st) : 'sig_item)))]];
     Grammar.extension (mod_decl_binding : 'mod_decl_binding Grammar.Entry.e)
       None
@@ -1431,6 +1557,17 @@ Grammar.safe_extend
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, "^"), e1), e2) :
                'expr)))];
+       Some "expr_attribute", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExAtt (loc, e1, attr) : 'expr)))];
        Some "+", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
@@ -3046,8 +3183,8 @@ Grammar.safe_extend
                                 'class_str_item Grammar.Entry.e)))
                          (Grammar.s_token ("", ";")),
                        (fun _ (cf : 'class_str_item) (loc : Ploc.t) ->
-                          (cf : 'e__7)))])),
-           (fun (cf : 'e__7 list) (loc : Ploc.t) ->
+                          (cf : 'e__10)))])),
+           (fun (cf : 'e__10 list) (loc : Ploc.t) ->
               (cf : 'class_structure)))]];
     Grammar.extension (class_self_patt : 'class_self_patt Grammar.Entry.e)
       None
@@ -3194,9 +3331,9 @@ Grammar.safe_extend
                                    'class_str_item Grammar.Entry.e)))
                             (Grammar.s_token ("", ";")),
                           (fun _ (s : 'class_str_item) (loc : Ploc.t) ->
-                             (s : 'e__8)))])))
+                             (s : 'e__11)))])))
              (Grammar.s_token ("", "end")),
-           (fun _ (st : 'e__8 list) _ (loc : Ploc.t) ->
+           (fun _ (st : 'e__11 list) _ (loc : Ploc.t) ->
               (MLast.CrDcl (loc, st) : 'class_str_item)))]];
     Grammar.extension (as_lident : 'as_lident Grammar.Entry.e) None
       [None, None,
@@ -3293,9 +3430,9 @@ Grammar.safe_extend
                                    'class_sig_item Grammar.Entry.e)))
                             (Grammar.s_token ("", ";")),
                           (fun _ (csf : 'class_sig_item) (loc : Ploc.t) ->
-                             (csf : 'e__9)))])))
+                             (csf : 'e__12)))])))
              (Grammar.s_token ("", "end")),
-           (fun _ (csf : 'e__9 list) (cst : 'class_self_type option) _
+           (fun _ (csf : 'e__12 list) (cst : 'class_self_type option) _
                 (loc : Ploc.t) ->
               (MLast.CtSig (loc, cst, csf) : 'class_type)));
         Grammar.production
@@ -3429,9 +3566,9 @@ Grammar.safe_extend
                                    'class_sig_item Grammar.Entry.e)))
                             (Grammar.s_token ("", ";")),
                           (fun _ (s : 'class_sig_item) (loc : Ploc.t) ->
-                             (s : 'e__10)))])))
+                             (s : 'e__13)))])))
              (Grammar.s_token ("", "end")),
-           (fun _ (st : 'e__10 list) _ (loc : Ploc.t) ->
+           (fun _ (st : 'e__13 list) _ (loc : Ploc.t) ->
               (MLast.CgDcl (loc, st) : 'class_sig_item)))]];
     Grammar.extension (class_description : 'class_description Grammar.Entry.e)
       None
@@ -3785,9 +3922,9 @@ Grammar.safe_extend
                                (Grammar.s_token ("", "=")))
                             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
                           (fun (e : 'expr) _ (loc : Ploc.t) ->
-                             (e : 'e__11)))])))
+                             (e : 'e__14)))])))
              (Grammar.s_token ("", "}")),
-           (fun _ (eo : 'e__11 option) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
+           (fun _ (eo : 'e__14 option) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
               (MLast.PaOlb (loc, p, eo) : 'patt)));
         Grammar.production
           (Grammar.r_next
@@ -3829,8 +3966,8 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "=")))
                          (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
-                       (fun (p : 'patt) _ (loc : Ploc.t) -> (p : 'e__12)))])),
-           (fun (po : 'e__12 option) (p : 'patt_tcon) (loc : Ploc.t) ->
+                       (fun (p : 'patt) _ (loc : Ploc.t) -> (p : 'e__15)))])),
+           (fun (po : 'e__15 option) (p : 'patt_tcon) (loc : Ploc.t) ->
               (p, po : 'patt_tcon_opt_eq_patt)))]];
     Grammar.extension (patt_tcon : 'patt_tcon Grammar.Entry.e) None
       [None, None,
@@ -3888,9 +4025,9 @@ Grammar.safe_extend
                                (Grammar.s_token ("", "=")))
                             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
                           (fun (e : 'expr) _ (loc : Ploc.t) ->
-                             (e : 'e__13)))])))
+                             (e : 'e__16)))])))
              (Grammar.s_token ("", "}")),
-           (fun _ (eo : 'e__13 option) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
+           (fun _ (eo : 'e__16 option) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
               (MLast.PaOlb (loc, p, eo) : 'ipatt)));
         Grammar.production
           (Grammar.r_next
@@ -3920,8 +4057,8 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "=")))
                          (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
-                       (fun (p : 'patt) _ (loc : Ploc.t) -> (p : 'e__14)))])),
-           (fun (po : 'e__14 option) (p : 'ipatt_tcon) (loc : Ploc.t) ->
+                       (fun (p : 'patt) _ (loc : Ploc.t) -> (p : 'e__17)))])),
+           (fun (po : 'e__17 option) (p : 'ipatt_tcon) (loc : Ploc.t) ->
               (p, po : 'ipatt_tcon_opt_eq_patt)))]];
     Grammar.extension (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e) None
       [None, None,

@@ -35,6 +35,8 @@ value flag_where_after_arrow = ref True;
 
 value sep = Pcaml.inter_phrases;
 
+value pr_attribute_body = Eprinter.make "pr_attribute_body";
+
 do {
   Eprinter.clear pr_expr;
   Eprinter.clear pr_patt;
@@ -194,6 +196,7 @@ value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
 
 value and_before elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
+value space_before elem pc x = pprintf pc " %p" elem x;
 
 value andop_before elem pc ((andop,_) as x) = pprintf pc "%s %p" andop elem x;
 
@@ -249,6 +252,7 @@ value sig_item = Eprinter.apply pr_sig_item;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
+value attribute_body = Eprinter.apply pr_attribute_body;
 
 value comm_bef pc loc =
   if flag_comments_in_phrases.val then Prtools.comm_bef pc.ind loc else ""
@@ -1203,6 +1207,13 @@ value map_option f =
 ;
 
 EXTEND_PRINTER
+  pr_attribute_body:
+    [ "top"
+      [ <:attribute_body< $attrid:id$ $structure:st$ >> ->
+        pprintf pc "%s%p" id (hlist (space_before (semi_after str_item))) st
+      ]
+    ]
+    ;
   pr_expr:
     [ "top"
       [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
@@ -1403,6 +1414,11 @@ EXTEND_PRINTER
             | _ -> None ]
           in
           right_operator pc 0 unfold next z ]
+    | "expr_attribute"
+      [ <:expr< $e$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p [@%p]" curr e attribute_body attr
+      ]
+
     | "add"
       [ z ->
           let ops = ["+"; "+."; "-"; "-."] in
