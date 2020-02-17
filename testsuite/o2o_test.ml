@@ -9,29 +9,8 @@ open OUnitTest;
 
 Pcaml.inter_phrases.val := Some ";;\n" ;
 
-value tests = "test pa_o -> pr_o" >::: [
-    "simplest" >:: (fun [ _ ->
-        assert_equal ~{printer=(fun (x:string) -> x)}
-          {foo|let _ = 1; 2;;
-let _ = 3;;
-let x = 1;;
-|foo}
-          (pr (pa1 "(1; 2);; 3 ;; let x = 1 ;;"))
-                        ]) ;
-    "infix1" >:: (fun [ _ ->
-        assert_equal ~{printer=(fun (x:string) -> x)}
-          {foo|let _ = (a + b) c;;
-|foo}
-          (pr (pa1 "(a + b) c;;"))
-                        ]);
-    "infix2" >:: (fun [ _ ->
-        assert_equal ~{printer=(fun (x:string) -> x)}
-          {foo|let _ = (a --> b) c;;
-|foo}
-          (pr (pa1 "(a --> b) c;;"))
-                        ])
-]
-;
+value tests = "test pa_o -> pr_o" >::: (Papr_matrix_test.o2o()) ;
+
 
 value _ =
 if invoked_with "o2o_test" then
