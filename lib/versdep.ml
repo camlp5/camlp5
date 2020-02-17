@@ -179,6 +179,13 @@ value ocaml_mkpat loc x =
   END
 ;
 
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_attribute_implem _ _ _ = assert False ;
+value ocaml_attribute_interf _ _ _ = assert False ;
+value ocaml_attribute_type _ _ _ = assert False ;
+value ocaml_attribute_patt _ _ _ _ = assert False ;
+value ocaml_expr_addattr _ _ = assert False ;
+ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
     attr_name = mkloc loc name ;
@@ -211,12 +218,10 @@ value ocaml_attribute_patt loc (name: string) p eopt =
 ;
 
 (*
-
-value ocaml_expr_addattr attr ({pexp_attributes = l} as e) =
+value busted_ocaml_expr_addattr attr ({pexp_attributes = l} as e) =
   { (e) with pexp_attributes = l @ [attr] }
 ;
 *)
-
 value ocaml_expr_addattr attr {
      pexp_desc=pexp_desc;
      pexp_loc=pexp_loc;
@@ -229,6 +234,8 @@ value ocaml_expr_addattr attr {
      pexp_loc_stack=pexp_loc_stack;
      pexp_attributes = pexp_attributes @ [attr]
     }
+;
+END
 ;
 
 value ocaml_mkexp loc x =
@@ -1564,7 +1571,7 @@ value ocaml_pctf_val (s, mf, vf, t, loc) =
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
     do { assert (vf = Concrete); Pctf_val (s, mf, Concrete, t, loc) }
   ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
-    do { asserrt (vf = Concrete); Pctf_val (s, mf, Concrete, t) }
+    do { assert (vf = Concrete); Pctf_val (s, mf, Concrete, t) }
   ELSE
     Pctf_val (mkloc loc s, mf, vf, t)
   END
