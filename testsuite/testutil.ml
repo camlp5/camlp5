@@ -91,17 +91,16 @@ value pa_all s =
   pall strm
 ;
 
-Pcaml.inter_phrases.val := Some " ;\n" ;
-value pr l = 
+value pr l = do {
   let sep = match Pcaml.inter_phrases.val with [ None -> "" | Some s -> s ] in
-  let b = Buffer.create 23 in do {
+  let b = Buffer.create 23 in
     List.iter (fun (ast, _) -> 
       let s = Eprinter.apply Pcaml.pr_str_item Pprintf.empty_pc ast in do {
         Buffer.add_string b s ;
         Buffer.add_string b sep ;
       }) l ;
     Buffer.contents b
-  }
+}
 ;
   
 value pa_original s =

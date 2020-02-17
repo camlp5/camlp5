@@ -7,15 +7,15 @@ include $(TOP)/config/Makefile
 DIFF=diff -Bwi -u20
 RM=rm
 
-all-tests: all
-	./o2r_test.byte
-	./r2sch_test.byte
-	./sch2r_test.pa_scheme.byte
-	./sch2r_test.pa_schemer.byte
-	./extfun_test.byte
+TESTS=o2r_test o2o_test r2sch_test \
+	sch2r_test.pa_scheme sch2r_test.pa_schemer \
+	extfun_test
+
+all-tests: all $(TESTS)
 
 all: \
 	o2r_test.byte \
+	o2o_test.byte \
 	r2sch_test.byte \
 	sch2r_test.pa_scheme.byte \
 	sch2r_test.pa_schemer.byte \
@@ -60,13 +60,29 @@ papr_official.cmo: papr_official.ml
 papr_official.byte: papr_official.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg gramlib.cma papr_official.cmo -o papr_official.byte
 
+extfun_test:: all
+	./extfun_test.byte
+
 extfun_test.byte: extfun_test.ml testutil.cmo
 	$(CAMLP5R) -I . -mode S -o extfun_test.ppo extfun_test.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg odyl.cma camlp5.cma pr_r.cmo testutil.cmo -impl extfun_test.ppo -o extfun_test.byte
 
+o2r_test:: all
+	./o2r_test.byte
+
 o2r_test.byte: o2r_test.ml testutil.cmo testutil2.cmo
 	$(CAMLP5R) -I . -mode S -o o2r_test.ppo o2r_test.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo pr_r.cmo testutil.cmo testutil2.cmo -impl o2r_test.ppo -o o2r_test.byte
+
+o2o_test:: all
+	./o2o_test.byte
+
+o2o_test.byte: o2o_test.ml testutil.cmo testutil2.cmo
+	$(CAMLP5R) -I . -mode S -o o2o_test.ppo o2o_test.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo pr_o.cmo testutil.cmo testutil2.cmo -impl o2o_test.ppo -o o2o_test.byte
+
+r2sch_test:: all
+	./r2sch_test.byte
 
 r2sch_test.byte: r2sch_test.ml testutil.cmo
 	$(CAMLP5R) -I . -mode S -o r2sch_test.ppo r2sch_test.ml
@@ -76,8 +92,14 @@ sch2r_test.cmo: sch2r_test.ml testutil.cmo testutil2.cmo
 	$(CAMLP5R) -I . -mode S -o sch2r_test.ppo sch2r_test.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -c -impl sch2r_test.ppo
 
+sch2r_test.pa_scheme:: all
+	./sch2r_test.pa_scheme.byte
+
 sch2r_test.pa_scheme.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg odyl.cma camlp5.cma pa_scheme.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_scheme.byte
+
+sch2r_test.pa_schemer:: all
+	./sch2r_test.pa_schemer.byte
 
 sch2r_test.pa_schemer.byte: sch2r_test.cmo testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg odyl.cma camlp5.cma ../etc/pa_schemer.cmo pr_r.cmo testutil.cmo testutil2.cmo sch2r_test.cmo -o sch2r_test.pa_schemer.byte
