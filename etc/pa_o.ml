@@ -905,7 +905,7 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = patt -> (i, p)
       | i = patt_label_ident ->
         let rec loop = fun [
-          <:patt< $PaUid _ _$ . $p$ >> -> loop p
+          <:patt< $MLast.PaUid _ _$ . $p$ >> -> loop p
         | p -> p
         ] in (i, loop i)
       | "_" -> (<:patt< _ >>, <:patt< _ >>) ] ]
