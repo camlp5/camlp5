@@ -18,38 +18,62 @@ value first_loc_of_ast =
   | [] -> Ploc.dummy ]
 ;
 
-value interf (ast, eoi_loc) = do {
+value pp_interf fmt (ast, eoi_loc) = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
-  let pt = Ast2pt.interf fname (List.map fst ast) in
-  let oc = open_out_file () in
-  let fmt = Format.formatter_of_out_channel oc in
   IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     let _ = pt in
     ignore (error loc "compiler-libs not available in this version of ocaml")
   ELSE
+    let pt = Ast2pt.interf fname (List.map fst ast) in
     Pprintast.signature fmt pt
   END ;
   Format.(pp_print_flush fmt ()) ;
+};
+
+value interf (ast, eoi_loc) = do {
+  let oc = open_out_file () in
+  let fmt = Format.formatter_of_out_channel oc in
+  pp_interf fmt (ast, eoi_loc) ;
   flush oc;
   match Pcaml.output_file.val with
   [ Some _ -> close_out oc
   | None -> () ]
 };
 
-value implem (ast, eoi_loc) = do {
+value pp_implem fmt (ast, eoi_loc) = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
-  let pt = Ast2pt.implem fname (List.map fst ast) in
-  let oc = open_out_file () in
-  let fmt = Format.formatter_of_out_channel oc in
   IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     let _ = pt in
     ignore (error loc "compiler-libs not available in this version of ocaml")
   ELSE
+    let pt = Ast2pt.implem fname (List.map fst ast) in
     Pprintast.structure fmt pt
   END ;
   Format.(pp_print_flush fmt ()) ;
+};
+
+value pr_sig_item ast = do {
+  let b = Buffer.create 23 in
+  let bfmt = Format.formatter_of_buffer b in
+  pp_interf bfmt ([(ast, Ploc.dummy)],Ploc.dummy) ;
+  Buffer.contents b
+}
+;
+
+value pr_str_item ast = do {
+  let b = Buffer.create 23 in
+  let bfmt = Format.formatter_of_buffer b in
+  pp_implem bfmt ([(ast, Ploc.dummy)],Ploc.dummy) ;
+  Buffer.contents b
+}
+;
+
+value implem (ast, eoi_loc) = do {
+  let oc = open_out_file () in
+  let fmt = Format.formatter_of_out_channel oc in
+  pp_implem fmt (ast, eoi_loc) ;
   flush oc;
   match Pcaml.output_file.val with
   [ Some _ -> close_out oc
