@@ -34,6 +34,7 @@ val parse_implem :
 val gram : Grammar.g;;
    (** Grammar variable of the OCaml language *)
 
+val attribute_body : (string MLast.v * MLast.payload) Grammar.Entry.e;;
 val interf : ((MLast.sig_item * MLast.loc) list * status) Grammar.Entry.e;;
 val implem : ((MLast.str_item * MLast.loc) list * status) Grammar.Entry.e;;
 val top_phrase : MLast.str_item option Grammar.Entry.e;;

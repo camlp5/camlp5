@@ -21,6 +21,7 @@ Plexer.dot_newline_is := ";";
 Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
 Plexer.dot_newline_is := odni;
 Plexer.dollar_for_antiquotation := odfa;
+Grammar.Unsafe.clear_entry attribute_body;
 Grammar.Unsafe.clear_entry interf;
 Grammar.Unsafe.clear_entry implem;
 Grammar.Unsafe.clear_entry top_phrase;
@@ -243,10 +244,6 @@ let build_letop_binder loc letop b l e =
   MLast.ExApp
     (loc, MLast.ExApp (loc, MLast.ExLid (loc, letop), argexp),
      MLast.ExFun (loc, [argpat, None, e]))
-;;
-
-let (attribute_body : (string MLast.v * MLast.payload) Grammar.Entry.e) =
-  Grammar.Entry.create gram "attribute_body"
 ;;
 
 (* -- begin copy from pa_r to q_MLast -- *)

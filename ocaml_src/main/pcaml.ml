@@ -41,6 +41,7 @@ variable CAMLP5PARAM to f or b.
 
 type status = Ploc.t option;;
 
+let attribute_body = Grammar.Entry.create gram "attribute_body";;
 let interf = Grammar.Entry.create gram "interf";;
 let implem = Grammar.Entry.create gram "implem";;
 let top_phrase = Grammar.Entry.create gram "top_phrase";;
