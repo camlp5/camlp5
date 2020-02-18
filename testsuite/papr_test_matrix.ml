@@ -104,6 +104,42 @@ value x = 1;
      r_output = Some ({foo|a[@foo][@bar];
 |foo}, None) ;
      r_input = ("a[@foo][@bar];", None)
+    };
+    {name="expr_attribute4";
+     o_input = ("a [@foo :type t = int];;", None) ;
+     o_output = Some ({foo|let _ = a[@foo: type t = int;;];;
+|foo}, None) ;
+     official_output = Some ({foo|;;((a)[@foo :type t = int])|foo}, None) ;
+     r_output = Some ({foo|a[@foo: type t = int;];
+|foo}, None) ;
+     r_input = ("a[@foo :type t = int;];", None)
+    };
+    {name="expr_attribute5";
+     o_input = ("a [@foo :int];;", None) ;
+     o_output = Some ({foo|let _ = a[@foo: int];;
+|foo}, None) ;
+     official_output = Some ({foo|;;((a)[@foo :int])|foo}, None) ;
+     r_output = Some ({foo|a[@foo: int];
+|foo}, None) ;
+     r_input = ("a[@foo :int];", None)
+    };
+    {name="expr_attribute6";
+     o_input = ("a [@foo ? (_,_)];;", None) ;
+     o_output = Some ({foo|let _ = a[@foo? _, _];;
+|foo}, None) ;
+     official_output = Some ({foo|;;((a)[@foo ?(_, _)])|foo}, None) ;
+     r_output = Some ({foo|a[@foo? (_, _)];
+|foo}, None) ;
+     r_input = ("a[@foo ? (_,_)];", None)
+    };
+    {name="expr_attribute7";
+     o_input = ("a [@foo ? (_,_) when true];;", None) ;
+     o_output = Some ({foo|let _ = a[@foo? _, _ when true];;
+|foo}, None) ;
+     official_output = Some ({foo|;;((a)[@foo ?(_, _) when true])|foo}, None) ;
+     r_output = Some ({foo|a[@foo? (_, _) when True];
+|foo}, None) ;
+     r_input = ("a[@foo ? (_,_) when True];", None)
     }
 ]
 ;
@@ -119,7 +155,7 @@ value i2test pa pp inputf outputf i =
 
     | ((inputs, None), Some (outputs, None)) ->
         assert_equal ~{printer=fmt_string}
-          outputs (pp (pa inputs))
+          outputs (wrap_err pp (wrap_err pa inputs))
 
     | ((inputs, Some exn), _) ->
         assert_raises_exn_pred ~{msg=i.name} ~{exnmsg="msg"} (smart_exn_eq exn)

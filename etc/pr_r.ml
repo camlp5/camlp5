@@ -1211,6 +1211,14 @@ EXTEND_PRINTER
     [ "top"
       [ <:attribute_body< $attrid:id$ $structure:st$ >> ->
         pprintf pc "%s%p" id (hlist (space_before (semi_after str_item))) st
+      | <:attribute_body< $attrid:id$ : $signature:si$ >> ->
+        pprintf pc "%s:%p" id (hlist (space_before (semi_after sig_item))) si
+      | <:attribute_body< $attrid:id$ : $type:ty$ >> ->
+        pprintf pc "%s:%p" id (space_before ctyp) ty
+      | <:attribute_body< $attrid:id$ ? $patt:p$ >> ->
+        pprintf pc "%s?%p" id (space_before patt) p
+      | <:attribute_body< $attrid:id$ ? $patt:p$ when $expr:e$ >> ->
+        pprintf pc "%s?%p when %p" id (space_before patt) p expr e
       ]
     ]
     ;

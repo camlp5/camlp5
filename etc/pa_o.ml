@@ -356,10 +356,10 @@ EXTEND
     ] ]
   ;
   attribute_structure:
-    [ [ st = V (LIST1 [ s = str_item; ";" → s ]) "structure" → st ] ]
+    [ [ st = V (LIST1 [ s = str_item; OPT ";;" → s ]) "structure" → st ] ]
   ;
   attribute_signature:
-    [ [ st = V (LIST1 [ s = sig_item; ";" → s ]) "signature" → st ] ]
+    [ [ st = V (LIST1 [ s = sig_item; OPT ";;" → s ]) "signature" → st ] ]
   ;
   attribute_body:
   [ [
