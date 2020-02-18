@@ -9,7 +9,7 @@ open OUnitTest;
 
 Pcaml.inter_phrases.val := Some ";\n" ;
 
-value tests = "test pa_r -> pr_r" >::: (Papr_matrix_test.r2r()) ;
+value tests = "test pa_r -> pr_r" >::: (Papr_test_matrix.r2r pa1 pr ()) ;
 
 value _ =
 if invoked_with "r2r_test" then
