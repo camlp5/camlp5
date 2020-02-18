@@ -140,6 +140,14 @@ value x = 1;
      r_output = Some ({foo|a[@foo? (_, _) when True];
 |foo}, None) ;
      r_input = ("a[@foo ? (_,_) when True];", None)
+    };
+    {name="expr_attribute8";
+     o_input = ("a [@foo ? _,_ when true];;", None) ;
+     o_output = Some ({foo|let _ = a[@foo? _, _ when true];;
+|foo}, None) ;
+     official_output = Some ({foo|;;((a)[@foo ?(_, _) when true])|foo}, None) ;
+     r_output = None ;
+     r_input = ("a[@foo ? (_,_) when True];", None)
     }
 ]
 ;
