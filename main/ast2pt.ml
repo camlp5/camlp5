@@ -411,7 +411,8 @@ value type_decl tn tl priv cl =
       mktype (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 ;
 
-value mkvalue_desc vn t p = ocaml_value_description vn (ctyp t) p;
+value mkvalue_desc ~{item_attributes} vn t p =
+ ocaml_value_description ~{item_attributes=List.map snd item_attributes} vn (ctyp t) p;
 
 value rec same_type_expr ct ce =
   match (ct, ce) with
@@ -1170,7 +1171,7 @@ and module_type =
   | MtLid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtQuo loc _ → error loc "abstract module type not allowed here"
   | MtSig loc sl →
-      mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
+      mkmty loc (Pmty_signature (List.fold_right (sig_item ~{item_attributes=[]}) (uv sl) []))
   | MtTyo loc me →
       match ocaml_pmty_typeof with
       [ Some pmty_typeof → mkmty loc (pmty_typeof (module_expr me))
@@ -1179,13 +1180,12 @@ and module_type =
   | MtWit loc mt wcl →
       mkmty loc (ocaml_pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | MtXtr loc _ _ → error loc "bad ast MtXtr" ]
-and sig_item s l =
+and sig_item ~{item_attributes} s l =
   match s with
   [ 
     SgAtt loc si a ->
-(*
-    ocaml_sig_item_addattr (attr (uv a)) (sig_item si)
-*)assert False
+    sig_item ~{item_attributes=[ (mkloc loc, attr (uv a)) :: item_attributes ]} si l
+
   | SgCls loc cd →
       [mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l]
   | SgClt loc ctd →
@@ -1195,7 +1195,7 @@ and sig_item s l =
              (psig_class_type (List.map (class_info class_type) (uv ctd))) ::
            l]
       | None → error loc "no class type in this ocaml version" ]
-  | SgDcl loc sl → List.fold_right sig_item (uv sl) l
+  | SgDcl loc sl → List.fold_right (sig_item ~{item_attributes=[]}) (uv sl) l
   | SgDir loc _ _ → l
   | SgExc loc n tl →
       [mksig loc
@@ -1203,7 +1203,7 @@ and sig_item s l =
        l]
   | SgExt loc n t p →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc vn t (uv p))) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes} vn t (uv p))) :: l]
   | SgInc loc mt →
       [mksig loc (ocaml_psig_include (mkloc loc) (module_type mt)) :: l]
   | SgMod loc rf ntl →
@@ -1237,10 +1237,10 @@ and sig_item s l =
       [mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l]
   | SgUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
-        (fun () → List.fold_right (fun (si, _) → sig_item si) (uv sl) l) ()
+        (fun () → List.fold_right (fun (si, _) → (sig_item ~{item_attributes=[]}) si) (uv sl) l) ()
   | SgVal loc n t →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc vn t [])) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=[]} vn t [])) :: l]
   | SgXtr loc _ _ → error loc "bad ast SgXtr" ]
 and module_expr =
   fun
@@ -1251,7 +1251,7 @@ and module_expr =
     let arg = option_map (fun (idopt, mt) -> (option_map uv (uv idopt), module_type mt)) (uv arg) in
       mkmod loc (ocaml_pmod_functor arg (module_expr me))
   | MeStr loc sl →
-      mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
+      mkmod loc (Pmod_structure (List.fold_right (str_item ~{item_attributes=[]}) (uv sl) []))
   | MeTyc loc me mt →
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
   | MeUid loc s → mkmod loc (ocaml_pmod_ident (Lident (uv s)))
@@ -1276,7 +1276,7 @@ and module_expr =
           mkmod loc (pmod_unpack e)
       | None → error loc "no module unpack in this ocaml version" ]
   | MeXtr loc _ _ → error loc "bad ast MeXtr" ]
-and str_item s l =
+and str_item ~{item_attributes} s l =
   match s with
   [ StCls loc cd →
       [mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l]
@@ -1287,7 +1287,7 @@ and str_item s l =
              (pstr_class_type (List.map (class_info class_type) (uv ctd))) ::
            l]
       | None → error loc "no class type in this ocaml version" ]
-  | StDcl loc sl → List.fold_right str_item (uv sl) l
+  | StDcl loc sl → List.fold_right (str_item ~{item_attributes=[]}) (uv sl) l
   | StDef loc jcl →
       match jocaml_pstr_def with
       [ Some pstr_def →
@@ -1313,7 +1313,7 @@ and str_item s l =
   | StExp loc e → [mkstr loc (ocaml_pstr_eval (expr e)) :: l]
   | StExt loc n t p →
       let vn = uv n in
-      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc vn t (uv p))) :: l]
+      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=item_attributes} vn t (uv p))) :: l]
   | StInc loc me →
       match ocaml_pstr_include with
       [ Some pstr_include →
@@ -1355,7 +1355,7 @@ and str_item s l =
       [mkstr loc (ocaml_pstr_type (uv flg) (List.map mktype_decl (uv tdl))) :: l]
   | StUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
-        (fun () → List.fold_right (fun (si, _) → str_item si) (uv sl) l) ()
+        (fun () → List.fold_right (fun (si, _) → str_item ~{item_attributes=[]} si) (uv sl) l) ()
   | StVal loc rf pel →
       [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l]
   | StXtr loc _ _ → error loc "bad ast StXtr" ]
@@ -1554,10 +1554,10 @@ and class_str_item c l =
 and attr (id, payload) =
   match payload with [
     StAttr loc st ->
-      let st = List.fold_right str_item (uv st) [] in
+      let st = List.fold_right (str_item ~{item_attributes=[]}) (uv st) [] in
       ocaml_attribute_implem (mkloc loc) (uv id) st
   | SiAttr loc si ->
-      let si = List.fold_right sig_item (uv si) [] in
+      let si = List.fold_right (sig_item ~{item_attributes=[]}) (uv si) [] in
       ocaml_attribute_interf (mkloc loc) (uv id) si
   | TyAttr loc ty ->
       let ty = ctyp (uv ty) in
@@ -1572,12 +1572,12 @@ and attr (id, payload) =
 
 value interf fname ast = do {
   glob_fname.val := fname;
-  List.fold_right sig_item ast []
+  List.fold_right (sig_item ~{item_attributes=[]}) ast []
 };
 
 value implem fname ast = do {
   glob_fname.val := fname;
-  List.fold_right str_item ast []
+  List.fold_right (str_item ~{item_attributes=[]}) ast []
 };
 
 value directive loc =
@@ -1618,6 +1618,6 @@ value phrase =
       ocaml_ptop_dir (mkloc loc) (uv d) (directive_args loc (uv dp))
   | si → do {
       glob_fname.val := Plexing.input_file.val;
-      Ptop_def (str_item si [])
+      Ptop_def (str_item ~{item_attributes=[]} si [])
     } ]
 ;

@@ -509,7 +509,11 @@ EXTEND
       | m = V LIDENT -> <:module_type< $_lid:m$ >> ] ]
   ;
   sig_item:
-    [ "top"
+    [ "top" LEFTA
+      [ si = SELF ; "[@@" ; attr = V attribute_body "attribute"; "]" ->
+        <:sig_item< $si$ [@@ $_attribute:attr$ ] >>
+      ]
+    | "simple"
       [ "exception"; (_, c, tl, _) = constructor_declaration ->
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";

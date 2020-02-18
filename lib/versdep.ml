@@ -137,13 +137,14 @@ IFDEF OCAML_VERSION > OCAML_3_01_1 AND OCAML_VERSION < OCAML_4_03_0 THEN
   ;
 END;
 
-value ocaml_value_description vn t p =
-  IFDEF OCAML_VERSION < OCAML_4_00 THEN {pval_type = t; pval_prim = p}
+value ocaml_value_description ?{item_attributes=[]} vn t p =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN
+    do { assert (item_attributes = []) ; {pval_type = t; pval_prim = p} }
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc}
+    do { assert (item_attributes = []) ; {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc} }
   ELSE
     {pval_type = t; pval_prim = p; pval_loc = t.ptyp_loc;
-     pval_name = mkloc t.ptyp_loc vn; pval_attributes = []}
+     pval_name = mkloc t.ptyp_loc vn; pval_attributes = item_attributes}
   END
 ;
 
