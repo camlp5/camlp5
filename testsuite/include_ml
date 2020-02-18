@@ -56,8 +56,10 @@ open Testutil2 ;;
 open Roundtrip_lexer ;;
 *)
 
+(*
 #load "papr_matrix_test.cmo" ;;
 #load "r2r_test.cmo" ;;
+*)
 
 (*
 ;;; Local Variables: ***

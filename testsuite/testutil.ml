@@ -111,6 +111,43 @@ value pr_original st =
   Pprintast.string_of_structure st
 ;
 
+
+open OUnitAssert ;
+
+value assert_bool ?{printer} msg b =
+  if not b then
+    let msg0 = match printer with [ None -> "" | Some (f, arg) -> f arg ] in
+    assert_failure (msg0^msg)
+  else ()
+;
+
+value assert_raises_exn_pred ?{msg} ?{exnmsg} exnpred (f: unit -> 'a) =
+  let pexn =
+    Printexc.to_string
+  in
+  let get_error_string () =
+    let str =
+      Format.sprintf
+        "expected exception %s, but no exception was raised."
+        (match exnmsg with [ None -> "<no message provided>" | Some msg -> msg ])
+    in
+      match msg with [
+          None ->
+            assert_failure str
+
+        | Some s ->
+            assert_failure (s^"\n"^str) ]
+  in
+    match raises f with [
+       None ->
+          assert_failure (get_error_string ())
+
+      | Some e ->
+          let msg = match msg with [ None -> "" | Some s -> s ] in
+          assert_bool ~{printer=(pexn,e)} msg (exnpred e) ]
+;
+
+
 (*
 ;;; Local Variables: ***
 ;;; mode:tuareg ***
