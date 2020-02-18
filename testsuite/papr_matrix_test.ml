@@ -63,6 +63,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("(!!!a) c;", None)
     };
+    (* original syntax accepts "$" as an infix symbol; revised syntax DOES NOT *)
     {name="dollar";
      o_input = ("a $ c;;", None) ;
      o_output = ({foo|let _ = a $ c;;
@@ -70,6 +71,22 @@ value x = 1;
      r_output = ({foo|\$  a c;
 |foo}, None) ;
      r_input = ("a $ c;", Some (Ploc.Exc Ploc.dummy (Stream.Error "';' expected after [str_item] (in [str_item_semi])")))
+    };
+    {name="expr_attribute1";
+     o_input = ("a [@foo];;", None) ;
+     o_output = ({foo|let _ = a [@foo];;
+|foo}, None) ;
+     r_output = ({foo|a [@foo];
+|foo}, None) ;
+     r_input = ("a [@foo];", None)
+    };
+    {name="expr_attribute2";
+     o_input = ("a + b [@foo];;", None) ;
+     o_output = ({foo|let _ = a + b [@foo];;
+|foo}, None) ;
+     r_output = ({foo|a + b [@foo];
+|foo}, None) ;
+     r_input = ("a + b [@foo];", None)
     }
 ]
 ;
