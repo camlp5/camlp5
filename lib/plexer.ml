@@ -501,6 +501,8 @@ value next_token_after_spaces ctx bp =
   | "|" ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "[" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
   | "[@" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[@@" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[@@@" -> keyword_or_error ctx (bp, $pos) $buf
   | "[|" -> keyword_or_error ctx (bp, $pos) $buf
   | "[<" -> keyword_or_error ctx (bp, $pos) $buf
   | "[:" -> keyword_or_error ctx (bp, $pos) $buf
@@ -653,6 +655,8 @@ and check =
   | "|" check_ident2!
   | "[" ?= [ "<<" | "<:" ]
   | "[@"
+  | "[@@"
+  | "[@@@"
   | "[|"
   | "[<"
   | "[:"
