@@ -161,11 +161,11 @@ value x = 1;
     };
     {name="item_attribute1"; implem = False ;
      o_input = ("val x : int [@@foo]", None) ;
-     o_output = Some ({foo|let _ = a[@foo? _, _ when true];;
+     o_output = Some ({foo|val x : int[@@foo];;
 |foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo ?(_, _) when true])|foo}, None) ;
+     official_output = Some ({foo|val x : int[@@foo ]|foo}, None) ;
      r_output = None ;
-     r_input = ("a[@foo ? (_,_) when True];", None)
+     r_input = ("value x : int[@@foo];", None)
     }
 ]
 ;

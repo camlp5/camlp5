@@ -354,7 +354,11 @@ EXTEND
     [ [ st = V (LIST0 [ s = sig_item; ";" → s ]) → st ] ]
   ;
   sig_item:
-    [ "top"
+    [ "top" LEFTA
+      [ si = SELF ; "[@@" ; attr = V attribute_body "attribute"; "]" ->
+        <:sig_item< $si$ [@@ $_attribute:attr$ ] >>
+      ]
+    | "simple"
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" → s ]); "end" →
           <:sig_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl, _) = constructor_declaration →

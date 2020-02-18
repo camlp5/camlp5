@@ -1738,7 +1738,7 @@ EXTEND_PRINTER
   pr_sig_item:
     [ "top"
       [ <:sig_item< $si$ [@@ $attribute:attr$] >> ->
-        pprintf pc "%p[@@%p]" curr si attribute_body attr
+        pprintf pc "%p[@@@@%p]" curr si attribute_body attr
       ]
 
     | "simple"
