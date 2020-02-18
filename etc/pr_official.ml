@@ -54,22 +54,6 @@ value pp_implem fmt (ast, eoi_loc) = do {
   Format.(pp_print_flush fmt ()) ;
 };
 
-value pr_sig_item ast = do {
-  let b = Buffer.create 23 in
-  let bfmt = Format.formatter_of_buffer b in
-  pp_interf bfmt ([(ast, Ploc.dummy)],Ploc.dummy) ;
-  Buffer.contents b
-}
-;
-
-value pr_str_item ast = do {
-  let b = Buffer.create 23 in
-  let bfmt = Format.formatter_of_buffer b in
-  pp_implem bfmt ([(ast, Ploc.dummy)],Ploc.dummy) ;
-  Buffer.contents b
-}
-;
-
 value implem (ast, eoi_loc) = do {
   let oc = open_out_file () in
   let fmt = Format.formatter_of_out_channel oc in
@@ -82,3 +66,20 @@ value implem (ast, eoi_loc) = do {
 
 Pcaml.print_interf.val := interf;
 Pcaml.print_implem.val := implem;
+
+value with_buffer_formatter f arg = do {
+  let b = Buffer.create 23 in
+  let bfmt = Format.formatter_of_buffer b in
+  f bfmt arg ;
+  Format.pp_print_flush bfmt () ;
+  Buffer.contents b
+}
+;
+
+value pr_sig_item ast =
+  with_buffer_formatter (fun bfmt () -> pp_interf bfmt ([(ast, Ploc.dummy)],Ploc.dummy)) ()
+;
+
+value pr_str_item ast =
+  with_buffer_formatter (fun bfmt () -> pp_implem bfmt ([(ast, Ploc.dummy)],Ploc.dummy)) ()
+;
