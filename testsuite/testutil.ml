@@ -79,6 +79,8 @@ value wrap_err f arg =
 try f arg with exc -> report_error_and_exit exc
 ;
 
+module PAPR = struct
+module Implem = struct
 value pa strm = let (ast, _) = Pcaml.parse_implem.val strm in ast ;
 value pa1 s = let ast = pa (Stream.of_string s) in ast ;
 value pa_all s =
@@ -102,14 +104,49 @@ value pr l = do {
     Buffer.contents b
 }
 ;
-  
-value pa_original s =
+end;
+
+module Interf = struct
+value pa strm = let (ast, _) = Pcaml.parse_interf.val strm in ast ;
+value pa1 s = let ast = pa (Stream.of_string s) in ast ;
+value pa_all s =
+  let strm = Stream.of_string s in
+  let rec pall = parser [
+    [: x = pa ; strm :] ->
+    if x = [] then [] else
+      x @ (pall strm)
+  | [: :] -> [] ] in
+  pall strm
+;
+
+value pr l = do {
+  let sep = match Pcaml.inter_phrases.val with [ None -> "" | Some s -> s ] in
+  let b = Buffer.create 23 in
+    List.iter (fun (ast, _) -> 
+      let s = Eprinter.apply Pcaml.pr_sig_item Pprintf.empty_pc ast in do {
+        Buffer.add_string b s ;
+        Buffer.add_string b sep ;
+      }) l ;
+    Buffer.contents b
+}
+;
+end;
+value both_pa1 = (Implem.pa1, Interf.pa1) ;
+value both_pr = (Implem.pr, Interf.pr) ;
+end;
+
+module Official = struct
+
+module Implem = struct
+value pa s =
   let lb = Lexing.from_string s in
   Parse.implementation lb
 ;
-value pr_original st =
+value pr st =
   Pprintast.string_of_structure st
 ;
+end ;
+end ;
 
 
 open OUnitAssert ;

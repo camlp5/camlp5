@@ -10,6 +10,9 @@ open OUnitTest ;
 
 Pcaml.inter_phrases.val := Some ";\n" ;
 
+value pa1 = PAPR.Implem.pa1 ;
+value pr = PAPR.Implem.pr ;
+
 value tests = "test pa_scheme -> pr_r" >::: [
     "simplest" >:: (fun [ _ ->
         assert_equal ~{msg="not equal"} ~{printer=(fun x -> x)}
