@@ -79,22 +79,31 @@ value x = 1;
      r_input = ("a $ c;", Some (Ploc.Exc Ploc.dummy (Stream.Error "';' expected after [str_item] (in [str_item_semi])")))
     };
     {name="expr_attribute1";
-     o_input = ("a [@foo];;", None) ;
-     o_output = Some ({foo|let _ = a [@foo];;
+     o_input = ("a[@foo];;", None) ;
+     o_output = Some ({foo|let _ = a[@foo];;
 |foo}, None) ;
      official_output = Some ({foo|;;((a)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|a [@foo];
+     r_output = Some ({foo|a[@foo];
 |foo}, None) ;
      r_input = ("a [@foo];", None)
     };
     {name="expr_attribute2";
-     o_input = ("a + b [@foo];;", None) ;
-     o_output = Some ({foo|let _ = a + b [@foo];;
+     o_input = ("a + b[@foo];;", None) ;
+     o_output = Some ({foo|let _ = a + b[@foo];;
 |foo}, None) ;
      official_output = Some ({foo|;;((a + b)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|a + b [@foo];
+     r_output = Some ({foo|a + b[@foo];
 |foo}, None) ;
      r_input = ("a + b [@foo];", None)
+    };
+    {name="expr_attribute3";
+     o_input = ("(a [@foo])[@bar];;", None) ;
+     o_output = Some ({foo|let _ = a[@foo][@bar];;
+|foo}, None) ;
+     official_output = Some ({foo|;;((a)[@foo ][@bar ])|foo}, None) ;
+     r_output = Some ({foo|a[@foo][@bar];
+|foo}, None) ;
+     r_input = ("a[@foo][@bar];", None)
     }
 ]
 ;

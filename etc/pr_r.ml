@@ -1416,7 +1416,7 @@ EXTEND_PRINTER
           right_operator pc 0 unfold next z ]
     | "expr_attribute"
       [ <:expr< $e$ [@ $attribute:attr$] >> ->
-        pprintf pc "%p [@%p]" curr e attribute_body attr
+        pprintf pc "%p[@%p]" curr e attribute_body attr
       ]
 
     | "add"
