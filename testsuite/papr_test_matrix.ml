@@ -21,23 +21,21 @@ type instance_t = {
   name : string ;
   r_input : (string * option exn);
   o_input : (string * option exn) ;
-  r_output : (string * option exn) ;
-  o_output : (string * option exn) ;
-  official_output : (string * option exn)
+  r_output : option (string * option exn) ;
+  o_output : option (string * option exn) ;
+  official_output : option (string * option exn)
 }
 ;
 
 value test_matrix = [
     {name="simplest";
      o_input = ("(1; 2);; 3 ;; let x = 1 ;;", None) ;
-     o_output = ({foo|let _ = 1; 2;;
+     o_output = Some ({foo|let _ = 1; 2;;
 let _ = 3;;
 let x = 1;;
 |foo}, None) ;
-     official_output = ({foo|;;1; 2
-;;3
-let x = 1|foo}, None) ;
-     r_output = ({foo|do { 1; 2 };
+     official_output = None ;
+     r_output = Some ({foo|do { 1; 2 };
 3;
 value x = 1;
 |foo}, None) ;
@@ -45,56 +43,56 @@ value x = 1;
     };
     {name="infix1";
      o_input = ("(a + b) c;;", None) ;
-     o_output = ({foo|let _ = (a + b) c;;
+     o_output = Some ({foo|let _ = (a + b) c;;
 |foo}, None) ;
-     official_output = ({foo|;;(+) a b c|foo}, None) ;
-     r_output = ({foo|(a + b) c;
+     official_output = Some ({foo|;;(+) a b c|foo}, None) ;
+     r_output = Some ({foo|(a + b) c;
 |foo}, None) ;
      r_input = ("(a + b) c;", None)
     };
     {name="infix2";
      o_input = ("(a --> b) c;;", None) ;
-     o_output = ({foo|let _ = (a --> b) c;;
+     o_output = Some ({foo|let _ = (a --> b) c;;
 |foo}, None) ;
-     official_output = ({foo|;;(-->) a b c|foo}, None) ;
-     r_output = ({foo|(a --> b) c;
+     official_output = Some ({foo|;;(-->) a b c|foo}, None) ;
+     r_output = Some ({foo|(a --> b) c;
 |foo}, None) ;
      r_input = ("(a --> b) c;", None)
     };
     {name="prefix1";
      o_input = ("(!!!a) c;;", None) ;
-     o_output = ({foo|let _ = !!!a c;;
+     o_output = Some ({foo|let _ = !!!a c;;
 |foo}, None) ;
-     official_output = ({foo|;;(!!!) a c|foo}, None) ;
-     r_output = ({foo|!!!a c;
+     official_output = Some ({foo|;;(!!!) a c|foo}, None) ;
+     r_output = Some ({foo|!!!a c;
 |foo}, None) ;
      r_input = ("(!!!a) c;", None)
     };
     (* original syntax accepts "$" as an infix symbol; revised syntax DOES NOT *)
     {name="dollar";
      o_input = ("a $ c;;", None) ;
-     o_output = ({foo|let _ = a $ c;;
+     o_output = Some ({foo|let _ = a $ c;;
 |foo}, None) ;
-     official_output = ({foo|;;a $ c|foo}, None) ;
-     r_output = ({foo|\$  a c;
+     official_output = Some ({foo|;;a $ c|foo}, None) ;
+     r_output = Some ({foo|\$  a c;
 |foo}, None) ;
      r_input = ("a $ c;", Some (Ploc.Exc Ploc.dummy (Stream.Error "';' expected after [str_item] (in [str_item_semi])")))
     };
     {name="expr_attribute1";
      o_input = ("a [@foo];;", None) ;
-     o_output = ({foo|let _ = a [@foo];;
+     o_output = Some ({foo|let _ = a [@foo];;
 |foo}, None) ;
-     official_output = ({foo|;;((a)[@foo ])|foo}, None) ;
-     r_output = ({foo|a [@foo];
+     official_output = Some ({foo|;;((a)[@foo ])|foo}, None) ;
+     r_output = Some ({foo|a [@foo];
 |foo}, None) ;
      r_input = ("a [@foo];", None)
     };
     {name="expr_attribute2";
      o_input = ("a + b [@foo];;", None) ;
-     o_output = ({foo|let _ = a + b [@foo];;
+     o_output = Some ({foo|let _ = a + b [@foo];;
 |foo}, None) ;
-     official_output = ({foo|;;((a + b)[@foo ])|foo}, None) ;
-     r_output = ({foo|a + b [@foo];
+     official_output = Some ({foo|;;((a + b)[@foo ])|foo}, None) ;
+     r_output = Some ({foo|a + b [@foo];
 |foo}, None) ;
      r_input = ("a + b [@foo];", None)
     }
@@ -106,12 +104,18 @@ value fmt_string s = Printf.sprintf "<<%s>>" s ;
 value i2test pa pp inputf outputf i =
   i.name >:: (fun _ ->
     match (inputf i, outputf i) with [
-      ((inputs, None), (outputs, None)) ->
+
+      ((inputs, None), None) ->
+        ignore(pa inputs)
+
+    | ((inputs, None), Some (outputs, None)) ->
         assert_equal ~{printer=fmt_string}
           outputs (pp (pa inputs))
+
     | ((inputs, Some exn), _) ->
         assert_raises_exn_pred ~{msg=i.name} ~{exnmsg="msg"} (smart_exn_eq exn)
           (fun () -> pa inputs)
+
     | _ -> assert False
     ])
 ;
