@@ -1440,7 +1440,8 @@ and sig_item ~item_attributes s l =
   | SgVal (loc, n, t) ->
       let vn = uv n in
       mksig loc
-        (ocaml_psig_value vn (mkvalue_desc ~item_attributes:[] vn t [])) ::
+        (ocaml_psig_value vn
+           (mkvalue_desc ~item_attributes:item_attributes vn t [])) ::
       l
   | SgXtr (loc, _, _) -> error loc "bad ast SgXtr"
 and module_expr =
