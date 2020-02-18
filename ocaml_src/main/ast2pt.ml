@@ -1365,7 +1365,11 @@ and module_type =
   | MtXtr (loc, _, _) -> error loc "bad ast MtXtr"
 and sig_item s l =
   match s with
-    SgCls (loc, cd) ->
+    SgAtt (loc, si, a) ->
+      (*
+          ocaml_sig_item_addattr (attr (uv a)) (sig_item si)
+      *)      assert false
+  | SgCls (loc, cd) ->
       mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l
   | SgClt (loc, ctd) ->
       begin match ocaml_psig_class_type with

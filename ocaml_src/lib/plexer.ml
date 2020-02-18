@@ -1031,10 +1031,34 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                       match Stream.peek strm__ with
                         Some '@' ->
                           Stream.junk strm__;
-                          keyword_or_error ctx (bp, Stream.count strm__)
-                            (Plexing.Lexbuf.get
-                               (Plexing.Lexbuf.add '@'
-                                  (Plexing.Lexbuf.add '[' buf)))
+                          begin match Stream.peek strm__ with
+                            Some '@' ->
+                              Stream.junk strm__;
+                              begin match Stream.peek strm__ with
+                                Some '@' ->
+                                  Stream.junk strm__;
+                                  keyword_or_error ctx
+                                    (bp, Stream.count strm__)
+                                    (Plexing.Lexbuf.get
+                                       (Plexing.Lexbuf.add '@'
+                                          (Plexing.Lexbuf.add '@'
+                                             (Plexing.Lexbuf.add '@'
+                                                (Plexing.Lexbuf.add '['
+                                                   buf)))))
+                              | _ ->
+                                  keyword_or_error ctx
+                                    (bp, Stream.count strm__)
+                                    (Plexing.Lexbuf.get
+                                       (Plexing.Lexbuf.add '@'
+                                          (Plexing.Lexbuf.add '@'
+                                             (Plexing.Lexbuf.add '[' buf))))
+                              end
+                          | _ ->
+                              keyword_or_error ctx (bp, Stream.count strm__)
+                                (Plexing.Lexbuf.get
+                                   (Plexing.Lexbuf.add '@'
+                                      (Plexing.Lexbuf.add '[' buf)))
+                          end
                       | Some '|' ->
                           Stream.junk strm__;
                           keyword_or_error ctx (bp, Stream.count strm__)
@@ -1343,7 +1367,23 @@ and check buf (strm__ : _ Stream.t) =
               match Stream.peek strm__ with
                 Some '@' ->
                   Stream.junk strm__;
-                  Plexing.Lexbuf.add '@' (Plexing.Lexbuf.add '[' buf)
+                  begin match Stream.peek strm__ with
+                    Some '@' ->
+                      Stream.junk strm__;
+                      begin match Stream.peek strm__ with
+                        Some '@' ->
+                          Stream.junk strm__;
+                          Plexing.Lexbuf.add '@'
+                            (Plexing.Lexbuf.add '@'
+                               (Plexing.Lexbuf.add '@'
+                                  (Plexing.Lexbuf.add '[' buf)))
+                      | _ ->
+                          Plexing.Lexbuf.add '@'
+                            (Plexing.Lexbuf.add '@'
+                               (Plexing.Lexbuf.add '[' buf))
+                      end
+                  | _ -> Plexing.Lexbuf.add '@' (Plexing.Lexbuf.add '[' buf)
+                  end
               | Some '|' ->
                   Stream.junk strm__;
                   Plexing.Lexbuf.add '|' (Plexing.Lexbuf.add '[' buf)
@@ -1559,15 +1599,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 821, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 825, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 821, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 825, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 821, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 825, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 822, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 826, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 822, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 826, 37)));
        Plexing.tok_comm = None}
   in
   let glex =

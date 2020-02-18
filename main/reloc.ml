@@ -419,7 +419,9 @@ and module_type floc sh =
 and sig_item floc sh =
   self where rec self =
     fun
-    [ SgCls loc x1 →
+    [ SgAtt loc si attr ->
+        SgAtt loc (self si) attr
+    | SgCls loc x1 →
         let loc = floc loc in
         SgCls loc
           (vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)

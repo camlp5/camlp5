@@ -319,7 +319,8 @@ and module_type floc sh =
 and sig_item floc sh =
   let rec self =
     function
-      SgCls (loc, x1) ->
+      SgAtt (loc, si, attr) -> SgAtt (loc, self si, attr)
+    | SgCls (loc, x1) ->
         let loc = floc loc in
         SgCls
           (loc,

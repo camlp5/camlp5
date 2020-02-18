@@ -185,6 +185,7 @@ value ocaml_attribute_interf _ _ _ = assert False ;
 value ocaml_attribute_type _ _ _ = assert False ;
 value ocaml_attribute_patt _ _ _ _ = assert False ;
 value ocaml_expr_addattr _ _ = assert False ;
+value ocaml_sig_item_addattr _ _ = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
@@ -217,11 +218,6 @@ value ocaml_attribute_patt loc (name: string) p eopt =
   })
 ;
 
-(*
-value busted_ocaml_expr_addattr attr ({pexp_attributes = l} as e) =
-  { (e) with pexp_attributes = l @ [attr] }
-;
-*)
 value ocaml_expr_addattr attr {
      pexp_desc=pexp_desc;
      pexp_loc=pexp_loc;
@@ -234,6 +230,29 @@ value ocaml_expr_addattr attr {
      pexp_loc_stack=pexp_loc_stack;
      pexp_attributes = pexp_attributes @ [attr]
     }
+;
+
+value ocaml_sig_item_addattr attr = fun [
+  { psig_desc =
+      Psig_value ({ pval_name = pval_name ;
+                    pval_type = pval_type ;
+                    pval_prim = pval_prim ;
+                    pval_attributes = pval_attributes ;
+                    pval_loc = pval_loc
+                  }) ;
+    psig_loc = psig_loc
+  } ->
+  { psig_desc =
+      Psig_value ({ pval_name = pval_name ;
+                    pval_type = pval_type ;
+                    pval_prim = pval_prim ;
+                    pval_attributes = pval_attributes @ [ attr ] ;
+                    pval_loc = pval_loc
+                  }) ;
+    psig_loc = psig_loc
+  }
+| _ -> assert False
+]
 ;
 END
 ;

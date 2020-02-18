@@ -159,7 +159,8 @@ and sig_item =
   | SgTyp of loc and V (list type_decl)
   | SgUse of loc and V string and V (list (sig_item * loc))
   | SgVal of loc and V string and ctyp
-  | SgXtr of loc and string and option (V sig_item) ]
+  | SgXtr of loc and string and option (V sig_item)
+  | SgAtt of loc and sig_item and V (V string * payload) ]
 and with_constr =
   [ WcMod of loc and V (list string) and module_expr
   | WcMos of loc and V (list string) and module_expr

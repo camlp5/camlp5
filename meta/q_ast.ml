@@ -306,7 +306,8 @@ module Meta_make (C : MetaSig) =
           MtXtr loc s _ → C.xtr loc s ]
     and sig_item =
       fun
-      [ SgCls _ lcict →
+      [ SgAtt _ e att -> assert False
+      | SgCls _ lcict →
           C.node "SgCls" [C.vala (C.list (class_infos class_type)) lcict]
       | SgClt _ lcict →
           C.node "SgClt" [C.vala (C.list (class_infos class_type)) lcict]

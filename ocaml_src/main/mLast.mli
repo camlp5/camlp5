@@ -150,6 +150,7 @@ and sig_item =
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp
   | SgXtr of loc * string * sig_item option
+  | SgAtt of loc * sig_item * (string * payload)
 and with_constr =
     WcMod of loc * string list * module_expr
   | WcMos of loc * string list * module_expr
