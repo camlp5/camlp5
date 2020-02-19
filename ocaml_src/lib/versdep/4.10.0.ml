@@ -526,7 +526,9 @@ let ocaml_psig_value s vd = Psig_value vd;;
 
 let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 
-let ocaml_pstr_eval e = Pstr_eval (e, []);;
+let ocaml_pstr_eval ?(item_attributes = []) e =
+  Pstr_eval (e, item_attributes)
+;;
 
 let ocaml_pstr_exception loc s ed =
   Pstr_exception

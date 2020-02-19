@@ -629,7 +629,19 @@ Grammar.safe_extend
                           (s : 'e__4)))])),
            (fun (st : 'e__4 list) (loc : Ploc.t) -> (st : 'structure)))]];
     Grammar.extension (str_item : 'str_item Grammar.Entry.e) None
-      [Some "top", None,
+      [Some "top", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (si : 'str_item)
+                (loc : Ploc.t) ->
+              (MLast.StAtt (loc, si, attr) : 'str_item)))];
+       Some "simple", None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),

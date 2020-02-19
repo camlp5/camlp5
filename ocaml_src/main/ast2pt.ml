@@ -1525,7 +1525,11 @@ and str_item ~item_attributes s l =
         | _ -> error loc "renamed exception should not have parameters"
       in
       mkstr loc si :: l
-  | StExp (loc, e) -> mkstr loc (ocaml_pstr_eval (expr e)) :: l
+  | StExp (loc, e) ->
+      mkstr loc
+        (ocaml_pstr_eval ~item_attributes:(List.map snd item_attributes)
+           (expr e)) ::
+      l
   | StExt (loc, n, t, p) ->
       let vn = uv n in
       mkstr loc
