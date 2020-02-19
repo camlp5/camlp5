@@ -227,8 +227,7 @@ module type S =
     val s_token : Plexing.pattern -> ('self, string) ty_symbol;;
     val s_rules : 'a ty_production list -> ('self, 'a) ty_symbol;;
     val s_vala :
-      string list -> ('self, 'a) ty_symbol ->
-        ('self, 'a Ploc.vala) ty_symbol;;
+      string list -> ('self, 'a) ty_symbol -> ('self, 'a Ploc.vala) ty_symbol;;
     val r_stop : ('self, 'r, 'r) ty_rule;;
     val r_next :
       ('self, 'a, 'r) ty_rule -> ('self, 'b) ty_symbol ->

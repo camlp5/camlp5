@@ -334,9 +334,9 @@ and sig_item floc sh =
     | SgDir (loc, x1, x2) ->
         let loc = floc loc in
         SgDir (loc, x1, vala_map (option_map (expr floc sh)) x2)
-    | SgExc (loc, x1, x2) ->
+    | SgExc (loc, x1, x2, x3) ->
         let loc = floc loc in
-        SgExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2)
+        SgExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3)
     | SgExt (loc, x1, x2, x3, x4) ->
         let loc = floc loc in SgExt (loc, x1, ctyp floc sh x2, x3, x4)
     | SgInc (loc, x1) ->
@@ -421,9 +421,9 @@ and str_item floc sh =
     | StDir (loc, x1, x2) ->
         let loc = floc loc in
         StDir (loc, x1, vala_map (option_map (expr floc sh)) x2)
-    | StExc (loc, x1, x2, x3) ->
+    | StExc (loc, x1, x2, x3, x4) ->
         let loc = floc loc in
-        StExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3)
+        StExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3, x4)
     | StExp (loc, x1, x2) ->
         let loc = floc loc in StExp (loc, expr floc sh x1, x2)
     | StExt (loc, x1, x2, x3, x4) ->

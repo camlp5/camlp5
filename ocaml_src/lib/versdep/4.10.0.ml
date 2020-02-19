@@ -472,12 +472,13 @@ let ocaml_ppat_variant =
 
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
-let ocaml_psig_exception loc s ed =
+let ocaml_psig_exception ?(expr_attributes = []) ?(item_attributes = []) loc s
+    ed =
   Psig_exception
     {ptyexn_constructor =
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-       pext_loc = loc; pext_attributes = []};
-     ptyexn_attributes = []; ptyexn_loc = loc}
+       pext_loc = loc; pext_attributes = expr_attributes};
+     ptyexn_attributes = item_attributes; ptyexn_loc = loc}
 ;;
 
 let ocaml_psig_include loc mt =
@@ -530,12 +531,13 @@ let ocaml_pstr_eval ?(item_attributes = []) e =
   Pstr_eval (e, item_attributes)
 ;;
 
-let ocaml_pstr_exception loc s ed =
+let ocaml_pstr_exception ?(expr_attributes = []) ?(item_attributes = []) loc s
+    ed =
   Pstr_exception
     {ptyexn_constructor =
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-       pext_loc = loc; pext_attributes = []};
-     ptyexn_attributes = []; ptyexn_loc = loc}
+       pext_loc = loc; pext_attributes = expr_attributes};
+     ptyexn_attributes = item_attributes; ptyexn_loc = loc}
 ;;
 
 let ocaml_pstr_exn_rebind =

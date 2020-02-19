@@ -317,8 +317,9 @@ module Meta_make (C : MetaSig) =
       | SgDcl (_, lsi) -> C.node "SgDcl" [C.vala (C.list sig_item) lsi]
       | SgDir (_, s, oe) ->
           C.node "SgDir" [C.vala C.string s; C.vala (C.option expr) oe]
-      | SgExc (_, s, lt) ->
-          C.node "SgExc" [C.vala C.string s; C.vala (C.list ctyp) lt]
+      | SgExc (_, s, lt, attrs) ->
+          let attrs = assert false in
+          C.node "SgExc" [C.vala C.string s; C.vala (C.list ctyp) lt; attrs]
       | SgExt (_, s, t, ls, attrs) ->
           let attrs = assert false in
           C.node "SgExt"
@@ -390,10 +391,11 @@ module Meta_make (C : MetaSig) =
       | StDef (_, lx) -> C.node "StDef" [C.vala (C.list joinclause) lx]
       | StDir (_, s, oe) ->
           C.node "StDir" [C.vala C.string s; C.vala (C.option expr) oe]
-      | StExc (_, s, lt, ls) ->
+      | StExc (_, s, lt, ls, attrs) ->
+          let attrs = assert false in
           C.node "StExc"
             [C.vala C.string s; C.vala (C.list ctyp) lt;
-             C.vala (C.list C.string) ls]
+             C.vala (C.list C.string) ls; attrs]
       | StExp (_, e, attrs) ->
           let attrs = assert false in C.node "StExp" [expr e; attrs]
       | StExt (_, s, t, ls, attrs) ->

@@ -1389,9 +1389,10 @@ and sig_item s l =
       end
   | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
-  | SgExc (loc, n, tl) ->
+  | SgExc (loc, n, tl, attrs) ->
       mksig loc
-        (ocaml_psig_exception (mkloc loc) (uv n) (List.map ctyp (uv tl))) ::
+        (ocaml_psig_exception ~item_attributes:(item_attributes attrs)
+           (mkloc loc) (uv n) (List.map ctyp (uv tl))) ::
       l
   | SgExt (loc, n, t, p, attrs) ->
       let vn = uv n in
@@ -1506,10 +1507,12 @@ and str_item s l =
       | None -> error loc "no 'def' in this ocaml version"
       end
   | StDir (loc, _, _) -> l
-  | StExc (loc, n, tl, sl) ->
+  | StExc (loc, n, tl, sl, attrs) ->
       let si =
         match uv tl, uv sl with
-          tl, [] -> ocaml_pstr_exception (mkloc loc) (uv n) (List.map ctyp tl)
+          tl, [] ->
+            ocaml_pstr_exception ~item_attributes:(item_attributes attrs)
+              (mkloc loc) (uv n) (List.map ctyp tl)
         | [], sl ->
             begin match ocaml_pstr_exn_rebind with
               Some pstr_exn_rebind ->
