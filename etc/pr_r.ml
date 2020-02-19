@@ -253,6 +253,9 @@ value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 value attribute_body = Eprinter.apply pr_attribute_body;
+value pr_attribute atstring pc attr =
+  pprintf pc "[%s%p]" atstring attribute_body (Pcaml.unvala attr)
+;
 
 value comm_bef pc loc =
   if flag_comments_in_phrases.val then Prtools.comm_bef pc.ind loc else ""
@@ -764,31 +767,34 @@ value type_constraint pc (t1, t2) =
 ;
 
 value type_decl pc td =
-  let ((_, tn), tp, pf, te, cl) =
+  let ((_, tn), tp, pf, te, cl, attrs) =
     (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
-     td.MLast.tdDef, td.MLast.tdCon)
+     td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
   let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p%s%p = %s%p%p" var_escaped (loc, Pcaml.unvala tn)
+       pprintf pc "%p%s%p = %s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
          (if Pcaml.unvala tp = [] then "" else " ")
          (hlist type_var) (Pcaml.unvala tp)
          (if pf then "private " else "") ctyp te
-         (hlist type_constraint) (Pcaml.unvala cl))
+         (hlist type_constraint) (Pcaml.unvala cl)
+        (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
     (fun () ->
        if pc.aft = "" then
-         pprintf pc "%p%s%p =@;%s%p%p" var_escaped (loc, Pcaml.unvala tn)
+         pprintf pc "%p%s%p =@;%s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp)
            (if pf then "private " else "") ctyp te
            (hlist type_constraint) (Pcaml.unvala cl)
+           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
        else
-         pprintf pc "@[<a>%p%s%p =@;%s%p%p@ @]" var_escaped
+         pprintf pc "@[<a>%p%s%p =@;%s%p%p%p@ @]" var_escaped
            (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp)
            (if pf then "private " else "") ctyp te
-           (hlist type_constraint) (Pcaml.unvala cl))
+           (hlist type_constraint) (Pcaml.unvala cl)
+           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
 ;
 
 value label_decl pc (loc, l, m, t) =

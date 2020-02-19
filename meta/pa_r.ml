@@ -704,10 +704,14 @@ EXTEND
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt → (i, p) ] ]
   ;
+  item_attribute:
+  [ [ "[@@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   type_decl:
     [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter); "=";
-        pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) →
-          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ >> ] ]
+        pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = V (LIST0 item_attribute) →
+          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_list:attrs$ >> ] ]
   ;
   type_patt:
     [ [ n = V LIDENT → (loc, n) ] ]

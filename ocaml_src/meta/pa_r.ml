@@ -322,6 +322,8 @@ Grammar.safe_extend
      grammar_entry_create "paren_ipatt"
    and label_ipatt : 'label_ipatt Grammar.Entry.e =
      grammar_entry_create "label_ipatt"
+   and item_attribute : 'item_attribute Grammar.Entry.e =
+     grammar_entry_create "item_attribute"
    and type_patt : 'type_patt Grammar.Entry.e =
      grammar_entry_create "type_patt"
    and constrain : 'constrain Grammar.Entry.e =
@@ -2653,6 +2655,17 @@ Grammar.safe_extend
              (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)),
            (fun (p : 'ipatt) _ (i : 'patt_label_ident) (loc : Ploc.t) ->
               (i, p : 'label_ipatt)))]];
+    Grammar.extension (item_attribute : 'item_attribute Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[@@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (loc : Ploc.t) ->
+              (attr : 'item_attribute)))]];
     Grammar.extension (type_decl : 'type_decl Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -2661,23 +2674,29 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_nterm
-                               (type_patt : 'type_patt Grammar.Entry.e)))
-                         (Grammar.s_list0
-                            (Grammar.s_nterm
-                               (type_parameter :
-                                'type_parameter Grammar.Entry.e))))
-                      (Grammar.s_token ("", "=")))
-                   (Grammar.s_flag (Grammar.s_token ("", "private"))))
-                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_nterm
+                                  (type_patt : 'type_patt Grammar.Entry.e)))
+                            (Grammar.s_list0
+                               (Grammar.s_nterm
+                                  (type_parameter :
+                                   'type_parameter Grammar.Entry.e))))
+                         (Grammar.s_token ("", "=")))
+                      (Grammar.s_flag (Grammar.s_token ("", "private"))))
+                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                (Grammar.s_list0
+                   (Grammar.s_nterm
+                      (constrain : 'constrain Grammar.Entry.e))))
              (Grammar.s_list0
-                (Grammar.s_nterm (constrain : 'constrain Grammar.Entry.e))),
-           (fun (cl : 'constrain list) (tk : 'ctyp) (pf : bool) _
-                (tpl : 'type_parameter list) (n : 'type_patt)
-                (loc : Ploc.t) ->
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (cl : 'constrain list)
+                (tk : 'ctyp) (pf : bool) _ (tpl : 'type_parameter list)
+                (n : 'type_patt) (loc : Ploc.t) ->
               ({MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = pf;
-                MLast.tdDef = tk; MLast.tdCon = cl; MLast.tdAttributes = []} :
+                MLast.tdDef = tk; MLast.tdCon = cl;
+                MLast.tdAttributes = attrs} :
                'type_decl)))]];
     Grammar.extension (type_patt : 'type_patt Grammar.Entry.e) None
       [None, None,

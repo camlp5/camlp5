@@ -176,6 +176,17 @@ value x = 1;
      r_output = Some ({foo|1[@@foo];
 |foo}, None) ;
      r_input = ("do { 1 } [@@foo];", None)
+    };
+    {name="item_attribute3"; implem = True ;
+     o_input = ("type nonrec t1 = int [@@bar] and t2 = bool [@@foo]", None) ;
+     o_output = Some ({foo|type nonrec t1 = int[@@bar]
+and t2 = bool[@@foo];;
+|foo}, None) ;
+     official_output = Some ({foo|;;1[@@foo ]|foo}, None) ;
+     r_output = Some ({foo|type nonrec t1 = int[@@bar]
+and t2 = bool[@@foo];
+|foo}, None) ;
+     r_input = ("type nonrec t1 = int [@@bar] and t2 = bool [@@foo];", None)
     }
 ]
 ;
