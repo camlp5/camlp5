@@ -768,9 +768,10 @@ value flatten_sequ e =
 value lident pc s = pprintf pc "%s" s;
 value string pc s = pprintf pc "\"%s\"" s;
 
-value external_decl pc (loc, n, t, sl) =
-  pprintf pc "external %p :@;%p@[ = %p@]" var_escaped (loc, n) ctyp t
+value external_decl pc (loc, n, t, sl, attrs) =
+  pprintf pc "external %p :@;%p@[ = %p%p@]" var_escaped (loc, n) ctyp t
     (hlist string) sl
+    (hlist (pr_attribute "@@")) attrs
 ;
 
 value exception_decl pc (loc, e, tl, id) =
@@ -1711,8 +1712,8 @@ EXTEND_PRINTER
             vlistl str_item_sep str_item pc sil
       | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ >> ->
           exception_decl pc (loc, e, tl, id)
-      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (loc, n, t, sl)
+      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
+          external_decl pc (loc, n, t, sl, attrs)
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1734,8 +1735,11 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "let%s %p" (if rf then " rec" else "")
                  (vlist2 let_binding (and_before let_binding)) pel)
-      | <:str_item< $exp:e$ >> ->
-          if pc.aft = ";;" then expr pc e else pprintf pc "let _ =@;%p" expr e
+      | <:str_item< $exp:e$ $list:attrs$ >> ->
+          if pc.aft = ";;" then
+            pprintf pc "%p%p" expr e (hlist (pr_attribute "@@")) attrs
+          else
+            pprintf pc "let _ =@;%p%p" expr e (hlist (pr_attribute "@@")) attrs
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.StUse _ fn sl ->
@@ -1749,8 +1753,8 @@ EXTEND_PRINTER
           pprintf pc "(* #%s %p *)" s expr e
       | <:sig_item:< exception $uid:e$ of $list:tl$ >> ->
           exception_decl pc (loc, e, tl, [])
-      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (loc, n, t, sl)
+      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
+          external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item:< declare $list:sil$ end >> ->
@@ -1775,8 +1779,8 @@ EXTEND_PRINTER
       | <:sig_item:< type $list:tdl$ >> ->
           pprintf pc "type %p"
             (vlist2 type_decl (and_before type_decl)) tdl
-      | <:sig_item:< value $lid:s$ : $t$ >> ->
-          pprintf pc "val %p :@;%p" var_escaped (loc, s) ctyp t
+      | <:sig_item:< value $lid:s$ : $t$ $list:attrs$ >> ->
+          pprintf pc "val %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;

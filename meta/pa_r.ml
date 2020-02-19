@@ -289,8 +289,8 @@ EXTEND
       | "exception"; (_, c, tl, _) = constructor_declaration; b = rebind_exn →
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) →
-          <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+        pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
+          <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
           <:str_item< external $lid:i$ : $t$ = $_list:pd$ >>
@@ -308,7 +308,7 @@ EXTEND
           <:str_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = str_item → (si, loc) ]) →
           <:str_item< # $_str:s$ $_list:sil$ >>
-      | e = expr → <:str_item< $exp:e$ >> ] ]
+      | e = expr ; attrs = V (LIST0 item_attribute) → <:str_item< $exp:e$ $_list:attrs$ >> ] ]
   ;
   rebind_exn:
     [ [ "="; a = V mod_ident "list" "" → a
@@ -360,8 +360,8 @@ EXTEND
       | "exception"; (_, c, tl, _) = constructor_declaration →
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) →
-          <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+        pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
+          <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
           <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
@@ -374,10 +374,10 @@ EXTEND
       | "open"; i = V mod_ident "list" "" → <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") →
           <:sig_item< type $_list:tdl$ >>
-      | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp →
-          <:sig_item< value $_lid:i$ : $t$ >>
-      | "value"; "("; i = operator_rparen; ":"; t = ctyp →
-          <:sig_item< value $lid:i$ : $t$ >>
+      | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
+          <:sig_item< value $_lid:i$ : $t$ $_list:attrs$ >>
+      | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
+          <:sig_item< value $lid:i$ : $t$ $_list:attrs$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →
