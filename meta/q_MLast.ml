@@ -350,8 +350,8 @@ EXTEND
           in
           Qast.Node "StExc" [Qast.Loc; c; tl; b]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
-        pd = SV (LIST1 STRING) →
-          Qast.Node "StExt" [Qast.Loc; i; t; pd]
+        pd = SV (LIST1 STRING) ; attrs = SV (LIST0 item_attribute) →
+          Qast.Node "StExt" [Qast.Loc; i; t; pd; attrs]
       | "include"; me = module_expr → Qast.Node "StInc" [Qast.Loc; me]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") →
           Qast.Node "StMod" [Qast.Loc; r; l]
@@ -368,7 +368,7 @@ EXTEND
       | "#"; s = SV STRING;
         sil = SV (LIST0 [ si = str_item → Qast.Tuple [si; Qast.Loc] ]) →
           Qast.Node "StUse" [Qast.Loc; s; sil]
-      | e = expr → Qast.Node "StExp" [Qast.Loc; e] ] ]
+      | e = expr ; attrs = SV (LIST0 item_attribute) → Qast.Node "StExp" [Qast.Loc; e; attrs] ] ]
   ;
   rebind_exn:
     [ [ "="; a = SV mod_ident "list" "" → a
@@ -430,7 +430,7 @@ EXTEND
           Qast.Node "SgExc" [Qast.Loc; c; tl]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) →
-          Qast.Node "SgExt" [Qast.Loc; i; t; pd]
+          Qast.Node "SgExt" [Qast.Loc; i; t; pd; Qast.VaVal(Qast.List[])]
       | "include"; mt = module_type → Qast.Node "SgInc" [Qast.Loc; mt]
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") →
@@ -440,8 +440,8 @@ EXTEND
       | "open"; i = SV mod_ident "list" "" → Qast.Node "SgOpn" [Qast.Loc; i]
       | "type"; tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "SgTyp" [Qast.Loc; tdl]
-      | "value"; i = SV LIDENT; ":"; t = ctyp →
-          Qast.Node "SgVal" [Qast.Loc; i; t]
+      | "value"; i = SV LIDENT; ":"; t = ctyp ; attrs = SV (LIST0 item_attribute) →
+          Qast.Node "SgVal" [Qast.Loc; i; t; attrs]
       | "#"; n = SV LIDENT; dp = SV (OPT expr) →
           Qast.Node "SgDir" [Qast.Loc; n; dp]
       | "#"; s = SV STRING;

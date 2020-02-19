@@ -197,14 +197,14 @@ and sig_item =
   fun
   [ <:sig_item< declare $list:sil$ end >> -> list sig_item sil
   | <:sig_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
-  | SgExt _ _ t _ -> ctyp t
+  | SgExt _ _ t _ _ -> ctyp t
   | <:sig_item< include $mt$ >> -> module_type mt
   | <:sig_item< module $flag:_$ $list:ntl$ >> ->
       list (fun (_, mt) -> module_type mt) ntl
   | SgMty _ _ mt -> module_type mt
   | <:sig_item< open $[s :: _]$ >> -> addmodule s
   | <:sig_item< type $list:tdl$ >> -> list type_decl tdl
-  | SgVal _ _ t -> ctyp t
+  | SgVal _ _ t _ -> ctyp t
   | <:sig_item< # $_$ $_$ >> -> ()
   | x -> not_impl "sig_item" x ]
 and module_expr =

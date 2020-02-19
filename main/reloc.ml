@@ -438,9 +438,9 @@ and sig_item floc sh =
     | SgExc loc x1 x2 →
         let loc = floc loc in
         SgExc loc x1 (vala_map (List.map (ctyp floc sh)) x2)
-    | SgExt loc x1 x2 x3 →
+    | SgExt loc x1 x2 x3 x4 →
         let loc = floc loc in
-        SgExt loc x1 (ctyp floc sh x2) x3
+        SgExt loc x1 (ctyp floc sh x2) x3 x4
     | SgInc loc x1 →
         let loc = floc loc in
         SgInc loc (module_type floc sh x1)
@@ -462,9 +462,9 @@ and sig_item floc sh =
         let loc = floc loc in
         SgUse loc x1
           (vala_map (List.map (fun (x1, loc) → (self x1, floc loc))) x2)
-    | SgVal loc x1 x2 →
+    | SgVal loc x1 x2 x3 →
         let loc = floc loc in
-        SgVal loc x1 (ctyp floc sh x2)
+        SgVal loc x1 (ctyp floc sh x2) x3
     | SgXtr loc x1 x2 →
         let loc = floc loc in
         SgXtr loc x1 (option_map (vala_map self) x2) ]
@@ -535,12 +535,12 @@ and str_item floc sh =
     | StExc loc x1 x2 x3 →
         let loc = floc loc in
         StExc loc x1 (vala_map (List.map (ctyp floc sh)) x2) x3
-    | StExp loc x1 →
+    | StExp loc x1 x2 →
         let loc = floc loc in
-        StExp loc (expr floc sh x1)
-    | StExt loc x1 x2 x3 →
+        StExp loc (expr floc sh x1) x2
+    | StExt loc x1 x2 x3 x4 →
         let loc = floc loc in
-        StExt loc x1 (ctyp floc sh x2) x3
+        StExt loc x1 (ctyp floc sh x2) x3 x4
     | StInc loc x1 →
         let loc = floc loc in
         StInc loc (module_expr floc sh x1)

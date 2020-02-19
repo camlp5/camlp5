@@ -316,9 +316,10 @@ module Meta_make (C : MetaSig) =
           C.node "SgDir" [C.vala C.string s; C.vala (C.option expr) oe]
       | SgExc _ s lt →
           C.node "SgExc" [C.vala C.string s; C.vala (C.list ctyp) lt]
-      | SgExt _ s t ls →
+      | SgExt _ s t ls attrs →
+          let attrs = assert False in
           C.node "SgExt"
-            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls]
+            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
       | SgInc _ mt → C.node "SgInc" [module_type mt]
       | SgMod _ b lsmt →
           let c_vala x = C.vala C.string x in
@@ -337,7 +338,9 @@ module Meta_make (C : MetaSig) =
             [C.vala C.string s;
              C.vala (C.list (fun (si, _) → C.tuple [sig_item si; C.loc_v ()]))
                lsil]
-      | SgVal _ s t → C.node "SgVal" [C.vala C.string s; ctyp t]
+      | SgVal _ s t attrs →
+          let attrs = assert False in
+          C.node "SgVal" [C.vala C.string s; ctyp t; attrs]
       | 
           SgXtr loc s _ → C.xtr loc s ]
     and with_constr =
@@ -386,10 +389,13 @@ module Meta_make (C : MetaSig) =
           C.node "StExc"
             [C.vala C.string s; C.vala (C.list ctyp) lt;
              C.vala (C.list C.string) ls]
-      | StExp _ e → C.node "StExp" [expr e]
-      | StExt _ s t ls →
+      | StExp _ e attrs →
+          let attrs = assert False in
+          C.node "StExp" [expr e; attrs]
+      | StExt _ s t ls attrs →
+          let attrs = assert False in
           C.node "StExt"
-            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls]
+            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
       | StInc _ me → C.node "StInc" [module_expr me]
       | StMod _ b lsme →
           let c_vala x = C.vala C.string x in
@@ -713,7 +719,7 @@ IFDEF STRICT THEN
     Pcaml.str_item: FIRST
       [ [ s = ANTIQUOT_LOC -> MLast.StXtr loc s None
         | s = ANTIQUOT_LOC "exp" ->
-            MLast.StExp loc (MLast.ExXtr loc s None) ] ]
+            MLast.StExp loc (MLast.ExXtr loc s None) (Ploc.VaVal []) ] ]
     ;
     Pcaml.sig_item: FIRST
       [ [ s = ANTIQUOT_LOC -> MLast.SgXtr loc s None ] ]

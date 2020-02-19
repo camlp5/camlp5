@@ -412,7 +412,7 @@ value type_decl ?{item_attributes=[]} tn tl priv cl =
 ;
 
 value mkvalue_desc ~{item_attributes} vn t p =
- ocaml_value_description ~{item_attributes=List.map snd item_attributes} vn (ctyp t) p;
+ ocaml_value_description ~{item_attributes=item_attributes} vn (ctyp t) p;
 
 value rec same_type_expr ct ce =
   match (ct, ce) with
@@ -1156,10 +1156,7 @@ and mktype_decl td =
       (uv td.tdCon)
   in
   let tn = uv (snd (uv td.tdNam)) in
-  let attrs = uv td.tdAttributes in
-  let attrs = List.map uv attrs in
-  let attrs = List.map attr attrs in
-  (tn, type_decl ~{item_attributes=attrs} tn (uv td.tdPrm) priv cl td.tdDef)
+  (tn, type_decl ~{item_attributes=item_attributes td.tdAttributes} tn (uv td.tdPrm) priv cl td.tdDef)
 and module_type =
   fun
   [ MtAcc loc _ _ as f →
@@ -1183,11 +1180,11 @@ and module_type =
   | MtWit loc mt wcl →
       mkmty loc (ocaml_pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | MtXtr loc _ _ → error loc "bad ast MtXtr" ]
-and sig_item ~{item_attributes} s l =
+and sig_item ~{item_attributes=arglebargle} s l =
   match s with
   [ 
     SgAtt loc si a ->
-    sig_item ~{item_attributes=[ (mkloc loc, attr (uv a)) :: item_attributes ]} si l
+      assert False
 
   | SgCls loc cd →
       [mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l]
@@ -1204,9 +1201,9 @@ and sig_item ~{item_attributes} s l =
       [mksig loc
          (ocaml_psig_exception (mkloc loc) (uv n) (List.map ctyp (uv tl))) ::
        l]
-  | SgExt loc n t p →
+  | SgExt loc n t p attrs →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes} vn t (uv p))) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t (uv p))) :: l]
   | SgInc loc mt →
       [mksig loc (ocaml_psig_include (mkloc loc) (module_type mt)) :: l]
   | SgMod loc rf ntl →
@@ -1241,9 +1238,9 @@ and sig_item ~{item_attributes} s l =
   | SgUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
         (fun () → List.fold_right (fun (si, _) → (sig_item ~{item_attributes=[]}) si) (uv sl) l) ()
-  | SgVal loc n t →
+  | SgVal loc n t attrs →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes} vn t [])) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t [])) :: l]
   | SgXtr loc _ _ → error loc "bad ast SgXtr" ]
 and module_expr =
   fun
@@ -1279,10 +1276,10 @@ and module_expr =
           mkmod loc (pmod_unpack e)
       | None → error loc "no module unpack in this ocaml version" ]
   | MeXtr loc _ _ → error loc "bad ast MeXtr" ]
-and str_item ~{item_attributes} s l =
+and str_item ~{item_attributes=arglebargle} s l =
   match s with
   [ StAtt loc si a ->
-    str_item ~{item_attributes=[ (mkloc loc, attr (uv a)) :: item_attributes ]} si l
+    assert False
 
   | StCls loc cd →
       [mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l]
@@ -1316,10 +1313,10 @@ and str_item ~{item_attributes} s l =
         | _ → error loc "renamed exception should not have parameters" ]
       in
       [mkstr loc si :: l]
-  | StExp loc e → [mkstr loc (ocaml_pstr_eval ~{item_attributes=List.map snd item_attributes} (expr e)) :: l]
-  | StExt loc n t p →
+  | StExp loc e attrs → [mkstr loc (ocaml_pstr_eval ~{item_attributes=item_attributes attrs} (expr e)) :: l]
+  | StExt loc n t p attrs →
       let vn = uv n in
-      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=item_attributes} vn t (uv p))) :: l]
+      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t (uv p))) :: l]
   | StInc loc me →
       match ocaml_pstr_include with
       [ Some pstr_include →
@@ -1557,6 +1554,8 @@ and class_str_item c l =
          (ocaml_pcf_virt
             (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
        l] ]
+and item_attributes attrs =
+  attrs |> uv |> List.map uv |> List.map attr
 and attr (id, payload) =
   match payload with [
     StAttr loc st ->

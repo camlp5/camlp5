@@ -151,14 +151,14 @@ and sig_item =
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and V string and V (option expr)
   | SgExc of loc and V string and V (list ctyp)
-  | SgExt of loc and V string and ctyp and V (list string)
+  | SgExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | SgInc of loc and module_type
   | SgMod of loc and V bool and V (list (V (option (V string)) * module_type))
   | SgMty of loc and V string and module_type
   | SgOpn of loc and V (list string)
   | SgTyp of loc and V (list type_decl)
   | SgUse of loc and V string and V (list (sig_item * loc))
-  | SgVal of loc and V string and ctyp
+  | SgVal of loc and V string and ctyp and V (list (V (V string * payload)))
   | SgXtr of loc and string and option (V sig_item)
   | SgAtt of loc and sig_item and V (V string * payload) ]
 and with_constr =
@@ -182,8 +182,8 @@ and str_item =
   | StDef of loc and V (list joinclause)
   | StDir of loc and V string and V (option expr)
   | StExc of loc and V string and V (list ctyp) and V (list string)
-  | StExp of loc and expr
-  | StExt of loc and V string and ctyp and V (list string)
+  | StExp of loc and expr and V (list (V (V string * payload)))
+  | StExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | StInc of loc and module_expr
   | StMod of loc and V bool and V (list (V (option (V string)) * module_expr))
   | StMty of loc and V string and module_type

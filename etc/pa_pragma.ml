@@ -789,8 +789,8 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             MLast.loc -> string -> MLast.ctyp -> MLast.sig_item >>;
-         expr = Obj.repr (fun loc s t -> MLast.SgVal loc s t);
+             MLast.loc -> string -> MLast.ctyp -> (list (string * payload)) -> MLast.sig_item >>;
+         expr = Obj.repr (fun loc s t attrs -> MLast.SgVal loc s t attrs);
          patt = no_patt loc});
      ("MLast.StDcl",
       fun loc ->
