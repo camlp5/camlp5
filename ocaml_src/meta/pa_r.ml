@@ -648,7 +648,7 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
            (fun (e : 'expr) (loc : Ploc.t) ->
-              (MLast.StExp (loc, e) : 'str_item)));
+              (MLast.StExp (loc, e, []) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -748,7 +748,7 @@ Grammar.safe_extend
              (Grammar.s_list1 (Grammar.s_token ("STRING", ""))),
            (fun (pd : string list) _ (t : 'ctyp) _ (i : 'operator_rparen) _ _
                 (loc : Ploc.t) ->
-              (MLast.StExt (loc, i, t, pd) : 'str_item)));
+              (MLast.StExt (loc, i, t, pd, []) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -764,7 +764,7 @@ Grammar.safe_extend
              (Grammar.s_list1 (Grammar.s_token ("STRING", ""))),
            (fun (pd : string list) _ (t : 'ctyp) _ (i : string) _
                 (loc : Ploc.t) ->
-              (MLast.StExt (loc, i, t, pd) : 'str_item)));
+              (MLast.StExt (loc, i, t, pd, []) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1003,7 +1003,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t : 'ctyp) _ (i : 'operator_rparen) _ _ (loc : Ploc.t) ->
-              (MLast.SgVal (loc, i, t) : 'sig_item)));
+              (MLast.SgVal (loc, i, t, []) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1014,7 +1014,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ":")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t : 'ctyp) _ (i : string) _ (loc : Ploc.t) ->
-              (MLast.SgVal (loc, i, t) : 'sig_item)));
+              (MLast.SgVal (loc, i, t, []) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
@@ -1079,7 +1079,7 @@ Grammar.safe_extend
              (Grammar.s_list1 (Grammar.s_token ("STRING", ""))),
            (fun (pd : string list) _ (t : 'ctyp) _ (i : 'operator_rparen) _ _
                 (loc : Ploc.t) ->
-              (MLast.SgExt (loc, i, t, pd) : 'sig_item)));
+              (MLast.SgExt (loc, i, t, pd, []) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1095,7 +1095,7 @@ Grammar.safe_extend
              (Grammar.s_list1 (Grammar.s_token ("STRING", ""))),
            (fun (pd : string list) _ (t : 'ctyp) _ (i : string) _
                 (loc : Ploc.t) ->
-              (MLast.SgExt (loc, i, t, pd) : 'sig_item)));
+              (MLast.SgExt (loc, i, t, pd, []) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop

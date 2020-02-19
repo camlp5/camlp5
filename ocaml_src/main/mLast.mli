@@ -141,14 +141,14 @@ and sig_item =
   | SgDcl of loc * sig_item list
   | SgDir of loc * string * expr option
   | SgExc of loc * string * ctyp list
-  | SgExt of loc * string * ctyp * string list
+  | SgExt of loc * string * ctyp * string list * (string * payload) list
   | SgInc of loc * module_type
   | SgMod of loc * bool * (string option * module_type) list
   | SgMty of loc * string * module_type
   | SgOpn of loc * string list
   | SgTyp of loc * type_decl list
   | SgUse of loc * string * (sig_item * loc) list
-  | SgVal of loc * string * ctyp
+  | SgVal of loc * string * ctyp * (string * payload) list
   | SgXtr of loc * string * sig_item option
   | SgAtt of loc * sig_item * (string * payload)
 and with_constr =
@@ -172,8 +172,8 @@ and str_item =
   | StDef of loc * joinclause list
   | StDir of loc * string * expr option
   | StExc of loc * string * ctyp list * string list
-  | StExp of loc * expr
-  | StExt of loc * string * ctyp * string list
+  | StExp of loc * expr * (string * payload) list
+  | StExt of loc * string * ctyp * string list * (string * payload) list
   | StInc of loc * module_expr
   | StMod of loc * bool * (string option * module_expr) list
   | StMty of loc * string * module_type
