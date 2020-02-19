@@ -159,8 +159,7 @@ and sig_item =
   | SgTyp of loc and V (list type_decl)
   | SgUse of loc and V string and V (list (sig_item * loc))
   | SgVal of loc and V string and ctyp and V (list (V (V string * payload)))
-  | SgXtr of loc and string and option (V sig_item)
-  | SgAtt of loc and sig_item and V (V string * payload) ]
+  | SgXtr of loc and string and option (V sig_item) ]
 and with_constr =
   [ WcMod of loc and V (list string) and module_expr
   | WcMos of loc and V (list string) and module_expr
@@ -191,8 +190,7 @@ and str_item =
   | StTyp of loc and V bool and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr))
-  | StXtr of loc and string and option (V str_item)
-  | StAtt of loc and str_item and V (V string * payload) ]
+  | StXtr of loc and string and option (V str_item) ]
 and joinclause =
   { jcLoc : loc;
     jcVal :

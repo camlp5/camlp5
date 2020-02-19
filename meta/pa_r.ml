@@ -283,11 +283,7 @@ EXTEND
     [ [ st = V (LIST0 [ s = str_item; ";" → s ]) → st ] ]
   ;
   str_item:
-    [ "top" LEFTA
-      [ si = SELF ; "[@@" ; attr = V attribute_body "attribute"; "]" ->
-        <:str_item< $si$ [@@ $_attribute:attr$ ] >>
-      ]
-    | "simple"
+    [ "top"
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
           <:str_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl, _) = constructor_declaration; b = rebind_exn →
@@ -358,11 +354,7 @@ EXTEND
     [ [ st = V (LIST0 [ s = sig_item; ";" → s ]) → st ] ]
   ;
   sig_item:
-    [ "top" LEFTA
-      [ si = SELF ; "[@@" ; attr = V attribute_body "attribute"; "]" ->
-        <:sig_item< $si$ [@@ $_attribute:attr$ ] >>
-      ]
-    | "simple"
+    [ "top"
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" → s ]); "end" →
           <:sig_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl, _) = constructor_declaration →

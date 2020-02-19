@@ -1696,11 +1696,6 @@ EXTEND_PRINTER
   ;
   pr_str_item:
     [ "top"
-      [ <:str_item< $si$ [@@ $attribute:attr$] >> ->
-        pprintf pc "%p[@@@@%p]" curr si attribute_body attr
-      ]
-
-    | "simple"
       [ <:str_item< # $lid:s$ $e$ >> ->
           let pc = {(pc) with aft = ""} in
           pprintf pc "(* #%s %p *)" s expr e
@@ -1749,11 +1744,6 @@ EXTEND_PRINTER
   ;
   pr_sig_item:
     [ "top"
-      [ <:sig_item< $si$ [@@ $attribute:attr$] >> ->
-        pprintf pc "%p[@@@@%p]" curr si attribute_body attr
-      ]
-
-    | "simple"
       [ <:sig_item< # $lid:s$ $e$ >> ->
           let pc = {(pc) with aft = ""} in
           pprintf pc "(* #%s %p *)" s expr e
