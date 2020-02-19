@@ -1488,7 +1488,10 @@ and module_expr =
   | MeXtr (loc, _, _) -> error loc "bad ast MeXtr"
 and str_item ~item_attributes s l =
   match s with
-    StCls (loc, cd) ->
+    StAtt (loc, si, a) ->
+      str_item ~item_attributes:((mkloc loc, attr (uv a)) :: item_attributes)
+        si l
+  | StCls (loc, cd) ->
       mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l
   | StClt (loc, ctd) ->
       begin match ocaml_pstr_class_type with

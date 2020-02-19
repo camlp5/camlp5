@@ -1278,7 +1278,10 @@ and module_expr =
   | MeXtr loc _ _ → error loc "bad ast MeXtr" ]
 and str_item ~{item_attributes} s l =
   match s with
-  [ StCls loc cd →
+  [ StAtt loc si a ->
+    str_item ~{item_attributes=[ (mkloc loc, attr (uv a)) :: item_attributes ]} si l
+
+  | StCls loc cd →
       [mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l]
   | StClt loc ctd →
       match ocaml_pstr_class_type with
@@ -1310,7 +1313,7 @@ and str_item ~{item_attributes} s l =
         | _ → error loc "renamed exception should not have parameters" ]
       in
       [mkstr loc si :: l]
-  | StExp loc e → [mkstr loc (ocaml_pstr_eval (expr e)) :: l]
+  | StExp loc e → [mkstr loc (ocaml_pstr_eval ~{item_attributes=List.map snd item_attributes} (expr e)) :: l]
   | StExt loc n t p →
       let vn = uv n in
       [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=item_attributes} vn t (uv p))) :: l]

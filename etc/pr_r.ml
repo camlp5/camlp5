@@ -1745,6 +1745,11 @@ EXTEND_PRINTER
   ;
   pr_str_item:
     [ "top"
+      [ <:str_item< $si$ [@@ $attribute:attr$] >> ->
+        pprintf pc "%p[@@@@%p]" curr si attribute_body attr
+      ]
+
+    | "simple"
       [ <:str_item< # $lid:s$ $e$ >> ->
           pprintf pc "#%s %p" s expr e
       | <:str_item< declare $list:sil$ end >> ->

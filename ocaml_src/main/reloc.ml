@@ -404,7 +404,8 @@ and module_expr floc sh =
 and str_item floc sh =
   let rec self =
     function
-      StCls (loc, x1) ->
+      StAtt (loc, si, attr) -> StAtt (loc, self si, attr)
+    | StCls (loc, x1) ->
         let loc = floc loc in
         StCls
           (loc,

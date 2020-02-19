@@ -164,8 +164,18 @@ value x = 1;
      o_output = Some ({foo|val x : int[@@foo];;
 |foo}, None) ;
      official_output = Some ({foo|val x : int[@@foo ]|foo}, None) ;
-     r_output = None ;
+     r_output = Some ({foo|value x : int[@@foo];
+|foo}, None) ;
      r_input = ("value x : int[@@foo];", None)
+    };
+    {name="item_attribute2"; implem = True ;
+     o_input = ("1 [@@foo]", None) ;
+     o_output = Some ({foo|let _ = 1[@@foo];;
+|foo}, None) ;
+     official_output = Some ({foo|;;1[@@foo ]|foo}, None) ;
+     r_output = Some ({foo|1[@@foo];
+|foo}, None) ;
+     r_input = ("do { 1 } [@@foo];", None)
     }
 ]
 ;

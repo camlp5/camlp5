@@ -373,7 +373,8 @@ module Meta_make (C : MetaSig) =
           MeXtr loc s _ → C.xtr loc s ]
     and str_item =
       fun
-      [ StCls _ lcice →
+      [ StAtt _ e att -> assert False
+      | StCls _ lcice →
           C.node "StCls" [C.vala (C.list (class_infos class_expr)) lcice]
       | StClt _ lcict →
           C.node "StClt" [C.vala (C.list (class_infos class_type)) lcict]

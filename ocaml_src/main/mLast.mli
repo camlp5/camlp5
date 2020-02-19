@@ -182,6 +182,7 @@ and str_item =
   | StUse of loc * string * (str_item * loc) list
   | StVal of loc * bool * (patt * expr) list
   | StXtr of loc * string * str_item option
+  | StAtt of loc * str_item * (string * payload)
 and joinclause =
   { jcLoc : loc;
     jcVal : (loc * (loc * (loc * string) * patt option) list * expr) list }

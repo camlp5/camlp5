@@ -1198,9 +1198,12 @@ value ocaml_pstr_class_type =
   ELSE Some (fun ctl -> Pstr_class_type ctl) END
 ;
 
-value ocaml_pstr_eval e =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_eval e
-  ELSE Pstr_eval e [] END
+value ocaml_pstr_eval ?{item_attributes=[]} e =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ; Pstr_eval e }
+  ELSE
+    Pstr_eval e item_attributes
+  END
 ;
 
 value ocaml_pstr_exception loc s ed =

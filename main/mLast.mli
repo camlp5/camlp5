@@ -191,7 +191,8 @@ and str_item =
   | StTyp of loc and V bool and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr))
-  | StXtr of loc and string and option (V str_item) ]
+  | StXtr of loc and string and option (V str_item)
+  | StAtt of loc and str_item and V (V string * payload) ]
 and joinclause =
   { jcLoc : loc;
     jcVal :

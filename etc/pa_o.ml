@@ -426,7 +426,11 @@ EXTEND
     ]
  ;
   str_item:
-    [ "top"
+    [ "top" LEFTA
+      [ si = SELF ; "[@@" ; attr = V attribute_body "attribute"; "]" ->
+        <:str_item< $si$ [@@ $_attribute:attr$ ] >>
+      ]
+    | "simple"
       [ "exception"; (_, c, tl, _) = constructor_declaration;
         b = rebind_exn ->
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ >>

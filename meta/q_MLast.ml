@@ -335,7 +335,11 @@ EXTEND
     [ [ st = SV (LIST0 [ s = str_item; ";" → s ]) → st ] ]
   ;
   str_item:
-    [ "top"
+    [ "top" LEFTA
+      [ si = SELF ; "[@@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "StAtt" [Qast.Loc; si; attr]
+      ]
+    | "simple"
       [ "declare"; st = SV (LIST0 [ s = str_item; ";" → s ]); "end" →
           Qast.Node "StDcl" [Qast.Loc; st]
       | "exception"; ctl = constructor_declaration; b = rebind_exn →
