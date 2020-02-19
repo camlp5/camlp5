@@ -310,8 +310,7 @@ module Meta_make (C : MetaSig) =
       | MtXtr (loc, s, _) -> C.xtr loc s
     and sig_item =
       function
-        SgAtt (_, e, att) -> assert false
-      | SgCls (_, lcict) ->
+        SgCls (_, lcict) ->
           C.node "SgCls" [C.vala (C.list (class_infos class_type)) lcict]
       | SgClt (_, lcict) ->
           C.node "SgClt" [C.vala (C.list (class_infos class_type)) lcict]
@@ -383,8 +382,7 @@ module Meta_make (C : MetaSig) =
       | MeXtr (loc, s, _) -> C.xtr loc s
     and str_item =
       function
-        StAtt (_, e, att) -> assert false
-      | StCls (_, lcice) ->
+        StCls (_, lcice) ->
           C.node "StCls" [C.vala (C.list (class_infos class_expr)) lcice]
       | StClt (_, lcict) ->
           C.node "StClt" [C.vala (C.list (class_infos class_type)) lcict]

@@ -1365,9 +1365,7 @@ and module_type =
   | MtLid (loc, s) -> mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtQuo (loc, _) -> error loc "abstract module type not allowed here"
   | MtSig (loc, sl) ->
-      mkmty loc
-        (Pmty_signature
-           (List.fold_right (sig_item ~item_attributes:[]) (uv sl) []))
+      mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
   | MtTyo (loc, me) ->
       begin match ocaml_pmty_typeof with
         Some pmty_typeof -> mkmty loc (pmty_typeof (module_expr me))
@@ -1377,10 +1375,9 @@ and module_type =
   | MtWit (loc, mt, wcl) ->
       mkmty loc (ocaml_pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | MtXtr (loc, _, _) -> error loc "bad ast MtXtr"
-and sig_item ~item_attributes:arglebargle s l =
+and sig_item s l =
   match s with
-    SgAtt (loc, si, a) -> assert false
-  | SgCls (loc, cd) ->
+    SgCls (loc, cd) ->
       mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l
   | SgClt (loc, ctd) ->
       begin match ocaml_psig_class_type with
@@ -1390,8 +1387,7 @@ and sig_item ~item_attributes:arglebargle s l =
           l
       | None -> error loc "no class type in this ocaml version"
       end
-  | SgDcl (loc, sl) ->
-      List.fold_right (sig_item ~item_attributes:[]) (uv sl) l
+  | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
   | SgExc (loc, n, tl) ->
       mksig loc
@@ -1441,10 +1437,7 @@ and sig_item ~item_attributes:arglebargle s l =
       mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l
   | SgUse (loc, fn, sl) ->
       Ploc.call_with glob_fname (uv fn)
-        (fun () ->
-           List.fold_right (fun (si, _) -> sig_item ~item_attributes:[] si)
-             (uv sl) l)
-        ()
+        (fun () -> List.fold_right (fun (si, _) -> sig_item si) (uv sl) l) ()
   | SgVal (loc, n, t, attrs) ->
       let vn = uv n in
       mksig loc
@@ -1466,9 +1459,7 @@ and module_expr =
       in
       mkmod loc (ocaml_pmod_functor arg (module_expr me))
   | MeStr (loc, sl) ->
-      mkmod loc
-        (Pmod_structure
-           (List.fold_right (str_item ~item_attributes:[]) (uv sl) []))
+      mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc (loc, me, mt) ->
       mkmod loc (Pmod_constraint (module_expr me, module_type mt))
   | MeUid (loc, s) -> mkmod loc (ocaml_pmod_ident (Lident (uv s)))
@@ -1494,10 +1485,9 @@ and module_expr =
       | None -> error loc "no module unpack in this ocaml version"
       end
   | MeXtr (loc, _, _) -> error loc "bad ast MeXtr"
-and str_item ~item_attributes:arglebargle s l =
+and str_item s l =
   match s with
-    StAtt (loc, si, a) -> assert false
-  | StCls (loc, cd) ->
+    StCls (loc, cd) ->
       mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l
   | StClt (loc, ctd) ->
       begin match ocaml_pstr_class_type with
@@ -1507,8 +1497,7 @@ and str_item ~item_attributes:arglebargle s l =
           l
       | None -> error loc "no class type in this ocaml version"
       end
-  | StDcl (loc, sl) ->
-      List.fold_right (str_item ~item_attributes:[]) (uv sl) l
+  | StDcl (loc, sl) -> List.fold_right str_item (uv sl) l
   | StDef (loc, jcl) ->
       begin match jocaml_pstr_def with
         Some pstr_def ->
@@ -1590,10 +1579,7 @@ and str_item ~item_attributes:arglebargle s l =
       l
   | StUse (loc, fn, sl) ->
       Ploc.call_with glob_fname (uv fn)
-        (fun () ->
-           List.fold_right (fun (si, _) -> str_item ~item_attributes:[] si)
-             (uv sl) l)
-        ()
+        (fun () -> List.fold_right (fun (si, _) -> str_item si) (uv sl) l) ()
   | StVal (loc, rf, pel) ->
       mkstr loc (Pstr_value (mkrf (uv rf), List.map mkpe (uv pel))) :: l
   | StXtr (loc, _, _) -> error loc "bad ast StXtr"
@@ -1827,10 +1813,10 @@ and item_attributes attrs = ((attrs |> uv) |> List.map uv) |> List.map attr
 and attr (id, payload) =
   match payload with
     StAttr (loc, st) ->
-      let st = List.fold_right (str_item ~item_attributes:[]) (uv st) [] in
+      let st = List.fold_right str_item (uv st) [] in
       ocaml_attribute_implem (mkloc loc) (uv id) st
   | SiAttr (loc, si) ->
-      let si = List.fold_right (sig_item ~item_attributes:[]) (uv si) [] in
+      let si = List.fold_right sig_item (uv si) [] in
       ocaml_attribute_interf (mkloc loc) (uv id) si
   | TyAttr (loc, ty) ->
       let ty = ctyp (uv ty) in ocaml_attribute_type (mkloc loc) (uv id) ty
@@ -1841,13 +1827,9 @@ and attr (id, payload) =
       ocaml_attribute_patt (mkloc loc) (uv id) p eopt
 ;;
 
-let interf fname ast =
-  glob_fname := fname; List.fold_right (sig_item ~item_attributes:[]) ast []
-;;
+let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;
 
-let implem fname ast =
-  glob_fname := fname; List.fold_right (str_item ~item_attributes:[]) ast []
-;;
+let implem fname ast = glob_fname := fname; List.fold_right str_item ast [];;
 
 let directive loc =
   function
@@ -1888,7 +1870,5 @@ let phrase =
   function
     StDir (loc, d, dp) ->
       ocaml_ptop_dir (mkloc loc) (uv d) (directive_args loc (uv dp))
-  | si ->
-      glob_fname := !(Plexing.input_file);
-      Ptop_def (str_item ~item_attributes:[] si [])
+  | si -> glob_fname := !(Plexing.input_file); Ptop_def (str_item si [])
 ;;

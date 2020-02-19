@@ -150,7 +150,6 @@ and sig_item =
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp * (string * payload) list
   | SgXtr of loc * string * sig_item option
-  | SgAtt of loc * sig_item * (string * payload)
 and with_constr =
     WcMod of loc * string list * module_expr
   | WcMos of loc * string list * module_expr
@@ -182,7 +181,6 @@ and str_item =
   | StUse of loc * string * (str_item * loc) list
   | StVal of loc * bool * (patt * expr) list
   | StXtr of loc * string * str_item option
-  | StAtt of loc * str_item * (string * payload)
 and joinclause =
   { jcLoc : loc;
     jcVal : (loc * (loc * (loc * string) * patt option) list * expr) list }
