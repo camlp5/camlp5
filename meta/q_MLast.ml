@@ -429,8 +429,8 @@ EXTEND
           in
           Qast.Node "SgExc" [Qast.Loc; c; tl]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
-        pd = SV (LIST1 STRING) →
-          Qast.Node "SgExt" [Qast.Loc; i; t; pd; Qast.VaVal(Qast.List[])]
+        pd = SV (LIST1 STRING) ; attrs = SV (LIST0 item_attribute) →
+          Qast.Node "SgExt" [Qast.Loc; i; t; pd; attrs]
       | "include"; mt = module_type → Qast.Node "SgInc" [Qast.Loc; mt]
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") →
