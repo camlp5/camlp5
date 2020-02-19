@@ -5610,7 +5610,7 @@ Grammar.safe_extend
                 (n : 'e__131) (loc : Ploc.t) ->
               (Qast.Record
                  ["tdNam", n; "tdPrm", tpl; "tdPrv", pf; "tdDef", tk;
-                  "tdCon", cl] :
+                  "tdCon", cl; "tdAttributes", Qast.VaVal (Qast.List [])] :
                'type_decl)))]];
     Grammar.extension (type_patt : 'type_patt Grammar.Entry.e) None
       [None, None,

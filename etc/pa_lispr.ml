@@ -568,7 +568,8 @@ and type_declaration_list_se =
       let td =
         {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
          MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
-         MLast.tdCon = <:vala< empty >>}
+         MLast.tdCon = <:vala< empty >>;
+         MLast.tdAttributes = <:vala< [] >>}
       in
       [td :: type_declaration_list_se sel]
   | [] → []

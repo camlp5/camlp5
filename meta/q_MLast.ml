@@ -952,13 +952,17 @@ EXTEND
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt → Qast.Tuple [i; p] ] ]
   ;
+  item_attribute:
+  [ [ "[@@" ; attr = SV attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   type_decl:
     [ [ n = SV type_patt "tp"; tpl = SV (LIST0 type_parameter); "=";
         pf = SV (FLAG "private") "priv"; tk = ctyp;
-        cl = SV (LIST0 constrain) →
+        cl = SV (LIST0 constrain) ; attrs = SV (LIST0 item_attribute) →
           Qast.Record
             [("tdNam", n); ("tdPrm", tpl); ("tdPrv", pf); ("tdDef", tk);
-             ("tdCon", cl)] ] ]
+             ("tdCon", cl); ("tdAttributes", attrs)] ] ]
   ;
   type_patt:
     [ [ n = SV LIDENT → Qast.Tuple [Qast.Loc; n] ] ]

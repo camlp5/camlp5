@@ -191,7 +191,8 @@ and type_decl =
     tdPrm : type_var list;
     tdPrv : bool;
     tdDef : ctyp;
-    tdCon : (ctyp * ctyp) list }
+    tdCon : (ctyp * ctyp) list;
+    tdAttributes : (string * payload) list }
 and class_type =
     CtAcc of loc * class_type * class_type
   | CtApp of loc * class_type * class_type

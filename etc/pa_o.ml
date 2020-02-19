@@ -924,11 +924,15 @@ EXTEND
       [ i = UIDENT -> <:patt< $uid:i$ >>
       | i = LIDENT -> <:patt< $lid:i$ >> ] ]
   ;
+  item_attribute:
+  [ [ "[@@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   (* Type declaration *)
   type_decl:
     [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
-        tk = type_kind; cl = V (LIST0 constrain) ->
-          <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ >>
+        tk = type_kind; cl = V (LIST0 constrain) ; attrs = V (LIST0 item_attribute) ->
+          <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_list:attrs$ >>
       | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ->
           let tk = <:ctyp< '$choose_tvar tpl$ >> in
           <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ >> ] ]

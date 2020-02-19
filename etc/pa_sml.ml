@@ -187,7 +187,8 @@ value extract_label_types loc tn tal cdol =
              let aux_def =
                {MLast.tdNam = <:vala< (loc, <:vala< new_tn >>) >>;
                 MLast.tdPrm = <:vala< [] >>; MLast.tdPrv = <:vala< False >>;
-                MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>}
+                MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>;
+                MLast.tdAttributes = <:vala< [] >>}
              in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
              ([(loc, <:vala< c >>, <:vala< tl >>, None) :: cdl],
@@ -198,7 +199,8 @@ value extract_label_types loc tn tal cdol =
   let td1 =
     {MLast.tdNam = <:vala< (loc, <:vala< tn >>) >>;
      MLast.tdPrm = <:vala< tal >>; MLast.tdPrv = <:vala< False >>;
-     MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = <:vala< [] >>}
+     MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = <:vala< [] >>;
+     MLast.tdAttributes = <:vala< [] >>}
   in
   [td1 :: aux]
 ;
@@ -650,7 +652,8 @@ EXTEND
     [ [ x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
           {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
-           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>}
+           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 =
             List.map
@@ -660,7 +663,8 @@ EXTEND
           {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< $x3$ == [ $list:x4$ ] >>;
-           MLast.tdCon = <:vala< [] >>} ] ]
+           MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>} ] ]
   ;
   tyvars:
     [ [ "'"; x1 = V tyvar -> [(x1, None)]
@@ -764,11 +768,13 @@ EXTEND
           {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< '$choose_tvar x1$ >>;
-           MLast.tdCon = <:vala< [] >>}
+           MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
           {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
-           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>} ] ]
+           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>} ] ]
   ;
   valspec:
     [ [ x1 = op_op; x2 = ident; ":"; x3 = ctyp ->

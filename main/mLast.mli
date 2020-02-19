@@ -204,7 +204,8 @@ and type_decl =
     tdPrm : V (list type_var);
     tdPrv : V bool;
     tdDef : ctyp;
-    tdCon : V (list (ctyp * ctyp)) }
+    tdCon : V (list (ctyp * ctyp));
+    tdAttributes: V (list (V (V string * payload))) }
 and class_type =
   [ CtAcc of loc and class_type and class_type
   | CtApp of loc and class_type and class_type

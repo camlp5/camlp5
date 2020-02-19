@@ -478,7 +478,8 @@ and type_decl floc sh x =
    tdPrv = x.tdPrv; tdDef = ctyp floc sh x.tdDef;
    tdCon =
      vala_map (List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2))
-       x.tdCon}
+       x.tdCon;
+   tdAttributes = x.tdAttributes}
 and class_type floc sh =
   let rec self =
     function

@@ -1050,7 +1050,8 @@
       (n (values loc1 <:vala< n1 >>)))
      {(MLast.tdNam <:vala< n >>) (MLast.tdPrm <:vala< tpl >>)
       (MLast.tdPrv <:vala< False >>) (MLast.tdDef (ctyp_se se2))
-      (MLast.tdCon <:vala< [] >>)}))
+      (MLast.tdCon <:vala< [] >>)
+      (MLast.tdAttributes <:vala< [] >>)}))
    (se (error se "type_decl"))))
  (type_declaration_list_se
   (lambda_match
@@ -1066,7 +1067,8 @@
       (td
        {(MLast.tdNam <:vala< n >>) (MLast.tdPrm <:vala< tpl >>)
         (MLast.tdPrv <:vala< False >>) (MLast.tdDef (ctyp_se se2))
-        (MLast.tdCon <:vala< [] >>)}))
+        (MLast.tdCon <:vala< [] >>)
+        (MLast.tdAttributes <:vala< [] >>)}))
      [td . (type_declaration_list_se sel)]))
    ([] [])
    ([se . _] (error se "type_decl"))))

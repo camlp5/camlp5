@@ -2677,7 +2677,7 @@ Grammar.safe_extend
                 (tpl : 'type_parameter list) (n : 'type_patt)
                 (loc : Ploc.t) ->
               ({MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = pf;
-                MLast.tdDef = tk; MLast.tdCon = cl} :
+                MLast.tdDef = tk; MLast.tdCon = cl; MLast.tdAttributes = []} :
                'type_decl)))]];
     Grammar.extension (type_patt : 'type_patt Grammar.Entry.e) None
       [None, None,
