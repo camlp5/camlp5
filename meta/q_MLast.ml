@@ -342,13 +342,13 @@ EXTEND
     | "simple"
       [ "declare"; st = SV (LIST0 [ s = str_item; ";" → s ]); "end" →
           Qast.Node "StDcl" [Qast.Loc; st]
-      | "exception"; ctl = constructor_declaration; b = rebind_exn →
+      | "exception"; ctl = constructor_declaration; b = rebind_exn ; attrs = SV (LIST0 item_attribute) →
           let (_, c, tl, _) =
             match ctl with
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
-          Qast.Node "StExc" [Qast.Loc; c; tl; b; Qast.VaVal(Qast.List[])]
+          Qast.Node "StExc" [Qast.Loc; c; tl; b; attrs]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = SV (LIST0 item_attribute) →
           Qast.Node "StExt" [Qast.Loc; i; t; pd; attrs]
@@ -421,13 +421,13 @@ EXTEND
     | "simple"
       [ "declare"; st = SV (LIST0 [ s = sig_item; ";" → s ]); "end" →
           Qast.Node "SgDcl" [Qast.Loc; st]
-      | "exception"; ctl = constructor_declaration →
+      | "exception"; ctl = constructor_declaration ; attrs = SV (LIST0 item_attribute) →
           let (_, c, tl, _) =
             match ctl with
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
-          Qast.Node "SgExc" [Qast.Loc; c; tl; Qast.VaVal(Qast.List[])]
+          Qast.Node "SgExc" [Qast.Loc; c; tl; attrs]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = SV (LIST0 item_attribute) →
           Qast.Node "SgExt" [Qast.Loc; i; t; pd; attrs]
