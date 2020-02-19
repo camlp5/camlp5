@@ -1063,23 +1063,32 @@ value ocaml_psig_class_type =
   ELSE Some (fun ctl -> Psig_class_type ctl) END
 ;
 
-value ocaml_psig_exception loc s ed =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_exception (mkloc loc s) ed
+value ocaml_psig_exception ?{expr_attributes=[]} ?{item_attributes=[]} loc s ed =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (expr_attributes = []) ;
+         assert (item_attributes = []) ;
+         Psig_exception (mkloc loc s) ed }
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
-    Psig_exception
+    do { assert (expr_attributes = []) ;
+         assert (item_attributes = []) ;
+      Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+    do { assert (item_attributes = []) ;
+         assert (expr_attributes = []) ;
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
+    }
   ELSE
     Psig_exception
       {ptyexn_constructor =
          {pext_name = mkloc loc s;
           pext_kind = Pext_decl (Pcstr_tuple ed) None;
-          pext_loc = loc; pext_attributes = []};
-       ptyexn_attributes = [];
+          pext_loc = loc; pext_attributes = expr_attributes};
+       ptyexn_attributes = item_attributes;
        ptyexn_loc = loc}
   END
 ;
@@ -1206,23 +1215,33 @@ value ocaml_pstr_eval ?{item_attributes=[]} e =
   END
 ;
 
-value ocaml_pstr_exception loc s ed =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_exception (mkloc loc s) ed
+value ocaml_pstr_exception ?{expr_attributes=[]} ?{item_attributes=[]} loc s ed =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (expr_attributes = []) ;
+         assert (item_attributes = []) ;
+    Pstr_exception (mkloc loc s) ed
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
+    do { assert (expr_attributes = []) ;
+         assert (item_attributes = []) ;
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+    do { assert (expr_attributes = []) ;
+         assert (item_attributes = []) ;
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
+    }
   ELSE
     Pstr_exception
       {ptyexn_constructor =
          {pext_name = mkloc loc s;
           pext_kind = Pext_decl (Pcstr_tuple ed) None;
-          pext_loc = loc; pext_attributes = []};
-       ptyexn_attributes = [];
+          pext_loc = loc; pext_attributes = expr_attributes};
+       ptyexn_attributes = item_attributes;
        ptyexn_loc = loc}
   END
 ;

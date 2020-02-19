@@ -150,7 +150,7 @@ and sig_item =
   | SgClt of loc and V (list (class_infos class_type))
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and V string and V (option expr)
-  | SgExc of loc and V string and V (list ctyp)
+  | SgExc of loc and V string and V (list ctyp) and V (list (V (V string * payload)))
   | SgExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | SgInc of loc and module_type
   | SgMod of loc and V bool and V (list (V (option (V string)) * module_type))
@@ -180,7 +180,7 @@ and str_item =
   | StDcl of loc and V (list str_item)
   | StDef of loc and V (list joinclause)
   | StDir of loc and V string and V (option expr)
-  | StExc of loc and V string and V (list ctyp) and V (list string)
+  | StExc of loc and V string and V (list ctyp) and V (list string) and V (list (V (V string * payload)))
   | StExp of loc and expr and V (list (V (V string * payload)))
   | StExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | StInc of loc and module_expr

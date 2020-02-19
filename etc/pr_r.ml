@@ -1004,14 +1004,16 @@ value typevar pc tv =
   pprintf pc "%s%s" q s
 ;
 
-value external_decl pc (loc, n, t, sl) =
-  pprintf pc "external %p :@;%p = %s" var_escaped (loc, n) ctyp t
+value external_decl pc (loc, n, t, sl, attrs) =
+  pprintf pc "external %p :@;%p = %s%p" var_escaped (loc, n) ctyp t
     (hlist string {(pc) with bef = ""; aft = ""} sl)
+    (hlist (pr_attribute "@@")) attrs
 ;
 
-value external_decl_original pc (loc, n, t, sl) =
-  pprintf pc "external ( %s ) :@;%p = %s" n ctyp t
+value external_decl_original pc (loc, n, t, sl, attrs) =
+  pprintf pc "external ( %s ) :@;%p = %s%p" n ctyp t
     (hlist string {(pc) with bef = ""; aft = ""} sl)
+    (hlist (pr_attribute "@@")) attrs
 ;
 
 value exception_decl pc (loc, e, tl, id) =
@@ -1784,11 +1786,11 @@ EXTEND_PRINTER
                    (vlist (semi_after str_item)) sil)
       | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ >> ->
           exception_decl pc (loc, e, tl, id)
-      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
+      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
           if is_operator n then
-            external_decl_original pc (loc, n, t, sl)
+            external_decl_original pc (loc, n, t, sl, attrs)
           else
-            external_decl pc (loc, n, t, sl)
+            external_decl pc (loc, n, t, sl, attrs)
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1810,8 +1812,8 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "value%s %p" (if rf then " rec" else "")
                  (vlist2 value_binding (and_before value_binding)) pel)
-      | <:str_item< $exp:e$ >> ->
-          expr pc e
+      | <:str_item< $exp:e$ $list:attrs$ >> ->
+          pprintf pc "%p%p" expr e (hlist (pr_attribute "@@")) attrs
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.StUse _ fn sl ->
@@ -1838,8 +1840,8 @@ EXTEND_PRINTER
                    (vlist (semi_after sig_item)) sil)
       | <:sig_item:< exception $uid:e$ of $list:tl$ >> ->
           exception_decl pc (loc, e, tl, [])
-      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (loc, n, t, sl)
+      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
+          external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1853,10 +1855,10 @@ EXTEND_PRINTER
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
-      | <:sig_item:< value $lid:s$ : $t$ >> when is_operator s ->
-          pprintf pc "value ( %s ) :@;%p" s ctyp t
-      | <:sig_item:< value $lid:s$ : $t$ >> ->
-          pprintf pc "value %p :@;%p" var_escaped (loc, s) ctyp t
+      | <:sig_item:< value $lid:s$ : $t$ $list:attrs$ >> when is_operator s ->
+          pprintf pc "value ( %s ) :@;%p%p" s ctyp t (hlist (pr_attribute "@@")) attrs
+      | <:sig_item:< value $lid:s$ : $t$ $list:attrs$ >> ->
+          pprintf pc "value %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.SgUse _ fn sl ->

@@ -1560,7 +1560,7 @@ Grammar.safe_extend
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
                  | _ -> raise (Match_failure ("q_MLast.ml", 349, 20))
                in
-               Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
+               Qast.Node ("StExc", [Qast.Loc; c; tl; b; Qast.VaVal(Qast.List[])]) :
                'str_item)));
         Grammar.production
           (Grammar.r_next
@@ -2444,7 +2444,7 @@ Grammar.safe_extend
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
                  | _ -> raise (Match_failure ("q_MLast.ml", 428, 20))
                in
-               Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
+               Qast.Node ("SgExc", [Qast.Loc; c; tl; Qast.VaVal(Qast.List[])]) :
                'sig_item)));
         Grammar.production
           (Grammar.r_next

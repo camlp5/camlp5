@@ -348,7 +348,7 @@ EXTEND
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
-          Qast.Node "StExc" [Qast.Loc; c; tl; b]
+          Qast.Node "StExc" [Qast.Loc; c; tl; b; Qast.VaVal(Qast.List[])]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = SV (LIST0 item_attribute) →
           Qast.Node "StExt" [Qast.Loc; i; t; pd; attrs]
@@ -427,7 +427,7 @@ EXTEND
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
-          Qast.Node "SgExc" [Qast.Loc; c; tl]
+          Qast.Node "SgExc" [Qast.Loc; c; tl; Qast.VaVal(Qast.List[])]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = SV (LIST0 item_attribute) →
           Qast.Node "SgExt" [Qast.Loc; i; t; pd; attrs]
