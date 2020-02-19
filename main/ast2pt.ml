@@ -343,11 +343,11 @@ value variance_of_var =
   | None → (False, False) ]
 ;
 
-value mktype loc tn tl cl tk pf tm =
+value mktype ~{item_attributes} loc tn tl cl tk pf tm =
   let (params, var_list) = List.split tl in
   let variance = List.map variance_of_var var_list in
   let params = List.map uv params in
-  match ocaml_type_declaration tn params cl tk pf tm (mkloc loc) variance with
+  match ocaml_type_declaration tn params cl tk pf tm (mkloc loc) variance item_attributes with
   [ Right td → td
   | Left msg → error loc msg ]
 ;
@@ -388,18 +388,18 @@ value mktvariant loc ctl priv =
   | None → error loc "no generalized data types in this ocaml version" ]
 ;
 
-value type_decl tn tl priv cl =
+value type_decl ?{item_attributes=[]} tn tl priv cl =
   fun
   [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> →
       let priv = if uv pf then Private else Public in
-      mktype loc tn tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (mktrecord ltl (uv pf)) priv (Some (ctyp t))
   | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> →
       let priv = if uv pf then Private else Public in
-      mktype loc tn tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
   | TyRec loc ltl →
-      mktype loc tn tl cl (mktrecord (uv ltl) False) priv None
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl →
-      mktype loc tn tl cl (mktvariant loc (uv ctl) False) priv None
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (mktvariant loc (uv ctl) False) priv None
   | t →
       let m =
         match t with
@@ -408,7 +408,7 @@ value type_decl tn tl priv cl =
             else None
         | _ → Some (ctyp t) ]
       in
-      mktype (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
+      mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 ;
 
 value mkvalue_desc ~{item_attributes} vn t p =
@@ -439,7 +439,7 @@ value type_decl_of_with_type loc tn tpl pf ct =
   let ct = Some (ctyp ct) in
   let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
   let pf = if pf then Private else Public in
-  ocaml_type_declaration tn params [] tk pf ct (mkloc loc) variance
+  ocaml_type_declaration tn params [] tk pf ct (mkloc loc) variance []
 ;
 
 value mkwithc =
@@ -1156,7 +1156,10 @@ and mktype_decl td =
       (uv td.tdCon)
   in
   let tn = uv (snd (uv td.tdNam)) in
-  (tn, type_decl tn (uv td.tdPrm) priv cl td.tdDef)
+  let attrs = uv td.tdAttributes in
+  let attrs = List.map uv attrs in
+  let attrs = List.map attr attrs in
+  (tn, type_decl ~{item_attributes=attrs} tn (uv td.tdPrm) priv cl td.tdDef)
 and module_type =
   fun
   [ MtAcc loc _ _ as f →

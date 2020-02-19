@@ -299,7 +299,7 @@ IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
   ;
 END;
 
-value ocaml_type_declaration tn params cl tk pf tm loc variance =
+value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
   IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
     Right
       {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
@@ -358,7 +358,7 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-             ptype_name = mkloc loc tn; ptype_attributes = []}
+             ptype_name = mkloc loc tn; ptype_attributes = attrs}
         END
     | None -> Left "no '_' type param in this ocaml version" ]
   END

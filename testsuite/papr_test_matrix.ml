@@ -182,7 +182,8 @@ value x = 1;
      o_output = Some ({foo|type nonrec t1 = int[@@bar]
 and t2 = bool[@@foo];;
 |foo}, None) ;
-     official_output = Some ({foo|;;1[@@foo ]|foo}, None) ;
+     official_output = Some ({foo|type nonrec t1 = int[@@bar ]
+and t2 = bool[@@foo ]|foo}, None) ;
      r_output = Some ({foo|type nonrec t1 = int[@@bar]
 and t2 = bool[@@foo];
 |foo}, None) ;
