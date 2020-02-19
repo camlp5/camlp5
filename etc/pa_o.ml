@@ -431,8 +431,8 @@ EXTEND
         b = rebind_exn ->
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ->
-          <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+        pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) ->
+          <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ->
           <:str_item< external $lid:i$ : $t$ = $_list:pd$ >>
@@ -461,7 +461,7 @@ EXTEND
           <:str_item< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = expr ->
           <:str_item< let open $m$ in $e$ >>
-      | e = expr -> <:str_item< $exp:e$ >> ] ]
+      | e = expr ; attrs = V (LIST0 item_attribute) -> <:str_item< $exp:e$ $_list:attrs$ >> ] ]
   ;
   rebind_exn:
     [ [ "="; sl = V mod_ident "list" -> sl
@@ -513,8 +513,8 @@ EXTEND
       [ "exception"; (_, c, tl, _) = constructor_declaration ->
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ->
-          <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+        pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) ->
+          <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ->
           <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
@@ -531,10 +531,10 @@ EXTEND
           <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
-      | "val"; i = V LIDENT "lid" ""; ":"; t = ctyp ->
-          <:sig_item< value $_lid:i$ : $t$ >>
-      | "val"; "("; i = operator_rparen; ":"; t = ctyp ->
-          <:sig_item< value $lid:i$ : $t$ >> ] ]
+      | "val"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = V (LIST0 item_attribute) ->
+          <:sig_item< value $_lid:i$ : $t$ $_list:attrs$ >>
+      | "val"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = V (LIST0 item_attribute) ->
+          <:sig_item< value $lid:i$ : $t$ $_list:attrs$ >> ] ]
   ;
   mod_decl_binding:
     [ [ i = V uidopt "uidopt"; mt = module_declaration -> (i, mt) ] ]
@@ -925,9 +925,9 @@ EXTEND
     [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
         tk = type_kind; cl = V (LIST0 constrain) ; attrs = V (LIST0 item_attribute) ->
           <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_list:attrs$ >>
-      | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ->
+      | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; attrs = V (LIST0 item_attribute) ->
           let tk = <:ctyp< '$choose_tvar tpl$ >> in
-          <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ >> ] ]
+          <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_list:attrs$ >> ] ]
   ;
   type_patt:
     [ [ n = V LIDENT -> (loc, n) ] ]
