@@ -178,7 +178,7 @@ value x = 1;
      r_output = Some ({foo|fun
 [ x | y[@foo] → 1 ];
 |foo}, None) ;
-     r_input = ("function x|y[@foo] -> 1;", None)
+     r_input = ("fun [ (x|y[@foo]) -> 1 ];", None)
     };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;

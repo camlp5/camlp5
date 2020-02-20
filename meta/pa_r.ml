@@ -610,6 +610,10 @@ EXTEND
   patt:
     [ LEFTA
       [ p1 = SELF; "|"; p2 = SELF → <:patt< $p1$ | $p2$ >> ]
+    | "alg_attribute" LEFTA
+      [ p = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:patt< $p$ [@ $_attribute:attr$ ] >>
+      ]
     | NONA
       [ p1 = SELF; ".."; p2 = SELF → <:patt< $p1$ .. $p2$ >> ]
     | LEFTA
@@ -672,7 +676,12 @@ EXTEND
       | "_" → <:patt< _ >> ] ]
   ;
   ipatt:
-    [ [ "("; op = operator_rparen -> <:patt< $lid:op$ >>
+    [ "top" LEFTA
+      [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:patt< $e1$ [@ $_attribute:attr$ ] >>
+      ]
+    | "simple"
+      [ "("; op = operator_rparen -> <:patt< $lid:op$ >>
       | "{"; lpl = V (LIST1 label_ipatt SEP ";"); "}" →
           <:patt< { $_list:lpl$ } >>
       | "("; p = paren_ipatt; ")" → p
