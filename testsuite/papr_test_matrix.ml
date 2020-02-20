@@ -168,6 +168,16 @@ value x = 1;
 |foo}, None) ;
      r_input = ("type t = int [@foo][@bar];", None)
     };
+    {name="alg_attribute11"; implem = True ;
+     o_input = ("function x|y[@foo] -> 1", None) ;
+     o_output = Some ({foo|let _ =
+  function
+    x | y[@foo] -> 1;;
+|foo}, None) ;
+     official_output = Some ({foo|;;fun (x|((y)[@foo ])) -> 1|foo}, None) ;
+     r_output = Some ({foo||foo}, None) ;
+     r_input = ("function x|y[@foo] -> 1;", None)
+    };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;
      o_output = Some ({foo|val x : int;;

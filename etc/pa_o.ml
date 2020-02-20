@@ -813,7 +813,11 @@ EXTEND
       [ p1 = SELF; "|"; p2 = SELF -> <:patt< $p1$ | $p2$ >> ]
     | [ p = SELF; ","; pl = LIST1 NEXT SEP "," ->
           <:patt< ( $list:[p :: pl]$) >> ]
-    | NONA
+    | "alg_attribute" LEFTA
+      [ p = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:patt< $p$ [@ $_attribute:attr$ ] >>
+      ]
+  | NONA
       [ p1 = SELF; ".."; p2 = SELF -> <:patt< $p1$ .. $p2$ >> ]
     | RIGHTA
       [ p1 = SELF; "::"; p2 = SELF -> <:patt< [$p1$ :: $p2$] >> ]

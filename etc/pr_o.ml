@@ -1479,6 +1479,11 @@ EXTEND_PRINTER
       [ <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
           plist next 0 pc pl ]
+    | "alg_attribute"
+      [ <:patt< $p$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr p attribute_body attr
+      ]
+
     | "range"
       [ <:patt< $x$ .. $y$ >> ->
           pprintf pc "%p..%p" next x next y ]
