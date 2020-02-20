@@ -316,8 +316,12 @@ EXTEND
   module_expr:
     [ [ "functor"; arg = SV functor_parameter "functor_parameter" "fp"; "->";
         me = SELF →
-          Qast.Node "MeFun" [Qast.Loc; arg; me]
-      | "struct"; st = structure; /; "end" →
+          Qast.Node "MeFun" [Qast.Loc; arg; me] ]
+    | "alg_attribute" LEFTA
+      [ e = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "MeAtt" [Qast.Loc; e; attr]
+      ]
+    | [ "struct"; st = structure; /; "end" →
           Qast.Node "MeStr" [Qast.Loc; st] ]
     | [ me1 = SELF; me2 = SELF → Qast.Node "MeApp" [Qast.Loc; me1; me2] ]
     | [ me1 = SELF; "."; me2 = SELF → Qast.Node "MeAcc" [Qast.Loc; me1; me2] ]
@@ -397,6 +401,11 @@ EXTEND
                          (Qast.Option
                             (Some (Qast.Tuple [Qast.VaVal (Qast.Option None); mt1])));
                        mt2] ]
+    | "alg_attribute" LEFTA
+      [ e = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "MtAtt" [Qast.Loc; e; attr]
+      ]
+    
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") →
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
     | [ "sig"; sg = signature; /; "end" → Qast.Node "MtSig" [Qast.Loc; sg]
