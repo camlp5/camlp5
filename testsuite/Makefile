@@ -76,13 +76,13 @@ o2r_test:: all
 	./o2r_test.byte
 
 o2r_test.byte: o2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo pr_r.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo pr_r.cmo pr_ro.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
 
 r2r_test:: all
 	./r2r_test.byte
 
 r2r_test.byte: r2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg odyl.cma camlp5.cma pa_r.cmo pr_r.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.ml -o r2r_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg odyl.cma camlp5.cma pa_r.cmo pr_r.cmo pr_ro.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.ml -o r2r_test.byte
 
 o2o_test:: all
 	./o2o_test.byte

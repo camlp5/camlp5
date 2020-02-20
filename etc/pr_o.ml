@@ -2423,6 +2423,11 @@ EXTEND_PRINTER
                pprintf pc "let%s %p in@ %p" (if rf then " rec" else "")
                  (vlist2 (binding expr) (and_before (binding expr))) pel
                  class_expr ce) ]
+    | "alg_attribute"
+      [ <:class_expr< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      ]
+
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
           pprintf pc "%p@;%p" curr ce (Eprinter.apply_level pr_expr "label")
@@ -2446,8 +2451,13 @@ EXTEND_PRINTER
     [ "top"
       [ <:class_type< [ $t$ ] -> $ct$ >> ->
           pprintf pc "%p ->@;%p" (Eprinter.apply_level pr_ctyp "star") t curr
-            ct
-      | <:class_type:< object $opt:cst$ $list:csi$ end >> ->
+            ct ]
+    | "alg_attribute"
+      [ <:class_type< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      ]
+
+    | [ <:class_type:< object $opt:cst$ $list:csi$ end >> ->
           let class_sig_item_sep =
             (* if flag_semi_semi.val then semi_semi_after class_sig_item
             else *) class_sig_item

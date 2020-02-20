@@ -189,6 +189,14 @@ value x = 1;
 |foo}, None) ;
      r_input = ("module M = struct end [@foo];", None)
     };
+    {name="alg_attribute13"; implem = True ;
+     o_input = ("class t = object end [@foo]", None) ;
+     o_output = Some ({foo|class t = object  end[@foo];;
+|foo}, None) ;
+     official_output = Some ({foo|class t = ((object  end)[@foo ])|foo}, None) ;
+     r_output = Some ({foo||foo}, None) ;
+     r_input = ("class t = object end [@foo];", None)
+    };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;
      o_output = Some ({foo|val x : int;;

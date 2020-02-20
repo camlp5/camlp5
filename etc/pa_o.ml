@@ -1099,6 +1099,10 @@ EXTEND
       | "let"; rf = V (FLAG "rec"); lb = V (LIST1 let_binding SEP "and");
         "in"; ce = SELF ->
           <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >> ]
+    | "alg_attribute" LEFTA
+      [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:class_expr< $ct$ [@ $_attribute:attr$ ] >>
+      ]
     | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
@@ -1182,7 +1186,12 @@ EXTEND
       | cs = class_signature -> cs ] ]
   ;
   class_signature:
-    [ [ "["; tl = LIST1 ctyp SEP ","; "]"; id = SELF ->
+    [ "alg_attribute" LEFTA
+      [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:class_type< $ct$ [@ $_attribute:attr$ ] >>
+      ]
+
+    | [ "["; tl = LIST1 ctyp SEP ","; "]"; id = SELF ->
           <:class_type< $id$ [ $list:tl$ ] >>
       | "object"; cst = V (OPT class_self_type);
         csf = V (LIST0 class_sig_item); "end" ->
