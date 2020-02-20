@@ -83,7 +83,8 @@ and patt =
   | PaUid of loc and V string
   | PaUnp of loc and V (option (V string)) and option module_type
   | PaVrn of loc and V string
-  | PaXtr of loc and string and option (V patt) ]
+  | PaXtr of loc and string and option (V patt)
+  | PaAtt of loc and patt and V (V string * payload) ]
 and expr =
   [ ExAcc of loc and expr and expr
   | ExAnt of loc and expr

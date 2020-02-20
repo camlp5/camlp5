@@ -596,7 +596,9 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 and patt =
   fun
-  [ PaAcc loc p1 p2 →
+  [ PaAtt loc p1 a ->
+    ocaml_patt_addattr (attr (uv a)) (patt p1)
+  | PaAcc loc p1 p2 →
       let p =
         match patt_long_id [] p1 with
         [ (<:patt:< $uid:i$ >>, il) →
