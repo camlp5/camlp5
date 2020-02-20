@@ -2276,6 +2276,17 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (p2 : 'patt) _ (p1 : 'patt) (loc : Ploc.t) ->
               (MLast.PaOrp (loc, p1, p2) : 'patt)))];
+       Some "alg_attribute", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (p : 'patt) (loc : Ploc.t) ->
+              (MLast.PaAtt (loc, p, attr) : 'patt)))];
        None, Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
@@ -2545,7 +2556,18 @@ Grammar.safe_extend
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.PaUid (loc, i) : 'patt_label_ident)))]];
     Grammar.extension (ipatt : 'ipatt Grammar.Entry.e) None
-      [None, None,
+      [Some "top", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (e1 : 'ipatt) (loc : Ploc.t) ->
+              (MLast.PaAtt (loc, e1, attr) : 'ipatt)))];
+       Some "simple", None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
            (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'ipatt)));
