@@ -764,15 +764,19 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_token ("", "exception")))
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "exception")))
+                   (Grammar.s_nterm
+                      (constructor_declaration :
+                       'constructor_declaration Grammar.Entry.e)))
+                (Grammar.s_nterm (rebind_exn : 'rebind_exn Grammar.Entry.e)))
+             (Grammar.s_list0
                 (Grammar.s_nterm
-                   (constructor_declaration :
-                    'constructor_declaration Grammar.Entry.e)))
-             (Grammar.s_nterm (rebind_exn : 'rebind_exn Grammar.Entry.e)),
-           (fun (b : 'rebind_exn) (_, c, tl, _ : 'constructor_declaration) _
-                (loc : Ploc.t) ->
-              (MLast.StExc (loc, c, tl, b, []) : 'str_item)));
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (b : 'rebind_exn)
+                (_, c, tl, _ : 'constructor_declaration) _ (loc : Ploc.t) ->
+              (MLast.StExc (loc, c, tl, b, attrs) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1097,13 +1101,18 @@ Grammar.safe_extend
               (MLast.SgExt (loc, i, t, pd, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_token ("", "exception")))
-             (Grammar.s_nterm
-                (constructor_declaration :
-                 'constructor_declaration Grammar.Entry.e)),
-           (fun (_, c, tl, _ : 'constructor_declaration) _ (loc : Ploc.t) ->
-              (MLast.SgExc (loc, c, tl, []) : 'sig_item)));
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "exception")))
+                (Grammar.s_nterm
+                   (constructor_declaration :
+                    'constructor_declaration Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list)
+                (_, c, tl, _ : 'constructor_declaration) _ (loc : Ploc.t) ->
+              (MLast.SgExc (loc, c, tl, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
