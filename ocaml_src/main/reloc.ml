@@ -107,7 +107,8 @@ and poly_variant floc sh =
 and patt floc sh =
   let rec self =
     function
-      PaAcc (loc, x1, x2) ->
+      PaAtt (loc, p, attr) -> PaAtt (loc, self p, attr)
+    | PaAcc (loc, x1, x2) ->
         let loc = floc loc in PaAcc (loc, self x1, self x2)
     | PaAli (loc, x1, x2) ->
         let loc = floc loc in PaAli (loc, self x1, self x2)

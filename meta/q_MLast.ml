@@ -859,6 +859,10 @@ EXTEND
   patt:
     [ LEFTA
       [ p1 = SELF; "|"; p2 = SELF → Qast.Node "PaOrp" [Qast.Loc; p1; p2] ]
+    | "alg_attribute" LEFTA
+      [ p1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "PaAtt" [Qast.Loc; p1; attr]
+      ]
     | NONA
       [ p1 = SELF; ".."; p2 = SELF → Qast.Node "PaRng" [Qast.Loc; p1; p2] ]
     | LEFTA

@@ -748,7 +748,8 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
         Ptype_abstract priv m
 and patt =
   function
-    PaAcc (loc, p1, p2) ->
+    PaAtt (loc, p1, a) -> ocaml_patt_addattr (attr (uv a)) (patt p1)
+  | PaAcc (loc, p1, p2) ->
       let p =
         match patt_long_id [] p1 with
           MLast.PaUid (loc, i), il ->

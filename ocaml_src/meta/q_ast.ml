@@ -155,7 +155,8 @@ module Meta_make (C : MetaSig) =
       | PvInh (_, t) -> C.node "PvInh" [ctyp t]
     and patt =
       function
-        PaAcc (_, p1, p2) -> C.node "PaAcc" [patt p1; patt p2]
+        PaAtt (_, e, att) -> assert false
+      | PaAcc (_, p1, p2) -> C.node "PaAcc" [patt p1; patt p2]
       | PaAli (_, p1, p2) -> C.node "PaAli" [patt p1; patt p2]
       | PaAnt (_, p) -> C.node "PaAnt" [patt p]
       | PaAny _ -> C.node "PaAny" []

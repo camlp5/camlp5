@@ -135,6 +135,13 @@ let ocaml_coretype_addattr attr
    ptyp_loc_stack = ptyp_loc_stack;
    ptyp_attributes = ptyp_attributes @ [attr]}
 ;;
+let ocaml_patt_addattr attr
+    {ppat_desc = ppat_desc; ppat_loc = ppat_loc;
+     ppat_loc_stack = ppat_loc_stack; ppat_attributes = ppat_attributes} =
+  {ppat_desc = ppat_desc; ppat_loc = ppat_loc;
+   ppat_loc_stack = ppat_loc_stack;
+   ppat_attributes = ppat_attributes @ [attr]}
+;;
 let ocaml_sig_item_addattr attr =
   function
     {psig_desc =

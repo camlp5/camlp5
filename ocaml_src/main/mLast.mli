@@ -79,6 +79,7 @@ and patt =
   | PaUnp of loc * string option * module_type option
   | PaVrn of loc * string
   | PaXtr of loc * string * patt option
+  | PaAtt of loc * patt * (string * payload)
 and expr =
     ExAcc of loc * expr * expr
   | ExAnt of loc * expr
