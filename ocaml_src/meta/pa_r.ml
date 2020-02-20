@@ -2776,6 +2776,17 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (t2 : 'ctyp) (pf : bool) _ (t1 : 'ctyp) (loc : Ploc.t) ->
               (MLast.TyMan (loc, t1, pf, t2) : 'ctyp)))];
+       Some "alg_attribute", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (e1 : 'ctyp) (loc : Ploc.t) ->
+              (MLast.TyAtt (loc, e1, attr) : 'ctyp)))];
        Some "as", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next

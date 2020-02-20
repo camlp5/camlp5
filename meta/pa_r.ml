@@ -725,6 +725,10 @@ EXTEND
     [ "top" LEFTA
       [ t1 = SELF; "=="; pf = V (FLAG "private") "priv"; t2 = SELF →
           <:ctyp< $t1$ == $_priv:pf$ $t2$ >> ]
+    | "alg_attribute" LEFTA
+      [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:ctyp< $e1$ [@ $_attribute:attr$ ] >>
+      ]
     | "as" LEFTA
       [ t1 = SELF; "as"; t2 = SELF → <:ctyp< $t1$ as $t2$ >> ]
     | LEFTA

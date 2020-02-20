@@ -155,7 +155,8 @@ value x = 1;
      o_output = Some ({foo|type t = int[@foo];;
 |foo}, None) ;
      official_output = Some ({foo|type t = ((int)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|;;((a)[@foo ?(_, _) when true])|foo}, None) ;
+     r_output = Some ({foo|type t = int[@foo];
+|foo}, None) ;
      r_input = ("type t = int [@foo];", None)
     };
     {name="simple-interf"; implem = False ;
