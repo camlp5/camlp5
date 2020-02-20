@@ -175,7 +175,9 @@ value x = 1;
     x | y[@foo] -> 1;;
 |foo}, None) ;
      official_output = Some ({foo|;;fun (x|((y)[@foo ])) -> 1|foo}, None) ;
-     r_output = Some ({foo||foo}, None) ;
+     r_output = Some ({foo|fun
+[ x | y[@foo] → 1 ];
+|foo}, None) ;
      r_input = ("function x|y[@foo] -> 1;", None)
     };
     {name="simple-interf"; implem = False ;

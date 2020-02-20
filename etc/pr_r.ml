@@ -1597,6 +1597,11 @@ EXTEND_PRINTER
             | _ -> None ]
           in
           left_operator pc 0 unfold next z ]
+    | "alg_attribute"
+      [ <:patt< $p$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr p attribute_body attr
+      ]
+
     | "range"
       [ <:patt< $x$ .. $y$ >> ->
           pprintf pc "%p..%p" next x next y ]
