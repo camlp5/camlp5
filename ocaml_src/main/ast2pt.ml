@@ -582,7 +582,7 @@ and mktvariant loc ctl priv =
     List.map
       (fun (loc, c, tl, rto) ->
          conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
-         mkloc loc)
+         mkloc loc, [])
       ctl
   in
   match ocaml_ptype_variant ctl priv with
@@ -591,9 +591,11 @@ and mktvariant loc ctl priv =
 and mktrecord ltl priv =
   let ltl =
     List.map
-      (fun (loc, n, m, t) ->
+      (fun (loc, n, m, t, attrs) ->
          let loc = mkloc loc in
-         let m = mkmutable m in let t = add_polytype t in n, m, t, loc)
+         let m = mkmutable m in
+         let t = add_polytype t in
+         let attrs = alg_attributes attrs in n, m, t, loc, attrs)
       ltl
   in
   ocaml_ptype_record ltl priv
@@ -1804,6 +1806,7 @@ and class_str_item c l =
            (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
       l
 and item_attributes attrs = ((attrs |> uv) |> List.map uv) |> List.map attr
+and alg_attributes attrs = ((attrs |> uv) |> List.map uv) |> List.map attr
 and attr (id, payload) =
   match payload with
     StAttr (loc, st) ->

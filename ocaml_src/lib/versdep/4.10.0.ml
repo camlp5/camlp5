@@ -257,9 +257,9 @@ let ocaml_ptype_abstract = Ptype_abstract;;
 let ocaml_ptype_record ltl priv =
   Ptype_record
     (List.map
-       (fun (s, mf, ct, loc) ->
+       (fun (s, mf, ct, loc, attrs) ->
           {pld_name = mkloc loc s; pld_mutable = mf; pld_type = ct;
-           pld_loc = loc; pld_attributes = []})
+           pld_loc = loc; pld_attributes = attrs})
        ltl)
 ;;
 
@@ -267,12 +267,12 @@ let ocaml_ptype_variant ctl priv =
   try
     let ctl =
       List.map
-        (fun (c, tl, rto, loc) ->
+        (fun (c, tl, rto, loc, attrs) ->
            if rto <> None then raise Exit
            else
              let tl = Pcstr_tuple tl in
              {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-              pcd_loc = loc; pcd_attributes = []})
+              pcd_loc = loc; pcd_attributes = attrs})
         ctl
     in
     Some (Ptype_variant ctl)

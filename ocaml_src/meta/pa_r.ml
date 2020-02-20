@@ -213,7 +213,7 @@ let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
 let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
 let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 
-let mklabdecl loc i mf t = loc, i, mf, t;;
+let mklabdecl loc i mf t attrs = loc, i, mf, t, attrs;;
 let mkident i : string = i;;
 
 let rec generalized_type_of_type =
@@ -322,6 +322,8 @@ Grammar.safe_extend
      grammar_entry_create "paren_ipatt"
    and label_ipatt : 'label_ipatt Grammar.Entry.e =
      grammar_entry_create "label_ipatt"
+   and alg_attribute : 'alg_attribute Grammar.Entry.e =
+     grammar_entry_create "alg_attribute"
    and item_attribute : 'item_attribute Grammar.Entry.e =
      grammar_entry_create "item_attribute"
    and type_patt : 'type_patt Grammar.Entry.e =
@@ -2710,6 +2712,17 @@ Grammar.safe_extend
              (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)),
            (fun (p : 'ipatt) _ (i : 'patt_label_ident) (loc : Ploc.t) ->
               (i, p : 'label_ipatt)))]];
+    Grammar.extension (alg_attribute : 'alg_attribute Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (loc : Ploc.t) ->
+              (attr : 'alg_attribute)))]];
     Grammar.extension (item_attribute : 'item_attribute Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -2834,6 +2847,10 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            (fun _ (attr : 'attribute_body) _ (e1 : 'ctyp) (loc : Ploc.t) ->
               (MLast.TyAtt (loc, e1, attr) : 'ctyp)))];
+       Some "below_alg_attribute", None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop Grammar.s_next,
+           (fun (t : 'ctyp) (loc : Ploc.t) -> (t : 'ctyp)))];
        Some "as", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
@@ -3008,13 +3025,19 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("LIDENT", "")))
-                   (Grammar.s_token ("", ":")))
-                (Grammar.s_flag (Grammar.s_token ("", "mutable"))))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) (mf : bool) _ (i : string) (loc : Ploc.t) ->
-              (mklabdecl loc i mf t : 'label_declaration)))]];
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("LIDENT", "")))
+                      (Grammar.s_token ("", ":")))
+                   (Grammar.s_flag (Grammar.s_token ("", "mutable"))))
+                (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e)
+                   "below_alg_attribute"))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (alg_attribute : 'alg_attribute Grammar.Entry.e))),
+           (fun (attrs : 'alg_attribute list) (t : 'ctyp) (mf : bool) _
+                (i : string) (loc : Ploc.t) ->
+              (mklabdecl loc i mf t attrs : 'label_declaration)))]];
     Grammar.extension (ident : 'ident Grammar.Entry.e) None
       [None, None,
        [Grammar.production

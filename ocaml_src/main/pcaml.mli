@@ -58,7 +58,7 @@ val constructor_declaration :
   (MLast.loc * string MLast.v * MLast.ctyp list MLast.v * MLast.ctyp option)
     Grammar.Entry.e;;
 val label_declaration :
-  (MLast.loc * string * bool * MLast.ctyp) Grammar.Entry.e;;
+  (MLast.loc * string * bool * MLast.ctyp * MLast.attributes) Grammar.Entry.e;;
 val with_constr : MLast.with_constr Grammar.Entry.e;;
 val poly_variant : MLast.poly_variant Grammar.Entry.e;;
 val class_sig_item : MLast.class_sig_item Grammar.Entry.e;;

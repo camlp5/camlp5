@@ -43,7 +43,7 @@ type ctyp =
   | TyPol of loc * string list * ctyp
   | TyPot of loc * string list * ctyp
   | TyQuo of loc * string
-  | TyRec of loc * (loc * string * bool * ctyp) list
+  | TyRec of loc * (loc * string * bool * ctyp * (string * payload) list) list
   | TySum of loc * (loc * string * ctyp list * ctyp option) list
   | TyTup of loc * ctyp list
   | TyUid of loc * string
@@ -235,7 +235,8 @@ and payload =
   | SiAttr of loc * sig_item list
   | TyAttr of loc * ctyp
   | PaAttr of loc * patt * expr option
-;;
+and attribute = string * payload
+and attributes = (string * payload) list;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;
