@@ -3211,6 +3211,18 @@ Grammar.safe_extend
                 (class_fun_def : 'class_fun_def Grammar.Entry.e)),
            (fun (ce : 'class_fun_def) (p : 'ipatt) _ (loc : Ploc.t) ->
               (MLast.CeFun (loc, p, ce) : 'class_expr)))];
+       Some "alg_attribute", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (ct : 'class_expr)
+                (loc : Ploc.t) ->
+              (MLast.CeAtt (loc, ct, attr) : 'class_expr)))];
        Some "apply", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -3508,6 +3520,32 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "[")))
+                      (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                   (Grammar.s_token ("", "]")))
+                (Grammar.s_token ("", "->")))
+             Grammar.s_self,
+           (fun (ct : 'class_type) _ _ (t : 'ctyp) _ (loc : Ploc.t) ->
+              (MLast.CtFun (loc, t, ct) : 'class_type)))];
+       Some "alg_attribute", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (ct : 'class_type)
+                (loc : Ploc.t) ->
+              (MLast.CtAtt (loc, ct, attr) : 'class_type)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
                 (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                    (Grammar.s_token ("", "[")))
                 (Grammar.s_list1sep
@@ -3540,20 +3578,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", "end")),
            (fun _ (csf : 'e__12 list) (cst : 'class_self_type option) _
                 (loc : Ploc.t) ->
-              (MLast.CtSig (loc, cst, csf) : 'class_type)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "[")))
-                      (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
-                   (Grammar.s_token ("", "]")))
-                (Grammar.s_token ("", "->")))
-             Grammar.s_self,
-           (fun (ct : 'class_type) _ _ (t : 'ctyp) _ (loc : Ploc.t) ->
-              (MLast.CtFun (loc, t, ct) : 'class_type)))];
+              (MLast.CtSig (loc, cst, csf) : 'class_type)))];
        Some "apply", None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
