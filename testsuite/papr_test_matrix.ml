@@ -159,6 +159,15 @@ value x = 1;
 |foo}, None) ;
      r_input = ("type t = int [@foo];", None)
     };
+    {name="alg_attribute10"; implem = True ;
+     o_input = ("type t = int [@foo][@bar]", None) ;
+     o_output = Some ({foo|type t = int[@foo][@bar];;
+|foo}, None) ;
+     official_output = Some ({foo|type t = ((int)[@foo ][@bar ])|foo}, None) ;
+     r_output = Some ({foo|type t = int[@foo][@bar];
+|foo}, None) ;
+     r_input = ("type t = int [@foo][@bar];", None)
+    };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;
      o_output = Some ({foo|val x : int;;
