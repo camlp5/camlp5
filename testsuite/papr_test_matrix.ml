@@ -180,6 +180,14 @@ value x = 1;
 |foo}, None) ;
      r_input = ("fun [ (x|y[@foo]) -> 1 ];", None)
     };
+    {name="alg_attribute12"; implem = True ;
+     o_input = ("module M = struct end [@foo]", None) ;
+     o_output = Some ({foo|module M = struct  end[@foo];;
+|foo}, None) ;
+     official_output = Some ({foo|module M = ((struct  end)[@foo ])|foo}, None) ;
+     r_output = Some ({foo||foo}, None) ;
+     r_input = ("module M = struct end [@foo];", None)
+    };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;
      o_output = Some ({foo|val x : int;;

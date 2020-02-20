@@ -1797,8 +1797,12 @@ EXTEND_PRINTER
   pr_module_expr:
     [ "top"
       [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
-          str_or_sig_functor pc (functor_parameter_unvala arg) module_expr me
-      | <:module_expr:< struct $list:sil$ end >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_expr me ]
+    | "alg_attribute"
+      [ <:module_expr< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      ]
+    | [ <:module_expr:< struct $list:sil$ end >> ->
           let str_item_sep =
             if flag_semi_semi.val then semi_semi_after str_item
             else str_item
@@ -1851,8 +1855,12 @@ EXTEND_PRINTER
   pr_module_type:
     [ "top"
       [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
-          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2
-      | <:module_type:< sig $list:sil$ end >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2 ]
+    | "alg_attribute"
+      [ <:module_type< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      ]
+    | [ <:module_type:< sig $list:sil$ end >> ->
           let sig_item_sep =
             if flag_semi_semi.val then semi_semi_after sig_item
             else sig_item

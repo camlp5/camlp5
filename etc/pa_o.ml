@@ -388,8 +388,12 @@ EXTEND
   module_expr:
     [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp";
         "->"; me = SELF ->
-          <:module_expr< functor $_fp:arg$ -> $me$ >>
-      | "struct"; OPT ";;"; st = structure; "end" ->
+          <:module_expr< functor $_fp:arg$ -> $me$ >> ]
+    | "alg_attribute" LEFTA
+      [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:module_expr< $e1$ [@ $_attribute:attr$ ] >>
+      ]
+    | [ "struct"; OPT ";;"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
     | [ me1 = SELF; "("; me2 = SELF; ")" -> <:module_expr< $me1$ $me2$ >>
@@ -489,6 +493,10 @@ EXTEND
         <:module_type< $mt1$ → $mt2$ >>
      ]
       END
+    | "alg_attribute" LEFTA
+      [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
+        <:module_type< $e1$ [@ $_attribute:attr$ ] >>
+      ]
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; sg = signature; "end" ->
