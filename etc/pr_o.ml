@@ -774,25 +774,25 @@ value external_decl pc (loc, n, t, sl, attrs) =
     (hlist (pr_attribute "@@")) attrs
 ;
 
-value exception_decl pc (loc, e, tl, id) =
+value exception_decl pc (loc, e, tl, id, attrs) =
   let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
   match id with
   [ [] ->
       match tl with
-      [ [] -> pprintf pc "exception %p" cons_escaped (loc, e)
+      [ [] -> pprintf pc "exception %p%p" cons_escaped (loc, e) (hlist (pr_attribute "@@")) attrs
       | tl ->
           let tl = List.map (fun t -> (t, " *")) tl in
-          pprintf pc "exception %p of@;%p" cons_escaped (loc, e)
-            (plist ctyp_apply 2) tl ]
+          pprintf pc "exception %p of@;%p%p" cons_escaped (loc, e)
+            (plist ctyp_apply 2) tl (hlist (pr_attribute "@@")) attrs ]
   | id ->
       match tl with
       [ [] ->
-          pprintf pc "exception %p =@;%p" cons_escaped (loc, e)
-            mod_ident (loc, id)
+          pprintf pc "exception %p =@;%p%p" cons_escaped (loc, e)
+            mod_ident (loc, id)  (hlist (pr_attribute "@@")) attrs
       | tl ->
           let tl = List.map (fun t -> (t, " *")) tl in
-          pprintf pc "exception %p of@;%p =@;%p" cons_escaped (loc, e)
-            (plist ctyp_apply 2) tl mod_ident (loc, id) ] ]
+          pprintf pc "exception %p of@;%p =@;%p%p" cons_escaped (loc, e)
+            (plist ctyp_apply 2) tl mod_ident (loc, id) (hlist (pr_attribute "@@")) attrs ] ]
 ;
 
 value functor_parameter_unvala arg =
@@ -1710,8 +1710,8 @@ EXTEND_PRINTER
               else str_item
             in
             vlistl str_item_sep str_item pc sil
-      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ >> ->
-          exception_decl pc (loc, e, tl, id)
+      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $list:attrs$ >> ->
+          exception_decl pc (loc, e, tl, id, attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:str_item< include $me$ >> ->
@@ -1751,8 +1751,8 @@ EXTEND_PRINTER
       [ <:sig_item< # $lid:s$ $e$ >> ->
           let pc = {(pc) with aft = ""} in
           pprintf pc "(* #%s %p *)" s expr e
-      | <:sig_item:< exception $uid:e$ of $list:tl$ >> ->
-          exception_decl pc (loc, e, tl, [])
+      | <:sig_item:< exception $uid:e$ of $list:tl$ $list:attrs$ >> ->
+          exception_decl pc (loc, e, tl, [], attrs)
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->

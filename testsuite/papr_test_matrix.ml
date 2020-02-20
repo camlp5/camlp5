@@ -188,6 +188,15 @@ and t2 = bool[@@foo ]|foo}, None) ;
 and t2 = bool[@@foo];
 |foo}, None) ;
      r_input = ("type nonrec t1 = int [@@bar] and t2 = bool [@@foo];", None)
+    };
+    {name="item_attribute4"; implem = True ;
+     o_input = ("exception Foo of int [@@foo]", None) ;
+     o_output = Some ({foo|exception Foo of int[@@foo];;
+|foo}, None) ;
+     official_output = Some ({foo|exception Foo of int [@@foo ]|foo}, None) ;
+     r_output = Some ({foo|exception Foo of int[@@foo];
+|foo}, None) ;
+     r_input = ("exception Foo of int [@@foo];", None)
     }
 ]
 ;

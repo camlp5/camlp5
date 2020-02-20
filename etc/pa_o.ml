@@ -428,8 +428,8 @@ EXTEND
   str_item:
     [ "top"
       [ "exception"; (_, c, tl, _) = constructor_declaration;
-        b = rebind_exn ->
-          <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ >>
+        b = rebind_exn ; attrs = V (LIST0 item_attribute) ->
+          <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ $_list:attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) ->
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
@@ -510,8 +510,8 @@ EXTEND
   ;
   sig_item:
     [ "top"
-      [ "exception"; (_, c, tl, _) = constructor_declaration ->
-          <:sig_item< exception $_uid:c$ of $_list:tl$ >>
+      [ "exception"; (_, c, tl, _) = constructor_declaration ; attrs = V (LIST0 item_attribute) ->
+          <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) ->
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
