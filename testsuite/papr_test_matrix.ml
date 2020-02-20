@@ -185,7 +185,8 @@ value x = 1;
      o_output = Some ({foo|module M = struct  end[@foo];;
 |foo}, None) ;
      official_output = Some ({foo|module M = ((struct  end)[@foo ])|foo}, None) ;
-     r_output = Some ({foo||foo}, None) ;
+     r_output = Some ({foo|module M = struct  end[@foo];
+|foo}, None) ;
      r_input = ("module M = struct end [@foo];", None)
     };
     {name="simple-interf"; implem = False ;

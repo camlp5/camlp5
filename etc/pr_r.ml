@@ -1879,8 +1879,13 @@ EXTEND_PRINTER
   pr_module_expr:
     [ "top"
       [ <:module_expr< functor $fp:arg$ -> $me$ >> ->
-          str_or_sig_functor pc (functor_parameter_unvala arg) module_expr me
-      | <:module_expr< struct $list:sil$ end >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_expr me ]
+    | "alg_attribute"
+      [ <:module_expr< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      ]
+
+    | [ <:module_expr< struct $list:sil$ end >> ->
           (* Heuristic : I don't like to print structs horizontally
              when alone in a line. *)
           horiz_vertic_if (alone_in_line pc)
@@ -1918,8 +1923,13 @@ EXTEND_PRINTER
   pr_module_type:
     [ "top"
       [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
-          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2
-      | <:module_type< sig $list:sil$ end >> ->
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2 ]
+    | "alg_attribute"
+      [ <:module_type< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      ]
+
+    | [ <:module_type< sig $list:sil$ end >> ->
          (* Heuristic : I don't like to print sigs horizontally
             when alone in a line. *)
           horiz_vertic_if (alone_in_line pc)
