@@ -215,7 +215,8 @@ and class_type =
   | CtFun of loc and ctyp and class_type
   | CtIde of loc and V string
   | CtSig of loc and V (option ctyp) and V (list class_sig_item)
-  | CtXtr of loc and string and option (V class_type) ]
+  | CtXtr of loc and string and option (V class_type)
+  | CtAtt of loc and class_type and V (V string * payload) ]
 and class_sig_item =
   [ CgCtr of loc and ctyp and ctyp
   | CgDcl of loc and V (list class_sig_item)
@@ -231,7 +232,8 @@ and class_expr =
   | CeLet of loc and V bool and V (list (patt * expr)) and class_expr
   | CeStr of loc and V (option patt) and V (list class_str_item)
   | CeTyc of loc and class_expr and class_type
-  | CeXtr of loc and string and option (V class_expr) ]
+  | CeXtr of loc and string and option (V class_expr)
+  | CeAtt of loc and class_expr and V (V string * payload) ]
 and class_str_item =
   [ CrCtr of loc and ctyp and ctyp
   | CrDcl of loc and V (list class_str_item)

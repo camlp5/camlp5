@@ -1577,7 +1577,8 @@ and str_item s l =
   | StXtr (loc, _, _) -> error loc "bad ast StXtr"
 and class_type =
   function
-    CtAcc (loc, _, _) as ct ->
+    CtAtt (loc, e, a) -> ocaml_pcty_addattr (attr (uv a)) (class_type e)
+  | CtAcc (loc, _, _) as ct ->
       let li = long_id_class_type loc ct in
       begin match ocaml_pcty_constr with
         Some pcty_constr -> mkcty loc (pcty_constr li [])
@@ -1669,7 +1670,8 @@ and class_sig_item c l =
       l
 and class_expr =
   function
-    CeApp (loc, _, _) as c ->
+    CeAtt (loc, e, a) -> ocaml_pcl_addattr (attr (uv a)) (class_expr e)
+  | CeApp (loc, _, _) as c ->
       begin match ocaml_pcl_apply with
         Some pcl_apply ->
           let (ce, el) = class_expr_fa [] c in

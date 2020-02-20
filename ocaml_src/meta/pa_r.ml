@@ -524,17 +524,6 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_cut
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "struct")))
-                   (Grammar.s_nterm
-                      (structure : 'structure Grammar.Entry.e))))
-             (Grammar.s_token ("", "end")),
-           (fun _ (st : 'structure) _ (loc : Ploc.t) ->
-              (MLast.MeStr (loc, st) : 'module_expr)));
-        Grammar.production
-          (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
@@ -547,6 +536,30 @@ Grammar.safe_extend
            (fun (me : 'module_expr) _ (arg : 'functor_parameter) _
                 (loc : Ploc.t) ->
               (MLast.MeFun (loc, arg, me) : 'module_expr)))];
+       Some "alg_attribute", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (e1 : 'module_expr)
+                (loc : Ploc.t) ->
+              (MLast.MeAtt (loc, e1, attr) : 'module_expr)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_cut
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "struct")))
+                   (Grammar.s_nterm
+                      (structure : 'structure Grammar.Entry.e))))
+             (Grammar.s_token ("", "end")),
+           (fun _ (st : 'structure) _ (loc : Ploc.t) ->
+              (MLast.MeStr (loc, st) : 'module_expr)))];
        None, None,
        [Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -867,6 +880,18 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (mt2 : 'module_type) _ (mt1 : 'module_type) (loc : Ploc.t) ->
               (MLast.MtFun (loc, Some (None, mt1), mt2) : 'module_type)))];
+       Some "alg_attribute", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "[@")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (attr : 'attribute_body) _ (e1 : 'module_type)
+                (loc : Ploc.t) ->
+              (MLast.MtAtt (loc, e1, attr) : 'module_type)))];
        None, None,
        [Grammar.production
           (Grammar.r_next

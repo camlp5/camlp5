@@ -154,6 +154,18 @@ let ocaml_pmod_addattr attr
   {pmod_desc = module_expr_desc; pmod_loc = pmod_loc;
    pmod_attributes = pmod_attributes @ [attr]}
 ;;
+let ocaml_pcty_addattr attr
+    {pcty_desc = pcty_desc; pcty_loc = pcty_loc;
+     pcty_attributes = pcty_attributes} =
+  {pcty_desc = pcty_desc; pcty_loc = pcty_loc;
+   pcty_attributes = pcty_attributes @ [attr]}
+;;
+let ocaml_pcl_addattr attr
+    {pcl_desc = pcl_desc; pcl_loc = pcl_loc;
+     pcl_attributes = pcl_attributes} =
+  {pcl_desc = pcl_desc; pcl_loc = pcl_loc;
+   pcl_attributes = pcl_attributes @ [attr]}
+;;
 let ocaml_sig_item_addattr attr =
   function
     {psig_desc =

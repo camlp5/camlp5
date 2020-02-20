@@ -600,7 +600,9 @@ and type_decl floc sh x =
 and class_type floc sh =
   self where rec self =
     fun
-    [ CtAcc loc x1 x2 →
+    [ CtAtt loc e attr ->
+       CtAtt loc (self e) attr
+    | CtAcc loc x1 x2 →
         let loc = floc loc in
         CtAcc loc (self x1) (self x2)
     | CtApp loc x1 x2 →
@@ -646,7 +648,9 @@ and class_sig_item floc sh =
 and class_expr floc sh =
   self where rec self =
     fun
-    [ CeApp loc x1 x2 →
+    [ CeAtt loc e attr ->
+       CeAtt loc (self e) attr
+    | CeApp loc x1 x2 →
         let loc = floc loc in
         CeApp loc (self x1) (expr floc sh x2)
     | CeCon loc x1 x2 →

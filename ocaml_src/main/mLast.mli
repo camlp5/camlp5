@@ -203,6 +203,7 @@ and class_type =
   | CtIde of loc * string
   | CtSig of loc * ctyp option * class_sig_item list
   | CtXtr of loc * string * class_type option
+  | CtAtt of loc * class_type * (string * payload)
 and class_sig_item =
     CgCtr of loc * ctyp * ctyp
   | CgDcl of loc * class_sig_item list
@@ -218,6 +219,7 @@ and class_expr =
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
   | CeXtr of loc * string * class_expr option
+  | CeAtt of loc * class_expr * (string * payload)
 and class_str_item =
     CrCtr of loc * ctyp * ctyp
   | CrDcl of loc * class_str_item list

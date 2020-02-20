@@ -459,7 +459,8 @@ module Meta_make (C : MetaSig) =
             x.tdCon)]
     and class_type =
       fun
-      [ CtAcc _ ct1 ct2 → C.node "CtAcc" [class_type ct1; class_type ct2]
+      [ CtAtt _ e att -> assert False
+      | CtAcc _ ct1 ct2 → C.node "CtAcc" [class_type ct1; class_type ct2]
       | CtApp _ ct1 ct2 → C.node "CtApp" [class_type ct1; class_type ct2]
       | CtCon _ ct lt →
           C.node "CtCon" [class_type ct; C.vala (C.list ctyp) lt]
@@ -483,7 +484,8 @@ module Meta_make (C : MetaSig) =
           C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t] ]
     and class_expr =
       fun
-      [ CeApp _ ce e → C.node "CeApp" [class_expr ce; expr e]
+      [ CeAtt _ e att -> assert False
+      | CeApp _ ce e → C.node "CeApp" [class_expr ce; expr e]
       | CeCon _ ls lt →
           C.node "CeCon"
             [C.vala (C.list C.string) ls; C.vala (C.list ctyp) lt]
