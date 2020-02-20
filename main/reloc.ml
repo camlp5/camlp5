@@ -389,7 +389,9 @@ and expr floc sh =
 and module_type floc sh =
   self where rec self =
     fun
-    [ MtAcc loc x1 x2 →
+    [ MtAtt loc e attr ->
+       MtAtt loc (self e) attr
+    | MtAcc loc x1 x2 →
         let loc = floc loc in
         MtAcc loc (self x1) (self x2)
     | MtApp loc x1 x2 →
@@ -487,7 +489,9 @@ and with_constr floc sh =
 and module_expr floc sh =
   self where rec self =
     fun
-    [ MeAcc loc x1 x2 →
+    [ MeAtt loc e attr ->
+       MeAtt loc (self e) attr
+    | MeAcc loc x1 x2 →
         let loc = floc loc in
         MeAcc loc (self x1) (self x2)
     | MeApp loc x1 x2 →

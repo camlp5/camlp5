@@ -1338,7 +1338,8 @@ and mktype_decl td =
     (uv td.tdPrm) priv cl td.tdDef
 and module_type =
   function
-    MtAcc (loc, _, _) as f ->
+    MtAtt (loc, e, a) -> ocaml_pmty_addattr (attr (uv a)) (module_type e)
+  | MtAcc (loc, _, _) as f ->
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtApp (loc, _, _) as f ->
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
@@ -1435,7 +1436,8 @@ and sig_item s l =
   | SgXtr (loc, _, _) -> error loc "bad ast SgXtr"
 and module_expr =
   function
-    MeAcc (loc, _, _) as f ->
+    MeAtt (loc, e, a) -> ocaml_pmod_addattr (attr (uv a)) (module_expr e)
+  | MeAcc (loc, _, _) as f ->
       mkmod loc (ocaml_pmod_ident (module_expr_long_id f))
   | MeApp (loc, me1, me2) ->
       mkmod loc (Pmod_apply (module_expr me1, module_expr me2))

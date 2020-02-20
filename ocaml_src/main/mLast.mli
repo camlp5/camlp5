@@ -136,6 +136,7 @@ and module_type =
   | MtUid of loc * string
   | MtWit of loc * module_type * with_constr list
   | MtXtr of loc * string * module_type option
+  | MtAtt of loc * module_type * (string * payload)
 and functor_parameter = (string option * module_type) option
 and sig_item =
     SgCls of loc * class_type class_infos list
@@ -166,6 +167,7 @@ and module_expr =
   | MeUid of loc * string
   | MeUnp of loc * expr * module_type option
   | MeXtr of loc * string * module_expr option
+  | MeAtt of loc * module_expr * (string * payload)
 and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list

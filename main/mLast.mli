@@ -140,7 +140,8 @@ and module_type =
   | MtTyo of loc and module_expr
   | MtUid of loc and V string
   | MtWit of loc and module_type and V (list with_constr)
-  | MtXtr of loc and string and option (V module_type) ]
+  | MtXtr of loc and string and option (V module_type)
+  | MtAtt of loc and module_type and V (V string * payload) ]
 (* NOTE WELL that this type is here for documentation: the places in MtFun and MeFun
    where this type should appear ..... in those places, the type is substituted in
    directly, so that the automated test will work.  What a PITA.
@@ -175,7 +176,8 @@ and module_expr =
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string
   | MeUnp of loc and expr and option module_type
-  | MeXtr of loc and string and option (V module_expr) ]
+  | MeXtr of loc and string and option (V module_expr)
+  | MeAtt of loc and module_expr and V (V string * payload) ]
 and str_item =
   [ StCls of loc and V (list (class_infos class_expr))
   | StClt of loc and V (list (class_infos class_type))

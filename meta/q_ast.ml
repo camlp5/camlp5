@@ -288,7 +288,8 @@ module Meta_make (C : MetaSig) =
           ExXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "ExAnt" [r]) s ]
     and module_type =
       fun
-      [ MtAcc _ mt1 mt2 → C.node "MtAcc" [module_type mt1; module_type mt2]
+      [ MtAtt _ e att -> assert False
+      | MtAcc _ mt1 mt2 → C.node "MtAcc" [module_type mt1; module_type mt2]
       | MtApp _ mt1 mt2 → C.node "MtApp" [module_type mt1; module_type mt2]
       | MtFun _ arg mt2 →
           let c_vala x = C.vala C.string x in
@@ -361,7 +362,8 @@ module Meta_make (C : MetaSig) =
              ctyp t] ]
     and module_expr =
       fun
-      [ MeAcc _ me1 me2 → C.node "MeAcc" [module_expr me1; module_expr me2]
+      [ MeAtt _ e att -> assert False
+      | MeAcc _ me1 me2 → C.node "MeAcc" [module_expr me1; module_expr me2]
       | MeApp _ me1 me2 → C.node "MeApp" [module_expr me1; module_expr me2]
       | MeFun _ arg me →
           let c_vala x = C.vala C.string x in

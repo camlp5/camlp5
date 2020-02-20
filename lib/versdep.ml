@@ -188,6 +188,8 @@ value ocaml_attribute_patt _ _ _ _ = assert False ;
 value ocaml_expr_addattr _ _ = assert False ;
 value ocaml_coretype_addattr _ _ = assert False ;
 value ocaml_patt_addattr _ _ = assert False ;
+value ocaml_pmty_addattr _ _ = assert False ;
+value ocaml_pmod_addattr _ _ = assert False ;
 value ocaml_sig_item_addattr _ _ = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
@@ -260,6 +262,30 @@ value ocaml_patt_addattr attr {
      ppat_loc = ppat_loc ;
      ppat_loc_stack = ppat_loc_stack ;
      ppat_attributes = ppat_attributes @ [attr]
+    }
+;
+
+value ocaml_pmty_addattr attr {
+     pmty_desc = pmty_desc;
+     pmty_loc = pmty_loc;
+     pmty_attributes = pmty_attributes
+    } =
+    {
+     pmty_desc = pmty_desc;
+     pmty_loc = pmty_loc;
+     pmty_attributes = pmty_attributes @ [attr]
+    }
+;
+
+value ocaml_pmod_addattr attr {
+     pmod_desc = module_expr_desc;
+     pmod_loc = pmod_loc;
+     pmod_attributes = pmod_attributes
+    } =
+    {
+     pmod_desc = module_expr_desc;
+     pmod_loc = pmod_loc;
+     pmod_attributes = pmod_attributes @ [attr]
     }
 ;
 
