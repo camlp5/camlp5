@@ -105,7 +105,8 @@ module Meta_make (C : MetaSig) =
     ;
     value rec ctyp =
       fun
-      [ TyAcc _ t1 t2 → C.node "TyAcc" [ctyp t1; ctyp t2]
+      [ TyAtt _ ct att -> assert False
+      | TyAcc _ t1 t2 → C.node "TyAcc" [ctyp t1; ctyp t2]
       | TyAli _ t1 t2 → C.node "TyAli" [ctyp t1; ctyp t2]
       | TyAny _ → C.node "TyAny" []
       | TyApp _ t1 t2 → C.node "TyApp" [ctyp t1; ctyp t2]

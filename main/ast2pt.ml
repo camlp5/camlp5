@@ -454,7 +454,9 @@ and mktrecord ltl priv =
 
 and ctyp =
   fun
-  [ TyAcc loc _ _ as f →
+  [ TyAtt loc ct a ->
+    ocaml_coretype_addattr (attr (uv a)) (ctyp ct)
+  | TyAcc loc _ _ as f →
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
       else mktyp loc (ocaml_ptyp_constr (mkloc loc) li [])

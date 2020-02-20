@@ -53,7 +53,8 @@ type ctyp =
   | TyUid of loc and V string
   | TyVrn of loc and V (list poly_variant) and
       option (option (V (list string)))
-  | TyXtr of loc and string and option (V ctyp) ]
+  | TyXtr of loc and string and option (V ctyp)
+  | TyAtt of loc and ctyp and V (V string * payload) ]
 and poly_variant =
   [ PvTag of loc and V string and V bool and V (list ctyp)
   | PvInh of loc and ctyp ]
