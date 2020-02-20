@@ -150,6 +150,14 @@ value x = 1;
      r_output = None ;
      r_input = ("a[@foo ? (_,_) when True];", None)
     };
+    {name="alg_attribute9"; implem = True ;
+     o_input = ("type t = int [@foo]", None) ;
+     o_output = Some ({foo|type t = int[@foo];;
+|foo}, None) ;
+     official_output = Some ({foo|type t = ((int)[@foo ])|foo}, None) ;
+     r_output = Some ({foo|;;((a)[@foo ?(_, _) when true])|foo}, None) ;
+     r_input = ("type t = int [@foo];", None)
+    };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;
      o_output = Some ({foo|val x : int;;

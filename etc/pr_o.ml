@@ -1581,6 +1581,11 @@ EXTEND_PRINTER
       [ <:ctyp:< $x$ == $priv:pf$ $y$ >> ->
           let op = if pf then "= private" else "=" in
           operator pc next next 2 (loc, op) x y ]
+    | "alg_attribute"
+      [ <:ctyp< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct attribute_body attr
+      ]
+
     | "arrow"
       [ <:ctyp:< $_$ -> $_$ >> as z ->
           let unfold =
