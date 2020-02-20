@@ -153,7 +153,7 @@ value expr_of_type_decl loc tn td =
   | <:ctyp< { $list:ldl$ } >> ->
       let lel =
         List.map
-          (fun (loc, l, mf, t) ->
+          (fun (loc, l, mf, t, _) ->
              let e = <:expr< x.$lid:l$ >> in
              let e =
                match expr_of_type "" False loc t with

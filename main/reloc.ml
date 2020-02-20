@@ -110,7 +110,7 @@ value rec ctyp floc sh =
         let loc = floc loc in
         TyRec loc
           (vala_map
-             (List.map (fun (loc, x1, x2, x3) → (floc loc, x1, x2, self x3)))
+             (List.map (fun (loc, x1, x2, x3, x4) → (floc loc, x1, x2, self x3, x4)))
              x1)
     | TySum loc x1 →
         let loc = floc loc in

@@ -1553,8 +1553,8 @@ and variant_declaration_se =
 and label_declaration_se =
   fun
   [ Sexpr loc [Slid _ lab; Slid _ "mutable"; se] →
-      (loc, rename_id lab, True, ctyp_se se)
-  | Sexpr loc [Slid _ lab; se] → (loc, rename_id lab, False, ctyp_se se)
+      (loc, rename_id lab, True, ctyp_se se, <:vala< [] >>)
+  | Sexpr loc [Slid _ lab; se] → (loc, rename_id lab, False, ctyp_se se, <:vala< [] >>)
   | se → error se "label_declaration" ]
 and class_sig_item_se =
   fun

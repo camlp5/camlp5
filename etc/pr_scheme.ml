@@ -294,11 +294,13 @@ value poly_variant_decl pc =
     END ]
 ;
 
-value label_decl pc (_, l, m, t) =
+value label_decl pc (_, l, m, t, attrs) = do {
+  assert(attrs = Ploc.VaVal []) ;
   let list = [(fun pc -> ctyp pc t, "")] in
   plistf 0 (paren pc "")
     [(fun pc -> pprintf pc "%s" l, "") ::
      if m then [(fun pc -> pprintf pc "mutable", "") :: list] else list]
+}
 ;
 
 value module_type_decl pc (s, mt) =

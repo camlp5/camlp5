@@ -208,11 +208,11 @@ value expr_list_of_type_decl loc td =
   [ <:ctyp< [ $list:cdl$ ] >> ->
       List.fold_right (fun cd el -> expr_of_cons_decl cd @ el) cdl []
   | <:ctyp< { $list:ldl$ } >> ->
-      let ldnl = name_of_vars (fun (loc, l, mf, t) -> t) ldl in
+      let ldnl = name_of_vars (fun (loc, l, mf, t, _) -> t) ldl in
       let pell =
         loop ldnl where rec loop =
           fun
-          [ [((loc, l, mf, t), n) :: ldnl] ->
+          [ [((loc, l, mf, t, _), n) :: ldnl] ->
               let p = <:patt< MLast.$lid:l$ >> in
               let pell = loop ldnl in
               let f e = List.map (fun pel -> [(p, e) :: pel]) pell in

@@ -192,7 +192,7 @@ value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
 value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 
-value mklabdecl loc i mf t = (loc, i, mf, t);
+value mklabdecl loc i mf t attrs = (loc, i, mf, t, attrs);
 value mkident i : string = i;
 
 value rec generalized_type_of_type =
@@ -713,6 +713,10 @@ EXTEND
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt → (i, p) ] ]
   ;
+  alg_attribute:
+  [ [ "[@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   item_attribute:
   [ [ "[@@" ; attr = V attribute_body "attribute"; "]" -> attr
     ] ]
@@ -746,6 +750,7 @@ EXTEND
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:ctyp< $e1$ [@ $_attribute:attr$ ] >>
       ]
+    | "below_alg_attribute" [ t = NEXT -> t ]
     | "as" LEFTA
       [ t1 = SELF; "as"; t2 = SELF → <:ctyp< $t1$ as $t2$ >> ]
     | LEFTA
@@ -784,8 +789,8 @@ EXTEND
           (loc, ci, <:vala< [] >>, None) ] ]
   ;
   label_declaration:
-    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp →
-          mklabdecl loc i mf t ] ]
+    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp LEVEL "below_alg_attribute" ; attrs = V (LIST0 alg_attribute) →
+          mklabdecl loc i mf t attrs ] ]
   ;
   ident:
     [ [ i = LIDENT → mkident i

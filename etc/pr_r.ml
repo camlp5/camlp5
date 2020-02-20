@@ -247,6 +247,7 @@ value uidopt_to_maybe_blank = fun [
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 value ctyp = Eprinter.apply pr_ctyp;
+value ctyp_below_alg_attribute x = Eprinter.apply_level pr_ctyp "below_alg_attribute" x;
 value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
 value module_expr = Eprinter.apply pr_module_expr;
@@ -797,9 +798,10 @@ value type_decl pc td =
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
 ;
 
-value label_decl pc (loc, l, m, t) =
-  pprintf pc "%p :%s@;%p" var_escaped (loc, l)
-    (if m then " mutable" else "") ctyp t
+value label_decl pc (loc, l, m, t, attrs) =
+  pprintf pc "%p :%s@;%p%p" var_escaped (loc, l)
+    (if m then " mutable" else "") ctyp_below_alg_attribute t
+    (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
 ;
 
 value cons_decl pc (_, c, tl, rto) =
@@ -1694,6 +1696,8 @@ EXTEND_PRINTER
       [ <:ctyp< $ct$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr ct attribute_body attr
       ]
+    | "below_alg_attribute"
+      [ z -> next pc z ]
 
     | "as"
       [ <:ctyp< $t1$ as $t2$ >> ->
@@ -1759,7 +1763,9 @@ EXTEND_PRINTER
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
        (* <:ctyp< [ < $list:_$ ] >> | *) <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
-      | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
+      | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >>
+      | <:ctyp< $_$ [@ $attribute:_$ ] >>
+        as z ->
           pprintf pc "@[<1>(%p)@]" ctyp z ] ]
   ;
   pr_str_item:

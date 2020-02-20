@@ -249,7 +249,7 @@ value mktuptyp _ t tl =
   Qast.Node "TyTup" [Qast.Loc; Qast.VaVal (Qast.Cons t (Qast.List tl))]
 ;
 
-value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t];
+value mklabdecl _ i mf t attrs = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t; attrs];
 value mkident i = Qast.Str i;
 
 value generalized_type_of_type t =
@@ -969,6 +969,10 @@ EXTEND
   [ [ "[@@" ; attr = SV attribute_body "attribute"; "]" -> attr
     ] ]
   ;
+  alg_attribute:
+  [ [ "[@" ; attr = SV attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   type_decl:
     [ [ n = SV type_patt "tp"; tpl = SV (LIST0 type_parameter); "=";
         pf = SV (FLAG "private") "priv"; tk = ctyp;
@@ -1003,6 +1007,7 @@ EXTEND
       [ t1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
         Qast.Node "TyAtt" [Qast.Loc; t1; attr]
       ]
+    | "below_alg_attribute" [ t = NEXT -> t ]
     | "as" LEFTA
       [ t1 = SELF; "as"; t2 = SELF → Qast.Node "TyAli" [Qast.Loc; t1; t2] ]
     | LEFTA
@@ -1045,8 +1050,8 @@ EXTEND
             [Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None] ] ]
   ;
   label_declaration:
-    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp →
-          mklabdecl Qast.Loc i mf t ] ]
+    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ; alg_attrs = SV (LIST0 alg_attribute)  →
+          mklabdecl Qast.Loc i mf t alg_attrs ] ]
   ;
   ident:
     [ [ i = LIDENT → mkident i

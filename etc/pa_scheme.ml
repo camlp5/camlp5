@@ -1175,9 +1175,9 @@
  (label_declaration_se
   (lambda_match
    ((Sexpr loc [(Slid _ lab) (Slid _ "mutable") se])
-    (values loc (rename_id lab) True (ctyp_se se)))
+    (values loc (rename_id lab) True (ctyp_se se) <:vala< [] >>))
    ((Sexpr loc [(Slid _ lab) se])
-    (values loc (rename_id lab) False (ctyp_se se)))
+    (values loc (rename_id lab) False (ctyp_se se) <:vala< [] >>))
    (se (error se "label_declaration"))))
  (class_sig_item_se
   (lambda_match

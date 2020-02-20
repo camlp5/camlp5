@@ -446,7 +446,7 @@ EXTEND
       | x1 = INT -> not_impl loc "selector 1" ] ]
   ;
   tlabel:
-    [ [ x1 = selector; ":"; x2 = ctyp -> (loc, x1, False, x2) ] ]
+    [ [ x1 = selector; ":"; x2 = ctyp -> (loc, x1, False, x2, <:vala< [] >>) ] ]
   ;
   tuple_ty:
     [ [ x1 = ctyp LEVEL "ty'"; "*"; x2 = tuple_ty -> [x1 :: x2]
@@ -462,7 +462,7 @@ EXTEND
       | "{"; x1 = LIST1 tlabel SEP ","; "}" ->
           if ocaml_records.val then <:ctyp< { $list:x1$ } >>
           else
-            let list = List.map (fun (_, l, _, t) -> (l, t)) x1 in
+            let list = List.map (fun (_, l, _, t, _) -> (l, t)) x1 in
             <:ctyp< < $list:list$ > >>
       | "{"; "}" -> not_impl loc "ty' 3"
       | "("; x1 = ctyp; ","; x2 = LIST1 ctyp SEP ","; ")"; x3 = tycon ->

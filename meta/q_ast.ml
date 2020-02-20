@@ -128,8 +128,9 @@ module Meta_make (C : MetaSig) =
           C.node "TyRec"
             [C.vala
                (C.list
-                  (fun (_, s, b, t) →
-                     C.tuple [C.loc_v (); C.string s; C.bool b; ctyp t]))
+                  (fun (_, s, b, t, attrs) →
+                     let attrs = assert False in
+                     C.tuple [C.loc_v (); C.string s; C.bool b; ctyp t; attrs]))
                llsbt]
       | TySum _ llsltot →
           C.node "TySum"

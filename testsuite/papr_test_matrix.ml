@@ -207,6 +207,26 @@ value x = 1;
 |foo}, None) ;
      r_input = ("class type t ['a] = object end [@foo];", None)
     };
+    {name="alg_attribute14"; implem = True ;
+     o_input = ("type t = { a : int [@foo] }", None) ;
+     o_output = Some ({foo|type t = { a : int[@foo] };;
+|foo}, None) ;
+     official_output = Some ({foo|type t = {
+  a: int [@foo ]}|foo}, None) ;
+     r_output = Some ({foo|type t = { a : int[@foo] };
+|foo}, None) ;
+     r_input = ("type t = { a : int [@foo] };", None)
+    };
+    {name="alg_attribute15"; implem = True ;
+     o_input = ("type t = { a : (int [@bar]) [@foo] }", None) ;
+     o_output = Some ({foo|type t = { a : (int[@bar])[@foo] };;
+|foo}, None) ;
+     official_output = Some ({foo|type t = {
+  a: (int [@bar ]) [@foo ] }|foo}, None) ;
+     r_output = Some ({foo|type t = { a : (int[@bar])[@foo] };
+|foo}, None) ;
+     r_input = ("type t = { a : (int [@bar]) [@foo] };", None)
+    };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;
      o_output = Some ({foo|val x : int;;

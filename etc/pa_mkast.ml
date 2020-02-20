@@ -187,7 +187,7 @@ value expr_of_type_decl loc td =
   | <:ctyp< { $list:ldl$ } >> ->
       let rev_lel =
         list_rev_map
-          (fun (loc, l, mf, t) ->
+          (fun (loc, l, mf, t, _) ->
              let e = <:expr< x.$lid:l$ >> in
              let e =
                match t with

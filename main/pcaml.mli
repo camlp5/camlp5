@@ -59,7 +59,7 @@ value constructor_declaration :
     (MLast.loc * MLast.v string * MLast.v (list MLast.ctyp) *
      option MLast.ctyp);
 value label_declaration :
-  Grammar.Entry.e (MLast.loc * string * bool * MLast.ctyp);
+  Grammar.Entry.e (MLast.loc * string * bool * MLast.ctyp * MLast.attributes);
 value with_constr : Grammar.Entry.e MLast.with_constr;
 value poly_variant : Grammar.Entry.e MLast.poly_variant;
 value class_sig_item : Grammar.Entry.e MLast.class_sig_item;

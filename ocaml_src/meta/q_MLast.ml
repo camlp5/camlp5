@@ -300,7 +300,7 @@ let mktuptyp _ t tl =
   Qast.Node ("TyTup", [Qast.Loc; Qast.VaVal (Qast.Cons (t, Qast.List tl))])
 ;;
 
-let mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t];;
+let mklabdecl _ i mf t attrs = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t; attrs];;
 let mkident i = Qast.Str i;;
 
 let generalized_type_of_type t =
@@ -6528,7 +6528,7 @@ Grammar.safe_extend
                 (Grammar.s_flag (Grammar.s_token ("", "mutable"))))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t : 'ctyp) (mf : bool) _ (i : string) (loc : Ploc.t) ->
-              (mklabdecl Qast.Loc i mf t : 'label_declaration)))]];
+              (mklabdecl Qast.Loc i mf t (Qast.VaVal(Qast.List[])): 'label_declaration)))]];
     Grammar.extension (ident : 'ident Grammar.Entry.e) None
       [None, None,
        [Grammar.production

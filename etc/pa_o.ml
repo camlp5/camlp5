@@ -932,6 +932,10 @@ EXTEND
   [ [ "[@@" ; attr = V attribute_body "attribute"; "]" -> attr
     ] ]
   ;
+  alg_attribute:
+  [ [ "[@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   (* Type declaration *)
   type_decl:
     [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
@@ -1009,8 +1013,8 @@ EXTEND
       | ld = label_declaration -> [ld] ] ]
   ;
   label_declaration:
-    [ [ i = LIDENT; ":"; t = poly_type -> (loc, i, False, t)
-      | "mutable"; i = LIDENT; ":"; t = poly_type -> (loc, i, True, t) ] ]
+    [ [ i = LIDENT; ":"; t = poly_type ; attrs = V (LIST0 alg_attribute) -> (loc, i, False, t, attrs)
+      | "mutable"; i = LIDENT; ":"; t = poly_type ; attrs = V (LIST0 alg_attribute) -> (loc, i, True, t, attrs) ] ]
   ;
   (* Core types *)
   ctyp:
@@ -1019,6 +1023,7 @@ EXTEND
       [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:ctyp< $ct$ [@ $_attribute:attr$ ] >>
       ]
+    | "below_alg_attribute" [ t = NEXT -> t ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "star"
@@ -1300,7 +1305,7 @@ EXTEND
           <:ctyp< type $list:nt$ . $ct$ >>
       | test_typevar_list_dot; tpl = LIST1 typevar; "."; t2 = ctyp ->
           <:ctyp< ! $list:tpl$ . $t2$ >>
-      | t = ctyp -> t ] ]
+      | t = ctyp LEVEL "below_alg_attribute" -> t ] ]
   ;
   (* Identifiers *)
   class_longident:

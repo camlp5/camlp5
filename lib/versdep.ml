@@ -520,7 +520,8 @@ value ocaml_ptype_abstract =
 
 value ocaml_ptype_record ltl priv =
   IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
-    let ltl = List.map (fun (n, m, t, _) -> (n, m, t)) ltl in
+    let ltl = List.map (fun (n, m, t, _, attrs) ->
+     do { assert (attrs = []) ; (n, m, t) }) ltl in
     IFDEF OCAML_VERSION <= OCAML_3_06 THEN
       Ptype_record ltl
     ELSE
@@ -528,46 +529,57 @@ value ocaml_ptype_record ltl priv =
       Ptype_record ltl priv
     END
   ELSIFDEF OCAML_VERSION < OCAML_3_11 THEN
+    let ltl = List.map (fun (n, m, t, loc, attrs) ->
+     do { assert (attrs = []) ; (n, m, t, loc) }) ltl in
     let priv = if priv then Private else Public in
     Ptype_record ltl priv
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
+    let ltl = List.map (fun (n, m, t, loc, attrs) ->
+     do { assert (attrs = []) ; (n, m, t, loc) }) ltl in
     Ptype_record ltl
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Ptype_record
-      (List.map (fun (s, mf, ct, loc) → (mkloc loc s, mf, ct, loc)) ltl)
+    let ltl = List.map (fun (s, mf, ct, loc, attrs) ->
+     do { assert (attrs = []) ; (mkloc loc s, mf, ct, loc) }) ltl in
+    Ptype_record ltl
   ELSE
     Ptype_record
       (List.map
-         (fun (s, mf, ct, loc) ->
+         (fun (s, mf, ct, loc, attrs) ->
             {pld_name = mkloc loc s; pld_mutable = mf; pld_type = ct;
-             pld_loc = loc; pld_attributes = []})
+             pld_loc = loc; pld_attributes = attrs})
          ltl)
   END
 ;
 
 value ocaml_ptype_variant ctl priv =
   IFDEF OCAML_VERSION = OCAML_3_13_0_gadt THEN
+    let ctl = List.map (fun (c, tl, rto, loc, attrs) ->
+      do { assert (attrs = []) ; (c, tl, rto, loc) }) ctl in
     Some (Ptype_variant ctl)
   ELSE
     try
       IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
         let ctl =
           List.map
-            (fun (c, tl, rto, loc) ->
-               if rto <> None then raise Exit else (c, tl))
+            (fun (c, tl, rto, loc, attrs) ->
+               if rto <> None || attrs <> [] then raise Exit else (c, tl))
             ctl
         in
         IFDEF OCAML_VERSION <= OCAML_3_06 THEN
+          let ctl = List.map (fun (c, tl, rto, loc, attrs) ->
+            do { assert (attrs = []) ; (c, tl, rto, loc) }) ctl in
           Some (Ptype_variant ctl)
         ELSE
+          let ctl = List.map (fun (c, tl, rto, loc, attrs) ->
+            do { assert (attrs = []) ; (c, tl, rto, loc) }) ctl in
           let priv = if priv then Private else Public in
           Some (Ptype_variant ctl priv)
         END
       ELSIFDEF OCAML_VERSION < OCAML_3_11 THEN
         let ctl =
           List.map
-            (fun (c, tl, rto, loc) ->
-               if rto <> None then raise Exit else (c, tl, loc))
+            (fun (c, tl, rto, loc, attrs) ->
+               if rto <> None || attrs <> [] then raise Exit else (c, tl, loc))
             ctl
         in
           let priv = if priv then Private else Public in
@@ -575,32 +587,33 @@ value ocaml_ptype_variant ctl priv =
       ELSIFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN
         let ctl =
           List.map
-            (fun (c, tl, rto, loc) ->
-               if rto <> None then raise Exit else (c, tl, loc))
+            (fun (c, tl, rto, loc, attrs) ->
+               if rto <> None || attrs <> [] then raise Exit else (c, tl, loc))
             ctl
         in
           Some (Ptype_variant ctl)
       ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
         let ctl =
           List.map
-            (fun (c, tl, rto, loc) ->
-               if rto <> None then raise Exit else (mknoloc c, tl, None, loc))
+            (fun (c, tl, rto, loc, attrs) ->
+               if rto <> None || attrs <> [] then raise Exit else (mknoloc c, tl, None, loc))
             ctl
         in
           Some (Ptype_variant ctl)
       ELSE
         let ctl =
           List.map
-            (fun (c, tl, rto, loc) ->
+            (fun (c, tl, rto, loc, attrs) ->
                if rto <> None then raise Exit
                else
                  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN
+                   do { assert (attrs = []) ;
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-                    pcd_loc = loc; pcd_attributes = []}
+                    pcd_loc = loc; pcd_attributes = []} }
                  ELSE
                    let tl = Pcstr_tuple tl in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-                    pcd_loc = loc; pcd_attributes = []}
+                    pcd_loc = loc; pcd_attributes = attrs}
                  END)
             ctl
         in

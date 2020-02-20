@@ -47,7 +47,7 @@ type ctyp =
   | TyPol of loc and V (list string) and ctyp
   | TyPot of loc and V (list string) and ctyp
   | TyQuo of loc and V string
-  | TyRec of loc and V (list (loc * string * bool * ctyp))
+  | TyRec of loc and V (list (loc * string * bool * ctyp * V (list (V (V string * payload)))))
   | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp))
   | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
@@ -252,6 +252,8 @@ and payload = [
 | TyAttr of loc and V ctyp
 | PaAttr of loc and V patt and option (V expr)
 ]
+and attribute = V (V string * payload)
+and attributes = V (list (V (V string * payload)))
 ;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";
