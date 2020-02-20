@@ -513,6 +513,92 @@ value rec patt_label_long_id =
 
 value int_of_string_l loc s = try int_of_string s with e → Ploc.raise loc e;
 
+value rec expr_fa al =
+  fun
+  [ ExApp _ f a → expr_fa [a :: al] f
+  | f → (f, al) ]
+;
+
+value rec class_expr_fa al =
+  fun
+  [ CeApp _ ce a → class_expr_fa [a :: al] ce
+  | ce → (ce, al) ]
+;
+
+value rec sep_expr_acc l =
+  fun
+  [ <:expr< $e1$.$e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
+  | <:expr< $uid:s$ >> as e →
+      let loc = MLast.loc_of_expr e in
+      match l with
+      [ [] → [(loc, [], e)]
+      | [(loc2, sl, e) :: l] → [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
+  | e → [(loc_of_expr e, [], e) :: l] ]
+;
+
+value list_map_check f l =
+  loop [] l where rec loop rev_l =
+    fun
+    [ [x :: l] →
+        match f x with
+        [ Some s → loop [s :: rev_l] l
+        | None → None ]
+    | [] → Some (List.rev rev_l) ]
+;
+
+value class_info class_expr ci =
+  let (params, var_list) = List.split (uv (snd ci.ciPrm)) in
+  let variance = List.map variance_of_var var_list in
+  match ocaml_class_infos with
+  [ Some class_infos →
+      match list_map_check uv params with
+      [ Some params →
+          class_infos (if uv ci.ciVir then Virtual else Concrete)
+            (params, mkloc (fst ci.ciPrm)) (uv ci.ciNam) (class_expr ci.ciExp)
+            (mkloc ci.ciLoc) variance
+      | None → error ci.ciLoc "no '_' type parameter allowed" ]
+  | None → error ci.ciLoc "no class_info in this ocaml version" ]
+;
+
+value bigarray_get loc e el =
+  match el with
+  [ [c1] → <:expr< Bigarray.Array1.get $e$ $c1$ >>
+  | [c1; c2] → <:expr< Bigarray.Array2.get $e$ $c1$ $c2$ >>
+  | [c1; c2; c3] → <:expr< Bigarray.Array3.get $e$ $c1$ $c2$ $c3$ >>
+  | _ → <:expr< Bigarray.Genarray.get $e$ [| $list:el$ |] >> ]
+;
+
+value bigarray_set loc e el v =
+  match el with
+  [ [c1] → <:expr< Bigarray.Array1.set $e$ $c1$ $v$ >>
+  | [c1; c2] → <:expr< Bigarray.Array2.set $e$ $c1$ $c2$ $v$ >>
+  | [c1; c2; c3] → <:expr< Bigarray.Array3.set $e$ $c1$ $c2$ $c3$ $v$ >>
+  | _ → <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
+;
+
+value neg_string n =
+  let len = String.length n in
+  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
+;
+
+value varify_constructors var_names =
+  loop where rec loop =
+    fun
+    [ <:ctyp:< $t1$ → $t2$ >> → <:ctyp< $loop t1$ → $loop t2$ >>
+    | <:ctyp:< $t1$ $t2$ >> → <:ctyp:< $loop t1$ $loop t2$ >>
+    | <:ctyp:< ($list:tl$) >> → <:ctyp:< ($list:List.map loop tl$) >>
+    | <:ctyp:< $lid:s$ >> as t →
+        if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
+    | t → t ]
+;
+
+value label_of_patt =
+  fun
+  [ PaLid _ s → uv s
+  | PaTyc _ (PaLid _ s) _ → uv s
+  | p → error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
+;
+
 value rec patt =
   fun
   [ PaAcc loc p1 p2 →
@@ -639,95 +725,8 @@ value rec patt =
   | PaXtr loc _ _ → error loc "bad ast PaXtr" ]
 and mklabpat (lab, p) =
   (patt_label_long_id lab, mkloc (loc_of_patt lab), patt p)
-;
 
-value rec expr_fa al =
-  fun
-  [ ExApp _ f a → expr_fa [a :: al] f
-  | f → (f, al) ]
-;
-
-value rec class_expr_fa al =
-  fun
-  [ CeApp _ ce a → class_expr_fa [a :: al] ce
-  | ce → (ce, al) ]
-;
-
-value rec sep_expr_acc l =
-  fun
-  [ <:expr< $e1$.$e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
-  | <:expr< $uid:s$ >> as e →
-      let loc = MLast.loc_of_expr e in
-      match l with
-      [ [] → [(loc, [], e)]
-      | [(loc2, sl, e) :: l] → [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
-  | e → [(loc_of_expr e, [], e) :: l] ]
-;
-
-value list_map_check f l =
-  loop [] l where rec loop rev_l =
-    fun
-    [ [x :: l] →
-        match f x with
-        [ Some s → loop [s :: rev_l] l
-        | None → None ]
-    | [] → Some (List.rev rev_l) ]
-;
-
-value class_info class_expr ci =
-  let (params, var_list) = List.split (uv (snd ci.ciPrm)) in
-  let variance = List.map variance_of_var var_list in
-  match ocaml_class_infos with
-  [ Some class_infos →
-      match list_map_check uv params with
-      [ Some params →
-          class_infos (if uv ci.ciVir then Virtual else Concrete)
-            (params, mkloc (fst ci.ciPrm)) (uv ci.ciNam) (class_expr ci.ciExp)
-            (mkloc ci.ciLoc) variance
-      | None → error ci.ciLoc "no '_' type parameter allowed" ]
-  | None → error ci.ciLoc "no class_info in this ocaml version" ]
-;
-
-value bigarray_get loc e el =
-  match el with
-  [ [c1] → <:expr< Bigarray.Array1.get $e$ $c1$ >>
-  | [c1; c2] → <:expr< Bigarray.Array2.get $e$ $c1$ $c2$ >>
-  | [c1; c2; c3] → <:expr< Bigarray.Array3.get $e$ $c1$ $c2$ $c3$ >>
-  | _ → <:expr< Bigarray.Genarray.get $e$ [| $list:el$ |] >> ]
-;
-
-value bigarray_set loc e el v =
-  match el with
-  [ [c1] → <:expr< Bigarray.Array1.set $e$ $c1$ $v$ >>
-  | [c1; c2] → <:expr< Bigarray.Array2.set $e$ $c1$ $c2$ $v$ >>
-  | [c1; c2; c3] → <:expr< Bigarray.Array3.set $e$ $c1$ $c2$ $c3$ $v$ >>
-  | _ → <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
-;
-
-value neg_string n =
-  let len = String.length n in
-  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
-;
-
-value varify_constructors var_names =
-  loop where rec loop =
-    fun
-    [ <:ctyp:< $t1$ → $t2$ >> → <:ctyp< $loop t1$ → $loop t2$ >>
-    | <:ctyp:< $t1$ $t2$ >> → <:ctyp:< $loop t1$ $loop t2$ >>
-    | <:ctyp:< ($list:tl$) >> → <:ctyp:< ($list:List.map loop tl$) >>
-    | <:ctyp:< $lid:s$ >> as t →
-        if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
-    | t → t ]
-;
-
-value label_of_patt =
-  fun
-  [ PaLid _ s → uv s
-  | PaTyc _ (PaLid _ s) _ → uv s
-  | p → error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
-;
-
-value rec expr =
+and expr =
   fun
   [ 
     ExAtt loc e a ->
