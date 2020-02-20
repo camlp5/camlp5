@@ -49,6 +49,7 @@ type ctyp =
   | TyUid of loc * string
   | TyVrn of loc * poly_variant list * string list option option
   | TyXtr of loc * string * ctyp option
+  | TyAtt of loc * ctyp * (string * payload)
 and poly_variant =
     PvTag of loc * string * bool * ctyp list
   | PvInh of loc * ctyp

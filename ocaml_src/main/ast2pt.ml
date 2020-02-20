@@ -229,130 +229,6 @@ let rec module_type_long_id =
   | t -> error (loc_of_module_type t) "bad module type long ident"
 ;;
 
-let rec ctyp =
-  function
-    TyAcc (loc, _, _) as f ->
-      let (is_cls, li) = ctyp_long_id f in
-      if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
-      else mktyp loc (ocaml_ptyp_constr (mkloc loc) li [])
-  | TyAli (loc, t1, t2) ->
-      let (t, i) =
-        match t1, t2 with
-          t, MLast.TyQuo (_, s) -> t, s
-        | MLast.TyQuo (_, s), t -> t, s
-        | _ -> error loc "incorrect alias type"
-      in
-      mktyp loc (Ptyp_alias (ctyp t, i))
-  | TyAny loc -> mktyp loc Ptyp_any
-  | TyApp (loc, _, _) as f ->
-      let (f, al) = ctyp_fa [] f in
-      let (is_cls, li) = ctyp_long_id f in
-      if is_cls then mktyp loc (ocaml_ptyp_class li (List.map ctyp al) [])
-      else mktyp loc (ocaml_ptyp_constr (mkloc loc) li (List.map ctyp al))
-  | TyArr (loc, TyLab (loc1, lab, t1), t2) ->
-      mktyp loc (ocaml_ptyp_arrow (uv lab) (ctyp t1) (ctyp t2))
-  | TyArr (loc, TyOlb (loc1, lab, t1), t2) ->
-      mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
-  | TyArr (loc, t1, t2) -> mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
-  | TyObj (loc, fl, v) ->
-      mktyp loc
-        (ocaml_ptyp_object (mkloc loc) (meth_list loc (uv fl) v) (uv v))
-  | TyCls (loc, id) ->
-      mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
-  | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
-  | TyLid (loc, s) ->
-      mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
-  | TyMan (loc, _, _, _) -> error loc "type manifest not allowed here"
-  | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
-  | TyPck (loc, mt) ->
-      begin match ocaml_ptyp_package with
-        Some ptyp_package ->
-          let pt = package_of_module_type loc mt in
-          mktyp loc (ptyp_package pt)
-      | None -> error loc "no package type in this ocaml version"
-      end
-  | TyPol (loc, pl, t) ->
-      begin match ocaml_ptyp_poly with
-        Some ptyp_poly -> mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
-      | None -> error loc "no poly types in that ocaml version"
-      end
-  | TyPot (loc, pl, t) -> error loc "'type id . t' not allowed here"
-  | TyQuo (loc, s) -> mktyp loc (Ptyp_var (uv s))
-  | TyRec (loc, _) -> error loc "record type not allowed here"
-  | TySum (loc, _) -> error loc "sum type not allowed here"
-  | TyTup (loc, tl) -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
-  | TyUid (loc, s) ->
-      mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
-  | TyVrn (loc, catl, ool) ->
-      let catl =
-        List.map
-          (function
-             PvTag (loc, c, a, t) -> Left (uv c, uv a, List.map ctyp (uv t))
-           | PvInh (loc, t) -> Right (ctyp t))
-          (uv catl)
-      in
-      let (clos, sl) =
-        match ool with
-          None -> true, None
-        | Some ol ->
-            match ol with
-              None -> false, None
-            | Some sl -> true, Some (uv sl)
-      in
-      begin match ocaml_ptyp_variant (mkloc loc) catl clos sl with
-        Some t -> mktyp loc t
-      | None -> error loc "no variant type or inherit in this ocaml version"
-      end
-  | TyXtr (loc, _, _) -> error loc "bad ast TyXtr"
-and meth_list loc fl v =
-  match fl with
-    [] -> if uv v then mkfield_var loc else []
-  | (lab, t) :: fl -> mkfield loc (lab, add_polytype t) (meth_list loc fl v)
-and add_polytype t =
-  match ocaml_ptyp_poly with
-    Some ptyp_poly ->
-      begin match t with
-        MLast.TyPol (loc, pl, t) ->
-          mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
-      | _ ->
-          let loc = MLast.loc_of_ctyp t in
-          mktyp loc (ptyp_poly (mkloc loc) [] (ctyp t))
-      end
-  | None -> ctyp t
-and package_of_module_type loc mt =
-  let (mt, with_con) =
-    match mt with
-      MLast.MtWit (_, mt, with_con) ->
-        let with_con =
-          List.map
-            (function
-               WcTyp (loc, id, tpl, pf, ct) ->
-                 let id_or_li =
-                   match uv id with
-                     [] -> error loc "bad ast"
-                   | sl ->
-                       match ocaml_id_or_li_of_string_list loc sl with
-                         Some li -> li
-                       | None -> error loc "simple identifier expected"
-                 in
-                 if uv tpl <> [] then
-                   error loc "no type parameters allowed here";
-                 if uv pf then error loc "no 'private' allowed here";
-                 id_or_li, ctyp ct
-             | WcTys (loc, id, tpl, t) ->
-                 error loc "package type with 'type :=' no allowed"
-             | WcMod (loc, _, _) ->
-                 error loc "package type with 'module' no allowed"
-             | WcMos (loc, _, _) ->
-                 error loc "package type with 'module' no allowed")
-            with_con
-        in
-        mt, with_con
-    | _ -> mt, []
-  in
-  let li = module_type_long_id mt in ocaml_package_type li with_con
-;;
-
 let variance_of_var =
   function
     Some false -> false, true
@@ -376,66 +252,10 @@ let mkmutable m = if m then Mutable else Immutable;;
 let mkvirtual m = if m then Virtual else Concrete;;
 let mkprivate m = if m then Private else Public;;
 
-let mktrecord ltl priv =
-  let ltl =
-    List.map
-      (fun (loc, n, m, t) ->
-         let loc = mkloc loc in
-         let m = mkmutable m in let t = add_polytype t in n, m, t, loc)
-      ltl
-  in
-  ocaml_ptype_record ltl priv
-;;
-
 let option_map f =
   function
     Some x -> Some (f x)
   | None -> None
-;;
-
-let mktvariant loc ctl priv =
-  let ctl =
-    List.map
-      (fun (loc, c, tl, rto) ->
-         conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
-         mkloc loc)
-      ctl
-  in
-  match ocaml_ptype_variant ctl priv with
-    Some x -> x
-  | None -> error loc "no generalized data types in this ocaml version"
-;;
-
-let type_decl ?(item_attributes = []) tn tl priv cl =
-  function
-    TyMan (loc, t, pf, MLast.TyRec (_, ltl)) ->
-      let priv = if uv pf then Private else Public in
-      mktype ~item_attributes:item_attributes loc tn tl cl
-        (mktrecord ltl (uv pf)) priv (Some (ctyp t))
-  | TyMan (loc, t, pf, MLast.TySum (_, ctl)) ->
-      let priv = if uv pf then Private else Public in
-      mktype ~item_attributes:item_attributes loc tn tl cl
-        (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
-  | TyRec (loc, ltl) ->
-      mktype ~item_attributes:item_attributes loc tn tl cl
-        (mktrecord (uv ltl) false) priv None
-  | TySum (loc, ctl) ->
-      mktype ~item_attributes:item_attributes loc tn tl cl
-        (mktvariant loc (uv ctl) false) priv None
-  | t ->
-      let m =
-        match t with
-          MLast.TyQuo (_, s) ->
-            if List.exists (fun (t, _) -> Some s = uv t) tl then Some (ctyp t)
-            else None
-        | _ -> Some (ctyp t)
-      in
-      mktype ~item_attributes:item_attributes (loc_of_ctyp t) tn tl cl
-        Ptype_abstract priv m
-;;
-
-let mkvalue_desc ~item_attributes vn t p =
-  ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
 ;;
 
 let rec same_type_expr ct ce =
@@ -456,54 +276,6 @@ let rec module_expr_long_id =
   | t -> error (loc_of_module_expr t) "bad module expr long ident"
 ;;
 
-let type_decl_of_with_type loc tn tpl pf ct =
-  let (params, var_list) = List.split (uv tpl) in
-  let variance = List.map variance_of_var var_list in
-  let params = List.map uv params in
-  let ct = Some (ctyp ct) in
-  let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
-  let pf = if pf then Private else Public in
-  ocaml_type_declaration tn params [] tk pf ct (mkloc loc) variance []
-;;
-
-let mkwithc =
-  function
-    WcMod (loc, id, m) ->
-      let mname = long_id_of_string_list loc (uv id) in
-      mname, ocaml_pwith_module (mkloc loc) mname (module_expr_long_id m)
-  | WcMos (loc, id, m) ->
-      begin match ocaml_pwith_modsubst with
-        Some pwith_modsubst ->
-          long_id_of_string_list loc (uv id),
-          pwith_modsubst (mkloc loc) (module_expr_long_id m)
-      | None -> error loc "no with module := in this ocaml version"
-      end
-  | WcTyp (loc, id, tpl, pf, ct) ->
-      begin match uv id with
-        [] -> error loc "Empty list as type name is not allowed there"
-      | xs ->
-          (* Last element of this list is actual declaration. List begins from
-             optional module path. We pass actual name to make type declaration
-             and a whole list to make With_type constraint.
-             See Parsetree.with_constaint type in compiler sources for more
-             details *)
-          let li = long_id_of_string_list loc xs in
-          let tname = List.hd (List.rev xs) in
-          match type_decl_of_with_type loc tname tpl (uv pf) ct with
-            Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
-          | Left msg -> error loc msg
-      end
-  | WcTys (loc, id, tpl, t) ->
-      match ocaml_pwith_typesubst with
-        Some pwith_typesubst ->
-          begin match type_decl_of_with_type loc "" tpl false t with
-            Right td ->
-              let li = long_id_of_string_list loc (uv id) in
-              li, pwith_typesubst (mkloc loc) td
-          | Left msg -> error loc msg
-          end
-      | None -> error loc "no with type := in this ocaml version"
-;;
 
 let rec patt_fa al =
   function
@@ -538,145 +310,6 @@ let rec patt_label_long_id =
 ;;
 
 let int_of_string_l loc s = try int_of_string s with e -> Ploc.raise loc e;;
-
-let rec patt =
-  function
-    PaAcc (loc, p1, p2) ->
-      let p =
-        match patt_long_id [] p1 with
-          MLast.PaUid (loc, i), il ->
-            begin match p2 with
-              MLast.PaUid (_, s) ->
-                ocaml_ppat_construct (mkloc loc) (mkli (conv_con s) (i :: il))
-                  None (not !(Prtools.no_constructors_arity))
-            | _ -> error (loc_of_patt p2) "bad access pattern"
-            end
-        | _ -> error (loc_of_patt p2) "bad pattern"
-      in
-      mkpat loc p
-  | PaAli (loc, p1, p2) ->
-      let (p, i, iloc) =
-        match p1, p2 with
-          p, MLast.PaLid (_, s) -> p, s, loc
-        | MLast.PaLid (_, s), p -> p, s, loc
-        | _ -> error loc "incorrect alias pattern"
-      in
-      mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
-  | PaAnt (_, p) -> patt p
-  | PaAny loc -> mkpat loc Ppat_any
-  | PaApp (loc, _, _) as f ->
-      let (f, al) = patt_fa [] f in
-      let al = List.map patt al in
-      let p = (patt f).ppat_desc in
-      begin match ocaml_ppat_construct_args p with
-        Some (li, li_loc, None, _) ->
-          if !(Prtools.no_constructors_arity) then
-            let a =
-              match al with
-                [a] -> a
-              | _ -> mkpat loc (Ppat_tuple al)
-            in
-            mkpat loc (ocaml_ppat_construct li_loc li (Some a) false)
-          else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li al
-      | Some _ | None ->
-          match ocaml_ppat_variant with
-            Some (ppat_variant_pat, ppat_variant) ->
-              begin match ppat_variant_pat p with
-                Some (s, None) ->
-                  let a =
-                    match al with
-                      [a] -> a
-                    | _ -> mkpat loc (Ppat_tuple al)
-                  in
-                  mkpat loc (ppat_variant (s, Some a))
-              | Some _ | None ->
-                  error (loc_of_patt f)
-                    ("this is not a constructor, " ^
-                     "it cannot be applied in a pattern")
-              end
-          | None ->
-              error (loc_of_patt f)
-                ("this is not a constructor, " ^
-                 "it cannot be applied in a pattern")
-      end
-  | PaArr (loc, pl) ->
-      begin match ocaml_ppat_array with
-        Some ppat_array -> mkpat loc (ppat_array (List.map patt (uv pl)))
-      | None -> error loc "no array patterns in this ocaml version"
-      end
-  | PaChr (loc, s) ->
-      mkpat loc
-        (Ppat_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
-  | PaInt (loc, s, c) ->
-      mkpat loc (Ppat_constant (pconst_of_const (mkintconst loc (uv s) c)))
-  | PaFlo (loc, s) -> mkpat loc (Ppat_constant (ocaml_pconst_float (uv s)))
-  | PaLab (loc, _) -> error loc "labeled pattern not allowed here"
-  | PaLaz (loc, p) ->
-      begin match ocaml_ppat_lazy with
-        Some ppat_lazy -> mkpat loc (ppat_lazy (patt p))
-      | None -> error loc "lazy patterns not in this version"
-      end
-  | PaLid (loc, s) -> mkpat loc (ocaml_ppat_var (mkloc loc) (uv s))
-  | PaNty (loc, s) -> error loc "new type not allowed here"
-  | PaOlb (loc, _, _) -> error loc "labeled pattern not allowed here"
-  | PaOrp (loc, p1, p2) -> mkpat loc (Ppat_or (patt p1, patt p2))
-  | PaRng (loc, p1, p2) ->
-      begin match p1, p2 with
-        PaChr (loc1, c1), PaChr (loc2, c2) ->
-          let c1 = char_of_char_token loc1 (uv c1) in
-          let c2 = char_of_char_token loc2 (uv c2) in mkrangepat loc c1 c2
-      | _ -> error loc "range pattern allowed only for characters"
-      end
-  | PaRec (loc, lpl) ->
-      let (lpl, is_closed) =
-        List.fold_right
-          (fun lp (lpl, is_closed) ->
-             match lp with
-               PaAny _, PaAny _ -> lpl, false
-             | lp -> lp :: lpl, is_closed)
-          (uv lpl) ([], true)
-      in
-      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
-  | PaStr (loc, s) ->
-      mkpat loc
-        (Ppat_constant
-           (ocaml_pconst_string (string_of_string_token loc (uv s)) None))
-  | PaTup (loc, pl) -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
-  | PaTyc (loc, p, t) -> mkpat loc (Ppat_constraint (patt p, ctyp t))
-  | PaTyp (loc, sl) ->
-      begin match ocaml_ppat_type with
-        Some ppat_type ->
-          mkpat loc
-            (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
-      | None -> error loc "no #type in this ocaml version"
-      end
-  | PaUid (loc, s) ->
-      let ca = not !(Prtools.no_constructors_arity) in
-      mkpat loc
-        (ocaml_ppat_construct (mkloc loc) (Lident (conv_con (uv s))) None ca)
-  | PaUnp (loc, s, mto) ->
-      begin match ocaml_ppat_unpack with
-        Some (ppat_unpack, ptyp_package) ->
-          let p =
-            mkpat loc (ppat_unpack (mkloc loc) (option_map uv (uv s)))
-          in
-          begin match mto with
-            Some mt ->
-              let pt = package_of_module_type loc mt in
-              mkpat loc (Ppat_constraint (p, mktyp loc (ptyp_package pt)))
-          | None -> p
-          end
-      | None -> error loc "no unpack pattern in this ocaml version"
-      end
-  | PaVrn (loc, s) ->
-      begin match ocaml_ppat_variant with
-        Some (_, ppat_variant) -> mkpat loc (ppat_variant (uv s, None))
-      | None -> error loc "no variant in this ocaml version"
-      end
-  | PaXtr (loc, _, _) -> error loc "bad ast PaXtr"
-and mklabpat (lab, p) =
-  patt_label_long_id lab, mkloc (loc_of_patt lab), patt p
-;;
 
 let rec expr_fa al =
   function
@@ -897,7 +530,360 @@ let label_of_patt =
   | p -> error (MLast.loc_of_patt p) "label_of_patt; case not impl"
 ;;
 
-let rec expr =
+let rec type_decl_of_with_type loc tn tpl pf ct =
+  let (params, var_list) = List.split (uv tpl) in
+  let variance = List.map variance_of_var var_list in
+  let params = List.map uv params in
+  let ct = Some (ctyp ct) in
+  let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
+  let pf = if pf then Private else Public in
+  ocaml_type_declaration tn params [] tk pf ct (mkloc loc) variance []
+and mkwithc =
+  function
+    WcMod (loc, id, m) ->
+      let mname = long_id_of_string_list loc (uv id) in
+      mname, ocaml_pwith_module (mkloc loc) mname (module_expr_long_id m)
+  | WcMos (loc, id, m) ->
+      begin match ocaml_pwith_modsubst with
+        Some pwith_modsubst ->
+          long_id_of_string_list loc (uv id),
+          pwith_modsubst (mkloc loc) (module_expr_long_id m)
+      | None -> error loc "no with module := in this ocaml version"
+      end
+  | WcTyp (loc, id, tpl, pf, ct) ->
+      begin match uv id with
+        [] -> error loc "Empty list as type name is not allowed there"
+      | xs ->
+          (* Last element of this list is actual declaration. List begins from
+             optional module path. We pass actual name to make type declaration
+             and a whole list to make With_type constraint.
+             See Parsetree.with_constaint type in compiler sources for more
+             details *)
+          let li = long_id_of_string_list loc xs in
+          let tname = List.hd (List.rev xs) in
+          match type_decl_of_with_type loc tname tpl (uv pf) ct with
+            Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
+          | Left msg -> error loc msg
+      end
+  | WcTys (loc, id, tpl, t) ->
+      match ocaml_pwith_typesubst with
+        Some pwith_typesubst ->
+          begin match type_decl_of_with_type loc "" tpl false t with
+            Right td ->
+              let li = long_id_of_string_list loc (uv id) in
+              li, pwith_typesubst (mkloc loc) td
+          | Left msg -> error loc msg
+          end
+      | None -> error loc "no with type := in this ocaml version"
+and mkvalue_desc ~item_attributes vn t p =
+  ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
+and mktvariant loc ctl priv =
+  let ctl =
+    List.map
+      (fun (loc, c, tl, rto) ->
+         conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
+         mkloc loc)
+      ctl
+  in
+  match ocaml_ptype_variant ctl priv with
+    Some x -> x
+  | None -> error loc "no generalized data types in this ocaml version"
+and mktrecord ltl priv =
+  let ltl =
+    List.map
+      (fun (loc, n, m, t) ->
+         let loc = mkloc loc in
+         let m = mkmutable m in let t = add_polytype t in n, m, t, loc)
+      ltl
+  in
+  ocaml_ptype_record ltl priv
+and ctyp =
+  function
+    TyAtt (loc, ct, a) -> ocaml_coretype_addattr (attr (uv a)) (ctyp ct)
+  | TyAcc (loc, _, _) as f ->
+      let (is_cls, li) = ctyp_long_id f in
+      if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
+      else mktyp loc (ocaml_ptyp_constr (mkloc loc) li [])
+  | TyAli (loc, t1, t2) ->
+      let (t, i) =
+        match t1, t2 with
+          t, MLast.TyQuo (_, s) -> t, s
+        | MLast.TyQuo (_, s), t -> t, s
+        | _ -> error loc "incorrect alias type"
+      in
+      mktyp loc (Ptyp_alias (ctyp t, i))
+  | TyAny loc -> mktyp loc Ptyp_any
+  | TyApp (loc, _, _) as f ->
+      let (f, al) = ctyp_fa [] f in
+      let (is_cls, li) = ctyp_long_id f in
+      if is_cls then mktyp loc (ocaml_ptyp_class li (List.map ctyp al) [])
+      else mktyp loc (ocaml_ptyp_constr (mkloc loc) li (List.map ctyp al))
+  | TyArr (loc, TyLab (loc1, lab, t1), t2) ->
+      mktyp loc (ocaml_ptyp_arrow (uv lab) (ctyp t1) (ctyp t2))
+  | TyArr (loc, TyOlb (loc1, lab, t1), t2) ->
+      mktyp loc (ocaml_ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
+  | TyArr (loc, t1, t2) -> mktyp loc (ocaml_ptyp_arrow "" (ctyp t1) (ctyp t2))
+  | TyObj (loc, fl, v) ->
+      mktyp loc
+        (ocaml_ptyp_object (mkloc loc) (meth_list loc (uv fl) v) (uv v))
+  | TyCls (loc, id) ->
+      mktyp loc (ocaml_ptyp_class (long_id_of_string_list loc (uv id)) [] [])
+  | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
+  | TyLid (loc, s) ->
+      mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
+  | TyMan (loc, _, _, _) -> error loc "type manifest not allowed here"
+  | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
+  | TyPck (loc, mt) ->
+      begin match ocaml_ptyp_package with
+        Some ptyp_package ->
+          let pt = package_of_module_type loc mt in
+          mktyp loc (ptyp_package pt)
+      | None -> error loc "no package type in this ocaml version"
+      end
+  | TyPol (loc, pl, t) ->
+      begin match ocaml_ptyp_poly with
+        Some ptyp_poly -> mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
+      | None -> error loc "no poly types in that ocaml version"
+      end
+  | TyPot (loc, pl, t) -> error loc "'type id . t' not allowed here"
+  | TyQuo (loc, s) -> mktyp loc (Ptyp_var (uv s))
+  | TyRec (loc, _) -> error loc "record type not allowed here"
+  | TySum (loc, _) -> error loc "sum type not allowed here"
+  | TyTup (loc, tl) -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
+  | TyUid (loc, s) ->
+      mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
+  | TyVrn (loc, catl, ool) ->
+      let catl =
+        List.map
+          (function
+             PvTag (loc, c, a, t) -> Left (uv c, uv a, List.map ctyp (uv t))
+           | PvInh (loc, t) -> Right (ctyp t))
+          (uv catl)
+      in
+      let (clos, sl) =
+        match ool with
+          None -> true, None
+        | Some ol ->
+            match ol with
+              None -> false, None
+            | Some sl -> true, Some (uv sl)
+      in
+      begin match ocaml_ptyp_variant (mkloc loc) catl clos sl with
+        Some t -> mktyp loc t
+      | None -> error loc "no variant type or inherit in this ocaml version"
+      end
+  | TyXtr (loc, _, _) -> error loc "bad ast TyXtr"
+and meth_list loc fl v =
+  match fl with
+    [] -> if uv v then mkfield_var loc else []
+  | (lab, t) :: fl -> mkfield loc (lab, add_polytype t) (meth_list loc fl v)
+and add_polytype t =
+  match ocaml_ptyp_poly with
+    Some ptyp_poly ->
+      begin match t with
+        MLast.TyPol (loc, pl, t) ->
+          mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
+      | _ ->
+          let loc = MLast.loc_of_ctyp t in
+          mktyp loc (ptyp_poly (mkloc loc) [] (ctyp t))
+      end
+  | None -> ctyp t
+and package_of_module_type loc mt =
+  let (mt, with_con) =
+    match mt with
+      MLast.MtWit (_, mt, with_con) ->
+        let with_con =
+          List.map
+            (function
+               WcTyp (loc, id, tpl, pf, ct) ->
+                 let id_or_li =
+                   match uv id with
+                     [] -> error loc "bad ast"
+                   | sl ->
+                       match ocaml_id_or_li_of_string_list loc sl with
+                         Some li -> li
+                       | None -> error loc "simple identifier expected"
+                 in
+                 if uv tpl <> [] then
+                   error loc "no type parameters allowed here";
+                 if uv pf then error loc "no 'private' allowed here";
+                 id_or_li, ctyp ct
+             | WcTys (loc, id, tpl, t) ->
+                 error loc "package type with 'type :=' no allowed"
+             | WcMod (loc, _, _) ->
+                 error loc "package type with 'module' no allowed"
+             | WcMos (loc, _, _) ->
+                 error loc "package type with 'module' no allowed")
+            with_con
+        in
+        mt, with_con
+    | _ -> mt, []
+  in
+  let li = module_type_long_id mt in ocaml_package_type li with_con
+and type_decl ?(item_attributes = []) tn tl priv cl =
+  function
+    TyMan (loc, t, pf, MLast.TyRec (_, ltl)) ->
+      let priv = if uv pf then Private else Public in
+      mktype ~item_attributes:item_attributes loc tn tl cl
+        (mktrecord ltl (uv pf)) priv (Some (ctyp t))
+  | TyMan (loc, t, pf, MLast.TySum (_, ctl)) ->
+      let priv = if uv pf then Private else Public in
+      mktype ~item_attributes:item_attributes loc tn tl cl
+        (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
+  | TyRec (loc, ltl) ->
+      mktype ~item_attributes:item_attributes loc tn tl cl
+        (mktrecord (uv ltl) false) priv None
+  | TySum (loc, ctl) ->
+      mktype ~item_attributes:item_attributes loc tn tl cl
+        (mktvariant loc (uv ctl) false) priv None
+  | t ->
+      let m =
+        match t with
+          MLast.TyQuo (_, s) ->
+            if List.exists (fun (t, _) -> Some s = uv t) tl then Some (ctyp t)
+            else None
+        | _ -> Some (ctyp t)
+      in
+      mktype ~item_attributes:item_attributes (loc_of_ctyp t) tn tl cl
+        Ptype_abstract priv m
+and patt =
+  function
+    PaAcc (loc, p1, p2) ->
+      let p =
+        match patt_long_id [] p1 with
+          MLast.PaUid (loc, i), il ->
+            begin match p2 with
+              MLast.PaUid (_, s) ->
+                ocaml_ppat_construct (mkloc loc) (mkli (conv_con s) (i :: il))
+                  None (not !(Prtools.no_constructors_arity))
+            | _ -> error (loc_of_patt p2) "bad access pattern"
+            end
+        | _ -> error (loc_of_patt p2) "bad pattern"
+      in
+      mkpat loc p
+  | PaAli (loc, p1, p2) ->
+      let (p, i, iloc) =
+        match p1, p2 with
+          p, MLast.PaLid (_, s) -> p, s, loc
+        | MLast.PaLid (_, s), p -> p, s, loc
+        | _ -> error loc "incorrect alias pattern"
+      in
+      mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
+  | PaAnt (_, p) -> patt p
+  | PaAny loc -> mkpat loc Ppat_any
+  | PaApp (loc, _, _) as f ->
+      let (f, al) = patt_fa [] f in
+      let al = List.map patt al in
+      let p = (patt f).ppat_desc in
+      begin match ocaml_ppat_construct_args p with
+        Some (li, li_loc, None, _) ->
+          if !(Prtools.no_constructors_arity) then
+            let a =
+              match al with
+                [a] -> a
+              | _ -> mkpat loc (Ppat_tuple al)
+            in
+            mkpat loc (ocaml_ppat_construct li_loc li (Some a) false)
+          else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li al
+      | Some _ | None ->
+          match ocaml_ppat_variant with
+            Some (ppat_variant_pat, ppat_variant) ->
+              begin match ppat_variant_pat p with
+                Some (s, None) ->
+                  let a =
+                    match al with
+                      [a] -> a
+                    | _ -> mkpat loc (Ppat_tuple al)
+                  in
+                  mkpat loc (ppat_variant (s, Some a))
+              | Some _ | None ->
+                  error (loc_of_patt f)
+                    ("this is not a constructor, " ^
+                     "it cannot be applied in a pattern")
+              end
+          | None ->
+              error (loc_of_patt f)
+                ("this is not a constructor, " ^
+                 "it cannot be applied in a pattern")
+      end
+  | PaArr (loc, pl) ->
+      begin match ocaml_ppat_array with
+        Some ppat_array -> mkpat loc (ppat_array (List.map patt (uv pl)))
+      | None -> error loc "no array patterns in this ocaml version"
+      end
+  | PaChr (loc, s) ->
+      mkpat loc
+        (Ppat_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
+  | PaInt (loc, s, c) ->
+      mkpat loc (Ppat_constant (pconst_of_const (mkintconst loc (uv s) c)))
+  | PaFlo (loc, s) -> mkpat loc (Ppat_constant (ocaml_pconst_float (uv s)))
+  | PaLab (loc, _) -> error loc "labeled pattern not allowed here"
+  | PaLaz (loc, p) ->
+      begin match ocaml_ppat_lazy with
+        Some ppat_lazy -> mkpat loc (ppat_lazy (patt p))
+      | None -> error loc "lazy patterns not in this version"
+      end
+  | PaLid (loc, s) -> mkpat loc (ocaml_ppat_var (mkloc loc) (uv s))
+  | PaNty (loc, s) -> error loc "new type not allowed here"
+  | PaOlb (loc, _, _) -> error loc "labeled pattern not allowed here"
+  | PaOrp (loc, p1, p2) -> mkpat loc (Ppat_or (patt p1, patt p2))
+  | PaRng (loc, p1, p2) ->
+      begin match p1, p2 with
+        PaChr (loc1, c1), PaChr (loc2, c2) ->
+          let c1 = char_of_char_token loc1 (uv c1) in
+          let c2 = char_of_char_token loc2 (uv c2) in mkrangepat loc c1 c2
+      | _ -> error loc "range pattern allowed only for characters"
+      end
+  | PaRec (loc, lpl) ->
+      let (lpl, is_closed) =
+        List.fold_right
+          (fun lp (lpl, is_closed) ->
+             match lp with
+               PaAny _, PaAny _ -> lpl, false
+             | lp -> lp :: lpl, is_closed)
+          (uv lpl) ([], true)
+      in
+      mkpat loc (ocaml_ppat_record (List.map mklabpat lpl) is_closed)
+  | PaStr (loc, s) ->
+      mkpat loc
+        (Ppat_constant
+           (ocaml_pconst_string (string_of_string_token loc (uv s)) None))
+  | PaTup (loc, pl) -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
+  | PaTyc (loc, p, t) -> mkpat loc (Ppat_constraint (patt p, ctyp t))
+  | PaTyp (loc, sl) ->
+      begin match ocaml_ppat_type with
+        Some ppat_type ->
+          mkpat loc
+            (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
+      | None -> error loc "no #type in this ocaml version"
+      end
+  | PaUid (loc, s) ->
+      let ca = not !(Prtools.no_constructors_arity) in
+      mkpat loc
+        (ocaml_ppat_construct (mkloc loc) (Lident (conv_con (uv s))) None ca)
+  | PaUnp (loc, s, mto) ->
+      begin match ocaml_ppat_unpack with
+        Some (ppat_unpack, ptyp_package) ->
+          let p =
+            mkpat loc (ppat_unpack (mkloc loc) (option_map uv (uv s)))
+          in
+          begin match mto with
+            Some mt ->
+              let pt = package_of_module_type loc mt in
+              mkpat loc (Ppat_constraint (p, mktyp loc (ptyp_package pt)))
+          | None -> p
+          end
+      | None -> error loc "no unpack pattern in this ocaml version"
+      end
+  | PaVrn (loc, s) ->
+      begin match ocaml_ppat_variant with
+        Some (_, ppat_variant) -> mkpat loc (ppat_variant (uv s, None))
+      | None -> error loc "no variant in this ocaml version"
+      end
+  | PaXtr (loc, _, _) -> error loc "bad ast PaXtr"
+and mklabpat (lab, p) =
+  patt_label_long_id lab, mkloc (loc_of_patt lab), patt p
+and expr =
   function
     ExAtt (loc, e, a) -> ocaml_expr_addattr (attr (uv a)) (expr e)
   | ExAcc (loc, x, MLast.ExLid (_, "val")) ->

@@ -986,6 +986,10 @@ EXTEND
     [ "top" LEFTA
       [ t1 = SELF; "=="; pf = SV (FLAG "private") "priv"; t2 = SELF →
           Qast.Node "TyMan" [Qast.Loc; t1; pf; t2] ]
+    | "alg_attribute" LEFTA
+      [ t1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "TyAtt" [Qast.Loc; t1; attr]
+      ]
     | "as" LEFTA
       [ t1 = SELF; "as"; t2 = SELF → Qast.Node "TyAli" [Qast.Loc; t1; t2] ]
     | LEFTA

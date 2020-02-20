@@ -128,6 +128,13 @@ let ocaml_expr_addattr attr
    pexp_loc_stack = pexp_loc_stack;
    pexp_attributes = pexp_attributes @ [attr]}
 ;;
+let ocaml_coretype_addattr attr
+    {ptyp_desc = ptyp_desc; ptyp_loc = ptyp_loc;
+     ptyp_loc_stack = ptyp_loc_stack; ptyp_attributes = ptyp_attributes} =
+  {ptyp_desc = ptyp_desc; ptyp_loc = ptyp_loc;
+   ptyp_loc_stack = ptyp_loc_stack;
+   ptyp_attributes = ptyp_attributes @ [attr]}
+;;
 let ocaml_sig_item_addattr attr =
   function
     {psig_desc =
