@@ -79,7 +79,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a $ c;", Some (Ploc.Exc Ploc.dummy (Stream.Error "';' expected after [str_item] (in [str_item_semi])")))
     };
-    {name="expr_attribute1"; implem = True ;
+    {name="alg_attribute1"; implem = True ;
      o_input = ("a[@foo];;", None) ;
      o_output = Some ({foo|let _ = a[@foo];;
 |foo}, None) ;
@@ -88,7 +88,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a [@foo];", None)
     };
-    {name="expr_attribute2"; implem = True ;
+    {name="alg_attribute2"; implem = True ;
      o_input = ("a + b[@foo];;", None) ;
      o_output = Some ({foo|let _ = a + b[@foo];;
 |foo}, None) ;
@@ -97,7 +97,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a + b [@foo];", None)
     };
-    {name="expr_attribute3"; implem = True ;
+    {name="alg_attribute3"; implem = True ;
      o_input = ("(a [@foo])[@bar];;", None) ;
      o_output = Some ({foo|let _ = a[@foo][@bar];;
 |foo}, None) ;
@@ -106,7 +106,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a[@foo][@bar];", None)
     };
-    {name="expr_attribute4"; implem = True ;
+    {name="alg_attribute4"; implem = True ;
      o_input = ("a [@foo :type t = int];;", None) ;
      o_output = Some ({foo|let _ = a[@foo: type t = int;;];;
 |foo}, None) ;
@@ -115,7 +115,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a[@foo :type t = int;];", None)
     };
-    {name="expr_attribute5"; implem = True ;
+    {name="alg_attribute5"; implem = True ;
      o_input = ("a [@foo :int];;", None) ;
      o_output = Some ({foo|let _ = a[@foo: int];;
 |foo}, None) ;
@@ -124,7 +124,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a[@foo :int];", None)
     };
-    {name="expr_attribute6"; implem = True ;
+    {name="alg_attribute6"; implem = True ;
      o_input = ("a [@foo ? (_,_)];;", None) ;
      o_output = Some ({foo|let _ = a[@foo? _, _];;
 |foo}, None) ;
@@ -133,7 +133,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a[@foo ? (_,_)];", None)
     };
-    {name="expr_attribute7"; implem = True ;
+    {name="alg_attribute7"; implem = True ;
      o_input = ("a [@foo ? (_,_) when true];;", None) ;
      o_output = Some ({foo|let _ = a[@foo? _, _ when true];;
 |foo}, None) ;
@@ -142,7 +142,7 @@ value x = 1;
 |foo}, None) ;
      r_input = ("a[@foo ? (_,_) when True];", None)
     };
-    {name="expr_attribute8"; implem = True ;
+    {name="alg_attribute8"; implem = True ;
      o_input = ("a [@foo ? _,_ when true];;", None) ;
      o_output = Some ({foo|let _ = a[@foo? _, _ when true];;
 |foo}, None) ;

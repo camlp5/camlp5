@@ -473,7 +473,7 @@ EXTEND
       | e1 = SELF; "@"; e2 = SELF → <:expr< $e1$ @ $e2$ >>
       | e1 = SELF; op = infixop1; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >>
       ]
-    | "expr_attribute" LEFTA
+    | "alg_attribute" LEFTA
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:expr< $e1$ [@ $_attribute:attr$ ] >>
       ]

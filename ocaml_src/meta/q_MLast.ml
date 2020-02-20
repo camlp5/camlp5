@@ -3531,7 +3531,7 @@ Grammar.safe_extend
                        e1]);
                    e2]) :
                'expr)))];
-       Some "expr_attribute", Some Gramext.LeftA,
+       Some "alg_attribute", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next

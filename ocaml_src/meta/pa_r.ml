@@ -1588,7 +1588,7 @@ Grammar.safe_extend
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, "^"), e1), e2) :
                'expr)))];
-       Some "expr_attribute", Some Gramext.LeftA,
+       Some "alg_attribute", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next

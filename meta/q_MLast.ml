@@ -604,7 +604,7 @@ EXTEND
                [Qast.Loc;
                 Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "@")]; e1];
              e2] ]
-    | "expr_attribute" LEFTA
+    | "alg_attribute" LEFTA
       [ e = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
         Qast.Node "ExAtt" [Qast.Loc; e; attr]
       ]
