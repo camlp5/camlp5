@@ -194,7 +194,8 @@ value x = 1;
      o_output = Some ({foo|class t = object  end[@foo];;
 |foo}, None) ;
      official_output = Some ({foo|class t = ((object  end)[@foo ])|foo}, None) ;
-     r_output = Some ({foo||foo}, None) ;
+     r_output = Some ({foo|class t = object  end[@foo];
+|foo}, None) ;
      r_input = ("class t = object end [@foo];", None)
     };
     {name="alg_attribute13"; implem = True ;
@@ -202,8 +203,9 @@ value x = 1;
      o_output = Some ({foo|class type ['a] t = object  end[@foo];;
 |foo}, None) ;
      official_output = Some ({foo|class type ['a] t = object  end[@foo ]|foo}, None) ;
-     r_output = Some ({foo||foo}, None) ;
-     r_input = ("class type ['a'] t = object end [@foo];", None)
+     r_output = Some ({foo|class type t ['a] = object  end[@foo];
+|foo}, None) ;
+     r_input = ("class type t ['a] = object end [@foo];", None)
     };
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;

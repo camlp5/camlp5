@@ -143,11 +143,11 @@ pr_r.cmx: ../lib/diff.cmx ../lib/eprinter.cmx ../lib/extfun.cmx \
     ../main/mLast.cmi ../main/mlsyntax.cmx ../main/pcaml.cmx \
     ../main/prtools.cmx
 pr_ro.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
-    ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi ../main/pcaml.cmi \
-    ../main/prtools.cmi
+    ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi \
+    ../main/mlsyntax.cmo ../main/pcaml.cmi ../main/prtools.cmi pr_r.cmo
 pr_ro.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
-    ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi ../main/pcaml.cmx \
-    ../main/prtools.cmx
+    ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi \
+    ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/prtools.cmx pr_r.cmx
 pr_rp.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
     ../lib/pprintf.cmi ../lib/pretty.cmi ../main/exparser.cmi \
     ../main/mLast.cmi ../main/parserify.cmi ../main/pcaml.cmi \

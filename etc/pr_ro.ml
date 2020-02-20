@@ -407,6 +407,11 @@ EXTEND_PRINTER
           pprintf pc "let%s %p in@ %p" (if rf then " rec" else "")
             (vlist2 (binding expr) (and_before (binding expr))) pel
             class_expr ce ]
+    | "alg_attribute"
+      [ <:class_expr< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct Pr_r.attribute_body attr
+      ]
+
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
           let (ce, el) =
@@ -444,8 +449,13 @@ EXTEND_PRINTER
           [ <:ctyp< < $list:_$ $flag:_$ > >> ->
               pprintf pc "[ %p ] ->@;%p" ctyp t curr ct
           | _ ->
-              pprintf pc "[%p] ->@;%p" ctyp t curr ct ]
-      | <:class_type< object $opt:cst$ $list:csi$ end >> ->
+              pprintf pc "[%p] ->@;%p" ctyp t curr ct ] ]
+    | "alg_attribute"
+      [ <:class_type< $ct$ [@ $attribute:attr$] >> ->
+        pprintf pc "%p[@%p]" curr ct Pr_r.attribute_body attr
+      ]
+
+    | [ <:class_type< object $opt:cst$ $list:csi$ end >> ->
           Pretty.horiz_vertic
             (fun () ->
                if alone_in_line pc then
