@@ -1107,9 +1107,19 @@ EXTEND
       | "let"; rf = SV (FLAG "rec"); lb = SV (LIST1 let_binding SEP "and");
         "in"; ce = SELF →
           Qast.Node "CeLet" [Qast.Loc; rf; lb; ce] ]
+    | "alg_attribute" LEFTA
+      [ t1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "CeAtt" [Qast.Loc; t1; attr]
+      ]
+
     | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" →
           Qast.Node "CeApp" [Qast.Loc; ce; e] ]
+    | "alg_attribute" LEFTA
+      [ t1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "CeAtt" [Qast.Loc; t1; attr]
+      ]
+
     | "simple"
       [ ci = SV class_longident "list" →
           Qast.Node "CeCon" [Qast.Loc; ci; Qast.VaVal (Qast.List [])]
@@ -1174,8 +1184,13 @@ EXTEND
   class_type:
     [ "top" RIGHTA
       [ "["; t = ctyp; "]"; "->"; ct = SELF →
-          Qast.Node "CtFun" [Qast.Loc; t; ct]
-      | "object"; cst = SV (OPT class_self_type);
+          Qast.Node "CtFun" [Qast.Loc; t; ct] ]
+    | "alg_attribute" LEFTA
+      [ t1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
+        Qast.Node "CtAtt" [Qast.Loc; t1; attr]
+      ]
+
+    | [ "object"; cst = SV (OPT class_self_type);
         csf = SV (LIST0 [ csf = class_sig_item; ";" → csf ]); "end" →
           Qast.Node "CtSig" [Qast.Loc; cst; csf]
       | ct = SELF; "["; tl = SV (LIST1 ctyp SEP ","); "]" →
