@@ -97,8 +97,9 @@ let ocaml_class_field loc cfd =
   {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []}
 ;;
 
-let ocaml_mktyp loc x =
-  {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = []; ptyp_attributes = []}
+let ocaml_mktyp ?(alg_attributes = []) loc x =
+  {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = [];
+   ptyp_attributes = alg_attributes}
 ;;
 let ocaml_mkpat loc x =
   {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
@@ -295,8 +296,8 @@ let ocaml_ptyp_poly =
   Some
     (fun loc cl t ->
        match cl with
-         [] -> t.ptyp_desc
-       | _ -> Ptyp_poly (List.map (mkloc loc) cl, t))
+         [] -> t.ptyp_desc, t.ptyp_attributes
+       | _ -> Ptyp_poly (List.map (mkloc loc) cl, t), [])
 ;;
 
 let ocaml_ptyp_variant loc catl clos sl_opt =

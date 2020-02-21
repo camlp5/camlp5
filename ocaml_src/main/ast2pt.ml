@@ -38,7 +38,9 @@ let mkloc loc =
   ocaml_location (!glob_fname, lnum, bolp, lnuml, bolpl, bp, ep)
 ;;
 
-let mktyp loc d = ocaml_mktyp (mkloc loc) d;;
+let mktyp ?(alg_attributes = []) loc d =
+  ocaml_mktyp ~alg_attributes:alg_attributes (mkloc loc) d
+;;
 let mkpat loc d = ocaml_mkpat (mkloc loc) d;;
 let mkexp loc d = ocaml_mkexp (mkloc loc) d;;
 let mkmty loc d = ocaml_mkmty (mkloc loc) d;;
@@ -644,7 +646,9 @@ and ctyp =
       end
   | TyPol (loc, pl, t) ->
       begin match ocaml_ptyp_poly with
-        Some ptyp_poly -> mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
+        Some ptyp_poly ->
+          let (ct, attrs) = ptyp_poly (mkloc loc) (uv pl) (ctyp t) in
+          mktyp ~alg_attributes:attrs loc ct
       | None -> error loc "no poly types in that ocaml version"
       end
   | TyPot (loc, pl, t) -> error loc "'type id . t' not allowed here"
@@ -684,10 +688,12 @@ and add_polytype t =
     Some ptyp_poly ->
       begin match t with
         MLast.TyPol (loc, pl, t) ->
-          mktyp loc (ptyp_poly (mkloc loc) (uv pl) (ctyp t))
+          let (ct, attrs) = ptyp_poly (mkloc loc) (uv pl) (ctyp t) in
+          mktyp ~alg_attributes:attrs loc ct
       | _ ->
           let loc = MLast.loc_of_ctyp t in
-          mktyp loc (ptyp_poly (mkloc loc) [] (ctyp t))
+          let (ct, attrs) = ptyp_poly (mkloc loc) [] (ctyp t) in
+          mktyp ~alg_attributes:attrs loc ct
       end
   | None -> ctyp t
 and package_of_module_type loc mt =
