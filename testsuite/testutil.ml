@@ -146,6 +146,26 @@ value pr st =
   Pprintast.string_of_structure st
 ;
 end ;
+
+module Interf = struct
+value pa s =
+  let lb = Lexing.from_string s in
+  Parse.interface lb
+;
+
+value with_buffer_formatter f arg = do {
+  let b = Buffer.create 23 in
+  let bfmt = Format.formatter_of_buffer b in
+  f bfmt arg ;
+  Format.pp_print_flush bfmt () ;
+  Buffer.contents b
+}
+;
+
+value pr st =
+  with_buffer_formatter Pprintast.signature st
+;
+end ;
 end ;
 
 
