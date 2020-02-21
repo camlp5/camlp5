@@ -291,7 +291,7 @@ EXTEND
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
           <:str_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs; b = rebind_exn ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) →
-          <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ $_list:alg_attrs$ >>
+          <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ $_list:alg_attrs$ $_list:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
@@ -366,7 +366,7 @@ EXTEND
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" → s ]); "end" →
           <:sig_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) →
-          <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:alg_attrs$ >>
+          <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:alg_attrs$ $_list:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
@@ -779,19 +779,23 @@ EXTEND
       | "{"; ldl = V (LIST1 label_declaration SEP ";"); "}" →
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;
+  ctyp_below_alg_attribute:
+  [ [ x = ctyp LEVEL "below_alg_attribute" -> x ]
+  ]
+  ;
   constructor_declaration:
-    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp SEP "and") ; attrs = V (LIST0 alg_attribute) →
+    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = V (LIST0 alg_attribute) →
           (loc, ci, cal, None, attrs)
-      | ci = V UIDENT "uid" ""; ":"; t = ctyp ; attrs = V (LIST0 alg_attribute) →
+      | ci = V UIDENT "uid" ""; ":"; t = ctyp_below_alg_attribute ; attrs = V (LIST0 alg_attribute) →
           let (tl, rt) = generalized_type_of_type t in
           (loc, ci, <:vala< tl >>, Some rt, attrs)
       | ci = V UIDENT "uid" "" ; attrs = V (LIST0 alg_attribute) →
           (loc, ci, <:vala< [] >>, None, attrs) ] ]
   ;
   constructor_declaration_sans_alg_attrs:
-    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp SEP "and") →
+    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") →
           (loc, ci, cal, None)
-      | ci = V UIDENT "uid" ""; ":"; t = ctyp →
+      | ci = V UIDENT "uid" ""; ":"; t = ctyp_below_alg_attribute →
           let (tl, rt) = generalized_type_of_type t in
           (loc, ci, <:vala< tl >>, Some rt)
       | ci = V UIDENT "uid" "" →

@@ -1032,7 +1032,7 @@ value exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs) =
 
       | tl ->
           let tl = List.map (fun t -> (t, " and")) tl in
-          pprintf pc "exception %p of@;%p%p%p" cons_escaped e (plist ctyp 0) tl
+          pprintf pc "exception %p of@;%p%p%p" cons_escaped e (plist ctyp_below_alg_attribute 0) tl
             (hlist (pr_attribute "@")) alg_attrs
             (hlist (pr_attribute "@@")) item_attrs
       ]

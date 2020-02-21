@@ -296,7 +296,7 @@ and t2 = bool[@@foo];
 |foo}, None) ;
      r_input = ("type nonrec t1 = int [@@bar] and t2 = bool [@@foo];", None)
     };
-    {name="item_attribute4"; implem = True ;
+    {name="exception-decl-attributes1"; implem = True ;
      o_input = ("exception Foo of int [@@foo]", None) ;
      o_output = Some ({foo|exception Foo of int[@@foo];;
 |foo}, None) ;
@@ -304,6 +304,15 @@ and t2 = bool[@@foo];
      r_output = Some ({foo|exception Foo of int[@@foo];
 |foo}, None) ;
      r_input = ("exception Foo of int [@@foo];", None)
+    };
+    {name="exception-decl-attributes2"; implem = True ;
+     o_input = ("exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar]", None) ;
+     r_input = ("exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar] ;", None) ;
+     o_output = Some ({foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];;
+|foo}, None) ;
+     official_output = Some ({foo|exception T of ((int)[@alg_foo ]) [@alg_bar ][@@item_bar ]|foo}, None) ;
+     r_output = Some ({foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];
+|foo}, None)
     }
 ]
 ;

@@ -334,6 +334,8 @@ Grammar.safe_extend
      grammar_entry_create "type_parameter"
    and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
      grammar_entry_create "simple_type_parameter"
+   and ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e =
+     grammar_entry_create "ctyp_below_alg_attribute"
    and constructor_declaration_sans_alg_attrs : 'constructor_declaration_sans_alg_attrs Grammar.Entry.e =
      grammar_entry_create "constructor_declaration_sans_alg_attrs"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
@@ -801,7 +803,8 @@ Grammar.safe_extend
                 (alg_attrs : 'alg_attribute list) (b : 'rebind_exn)
                 (_, c, tl, _ : 'constructor_declaration_sans_alg_attrs) _
                 (loc : Ploc.t) ->
-              (MLast.StExc (loc, c, tl, b, alg_attrs, []) : 'str_item)));
+              (MLast.StExc (loc, c, tl, b, alg_attrs, item_attrs) :
+               'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1156,7 +1159,7 @@ Grammar.safe_extend
                 (alg_attrs : 'alg_attribute list)
                 (_, c, tl, _ : 'constructor_declaration_sans_alg_attrs) _
                 (loc : Ploc.t) ->
-              (MLast.SgExc (loc, c, tl, alg_attrs, []) : 'sig_item)));
+              (MLast.SgExc (loc, c, tl, alg_attrs, item_attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3006,6 +3009,16 @@ Grammar.safe_extend
            (fun (i : 'ident) _ (loc : Ploc.t) ->
               (MLast.TyQuo (loc, i) : 'ctyp)))]];
     Grammar.extension
+      (ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterml (ctyp : 'ctyp Grammar.Entry.e)
+                "below_alg_attribute"),
+           (fun (x : 'ctyp) (loc : Ploc.t) ->
+              (x : 'ctyp_below_alg_attribute)))]];
+    Grammar.extension
       (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
       None
       [None, None,
@@ -3024,12 +3037,14 @@ Grammar.safe_extend
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("UIDENT", "")))
                    (Grammar.s_token ("", ":")))
-                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (ctyp_below_alg_attribute :
+                    'ctyp_below_alg_attribute Grammar.Entry.e)))
              (Grammar.s_list0
                 (Grammar.s_nterm
                    (alg_attribute : 'alg_attribute Grammar.Entry.e))),
-           (fun (attrs : 'alg_attribute list) (t : 'ctyp) _ (ci : string)
-                (loc : Ploc.t) ->
+           (fun (attrs : 'alg_attribute list) (t : 'ctyp_below_alg_attribute)
+                _ (ci : string) (loc : Ploc.t) ->
               (let (tl, rt) = generalized_type_of_type t in
                loc, ci, tl, Some rt, attrs :
                'constructor_declaration)));
@@ -3041,13 +3056,16 @@ Grammar.safe_extend
                       (Grammar.s_token ("UIDENT", "")))
                    (Grammar.s_token ("", "of")))
                 (Grammar.s_list1sep
-                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
+                   (Grammar.s_nterm
+                      (ctyp_below_alg_attribute :
+                       'ctyp_below_alg_attribute Grammar.Entry.e))
                    (Grammar.s_token ("", "and")) false))
              (Grammar.s_list0
                 (Grammar.s_nterm
                    (alg_attribute : 'alg_attribute Grammar.Entry.e))),
-           (fun (attrs : 'alg_attribute list) (cal : 'ctyp list) _
-                (ci : string) (loc : Ploc.t) ->
+           (fun (attrs : 'alg_attribute list)
+                (cal : 'ctyp_below_alg_attribute list) _ (ci : string)
+                (loc : Ploc.t) ->
               (loc, ci, cal, None, attrs : 'constructor_declaration)))]];
     Grammar.extension
       (constructor_declaration_sans_alg_attrs :
@@ -3064,8 +3082,11 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_token ("UIDENT", "")))
                 (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) _ (ci : string) (loc : Ploc.t) ->
+             (Grammar.s_nterm
+                (ctyp_below_alg_attribute :
+                 'ctyp_below_alg_attribute Grammar.Entry.e)),
+           (fun (t : 'ctyp_below_alg_attribute) _ (ci : string)
+                (loc : Ploc.t) ->
               (let (tl, rt) = generalized_type_of_type t in
                loc, ci, tl, Some rt :
                'constructor_declaration_sans_alg_attrs)));
@@ -3076,9 +3097,12 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "")))
                 (Grammar.s_token ("", "of")))
              (Grammar.s_list1sep
-                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
+                (Grammar.s_nterm
+                   (ctyp_below_alg_attribute :
+                    'ctyp_below_alg_attribute Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
-           (fun (cal : 'ctyp list) _ (ci : string) (loc : Ploc.t) ->
+           (fun (cal : 'ctyp_below_alg_attribute list) _ (ci : string)
+                (loc : Ploc.t) ->
               (loc, ci, cal, None :
                'constructor_declaration_sans_alg_attrs)))]];
     Grammar.extension (label_declaration : 'label_declaration Grammar.Entry.e)
