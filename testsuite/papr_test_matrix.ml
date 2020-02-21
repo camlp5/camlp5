@@ -227,6 +227,36 @@ value x = 1;
 |foo}, None) ;
      r_input = ("type t = { a : (int [@bar]) [@foo] };", None)
     };
+    {name="alg_attribute16"; implem = True ;
+     o_input = ("type t = a * (b[@bar])", None) ;
+     r_input = ("type t = (a * b[@bar]);", None) ;
+     o_output = Some ({foo|type t = a * (b[@bar]);;
+|foo}, None) ;
+     official_output = Some ({foo|type t = (a * ((b)[@bar ]))|foo}, None) ;
+     r_output = Some ({foo|type t = (a * b[@bar]);
+|foo}, None)
+    };
+    {name="alg_attribute17"; implem = True ;
+     o_input = ("type t = a * b[@bar]", None) ;
+     r_input = ("type t = (a * b)[@bar];", None) ;
+     o_output = Some ({foo|type t = a * b[@bar];;
+|foo}, None) ;
+     official_output = Some ({foo|type t = (((a * b))[@bar ])|foo}, None) ;
+     r_output = Some ({foo|type t = (a * b)[@bar];
+|foo}, None)
+    };
+
+    {name="alg_attribute19"; implem = True ;
+     o_input = ("type t = { a : ((int * bool)[@bar]) [@foo] }", None) ;
+     r_input = ("type t = { a : ((int * bool)[@bar]) [@foo] };", None) ;
+     o_output = Some ({foo|type t = { a : (int * bool[@bar])[@foo] };;
+|foo}, None) ;
+     official_output = Some ({foo|type t = {
+  a: (int * bool [@bar ]) [@foo ] }|foo}, None) ;
+     r_output = Some ({foo|type t = { a : ((int * bool)[@bar])[@foo] };
+|foo}, None)
+    };
+
     {name="simple-interf"; implem = False ;
      o_input = ("val x : int", None) ;
      o_output = Some ({foo|val x : int;;

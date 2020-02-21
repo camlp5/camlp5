@@ -1018,12 +1018,14 @@ EXTEND
   ;
   (* Core types *)
   ctyp:
-    [ [ t1 = SELF; "as"; "'"; i = ident -> <:ctyp< $t1$ as '$i$ >> ]
-    | "alg_attribute" LEFTA
+    [ 
+      "alg_attribute" LEFTA
       [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:ctyp< $ct$ [@ $_attribute:attr$ ] >>
       ]
     | "below_alg_attribute" [ t = NEXT -> t ]
+
+    | [ t1 = SELF; "as"; "'"; i = ident -> <:ctyp< $t1$ as '$i$ >> ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "star"
