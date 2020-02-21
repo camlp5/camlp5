@@ -163,12 +163,17 @@ value ocaml_class_field loc cfd =
   ELSE {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []} END
 ;
 
-value ocaml_mktyp loc x =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {ptyp_desc = x; ptyp_loc = loc}
+value ocaml_mktyp ?{alg_attributes=[]} loc x =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (alg_attributes = []) ;
+    {ptyp_desc = x; ptyp_loc = loc}
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+    do { assert (alg_attributes = []) ;
     {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []}
+    }
   ELSE
-    {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = []; ptyp_attributes = []}
+    {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = []; ptyp_attributes = alg_attributes}
   END
 ;
 value ocaml_mkpat loc x =
@@ -663,19 +668,19 @@ value ocaml_ptyp_package =
 value ocaml_ptyp_poly =
   IFDEF OCAML_VERSION <= OCAML_3_04 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun loc cl t -> Ptyp_poly cl t)
+    Some (fun loc cl t -> (Ptyp_poly cl t, []))
   ELSIFDEF OCAML_VERSION < OCAML_4_05_0 THEN
     Some
       (fun loc cl t ->
          match cl with
-         [ [] -> t.ptyp_desc
-         | _ -> Ptyp_poly cl t ])
+         [ [] -> (t.ptyp_desc, t.ptyp_attributes)
+         | _ -> (Ptyp_poly cl t, []) ])
   ELSE
     Some
       (fun loc cl t ->
          match cl with
-         [ [] -> t.ptyp_desc
-         | _ -> Ptyp_poly (List.map (mkloc loc) cl) t ])
+         [ [] -> (t.ptyp_desc, t.ptyp_attributes)
+         | _ -> (Ptyp_poly (List.map (mkloc loc) cl) t, []) ])
   END
 ;
 

@@ -222,7 +222,7 @@ value x = 1;
      o_output = Some ({foo|type t = { a : (int[@bar])[@foo] };;
 |foo}, None) ;
      official_output = Some ({foo|type t = {
-  a: (int [@bar ]) [@foo ] }|foo}, None) ;
+  a: ((int)[@bar ]) [@foo ]}|foo}, None) ;
      r_output = Some ({foo|type t = { a : (int[@bar])[@foo] };
 |foo}, None) ;
      r_input = ("type t = { a : (int [@bar]) [@foo] };", None)
@@ -252,7 +252,7 @@ value x = 1;
      o_output = Some ({foo|type t = { a : (int * bool[@bar])[@foo] };;
 |foo}, None) ;
      official_output = Some ({foo|type t = {
-  a: (int * bool [@bar ]) [@foo ] }|foo}, None) ;
+  a: (((int * bool))[@bar ]) [@foo ]}|foo}, None) ;
      r_output = Some ({foo|type t = { a : ((int * bool)[@bar])[@foo] };
 |foo}, None)
     };
