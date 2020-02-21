@@ -23,7 +23,7 @@ end ;
 value both_pr = (Implem.pr, Interf.pr) ;
 end ;
 
-value tests = "test pa_o -> pr_official" >::: (Papr_test_matrix.o2official PAPR.both_pa1 Official.both_pr ()) ;
+value tests = "test pa_o -> official" >::: (Papr_test_matrix.o2official PAPR.both_pa1 Official.both_pr ()) ;
 
 
 value _ =

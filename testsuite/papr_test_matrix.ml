@@ -351,6 +351,22 @@ and t2 = bool[@@foo];
      official_output = Some ({foo|exception T of ((int)[@alg_foo ]) [@alg_bar ][@@item_bar ]|foo}, None) ;
      r_output = Some ({foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];
 |foo}, None)
+    };
+    {name="constructor-decl-attributes1"; implem = True ;
+     o_input = OK"type t = A of int * bool [@alg_foo] | B of bool * string [@alg_bar] [@@item_bar]" ;
+     official_input = OK"type t = A of int * bool [@alg_foo] | B of bool * string [@alg_bar] [@@item_bar]" ;
+     r_input = OK"type t = [ A of int and bool [@alg_foo] | B of bool and string [@alg_bar] ] [@@item_bar];" ;
+     o_output = Some ({foo|type t =
+    A of int * bool[@alg_foo]
+  | B of bool * string[@alg_bar][@@item_bar];;
+|foo}, None) ;
+     official_output = Some ({foo|type t =
+  | A of int * bool [@alg_foo ]
+  | B of bool * string [@alg_bar ][@@item_bar ]|foo}, None) ;
+     r_output = Some ({foo|type t =
+  [ A of int and bool[@alg_foo]
+  | B of bool and string[@alg_bar] ][@@item_bar];
+|foo}, None)
     }
 ]
 ;
