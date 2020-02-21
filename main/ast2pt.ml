@@ -432,9 +432,9 @@ and mkvalue_desc ~{item_attributes} vn t p =
 and mktvariant loc ctl priv =
   let ctl =
     List.map
-      (fun (loc, c, tl, rto) →
+      (fun (loc, c, tl, rto, alg_attrs) →
          (conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
-          mkloc loc, []))
+          mkloc loc, alg_attributes alg_attrs))
       ctl
   in
   match ocaml_ptype_variant ctl priv with
@@ -1193,9 +1193,9 @@ and sig_item s l =
       | None → error loc "no class type in this ocaml version" ]
   | SgDcl loc sl → List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ → l
-  | SgExc loc n tl attrs →
+  | SgExc loc n tl alg_attrs item_attrs →
       [mksig loc
-         (ocaml_psig_exception ~{item_attributes=item_attributes attrs} (mkloc loc) (uv n) (List.map ctyp (uv tl))) ::
+         (ocaml_psig_exception ~{alg_attributes=alg_attributes alg_attrs} (mkloc loc) (uv n) (List.map ctyp (uv tl))) ::
        l]
   | SgExt loc n t p attrs →
       let vn = uv n in
@@ -1293,11 +1293,11 @@ and str_item s l =
           [mkstr loc (pstr_def jcl) :: l]
       | None → error loc "no 'def' in this ocaml version" ]
   | StDir loc _ _ → l
-  | StExc loc n tl sl attrs →
+  | StExc loc n tl sl alg_attrs item_attrs →
       let si =
         match (uv tl, uv sl) with
         [ (tl, []) →
-            ocaml_pstr_exception ~{item_attributes=item_attributes attrs} (mkloc loc) (uv n) (List.map ctyp tl)
+            ocaml_pstr_exception ~{alg_attributes=alg_attributes alg_attrs} ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) (List.map ctyp tl)
         | ([], sl) →
             match ocaml_pstr_exn_rebind with
             [ Some pstr_exn_rebind →

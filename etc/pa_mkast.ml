@@ -130,7 +130,7 @@ value rec expr_of_type loc t =
       <:expr< error >> ]
 ;
 
-value expr_of_cons_decl (loc, c, tl, rto) =
+value expr_of_cons_decl (loc, c, tl, rto, _) =
   let tl = Pcaml.unvala tl in
   let tnl = name_of_vars tl in
   let p =

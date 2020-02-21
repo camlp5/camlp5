@@ -804,12 +804,13 @@ value label_decl pc (loc, l, m, t, attrs) =
     (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
 ;
 
-value cons_decl pc (_, c, tl, rto) =
+value cons_decl pc (_, c, tl, rto, alg_attrs) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
     match rto with
-    [ Some rt -> pprintf pc "%p : %p" cons_escaped c ctyp rt
+    [ Some rt -> pprintf pc "%p : %p%p" cons_escaped c ctyp rt
+                   (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None -> cons_escaped pc c ]
   }
   else do {
@@ -817,16 +818,19 @@ value cons_decl pc (_, c, tl, rto) =
     [ Some rt ->
         let loc = Ploc.dummy in
         let t = List.fold_right (fun t rt -> <:ctyp< $t$ -> $rt$ >>) tl rt in
-        pprintf pc "%p :@;<1 4>%p" cons_escaped c ctyp t
+        pprintf pc "%p :@;<1 4>%p%p" cons_escaped c ctyp t
+          (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None ->
         let tl = List.map (fun t -> (t, " and")) tl in
-        pprintf pc "%p of@;<1 4>%p" cons_escaped c (plist ctyp 2) tl ]
+        pprintf pc "%p of@;<1 4>%p%p" cons_escaped c (plist ctyp 2) tl
+          (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
+    ]
   }
 ;
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl, _) ->
+    (fun (_, _, tl, _,_) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])
@@ -1018,23 +1022,33 @@ value external_decl_original pc (loc, n, t, sl, attrs) =
     (hlist (pr_attribute "@@")) attrs
 ;
 
-value exception_decl pc (loc, e, tl, id, attrs) =
+value exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs) =
   match id with
   [ [] ->
       match tl with
-      [ [] -> pprintf pc "exception %p" cons_escaped e
+      [ [] -> pprintf pc "exception %p%p%p" cons_escaped e
+            (hlist (pr_attribute "@")) alg_attrs
+            (hlist (pr_attribute "@@")) item_attrs
+
       | tl ->
           let tl = List.map (fun t -> (t, " and")) tl in
-          pprintf pc "exception %p of@;%p%p" cons_escaped e (plist ctyp 0) tl
-            (hlist (pr_attribute "@@")) attrs ]
+          pprintf pc "exception %p of@;%p%p%p" cons_escaped e (plist ctyp 0) tl
+            (hlist (pr_attribute "@")) alg_attrs
+            (hlist (pr_attribute "@@")) item_attrs
+      ]
   | id ->
       match tl with
       [ [] ->
-          pprintf pc "exception %p@;= %p%p" cons_escaped e mod_ident (loc, id) (hlist (pr_attribute "@@")) attrs
+          pprintf pc "exception %p@;= %p%p%p" cons_escaped e mod_ident (loc, id)
+            (hlist (pr_attribute "@")) alg_attrs
+            (hlist (pr_attribute "@@")) item_attrs
       | tl ->
           let tl = List.map (fun t -> (t, " and")) tl in
-          pprintf pc "exception %p of@;%p@;= %p%p" cons_escaped e
-            (plist ctyp 0) tl mod_ident (loc, id) (hlist (pr_attribute "@@")) attrs ] ]
+          pprintf pc "exception %p of@;%p@;= %p%p%p" cons_escaped e
+              (plist ctyp 0) tl mod_ident (loc, id)
+            (hlist (pr_attribute "@")) alg_attrs
+            (hlist (pr_attribute "@@")) item_attrs
+      ] ]
 ;
 
 value functor_parameter_unvala arg =
@@ -1801,8 +1815,8 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after str_item)) sil)
-      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $list:attrs$ >> ->
-          exception_decl pc (loc, e, tl, id, attrs)
+      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $list:alg_attrs$ $list:item_attrs$ >> ->
+          exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
           if is_operator n then
             external_decl_original pc (loc, n, t, sl, attrs)
@@ -1855,8 +1869,8 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after sig_item)) sil)
-      | <:sig_item:< exception $uid:e$ of $list:tl$ $list:attrs$ >> ->
-          exception_decl pc (loc, e, tl, [], attrs)
+      | <:sig_item:< exception $uid:e$ of $list:tl$ $list:alg_attrs$ $list:item_attrs$ >> ->
+          exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->

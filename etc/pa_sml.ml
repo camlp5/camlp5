@@ -179,7 +179,8 @@ value sig_declare loc =
 value extract_label_types loc tn tal cdol =
   let (cdl, aux) =
     List.fold_right
-      (fun (loc, c, tl, aux_opt) (cdl, aux) ->
+      (fun (loc, c, tl, aux_opt, alg_attrs) (cdl, aux) -> do {
+         assert (alg_attrs = <:vala< [] >>) ;
          match aux_opt with
          [ Some anon_record_type ->
              let new_tn = tn ^ "_" ^ c in
@@ -191,9 +192,10 @@ value extract_label_types loc tn tal cdol =
                 MLast.tdAttributes = <:vala< [] >>}
              in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
-             ([(loc, <:vala< c >>, <:vala< tl >>, None) :: cdl],
+             ([(loc, <:vala< c >>, <:vala< tl >>, None, <:vala< [] >>) :: cdl],
                 [aux_def :: aux])
-         | None -> ([(loc, <:vala< c >>, <:vala< tl >>, None) :: cdl], aux) ])
+         | None -> ([(loc, <:vala< c >>, <:vala< tl >>, None, <:vala< [] >>) :: cdl], aux) ]
+         })
       cdol ([], [])
   in
   let td1 =
@@ -657,7 +659,7 @@ EXTEND
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 =
             List.map
-              (fun (loc, c, tl, _) -> (loc, <:vala< c>>, <:vala< tl >>, None))
+              (fun (loc, c, tl, _, alg_attrs) -> (loc, <:vala< c>>, <:vala< tl >>, None, alg_attrs))
               x4
           in
           {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
@@ -687,11 +689,11 @@ EXTEND
       | "datatype"; x1 = tycon -> not_impl loc "dbrhs 2" ] ]
   ;
   constr:
-    [ [ x1 = op_op; x2 = ident -> (loc, x2, [], None)
+    [ [ x1 = op_op; x2 = ident -> (loc, x2, [], None, <:vala< [] >>)
       | x1 = op_op; x2 = ident; "of"; x3 = ctyp ->
           match x3 with
-          [ <:ctyp< {$list:_$} >> -> (loc, x2, [], Some x3)
-          | _ -> (loc, x2, [x3], None) ] ] ]
+          [ <:ctyp< {$list:_$} >> -> (loc, x2, [], Some x3, <:vala< [] >>)
+          | _ -> (loc, x2, [x3], None, <:vala< [] >>) ] ] ]
   ;
   eb:
     [ [ x1 = op_op; x2 = ident -> (x2, [], [])

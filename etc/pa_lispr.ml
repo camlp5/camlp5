@@ -608,7 +608,7 @@ and ctyp_ident_se loc s =
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Satom _ Auid ci :: sel] →
-      (loc, <:vala< ci >>, <:vala< (List.map ctyp_se sel) >>, None)
+      (loc, <:vala< ci >>, <:vala< (List.map ctyp_se sel) >>, None, <:vala< [] >>)
   | se → error se "constructor_declaration" ]
 ;
 

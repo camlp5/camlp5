@@ -57,7 +57,7 @@ value match_case :
 value constructor_declaration :
   Grammar.Entry.e
     (MLast.loc * MLast.v string * MLast.v (list MLast.ctyp) *
-     option MLast.ctyp);
+     option MLast.ctyp * MLast.attributes);
 value label_declaration :
   Grammar.Entry.e (MLast.loc * string * bool * MLast.ctyp * MLast.attributes);
 value with_constr : Grammar.Entry.e MLast.with_constr;

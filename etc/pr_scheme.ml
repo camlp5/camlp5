@@ -111,7 +111,7 @@ pr_expr_fun_args.val :=
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl, rto) ->
+    (fun (_, _, tl, rto, _) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])
@@ -261,7 +261,8 @@ value match_assoc pc (p, we, e) =
   plistf 0 (paren pc "") list
 ;
 
-value constr_decl pc (_, c, tl, rto) =
+value constr_decl pc (_, c, tl, rto, alg_attrs) = do {
+  assert (alg_attrs = <:vala< [] >>) ;
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   match tl with
@@ -270,6 +271,7 @@ value constr_decl pc (_, c, tl, rto) =
       plistf 0 (paren pc "")
         [(fun pc -> pprintf pc "%s" c, "") ::
          List.map (fun t -> (fun pc -> ctyp pc t, "")) tl] ]
+}
 ;
 
 value poly_variant_decl pc =

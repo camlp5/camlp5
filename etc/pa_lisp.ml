@@ -603,7 +603,7 @@
  constructor_declaration_se
  (lambda_match
   ((Sexpr loc (list (Satom _ Auid ci) :: sel))
-   (, loc <:vala< ci >> <:vala< (List.map ctyp_se sel) >> None))
+   (, loc <:vala< ci >> <:vala< (List.map ctyp_se sel) >> None <:vala< (list) >>))
   (se
    (error se "constructor_declaration"))))
 

@@ -562,12 +562,13 @@ value label_decl pc (_, l, m, t, attrs) =
   (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
 ;
 
-value cons_decl pc (loc, c, tl, rto) =
+value cons_decl pc (loc, c, tl, rto, alg_attrs) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
     match rto with
-    [ Some rt -> pprintf pc "%p : %p" cons_escaped (loc, c) ctyp rt
+    [ Some rt -> pprintf pc "%p : %p%p" cons_escaped (loc, c) ctyp rt
+                   (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None -> cons_escaped pc (loc, c) ]
   }
   else do {
@@ -575,17 +576,18 @@ value cons_decl pc (loc, c, tl, rto) =
     let tl = List.map (fun t -> (t, " *")) tl in
     match rto with
     [ Some rt ->
-        pprintf pc "%p :@;<1 4>%p -> %p" cons_escaped (loc, c)
+        pprintf pc "%p :@;<1 4>%p -> %p%p" cons_escaped (loc, c)
           (plist ctyp_apply 2) tl ctyp rt
+          (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None ->
-        pprintf pc "%p of@;<1 4>%p" cons_escaped (loc, c) (plist ctyp_apply 2)
-          tl ]
+        pprintf pc "%p of@;<1 4>%p%p" cons_escaped (loc, c) (plist ctyp_apply 2)
+          tl (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs) ]
   }
 ;
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl, rto) ->
+    (fun (_, _, tl, rto,_) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])
@@ -776,25 +778,35 @@ value external_decl pc (loc, n, t, sl, attrs) =
     (hlist (pr_attribute "@@")) attrs
 ;
 
-value exception_decl pc (loc, e, tl, id, attrs) =
+value exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs) =
   let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
   match id with
   [ [] ->
       match tl with
-      [ [] -> pprintf pc "exception %p%p" cons_escaped (loc, e) (hlist (pr_attribute "@@")) attrs
+      [ [] -> pprintf pc "exception %p%p%p" cons_escaped (loc, e)
+                (hlist (pr_attribute "@")) alg_attrs
+                (hlist (pr_attribute "@@")) item_attrs
       | tl ->
           let tl = List.map (fun t -> (t, " *")) tl in
-          pprintf pc "exception %p of@;%p%p" cons_escaped (loc, e)
-            (plist ctyp_apply 2) tl (hlist (pr_attribute "@@")) attrs ]
+          pprintf pc "exception %p of@;%p%p%p" cons_escaped (loc, e)
+            (plist ctyp_apply 2) tl
+            (hlist (pr_attribute "@")) alg_attrs
+            (hlist (pr_attribute "@@")) item_attrs
+      ]
   | id ->
       match tl with
       [ [] ->
-          pprintf pc "exception %p =@;%p%p" cons_escaped (loc, e)
-            mod_ident (loc, id)  (hlist (pr_attribute "@@")) attrs
+          pprintf pc "exception %p =@;%p%p%p" cons_escaped (loc, e)
+            mod_ident (loc, id)
+            (hlist (pr_attribute "@")) alg_attrs
+            (hlist (pr_attribute "@@")) item_attrs
       | tl ->
           let tl = List.map (fun t -> (t, " *")) tl in
-          pprintf pc "exception %p of@;%p =@;%p%p" cons_escaped (loc, e)
-            (plist ctyp_apply 2) tl mod_ident (loc, id) (hlist (pr_attribute "@@")) attrs ] ]
+          pprintf pc "exception %p of@;%p =@;%p%p%p" cons_escaped (loc, e)
+            (plist ctyp_apply 2) tl mod_ident (loc, id)
+            (hlist (pr_attribute "@")) alg_attrs
+            (hlist (pr_attribute "@@")) item_attrs
+      ] ]
 ;
 
 value functor_parameter_unvala arg =
@@ -1724,8 +1736,8 @@ EXTEND_PRINTER
               else str_item
             in
             vlistl str_item_sep str_item pc sil
-      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $list:attrs$ >> ->
-          exception_decl pc (loc, e, tl, id, attrs)
+      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $list:alg_attrs$ $list:item_attrs$ >> ->
+          exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:str_item< include $me$ >> ->
@@ -1765,8 +1777,8 @@ EXTEND_PRINTER
       [ <:sig_item< # $lid:s$ $e$ >> ->
           let pc = {(pc) with aft = ""} in
           pprintf pc "(* #%s %p *)" s expr e
-      | <:sig_item:< exception $uid:e$ of $list:tl$ $list:attrs$ >> ->
-          exception_decl pc (loc, e, tl, [], attrs)
+      | <:sig_item:< exception $uid:e$ of $list:tl$ $list:alg_attrs$ $list:item_attrs$ >> ->
+          exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->

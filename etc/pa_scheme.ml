@@ -1157,7 +1157,7 @@
   (lambda_match
    ((Sexpr loc [(Suid _ ci) . sel])
     (values loc <:vala< (rename_id ci) >> <:vala< (List.map ctyp_se sel) >>
-       None))
+       None <:vala< [] >>))
    (se (error se "constructor_declaration"))))
  (variant_declaration_se
   (lambda_match

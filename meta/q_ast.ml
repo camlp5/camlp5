@@ -136,10 +136,11 @@ module Meta_make (C : MetaSig) =
           C.node "TySum"
             [C.vala
                (C.list
-                  (fun (_, s, lt, ot) →
+                  (fun (_, s, lt, ot, attrs) →
+                     let attrs = assert False in
                      C.tuple
                        [C.loc_v (); C.vala C.string s;
-                        C.vala (C.list ctyp) lt; C.option ctyp ot]))
+                        C.vala (C.list ctyp) lt; C.option ctyp ot; attrs]))
                llsltot]
       | TyTup _ lt → C.node "TyTup" [C.vala (C.list ctyp) lt]
       | TyUid _ s → C.node "TyUid" [C.vala C.string s]
@@ -317,9 +318,10 @@ module Meta_make (C : MetaSig) =
       | SgDcl _ lsi → C.node "SgDcl" [C.vala (C.list sig_item) lsi]
       | SgDir _ s oe →
           C.node "SgDir" [C.vala C.string s; C.vala (C.option expr) oe]
-      | SgExc _ s lt attrs →
-          let attrs = assert False in
-          C.node "SgExc" [C.vala C.string s; C.vala (C.list ctyp) lt; attrs]
+      | SgExc _ s lt alg_attrs item_attrs →
+          let alg_attrs = assert False in
+          let item_attrs = assert False in
+          C.node "SgExc" [C.vala C.string s; C.vala (C.list ctyp) lt; alg_attrs; item_attrs]
       | SgExt _ s t ls attrs →
           let attrs = assert False in
           C.node "SgExt"
@@ -389,11 +391,12 @@ module Meta_make (C : MetaSig) =
       | StDef _ lx → C.node "StDef" [C.vala (C.list joinclause) lx]
       | StDir _ s oe →
           C.node "StDir" [C.vala C.string s; C.vala (C.option expr) oe]
-      | StExc _ s lt ls attrs →
-          let attrs = assert False in
+      | StExc _ s lt ls alg_attrs item_attrs →
+          let alg_attrs = assert False in
+          let item_attrs = assert False in
           C.node "StExc"
             [C.vala C.string s; C.vala (C.list ctyp) lt;
-             C.vala (C.list C.string) ls; attrs]
+             C.vala (C.list C.string) ls; alg_attrs; item_attrs]
       | StExp _ e attrs →
           let attrs = assert False in
           C.node "StExp" [expr e; attrs]

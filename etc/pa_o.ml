@@ -431,9 +431,9 @@ EXTEND
  ;
   str_item:
     [ "top"
-      [ "exception"; (_, c, tl, _) = constructor_declaration;
-        b = rebind_exn ; attrs = V (LIST0 item_attribute) ->
-          <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ $_list:attrs$ >>
+      [ "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs;
+        b = rebind_exn ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) ->
+          <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ $_list:alg_attrs$ $_list:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) ->
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
@@ -518,8 +518,8 @@ EXTEND
   ;
   sig_item:
     [ "top"
-      [ "exception"; (_, c, tl, _) = constructor_declaration ; attrs = V (LIST0 item_attribute) ->
-          <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:attrs$ >>
+      [ "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) ->
+          <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:alg_attrs$ $_list:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) ->
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
@@ -984,7 +984,7 @@ EXTEND
     [ [ "{"; ldl = V label_declarations "list"; "}" ->
       <:ctyp< { $_list:ldl$ } >> ] ]
   ;
-  constructor_declaration:
+  constructor_declaration_sans_alg_attrs:
     [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
           (loc, ci, cal, None)
       | ci = cons_ident; "of"; cdrec = record_type ->
@@ -1001,6 +1001,25 @@ EXTEND
           in
           (loc, ci, <:vala< [] >>, Some t)
       | ci = cons_ident -> (loc, ci, <:vala< [] >>, None) ] ]
+  ;
+  constructor_declaration:
+    [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = V (LIST0 alg_attribute) ->
+          (loc, ci, cal, None, alg_attrs)
+      | ci = cons_ident; "of"; cdrec = record_type ; alg_attrs = V (LIST0 alg_attribute) ->
+          (loc, ci, Ploc.VaVal [cdrec], None, alg_attrs)
+      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*");
+        "->"; t = ctyp ; alg_attrs = V (LIST0 alg_attribute) ->
+          (loc, ci, cal, Some t, alg_attrs)
+      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = V (LIST0 alg_attribute) ->
+          let t =
+            match cal with
+            [ <:vala< [t] >> -> t
+            | <:vala< [t :: tl] >> -> <:ctyp< ($list:[t :: tl]$) >>
+            | _ -> assert False ]
+          in
+          (loc, ci, <:vala< [] >>, Some t, alg_attrs)
+      | ci = cons_ident; alg_attrs = V (LIST0 alg_attribute) ->
+          (loc, ci, <:vala< [] >>, None, alg_attrs) ] ]
   ;
   cons_ident:
     [ [ i = V UIDENT "uid" "" -> i

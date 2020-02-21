@@ -72,7 +72,7 @@ value rec expr_of_type gtn use_self loc t =
       Some (<:expr< error >>, use_self) ]
 ;
 
-value expr_of_cons_decl gtn use_self (loc, c, tl, rto) =
+value expr_of_cons_decl gtn use_self (loc, c, tl, rto, _) =
   let tl = Pcaml.unvala tl in
   let (p, _) =
     let p = <:patt< $_uid:c$ >> in

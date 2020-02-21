@@ -48,7 +48,7 @@ type ctyp =
   | TyPot of loc and V (list string) and ctyp
   | TyQuo of loc and V string
   | TyRec of loc and V (list (loc * string * bool * ctyp * V (list (V (V string * payload)))))
-  | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp))
+  | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp * V (list (V (V string * payload)))))
   | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
   | TyVrn of loc and V (list poly_variant) and
@@ -153,7 +153,7 @@ and sig_item =
   | SgClt of loc and V (list (class_infos class_type))
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and V string and V (option expr)
-  | SgExc of loc and V string and V (list ctyp) and V (list (V (V string * payload)))
+  | SgExc of loc and V string and V (list ctyp) and V (list (V (V string * payload))) and V (list (V (V string * payload)))
   | SgExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | SgInc of loc and module_type
   | SgMod of loc and V bool and V (list (V (option (V string)) * module_type))
@@ -184,7 +184,7 @@ and str_item =
   | StDcl of loc and V (list str_item)
   | StDef of loc and V (list joinclause)
   | StDir of loc and V string and V (option expr)
-  | StExc of loc and V string and V (list ctyp) and V (list string) and V (list (V (V string * payload)))
+  | StExc of loc and V string and V (list ctyp) and V (list string) and V (list (V (V string * payload))) and V (list (V (V string * payload)))
   | StExp of loc and expr and V (list (V (V string * payload)))
   | StExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | StInc of loc and module_expr

@@ -290,8 +290,8 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
           <:str_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl, _) = constructor_declaration; b = rebind_exn ; attrs = V (LIST0 item_attribute) →
-          <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ $_list:attrs$ >>
+      | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs; b = rebind_exn ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) →
+          <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ $_list:alg_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
@@ -365,8 +365,8 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" → s ]); "end" →
           <:sig_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl, _) = constructor_declaration ; attrs = V (LIST0 item_attribute) →
-          <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:attrs$ >>
+      | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) →
+          <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:alg_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
@@ -780,6 +780,15 @@ EXTEND
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;
   constructor_declaration:
+    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp SEP "and") ; attrs = V (LIST0 alg_attribute) →
+          (loc, ci, cal, None, attrs)
+      | ci = V UIDENT "uid" ""; ":"; t = ctyp ; attrs = V (LIST0 alg_attribute) →
+          let (tl, rt) = generalized_type_of_type t in
+          (loc, ci, <:vala< tl >>, Some rt, attrs)
+      | ci = V UIDENT "uid" "" ; attrs = V (LIST0 alg_attribute) →
+          (loc, ci, <:vala< [] >>, None, attrs) ] ]
+  ;
+  constructor_declaration_sans_alg_attrs:
     [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp SEP "and") →
           (loc, ci, cal, None)
       | ci = V UIDENT "uid" ""; ":"; t = ctyp →

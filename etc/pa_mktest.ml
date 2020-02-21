@@ -130,7 +130,7 @@ value patt_expr_list_of_type loc (f : MLast.expr -> list (list (MLast.patt * MLa
   List.concat (List.map f el)
 ;
 
-value expr_of_cons_decl (loc, c, tl, rto) = do {
+value expr_of_cons_decl (loc, c, tl, rto, _) = do {
   let c = Pcaml.unvala c in
   if String.length c = 5 && String.sub c 2 3 = "Xtr" then []
   else do {
