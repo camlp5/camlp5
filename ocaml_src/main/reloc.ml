@@ -85,9 +85,9 @@ let rec ctyp floc sh =
           (loc,
            vala_map
              (List.map
-                (fun (loc, x1, x2, x3) ->
+                (fun (loc, x1, x2, x3, x4) ->
                    floc loc, x1, vala_map (List.map self) x2,
-                   option_map self x3))
+                   option_map self x3, x4))
              x1)
     | TyTup (loc, x1) ->
         let loc = floc loc in TyTup (loc, vala_map (List.map self) x1)
@@ -338,9 +338,9 @@ and sig_item floc sh =
     | SgDir (loc, x1, x2) ->
         let loc = floc loc in
         SgDir (loc, x1, vala_map (option_map (expr floc sh)) x2)
-    | SgExc (loc, x1, x2, x3) ->
+    | SgExc (loc, x1, x2, x3, x4) ->
         let loc = floc loc in
-        SgExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3)
+        SgExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3, x4)
     | SgExt (loc, x1, x2, x3, x4) ->
         let loc = floc loc in SgExt (loc, x1, ctyp floc sh x2, x3, x4)
     | SgInc (loc, x1) ->
@@ -426,9 +426,9 @@ and str_item floc sh =
     | StDir (loc, x1, x2) ->
         let loc = floc loc in
         StDir (loc, x1, vala_map (option_map (expr floc sh)) x2)
-    | StExc (loc, x1, x2, x3, x4) ->
+    | StExc (loc, x1, x2, x3, x4, x5) ->
         let loc = floc loc in
-        StExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3, x4)
+        StExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3, x4, x5)
     | StExp (loc, x1, x2) ->
         let loc = floc loc in StExp (loc, expr floc sh x1, x2)
     | StExt (loc, x1, x2, x3, x4) ->

@@ -44,7 +44,10 @@ type ctyp =
   | TyPot of loc * string list * ctyp
   | TyQuo of loc * string
   | TyRec of loc * (loc * string * bool * ctyp * (string * payload) list) list
-  | TySum of loc * (loc * string * ctyp list * ctyp option) list
+  | TySum of
+      loc *
+        (loc * string * ctyp list * ctyp option * (string * payload) list)
+          list
   | TyTup of loc * ctyp list
   | TyUid of loc * string
   | TyVrn of loc * poly_variant list * string list option option
@@ -143,7 +146,9 @@ and sig_item =
   | SgClt of loc * class_type class_infos list
   | SgDcl of loc * sig_item list
   | SgDir of loc * string * expr option
-  | SgExc of loc * string * ctyp list * (string * payload) list
+  | SgExc of
+      loc * string * ctyp list * (string * payload) list *
+        (string * payload) list
   | SgExt of loc * string * ctyp * string list * (string * payload) list
   | SgInc of loc * module_type
   | SgMod of loc * bool * (string option * module_type) list
@@ -174,7 +179,9 @@ and str_item =
   | StDcl of loc * str_item list
   | StDef of loc * joinclause list
   | StDir of loc * string * expr option
-  | StExc of loc * string * ctyp list * string list * (string * payload) list
+  | StExc of
+      loc * string * ctyp list * string list * (string * payload) list *
+        (string * payload) list
   | StExp of loc * expr * (string * payload) list
   | StExt of loc * string * ctyp * string list * (string * payload) list
   | StInc of loc * module_expr
