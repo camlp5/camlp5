@@ -1084,14 +1084,20 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "module")))
-                      (Grammar.s_token ("", "type")))
-                   (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
-                (Grammar.s_token ("", "=")))
-             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (mt : 'module_type) _ (i : 'ident) _ _ (loc : Ploc.t) ->
-              (MLast.SgMty (loc, i, mt) : 'sig_item)));
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "module")))
+                         (Grammar.s_token ("", "type")))
+                      (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
+                   (Grammar.s_token ("", "=")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (mt : 'module_type) _
+                (i : 'ident) _ _ (loc : Ploc.t) ->
+              (MLast.SgMty (loc, i, mt, []) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

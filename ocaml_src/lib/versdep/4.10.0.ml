@@ -530,10 +530,10 @@ let ocaml_psig_module loc (s : string option) mt =
      pmd_loc = loc}
 ;;
 
-let ocaml_psig_modtype loc s mto =
+let ocaml_psig_modtype ?(item_attributes = []) loc s mto =
   let pmtd =
-    {pmtd_name = mkloc loc s; pmtd_type = mto; pmtd_attributes = [];
-     pmtd_loc = loc}
+    {pmtd_name = mkloc loc s; pmtd_type = mto;
+     pmtd_attributes = item_attributes; pmtd_loc = loc}
   in
   Psig_modtype pmtd
 ;;
