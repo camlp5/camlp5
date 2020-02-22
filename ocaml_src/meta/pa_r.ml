@@ -1200,12 +1200,18 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (module_declaration : 'module_declaration Grammar.Entry.e)),
-           (fun (mt : 'module_declaration) (i : 'uidopt) (loc : Ploc.t) ->
-              (i, mt : 'mod_decl_binding)))]];
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (module_declaration :
+                    'module_declaration Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (mt : 'module_declaration)
+                (i : 'uidopt) (loc : Ploc.t) ->
+              (i, mt, attrs : 'mod_decl_binding)))]];
     Grammar.extension
       (module_declaration : 'module_declaration Grammar.Entry.e) None
       [None, Some Gramext.RightA,

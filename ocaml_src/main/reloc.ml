@@ -349,7 +349,8 @@ and sig_item floc sh =
         let loc = floc loc in
         SgMod
           (loc, x1,
-           vala_map (List.map (fun (x1, x2) -> x1, module_type floc sh x2))
+           vala_map
+             (List.map (fun (x1, x2, x3) -> x1, module_type floc sh x2, x3))
              x2)
     | SgMty (loc, x1, x2, x3) ->
         let loc = floc loc in SgMty (loc, x1, module_type floc sh x2, x3)

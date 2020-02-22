@@ -341,8 +341,9 @@ module Meta_make (C : MetaSig) =
             [C.vala C.bool b;
              C.vala
                (C.list
-                  (fun (sopt, mt) ->
-                     C.tuple [C.vala c_vala_opt sopt; module_type mt]))
+                  (fun (sopt, mt, attrs) ->
+                     let attrs = assert false in
+                     C.tuple [C.vala c_vala_opt sopt; module_type mt; attrs]))
                lsmt]
       | SgMty (_, s, mt, attrs) ->
           let attrs = assert false in

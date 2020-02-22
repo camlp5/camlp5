@@ -524,9 +524,9 @@ let ocaml_psig_include loc mt =
   Psig_include {pincl_mod = mt; pincl_loc = loc; pincl_attributes = []}
 ;;
 
-let ocaml_psig_module loc (s : string option) mt =
+let ocaml_psig_module ?(item_attributes = []) loc (s : string option) mt =
   Psig_module
-    {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
+    {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = item_attributes;
      pmd_loc = loc}
 ;;
 
@@ -548,8 +548,8 @@ let ocaml_psig_recmodule =
   let f ntl =
     let ntl =
       List.map
-        (fun (s, mt) ->
-           {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
+        (fun (s, mt, attrs) ->
+           {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = attrs;
             pmd_loc = loc_none})
         ntl
     in
