@@ -370,6 +370,26 @@ and t2 = bool[@@foo];
   [ A of int and bool[@alg_foo]
   | B of bool and string[@alg_bar] ][@@item_bar];
 |foo}
+    };
+    {name="module-expr-item-attributes1"; implem = True ;
+     o_input = OK{foo|module M = struct end [@alg_foo] [@@item_bar]|foo} ;
+     official_input = OK{foo|module M = struct end [@alg_foo] [@@item_bar]|foo} ;
+     r_input = OK{foo|module M = struct end [@alg_foo] [@@item_bar];|foo} ;
+     o_output = OK {foo|module M = struct  end[@alg_foo][@@item_bar];;
+|foo} ;
+     official_output = OK {foo|module M = ((struct  end)[@alg_foo ])[@@item_bar ]|foo} ;
+     r_output = OK {foo|module M = struct  end[@alg_foo][@@item_bar];
+|foo}
+    };
+    {name="module-expr-item-attributes2"; implem = True ;
+     o_input = OK{foo|module M = N [@alg_foo] [@@item_bar]|foo} ;
+     official_input = OK{foo|module M = N [@alg_foo] [@@item_bar]|foo} ;
+     r_input = OK{foo|module M = N [@alg_foo] [@@item_bar];|foo} ;
+     o_output = OK {foo|module M = N[@alg_foo][@@item_bar];;
+|foo} ;
+     official_output = OK {foo|module M = ((N)[@alg_foo ])[@@item_bar ]|foo} ;
+     r_output = OK {foo|module M = N[@alg_foo][@@item_bar];
+|foo}
     }
 ]
 ;

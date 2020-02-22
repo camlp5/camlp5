@@ -1324,8 +1324,8 @@ and str_item s l =
   | StMod loc rf nel →
       if not (uv rf) then
         List.fold_right
-          (fun (nopt, me) l →
-             let m = ocaml_pstr_module (mkloc loc) (option_map uv (uv nopt)) (module_expr me) in
+          (fun (nopt, me, attrs) l →
+             let m = ocaml_pstr_module ~{item_attributes=item_attributes attrs} (mkloc loc) (option_map uv (uv nopt)) (module_expr me) in
              [mkstr loc m :: l])
           (uv nel) l
       else
@@ -1333,7 +1333,8 @@ and str_item s l =
         [ Some pstr_recmodule →
             let nel =
               List.map
-                (fun (nopt, me) →
+                (fun (nopt, me, attrs) →
+                   let attrs = item_attributes attrs in
                    let (me, mt) =
                      match me with
                      [ MeTyc _ me mt → (module_expr me, module_type mt)
@@ -1341,7 +1342,7 @@ and str_item s l =
                          error (MLast.loc_of_module_expr me)
                            "module rec needs module types constraints" ]
                    in
-                   (option_map uv (uv nopt), mt, ocaml_pmod_constraint (mkloc loc) me mt))
+                   (option_map uv (uv nopt), mt, ocaml_pmod_constraint (mkloc loc) me mt, attrs))
                 (uv nel)
             in
             [mkstr loc (pstr_recmodule nel) :: l]

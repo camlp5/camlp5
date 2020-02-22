@@ -849,8 +849,8 @@ and str_item_se se =
       let me = module_expr_se se in
       <:str_item< include $me$ >>
   | Sexpr loc [Slid _ "module"; se1; se2] →
-      let (i, mb) = str_module_se (Sexpr loc [se1; se2]) in
-      <:str_item< module $_uidopt:i$ = $mb$ >>
+      let (i, mb, attrs) = str_module_se (Sexpr loc [se1; se2]) in
+      <:str_item< module $_uidopt:i$ = $mb$ $_list:attrs$ >>
   | Sexpr loc [Slid _ ("module*" | "modulerec*" as rf) :: sel] →
       let rf = rf = "modulerec*" in
       let lmb = anti_list_map str_module_se sel in
@@ -891,7 +891,7 @@ and str_item_se se =
 and str_module_se =
   fun
   [ Sexpr loc [se1; se2] →
-      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_expr_se se2)
+      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_expr_se se2, <:vala< [] >>)
   | se → error se "module binding" ]
 and sig_module_se =
   fun

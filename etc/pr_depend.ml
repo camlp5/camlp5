@@ -230,7 +230,7 @@ and str_item =
   | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
   | <:str_item< include $me$ >> -> module_expr me
   | <:str_item< module $flag:_$ $list:nel$ >> ->
-      list (fun (_, me) -> module_expr me) nel
+      list (fun (_, me,_) -> module_expr me) nel
   | <:str_item< module type $_$ = $mt$ >> -> module_type mt
   | <:str_item< open $[s :: _]$ >> -> addmodule s
   | <:str_item< type $list:tdl$ >> -> list type_decl tdl

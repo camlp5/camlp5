@@ -1058,7 +1058,7 @@ value functor_parameter_unvala arg =
   ]
 ;
 
-value str_module pref pc (m, me) =
+value str_module pref pc (m, me, item_attrs) =
   let m = match m with [ None -> "_" | Some s -> s ] in
   let (mal, me) =
     loop me where rec loop =
@@ -1091,23 +1091,29 @@ value str_module pref pc (m, me) =
   if pc.aft = "" then
     match mto with
     [ Some mt ->
-        pprintf pc "%s %s%s%p :@;%p =@;%p" pref m
+        pprintf pc "%s %s%s%p :@;%p =@;%p%p" pref m
           (if mal = [] then "" else " ") (hlist module_arg) mal
           module_type mt module_expr me
+          (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
     | None ->
         let mal = List.map (fun ma -> (ma, "")) mal in
-        pprintf pc "%s %s%p =@;%p" pref m (plistb module_arg 2) mal
-          module_expr me ]
+        pprintf pc "%s %s%p =@;%p%p" pref m (plistb module_arg 2) mal
+          module_expr me
+          (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
+    ]
   else
     match mto with
     [ Some mt ->
-        pprintf pc "%s %s%s%p :@;%p =@;%p@;<0 0>" pref m
+        pprintf pc "%s %s%s%p :@;%p =@;%p%p@;<0 0>" pref m
           (if mal = [] then "" else " ") (hlist module_arg) mal
           module_type mt module_expr me
+          (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
     | None ->
         let mal = List.map (fun ma -> (ma, "")) mal in
-        pprintf pc "@[<a>%s %s%p =@;%p@;<0 0>@]" pref m (plistb module_arg 2)
-          mal module_expr me ]
+        pprintf pc "@[<a>%s %s%p =@;%p%p@;<0 0>@]" pref m (plistb module_arg 2)
+          mal module_expr me
+          (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
+    ]
 ;
 
 value sig_module_or_module_type pref defc pc ((m : option string), mt) =
@@ -1825,7 +1831,7 @@ EXTEND_PRINTER
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
-          let mdl = List.map (fun (m, mt) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt)) mdl in
+          let mdl = List.map (fun (m, mt, item_attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, item_attrs)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $m$ = $mt$ >> ->

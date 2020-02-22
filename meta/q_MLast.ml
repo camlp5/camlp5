@@ -379,7 +379,8 @@ EXTEND
       | → Qast.VaVal (Qast.List []) ] ]
   ;
   mod_binding:
-    [ [ i = SV uidopt "uidopt"; me = mod_fun_binding → Qast.Tuple [i; me] ] ]
+    [ [ i = SV uidopt "uidopt"; me = mod_fun_binding ; attrs = SV (LIST0 item_attribute) →
+        Qast.Tuple [i; me; attrs] ] ]
   ;
   mod_fun_binding:
     [ RIGHTA

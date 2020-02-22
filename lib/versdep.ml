@@ -1392,20 +1392,24 @@ value ocaml_pstr_modtype loc s mt =
   END
 ;
 
-value ocaml_pstr_module loc (s : option string) me =
+value ocaml_pstr_module ?{item_attributes=[]} loc (s : option string) me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
     let s = mustSome "ocaml_pstr_module" s in
     Pstr_module (mkloc loc s) me
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    do { assert (item_attributes = []) ;
     let s = mustSome "ocaml_pstr_module" s in
     let mb =
       {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
        pmb_loc = loc}
     in
     Pstr_module mb
+    }
   ELSE
     let mb =
-      {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+      {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = item_attributes;
        pmb_loc = loc}
     in
     Pstr_module mb
@@ -1441,9 +1445,14 @@ value ocaml_pstr_primitive s vd =
 value ocaml_pstr_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
-    Some (fun nel -> Pstr_recmodule nel)
+    Some (fun nel ->
+      let mel = List.map (fun (a,b,c,attrs) ->
+        do { assert (attrs = []) ; (a,b,c) }) mel in
+      Pstr_recmodule nel)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let f nel =
+      let mel = List.map (fun (a,b,c,attrs) ->
+        do { assert (attrs = []) ; (a,b,c) }) mel in
       Pstr_recmodule (List.map (fun ((s : option string), mt, me) →
                                 let s = mustSome "ocaml_pstr_recmodule" s in
                                  (mknoloc s, mt, me)) nel)
@@ -1451,6 +1460,8 @@ value ocaml_pstr_recmodule =
     Some f
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     let f nel =
+      let mel = List.map (fun (a,b,c,attrs) ->
+        do { assert (attrs = []) ; (a,b,c) }) mel in
       Pstr_recmodule
         (List.map
            (fun ((s : option string), mt, me) ->
@@ -1464,8 +1475,8 @@ value ocaml_pstr_recmodule =
     let f nel =
       Pstr_recmodule
         (List.map
-           (fun ((s : option string), mt, me) ->
-              {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
+           (fun ((s : option string), mt, me, attrs) ->
+              {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = attrs;
                pmb_loc = loc_none})
            nel)
     in

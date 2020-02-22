@@ -472,7 +472,8 @@ EXTEND
       | -> <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = V uidopt "uidopt"; me = mod_fun_binding -> (i, me) ] ]
+    [ [ i = V uidopt "uidopt"; me = mod_fun_binding ;
+        attrs = V (LIST0 item_attribute) -> (i, me, attrs) ] ]
   ;
   mod_fun_binding:
     [ RIGHTA

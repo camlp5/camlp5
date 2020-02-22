@@ -551,7 +551,7 @@ and str_item floc sh =
     | StMod loc x1 x2 →
         let loc = floc loc in
         StMod loc x1
-          (vala_map (List.map (fun (x1, x2) → (x1, module_expr floc sh x2)))
+          (vala_map (List.map (fun (x1, x2, x3) → (x1, module_expr floc sh x2, x3)))
              x2)
     | StMty loc x1 x2 →
         let loc = floc loc in
