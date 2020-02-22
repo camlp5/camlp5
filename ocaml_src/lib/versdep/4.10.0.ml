@@ -603,9 +603,9 @@ let ocaml_pstr_modtype loc s mt =
   Pstr_modtype pmtd
 ;;
 
-let ocaml_pstr_module loc (s : string option) me =
+let ocaml_pstr_module ?(item_attributes = []) loc (s : string option) me =
   let mb =
-    {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
+    {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = item_attributes;
      pmb_loc = loc}
   in
   Pstr_module mb
@@ -625,8 +625,8 @@ let ocaml_pstr_recmodule =
   let f nel =
     Pstr_recmodule
       (List.map
-         (fun ((s : string option), mt, me) ->
-            {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
+         (fun ((s : string option), mt, me, attrs) ->
+            {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = attrs;
              pmb_loc = loc_none})
          nel)
   in

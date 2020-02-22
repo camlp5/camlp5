@@ -185,7 +185,9 @@ and str_item =
   | StExp of loc * expr * (string * payload) list
   | StExt of loc * string * ctyp * string list * (string * payload) list
   | StInc of loc * module_expr
-  | StMod of loc * bool * (string option * module_expr) list
+  | StMod of
+      loc * bool *
+        (string option * module_expr * (string * payload) list) list
   | StMty of loc * string * module_type
   | StOpn of loc * string list
   | StTyp of loc * bool * type_decl list
