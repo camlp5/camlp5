@@ -17,7 +17,7 @@ value smart_exn_eq e1 e2 =
   in eqrec e1 e2
 ;
 
-type input_desc_t = [
+type step_desc_t = [
   OK of string
 | EXN of string and exn
 | SKIP of string and string
@@ -27,12 +27,12 @@ type input_desc_t = [
 type instance_t = {
   name : string ;
   implem : bool ;
-  r_input : input_desc_t;
-  o_input : input_desc_t ;
-  official_input : input_desc_t ;
-  r_output : option (string * option exn) ;
-  o_output : option (string * option exn) ;
-  official_output : option (string * option exn)
+  r_input : step_desc_t;
+  o_input : step_desc_t ;
+  official_input : step_desc_t ;
+  r_output : step_desc_t ;
+  o_output : step_desc_t ;
+  official_output : step_desc_t
 }
 ;
 
@@ -41,332 +41,335 @@ value test_matrix = [
      o_input = OK "(1; 2);; 3 ;; let x = 1 ;;" ;
      official_input = OK "(1; 2);; 3 ;; let x = 1 ;;" ;
      r_input = OK "do { 1; 2}; 3 ; value x = 1 ;" ;
-     o_output = Some ({foo|let _ = 1; 2;;
+     o_output = OK {foo|let _ = 1; 2;;
 let _ = 3;;
 let x = 1;;
-|foo}, None) ;
-     official_output = None ;
-     r_output = Some ({foo|do { 1; 2 };
+|foo} ;
+     official_output = OK {foo|;;1; 2
+;;3
+let x = 1|foo};
+     r_output = OK {foo|do { 1; 2 };
 3;
 value x = 1;
-|foo}, None)
+|foo}
     };
     {name="infix1"; implem = True ;
      o_input = OK"(a + b) c;;" ;
      official_input = OK"(+) a b c;;" ;
      r_input = OK"(a + b) c;" ;
-     o_output = Some ({foo|let _ = (a + b) c;;
-|foo}, None) ;
-     official_output = Some ({foo|;;(+) a b c|foo}, None) ;
-     r_output = Some ({foo|(a + b) c;
-|foo}, None)
+     o_output = OK {foo|let _ = (a + b) c;;
+|foo} ;
+     official_output = OK {foo|;;(+) a b c|foo} ;
+     r_output = OK{foo|(a + b) c;
+|foo}
     };
     {name="infix2"; implem = True ;
      o_input = OK "(a --> b) c;;" ;
      official_input = OK "(-->) a b c;;" ;
      r_input = OK"(a --> b) c;" ;
-     o_output = Some ({foo|let _ = (a --> b) c;;
-|foo}, None) ;
-     official_output = Some ({foo|;;(-->) a b c|foo}, None) ;
-     r_output = Some ({foo|(a --> b) c;
-|foo}, None)
+     o_output = OK {foo|let _ = (a --> b) c;;
+|foo} ;
+     official_output = OK {foo|;;(-->) a b c|foo} ;
+     r_output = OK {foo|(a --> b) c;
+|foo}
     };
     {name="prefix1"; implem = True ;
      o_input = OK"(!!!a) c;;" ;
      official_input = OK"(!!!) a c;;" ;
      r_input = OK"(!!!a) c;" ;
-     o_output = Some ({foo|let _ = !!!a c;;
-|foo}, None) ;
-     official_output = Some ({foo|;;(!!!) a c|foo}, None) ;
-     r_output = Some ({foo|!!!a c;
-|foo}, None)
+     o_output = OK {foo|let _ = !!!a c;;
+|foo} ;
+     official_output = OK {foo|;;(!!!) a c|foo} ;
+     r_output = OK {foo|!!!a c;
+|foo}
     };
     (* original syntax accepts "$" as an infix symbol; revised syntax DOES NOT *)
     {name="dollar"; implem = True ;
      o_input = OK"a $ c;;" ;
      official_input = OK"a $ c;;" ;
      r_input = EXN "a $ c;" (Ploc.Exc Ploc.dummy (Stream.Error "';' expected after [str_item] (in [str_item_semi])")) ;
-     o_output = Some ({foo|let _ = a $ c;;
-|foo}, None) ;
-     official_output = Some ({foo|;;a $ c|foo}, None) ;
-     r_output = Some ({foo|\$  a c;
-|foo}, None)
+     o_output = OK {foo|let _ = a $ c;;
+|foo} ;
+     official_output = OK {foo|;;a $ c|foo} ;
+     r_output = OK {foo|\$  a c;
+|foo}
     };
     {name="alg_attribute1"; implem = True ;
      o_input = OK"a[@foo];;" ;
      official_input = OK"a[@foo];;" ;
      r_input = OK"a [@foo];" ;
-     o_output = Some ({foo|let _ = a[@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|a[@foo];
-|foo}, None)
+     o_output = OK {foo|let _ = a[@foo];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@foo ])|foo} ;
+     r_output = OK {foo|a[@foo];
+|foo}
     };
     {name="alg_attribute2"; implem = True ;
      o_input = OK"a + b[@foo];;" ;
      official_input = OK"a + b[@foo];;" ;
      r_input = OK"a + b [@foo];" ;
-     o_output = Some ({foo|let _ = a + b[@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a + b)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|a + b[@foo];
-|foo}, None)
+     o_output = OK {foo|let _ = a + b[@foo];;
+|foo} ;
+     official_output = OK {foo|;;((a + b)[@foo ])|foo} ;
+     r_output = OK {foo|a + b[@foo];
+|foo}
     };
     {name="alg_attribute3"; implem = True ;
      o_input = OK"(a [@foo])[@bar];;" ;
      official_input = OK"(a [@foo])[@bar];;" ;
      r_input = OK"a[@foo][@bar];" ;
-     o_output = Some ({foo|let _ = a[@foo][@bar];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo ][@bar ])|foo}, None) ;
-     r_output = Some ({foo|a[@foo][@bar];
-|foo}, None)
+     o_output = OK {foo|let _ = a[@foo][@bar];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@foo ][@bar ])|foo} ;
+     r_output = OK {foo|a[@foo][@bar];
+|foo}
     };
     {name="alg_attribute4"; implem = True ;
      o_input = OK"a [@foo :type t = int];;" ;
      official_input = OK"a [@foo :type t = int];;" ;
      r_input = OK"a[@foo :type t = int;];" ;
-     o_output = Some ({foo|let _ = a[@foo: type t = int;;];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo :type t = int])|foo}, None) ;
-     r_output = Some ({foo|a[@foo: type t = int;];
-|foo}, None)
+     o_output = OK {foo|let _ = a[@foo: type t = int;;];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@foo :type t = int])|foo} ;
+     r_output = OK{foo|a[@foo: type t = int;];
+|foo}
     };
     {name="alg_attribute5"; implem = True ;
      o_input = OK"a [@foo :int];;" ;
      official_input = OK"a [@foo :int];;" ;
      r_input = OK"a[@foo :int];" ;
-     o_output = Some ({foo|let _ = a[@foo: int];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo :int])|foo}, None) ;
-     r_output = Some ({foo|a[@foo: int];
-|foo}, None)
+     o_output = OK {foo|let _ = a[@foo: int];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@foo :int])|foo} ;
+     r_output = OK {foo|a[@foo: int];
+|foo}
     };
     {name="alg_attribute6"; implem = True ;
      o_input = OK"a [@foo ? (_,_)];;" ;
      official_input = OK"a [@foo ? (_,_)];;" ;
      r_input = OK"a[@foo ? (_,_)];" ;
-     o_output = Some ({foo|let _ = a[@foo? _, _];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo ?(_, _)])|foo}, None) ;
-     r_output = Some ({foo|a[@foo? (_, _)];
-|foo}, None)
+     o_output = OK {foo|let _ = a[@foo? _, _];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@foo ?(_, _)])|foo} ;
+     r_output = OK {foo|a[@foo? (_, _)];
+|foo}
     };
     {name="alg_attribute7"; implem = True ;
      o_input = OK"a [@foo ? (_,_) when true];;" ;
      official_input = OK"a [@foo ? (_,_) when true];;" ;
      r_input = OK"a[@foo ? (_,_) when True];" ;
-     o_output = Some ({foo|let _ = a[@foo? _, _ when true];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo ?(_, _) when true])|foo}, None) ;
-     r_output = Some ({foo|a[@foo? (_, _) when True];
-|foo}, None)
+     o_output = OK {foo|let _ = a[@foo? _, _ when true];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@foo ?(_, _) when true])|foo} ;
+     r_output = OK {foo|a[@foo? (_, _) when True];
+|foo}
     };
     {name="alg_attribute8"; implem = True ;
      o_input = OK"a [@foo ? _,_ when true];;" ;
      official_input = OK"a [@foo ? _,_ when true];;" ;
      r_input = OK"a[@foo ? (_,_) when True];" ;
-     o_output = Some ({foo|let _ = a[@foo? _, _ when true];;
-|foo}, None) ;
-     official_output = Some ({foo|;;((a)[@foo ?(_, _) when true])|foo}, None) ;
-     r_output = None
+     o_output = OK {foo|let _ = a[@foo? _, _ when true];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@foo ?(_, _) when true])|foo} ;
+     r_output = OK "a[@foo? (_, _) when True];
+"
     };
     {name="alg_attribute9"; implem = True ;
      o_input = OK"type t = int [@foo]" ;
      official_input = OK"type t = int [@foo]" ;
      r_input = OK"type t = int [@foo];" ;
-     o_output = Some ({foo|type t = int[@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|type t = ((int)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|type t = int[@foo];
-|foo}, None)
+     o_output = OK {foo|type t = int[@foo];;
+|foo} ;
+     official_output = OK {foo|type t = ((int)[@foo ])|foo} ;
+     r_output = OK {foo|type t = int[@foo];
+|foo}
     };
     {name="alg_attribute10"; implem = True ;
      o_input = OK"type t = int [@foo][@bar]" ;
      official_input = OK"type t = int [@foo][@bar]" ;
      r_input = OK"type t = int [@foo][@bar];" ;
-     o_output = Some ({foo|type t = int[@foo][@bar];;
-|foo}, None) ;
-     official_output = Some ({foo|type t = ((int)[@foo ][@bar ])|foo}, None) ;
-     r_output = Some ({foo|type t = int[@foo][@bar];
-|foo}, None)
+     o_output = OK {foo|type t = int[@foo][@bar];;
+|foo} ;
+     official_output = OK {foo|type t = ((int)[@foo ][@bar ])|foo} ;
+     r_output = OK {foo|type t = int[@foo][@bar];
+|foo}
     };
     {name="alg_attribute11"; implem = True ;
      o_input = OK"function x|y[@foo] -> 1" ;
      official_input = SKIP "function x|y[@foo] -> 1" "this test is problematic but probably not an error" ;
      r_input = OK"fun [ (x|y[@foo]) -> 1 ];" ;
-     o_output = Some ({foo|let _ =
+     o_output = OK {foo|let _ =
   function
     x | y[@foo] -> 1;;
-|foo}, None) ;
-     official_output = Some ({foo|;;fun (x|((y)[@foo ])) -> 1|foo}, None) ;
-     r_output = Some ({foo|fun
+|foo} ;
+     official_output = OK {foo|;;fun (x|((y)[@foo ])) -> 1|foo} ;
+     r_output = OK {foo|fun
 [ x | y[@foo] → 1 ];
-|foo}, None)
+|foo}
     };
     {name="alg_attribute12"; implem = True ;
      o_input = OK"module M = struct end [@foo]" ;
      official_input = OK"module M = struct end [@foo]" ;
      r_input = OK"module M = struct end [@foo];" ;
-     o_output = Some ({foo|module M = struct  end[@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|module M = ((struct  end)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|module M = struct  end[@foo];
-|foo}, None)
+     o_output = OK {foo|module M = struct  end[@foo];;
+|foo} ;
+     official_output = OK {foo|module M = ((struct  end)[@foo ])|foo} ;
+     r_output = OK {foo|module M = struct  end[@foo];
+|foo}
     };
     {name="alg_attribute13"; implem = True ;
      o_input = OK"class t = object end [@foo]" ;
      official_input = OK"class t = object end [@foo]" ;
      r_input = OK"class t = object end [@foo];" ;
-     o_output = Some ({foo|class t = object  end[@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|class t = ((object  end)[@foo ])|foo}, None) ;
-     r_output = Some ({foo|class t = object  end[@foo];
-|foo}, None)
+     o_output = OK {foo|class t = object  end[@foo];;
+|foo} ;
+     official_output = OK {foo|class t = ((object  end)[@foo ])|foo} ;
+     r_output = OK {foo|class t = object  end[@foo];
+|foo}
     };
     {name="alg_attribute13"; implem = True ;
      o_input = OK"class type ['a ] t = object end [@foo]" ;
      official_input = OK"class type ['a ] t = object end [@foo]" ;
      r_input = OK"class type t ['a] = object end [@foo];" ;
-     o_output = Some ({foo|class type ['a] t = object  end[@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|class type ['a] t = object  end[@foo ]|foo}, None) ;
-     r_output = Some ({foo|class type t ['a] = object  end[@foo];
-|foo}, None)
+     o_output = OK {foo|class type ['a] t = object  end[@foo];;
+|foo} ;
+     official_output = OK {foo|class type ['a] t = object  end[@foo ]|foo} ;
+     r_output = OK {foo|class type t ['a] = object  end[@foo];
+|foo}
     };
     {name="alg_attribute14"; implem = True ;
      o_input = OK"type t = { a : int [@foo] }" ;
      official_input = OK"type t = { a : int [@foo] }" ;
      r_input = OK"type t = { a : int [@foo] };" ;
-     o_output = Some ({foo|type t = { a : int[@foo] };;
-|foo}, None) ;
-     official_output = Some ({foo|type t = {
-  a: int [@foo ]}|foo}, None) ;
-     r_output = Some ({foo|type t = { a : int[@foo] };
-|foo}, None)
+     o_output = OK {foo|type t = { a : int[@foo] };;
+|foo} ;
+     official_output = OK {foo|type t = {
+  a: int [@foo ]}|foo} ;
+     r_output = OK {foo|type t = { a : int[@foo] };
+|foo}
     };
     {name="alg_attribute15"; implem = True ;
      o_input = OK"type t = { a : (int [@bar]) [@foo] }" ;
      official_input = OK"type t = { a : (int [@bar]) [@foo] }" ;
      r_input = OK"type t = { a : (int [@bar]) [@foo] };" ;
-     o_output = Some ({foo|type t = { a : (int[@bar])[@foo] };;
-|foo}, None) ;
-     official_output = Some ({foo|type t = {
-  a: ((int)[@bar ]) [@foo ]}|foo}, None) ;
-     r_output = Some ({foo|type t = { a : (int[@bar])[@foo] };
-|foo}, None)
+     o_output = OK {foo|type t = { a : (int[@bar])[@foo] };;
+|foo} ;
+     official_output = OK {foo|type t = {
+  a: ((int)[@bar ]) [@foo ]}|foo} ;
+     r_output = OK {foo|type t = { a : (int[@bar])[@foo] };
+|foo}
     };
     {name="alg_attribute16"; implem = True ;
      o_input = OK"type t = a * (b[@bar])" ;
      official_input = OK"type t = a * (b[@bar])" ;
      r_input = OK"type t = (a * b[@bar]);" ;
-     o_output = Some ({foo|type t = a * (b[@bar]);;
-|foo}, None) ;
-     official_output = Some ({foo|type t = (a * ((b)[@bar ]))|foo}, None) ;
-     r_output = Some ({foo|type t = (a * b[@bar]);
-|foo}, None)
+     o_output = OK {foo|type t = a * (b[@bar]);;
+|foo} ;
+     official_output = OK {foo|type t = (a * ((b)[@bar ]))|foo} ;
+     r_output = OK {foo|type t = (a * b[@bar]);
+|foo}
     };
     {name="alg_attribute17"; implem = True ;
      o_input = OK"type t = a * b[@bar]" ;
      official_input = OK"type t = a * b[@bar]" ;
      r_input = OK"type t = (a * b)[@bar];" ;
-     o_output = Some ({foo|type t = a * b[@bar];;
-|foo}, None) ;
-     official_output = Some ({foo|type t = (((a * b))[@bar ])|foo}, None) ;
-     r_output = Some ({foo|type t = (a * b)[@bar];
-|foo}, None)
+     o_output = OK {foo|type t = a * b[@bar];;
+|foo} ;
+     official_output = OK {foo|type t = (((a * b))[@bar ])|foo} ;
+     r_output = OK {foo|type t = (a * b)[@bar];
+|foo}
     };
 
     {name="alg_attribute19"; implem = True ;
      o_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] }" ;
      official_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] }" ;
      r_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] };" ;
-     o_output = Some ({foo|type t = { a : (int * bool[@bar])[@foo] };;
-|foo}, None) ;
-     official_output = Some ({foo|type t = {
-  a: (((int * bool))[@bar ]) [@foo ]}|foo}, None) ;
-     r_output = Some ({foo|type t = { a : ((int * bool)[@bar])[@foo] };
-|foo}, None)
+     o_output = OK {foo|type t = { a : (int * bool[@bar])[@foo] };;
+|foo} ;
+     official_output = OK {foo|type t = {
+  a: (((int * bool))[@bar ]) [@foo ]}|foo} ;
+     r_output = OK {foo|type t = { a : ((int * bool)[@bar])[@foo] };
+|foo}
     };
 
     {name="simple-interf"; implem = False ;
      o_input = OK"val x : int" ;
      official_input = OK"val x : int" ;
      r_input = OK"value x : int;" ;
-     o_output = Some ({foo|val x : int;;
-|foo}, None) ;
-     official_output = Some ({foo|val x : int|foo}, None) ;
-     r_output = Some ({foo|value x : int;
-|foo}, None)
+     o_output = OK {foo|val x : int;;
+|foo} ;
+     official_output = OK {foo|val x : int|foo} ;
+     r_output = OK {foo|value x : int;
+|foo}
     };
     {name="item_attribute1"; implem = False ;
      o_input = OK"val x : int [@@foo]" ;
      official_input = OK"val x : int [@@foo]" ;
      r_input = OK"value x : int[@@foo];" ;
-     o_output = Some ({foo|val x : int[@@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|val x : int[@@foo ]|foo}, None) ;
-     r_output = Some ({foo|value x : int[@@foo];
-|foo}, None)
+     o_output = OK {foo|val x : int[@@foo];;
+|foo} ;
+     official_output = OK {foo|val x : int[@@foo ]|foo} ;
+     r_output = OK {foo|value x : int[@@foo];
+|foo}
     };
     {name="item_attribute2"; implem = True ;
      o_input = OK"1 [@@foo]" ;
      official_input = OK"1 [@@foo]" ;
      r_input = OK"do { 1 } [@@foo];" ;
-     o_output = Some ({foo|let _ = 1[@@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|;;1[@@foo ]|foo}, None) ;
-     r_output = Some ({foo|1[@@foo];
-|foo}, None)
+     o_output = OK {foo|let _ = 1[@@foo];;
+|foo} ;
+     official_output = OK {foo|;;1[@@foo ]|foo} ;
+     r_output = OK {foo|1[@@foo];
+|foo}
     };
     {name="item_attribute3"; implem = True ;
      o_input = OK"type nonrec t1 = int [@@bar] and t2 = bool [@@foo]" ;
      official_input = OK"type nonrec t1 = int [@@bar] and t2 = bool [@@foo]" ;
      r_input = OK"type nonrec t1 = int [@@bar] and t2 = bool [@@foo];" ;
-     o_output = Some ({foo|type nonrec t1 = int[@@bar]
+     o_output = OK {foo|type nonrec t1 = int[@@bar]
 and t2 = bool[@@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|type nonrec t1 = int[@@bar ]
-and t2 = bool[@@foo ]|foo}, None) ;
-     r_output = Some ({foo|type nonrec t1 = int[@@bar]
+|foo} ;
+     official_output = OK {foo|type nonrec t1 = int[@@bar ]
+and t2 = bool[@@foo ]|foo} ;
+     r_output = OK {foo|type nonrec t1 = int[@@bar]
 and t2 = bool[@@foo];
-|foo}, None)
+|foo}
     };
     {name="exception-decl-attributes1"; implem = True ;
      o_input = OK"exception Foo of int [@@foo]" ;
      official_input = OK"exception Foo of int [@@foo]" ;
      r_input = OK"exception Foo of int [@@foo];" ;
-     o_output = Some ({foo|exception Foo of int[@@foo];;
-|foo}, None) ;
-     official_output = Some ({foo|exception Foo of int [@@foo ]|foo}, None) ;
-     r_output = Some ({foo|exception Foo of int[@@foo];
-|foo}, None)
+     o_output = OK {foo|exception Foo of int[@@foo];;
+|foo} ;
+     official_output = OK {foo|exception Foo of int [@@foo ]|foo} ;
+     r_output = OK {foo|exception Foo of int[@@foo];
+|foo}
     };
     {name="exception-decl-attributes2"; implem = True ;
      o_input = OK"exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar]" ;
      official_input = OK"exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar]" ;
      r_input = OK"exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar] ;" ;
-     o_output = Some ({foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];;
-|foo}, None) ;
-     official_output = Some ({foo|exception T of ((int)[@alg_foo ]) [@alg_bar ][@@item_bar ]|foo}, None) ;
-     r_output = Some ({foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];
-|foo}, None)
+     o_output = OK {foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];;
+|foo} ;
+     official_output = OK {foo|exception T of ((int)[@alg_foo ]) [@alg_bar ][@@item_bar ]|foo} ;
+     r_output = OK {foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];
+|foo}
     };
     {name="constructor-decl-attributes1"; implem = True ;
      o_input = OK"type t = A of int * bool [@alg_foo] | B of bool * string [@alg_bar] [@@item_bar]" ;
      official_input = OK"type t = A of int * bool [@alg_foo] | B of bool * string [@alg_bar] [@@item_bar]" ;
      r_input = OK"type t = [ A of int and bool [@alg_foo] | B of bool and string [@alg_bar] ] [@@item_bar];" ;
-     o_output = Some ({foo|type t =
+     o_output = OK {foo|type t =
     A of int * bool[@alg_foo]
   | B of bool * string[@alg_bar][@@item_bar];;
-|foo}, None) ;
-     official_output = Some ({foo|type t =
+|foo} ;
+     official_output = OK {foo|type t =
   | A of int * bool [@alg_foo ]
-  | B of bool * string [@alg_bar ][@@item_bar ]|foo}, None) ;
-     r_output = Some ({foo|type t =
+  | B of bool * string [@alg_bar ][@@item_bar ]|foo} ;
+     r_output = OK {foo|type t =
   [ A of int and bool[@alg_foo]
   | B of bool and string[@alg_bar] ][@@item_bar];
-|foo}, None)
+|foo}
     }
 ]
 ;
@@ -380,17 +383,14 @@ value i2test (pa_implem,pa_interf)  (pp_implem, pp_interf) inputf outputf i =
       (_,SKIP inputs msg, _) ->
         todo i.name   
 
-    | (True,OK inputs, None) ->
-        ignore(pa_implem inputs)
+    | (_,_,SKIP outputs msg) ->
+        todo i.name   
 
-    | (False,OK inputs, None) ->
-        ignore(pa_interf inputs)
-
-    | (True, OK inputs, Some (outputs, None)) ->
+    | (True, OK inputs, OK outputs) ->
         assert_equal ~{printer=fmt_string}
           outputs (wrap_err pp_implem (wrap_err pa_implem inputs))
 
-    | (False, OK inputs, Some (outputs, None)) ->
+    | (False, OK inputs, OK outputs) ->
         assert_equal ~{printer=fmt_string}
           outputs (wrap_err pp_interf (wrap_err pa_interf inputs))
 
