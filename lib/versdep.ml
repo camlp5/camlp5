@@ -1200,18 +1200,22 @@ value ocaml_psig_include loc mt =
   END
 ;
 
-value ocaml_psig_module loc (s : option string) mt =
+value ocaml_psig_module ?{item_attributes=[]} loc (s : option string) mt =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
     let s = mustSome "ocaml_psig_module" s in
     Psig_module (mknoloc s) mt
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    do { assert (item_attributes = []) ;
   let s = mustSome "ocaml_psig_module" s in
     Psig_module
       {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
        pmd_loc = loc}
+    }
   ELSE
     Psig_module
-      {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
+      {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = item_attributes;
        pmd_loc = loc}
   END
 ;
@@ -1254,9 +1258,12 @@ value ocaml_psig_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let f ntl =
-      let ntl = List.map (fun ((s : option string), mt) ->
+      let ntl = List.map (fun ((s : option string), mt, attrs) ->
+          do { assert (attrs = []) ;
           let s = mustSome "ocaml_psig_recmodule" s in
-          (mknoloc s, mt)) ntl in
+          (mknoloc s, mt)
+          }
+          ) ntl in
       Psig_recmodule ntl
     in
     Some f
@@ -1264,10 +1271,12 @@ value ocaml_psig_recmodule =
     let f ntl =
       let ntl =
         List.map
-          (fun ((s : option string), mt) ->
+          (fun ((s : option string), mt, attrs) ->
+             do { assert (attrs = []) ;
              let s = mustSome "ocaml_psig_recmodule" s in
              {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
-              pmd_loc = loc_none})
+              pmd_loc = loc_none}
+             })
           ntl
       in
       Psig_recmodule ntl
@@ -1277,8 +1286,8 @@ value ocaml_psig_recmodule =
     let f ntl =
       let ntl =
         List.map
-          (fun (s, mt) ->
-             {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
+          (fun (s, mt, attrs) ->
+             {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = attrs;
               pmd_loc = loc_none})
           ntl
       in

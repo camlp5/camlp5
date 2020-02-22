@@ -546,7 +546,7 @@ EXTEND
           <:sig_item< value $lid:i$ : $t$ $_list:attrs$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V uidopt "uidopt"; mt = module_declaration -> (i, mt) ] ]
+    [ [ i = V uidopt "uidopt"; mt = module_declaration ; attrs = V (LIST0 item_attribute) -> (i, mt, attrs) ] ]
   ;
   module_declaration:
     [ RIGHTA

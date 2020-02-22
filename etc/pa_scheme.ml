@@ -601,7 +601,7 @@
  (sig_module_se
   (lambda_match
    ((Sexpr loc [se1 se2])
-    (values (Ploc.VaVal (Some (anti_uid_or_error se1))) (module_type_se se2)))
+    (values (Ploc.VaVal (Some (anti_uid_or_error se1))) (module_type_se se2) <:vala< [] >>))
    (se (error se "module binding"))))
  (expr_se
   (lambda_match

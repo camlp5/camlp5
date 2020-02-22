@@ -2741,7 +2741,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (module_declaration : 'module_declaration Grammar.Entry.e)),
            (fun (mt : 'module_declaration) (i : 'e__78) (loc : Ploc.t) ->
-              (Qast.Tuple [i; mt] : 'mod_decl_binding)))]];
+              (Qast.Tuple [i; mt; Qast.VaVal(Qast.List[])] : 'mod_decl_binding)))]];
     Grammar.extension
       (module_declaration : 'module_declaration Grammar.Entry.e) None
       [None, Some Gramext.RightA,

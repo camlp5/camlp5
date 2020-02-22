@@ -1116,7 +1116,7 @@ value str_module pref pc (m, me, item_attrs) =
     ]
 ;
 
-value sig_module_or_module_type pref defc pc ((m : option string), mt) =
+value sig_module_or_module_type pref defc pc ((m : option string), mt, item_attrs) =
   let m = match m with [ None -> "_" | Some s -> s ] in
   let (mal, mt) =
     loop mt where rec loop =
@@ -1143,11 +1143,13 @@ value sig_module_or_module_type pref defc pc ((m : option string), mt) =
   ] in
   let mal = List.map (fun ma -> (ma, "")) mal in
   if pc.aft = "" then
-    pprintf pc "%s %s%p %c@;%p" pref m (plistb module_arg 2) mal defc
+    pprintf pc "%s %s%p %c@;%p%p" pref m (plistb module_arg 2) mal defc
       module_type mt
+      (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
   else
-    pprintf pc "@[<a>%s %s%p %c@;%p@;<0 0>@]" pref m (plistb module_arg 2) mal
+    pprintf pc "@[<a>%s %s%p %c@;%p%p@;<0 0>@]" pref m (plistb module_arg 2) mal
       defc module_type mt
+      (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
 ;
 
 value str_or_sig_functor pc farg module_expr_or_type met =
@@ -1834,8 +1836,8 @@ EXTEND_PRINTER
           let mdl = List.map (fun (m, mt, item_attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, item_attrs)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
-      | <:str_item< module type $m$ = $mt$ >> ->
-          sig_module_or_module_type "module type" '=' pc (Some m, mt)
+      | <:str_item< module type $m$ = $mt$ $_list:item_attrs$ >> ->
+          sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:str_item< type $flag:nonrf$ $list:tdl$ >> ->
@@ -1882,12 +1884,12 @@ EXTEND_PRINTER
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
-          let mdl = List.map (fun (m, mt) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt)) mdl in
+          let mdl = List.map (fun (m, mt, attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, attrs)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
             (sig_module_or_module_type "and" ':') pc mdl
-      | <:sig_item< module type $m$ = $mt$ >> ->
-          sig_module_or_module_type "module type" '=' pc (Some m, mt)
+      | <:sig_item< module type $m$ = $mt$ $_list:item_attrs$ >> ->
+          sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->

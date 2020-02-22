@@ -459,8 +459,8 @@ EXTEND
           Qast.Node "SgUse" [Qast.Loc; s; sil] ] ]
   ;
   mod_decl_binding:
-    [ [ i = SV uidopt "uidopt"; mt = module_declaration →
-          Qast.Tuple [i; mt] ] ]
+    [ [ i = SV uidopt "uidopt"; mt = module_declaration ; attrs = SV (LIST0 item_attribute) →
+          Qast.Tuple [i; mt; attrs] ] ]
   ;
   module_declaration:
     [ RIGHTA
