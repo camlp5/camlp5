@@ -1221,14 +1221,14 @@ and sig_item s l =
             in
             [mksig loc (psig_recmodule ntl) :: l]
         | None → error loc "no recursive module in this ocaml version" ]
-  | SgMty loc n mt →
+  | SgMty loc n mt item_attrs →
       let mto =
         match mt with
         | MtQuo _ _ -> None
         | _ -> Some (module_type mt)
         end
       in
-      [mksig loc (ocaml_psig_modtype (mkloc loc) (uv n) mto) :: l]
+      [mksig loc (ocaml_psig_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
   | SgOpn loc id →
       [mksig loc
          (ocaml_psig_open (mkloc loc) (long_id_of_string_list loc (uv id))) ::

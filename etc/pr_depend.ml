@@ -201,7 +201,7 @@ and sig_item =
   | <:sig_item< include $mt$ >> -> module_type mt
   | <:sig_item< module $flag:_$ $list:ntl$ >> ->
       list (fun (_, mt) -> module_type mt) ntl
-  | SgMty _ _ mt -> module_type mt
+  | SgMty _ _ mt _ -> module_type mt
   | <:sig_item< open $[s :: _]$ >> -> addmodule s
   | <:sig_item< type $list:tdl$ >> -> list type_decl tdl
   | SgVal _ _ t _ -> ctyp t

@@ -157,7 +157,7 @@ and sig_item =
   | SgExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | SgInc of loc and module_type
   | SgMod of loc and V bool and V (list (V (option (V string)) * module_type))
-  | SgMty of loc and V string and module_type
+  | SgMty of loc and V string and module_type and V (list (V (V string * payload)))
   | SgOpn of loc and V (list string)
   | SgTyp of loc and V (list type_decl)
   | SgUse of loc and V string and V (list (sig_item * loc))
@@ -189,7 +189,7 @@ and str_item =
   | StExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
   | StInc of loc and module_expr
   | StMod of loc and V bool and V (list (V (option (V string)) * module_expr * V (list (V (V string * payload)))))
-  | StMty of loc and V string and module_type and  V (list (V (V string * payload)))
+  | StMty of loc and V string and module_type and V (list (V (V string * payload)))
   | StOpn of loc and V (list string)
   | StTyp of loc and V bool and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))

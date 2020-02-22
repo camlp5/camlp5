@@ -453,9 +453,9 @@ and sig_item floc sh =
         SgMod loc x1
           (vala_map (List.map (fun (x1, x2) → (x1, module_type floc sh x2)))
              x2)
-    | SgMty loc x1 x2 →
+    | SgMty loc x1 x2 x3 →
         let loc = floc loc in
-        SgMty loc x1 (module_type floc sh x2)
+        SgMty loc x1 (module_type floc sh x2) x3
     | SgOpn loc x1 →
         let loc = floc loc in
         SgOpn loc x1

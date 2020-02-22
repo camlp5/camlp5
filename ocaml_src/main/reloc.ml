@@ -442,8 +442,8 @@ and str_item floc sh =
            vala_map
              (List.map (fun (x1, x2, x3) -> x1, module_expr floc sh x2, x3))
              x2)
-    | StMty (loc, x1, x2) ->
-        let loc = floc loc in StMty (loc, x1, module_type floc sh x2)
+    | StMty (loc, x1, x2, x3) ->
+        let loc = floc loc in StMty (loc, x1, module_type floc sh x2, x3)
     | StOpn (loc, x1) -> let loc = floc loc in StOpn (loc, x1)
     | StTyp (loc, x1, x2) ->
         let loc = floc loc in

@@ -595,10 +595,10 @@ let ocaml_pstr_include =
        Pstr_include {pincl_mod = me; pincl_loc = loc; pincl_attributes = []})
 ;;
 
-let ocaml_pstr_modtype loc s mt =
+let ocaml_pstr_modtype ?(item_attributes = []) loc s mt =
   let pmtd =
-    {pmtd_name = mkloc loc s; pmtd_type = Some mt; pmtd_attributes = [];
-     pmtd_loc = loc}
+    {pmtd_name = mkloc loc s; pmtd_type = Some mt;
+     pmtd_attributes = item_attributes; pmtd_loc = loc}
   in
   Pstr_modtype pmtd
 ;;

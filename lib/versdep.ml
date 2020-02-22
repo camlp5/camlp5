@@ -1216,8 +1216,9 @@ value ocaml_psig_module loc (s : option string) mt =
   END
 ;
 
-value ocaml_psig_modtype loc s mto =
+value ocaml_psig_modtype ?{item_attributes=[]} loc s mto =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
     let mtd =
       match mto with
       | None -> Pmodtype_abstract
@@ -1225,9 +1226,10 @@ value ocaml_psig_modtype loc s mto =
       end
     in
     Psig_modtype (mknoloc s) mtd
+    }
   ELSE
     let pmtd =
-      {pmtd_name = mkloc loc s; pmtd_type = mto; pmtd_attributes = [];
+      {pmtd_name = mkloc loc s; pmtd_type = mto; pmtd_attributes = item_attributes;
        pmtd_loc = loc}
     in
     Psig_modtype pmtd
