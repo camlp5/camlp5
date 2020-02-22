@@ -359,8 +359,8 @@ EXTEND
       | "include"; me = module_expr → Qast.Node "StInc" [Qast.Loc; me]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") →
           Qast.Node "StMod" [Qast.Loc; r; l]
-      | "module"; "type"; i = SV ident ""; "="; mt = module_type →
-          Qast.Node "StMty" [Qast.Loc; i; mt]
+      | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = SV (LIST0 item_attribute) →
+          Qast.Node "StMty" [Qast.Loc; i; mt; attrs]
       | "open"; i = SV mod_ident "list" "" → Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; nrfl = SV (FLAG "nonrec");
         tdl = SV (LIST1 type_decl SEP "and") →

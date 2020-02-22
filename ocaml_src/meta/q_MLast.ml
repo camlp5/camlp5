@@ -1423,7 +1423,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
            (fun (mt : 'module_type) _ (i : 'e__32) _ _ (loc : Ploc.t) ->
-              (Qast.Node ("StMty", [Qast.Loc; i; mt]) : 'str_item)));
+              (Qast.Node ("StMty", [Qast.Loc; i; mt; Qast.VaVal(Qast.List[])]) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

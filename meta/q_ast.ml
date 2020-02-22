@@ -416,7 +416,9 @@ module Meta_make (C : MetaSig) =
                     let attrs = assert False in
                     C.tuple [C.vala c_vala_opt sopt; module_expr me; attrs]))
                lsme]
-      | StMty _ s mt → C.node "StMty" [C.vala C.string s; module_type mt]
+      | StMty _ s mt attrs →
+           let attrs = assert False in
+           C.node "StMty" [C.vala C.string s; module_type mt; attrs]
       | StOpn _ ls → C.node "StOpn" [C.vala (C.list C.string) ls]
       | StTyp _ b ltd →
           C.node "StTyp" [C.vala C.bool b; C.vala (C.list type_decl) ltd]

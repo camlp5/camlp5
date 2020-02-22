@@ -1347,8 +1347,8 @@ and str_item s l =
             in
             [mkstr loc (pstr_recmodule nel) :: l]
         | None → error loc "no recursive module in this ocaml version" ]
-  | StMty loc n mt →
-      let m = ocaml_pstr_modtype (mkloc loc) (uv n) (module_type mt) in
+  | StMty loc n mt item_attrs →
+      let m = ocaml_pstr_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) (module_type mt) in
       [mkstr loc m :: l]
   | StOpn loc id →
       [mkstr loc

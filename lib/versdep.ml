@@ -1381,11 +1381,14 @@ value ocaml_pstr_include =
   END
 ;
 
-value ocaml_pstr_modtype loc s mt =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_modtype (mkloc loc s) mt
+value ocaml_pstr_modtype ?{item_attributes=[]} loc s mt =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
+      Pstr_modtype (mkloc loc s) mt
+    }
   ELSE
     let pmtd =
-      {pmtd_name = mkloc loc s; pmtd_type = Some mt; pmtd_attributes = [];
+      {pmtd_name = mkloc loc s; pmtd_type = Some mt; pmtd_attributes = item_attributes;
        pmtd_loc = loc}
     in
     Pstr_modtype pmtd

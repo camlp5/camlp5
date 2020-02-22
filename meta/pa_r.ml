@@ -301,7 +301,7 @@ EXTEND
       | "include"; me = module_expr → <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V ident "";  "="; mt = module_type →
+      | "module"; "type"; i = V ident "";  "="; mt = module_type ; attrs = V (LIST0 item_attribute) →
           <:str_item< module type $_:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
       | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
