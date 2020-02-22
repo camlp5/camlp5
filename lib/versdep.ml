@@ -691,7 +691,7 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
       let catl =
         List.map
           (fun
-           [ Left (c, a, tl) -> (c, a, tl)
+           [ Left (c, a, tl, attrs) -> do { assert (attrs = []) ; (c, a, tl) }
            | Right t -> raise Exit ])
           catl
       in
@@ -703,7 +703,7 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
     let catl =
       List.map
         (fun
-         [ Left (c, a, tl) -> Rtag c a tl
+         [ Left (c, a, tl, attrs) -> do { assert (attrs = []) ; Rtag c a tl }
          | Right t -> Rinherit t ])
         catl
     in
@@ -712,7 +712,7 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
     let catl =
       List.map
         (fun
-         [ Left (c, a, tl) -> Rtag c [] a tl
+         [ Left (c, a, tl, attrs) -> do { assert (attrs = []) ; Rtag c [] a tl }
          | Right t -> Rinherit t ])
         catl
     in
@@ -722,7 +722,7 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
     let catl =
       List.map
         (fun
-         [ Left (c, a, tl) -> Rtag (mkloc loc c) [] a tl
+         [ Left (c, a, tl, attrs) -> do { assert (attrs = []) ; Rtag (mkloc loc c) [] a tl }
          | Right t -> Rinherit t ])
         catl
     in
@@ -732,13 +732,13 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
     let catl =
       List.map
         (fun c ->
-           let d =
+           let (d,attrs) =
              match c with
-             | Left (c, a, tl) -> Rtag (mkloc loc c) a tl
-             | Right t -> Rinherit t
+             | Left (c, a, tl, attrs) -> (Rtag (mkloc loc c) a tl, attrs)
+             | Right t -> (Rinherit t, [])
              end
          in
-	 {prf_desc = d; prf_loc = loc; prf_attributes = []})
+	 {prf_desc = d; prf_loc = loc; prf_attributes = attrs})
       catl
     in
     let clos = if clos then Closed else Open in

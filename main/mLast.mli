@@ -56,7 +56,7 @@ type ctyp =
   | TyXtr of loc and string and option (V ctyp)
   | TyAtt of loc and ctyp and V (V string * payload) ]
 and poly_variant =
-  [ PvTag of loc and V string and V bool and V (list ctyp)
+  [ PvTag of loc and V string and V bool and V (list ctyp) and V (list (V (V string * payload)))
   | PvInh of loc and ctyp ]
 and patt =
   [ PaAcc of loc and patt and patt

@@ -511,7 +511,7 @@ and ctyp =
       let catl =
         List.map
           (fun
-           [ PvTag loc c a t → Left (uv c, uv a, List.map ctyp (uv t))
+           [ PvTag loc c a t alg_attrs → Left (uv c, uv a, List.map ctyp (uv t), alg_attributes alg_attrs)
            | PvInh loc t → Right (ctyp t) ])
           (uv catl)
       in

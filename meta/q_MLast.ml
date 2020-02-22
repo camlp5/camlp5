@@ -1061,7 +1061,7 @@ EXTEND
             [Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None] ] ]
   ;
   label_declaration:
-    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ; alg_attrs = SV (LIST0 alg_attribute) →
+    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp LEVEL "below_alg_attribute" ; alg_attrs = SV (LIST0 alg_attribute) →
           mklabdecl Qast.Loc i mf t alg_attrs ] ]
   ;
   ident:
@@ -1315,13 +1315,13 @@ EXTEND
     [ [ rfl = SV (LIST0 poly_variant SEP "|") → rfl ] ]
   ;
   poly_variant:
-    [ [ "`"; i = SV ident "" →
+    [ [ "`"; i = SV ident "" ; alg_attrs = SV (LIST0 alg_attribute) →
           Qast.Node "PvTag"
             [Qast.Loc; i; Qast.VaVal (Qast.Bool True);
-             Qast.VaVal (Qast.List [])]
+             Qast.VaVal (Qast.List []); alg_attrs]
       | "`"; i = SV ident ""; "of"; ao = SV (FLAG "&");
-        l = SV (LIST1 ctyp SEP "&") →
-          Qast.Node "PvTag" [Qast.Loc; i; ao; l]
+        l = SV (LIST1 (ctyp LEVEL "below_alg_attribute") SEP "&") ; alg_attrs = SV (LIST0 alg_attribute) →
+          Qast.Node "PvTag" [Qast.Loc; i; ao; l; alg_attrs]
       | t = ctyp → Qast.Node "PvInh" [Qast.Loc; t] ] ]
   ;
   name_tag:

@@ -9352,7 +9352,7 @@ Grammar.safe_extend
                            'e__245)))])),
            (fun (l : 'e__245) (ao : 'e__244) _ (i : 'e__243) _
                 (loc : Ploc.t) ->
-              (Qast.Node ("PvTag", [Qast.Loc; i; ao; l]) : 'poly_variant)));
+              (Qast.Node ("PvTag", [Qast.Loc; i; ao; l; Qast.VaVal(Qast.List[])]) : 'poly_variant)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "`")))
@@ -9378,7 +9378,7 @@ Grammar.safe_extend
               (Qast.Node
                  ("PvTag",
                   [Qast.Loc; i; Qast.VaVal (Qast.Bool true);
-                   Qast.VaVal (Qast.List [])]) :
+                   Qast.VaVal (Qast.List []); Qast.VaVal (Qast.List [])]) :
                'poly_variant)))]];
     Grammar.extension (name_tag : 'name_tag Grammar.Entry.e) None
       [None, None,

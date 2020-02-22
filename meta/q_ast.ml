@@ -152,9 +152,10 @@ module Meta_make (C : MetaSig) =
           TyXtr loc s _ → C.xtr loc s ]
     and poly_variant =
       fun
-      [ PvTag _ s b lt →
+      [ PvTag _ s b lt attrs →
+          let attrs = assert False in
           C.node "PvTag"
-            [C.vala C.string s; C.vala C.bool b; C.vala (C.list ctyp) lt]
+            [C.vala C.string s; C.vala C.bool b; C.vala (C.list ctyp) lt; attrs]
       | PvInh _ t → C.node "PvInh" [ctyp t] ]
     and patt =
       fun

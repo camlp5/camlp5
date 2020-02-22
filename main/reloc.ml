@@ -135,9 +135,9 @@ value rec ctyp floc sh =
         TyXtr loc x1 (option_map (vala_map self) x2) ]
 and poly_variant floc sh =
   fun
-  [ PvTag loc x1 x2 x3 →
+  [ PvTag loc x1 x2 x3 x4 →
       let loc = floc loc in
-      PvTag loc x1 x2 (vala_map (List.map (ctyp floc sh)) x3)
+      PvTag loc x1 x2 (vala_map (List.map (ctyp floc sh)) x3) x4
   | PvInh loc x1 →
       let loc = floc loc in
       PvInh loc (ctyp floc sh x1) ]
