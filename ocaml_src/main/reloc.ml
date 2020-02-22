@@ -101,9 +101,9 @@ let rec ctyp floc sh =
   self
 and poly_variant floc sh =
   function
-    PvTag (loc, x1, x2, x3) ->
+    PvTag (loc, x1, x2, x3, x4) ->
       let loc = floc loc in
-      PvTag (loc, x1, x2, vala_map (List.map (ctyp floc sh)) x3)
+      PvTag (loc, x1, x2, vala_map (List.map (ctyp floc sh)) x3, x4)
   | PvInh (loc, x1) -> let loc = floc loc in PvInh (loc, ctyp floc sh x1)
 and patt floc sh =
   let rec self =

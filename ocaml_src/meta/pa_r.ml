@@ -4131,13 +4131,13 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "&")) false),
            (fun (l : 'ctyp list) (ao : bool) _ (i : 'ident) _
                 (loc : Ploc.t) ->
-              (MLast.PvTag (loc, i, ao, l) : 'poly_variant)));
+              (MLast.PvTag (loc, i, ao, l, []) : 'poly_variant)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "`")))
              (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)),
            (fun (i : 'ident) _ (loc : Ploc.t) ->
-              (MLast.PvTag (loc, i, true, []) : 'poly_variant)))]];
+              (MLast.PvTag (loc, i, true, [], []) : 'poly_variant)))]];
     Grammar.extension (name_tag : 'name_tag Grammar.Entry.e) None
       [None, None,
        [Grammar.production
