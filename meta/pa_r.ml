@@ -379,7 +379,7 @@ EXTEND
         l = V (LIST1 mod_decl_binding SEP "and") →
           <:sig_item< module $_flag:rf$ $_list:l$ >>
       | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = V (LIST0 item_attribute) →
-          <:sig_item< module type $_:i$ = $mt$ >>
+          <:sig_item< module type $_:i$ = $mt$ $_list:attrs$ >>
       | "open"; i = V mod_ident "list" "" → <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") →
           <:sig_item< type $_list:tdl$ >>

@@ -1097,7 +1097,7 @@ Grammar.safe_extend
                    (item_attribute : 'item_attribute Grammar.Entry.e))),
            (fun (attrs : 'item_attribute list) (mt : 'module_type) _
                 (i : 'ident) _ _ (loc : Ploc.t) ->
-              (MLast.SgMty (loc, i, mt, []) : 'sig_item)));
+              (MLast.SgMty (loc, i, mt, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
