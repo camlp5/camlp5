@@ -640,7 +640,7 @@ let ocaml_pstr_type is_nonrec stl =
 
 let ocaml_class_infos =
   Some
-    (fun virt (sl, sloc) name expr loc variance ->
+    (fun ?(item_attributes = []) virt (sl, sloc) name expr loc variance ->
        let _ =
          if List.length sl <> List.length variance then
            failwith "internal error: ocaml_class_infos"
@@ -652,7 +652,7 @@ let ocaml_class_infos =
            sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
-        pci_expr = expr; pci_loc = loc; pci_attributes = []})
+        pci_expr = expr; pci_loc = loc; pci_attributes = item_attributes})
 ;;
 
 let ocaml_pmod_constraint loc me mt =
