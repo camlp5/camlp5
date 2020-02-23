@@ -1246,17 +1246,17 @@ EXTEND
       | "val"; (mf, vf) = mut_virt; l = V LIDENT "lid" ""; ":"; t = ctyp ->
         <:class_sig_item< value $flag:mf$ $flag:vf$ $_lid:l$ : $t$ >>
       | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ->
-          <:class_sig_item< method virtual private $_lid:l$ : $t$ >>
+        t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_sig_item< method virtual private $_lid:l$ : $t$ $_list:attrs$ >>
       | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ->
-          <:class_sig_item< method virtual private $_lid:l$ : $t$ >>
-      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
-          <:class_sig_item< method virtual $_lid:l$ : $t$ >>
-      | "method"; "private"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
-          <:class_sig_item< method private $_lid:l$ : $t$ >>
-      | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
-          <:class_sig_item< method $_lid:l$ : $t$ >>
+        t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_sig_item< method virtual private $_lid:l$ : $t$ $_list:attrs$ >>
+      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_sig_item< method virtual $_lid:l$ : $t$ $_list:attrs$ >>
+      | "method"; "private"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_sig_item< method private $_lid:l$ : $t$ $_list:attrs$ >>
+      | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_sig_item< method $_lid:l$ : $t$ $_list:attrs$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;

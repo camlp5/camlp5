@@ -279,9 +279,9 @@ value class_object pc (csp, csl) =
          csp (vlist (semi_after class_str_item)) csl)
 ;
 
-value sig_method_or_method_virtual pc virt priv s t =
-  pprintf pc "method%s%s %s :@;%p" virt (if priv then " private" else "") s
-    ctyp t
+value sig_method_or_method_virtual pc virt priv s t item_attrs =
+  pprintf pc "method%s%s %s :@;%p%p" virt (if priv then " private" else "") s
+    ctyp t (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
 ;
 
 (* *)
@@ -500,10 +500,10 @@ EXTEND_PRINTER
     [ "top"
       [ <:class_sig_item< inherit $ct$ >> ->
           pprintf pc "inherit@;%p" class_type ct
-      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ >> ->
-          sig_method_or_method_virtual pc "" priv s t
-      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
-          sig_method_or_method_virtual pc " virtual" priv s t
+      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ $_list:attrs$ >> ->
+          sig_method_or_method_virtual pc "" priv s t attrs
+      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ $_list:attrs$ >> ->
+          sig_method_or_method_virtual pc " virtual" priv s t attrs
       | <:class_sig_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
       | <:class_sig_item< value $flag:mf$ $flag:vf$ $lid:s$ : $t$ >> ->
@@ -534,7 +534,7 @@ EXTEND_PRINTER
       | <:class_str_item< initializer $e$ >> ->
           pprintf pc "initializer@;%p" expr e
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
-          sig_method_or_method_virtual pc " virtual" priv s t
+          sig_method_or_method_virtual pc " virtual" priv s t (Ploc.VaVal []) (* TODO FIX THIS *)
       | <:class_str_item<
           method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$
         >> ->

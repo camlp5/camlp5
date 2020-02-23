@@ -148,12 +148,17 @@ value ocaml_value_description ?{item_attributes=[]} vn t p =
   END
 ;
 
-value ocaml_class_type_field loc ctfd =
-  IFDEF OCAML_VERSION < OCAML_4_00 THEN ctfd
+value ocaml_class_type_field ?{item_attributes=[]} loc ctfd =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN
+    do { assert (item_attributes = []) ;
+    ctfd
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
     {pctf_desc = ctfd; pctf_loc = loc}
+    }
   ELSE
-    {pctf_desc = ctfd; pctf_loc = loc; pctf_attributes = []}
+    {pctf_desc = ctfd; pctf_loc = loc; pctf_attributes = item_attributes}
   END
 ;
 
