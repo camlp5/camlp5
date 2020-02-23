@@ -1525,7 +1525,8 @@ value ocaml_pstr_type is_nonrec stl =
 ;
 
 value ocaml_class_infos =
-  IFDEF OCAML_VERSION <= OCAML_1_07 THEN None
+  IFDEF OCAML_VERSION <= OCAML_1_07 THEN
+    None
   ELSIFDEF OCAML_VERSION <= OCAML_3_00 THEN
     Some
       (fun virt params name expr loc variance ->
@@ -1533,13 +1534,15 @@ value ocaml_class_infos =
           pci_expr = expr; pci_loc = loc})
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Some
-      (fun virt (sl, sloc) name expr loc variance ->
+      (fun ?{item_attributes=[]} virt (sl, sloc) name expr loc variance ->
+        do { assert(item_attributes=[]) ;
         let params = (List.map (fun s → mkloc loc s) sl, sloc) in
         {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
-         pci_expr = expr; pci_loc = loc; pci_variance = variance})
+         pci_expr = expr; pci_loc = loc; pci_variance = variance}
+        })
   ELSE
     Some
-      (fun virt (sl, sloc) name expr loc variance ->
+      (fun ?{item_attributes=[]} virt (sl, sloc) name expr loc variance ->
          let _ =
            if List.length sl <> List.length variance then
              failwith "internal error: ocaml_class_infos"
@@ -1552,7 +1555,7 @@ value ocaml_class_infos =
             sl variance
          in
          {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
-          pci_expr = expr; pci_loc = loc; pci_attributes = []})
+          pci_expr = expr; pci_loc = loc; pci_attributes = item_attributes})
   END
 ;
 

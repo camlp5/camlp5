@@ -326,14 +326,16 @@ value list_map_check f l =
     | [] → Some (List.rev rev_l) ]
 ;
 
-value class_info class_expr ci =
+value class_info item_attributes_fun class_expr ci =
   let (params, var_list) = List.split (uv (snd ci.ciPrm)) in
   let variance = List.map variance_of_var var_list in
   match ocaml_class_infos with
   [ Some class_infos →
       match list_map_check uv params with
       [ Some params →
-          class_infos (if uv ci.ciVir then Virtual else Concrete)
+          class_infos
+            ~{item_attributes=item_attributes_fun ci.ciAttributes}
+            (if uv ci.ciVir then Virtual else Concrete)
             (params, mkloc (fst ci.ciPrm)) (uv ci.ciNam) (class_expr ci.ciExp)
             (mkloc ci.ciLoc) variance
       | None → error ci.ciLoc "no '_' type parameter allowed" ]
@@ -1187,12 +1189,12 @@ and sig_item s l =
   match s with
   [ 
     SgCls loc cd →
-      [mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l]
+      [mksig loc (Psig_class (List.map (class_info item_attributes class_type) (uv cd))) :: l]
   | SgClt loc ctd →
       match ocaml_psig_class_type with
       [ Some psig_class_type →
           [mksig loc
-             (psig_class_type (List.map (class_info class_type) (uv ctd))) ::
+             (psig_class_type (List.map (class_info item_attributes class_type) (uv ctd))) ::
            l]
       | None → error loc "no class type in this ocaml version" ]
   | SgDcl loc sl → List.fold_right sig_item (uv sl) l
@@ -1281,12 +1283,12 @@ and module_expr =
 and str_item s l =
   match s with
   [ StCls loc cd →
-      [mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l]
+      [mkstr loc (Pstr_class (List.map (class_info item_attributes class_expr) (uv cd))) :: l]
   | StClt loc ctd →
       match ocaml_pstr_class_type with
       [ Some pstr_class_type →
           [mkstr loc
-             (pstr_class_type (List.map (class_info class_type) (uv ctd))) ::
+             (pstr_class_type (List.map (class_info item_attributes class_type) (uv ctd))) ::
            l]
       | None → error loc "no class type in this ocaml version" ]
   | StDcl loc sl → List.fold_right str_item (uv sl) l
