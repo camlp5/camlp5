@@ -525,10 +525,11 @@ module Meta_make (C : MetaSig) =
       | CrInh loc Override ce os →
           C.node "CrInh" [C.node_no_loc "Override" []; class_expr ce; C.vala (C.option C.string) os]
       | CrIni _ e → C.node "CrIni" [expr e]
-      | CrMth _ b1 b2 s ot e →
+      | CrMth _ b1 b2 s ot e attrs →
+          let attrs = assert False in
           C.node "CrMth"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s;
-             C.vala (C.option ctyp) ot; expr e]
+             C.vala (C.option ctyp) ot; expr e; attrs]
       | CrVal _ b1 b2 s e →
           C.node "CrVal"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e]

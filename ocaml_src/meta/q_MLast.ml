@@ -7712,7 +7712,7 @@ Grammar.safe_extend
              (Grammar.s_nterm (fun_binding : 'fun_binding Grammar.Entry.e)),
            (fun (e : 'fun_binding) (topt : 'e__210) (l : 'e__209)
                 (pf : 'e__208) (ovf : 'e__207) _ (loc : Ploc.t) ->
-              (Qast.Node ("CrMth", [Qast.Loc; ovf; pf; l; topt; e]) :
+              (Qast.Node ("CrMth", [Qast.Loc; ovf; pf; l; topt; e; Qast.VaVal(Qast.List[])]) :
                'class_str_item)));
         Grammar.production
           (Grammar.r_next

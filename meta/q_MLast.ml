@@ -1174,8 +1174,8 @@ EXTEND
         ":"; t = ctyp →
           Qast.Node "CrVir" [Qast.Loc; pf; l; t]
       | "method"; ovf = SV (FLAG "!") "!"; pf = SV (FLAG "private") "priv";
-        l = SV lident "lid" ""; topt = SV (OPT polyt); e = fun_binding →
-          Qast.Node "CrMth" [Qast.Loc; ovf; pf; l; topt; e]
+        l = SV lident "lid" ""; topt = SV (OPT polyt); e = fun_binding ; attrs = SV (LIST0 item_attribute) →
+          Qast.Node "CrMth" [Qast.Loc; ovf; pf; l; topt; e; attrs]
       | "type"; t1 = ctyp; "="; t2 = ctyp →
           Qast.Node "CrCtr" [Qast.Loc; t1; t2]
       | "initializer"; se = expr → Qast.Node "CrIni" [Qast.Loc; se] ] ]

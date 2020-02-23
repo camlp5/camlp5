@@ -240,7 +240,7 @@ and class_str_item =
   | CrInh of loc and override_flag and class_expr and V (option string)
   | CrIni of loc and expr
   | CrMth of loc and V bool and V bool and V string and V (option ctyp) and
-      expr
+      expr and V (list (V (V string * payload)))
   | CrVal of loc and V bool and V bool and V string and expr
   | CrVav of loc and V bool and V string and ctyp
   | CrVir of loc and V bool and V string and ctyp ]

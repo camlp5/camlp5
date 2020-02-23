@@ -162,10 +162,18 @@ value ocaml_class_type_field ?{item_attributes=[]} loc ctfd =
   END
 ;
 
-value ocaml_class_field loc cfd =
-  IFDEF OCAML_VERSION < OCAML_4_00 THEN cfd
-  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pcf_desc = cfd; pcf_loc = loc}
-  ELSE {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []} END
+value ocaml_class_field ?{item_attributes=[]} loc cfd =
+  IFDEF OCAML_VERSION < OCAML_4_00 THEN
+    do { assert (item_attributes = []) ;
+    cfd
+    }
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
+    {pcf_desc = cfd; pcf_loc = loc}
+    }
+  ELSE
+    {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = item_attributes}
+  END
 ;
 
 value ocaml_mktyp ?{alg_attributes=[]} loc x =

@@ -1529,7 +1529,7 @@ and class_str_item c l =
       [ Some pcf_init →
           [ocaml_class_field (mkloc loc) (pcf_init (expr e)) :: l]
       | None → error loc "no initializer in this ocaml version" ]
-  | CrMth loc ovf pf s ot e →
+  | CrMth loc ovf pf s ot e item_attrs →
       let e =
         match ocaml_pexp_poly with
         [ Some pexp_poly →

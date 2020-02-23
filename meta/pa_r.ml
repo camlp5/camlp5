@@ -905,10 +905,10 @@ EXTEND
         lab = V lident "lid" ""; ":"; t = ctyp →
           <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
-        ":"; t = ctyp →
+        ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
           <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>
       | "method"; ovf = V (FLAG "!") "!"; pf = V (FLAG "private") "priv";
-        l = V lident "lid" ""; topt = V (OPT polyt); e = fun_binding →
+        l = V lident "lid" ""; topt = V (OPT polyt); e = fun_binding ; attrs = V (LIST0 item_attribute) →
           <:class_str_item<
             method $_!:ovf$ $_priv:pf$ $_lid:l$ $_opt:topt$ = $e$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp →
