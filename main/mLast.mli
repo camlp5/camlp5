@@ -28,10 +28,11 @@ type class_infos 'a =
     ciVir : V bool;
     ciPrm : (loc * V (list type_var));
     ciNam : V string;
-    ciExp : 'a }
-;
+    ciExp : 'a ;
+    ciAttributes : V (list (V (V string * payload)))
+  }
 
-type ctyp =
+and ctyp =
   [ TyAcc of loc and ctyp and ctyp
   | TyAli of loc and ctyp and ctyp
   | TyAny of loc

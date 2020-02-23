@@ -1096,10 +1096,10 @@ EXTEND
   ;
   class_declaration:
     [ [ vf = SV (FLAG "virtual"); i = SV LIDENT; ctp = class_type_parameters;
-        cfb = class_fun_binding →
+        cfb = class_fun_binding ; attrs = SV (LIST0 item_attribute) →
           Qast.Record
             [("ciLoc", Qast.Loc); ("ciVir", vf); ("ciPrm", ctp); ("ciNam", i);
-             ("ciExp", cfb)] ] ]
+             ("ciExp", cfb); ("ciAttributes", attrs)] ] ]
   ;
   class_fun_binding:
     [ [ "="; ce = class_expr → ce
@@ -1241,17 +1241,17 @@ EXTEND
   ;
   class_description:
     [ [ vf = SV (FLAG "virtual"); n = SV LIDENT; ctp = class_type_parameters;
-        ":"; ct = class_type →
+        ":"; ct = class_type ; attrs = SV (LIST0 item_attribute) →
           Qast.Record
             [("ciLoc", Qast.Loc); ("ciVir", vf); ("ciPrm", ctp); ("ciNam", n);
-             ("ciExp", ct)] ] ]
+             ("ciExp", ct); ("ciAttributes", attrs)] ] ]
   ;
   class_type_declaration:
     [ [ vf = SV (FLAG "virtual"); n = SV LIDENT; ctp = class_type_parameters;
-        "="; cs = class_type →
+        "="; cs = class_type ; attrs = SV (LIST0 item_attribute) →
           Qast.Record
             [("ciLoc", Qast.Loc); ("ciVir", vf); ("ciPrm", ctp); ("ciNam", n);
-             ("ciExp", cs)] ] ]
+             ("ciExp", cs); ("ciAttributes", attrs)] ] ]
   ;
   expr: LEVEL "apply"
     [ LEFTA

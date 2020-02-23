@@ -143,7 +143,7 @@ value map_vala f x = <:vala< f (Pcaml.unvala x) >>;
 value class_infos f ci =
   {MLast.ciLoc = ci.MLast.ciLoc; MLast.ciVir = ci.MLast.ciVir;
    MLast.ciPrm = ci.MLast.ciPrm; MLast.ciNam = ci.MLast.ciNam;
-   MLast.ciExp = f ci.MLast.ciExp}
+   MLast.ciExp = f ci.MLast.ciExp; MLast.ciAttributes = ci.MLast.ciAttributes}
 ;
 
 value rec expr x =

@@ -491,7 +491,8 @@
       (cd
        {(MLast.ciLoc loc) (MLast.ciVir <:vala< False >>)
         (MLast.ciPrm (values loc <:vala< tvl >>)) (MLast.ciNam <:vala< n >>)
-        (MLast.ciExp (class_type_se se2))}))
+        (MLast.ciExp (class_type_se se2))
+        (MLast.ciAttributes <:vala< []>>)}))
      <:sig_item< class $list:[cd]$ >>))
    ((Sexpr loc [(Slid _ "exception") se . sel])
     (let* ((c (anti_uid_or_error se)) (tl (anti_list_map ctyp_se sel)))

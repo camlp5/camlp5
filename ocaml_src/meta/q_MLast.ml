@@ -7184,7 +7184,7 @@ Grammar.safe_extend
                 (i : 'e__184) (vf : 'e__183) (loc : Ploc.t) ->
               (Qast.Record
                  ["ciLoc", Qast.Loc; "ciVir", vf; "ciPrm", ctp; "ciNam", i;
-                  "ciExp", cfb] :
+                  "ciExp", cfb; "CiAttributes", Qast.VaVal(Qast.List[])] :
                'class_declaration)))]];
     Grammar.extension (class_fun_binding : 'class_fun_binding Grammar.Entry.e)
       None
@@ -8832,7 +8832,7 @@ Grammar.safe_extend
                 (n : 'e__232) (vf : 'e__231) (loc : Ploc.t) ->
               (Qast.Record
                  ["ciLoc", Qast.Loc; "ciVir", vf; "ciPrm", ctp; "ciNam", n;
-                  "ciExp", ct] :
+                  "ciExp", ct; "CiAttributes", Qast.VaVal(Qast.List[])] :
                'class_description)))]];
     Grammar.extension
       (class_type_declaration : 'class_type_declaration Grammar.Entry.e) None
@@ -8915,7 +8915,7 @@ Grammar.safe_extend
                 (n : 'e__234) (vf : 'e__233) (loc : Ploc.t) ->
               (Qast.Record
                  ["ciLoc", Qast.Loc; "ciVir", vf; "ciPrm", ctp; "ciNam", n;
-                  "ciExp", cs] :
+                  "ciExp", cs; "CiAttributes", Qast.VaVal(Qast.List[])] :
                'class_type_declaration)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "apply"))

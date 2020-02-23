@@ -767,7 +767,7 @@ and sig_item_se =
       let cd =
         {MLast.ciLoc = loc; MLast.ciVir = <:vala< False >>;
          MLast.ciPrm = (loc, <:vala< tvl >>); MLast.ciNam = <:vala< n >>;
-         MLast.ciExp = class_type_se se2}
+         MLast.ciExp = class_type_se se2; MLast.ciAttributes = <:vala< [] >>}
       in
       <:sig_item< class $list:[cd]$ >>
   | Sexpr loc [Slid _ "exception"; se :: sel] →

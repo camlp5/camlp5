@@ -1099,9 +1099,9 @@ EXTEND
   (* Class expressions *)
   class_declaration:
     [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; i = V LIDENT;
-        cfb = class_fun_binding ->
+        cfb = class_fun_binding ; attrs = V (LIST0 item_attribute) ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
-           MLast.ciNam = i; MLast.ciExp = cfb} ] ]
+           MLast.ciNam = i; MLast.ciExp = cfb; MLast.ciAttributes = attrs} ] ]
   ;
   class_fun_binding:
     [ [ "="; ce = class_expr -> ce
@@ -1262,15 +1262,15 @@ EXTEND
   ;
   class_description:
     [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
-        ":"; ct = class_type ->
+        ":"; ct = class_type ; attrs = V (LIST0 item_attribute) ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
-           MLast.ciNam = n; MLast.ciExp = ct} ] ]
+           MLast.ciNam = n; MLast.ciExp = ct; MLast.ciAttributes = attrs} ] ]
   ;
   class_type_declaration:
     [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
-        "="; cs = class_signature ->
+        "="; cs = class_signature ; attrs = V (LIST0 item_attribute) ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
-           MLast.ciNam = n; MLast.ciExp = cs} ] ]
+           MLast.ciNam = n; MLast.ciExp = cs; MLast.ciAttributes = attrs} ] ]
   ;
   (* Expressions *)
   expr: LEVEL "simple"

@@ -27,7 +27,7 @@ value class_infos_map floc f x =
    ciPrm =
      let (x1, x2) = x.ciPrm in
      (floc x1, x2);
-   ciNam = x.ciNam; ciExp = f x.ciExp}
+   ciNam = x.ciNam; ciExp = f x.ciExp; ciAttributes = x.ciAttributes }
 ;
 
 value anti_loc qloc sh loc loc1 =
