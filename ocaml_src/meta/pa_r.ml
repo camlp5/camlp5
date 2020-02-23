@@ -3486,31 +3486,43 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "method")))
-                         (Grammar.s_flag (Grammar.s_token ("", "!"))))
-                      (Grammar.s_flag (Grammar.s_token ("", "private"))))
-                   (Grammar.s_nterm (lident : 'lident Grammar.Entry.e)))
-                (Grammar.s_opt
-                   (Grammar.s_nterm (polyt : 'polyt Grammar.Entry.e))))
-             (Grammar.s_nterm (fun_binding : 'fun_binding Grammar.Entry.e)),
-           (fun (e : 'fun_binding) (topt : 'polyt option) (l : 'lident)
-                (pf : bool) (ovf : bool) _ (loc : Ploc.t) ->
-              (MLast.CrMth (loc, ovf, pf, l, topt, e) : 'class_str_item)));
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "method")))
+                            (Grammar.s_flag (Grammar.s_token ("", "!"))))
+                         (Grammar.s_flag (Grammar.s_token ("", "private"))))
+                      (Grammar.s_nterm (lident : 'lident Grammar.Entry.e)))
+                   (Grammar.s_opt
+                      (Grammar.s_nterm (polyt : 'polyt Grammar.Entry.e))))
+                (Grammar.s_nterm
+                   (fun_binding : 'fun_binding Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (e : 'fun_binding)
+                (topt : 'polyt option) (l : 'lident) (pf : bool) (ovf : bool)
+                _ (loc : Ploc.t) ->
+              (MLast.CrMth (loc, ovf, pf, l, topt, e, []) :
+               'class_str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "method")))
-                         (Grammar.s_token ("", "virtual")))
-                      (Grammar.s_flag (Grammar.s_token ("", "private"))))
-                   (Grammar.s_nterm (lident : 'lident Grammar.Entry.e)))
-                (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) _ (l : 'lident) (pf : bool) _ _ (loc : Ploc.t) ->
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "method")))
+                            (Grammar.s_token ("", "virtual")))
+                         (Grammar.s_flag (Grammar.s_token ("", "private"))))
+                      (Grammar.s_nterm (lident : 'lident Grammar.Entry.e)))
+                   (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (t : 'ctyp) _ (l : 'lident)
+                (pf : bool) _ _ (loc : Ploc.t) ->
               (MLast.CrVir (loc, pf, l, t) : 'class_str_item)));
         Grammar.production
           (Grammar.r_next

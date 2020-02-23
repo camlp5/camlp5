@@ -565,11 +565,11 @@ and class_str_item floc sh =
     | CrInh (loc, ovf, x1, x2) ->
         let loc = floc loc in CrInh (loc, ovf, class_expr floc sh x1, x2)
     | CrIni (loc, x1) -> let loc = floc loc in CrIni (loc, expr floc sh x1)
-    | CrMth (loc, x1, x2, x3, x4, x5) ->
+    | CrMth (loc, x1, x2, x3, x4, x5, x6) ->
         let loc = floc loc in
         CrMth
           (loc, x1, x2, x3, vala_map (option_map (ctyp floc sh)) x4,
-           expr floc sh x5)
+           expr floc sh x5, x6)
     | CrVal (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CrVal (loc, x1, x2, x3, expr floc sh x4)
     | CrVav (loc, x1, x2, x3) ->

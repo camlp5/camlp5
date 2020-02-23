@@ -93,8 +93,8 @@ let ocaml_class_type_field ?(item_attributes = []) loc ctfd =
   {pctf_desc = ctfd; pctf_loc = loc; pctf_attributes = item_attributes}
 ;;
 
-let ocaml_class_field loc cfd =
-  {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = []}
+let ocaml_class_field ?(item_attributes = []) loc cfd =
+  {pcf_desc = cfd; pcf_loc = loc; pcf_attributes = item_attributes}
 ;;
 
 let ocaml_mktyp ?(alg_attributes = []) loc x =

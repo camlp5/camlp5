@@ -236,7 +236,9 @@ and class_str_item =
   | CrDcl of loc * class_str_item list
   | CrInh of loc * override_flag * class_expr * string option
   | CrIni of loc * expr
-  | CrMth of loc * bool * bool * string * ctyp option * expr
+  | CrMth of
+      loc * bool * bool * string * ctyp option * expr *
+        (string * payload) list
   | CrVal of loc * bool * bool * string * expr
   | CrVav of loc * bool * string * ctyp
   | CrVir of loc * bool * string * ctyp
