@@ -3244,18 +3244,24 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_flag (Grammar.s_token ("", "virtual"))))
-                   (Grammar.s_token ("LIDENT", "")))
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_flag (Grammar.s_token ("", "virtual"))))
+                      (Grammar.s_token ("LIDENT", "")))
+                   (Grammar.s_nterm
+                      (class_type_parameters :
+                       'class_type_parameters Grammar.Entry.e)))
                 (Grammar.s_nterm
-                   (class_type_parameters :
-                    'class_type_parameters Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (class_fun_binding : 'class_fun_binding Grammar.Entry.e)),
-           (fun (cfb : 'class_fun_binding) (ctp : 'class_type_parameters)
-                (i : string) (vf : bool) (loc : Ploc.t) ->
+                   (class_fun_binding : 'class_fun_binding Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (cfb : 'class_fun_binding)
+                (ctp : 'class_type_parameters) (i : string) (vf : bool)
+                (loc : Ploc.t) ->
               ({MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
-                MLast.ciNam = i; MLast.ciExp = cfb} :
+                MLast.ciNam = i; MLast.ciExp = cfb;
+                MLast.ciAttributes = attrs} :
                'class_declaration)))]];
     Grammar.extension (class_fun_binding : 'class_fun_binding Grammar.Entry.e)
       None
@@ -3864,18 +3870,25 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_flag (Grammar.s_token ("", "virtual"))))
-                      (Grammar.s_token ("LIDENT", "")))
-                   (Grammar.s_nterm
-                      (class_type_parameters :
-                       'class_type_parameters Grammar.Entry.e)))
-                (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)),
-           (fun (ct : 'class_type) _ (ctp : 'class_type_parameters)
-                (n : string) (vf : bool) (loc : Ploc.t) ->
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_flag
+                               (Grammar.s_token ("", "virtual"))))
+                         (Grammar.s_token ("LIDENT", "")))
+                      (Grammar.s_nterm
+                         (class_type_parameters :
+                          'class_type_parameters Grammar.Entry.e)))
+                   (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (ct : 'class_type) _
+                (ctp : 'class_type_parameters) (n : string) (vf : bool)
+                (loc : Ploc.t) ->
               ({MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
-                MLast.ciNam = n; MLast.ciExp = ct} :
+                MLast.ciNam = n; MLast.ciExp = ct;
+                MLast.ciAttributes = attrs} :
                'class_description)))]];
     Grammar.extension
       (class_type_declaration : 'class_type_declaration Grammar.Entry.e) None
@@ -3885,18 +3898,25 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_flag (Grammar.s_token ("", "virtual"))))
-                      (Grammar.s_token ("LIDENT", "")))
-                   (Grammar.s_nterm
-                      (class_type_parameters :
-                       'class_type_parameters Grammar.Entry.e)))
-                (Grammar.s_token ("", "=")))
-             (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)),
-           (fun (cs : 'class_type) _ (ctp : 'class_type_parameters)
-                (n : string) (vf : bool) (loc : Ploc.t) ->
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_flag
+                               (Grammar.s_token ("", "virtual"))))
+                         (Grammar.s_token ("LIDENT", "")))
+                      (Grammar.s_nterm
+                         (class_type_parameters :
+                          'class_type_parameters Grammar.Entry.e)))
+                   (Grammar.s_token ("", "=")))
+                (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (cs : 'class_type) _
+                (ctp : 'class_type_parameters) (n : string) (vf : bool)
+                (loc : Ploc.t) ->
               ({MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
-                MLast.ciNam = n; MLast.ciExp = cs} :
+                MLast.ciNam = n; MLast.ciExp = cs;
+                MLast.ciAttributes = attrs} :
                'class_type_declaration)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "apply"))
