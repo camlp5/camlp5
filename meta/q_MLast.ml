@@ -1231,11 +1231,11 @@ EXTEND
         t = ctyp →
           Qast.Node "CgVal" [Qast.Loc; mf; vf; l; t]
       | "method"; "virtual"; pf = SV (FLAG "private"); l = SV lident "lid" "";
-        ":"; t = ctyp →
-          Qast.Node "CgVir" [Qast.Loc; pf; l; t]
+        ":"; t = ctyp ; attrs = SV (LIST0 item_attribute) →
+          Qast.Node "CgVir" [Qast.Loc; pf; l; t; attrs]
       | "method"; pf = SV (FLAG "private"); l = SV lident "lid" ""; ":";
-        t = ctyp →
-          Qast.Node "CgMth" [Qast.Loc; pf; l; t]
+        t = ctyp ; attrs = SV (LIST0 item_attribute) →
+          Qast.Node "CgMth" [Qast.Loc; pf; l; t; attrs]
       | "type"; t1 = ctyp; "="; t2 = ctyp →
           Qast.Node "CgCtr" [Qast.Loc; t1; t2] ] ]
   ;

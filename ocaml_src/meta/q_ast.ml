@@ -497,13 +497,15 @@ module Meta_make (C : MetaSig) =
       | CgDcl (_, lcsi) ->
           C.node "CgDcl" [C.vala (C.list class_sig_item) lcsi]
       | CgInh (_, ct) -> C.node "CgInh" [class_type ct]
-      | CgMth (_, b, s, t) ->
-          C.node "CgMth" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CgMth (_, b, s, t, attrs) ->
+          let attrs = assert false in
+          C.node "CgMth" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CgVal (_, mf, vf, s, t) ->
           C.node "CgVal"
             [C.vala C.bool mf; C.vala C.bool vf; C.vala C.string s; ctyp t]
-      | CgVir (_, b, s, t) ->
-          C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CgVir (_, b, s, t, attrs) ->
+          let attrs = assert false in
+          C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
     and class_expr =
       function
         CeAtt (_, e, att) -> assert false

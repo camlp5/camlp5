@@ -518,12 +518,12 @@ and class_sig_item floc sh =
         let loc = floc loc in CgDcl (loc, vala_map (List.map self) x1)
     | CgInh (loc, x1) ->
         let loc = floc loc in CgInh (loc, class_type floc sh x1)
-    | CgMth (loc, x1, x2, x3) ->
-        let loc = floc loc in CgMth (loc, x1, x2, ctyp floc sh x3)
+    | CgMth (loc, x1, x2, x3, x4) ->
+        let loc = floc loc in CgMth (loc, x1, x2, ctyp floc sh x3, x4)
     | CgVal (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CgVal (loc, x1, x2, x3, ctyp floc sh x4)
-    | CgVir (loc, x1, x2, x3) ->
-        let loc = floc loc in CgVir (loc, x1, x2, ctyp floc sh x3)
+    | CgVir (loc, x1, x2, x3, x4) ->
+        let loc = floc loc in CgVir (loc, x1, x2, ctyp floc sh x3, x4)
   in
   self
 and class_expr floc sh =

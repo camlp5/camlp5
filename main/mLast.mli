@@ -221,10 +221,10 @@ and class_sig_item =
   [ CgCtr of loc and ctyp and ctyp
   | CgDcl of loc and V (list class_sig_item)
   | CgInh of loc and class_type
-  | CgMth of loc and V bool and V string and ctyp
+  | CgMth of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
     (* first mutable, then virtual *)
   | CgVal of loc and V bool and V bool and V string and ctyp
-  | CgVir of loc and V bool and V string and ctyp ]
+  | CgVir of loc and V bool and V string and ctyp and V (list (V (V string * payload))) ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and V (list string) and V (list ctyp)
