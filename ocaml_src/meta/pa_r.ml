@@ -3502,7 +3502,7 @@ Grammar.safe_extend
            (fun (attrs : 'item_attribute list) (e : 'fun_binding)
                 (topt : 'polyt option) (l : 'lident) (pf : bool) (ovf : bool)
                 _ (loc : Ploc.t) ->
-              (MLast.CrMth (loc, ovf, pf, l, topt, e, []) :
+              (MLast.CrMth (loc, ovf, pf, l, topt, e, attrs) :
                'class_str_item)));
         Grammar.production
           (Grammar.r_next
@@ -3523,7 +3523,7 @@ Grammar.safe_extend
                    (item_attribute : 'item_attribute Grammar.Entry.e))),
            (fun (attrs : 'item_attribute list) (t : 'ctyp) _ (l : 'lident)
                 (pf : bool) _ _ (loc : Ploc.t) ->
-              (MLast.CrVir (loc, pf, l, t) : 'class_str_item)));
+              (MLast.CrVir (loc, pf, l, t, []) : 'class_str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

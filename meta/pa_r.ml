@@ -910,7 +910,7 @@ EXTEND
       | "method"; ovf = V (FLAG "!") "!"; pf = V (FLAG "private") "priv";
         l = V lident "lid" ""; topt = V (OPT polyt); e = fun_binding ; attrs = V (LIST0 item_attribute) →
           <:class_str_item<
-            method $_!:ovf$ $_priv:pf$ $_lid:l$ $_opt:topt$ = $e$ >>
+            method $_!:ovf$ $_priv:pf$ $_lid:l$ $_opt:topt$ = $e$ $_list:attrs$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp →
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr → <:class_str_item< initializer $se$ >> ] ]

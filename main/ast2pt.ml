@@ -1553,8 +1553,8 @@ and class_str_item c l =
              (pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc)) ::
            l]
       | None → error loc "no virtual value in this ocaml version" ]
-  | CrVir loc b s t →
-      [ocaml_class_field (mkloc loc)
+  | CrVir loc b s t item_attrs →
+      [ocaml_class_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
          (ocaml_pcf_virt
             (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
        l] ]

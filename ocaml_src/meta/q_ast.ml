@@ -548,8 +548,9 @@ module Meta_make (C : MetaSig) =
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e]
       | CrVav (_, b, s, t) ->
           C.node "CrVav" [C.vala C.bool b; C.vala C.string s; ctyp t]
-      | CrVir (_, b, s, t) ->
-          C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t]
+      | CrVir (_, b, s, t, attrs) ->
+          let attrs = assert false in
+          C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
     ;;
   end
 ;;

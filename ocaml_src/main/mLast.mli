@@ -241,7 +241,7 @@ and class_str_item =
         (string * payload) list
   | CrVal of loc * bool * bool * string * expr
   | CrVav of loc * bool * string * ctyp
-  | CrVir of loc * bool * string * ctyp
+  | CrVir of loc * bool * string * ctyp * (string * payload) list
 and override_flag = Fresh | Override
 and payload =
     StAttr of loc * str_item list

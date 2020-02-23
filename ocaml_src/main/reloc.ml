@@ -574,8 +574,8 @@ and class_str_item floc sh =
         let loc = floc loc in CrVal (loc, x1, x2, x3, expr floc sh x4)
     | CrVav (loc, x1, x2, x3) ->
         let loc = floc loc in CrVav (loc, x1, x2, ctyp floc sh x3)
-    | CrVir (loc, x1, x2, x3) ->
-        let loc = floc loc in CrVir (loc, x1, x2, ctyp floc sh x3)
+    | CrVir (loc, x1, x2, x3, x4) ->
+        let loc = floc loc in CrVir (loc, x1, x2, ctyp floc sh x3, x4)
   in
   self
 ;;

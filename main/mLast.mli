@@ -243,7 +243,7 @@ and class_str_item =
       expr and V (list (V (V string * payload)))
   | CrVal of loc and V bool and V bool and V string and expr
   | CrVav of loc and V bool and V string and ctyp
-  | CrVir of loc and V bool and V string and ctyp ]
+  | CrVir of loc and V bool and V string and ctyp and V (list (V (V string * payload))) ]
 and override_flag = [ Fresh | Override ]
 
 and payload = [

@@ -265,7 +265,7 @@ and class_str_item =
       ctyp t
     }
   | CrVal _ _ _ _ e -> expr e
-  | CrVir _ _ _ t -> ctyp t
+  | CrVir _ _ _ t _ -> ctyp t
   | x -> not_impl "class_str_item" x ]
 ;
 
