@@ -1674,8 +1674,9 @@ and class_sig_item c l =
   | CgInh (loc, ct) ->
       ocaml_class_type_field (mkloc loc) (ocaml_pctf_inher (class_type ct)) ::
       l
-  | CgMth (loc, pf, s, t, alg_attrs) ->
-      ocaml_class_type_field (mkloc loc)
+  | CgMth (loc, pf, s, t, item_attrs) ->
+      ocaml_class_type_field ~item_attributes:(item_attributes item_attrs)
+        (mkloc loc)
         (ocaml_pctf_meth
            (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) ::
       l
@@ -1684,8 +1685,9 @@ and class_sig_item c l =
         (ocaml_pctf_val
            (uv s, mkmutable (uv mf), mkvirtual (uv vf), ctyp t, mkloc loc)) ::
       l
-  | CgVir (loc, b, s, t, alg_attrs) ->
-      ocaml_class_type_field (mkloc loc)
+  | CgVir (loc, b, s, t, item_attrs) ->
+      ocaml_class_type_field ~item_attributes:(item_attributes item_attrs)
+        (mkloc loc)
         (ocaml_pctf_virt
            (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
       l

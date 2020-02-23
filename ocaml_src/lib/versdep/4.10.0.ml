@@ -89,8 +89,8 @@ let ocaml_value_description ?(item_attributes = []) vn t p =
    pval_name = mkloc t.ptyp_loc vn; pval_attributes = item_attributes}
 ;;
 
-let ocaml_class_type_field loc ctfd =
-  {pctf_desc = ctfd; pctf_loc = loc; pctf_attributes = []}
+let ocaml_class_type_field ?(item_attributes = []) loc ctfd =
+  {pctf_desc = ctfd; pctf_loc = loc; pctf_attributes = item_attributes}
 ;;
 
 let ocaml_class_field loc cfd =
