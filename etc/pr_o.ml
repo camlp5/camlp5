@@ -2198,12 +2198,12 @@ value class_decl pc ci =
 
 value variant_decl pc pv =
   match pv with
-  [ <:poly_variant< `$c$ >> ->
-       pprintf pc "`%s" c
-  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ >> ->
+  [ <:poly_variant< `$c$ $_list:alg_attrs$ >> ->
+       pprintf pc "`%s%p" c (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
+  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ $_list:alg_attrs$ >> ->
        let tl = List.map (fun t -> (t, " &")) tl in
-       pprintf pc "`%s of%s@;<1 5>%p" c (if ao then " &" else "")
-         (plist ctyp 2) tl
+       pprintf pc "`%s of%s@;<1 5>%p%p" c (if ao then " &" else "")
+         (plist ctyp 2) tl (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
   | <:poly_variant< $t$ >> ->
        ctyp pc t
   | IFDEF STRICT THEN

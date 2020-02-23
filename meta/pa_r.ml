@@ -1041,10 +1041,10 @@ EXTEND
     [ [ rfl = V (LIST0 poly_variant SEP "|") → rfl ] ]
   ;
   poly_variant:
-    [ [ "`"; i = V ident "" → <:poly_variant< ` $_:i$ >>
+    [ [ "`"; i = V ident "" ; attrs = V (LIST0 alg_attribute) → <:poly_variant< ` $_:i$ $_list:attrs$ >>
       | "`"; i = V ident ""; "of"; ao = V (FLAG "&");
-        l = V (LIST1 ctyp SEP "&") →
-          <:poly_variant< ` $_:i$ of $_flag:ao$ $_list:l$ >>
+        l = V (LIST1 ctyp_below_alg_attribute SEP "&") ; attrs = V (LIST0 alg_attribute) →
+          <:poly_variant< ` $_:i$ of $_flag:ao$ $_list:l$ $_list:attrs$ >>
       | t = ctyp → <:poly_variant< $t$ >> ] ]
   ;
   name_tag:

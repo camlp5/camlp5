@@ -279,7 +279,6 @@ value x = 1;
      r_output = OK {foo|type t = (a * b)[@bar];
 |foo}
     };
-
     {name="alg_attribute19"; implem = True ;
      o_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] }" ;
      official_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] }" ;
@@ -289,6 +288,26 @@ value x = 1;
      official_output = OK {foo|type t = {
   a: (((int * bool))[@bar ]) [@foo ]}|foo} ;
      r_output = OK {foo|type t = { a : ((int * bool)[@bar])[@foo] };
+|foo}
+    };
+    {name="poly-variant-alg-attribute1"; implem = True ;
+     o_input = OK {foo|type t = [ `Foo [@alg_foo] ]|foo} ;
+     official_input = OK {foo|type t = [ `Foo [@alg_foo] ]|foo} ;
+     r_input = OK {foo|type t = [= `Foo [@alg_foo] ];|foo} ;
+     o_output = OK {foo|type t = [ `Foo[@alg_foo] ];;
+|foo} ;
+     official_output = OK {foo|type t = [ `Foo [@alg_foo ]]|foo} ;
+     r_output = OK {foo|type t = [ = `Foo[@alg_foo] ];
+|foo}
+    };
+    {name="poly-variant-alg-attribute2"; implem = True ;
+     o_input = OK {foo|type t = [ `Foo of (int [@alg_bar]) [@alg_foo] ]|foo} ;
+     official_input = OK {foo|type t = [ `Foo of (int [@alg_bar]) [@alg_foo] ]|foo} ;
+     r_input = OK {foo|type t = [= `Foo of (int [@alg_bar])[@alg_foo] ];|foo} ;
+     o_output = OK {foo|type t = [ `Foo of int[@alg_bar][@alg_foo] ];;
+|foo} ;
+     official_output = OK {foo|type t = [ `Foo of ((int)[@alg_bar ]) [@alg_foo ]]|foo} ;
+     r_output = OK {foo|type t = [ = `Foo of int[@alg_bar][@alg_foo] ];
 |foo}
     };
 
@@ -407,11 +426,11 @@ value i2test (pa_implem,pa_interf)  (pp_implem, pp_interf) inputf outputf i =
         todo i.name   
 
     | (True, OK inputs, OK outputs) ->
-        assert_equal ~{printer=fmt_string}
+        assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}
           outputs (wrap_err pp_implem (wrap_err pa_implem inputs))
 
     | (False, OK inputs, OK outputs) ->
-        assert_equal ~{printer=fmt_string}
+        assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}
           outputs (wrap_err pp_interf (wrap_err pa_interf inputs))
 
     | (True,EXN inputs exn, _) ->

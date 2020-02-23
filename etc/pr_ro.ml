@@ -196,11 +196,11 @@ value class_decl pc ci =
 
 value variant_decl pc pv =
   match pv with
-  [ <:poly_variant< `$c$ >> ->
-       pprintf pc "`%s" c
-  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ >> ->
-       pprintf pc "`%s of%s@;<1 5>%p" c (if ao then "& " else "")
-         (hlist2 ctyp (amp_before ctyp)) tl
+  [ <:poly_variant< `$c$ $_list:alg_attrs$ >> ->
+       pprintf pc "`%s%p" c (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala alg_attrs)
+  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ $_list:alg_attrs$ >> ->
+       pprintf pc "`%s of%s@;<1 5>%p%p" c (if ao then "& " else "")
+         (hlist2 ctyp (amp_before ctyp)) tl (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala alg_attrs)
   | <:poly_variant< $t$ >> ->
        ctyp pc t
   | IFDEF STRICT THEN
