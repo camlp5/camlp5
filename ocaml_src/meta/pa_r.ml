@@ -4121,23 +4121,34 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "`")))
-                      (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
-                   (Grammar.s_token ("", "of")))
-                (Grammar.s_flag (Grammar.s_token ("", "&"))))
-             (Grammar.s_list1sep
-                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
-                (Grammar.s_token ("", "&")) false),
-           (fun (l : 'ctyp list) (ao : bool) _ (i : 'ident) _
-                (loc : Ploc.t) ->
-              (MLast.PvTag (loc, i, ao, l, []) : 'poly_variant)));
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "`")))
+                         (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
+                      (Grammar.s_token ("", "of")))
+                   (Grammar.s_flag (Grammar.s_token ("", "&"))))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm
+                      (ctyp_below_alg_attribute :
+                       'ctyp_below_alg_attribute Grammar.Entry.e))
+                   (Grammar.s_token ("", "&")) false))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (alg_attribute : 'alg_attribute Grammar.Entry.e))),
+           (fun (attrs : 'alg_attribute list)
+                (l : 'ctyp_below_alg_attribute list) (ao : bool) _
+                (i : 'ident) _ (loc : Ploc.t) ->
+              (MLast.PvTag (loc, i, ao, l, attrs) : 'poly_variant)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "`")))
-             (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)),
-           (fun (i : 'ident) _ (loc : Ploc.t) ->
-              (MLast.PvTag (loc, i, true, [], []) : 'poly_variant)))]];
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "`")))
+                (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (alg_attribute : 'alg_attribute Grammar.Entry.e))),
+           (fun (attrs : 'alg_attribute list) (i : 'ident) _ (loc : Ploc.t) ->
+              (MLast.PvTag (loc, i, true, [], attrs) : 'poly_variant)))]];
     Grammar.extension (name_tag : 'name_tag Grammar.Entry.e) None
       [None, None,
        [Grammar.production
