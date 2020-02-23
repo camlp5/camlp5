@@ -965,11 +965,11 @@ EXTEND
         t = ctyp →
           <:class_sig_item< value $_flag:mf$ $_flag:vf$  $_lid:l$ : $t$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
-        ":"; t = ctyp →
-          <:class_sig_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>
+        ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
+          <:class_sig_item< method virtual $_flag:pf$ $_lid:l$ : $t$ $_list:attrs$ >>
       | "method"; pf = V (FLAG "private"); l = V lident "lid" ""; ":";
-        t = ctyp →
-          <:class_sig_item< method $_flag:pf$ $_lid:l$ : $t$ >>
+        t = ctyp ; attrs = V (LIST0 item_attribute) →
+          <:class_sig_item< method $_flag:pf$ $_lid:l$ : $t$ $_list:attrs$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp →
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;

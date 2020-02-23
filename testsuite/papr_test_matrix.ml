@@ -409,6 +409,16 @@ and t2 = bool[@@foo];
      official_output = OK {foo|module M = ((N)[@alg_foo ])[@@item_bar ]|foo} ;
      r_output = OK {foo|module M = N[@alg_foo][@@item_bar];
 |foo}
+    };
+    {name="method-class-sig-item-attributes1"; implem = True ;
+     o_input = OK {foo|class type ct = object method m : int end |foo} ;
+     official_input = OK {foo|class type ct = object method m : int [@@argle] end |foo} ;
+     r_input = OK {foo|class type ct = object method m : int ; end;|foo} ;
+     o_output = OK {foo|class type ct = object method m : int end;;
+|foo} ;
+     official_output = OK {foo|class type ct = object method  m : int[@@argle ] end|foo} ;
+     r_output = OK {foo|class type ct = object method m : int; end;
+|foo}
     }
 ]
 ;
