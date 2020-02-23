@@ -37,7 +37,8 @@ CAMLP5R=$(TOP)/local-install/bin/camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
-PACKAGES=rresult,fmt,pcre,ounit2,compiler-libs.common,camlp5
+PACKAGES_NOCAMLP5=rresult,fmt,pcre,ounit2,compiler-libs.common
+PACKAGES=$(PACKAGES_NOCAMLP5),camlp5
 
 pa_ounit2.cmo: pa_ounit2.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl pa_ounit2.ml
@@ -57,8 +58,13 @@ roundtrip_lexer.cmo: roundtrip_lexer.ml
 roundtrip_lexer.byte: roundtrip_lexer.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg gramlib.cma roundtrip_lexer.cmo -o roundtrip_lexer.byte
 
-papr_official.cmo: papr_official.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl papr_official.ml
+papr_official.cmo: papr_official.ppo.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES_NOCAMLP5) -warn-error A -c -o papr_official.cmo -impl papr_official.ppo.ml
+
+.PRECIOUS: papr_official.ppo.ml
+
+papr_official.ppo.ml: papr_official.ml
+	$(CAMLP5R) -I . -mode S -o papr_official.ppo.ml papr_official.ml
 
 papr_official.byte: papr_official.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg gramlib.cma papr_official.cmo -o papr_official.byte
@@ -148,3 +154,6 @@ setup: setup-ocaml
 
 clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt
+
+realclean: clean
+	$(RM) -f papr_official.ppo.ml
