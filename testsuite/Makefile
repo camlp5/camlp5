@@ -67,7 +67,7 @@ papr_official.ppo.ml: papr_official.ml
 	$(CAMLP5R) -I . -mode S -o papr_official.ppo.ml papr_official.ml
 
 papr_official.byte: papr_official.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg gramlib.cma papr_official.cmo -o papr_official.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES_NOCAMLP5),ounit2 -linkall -linkpkg papr_official.cmo -o papr_official.byte
 
 extfun_test:: all
 	./extfun_test.byte
