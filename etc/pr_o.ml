@@ -2127,17 +2127,19 @@ value class_type_params pc (loc, ctp) =
 ;
 
 value class_def pc ci =
-  pprintf pc "%s%p%s :@;%p"
+  pprintf pc "%s%p%s :@;%p%p"
     (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
     class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
     (Pcaml.unvala ci.MLast.ciNam) class_type ci.MLast.ciExp
+    (hlist (pr_attribute "@@")) (Pcaml.unvala ci.MLast.ciAttributes)
 ;
 
 value class_type_decl pc ci =
-  pprintf pc "%s%p%s =@;%p"
+  pprintf pc "%s%p%s =@;%p%p"
     (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
     class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
     (Pcaml.unvala ci.MLast.ciNam) class_type ci.MLast.ciExp
+    (hlist (pr_attribute "@@")) (Pcaml.unvala ci.MLast.ciAttributes)
 ;
 
 value class_type_decl_list pc loc cd =
@@ -2193,7 +2195,8 @@ value class_decl pc ci =
          in
          pprintf pc "%p%p =" (plistl patt patt 4) pl class_type_opt ct_opt)
   in
-  pprintf pc "@[%p@;%p@]" cdef () class_expr ce
+  pprintf pc "@[%p@;%p%p@]" cdef () class_expr ce
+    (hlist (pr_attribute "@@")) (Pcaml.unvala ci.MLast.ciAttributes)
 ;
 
 value variant_decl pc pv =

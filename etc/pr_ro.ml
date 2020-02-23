@@ -116,11 +116,12 @@ value class_type_params pc ctp =
 ;
 
 value class_def_or_type_decl char pc ci =
-  pprintf pc "%s%s%p %c@;%p"
+  pprintf pc "%s%s%p %c@;%p%p"
     (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
     (Pcaml.unvala ci.MLast.ciNam)
     class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm)) char
     class_type ci.MLast.ciExp
+    (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala ci.MLast.ciAttributes)
 ;
 value class_def = class_def_or_type_decl ':';
 value class_type_decl = class_def_or_type_decl '=';
@@ -191,7 +192,8 @@ value class_decl pc ci =
          in
          pprintf pc "%p%p =" (plistl patt patt 4) pl class_type_opt ct_opt)
   in
-  pprintf pc "@[%p@;%p@]" cdef () class_expr ce
+  pprintf pc "@[%p@;%p%p@]" cdef () class_expr ce
+    (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala ci.MLast.ciAttributes)
 ;
 
 value variant_decl pc pv =
