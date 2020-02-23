@@ -1172,25 +1172,25 @@ EXTEND
         ":"; t = ctyp ->
           <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
       | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ->
-          <:class_str_item< method virtual private $_lid:l$ : $t$ >>
+        t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_str_item< method virtual private $_lid:l$ : $t$ $_list:attrs$ >>
       | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ->
-          <:class_str_item< method virtual private $_lid:l$ : $t$ >>
-      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ->
-          <:class_str_item< method virtual $_lid:l$ : $t$ >>
+        t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_str_item< method virtual private $_lid:l$ : $t$ $_list:attrs$ >>
+      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = V (LIST0 item_attribute) ->
+          <:class_str_item< method virtual $_lid:l$ : $t$ $_list:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
-        ":"; t = poly_type; "="; e = expr ->
-          <:class_str_item< method $_!:ov$ private $_lid:l$ : $t$ = $e$ >>
+        ":"; t = poly_type; "="; e = expr ; attrs = V (LIST0 item_attribute) ->
+          <:class_str_item< method $_!:ov$ private $_lid:l$ : $t$ = $e$ $_list:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
-        sb = fun_binding ->
-          <:class_str_item< method $_!:ov$ private $_lid:l$ = $sb$ >>
+        sb = fun_binding ; attrs = V (LIST0 item_attribute) ->
+          <:class_str_item< method $_!:ov$ private $_lid:l$ = $sb$ $_list:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" ""; ":";
-        t = poly_type; "="; e = expr ->
-          <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ >>
+        t = poly_type; "="; e = expr ; attrs = V (LIST0 item_attribute) ->
+          <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ $_list:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" "";
-        sb = fun_binding ->
-          <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ >>
+        sb = fun_binding ; attrs = V (LIST0 item_attribute) ->
+          <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ $_list:attrs$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]

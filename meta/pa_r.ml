@@ -906,7 +906,7 @@ EXTEND
           <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
         ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
-          <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>
+          <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ $_list:attrs$ >>
       | "method"; ovf = V (FLAG "!") "!"; pf = V (FLAG "private") "priv";
         l = V lident "lid" ""; topt = V (OPT polyt); e = fun_binding ; attrs = V (LIST0 item_attribute) →
           <:class_str_item<

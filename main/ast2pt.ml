@@ -1539,7 +1539,7 @@ and class_str_item c l =
             if uv ot = None then expr e
             else error loc "no method with label in this ocaml version" ]
       in
-      [ocaml_class_field (mkloc loc)
+      [ocaml_class_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
          (ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc)) ::
        l]
   | CrVal loc ovf mf s e →

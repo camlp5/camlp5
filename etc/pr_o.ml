@@ -2560,10 +2560,10 @@ EXTEND_PRINTER
             pb
       | <:class_str_item< initializer $e$ >> ->
           pprintf pc "initializer@;%p" expr e
-      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
-          sig_method_or_method_virtual pc " virtual" priv s t (Ploc.VaVal []) (* TODO FIX THIS *)
+      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_list:item_attrs$ >> ->
+          sig_method_or_method_virtual pc " virtual" priv s t item_attrs
       | <:class_str_item<
-          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$
+          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$ $_list:item_attrs$
         >> ->
           let (pl, e) =
             match topt with
@@ -2573,15 +2573,15 @@ EXTEND_PRINTER
           let simple_patt = Eprinter.apply_level pr_patt "simple" in
           match topt with
           [ None ->
-              pprintf pc "method%s%s %s%s%p =@;%p"
+              pprintf pc "method%s%s %s%s%p =@;%p%p"
                 (if ov then "!" else "") (if priv then " private" else "") s
                 (if pl = [] then "" else " ") (hlist simple_patt) pl
-                expr e
+                expr e (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
           | Some t ->
-              pprintf pc "method%s%s %s%s%p :@;<1 4>%p =@;%p"
+              pprintf pc "method%s%s %s%s%p :@;<1 4>%p =@;%p%p"
                 (if ov then "!" else "") (if priv then " private" else "") s
                 (if pl = [] then "" else " ") (hlist simple_patt) pl
-                poly_type t expr e ]
+                poly_type t expr e (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs) ]
       | <:class_str_item< type $t1$ = $t2$ >> ->
           pprintf pc "constraint %p =@;%p" ctyp t1 ctyp t2
       | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->

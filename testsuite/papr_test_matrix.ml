@@ -419,6 +419,16 @@ and t2 = bool[@@foo];
      official_output = OK {foo|class type ct = object method  m : int[@@argle ] end|foo} ;
      r_output = OK {foo|class type ct = object method m : int[@@argle]; end;
 |foo}
+    };
+    {name="method-class-struct-item-attributes1"; implem = True ;
+     o_input = OK {foo|class c = object method foo = 1 [@@argle] end |foo} ;
+     official_input = OK {foo|class c = object method foo = 1 [@@argle] end |foo} ;
+     r_input = OK {foo|class c = object method foo = 1[@@argle]; end; |foo} ;
+     o_output = OK {foo|class c = object method foo = 1[@@argle] end;;
+|foo} ;
+     official_output = OK {foo|class c = object method foo = 1[@@argle ] end|foo} ;
+     r_output = OK {foo|class c = object method foo = 1[@@argle]; end;
+|foo}
     }
 ]
 ;

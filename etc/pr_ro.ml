@@ -533,10 +533,10 @@ EXTEND_PRINTER
             pb
       | <:class_str_item< initializer $e$ >> ->
           pprintf pc "initializer@;%p" expr e
-      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
-          sig_method_or_method_virtual pc " virtual" priv s t (Ploc.VaVal []) (* TODO FIX THIS *)
+      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_list:item_attrs$ >> ->
+          sig_method_or_method_virtual pc " virtual" priv s t item_attrs
       | <:class_str_item<
-          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$
+          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$ $_list:item_attrs$
         >> ->
           let (pl, e) =
             match topt with
@@ -544,14 +544,14 @@ EXTEND_PRINTER
             | None -> expr_fun_args e ]
           in
           let pl = List.map (fun p -> (p, "")) pl in
-          pprintf pc "method%s%s %s%s%p%p =@;%p"
+          pprintf pc "method%s%s %s%s%p%p =@;%p%p"
             (if ov then "!" else "") (if priv then " private" else "") s
             (if pl = [] then "" else " ") (plist patt 2) pl
             (fun pc ->
                fun
                [ Some t -> pprintf pc " : %p" ctyp t
                | None -> pprintf pc "" ])
-            topt expr e
+            topt expr e (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
       | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
