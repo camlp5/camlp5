@@ -15,7 +15,6 @@
 #directory "../meta";;
 #directory "../main";;
 #directory "../etc";;
-
 (*
 #load "pa_o.cmo";;
 #load "pa_op.cmo";;
@@ -27,6 +26,7 @@ Pcaml.inter_phrases := Some ";;\n";;
 #load "pa_r.cmo";;
 #load "pa_rp.cmo";;
 #load "pr_r.cmo";;
+#load "pr_ro.cmo";;
 #load "pr_rp.cmo";;
 Pcaml.inter_phrases := Some ";\n";;
 
@@ -60,6 +60,9 @@ open Roundtrip_lexer ;;
 #load "papr_matrix_test.cmo" ;;
 #load "r2r_test.cmo" ;;
 *)
+
+let pp_loc (loc : Location.t) = Format.print_string "<loc>" ;;
+#install_printer pp_loc ;;
 
 (*
 ;;; Local Variables: ***
