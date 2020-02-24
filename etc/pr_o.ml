@@ -2558,15 +2558,8 @@ EXTEND_PRINTER
   ;
   pr_class_str_item:
     [ "top"
-      [ <:class_str_item< inherit $ce$ $opt:pb$ >> ->
-          pprintf pc "inherit@;%p@[%p@]" class_expr ce
-            (fun pc ->
-               fun
-               [ Some s -> pprintf pc " as %s" s
-               | None -> pprintf pc "" ])
-            pb
-      | <:class_str_item< inherit! $ce$ $opt:pb$ >> ->
-          pprintf pc "inherit!@;%p@[%p@]" class_expr ce
+      [ <:class_str_item< inherit $!:ovf$ $ce$ $opt:pb$ >> ->
+          pprintf pc "inherit%s@;%p@[%p@]" (if ovf then "!" else "") class_expr ce
             (fun pc ->
                fun
                [ Some s -> pprintf pc " as %s" s

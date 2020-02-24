@@ -1170,10 +1170,8 @@ EXTEND
       | "("; p = patt; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >> ] ]
   ;
   class_str_item:
-    [ [ "inherit"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ->
-          <:class_str_item< inherit $ce$ $_opt:pb$ >>
-      | "inherit"; "!"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ->
-          <:class_str_item< inherit! $ce$ $_opt:pb$ >>
+    [ [ "inherit"; ovf = V (FLAG "!") "!"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ->
+          <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ >>
       | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
         lab = V LIDENT "lid" ""; e = cvalue_binding ->
           <:class_str_item< value $_!:ov$ $_flag:mf$ $_lid:lab$ = $e$ >>

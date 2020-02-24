@@ -910,10 +910,8 @@ EXTEND
   class_str_item:
     [ [ "declare"; st = V (LIST0 [ s= class_str_item; ";" → s ]); "end" →
           <:class_str_item< declare $_list:st$ end >>
-      | "inherit"; ce = class_expr; pb = V (OPT as_lident) →
-          <:class_str_item< inherit $ce$ $_opt:pb$ >>
-      | "inherit"; "!" ; ce = class_expr; pb = V (OPT as_lident) →
-          <:class_str_item< inherit! $ce$ $_opt:pb$ >>
+      | "inherit"; ovf = V (FLAG "!") "!"; ce = class_expr; pb = V (OPT as_lident) →
+          <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ >>
       | "value"; ovf = V (FLAG "!") "!"; mf = V (FLAG "mutable");
         lab = V lident "lid" ""; e = cvalue_binding →
           <:class_str_item< value $_!:ovf$ $_flag:mf$ $_lid:lab$ = $e$ >>

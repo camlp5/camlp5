@@ -1137,7 +1137,7 @@ Grammar.safe_extend
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            (fun (attrs : 'item_attributes) (i : 'mod_ident) _
                 (loc : Ploc.t) ->
-              (MLast.SgOpn (loc, i, []) : 'sig_item)));
+              (MLast.SgOpn (loc, i, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1179,7 +1179,7 @@ Grammar.safe_extend
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            (fun (attrs : 'item_attributes) (mt : 'module_type) _
                 (loc : Ploc.t) ->
-              (MLast.SgInc (loc, mt, []) : 'sig_item)));
+              (MLast.SgInc (loc, mt, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3611,24 +3611,13 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "inherit")))
-                   (Grammar.s_token ("", "!")))
+                   (Grammar.s_flag (Grammar.s_token ("", "!"))))
                 (Grammar.s_nterm (class_expr : 'class_expr Grammar.Entry.e)))
              (Grammar.s_opt
                 (Grammar.s_nterm (as_lident : 'as_lident Grammar.Entry.e))),
-           (fun (pb : 'as_lident option) (ce : 'class_expr) _ _
+           (fun (pb : 'as_lident option) (ce : 'class_expr) (ovf : bool) _
                 (loc : Ploc.t) ->
-              (MLast.CrInh (loc, MLast.Override, ce, pb) : 'class_str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_token ("", "inherit")))
-                (Grammar.s_nterm (class_expr : 'class_expr Grammar.Entry.e)))
-             (Grammar.s_opt
-                (Grammar.s_nterm (as_lident : 'as_lident Grammar.Entry.e))),
-           (fun (pb : 'as_lident option) (ce : 'class_expr) _
-                (loc : Ploc.t) ->
-              (MLast.CrInh (loc, MLast.Fresh, ce, pb) : 'class_str_item)));
+              (MLast.CrInh (loc, ovf, ce, pb) : 'class_str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

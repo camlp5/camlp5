@@ -7748,7 +7748,24 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "inherit")))
-                   (Grammar.s_token ("", "!")))
+                   (Grammar.s_facto
+                      (Grammar.s_rules
+                         [Grammar.production
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_flag (Grammar.s_token ("", "!"))),
+                             (fun (a : bool) (loc : Ploc.t) ->
+                                (Qast.VaVal (Qast.Bool a) : 'e__183)));
+                          Grammar.production
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("ANTIQUOT", "_!")),
+                             (fun (a : string) (loc : Ploc.t) ->
+                                (Qast.VaAnt ("_!", loc, a) : 'e__183)));
+                          Grammar.production
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("ANTIQUOT", "!")),
+                             (fun (a : string) (loc : Ploc.t) ->
+                                (Qast.VaVal (Qast.VaAnt ("!", loc, a)) :
+                                 'e__183)))])))
                 (Grammar.s_nterm (class_expr : 'class_expr Grammar.Entry.e)))
              (Grammar.s_facto
                 (Grammar.s_rules
@@ -7770,39 +7787,9 @@ Grammar.safe_extend
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
                            'e__184)))])),
-           (fun (pb : 'e__184) (ce : 'class_expr) _ _ (loc : Ploc.t) ->
-              (Qast.Node
-                 ("CrInh", [Qast.Loc; Qast.Node ("Override", []); ce; pb]) :
-               'class_str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_token ("", "inherit")))
-                (Grammar.s_nterm (class_expr : 'class_expr Grammar.Entry.e)))
-             (Grammar.s_facto
-                (Grammar.s_rules
-                   [Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_opt
-                            (Grammar.s_nterm
-                               (as_lident : 'as_lident Grammar.Entry.e))),
-                       (fun (a : 'as_lident option) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Option a) : 'e__183)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_opt")),
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_opt", loc, a) : 'e__183)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "opt")),
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                           'e__183)))])),
-           (fun (pb : 'e__183) (ce : 'class_expr) _ (loc : Ploc.t) ->
-              (Qast.Node
-                 ("CrInh", [Qast.Loc; Qast.Node ("Fresh", []); ce; pb]) :
+           (fun (pb : 'e__184) (ce : 'class_expr) (ovf : 'e__183) _
+                (loc : Ploc.t) ->
+              (Qast.Node ("CrInh", [Qast.Loc; ovf; ce; pb]) :
                'class_str_item)));
         Grammar.production
           (Grammar.r_next

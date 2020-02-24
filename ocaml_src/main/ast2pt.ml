@@ -250,6 +250,7 @@ let mktype ~item_attributes loc tn tl cl tk pf tm =
   | Left msg -> error loc msg
 ;;
 
+let mkoverride m = if m then Override else Fresh;;
 let mkmutable m = if m then Mutable else Immutable;;
 let mkvirtual m = if m then Virtual else Concrete;;
 let mkprivate m = if m then Private else Public;;
@@ -1800,11 +1801,7 @@ and class_str_item c l =
       end
   | CrDcl (loc, cl) -> List.fold_right class_str_item (uv cl) l
   | CrInh (loc, ovflag, ce, pb) ->
-      let ovflag =
-        match ovflag with
-          MLast.Fresh -> Asttypes.Fresh
-        | MLast.Override -> Asttypes.Override
-      in
+      let ovflag = mkoverride (uv ovflag) in
       ocaml_class_field (mkloc loc)
         (ocaml_pcf_inher (mkloc loc) ovflag (class_expr ce) (uv pb)) ::
       l

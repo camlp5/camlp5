@@ -234,7 +234,7 @@ and class_expr =
 and class_str_item =
     CrCtr of loc * ctyp * ctyp
   | CrDcl of loc * class_str_item list
-  | CrInh of loc * override_flag * class_expr * string option
+  | CrInh of loc * bool * class_expr * string option
   | CrIni of loc * expr
   | CrMth of
       loc * bool * bool * string * ctyp option * expr *
@@ -242,7 +242,6 @@ and class_str_item =
   | CrVal of loc * bool * bool * string * expr
   | CrVav of loc * bool * string * ctyp
   | CrVir of loc * bool * string * ctyp * (string * payload) list
-and override_flag = Fresh | Override
 and payload =
     StAttr of loc * str_item list
   | SiAttr of loc * sig_item list

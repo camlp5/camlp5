@@ -1168,10 +1168,8 @@ EXTEND
   class_str_item:
     [ [ "declare"; st = SV (LIST0 [ s = class_str_item; ";" → s ]); "end" →
           Qast.Node "CrDcl" [Qast.Loc; st]
-      | "inherit"; ce = class_expr; pb = SV (OPT as_lident) →
-          Qast.Node "CrInh" [Qast.Loc; Qast.Node "Fresh" []; ce; pb]
-      | "inherit"; "!"; ce = class_expr; pb = SV (OPT as_lident) →
-          Qast.Node "CrInh" [Qast.Loc; Qast.Node "Override" []; ce; pb]
+      | "inherit"; ovf = SV (FLAG "!") "!"; ce = class_expr; pb = SV (OPT as_lident) →
+          Qast.Node "CrInh" [Qast.Loc; ovf ; ce; pb]
       | "value"; ovf = SV (FLAG "!") "!"; mf = SV (FLAG "mutable");
         lab = SV lident "lid" ""; e = cvalue_binding →
           Qast.Node "CrVal" [Qast.Loc; ovf; mf; lab; e]

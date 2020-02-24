@@ -550,14 +550,9 @@ module Meta_make (C : MetaSig) =
         CrCtr (_, t1, t2) -> C.node "CrCtr" [ctyp t1; ctyp t2]
       | CrDcl (_, lcsi) ->
           C.node "CrDcl" [C.vala (C.list class_str_item) lcsi]
-      | CrInh (loc, Fresh, ce, os) ->
+      | CrInh (loc, b1, ce, os) ->
           C.node "CrInh"
-            [C.node_no_loc "Fresh" []; class_expr ce;
-             C.vala (C.option C.string) os]
-      | CrInh (loc, Override, ce, os) ->
-          C.node "CrInh"
-            [C.node_no_loc "Override" []; class_expr ce;
-             C.vala (C.option C.string) os]
+            [C.vala C.bool b1; class_expr ce; C.vala (C.option C.string) os]
       | CrIni (_, e) -> C.node "CrIni" [expr e]
       | CrMth (_, b1, b2, s, ot, e, attrs) ->
           let attrs = assert false in
