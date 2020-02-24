@@ -258,6 +258,22 @@ EXTEND
       <:attribute_body< $_attrid:id$ ? $_patt:p$ when $_expr:e$ >>
     ] ]
   ;
+  alg_attribute:
+  [ [ "[@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
+  item_attribute:
+  [ [ "[@@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
+  item_attributes:
+  [ [ l = V (LIST0 item_attribute) -> l ]
+  ]
+  ;
+  alg_attributes:
+  [ [ l = V (LIST0 alg_attribute) -> l ]
+  ]
+  ;
   functor_parameter:
     [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
@@ -295,10 +311,10 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
           <:str_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs; b = rebind_exn ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) →
+      | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs; b = rebind_exn ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ $_list:alg_attrs$ $_list:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
+        pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
@@ -306,7 +322,7 @@ EXTEND
       | "include"; me = module_expr → <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V ident "";  "="; mt = module_type ; attrs = V (LIST0 item_attribute) →
+      | "module"; "type"; i = V ident "";  "="; mt = module_type ; attrs = item_attributes →
           <:str_item< module type $_:i$ = $mt$ $_list:attrs$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
       | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
@@ -317,7 +333,7 @@ EXTEND
           <:str_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = str_item → (si, loc) ]) →
           <:str_item< # $_str:s$ $_list:sil$ >>
-      | e = expr ; attrs = V (LIST0 item_attribute) → <:str_item< $exp:e$ $_list:attrs$ >> ] ]
+      | e = expr ; attrs = item_attributes → <:str_item< $exp:e$ $_list:attrs$ >> ] ]
   ;
   rebind_exn:
     [ [ "="; a = V mod_ident "list" "" → a
@@ -325,7 +341,7 @@ EXTEND
   ;
   mod_binding:
     [ [ i = V uidopt "uidopt"; me = mod_fun_binding ;
-        attrs = V (LIST0 item_attribute) → (i, me, attrs)
+        attrs = item_attributes → (i, me, attrs)
       ] ]
   ;
   mod_fun_binding:
@@ -371,10 +387,10 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" → s ]); "end" →
           <:sig_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = V (LIST0 alg_attribute) ; item_attrs = V (LIST0 item_attribute) →
+      | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
           <:sig_item< exception $_uid:c$ of $_list:tl$ $_list:alg_attrs$ $_list:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ; attrs = V (LIST0 item_attribute) →
+        pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_list:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
@@ -383,14 +399,14 @@ EXTEND
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") →
           <:sig_item< module $_flag:rf$ $_list:l$ >>
-      | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = V (LIST0 item_attribute) →
+      | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes →
           <:sig_item< module type $_:i$ = $mt$ $_list:attrs$ >>
       | "open"; i = V mod_ident "list" "" → <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") →
           <:sig_item< type $_list:tdl$ >>
-      | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
+      | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
           <:sig_item< value $_lid:i$ : $t$ $_list:attrs$ >>
-      | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
+      | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes →
           <:sig_item< value $lid:i$ : $t$ $_list:attrs$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
@@ -398,7 +414,7 @@ EXTEND
           <:sig_item< # $_str:s$ $_list:sil$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = V uidopt "uidopt"; mt = module_declaration ; attrs = V (LIST0 item_attribute) → (i, mt, attrs) ] ]
+    [ [ i = V uidopt "uidopt"; mt = module_declaration ; attrs = item_attributes → (i, mt, attrs) ] ]
   ;
   module_declaration:
     [ RIGHTA
@@ -594,7 +610,7 @@ EXTEND
       | e = expr → [e] ] ]
   ;
   let_binding:
-    [ [ p = ipatt; e = fun_binding ; attrs = V (LIST0 item_attribute) → (p, e, attrs) ] ]
+    [ [ p = ipatt; e = fun_binding ; attrs = item_attributes → (p, e, attrs) ] ]
   ;
   letop_binding:
     [ [ p = ipatt; e = fun_binding → (p, e) ] ]
@@ -722,17 +738,9 @@ EXTEND
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt → (i, p) ] ]
   ;
-  alg_attribute:
-  [ [ "[@" ; attr = V attribute_body "attribute"; "]" -> attr
-    ] ]
-  ;
-  item_attribute:
-  [ [ "[@@" ; attr = V attribute_body "attribute"; "]" -> attr
-    ] ]
-  ;
   type_decl:
     [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter); "=";
-        pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = V (LIST0 item_attribute) →
+        pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = item_attributes →
           <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_list:attrs$ >> ] ]
   ;
   type_patt:
@@ -793,12 +801,12 @@ EXTEND
   ]
   ;
   constructor_declaration:
-    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = V (LIST0 alg_attribute) →
+    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = alg_attributes →
           (loc, ci, cal, None, attrs)
-      | ci = V UIDENT "uid" ""; ":"; t = ctyp_below_alg_attribute ; attrs = V (LIST0 alg_attribute) →
+      | ci = V UIDENT "uid" ""; ":"; t = ctyp_below_alg_attribute ; attrs = alg_attributes →
           let (tl, rt) = generalized_type_of_type t in
           (loc, ci, <:vala< tl >>, Some rt, attrs)
-      | ci = V UIDENT "uid" "" ; attrs = V (LIST0 alg_attribute) →
+      | ci = V UIDENT "uid" "" ; attrs = alg_attributes →
           (loc, ci, <:vala< [] >>, None, attrs) ] ]
   ;
   constructor_declaration_sans_alg_attrs:
@@ -811,7 +819,7 @@ EXTEND
           (loc, ci, <:vala< [] >>, None) ] ]
   ;
   label_declaration:
-    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp LEVEL "below_alg_attribute" ; attrs = V (LIST0 alg_attribute) →
+    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp LEVEL "below_alg_attribute" ; attrs = alg_attributes →
           mklabdecl loc i mf t attrs ] ]
   ;
   ident:
@@ -847,7 +855,7 @@ EXTEND
   ;
   class_declaration:
     [ [ vf = V (FLAG "virtual"); i = V LIDENT; ctp = class_type_parameters;
-        cfb = class_fun_binding ; attrs = V (LIST0 item_attribute) →
+        cfb = class_fun_binding ; attrs = item_attributes →
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = i; MLast.ciExp = cfb; MLast.ciAttributes = attrs} ] ]
   ;
@@ -913,10 +921,10 @@ EXTEND
         lab = V lident "lid" ""; ":"; t = ctyp →
           <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
-        ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
+        ":"; t = ctyp ; attrs = item_attributes →
           <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ $_list:attrs$ >>
       | "method"; ovf = V (FLAG "!") "!"; pf = V (FLAG "private") "priv";
-        l = V lident "lid" ""; topt = V (OPT polyt); e = fun_binding ; attrs = V (LIST0 item_attribute) →
+        l = V lident "lid" ""; topt = V (OPT polyt); e = fun_binding ; attrs = item_attributes →
           <:class_str_item<
             method $_!:ovf$ $_priv:pf$ $_lid:l$ $_opt:topt$ = $e$ $_list:attrs$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp →
@@ -973,23 +981,23 @@ EXTEND
         t = ctyp →
           <:class_sig_item< value $_flag:mf$ $_flag:vf$  $_lid:l$ : $t$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
-        ":"; t = ctyp ; attrs = V (LIST0 item_attribute) →
+        ":"; t = ctyp ; attrs = item_attributes →
           <:class_sig_item< method virtual $_flag:pf$ $_lid:l$ : $t$ $_list:attrs$ >>
       | "method"; pf = V (FLAG "private"); l = V lident "lid" ""; ":";
-        t = ctyp ; attrs = V (LIST0 item_attribute) →
+        t = ctyp ; attrs = item_attributes →
           <:class_sig_item< method $_flag:pf$ $_lid:l$ : $t$ $_list:attrs$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp →
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
   class_description:
     [ [ vf = V (FLAG "virtual"); n = V LIDENT; ctp = class_type_parameters;
-        ":"; ct = class_type ; attrs = V (LIST0 item_attribute) →
+        ":"; ct = class_type ; attrs = item_attributes →
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = ct; MLast.ciAttributes = attrs} ] ]
   ;
   class_type_declaration:
     [ [ vf = V (FLAG "virtual"); n = V LIDENT; ctp = class_type_parameters;
-        "="; cs = class_type ; attrs = V (LIST0 item_attribute) →
+        "="; cs = class_type ; attrs = item_attributes →
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = cs; MLast.ciAttributes = attrs} ] ]
   ;
@@ -1049,9 +1057,9 @@ EXTEND
     [ [ rfl = V (LIST0 poly_variant SEP "|") → rfl ] ]
   ;
   poly_variant:
-    [ [ "`"; i = V ident "" ; attrs = V (LIST0 alg_attribute) → <:poly_variant< ` $_:i$ $_list:attrs$ >>
+    [ [ "`"; i = V ident "" ; attrs = alg_attributes → <:poly_variant< ` $_:i$ $_list:attrs$ >>
       | "`"; i = V ident ""; "of"; ao = V (FLAG "&");
-        l = V (LIST1 ctyp_below_alg_attribute SEP "&") ; attrs = V (LIST0 alg_attribute) →
+        l = V (LIST1 ctyp_below_alg_attribute SEP "&") ; attrs = alg_attributes →
           <:poly_variant< ` $_:i$ of $_flag:ao$ $_list:l$ $_list:attrs$ >>
       | t = ctyp → <:poly_variant< $t$ >> ] ]
   ;
