@@ -793,7 +793,8 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open0")))
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "open0")))
                 (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
