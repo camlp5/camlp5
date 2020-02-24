@@ -7370,7 +7370,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "initializer")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
            (fun (se : 'expr) _ (loc : Ploc.t) ->
-              (Qast.Node ("CrIni", [Qast.Loc; se]) : 'class_str_item)));
+              (Qast.Node ("CrIni", [Qast.Loc; se; Qast.VaVal(Qast.List[])]) : 'class_str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -7381,7 +7381,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t2 : 'ctyp) _ (t1 : 'ctyp) _ (loc : Ploc.t) ->
-              (Qast.Node ("CrCtr", [Qast.Loc; t1; t2]) : 'class_str_item)));
+              (Qast.Node ("CrCtr", [Qast.Loc; t1; t2; Qast.VaVal(Qast.List[])]) : 'class_str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -7648,7 +7648,7 @@ Grammar.safe_extend
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t : 'ctyp) _ (lab : 'e__189) (mf : 'e__188) _ _
                 (loc : Ploc.t) ->
-              (Qast.Node ("CrVav", [Qast.Loc; mf; lab; t]) :
+              (Qast.Node ("CrVav", [Qast.Loc; mf; lab; t; Qast.VaVal(Qast.List[])]) :
                'class_str_item)));
         Grammar.production
           (Grammar.r_next
@@ -7740,7 +7740,7 @@ Grammar.safe_extend
                 (cvalue_binding : 'cvalue_binding Grammar.Entry.e)),
            (fun (e : 'cvalue_binding) (lab : 'e__187) (mf : 'e__186)
                 (ovf : 'e__185) _ (loc : Ploc.t) ->
-              (Qast.Node ("CrVal", [Qast.Loc; ovf; mf; lab; e]) :
+              (Qast.Node ("CrVal", [Qast.Loc; ovf; mf; lab; e; Qast.VaVal(Qast.List[])]) :
                'class_str_item)));
         Grammar.production
           (Grammar.r_next
@@ -7789,7 +7789,7 @@ Grammar.safe_extend
                            'e__184)))])),
            (fun (pb : 'e__184) (ce : 'class_expr) (ovf : 'e__183) _
                 (loc : Ploc.t) ->
-              (Qast.Node ("CrInh", [Qast.Loc; ovf; ce; pb]) :
+              (Qast.Node ("CrInh", [Qast.Loc; ovf; ce; pb; Qast.VaVal(Qast.List[])]) :
                'class_str_item)));
         Grammar.production
           (Grammar.r_next

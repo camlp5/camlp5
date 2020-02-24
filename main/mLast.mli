@@ -236,14 +236,14 @@ and class_expr =
   | CeXtr of loc and string and option (V class_expr)
   | CeAtt of loc and class_expr and V (V string * payload) ]
 and class_str_item =
-  [ CrCtr of loc and ctyp and ctyp
+  [ CrCtr of loc and ctyp and ctyp and V (list (V (V string * payload)))
   | CrDcl of loc and V (list class_str_item)
-  | CrInh of loc and V bool and class_expr and V (option string)
-  | CrIni of loc and expr
+  | CrInh of loc and V bool and class_expr and V (option string) and V (list (V (V string * payload)))
+  | CrIni of loc and expr and V (list (V (V string * payload)))
   | CrMth of loc and V bool and V bool and V string and V (option ctyp) and
       expr and V (list (V (V string * payload)))
-  | CrVal of loc and V bool and V bool and V string and expr
-  | CrVav of loc and V bool and V string and ctyp
+  | CrVal of loc and V bool and V bool and V string and expr and V (list (V (V string * payload)))
+  | CrVav of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
   | CrVir of loc and V bool and V string and ctyp and V (list (V (V string * payload))) ]
 
 and payload = [

@@ -257,14 +257,14 @@ and class_expr =
   | x -> not_impl "class_expr" x ]
 and class_str_item =
   fun
-  [ CrInh _ _ ce _ -> class_expr ce
-  | CrIni _ e -> expr e
+  [ CrInh _ _ ce _ _ -> class_expr ce
+  | CrIni _ e _ -> expr e
   | <:class_str_item< method $priv:_$ $lid:_$ = $e$ >> -> expr e
   | <:class_str_item< method $priv:_$ $lid:_$ : $t$ = $e$ >> -> do {
       expr e;
       ctyp t
     }
-  | CrVal _ _ _ _ e -> expr e
+  | CrVal _ _ _ _ e _ -> expr e
   | CrVir _ _ _ t _ -> ctyp t
   | x -> not_impl "class_str_item" x ]
 ;

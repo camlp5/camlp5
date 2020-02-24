@@ -532,21 +532,28 @@ module Meta_make (C : MetaSig) =
           CeXtr loc s _ → C.xtr loc s ]
     and class_str_item =
       fun
-      [ CrCtr _ t1 t2 → C.node "CrCtr" [ctyp t1; ctyp t2]
+      [ CrCtr _ t1 t2 attrs →
+        let attrs = assert False in
+        C.node "CrCtr" [ctyp t1; ctyp t2; attrs]
       | CrDcl _ lcsi → C.node "CrDcl" [C.vala (C.list class_str_item) lcsi]
-      | CrInh loc b1 ce os →
-          C.node "CrInh" [C.vala C.bool b1; class_expr ce; C.vala (C.option C.string) os]
-      | CrIni _ e → C.node "CrIni" [expr e]
+      | CrInh loc b1 ce os attrs →
+          let attrs = assert False in
+          C.node "CrInh" [C.vala C.bool b1; class_expr ce; C.vala (C.option C.string) os; attrs]
+      | CrIni _ e attrs →
+        let attrs = assert False in
+        C.node "CrIni" [expr e; attrs]
       | CrMth _ b1 b2 s ot e attrs →
           let attrs = assert False in
           C.node "CrMth"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s;
              C.vala (C.option ctyp) ot; expr e; attrs]
-      | CrVal _ b1 b2 s e →
+      | CrVal _ b1 b2 s e attrs →
+          let attrs = assert False in
           C.node "CrVal"
-            [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e]
-      | CrVav _ b s t →
-          C.node "CrVav" [C.vala C.bool b; C.vala C.string s; ctyp t]
+            [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e; attrs]
+      | CrVav _ b s t attrs →
+          let attrs = assert False in
+          C.node "CrVav" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CrVir _ b s t attrs →
           let attrs = assert False in
           C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs] ]

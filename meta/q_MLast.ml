@@ -1168,23 +1168,23 @@ EXTEND
   class_str_item:
     [ [ "declare"; st = SV (LIST0 [ s = class_str_item; ";" → s ]); "end" →
           Qast.Node "CrDcl" [Qast.Loc; st]
-      | "inherit"; ovf = SV (FLAG "!") "!"; ce = class_expr; pb = SV (OPT as_lident) →
-          Qast.Node "CrInh" [Qast.Loc; ovf ; ce; pb]
+      | "inherit"; ovf = SV (FLAG "!") "!"; ce = class_expr; pb = SV (OPT as_lident) ; attrs = item_attributes →
+          Qast.Node "CrInh" [Qast.Loc; ovf ; ce; pb; attrs]
       | "value"; ovf = SV (FLAG "!") "!"; mf = SV (FLAG "mutable");
-        lab = SV lident "lid" ""; e = cvalue_binding →
-          Qast.Node "CrVal" [Qast.Loc; ovf; mf; lab; e]
+        lab = SV lident "lid" ""; e = cvalue_binding ; attrs = item_attributes →
+          Qast.Node "CrVal" [Qast.Loc; ovf; mf; lab; e; attrs]
       | "value"; "virtual"; mf = SV (FLAG "mutable");
-        lab = SV lident "lid" ""; ":"; t = ctyp →
-          Qast.Node "CrVav" [Qast.Loc; mf; lab; t]
+        lab = SV lident "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
+          Qast.Node "CrVav" [Qast.Loc; mf; lab; t; attrs]
       | "method"; "virtual"; pf = SV (FLAG "private"); l = SV lident "lid" "";
         ":"; t = ctyp ; attrs = item_attributes →
           Qast.Node "CrVir" [Qast.Loc; pf; l; t; attrs]
       | "method"; ovf = SV (FLAG "!") "!"; pf = SV (FLAG "private") "priv";
         l = SV lident "lid" ""; topt = SV (OPT polyt); e = fun_binding ; attrs = item_attributes →
           Qast.Node "CrMth" [Qast.Loc; ovf; pf; l; topt; e; attrs]
-      | "type"; t1 = ctyp; "="; t2 = ctyp →
-          Qast.Node "CrCtr" [Qast.Loc; t1; t2]
-      | "initializer"; se = expr → Qast.Node "CrIni" [Qast.Loc; se] ] ]
+      | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
+          Qast.Node "CrCtr" [Qast.Loc; t1; t2; attrs]
+      | "initializer"; se = expr ; attrs = item_attributes → Qast.Node "CrIni" [Qast.Loc; se; attrs] ] ]
   ;
   as_lident:
     [ [ "as"; i = LIDENT → mkident i ] ]

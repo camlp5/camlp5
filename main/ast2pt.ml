@@ -1512,22 +1512,22 @@ and class_expr =
   | CeXtr loc _ _ → error loc "bad ast CeXtr" ]
 and class_str_item c l =
   match c with
-  [ CrCtr loc t1 t2 →
+  [ CrCtr loc t1 t2 attrs →
       match ocaml_pcf_cstr with
       [ Some pcf_cstr →
           let loc = mkloc loc in
-          [ocaml_class_field loc (pcf_cstr (ctyp t1, ctyp t2, loc)) :: l]
+          [ocaml_class_field ~{item_attributes=item_attributes attrs} loc (pcf_cstr (ctyp t1, ctyp t2, loc)) :: l]
       | None → error loc "no constraint in this ocaml version" ]
   | CrDcl loc cl → List.fold_right class_str_item (uv cl) l
-  | CrInh loc ovflag ce pb →
+  | CrInh loc ovflag ce pb attrs →
       let ovflag = mkoverride (uv ovflag) in
-      [ocaml_class_field (mkloc loc)
+      [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc)
          (ocaml_pcf_inher (mkloc loc) ovflag (class_expr ce) (uv pb)) ::
        l]
-  | CrIni loc e →
+  | CrIni loc e attrs →
       match ocaml_pcf_init with
       [ Some pcf_init →
-          [ocaml_class_field (mkloc loc) (pcf_init (expr e)) :: l]
+          [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc) (pcf_init (expr e)) :: l]
       | None → error loc "no initializer in this ocaml version" ]
   | CrMth loc ovf pf s ot e item_attrs →
       let e =
@@ -1542,14 +1542,14 @@ and class_str_item c l =
       [ocaml_class_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
          (ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc)) ::
        l]
-  | CrVal loc ovf mf s e →
-      [ocaml_class_field (mkloc loc)
+  | CrVal loc ovf mf s e attrs →
+      [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc)
          (ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc)) ::
        l]
-  | CrVav loc mf s t →
+  | CrVav loc mf s t attrs →
       match ocaml_pcf_valvirt with
       [ Some pcf_valvirt →
-          [ocaml_class_field (mkloc loc)
+          [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc)
              (pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc)) ::
            l]
       | None → error loc "no virtual value in this ocaml version" ]
