@@ -328,6 +328,14 @@ EXTEND
   [ [ l = SV (LIST0 alg_attribute) "algattrs" -> l ]
   ]
   ;
+  item_extension:
+  [ [ "[%%" ; e = SV attribute_body "extension"; "]" -> e
+    ] ]
+  ;
+  alg_extension:
+  [ [ "[%" ; e = SV attribute_body "extension"; "]" -> e
+    ] ]
+  ;
   functor_parameter:
    [ [ "(" ; i = SV uidopt "uidopt"; ":"; t = module_type ; ")" →
                 Qast.Option (Some (Qast.Tuple [i; t]))
@@ -353,7 +361,9 @@ EXTEND
           Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option None]
       | "("; me = SELF; ":"; mt = module_type; ")" →
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
-      | "("; me = SELF; ")" → me ] ]
+      | "("; me = SELF; ")" → me
+      | e = alg_extension -> Qast.Node "MeExten" [Qast.Loc; e]
+      ] ]
   ;
   structure:
     [ [ st = SV (LIST0 [ s = str_item; ";" → s ]) → st ] ]
@@ -395,6 +405,7 @@ EXTEND
           Qast.Node "StUse" [Qast.Loc; s; sil]
       | e = expr ; attrs = item_attributes → Qast.Node "StExp" [Qast.Loc; e; attrs]
       | attr = floating_attribute -> Qast.Node "StFlAtt" [Qast.Loc; attr]
+      | e = item_extension -> Qast.Node "StExten" [Qast.Loc; e]
       ] ]
   ;
   rebind_exn:
@@ -439,6 +450,7 @@ EXTEND
     | [ m1 = SELF; "."; m2 = SELF → Qast.Node "MtAcc" [Qast.Loc; m1; m2] ]
     | "simple"
       [ i = SV UIDENT → Qast.Node "MtUid" [Qast.Loc; i]
+      | e = alg_extension -> Qast.Node "MtExten" [Qast.Loc; e]
       | i = SV LIDENT → Qast.Node "MtLid" [Qast.Loc; i]
       | "'"; i = SV ident "" → Qast.Node "MtQuo" [Qast.Loc; i]
       | "("; mt = SELF; ")" → mt ] ]
@@ -481,6 +493,7 @@ EXTEND
         sil = SV (LIST0 [ si = sig_item → Qast.Tuple [si; Qast.Loc] ]) →
           Qast.Node "SgUse" [Qast.Loc; s; sil]
       | attr = floating_attribute -> Qast.Node "SgFlAtt" [Qast.Loc; attr]
+      | e = item_extension -> Qast.Node "SgExten" [Qast.Loc; e]
       ] ]
   ;
   mod_decl_binding:
@@ -803,6 +816,7 @@ EXTEND
       | s = SV FLOAT → Qast.Node "ExFlo" [Qast.Loc; s]
       | s = SV STRING → Qast.Node "ExStr" [Qast.Loc; s]
       | s = SV CHAR → Qast.Node "ExChr" [Qast.Loc; s]
+      | e = alg_extension -> Qast.Node "ExExten" [Qast.Loc; e]
       | i = SV LIDENT → Qast.Node "ExLid" [Qast.Loc; i]
       | i = SV GIDENT → Qast.Node "ExLid" [Qast.Loc; i]
       | i = SV UIDENT → Qast.Node "ExUid" [Qast.Loc; i]
@@ -906,7 +920,9 @@ EXTEND
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF → Qast.Node "PaAcc" [Qast.Loc; p1; p2] ]
     | "simple"
-      [ s = SV LIDENT → Qast.Node "PaLid" [Qast.Loc; s]
+      [ 
+        e = alg_extension -> Qast.Node "PaExten" [Qast.Loc; e]
+      | s = SV LIDENT → Qast.Node "PaLid" [Qast.Loc; s]
       | s = SV GIDENT → Qast.Node "PaLid" [Qast.Loc; s]
       | s = SV UIDENT → Qast.Node "PaUid" [Qast.Loc; s]
       | s = SV INT → Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
@@ -971,6 +987,7 @@ EXTEND
     [ [ "{"; lpl = SV (LIST1 label_ipatt SEP ";"); "}" →
           Qast.Node "PaRec" [Qast.Loc; lpl]
       | "("; p = paren_ipatt; ")" → p
+      | e = alg_extension -> Qast.Node "PaExten" [Qast.Loc; e]
       | s = SV LIDENT → Qast.Node "PaLid" [Qast.Loc; s]
       | s = SV GIDENT → Qast.Node "PaLid" [Qast.Loc; s]
       | "_" → Qast.Node "PaAny" [Qast.Loc] ] ]
@@ -1044,6 +1061,7 @@ EXTEND
       | i = GIDENT →
           Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal (greek_ascii_equiv i)]
       | "_" → Qast.Node "TyAny" [Qast.Loc]
+      | e = alg_extension -> Qast.Node "TyExten" [Qast.Loc; e]
       | i = SV LIDENT → Qast.Node "TyLid" [Qast.Loc; i]
       | i = SV UIDENT → Qast.Node "TyUid" [Qast.Loc; i]
       | "module"; mt = module_type → Qast.Node "TyPck" [Qast.Loc; mt]
@@ -1164,7 +1182,9 @@ EXTEND
           Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
       | "("; ce = SELF; ":"; ct = class_type; ")" →
           Qast.Node "CeTyc" [Qast.Loc; ce; ct]
-      | "("; ce = SELF; ")" → ce ] ]
+      | "("; ce = SELF; ")" → ce
+      | e = alg_extension -> Qast.Node "CeExten" [Qast.Loc; e]
+      ] ]
   ;
   class_structure:
     [ [ cf = SV (LIST0 [ cf = class_str_item; ";" → cf ]) → cf ] ]
@@ -1195,6 +1215,7 @@ EXTEND
           Qast.Node "CrCtr" [Qast.Loc; t1; t2; attrs]
       | "initializer"; se = expr ; attrs = item_attributes → Qast.Node "CrIni" [Qast.Loc; se; attrs]
       | attr = floating_attribute -> Qast.Node "CrFlAtt" [Qast.Loc; attr]
+      | e = item_extension -> Qast.Node "CrExten" [Qast.Loc; e]
       ] ]
   ;
   as_lident:
@@ -1235,7 +1256,9 @@ EXTEND
     | "simple"
       [ i = SV LIDENT "id" → Qast.Node "CtIde" [Qast.Loc; i]
       | i = SV UIDENT "id" → Qast.Node "CtIde" [Qast.Loc; i]
-      | "("; ct = SELF; ")" → ct ] ]
+      | "("; ct = SELF; ")" → ct
+      | e = alg_extension -> Qast.Node "CtExten" [Qast.Loc; e]
+      ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" → t ] ]
@@ -1256,6 +1279,7 @@ EXTEND
       | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
           Qast.Node "CgCtr" [Qast.Loc; t1; t2; attrs]
       | attr = floating_attribute -> Qast.Node "CgFlAtt" [Qast.Loc; attr]
+      | e = item_extension -> Qast.Node "CgExten" [Qast.Loc; e]
       ] ]
   ;
   class_description:
