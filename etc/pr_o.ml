@@ -19,6 +19,7 @@ open Mlsyntax.Original;
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
+value flag_expand_letop_syntax = Pcaml.flag_expand_letop_syntax;
 value flag_compatible_old_versions_of_ocaml =
   Pcaml.flag_compatible_old_versions_of_ocaml
 ;
@@ -1200,7 +1201,7 @@ EXTEND_PRINTER
           pr_letlike "let" pc loc rf pel e
 
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
-           when is_letop letop ->
+           when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
         let loc = MLast.loc_of_expr e0 in
         let rec deconstruct_ands acc = fun [
               (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
@@ -2045,6 +2046,7 @@ value set_flags s =
       [ 'A' | 'a' -> do {
           flag_comments_in_phrases.val := is_upp;
           flag_equilibrate_cases.val := is_upp;
+          flag_expand_letop_syntax.val := is_upp;
           flag_horiz_let_in.val := is_upp;
           flag_semi_semi.val := is_upp;
         }
@@ -2053,6 +2055,7 @@ value set_flags s =
       | 'L' | 'l' -> flag_horiz_let_in.val := is_upp
       | 'M' | 'm' -> flag_semi_semi.val := is_upp
       | 'O' | 'o' -> flag_add_locations.val := is_upp
+      | 'X' | 'x' -> flag_expand_letop_syntax.val := is_upp
       | 'Z' | 'z' -> flag_compatible_old_versions_of_ocaml.val := is_upp
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
@@ -2063,12 +2066,13 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s%s%s"
+    sprintf "%s%s%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
       (flag flag_add_locations.val "O" "o")
+      (flag flag_expand_letop_syntax.val "X" "x")
       (flag flag_compatible_old_versions_of_ocaml.val "Z" "z")
   in
   let on = on_off flag_on in

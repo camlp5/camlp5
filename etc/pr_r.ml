@@ -22,6 +22,7 @@ value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
+value flag_expand_letop_syntax = Pcaml.flag_expand_letop_syntax;
 
 value flag_where_after_in = ref True;
 value flag_where_after_let_eq = ref True;
@@ -1379,7 +1380,7 @@ EXTEND_PRINTER
               pprintf pc "%p@ %p" (letop_up_to_in "let") (rf, pel) (comm_expr expr_wh)
                 e ]
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >>
-           when is_letop letop ->
+           when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
         let rec deconstruct_ands acc = fun [
               (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
                 deconstruct_ands [ (andop, (pat2, e2)) :: acc ] (pat1, e1)
@@ -2042,6 +2043,7 @@ value set_flags s =
           let v = is_uppercase s.[i] in
           flag_comments_in_phrases.val := v;
           flag_expand_declare.val := v;
+          flag_expand_letop_syntax.val := v;
           flag_equilibrate_cases.val := v;
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
@@ -2052,6 +2054,7 @@ value set_flags s =
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
       | 'O' | 'o' -> flag_add_locations.val := is_uppercase s.[i]
       | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
+      | 'X' | 'x' -> flag_expand_letop_syntax.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
@@ -2061,13 +2064,14 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    Printf.sprintf "%s%s%s%s%s%s"
+    Printf.sprintf "%s%s%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_expand_declare.val "D" "d")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_add_locations.val "O" "o")
       (flag flag_sequ_begin_at_eol.val "S" "s")
+      (flag flag_expand_letop_syntax.val "X" "x")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in

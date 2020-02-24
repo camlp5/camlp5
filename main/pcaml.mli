@@ -183,4 +183,5 @@ value expr_reloc :
 value rename_id : ref (string -> string);
 value flag_comments_in_phrases : ref bool;
 value flag_equilibrate_cases : ref bool;
+value flag_expand_letop_syntax : ref bool;
 value flag_compatible_old_versions_of_ocaml : ref bool;

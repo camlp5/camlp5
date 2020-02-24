@@ -427,6 +427,7 @@ value pr_expr_fun_args = ref Extfun.empty;
 
 value flag_comments_in_phrases = ref True;
 value flag_equilibrate_cases = ref False;
+value flag_expand_letop_syntax = ref False ;
 value flag_compatible_old_versions_of_ocaml = ref False;
 
 value inter_phrases = ref None;
