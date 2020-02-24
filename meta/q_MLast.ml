@@ -1232,18 +1232,18 @@ EXTEND
   class_sig_item:
     [ [ "declare"; st = SV (LIST0 [ s = class_sig_item; ";" → s ]); "end" →
           Qast.Node "CgDcl" [Qast.Loc; st]
-      | "inherit"; cs = class_type → Qast.Node "CgInh" [Qast.Loc; cs]
+      | "inherit"; cs = class_type ; attrs = item_attributes → Qast.Node "CgInh" [Qast.Loc; cs; attrs]
       | "value"; mf = SV (FLAG "mutable"); vf = SV (FLAG "virtual"); l = SV lident "lid" ""; ":";
-        t = ctyp →
-          Qast.Node "CgVal" [Qast.Loc; mf; vf; l; t]
+        t = ctyp ; attrs = item_attributes →
+          Qast.Node "CgVal" [Qast.Loc; mf; vf; l; t; attrs]
       | "method"; "virtual"; pf = SV (FLAG "private"); l = SV lident "lid" "";
         ":"; t = ctyp ; attrs = item_attributes →
           Qast.Node "CgVir" [Qast.Loc; pf; l; t; attrs]
       | "method"; pf = SV (FLAG "private"); l = SV lident "lid" ""; ":";
         t = ctyp ; attrs = item_attributes →
           Qast.Node "CgMth" [Qast.Loc; pf; l; t; attrs]
-      | "type"; t1 = ctyp; "="; t2 = ctyp →
-          Qast.Node "CgCtr" [Qast.Loc; t1; t2] ] ]
+      | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
+          Qast.Node "CgCtr" [Qast.Loc; t1; t2; attrs] ] ]
   ;
   class_description:
     [ [ vf = SV (FLAG "virtual"); n = SV LIDENT; ctp = class_type_parameters;

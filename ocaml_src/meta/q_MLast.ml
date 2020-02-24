@@ -8141,7 +8141,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t2 : 'ctyp) _ (t1 : 'ctyp) _ (loc : Ploc.t) ->
-              (Qast.Node ("CgCtr", [Qast.Loc; t1; t2]) : 'class_sig_item)));
+              (Qast.Node ("CgCtr", [Qast.Loc; t1; t2; Qast.VaVal(Qast.List[])]) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -8410,14 +8410,14 @@ Grammar.safe_extend
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t : 'ctyp) _ (l : 'e__207) (vf : 'e__206) (mf : 'e__205) _
                 (loc : Ploc.t) ->
-              (Qast.Node ("CgVal", [Qast.Loc; mf; vf; l; t]) :
+              (Qast.Node ("CgVal", [Qast.Loc; mf; vf; l; t; Qast.VaVal(Qast.List[])]) :
                'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "inherit")))
              (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)),
            (fun (cs : 'class_type) _ (loc : Ploc.t) ->
-              (Qast.Node ("CgInh", [Qast.Loc; cs]) : 'class_sig_item)));
+              (Qast.Node ("CgInh", [Qast.Loc; cs; Qast.VaVal(Qast.List[])]) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
