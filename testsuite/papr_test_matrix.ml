@@ -484,6 +484,16 @@ and t2 = bool[@@foo];
      official_output = OK {foo|[@@@argle ]|foo};
      r_output = OK {foo|[@@@argle];
 |foo}
+    };
+    {name="floating-attributes2"; implem = False ;
+     o_input = OK {foo|[@@@argle]|foo} ;
+     official_input = OK {foo|[@@@argle]|foo} ;
+     r_input = OK {foo|[@@@argle];|foo} ;
+     o_output = OK {foo|[@@@argle];;
+|foo};
+     official_output = OK {foo|[@@@argle ]|foo};
+     r_output = OK {foo|[@@@argle];
+|foo}
     }
 ]
 ;
