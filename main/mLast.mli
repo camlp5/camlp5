@@ -188,10 +188,10 @@ and str_item =
   | StExc of loc and V string and V (list ctyp) and V (list string) and V (list (V (V string * payload))) and V (list (V (V string * payload)))
   | StExp of loc and expr and V (list (V (V string * payload)))
   | StExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
-  | StInc of loc and module_expr
+  | StInc of loc and module_expr and V (list (V (V string * payload)))
   | StMod of loc and V bool and V (list (V (option (V string)) * module_expr * V (list (V (V string * payload)))))
   | StMty of loc and V string and module_type and V (list (V (V string * payload)))
-  | StOpn of loc and V (list string)
+  | StOpn of loc and V (list string) and V (list (V (V string * payload)))
   | StTyp of loc and V bool and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr * V (list (V (V string * payload)))))

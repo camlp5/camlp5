@@ -1318,7 +1318,7 @@ and str_item s l =
   | StExt loc n t p attrs →
       let vn = uv n in
       [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t (uv p))) :: l]
-  | StInc loc me →
+  | StInc loc me attrs →
       match ocaml_pstr_include with
       [ Some pstr_include →
           [mkstr loc (pstr_include (mkloc loc) (module_expr me)) :: l]
@@ -1352,7 +1352,7 @@ and str_item s l =
   | StMty loc n mt item_attrs →
       let m = ocaml_pstr_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) (module_type mt) in
       [mkstr loc m :: l]
-  | StOpn loc id →
+  | StOpn loc id attrs →
       [mkstr loc
          (ocaml_pstr_open (mkloc loc) (long_id_of_string_list loc (uv id))) ::
        l]

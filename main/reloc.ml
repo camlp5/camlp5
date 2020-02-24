@@ -545,9 +545,9 @@ and str_item floc sh =
     | StExt loc x1 x2 x3 x4 →
         let loc = floc loc in
         StExt loc x1 (ctyp floc sh x2) x3 x4
-    | StInc loc x1 →
+    | StInc loc x1 x2 →
         let loc = floc loc in
-        StInc loc (module_expr floc sh x1)
+        StInc loc (module_expr floc sh x1) x2
     | StMod loc x1 x2 →
         let loc = floc loc in
         StMod loc x1
@@ -556,9 +556,9 @@ and str_item floc sh =
     | StMty loc x1 x2 x3 →
         let loc = floc loc in
         StMty loc x1 (module_type floc sh x2) x3
-    | StOpn loc x1 →
+    | StOpn loc x1 x2 →
         let loc = floc loc in
-        StOpn loc x1
+        StOpn loc x1 x2
     | StTyp loc x1 x2 →
         let loc = floc loc in
         StTyp loc x1 (vala_map (List.map (type_decl floc sh)) x2)

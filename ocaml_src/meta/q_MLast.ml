@@ -1488,7 +1488,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
                            'e__34)))])),
            (fun (i : 'e__34) _ (loc : Ploc.t) ->
-              (Qast.Node ("StOpn", [Qast.Loc; i]) : 'str_item)));
+              (Qast.Node ("StOpn", [Qast.Loc; i; Qast.VaVal(Qast.List[])]) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1587,7 +1587,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "include")))
              (Grammar.s_nterm (module_expr : 'module_expr Grammar.Entry.e)),
            (fun (me : 'module_expr) _ (loc : Ploc.t) ->
-              (Qast.Node ("StInc", [Qast.Loc; me]) : 'str_item)));
+              (Qast.Node ("StInc", [Qast.Loc; me; Qast.VaVal(Qast.List[])]) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

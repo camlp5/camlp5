@@ -1399,14 +1399,18 @@ value ocaml_pstr_exn_rebind =
 ;
 
 value ocaml_pstr_include =
-  IFDEF OCAML_VERSION <= OCAML_3_00 THEN None
+  IFDEF OCAML_VERSION <= OCAML_3_00 THEN
+    None
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun loc me -> Pstr_include me)
+    Some (fun ?{item_attributes=[]} loc me ->
+      do { assert (item_attributes = []) ;
+      Pstr_include me
+      })
   ELSE
     Some
-      (fun loc me ->
+      (fun ?{item_attributes=[]} loc me ->
          Pstr_include
-           {pincl_mod = me; pincl_loc = loc; pincl_attributes = []})
+           {pincl_mod = me; pincl_loc = loc; pincl_attributes = item_attributes})
   END
 ;
 
@@ -1448,13 +1452,21 @@ value ocaml_pstr_module ?{item_attributes=[]} loc (s : option string) me =
   END
 ;
 
-value ocaml_pstr_open loc li =
-  IFDEF OCAML_VERSION < OCAML_4_01 THEN Pstr_open (mknoloc li)
-  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pstr_open Fresh (mknoloc li)
+value ocaml_pstr_open ?{item_attributes=[]} loc li =
+  IFDEF OCAML_VERSION < OCAML_4_01 THEN
+    do { assert (item_attributes = []) ;
+    Pstr_open (mknoloc li)
+    }
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
+    Pstr_open Fresh (mknoloc li)
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_08 THEN
+    do { assert (item_attributes = []) ;
     Pstr_open
       {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
        popen_attributes = []}
+    }
   ELSE
     Pstr_open
       { popen_expr =
@@ -1464,7 +1476,7 @@ value ocaml_pstr_open loc li =
         }
       ; popen_override = Fresh
       ; popen_loc = loc
-      ; popen_attributes = []
+      ; popen_attributes = item_attributes
       }
   END
 ;

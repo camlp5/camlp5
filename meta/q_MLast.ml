@@ -372,12 +372,12 @@ EXTEND
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
           Qast.Node "StExt" [Qast.Loc; i; t; pd; attrs]
-      | "include"; me = module_expr → Qast.Node "StInc" [Qast.Loc; me]
+      | "include"; me = module_expr ; attrs = item_attributes → Qast.Node "StInc" [Qast.Loc; me; attrs]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") →
           Qast.Node "StMod" [Qast.Loc; r; l]
       | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = item_attributes →
           Qast.Node "StMty" [Qast.Loc; i; mt; attrs]
-      | "open"; i = SV mod_ident "list" "" → Qast.Node "StOpn" [Qast.Loc; i]
+      | "open"; i = SV mod_ident "list" "" ; attrs = item_attributes → Qast.Node "StOpn" [Qast.Loc; i; attrs]
       | "type"; nrfl = SV (FLAG "nonrec");
         tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "StTyp" [Qast.Loc; nrfl; tdl]
