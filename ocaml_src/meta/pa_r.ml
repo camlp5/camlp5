@@ -238,23 +238,17 @@ let build_op_attributed loc op attrs =
 ;;
 
 let build_letop_binder loc letop b l e =
-  let (firstpat, firstarg, firstattrs) = b in
   let (argpat, argexp) =
     (* TODO FIX THIS CHET *)
     List.fold_left
-      (fun (argpat, argexp) (andop, (pat, exp, attrs)) ->
-         let attrs = List.map Pcaml.unvala (Pcaml.unvala attrs) in
-         let andop = build_op_attributed loc andop attrs in
+      (fun (argpat, argexp) (andop, (pat, exp)) ->
          MLast.PaTup (loc, [argpat; pat]),
-         MLast.ExApp (loc, MLast.ExApp (loc, andop, argexp), exp))
-      (firstpat, firstarg) l
-  in
-  let letop =
-    build_op_attributed loc letop
-      (List.map Pcaml.unvala (Pcaml.unvala firstattrs))
+         MLast.ExApp
+           (loc, MLast.ExApp (loc, MLast.ExLid (loc, andop), argexp), exp))
+      b l
   in
   MLast.ExApp
-    (loc, MLast.ExApp (loc, letop, argexp),
+    (loc, MLast.ExApp (loc, MLast.ExLid (loc, letop), argexp),
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
@@ -305,14 +299,16 @@ Grammar.safe_extend
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
    and uidopt : 'uidopt Grammar.Entry.e = grammar_entry_create "uidopt"
-   and and_binding : 'and_binding Grammar.Entry.e =
-     grammar_entry_create "and_binding"
+   and andop_binding : 'andop_binding Grammar.Entry.e =
+     grammar_entry_create "andop_binding"
    and closed_case_list : 'closed_case_list Grammar.Entry.e =
      grammar_entry_create "closed_case_list"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
      grammar_entry_create "cons_expr_opt"
    and dummy : 'dummy Grammar.Entry.e = grammar_entry_create "dummy"
    and sequence : 'sequence Grammar.Entry.e = grammar_entry_create "sequence"
+   and letop_binding : 'letop_binding Grammar.Entry.e =
+     grammar_entry_create "letop_binding"
    and fun_binding : 'fun_binding Grammar.Entry.e =
      grammar_entry_create "fun_binding"
    and as_patt_opt : 'as_patt_opt Grammar.Entry.e =
@@ -1311,15 +1307,16 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (m : string) (loc : Ploc.t) -> (Some m : 'uidopt)))]];
-    Grammar.extension (and_binding : 'and_binding Grammar.Entry.e) None
+    Grammar.extension (andop_binding : 'andop_binding Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_nterm (andop : 'andop Grammar.Entry.e)))
-             (Grammar.s_nterm (let_binding : 'let_binding Grammar.Entry.e)),
-           (fun (b : 'let_binding) (op : 'andop) (loc : Ploc.t) ->
-              (op, b : 'and_binding)))]];
+             (Grammar.s_nterm
+                (letop_binding : 'letop_binding Grammar.Entry.e)),
+           (fun (b : 'letop_binding) (op : 'andop) (loc : Ploc.t) ->
+              (op, b : 'andop_binding)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e) None
       [Some "top", Some Gramext.RightA,
        [Grammar.production
@@ -1493,13 +1490,13 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_nterm (letop : 'letop Grammar.Entry.e)))
                       (Grammar.s_nterm
-                         (let_binding : 'let_binding Grammar.Entry.e)))
+                         (letop_binding : 'letop_binding Grammar.Entry.e)))
                    (Grammar.s_list0
                       (Grammar.s_nterm
-                         (and_binding : 'and_binding Grammar.Entry.e))))
+                         (andop_binding : 'andop_binding Grammar.Entry.e))))
                 (Grammar.s_token ("", "in")))
              (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "top"),
-           (fun (x : 'expr) _ (l : 'and_binding list) (b : 'let_binding)
+           (fun (x : 'expr) _ (l : 'andop_binding list) (b : 'letop_binding)
                 (letop : 'letop) (loc : Ploc.t) ->
               (build_letop_binder loc letop b l x : 'expr)));
         Grammar.production
@@ -2272,6 +2269,15 @@ Grammar.safe_extend
            (fun (attrs : 'item_attribute list) (e : 'fun_binding) (p : 'ipatt)
                 (loc : Ploc.t) ->
               (p, e, attrs : 'let_binding)))]];
+    Grammar.extension (letop_binding : 'letop_binding Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+             (Grammar.s_nterm (fun_binding : 'fun_binding Grammar.Entry.e)),
+           (fun (e : 'fun_binding) (p : 'ipatt) (loc : Ploc.t) ->
+              (p, e : 'letop_binding)))]];
     Grammar.extension (fun_binding : 'fun_binding Grammar.Entry.e) None
       [None, Some Gramext.RightA,
        [Grammar.production
