@@ -1864,7 +1864,7 @@ EXTEND_PRINTER
       | MLast.StUse _ fn sl ->
           let pc = {(pc) with aft = ""} in
           pprintf pc ""
-      | <:str_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       ] ]
   ;
@@ -1912,7 +1912,7 @@ EXTEND_PRINTER
       | MLast.SgUse _ fn sl ->
           let pc = {(pc) with aft = ""} in
           pprintf pc ""
-      | <:sig_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       ] ]
   ;

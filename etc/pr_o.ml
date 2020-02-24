@@ -1791,7 +1791,7 @@ EXTEND_PRINTER
       | MLast.StUse _ fn sl ->
           let pc = {(pc) with aft = ""} in
           pprintf pc ""
-      | <:str_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       ] ]
   ;
@@ -1832,7 +1832,7 @@ EXTEND_PRINTER
           pprintf pc "val %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
-      | <:sig_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       ] ]
   ;
@@ -2558,7 +2558,7 @@ EXTEND_PRINTER
             (if mf then " mutable" else "")
             (if vf then " virtual" else "")
             var_escaped (loc, s) ctyp t
-      | <:class_sig_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:class_sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       | z ->
           error (MLast.loc_of_class_sig_item z)
@@ -2609,7 +2609,7 @@ EXTEND_PRINTER
           pprintf pc "val virtual%s %s :@;%p%p"
             (if mf then " mutable" else "") s ctyp t
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
-      | <:class_str_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:class_str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       | z ->
           error (MLast.loc_of_class_str_item z)

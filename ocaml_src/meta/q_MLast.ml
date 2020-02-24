@@ -1262,13 +1262,10 @@ Grammar.safe_extend
               (Qast.Node ("StAtt", [Qast.Loc; si; attr]) : 'str_item)))];
        Some "simple", None,
        [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (floating_attribute : 'floating_attribute Grammar.Entry.e)),
+           (fun (attr : 'floating_attribute) (loc : Ploc.t) ->
               (Qast.Node ("StFlAtt", [Qast.Loc; attr]) : 'str_item)));
         Grammar.production
           (Grammar.r_next
@@ -2230,13 +2227,10 @@ Grammar.safe_extend
               (Qast.Node ("SgAtt", [Qast.Loc; si; attr]) : 'sig_item)))];
        Some "simple", None,
        [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (floating_attribute : 'floating_attribute Grammar.Entry.e)),
+           (fun (attr : 'floating_attribute) (loc : Ploc.t) ->
               (Qast.Node ("SgFlAtt", [Qast.Loc; attr]) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
@@ -7415,13 +7409,10 @@ Grammar.safe_extend
     Grammar.extension (class_str_item : 'class_str_item Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (floating_attribute : 'floating_attribute Grammar.Entry.e)),
+           (fun (attr : 'floating_attribute) (loc : Ploc.t) ->
               (Qast.Node ("CrFlAtt", [Qast.Loc; attr]) : 'class_str_item)));
         Grammar.production
           (Grammar.r_next
@@ -8191,13 +8182,10 @@ Grammar.safe_extend
     Grammar.extension (class_sig_item : 'class_sig_item Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (floating_attribute : 'floating_attribute Grammar.Entry.e)),
+           (fun (attr : 'floating_attribute) (loc : Ploc.t) ->
               (Qast.Node ("CgFlAtt", [Qast.Loc; attr]) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next

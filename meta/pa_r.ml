@@ -338,7 +338,7 @@ EXTEND
       | "#"; s = V STRING; sil = V (LIST0 [ si = str_item → (si, loc) ]) →
           <:str_item< # $_str:s$ $_list:sil$ >>
       | e = expr ; attrs = item_attributes → <:str_item< $exp:e$ $_itemattrs:attrs$ >>
-      | attr = floating_attribute ; ";" -> <:str_item< [@@@ $_attribute:attr$ ] ; >>
+      | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
       ] ]
   ;
   rebind_exn:
@@ -418,7 +418,7 @@ EXTEND
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →
           <:sig_item< # $_str:s$ $_list:sil$ >>
-      | attr = floating_attribute ; ";" -> <:sig_item< [@@@ $_attribute:attr$ ] ; >>
+      | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
       ] ]
   ;
   mod_decl_binding:
@@ -936,7 +936,7 @@ EXTEND
       | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
           <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
       | "initializer"; se = expr ; attrs = item_attributes → <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
-      | attr = floating_attribute ; ";" -> <:class_str_item< [@@@ $_attribute:attr$ ] ; >>
+      | attr = floating_attribute -> <:class_str_item< [@@@ $_attribute:attr$ ] >>
       ] ]
   ;
   as_lident:
@@ -996,7 +996,7 @@ EXTEND
           <:class_sig_item< method $_flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp →
           <:class_sig_item< type $t1$ = $t2$ >>
-      | attr = floating_attribute ; ";" -> <:class_sig_item< [@@@ $_attribute:attr$ ] ; >>
+      | attr = floating_attribute -> <:class_sig_item< [@@@ $_attribute:attr$ ] >>
       ] ]
   ;
   class_description:

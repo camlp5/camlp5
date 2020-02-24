@@ -721,15 +721,6 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
-              (MLast.StFlAtt (loc, attr) : 'str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
@@ -1087,15 +1078,6 @@ Grammar.safe_extend
     Grammar.extension (sig_item : 'sig_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
-              (MLast.SgFlAtt (loc, attr) : 'sig_item)));
-        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "#")))
@@ -3548,15 +3530,6 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
-              (MLast.CrFlAtt (loc, attr) : 'class_str_item)));
-        Grammar.production
-          (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_token ("", "initializer")))
@@ -3865,15 +3838,6 @@ Grammar.safe_extend
     Grammar.extension (class_sig_item : 'class_sig_item Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm
-                   (floating_attribute :
-                    'floating_attribute Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
-           (fun _ (attr : 'floating_attribute) (loc : Ploc.t) ->
-              (MLast.CgFlAtt (loc, attr) : 'class_sig_item)));
-        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next

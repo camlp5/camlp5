@@ -377,6 +377,10 @@ EXTEND
       <:attribute_body< $_attrid:id$ ? $_patt:p$ when $_expr:e$ >>
     ] ]
   ;
+  floating_attribute:
+  [ [ "[@@@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   item_attribute:
   [ [ "[@@" ; attr = V attribute_body "attribute"; "]" -> attr
     ] ]
@@ -481,7 +485,9 @@ EXTEND
           <:str_item< let module $_uidopt:m$ = $mb$ in $e$ >>
       | "let"; "open"; m = module_expr; "in"; e = expr ->
           <:str_item< let open $m$ in $e$ >>
-      | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >> ] ]
+      | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
+      | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
+      ] ]
   ;
   rebind_exn:
     [ [ "="; sl = V mod_ident "list" -> sl
@@ -559,7 +565,9 @@ EXTEND
       | "val"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes ->
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
       | "val"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes ->
-          <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ] ]
+          <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
+      | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
+      ] ]
   ;
   mod_decl_binding:
     [ [ i = V uidopt "uidopt"; mt = module_declaration ; attrs = item_attributes -> (i, mt, attrs) ] ]
@@ -1206,7 +1214,9 @@ EXTEND
           <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ $_itemattrs:attrs$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
           <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
-      | "initializer"; se = expr ; attrs = item_attributes -> <:class_str_item< initializer $se$ $_itemattrs:attrs$ >> ] ]
+      | "initializer"; se = expr ; attrs = item_attributes -> <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
+      | attr = floating_attribute -> <:class_str_item< [@@@ $_attribute:attr$ ] >>
+      ] ]
   ;
   cvalue_binding:
     [ [ "="; e = expr -> e
@@ -1271,7 +1281,9 @@ EXTEND
       | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = item_attributes ->
           <:class_sig_item< method $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
-          <:class_sig_item< type $t1$ = $t2$ $_itemattrs:attrs$ >> ] ]
+          <:class_sig_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
+      | attr = floating_attribute -> <:class_sig_item< [@@@ $_attribute:attr$ ] >>
+      ] ]
   ;
   class_description:
     [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;

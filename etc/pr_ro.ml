@@ -515,7 +515,7 @@ EXTEND_PRINTER
             (if mf then " mutable" else "")
             (if mf then " virtual" else "")
             var_escaped s ctyp t
-      | <:class_sig_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:class_sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_attribute "@@@") attr
       | z ->
           error (MLast.loc_of_class_sig_item z)
@@ -564,7 +564,7 @@ EXTEND_PRINTER
           pprintf pc "value virtual%s %s :@;%p%p"
             (if mf then " mutable" else "") s ctyp t
             (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
-      | <:class_str_item< [@@@ $_attribute:attr$ ]; >> ->
+      | <:class_str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_attribute "@@@") attr
       | z ->
           Ploc.raise (MLast.loc_of_class_str_item z)
