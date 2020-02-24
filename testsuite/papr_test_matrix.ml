@@ -12,6 +12,7 @@ value smart_exn_eq e1 e2 =
   match (e1, e2) with [
     (Ploc.Exc _ e1, Ploc.Exc _ e2) -> eqrec e1 e2
   | (Stream.Error msg1, Stream.Error msg2) -> msg1 = msg2
+  | (Syntaxerr.Error (Other _), Syntaxerr.Error (Other _)) -> True
   | _ -> e1 = e2
   ]
   in eqrec e1 e2
@@ -450,6 +451,19 @@ and t2 = bool[@@foo];
      r_output = OK {foo|let x = 1[@@argle] in
 2;
 |foo}
+    };
+    {name="letop-binding-item-attributes1-FAILS"; implem = True ;
+     o_input = EXN {foo|let|| x = 1 [@@argle] in 2|foo}
+                   (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error
+                    "[andop_binding] expected after [letop_binding] (in [expr])")) ;
+     official_input = EXN {foo|let|| x = 1 [@@argle] in 2|foo}
+                   (Syntaxerr.Error (Syntaxerr.Other Location.none)) ;
+     r_input = EXN {foo|let|| x = 1 [@@argle] in 2;|foo}
+                   (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error
+                    "[andop_binding] expected after [letop_binding] (in [expr])")) ;
+     o_output = OK "should never get here";
+     official_output = OK "should never get here";
+     r_output = OK "should never get here"
     }
 ]
 ;

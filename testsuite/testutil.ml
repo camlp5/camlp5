@@ -70,13 +70,13 @@ value report_error exc = do {
   Format.print_newline ();
 };
 
-value report_error_and_exit exc = do {
+value report_error_and_exit ?{exit=True} exc = do {
   report_error exc ;
-  exit 2
+  if exit then Stdlib.exit 2 else raise exc
 };
 
-value wrap_err f arg =
-try f arg with exc -> report_error_and_exit exc
+value wrap_err ?{exit=True} f arg =
+try f arg with exc -> report_error_and_exit ~{exit=exit} exc
 ;
 
 module PAPR = struct
