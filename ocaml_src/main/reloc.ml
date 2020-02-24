@@ -563,22 +563,24 @@ and class_expr floc sh =
 and class_str_item floc sh =
   let rec self =
     function
-      CrCtr (loc, x1, x2) ->
-        let loc = floc loc in CrCtr (loc, ctyp floc sh x1, ctyp floc sh x2)
+      CrCtr (loc, x1, x2, x3) ->
+        let loc = floc loc in
+        CrCtr (loc, ctyp floc sh x1, ctyp floc sh x2, x3)
     | CrDcl (loc, x1) ->
         let loc = floc loc in CrDcl (loc, vala_map (List.map self) x1)
-    | CrInh (loc, ovf, x1, x2) ->
-        let loc = floc loc in CrInh (loc, ovf, class_expr floc sh x1, x2)
-    | CrIni (loc, x1) -> let loc = floc loc in CrIni (loc, expr floc sh x1)
+    | CrInh (loc, ovf, x1, x2, x3) ->
+        let loc = floc loc in CrInh (loc, ovf, class_expr floc sh x1, x2, x3)
+    | CrIni (loc, x1, x2) ->
+        let loc = floc loc in CrIni (loc, expr floc sh x1, x2)
     | CrMth (loc, x1, x2, x3, x4, x5, x6) ->
         let loc = floc loc in
         CrMth
           (loc, x1, x2, x3, vala_map (option_map (ctyp floc sh)) x4,
            expr floc sh x5, x6)
-    | CrVal (loc, x1, x2, x3, x4) ->
-        let loc = floc loc in CrVal (loc, x1, x2, x3, expr floc sh x4)
-    | CrVav (loc, x1, x2, x3) ->
-        let loc = floc loc in CrVav (loc, x1, x2, ctyp floc sh x3)
+    | CrVal (loc, x1, x2, x3, x4, x5) ->
+        let loc = floc loc in CrVal (loc, x1, x2, x3, expr floc sh x4, x5)
+    | CrVav (loc, x1, x2, x3, x4) ->
+        let loc = floc loc in CrVav (loc, x1, x2, ctyp floc sh x3, x4)
     | CrVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CrVir (loc, x1, x2, ctyp floc sh x3, x4)
   in

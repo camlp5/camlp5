@@ -232,15 +232,15 @@ and class_expr =
   | CeXtr of loc * string * class_expr option
   | CeAtt of loc * class_expr * (string * payload)
 and class_str_item =
-    CrCtr of loc * ctyp * ctyp
+    CrCtr of loc * ctyp * ctyp * (string * payload) list
   | CrDcl of loc * class_str_item list
-  | CrInh of loc * bool * class_expr * string option
-  | CrIni of loc * expr
+  | CrInh of loc * bool * class_expr * string option * (string * payload) list
+  | CrIni of loc * expr * (string * payload) list
   | CrMth of
       loc * bool * bool * string * ctyp option * expr *
         (string * payload) list
-  | CrVal of loc * bool * bool * string * expr
-  | CrVav of loc * bool * string * ctyp
+  | CrVal of loc * bool * bool * string * expr * (string * payload) list
+  | CrVav of loc * bool * string * ctyp * (string * payload) list
   | CrVir of loc * bool * string * ctyp * (string * payload) list
 and payload =
     StAttr of loc * str_item list
