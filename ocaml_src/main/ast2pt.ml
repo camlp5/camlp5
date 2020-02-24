@@ -1604,9 +1604,19 @@ and str_item s l =
       in
       mkstr loc m :: l
   | StOpn (loc, id, attrs) ->
+      let li = long_id_of_string_list loc (uv id) in
+      let me =
+        {pmod_desc = Pmod_ident (mknoloc li); pmod_loc = loc_none;
+         pmod_attributes = []}
+      in
       mkstr loc
-        (ocaml_pstr_open ~item_attributes:(item_attributes attrs) (mkloc loc)
-           (long_id_of_string_list loc (uv id))) ::
+        (ocaml_pstr_open ~item_attributes:(item_attributes attrs)
+           (mkoverride false) (mkloc loc) me) ::
+      l
+  | StOpn2 (loc, ovf, me, attrs) ->
+      mkstr loc
+        (ocaml_pstr_open ~item_attributes:(item_attributes attrs)
+           (mkoverride (uv ovf)) (mkloc loc) (module_expr me)) ::
       l
   | StTyp (loc, flg, tdl) ->
       mkstr loc (ocaml_pstr_type (uv flg) (List.map mktype_decl (uv tdl))) ::

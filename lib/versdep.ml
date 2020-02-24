@@ -1448,29 +1448,28 @@ value ocaml_pstr_module ?{item_attributes=[]} loc (s : option string) me =
   END
 ;
 
-value ocaml_pstr_open ?{item_attributes=[]} loc li =
+value ocaml_pstr_open ?{item_attributes=[]} ovflag loc me =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN
-    do { assert (item_attributes = []) ;
+    do { assert (item_attributes = []) ; assert (ovflag = Fresh) ;
+    let li = match me with [ {pmod_desc=Pmod_ident {txt = li }} -> li | _ -> assert False ] in
     Pstr_open (mknoloc li)
     }
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    do { assert (item_attributes = []) ;
+    do { assert (item_attributes = []) ; assert (ovflag = Fresh) ;
+    let li = match me with [ {pmod_desc=Pmod_ident {txt = li }} -> li | _ -> assert False ] in
     Pstr_open Fresh (mknoloc li)
     }
   ELSIFDEF OCAML_VERSION < OCAML_4_08 THEN
-    do { assert (item_attributes = []) ;
+    do { assert (item_attributes = []) ; assert (ovflag = Fresh) ;
+    let li = match me with [ {pmod_desc=Pmod_ident {txt = li }} -> li | _ -> assert False ] in
     Pstr_open
       {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
        popen_attributes = []}
     }
   ELSE
     Pstr_open
-      { popen_expr =
-        { pmod_desc = Pmod_ident (mknoloc li)
-        ; pmod_loc = loc_none
-        ; pmod_attributes = []
-        }
-      ; popen_override = Fresh
+      { popen_expr = me
+      ; popen_override = ovflag
       ; popen_loc = loc
       ; popen_attributes = item_attributes
       }

@@ -603,12 +603,9 @@ let ocaml_pstr_module ?(item_attributes = []) loc (s : string option) me =
   Pstr_module mb
 ;;
 
-let ocaml_pstr_open ?(item_attributes = []) loc li =
+let ocaml_pstr_open ?(item_attributes = []) ovflag loc me =
   Pstr_open
-    {popen_expr =
-      {pmod_desc = Pmod_ident (mknoloc li); pmod_loc = loc_none;
-       pmod_attributes = []};
-     popen_override = Fresh; popen_loc = loc;
+    {popen_expr = me; popen_override = ovflag; popen_loc = loc;
      popen_attributes = item_attributes}
 ;;
 

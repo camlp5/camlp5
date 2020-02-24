@@ -779,6 +779,20 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "open2")))
+                   (Grammar.s_flag (Grammar.s_token ("", "!"))))
+                (Grammar.s_nterm
+                   (module_expr : 'module_expr Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (me : 'module_expr) (ovf : bool) _
+                (loc : Ploc.t) ->
+              (MLast.StOpn2 (loc, ovf, me, attrs) : 'str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
                 (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
              (Grammar.s_nterm

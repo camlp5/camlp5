@@ -193,6 +193,7 @@ and str_item =
   | StMod of loc and V bool and V (list (V (option (V string)) * module_expr * V (list (V (V string * payload)))))
   | StMty of loc and V string and module_type and V (list (V (V string * payload)))
   | StOpn of loc and V (list string) and V (list (V (V string * payload)))
+  | StOpn2 of loc and V bool and module_expr and V (list (V (V string * payload)))
   | StTyp of loc and V bool and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr * V (list (V (V string * payload)))))

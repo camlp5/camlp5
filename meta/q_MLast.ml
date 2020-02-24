@@ -382,6 +382,8 @@ EXTEND
       | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = item_attributes →
           Qast.Node "StMty" [Qast.Loc; i; mt; attrs]
       | "open"; i = SV mod_ident "list" "" ; attrs = item_attributes → Qast.Node "StOpn" [Qast.Loc; i; attrs]
+      | "open2"; ovf = SV (FLAG "!") "!"; me = module_expr ; attrs = item_attributes →
+          Qast.Node "StOpn2" [Qast.Loc; ovf; me; attrs]
       | "type"; nrfl = SV (FLAG "nonrec");
         tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "StTyp" [Qast.Loc; nrfl; tdl]
