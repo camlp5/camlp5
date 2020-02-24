@@ -509,16 +509,20 @@ module Meta_make (C : MetaSig) =
       | CtXtr (loc, s, _) -> C.xtr loc s
     and class_sig_item =
       function
-        CgCtr (_, t1, t2) -> C.node "CgCtr" [ctyp t1; ctyp t2]
+        CgCtr (_, t1, t2, attrs) ->
+          let attrs = assert false in C.node "CgCtr" [ctyp t1; ctyp t2; attrs]
       | CgDcl (_, lcsi) ->
           C.node "CgDcl" [C.vala (C.list class_sig_item) lcsi]
-      | CgInh (_, ct) -> C.node "CgInh" [class_type ct]
+      | CgInh (_, ct, attrs) ->
+          let attrs = assert false in C.node "CgInh" [class_type ct; attrs]
       | CgMth (_, b, s, t, attrs) ->
           let attrs = assert false in
           C.node "CgMth" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
-      | CgVal (_, mf, vf, s, t) ->
+      | CgVal (_, mf, vf, s, t, attrs) ->
+          let attrs = assert false in
           C.node "CgVal"
-            [C.vala C.bool mf; C.vala C.bool vf; C.vala C.string s; ctyp t]
+            [C.vala C.bool mf; C.vala C.bool vf; C.vala C.string s; ctyp t;
+             attrs]
       | CgVir (_, b, s, t, attrs) ->
           let attrs = assert false in
           C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]

@@ -1682,16 +1682,19 @@ and class_type =
   | CtXtr (loc, _, _) -> error loc "bad ast CtXtr"
 and class_sig_item c l =
   match c with
-    CgCtr (loc, t1, t2) ->
+    CgCtr (loc, t1, t2, item_attrs) ->
       begin match ocaml_pctf_cstr with
         Some pctf_cstr ->
           let loc = mkloc loc in
-          ocaml_class_type_field loc (pctf_cstr (ctyp t1, ctyp t2, loc)) :: l
+          ocaml_class_type_field ~item_attributes:(item_attributes item_attrs)
+            loc (pctf_cstr (ctyp t1, ctyp t2, loc)) ::
+          l
       | None -> error loc "no class constraint in this ocaml version"
       end
   | CgDcl (loc, cl) -> List.fold_right class_sig_item (uv cl) l
-  | CgInh (loc, ct) ->
-      ocaml_class_type_field (mkloc loc) (ocaml_pctf_inher (class_type ct)) ::
+  | CgInh (loc, ct, item_attrs) ->
+      ocaml_class_type_field ~item_attributes:(item_attributes item_attrs)
+        (mkloc loc) (ocaml_pctf_inher (class_type ct)) ::
       l
   | CgMth (loc, pf, s, t, item_attrs) ->
       ocaml_class_type_field ~item_attributes:(item_attributes item_attrs)
@@ -1699,8 +1702,9 @@ and class_sig_item c l =
         (ocaml_pctf_meth
            (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) ::
       l
-  | CgVal (loc, mf, vf, s, t) ->
-      ocaml_class_type_field (mkloc loc)
+  | CgVal (loc, mf, vf, s, t, item_attrs) ->
+      ocaml_class_type_field ~item_attributes:(item_attributes item_attrs)
+        (mkloc loc)
         (ocaml_pctf_val
            (uv s, mkmutable (uv mf), mkvirtual (uv vf), ctyp t, mkloc loc)) ::
       l

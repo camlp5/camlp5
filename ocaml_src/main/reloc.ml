@@ -515,16 +515,17 @@ and class_type floc sh =
 and class_sig_item floc sh =
   let rec self =
     function
-      CgCtr (loc, x1, x2) ->
-        let loc = floc loc in CgCtr (loc, ctyp floc sh x1, ctyp floc sh x2)
+      CgCtr (loc, x1, x2, x3) ->
+        let loc = floc loc in
+        CgCtr (loc, ctyp floc sh x1, ctyp floc sh x2, x3)
     | CgDcl (loc, x1) ->
         let loc = floc loc in CgDcl (loc, vala_map (List.map self) x1)
-    | CgInh (loc, x1) ->
-        let loc = floc loc in CgInh (loc, class_type floc sh x1)
+    | CgInh (loc, x1, x2) ->
+        let loc = floc loc in CgInh (loc, class_type floc sh x1, x2)
     | CgMth (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CgMth (loc, x1, x2, ctyp floc sh x3, x4)
-    | CgVal (loc, x1, x2, x3, x4) ->
-        let loc = floc loc in CgVal (loc, x1, x2, x3, ctyp floc sh x4)
+    | CgVal (loc, x1, x2, x3, x4, x5) ->
+        let loc = floc loc in CgVal (loc, x1, x2, x3, ctyp floc sh x4, x5)
     | CgVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CgVir (loc, x1, x2, ctyp floc sh x3, x4)
   in

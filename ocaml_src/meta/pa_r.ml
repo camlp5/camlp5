@@ -3833,7 +3833,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t2 : 'ctyp) _ (t1 : 'ctyp) _ (loc : Ploc.t) ->
-              (MLast.CgCtr (loc, t1, t2) : 'class_sig_item)));
+              (MLast.CgCtr (loc, t1, t2, []) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3885,13 +3885,13 @@ Grammar.safe_extend
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
            (fun (t : 'ctyp) _ (l : 'lident) (vf : bool) (mf : bool) _
                 (loc : Ploc.t) ->
-              (MLast.CgVal (loc, mf, vf, l, t) : 'class_sig_item)));
+              (MLast.CgVal (loc, mf, vf, l, t, []) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "inherit")))
              (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)),
            (fun (cs : 'class_type) _ (loc : Ploc.t) ->
-              (MLast.CgInh (loc, cs) : 'class_sig_item)));
+              (MLast.CgInh (loc, cs, []) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

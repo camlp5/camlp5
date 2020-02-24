@@ -215,11 +215,11 @@ and class_type =
   | CtXtr of loc * string * class_type option
   | CtAtt of loc * class_type * (string * payload)
 and class_sig_item =
-    CgCtr of loc * ctyp * ctyp
+    CgCtr of loc * ctyp * ctyp * (string * payload) list
   | CgDcl of loc * class_sig_item list
-  | CgInh of loc * class_type
+  | CgInh of loc * class_type * (string * payload) list
   | CgMth of loc * bool * string * ctyp * (string * payload) list
-  | CgVal of loc * bool * bool * string * ctyp
+  | CgVal of loc * bool * bool * string * ctyp * (string * payload) list
   | CgVir of loc * bool * string * ctyp * (string * payload) list
 and class_expr =
     CeApp of loc * class_expr * expr
