@@ -1245,28 +1245,6 @@ value map_option f =
   | None -> None ]
 ;
 
-value is_op_attributed op_pred =
-  let rec oprec = fun [
-    <:expr< $lid:op$ >> -> op_pred op
-  | <:expr< $e$ [@ $attribute:_$ ] >> -> oprec e
-  | _ -> False ]
-  in oprec
-;
-
-value is_andop_attributed e = is_op_attributed is_andop e ;
-value is_letop_attributed e = is_op_attributed is_letop e ;
-
-value split_op_attributed op_pred =
-  let rec oprec acc = fun [
-    <:expr< $lid:op$ >> -> do { assert (op_pred op) ; (op, <:vala< acc >>) }
-  | <:expr< $e$ [@ $attribute:a$ ] >> -> oprec [<:vala< a >> :: acc] e
-  | _ -> assert False ]
-  in oprec []
-;
-
-value split_andop_attributed e = split_op_attributed is_andop e ;
-value split_letop_attributed e = split_op_attributed is_letop e ;
-
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
@@ -1406,14 +1384,12 @@ EXTEND_PRINTER
               let pel = List.map (fun x -> ("and",x)) pel in
               pprintf pc "%p@ %p" (letop_up_to_in "let") (rf, pel) (comm_expr expr_wh)
                 e ]
-      | <:expr< $letop$ $arg$ (fun $bindpat$ -> $body$) >>
-           when not Pcaml.flag_expand_letop_syntax.val && is_letop_attributed letop ->
-        let (letop, letop_attrs) = split_letop_attributed letop in
+      | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >>
+           when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
         let rec deconstruct_ands acc = fun [
-              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $andop$ $e1$ $e2$ >>) when is_andop_attributed andop ->
-                let (andop, attrs) = split_andop_attributed andop in
-                deconstruct_ands [ (andop, (pat2, e2, attrs)) :: acc ] (pat1, e1)
-            | (pat, exp) -> [ ("andop_unused", (pat, exp, letop_attrs))::acc ]
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
+                deconstruct_ands [ (andop, (pat2, e2, <:vala< [] >>)) :: acc ] (pat1, e1)
+            | (pat, exp) -> [ ("andop_unused", (pat, exp, <:vala< [] >>))::acc ]
         ] in
         let pel = deconstruct_ands [] (bindpat, arg) in
         pprintf pc "%p@ %p" (letop_up_to_in letop) (False, pel)

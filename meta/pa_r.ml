@@ -218,15 +218,11 @@ value build_op_attributed loc op attrs =
 ;
 
 value build_letop_binder loc letop b l e =
-  let (firstpat, firstarg, firstattrs) = b in
   let (argpat, argexp) = (* TODO FIX THIS CHET *)
-    List.fold_left (fun (argpat, argexp) (andop, (pat, exp, attrs)) ->
-        let attrs = List.map Pcaml.unvala (Pcaml.unvala attrs) in
-        let andop = build_op_attributed loc andop attrs in
-        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $andop$ $argexp$ $exp$ >>))
-      (firstpat,firstarg) l in
-  let letop = build_op_attributed loc letop (List.map Pcaml.unvala (Pcaml.unvala firstattrs)) in
-  <:expr< $letop$ $argexp$ (fun $argpat$ -> $e$) >>
+    List.fold_left (fun (argpat, argexp) (andop, (pat, exp)) ->
+        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>))
+      b l in
+  <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -431,8 +427,8 @@ EXTEND
       ]
     ]
   ;
-  and_binding:
-  [ [ op = andop ; b = let_binding -> (op, b) ] ]
+  andop_binding:
+  [ [ op = andop ; b = letop_binding -> (op, b) ] ]
   ;
   expr:
     [ "top" RIGHTA
@@ -440,7 +436,7 @@ EXTEND
         x = SELF →
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
 
-      | letop = letop ; b = let_binding ; l = LIST0 and_binding; "in";
+      | letop = letop ; b = letop_binding ; l = LIST0 andop_binding; "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
@@ -599,6 +595,9 @@ EXTEND
   ;
   let_binding:
     [ [ p = ipatt; e = fun_binding ; attrs = V (LIST0 item_attribute) → (p, e, attrs) ] ]
+  ;
+  letop_binding:
+    [ [ p = ipatt; e = fun_binding → (p, e) ] ]
   ;
   fun_binding:
     [ RIGHTA

@@ -1033,28 +1033,6 @@ value pr_letlike letop pc loc rf pel e =
           e)
 ;
 
-value is_op_attributed op_pred =
-  let rec oprec = fun [
-    <:expr< $lid:op$ >> -> op_pred op
-  | <:expr< $e$ [@ $attribute:_$ ] >> -> oprec e
-  | _ -> False ]
-  in oprec
-;
-
-value is_andop_attributed e = is_op_attributed is_andop e ;
-value is_letop_attributed e = is_op_attributed is_letop e ;
-
-value split_op_attributed op_pred =
-  let rec oprec acc = fun [
-    <:expr< $lid:op$ >> -> do { assert (op_pred op) ; (op, <:vala< acc >>) }
-  | <:expr< $e$ [@ $attribute:a$ ] >> -> oprec [<:vala< a >> :: acc] e
-  | _ -> assert False ]
-  in oprec []
-;
-
-value split_andop_attributed e = split_op_attributed is_andop e ;
-value split_letop_attributed e = split_op_attributed is_letop e ;
-
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
@@ -1229,15 +1207,13 @@ EXTEND_PRINTER
         let loc = MLast.loc_of_expr e0 in
           pr_letlike "let" pc loc rf pel e
 
-      | <:expr< $letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
-           when not Pcaml.flag_expand_letop_syntax.val && is_letop_attributed letop ->
+      | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
+           when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
         let loc = MLast.loc_of_expr e0 in
-        let (letop, letop_attrs) = split_letop_attributed letop in
         let rec deconstruct_ands acc = fun [
-              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $andop$ $e1$ $e2$ >>) when is_andop_attributed andop ->
-                let (andop, attrs) = split_andop_attributed andop in
-                deconstruct_ands [ (andop, (pat2, e2, attrs)) :: acc ] (pat1, e1)
-            | (pat, exp) -> [ ("andop_unused", (pat, exp, letop_attrs))::acc ]
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
+                deconstruct_ands [ (andop, (pat2, e2, <:vala< [] >>)) :: acc ] (pat1, e1)
+            | (pat, exp) -> [ ("andop_unused", (pat, exp, <:vala< [] >>))::acc ]
         ] in
         let pel = deconstruct_ands [] (bindpat, arg) in
           pr_letlike letop pc loc False pel body

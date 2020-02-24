@@ -335,12 +335,9 @@ value rec expr_of_patt p =
 ;
 
 value build_letop_binder loc letop b l e = do {
-  let (argpat, argexp, argattrs) = (* TODO FIX THIS CHET *)
-    List.fold_left (fun (argpat, argexp, argattrs) (andop, (pat, exp, attrs)) ->
-        let argattrs = Pcaml.unvala argattrs in
-        let attrs = Pcaml.unvala attrs in
-        let attrs = argattrs @ attrs in
-        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>, Ploc.VaVal attrs))
+  let (argpat, argexp) =
+    List.fold_left (fun (argpat, argexp) (andop, (pat, exp)) ->
+        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>))
       b l in
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
   }
@@ -572,8 +569,8 @@ EXTEND
       | "module"; i = V mod_ident ""; ":="; me = module_expr ->
           <:with_constr< module $_:i$ := $me$ >> ] ]
   ;
-  and_binding:
-  [ [ op = andop ; b = let_binding -> (op, b) ] ]
+  andop_binding:
+  [ [ op = andop ; b = letop_binding -> (op, b) ] ]
   ;
   (* Core expressions *)
   expr:
@@ -587,7 +584,7 @@ EXTEND
         x = expr LEVEL "top" ->
           <:expr< let $_flag:o$ $_list:l$ in $x$ >>
 
-      | letop = letop ; b = let_binding ; l = (LIST0 and_binding); "in";
+      | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
@@ -757,6 +754,13 @@ EXTEND
       | p = patt; "="; e = expr ; attrs = V (LIST0 item_attribute) -> (p, e, attrs)
       | p = patt; ":"; t = poly_type; "="; e = expr ; attrs = V (LIST0 item_attribute) ->
           (<:patt< ($p$ : $t$) >>, e, attrs)
+      ] ]
+  ;
+  letop_binding:
+    [ [ p = val_ident; e = fun_binding -> (p, e)
+      | p = patt; "="; e = expr -> (p, e)
+      | p = patt; ":"; t = poly_type; "="; e = expr ->
+          (<:patt< ($p$ : $t$) >>, e)
       ] ]
   ;
   val_ident:
