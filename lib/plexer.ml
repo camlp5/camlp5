@@ -503,6 +503,8 @@ value next_token_after_spaces ctx bp =
   | "[@" -> keyword_or_error ctx (bp, $pos) $buf
   | "[@@" -> keyword_or_error ctx (bp, $pos) $buf
   | "[@@@" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[%" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[%%" -> keyword_or_error ctx (bp, $pos) $buf
   | "[|" -> keyword_or_error ctx (bp, $pos) $buf
   | "[<" -> keyword_or_error ctx (bp, $pos) $buf
   | "[:" -> keyword_or_error ctx (bp, $pos) $buf
@@ -657,6 +659,8 @@ and check =
   | "[@"
   | "[@@"
   | "[@@@"
+  | "[%"
+  | "[%%"
   | "[|"
   | "[<"
   | "[:"

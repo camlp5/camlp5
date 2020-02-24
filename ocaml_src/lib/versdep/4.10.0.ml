@@ -171,6 +171,25 @@ let ocaml_psig_attribute attr = Psig_attribute attr;;
 let ocaml_pstr_attribute attr = Pstr_attribute attr;;
 let ocaml_pctf_attribute attr = Pctf_attribute attr;;
 let ocaml_pcf_attribute attr = Pcf_attribute attr;;
+let ocaml_extension_implem loc id pay = mkloc loc id, PStr pay;;
+let ocaml_extension_interf loc id pay = mkloc loc id, PSig pay;;
+let ocaml_extension_type loc id pay = mkloc loc id, PTyp pay;;
+let ocaml_extension_patt loc id p eopt = mkloc loc id, PPat (p, eopt);;
+let ocaml_ptyp_extension e = Ptyp_extension e;;
+let ocaml_pexp_extension e = Pexp_extension e;;
+let ocaml_ppat_extension e = Ppat_extension e;;
+let ocaml_pmty_extension e = Pmty_extension e;;
+let ocaml_pmod_extension e = Pmod_extension e;;
+let ocaml_psig_extension ?(item_attributes = []) e =
+  Psig_extension (e, item_attributes)
+;;
+let ocaml_pstr_extension ?(item_attributes = []) e =
+  Pstr_extension (e, item_attributes)
+;;
+let ocaml_pcl_extension e = Pcl_extension e;;
+let ocaml_pcty_extension e = Pcty_extension e;;
+let ocaml_pctf_extension e = Pctf_extension e;;
+let ocaml_pcf_extension e = Pcf_extension e;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}

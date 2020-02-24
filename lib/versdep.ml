@@ -210,10 +210,29 @@ value ocaml_pmty_addattr _ _ = assert False ;
 value ocaml_pmod_addattr _ _ = assert False ;
 value ocaml_pcty_addattr _ _ = assert False ;
 value ocaml_pcl_addattr _ _ = assert False ;
+
+(* floating attributes *)
 value ocaml_psig_attribute _ = assert False ;
 value ocaml_pstr_attribute _ = assert False ;
 value ocaml_pctf_attribute _ = assert False ;
 value ocaml_pcf_attribute _ = assert False ;
+
+(* extension nodes *)
+value ocaml_extension_implem _ _ _ = assert False ;
+value ocaml_extension_interf _ _ _ = assert False ;
+value ocaml_extension_type _ _ _ = assert False ;
+value ocaml_extension_patt _ _ _ = assert False ;
+value ocaml_ptyp_extension _ = assert False ;
+value ocaml_pexp_extension _ = assert False ;
+value ocaml_ppat_extension _ = assert False ;
+value ocaml_pmty_extension _ = assert False ;
+value ocaml_pmod_extension _ = assert False ;
+value ocaml_psig_extension ?{item_attributes=[]} _ = assert False ;
+value ocaml_pstr_extension ?{item_attributes=[]} _ = assert False ;
+value ocaml_pcl_extension _ = assert False ;
+value ocaml_pcty_extension _ = assert False ;
+value ocaml_pctr_extension _ = assert False ;
+value ocaml_pcf_extension _ = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
@@ -336,10 +355,28 @@ value ocaml_pcl_addattr attr {
     }
 ;
 
+(* floating attributes *)
 value ocaml_psig_attribute attr = Psig_attribute attr ;
 value ocaml_pstr_attribute attr = Pstr_attribute attr ;
 value ocaml_pctf_attribute attr = Pctf_attribute attr ;
 value ocaml_pcf_attribute attr = Pcf_attribute attr ;
+
+(* extension nodes *)
+value ocaml_extension_implem loc id pay = (mkloc loc id, PStr pay) ;
+value ocaml_extension_interf loc id pay = (mkloc loc id, PSig pay) ;
+value ocaml_extension_type loc id pay = (mkloc loc id, PTyp pay) ;
+value ocaml_extension_patt loc id p eopt = (mkloc loc id, PPat p eopt) ;
+value ocaml_ptyp_extension e = Ptyp_extension e ;
+value ocaml_pexp_extension e = Pexp_extension e ;
+value ocaml_ppat_extension e = Ppat_extension e ;
+value ocaml_pmty_extension e = Pmty_extension e ;
+value ocaml_pmod_extension e = Pmod_extension e ;
+value ocaml_psig_extension ?{item_attributes=[]} e = Psig_extension e item_attributes ;
+value ocaml_pstr_extension ?{item_attributes=[]} e = Pstr_extension e item_attributes ;
+value ocaml_pcl_extension e = Pcl_extension e ;
+value ocaml_pcty_extension e = Pcty_extension e ;
+value ocaml_pctf_extension e = Pctf_extension e ;
+value ocaml_pcf_extension e = Pcf_extension e ;
 END
 ;
 

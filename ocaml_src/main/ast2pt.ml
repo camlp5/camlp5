@@ -683,6 +683,8 @@ and ctyp =
       | None -> error loc "no variant type or inherit in this ocaml version"
       end
   | TyXtr (loc, _, _) -> error loc "bad ast TyXtr"
+  | TyExten (loc, ebody) ->
+      mktyp loc (ocaml_ptyp_extension (extension (uv ebody)))
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then mkfield_var loc else []
@@ -894,6 +896,8 @@ and patt =
       | None -> error loc "no variant in this ocaml version"
       end
   | PaXtr (loc, _, _) -> error loc "bad ast PaXtr"
+  | PaExten (loc, ebody) ->
+      mkpat loc (ocaml_ppat_extension (extension (uv ebody)))
 and mklabpat (lab, p) =
   patt_label_long_id lab, mkloc (loc_of_patt lab), patt p
 and expr =
@@ -1255,6 +1259,8 @@ and expr =
       let e2 = MLast.ExSeq (loc, uv el) in
       mkexp loc (Pexp_while (expr e1, expr e2))
   | ExXtr (loc, _, _) -> error loc "bad ast ExXtr"
+  | ExExten (loc, ebody) ->
+      mkexp loc (ocaml_pexp_extension (extension (uv ebody)))
 and label_expr rev_al =
   function
     ExLab (loc, lpeo) ->
@@ -1376,6 +1382,8 @@ and module_type =
   | MtWit (loc, mt, wcl) ->
       mkmty loc (ocaml_pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | MtXtr (loc, _, _) -> error loc "bad ast MtXtr"
+  | MtExten (loc, ebody) ->
+      mkmty loc (ocaml_pmty_extension (extension (uv ebody)))
 and sig_item s l =
   match s with
     SgCls (loc, cd) ->
@@ -1463,6 +1471,8 @@ and sig_item s l =
   | SgXtr (loc, _, _) -> error loc "bad ast SgXtr"
   | SgFlAtt (loc, float_attr) ->
       mksig loc (ocaml_psig_attribute (attr (uv float_attr))) :: l
+  | SgExten (loc, ebody) ->
+      mksig loc (ocaml_psig_extension (extension (uv ebody))) :: l
 and module_expr =
   function
     MeAtt (loc, e, a) -> ocaml_pmod_addattr (attr (uv a)) (module_expr e)
@@ -1504,6 +1514,8 @@ and module_expr =
       | None -> error loc "no module unpack in this ocaml version"
       end
   | MeXtr (loc, _, _) -> error loc "bad ast MeXtr"
+  | MeExten (loc, ebody) ->
+      mkmod loc (ocaml_pmod_extension (extension (uv ebody)))
 and str_item s l =
   match s with
     StCls (loc, cd) ->
@@ -1619,6 +1631,8 @@ and str_item s l =
   | StXtr (loc, _, _) -> error loc "bad ast StXtr"
   | StFlAtt (loc, float_attr) ->
       mkstr loc (ocaml_pstr_attribute (attr (uv float_attr))) :: l
+  | StExten (loc, ebody) ->
+      mkstr loc (ocaml_pstr_extension (extension (uv ebody))) :: l
 and class_type =
   function
     CtAtt (loc, e, a) -> ocaml_pcty_addattr (attr (uv a)) (class_type e)
@@ -1684,6 +1698,8 @@ and class_type =
       | None -> error loc "no class type desc in this ocaml version"
       end
   | CtXtr (loc, _, _) -> error loc "bad ast CtXtr"
+  | CtExten (loc, ebody) ->
+      mkcty loc (ocaml_pcty_extension (extension (uv ebody)))
 and class_sig_item c l =
   match c with
     CgCtr (loc, t1, t2, item_attrs) ->
@@ -1721,6 +1737,10 @@ and class_sig_item c l =
   | CgFlAtt (loc, float_attr) ->
       ocaml_class_type_field (mkloc loc)
         (ocaml_pctf_attribute (attr (uv float_attr))) ::
+      l
+  | CgExten (loc, ebody) ->
+      ocaml_class_type_field (mkloc loc)
+        (ocaml_pctf_extension (extension (uv ebody))) ::
       l
 and class_expr =
   function
@@ -1802,6 +1822,8 @@ and class_expr =
       | None -> error loc "no class expr desc in this ocaml version"
       end
   | CeXtr (loc, _, _) -> error loc "bad ast CeXtr"
+  | CeExten (loc, ebody) ->
+      mkpcl loc (ocaml_pcl_extension (extension (uv ebody)))
 and class_str_item c l =
   match c with
     CrCtr (loc, t1, t2, attrs) ->
@@ -1862,6 +1884,10 @@ and class_str_item c l =
       ocaml_class_field (mkloc loc)
         (ocaml_pcf_attribute (attr (uv float_attr))) ::
       l
+  | CrExten (loc, ebody) ->
+      ocaml_class_field (mkloc loc)
+        (ocaml_pcf_extension (extension (uv ebody))) ::
+      l
 and item_attributes attrs = ((attrs |> uv) |> List.map uv) |> List.map attr
 and alg_attributes attrs = ((attrs |> uv) |> List.map uv) |> List.map attr
 and attr (id, payload) =
@@ -1879,6 +1905,21 @@ and attr (id, payload) =
       let eopt = option_map uv eopt in
       let eopt = option_map expr eopt in
       ocaml_attribute_patt (mkloc loc) (uv id) p eopt
+and extension (id, payload) =
+  match payload with
+    StAttr (loc, st) ->
+      let st = List.fold_right str_item (uv st) [] in
+      ocaml_extension_implem (mkloc loc) (uv id) st
+  | SiAttr (loc, si) ->
+      let si = List.fold_right sig_item (uv si) [] in
+      ocaml_extension_interf (mkloc loc) (uv id) si
+  | TyAttr (loc, ty) ->
+      let ty = ctyp (uv ty) in ocaml_extension_type (mkloc loc) (uv id) ty
+  | PaAttr (loc, p, eopt) ->
+      let p = patt (uv p) in
+      let eopt = option_map uv eopt in
+      let eopt = option_map expr eopt in
+      ocaml_extension_patt (mkloc loc) (uv id) p eopt
 ;;
 
 let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;

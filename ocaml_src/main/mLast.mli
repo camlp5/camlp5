@@ -52,6 +52,7 @@ and ctyp =
   | TyVrn of loc * poly_variant list * string list option option
   | TyXtr of loc * string * ctyp option
   | TyAtt of loc * ctyp * (string * payload)
+  | TyExten of loc * attribute_body
 and poly_variant =
     PvTag of loc * string * bool * ctyp list * (string * payload) list
   | PvInh of loc * ctyp
@@ -82,6 +83,7 @@ and patt =
   | PaVrn of loc * string
   | PaXtr of loc * string * patt option
   | PaAtt of loc * patt * (string * payload)
+  | PaExten of loc * attribute_body
 and expr =
     ExAcc of loc * expr * expr
   | ExAnt of loc * expr
@@ -127,6 +129,7 @@ and expr =
   | ExWhi of loc * expr * expr list
   | ExXtr of loc * string * expr option
   | ExAtt of loc * expr * (string * payload)
+  | ExExten of loc * attribute_body
 and module_type =
     MtAcc of loc * module_type * module_type
   | MtApp of loc * module_type * module_type
@@ -139,6 +142,7 @@ and module_type =
   | MtWit of loc * module_type * with_constr list
   | MtXtr of loc * string * module_type option
   | MtAtt of loc * module_type * (string * payload)
+  | MtExten of loc * attribute_body
 and functor_parameter = (string option * module_type) option
 and sig_item =
     SgCls of loc * class_type class_infos list
@@ -160,6 +164,7 @@ and sig_item =
   | SgVal of loc * string * ctyp * (string * payload) list
   | SgXtr of loc * string * sig_item option
   | SgFlAtt of loc * (string * payload)
+  | SgExten of loc * attribute_body
 and with_constr =
     WcMod of loc * string list * module_expr
   | WcMos of loc * string list * module_expr
@@ -175,6 +180,7 @@ and module_expr =
   | MeUnp of loc * expr * module_type option
   | MeXtr of loc * string * module_expr option
   | MeAtt of loc * module_expr * (string * payload)
+  | MeExten of loc * attribute_body
 and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list
@@ -197,6 +203,7 @@ and str_item =
   | StVal of loc * bool * (patt * expr * (string * payload) list) list
   | StXtr of loc * string * str_item option
   | StFlAtt of loc * (string * payload)
+  | StExten of loc * attribute_body
 and joinclause =
   { jcLoc : loc;
     jcVal : (loc * (loc * (loc * string) * patt option) list * expr) list }
@@ -216,6 +223,7 @@ and class_type =
   | CtSig of loc * ctyp option * class_sig_item list
   | CtXtr of loc * string * class_type option
   | CtAtt of loc * class_type * (string * payload)
+  | CtExten of loc * attribute_body
 and class_sig_item =
     CgCtr of loc * ctyp * ctyp * (string * payload) list
   | CgDcl of loc * class_sig_item list
@@ -224,6 +232,7 @@ and class_sig_item =
   | CgVal of loc * bool * bool * string * ctyp * (string * payload) list
   | CgVir of loc * bool * string * ctyp * (string * payload) list
   | CgFlAtt of loc * (string * payload)
+  | CgExten of loc * attribute_body
 and class_expr =
     CeApp of loc * class_expr * expr
   | CeCon of loc * string list * ctyp list
@@ -234,6 +243,7 @@ and class_expr =
   | CeTyc of loc * class_expr * class_type
   | CeXtr of loc * string * class_expr option
   | CeAtt of loc * class_expr * (string * payload)
+  | CeExten of loc * attribute_body
 and class_str_item =
     CrCtr of loc * ctyp * ctyp * (string * payload) list
   | CrDcl of loc * class_str_item list
@@ -246,12 +256,13 @@ and class_str_item =
   | CrVav of loc * bool * string * ctyp * (string * payload) list
   | CrVir of loc * bool * string * ctyp * (string * payload) list
   | CrFlAtt of loc * (string * payload)
+  | CrExten of loc * attribute_body
 and payload =
     StAttr of loc * str_item list
   | SiAttr of loc * sig_item list
   | TyAttr of loc * ctyp
   | PaAttr of loc * patt * expr option
-and attribute = string * payload
+and attribute_body = string * payload
 and attributes = (string * payload) list;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;

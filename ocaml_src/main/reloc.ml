@@ -97,6 +97,7 @@ let rec ctyp floc sh =
         TyVrn (loc, vala_map (List.map (poly_variant floc sh)) x1, x2)
     | TyXtr (loc, x1, x2) ->
         let loc = floc loc in TyXtr (loc, x1, option_map (vala_map self) x2)
+    | TyExten (loc, exten) -> TyExten (floc loc, exten)
   in
   self
 and poly_variant floc sh =
@@ -158,6 +159,7 @@ and patt floc sh =
     | PaVrn (loc, x1) -> let loc = floc loc in PaVrn (loc, x1)
     | PaXtr (loc, x1, x2) ->
         let loc = floc loc in PaXtr (loc, x1, option_map (vala_map self) x2)
+    | PaExten (loc, exten) -> PaExten (floc loc, exten)
   in
   self
 and expr floc sh =
@@ -291,6 +293,7 @@ and expr floc sh =
         ExWhi (loc, self x1, vala_map (List.map self) x2)
     | ExXtr (loc, x1, x2) ->
         let loc = floc loc in ExXtr (loc, x1, option_map (vala_map self) x2)
+    | ExExten (loc, exten) -> ExExten (floc loc, exten)
   in
   self
 and module_type floc sh =
@@ -319,6 +322,7 @@ and module_type floc sh =
         MtWit (loc, self x1, vala_map (List.map (with_constr floc sh)) x2)
     | MtXtr (loc, x1, x2) ->
         let loc = floc loc in MtXtr (loc, x1, option_map (vala_map self) x2)
+    | MtExten (loc, exten) -> MtExten (floc loc, exten)
   in
   self
 and sig_item floc sh =
@@ -369,6 +373,7 @@ and sig_item floc sh =
     | SgXtr (loc, x1, x2) ->
         let loc = floc loc in SgXtr (loc, x1, option_map (vala_map self) x2)
     | SgFlAtt (loc, a) -> SgFlAtt (floc loc, a)
+    | SgExten (loc, exten) -> SgExten (floc loc, exten)
   in
   self
 and with_constr floc sh =
@@ -406,6 +411,7 @@ and module_expr floc sh =
         MeUnp (loc, expr floc sh x1, option_map (module_type floc sh) x2)
     | MeXtr (loc, x1, x2) ->
         let loc = floc loc in MeXtr (loc, x1, option_map (vala_map self) x2)
+    | MeExten (loc, exten) -> MeExten (floc loc, exten)
   in
   self
 and str_item floc sh =
@@ -468,6 +474,7 @@ and str_item floc sh =
     | StXtr (loc, x1, x2) ->
         let loc = floc loc in StXtr (loc, x1, option_map (vala_map self) x2)
     | StFlAtt (loc, a) -> StFlAtt (floc loc, a)
+    | StExten (loc, exten) -> StExten (floc loc, exten)
   in
   self
 and joinclause floc sh x =
@@ -513,6 +520,7 @@ and class_type floc sh =
            vala_map (List.map (class_sig_item floc sh)) x2)
     | CtXtr (loc, x1, x2) ->
         let loc = floc loc in CtXtr (loc, x1, option_map (vala_map self) x2)
+    | CtExten (loc, exten) -> CtExten (floc loc, exten)
   in
   self
 and class_sig_item floc sh =
@@ -532,6 +540,7 @@ and class_sig_item floc sh =
     | CgVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CgVir (loc, x1, x2, ctyp floc sh x3, x4)
     | CgFlAtt (loc, a) -> CgFlAtt (floc loc, a)
+    | CgExten (loc, exten) -> CgExten (floc loc, exten)
   in
   self
 and class_expr floc sh =
@@ -563,6 +572,7 @@ and class_expr floc sh =
         let loc = floc loc in CeTyc (loc, self x1, class_type floc sh x2)
     | CeXtr (loc, x1, x2) ->
         let loc = floc loc in CeXtr (loc, x1, option_map (vala_map self) x2)
+    | CeExten (loc, exten) -> CeExten (floc loc, exten)
   in
   self
 and class_str_item floc sh =
@@ -589,6 +599,7 @@ and class_str_item floc sh =
     | CrVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CrVir (loc, x1, x2, ctyp floc sh x3, x4)
     | CrFlAtt (loc, a) -> CrFlAtt (floc loc, a)
+    | CrExten (loc, exten) -> CrExten (floc loc, exten)
   in
   self
 ;;

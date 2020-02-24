@@ -148,8 +148,11 @@ module Meta_make (C : MetaSig) =
           C.node "TyVrn"
             [C.vala (C.list poly_variant) lpv;
              C.option (C.option (C.vala (C.list C.string))) ools]
-      | 
-          TyXtr loc s _ → C.xtr loc s ]
+      | TyXtr loc s _ → C.xtr loc s
+      | TyExten loc exten ->
+          let exten = assert False in
+          C.node "TyExten" [exten]
+      ]
     and poly_variant =
       fun
       [ PvTag _ s b lt attrs →
@@ -195,7 +198,11 @@ module Meta_make (C : MetaSig) =
           C.node "PaUnp" [C.vala c_vala_opt s; C.option module_type omt]
       | PaVrn _ s → C.node "PaVrn" [C.vala C.string s]
       | 
-          PaXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "PaAnt" [r]) s ]
+          PaXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "PaAnt" [r]) s
+      | PaExten loc exten ->
+          let exten = assert False in
+          C.node "PaExten" [exten]
+      ]
     and expr =
       fun
       [ ExAtt _ e att -> assert False
@@ -290,7 +297,11 @@ module Meta_make (C : MetaSig) =
       | ExVrn _ s → C.node "ExVrn" [C.vala C.string s]
       | ExWhi _ e le → C.node "ExWhi" [expr e; C.vala (C.list expr) le]
       | 
-          ExXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "ExAnt" [r]) s ]
+          ExXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "ExAnt" [r]) s
+      | ExExten loc exten ->
+          let exten = assert False in
+          C.node "ExExten" [exten]
+      ]
     and module_type =
       fun
       [ MtAtt _ e att -> assert False
@@ -311,7 +322,11 @@ module Meta_make (C : MetaSig) =
       | MtWit _ mt lwc →
           C.node "MtWit" [module_type mt; C.vala (C.list with_constr) lwc]
       | 
-          MtXtr loc s _ → C.xtr loc s ]
+          MtXtr loc s _ → C.xtr loc s
+      | MtExten loc exten ->
+          let exten = assert False in
+          C.node "MtExten" [exten]
+      ]
     and sig_item =
       fun
       [ SgCls _ lcict →
@@ -361,7 +376,11 @@ module Meta_make (C : MetaSig) =
       | SgXtr loc s _ → C.xtr loc s
       | SgFlAtt loc attr ->
           let attr = assert False in
-          C.node "SgFlAtt" [attr] ]
+          C.node "SgFlAtt" [attr]
+      | SgExten loc exten ->
+          let exten = assert False in
+          C.node "SgExten" [exten]
+      ]
     and with_constr =
       fun
       [ WcMod _ ls me →
@@ -393,7 +412,11 @@ module Meta_make (C : MetaSig) =
       | MeUid _ s → C.node "MeUid" [C.vala C.string s]
       | MeUnp _ e omt → C.node "MeUnp" [expr e; C.option module_type omt]
       | 
-          MeXtr loc s _ → C.xtr loc s ]
+          MeXtr loc s _ → C.xtr loc s
+      | MeExten loc exten ->
+          let exten = assert False in
+          C.node "MeExten" [exten]
+      ]
     and str_item =
       fun
       [ StCls _ lcice →
@@ -453,7 +476,11 @@ module Meta_make (C : MetaSig) =
       | StXtr loc s _ → C.xtr loc s
       | StFlAtt loc attr ->
           let attr = assert False in
-          C.node "StFlAtt" [attr] ]
+          C.node "StFlAtt" [attr]
+      | StExten loc exten ->
+          let exten = assert False in
+          C.node "StExten" [exten]
+      ]
     and joinclause x =
       C.record
         [(record_label "jcLoc", C.loc_v ());
@@ -499,7 +526,11 @@ module Meta_make (C : MetaSig) =
           C.node "CtSig"
             [C.vala (C.option ctyp) ot; C.vala (C.list class_sig_item) lcsi]
       | 
-          CtXtr loc s _ → C.xtr loc s ]
+          CtXtr loc s _ → C.xtr loc s
+      | CtExten loc exten ->
+          let exten = assert False in
+          C.node "CtExten" [exten]
+      ]
     and class_sig_item =
       fun
       [ CgCtr _ t1 t2 attrs →
@@ -520,7 +551,11 @@ module Meta_make (C : MetaSig) =
           C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CgFlAtt loc attr ->
           let attr = assert False in
-          C.node "CgFlAtt" [attr] ]
+          C.node "CgFlAtt" [attr]
+      | CgExten loc exten ->
+          let exten = assert False in
+          C.node "CgExten" [exten]
+      ]
     and class_expr =
       fun
       [ CeAtt _ e att -> assert False
@@ -541,7 +576,11 @@ module Meta_make (C : MetaSig) =
             [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]
       | CeTyc _ ce ct → C.node "CeTyc" [class_expr ce; class_type ct]
       | 
-          CeXtr loc s _ → C.xtr loc s ]
+          CeXtr loc s _ → C.xtr loc s
+      | CeExten loc exten ->
+          let exten = assert False in
+          C.node "CeExten" [exten]
+      ]
     and class_str_item =
       fun
       [ CrCtr _ t1 t2 attrs →
@@ -571,7 +610,11 @@ module Meta_make (C : MetaSig) =
           C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CrFlAtt loc attr ->
           let attr = assert False in
-          C.node "CrFlAtt" [attr] ]
+          C.node "CrFlAtt" [attr]
+      | CrExten loc exten ->
+          let exten = assert False in
+          C.node "CrExten" [exten]
+      ]
     ;
   end
 ;
