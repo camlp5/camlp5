@@ -910,14 +910,14 @@ EXTEND
   class_str_item:
     [ [ "declare"; st = V (LIST0 [ s= class_str_item; ";" → s ]); "end" →
           <:class_str_item< declare $_list:st$ end >>
-      | "inherit"; ovf = V (FLAG "!") "!"; ce = class_expr; pb = V (OPT as_lident) →
-          <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ >>
+      | "inherit"; ovf = V (FLAG "!") "!"; ce = class_expr; pb = V (OPT as_lident) ; attrs = item_attributes →
+          <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ $_itemattrs:attrs$ >>
       | "value"; ovf = V (FLAG "!") "!"; mf = V (FLAG "mutable");
-        lab = V lident "lid" ""; e = cvalue_binding →
-          <:class_str_item< value $_!:ovf$ $_flag:mf$ $_lid:lab$ = $e$ >>
+        lab = V lident "lid" ""; e = cvalue_binding ; attrs = item_attributes →
+          <:class_str_item< value $_!:ovf$ $_flag:mf$ $_lid:lab$ = $e$ $_itemattrs:attrs$ >>
       | "value"; "virtual"; mf = V (FLAG "mutable");
-        lab = V lident "lid" ""; ":"; t = ctyp →
-          <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
+        lab = V lident "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
+          <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
         ":"; t = ctyp ; attrs = item_attributes →
           <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
@@ -925,9 +925,9 @@ EXTEND
         l = V lident "lid" ""; topt = V (OPT polyt); e = fun_binding ; attrs = item_attributes →
           <:class_str_item<
             method $_!:ovf$ $_priv:pf$ $_lid:l$ $_opt:topt$ = $e$ $_itemattrs:attrs$ >>
-      | "type"; t1 = ctyp; "="; t2 = ctyp →
-          <:class_str_item< type $t1$ = $t2$ >>
-      | "initializer"; se = expr → <:class_str_item< initializer $se$ >> ] ]
+      | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
+          <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
+      | "initializer"; se = expr ; attrs = item_attributes → <:class_str_item< initializer $se$ $_itemattrs:attrs$ >> ] ]
   ;
   as_lident:
     [ [ "as"; i = LIDENT → mkident i ] ]

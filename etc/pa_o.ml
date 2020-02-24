@@ -1170,20 +1170,20 @@ EXTEND
       | "("; p = patt; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >> ] ]
   ;
   class_str_item:
-    [ [ "inherit"; ovf = V (FLAG "!") "!"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ->
-          <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ >>
+    [ [ "inherit"; ovf = V (FLAG "!") "!"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ; attrs = item_attributes ->
+          <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ $_itemattrs:attrs$ >>
       | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
-        lab = V LIDENT "lid" ""; e = cvalue_binding ->
-          <:class_str_item< value $_!:ov$ $_flag:mf$ $_lid:lab$ = $e$ >>
+        lab = V LIDENT "lid" ""; e = cvalue_binding ; attrs = item_attributes ->
+          <:class_str_item< value $_!:ov$ $_flag:mf$ $_lid:lab$ = $e$ $_itemattrs:attrs$ >>
       | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
-        "virtual"; lab = V LIDENT "lid" ""; ":"; t = ctyp ->
+        "virtual"; lab = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes ->
           if Pcaml.unvala ov then
             Ploc.raise loc (Stream.Error "virtual value cannot override")
           else
-            <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
+            <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
       | "val"; "virtual"; mf = V (FLAG "mutable"); lab = V LIDENT "lid" "";
-        ":"; t = ctyp ->
-          <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ >>
+        ":"; t = ctyp ; attrs = item_attributes ->
+          <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
         t = poly_type ; attrs = item_attributes ->
           <:class_str_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
@@ -1204,9 +1204,9 @@ EXTEND
       | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" "";
         sb = fun_binding ; attrs = item_attributes ->
           <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ $_itemattrs:attrs$ >>
-      | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
-          <:class_str_item< type $t1$ = $t2$ >>
-      | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]
+      | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
+          <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
+      | "initializer"; se = expr ; attrs = item_attributes -> <:class_str_item< initializer $se$ $_itemattrs:attrs$ >> ] ]
   ;
   cvalue_binding:
     [ [ "="; e = expr -> e
