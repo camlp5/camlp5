@@ -1756,9 +1756,9 @@ EXTEND_PRINTER
               else str_item
             in
             vlistl str_item_sep str_item pc sil
-      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $list:alg_attrs$ $list:item_attrs$ >> ->
+      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
           exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs)
-      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
+      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
@@ -1766,7 +1766,7 @@ EXTEND_PRINTER
           let mdl = List.map (fun (m, mt, item_attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, item_attrs)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
-      | <:str_item< module type $m$ = $mt$ $_list:item_attrs$ >> ->
+      | <:str_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" False '=' pc (Some m, mt, item_attrs)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
@@ -1781,7 +1781,7 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "let%s %p" (if rf then " rec" else "")
                  (vlist2 let_binding (and_before let_binding)) pel)
-      | <:str_item< $exp:e$ $list:attrs$ >> ->
+      | <:str_item< $exp:e$ $itemattrs:attrs$ >> ->
           if pc.aft = ";;" then
             pprintf pc "%p%p" expr e (hlist (pr_attribute "@@")) attrs
           else
@@ -1797,9 +1797,9 @@ EXTEND_PRINTER
       [ <:sig_item< # $lid:s$ $e$ >> ->
           let pc = {(pc) with aft = ""} in
           pprintf pc "(* #%s %p *)" s expr e
-      | <:sig_item:< exception $uid:e$ of $list:tl$ $list:alg_attrs$ $list:item_attrs$ >> ->
+      | <:sig_item:< exception $uid:e$ of $list:tl$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
           exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
-      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
+      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
@@ -1818,14 +1818,14 @@ EXTEND_PRINTER
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) True ':')
             (sig_module_or_module_type "and" True ':') pc mdl
-      | <:sig_item< module type $m$ = $mt$ $_list:item_attrs$ >> ->
+      | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" False '=' pc (Some m, mt, item_attrs)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item:< type $list:tdl$ >> ->
           pprintf pc "type %p"
             (vlist2 type_decl (and_before type_decl)) tdl
-      | <:sig_item:< value $lid:s$ : $t$ $list:attrs$ >> ->
+      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
           pprintf pc "val %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
@@ -2212,9 +2212,9 @@ value class_decl pc ci =
 
 value variant_decl pc pv =
   match pv with
-  [ <:poly_variant< `$c$ $_list:alg_attrs$ >> ->
+  [ <:poly_variant< `$c$ $_algattrs:alg_attrs$ >> ->
        pprintf pc "`%s%p" c (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
-  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ $_list:alg_attrs$ >> ->
+  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ $_algattrs:alg_attrs$ >> ->
        let tl = List.map (fun t -> (t, " &")) tl in
        pprintf pc "`%s of%s@;<1 5>%p%p" c (if ao then " &" else "")
          (plist ctyp 2) tl (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
@@ -2541,9 +2541,9 @@ EXTEND_PRINTER
     [ "top"
       [ <:class_sig_item< inherit $ct$ >> ->
           pprintf pc "inherit@;%p" class_type ct
-      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ $_list:attrs$ >> ->
+      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ $_itemattrs:attrs$ >> ->
           sig_method_or_method_virtual pc "" priv s t attrs
-      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ $_list:attrs$  >> ->
+      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:attrs$  >> ->
           sig_method_or_method_virtual pc " virtual" priv s t attrs
       | <:class_sig_item< type $t1$ = $t2$ >> ->
           pprintf pc "constraint %p =@;%p" ctyp t1 ctyp t2
@@ -2574,10 +2574,10 @@ EXTEND_PRINTER
             pb
       | <:class_str_item< initializer $e$ >> ->
           pprintf pc "initializer@;%p" expr e
-      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_list:item_attrs$ >> ->
+      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t item_attrs
       | <:class_str_item<
-          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$ $_list:item_attrs$
+          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$ $_itemattrs:item_attrs$
         >> ->
           let (pl, e) =
             match topt with

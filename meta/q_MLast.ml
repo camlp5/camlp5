@@ -317,11 +317,11 @@ EXTEND
     ] ]
   ;
   item_attributes:
-  [ [ l = SV (LIST0 item_attribute) -> l ]
+  [ [ l = SV (LIST0 item_attribute) "itemattrs" -> l ]
   ]
   ;
   alg_attributes:
-  [ [ l = SV (LIST0 alg_attribute) -> l ]
+  [ [ l = SV (LIST0 alg_attribute) "algattrs" -> l ]
   ]
   ;
   functor_parameter:

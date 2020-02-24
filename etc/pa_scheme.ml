@@ -563,7 +563,7 @@
    ((Sexpr loc [(Slid _ "module") se1 se2])
       (let* (((values i mb attrs) (str_module_se (Sexpr loc [se1 se2])))
             )
-        <:str_item< module $_uidopt:i$ = $mb$ $_list:attrs$ >>
+        <:str_item< module $_uidopt:i$ = $mb$ $_itemattrs:attrs$ >>
         ))
    ((Sexpr loc [(Slid _ (as (or "module*" "modulerec*") rf)) . sel])
     (let* ((rf (= rf "modulerec*")) (lmb (anti_list_map str_module_se sel)))

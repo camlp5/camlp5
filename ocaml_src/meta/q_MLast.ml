@@ -898,14 +898,14 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.List a) : 'e__18)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_list")),
+                         (Grammar.s_token ("ANTIQUOT", "_itemattrs")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_list", loc, a) : 'e__18)));
+                          (Qast.VaAnt ("_itemattrs", loc, a) : 'e__18)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "list")),
+                         (Grammar.s_token ("ANTIQUOT", "itemattrs")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
+                          (Qast.VaVal (Qast.VaAnt ("itemattrs", loc, a)) :
                            'e__18)))])),
            (fun (l : 'e__18) (loc : Ploc.t) -> (l : 'item_attributes)))]];
     Grammar.extension (alg_attributes : 'alg_attributes Grammar.Entry.e) None
@@ -924,14 +924,14 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.List a) : 'e__19)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_list")),
+                         (Grammar.s_token ("ANTIQUOT", "_algattrs")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_list", loc, a) : 'e__19)));
+                          (Qast.VaAnt ("_algattrs", loc, a) : 'e__19)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "list")),
+                         (Grammar.s_token ("ANTIQUOT", "algattrs")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
+                          (Qast.VaVal (Qast.VaAnt ("algattrs", loc, a)) :
                            'e__19)))])),
            (fun (l : 'e__19) (loc : Ploc.t) -> (l : 'alg_attributes)))]];
     Grammar.extension (functor_parameter : 'functor_parameter Grammar.Entry.e)

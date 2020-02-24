@@ -850,7 +850,7 @@ and str_item_se se =
       <:str_item< include $me$ >>
   | Sexpr loc [Slid _ "module"; se1; se2] →
       let (i, mb, attrs) = str_module_se (Sexpr loc [se1; se2]) in
-      <:str_item< module $_uidopt:i$ = $mb$ $_list:attrs$ >>
+      <:str_item< module $_uidopt:i$ = $mb$ $_itemattrs:attrs$ >>
   | Sexpr loc [Slid _ ("module*" | "modulerec*" as rf) :: sel] →
       let rf = rf = "modulerec*" in
       let lmb = anti_list_map str_module_se sel in

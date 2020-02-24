@@ -1829,9 +1829,9 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after str_item)) sil)
-      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $list:alg_attrs$ $list:item_attrs$ >> ->
+      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
           exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs)
-      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
+      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           if is_operator n then
             external_decl_original pc (loc, n, t, sl, attrs)
           else
@@ -1842,7 +1842,7 @@ EXTEND_PRINTER
           let mdl = List.map (fun (m, mt, item_attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, item_attrs)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
-      | <:str_item< module type $m$ = $mt$ $_list:item_attrs$ >> ->
+      | <:str_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
@@ -1857,7 +1857,7 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "value%s %p" (if rf then " rec" else "")
                  (vlist2 value_binding (and_before value_binding)) pel)
-      | <:str_item< $exp:e$ $list:attrs$ >> ->
+      | <:str_item< $exp:e$ $itemattrs:attrs$ >> ->
           pprintf pc "%p%p" expr e (hlist (pr_attribute "@@")) attrs
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
@@ -1883,9 +1883,9 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after sig_item)) sil)
-      | <:sig_item:< exception $uid:e$ of $list:tl$ $list:alg_attrs$ $list:item_attrs$ >> ->
+      | <:sig_item:< exception $uid:e$ of $list:tl$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
           exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
-      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $list:attrs$ >> ->
+      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
@@ -1894,15 +1894,15 @@ EXTEND_PRINTER
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
             (sig_module_or_module_type "and" ':') pc mdl
-      | <:sig_item< module type $m$ = $mt$ $_list:item_attrs$ >> ->
+      | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
-      | <:sig_item:< value $lid:s$ : $t$ $list:attrs$ >> when is_operator s ->
+      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_operator s ->
           pprintf pc "value ( %s ) :@;%p%p" s ctyp t (hlist (pr_attribute "@@")) attrs
-      | <:sig_item:< value $lid:s$ : $t$ $list:attrs$ >> ->
+      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
           pprintf pc "value %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"

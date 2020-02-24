@@ -198,9 +198,9 @@ value class_decl pc ci =
 
 value variant_decl pc pv =
   match pv with
-  [ <:poly_variant< `$c$ $_list:alg_attrs$ >> ->
+  [ <:poly_variant< `$c$ $_algattrs:alg_attrs$ >> ->
        pprintf pc "`%s%p" c (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala alg_attrs)
-  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ $_list:alg_attrs$ >> ->
+  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ $_algattrs:alg_attrs$ >> ->
        pprintf pc "`%s of%s@;<1 5>%p%p" c (if ao then "& " else "")
          (hlist2 ctyp (amp_before ctyp)) tl (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala alg_attrs)
   | <:poly_variant< $t$ >> ->
@@ -504,9 +504,9 @@ EXTEND_PRINTER
     [ "top"
       [ <:class_sig_item< inherit $ct$ >> ->
           pprintf pc "inherit@;%p" class_type ct
-      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ $_list:attrs$ >> ->
+      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ $_itemattrs:attrs$ >> ->
           sig_method_or_method_virtual pc "" priv s t attrs
-      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ $_list:attrs$ >> ->
+      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:attrs$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t attrs
       | <:class_sig_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
@@ -537,10 +537,10 @@ EXTEND_PRINTER
             pb
       | <:class_str_item< initializer $e$ >> ->
           pprintf pc "initializer@;%p" expr e
-      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_list:item_attrs$ >> ->
+      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t item_attrs
       | <:class_str_item<
-          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$ $_list:item_attrs$
+          method $!:ov$ $priv:priv$ $lid:s$ $opt:topt$ = $e$ $_itemattrs:item_attrs$
         >> ->
           let (pl, e) =
             match topt with
