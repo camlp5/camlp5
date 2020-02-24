@@ -1130,10 +1130,14 @@ Grammar.safe_extend
               (MLast.SgTyp (loc, tdl) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
-             (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)),
-           (fun (i : 'mod_ident) _ (loc : Ploc.t) ->
-              (MLast.SgOpn (loc, i) : 'sig_item)));
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
+                (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (i : 'mod_ident) _
+                (loc : Ploc.t) ->
+              (MLast.SgOpn (loc, i, []) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1166,10 +1170,16 @@ Grammar.safe_extend
               (MLast.SgMod (loc, rf, l) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "include")))
-             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (mt : 'module_type) _ (loc : Ploc.t) ->
-              (MLast.SgInc (loc, mt) : 'sig_item)));
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "include")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (mt : 'module_type) _
+                (loc : Ploc.t) ->
+              (MLast.SgInc (loc, mt, []) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

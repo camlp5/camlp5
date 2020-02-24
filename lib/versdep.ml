@@ -1211,10 +1211,13 @@ value ocaml_psig_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   END
 ;
 
-value ocaml_psig_include loc mt =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_include mt
+value ocaml_psig_include ?{item_attributes=[]} loc mt =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
+    Psig_include mt
+    }
   ELSE
-    Psig_include {pincl_mod = mt; pincl_loc = loc; pincl_attributes = []}
+    Psig_include {pincl_mod = mt; pincl_loc = loc; pincl_attributes = item_attributes}
   END
 ;
 
@@ -1258,17 +1261,25 @@ value ocaml_psig_modtype ?{item_attributes=[]} loc s mto =
   END
 ;
 
-value ocaml_psig_open loc li =
-  IFDEF OCAML_VERSION < OCAML_4_01 THEN Psig_open (mkloc loc li)
-  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_open Fresh (mkloc loc li)
+value ocaml_psig_open ?{item_attributes=[]} loc li =
+  IFDEF OCAML_VERSION < OCAML_4_01 THEN
+    do { assert (item_attributes = []) ;
+    Psig_open (mkloc loc li)
+    }
+  ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
+    Psig_open Fresh (mkloc loc li)
+    }
   ELSIFDEF OCAML_VERSION < OCAML_4_08 THEN
+    do { assert (item_attributes = []) ;
     Psig_open
       {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
        popen_attributes = []}
+    }
   ELSE
     Psig_open
       {popen_expr = mknoloc li; popen_override = Fresh; popen_loc = loc;
-       popen_attributes = []}
+       popen_attributes = item_attributes}
   END
 ;
 

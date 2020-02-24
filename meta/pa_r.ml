@@ -395,13 +395,13 @@ EXTEND
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
           <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
-      | "include"; mt = module_type → <:sig_item< include $mt$ >>
+      | "include"; mt = module_type ; attrs = item_attributes → <:sig_item< include $mt$ $_itemattrs:attrs$ >>
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") →
           <:sig_item< module $_flag:rf$ $_list:l$ >>
       | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes →
           <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
-      | "open"; i = V mod_ident "list" "" → <:sig_item< open $_:i$ >>
+      | "open"; i = V mod_ident "list" "" ; attrs = item_attributes → <:sig_item< open $_:i$ $_itemattrs:attrs$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") →
           <:sig_item< type $_list:tdl$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes →

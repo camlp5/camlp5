@@ -1405,8 +1405,11 @@ and sig_item s l =
            (mkvalue_desc ~item_attributes:(item_attributes attrs) vn t
               (uv p))) ::
       l
-  | SgInc (loc, mt) ->
-      mksig loc (ocaml_psig_include (mkloc loc) (module_type mt)) :: l
+  | SgInc (loc, mt, attrs) ->
+      mksig loc
+        (ocaml_psig_include ~item_attributes:(item_attributes attrs)
+           (mkloc loc) (module_type mt)) ::
+      l
   | SgMod (loc, rf, ntl) ->
       if not (uv rf) then
         List.fold_right
@@ -1440,9 +1443,10 @@ and sig_item s l =
         (ocaml_psig_modtype ~item_attributes:(item_attributes item_attrs)
            (mkloc loc) (uv n) mto) ::
       l
-  | SgOpn (loc, id) ->
+  | SgOpn (loc, id, attrs) ->
       mksig loc
-        (ocaml_psig_open (mkloc loc) (long_id_of_string_list loc (uv id))) ::
+        (ocaml_psig_open ~item_attributes:(item_attributes attrs) (mkloc loc)
+           (long_id_of_string_list loc (uv id))) ::
       l
   | SgTyp (loc, tdl) ->
       mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l

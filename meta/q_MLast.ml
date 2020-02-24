@@ -457,13 +457,13 @@ EXTEND
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
           Qast.Node "SgExt" [Qast.Loc; i; t; pd; attrs]
-      | "include"; mt = module_type → Qast.Node "SgInc" [Qast.Loc; mt]
+      | "include"; mt = module_type ; attrs = item_attributes → Qast.Node "SgInc" [Qast.Loc; mt; attrs]
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") →
           Qast.Node "SgMod" [Qast.Loc; rf; l]
       | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = item_attributes →
           Qast.Node "SgMty" [Qast.Loc; i; mt; attrs]
-      | "open"; i = SV mod_ident "list" "" → Qast.Node "SgOpn" [Qast.Loc; i]
+      | "open"; i = SV mod_ident "list" "" ; attrs = item_attributes → Qast.Node "SgOpn" [Qast.Loc; i; attrs]
       | "type"; tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "SgTyp" [Qast.Loc; tdl]
       | "value"; i = SV LIDENT; ":"; t = ctyp ; attrs = item_attributes →

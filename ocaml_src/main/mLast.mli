@@ -149,12 +149,12 @@ and sig_item =
       loc * string * ctyp list * (string * payload) list *
         (string * payload) list
   | SgExt of loc * string * ctyp * string list * (string * payload) list
-  | SgInc of loc * module_type
+  | SgInc of loc * module_type * (string * payload) list
   | SgMod of
       loc * bool *
         (string option * module_type * (string * payload) list) list
   | SgMty of loc * string * module_type * (string * payload) list
-  | SgOpn of loc * string list
+  | SgOpn of loc * string list * (string * payload) list
   | SgTyp of loc * type_decl list
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp * (string * payload) list

@@ -340,7 +340,8 @@ module Meta_make (C : MetaSig) =
           let attrs = assert false in
           C.node "SgExt"
             [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
-      | SgInc (_, mt) -> C.node "SgInc" [module_type mt]
+      | SgInc (_, mt, attrs) ->
+          let attrs = assert false in C.node "SgInc" [module_type mt; attrs]
       | SgMod (_, b, lsmt) ->
           let c_vala x = C.vala C.string x in
           let c_vala_opt sopt = C.option c_vala sopt in
@@ -355,7 +356,9 @@ module Meta_make (C : MetaSig) =
       | SgMty (_, s, mt, attrs) ->
           let attrs = assert false in
           C.node "SgMty" [C.vala C.string s; module_type mt; attrs]
-      | SgOpn (_, ls) -> C.node "SgOpn" [C.vala (C.list C.string) ls]
+      | SgOpn (_, ls, attrs) ->
+          let attrs = assert false in
+          C.node "SgOpn" [C.vala (C.list C.string) ls; attrs]
       | SgTyp (_, ltd) -> C.node "SgTyp" [C.vala (C.list type_decl) ltd]
       | SgUse (_, s, lsil) ->
           C.node "SgUse"

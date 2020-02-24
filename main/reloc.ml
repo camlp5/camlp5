@@ -445,9 +445,9 @@ and sig_item floc sh =
     | SgExt loc x1 x2 x3 x4 →
         let loc = floc loc in
         SgExt loc x1 (ctyp floc sh x2) x3 x4
-    | SgInc loc x1 →
+    | SgInc loc x1 x2 →
         let loc = floc loc in
-        SgInc loc (module_type floc sh x1)
+        SgInc loc (module_type floc sh x1) x2
     | SgMod loc x1 x2 →
         let loc = floc loc in
         SgMod loc x1
@@ -456,9 +456,9 @@ and sig_item floc sh =
     | SgMty loc x1 x2 x3 →
         let loc = floc loc in
         SgMty loc x1 (module_type floc sh x2) x3
-    | SgOpn loc x1 →
+    | SgOpn loc x1 x2 →
         let loc = floc loc in
-        SgOpn loc x1
+        SgOpn loc x1 x2
     | SgTyp loc x1 →
         let loc = floc loc in
         SgTyp loc (vala_map (List.map (type_decl floc sh)) x1)

@@ -520,8 +520,9 @@ let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
      ptyexn_attributes = item_attributes; ptyexn_loc = loc}
 ;;
 
-let ocaml_psig_include loc mt =
-  Psig_include {pincl_mod = mt; pincl_loc = loc; pincl_attributes = []}
+let ocaml_psig_include ?(item_attributes = []) loc mt =
+  Psig_include
+    {pincl_mod = mt; pincl_loc = loc; pincl_attributes = item_attributes}
 ;;
 
 let ocaml_psig_module ?(item_attributes = []) loc (s : string option) mt =
@@ -538,10 +539,10 @@ let ocaml_psig_modtype ?(item_attributes = []) loc s mto =
   Psig_modtype pmtd
 ;;
 
-let ocaml_psig_open loc li =
+let ocaml_psig_open ?(item_attributes = []) loc li =
   Psig_open
     {popen_expr = mknoloc li; popen_override = Fresh; popen_loc = loc;
-     popen_attributes = []}
+     popen_attributes = item_attributes}
 ;;
 
 let ocaml_psig_recmodule =
