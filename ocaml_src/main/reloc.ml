@@ -218,7 +218,8 @@ and expr floc sh =
         let loc = floc loc in
         ExLet
           (loc, x1,
-           vala_map (List.map (fun (x1, x2) -> patt floc sh x1, self x2)) x2,
+           vala_map
+             (List.map (fun (x1, x2, x3) -> patt floc sh x1, self x2, x3)) x2,
            self x3)
     | ExLid (loc, x1) -> let loc = floc loc in ExLid (loc, x1)
     | ExLmd (loc, x1, x2, x3) ->
@@ -459,7 +460,9 @@ and str_item floc sh =
         StVal
           (loc, x1,
            vala_map
-             (List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2)) x2)
+             (List.map
+                (fun (x1, x2, x3) -> patt floc sh x1, expr floc sh x2, x3))
+             x2)
     | StXtr (loc, x1, x2) ->
         let loc = floc loc in StXtr (loc, x1, option_map (vala_map self) x2)
   in
@@ -542,7 +545,9 @@ and class_expr floc sh =
         CeLet
           (loc, x1,
            vala_map
-             (List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2)) x2,
+             (List.map
+                (fun (x1, x2, x3) -> patt floc sh x1, expr floc sh x2, x3))
+             x2,
            self x3)
     | CeStr (loc, x1, x2) ->
         let loc = floc loc in

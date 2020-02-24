@@ -192,7 +192,7 @@ let subst mloc env =
   let rec loop =
     function
       MLast.ExLet (_, rf, pel, e) ->
-        let pel = List.map (fun (p, e) -> p, loop e) pel in
+        let pel = List.map (fun (p, e, attrs) -> p, loop e, attrs) pel in
         MLast.ExLet (loc, rf, pel, loop e)
     | MLast.ExIfe (_, e1, e2, e3) ->
         MLast.ExIfe (loc, loop e1, loop e2, loop e3)

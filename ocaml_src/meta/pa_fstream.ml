@@ -69,7 +69,7 @@ let stream_pattern_component skont =
           (loc, MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n)),
            [p, None, skont; MLast.PaAny loc, None, MLast.ExUid (loc, "None")])
   | SpStr (loc, p) ->
-      MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n)], skont)
+      MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n), []], skont)
   | SpWhn (loc, e) -> MLast.ExIfe (loc, e, skont, MLast.ExUid (loc, "None"))
   | SpCut loc ->
       MLast.ExMat
@@ -96,7 +96,8 @@ let rec stream_pattern loc epo e =
                    MLast.ExAcc
                      (loc, MLast.ExUid (loc, "Fstream"),
                       MLast.ExLid (loc, "count")),
-                   MLast.ExLid (loc, strm_n))],
+                   MLast.ExLid (loc, strm_n)),
+                []],
                e)
         | None -> e
       in
@@ -139,7 +140,8 @@ let cparser_match loc me bpo pc =
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Fstream"),
                   MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            pc)
     | None -> pc
   in
@@ -152,7 +154,7 @@ let cparser_match loc me bpo pc =
             MLast.TyAcc
               (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
             MLast.TyAny loc)),
-      me],
+      me, []],
      e)
 ;;
 
@@ -169,7 +171,8 @@ let cparser loc bpo pc =
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Fstream"),
                   MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            e)
     | None -> e
   in
@@ -363,7 +366,8 @@ let rec mstream_pattern loc m (spcl, epo, e) =
                 (loc,
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
-                 MLast.ExLid (loc, strm_n))],
+                 MLast.ExLid (loc, strm_n)),
+              []],
              e)
       | None -> e
       end
@@ -412,7 +416,8 @@ let mparser_match loc m me bpo pc =
               (loc,
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            pc)
     | None -> pc
   in
@@ -428,7 +433,7 @@ let mparser_match loc m me bpo pc =
            (loc,
             MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),
             MLast.TyAny loc)),
-      me],
+      me, []],
      e)
 ;;
 
@@ -444,7 +449,8 @@ let mparser loc m bpo pc =
               (loc,
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            e)
     | None -> e
   in

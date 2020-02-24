@@ -101,7 +101,7 @@ and expr =
   | ExJdf of loc * joinclause list * expr
   | ExLab of loc * (patt * expr option) list
   | ExLaz of loc * expr
-  | ExLet of loc * bool * (patt * expr) list * expr
+  | ExLet of loc * bool * (patt * expr * (string * payload) list) list * expr
   | ExLid of loc * string
   | ExLmd of loc * string option * module_expr * expr
   | ExLop of loc * module_expr * expr
@@ -193,7 +193,7 @@ and str_item =
   | StOpn of loc * string list
   | StTyp of loc * bool * type_decl list
   | StUse of loc * string * (str_item * loc) list
-  | StVal of loc * bool * (patt * expr) list
+  | StVal of loc * bool * (patt * expr * (string * payload) list) list
   | StXtr of loc * string * str_item option
 and joinclause =
   { jcLoc : loc;
@@ -225,7 +225,8 @@ and class_expr =
     CeApp of loc * class_expr * expr
   | CeCon of loc * string list * ctyp list
   | CeFun of loc * patt * class_expr
-  | CeLet of loc * bool * (patt * expr) list * class_expr
+  | CeLet of
+      loc * bool * (patt * expr * (string * payload) list) list * class_expr
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
   | CeXtr of loc * string * class_expr option

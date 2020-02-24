@@ -78,7 +78,7 @@ let rec handle_failure e =
          | _ -> false)
         pel
   | MLast.ExLet (_, false, pel, e) ->
-      List.for_all (fun (p, e) -> handle_failure e) pel && handle_failure e
+      List.for_all (fun (p, e, _) -> handle_failure e) pel && handle_failure e
   | MLast.ExSeq (_, el) -> List.for_all handle_failure el
   | MLast.ExAcc (_, MLast.ExUid (_, _), _) | MLast.ExLid (_, _) |
     MLast.ExInt (_, _, "") | MLast.ExStr (_, _) | MLast.ExChr (_, _) |
@@ -119,9 +119,9 @@ let rec subst v e =
   | MLast.ExApp (loc, e1, e2) -> MLast.ExApp (loc, subst v e1, subst v e2)
   | MLast.ExTup (loc, el) -> MLast.ExTup (loc, List.map (subst v) el)
   | _ -> raise Not_found
-and subst_pe v (p, e) =
+and subst_pe v (p, e, attrs) =
   match p with
-    MLast.PaLid (_, v') when v <> v' -> p, subst v e
+    MLast.PaLid (_, v') when v <> v' -> p, subst v e, attrs
   | _ -> raise Not_found
 ;;
 
@@ -182,7 +182,7 @@ let stream_pattern_component skont ckont =
                 None, ckont])
         else if is_raise_failure ckont then
           let p = wildcard_if_not_bound p skont in
-          MLast.ExLet (loc, false, [p, e], skont)
+          MLast.ExLet (loc, false, [p, e, []], skont)
         else if is_raise ckont then
           let tst =
             if handle_failure e then e
@@ -195,7 +195,7 @@ let stream_pattern_component skont ckont =
                   None, ckont])
           in
           let p = wildcard_if_not_bound p skont in
-          MLast.ExLet (loc, false, [p, tst], skont)
+          MLast.ExLet (loc, false, [p, tst, []], skont)
         else if
           pattern_eq_expression
             (MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p)) skont
@@ -266,10 +266,10 @@ let stream_pattern_component skont ckont =
           MLast.PaLid (_, v) ->
             MLast.ExLet
               (loc, false,
-               [MLast.PaLid (loc, v), MLast.ExLid (loc, "strm__")], skont)
+               [MLast.PaLid (loc, v), MLast.ExLid (loc, "strm__"), []], skont)
         | _ -> raise Not_found
       with Not_found ->
-        MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n)], skont)
+        MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n), []], skont)
 ;;
 
 let rec stream_pattern loc epo e ekont =
@@ -285,13 +285,14 @@ let rec stream_pattern loc epo e ekont =
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, "Stream"),
                     MLast.ExLid (loc, "count")),
-                 MLast.ExLid (loc, strm_n))],
+                 MLast.ExLid (loc, strm_n)),
+              []],
              e)
       | _ -> e
       end
   | (SpLet (loc, p1, e1), _) :: spcl ->
       let skont = stream_pattern loc epo e ekont spcl in
-      MLast.ExLet (loc, false, [p1, e1], skont)
+      MLast.ExLet (loc, false, [p1, e1, []], skont)
   | (spc, err) :: spcl ->
       let skont =
         let ekont =
@@ -525,7 +526,8 @@ let cparser loc (bpo, pc) =
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Stream"),
                   MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            e)
     | None -> e
   in
@@ -569,7 +571,8 @@ let cparser_match loc me (bpo, pc) =
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Stream"),
                   MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            pc)
     | None -> pc
   in
@@ -590,7 +593,7 @@ let cparser_match loc me (bpo, pc) =
                 MLast.TyAcc
                   (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
                 MLast.TyAny loc)),
-          me],
+          me, []],
          e)
 ;;
 

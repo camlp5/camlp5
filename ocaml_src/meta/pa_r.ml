@@ -232,17 +232,29 @@ let warning_deprecated_since_6_00 loc =
     end
 ;;
 
+let build_op_attributed loc op attrs =
+  List.fold_left (fun e a -> MLast.ExAtt (loc, e, a)) (MLast.ExLid (loc, op))
+    attrs
+;;
+
 let build_letop_binder loc letop b l e =
+  let (firstpat, firstarg, firstattrs) = b in
   let (argpat, argexp) =
+    (* TODO FIX THIS CHET *)
     List.fold_left
-      (fun (argpat, argexp) (andop, (pat, exp)) ->
+      (fun (argpat, argexp) (andop, (pat, exp, attrs)) ->
+         let attrs = List.map Pcaml.unvala (Pcaml.unvala attrs) in
+         let andop = build_op_attributed loc andop attrs in
          MLast.PaTup (loc, [argpat; pat]),
-         MLast.ExApp
-           (loc, MLast.ExApp (loc, MLast.ExLid (loc, andop), argexp), exp))
-      b l
+         MLast.ExApp (loc, MLast.ExApp (loc, andop, argexp), exp))
+      (firstpat, firstarg) l
+  in
+  let letop =
+    build_op_attributed loc letop
+      (List.map Pcaml.unvala (Pcaml.unvala firstattrs))
   in
   MLast.ExApp
-    (loc, MLast.ExApp (loc, MLast.ExLid (loc, letop), argexp),
+    (loc, MLast.ExApp (loc, letop, argexp),
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
@@ -2249,11 +2261,17 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
-             (Grammar.s_nterm (fun_binding : 'fun_binding Grammar.Entry.e)),
-           (fun (e : 'fun_binding) (p : 'ipatt) (loc : Ploc.t) ->
-              (p, e : 'let_binding)))]];
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (fun_binding : 'fun_binding Grammar.Entry.e)))
+             (Grammar.s_list0
+                (Grammar.s_nterm
+                   (item_attribute : 'item_attribute Grammar.Entry.e))),
+           (fun (attrs : 'item_attribute list) (e : 'fun_binding) (p : 'ipatt)
+                (loc : Ploc.t) ->
+              (p, e, attrs : 'let_binding)))]];
     Grammar.extension (fun_binding : 'fun_binding Grammar.Entry.e) None
       [None, Some Gramext.RightA,
        [Grammar.production

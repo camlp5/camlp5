@@ -50,7 +50,8 @@ val expr : MLast.expr Grammar.Entry.e;;
 val patt : MLast.patt Grammar.Entry.e;;
 val ipatt : MLast.patt Grammar.Entry.e;;
 val ctyp : MLast.ctyp Grammar.Entry.e;;
-val let_binding : (MLast.patt * MLast.expr) Grammar.Entry.e;;
+val let_binding :
+  (MLast.patt * MLast.expr * MLast.attributes) Grammar.Entry.e;;
 val type_decl : MLast.type_decl Grammar.Entry.e;;
 val match_case :
   (MLast.patt * MLast.expr option MLast.v * MLast.expr) Grammar.Entry.e;;
@@ -175,4 +176,5 @@ val expr_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
 val rename_id : (string -> string) ref;;
 val flag_comments_in_phrases : bool ref;;
 val flag_equilibrate_cases : bool ref;;
+val flag_expand_letop_syntax : bool ref;;
 val flag_compatible_old_versions_of_ocaml : bool ref;;

@@ -113,7 +113,8 @@ let rec unstream_pattern_kont =
                  (_,
                   MLast.ExAcc
                     (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Error")),
-                  e2))])],
+                  e2))]),
+        []],
        e) ->
       let f =
         match f with
@@ -174,10 +175,11 @@ let rec unstream_pattern_kont =
           (_,
            MLast.ExAcc
              (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
-           MLast.ExLid (_, "strm__"))],
+           MLast.ExLid (_, "strm__")),
+        []],
        e) ->
       [], Some (MLast.PaLid (loc, p)), e
-  | MLast.ExLet (_, false, [p, MLast.ExLid (_, "strm__")], e) ->
+  | MLast.ExLet (_, false, [p, MLast.ExLid (_, "strm__"), []], e) ->
       let (sp, epo, e) = unstream_pattern_kont e in
       (SpStr (loc, p), SpoNoth) :: sp, epo, e
   | MLast.ExMat
@@ -216,9 +218,9 @@ let rec unstream_pattern_kont =
           (_, MLast.ExLid (_, "raise"),
            MLast.ExAcc
              (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure")))]) ->
-      let e = MLast.ExLet (loc, false, [MLast.PaLid (loc, s), e1], e2) in
+      let e = MLast.ExLet (loc, false, [MLast.PaLid (loc, s), e1, []], e2) in
       unstream_pattern_kont e
-  | MLast.ExLet (_, false, [p, e1], e2) as ge ->
+  | MLast.ExLet (_, false, [p, e1, []], e2) as ge ->
       if contains_strm__ e1 then
         let (f, err) =
           match e1 with
@@ -362,7 +364,8 @@ let rec unparser_cases_list =
           (_, MLast.ExApp (_, f, MLast.ExLid (_, "strm__")),
            [MLast.PaAcc
               (_, MLast.PaUid (_, "Stream"), MLast.PaUid (_, "Failure")),
-            None, MLast.ExApp (_, MLast.ExLid (_, "raise"), e2)])],
+            None, MLast.ExApp (_, MLast.ExLid (_, "raise"), e2)]),
+        []],
        e1) ->
       let spe1 =
         let (sp, epo, e) = unstream_pattern_kont e1 in
@@ -379,14 +382,15 @@ let rec unparser_cases_list =
           (_,
            MLast.ExAcc
              (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
-           MLast.ExLid (_, "strm__"))],
+           MLast.ExLid (_, "strm__")),
+        []],
        e) ->
       [[], Some (MLast.PaLid (loc, p)), e]
   | MLast.ExLet
-      (_, false, [p, MLast.ExApp (_, f, MLast.ExLid (_, "strm__"))], e) ->
+      (_, false, [p, MLast.ExApp (_, f, MLast.ExLid (_, "strm__")), []], e) ->
       let (sp, epo, e) = unstream_pattern_kont e in
       [(SpNtr (loc, p, f), SpoNoth) :: sp, epo, e]
-  | MLast.ExLet (_, false, [p, MLast.ExLid (_, "strm__")], e) ->
+  | MLast.ExLet (_, false, [p, MLast.ExLid (_, "strm__"), []], e) ->
       let (sp, epo, e) = unstream_pattern_kont e in
       [(SpStr (loc, p), SpoNoth) :: sp, epo, e]
   | MLast.ExMat
@@ -527,7 +531,8 @@ let unparser_body e =
             (_,
              MLast.ExAcc
                (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
-             MLast.ExLid (_, strm_n))],
+             MLast.ExLid (_, strm_n)),
+          []],
          e) ->
         Some (MLast.PaLid (loc, bp)), e
     | _ -> None, e

@@ -457,8 +457,8 @@ let ocaml_pexp_variant =
   Some (pexp_variant_pat, pexp_variant)
 ;;
 
-let ocaml_value_binding loc p e =
-  {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = []}
+let ocaml_value_binding ?(item_attributes = []) loc p e =
+  {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
 ;;
 
 let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;

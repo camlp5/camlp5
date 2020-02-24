@@ -329,7 +329,7 @@ module MetaAction =
                          MLast.ExUid (loc, "ExLet")),
                       mloc),
                    rf),
-                mvala (mlist mpe) pel),
+                mvala (mlist mpea) pel),
              mexpr e)
       | MLast.ExLid (loc, s) ->
           MLast.ExApp
@@ -631,6 +631,16 @@ module MetaAction =
                 mloc),
              mvala mstring s)
       | x -> not_impl "mctyp" x
+    and mpea (p, e, attrs) =
+      assert ([] = Pcaml.unvala attrs);
+      MLast.ExTup
+        (loc,
+         [mpatt p; mexpr e;
+          MLast.ExApp
+            (loc,
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
+             MLast.ExUid (loc, "[]"))])
     and mpe (p, e) = MLast.ExTup (loc, [mpatt p; mexpr e])
     and mpwe (p, w, e) =
       MLast.ExTup (loc, [mpatt p; mvala (moption mexpr) w; mexpr e])
@@ -943,7 +953,7 @@ let quot_expr psl e =
              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Tuple")),
            mklistexp loc el)
     | MLast.ExLet (_, r, pel, e) ->
-        let pel = List.map (fun (p, e) -> p, loop e) pel in
+        let pel = List.map (fun (p, e, attrs) -> p, loop e, attrs) pel in
         MLast.ExLet (loc, r, pel, loop e)
     | _ -> e
   in
@@ -993,7 +1003,8 @@ let quotify_action psl act =
                       mklistpat loc pl1),
                    None, MLast.ExTup (loc, el1);
                    MLast.PaAny loc, None,
-                   MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])])],
+                   MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])]),
+               []],
               e)
        | _ -> e)
     e psl
@@ -1683,7 +1694,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
                         (loc, MLast.TyUid (loc, gmod),
                          MLast.TyUid (loc, "Entry")),
                       MLast.TyLid (loc, "e")),
-                   MLast.TyQuo (loc, x))))
+                   MLast.TyQuo (loc, x))),
+             [])
           nl
       in
       let locals =
@@ -1708,7 +1720,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
                         (loc, MLast.TyUid (loc, gmod),
                          MLast.TyUid (loc, "Entry")),
                       MLast.TyLid (loc, "e")),
-                   MLast.TyQuo (loc, x))))
+                   MLast.TyQuo (loc, x))),
+             [])
           ll
       in
       let e =
@@ -1721,7 +1734,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
                 (loc,
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, gmod), MLast.ExUid (loc, "Entry")),
-                 MLast.ExLid (loc, "create"))],
+                 MLast.ExLid (loc, "create")),
+              []],
              MLast.ExLet (loc, false, locals, args))
         else
           MLast.ExLet
@@ -1743,7 +1757,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
                              (loc, MLast.ExUid (loc, gmod),
                               MLast.ExLid (loc, "of_entry")),
                            locate n1)),
-                     MLast.ExLid (loc, "s"))])],
+                     MLast.ExLid (loc, "s"))]),
+              []],
              MLast.ExLet (loc, false, locals, args))
       in
       MLast.ExLet (loc, false, globals, e)
@@ -1771,7 +1786,8 @@ let text_of_extend loc gmod gl el f =
                      (loc, f,
                       MLast.ExApp
                         (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), e),
-                         MLast.ExUid (loc, "[]")))])],
+                         MLast.ExUid (loc, "[]")))]),
+               []],
               MLast.ExApp
                 (loc, MLast.ExLid (loc, "aux"), MLast.ExUid (loc, "()"))))
         el
@@ -1833,7 +1849,7 @@ let text_of_functorial_extend loc gmod gl el =
              MLast.ExLet
                (loc, false,
                 [MLast.PaLid (loc, "aux"),
-                 MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, e])],
+                 MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, e]), []],
                 MLast.ExApp
                   (loc, MLast.ExLid (loc, "aux"), MLast.ExUid (loc, "()")))
            else e)

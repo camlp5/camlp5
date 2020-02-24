@@ -397,6 +397,7 @@ let pr_expr_fun_args = ref Extfun.empty;;
 
 let flag_comments_in_phrases = ref true;;
 let flag_equilibrate_cases = ref false;;
+let flag_expand_letop_syntax = ref false;;
 let flag_compatible_old_versions_of_ocaml = ref false;;
 
 let inter_phrases = ref None;;

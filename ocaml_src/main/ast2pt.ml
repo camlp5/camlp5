@@ -1304,7 +1304,7 @@ and mkjoinclause jc =
       (uv jc.jcVal)
   in
   mkloc jc.jcLoc, jcval
-and mkpe (p, e) =
+and mkpe (p, e, attrs) =
   let loc = Ploc.encl (loc_of_patt p) (loc_of_expr e) in
   let (p, e) =
     match e with
@@ -1318,7 +1318,8 @@ and mkpe (p, e) =
         expand_gadt_type loc p loc1 nt ct e
     | p -> p, e
   in
-  ocaml_value_binding (mkloc loc) (patt p) (expr e)
+  ocaml_value_binding ~item_attributes:(item_attributes attrs) (mkloc loc)
+    (patt p) (expr e)
 and expand_gadt_type loc p loc1 nt ct e =
   let nt = uv nt in
   let e = MLast.ExTyc (loc, e, ct) in
