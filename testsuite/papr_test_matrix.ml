@@ -464,6 +464,16 @@ and t2 = bool[@@foo];
      o_output = OK "should never get here";
      official_output = OK "should never get here";
      r_output = OK "should never get here"
+    };
+    {name="open-item-attributes1"; implem = True ;
+     o_input = OK {foo|open Foo [@@argle]|foo} ;
+     official_input = OK {foo|open Foo [@@argle]|foo} ;
+     r_input = OK {foo|open Foo [@@argle];|foo} ;
+     o_output = OK {foo|open Foo[@@argle];;
+|foo};
+     official_output = OK {foo|open Foo[@@argle ]|foo};
+     r_output = OK {foo|open Foo[@@argle];
+|foo}
     }
 ]
 ;

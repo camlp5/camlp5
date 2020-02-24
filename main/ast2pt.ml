@@ -1321,7 +1321,7 @@ and str_item s l =
   | StInc loc me attrs →
       match ocaml_pstr_include with
       [ Some pstr_include →
-          [mkstr loc (pstr_include (mkloc loc) (module_expr me)) :: l]
+          [mkstr loc (pstr_include ~{item_attributes=item_attributes attrs} (mkloc loc) (module_expr me)) :: l]
       | None → error loc "no include in this ocaml version" ]
   | StMod loc rf nel →
       if not (uv rf) then
@@ -1354,7 +1354,7 @@ and str_item s l =
       [mkstr loc m :: l]
   | StOpn loc id attrs →
       [mkstr loc
-         (ocaml_pstr_open (mkloc loc) (long_id_of_string_list loc (uv id))) ::
+         (ocaml_pstr_open ~{item_attributes=item_attributes attrs} (mkloc loc) (long_id_of_string_list loc (uv id))) ::
        l]
   | StTyp loc flg tdl →
       [mkstr loc (ocaml_pstr_type (uv flg) (List.map mktype_decl (uv tdl))) :: l]

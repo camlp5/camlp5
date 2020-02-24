@@ -1760,16 +1760,16 @@ EXTEND_PRINTER
           exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
-      | <:str_item< include $me$ >> ->
-          pprintf pc "include %p" module_expr me
+      | <:str_item< include $me$ $_itemattrs:attrs$ >> ->
+          pprintf pc "include %p%p" module_expr me (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt, item_attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, item_attrs)) mdl in
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" False '=' pc (Some m, mt, item_attrs)
-      | <:str_item:< open $i$ >> ->
-          pprintf pc "open %p" mod_ident (loc, i)
+      | <:str_item:< open $i$ $_itemattrs:attrs$ >> ->
+          pprintf pc "open %p%p" mod_ident (loc, i) (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
       | <:str_item:< type $flag:nonrf$ $list:tdl$ >> ->
           pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl

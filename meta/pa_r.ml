@@ -319,12 +319,12 @@ EXTEND
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) →
           <:str_item< external $lid:i$ : $t$ = $_list:pd$ >>
-      | "include"; me = module_expr → <:str_item< include $me$ >>
+      | "include"; me = module_expr ; attrs = item_attributes → <:str_item< include $me$ $_itemattrs:attrs$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
       | "module"; "type"; i = V ident "";  "="; mt = module_type ; attrs = item_attributes →
           <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
-      | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
+      | "open"; i = V mod_ident "list" "" ; attrs = item_attributes -> <:str_item< open $_:i$ $_itemattrs:attrs$ >>
       | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
           <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
       | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
