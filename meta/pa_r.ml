@@ -328,7 +328,6 @@ EXTEND
           <:str_item< module $_flag:r$ $_list:l$ >>
       | "module"; "type"; i = V ident "";  "="; mt = module_type ; attrs = item_attributes →
           <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
-      | "open0"; i = V mod_ident "list" "" ; attrs = item_attributes -> <:str_item< open0 $_:i$ $_itemattrs:attrs$ >>
       | "open"; ovf = V (FLAG "!") "!"; me = module_expr; attrs = item_attributes ->
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
       | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →

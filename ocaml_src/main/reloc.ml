@@ -447,9 +447,8 @@ and str_item floc sh =
              x2)
     | StMty (loc, x1, x2, x3) ->
         let loc = floc loc in StMty (loc, x1, module_type floc sh x2, x3)
-    | StOpn (loc, x1, x2) -> let loc = floc loc in StOpn (loc, x1, x2)
-    | StOpn2 (loc, x1, x2, x3) ->
-        let loc = floc loc in StOpn2 (loc, x1, module_expr floc sh x2, x3)
+    | StOpn (loc, x1, x2, x3) ->
+        let loc = floc loc in StOpn (loc, x1, module_expr floc sh x2, x3)
     | StTyp (loc, x1, x2) ->
         let loc = floc loc in
         StTyp (loc, x1, vala_map (List.map (type_decl floc sh)) x2)
