@@ -1244,7 +1244,11 @@ and sig_item s l =
   | SgVal loc n t attrs →
       let vn = uv n in
       [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t [])) :: l]
-  | SgXtr loc _ _ → error loc "bad ast SgXtr" ]
+  | SgXtr loc _ _ → error loc "bad ast SgXtr"
+  | SgFlAtt loc float_attr →
+      [mksig loc
+         (ocaml_psig_attribute (attr (uv float_attr))) ::
+       l] ]
 and module_expr =
   fun
   [ MeAtt loc e a ->
@@ -1364,7 +1368,11 @@ and str_item s l =
         (fun () → List.fold_right (fun (si, _) → str_item si) (uv sl) l) ()
   | StVal loc rf pel →
       [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l]
-  | StXtr loc _ _ → error loc "bad ast StXtr" ]
+  | StXtr loc _ _ → error loc "bad ast StXtr"
+  | StFlAtt loc float_attr →
+      [mkstr loc
+         (ocaml_pstr_attribute (attr (uv float_attr))) ::
+       l] ]
 and class_type =
   fun
   [ CtAtt loc e a ->
@@ -1437,6 +1445,10 @@ and class_sig_item c l =
       [ocaml_class_type_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
          (ocaml_pctf_virt
             (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
+       l]
+  | CgFlAtt loc float_attr →
+      [ocaml_class_type_field (mkloc loc)
+         (ocaml_pctf_attribute (attr (uv float_attr))) ::
        l] ]
 and class_expr =
   fun
@@ -1557,6 +1569,10 @@ and class_str_item c l =
       [ocaml_class_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
          (ocaml_pcf_virt
             (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
+       l]
+  | CrFlAtt loc float_attr →
+      [ocaml_class_field (mkloc loc)
+         (ocaml_pcf_attribute (attr (uv float_attr))) ::
        l] ]
 and item_attributes attrs =
   attrs |> uv |> List.map uv |> List.map attr

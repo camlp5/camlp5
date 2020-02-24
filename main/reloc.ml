@@ -471,7 +471,8 @@ and sig_item floc sh =
         SgVal loc x1 (ctyp floc sh x2) x3
     | SgXtr loc x1 x2 →
         let loc = floc loc in
-        SgXtr loc x1 (option_map (vala_map self) x2) ]
+        SgXtr loc x1 (option_map (vala_map self) x2)
+    | SgFlAtt loc a -> SgFlAtt (floc loc) a ]
 and with_constr floc sh =
   fun
   [ WcMod loc x1 x2 →
@@ -574,7 +575,8 @@ and str_item floc sh =
              x2)
     | StXtr loc x1 x2 →
         let loc = floc loc in
-        StXtr loc x1 (option_map (vala_map self) x2) ]
+        StXtr loc x1 (option_map (vala_map self) x2)
+    | StFlAtt loc a -> StFlAtt (floc loc) a ]
 and joinclause floc sh x =
   {jcLoc = floc x.jcLoc;
    jcVal =
@@ -644,7 +646,8 @@ and class_sig_item floc sh =
         CgVal loc x1 x2 x3 (ctyp floc sh x4) x5
     | CgVir loc x1 x2 x3 x4 →
         let loc = floc loc in
-        CgVir loc x1 x2 (ctyp floc sh x3) x4 ]
+        CgVir loc x1 x2 (ctyp floc sh x3) x4
+    | CgFlAtt loc a -> CgFlAtt (floc loc) a ]
 and class_expr floc sh =
   self where rec self =
     fun
@@ -703,7 +706,8 @@ and class_str_item floc sh =
         CrVav loc x1 x2 (ctyp floc sh x3) x4
     | CrVir loc x1 x2 x3 x4 →
         let loc = floc loc in
-        CrVir loc x1 x2 (ctyp floc sh x3) x4 ]
+        CrVir loc x1 x2 (ctyp floc sh x3) x4
+    | CrFlAtt loc a -> CrFlAtt (floc loc) a ]
 ;
 
 (* Equality over syntax trees *)

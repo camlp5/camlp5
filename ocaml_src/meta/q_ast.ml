@@ -370,6 +370,8 @@ module Meta_make (C : MetaSig) =
           let attrs = assert false in
           C.node "SgVal" [C.vala C.string s; ctyp t; attrs]
       | SgXtr (loc, s, _) -> C.xtr loc s
+      | SgFlAtt (loc, attr) ->
+          let attr = assert false in C.node "SgFlAtt" [attr]
     and with_constr =
       function
         WcMod (_, ls, me) ->
@@ -463,6 +465,8 @@ module Meta_make (C : MetaSig) =
                      C.tuple [patt p; expr e; attrs]))
                lpe]
       | StXtr (loc, s, _) -> C.xtr loc s
+      | StFlAtt (loc, attr) ->
+          let attr = assert false in C.node "StFlAtt" [attr]
     and joinclause x =
       C.record
         [record_label "jcLoc", C.loc_v ();
@@ -526,6 +530,8 @@ module Meta_make (C : MetaSig) =
       | CgVir (_, b, s, t, attrs) ->
           let attrs = assert false in
           C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
+      | CgFlAtt (loc, attr) ->
+          let attr = assert false in C.node "CgFlAtt" [attr]
     and class_expr =
       function
         CeAtt (_, e, att) -> assert false
@@ -578,6 +584,8 @@ module Meta_make (C : MetaSig) =
       | CrVir (_, b, s, t, attrs) ->
           let attrs = assert false in
           C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
+      | CrFlAtt (loc, attr) ->
+          let attr = assert false in C.node "CrFlAtt" [attr]
     ;;
   end
 ;;

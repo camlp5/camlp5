@@ -308,6 +308,10 @@ EXTEND
       Qast.Tuple [id; Qast.Node "PaAttr" [Qast.Loc; p; Qast.Option (Some e)]]
     ] ]
   ;
+  floating_attribute:
+  [ [ "[@@@" ; attr = SV attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   item_attribute:
   [ [ "[@@" ; attr = SV attribute_body "attribute"; "]" -> attr
     ] ]
@@ -388,7 +392,9 @@ EXTEND
       | "#"; s = SV STRING;
         sil = SV (LIST0 [ si = str_item → Qast.Tuple [si; Qast.Loc] ]) →
           Qast.Node "StUse" [Qast.Loc; s; sil]
-      | e = expr ; attrs = item_attributes → Qast.Node "StExp" [Qast.Loc; e; attrs] ] ]
+      | e = expr ; attrs = item_attributes → Qast.Node "StExp" [Qast.Loc; e; attrs]
+      | attr = floating_attribute ; ";" -> Qast.Node "StFlAtt" [Qast.Loc; attr]
+      ] ]
   ;
   rebind_exn:
     [ [ "="; a = SV mod_ident "list" "" → a
@@ -472,7 +478,9 @@ EXTEND
           Qast.Node "SgDir" [Qast.Loc; n; dp]
       | "#"; s = SV STRING;
         sil = SV (LIST0 [ si = sig_item → Qast.Tuple [si; Qast.Loc] ]) →
-          Qast.Node "SgUse" [Qast.Loc; s; sil] ] ]
+          Qast.Node "SgUse" [Qast.Loc; s; sil]
+      | attr = floating_attribute ; ";" -> Qast.Node "SgFlAtt" [Qast.Loc; attr]
+      ] ]
   ;
   mod_decl_binding:
     [ [ i = SV uidopt "uidopt"; mt = module_declaration ; attrs = item_attributes →
@@ -1184,7 +1192,9 @@ EXTEND
           Qast.Node "CrMth" [Qast.Loc; ovf; pf; l; topt; e; attrs]
       | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
           Qast.Node "CrCtr" [Qast.Loc; t1; t2; attrs]
-      | "initializer"; se = expr ; attrs = item_attributes → Qast.Node "CrIni" [Qast.Loc; se; attrs] ] ]
+      | "initializer"; se = expr ; attrs = item_attributes → Qast.Node "CrIni" [Qast.Loc; se; attrs]
+      | attr = floating_attribute ; ";" -> Qast.Node "CrFlAtt" [Qast.Loc; attr]
+      ] ]
   ;
   as_lident:
     [ [ "as"; i = LIDENT → mkident i ] ]
@@ -1243,7 +1253,9 @@ EXTEND
         t = ctyp ; attrs = item_attributes →
           Qast.Node "CgMth" [Qast.Loc; pf; l; t; attrs]
       | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
-          Qast.Node "CgCtr" [Qast.Loc; t1; t2; attrs] ] ]
+          Qast.Node "CgCtr" [Qast.Loc; t1; t2; attrs]
+      | attr = floating_attribute ; ";" -> Qast.Node "CgFlAtt" [Qast.Loc; attr]
+      ] ]
   ;
   class_description:
     [ [ vf = SV (FLAG "virtual"); n = SV LIDENT; ctp = class_type_parameters;

@@ -159,6 +159,7 @@ and sig_item =
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp * (string * payload) list
   | SgXtr of loc * string * sig_item option
+  | SgFlAtt of loc * (string * payload)
 and with_constr =
     WcMod of loc * string list * module_expr
   | WcMos of loc * string list * module_expr
@@ -195,6 +196,7 @@ and str_item =
   | StUse of loc * string * (str_item * loc) list
   | StVal of loc * bool * (patt * expr * (string * payload) list) list
   | StXtr of loc * string * str_item option
+  | StFlAtt of loc * (string * payload)
 and joinclause =
   { jcLoc : loc;
     jcVal : (loc * (loc * (loc * string) * patt option) list * expr) list }
@@ -221,6 +223,7 @@ and class_sig_item =
   | CgMth of loc * bool * string * ctyp * (string * payload) list
   | CgVal of loc * bool * bool * string * ctyp * (string * payload) list
   | CgVir of loc * bool * string * ctyp * (string * payload) list
+  | CgFlAtt of loc * (string * payload)
 and class_expr =
     CeApp of loc * class_expr * expr
   | CeCon of loc * string list * ctyp list
@@ -242,6 +245,7 @@ and class_str_item =
   | CrVal of loc * bool * bool * string * expr * (string * payload) list
   | CrVav of loc * bool * string * ctyp * (string * payload) list
   | CrVir of loc * bool * string * ctyp * (string * payload) list
+  | CrFlAtt of loc * (string * payload)
 and payload =
     StAttr of loc * str_item list
   | SiAttr of loc * sig_item list

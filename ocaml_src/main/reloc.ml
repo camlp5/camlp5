@@ -368,6 +368,7 @@ and sig_item floc sh =
         let loc = floc loc in SgVal (loc, x1, ctyp floc sh x2, x3)
     | SgXtr (loc, x1, x2) ->
         let loc = floc loc in SgXtr (loc, x1, option_map (vala_map self) x2)
+    | SgFlAtt (loc, a) -> SgFlAtt (floc loc, a)
   in
   self
 and with_constr floc sh =
@@ -465,6 +466,7 @@ and str_item floc sh =
              x2)
     | StXtr (loc, x1, x2) ->
         let loc = floc loc in StXtr (loc, x1, option_map (vala_map self) x2)
+    | StFlAtt (loc, a) -> StFlAtt (floc loc, a)
   in
   self
 and joinclause floc sh x =
@@ -528,6 +530,7 @@ and class_sig_item floc sh =
         let loc = floc loc in CgVal (loc, x1, x2, x3, ctyp floc sh x4, x5)
     | CgVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CgVir (loc, x1, x2, ctyp floc sh x3, x4)
+    | CgFlAtt (loc, a) -> CgFlAtt (floc loc, a)
   in
   self
 and class_expr floc sh =
@@ -584,6 +587,7 @@ and class_str_item floc sh =
         let loc = floc loc in CrVav (loc, x1, x2, ctyp floc sh x3, x4)
     | CrVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in CrVir (loc, x1, x2, ctyp floc sh x3, x4)
+    | CrFlAtt (loc, a) -> CrFlAtt (floc loc, a)
   in
   self
 ;;

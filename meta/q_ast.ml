@@ -358,8 +358,10 @@ module Meta_make (C : MetaSig) =
       | SgVal _ s t attrs →
           let attrs = assert False in
           C.node "SgVal" [C.vala C.string s; ctyp t; attrs]
-      | 
-          SgXtr loc s _ → C.xtr loc s ]
+      | SgXtr loc s _ → C.xtr loc s
+      | SgFlAtt loc attr ->
+          let attr = assert False in
+          C.node "SgFlAtt" [attr] ]
     and with_constr =
       fun
       [ WcMod _ ls me →
@@ -448,8 +450,10 @@ module Meta_make (C : MetaSig) =
              C.vala (C.list (fun (p, e, attrs) →
                let attrs = assert False in
                C.tuple [patt p; expr e; attrs])) lpe]
-      | 
-          StXtr loc s _ → C.xtr loc s ]
+      | StXtr loc s _ → C.xtr loc s
+      | StFlAtt loc attr ->
+          let attr = assert False in
+          C.node "StFlAtt" [attr] ]
     and joinclause x =
       C.record
         [(record_label "jcLoc", C.loc_v ());
@@ -513,7 +517,10 @@ module Meta_make (C : MetaSig) =
           C.node "CgVal" [C.vala C.bool mf; C.vala C.bool vf; C.vala C.string s; ctyp t; attrs]
       | CgVir _ b s t attrs →
           let attrs = assert False in
-          C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs] ]
+          C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
+      | CgFlAtt loc attr ->
+          let attr = assert False in
+          C.node "CgFlAtt" [attr] ]
     and class_expr =
       fun
       [ CeAtt _ e att -> assert False
@@ -561,7 +568,10 @@ module Meta_make (C : MetaSig) =
           C.node "CrVav" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CrVir _ b s t attrs →
           let attrs = assert False in
-          C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs] ]
+          C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
+      | CrFlAtt loc attr ->
+          let attr = assert False in
+          C.node "CrFlAtt" [attr] ]
     ;
   end
 ;

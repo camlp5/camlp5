@@ -163,7 +163,8 @@ and sig_item =
   | SgTyp of loc and V (list type_decl)
   | SgUse of loc and V string and V (list (sig_item * loc))
   | SgVal of loc and V string and ctyp and V (list (V (V string * payload)))
-  | SgXtr of loc and string and option (V sig_item) ]
+  | SgXtr of loc and string and option (V sig_item)
+  | SgFlAtt of loc and V (V string * payload) ]
 and with_constr =
   [ WcMod of loc and V (list string) and module_expr
   | WcMos of loc and V (list string) and module_expr
@@ -195,7 +196,8 @@ and str_item =
   | StTyp of loc and V bool and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr * V (list (V (V string * payload)))))
-  | StXtr of loc and string and option (V str_item) ]
+  | StXtr of loc and string and option (V str_item)
+  | StFlAtt of loc and V (V string * payload) ]
 and joinclause =
   { jcLoc : loc;
     jcVal :
@@ -225,7 +227,8 @@ and class_sig_item =
   | CgMth of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
     (* first mutable, then virtual *)
   | CgVal of loc and V bool and V bool and V string and ctyp and V (list (V (V string * payload)))
-  | CgVir of loc and V bool and V string and ctyp and V (list (V (V string * payload))) ]
+  | CgVir of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
+  | CgFlAtt of loc and V (V string * payload) ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and V (list string) and V (list ctyp)
@@ -244,7 +247,8 @@ and class_str_item =
       expr and V (list (V (V string * payload)))
   | CrVal of loc and V bool and V bool and V string and expr and V (list (V (V string * payload)))
   | CrVav of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
-  | CrVir of loc and V bool and V string and ctyp and V (list (V (V string * payload))) ]
+  | CrVir of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
+  | CrFlAtt of loc and V (V string * payload) ]
 
 and payload = [
   StAttr of loc and V (list str_item)

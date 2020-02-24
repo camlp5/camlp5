@@ -167,21 +167,10 @@ let ocaml_pcl_addattr attr
   {pcl_desc = pcl_desc; pcl_loc = pcl_loc;
    pcl_attributes = pcl_attributes @ [attr]}
 ;;
-let ocaml_sig_item_addattr attr =
-  function
-    {psig_desc =
-       Psig_value
-         {pval_name = pval_name; pval_type = pval_type; pval_prim = pval_prim;
-          pval_attributes = pval_attributes; pval_loc = pval_loc};
-     psig_loc = psig_loc} ->
-      {psig_desc =
-        Psig_value
-          {pval_name = pval_name; pval_type = pval_type;
-           pval_prim = pval_prim; pval_attributes = pval_attributes @ [attr];
-           pval_loc = pval_loc};
-       psig_loc = psig_loc}
-  | _ -> assert false
-;;
+let ocaml_psig_attribute attr = Psig_attribute attr;;
+let ocaml_pstr_attribute attr = Pstr_attribute attr;;
+let ocaml_pctf_attribute attr = Pctf_attribute attr;;
+let ocaml_pcf_attribute attr = Pcf_attribute attr;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}
