@@ -298,6 +298,10 @@ Grammar.safe_extend
      grammar_entry_create "item_attributes"
    and alg_attributes : 'alg_attributes Grammar.Entry.e =
      grammar_entry_create "alg_attributes"
+   and item_extension : 'item_extension Grammar.Entry.e =
+     grammar_entry_create "item_extension"
+   and alg_extension : 'alg_extension Grammar.Entry.e =
+     grammar_entry_create "alg_extension"
    and rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
    and mod_binding : 'mod_binding Grammar.Entry.e =
@@ -571,6 +575,28 @@ Grammar.safe_extend
                    (alg_attribute : 'alg_attribute Grammar.Entry.e))),
            (fun (l : 'alg_attribute list) (loc : Ploc.t) ->
               (l : 'alg_attributes)))]];
+    Grammar.extension (item_extension : 'item_extension Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[%%")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (e : 'attribute_body) _ (loc : Ploc.t) ->
+              (e : 'item_extension)))]];
+    Grammar.extension (alg_extension : 'alg_extension Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[%")))
+                (Grammar.s_nterm
+                   (attribute_body : 'attribute_body Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (e : 'attribute_body) _ (loc : Ploc.t) ->
+              (e : 'alg_extension)))]];
     Grammar.extension (functor_parameter : 'functor_parameter Grammar.Entry.e)
       None
       [None, None,
@@ -649,6 +675,12 @@ Grammar.safe_extend
               (MLast.MeAcc (loc, me1, me2) : 'module_expr)))];
        Some "simple", None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.MeExten (loc, e) : 'module_expr)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
@@ -719,6 +751,12 @@ Grammar.safe_extend
     Grammar.extension (str_item : 'str_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (item_extension : 'item_extension Grammar.Entry.e)),
+           (fun (e : 'item_extension) (loc : Ploc.t) ->
+              (MLast.StExten (loc, e) : 'str_item)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (floating_attribute : 'floating_attribute Grammar.Entry.e)),
@@ -1067,6 +1105,12 @@ Grammar.safe_extend
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.MtLid (loc, i) : 'module_type)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.MtExten (loc, e) : 'module_type)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.MtUid (loc, i) : 'module_type)))]];
@@ -1088,6 +1132,12 @@ Grammar.safe_extend
     Grammar.extension (sig_item : 'sig_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (item_extension : 'item_extension Grammar.Entry.e)),
+           (fun (e : 'item_extension) (loc : Ploc.t) ->
+              (MLast.SgExten (loc, e) : 'sig_item)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (floating_attribute : 'floating_attribute Grammar.Entry.e)),
@@ -2201,6 +2251,12 @@ Grammar.safe_extend
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.ExLid (loc, i) : 'expr)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.ExExten (loc, e) : 'expr)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("CHAR", "")),
            (fun (s : string) (loc : Ploc.t) ->
               (MLast.ExChr (loc, s) : 'expr)));
@@ -3100,6 +3156,12 @@ Grammar.safe_extend
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.TyLid (loc, i) : 'ctyp)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.TyExten (loc, e) : 'ctyp)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
            (fun _ (loc : Ploc.t) -> (MLast.TyAny loc : 'ctyp)));
         Grammar.production
@@ -3446,6 +3508,12 @@ Grammar.safe_extend
               (MLast.CeApp (loc, ce, e) : 'class_expr)))];
        Some "simple", None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.CeExten (loc, e) : 'class_expr)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
@@ -3545,6 +3613,12 @@ Grammar.safe_extend
     Grammar.extension (class_str_item : 'class_str_item Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (item_extension : 'item_extension Grammar.Entry.e)),
+           (fun (e : 'item_extension) (loc : Ploc.t) ->
+              (MLast.CrExten (loc, e) : 'class_str_item)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (floating_attribute : 'floating_attribute Grammar.Entry.e)),
@@ -3833,6 +3907,12 @@ Grammar.safe_extend
               (MLast.CtAcc (loc, ct1, ct2) : 'class_type)))];
        Some "simple", None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.CtExten (loc, e) : 'class_type)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
@@ -3860,6 +3940,12 @@ Grammar.safe_extend
     Grammar.extension (class_sig_item : 'class_sig_item Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (item_extension : 'item_extension Grammar.Entry.e)),
+           (fun (e : 'item_extension) (loc : Ploc.t) ->
+              (MLast.CgExten (loc, e) : 'class_sig_item)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (floating_attribute : 'floating_attribute Grammar.Entry.e)),

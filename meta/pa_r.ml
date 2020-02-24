@@ -278,6 +278,14 @@ EXTEND
   [ [ l = V (LIST0 alg_attribute) "algattrs" -> l ]
   ]
   ;
+  item_extension:
+  [ [ "[%%" ; e = V attribute_body "extension"; "]" -> e
+    ] ]
+  ;
+  alg_extension:
+  [ [ "[%" ; e = V attribute_body "extension"; "]" -> e
+    ] ]
+  ;
   functor_parameter:
     [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
@@ -306,7 +314,9 @@ EXTEND
           <:module_expr< (value $e$) >>
       | "("; me = SELF; ":"; mt = module_type; ")" →
           <:module_expr< ( $me$ : $mt$ ) >>
-      | "("; me = SELF; ")" → <:module_expr< $me$ >> ] ]
+      | "("; me = SELF; ")" → <:module_expr< $me$ >>
+      | e = alg_extension -> <:module_expr< [% $_extension:e$ ] >>
+      ] ]
   ;
   structure:
     [ [ st = V (LIST0 [ s = str_item; ";" → s ]) → st ] ]
@@ -340,6 +350,7 @@ EXTEND
           <:str_item< # $_str:s$ $_list:sil$ >>
       | e = expr ; attrs = item_attributes → <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:str_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   rebind_exn:
@@ -383,6 +394,7 @@ EXTEND
     | [ m1 = SELF; "."; m2 = SELF → <:module_type< $m1$ . $m2$ >> ]
     | "simple"
       [ i = V UIDENT → <:module_type< $_uid:i$ >>
+      | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
       | i = V LIDENT → <:module_type< $_lid:i$ >>
       | "'"; i = V ident "" → <:module_type< ' $_:i$ >>
       | "("; mt = SELF; ")" → <:module_type< $mt$ >> ] ]
@@ -420,6 +432,7 @@ EXTEND
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →
           <:sig_item< # $_str:s$ $_list:sil$ >>
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:sig_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   mod_decl_binding:
@@ -570,6 +583,7 @@ EXTEND
       | s = V FLOAT → <:expr< $_flo:s$ >>
       | s = V STRING → <:expr< $_str:s$ >>
       | s = V CHAR → <:expr< $_chr:s$ >>
+      | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | i = V LIDENT → <:expr< $_lid:i$ >>
       | i = V GIDENT → <:expr< $_lid:i$ >>
       | i = V UIDENT → <:expr< $_uid:i$ >>
@@ -794,6 +808,7 @@ EXTEND
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
       | i = GIDENT → <:ctyp< '$greek_ascii_equiv i$ >>
       | "_" → <:ctyp< _ >>
+      | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | i = V LIDENT → <:ctyp< $_lid:i$ >>
       | i = V UIDENT → <:ctyp< $_uid:i$ >>
       | "module"; mt = module_type → <:ctyp< module $mt$ >>
@@ -907,7 +922,9 @@ EXTEND
           <:class_expr< [ $_list:ctcl$ ] $_list:ci$ >>
       | "("; ce = SELF; ":"; ct = class_type; ")" →
           <:class_expr< ($ce$ : $ct$) >>
-      | "("; ce = SELF; ")" → ce ] ]
+      | "("; ce = SELF; ")" → ce
+      | e = alg_extension -> <:class_expr< [% $_extension:e$ ] >>
+      ] ]
   ;
   class_structure:
     [ [ cf = V (LIST0 [ cf = class_str_item; ";" → cf ]) → cf ] ]
@@ -938,6 +955,7 @@ EXTEND
           <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
       | "initializer"; se = expr ; attrs = item_attributes → <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:class_str_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:class_str_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   as_lident:
@@ -977,7 +995,9 @@ EXTEND
     | "simple"
       [ i = V LIDENT "id" → <:class_type< $_id:i$ >>
       | i = V UIDENT "id" → <:class_type< $_id:i$ >>
-      | "("; ct = SELF; ")" → ct ] ]
+      | "("; ct = SELF; ")" → ct
+      | e = alg_extension -> <:class_type< [% $_extension:e$ ] >>
+ ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" → t ] ]
@@ -998,6 +1018,7 @@ EXTEND
       | "type"; t1 = ctyp; "="; t2 = ctyp →
           <:class_sig_item< type $t1$ = $t2$ >>
       | attr = floating_attribute -> <:class_sig_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:class_sig_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   class_description:
