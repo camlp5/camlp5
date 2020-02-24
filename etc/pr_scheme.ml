@@ -1072,8 +1072,8 @@ EXTEND_PRINTER
           class_decl_list pc cdl
       | <:str_item< class type $list:ctdl$ >> ->
           class_type_decl_list pc ctdl
-      | <:str_item< open $i$ >> ->
-          plistb longident 0 (paren pc "open") [(i, "")]
+      | <:str_item< open $me$ >> ->
+          plistb module_expr 0 (paren pc "open") [(me, "")]
       | <:str_item< include $me$ >> ->
           plistb module_expr 0 (paren pc "include") [(me, "")]
       | <:str_item< type $list:tdl$ >> ->

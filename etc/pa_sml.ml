@@ -879,8 +879,8 @@ EXTEND
               x1
           in
           str_declare loc dl
-      | "open"; x1 = LIST1 sqid ->
-          let dl = List.map (fun sl -> <:str_item< open $sl$ >>) x1 in
+      | "open"; x1 = LIST1 module_expr ->
+          let dl = List.map (fun me -> <:str_item< open $me$ >>) x1 in
           str_declare loc dl
       | LIDENT "use"; s = STRING ->
           <:str_item< #use $str:s$ >>

@@ -257,8 +257,7 @@ and str_item_se se =
       let mb = module_binding_se se in
       <:str_item< module $uid:i$ = $mb$ >>
   | Sexpr loc [Satom _ Alid "open"; Satom _ Auid s] →
-      let s = [s] in
-      <:str_item< open $s$ >>
+      <:str_item< open $uid:s$ >>
   | Sexpr loc [Satom _ Alid "type" :: sel] →
       let tdl = type_declaration_list_se sel in
       <:str_item< type $list:tdl$ >>

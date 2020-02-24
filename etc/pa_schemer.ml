@@ -860,8 +860,8 @@ and str_item_se se =
       let mt = module_type_se se2 in
       <:str_item< module type $_:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] →
-      let s = anti_longident_se se in
-      <:str_item< open $_:s$ >>
+      let me = module_expr_se se in
+      <:str_item< open $me$ >>
   | Sexpr loc [Slid _ "type" :: sel] →
       let tdl = type_declaration_list_se sel in
       <:str_item< type $list:tdl$ >>
