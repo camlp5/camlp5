@@ -212,15 +212,21 @@ value warning_deprecated_since_6_00 loc =
   else ()
 ;
 
+value build_op_attributed loc op attrs =
+  List.fold_left (fun e a -> <:expr< $e$ [@ $attribute:a$ ] >>)
+          <:expr< $lid:op$ >> attrs  
+;
+
 value build_letop_binder loc letop b l e =
-  let (argpat, argexp, argattrs) = (* TODO FIX THIS CHET *)
-    List.fold_left (fun (argpat, argexp, argattrs) (andop, (pat, exp, attrs)) ->
-        let argattrs = Pcaml.unvala argattrs in
-        let attrs = Pcaml.unvala attrs in
-        let attrs = argattrs @ attrs in
-        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>, Ploc.VaVal attrs))
-      b l in
-  <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
+  let (firstpat, firstarg, firstattrs) = b in
+  let (argpat, argexp) = (* TODO FIX THIS CHET *)
+    List.fold_left (fun (argpat, argexp) (andop, (pat, exp, attrs)) ->
+        let attrs = List.map Pcaml.unvala (Pcaml.unvala attrs) in
+        let andop = build_op_attributed loc andop attrs in
+        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $andop$ $argexp$ $exp$ >>))
+      (firstpat,firstarg) l in
+  let letop = build_op_attributed loc letop (List.map Pcaml.unvala (Pcaml.unvala firstattrs)) in
+  <:expr< $letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
