@@ -251,7 +251,9 @@ value rec class_longident pc cl =
   | [c :: cl] -> pprintf pc "%s.%p" c class_longident cl ]
 ;
 
-value binding elem pc (p, e) = pprintf pc "%p =@;%p" patt p expr e;
+value binding elem pc (p, e, item_attrs) =
+  pprintf pc "%p =@;%p%p" patt p expr e
+    (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs);
 value field pc (s, t) = pprintf pc "%s :@;%p" s ctyp t;
 value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 

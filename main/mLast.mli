@@ -105,7 +105,7 @@ and expr =
   | ExJdf of loc and V (list joinclause) and expr
   | ExLab of loc and V (list (patt * V (option expr)))
   | ExLaz of loc and expr
-  | ExLet of loc and V bool and V (list (patt * expr)) and expr
+  | ExLet of loc and V bool and V (list (patt * expr * V (list (V (V string * payload))))) and expr
   | ExLid of loc and V string
   | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and module_expr and expr
@@ -194,7 +194,7 @@ and str_item =
   | StOpn of loc and V (list string)
   | StTyp of loc and V bool and V (list type_decl)
   | StUse of loc and V string and V (list (str_item * loc))
-  | StVal of loc and V bool and V (list (patt * expr))
+  | StVal of loc and V bool and V (list (patt * expr * V (list (V (V string * payload)))))
   | StXtr of loc and string and option (V str_item) ]
 and joinclause =
   { jcLoc : loc;
@@ -230,7 +230,7 @@ and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and V (list string) and V (list ctyp)
   | CeFun of loc and patt and class_expr
-  | CeLet of loc and V bool and V (list (patt * expr)) and class_expr
+  | CeLet of loc and V bool and V (list (patt * expr * V (list (V (V string * payload))))) and class_expr
   | CeStr of loc and V (option patt) and V (list class_str_item)
   | CeTyc of loc and class_expr and class_type
   | CeXtr of loc and string and option (V class_expr)

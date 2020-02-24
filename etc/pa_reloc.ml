@@ -180,7 +180,7 @@ value gen_reloc loc tdl =
                else e
              in
              let e = <:expr< fun floc sh -> $e$ >> in
-             (<:patt< $lid:tn$ >>, e))
+             (<:patt< $lid:tn$ >>, e, <:vala< [] >>))
           tdl
       in
       <:str_item< value rec $list:pel$ >>

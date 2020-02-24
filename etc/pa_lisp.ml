@@ -246,7 +246,7 @@
  value_binding_se
  (lambda_match
   ((list se1 se2 :: sel)
-   (list (, (ipatt_se se1) (expr_se se2)) :: (value_binding_se sel)))
+   (list (, (ipatt_se se1) (expr_se se2) <:vala< (list) >>) :: (value_binding_se sel)))
   ((list) (list))
   ((list se :: _) (error se "value_binding")))
  module_binding_se
@@ -302,7 +302,7 @@
           ((list (Sexpr _ sel1) :: sel2)
            (List.fold_right
             (lambda (se ek)
-              (let (((, p e) (let_binding_se se)))
+              (let (((, p e _) (let_binding_se se)))
                 <:expr< let $p$ = $e$ in $ek$ >>))
             sel1 (progn_se loc sel2)))
           ((list se :: _) (error se "let_binding"))
@@ -372,7 +372,7 @@
      ((sel) (let ((el (List.map expr_se sel))) <:expr< do { $list:el$ } >>))))
  let_binding_se
  (lambda_match
-  ((Sexpr loc (list se1 se2)) (, (ipatt_se se1) (expr_se se2)))
+  ((Sexpr loc (list se1 se2)) (, (ipatt_se se1) (expr_se se2) <:vala< (list)>>))
   (se (error se "let_binding")))
  match_case
  (lambda loc

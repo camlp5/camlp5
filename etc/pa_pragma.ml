@@ -1134,7 +1134,7 @@ and eval_let loc env rf pel e =
     let extra_env =
       loop [] pel where rec loop extra_env =
         fun
-        [ [(p, e) :: pel] ->
+        [ [(p, e, _) :: pel] ->
             let extra_env =
               match p with
               [ <:patt< $lid:s$ >> ->
@@ -1155,7 +1155,7 @@ and eval_let loc env rf pel e =
     let new_env =
       loop env pel where rec loop new_env =
         fun
-        [ [(p, e) :: pel] ->
+        [ [(p, e, _) :: pel] ->
             let v = eval_expr env e in
             let new_env =
               loop new_env v p where rec loop new_env v =

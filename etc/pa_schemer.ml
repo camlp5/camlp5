@@ -826,7 +826,7 @@ and str_item_se se =
       <:str_item< class $s$ [ $list:tpl$ ] = $ce$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] →
       let r = r = "definerec" in
-      let (p, e) = fun_binding_se se (begin_se loc sel) in
+      let (p, e, _) = fun_binding_se se (begin_se loc sel) in
       <:str_item< value $flag:r$ $p$ = $e$ >>
   | Sexpr loc [Slid _ ("define*" | "definerec*" as rf) :: sel] →
       let rf = rf = "definerec*" in
@@ -1052,7 +1052,7 @@ and expr_se =
       [ [Sexpr _ sel1 :: sel2] →
           List.fold_right
             (fun se ek →
-               let (p, e) = let_binding_se se in
+               let (p, e, _) = let_binding_se se in
                <:expr< let $p$ = $e$ in $ek$ >>)
             sel1 (begin_se loc sel2)
       | [se :: _] → error se "let_binding"
@@ -1173,13 +1173,13 @@ and let_binding_se =
   [ Sexpr loc [se :: sel] →
       let e = begin_se loc sel in
       match ipatt_opt_se se with
-      [ Left p → (p, e)
+      [ Left p → (p, e, <:vala< [] >>)
       | Right _ → fun_binding_se se e ]
   | se → error se "let_binding" ]
 and fun_binding_se se e =
   match se with
-  [ Sexpr _ [Slid _ "values" :: _] → (ipatt_se se, e)
-  | Sexpr _ [Slid _ ":"; _; _] → (ipatt_se se, e)
+  [ Sexpr _ [Slid _ "values" :: _] → (ipatt_se se, e, <:vala< [] >>)
+  | Sexpr _ [Slid _ ":"; _; _] → (ipatt_se se, e, <:vala< []>>)
   | Sexpr _ [se1 :: sel] →
       match ipatt_opt_se se1 with
       [ Left p →
@@ -1193,9 +1193,9 @@ and fun_binding_se se e =
                  <:expr< fun $p$ -> $e$ >>)
               sel e
           in
-          (p, e)
-      | Right _ → (ipatt_se se, e) ]
-  | _ → (ipatt_se se, e) ]
+          (p, e, <:vala< [] >>)
+      | Right _ → (ipatt_se se, e, <:vala< [] >>) ]
+  | _ → (ipatt_se se, e, <:vala< [] >>) ]
 and match_case loc =
   fun
   [ Sexpr loc [Sexpr _ [Slid _ "when"; se; sew] :: sel] →

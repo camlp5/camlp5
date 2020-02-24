@@ -1076,9 +1076,14 @@ value ocaml_pexp_variant =
   END
 ;
 
-value ocaml_value_binding loc p e =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN (p, e)
-  ELSE {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = []} END
+value ocaml_value_binding ?{item_attributes=[]} loc p e =
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    do { assert (item_attributes = []) ;
+    (p, e)
+    }
+  ELSE
+    {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
+  END
 ;
 
 value ocaml_ppat_alias p i iloc = Ppat_alias p (mkloc iloc i);

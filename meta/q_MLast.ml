@@ -831,7 +831,7 @@ EXTEND
       | e = expr → Qast.List [e] ] ]
   ;
   let_binding:
-    [ [ p = ipatt; e = fun_binding → Qast.Tuple [p; e] ] ]
+    [ [ p = ipatt; e = fun_binding ; attrs = SV (LIST0 item_attribute) → Qast.Tuple [p; e; attrs] ] ]
   ;
   fun_binding:
     [ RIGHTA

@@ -62,7 +62,7 @@ and alt 'a 'b =
 
 value rec get_globals =
   fun
-  [ [(<:patt< _ >>, <:expr< ($e$ : $uid:gmod1$.Entry.e '$_$) >>) :: pel] ->
+  [ [(<:patt< _ >>, <:expr< ($e$ : $uid:gmod1$.Entry.e '$_$) >>, _) :: pel] ->
       let (gmod, gl) = get_globals pel in
       if gmod = "" || gmod = gmod1 then (gmod1, [e :: gl])
       else raise Not_found
@@ -72,7 +72,7 @@ value rec get_globals =
 
 value rec get_locals =
   fun
-  [ [(<:patt< $_$ >>, <:expr< (grammar_entry_create $_$ : $_$) >>) :: pel] ->
+  [ [(<:patt< $_$ >>, <:expr< (grammar_entry_create $_$ : $_$) >>, _) :: pel] ->
       get_locals pel
   | [] -> ()
   | _ -> raise Not_found ]

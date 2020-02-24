@@ -325,7 +325,10 @@ value patt_as pc z =
    Some functions follow (some of them with '_binding' in their name) which
    use syntax or pretty printing shortcuts.
 *)
-value binding elem pc (p, e) = pprintf pc "%p =@;%p" patt p elem e;
+value binding elem pc (p, e, attrs) =
+  pprintf pc "%p =@;%p%p" patt p elem e
+  (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+;
 
 value record_binding is_last pc (p, e) =
   pprintf pc "%p =@;%q" patt p expr1 e (if is_last then pc.dang else ";")
@@ -363,7 +366,7 @@ value expr_with_comm_except_if_sequence pc e =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value let_binding pc (p, e) =
+value let_binding pc (p, e, attrs) =
   let (pl, e) =
     match p with
     [ <:patt< ($_$ : $_$) >> -> ([], e)
@@ -384,20 +387,24 @@ value let_binding pc (p, e) =
   let pc = {(pc) with dang = ""} in
   match pc.aft with
   [ "" ->
-      pprintf pc "%p =@;%q"
+      pprintf pc "%p =@;%q%p"
         (plistl simple_patt (patt_tycon tyo) 4) pl
         expr_with_comm_except_if_sequence e ""
+        (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
   | "in" ->
-      pprintf pc "@[<a>%p =@;%q@ @]"
+      pprintf pc "@[<a>%p =@;%q%p@ @]"
         (plistl simple_patt (patt_tycon tyo) 4) pl
         expr_with_comm_except_if_sequence e ""
+        (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
   | _ ->
-      pprintf pc "@[<a>%p =@;%q@;<0 0>@]"
+      pprintf pc "@[<a>%p =@;%q%p@;<0 0>@]"
         (plistl simple_patt (patt_tycon tyo) 4) pl
-        expr_with_comm_except_if_sequence e "" ]
+        expr_with_comm_except_if_sequence e ""
+        (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+  ]
 ;
 
-value letop_binding pc (_, (p, e)) = let_binding pc (p, e)
+value letop_binding pc (_, (p, e, attrs)) = let_binding pc (p, e, attrs)
 ;
 
 value match_assoc force_vertic pc ((p, w, e), is_last) =
@@ -1026,6 +1033,28 @@ value pr_letlike letop pc loc rf pel e =
           e)
 ;
 
+value is_op_attributed op_pred =
+  let rec oprec = fun [
+    <:expr< $lid:op$ >> -> op_pred op
+  | <:expr< $e$ [@ $attribute:_$ ] >> -> oprec e
+  | _ -> False ]
+  in oprec
+;
+
+value is_andop_attributed e = is_op_attributed is_andop e ;
+value is_letop_attributed e = is_op_attributed is_letop e ;
+
+value split_op_attributed op_pred =
+  let rec oprec acc = fun [
+    <:expr< $lid:op$ >> -> do { assert (op_pred op) ; (op, <:vala< acc >>) }
+  | <:expr< $e$ [@ $attribute:a$ ] >> -> oprec [<:vala< a >> :: acc] e
+  | _ -> assert False ]
+  in oprec []
+;
+
+value split_andop_attributed e = split_op_attributed is_andop e ;
+value split_letop_attributed e = split_op_attributed is_letop e ;
+
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
@@ -1200,13 +1229,15 @@ EXTEND_PRINTER
         let loc = MLast.loc_of_expr e0 in
           pr_letlike "let" pc loc rf pel e
 
-      | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
-           when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
+      | <:expr< $letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
+           when not Pcaml.flag_expand_letop_syntax.val && is_letop_attributed letop ->
         let loc = MLast.loc_of_expr e0 in
+        let (letop, letop_attrs) = split_letop_attributed letop in
         let rec deconstruct_ands acc = fun [
-              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
-                deconstruct_ands [ (andop, (pat2, e2)) :: acc ] (pat1, e1)
-            | (pat, exp) -> [ ("andop_unused", (pat, exp))::acc ]
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $andop$ $e1$ $e2$ >>) when is_andop_attributed andop ->
+                let (andop, attrs) = split_andop_attributed andop in
+                deconstruct_ands [ (andop, (pat2, e2, attrs)) :: acc ] (pat1, e1)
+            | (pat, exp) -> [ ("andop_unused", (pat, exp, letop_attrs))::acc ]
         ] in
         let pel = deconstruct_ands [] (bindpat, arg) in
           pr_letlike letop pc loc False pel body
@@ -1553,7 +1584,7 @@ EXTEND_PRINTER
                  | lp -> ([lp :: lpl], closed) ])
               lpl ([], False)
           in
-          let lxl = List.map (fun lx -> (lx, ";")) lpl in
+          let lxl = List.map (fun (a,b) -> ((a,b,<:vala< []>>), ";")) lpl in
           pprintf pc "@[<1>{%p%s}@]" (plist (binding patt) 0) lxl
             (if closed then "; _" else "")
       | <:patt< [| $list:pl$ |] >> ->

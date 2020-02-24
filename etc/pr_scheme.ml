@@ -177,7 +177,7 @@ value exception_decl pc (c, tl) =
      List.map (fun t -> (fun pc -> ctyp pc t, "")) tl]
 ;
 
-value value_binding b pc (p, e) =
+value value_binding b pc (p, e, _) =
   let (pl, e) = expr_fun_args e in
   horiz_vertic
     (fun () ->
@@ -216,7 +216,7 @@ value value_binding b pc (p, e) =
 value value_binding_list pc (rf, pel) =
   let b = if rf then "definerec" else "define" in
   match pel with
-  [ [(p, e)] -> value_binding b pc (p, e)
+  [ [((_, _, _) as x)] -> value_binding b pc x
   | _ ->
       horiz_vertic
         (fun () ->
@@ -225,7 +225,7 @@ value value_binding_list pc (rf, pel) =
            pprintf pc "(%s*@;<1 1>%p)" b (vlist (value_binding "")) pel) ]
 ;
 
-value let_binding pc (p, e) =
+value let_binding pc (p, e,_) =
   let (pl, e) = expr_fun_args e in
   plistf 0 (paren pc "")
     [(fun pc ->
@@ -670,10 +670,10 @@ EXTEND_PRINTER
                sprintf "%s\n%s" s1 s2)
       | <:expr< let $p1$ = $e1$ in $e2$ >> ->
           let (pel, e) =
-            loop [(p1, e1)] e2 where rec loop pel =
+            loop [(p1, e1, <:vala< [] >>)] e2 where rec loop pel =
               fun
               [ <:expr< let $p1$ = $e1$ in $e2$ >> ->
-                  loop [(p1, e1) :: pel] e2
+                  loop [(p1, e1, <:vala< [] >>) :: pel] e2
               | e -> (List.rev pel, e) ]
           in
           let b =

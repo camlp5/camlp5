@@ -105,9 +105,9 @@ value apply_bind loc e bl =
     fun
     [ [] -> e
     | [<:str_item< value $p1$ = $e1$ >> :: list] ->
-        loop_let e [(p1, e1)] list
+        loop_let e [(p1, e1, <:vala< [] >>)] list
     | [<:str_item< value rec $p1$ = $e1$ >> :: list] ->
-        loop_letrec e [(p1, e1)] list
+        loop_letrec e [(p1, e1, <:vala< [] >>)] list
     | [<:str_item< module $uid:s_argle$ = $me$ >> :: list] ->
         let e = <:expr< let module $uid:s_argle$ = $me$ in $e$ >> in
         loop e list
@@ -116,14 +116,14 @@ value apply_bind loc e bl =
   and loop_let e pel =
     fun
     [ [<:str_item< value $p1$ = $e1$ >> :: list] ->
-        loop_let e [(p1, e1) :: pel] list
+        loop_let e [(p1, e1, <:vala< [] >>) :: pel] list
     | list ->
         let e = <:expr< let $list:pel$ in $e$ >> in
         loop e list ]
   and loop_letrec e pel =
     fun
     [ [<:str_item< value rec $p1$ = $e1$ >> :: list] ->
-        loop_letrec e [(p1, e1) :: pel] list
+        loop_letrec e [(p1, e1, <:vala< [] >>) :: pel] list
     | list ->
         let e = <:expr< let rec $list:pel$ in $e$ >> in
         loop e list ]
@@ -258,7 +258,7 @@ value function_of_clause_list loc xl =
           in
           List.fold_right (fun s e -> <:expr< fun $lid:s$ -> $e$ >>) sl e ]
   in
-  (let loc = fname_loc in <:patt< $lid:fname$ >>, e)
+  (let loc = fname_loc in <:patt< $lid:fname$ >>, e, <:vala< [] >>)
 ;
 
 value record_expr loc x1 =
@@ -299,7 +299,7 @@ value record_expr loc x1 =
 ;
 
 value record_match_assoc loc lpl e =
-  if ocaml_records.val then (<:patt< { $list:lpl$ } >>, e)
+  if ocaml_records.val then (<:patt< { $list:lpl$ } >>, e, <:vala< [] >>)
   else
     let pl = List.map (fun (_, p) -> p) lpl in
     let e =
@@ -319,7 +319,7 @@ value record_match_assoc loc lpl e =
       <:expr< let v = $e$ in ($list:el$) >>
     in
     let p = <:patt< ($list:pl$) >> in
-    (p, e)
+    (p, e, <:vala< [] >>)
 ;
 
 value op =
@@ -553,21 +553,21 @@ EXTEND
             (fun pel x2 ->
                let loc =
                  match pel with
-                 [ [(p, _) :: _] ->
+                 [ [(p, _, _) :: _] ->
                      Ploc.encl (MLast.loc_of_patt p) (MLast.loc_of_expr x2)
                  | _ -> loc ]
                in
                match pel with
-               [ [(_, <:expr< fun [$list:_$] >>) :: _] ->
+               [ [(_, <:expr< fun [$list:_$] >>, _) :: _] ->
                    <:expr< let rec $list:pel$ in $x2$ >>
                | _ ->
                    let pel =
                      List.map
-                       (fun (p, e) ->
+                       (fun (p, e, _) ->
                           match p with
                           [ <:patt< { $list:lpl$ } >> ->
                               record_match_assoc (MLast.loc_of_patt p) lpl e
-                          | _ -> (p, e) ])
+                          | _ -> (p, e, <:vala< [] >>) ])
                        pel
                    in
                    <:expr< let $list:pel$ in $x2$ >> ])
@@ -630,7 +630,7 @@ EXTEND
   ;
   vb:
     [ [ "lazy"; x1 = patt; "="; x2 = expr -> not_impl loc "vb 1"
-      | x1 = patt; "="; x2 = expr -> (x1, x2) ] ]
+      | x1 = patt; "="; x2 = expr -> (x1, x2, <:vala< [] >>) ] ]
   ;
   constrain:
     [ [ -> None

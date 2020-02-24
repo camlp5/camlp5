@@ -374,7 +374,7 @@ pr_expr_fun_args.val :=
 ;
 
 type seq =
-  [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr) and seq
+  [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr * MLast.attributes) and seq
   | SE_let_module of Ploc.t and option (Ploc.vala string) and MLast.module_expr and seq
   | SE_let_open of Ploc.t and MLast.module_expr and seq
   | SE_closed of MLast.expr and seq
@@ -442,7 +442,7 @@ value sequencify e =
  *)
 value can_be_displayed_as_where rf pel e =
   match pel with
-  [ [(p, body)] ->
+  [ [(p, body, _)] ->
       let e1 =
         loop e where rec loop =
           fun
@@ -472,7 +472,7 @@ value expr_wh pc e = forward_expr_wh.val pc e;
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value value_or_let_binding sequence_box pc (p, e) =
+value value_or_let_binding sequence_box pc (p, e, attrs) =
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
@@ -501,8 +501,9 @@ value value_or_let_binding sequence_box pc (p, e) =
   in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p = %p%s" (hlistl patt patt_tycon) pl (comm_expr expr_wh)
-         e (if pc.aft = "in" then " " else ""))
+       pprintf pc "%p = %p%p%s" (hlistl patt patt_tycon) pl (comm_expr expr_wh)
+         e (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+         (if pc.aft = "in" then " " else ""))
     (fun () ->
        let patt_eq pc () =
          let pl = List.map (fun p -> (p, "")) pl in
@@ -510,12 +511,16 @@ value value_or_let_binding sequence_box pc (p, e) =
        in
        match sequencify e with
        [ Some se ->
-           sequence_box (fun pc () -> pprintf pc "%p " patt_eq ()) pc se
+           pprintf pc "%p%p"
+             (sequence_box (fun pc () -> pprintf pc "%p " patt_eq ())) se
+             (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
        | None ->
            if pc.aft = "" then
-             pprintf pc "%p@;%p" patt_eq () (comm_expr expr_wh) e
+             pprintf pc "%p@;%p%p" patt_eq () (comm_expr expr_wh) e
+               (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
            else
-             pprintf pc "@[<a>%p@;%p@ @]" patt_eq () (comm_expr expr_wh) e ])
+             pprintf pc "@[<a>%p@;%p%p@ @]" patt_eq () (comm_expr expr_wh) e
+               (hlist (pr_attribute "@@")) (Pcaml.unvala attrs) ])
 ;
 
 (* Pretty printing improvement (optional):
@@ -1240,6 +1245,28 @@ value map_option f =
   | None -> None ]
 ;
 
+value is_op_attributed op_pred =
+  let rec oprec = fun [
+    <:expr< $lid:op$ >> -> op_pred op
+  | <:expr< $e$ [@ $attribute:_$ ] >> -> oprec e
+  | _ -> False ]
+  in oprec
+;
+
+value is_andop_attributed e = is_op_attributed is_andop e ;
+value is_letop_attributed e = is_op_attributed is_letop e ;
+
+value split_op_attributed op_pred =
+  let rec oprec acc = fun [
+    <:expr< $lid:op$ >> -> do { assert (op_pred op) ; (op, <:vala< acc >>) }
+  | <:expr< $e$ [@ $attribute:a$ ] >> -> oprec [<:vala< a >> :: acc] e
+  | _ -> assert False ]
+  in oprec []
+;
+
+value split_andop_attributed e = split_op_attributed is_andop e ;
+value split_letop_attributed e = split_op_attributed is_letop e ;
+
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
@@ -1379,12 +1406,14 @@ EXTEND_PRINTER
               let pel = List.map (fun x -> ("and",x)) pel in
               pprintf pc "%p@ %p" (letop_up_to_in "let") (rf, pel) (comm_expr expr_wh)
                 e ]
-      | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >>
-           when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
+      | <:expr< $letop$ $arg$ (fun $bindpat$ -> $body$) >>
+           when not Pcaml.flag_expand_letop_syntax.val && is_letop_attributed letop ->
+        let (letop, letop_attrs) = split_letop_attributed letop in
         let rec deconstruct_ands acc = fun [
-              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $lid:andop$ $e1$ $e2$ >>) when is_andop andop ->
-                deconstruct_ands [ (andop, (pat2, e2)) :: acc ] (pat1, e1)
-            | (pat, exp) -> [ ("andop_unused", (pat, exp))::acc ]
+              (<:patt< ( $pat1$, $pat2$ ) >>, <:expr< $andop$ $e1$ $e2$ >>) when is_andop_attributed andop ->
+                let (andop, attrs) = split_andop_attributed andop in
+                deconstruct_ands [ (andop, (pat2, e2, attrs)) :: acc ] (pat1, e1)
+            | (pat, exp) -> [ ("andop_unused", (pat, exp, letop_attrs))::acc ]
         ] in
         let pel = deconstruct_ands [] (bindpat, arg) in
         pprintf pc "%p@ %p" (letop_up_to_in letop) (False, pel)

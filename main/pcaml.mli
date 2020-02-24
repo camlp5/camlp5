@@ -50,7 +50,7 @@ value expr : Grammar.Entry.e MLast.expr;
 value patt : Grammar.Entry.e MLast.patt;
 value ipatt : Grammar.Entry.e MLast.patt;
 value ctyp : Grammar.Entry.e MLast.ctyp;
-value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr);
+value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr * MLast.attributes);
 value type_decl : Grammar.Entry.e MLast.type_decl;
 value match_case :
   Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);

@@ -234,7 +234,9 @@ module Meta_make (C : MetaSig) =
       | ExLet _ b lpe e →
           C.node "ExLet"
             [C.vala C.bool b;
-             C.vala (C.list (fun (p, e) → C.tuple [patt p; expr e])) lpe;
+             C.vala (C.list (fun (p, e, attrs) →
+               let attrs = assert False in
+               C.tuple [patt p; expr e; attrs])) lpe;
              expr e]
       | ExLid _ s → C.node "ExLid" [C.vala C.string s]
       | ExLmd _ s me e →
@@ -435,7 +437,9 @@ module Meta_make (C : MetaSig) =
       | StVal _ b lpe →
           C.node "StVal"
             [C.vala C.bool b;
-             C.vala (C.list (fun (p, e) → C.tuple [patt p; expr e])) lpe]
+             C.vala (C.list (fun (p, e, attrs) →
+               let attrs = assert False in
+               C.tuple [patt p; expr e; attrs])) lpe]
       | 
           StXtr loc s _ → C.xtr loc s ]
     and joinclause x =
@@ -508,7 +512,9 @@ module Meta_make (C : MetaSig) =
       | CeLet _ b lpe ce →
           C.node "CeLet"
             [C.vala C.bool b;
-             C.vala (C.list (fun (p, e) → C.tuple [patt p; expr e])) lpe;
+             C.vala (C.list (fun (p, e, attrs) →
+               let attrs = assert False in
+               C.tuple [patt p; expr e; attrs])) lpe;
              class_expr ce]
       | CeStr _ op lcsi →
           C.node "CeStr"

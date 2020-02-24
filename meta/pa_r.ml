@@ -213,9 +213,12 @@ value warning_deprecated_since_6_00 loc =
 ;
 
 value build_letop_binder loc letop b l e =
-  let (argpat, argexp) =
-    List.fold_left (fun (argpat, argexp) (andop, (pat, exp)) ->
-        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>))
+  let (argpat, argexp, argattrs) = (* TODO FIX THIS CHET *)
+    List.fold_left (fun (argpat, argexp, argattrs) (andop, (pat, exp, attrs)) ->
+        let argattrs = Pcaml.unvala argattrs in
+        let attrs = Pcaml.unvala attrs in
+        let attrs = argattrs @ attrs in
+        (<:patt< ( $argpat$, $pat$ ) >>, <:expr< $lid:andop$ $argexp$ $exp$ >>, Ploc.VaVal attrs))
       b l in
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
@@ -589,7 +592,7 @@ EXTEND
       | e = expr → [e] ] ]
   ;
   let_binding:
-    [ [ p = ipatt; e = fun_binding → (p, e) ] ]
+    [ [ p = ipatt; e = fun_binding ; attrs = V (LIST0 item_attribute) → (p, e, attrs) ] ]
   ;
   fun_binding:
     [ RIGHTA

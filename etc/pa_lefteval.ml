@@ -180,7 +180,7 @@ value rec expr x =
     <:expr< $flo:_$ >> | <:expr< new $list:_$ >> ->
       x
   | x -> not_impl "expr" x ]
-and let_binding (p, e) = (p, expr e)
+and let_binding (p, e, attrs) = (p, expr e, attrs)
 and match_assoc (p, eo, e) = (p, map_vala (map_option expr) eo, expr e)
 and module_expr x =
   let loc = MLast.loc_of_module_expr x in

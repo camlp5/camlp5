@@ -240,7 +240,7 @@ value gen_ast loc tdl =
           (fun td ->
              let tn = Pcaml.unvala (snd (Pcaml.unvala td.MLast.tdNam)) in
              let e = expr_of_type_decl loc td in
-             (<:patt< $lid:tn$ >>, e))
+             (<:patt< $lid:tn$ >>, e, <:vala< [] >>))
           tdl
       in
       <:str_item<

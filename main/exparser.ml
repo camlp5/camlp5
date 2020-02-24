@@ -65,7 +65,7 @@ value rec handle_failure e =
          | _ -> False ])
         pel
   | <:expr< let $list:pel$ in $e$ >> ->
-      List.for_all (fun (p, e) -> handle_failure e) pel && handle_failure e
+      List.for_all (fun (p, e, _) -> handle_failure e) pel && handle_failure e
   | <:expr< do { $list:el$ } >> -> List.for_all handle_failure el
   | <:expr< $uid:_$ . $_$ >> | <:expr< $lid:_$ >> | <:expr< $int:_$ >> |
     <:expr< $str:_$ >> | <:expr< $chr:_$ >> | <:expr< fun [ $list:_$ ] >> |
@@ -102,9 +102,9 @@ value rec subst v e =
   | <:expr:< $e1$ $e2$ >> -> <:expr< $subst v e1$ $subst v e2$ >>
   | <:expr:< ( $list:el$ ) >> -> <:expr< ( $list:List.map (subst v) el$ ) >>
   | _ -> raise Not_found ]
-and subst_pe v (p, e) =
+and subst_pe v (p, e, attrs) =
   match p with
-  [ <:patt< $lid:v'$ >> when v <> v' -> (p, subst v e)
+  [ <:patt< $lid:v'$ >> when v <> v' -> (p, subst v e, attrs)
   | _ -> raise Not_found ]
 ;
 

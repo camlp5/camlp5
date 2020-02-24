@@ -439,6 +439,17 @@ and t2 = bool[@@foo];
      official_output = OK {foo|class c = object  end[@@argle ]|foo} ;
      r_output = OK {foo|class c = object  end[@@argle];
 |foo}
+    };
+    {name="let-binding-item-attributes1"; implem = True ;
+     o_input = OK {foo|let x = 1 [@@argle] in 2|foo} ;
+     official_input = OK {foo|let x = 1 [@@argle] in 2|foo} ;
+     r_input = OK {foo|let x = 1 [@@argle] in 2;|foo} ;
+     o_output = OK {foo|let _ = let x = 1[@@argle] in 2;;
+|foo};
+     official_output = OK {foo|;;let x = 1[@@argle ] in 2|foo};
+     r_output = OK {foo|let x = 1[@@argle] in
+2;
+|foo}
     }
 ]
 ;

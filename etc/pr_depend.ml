@@ -169,7 +169,7 @@ and expr_module =
   fun
   [ <:expr< $uid:m$ >> -> addmodule m
   | e -> expr e ]
-and let_binding (p, e) = do { patt p; expr e }
+and let_binding (p, e, _) = do { patt p; expr e }
 and label_expr (p, e) = do { patt p; expr e }
 and match_case (p, w, e) = do { patt p; vala (option expr) w; expr e }
 and module_type =

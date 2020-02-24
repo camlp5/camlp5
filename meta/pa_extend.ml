@@ -250,7 +250,7 @@ module MetaAction =
       | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $mvala mstring s$ >>
       | MLast.ExLet loc rf pel e ->
           let rf = mvala mbool rf in
-          <:expr< MLast.ExLet $mloc$ $rf$ $mvala (mlist mpe) pel$ $mexpr e$ >>
+          <:expr< MLast.ExLet $mloc$ $rf$ $mvala (mlist mpea) pel$ $mexpr e$ >>
       | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $mvala mstring s$ >>
       | MLast.ExMat loc e pwel ->
           <:expr< MLast.ExMat $mloc$ $mexpr e$ $mvala (mlist mpwe) pwel$ >>
@@ -303,7 +303,12 @@ module MetaAction =
           <:expr< MLast.TyTup $mloc$ $mvala (mlist mctyp) tl$ >>
       | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mctyp" x ]
-    and mpe (p, e) = <:expr< ($mpatt p$, $mexpr e$) >>
+    and mpea (p, e, attrs) =
+      do { assert ([] = Pcaml.unvala attrs) ;
+      <:expr< ($mpatt p$, $mexpr e$, Ploc.VaVal []) >>
+      }
+    and mpe (p, e) =
+      <:expr< ($mpatt p$, $mexpr e$) >>
     and mpwe (p, w, e) =
       <:expr< ($mpatt p$, $mvala (moption mexpr) w$, $mexpr e$) >>;
   end
@@ -448,7 +453,7 @@ value quot_expr psl e =
         let el = List.map loop el in
         <:expr< Qast.Tuple $mklistexp loc el$ >>
     | <:expr< let $flag:r$ $list:pel$ in $e$ >> ->
-        let pel = List.map (fun (p, e) -> (p, loop e)) pel in
+        let pel = List.map (fun (p, e, attrs) -> (p, loop e, attrs)) pel in
         <:expr< let $flag:r$ $list:pel$ in $loop e$ >>
     | _ -> e ]
 ;
@@ -919,7 +924,7 @@ value let_in_of_extend loc gmod functor_version gl el args =
       let globals =
         List.map
           (fun {expr = e; tvar = x; loc = loc} ->
-             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>))
+             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>, <:vala< [] >>))
           nl
       in
       let locals =
@@ -933,7 +938,8 @@ value let_in_of_extend loc gmod functor_version gl el args =
              (<:patt< $lid:i$ >>,
               <:expr<
                 (grammar_entry_create $str:i$ : $uid:gmod$.Entry.e '$x$)
-              >>))
+              >>,
+             <:vala< [] >>))
           ll
       in
       let e =

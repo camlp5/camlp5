@@ -275,7 +275,7 @@ and str_item_se se =
       <:str_item< $exp:e$ >> ]
 and value_binding_se =
   fun
-  [ [se1; se2 :: sel] → [(ipatt_se se1, expr_se se2) :: value_binding_se sel]
+  [ [se1; se2 :: sel] → [(ipatt_se se1, expr_se se2, <:vala< [] >>) :: value_binding_se sel]
   | [] → []
   | [se :: _] → error se "value_binding" ]
 and module_binding_se se = module_expr_se se
@@ -327,7 +327,7 @@ and expr_se =
       [ [Sexpr _ sel1 :: sel2] →
           List.fold_right
             (fun se ek →
-               let (p, e) = let_binding_se se in
+               let (p, e, _) = let_binding_se se in
                <:expr< let $p$ = $e$ in $ek$ >>)
             sel1 (progn_se loc sel2)
       | [se :: _] → error se "let_binding"
@@ -404,7 +404,7 @@ and progn_se loc =
       <:expr< do { $list:el$ } >> ]
 and let_binding_se =
   fun
-  [ Sexpr loc [se1; se2] → (ipatt_se se1, expr_se se2)
+  [ Sexpr loc [se1; se2] → (ipatt_se se1, expr_se se2, <:vala< [] >>)
   | se → error se "let_binding" ]
 and match_case loc =
   fun

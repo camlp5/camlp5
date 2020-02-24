@@ -541,7 +541,7 @@
    ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
     (let*
      ((r (= r "definerec"))
-      ((values p e) (fun_binding_se se (begin_se loc sel))))
+      ((values p e _) (fun_binding_se se (begin_se loc sel))))
      <:str_item< value $flag:r$ $p$ = $e$ >>))
    ((Sexpr loc [(Slid _ (as (or "define*" "definerec*") rf)) . sel])
     (let* ((rf (= rf "definerec*")) (lbs (anti_list_map let_binding_se sel)))
@@ -741,7 +741,7 @@
      ([(Sexpr _ sel1) . sel2]
       (List.fold_right
        (lambda (se ek)
-        (let (((values p e) (let_binding_se se)))
+        (let (((values p e _) (let_binding_se se)))
          <:expr< let $p$ = $e$ in $ek$ >>))
        sel1 (begin_se loc sel2)))
      ([se . _] (error se "let_binding"))
@@ -847,13 +847,13 @@
    ((Sexpr loc [se . sel])
     (let ((e (begin_se loc sel)))
      (match (ipatt_opt_se se)
-      ((Left p) (values p e))
+      ((Left p) (values p e <:vala< [] >>))
       ((Right _) (fun_binding_se se e)))))
    (se (error se "let_binding"))))
  ((fun_binding_se se e)
   (match se
-   ((Sexpr _ [(Slid _ "values") . _]) (values (ipatt_se se) e))
-   ((Sexpr _ [(Slid _ ":") _ _]) (values (ipatt_se se) e))
+   ((Sexpr _ [(Slid _ "values") . _]) (values (ipatt_se se) e <:vala< [] >>))
+   ((Sexpr _ [(Slid _ ":") _ _]) (values (ipatt_se se) e <:vala< [] >>))
    ((Sexpr _ [se1 . sel])
     (match (ipatt_opt_se se1)
      ((Left p)
@@ -866,9 +866,9 @@
              (p (ipatt_se se)))
             <:expr< fun $p$ -> $e$ >>))
           sel e)))
-       (values p e)))
-     ((Right _) (values (ipatt_se se) e))))
-   (_ (values (ipatt_se se) e))))
+       (values p e <:vala< [] >>)))
+     ((Right _) (values (ipatt_se se) e <:vala< [] >>))))
+   (_ (values (ipatt_se se) e <:vala< [] >>))))
  ((match_case loc)
   (lambda_match
    ((Sexpr loc [(Sexpr _ [(Slid _ "when") se sew]) . sel])

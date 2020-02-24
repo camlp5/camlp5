@@ -4849,7 +4849,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
              (Grammar.s_nterm (fun_binding : 'fun_binding Grammar.Entry.e)),
            (fun (e : 'fun_binding) (p : 'ipatt) (loc : Ploc.t) ->
-              (Qast.Tuple [p; e] : 'let_binding)))]];
+              (Qast.Tuple [p; e; Qast.VaVal(Qast.List[])] : 'let_binding)))]];
     Grammar.extension (fun_binding : 'fun_binding Grammar.Entry.e) None
       [None, Some Gramext.RightA,
        [Grammar.production
