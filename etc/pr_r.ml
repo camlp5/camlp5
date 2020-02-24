@@ -1863,7 +1863,10 @@ EXTEND_PRINTER
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.StUse _ fn sl ->
           let pc = {(pc) with aft = ""} in
-          pprintf pc "" ] ]
+          pprintf pc ""
+      | <:str_item< [@@@ $_attribute:attr$ ]; >> ->
+          pprintf pc "%p" (pr_attribute "@@@") attr
+      ] ]
   ;
   pr_sig_item:
     [ "top"
@@ -1908,7 +1911,10 @@ EXTEND_PRINTER
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.SgUse _ fn sl ->
           let pc = {(pc) with aft = ""} in
-          pprintf pc "" ] ]
+          pprintf pc ""
+      | <:sig_item< [@@@ $_attribute:attr$ ]; >> ->
+          pprintf pc "%p" (pr_attribute "@@@") attr
+      ] ]
   ;
   pr_module_expr:
     [ "top"
