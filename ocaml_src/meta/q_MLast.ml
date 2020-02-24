@@ -1498,7 +1498,7 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "open2")))
+                      (Grammar.s_token ("", "open")))
                    (Grammar.s_facto
                       (Grammar.s_rules
                          [Grammar.production
@@ -1528,7 +1528,7 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open0")))
                 (Grammar.s_facto
                    (Grammar.s_rules
                       [Grammar.production

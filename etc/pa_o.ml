@@ -465,8 +465,8 @@ EXTEND
           <:str_item< module $_flag:r$ $_list:l$ >>
       | "module"; "type"; i = V ident ""; "="; mt = module_type ->
           <:str_item< module type $_:i$ = $mt$ >>
-      | "open"; i = V mod_ident "list" "" ; attrs = item_attributes ->
-          <:str_item< open $_:i$ $_itemattrs:attrs$ >>
+      | "open"; ovf = V (FLAG "!") "!"; me = module_expr ; attrs = item_attributes ->
+          <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
       | "type"; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_flag:nr$ $_list:tdl$ >>
       | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";

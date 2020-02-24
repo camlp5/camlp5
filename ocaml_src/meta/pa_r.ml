@@ -781,7 +781,7 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "open2")))
+                      (Grammar.s_token ("", "open")))
                    (Grammar.s_flag (Grammar.s_token ("", "!"))))
                 (Grammar.s_nterm
                    (module_expr : 'module_expr Grammar.Entry.e)))
@@ -793,7 +793,7 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open0")))
                 (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
