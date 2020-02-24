@@ -1254,10 +1254,10 @@ EXTEND
     ] ]
   ;
   class_sig_item:
-    [ [ "inherit"; cs = class_signature ->
-          <:class_sig_item< inherit $cs$ >>
-      | "val"; (mf, vf) = mut_virt; l = V LIDENT "lid" ""; ":"; t = ctyp ->
-        <:class_sig_item< value $flag:mf$ $flag:vf$ $_lid:l$ : $t$ >>
+    [ [ "inherit"; cs = class_signature ; attrs = item_attributes ->
+          <:class_sig_item< inherit $cs$ $_itemattrs:attrs$ >>
+      | "val"; (mf, vf) = mut_virt; l = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes ->
+        <:class_sig_item< value $flag:mf$ $flag:vf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
         t = poly_type ; attrs = item_attributes ->
           <:class_sig_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
@@ -1270,8 +1270,8 @@ EXTEND
           <:class_sig_item< method private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = item_attributes ->
           <:class_sig_item< method $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
-          <:class_sig_item< type $t1$ = $t2$ >> ] ]
+      | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
+          <:class_sig_item< type $t1$ = $t2$ $_itemattrs:attrs$ >> ] ]
   ;
   class_description:
     [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;

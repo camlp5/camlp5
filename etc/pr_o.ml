@@ -2558,13 +2558,14 @@ EXTEND_PRINTER
   ;
   pr_class_str_item:
     [ "top"
-      [ <:class_str_item< inherit $!:ovf$ $ce$ $opt:pb$ >> ->
-          pprintf pc "inherit%s@;%p@[%p@]" (if ovf then "!" else "") class_expr ce
+      [ <:class_str_item< inherit $!:ovf$ $ce$ $opt:pb$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "inherit%s@;%p@[%p%p@]" (if ovf then "!" else "") class_expr ce
             (fun pc ->
                fun
                [ Some s -> pprintf pc " as %s" s
                | None -> pprintf pc "" ])
             pb
+            (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< initializer $e$ >> ->
           pprintf pc "initializer@;%p" expr e
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
@@ -2589,14 +2590,17 @@ EXTEND_PRINTER
                 (if ov then "!" else "") (if priv then " private" else "") s
                 (if pl = [] then "" else " ") (hlist simple_patt) pl
                 poly_type t expr e (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs) ]
-      | <:class_str_item< type $t1$ = $t2$ >> ->
-          pprintf pc "constraint %p =@;%p" ctyp t1 ctyp t2
-      | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
-          pprintf pc "val%s%s %s =@;%p" (if ovf then "!" else "")
+      | <:class_str_item< type $t1$ = $t2$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "constraint %p =@;%p%p" ctyp t1 ctyp t2
+            (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
+      | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "val%s%s %s =@;%p%p" (if ovf then "!" else "")
             (if mf then " mutable" else "") s expr e
-      | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ >> ->
-          pprintf pc "val virtual%s %s :@;%p"
+            (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
+      | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "val virtual%s %s :@;%p%p"
             (if mf then " mutable" else "") s ctyp t
+            (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | z ->
           error (MLast.loc_of_class_str_item z)
             (sprintf "pr_class_str_item %d" (Obj.tag (Obj.repr z))) ] ]

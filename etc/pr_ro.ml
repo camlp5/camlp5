@@ -521,15 +521,16 @@ EXTEND_PRINTER
   ;
   pr_class_str_item:
     [ "top"
-      [ <:class_str_item< inherit $!:ovf$ $ce$ $opt:pb$ >> ->
-          pprintf pc "inherit%s@;%p%p" (if ovf then "!" else "") class_expr ce
+      [ <:class_str_item< inherit $!:ovf$ $ce$ $opt:pb$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "inherit%s@;%p%p%p" (if ovf then "!" else "") class_expr ce
             (fun pc ->
                fun
                [ Some s -> pprintf pc " as %s" s
                | None -> pprintf pc "" ])
             pb
-      | <:class_str_item< initializer $e$ >> ->
-          pprintf pc "initializer@;%p" expr e
+            (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
+      | <:class_str_item< initializer $e$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "initializer@;%p%p" expr e (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t item_attrs
       | <:class_str_item<
@@ -549,14 +550,17 @@ EXTEND_PRINTER
                [ Some t -> pprintf pc " : %p" ctyp t
                | None -> pprintf pc "" ])
             topt expr e (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
-      | <:class_str_item< type $t1$ = $t2$ >> ->
-          pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
-      | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ >> ->
-          pprintf pc "value%s%s %p =@;%p" (if ovf then "!" else "")
+      | <:class_str_item< type $t1$ = $t2$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "type %p =@;%p%p" ctyp t1 ctyp t2
+            (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
+      | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "value%s%s %p =@;%p%p" (if ovf then "!" else "")
             (if mf then " mutable" else "") var_escaped s expr e
-      | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ >> ->
-          pprintf pc "value virtual%s %s :@;%p"
+            (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
+      | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "value virtual%s %s :@;%p%p"
             (if mf then " mutable" else "") s ctyp t
+            (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | z ->
           Ploc.raise (MLast.loc_of_class_str_item z)
             (Failure
