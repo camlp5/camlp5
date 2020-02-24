@@ -591,8 +591,10 @@ let ocaml_pstr_exn_rebind =
 
 let ocaml_pstr_include =
   Some
-    (fun loc me ->
-       Pstr_include {pincl_mod = me; pincl_loc = loc; pincl_attributes = []})
+    (fun ?(item_attributes = []) loc me ->
+       Pstr_include
+         {pincl_mod = me; pincl_loc = loc;
+          pincl_attributes = item_attributes})
 ;;
 
 let ocaml_pstr_modtype ?(item_attributes = []) loc s mt =
@@ -611,12 +613,13 @@ let ocaml_pstr_module ?(item_attributes = []) loc (s : string option) me =
   Pstr_module mb
 ;;
 
-let ocaml_pstr_open loc li =
+let ocaml_pstr_open ?(item_attributes = []) loc li =
   Pstr_open
     {popen_expr =
       {pmod_desc = Pmod_ident (mknoloc li); pmod_loc = loc_none;
        pmod_attributes = []};
-     popen_override = Fresh; popen_loc = loc; popen_attributes = []}
+     popen_override = Fresh; popen_loc = loc;
+     popen_attributes = item_attributes}
 ;;
 
 let ocaml_pstr_primitive s vd = Pstr_primitive vd;;

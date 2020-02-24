@@ -185,12 +185,12 @@ and str_item =
         (string * payload) list
   | StExp of loc * expr * (string * payload) list
   | StExt of loc * string * ctyp * string list * (string * payload) list
-  | StInc of loc * module_expr
+  | StInc of loc * module_expr * (string * payload) list
   | StMod of
       loc * bool *
         (string option * module_expr * (string * payload) list) list
   | StMty of loc * string * module_type * (string * payload) list
-  | StOpn of loc * string list
+  | StOpn of loc * string list * (string * payload) list
   | StTyp of loc * bool * type_decl list
   | StUse of loc * string * (str_item * loc) list
   | StVal of loc * bool * (patt * expr * (string * payload) list) list
