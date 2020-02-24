@@ -258,6 +258,10 @@ EXTEND
       <:attribute_body< $_attrid:id$ ? $_patt:p$ when $_expr:e$ >>
     ] ]
   ;
+  floating_attribute:
+  [ [ "[@@@" ; attr = V attribute_body "attribute"; "]" -> attr
+    ] ]
+  ;
   alg_attribute:
   [ [ "[@" ; attr = V attribute_body "attribute"; "]" -> attr
     ] ]
@@ -333,7 +337,9 @@ EXTEND
           <:str_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = str_item → (si, loc) ]) →
           <:str_item< # $_str:s$ $_list:sil$ >>
-      | e = expr ; attrs = item_attributes → <:str_item< $exp:e$ $_itemattrs:attrs$ >> ] ]
+      | e = expr ; attrs = item_attributes → <:str_item< $exp:e$ $_itemattrs:attrs$ >>
+      | attr = floating_attribute ; ";" -> <:str_item< [@@@ $_attribute:attr$ ] ; >>
+      ] ]
   ;
   rebind_exn:
     [ [ "="; a = V mod_ident "list" "" → a
@@ -411,7 +417,9 @@ EXTEND
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →
-          <:sig_item< # $_str:s$ $_list:sil$ >> ] ]
+          <:sig_item< # $_str:s$ $_list:sil$ >>
+      | attr = floating_attribute ; ";" -> <:sig_item< [@@@ $_attribute:attr$ ] ; >>
+      ] ]
   ;
   mod_decl_binding:
     [ [ i = V uidopt "uidopt"; mt = module_declaration ; attrs = item_attributes → (i, mt, attrs) ] ]
@@ -927,7 +935,9 @@ EXTEND
             method $_!:ovf$ $_priv:pf$ $_lid:l$ $_opt:topt$ = $e$ $_itemattrs:attrs$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
           <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
-      | "initializer"; se = expr ; attrs = item_attributes → <:class_str_item< initializer $se$ $_itemattrs:attrs$ >> ] ]
+      | "initializer"; se = expr ; attrs = item_attributes → <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
+      | attr = floating_attribute ; ";" -> <:class_str_item< [@@@ $_attribute:attr$ ] ; >>
+      ] ]
   ;
   as_lident:
     [ [ "as"; i = LIDENT → mkident i ] ]
@@ -985,7 +995,9 @@ EXTEND
         t = ctyp ; attrs = item_attributes →
           <:class_sig_item< method $_flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp →
-          <:class_sig_item< type $t1$ = $t2$ >> ] ]
+          <:class_sig_item< type $t1$ = $t2$ >>
+      | attr = floating_attribute ; ";" -> <:class_sig_item< [@@@ $_attribute:attr$ ] ; >>
+      ] ]
   ;
   class_description:
     [ [ vf = V (FLAG "virtual"); n = V LIDENT; ctp = class_type_parameters;
