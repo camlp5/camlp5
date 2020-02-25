@@ -251,6 +251,9 @@ value attribute_body = Eprinter.apply pr_attribute_body;
 value pr_attribute atstring pc attr =
   pprintf pc "[%s%p]" atstring attribute_body (Pcaml.unvala attr)
 ;
+value pr_extension atstring pc attr =
+  pprintf pc "[%s%p]" atstring attribute_body (Pcaml.unvala attr)
+;
 
 value comm_bef pc loc =
   if flag_comments_in_phrases.val then Prtools.comm_bef pc.ind loc else ""
@@ -1471,6 +1474,8 @@ EXTEND_PRINTER
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> ->
           pprintf pc "\"%s\"" s
+      | <:expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:expr< $chr:s$ >> ->
           pprintf pc "'%s'" (ocaml_char s)
       | <:expr:< ?{$_$} >> | <:expr:< ~{$_$} >> | <:expr:< ~{$_$ = $_$} >> ->
@@ -1731,6 +1736,8 @@ EXTEND_PRINTER
           pprintf pc "'%p" var_escaped (loc, s)
       | <:ctyp< _ >> ->
           pprintf pc "_"
+      | <:ctyp< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:ctyp:< ?$_$: $_$ >> | <:ctyp:< ~$_$: $_$ >> ->
           error loc "labels not pretty printed (in type)"
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
@@ -1794,6 +1801,8 @@ EXTEND_PRINTER
           pprintf pc ""
       | <:str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
+      | <:str_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%%") e
       ] ]
   ;
   pr_sig_item:
@@ -1835,6 +1844,8 @@ EXTEND_PRINTER
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | <:sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
+      | <:sig_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%%") e
       ] ]
   ;
   pr_module_expr:
@@ -1889,6 +1900,8 @@ EXTEND_PRINTER
           pprintf pc "(val %p)" expr e
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
+      | <:module_expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:module_expr< functor $_fp:_$ -> $_$ >> |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
         <:module_expr< $_$ $_$ >> as z ->
@@ -1931,6 +1944,8 @@ EXTEND_PRINTER
     | "simple"
       [ <:module_type< $uid:s$ >> ->
           pprintf pc "%s" s
+      | <:module_type< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | z ->
           error (MLast.loc_of_module_type z)
             (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z))) ] ]
@@ -2491,6 +2506,8 @@ EXTEND_PRINTER
           class_object loc pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" class_expr ce class_type ct
+      | <:class_expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" class_expr z
       | z ->
@@ -2540,6 +2557,8 @@ EXTEND_PRINTER
       | <:class_type< $ct1$ . $ct2$ >> ->
           pprintf pc "%p.%p" curr ct1 curr ct2 ]
     | [ <:class_type< $id:id$ >> -> pprintf pc "%s" id
+      | <:class_type< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | z ->
           error (MLast.loc_of_class_type z)
             (sprintf "pr_class_type %d" (Obj.tag (Obj.repr z))) ] ]
@@ -2561,6 +2580,8 @@ EXTEND_PRINTER
             var_escaped (loc, s) ctyp t
       | <:class_sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
+      | <:class_sig_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%%") e
       | z ->
           error (MLast.loc_of_class_sig_item z)
             (sprintf "pr_class_sig_item %d" (Obj.tag (Obj.repr z))) ] ]
@@ -2612,6 +2633,8 @@ EXTEND_PRINTER
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
+      | <:class_str_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%%") e
       | z ->
           error (MLast.loc_of_class_str_item z)
             (sprintf "pr_class_str_item %d" (Obj.tag (Obj.repr z)))

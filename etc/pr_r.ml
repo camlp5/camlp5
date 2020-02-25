@@ -258,6 +258,9 @@ value attribute_body = Eprinter.apply pr_attribute_body;
 value pr_attribute atstring pc attr =
   pprintf pc "[%s%p]" atstring attribute_body (Pcaml.unvala attr)
 ;
+value pr_extension atstring pc attr =
+  pprintf pc "[%s%p]" atstring attribute_body (Pcaml.unvala attr)
+;
 
 value comm_bef pc loc =
   if flag_comments_in_phrases.val then Prtools.comm_bef pc.ind loc else ""
@@ -1598,6 +1601,8 @@ EXTEND_PRINTER
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> ->
           pprintf pc "\"%s\"" s
+      | <:expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:expr< $chr:s$ >> ->
           pprintf pc "'%s'" s
       | MLast.ExOlb loc _ _ | MLast.ExLab loc _ ->
@@ -1786,6 +1791,8 @@ EXTEND_PRINTER
           pprintf pc "%p" typevar s
       | <:ctyp< _ >> ->
           pprintf pc "_"
+      | <:ctyp< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:ctyp< ?$i$: $t$ >> | <:ctyp< ~$_$: $t$ >> ->
           failwith "labels not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
@@ -1867,6 +1874,8 @@ EXTEND_PRINTER
           pprintf pc ""
       | <:str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
+      | <:str_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%%") e
       ] ]
   ;
   pr_sig_item:
@@ -1915,6 +1924,8 @@ EXTEND_PRINTER
           pprintf pc ""
       | <:sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
+      | <:sig_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%%") e
       ] ]
   ;
   pr_module_expr:
@@ -1955,6 +1966,8 @@ EXTEND_PRINTER
           pprintf pc "(value %p)" expr e
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
+      | <:module_expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:module_expr< functor $_fp:_$ -> $_$ >> |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
         <:module_expr< $_$ $_$ >> as z ->
@@ -1997,6 +2010,8 @@ EXTEND_PRINTER
           pprintf pc "'%s" s
       | <:module_type< $_$ $_$ >> as z ->
           pprintf pc "(%p)" module_type z
+      | <:module_type< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | z ->
           Ploc.raise (MLast.loc_of_module_type z)
             (Failure (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z)))) ] ]

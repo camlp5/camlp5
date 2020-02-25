@@ -440,6 +440,8 @@ EXTEND_PRINTER
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" class_expr ce class_type ct
+      | <:class_expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (Pr_r.pr_extension "%") e
       | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" class_expr z
       | z ->
@@ -494,6 +496,8 @@ EXTEND_PRINTER
     | "simple"
       [ <:class_type< $id:s$ >> ->
           pprintf pc "%s" s
+      | <:class_type< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (Pr_r.pr_extension "%") e
       | <:class_type< $_$ $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" class_type z
       | z ->
@@ -517,6 +521,8 @@ EXTEND_PRINTER
             var_escaped s ctyp t
       | <:class_sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_attribute "@@@") attr
+      | <:class_sig_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (Pr_r.pr_extension "%%") e
       | z ->
           error (MLast.loc_of_class_sig_item z)
             (sprintf "pr_class_sig_item %d" (Obj.tag (Obj.repr z)))
@@ -566,6 +572,8 @@ EXTEND_PRINTER
             (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_attribute "@@@") attr
+      | <:class_str_item< [%% $_extension:e$ ] >> ->
+          pprintf pc "%p" (Pr_r.pr_extension "%%") e
       | z ->
           Ploc.raise (MLast.loc_of_class_str_item z)
             (Failure
