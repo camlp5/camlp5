@@ -1377,6 +1377,8 @@ EXTEND_PRINTER
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
+      | <:expr:< let exception $uid:e$ of $list:tl$ $algattrs:attrs$ in $x$ >> ->
+          pprintf pc "@[<a>let %p@ in@] %p" exception_decl (loc, e, tl, [], attrs, []) curr x
       | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se

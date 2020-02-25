@@ -225,6 +225,26 @@ value build_letop_binder loc letop b l e =
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
+value check_let_exception =
+  Grammar.Entry.of_parser gram "check_let_exception"
+    (fun strm ->
+       match Stream.npeek 2 strm with
+       [ [("", "let"); ("", "exception")] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_let_not_exception_f = (fun strm ->
+       match Stream.npeek 2 strm with
+       [ [("", "let"); ("", "exception")] -> raise Stream.Failure
+       | [("", "let"); _] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_let_not_exception =
+  Grammar.Entry.of_parser gram "check_let_not_exception"
+    check_let_not_exception_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -470,7 +490,14 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
+        "of" ; tyl = V (LIST1 ctyp_below_alg_attribute) ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
+        <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
+        "in" ; x = SELF ->
+        <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
+
+      | check_let_not_exception ; "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
 
@@ -478,9 +505,9 @@ EXTEND
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
-      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
+      | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
           <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
-      | "let"; "open"; m = module_expr; "in"; e = SELF →
+      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = SELF →
           <:expr< let open $m$ in $e$ >>
       | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = ipatt; e = fun_def → <:expr< fun $p$ → $e$ >>

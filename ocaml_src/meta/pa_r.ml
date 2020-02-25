@@ -252,6 +252,26 @@ let build_letop_binder loc letop b l e =
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
+let check_let_exception =
+  Grammar.Entry.of_parser gram "check_let_exception"
+    (fun strm ->
+       match Stream.npeek 2 strm with
+         ["", "let"; "", "exception"] -> ()
+       | _ -> raise Stream.Failure)
+;;
+
+let check_let_not_exception_f strm =
+  match Stream.npeek 2 strm with
+    ["", "let"; "", "exception"] -> raise Stream.Failure
+  | ["", "let"; _] -> ()
+  | _ -> raise Stream.Failure
+;;
+
+let check_let_not_exception =
+  Grammar.Entry.of_parser gram "check_let_not_exception"
+    check_let_not_exception_f
+;;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -1587,14 +1607,18 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_nterm
+                               (check_let_not_exception :
+                                'check_let_not_exception Grammar.Entry.e)))
                          (Grammar.s_token ("", "let")))
                       (Grammar.s_token ("", "open")))
                    (Grammar.s_nterm
                       (module_expr : 'module_expr Grammar.Entry.e)))
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
-           (fun (e : 'expr) _ (m : 'module_expr) _ _ (loc : Ploc.t) ->
+           (fun (e : 'expr) _ (m : 'module_expr) _ _ _ (loc : Ploc.t) ->
               (MLast.ExLop (loc, m, e) : 'expr)));
         Grammar.production
           (Grammar.r_next
@@ -1602,7 +1626,11 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_nterm
+                                  (check_let_not_exception :
+                                   'check_let_not_exception Grammar.Entry.e)))
                             (Grammar.s_token ("", "let")))
                          (Grammar.s_token ("", "module")))
                       (Grammar.s_nterm (uidopt : 'uidopt Grammar.Entry.e)))
@@ -1610,7 +1638,7 @@ Grammar.safe_extend
                       (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e)))
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
-           (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'uidopt) _ _
+           (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'uidopt) _ _ _
                 (loc : Ploc.t) ->
               (MLast.ExLmd (loc, m, mb, e) : 'expr)));
         Grammar.production
@@ -1635,7 +1663,11 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_nterm
+                               (check_let_not_exception :
+                                'check_let_not_exception Grammar.Entry.e)))
                          (Grammar.s_token ("", "let")))
                       (Grammar.s_flag (Grammar.s_token ("", "rec"))))
                    (Grammar.s_list1sep
@@ -1644,9 +1676,57 @@ Grammar.safe_extend
                       (Grammar.s_token ("", "and")) false))
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
-           (fun (x : 'expr) _ (l : 'let_binding list) (r : bool) _
+           (fun (x : 'expr) _ (l : 'let_binding list) (r : bool) _ _
                 (loc : Ploc.t) ->
-              (MLast.ExLet (loc, r, l, x) : 'expr)))];
+              (MLast.ExLet (loc, r, l, x) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_nterm
+                                  (check_let_exception :
+                                   'check_let_exception Grammar.Entry.e)))
+                            (Grammar.s_token ("", "let")))
+                         (Grammar.s_token ("", "exception")))
+                      (Grammar.s_token ("UIDENT", "")))
+                   (Grammar.s_nterm
+                      (alg_attributes : 'alg_attributes Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           (fun (x : 'expr) _ (alg_attrs : 'alg_attributes) (id : string) _ _
+                _ (loc : Ploc.t) ->
+              (MLast.ExLEx (loc, id, [], x, alg_attrs) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_nterm
+                                        (check_let_exception :
+                                         'check_let_exception
+                                           Grammar.Entry.e)))
+                                  (Grammar.s_token ("", "let")))
+                               (Grammar.s_token ("", "exception")))
+                            (Grammar.s_token ("UIDENT", "")))
+                         (Grammar.s_token ("", "of")))
+                      (Grammar.s_list1
+                         (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))))
+                   (Grammar.s_nterm
+                      (alg_attributes : 'alg_attributes Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           (fun (x : 'expr) _ (alg_attrs : 'alg_attributes) (tyl : 'ctyp list)
+                _ (id : string) _ _ _ (loc : Ploc.t) ->
+              (MLast.ExLEx (loc, id, tyl, x, alg_attrs) : 'expr)))];
        Some "where", None,
        [Grammar.production
           (Grammar.r_next

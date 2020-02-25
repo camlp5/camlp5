@@ -276,6 +276,29 @@ value warning_deprecated_since_6_00 loc =
   else ()
 ;
 
+value check_let_exception_f = (fun strm ->
+       match Stream.npeek 2 strm with
+       [ [("", "let"); ("", "exception")] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_let_exception =
+  Grammar.Entry.of_parser gram "check_let_exception"
+    check_let_exception_f
+;
+
+value check_let_not_exception_f = (fun strm ->
+       match Stream.npeek 2 strm with
+       [ [("", "let"); ("", "exception")] -> raise Stream.Failure
+       | [("", "let"); _] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_let_not_exception =
+  Grammar.Entry.of_parser gram "check_let_not_exception"
+    check_let_not_exception_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -524,13 +547,20 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
+      [ check_let_exception ; "let" ; "exception" ; id = SV UIDENT ;
+        "of"; tyl = SV (LIST1 ctyp) ; alg_attrs = alg_attributes ;
+        "in" ; x = SELF ->
+          Qast.Node "ExLEx" [Qast.Loc ; id ; tyl ; x; alg_attrs]
+      | check_let_exception ; "let" ; "exception" ; id = SV UIDENT ; alg_attrs = alg_attributes ;
+        "in" ; x = SELF ->
+          Qast.Node "ExLEx" [Qast.Loc ; id ; Qast.VaVal(Qast.List[]) ; x; alg_attrs]
+      | check_let_not_exception ; "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
         "in"; x = SELF →
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
-      | "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in";
+      | check_let_not_exception ; "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = SELF →
           Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
-      | "let"; "open"; m = module_expr; "in"; e = SELF →
+      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = SELF →
           Qast.Node "ExLop" [Qast.Loc; m; e]
       | "fun"; l = closed_case_list → Qast.Node "ExFun" [Qast.Loc; l]
       | "fun"; p = ipatt; e = fun_def →

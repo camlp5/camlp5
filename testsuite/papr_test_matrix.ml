@@ -494,6 +494,26 @@ and t2 = bool[@@foo];
      official_output = OK {foo|[@@@argle ]|foo};
      r_output = OK {foo|[@@@argle];
 |foo}
+    };
+    {name="let-exception1"; implem = True ;
+     o_input = OK {foo|let exception E [@algattr] in 1 [@@itemattr]|foo} ;
+     official_input = OK {foo|let exception E[@algattr] in 1 [@@itemattr]|foo} ;
+     r_input = OK {foo|let exception E[@algattr] in 1 [@@itemattr];|foo} ;
+     o_output = OK {foo|let _ = let exception E[@algattr] in 1[@@itemattr];;
+|foo};
+     official_output = OK {foo|;;let exception E [@algattr ] in 1[@@itemattr ]|foo};
+     r_output = OK {foo|let exception E[@algattr] in 1[@@itemattr];
+|foo}
+    };
+    {name="let-exception2"; implem = True ;
+     o_input = OK {foo|let exception E of int [@algattr] in 1 [@@itemattr]|foo} ;
+     official_input = OK {foo|let exception E of int[@algattr] in 1 [@@itemattr]|foo} ;
+     r_input = OK {foo|let exception E of int[@algattr] in 1 [@@itemattr];|foo} ;
+     o_output = OK {foo|let _ = let exception E of int[@algattr] in 1[@@itemattr];;
+|foo};
+     official_output = OK {foo|;;let exception E of int [@algattr ] in 1[@@itemattr ]|foo};
+     r_output = OK {foo|let exception E of int[@algattr] in 1[@@itemattr];
+|foo}
     }
 ]
 ;

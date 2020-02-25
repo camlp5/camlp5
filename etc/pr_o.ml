@@ -1210,6 +1210,9 @@ EXTEND_PRINTER
         let loc = MLast.loc_of_expr e0 in
           pr_letlike "let" pc loc rf pel e
 
+      | <:expr:< let exception $uid:e$ of $list:tl$ $algattrs:attrs$ in $x$ >> ->
+          pprintf pc "@[<a>let %p@ in@] %p" exception_decl (loc, e, tl, [], attrs, []) curr x
+
       | <:expr< $lid:letop$ $arg$ (fun $bindpat$ -> $body$) >> as e0
            when not Pcaml.flag_expand_letop_syntax.val && is_letop letop ->
         let loc = MLast.loc_of_expr e0 in

@@ -346,6 +346,26 @@ value build_letop_binder loc letop b l e = do {
 value lbl_expr = Grammar.Entry.create Pcaml.gram "lbl_expr";
 value lbl_expr_list = Grammar.Entry.create Pcaml.gram "lbl_expr_list";
 
+value check_let_exception =
+  Grammar.Entry.of_parser gram "check_let_exception"
+    (fun strm ->
+       match Stream.npeek 2 strm with
+       [ [("", "let"); ("", "exception")] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_let_not_exception_f = (fun strm ->
+       match Stream.npeek 2 strm with
+       [ [("", "let"); ("", "exception")] -> raise Stream.Failure
+       | [("", "let"); _] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_let_not_exception =
+  Grammar.Entry.of_parser gram "check_let_not_exception"
+    check_let_not_exception_f
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
@@ -469,21 +489,29 @@ EXTEND
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
       | "type"; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_flag:nr$ $_list:tdl$ >>
-      | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
+        "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
+        let e = <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >> in
+        <:str_item< $exp:e$ $_itemattrs:attrs$ >>
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
+        "in" ; x = expr ; attrs = item_attributes ->
+        let e = <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >> in
+        <:str_item< $exp:e$ $_itemattrs:attrs$ >>
+      | check_let_not_exception ; "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
           let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
           <:str_item< $exp:e$ >>
-      | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
+      | check_let_not_exception ; "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           match l with
           [ <:vala< [(p, e, attrs)] >> ->
               match p with
               [ <:patt< _ >> -> <:str_item< $exp:e$ >> (* TODO FIX THIS CHET *)
               | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
-      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
+      | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
           <:str_item< let module $_uidopt:m$ = $mb$ in $e$ >>
-      | "let"; "open"; m = module_expr; "in"; e = expr ->
+      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = expr ->
           <:str_item< let open $m$ in $e$ >>
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
@@ -604,19 +632,26 @@ EXTEND
       | e1 = SELF; ";" -> e1
       | el = V e_phony "list" -> <:expr< do { $_list:el$ } >> ]
     | "expr1"
-      [ "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
+        "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
+        <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
+        "in" ; x = SELF ->
+        <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
+      | check_let_not_exception ; "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
           <:expr< let $_flag:o$ $_list:l$ in $x$ >>
+
+      | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
+        e = expr LEVEL "top" ->
+          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
+      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = expr LEVEL "top" ->
+          <:expr< let open $m$ in $e$ >>
 
       | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
-      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
-        e = expr LEVEL "top" ->
-          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
-      | "let"; "open"; m = module_expr; "in"; e = expr LEVEL "top" ->
-          <:expr< let open $m$ in $e$ >>
       | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
           <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = patt LEVEL "simple"; (eo, e) = fun_def ->
