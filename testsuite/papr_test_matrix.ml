@@ -506,13 +506,13 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="let-exception2"; implem = True ;
-     o_input = OK {foo|let exception E of int [@algattr] in 1 [@@itemattr]|foo} ;
-     official_input = OK {foo|let exception E of int[@algattr] in 1 [@@itemattr]|foo} ;
-     r_input = OK {foo|let exception E of int[@algattr] in 1 [@@itemattr];|foo} ;
-     o_output = OK {foo|let _ = let exception E of int[@algattr] in 1[@@itemattr];;
+     o_input = OK {foo|let exception E of (int [@algattr2])[@algattr] in 1 [@@itemattr]|foo} ;
+     official_input = OK {foo|let exception E of (int [@algattr2])[@algattr] in 1 [@@itemattr]|foo} ;
+     r_input = OK {foo|let exception E of (int [@algattr2])[@algattr] in 1 [@@itemattr];|foo} ;
+     o_output = OK {foo|let _ = let exception E of (int[@algattr2])[@algattr] in 1[@@itemattr];;
 |foo};
-     official_output = OK {foo|;;let exception E of int [@algattr ] in 1[@@itemattr ]|foo};
-     r_output = OK {foo|let exception E of int[@algattr] in 1[@@itemattr];
+     official_output = OK {foo|;;let exception E of ((int)[@algattr2 ]) [@algattr ] in 1[@@itemattr ]|foo};
+     r_output = OK {foo|let exception E of (int[@algattr2])[@algattr] in 1[@@itemattr];
 |foo}
     }
 ]

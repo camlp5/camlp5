@@ -1719,13 +1719,16 @@ Grammar.safe_extend
                             (Grammar.s_token ("UIDENT", "")))
                          (Grammar.s_token ("", "of")))
                       (Grammar.s_list1
-                         (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))))
+                         (Grammar.s_nterm
+                            (ctyp_below_alg_attribute :
+                             'ctyp_below_alg_attribute Grammar.Entry.e))))
                    (Grammar.s_nterm
                       (alg_attributes : 'alg_attributes Grammar.Entry.e)))
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
-           (fun (x : 'expr) _ (alg_attrs : 'alg_attributes) (tyl : 'ctyp list)
-                _ (id : string) _ _ _ (loc : Ploc.t) ->
+           (fun (x : 'expr) _ (alg_attrs : 'alg_attributes)
+                (tyl : 'ctyp_below_alg_attribute list) _ (id : string) _ _ _
+                (loc : Ploc.t) ->
               (MLast.ExLEx (loc, id, tyl, x, alg_attrs) : 'expr)))];
        Some "where", None,
        [Grammar.production

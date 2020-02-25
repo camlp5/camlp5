@@ -3653,8 +3653,9 @@ Grammar.safe_extend
                             [Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_list1
-                                     (Grammar.s_nterm
-                                        (ctyp : 'ctyp Grammar.Entry.e))),
+                                     (Grammar.s_nterml
+                                        (ctyp : 'ctyp Grammar.Entry.e)
+                                        "below_alg_attribute")),
                                 (fun (a : 'ctyp list) (loc : Ploc.t) ->
                                    (Qast.VaVal (Qast.List a) : 'e__85)));
                              Grammar.production

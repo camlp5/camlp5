@@ -548,7 +548,7 @@ EXTEND
   expr:
     [ "top" RIGHTA
       [ check_let_exception ; "let" ; "exception" ; id = SV UIDENT ;
-        "of"; tyl = SV (LIST1 ctyp) ; alg_attrs = alg_attributes ;
+        "of"; tyl = SV (LIST1 ctyp LEVEL "below_alg_attribute") ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
           Qast.Node "ExLEx" [Qast.Loc ; id ; tyl ; x; alg_attrs]
       | check_let_exception ; "let" ; "exception" ; id = SV UIDENT ; alg_attrs = alg_attributes ;
