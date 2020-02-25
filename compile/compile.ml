@@ -518,12 +518,13 @@ value compile_entry entry =
   let pel1 = start_parser_of_entry entry in
   let pel2 = continue_parser_of_entry entry in
   let pel = list_alternate pel1 pel2 in
-  List.fold_right
+  let pel = List.fold_right
     (fun pe list ->
        match pe with
        [ Some pe -> [pe :: list]
        | None -> list ])
-    pel (continue_parser_of_entry_again entry)
+    pel (continue_parser_of_entry_again entry) in
+  List.map (fun (p,e) -> (p,e,<:vala< [] >>)) pel
 ;
 
 (* get all entries connected together *)
