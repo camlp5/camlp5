@@ -190,6 +190,10 @@ let ocaml_pcl_extension e = Pcl_extension e;;
 let ocaml_pcty_extension e = Pcty_extension e;;
 let ocaml_pctf_extension e = Pctf_extension e;;
 let ocaml_pcf_extension e = Pcf_extension e;;
+let ocaml_extension_exception loc s ed alg_attributes =
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
+   pext_loc = loc; pext_attributes = alg_attributes}
+;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}

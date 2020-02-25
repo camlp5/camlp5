@@ -245,6 +245,10 @@ module Meta_make (C : MetaSig) =
                let attrs = assert False in
                C.tuple [patt p; expr e; attrs])) lpe;
              expr e]
+      | ExLEx _ id lt e attrs ->
+          let attrs = assert False in
+          C.node "ExLEx"
+            [C.vala C.string id; C.vala (C.list ctyp) lt; expr e; attrs]
       | ExLid _ s → C.node "ExLid" [C.vala C.string s]
       | ExLmd _ s me e →
           let c_vala x = C.vala C.string x in

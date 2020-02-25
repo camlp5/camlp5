@@ -233,6 +233,7 @@ value ocaml_pcl_extension _ = assert False ;
 value ocaml_pcty_extension _ = assert False ;
 value ocaml_pctr_extension _ = assert False ;
 value ocaml_pcf_extension _ = assert False ;
+value ocaml_extension_exception _ _ _ _ = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
@@ -377,6 +378,12 @@ value ocaml_pcl_extension e = Pcl_extension e ;
 value ocaml_pcty_extension e = Pcty_extension e ;
 value ocaml_pctf_extension e = Pctf_extension e ;
 value ocaml_pcf_extension e = Pcf_extension e ;
+
+value ocaml_extension_exception loc s ed alg_attributes =
+  {pext_name = mkloc loc s;
+   pext_kind = Pext_decl (Pcstr_tuple ed) None;
+   pext_loc = loc; pext_attributes = alg_attributes}
+;
 END
 ;
 

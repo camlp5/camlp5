@@ -223,6 +223,9 @@ and expr floc sh =
            vala_map
              (List.map (fun (x1, x2, x3) -> patt floc sh x1, self x2, x3)) x2,
            self x3)
+    | ExLEx (loc, x1, x2, x3, x4) ->
+        let loc = floc loc in
+        ExLEx (loc, x1, vala_map (List.map (ctyp floc sh)) x2, self x3, x4)
     | ExLid (loc, x1) -> let loc = floc loc in ExLid (loc, x1)
     | ExLmd (loc, x1, x2, x3) ->
         let loc = floc loc in ExLmd (loc, x1, module_expr floc sh x2, self x3)

@@ -108,6 +108,7 @@ and expr =
   | ExLab of loc and V (list (patt * V (option expr)))
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr * V (list (V (V string * payload))))) and expr
+  | ExLEx of loc and V string and V (list ctyp) and expr and V (list (V (V string * payload)))
   | ExLid of loc and V string
   | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and module_expr and expr
