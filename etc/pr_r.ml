@@ -1639,6 +1639,9 @@ EXTEND_PRINTER
         pprintf pc "%p[@%p]" curr p attribute_body attr
       ]
 
+    | [ <:patt< exception $uid:s$ >> ->
+          pprintf pc "exception %p" cons_escaped s ]
+
     | "range"
       [ <:patt< $x$ .. $y$ >> ->
           pprintf pc "%p..%p" next x next y ]
@@ -1705,8 +1708,6 @@ EXTEND_PRINTER
           var_escaped pc (loc, s)
       | <:patt< $uid:s$ >> ->
           cons_escaped pc s
-      | <:patt< exception $uid:s$ >> ->
-          pprintf pc "exception %p" cons_escaped s
       | <:patt< $chr:s$ >> ->
           pprintf pc "'%s'" s
       | <:patt< $str:s$ >> ->
