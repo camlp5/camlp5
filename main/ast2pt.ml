@@ -317,6 +317,9 @@ value rec class_expr_fa al =
 value rec sep_expr_acc l =
   fun
   [ <:expr< $e1$.$e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
+  | <:expr< $e1$ . ( $e2$ ) >>
+    when match e1 with [ <:expr< $uid:_$ >> -> True | _ -> False ] ->
+     sep_expr_acc (sep_expr_acc l e2) e1
   | <:expr< $uid:s$ >> as e →
       let loc = MLast.loc_of_expr e in
       match l with
@@ -773,6 +776,12 @@ and expr =
         | [(loc, ml, <:expr< $lid:s$ >>) :: l] →
             (mkexp loc (ocaml_pexp_ident (mkloc loc) (mkli s ml)), l)
         | [(_, [], e) :: l] → (expr e, l)
+        | [(loc, [mh :: mtl], e) :: l] ->
+          let mexp = List.fold_left
+            (fun me uid -> <:module_expr< $me$ . $uid:uid$ >>)
+            <:module_expr< $uid:mh$ >> mtl in
+          let e = <:expr< let open $mexp$ in $e$ >> in
+          (expr e, l)
         | _ → error loc "bad ast" ]
       in
       let (_, e) =

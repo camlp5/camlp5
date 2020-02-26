@@ -40,6 +40,14 @@ type instance_t = {
 ;
 
 value test_matrix = [
+    {name="test-prototype"; implem = True ;
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
     {name="simplest"; implem = True ;
      o_input = OK "(1; 2);; 3 ;; let x = 1 ;;" ;
      official_input = OK "(1; 2);; 3 ;; let x = 1 ;;" ;
@@ -596,6 +604,36 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|;;+ (+ x)|foo} ;
      r_output = OK {foo|+(+x);
+|foo}
+    };
+    {name="module-record1"; implem = True ;
+     o_input = OK {foo|M.{a = b}|foo} ;
+     official_input = OK {foo|M.{a = b}|foo} ;
+     r_input = OK {foo|M.({a = b});|foo} ;
+     o_output = OK {foo|let _ = M.({a = b});;
+|foo};
+     official_output = OK {foo|;;let open M in { a = b }|foo} ;
+     r_output = OK {foo|M.({a = b});
+|foo}
+    };
+    {name="module-record2"; implem = True ;
+     o_input = OK {foo|M.N.{a = b}|foo} ;
+     official_input = OK {foo|M.N.{a = b}|foo} ;
+     r_input = OK {foo|M.N.({a = b});|foo} ;
+     o_output = OK {foo|let _ = M.N.({a = b});;
+|foo};
+     official_output = OK {foo|;;let open M.N in { a = b }|foo} ;
+     r_output = OK {foo|M.N.({a = b});
+|foo}
+    };
+    {name="module-record3"; implem = True ;
+     o_input = OK {foo|M.N.{e with a = b}|foo} ;
+     official_input = OK {foo|M.N.{e with a = b}|foo} ;
+     r_input = OK {foo|M.N.({(e) with a = b});|foo} ;
+     o_output = OK {foo|let _ = M.N.({e with a = b});;
+|foo};
+     official_output = OK {foo|;;let open M.N in { e with a = b }|foo} ;
+     r_output = OK {foo|M.N.({(e) with a = b});
 |foo}
     }
 ]

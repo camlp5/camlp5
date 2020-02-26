@@ -909,6 +909,9 @@ EXTEND
           <:expr< $_uid:i$ . ( $e$ ) >>
       | i = V UIDENT; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
           <:expr< $_uid:i$ . ({ $_list:lel$ }) >>
+      | i = V UIDENT; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
+        "}" ->
+          <:expr< $_uid:i$ . ({ ($e$) with $_list:lel$ }) >>
  ] ]
 
   ;
