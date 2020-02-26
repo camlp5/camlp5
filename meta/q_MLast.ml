@@ -503,6 +503,8 @@ EXTEND
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") →
           Qast.Node "SgMod" [Qast.Loc; rf; l]
+      | "module"; "alias"; i = SV UIDENT; "="; li = SV mod_ident "list" "" ; attrs = item_attributes →
+          Qast.Node "SgMtyAlias" [Qast.Loc; i; li; attrs]
       | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = item_attributes →
           Qast.Node "SgMty" [Qast.Loc; i; mt; attrs]
       | "open"; i = SV mod_ident "list" "" ; attrs = item_attributes → Qast.Node "SgOpn" [Qast.Loc; i; attrs]
