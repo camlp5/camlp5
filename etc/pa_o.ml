@@ -893,6 +893,8 @@ EXTEND
         <:patt< $p$ [@ $_attribute:attr$ ] >>
       ]
   | NONA
+      [ "exception"; s = V UIDENT → <:patt< exception $_uid:s$ >> ]
+  | NONA
       [ p1 = SELF; ".."; p2 = SELF -> <:patt< $p1$ .. $p2$ >> ]
     | RIGHTA
       [ p1 = SELF; "::"; p2 = SELF -> <:patt< [$p1$ :: $p2$] >> ]

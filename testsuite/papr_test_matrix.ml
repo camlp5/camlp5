@@ -514,6 +514,19 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;let exception E of ((int)[@algattr2 ]) [@algattr ] in 1[@@itemattr ]|foo};
      r_output = OK {foo|let exception E of (int[@algattr2])[@algattr] in 1[@@itemattr];
 |foo}
+    };
+    {name="pat-exception1"; implem = True ;
+     o_input = OK {foo|(fun (exception E) -> 1)|foo} ;
+     official_input = OK {foo|(fun (exception E) -> 1)|foo} ;
+     r_input = OK {foo|(fun [ exception E -> 1 ]);|foo} ;
+     o_output = OK {foo|let _ =
+  function
+    exception E -> 1;;
+|foo};
+     official_output = OK {foo|;;fun exception E -> 1|foo};
+     r_output = OK {foo|fun
+[ exception E → 1 ];
+|foo}
     }
 ]
 ;

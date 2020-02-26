@@ -708,6 +708,7 @@ EXTEND
       [ s = V LIDENT → <:patt< $_lid:s$ >>
       | s = V GIDENT → <:patt< $_lid:s$ >>
       | s = V UIDENT → <:patt< $_uid:s$ >>
+      | "exception"; s = V UIDENT → <:patt< exception $_uid:s$ >>
       | s = V INT → <:patt< $_int:s$ >>
       | s = V INT_l → <:patt< $_int32:s$ >>
       | s = V INT_L → <:patt< $_int64:s$ >>
