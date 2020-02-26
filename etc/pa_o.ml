@@ -893,7 +893,18 @@ EXTEND
         <:patt< $p$ [@ $_attribute:attr$ ] >>
       ]
   | NONA
-      [ "exception"; p = SELF → <:patt< exception $p$ >> ]
+      [ "exception"; p = SELF →
+      let rec is_uid_path = fun [
+        <:patt< $uid:_$ >> -> True
+      | <:patt< $p$ . $uid:_$ >> -> is_uid_path p
+      | _ -> False
+      ] in do {
+        if not (is_uid_path p) then
+          failwith "pa_o: exception-pattern must have UIDENT path argument"
+        else () ;
+         <:patt< exception $p$ >>
+        }
+      ]
   | NONA
       [ p1 = SELF; ".."; p2 = SELF -> <:patt< $p1$ .. $p2$ >> ]
     | RIGHTA

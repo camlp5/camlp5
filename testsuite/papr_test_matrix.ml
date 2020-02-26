@@ -12,6 +12,7 @@ value smart_exn_eq e1 e2 =
   match (e1, e2) with [
     (Ploc.Exc _ e1, Ploc.Exc _ e2) -> eqrec e1 e2
   | (Stream.Error msg1, Stream.Error msg2) -> msg1 = msg2
+  | (Failure msg1, Failure msg2) -> msg1 = msg2
   | (Syntaxerr.Error (Other _), Syntaxerr.Error (Other _)) -> True
   | _ -> e1 = e2
   ]
@@ -22,6 +23,7 @@ type step_desc_t = [
   OK of string
 | EXN of string and exn
 | SKIP of string and string
+| TODO of string
 ]
 ;
 
@@ -534,6 +536,16 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;match x with | exception E.F -> 1|foo};
      r_output = OK {foo|match x with [ exception E.F → 1 ];
 |foo}
+    };
+    {name="pat-exception-error1"; implem = True ;
+     o_input = EXN {foo|match x with exception (_, _) -> 1|foo}
+                   (Ploc.Exc Ploc.dummy (Failure "pa_o: exception-pattern must have UIDENT path argument")) ;
+     official_input = OK {foo|match x with exception (_, _) -> 1|foo} ;
+     r_input = EXN {foo|match x with [ exception (_, _) -> 1 ];|foo}
+                   (Ploc.Exc Ploc.dummy (Failure "pa_r: exception-pattern must have UIDENT path argument")) ;
+     o_output = SKIP "" "unused";
+     official_output = OK {foo|;;match x with | exception (_, _) -> 1|foo} ;
+     r_output = SKIP "" "unused"
     }
 ]
 ;
@@ -558,11 +570,13 @@ value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf
 
     match (i.implem, inputf i, outputf i) with [
 
-      (_,SKIP inputs msg, _) ->
-        todo i.name   
+      (_,TODO msg, _) ->
+        todo msg   
 
-    | (_,_,SKIP outputs msg) ->
-        todo i.name   
+    | (_,_,TODO msg) ->
+        todo msg   
+
+    | (_,SKIP _ _ , _) -> ()
 
     | (True, OK inputs, OK outputs) -> do {
         assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}
@@ -577,11 +591,11 @@ value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf
       }
 
     | (True,EXN inputs exn, _) ->
-        assert_raises_exn_pred ~{msg=i.name} ~{exnmsg="msg"} (smart_exn_eq exn)
+        assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
           (fun () -> pa_implem inputs)
 
     | (False,EXN inputs exn, _) ->
-        assert_raises_exn_pred ~{msg=i.name} ~{exnmsg="msg"} (smart_exn_eq exn)
+        assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
           (fun () -> pa_interf inputs)
 
     | _ -> assert False

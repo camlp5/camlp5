@@ -2607,7 +2607,17 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "exception")))
              Grammar.s_self,
            (fun (p : 'patt) _ (loc : Ploc.t) ->
-              (MLast.PaExc (loc, p) : 'patt)))];
+              (let rec is_uid_path =
+                 function
+                   MLast.PaUid (_, _) -> true
+                 | MLast.PaAcc (_, p, MLast.PaUid (_, _)) -> is_uid_path p
+                 | _ -> false
+               in
+               if not (is_uid_path p) then
+                 failwith
+                   "pa_r: exception-pattern must have UIDENT path argument";
+               MLast.PaExc (loc, p) :
+               'patt)))];
        None, Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
