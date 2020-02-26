@@ -524,6 +524,16 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;match x with | exception E -> 1|foo};
      r_output = OK {foo|match x with [ exception E → 1 ];
 |foo}
+    };
+    {name="pat-exception1"; implem = True ;
+     o_input = OK {foo|match x with exception E.F -> 1|foo} ;
+     official_input = OK {foo|match x with exception E.F -> 1|foo} ;
+     r_input = OK {foo|match x with [ exception E.F -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with exception E.F -> 1;;
+|foo};
+     official_output = OK {foo|;;match x with | exception E.F -> 1|foo};
+     r_output = OK {foo|match x with [ exception E.F → 1 ];
+|foo}
     }
 ]
 ;

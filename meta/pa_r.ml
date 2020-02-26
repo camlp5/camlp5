@@ -697,7 +697,7 @@ EXTEND
       [ p = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:patt< $p$ [@ $_attribute:attr$ ] >>
       ]
-    | NONA [ "exception"; s = V UIDENT → <:patt< exception $_uid:s$ >> ]
+    | NONA [ "exception"; p = patt → <:patt< exception $p$ >> ]
     | NONA
       [ p1 = SELF; ".."; p2 = SELF → <:patt< $p1$ .. $p2$ >> ]
     | LEFTA

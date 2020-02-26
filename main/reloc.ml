@@ -171,7 +171,7 @@ and patt floc sh =
         PaChr loc x1
     | PaExc loc x1 →
         let loc = floc loc in
-        PaExc loc x1
+        PaExc loc (self x1)
     | PaFlo loc x1 →
         let loc = floc loc in
         PaFlo loc x1

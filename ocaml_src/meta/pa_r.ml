@@ -2605,9 +2605,9 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("", "exception")))
-             (Grammar.s_token ("UIDENT", "")),
-           (fun (s : string) _ (loc : Ploc.t) ->
-              (MLast.PaExc (loc, s) : 'patt)))];
+             Grammar.s_self,
+           (fun (p : 'patt) _ (loc : Ploc.t) ->
+              (MLast.PaExc (loc, p) : 'patt)))];
        None, Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next

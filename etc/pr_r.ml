@@ -1638,10 +1638,8 @@ EXTEND_PRINTER
       [ <:patt< $p$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr p attribute_body attr
       ]
-
-    | [ <:patt< exception $uid:s$ >> ->
-          pprintf pc "exception %p" cons_escaped s ]
-
+    | [ <:patt< exception $p$ >> ->
+          pprintf pc "exception %p" next p ]
     | "range"
       [ <:patt< $x$ .. $y$ >> ->
           pprintf pc "%p..%p" next x next y ]
@@ -1718,8 +1716,8 @@ EXTEND_PRINTER
           error loc "labels not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< `$s$ >> ->
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"
-      | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
-        <:patt< exception $_$ >>
+      | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
+      |  <:patt< exception $_$ >>
         as z ->
           pprintf pc "@[<1>(%p)@]" patt z
       | z ->

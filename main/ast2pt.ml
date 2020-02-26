@@ -271,7 +271,7 @@ value exception_to_constructor_pattern =
   let rec erec =
   fun
   [ PaApp loc f a → PaApp loc (erec f) a
-  | PaExc loc ename -> PaUid loc ename
+  | PaExc loc ename -> ename
   | _ -> assert False ]
 in erec
 ;
@@ -638,8 +638,8 @@ and patt =
       mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
   | PaAnt _ p → patt p
   | PaAny loc → mkpat loc Ppat_any
-  | PaExc loc _ as f0 ->
-      let p = patt (exception_to_constructor_pattern f0) in
+  | PaExc loc p ->
+      let p = patt p in
       mkpat loc (Ppat_exception p)
 
   | PaApp loc _ _ as f0 →

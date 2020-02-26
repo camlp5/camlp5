@@ -123,7 +123,7 @@ and patt floc sh =
     | PaArr (loc, x1) ->
         let loc = floc loc in PaArr (loc, vala_map (List.map self) x1)
     | PaChr (loc, x1) -> let loc = floc loc in PaChr (loc, x1)
-    | PaExc (loc, x1) -> let loc = floc loc in PaExc (loc, x1)
+    | PaExc (loc, x1) -> let loc = floc loc in PaExc (loc, self x1)
     | PaFlo (loc, x1) -> let loc = floc loc in PaFlo (loc, x1)
     | PaInt (loc, x1, x2) -> let loc = floc loc in PaInt (loc, x1, x2)
     | PaLab (loc, x1) ->
