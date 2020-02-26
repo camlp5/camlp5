@@ -261,11 +261,19 @@ value rec module_expr_long_id =
   | t → error (loc_of_module_expr t) "bad module expr long ident" ]
 ;
 
-
 value rec patt_fa al =
   fun
   [ PaApp _ f a → patt_fa [a :: al] f
   | f → (f, al) ]
+;
+
+value exception_to_constructor_pattern =
+  let rec erec =
+  fun
+  [ PaApp loc f a → PaApp loc (erec f) a
+  | PaExc loc ename -> PaUid loc ename
+  | _ -> assert False ]
+in erec
 ;
 
 value rec mkrangepat loc c1 c2 =
@@ -630,8 +638,17 @@ and patt =
       mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
   | PaAnt _ p → patt p
   | PaAny loc → mkpat loc Ppat_any
-  | PaApp loc _ _ as f →
-      let (f, al) = patt_fa [] f in
+  | PaExc loc _ as f0 ->
+      let p = patt (exception_to_constructor_pattern f0) in
+      mkpat loc (Ppat_exception p)
+
+  | PaApp loc _ _ as f0 →
+      let (f, al) = patt_fa [] f0 in
+      match f with [
+        PaExc loc ename ->
+          let p = patt (exception_to_constructor_pattern f0) in
+          mkpat loc (Ppat_exception p)
+      | _ -> 
       let al = List.map patt al in
       let p = (patt f).ppat_desc in
       match ocaml_ppat_construct_args p with
@@ -663,6 +680,7 @@ and patt =
               error (loc_of_patt f)
                 ("this is not a constructor, " ^
                  "it cannot be applied in a pattern") ] ]
+      ]
   | PaArr loc pl →
       match ocaml_ppat_array with
       [ Some ppat_array → mkpat loc (ppat_array (List.map patt (uv pl)))

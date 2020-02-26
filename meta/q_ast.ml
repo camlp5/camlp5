@@ -170,6 +170,7 @@ module Meta_make (C : MetaSig) =
       | PaApp _ p1 p2 → C.node "PaApp" [patt p1; patt p2]
       | PaArr _ lp → C.node "PaArr" [C.vala (C.list patt) lp]
       | PaChr _ s → C.node "PaChr" [C.vala C.string s]
+      | PaExc _ s → C.node "PaExc" [C.vala C.string s]
       | PaFlo _ s → C.node "PaFlo" [C.vala C.string s]
       | PaInt _ s1 s2 → C.node "PaInt" [C.vala C.string s1; C.string s2]
       | PaLab _ lpop →

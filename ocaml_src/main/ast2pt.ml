@@ -279,11 +279,20 @@ let rec module_expr_long_id =
   | t -> error (loc_of_module_expr t) "bad module expr long ident"
 ;;
 
-
 let rec patt_fa al =
   function
     PaApp (_, f, a) -> patt_fa (a :: al) f
   | f -> f, al
+;;
+
+let exception_to_constructor_pattern =
+  let rec erec =
+    function
+      PaApp (loc, f, a) -> PaApp (loc, erec f, a)
+    | PaExc (loc, ename) -> PaUid (loc, ename)
+    | _ -> assert false
+  in
+  erec
 ;;
 
 let rec mkrangepat loc c1 c2 =
@@ -786,40 +795,48 @@ and patt =
       mkpat loc (ocaml_ppat_alias (patt p) i (mkloc iloc))
   | PaAnt (_, p) -> patt p
   | PaAny loc -> mkpat loc Ppat_any
-  | PaApp (loc, _, _) as f ->
-      let (f, al) = patt_fa [] f in
-      let al = List.map patt al in
-      let p = (patt f).ppat_desc in
-      begin match ocaml_ppat_construct_args p with
-        Some (li, li_loc, None, _) ->
-          if !(Prtools.no_constructors_arity) then
-            let a =
-              match al with
-                [a] -> a
-              | _ -> mkpat loc (Ppat_tuple al)
-            in
-            mkpat loc (ocaml_ppat_construct li_loc li (Some a) false)
-          else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li al
-      | Some _ | None ->
-          match ocaml_ppat_variant with
-            Some (ppat_variant_pat, ppat_variant) ->
-              begin match ppat_variant_pat p with
-                Some (s, None) ->
-                  let a =
-                    match al with
-                      [a] -> a
-                    | _ -> mkpat loc (Ppat_tuple al)
-                  in
-                  mkpat loc (ppat_variant (s, Some a))
-              | Some _ | None ->
+  | PaExc (loc, _) as f0 ->
+      let p = patt (exception_to_constructor_pattern f0) in
+      mkpat loc (Ppat_exception p)
+  | PaApp (loc, _, _) as f0 ->
+      let (f, al) = patt_fa [] f0 in
+      begin match f with
+        PaExc (loc, ename) ->
+          let p = patt (exception_to_constructor_pattern f0) in
+          mkpat loc (Ppat_exception p)
+      | _ ->
+          let al = List.map patt al in
+          let p = (patt f).ppat_desc in
+          match ocaml_ppat_construct_args p with
+            Some (li, li_loc, None, _) ->
+              if !(Prtools.no_constructors_arity) then
+                let a =
+                  match al with
+                    [a] -> a
+                  | _ -> mkpat loc (Ppat_tuple al)
+                in
+                mkpat loc (ocaml_ppat_construct li_loc li (Some a) false)
+              else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li al
+          | Some _ | None ->
+              match ocaml_ppat_variant with
+                Some (ppat_variant_pat, ppat_variant) ->
+                  begin match ppat_variant_pat p with
+                    Some (s, None) ->
+                      let a =
+                        match al with
+                          [a] -> a
+                        | _ -> mkpat loc (Ppat_tuple al)
+                      in
+                      mkpat loc (ppat_variant (s, Some a))
+                  | Some _ | None ->
+                      error (loc_of_patt f)
+                        ("this is not a constructor, " ^
+                         "it cannot be applied in a pattern")
+                  end
+              | None ->
                   error (loc_of_patt f)
                     ("this is not a constructor, " ^
                      "it cannot be applied in a pattern")
-              end
-          | None ->
-              error (loc_of_patt f)
-                ("this is not a constructor, " ^
-                 "it cannot be applied in a pattern")
       end
   | PaArr (loc, pl) ->
       begin match ocaml_ppat_array with

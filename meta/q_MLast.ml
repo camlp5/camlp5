@@ -955,6 +955,7 @@ EXTEND
       | s = SV LIDENT → Qast.Node "PaLid" [Qast.Loc; s]
       | s = SV GIDENT → Qast.Node "PaLid" [Qast.Loc; s]
       | s = SV UIDENT → Qast.Node "PaUid" [Qast.Loc; s]
+      | "exception"; s = SV UIDENT → Qast.Node "PaExc" [Qast.Loc; s]
       | s = SV INT → Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
       | s = SV INT_l → Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "l"]
       | s = SV INT_L → Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "L"]
