@@ -338,6 +338,12 @@ let rec class_expr_fa al =
 let rec sep_expr_acc l =
   function
     MLast.ExAcc (_, e1, e2) -> sep_expr_acc (sep_expr_acc l e2) e1
+  | MLast.ExAre (_, e1, e2)
+    when
+      match e1 with
+        MLast.ExUid (_, _) -> true
+      | _ -> false ->
+      sep_expr_acc (sep_expr_acc l e2) e1
   | MLast.ExUid (_, s) as e ->
       let loc = MLast.loc_of_expr e in
       begin match l with
@@ -933,6 +939,13 @@ and expr =
         | (loc, ml, MLast.ExLid (_, s)) :: l ->
             mkexp loc (ocaml_pexp_ident (mkloc loc) (mkli s ml)), l
         | (_, [], e) :: l -> expr e, l
+        | (loc, mh :: mtl, e) :: l ->
+            let mexp =
+              List.fold_left
+                (fun me uid -> MLast.MeAcc (loc, me, MLast.MeUid (loc, uid)))
+                (MLast.MeUid (loc, mh)) mtl
+            in
+            let e = MLast.ExLop (loc, mexp, e) in expr e, l
         | _ -> error loc "bad ast"
       in
       let (_, e) =
@@ -1473,6 +1486,14 @@ and sig_item s l =
         (ocaml_psig_modtype ~item_attributes:(item_attributes item_attrs)
            (mkloc loc) (uv n) mto) ::
       l
+  | SgMtyAlias (loc, n, li, item_attrs) ->
+      let li = long_id_of_string_list loc (uv li) in
+      let mty = mkmty loc (ocaml_pmty_alias (mkloc loc) li) in
+      let m =
+        ocaml_psig_modtype ~item_attributes:(item_attributes item_attrs)
+          (mkloc loc) (uv n) (Some mty)
+      in
+      mksig loc m :: l
   | SgOpn (loc, id, attrs) ->
       mksig loc
         (ocaml_psig_open ~item_attributes:(item_attributes attrs) (mkloc loc)

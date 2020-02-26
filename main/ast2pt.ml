@@ -1270,6 +1270,13 @@ and sig_item s l =
         end
       in
       [mksig loc (ocaml_psig_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
+
+  | SgMtyAlias loc n li item_attrs ->
+      let li = long_id_of_string_list loc (uv li) in
+      let mty = mkmty loc (ocaml_pmty_alias (mkloc loc) li) in
+      let m = ocaml_psig_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) (Some mty) in
+      [mksig loc m :: l]
+
   | SgOpn loc id attrs →
       [mksig loc
          (ocaml_psig_open ~{item_attributes=item_attributes attrs} (mkloc loc) (long_id_of_string_list loc (uv id))) ::

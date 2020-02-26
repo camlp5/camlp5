@@ -2069,6 +2069,24 @@ Grammar.safe_extend
        Some "unary minus", Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+.")))
+             Grammar.s_self,
+           (fun (e : 'expr) _ (loc : Ploc.t) ->
+              (match e with
+                 MLast.ExFlo (_, _) -> e
+               | _ -> MLast.ExApp (loc, MLast.ExLid (loc, "~+."), e) :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")))
+             Grammar.s_self,
+           (fun (e : 'expr) _ (loc : Ploc.t) ->
+              (match e with
+                 MLast.ExInt (_, _, "") -> e
+               | _ -> MLast.ExApp (loc, MLast.ExLid (loc, "~+"), e) :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-.")))
              Grammar.s_self,
            (fun (e : 'expr) _ (loc : Ploc.t) ->
@@ -2607,17 +2625,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "exception")))
              Grammar.s_self,
            (fun (p : 'patt) _ (loc : Ploc.t) ->
-              (let rec is_uid_path =
-                 function
-                   MLast.PaUid (_, _) -> true
-                 | MLast.PaAcc (_, p, MLast.PaUid (_, _)) -> is_uid_path p
-                 | _ -> false
-               in
-               if not (is_uid_path p) then
-                 failwith
-                   "pa_r: exception-pattern must have UIDENT path argument";
-               MLast.PaExc (loc, p) :
-               'patt)))];
+              (MLast.PaExc (loc, p) : 'patt)))];
        None, Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
@@ -2734,6 +2742,18 @@ Grammar.safe_extend
              (Grammar.s_token ("INT", "")),
            (fun (s : string) _ (loc : Ploc.t) ->
               (MLast.PaInt (loc, neg_string s, "") : 'patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")))
+             (Grammar.s_token ("FLOAT", "")),
+           (fun (s : string) _ (loc : Ploc.t) ->
+              (MLast.PaFlo (loc, s) : 'patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")))
+             (Grammar.s_token ("INT", "")),
+           (fun (s : string) _ (loc : Ploc.t) ->
+              (MLast.PaInt (loc, s, "") : 'patt)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("CHAR", "")),
            (fun (s : string) (loc : Ploc.t) ->

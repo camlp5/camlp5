@@ -520,6 +520,12 @@ value ocaml_class_structure p cil =
 
 value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_pmty_alias loc li = assert False ;
+ELSE
+value ocaml_pmty_alias loc li = Pmty_alias (mkloc loc li);
+END
+;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
 value ocaml_pmty_functor sloc mt1 mt2 =

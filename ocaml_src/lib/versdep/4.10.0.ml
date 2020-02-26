@@ -249,6 +249,7 @@ let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
 
 let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
+let ocaml_pmty_alias loc li = Pmty_alias (mkloc loc li);;
 
 let ocaml_pmty_functor sloc mt1 mt2 =
   let mt1 =

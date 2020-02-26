@@ -363,6 +363,8 @@ and sig_item floc sh =
              x2)
     | SgMty (loc, x1, x2, x3) ->
         let loc = floc loc in SgMty (loc, x1, module_type floc sh x2, x3)
+    | SgMtyAlias (loc, x1, x2, x3) ->
+        let loc = floc loc in SgMtyAlias (loc, x1, x2, x3)
     | SgOpn (loc, x1, x2) -> let loc = floc loc in SgOpn (loc, x1, x2)
     | SgTyp (loc, x1) ->
         let loc = floc loc in
