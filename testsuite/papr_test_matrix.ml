@@ -537,15 +537,55 @@ and t2 = bool[@@foo];
      r_output = OK {foo|match x with [ exception E.F → 1 ];
 |foo}
     };
-    {name="pat-exception-error1"; implem = True ;
-     o_input = EXN {foo|match x with exception (_, _) -> 1|foo}
-                   (Ploc.Exc Ploc.dummy (Failure "pa_o: exception-pattern must have UIDENT path argument")) ;
-     official_input = OK {foo|match x with exception (_, _) -> 1|foo} ;
-     r_input = EXN {foo|match x with [ exception (_, _) -> 1 ];|foo}
-                   (Ploc.Exc Ploc.dummy (Failure "pa_r: exception-pattern must have UIDENT path argument")) ;
-     o_output = SKIP "" "unused";
-     official_output = OK {foo|;;match x with | exception (_, _) -> 1|foo} ;
-     r_output = SKIP "" "unused"
+    {name="pat-exception2"; implem = True ;
+     o_input = OK {foo|match x with exception E.F _ -> 1|foo} ;
+     official_input = OK {foo|match x with exception E.F _ -> 1|foo} ;
+     r_input = OK {foo|match x with [ exception E.F _ -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with exception E.F _ -> 1;;
+|foo};
+     official_output = OK {foo|;;match x with | exception E.F _ -> 1|foo};
+     r_output = OK {foo|match x with [ exception E.F _ → 1 ];
+|foo}
+    };
+    {name="unary-plus1"; implem = True ;
+     o_input = OK {foo|+ 1|foo} ;
+     official_input = OK {foo|+ 1|foo} ;
+     r_input = OK {foo|+ 1;|foo} ;
+     o_output = OK {foo|let _ = 1;;
+|foo};
+     official_output = OK {foo|;;1|foo} ;
+     r_output = OK {foo|1;
+|foo}
+    };
+    {name="unary-plus2"; implem = True ;
+     o_input = OK {foo|+. 1.|foo} ;
+     official_input = OK {foo|+. 1.|foo} ;
+     r_input = OK {foo|+. 1.;|foo} ;
+     o_output = OK {foo|let _ = 1.;;
+|foo};
+     official_output = OK {foo|;;1.|foo} ;
+     r_output = OK {foo|1.;
+|foo}
+    };
+    {name="unary-plus3"; implem = True ;
+     o_input = OK {foo|+ x|foo} ;
+     official_input = OK {foo|+ x|foo} ;
+     r_input = OK {foo|+ x;|foo} ;
+     o_output = OK {foo|let _ = +x;;
+|foo};
+     official_output = OK {foo|;;+ x|foo} ;
+     r_output = OK {foo|+x;
+|foo}
+    };
+    {name="unary-plus4"; implem = True ;
+     o_input = OK {foo|+ + x|foo} ;
+     official_input = OK {foo|+ + x|foo} ;
+     r_input = OK {foo|+ +x;|foo} ;
+     o_output = OK {foo|let _ = +(+x);;
+|foo};
+     official_output = OK {foo|;;+ (+ x)|foo} ;
+     r_output = OK {foo|+(+x);
+|foo}
     }
 ]
 ;

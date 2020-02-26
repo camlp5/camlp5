@@ -1346,10 +1346,10 @@ EXTEND_PRINTER
           right_operator pc loc 0 unfold next z ]
     | "unary_minus"
       [ <:expr< $lid:op$ $x$ >> as z ->
-        let ops = ["-" ; "-."] in
-        let in_ops x = List.mem x ops || is_prefixop x in
+        let ops = [("-","-") ; ("-.","-."); ("~+","+"); ("~+.","+.")] in
+        let in_ops x = List.mem_assoc x ops in
         if in_ops op then
-          pprintf pc "%s%p" op (unary in_ops curr) x
+          pprintf pc "%s%p" (List.assoc op ops) (unary in_ops curr) x
         else next pc z
       ]
     | "apply"

@@ -584,6 +584,16 @@ EXTEND
     | "unary minus" NONA
       [ "-"; e = SELF → <:expr< - $e$ >>
       | "-."; e = SELF → <:expr< -. $e$ >>
+      | "+"; e = SELF → 
+         match e with [
+           <:expr< $int:_$ >> -> e
+         | _ ->  <:expr< $lid:"~+"$ $e$ >>
+         ]
+      | "+."; e = SELF →
+         match e with [
+           <:expr< $flo:_$ >> -> e
+         | _ -> <:expr< $lid:"~+."$ $e$ >>
+         ]
       ]
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF → <:expr< $e1$ $e2$ >>
@@ -698,16 +708,7 @@ EXTEND
         <:patt< $p$ [@ $_attribute:attr$ ] >>
       ]
     | NONA [ "exception"; p = patt →
-      let rec is_uid_path = fun [
-        <:patt< $uid:_$ >> -> True
-      | <:patt< $p$ . $uid:_$ >> -> is_uid_path p
-      | _ -> False
-      ] in do {
-        if not (is_uid_path p) then
-          failwith "pa_r: exception-pattern must have UIDENT path argument"
-        else () ;
         <:patt< exception $p$ >>
-        }
       ]
     | NONA
       [ p1 = SELF; ".."; p2 = SELF → <:patt< $p1$ .. $p2$ >> ]
@@ -727,6 +728,8 @@ EXTEND
       | s = V FLOAT → <:patt< $_flo:s$ >>
       | s = V STRING → <:patt< $_str:s$ >>
       | s = V CHAR → <:patt< $_chr:s$ >>
+      | "+"; s = V INT → <:patt< $_int:s$ >>
+      | "+"; s = V FLOAT → <:patt< $_flo:s$ >>
       | "-"; s = INT → <:patt< $int:neg_string s$ >>
       | "-"; s = INT_l → <:patt< $int32:neg_string s$ >>
       | "-"; s = INT_L → <:patt< $int64:neg_string s$ >>
