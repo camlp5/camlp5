@@ -1246,6 +1246,23 @@ Grammar.safe_extend
                       (Grammar.r_next
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "module")))
+                         (Grammar.s_token ("", "alias")))
+                      (Grammar.s_token ("UIDENT", "")))
+                   (Grammar.s_token ("", "=")))
+                (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (li : 'mod_ident) _ (i : string) _
+                _ (loc : Ploc.t) ->
+              (MLast.SgMtyAlias (loc, i, li, attrs) : 'sig_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "module")))
                          (Grammar.s_token ("", "type")))
                       (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))

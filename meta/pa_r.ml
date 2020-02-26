@@ -440,6 +440,8 @@ EXTEND
           <:sig_item< module $_flag:rf$ $_list:l$ >>
       | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes →
           <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
+      | "module"; "alias"; i = V UIDENT; "="; li = V mod_ident "list" "" ; attrs = item_attributes →
+          <:sig_item< module alias $_:i$ = $_:li$ $_itemattrs:attrs$ >>
       | "open"; i = V mod_ident "list" "" ; attrs = item_attributes → <:sig_item< open $_:i$ $_itemattrs:attrs$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") →
           <:sig_item< type $_list:tdl$ >>

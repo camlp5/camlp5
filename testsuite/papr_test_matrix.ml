@@ -635,8 +635,17 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;let open M.N in { e with a = b }|foo} ;
      r_output = OK {foo|M.N.({(e) with a = b});
 |foo}
-    }
-]
+    };
+    {name="module-alias1"; implem = False ;
+     o_input = OK {foo|module T = A.B.C|foo} ;
+     official_input = OK {foo|module T = A.B.C|foo} ;
+     r_input = OK {foo|module alias T = A.B.C;|foo} ;
+     o_output = OK {foo|module T = A.B.C;;
+|foo};
+     official_output = OK {foo|module T = A.B.C|foo} ;
+     r_output = OK {foo|module alias T = A.B.C;
+|foo}
+    }]
 ;
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;

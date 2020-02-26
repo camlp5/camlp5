@@ -1838,6 +1838,8 @@ EXTEND_PRINTER
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) True ':')
             (sig_module_or_module_type "and" True ':') pc mdl
+      | <:sig_item:< module alias $i$ = $li$ $itemattrs:item_attrs$ >> ->
+          pprintf pc "module %s = %p%p" i mod_ident (loc, li) (hlist (pr_attribute "@@")) item_attrs
       | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" False '=' pc (Some m, mt, item_attrs)
       | <:sig_item:< open $i$ >> ->

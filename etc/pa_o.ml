@@ -366,6 +366,31 @@ value check_let_not_exception =
     check_let_not_exception_f
 ;
 
+value check_module_alias_f = (fun strm ->
+       match Stream.npeek 3 strm with
+       [ [("", "module"); ("UIDENT", _); ("", "=")] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_module_alias =
+  Grammar.Entry.of_parser gram "check_module_alias"
+    check_module_alias_f
+;
+
+
+value check_module_not_alias_f = (fun strm ->
+       match Stream.npeek 3 strm with
+       [ [("", "module"); ("UIDENT", _); ("", "=")] -> raise Stream.Failure
+       | [("", "module") :: _] -> ()
+       | _ -> raise Stream.Failure ])
+;
+
+value check_module_not_alias =
+  Grammar.Entry.of_parser gram "check_module_not_alias"
+    check_module_not_alias_f
+;
+
+
 value merge_alg_item_attrs ~{nonterm_name} alg_attrs item_attrs =
   match (alg_attrs, item_attrs) with [
     (l1, Ploc.VaVal l2) -> Ploc.VaVal (l1@l2)
@@ -475,6 +500,14 @@ EXTEND
   ;
   uidopt:
     [ [ m = V UIDENT -> Some m
+      | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
+      | "_" -> None
+        END
+      ]
+    ]
+ ;
+  uidopt_no_anti:
+    [ [ m = UIDENT -> Some (Ploc.VaVal m)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | "_" -> None
         END
@@ -591,9 +624,11 @@ EXTEND
           <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
       | "include"; mt = module_type ->
           <:sig_item< include $mt$ >>
-      | "module"; rf = V (FLAG "rec");
-        l = V (LIST1 mod_decl_binding SEP "and") ->
-          <:sig_item< module $_flag:rf$ $_list:l$ >>
+      | check_module_not_alias; "module"; rf = FLAG "rec";
+        l = LIST1 mod_decl_binding SEP "and" ->
+          <:sig_item< module $flag:rf$ $list:l$ >>
+      | check_module_alias; "module"; i = UIDENT; "="; li = mod_ident ; attrs = item_attributes →
+          <:sig_item< module alias $i$ = $li$ $_itemattrs:attrs$ >>
       | "module"; "type"; i = V ident ""; "="; mt = module_type ->
           <:sig_item< module type $_:i$ = $mt$ >>
       | "module"; "type"; i = V ident "" ->
@@ -610,7 +645,7 @@ EXTEND
       ] ]
   ;
   mod_decl_binding:
-    [ [ i = V uidopt "uidopt"; mt = module_declaration ; attrs = item_attributes -> (i, mt, attrs) ] ]
+    [ [ i = uidopt_no_anti ; mt = module_declaration ; attrs = item_attributes -> (Ploc.VaVal i, mt, attrs) ] ]
   ;
   module_declaration:
     [ RIGHTA
