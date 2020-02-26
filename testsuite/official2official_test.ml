@@ -12,7 +12,7 @@ Pcaml.inter_phrases.val := Some ";;\n" ;
 value both_pa = (Official.Implem.pa, Official.Interf.pa) ;
 value both_pr = (Official.Implem.pr, Official.Interf.pr) ;
 
-value tests = "test official -> official" >::: (Papr_test_matrix.official2official both_pa both_pr ()) ;
+value tests = "test official -> official" >::: (Papr_test_matrix.official2official both_pa both_pr (Some Testutil.Official.both_pa) ()) ;
 
 
 value _ =

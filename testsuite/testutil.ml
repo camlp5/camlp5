@@ -166,6 +166,8 @@ value pr st =
   with_buffer_formatter Pprintast.signature st
 ;
 end ;
+value both_pa = (Implem.pa, Interf.pa) ;
+value both_pr = (Implem.pr, Interf.pr) ;
 end ;
 
 

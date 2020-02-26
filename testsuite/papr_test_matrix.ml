@@ -516,16 +516,13 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="pat-exception1"; implem = True ;
-     o_input = OK {foo|(fun (exception E) -> 1)|foo} ;
-     official_input = OK {foo|(fun (exception E) -> 1)|foo} ;
-     r_input = OK {foo|(fun [ exception E -> 1 ]);|foo} ;
-     o_output = OK {foo|let _ =
-  function
-    exception E -> 1;;
+     o_input = OK {foo|match x with exception E -> 1|foo} ;
+     official_input = OK {foo|match x with exception E -> 1|foo} ;
+     r_input = OK {foo|match x with [ exception E -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with exception E -> 1;;
 |foo};
-     official_output = OK {foo|;;fun exception E -> 1|foo};
-     r_output = OK {foo|fun
-[ exception E → 1 ];
+     official_output = OK {foo|;;match x with | exception E -> 1|foo};
+     r_output = OK {foo|match x with [ exception E → 1 ];
 |foo}
     }
 ]
@@ -533,8 +530,22 @@ and t2 = bool[@@foo];
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
 
-value i2test (pa_implem,pa_interf)  (pp_implem, pp_interf) inputf outputf i =
+value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf outputf i =
   i.name >:: (fun _ ->
+    let official_reparse0 implem s = match (implem,pa_official_opt) with [
+      (_,None) -> ()
+    | (True,Some (f,_)) -> ignore(f s)
+    | (False,Some (_,f)) -> ignore(f s)
+    ] in
+    let official_reparse implem s =
+    try official_reparse0 implem s
+    with exn -> do {
+      Printf.fprintf stderr "Exception during reparse of <<%s>>:\n\t" s ;
+      flush stderr ;
+      Testutil.report_error exn ;
+      raise exn
+    } in
+
     match (i.implem, inputf i, outputf i) with [
 
       (_,SKIP inputs msg, _) ->
@@ -543,13 +554,17 @@ value i2test (pa_implem,pa_interf)  (pp_implem, pp_interf) inputf outputf i =
     | (_,_,SKIP outputs msg) ->
         todo i.name   
 
-    | (True, OK inputs, OK outputs) ->
+    | (True, OK inputs, OK outputs) -> do {
         assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}
-          outputs (wrap_err pp_implem (wrap_err pa_implem inputs))
+          outputs (wrap_err pp_implem (wrap_err pa_implem inputs)) ;
+          official_reparse True outputs
+      }
 
-    | (False, OK inputs, OK outputs) ->
+    | (False, OK inputs, OK outputs) -> do {
         assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}
-          outputs (wrap_err pp_interf (wrap_err pa_interf inputs))
+          outputs (wrap_err pp_interf (wrap_err pa_interf inputs)) ;
+          official_reparse False outputs
+      }
 
     | (True,EXN inputs exn, _) ->
         assert_raises_exn_pred ~{msg=i.name} ~{exnmsg="msg"} (smart_exn_eq exn)
@@ -570,12 +585,12 @@ value o_output i = i.o_output ;
 value official_output i = i.official_output ;
 value official_input i = i.official_input ;
 
-value r2r pa pp () = List.map (i2test pa pp r_input r_output ) test_matrix ;
-value r2o pa pp () = List.map (i2test pa pp r_input o_output ) test_matrix ;
-value o2r pa pp () = List.map (i2test pa pp o_input r_output ) test_matrix ;
-value o2o pa pp () = List.map (i2test pa pp o_input o_output ) test_matrix ;
-value o2official pa pp () = List.map (i2test pa pp o_input official_output ) test_matrix ;
-value official2official pa pp () = List.map (i2test pa pp official_input official_output ) test_matrix ;
+value r2r pa pp opa () = List.map (i2test pa pp opa r_input r_output ) test_matrix ;
+value r2o pa pp opa () = List.map (i2test pa pp opa r_input o_output ) test_matrix ;
+value o2r pa pp opa () = List.map (i2test pa pp opa o_input r_output ) test_matrix ;
+value o2o pa pp opa () = List.map (i2test pa pp opa o_input o_output ) test_matrix ;
+value o2official pa pp opa () = List.map (i2test pa pp opa o_input official_output ) test_matrix ;
+value official2official pa pp opa () = List.map (i2test pa pp opa official_input official_output ) test_matrix ;
 
 (*
 ;;; Local Variables: ***
