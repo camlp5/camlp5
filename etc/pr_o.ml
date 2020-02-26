@@ -1700,6 +1700,8 @@ EXTEND_PRINTER
                          mod_param t3
                    | _ -> error loc "type dot 3" ]
 
+               | <:ctyp< $uid:m1$.$uid:m2$.$uid:m3$.$uid:m4$ >> ->
+                   pprintf pc "%s.%s.%s.%s" m1 m2 m3 m4
                | <:ctyp< $uid:m1$.$uid:m2$.$uid:m3$ >> ->
                    pprintf pc "%s.%s.%s" m1 m2 m3
                | <:ctyp< $uid:m1$.$uid:m2$ >> ->
