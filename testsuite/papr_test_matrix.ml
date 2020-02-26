@@ -454,6 +454,17 @@ and t2 = bool[@@foo];
 2;
 |foo}
     };
+    {name="let-binding-item-attributes2"; implem = True ;
+     o_input = OK {foo|let [@argle] x = 1 in 2|foo} ;
+     official_input = OK {foo|let [@argle] x = 1 in 2|foo} ;
+     r_input = SKIP {foo|let [@argle] x = 1 in 2;|foo} "this isn't allowed in revised syntax (and won't be)";
+     o_output = OK {foo|let _ = let x = 1[@@argle] in 2;;
+|foo};
+     official_output = OK {foo|;;let x = 1[@@argle ] in 2|foo};
+     r_output = OK {foo|let x = 1[@@argle] in
+2;
+|foo}
+    };
     {name="letop-binding-item-attributes1-FAILS"; implem = True ;
      o_input = EXN {foo|let|| x = 1 [@@argle] in 2|foo}
                    (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error

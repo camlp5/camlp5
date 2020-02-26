@@ -366,6 +366,14 @@ value check_let_not_exception =
     check_let_not_exception_f
 ;
 
+value merge_alg_item_attrs ~{nonterm_name} alg_attrs item_attrs =
+  match (alg_attrs, item_attrs) with [
+    (l1, Ploc.VaVal l2) -> Ploc.VaVal (l1@l2)
+  | ([], (Ploc.VaAnt _)) -> item_attrs
+  | _ -> failwith (nonterm_name^": cannot specify both algebraic-attributes AND item-attribute antiquotation")
+  ]
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
@@ -413,8 +421,12 @@ EXTEND
   [ [ l = V (LIST0 item_attribute) "itemattrs" -> l ]
   ]
   ;
+  alg_attributes_no_anti:
+  [ [ l = (LIST0 alg_attribute) -> l ]
+  ]
+  ;
   alg_attributes:
-  [ [ l = V (LIST0 alg_attribute) "algattrs" -> l ]
+  [ [ l = V alg_attributes_no_anti "algattrs" -> l ]
   ]
   ;
   functor_parameter:
@@ -820,10 +832,21 @@ EXTEND
           Pcaml.handle_expr_quotation loc con ] ]
   ;
   let_binding:
-    [ [ p = val_ident; e = fun_binding ; attrs = item_attributes -> (p, e, attrs)
-      | p = patt; "="; e = expr ; attrs = item_attributes -> (p, e, attrs)
-      | p = patt; ":"; t = poly_type; "="; e = expr ; attrs = item_attributes ->
-          (<:patt< ($p$ : $t$) >>, e, attrs)
+    [ [ alg_attrs = alg_attributes_no_anti ;
+        p = val_ident; e = fun_binding ;
+        item_attrs = item_attributes ->
+        let attrs = merge_alg_item_attrs ~{nonterm_name="let_binding"} alg_attrs item_attrs in
+        (p, e, attrs)
+      | alg_attrs = alg_attributes_no_anti ;
+        p = patt; "="; e = expr ;
+        item_attrs = item_attributes ->
+        let attrs = merge_alg_item_attrs ~{nonterm_name="let_binding"} alg_attrs item_attrs in
+        (p, e, attrs)
+      | alg_attrs = alg_attributes_no_anti ;
+        p = patt; ":"; t = poly_type; "="; e = expr ;
+        item_attrs = item_attributes ->
+        let attrs = merge_alg_item_attrs ~{nonterm_name="let_binding"} alg_attrs item_attrs in
+        (<:patt< ($p$ : $t$) >>, e, attrs)
       ] ]
   ;
   letop_binding:
