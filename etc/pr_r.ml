@@ -1718,7 +1718,8 @@ EXTEND_PRINTER
           error loc "labels not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< `$s$ >> ->
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"
-      | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
+      | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
+        <:patt< exception $_$ >>
         as z ->
           pprintf pc "@[<1>(%p)@]" patt z
       | z ->

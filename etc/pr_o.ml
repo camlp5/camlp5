@@ -1620,6 +1620,7 @@ EXTEND_PRINTER
       | <:patt< `$s$ >> ->
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
+        <:patt< exception $_$ >> |
         <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
           pprintf pc "@[<1>(%p)@]" patt z
       | z ->
