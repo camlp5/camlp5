@@ -2,7 +2,7 @@
 ocaml-4.00.0:
   syntax: original
   package: ocaml-4.00.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0
   dirs:
     - utils
     - asmcomp
@@ -70,7 +70,7 @@ ocaml-4.00.0:
 ocaml-4.01.0:
   syntax: original
   package: ocaml-4.01.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0
   dirs:
     - utils
     - asmcomp
@@ -142,7 +142,7 @@ ocaml-4.01.0:
 ocaml-4.02.0:
   syntax: original
   package: ocaml-4.02.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.02.0/.opam-switch/sources/ocaml-base-compiler.4.02.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.02.0/.opam-switch/sources/ocaml-base-compiler.4.02.0
   dirs:
     - utils
     - asmcomp
@@ -170,7 +170,7 @@ ocaml-4.02.0:
 ocaml-4.04.0:
   syntax: original
   package: ocaml-4.04.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.04.0/.opam-switch/sources/ocaml-base-compiler.4.04.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.04.0/.opam-switch/sources/ocaml-base-compiler.4.04.0
   dirs:
     - utils
     - asmcomp
@@ -188,12 +188,12 @@ ocaml-4.04.0:
     - otherlibs
     - lex
   exclude:
-    roundtrip-original: []
+    roundtrip-original.*: []
   files: []
 ocaml-4.07.0:
   syntax: original
   package: ocaml-4.07.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.07.0/.opam-switch/sources/ocaml-base-compiler.4.07.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.07.0/.opam-switch/sources/ocaml-base-compiler.4.07.0
   dirs:
     - utils
     - asmcomp
@@ -211,12 +211,12 @@ ocaml-4.07.0:
     - otherlibs
     - lex
   exclude:
-    roundtrip-original: []
+    roundtrip-original.*: []
   files: []
 ocaml-4.09.0:
   syntax: original
   package: ocaml-4.09.0
-  location: /home/chet/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.09.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.09.0/.opam-switch/sources/ocaml-base-compiler.4.09.0
   dirs:
     - utils
     - asmcomp
@@ -234,5 +234,36 @@ ocaml-4.09.0:
     - otherlibs
     - lex
   exclude:
-    roundtrip-original: []
+    roundtrip-original.*: []
+  files: []
+ocaml-4.10.0:
+  syntax: original
+  package: ocaml-4.10.0
+  location: /home/chetsky/Hack/Ocaml/GENERIC/4.10.0/.opam-switch/sources/ocaml-base-compiler.4.10.0
+  dirs:
+    - utils
+    - asmcomp
+    - typing
+    - debugger
+    - testsuite
+    - bytecomp
+    - tools
+    - toplevel
+    - ocamldoc
+    - driver
+    - parsing
+    - stdlib
+    - ocamlbuild
+    - otherlibs
+    - lex
+  exclude:
+    roundtrip-original.*:
+      - stdlib/bool.ml
+      - stdlib/bool.mli
+      - stdlib/list.ml
+      - stdlib/list.mli
+      - stdlib/listLabels.ml
+      - stdlib/listLabels.mli
+      - stdlib/unit.ml
+      - stdlib/unit.mli
   files: []
