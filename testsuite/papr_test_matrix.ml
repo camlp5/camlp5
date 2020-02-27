@@ -645,7 +645,30 @@ and t2 = bool[@@foo];
      official_output = OK {foo|module T = A.B.C|foo} ;
      r_output = OK {foo|module alias T = A.B.C;
 |foo}
-    }]
+    };
+    {name="labeled-field-alg-attribute1"; implem = True ;
+     o_input = OK {foo|type t = { a : int [@attr] ; }|foo} ;
+     official_input = OK {foo|type t = { a : int [@attr] ; }|foo} ;
+     r_input = OK {foo|type t = { a : int[@attr] };|foo} ;
+     o_output = OK {foo|type t = { a : int[@attr] };;
+|foo};
+     official_output = OK {foo|type t = {
+  a: int [@attr ]}|foo} ;
+     r_output = OK {foo|type t = { a : int[@attr] };
+|foo}
+    };
+    {name="labeled-field-alg-attribute2"; implem = True ;
+     o_input = OK {foo|type t = { a : int [@attr] ; [@attr2] }|foo} ;
+     official_input = OK {foo|type t = { a : int [@attr] ;  [@attr2]}|foo} ;
+     r_input = OK {foo|type t = { a : int[@attr] [@attr2] };|foo} ;
+     o_output = OK {foo|type t = { a : int[@attr] [@attr2] };;
+|foo};
+     official_output = OK {foo|type t = {
+  a: int [@attr ][@attr2 ]}|foo} ;
+     r_output = OK {foo|type t = { a : int[@attr] [@attr2] };
+|foo}
+    }
+]
 ;
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;

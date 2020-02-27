@@ -391,11 +391,19 @@ value check_module_not_alias =
 ;
 
 
-value merge_alg_item_attrs ~{nonterm_name} alg_attrs item_attrs =
-  match (alg_attrs, item_attrs) with [
+value merge_left_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} left_attrs right_attrs =
+  match (left_attrs, right_attrs) with [
     (l1, Ploc.VaVal l2) -> Ploc.VaVal (l1@l2)
-  | ([], (Ploc.VaAnt _)) -> item_attrs
-  | _ -> failwith (nonterm_name^": cannot specify both algebraic-attributes AND item-attribute antiquotation")
+  | ([], (Ploc.VaAnt _)) -> right_attrs
+  | _ -> failwith (Printf.sprintf "%s: cannot specify both %s AND %s antiquotation" nonterm_name left_name right_name)
+  ]
+;
+
+value merge_right_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} left_attrs right_attrs =
+  match (left_attrs, right_attrs) with [
+    (Ploc.VaVal l1, l2) -> Ploc.VaVal (l1@l2)
+  | ((Ploc.VaAnt _), []) -> left_attrs
+  | _ -> failwith (Printf.sprintf "%s: cannot specify both %s antiquotation AND %s" nonterm_name left_name right_name)
   ]
 ;
 
@@ -870,17 +878,17 @@ EXTEND
     [ [ alg_attrs = alg_attributes_no_anti ;
         p = val_ident; e = fun_binding ;
         item_attrs = item_attributes ->
-        let attrs = merge_alg_item_attrs ~{nonterm_name="let_binding"} alg_attrs item_attrs in
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
         (p, e, attrs)
       | alg_attrs = alg_attributes_no_anti ;
         p = patt; "="; e = expr ;
         item_attrs = item_attributes ->
-        let attrs = merge_alg_item_attrs ~{nonterm_name="let_binding"} alg_attrs item_attrs in
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
         (p, e, attrs)
       | alg_attrs = alg_attributes_no_anti ;
         p = patt; ":"; t = poly_type; "="; e = expr ;
         item_attrs = item_attributes ->
-        let attrs = merge_alg_item_attrs ~{nonterm_name="let_binding"} alg_attrs item_attrs in
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
         (<:patt< ($p$ : $t$) >>, e, attrs)
       ] ]
   ;
@@ -1164,9 +1172,15 @@ EXTEND
       | UIDENT "False" -> <:vala< "False_" >> ] ]
   ;
   label_declarations:
-    [ [ ld = label_declaration; ";"; ldl = SELF -> [ld :: ldl]
-      | ld = label_declaration; ";" -> [ld]
-      | ld = label_declaration -> [ld] ] ]
+    [ [ (a,b,c,d, attrs1) = label_declaration; ";"; attrs2 = alg_attributes_no_anti ; ldl = SELF ->
+          let attrs = merge_right_auxiliary_attrs ~{nonterm_name="label_declarations"}
+          ~{left_name="algebraic attributes"} ~{right_name="algebraic attributes"} attrs1 attrs2 in
+          [(a,b,c,d, attrs) :: ldl]
+      | (a,b,c,d, attrs1) = label_declaration; ";"; attrs2 = alg_attributes_no_anti ->
+          let attrs = merge_right_auxiliary_attrs ~{nonterm_name="label_declarations"}
+          ~{left_name="algebraic attributes"} ~{right_name="algebraic attributes"} attrs1 attrs2 in
+          [(a,b,c,d, attrs)]
+      | (a,b,c,d, attrs1) = label_declaration -> [(a,b,c,d, attrs1)] ] ]
   ;
   label_declaration:
     [ [ i = LIDENT; ":"; t = poly_type ; attrs = alg_attributes -> (loc, i, False, t, attrs)
