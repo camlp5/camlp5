@@ -667,6 +667,26 @@ and t2 = bool[@@foo];
   a: int [@attr ][@attr2 ]}|foo} ;
      r_output = OK {foo|type t = { a : int[@attr] [@attr2] };
 |foo}
+    };
+    {name="val-attributes1"; implem = False ;
+     o_input = OK {foo|val x : int [@@attr2]|foo} ;
+     official_input = OK {foo|val x : int [@@attr2]|foo} ;
+     r_input = OK {foo|value x : int [@@attr2];|foo} ;
+     o_output = OK {foo|val x : int[@@attr2];;
+|foo};
+     official_output = OK {foo|val x : int[@@attr2 ]|foo} ;
+     r_output = OK {foo|value x : int[@@attr2];
+|foo}
+    };
+    {name="val-attributes2"; implem = False ;
+     o_input = OK {foo|val[@attr1] x : int [@@attr2]|foo} ;
+     official_input = OK {foo|val[@attr1] x : int [@@attr2]|foo} ;
+     r_input = OK {foo|value x : int [@@attr1][@@attr2];|foo} ;
+     o_output = OK {foo|val x : int[@@attr1] [@@attr2];;
+|foo};
+     official_output = OK {foo|val x : int[@@attr1 ][@@attr2 ]|foo} ;
+     r_output = OK {foo|value x : int[@@attr1] [@@attr2];
+|foo}
     }
 ]
 ;

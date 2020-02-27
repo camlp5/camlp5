@@ -645,9 +645,11 @@ EXTEND
           <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
-      | "val"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes ->
+      | "val"; attrs1 = alg_attributes_no_anti; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
-      | "val"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes ->
+      | "val"; attrs1 = alg_attributes_no_anti; "("; i = operator_rparen; ":"; t = ctyp ; attrs2 = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
           <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
       ] ]
