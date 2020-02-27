@@ -2,10 +2,11 @@
 
 while (<ARGV>) {
 
-  $_ =~s/Plexer.gmake\s*\(\s*\)\s*/Lazy.force P.lexer/ ;
+  $_ =~ s/Plexer.gmake\s*\(\s*\)\s*/Lazy.force P.lexer/ ;
+  $_ =~ s/Grammar.Entry.of_parser\s+gram\s+"[^"]+"//;
 
   next if /^\s*EXTEND/../^\s*END/ ;
-  next if /Grammar.Entry.of_parser/;
+#  next if /Grammar.Entry.of_parser/;
   next if /Grammar.Entry.gcreate/;
   next if /Grammar.Entry.create/;
   next if /^\s*#load/ ;

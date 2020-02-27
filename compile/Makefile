@@ -26,7 +26,7 @@ $(CAMLP5N)$D.fast.opt: pa_$D_fast.cmx
 
 pa_$D_fast.ml: compile.cmo comp_head.ml.tpl comp_trail.ml.tpl $(SRC)
 	cat $(SRC) > tmp.$D_concat.ml
-	../meta/camlp5r -I ../meta -I ../etc pa_extend.cmo pa_macro.cmo pa_macro_gram.cmo pr_r.cmo pr_extend.cmo tmp.$D_concat.ml > tmp.$D_postprocessed.ml.ppo.TMP && mv tmp.$D_postprocessed.ml.ppo.TMP tmp.$D_postprocessed.ml.ppo
+	../meta/camlp5r -I ../meta -I ../etc pa_extend.cmo pa_macro.cmo pa_macro_gram.cmo pr_r.cmo pr_ro.cmo pr_extend.cmo tmp.$D_concat.ml > tmp.$D_postprocessed.ml.ppo.TMP && mv tmp.$D_postprocessed.ml.ppo.TMP tmp.$D_postprocessed.ml.ppo
 	./strip-parser.pl tmp.$D_postprocessed.ml.ppo > $D_stripped.tmp
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) EXE=$(EXE) RM=$(RM) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
 	cat comp_head.ml.tpl $D_stripped.tmp $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
