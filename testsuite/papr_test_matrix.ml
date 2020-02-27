@@ -743,6 +743,16 @@ and t2 = bool[@@foo];
      official_output = OK {foo|let f ((module M)  : (module S)) = ()|foo} ;
      r_output = OK {foo|value f (module M : S) = ();
 |foo}
+    };
+    {name="abstract-module-type-str-item"; implem = True ;
+     o_input = OK {foo|module type S|foo} ;
+     official_input = OK {foo|module type S|foo} ;
+     r_input = OK {foo|module type S;|foo} ;
+     o_output = OK {foo|module type S;;
+|foo};
+     official_output = OK {foo|module type S|foo} ;
+     r_output = OK {foo|module type S;
+|foo}
     }
 ]
 ;

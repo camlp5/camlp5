@@ -160,6 +160,7 @@ and sig_item =
       loc * bool *
         (string option * module_type * (string * payload) list) list
   | SgMty of loc * string * module_type * (string * payload) list
+  | SgMtyAbs of loc * string * (string * payload) list
   | SgMtyAlias of loc * string * string list * (string * payload) list
   | SgOpn of loc * string list * (string * payload) list
   | SgTyp of loc * type_decl list
@@ -200,6 +201,7 @@ and str_item =
       loc * bool *
         (string option * module_expr * (string * payload) list) list
   | StMty of loc * string * module_type * (string * payload) list
+  | StMtyAbs of loc * string * (string * payload) list
   | StOpn of loc * bool * module_expr * (string * payload) list
   | StTyp of loc * bool * type_decl list
   | StUse of loc * string * (str_item * loc) list

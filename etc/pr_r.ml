@@ -1856,6 +1856,8 @@ EXTEND_PRINTER
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
+      | <:str_item< module type $m$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "module type %s%p" m  (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ->
           pprintf pc "open%s %p%p" (if (Pcaml.unvala ovf) then "!" else "")
             module_expr me (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
@@ -1919,6 +1921,8 @@ EXTEND_PRINTER
           pprintf pc "module alias %s = %p%p" i mod_ident (loc, li) (hlist (pr_attribute "@@")) item_attrs
       | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
+      | <:sig_item< module type $m$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "module type %s%p" m  (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->

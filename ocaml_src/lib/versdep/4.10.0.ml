@@ -619,6 +619,14 @@ let ocaml_pstr_modtype ?(item_attributes = []) loc s mt =
   Pstr_modtype pmtd
 ;;
 
+let ocaml_pstr_modtype_abs ?(item_attributes = []) loc s =
+  let pmtd =
+    {pmtd_name = mkloc loc s; pmtd_type = None;
+     pmtd_attributes = item_attributes; pmtd_loc = loc}
+  in
+  Pstr_modtype pmtd
+;;
+
 let ocaml_pstr_module ?(item_attributes = []) loc (s : string option) me =
   let mb =
     {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = item_attributes;

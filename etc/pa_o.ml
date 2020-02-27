@@ -539,8 +539,10 @@ EXTEND
       | "include"; me = module_expr ; attrs = item_attributes -> <:str_item< include $me$ $_itemattrs:attrs$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V ident ""; "="; mt = module_type ->
-          <:str_item< module type $_:i$ = $mt$ >>
+      | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes ->
+          <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
+      | "module"; "type"; i = V ident "" ; attrs = item_attributes ->
+          <:str_item< module type $_:i$ $_itemattrs:attrs$ >>
       | "open"; ovf = V (FLAG "!") "!"; me = module_expr ; attrs = item_attributes ->
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
       | "type"; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
@@ -640,10 +642,11 @@ EXTEND
           <:sig_item< module $flag:rf$ $list:l$ >>
       | check_module_alias; "module"; i = UIDENT; "="; li = mod_ident ; attrs = item_attributes →
           <:sig_item< module alias $i$ = $li$ $_itemattrs:attrs$ >>
-      | "module"; "type"; i = V ident ""; "="; mt = module_type ->
-          <:sig_item< module type $_:i$ = $mt$ >>
-      | "module"; "type"; i = V ident "" ->
-          <:sig_item< module type $_:i$ = 'abstract >>
+      | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes ->
+          <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
+      | "module"; "type"; i = V ident "" ; attrs = item_attributes ->
+          <:sig_item< module type $_:i$ $_itemattrs:attrs$ >>
+
       | "open"; i = V mod_ident "list" "" ->
           <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_decl SEP "and") ->

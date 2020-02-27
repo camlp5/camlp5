@@ -67,7 +67,10 @@ val class_sig_item : MLast.class_sig_item Grammar.Entry.e;;
 val class_str_item : MLast.class_str_item Grammar.Entry.e;;
 val class_expr : MLast.class_expr Grammar.Entry.e;;
 val class_type : MLast.class_type Grammar.Entry.e;;
+val alg_attribute : MLast.attribute_body Grammar.Entry.e;;
+val alg_attributes : MLast.attributes Grammar.Entry.e;;
    (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
+
 
 val input_file : string ref;;
    (** The file currently being parsed. *)

@@ -72,6 +72,9 @@ let class_str_item = Grammar.Entry.create gram "class_str_item";;
 let class_type = Grammar.Entry.create gram "class_type";;
 let class_expr = Grammar.Entry.create gram "class_expr";;
 
+let alg_attribute = Grammar.Entry.create gram "alg_attribute";;
+let alg_attributes = Grammar.Entry.create gram "alg_attributes";;
+
 let parse_interf = ref (Grammar.Entry.parse interf);;
 let parse_implem = ref (Grammar.Entry.parse implem);;
 

@@ -1474,6 +1474,18 @@ value ocaml_pstr_modtype ?{item_attributes=[]} loc s mt =
   END
 ;
 
+value ocaml_pstr_modtype_abs ?{item_attributes=[]} loc s =
+  IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    assert False
+  ELSE
+    let pmtd =
+      {pmtd_name = mkloc loc s; pmtd_type = None; pmtd_attributes = item_attributes;
+       pmtd_loc = loc}
+    in
+    Pstr_modtype pmtd
+  END
+;
+
 value ocaml_pstr_module ?{item_attributes=[]} loc (s : option string) me =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     do { assert (item_attributes = []) ;
