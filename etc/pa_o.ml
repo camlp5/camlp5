@@ -42,6 +42,8 @@ do {
   Grammar.Unsafe.clear_entry poly_variant;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
+  Grammar.Unsafe.clear_entry alg_attribute;
+  Grammar.Unsafe.clear_entry alg_attributes;
   Grammar.Unsafe.clear_entry class_sig_item;
   Grammar.Unsafe.clear_entry class_str_item
 };
@@ -411,7 +413,8 @@ EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl constructor_declaration label_declaration
-    match_case with_constr poly_variant lbl_expr lbl_expr_list attribute_body;
+    match_case with_constr poly_variant lbl_expr lbl_expr_list
+    attribute_body alg_attribute alg_attributes;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
     ] ]
@@ -531,8 +534,8 @@ EXTEND
         pd = V (LIST1 STRING) ; attrs = item_attributes ->
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ->
-          <:str_item< external $lid:i$ : $t$ = $_list:pd$ >>
+        pd = V (LIST1 STRING) ; attrs = item_attributes ->
+          <:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
       | "include"; me = module_expr ; attrs = item_attributes -> <:str_item< include $me$ $_itemattrs:attrs$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
           <:str_item< module $_flag:r$ $_list:l$ >>
@@ -628,8 +631,8 @@ EXTEND
         pd = V (LIST1 STRING) ; attrs = item_attributes ->
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ->
-          <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
+        pd = V (LIST1 STRING) ; attrs = item_attributes ->
+          <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
       | "include"; mt = module_type ->
           <:sig_item< include $mt$ >>
       | check_module_not_alias; "module"; rf = FLAG "rec";

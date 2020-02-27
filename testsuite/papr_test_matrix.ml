@@ -687,7 +687,34 @@ and t2 = bool[@@foo];
      official_output = OK {foo|val x : int[@@attr1 ][@@attr2 ]|foo} ;
      r_output = OK {foo|value x : int[@@attr1] [@@attr2];
 |foo}
+    };
+    {name="external-operator-sig-item"; implem = False ;
+     o_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
+  [@@a "msg"]|foo} ;
+     official_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
+  [@@a "msg"]|foo} ;
+     r_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
+  [@@a "msg";];|foo} ;
+     o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a let _ = "msg";;];;
+|foo};
+     official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
+     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@a "msg";];
+|foo}
+    };
+    {name="external-operator-str-item"; implem = True ;
+     o_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
+  [@@a "msg"]|foo} ;
+     official_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
+  [@@a "msg"]|foo} ;
+     r_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
+  [@@a "msg";];|foo} ;
+     o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a let _ = "msg";;];;
+|foo};
+     official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
+     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@a "msg";];
+|foo}
     }
+
 ]
 ;
 

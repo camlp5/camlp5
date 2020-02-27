@@ -1903,7 +1903,10 @@ EXTEND_PRINTER
       | <:sig_item:< exception $uid:e$ of $list:tl$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
           exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
-          external_decl pc (loc, n, t, sl, attrs)
+          if is_operator n then
+            external_decl_original pc (loc, n, t, sl, attrs)
+          else
+            external_decl pc (loc, n, t, sl, attrs)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->

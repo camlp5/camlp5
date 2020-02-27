@@ -66,7 +66,10 @@ value class_sig_item : Grammar.Entry.e MLast.class_sig_item;
 value class_str_item : Grammar.Entry.e MLast.class_str_item;
 value class_expr : Grammar.Entry.e MLast.class_expr;
 value class_type : Grammar.Entry.e MLast.class_type;
+value alg_attribute : Grammar.Entry.e MLast.attribute_body;
+value alg_attributes : Grammar.Entry.e MLast.attributes;
    (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
+
 
 value input_file : ref string;
    (** The file currently being parsed. *)
