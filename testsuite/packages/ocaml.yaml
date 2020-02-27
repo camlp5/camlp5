@@ -266,4 +266,5 @@ ocaml-4.10.0:
       - stdlib/listLabels.mli
       - stdlib/unit.ml
       - stdlib/unit.mli
+      - testsuite/tests/basic-modules/main.mli
   files: []
