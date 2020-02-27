@@ -695,7 +695,7 @@ and t2 = bool[@@foo];
   [@@a "msg"]|foo} ;
      r_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
   [@@a "msg";];|foo} ;
-     o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a let _ = "msg";;];;
+     o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"];;
 |foo};
      official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
      r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@a "msg";];
@@ -708,13 +708,22 @@ and t2 = bool[@@foo];
   [@@a "msg"]|foo} ;
      r_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
   [@@a "msg";];|foo} ;
-     o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a let _ = "msg";;];;
+     o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"];;
 |foo};
      official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
      r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@a "msg";];
 |foo}
+    };
+    {name="expr-1"; implem = True ;
+     o_input = OK {foo|let () = (f [@inlined never]) ()|foo} ;
+     official_input = OK {foo|let () = (f [@inlined never]) ()|foo} ;
+     r_input = OK {foo|value () = (f[@inlined never;]) ();|foo} ;
+     o_output = OK {foo|let () = (f[@inlined never]) ();;
+|foo};
+     official_output = OK {foo|let () = ((f)[@inlined never]) ()|foo} ;
+     r_output = OK {foo|value () = (f[@inlined never;]) ();
+|foo}
     }
-
 ]
 ;
 

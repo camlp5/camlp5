@@ -1619,6 +1619,7 @@ EXTEND_PRINTER
         <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
         <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
+        <:expr< $_$ [@ $_attribute:_$] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->
           let expr_wh =
             if flag_where_after_lparen.val then expr_wh else expr

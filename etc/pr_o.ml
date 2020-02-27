@@ -1039,7 +1039,9 @@ value pr_letlike letop pc loc rf pel e =
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
-      [ <:attribute_body< $attrid:id$ $structure:st$ >> ->
+      [ <:attribute_body< $attrid:id$ $exp:e$ ; >> ->
+        pprintf pc "%s%p" id (space_before expr) e
+      | <:attribute_body< $attrid:id$ $structure:st$ >> ->
         pprintf pc "%s%p" id (hlist (space_before (semi_semi_after str_item))) st
       | <:attribute_body< $attrid:id$ : $signature:si$ >> ->
         pprintf pc "%s:%p" id (hlist (space_before (semi_semi_after sig_item))) si
@@ -1500,6 +1502,7 @@ EXTEND_PRINTER
         <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ |
+        <:expr< $_$ [@ $_attribute:_$] >> |
         MLast.ExRpl _ _ _ | MLast.ExSpw _ _ | MLast.ExPar _ _ _ as z ->
           pprintf pc "@[<1>(%q)@]" expr z ""
       | z ->
