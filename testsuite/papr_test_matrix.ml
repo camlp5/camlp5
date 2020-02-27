@@ -723,6 +723,26 @@ and t2 = bool[@@foo];
      official_output = OK {foo|let () = ((f)[@inlined never]) ()|foo} ;
      r_output = OK {foo|value () = (f[@inlined never;]) ();
 |foo}
+    };
+    {name="anon-module-argumet"; implem = True ;
+     o_input = OK {foo|let f (module _ : S) = ()|foo} ;
+     official_input = OK {foo|let f (module _ : S) = ()|foo} ;
+     r_input = OK {foo|value f (module _ : S) = ();|foo} ;
+     o_output = OK {foo|let f (module _ : S) = ();;
+|foo};
+     official_output = OK {foo|let f ((module _)  : (module S)) = ()|foo} ;
+     r_output = OK {foo|value f (module _ : S) = ();
+|foo}
+    };
+    {name="named-module-argumet"; implem = True ;
+     o_input = OK {foo|let f (module M : S) = ()|foo} ;
+     official_input = OK {foo|let f (module M : S) = ()|foo} ;
+     r_input = OK {foo|value f (module M : S) = ();|foo} ;
+     o_output = OK {foo|let f (module M : S) = ();;
+|foo};
+     official_output = OK {foo|let f ((module M)  : (module S)) = ()|foo} ;
+     r_output = OK {foo|value f (module M : S) = ();
+|foo}
     }
 ]
 ;
