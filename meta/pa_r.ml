@@ -533,6 +533,9 @@ EXTEND
       | "for"; i = V LIDENT; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; "{"; seq = V sequence "list"; "}" →
           <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >>
+      | "for2"; i = V LIDENT; "="; e1 = SELF; df = V direction_flag "to";
+        e2 = SELF; "do"; "{"; seq = V sequence "list"; "}" →
+          <:expr< for2 $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >>
       | "while"; e = SELF; "do"; "{"; seq = V sequence "list"; "}" →
           <:expr< while $e$ do { $_list:seq$ } >> ]
     | "where"

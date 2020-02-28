@@ -3330,7 +3330,7 @@ Grammar.safe_extend
                                (Grammar.r_next
                                   (Grammar.r_next
                                      (Grammar.r_next Grammar.r_stop
-                                        (Grammar.s_token ("", "for")))
+                                        (Grammar.s_token ("", "for2")))
                                      (Grammar.s_nterm
                                         (patt : 'patt Grammar.Entry.e)))
                                   (Grammar.s_token ("", "=")))
