@@ -415,9 +415,11 @@ and module_expr floc sh =
     | MeTyc (loc, x1, x2) ->
         let loc = floc loc in MeTyc (loc, self x1, module_type floc sh x2)
     | MeUid (loc, x1) -> let loc = floc loc in MeUid (loc, x1)
-    | MeUnp (loc, x1, x2) ->
+    | MeUnp (loc, x1, x2, x3) ->
         let loc = floc loc in
-        MeUnp (loc, expr floc sh x1, option_map (module_type floc sh) x2)
+        MeUnp
+          (loc, expr floc sh x1, option_map (module_type floc sh) x2,
+           option_map (module_type floc sh) x3)
     | MeXtr (loc, x1, x2) ->
         let loc = floc loc in MeXtr (loc, x1, option_map (vala_map self) x2)
     | MeExten (loc, exten) -> MeExten (floc loc, exten)

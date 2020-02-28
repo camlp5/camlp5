@@ -736,7 +736,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            (fun _ (e : 'expr) _ _ (loc : Ploc.t) ->
-              (MLast.MeUnp (loc, e, None) : 'module_expr)));
+              (MLast.MeUnp (loc, e, None, None) : 'module_expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -752,7 +752,7 @@ Grammar.safe_extend
                    (module_type : 'module_type Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            (fun _ (mt : 'module_type) _ (e : 'expr) _ _ (loc : Ploc.t) ->
-              (MLast.MeUnp (loc, e, Some mt) : 'module_expr)));
+              (MLast.MeUnp (loc, e, Some mt, None) : 'module_expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->

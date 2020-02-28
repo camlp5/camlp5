@@ -1315,22 +1315,27 @@ and module_expr =
   | MeTyc loc me mt →
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
   | MeUid loc s → mkmod loc (ocaml_pmod_ident (Lident (uv s)))
-  | MeUnp loc e mto →
+  | MeUnp loc e mto1 mto2 →
       match ocaml_pmod_unpack with
       [ Some (Left pmod_unpack) →
-          match mto with
-          [ Some mt →
+          match (mto1, mto2) with
+          [ (Some mt, None) →
               let pt = package_of_module_type loc mt in
               mkmod loc (pmod_unpack (expr e) pt)
-          | None → error loc "no such module unpack in this ocaml version" ]
+          | _ → error loc "no such module unpack in this ocaml version" ]
       | Some (Right (pmod_unpack, ptyp_package)) →
           let e =
-            match mto with
-            [ Some mt →
-                let pt = package_of_module_type loc mt in
+            match (mto1, mto2) with
+            [ (Some mt1, None) →
+                let pt = package_of_module_type loc mt1 in
                 let t = mktyp loc (ptyp_package pt) in
                 mkexp loc (ocaml_pexp_constraint (expr e) (Some t) None)
-            | None →
+            | (Some mt1, Some mt2) →
+                let t1 = mktyp loc (ptyp_package (package_of_module_type loc mt1)) in
+                let t2 = mktyp loc (ptyp_package (package_of_module_type loc mt2)) in
+                mkexp loc (ocaml_pexp_constraint (expr e) (Some t1) (Some t2))
+            | (None, Some _) -> error loc "malformed module unpack"
+            | (None, None) →
                 expr e ]
           in
           mkmod loc (pmod_unpack e)

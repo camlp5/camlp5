@@ -186,7 +186,7 @@ and module_expr =
   | MeStr of loc and V (list str_item)
   | MeTyc of loc and module_expr and module_type
   | MeUid of loc and V string
-  | MeUnp of loc and expr and option module_type
+  | MeUnp of loc and expr and option module_type and option module_type
   | MeXtr of loc and string and option (V module_expr)
   | MeAtt of loc and module_expr and V (V string * payload)
   | MeExten of loc and attribute_body ]

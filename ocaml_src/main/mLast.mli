@@ -181,7 +181,7 @@ and module_expr =
   | MeStr of loc * str_item list
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string
-  | MeUnp of loc * expr * module_type option
+  | MeUnp of loc * expr * module_type option * module_type option
   | MeXtr of loc * string * module_expr option
   | MeAtt of loc * module_expr * (string * payload)
   | MeExten of loc * attribute_body

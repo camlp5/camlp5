@@ -421,7 +421,7 @@ module Meta_make (C : MetaSig) =
       | MeStr _ lsi → C.node "MeStr" [C.vala (C.list str_item) lsi]
       | MeTyc _ me mt → C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid _ s → C.node "MeUid" [C.vala C.string s]
-      | MeUnp _ e omt → C.node "MeUnp" [expr e; C.option module_type omt]
+      | MeUnp _ e omt1 omt2 → C.node "MeUnp" [expr e; C.option module_type omt1; C.option module_type omt2]
       | 
           MeXtr loc s _ → C.xtr loc s
       | MeExten loc exten ->

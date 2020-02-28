@@ -378,10 +378,12 @@ EXTEND
     | [ me1 = SELF; "."; me2 = SELF → Qast.Node "MeAcc" [Qast.Loc; me1; me2] ]
     | "simple"
       [ i = SV UIDENT → Qast.Node "MeUid" [Qast.Loc; i]
+      | "("; "value"; e = expr; ":"; mt1 = module_type; ":>"; mt2 = module_type; ")" →
+          Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option (Some mt1); Qast.Option (Some mt2)]
       | "("; "value"; e = expr; ":"; mt = module_type; ")" →
-          Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option (Some mt)]
+          Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option (Some mt); Qast.Option None]
       | "("; "value"; e = expr; ")" →
-          Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option None]
+          Qast.Node "MeUnp" [Qast.Loc; e; Qast.Option None; Qast.Option None]
       | "("; me = SELF; ":"; mt = module_type; ")" →
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "("; me = SELF; ")" → me
