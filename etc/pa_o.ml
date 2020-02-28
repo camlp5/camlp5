@@ -225,7 +225,7 @@ value test_label_eq =
        [ Some (("UIDENT", _) | ("LIDENT", _) | ("", ".")) ->
            test (lev + 1) strm
        | Some ("ANTIQUOT_LOC", _) -> ()
-       | Some ("", "=" | ";" | "}") -> ()
+       | Some ("", "=" | ";" | "}" | ":") -> ()
        | _ -> raise Stream.Failure ])
 ;
 
@@ -942,8 +942,19 @@ EXTEND
       | le = lbl_expr -> [le] ] ]
   ;
   lbl_expr:
-    [ [ i = patt_label_ident; "="; e = expr LEVEL "expr1" -> (i, e)
-      | i = patt_label_ident -> (i, expr_of_patt i) ] ]
+    [ [ i = patt_label_ident ;
+        tycon = OPT [ ":" ; c = ctyp -> c ];
+        e = OPT [ "="; e = expr LEVEL "expr1" -> e] ->
+        let rhs = match e with [
+          None -> expr_of_patt i
+        | Some e -> e
+        ] in
+        let rhs = match tycon with [
+          None -> rhs
+        | Some ty -> <:expr< ($rhs$ : $ty$) >>
+        ] in 
+        (i, rhs)
+      ] ]
   ;
   expr1_semi_list:
     [ [ el = LIST1 (expr LEVEL "expr1") SEP ";" OPT_SEP -> el ] ]
@@ -1087,12 +1098,19 @@ EXTEND
       | le = lbl_patt -> [le] ] ]
   ;
   lbl_patt:
-    [ [ i = patt_label_ident; "="; p = patt -> (i, p)
-      | i = patt_label_ident ->
+    [ [ i = patt_label_ident ; tycon = OPT [ ":" ; c = ctyp -> c ]; p = OPT [ "="; p = patt -> p ] ->
         let rec loop = fun [
-          <:patt< $MLast.PaUid _ _$ . $p$ >> -> loop p
+          <:patt< $_$ . $p$ >> -> loop p
         | p -> p
-        ] in (i, loop i)
+        ] in
+        let rhs = match p with [
+          None -> loop i
+        | Some p -> p
+        ] in
+        let rhs = match tycon with [
+          None -> rhs
+        | Some ty -> <:patt< ($rhs$ : $ty$) >>
+        ] in (i, rhs)
       | "_" -> (<:patt< _ >>, <:patt< _ >>) ] ]
   ;
   patt_label_ident:

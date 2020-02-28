@@ -894,6 +894,56 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;for _ = 1 to 10 do () done|foo} ;
      r_output = OK {foo|for _ = 1 to 10 do { () };
 |foo}
+    };
+    {name="record-label-patterns1"; implem = True ;
+     o_input = OK {foo|let get_int { contents : int } = contents|foo} ;
+     official_input = OK {foo|let get_int { contents : int } = contents|foo} ;
+     r_input = OK {foo|value get_int { contents = (contents : int) } = contents;|foo} ;
+     o_output = OK {foo|let get_int {contents = (contents : int)} = contents;;
+|foo};
+     official_output = OK {foo|let get_int { contents = (contents : int) } = contents|foo} ;
+     r_output = OK {foo|value get_int {contents = (contents : int)} = contents;
+|foo}
+    };
+    {name="record-label-patterns2"; implem = True ;
+     o_input = OK {foo|let get_int { M.N.contents : int } = contents|foo} ;
+     official_input = OK {foo|let get_int { M.N.contents : int } = contents|foo} ;
+     r_input = OK {foo|value get_int { M.N.contents = (contents : int) } = contents;|foo} ;
+     o_output = OK {foo|let get_int {M.N.contents = (contents : int)} = contents;;
+|foo};
+     official_output = OK {foo|let get_int { M.N.contents = (contents : int) } = contents|foo} ;
+     r_output = OK {foo|value get_int {M.N.contents = (contents : int)} = contents;
+|foo}
+    };
+    {name="record-label-patterns3"; implem = True ;
+     o_input = OK {foo|let get_int { M.N.contents : int = c } = c|foo} ;
+     official_input = OK {foo|let get_int { M.N.contents : int = c } = c|foo} ;
+     r_input = OK {foo|value get_int { M.N.contents = (c : int) } = c;|foo} ;
+     o_output = OK {foo|let get_int {M.N.contents = (c : int)} = c;;
+|foo};
+     official_output = OK {foo|let get_int { M.N.contents = (c : int) } = c|foo} ;
+     r_output = OK {foo|value get_int {M.N.contents = (c : int)} = c;
+|foo}
+    };
+    {name="record-label-expression1"; implem = True ;
+     o_input = OK {foo|let set_int contents = { contents : int }|foo} ;
+     official_input = OK {foo|let set_int contents = { contents : int }|foo} ;
+     r_input = OK {foo|value set_int contents = { contents = (contents : int) };|foo} ;
+     o_output = OK {foo|let set_int contents = {contents = (contents : int)};;
+|foo};
+     official_output = OK {foo|let set_int contents = { contents = (contents : int) }|foo} ;
+     r_output = OK {foo|value set_int contents = {contents = (contents : int)};
+|foo}
+    };
+    {name="record-label-expression2"; implem = True ;
+     o_input = OK {foo|let set_int2 c = { contents : int = c }|foo} ;
+     official_input = OK {foo|let set_int2 c = { contents : int = c }|foo} ;
+     r_input = OK {foo|value set_int2 c = { contents = (c : int) };|foo} ;
+     o_output = OK {foo|let set_int2 c = {contents = (c : int)};;
+|foo};
+     official_output = OK {foo|let set_int2 c = { contents = (c : int) }|foo} ;
+     r_output = OK {foo|value set_int2 c = {contents = (c : int)};
+|foo}
     }
 ]
 ;
