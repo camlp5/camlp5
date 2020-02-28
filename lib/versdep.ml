@@ -976,8 +976,11 @@ value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
 value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
 
 value ocaml_pexp_for i e1 e2 df e =
-  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_for (mknoloc i) e1 e2 df e
-  ELSE Pexp_for (ocaml_mkpat loc_none (Ppat_var (mknoloc i))) e1 e2 df e END
+  IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    Pexp_for (mknoloc i) e1 e2 df e
+  ELSE
+    Pexp_for i e1 e2 df e
+END
 ;
 
 value ocaml_case (p, wo, loc, e) =

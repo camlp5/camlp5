@@ -102,6 +102,7 @@ and expr =
   | ExCoe of loc and expr and option ctyp and ctyp
   | ExFlo of loc and V string
   | ExFor of loc and V string and expr and expr and V bool and V (list expr)
+  | ExFor2 of loc and patt and expr and expr and V bool and V (list expr)
   | ExFun of loc and V (list (patt * V (option expr) * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string

@@ -400,9 +400,7 @@ let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
 
 let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
 
-let ocaml_pexp_for i e1 e2 df e =
-  Pexp_for (ocaml_mkpat loc_none (Ppat_var (mknoloc i)), e1, e2, df, e)
-;;
+let ocaml_pexp_for i e1 e2 df e = Pexp_for (i, e1, e2, df, e);;
 
 let ocaml_case (p, wo, loc, e) = {pc_lhs = p; pc_guard = wo; pc_rhs = e};;
 
