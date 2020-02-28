@@ -589,12 +589,9 @@ EXTEND
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF →
           Qast.Node "ExIfe" [Qast.Loc; e1; e2; e3]
       | "do"; "{"; seq = SV sequence "list"; "}" → mksequence2 Qast.Loc seq
-      | "for"; i = SV LIDENT; "="; e1 = SELF; df = SV direction_flag "to";
+      | "for"; i = patt; "="; e1 = SELF; df = SV direction_flag "to";
         e2 = SELF; "do"; "{"; seq = SV sequence "list"; "}" →
           Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; seq]
-      | "for2"; i = patt; "="; e1 = SELF; df = SV direction_flag "to";
-        e2 = SELF; "do"; "{"; seq = SV sequence "list"; "}" →
-          Qast.Node "ExFor2" [Qast.Loc; i; e1; e2; df; seq]
       | "while"; e = SELF; "do"; "{"; seq = SV sequence "list"; "}" →
           Qast.Node "ExWhi" [Qast.Loc; e; seq] ]
     | "where"

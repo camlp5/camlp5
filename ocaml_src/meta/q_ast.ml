@@ -219,10 +219,6 @@ module Meta_make (C : MetaSig) =
       | ExFlo (_, s) -> C.node "ExFlo" [C.vala C.string s]
       | ExFor (_, s, e1, e2, b, le) ->
           C.node "ExFor"
-            [C.vala C.string s; expr e1; expr e2; C.vala C.bool b;
-             C.vala (C.list expr) le]
-      | ExFor2 (_, s, e1, e2, b, le) ->
-          C.node "ExFor2"
             [patt s; expr e1; expr e2; C.vala C.bool b;
              C.vala (C.list expr) le]
       | ExFun (_, lpoee) ->

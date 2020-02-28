@@ -97,8 +97,7 @@ and expr =
   | ExChr of loc * string
   | ExCoe of loc * expr * ctyp option * ctyp
   | ExFlo of loc * string
-  | ExFor of loc * string * expr * expr * bool * expr list
-  | ExFor2 of loc * patt * expr * expr * bool * expr list
+  | ExFor of loc * patt * expr * expr * bool * expr list
   | ExFun of loc * (patt * expr option * expr) list
   | ExIfe of loc * expr * expr * expr
   | ExInt of loc * string * string

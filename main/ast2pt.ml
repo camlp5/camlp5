@@ -903,11 +903,6 @@ and expr =
         (ocaml_pexp_constraint (expr e) (option_map ctyp t1) (Some (ctyp t2)))
   | ExFlo loc s → mkexp loc (Pexp_constant (ocaml_pconst_float (uv s)))
   | ExFor loc i e1 e2 df el →
-      let i = PaLid loc <:vala< (uv i) >> in
-      let e3 = <:expr< do { $list:uv el$ } >> in
-      let df = if uv df then Upto else Downto in
-      mkexp loc (ocaml_pexp_for (patt i) (expr e1) (expr e2) df (expr e3))
-  | ExFor2 loc i e1 e2 df el →
       let e3 = <:expr< do { $list:uv el$ } >> in
       let df = if uv df then Upto else Downto in
       mkexp loc (ocaml_pexp_for (patt i) (expr e1) (expr e2) df (expr e3))

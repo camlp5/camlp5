@@ -272,10 +272,7 @@ and expr floc sh =
         ExFlo loc x1
     | ExFor loc x1 x2 x3 x4 x5 →
         let loc = floc loc in
-        ExFor loc x1 (self x2) (self x3) x4 (vala_map (List.map self) x5)
-    | ExFor2 loc x1 x2 x3 x4 x5 →
-        let loc = floc loc in
-        ExFor2 loc (patt floc sh x1) (self x2) (self x3) x4 (vala_map (List.map self) x5)
+        ExFor loc (patt floc sh x1) (self x2) (self x3) x4 (vala_map (List.map self) x5)
     | ExFun loc x1 →
         let loc = floc loc in
         ExFun loc
