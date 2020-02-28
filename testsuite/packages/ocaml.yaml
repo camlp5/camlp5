@@ -267,4 +267,5 @@ ocaml-4.10.0:
       - stdlib/unit.ml
       - stdlib/unit.mli
       - testsuite/tests/basic-modules/main.mli
+      - testsuite/tests/basic/patmatch_split_no_or.ml
   files: []

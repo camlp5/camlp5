@@ -1609,6 +1609,8 @@ EXTEND_PRINTER
       | <:patt< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
+      | <:patt< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:patt:< $lid:s$ >> -> var_escaped pc (loc, s)
       | <:patt:< $uid:s$ >> -> cons_escaped pc (loc, s)
       | <:patt< $chr:s$ >> -> pprintf pc "'%s'" (ocaml_char s)
@@ -1890,11 +1892,9 @@ EXTEND_PRINTER
    | "apply"
       [ <:module_expr< $x$ $y$ >> ->
           let mod_exp2 pc (is_first, me) =
-            match me with
-            [ <:module_expr< $uid:_$ >> | <:module_expr< $_$ . $_$ >>
-              when not is_first ->
-                pprintf pc "(%p)" next me
-            | _ -> next pc me ]
+            if is_first then
+              next pc me
+            else pprintf pc "(%p)" module_expr me
           in
           let (me, mel) =
             loop [(False, y)] x where rec loop mel =
@@ -2509,6 +2509,10 @@ EXTEND_PRINTER
         pprintf pc "%p[@%p]" curr ct attribute_body attr
       ]
 
+    | [ <:class_expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
+      ]
+
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
           pprintf pc "%p@;%p" curr ce (Eprinter.apply_level pr_expr "label")
@@ -2522,9 +2526,9 @@ EXTEND_PRINTER
           class_object loc pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" class_expr ce class_type ct
-      | <:class_expr< [% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%") e
-      | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >> as z ->
+      | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >>
+        | <:class_expr< [% $_extension:_$ ] >>
+        as z ->
           pprintf pc "@[<1>(%p)@]" class_expr z
       | z ->
           error (MLast.loc_of_class_expr z)

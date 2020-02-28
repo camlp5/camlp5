@@ -729,6 +729,7 @@ EXTEND
       [ s = V LIDENT → <:patt< $_lid:s$ >>
       | s = V GIDENT → <:patt< $_lid:s$ >>
       | s = V UIDENT → <:patt< $_uid:s$ >>
+      | e = alg_extension -> <:patt< [% $_extension:e$ ] >>
       | s = V INT → <:patt< $_int:s$ >>
       | s = V INT_l → <:patt< $_int32:s$ >>
       | s = V INT_L → <:patt< $_int64:s$ >>
@@ -791,6 +792,7 @@ EXTEND
       | "{"; lpl = V (LIST1 label_ipatt SEP ";"); "}" →
           <:patt< { $_list:lpl$ } >>
       | "("; p = paren_ipatt; ")" → p
+      | e = alg_extension -> <:patt< [% $_extension:e$ ] >>
       | s = V LIDENT → <:patt< $_lid:s$ >>
       | s = V GIDENT → <:patt< $_lid:s$ >>
       | "_" → <:patt< _ >> ] ]
@@ -958,10 +960,20 @@ EXTEND
       [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:class_expr< $ct$ [@ $_attribute:attr$ ] >>
       ]
-    | "apply" LEFTA
+    | [ e = alg_extension -> <:class_expr< [% $_extension:e$ ] >>
+      ]
+    | [ ce = class_expr_apply -> ce ]
+    ]
+    ;
+  class_expr_apply:
+    [ "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" →
           <:class_expr< $ce$ $e$ >> ]
-    | "simple"
+    | [ ce = class_expr_simple -> ce ]
+    ]
+    ;
+  class_expr_simple:
+    [ "simple"
       [ ci = V class_longident "list" →
           <:class_expr< $_list:ci$ >>
       | "object"; cspo = V (OPT class_self_patt); cf = class_structure;
@@ -970,10 +982,9 @@ EXTEND
       | "["; ctcl = V (LIST1 ctyp SEP ","); "]";
         ci = V class_longident "list" →
           <:class_expr< [ $_list:ctcl$ ] $_list:ci$ >>
-      | "("; ce = SELF; ":"; ct = class_type; ")" →
+      | "("; ce = class_expr; ":"; ct = class_type; ")" →
           <:class_expr< ($ce$ : $ct$) >>
-      | "("; ce = SELF; ")" → ce
-      | e = alg_extension -> <:class_expr< [% $_extension:e$ ] >>
+      | "("; ce = class_expr; ")" → ce
       ] ]
   ;
   class_structure:

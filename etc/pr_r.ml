@@ -1701,6 +1701,8 @@ EXTEND_PRINTER
       | <:patt< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
+      | <:patt< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (pr_extension "%") e
       | <:patt:< $lid:s$ >> when is_operator s ->
           pprintf pc "( %s )" s
       | <:patt:< $lid:s$ >> ->

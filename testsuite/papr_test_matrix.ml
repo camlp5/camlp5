@@ -753,6 +753,117 @@ and t2 = bool[@@foo];
      official_output = OK {foo|module type S|foo} ;
      r_output = OK {foo|module type S;
 |foo}
+    };
+    {name="alg-extension-ctyp"; implem = True ;
+     o_input = OK {foo|type t = int * [%a]|foo} ;
+     official_input = OK {foo|type t = int * [%a]|foo} ;
+     r_input = OK {foo|type t = (int * [%a]);|foo} ;
+     o_output = OK {foo|type t = int * [%a];;
+|foo};
+     official_output = OK {foo|type t = (int * [%a ])|foo} ;
+     r_output = OK {foo|type t = (int * [%a]);
+|foo}
+    };
+    {name="alg-extension-patt"; implem = True ;
+     o_input = OK {foo|match x with (x, [%a]) -> 1|foo} ;
+     official_input = OK {foo|match x with (x, [%a]) -> 1|foo} ;
+     r_input = OK {foo|match x with [ (x, [%a]) -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with x, [%a] -> 1;;
+|foo};
+     official_output = OK {foo|;;match x with | (x, [%a ]) -> 1|foo} ;
+     r_output = OK {foo|match x with [ (x, [%a]) → 1 ];
+|foo}
+    };
+    {name="alg-extension-expr"; implem = True ;
+     o_input = OK {foo|let x = 1 + [%a]|foo} ;
+     official_input = OK {foo|let x = 1 + [%a]|foo} ;
+     r_input = OK {foo|value x = 1 + [%a];|foo} ;
+     o_output = OK {foo|let x = 1 + [%a];;
+|foo};
+     official_output = OK {foo|let x = 1 + ([%a ])|foo} ;
+     r_output = OK {foo|value x = 1 + [%a];
+|foo}
+    };
+    {name="alg-extension-module-type"; implem = True ;
+     o_input = OK {foo|module type S = sig module M : [%a] end|foo} ;
+     official_input = OK {foo|module type S = sig module M : [%a] end|foo} ;
+     r_input = OK {foo|module type S = sig module M : [%a]; end;|foo} ;
+     o_output = OK {foo|module type S = sig module M : [%a] end;;
+|foo};
+     official_output = OK {foo|module type S  = sig module M : [%a ] end|foo} ;
+     r_output = OK {foo|module type S = sig module M : [%a]; end;
+|foo}
+    };
+    {name="alg-extension-sig-item"; implem = True ;
+     o_input = OK {foo|module type S = sig [%%a] type t end|foo} ;
+     official_input = OK {foo|module type S = sig [%%a] type t end|foo} ;
+     r_input = OK {foo|module type S = sig [%%a]; type t = 'a; end;|foo} ;
+     o_output = OK {foo|module type S = sig [%%a] type t end;;
+|foo};
+     official_output = OK {foo|module type S  = sig [%%a ] type t end|foo} ;
+     r_output = OK {foo|module type S = sig [%%a]; type t = α; end;
+|foo}
+    };
+    {name="alg-extension-module-expr"; implem = True ;
+     o_input = OK {foo|module M = F([%a])|foo} ;
+     official_input = OK {foo|module M = F([%a])|foo} ;
+     r_input = OK {foo|module M = F([%a]);|foo} ;
+     o_output = OK {foo|module M = F ([%a]);;
+|foo};
+     official_output = OK {foo|module M = (F)([%a ])|foo} ;
+     r_output = OK {foo|module M = F [%a];
+|foo}
+    };
+    {name="alg-extension-str-item"; implem = True ;
+     o_input = OK {foo|module S = struct [%%a] type t end|foo} ;
+     official_input = OK {foo|module S = struct [%%a] type t end|foo} ;
+     r_input = OK {foo|module S = struct [%%a]; type t = 'a; end;|foo} ;
+     o_output = OK {foo|module S = struct [%%a] type t end;;
+|foo};
+     official_output = OK {foo|module S = struct [%%a ]
+                  type t end|foo} ;
+     r_output = OK {foo|module S = struct [%%a]; type t = α; end;
+|foo}
+    };
+    {name="alg-extension-class-sig-item"; implem = True ;
+     o_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
+     official_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
+     r_input = OK {foo|class type ct = object value x : int; [%%a]; end;|foo} ;
+     o_output = OK {foo|class type ct = object val x : int [%%a] end;;
+|foo};
+     official_output = OK {foo|class type ct = object val  x : int [%%a ] end|foo} ;
+     r_output = OK {foo|class type ct = object value x : int; [%%a]; end;
+|foo}
+    };
+    {name="alg-extension-class-str-item"; implem = True ;
+     o_input = OK {foo|class ct = object val x = 1 [%%a] end|foo} ;
+     official_input = OK {foo|class ct = object val x = 1 [%%a] end|foo} ;
+     r_input = OK {foo|class ct = object value x = 1; [%%a]; end;|foo} ;
+     o_output = OK {foo|class ct = object val x = 1 [%%a] end;;
+|foo};
+     official_output = OK {foo|class ct = object val x = 1 [%%a ] end|foo} ;
+     r_output = OK {foo|class ct = object value x = 1; [%%a]; end;
+|foo}
+    };
+    {name="alg-extension-class-expr"; implem = True ;
+     o_input = OK {foo|class c = ([%a]) 1 |foo} ;
+     official_input = OK {foo|class c = ([%a]) 1 |foo} ;
+     r_input = OK {foo|class c = ([%a]) 1 ;|foo} ;
+     o_output = OK {foo|class c = ([%a]) 1;;
+|foo};
+     official_output = OK {foo|class c = (([%a ]) 1)|foo} ;
+     r_output = OK {foo|class c = ([%a]) 1;
+|foo}
+    };
+    {name="alg-extension-class-str-item"; implem = True ;
+     o_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
+     official_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
+     r_input = OK {foo|class type ct = object value x : int; [%%a]; end;|foo} ;
+     o_output = OK {foo|class type ct = object val x : int [%%a] end;;
+|foo};
+     official_output = OK {foo|class type ct = object val  x : int [%%a ] end|foo} ;
+     r_output = OK {foo|class type ct = object value x : int; [%%a]; end;
+|foo}
     }
 ]
 ;

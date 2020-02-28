@@ -414,7 +414,8 @@ EXTEND
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl constructor_declaration label_declaration
     match_case with_constr poly_variant lbl_expr lbl_expr_list
-    attribute_body alg_attribute alg_attributes;
+    attribute_body alg_attribute alg_attributes
+    ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
     ] ]
@@ -465,6 +466,14 @@ EXTEND
   [ [ l = V alg_attributes_no_anti "algattrs" -> l ]
   ]
   ;
+  item_extension:
+  [ [ "[%%" ; e = V attribute_body "extension"; "]" -> e
+    ] ]
+  ;
+  alg_extension:
+  [ [ "[%" ; e = V attribute_body "extension"; "]" -> e
+    ] ]
+  ;
   functor_parameter:
     [ [ "("; i = V uidopt "uidopt"; ":"; t = module_type; ")" -> Some(i, t)
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
@@ -489,9 +498,6 @@ EXTEND
       | me1 = SELF; "("; ")" -> <:module_expr< $me1$ (struct end) >>
         END
       ]
-
-
-
     | [ i = mod_expr_ident -> i
       | "("; "val"; e = expr; ":"; mt = module_type; ")" ->
          <:module_expr< (value $e$ : $mt$) >>
@@ -499,7 +505,9 @@ EXTEND
          <:module_expr< (value $e$) >>
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
-      | "("; me = SELF; ")" -> <:module_expr< $me$ >> ] ]
+      | "("; me = SELF; ")" -> <:module_expr< $me$ >>
+      | e = alg_extension -> <:module_expr< [% $_extension:e$ ] >>
+      ] ]
   ;
   structure:
     [ [ st = V (LIST0 [ s = str_item; OPT ";;" -> s ]) -> st ] ]
@@ -573,6 +581,7 @@ EXTEND
           <:str_item< let open $m$ in $e$ >>
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:str_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   rebind_exn:
@@ -613,6 +622,7 @@ EXTEND
       | "module"; "type"; "of"; me = module_expr ->
           <:module_type< module type of $me$ >>
       | i = mod_type_ident -> i
+      | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
       | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
   ;
   signature:
@@ -658,6 +668,7 @@ EXTEND
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
           <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:sig_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   mod_decl_binding:
@@ -852,6 +863,7 @@ EXTEND
       | s = V FLOAT -> <:expr< $_flo:s$ >>
       | s = V STRING -> <:expr< $_str:s$ >>
       | c = V CHAR -> <:expr< $_chr:c$ >>
+      | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | UIDENT "True" -> <:expr< True_ >>
       | UIDENT "False" -> <:expr< False_ >>
       | i = expr_ident -> i
@@ -1037,6 +1049,7 @@ EXTEND
       | s = V FLOAT -> <:patt< $_flo:s$ >>
       | s = V STRING -> <:patt< $_str:s$ >>
       | s = V CHAR -> <:patt< $_chr:s$ >>
+      | e = alg_extension -> <:patt< [% $_extension:e$ ] >>
       | UIDENT "True" -> <:patt< True_ >>
       | UIDENT "False" -> <:patt< False_ >>
       | "false" -> <:patt< False >>
@@ -1217,6 +1230,7 @@ EXTEND
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
       | "_" -> <:ctyp< _ >>
+      | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>
       | i = V UIDENT -> <:ctyp< $_uid:i$ >>
       | "("; "module"; mt = module_type; ")" -> <:ctyp< module $mt$ >>
@@ -1288,10 +1302,22 @@ EXTEND
       [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:class_expr< $ct$ [@ $_attribute:attr$ ] >>
       ]
-    | "apply" LEFTA
+    | "extension" NONA [
+         e = alg_extension -> <:class_expr< [% $_extension:e$ ] >>
+      | e = NEXT -> e
+      ]
+    | [ ce = class_expr_apply -> ce ]
+    ]
+    ;
+  class_expr_apply:
+    [ "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
-    | "simple"
+    | [ ce = class_expr_simple -> ce ]
+    ]
+    ;
+  class_expr_simple:
+    [ "simple"
       [ "["; ct = ctyp; ","; ctcl = LIST1 ctyp SEP ","; "]";
         ci = class_longident ->
           <:class_expr< [ $list:[ct :: ctcl]$ ] $list:ci$ >>
@@ -1301,9 +1327,10 @@ EXTEND
       | "object"; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
           <:class_expr< object $_opt:cspo$ $_list:cf$ end >>
-      | "("; ce = SELF; ":"; ct = class_type; ")" ->
+      | "("; ce = class_expr; ":"; ct = class_type; ")" ->
           <:class_expr< ($ce$ : $ct$) >>
-      | "("; ce = SELF; ")" -> ce ] ]
+      | "("; ce = class_expr; ")" -> ce
+      ] ]
   ;
   class_structure:
     [ [ cf = LIST0 class_str_item -> cf ] ]
@@ -1351,6 +1378,7 @@ EXTEND
           <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
       | "initializer"; se = expr ; attrs = item_attributes -> <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:class_str_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:class_str_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   cvalue_binding:
@@ -1418,6 +1446,7 @@ EXTEND
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
           <:class_sig_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:class_sig_item< [@@@ $_attribute:attr$ ] >>
+      | e = item_extension -> <:class_sig_item< [%% $_extension:e$ ] >>
       ] ]
   ;
   class_description:

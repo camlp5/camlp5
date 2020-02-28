@@ -295,6 +295,88 @@ let number buf (strm__ : _ Stream.t) =
       | _ -> end_integer buf strm__
 ;;
 
+(*
+let hex_float_literal =
+  '0' ['x' 'X']
+  ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
+  ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
+  (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+let literal_modifier = ['G'-'Z' 'g'-'z']
+
+let hex_float_literal =
+  '0' ['x' 'X']
+  ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
+  ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
+  (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+let literal_modifier = ['G'-'Z' 'g'-'z']
+*)
+
+(* hex_digits* *)
+let rec hex_digits_under_star buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('0'..'9' | 'a'..'f' | 'A'..'F' | '_' as c) ->
+      Stream.junk strm__;
+      hex_digits_under_star (Plexing.Lexbuf.add c buf) strm__
+  | _ -> buf
+;;
+let rec hex_under_integer buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('0'..'9' | 'a'..'f' | 'A'..'F' as c) ->
+      Stream.junk strm__;
+      begin try hex_digits_under_star (Plexing.Lexbuf.add c buf) strm__ with
+        Stream.Failure -> raise (Stream.Error "")
+      end
+  | _ -> raise Stream.Failure
+;;
+let rec decimal_under_integer buf (strm__ : _ Stream.t) =
+  let buf =
+    match Stream.peek strm__ with
+      Some ('0'..'9' as c) -> Stream.junk strm__; Plexing.Lexbuf.add c buf
+    | _ -> buf
+  in
+  decimal_digits_under buf strm__
+;;
+
+let hex_exponent_part buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('p' | 'P' as c) ->
+      Stream.junk strm__;
+      let buf = Plexing.Lexbuf.add c buf in
+      let buf =
+        match Stream.peek strm__ with
+          Some ('+' | '-' as c) ->
+            Stream.junk strm__; Plexing.Lexbuf.add c buf
+        | _ -> buf
+      in
+      decimal_under_integer buf strm__
+  | _ -> raise Stream.Failure
+;;
+
+let hex_number buf (strm__ : _ Stream.t) =
+  let buf = hex_under_integer buf strm__ in
+  match Stream.peek strm__ with
+    Some '.' ->
+      Stream.junk strm__;
+      let buf = hex_digits_under_star (Plexing.Lexbuf.add '.' buf) strm__ in
+      begin match
+        (try Some (hex_exponent_part buf strm__) with Stream.Failure -> None)
+      with
+        Some buf -> "FLOAT", Plexing.Lexbuf.get buf
+      | _ -> "FLOAT", Plexing.Lexbuf.get buf
+      end
+  | _ ->
+      match
+        try Some (hex_exponent_part buf strm__) with Stream.Failure -> None
+      with
+        Some buf -> "FLOAT", Plexing.Lexbuf.get buf
+      | _ ->
+          match
+            try Some (exponent_part buf strm__) with Stream.Failure -> None
+          with
+            Some buf -> "FLOAT", Plexing.Lexbuf.get buf
+          | _ -> end_integer buf strm__
+;;
+
 let char_after_bslash buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '\'' -> Stream.junk strm__; buf
@@ -889,7 +971,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                         strm__
                   | Some ('x' | 'X' as c) ->
                       Stream.junk strm__;
-                      digits hexa
+                      hex_number
                         (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '0' buf))
                         strm__
                   | Some ('b' | 'B' as c) ->
@@ -1624,15 +1706,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 829, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 871, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 829, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 871, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 829, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 871, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 830, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 872, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 830, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 872, 37)));
        Plexing.tok_comm = None}
   in
   let glex =

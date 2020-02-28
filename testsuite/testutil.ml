@@ -3,6 +3,13 @@
 
 open Printf;
 
+value map_stream f =
+  let rec mrec = parser [
+    [: `e ; strm :] -> [: `f e ; mrec strm :]
+  | [: :] -> [: :]
+  ] in mrec
+;
+
 value list_of_stream_eof eoftok strm =
   let rec lrec acc = parser [
     [: `e when e = eoftok :] -> List.rev [ e::acc ]

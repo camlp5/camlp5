@@ -64,7 +64,7 @@ papr_official.cmo: papr_official.ppo.ml
 .PRECIOUS: papr_official.ppo.ml
 
 papr_official.ppo.ml: papr_official.ml
-	$(CAMLP5R) -I . -mode S -o papr_official.ppo.ml papr_official.ml
+	$(CAMLP5R) pr_o.cmo -I . -mode S -o papr_official.ppo.ml papr_official.ml
 
 papr_official.byte: papr_official.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES_NOCAMLP5),ounit2 -linkall -linkpkg papr_official.cmo -o papr_official.byte

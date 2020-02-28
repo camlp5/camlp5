@@ -390,6 +390,10 @@ Grammar.safe_extend
      grammar_entry_create "class_type_parameters"
    and class_fun_def : 'class_fun_def Grammar.Entry.e =
      grammar_entry_create "class_fun_def"
+   and class_expr_apply : 'class_expr_apply Grammar.Entry.e =
+     grammar_entry_create "class_expr_apply"
+   and class_expr_simple : 'class_expr_simple Grammar.Entry.e =
+     grammar_entry_create "class_expr_simple"
    and class_structure : 'class_structure Grammar.Entry.e =
      grammar_entry_create "class_structure"
    and class_self_patt : 'class_self_patt Grammar.Entry.e =
@@ -2830,6 +2834,12 @@ Grammar.safe_extend
            (fun (s : string) (loc : Ploc.t) ->
               (MLast.PaInt (loc, s, "") : 'patt)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.PaExten (loc, e) : 'patt)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (s : string) (loc : Ploc.t) ->
               (MLast.PaUid (loc, s) : 'patt)));
@@ -2977,6 +2987,12 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            (fun (s : string) (loc : Ploc.t) ->
               (MLast.PaLid (loc, s) : 'ipatt)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (MLast.PaExten (loc, e) : 'ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3668,26 +3684,46 @@ Grammar.safe_extend
            (fun _ (attr : 'attribute_body) _ (ct : 'class_expr)
                 (loc : Ploc.t) ->
               (MLast.CeAtt (loc, ct, attr) : 'class_expr)))];
-       Some "apply", Some Gramext.LeftA,
-       [Grammar.production
-          (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-             (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "label"),
-           (fun (e : 'expr) (ce : 'class_expr) (loc : Ploc.t) ->
-              (MLast.CeApp (loc, ce, e) : 'class_expr)))];
-       Some "simple", None,
+       None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (alg_extension : 'alg_extension Grammar.Entry.e)),
            (fun (e : 'alg_extension) (loc : Ploc.t) ->
-              (MLast.CeExten (loc, e) : 'class_expr)));
-        Grammar.production
+              (MLast.CeExten (loc, e) : 'class_expr)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (class_expr_apply : 'class_expr_apply Grammar.Entry.e)),
+           (fun (ce : 'class_expr_apply) (loc : Ploc.t) ->
+              (ce : 'class_expr)))]];
+    Grammar.extension (class_expr_apply : 'class_expr_apply Grammar.Entry.e)
+      None
+      [Some "apply", Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+             (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "label"),
+           (fun (e : 'expr) (ce : 'class_expr_apply) (loc : Ploc.t) ->
+              (MLast.CeApp (loc, ce, e) : 'class_expr_apply)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (class_expr_simple : 'class_expr_simple Grammar.Entry.e)),
+           (fun (ce : 'class_expr_simple) (loc : Ploc.t) ->
+              (ce : 'class_expr_apply)))]];
+    Grammar.extension (class_expr_simple : 'class_expr_simple Grammar.Entry.e)
+      None
+      [Some "simple", None,
+       [Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                Grammar.s_self)
+                (Grammar.s_nterm (class_expr : 'class_expr Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
-           (fun _ (ce : 'class_expr) _ (loc : Ploc.t) -> (ce : 'class_expr)));
+           (fun _ (ce : 'class_expr) _ (loc : Ploc.t) ->
+              (ce : 'class_expr_simple)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3695,12 +3731,13 @@ Grammar.safe_extend
                    (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("", "(")))
-                      Grammar.s_self)
+                      (Grammar.s_nterm
+                         (class_expr : 'class_expr Grammar.Entry.e)))
                    (Grammar.s_token ("", ":")))
                 (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            (fun _ (ct : 'class_type) _ (ce : 'class_expr) _ (loc : Ploc.t) ->
-              (MLast.CeTyc (loc, ce, ct) : 'class_expr)));
+              (MLast.CeTyc (loc, ce, ct) : 'class_expr_simple)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3714,7 +3751,7 @@ Grammar.safe_extend
                 (class_longident : 'class_longident Grammar.Entry.e)),
            (fun (ci : 'class_longident) _ (ctcl : 'ctyp list) _
                 (loc : Ploc.t) ->
-              (MLast.CeCon (loc, ci, ctcl) : 'class_expr)));
+              (MLast.CeCon (loc, ci, ctcl) : 'class_expr_simple)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3730,13 +3767,13 @@ Grammar.safe_extend
              (Grammar.s_token ("", "end")),
            (fun _ (cf : 'class_structure) (cspo : 'class_self_patt option) _
                 (loc : Ploc.t) ->
-              (MLast.CeStr (loc, cspo, cf) : 'class_expr)));
+              (MLast.CeStr (loc, cspo, cf) : 'class_expr_simple)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
            (fun (ci : 'class_longident) (loc : Ploc.t) ->
-              (MLast.CeCon (loc, ci, []) : 'class_expr)))]];
+              (MLast.CeCon (loc, ci, []) : 'class_expr_simple)))]];
     Grammar.extension (class_structure : 'class_structure Grammar.Entry.e)
       None
       [None, None,

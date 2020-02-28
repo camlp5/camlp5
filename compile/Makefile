@@ -8,7 +8,12 @@ OCAMLCFLAGS=$(DEBUG) $(OCAMLC_W_Y) $(WARNERR) $(INCLUDES)
 D=o
 SRC=../etc/pa_$(D).ml ../etc/pa_$(D)p.ml
 COMP_OPT=-strict_parsing
-COMP_OPT=-e "Grammar.Entry.obj Pcaml.interf" -e "Grammar.Entry.obj Pcaml.implem" -e "Grammar.Entry.obj Pcaml.top_phrase" -e "Grammar.Entry.obj Pcaml.use_file"
+COMP_OPT=-e "Grammar.Entry.obj Pcaml.interf" \
+         -e "Grammar.Entry.obj Pcaml.implem" \
+         -e "Grammar.Entry.obj Pcaml.top_phrase" \
+         -e "Grammar.Entry.obj Pcaml.use_file" \
+
+
 RM=rm
 
 all: out

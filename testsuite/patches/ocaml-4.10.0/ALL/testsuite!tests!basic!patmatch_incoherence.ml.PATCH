@@ -1,0 +1,153 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.10.0/.opam-switch/sources/ocaml-base-compiler.4.10.0/testsuite/tests/basic/patmatch_incoherence.ml	2020-02-21 05:50:54.000000000 -0800
++++ patches/ocaml-4.10.0/ALL/testsuite!tests!basic!patmatch_incoherence.ml.INPUT	2020-02-27 18:37:59.957143028 -0800
+@@ -3,38 +3,38 @@
+ *)
+ 
+ type tlist = { x: 'a. 'a list };;
+-[%%expect{|
++[%%expect{foo|
+ type tlist = { x : 'a. 'a list; }
+-|}];;
++|foo}];;
+ 
+ match { x = [] } with
+ | { x = [] } -> ()
+ | { x = 3 :: _ } -> ()
+ | { x = "" :: _ } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ - : unit = ()
+-|}];;
++|foo}];;
+ 
+ 
+ type t = { x: 'a. 'a };;
+-[%%expect{|
++[%%expect{foo|
+ type t = { x : 'a. 'a; }
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = 3 } -> ()
+ | { x = "" } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = 3 } -> ()
+ | { x = None } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Lines 1-3, characters 0-20:
+ 1 | match { x = assert false } with
+ 2 | | { x = 3 } -> ()
+@@ -43,13 +43,13 @@
+ Here is an example of a case that is not matched:
+ {x=Some _}
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = None } -> ()
+ | { x = "" } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Lines 1-3, characters 0-18:
+ 1 | match { x = assert false } with
+ 2 | | { x = None } -> ()
+@@ -58,13 +58,13 @@
+ Here is an example of a case that is not matched:
+ {x="*"}
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = None } -> ()
+ | { x = `X } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Lines 1-3, characters 0-18:
+ 1 | match { x = assert false } with
+ 2 | | { x = None } -> ()
+@@ -73,13 +73,13 @@
+ Here is an example of a case that is not matched:
+ {x=`AnyOtherTag}
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = [||] } -> ()
+ | { x = 3 } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Lines 1-3, characters 0-17:
+ 1 | match { x = assert false } with
+ 2 | | { x = [||] } -> ()
+@@ -88,13 +88,13 @@
+ Here is an example of a case that is not matched:
+ {x=0}
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = `X } -> ()
+ | { x = 3 } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Lines 1-3, characters 0-17:
+ 1 | match { x = assert false } with
+ 2 | | { x = `X } -> ()
+@@ -103,13 +103,13 @@
+ Here is an example of a case that is not matched:
+ {x=0}
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = `X "lol" } -> ()
+ | { x = 3 } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Lines 1-3, characters 0-17:
+ 1 | match { x = assert false } with
+ 2 | | { x = `X "lol" } -> ()
+@@ -118,14 +118,14 @@
+ Here is an example of a case that is not matched:
+ {x=0}
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;
+ 
+ match { x = assert false } with
+ | { x = (2., "") } -> ()
+ | { x = None } -> ()
+ | { x = 3 } -> ()
+ ;;
+-[%%expect{|
++[%%expect{foo|
+ Lines 1-4, characters 0-17:
+ 1 | match { x = assert false } with
+ 2 | | { x = (2., "") } -> ()
+@@ -135,4 +135,4 @@
+ Here is an example of a case that is not matched:
+ {x=0}
+ Exception: Assert_failure ("", 1, 12).
+-|}];;
++|foo}];;

@@ -175,6 +175,48 @@ value number =
   | decimal_digits_under end_integer! ]
 ;
 
+(*
+let hex_float_literal =
+  '0' ['x' 'X']
+  ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
+  ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
+  (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+let literal_modifier = ['G'-'Z' 'g'-'z']
+
+let hex_float_literal =
+  '0' ['x' 'X']
+  ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
+  ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
+  (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+let literal_modifier = ['G'-'Z' 'g'-'z']
+*)
+
+(* hex_digits* *)
+value rec hex_digits_under_star =
+  lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' | '_' ] hex_digits_under_star! | ]
+;
+value rec hex_under_integer =
+  lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' ] hex_digits_under_star ]
+;
+value rec decimal_under_integer =
+  lexer [ [ '0'-'9' | ] decimal_digits_under! ]
+;
+
+value hex_exponent_part =
+  lexer
+  [ [ 'p' | 'P' ] [ '+' | '-' | ]
+    decimal_under_integer! ]
+;
+
+value hex_number =
+  lexer
+  [ hex_under_integer '.' hex_digits_under_star! hex_exponent_part -> ("FLOAT", $buf)
+  | hex_under_integer '.' hex_digits_under_star! -> ("FLOAT", $buf)
+  | hex_under_integer hex_exponent_part -> ("FLOAT", $buf)
+  | hex_under_integer exponent_part -> ("FLOAT", $buf)
+  | hex_under_integer end_integer! ]
+;
+
 value char_after_bslash =
   lexer
   [ "'"/
@@ -472,7 +514,7 @@ value next_token_after_spaces ctx bp =
   | [ 'a'-'z' | '_' | misc_letter ] ident! (keyword ctx)
   | '1'-'9' number!
   | "0" [ 'o' | 'O' ] (digits octal)!
-  | "0" [ 'x' | 'X' ] (digits hexa)!
+  | "0" [ 'x' | 'X' ] (hex_number)!
   | "0" [ 'b' | 'B' ] (digits binary)!
   | "0" number!
   | "'"/ ?= [ '\\' 'a'-'z' 'a'-'z' ] -> keyword_or_error ctx (bp, $pos) "'"

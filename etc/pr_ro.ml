@@ -416,6 +416,10 @@ EXTEND_PRINTER
         pprintf pc "%p[@%p]" curr ct Pr_r.attribute_body attr
       ]
 
+    | [ <:class_expr< [% $_extension:e$ ] >> ->
+          pprintf pc "%p" (Pr_r.pr_extension "%") e
+      ]
+
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
           let (ce, el) =
@@ -440,9 +444,9 @@ EXTEND_PRINTER
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" class_expr ce class_type ct
-      | <:class_expr< [% $_extension:e$ ] >> ->
-          pprintf pc "%p" (Pr_r.pr_extension "%") e
-      | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >> as z ->
+      | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >>
+        | <:class_expr< [% $_extension:_$ ] >>
+        as z ->
           pprintf pc "@[<1>(%p)@]" class_expr z
       | z ->
           error (MLast.loc_of_class_expr z)

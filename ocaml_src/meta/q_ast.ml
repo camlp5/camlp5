@@ -633,145 +633,145 @@ let is_anti_anti n = String.length n > 0 && n.[0] = '_';;
 module Meta_E =
   Meta_make
     (struct
-       type t = MLast.expr;;
-       let loc = Ploc.dummy;;
-       let loc_v () = MLast.ExLid (loc, !(Ploc.name));;
-       let node con el =
-         List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
-           (MLast.ExApp
-              (loc,
-               MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, con)),
-               loc_v ()))
-           el
-       ;;
-       let node_no_loc con el =
-         List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
-           (MLast.ExAcc
-              (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, con)))
-           el
-       ;;
-       let list elem el =
-         let rec loop el =
-           match el with
-             [] -> MLast.ExUid (loc, "[]")
-           | e :: el ->
-               MLast.ExApp
-                 (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), elem e),
-                  loop el)
-         in
-         loop el
-       ;;
-       let option elem oe =
-         match oe with
-           None -> MLast.ExUid (loc, "None")
-         | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
-       ;;
-       let vala elem e = elem e;;
-       let bool b =
-         if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
-       ;;
-       let string s = MLast.ExStr (loc, s);;
-       let tuple le = MLast.ExTup (loc, le);;
-       let record lfe = MLast.ExRec (loc, lfe, None);;
-       let xtr loc s =
-         match get_anti_loc s with
-           Some (_, typ, str) ->
-             begin match typ with
-               "" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
-                 MLast.ExAnt (loc, r)
-             | _ -> assert false
-             end
-         | None -> assert false
-       ;;
-       let xtr_or_anti loc f s =
-         match get_anti_loc s with
-           Some (_, typ, str) ->
-             begin match typ with
-               "" | "exp" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
-                 MLast.ExAnt (loc, r)
-             | "anti" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
-                 f (MLast.ExAnt (loc, r))
-             | _ -> assert false
-             end
-         | None -> assert false
-       ;;
-     end)
+      type t = MLast.expr;;
+      let loc = Ploc.dummy;;
+      let loc_v () = MLast.ExLid (loc, !(Ploc.name));;
+      let node con el =
+        List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
+          (MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, con)),
+              loc_v ()))
+          el
+      ;;
+      let node_no_loc con el =
+        List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
+          (MLast.ExAcc
+             (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, con)))
+          el
+      ;;
+      let list elem el =
+        let rec loop el =
+          match el with
+            [] -> MLast.ExUid (loc, "[]")
+          | e :: el ->
+              MLast.ExApp
+                (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), elem e),
+                 loop el)
+        in
+        loop el
+      ;;
+      let option elem oe =
+        match oe with
+          None -> MLast.ExUid (loc, "None")
+        | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
+      ;;
+      let vala elem e = elem e;;
+      let bool b =
+        if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
+      ;;
+      let string s = MLast.ExStr (loc, s);;
+      let tuple le = MLast.ExTup (loc, le);;
+      let record lfe = MLast.ExRec (loc, lfe, None);;
+      let xtr loc s =
+        match get_anti_loc s with
+          Some (_, typ, str) ->
+            begin match typ with
+              "" ->
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+                MLast.ExAnt (loc, r)
+            | _ -> assert false
+            end
+        | None -> assert false
+      ;;
+      let xtr_or_anti loc f s =
+        match get_anti_loc s with
+          Some (_, typ, str) ->
+            begin match typ with
+              "" | "exp" ->
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
+                MLast.ExAnt (loc, r)
+            | "anti" ->
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
+                f (MLast.ExAnt (loc, r))
+            | _ -> assert false
+            end
+        | None -> assert false
+      ;;
+    end)
 ;;
 
 module Meta_P =
   Meta_make
     (struct
-       type t = MLast.patt;;
-       let loc = Ploc.dummy;;
-       let loc_v () = MLast.PaAny loc;;
-       let node con pl =
-         List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
-           (MLast.PaApp
-              (loc,
-               MLast.PaAcc
-                 (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, con)),
-               MLast.PaAny loc))
-           pl
-       ;;
-       let node_no_loc con pl =
-         List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
-           (MLast.PaAcc
-              (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, con)))
-           pl
-       ;;
-       let list elem el =
-         let rec loop el =
-           match el with
-             [] -> MLast.PaUid (loc, "[]")
-           | e :: el ->
-               MLast.PaApp
-                 (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), elem e),
-                  loop el)
-         in
-         loop el
-       ;;
-       let option elem oe =
-         match oe with
-           None -> MLast.PaUid (loc, "None")
-         | Some e -> MLast.PaApp (loc, MLast.PaUid (loc, "Some"), elem e)
-       ;;
-       let vala elem p = elem p;;
-       let bool b =
-         if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
-       ;;
-       let string s = MLast.PaStr (loc, s);;
-       let tuple lp = MLast.PaTup (loc, lp);;
-       let record lfp = MLast.PaRec (loc, lfp);;
-       let xtr loc s =
-         match get_anti_loc s with
-           Some (_, typ, str) ->
-             begin match typ with
-               "" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
-                 MLast.PaAnt (loc, r)
-             | _ -> assert false
-             end
-         | None -> assert false
-       ;;
-       let xtr_or_anti loc f s =
-         match get_anti_loc s with
-           Some (_, typ, str) ->
-             begin match typ with
-               "" | "exp" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
-                 MLast.PaAnt (loc, r)
-             | "anti" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
-                 f (MLast.PaAnt (loc, r))
-             | _ -> assert false
-             end
-         | None -> assert false
-       ;;
-     end)
+      type t = MLast.patt;;
+      let loc = Ploc.dummy;;
+      let loc_v () = MLast.PaAny loc;;
+      let node con pl =
+        List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
+          (MLast.PaApp
+             (loc,
+              MLast.PaAcc
+                (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, con)),
+              MLast.PaAny loc))
+          pl
+      ;;
+      let node_no_loc con pl =
+        List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
+          (MLast.PaAcc
+             (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, con)))
+          pl
+      ;;
+      let list elem el =
+        let rec loop el =
+          match el with
+            [] -> MLast.PaUid (loc, "[]")
+          | e :: el ->
+              MLast.PaApp
+                (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), elem e),
+                 loop el)
+        in
+        loop el
+      ;;
+      let option elem oe =
+        match oe with
+          None -> MLast.PaUid (loc, "None")
+        | Some e -> MLast.PaApp (loc, MLast.PaUid (loc, "Some"), elem e)
+      ;;
+      let vala elem p = elem p;;
+      let bool b =
+        if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
+      ;;
+      let string s = MLast.PaStr (loc, s);;
+      let tuple lp = MLast.PaTup (loc, lp);;
+      let record lfp = MLast.PaRec (loc, lfp);;
+      let xtr loc s =
+        match get_anti_loc s with
+          Some (_, typ, str) ->
+            begin match typ with
+              "" ->
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+                MLast.PaAnt (loc, r)
+            | _ -> assert false
+            end
+        | None -> assert false
+      ;;
+      let xtr_or_anti loc f s =
+        match get_anti_loc s with
+          Some (_, typ, str) ->
+            begin match typ with
+              "" | "exp" ->
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
+                MLast.PaAnt (loc, r)
+            | "anti" ->
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
+                f (MLast.PaAnt (loc, r))
+            | _ -> assert false
+            end
+        | None -> assert false
+      ;;
+    end)
 ;;
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;

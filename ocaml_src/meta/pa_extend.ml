@@ -304,6 +304,16 @@ module MetaAction =
                    mloc),
                 mvala mstring s),
              MLast.ExStr (loc, c))
+      | ExLab (loc, peoptl) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "MLast"),
+                   MLast.ExUid (loc, "ExLab")),
+                mloc),
+             mvala (mlist mpeopt) peoptl)
       | MLast.ExFlo (loc, s) ->
           MLast.ExApp
             (loc,
@@ -644,6 +654,8 @@ module MetaAction =
     and mpe (p, e) = MLast.ExTup (loc, [mpatt p; mexpr e])
     and mpwe (p, w, e) =
       MLast.ExTup (loc, [mpatt p; mvala (moption mexpr) w; mexpr e])
+    and mpeopt (p, eopt) =
+      MLast.ExTup (loc, [mpatt p; mvala (moption mexpr) eopt])
     ;;
   end
 ;;
