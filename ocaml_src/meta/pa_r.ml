@@ -1548,7 +1548,8 @@ Grammar.safe_extend
                                   (Grammar.r_next
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("", "for")))
-                                     (Grammar.s_token ("LIDENT", "")))
+                                     (Grammar.s_nterm
+                                        (patt : 'patt Grammar.Entry.e)))
                                   (Grammar.s_token ("", "=")))
                                Grammar.s_self)
                             (Grammar.s_nterm
@@ -1560,9 +1561,8 @@ Grammar.safe_extend
                 (Grammar.s_nterm (sequence : 'sequence Grammar.Entry.e)))
              (Grammar.s_token ("", "}")),
            (fun _ (seq : 'sequence) _ _ (e2 : 'expr) (df : 'direction_flag)
-                (e1 : 'expr) _ (i : string) _ (loc : Ploc.t) ->
-              (MLast.ExFor (loc, MLast.PaLid (loc, i), e1, e2, df, seq) :
-               'expr)));
+                (e1 : 'expr) _ (i : 'patt) _ (loc : Ploc.t) ->
+              (MLast.ExFor (loc, i, e1, e2, df, seq) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

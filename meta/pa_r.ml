@@ -530,9 +530,9 @@ EXTEND
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF →
           <:expr< if $e1$ then $e2$ else $e3$ >>
       | "do"; "{"; seq = V sequence "list"; "}" → mksequence2 loc seq
-      | "for"; i = V LIDENT; "="; e1 = SELF; df = V direction_flag "to";
+      | "for"; i = patt; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; "{"; seq = V sequence "list"; "}" →
-          <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >>
+          <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >>
       | "while"; e = SELF; "do"; "{"; seq = V sequence "list"; "}" →
           <:expr< while $e$ do { $_list:seq$ } >> ]
     | "where"

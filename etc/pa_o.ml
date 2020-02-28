@@ -740,10 +740,10 @@ EXTEND
           <:expr< if $e1$ then $e2$ else $e3$ >>
       | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1" ->
           <:expr< if $e1$ then $e2$ else () >>
-      | "for"; i = V LIDENT; "="; e1 = SELF; df = V direction_flag "to";
+      | "for"; i = patt; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e in
-          <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
+          <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
       | "for"; "("; i = operator_rparen; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let i = Ploc.VaVal i in

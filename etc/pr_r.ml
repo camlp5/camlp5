@@ -1421,9 +1421,9 @@ EXTEND_PRINTER
           | [e :: el] ->
               let se = seq_of_expr_ne_list e el in
               pprintf pc "%pdo {@;%p@ }" bef () hvseq se ]
-      | <:expr:< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
+      | <:expr:< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           let bef pc () =
-            pprintf pc "@[<a>for %s = %p %s@;<1 4>%p@ @]" v curr e1
+            pprintf pc "@[<a>for %p = %p %s@;<1 4>%p@ @]" patt v curr e1
               (if d then "to" else "downto") curr e2
           in
           match el with

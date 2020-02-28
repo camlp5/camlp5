@@ -864,6 +864,36 @@ and t2 = bool[@@foo];
      official_output = OK {foo|class type ct = object val  x : int [%%a ] end|foo} ;
      r_output = OK {foo|class type ct = object value x : int; [%%a]; end;
 |foo}
+    };
+    {name="for-loop-index-var1"; implem = True ;
+     o_input = OK {foo|for i = 1 to 10 do () done|foo} ;
+     official_input = OK {foo|for i = 1 to 10 do () done|foo} ;
+     r_input = OK {foo|for i = 1 to 10 do { () };|foo} ;
+     o_output = OK {foo|let _ = for i = 1 to 10 do () done;;
+|foo};
+     official_output = OK {foo|;;for i = 1 to 10 do () done|foo} ;
+     r_output = OK {foo|for i = 1 to 10 do { () };
+|foo}
+    };
+    {name="for-loop-index-var2"; implem = True ;
+     o_input = OK {foo|for (+) = 1 to 10 do () done|foo} ;
+     official_input = OK {foo|for (+) = 1 to 10 do () done|foo} ;
+     r_input = OK {foo|for (+) = 1 to 10 do { () };|foo} ;
+     o_output = OK {foo|let _ = for (+) = 1 to 10 do () done;;
+|foo};
+     official_output = OK {foo|;;for (+) = 1 to 10 do () done|foo} ;
+     r_output = OK {foo|for ( + ) = 1 to 10 do { () };
+|foo}
+    };
+    {name="for-loop-index-var3"; implem = True ;
+     o_input = OK {foo|for _ = 1 to 10 do () done|foo} ;
+     official_input = OK {foo|for _ = 1 to 10 do () done|foo} ;
+     r_input = OK {foo|for _ = 1 to 10 do { () };|foo} ;
+     o_output = OK {foo|let _ = for _ = 1 to 10 do () done;;
+|foo};
+     official_output = OK {foo|;;for _ = 1 to 10 do () done|foo} ;
+     r_output = OK {foo|for _ = 1 to 10 do { () };
+|foo}
     }
 ]
 ;

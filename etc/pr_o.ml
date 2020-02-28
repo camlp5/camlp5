@@ -1242,10 +1242,10 @@ EXTEND_PRINTER
       | <:expr:< while $e1$ do { $list:el$ } >> ->
           pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
             (hvlistl (semi_after expr) curr) el
-      | <:expr:< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
+      | <:expr:< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           pprintf pc
             "@[<a>@[<a>for %p = %p %s@;<1 4>%p@ do@]@;%q@ done@]"
-            var_escaped (loc,v)
+            patt v
             curr e1 (if d then "to" else "downto") curr e2
             (hvlistl (semi_after curr) curr) el "" ]
     | "tuple"
