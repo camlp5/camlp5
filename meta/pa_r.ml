@@ -332,8 +332,8 @@ EXTEND
       [ i = V UIDENT → <:module_expr< $_uid:i$ >>
       | "("; "value"; e = expr; ":"; mt1 = module_type; ":>"; mt2 = module_type; ")" →
           <:module_expr< (value $e$ : $mt1$ :> $mt2$) >>
-      | "("; "value"; e = expr; ":"; mt = module_type; ")" →
-          <:module_expr< (value $e$ : $mt$) >>
+      | "("; "value"; e = expr; ":"; mt1 = module_type; ")" →
+          <:module_expr< (value $e$ : $mt1$) >>
       | "("; "value"; e = expr; ")" →
           <:module_expr< (value $e$) >>
       | "("; me = SELF; ":"; mt = module_type; ")" →

@@ -507,8 +507,8 @@ EXTEND
     [
       [  "("; "val"; e = expr; ":"; mt1 = module_type; ":>"; mt2 = module_type; ")" ->
          <:module_expr< (value $e$ : $mt1$ :> $mt2$) >>
-      |  "("; "val"; e = expr; ":"; mt = module_type; ")" ->
-         <:module_expr< (value $e$ : $mt$) >>
+      |  "("; "val"; e = expr; ":"; mt1 = module_type; ")" ->
+         <:module_expr< (value $e$ : $mt1$) >>
       | "("; "val"; e = expr; ")" ->
          <:module_expr< (value $e$) >>
       | "("; me = module_expr; ":"; mt = module_type; ")" ->
