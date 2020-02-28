@@ -1910,6 +1910,8 @@ EXTEND_PRINTER
     | "simple"
       [ <:module_expr< $uid:s$ >> ->
           pprintf pc "%s" s
+      | <:module_expr< (value $e$ : $mt1$ :> $mt2$) >> ->
+          pprintf pc "@[<1>(val %p :@ %p :>@ %p)@]" expr e module_type mt1 module_type mt2
       | <:module_expr< (value $e$ : $mt$) >> ->
           pprintf pc "@[<1>(val %p :@ %p)@]" expr e module_type mt
       | <:module_expr< (value $e$) >> ->

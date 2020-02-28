@@ -964,6 +964,16 @@ and t2 = bool[@@foo];
      official_output = OK {foo|module M = (F)((val (string : (module MT))))|foo} ;
      r_output = OK {foo|module M = F (value string : MT);
 |foo}
+    };
+    {name="module-expr-unpack-module3"; implem = True ;
+     o_input = OK {foo|module M = F(val string : MT :> MT2)|foo} ;
+     official_input = OK {foo|module M = F(val string : MT :> MT2)|foo} ;
+     r_input = OK {foo|module M = F(value string : MT :> MT2);|foo} ;
+     o_output = OK {foo|module M = F ((val string : MT :> MT2));;
+|foo};
+     official_output = OK {foo|module M = (F)((val (string : (module MT)  :> (module MT2))))|foo} ;
+     r_output = OK {foo|module M = F (value string : MT :> MT2);
+|foo}
     }
 ]
 ;

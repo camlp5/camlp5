@@ -505,7 +505,9 @@ EXTEND
   ;
   paren_module_expr:
     [
-      [  "("; "val"; e = expr; ":"; mt = module_type; ")" ->
+      [  "("; "val"; e = expr; ":"; mt1 = module_type; ":>"; mt2 = module_type; ")" ->
+         <:module_expr< (value $e$ : $mt1$ :> $mt2$) >>
+      |  "("; "val"; e = expr; ":"; mt = module_type; ")" ->
          <:module_expr< (value $e$ : $mt$) >>
       | "("; "val"; e = expr; ")" ->
          <:module_expr< (value $e$) >>

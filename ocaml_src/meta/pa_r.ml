@@ -754,6 +754,28 @@ Grammar.safe_extend
            (fun _ (mt : 'module_type) _ (e : 'expr) _ _ (loc : Ploc.t) ->
               (MLast.MeUnp (loc, e, Some mt, None) : 'module_expr)));
         Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("", "(")))
+                               (Grammar.s_token ("", "value")))
+                            (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+                         (Grammar.s_token ("", ":")))
+                      (Grammar.s_nterm
+                         (module_type : 'module_type Grammar.Entry.e)))
+                   (Grammar.s_token ("", ":>")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           (fun _ (mt2 : 'module_type) _ (mt1 : 'module_type) _ (e : 'expr) _
+                _ (loc : Ploc.t) ->
+              (MLast.MeUnp (loc, e, Some mt1, Some mt2) : 'module_expr)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.MeUid (loc, i) : 'module_expr)))]];
