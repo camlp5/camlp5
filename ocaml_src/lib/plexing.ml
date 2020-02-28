@@ -221,7 +221,7 @@ let rev_implode l =
 
 module Lexbuf :
   sig
-    type t = char list;;
+    type t;;
     val empty : t;;
     val add : char -> t -> t;;
     val get : t -> string;;
