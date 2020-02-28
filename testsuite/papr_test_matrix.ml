@@ -944,6 +944,26 @@ and t2 = bool[@@foo];
      official_output = OK {foo|let set_int2 c = { contents = (c : int) }|foo} ;
      r_output = OK {foo|value set_int2 c = {contents = (c : int)};
 |foo}
+    };
+    {name="module-expr-unpack-module1"; implem = True ;
+     o_input = OK {foo|module M = F(val string)|foo} ;
+     official_input = OK {foo|module M = F(val string)|foo} ;
+     r_input = OK {foo|module M = F(value string);|foo} ;
+     o_output = OK {foo|module M = F ((val string));;
+|foo};
+     official_output = OK {foo|module M = (F)((val string))|foo} ;
+     r_output = OK {foo|module M = F (value string);
+|foo}
+    };
+    {name="module-expr-unpack-module2"; implem = True ;
+     o_input = OK {foo|module M = F(val string : MT)|foo} ;
+     official_input = OK {foo|module M = F(val string : MT)|foo} ;
+     r_input = OK {foo|module M = F(value string : MT);|foo} ;
+     o_output = OK {foo|module M = F ((val string : MT));;
+|foo};
+     official_output = OK {foo|module M = (F)((val (string : (module MT))))|foo} ;
+     r_output = OK {foo|module M = F (value string : MT);
+|foo}
     }
 ]
 ;

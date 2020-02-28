@@ -493,22 +493,28 @@ EXTEND
     | [ "struct"; OPT ";;"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
-    | [ me1 = SELF; "("; me2 = SELF; ")" -> <:module_expr< $me1$ $me2$ >>
+    | [ me1 = SELF; me2 = paren_module_expr -> <:module_expr< $me1$ $me2$ >>
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       | me1 = SELF; "("; ")" -> <:module_expr< $me1$ (struct end) >>
         END
       ]
     | [ i = mod_expr_ident -> i
-      | "("; "val"; e = expr; ":"; mt = module_type; ")" ->
-         <:module_expr< (value $e$ : $mt$) >>
-      | "("; "val"; e = expr; ")" ->
-         <:module_expr< (value $e$) >>
-      | "("; me = SELF; ":"; mt = module_type; ")" ->
-          <:module_expr< ( $me$ : $mt$ ) >>
-      | "("; me = SELF; ")" -> <:module_expr< $me$ >>
+      | me = paren_module_expr -> me
       | e = alg_extension -> <:module_expr< [% $_extension:e$ ] >>
       ] ]
   ;
+  paren_module_expr:
+    [
+      [  "("; "val"; e = expr; ":"; mt = module_type; ")" ->
+         <:module_expr< (value $e$ : $mt$) >>
+      | "("; "val"; e = expr; ")" ->
+         <:module_expr< (value $e$) >>
+      | "("; me = module_expr; ":"; mt = module_type; ")" ->
+          <:module_expr< ( $me$ : $mt$ ) >>
+      | "("; me = module_expr; ")" -> <:module_expr< $me$ >>
+      ]
+    ]
+    ;
   structure:
     [ [ st = V (LIST0 [ s = str_item; OPT ";;" -> s ]) -> st ] ]
   ;
