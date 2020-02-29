@@ -524,8 +524,8 @@ sub package_run_files {
       STEPS: foreach my $stepna (keys %used_steps) {
 	if ($stepna =~ /^${epat}$/) {
 	  my @exclude_files = @{ $pkg{'exclude'}->{$epat} } ;
-	  print STDERR "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n" 
-	      if $main::verbose && @exclude_files;
+	  Log::vlog( "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n") 
+	      if @exclude_files;
 	  push (@l, @exclude_files) ;
 	  last STEPS ;
 	}
@@ -616,7 +616,7 @@ sub setup_package {
 
     my $origf = "$location/".$f ;
 
-    print STDERR "SRC: $origf\n" if $main::verbose ;
+    Log::vlog( "SRC: $origf\n") ;
 
     # so we know if any step failed
     my $failure = 0 ;
@@ -761,7 +761,7 @@ sub run_package {
 
     my $origf = "$location/".$f ;
 
-    print STDERR "SRC: $origf\n" if $main::verbose ;
+    Log::vlog( "SRC: $origf\n") ;
 
     my @recipes = keys %{ $profile{'recipes'} } ;
     RECIPE: foreach my $recna (@recipes) {
@@ -854,7 +854,7 @@ sub diff_package {
 
     my $origf = "$location/".$f ;
 
-    print STDERR "SRC: $origf\n" if $main::verbose ;
+    Log::vlog( "SRC: $origf\n") ;
 
     my %recipe_outputs ;
     my %recipe_base ;
@@ -1025,7 +1025,7 @@ sub runtool {
   my $srcf = $args{'src-filename'} ;
   my $dstf = $args{'dst-filename'} ;
 
-  print STDERR "$tool->{'name'}: $srcf -> $dstf\n" if $main::verbose ;
+  Log::vlog( "$tool->{'name'}: $srcf -> $dstf\n") ;
   my @cmd = &{ $tool->{'command'}, }($srcf, $dstf) ;
   my $code = v_systemx([0..2], [@cmd]) ;
   if ($code != 0) {
@@ -1046,7 +1046,7 @@ sub v_systemx {
   my @cmd = @{ shift @_ } ;
   my %args = @_ ;
 
-  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
+  Log::vlog( join(' ', map { shell_quote($_) } @cmd)."\n") ;
 
   return runx($codes, @cmd) ;
 }
@@ -1057,7 +1057,7 @@ sub v_capturex {
   my @cmd = @{ shift @_ } ;
   my %args = @_ ;
 
-  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
+  Log::vlog( join(' ', map { shell_quote($_) } @cmd)."\n") ;
 
   my $txt ;
   if (exists $args{'ENV'}) {
@@ -1119,6 +1119,15 @@ sub log {
   }
   else {
     print STDERR @_ ;
+  }
+}
+
+sub vlog {
+  if ($main::verbose) {
+    print STDERR @_ ;
+  }
+  else {
+    $buffer .= join('', @_) ;
   }
 }
 
