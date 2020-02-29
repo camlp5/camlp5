@@ -6,6 +6,7 @@
 
 open Versdep;
 
+value simplest_raw_strings = ref False ;
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
 
@@ -17,6 +18,7 @@ value force_antiquot_loc = ref False;
 
 type context =
   { after_space : mutable bool;
+    simplest_raw_strings : bool ;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     dot_newline_is : string;
@@ -455,28 +457,28 @@ value rec rawstring0 ctx bp buf =
 ;
 
 (*
- * predicate checks that the stream contains "[:alpha:]+|", and it gets
- * called when the main lexer has already seen a "{".  To check for at least
- * one alpha, require that the offset of the "|" be > 1 (which means that
- * offset 1 must be [:alpha:].
- *
- * The further check for alpha here is unnecessary, since the main lexer will
- * NOT call this function in the case where the input is "{|" (because that's
- * a valid token, and precedes the branch where this code is invoked.
+ * This predicate checks that the stream contains a valid raw-string starter.  
+ * The definition of "valid raw string starter" depends on the value of 
+ * the variable [simplest_raw_strings]: if it is [False], then a valid
+ * raw-string starter is "[:alpha:]+|"; if it is [True], a valid raw-string
+ * starter is "[:alpha:]*|".  [simplest_raw_strings] is set to True in
+ * original syntax.
+
+ * This predicate gets called when the main lexer has already seen a "{".
 *)
-value raw_string_starter_p strm =
+value raw_string_starter_p ctx strm =
   let rec predrec n =
     match stream_peek_nth n strm with
       [ None -> False
       | Some ('a'..'z' | '_') ->
          predrec (n+1)
-      | Some '|' when n > 1 -> True
+      | Some '|' when ctx.simplest_raw_strings || n > 1 -> True
       | Some _ -> False ]
   in predrec 1
 ;
 
 value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
-  if not (raw_string_starter_p strm) then
+  if not (raw_string_starter_p ctx strm) then
     keyword_or_error ctx loc "{"
   else
     rawstring0 ctx bp $empty strm
@@ -552,7 +554,6 @@ value next_token_after_spaces ctx bp =
   | "[:" -> keyword_or_error ctx (bp, $pos) $buf
   | "[" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
-  | "{|" -> keyword_or_error ctx (bp, $pos) $buf
   | "{<" -> keyword_or_error ctx (bp, $pos) $buf
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
@@ -649,12 +650,12 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
       err ctx (Stream.count cstrm, Stream.count cstrm + 1) str ]
 ;
 
-value func kwd_table glexr =
-  let ctx =
+value make_ctx kwd_table =
     let line_nb = ref 0 in
     let bol_pos = ref 0 in
     {after_space = False;
      dollar_for_antiquotation = dollar_for_antiquotation.val;
+     simplest_raw_strings = simplest_raw_strings.val ;
      specific_space_dot = specific_space_dot.val;
      dot_newline_is = dot_newline_is.val;
      find_kwd = Hashtbl.find kwd_table;
@@ -671,7 +672,9 @@ value func kwd_table glexr =
      };
      make_lined_loc loc comm =
        Ploc.make_loc Plexing.input_file.val line_nb.val bol_pos.val loc comm}
-  in
+;
+
+value func ctx kwd_table glexr =
   Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;
 
@@ -727,8 +730,10 @@ and check_ident2 =
     check_ident2! | ]
 ;
 
-value check_keyword s =
-  try check_keyword_stream (Stream.of_string s) with _ -> False
+value check_keyword ctx s =
+  if ctx.simplest_raw_strings && (s = "{|" || s = "|}") then False
+  else
+    try check_keyword_stream (Stream.of_string s) with _ -> False
 ;
 
 value error_no_respect_rules p_con p_prm =
@@ -741,11 +746,11 @@ value error_no_respect_rules p_con p_prm =
           " does not respect Plexer rules"))
 ;
 
-value using_token kwd_table (p_con, p_prm) =
+value using_token ctx kwd_table (p_con, p_prm) =
   match p_con with
   [ "" ->
       if not (hashtbl_mem kwd_table p_prm) then
-        if check_keyword p_prm then Hashtbl.add kwd_table p_prm p_prm
+        if check_keyword ctx p_prm then Hashtbl.add kwd_table p_prm p_prm
         else error_no_respect_rules p_con p_prm
       else ()
   | "LIDENT" ->
@@ -866,14 +871,15 @@ value tok_match =
 
 value gmake () =
   let kwd_table = Hashtbl.create 301 in
+  let ctx = make_ctx kwd_table in
   let glexr =
     ref
      {Plexing.tok_func = fun []; tok_using = fun []; tok_removing = fun [];
       tok_match = fun []; tok_text = fun []; tok_comm = None}
   in
   let glex =
-    {Plexing.tok_func = func kwd_table glexr;
-     tok_using = using_token kwd_table;
+    {Plexing.tok_func = func ctx kwd_table glexr;
+     tok_using = using_token ctx kwd_table;
      tok_removing = removing_token kwd_table;
      tok_match = tok_match; tok_text = text; tok_comm = None}
   in

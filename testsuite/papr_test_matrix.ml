@@ -974,6 +974,34 @@ and t2 = bool[@@foo];
      official_output = OK {foo|module M = (F)((val (string : (module MT)  :> (module MT2))))|foo} ;
      r_output = OK {foo|module M = F (value string : MT :> MT2);
 |foo}
+    };
+    {name="simplest-raw-strings-1"; implem = True ;
+     o_input = OK {foo|{|argle|}|foo} ;
+     official_input = OK {foo|{|argle|}|foo} ;
+     r_input = EXN {foo|{|argle|}|foo}
+                   (Ploc.Exc Ploc.dummy
+                              (Stdlib.Stream.Error "'(' or [label_expr] expected after '{' (in [expr])"));
+     o_output = OK {foo|let _ = "argle";;
+|foo};
+     official_output = SKIP "meh" "meh" ;
+     r_output = OK {foo|"argle";
+|foo}
+    };
+    {name="simplest-raw-strings-2"; implem = True ;
+     o_input = OK {foo|{|argle|}|foo} ;
+     official_input = SKIP "meh" "meh";
+     r_input = SKIP "meh" "meh" ;
+     o_output = SKIP "meh" "meh" ;
+     official_output = OK {foo|;;"argle"|foo} ;
+     r_output = SKIP "meh" "meh" 
+    };
+    {name="simplest-raw-strings-3"; implem = True ;
+     o_input = SKIP "meh" "meh";
+     official_input = OK {foo|{|argle|}|foo} ;
+     r_input = SKIP "meh" "meh" ;
+     o_output = SKIP "meh" "meh" ;
+     official_output = OK {foo|;;{|argle|}|foo} ;
+     r_output = SKIP "meh" "meh" 
     }
 ]
 ;
@@ -1005,6 +1033,7 @@ value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf
         todo msg   
 
     | (_,SKIP _ _ , _) -> ()
+    | (_,OK _, SKIP _ _ ) -> ()
 
     | (True, OK inputs, OK outputs) -> do {
         assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}

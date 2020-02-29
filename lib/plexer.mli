@@ -54,6 +54,12 @@ value gmake : unit -> Plexing.lexer (string * string);
        to convert them into the real corresponding string or char
        value. *)
 
+value simplest_raw_strings : ref bool;
+   (** When False (default), the next call to [Plexer.gmake ()] returns a
+       lexer where {|...|} is not a valid raw-string.  Setting it to True
+       will allow such strings to be valid raw-strings, while checking for
+       and throwing an error if "{|" and "|}" are specified  as keywords. *)
+
 value dollar_for_antiquotation : ref bool;
    (** When True (default), the next call to [Plexer.gmake ()] returns a
        lexer where the dollar sign is used for antiquotations. If False,
