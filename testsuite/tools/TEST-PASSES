@@ -641,7 +641,11 @@ sub setup_package {
 	'patch-directory' => $patchdir,
 	'package-name' => $pkg{'package'},
 	  ) ;
+      if (! (-s $inputf)) {
+	Log::carp("ZERO-SIZED INPUT file $inputf") ;
+      }
     }
+
   }
 }
 
@@ -768,6 +772,10 @@ sub run_package {
       Log::log( "== $f : recipe $recna\n");
     
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
+      if (! (-s $inputf)) {
+	Log::carp("Aborting processing of $f recipe $recna: ZERO-SIZED INPUT file $inputf") ;
+	next RECIPE ;
+      }
       {
 	my $laststep = int(@steps) - 1 ;
 	my $laststepname = $steps[$laststep] ;
