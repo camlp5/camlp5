@@ -1002,6 +1002,17 @@ and t2 = bool[@@foo];
      o_output = SKIP "meh" "meh" ;
      official_output = OK {foo|;;{|argle|}|foo} ;
      r_output = SKIP "meh" "meh" 
+    };
+    {name="poly-type-1"; implem = True ;
+     o_input = OK {foo|type tlist = { x: 'a. 'a list }|foo} ;
+     official_input = OK {foo|type tlist = { x: 'a. 'a list }|foo} ;
+     r_input = OK {foo|type tlist = { x : ! 'a . list 'a };|foo} ;
+     o_output = OK {foo|type tlist = { x : 'a . 'a list };;
+|foo};
+     official_output = OK {foo|type tlist = {
+  x: 'a . 'a list }|foo} ;
+     r_output = OK {foo|type tlist = { x : ! α . list α };
+|foo}
     }
 ]
 ;

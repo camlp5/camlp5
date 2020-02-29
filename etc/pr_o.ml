@@ -1755,10 +1755,14 @@ EXTEND_PRINTER
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
         <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
-      | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> | <:ctyp< ($list:_$) >>
+      ]
+    | "bottom"
+      [
+        <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> | <:ctyp< ($list:_$) >>
       | <:ctyp< $_$ [@ $attribute:_$ ] >>
         as z ->
-          pprintf pc "@[<1>(%p)@]" ctyp z ] ]
+          pprintf pc "@[<1>(%p)@]" ctyp z
+      ] ]
   ;
   pr_str_item:
     [ "top"
@@ -2479,7 +2483,7 @@ EXTEND_PRINTER
       | <:expr< ?{$p$} >> ->
           pprintf pc "?%p" patt p ] ]
   ;
-  pr_ctyp: AFTER "top"
+  pr_ctyp: AFTER "below_alg_attribute"
     [ "as"
       [ <:ctyp< $t1$ as $t2$ >> -> pprintf pc "%p@[ as %p@]" curr t1 next t2 ]
     | "poly"
@@ -2491,6 +2495,14 @@ EXTEND_PRINTER
     [ "label"
       [ <:ctyp< ?$i$: $t$ >> -> pprintf pc "?%s:%p" i curr t
       | <:ctyp< ~$i$: $t$ >> -> pprintf pc "%s:%p" i curr t ] ]
+  ;
+  pr_ctyp: AFTER "bottom"
+    [ "catch-poly"
+      [ <:ctyp< ! $list:_$ . $_$ >> 
+      | <:ctyp:< type $list:pl$ . $t$ >> as z ->
+          pprintf pc "@[<1>(%p)@]" ctyp z
+      ]
+    ]
   ;
   pr_class_expr:
     [ "top"
