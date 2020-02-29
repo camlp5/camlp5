@@ -512,7 +512,7 @@ sub package_run_files {
 
   foreach my $stepna (keys %used_steps) {
     if (exists $tools{$stepna}->{'syntax'}) {
-      croak "package syntax <<$pkg{'syntax'}>> <> tool step <<$stepna>> syntax <<$tools{$stepna}->{'syntax'}>>"
+      Log::croak( "package syntax <<$pkg{'syntax'}>> <> tool step <<$stepna>> syntax <<$tools{$stepna}->{'syntax'}>>")
 	  unless $pkg{'syntax'} eq $tools{$stepna}->{'syntax'} ;
     }
   }
@@ -546,7 +546,7 @@ sub package_run_files {
       }
     } ;
 
-    croak "package $pkg{'package'} has location $location not found in filesystem"
+    Log::croak( "package $pkg{'package'} has location $location not found in filesystem")
 	unless (-d $location) ;
     find( { wanted => $perfile, no_chdir => 1 }, 
 	  (map { $location."/".$_ } @dirs) ) ;
@@ -606,12 +606,13 @@ sub setup_package {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
-    print STDERR "==== SETUP $f ====\n" unless $main::quiet;
+    Log::flush() ;
+    Log::log("==== SETUP $f ====\n");
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
     elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
-    else { croak "unrecognized filetype $f" ; }
+    else { Log::croak( "unrecognized filetype $f") ; }
 
     my $origf = "$location/".$f ;
 
@@ -628,7 +629,7 @@ sub setup_package {
 
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
       if (-r $inputf) {
-	print STDERR "REMOVING $inputf and all downstream files\n" unless $main::quiet ;
+	Log::log( "REMOVING $inputf and all downstream files\n") ;
 	v_systemx([0], ["rm", <$recbase.*>]) ;
       }
       my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
@@ -662,6 +663,7 @@ sub create_patchindex {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
+    Log::flush() ;
     my $bangf = bang_escape($f) ;
 
     my $origf = "$location/".$f ;
@@ -670,7 +672,7 @@ sub create_patchindex {
     my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
 
     next unless -r $all_patch ;
-    print STDERR "==== PATCHINDEX $f ====\n" unless $main::quiet;
+    Log::log( "==== PATCHINDEX $f ====\n");
 
     my $digest = file_md5_hex($origf) ;
     $patchindex{$digest} = {
@@ -707,6 +709,7 @@ sub discover_patches {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
+    Log::flush() ;
     my $bangf = bang_escape($f) ;
 
     my $origf = "$location/".$f ;
@@ -714,7 +717,7 @@ sub discover_patches {
     my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
     my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
 
-    print STDERR "==== PATCHINDEX $f ====\n" unless $main::quiet;
+    Log::log( "==== PATCHINDEX $f ====\n");
     my $digest = file_md5_hex($origf) ;
     next unless exists $patchindex{$digest} ;
 
@@ -725,7 +728,7 @@ sub discover_patches {
     next if $all_patch eq $h{'patch-filename'} ;
 
     if (-r $all_patch) {
-      print STDERR "OVERWRITING patch $all_patch\n" unless $main::quiet ;
+      Log::log( "OVERWRITING patch $all_patch\n") ;
     }
       
     v_systemx([0], ["cp", $h{'patch-filename'}, $all_patch]) ;
@@ -744,12 +747,13 @@ sub run_package {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
-    print STDERR "==== RUN $f ====\n" unless $main::quiet;
+    Log::flush() ;
+    Log::log( "==== RUN $f ====\n");
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
     elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
-    else { croak "unrecognized filetype $f" ; }
+    else { Log::croak( "unrecognized filetype $f") ; }
 
     my $origf = "$location/".$f ;
 
@@ -761,7 +765,7 @@ sub run_package {
       my $recbase = "$workdir/work/$recna/".$bangf ;
       my @steps = @{ $recipe{'steps'} } ;
 
-      print STDERR "== $f : recipe $recna\n" unless $main::quiet;
+      Log::log( "== $f : recipe $recna\n");
     
       my $inputf = "$recbase.0-$steps[0].INPUT" ;
       {
@@ -770,7 +774,7 @@ sub run_package {
 	my $laststepbase = "$recbase.$laststep-$laststepname" ;
 	my $lastoutput = "$laststepbase.OUTPUT" ;
 	if (-r $lastoutput) {
-	  print STDERR "SKIP\n" unless $main::quiet ;
+	  Log::log( "SKIP\n") ;
 	  next RECIPE ;
 	}
 	else {
@@ -782,7 +786,7 @@ sub run_package {
 	    }
 	  }
 	  if (@toremove) { 
-	    print STDERR "CLEAN/REDO\n" unless $main::quiet ;
+	    Log::log( "CLEAN/REDO\n") ;
 	    v_systemx([0], ["rm", "-f", @toremove]) ;
 	  }
 	}
@@ -804,13 +808,13 @@ sub run_package {
 	) ;
 
 	if ($code != 0) {
-	  warn "aborting processing of $f recipe $recna at step $stepname: $@" ;
+	  Log::carp( "aborting processing of $f recipe $recna at step $stepname: $@") ;
 	  print STDERR "NOT OK $f\n";
 	  if ($main::continue_error) {
 	    next RECIPE;
 	  }
 	  else {
-	    croak "aborting entire test" ;
+	    Log::croak( "aborting entire test") ;
 	  }
 	}
 	# setup for next step
@@ -832,12 +836,13 @@ sub diff_package {
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
-    print STDERR "==== DIFF $f ====\n" unless $main::quiet;
+    Log::flush() ;
+    Log::log( "==== DIFF $f ====\n");
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
     elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
-    else { croak "unrecognized filetype $f" ; }
+    else { Log::croak( "unrecognized filetype $f") ; }
 
     my $origf = "$location/".$f ;
 
@@ -880,10 +885,10 @@ sub diff_package {
       }
     }
     if (0 == $code || 1 == $code) {
-      print STDERR "OK $f\n" unless $main::quiet ;
+      Log::log( "OK $f\n") ;
     } else {
       print STDERR "NOT OK $f\n";
-      croak "stopping due to errors in $f" unless $main::continue_error ;
+      Log::croak( "stopping due to errors in $f") unless $main::continue_error ;
     }
   }
 }
@@ -908,10 +913,10 @@ sub generate_input {
   my $recipe_input = "$patchdir/$recna/$escf.INPUT" ;
   my $recipe_patch = "$patchdir/$recna/$escf.PATCH" ;
 
-  croak "both PATCH & INPUT exist for package=$pkgna recipe=ALL file=$inputf"
+  Log::croak( "both PATCH & INPUT exist for package=$pkgna recipe=ALL file=$inputf")
       if ((-r $all_input) && (-r $all_patch)) ;
 
-  croak "both PATCH & INPUT exist for package=$pkgna recipe=$recna file=$inputf"
+  Log::croak( "both PATCH & INPUT exist for package=$pkgna recipe=$recna file=$inputf")
       if ((-r $recipe_input) && (-r $recipe_patch)) ;
 
   v_systemx([0], ["cp", $inputf, $outputf]) ;
@@ -970,13 +975,13 @@ sub extended_diff {
   }
 
   if ($wdiff_ok) {
-    print STDERR "== DIFF $f1 <-> $f2\n" unless $main::quiet ;
-    print STDERR "WDIFF SAYS OK\n" unless $main::quiet ;
+    Log::log( "== DIFF $f1 <-> $f2\n") ;
+    Log::log( "WDIFF SAYS OK\n") ;
     return 1 ;
   }
   if ($wordeq_ok) {
-    print STDERR "== $f1 <-> $f2\n" unless $main::quiet ;
-    print STDERR "WHITE SPACE DIFFERENCES from wordeq\n" unless $main::quiet ;
+    Log::log( "== $f1 <-> $f2\n") ;
+    Log::log( "WHITE SPACE DIFFERENCES from wordeq\n") ;
     return 1 ;
   }
 
@@ -1017,10 +1022,10 @@ sub runtool {
   my $code = v_systemx([0..2], [@cmd]) ;
   if ($code != 0) {
     if (!$continue_error) {
-      croak ("command <<".join(' ', @cmd).">> croakd with $@") ;
+      Log::croak ("command <<".join(' ', @cmd).">> croakd with $@") ;
     }
     else {
-      warn ("command <<".join(' ', @cmd).">> croakd with $@") ;
+      Log::carp ("command <<".join(' ', @cmd).">> croakd with $@") ;
       return $code ;
     }
   }
@@ -1028,7 +1033,7 @@ sub runtool {
 }
 
 sub v_systemx {
-  croak "v_systemx: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
+  Log::croak( "v_systemx: must specify exit codes") unless (ref($_[0]) eq 'ARRAY') ;
   my $codes = shift ;
   my @cmd = @{ shift @_ } ;
   my %args = @_ ;
@@ -1039,7 +1044,7 @@ sub v_systemx {
 }
 
 sub v_capturex {
-  croak "v_capturex: must specify exit codes" unless (ref($_[0]) eq 'ARRAY') ;
+  Log::croak( "v_capturex: must specify exit codes") unless (ref($_[0]) eq 'ARRAY') ;
   my $codes = shift ;
   my @cmd = @{ shift @_ } ;
   my %args = @_ ;
@@ -1073,7 +1078,7 @@ sub onlynl {
 
 sub f_read {
   my $f = shift;
-  open(F,"<$f") || croak "cannot open $f for reading";
+  open(F,"<$f") || Log::croak( "cannot open $f for reading");
   my @l = <F>;
   close(F);
   return (wantarray ? @l : join('', @l)) ;
@@ -1081,7 +1086,43 @@ sub f_read {
 
 sub f_write {
   my $f = shift;
-  open(F,">$f") || croak "cannot open $f for writing";
+  open(F,">$f") || Log::croak( "cannot open $f for writing");
   print F @_;
   close(F);
 }
+
+1;
+
+package Log ;
+
+require Exporter;
+our @ISA       = ('Exporter');
+our @EXPORT    = qw(croak carp log);
+
+use Carp ;
+use Carp::Assert ;
+
+our $buffer ;
+END { show() ; }
+
+sub log {
+  if ($main::quiet && !$main::verbose) {
+    $buffer .= join('', @_) ;
+  }
+  else {
+    print STDERR @_ ;
+  }
+}
+
+sub flush { $buffer = "" ; }
+sub show { if ($buffer) { print STDERR $buffer; } flush() ; }
+
+sub croak {
+  show() ; Carp::croak(@_) ;
+}
+
+sub carp {
+  show() ; Carp::carp(@_) ;
+}
+
+1;
