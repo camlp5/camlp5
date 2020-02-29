@@ -633,6 +633,7 @@ EXTEND
       | s = V FLOAT → <:expr< $_flo:s$ >>
       | s = V STRING → <:expr< $_str:s$ >>
       | s = V CHAR → <:expr< $_chr:s$ >>
+      | "." -> <:expr< . >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | i = V LIDENT → <:expr< $_lid:i$ >>
       | i = V GIDENT → <:expr< $_lid:i$ >>
@@ -696,7 +697,8 @@ EXTEND
   ;
   match_case:
     [ [ p = patt; aso = as_patt_opt; w = V (OPT when_expr); "->"; e = expr →
-          mkmatchcase loc p aso w e ] ]
+          mkmatchcase loc p aso w e
+      ] ]
   ;
   as_patt_opt:
     [ [ "as"; p = patt → Some p

@@ -300,6 +300,7 @@ and expr floc sh =
     | ExXtr (loc, x1, x2) ->
         let loc = floc loc in ExXtr (loc, x1, option_map (vala_map self) x2)
     | ExExten (loc, exten) -> ExExten (floc loc, exten)
+    | ExUnr loc -> ExUnr (floc loc)
   in
   self
 and module_type floc sh =

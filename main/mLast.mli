@@ -135,7 +135,9 @@ and expr =
   | ExWhi of loc and expr and V (list expr)
   | ExXtr of loc and string and option (V expr)
   | ExAtt of loc and expr and V (V string * payload)
-  | ExExten of loc and attribute_body ]
+  | ExExten of loc and attribute_body
+  | ExUnr of loc
+  ]
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type

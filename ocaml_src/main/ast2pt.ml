@@ -1295,6 +1295,7 @@ and expr =
   | ExXtr (loc, _, _) -> error loc "bad ast ExXtr"
   | ExExten (loc, ebody) ->
       mkexp loc (ocaml_pexp_extension (extension (uv ebody)))
+  | ExUnr loc -> mkexp loc (ocaml_pexp_unreachable ())
 and label_expr rev_al =
   function
     ExLab (loc, lpeo) ->

@@ -7,7 +7,7 @@ include $(TOP)/config/Makefile
 DIFF=diff -Bwi -u20
 RM=rm
 
-TESTS=o2r_test r2r_test o2o_test o2official_test official2official_test r2sch_test \
+TESTS=o2r_test r2r_test r2o_test o2o_test o2official_test r2official_test official2official_test r2sch_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
 	extfun_test
 
@@ -16,8 +16,10 @@ all-tests: all $(TESTS)
 all: \
 	o2r_test.byte \
 	r2r_test.byte \
+	r2o_test.byte \
 	o2o_test.byte \
 	o2official_test.byte \
+	r2official_test.byte \
 	official2official_test.byte \
 	r2sch_test.byte \
 	sch2r_test.pa_scheme.byte \
@@ -91,6 +93,14 @@ r2r_test:: all
 r2r_test.byte: r2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg odyl.cma camlp5.cma pa_r.cmo pr_r.cmo pr_ro.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.ml -o r2r_test.byte
 
+
+r2o_test:: all
+	./r2o_test.byte
+
+r2o_test.byte: r2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg odyl.cma camlp5.cma pa_r.cmo pr_o.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_test.ml -o r2o_test.byte
+
+
 o2o_test:: all
 	./o2o_test.byte
 
@@ -102,6 +112,14 @@ o2official_test:: all
 
 o2official_test.byte: o2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -I ../etc -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo pr_official.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_test.ml -o o2official_test.byte
+
+
+r2official_test:: all
+	./r2official_test.byte
+
+r2official_test.byte: r2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -I ../etc -linkall -linkpkg odyl.cma camlp5.cma pa_r.cmo pr_official.cmo testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_test.ml -o r2official_test.byte
+
 
 
 official2official_test:: all

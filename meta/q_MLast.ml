@@ -858,6 +858,7 @@ EXTEND
       | i = SV LIDENT → Qast.Node "ExLid" [Qast.Loc; i]
       | i = SV GIDENT → Qast.Node "ExLid" [Qast.Loc; i]
       | i = SV UIDENT → Qast.Node "ExUid" [Qast.Loc; i]
+      | "." -> Qast.Node "ExUnr" [Qast.Loc]
       | "["; "]" → Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
           mklistexp Qast.Loc last el
@@ -922,7 +923,8 @@ EXTEND
   ;
   match_case:
     [ [ p = patt; aso = as_patt_opt; w = SV (OPT when_expr); "->"; e = expr →
-          mkmatchcase Qast.Loc p aso w e ] ]
+          mkmatchcase Qast.Loc p aso w e
+      ] ]
   ;
   as_patt_opt:
     [ [ "as"; p = patt → Qast.Option (Some p)

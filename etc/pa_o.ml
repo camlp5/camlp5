@@ -943,9 +943,13 @@ EXTEND
       | ":>"; t = poly_type; "="; e = expr -> <:expr< ($e$ :> $t$) >>
       ] ]
   ;
+(* NOTE WELL: if I expand expr_or_dot into match_case and make it two rules,
+ * I get errors; more evidence there's a bug in the grammar-interpreter *)
+  expr_or_dot: [[ e = expr -> e | "." -> <:expr< . >> ]] ;
   match_case:
-    [ [ x1 = patt; w = V (OPT [ "when"; e = expr -> e ]); "->"; x2 = expr ->
-          (x1, w, x2) ] ]
+    [ [ x1 = patt; w = V (OPT [ "when"; e = expr -> e ]); "->"; e = expr_or_dot ->
+          (x1, w, e)
+      ] ]
   ;
   lbl_expr_list:
     [ [ le = lbl_expr; ";"; lel = SELF -> [le :: lel]

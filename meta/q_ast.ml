@@ -306,6 +306,7 @@ module Meta_make (C : MetaSig) =
       | ExExten loc exten ->
           let exten = assert False in
           C.node "ExExten" [exten]
+      | ExUnr loc -> C.node "ExUnr" []
       ]
     and module_type =
       fun

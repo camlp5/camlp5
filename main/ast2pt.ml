@@ -1106,6 +1106,7 @@ and expr =
       mkexp loc (Pexp_while (expr e1) (expr e2))
   | ExXtr loc _ _ → error loc "bad ast ExXtr"
   | ExExten loc ebody -> mkexp loc (ocaml_pexp_extension (extension (uv ebody)))
+  | ExUnr loc -> error loc "bad ast ExUnr (parses as '.'; cannot have an ExUnr except at the rhs of match-case)"
   ]
 and label_expr rev_al =
   fun
@@ -1182,7 +1183,10 @@ and expand_gadt_type loc p loc1 nt ct e =
   let ct = <:ctyp< ! $list:tp$ . $ct$ >> in
   (<:patt< ($p$ : $ct$) >>, e)
 and mkpwe (p, w, e) =
-  ocaml_case (patt p, option_map expr (uv w), mkloc (loc_of_expr e), expr e)
+  let conve = match e with [
+    ExUnr loc -> mkexp loc (ocaml_pexp_unreachable())
+  | e -> expr e ] in
+  ocaml_case (patt p, option_map expr (uv w), mkloc (loc_of_expr e), conve)
 and mklabexp (lab, e) =
   (patt_label_long_id lab, mkloc (loc_of_patt lab), expr e)
 and mkideexp (ide, e) = (ide, expr e)

@@ -132,6 +132,7 @@ and expr =
   | ExXtr of loc * string * expr option
   | ExAtt of loc * expr * (string * payload)
   | ExExten of loc * attribute_body
+  | ExUnr of loc
 and module_type =
     MtAcc of loc * module_type * module_type
   | MtApp of loc * module_type * module_type

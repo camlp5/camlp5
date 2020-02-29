@@ -194,6 +194,7 @@ let ocaml_extension_exception loc s ed alg_attributes =
   {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
    pext_loc = loc; pext_attributes = alg_attributes}
 ;;
+let ocaml_pexp_unreachable () = Pexp_unreachable;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}
@@ -402,7 +403,16 @@ let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
 
 let ocaml_pexp_for i e1 e2 df e = Pexp_for (i, e1, e2, df, e);;
 
-let ocaml_case (p, wo, loc, e) = {pc_lhs = p; pc_guard = wo; pc_rhs = e};;
+let ocaml_case (p, wo, loc, e) =
+  let e =
+    match e with
+      {pexp_desc = Pexp_unreachable; pexp_attributes = _ :: _} ->
+        failwith
+          "Internal error: Pexp_unreachable (parsed as '.') must not have attributes"
+    | e -> e
+  in
+  {pc_lhs = p; pc_guard = wo; pc_rhs = e}
+;;
 
 let ocaml_pexp_function lab eo pel =
   match pel with

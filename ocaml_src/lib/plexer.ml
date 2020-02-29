@@ -6,6 +6,7 @@
 
 open Versdep;;
 
+let simplest_raw_strings = ref false;;
 let no_quotations = ref false;;
 let error_on_unknown_keywords = ref false;;
 
@@ -17,6 +18,7 @@ let force_antiquot_loc = ref false;;
 
 type context =
   { mutable after_space : bool;
+    simplest_raw_strings : bool;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     dot_newline_is : string;
@@ -862,28 +864,28 @@ let rec rawstring0 ctx bp buf (strm__ : _ Stream.t) =
 ;;
 
 (*
- * predicate checks that the stream contains "[:alpha:]+|", and it gets
- * called when the main lexer has already seen a "{".  To check for at least
- * one alpha, require that the offset of the "|" be > 1 (which means that
- * offset 1 must be [:alpha:].
- *
- * The further check for alpha here is unnecessary, since the main lexer will
- * NOT call this function in the case where the input is "{|" (because that's
- * a valid token, and precedes the branch where this code is invoked.
+ * This predicate checks that the stream contains a valid raw-string starter.  
+ * The definition of "valid raw string starter" depends on the value of 
+ * the variable [simplest_raw_strings]: if it is [False], then a valid
+ * raw-string starter is "[:alpha:]+|"; if it is [True], a valid raw-string
+ * starter is "[:alpha:]*|".  [simplest_raw_strings] is set to True in
+ * original syntax.
+
+ * This predicate gets called when the main lexer has already seen a "{".
 *)
-let raw_string_starter_p strm =
+let raw_string_starter_p ctx strm =
   let rec predrec n =
     match stream_peek_nth n strm with
       None -> false
     | Some ('a'..'z' | '_') -> predrec (n + 1)
-    | Some '|' when n > 1 -> true
+    | Some '|' when ctx.simplest_raw_strings || n > 1 -> true
     | Some _ -> false
   in
   predrec 1
 ;;
 
 let keyword_or_error_or_rawstring ctx bp (loc, s) buf strm =
-  if not (raw_string_starter_p strm) then keyword_or_error ctx loc "{"
+  if not (raw_string_starter_p ctx strm) then keyword_or_error ctx loc "{"
   else rawstring0 ctx bp Plexing.Lexbuf.empty strm
 ;;
 
@@ -1188,13 +1190,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                           (Plexing.Lexbuf.get (Plexing.Lexbuf.add '{' buf))
                     | _ ->
                         match Stream.peek strm__ with
-                          Some '|' ->
-                            Stream.junk strm__;
-                            keyword_or_error ctx (bp, Stream.count strm__)
-                              (Plexing.Lexbuf.get
-                                 (Plexing.Lexbuf.add '|'
-                                    (Plexing.Lexbuf.add '{' buf)))
-                        | Some '<' ->
+                          Some '<' ->
                             Stream.junk strm__;
                             keyword_or_error ctx (bp, Stream.count strm__)
                               (Plexing.Lexbuf.get
@@ -1362,28 +1358,29 @@ let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     err ctx (Stream.count cstrm, Stream.count cstrm + 1) str
 ;;
 
-let func kwd_table glexr =
-  let ctx =
-    let line_nb = ref 0 in
-    let bol_pos = ref 0 in
-    {after_space = false;
-     dollar_for_antiquotation = !dollar_for_antiquotation;
-     specific_space_dot = !specific_space_dot;
-     dot_newline_is = !dot_newline_is; find_kwd = Hashtbl.find kwd_table;
-     line_cnt =
-       (fun bp1 c ->
-          match c with
-            '\n' | '\r' ->
-              if c = '\n' then incr !(Plexing.line_nb);
-              !(Plexing.bol_pos) := bp1 + 1
-          | c -> ());
-     set_line_nb =
-       (fun () ->
-          line_nb := !(!(Plexing.line_nb)); bol_pos := !(!(Plexing.bol_pos)));
-     make_lined_loc =
-       fun loc comm ->
-         Ploc.make_loc !(Plexing.input_file) !line_nb !bol_pos loc comm}
-  in
+let make_ctx kwd_table =
+  let line_nb = ref 0 in
+  let bol_pos = ref 0 in
+  {after_space = false; dollar_for_antiquotation = !dollar_for_antiquotation;
+   simplest_raw_strings = !simplest_raw_strings;
+   specific_space_dot = !specific_space_dot; dot_newline_is = !dot_newline_is;
+   find_kwd = Hashtbl.find kwd_table;
+   line_cnt =
+     (fun bp1 c ->
+        match c with
+          '\n' | '\r' ->
+            if c = '\n' then incr !(Plexing.line_nb);
+            !(Plexing.bol_pos) := bp1 + 1
+        | c -> ());
+   set_line_nb =
+     (fun () ->
+        line_nb := !(!(Plexing.line_nb)); bol_pos := !(!(Plexing.bol_pos)));
+   make_lined_loc =
+     fun loc comm ->
+       Ploc.make_loc !(Plexing.input_file) !line_nb !bol_pos loc comm}
+;;
+
+let func ctx kwd_table glexr =
   Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;
 
@@ -1564,8 +1561,9 @@ and check_ident2 buf (strm__ : _ Stream.t) =
   | _ -> buf
 ;;
 
-let check_keyword s =
-  try check_keyword_stream (Stream.of_string s) with _ -> false
+let check_keyword ctx s =
+  if ctx.simplest_raw_strings && (s = "{|" || s = "|}") then false
+  else try check_keyword_stream (Stream.of_string s) with _ -> false
 ;;
 
 let error_no_respect_rules p_con p_prm =
@@ -1578,11 +1576,11 @@ let error_no_respect_rules p_con p_prm =
         " does not respect Plexer rules"))
 ;;
 
-let using_token kwd_table (p_con, p_prm) =
+let using_token ctx kwd_table (p_con, p_prm) =
   match p_con with
     "" ->
       if not (hashtbl_mem kwd_table p_prm) then
-        if check_keyword p_prm then Hashtbl.add kwd_table p_prm p_prm
+        if check_keyword ctx p_prm then Hashtbl.add kwd_table p_prm p_prm
         else error_no_respect_rules p_con p_prm
   | "LIDENT" ->
       if p_prm = "" then ()
@@ -1703,23 +1701,24 @@ let tok_match =
 
 let gmake () =
   let kwd_table = Hashtbl.create 301 in
+  let ctx = make_ctx kwd_table in
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 871, 25)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 877, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 871, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 877, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 871, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 877, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 872, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 878, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 872, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 878, 37)));
        Plexing.tok_comm = None}
   in
   let glex =
-    {Plexing.tok_func = func kwd_table glexr;
-     Plexing.tok_using = using_token kwd_table;
+    {Plexing.tok_func = func ctx kwd_table glexr;
+     Plexing.tok_using = using_token ctx kwd_table;
      Plexing.tok_removing = removing_token kwd_table;
      Plexing.tok_match = tok_match; Plexing.tok_text = text;
      Plexing.tok_comm = None}

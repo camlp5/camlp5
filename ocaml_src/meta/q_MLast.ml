@@ -4710,6 +4710,10 @@ Grammar.safe_extend
               (Qast.Node ("ExUid", [Qast.Loc; Qast.VaVal (Qast.Str "[]")]) :
                'expr)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ".")),
+           (fun _ (loc : Ploc.t) ->
+              (Qast.Node ("ExUnr", [Qast.Loc]) : 'expr)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_facto
                 (Grammar.s_rules

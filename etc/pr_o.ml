@@ -411,6 +411,12 @@ value letop_binding pc (_, (p, e, attrs)) = let_binding pc (p, e, attrs)
 ;
 
 value match_assoc force_vertic pc ((p, w, e), is_last) =
+  let expr pc = fun [
+    <:expr< . >> -> pprintf pc "." | e -> expr pc e
+  ] in
+  let expr_with_comm_except_if_sequence pc = fun [
+    <:expr< . >> -> pprintf pc "." | e -> expr_with_comm_except_if_sequence pc e
+  ] in
   let (pc_aft, pc_dang) =
     if not is_last then ("", "|") else (pc.aft, pc.dang)
   in
@@ -1473,6 +1479,9 @@ EXTEND_PRINTER
       | <:expr< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
+      | <:expr:< . >> ->
+          Ploc.raise loc
+            (Failure "pr_expr of (PaUnr _) not allowed except at rhs of match-case")
       | <:expr:< $lid:s$ >> -> var_escaped pc (loc, s)
       | <:expr:< $uid:s$ >> -> cons_escaped pc (loc, s)
       | <:expr< `$s$ >> ->

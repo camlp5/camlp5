@@ -234,6 +234,8 @@ value ocaml_pcty_extension _ = assert False ;
 value ocaml_pctr_extension _ = assert False ;
 value ocaml_pcf_extension _ = assert False ;
 value ocaml_extension_exception _ _ _ _ = assert False ;
+
+value ocaml_pexp_unreachable () = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
@@ -384,6 +386,8 @@ value ocaml_extension_exception loc s ed alg_attributes =
    pext_kind = Pext_decl (Pcstr_tuple ed) None;
    pext_loc = loc; pext_attributes = alg_attributes}
 ;
+
+value ocaml_pexp_unreachable () = Pexp_unreachable ;
 END
 ;
 
@@ -990,6 +994,11 @@ value ocaml_case (p, wo, loc, e) =
     | None -> (p, e)
     end
   ELSE
+    let e =
+      match e with [
+        {pexp_desc = Pexp_unreachable; pexp_attributes = [_ :: _]} ->
+          failwith "Internal error: Pexp_unreachable (parsed as '.') must not have attributes"
+      | e -> e ] in
     {pc_lhs = p; pc_guard = wo; pc_rhs = e}
   END
 ;

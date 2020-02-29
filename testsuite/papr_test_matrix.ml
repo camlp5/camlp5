@@ -29,6 +29,7 @@ type step_desc_t = [
 
 type instance_t = {
   name : string ;
+  exclude : list string ;
   implem : bool ;
   r_input : step_desc_t;
   o_input : step_desc_t ;
@@ -41,6 +42,7 @@ type instance_t = {
 
 value test_matrix = [
     {name="test-prototype"; implem = True ;
+     exclude=[];
      o_input = OK {foo||foo} ;
      official_input = OK {foo||foo} ;
      r_input = OK {foo||foo} ;
@@ -49,6 +51,7 @@ value test_matrix = [
      r_output = OK {foo||foo}
     };
     {name="simplest"; implem = True ;
+     exclude=[];
      o_input = OK "(1; 2);; 3 ;; let x = 1 ;;" ;
      official_input = OK "(1; 2);; 3 ;; let x = 1 ;;" ;
      r_input = OK "do { 1; 2}; 3 ; value x = 1 ;" ;
@@ -65,6 +68,7 @@ value x = 1;
 |foo}
     };
     {name="infix1"; implem = True ;
+     exclude=[];
      o_input = OK"(a + b) c;;" ;
      official_input = OK"(+) a b c;;" ;
      r_input = OK"(a + b) c;" ;
@@ -75,6 +79,7 @@ value x = 1;
 |foo}
     };
     {name="infix2"; implem = True ;
+     exclude=[];
      o_input = OK "(a --> b) c;;" ;
      official_input = OK "(-->) a b c;;" ;
      r_input = OK"(a --> b) c;" ;
@@ -85,6 +90,7 @@ value x = 1;
 |foo}
     };
     {name="prefix1"; implem = True ;
+     exclude=[];
      o_input = OK"(!!!a) c;;" ;
      official_input = OK"(!!!) a c;;" ;
      r_input = OK"(!!!a) c;" ;
@@ -96,6 +102,7 @@ value x = 1;
     };
     (* original syntax accepts "$" as an infix symbol; revised syntax DOES NOT *)
     {name="dollar"; implem = True ;
+     exclude=[];
      o_input = OK"a $ c;;" ;
      official_input = OK"a $ c;;" ;
      r_input = EXN "a $ c;" (Ploc.Exc Ploc.dummy (Stream.Error "';' expected after [str_item] (in [str_item_semi])")) ;
@@ -106,6 +113,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute1"; implem = True ;
+     exclude=[];
      o_input = OK"a[@foo];;" ;
      official_input = OK"a[@foo];;" ;
      r_input = OK"a [@foo];" ;
@@ -116,6 +124,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute2"; implem = True ;
+     exclude=[];
      o_input = OK"a + b[@foo];;" ;
      official_input = OK"a + b[@foo];;" ;
      r_input = OK"a + b [@foo];" ;
@@ -126,6 +135,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute3"; implem = True ;
+     exclude=[];
      o_input = OK"(a [@foo])[@bar];;" ;
      official_input = OK"(a [@foo])[@bar];;" ;
      r_input = OK"a[@foo][@bar];" ;
@@ -136,6 +146,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute4"; implem = True ;
+     exclude=[];
      o_input = OK"a [@foo :type t = int];;" ;
      official_input = OK"a [@foo :type t = int];;" ;
      r_input = OK"a[@foo :type t = int;];" ;
@@ -146,6 +157,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute5"; implem = True ;
+     exclude=[];
      o_input = OK"a [@foo :int];;" ;
      official_input = OK"a [@foo :int];;" ;
      r_input = OK"a[@foo :int];" ;
@@ -156,6 +168,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute6"; implem = True ;
+     exclude=[];
      o_input = OK"a [@foo ? (_,_)];;" ;
      official_input = OK"a [@foo ? (_,_)];;" ;
      r_input = OK"a[@foo ? (_,_)];" ;
@@ -166,6 +179,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute7"; implem = True ;
+     exclude=[];
      o_input = OK"a [@foo ? (_,_) when true];;" ;
      official_input = OK"a [@foo ? (_,_) when true];;" ;
      r_input = OK"a[@foo ? (_,_) when True];" ;
@@ -176,6 +190,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute8"; implem = True ;
+     exclude=[];
      o_input = OK"a [@foo ? _,_ when true];;" ;
      official_input = OK"a [@foo ? _,_ when true];;" ;
      r_input = OK"a[@foo ? (_,_) when True];" ;
@@ -186,6 +201,7 @@ value x = 1;
 "
     };
     {name="alg_attribute9"; implem = True ;
+     exclude=[];
      o_input = OK"type t = int [@foo]" ;
      official_input = OK"type t = int [@foo]" ;
      r_input = OK"type t = int [@foo];" ;
@@ -196,6 +212,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute10"; implem = True ;
+     exclude=[];
      o_input = OK"type t = int [@foo][@bar]" ;
      official_input = OK"type t = int [@foo][@bar]" ;
      r_input = OK"type t = int [@foo][@bar];" ;
@@ -206,6 +223,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute11"; implem = True ;
+     exclude=[];
      o_input = OK"function x|y[@foo] -> 1" ;
      official_input = SKIP "function x|y[@foo] -> 1" "this test is problematic but probably not an error" ;
      r_input = OK"fun [ (x|y[@foo]) -> 1 ];" ;
@@ -219,6 +237,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute12"; implem = True ;
+     exclude=[];
      o_input = OK"module M = struct end [@foo]" ;
      official_input = OK"module M = struct end [@foo]" ;
      r_input = OK"module M = struct end [@foo];" ;
@@ -229,6 +248,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute13"; implem = True ;
+     exclude=[];
      o_input = OK"class t = object end [@foo]" ;
      official_input = OK"class t = object end [@foo]" ;
      r_input = OK"class t = object end [@foo];" ;
@@ -239,6 +259,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute13"; implem = True ;
+     exclude=[];
      o_input = OK"class type ['a ] t = object end [@foo]" ;
      official_input = OK"class type ['a ] t = object end [@foo]" ;
      r_input = OK"class type t ['a] = object end [@foo];" ;
@@ -249,6 +270,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute14"; implem = True ;
+     exclude=[];
      o_input = OK"type t = { a : int [@foo] }" ;
      official_input = OK"type t = { a : int [@foo] }" ;
      r_input = OK"type t = { a : int [@foo] };" ;
@@ -260,6 +282,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute15"; implem = True ;
+     exclude=[];
      o_input = OK"type t = { a : (int [@bar]) [@foo] }" ;
      official_input = OK"type t = { a : (int [@bar]) [@foo] }" ;
      r_input = OK"type t = { a : (int [@bar]) [@foo] };" ;
@@ -271,6 +294,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute16"; implem = True ;
+     exclude=[];
      o_input = OK"type t = a * (b[@bar])" ;
      official_input = OK"type t = a * (b[@bar])" ;
      r_input = OK"type t = (a * b[@bar]);" ;
@@ -281,6 +305,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute17"; implem = True ;
+     exclude=[];
      o_input = OK"type t = a * b[@bar]" ;
      official_input = OK"type t = a * b[@bar]" ;
      r_input = OK"type t = (a * b)[@bar];" ;
@@ -291,6 +316,7 @@ value x = 1;
 |foo}
     };
     {name="alg_attribute19"; implem = True ;
+     exclude=[];
      o_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] }" ;
      official_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] }" ;
      r_input = OK"type t = { a : ((int * bool)[@bar]) [@foo] };" ;
@@ -302,6 +328,7 @@ value x = 1;
 |foo}
     };
     {name="poly-variant-alg-attribute1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|type t = [ `Foo [@alg_foo] ]|foo} ;
      official_input = OK {foo|type t = [ `Foo [@alg_foo] ]|foo} ;
      r_input = OK {foo|type t = [= `Foo [@alg_foo] ];|foo} ;
@@ -312,6 +339,7 @@ value x = 1;
 |foo}
     };
     {name="poly-variant-alg-attribute2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|type t = [ `Foo of (int [@alg_bar]) [@alg_foo] ]|foo} ;
      official_input = OK {foo|type t = [ `Foo of (int [@alg_bar]) [@alg_foo] ]|foo} ;
      r_input = OK {foo|type t = [= `Foo of (int [@alg_bar])[@alg_foo] ];|foo} ;
@@ -323,6 +351,7 @@ value x = 1;
     };
 
     {name="simple-interf"; implem = False ;
+     exclude=[];
      o_input = OK"val x : int" ;
      official_input = OK"val x : int" ;
      r_input = OK"value x : int;" ;
@@ -333,6 +362,7 @@ value x = 1;
 |foo}
     };
     {name="item_attribute1"; implem = False ;
+     exclude=[];
      o_input = OK"val x : int [@@foo]" ;
      official_input = OK"val x : int [@@foo]" ;
      r_input = OK"value x : int[@@foo];" ;
@@ -343,6 +373,7 @@ value x = 1;
 |foo}
     };
     {name="item_attribute2"; implem = True ;
+     exclude=[];
      o_input = OK"1 [@@foo]" ;
      official_input = OK"1 [@@foo]" ;
      r_input = OK"do { 1 } [@@foo];" ;
@@ -353,6 +384,7 @@ value x = 1;
 |foo}
     };
     {name="item_attribute3"; implem = True ;
+     exclude=[];
      o_input = OK"type nonrec t1 = int [@@bar] and t2 = bool [@@foo]" ;
      official_input = OK"type nonrec t1 = int [@@bar] and t2 = bool [@@foo]" ;
      r_input = OK"type nonrec t1 = int [@@bar] and t2 = bool [@@foo];" ;
@@ -366,6 +398,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="exception-decl-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK"exception Foo of int [@@foo]" ;
      official_input = OK"exception Foo of int [@@foo]" ;
      r_input = OK"exception Foo of int [@@foo];" ;
@@ -376,6 +409,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="exception-decl-attributes2"; implem = True ;
+     exclude=[];
      o_input = OK"exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar]" ;
      official_input = OK"exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar]" ;
      r_input = OK"exception T of (int [@alg_foo]) [@alg_bar] [@@item_bar] ;" ;
@@ -386,6 +420,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="constructor-decl-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK"type t = A of int * bool [@alg_foo] | B of bool * string [@alg_bar] [@@item_bar]" ;
      official_input = OK"type t = A of int * bool [@alg_foo] | B of bool * string [@alg_bar] [@@item_bar]" ;
      r_input = OK"type t = [ A of int and bool [@alg_foo] | B of bool and string [@alg_bar] ] [@@item_bar];" ;
@@ -402,6 +437,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-expr-item-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK{foo|module M = struct end [@alg_foo] [@@item_bar]|foo} ;
      official_input = OK{foo|module M = struct end [@alg_foo] [@@item_bar]|foo} ;
      r_input = OK{foo|module M = struct end [@alg_foo] [@@item_bar];|foo} ;
@@ -412,6 +448,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-expr-item-attributes2"; implem = True ;
+     exclude=[];
      o_input = OK{foo|module M = N [@alg_foo] [@@item_bar]|foo} ;
      official_input = OK{foo|module M = N [@alg_foo] [@@item_bar]|foo} ;
      r_input = OK{foo|module M = N [@alg_foo] [@@item_bar];|foo} ;
@@ -422,6 +459,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="method-class-sig-item-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|class type ct = object method m : int [@@argle] end |foo} ;
      official_input = OK {foo|class type ct = object method m : int [@@argle] end |foo} ;
      r_input = OK {foo|class type ct = object method m : int  [@@argle] ; end;|foo} ;
@@ -432,6 +470,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="method-class-struct-item-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|class c = object method foo = 1 [@@argle] end |foo} ;
      official_input = OK {foo|class c = object method foo = 1 [@@argle] end |foo} ;
      r_input = OK {foo|class c = object method foo = 1[@@argle]; end; |foo} ;
@@ -442,6 +481,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="class-decl-item-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|class c = object end [@@argle] |foo} ;
      official_input = OK {foo|class c = object end [@@argle] |foo} ;
      r_input = OK {foo|class c = object end [@@argle] ;|foo} ;
@@ -452,6 +492,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="let-binding-item-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let x = 1 [@@argle] in 2|foo} ;
      official_input = OK {foo|let x = 1 [@@argle] in 2|foo} ;
      r_input = OK {foo|let x = 1 [@@argle] in 2;|foo} ;
@@ -463,6 +504,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="let-binding-item-attributes2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let [@argle] x = 1 in 2|foo} ;
      official_input = OK {foo|let [@argle] x = 1 in 2|foo} ;
      r_input = SKIP {foo|let [@argle] x = 1 in 2;|foo} "this isn't allowed in revised syntax (and won't be)";
@@ -474,6 +516,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="letop-binding-item-attributes1-FAILS"; implem = True ;
+     exclude=[];
      o_input = EXN {foo|let|| x = 1 [@@argle] in 2|foo}
                    (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error
                     "[andop_binding] expected after [letop_binding] (in [expr])")) ;
@@ -487,6 +530,7 @@ and t2 = bool[@@foo];
      r_output = OK "should never get here"
     };
     {name="open-item-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|open Foo [@@argle]|foo} ;
      official_input = OK {foo|open Foo [@@argle]|foo} ;
      r_input = OK {foo|open Foo [@@argle];|foo} ;
@@ -497,6 +541,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="floating-attributes1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|[@@@argle]|foo} ;
      official_input = OK {foo|[@@@argle]|foo} ;
      r_input = OK {foo|[@@@argle];|foo} ;
@@ -507,6 +552,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="floating-attributes2"; implem = False ;
+     exclude=[];
      o_input = OK {foo|[@@@argle]|foo} ;
      official_input = OK {foo|[@@@argle]|foo} ;
      r_input = OK {foo|[@@@argle];|foo} ;
@@ -517,6 +563,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="let-exception1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let exception E [@algattr] in 1 [@@itemattr]|foo} ;
      official_input = OK {foo|let exception E[@algattr] in 1 [@@itemattr]|foo} ;
      r_input = OK {foo|let exception E[@algattr] in 1 [@@itemattr];|foo} ;
@@ -527,6 +574,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="let-exception2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let exception E of (int [@algattr2])[@algattr] in 1 [@@itemattr]|foo} ;
      official_input = OK {foo|let exception E of (int [@algattr2])[@algattr] in 1 [@@itemattr]|foo} ;
      r_input = OK {foo|let exception E of (int [@algattr2])[@algattr] in 1 [@@itemattr];|foo} ;
@@ -537,6 +585,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="pat-exception1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|match x with exception E -> 1|foo} ;
      official_input = OK {foo|match x with exception E -> 1|foo} ;
      r_input = OK {foo|match x with [ exception E -> 1 ];|foo} ;
@@ -547,6 +596,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="pat-exception1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|match x with exception E.F -> 1|foo} ;
      official_input = OK {foo|match x with exception E.F -> 1|foo} ;
      r_input = OK {foo|match x with [ exception E.F -> 1 ];|foo} ;
@@ -557,6 +607,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="pat-exception2"; implem = True ;
+     exclude=["r2official"];
      o_input = OK {foo|match x with exception E.F _ -> 1|foo} ;
      official_input = OK {foo|match x with exception E.F _ -> 1|foo} ;
      r_input = OK {foo|match x with [ exception E.F _ -> 1 ];|foo} ;
@@ -567,6 +618,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="unary-plus1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|+ 1|foo} ;
      official_input = OK {foo|+ 1|foo} ;
      r_input = OK {foo|+ 1;|foo} ;
@@ -577,6 +629,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="unary-plus2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|+. 1.|foo} ;
      official_input = OK {foo|+. 1.|foo} ;
      r_input = OK {foo|+. 1.;|foo} ;
@@ -587,6 +640,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="unary-plus3"; implem = True ;
+     exclude=[];
      o_input = OK {foo|+ x|foo} ;
      official_input = OK {foo|+ x|foo} ;
      r_input = OK {foo|+ x;|foo} ;
@@ -597,6 +651,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="unary-plus4"; implem = True ;
+     exclude=[];
      o_input = OK {foo|+ + x|foo} ;
      official_input = OK {foo|+ + x|foo} ;
      r_input = OK {foo|+ +x;|foo} ;
@@ -607,6 +662,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-record1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|M.{a = b}|foo} ;
      official_input = OK {foo|M.{a = b}|foo} ;
      r_input = OK {foo|M.({a = b});|foo} ;
@@ -617,6 +673,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-record2"; implem = True ;
+     exclude=["r2official"];
      o_input = OK {foo|M.N.{a = b}|foo} ;
      official_input = OK {foo|M.N.{a = b}|foo} ;
      r_input = OK {foo|M.N.({a = b});|foo} ;
@@ -626,7 +683,17 @@ and t2 = bool[@@foo];
      r_output = OK {foo|M.N.({a = b});
 |foo}
     };
+    {name="module-record2-r2official"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "";
+     official_input = SKIP "" "";
+     r_input = OK {foo|M.N.({a = b});|foo} ;
+     o_output = SKIP "" "";
+     official_output = OK {foo|;;M.N.({ a = b })|foo} ;
+     r_output = SKIP "" ""
+    };
     {name="module-record3"; implem = True ;
+     exclude=["r2official"];
      o_input = OK {foo|M.N.{e with a = b}|foo} ;
      official_input = OK {foo|M.N.{e with a = b}|foo} ;
      r_input = OK {foo|M.N.({(e) with a = b});|foo} ;
@@ -636,7 +703,17 @@ and t2 = bool[@@foo];
      r_output = OK {foo|M.N.({(e) with a = b});
 |foo}
     };
+    {name="module-record3-r2official"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "";
+     official_input = SKIP "" "";
+     r_input = OK {foo|M.N.({(e) with a = b});|foo} ;
+     o_output = SKIP "" "";
+     official_output = OK {foo|;;M.N.({ e with a = b })|foo} ;
+     r_output = SKIP "" ""
+    };
     {name="module-alias1"; implem = False ;
+     exclude=[];
      o_input = OK {foo|module T = A.B.C|foo} ;
      official_input = OK {foo|module T = A.B.C|foo} ;
      r_input = OK {foo|module alias T = A.B.C;|foo} ;
@@ -647,6 +724,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="labeled-field-alg-attribute1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|type t = { a : int [@attr] ; }|foo} ;
      official_input = OK {foo|type t = { a : int [@attr] ; }|foo} ;
      r_input = OK {foo|type t = { a : int[@attr] };|foo} ;
@@ -658,6 +736,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="labeled-field-alg-attribute2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|type t = { a : int [@attr] ; [@attr2] }|foo} ;
      official_input = OK {foo|type t = { a : int [@attr] ;  [@attr2]}|foo} ;
      r_input = OK {foo|type t = { a : int[@attr] [@attr2] };|foo} ;
@@ -669,6 +748,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="val-attributes1"; implem = False ;
+     exclude=[];
      o_input = OK {foo|val x : int [@@attr2]|foo} ;
      official_input = OK {foo|val x : int [@@attr2]|foo} ;
      r_input = OK {foo|value x : int [@@attr2];|foo} ;
@@ -679,6 +759,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="val-attributes2"; implem = False ;
+     exclude=[];
      o_input = OK {foo|val[@attr1] x : int [@@attr2]|foo} ;
      official_input = OK {foo|val[@attr1] x : int [@@attr2]|foo} ;
      r_input = OK {foo|value x : int [@@attr1][@@attr2];|foo} ;
@@ -689,6 +770,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="external-operator-sig-item"; implem = False ;
+     exclude=[];
      o_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
   [@@a "msg"]|foo} ;
      official_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
@@ -702,6 +784,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="external-operator-str-item"; implem = True ;
+     exclude=[];
      o_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
   [@@a "msg"]|foo} ;
      official_input = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"
@@ -715,6 +798,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="expr-1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let () = (f [@inlined never]) ()|foo} ;
      official_input = OK {foo|let () = (f [@inlined never]) ()|foo} ;
      r_input = OK {foo|value () = (f[@inlined never;]) ();|foo} ;
@@ -725,6 +809,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="anon-module-argumet"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let f (module _ : S) = ()|foo} ;
      official_input = OK {foo|let f (module _ : S) = ()|foo} ;
      r_input = OK {foo|value f (module _ : S) = ();|foo} ;
@@ -735,6 +820,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="named-module-argumet"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let f (module M : S) = ()|foo} ;
      official_input = OK {foo|let f (module M : S) = ()|foo} ;
      r_input = OK {foo|value f (module M : S) = ();|foo} ;
@@ -745,6 +831,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="abstract-module-type-str-item"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module type S|foo} ;
      official_input = OK {foo|module type S|foo} ;
      r_input = OK {foo|module type S;|foo} ;
@@ -755,6 +842,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-ctyp"; implem = True ;
+     exclude=[];
      o_input = OK {foo|type t = int * [%a]|foo} ;
      official_input = OK {foo|type t = int * [%a]|foo} ;
      r_input = OK {foo|type t = (int * [%a]);|foo} ;
@@ -765,6 +853,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-patt"; implem = True ;
+     exclude=[];
      o_input = OK {foo|match x with (x, [%a]) -> 1|foo} ;
      official_input = OK {foo|match x with (x, [%a]) -> 1|foo} ;
      r_input = OK {foo|match x with [ (x, [%a]) -> 1 ];|foo} ;
@@ -775,6 +864,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-expr"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let x = 1 + [%a]|foo} ;
      official_input = OK {foo|let x = 1 + [%a]|foo} ;
      r_input = OK {foo|value x = 1 + [%a];|foo} ;
@@ -785,6 +875,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-module-type"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module type S = sig module M : [%a] end|foo} ;
      official_input = OK {foo|module type S = sig module M : [%a] end|foo} ;
      r_input = OK {foo|module type S = sig module M : [%a]; end;|foo} ;
@@ -795,6 +886,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-sig-item"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module type S = sig [%%a] type t end|foo} ;
      official_input = OK {foo|module type S = sig [%%a] type t end|foo} ;
      r_input = OK {foo|module type S = sig [%%a]; type t = 'a; end;|foo} ;
@@ -805,6 +897,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-module-expr"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module M = F([%a])|foo} ;
      official_input = OK {foo|module M = F([%a])|foo} ;
      r_input = OK {foo|module M = F([%a]);|foo} ;
@@ -815,6 +908,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-str-item"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module S = struct [%%a] type t end|foo} ;
      official_input = OK {foo|module S = struct [%%a] type t end|foo} ;
      r_input = OK {foo|module S = struct [%%a]; type t = 'a; end;|foo} ;
@@ -826,6 +920,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-class-sig-item"; implem = True ;
+     exclude=[];
      o_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
      official_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
      r_input = OK {foo|class type ct = object value x : int; [%%a]; end;|foo} ;
@@ -836,6 +931,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-class-str-item"; implem = True ;
+     exclude=[];
      o_input = OK {foo|class ct = object val x = 1 [%%a] end|foo} ;
      official_input = OK {foo|class ct = object val x = 1 [%%a] end|foo} ;
      r_input = OK {foo|class ct = object value x = 1; [%%a]; end;|foo} ;
@@ -846,6 +942,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-class-expr"; implem = True ;
+     exclude=[];
      o_input = OK {foo|class c = ([%a]) 1 |foo} ;
      official_input = OK {foo|class c = ([%a]) 1 |foo} ;
      r_input = OK {foo|class c = ([%a]) 1 ;|foo} ;
@@ -856,6 +953,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="alg-extension-class-str-item"; implem = True ;
+     exclude=[];
      o_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
      official_input = OK {foo|class type ct = object val x : int [%%a] end|foo} ;
      r_input = OK {foo|class type ct = object value x : int; [%%a]; end;|foo} ;
@@ -866,6 +964,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="for-loop-index-var1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|for i = 1 to 10 do () done|foo} ;
      official_input = OK {foo|for i = 1 to 10 do () done|foo} ;
      r_input = OK {foo|for i = 1 to 10 do { () };|foo} ;
@@ -876,6 +975,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="for-loop-index-var2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|for (+) = 1 to 10 do () done|foo} ;
      official_input = OK {foo|for (+) = 1 to 10 do () done|foo} ;
      r_input = OK {foo|for (+) = 1 to 10 do { () };|foo} ;
@@ -886,6 +986,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="for-loop-index-var3"; implem = True ;
+     exclude=[];
      o_input = OK {foo|for _ = 1 to 10 do () done|foo} ;
      official_input = OK {foo|for _ = 1 to 10 do () done|foo} ;
      r_input = OK {foo|for _ = 1 to 10 do { () };|foo} ;
@@ -896,6 +997,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="record-label-patterns1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let get_int { contents : int } = contents|foo} ;
      official_input = OK {foo|let get_int { contents : int } = contents|foo} ;
      r_input = OK {foo|value get_int { contents = (contents : int) } = contents;|foo} ;
@@ -906,6 +1008,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="record-label-patterns2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let get_int { M.N.contents : int } = contents|foo} ;
      official_input = OK {foo|let get_int { M.N.contents : int } = contents|foo} ;
      r_input = OK {foo|value get_int { M.N.contents = (contents : int) } = contents;|foo} ;
@@ -916,6 +1019,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="record-label-patterns3"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let get_int { M.N.contents : int = c } = c|foo} ;
      official_input = OK {foo|let get_int { M.N.contents : int = c } = c|foo} ;
      r_input = OK {foo|value get_int { M.N.contents = (c : int) } = c;|foo} ;
@@ -926,6 +1030,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="record-label-expression1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let set_int contents = { contents : int }|foo} ;
      official_input = OK {foo|let set_int contents = { contents : int }|foo} ;
      r_input = OK {foo|value set_int contents = { contents = (contents : int) };|foo} ;
@@ -936,6 +1041,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="record-label-expression2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|let set_int2 c = { contents : int = c }|foo} ;
      official_input = OK {foo|let set_int2 c = { contents : int = c }|foo} ;
      r_input = OK {foo|value set_int2 c = { contents = (c : int) };|foo} ;
@@ -946,6 +1052,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-expr-unpack-module1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module M = F(val string)|foo} ;
      official_input = OK {foo|module M = F(val string)|foo} ;
      r_input = OK {foo|module M = F(value string);|foo} ;
@@ -956,6 +1063,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-expr-unpack-module2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module M = F(val string : MT)|foo} ;
      official_input = OK {foo|module M = F(val string : MT)|foo} ;
      r_input = OK {foo|module M = F(value string : MT);|foo} ;
@@ -966,6 +1074,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-expr-unpack-module3"; implem = True ;
+     exclude=[];
      o_input = OK {foo|module M = F(val string : MT :> MT2)|foo} ;
      official_input = OK {foo|module M = F(val string : MT :> MT2)|foo} ;
      r_input = OK {foo|module M = F(value string : MT :> MT2);|foo} ;
@@ -976,6 +1085,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="simplest-raw-strings-1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|{|argle|}|foo} ;
      official_input = OK {foo|{|argle|}|foo} ;
      r_input = EXN {foo|{|argle|}|foo}
@@ -988,6 +1098,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="simplest-raw-strings-2"; implem = True ;
+     exclude=[];
      o_input = OK {foo|{|argle|}|foo} ;
      official_input = SKIP "meh" "meh";
      r_input = SKIP "meh" "meh" ;
@@ -996,6 +1107,7 @@ and t2 = bool[@@foo];
      r_output = SKIP "meh" "meh" 
     };
     {name="simplest-raw-strings-3"; implem = True ;
+     exclude=[];
      o_input = SKIP "meh" "meh";
      official_input = OK {foo|{|argle|}|foo} ;
      r_input = SKIP "meh" "meh" ;
@@ -1004,6 +1116,7 @@ and t2 = bool[@@foo];
      r_output = SKIP "meh" "meh" 
     };
     {name="poly-type-1"; implem = True ;
+     exclude=[];
      o_input = OK {foo|type tlist = { x: 'a. 'a list }|foo} ;
      official_input = OK {foo|type tlist = { x: 'a. 'a list }|foo} ;
      r_input = OK {foo|type tlist = { x : ! 'a . list 'a };|foo} ;
@@ -1013,13 +1126,37 @@ and t2 = bool[@@foo];
   x: 'a . 'a list }|foo} ;
      r_output = OK {foo|type tlist = { x : ! α . list α };
 |foo}
+    };
+    {name="unreachable-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with pat -> .|foo} ;
+     official_input = OK {foo|match x with pat -> .|foo} ;
+     r_input = OK {foo|match x with [ pat -> . ];|foo} ;
+     o_output = OK {foo|let _ = match x with pat -> .;;
+|foo};
+     official_output = OK {foo|;;match x with | pat -> .|foo} ;
+     r_output = OK {foo|match x with pat → .;
+|foo}
+    };
+    {name="unreachable-2"; implem = True ;
+     exclude=[];
+     o_input = EXN {foo|.|foo} (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error "illegal begin of implem")) ;
+     official_input = EXN {foo|.|foo} (Syntaxerr.Error (Syntaxerr.Other Location.none)) ;
+     r_input = OK {foo| . ;|foo} ;
+     o_output = EXN "" (Ploc.Exc Ploc.dummy
+                        (Failure "pr_expr of (PaUnr _) not allowed except at rhs of match-case"));
+     official_output = EXN ""
+       (Ploc.Exc Ploc.dummy
+          (Failure "bad ast ExUnr (parses as '.'; cannot have an ExUnr except at the rhs of match-case)")) ;
+     r_output = OK {foo|.;
+|foo}
     }
 ]
 ;
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
 
-value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf outputf i =
+value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf outputf i =
   i.name >:: (fun _ ->
     let official_reparse0 implem s = match (implem,pa_official_opt) with [
       (_,None) -> ()
@@ -1035,6 +1172,7 @@ value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf
       raise exn
     } in
 
+    if List.mem kind i.exclude then () else
     match (i.implem, inputf i, outputf i) with [
 
       (_,TODO msg, _) ->
@@ -1058,6 +1196,18 @@ value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf
           official_reparse False outputs
       }
 
+    | (True, OK inputs, EXN outputs exn) -> do {
+        let ast = wrap_err pa_implem inputs in
+        assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
+          (fun () -> pp_implem ast)
+      }
+
+    | (False, OK inputs, EXN outputs exn) -> do {
+        let ast = wrap_err pa_interf inputs in
+        assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
+          (fun () -> pp_interf ast)
+      }
+
     | (True,EXN inputs exn, _) ->
         assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
           (fun () -> pa_implem inputs)
@@ -1066,7 +1216,6 @@ value i2test (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf
         assert_raises_exn_pred ~{msg=i.name} (smart_exn_eq exn)
           (fun () -> pa_interf inputs)
 
-    | _ -> assert False
     ])
 ;
 
@@ -1077,12 +1226,13 @@ value o_output i = i.o_output ;
 value official_output i = i.official_output ;
 value official_input i = i.official_input ;
 
-value r2r pa pp opa () = List.map (i2test pa pp opa r_input r_output ) test_matrix ;
-value r2o pa pp opa () = List.map (i2test pa pp opa r_input o_output ) test_matrix ;
-value o2r pa pp opa () = List.map (i2test pa pp opa o_input r_output ) test_matrix ;
-value o2o pa pp opa () = List.map (i2test pa pp opa o_input o_output ) test_matrix ;
-value o2official pa pp opa () = List.map (i2test pa pp opa o_input official_output ) test_matrix ;
-value official2official pa pp opa () = List.map (i2test pa pp opa official_input official_output ) test_matrix ;
+value r2r pa pp opa () = List.map (i2test ~{kind="r2r"} pa pp opa r_input r_output ) test_matrix ;
+value r2o pa pp opa () = List.map (i2test ~{kind="r2o"} pa pp opa r_input o_output ) test_matrix ;
+value o2r pa pp opa () = List.map (i2test ~{kind="o2r"} pa pp opa o_input r_output ) test_matrix ;
+value o2o pa pp opa () = List.map (i2test ~{kind="o2o"} pa pp opa o_input o_output ) test_matrix ;
+value o2official pa pp opa () = List.map (i2test ~{kind="o2official"} pa pp opa o_input official_output ) test_matrix ;
+value r2official pa pp opa () = List.map (i2test ~{kind="r2official"} pa pp opa r_input official_output ) test_matrix ;
+value official2official pa pp opa () = List.map (i2test ~{kind="official2official"} pa pp opa official_input official_output ) test_matrix ;
 
 (*
 ;;; Local Variables: ***

@@ -309,6 +309,7 @@ module Meta_make (C : MetaSig) =
       | ExXtr (loc, s, _) -> C.xtr_or_anti loc (fun r -> C.node "ExAnt" [r]) s
       | ExExten (loc, exten) ->
           let exten = assert false in C.node "ExExten" [exten]
+      | ExUnr loc -> C.node "ExUnr" []
     and module_type =
       function
         MtAtt (_, e, att) -> assert false

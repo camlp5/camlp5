@@ -1593,6 +1593,7 @@ EXTEND_PRINTER
       | <:expr< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
+      | <:expr< . >> -> pprintf pc "."
       | <:expr:< $lid:s$ >> when is_operator s ->
           pprintf pc "( %s )" s
       | <:expr:< $lid:s$ >> ->

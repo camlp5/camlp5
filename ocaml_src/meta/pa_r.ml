@@ -14,13 +14,16 @@ Pcaml.syntax_name := "Revised";;
 Pcaml.no_constructors_arity := false;;
 
 let odfa = !(Plexer.dollar_for_antiquotation) in
+let osrs = !(Plexer.simplest_raw_strings) in
 let odni = !(Plexer.dot_newline_is) in
 Plexer.dollar_for_antiquotation := false;
+Plexer.simplest_raw_strings := false;
 Plexer.utf8_lexing := true;
 Plexer.dot_newline_is := ";";
 Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
 Plexer.dot_newline_is := odni;
 Plexer.dollar_for_antiquotation := odfa;
+Plexer.simplest_raw_strings := osrs;
 Grammar.Unsafe.clear_entry attribute_body;
 Grammar.Unsafe.clear_entry interf;
 Grammar.Unsafe.clear_entry implem;
@@ -2413,6 +2416,9 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[")))
              (Grammar.s_token ("", "]")),
            (fun _ _ (loc : Ploc.t) -> (MLast.ExUid (loc, "[]") : 'expr)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ".")),
+           (fun _ (loc : Ploc.t) -> (MLast.ExUnr loc : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->

@@ -397,6 +397,7 @@ and expr floc sh =
         let loc = floc loc in
         ExXtr loc x1 (option_map (vala_map self) x2)
     | ExExten loc exten -> ExExten (floc loc) exten
+    | ExUnr loc -> ExUnr (floc loc)
     ]
 and module_type floc sh =
   self where rec self =
