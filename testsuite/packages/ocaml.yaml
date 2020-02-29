@@ -268,4 +268,7 @@ ocaml-4.10.0:
       - stdlib/unit.mli
       - testsuite/tests/basic-modules/main.mli
       - testsuite/tests/basic/patmatch_split_no_or.ml
+      - testsuite/tests/lexing/uchar_esc.ml
+      - testsuite/tests/lib-dynlink-private/plugin4/chicken.mli
+      - testsuite/tests/lib-dynlink-private/plugin6/pheasant.mli
   files: []
