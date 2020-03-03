@@ -654,6 +654,7 @@ and ctyp =
       mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
   | TyMan (loc, _, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
+  | TyOpn loc -> error loc "open (parsed as '..') type not allowed here"
   | TyPck (loc, mt) ->
       begin match ocaml_ptyp_package with
         Some ptyp_package ->
@@ -765,6 +766,9 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
   | TySum (loc, ctl) ->
       mktype ~item_attributes:item_attributes loc tn tl cl
         (mktvariant loc (uv ctl) false) priv None
+  | TyOpn loc ->
+      mktype ~item_attributes:item_attributes loc tn tl cl
+        (ocaml_ptype_open ()) priv None
   | t ->
       let m =
         match t with
@@ -1295,7 +1299,9 @@ and expr =
   | ExXtr (loc, _, _) -> error loc "bad ast ExXtr"
   | ExExten (loc, ebody) ->
       mkexp loc (ocaml_pexp_extension (extension (uv ebody)))
-  | ExUnr loc -> mkexp loc (ocaml_pexp_unreachable ())
+  | ExUnr loc ->
+      error loc
+        "bad ast ExUnr (parses as '.'; cannot have an ExUnr except at the rhs of match-case)"
 and label_expr rev_al =
   function
     ExLab (loc, lpeo) ->
@@ -1373,7 +1379,12 @@ and expand_gadt_type loc p loc1 nt ct e =
   let tp = List.map (fun s -> "&" ^ s) nt in
   let ct = MLast.TyPol (loc, tp, ct) in MLast.PaTyc (loc, p, ct), e
 and mkpwe (p, w, e) =
-  ocaml_case (patt p, option_map expr (uv w), mkloc (loc_of_expr e), expr e)
+  let conve =
+    match e with
+      ExUnr loc -> mkexp loc (ocaml_pexp_unreachable ())
+    | e -> expr e
+  in
+  ocaml_case (patt p, option_map expr (uv w), mkloc (loc_of_expr e), conve)
 and mklabexp (lab, e) =
   patt_label_long_id lab, mkloc (loc_of_patt lab), expr e
 and mkideexp (ide, e) = ide, expr e

@@ -195,6 +195,7 @@ let ocaml_extension_exception loc s ed alg_attributes =
    pext_loc = loc; pext_attributes = alg_attributes}
 ;;
 let ocaml_pexp_unreachable () = Pexp_unreachable;;
+let ocaml_ptype_open () = Ptype_open;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}

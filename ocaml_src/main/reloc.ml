@@ -66,6 +66,7 @@ let rec ctyp floc sh =
         let loc = floc loc in
         TyObj (loc, vala_map (List.map (fun (x1, x2) -> x1, self x2)) x1, x2)
     | TyOlb (loc, x1, x2) -> let loc = floc loc in TyOlb (loc, x1, self x2)
+    | TyOpn loc -> TyOpn (floc loc)
     | TyPck (loc, x1) ->
         let loc = floc loc in TyPck (loc, module_type floc sh x1)
     | TyPol (loc, x1, x2) -> let loc = floc loc in TyPol (loc, x1, self x2)

@@ -503,6 +503,7 @@ and ctyp =
   | TyLid loc s → mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
   | TyMan loc _ _ _ → error loc "type manifest not allowed here"
   | TyOlb loc lab _ → error loc "labeled type not allowed here"
+  | TyOpn loc ->  error loc "open (parsed as '..') type not allowed here"
   | TyPck loc mt →
       match ocaml_ptyp_package with
       [ Some ptyp_package →
@@ -606,6 +607,8 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
       mktype ~{item_attributes=item_attributes} loc tn tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl →
       mktype ~{item_attributes=item_attributes} loc tn tl cl (mktvariant loc (uv ctl) False) priv None
+  | TyOpn loc ->
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (ocaml_ptype_open ()) priv None
   | t →
       let m =
         match t with

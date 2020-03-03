@@ -2417,9 +2417,6 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            (fun _ _ (loc : Ploc.t) -> (MLast.ExUid (loc, "[]") : 'expr)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ".")),
-           (fun _ (loc : Ploc.t) -> (MLast.ExUnr loc : 'expr)));
-        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.ExUid (loc, i) : 'expr)));
@@ -2437,6 +2434,9 @@ Grammar.safe_extend
                 (alg_extension : 'alg_extension Grammar.Entry.e)),
            (fun (e : 'alg_extension) (loc : Ploc.t) ->
               (MLast.ExExten (loc, e) : 'expr)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ".")),
+           (fun _ (loc : Ploc.t) -> (MLast.ExUnr loc : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("CHAR", "")),
            (fun (s : string) (loc : Ploc.t) ->

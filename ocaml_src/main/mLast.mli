@@ -38,6 +38,7 @@ and ctyp =
   | TyMan of loc * ctyp * bool * ctyp
   | TyObj of loc * (string * ctyp) list * bool
   | TyOlb of loc * string * ctyp
+  | TyOpn of loc
   | TyPck of loc * module_type
   | TyPol of loc * string list * ctyp
   | TyPot of loc * string list * ctyp

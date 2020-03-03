@@ -120,6 +120,7 @@ module Meta_make (C : MetaSig) =
             [C.vala (C.list (fun (s, t) → C.tuple [C.string s; ctyp t])) lst;
              C.vala C.bool b]
       | TyOlb _ s t → C.node "TyOlb" [C.vala C.string s; ctyp t]
+      | TyOpn _ -> C.node "TyOpn" []
       | TyPck _ mt → C.node "TyPck" [module_type mt]
       | TyPol _ ls t → C.node "TyPol" [C.vala (C.list C.string) ls; ctyp t]
       | TyPot _ ls t → C.node "TyPot" [C.vala (C.list C.string) ls; ctyp t]

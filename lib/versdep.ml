@@ -236,6 +236,7 @@ value ocaml_pcf_extension _ = assert False ;
 value ocaml_extension_exception _ _ _ _ = assert False ;
 
 value ocaml_pexp_unreachable () = assert False ;
+value ocaml_ptype_open () = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
@@ -388,6 +389,7 @@ value ocaml_extension_exception loc s ed alg_attributes =
 ;
 
 value ocaml_pexp_unreachable () = Pexp_unreachable ;
+value ocaml_ptype_open () = Ptype_open ;
 END
 ;
 

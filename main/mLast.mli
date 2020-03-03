@@ -44,6 +44,7 @@ and ctyp =
   | TyMan of loc and ctyp and V bool and ctyp
   | TyObj of loc and V (list (string * ctyp)) and V bool
   | TyOlb of loc and V string and ctyp
+  | TyOpn of loc
   | TyPck of loc and module_type
   | TyPol of loc and V (list string) and ctyp
   | TyPot of loc and V (list string) and ctyp

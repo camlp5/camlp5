@@ -94,6 +94,7 @@ value rec ctyp floc sh =
     | TyOlb loc x1 x2 →
         let loc = floc loc in
         TyOlb loc x1 (self x2)
+    | TyOpn loc -> TyOpn (floc loc)
     | TyPck loc x1 →
         let loc = floc loc in
         TyPck loc (module_type floc sh x1)
