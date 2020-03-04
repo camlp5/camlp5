@@ -1150,6 +1150,19 @@ and t2 = bool[@@foo];
           (Failure "bad ast ExUnr (parses as '.'; cannot have an ExUnr except at the rhs of match-case)")) ;
      r_output = OK {foo|.;
 |foo}
+    };
+    {name="inline-record-types"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = A of { a : int }|foo} ;
+     official_input = OK {foo|type t = A of { a : int }|foo} ;
+     r_input = OK {foo|type t = [ A of { a : int } ];|foo} ;
+     o_output = OK {foo|type t =
+    A of { a : int };;
+|foo};
+     official_output = OK {foo|type t = A of { a : int }|foo} ;
+     r_output = OK {foo|type t =
+  [ A of { a : int } ];
+|foo}
     }
 ]
 ;

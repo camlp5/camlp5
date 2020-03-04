@@ -1103,6 +1103,7 @@ EXTEND
       [ "'"; i = SV ident "" → Qast.Node "TyQuo" [Qast.Loc; i]
       | i = GIDENT →
           Qast.Node "TyQuo" [Qast.Loc; Qast.VaVal (greek_ascii_equiv i)]
+      | ".." -> Qast.Node "TyOpn" [Qast.Loc]
       | "_" → Qast.Node "TyAny" [Qast.Loc]
       | e = alg_extension -> Qast.Node "TyExten" [Qast.Loc; e]
       | i = SV LIDENT → Qast.Node "TyLid" [Qast.Loc; i]

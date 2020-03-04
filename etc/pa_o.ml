@@ -1262,6 +1262,7 @@ EXTEND
       | t1 = SELF; "("; t2 = SELF; ")" -> <:ctyp< $t1$ $t2$ >> ]
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
+      | ".." -> <:ctyp< .. >>
       | "_" -> <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>

@@ -866,6 +866,7 @@ EXTEND
     | "simple"
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
       | i = GIDENT → <:ctyp< '$greek_ascii_equiv i$ >>
+      | ".." -> <:ctyp< .. >>
       | "_" → <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | i = V LIDENT → <:ctyp< $_lid:i$ >>

@@ -1757,6 +1757,7 @@ EXTEND_PRINTER
           pprintf pc "'%p" var_escaped (loc, s)
       | <:ctyp< _ >> ->
           pprintf pc "_"
+      | <:ctyp< .. >> -> pprintf pc ".."
       | <:ctyp< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
       | <:ctyp:< ?$_$: $_$ >> | <:ctyp:< ~$_$: $_$ >> ->

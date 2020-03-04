@@ -3378,6 +3378,9 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
            (fun _ (loc : Ploc.t) -> (MLast.TyAny loc : 'ctyp)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "..")),
+           (fun _ (loc : Ploc.t) -> (MLast.TyOpn loc : 'ctyp)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.TyQuo (loc, greek_ascii_equiv i) : 'ctyp)));

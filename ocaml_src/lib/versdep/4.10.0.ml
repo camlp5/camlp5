@@ -196,6 +196,21 @@ let ocaml_extension_exception loc s ed alg_attributes =
 ;;
 let ocaml_pexp_unreachable () = Pexp_unreachable;;
 let ocaml_ptype_open () = Ptype_open;;
+let ocaml_type_extension ?(item_attributes = []) loc pathlid priv cstrs =
+  let ecstrs =
+    List.map
+      (fun (s, ctyl) ->
+         {pext_name = mkloc loc s;
+          pext_kind = Pext_decl (Pcstr_tuple ctyl, None); pext_loc = loc;
+          pext_attributes = []})
+      cstrs
+  in
+  {ptyext_path = mkloc loc pathlid; ptyext_params = [];
+   ptyext_constructors = ecstrs; ptyext_private = priv; ptyext_loc = loc;
+   ptyext_attributes = item_attributes}
+;;
+let ocaml_pstr_typext ext = Pstr_typext ext;;
+let ocaml_psig_typext ext = Psig_typext ext;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}

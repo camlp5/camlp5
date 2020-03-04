@@ -6816,6 +6816,10 @@ Grammar.safe_extend
            (fun _ (loc : Ploc.t) ->
               (Qast.Node ("TyAny", [Qast.Loc]) : 'ctyp)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "..")),
+           (fun _ (loc : Ploc.t) ->
+              (Qast.Node ("TyOpn", [Qast.Loc]) : 'ctyp)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
               (Qast.Node

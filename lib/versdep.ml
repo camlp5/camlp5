@@ -237,6 +237,11 @@ value ocaml_extension_exception _ _ _ _ = assert False ;
 
 value ocaml_pexp_unreachable () = assert False ;
 value ocaml_ptype_open () = assert False ;
+
+value ocaml_psig_typext _ = assert False ;
+value ocaml_pstr_typext _ = assert False ;
+
+value ocaml_type_extension ?{item_attributes=[]} lo pathlid priv cstrs = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
@@ -390,6 +395,23 @@ value ocaml_extension_exception loc s ed alg_attributes =
 
 value ocaml_pexp_unreachable () = Pexp_unreachable ;
 value ocaml_ptype_open () = Ptype_open ;
+
+value ocaml_type_extension ?{item_attributes=[]} loc pathlid priv cstrs =
+let ecstrs = List.map (fun (s, ctyl) -> 
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ctyl) None;
+   pext_loc = loc; pext_attributes = []}) cstrs in
+  {
+     ptyext_path = mkloc loc pathlid ;
+     ptyext_params = [] ;
+     ptyext_constructors = ecstrs ;
+     ptyext_private = priv ;
+     ptyext_loc = loc ;
+     ptyext_attributes = item_attributes
+  }
+;
+
+value ocaml_pstr_typext ext = Pstr_typext ext ;
+value ocaml_psig_typext ext = Psig_typext ext ;
 END
 ;
 
