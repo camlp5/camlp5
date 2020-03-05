@@ -15,8 +15,6 @@ type pr_context =
 
 type 'a pr_fun = pr_context -> 'a -> string;;
 
-(* *)
-
 let tab ind = String.make ind ' ';;
 
 (* horizontal list *)

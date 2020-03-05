@@ -15,14 +15,6 @@ type pr_context =
 
 type pr_fun 'a = pr_context -> 'a -> string;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_ind_bef = Pprintf.with_ind_bef;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft_dang = Pprintf.with_bef_aft_dang;
-  value with_aft = Pprintf.with_aft;
-  value with_aft_dang = Pprintf.with_aft_dang;
-END;
-
 value tab ind = String.make ind ' ';
 
 (* horizontal list *)

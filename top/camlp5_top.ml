@@ -52,15 +52,12 @@ value print_location lb loc =
   if List.mem Toploop.input_name.val [""; "//toplevel//"] then
     highlight_locations lb loc (-1, -1)
   else
-    IFDEF OCAML_VERSION <= OCAML_2_99 THEN
-      Toploop.print_location (Ast2pt.mkloc loc)
-    ELSE do {
+    do {
       Format.fprintf Format.err_formatter "%s%!"
         (Pcaml.string_of_loc Toploop.input_name.val (Ploc.line_nb loc)
 	   (Ploc.first_pos loc - Ploc.bol_pos loc)
 	   (Ploc.last_pos loc - Ploc.bol_pos loc));
     }
-    END
 ;
 
 value wrap f shfn lb =
@@ -122,8 +119,7 @@ value toplevel_phrase cs = do {
 Pcaml.add_directive "load"
   (fun
    [ Some <:expr< $str:s$ >> ->
-       IFDEF OCAML_VERSION <= OCAML_2_99 THEN Topdirs.dir_load s
-       ELSE Topdirs.dir_load Format.std_formatter s END
+       Topdirs.dir_load Format.std_formatter s
    | Some _ | None -> raise Not_found ]);
 
 Pcaml.add_directive "directory"
@@ -188,13 +184,7 @@ Toploop.parse_use_file.val :=
 
 Pcaml.warning.val :=
   fun loc txt ->
-    IFDEF OCAML_VERSION <= OCAML_2_00 THEN
-      Toploop.print_warning (Ast2pt.mkloc loc) txt
-    ELSIFDEF OCAML_VERSION <= OCAML_2_99 THEN
-      Toploop.print_warning (Ast2pt.mkloc loc) (Warnings.Other txt)
-    ELSE
       Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
-        (IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN Warnings.Other txt
-         ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN Warnings.Camlp4 txt
+        (IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Warnings.Camlp4 txt
          ELSE Warnings.Preprocessor txt END)
-    END;
+;

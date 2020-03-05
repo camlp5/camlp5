@@ -7,10 +7,6 @@
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
 
-IFDEF OCAML_VERSION <= OCAML_3_00 AND NOT COMPATIBLE_WITH_OLD_OCAML THEN
-  #option "-split_ext";
-END;
-
 value gram = Grammar.gcreate (Plexer.gmake ());
 
 value antiquot k loc s f =

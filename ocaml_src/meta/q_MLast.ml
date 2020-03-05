@@ -7,8 +7,6 @@
 (* #load "q_MLast.cmo" *)
 (* #load "pa_macro.cmo" *)
 
-(* *)
-
 let gram = Grammar.gcreate (Plexer.gmake ());;
 
 let antiquot k loc s f =
@@ -1873,7 +1871,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 408, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 404, 20))
                in
                Qast.Node
                  ("StExc", [Qast.Loc; c; tl; b; alg_attrs; item_attrs]) :
@@ -2900,7 +2898,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 500, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 496, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));
