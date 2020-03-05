@@ -304,7 +304,7 @@ module MetaAction =
                    mloc),
                 mvala mstring s),
              MLast.ExStr (loc, c))
-      | ExLab (loc, peoptl) ->
+      | MLast.ExLab (loc, peoptl) ->
           MLast.ExApp
             (loc,
              MLast.ExApp

@@ -295,10 +295,6 @@ compare_source:
 bootstrap_all_versdep: oprinter
 	$(NOVERBOSE) for i in ocaml_src/lib/versdep/*.ml; do \
 	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
-	done; \
-	for i in ocaml_src/lib/versdep/*/*.ml; do \
-	  n="$$(basename $$(dirname $$i))"; \
-	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=$$n; \
 	done
 
 bootstrap_versdep:

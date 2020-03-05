@@ -22,7 +22,7 @@ value pp_interf fmt (ast, eoi_loc) = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
-    let _ = pt in
+    let _ = fname in
     ignore (error loc "compiler-libs not available in this version of ocaml")
   ELSE
     let pt = Ast2pt.interf fname (List.map fst ast) in
@@ -45,7 +45,7 @@ value pp_implem fmt (ast, eoi_loc) = do {
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
   IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
-    let _ = pt in
+    let _ = fname in
     ignore (error loc "compiler-libs not available in this version of ocaml")
   ELSE
     let pt = Ast2pt.implem fname (List.map fst ast) in

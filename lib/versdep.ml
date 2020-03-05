@@ -221,7 +221,7 @@ value ocaml_pcf_attribute _ = assert False ;
 value ocaml_extension_implem _ _ _ = assert False ;
 value ocaml_extension_interf _ _ _ = assert False ;
 value ocaml_extension_type _ _ _ = assert False ;
-value ocaml_extension_patt _ _ _ = assert False ;
+value ocaml_extension_patt _ _ _ _ k= assert False ;
 value ocaml_ptyp_extension _ = assert False ;
 value ocaml_pexp_extension _ = assert False ;
 value ocaml_ppat_extension _ = assert False ;
@@ -231,7 +231,7 @@ value ocaml_psig_extension ?{item_attributes=[]} _ = assert False ;
 value ocaml_pstr_extension ?{item_attributes=[]} _ = assert False ;
 value ocaml_pcl_extension _ = assert False ;
 value ocaml_pcty_extension _ = assert False ;
-value ocaml_pctr_extension _ = assert False ;
+value ocaml_pctf_extension _ = assert False ;
 value ocaml_pcf_extension _ = assert False ;
 value ocaml_extension_exception _ _ _ _ = assert False ;
 
@@ -242,6 +242,8 @@ value ocaml_psig_typext _ = assert False ;
 value ocaml_pstr_typext _ = assert False ;
 
 value ocaml_type_extension ?{item_attributes=[]} lo pathlid priv cstrs = assert False ;
+value ocaml_pexp_letexception exdef body = assert False ;
+value ocaml_ppat_exception _ = assert False ;
 ELSE
 value ocaml_attribute_implem loc (name: string) sl =
   Parsetree.({
@@ -412,6 +414,10 @@ let ecstrs = List.map (fun (s, ctyl) ->
 
 value ocaml_pstr_typext ext = Pstr_typext ext ;
 value ocaml_psig_typext ext = Psig_typext ext ;
+value ocaml_pexp_letexception exdef body =
+  Pexp_letexception exdef body ;
+value ocaml_ppat_exception p =
+  Ppat_exception p;
 END
 ;
 
@@ -1005,7 +1011,10 @@ value ocaml_pexp_field loc e li = Pexp_field e (mkloc loc li);
 
 value ocaml_pexp_for i e1 e2 df e =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Pexp_for (mknoloc i) e1 e2 df e
+    let i = match i with [
+      {ppat_desc=Ppat_var i} -> i
+    | _ -> failwith "for-loops must have variables for the index" ] in
+    Pexp_for i e1 e2 df e
   ELSE
     Pexp_for i e1 e2 df e
 END
@@ -1017,6 +1026,8 @@ value ocaml_case (p, wo, loc, e) =
     | Some w -> (p, ocaml_mkexp loc (Pexp_when w e))
     | None -> (p, e)
     end
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    {pc_lhs = p; pc_guard = wo; pc_rhs = e}
   ELSE
     let e =
       match e with [
@@ -1582,21 +1593,21 @@ value ocaml_pstr_primitive s vd =
 value ocaml_pstr_recmodule =
   IFDEF OCAML_VERSION <= OCAML_3_06 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_00 THEN
-    Some (fun nel ->
+    Some (fun mel ->
       let mel = List.map (fun (a,b,c,attrs) ->
         do { assert (attrs = []) ; (a,b,c) }) mel in
-      Pstr_recmodule nel)
+      Pstr_recmodule mel)
   ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    let f nel =
+    let f mel =
       let mel = List.map (fun (a,b,c,attrs) ->
         do { assert (attrs = []) ; (a,b,c) }) mel in
       Pstr_recmodule (List.map (fun ((s : option string), mt, me) →
                                 let s = mustSome "ocaml_pstr_recmodule" s in
-                                 (mknoloc s, mt, me)) nel)
+                                 (mknoloc s, mt, me)) mel)
     in
     Some f
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-    let f nel =
+    let f mel =
       let mel = List.map (fun (a,b,c,attrs) ->
         do { assert (attrs = []) ; (a,b,c) }) mel in
       Pstr_recmodule
@@ -1605,17 +1616,17 @@ value ocaml_pstr_recmodule =
               let s = mustSome "ocaml_pstr_recmodule" s in
               {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
                pmb_loc = loc_none})
-           nel)
+           mel)
     in
     Some f
   ELSE
-    let f nel =
+    let f mel =
       Pstr_recmodule
         (List.map
            (fun ((s : option string), mt, me, attrs) ->
               {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = attrs;
                pmb_loc = loc_none})
-           nel)
+           mel)
     in
     Some f
   END

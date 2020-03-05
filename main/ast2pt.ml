@@ -646,14 +646,14 @@ and patt =
   | PaAny loc → mkpat loc Ppat_any
   | PaExc loc p ->
       let p = patt p in
-      mkpat loc (Ppat_exception p)
+      mkpat loc (ocaml_ppat_exception p)
 
   | PaApp loc _ _ as f0 →
       let (f, al) = patt_fa [] f0 in
       match f with [
         PaExc loc ename ->
           let p = patt (exception_to_constructor_pattern f0) in
-          mkpat loc (Ppat_exception p)
+          mkpat loc (ocaml_ppat_exception p)
       | _ -> 
       let al = List.map patt al in
       let p = (patt f).ppat_desc in
@@ -961,7 +961,7 @@ and expr =
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
   | ExLEx loc exnname exntyl body alg_attrs ->
       let exdef = ocaml_extension_exception (mkloc loc) (uv exnname) (List.map ctyp (uv exntyl)) (alg_attributes alg_attrs) in
-      mkexp loc (Pexp_letexception exdef (expr body))
+      mkexp loc (ocaml_pexp_letexception exdef (expr body))
   | ExLid loc s → mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident (uv s)))
   | ExLmd loc i me e →
       match ocaml_pexp_letmodule with
@@ -1599,9 +1599,15 @@ and class_str_item c l =
       [ocaml_class_field (mkloc loc) (ocaml_pcf_extension (extension (uv ebody))) :: l]
   ]
 and item_attributes attrs =
-  attrs |> uv |> List.map uv |> List.map attr
+    let x = uv attrs in
+    let x = List.map uv x in
+    let x = List.map attr x in
+    x
 and alg_attributes attrs =
-  attrs |> uv |> List.map uv |> List.map attr
+    let x = uv attrs in
+    let x = List.map uv x in
+    let x = List.map attr x in
+    x
 and attr (id, payload) =
   match payload with [
     StAttr loc st ->

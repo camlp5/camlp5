@@ -211,6 +211,8 @@ let ocaml_type_extension ?(item_attributes = []) loc pathlid priv cstrs =
 ;;
 let ocaml_pstr_typext ext = Pstr_typext ext;;
 let ocaml_psig_typext ext = Psig_typext ext;;
+let ocaml_pexp_letexception exdef body = Pexp_letexception (exdef, body);;
+let ocaml_ppat_exception p = Ppat_exception p;;
 
 let ocaml_mkexp loc x =
   {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}
@@ -668,13 +670,13 @@ let ocaml_pstr_open ?(item_attributes = []) ovflag loc me =
 let ocaml_pstr_primitive s vd = Pstr_primitive vd;;
 
 let ocaml_pstr_recmodule =
-  let f nel =
+  let f mel =
     Pstr_recmodule
       (List.map
          (fun ((s : string option), mt, me, attrs) ->
             {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = attrs;
              pmb_loc = loc_none})
-         nel)
+         mel)
   in
   Some f
 ;;
