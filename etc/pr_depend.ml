@@ -232,6 +232,8 @@ and str_item =
   | <:str_item< module $flag:_$ $list:nel$ >> ->
       list (fun (_, me,_) -> module_expr me) nel
   | <:str_item< module type $_$ = $mt$ >> -> module_type mt
+  | <:str_item< open $!:_$ $uid:s$ >> -> addmodule s
+  | <:str_item< open $!:_$ $uid:s$ . $_$ >> -> addmodule s
   | <:str_item< open $!:_$ $me$ >> -> module_expr me
   | <:str_item< type $list:tdl$ >> -> list type_decl tdl
   | <:str_item< value $flag:_$ $list:pel$ >> -> list let_binding pel
