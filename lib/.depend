@@ -1,5 +1,5 @@
-diff.cmo: diff.cmi
-diff.cmx: diff.cmi
+diff.cmo: diff.cmi versdep.cmo
+diff.cmx: diff.cmi versdep.cmx
 eprinter.cmo: eprinter.cmi extfun.cmi pprintf.cmi
 eprinter.cmx: eprinter.cmi extfun.cmx pprintf.cmx
 eprinter.cmi: extfun.cmi pprintf.cmi
@@ -16,11 +16,11 @@ gramext.cmi: fstream.cmi plexing.cmi
 grammar.cmo: fstream.cmi gramext.cmi grammar.cmi plexing.cmi ploc.cmi
 grammar.cmx: fstream.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx
 grammar.cmi: gramext.cmi plexing.cmi ploc.cmi
-plexer.cmo: plexer.cmi plexing.cmi ploc.cmi
-plexer.cmx: plexer.cmi plexing.cmx ploc.cmx
+plexer.cmo: plexer.cmi plexing.cmi ploc.cmi versdep.cmo
+plexer.cmx: plexer.cmi plexing.cmx ploc.cmx versdep.cmx
 plexer.cmi: plexing.cmi
-plexing.cmo: plexing.cmi ploc.cmi
-plexing.cmx: plexing.cmi ploc.cmx
+plexing.cmo: plexing.cmi ploc.cmi versdep.cmo
+plexing.cmx: plexing.cmi ploc.cmx versdep.cmx
 plexing.cmi: ploc.cmi
 ploc.cmo: ploc.cmi
 ploc.cmx: ploc.cmi
