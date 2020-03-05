@@ -16,7 +16,7 @@ let utf8_string_length s =
     if i = String.length s then len
     else
       let c = Char.code s.[i] in
-      if c < 0b10000000 || c >= 0b11000000 then loop (i + 1) (len + 1)
+      if c < 0b1000_0000 || c >= 0b1100_0000 then loop (i + 1) (len + 1)
       else loop (i + 1) len
   in
   loop 0 0

@@ -1706,22 +1706,17 @@ let gmake () =
     ref
       {Plexing.tok_func =
         (fun _ -> raise (Match_failure ("plexer.ml", 877, 25)));
-       Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 877, 45)));
-       Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 877, 68)));
-       Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 878, 18)));
-       Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 878, 37)));
-       Plexing.tok_comm = None}
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 877, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 877, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 878, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 878, 37)));
+       tok_comm = None}
   in
   let glex =
     {Plexing.tok_func = func ctx kwd_table glexr;
-     Plexing.tok_using = using_token ctx kwd_table;
-     Plexing.tok_removing = removing_token kwd_table;
-     Plexing.tok_match = tok_match; Plexing.tok_text = text;
-     Plexing.tok_comm = None}
+     tok_using = using_token ctx kwd_table;
+     tok_removing = removing_token kwd_table; tok_match = tok_match;
+     tok_text = text; tok_comm = None}
   in
   glexr := glex; glex
 ;;

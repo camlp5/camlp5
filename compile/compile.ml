@@ -583,22 +583,12 @@ value rec expr_list =
   | [x :: l] -> <:expr< [$str:String.escaped x$ :: $expr_list l$] >> ]
 ;
 
-value list_filter =
-  IFDEF OCAML_VERSION <= OCAML_2_01 THEN
-    fun f ->
-      loop [] where rec loop accu =
-        fun
-        [ [x :: l] -> loop (if f x then [x :: accu] else accu) l
-        | [] -> List.rev accu ]
-  ELSE List.filter END
-;
-
 value compile () =
   let _ = keywords.val := [] in
   let list = List.fold_left all_entries_in_graph [] entries.val in
   let list =
-    list_filter (fun e -> List.memq e list) entries.val @
-    list_filter (fun e -> not (List.memq e entries.val)) list
+    List.filter (fun e -> List.memq e list) entries.val @
+    List.filter (fun e -> not (List.memq e entries.val)) list
   in
   let list =
     let set = ref [] in

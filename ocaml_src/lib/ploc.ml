@@ -42,17 +42,6 @@ let bol_pos_last loc = loc.bol_pos_last;;
 let comment loc = loc.comm;;
 let comment_last loc = loc.ecomm;;
 
-let with_bp_ep l bp ep =
-  {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
-   line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = bp;
-   ep = ep; comm = l.comm; ecomm = l.ecomm}
-;;
-let with_comm l comm =
-  {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
-   line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = l.bp;
-   ep = l.ep; comm = comm; ecomm = l.ecomm}
-;;
-
 let encl loc1 loc2 =
   if loc1.bp < loc2.bp then
     if loc1.ep < loc2.ep then
@@ -66,10 +55,10 @@ let encl loc1 loc2 =
      bp = loc2.bp; ep = loc1.ep; comm = loc2.comm; ecomm = loc1.comm}
   else loc2
 ;;
-let shift sh loc = with_bp_ep loc (sh + loc.bp) (sh + loc.ep);;
-let sub loc sh len = with_bp_ep loc (loc.bp + sh) (loc.bp + sh + len);;
-let after loc sh len = with_bp_ep loc (loc.ep + sh) (loc.ep + sh + len);;
-let with_comment loc comm = with_comm loc comm;;
+let shift sh loc = {loc with bp = sh + loc.bp; ep = sh + loc.ep};;
+let sub loc sh len = {loc with bp = loc.bp + sh; ep = loc.bp + sh + len};;
+let after loc sh len = {loc with bp = loc.ep + sh; ep = loc.ep + sh + len};;
+let with_comment loc comm = {loc with comm = comm};;
 
 let name = ref "loc";;
 

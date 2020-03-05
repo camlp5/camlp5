@@ -1019,10 +1019,6 @@ value val_tab = do {
   ht
 };
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ctyp e t = {ctyp = t; expr = e.expr; patt = e.patt};
-END;
-
 value rec eval_expr env e =
   let loc = MLast.loc_of_expr e in
   match e with

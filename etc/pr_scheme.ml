@@ -50,14 +50,6 @@ value to_be_renamed = ["cond"; "sum"];
 
 value rename_id s = if List.mem s to_be_renamed then s ^ "#" else s;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind_bef = Pprintf.with_ind_bef;
-  value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
-END;
-
 value rec longident pc sl =
   match sl with
   [ [] -> pprintf pc ""

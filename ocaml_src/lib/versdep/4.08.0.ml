@@ -38,14 +38,13 @@ let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
 
 let loc_none =
   let loc =
-    {Lexing.pos_fname = "_none_"; Lexing.pos_lnum = 1; Lexing.pos_bol = 0;
-     Lexing.pos_cnum = -1}
+    {Lexing.pos_fname = "_none_"; pos_lnum = 1; pos_bol = 0; pos_cnum = -1}
   in
   {Location.loc_start = loc; Location.loc_end = loc;
    Location.loc_ghost = true}
 ;;
 
-let mkloc loc txt = {Location.txt = txt; Location.loc = loc};;
+let mkloc loc txt = {Location.txt = txt; loc = loc};;
 let mknoloc txt = mkloc loc_none txt;;
 
 let ocaml_id_or_li_of_string_list loc sl =

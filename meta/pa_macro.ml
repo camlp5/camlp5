@@ -161,8 +161,6 @@ value defined_version loc =
 
 value is_defined i =
   (i = "STRICT" && Pcaml.strict_mode.val) ||
-  (i = "COMPATIBLE_WITH_OLD_OCAML" &&
-   Pcaml.flag_compatible_old_versions_of_ocaml.val) ||
   List.mem_assoc i defined.val
 ;
 

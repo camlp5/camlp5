@@ -20,9 +20,7 @@ value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 value flag_expand_letop_syntax = Pcaml.flag_expand_letop_syntax;
-value flag_compatible_old_versions_of_ocaml =
-  Pcaml.flag_compatible_old_versions_of_ocaml
-;
+
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
@@ -160,14 +158,6 @@ value cons_escaped pc (loc, v) =
   in
   pprintf pc "%s" x
 ;
-
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
-  value with_dang = Pprintf.with_dang;
-END;
 
 value rec mod_ident pc (loc, sl) =
   match sl with
@@ -1118,11 +1108,6 @@ EXTEND_PRINTER
                      (if_then force_vertic curr) (e1, e2) "else"
                      (loop_else_if_and_else force_vertic curr) (eel, e3) ])
       | <:expr:< fun [ $list:pwel$ ] >> as ge ->
-          let pwel =
-            if flag_compatible_old_versions_of_ocaml.val then
-              do_split_or_patterns_with_bindings pwel
-            else pwel
-          in
           match pwel with
           [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
               let (pl, e1) = expr_fun_args e1 in
@@ -1157,11 +1142,6 @@ EXTEND_PRINTER
             match e with
             [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
             | _ -> "match" ]
-          in
-          let pwel =
-            if flag_compatible_old_versions_of_ocaml.val then
-              do_split_or_patterns_with_bindings pwel
-            else pwel
           in
           match pwel with
           [ [(p, wo, e)] ->
@@ -1312,13 +1292,7 @@ EXTEND_PRINTER
           [ Some y ->
               let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
               plist next 0 pc xl
-          | None -> next pc z ]
-      | <:expr:< {($e$) with $list:lel$} >>
-        when flag_compatible_old_versions_of_ocaml.val -> do {
-          match record_without_with loc e lel with
-          [ Some e -> pprintf pc "@[%p@]" next e
-          | None -> failwith "cannot convert record" ]
-        } ]
+          | None -> next pc z ] ]
     | "add"
       [ z ->
           let ops = ["+"; "+."; "-"; "-."] in
@@ -1417,26 +1391,13 @@ EXTEND_PRINTER
       ]
     | "simple"
       [ <:expr< {$list:lel$} >> ->
-          let lel =
-            if flag_compatible_old_versions_of_ocaml.val then do {
-              match lel with
-              [ [((<:patt< $uid:m$.$_$ >> as p), e) :: rest] -> do {
-                  expand_module_prefix m [(p, e)] rest
-                }
-              | _ -> lel ]
-            }
-            else lel
-          in
           let lxl = List.map (fun lx -> (lx, ";")) lel in
           pprintf pc "@[{%p}@]"
             (plistl (comm_patt_any (record_binding False))
                (comm_patt_any (record_binding True)) 1)
             lxl
-      | <:expr< {($e$) with $list:lel$} >> as z -> do {
-          if flag_compatible_old_versions_of_ocaml.val then do {
-            pprintf pc "@[<1>(%q)@]" expr z ""
-          }
-          else do {
+      | <:expr< {($e$) with $list:lel$} >> -> do {
+          do {
             let dot_expr = Eprinter.apply_level pr_expr "dot" in
             let lxl = List.map (fun lx -> (lx, ";")) lel in
             pprintf pc "@[{%p with @]%p}" dot_expr e
@@ -1464,10 +1425,6 @@ EXTEND_PRINTER
       | <:expr< (module $me$) >> ->
           pprintf pc "(module %p)" module_expr me
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
-          let s =
-            if flag_compatible_old_versions_of_ocaml.val then strip_char '_' s
-            else s
-          in
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
       | <:expr< $int32:s$ >> ->
@@ -2067,7 +2024,6 @@ value set_flags s =
       | 'M' | 'm' -> flag_semi_semi.val := is_upp
       | 'O' | 'o' -> flag_add_locations.val := is_upp
       | 'X' | 'x' -> flag_expand_letop_syntax.val := is_upp
-      | 'Z' | 'z' -> flag_compatible_old_versions_of_ocaml.val := is_upp
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
@@ -2077,14 +2033,13 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s%s%s%s"
+    sprintf "%s%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
       (flag flag_add_locations.val "O" "o")
       (flag flag_expand_letop_syntax.val "X" "x")
-      (flag flag_compatible_old_versions_of_ocaml.val "Z" "z")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in

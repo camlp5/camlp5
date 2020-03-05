@@ -10,39 +10,6 @@ type pr_fun 'a = pr_context -> 'a -> string;
 value tab ind = String.make ind ' ';
 value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};
 
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_ind pc ind =
-    {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_ind_bef pc ind bef =
-    {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_ind_bef_aft pc ind bef aft =
-    {ind = ind; bef = bef; aft = aft; dang = pc.dang}
-  ;
-  value with_bef pc bef =
-    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_bef_aft pc bef aft =
-    {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
-  ;
-  value with_bef_aft_dang pc bef aft dang =
-    {ind = pc.ind; bef = bef; aft = aft; dang = dang}
-  ;
-  value with_bef_dang pc bef dang =
-    {ind = pc.ind; bef = bef; aft = pc.aft; dang = dang}
-  ;
-  value with_aft pc aft =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
-  ;
-  value with_aft_dang pc aft dang =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
-  ;
-  value with_dang pc dang =
-    {ind = pc.ind; bef = pc.bef; aft = pc.aft; dang = dang}
-  ;
-END;
-
 value sprint_break nspaces offset pc f g =
   Pretty.horiz_vertic
     (fun () ->

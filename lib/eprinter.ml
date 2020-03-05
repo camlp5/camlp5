@@ -35,12 +35,6 @@ value add_lev (lab, extf) levs =
   [lev :: levs]
 ;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_pr_rules lev pr_rules =
-    {pr_label = lev.pr_label; pr_rules = pr_rules}
-  ;
-END;
-
 value extend pr pos levs =
   match pos with
   [ None ->

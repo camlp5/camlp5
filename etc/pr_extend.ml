@@ -29,12 +29,6 @@ value not_impl name pc x =
   pprintf pc "\"pr_extend, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-  value with_bef = Pprintf.with_bef;
-  value with_aft = Pprintf.with_aft;
-END;
-
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 value semi_after elem pc x = pprintf pc "%p;" elem x;
 

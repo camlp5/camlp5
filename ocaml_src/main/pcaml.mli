@@ -180,4 +180,3 @@ val rename_id : (string -> string) ref;;
 val flag_comments_in_phrases : bool ref;;
 val flag_equilibrate_cases : bool ref;;
 val flag_expand_letop_syntax : bool ref;;
-val flag_compatible_old_versions_of_ocaml : bool ref;;

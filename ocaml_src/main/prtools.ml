@@ -15,11 +15,7 @@ type pr_context =
 
 type 'a pr_fun = pr_context -> 'a -> string;;
 
-let with_ind_bef = Pprintf.with_ind_bef;;
-let with_bef = Pprintf.with_bef;;
-let with_bef_aft_dang = Pprintf.with_bef_aft_dang;;
-let with_aft = Pprintf.with_aft;;
-let with_aft_dang = Pprintf.with_aft_dang;;
+(* *)
 
 let tab ind = String.make ind ' ';;
 
@@ -29,8 +25,8 @@ let rec hlist elem pc xl =
     [] -> sprintf "%s%s" pc.bef pc.aft
   | [x] -> elem pc x
   | x :: xl ->
-      sprintf "%s %s" (elem (with_aft_dang pc "" "") x)
-        (hlist elem (with_bef pc "") xl)
+      sprintf "%s %s" (elem {pc with aft = ""; dang = ""} x)
+        (hlist elem {pc with bef = ""} xl)
 ;;
 
 (* horizontal list with different function from 2nd element on *)
@@ -39,8 +35,8 @@ let rec hlist2 elem elem2 pc xl =
     [] -> invalid_arg "hlist2"
   | [x] -> elem pc x
   | x :: xl ->
-      sprintf "%s %s" (elem (with_aft pc "") x)
-        (hlist2 elem2 elem2 (with_bef pc "") xl)
+      sprintf "%s %s" (elem {pc with aft = ""} x)
+        (hlist2 elem2 elem2 {pc with bef = ""} xl)
 ;;
 
 (* horizontal list with different function for the last element *)
@@ -49,8 +45,8 @@ let rec hlistl elem eleml pc xl =
     [] -> sprintf "%s%s" pc.bef pc.aft
   | [x] -> eleml pc x
   | x :: xl ->
-      sprintf "%s %s" (elem (with_aft_dang pc "" "") x)
-        (hlistl elem eleml (with_bef pc "") xl)
+      sprintf "%s %s" (elem {pc with aft = ""; dang = ""} x)
+        (hlistl elem eleml {pc with bef = ""} xl)
 ;;
 
 (* vertical list *)
@@ -59,8 +55,8 @@ let rec vlist elem pc xl =
     [] -> sprintf "%s%s" pc.bef pc.aft
   | [x] -> elem pc x
   | x :: xl ->
-      sprintf "%s\n%s" (elem (with_aft_dang pc "" "") x)
-        (vlist elem (with_bef pc (tab pc.ind)) xl)
+      sprintf "%s\n%s" (elem {pc with aft = ""; dang = ""} x)
+        (vlist elem {pc with bef = tab pc.ind} xl)
 ;;
 
 (* vertical list with different function from 2nd element on *)
@@ -69,8 +65,8 @@ let rec vlist2 elem elem2 pc xl =
     [] -> invalid_arg "vlist2"
   | [x] -> elem pc x
   | x :: xl ->
-      sprintf "%s\n%s" (elem (with_aft pc "") x)
-        (vlist2 elem2 elem2 (with_bef pc (tab pc.ind)) xl)
+      sprintf "%s\n%s" (elem {pc with aft = ""} x)
+        (vlist2 elem2 elem2 {pc with bef = tab pc.ind} xl)
 ;;
 
 (* vertical list with different function from 2nd element on *)
@@ -79,8 +75,8 @@ let rec vlist3 elem elem2 pc xl =
     [] -> invalid_arg "vlist3"
   | [x] -> elem pc (x, true)
   | x :: xl ->
-      sprintf "%s\n%s" (elem (with_aft pc "") (x, false))
-        (vlist3 elem2 elem2 (with_bef pc (tab pc.ind)) xl)
+      sprintf "%s\n%s" (elem {pc with aft = ""} (x, false))
+        (vlist3 elem2 elem2 {pc with bef = tab pc.ind} xl)
 ;;
 
 (* vertical list with different function for the last element *)
@@ -89,8 +85,8 @@ let rec vlistl elem eleml pc xl =
     [] -> sprintf "%s%s" pc.bef pc.aft
   | [x] -> eleml pc x
   | x :: xl ->
-      sprintf "%s\n%s" (elem (with_aft_dang pc "" "") x)
-        (vlistl elem eleml (with_bef pc (tab pc.ind)) xl)
+      sprintf "%s\n%s" (elem {pc with aft = ""; dang = ""} x)
+        (vlistl elem eleml {pc with bef = tab pc.ind} xl)
 ;;
 
 (* vertical list applied to a list of functions *)
@@ -99,8 +95,8 @@ let rec vlistf pc fl =
     [] -> sprintf "%s%s" pc.bef pc.aft
   | [f] -> f pc
   | f :: fl ->
-      sprintf "%s\n%s" (f (with_aft_dang pc "" ""))
-        (vlistf (with_bef pc (tab pc.ind)) fl)
+      sprintf "%s\n%s" (f {pc with aft = ""; dang = ""})
+        (vlistf {pc with bef = tab pc.ind} fl)
 ;;
 
 let hvlistl elem eleml pc xl =
@@ -152,26 +148,27 @@ and plistl_two_parts elem eleml sh pc xl =
   | [x, _] -> eleml pc x, None
   | (x, sep) :: xl ->
       let s =
-        horiz_vertic (fun () -> Some (elem (with_aft_dang pc sep sep) x))
+        horiz_vertic (fun () -> Some (elem {pc with aft = sep; dang = sep} x))
           (fun () -> None)
       in
       match s with
-        Some b -> plistl_kont_same_line elem eleml sh (with_bef pc b) xl, None
+        Some b ->
+          plistl_kont_same_line elem eleml sh {pc with bef = b} xl, None
       | None ->
-          let s1 = elem (with_aft_dang pc sep sep) x in
+          let s1 = elem {pc with aft = sep; dang = sep} x in
           let s2 =
             plistl elem eleml 0
-              (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) xl
+              {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} xl
           in
           s1, Some s2
 and plistl_kont_same_line elem eleml sh pc xl =
   match xl with
     [] -> assert false
   | [x, _] ->
-      horiz_vertic (fun () -> eleml (with_bef pc (sprintf "%s " pc.bef)) x)
+      horiz_vertic (fun () -> eleml {pc with bef = sprintf "%s " pc.bef} x)
         (fun () ->
            let s =
-             eleml (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) x
+             eleml {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} x
            in
            let (b, s) = rise_string pc.ind sh pc.bef s in
            sprintf "%s\n%s" b s)
@@ -180,15 +177,17 @@ and plistl_kont_same_line elem eleml sh pc xl =
         horiz_vertic
           (fun () ->
              Some
-               (elem (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep) x))
+               (elem
+                  {pc with bef = sprintf "%s " pc.bef; aft = sep; dang = sep}
+                  x))
           (fun () -> None)
       in
       match s with
-        Some b -> plistl_kont_same_line elem eleml sh (with_bef pc b) xl
+        Some b -> plistl_kont_same_line elem eleml sh {pc with bef = b} xl
       | None ->
           let (s1, s2o) =
             plistl_two_parts elem eleml 0
-              (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh)))
+              {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)}
               ((x, sep) :: xl)
           in
           match s2o with
@@ -207,10 +206,10 @@ let plistb elem sh pc xl =
   match xl with
     [] -> sprintf "%s%s" pc.bef pc.aft
   | [x, _] ->
-      horiz_vertic (fun () -> elem (with_bef pc (sprintf "%s " pc.bef)) x)
+      horiz_vertic (fun () -> elem {pc with bef = sprintf "%s " pc.bef} x)
         (fun () ->
            let s =
-             elem (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) x
+             elem {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} x
            in
            sprintf "%s\n%s" pc.bef s)
   | (x, sep) :: xl ->
@@ -218,11 +217,13 @@ let plistb elem sh pc xl =
         horiz_vertic
           (fun () ->
              Some
-               (elem (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep) x))
+               (elem
+                  {pc with bef = sprintf "%s " pc.bef; aft = sep; dang = sep}
+                  x))
           (fun () -> None)
       in
       match s with
-        Some b -> plistl_kont_same_line elem elem sh (with_bef pc b) xl
+        Some b -> plistl_kont_same_line elem elem sh {pc with bef = b} xl
       | None ->
           let s1 =
             let s =
@@ -235,7 +236,7 @@ let plistb elem sh pc xl =
           in
           let s2 =
             plistl elem elem 0
-              (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) xl
+              {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} xl
           in
           sprintf "%s\n%s" s1 s2
 ;;
@@ -255,39 +256,42 @@ and plistf_two_parts sh pc xl =
   | [x, _] -> x pc, None
   | (x, sep) :: xl ->
       let s =
-        horiz_vertic (fun () -> Some (x (with_aft_dang pc sep sep)))
+        horiz_vertic (fun () -> Some (x {pc with aft = sep; dang = sep}))
           (fun () -> None)
       in
       match s with
-        Some b -> plistf_kont_same_line sh (with_bef pc b) xl, None
+        Some b -> plistf_kont_same_line sh {pc with bef = b} xl, None
       | None ->
-          let s1 = x (with_aft_dang pc sep sep) in
+          let s1 = x {pc with aft = sep; dang = sep} in
           let s2 =
-            plistf 0 (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) xl
+            plistf 0 {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} xl
           in
           s1, Some s2
 and plistf_kont_same_line sh pc xl =
   match xl with
     [] -> assert false
   | [x, _] ->
-      horiz_vertic (fun () -> x (with_bef pc (sprintf "%s " pc.bef)))
+      horiz_vertic (fun () -> x {pc with bef = sprintf "%s " pc.bef})
         (fun () ->
-           let s = x (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) in
+           let s = x {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} in
            let (b, s) = rise_string pc.ind sh pc.bef s in
            sprintf "%s\n%s" b s)
   | (x, sep) :: xl ->
       let s =
         horiz_vertic
           (fun () ->
-             Some (x (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep)))
+             Some
+               (x
+                  {pc with bef = sprintf "%s " pc.bef; aft = sep;
+                   dang = sep}))
           (fun () -> None)
       in
       match s with
-        Some b -> plistf_kont_same_line sh (with_bef pc b) xl
+        Some b -> plistf_kont_same_line sh {pc with bef = b} xl
       | None ->
           let (s1, s2o) =
             plistf_two_parts 0
-              (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh)))
+              {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)}
               ((x, sep) :: xl)
           in
           match s2o with
@@ -303,19 +307,22 @@ let rec plistbf sh pc xl =
   match xl with
     [] -> sprintf "%s%s" pc.bef pc.aft
   | [x, _] ->
-      horiz_vertic (fun () -> x (with_bef pc (sprintf "%s " pc.bef)))
+      horiz_vertic (fun () -> x {pc with bef = sprintf "%s " pc.bef})
         (fun () ->
-           let s = x (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) in
+           let s = x {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} in
            sprintf "%s\n%s" pc.bef s)
   | (x, sep) :: xl ->
       let s =
         horiz_vertic
           (fun () ->
-             Some (x (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep)))
+             Some
+               (x
+                  {pc with bef = sprintf "%s " pc.bef; aft = sep;
+                   dang = sep}))
           (fun () -> None)
       in
       match s with
-        Some b -> plistf_kont_same_line sh (with_bef pc b) xl
+        Some b -> plistf_kont_same_line sh {pc with bef = b} xl
       | None ->
           let s1 =
             let s =
@@ -326,7 +333,7 @@ let rec plistbf sh pc xl =
             sprintf "%s\n%s" pc.bef s
           in
           let s2 =
-            plistf 0 (with_ind_bef pc (pc.ind + sh) (tab (pc.ind + sh))) xl
+            plistf 0 {pc with ind = pc.ind + sh; bef = tab (pc.ind + sh)} xl
           in
           sprintf "%s\n%s" s1 s2
 ;;

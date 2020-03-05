@@ -76,13 +76,6 @@ value patt_option pc =
   | None -> pprintf pc "" ]
 ;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind_bef = Pprintf.with_ind_bef;
-  value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
-  value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
-END;
-
 value stream_patt_comp pc spc =
   match spc with
   [ SpTrm _ p <:vala< None >> ->

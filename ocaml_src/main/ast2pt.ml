@@ -740,9 +740,7 @@ and package_of_module_type loc mt =
                  id_or_li, ctyp ct
              | WcTys (loc, id, tpl, t) ->
                  error loc "package type with 'type :=' no allowed"
-             | WcMod (loc, _, _) ->
-                 error loc "package type with 'module' no allowed"
-             | WcMos (loc, _, _) ->
+             | WcMod (loc, _, _) | WcMos (loc, _, _) ->
                  error loc "package type with 'module' no allowed")
             with_con
         in
@@ -1650,19 +1648,7 @@ and str_item s l =
 and class_type =
   function
     CtAtt (loc, e, a) -> ocaml_pcty_addattr (attr (uv a)) (class_type e)
-  | CtAcc (loc, _, _) as ct ->
-      let li = long_id_class_type loc ct in
-      begin match ocaml_pcty_constr with
-        Some pcty_constr -> mkcty loc (pcty_constr li [])
-      | None -> error loc "no class type desc in this ocaml version"
-      end
-  | CtApp (loc, _, _) as ct ->
-      let li = long_id_class_type loc ct in
-      begin match ocaml_pcty_constr with
-        Some pcty_constr -> mkcty loc (pcty_constr li [])
-      | None -> error loc "no class type desc in this ocaml version"
-      end
-  | CtIde (loc, _) as ct ->
+  | CtAcc (loc, _, _) | CtApp (loc, _, _) | CtIde (loc, _) as ct ->
       let li = long_id_class_type loc ct in
       begin match ocaml_pcty_constr with
         Some pcty_constr -> mkcty loc (pcty_constr li [])

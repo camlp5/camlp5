@@ -78,12 +78,6 @@ value class_str_item = Eprinter.apply pr_class_str_item;
 value class_sig_item = Eprinter.apply pr_class_sig_item;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
-END;
-
 value rec mod_ident pc sl =
   match sl with
   [ [] -> pprintf pc ""

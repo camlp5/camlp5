@@ -29,11 +29,6 @@ value not_impl name pc x =
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-  value with_bef_aft = Pprintf.with_bef_aft;
-END;
-
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 value semi_after elem pc x = pprintf pc "%p;" elem x;
 

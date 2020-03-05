@@ -178,12 +178,6 @@ value var_escaped pc (loc, v) =
 
 value cons_escaped pc s = pprintf pc "%s" s;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
-END;
-
 value rec mod_ident pc (loc, sl) =
   match sl with
   [ [] -> pprintf pc ""

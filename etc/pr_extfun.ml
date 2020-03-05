@@ -50,10 +50,6 @@ value rec un_extfun rpel =
   | _ -> raise Not_found ]
 ;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-END;
-
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 
 value comm_bef pc loc =

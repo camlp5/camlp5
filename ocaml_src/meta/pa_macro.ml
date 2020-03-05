@@ -163,10 +163,7 @@ let defined_version loc =
 ;;
 
 let is_defined i =
-  i = "STRICT" && !(Pcaml.strict_mode) ||
-  i = "COMPATIBLE_WITH_OLD_OCAML" &&
-  !(Pcaml.flag_compatible_old_versions_of_ocaml) ||
-  List.mem_assoc i !defined
+  i = "STRICT" && !(Pcaml.strict_mode) || List.mem_assoc i !defined
 ;;
 
 let print_defined () =
@@ -197,9 +194,7 @@ let subst mloc env =
     | MLast.ExIfe (_, e1, e2, e3) ->
         MLast.ExIfe (loc, loop e1, loop e2, loop e3)
     | MLast.ExApp (_, e1, e2) -> MLast.ExApp (loc, loop e1, loop e2)
-    | MLast.ExLid (_, x) as e ->
-        (try MLast.ExAnt (loc, List.assoc x env) with Not_found -> e)
-    | MLast.ExUid (_, x) as e ->
+    | MLast.ExLid (_, x) | MLast.ExUid (_, x) as e ->
         (try MLast.ExAnt (loc, List.assoc x env) with Not_found -> e)
     | MLast.ExTup (_, x) -> MLast.ExTup (loc, List.map loop x)
     | MLast.ExRec (_, pel, None) ->
@@ -244,8 +239,8 @@ let substt mloc env =
       MLast.TyArr (_, t1, t2) -> MLast.TyArr (loc, loop t1, loop t2)
     | MLast.TyApp (_, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
     | MLast.TyTup (_, tl) -> MLast.TyTup (loc, List.map loop tl)
-    | MLast.TyLid (_, x) as t -> (try List.assoc x env with Not_found -> t)
-    | MLast.TyUid (_, x) as t -> (try List.assoc x env with Not_found -> t)
+    | MLast.TyLid (_, x) | MLast.TyUid (_, x) as t ->
+        (try List.assoc x env with Not_found -> t)
     | t -> t
   in
   loop
