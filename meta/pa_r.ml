@@ -1264,48 +1264,6 @@ EXTEND
   expr: [[]];
 END;
 
-IFDEF JOCAML OR COMPATIBLE_WITH_OLD_OCAML THEN
-  EXTEND
-    GLOBAL: str_item expr;
-    (* -- cut 1 end -- *)
-    str_item:
-      [ [ "def"; jal = V (LIST1 joinautomaton SEP "and") →
-            <:str_item< def $_list:jal$ >> ] ]
-    ;
-    expr: LEVEL "top"
-      [ [ "def"; jal = V (LIST1 joinautomaton SEP "and"); "in";
-          e = expr LEVEL "top"→
-            <:expr< def $_list:jal$ in $e$ >> ] ]
-    ;
-    expr: LEVEL "apply"
-      [ [ "reply"; eo = V (OPT expr); "to"; ji = V joinident "jid" →
-            <:expr< reply $_opt:eo$ to $_jid:ji$ >> ] ]
-    ;
-    expr: BEFORE ":="
-      [ [ "spawn"; e = SELF → <:expr< spawn $e$ >> ] ]
-    ;
-    expr: LEVEL "&&"
-      [ [ e1 = SELF; "&"; e2 = SELF → <:expr< $e1$ & $e2$ >> ] ]
-    ;
-    joinautomaton:
-      [ [ jcl = V (LIST1 joinclause SEP "or") →
-            {MLast.jcLoc = loc; MLast.jcVal = jcl} ] ]
-    ;
-    joinclause:
-      [ [ jpl = V (LIST1 joinpattern SEP "&"); "="; e = expr →
-            (loc, jpl, e) ] ]
-    ;
-    joinpattern:
-      [ [ ji = joinident; "("; op = V (OPT patt); ")" → (loc, ji, op) ] ]
-    ;
-    joinident:
-      [ [ i = V LIDENT → (loc, i) ] ]
-    ;
-    (* -- cut 2 begin -- *)
-    expr: [[]];
-  END;
-END;
-
 (* -- cut 2 end -- *)
 (* -- end copy from pa_r to q_MLast -- *)
 

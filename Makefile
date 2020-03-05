@@ -225,9 +225,6 @@ new_sources: oprinter
 	$(NOVERBOSE) mkdir ocaml_src.new/lib/versdep
 	$(NOVERBOSE) (cd ocaml_src/lib/versdep; \
 	   cp *.ml ../../../ocaml_src.new/lib/versdep/.)
-	$(NOVERBOSE) mkdir ocaml_src.new/lib/versdep/jocaml
-	$(NOVERBOSE) (cd ocaml_src/lib/versdep/jocaml; \
-	   cp *.ml ../../../../ocaml_src.new/lib/versdep/jocaml)
 	$(NOVERBOSE) for i in $(FDIRS); do \
           files="$$(cd $$i; ls *.ml*)"; \
 	  for j in $$files; do \
@@ -355,7 +352,7 @@ untouch_sources:
 
 promote_sources:
 	$(MAKE) mv_git FROM=ocaml_src TO=ocaml_src.new
-	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
+	for i in $(FDIRS) lib/versdep; do \
 	  $(MAKE) mv_git FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
@@ -366,7 +363,7 @@ unpromote_sources:
 	mv ocaml_src ocaml_src.new
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
-	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
+	for i in $(FDIRS) lib/versdep; do \
 	  $(MAKE) mv_git FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
 	$(MAKE) mv_git FROM=ocaml_src.new TO=ocaml_src

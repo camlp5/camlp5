@@ -23,7 +23,7 @@ value mustSome symbol = fun [
 ]
 ;
 
-value ocaml_name = IFDEF JOCAML THEN "jocaml" ELSE "ocaml" END;
+value ocaml_name = "ocaml";
 
 value sys_ocaml_version =
   IFDEF OCAML_1_06 THEN "1.06"
@@ -81,7 +81,7 @@ value mknoloc txt =
 ;
 
 value ocaml_id_or_li_of_string_list loc sl =
-  IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN
+  IFDEF OCAML_VERSION < OCAML_3_13_0 THEN
     match List.rev sl with
     [ [s] -> Some s
     | _ -> None ]
@@ -489,7 +489,7 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
-        ELSIFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN
+        ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
@@ -665,7 +665,7 @@ value ocaml_ptype_variant ctl priv =
         in
           let priv = if priv then Private else Public in
           Some (Ptype_variant ctl priv)
-      ELSIFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN
+      ELSIFDEF OCAML_VERSION < OCAML_3_13_0 THEN
         let ctl =
           List.map
             (fun (c, tl, rto, loc, attrs) ->
@@ -1224,7 +1224,7 @@ value ocaml_ppat_type =
 ;
 
 value ocaml_ppat_unpack =
-  IFDEF OCAML_VERSION < OCAML_3_13_0 OR JOCAML THEN None
+  IFDEF OCAML_VERSION < OCAML_3_13_0 THEN None
   ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     Some (fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s)), fun pt -> Ptyp_package pt)
   ELSE
@@ -1983,55 +1983,6 @@ value split_or_patterns_with_bindings =
 
 value has_records_with_with =
   IFDEF OCAML_VERSION <= OCAML_1_07 THEN False ELSE True END
-;
-
-IFDEF JOCAML THEN
-  value joinclause (loc, jc) =
-    let jc =
-      List.map
-        (fun (loc, (jpl, e)) ->
-           let jpl =
-             List.map
-               (fun (locp, (loci, s), p) ->
-                  let ji = {pjident_desc = s; pjident_loc = loci} in
-                  {pjpat_desc = (ji, p); pjpat_loc = locp})
-               jpl
-           in
-           {pjclause_desc = (jpl, e); pjclause_loc = loc})
-        jc
-    in
-    {pjauto_desc = jc; pjauto_loc = loc}
-  ;
-END;
-
-value jocaml_pstr_def =
-  IFDEF JOCAML THEN Some (fun jcl -> Pstr_def (List.map joinclause jcl))
-  ELSE (None : option (_ -> _)) END
-;
-
-value jocaml_pexp_def =
-  IFDEF JOCAML THEN Some (fun jcl e -> Pexp_def (List.map joinclause jcl) e)
-  ELSE (None : option (_ -> _ -> _)) END
-;
-
-value jocaml_pexp_par =
-  IFDEF JOCAML THEN Some (fun e1 e2 -> Pexp_par e1 e2)
-  ELSE (None : option (_ -> _ -> _)) END
-;
-
-value jocaml_pexp_reply =
-  IFDEF JOCAML THEN
-    let pexp_reply loc e (sloc, s) =
-      let ji = {pjident_desc = s; pjident_loc = sloc} in
-      Pexp_reply e ji
-    in
-    Some pexp_reply
-  ELSE (None : option (_ -> _ -> _ -> _)) END
-;
-
-value jocaml_pexp_spawn =
-  IFDEF JOCAML THEN Some (fun e -> Pexp_spawn e)
-  ELSE (None : option (_ -> _)) END
 ;
 
 value arg_rest =

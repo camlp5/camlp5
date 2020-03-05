@@ -207,9 +207,6 @@ and expr floc sh =
     | ExIfe (loc, x1, x2, x3) ->
         let loc = floc loc in ExIfe (loc, self x1, self x2, self x3)
     | ExInt (loc, x1, x2) -> let loc = floc loc in ExInt (loc, x1, x2)
-    | ExJdf (loc, x1, x2) ->
-        let loc = floc loc in
-        ExJdf (loc, vala_map (List.map (joinclause floc sh)) x1, self x2)
     | ExLab (loc, x1) ->
         let loc = floc loc in
         ExLab
@@ -256,8 +253,6 @@ and expr floc sh =
     | ExOvr (loc, x1) ->
         let loc = floc loc in
         ExOvr (loc, vala_map (List.map (fun (x1, x2) -> x1, self x2)) x1)
-    | ExPar (loc, x1, x2) ->
-        let loc = floc loc in ExPar (loc, self x1, self x2)
     | ExPck (loc, x1, x2) ->
         let loc = floc loc in
         ExPck
@@ -268,14 +263,8 @@ and expr floc sh =
           (loc,
            vala_map (List.map (fun (x1, x2) -> patt floc sh x1, self x2)) x1,
            option_map self x2)
-    | ExRpl (loc, x1, x2) ->
-        let loc = floc loc in
-        ExRpl
-          (loc, vala_map (option_map self) x1,
-           vala_map (fun (loc, x1) -> floc loc, x1) x2)
     | ExSeq (loc, x1) ->
         let loc = floc loc in ExSeq (loc, vala_map (List.map self) x1)
-    | ExSpw (loc, x1) -> let loc = floc loc in ExSpw (loc, self x1)
     | ExSnd (loc, x1, x2) -> let loc = floc loc in ExSnd (loc, self x1, x2)
     | ExSte (loc, x1, x2) ->
         let loc = floc loc in ExSte (loc, self x1, self x2)
@@ -442,9 +431,6 @@ and str_item floc sh =
            vala_map (List.map (class_infos_map floc (class_type floc sh))) x1)
     | StDcl (loc, x1) ->
         let loc = floc loc in StDcl (loc, vala_map (List.map self) x1)
-    | StDef (loc, x1) ->
-        let loc = floc loc in
-        StDef (loc, vala_map (List.map (joinclause floc sh)) x1)
     | StDir (loc, x1, x2) ->
         let loc = floc loc in
         StDir (loc, x1, vala_map (option_map (expr floc sh)) x2)
@@ -491,21 +477,6 @@ and str_item floc sh =
     | StExten (loc, exten) -> StExten (floc loc, exten)
   in
   self
-and joinclause floc sh x =
-  {jcLoc = floc x.jcLoc;
-   jcVal =
-     vala_map
-       (List.map
-          (fun (loc, x1, x2) ->
-             floc loc,
-             vala_map
-               (List.map
-                  (fun (loc, x1, x2) ->
-                     floc loc, (fun (loc, x1) -> floc loc, x1) x1,
-                     vala_map (option_map (patt floc sh)) x2))
-               x1,
-             expr floc sh x2))
-       x.jcVal}
 and type_decl floc sh x =
   {tdNam = vala_map (fun (loc, x1) -> floc loc, x1) x.tdNam; tdPrm = x.tdPrm;
    tdPrv = x.tdPrv; tdDef = ctyp floc sh x.tdDef;

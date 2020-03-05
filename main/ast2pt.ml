@@ -955,12 +955,6 @@ and expr =
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) e3o)
   | ExInt loc s c →
       mkexp loc (Pexp_constant (pconst_of_const (mkintconst loc (uv s) c)))
-  | ExJdf loc jl e →
-      match jocaml_pexp_def with
-      [ Some pexp_def →
-          mkexp loc (pexp_def (list_rev_map mkjoinclause (uv jl)) (expr e))
-      | None →
-          error loc "no 'def in' in this ocaml version" ]
   | ExLab loc _ → error loc "labeled expression not allowed here 1"
   | ExLaz loc e → mklazy loc (expr e)
   | ExLet loc rf pel e →
@@ -1006,10 +1000,6 @@ and expr =
   | ExOlb loc _ _ → error loc "labeled expression not allowed here 2"
   | ExOvr loc iel →
       mkexp loc (ocaml_pexp_override (List.map mkideexp (uv iel)))
-  | ExPar loc e1 e2 →
-      match jocaml_pexp_par with
-      [ Some pexp_par → mkexp loc (pexp_par (expr e1) (expr e2))
-      | None → error loc "no '&' in this ocaml version" ]
   | ExPck loc me mto →
       match ocaml_pexp_pack with
       [ Some (Left pexp_pack) →
@@ -1055,20 +1045,6 @@ and expr =
           | None → None ]
         in
         mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
-  | ExRpl loc eo locs →
-      let (sloc, s) = uv locs in
-      match jocaml_pexp_reply with
-      [ Some pexp_reply →
-          let e =
-            match uv eo with
-            [ Some e → expr e
-            | None →
-                let cloc = mkloc sloc in
-                let e = ocaml_pexp_construct cloc (Lident "()") None False in
-                mkexp loc e ]
-          in
-          mkexp loc (pexp_reply (mkloc loc) e (mkloc sloc, uv s))
-      | None → error loc "no 'reply' in this ocaml version" ]
   | ExSeq loc el →
       loop (uv el) where rec loop =
         fun
@@ -1078,10 +1054,6 @@ and expr =
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
   | ExSnd loc e s → mkexp loc (ocaml_pexp_send (mkloc loc) (expr e) (uv s))
-  | ExSpw loc e →
-      match jocaml_pexp_spawn with
-      [ Some pexp_spawn → mkexp loc (pexp_spawn (expr e))
-      | None → error loc "no 'spawn' in this ocaml version" ]
   | ExSte loc e1 e2 →
       let cloc = mkloc loc in
       mkexp loc
@@ -1137,29 +1109,6 @@ and label_expr rev_al =
           [("?" ^ uv lab, expr e) :: rev_al]
       | _ → error loc "ExOlb case not impl" ]
   | e → [("", expr e) :: rev_al] ]
-and mkjoinclause jc =
-  let jcval =
-    list_rev_map
-      (fun (loc, jpl, e) →
-         let jpl =
-           list_rev_map
-             (fun (locp, locs, jp) →
-                let (loc, s) = locs in
-                let p =
-                  match uv jp with
-                  [ Some p → patt p
-                  | None →
-                      mkpat loc
-                        (ocaml_ppat_construct (mkloc loc) (Lident "()") None
-                           False) ]
-                in
-                (mkloc locp, (mkloc loc, uv s), p))
-             (uv jpl)
-         in
-         (mkloc loc, (jpl, expr e)))
-      (uv jc.jcVal)
-  in
-  (mkloc jc.jcLoc, jcval)
 and mkpe (p, e, attrs) =
   let loc = Ploc.encl (loc_of_patt p) (loc_of_expr e) in
   let (p, e) =
@@ -1362,12 +1311,6 @@ and str_item s l =
            l]
       | None → error loc "no class type in this ocaml version" ]
   | StDcl loc sl → List.fold_right str_item (uv sl) l
-  | StDef loc jcl →
-      match jocaml_pstr_def with
-      [ Some pstr_def →
-          let jcl = List.map mkjoinclause (uv jcl) in
-          [mkstr loc (pstr_def jcl) :: l]
-      | None → error loc "no 'def' in this ocaml version" ]
   | StDir loc _ _ → l
   | StExc loc n tl sl alg_attrs item_attrs →
       let si =

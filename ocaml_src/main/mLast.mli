@@ -102,7 +102,6 @@ and expr =
   | ExFun of loc * (patt * expr option * expr) list
   | ExIfe of loc * expr * expr * expr
   | ExInt of loc * string * string
-  | ExJdf of loc * joinclause list * expr
   | ExLab of loc * (patt * expr option) list
   | ExLaz of loc * expr
   | ExLet of loc * bool * (patt * expr * (string * payload) list) list * expr
@@ -115,12 +114,9 @@ and expr =
   | ExObj of loc * patt option * class_str_item list
   | ExOlb of loc * patt * expr option
   | ExOvr of loc * (string * expr) list
-  | ExPar of loc * expr * expr
   | ExPck of loc * module_expr * module_type option
   | ExRec of loc * (patt * expr) list * expr option
-  | ExRpl of loc * expr option * (loc * string)
   | ExSeq of loc * expr list
-  | ExSpw of loc * expr
   | ExSnd of loc * expr * string
   | ExSte of loc * expr * expr
   | ExStr of loc * string
@@ -191,7 +187,6 @@ and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list
   | StDcl of loc * str_item list
-  | StDef of loc * joinclause list
   | StDir of loc * string * expr option
   | StExc of
       loc * string * ctyp list * string list * (string * payload) list *
@@ -211,9 +206,6 @@ and str_item =
   | StXtr of loc * string * str_item option
   | StFlAtt of loc * (string * payload)
   | StExten of loc * attribute_body
-and joinclause =
-  { jcLoc : loc;
-    jcVal : (loc * (loc * (loc * string) * patt option) list * expr) list }
 and type_decl =
   { tdNam : loc * string;
     tdPrm : type_var list;

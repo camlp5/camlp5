@@ -106,7 +106,6 @@ and expr =
   | ExFun of loc and V (list (patt * V (option expr) * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
-  | ExJdf of loc and V (list joinclause) and expr
   | ExLab of loc and V (list (patt * V (option expr)))
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr * V (list (V (V string * payload))))) and expr
@@ -119,12 +118,9 @@ and expr =
   | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and patt and V (option expr)
   | ExOvr of loc and V (list (string * expr))
-  | ExPar of loc and expr and expr
   | ExPck of loc and module_expr and option module_type
   | ExRec of loc and V (list (patt * expr)) and option expr
-  | ExRpl of loc and V (option expr) and V (loc * V string)
   | ExSeq of loc and V (list expr)
-  | ExSpw of loc and expr
   | ExSnd of loc and expr and V string
   | ExSte of loc and expr and expr
   | ExStr of loc and V string
@@ -197,7 +193,6 @@ and str_item =
   [ StCls of loc and V (list (class_infos class_expr))
   | StClt of loc and V (list (class_infos class_type))
   | StDcl of loc and V (list str_item)
-  | StDef of loc and V (list joinclause)
   | StDir of loc and V string and V (option expr)
   | StExc of loc and V string and V (list ctyp) and V (list string) and V (list (V (V string * payload))) and V (list (V (V string * payload)))
   | StExp of loc and expr and V (list (V (V string * payload)))
@@ -213,12 +208,6 @@ and str_item =
   | StXtr of loc and string and option (V str_item)
   | StFlAtt of loc and V (V string * payload)
   | StExten of loc and attribute_body ]
-and joinclause =
-  { jcLoc : loc;
-    jcVal :
-      V (list
-           (loc * V (list (loc * (loc * V string) * V (option patt))) *
-            expr)) }
 and type_decl =
   { tdNam : V (loc * V string);
     tdPrm : V (list type_var);

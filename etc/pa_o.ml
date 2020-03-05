@@ -1669,47 +1669,6 @@ EXTEND
 END
 ;
 
-IFDEF JOCAML THEN
-  DELETE_RULE expr: SELF; "or"; SELF END;
-  DELETE_RULE expr: SELF; "&"; SELF END;
-  EXTEND
-    GLOBAL: str_item expr;
-    str_item:
-      [ [ "def"; jal = V (LIST1 joinautomaton SEP "and") ->
-            <:str_item< def $_list:jal$ >> ] ]
-    ;
-    expr: LEVEL "top"
-      [ [ "def"; jal = V (LIST1 joinautomaton SEP "and"); "in";
-          e = expr LEVEL "top"->
-            <:expr< def $_list:jal$ in $e$ >> ] ]
-    ;
-    expr: LEVEL "apply"
-      [ [ "reply"; eo = V (OPT expr); "to"; ji = joinident ->
-            <:expr< reply $_opt:eo$ to $jid:ji$ >> ] ]
-    ;
-    expr: BEFORE ":="
-      [ [ "spawn"; e = SELF -> <:expr< spawn $e$ >> ] ]
-    ;
-    expr: LEVEL "&&"
-      [ [ e1 = SELF; "&"; e2 = SELF -> <:expr< $e1$ & $e2$ >> ] ]
-    ;
-    joinautomaton:
-      [ [ jcl = V (LIST1 joinclause SEP "or") ->
-            {MLast.jcLoc = loc; MLast.jcVal = jcl} ] ]
-    ;
-    joinclause:
-      [ [ jpl = V (LIST1 joinpattern SEP "&"); "="; e = expr ->
-            (loc, jpl, e) ] ]
-    ;
-    joinpattern:
-      [ [ ji = joinident; "("; op = V (OPT patt); ")" -> (loc, ji, op) ] ]
-    ;
-    joinident:
-      [ [ i = V LIDENT -> (loc, i) ] ]
-    ;
-  END;
-END;
-
 (* Main entry points *)
 
 EXTEND

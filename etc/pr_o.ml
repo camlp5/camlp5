@@ -1510,9 +1510,9 @@ EXTEND_PRINTER
         <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
         <:expr< let open $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
-        <:expr< try $_$ with [ $list:_$ ] >> | MLast.ExJdf _ _ _ |
-        <:expr< $_$ [@ $_attribute:_$] >> |
-        MLast.ExRpl _ _ _ | MLast.ExSpw _ _ | MLast.ExPar _ _ _ as z ->
+        <:expr< try $_$ with [ $list:_$ ] >> |
+        <:expr< $_$ [@ $_attribute:_$] >>
+          as z ->
           pprintf pc "@[<1>(%q)@]" expr z ""
       | z ->
           Ploc.raise (MLast.loc_of_expr z)
@@ -1993,56 +1993,6 @@ value option elem pc x =
   [ Some x -> elem pc x
   | None -> pprintf pc "" ]
 ;
-
-value joinpattern pc (loc, (_, ji), op) =
-  pprintf pc "%s (%p)" (Pcaml.unvala ji) (option patt) (Pcaml.unvala op)
-;
-value joinclause pc (loc, jpl, e) =
-   pprintf pc "@[%p =@]@;%p" (hlistl (amp_after joinpattern) joinpattern)
-     (Pcaml.unvala jpl) expr e
-;
-value joinautomaton pc jc =
-  horiz_vertic
-    (fun () ->
-       pprintf pc "%p" (hlist2 joinclause (or_before joinclause))
-         (Pcaml.unvala jc.MLast.jcVal))
-    (fun () ->
-       pprintf pc "%p" (vlist2 joinclause (or_before joinclause))
-         (Pcaml.unvala jc.MLast.jcVal))
-;
-
-EXTEND_PRINTER
-  pr_str_item:
-    [ [ <:str_item< def $list:jcl$ >> ->
-          pprintf pc "def %p"
-            (hlist2 joinautomaton (and_before joinautomaton)) jcl ] ]
-  ;
-  pr_expr: LEVEL "expr1"
-    [ [ <:expr< def $list:jcl$ in $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               pprintf pc "def %p in %p"
-                 (hlist2 joinautomaton (and_before joinautomaton)) jcl expr e)
-            (fun () ->
-               pprintf pc "@[<a>def %p@ in@]@ %p"
-                 (vlist2 joinautomaton (and_before joinautomaton)) jcl
-                 expr e) ] ]
-  ;
-  pr_expr: LEVEL "apply"
-    [ [ <:expr< reply $opt:eo$ to $s$ >> ->
-          pprintf pc "reply%p to %s" (option (space_before expr)) eo s ] ]
-  ;
-  pr_expr: BEFORE "assign"
-    [ [ <:expr< spawn $e$ >> ->
-          pprintf pc "spawn %p" next e ] ]
-  ;
-  pr_expr: LEVEL "and"
-    [ [ <:expr< $e1$ & $e2$ >> ->
-          horiz_vertic
-            (fun () -> pprintf pc "%p & %p" next e1 curr e2)
-            (fun () -> pprintf pc "%p &@ %p" next e1 curr e2) ] ]
-  ;
-END;
 
 (* main part *)
 
