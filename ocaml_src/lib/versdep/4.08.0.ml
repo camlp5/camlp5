@@ -231,7 +231,12 @@ let ocaml_ptype_variant ctl priv =
         (fun (c, tl, rto, loc, attrs) ->
            if rto <> None then raise Exit
            else
-             let tl = Pcstr_tuple tl in
+             let tl =
+               match tl with
+                 Left x -> Pcstr_tuple x
+               | Right (Ptype_record x) -> Pcstr_record x
+               | _ -> assert false
+             in
              {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
               pcd_loc = loc; pcd_attributes = attrs})
         ctl

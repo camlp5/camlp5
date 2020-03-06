@@ -597,10 +597,16 @@ and mkwithc =
 and mkvalue_desc ~item_attributes vn t p =
   ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
 and mktvariant loc ctl priv =
+  let sumbranch_ctyp l =
+    match l with
+      [TyRec (loc, ltl)] -> Right (mktrecord (uv ltl) priv)
+    | TyRec (_, _) :: _ -> error loc "only ONE record type allowed here"
+    | l -> Left (List.map ctyp l)
+  in
   let ctl =
     List.map
       (fun (loc, c, tl, rto, alg_attrs) ->
-         conv_con (uv c), List.map ctyp (uv tl), option_map ctyp rto,
+         conv_con (uv c), sumbranch_ctyp (uv tl), option_map ctyp rto,
          mkloc loc, alg_attributes alg_attrs)
       ctl
   in

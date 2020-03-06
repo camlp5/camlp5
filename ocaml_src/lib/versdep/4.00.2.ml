@@ -204,6 +204,11 @@ let ocaml_ptype_variant ctl priv =
     let ctl =
       List.map
         (fun (c, tl, rto, loc, attrs) ->
+           let tl =
+             match tl with
+               Left x -> x
+             | Right _ -> raise Exit
+           in
            if rto <> None || attrs <> [] then raise Exit
            else mknoloc c, tl, None, loc)
         ctl

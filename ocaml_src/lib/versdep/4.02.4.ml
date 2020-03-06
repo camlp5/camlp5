@@ -232,6 +232,11 @@ let ocaml_ptype_variant ctl priv =
            else
              begin
                assert (attrs = []);
+               let tl =
+                 match tl with
+                   Left x -> x
+                 | Right _ -> raise Exit
+               in
                {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
                 pcd_loc = loc; pcd_attributes = []}
              end)
