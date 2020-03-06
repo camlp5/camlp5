@@ -15,13 +15,13 @@
 #directory "../meta";;
 #directory "../main";;
 #directory "../etc";;
-(*
+
 #load "pa_o.cmo";;
 #load "pa_op.cmo";;
 #load "pr_o.cmo";;
 #load "pr_op.cmo";;
 Pcaml.inter_phrases := Some ";;\n";;
-*)
+
 (*
 #load "pa_r.cmo";;
 #load "pa_rp.cmo";;
@@ -51,10 +51,10 @@ Exparser.optim := false ;;
 open OUnit2 ;;
 open Testutil ;;
 open Testutil2 ;;
-
+(*
 #load "roundtrip_lexer.cmo";;
 open Roundtrip_lexer ;;
-
+*)
 
 (*
 #load "papr_matrix_test.cmo" ;;
