@@ -251,6 +251,56 @@ value check_let_not_exception =
     check_let_not_exception_f
 ;
 
+value stream_peek_nth n strm =
+  loop n (Stream.npeek n strm) where rec loop n =
+    fun
+    [ [] -> None
+    | [x] -> if n == 1 then Some x else None
+    | [_ :: l] -> loop (n - 1) l ]
+;
+
+(* returns True if the stream is a type-decl, and not an extension.
+   returns False if the stream is an extension and not a type-decl.
+   Since a type-decl might not have an "=" (if it's a list of decls)
+   the default is "type-decl".
+*)
+value is_type_decl_not_extension strm =
+  let rec wrec n =
+    match stream_peek_nth n strm with [
+      None -> assert False
+    | Some ("","=") -> True
+    | Some ("","+=") -> False
+    | Some ("EOI","") -> True
+    | Some (
+      ("","(") | ("",")") | ("","'") | ("",".") | ("","$") | ("",":")
+      | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
+      | ("ANTIQUOT",_)
+    ) -> wrec (n+1)
+    | Some (a,b) -> raise (Stream.Error (Printf.sprintf "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")" a b))
+ ]
+  in wrec 1
+;
+
+value check_type_decl_f strm =
+  if is_type_decl_not_extension strm then ()
+  else raise Stream.Failure
+;
+
+value check_type_decl =
+  Grammar.Entry.of_parser gram "check_type_decl"
+    check_type_decl_f
+;
+
+value check_type_extension_f strm =
+  if not (is_type_decl_not_extension strm) then ()
+  else raise Stream.Failure
+;
+
+value check_type_extension =
+  Grammar.Entry.of_parser gram "check_type_extension"
+    check_type_extension_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -258,7 +308,9 @@ EXTEND
     structure class_type class_expr class_sig_item class_str_item let_binding
     type_decl type_extension
     constructor_declaration label_declaration match_case ipatt
-    with_constr poly_variant attribute_body alg_attribute alg_attributes;
+    with_constr poly_variant attribute_body alg_attribute alg_attributes
+    check_type_decl check_type_extension
+    ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
     ] ]

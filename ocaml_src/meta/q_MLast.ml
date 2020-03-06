@@ -2594,7 +2594,10 @@ Grammar.safe_extend
               (Qast.Node ("SgVal", [Qast.Loc; i; t; attrs]) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_nterm
+                   (check_type_decl : 'check_type_decl Grammar.Entry.e)))
              (Grammar.s_facto
                 (Grammar.s_rules
                    [Grammar.production
@@ -2616,7 +2619,7 @@ Grammar.safe_extend
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
                            'e__71)))])),
-           (fun (tdl : 'e__71) _ (loc : Ploc.t) ->
+           (fun (tdl : 'e__71) _ _ (loc : Ploc.t) ->
               (Qast.Node ("SgTyp", [Qast.Loc; tdl]) : 'sig_item)));
         Grammar.production
           (Grammar.r_next

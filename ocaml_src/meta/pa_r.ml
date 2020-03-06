@@ -278,6 +278,58 @@ let check_let_not_exception =
     check_let_not_exception_f
 ;;
 
+let stream_peek_nth n strm =
+  let rec loop n =
+    function
+      [] -> None
+    | [x] -> if n == 1 then Some x else None
+    | _ :: l -> loop (n - 1) l
+  in
+  loop n (Stream.npeek n strm)
+;;
+
+(* returns True if the stream is a type-decl, and not an extension.
+   returns False if the stream is an extension and not a type-decl.
+   Since a type-decl might not have an "=" (if it's a list of decls)
+   the default is "type-decl".
+*)
+let is_type_decl_not_extension strm =
+  let rec wrec n =
+    match stream_peek_nth n strm with
+      None -> assert false
+    | Some ("", "=") -> true
+    | Some ("", "+=") -> false
+    | Some ("EOI", "") -> true
+    | Some
+        ("", "(" | "", ")" | "", "'" | "", "." | "", "$" | "", ":" |
+         "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
+        wrec (n + 1)
+    | Some (a, b) ->
+        raise
+          (Stream.Error
+             (Printf.sprintf
+                "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")"
+                a b))
+  in
+  wrec 1
+;;
+
+let check_type_decl_f strm =
+  if is_type_decl_not_extension strm then () else raise Stream.Failure
+;;
+
+let check_type_decl =
+  Grammar.Entry.of_parser gram "check_type_decl" check_type_decl_f
+;;
+
+let check_type_extension_f strm =
+  if not (is_type_decl_not_extension strm) then () else raise Stream.Failure
+;;
+
+let check_type_extension =
+  Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f
+;;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -307,7 +359,9 @@ Grammar.safe_extend
    and _ = (poly_variant : 'poly_variant Grammar.Entry.e)
    and _ = (attribute_body : 'attribute_body Grammar.Entry.e)
    and _ = (alg_attribute : 'alg_attribute Grammar.Entry.e)
-   and _ = (alg_attributes : 'alg_attributes Grammar.Entry.e) in
+   and _ = (alg_attributes : 'alg_attributes Grammar.Entry.e)
+   and _ = (check_type_decl : 'check_type_decl Grammar.Entry.e)
+   and _ = (check_type_extension : 'check_type_extension Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in

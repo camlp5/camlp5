@@ -563,7 +563,7 @@ EXTEND
       | "module"; "type"; i = SV ident "" ; attrs = item_attributes →
           Qast.Node "SgMtyAbs" [Qast.Loc; i; attrs]
       | "open"; i = SV mod_ident "list" "" ; attrs = item_attributes → Qast.Node "SgOpn" [Qast.Loc; i; attrs]
-      | "type"; tdl = SV (LIST1 type_decl SEP "and") →
+      | "type" ; check_type_decl ; tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "SgTyp" [Qast.Loc; tdl]
       | "value"; i = SV LIDENT; ":"; t = ctyp ; attrs = item_attributes →
           Qast.Node "SgVal" [Qast.Loc; i; t; attrs]
