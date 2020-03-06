@@ -180,7 +180,7 @@ value test_constr_decl =
        | _ -> raise Stream.Failure ])
 ;
 
-value stream_peek_nth n strm =
+value stream_peek_nth n (strm : Stream.t (string * string)) =
   loop n (Stream.npeek n strm) where rec loop n =
     fun
     [ [] -> None
@@ -370,14 +370,6 @@ value check_let_not_exception_f = (fun strm ->
 value check_let_not_exception =
   Grammar.Entry.of_parser gram "check_let_not_exception"
     check_let_not_exception_f
-;
-
-value stream_peek_nth n strm =
-  loop n (Stream.npeek n strm) where rec loop n =
-    fun
-    [ [] -> None
-    | [x] -> if n == 1 then Some x else None
-    | [_ :: l] -> loop (n - 1) l ]
 ;
 
 (* returns True if the stream is a type-decl, and not an extension.
@@ -622,6 +614,8 @@ EXTEND
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
       | "type"; check_type_decl; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_flag:nr$ $_list:tdl$ >>
+      | "type" ; check_type_extension ; te = type_extension →
+          <:str_item< type $_tp:te.teNam$ $_list:te.tePrm$ += $_priv:te.tePrv$ $te.teDef$ $_itemattrs:te.teAttributes$ >>
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
         let e = <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >> in
@@ -728,6 +722,8 @@ EXTEND
           <:sig_item< open $_:i$ >>
       | "type"; check_type_decl; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
+      | "type" ; check_type_extension ; te = type_extension →
+          <:sig_item< type $_tp:te.teNam$ $_list:te.tePrm$ += $_priv:te.tePrv$ $te.teDef$ $_itemattrs:te.teAttributes$ >>
       | "val"; attrs1 = alg_attributes_no_anti; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
@@ -1203,7 +1199,7 @@ EXTEND
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
     [ [ tpl = type_parameters; n = V mod_ident_patt "tp"; "+=";
-        pf = V (FLAG "private") "priv"; tk = ctyp;
+        pf = V (FLAG "private") "priv"; tk = type_kind;
         attrs = item_attributes →
 (*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
