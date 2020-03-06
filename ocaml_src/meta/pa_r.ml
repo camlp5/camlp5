@@ -42,6 +42,7 @@ Grammar.Unsafe.clear_entry ipatt;
 Grammar.Unsafe.clear_entry ctyp;
 Grammar.Unsafe.clear_entry let_binding;
 Grammar.Unsafe.clear_entry type_decl;
+Grammar.Unsafe.clear_entry type_extension;
 Grammar.Unsafe.clear_entry constructor_declaration;
 Grammar.Unsafe.clear_entry label_declaration;
 Grammar.Unsafe.clear_entry match_case;
@@ -296,6 +297,7 @@ Grammar.safe_extend
    and _ = (class_str_item : 'class_str_item Grammar.Entry.e)
    and _ = (let_binding : 'let_binding Grammar.Entry.e)
    and _ = (type_decl : 'type_decl Grammar.Entry.e)
+   and _ = (type_extension : 'type_extension Grammar.Entry.e)
    and _ =
      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
    and _ = (label_declaration : 'label_declaration Grammar.Entry.e)
@@ -367,6 +369,18 @@ Grammar.safe_extend
      grammar_entry_create "paren_ipatt"
    and label_ipatt : 'label_ipatt Grammar.Entry.e =
      grammar_entry_create "label_ipatt"
+   and mod_ident_patt : 'mod_ident_patt Grammar.Entry.e =
+     (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
+   (*
+     type_extension:
+       [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
+           pf = V (FLAG "private") "priv"; tk = ctyp;
+           attrs = item_attributes →
+             <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
+         ] ]
+     ;
+   *)
+     grammar_entry_create "mod_ident_patt"
    and type_patt : 'type_patt Grammar.Entry.e =
      grammar_entry_create "type_patt"
    and constrain : 'constrain Grammar.Entry.e =
@@ -3159,6 +3173,23 @@ Grammar.safe_extend
                 MLast.tdDef = tk; MLast.tdCon = cl;
                 MLast.tdAttributes = attrs} :
                'type_decl)))]];
+    (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
+  (*
+    type_extension:
+      [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
+          pf = V (FLAG "private") "priv"; tk = ctyp;
+          attrs = item_attributes →
+            <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
+        ] ]
+    ;
+  *)
+    Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)),
+           (fun (n : 'mod_ident) (loc : Ploc.t) ->
+              (loc, n : 'mod_ident_patt)))]];
     Grammar.extension (type_patt : 'type_patt Grammar.Entry.e) None
       [None, None,
        [Grammar.production

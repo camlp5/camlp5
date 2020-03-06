@@ -215,6 +215,12 @@ and type_decl =
     tdDef : ctyp;
     tdCon : V (list (ctyp * ctyp));
     tdAttributes: V (list (V (V string * payload))) }
+and type_extension =
+  { teNam : V (loc * V (list string));
+    tePrm : V (list type_var);
+    tePrv : V bool;
+    teDef : ctyp;
+    teAttributes: V (list (V (V string * payload))) }
 and class_type =
   [ CtAcc of loc and class_type and class_type
   | CtApp of loc and class_type and class_type

@@ -43,6 +43,7 @@ do {
   Grammar.Unsafe.clear_entry ctyp;
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_decl;
+  Grammar.Unsafe.clear_entry type_extension;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
@@ -255,7 +256,8 @@ value check_let_not_exception =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type module_expr signature
     structure class_type class_expr class_sig_item class_str_item let_binding
-    type_decl constructor_declaration label_declaration match_case ipatt
+    type_decl type_extension
+    constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant attribute_body alg_attribute alg_attributes;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
@@ -824,6 +826,19 @@ EXTEND
     [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter); "=";
         pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = item_attributes →
           <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
+  ;
+  (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
+(*
+  type_extension:
+    [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
+        pf = V (FLAG "private") "priv"; tk = ctyp;
+        attrs = item_attributes →
+          <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
+      ] ]
+  ;
+*)
+  mod_ident_patt:
+    [ [ n = V mod_ident → (loc, n) ] ]
   ;
   type_patt:
     [ [ n = V LIDENT → (loc, n) ] ]

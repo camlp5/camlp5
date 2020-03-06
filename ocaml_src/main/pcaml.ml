@@ -59,6 +59,7 @@ let ipatt = Grammar.Entry.create gram "ipatt";;
 let ctyp = Grammar.Entry.create gram "ctyp";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
 let type_decl = Grammar.Entry.create gram "type_declaration";;
+let type_extension = Grammar.Entry.create gram "type_extension";;
 let match_case = Grammar.Entry.create gram "match_case";;
 let constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration"

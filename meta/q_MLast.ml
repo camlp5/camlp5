@@ -156,6 +156,7 @@ value class_str_item = Grammar.Entry.create gram "class_str_item";
 value ipatt = Grammar.Entry.create gram "ipatt";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_decl = Grammar.Entry.create gram "type_decl";
+value type_extension = Grammar.Entry.create gram "type_extension";
 value match_case = Grammar.Entry.create gram "match_case";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";
@@ -295,13 +296,65 @@ value check_let_not_exception =
     check_let_not_exception_f
 ;
 
+value stream_peek_nth n strm =
+  loop n (Stream.npeek n strm) where rec loop n =
+    fun
+    [ [] -> None
+    | [x] -> if n == 1 then Some x else None
+    | [_ :: l] -> loop (n - 1) l ]
+;
+
+(* returns True if the stream is a type-decl, and not an extension.
+   returns False if the stream is an extension and not a type-decl.
+   Since a type-decl might not have an "=" (if it's a list of decls)
+   the default is "type-decl".
+*)
+value is_type_decl_not_extension strm =
+  let rec wrec n =
+    match stream_peek_nth n strm with [
+      None -> assert False
+    | Some ("","=") -> True
+    | Some ("","+=") -> False
+    | Some ("EOI","") -> True
+    | Some (
+      ("","(") | ("",")") | ("","'") | ("",".") | ("","$") | ("",":")
+      | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
+      | ("ANTIQUOT",_)
+    ) -> wrec (n+1)
+    | Some (a,b) -> raise (Stream.Error (Printf.sprintf "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")" a b))
+ ]
+  in wrec 1
+;
+
+value check_type_decl_f strm =
+  if is_type_decl_not_extension strm then ()
+  else raise Stream.Failure
+;
+
+value check_type_decl =
+  Grammar.Entry.of_parser gram "check_type_decl"
+    check_type_decl_f
+;
+
+value check_type_extension_f strm =
+  if not (is_type_decl_not_extension strm) then ()
+  else raise Stream.Failure
+;
+
+value check_type_extension =
+  Grammar.Entry.of_parser gram "check_type_extension"
+    check_type_extension_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
     module_expr signature structure class_type class_expr class_sig_item
-    class_str_item let_binding type_decl constructor_declaration
-    label_declaration match_case ipatt with_constr poly_variant attribute_body;
+    class_str_item let_binding type_decl type_extension constructor_declaration
+    label_declaration match_case ipatt with_constr poly_variant attribute_body
+    check_type_decl check_type_extension
+    ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> Qast.VaVal (Qast.Str (String.concat "." l))
     ] ]
@@ -416,7 +469,7 @@ EXTEND
           Qast.Node "StMtyAbs" [Qast.Loc; i; attrs]
       | "open"; ovf = SV (FLAG "!") "!"; me = module_expr ; attrs = item_attributes →
           Qast.Node "StOpn" [Qast.Loc; ovf; me; attrs]
-      | "type"; nrfl = SV (FLAG "nonrec");
+      | "type" ; check_type_decl ; nrfl = SV (FLAG "nonrec");
         tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "StTyp" [Qast.Loc; nrfl; tdl]
       | "value"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and") →
@@ -1054,6 +1107,19 @@ EXTEND
           Qast.Record
             [("tdNam", n); ("tdPrm", tpl); ("tdPrv", pf); ("tdDef", tk);
              ("tdCon", cl); ("tdAttributes", attrs)] ] ]
+  ;
+  (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
+  type_extension:
+    [ [ n = SV mod_ident_patt "tp"; tpl = SV (LIST0 type_parameter); "+=";
+        pf = SV (FLAG "private") "priv"; tk = ctyp;
+        attrs = item_attributes →
+          Qast.Record
+            [("teNam", n); ("tePrm", tpl); ("tePrv", pf); ("teDef", tk);
+             ("teAttributes", attrs)] ] ]
+  ;
+  (* why is this called what it's called? *)
+  mod_ident_patt:
+    [ [ n = SV mod_ident → Qast.Tuple [Qast.Loc; n] ] ]
   ;
   type_patt:
     [ [ n = SV LIDENT → Qast.Tuple [Qast.Loc; n] ] ]
@@ -1736,6 +1802,7 @@ let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
 let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
 let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
+let type_extension_eoi = Grammar.Entry.create gram "type_extension_eoi" in
 do {
   EXTEND
     attribute_body_eoi: [ [ x = attribute_body; EOI -> x ] ];
@@ -1753,6 +1820,7 @@ do {
     with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
     poly_variant_eoi: [ [ x = poly_variant; EOI -> x ] ];
     type_decl_eoi: [ [ x = type_decl; EOI -> x ] ];
+    type_extension_eoi: [ [ x = type_extension; EOI -> x ] ];
   END;
   List.iter (fun (q, f) -> Quotation.add q (f q))
     [("attribute_body", apply_entry attribute_body_eoi);
@@ -1769,7 +1837,8 @@ do {
      ("class_str_item", apply_entry class_str_item_eoi);
      ("with_constr", apply_entry with_constr_eoi);
      ("poly_variant", apply_entry poly_variant_eoi);
-     ("type_decl", apply_entry type_decl_eoi)];
+     ("type_decl", apply_entry type_decl_eoi);
+     ("type_extension", apply_entry type_extension_eoi)];
 };
 
 do {
