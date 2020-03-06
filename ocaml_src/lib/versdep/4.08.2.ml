@@ -145,9 +145,6 @@ let ocaml_pexp_unreachable () = assert false;;
 let ocaml_ptype_open () = assert false;;
 let ocaml_psig_typext _ = assert false;;
 let ocaml_pstr_typext _ = assert false;;
-let ocaml_type_extension ?(item_attributes = []) lo pathlid priv cstrs =
-  assert false
-;;
 let ocaml_pexp_letexception exdef body = assert false;;
 let ocaml_ppat_exception _ = assert false;;
 
@@ -173,6 +170,11 @@ let variance_of_bool_bool =
   | _ -> Invariant
 ;;
 
+
+let ocaml_type_extension ?(item_attributes = []) lo pathlid params priv
+    cstrs =
+  assert false
+;;
 let ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->

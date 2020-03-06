@@ -201,19 +201,6 @@ let ocaml_extension_exception loc s ed alg_attributes =
 ;;
 let ocaml_pexp_unreachable () = Pexp_unreachable;;
 let ocaml_ptype_open () = Ptype_open;;
-let ocaml_type_extension ?(item_attributes = []) loc pathlid priv cstrs =
-  let ecstrs =
-    List.map
-      (fun (s, ctyl) ->
-         {pext_name = mkloc loc s;
-          pext_kind = Pext_decl (Pcstr_tuple ctyl, None); pext_loc = loc;
-          pext_attributes = []})
-      cstrs
-  in
-  {ptyext_path = mkloc loc pathlid; ptyext_params = [];
-   ptyext_constructors = ecstrs; ptyext_private = priv; ptyext_loc = loc;
-   ptyext_attributes = item_attributes}
-;;
 let ocaml_pstr_typext ext = Pstr_typext ext;;
 let ocaml_psig_typext ext = Psig_typext ext;;
 let ocaml_pexp_letexception exdef body = Pexp_letexception (exdef, body);;
@@ -241,6 +228,34 @@ let variance_of_bool_bool =
   | _ -> Invariant
 ;;
 
+
+let ocaml_type_extension ?(item_attributes = []) loc pathlid params priv
+    (tk : type_kind) =
+  let ecstrs =
+    match tk with
+      Ptype_variant cdl ->
+        List.map
+          (fun cd ->
+             {pext_name = cd.pcd_name;
+              pext_kind = Pext_decl (cd.pcd_args, None);
+              pext_loc = cd.pcd_loc; pext_attributes = cd.pcd_attributes})
+          cdl
+    | _ -> failwith "only labeled variant types allowed in type-extension"
+  in
+  let params =
+    List.map
+      (fun (os, va) ->
+         let s =
+           mustSome
+             "ocaml_type_extension: blank type-params ('_') not allowed" os
+         in
+         ocaml_mktyp loc (Ptyp_var s), variance_of_bool_bool va)
+      params
+  in
+  {ptyext_path = mkloc loc pathlid; ptyext_params = params;
+   ptyext_constructors = ecstrs; ptyext_private = priv; ptyext_loc = loc;
+   ptyext_attributes = item_attributes}
+;;
 let ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
   match list_map_check (fun s_opt -> s_opt) params with
     Some params ->
