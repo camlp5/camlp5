@@ -366,13 +366,12 @@ let is_type_decl_not_extension strm =
   let rec wrec n =
     match stream_peek_nth n strm with
       None -> assert false
-    | Some ("", "=") -> true
-    | Some ("", "+=") -> false
+    | Some ("", "=" | "", "end" | "", "rec" | "", "nonrec") -> true
     | Some ("EOI", "") -> true
+    | Some ("", "+=") -> false
     | Some
         ("", "(" | "", ")" | "", "'" | "", "." | "", "$" | "", ":" |
-         "", "rec" | "", "nonrec" | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ |
-         "ANTIQUOT", _) ->
+         "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
         wrec (n + 1)
     | Some (a, b) ->
         raise
@@ -1946,7 +1945,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 458, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 462, 20))
                in
                Qast.Node
                  ("StExc", [Qast.Loc; c; tl; b; alg_attrs; item_attrs]) :
@@ -2987,7 +2986,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 552, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 556, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));

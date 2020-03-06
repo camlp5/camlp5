@@ -38,6 +38,7 @@ do {
   Grammar.Unsafe.clear_entry ctyp;
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_decl;
+  Grammar.Unsafe.clear_entry type_extension;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
@@ -371,6 +372,61 @@ value check_let_not_exception =
     check_let_not_exception_f
 ;
 
+value stream_peek_nth n strm =
+  loop n (Stream.npeek n strm) where rec loop n =
+    fun
+    [ [] -> None
+    | [x] -> if n == 1 then Some x else None
+    | [_ :: l] -> loop (n - 1) l ]
+;
+
+(* returns True if the stream is a type-decl, and not an extension.
+   returns False if the stream is an extension and not a type-decl.
+   Since a type-decl might not have an "=" (if it's a list of decls)
+   the default is "type-decl".
+*)
+value is_type_decl_not_extension strm =
+  let rec wrec n =
+    match stream_peek_nth n strm with [
+      None -> assert False
+    | Some (
+        ("","=")
+      | ("","end")
+      | ("","rec") 
+      | ("","nonrec")
+      ) -> True
+    | Some ("EOI","") -> True
+    | Some ("","+=") -> False
+    | Some (
+      ("","(") | ("",")") | ("","'") | ("",".") | ("","$") | ("",":")
+      | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
+      | ("ANTIQUOT",_)
+    ) -> wrec (n+1)
+    | Some (a,b) -> raise (Stream.Error (Printf.sprintf "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")" a b))
+ ]
+  in wrec 1
+;
+
+value check_type_decl_f strm =
+  if is_type_decl_not_extension strm then ()
+  else raise Stream.Failure
+;
+
+value check_type_decl =
+  Grammar.Entry.of_parser gram "check_type_decl"
+    check_type_decl_f
+;
+
+value check_type_extension_f strm =
+  if not (is_type_decl_not_extension strm) then ()
+  else raise Stream.Failure
+;
+
+value check_type_extension =
+  Grammar.Entry.of_parser gram "check_type_extension"
+    check_type_extension_f
+;
+
 value check_module_alias_f = (fun strm ->
        match Stream.npeek 3 strm with
        [ [("", "module"); ("UIDENT", _); ("", "=")] -> ()
@@ -415,7 +471,7 @@ value merge_right_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} lef
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
-    let_binding type_decl constructor_declaration label_declaration
+    let_binding type_decl type_extension constructor_declaration label_declaration
     match_case with_constr poly_variant lbl_expr lbl_expr_list
     attribute_body alg_attribute alg_attributes
     ;
@@ -564,7 +620,7 @@ EXTEND
           <:str_item< module type $_:i$ $_itemattrs:attrs$ >>
       | "open"; ovf = V (FLAG "!") "!"; me = module_expr ; attrs = item_attributes ->
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
-      | "type"; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
+      | "type"; check_type_decl; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_flag:nr$ $_list:tdl$ >>
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
@@ -670,7 +726,7 @@ EXTEND
 
       | "open"; i = V mod_ident "list" "" ->
           <:sig_item< open $_:i$ >>
-      | "type"; tdl = V (LIST1 type_decl SEP "and") ->
+      | "type"; check_type_decl; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
       | "val"; attrs1 = alg_attributes_no_anti; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
@@ -1143,6 +1199,20 @@ EXTEND
       | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; attrs = item_attributes ->
           let tk = <:ctyp< '$choose_tvar tpl$ >> in
           <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
+  ;
+  (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
+  type_extension:
+    [ [ tpl = type_parameters; n = V mod_ident_patt "tp"; "+=";
+        pf = V (FLAG "private") "priv"; tk = ctyp;
+        attrs = item_attributes →
+(*
+          <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
+*)
+          {teNam=n; tePrm= <:vala< tpl >>; tePrv=pf; teDef=tk; teAttributes=attrs}
+      ] ]
+  ;
+  mod_ident_patt:
+    [ [ n = V mod_ident → (loc, n) ] ]
   ;
   type_patt:
     [ [ n = V LIDENT -> (loc, n) ] ]

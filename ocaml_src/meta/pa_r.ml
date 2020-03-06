@@ -297,13 +297,12 @@ let is_type_decl_not_extension strm =
   let rec wrec n =
     match stream_peek_nth n strm with
       None -> assert false
-    | Some ("", "=") -> true
-    | Some ("", "+=") -> false
+    | Some ("", "=" | "", "end" | "", "rec" | "", "nonrec") -> true
     | Some ("EOI", "") -> true
+    | Some ("", "+=") -> false
     | Some
         ("", "(" | "", ")" | "", "'" | "", "." | "", "$" | "", ":" |
-         "", "rec" | "", "nonrec" | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ |
-         "ANTIQUOT", _) ->
+         "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
         wrec (n + 1)
     | Some (a, b) ->
         raise
