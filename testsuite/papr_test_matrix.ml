@@ -1151,7 +1151,7 @@ and t2 = bool[@@foo];
      r_output = OK {foo|.;
 |foo}
     };
-    {name="inline-record-types"; implem = True ;
+    {name="inline-record-types1"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t = A of { a : int }|foo} ;
      official_input = OK {foo|type t = A of { a : int }|foo} ;
@@ -1159,9 +1159,32 @@ and t2 = bool[@@foo];
      o_output = OK {foo|type t =
     A of { a : int };;
 |foo};
-     official_output = OK {foo|type t = A of { a : int }|foo} ;
+     official_output = OK {foo|type t =
+  | A of {
+  a: int } |foo} ;
      r_output = OK {foo|type t =
   [ A of { a : int } ];
+|foo}
+    };
+    {name="inline-record-types2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = A of int * string | B of { a : int } | C of bool|foo} ;
+     official_input = OK {foo|type t = A of int * string | B of { a : int } | C of bool|foo} ;
+     r_input = OK {foo|type t = [ A of int and string | B of { a : int } | C of bool ];|foo} ;
+     o_output = OK {foo|type t =
+    A of int * string
+  | B of { a : int }
+  | C of bool;;
+|foo};
+     official_output = OK {foo|type t =
+  | A of int * string 
+  | B of {
+  a: int } 
+  | C of bool |foo} ;
+     r_output = OK {foo|type t =
+  [ A of int and string
+  | B of { a : int }
+  | C of bool ];
 |foo}
     }
 ]
