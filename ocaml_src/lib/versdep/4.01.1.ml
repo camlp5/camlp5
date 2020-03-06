@@ -22,6 +22,12 @@ let mustSome symbol =
   | None -> failwith ("Some: " ^ symbol)
 ;;
 
+let mustLeft symbol =
+  function
+    Left x -> x
+  | Right _ -> failwith ("choice: " ^ symbol)
+;;
+
 let ocaml_name = "ocaml";;
 
 let sys_ocaml_version = Sys.ocaml_version;;
@@ -415,6 +421,7 @@ let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
   assert (alg_attributes = []);
   assert (item_attributes = []);
+  let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
   Psig_exception (mkloc loc s, ed)
 ;;
 
@@ -471,6 +478,7 @@ let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
   assert (alg_attributes = []);
   assert (item_attributes = []);
+  let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
   Pstr_exception (mkloc loc s, ed)
 ;;
 

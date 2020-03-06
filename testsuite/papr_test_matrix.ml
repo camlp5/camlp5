@@ -1186,6 +1186,18 @@ and t2 = bool[@@foo];
   | B of { a : int }
   | C of bool ];
 |foo}
+    };
+    {name="exception-record-type"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|exception E of { a : int }|foo} ;
+     official_input = OK {foo|exception E of { a : int }|foo} ;
+     r_input = OK {foo|exception E of { a : int };|foo} ;
+     o_output = OK {foo|exception E of { a : int };;
+|foo};
+     official_output = OK {foo|exception E of {
+  a: int } |foo} ;
+     r_output = OK {foo|exception E of { a : int };
+|foo}
     }
 ]
 ;

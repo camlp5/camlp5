@@ -596,18 +596,17 @@ and mkwithc =
       | None -> error loc "no with type := in this ocaml version"
 and mkvalue_desc ~item_attributes vn t p =
   ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
+and sumbranch_ctyp ?(priv = false) loc l =
+  match l with
+    [TyRec (loc, ltl)] -> Right (mktrecord (uv ltl) priv)
+  | TyRec (_, _) :: _ -> error loc "only ONE record type allowed here"
+  | l -> Left (List.map ctyp l)
 and mktvariant loc ctl priv =
-  let sumbranch_ctyp l =
-    match l with
-      [TyRec (loc, ltl)] -> Right (mktrecord (uv ltl) priv)
-    | TyRec (_, _) :: _ -> error loc "only ONE record type allowed here"
-    | l -> Left (List.map ctyp l)
-  in
   let ctl =
     List.map
       (fun (loc, c, tl, rto, alg_attrs) ->
-         conv_con (uv c), sumbranch_ctyp (uv tl), option_map ctyp rto,
-         mkloc loc, alg_attributes alg_attrs)
+         conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tl),
+         option_map ctyp rto, mkloc loc, alg_attributes alg_attrs)
       ctl
   in
   match ocaml_ptype_variant ctl priv with
@@ -1399,9 +1398,10 @@ and sig_item s l =
   | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
   | SgExc (loc, n, tl, alg_attrs, item_attrs) ->
+      let tl = sumbranch_ctyp loc (uv tl) in
       mksig loc
         (ocaml_psig_exception ~alg_attributes:(alg_attributes alg_attrs)
-           (mkloc loc) (uv n) (List.map ctyp (uv tl))) ::
+           (mkloc loc) (uv n) tl) ::
       l
   | SgExt (loc, n, t, p, attrs) ->
       let vn = uv n in
@@ -1557,9 +1557,10 @@ and str_item s l =
       let si =
         match uv tl, uv sl with
           tl, [] ->
+            let tl = sumbranch_ctyp loc tl in
             ocaml_pstr_exception ~alg_attributes:(alg_attributes alg_attrs)
               ~item_attributes:(item_attributes item_attrs) (mkloc loc) (uv n)
-              (List.map ctyp tl)
+              tl
         | [], sl ->
             begin match ocaml_pstr_exn_rebind with
               Some pstr_exn_rebind ->

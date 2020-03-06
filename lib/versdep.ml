@@ -23,6 +23,12 @@ value mustSome symbol = fun [
 ]
 ;
 
+value mustLeft symbol = fun [
+  Left x -> x
+| Right _ -> failwith ("choice: "^symbol)
+]
+;
+
 value ocaml_name = "ocaml";
 
 value sys_ocaml_version =
@@ -1037,10 +1043,12 @@ value ocaml_psig_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
+         let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
          Psig_exception (mkloc loc s) ed }
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
+      let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
       Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
@@ -1048,15 +1056,21 @@ value ocaml_psig_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     do { assert (item_attributes = []) ;
          assert (alg_attributes = []) ;
+    let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
     }
   ELSE
+    let ed = match ed with [
+      Left x -> Pcstr_tuple x
+    | Right (Ptype_record x) -> Pcstr_record x
+    | _ -> assert False
+    ] in
     Psig_exception
       {ptyexn_constructor =
          {pext_name = mkloc loc s;
-          pext_kind = Pext_decl (Pcstr_tuple ed) None;
+          pext_kind = Pext_decl ed None;
           pext_loc = loc; pext_attributes = alg_attributes};
        ptyexn_attributes = item_attributes;
        ptyexn_loc = loc}
@@ -1209,11 +1223,13 @@ value ocaml_pstr_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
+    let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
     Pstr_exception (mkloc loc s) ed
     }
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
+    let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
@@ -1221,15 +1237,21 @@ value ocaml_pstr_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
+    let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
     }
   ELSE
+    let ed = match ed with [
+      Left x -> Pcstr_tuple x
+    | Right (Ptype_record x) -> Pcstr_record x
+    | _ -> assert False
+    ] in
     Pstr_exception
       {ptyexn_constructor =
          {pext_name = mkloc loc s;
-          pext_kind = Pext_decl (Pcstr_tuple ed) None;
+          pext_kind = Pext_decl ed None;
           pext_loc = loc; pext_attributes = alg_attributes};
        ptyexn_attributes = item_attributes;
        ptyexn_loc = loc}

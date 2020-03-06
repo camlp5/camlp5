@@ -22,6 +22,12 @@ let mustSome symbol =
   | None -> failwith ("Some: " ^ symbol)
 ;;
 
+let mustLeft symbol =
+  function
+    Left x -> x
+  | Right _ -> failwith ("choice: " ^ symbol)
+;;
+
 let ocaml_name = "ocaml";;
 
 let sys_ocaml_version = Sys.ocaml_version;;
@@ -556,9 +562,15 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
+  let ed =
+    match ed with
+      Left x -> Pcstr_tuple x
+    | Right (Ptype_record x) -> Pcstr_record x
+    | _ -> assert false
+  in
   Psig_exception
     {ptyexn_constructor =
-      {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
+      {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
        pext_loc = loc; pext_attributes = alg_attributes};
      ptyexn_attributes = item_attributes; ptyexn_loc = loc}
 ;;
@@ -616,9 +628,15 @@ let ocaml_pstr_eval ?(item_attributes = []) e =
 
 let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
+  let ed =
+    match ed with
+      Left x -> Pcstr_tuple x
+    | Right (Ptype_record x) -> Pcstr_record x
+    | _ -> assert false
+  in
   Pstr_exception
     {ptyexn_constructor =
-      {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
+      {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
        pext_loc = loc; pext_attributes = alg_attributes};
      ptyexn_attributes = item_attributes; ptyexn_loc = loc}
 ;;
