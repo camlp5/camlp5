@@ -770,6 +770,34 @@ value type_constraint pc (t1, t2) =
   pprintf pc " constraint %p =@;%p" ctyp t1 ctyp t2
 ;
 
+value type_extension pc te =
+  let ((_, tn), tp, pf, te, attrs) =
+    (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
+     te.MLast.teDef, te.MLast.teAttributes)
+  in
+  let loc = MLast.loc_of_ctyp te in
+  horiz_vertic
+    (fun () ->
+       pprintf pc "%p%s%p += %s%p%p" mod_ident (loc, Pcaml.unvala tn)
+         (if Pcaml.unvala tp = [] then "" else " ")
+         (hlist type_var) (Pcaml.unvala tp)
+         (if pf then "private " else "") ctyp te
+        (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
+    (fun () ->
+       if pc.aft = "" then
+         pprintf pc "%p%s%p +=@;%s%p%p" mod_ident (loc, Pcaml.unvala tn)
+           (if Pcaml.unvala tp = [] then "" else " ")
+           (hlist type_var) (Pcaml.unvala tp)
+           (if pf then "private " else "") ctyp te
+           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+       else
+         pprintf pc "@[<a>%p%s%p +=@;%s%p%p@ @]" mod_ident
+           (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
+           (hlist type_var) (Pcaml.unvala tp)
+           (if pf then "private " else "") ctyp te
+           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
+;
+
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl, attrs) =
     (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
@@ -1862,6 +1890,8 @@ EXTEND_PRINTER
       | <:str_item< type $flag:nonrf$ $list:tdl$ >> ->
           pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl
+      | MLast.StTypExten _ te ->
+          pprintf pc "type %p" type_extension te
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->

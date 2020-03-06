@@ -1203,10 +1203,15 @@ and t2 = bool[@@foo];
      exclude=[];
      o_input = OK {foo|type t += A of int|foo} ;
      official_input = OK {foo|type t += A of int|foo} ;
-     r_input = OK {foo|type t += [ A of int ]|foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     r_input = OK {foo|type t += [ A of int ];|foo} ;
+     o_output = OK {foo|type t +=
+    A of int;;
+|foo};
+     official_output = OK {foo|type t +=  
+  | A of int |foo} ;
+     r_output = OK {foo|type t +=
+  [ A of int ];
+|foo}
     }
 ]
 ;

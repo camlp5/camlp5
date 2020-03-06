@@ -564,6 +564,37 @@ value type_decl pc td =
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)) ]
 ;
 
+value type_extension pc te =
+  let ((_, tn), tp, pf, te,attrs) =
+    (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
+     te.MLast.teDef, te.MLast.teAttributes)
+  in
+      let loc = MLast.loc_of_ctyp te in
+      if pc.aft = "" then
+        pprintf pc "%p%p +=@;%s%p%p"
+          type_params (loc, Pcaml.unvala tp)
+          mod_ident (loc, Pcaml.unvala tn)
+          (if pf then "private " else "")
+          ctyp te
+        (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+      else
+        horiz_vertic
+          (fun () ->
+             pprintf pc "%p%p += %s%p%p"
+               type_params (loc, Pcaml.unvala tp)
+               mod_ident (loc, Pcaml.unvala tn)
+               (if pf then "private " else "")
+               ctyp te
+               (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
+          (fun () ->
+             pprintf pc "@[<a>%p%p +=@;%s%p%p@ @]"
+               type_params
+               (loc, Pcaml.unvala tp) mod_ident (loc, Pcaml.unvala tn)
+               (if pf then "private " else "")
+               ctyp te 
+               (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
+;
+
 value label_decl pc (_, l, m, t, attrs) =
   pprintf pc "%s%s :@;%p%p" (if m then "mutable " else "") l ctyp_below_alg_attribute t
   (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
@@ -1766,6 +1797,8 @@ EXTEND_PRINTER
       | <:str_item:< type $flag:nonrf$ $list:tdl$ >> ->
           pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl
+      | MLast.StTypExten _ te ->
+          pprintf pc "type %p" type_extension te
       | <:str_item:< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
