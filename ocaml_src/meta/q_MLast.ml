@@ -371,7 +371,8 @@ let is_type_decl_not_extension strm =
     | Some ("EOI", "") -> true
     | Some
         ("", "(" | "", ")" | "", "'" | "", "." | "", "$" | "", ":" |
-         "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
+         "", "rec" | "", "nonrec" | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ |
+         "ANTIQUOT", _) ->
         wrec (n + 1)
     | Some (a, b) ->
         raise
@@ -1613,6 +1614,17 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_nterm
+                   (check_type_extension :
+                    'check_type_extension Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (type_extension : 'type_extension Grammar.Entry.e)),
+           (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
+              (Qast.Node ("StTypExten", [Qast.Loc; te]) : 'str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "type")))
@@ -1934,7 +1946,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 457, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 458, 20))
                in
                Qast.Node
                  ("StExc", [Qast.Loc; c; tl; b; alg_attrs; item_attrs]) :
@@ -2597,6 +2609,17 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
                 (Grammar.s_nterm
+                   (check_type_extension :
+                    'check_type_extension Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (type_extension : 'type_extension Grammar.Entry.e)),
+           (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
+              (Qast.Node ("SgTypExten", [Qast.Loc; te]) : 'sig_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_nterm
                    (check_type_decl : 'check_type_decl Grammar.Entry.e)))
              (Grammar.s_facto
                 (Grammar.s_rules
@@ -2964,7 +2987,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 549, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 552, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));

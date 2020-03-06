@@ -318,6 +318,7 @@ value is_type_decl_not_extension strm =
     | Some ("EOI","") -> True
     | Some (
       ("","(") | ("",")") | ("","'") | ("",".") | ("","$") | ("",":")
+      | ("","rec") | ("","nonrec")
       | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
       | ("ANTIQUOT",_)
     ) -> wrec (n+1)
@@ -472,6 +473,8 @@ EXTEND
       | "type" ; check_type_decl ; nrfl = SV (FLAG "nonrec");
         tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "StTyp" [Qast.Loc; nrfl; tdl]
+      | "type" ; check_type_extension ; te = type_extension →
+          Qast.Node "StTypExten" [Qast.Loc; te]
       | "value"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and") →
           Qast.Node "StVal" [Qast.Loc; r; l]
       | "#"; n = SV LIDENT; dp = SV (OPT expr) →
@@ -565,6 +568,8 @@ EXTEND
       | "open"; i = SV mod_ident "list" "" ; attrs = item_attributes → Qast.Node "SgOpn" [Qast.Loc; i; attrs]
       | "type" ; check_type_decl ; tdl = SV (LIST1 type_decl SEP "and") →
           Qast.Node "SgTyp" [Qast.Loc; tdl]
+      | "type" ; check_type_extension ; te = type_extension →
+          Qast.Node "SgTypExten" [Qast.Loc; te]
       | "value"; i = SV LIDENT; ":"; t = ctyp ; attrs = item_attributes →
           Qast.Node "SgVal" [Qast.Loc; i; t; attrs]
       | "#"; n = SV LIDENT; dp = SV (OPT expr) →

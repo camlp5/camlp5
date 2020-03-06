@@ -273,6 +273,7 @@ value is_type_decl_not_extension strm =
     | Some ("EOI","") -> True
     | Some (
       ("","(") | ("",")") | ("","'") | ("",".") | ("","$") | ("",":")
+      | ("","rec") | ("","nonrec")
       | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
       | ("ANTIQUOT",_)
     ) -> wrec (n+1)
@@ -423,8 +424,10 @@ EXTEND
           <:str_item< module type $_:i$ $_itemattrs:attrs$ >>
       | "open"; ovf = V (FLAG "!") "!"; me = module_expr; attrs = item_attributes ->
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
-      | "type"; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
+      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
           <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
+      | "type" ; check_type_extension ; te = type_extension →
+          <:str_item< type $_tp:te.teNam$ $_list:te.tePrm$ += $_priv:te.tePrv$ $te.teDef$ $_itemattrs:te.teAttributes$ >>
       | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           <:str_item< value $_flag:r$ $_list:l$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
@@ -508,8 +511,10 @@ EXTEND
       | "module"; "alias"; i = V UIDENT; "="; li = V mod_ident "list" "" ; attrs = item_attributes →
           <:sig_item< module alias $_:i$ = $_:li$ $_itemattrs:attrs$ >>
       | "open"; i = V mod_ident "list" "" ; attrs = item_attributes → <:sig_item< open $_:i$ $_itemattrs:attrs$ >>
-      | "type"; tdl = V (LIST1 type_decl SEP "and") →
+      | "type"; check_type_decl ; tdl = V (LIST1 type_decl SEP "and") →
           <:sig_item< type $_list:tdl$ >>
+      | "type" ; check_type_extension ; te = type_extension →
+          <:sig_item< type $_tp:te.teNam$ $_list:te.tePrm$ += $_priv:te.tePrv$ $te.teDef$ $_itemattrs:te.teAttributes$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
       | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes →
@@ -880,15 +885,16 @@ EXTEND
           <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
   ;
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
-(*
   type_extension:
     [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
         pf = V (FLAG "private") "priv"; tk = ctyp;
         attrs = item_attributes →
+(*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
+*)
+          {teNam=n; tePrm=tpl; tePrv=pf; teDef=tk; teAttributes=attrs}
       ] ]
   ;
-*)
   mod_ident_patt:
     [ [ n = V mod_ident → (loc, n) ] ]
   ;

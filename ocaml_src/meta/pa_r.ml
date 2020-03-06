@@ -302,7 +302,8 @@ let is_type_decl_not_extension strm =
     | Some ("EOI", "") -> true
     | Some
         ("", "(" | "", ")" | "", "'" | "", "." | "", "$" | "", ":" |
-         "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
+         "", "rec" | "", "nonrec" | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ |
+         "ANTIQUOT", _) ->
         wrec (n + 1)
     | Some (a, b) ->
         raise
@@ -424,16 +425,6 @@ Grammar.safe_extend
    and label_ipatt : 'label_ipatt Grammar.Entry.e =
      grammar_entry_create "label_ipatt"
    and mod_ident_patt : 'mod_ident_patt Grammar.Entry.e =
-     (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
-   (*
-     type_extension:
-       [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
-           pf = V (FLAG "private") "priv"; tk = ctyp;
-           attrs = item_attributes →
-             <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
-         ] ]
-     ;
-   *)
      grammar_entry_create "mod_ident_patt"
    and type_patt : 'type_patt Grammar.Entry.e =
      grammar_entry_create "type_patt"
@@ -925,11 +916,31 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_nterm
+                   (check_type_extension :
+                    'check_type_extension Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (type_extension : 'type_extension Grammar.Entry.e)),
+           (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
+              (MLast.StTypExten
+                 (loc,
+                  {MLast.teNam = te.teNam; MLast.tePrm = te.tePrm;
+                   MLast.tePrv = te.tePrv; MLast.teDef = te.teDef;
+                   MLast.teAttributes = te.teAttributes}) :
+               'str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "type")))
+                   (Grammar.s_nterm
+                      (check_type_decl : 'check_type_decl Grammar.Entry.e)))
                 (Grammar.s_flag (Grammar.s_token ("", "nonrec"))))
              (Grammar.s_list1sep
                 (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
-           (fun (tdl : 'type_decl list) (nrfl : bool) _ (loc : Ploc.t) ->
+           (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
               (MLast.StTyp (loc, nrfl, tdl) : 'str_item)));
         Grammar.production
           (Grammar.r_next
@@ -1334,11 +1345,30 @@ Grammar.safe_extend
               (MLast.SgVal (loc, i, t, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_nterm
+                   (check_type_extension :
+                    'check_type_extension Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (type_extension : 'type_extension Grammar.Entry.e)),
+           (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
+              (MLast.SgTypExten
+                 (loc,
+                  {MLast.teNam = te.teNam; MLast.tePrm = te.tePrm;
+                   MLast.tePrv = te.tePrv; MLast.teDef = te.teDef;
+                   MLast.teAttributes = te.teAttributes}) :
+               'sig_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
+                (Grammar.s_nterm
+                   (check_type_decl : 'check_type_decl Grammar.Entry.e)))
              (Grammar.s_list1sep
                 (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
-           (fun (tdl : 'type_decl list) _ (loc : Ploc.t) ->
+           (fun (tdl : 'type_decl list) _ _ (loc : Ploc.t) ->
               (MLast.SgTyp (loc, tdl) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
@@ -3228,15 +3258,33 @@ Grammar.safe_extend
                 MLast.tdAttributes = attrs} :
                'type_decl)))]];
     (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
-  (*
-    type_extension:
-      [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
-          pf = V (FLAG "private") "priv"; tk = ctyp;
-          attrs = item_attributes →
-            <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
-        ] ]
-    ;
-  *)
+    Grammar.extension (type_extension : 'type_extension Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_nterm
+                               (mod_ident_patt :
+                                'mod_ident_patt Grammar.Entry.e)))
+                         (Grammar.s_list0
+                            (Grammar.s_nterm
+                               (type_parameter :
+                                'type_parameter Grammar.Entry.e))))
+                      (Grammar.s_token ("", "+=")))
+                   (Grammar.s_flag (Grammar.s_token ("", "private"))))
+                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (tk : 'ctyp) (pf : bool) _
+                (tpl : 'type_parameter list) (n : 'mod_ident_patt)
+                (loc : Ploc.t) ->
+              ({teNam = n; tePrm = tpl; tePrv = pf; teDef = tk;
+                teAttributes = attrs} :
+               'type_extension)))]];
     Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
