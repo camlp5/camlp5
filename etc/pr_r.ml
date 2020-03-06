@@ -1955,6 +1955,8 @@ EXTEND_PRINTER
           pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
+      | MLast.SgTypExten _ te ->
+          pprintf pc "type %p" type_extension te
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_operator s ->
           pprintf pc "value ( %s ) :@;%p%p" s ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->

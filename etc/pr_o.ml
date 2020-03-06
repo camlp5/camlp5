@@ -1860,6 +1860,8 @@ EXTEND_PRINTER
       | <:sig_item:< type $list:tdl$ >> ->
           pprintf pc "type %p"
             (vlist2 type_decl (and_before type_decl)) tdl
+      | MLast.SgTypExten _ te ->
+          pprintf pc "type %p" type_extension te
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
           pprintf pc "val %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->

@@ -1199,7 +1199,21 @@ and t2 = bool[@@foo];
      r_output = OK {foo|exception E of { a : int };
 |foo}
     };
-    {name="type-extension1"; implem = True ;
+    {name="type-extension-str-item1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t += A of int|foo} ;
+     official_input = OK {foo|type t += A of int|foo} ;
+     r_input = OK {foo|type t += [ A of int ];|foo} ;
+     o_output = OK {foo|type t +=
+    A of int;;
+|foo};
+     official_output = OK {foo|type t +=  
+  | A of int |foo} ;
+     r_output = OK {foo|type t +=
+  [ A of int ];
+|foo}
+    };
+    {name="type-extension-sig-item1"; implem = False ;
      exclude=[];
      o_input = OK {foo|type t += A of int|foo} ;
      official_input = OK {foo|type t += A of int|foo} ;
