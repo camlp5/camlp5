@@ -373,6 +373,7 @@ module Meta_make (C : MetaSig) =
           let attrs = assert false in
           C.node "SgOpn" [C.vala (C.list C.string) ls; attrs]
       | SgTyp (_, ltd) -> C.node "SgTyp" [C.vala (C.list type_decl) ltd]
+      | SgTypExten (_, te) -> C.node "SgTypExten" [type_extension te]
       | SgUse (_, s, lsil) ->
           C.node "SgUse"
             [C.vala C.string s;
@@ -470,6 +471,7 @@ module Meta_make (C : MetaSig) =
           C.node "StOpn" [C.vala C.bool b1; module_expr me; attrs]
       | StTyp (_, b, ltd) ->
           C.node "StTyp" [C.vala C.bool b; C.vala (C.list type_decl) ltd]
+      | StTypExten (_, te) -> C.node "StTypExten" [type_extension te]
       | StUse (_, s, lsil) ->
           C.node "StUse"
             [C.vala C.string s;
@@ -491,6 +493,7 @@ module Meta_make (C : MetaSig) =
       | StExten (loc, exten) ->
           let exten = assert false in C.node "StExten" [exten]
     and type_decl x =
+      let attrs = assert false in
       C.record
         [record_label "tdNam",
          C.vala (fun (_, s) -> C.tuple [C.loc_v (); C.vala C.string s])
@@ -499,7 +502,19 @@ module Meta_make (C : MetaSig) =
          record_label "tdPrv", C.vala C.bool x.tdPrv;
          record_label "tdDef", ctyp x.tdDef;
          record_label "tdCon",
-         C.vala (C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2])) x.tdCon]
+         C.vala (C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2])) x.tdCon;
+         record_label "tdAttributes", attrs]
+    and type_extension x =
+      let attrs = assert false in
+      C.record
+        [record_label "teNam",
+         C.vala
+           (fun (_, s) -> C.tuple [C.loc_v (); C.vala (C.list C.string) s])
+           x.teNam;
+         record_label "tePrm", C.vala (C.list type_var) x.tePrm;
+         record_label "tePrv", C.vala C.bool x.tePrv;
+         record_label "teDef", ctyp x.teDef;
+         record_label "teAttributes", attrs]
     and class_type =
       function
         CtAtt (_, e, att) -> assert false

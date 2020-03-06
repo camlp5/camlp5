@@ -471,6 +471,9 @@ and sig_item floc sh =
     | SgTyp loc x1 →
         let loc = floc loc in
         SgTyp loc (vala_map (List.map (type_decl floc sh)) x1)
+    | SgTypExten loc x1 →
+        let loc = floc loc in
+        SgTypExten loc (type_extension floc sh x1)
     | SgUse loc x1 x2 →
         let loc = floc loc in
         SgUse loc x1
@@ -576,6 +579,9 @@ and str_item floc sh =
     | StTyp loc x1 x2 →
         let loc = floc loc in
         StTyp loc x1 (vala_map (List.map (type_decl floc sh)) x2)
+    | StTypExten loc x1 →
+        let loc = floc loc in
+        StTypExten loc (type_extension floc sh x1)
     | StUse loc x1 x2 →
         let loc = floc loc in
         StUse loc x1
@@ -599,6 +605,10 @@ and type_decl floc sh x =
      vala_map (List.map (fun (x1, x2) → (ctyp floc sh x1, ctyp floc sh x2)))
        x.tdCon;
    tdAttributes = x.tdAttributes}
+and type_extension floc sh x =
+  {teNam = vala_map (fun (loc, x1) → (floc loc, x1)) x.teNam; tePrm = x.tePrm;
+   tePrv = x.tePrv; teDef = ctyp floc sh x.teDef;
+   teAttributes = x.teAttributes}
 and class_type floc sh =
   self where rec self =
     fun

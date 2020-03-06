@@ -168,6 +168,7 @@ and sig_item =
   | SgMtyAlias of loc and V string and V (list string) and V (list (V (V string * payload)))
   | SgOpn of loc and V (list string) and V (list (V (V string * payload)))
   | SgTyp of loc and V (list type_decl)
+  | SgTypExten of loc and type_extension
   | SgUse of loc and V string and V (list (sig_item * loc))
   | SgVal of loc and V string and ctyp and V (list (V (V string * payload)))
   | SgXtr of loc and string and option (V sig_item)
@@ -203,6 +204,7 @@ and str_item =
   | StMtyAbs of loc and V string and V (list (V (V string * payload)))
   | StOpn of loc and V bool and module_expr and V (list (V (V string * payload)))
   | StTyp of loc and V bool and V (list type_decl)
+  | StTypExten of loc and type_extension
   | StUse of loc and V string and V (list (str_item * loc))
   | StVal of loc and V bool and V (list (patt * expr * V (list (V (V string * payload)))))
   | StXtr of loc and string and option (V str_item)

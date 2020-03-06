@@ -1251,6 +1251,8 @@ and sig_item s l =
        l]
   | SgTyp loc tdl →
       [mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l]
+  | SgTypExten loc te →
+      assert False
   | SgUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
         (fun () → List.fold_right (fun (si, _) → sig_item si) (uv sl) l) ()
@@ -1383,6 +1385,8 @@ and str_item s l =
        l]
   | StTyp loc flg tdl →
       [mkstr loc (ocaml_pstr_type (uv flg) (List.map mktype_decl (uv tdl))) :: l]
+  | StTypExten loc te →
+      assert False
   | StUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
         (fun () → List.fold_right (fun (si, _) → str_item si) (uv sl) l) ()
