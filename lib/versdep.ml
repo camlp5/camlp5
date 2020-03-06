@@ -207,7 +207,6 @@ value ocaml_ptype_open () = assert False ;
 value ocaml_psig_typext _ = assert False ;
 value ocaml_pstr_typext _ = assert False ;
 
-value ocaml_type_extension ?{item_attributes=[]} lo pathlid priv cstrs = assert False ;
 value ocaml_pexp_letexception exdef body = assert False ;
 value ocaml_ppat_exception _ = assert False ;
 ELSE
@@ -364,20 +363,6 @@ value ocaml_extension_exception loc s ed alg_attributes =
 value ocaml_pexp_unreachable () = Pexp_unreachable ;
 value ocaml_ptype_open () = Ptype_open ;
 
-value ocaml_type_extension ?{item_attributes=[]} loc pathlid priv cstrs =
-let ecstrs = List.map (fun (s, ctyl) -> 
-  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ctyl) None;
-   pext_loc = loc; pext_attributes = []}) cstrs in
-  {
-     ptyext_path = mkloc loc pathlid ;
-     ptyext_params = [] ;
-     ptyext_constructors = ecstrs ;
-     ptyext_private = priv ;
-     ptyext_loc = loc ;
-     ptyext_attributes = item_attributes
-  }
-;
-
 value ocaml_pstr_typext ext = Pstr_typext ext ;
 value ocaml_psig_typext ext = Psig_typext ext ;
 value ocaml_pexp_letexception exdef body =
@@ -428,6 +413,37 @@ IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
   ;
 END;
 
+
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_type_extension ?{item_attributes=[]} lo pathlid params priv cstrs = assert False ;
+ELSE
+value ocaml_type_extension ?{item_attributes=[]} loc pathlid params priv (tk : type_kind) =
+let ecstrs = match tk with [
+  Ptype_variant cdl ->
+    List.map (fun cd ->
+        {pext_name = cd.pcd_name; pext_kind = Pext_decl cd.pcd_args None;
+     pext_loc = cd.pcd_loc; pext_attributes = cd.pcd_attributes}
+    ) cdl
+| _ -> failwith "only labeled variant types allowed in type-extension"
+] in
+let params =
+  List.map
+    (fun (os, va) ->
+       let s = mustSome "ocaml_type_extension: blank type-params ('_') not allowed" os in
+       (ocaml_mktyp loc (Ptyp_var s), variance_of_bool_bool va))
+    params
+in
+  {
+     ptyext_path = mkloc loc pathlid ;
+     ptyext_params = params ;
+     ptyext_constructors = ecstrs ;
+     ptyext_private = priv ;
+     ptyext_loc = loc ;
+     ptyext_attributes = item_attributes
+  }
+;
+END
+;
 value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
     match list_map_check (fun s_opt -> s_opt) params with
     [ Some params ->

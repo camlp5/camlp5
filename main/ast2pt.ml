@@ -625,6 +625,19 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
         | _ → Some (ctyp t) ]
       in
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
+and type_extension loc te =
+  let pf = uv te.tePrv in
+  let tedef = match te.teDef with [
+    TySum loc ctl -> mktvariant loc (uv ctl) pf
+  | TyRec loc _ -> error loc "bare record-type not allowed as type-extension"
+  | _ -> assert False
+  ] in
+  ocaml_type_extension ~{item_attributes=item_attributes te.teAttributes} (mkloc loc)
+    (long_id_of_string_list loc (uv (snd (uv te.teNam))))
+    (List.map (fun (p,v) -> (uv p, variance_of_var v)) (uv te.tePrm))
+    (if pf then Private else Public)
+    tedef
+
 and patt =
   fun
   [ PaAtt loc p1 a ->
@@ -1252,7 +1265,7 @@ and sig_item s l =
   | SgTyp loc tdl →
       [mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l]
   | SgTypExten loc te →
-      assert False
+      [mksig loc (ocaml_psig_typext (type_extension loc te)) :: l]
   | SgUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
         (fun () → List.fold_right (fun (si, _) → sig_item si) (uv sl) l) ()
@@ -1386,7 +1399,7 @@ and str_item s l =
   | StTyp loc flg tdl →
       [mkstr loc (ocaml_pstr_type (uv flg) (List.map mktype_decl (uv tdl))) :: l]
   | StTypExten loc te →
-      assert False
+      [mkstr loc (ocaml_pstr_typext (type_extension loc te)) :: l]
   | StUse loc fn sl →
       Ploc.call_with glob_fname (uv fn)
         (fun () → List.fold_right (fun (si, _) → str_item si) (uv sl) l) ()
