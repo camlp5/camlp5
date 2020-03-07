@@ -435,15 +435,9 @@ module Meta_make (C : MetaSig) =
       | StDcl (_, lsi) -> C.node "StDcl" [C.vala (C.list str_item) lsi]
       | StDir (_, s, oe) ->
           C.node "StDir" [C.vala C.string s; C.vala (C.option expr) oe]
-      | StExc (_, s, lt, ls, alg_attrs, item_attrs) ->
-          let alg_attrs = assert false in
-          let item_attrs = assert false in
-          C.node "StExc"
-            [C.vala C.string s; C.vala (C.list ctyp) lt;
-             C.vala (C.list C.string) ls; alg_attrs; item_attrs]
-      | StExc2 (_, extc, attrs) ->
+      | StExc (_, extc, attrs) ->
           let attrs = assert false in
-          C.node "StExc2" [extension_constructor extc; attrs]
+          C.node "StExc" [extension_constructor extc; attrs]
       | StExp (_, e, attrs) ->
           let attrs = assert false in C.node "StExp" [expr e; attrs]
       | StExt (_, s, t, ls, attrs) ->

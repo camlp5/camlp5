@@ -182,8 +182,7 @@ and str_item =
   | StClt of loc * class_type class_infos list
   | StDcl of loc * str_item list
   | StDir of loc * string * expr option
-  | StExc of loc * string * ctyp list * string list * attributes * attributes
-  | StExc2 of loc * extension_constructor * attributes
+  | StExc of loc * extension_constructor * attributes
   | StExp of loc * expr * attributes
   | StExt of loc * string * ctyp * string list * attributes
   | StInc of loc * module_expr * attributes

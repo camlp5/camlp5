@@ -1572,26 +1572,20 @@ and str_item s l =
       end
   | StDcl (loc, sl) -> List.fold_right str_item (uv sl) l
   | StDir (loc, _, _) -> l
-  | StExc2 (loc, EcTuple (n, tl, alg_attrs), item_attrs) ->
-      str_item (StExc (loc, n, tl, [], alg_attrs, item_attrs)) l
-  | StExc2 (loc, EcRebind (n, sl, alg_attrs), item_attrs) ->
-      str_item (StExc (loc, n, [], sl, alg_attrs, item_attrs)) l
-  | StExc (loc, n, tl, sl, alg_attrs, item_attrs) ->
+  | StExc (loc, EcTuple (n, tl, alg_attrs), item_attrs) ->
+      let tl = sumbranch_ctyp loc (uv tl) in
       let si =
-        match uv tl, uv sl with
-          tl, [] ->
-            let tl = sumbranch_ctyp loc tl in
-            ocaml_pstr_exception ~alg_attributes:(alg_attributes alg_attrs)
-              ~item_attributes:(item_attributes item_attrs) (mkloc loc) (uv n)
-              tl
-        | [], sl ->
-            begin match ocaml_pstr_exn_rebind with
-              Some pstr_exn_rebind ->
-                pstr_exn_rebind (mkloc loc) (uv n)
-                  (long_id_of_string_list loc sl)
-            | None -> error loc "no exception renaming in this ocaml version"
-            end
-        | _ -> error loc "renamed exception should not have parameters"
+        ocaml_pstr_exception ~alg_attributes:(alg_attributes alg_attrs)
+          ~item_attributes:(item_attributes item_attrs) (mkloc loc) (uv n) tl
+      in
+      mkstr loc si :: l
+  | StExc (loc, EcRebind (n, sl, alg_attrs), item_attrs) ->
+      let sl = uv sl in
+      let si =
+        match ocaml_pstr_exn_rebind with
+          Some pstr_exn_rebind ->
+            pstr_exn_rebind (mkloc loc) (uv n) (long_id_of_string_list loc sl)
+        | None -> error loc "no exception renaming in this ocaml version"
       in
       mkstr loc si :: l
   | StExp (loc, e, attrs) ->

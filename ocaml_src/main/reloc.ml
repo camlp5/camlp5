@@ -436,12 +436,9 @@ and str_item floc sh =
     | StDir (loc, x1, x2) ->
         let loc = floc loc in
         StDir (loc, x1, vala_map (option_map (expr floc sh)) x2)
-    | StExc (loc, x1, x2, x3, x4, x5) ->
+    | StExc (loc, x1, x2) ->
         let loc = floc loc in
-        StExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3, x4, x5)
-    | StExc2 (loc, x1, x2) ->
-        let loc = floc loc in
-        StExc2 (loc, extension_constructor floc sh x1, x2)
+        StExc (loc, extension_constructor floc sh x1, x2)
     | StExp (loc, x1, x2) ->
         let loc = floc loc in StExp (loc, expr floc sh x1, x2)
     | StExt (loc, x1, x2, x3, x4) ->

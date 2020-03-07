@@ -1090,10 +1090,10 @@ Grammar.safe_extend
                 (_, c, tl, _ : 'constructor_declaration_sans_alg_attrs) _
                 (loc : Ploc.t) ->
               (if b = [] then
-                 MLast.StExc2
+                 MLast.StExc
                    (loc, MLast.EcTuple (c, tl, alg_attrs), item_attrs)
                else
-                 MLast.StExc2
+                 MLast.StExc
                    (loc, MLast.EcRebind (c, b, alg_attrs), item_attrs) :
                'str_item)));
         Grammar.production

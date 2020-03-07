@@ -2009,7 +2009,7 @@ Grammar.safe_extend
                  | _ -> raise (Match_failure ("q_MLast.ml", 521, 20))
                in
                Qast.Node
-                 ("StExc2",
+                 ("StExc",
                   [Qast.Loc; Qast.Node ("EcTuple", [c; tl; alg_attrs]);
                    item_attrs]) :
                'str_item)));
@@ -2035,7 +2035,7 @@ Grammar.safe_extend
            (fun (item_attrs : 'item_attributes) (alg_attrs : 'alg_attributes)
                 (b : 'rebind_exn) (c : 'cons_ident) _ _ (loc : Ploc.t) ->
               (Qast.Node
-                 ("StExc2",
+                 ("StExc",
                   [Qast.Loc; Qast.Node ("EcRebind", [c; b; alg_attrs]);
                    item_attrs]) :
                'str_item)));
