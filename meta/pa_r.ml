@@ -467,6 +467,9 @@ EXTEND
   ;
   extension_constructor:
   [ [ check_extension_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+(*
+        <:extension_constructor< $c$ = $b$ $alg_attrs$ >>
+*)
         MLast.EcRebind c b alg_attrs
     | check_extension_decl ; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ->
         MLast.EcTuple c tl alg_attrs

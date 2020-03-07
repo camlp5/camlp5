@@ -415,7 +415,8 @@ value check_extension_rebind =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
     module_expr signature structure class_type class_expr class_sig_item
-    class_str_item let_binding type_decl type_extension constructor_declaration
+    class_str_item let_binding type_decl type_extension extension_constructor
+    constructor_declaration
     label_declaration match_case ipatt with_constr poly_variant attribute_body
     check_type_decl check_type_extension
     ;

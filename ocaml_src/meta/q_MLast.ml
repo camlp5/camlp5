@@ -480,6 +480,7 @@ Grammar.safe_extend
    and _ = (let_binding : 'let_binding Grammar.Entry.e)
    and _ = (type_decl : 'type_decl Grammar.Entry.e)
    and _ = (type_extension : 'type_extension Grammar.Entry.e)
+   and _ = (extension_constructor : 'extension_constructor Grammar.Entry.e)
    and _ =
      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
    and _ = (label_declaration : 'label_declaration Grammar.Entry.e)
@@ -513,8 +514,6 @@ Grammar.safe_extend
      grammar_entry_create "item_extension"
    and alg_extension : 'alg_extension Grammar.Entry.e =
      grammar_entry_create "alg_extension"
-   and extension_constructor : 'extension_constructor Grammar.Entry.e =
-     grammar_entry_create "extension_constructor"
    and rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
    and mod_binding : 'mod_binding Grammar.Entry.e =
@@ -1483,7 +1482,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 516, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 517, 20))
                in
                Qast.Node ("EcTuple", [c; tl; alg_attrs]) :
                'extension_constructor)));
@@ -3094,7 +3093,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 623, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 624, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));
