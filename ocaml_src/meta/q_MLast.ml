@@ -2009,8 +2009,8 @@ Grammar.safe_extend
                  | _ -> raise (Match_failure ("q_MLast.ml", 521, 20))
                in
                Qast.Node
-                 ("StExc",
-                  [Qast.Loc; c; tl; Qast.VaVal (Qast.List []); alg_attrs;
+                 ("StExc2",
+                  [Qast.Loc; Qast.Node ("EcTuple", [c; tl; alg_attrs]);
                    item_attrs]) :
                'str_item)));
         Grammar.production
@@ -2035,8 +2035,8 @@ Grammar.safe_extend
            (fun (item_attrs : 'item_attributes) (alg_attrs : 'alg_attributes)
                 (b : 'rebind_exn) (c : 'cons_ident) _ _ (loc : Ploc.t) ->
               (Qast.Node
-                 ("StExc",
-                  [Qast.Loc; c; Qast.VaVal (Qast.List []); b; alg_attrs;
+                 ("StExc2",
+                  [Qast.Loc; Qast.Node ("EcRebind", [c; b; alg_attrs]);
                    item_attrs]) :
                'str_item)));
         Grammar.production
@@ -3075,7 +3075,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 618, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 616, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));

@@ -512,7 +512,7 @@ EXTEND
       [ "declare"; st = SV (LIST0 [ s = str_item; ";" → s ]); "end" →
           Qast.Node "StDcl" [Qast.Loc; st]
       | "exception"; check_exception_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
-          Qast.Node "StExc" [Qast.Loc; c; Qast.VaVal (Qast.List[]); b; alg_attrs; item_attrs]
+          Qast.Node "StExc2" [Qast.Loc; Qast.Node "EcRebind" [c; b; alg_attrs]; item_attrs]
 
       | "exception"; check_exception_decl ; ctl = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
           let (_, c, tl, _) =
@@ -520,9 +520,7 @@ EXTEND
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
-          Qast.Node "StExc" [Qast.Loc; c; tl; Qast.VaVal (Qast.List[]); alg_attrs; item_attrs]
-
-
+          Qast.Node "StExc2" [Qast.Loc; Qast.Node "EcTuple" [c; tl; alg_attrs]; item_attrs]
 
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
