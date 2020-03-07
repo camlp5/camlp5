@@ -422,20 +422,19 @@ or exception E = A.B.C ...
 
 E could be an ID, or a two-part constructor-name, or an escaped operator (3 tokens).
 
-So we might have to search out 4 tokens
+So we might have to search out 4 tokens.  If we find no "=", then just default to defn.
+Similarly, if the input ends before we find an "=", default to defn.
 
 *)
 
 let is_exception_decl_or_rebind strm =
   let rec checkrec n =
-    if n = 4 then
-      raise
-        (Stream.Error
-           "is_exception_decl_or_rebind: neither of two forms of exception defn")
+    if n = 4 then true
     else
       match stream_peek_nth n strm with
         Some ("", "of") -> true
       | Some ("", "=") -> false
+      | None -> true
       | _ -> checkrec (n + 1)
   in
   checkrec 1
@@ -2006,7 +2005,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 521, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 523, 20))
                in
                Qast.Node
                  ("StExc",
@@ -3075,7 +3074,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 616, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 618, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));
