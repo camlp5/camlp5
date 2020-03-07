@@ -195,7 +195,7 @@ and str_item =
   | StClt of loc and V (list (class_infos class_type))
   | StDcl of loc and V (list str_item)
   | StDir of loc and V string and V (option expr)
-  | StExc of loc and extension_constructor and attributes
+  | StExc of loc and V extension_constructor and attributes
   | StExp of loc and expr and attributes
   | StExt of loc and V string and ctyp and V (list string) and attributes
   | StInc of loc and module_expr and attributes
@@ -226,6 +226,9 @@ and type_extension =
     tePrm : V (list type_var);
     tePrv : V bool;
     teDef : ctyp;
+(*
+    teECs : V (list extension_constructor) ;
+*)
     teAttributes: attributes }
 and class_type =
   [ CtAcc of loc and class_type and class_type

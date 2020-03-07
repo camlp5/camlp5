@@ -376,7 +376,7 @@ Similarly, if the input ends before we find an "=", default to defn.
 
 *)
 
-value is_exception_decl_or_rebind strm =
+value is_extension_decl_or_rebind strm =
   let rec checkrec n =
   if n = 4 then True
   else
@@ -389,24 +389,24 @@ value is_exception_decl_or_rebind strm =
   checkrec 1
 ;
 
-value check_exception_decl_f strm =
-  if is_exception_decl_or_rebind strm then ()
+value check_extension_decl_f strm =
+  if is_extension_decl_or_rebind strm then ()
   else raise Stream.Failure
 ;
 
-value check_exception_decl =
-  Grammar.Entry.of_parser gram "check_exception_decl"
-    check_exception_decl_f
+value check_extension_decl =
+  Grammar.Entry.of_parser gram "check_extension_decl"
+    check_extension_decl_f
 ;
 
-value check_exception_rebind_f strm =
-  if not (is_exception_decl_or_rebind strm) then ()
+value check_extension_rebind_f strm =
+  if not (is_extension_decl_or_rebind strm) then ()
   else raise Stream.Failure
 ;
 
-value check_exception_rebind =
-  Grammar.Entry.of_parser gram "check_exception_rebind"
-    check_exception_rebind_f
+value check_extension_rebind =
+  Grammar.Entry.of_parser gram "check_extension_rebind"
+    check_extension_rebind_f
 ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -505,6 +505,18 @@ EXTEND
   structure:
     [ [ st = SV (LIST0 [ s = str_item; ";" → s ]) → st ] ]
   ;
+  extension_constructor:
+  [ [ check_extension_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+        Qast.Node "EcRebind" [c; b; alg_attrs]
+    | check_extension_decl ; ctl = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ->
+          let (_, c, tl, _) =
+            match ctl with
+            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
+            | _ → match () with [] ]
+          in
+        Qast.Node "EcTuple" [c; tl; alg_attrs]
+    ] ]
+  ;
   str_item:
     [ "top" LEFTA
       [ si = SELF ; "[@@" ; attr = SV attribute_body "attribute"; "]" ->
@@ -513,16 +525,8 @@ EXTEND
     | "simple"
       [ "declare"; st = SV (LIST0 [ s = str_item; ";" → s ]); "end" →
           Qast.Node "StDcl" [Qast.Loc; st]
-      | "exception"; check_exception_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
-          Qast.Node "StExc" [Qast.Loc; Qast.Node "EcRebind" [c; b; alg_attrs]; item_attrs]
-
-      | "exception"; check_exception_decl ; ctl = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
-          let (_, c, tl, _) =
-            match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
-            | _ → match () with [] ]
-          in
-          Qast.Node "StExc" [Qast.Loc; Qast.Node "EcTuple" [c; tl; alg_attrs]; item_attrs]
+      | "exception"; ec = SV extension_constructor "excon" ; item_attrs = item_attributes →
+          Qast.Node "StExc" [Qast.Loc; ec; item_attrs]
 
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →

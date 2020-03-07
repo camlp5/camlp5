@@ -436,7 +436,7 @@ module Meta_make (C : MetaSig) =
           C.node "StDir" [C.vala C.string s; C.vala (C.option expr) oe]
       | StExc _ extc attrs ->
           let attrs = assert False in
-          C.node "StExc" [extension_constructor extc; attrs] 
+          C.node "StExc" [C.vala extension_constructor extc; attrs] 
       | StExp _ e attrs →
           let attrs = assert False in
           C.node "StExp" [expr e; attrs]

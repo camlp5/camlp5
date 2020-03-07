@@ -357,7 +357,7 @@ So we might have to search out 4 tokens
 
 *)
 
-let is_exception_decl_or_rebind strm =
+let is_extension_decl_or_rebind strm =
   let rec checkrec n =
     if n = 4 then true
     else
@@ -370,21 +370,21 @@ let is_exception_decl_or_rebind strm =
   checkrec 1
 ;;
 
-let check_exception_decl_f strm =
-  if is_exception_decl_or_rebind strm then () else raise Stream.Failure
+let check_extension_decl_f strm =
+  if is_extension_decl_or_rebind strm then () else raise Stream.Failure
 ;;
 
-let check_exception_decl =
-  Grammar.Entry.of_parser gram "check_exception_decl" check_exception_decl_f
+let check_extension_decl =
+  Grammar.Entry.of_parser gram "check_extension_decl" check_extension_decl_f
 ;;
 
-let check_exception_rebind_f strm =
-  if not (is_exception_decl_or_rebind strm) then () else raise Stream.Failure
+let check_extension_rebind_f strm =
+  if not (is_extension_decl_or_rebind strm) then () else raise Stream.Failure
 ;;
 
-let check_exception_rebind =
-  Grammar.Entry.of_parser gram "check_exception_rebind"
-    check_exception_rebind_f
+let check_extension_rebind =
+  Grammar.Entry.of_parser gram "check_extension_rebind"
+    check_extension_rebind_f
 ;;
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -1118,8 +1118,8 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "exception")))
                          (Grammar.s_nterm
-                            (check_exception_rebind :
-                             'check_exception_rebind Grammar.Entry.e)))
+                            (check_extension_rebind :
+                             'check_extension_rebind Grammar.Entry.e)))
                       (Grammar.s_nterm
                          (cons_ident : 'cons_ident Grammar.Entry.e)))
                    (Grammar.s_nterm
@@ -1141,8 +1141,8 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("", "exception")))
                       (Grammar.s_nterm
-                         (check_exception_decl :
-                          'check_exception_decl Grammar.Entry.e)))
+                         (check_extension_decl :
+                          'check_extension_decl Grammar.Entry.e)))
                    (Grammar.s_nterm
                       (constructor_declaration_sans_alg_attrs :
                        'constructor_declaration_sans_alg_attrs

@@ -443,7 +443,7 @@ So we might have to search out 4 tokens
 
 *)
 
-value is_exception_decl_or_rebind strm =
+value is_extension_decl_or_rebind strm =
   let rec checkrec n =
   if n = 4 then True
   else
@@ -456,24 +456,24 @@ value is_exception_decl_or_rebind strm =
   checkrec 1
 ;
 
-value check_exception_decl_f strm =
-  if is_exception_decl_or_rebind strm then ()
+value check_extension_decl_f strm =
+  if is_extension_decl_or_rebind strm then ()
   else raise Stream.Failure
 ;
 
-value check_exception_decl =
-  Grammar.Entry.of_parser gram "check_exception_decl"
-    check_exception_decl_f
+value check_extension_decl =
+  Grammar.Entry.of_parser gram "check_extension_decl"
+    check_extension_decl_f
 ;
 
-value check_exception_rebind_f strm =
-  if not (is_exception_decl_or_rebind strm) then ()
+value check_extension_rebind_f strm =
+  if not (is_extension_decl_or_rebind strm) then ()
   else raise Stream.Failure
 ;
 
-value check_exception_rebind =
-  Grammar.Entry.of_parser gram "check_exception_rebind"
-    check_exception_rebind_f
+value check_extension_rebind =
+  Grammar.Entry.of_parser gram "check_extension_rebind"
+    check_extension_rebind_f
 ;
 
 value check_module_alias_f = (fun strm ->
@@ -651,10 +651,10 @@ EXTEND
  ;
   str_item:
     [ "top"
-      [ "exception"; check_exception_decl; (_, c, tl, _) = constructor_declaration_sans_alg_attrs;
+      [ "exception"; check_extension_decl; (_, c, tl, _) = constructor_declaration_sans_alg_attrs;
         alg_attrs = alg_attributes ; item_attrs = item_attributes ->
           <:str_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
-      | "exception"; check_exception_rebind ; c = cons_ident ; b = rebind_exn ;
+      | "exception"; check_extension_rebind ; c = cons_ident ; b = rebind_exn ;
         alg_attrs = alg_attributes ; item_attrs = item_attributes ->
           <:str_item< exception $_uid:c$ = $_list:b$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
