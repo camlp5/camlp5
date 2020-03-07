@@ -470,9 +470,6 @@ EXTEND
         <:extension_constructor< $_uid:c$ = $_list:b$ $_algattrs:alg_attrs$ >>
     | check_extension_decl ; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ->
         <:extension_constructor< $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ >>
-(*
-        MLast.EcTuple c tl alg_attrs
-*)
     ] ]
   ;
   str_item:
