@@ -6631,7 +6631,7 @@ Grammar.safe_extend
                 (tpl : 'e__153) (n : 'e__152) (loc : Ploc.t) ->
               (Qast.Record
                  ["teNam", n; "tePrm", tpl; "tePrv", pf; "teDef", tk;
-                  "teAttributes", attrs] :
+                  "teECs", Qast.VaVal (Qast.List []); "teAttributes", attrs] :
                'type_extension)))]];
     (* why is this called what it's called? *)
     Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None

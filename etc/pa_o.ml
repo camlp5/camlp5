@@ -1270,7 +1270,7 @@ EXTEND
 (*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
 *)
-          {MLast.teNam=n; tePrm= <:vala< tpl >>; tePrv=pf; teDef=tk; teAttributes=attrs}
+          {MLast.teNam=n; tePrm= <:vala< tpl >>; tePrv=pf; teDef=tk; teAttributes=attrs; teECs = <:vala< [] >>}
       ] ]
   ;
   mod_ident_patt:

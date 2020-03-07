@@ -226,9 +226,7 @@ and type_extension =
     tePrm : V (list type_var);
     tePrv : V bool;
     teDef : ctyp;
-(*
-    teECs : V (list extension_constructor) ;
-*)
+    teECs : V (list (V extension_constructor)) ;
     teAttributes: attributes }
 and class_type =
   [ CtAcc of loc and class_type and class_type

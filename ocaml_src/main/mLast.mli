@@ -212,6 +212,7 @@ and type_extension =
     tePrm : type_var list;
     tePrv : bool;
     teDef : ctyp;
+    teECs : extension_constructor list;
     teAttributes : attributes }
 and class_type =
     CtAcc of loc * class_type * class_type

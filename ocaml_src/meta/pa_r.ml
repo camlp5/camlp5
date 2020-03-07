@@ -1021,6 +1021,7 @@ Grammar.safe_extend
                  (loc,
                   {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
                    MLast.tePrv = te.MLast.tePrv; MLast.teDef = te.MLast.teDef;
+                   MLast.teECs = [];
                    MLast.teAttributes = te.MLast.teAttributes}) :
                'str_item)));
         Grammar.production
@@ -1442,6 +1443,7 @@ Grammar.safe_extend
                  (loc,
                   {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
                    MLast.tePrv = te.MLast.tePrv; MLast.teDef = te.MLast.teDef;
+                   MLast.teECs = [];
                    MLast.teAttributes = te.MLast.teAttributes}) :
                'sig_item)));
         Grammar.production
@@ -3368,7 +3370,7 @@ Grammar.safe_extend
                 (tpl : 'type_parameter list) (n : 'mod_ident_patt)
                 (loc : Ploc.t) ->
               ({MLast.teNam = n; tePrm = tpl; tePrv = pf; teDef = tk;
-                teAttributes = attrs} :
+                teAttributes = attrs; teECs = []} :
                'type_extension)))]];
     Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None
       [None, None,

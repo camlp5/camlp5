@@ -1192,6 +1192,7 @@ EXTEND
         attrs = item_attributes →
           Qast.Record
             [("teNam", n); ("tePrm", tpl); ("tePrv", pf); ("teDef", tk);
+             ("teECs", Qast.VaVal(Qast.List[]));
              ("teAttributes", attrs)] ] ]
   ;
   (* why is this called what it's called? *)
