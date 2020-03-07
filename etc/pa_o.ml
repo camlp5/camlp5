@@ -648,15 +648,19 @@ EXTEND
         END
       ]
     ]
- ;
+  ;
+  extension_constructor:
+  [ [ check_extension_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+        MLast.EcRebind c b alg_attrs
+    | check_extension_decl ; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ->
+        MLast.EcTuple c tl alg_attrs
+    ] ]
+  ;
   str_item:
     [ "top"
-      [ "exception"; check_extension_decl; (_, c, tl, _) = constructor_declaration_sans_alg_attrs;
-        alg_attrs = alg_attributes ; item_attrs = item_attributes ->
-          <:str_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
-      | "exception"; check_extension_rebind ; c = cons_ident ; b = rebind_exn ;
-        alg_attrs = alg_attributes ; item_attrs = item_attributes ->
-          <:str_item< exception $_uid:c$ = $_list:b$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
+      [ "exception"; ec = V extension_constructor "excon" ; item_attrs = item_attributes →
+          <:str_item< exception $_excon:ec$ $_itemattrs:item_attrs$ >>
+
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes ->
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
