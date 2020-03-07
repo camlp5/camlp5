@@ -29,7 +29,7 @@ type class_infos 'a =
     ciPrm : (loc * V (list type_var));
     ciNam : V string;
     ciExp : 'a ;
-    ciAttributes : V (list (V (V string * payload)))
+    ciAttributes : attributes
   }
 
 and ctyp =
@@ -49,17 +49,17 @@ and ctyp =
   | TyPol of loc and V (list string) and ctyp
   | TyPot of loc and V (list string) and ctyp
   | TyQuo of loc and V string
-  | TyRec of loc and V (list (loc * string * bool * ctyp * V (list (V (V string * payload)))))
-  | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp * V (list (V (V string * payload)))))
+  | TyRec of loc and V (list (loc * string * bool * ctyp * attributes))
+  | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp * attributes))
   | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
   | TyVrn of loc and V (list poly_variant) and
       option (option (V (list string)))
   | TyXtr of loc and string and option (V ctyp)
-  | TyAtt of loc and ctyp and V (V string * payload)
+  | TyAtt of loc and ctyp and attribute_body
   | TyExten of loc and attribute_body ]
 and poly_variant =
-  [ PvTag of loc and V string and V bool and V (list ctyp) and V (list (V (V string * payload)))
+  [ PvTag of loc and V string and V bool and V (list ctyp) and attributes
   | PvInh of loc and ctyp ]
 and patt =
   [ PaAcc of loc and patt and patt
@@ -88,7 +88,7 @@ and patt =
   | PaUnp of loc and V (option (V string)) and option module_type
   | PaVrn of loc and V string
   | PaXtr of loc and string and option (V patt)
-  | PaAtt of loc and patt and V (V string * payload)
+  | PaAtt of loc and patt and attribute_body
   | PaExten of loc and attribute_body ]
 and expr =
   [ ExAcc of loc and expr and expr
@@ -108,8 +108,8 @@ and expr =
   | ExInt of loc and V string and string
   | ExLab of loc and V (list (patt * V (option expr)))
   | ExLaz of loc and expr
-  | ExLet of loc and V bool and V (list (patt * expr * V (list (V (V string * payload))))) and expr
-  | ExLEx of loc and V string and V (list ctyp) and expr and V (list (V (V string * payload)))
+  | ExLet of loc and V bool and V (list (patt * expr * attributes)) and expr
+  | ExLEx of loc and V string and V (list ctyp) and expr and attributes
   | ExLid of loc and V string
   | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and module_expr and expr
@@ -131,7 +131,7 @@ and expr =
   | ExVrn of loc and V string
   | ExWhi of loc and expr and V (list expr)
   | ExXtr of loc and string and option (V expr)
-  | ExAtt of loc and expr and V (V string * payload)
+  | ExAtt of loc and expr and attribute_body
   | ExExten of loc and attribute_body
   | ExUnr of loc
   ]
@@ -146,7 +146,7 @@ and module_type =
   | MtUid of loc and V string
   | MtWit of loc and module_type and V (list with_constr)
   | MtXtr of loc and string and option (V module_type)
-  | MtAtt of loc and module_type and V (V string * payload)
+  | MtAtt of loc and module_type and attribute_body
   | MtExten of loc and attribute_body ]
 (* NOTE WELL that this type is here for documentation: the places in MtFun and MeFun
    where this type should appear ..... in those places, the type is substituted in
@@ -159,20 +159,20 @@ and sig_item =
   | SgClt of loc and V (list (class_infos class_type))
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and V string and V (option expr)
-  | SgExc of loc and V string and V (list ctyp) and V (list (V (V string * payload))) and V (list (V (V string * payload)))
-  | SgExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
-  | SgInc of loc and module_type and V (list (V (V string * payload)))
-  | SgMod of loc and V bool and V (list (V (option (V string)) * module_type * V (list (V (V string * payload)))))
-  | SgMty of loc and V string and module_type and V (list (V (V string * payload)))
-  | SgMtyAbs of loc and V string and V (list (V (V string * payload)))
-  | SgMtyAlias of loc and V string and V (list string) and V (list (V (V string * payload)))
-  | SgOpn of loc and V (list string) and V (list (V (V string * payload)))
+  | SgExc of loc and V string and V (list ctyp) and attributes and attributes
+  | SgExt of loc and V string and ctyp and V (list string) and attributes
+  | SgInc of loc and module_type and attributes
+  | SgMod of loc and V bool and V (list (V (option (V string)) * module_type * attributes))
+  | SgMty of loc and V string and module_type and attributes
+  | SgMtyAbs of loc and V string and attributes
+  | SgMtyAlias of loc and V string and V (list string) and attributes
+  | SgOpn of loc and V (list string) and attributes
   | SgTyp of loc and V (list type_decl)
   | SgTypExten of loc and type_extension
   | SgUse of loc and V string and V (list (sig_item * loc))
-  | SgVal of loc and V string and ctyp and V (list (V (V string * payload)))
+  | SgVal of loc and V string and ctyp and attributes
   | SgXtr of loc and string and option (V sig_item)
-  | SgFlAtt of loc and V (V string * payload)
+  | SgFlAtt of loc and attribute_body
   | SgExten of loc and attribute_body ]
 and with_constr =
   [ WcMod of loc and V (list string) and module_expr
@@ -188,27 +188,27 @@ and module_expr =
   | MeUid of loc and V string
   | MeUnp of loc and expr and option module_type and option module_type
   | MeXtr of loc and string and option (V module_expr)
-  | MeAtt of loc and module_expr and V (V string * payload)
+  | MeAtt of loc and module_expr and attribute_body
   | MeExten of loc and attribute_body ]
 and str_item =
   [ StCls of loc and V (list (class_infos class_expr))
   | StClt of loc and V (list (class_infos class_type))
   | StDcl of loc and V (list str_item)
   | StDir of loc and V string and V (option expr)
-  | StExc of loc and V string and V (list ctyp) and V (list string) and V (list (V (V string * payload))) and V (list (V (V string * payload)))
-  | StExp of loc and expr and V (list (V (V string * payload)))
-  | StExt of loc and V string and ctyp and V (list string) and V (list (V (V string * payload)))
-  | StInc of loc and module_expr and V (list (V (V string * payload)))
-  | StMod of loc and V bool and V (list (V (option (V string)) * module_expr * V (list (V (V string * payload)))))
-  | StMty of loc and V string and module_type and V (list (V (V string * payload)))
-  | StMtyAbs of loc and V string and V (list (V (V string * payload)))
-  | StOpn of loc and V bool and module_expr and V (list (V (V string * payload)))
+  | StExc of loc and V string and V (list ctyp) and V (list string) and attributes and attributes
+  | StExp of loc and expr and attributes
+  | StExt of loc and V string and ctyp and V (list string) and attributes
+  | StInc of loc and module_expr and attributes
+  | StMod of loc and V bool and V (list (V (option (V string)) * module_expr * attributes))
+  | StMty of loc and V string and module_type and attributes
+  | StMtyAbs of loc and V string and attributes
+  | StOpn of loc and V bool and module_expr and attributes
   | StTyp of loc and V bool and V (list type_decl)
   | StTypExten of loc and type_extension
   | StUse of loc and V string and V (list (str_item * loc))
-  | StVal of loc and V bool and V (list (patt * expr * V (list (V (V string * payload)))))
+  | StVal of loc and V bool and V (list (patt * expr * attributes))
   | StXtr of loc and string and option (V str_item)
-  | StFlAtt of loc and V (V string * payload)
+  | StFlAtt of loc and attribute_body
   | StExten of loc and attribute_body ]
 and type_decl =
   { tdNam : V (loc * V string);
@@ -216,13 +216,13 @@ and type_decl =
     tdPrv : V bool;
     tdDef : ctyp;
     tdCon : V (list (ctyp * ctyp));
-    tdAttributes: V (list (V (V string * payload))) }
+    tdAttributes: attributes }
 and type_extension =
   { teNam : V (loc * V (list string));
     tePrm : V (list type_var);
     tePrv : V bool;
     teDef : ctyp;
-    teAttributes: V (list (V (V string * payload))) }
+    teAttributes: attributes }
 and class_type =
   [ CtAcc of loc and class_type and class_type
   | CtApp of loc and class_type and class_type
@@ -231,39 +231,39 @@ and class_type =
   | CtIde of loc and V string
   | CtSig of loc and V (option ctyp) and V (list class_sig_item)
   | CtXtr of loc and string and option (V class_type)
-  | CtAtt of loc and class_type and V (V string * payload)
+  | CtAtt of loc and class_type and attribute_body
   | CtExten of loc and attribute_body ]
 and class_sig_item =
-  [ CgCtr of loc and ctyp and ctyp and V (list (V (V string * payload)))
+  [ CgCtr of loc and ctyp and ctyp and attributes
   | CgDcl of loc and V (list class_sig_item)
-  | CgInh of loc and class_type and V (list (V (V string * payload)))
-  | CgMth of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
+  | CgInh of loc and class_type and attributes
+  | CgMth of loc and V bool and V string and ctyp and attributes
     (* first mutable, then virtual *)
-  | CgVal of loc and V bool and V bool and V string and ctyp and V (list (V (V string * payload)))
-  | CgVir of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
-  | CgFlAtt of loc and V (V string * payload)
+  | CgVal of loc and V bool and V bool and V string and ctyp and attributes
+  | CgVir of loc and V bool and V string and ctyp and attributes
+  | CgFlAtt of loc and attribute_body
   | CgExten of loc and attribute_body ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and V (list string) and V (list ctyp)
   | CeFun of loc and patt and class_expr
-  | CeLet of loc and V bool and V (list (patt * expr * V (list (V (V string * payload))))) and class_expr
+  | CeLet of loc and V bool and V (list (patt * expr * attributes)) and class_expr
   | CeStr of loc and V (option patt) and V (list class_str_item)
   | CeTyc of loc and class_expr and class_type
   | CeXtr of loc and string and option (V class_expr)
-  | CeAtt of loc and class_expr and V (V string * payload)
+  | CeAtt of loc and class_expr and attribute_body
   | CeExten of loc and attribute_body ]
 and class_str_item =
-  [ CrCtr of loc and ctyp and ctyp and V (list (V (V string * payload)))
+  [ CrCtr of loc and ctyp and ctyp and attributes
   | CrDcl of loc and V (list class_str_item)
-  | CrInh of loc and V bool and class_expr and V (option string) and V (list (V (V string * payload)))
-  | CrIni of loc and expr and V (list (V (V string * payload)))
+  | CrInh of loc and V bool and class_expr and V (option string) and attributes
+  | CrIni of loc and expr and attributes
   | CrMth of loc and V bool and V bool and V string and V (option ctyp) and
-      expr and V (list (V (V string * payload)))
-  | CrVal of loc and V bool and V bool and V string and expr and V (list (V (V string * payload)))
-  | CrVav of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
-  | CrVir of loc and V bool and V string and ctyp and V (list (V (V string * payload)))
-  | CrFlAtt of loc and V (V string * payload)
+      expr and attributes
+  | CrVal of loc and V bool and V bool and V string and expr and attributes
+  | CrVav of loc and V bool and V string and ctyp and attributes
+  | CrVir of loc and V bool and V string and ctyp and attributes
+  | CrFlAtt of loc and attribute_body
   | CrExten of loc and attribute_body ]
 
 and payload = [
@@ -273,7 +273,7 @@ and payload = [
 | PaAttr of loc and V patt and option (V expr)
 ]
 and attribute_body = V (V string * payload)
-and attributes = V (list (V (V string * payload)))
+and attributes = V (list attribute_body)
 ;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";
