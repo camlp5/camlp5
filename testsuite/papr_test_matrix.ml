@@ -1256,6 +1256,25 @@ and t2 = bool[@@foo];
   [ A of int
   | B of { a : int } ];
 |foo}
+    };
+    {name="list-type-def1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type 'a t = 'a list = [] | (::) of 'a * 'a list|foo} ;
+     official_input = OK {foo|type 'a t = 'a list = [] | (::) of 'a * 'a list|foo} ;
+     r_input = OK {foo|type t 'a = list 'a == [ [] | (::) of 'a and list 'a ];|foo} ;
+     o_output = OK {foo|type 'a t =
+  'a list =
+      []
+    | ( :: ) of 'a * 'a list;;
+|foo};
+     official_output = OK {foo|type 'a t = 'a list =
+  | [] 
+  | (::) of 'a * 'a list |foo} ;
+     r_output = OK {foo|type t α =
+  list α ==
+    [ []
+    | ( :: ) of α and list α ];
+|foo}
     }
 ]
 ;

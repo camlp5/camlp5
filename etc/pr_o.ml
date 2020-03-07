@@ -154,6 +154,9 @@ value cons_escaped pc (loc, v) =
     | "False" -> "false"
     | "True_" -> "True"
     | "False_" -> "False"
+    | "[]" -> "[]"
+    | "()" -> "()"
+    | "::" -> "( :: )"
     | _ -> v ]
   in
   pprintf pc "%s" x

@@ -1305,7 +1305,13 @@ EXTEND
   cons_ident:
     [ [ i = V UIDENT "uid" "" -> i
       | UIDENT "True" -> <:vala< "True_" >>
-      | UIDENT "False" -> <:vala< "False_" >> ] ]
+      | UIDENT "False" -> <:vala< "False_" >>
+      | "true" -> <:vala< "True" >>
+      | "false" -> <:vala< "False" >>
+      | "["; "]" -> <:vala< "[]" >>
+      | "("; ")" -> <:vala< "()" >>
+      | "("; "::" ; ")" -> <:vala< "::" >>
+      ] ]
   ;
   label_declarations:
     [ [ (a,b,c,d, attrs1) = label_declaration; ";"; attrs2 = alg_attributes_no_anti ; ldl = SELF ->

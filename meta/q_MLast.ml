@@ -1203,23 +1203,26 @@ EXTEND
       | "{"; ldl = SV (LIST1 label_declaration SEP ";"); "}" →
           Qast.Node "TyRec" [Qast.Loc; ldl] ] ]
   ;
+  cons_ident:
+  [ [ ci = SV UIDENT -> ci
+    ] ] ;
   constructor_declaration:
-    [ [ ci = SV UIDENT; "of"; cal = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
+    [ [ ci = cons_ident; "of"; cal = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
           Qast.Tuple [Qast.Loc; ci; cal; Qast.Option None; alg_attrs]
-      | ci = SV UIDENT; ":"; t = ctyp ; alg_attrs = alg_attributes →
+      | ci = cons_ident; ":"; t = ctyp ; alg_attrs = alg_attributes →
           let (tl, rt) = generalized_type_of_type t in
           Qast.Tuple [Qast.Loc; ci; Qast.VaVal tl; Qast.Option (Some rt); alg_attrs]
-      | ci = SV UIDENT ; alg_attrs = alg_attributes →
+      | ci = cons_ident ; alg_attrs = alg_attributes →
           Qast.Tuple
             [Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs] ] ]
   ;
   constructor_declaration_sans_alg_attrs:
-    [ [ ci = SV UIDENT; "of"; cal = SV (LIST1 ctyp SEP "and") →
+    [ [ ci = cons_ident; "of"; cal = SV (LIST1 ctyp SEP "and") →
           Qast.Tuple [Qast.Loc; ci; cal; Qast.Option None]
-      | ci = SV UIDENT; ":"; t = ctyp →
+      | ci = cons_ident; ":"; t = ctyp →
           let (tl, rt) = generalized_type_of_type t in
           Qast.Tuple [Qast.Loc; ci; Qast.VaVal tl; Qast.Option (Some rt)]
-      | ci = SV UIDENT →
+      | ci = cons_ident →
           Qast.Tuple
             [Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None] ] ]
   ;

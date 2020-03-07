@@ -176,7 +176,15 @@ value var_escaped pc (loc, v) =
   else lprintf pc "%s" v
 ;
 
-value cons_escaped pc s = pprintf pc "%s" s;
+value cons_escaped pc s =
+  let s = match s with [
+    "[]" -> "[]"
+  | "::" -> "( :: )"
+  | "()" ->  "()"
+  | s -> s ]
+  in
+  pprintf pc "%s" s
+;
 
 value rec mod_ident pc (loc, sl) =
   match sl with

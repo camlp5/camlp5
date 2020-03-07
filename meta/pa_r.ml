@@ -974,22 +974,28 @@ EXTEND
   [ [ x = ctyp LEVEL "below_alg_attribute" -> x ]
   ]
   ;
+  cons_ident:
+  [ [ ci = V UIDENT "uid" "" -> ci
+    | "[" ; "]" -> <:vala< "[]" >>
+    | "(" ; ")" -> <:vala< "()" >>
+    | "(" ; "::" ; ")" -> <:vala< "::" >>
+    ] ] ;
   constructor_declaration:
-    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = alg_attributes →
+    [ [ ci = cons_ident; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = alg_attributes →
           (loc, ci, cal, None, attrs)
-      | ci = V UIDENT "uid" ""; ":"; t = ctyp_below_alg_attribute ; attrs = alg_attributes →
+      | ci = cons_ident; ":"; t = ctyp_below_alg_attribute ; attrs = alg_attributes →
           let (tl, rt) = generalized_type_of_type t in
           (loc, ci, <:vala< tl >>, Some rt, attrs)
-      | ci = V UIDENT "uid" "" ; attrs = alg_attributes →
+      | ci = cons_ident; attrs = alg_attributes →
           (loc, ci, <:vala< [] >>, None, attrs) ] ]
   ;
   constructor_declaration_sans_alg_attrs:
-    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") →
+    [ [ ci = cons_ident; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") →
           (loc, ci, cal, None)
-      | ci = V UIDENT "uid" ""; ":"; t = ctyp_below_alg_attribute →
+      | ci = cons_ident; ":"; t = ctyp_below_alg_attribute →
           let (tl, rt) = generalized_type_of_type t in
           (loc, ci, <:vala< tl >>, Some rt)
-      | ci = V UIDENT "uid" "" →
+      | ci = cons_ident →
           (loc, ci, <:vala< [] >>, None) ] ]
   ;
   label_declaration:
