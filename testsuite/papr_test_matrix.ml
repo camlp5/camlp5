@@ -397,6 +397,17 @@ and t2 = bool[@@foo ]|foo} ;
 and t2 = bool[@@foo];
 |foo}
     };
+    {name="item_attribute4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t [@@a]|foo} ;
+     official_input = OK {foo|type t [@@a]|foo} ;
+     r_input = OK {foo|type t = 'a [@@a];|foo} ;
+     o_output = OK {foo|type t[@@a];;
+|foo};
+     official_output = OK {foo|type t[@@a ]|foo} ;
+     r_output = OK {foo|type t = α[@@a];
+|foo}
+    };
     {name="exception-decl-attributes1"; implem = True ;
      exclude=[];
      o_input = OK"exception Foo of int [@@foo]" ;

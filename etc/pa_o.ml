@@ -403,7 +403,7 @@ value is_type_decl_not_extension strm =
     | Some ("EOI","") -> True
     | Some ("","+=") -> False
     | Some (
-      ("","(") | ("",")") | ("","'") | ("",".") | ("",",") | ("","$") | ("",":") | ("","+") | ("","-")
+      ("",_)
       | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
       | ("ANTIQUOT",_)
     ) -> wrec (n+1)

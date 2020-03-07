@@ -318,9 +318,7 @@ let is_type_decl_not_extension strm =
     | Some ("EOI", "") -> true
     | Some ("", "+=") -> false
     | Some
-        ("", "(" | "", ")" | "", "'" | "", "." | "", "," | "", "$" | "", ":" |
-         "", "+" | "", "-" | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ |
-         "ANTIQUOT", _) ->
+        ("", _ | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
         wrec (n + 1)
     | Some (a, b) ->
         raise
