@@ -440,6 +440,9 @@ module Meta_make (C : MetaSig) =
           C.node "StExc"
             [C.vala C.string s; C.vala (C.list ctyp) lt;
              C.vala (C.list C.string) ls; alg_attrs; item_attrs]
+      | StExc2 _ extc attrs ->
+          let attrs = assert False in
+          C.node "StExc2" [extension_constructor extc; attrs] 
       | StExp _ e attrs →
           let attrs = assert False in
           C.node "StExp" [expr e; attrs]
@@ -506,6 +509,14 @@ module Meta_make (C : MetaSig) =
           C.vala (C.list (fun (t1, t2) → C.tuple [ctyp t1; ctyp t2]))
             x.tdCon);
          (record_label "tdAttributes", attrs)]
+    and extension_constructor = fun [
+      EcTuple s lt attrs ->
+        let attrs = assert False in
+        C.node_no_loc "EcTuple" [C.vala C.string s; C.vala (C.list ctyp) lt; attrs]
+    | EcRebind s ls attrs ->
+        let attrs = assert False in
+        C.node_no_loc "EcRebind" [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
+    ]
     and type_extension x =
       let attrs = assert False in
       C.record

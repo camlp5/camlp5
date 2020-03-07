@@ -553,6 +553,9 @@ and str_item floc sh =
     | StExc loc x1 x2 x3 x4 x5 →
         let loc = floc loc in
         StExc loc x1 (vala_map (List.map (ctyp floc sh)) x2) x3 x4 x5
+    | StExc2 loc x1 x2 →
+        let loc = floc loc in
+        StExc2 loc (extension_constructor floc sh x1) x2
     | StExp loc x1 x2 →
         let loc = floc loc in
         StExp loc (expr floc sh x1) x2
@@ -609,6 +612,10 @@ and type_extension floc sh x =
   {teNam = vala_map (fun (loc, x1) → (floc loc, x1)) x.teNam; tePrm = x.tePrm;
    tePrv = x.tePrv; teDef = ctyp floc sh x.teDef;
    teAttributes = x.teAttributes}
+and extension_constructor floc sh = fun [
+    EcTuple x1 x2 x3 -> EcTuple x1 (vala_map (List.map (ctyp floc sh)) x2) x3
+  | EcRebind x1 x2 x3 -> EcRebind x1 x2 x3
+]
 and class_type floc sh =
   self where rec self =
     fun

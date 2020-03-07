@@ -25,7 +25,7 @@ type 'a class_infos =
     ciPrm : loc * type_var list;
     ciNam : string;
     ciExp : 'a;
-    ciAttributes : (string * payload) list }
+    ciAttributes : attributes }
 and ctyp =
     TyAcc of loc * ctyp * ctyp
   | TyAli of loc * ctyp * ctyp
@@ -43,19 +43,16 @@ and ctyp =
   | TyPol of loc * string list * ctyp
   | TyPot of loc * string list * ctyp
   | TyQuo of loc * string
-  | TyRec of loc * (loc * string * bool * ctyp * (string * payload) list) list
-  | TySum of
-      loc *
-        (loc * string * ctyp list * ctyp option * (string * payload) list)
-          list
+  | TyRec of loc * (loc * string * bool * ctyp * attributes) list
+  | TySum of loc * (loc * string * ctyp list * ctyp option * attributes) list
   | TyTup of loc * ctyp list
   | TyUid of loc * string
   | TyVrn of loc * poly_variant list * string list option option
   | TyXtr of loc * string * ctyp option
-  | TyAtt of loc * ctyp * (string * payload)
+  | TyAtt of loc * ctyp * attribute_body
   | TyExten of loc * attribute_body
 and poly_variant =
-    PvTag of loc * string * bool * ctyp list * (string * payload) list
+    PvTag of loc * string * bool * ctyp list * attributes
   | PvInh of loc * ctyp
 and patt =
     PaAcc of loc * patt * patt
@@ -84,7 +81,7 @@ and patt =
   | PaUnp of loc * string option * module_type option
   | PaVrn of loc * string
   | PaXtr of loc * string * patt option
-  | PaAtt of loc * patt * (string * payload)
+  | PaAtt of loc * patt * attribute_body
   | PaExten of loc * attribute_body
 and expr =
     ExAcc of loc * expr * expr
@@ -104,8 +101,8 @@ and expr =
   | ExInt of loc * string * string
   | ExLab of loc * (patt * expr option) list
   | ExLaz of loc * expr
-  | ExLet of loc * bool * (patt * expr * (string * payload) list) list * expr
-  | ExLEx of loc * string * ctyp list * expr * (string * payload) list
+  | ExLet of loc * bool * (patt * expr * attributes) list * expr
+  | ExLEx of loc * string * ctyp list * expr * attributes
   | ExLid of loc * string
   | ExLmd of loc * string option * module_expr * expr
   | ExLop of loc * module_expr * expr
@@ -127,7 +124,7 @@ and expr =
   | ExVrn of loc * string
   | ExWhi of loc * expr * expr list
   | ExXtr of loc * string * expr option
-  | ExAtt of loc * expr * (string * payload)
+  | ExAtt of loc * expr * attribute_body
   | ExExten of loc * attribute_body
   | ExUnr of loc
 and module_type =
@@ -141,7 +138,7 @@ and module_type =
   | MtUid of loc * string
   | MtWit of loc * module_type * with_constr list
   | MtXtr of loc * string * module_type option
-  | MtAtt of loc * module_type * (string * payload)
+  | MtAtt of loc * module_type * attribute_body
   | MtExten of loc * attribute_body
 and functor_parameter = (string option * module_type) option
 and sig_item =
@@ -149,24 +146,20 @@ and sig_item =
   | SgClt of loc * class_type class_infos list
   | SgDcl of loc * sig_item list
   | SgDir of loc * string * expr option
-  | SgExc of
-      loc * string * ctyp list * (string * payload) list *
-        (string * payload) list
-  | SgExt of loc * string * ctyp * string list * (string * payload) list
-  | SgInc of loc * module_type * (string * payload) list
-  | SgMod of
-      loc * bool *
-        (string option * module_type * (string * payload) list) list
-  | SgMty of loc * string * module_type * (string * payload) list
-  | SgMtyAbs of loc * string * (string * payload) list
-  | SgMtyAlias of loc * string * string list * (string * payload) list
-  | SgOpn of loc * string list * (string * payload) list
+  | SgExc of loc * string * ctyp list * attributes * attributes
+  | SgExt of loc * string * ctyp * string list * attributes
+  | SgInc of loc * module_type * attributes
+  | SgMod of loc * bool * (string option * module_type * attributes) list
+  | SgMty of loc * string * module_type * attributes
+  | SgMtyAbs of loc * string * attributes
+  | SgMtyAlias of loc * string * string list * attributes
+  | SgOpn of loc * string list * attributes
   | SgTyp of loc * type_decl list
   | SgTypExten of loc * type_extension
   | SgUse of loc * string * (sig_item * loc) list
-  | SgVal of loc * string * ctyp * (string * payload) list
+  | SgVal of loc * string * ctyp * attributes
   | SgXtr of loc * string * sig_item option
-  | SgFlAtt of loc * (string * payload)
+  | SgFlAtt of loc * attribute_body
   | SgExten of loc * attribute_body
 and with_constr =
     WcMod of loc * string list * module_expr
@@ -182,31 +175,28 @@ and module_expr =
   | MeUid of loc * string
   | MeUnp of loc * expr * module_type option * module_type option
   | MeXtr of loc * string * module_expr option
-  | MeAtt of loc * module_expr * (string * payload)
+  | MeAtt of loc * module_expr * attribute_body
   | MeExten of loc * attribute_body
 and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list
   | StDcl of loc * str_item list
   | StDir of loc * string * expr option
-  | StExc of
-      loc * string * ctyp list * string list * (string * payload) list *
-        (string * payload) list
-  | StExp of loc * expr * (string * payload) list
-  | StExt of loc * string * ctyp * string list * (string * payload) list
-  | StInc of loc * module_expr * (string * payload) list
-  | StMod of
-      loc * bool *
-        (string option * module_expr * (string * payload) list) list
-  | StMty of loc * string * module_type * (string * payload) list
-  | StMtyAbs of loc * string * (string * payload) list
-  | StOpn of loc * bool * module_expr * (string * payload) list
+  | StExc of loc * string * ctyp list * string list * attributes * attributes
+  | StExc2 of loc * extension_constructor * attributes
+  | StExp of loc * expr * attributes
+  | StExt of loc * string * ctyp * string list * attributes
+  | StInc of loc * module_expr * attributes
+  | StMod of loc * bool * (string option * module_expr * attributes) list
+  | StMty of loc * string * module_type * attributes
+  | StMtyAbs of loc * string * attributes
+  | StOpn of loc * bool * module_expr * attributes
   | StTyp of loc * bool * type_decl list
   | StTypExten of loc * type_extension
   | StUse of loc * string * (str_item * loc) list
-  | StVal of loc * bool * (patt * expr * (string * payload) list) list
+  | StVal of loc * bool * (patt * expr * attributes) list
   | StXtr of loc * string * str_item option
-  | StFlAtt of loc * (string * payload)
+  | StFlAtt of loc * attribute_body
   | StExten of loc * attribute_body
 and type_decl =
   { tdNam : loc * string;
@@ -214,13 +204,16 @@ and type_decl =
     tdPrv : bool;
     tdDef : ctyp;
     tdCon : (ctyp * ctyp) list;
-    tdAttributes : (string * payload) list }
+    tdAttributes : attributes }
+and extension_constructor =
+    EcTuple of string * ctyp list * attributes
+  | EcRebind of string * string list * attributes
 and type_extension =
   { teNam : loc * string list;
     tePrm : type_var list;
     tePrv : bool;
     teDef : ctyp;
-    teAttributes : (string * payload) list }
+    teAttributes : attributes }
 and class_type =
     CtAcc of loc * class_type * class_type
   | CtApp of loc * class_type * class_type
@@ -229,40 +222,37 @@ and class_type =
   | CtIde of loc * string
   | CtSig of loc * ctyp option * class_sig_item list
   | CtXtr of loc * string * class_type option
-  | CtAtt of loc * class_type * (string * payload)
+  | CtAtt of loc * class_type * attribute_body
   | CtExten of loc * attribute_body
 and class_sig_item =
-    CgCtr of loc * ctyp * ctyp * (string * payload) list
+    CgCtr of loc * ctyp * ctyp * attributes
   | CgDcl of loc * class_sig_item list
-  | CgInh of loc * class_type * (string * payload) list
-  | CgMth of loc * bool * string * ctyp * (string * payload) list
-  | CgVal of loc * bool * bool * string * ctyp * (string * payload) list
-  | CgVir of loc * bool * string * ctyp * (string * payload) list
-  | CgFlAtt of loc * (string * payload)
+  | CgInh of loc * class_type * attributes
+  | CgMth of loc * bool * string * ctyp * attributes
+  | CgVal of loc * bool * bool * string * ctyp * attributes
+  | CgVir of loc * bool * string * ctyp * attributes
+  | CgFlAtt of loc * attribute_body
   | CgExten of loc * attribute_body
 and class_expr =
     CeApp of loc * class_expr * expr
   | CeCon of loc * string list * ctyp list
   | CeFun of loc * patt * class_expr
-  | CeLet of
-      loc * bool * (patt * expr * (string * payload) list) list * class_expr
+  | CeLet of loc * bool * (patt * expr * attributes) list * class_expr
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
   | CeXtr of loc * string * class_expr option
-  | CeAtt of loc * class_expr * (string * payload)
+  | CeAtt of loc * class_expr * attribute_body
   | CeExten of loc * attribute_body
 and class_str_item =
-    CrCtr of loc * ctyp * ctyp * (string * payload) list
+    CrCtr of loc * ctyp * ctyp * attributes
   | CrDcl of loc * class_str_item list
-  | CrInh of loc * bool * class_expr * string option * (string * payload) list
-  | CrIni of loc * expr * (string * payload) list
-  | CrMth of
-      loc * bool * bool * string * ctyp option * expr *
-        (string * payload) list
-  | CrVal of loc * bool * bool * string * expr * (string * payload) list
-  | CrVav of loc * bool * string * ctyp * (string * payload) list
-  | CrVir of loc * bool * string * ctyp * (string * payload) list
-  | CrFlAtt of loc * (string * payload)
+  | CrInh of loc * bool * class_expr * string option * attributes
+  | CrIni of loc * expr * attributes
+  | CrMth of loc * bool * bool * string * ctyp option * expr * attributes
+  | CrVal of loc * bool * bool * string * expr * attributes
+  | CrVav of loc * bool * string * ctyp * attributes
+  | CrVir of loc * bool * string * ctyp * attributes
+  | CrFlAtt of loc * attribute_body
   | CrExten of loc * attribute_body
 and payload =
     StAttr of loc * str_item list
@@ -270,7 +260,7 @@ and payload =
   | TyAttr of loc * ctyp
   | PaAttr of loc * patt * expr option
 and attribute_body = string * payload
-and attributes = (string * payload) list;;
+and attributes = attribute_body list;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;

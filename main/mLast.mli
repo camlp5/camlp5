@@ -196,6 +196,7 @@ and str_item =
   | StDcl of loc and V (list str_item)
   | StDir of loc and V string and V (option expr)
   | StExc of loc and V string and V (list ctyp) and V (list string) and attributes and attributes
+  | StExc2 of loc and extension_constructor and attributes
   | StExp of loc and expr and attributes
   | StExt of loc and V string and ctyp and V (list string) and attributes
   | StInc of loc and module_expr and attributes
@@ -217,6 +218,10 @@ and type_decl =
     tdDef : ctyp;
     tdCon : V (list (ctyp * ctyp));
     tdAttributes: attributes }
+and extension_constructor = [
+    EcTuple of V string and V (list ctyp) and attributes
+  | EcRebind of V string and V (list string) and attributes
+  ]
 and type_extension =
   { teNam : V (loc * V (list string));
     tePrm : V (list type_var);

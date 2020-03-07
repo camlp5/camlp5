@@ -450,62 +450,6 @@ let rec string ctx bp buf (strm__ : _ Stream.t) =
       | _ -> err ctx (bp, Stream.count strm__) "string not terminated"
 ;;
 
-let comment ctx bp =
-  let rec comment buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '*' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some ')' ->
-            Stream.junk strm__;
-            Plexing.Lexbuf.add ')' (Plexing.Lexbuf.add '*' buf)
-        | _ -> comment (Plexing.Lexbuf.add '*' buf) strm__
-        end
-    | Some '(' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some '*' ->
-            Stream.junk strm__;
-            let buf =
-              comment (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '(' buf))
-                strm__
-            in
-            comment buf strm__
-        | _ -> comment (Plexing.Lexbuf.add '(' buf) strm__
-        end
-    | Some '"' ->
-        Stream.junk strm__;
-        let buf = string ctx bp (Plexing.Lexbuf.add '"' buf) strm__ in
-        let buf = Plexing.Lexbuf.add '"' buf in comment buf strm__
-    | Some '\'' ->
-        Stream.junk strm__;
-        begin try
-          match Stream.peek strm__ with
-            Some '*' ->
-              Stream.junk strm__;
-              begin match Stream.peek strm__ with
-                Some ')' ->
-                  Stream.junk strm__;
-                  Plexing.Lexbuf.add ')'
-                    (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '\'' buf))
-              | _ ->
-                  comment
-                    (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '\'' buf))
-                    strm__
-              end
-          | _ ->
-              let buf = any ctx (Plexing.Lexbuf.add '\'' buf) strm__ in
-              comment buf strm__
-        with Stream.Failure -> raise (Stream.Error "")
-        end
-    | _ ->
-        match try Some (any ctx buf strm__) with Stream.Failure -> None with
-          Some buf -> comment buf strm__
-        | _ -> err ctx (bp, Stream.count strm__) "comment not terminated"
-  in
-  comment
-;;
-
 let rec quotation ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '>' ->
@@ -831,7 +775,7 @@ let rec any_to_nl buf (strm__ : _ Stream.t) =
   | _ -> buf
 ;;
 
-let rec rawstring1 (ofs, delim) ctx buf (strm__ : _ Stream.t) =
+let rec rawstring1 delimtok (ofs, delim) ctx buf (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
     Some c ->
@@ -839,13 +783,14 @@ let rec rawstring1 (ofs, delim) ctx buf (strm__ : _ Stream.t) =
       let strm = strm__ in
       ctx.line_cnt bp c;
       let buf = Plexing.Lexbuf.add c buf in
-      if String.get delim ofs <> c then rawstring1 (0, delim) ctx buf strm
+      if String.get delim ofs <> c then
+        rawstring1 delimtok (0, delim) ctx buf strm
       else if ofs + 1 < String.length delim then
-        rawstring1 (ofs + 1, delim) ctx buf strm
+        rawstring1 delimtok (ofs + 1, delim) ctx buf strm
       else
         let s = Plexing.Lexbuf.get buf in
         let slen = String.length s in
-        "STRING", String.escaped (String.sub s 0 (slen - String.length delim))
+        delimtok, String.sub s 0 (slen - String.length delim)
   | _ -> raise Stream.Failure
 ;;
 
@@ -855,12 +800,21 @@ let rec rawstring0 ctx bp buf (strm__ : _ Stream.t) =
     Some '|' ->
       Stream.junk strm__;
       let strm = strm__ in
-      rawstring1 (0, "|" ^ Plexing.Lexbuf.get buf ^ "}") ctx
-        Plexing.Lexbuf.empty strm
+      rawstring1 (Plexing.Lexbuf.get buf)
+        (0, "|" ^ Plexing.Lexbuf.get buf ^ "}") ctx Plexing.Lexbuf.empty strm
   | Some ('a'..'z' | '_' as c) ->
       Stream.junk strm__;
       let strm = strm__ in rawstring0 ctx bp (Plexing.Lexbuf.add c buf) strm
   | _ -> raise Stream.Failure
+;;
+
+let add_string buf s =
+  let slen = String.length s in
+  let rec addrec buf i =
+    if i = slen then buf
+    else addrec (Plexing.Lexbuf.add (String.get s i) buf) (i + 1)
+  in
+  addrec buf 0
 ;;
 
 (*
@@ -884,9 +838,80 @@ let raw_string_starter_p ctx strm =
   predrec 1
 ;;
 
+let comment_rawstring ctx bp (buf : Plexing.Lexbuf.t) strm =
+  if not (raw_string_starter_p ctx strm) then buf
+  else
+    let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
+    let rs = Printf.sprintf "{%s|%s|%s}" delim s delim in add_string buf rs
+;;
+
+let comment ctx bp =
+  let rec comment buf (strm__ : _ Stream.t) =
+    match Stream.peek strm__ with
+      Some '*' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some ')' ->
+            Stream.junk strm__;
+            Plexing.Lexbuf.add ')' (Plexing.Lexbuf.add '*' buf)
+        | _ -> comment (Plexing.Lexbuf.add '*' buf) strm__
+        end
+    | Some '{' ->
+        Stream.junk strm__;
+        let buf =
+          comment_rawstring ctx bp (Plexing.Lexbuf.add '{' buf) strm__
+        in
+        comment buf strm__
+    | Some '(' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some '*' ->
+            Stream.junk strm__;
+            let buf =
+              comment (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '(' buf))
+                strm__
+            in
+            comment buf strm__
+        | _ -> comment (Plexing.Lexbuf.add '(' buf) strm__
+        end
+    | Some '"' ->
+        Stream.junk strm__;
+        let buf = string ctx bp (Plexing.Lexbuf.add '"' buf) strm__ in
+        let buf = Plexing.Lexbuf.add '"' buf in comment buf strm__
+    | Some '\'' ->
+        Stream.junk strm__;
+        begin try
+          match Stream.peek strm__ with
+            Some '*' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ')' ->
+                  Stream.junk strm__;
+                  Plexing.Lexbuf.add ')'
+                    (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '\'' buf))
+              | _ ->
+                  comment
+                    (Plexing.Lexbuf.add '*' (Plexing.Lexbuf.add '\'' buf))
+                    strm__
+              end
+          | _ ->
+              let buf = any ctx (Plexing.Lexbuf.add '\'' buf) strm__ in
+              comment buf strm__
+        with Stream.Failure -> raise (Stream.Error "")
+        end
+    | _ ->
+        match try Some (any ctx buf strm__) with Stream.Failure -> None with
+          Some buf -> comment buf strm__
+        | _ -> err ctx (bp, Stream.count strm__) "comment not terminated"
+  in
+  comment
+;;
+
 let keyword_or_error_or_rawstring ctx bp (loc, s) buf strm =
   if not (raw_string_starter_p ctx strm) then keyword_or_error ctx loc "{"
-  else rawstring0 ctx bp Plexing.Lexbuf.empty strm
+  else
+    let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
+    "STRING", String.escaped s
 ;;
 
 let dotsymbolchar buf (strm__ : _ Stream.t) =
@@ -1705,11 +1730,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 877, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 877, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 877, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 878, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 878, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 897, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 897, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 897, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 898, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 898, 37)));
        tok_comm = None}
   in
   let glex =

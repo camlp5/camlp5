@@ -1590,6 +1590,7 @@ and str_item s l =
         | _ -> error loc "renamed exception should not have parameters"
       in
       mkstr loc si :: l
+  | StExc2 (_, _, _) -> assert false
   | StExp (loc, e, attrs) ->
       mkstr loc
         (ocaml_pstr_eval ~item_attributes:(item_attributes attrs) (expr e)) ::
