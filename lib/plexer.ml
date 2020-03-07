@@ -244,21 +244,6 @@ value rec string ctx bp =
   | -> err ctx (bp, $pos) "string not terminated" ]
 ;
 
-value comment ctx bp =
-  comment where rec comment =
-    lexer
-    [ "*)"
-    | "*" comment!
-    | "(*" comment! comment!
-    | "(" comment!
-    | "\"" (string ctx bp)! [ -> $add "\"" ] comment!
-    | "'*)"
-    | "'*" comment!
-    | "'" (any ctx) comment!
-    | (any ctx) comment!
-    | -> err ctx (bp, $pos) "comment not terminated" ]
-;
-
 value rec quotation ctx bp =
   lexer
   [ ">>"/
@@ -430,30 +415,39 @@ value rec any_to_nl =
   | ]
 ;
 
-value rec rawstring1 (ofs, delim) ctx buf =
+value rec rawstring1 delimtok (ofs, delim) ctx buf =
   parser bp [: `c ; strm :] -> do {
     ctx.line_cnt bp c;
     let buf = $add c in
     if String.get delim ofs <> c then
-      rawstring1 (0, delim) ctx buf strm
+      rawstring1 delimtok (0, delim) ctx buf strm
     else if ofs+1 < String.length delim then
-      rawstring1 (ofs+1, delim) ctx buf strm
+      rawstring1 delimtok (ofs+1, delim) ctx buf strm
     else
       let s = $buf in
-      let slen = String.length s in
-      ("STRING", String.escaped (String.sub s 0 (slen - (String.length delim))))
+      let slen = String.length s in do {
+      (delimtok, String.sub s 0 (slen - (String.length delim)))
+      }
   }
 ;
 
 value rec rawstring0 ctx bp buf =
   parser bp [
     [: `'|' ; strm :] -> do {
-      rawstring1 (0, "|" ^ $buf ^ "}") ctx $empty strm
+      rawstring1 $buf (0, "|" ^ $buf ^ "}") ctx $empty strm
     }
   | [: `('a'..'z' | '_' as c) ; strm :] -> do {
       rawstring0 ctx bp ($add c) strm
     }
   ]
+;
+
+value add_string buf s =
+  let slen = String.length s in
+  let rec addrec buf i =
+    if i = slen then buf
+    else addrec ($add (String.get s i)) (i+1)
+  in addrec buf 0
 ;
 
 (*
@@ -477,11 +471,37 @@ value raw_string_starter_p ctx strm =
   in predrec 1
 ;
 
+value comment_rawstring ctx bp (buf : Plexing.Lexbuf.t) strm =
+  if not (raw_string_starter_p ctx strm) then
+    buf
+  else
+  let (delim, s) = rawstring0 ctx bp $empty strm in
+  let rs = Printf.sprintf "{%s|%s|%s}" delim s delim in
+  add_string buf rs
+;
+
+value comment ctx bp =
+  comment where rec comment =
+    lexer
+    [ "*)"
+    | "*" comment!
+    | "{" (comment_rawstring ctx bp)! comment!
+    | "(*" comment! comment!
+    | "(" comment!
+    | "\"" (string ctx bp)! [ -> $add "\"" ] comment!
+    | "'*)"
+    | "'*" comment!
+    | "'" (any ctx) comment!
+    | (any ctx) comment!
+    | -> err ctx (bp, $pos) "comment not terminated" ]
+;
+
 value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
   if not (raw_string_starter_p ctx strm) then
     keyword_or_error ctx loc "{"
   else
-    rawstring0 ctx bp $empty strm
+    let (delim, s) = rawstring0 ctx bp $empty strm in
+    ("STRING", String.escaped s)
 ;
 
 value dotsymbolchar = lexer
