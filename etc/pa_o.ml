@@ -651,11 +651,11 @@ EXTEND
  ;
   str_item:
     [ "top"
-      [ "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs;
-        b = rebind_exn ; alg_attrs = alg_attributes ; item_attrs = item_attributes ->
-          if b = Ploc.VaVal [] then
+      [ "exception"; check_exception_decl; (_, c, tl, _) = constructor_declaration_sans_alg_attrs;
+        alg_attrs = alg_attributes ; item_attrs = item_attributes ->
           <:str_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
-          else
+      | "exception"; check_exception_rebind ; c = cons_ident ; b = rebind_exn ;
+        alg_attrs = alg_attributes ; item_attrs = item_attributes ->
           <:str_item< exception $_uid:c$ = $_list:b$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes ->
