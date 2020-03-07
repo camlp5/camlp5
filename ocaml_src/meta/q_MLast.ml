@@ -362,16 +362,34 @@ let stream_peek_nth n strm =
    Since a type-decl might not have an "=" (if it's a list of decls)
    the default is "type-decl".
 *)
+let word_keywordp s =
+  let rec wrec (strm__ : _ Stream.t) =
+    match Stream.peek strm__ with
+      Some ('a'..'z' | 'A'..'Z' | '_' | '0'..'9') ->
+        Stream.junk strm__; let strm = strm__ in wrec strm
+    | _ -> let strm = strm__ in Stream.empty strm; true
+  in
+  let check (strm__ : _ Stream.t) =
+    match Stream.peek strm__ with
+      Some ('a'..'z' | 'A'..'Z' | '_') ->
+        Stream.junk strm__; let strm = strm__ in wrec strm
+    | _ -> false
+  in
+  try check (Stream.of_string s) with Stream.Failure | Stream.Error _ -> false
+;;
+
 let is_type_decl_not_extension strm =
   let rec wrec n =
     match stream_peek_nth n strm with
       None -> assert false
-    | Some ("", "=" | "", "end" | "", "rec" | "", "nonrec") -> true
+    | Some ("", "=" | "", ";" | "", ";;") -> true
+    | Some ("", s) when word_keywordp s -> true
     | Some ("EOI", "") -> true
     | Some ("", "+=") -> false
     | Some
-        ("", "(" | "", ")" | "", "'" | "", "." | "", "$" | "", ":" |
-         "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
+        ("", "(" | "", ")" | "", "'" | "", "." | "", "," | "", "$" | "", ":" |
+         "", "+" | "", "-" | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ |
+         "ANTIQUOT", _) ->
         wrec (n + 1)
     | Some (a, b) ->
         raise
@@ -1945,7 +1963,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 462, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 475, 20))
                in
                Qast.Node
                  ("StExc", [Qast.Loc; c; tl; b; alg_attrs; item_attrs]) :
@@ -2986,7 +3004,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 556, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 569, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));

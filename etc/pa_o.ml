@@ -377,20 +377,33 @@ value check_let_not_exception =
    Since a type-decl might not have an "=" (if it's a list of decls)
    the default is "type-decl".
 *)
+value word_keywordp s =
+  let rec wrec = parser [
+    [: `('a'..'z'|'A'..'Z'|'_'|'0'..'9') ; strm :] -> wrec strm
+  | [: strm :] -> do { Stream.empty strm ; True }
+  ] in
+  let check = parser [
+    [: `('a'..'z'|'A'..'Z'|'_') ; strm :] -> wrec strm
+  | [:  :] -> False
+  ] in
+  try check (Stream.of_string s)
+  with Stream.Failure | (Stream.Error _) -> False
+;
+
 value is_type_decl_not_extension strm =
   let rec wrec n =
     match stream_peek_nth n strm with [
       None -> assert False
     | Some (
         ("","=")
-      | ("","end")
-      | ("","rec") 
-      | ("","nonrec")
+      | ("",";")
+      | ("",";;")
       ) -> True
+    | Some ("",s) when word_keywordp s -> True
     | Some ("EOI","") -> True
     | Some ("","+=") -> False
     | Some (
-      ("","(") | ("",")") | ("","'") | ("",".") | ("","$") | ("",":")
+      ("","(") | ("",")") | ("","'") | ("",".") | ("",",") | ("","$") | ("",":") | ("","+") | ("","-")
       | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
       | ("ANTIQUOT",_)
     ) -> wrec (n+1)
