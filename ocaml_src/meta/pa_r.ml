@@ -1089,7 +1089,9 @@ Grammar.safe_extend
                 (b : 'rebind_exn)
                 (_, c, tl, _ : 'constructor_declaration_sans_alg_attrs) _
                 (loc : Ploc.t) ->
-              (MLast.StExc (loc, c, tl, b, alg_attrs, item_attrs) :
+              (if b = [] then
+                 MLast.StExc (loc, c, tl, [], alg_attrs, item_attrs)
+               else MLast.StExc (loc, c, [], b, alg_attrs, item_attrs) :
                'str_item)));
         Grammar.production
           (Grammar.r_next

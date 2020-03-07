@@ -1072,7 +1072,7 @@ EXTEND_PRINTER
           type_decl_list pc tdl
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->
           exception_decl pc (c, tl)
-      | <:str_item< exception $uid:c$ of $list:_$ = $id$ >> ->
+      | <:str_item< exception $uid:c$ = $id$ >> ->
           plistbf 0 (paren pc "exceptionrebind")
             [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "");
              (fun pc -> longident pc id, "")]

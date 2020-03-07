@@ -205,7 +205,8 @@ and str_item x =
       <:str_item< class $list:List.map (class_infos class_expr) ce$ >>
   | <:str_item< $exp:e$ >> -> <:str_item< $exp:expr e$ >>
   | <:str_item< open $_$ >> | <:str_item< type $list:_$ >> |
-    <:str_item< exception $uid:_$ of $list:_$ = $_$ >> |
+    <:str_item< exception $uid:_$ of $list:_$ >> |
+    <:str_item< exception $uid:_$ = $_$ >> |
     <:str_item< module type $_$ = $_$ >> |
     <:str_item< # $lid:_$ $opt:_$ >> ->
       x

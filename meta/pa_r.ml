@@ -425,7 +425,10 @@ EXTEND
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
           <:str_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs; b = rebind_exn ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
-          <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
+          if b = <:vala< [] >> then
+          <:str_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
+          else
+          <:str_item< exception $_uid:c$ = $_:b$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>

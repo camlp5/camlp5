@@ -1875,8 +1875,10 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after str_item)) sil)
-      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
-          exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs)
+      | <:str_item:< exception $uid:e$ of $list:tl$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
+          exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
+      | <:str_item:< exception $uid:e$ = $id$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
+          exception_decl pc (loc, e, [], id, alg_attrs, item_attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           if is_operator n then
             external_decl_original pc (loc, n, t, sl, attrs)

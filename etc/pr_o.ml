@@ -1780,8 +1780,10 @@ EXTEND_PRINTER
               else str_item
             in
             vlistl str_item_sep str_item pc sil
-      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
-          exception_decl pc (loc, e, tl, id, alg_attrs, item_attrs)
+      | <:str_item:< exception $uid:e$ of $list:tl$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
+          exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
+      | <:str_item:< exception $uid:e$ = $id$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
+          exception_decl pc (loc, e, [], id, alg_attrs, item_attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
       | <:str_item< include $me$ $_itemattrs:attrs$ >> ->

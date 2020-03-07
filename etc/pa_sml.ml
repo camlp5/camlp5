@@ -875,7 +875,10 @@ EXTEND
           let dl =
             List.map
               (fun (s, tl, eqn) ->
-                 <:str_item< exception $uid:s$ of $list:tl$ = $eqn$ >>)
+                 if eqn = [] then
+                 <:str_item< exception $uid:s$ of $list:tl$ >>
+                 else
+                 <:str_item< exception $uid:s$ = $eqn$ >>)
               x1
           in
           str_declare loc dl

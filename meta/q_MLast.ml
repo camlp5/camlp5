@@ -364,6 +364,49 @@ value check_type_extension =
     check_type_extension_f
 ;
 
+(* an exception definition is one of:
+
+   exception E of ...
+or exception E = A.B.C ...
+
+E could be an ID, or a two-part constructor-name, or an escaped operator (3 tokens).
+
+So we might have to search out 4 tokens
+
+*)
+
+value is_exception_decl_or_rebind strm =
+  let rec checkrec n =
+  if n = 4 then raise (Stream.Error "is_exception_decl_or_rebind: neither of two forms of exception defn")
+  else
+  match stream_peek_nth n strm with [
+    Some("","of") -> True
+  | Some("","=") -> False
+  | _ -> checkrec (n+1)
+  ] in
+  checkrec 1
+;
+
+value check_exception_decl_f strm =
+  if is_exception_decl_or_rebind strm then ()
+  else raise Stream.Failure
+;
+
+value check_exception_decl =
+  Grammar.Entry.of_parser gram "check_exception_decl"
+    check_exception_decl_f
+;
+
+value check_exception_rebind_f strm =
+  if not (is_exception_decl_or_rebind strm) then ()
+  else raise Stream.Failure
+;
+
+value check_exception_rebind =
+  Grammar.Entry.of_parser gram "check_exception_rebind"
+    check_exception_rebind_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -468,13 +511,19 @@ EXTEND
     | "simple"
       [ "declare"; st = SV (LIST0 [ s = str_item; ";" → s ]); "end" →
           Qast.Node "StDcl" [Qast.Loc; st]
-      | "exception"; ctl = constructor_declaration_sans_alg_attrs; b = rebind_exn ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
+      | "exception"; check_exception_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
+          Qast.Node "StExc" [Qast.Loc; c; Qast.VaVal (Qast.List[]); b; alg_attrs; item_attrs]
+
+      | "exception"; check_exception_decl ; ctl = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
           let (_, c, tl, _) =
             match ctl with
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
-          Qast.Node "StExc" [Qast.Loc; c; tl; b; alg_attrs; item_attrs]
+          Qast.Node "StExc" [Qast.Loc; c; tl; Qast.VaVal (Qast.List[]); alg_attrs; item_attrs]
+
+
+
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
           Qast.Node "StExt" [Qast.Loc; i; t; pd; attrs]

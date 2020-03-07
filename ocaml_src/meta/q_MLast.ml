@@ -415,6 +415,49 @@ let check_type_extension =
   Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f
 ;;
 
+(* an exception definition is one of:
+
+   exception E of ...
+or exception E = A.B.C ...
+
+E could be an ID, or a two-part constructor-name, or an escaped operator (3 tokens).
+
+So we might have to search out 4 tokens
+
+*)
+
+let is_exception_decl_or_rebind strm =
+  let rec checkrec n =
+    if n = 4 then
+      raise
+        (Stream.Error
+           "is_exception_decl_or_rebind: neither of two forms of exception defn")
+    else
+      match stream_peek_nth n strm with
+        Some ("", "of") -> true
+      | Some ("", "=") -> false
+      | _ -> checkrec (n + 1)
+  in
+  checkrec 1
+;;
+
+let check_exception_decl_f strm =
+  if is_exception_decl_or_rebind strm then () else raise Stream.Failure
+;;
+
+let check_exception_decl =
+  Grammar.Entry.of_parser gram "check_exception_decl" check_exception_decl_f
+;;
+
+let check_exception_rebind_f strm =
+  if not (is_exception_decl_or_rebind strm) then () else raise Stream.Failure
+;;
+
+let check_exception_rebind =
+  Grammar.Entry.of_parser gram "check_exception_rebind"
+    check_exception_rebind_f
+;;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -1947,9 +1990,42 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("", "exception")))
                       (Grammar.s_nterm
-                         (constructor_declaration_sans_alg_attrs :
-                          'constructor_declaration_sans_alg_attrs
-                            Grammar.Entry.e)))
+                         (check_exception_decl :
+                          'check_exception_decl Grammar.Entry.e)))
+                   (Grammar.s_nterm
+                      (constructor_declaration_sans_alg_attrs :
+                       'constructor_declaration_sans_alg_attrs
+                         Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (alg_attributes : 'alg_attributes Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (item_attrs : 'item_attributes) (alg_attrs : 'alg_attributes)
+                (ctl : 'constructor_declaration_sans_alg_attrs) _ _
+                (loc : Ploc.t) ->
+              (let (_, c, tl, _) =
+                 match ctl with
+                   Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
+                 | _ -> raise (Match_failure ("q_MLast.ml", 521, 20))
+               in
+               Qast.Node
+                 ("StExc",
+                  [Qast.Loc; c; tl; Qast.VaVal (Qast.List []); alg_attrs;
+                   item_attrs]) :
+               'str_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "exception")))
+                         (Grammar.s_nterm
+                            (check_exception_rebind :
+                             'check_exception_rebind Grammar.Entry.e)))
+                      (Grammar.s_nterm
+                         (cons_ident : 'cons_ident Grammar.Entry.e)))
                    (Grammar.s_nterm
                       (rebind_exn : 'rebind_exn Grammar.Entry.e)))
                 (Grammar.s_nterm
@@ -1957,16 +2033,11 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            (fun (item_attrs : 'item_attributes) (alg_attrs : 'alg_attributes)
-                (b : 'rebind_exn)
-                (ctl : 'constructor_declaration_sans_alg_attrs) _
-                (loc : Ploc.t) ->
-              (let (_, c, tl, _) =
-                 match ctl with
-                   Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 475, 20))
-               in
-               Qast.Node
-                 ("StExc", [Qast.Loc; c; tl; b; alg_attrs; item_attrs]) :
+                (b : 'rebind_exn) (c : 'cons_ident) _ _ (loc : Ploc.t) ->
+              (Qast.Node
+                 ("StExc",
+                  [Qast.Loc; c; Qast.VaVal (Qast.List []); b; alg_attrs;
+                   item_attrs]) :
                'str_item)));
         Grammar.production
           (Grammar.r_next
@@ -3004,7 +3075,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 569, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 618, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));

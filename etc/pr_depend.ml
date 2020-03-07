@@ -225,7 +225,7 @@ and str_item =
       list (fun ci -> class_expr ci.ciExp) cil
   | <:str_item< declare $list:sil$ end >> -> list str_item sil
   | StDir _ _ _ -> ()
-  | <:str_item< exception $uid:_$ of $list:tl$ = $list:_$ >> -> list ctyp tl
+  | <:str_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
   | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
   | <:str_item< include $me$ >> -> module_expr me
