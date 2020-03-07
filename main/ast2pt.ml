@@ -1340,6 +1340,11 @@ and str_item s l =
       | None → error loc "no class type in this ocaml version" ]
   | StDcl loc sl → List.fold_right str_item (uv sl) l
   | StDir loc _ _ → l
+  | StExc2 loc (EcTuple n tl alg_attrs) item_attrs ->
+    str_item (StExc loc n tl <:vala< [] >> alg_attrs item_attrs) l
+  | StExc2 loc (EcRebind n sl alg_attrs) item_attrs ->
+    str_item (StExc loc n <:vala< [] >> sl alg_attrs item_attrs) l
+
   | StExc loc n tl sl alg_attrs item_attrs →
       let si =
         match (uv tl, uv sl) with
@@ -1356,7 +1361,6 @@ and str_item s l =
         | _ → error loc "renamed exception should not have parameters" ]
       in
       [mkstr loc si :: l]
-  | StExc2 _ _ _ -> assert False
   | StExp loc e attrs → [mkstr loc (ocaml_pstr_eval ~{item_attributes=item_attributes attrs} (expr e)) :: l]
   | StExt loc n t p attrs →
       let vn = uv n in
