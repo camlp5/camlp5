@@ -4,11 +4,11 @@ recipes:
     name: cp
     steps:
       - cp
-      - brave-comment-stripper
+      - brave-comment-stripper.original
       - cowardly-arrow
   roundtrip-ocamlformat:
     name: roundtrip-ocamlformat
     steps:
-      - brave-comment-stripper
+      - brave-comment-stripper.original
       - cowardly-arrow
       - ocamlformat

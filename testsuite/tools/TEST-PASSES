@@ -84,7 +84,7 @@ our %tools = (
     },
   },
 
-  'brave-comment-stripper' => {
+  'brave-comment-stripper.original' => {
     'name' => 'brave-comment-stripper',
 	'command' => sub {
 	  my %args = @_ ;
@@ -94,6 +94,25 @@ our %tools = (
 	  my $txt = v_capturex([0],
 			       [ "./roundtrip_lexer.byte",
 			       "-mode","lexer-passthru",
+                               "-syntax","original",
+			       "-strip-comments",
+				 $inputf],
+	      'output-filename' => $outputf) ;
+	  return 0 ;
+    },
+  },
+
+  'brave-comment-stripper.revised' => {
+    'name' => 'brave-comment-stripper',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = v_capturex([0],
+			       [ "./roundtrip_lexer.byte",
+			       "-mode","lexer-passthru",
+                               "-syntax","revised",
 			       "-strip-comments",
 				 $inputf],
 	      'output-filename' => $outputf) ;

@@ -304,9 +304,27 @@ value eval env =
 ;
 end ;
 
-value lex_stream1 is = do {
-  Plexer.dollar_for_antiquotation.val := False ;
+value syntax = ref "revised" ;
+value set_syntax s = syntax.val := s ;
+
+value setup_syntax () =
+  match syntax.val with [
+    "revised" -> do {
+  Plexer.dollar_for_antiquotation.val := False;
+  Plexer.simplest_raw_strings.val := False;
   Plexer.utf8_lexing.val := True;
+  Plexer.dot_newline_is.val := ";"
+    }
+  | "original" -> do {
+  Plexer.dollar_for_antiquotation.val := False;
+  Plexer.simplest_raw_strings.val := True;
+  Plexer.utf8_lexing.val := True
+    }
+  | _ -> failwith (Printf.sprintf "syntax <<%s>> not recognized" syntax.val)
+];
+
+value lex_stream1 is = do {
+  setup_syntax() ;
   let lexer = Plexer.gmake() in
   let (strm, locfun) = lexer.Plexing.tok_func is in
   let rec addloc i =
@@ -517,6 +535,7 @@ value un_def s =
 value roundtrip_lexer () = do {
     Arg.(parse [
              ("-mode",(Symbol ["lexer-passthru";"parse-pp";"ifdef-eval"] set_mode)," choose mode") ;
+             ("-syntax",(Symbol ["original";"revised"] set_syntax),"choose syntax") ;
              ("-D", String add_def, " add def") ;
              ("-U", String un_def, " un def");
              ("-strip-comments", Set strip_comments, " strip comments")
