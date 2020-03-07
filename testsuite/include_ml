@@ -55,6 +55,8 @@ open Testutil2 ;;
 #load "roundtrip_lexer.cmo";;
 open Roundtrip_lexer ;;
 *)
+let pp_plexing_lexbuf b = Fmt.(pf stdout "<<%s>>" (Plexing.Lexbuf.get b)) ;;
+#install_printer pp_plexing_lexbuf ;;
 
 (*
 #load "papr_matrix_test.cmo" ;;
