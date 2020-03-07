@@ -371,17 +371,19 @@ or exception E = A.B.C ...
 
 E could be an ID, or a two-part constructor-name, or an escaped operator (3 tokens).
 
-So we might have to search out 4 tokens
+So we might have to search out 4 tokens.  If we find no "=", then just default to defn.
+Similarly, if the input ends before we find an "=", default to defn.
 
 *)
 
 value is_exception_decl_or_rebind strm =
   let rec checkrec n =
-  if n = 4 then raise (Stream.Error "is_exception_decl_or_rebind: neither of two forms of exception defn")
+  if n = 4 then True
   else
   match stream_peek_nth n strm with [
     Some("","of") -> True
   | Some("","=") -> False
+  | None -> True
   | _ -> checkrec (n+1)
   ] in
   checkrec 1

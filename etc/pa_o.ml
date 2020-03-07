@@ -432,6 +432,50 @@ value check_type_extension =
     check_type_extension_f
 ;
 
+(* an exception definition is one of:
+
+   exception E of ...
+or exception E = A.B.C ...
+
+E could be an ID, or a two-part constructor-name, or an escaped operator (3 tokens).
+
+So we might have to search out 4 tokens
+
+*)
+
+value is_exception_decl_or_rebind strm =
+  let rec checkrec n =
+  if n = 4 then True
+  else
+  match stream_peek_nth n strm with [
+    Some("","of") -> True
+  | Some("","=") -> False
+  | None -> True
+  | _ -> checkrec (n+1)
+  ] in
+  checkrec 1
+;
+
+value check_exception_decl_f strm =
+  if is_exception_decl_or_rebind strm then ()
+  else raise Stream.Failure
+;
+
+value check_exception_decl =
+  Grammar.Entry.of_parser gram "check_exception_decl"
+    check_exception_decl_f
+;
+
+value check_exception_rebind_f strm =
+  if not (is_exception_decl_or_rebind strm) then ()
+  else raise Stream.Failure
+;
+
+value check_exception_rebind =
+  Grammar.Entry.of_parser gram "check_exception_rebind"
+    check_exception_rebind_f
+;
+
 value check_module_alias_f = (fun strm ->
        match Stream.npeek 3 strm with
        [ [("", "module"); ("UIDENT", _); ("", "=")] -> ()
