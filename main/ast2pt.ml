@@ -610,6 +610,11 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
   | TyMan loc t pf <:ctyp< [ $list:ctl$ ] >> →
       let priv = if uv pf then Private else Public in
       mktype ~{item_attributes=item_attributes} loc tn tl cl (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
+
+  | TyMan loc t pf <:ctyp< .. >> →
+      let priv = if uv pf then Private else Public in
+      mktype ~{item_attributes=item_attributes} loc tn tl cl (ocaml_ptype_open ()) priv (Some (ctyp t))
+
   | TyRec loc ltl →
       mktype ~{item_attributes=item_attributes} loc tn tl cl (mktrecord (uv ltl) False) priv None
   | TySum loc ctl →

@@ -763,6 +763,10 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
       let priv = if uv pf then Private else Public in
       mktype ~item_attributes:item_attributes loc tn tl cl
         (mktvariant loc ctl (uv pf)) priv (Some (ctyp t))
+  | TyMan (loc, t, pf, MLast.TyOpn _) ->
+      let priv = if uv pf then Private else Public in
+      mktype ~item_attributes:item_attributes loc tn tl cl
+        (ocaml_ptype_open ()) priv (Some (ctyp t))
   | TyRec (loc, ltl) ->
       mktype ~item_attributes:item_attributes loc tn tl cl
         (mktrecord (uv ltl) false) priv None

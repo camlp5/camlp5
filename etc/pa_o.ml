@@ -1233,6 +1233,7 @@ EXTEND
     [ [ test_constr_decl; OPT "|";
         cdl = LIST1 constructor_declaration SEP "|" ->
           <:ctyp< [ $list:cdl$ ] >>
+      | ".." -> <:ctyp< .. >>
       | t = ctyp ->
           <:ctyp< $t$ >>
       | t = ctyp; "="; pf = FLAG "private"; "{";
@@ -1241,6 +1242,8 @@ EXTEND
       | t = ctyp; "="; pf = FLAG "private"; OPT "|";
         cdl = LIST1 constructor_declaration SEP "|" ->
           <:ctyp< $t$ == $priv:pf$ [ $list:cdl$ ] >>
+      | t = ctyp; "="; pf = FLAG "private"; ".." ->
+          <:ctyp< $t$ == $priv:pf$ .. >>
       | "{"; ldl = V label_declarations "list"; "}" ->
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;
@@ -1341,7 +1344,6 @@ EXTEND
       | t1 = SELF; "("; t2 = SELF; ")" -> <:ctyp< $t1$ $t2$ >> ]
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
-      | ".." -> <:ctyp< .. >>
       | "_" -> <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>

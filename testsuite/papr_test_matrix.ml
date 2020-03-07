@@ -1217,6 +1217,17 @@ and t2 = bool[@@foo];
   | B of { a : int } ];
 |foo}
     };
+    {name="type-extension-str-item2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = exn = ..|foo} ;
+     official_input = OK {foo|type t = exn = ..|foo} ;
+     r_input = OK {foo|type t = exn == ..;|foo} ;
+     o_output = OK {foo|type t = exn = ..;;
+|foo};
+     official_output = OK {foo|type t = exn = ..|foo} ;
+     r_output = OK {foo|type t = exn == ..;
+|foo}
+    };
     {name="type-extension-sig-item1"; implem = False ;
      exclude=[];
      o_input = OK {foo|type t += A of int | B of { a : int }|foo} ;
