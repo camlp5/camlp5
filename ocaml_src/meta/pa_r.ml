@@ -43,6 +43,7 @@ Grammar.Unsafe.clear_entry ctyp;
 Grammar.Unsafe.clear_entry let_binding;
 Grammar.Unsafe.clear_entry type_decl;
 Grammar.Unsafe.clear_entry type_extension;
+Grammar.Unsafe.clear_entry extension_constructor;
 Grammar.Unsafe.clear_entry constructor_declaration;
 Grammar.Unsafe.clear_entry label_declaration;
 Grammar.Unsafe.clear_entry match_case;
@@ -407,6 +408,7 @@ Grammar.safe_extend
    and _ = (let_binding : 'let_binding Grammar.Entry.e)
    and _ = (type_decl : 'type_decl Grammar.Entry.e)
    and _ = (type_extension : 'type_extension Grammar.Entry.e)
+   and _ = (extension_constructor : 'extension_constructor Grammar.Entry.e)
    and _ =
      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
    and _ = (label_declaration : 'label_declaration Grammar.Entry.e)
@@ -438,8 +440,6 @@ Grammar.safe_extend
      grammar_entry_create "item_extension"
    and alg_extension : 'alg_extension Grammar.Entry.e =
      grammar_entry_create "alg_extension"
-   and extension_constructor : 'extension_constructor Grammar.Entry.e =
-     grammar_entry_create "extension_constructor"
    and rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
    and mod_binding : 'mod_binding Grammar.Entry.e =

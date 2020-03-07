@@ -54,6 +54,7 @@ val let_binding :
   (MLast.patt * MLast.expr * MLast.attributes) Grammar.Entry.e;;
 val type_decl : MLast.type_decl Grammar.Entry.e;;
 val type_extension : MLast.type_extension Grammar.Entry.e;;
+val extension_constructor : MLast.extension_constructor Grammar.Entry.e;;
 val match_case :
   (MLast.patt * MLast.expr option MLast.v * MLast.expr) Grammar.Entry.e;;
 val constructor_declaration :

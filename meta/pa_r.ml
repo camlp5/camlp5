@@ -44,6 +44,7 @@ do {
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_decl;
   Grammar.Unsafe.clear_entry type_extension;
+  Grammar.Unsafe.clear_entry extension_constructor;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
@@ -368,7 +369,7 @@ value check_extension_rebind =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type module_expr signature
     structure class_type class_expr class_sig_item class_str_item let_binding
-    type_decl type_extension
+    type_decl type_extension extension_constructor
     constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant attribute_body alg_attribute alg_attributes
     check_type_decl check_type_extension

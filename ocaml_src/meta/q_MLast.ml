@@ -199,6 +199,9 @@ let ipatt = Grammar.Entry.create gram "ipatt";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
 let type_decl = Grammar.Entry.create gram "type_decl";;
 let type_extension = Grammar.Entry.create gram "type_extension";;
+let extension_constructor =
+  Grammar.Entry.create gram "extension_constructor"
+;;
 let match_case = Grammar.Entry.create gram "match_case";;
 let constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration"
@@ -1480,7 +1483,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 515, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 516, 20))
                in
                Qast.Node ("EcTuple", [c; tl; alg_attrs]) :
                'extension_constructor)));
@@ -3091,7 +3094,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 622, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 623, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));
@@ -11474,6 +11477,9 @@ let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
 let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
 let type_extension_eoi = Grammar.Entry.create gram "type_extension_eoi" in
+let extension_constructor_eoi =
+  Grammar.Entry.create gram "extension_constructor_eoi"
+in
 Grammar.safe_extend
   [Grammar.extension
      (attribute_body_eoi : 'attribute_body_eoi Grammar.Entry.e) None
@@ -11622,7 +11628,20 @@ Grammar.safe_extend
                   (type_extension : 'type_extension Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           (fun _ (x : 'type_extension) (loc : Ploc.t) ->
-             (x : 'type_extension_eoi)))]]];
+             (x : 'type_extension_eoi)))]];
+   Grammar.extension
+     (extension_constructor_eoi : 'extension_constructor_eoi Grammar.Entry.e)
+     None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (extension_constructor :
+                   'extension_constructor Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          (fun _ (x : 'extension_constructor) (loc : Ploc.t) ->
+             (x : 'extension_constructor_eoi)))]]];
 List.iter (fun (q, f) -> Quotation.add q (f q))
   ["attribute_body", apply_entry attribute_body_eoi;
    "sig_item", apply_entry sig_item_eoi; "str_item", apply_entry str_item_eoi;
@@ -11636,7 +11655,8 @@ List.iter (fun (q, f) -> Quotation.add q (f q))
    "with_constr", apply_entry with_constr_eoi;
    "poly_variant", apply_entry poly_variant_eoi;
    "type_decl", apply_entry type_decl_eoi;
-   "type_extension", apply_entry type_extension_eoi];;
+   "type_extension", apply_entry type_extension_eoi;
+   "extension_constructor", apply_entry extension_constructor_eoi];;
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
 Grammar.safe_extend

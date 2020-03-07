@@ -53,6 +53,7 @@ value ctyp : Grammar.Entry.e MLast.ctyp;
 value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr * MLast.attributes);
 value type_decl : Grammar.Entry.e MLast.type_decl;
 value type_extension : Grammar.Entry.e MLast.type_extension;
+value extension_constructor : Grammar.Entry.e MLast.extension_constructor;
 value match_case :
   Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);
 value constructor_declaration :

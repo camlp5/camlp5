@@ -157,6 +157,7 @@ value ipatt = Grammar.Entry.create gram "ipatt";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_decl = Grammar.Entry.create gram "type_decl";
 value type_extension = Grammar.Entry.create gram "type_extension";
+value extension_constructor = Grammar.Entry.create gram "extension_constructor";
 value match_case = Grammar.Entry.create gram "match_case";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";
@@ -1881,6 +1882,7 @@ let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
 let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
 let type_extension_eoi = Grammar.Entry.create gram "type_extension_eoi" in
+let extension_constructor_eoi = Grammar.Entry.create gram "extension_constructor_eoi" in
 do {
   EXTEND
     attribute_body_eoi: [ [ x = attribute_body; EOI -> x ] ];
@@ -1899,6 +1901,7 @@ do {
     poly_variant_eoi: [ [ x = poly_variant; EOI -> x ] ];
     type_decl_eoi: [ [ x = type_decl; EOI -> x ] ];
     type_extension_eoi: [ [ x = type_extension; EOI -> x ] ];
+    extension_constructor_eoi: [ [ x = extension_constructor; EOI -> x ] ];
   END;
   List.iter (fun (q, f) -> Quotation.add q (f q))
     [("attribute_body", apply_entry attribute_body_eoi);
@@ -1916,7 +1919,8 @@ do {
      ("with_constr", apply_entry with_constr_eoi);
      ("poly_variant", apply_entry poly_variant_eoi);
      ("type_decl", apply_entry type_decl_eoi);
-     ("type_extension", apply_entry type_extension_eoi)];
+     ("type_extension", apply_entry type_extension_eoi);
+     ("extension_constructor", apply_entry extension_constructor_eoi)];
 };
 
 do {

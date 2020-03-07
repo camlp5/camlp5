@@ -39,6 +39,7 @@ do {
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_decl;
   Grammar.Unsafe.clear_entry type_extension;
+  Grammar.Unsafe.clear_entry extension_constructor;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
@@ -520,7 +521,8 @@ value merge_right_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} lef
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
-    let_binding type_decl type_extension constructor_declaration label_declaration
+    let_binding type_decl type_extension extension_constructor
+    constructor_declaration label_declaration
     match_case with_constr poly_variant lbl_expr lbl_expr_list
     attribute_body alg_attribute alg_attributes
     ;
