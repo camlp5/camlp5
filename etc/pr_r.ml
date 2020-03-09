@@ -783,6 +783,7 @@ value type_extension pc te =
     (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
      te.MLast.teDef, te.MLast.teAttributes)
   in
+  let te = assert False in
   let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->

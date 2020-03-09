@@ -632,6 +632,10 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 and type_extension loc te =
   let pf = uv te.tePrv in
+
+  let _ = pf in
+  (assert False)
+(*
   let tedef = match te.teDef with [
     TySum loc ctl -> mktvariant loc (uv ctl) pf
   | TyRec loc _ -> error loc "bare record-type not allowed as type-extension"
@@ -642,7 +646,7 @@ and type_extension loc te =
     (List.map (fun (p,v) -> (uv p, variance_of_var v)) (uv te.tePrm))
     (if pf then Private else Public)
     tedef
-
+*)
 and patt =
   fun
   [ PaAtt loc p1 a ->

@@ -3369,7 +3369,7 @@ Grammar.safe_extend
            (fun (attrs : 'item_attributes) (tk : 'ctyp) (pf : bool) _
                 (tpl : 'type_parameter list) (n : 'mod_ident_patt)
                 (loc : Ploc.t) ->
-              ({MLast.teNam = n; tePrm = tpl; tePrv = pf; teDef = tk;
+              ({MLast.teNam = n; tePrm = tpl; tePrv = pf; teDef = ();
                 teAttributes = attrs; teECs = []} :
                'type_extension)))]];
     Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None

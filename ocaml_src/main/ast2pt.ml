@@ -786,19 +786,7 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
       in
       mktype ~item_attributes:item_attributes (loc_of_ctyp t) tn tl cl
         Ptype_abstract priv m
-and type_extension loc te =
-  let pf = uv te.tePrv in
-  let tedef =
-    match te.teDef with
-      TySum (loc, ctl) -> mktvariant loc (uv ctl) pf
-    | TyRec (loc, _) ->
-        error loc "bare record-type not allowed as type-extension"
-    | _ -> assert false
-  in
-  ocaml_type_extension ~item_attributes:(item_attributes te.teAttributes)
-    (mkloc loc) (long_id_of_string_list loc (uv (snd (uv te.teNam))))
-    (List.map (fun (p, v) -> uv p, variance_of_var v) (uv te.tePrm))
-    (if pf then Private else Public) tedef
+and type_extension loc te = let pf = uv te.tePrv in let _ = pf in assert false
 and patt =
   function
     PaAtt (loc, p1, a) -> ocaml_patt_addattr (attr (uv a)) (patt p1)

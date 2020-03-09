@@ -513,6 +513,7 @@ module Meta_make (C : MetaSig) =
             [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
     and type_extension x =
       let attrs = assert false in
+      let teDef = assert false in
       C.record
         [record_label "teNam",
          C.vala
@@ -520,8 +521,7 @@ module Meta_make (C : MetaSig) =
            x.teNam;
          record_label "tePrm", C.vala (C.list type_var) x.tePrm;
          record_label "tePrv", C.vala C.bool x.tePrv;
-         record_label "teDef", ctyp x.teDef;
-         record_label "teAttributes", attrs]
+         record_label "teDef", teDef; record_label "teAttributes", attrs]
     and class_type =
       function
         CtAtt (_, e, att) -> assert false

@@ -513,13 +513,14 @@ module Meta_make (C : MetaSig) =
     ]
     and type_extension x =
       let attrs = assert False in
+      let teDef = assert False in
       C.record
         [(record_label "teNam",
           C.vala (fun (_, s) → C.tuple [C.loc_v (); C.vala (C.list C.string) s])
             x.teNam);
          (record_label "tePrm", C.vala (C.list type_var) x.tePrm);
          (record_label "tePrv", C.vala C.bool x.tePrv);
-         (record_label "teDef", ctyp x.teDef);
+         (record_label "teDef", teDef);
          (record_label "teAttributes", attrs)]
     and class_type =
       fun
