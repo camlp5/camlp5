@@ -960,12 +960,12 @@ EXTEND
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
     [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
-        pf = V (FLAG "private") "priv"; tk = ctyp;
+        pf = V (FLAG "private") "priv"; "[" ; ecs = V (LIST1 extension_constructor SEP "|") ; "]" ;
         attrs = item_attributes →
 (*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
 *)
-          {MLast.teNam=n; tePrm=tpl; tePrv=pf; teAttributes=attrs; teECs = <:vala< [] >>}
+          {MLast.teNam=n; tePrm=tpl; tePrv=pf; teAttributes=attrs; teECs = ecs }
       ] ]
   ;
   mod_ident_patt:

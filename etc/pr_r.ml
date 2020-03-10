@@ -779,7 +779,7 @@ value type_constraint pc (t1, t2) =
 ;
 
 
-value extension_constructor loc pc ec = match (Pcaml.unvala ec) with [
+value extension_constructor loc pc ec = match ec with [
   <:extension_constructor:< $uid:e$ of $list:tl$ $algattrs:alg_attrs$ >> ->
     match tl with
       [ [] -> pprintf pc "%p%p" cons_escaped e
@@ -805,7 +805,7 @@ value type_extension pc te =
   in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p%s%p += %s%p%p" mod_ident (loc, Pcaml.unvala tn)
+       pprintf pc "%p%s%p += %s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
          (if Pcaml.unvala tp = [] then "" else " ")
          (hlist type_var) (Pcaml.unvala tp)
          (if pf then "private " else "")
@@ -813,14 +813,14 @@ value type_extension pc te =
          (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
     (fun () ->
        if pc.aft = "" then
-         pprintf pc "%p%s%p +=@;%s%p%p" mod_ident (loc, Pcaml.unvala tn)
+         pprintf pc "%p%s%p +=@;%s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp)
            (if pf then "private " else "")
            (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
        else
-         pprintf pc "@[<a>%p%s%p +=@;%s%p%p@ @]" mod_ident
+         pprintf pc "@[<a>%p%s%p +=@;%s[ %p ]%p@ @]" mod_ident
            (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp)
            (if pf then "private " else "")

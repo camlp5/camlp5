@@ -491,8 +491,7 @@ and type_decl floc sh x =
 and type_extension floc sh x =
   {teNam = vala_map (fun (loc, x1) -> floc loc, x1) x.teNam; tePrm = x.tePrm;
    tePrv = x.tePrv;
-   teECs =
-     vala_map (List.map (vala_map (extension_constructor floc sh))) x.teECs;
+   teECs = vala_map (List.map (extension_constructor floc sh)) x.teECs;
    teAttributes = x.teAttributes}
 and extension_constructor floc sh =
   function

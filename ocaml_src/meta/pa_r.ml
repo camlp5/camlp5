@@ -3361,14 +3361,18 @@ Grammar.safe_extend
                                 'type_parameter Grammar.Entry.e))))
                       (Grammar.s_token ("", "+=")))
                    (Grammar.s_flag (Grammar.s_token ("", "private"))))
-                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm
+                      (extension_constructor :
+                       'extension_constructor Grammar.Entry.e))
+                   (Grammar.s_token ("", "|")) false))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
-           (fun (attrs : 'item_attributes) (tk : 'ctyp) (pf : bool) _
-                (tpl : 'type_parameter list) (n : 'mod_ident_patt)
-                (loc : Ploc.t) ->
+           (fun (attrs : 'item_attributes) (ecs : 'extension_constructor list)
+                (pf : bool) _ (tpl : 'type_parameter list)
+                (n : 'mod_ident_patt) (loc : Ploc.t) ->
               ({MLast.teNam = n; tePrm = tpl; tePrv = pf;
-                teAttributes = attrs; teECs = []} :
+                teAttributes = attrs; teECs = ecs} :
                'type_extension)))]];
     Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None
       [None, None,

@@ -630,7 +630,7 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
         | _ → Some (ctyp t) ]
       in
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
-and extension_constructor loc ec = match uv ec with [
+and extension_constructor loc ec = match ec with [
       EcTuple n tl alg_attrs ->
       match sumbranch_ctyp loc (uv tl) with [
         Left x -> 

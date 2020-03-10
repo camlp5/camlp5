@@ -567,7 +567,7 @@ value type_decl pc td =
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)) ]
 ;
 
-value extension_constructor loc pc ec = match (Pcaml.unvala ec) with [
+value extension_constructor loc pc ec = match ec with [
   <:extension_constructor:< $uid:e$ of $list:tl$ $algattrs:alg_attrs$ >> ->
     match tl with
       [ [] -> pprintf pc "%p%p" cons_escaped (loc, e)
