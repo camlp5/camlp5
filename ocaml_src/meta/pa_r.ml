@@ -1017,7 +1017,12 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (assert false : 'str_item)));
+              (MLast.StTypExten
+                 (loc,
+                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
+                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
+                   MLast.teAttributes = te.MLast.teAttributes}) :
+               'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1433,7 +1438,12 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (assert false : 'sig_item)));
+              (MLast.SgTypExten
+                 (loc,
+                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
+                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
+                   MLast.teAttributes = te.MLast.teAttributes}) :
+               'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
