@@ -3351,26 +3351,31 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_nterm
-                               (mod_ident_patt :
-                                'mod_ident_patt Grammar.Entry.e)))
-                         (Grammar.s_list0
-                            (Grammar.s_nterm
-                               (type_parameter :
-                                'type_parameter Grammar.Entry.e))))
-                      (Grammar.s_token ("", "+=")))
-                   (Grammar.s_flag (Grammar.s_token ("", "private"))))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm
-                      (extension_constructor :
-                       'extension_constructor Grammar.Entry.e))
-                   (Grammar.s_token ("", "|")) false))
+                         (Grammar.r_next
+                            (Grammar.r_next
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_nterm
+                                     (mod_ident_patt :
+                                      'mod_ident_patt Grammar.Entry.e)))
+                               (Grammar.s_list0
+                                  (Grammar.s_nterm
+                                     (type_parameter :
+                                      'type_parameter Grammar.Entry.e))))
+                            (Grammar.s_token ("", "+=")))
+                         (Grammar.s_flag (Grammar.s_token ("", "private"))))
+                      (Grammar.s_token ("", "[")))
+                   (Grammar.s_list1sep
+                      (Grammar.s_nterm
+                         (extension_constructor :
+                          'extension_constructor Grammar.Entry.e))
+                      (Grammar.s_token ("", "|")) false))
+                (Grammar.s_token ("", "]")))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
-           (fun (attrs : 'item_attributes) (ecs : 'extension_constructor list)
-                (pf : bool) _ (tpl : 'type_parameter list)
-                (n : 'mod_ident_patt) (loc : Ploc.t) ->
+           (fun (attrs : 'item_attributes) _
+                (ecs : 'extension_constructor list) _ (pf : bool) _
+                (tpl : 'type_parameter list) (n : 'mod_ident_patt)
+                (loc : Ploc.t) ->
               ({MLast.teNam = n; tePrm = tpl; tePrv = pf;
                 teAttributes = attrs; teECs = ecs} :
                'type_extension)))]];
