@@ -786,7 +786,27 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
       in
       mktype ~item_attributes:item_attributes (loc_of_ctyp t) tn tl cl
         Ptype_abstract priv m
-and type_extension loc te = let pf = uv te.tePrv in let _ = pf in assert false
+and extension_constructor loc ec =
+  match uv ec with
+    EcTuple (n, tl, alg_attrs) ->
+      begin match sumbranch_ctyp loc (uv tl) with
+        Left x ->
+          ocaml_ec_tuple ~alg_attributes:(alg_attributes alg_attrs)
+            (mkloc loc) (uv n) x
+      | Right x ->
+          ocaml_ec_record ~alg_attributes:(alg_attributes alg_attrs)
+            (mkloc loc) (uv n) x
+      end
+  | EcRebind (n, sl, alg_attrs) ->
+      let sl = uv sl in
+      ocaml_ec_rebind (mkloc loc) (uv n) (long_id_of_string_list loc sl)
+and type_extension loc te =
+  let pf = uv te.tePrv in
+  let ecstrs = List.map (extension_constructor loc) (uv te.teECs) in
+  ocaml_type_extension ~item_attributes:(item_attributes te.teAttributes)
+    (mkloc loc) (long_id_of_string_list loc (uv (snd (uv te.teNam))))
+    (List.map (fun (p, v) -> uv p, variance_of_var v) (uv te.tePrm))
+    (if pf then Private else Public) ecstrs
 and patt =
   function
     PaAtt (loc, p1, a) -> ocaml_patt_addattr (attr (uv a)) (patt p1)
