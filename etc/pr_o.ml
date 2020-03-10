@@ -574,7 +574,7 @@ value extension_constructor loc pc ec = match ec with [
             (hlist (pr_attribute "@")) alg_attrs
 
       | tl ->
-          let tl = List.map (fun t -> (t, " and")) tl in
+          let tl = List.map (fun t -> (t, " *")) tl in
           pprintf pc "%p of@;%p%p" cons_escaped (loc, e) (plist ctyp_below_alg_attribute 0) tl
             (hlist (pr_attribute "@")) alg_attrs
       ]

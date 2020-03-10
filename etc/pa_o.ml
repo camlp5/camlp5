@@ -1228,7 +1228,7 @@ EXTEND
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
     [ [ tpl = type_parameters; n = V mod_ident_patt "tp"; "+=";
-        pf = V (FLAG "private") "priv"; ecs = V (LIST1 extension_constructor SEP "|") ;
+        pf = V (FLAG "private") "priv"; OPT [ "|" ] ; ecs = V (LIST1 extension_constructor SEP "|") ;
         attrs = item_attributes →
 (*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
