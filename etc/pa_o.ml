@@ -1077,6 +1077,15 @@ EXTEND
           <:expr< $_uid:i$ . $lid:j$ >>
       | i = V UIDENT; "."; "("; e = expr; ")" ->
           <:expr< $_uid:i$ . ( $e$ ) >>
+      | i = V UIDENT; "."; "["; el = expr1_semi_list; "]" ->
+          <:expr< $_uid:i$ . ( $exp:mklistexp loc None el$ ) >>
+      | i = V UIDENT; "."; "[|"; el = V expr1_semi_list "list"; "|]" ->
+          <:expr< $_uid:i$ . ( [| $_list:el$ |] ) >>
+
+      | i = V UIDENT; "."; "{<"; ">}" -> <:expr< $_uid:i$ . ( {< >} ) >>
+      | i = V UIDENT; "."; "{<"; fel = V field_expr_list "list"; ">}" ->
+          <:expr< $_uid:i$ . ( {< $_list:fel$ >} ) >>
+
       | i = V UIDENT; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
           <:expr< $_uid:i$ . ({ $_list:lel$ }) >>
       | i = V UIDENT; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
