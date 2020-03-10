@@ -211,7 +211,6 @@ and type_extension =
   { teNam : loc * string list;
     tePrm : type_var list;
     tePrv : bool;
-    teDef : unit;
     teECs : extension_constructor list;
     teAttributes : attributes }
 and class_type =

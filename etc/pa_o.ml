@@ -681,7 +681,9 @@ EXTEND
       | "type"; check_type_decl; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
           <:str_item< type $_flag:nr$ $_list:tdl$ >>
       | "type" ; check_type_extension ; te = type_extension →
+(*
           <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $te.MLast.teDef$ $_itemattrs:te.MLast.teAttributes$ >>
+*)assert False
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
         let e = <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >> in
@@ -789,7 +791,9 @@ EXTEND
       | "type"; check_type_decl; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
       | "type" ; check_type_extension ; te = type_extension →
+(*
           <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $te.MLast.teDef$ $_itemattrs:te.MLast.teAttributes$ >>
+*) assert False
       | "val"; attrs1 = alg_attributes_no_anti; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
@@ -1270,7 +1274,7 @@ EXTEND
 (*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
 *)
-          {MLast.teNam=n; tePrm= <:vala< tpl >>; tePrv=pf; teDef=(); teAttributes=attrs; teECs = <:vala< [] >>}
+          {MLast.teNam=n; tePrm= <:vala< tpl >>; tePrv=pf; teAttributes=attrs; teECs = <:vala< [] >>}
       ] ]
   ;
   mod_ident_patt:

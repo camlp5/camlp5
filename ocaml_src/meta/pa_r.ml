@@ -1017,13 +1017,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (MLast.StTypExten
-                 (loc,
-                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
-                   MLast.tePrv = te.MLast.tePrv; MLast.teDef = te.MLast.teDef;
-                   MLast.teECs = [];
-                   MLast.teAttributes = te.MLast.teAttributes}) :
-               'str_item)));
+              (assert false : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1439,13 +1433,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (MLast.SgTypExten
-                 (loc,
-                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
-                   MLast.tePrv = te.MLast.tePrv; MLast.teDef = te.MLast.teDef;
-                   MLast.teECs = [];
-                   MLast.teAttributes = te.MLast.teAttributes}) :
-               'sig_item)));
+              (assert false : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3369,7 +3357,7 @@ Grammar.safe_extend
            (fun (attrs : 'item_attributes) (tk : 'ctyp) (pf : bool) _
                 (tpl : 'type_parameter list) (n : 'mod_ident_patt)
                 (loc : Ploc.t) ->
-              ({MLast.teNam = n; tePrm = tpl; tePrv = pf; teDef = ();
+              ({MLast.teNam = n; tePrm = tpl; tePrv = pf;
                 teAttributes = attrs; teECs = []} :
                'type_extension)))]];
     Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None

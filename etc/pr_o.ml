@@ -567,20 +567,37 @@ value type_decl pc td =
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)) ]
 ;
 
+value extension_constructor loc pc ec = match (Pcaml.unvala ec) with [
+  <:extension_constructor:< $uid:e$ of $list:tl$ $algattrs:alg_attrs$ >> ->
+    match tl with
+      [ [] -> pprintf pc "%p%p" cons_escaped (loc, e)
+            (hlist (pr_attribute "@")) alg_attrs
+
+      | tl ->
+          let tl = List.map (fun t -> (t, " and")) tl in
+          pprintf pc "%p of@;%p%p" cons_escaped (loc, e) (plist ctyp_below_alg_attribute 0) tl
+            (hlist (pr_attribute "@")) alg_attrs
+      ]
+
+| <:extension_constructor:< $uid:e$ = $id$ $algattrs:alg_attrs$ >> ->
+      pprintf pc "%p@;= %p%p" cons_escaped (loc, e) mod_ident (loc, id)
+        (hlist (pr_attribute "@")) alg_attrs
+| _ -> error loc "extension_constructor: internal error"
+]
+;
+
 value type_extension pc te =
-  let ((_, tn), tp, pf, te,attrs) =
+  let ((loc, tn), tp, pf, ecstrs, attrs) =
     (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
-     te.MLast.teDef, te.MLast.teAttributes)
+     te.MLast.teECs, te.MLast.teAttributes)
   in
-      let te = assert False in
-      let loc = MLast.loc_of_ctyp te in
       if pc.aft = "" then
         pprintf pc "%p%p +=@;%s%p%p"
           type_params (loc, Pcaml.unvala tp)
           mod_ident (loc, Pcaml.unvala tn)
           (if pf then "private " else "")
-          ctyp te
-        (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+          (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
+          (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
       else
         horiz_vertic
           (fun () ->
@@ -588,14 +605,14 @@ value type_extension pc te =
                type_params (loc, Pcaml.unvala tp)
                mod_ident (loc, Pcaml.unvala tn)
                (if pf then "private " else "")
-               ctyp te
+               (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
           (fun () ->
              pprintf pc "@[<a>%p%p +=@;%s%p%p@ @]"
                type_params
                (loc, Pcaml.unvala tp) mod_ident (loc, Pcaml.unvala tn)
                (if pf then "private " else "")
-               ctyp te 
+               (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
 ;
 

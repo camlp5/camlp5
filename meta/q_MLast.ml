@@ -1188,11 +1188,11 @@ EXTEND
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
     [ [ n = SV mod_ident_patt "tp"; tpl = SV (LIST0 type_parameter); "+=";
-        pf = SV (FLAG "private") "priv"; tk = ctyp;
+        pf = SV (FLAG "private") "priv"; ecs = SV (LIST1 extension_constructor SEP "|") ;
         attrs = item_attributes →
           Qast.Record
-            [("teNam", n); ("tePrm", tpl); ("tePrv", pf); ("teDef", tk);
-             ("teECs", Qast.VaVal(Qast.List[]));
+            [("teNam", n); ("tePrm", tpl); ("tePrv", pf);
+             ("teECs", ecs);
              ("teAttributes", attrs)] ] ]
   ;
   (* why is this called what it's called? *)

@@ -497,7 +497,9 @@ EXTEND
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
           <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
       | "type" ; check_type_extension ; te = type_extension →
-          <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $te.MLast.teDef$ $_itemattrs:te.MLast.teAttributes$ >>
+(*
+          <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
+*) assert False
       | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           <:str_item< value $_flag:r$ $_list:l$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
@@ -584,7 +586,9 @@ EXTEND
       | "type"; check_type_decl ; tdl = V (LIST1 type_decl SEP "and") →
           <:sig_item< type $_list:tdl$ >>
       | "type" ; check_type_extension ; te = type_extension →
+(*
           <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $te.MLast.teDef$ $_itemattrs:te.MLast.teAttributes$ >>
+*) assert False
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
       | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes →
@@ -962,7 +966,7 @@ EXTEND
 (*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
 *)
-          {MLast.teNam=n; tePrm=tpl; tePrv=pf; teDef=(); teAttributes=attrs; teECs = <:vala< [] >>}
+          {MLast.teNam=n; tePrm=tpl; tePrv=pf; teAttributes=attrs; teECs = <:vala< [] >>}
       ] ]
   ;
   mod_ident_patt:
