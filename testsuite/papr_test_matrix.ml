@@ -1292,18 +1292,20 @@ and t2 = bool[@@foo];
     [ []
     | ( :: ) of α and list α ];
 |foo}
-    }(*;
+    };
     {name="extend-types-with-reference1"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t += A = A.A | B = A.B|foo} ;
      official_input = OK {foo|type t += A = A.A | B = A.B|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|type t += [ A = A.A | B = A.B ];|foo} ;
+     o_output = OK {foo|type t += A = A.A | B = A.B;;
+|foo};
      official_output = OK {foo|type t +=  
   | A = A.A
   | B = A.B|foo} ;
-     r_output = OK {foo||foo}
-       }*)
+     r_output = OK {foo|type t += [ A = A.A | B = A.B ];
+|foo}
+    }
 ]
 ;
 
