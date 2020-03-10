@@ -1991,6 +1991,8 @@ EXTEND_PRINTER
     | "simple"
       [ <:module_type< $uid:s$ >> ->
           pprintf pc "%s" s
+      | <:module_type< $lid:s$ >> ->
+          pprintf pc "%s" s
       | <:module_type< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
       | z ->

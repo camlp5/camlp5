@@ -2084,6 +2084,8 @@ EXTEND_PRINTER
     | "simple"
       [ <:module_type< $uid:s$ >> ->
           pprintf pc "%s" s
+      | <:module_type< $lid:s$ >> ->
+          pprintf pc "%s" s
       | <:module_type< ' $s$ >> ->
           pprintf pc "'%s" s
       | <:module_type< $_$ $_$ >> as z ->

@@ -320,50 +320,6 @@ value check_type_extension =
     check_type_extension_f
 ;
 
-(* an exception definition is one of:
-
-   exception E of ...
-or exception E = A.B.C ...
-
-E could be an ID, or a two-part constructor-name, or an escaped operator (3 tokens).
-
-So we might have to search out 4 tokens
-
-*)
-
-value is_extension_decl_or_rebind strm =
-  let rec checkrec n =
-  if n = 4 then True
-  else
-  match stream_peek_nth n strm with [
-    Some("","of") -> True
-  | Some("","=") -> False
-  | None -> True
-  | _ -> checkrec (n+1)
-  ] in
-  checkrec 1
-;
-
-value check_extension_decl_f strm =
-  if is_extension_decl_or_rebind strm then ()
-  else raise Stream.Failure
-;
-
-value check_extension_decl =
-  Grammar.Entry.of_parser gram "check_extension_decl"
-    check_extension_decl_f
-;
-
-value check_extension_rebind_f strm =
-  if not (is_extension_decl_or_rebind strm) then ()
-  else raise Stream.Failure
-;
-
-value check_extension_rebind =
-  Grammar.Entry.of_parser gram "check_extension_rebind"
-    check_extension_rebind_f
-;
-
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -465,6 +421,7 @@ EXTEND
   structure:
     [ [ st = V (LIST0 [ s = str_item; ";" → s ]) → st ] ]
   ;
+(*
   extension_constructor:
   [ [ check_extension_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
         <:extension_constructor< $_uid:c$ = $_list:b$ $_algattrs:alg_attrs$ >>
@@ -472,6 +429,17 @@ EXTEND
         <:extension_constructor< $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ >>
     ] ]
   ;
+*)
+  extension_constructor:
+  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+        <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
+    | ci = cons_ident; "of"; tl = V (LIST1 ctyp_below_alg_attribute SEP "and") ; alg_attrs = alg_attributes →
+        <:extension_constructor< $_uid:ci$ of $_list:tl$ $_algattrs:alg_attrs$ >>
+    | ci = cons_ident ; alg_attrs = alg_attributes →
+        <:extension_constructor< $_uid:ci$ $_algattrs:alg_attrs$ >>
+    ] ]
+  ;
+
   str_item:
     [ "top"
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
@@ -512,8 +480,7 @@ EXTEND
       ] ]
   ;
   rebind_exn:
-    [ [ "="; a = V mod_ident "list" "" → a
-      | → <:vala< [] >> ] ]
+    [ [ "="; a = V mod_ident "list" "" → a ] ]
   ;
   mod_binding:
     [ [ i = V uidopt "uidopt"; me = mod_fun_binding ;

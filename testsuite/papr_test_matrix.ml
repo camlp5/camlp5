@@ -1305,6 +1305,17 @@ and t2 = bool[@@foo];
   | B = A.B|foo} ;
      r_output = OK {foo|type t += [ A = A.A | B = A.B ];
 |foo}
+    };
+    {name="lowercase-module-type1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type S = sig module type t module M: t end|foo} ;
+     official_input = OK {foo|module type S = sig module type t module M: t end|foo} ;
+     r_input = OK {foo|module type S = sig module type t; module M: t; end;|foo} ;
+     o_output = OK {foo|module type S = sig module type t module M : t end;;
+|foo};
+     official_output = OK {foo|module type S  = sig module type t module M : t end|foo} ;
+     r_output = OK {foo|module type S = sig module type t; module M : t; end;
+|foo}
     }
 ]
 ;
