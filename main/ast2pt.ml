@@ -630,23 +630,26 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
         | _ → Some (ctyp t) ]
       in
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
+and extension_constructor loc ec = match uv ec with [
+      EcTuple n tl alg_attrs ->
+      match sumbranch_ctyp loc (uv tl) with [
+        Left x -> 
+          ocaml_ec_tuple ~{alg_attributes=alg_attributes alg_attrs} (mkloc loc) (uv n) x
+      | Right x -> 
+          ocaml_ec_record ~{alg_attributes=alg_attributes alg_attrs} (mkloc loc) (uv n) x
+      ]
+    | EcRebind n sl alg_attrs ->
+      let sl = uv sl in
+      ocaml_ec_rebind (mkloc loc) (uv n) (long_id_of_string_list loc sl)
+    ]
 and type_extension loc te =
   let pf = uv te.tePrv in
-
-  let _ = pf in
-  (assert False)
-(*
-  let tedef = match te.teDef with [
-    TySum loc ctl -> mktvariant loc (uv ctl) pf
-  | TyRec loc _ -> error loc "bare record-type not allowed as type-extension"
-  | _ -> assert False
-  ] in
+  let ecstrs = List.map (extension_constructor loc) (uv te.teECs) in
   ocaml_type_extension ~{item_attributes=item_attributes te.teAttributes} (mkloc loc)
     (long_id_of_string_list loc (uv (snd (uv te.teNam))))
     (List.map (fun (p,v) -> (uv p, variance_of_var v)) (uv te.tePrm))
     (if pf then Private else Public)
-    tedef
-*)
+    ecstrs
 and patt =
   fun
   [ PaAtt loc p1 a ->

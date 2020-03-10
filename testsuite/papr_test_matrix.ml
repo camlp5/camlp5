@@ -1210,6 +1210,17 @@ and t2 = bool[@@foo];
      r_output = OK {foo|exception E of { a : int };
 |foo}
     };
+    {name="exception-rebind1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|exception E = A.B|foo} ;
+     official_input = OK {foo|exception E = A.B|foo} ;
+     r_input = OK {foo|exception E = A.B;|foo} ;
+     o_output = OK {foo|exception E = A.B;;
+|foo};
+     official_output = OK {foo|exception E = A.B|foo} ;
+     r_output = OK {foo|exception E = A.B;
+|foo}
+    };
     {name="type-extension-str-item1"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t += A of int | B of { a : int }|foo} ;
