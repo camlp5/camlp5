@@ -394,6 +394,7 @@ let pr_patt = Eprinter.make "patt";;
 let pr_ctyp = Eprinter.make "type";;
 let pr_str_item = Eprinter.make "str_item";;
 let pr_sig_item = Eprinter.make "sig_item";;
+let pr_module_longident = Eprinter.make "module_longident";;
 let pr_module_expr = Eprinter.make "module_expr";;
 let pr_module_type = Eprinter.make "module_type";;
 let pr_class_sig_item = Eprinter.make "class_sig_item";;

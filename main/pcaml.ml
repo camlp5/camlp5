@@ -422,6 +422,7 @@ value pr_patt = Eprinter.make "patt";
 value pr_ctyp = Eprinter.make "type";
 value pr_str_item = Eprinter.make "str_item";
 value pr_sig_item = Eprinter.make "sig_item";
+value pr_module_longident = Eprinter.make "module_longident";
 value pr_module_expr = Eprinter.make "module_expr";
 value pr_module_type = Eprinter.make "module_type";
 value pr_class_sig_item = Eprinter.make "class_sig_item";

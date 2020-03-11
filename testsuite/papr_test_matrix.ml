@@ -1333,9 +1333,11 @@ and t2 = bool[@@foo];
      o_input = OK {foo|type t = A.B(C).D.t|foo} ;
      official_input = OK {foo|type t = A.B(C).D.t|foo} ;
      r_input = OK {foo|type t = A.B(C).D.t ;|foo} ;
-     o_output = OK {foo||foo};
+     o_output = OK {foo|type t = A.B(C).D.t;;
+|foo};
      official_output = OK {foo|type t = A.B(C).D.t|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|type t = A.B(C).D.t;
+|foo}
     }
 
 ]

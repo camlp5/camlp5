@@ -116,6 +116,7 @@ val pr_patt : MLast.patt Eprinter.t;;
 val pr_ctyp : MLast.ctyp Eprinter.t;;
 val pr_str_item : MLast.str_item Eprinter.t;;
 val pr_sig_item : MLast.sig_item Eprinter.t;;
+val pr_module_longident : MLast.module_expr Eprinter.t;;
 val pr_module_expr : MLast.module_expr Eprinter.t;;
 val pr_module_type : MLast.module_type Eprinter.t;;
 val pr_class_sig_item : MLast.class_sig_item Eprinter.t;;

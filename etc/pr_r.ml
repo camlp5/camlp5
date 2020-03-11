@@ -44,6 +44,7 @@ do {
   Eprinter.clear pr_ctyp;
   Eprinter.clear pr_str_item;
   Eprinter.clear pr_sig_item;
+  Eprinter.clear pr_module_longident;
   Eprinter.clear pr_module_expr;
   Eprinter.clear pr_module_type;
   Eprinter.clear pr_class_sig_item;
@@ -253,6 +254,7 @@ value ctyp = Eprinter.apply pr_ctyp;
 value ctyp_below_alg_attribute x = Eprinter.apply_level pr_ctyp "below_alg_attribute" x;
 value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
+value module_longident = Eprinter.apply pr_module_longident;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
@@ -1822,7 +1824,7 @@ EXTEND_PRINTER
 *)
 MLast.TyAcc _ x y ->
           pprintf pc "%p.%p" curr x curr y
-      | MLast.TyAcc2 _ me ct -> pprintf pc "%p.%p" module_expr me curr ct
+      | MLast.TyAcc2 _ me ct -> pprintf pc "%p.%p" module_longident me curr ct
       ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->
@@ -2008,6 +2010,21 @@ MLast.TyAcc _ x y ->
       | <:sig_item< [%% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%%") e
       ] ]
+  ;
+  pr_module_longident:
+    [ "dot"
+      [ <:module_expr< $x$ . $y$ >> ->
+          pprintf pc "%p.%p" curr x curr y
+      | <:module_expr< $x$ $y$ >> ->
+          pprintf pc "%p(%p)" module_longident x module_longident y
+      | <:module_expr< $uid:s$ >> ->
+          pprintf pc "%s" s
+      ]
+    | "bottom" [
+        z -> pprintf pc "[INTERNAL ERROR(pr_module_longident): unexpected module_expr %p]"
+               module_expr z
+      ]
+    ]
   ;
   pr_module_expr:
     [ "top"

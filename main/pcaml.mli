@@ -115,6 +115,7 @@ value pr_patt : Eprinter.t MLast.patt;
 value pr_ctyp : Eprinter.t MLast.ctyp;
 value pr_str_item : Eprinter.t MLast.str_item;
 value pr_sig_item : Eprinter.t MLast.sig_item;
+value pr_module_longident : Eprinter.t MLast.module_expr;
 value pr_module_expr : Eprinter.t MLast.module_expr;
 value pr_module_type : Eprinter.t MLast.module_type;
 value pr_class_sig_item : Eprinter.t MLast.class_sig_item;
