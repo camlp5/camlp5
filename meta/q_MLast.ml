@@ -1189,6 +1189,15 @@ EXTEND
       ]
     ]
   ;
+  ctyp_ident2:
+    [ LEFTA
+      [ me1 = module_expr_extended_longident ; "." ; i = SV LIDENT "lid" → 
+          Qast.Node "TyAcc2" [Qast.Loc; me1; Qast.Node "TyLid" [Qast.Loc; i]]
+      | i = SV LIDENT "lid" → 
+          Qast.Node "TyLid" [Qast.Loc; i]
+      ] 
+    ]
+  ;
   ctyp:
     [ "top" LEFTA
       [ t1 = SELF; "=="; pf = SV (FLAG "private") "priv"; t2 = SELF →

@@ -451,6 +451,8 @@ Grammar.safe_extend
      grammar_entry_create "type_parameter"
    and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
      grammar_entry_create "simple_type_parameter"
+   and ctyp_ident : 'ctyp_ident Grammar.Entry.e =
+     grammar_entry_create "ctyp_ident"
    and ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e =
      grammar_entry_create "ctyp_below_alg_attribute"
    and cons_ident : 'cons_ident Grammar.Entry.e =
@@ -3420,6 +3422,32 @@ Grammar.safe_extend
              (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)),
            (fun (i : 'ident) _ (loc : Ploc.t) ->
               (Some i : 'simple_type_parameter)))]];
+    Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) ->
+              (MLast.TyLid (loc, i) : 'ctyp_ident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("LIDENT", "")),
+           (fun (i : string) _ (me1 : 'ctyp_ident) (loc : Ploc.t) ->
+              (MLast.TyAcc (loc, me1, MLast.TyLid (loc, i)) : 'ctyp_ident)))];
+       None, Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_token ("", ".")))
+             Grammar.s_self,
+           (fun (me2 : 'ctyp_ident) _ (me1 : 'ctyp_ident) (loc : Ploc.t) ->
+              (MLast.TyAcc (loc, me1, me2) : 'ctyp_ident)))];
+       None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) ->
+              (MLast.TyUid (loc, i) : 'ctyp_ident)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e) None
       [Some "top", Some Gramext.LeftA,
        [Grammar.production
@@ -3493,12 +3521,9 @@ Grammar.safe_extend
               (MLast.TyApp (loc, t1, t2) : 'ctyp)))];
        None, Some Gramext.LeftA,
        [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_token ("", ".")))
-             Grammar.s_self,
-           (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
-              (MLast.TyAcc (loc, t1, t2) : 'ctyp)))];
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (ctyp_ident : 'ctyp_ident Grammar.Entry.e)),
+           (fun (t : 'ctyp_ident) (loc : Ploc.t) -> (t : 'ctyp)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next
@@ -3562,14 +3587,6 @@ Grammar.safe_extend
              (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
            (fun (mt : 'module_type) _ (loc : Ploc.t) ->
               (MLast.TyPck (loc, mt) : 'ctyp)));
-        Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) ->
-              (MLast.TyUid (loc, i) : 'ctyp)));
-        Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) ->
-              (MLast.TyLid (loc, i) : 'ctyp)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm

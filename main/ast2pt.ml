@@ -212,8 +212,8 @@ value rec ctyp_long_id =
 (*
  <:ctyp< $m$.$lid:s$ >> →
 *)
- MLast.TyAcc _ m (TyLid _ (Ploc.VaVal s)) →
-
+ MLast.TyAcc _ m (TyLid _ s) →
+      let s = Pcaml.unvala s in
       let (is_cls, li) = ctyp0_long_id m in
       (is_cls, Ldot li s)
   | <:ctyp< $m1$ $m2$ >> →
@@ -229,7 +229,8 @@ and ctyp0_long_id = fun [
 (*
     <:ctyp< $m$.$uid:s$ >> →
 *)
-    MLast.TyAcc _ m (TyUid _ (Ploc.VaVal s)) →
+    MLast.TyAcc _ m (TyUid _ s) →
+      let s = Pcaml.unvala s in
       let (is_cls, li) = ctyp0_long_id m in
       (is_cls, Ldot li s)
   | <:ctyp< $uid:s$ >> → (False, Lident s)
