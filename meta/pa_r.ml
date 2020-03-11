@@ -320,6 +320,34 @@ value check_type_extension =
     check_type_extension_f
 ;
 
+value check_dot_uid_f strm =
+  match Stream.npeek 5 strm with [
+    [("",".") ; ("UIDENT",_) :: _] -> ()
+  | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_dot_uid =
+  Grammar.Entry.of_parser gram "check_dot_uid"
+    check_dot_uid_f
+;
+
+value convert_ctyp_ident ct =
+  let open MLast in
+  let rec crec = fun [
+    TyUid loc uid -> MeUid loc uid
+  | TyAcc loc ct1 ct2 -> MeAcc loc (crec ct1) (crec ct2)
+  | TyLid loc s ->
+    Ploc.raise loc (Failure (Printf.sprintf "convert_ctyp_ident: unexpected TyLid \"%s\"" (Pcaml.unvala s)))
+  | _ -> assert False
+  ] in
+  match ct with [
+    TyAcc loc1 ct1 (TyLid _ _ as ct2) -> TyAcc2 loc1 (crec ct1) ct2
+  | _ -> ct
+  ]
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -328,7 +356,7 @@ EXTEND
     type_decl type_extension extension_constructor
     constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant attribute_body alg_attribute alg_attributes
-    check_type_decl check_type_extension
+    check_type_decl check_type_extension check_dot_uid
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
@@ -955,7 +983,7 @@ EXTEND
       | "_" → None ] ]
   ;
   ctyp_ident:
-    [
+    [ LEFTA
       [ me1 = SELF ; "." ; i = V LIDENT "lid" → 
           MLast.TyAcc loc me1 (MLast.TyLid loc i)
       | i = V LIDENT "lid" → 
@@ -966,6 +994,22 @@ EXTEND
       ] 
     | [ i = V UIDENT "uid" → MLast.TyUid loc i
       ]
+    ]
+  ;
+  module_expr_extended_longident:
+    [ LEFTA
+      [ me1 = SELF; "(" ; me2 = SELF ; ")" → MLast.MeApp loc me1 me2
+      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → MLast.MeAcc loc me1 me2
+      | i = V UIDENT "uid" → MLast.MeUid loc i
+      ] ]
+  ;
+  ctyp_ident2:
+    [ LEFTA
+      [ me1 = module_expr_extended_longident ; "." ; i = V LIDENT "lid" → 
+          MLast.TyAcc2 loc me1 (MLast.TyLid loc i)
+      | i = V LIDENT "lid" → 
+          MLast.TyLid loc i
+      ] 
     ]
   ;
   ctyp:
@@ -989,7 +1033,7 @@ EXTEND
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → <:ctyp< $t1$ $t2$ >> ]
     | LEFTA
-      [ t = ctyp_ident → t ]
+      [ t = ctyp_ident → convert_ctyp_ident t ]
     | "simple"
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
       | i = GIDENT → <:ctyp< '$greek_ascii_equiv i$ >>

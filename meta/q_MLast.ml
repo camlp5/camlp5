@@ -167,6 +167,7 @@ value label_declaration =
 value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 value attribute_body = Grammar.Entry.create gram "attribute_body";
+value ctyp_ident2 = Grammar.Entry.create gram "ctyp_ident2";
 
 value mksequence2 _ =
   fun
@@ -365,6 +366,20 @@ value check_type_extension =
     check_type_extension_f
 ;
 
+
+value check_dot_uid_f strm =
+  match Stream.npeek 5 strm with [
+    [("",".") ; ("UIDENT",_) :: _] -> ()
+  | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_dot_uid =
+  Grammar.Entry.of_parser gram "check_dot_uid"
+    check_dot_uid_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -373,7 +388,7 @@ EXTEND
     class_str_item let_binding type_decl type_extension extension_constructor
     constructor_declaration
     label_declaration match_case ipatt with_constr poly_variant attribute_body
-    check_type_decl check_type_extension
+    check_type_decl check_type_extension check_dot_uid ctyp_ident2
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> Qast.VaVal (Qast.Str (String.concat "." l))
@@ -433,13 +448,6 @@ EXTEND
                 Qast.Option (Some (Qast.Tuple [i; t]))
      | "(" ; ")" → Qast.Option None ] ]
    ;
-  module_expr_extended_longident:
-    [ LEFTA
-      [ me1 = SELF; "(" ; me2 = SELF ; ")" → Qast.Node "MeApp" [Qast.Loc; me1; me2]
-      | me1 = SELF; "."; me2 = SELF → Qast.Node "MeAcc" [Qast.Loc; me1; me2]
-      | i = SV UIDENT "uid" → Qast.Node "MeUid" [Qast.Loc; i]
-      ] ]
-  ;
   module_expr:
     [ [ "functor"; arg = SV functor_parameter "functor_parameter" "fp"; "->";
         me = SELF →
@@ -1188,6 +1196,13 @@ EXTEND
     | [ i = SV UIDENT "uid" → Qast.Node "TyUid" [Qast.Loc; i]
       ]
     ]
+  ;
+  module_expr_extended_longident:
+    [ LEFTA
+      [ me1 = SELF; "(" ; me2 = SELF ; ")" → Qast.Node "MeApp" [Qast.Loc; me1; me2]
+      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → Qast.Node "MeAcc" [Qast.Loc; me1; me2]
+      | i = SV UIDENT "uid" → Qast.Node "MeUid" [Qast.Loc; i]
+      ] ]
   ;
   ctyp_ident2:
     [ LEFTA

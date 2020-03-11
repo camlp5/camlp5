@@ -1689,10 +1689,12 @@ EXTEND_PRINTER
               | t -> pprintf pc "%p@;%p" next t2 next t1 ] ] ]
     | "dot"
       [
+          MLast.TyAcc2 loc me ct -> pprintf pc "%p.%p" module_expr me curr ct
+
 (*
  <:ctyp:< $t1$ . $t2$ >> ->
 *)
-MLast.TyAcc loc t1 t2 ->
+        | MLast.TyAcc loc t1 t2 ->
           pprintf pc "%p.%p"
             (fun pc ->
                fun

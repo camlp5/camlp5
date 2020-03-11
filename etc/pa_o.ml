@@ -474,6 +474,19 @@ value merge_right_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} lef
   ]
 ;
 
+value check_dot_uid_f strm =
+  match Stream.npeek 5 strm with [
+    [("",".") ; ("UIDENT",_) :: _] -> ()
+  | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_dot_uid =
+  Grammar.Entry.of_parser gram "check_dot_uid"
+    check_dot_uid_f
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
@@ -1355,7 +1368,7 @@ EXTEND
   ;
   (* Core types *)
   ctyp_ident:
-    [
+    [ LEFTA
       [ me1 = SELF ; "." ; i = V LIDENT "lid" → 
           MLast.TyAcc loc me1 (MLast.TyLid loc i)
       | i = V LIDENT "lid" → 
@@ -1366,6 +1379,22 @@ EXTEND
       ] 
     | [ i = V UIDENT "uid" → MLast.TyUid loc i
       ]
+    ]
+  ;
+  module_expr_extended_longident:
+    [ LEFTA
+      [ me1 = SELF; "(" ; me2 = SELF ; ")" → MLast.MeApp loc me1 me2
+      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → MLast.MeAcc loc me1 me2
+      | i = V UIDENT "uid" → MLast.MeUid loc i
+      ] ]
+  ;
+  ctyp_ident2:
+    [ LEFTA
+      [ me1 = module_expr_extended_longident ; "." ; i = V LIDENT "lid" → 
+          MLast.TyAcc2 loc me1 (MLast.TyLid loc i)
+      | i = V LIDENT "lid" → 
+          MLast.TyLid loc i
+      ] 
     ]
   ;
   ctyp:
@@ -1790,6 +1819,21 @@ EXTEND
           <:class_expr< fun $p$ -> $cfd$ >> ] ]
   ;
 END
+;
+
+value convert_ctyp_ident ct =
+  let open MLast in
+  let rec crec = fun [
+    TyUid loc uid -> MeUid loc uid
+  | TyAcc loc ct1 ct2 -> MeAcc loc (crec ct1) (crec ct2)
+  | TyLid loc s ->
+    Ploc.raise loc (Failure (Printf.sprintf "convert_ctyp_ident: unexpected TyLid \"%s\"" (Pcaml.unvala s)))
+  | _ -> assert False
+  ] in
+  match ct with [
+    TyAcc loc1 ct1 (TyLid _ _ as ct2) -> TyAcc2 loc1 (crec ct1) ct2
+  | _ -> ct
+  ]
 ;
 
 (* Main entry points *)

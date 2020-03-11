@@ -347,6 +347,37 @@ let check_type_extension =
   Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f
 ;;
 
+let check_dot_uid_f strm =
+  match Stream.npeek 5 strm with
+    ("", ".") :: ("UIDENT", _) :: _ -> ()
+  | ("", ".") :: ("", "$") :: ("LIDENT", ("uid" | "_uid")) :: ("", ":") ::
+    ("LIDENT", _) :: _ ->
+      ()
+  | _ -> raise Stream.Failure
+;;
+
+let check_dot_uid =
+  Grammar.Entry.of_parser gram "check_dot_uid" check_dot_uid_f
+;;
+
+let convert_ctyp_ident ct =
+  let open MLast in
+  let rec crec =
+    function
+      TyUid (loc, uid) -> MeUid (loc, uid)
+    | TyAcc (loc, ct1, ct2) -> MeAcc (loc, crec ct1, crec ct2)
+    | TyLid (loc, s) ->
+        Ploc.raise loc
+          (Failure
+             (Printf.sprintf "convert_ctyp_ident: unexpected TyLid \"%s\""
+                (Pcaml.unvala s)))
+    | _ -> assert false
+  in
+  match ct with
+    TyAcc (loc1, ct1, (TyLid (_, _) as ct2)) -> TyAcc2 (loc1, crec ct1, ct2)
+  | _ -> ct
+;;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -379,7 +410,8 @@ Grammar.safe_extend
    and _ = (alg_attribute : 'alg_attribute Grammar.Entry.e)
    and _ = (alg_attributes : 'alg_attributes Grammar.Entry.e)
    and _ = (check_type_decl : 'check_type_decl Grammar.Entry.e)
-   and _ = (check_type_extension : 'check_type_extension Grammar.Entry.e) in
+   and _ = (check_type_extension : 'check_type_extension Grammar.Entry.e)
+   and _ = (check_dot_uid : 'check_dot_uid Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
@@ -453,6 +485,10 @@ Grammar.safe_extend
      grammar_entry_create "simple_type_parameter"
    and ctyp_ident : 'ctyp_ident Grammar.Entry.e =
      grammar_entry_create "ctyp_ident"
+   and module_expr_extended_longident : 'module_expr_extended_longident Grammar.Entry.e =
+     grammar_entry_create "module_expr_extended_longident"
+   and ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e =
+     grammar_entry_create "ctyp_ident2"
    and ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e =
      grammar_entry_create "ctyp_below_alg_attribute"
    and cons_ident : 'cons_ident Grammar.Entry.e =
@@ -3423,7 +3459,7 @@ Grammar.safe_extend
            (fun (i : 'ident) _ (loc : Ploc.t) ->
               (Some i : 'simple_type_parameter)))]];
     Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
-      [None, None,
+      [None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
@@ -3448,6 +3484,57 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.TyUid (loc, i) : 'ctyp_ident)))]];
+    Grammar.extension
+      (module_expr_extended_longident :
+       'module_expr_extended_longident Grammar.Entry.e)
+      None
+      [None, Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) ->
+              (MLast.MeUid (loc, i) : 'module_expr_extended_longident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_nterm
+                      (check_dot_uid : 'check_dot_uid Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             Grammar.s_self,
+           (fun (me2 : 'module_expr_extended_longident) _ _
+                (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
+              (MLast.MeAcc (loc, me1, me2) :
+               'module_expr_extended_longident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_token ("", "(")))
+                Grammar.s_self)
+             (Grammar.s_token ("", ")")),
+           (fun _ (me2 : 'module_expr_extended_longident) _
+                (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
+              (MLast.MeApp (loc, me1, me2) :
+               'module_expr_extended_longident)))]];
+    Grammar.extension (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e) None
+      [None, Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) ->
+              (MLast.TyLid (loc, i) : 'ctyp_ident2)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (module_expr_extended_longident :
+                       'module_expr_extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("LIDENT", "")),
+           (fun (i : string) _ (me1 : 'module_expr_extended_longident)
+                (loc : Ploc.t) ->
+              (MLast.TyAcc2 (loc, me1, MLast.TyLid (loc, i)) :
+               'ctyp_ident2)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e) None
       [Some "top", Some Gramext.LeftA,
        [Grammar.production
@@ -3523,7 +3610,8 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (ctyp_ident : 'ctyp_ident Grammar.Entry.e)),
-           (fun (t : 'ctyp_ident) (loc : Ploc.t) -> (t : 'ctyp)))];
+           (fun (t : 'ctyp_ident) (loc : Ploc.t) ->
+              (convert_ctyp_ident t : 'ctyp)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next

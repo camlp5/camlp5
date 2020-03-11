@@ -1821,7 +1821,9 @@ EXTEND_PRINTER
 (* <:ctyp< $x$ . $y$ >> ->
 *)
 MLast.TyAcc _ x y ->
-          pprintf pc "%p.%p" curr x curr y ]
+          pprintf pc "%p.%p" curr x curr y
+      | MLast.TyAcc2 _ me ct -> pprintf pc "%p.%p" module_expr me curr ct
+      ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->
           horiz_vertic

@@ -209,9 +209,6 @@ crec l1 l2
 value rec ctyp_long_id =
   fun
   [
-(*
- <:ctyp< $m$.$lid:s$ >> →
-*)
  MLast.TyAcc _ m (TyLid _ s) →
       let s = Pcaml.unvala s in
       let (is_cls, li) = ctyp0_long_id m in
@@ -220,6 +217,13 @@ value rec ctyp_long_id =
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
+(*
+ <:ctyp< $m$.$lid:s$ >> →
+*)
+| MLast.TyAcc2 _ m ct →
+      let li1 = module_expr_long_id m in
+      let (is_cls, li2) = ctyp_long_id ct in
+      (is_cls, concat_long_ids li1 li2)
   | <:ctyp< $lid:s$ >> → (False, Lident s)
   | TyCls loc sl → (True, long_id_of_string_list loc (uv sl))
   | <:ctyp:< $uid:s$ >> → error loc (Printf.sprintf "unexpected TyUid %s" s)
@@ -492,11 +496,16 @@ and ctyp =
   fun
   [ TyAtt loc ct a ->
     ocaml_coretype_addattr (attr (uv a)) (ctyp ct)
-  | TyAcc loc _ _ as f →
+  | TyAcc2 loc _ _ as f →
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
       else mktyp loc (ocaml_ptyp_constr (mkloc loc) li [])
-  | TyAcc2 loc _ _ -> assert False
+
+  | TyAcc loc _ _ as f ->
+      let (is_cls, li) = ctyp_long_id f in
+      if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
+      else mktyp loc (ocaml_ptyp_constr (mkloc loc) li [])
+
   | TyAli loc t1 t2 →
       let (t, i) =
         match (t1, t2) with
