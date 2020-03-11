@@ -34,6 +34,7 @@ type class_infos 'a =
 
 and ctyp =
   [ TyAcc of loc and ctyp and ctyp
+  | TyAcc2 of loc and module_expr and ctyp
   | TyAli of loc and ctyp and ctyp
   | TyAny of loc
   | TyApp of loc and ctyp and ctyp

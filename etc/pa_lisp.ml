@@ -594,7 +594,9 @@
                         (let* ((t1 (ctyp_id
                                     loc (String.sub s ibeg (- i ibeg))))
                                (t2 (loop (+ i 1) (+ i 1))))
-                          <:ctyp< $t1$ . $t2$ >>)
+;;                          <:ctyp< $t1$ . $t2$ >>
+(MLast.TyAcc loc t1 t2)
+)
                       (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                       (Stream.Error "ctyp expected")))
                   (loop ibeg (+ i 1)))))))

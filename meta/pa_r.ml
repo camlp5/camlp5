@@ -954,6 +954,20 @@ EXTEND
       | i = GIDENT → Some (greek_ascii_equiv i)
       | "_" → None ] ]
   ;
+  ctyp_ident:
+    [
+      [ me1 = SELF ; "." ; i = V LIDENT "lid" → 
+          MLast.TyAcc loc me1 (MLast.TyLid loc i)
+      | i = V LIDENT "lid" → 
+          MLast.TyLid loc i
+      ] 
+    | LEFTA
+      [ me1 = SELF; "."; me2 = SELF → MLast.TyAcc loc me1 me2
+      ] 
+    | [ i = V UIDENT "uid" → MLast.TyUid loc i
+      ]
+    ]
+  ;
   ctyp:
     [ "top" LEFTA
       [ t1 = SELF; "=="; pf = V (FLAG "private") "priv"; t2 = SELF →
@@ -975,15 +989,13 @@ EXTEND
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → <:ctyp< $t1$ $t2$ >> ]
     | LEFTA
-      [ t1 = SELF; "."; t2 = SELF → <:ctyp< $t1$ . $t2$ >> ]
+      [ t = ctyp_ident → t ]
     | "simple"
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
       | i = GIDENT → <:ctyp< '$greek_ascii_equiv i$ >>
       | ".." -> <:ctyp< .. >>
       | "_" → <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
-      | i = V LIDENT → <:ctyp< $_lid:i$ >>
-      | i = V UIDENT → <:ctyp< $_uid:i$ >>
       | "module"; mt = module_type → <:ctyp< module $mt$ >>
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" → mktuptyp loc t tl
       | "("; t = SELF; ")" → <:ctyp< $t$ >>

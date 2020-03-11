@@ -563,7 +563,10 @@ EXTEND_PRINTER
           plistb curr 0 (paren pc "==") [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ as $t2$ >> ->
           plistb curr 0 (paren pc "as") [(t1, ""); (t2, "")]
+(*
       | <:ctyp< $t1$ . $t2$ >> ->
+*)
+      | MLast.TyAcc _ t1 t2 ->
           sprintf "%s.%s"
             (curr {(pc) with aft = ""} t1)
             (curr {(pc) with bef = ""} t2)

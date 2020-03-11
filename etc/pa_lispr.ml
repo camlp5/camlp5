@@ -601,7 +601,10 @@ and ctyp_ident_se loc s =
       if i > ibeg then
         let t1 = ctyp_id loc (String.sub s ibeg (i - ibeg)) in
         let t2 = loop (i + 1) (i + 1) in
+MLast.TyAcc loc t1 t2
+(*
         <:ctyp< $t1$ . $t2$ >>
+*)
       else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
     else loop ibeg (i + 1)
 and constructor_declaration_se =

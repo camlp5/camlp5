@@ -433,6 +433,13 @@ EXTEND
                 Qast.Option (Some (Qast.Tuple [i; t]))
      | "(" ; ")" → Qast.Option None ] ]
    ;
+  module_expr_extended_longident:
+    [ LEFTA
+      [ me1 = SELF; "(" ; me2 = SELF ; ")" → Qast.Node "MeApp" [Qast.Loc; me1; me2]
+      | me1 = SELF; "."; me2 = SELF → Qast.Node "MeAcc" [Qast.Loc; me1; me2]
+      | i = SV UIDENT "uid" → Qast.Node "MeUid" [Qast.Loc; i]
+      ] ]
+  ;
   module_expr:
     [ [ "functor"; arg = SV functor_parameter "functor_parameter" "fp"; "->";
         me = SELF →
@@ -1168,6 +1175,20 @@ EXTEND
       | i = GIDENT → Qast.Option (Some (greek_ascii_equiv i))
       | "_" → Qast.Option None ] ]
   ;
+  ctyp_ident:
+    [ LEFTA
+      [ me1 = SELF ; "." ; i = SV LIDENT "lid" → 
+          Qast.Node "TyAcc" [Qast.Loc; me1; Qast.Node "TyLid" [Qast.Loc; i]]
+      | i = SV LIDENT "lid" → 
+          Qast.Node "TyLid" [Qast.Loc; i]
+      ] 
+    | LEFTA
+      [ me1 = SELF; "."; me2 = SELF → Qast.Node "TyAcc" [Qast.Loc; me1; me2]
+      ] 
+    | [ i = SV UIDENT "uid" → Qast.Node "TyUid" [Qast.Loc; i]
+      ]
+    ]
+  ;
   ctyp:
     [ "top" LEFTA
       [ t1 = SELF; "=="; pf = SV (FLAG "private") "priv"; t2 = SELF →
@@ -1189,7 +1210,7 @@ EXTEND
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → Qast.Node "TyApp" [Qast.Loc; t1; t2] ]
     | LEFTA
-      [ t1 = SELF; "."; t2 = SELF → Qast.Node "TyAcc" [Qast.Loc; t1; t2] ]
+      [ t = ctyp_ident → t ]
     | "simple"
       [ "'"; i = SV ident "" → Qast.Node "TyQuo" [Qast.Loc; i]
       | i = GIDENT →
@@ -1197,8 +1218,6 @@ EXTEND
       | ".." -> Qast.Node "TyOpn" [Qast.Loc]
       | "_" → Qast.Node "TyAny" [Qast.Loc]
       | e = alg_extension -> Qast.Node "TyExten" [Qast.Loc; e]
-      | i = SV LIDENT → Qast.Node "TyLid" [Qast.Loc; i]
-      | i = SV UIDENT → Qast.Node "TyUid" [Qast.Loc; i]
       | "module"; mt = module_type → Qast.Node "TyPck" [Qast.Loc; mt]
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" →
           mktuptyp Qast.Loc t tl

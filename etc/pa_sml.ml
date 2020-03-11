@@ -436,10 +436,11 @@ EXTEND
   tycon:
     [ [ LIDENT "real" -> <:ctyp< float >>
       | x1 = idd; "."; x2 = tycon ->
-          let r = <:ctyp< $uid:x1$ . $x2$ >> in
+        let r = MLast.TyAcc loc (MLast.TyUid loc (Ploc.VaVal x1)) x2 (* <:ctyp< $uid:x1$ . $x2$ >> *) in
           loop r where rec loop =
             fun
-            [ <:ctyp< $a$ . ($b$ . $c$) >> -> <:ctyp< $a$ . $b$ . $loop c$ >>
+              [ (* <:ctyp< $a$ . ($b$ . $c$) >> -> <:ctyp< $a$ . $b$ . $loop c$ >> *)
+                MLast.TyAcc loc1 a (MLast.TyAcc loc2 b c) -> MLast.TyAcc loc1 (MLast.TyAcc loc2 a b) c
             | x -> x ]
       | x1 = idd -> <:ctyp< $lid:uncap x1$ >> ] ]
   ;

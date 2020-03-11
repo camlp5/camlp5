@@ -72,7 +72,9 @@ and variant =
     END ]
 and ctyp_module =
   fun
-  [ <:ctyp< $t$.$_$ >> -> ctyp_module t
+  [ 
+    (*<:ctyp< $t$.$_$ >> *)
+MLast.TyAcc _ t _ -> ctyp_module t
   | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
   | <:ctyp< $uid:m$ >> -> addmodule m
   | x -> not_impl "ctyp_module" x ]

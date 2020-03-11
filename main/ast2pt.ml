@@ -188,22 +188,53 @@ value rec ctyp_fa al =
   | f → (f, al) ]
 ;
 
+value rec module_expr_long_id =
+  fun
+  [ <:module_expr< $me1$ ( $me2$ ) >> →
+      Lapply (module_expr_long_id me1) (module_expr_long_id me2)
+  | <:module_expr< $m$ . $uid:s$ >> → Ldot (module_expr_long_id m) s
+  | <:module_expr< $uid:s$ >> → Lident s
+  | t → error (loc_of_module_expr t) "bad module expr long ident" ]
+;
+
+value concat_long_ids l1 l2 =
+let rec crec lhs = fun [
+  Lident s -> Ldot lhs s
+| Ldot li s -> Ldot (crec lhs li) s
+| Lapply lif liarg -> Lapply (crec lhs lif) liarg
+] in
+crec l1 l2
+;
+
 value rec ctyp_long_id =
   fun
-  [ <:ctyp< $m$.$lid:s$ >> →
-      let (is_cls, li) = ctyp_long_id m in
-      (is_cls, Ldot li s)
-  | <:ctyp< $m$.$uid:s$ >> →
-      let (is_cls, li) = ctyp_long_id m in
+  [
+(*
+ <:ctyp< $m$.$lid:s$ >> →
+*)
+ MLast.TyAcc _ m (TyLid _ (Ploc.VaVal s)) →
+
+      let (is_cls, li) = ctyp0_long_id m in
       (is_cls, Ldot li s)
   | <:ctyp< $m1$ $m2$ >> →
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
-  | <:ctyp< $uid:s$ >> → (False, Lident s)
   | <:ctyp< $lid:s$ >> → (False, Lident s)
   | TyCls loc sl → (True, long_id_of_string_list loc (uv sl))
+  | <:ctyp:< $uid:s$ >> → error loc (Printf.sprintf "unexpected TyUid %s" s)
   | t → error (loc_of_ctyp t) "incorrect type" ]
+
+and ctyp0_long_id = fun [
+(*
+    <:ctyp< $m$.$uid:s$ >> →
+*)
+    MLast.TyAcc _ m (TyUid _ (Ploc.VaVal s)) →
+      let (is_cls, li) = ctyp0_long_id m in
+      (is_cls, Ldot li s)
+  | <:ctyp< $uid:s$ >> → (False, Lident s)
+  | _ -> assert False
+]
 ;
 
 value rec module_type_long_id =
@@ -241,24 +272,6 @@ value option_map f =
   fun
   [ Some x → Some (f x)
   | None → None ]
-;
-
-value rec same_type_expr ct ce =
-  match (ct, ce) with
-  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) → s1 = s2
-  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) → s1 = s2
-  | (<:ctyp< $t1$.$t2$ >>, <:expr< $e1$.$e2$ >>) →
-      same_type_expr t1 e1 && same_type_expr t2 e2
-  | _ → False ]
-;
-
-value rec module_expr_long_id =
-  fun
-  [ <:module_expr< $me1$ ( $me2$ ) >> →
-      Lapply (module_expr_long_id me1) (module_expr_long_id me2)
-  | <:module_expr< $m$ . $uid:s$ >> → Ldot (module_expr_long_id m) s
-  | <:module_expr< $uid:s$ >> → Lident s
-  | t → error (loc_of_module_expr t) "bad module expr long ident" ]
 ;
 
 value rec patt_fa al =
@@ -482,6 +495,7 @@ and ctyp =
       let (is_cls, li) = ctyp_long_id f in
       if is_cls then mktyp loc (ocaml_ptyp_class li [] [])
       else mktyp loc (ocaml_ptyp_constr (mkloc loc) li [])
+  | TyAcc2 loc _ _ -> assert False
   | TyAli loc t1 t2 →
       let (t, i) =
         match (t1, t2) with

@@ -58,7 +58,11 @@ value ty_var =
 value vars = ref [];
 value rec type_of_ctyp t =
   match t with
-  [ MLast.TyAcc loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
+  [ MLast.TyAcc loc t1 t2 ->
+Type.TyAcc loc (type_of_ctyp t1) (type_of_ctyp t2)
+(*
+ <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
+*)
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
   | MLast.TyArr loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ -> $type_of_ctyp t2$ >>
@@ -97,7 +101,7 @@ and str_of_ty3 loc t =
       "(" ^
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
-  | <:ctyp< $t1$ . $t2$ >> -> str_of_ty1 loc t1 ^ "." ^ str_of_ty1 loc t2
+    |(* <:ctyp< $t1$ . $t2$ >> *) Type.TyAcc _ t1 t2 -> str_of_ty1 loc t1 ^ "." ^ str_of_ty1 loc t2
   | <:ctyp< '$s$ >> ->
       match s.val with
       [ Some t -> str_of_ty3 loc t
@@ -120,8 +124,11 @@ value rec eval_type loc t =
   match t with
   [ <:ctyp< $t1$ -> $t2$ >> ->
       <:ctyp< $eval_type loc t1$ -> $eval_type loc t2$ >>
-  | <:ctyp< $t1$ . $t2$ >> ->
+  | (* <:ctyp< $t1$ . $t2$ >> *) Type.TyAcc _ t1 t2 ->
+Type.TyAcc loc (eval_type loc t1) (eval_type loc t2)
+(*
       <:ctyp< $eval_type loc t1$ . $eval_type loc t2$ >>
+*)
   | <:ctyp< $t1$ $t2$ >> ->
       <:ctyp< $eval_type loc t1$ $eval_type loc t2$ >>
   | <:ctyp< ( $list:tl$ ) >> ->
@@ -181,7 +188,11 @@ value rec inst loc t =
               inst_vars.val := [(s, t) :: inst_vars.val];
               t
             } ] ]
-  | <:ctyp< $_$ . $_$ >> | <:ctyp< $lid:_$ >> -> t
+| Type.TyAcc _ _ _
+(*
+  | <:ctyp< $_$ . $_$ >>
+*)
+ | <:ctyp< $lid:_$ >> -> t
   | t -> not_impl loc "instantiate" t ]
 ;
 
@@ -195,7 +206,10 @@ value rec unify loc t1 t2 =
 
   | (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
+(*
   | (<:ctyp< $t11$ . $t12$ >>, <:ctyp< $t21$ . $t22$ >>) ->
+*)
+  | ((Type.TyAcc _ t11 t12), (Type.TyAcc _ t21 t22)) ->
       unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< $t11$ -> $t12$ >>, <:ctyp< $t21$ -> $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22

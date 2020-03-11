@@ -1688,7 +1688,11 @@ EXTEND_PRINTER
               [ <:ctyp< $_$ $_$ >> -> pprintf pc "%p@;%p" curr t2 next t1
               | t -> pprintf pc "%p@;%p" next t2 next t1 ] ] ]
     | "dot"
-      [ <:ctyp:< $t1$ . $t2$ >> ->
+      [
+(*
+ <:ctyp:< $t1$ . $t2$ >> ->
+*)
+MLast.TyAcc loc t1 t2 ->
           pprintf pc "%p.%p"
             (fun pc ->
                fun

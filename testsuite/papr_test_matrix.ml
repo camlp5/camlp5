@@ -1316,7 +1316,17 @@ and t2 = bool[@@foo];
      official_output = OK {foo|module type S  = sig module type t module M : t end|foo} ;
      r_output = OK {foo|module type S = sig module type t; module M : t; end;
 |foo}
+    };
+    {name="extended-module-path1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = A.B(C).D.t|foo} ;
+     official_input = OK {foo|type t = A.B(C).D.t|foo} ;
+     r_input = OK {foo|type t = A.B(C).D.t ;|foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     }
+
 ]
 ;
 

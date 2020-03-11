@@ -1817,7 +1817,10 @@ EXTEND_PRINTER
           in
           left_operator pc 2 unfold next z ]
     | "dot"
-      [ <:ctyp< $x$ . $y$ >> ->
+      [
+(* <:ctyp< $x$ . $y$ >> ->
+*)
+MLast.TyAcc _ x y ->
           pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->
