@@ -1033,7 +1033,7 @@ EXTEND
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → <:ctyp< $t1$ $t2$ >> ]
     | LEFTA
-      [ t = ctyp_ident → convert_ctyp_ident t ]
+      [ t = ctyp_ident2 → t ]
     | "simple"
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
       | i = GIDENT → <:ctyp< '$greek_ascii_equiv i$ >>

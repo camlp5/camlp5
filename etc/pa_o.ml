@@ -487,6 +487,21 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value convert_ctyp_ident ct =
+  let open MLast in
+  let rec crec = fun [
+    TyUid loc uid -> MeUid loc uid
+  | TyAcc loc ct1 ct2 -> MeAcc loc (crec ct1) (crec ct2)
+  | TyLid loc s ->
+    Ploc.raise loc (Failure (Printf.sprintf "convert_ctyp_ident: unexpected TyLid \"%s\"" (Pcaml.unvala s)))
+  | _ -> assert False
+  ] in
+  match ct with [
+    TyAcc loc1 ct1 (TyLid _ _ as ct2) -> TyAcc2 loc1 (crec ct1) ct2
+  | _ -> ct
+  ]
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
@@ -1414,7 +1429,7 @@ EXTEND
     | "apply"
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t2$ $t1$ >> ]
     | "ctyp2" LEFTA
-      [ t = ctyp_ident → t ]
+      [ t = ctyp_ident2 → t ]
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
       | "_" -> <:ctyp< _ >>
@@ -1819,21 +1834,6 @@ EXTEND
           <:class_expr< fun $p$ -> $cfd$ >> ] ]
   ;
 END
-;
-
-value convert_ctyp_ident ct =
-  let open MLast in
-  let rec crec = fun [
-    TyUid loc uid -> MeUid loc uid
-  | TyAcc loc ct1 ct2 -> MeAcc loc (crec ct1) (crec ct2)
-  | TyLid loc s ->
-    Ploc.raise loc (Failure (Printf.sprintf "convert_ctyp_ident: unexpected TyLid \"%s\"" (Pcaml.unvala s)))
-  | _ -> assert False
-  ] in
-  match ct with [
-    TyAcc loc1 ct1 (TyLid _ _ as ct2) -> TyAcc2 loc1 (crec ct1) ct2
-  | _ -> ct
-  ]
 ;
 
 (* Main entry points *)

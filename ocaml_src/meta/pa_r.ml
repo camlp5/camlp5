@@ -3609,9 +3609,8 @@ Grammar.safe_extend
        None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm (ctyp_ident : 'ctyp_ident Grammar.Entry.e)),
-           (fun (t : 'ctyp_ident) (loc : Ploc.t) ->
-              (convert_ctyp_ident t : 'ctyp)))];
+             (Grammar.s_nterm (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e)),
+           (fun (t : 'ctyp_ident2) (loc : Ploc.t) -> (t : 'ctyp)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next
