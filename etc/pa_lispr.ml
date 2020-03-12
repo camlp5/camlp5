@@ -233,8 +233,29 @@ value ctyp_id loc s =
   [ ''' →
       let s = String.sub s 1 (String.length s - 1) in
       <:ctyp< '$s$ >>
-  | 'A'..'Z' → <:ctyp< $uid:s$ >>
+  | 'A'..'Z' → failwith "must not call ctyp_id with UIDs"
   | _ → <:ctyp< $lid:s$ >> ]
+;
+
+value split_at_dots loc s =
+  loop 0 0 where rec loop ibeg i =
+    if i = String.length s then
+      if i > ibeg then [ (String.sub s ibeg (i - ibeg)) ]
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
+    else if s.[i] = '.' then
+      if i > ibeg then
+        let t1 = [ (String.sub s ibeg (i - ibeg)) ] in
+        let t2 = loop (i + 1) (i + 1) in
+        t1 @ t2
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
+    else loop ibeg (i + 1)
+;
+
+value split_last l =
+  match List.rev l with [
+    [] -> failwith "split_last: empty list"
+  | [ h :: t ] -> (List.rev t, h)
+  ]
 ;
 
 value strm_n = "strm__";
@@ -593,20 +614,20 @@ and ctyp_se =
   | Satom loc (Alid | Auid) s → ctyp_ident_se loc s
   | se → error se "ctyp" ]
 and ctyp_ident_se loc s =
-  loop 0 0 where rec loop ibeg i =
-    if i = String.length s then
-      if i > ibeg then ctyp_id loc (String.sub s ibeg (i - ibeg))
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
-    else if s.[i] = '.' then
-      if i > ibeg then
-        let t1 = ctyp_id loc (String.sub s ibeg (i - ibeg)) in
-        let t2 = loop (i + 1) (i + 1) in
-MLast.TyAcc loc t1 t2
-(*
-        <:ctyp< $t1$ . $t2$ >>
-*)
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
-    else loop ibeg (i + 1)
+  let sl = split_at_dots loc s in
+  let (hdl, lid) = split_last sl in
+  let capitalized s =
+    match s.[0] with [ 'A'..'Z' -> True | _ -> False ] in do {
+  if not (List.for_all capitalized hdl) then
+    Ploc.raise loc (Stream.Error "ctyp expected, but components aren't capitalized")
+  else () ;
+  match hdl with [
+    [] -> ctyp_id loc lid
+  | [ h :: t ] ->
+    let me = List.fold_left (fun me uid -> <:module_expr< $me$ . $uid:uid$ >>)
+      <:module_expr< $uid:h$ >> t in
+    TyAcc2 loc me (ctyp_id loc lid)
+  ]}
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Satom _ Auid ci :: sel] →
