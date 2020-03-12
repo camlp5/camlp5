@@ -106,7 +106,6 @@ module Meta_make (C : MetaSig) =
     value rec ctyp =
       fun
       [ TyAtt _ ct att -> assert False
-      | TyAcc _ t1 t2 → C.node "TyAcc" [ctyp t1; ctyp t2]
       | TyAcc2 _ m1 t2 → C.node "TyAcc2" [module_expr m1; ctyp t2]
       | TyAli _ t1 t2 → C.node "TyAli" [ctyp t1; ctyp t2]
       | TyAny _ → C.node "TyAny" []
@@ -145,7 +144,6 @@ module Meta_make (C : MetaSig) =
                         C.vala (C.list ctyp) lt; C.option ctyp ot; attrs]))
                llsltot]
       | TyTup _ lt → C.node "TyTup" [C.vala (C.list ctyp) lt]
-      | TyUid _ s → C.node "TyUid" [C.vala C.string s]
       | TyVrn _ lpv ools →
           C.node "TyVrn"
             [C.vala (C.list poly_variant) lpv;

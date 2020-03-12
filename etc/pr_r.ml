@@ -1820,11 +1820,7 @@ EXTEND_PRINTER
           left_operator pc 2 unfold next z ]
     | "dot"
       [
-(* <:ctyp< $x$ . $y$ >> ->
-*)
-MLast.TyAcc _ x y ->
-          pprintf pc "%p.%p" curr x curr y
-      | MLast.TyAcc2 _ me ct -> pprintf pc "%p.%p" module_longident me curr ct
+        MLast.TyAcc2 _ me ct -> pprintf pc "%p.%p" module_longident me curr ct
       ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->
@@ -1852,8 +1848,6 @@ MLast.TyAcc _ x y ->
           pprintf pc "@[module@ %p@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
-      | TyUid _ (Ploc.VaVal t) ->
-          pprintf pc "%s" t
       | <:ctyp:< ' $s$ >> ->
           pprintf pc "%p" typevar s
       | <:ctyp< _ >> ->

@@ -1692,8 +1692,6 @@ EXTEND_PRINTER
     | "dot"
       [
           MLast.TyAcc2 loc me ct -> pprintf pc "%p.%p" module_longident me curr ct
-
-        | MLast.TyAcc loc t1 t2 -> failwith "INTERNAL ERROR: TyAcc should not occur here"
       ]
     | "simple"
       [ <:ctyp:< { $list:ltl$ } >> ->
@@ -1713,7 +1711,6 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(module@ %p)@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
-      | MLast.TyUid _ _  -> failwith "TyUID should not happen here"
       | <:ctyp:< ' $s$ >> ->
           pprintf pc "'%p" var_escaped (loc, s)
       | <:ctyp< _ >> ->

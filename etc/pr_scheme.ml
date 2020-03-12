@@ -586,7 +586,6 @@ EXTEND_PRINTER
              (fun pc -> curr pc t, "")]
       | <:ctyp< $lid:s$ >> ->
           sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
-      | MLast.TyUid _ _ -> failwith "TyUID should not happen here"
       | <:ctyp< ' $s$ >> ->
           sprintf "%s'%s%s" pc.bef s pc.aft
       | <:ctyp< _ >> ->

@@ -33,8 +33,7 @@ type class_infos 'a =
   }
 
 and ctyp =
-  [ TyAcc of loc and ctyp and ctyp
-  | TyAcc2 of loc and module_expr and ctyp
+  [ TyAcc2 of loc and module_expr and ctyp
   | TyAli of loc and ctyp and ctyp
   | TyAny of loc
   | TyApp of loc and ctyp and ctyp
@@ -53,7 +52,6 @@ and ctyp =
   | TyRec of loc and V (list (loc * string * bool * ctyp * attributes))
   | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp * attributes))
   | TyTup of loc and V (list ctyp)
-  | TyUid of loc and V string
   | TyVrn of loc and V (list poly_variant) and
       option (option (V (list string)))
   | TyXtr of loc and string and option (V ctyp)

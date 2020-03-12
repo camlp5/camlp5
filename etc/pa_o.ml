@@ -487,21 +487,6 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
-value convert_ctyp_ident ct =
-  let open MLast in
-  let rec crec = fun [
-    TyUid loc uid -> MeUid loc uid
-  | TyAcc loc ct1 ct2 -> MeAcc loc (crec ct1) (crec ct2)
-  | TyLid loc s ->
-    Ploc.raise loc (Failure (Printf.sprintf "convert_ctyp_ident: unexpected TyLid \"%s\"" (Pcaml.unvala s)))
-  | _ -> assert False
-  ] in
-  match ct with [
-    TyAcc loc1 ct1 (TyLid _ _ as ct2) -> TyAcc2 loc1 (crec ct1) ct2
-  | _ -> ct
-  ]
-;
-
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
     signature structure class_type class_expr class_sig_item class_str_item
@@ -1382,20 +1367,6 @@ EXTEND
       | "mutable"; i = LIDENT; ":"; t = poly_type ; attrs = alg_attributes -> (loc, i, True, t, attrs) ] ]
   ;
   (* Core types *)
-  ctyp_ident:
-    [ LEFTA
-      [ me1 = SELF ; "." ; i = V LIDENT "lid" → 
-          MLast.TyAcc loc me1 (MLast.TyLid loc i)
-      | i = V LIDENT "lid" → 
-          MLast.TyLid loc i
-      ] 
-    | LEFTA
-      [ me1 = SELF; "."; me2 = SELF → MLast.TyAcc loc me1 me2
-      ] 
-    | [ i = V UIDENT "uid" → MLast.TyUid loc i
-      ]
-    ]
-  ;
   module_expr_extended_longident:
     [ LEFTA
       [ me1 = SELF; "(" ; me2 = SELF ; ")" → MLast.MeApp loc me1 me2

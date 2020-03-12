@@ -293,17 +293,22 @@ module MetaAction =
           <:expr< MLast.PaTyc $mloc$ $mpatt p$ $mctyp t$ >>
       | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mpatt" x ]
+    and mmexp =
+      fun
+      [ MLast.MeApp loc me1 me2 -> <:expr< MLast.MeApp $mmexp me1$ $mmexp me2$ >>
+      | MLast.MeAcc loc me1 me2 -> <:expr< MLast.MeAcc $mmexp me1$ $mmexp me2$ >>
+      | MLast.MeUid loc s -> <:expr< MLast.MeUid $mloc$ $mvala mstring s$ >>
+      | x -> not_impl "mmexp" x ]
     and mctyp =
       fun
-      [ MLast.TyAcc loc t1 t2 ->
-          <:expr< MLast.TyAcc $mloc$ $mctyp t1$ $mctyp t2$ >>
+      [ MLast.TyAcc2 loc m1 t2 ->
+          <:expr< MLast.TyAcc $mloc$ $mmexp m1$ $mctyp t2$ >>
       | MLast.TyApp loc t1 t2 ->
           <:expr< MLast.TyApp $mloc$ $mctyp t1$ $mctyp t2$ >>
       | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>
       | MLast.TyQuo loc s -> <:expr< MLast.TyQuo $mloc$ $mvala mstring s$ >>
       | MLast.TyTup loc tl ->
           <:expr< MLast.TyTup $mloc$ $mvala (mlist mctyp) tl$ >>
-      | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mctyp" x ]
     and mpea (p, e, attrs) =
       do { assert ([] = Pcaml.unvala attrs) ;

@@ -120,7 +120,6 @@ Type.TyAcc2 loc (type_of_module_expr_longident me1) (type_of_ctyp t2)
           vars.val := [(s, v) :: vars.val];
           v
         } ]
-  | MLast.TyUid loc s -> failwith "type_of_ctyp: UID not allowed here"
   | t -> not_impl (MLast.loc_of_ctyp t) "Type.of_ctyp" t ]
 ;
 
@@ -898,12 +897,12 @@ value val_tab = do {
                MLast.str_item >>;
          expr = Obj.repr (fun loc rf pel -> MLast.StVal loc rf pel);
          patt = no_patt loc});
-     ("MLast.TyAcc",
+     ("MLast.TyAcc2",
       fun loc ->
         {ctyp =
            <:ctyp<
-             MLast.loc -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
-         expr = Obj.repr (fun loc t1 t2 -> MLast.TyAcc loc t1 t2);
+             MLast.loc -> MLast.module_expr -> MLast.ctyp -> MLast.ctyp >>;
+         expr = Obj.repr (fun loc me1 t2 -> MLast.TyAcc2 loc me1 t2);
          patt = no_patt loc});
      ("MLast.TyAny",
       fun loc ->
@@ -942,11 +941,6 @@ value val_tab = do {
                list (MLast.loc * string * bool * MLast.ctyp) ->
                MLast.ctyp >>;
          expr = Obj.repr (fun loc ldl -> MLast.TyRec loc ldl);
-         patt = no_patt loc});
-     ("MLast.TyUid",
-      fun loc ->
-        {ctyp = <:ctyp< MLast.loc -> string -> MLast.ctyp >>;
-         expr = Obj.repr (fun loc s -> MLast.TyUid loc s);
          patt = no_patt loc});
      ("module_expr",
       fun loc ->

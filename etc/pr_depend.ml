@@ -43,7 +43,7 @@ value longident =
 
 value rec ctyp =
   fun
-  [ TyAcc _ t _ -> ctyp_module t
+  [ TyAcc2 _ t _ -> module_expr t
   | TyAli _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyAny _ -> ()
@@ -76,7 +76,6 @@ and ctyp_module =
     (*<:ctyp< $t$.$_$ >> *)
 MLast.TyAcc2 _ t _ -> module_expr t
   | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
-  | MLast.TyUid _ _ -> failwith "TyUID not allowed here"
   | x -> not_impl "ctyp_module" x ]
 
 and patt =

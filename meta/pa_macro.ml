@@ -232,8 +232,6 @@ value substt mloc env =
     [ <:ctyp< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
     | <:ctyp< $t1$ $t2$ >> -> <:ctyp< $loop t1$ $loop t2$ >>
     | <:ctyp< ($list:tl$) >> -> <:ctyp< ($list:List.map loop tl$) >>
-    | TyUid loc s ->
-      Ploc.raise mloc (Failure (Printf.sprintf "Pa_macro.substt: unexpected TyUid \"%s\"" (Pcaml.unvala s)))
     | <:ctyp< $lid:x$ >> as t ->
         try List.assoc x env with [ Not_found -> t ]
     | t -> t ]

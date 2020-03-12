@@ -333,21 +333,6 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
-value convert_ctyp_ident ct =
-  let open MLast in
-  let rec crec = fun [
-    TyUid loc uid -> MeUid loc uid
-  | TyAcc loc ct1 ct2 -> MeAcc loc (crec ct1) (crec ct2)
-  | TyLid loc s ->
-    Ploc.raise loc (Failure (Printf.sprintf "convert_ctyp_ident: unexpected TyLid \"%s\"" (Pcaml.unvala s)))
-  | _ -> assert False
-  ] in
-  match ct with [
-    TyAcc loc1 ct1 (TyLid _ _ as ct2) -> TyAcc2 loc1 (crec ct1) ct2
-  | _ -> ct
-  ]
-;
-
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -981,20 +966,6 @@ EXTEND
     [ [ "'"; i = ident → Some i
       | i = GIDENT → Some (greek_ascii_equiv i)
       | "_" → None ] ]
-  ;
-  ctyp_ident:
-    [ LEFTA
-      [ me1 = SELF ; "." ; i = V LIDENT "lid" → 
-          MLast.TyAcc loc me1 (MLast.TyLid loc i)
-      | i = V LIDENT "lid" → 
-          MLast.TyLid loc i
-      ] 
-    | LEFTA
-      [ me1 = SELF; "."; me2 = SELF → MLast.TyAcc loc me1 me2
-      ] 
-    | [ i = V UIDENT "uid" → MLast.TyUid loc i
-      ]
-    ]
   ;
   module_expr_extended_longident:
     [ LEFTA
