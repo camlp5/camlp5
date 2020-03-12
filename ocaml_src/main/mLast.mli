@@ -27,8 +27,7 @@ type 'a class_infos =
     ciExp : 'a;
     ciAttributes : attributes }
 and ctyp =
-    TyAcc of loc * ctyp * ctyp
-  | TyAcc2 of loc * module_expr * ctyp
+    TyAcc2 of loc * module_expr * ctyp
   | TyAli of loc * ctyp * ctyp
   | TyAny of loc
   | TyApp of loc * ctyp * ctyp
@@ -47,7 +46,6 @@ and ctyp =
   | TyRec of loc * (loc * string * bool * ctyp * attributes) list
   | TySum of loc * (loc * string * ctyp list * ctyp option * attributes) list
   | TyTup of loc * ctyp list
-  | TyUid of loc * string
   | TyVrn of loc * poly_variant list * string list option option
   | TyXtr of loc * string * ctyp option
   | TyAtt of loc * ctyp * attribute_body

@@ -572,9 +572,42 @@ module MetaAction =
                 mloc),
              mvala mstring s)
       | x -> not_impl "mpatt" x
+    and mmexp =
+      function
+        MLast.MeApp (loc, me1, me2) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "MLast"),
+                   MLast.ExUid (loc, "MeApp")),
+                mmexp me1),
+             mmexp me2)
+      | MLast.MeAcc (loc, me1, me2) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "MLast"),
+                   MLast.ExUid (loc, "MeAcc")),
+                mmexp me1),
+             mmexp me2)
+      | MLast.MeUid (loc, s) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "MLast"),
+                   MLast.ExUid (loc, "MeUid")),
+                mloc),
+             mvala mstring s)
+      | x -> not_impl "mmexp" x
     and mctyp =
       function
-        MLast.TyAcc (loc, t1, t2) ->
+        MLast.TyAcc2 (loc, m1, t2) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -585,7 +618,7 @@ module MetaAction =
                      (loc, MLast.ExUid (loc, "MLast"),
                       MLast.ExUid (loc, "TyAcc")),
                    mloc),
-                mctyp t1),
+                mmexp m1),
              mctyp t2)
       | MLast.TyApp (loc, t1, t2) ->
           MLast.ExApp
@@ -630,16 +663,6 @@ module MetaAction =
                    MLast.ExUid (loc, "TyTup")),
                 mloc),
              mvala (mlist mctyp) tl)
-      | MLast.TyUid (loc, s) ->
-          MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "TyUid")),
-                mloc),
-             mvala mstring s)
       | x -> not_impl "mctyp" x
     and mpea (p, e, attrs) =
       assert ([] = Pcaml.unvala attrs);

@@ -48,8 +48,6 @@ let rec ctyp floc sh =
   let rec self =
     function
       TyAtt (loc, ct, attr) -> TyAtt (loc, self ct, attr)
-    | TyAcc (loc, x1, x2) ->
-        let loc = floc loc in TyAcc (loc, self x1, self x2)
     | TyAcc2 (loc, x1, x2) ->
         let loc = floc loc in TyAcc2 (loc, module_expr floc sh x1, self x2)
     | TyAli (loc, x1, x2) ->
@@ -94,7 +92,6 @@ let rec ctyp floc sh =
              x1)
     | TyTup (loc, x1) ->
         let loc = floc loc in TyTup (loc, vala_map (List.map self) x1)
-    | TyUid (loc, x1) -> let loc = floc loc in TyUid (loc, x1)
     | TyVrn (loc, x1, x2) ->
         let loc = floc loc in
         TyVrn (loc, vala_map (List.map (poly_variant floc sh)) x1, x2)
