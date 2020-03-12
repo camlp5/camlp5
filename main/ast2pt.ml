@@ -213,9 +213,9 @@ value rec ctyp_long_id =
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
-| MLast.TyAcc2 _ m ct →
+  | <:ctyp:< $mpath:m$ . $lid:id$ >> →
       let li1 = module_expr_long_id m in
-      let (is_cls, li2) = ctyp_long_id ct in
+      let (is_cls, li2) = ctyp_long_id <:ctyp< $lid:id$ >> in
       (is_cls, concat_long_ids li1 li2)
   | <:ctyp< $lid:s$ >> → (False, Lident s)
   | TyCls loc sl → (True, long_id_of_string_list loc (uv sl))

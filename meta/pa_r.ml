@@ -979,9 +979,9 @@ EXTEND
   ctyp_ident2:
     [ LEFTA
       [ me1 = module_expr_extended_longident ; "." ; i = V LIDENT "lid" → 
-          MLast.TyAcc2 loc me1 (MLast.TyLid loc i)
+          <:ctyp< $mpath:me1$ . $_lid:i$ >>
       | i = V LIDENT "lid" → 
-          MLast.TyLid loc i
+          <:ctyp< $_lid:i$ >>
       ] 
     ]
   ;
