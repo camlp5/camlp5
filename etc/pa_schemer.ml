@@ -1507,12 +1507,12 @@ and ctyp_se =
            <:ctyp< $t$ $t2$ >>)
         (ctyp_se se) sel
   | Sacc loc se1 se2 →
-      let t1 = ctyp_se se1 in
-      let t2 = ctyp_se se2 in
-(*
-      <:ctyp< $t1$ . $t2$ >>
-*)
-MLast.TyAcc loc t1 t2
+      let me1 = module_expr_se se1 in
+      match ctyp_se se2 with [
+        MLast.TyAcc2 loc me2 ct ->
+          MLast.TyAcc2 loc <:module_expr< $me1$ . $me2$ >> ct
+      | ct -> MLast.TyAcc2 loc me1 ct
+      ]
   | Slid loc "_" → <:ctyp< _ >>
   | Slid loc s →
       if s.[0] = ''' then
@@ -1520,8 +1520,8 @@ MLast.TyAcc loc t1 t2
         <:ctyp< '$s$ >>
       else <:ctyp< $lid:(rename_id s)$ >>
   | Slidv loc s → <:ctyp< $_lid:s$ >>
-  | Suid loc s → <:ctyp< $uid:(rename_id s)$ >>
-  | Suidv loc s → <:ctyp< $_uid:s$ >>
+  | Suid loc s as se → error se "ctyp_se: UID not allowed here"
+  | Suidv loc s as se → error se "ctyp_se: UIDv not allowed here"
   | Santi loc "" s → <:ctyp< $xtr:s$ >>
   | se → error se "ctyp" ]
 and object_field_list_se sel =
