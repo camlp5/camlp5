@@ -50,6 +50,7 @@ value sig_item = Grammar.Entry.create gram "sig_item";
 value str_item = Grammar.Entry.create gram "str_item";
 value functor_parameter = Grammar.Entry.create gram "functor_parameter";
 value module_type = Grammar.Entry.create gram "module_type";
+value module_expr_extended_longident = Grammar.Entry.create gram "module_expr_extended_longident";
 value module_expr = Grammar.Entry.create gram "module_expr";
 value expr = Grammar.Entry.create gram "expr";
 value patt = Grammar.Entry.create gram "patt";

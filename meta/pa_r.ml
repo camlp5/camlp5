@@ -32,6 +32,7 @@ do {
   Grammar.Unsafe.clear_entry use_file;
   Grammar.Unsafe.clear_entry functor_parameter;
   Grammar.Unsafe.clear_entry module_type;
+  Grammar.Unsafe.clear_entry module_expr_extended_longident;
   Grammar.Unsafe.clear_entry module_expr;
   Grammar.Unsafe.clear_entry sig_item;
   Grammar.Unsafe.clear_entry str_item;
@@ -336,7 +337,8 @@ value check_dot_uid =
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
-  GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type module_expr signature
+  GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
+    module_expr module_expr_extended_longident signature
     structure class_type class_expr class_sig_item class_str_item let_binding
     type_decl type_extension extension_constructor
     constructor_declaration label_declaration match_case ipatt

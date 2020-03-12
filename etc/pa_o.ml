@@ -29,6 +29,7 @@ do {
   Grammar.Unsafe.clear_entry use_file;
   Grammar.Unsafe.clear_entry module_type;
   Grammar.Unsafe.clear_entry module_expr;
+  Grammar.Unsafe.clear_entry module_expr_extended_longident;
   Grammar.Unsafe.clear_entry sig_item;
   Grammar.Unsafe.clear_entry str_item;
   Grammar.Unsafe.clear_entry signature;
@@ -488,7 +489,8 @@ value check_dot_uid =
 ;
 
 EXTEND
-  GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
+  GLOBAL: sig_item str_item ctyp patt expr module_type
+    module_expr module_expr_extended_longident
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl type_extension extension_constructor
     constructor_declaration label_declaration

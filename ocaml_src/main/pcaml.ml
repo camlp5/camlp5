@@ -52,6 +52,9 @@ let sig_item = Grammar.Entry.create gram "sig_item";;
 let str_item = Grammar.Entry.create gram "str_item";;
 let functor_parameter = Grammar.Entry.create gram "functor_parameter";;
 let module_type = Grammar.Entry.create gram "module_type";;
+let module_expr_extended_longident =
+  Grammar.Entry.create gram "module_expr_extended_longident"
+;;
 let module_expr = Grammar.Entry.create gram "module_expr";;
 let expr = Grammar.Entry.create gram "expr";;
 let patt = Grammar.Entry.create gram "patt";;

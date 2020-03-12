@@ -31,6 +31,7 @@ Grammar.Unsafe.clear_entry top_phrase;
 Grammar.Unsafe.clear_entry use_file;
 Grammar.Unsafe.clear_entry functor_parameter;
 Grammar.Unsafe.clear_entry module_type;
+Grammar.Unsafe.clear_entry module_expr_extended_longident;
 Grammar.Unsafe.clear_entry module_expr;
 Grammar.Unsafe.clear_entry sig_item;
 Grammar.Unsafe.clear_entry str_item;
@@ -371,6 +372,9 @@ Grammar.safe_extend
    and _ = (functor_parameter : 'functor_parameter Grammar.Entry.e)
    and _ = (module_type : 'module_type Grammar.Entry.e)
    and _ = (module_expr : 'module_expr Grammar.Entry.e)
+   and _ =
+     (module_expr_extended_longident :
+      'module_expr_extended_longident Grammar.Entry.e)
    and _ = (signature : 'signature Grammar.Entry.e)
    and _ = (structure : 'structure Grammar.Entry.e)
    and _ = (class_type : 'class_type Grammar.Entry.e)
@@ -465,8 +469,6 @@ Grammar.safe_extend
      grammar_entry_create "type_parameter"
    and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
      grammar_entry_create "simple_type_parameter"
-   and module_expr_extended_longident : 'module_expr_extended_longident Grammar.Entry.e =
-     grammar_entry_create "module_expr_extended_longident"
    and ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e =
      grammar_entry_create "ctyp_ident2"
    and ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e =
