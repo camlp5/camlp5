@@ -616,7 +616,7 @@ module MetaAction =
                   (loc,
                    MLast.ExAcc
                      (loc, MLast.ExUid (loc, "MLast"),
-                      MLast.ExUid (loc, "TyAcc")),
+                      MLast.ExUid (loc, "TyAcc2")),
                    mloc),
                 mmexp m1),
              mctyp t2)
