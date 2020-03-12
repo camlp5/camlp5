@@ -22,14 +22,18 @@
 #load "pr_op.cmo";;
 Pcaml.inter_phrases := Some ";;\n";;
 *)
-
+(*
 #load "pa_r.cmo";;
 #load "pa_rp.cmo";;
 #load "pr_r.cmo";;
 #load "pr_ro.cmo";;
 #load "pr_rp.cmo";;
 Pcaml.inter_phrases := Some ";\n";;
+*)
 
+#load "pa_lispr.cmo";;
+#load "pa_extend.cmo";;
+#load "q_MLast.cmo" ;;
 
 (*
 #load "pr_official.cma";;
