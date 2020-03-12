@@ -6864,29 +6864,6 @@ Grammar.safe_extend
       None
       [None, Some Gramext.LeftA,
        [Grammar.production
-          (Grammar.r_next Grammar.r_stop
-             (Grammar.s_facto
-                (Grammar.s_rules
-                   [Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("UIDENT", "")),
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Str a) : 'e__165)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_uid")),
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_uid", loc, a) : 'e__165)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "uid")),
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) :
-                           'e__165)))])),
-           (fun (i : 'e__165) (loc : Ploc.t) ->
-              (Qast.Node ("MeUid", [Qast.Loc; i]) :
-               'module_expr_extended_longident)));
-        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
@@ -6908,6 +6885,30 @@ Grammar.safe_extend
            (fun _ (me2 : 'module_expr_extended_longident) _
                 (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
               (Qast.Node ("MeApp", [Qast.Loc; me1; me2]) :
+               'module_expr_extended_longident)))];
+       Some "simple", None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_facto
+                (Grammar.s_rules
+                   [Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("UIDENT", "")),
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.Str a) : 'e__165)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "_uid")),
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaAnt ("_uid", loc, a) : 'e__165)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "uid")),
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) :
+                           'e__165)))])),
+           (fun (i : 'e__165) (loc : Ploc.t) ->
+              (Qast.Node ("MeUid", [Qast.Loc; i]) :
                'module_expr_extended_longident)))]];
     Grammar.extension (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e) None
       [None, Some Gramext.LeftA,

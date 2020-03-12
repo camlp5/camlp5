@@ -1201,7 +1201,9 @@ EXTEND
     [ LEFTA
       [ me1 = SELF; "(" ; me2 = SELF ; ")" → Qast.Node "MeApp" [Qast.Loc; me1; me2]
       | me1 = SELF; check_dot_uid ; "."; me2 = SELF → Qast.Node "MeAcc" [Qast.Loc; me1; me2]
-      | i = SV UIDENT "uid" → Qast.Node "MeUid" [Qast.Loc; i]
+      ]
+    | "simple"
+      [ i = SV UIDENT "uid" → Qast.Node "MeUid" [Qast.Loc; i]
       ] ]
   ;
   ctyp_ident2:
