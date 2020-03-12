@@ -258,6 +258,10 @@ value split_last l =
   ]
 ;
 
+value capitalized s =
+  match s.[0] with [ 'A'..'Z' -> True | _ -> False ]
+;
+
 value strm_n = "strm__";
 value peek_fun loc = <:expr< Stream.peek >>;
 value junk_fun loc = <:expr< Stream.junk >>;
@@ -615,9 +619,7 @@ and ctyp_se =
   | se → error se "ctyp" ]
 and ctyp_ident_se loc s =
   let sl = split_at_dots loc s in
-  let (hdl, lid) = split_last sl in
-  let capitalized s =
-    match s.[0] with [ 'A'..'Z' -> True | _ -> False ] in do {
+  let (hdl, lid) = split_last sl in do {
   if not (List.for_all capitalized hdl) then
     Ploc.raise loc (Stream.Error "ctyp expected, but components aren't capitalized")
   else () ;

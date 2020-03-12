@@ -1234,7 +1234,7 @@ EXTEND
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → Qast.Node "TyApp" [Qast.Loc; t1; t2] ]
     | LEFTA
-      [ t = ctyp_ident → t ]
+      [ t = ctyp_ident2 → t ]
     | "simple"
       [ "'"; i = SV ident "" → Qast.Node "TyQuo" [Qast.Loc; i]
       | i = GIDENT →

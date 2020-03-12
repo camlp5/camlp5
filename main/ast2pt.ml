@@ -226,7 +226,7 @@ value rec ctyp_long_id =
       (is_cls, concat_long_ids li1 li2)
   | <:ctyp< $lid:s$ >> → (False, Lident s)
   | TyCls loc sl → (True, long_id_of_string_list loc (uv sl))
-  | <:ctyp:< $uid:s$ >> → error loc (Printf.sprintf "unexpected TyUid %s" s)
+  | TyUid loc s → error loc (Printf.sprintf "unexpected TyUid %s" (Pcaml.unvala s))
   | t → error (loc_of_ctyp t) "incorrect type" ]
 
 and ctyp0_long_id = fun [
@@ -237,7 +237,7 @@ and ctyp0_long_id = fun [
       let s = Pcaml.unvala s in
       let (is_cls, li) = ctyp0_long_id m in
       (is_cls, Ldot li s)
-  | <:ctyp< $uid:s$ >> → (False, Lident s)
+  | TyUid loc s → (False, Lident (Pcaml.unvala s))
   | _ -> assert False
 ]
 ;

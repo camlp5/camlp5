@@ -1852,7 +1852,7 @@ MLast.TyAcc _ x y ->
           pprintf pc "@[module@ %p@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
-      | <:ctyp< $uid:t$ >> ->
+      | TyUid _ (Ploc.VaVal t) ->
           pprintf pc "%s" t
       | <:ctyp:< ' $s$ >> ->
           pprintf pc "%p" typevar s
