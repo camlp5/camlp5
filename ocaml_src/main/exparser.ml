@@ -161,8 +161,8 @@ let stream_pattern_component skont ckont =
                 (_, MLast.PaLid (_, v),
                  MLast.TyApp
                    (_,
-                    MLast.TyAcc
-                      (_, MLast.TyUid (_, "Stream"), MLast.TyLid (_, "t")),
+                    MLast.TyAcc2
+                      (_, MLast.MeUid (_, "Stream"), MLast.TyLid (_, "t")),
                     MLast.TyAny _)),
               None, e])
           when v = strm_n ->
@@ -480,8 +480,8 @@ let mk_rule x =
             (loc, MLast.PaLid (loc, strm_n),
              MLast.TyApp
                (loc,
-                MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
+                MLast.TyAcc2
+                  (loc, MLast.MeUid (loc, "Stream"), MLast.TyLid (loc, "t")),
                 MLast.TyAny loc))
         in
         MLast.ExFun (loc, [p, None, e])
@@ -537,8 +537,8 @@ let cparser loc (bpo, pc) =
       (loc, MLast.PaLid (loc, strm_n),
        MLast.TyApp
          (loc,
-          MLast.TyAcc
-            (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
+          MLast.TyAcc2
+            (loc, MLast.MeUid (loc, "Stream"), MLast.TyLid (loc, "t")),
           MLast.TyAny loc))
   in
   MLast.ExFun (loc, [p, None, e])
@@ -590,8 +590,8 @@ let cparser_match loc me (bpo, pc) =
             (loc, p,
              MLast.TyApp
                (loc,
-                MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
+                MLast.TyAcc2
+                  (loc, MLast.MeUid (loc, "Stream"), MLast.TyLid (loc, "t")),
                 MLast.TyAny loc)),
           me, []],
          e)

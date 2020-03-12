@@ -142,8 +142,8 @@ let rec unstream_pattern_kont =
                   (loc, MLast.PaLid (loc, "strm__"),
                    MLast.TyApp
                      (loc,
-                      MLast.TyAcc
-                        (loc, MLast.TyUid (loc, "Stream"),
+                      MLast.TyAcc2
+                        (loc, MLast.MeUid (loc, "Stream"),
                          MLast.TyLid (loc, "t")),
                       MLast.TyAny loc)),
                 None, f])
@@ -215,8 +215,8 @@ let rec unstream_pattern_kont =
                       (loc, MLast.PaLid (loc, "strm__"),
                        MLast.TyApp
                          (loc,
-                          MLast.TyAcc
-                            (loc, MLast.TyUid (loc, "Stream"),
+                          MLast.TyAcc2
+                            (loc, MLast.MeUid (loc, "Stream"),
                              MLast.TyLid (loc, "t")),
                           MLast.TyAny loc)),
                     None, e1])
@@ -281,8 +281,8 @@ let rec unstream_pattern_kont =
               (loc, MLast.PaLid (loc, "strm__"),
                MLast.TyApp
                  (loc,
-                  MLast.TyAcc
-                    (loc, MLast.TyUid (loc, "Stream"),
+                  MLast.TyAcc2
+                    (loc, MLast.MeUid (loc, "Stream"),
                      MLast.TyLid (loc, "t")),
                   MLast.TyAny loc)),
             None, ge])
@@ -323,8 +323,8 @@ let rec unstream_pattern_kont =
               (loc, MLast.PaLid (loc, "strm__"),
                MLast.TyApp
                  (loc,
-                  MLast.TyAcc
-                    (loc, MLast.TyUid (loc, "Stream"),
+                  MLast.TyAcc2
+                    (loc, MLast.MeUid (loc, "Stream"),
                      MLast.TyLid (loc, "t")),
                   MLast.TyAny loc)),
             None, f])
@@ -478,8 +478,8 @@ let rec unparser_cases_list =
               (loc, MLast.PaLid (loc, "strm__"),
                MLast.TyApp
                  (loc,
-                  MLast.TyAcc
-                    (loc, MLast.TyUid (loc, "Stream"),
+                  MLast.TyAcc2
+                    (loc, MLast.MeUid (loc, "Stream"),
                      MLast.TyLid (loc, "t")),
                   MLast.TyAny loc)),
             None, f])

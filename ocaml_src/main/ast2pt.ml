@@ -237,14 +237,15 @@ let rec ctyp_long_id =
       let (is_cls, li2) = ctyp_long_id ct in is_cls, concat_long_ids li1 li2
   | MLast.TyLid (_, s) -> false, Lident s
   | TyCls (loc, sl) -> true, long_id_of_string_list loc (uv sl)
-  | MLast.TyUid (loc, s) -> error loc (Printf.sprintf "unexpected TyUid %s" s)
+  | TyUid (loc, s) ->
+      error loc (Printf.sprintf "unexpected TyUid %s" (Pcaml.unvala s))
   | t -> error (loc_of_ctyp t) "incorrect type"
 and ctyp0_long_id =
   function
     MLast.TyAcc (_, m, TyUid (_, s)) ->
       let s = Pcaml.unvala s in
       let (is_cls, li) = ctyp0_long_id m in is_cls, Ldot (li, s)
-  | MLast.TyUid (_, s) -> false, Lident s
+  | TyUid (loc, s) -> false, Lident (Pcaml.unvala s)
   | _ -> assert false
 ;;
 

@@ -239,8 +239,12 @@ let substt mloc env =
       MLast.TyArr (_, t1, t2) -> MLast.TyArr (loc, loop t1, loop t2)
     | MLast.TyApp (_, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
     | MLast.TyTup (_, tl) -> MLast.TyTup (loc, List.map loop tl)
-    | MLast.TyLid (_, x) | MLast.TyUid (_, x) as t ->
-        (try List.assoc x env with Not_found -> t)
+    | TyUid (loc, s) ->
+        Ploc.raise mloc
+          (Failure
+             (Printf.sprintf "Pa_macro.substt: unexpected TyUid \"%s\""
+                (Pcaml.unvala s)))
+    | MLast.TyLid (_, x) as t -> (try List.assoc x env with Not_found -> t)
     | t -> t
   in
   loop

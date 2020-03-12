@@ -151,8 +151,8 @@ let cparser_match loc me bpo pc =
         (loc, MLast.PaLid (loc, strm_n),
          MLast.TyApp
            (loc,
-            MLast.TyAcc
-              (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+            MLast.TyAcc2
+              (loc, MLast.MeUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
             MLast.TyAny loc)),
       me, []],
      e)
@@ -181,8 +181,8 @@ let cparser loc bpo pc =
       (loc, MLast.PaLid (loc, strm_n),
        MLast.TyApp
          (loc,
-          MLast.TyAcc
-            (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+          MLast.TyAcc2
+            (loc, MLast.MeUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
           MLast.TyAny loc))
   in
   MLast.ExFun (loc, [p, None, e])
@@ -431,7 +431,7 @@ let mparser_match loc m me bpo pc =
         (loc, p,
          MLast.TyApp
            (loc,
-            MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),
+            MLast.TyAcc2 (loc, MLast.MeUid (loc, m), MLast.TyLid (loc, "t")),
             MLast.TyAny loc)),
       me, []],
      e)
@@ -459,7 +459,7 @@ let mparser loc m bpo pc =
       (loc, MLast.PaLid (loc, strm_n),
        MLast.TyApp
          (loc,
-          MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),
+          MLast.TyAcc2 (loc, MLast.MeUid (loc, m), MLast.TyLid (loc, "t")),
           MLast.TyAny loc))
   in
   MLast.ExFun (loc, [p, None, e])
