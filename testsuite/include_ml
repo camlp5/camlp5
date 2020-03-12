@@ -15,13 +15,13 @@
 #directory "../meta";;
 #directory "../main";;
 #directory "../etc";;
-(*
+
 #load "pa_o.cmo";;
 #load "pa_op.cmo";;
 #load "pr_o.cmo";;
 #load "pr_op.cmo";;
 Pcaml.inter_phrases := Some ";;\n";;
-*)
+
 (*
 #load "pa_r.cmo";;
 #load "pa_rp.cmo";;
@@ -30,19 +30,19 @@ Pcaml.inter_phrases := Some ";;\n";;
 #load "pr_rp.cmo";;
 Pcaml.inter_phrases := Some ";\n";;
 *)
-
+(*
 #load "pa_lispr.cmo";;
 #load "pa_extend.cmo";;
 #load "q_MLast.cmo" ;;
-
+*)
 (*
 #load "pr_official.cma";;
 #load "papr_official.cmo" ;;
 *)
-(*
+
 #load "pa_extend.cmo";;
 #load "q_MLast.cmo";;
-*)
+
 (*
 #load "q_phony.cmo";;
 *)
