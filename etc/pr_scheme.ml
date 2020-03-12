@@ -20,6 +20,7 @@ do {
   Eprinter.clear pr_ctyp;
   Eprinter.clear pr_str_item;
   Eprinter.clear pr_sig_item;
+  Eprinter.clear pr_module_longident;
   Eprinter.clear pr_module_expr;
   Eprinter.clear pr_module_type;
   Eprinter.clear pr_class_sig_item;
@@ -66,6 +67,7 @@ value patt = Eprinter.apply pr_patt;
 value ctyp = Eprinter.apply pr_ctyp;
 value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
+value module_longident = Eprinter.apply pr_module_longident;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
 value class_str_item = Eprinter.apply pr_class_str_item;
@@ -566,10 +568,10 @@ EXTEND_PRINTER
 (*
       | <:ctyp< $t1$ . $t2$ >> ->
 *)
-      | MLast.TyAcc _ t1 t2 ->
-          sprintf "%s.%s"
-            (curr {(pc) with aft = ""} t1)
-            (curr {(pc) with bef = ""} t2)
+      | MLast.TyAcc2 _ me1 t2 ->
+          pprintf pc "%p.%p"
+            module_longident me1
+            curr t2
       | <:ctyp< < $list:fl$ $flag:v$ > >> ->
           let b = if v then "objectvar" else "object" in
           if fl = [] then sprintf "%s(%s)%s" pc.bef b pc.aft
@@ -584,8 +586,7 @@ EXTEND_PRINTER
              (fun pc -> curr pc t, "")]
       | <:ctyp< $lid:s$ >> ->
           sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
-      | <:ctyp< $uid:s$ >> ->
-          sprintf "%s%s%s" pc.bef s pc.aft
+      | MLast.TyUid _ _ -> failwith "TyUID should not happen here"
       | <:ctyp< ' $s$ >> ->
           sprintf "%s'%s%s" pc.bef s pc.aft
       | <:ctyp< _ >> ->
@@ -1150,6 +1151,21 @@ EXTEND_PRINTER
 *)
       | x ->
           not_impl "sig_item" pc x ] ]
+  ;
+  pr_module_longident:
+    [ "dot"
+      [ <:module_expr< $x$ . $y$ >> ->
+          pprintf pc "%p.%p" curr x curr y
+      | <:module_expr< $x$ $y$ >> ->
+          pprintf pc "%p(%p)" module_longident x module_longident y
+      | <:module_expr< $uid:s$ >> ->
+          pprintf pc "%s" s
+      ]
+    | "bottom" [
+        z -> pprintf pc "[INTERNAL ERROR(pr_module_longident): unexpected module_expr %p]"
+               module_expr z
+      ]
+    ]
   ;
   pr_module_expr:
     [ "top"

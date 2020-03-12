@@ -1693,63 +1693,8 @@ EXTEND_PRINTER
       [
           MLast.TyAcc2 loc me ct -> pprintf pc "%p.%p" module_longident me curr ct
 
-(*
- <:ctyp:< $t1$ . $t2$ >> ->
-*)
-        | MLast.TyAcc loc t1 t2 ->
-          pprintf pc "%p.%p"
-            (fun pc ->
-               fun
-               [ <:ctyp:< $t1$ $t2$ >> ->
-                   let (t1, tl) =
-                     loop [t2] t1 where rec loop tl =
-                       fun
-                       [ <:ctyp< $t1$ $t2$ >> -> loop [t2 :: tl] t1
-                       | t -> (t, tl) ]
-                   in
-                   let mod_fun pc =
-                     fun
-                     [ <:ctyp< $uid:s1$.$uid:s2$.$uid:s3$.$uid:s4$ >> ->
-                         pprintf pc "%s.%s.%s.%s" s1 s2 s3 s4
-                     | <:ctyp< $uid:s1$.$uid:s2$ >> ->
-                         pprintf pc "%s.%s" s1 s2
-                     | <:ctyp< $uid:s$ >> -> pprintf pc "%s" s
-                     | t -> error (MLast.loc_of_ctyp t) "type dot 4" ]
-                   in
-                   let mod_param pc =
-                     fun
-                     [ <:ctyp< $uid:s1$.$uid:s2$ >> ->
-                         pprintf pc "%s.%s" s1 s2
-                     | <:ctyp< $uid:s$ >> -> pprintf pc "%s" s
-                     | t -> error (MLast.loc_of_ctyp t) "type dot 5" ]
-                   in
-                   match tl with
-                   [ [] -> assert False
-                   | [t2] -> pprintf pc "%p(%p)" mod_fun t1 mod_param t2
-                   | [t2; t3] ->
-                       pprintf pc "%p(%p)(%p)" mod_fun t1 mod_param t2
-                         mod_param t3
-                   | _ -> error loc "type dot 3" ]
-
-               | <:ctyp< $uid:m1$.$uid:m2$.$uid:m3$.$uid:m4$ >> ->
-                   pprintf pc "%s.%s.%s.%s" m1 m2 m3 m4
-               | <:ctyp< $uid:m1$.$uid:m2$.$uid:m3$ >> ->
-                   pprintf pc "%s.%s.%s" m1 m2 m3
-               | <:ctyp< $uid:m1$.$uid:m2$ >> ->
-                   pprintf pc "%s.%s" m1 m2
-               | <:ctyp< $uid:m$ >> ->
-                   pprintf pc "%s" m
-
-               | _ -> error loc "type dot 1" ])
-            t1
-            (fun pc ->
-               fun
-               [ <:ctyp< $lid:t$ >> ->
-                   pprintf pc "%s" t
-               | <:ctyp< $uid:t$ >> ->
-                   pprintf pc "%s" t
-               | _ -> error loc "type dot 2" ])
-            t2 ]
+        | MLast.TyAcc loc t1 t2 -> failwith "INTERNAL ERROR: TyAcc should not occur here"
+      ]
     | "simple"
       [ <:ctyp:< { $list:ltl$ } >> ->
           pprintf pc "@[<a>@[<2>{ %p }@]@]"
@@ -1768,8 +1713,7 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(module@ %p)@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
-      | <:ctyp< $uid:t$ >> ->
-          pprintf pc "%s"t
+      | MLast.TyUid _ _  -> failwith "TyUID should not happen here"
       | <:ctyp:< ' $s$ >> ->
           pprintf pc "'%p" var_escaped (loc, s)
       | <:ctyp< _ >> ->

@@ -5,6 +5,7 @@
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
 #qmod "ctyp,Type";
+#qmod "module_expr,ME";
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -25,20 +26,55 @@ value not_impl loc name x =
   Ploc.raise loc (Failure ("pa_pragma: not impl " ^ name ^ " " ^ desc))
 ;
 
+module Types = struct
+    type loc = Ploc.t;
+    type ctyp_t =
+      [ TyAcc2 of loc and me_t and ctyp_t
+      | TyAny of loc
+      | TyApp of loc and ctyp_t and ctyp_t
+      | TyArr of loc and ctyp_t and ctyp_t
+      | TyLid of loc and MLast.v string
+      | TyQuo of loc and MLast.v (ref (option ctyp_t))
+      | TyTup of loc and MLast.v (list ctyp_t)
+      | TyUid of loc and MLast.v string ]
+    and me_t =
+      [ MeApp of loc and me_t and me_t
+      | MeAcc of loc and me_t and me_t
+      | MeUid of loc and MLast.v string
+      ]
+      ;
+end
+;
+
 module Type =
   struct
     type loc = Ploc.t;
-    type t =
-      [ TyAcc of loc and t and t
+    type t = Types.ctyp_t ==
+      [ TyAcc2 of loc and Types.me_t and t
       | TyAny of loc
       | TyApp of loc and t and t
       | TyArr of loc and t and t
       | TyLid of loc and MLast.v string
       | TyQuo of loc and MLast.v (ref (option t))
       | TyTup of loc and MLast.v (list t)
-      | TyUid of loc and MLast.v string ]
-    ;
+      | TyUid of loc and MLast.v string ] ;
+    type me_t = Types.me_t ==
+      [ MeApp of loc and me_t and me_t
+      | MeAcc of loc and me_t and me_t
+      | MeUid of loc and MLast.v string
+      ]
+      ;
   end
+;
+module ME = struct
+    type loc = Ploc.t;
+    type t = Types.me_t ==
+      [ MeApp of loc and t and t
+      | MeAcc of loc and t and t
+      | MeUid of loc and MLast.v string
+      ]
+      ;
+end
 ;
 
 type expr_v 'e =
@@ -56,10 +92,20 @@ value ty_var =
 ;
 
 value vars = ref [];
+value type_of_module_expr_longident t =
+  let rec merec = fun [
+    MLast.MeAcc loc me1 me2 -> <:module_expr< $merec me1$ . $merec me2$ >>
+  | MLast.MeApp loc me1 me2 -> <:module_expr< $merec me1$ $merec me2$ >>
+  | MLast.MeUid loc uid -> <:module_expr< $_uid:uid$ >>
+  | _ -> failwith "type_of_module_expr_longident: unrecognized longident"
+  ]
+  in merec t
+;
+
 value rec type_of_ctyp t =
   match t with
-  [ MLast.TyAcc loc t1 t2 ->
-Type.TyAcc loc (type_of_ctyp t1) (type_of_ctyp t2)
+  [ MLast.TyAcc2 loc me1 t2 ->
+Type.TyAcc2 loc (type_of_module_expr_longident me1) (type_of_ctyp t2)
 (*
  <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
 *)
@@ -74,7 +120,7 @@ Type.TyAcc loc (type_of_ctyp t1) (type_of_ctyp t2)
           vars.val := [(s, v) :: vars.val];
           v
         } ]
-  | MLast.TyUid loc s -> <:ctyp< $_uid:s$ >>
+  | MLast.TyUid loc s -> failwith "type_of_ctyp: UID not allowed here"
   | t -> not_impl (MLast.loc_of_ctyp t) "Type.of_ctyp" t ]
 ;
 
@@ -94,6 +140,14 @@ and str_of_ty2 loc =
       let s2 = str_of_ty3 loc t2 in
       s1 ^ " " ^ s2
   | t -> str_of_ty3 loc t ]
+and str_of_module_expr_longident loc me =
+  let rec srec = fun [
+    <:module_expr< $me1$ . $me2$ >> -> srec me1 ^ "." ^ srec me2
+  | <:module_expr< $me1$ $me2$ >> -> srec me1 ^ "(" ^ srec me2 ^ ")"
+  | <:module_expr< $uid:uid$ >> -> uid
+  | _ -> failwith "str_of_module_expr_longident: unrecognized longident"
+  ]
+  in srec me
 and str_of_ty3 loc t =
   match t with
   [ <:ctyp< ( $list:tl$ ) >> ->
@@ -101,7 +155,7 @@ and str_of_ty3 loc t =
       "(" ^
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
-    |(* <:ctyp< $t1$ . $t2$ >> *) Type.TyAcc _ t1 t2 -> str_of_ty1 loc t1 ^ "." ^ str_of_ty1 loc t2
+    | Type.TyAcc2 _ me1 t2 -> str_of_module_expr_longident loc me1 ^ "." ^ str_of_ty1 loc t2
   | <:ctyp< '$s$ >> ->
       match s.val with
       [ Some t -> str_of_ty3 loc t
@@ -114,7 +168,7 @@ and str_of_ty3 loc t =
               n
             } ] ]
   | <:ctyp< $lid:s$ >> -> s
-  | <:ctyp< $uid:s$ >> -> s
+  | Type.TyUid loc _  -> Ploc.raise loc (Failure "str_of_ty3: UID should not occur here")
   | <:ctyp< _ >> -> "_"
   | <:ctyp< $_$ $_$ >> -> "(" ^ str_of_ty1 loc t ^ ")"
   | t -> not_impl loc "str_of_ty3" t ]
@@ -124,11 +178,8 @@ value rec eval_type loc t =
   match t with
   [ <:ctyp< $t1$ -> $t2$ >> ->
       <:ctyp< $eval_type loc t1$ -> $eval_type loc t2$ >>
-  | (* <:ctyp< $t1$ . $t2$ >> *) Type.TyAcc _ t1 t2 ->
-Type.TyAcc loc (eval_type loc t1) (eval_type loc t2)
-(*
-      <:ctyp< $eval_type loc t1$ . $eval_type loc t2$ >>
-*)
+  | Type.TyAcc2 loc me t2 ->
+      Type.TyAcc2 loc me (eval_type loc t2)
   | <:ctyp< $t1$ $t2$ >> ->
       <:ctyp< $eval_type loc t1$ $eval_type loc t2$ >>
   | <:ctyp< ( $list:tl$ ) >> ->
@@ -137,7 +188,8 @@ Type.TyAcc loc (eval_type loc t1) (eval_type loc t2)
       match s.val with
       [ Some t -> eval_type loc t
       | None -> t ]
-  | <:ctyp< $_lid:_$ >> | <:ctyp< $uid:_$ >> | <:ctyp< _ >> -> t
+  | Type.TyUid _ _ -> failwith "eval_type: TyUID not allowed here"
+  | <:ctyp< $_lid:_$ >> | <:ctyp< _ >> -> t
   | IFDEF STRICT THEN
       _ -> failwith "eval_type"
     END ]
@@ -188,7 +240,7 @@ value rec inst loc t =
               inst_vars.val := [(s, t) :: inst_vars.val];
               t
             } ] ]
-| Type.TyAcc _ _ _
+| Type.TyAcc2 _ _ _
 (*
   | <:ctyp< $_$ . $_$ >>
 *)
@@ -198,19 +250,28 @@ value rec inst loc t =
 
 value instantiate loc s t = do { inst_vars.val := []; inst loc t };
 
+value unify_module_expr_longident loc me1 me2 =
+  let rec urec = fun [
+    (Types.MeAcc _ me11 me12, Types.MeAcc _ me21 me22) ->
+      urec (me11, me21) && urec (me12, me22)
+  | (Types.MeApp _ me11 me12, Types.MeApp _ me21 me22) ->
+      urec (me11, me21) && urec (me12, me22)
+  | (Types.MeUid _ s1, Types.MeUid _ s2) ->
+      s1 = s2
+  | _ -> False
+  ] in
+  urec (me1, me2)
+;
 value rec unify loc t1 t2 =
   match (eval_type loc t1, eval_type loc t2) with
-  [ (<:ctyp< MLast.loc >>, t2) ->
-      let t1 = <:ctyp< Ploc.t >> in
+  [ (Type.TyAcc2 loc <:module_expr< MLast >> <:ctyp< loc >>, t2) ->
+      let t1 = Type.TyAcc2 loc <:module_expr< Ploc >> <:ctyp< t >> in
       unify loc t1 t2
 
   | (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
-(*
-  | (<:ctyp< $t11$ . $t12$ >>, <:ctyp< $t21$ . $t22$ >>) ->
-*)
-  | ((Type.TyAcc _ t11 t12), (Type.TyAcc _ t21 t22)) ->
-      unify loc t11 t21 && unify loc t12 t22
+  | ((Type.TyAcc2 loc me11 t12), (Type.TyAcc2 _ me21 t22)) ->
+      unify_module_expr_longident loc me11 me21 && unify loc t12 t22
   | (<:ctyp< $t11$ -> $t12$ >>, <:ctyp< $t21$ -> $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< ( $list:tl1$ ) >>, <:ctyp< ( $list:tl2$ ) >>) ->
@@ -236,7 +297,7 @@ value rec unify loc t1 t2 =
         } ]
   | (<:ctyp< '$s$ >>, t2) -> unify loc t2 t1
 
-  | (<:ctyp< MLast.type_decl >>, t2) ->
+  | (Type.TyAcc2 loc <:module_expr< MLast >> <:ctyp< type_decl >>, t2) ->
       let t1 =
         <:ctyp<
           ((MLast.loc * string) *
@@ -245,12 +306,13 @@ value rec unify loc t1 t2 =
            list (MLast.ctyp * MLast.ctyp)) >>
       in
       unify loc t1 t2
-  | (<:ctyp< Plexing.pattern >>, t2) ->
+  | (Type.TyAcc2 loc <:module_expr< Plexing >> <:ctyp< pattern >>, t2) ->
       let t1 = <:ctyp< (string * string) >> in
       unify loc t1 t2
 
   | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) -> s1 = s2
-  | (<:ctyp< $uid:s1$ >>, <:ctyp< $uid:s2$ >>) -> s1 = s2
+  | (Type.TyUid loc _, _) -> failwith "unify: TyUID not allowd here"
+  | (_, Type.TyUid loc _) -> failwith "unify: TyUID not allowd here"
   | (<:ctyp< _ >>, _) -> True
   | (t1, t2) -> False ]
 ;

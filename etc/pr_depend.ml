@@ -74,13 +74,12 @@ and ctyp_module =
   fun
   [ 
     (*<:ctyp< $t$.$_$ >> *)
-MLast.TyAcc _ t _ -> ctyp_module t
+MLast.TyAcc2 _ t _ -> module_expr t
   | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
-  | <:ctyp< $uid:m$ >> -> addmodule m
+  | MLast.TyUid _ _ -> failwith "TyUID not allowed here"
   | x -> not_impl "ctyp_module" x ]
-;
 
-value rec patt =
+and patt =
   fun
   [ PaAcc _ p _ -> patt_module p
   | PaAli _ p1 p2 -> do { patt p1; patt p2 }
