@@ -29,7 +29,7 @@ value not_impl loc name x =
 module Types = struct
     type loc = Ploc.t;
     type ctyp_t =
-      [ TyAcc2 of loc and me_t and MLast.v string
+      [ TyAcc of loc and me_t and MLast.v string
       | TyAny of loc
       | TyApp of loc and ctyp_t and ctyp_t
       | TyArr of loc and ctyp_t and ctyp_t
@@ -49,7 +49,7 @@ module Type =
   struct
     type loc = Ploc.t;
     type t = Types.ctyp_t ==
-      [ TyAcc2 of loc and Types.me_t and MLast.v string
+      [ TyAcc of loc and Types.me_t and MLast.v string
       | TyAny of loc
       | TyApp of loc and t and t
       | TyArr of loc and t and t
@@ -102,7 +102,7 @@ value type_of_module_expr_longident t =
 
 value rec type_of_ctyp t =
   match t with
-  [ MLast.TyAcc2 loc me1 t2 ->
+  [ MLast.TyAcc loc me1 t2 ->
       <:ctyp< $mpath:type_of_module_expr_longident me1$ . $_lid:t2$ >>
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
@@ -231,10 +231,7 @@ value rec inst loc t =
               inst_vars.val := [(s, t) :: inst_vars.val];
               t
             } ] ]
-| Type.TyAcc2 _ _ _
-(*
-  | <:ctyp< $_$ . $_$ >>
-*)
+| Type.TyAcc _ _ _
  | <:ctyp< $lid:_$ >> -> t
   | t -> not_impl loc "instantiate" t ]
 ;
@@ -887,12 +884,12 @@ value val_tab = do {
                MLast.str_item >>;
          expr = Obj.repr (fun loc rf pel -> MLast.StVal loc rf pel);
          patt = no_patt loc});
-     ("MLast.TyAcc2",
+     ("MLast.TyAcc",
       fun loc ->
         {ctyp =
            <:ctyp<
              MLast.loc -> MLast.module_expr -> MLast.ctyp -> MLast.ctyp >>;
-         expr = Obj.repr (fun loc me1 t2 -> MLast.TyAcc2 loc me1 t2);
+         expr = Obj.repr (fun loc me1 t2 -> MLast.TyAcc loc me1 t2);
          patt = no_patt loc});
      ("MLast.TyAny",
       fun loc ->

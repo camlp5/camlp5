@@ -142,7 +142,7 @@ let rec unstream_pattern_kont =
                   (loc, MLast.PaLid (loc, "strm__"),
                    MLast.TyApp
                      (loc,
-                      MLast.TyAcc2 (loc, MLast.MeUid (loc, "Stream"), "t"),
+                      MLast.TyAcc (loc, MLast.MeUid (loc, "Stream"), "t"),
                       MLast.TyAny loc)),
                 None, f])
       in
@@ -213,8 +213,7 @@ let rec unstream_pattern_kont =
                       (loc, MLast.PaLid (loc, "strm__"),
                        MLast.TyApp
                          (loc,
-                          MLast.TyAcc2
-                            (loc, MLast.MeUid (loc, "Stream"), "t"),
+                          MLast.TyAcc (loc, MLast.MeUid (loc, "Stream"), "t"),
                           MLast.TyAny loc)),
                     None, e1])
               in
@@ -277,7 +276,7 @@ let rec unstream_pattern_kont =
            [MLast.PaTyc
               (loc, MLast.PaLid (loc, "strm__"),
                MLast.TyApp
-                 (loc, MLast.TyAcc2 (loc, MLast.MeUid (loc, "Stream"), "t"),
+                 (loc, MLast.TyAcc (loc, MLast.MeUid (loc, "Stream"), "t"),
                   MLast.TyAny loc)),
             None, ge])
       in
@@ -316,7 +315,7 @@ let rec unstream_pattern_kont =
            [MLast.PaTyc
               (loc, MLast.PaLid (loc, "strm__"),
                MLast.TyApp
-                 (loc, MLast.TyAcc2 (loc, MLast.MeUid (loc, "Stream"), "t"),
+                 (loc, MLast.TyAcc (loc, MLast.MeUid (loc, "Stream"), "t"),
                   MLast.TyAny loc)),
             None, f])
       in
@@ -468,7 +467,7 @@ let rec unparser_cases_list =
            [MLast.PaTyc
               (loc, MLast.PaLid (loc, "strm__"),
                MLast.TyApp
-                 (loc, MLast.TyAcc2 (loc, MLast.MeUid (loc, "Stream"), "t"),
+                 (loc, MLast.TyAcc (loc, MLast.MeUid (loc, "Stream"), "t"),
                   MLast.TyAny loc)),
             None, f])
       in

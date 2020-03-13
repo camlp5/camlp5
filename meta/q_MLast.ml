@@ -168,7 +168,7 @@ value label_declaration =
 value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 value attribute_body = Grammar.Entry.create gram "attribute_body";
-value ctyp_ident2 = Grammar.Entry.create gram "ctyp_ident2";
+value ctyp_ident = Grammar.Entry.create gram "ctyp_ident";
 
 value mksequence2 _ =
   fun
@@ -398,7 +398,7 @@ EXTEND
     class_str_item let_binding type_decl type_extension extension_constructor
     constructor_declaration
     label_declaration match_case ipatt with_constr poly_variant attribute_body
-    check_type_decl check_type_extension check_dot_uid ctyp_ident2
+    check_type_decl check_type_extension check_dot_uid ctyp_ident
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> Qast.VaVal (Qast.Str (String.concat "." l))
@@ -1216,10 +1216,10 @@ EXTEND
       [ i = SV UIDENT "uid" → Qast.Node "MeUid" [Qast.Loc; i]
       ] ]
   ;
-  ctyp_ident2:
+  ctyp_ident:
     [ LEFTA
       [ me1 = module_expr_extended_longident ; "." ; i = SV LIDENT "lid" → 
-          Qast.Node "TyAcc2" [Qast.Loc; me1; i]
+          Qast.Node "TyAcc" [Qast.Loc; me1; i]
       | i = SV LIDENT "lid" → 
           Qast.Node "TyLid" [Qast.Loc; i]
       ] 
@@ -1246,7 +1246,7 @@ EXTEND
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → Qast.Node "TyApp" [Qast.Loc; t1; t2] ]
     | LEFTA
-      [ t = ctyp_ident2 → t ]
+      [ t = ctyp_ident → t ]
     | "simple"
       [ "'"; i = SV ident "" → Qast.Node "TyQuo" [Qast.Loc; i]
       | i = GIDENT →

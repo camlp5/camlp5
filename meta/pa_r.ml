@@ -976,7 +976,7 @@ EXTEND
       | i = V UIDENT "uid" → MLast.MeUid loc i
       ] ]
   ;
-  ctyp_ident2:
+  ctyp_ident:
     [ LEFTA
       [ me1 = module_expr_extended_longident ; "." ; i = V LIDENT "lid" → 
           <:ctyp< $mpath:me1$ . $_lid:i$ >>
@@ -1006,7 +1006,7 @@ EXTEND
     | "apply" LEFTA
       [ t1 = SELF; t2 = SELF → <:ctyp< $t1$ $t2$ >> ]
     | LEFTA
-      [ t = ctyp_ident2 → t ]
+      [ t = ctyp_ident → t ]
     | "simple"
       [ "'"; i = V ident "" → <:ctyp< '$_:i$ >>
       | i = GIDENT → <:ctyp< '$greek_ascii_equiv i$ >>

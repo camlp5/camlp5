@@ -214,7 +214,7 @@ let label_declaration = Grammar.Entry.create gram "label_declaration";;
 let with_constr = Grammar.Entry.create gram "with_constr";;
 let poly_variant = Grammar.Entry.create gram "poly_variant";;
 let attribute_body = Grammar.Entry.create gram "attribute_body";;
-let ctyp_ident2 = Grammar.Entry.create gram "ctyp_ident2";;
+let ctyp_ident = Grammar.Entry.create gram "ctyp_ident";;
 
 let mksequence2 _ =
   function
@@ -480,7 +480,7 @@ Grammar.safe_extend
    and _ = (check_type_decl : 'check_type_decl Grammar.Entry.e)
    and _ = (check_type_extension : 'check_type_extension Grammar.Entry.e)
    and _ = (check_dot_uid : 'check_dot_uid Grammar.Entry.e)
-   and _ = (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e) in
+   and _ = (ctyp_ident : 'ctyp_ident Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
@@ -553,8 +553,6 @@ Grammar.safe_extend
      grammar_entry_create "type_parameter"
    and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
      grammar_entry_create "simple_type_parameter"
-   and ctyp_ident : 'ctyp_ident Grammar.Entry.e =
-     grammar_entry_create "ctyp_ident"
    and cons_ident : 'cons_ident Grammar.Entry.e =
      grammar_entry_create "cons_ident"
    and constructor_declaration_sans_alg_attrs : 'constructor_declaration_sans_alg_attrs Grammar.Entry.e =
@@ -6920,7 +6918,7 @@ Grammar.safe_extend
            (fun (i : 'e__165) (loc : Ploc.t) ->
               (Qast.Node ("MeUid", [Qast.Loc; i]) :
                'module_expr_extended_longident)))]];
-    Grammar.extension (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e) None
+    Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
@@ -6943,7 +6941,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                            'e__167)))])),
            (fun (i : 'e__167) (loc : Ploc.t) ->
-              (Qast.Node ("TyLid", [Qast.Loc; i]) : 'ctyp_ident2)));
+              (Qast.Node ("TyLid", [Qast.Loc; i]) : 'ctyp_ident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -6972,7 +6970,7 @@ Grammar.safe_extend
                            'e__166)))])),
            (fun (i : 'e__166) _ (me1 : 'module_expr_extended_longident)
                 (loc : Ploc.t) ->
-              (Qast.Node ("TyAcc2", [Qast.Loc; me1; i]) : 'ctyp_ident2)))]];
+              (Qast.Node ("TyAcc", [Qast.Loc; me1; i]) : 'ctyp_ident)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e) None
       [Some "top", Some Gramext.LeftA,
        [Grammar.production
@@ -7122,8 +7120,8 @@ Grammar.safe_extend
        None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e)),
-           (fun (t : 'ctyp_ident2) (loc : Ploc.t) -> (t : 'ctyp)))];
+             (Grammar.s_nterm (ctyp_ident : 'ctyp_ident Grammar.Entry.e)),
+           (fun (t : 'ctyp_ident) (loc : Ploc.t) -> (t : 'ctyp)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next

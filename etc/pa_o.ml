@@ -1378,7 +1378,7 @@ EXTEND
       [ i = V UIDENT "uid" → <:module_expr< $_uid:i$ >>
       ] ]
   ;
-  ctyp_ident2:
+  ctyp_ident:
     [ LEFTA
       [ me1 = module_expr_extended_longident ; "." ; i = V LIDENT "lid" → 
           <:ctyp< $mpath:me1$ . $_lid:i$ >>
@@ -1404,7 +1404,7 @@ EXTEND
     | "apply"
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t2$ $t1$ >> ]
     | "ctyp2" LEFTA
-      [ t = ctyp_ident2 → t ]
+      [ t = ctyp_ident → t ]
     | "simple"
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
       | "_" -> <:ctyp< _ >>

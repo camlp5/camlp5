@@ -443,7 +443,7 @@ EXTEND
         | <:ctyp< $lid:c$ >> ->
             let mexp = <:module_expr< $uid:x1$ >> in
             <:ctyp< $mpath:mexp$ . $lid:c$ >>
-        | _ -> failwith "pa_sml: tycon: should be either TyAcc2 or TyLid"
+        | _ -> failwith "pa_sml: tycon: should be either TyAcc or TyLid"
         ]
       | x1 = idd -> <:ctyp< $lid:uncap x1$ >> ] ]
   ;

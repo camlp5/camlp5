@@ -1513,7 +1513,7 @@ and ctyp_se =
           let me = <:module_expr< $me1$ . $me2$ >> in
           <:ctyp< $mpath:me$ . $lid:lid$ >>
       | <:ctyp< $lid:lid$ >> -> <:ctyp< $mpath:me1$ . $lid:lid$ >>
-      | _ -> failwith "pa_schemer: only TyAcc2 and TyLid allowed here"
+      | _ -> failwith "pa_schemer: only TyAcc and TyLid allowed here"
       ]
   | Slid loc "_" → <:ctyp< _ >>
   | Slid loc s →

@@ -48,8 +48,8 @@ let rec ctyp floc sh =
   let rec self =
     function
       TyAtt (loc, ct, attr) -> TyAtt (loc, self ct, attr)
-    | TyAcc2 (loc, x1, x2) ->
-        let loc = floc loc in TyAcc2 (loc, module_expr floc sh x1, x2)
+    | TyAcc (loc, x1, x2) ->
+        let loc = floc loc in TyAcc (loc, module_expr floc sh x1, x2)
     | TyAli (loc, x1, x2) ->
         let loc = floc loc in TyAli (loc, self x1, self x2)
     | TyAny loc -> let loc = floc loc in TyAny loc

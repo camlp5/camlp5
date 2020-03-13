@@ -469,8 +469,8 @@ Grammar.safe_extend
      grammar_entry_create "type_parameter"
    and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
      grammar_entry_create "simple_type_parameter"
-   and ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e =
-     grammar_entry_create "ctyp_ident2"
+   and ctyp_ident : 'ctyp_ident Grammar.Entry.e =
+     grammar_entry_create "ctyp_ident"
    and ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e =
      grammar_entry_create "ctyp_below_alg_attribute"
    and cons_ident : 'cons_ident Grammar.Entry.e =
@@ -3472,12 +3472,12 @@ Grammar.safe_extend
                 (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
               (MLast.MeApp (loc, me1, me2) :
                'module_expr_extended_longident)))]];
-    Grammar.extension (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e) None
+    Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
-              (MLast.TyLid (loc, i) : 'ctyp_ident2)));
+              (MLast.TyLid (loc, i) : 'ctyp_ident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3489,7 +3489,7 @@ Grammar.safe_extend
              (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) _ (me1 : 'module_expr_extended_longident)
                 (loc : Ploc.t) ->
-              (MLast.TyAcc2 (loc, me1, i) : 'ctyp_ident2)))]];
+              (MLast.TyAcc (loc, me1, i) : 'ctyp_ident)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e) None
       [Some "top", Some Gramext.LeftA,
        [Grammar.production
@@ -3564,8 +3564,8 @@ Grammar.safe_extend
        None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm (ctyp_ident2 : 'ctyp_ident2 Grammar.Entry.e)),
-           (fun (t : 'ctyp_ident2) (loc : Ploc.t) -> (t : 'ctyp)))];
+             (Grammar.s_nterm (ctyp_ident : 'ctyp_ident Grammar.Entry.e)),
+           (fun (t : 'ctyp_ident) (loc : Ploc.t) -> (t : 'ctyp)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next
