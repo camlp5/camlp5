@@ -185,9 +185,7 @@ let expr = Grammar.Entry.create gram "expr";;
 
 let functor_parameter = Grammar.Entry.create gram "functor_parameter";;
 let module_type = Grammar.Entry.create gram "module_type";;
-let module_expr_extended_longident =
-  Grammar.Entry.create gram "module_expr_extended_longident"
-;;
+let extended_longident = Grammar.Entry.create gram "extended_longident";;
 let module_expr = Grammar.Entry.create gram "module_expr";;
 
 let structure = Grammar.Entry.create gram "structure";;
@@ -432,10 +430,10 @@ let check_dot_uid_f strm =
   match stream_npeek 5 strm with
     ("", ".") :: ("UIDENT", _) :: _ -> ()
   | ("", ".") :: ("ANTIQUOT", qs) :: _
-    when prefix_eq "mpath:" qs || prefix_eq "_mpath:" qs ->
+    when prefix_eq "longid:" qs || prefix_eq "_longid:" qs ->
       ()
   | ("", ".") :: ("", "$") ::
-    ("LIDENT", ("uid" | "_uid" | "mpath" | "_mpath")) :: ("", ":") ::
+    ("LIDENT", ("uid" | "_uid" | "longid" | "_longid")) :: ("", ":") ::
     ("LIDENT", _) :: _ ->
       ()
   | _ -> raise Stream.Failure
@@ -456,9 +454,7 @@ Grammar.safe_extend
    and _ = (functor_parameter : 'functor_parameter Grammar.Entry.e)
    and _ = (module_type : 'module_type Grammar.Entry.e)
    and _ = (module_expr : 'module_expr Grammar.Entry.e)
-   and _ =
-     (module_expr_extended_longident :
-      'module_expr_extended_longident Grammar.Entry.e)
+   and _ = (extended_longident : 'extended_longident Grammar.Entry.e)
    and _ = (signature : 'signature Grammar.Entry.e)
    and _ = (structure : 'structure Grammar.Entry.e)
    and _ = (class_type : 'class_type Grammar.Entry.e)
@@ -6788,9 +6784,7 @@ Grammar.safe_extend
            (fun (i : 'ident) _ (loc : Ploc.t) ->
               (Qast.Option (Some i) : 'simple_type_parameter)))]];
     Grammar.extension
-      (module_expr_extended_longident :
-       'module_expr_extended_longident Grammar.Entry.e)
-      None
+      (extended_longident : 'extended_longident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
@@ -6800,10 +6794,10 @@ Grammar.safe_extend
                       (check_dot_uid : 'check_dot_uid Grammar.Entry.e)))
                 (Grammar.s_token ("", ".")))
              Grammar.s_self,
-           (fun (me2 : 'module_expr_extended_longident) _ _
-                (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
+           (fun (me2 : 'extended_longident) _ _ (me1 : 'extended_longident)
+                (loc : Ploc.t) ->
               (Qast.Node ("LiAcc", [Qast.Loc; me1; me2]) :
-               'module_expr_extended_longident)));
+               'extended_longident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -6811,10 +6805,10 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "(")))
                 Grammar.s_self)
              (Grammar.s_token ("", ")")),
-           (fun _ (me2 : 'module_expr_extended_longident) _
-                (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
+           (fun _ (me2 : 'extended_longident) _ (me1 : 'extended_longident)
+                (loc : Ploc.t) ->
               (Qast.Node ("LiApp", [Qast.Loc; me1; me2]) :
-               'module_expr_extended_longident)))];
+               'extended_longident)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
@@ -6837,8 +6831,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) :
                            'e__162)))])),
            (fun (i : 'e__162) (loc : Ploc.t) ->
-              (Qast.Node ("LiUid", [Qast.Loc; i]) :
-               'module_expr_extended_longident)))]];
+              (Qast.Node ("LiUid", [Qast.Loc; i]) : 'extended_longident)))]];
     Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,
        [Grammar.production
@@ -6868,8 +6861,8 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_nterm
-                      (module_expr_extended_longident :
-                       'module_expr_extended_longident Grammar.Entry.e)))
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
                 (Grammar.s_token ("", ".")))
              (Grammar.s_facto
                 (Grammar.s_rules
@@ -6889,8 +6882,7 @@ Grammar.safe_extend
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                            'e__163)))])),
-           (fun (i : 'e__163) _ (me1 : 'module_expr_extended_longident)
-                (loc : Ploc.t) ->
+           (fun (i : 'e__163) _ (me1 : 'extended_longident) (loc : Ploc.t) ->
               (Qast.Node ("TyAcc", [Qast.Loc; me1; i]) : 'ctyp_ident)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e) None
       [Some "top", Some Gramext.LeftA,
@@ -11325,16 +11317,14 @@ Grammar.safe_extend
           (fun (a : string) (loc : Ploc.t) ->
              (Qast.VaAnt ("mexp", loc, a) : 'module_expr)))]];
    Grammar.extension
-     (module_expr_extended_longident :
-      'module_expr_extended_longident Grammar.Entry.e)
+     (extended_longident : 'extended_longident Grammar.Entry.e)
      (Some (Gramext.Level "simple"))
      [None, None,
       [Grammar.production
          (Grammar.r_next Grammar.r_stop
-            (Grammar.s_token ("ANTIQUOT", "mpath")),
+            (Grammar.s_token ("ANTIQUOT", "longid")),
           (fun (a : string) (loc : Ploc.t) ->
-             (Qast.VaAnt ("mpath", loc, a) :
-              'module_expr_extended_longident)))]];
+             (Qast.VaAnt ("longid", loc, a) : 'extended_longident)))]];
    Grammar.extension (str_item : 'str_item Grammar.Entry.e)
      (Some (Gramext.Level "top"))
      [None, None,
@@ -11545,8 +11535,8 @@ let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
 let patt_eoi = Grammar.Entry.create gram "patt_eoi" in
 let expr_eoi = Grammar.Entry.create gram "expr_eoi" in
 let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
-let module_expr_extended_longident_eoi =
-  Grammar.Entry.create gram "module_expr_extended_longident_eoi"
+let extended_longident_eoi =
+  Grammar.Entry.create gram "extended_longident_eoi"
 in
 let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
 let class_type_eoi = Grammar.Entry.create gram "class_type_eoi" in
@@ -11631,19 +11621,16 @@ Grammar.safe_extend
           (fun _ (x : 'module_expr) (loc : Ploc.t) ->
              (x : 'module_expr_eoi)))]];
    Grammar.extension
-     (module_expr_extended_longident_eoi :
-      'module_expr_extended_longident_eoi Grammar.Entry.e)
-     None
+     (extended_longident_eoi : 'extended_longident_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm
-                  (module_expr_extended_longident :
-                   'module_expr_extended_longident Grammar.Entry.e)))
+                  (extended_longident : 'extended_longident Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
-          (fun _ (x : 'module_expr_extended_longident) (loc : Ploc.t) ->
-             (x : 'module_expr_extended_longident_eoi)))]];
+          (fun _ (x : 'extended_longident) (loc : Ploc.t) ->
+             (x : 'extended_longident_eoi)))]];
    Grammar.extension (class_type_eoi : 'class_type_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -11742,8 +11729,7 @@ List.iter (fun (q, f) -> Quotation.add q (f q))
    "ctyp", apply_entry ctyp_eoi; "patt", apply_entry patt_eoi;
    "expr", apply_entry expr_eoi; "module_type", apply_entry module_type_eoi;
    "module_expr", apply_entry module_expr_eoi;
-   "module_expr_extended_longident",
-   apply_entry module_expr_extended_longident_eoi;
+   "extended_longident", apply_entry extended_longident_eoi;
    "class_type", apply_entry class_type_eoi;
    "class_expr", apply_entry class_expr_eoi;
    "class_sig_item", apply_entry class_sig_item_eoi;

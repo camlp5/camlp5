@@ -979,7 +979,7 @@ EXTEND
   ctyp_ident:
     [ LEFTA
       [ me1 = module_expr_extended_longident ; "." ; i = V LIDENT "lid" → 
-          <:ctyp< $mpath:me1$ . $_lid:i$ >>
+          <:ctyp< $longid:me1$ . $_lid:i$ >>
       | i = V LIDENT "lid" → 
           <:ctyp< $_lid:i$ >>
       ] 

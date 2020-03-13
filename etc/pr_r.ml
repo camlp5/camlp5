@@ -1820,7 +1820,7 @@ EXTEND_PRINTER
           left_operator pc 2 unfold next z ]
     | "dot"
       [
-        <:ctyp< $mpath:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" longident me lid
+        <:ctyp< $longid:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" longident me lid
       ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->

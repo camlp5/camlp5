@@ -1522,9 +1522,9 @@ and ctyp_se =
   | Sacc loc se1 se2 →
       let me1 = longid_se se1 in
       match ctyp_se se2 with [
-        <:ctyp< $mpath:me2$ . $lid:lid$ >> ->
-          <:ctyp< $mpath:me1$ . $mpath:me2$ . $lid:lid$ >>
-      | <:ctyp< $lid:lid$ >> -> <:ctyp< $mpath:me1$ . $lid:lid$ >>
+        <:ctyp< $longid:me2$ . $lid:lid$ >> ->
+          <:ctyp< $longid:me1$ . $longid:me2$ . $lid:lid$ >>
+      | <:ctyp< $lid:lid$ >> -> <:ctyp< $longid:me1$ . $lid:lid$ >>
       | _ -> failwith "pa_schemer: only TyAcc and TyLid allowed here"
       ]
   | Slid loc "_" → <:ctyp< _ >>

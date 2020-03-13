@@ -626,7 +626,7 @@
                   ((list h :: t)
                      (let ((me (List.fold_left (lambda (me uid) (MLast.LiAcc loc me (LiUid loc <:vala< uid >>)))
                                   (MLast.LiUid loc <:vala< h >>) t)))
-                         (<:ctyp< $mpath:me$ . $lid:lid$ >>))
+                         (<:ctyp< $longid:me$ . $lid:lid$ >>))
                   )
          )
   )

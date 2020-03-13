@@ -1691,7 +1691,7 @@ EXTEND_PRINTER
               | t -> pprintf pc "%p@;%p" next t2 next t1 ] ] ]
     | "dot"
       [
-          <:ctyp< $mpath:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" longident me lid
+          <:ctyp< $longid:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" longident me lid
       ]
     | "simple"
       [ <:ctyp:< { $list:ltl$ } >> ->

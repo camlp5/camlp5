@@ -565,7 +565,7 @@ EXTEND_PRINTER
           plistb curr 0 (paren pc "==") [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ as $t2$ >> ->
           plistb curr 0 (paren pc "as") [(t1, ""); (t2, "")]
-      | <:ctyp< $mpath:me1$ . $lid:lid$ >> ->
+      | <:ctyp< $longid:me1$ . $lid:lid$ >> ->
           pprintf pc "%p.%s" longident me1 lid
       | <:ctyp< < $list:fl$ $flag:v$ > >> ->
           let b = if v then "objectvar" else "object" in

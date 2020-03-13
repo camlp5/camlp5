@@ -143,7 +143,7 @@ value expr = Grammar.Entry.create gram "expr";
 
 value functor_parameter = Grammar.Entry.create gram "functor_parameter";
 value module_type = Grammar.Entry.create gram "module_type";
-value module_expr_extended_longident = Grammar.Entry.create gram "module_expr_extended_longident";
+value extended_longident = Grammar.Entry.create gram "extended_longident";
 value module_expr = Grammar.Entry.create gram "module_expr";
 
 value structure = Grammar.Entry.create gram "structure";
@@ -378,8 +378,8 @@ value prefix_eq s0 s1 =
 value check_dot_uid_f strm =
   match stream_npeek 5 strm with [
     [("",".") ; ("UIDENT",_) :: _] -> ()
-  | [("",".") ; ("ANTIQUOT", qs) :: _] when prefix_eq "mpath:" qs || prefix_eq "_mpath:" qs -> ()
-  | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid"|"mpath"|"_mpath")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
+  | [("",".") ; ("ANTIQUOT", qs) :: _] when prefix_eq "longid:" qs || prefix_eq "_longid:" qs -> ()
+  | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid"|"longid"|"_longid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
   | _ -> raise Stream.Failure
   ]
 ;
@@ -393,7 +393,7 @@ value check_dot_uid =
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
-    module_expr module_expr_extended_longident
+    module_expr extended_longident
     signature structure class_type class_expr class_sig_item
     class_str_item let_binding type_decl type_extension extension_constructor
     constructor_declaration
@@ -1193,7 +1193,7 @@ EXTEND
       | i = GIDENT → Qast.Option (Some (greek_ascii_equiv i))
       | "_" → Qast.Option None ] ]
   ;
-  module_expr_extended_longident:
+  extended_longident:
     [ LEFTA
       [ me1 = SELF; "(" ; me2 = SELF ; ")" → Qast.Node "LiApp" [Qast.Loc; me1; me2]
       | me1 = SELF; check_dot_uid ; "."; me2 = SELF → Qast.Node "LiAcc" [Qast.Loc; me1; me2]
@@ -1204,7 +1204,7 @@ EXTEND
   ;
   ctyp_ident:
     [ LEFTA
-      [ me1 = module_expr_extended_longident ; "." ; i = SV LIDENT "lid" → 
+      [ me1 = extended_longident ; "." ; i = SV LIDENT "lid" → 
           Qast.Node "TyAcc" [Qast.Loc; me1; i]
       | i = SV LIDENT "lid" → 
           Qast.Node "TyLid" [Qast.Loc; i]
@@ -1753,8 +1753,8 @@ EXTEND
       | a = ANTIQUOT "xtr" -> antiquot_xtr loc "MeXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
-  module_expr_extended_longident: LEVEL "simple"
-    [ [ a = ANTIQUOT "mpath" -> Qast.VaAnt "mpath" loc a ] ]
+  extended_longident: LEVEL "simple"
+    [ [ a = ANTIQUOT "longid" -> Qast.VaAnt "longid" loc a ] ]
   ;
   str_item: LEVEL "top"
     [ [ a = ANTIQUOT "stri" -> Qast.VaAnt "stri" loc a
@@ -1870,7 +1870,7 @@ let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
 let patt_eoi = Grammar.Entry.create gram "patt_eoi" in
 let expr_eoi = Grammar.Entry.create gram "expr_eoi" in
 let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
-let module_expr_extended_longident_eoi = Grammar.Entry.create gram "module_expr_extended_longident_eoi" in
+let extended_longident_eoi = Grammar.Entry.create gram "extended_longident_eoi" in
 let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
 let class_type_eoi = Grammar.Entry.create gram "class_type_eoi" in
 let class_expr_eoi = Grammar.Entry.create gram "class_expr_eoi" in
@@ -1891,7 +1891,7 @@ do {
     expr_eoi: [ [ x = expr; EOI -> x ] ];
     module_type_eoi: [ [ x = module_type; EOI -> x ] ];
     module_expr_eoi: [ [ x = module_expr; EOI -> x ] ];
-    module_expr_extended_longident_eoi: [ [ x = module_expr_extended_longident; EOI -> x ] ];
+    extended_longident_eoi: [ [ x = extended_longident; EOI -> x ] ];
     class_type_eoi: [ [ x = class_type; EOI -> x ] ];
     class_expr_eoi: [ [ x = class_expr; EOI -> x ] ];
     class_sig_item_eoi: [ [ x = class_sig_item; EOI -> x ] ];
@@ -1911,7 +1911,7 @@ do {
      ("expr", apply_entry expr_eoi);
      ("module_type", apply_entry module_type_eoi);
      ("module_expr", apply_entry module_expr_eoi);
-     ("module_expr_extended_longident", apply_entry module_expr_extended_longident_eoi);
+     ("extended_longident", apply_entry extended_longident_eoi);
      ("class_type", apply_entry class_type_eoi);
      ("class_expr", apply_entry class_expr_eoi);
      ("class_sig_item", apply_entry class_sig_item_eoi);

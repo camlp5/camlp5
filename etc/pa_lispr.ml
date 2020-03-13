@@ -628,7 +628,7 @@ and ctyp_ident_se loc s =
   | [ h :: t ] ->
     let me = List.fold_left (fun me uid -> MLast.LiAcc loc me (LiUid loc <:vala< uid >>))
       (MLast.LiUid loc <:vala< h >>) t in
-    <:ctyp< $mpath:me$ . $lid:lid$ >>
+    <:ctyp< $longid:me$ . $lid:lid$ >>
   ]}
 and constructor_declaration_se =
   fun

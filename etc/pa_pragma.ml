@@ -102,7 +102,7 @@ value type_longid_of_longident t =
 value rec type_of_ctyp t =
   match t with
   [ MLast.TyAcc loc me1 t2 ->
-      <:ctyp< $mpath:type_longid_of_longident me1$ . $_lid:t2$ >>
+      <:ctyp< $longid:type_longid_of_longident me1$ . $_lid:t2$ >>
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
   | MLast.TyArr loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ -> $type_of_ctyp t2$ >>
@@ -147,7 +147,7 @@ and str_of_ty3 loc t =
       "(" ^
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
-    | <:ctyp< $mpath:me1$ . $lid:t2$ >> -> str_of_longid loc me1 ^ "." ^ t2
+    | <:ctyp< $longid:me1$ . $lid:t2$ >> -> str_of_longid loc me1 ^ "." ^ t2
   | <:ctyp< '$s$ >> ->
       match s.val with
       [ Some t -> str_of_ty3 loc t
@@ -169,7 +169,7 @@ value rec eval_type loc t =
   match t with
   [ <:ctyp< $t1$ -> $t2$ >> ->
       <:ctyp< $eval_type loc t1$ -> $eval_type loc t2$ >>
-  | <:ctyp< $mpath:me$ . $lid:t2$ >> -> <:ctyp< $mpath:me$ . $lid:t2$ >>
+  | <:ctyp< $longid:me$ . $lid:t2$ >> -> <:ctyp< $longid:me$ . $lid:t2$ >>
   | <:ctyp< $t1$ $t2$ >> ->
       <:ctyp< $eval_type loc t1$ $eval_type loc t2$ >>
   | <:ctyp< ( $list:tl$ ) >> ->
@@ -256,7 +256,7 @@ value rec unify loc t1 t2 =
 
   | (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
-  | (<:ctyp< $mpath:me11$ . $lid:t12$ >>, <:ctyp< $mpath:me21$ . $lid:t22$ >>) ->
+  | (<:ctyp< $longid:me11$ . $lid:t12$ >>, <:ctyp< $longid:me21$ . $lid:t22$ >>) ->
       unify_longid loc me11 me21 && t12 = t22
   | (<:ctyp< $t11$ -> $t12$ >>, <:ctyp< $t21$ -> $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22

@@ -43,7 +43,7 @@ value id_list =
 
 value rec ctyp =
   fun
-  [ <:ctyp< $mpath:t$ . $lid:_$ >> -> longident t
+  [ <:ctyp< $longid:t$ . $lid:_$ >> -> longident t
   | TyAli _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyAny _ -> ()
@@ -73,7 +73,7 @@ and variant =
 and ctyp_module =
   fun
   [ 
-    <:ctyp< $mpath:t$ . $lid:_$ >> -> longident t
+    <:ctyp< $longid:t$ . $lid:_$ >> -> longident t
   | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
   | x -> not_impl "ctyp_module" x ]
 
