@@ -1691,7 +1691,7 @@ EXTEND_PRINTER
               | t -> pprintf pc "%p@;%p" next t2 next t1 ] ] ]
     | "dot"
       [
-          MLast.TyAcc2 loc me ct -> pprintf pc "%p.%p" module_longident me curr ct
+          <:ctyp< $mpath:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" module_longident me lid
       ]
     | "simple"
       [ <:ctyp:< { $list:ltl$ } >> ->

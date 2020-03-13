@@ -628,7 +628,7 @@ and ctyp_ident_se loc s =
   | [ h :: t ] ->
     let me = List.fold_left (fun me uid -> <:module_expr< $me$ . $uid:uid$ >>)
       <:module_expr< $uid:h$ >> t in
-    TyAcc2 loc me (ctyp_id loc lid)
+    <:ctyp< $mpath:me$ . $lid:lid$ >>
   ]}
 and constructor_declaration_se =
   fun

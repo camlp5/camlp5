@@ -29,14 +29,13 @@ value not_impl loc name x =
 module Types = struct
     type loc = Ploc.t;
     type ctyp_t =
-      [ TyAcc2 of loc and me_t and ctyp_t
+      [ TyAcc2 of loc and me_t and MLast.v string
       | TyAny of loc
       | TyApp of loc and ctyp_t and ctyp_t
       | TyArr of loc and ctyp_t and ctyp_t
       | TyLid of loc and MLast.v string
       | TyQuo of loc and MLast.v (ref (option ctyp_t))
-      | TyTup of loc and MLast.v (list ctyp_t)
-      | TyUid of loc and MLast.v string ]
+      | TyTup of loc and MLast.v (list ctyp_t) ]
     and me_t =
       [ MeApp of loc and me_t and me_t
       | MeAcc of loc and me_t and me_t
@@ -50,14 +49,13 @@ module Type =
   struct
     type loc = Ploc.t;
     type t = Types.ctyp_t ==
-      [ TyAcc2 of loc and Types.me_t and t
+      [ TyAcc2 of loc and Types.me_t and MLast.v string
       | TyAny of loc
       | TyApp of loc and t and t
       | TyArr of loc and t and t
       | TyLid of loc and MLast.v string
       | TyQuo of loc and MLast.v (ref (option t))
-      | TyTup of loc and MLast.v (list t)
-      | TyUid of loc and MLast.v string ] ;
+      | TyTup of loc and MLast.v (list t) ] ;
     type me_t = Types.me_t ==
       [ MeApp of loc and me_t and me_t
       | MeAcc of loc and me_t and me_t
@@ -105,10 +103,7 @@ value type_of_module_expr_longident t =
 value rec type_of_ctyp t =
   match t with
   [ MLast.TyAcc2 loc me1 t2 ->
-Type.TyAcc2 loc (type_of_module_expr_longident me1) (type_of_ctyp t2)
-(*
- <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
-*)
+      <:ctyp< $mpath:type_of_module_expr_longident me1$ . $_lid:t2$ >>
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
   | MLast.TyArr loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ -> $type_of_ctyp t2$ >>
@@ -154,7 +149,7 @@ and str_of_ty3 loc t =
       "(" ^
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
-    | Type.TyAcc2 _ me1 t2 -> str_of_module_expr_longident loc me1 ^ "." ^ str_of_ty1 loc t2
+    | <:ctyp< $mpath:me1$ . $lid:t2$ >> -> str_of_module_expr_longident loc me1 ^ "." ^ t2
   | <:ctyp< '$s$ >> ->
       match s.val with
       [ Some t -> str_of_ty3 loc t
@@ -167,7 +162,6 @@ and str_of_ty3 loc t =
               n
             } ] ]
   | <:ctyp< $lid:s$ >> -> s
-  | Type.TyUid loc _  -> Ploc.raise loc (Failure "str_of_ty3: UID should not occur here")
   | <:ctyp< _ >> -> "_"
   | <:ctyp< $_$ $_$ >> -> "(" ^ str_of_ty1 loc t ^ ")"
   | t -> not_impl loc "str_of_ty3" t ]
@@ -177,8 +171,7 @@ value rec eval_type loc t =
   match t with
   [ <:ctyp< $t1$ -> $t2$ >> ->
       <:ctyp< $eval_type loc t1$ -> $eval_type loc t2$ >>
-  | Type.TyAcc2 loc me t2 ->
-      Type.TyAcc2 loc me (eval_type loc t2)
+  | <:ctyp< $mpath:me$ . $lid:t2$ >> -> <:ctyp< $mpath:me$ . $lid:t2$ >>
   | <:ctyp< $t1$ $t2$ >> ->
       <:ctyp< $eval_type loc t1$ $eval_type loc t2$ >>
   | <:ctyp< ( $list:tl$ ) >> ->
@@ -187,7 +180,6 @@ value rec eval_type loc t =
       match s.val with
       [ Some t -> eval_type loc t
       | None -> t ]
-  | Type.TyUid _ _ -> failwith "eval_type: TyUID not allowed here"
   | <:ctyp< $_lid:_$ >> | <:ctyp< _ >> -> t
   | IFDEF STRICT THEN
       _ -> failwith "eval_type"
@@ -263,14 +255,14 @@ value unify_module_expr_longident loc me1 me2 =
 ;
 value rec unify loc t1 t2 =
   match (eval_type loc t1, eval_type loc t2) with
-  [ (Type.TyAcc2 loc <:module_expr< MLast >> <:ctyp< loc >>, t2) ->
-      let t1 = Type.TyAcc2 loc <:module_expr< Ploc >> <:ctyp< t >> in
+  [ (<:ctyp< Mlast.loc >>, t2) ->
+      let t1 = <:ctyp< Ploc.t >> in
       unify loc t1 t2
 
   | (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
-  | ((Type.TyAcc2 loc me11 t12), (Type.TyAcc2 _ me21 t22)) ->
-      unify_module_expr_longident loc me11 me21 && unify loc t12 t22
+  | (<:ctyp< $mpath:me11$ . $lid:t12$ >>, <:ctyp< $mpath:me21$ . $lid:t22$ >>) ->
+      unify_module_expr_longident loc me11 me21 && t12 = t22
   | (<:ctyp< $t11$ -> $t12$ >>, <:ctyp< $t21$ -> $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< ( $list:tl1$ ) >>, <:ctyp< ( $list:tl2$ ) >>) ->
@@ -296,7 +288,7 @@ value rec unify loc t1 t2 =
         } ]
   | (<:ctyp< '$s$ >>, t2) -> unify loc t2 t1
 
-  | (Type.TyAcc2 loc <:module_expr< MLast >> <:ctyp< type_decl >>, t2) ->
+  | (<:ctyp< MLast.type_decl >>, t2) ->
       let t1 =
         <:ctyp<
           ((MLast.loc * string) *
@@ -305,13 +297,11 @@ value rec unify loc t1 t2 =
            list (MLast.ctyp * MLast.ctyp)) >>
       in
       unify loc t1 t2
-  | (Type.TyAcc2 loc <:module_expr< Plexing >> <:ctyp< pattern >>, t2) ->
+  | (<:ctyp< Plexing.pattern >>, t2) ->
       let t1 = <:ctyp< (string * string) >> in
       unify loc t1 t2
 
   | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) -> s1 = s2
-  | (Type.TyUid loc _, _) -> failwith "unify: TyUID not allowd here"
-  | (_, Type.TyUid loc _) -> failwith "unify: TyUID not allowd here"
   | (<:ctyp< _ >>, _) -> True
   | (t1, t2) -> False ]
 ;

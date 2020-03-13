@@ -63,7 +63,7 @@ value rec ctyp floc sh =
        TyAtt loc (self ct) attr
     | TyAcc2 loc x1 x2 ->
         let loc = floc loc in
-        TyAcc2 loc (module_expr floc sh x1) (self x2)
+        TyAcc2 loc (module_expr floc sh x1) x2
     | TyAli loc x1 x2 →
         let loc = floc loc in
         TyAli loc (self x1) (self x2)

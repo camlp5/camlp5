@@ -626,7 +626,7 @@
                   ((list h :: t)
                      (let ((me (List.fold_left (lambda (me uid) <:module_expr< $me$ . $uid:uid$ >>)
                                   <:module_expr< $uid:h$ >> t)))
-                         (MLast.TyAcc2 loc me (ctyp_id loc lid)))
+                         (<:ctyp< $mpath:me$ . $lid:lid$ >>))
                   )
          )
   )

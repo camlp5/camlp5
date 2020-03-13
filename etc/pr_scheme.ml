@@ -565,13 +565,8 @@ EXTEND_PRINTER
           plistb curr 0 (paren pc "==") [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ as $t2$ >> ->
           plistb curr 0 (paren pc "as") [(t1, ""); (t2, "")]
-(*
-      | <:ctyp< $t1$ . $t2$ >> ->
-*)
-      | MLast.TyAcc2 _ me1 t2 ->
-          pprintf pc "%p.%p"
-            module_longident me1
-            curr t2
+      | <:ctyp< $mpath:me1$ . $lid:lid$ >> ->
+          pprintf pc "%p.%s" module_longident me1 lid
       | <:ctyp< < $list:fl$ $flag:v$ > >> ->
           let b = if v then "objectvar" else "object" in
           if fl = [] then sprintf "%s(%s)%s" pc.bef b pc.aft

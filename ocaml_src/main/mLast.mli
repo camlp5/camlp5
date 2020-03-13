@@ -27,7 +27,7 @@ type 'a class_infos =
     ciExp : 'a;
     ciAttributes : attributes }
 and ctyp =
-    TyAcc2 of loc * module_expr * ctyp
+    TyAcc2 of loc * module_expr * string
   | TyAli of loc * ctyp * ctyp
   | TyAny of loc
   | TyApp of loc * ctyp * ctyp

@@ -3489,8 +3489,7 @@ Grammar.safe_extend
              (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) _ (me1 : 'module_expr_extended_longident)
                 (loc : Ploc.t) ->
-              (MLast.TyAcc2 (loc, me1, MLast.TyLid (loc, i)) :
-               'ctyp_ident2)))]];
+              (MLast.TyAcc2 (loc, me1, i) : 'ctyp_ident2)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e) None
       [Some "top", Some Gramext.LeftA,
        [Grammar.production

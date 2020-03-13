@@ -1820,7 +1820,7 @@ EXTEND_PRINTER
           left_operator pc 2 unfold next z ]
     | "dot"
       [
-        MLast.TyAcc2 _ me ct -> pprintf pc "%p.%p" module_longident me curr ct
+        <:ctyp< $mpath:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" module_longident me lid
       ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->

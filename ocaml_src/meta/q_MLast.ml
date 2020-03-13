@@ -6836,10 +6836,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                            'e__162)))])),
            (fun (i : 'e__162) _ (me1 : 'ctyp_ident) (loc : Ploc.t) ->
-              (Qast.Node
-                 ("TyAcc",
-                  [Qast.Loc; me1; Qast.Node ("TyLid", [Qast.Loc; i])]) :
-               'ctyp_ident)))];
+              (Qast.Node ("TyAcc", [Qast.Loc; me1; i]) : 'ctyp_ident)))];
        None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
@@ -6975,10 +6972,7 @@ Grammar.safe_extend
                            'e__166)))])),
            (fun (i : 'e__166) _ (me1 : 'module_expr_extended_longident)
                 (loc : Ploc.t) ->
-              (Qast.Node
-                 ("TyAcc2",
-                  [Qast.Loc; me1; Qast.Node ("TyLid", [Qast.Loc; i])]) :
-               'ctyp_ident2)))]];
+              (Qast.Node ("TyAcc2", [Qast.Loc; me1; i]) : 'ctyp_ident2)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e) None
       [Some "top", Some Gramext.LeftA,
        [Grammar.production

@@ -229,7 +229,7 @@ let rec ctyp_long_id =
     MLast.TyApp (_, m1, m2) ->
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in is_cls, Lapply (li1, li2)
-  | MLast.TyAcc2 (loc, m, MLast.TyLid (_, id)) ->
+  | MLast.TyAcc2 (loc, m, id) ->
       let li1 = module_expr_long_id m in
       let (is_cls, li2) = ctyp_long_id (MLast.TyLid (loc, id)) in
       is_cls, concat_long_ids li1 li2

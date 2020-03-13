@@ -1509,9 +1509,11 @@ and ctyp_se =
   | Sacc loc se1 se2 →
       let me1 = module_expr_se se1 in
       match ctyp_se se2 with [
-        MLast.TyAcc2 loc me2 ct ->
-          MLast.TyAcc2 loc <:module_expr< $me1$ . $me2$ >> ct
-      | ct -> MLast.TyAcc2 loc me1 ct
+        <:ctyp< $mpath:me2$ . $lid:lid$ >> ->
+          let me = <:module_expr< $me1$ . $me2$ >> in
+          <:ctyp< $mpath:me$ . $lid:lid$ >>
+      | <:ctyp< $lid:lid$ >> -> <:ctyp< $mpath:me1$ . $lid:lid$ >>
+      | _ -> failwith "pa_schemer: only TyAcc2 and TyLid allowed here"
       ]
   | Slid loc "_" → <:ctyp< _ >>
   | Slid loc s →

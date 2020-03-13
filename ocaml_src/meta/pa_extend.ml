@@ -619,7 +619,7 @@ module MetaAction =
                       MLast.ExUid (loc, "TyAcc2")),
                    mloc),
                 mmexp m1),
-             mctyp t2)
+             mvala mstring t2)
       | MLast.TyApp (loc, t1, t2) ->
           MLast.ExApp
             (loc,
@@ -1060,9 +1060,7 @@ let rec make_ctyp styp tvar =
   | STnone -> failwith "make_ctyp: internal error"
   | STvala (loc, t) ->
       MLast.TyApp
-        (loc,
-         MLast.TyAcc2
-           (loc, MLast.MeUid (loc, "Ploc"), MLast.TyLid (loc, "vala")),
+        (loc, MLast.TyAcc2 (loc, MLast.MeUid (loc, "Ploc"), "vala"),
          make_ctyp t tvar)
 ;;
 
@@ -1077,9 +1075,7 @@ let text_of_action loc psl rtvar act tvar =
     MLast.ExFun
       (loc,
        [MLast.PaTyc
-          (loc, locid,
-           MLast.TyAcc2
-             (loc, MLast.MeUid (loc, "Ploc"), MLast.TyLid (loc, "t"))),
+          (loc, locid, MLast.TyAcc2 (loc, MLast.MeUid (loc, "Ploc"), "t")),
         None, MLast.ExTyc (loc, act, MLast.TyQuo (loc, rtvar))])
   in
   let txt =
@@ -1208,7 +1204,7 @@ let rec make_expr gmod tvar =
                          MLast.MeAcc
                            (loc, MLast.MeUid (loc, gmod),
                             MLast.MeUid (loc, "Entry")),
-                         MLast.TyLid (loc, "e")),
+                         "e"),
                       MLast.TyQuo (loc, n.tvar)))),
              MLast.ExStr (loc, lab))
       | None ->
@@ -1229,7 +1225,7 @@ let rec make_expr gmod tvar =
                         MLast.MeAcc
                           (loc, MLast.MeUid (loc, gmod),
                            MLast.MeUid (loc, "Entry")),
-                        MLast.TyLid (loc, "e")),
+                        "e"),
                      MLast.TyQuo (loc, n.tvar))))
       end
   | TXopt (loc, t) ->
@@ -1659,7 +1655,7 @@ let text_of_entry loc gmod e =
             (loc,
              MLast.MeAcc
                (loc, MLast.MeUid (loc, gmod), MLast.MeUid (loc, "Entry")),
-             MLast.TyLid (loc, "e")),
+             "e"),
           MLast.TyQuo (loc, x.tvar)))
   in
   let loc = Ploc.with_comment loc "" in
@@ -1728,7 +1724,7 @@ let let_in_of_extend loc gmod functor_version gl el args =
                       MLast.MeAcc
                         (loc, MLast.MeUid (loc, gmod),
                          MLast.MeUid (loc, "Entry")),
-                      MLast.TyLid (loc, "e")),
+                      "e"),
                    MLast.TyQuo (loc, x))),
              [])
           nl
@@ -1754,7 +1750,7 @@ let let_in_of_extend loc gmod functor_version gl el args =
                       MLast.MeAcc
                         (loc, MLast.MeUid (loc, gmod),
                          MLast.MeUid (loc, "Entry")),
-                      MLast.TyLid (loc, "e")),
+                      "e"),
                    MLast.TyQuo (loc, x))),
              [])
           ll

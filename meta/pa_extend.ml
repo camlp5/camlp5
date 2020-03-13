@@ -302,7 +302,7 @@ module MetaAction =
     and mctyp =
       fun
       [ MLast.TyAcc2 loc m1 t2 ->
-          <:expr< MLast.TyAcc2 $mloc$ $mmexp m1$ $mctyp t2$ >>
+          <:expr< MLast.TyAcc2 $mloc$ $mmexp m1$ $mvala mstring t2$ >>
       | MLast.TyApp loc t1 t2 ->
           <:expr< MLast.TyApp $mloc$ $mctyp t1$ $mctyp t2$ >>
       | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>

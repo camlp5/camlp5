@@ -436,12 +436,15 @@ EXTEND
   tycon:
     [ [ LIDENT "real" -> <:ctyp< float >>
       | x1 = idd; "."; x2 = tycon ->
-        let r = MLast.TyAcc2 loc (MLast.MeUid loc (Ploc.VaVal x1)) x2 (* <:ctyp< $uid:x1$ . $x2$ >> *) in
-          loop r where rec loop =
-            fun
-              [ (* <:ctyp< $a$ . ($b$ . $c$) >> -> <:ctyp< $a$ . $b$ . $loop c$ >> *)
-                MLast.TyAcc2 loc1 a (MLast.TyAcc2 loc2 b c) -> MLast.TyAcc2 loc1 (MLast.MeAcc loc2 a b) c
-            | x -> x ]
+        match x2 with [
+          <:ctyp< $mpath:b$ . $lid:c$ >> ->
+            let mexp = <:module_expr< $uid:x1$ . $b$ >> in
+            <:ctyp< $mpath:mexp$ . $lid:c$ >>
+        | <:ctyp< $lid:c$ >> ->
+            let mexp = <:module_expr< $uid:x1$ >> in
+            <:ctyp< $mpath:mexp$ . $lid:c$ >>
+        | _ -> failwith "pa_sml: tycon: should be either TyAcc2 or TyLid"
+        ]
       | x1 = idd -> <:ctyp< $lid:uncap x1$ >> ] ]
   ;
   selector:

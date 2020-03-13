@@ -103,7 +103,8 @@ module Meta_make (C : MetaSig) =
     let rec ctyp =
       function
         TyAtt (_, ct, att) -> assert false
-      | TyAcc2 (_, m1, t2) -> C.node "TyAcc2" [module_expr m1; ctyp t2]
+      | TyAcc2 (_, m1, t2) ->
+          C.node "TyAcc2" [module_expr m1; C.vala C.string t2]
       | TyAli (_, t1, t2) -> C.node "TyAli" [ctyp t1; ctyp t2]
       | TyAny _ -> C.node "TyAny" []
       | TyApp (_, t1, t2) -> C.node "TyApp" [ctyp t1; ctyp t2]

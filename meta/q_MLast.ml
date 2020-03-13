@@ -1196,7 +1196,7 @@ EXTEND
   ctyp_ident:
     [ LEFTA
       [ me1 = SELF ; "." ; i = SV LIDENT "lid" → 
-          Qast.Node "TyAcc" [Qast.Loc; me1; Qast.Node "TyLid" [Qast.Loc; i]]
+          Qast.Node "TyAcc" [Qast.Loc; me1; i]
       | i = SV LIDENT "lid" → 
           Qast.Node "TyLid" [Qast.Loc; i]
       ] 
@@ -1219,7 +1219,7 @@ EXTEND
   ctyp_ident2:
     [ LEFTA
       [ me1 = module_expr_extended_longident ; "." ; i = SV LIDENT "lid" → 
-          Qast.Node "TyAcc2" [Qast.Loc; me1; Qast.Node "TyLid" [Qast.Loc; i]]
+          Qast.Node "TyAcc2" [Qast.Loc; me1; i]
       | i = SV LIDENT "lid" → 
           Qast.Node "TyLid" [Qast.Loc; i]
       ] 

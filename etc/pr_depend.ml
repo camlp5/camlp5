@@ -43,7 +43,7 @@ value longident =
 
 value rec ctyp =
   fun
-  [ TyAcc2 _ t _ -> module_expr t
+  [ <:ctyp< $mpath:t$ . $lid:_$ >> -> module_expr t
   | TyAli _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyAny _ -> ()
@@ -73,8 +73,7 @@ and variant =
 and ctyp_module =
   fun
   [ 
-    (*<:ctyp< $t$.$_$ >> *)
-MLast.TyAcc2 _ t _ -> module_expr t
+    <:ctyp< $mpath:t$ . $lid:_$ >> -> module_expr t
   | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
   | x -> not_impl "ctyp_module" x ]
 
