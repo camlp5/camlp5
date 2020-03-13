@@ -226,10 +226,11 @@ let concat_long_ids l1 l2 =
 
 let rec longid_long_id =
   function
-    LiApp (_, me1, me2) -> Lapply (longid_long_id me1, longid_long_id me2)
-  | LiAcc (_, m1, m2) ->
-      concat_long_ids (longid_long_id m1) (longid_long_id m2)
-  | LiUid (_, s) -> Lident (Pcaml.unvala s)
+    MLast.LiApp (_, me1, me2) ->
+      Lapply (longid_long_id me1, longid_long_id me2)
+  | MLast.LiAcc (_, me1, me2) ->
+      concat_long_ids (longid_long_id me1) (longid_long_id me2)
+  | MLast.LiUid (_, s) -> Lident (Pcaml.unvala s)
 ;;
 
 let rec expr_long_id =

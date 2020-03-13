@@ -2006,16 +2006,16 @@ EXTEND_PRINTER
       ] ]
   ;
   pr_longident:
-    [ "dot"
-      [ MLast.LiAcc _ x y ->
+        [ "dot"
+      [ <:extended_longident< $longid:x$ . $longid:y$ >> ->
           pprintf pc "%p.%p" curr x curr y
-      | MLast.LiApp _ x y ->
+      | <:extended_longident< $longid:x$ ( $longid:y$ ) >> ->
           pprintf pc "%p(%p)" longident x longident y
-      | MLast.LiUid _ (Ploc.VaVal s) ->
+      | <:extended_longident< $uid:s$ >> ->
           pprintf pc "%s" s
       ]
     | "bottom" [
-        z -> pprintf pc "[INTERNAL ERROR(pr_longident): unexpected longident]"
+        z -> pprintf pc "[INTERNAL ERROR(pr_module_longident): unexpected longident]"
       ]
     ]
   ;

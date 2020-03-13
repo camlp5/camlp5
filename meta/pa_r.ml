@@ -32,7 +32,7 @@ do {
   Grammar.Unsafe.clear_entry use_file;
   Grammar.Unsafe.clear_entry functor_parameter;
   Grammar.Unsafe.clear_entry module_type;
-  Grammar.Unsafe.clear_entry module_expr_extended_longident;
+  Grammar.Unsafe.clear_entry extended_longident;
   Grammar.Unsafe.clear_entry module_expr;
   Grammar.Unsafe.clear_entry sig_item;
   Grammar.Unsafe.clear_entry str_item;
@@ -338,7 +338,7 @@ value check_dot_uid =
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
-    module_expr module_expr_extended_longident signature
+    module_expr extended_longident signature
     structure class_type class_expr class_sig_item class_str_item let_binding
     type_decl type_extension extension_constructor
     constructor_declaration label_declaration match_case ipatt
@@ -969,16 +969,16 @@ EXTEND
       | i = GIDENT → Some (greek_ascii_equiv i)
       | "_" → None ] ]
   ;
-  module_expr_extended_longident:
+  extended_longident:
     [ LEFTA
-      [ me1 = SELF; "(" ; me2 = SELF ; ")" → MLast.LiApp loc me1 me2
-      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → MLast.LiAcc loc me1 me2
-      | i = V UIDENT "uid" → MLast.LiUid loc i
+      [ me1 = SELF; "(" ; me2 = SELF ; ")" → <:extended_longident< $longid:me1$ ( $longid:me2$ ) >>
+      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → <:extended_longident< $longid:me1$ . $longid:me2$ >>
+      | i = V UIDENT "uid" → <:extended_longident< $_uid:i$ >>
       ] ]
   ;
   ctyp_ident:
     [ LEFTA
-      [ me1 = module_expr_extended_longident ; "." ; i = V LIDENT "lid" → 
+      [ me1 = extended_longident ; "." ; i = V LIDENT "lid" → 
           <:ctyp< $longid:me1$ . $_lid:i$ >>
       | i = V LIDENT "lid" → 
           <:ctyp< $_lid:i$ >>

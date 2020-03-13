@@ -220,9 +220,9 @@ and module_expr =
   | x -> not_impl "module_expr" x ]
 and longident =
   fun
-  [ MLast.LiAcc _ _ (MLast.LiUid _ (Ploc.VaVal m)) -> addmodule m
-  | MLast.LiApp _ me1 me2 -> do { longident me1; longident me2 }
-  | MLast.LiUid _ _ -> ()
+  [ <:extended_longident< $longid:_$ . $uid:m$ >> -> addmodule m
+  | <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> -> do { longident me1; longident me2 }
+  | <:extended_longident< $_uid:_$ >> -> ()
   | x -> not_impl "longident" x ]
 and str_item =
   fun

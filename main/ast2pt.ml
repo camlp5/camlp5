@@ -208,10 +208,10 @@ crec l1 l2
 
 value rec longid_long_id =
   fun
-  [ LiApp _ me1 me2 ->
+  [ <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> ->
       Lapply (longid_long_id me1) (longid_long_id me2)
-  | LiAcc _ m1 m2 → concat_long_ids (longid_long_id m1) (longid_long_id m2)
-  | LiUid _ s → Lident (Pcaml.unvala s)
+  | <:extended_longident< $longid:me1$ . $longid:me2$ >> → concat_long_ids (longid_long_id me1) (longid_long_id me2)
+  | <:extended_longident< $_uid:s$ >> → Lident (Pcaml.unvala s)
   ]
 ;
 

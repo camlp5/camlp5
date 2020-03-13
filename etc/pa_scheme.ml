@@ -440,12 +440,12 @@
   (lambda_match
    ((Sexpr loc [se1 se2])
     (let* ((li1 (longid_se se1)) (li2 (longid_se se2)))
-     (MLast.LiApp loc li1 li2)))
+     <:extended_longident< $longid:li1$ ( $longid:li2$ ) >>))
    ((Sacc loc se1 se2)
     (let* ((li1 (longid_se se1)) (li2 (longid_se se2)))
-     (MLast.LiAcc loc li1 li2)))
-   ((Suid loc s) (MLast.LiUid loc <:vala< (rename_id s) >>))
-   ((Suidv loc s) (MLast.LiUid loc s))
+     <:extended_longident< $longid:li1$ . $longid:li2$ >>))
+   ((Suid loc s) <:extended_longident< $uid:(rename_id s)$ >>)
+   ((Suidv loc s) <:extended_longident< $_uid:s$ >>)
    (se (error se "longid_se"))))
  (module_type_se
   (lambda_match

@@ -5,7 +5,7 @@
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
 #qmod "ctyp,Type";
-#qmod "longident,LI";
+#qmod "extended_longident,LI";
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -92,9 +92,9 @@ value ty_var =
 value vars = ref [];
 value type_longid_of_longident t =
   let rec merec = fun [
-    MLast.LiAcc loc me1 me2 -> LI.LiAcc loc (merec me1) (merec me2)
-  | MLast.LiApp loc me1 me2 -> LI.LiApp loc (merec me1) (merec me2)
-  | MLast.LiUid loc uid -> LI.LiUid loc uid
+    MLast.LiAcc loc me1 me2 -> <:extended_longident< $longid:(merec me1)$ . $longid:(merec me2)$ >>
+  | MLast.LiApp loc me1 me2 -> <:extended_longident< $longid:(merec me1)$ ( $longid:(merec me2)$ ) >>
+  | MLast.LiUid loc uid -> <:extended_longident< $_uid:uid$ >>
   ]
   in merec t
 ;
@@ -238,11 +238,11 @@ value instantiate loc s t = do { inst_vars.val := []; inst loc t };
 
 value unify_longid loc me1 me2 =
   let rec urec = fun [
-    (Types.LiAcc _ me11 me12, Types.LiAcc _ me21 me22) ->
+    (<:extended_longident< $longid:me11$ . $longid:me12$ >>, <:extended_longident< $longid:me21$ . $longid:me22$ >>) ->
       urec (me11, me21) && urec (me12, me22)
-  | (Types.LiApp _ me11 me12, Types.LiApp _ me21 me22) ->
+  | (<:extended_longident< $longid:me11$ ( $longid:me12$ ) >>, <:extended_longident< $longid:me21$ ( $longid:me22$ ) >>) ->
       urec (me11, me21) && urec (me12, me22)
-  | (Types.LiUid _ s1, Types.LiUid _ s2) ->
+  | (<:extended_longident< $_uid:s1$ >>, <:extended_longident< $_uid:s2$ >>) ->
       s1 = s2
   | _ -> False
   ] in

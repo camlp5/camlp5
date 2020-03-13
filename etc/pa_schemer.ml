@@ -716,13 +716,13 @@ and longid_se =
   [ Sexpr loc [se1; se2] →
       let li1 = longid_se se1 in
       let li2 = longid_se se2 in
-      MLast.LiApp loc li1 li2
+      <:extended_longident< $longid:li1$ ( $longid:li2$ ) >>
   | Sacc loc se1 se2 →
       let li1 = longid_se se1 in
       let li2 = longid_se se2 in
-      MLast.LiAcc loc li1 li2
-  | Suid loc s → MLast.LiUid loc <:vala< (rename_id s) >>
-  | Suidv loc s → MLast.LiUid loc s
+      <:extended_longident< $longid:li1$ . $longid:li2$ >>
+  | Suid loc s → <:extended_longident< $uid:(rename_id s)$ >>
+  | Suidv loc s → <:extended_longident< $_uid:s$ >>
   | se → error se "longid_se" ]
 and module_type_se =
   fun

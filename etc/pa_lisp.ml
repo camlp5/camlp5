@@ -624,8 +624,8 @@
          (match hdl
                   ((list) (ctyp_id loc lid))
                   ((list h :: t)
-                     (let ((me (List.fold_left (lambda (me uid) (MLast.LiAcc loc me (LiUid loc <:vala< uid >>)))
-                                  (MLast.LiUid loc <:vala< h >>) t)))
+                     (let ((me (List.fold_left (lambda (me uid) <:extended_longident< $longid:me$ . $uid:uid$ >>)
+                                  <:extended_longident< $uid:h$ >> t)))
                          (<:ctyp< $longid:me$ . $lid:lid$ >>))
                   )
          )

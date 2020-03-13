@@ -378,7 +378,10 @@ value prefix_eq s0 s1 =
 value check_dot_uid_f strm =
   match stream_npeek 5 strm with [
     [("",".") ; ("UIDENT",_) :: _] -> ()
-  | [("",".") ; ("ANTIQUOT", qs) :: _] when prefix_eq "longid:" qs || prefix_eq "_longid:" qs -> ()
+  | [("",".") ; ("ANTIQUOT", qs) :: _]
+    when prefix_eq "longid:" qs || prefix_eq "_longid:" qs
+         || prefix_eq "uid:" qs || prefix_eq "_uid:" qs
+    -> ()
   | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid"|"longid"|"_longid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
   | _ -> raise Stream.Failure
   ]

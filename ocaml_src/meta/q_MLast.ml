@@ -430,7 +430,9 @@ let check_dot_uid_f strm =
   match stream_npeek 5 strm with
     ("", ".") :: ("UIDENT", _) :: _ -> ()
   | ("", ".") :: ("ANTIQUOT", qs) :: _
-    when prefix_eq "longid:" qs || prefix_eq "_longid:" qs ->
+    when
+      prefix_eq "longid:" qs || prefix_eq "_longid:" qs ||
+      prefix_eq "uid:" qs || prefix_eq "_uid:" qs ->
       ()
   | ("", ".") :: ("", "$") ::
     ("LIDENT", ("uid" | "_uid" | "longid" | "_longid")) :: ("", ":") ::
@@ -3096,7 +3098,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 600, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 603, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));

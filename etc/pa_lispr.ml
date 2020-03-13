@@ -626,8 +626,8 @@ and ctyp_ident_se loc s =
   match hdl with [
     [] -> ctyp_id loc lid
   | [ h :: t ] ->
-    let me = List.fold_left (fun me uid -> MLast.LiAcc loc me (LiUid loc <:vala< uid >>))
-      (MLast.LiUid loc <:vala< h >>) t in
+    let me = List.fold_left (fun me uid -> <:extended_longident< $longid:me$ . $uid:uid$ >>)
+      <:extended_longident< $uid:h$ >> t in
     <:ctyp< $longid:me$ . $lid:lid$ >>
   ]}
 and constructor_declaration_se =
