@@ -206,6 +206,16 @@ let rec crec lhs = fun [
 crec l1 l2
 ;
 
+value rec expr_long_id = fun
+  [ <:expr< $uid:uid$ >> -> Lident uid
+  | <:expr< $e1$ . $e2$ >> ->
+    let li1 = expr_long_id e1 and
+        li2 = expr_long_id e2 in
+    concat_long_ids li1 li2
+  | _ -> failwith "expr_long_id: unexpected expr"
+  ]
+;
+
 value rec ctyp_long_id =
   fun
   [
@@ -389,6 +399,15 @@ value label_of_patt =
   [ PaLid _ s → uv s
   | PaTyc _ (PaLid _ s) _ → uv s
   | p → error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
+;
+
+value is_module_path e0 =
+  let rec isrec = fun [
+    <:expr< $uid:_$ >> -> True
+  | <:expr< $e1$ . $e2$ >> -> isrec e1 && isrec e2
+  | _ -> False
+  ]
+  in isrec e0
 ;
 
 value rec type_decl_of_with_type loc tn tpl pf ct =
@@ -878,20 +897,19 @@ and expr =
                   mkexp loc (ocaml_pexp_apply (expr f) al) ]
           | None → mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
   | ExAre loc e1 e2 →
-      match e1 with
-      [ <:expr< $uid:m$ >> →
+      if is_module_path e1 then
           match ocaml_pexp_open with
           [ Some pexp_open →
-              let li = Lident m in
+              let li = expr_long_id e1 in
               mkexp loc (pexp_open li (expr e2))
           | None → error loc "no expression open in this ocaml version" ]
-      | _ →
+      else
           let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc
                   (ocaml_pexp_ident cloc (array_function "Array" "get")))
-               [("", expr e1); ("", expr e2)]) ]
+               [("", expr e1); ("", expr e2)])
   | ExArr loc el → mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v →
       match e with

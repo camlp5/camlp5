@@ -224,6 +224,16 @@ let concat_long_ids l1 l2 =
   crec l1 l2
 ;;
 
+let rec expr_long_id =
+  function
+    MLast.ExUid (_, uid) -> Lident uid
+  | MLast.ExAcc (_, e1, e2) ->
+      let li1 = expr_long_id e1
+      and li2 = expr_long_id e2 in
+      concat_long_ids li1 li2
+  | _ -> failwith "expr_long_id: unexpected expr"
+;;
+
 let rec ctyp_long_id =
   function
     MLast.TyApp (_, m1, m2) ->
@@ -547,6 +557,16 @@ let label_of_patt =
     PaLid (_, s) -> uv s
   | PaTyc (_, PaLid (_, s), _) -> uv s
   | p -> error (MLast.loc_of_patt p) "label_of_patt; case not impl"
+;;
+
+let is_module_path e0 =
+  let rec isrec =
+    function
+      MLast.ExUid (_, _) -> true
+    | MLast.ExAcc (_, e1, e2) -> isrec e1 && isrec e2
+    | _ -> false
+  in
+  isrec e0
 ;;
 
 let rec type_decl_of_with_type loc tn tpl pf ct =
@@ -1040,21 +1060,18 @@ and expr =
           | None -> mkexp loc (ocaml_pexp_apply (expr f) al)
       end
   | ExAre (loc, e1, e2) ->
-      begin match e1 with
-        MLast.ExUid (_, m) ->
-          begin match ocaml_pexp_open with
-            Some pexp_open ->
-              let li = Lident m in mkexp loc (pexp_open li (expr e2))
-          | None -> error loc "no expression open in this ocaml version"
-          end
-      | _ ->
-          let cloc = mkloc loc in
-          mkexp loc
-            (ocaml_pexp_apply
-               (mkexp loc
-                  (ocaml_pexp_ident cloc (array_function "Array" "get")))
-               ["", expr e1; "", expr e2])
-      end
+      if is_module_path e1 then
+        match ocaml_pexp_open with
+          Some pexp_open ->
+            let li = expr_long_id e1 in mkexp loc (pexp_open li (expr e2))
+        | None -> error loc "no expression open in this ocaml version"
+      else
+        let cloc = mkloc loc in
+        mkexp loc
+          (ocaml_pexp_apply
+             (mkexp loc
+                (ocaml_pexp_ident cloc (array_function "Array" "get")))
+             ["", expr e1; "", expr e2])
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss (loc, e, v) ->
       begin match e with

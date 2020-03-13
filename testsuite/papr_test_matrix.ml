@@ -684,7 +684,7 @@ and t2 = bool[@@foo];
 |foo}
     };
     {name="module-record2"; implem = True ;
-     exclude=["r2official"];
+     exclude=[];
      o_input = OK {foo|M.N.{a = b}|foo} ;
      official_input = OK {foo|M.N.{a = b}|foo} ;
      r_input = OK {foo|M.N.({a = b});|foo} ;
@@ -694,17 +694,8 @@ and t2 = bool[@@foo];
      r_output = OK {foo|M.N.({a = b});
 |foo}
     };
-    {name="module-record2-r2official"; implem = True ;
-     exclude=[];
-     o_input = SKIP "" "";
-     official_input = SKIP "" "";
-     r_input = OK {foo|M.N.({a = b});|foo} ;
-     o_output = SKIP "" "";
-     official_output = OK {foo|;;M.N.({ a = b })|foo} ;
-     r_output = SKIP "" ""
-    };
     {name="module-record3"; implem = True ;
-     exclude=["r2official"];
+     exclude=[];
      o_input = OK {foo|M.N.{e with a = b}|foo} ;
      official_input = OK {foo|M.N.{e with a = b}|foo} ;
      r_input = OK {foo|M.N.({(e) with a = b});|foo} ;
@@ -713,15 +704,6 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;let open M.N in { e with a = b }|foo} ;
      r_output = OK {foo|M.N.({(e) with a = b});
 |foo}
-    };
-    {name="module-record3-r2official"; implem = True ;
-     exclude=[];
-     o_input = SKIP "" "";
-     official_input = SKIP "" "";
-     r_input = OK {foo|M.N.({(e) with a = b});|foo} ;
-     o_output = SKIP "" "";
-     official_output = OK {foo|;;M.N.({ e with a = b })|foo} ;
-     r_output = SKIP "" ""
     };
     {name="module-alias1"; implem = False ;
      exclude=[];
