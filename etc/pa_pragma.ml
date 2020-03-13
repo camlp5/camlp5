@@ -135,9 +135,9 @@ and str_of_ty2 loc =
   | t -> str_of_ty3 loc t ]
 and str_of_longid loc me =
   let rec srec = fun [
-    LI.LiAcc _ me1 me2 -> srec me1 ^ "." ^ srec me2
-  | LI.LiApp loc me1 me2 -> srec me1 ^ "(" ^ srec me2 ^ ")"
-  | LI.LiUid loc uid  -> (Pcaml.unvala uid)
+    <:extended_longident< $longid:me1$ . $longid:me2$ >> -> srec me1 ^ "." ^ srec me2
+  | <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> -> srec me1 ^ "(" ^ srec me2 ^ ")"
+  | <:extended_longident< $_uid:uid$ >> -> (Pcaml.unvala uid)
   ]
   in srec me
 and str_of_ty3 loc t =
