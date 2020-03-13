@@ -711,6 +711,19 @@ value rec module_expr_se =
   | Suidv loc s → <:module_expr< $_uid:s$ >>
   | Santi loc "" s → <:module_expr< $xtr:s$ >>
   | se → error se "module expr" ]
+and longid_se =
+  fun
+  [ Sexpr loc [se1; se2] →
+      let li1 = longid_se se1 in
+      let li2 = longid_se se2 in
+      MLast.LiApp loc li1 li2
+  | Sacc loc se1 se2 →
+      let li1 = longid_se se1 in
+      let li2 = longid_se se2 in
+      MLast.LiAcc loc li1 li2
+  | Suid loc s → MLast.LiUid loc <:vala< (rename_id s) >>
+  | Suidv loc s → MLast.LiUid loc s
+  | se → error se "longid_se" ]
 and module_type_se =
   fun
   [ Sexpr loc [Slid _ "functor"; se1; se2; se3] →
@@ -1507,7 +1520,7 @@ and ctyp_se =
            <:ctyp< $t$ $t2$ >>)
         (ctyp_se se) sel
   | Sacc loc se1 se2 →
-      let me1 = module_expr_se se1 in
+      let me1 = longid_se se1 in
       match ctyp_se se2 with [
         <:ctyp< $mpath:me2$ . $lid:lid$ >> ->
           <:ctyp< $mpath:me1$ . $mpath:me2$ . $lid:lid$ >>

@@ -32,8 +32,13 @@ type class_infos 'a =
     ciAttributes : attributes
   }
 
+and longid =
+  [ LiAcc of loc and longid and longid
+  | LiApp of loc and longid and longid
+  | LiUid of loc and V string
+  ]
 and ctyp =
-  [ TyAcc of loc and module_expr and V string
+  [ TyAcc of loc and longid and V string
   | TyAli of loc and ctyp and ctyp
   | TyAny of loc
   | TyApp of loc and ctyp and ctyp

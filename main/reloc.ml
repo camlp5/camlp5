@@ -63,7 +63,7 @@ value rec ctyp floc sh =
        TyAtt loc (self ct) attr
     | TyAcc loc x1 x2 ->
         let loc = floc loc in
-        TyAcc loc (module_expr floc sh x1) x2
+        TyAcc loc (longid floc sh x1) x2
     | TyAli loc x1 x2 →
         let loc = floc loc in
         TyAli loc (self x1) (self x2)
@@ -498,6 +498,19 @@ and with_constr floc sh =
   | WcTys loc x1 x2 x3 →
       let loc = floc loc in
       WcTys loc x1 x2 (ctyp floc sh x3) ]
+and longid floc sh =
+  self where rec self =
+    fun
+    [ LiAcc loc x1 x2 →
+        let loc = floc loc in
+        LiAcc loc (self x1) x2
+    | LiApp loc x1 x2 →
+        let loc = floc loc in
+        LiApp loc (self x1) (self x2)
+    | LiUid loc x1 →
+        let loc = floc loc in
+        LiUid loc x1
+    ]
 and module_expr floc sh =
   self where rec self =
     fun

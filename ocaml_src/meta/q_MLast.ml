@@ -6802,7 +6802,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me2 : 'module_expr_extended_longident) _ _
                 (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
-              (Qast.Node ("MeAcc", [Qast.Loc; me1; me2]) :
+              (Qast.Node ("LiAcc", [Qast.Loc; me1; me2]) :
                'module_expr_extended_longident)));
         Grammar.production
           (Grammar.r_next
@@ -6813,7 +6813,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            (fun _ (me2 : 'module_expr_extended_longident) _
                 (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
-              (Qast.Node ("MeApp", [Qast.Loc; me1; me2]) :
+              (Qast.Node ("LiApp", [Qast.Loc; me1; me2]) :
                'module_expr_extended_longident)))];
        Some "simple", None,
        [Grammar.production
@@ -6837,7 +6837,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) :
                            'e__162)))])),
            (fun (i : 'e__162) (loc : Ploc.t) ->
-              (Qast.Node ("MeUid", [Qast.Loc; i]) :
+              (Qast.Node ("LiUid", [Qast.Loc; i]) :
                'module_expr_extended_longident)))]];
     Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,

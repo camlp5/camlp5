@@ -293,16 +293,15 @@ module MetaAction =
           <:expr< MLast.PaTyc $mloc$ $mpatt p$ $mctyp t$ >>
       | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mpatt" x ]
-    and mmexp =
+    and mlongid =
       fun
-      [ MLast.MeApp loc me1 me2 -> <:expr< MLast.MeApp $mmexp me1$ $mmexp me2$ >>
-      | MLast.MeAcc loc me1 me2 -> <:expr< MLast.MeAcc $mmexp me1$ $mmexp me2$ >>
-      | MLast.MeUid loc s -> <:expr< MLast.MeUid $mloc$ $mvala mstring s$ >>
-      | x -> not_impl "mmexp" x ]
+      [ MLast.LiApp loc me1 me2 -> <:expr< MLast.LiApp $mlongid me1$ $mlongid me2$ >>
+      | MLast.LiAcc loc me1 me2 -> <:expr< MLast.LiAcc $mlongid me1$ $mlongid me2$ >>
+      | MLast.LiUid loc s -> <:expr< MLast.LiUid $mloc$ $mvala mstring s$ >> ]
     and mctyp =
       fun
       [ MLast.TyAcc loc m1 t2 ->
-          <:expr< MLast.TyAcc $mloc$ $mmexp m1$ $mvala mstring t2$ >>
+          <:expr< MLast.TyAcc $mloc$ $mlongid m1$ $mvala mstring t2$ >>
       | MLast.TyApp loc t1 t2 ->
           <:expr< MLast.TyApp $mloc$ $mctyp t1$ $mctyp t2$ >>
       | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>

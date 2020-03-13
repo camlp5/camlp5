@@ -35,7 +35,7 @@ value option f =
 
 value vala f v = Pcaml.vala_mapa f (fun _ -> ()) v;
 
-value longident =
+value id_list =
   fun
   [ [s; _ :: _] -> addmodule s
   | _ -> () ]
@@ -43,12 +43,12 @@ value longident =
 
 value rec ctyp =
   fun
-  [ <:ctyp< $mpath:t$ . $lid:_$ >> -> module_expr t
+  [ <:ctyp< $mpath:t$ . $lid:_$ >> -> longident t
   | TyAli _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyAny _ -> ()
   | TyArr _ t1 t2 -> do { ctyp t1; ctyp t2 }
-  | <:ctyp< # $list:li$ >> -> longident li
+  | <:ctyp< # $list:li$ >> -> id_list li
   | TyLab _ _ t -> ctyp t
   | TyLid _ _ -> ()
   | TyMan _ t1 _ t2 -> do { ctyp t1; ctyp t2 }
@@ -73,7 +73,7 @@ and variant =
 and ctyp_module =
   fun
   [ 
-    <:ctyp< $mpath:t$ . $lid:_$ >> -> module_expr t
+    <:ctyp< $mpath:t$ . $lid:_$ >> -> longident t
   | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
   | x -> not_impl "ctyp_module" x ]
 
@@ -143,7 +143,7 @@ and expr =
       expr e;
       list match_case pwel
     }
-  | <:expr< new $list:li$ >> -> longident li
+  | <:expr< new $list:li$ >> -> id_list li
   | ExOlb _ _ eo -> option expr (Pcaml.unvala eo)
   | <:expr< {$list:lel$} >> -> list label_expr lel
   | <:expr< {($w$) with $list:lel$} >> -> do {
@@ -218,6 +218,12 @@ and module_expr =
   | <:module_expr< ($me$ : $mt$) >> -> do { module_expr me; module_type mt }
   | <:module_expr< $uid:_$ >> -> ()
   | x -> not_impl "module_expr" x ]
+and longident =
+  fun
+  [ MLast.LiAcc _ _ (MLast.LiUid _ (Ploc.VaVal m)) -> addmodule m
+  | MLast.LiApp _ me1 me2 -> do { longident me1; longident me2 }
+  | MLast.LiUid _ _ -> ()
+  | x -> not_impl "longident" x ]
 and str_item =
   fun
   [ <:str_item< class $list:cil$ >> ->
@@ -243,7 +249,7 @@ and class_expr =
   fun
   [ <:class_expr< $ce$ $e$ >> -> do { class_expr ce; expr e }
   | <:class_expr< [ $list:tl$ ] $list:li$ >> -> do {
-      longident li;
+      id_list li;
       list ctyp tl
     }
   | <:class_expr< fun $p$ -> $ce$ >> -> do { patt p; class_expr ce }

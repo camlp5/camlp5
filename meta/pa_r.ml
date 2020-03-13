@@ -971,9 +971,9 @@ EXTEND
   ;
   module_expr_extended_longident:
     [ LEFTA
-      [ me1 = SELF; "(" ; me2 = SELF ; ")" → MLast.MeApp loc me1 me2
-      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → MLast.MeAcc loc me1 me2
-      | i = V UIDENT "uid" → MLast.MeUid loc i
+      [ me1 = SELF; "(" ; me2 = SELF ; ")" → MLast.LiApp loc me1 me2
+      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → MLast.LiAcc loc me1 me2
+      | i = V UIDENT "uid" → MLast.LiUid loc i
       ] ]
   ;
   ctyp_ident:

@@ -206,6 +206,15 @@ let rec crec lhs = fun [
 crec l1 l2
 ;
 
+value rec longid_long_id =
+  fun
+  [ LiApp _ me1 me2 ->
+      Lapply (longid_long_id me1) (longid_long_id me2)
+  | LiAcc _ m1 m2 → concat_long_ids (longid_long_id m1) (longid_long_id m2)
+  | LiUid _ s → Lident (Pcaml.unvala s)
+  ]
+;
+
 value rec expr_long_id = fun
   [ <:expr< $uid:uid$ >> -> Lident uid
   | <:expr< $e1$ . $e2$ >> ->
@@ -224,7 +233,7 @@ value rec ctyp_long_id =
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
   | <:ctyp:< $mpath:m$ . $lid:id$ >> →
-      let li1 = module_expr_long_id m in
+      let li1 = longid_long_id m in
       let (is_cls, li2) = ctyp_long_id <:ctyp< $lid:id$ >> in
       (is_cls, concat_long_ids li1 li2)
   | <:ctyp< $lid:s$ >> → (False, Lident s)

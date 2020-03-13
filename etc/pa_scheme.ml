@@ -436,6 +436,17 @@
    ((Suidv loc s) <:module_expr< $_uid:s$ >>)
    ((Santi loc "" s) <:module_expr< $xtr:s$ >>)
    (se (error se "module expr"))))
+ (longid_se
+  (lambda_match
+   ((Sexpr loc [se1 se2])
+    (let* ((li1 (longid_se se1)) (li2 (longid_se se2)))
+     (MLast.LiApp loc li1 li2)))
+   ((Sacc loc se1 se2)
+    (let* ((li1 (longid_se se1)) (li2 (longid_se se2)))
+     (MLast.LiAcc loc li1 li2)))
+   ((Suid loc s) (MLast.LiUid loc <:vala< (rename_id s) >>))
+   ((Suidv loc s) (MLast.LiUid loc s))
+   (se (error se "longid_se"))))
  (module_type_se
   (lambda_match
    ((Sexpr loc [(Slid _ "functor") se1 se2 se3])
@@ -1137,7 +1148,7 @@
      (lambda (t se) (let ((t2 (ctyp_se se))) <:ctyp< $t$ $t2$ >>))
      (ctyp_se se) sel))
    ((Sacc loc se1 se2)
-    (let* ((me1 (module_expr_se se1)))
+    (let* ((me1 (longid_se se1)))
       (match (ctyp_se se2)
              (<:ctyp< $mpath:me2$ . $lid:lid$ >>
                 <:ctyp< $mpath:me1$ . $mpath:me2$ . $lid:lid$ >>)

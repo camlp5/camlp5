@@ -1370,11 +1370,11 @@ EXTEND
   (* Core types *)
   module_expr_extended_longident:
     [ LEFTA
-      [ me1 = SELF; "(" ; me2 = SELF ; ")" → <:module_expr< ( $me1$ $me2$ ) >>
-      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → <:module_expr< $me1$ . $me2$ >>
+      [ me1 = SELF; "(" ; me2 = SELF ; ")" → LiApp loc me1 me2
+      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → LiAcc loc me1 me2
       ]
     | "simple"
-      [ i = V UIDENT "uid" → <:module_expr< $_uid:i$ >>
+      [ i = V UIDENT "uid" → LiUid loc i
       ] ]
   ;
   ctyp_ident:
