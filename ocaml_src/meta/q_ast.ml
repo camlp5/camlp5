@@ -103,8 +103,7 @@ module Meta_make (C : MetaSig) =
     let rec ctyp =
       function
         TyAtt (_, ct, att) -> assert false
-      | TyAcc (_, m1, t2) ->
-          C.node "TyAcc" [module_expr m1; C.vala C.string t2]
+      | TyAcc (_, m1, t2) -> C.node "TyAcc" [longid m1; C.vala C.string t2]
       | TyAli (_, t1, t2) -> C.node "TyAli" [ctyp t1; ctyp t2]
       | TyAny _ -> C.node "TyAny" []
       | TyApp (_, t1, t2) -> C.node "TyApp" [ctyp t1; ctyp t2]
@@ -402,6 +401,11 @@ module Meta_make (C : MetaSig) =
           C.node "WcTys"
             [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
              ctyp t]
+    and longid =
+      function
+        LiAcc (_, me1, me2) -> C.node "LiAcc" [longid me1; longid me2]
+      | LiApp (_, me1, me2) -> C.node "LiApp" [longid me1; longid me2]
+      | LiUid (_, s) -> C.node "LiUid" [C.vala C.string s]
     and module_expr =
       function
         MeAtt (_, e, att) -> assert false

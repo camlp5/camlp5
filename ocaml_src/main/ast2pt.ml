@@ -224,6 +224,14 @@ let concat_long_ids l1 l2 =
   crec l1 l2
 ;;
 
+let rec longid_long_id =
+  function
+    LiApp (_, me1, me2) -> Lapply (longid_long_id me1, longid_long_id me2)
+  | LiAcc (_, m1, m2) ->
+      concat_long_ids (longid_long_id m1) (longid_long_id m2)
+  | LiUid (_, s) -> Lident (Pcaml.unvala s)
+;;
+
 let rec expr_long_id =
   function
     MLast.ExUid (_, uid) -> Lident uid
@@ -240,7 +248,7 @@ let rec ctyp_long_id =
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in is_cls, Lapply (li1, li2)
   | MLast.TyAcc (loc, m, id) ->
-      let li1 = module_expr_long_id m in
+      let li1 = longid_long_id m in
       let (is_cls, li2) = ctyp_long_id (MLast.TyLid (loc, id)) in
       is_cls, concat_long_ids li1 li2
   | MLast.TyLid (_, s) -> false, Lident s

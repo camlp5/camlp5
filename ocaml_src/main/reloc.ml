@@ -49,7 +49,7 @@ let rec ctyp floc sh =
     function
       TyAtt (loc, ct, attr) -> TyAtt (loc, self ct, attr)
     | TyAcc (loc, x1, x2) ->
-        let loc = floc loc in TyAcc (loc, module_expr floc sh x1, x2)
+        let loc = floc loc in TyAcc (loc, longid floc sh x1, x2)
     | TyAli (loc, x1, x2) ->
         let loc = floc loc in TyAli (loc, self x1, self x2)
     | TyAny loc -> let loc = floc loc in TyAny loc
@@ -387,6 +387,15 @@ and with_constr floc sh =
       let loc = floc loc in WcTyp (loc, x1, x2, x3, ctyp floc sh x4)
   | WcTys (loc, x1, x2, x3) ->
       let loc = floc loc in WcTys (loc, x1, x2, ctyp floc sh x3)
+and longid floc sh =
+  let rec self =
+    function
+      LiAcc (loc, x1, x2) -> let loc = floc loc in LiAcc (loc, self x1, x2)
+    | LiApp (loc, x1, x2) ->
+        let loc = floc loc in LiApp (loc, self x1, self x2)
+    | LiUid (loc, x1) -> let loc = floc loc in LiUid (loc, x1)
+  in
+  self
 and module_expr floc sh =
   let rec self =
     function

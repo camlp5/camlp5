@@ -3448,7 +3448,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
-              (MLast.MeUid (loc, i) : 'module_expr_extended_longident)));
+              (MLast.LiUid (loc, i) : 'module_expr_extended_longident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3459,7 +3459,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (me2 : 'module_expr_extended_longident) _ _
                 (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
-              (MLast.MeAcc (loc, me1, me2) :
+              (MLast.LiAcc (loc, me1, me2) :
                'module_expr_extended_longident)));
         Grammar.production
           (Grammar.r_next
@@ -3470,7 +3470,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            (fun _ (me2 : 'module_expr_extended_longident) _
                 (me1 : 'module_expr_extended_longident) (loc : Ploc.t) ->
-              (MLast.MeApp (loc, me1, me2) :
+              (MLast.LiApp (loc, me1, me2) :
                'module_expr_extended_longident)))]];
     Grammar.extension (ctyp_ident : 'ctyp_ident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,

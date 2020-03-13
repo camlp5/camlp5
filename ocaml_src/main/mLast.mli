@@ -26,8 +26,12 @@ type 'a class_infos =
     ciNam : string;
     ciExp : 'a;
     ciAttributes : attributes }
+and longid =
+    LiAcc of loc * longid * longid
+  | LiApp of loc * longid * longid
+  | LiUid of loc * string
 and ctyp =
-    TyAcc of loc * module_expr * string
+    TyAcc of loc * longid * string
   | TyAli of loc * ctyp * ctyp
   | TyAny of loc
   | TyApp of loc * ctyp * ctyp
