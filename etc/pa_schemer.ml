@@ -1510,8 +1510,7 @@ and ctyp_se =
       let me1 = module_expr_se se1 in
       match ctyp_se se2 with [
         <:ctyp< $mpath:me2$ . $lid:lid$ >> ->
-          let me = <:module_expr< $me1$ . $me2$ >> in
-          <:ctyp< $mpath:me$ . $lid:lid$ >>
+          <:ctyp< $mpath:me1$ . $mpath:me2$ . $lid:lid$ >>
       | <:ctyp< $lid:lid$ >> -> <:ctyp< $mpath:me1$ . $lid:lid$ >>
       | _ -> failwith "pa_schemer: only TyAcc and TyLid allowed here"
       ]

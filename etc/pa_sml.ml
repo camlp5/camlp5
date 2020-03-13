@@ -438,11 +438,9 @@ EXTEND
       | x1 = idd; "."; x2 = tycon ->
         match x2 with [
           <:ctyp< $mpath:b$ . $lid:c$ >> ->
-            let mexp = <:module_expr< $uid:x1$ . $b$ >> in
-            <:ctyp< $mpath:mexp$ . $lid:c$ >>
+            <:ctyp< $uid:x1$ . $mpath:b$ . $lid:c$ >>
         | <:ctyp< $lid:c$ >> ->
-            let mexp = <:module_expr< $uid:x1$ >> in
-            <:ctyp< $mpath:mexp$ . $lid:c$ >>
+            <:ctyp< $uid:x1$ . $lid:c$ >>
         | _ -> failwith "pa_sml: tycon: should be either TyAcc or TyLid"
         ]
       | x1 = idd -> <:ctyp< $lid:uncap x1$ >> ] ]

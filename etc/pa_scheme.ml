@@ -1140,8 +1140,7 @@
     (let* ((me1 (module_expr_se se1)))
       (match (ctyp_se se2)
              (<:ctyp< $mpath:me2$ . $lid:lid$ >>
-              (let ((me <:module_expr< $me1$ . $me2$ >>))
-                 <:ctyp< $mpath:me$ . $lid:lid$ >>))
+                <:ctyp< $mpath:me1$ . $mpath:me2$ . $lid:lid$ >>)
              (<:ctyp< $lid:lid$ >> <:ctyp< $mpath:me1$ . $lid:lid$ >>)
              (_ (failwith "only TyAcc and TyLid allowed here"))
       )

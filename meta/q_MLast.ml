@@ -1193,20 +1193,6 @@ EXTEND
       | i = GIDENT → Qast.Option (Some (greek_ascii_equiv i))
       | "_" → Qast.Option None ] ]
   ;
-  ctyp_ident:
-    [ LEFTA
-      [ me1 = SELF ; "." ; i = SV LIDENT "lid" → 
-          Qast.Node "TyAcc" [Qast.Loc; me1; i]
-      | i = SV LIDENT "lid" → 
-          Qast.Node "TyLid" [Qast.Loc; i]
-      ] 
-    | LEFTA
-      [ me1 = SELF; "."; me2 = SELF → Qast.Node "TyAcc" [Qast.Loc; me1; me2]
-      ] 
-    | [ i = SV UIDENT "uid" → Qast.Node "TyUid" [Qast.Loc; i]
-      ]
-    ]
-  ;
   module_expr_extended_longident:
     [ LEFTA
       [ me1 = SELF; "(" ; me2 = SELF ; ")" → Qast.Node "MeApp" [Qast.Loc; me1; me2]
