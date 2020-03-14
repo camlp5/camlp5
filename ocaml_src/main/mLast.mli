@@ -27,7 +27,7 @@ type 'a class_infos =
     ciExp : 'a;
     ciAttributes : attributes }
 and longid =
-    LiAcc of loc * longid * longid
+    LiAcc of loc * longid * string
   | LiApp of loc * longid * longid
   | LiUid of loc * string
 and ctyp =

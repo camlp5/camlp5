@@ -1199,7 +1199,7 @@ EXTEND
   extended_longident:
     [ LEFTA
       [ me1 = SELF; "(" ; me2 = SELF ; ")" → Qast.Node "LiApp" [Qast.Loc; me1; me2]
-      | me1 = SELF; check_dot_uid ; "."; i = SV UIDENT "uid" → Qast.Node "LiAcc" [Qast.Loc; me1; Qast.Node "LiUid" [Qast.Loc; i]]
+      | me1 = SELF; check_dot_uid ; "."; i = SV UIDENT "uid" → Qast.Node "LiAcc" [Qast.Loc; me1; i]
       ]
     | "simple"
       [ i = SV UIDENT "uid" → Qast.Node "LiUid" [Qast.Loc; i]

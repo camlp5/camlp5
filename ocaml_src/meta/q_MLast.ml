@@ -6817,7 +6817,7 @@ Grammar.safe_extend
                 (loc : Ploc.t) ->
               (Qast.Node
                  ("LiAcc",
-                  [Qast.Loc; me1; Qast.Node ("LiUid", [Qast.Loc; i])]) :
+                  [Qast.Loc; me1; i]) :
                'extended_longident)));
         Grammar.production
           (Grammar.r_next

@@ -38,7 +38,7 @@ module Types = struct
       | TyTup of loc and MLast.v (list ctyp_t) ]
     and li_t =
       [ LiApp of loc and li_t and li_t
-      | LiAcc of loc and li_t and li_t
+      | LiAcc of loc and li_t and MLast.v string
       | LiUid of loc and MLast.v string
       ]
       ;
@@ -58,7 +58,7 @@ module Type =
       | TyTup of loc and MLast.v (list t) ] ;
     type li_t = Types.li_t ==
       [ LiApp of loc and li_t and li_t
-      | LiAcc of loc and li_t and li_t
+      | LiAcc of loc and li_t and MLast.v string
       | LiUid of loc and MLast.v string
       ]
       ;
@@ -68,7 +68,7 @@ module LI = struct
     type loc = Ploc.t;
     type t = Types.li_t ==
       [ LiApp of loc and t and t
-      | LiAcc of loc and t and t
+      | LiAcc of loc and t and MLast.v string
       | LiUid of loc and MLast.v string
       ]
       ;
@@ -92,10 +92,9 @@ value ty_var =
 value vars = ref [];
 value type_longid_of_longident t =
   let rec merec = fun [
-    MLast.LiAcc loc me1 (MLast.LiUid _ uid) -> <:extended_longident< $longid:(merec me1)$ . $_uid:uid$ >>
+    MLast.LiAcc loc me1 uid -> <:extended_longident< $longid:(merec me1)$ . $_uid:uid$ >>
   | MLast.LiApp loc me1 me2 -> <:extended_longident< $longid:(merec me1)$ ( $longid:(merec me2)$ ) >>
   | MLast.LiUid loc uid -> <:extended_longident< $_uid:uid$ >>
-  | _ -> failwith "type_longid_of_longident"
   ]
   in merec t
 ;
@@ -139,7 +138,6 @@ and str_of_longid loc me =
     <:extended_longident< $longid:me1$ . $_uid:uid$ >> -> srec me1 ^ "." ^ (Pcaml.unvala uid)
   | <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> -> srec me1 ^ "(" ^ srec me2 ^ ")"
   | <:extended_longident< $_uid:uid$ >> -> (Pcaml.unvala uid)
-  | _ -> failwith "str_of_longid"
   ]
   in srec me
 and str_of_ty3 loc t =

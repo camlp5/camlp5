@@ -228,10 +228,9 @@ let rec longid_long_id =
   function
     MLast.LiApp (_, me1, me2) ->
       Lapply (longid_long_id me1, longid_long_id me2)
-  | MLast.LiAcc (_, me1, MLast.LiUid (_, uid)) ->
+  | MLast.LiAcc (_, me1, uid) ->
       Ldot (longid_long_id me1, Pcaml.unvala uid)
   | MLast.LiUid (_, s) -> Lident (Pcaml.unvala s)
-  | _ -> failwith "longid_long_id"
 ;;
 
 let rec expr_long_id =

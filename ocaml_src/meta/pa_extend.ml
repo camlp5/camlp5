@@ -584,7 +584,7 @@ module MetaAction =
                    MLast.ExUid (loc, "LiApp")),
                 mlongid me1),
              mlongid me2)
-      | MLast.LiAcc (loc, me1, me2) ->
+      | MLast.LiAcc (loc, me1, uid) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -593,7 +593,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "LiAcc")),
                 mlongid me1),
-             mlongid me2)
+             mvala mstring uid)
       | MLast.LiUid (loc, s) ->
           MLast.ExApp
             (loc,
@@ -1202,7 +1202,7 @@ let rec make_expr gmod tvar =
                         (loc,
                          MLast.LiAcc
                            (loc, MLast.LiUid (loc, gmod),
-                            MLast.LiUid (loc, "Entry")),
+                            "Entry"),
                          "e"),
                       MLast.TyQuo (loc, n.tvar)))),
              MLast.ExStr (loc, lab))
@@ -1223,7 +1223,7 @@ let rec make_expr gmod tvar =
                        (loc,
                         MLast.LiAcc
                           (loc, MLast.LiUid (loc, gmod),
-                           MLast.LiUid (loc, "Entry")),
+                           "Entry"),
                         "e"),
                      MLast.TyQuo (loc, n.tvar))))
       end
@@ -1653,7 +1653,7 @@ let text_of_entry loc gmod e =
           MLast.TyAcc
             (loc,
              MLast.LiAcc
-               (loc, MLast.LiUid (loc, gmod), MLast.LiUid (loc, "Entry")),
+               (loc, MLast.LiUid (loc, gmod), "Entry"),
              "e"),
           MLast.TyQuo (loc, x.tvar)))
   in
@@ -1722,7 +1722,7 @@ let let_in_of_extend loc gmod functor_version gl el args =
                      (loc,
                       MLast.LiAcc
                         (loc, MLast.LiUid (loc, gmod),
-                         MLast.LiUid (loc, "Entry")),
+                          "Entry"),
                       "e"),
                    MLast.TyQuo (loc, x))),
              [])
@@ -1748,7 +1748,7 @@ let let_in_of_extend loc gmod functor_version gl el args =
                      (loc,
                       MLast.LiAcc
                         (loc, MLast.LiUid (loc, gmod),
-                         MLast.LiUid (loc, "Entry")),
+                          "Entry"),
                       "e"),
                    MLast.TyQuo (loc, x))),
              [])

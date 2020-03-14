@@ -296,7 +296,7 @@ module MetaAction =
     and mlongid =
       fun
       [ MLast.LiApp loc me1 me2 -> <:expr< MLast.LiApp $mlongid me1$ $mlongid me2$ >>
-      | MLast.LiAcc loc me1 me2 -> <:expr< MLast.LiAcc $mlongid me1$ $mlongid me2$ >>
+      | MLast.LiAcc loc me1 uid -> <:expr< MLast.LiAcc $mlongid me1$ $mvala mstring uid$ >>
       | MLast.LiUid loc s -> <:expr< MLast.LiUid $mloc$ $mvala mstring s$ >> ]
     and mctyp =
       fun

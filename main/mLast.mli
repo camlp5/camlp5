@@ -33,7 +33,7 @@ type class_infos 'a =
   }
 
 and longid =
-  [ LiAcc of loc and longid and longid
+  [ LiAcc of loc and longid and V string
   | LiApp of loc and longid and longid
   | LiUid of loc and V string
   ]

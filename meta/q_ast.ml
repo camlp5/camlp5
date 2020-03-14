@@ -404,7 +404,7 @@ module Meta_make (C : MetaSig) =
              ctyp t] ]
     and longid =
       fun
-      [ LiAcc _ me1 me2 → C.node "LiAcc" [longid me1; longid me2]
+      [ LiAcc _ me1 s → C.node "LiAcc" [longid me1; C.vala C.string s]
       | LiApp _ me1 me2 → C.node "LiApp" [longid me1; longid me2]
       | LiUid _ s → C.node "LiUid" [C.vala C.string s]
       ]

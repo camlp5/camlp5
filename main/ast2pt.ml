@@ -212,7 +212,6 @@ value rec longid_long_id =
       Lapply (longid_long_id me1) (longid_long_id me2)
   | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (longid_long_id me1) (Pcaml.unvala uid)
   | <:extended_longident< $_uid:s$ >> → Lident (Pcaml.unvala s)
-  | _ -> failwith "longid_long_id"
   ]
 ;
 
