@@ -3452,10 +3452,10 @@ Grammar.safe_extend
                    (Grammar.s_nterm
                       (check_dot_uid : 'check_dot_uid Grammar.Entry.e)))
                 (Grammar.s_token ("", ".")))
-             Grammar.s_self,
-           (fun (me2 : 'extended_longident) _ _ (me1 : 'extended_longident)
-                (loc : Ploc.t) ->
-              (MLast.LiAcc (loc, me1, me2) : 'extended_longident)));
+             (Grammar.s_token ("UIDENT", "")),
+           (fun (i : string) _ _ (me1 : 'extended_longident) (loc : Ploc.t) ->
+              (MLast.LiAcc (loc, me1, MLast.LiUid (loc, i)) :
+               'extended_longident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
