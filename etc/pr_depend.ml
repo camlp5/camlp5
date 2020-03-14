@@ -222,7 +222,7 @@ and longident =
   fun
   [ <:extended_longident< $longid:_$ . $uid:m$ >> -> addmodule m
   | <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> -> do { longident me1; longident me2 }
-  | <:extended_longident< $_uid:_$ >> -> ()
+  | <:extended_longident< $uid:m$ >> -> addmodule m
   | x -> not_impl "longident" x ]
 and str_item =
   fun
