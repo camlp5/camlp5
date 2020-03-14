@@ -3454,8 +3454,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ".")))
              (Grammar.s_token ("UIDENT", "")),
            (fun (i : string) _ _ (me1 : 'extended_longident) (loc : Ploc.t) ->
-              (MLast.LiAcc (loc, me1, i) :
-               'extended_longident)));
+              (MLast.LiAcc (loc, me1, i) : 'extended_longident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

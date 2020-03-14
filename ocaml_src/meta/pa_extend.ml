@@ -1200,9 +1200,7 @@ let rec make_expr gmod tvar =
                      (loc,
                       MLast.TyAcc
                         (loc,
-                         MLast.LiAcc
-                           (loc, MLast.LiUid (loc, gmod),
-                            "Entry"),
+                         MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
                          "e"),
                       MLast.TyQuo (loc, n.tvar)))),
              MLast.ExStr (loc, lab))
@@ -1221,9 +1219,7 @@ let rec make_expr gmod tvar =
                     (loc,
                      MLast.TyAcc
                        (loc,
-                        MLast.LiAcc
-                          (loc, MLast.LiUid (loc, gmod),
-                           "Entry"),
+                        MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
                         "e"),
                      MLast.TyQuo (loc, n.tvar))))
       end
@@ -1651,10 +1647,7 @@ let text_of_entry loc gmod e =
        MLast.TyApp
          (loc,
           MLast.TyAcc
-            (loc,
-             MLast.LiAcc
-               (loc, MLast.LiUid (loc, gmod), "Entry"),
-             "e"),
+            (loc, MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"), "e"),
           MLast.TyQuo (loc, x.tvar)))
   in
   let loc = Ploc.with_comment loc "" in
@@ -1720,9 +1713,7 @@ let let_in_of_extend loc gmod functor_version gl el args =
                   (loc,
                    MLast.TyAcc
                      (loc,
-                      MLast.LiAcc
-                        (loc, MLast.LiUid (loc, gmod),
-                          "Entry"),
+                      MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
                       "e"),
                    MLast.TyQuo (loc, x))),
              [])
@@ -1746,9 +1737,7 @@ let let_in_of_extend loc gmod functor_version gl el args =
                   (loc,
                    MLast.TyAcc
                      (loc,
-                      MLast.LiAcc
-                        (loc, MLast.LiUid (loc, gmod),
-                          "Entry"),
+                      MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
                       "e"),
                    MLast.TyQuo (loc, x))),
              [])

@@ -6815,9 +6815,7 @@ Grammar.safe_extend
                            'e__162)))])),
            (fun (i : 'e__162) _ _ (me1 : 'extended_longident)
                 (loc : Ploc.t) ->
-              (Qast.Node
-                 ("LiAcc",
-                  [Qast.Loc; me1; i]) :
+              (Qast.Node ("LiAcc", [Qast.Loc; me1; i]) :
                'extended_longident)));
         Grammar.production
           (Grammar.r_next
