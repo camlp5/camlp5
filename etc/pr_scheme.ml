@@ -1148,8 +1148,8 @@ EXTEND_PRINTER
   ;
   pr_longident:
     [ "dot"
-      [ <:extended_longident< $longid:x$ . $longid:y$ >> ->
-          pprintf pc "%p.%p" curr x curr y
+      [ <:extended_longident< $longid:x$ . $uid:uid$ >> ->
+          pprintf pc "%p.%s" curr x uid
       | <:extended_longident< $longid:x$ ( $longid:y$ ) >> ->
           pprintf pc "%p(%p)" longident x longident y
       | <:extended_longident< $uid:s$ >> ->

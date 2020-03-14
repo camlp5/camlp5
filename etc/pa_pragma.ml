@@ -92,9 +92,10 @@ value ty_var =
 value vars = ref [];
 value type_longid_of_longident t =
   let rec merec = fun [
-    MLast.LiAcc loc me1 me2 -> <:extended_longident< $longid:(merec me1)$ . $longid:(merec me2)$ >>
+    MLast.LiAcc loc me1 (MLast.LiUid _ uid) -> <:extended_longident< $longid:(merec me1)$ . $_uid:uid$ >>
   | MLast.LiApp loc me1 me2 -> <:extended_longident< $longid:(merec me1)$ ( $longid:(merec me2)$ ) >>
   | MLast.LiUid loc uid -> <:extended_longident< $_uid:uid$ >>
+  | _ -> failwith "type_longid_of_longident"
   ]
   in merec t
 ;
@@ -135,9 +136,10 @@ and str_of_ty2 loc =
   | t -> str_of_ty3 loc t ]
 and str_of_longid loc me =
   let rec srec = fun [
-    <:extended_longident< $longid:me1$ . $longid:me2$ >> -> srec me1 ^ "." ^ srec me2
+    <:extended_longident< $longid:me1$ . $_uid:uid$ >> -> srec me1 ^ "." ^ (Pcaml.unvala uid)
   | <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> -> srec me1 ^ "(" ^ srec me2 ^ ")"
   | <:extended_longident< $_uid:uid$ >> -> (Pcaml.unvala uid)
+  | _ -> failwith "str_of_longid"
   ]
   in srec me
 and str_of_ty3 loc t =
@@ -238,8 +240,8 @@ value instantiate loc s t = do { inst_vars.val := []; inst loc t };
 
 value unify_longid loc me1 me2 =
   let rec urec = fun [
-    (<:extended_longident< $longid:me11$ . $longid:me12$ >>, <:extended_longident< $longid:me21$ . $longid:me22$ >>) ->
-      urec (me11, me21) && urec (me12, me22)
+    (<:extended_longident< $longid:me11$ . $uid:uid12$ >>, <:extended_longident< $longid:me21$ . $uid:uid22$ >>) ->
+      urec (me11, me21) && uid12 =  uid22
   | (<:extended_longident< $longid:me11$ ( $longid:me12$ ) >>, <:extended_longident< $longid:me21$ ( $longid:me22$ ) >>) ->
       urec (me11, me21) && urec (me12, me22)
   | (<:extended_longident< $_uid:s1$ >>, <:extended_longident< $_uid:s2$ >>) ->

@@ -5,6 +5,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
+open Asttools;
 open Pcaml;
 open Versdep;
 
@@ -438,7 +439,8 @@ EXTEND
       | x1 = idd; "."; x2 = tycon ->
         match x2 with [
           <:ctyp< $longid:b$ . $lid:c$ >> ->
-            <:ctyp< $uid:x1$ . $longid:b$ . $lid:c$ >>
+            let a = longid_concat <:extended_longident< $uid:x1$ >> b in
+            <:ctyp< $longid:a$ . $lid:c$ >>
         | <:ctyp< $lid:c$ >> ->
             <:ctyp< $uid:x1$ . $lid:c$ >>
         | _ -> failwith "pa_sml: tycon: should be either TyAcc or TyLid"

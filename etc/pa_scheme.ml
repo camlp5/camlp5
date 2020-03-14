@@ -2,6 +2,7 @@
 ; pa_scheme.ml,v
 ; Copyright (c) INRIA 2007-2017
 
+(open Asttools)
 (open Pcaml)
 (open Exparser)
 (open Versdep)
@@ -443,7 +444,7 @@
      <:extended_longident< $longid:li1$ ( $longid:li2$ ) >>))
    ((Sacc loc se1 se2)
     (let* ((li1 (longid_se se1)) (li2 (longid_se se2)))
-     <:extended_longident< $longid:li1$ . $longid:li2$ >>))
+     (longid_concat li1 li2)))
    ((Suid loc s) <:extended_longident< $uid:(rename_id s)$ >>)
    ((Suidv loc s) <:extended_longident< $_uid:s$ >>)
    (se (error se "longid_se"))))
@@ -1151,7 +1152,7 @@
     (let* ((me1 (longid_se se1)))
       (match (ctyp_se se2)
              (<:ctyp< $longid:me2$ . $lid:lid$ >>
-                <:ctyp< $longid:me1$ . $longid:me2$ . $lid:lid$ >>)
+                <:ctyp< $longid:(longid_concat me1 me2)$ . $lid:lid$ >>)
              (<:ctyp< $lid:lid$ >> <:ctyp< $longid:me1$ . $lid:lid$ >>)
              (_ (failwith "only TyAcc and TyLid allowed here"))
       )

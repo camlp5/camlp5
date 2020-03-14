@@ -972,7 +972,7 @@ EXTEND
   extended_longident:
     [ LEFTA
       [ me1 = SELF; "(" ; me2 = SELF ; ")" → <:extended_longident< $longid:me1$ ( $longid:me2$ ) >>
-      | me1 = SELF; check_dot_uid ; "."; me2 = SELF → <:extended_longident< $longid:me1$ . $longid:me2$ >>
+      | me1 = SELF; check_dot_uid ; "."; i = V UIDENT "uid" → <:extended_longident< $longid:me1$ . $_uid:i$ >>
       | i = V UIDENT "uid" → <:extended_longident< $_uid:i$ >>
       ] ]
   ;
