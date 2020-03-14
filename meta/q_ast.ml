@@ -305,6 +305,7 @@ module Meta_make (C : MetaSig) =
       fun
       [ MtAtt _ e att -> assert False
       | MtAcc _ mt1 mt2 → C.node "MtAcc" [module_type mt1; module_type mt2]
+      | MtAcc2 _ mt1 uid → C.node "MtAcc2" [longid mt1; C.vala C.string uid]
       | MtApp _ mt1 mt2 → C.node "MtApp" [module_type mt1; module_type mt2]
       | MtFun _ arg mt2 →
           let c_vala x = C.vala C.string x in

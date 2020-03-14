@@ -163,6 +163,24 @@ value long_id_of_string_list loc sl =
   | [s :: sl] → mkli s (List.rev sl) ]
 ;
 
+value concat_long_ids l1 l2 =
+let rec crec lhs = fun [
+  Lident s -> Ldot lhs s
+| Ldot li s -> Ldot (crec lhs li) s
+| Lapply lif liarg -> Lapply (crec lhs lif) liarg
+] in
+crec l1 l2
+;
+
+value rec longid_long_id =
+  fun
+  [ <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> ->
+      Lapply (longid_long_id me1) (longid_long_id me2)
+  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (longid_long_id me1) (Pcaml.unvala uid)
+  | <:extended_longident< $_uid:s$ >> → Lident (Pcaml.unvala s)
+  ]
+;
+
 value long_id_class_type loc ct =
   longident ct where rec longident =
     fun
@@ -197,24 +215,6 @@ value rec module_expr_long_id =
   | t → error (loc_of_module_expr t) "bad module expr long ident" ]
 ;
 
-value concat_long_ids l1 l2 =
-let rec crec lhs = fun [
-  Lident s -> Ldot lhs s
-| Ldot li s -> Ldot (crec lhs li) s
-| Lapply lif liarg -> Lapply (crec lhs lif) liarg
-] in
-crec l1 l2
-;
-
-value rec longid_long_id =
-  fun
-  [ <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> ->
-      Lapply (longid_long_id me1) (longid_long_id me2)
-  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (longid_long_id me1) (Pcaml.unvala uid)
-  | <:extended_longident< $_uid:s$ >> → Lident (Pcaml.unvala s)
-  ]
-;
-
 value rec expr_long_id = fun
   [ <:expr< $uid:uid$ >> -> Lident uid
   | <:expr< $e1$ . $e2$ >> ->
@@ -239,6 +239,12 @@ value rec ctyp_long_id =
   | <:ctyp< $lid:s$ >> → (False, Lident s)
   | TyCls loc sl → (True, long_id_of_string_list loc (uv sl))
   | t → error (loc_of_ctyp t) "incorrect type" ]
+;
+
+value module_type_long_id2 = fun [
+  MtAcc2 _ li uid -> Ldot (longid_long_id li) (Pcaml.unvala uid)
+| _ -> failwith "module_type_long_id2"
+]
 ;
 
 value rec module_type_long_id =
@@ -1216,6 +1222,8 @@ and module_type =
       ocaml_pmty_addattr (attr (uv a)) (module_type e)
   | MtAcc loc _ _ as f →
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
+  | MtAcc2 loc _ _ as f →
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id2 f))
   | MtApp loc _ _ as f →
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtFun loc arg mt →

@@ -392,6 +392,9 @@ and module_type floc sh =
     | MtAcc loc x1 x2 →
         let loc = floc loc in
         MtAcc loc (self x1) (self x2)
+    | MtAcc2 loc x1 x2 →
+        let loc = floc loc in
+        MtAcc2 loc (longid floc sh x1) x2
     | MtApp loc x1 x2 →
         let loc = floc loc in
         MtApp loc (self x1) (self x2)

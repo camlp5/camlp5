@@ -141,6 +141,7 @@ and expr =
   ]
 and module_type =
   [ MtAcc of loc and module_type and module_type
+  | MtAcc2 of loc and longid and V string
   | MtApp of loc and module_type and module_type
   | MtFun of loc and (V (option (V (option (V string)) * module_type))) and module_type
   | MtLid of loc and V string
