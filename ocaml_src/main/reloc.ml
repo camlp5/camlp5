@@ -509,16 +509,16 @@ and class_type floc sh =
   let rec self =
     function
       CtAtt (loc, e, attr) -> CtAtt (loc, self e, attr)
-    | CtAcc (loc, x1, x2) ->
-        let loc = floc loc in CtAcc (loc, self x1, self x2)
-    | CtApp (loc, x1, x2) ->
-        let loc = floc loc in CtApp (loc, self x1, self x2)
+    | CtLong (loc, x1) ->
+        let loc = floc loc in CtLong (loc, longid floc sh x1)
+    | CtLongLid (loc, x1, x2) ->
+        let loc = floc loc in CtLongLid (loc, longid floc sh x1, x2)
+    | CtLid (loc, x1) -> let loc = floc loc in CtLid (loc, x1)
     | CtCon (loc, x1, x2) ->
         let loc = floc loc in
         CtCon (loc, self x1, vala_map (List.map (ctyp floc sh)) x2)
     | CtFun (loc, x1, x2) ->
         let loc = floc loc in CtFun (loc, ctyp floc sh x1, self x2)
-    | CtIde (loc, x1) -> let loc = floc loc in CtIde (loc, x1)
     | CtSig (loc, x1, x2) ->
         let loc = floc loc in
         CtSig

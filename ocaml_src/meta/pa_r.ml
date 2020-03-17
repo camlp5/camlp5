@@ -4408,20 +4408,6 @@ Grammar.safe_extend
            (fun _ (csf : 'e__12 list) (cst : 'class_self_type option) _
                 (loc : Ploc.t) ->
               (MLast.CtSig (loc, cst, csf) : 'class_type)))];
-       Some "apply", None,
-       [Grammar.production
-          (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-             Grammar.s_self,
-           (fun (ct2 : 'class_type) (ct1 : 'class_type) (loc : Ploc.t) ->
-              (MLast.CtApp (loc, ct1, ct2) : 'class_type)))];
-       Some "dot", None,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_token ("", ".")))
-             Grammar.s_self,
-           (fun (ct2 : 'class_type) _ (ct1 : 'class_type) (loc : Ploc.t) ->
-              (MLast.CtAcc (loc, ct1, ct2) : 'class_type)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
@@ -4437,13 +4423,26 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            (fun _ (ct : 'class_type) _ (loc : Ploc.t) -> (ct : 'class_type)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) ->
-              (MLast.CtIde (loc, i) : 'class_type)));
-        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
-              (MLast.CtIde (loc, i) : 'class_type)))]];
+              (CtLid (loc, i) : 'class_type)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (extended_longident : 'extended_longident Grammar.Entry.e)),
+           (fun (li : 'extended_longident) (loc : Ploc.t) ->
+              (CtLong (loc, li) : 'class_type)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("LIDENT", "")),
+           (fun (i : string) _ (li : 'extended_longident) (loc : Ploc.t) ->
+              (CtLongLid (loc, li, i) : 'class_type)))]];
     Grammar.extension (class_self_type : 'class_self_type Grammar.Entry.e)
       None
       [None, None,
