@@ -576,12 +576,11 @@ EXTEND
     | [ "sig"; sg = signature; /; "end" → Qast.Node "MtSig" [Qast.Loc; sg]
       | "module"; "type"; "of"; me = module_expr →
           Qast.Node "MtTyo" [Qast.Loc; me] ]
-    | [ m1 = SELF; m2 = SELF → Qast.Node "MtApp" [Qast.Loc; m1; m2] ]
-    | [ m1 = SELF; "."; m2 = SELF → Qast.Node "MtAcc" [Qast.Loc; m1; m2] ]
     | "simple"
-      [ i = SV UIDENT → Qast.Node "MtUid" [Qast.Loc; i]
-      | e = alg_extension -> Qast.Node "MtExten" [Qast.Loc; e]
+      [ li = extended_longident; "."; i = SV LIDENT → Qast.Node "MtLongLid" [Qast.Loc; li; i]
+      | li = extended_longident → Qast.Node "MtLong" [Qast.Loc; li]
       | i = SV LIDENT → Qast.Node "MtLid" [Qast.Loc; i]
+      | e = alg_extension -> Qast.Node "MtExten" [Qast.Loc; e]
       | "'"; i = SV ident "" → Qast.Node "MtQuo" [Qast.Loc; i]
       | "("; mt = SELF; ")" → mt ] ]
   ;

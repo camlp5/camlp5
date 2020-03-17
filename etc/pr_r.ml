@@ -2090,21 +2090,27 @@ EXTEND_PRINTER
       | <:module_type< $mt$ with $list:wcl$ >> ->
           pprintf pc "%p with@;%p" module_type mt
             (vlist2 with_constraint (and_before with_constraint)) wcl ]
-    | "apply"
-      [ <:module_type< $x$ $y$ >> ->
-          pprintf pc "%p %p" curr x next y ]
     | "dot"
-      [ <:module_type< $x$ . $y$ >> ->
-          pprintf pc "%p.%p" curr x curr y ]
+      [ 
+MLast.MtLongLid _ li s ->
+(*
+<:module_type< $x$ . $y$ >> ->
+*)
+          pprintf pc "%p.%s" longident li (Pcaml.unvala s)
+| MLast.MtLid _ s ->
+(*
+<:module_type< $x$ . $y$ >> ->
+*)
+          pprintf pc "%s" (Pcaml.unvala s)
+| MLast.MtLong _ li ->
+(*
+<:module_type< $x$ . $y$ >> ->
+*)
+          pprintf pc "%p" longident li
+    ]
     | "simple"
-      [ <:module_type< $uid:s$ >> ->
-          pprintf pc "%s" s
-      | <:module_type< $lid:s$ >> ->
-          pprintf pc "%s" s
-      | <:module_type< ' $s$ >> ->
+      [ <:module_type< ' $s$ >> ->
           pprintf pc "'%s" s
-      | <:module_type< $_$ $_$ >> as z ->
-          pprintf pc "(%p)" module_type z
       | <:module_type< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
       | z ->

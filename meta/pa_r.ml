@@ -530,12 +530,11 @@ EXTEND
           <:module_type< sig $_list:sg$ end >>
       | "module"; "type"; "of"; me = module_expr →
           <:module_type< module type of $me$ >> ]
-    | [ m1 = SELF; m2 = SELF → <:module_type< $m1$ $m2$ >> ]
-    | [ m1 = SELF; "."; m2 = SELF → <:module_type< $m1$ . $m2$ >> ]
     | "simple"
-      [ i = V UIDENT → <:module_type< $_uid:i$ >>
+      [ li = extended_longident; "."; i = V LIDENT → MLast.MtLongLid loc li i
+      | li = extended_longident → MLast.MtLong loc li
+      | i = V LIDENT → MLast.MtLid loc i
       | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
-      | i = V LIDENT → <:module_type< $_lid:i$ >>
       | "'"; i = V ident "" → <:module_type< ' $_:i$ >>
       | "("; mt = SELF; ")" → <:module_type< $mt$ >> ] ]
   ;

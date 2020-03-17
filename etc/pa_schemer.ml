@@ -739,18 +739,26 @@ and module_type_se =
       let mt = module_type_se se in
       let wcl = anti_list_map with_constr_se sel in
       <:module_type< $mt$ with $_list:wcl$ >>
-  | Sexpr loc [se1; se2] →
-      let mt1 = module_type_se se1 in
-      let mt2 = module_type_se se2 in
-      <:module_type< $mt1$ $mt2$ >>
-  | Sacc loc se1 se2 →
-      let mt1 = module_type_se se1 in
-      let mt2 = module_type_se se2 in
+  | Sacc loc se1 (Slid _ s) →
+      let li1 = longid_se se1 in
+      MtLongLid loc li1 <:vala< (rename_id s) >>
+(*
       <:module_type< $mt1$ . $mt2$ >>
-  | Slid loc s → <:module_type< $lid:(rename_id s)$ >>
-  | Slidv loc s → <:module_type< $_lid:s$ >>
-  | Suid loc s → <:module_type< $uid:(rename_id s)$ >>
-  | Suidv loc s → <:module_type< $_uid:s$ >>
+*)
+  | Sacc loc _ (Suid _ _) as se →
+      let li = longid_se se in
+      MtLong loc li
+(*
+      <:module_type< $mt1$ . $mt2$ >>
+*)
+  | Slid loc s → MtLid loc <:vala< (rename_id s) >>
+(*
+ <:module_type< $lid:(rename_id s)$ >>
+*)
+  | Slidv loc s → MtLid loc s
+(*
+<:module_type< $_lid:s$ >>
+*)
   | Santi loc "" s → <:module_type< $xtr:s$ >>
   | se → error se "module type" ]
 and with_constr_se =

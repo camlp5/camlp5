@@ -389,15 +389,12 @@ and module_type floc sh =
     fun
     [ MtAtt loc e attr ->
        MtAtt loc (self e) attr
-    | MtAcc loc x1 x2 →
+    | MtLong loc x1 →
         let loc = floc loc in
-        MtAcc loc (self x1) (self x2)
-    | MtAcc2 loc x1 x2 →
+        MtLong loc (longid floc sh x1)
+    | MtLongLid loc x1 x2 →
         let loc = floc loc in
-        MtAcc2 loc (longid floc sh x1) x2
-    | MtApp loc x1 x2 →
-        let loc = floc loc in
-        MtApp loc (self x1) (self x2)
+        MtLongLid loc (longid floc sh x1) x2
     | MtFun loc arg x3 →
       let arg = vala_map (option_map (fun (idopt, m) -> (idopt, self m))) arg in
         let loc = floc loc in
@@ -414,9 +411,6 @@ and module_type floc sh =
     | MtTyo loc x1 →
         let loc = floc loc in
         MtTyo loc (module_expr floc sh x1)
-    | MtUid loc x1 →
-        let loc = floc loc in
-        MtUid loc x1
     | MtWit loc x1 x2 →
         let loc = floc loc in
         MtWit loc (self x1) (vala_map (List.map (with_constr floc sh)) x2)

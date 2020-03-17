@@ -1947,10 +1947,23 @@ EXTEND_PRINTER
           pprintf pc "%p with@;%p" module_type mt
             (vlist2 with_constraint (and_before with_constraint)) wcl ]
     | "apply"
-      [ <:module_type< $x$ $y$ >> ->
-          pprintf pc "%p(%p)" curr x curr y
-      | <:module_type< $x$ . $y$ >> ->
-          pprintf pc "%p.%p" curr x curr y ]
+      [ 
+MLast.MtLongLid _ li s ->
+(*
+<:module_type< $x$ . $y$ >> ->
+*)
+          pprintf pc "%p.%s" longident li (Pcaml.unvala s)
+| MLast.MtLid _ s ->
+(*
+<:module_type< $x$ . $y$ >> ->
+*)
+          pprintf pc "%s" (Pcaml.unvala s)
+| MLast.MtLong _ li ->
+(*
+<:module_type< $x$ . $y$ >> ->
+*)
+          pprintf pc "%p" longident li
+    ]
     | "simple"
       [ <:module_type< $uid:s$ >> ->
           pprintf pc "%s" s

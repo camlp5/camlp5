@@ -242,11 +242,12 @@ value rec ctyp_long_id =
 ;
 
 value module_type_long_id2 = fun [
-  MtAcc2 _ li uid -> Ldot (longid_long_id li) (Pcaml.unvala uid)
+  MtLongLid _ li lid -> Ldot (longid_long_id li) (Pcaml.unvala lid)
+| MtLong _ li -> longid_long_id li
 | _ -> failwith "module_type_long_id2"
 ]
 ;
-
+(*
 value rec module_type_long_id =
   fun
   [ <:module_type< $m$ . $uid:s$ >> → Ldot (module_type_long_id m) s
@@ -256,7 +257,7 @@ value rec module_type_long_id =
   | <:module_type< $uid:s$ >> → Lident s
   | t → error (loc_of_module_type t) "bad module type long ident" ]
 ;
-
+*)
 value variance_of_var =
   fun
   [ Some False → (False, True)
@@ -631,7 +632,7 @@ and package_of_module_type loc mt =
         (mt, with_con)
     | _ → (mt, []) ]
   in
-  let li = module_type_long_id mt in
+  let li = module_type_long_id2 mt in
   ocaml_package_type li with_con
 
 and type_decl ?{item_attributes=[]} tn tl priv cl =
@@ -1220,18 +1221,16 @@ and module_type =
   fun
   [ MtAtt loc e a ->
       ocaml_pmty_addattr (attr (uv a)) (module_type e)
-  | MtAcc loc _ _ as f →
-      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
-  | MtAcc2 loc _ _ as f →
+  | MtLongLid loc _ _ as f →
       mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id2 f))
-  | MtApp loc _ _ as f →
-      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
+  | MtLong loc _ as f →
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id2 f))
+  | MtLid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtFun loc arg mt →
     let arg = option_map (fun (idopt, mt) -> (option_map uv (uv idopt), module_type mt)) (uv arg) in
       mkmty loc
         (ocaml_pmty_functor (mkloc loc) arg
            (module_type mt))
-  | MtLid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtQuo loc _ → error loc "abstract module type not allowed here"
   | MtSig loc sl →
       mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
@@ -1239,7 +1238,6 @@ and module_type =
       match ocaml_pmty_typeof with
       [ Some pmty_typeof → mkmty loc (pmty_typeof (module_expr me))
       | None → error loc "no 'module type of ..' in this ocaml version" ]
-  | MtUid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtWit loc mt wcl →
       mkmty loc (ocaml_pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | MtXtr loc _ _ → error loc "bad ast MtXtr"

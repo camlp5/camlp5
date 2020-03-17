@@ -462,16 +462,28 @@
    ((Sexpr loc [(Slid _ "with") se . sel])
     (let* ((mt (module_type_se se)) (wcl (anti_list_map with_constr_se sel)))
      <:module_type< $mt$ with $_list:wcl$ >>))
-   ((Sexpr loc [se1 se2])
-    (let* ((mt1 (module_type_se se1)) (mt2 (module_type_se se2)))
-     <:module_type< $mt1$ $mt2$ >>))
-   ((Sacc loc se1 se2)
-    (let* ((mt1 (module_type_se se1)) (mt2 (module_type_se se2)))
-     <:module_type< $mt1$ . $mt2$ >>))
-   ((Slid loc s) <:module_type< $lid:(rename_id s)$ >>)
-   ((Slidv loc s) <:module_type< $_lid:s$ >>)
-   ((Suid loc s) <:module_type< $uid:(rename_id s)$ >>)
-   ((Suidv loc s) <:module_type< $_uid:s$ >>)
+
+   ((Sacc loc se1 (Slid _ s))
+    (let* ((li1 (longid_se se1)))
+      (MtLongLid loc li1 <:vala< (rename_id s) >>)
+;;;     <:module_type< $mt1$ . $mt2$ >>
+
+))
+
+   ((as (Sacc loc _ (Suid _ _)) se)
+    (let* ((li (longid_se se)))
+    (MtLong loc li)
+;;;     <:module_type< $mt1$ . $mt2$ >>
+))
+
+   ((Slid loc s) 
+    (MtLid loc <:vala< (rename_id s) >>)
+;;;<:module_type< $lid:(rename_id s)$ >>
+)
+   ((Slidv loc s)
+    (MtLid loc s)
+;;; <:module_type< $_lid:s$ >>
+)
    ((Santi loc "" s) <:module_type< $xtr:s$ >>)
    (se (error se "module type"))))
  (with_constr_se

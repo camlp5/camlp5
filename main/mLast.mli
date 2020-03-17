@@ -140,15 +140,13 @@ and expr =
   | ExUnr of loc
   ]
 and module_type =
-  [ MtAcc of loc and module_type and module_type
-  | MtAcc2 of loc and longid and V string
-  | MtApp of loc and module_type and module_type
-  | MtFun of loc and (V (option (V (option (V string)) * module_type))) and module_type
+  [ MtLong of loc and longid
+  | MtLongLid of loc and longid and V string
   | MtLid of loc and V string
+  | MtFun of loc and (V (option (V (option (V string)) * module_type))) and module_type
   | MtQuo of loc and V string
   | MtSig of loc and V (list sig_item)
   | MtTyo of loc and module_expr
-  | MtUid of loc and V string
   | MtWit of loc and module_type and V (list with_constr)
   | MtXtr of loc and string and option (V module_type)
   | MtAtt of loc and module_type and attribute_body

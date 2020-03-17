@@ -725,19 +725,17 @@ EXTEND
           <:module_type< sig $_list:sg$ end >>
       | "module"; "type"; "of"; me = module_expr ->
           <:module_type< module type of $me$ >>
-      | i = mod_type_ident -> i
+      | li = extended_longident; "."; i = V LIDENT → MLast.MtLongLid loc li i
+(*
+<:module_type< $m1$ . $m2$ >>
+*)
+      | li = extended_longident → MLast.MtLong loc li
+      | i = V LIDENT → MLast.MtLid loc i
       | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
       | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
   ;
   signature:
     [ [ sg = V (LIST0 [ s = sig_item; OPT ";;" -> s ]) -> sg ] ]
-  ;
-  mod_type_ident:
-    [ LEFTA
-      [ m1 = SELF; "."; m2 = SELF -> <:module_type< $m1$ . $m2$ >>
-      | m1 = SELF; "("; m2 = SELF; ")" -> <:module_type< $m1$ $m2$ >> ]
-    | [ m = V UIDENT -> <:module_type< $_uid:m$ >>
-      | m = V LIDENT -> <:module_type< $_lid:m$ >> ] ]
   ;
   sig_item:
     [ "top"

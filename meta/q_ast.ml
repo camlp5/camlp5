@@ -304,9 +304,9 @@ module Meta_make (C : MetaSig) =
     and module_type =
       fun
       [ MtAtt _ e att -> assert False
-      | MtAcc _ mt1 mt2 → C.node "MtAcc" [module_type mt1; module_type mt2]
-      | MtAcc2 _ mt1 uid → C.node "MtAcc2" [longid mt1; C.vala C.string uid]
-      | MtApp _ mt1 mt2 → C.node "MtApp" [module_type mt1; module_type mt2]
+      | MtLong _ mt1 → C.node "MtLong" [longid mt1]
+      | MtLongLid _ mt1 lid → C.node "MtLongLid" [longid mt1; C.vala C.string lid]
+      | MtLid _ s → C.node "MtLid" [C.vala C.string s]
       | MtFun _ arg mt2 →
           let c_vala x = C.vala C.string x in
           let c_vala_opt sopt = C.option c_vala sopt in
@@ -314,11 +314,9 @@ module Meta_make (C : MetaSig) =
             C.tuple [C.vala c_vala_opt sopt; module_type mt] in
           let c_arg arg = C.option c_tuple arg in
             C.node "MtFun" [C.vala c_arg arg; module_type mt2]
-      | MtLid _ s → C.node "MtLid" [C.vala C.string s]
       | MtQuo _ s → C.node "MtQuo" [C.vala C.string s]
       | MtSig _ lsi → C.node "MtSig" [C.vala (C.list sig_item) lsi]
       | MtTyo _ me → C.node "MtTyo" [module_expr me]
-      | MtUid _ s → C.node "MtUid" [C.vala C.string s]
       | MtWit _ mt lwc →
           C.node "MtWit" [module_type mt; C.vala (C.list with_constr) lwc]
       | 
