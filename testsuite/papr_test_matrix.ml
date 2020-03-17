@@ -1320,8 +1320,62 @@ and t2 = bool[@@foo];
      official_output = OK {foo|type t = A.B(C).D.t|foo} ;
      r_output = OK {foo|type t = A.B(C).D.t;
 |foo}
+    };
+    {name="module-type-longident1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type S = M.N.S|foo} ;
+     official_input = OK {foo|module type S = M.N.S|foo} ;
+     r_input = OK {foo|module type S = M.N.S;|foo} ;
+     o_output = OK {foo|module type S = M.N.S;;
+|foo};
+     official_output = OK {foo|module type S  = M.N.S|foo} ;
+     r_output = OK {foo|module type S = M.N.S;
+|foo}
+    };
+    {name="module-type-longident2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type s = M.N.s|foo} ;
+     official_input = OK {foo|module type s = M.N.s|foo} ;
+     r_input = OK {foo|module type s = M.N.s;|foo} ;
+     o_output = OK {foo|module type s = M.N.s;;
+|foo};
+     official_output = OK {foo|module type s  = M.N.s|foo} ;
+     r_output = OK {foo|module type s = M.N.s;
+|foo}
+    };
+    {name="module-type-longident3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type s = s|foo} ;
+     official_input = OK {foo|module type s = s|foo} ;
+     r_input = OK {foo|module type s = s;|foo} ;
+     o_output = OK {foo|module type s = s;;
+|foo};
+     official_output = OK {foo|module type s  = s|foo} ;
+     r_output = OK {foo|module type s = s;
+|foo}
+    };
+    {name="module-type-longident4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type S = M.N(P).S|foo} ;
+     official_input = OK {foo|module type S = M.N(P).S|foo} ;
+     r_input = OK {foo|module type S = M.N(P).S;|foo} ;
+     o_output = OK {foo|module type S = M.N(P).S;;
+|foo};
+     official_output = OK {foo|module type S  = M.N(P).S|foo} ;
+     r_output = OK {foo|module type S = M.N(P).S;
+|foo}
+    };
+    {name="-type-constr-longident1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type ('a, 'b) s = ('b, 'a) M.N(P).t|foo} ;
+     official_input = OK {foo|type ('a, 'b) s = ('b, 'a) M.N(P).t|foo} ;
+     r_input = OK {foo|type s 'a 'b = M.N(P).t 'b 'a;|foo} ;
+     o_output = OK {foo|type ('a, 'b) s = ('b, 'a) M.N(P).t;;
+|foo};
+     official_output = OK {foo|type ('a, 'b) s = ('b, 'a) M.N(P).t|foo} ;
+     r_output = OK {foo|type s α β = M.N(P).t β α;
+|foo}
     }
-
 ]
 ;
 
