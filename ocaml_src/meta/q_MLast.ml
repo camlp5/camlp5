@@ -2375,20 +2375,6 @@ Grammar.safe_extend
              (Grammar.s_token ("", "end")),
            (fun _ (sg : 'signature) _ (loc : Ploc.t) ->
               (Qast.Node ("MtSig", [Qast.Loc; sg]) : 'module_type)))];
-       None, None,
-       [Grammar.production
-          (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-             Grammar.s_self,
-           (fun (m2 : 'module_type) (m1 : 'module_type) (loc : Ploc.t) ->
-              (Qast.Node ("MtApp", [Qast.Loc; m1; m2]) : 'module_type)))];
-       None, None,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_token ("", ".")))
-             Grammar.s_self,
-           (fun (m2 : 'module_type) _ (m1 : 'module_type) (loc : Ploc.t) ->
-              (Qast.Node ("MtAcc", [Qast.Loc; m1; m2]) : 'module_type)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next
@@ -2421,6 +2407,12 @@ Grammar.safe_extend
                            'e__58)))])),
            (fun (i : 'e__58) _ (loc : Ploc.t) ->
               (Qast.Node ("MtQuo", [Qast.Loc; i]) : 'module_type)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (alg_extension : 'alg_extension Grammar.Entry.e)),
+           (fun (e : 'alg_extension) (loc : Ploc.t) ->
+              (Qast.Node ("MtExten", [Qast.Loc; e]) : 'module_type)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_facto
@@ -2456,16 +2448,22 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
-                (alg_extension : 'alg_extension Grammar.Entry.e)),
-           (fun (e : 'alg_extension) (loc : Ploc.t) ->
-              (Qast.Node ("MtExten", [Qast.Loc; e]) : 'module_type)));
+                (extended_longident : 'extended_longident Grammar.Entry.e)),
+           (fun (li : 'extended_longident) (loc : Ploc.t) ->
+              (Qast.Node ("MtLong", [Qast.Loc; li]) : 'module_type)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
              (Grammar.s_facto
                 (Grammar.s_rules
                    [Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("UIDENT", "")),
+                         (Grammar.s_token ("LIDENT", "")),
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.Str a) : 'e__56)));
                     Grammar.production
@@ -2480,17 +2478,17 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__56)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_uid")),
+                         (Grammar.s_token ("ANTIQUOT", "_lid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_uid", loc, a) : 'e__56)));
+                          (Qast.VaAnt ("_lid", loc, a) : 'e__56)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "uid")),
+                         (Grammar.s_token ("ANTIQUOT", "lid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("uid", loc, a)) :
+                          (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                            'e__56)))])),
-           (fun (i : 'e__56) (loc : Ploc.t) ->
-              (Qast.Node ("MtUid", [Qast.Loc; i]) : 'module_type)))]];
+           (fun (i : 'e__56) _ (li : 'extended_longident) (loc : Ploc.t) ->
+              (Qast.Node ("MtLongLid", [Qast.Loc; li; i]) : 'module_type)))]];
     Grammar.extension (signature : 'signature Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -3098,7 +3096,7 @@ Grammar.safe_extend
               (let (_, c, tl, _) =
                  match ctl with
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
-                 | _ -> raise (Match_failure ("q_MLast.ml", 603, 20))
+                 | _ -> raise (Match_failure ("q_MLast.ml", 602, 20))
                in
                Qast.Node ("SgExc", [Qast.Loc; c; tl; alg_attrs; item_attrs]) :
                'sig_item)));

@@ -1292,20 +1292,6 @@ Grammar.safe_extend
              (Grammar.s_token ("", "end")),
            (fun _ (sg : 'signature) _ (loc : Ploc.t) ->
               (MLast.MtSig (loc, sg) : 'module_type)))];
-       None, None,
-       [Grammar.production
-          (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-             Grammar.s_self,
-           (fun (m2 : 'module_type) (m1 : 'module_type) (loc : Ploc.t) ->
-              (MLast.MtApp (loc, m1, m2) : 'module_type)))];
-       None, None,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_token ("", ".")))
-             Grammar.s_self,
-           (fun (m2 : 'module_type) _ (m1 : 'module_type) (loc : Ploc.t) ->
-              (MLast.MtAcc (loc, m1, m2) : 'module_type)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next
@@ -1322,19 +1308,32 @@ Grammar.safe_extend
            (fun (i : 'ident) _ (loc : Ploc.t) ->
               (MLast.MtQuo (loc, i) : 'module_type)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) ->
-              (MLast.MtLid (loc, i) : 'module_type)));
-        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (alg_extension : 'alg_extension Grammar.Entry.e)),
            (fun (e : 'alg_extension) (loc : Ploc.t) ->
               (MLast.MtExten (loc, e) : 'module_type)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
-              (MLast.MtUid (loc, i) : 'module_type)))]];
+              (MLast.MtLid (loc, i) : 'module_type)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (extended_longident : 'extended_longident Grammar.Entry.e)),
+           (fun (li : 'extended_longident) (loc : Ploc.t) ->
+              (MLast.MtLong (loc, li) : 'module_type)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("LIDENT", "")),
+           (fun (i : string) _ (li : 'extended_longident) (loc : Ploc.t) ->
+              (MLast.MtLongLid (loc, li, i) : 'module_type)))]];
     Grammar.extension (signature : 'signature Grammar.Entry.e) None
       [None, None,
        [Grammar.production

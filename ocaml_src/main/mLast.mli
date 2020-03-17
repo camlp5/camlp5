@@ -131,14 +131,13 @@ and expr =
   | ExExten of loc * attribute_body
   | ExUnr of loc
 and module_type =
-    MtAcc of loc * module_type * module_type
-  | MtApp of loc * module_type * module_type
-  | MtFun of loc * (string option * module_type) option * module_type
+    MtLong of loc * longid
+  | MtLongLid of loc * longid * string
   | MtLid of loc * string
+  | MtFun of loc * (string option * module_type) option * module_type
   | MtQuo of loc * string
   | MtSig of loc * sig_item list
   | MtTyo of loc * module_expr
-  | MtUid of loc * string
   | MtWit of loc * module_type * with_constr list
   | MtXtr of loc * string * module_type option
   | MtAtt of loc * module_type * attribute_body
