@@ -242,8 +242,8 @@ value rec ctyp_long_id =
 ;
 
 value module_type_long_id2 = fun [
-  MtLongLid _ li lid -> Ldot (longid_long_id li) (Pcaml.unvala lid)
-| MtLong _ li -> longid_long_id li
+  <:module_type< $longid:li$ . $_lid:lid$ >> -> Ldot (longid_long_id li) (Pcaml.unvala lid)
+| <:module_type< $longid:li$ >> -> longid_long_id li
 | _ -> failwith "module_type_long_id2"
 ]
 ;

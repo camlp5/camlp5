@@ -531,9 +531,9 @@ EXTEND
       | "module"; "type"; "of"; me = module_expr →
           <:module_type< module type of $me$ >> ]
     | "simple"
-      [ li = extended_longident; "."; i = V LIDENT → MLast.MtLongLid loc li i
-      | li = extended_longident → MLast.MtLong loc li
-      | i = V LIDENT → MLast.MtLid loc i
+      [ li = extended_longident; "."; i = V LIDENT → <:module_type< $longid:li$ . $_lid:i$ >>
+      | li = extended_longident → <:module_type< $longid:li$ >>
+      | i = V LIDENT → <:module_type< $_lid:i$ >>
       | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
       | "'"; i = V ident "" → <:module_type< ' $_:i$ >>
       | "("; mt = SELF; ")" → <:module_type< $mt$ >> ] ]

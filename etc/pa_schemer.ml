@@ -741,24 +741,12 @@ and module_type_se =
       <:module_type< $mt$ with $_list:wcl$ >>
   | Sacc loc se1 (Slid _ s) →
       let li1 = longid_se se1 in
-      MtLongLid loc li1 <:vala< (rename_id s) >>
-(*
-      <:module_type< $mt1$ . $mt2$ >>
-*)
+      <:module_type< $longid:li1$ . $lid:(rename_id s)$ >>
   | Sacc loc _ (Suid _ _) as se →
       let li = longid_se se in
-      MtLong loc li
-(*
-      <:module_type< $mt1$ . $mt2$ >>
-*)
-  | Slid loc s → MtLid loc <:vala< (rename_id s) >>
-(*
- <:module_type< $lid:(rename_id s)$ >>
-*)
-  | Slidv loc s → MtLid loc s
-(*
-<:module_type< $_lid:s$ >>
-*)
+      <:module_type< $longid:li$ >>
+  | Slid loc s → <:module_type< $lid:(rename_id s)$ >>
+  | Slidv loc s → <:module_type< $_lid:s$ >>
   | Santi loc "" s → <:module_type< $xtr:s$ >>
   | se → error se "module type" ]
 and with_constr_se =

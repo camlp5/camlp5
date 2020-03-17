@@ -2091,22 +2091,12 @@ EXTEND_PRINTER
           pprintf pc "%p with@;%p" module_type mt
             (vlist2 with_constraint (and_before with_constraint)) wcl ]
     | "dot"
-      [ 
-MLast.MtLongLid _ li s ->
-(*
-<:module_type< $x$ . $y$ >> ->
-*)
-          pprintf pc "%p.%s" longident li (Pcaml.unvala s)
-| MLast.MtLid _ s ->
-(*
-<:module_type< $x$ . $y$ >> ->
-*)
-          pprintf pc "%s" (Pcaml.unvala s)
-| MLast.MtLong _ li ->
-(*
-<:module_type< $x$ . $y$ >> ->
-*)
+      [ <:module_type< $longid:li$ . $lid:s$ >> ->
+          pprintf pc "%p.%s" longident li s
+      | <:module_type< $longid:li$ >> ->
           pprintf pc "%p" longident li
+      | <:module_type< $lid:s$ >> ->
+          pprintf pc "%s" s
     ]
     | "simple"
       [ <:module_type< ' $s$ >> ->

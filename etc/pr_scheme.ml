@@ -1219,23 +1219,12 @@ EXTEND_PRINTER
       | <:module_type< $mt$ with $list:wcl$ >> ->
           pprintf pc "(with %p@;<1 1>%p)" curr mt (hlist with_constraint) wcl
 
-      | MLast.MtLongLid _ li s ->
-(*
-<:module_type< $x$ . $y$ >> ->
-*)
-          pprintf pc "%p.%s" longident li (Pcaml.unvala s)
-| MLast.MtLid _ s ->
-(*
-<:module_type< $x$ . $y$ >> ->
-*)
-          pprintf pc "%s" (Pcaml.unvala s)
-| MLast.MtLong _ li ->
-(*
-<:module_type< $x$ . $y$ >> ->
-*)
+      | <:module_type< $longid:li$ . $lid:s$ >> ->
+          pprintf pc "%p.%s" longident li s
+      | <:module_type< $longid:li$ >> ->
           pprintf pc "%p" longident li
-
-
+      | <:module_type< $lid:s$ >> ->
+          pprintf pc "%s" s
       | x ->
           not_impl "module_type" pc x ] ]
   ;

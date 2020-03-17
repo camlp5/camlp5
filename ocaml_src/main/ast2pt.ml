@@ -258,8 +258,8 @@ let rec ctyp_long_id =
 
 let module_type_long_id2 =
   function
-    MtLongLid (_, li, lid) -> Ldot (longid_long_id li, Pcaml.unvala lid)
-  | MtLong (_, li) -> longid_long_id li
+    MLast.MtLongLid (_, li, lid) -> Ldot (longid_long_id li, Pcaml.unvala lid)
+  | MLast.MtLong (_, li) -> longid_long_id li
   | _ -> failwith "module_type_long_id2"
 ;;
 (*

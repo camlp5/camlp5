@@ -809,7 +809,7 @@ EXTEND
           <:with_constr< module $x1$ = $x2$ >> ] ]
   ;
   module_type:
-    [ [ x1 = ident -> MtLong loc <:extended_longident< $uid:x1$ >>
+    [ [ x1 = ident -> <:module_type< $uid:x1$ >>
       | "sig"; x1 = spec_s; "end" -> <:module_type< sig $list:x1$ end >>
       | x1 = module_type; "where"; x2 = LIST1 whspec SEP "and" ->
           <:module_type< $x1$ with $list:x2$ >> ] ]
