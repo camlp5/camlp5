@@ -247,17 +247,7 @@ value module_type_long_id2 = fun [
 | _ -> failwith "module_type_long_id2"
 ]
 ;
-(*
-value rec module_type_long_id =
-  fun
-  [ <:module_type< $m$ . $uid:s$ >> → Ldot (module_type_long_id m) s
-  | <:module_type< $m$ . $lid:s$ >> → Ldot (module_type_long_id m) s
-  | MtApp _ m1 m2 → Lapply (module_type_long_id m1) (module_type_long_id m2)
-  | <:module_type< $lid:s$ >> → Lident s
-  | <:module_type< $uid:s$ >> → Lident s
-  | t → error (loc_of_module_type t) "bad module type long ident" ]
-;
-*)
+
 value variance_of_var =
   fun
   [ Some False → (False, True)
