@@ -231,11 +231,11 @@ and type_extension =
     teECs : V (list extension_constructor) ;
     teAttributes: attributes }
 and class_type =
-  [ CtAcc of loc and class_type and class_type
-  | CtApp of loc and class_type and class_type
+  [ CtLong of loc and longid
+  | CtLongLid of loc and longid and V string
+  | CtLid of loc and V string
   | CtCon of loc and class_type and V (list ctyp)
   | CtFun of loc and ctyp and class_type
-  | CtIde of loc and V string
   | CtSig of loc and V (option ctyp) and V (list class_sig_item)
   | CtXtr of loc and string and option (V class_type)
   | CtAtt of loc and class_type and attribute_body

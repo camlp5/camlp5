@@ -485,19 +485,27 @@ EXTEND_PRINTER
       | <:class_type< $ct$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
           pprintf pc "%p@;@[<1>[%p]@]" curr ct (plist ctyp 0) ctcl ]
-    | "apply"
-      [ <:class_type< $ct1$ $ct2$ >> ->
-          pprintf pc "%p %p" curr ct1 curr ct2 ]
     | "dot"
-      [ <:class_type< $ct1$ . $ct2$ >> ->
-          pprintf pc "%p.%p" curr ct1 curr ct2 ]
-    | "simple"
-      [ <:class_type< $id:s$ >> ->
+      [
+(*
+ <:class_type< $longid:li$ . $lid:s$ >> ->
+*)
+CtLongLid _ li (Ploc.VaVal s) ->
+          pprintf pc "%p.%s" Pr_r.longident li s
+(*
+      | <:class_type< $longid:li$ >> ->
+*)
+| CtLong _ li ->
+          pprintf pc "%p" Pr_r.longident li
+(*
+      | <:class_type< $lid:s$ >> ->
+*)
+| CtLid _ (Ploc.VaVal s) ->
           pprintf pc "%s" s
-      | <:class_type< [% $_extension:e$ ] >> ->
+    ]
+    | "simple"
+      [ <:class_type< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_extension "%") e
-      | <:class_type< $_$ $_$ >> as z ->
-          pprintf pc "@[<1>(%p)@]" class_type z
       | z ->
           Ploc.raise (MLast.loc_of_class_type z)
             (Failure (sprintf "pr_class_type %d" (Obj.tag (Obj.repr z)))) ] ]

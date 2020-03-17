@@ -529,12 +529,12 @@ module Meta_make (C : MetaSig) =
     and class_type =
       fun
       [ CtAtt _ e att -> assert False
-      | CtAcc _ ct1 ct2 → C.node "CtAcc" [class_type ct1; class_type ct2]
-      | CtApp _ ct1 ct2 → C.node "CtApp" [class_type ct1; class_type ct2]
+      | CtLong _ mt1 → C.node "CtLong" [longid mt1]
+      | CtLongLid _ mt1 lid → C.node "CtLongLid" [longid mt1; C.vala C.string lid]
+      | CtLid _ s → C.node "CtLid" [C.vala C.string s]
       | CtCon _ ct lt →
           C.node "CtCon" [class_type ct; C.vala (C.list ctyp) lt]
       | CtFun _ t ct → C.node "CtFun" [ctyp t; class_type ct]
-      | CtIde _ s → C.node "CtIde" [C.vala C.string s]
       | CtSig _ ot lcsi →
           C.node "CtSig"
             [C.vala (C.option ctyp) ot; C.vala (C.list class_sig_item) lcsi]

@@ -1204,13 +1204,10 @@ EXTEND
           <:class_type< object $_opt:cst$ $_list:csf$ end >>
       | ct = SELF; "["; tl = V (LIST1 ctyp SEP ","); "]" →
           <:class_type< $ct$ [ $_list:tl$ ] >> ]
-    | "apply"
-      [ ct1 = SELF; ct2 = SELF → <:class_type< $ct1$ $ct2$ >> ]
-    | "dot"
-      [ ct1 = SELF; "."; ct2 = SELF → <:class_type< $ct1$ . $ct2$ >> ]
     | "simple"
-      [ i = V LIDENT "id" → <:class_type< $_id:i$ >>
-      | i = V UIDENT "id" → <:class_type< $_id:i$ >>
+      [ li = extended_longident; "."; i = V LIDENT → CtLongLid loc li i
+      | li = extended_longident → CtLong loc li
+      | i = V LIDENT → CtLid loc i
       | "("; ct = SELF; ")" → ct
       | e = alg_extension -> <:class_type< [% $_extension:e$ ] >>
  ] ]

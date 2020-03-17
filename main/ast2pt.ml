@@ -181,25 +181,6 @@ value rec longid_long_id =
   ]
 ;
 
-value long_id_class_type loc ct =
-  longident ct where rec longident =
-    fun
-    [ CtIde loc s → Lident (uv s)
-    | CtApp loc ct1 ct2 →
-        let li1 = longident ct1 in
-        let li2 = longident ct2 in
-        Lapply li1 li2
-    | CtAcc loc ct1 ct2 →
-        let li1 = longident ct1 in
-        let li2 = longident ct2 in
-        loop li1 li2 where rec loop li1 =
-          fun
-          [ Lident s → Ldot li1 s
-          | Lapply li21 li22 → error loc "long_id_of_class_type bad ast"
-          | Ldot li2 s → Ldot (loop li1 li2) s ]
-    | _ → error loc "long_id_of_class_type case not impl" ]
-;
-
 value rec ctyp_fa al =
   fun
   [ TyApp _ f a → ctyp_fa [a :: al] f
@@ -241,10 +222,30 @@ value rec ctyp_long_id =
   | t → error (loc_of_ctyp t) "incorrect type" ]
 ;
 
-value module_type_long_id2 = fun [
+value module_type_long_id = fun [
   <:module_type< $longid:li$ . $_lid:lid$ >> -> Ldot (longid_long_id li) (Pcaml.unvala lid)
 | <:module_type< $longid:li$ >> -> longid_long_id li
-| _ -> failwith "module_type_long_id2"
+| _ -> failwith "module_type_long_id"
+]
+;
+
+value class_type_long_id = fun [
+(*
+  <:class_type< $longid:li$ . $_lid:lid$ >> ->
+*)
+ CtLongLid _ li lid ->
+ Ldot (longid_long_id li) (Pcaml.unvala lid)
+(*
+| <:class_type< $longid:li$ >> ->
+*)
+| CtLong _ li ->
+ longid_long_id li
+(*
+| <:class_type< $_lid:lid$ >> ->
+*)
+| CtLid _ lid ->
+ Lident (Pcaml.unvala lid)
+| _ -> failwith "class_type_long_id"
 ]
 ;
 
@@ -622,7 +623,7 @@ and package_of_module_type loc mt =
         (mt, with_con)
     | _ → (mt, []) ]
   in
-  let li = module_type_long_id2 mt in
+  let li = module_type_long_id mt in
   ocaml_package_type li with_con
 
 and type_decl ?{item_attributes=[]} tn tl priv cl =
@@ -1212,9 +1213,9 @@ and module_type =
   [ MtAtt loc e a ->
       ocaml_pmty_addattr (attr (uv a)) (module_type e)
   | MtLongLid loc _ _ as f →
-      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id2 f))
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtLong loc _ as f →
-      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id2 f))
+      mkmty loc (ocaml_pmty_ident (mkloc loc) (module_type_long_id f))
   | MtLid loc s → mkmty loc (ocaml_pmty_ident (mkloc loc) (Lident (uv s)))
   | MtFun loc arg mt →
     let arg = option_map (fun (idopt, mt) -> (option_map uv (uv idopt), module_type mt)) (uv arg) in
@@ -1455,13 +1456,14 @@ and class_type =
   fun
   [ CtAtt loc e a ->
     ocaml_pcty_addattr (attr (uv a)) (class_type e)
-  | CtAcc loc _ _ | CtApp loc _ _ | CtIde loc _ as ct →
-      let li = long_id_class_type loc ct in
+  | CtLongLid loc _ _ | CtLong loc _ | CtLid loc _ as ct ->
+    let li = class_type_long_id ct in
       match ocaml_pcty_constr with
       [ Some pcty_constr → mkcty loc (pcty_constr li [])
       | None → error loc "no class type desc in this ocaml version" ]
+
   | CtCon loc ct tl →
-      let li = long_id_class_type loc ct in
+      let li = class_type_long_id ct in
       match ocaml_pcty_constr with
       [ Some pcty_constr → mkcty loc (pcty_constr li (List.map ctyp (uv tl)))
       | None → error loc "no class type desc in this ocaml version" ]

@@ -1430,13 +1430,10 @@ EXTEND
           Qast.Node "CtSig" [Qast.Loc; cst; csf]
       | ct = SELF; "["; tl = SV (LIST1 ctyp SEP ","); "]" →
           Qast.Node "CtCon" [Qast.Loc; ct; tl] ]
-    | "apply"
-      [ ct1 = SELF; ct2 = SELF → Qast.Node "CtApp" [Qast.Loc; ct1; ct2] ]
-    | "dot"
-      [ ct1 = SELF; "."; ct2 = SELF → Qast.Node "CtAcc" [Qast.Loc; ct1; ct2] ]
     | "simple"
-      [ i = SV LIDENT "id" → Qast.Node "CtIde" [Qast.Loc; i]
-      | i = SV UIDENT "id" → Qast.Node "CtIde" [Qast.Loc; i]
+      [ li = extended_longident; "."; i = SV LIDENT → Qast.Node "CtLongLid" [Qast.Loc; li; i]
+      | li = extended_longident → Qast.Node "CtLong" [Qast.Loc; li]
+      | i = SV LIDENT → Qast.Node "CtLid" [Qast.Loc; i]
       | "("; ct = SELF; ")" → ct
       | e = alg_extension -> Qast.Node "CtExten" [Qast.Loc; e]
       ] ]
