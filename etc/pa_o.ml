@@ -1579,9 +1579,9 @@ EXTEND
       | "object"; cst = V (OPT class_self_type);
         csf = V (LIST0 class_sig_item); "end" ->
           <:class_type< object $_opt:cst$ $_list:csf$ end >> ]
-    | [ li = extended_longident; "."; i = V LIDENT → CtLongLid loc li i
-      | li = extended_longident → CtLong loc li
-      | i = V LIDENT → CtLid loc i
+    | [ li = extended_longident; "."; i = V LIDENT → <:class_type< $longid:li$ . $_lid:i$ >>
+      | li = extended_longident → <:class_type< $longid:li$ >>
+      | i = V LIDENT → <:class_type< $_lid:i$ >>
       ] ]
   ;
   class_self_type:

@@ -4425,13 +4425,13 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
-              (CtLid (loc, i) : 'class_type)));
+              (MLast.CtLid (loc, i) : 'class_type)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (extended_longident : 'extended_longident Grammar.Entry.e)),
            (fun (li : 'extended_longident) (loc : Ploc.t) ->
-              (CtLong (loc, li) : 'class_type)));
+              (MLast.CtLong (loc, li) : 'class_type)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4442,7 +4442,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ".")))
              (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) _ (li : 'extended_longident) (loc : Ploc.t) ->
-              (CtLongLid (loc, li, i) : 'class_type)))]];
+              (MLast.CtLongLid (loc, li, i) : 'class_type)))]];
     Grammar.extension (class_self_type : 'class_self_type Grammar.Entry.e)
       None
       [None, None,

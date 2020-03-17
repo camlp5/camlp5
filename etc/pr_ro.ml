@@ -487,20 +487,11 @@ EXTEND_PRINTER
           pprintf pc "%p@;@[<1>[%p]@]" curr ct (plist ctyp 0) ctcl ]
     | "dot"
       [
-(*
- <:class_type< $longid:li$ . $lid:s$ >> ->
-*)
-CtLongLid _ li (Ploc.VaVal s) ->
+        <:class_type< $longid:li$ . $lid:s$ >> ->
           pprintf pc "%p.%s" Pr_r.longident li s
-(*
       | <:class_type< $longid:li$ >> ->
-*)
-| CtLong _ li ->
           pprintf pc "%p" Pr_r.longident li
-(*
       | <:class_type< $lid:s$ >> ->
-*)
-| CtLid _ (Ploc.VaVal s) ->
           pprintf pc "%s" s
     ]
     | "simple"

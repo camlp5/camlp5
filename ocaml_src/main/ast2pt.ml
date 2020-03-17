@@ -243,9 +243,9 @@ let module_type_long_id =
 
 let class_type_long_id =
   function
-    CtLongLid (_, li, lid) -> Ldot (longid_long_id li, Pcaml.unvala lid)
-  | CtLong (_, li) -> longid_long_id li
-  | CtLid (_, lid) -> Lident (Pcaml.unvala lid)
+    MLast.CtLongLid (_, li, lid) -> Ldot (longid_long_id li, Pcaml.unvala lid)
+  | MLast.CtLong (_, li) -> longid_long_id li
+  | MLast.CtLid (_, lid) -> Lident (Pcaml.unvala lid)
   | _ -> failwith "class_type_long_id"
 ;;
 

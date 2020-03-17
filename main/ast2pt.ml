@@ -230,21 +230,12 @@ value module_type_long_id = fun [
 ;
 
 value class_type_long_id = fun [
-(*
   <:class_type< $longid:li$ . $_lid:lid$ >> ->
-*)
- CtLongLid _ li lid ->
- Ldot (longid_long_id li) (Pcaml.unvala lid)
-(*
+    Ldot (longid_long_id li) (Pcaml.unvala lid)
 | <:class_type< $longid:li$ >> ->
-*)
-| CtLong _ li ->
- longid_long_id li
-(*
+    longid_long_id li
 | <:class_type< $_lid:lid$ >> ->
-*)
-| CtLid _ lid ->
- Lident (Pcaml.unvala lid)
+    Lident (Pcaml.unvala lid)
 | _ -> failwith "class_type_long_id"
 ]
 ;

@@ -1205,9 +1205,9 @@ EXTEND
       | ct = SELF; "["; tl = V (LIST1 ctyp SEP ","); "]" →
           <:class_type< $ct$ [ $_list:tl$ ] >> ]
     | "simple"
-      [ li = extended_longident; "."; i = V LIDENT → CtLongLid loc li i
-      | li = extended_longident → CtLong loc li
-      | i = V LIDENT → CtLid loc i
+      [ li = extended_longident; "."; i = V LIDENT → <:class_type< $longid:li$ . $_lid:i$ >>
+      | li = extended_longident → <:class_type< $longid:li$ >>
+      | i = V LIDENT → <:class_type< $_lid:i$ >>
       | "("; ct = SELF; ")" → ct
       | e = alg_extension -> <:class_type< [% $_extension:e$ ] >>
  ] ]
