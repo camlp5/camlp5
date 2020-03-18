@@ -1129,8 +1129,11 @@ EXTEND_PRINTER
              (fun pc -> module_type pc mt, "")]
       | <:sig_item< module type $s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
+(*
       | <:sig_item< open $i$ >> ->
-          plistb id_list 0 (paren pc "open") [(i, "")]
+*)
+      | MLast.SgOpn _ i <:vala< [] >> ->
+          plistb longident 0 (paren pc "open") [(i, "")]
       | <:sig_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
       | <:sig_item< exception $uid:c$ of $list:tl$ >> ->

@@ -1827,8 +1827,11 @@ EXTEND_PRINTER
           sig_module_or_module_type "module type" False '=' pc (Some m, mt, item_attrs)
       | <:sig_item< module type $m$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "module type %s%p" m  (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
+      | MLast.SgOpn _ i item_attrs ->
+(*
       | <:sig_item:< open $i$ >> ->
-          pprintf pc "open %p" mod_ident (loc, i)
+*)
+          pprintf pc "open %p%p" longident i (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< type $list:tdl$ >> ->
           pprintf pc "type %p"
             (vlist2 type_decl (and_before type_decl)) tdl

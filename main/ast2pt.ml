@@ -1283,9 +1283,10 @@ and sig_item s l =
       let m = ocaml_psig_module ~{item_attributes=item_attributes item_attrs} (mkloc loc) (Some (uv n)) mty in
       [mksig loc m :: l]
 
-  | SgOpn loc id attrs →
+  | SgOpn loc lid attrs →
+      let lid = longid_long_id lid in
       [mksig loc
-         (ocaml_psig_open ~{item_attributes=item_attributes attrs} (mkloc loc) (long_id_of_string_list loc (uv id))) ::
+         (ocaml_psig_open ~{item_attributes=item_attributes attrs} (mkloc loc) lid) ::
        l]
   | SgTyp loc tdl →
       [mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l]

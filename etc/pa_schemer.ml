@@ -805,8 +805,11 @@ and sig_item_se =
       let mt = module_type_se se2 in
       <:sig_item< module type $_:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] →
-      let s = anti_longident_se se in
+      let lid = longid_se se in
+MLast.SgOpn loc lid <:vala< [] >>
+(*
       <:sig_item< open $_:s$ >>
+*)
   | Sexpr loc [Slid _ "type" :: sel] →
       let tdl = type_declaration_list_se sel in
       <:sig_item< type $list:tdl$ >>

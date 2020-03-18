@@ -1375,6 +1375,17 @@ and t2 = bool[@@foo];
      official_output = OK {foo|type ('a, 'b) s = ('b, 'a) M.N(P).t|foo} ;
      r_output = OK {foo|type s α β = M.N(P).t β α;
 |foo}
+    };
+    {name="sig-open1"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|open A.B(C)|foo} ;
+     official_input = OK {foo|open A.B(C)|foo} ;
+     r_input = OK {foo|open A.B(C);|foo} ;
+     o_output = OK {foo|open A.B(C);;
+|foo};
+     official_output = OK {foo|open A.B(C)|foo} ;
+     r_output = OK {foo|open A.B(C);
+|foo}
     }
 ]
 ;

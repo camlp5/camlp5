@@ -756,8 +756,11 @@ EXTEND
       | "module"; "type"; i = V ident "" ; attrs = item_attributes ->
           <:sig_item< module type $_:i$ $_itemattrs:attrs$ >>
 
-      | "open"; i = V mod_ident "list" "" ->
+      | "open"; i = extended_longident ; attrs = item_attributes ->
+MLast.SgOpn loc i attrs
+(*
           <:sig_item< open $_:i$ >>
+*)
       | "type"; check_type_decl; tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
       | "type" ; check_type_extension ; te = type_extension →
