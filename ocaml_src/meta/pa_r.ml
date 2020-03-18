@@ -1449,7 +1449,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
            (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
-              (MLast.SgTyp (loc, false, tdl) : 'sig_item)));
+              (MLast.SgTyp (loc, nrfl, tdl) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
