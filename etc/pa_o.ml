@@ -494,6 +494,21 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value expr_to_inline loc e ext attrs =
+  let e = expr_wrap_attrs loc e attrs in
+  match ext with [ None -> e
+  | Some attrid ->
+   <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+  ]
+;
+
+value str_item_to_inline loc si ext =
+  match ext with [ None -> si
+  | Some attrid ->
+   <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
+  ]
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr extended_longident
@@ -678,11 +693,7 @@ EXTEND
         <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
-          let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
-          let e = match ext with [ None -> e
-          | Some attrid ->
-            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
-          ] in
+          let e = expr_to_inline loc <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext [] in
           <:str_item< $exp:e$ >>
 
       | check_let_not_exception ; "let"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
@@ -692,26 +703,16 @@ EXTEND
               [ <:patt< _ >> -> <:str_item< $exp:e$ >> (* TODO FIX THIS CHET *)
               | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ] in
-          match ext with [ None -> si
-          | Some attrid ->
-            <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
-          ]
+          str_item_to_inline loc si ext
+
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
-          let e = <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> in
-          let e = expr_wrap_attrs loc e attrs in
-          let e = match ext with [ None -> e
-          | Some attrid ->
-            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
-          ] in
+          let e = expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs in
           <:str_item< $exp:e$ >>
 
       | check_let_not_exception ; "let"; "open"; (ext, attrs) = ext_attributes; m = module_expr; "in"; e = expr ->
-          let si = <:str_item< let open $m$ in $e$ $itemattrs:attrs$ >> in
-          match ext with [ None -> si
-          | Some attrid ->
-            <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
-          ]
+          let e = expr_to_inline loc <:expr< let open $m$ in $e$ >> ext attrs in
+          <:str_item< $exp:e$ >>
 
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
@@ -844,28 +845,14 @@ EXTEND
         <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
       | check_let_not_exception ; "let"; ext = ext_opt; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
-          let e = <:expr< let $_flag:o$ $_list:l$ in $x$ >> in
-          match ext with [ None -> e
-          | Some attrid ->
-            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
-          ]
+          expr_to_inline loc <:expr< let $_flag:o$ $_list:l$ in $x$ >> ext []
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          let e = <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> in
-          let e = expr_wrap_attrs loc e attrs in
-          match ext with [ None -> e
-          | Some attrid ->
-            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
-          ]
+          expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
 
       | check_let_not_exception ; "let"; "open"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
-          let e = <:expr< let open $m$ in $e$ >> in
-          let e = expr_wrap_attrs loc e attrs in
-          match ext with [ None -> e
-          | Some attrid ->
-            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
-          ]
+          expr_to_inline loc <:expr< let open $m$ in $e$ >> ext attrs
 
       | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->

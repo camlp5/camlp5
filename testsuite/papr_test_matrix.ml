@@ -1528,7 +1528,8 @@ and t2 = bool[@@foo];
      o_input = OK {foo|let module%foo [@foo] M = M in ()|foo} ;
      official_input = OK {foo|let module%foo [@foo] M = M in ()|foo} ;
      r_input = OK {foo|let module%foo [@foo] M = M in ();|foo} ;
-     o_output = OK {foo||foo};
+     o_output = OK {foo|let _ = [%foo (let module M = M in ())[@foo]];;
+|foo};
      official_output = OK {foo|;;[%foo ((let module M = M in ())[@foo ])]|foo} ;
      r_output = OK {foo|[%foo (let module M = M in ())[@foo];];
 |foo}
@@ -1542,6 +1543,17 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|;;((let module M = M in ())[@foo ])|foo} ;
      r_output = OK {foo|(let module M = M in ())[@foo];
+|foo}
+    };
+    {name="inline-extensions4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let open%foo [@foo] M in ()|foo} ;
+     official_input = OK {foo|let open%foo [@foo] M in ()|foo} ;
+     r_input = OK {foo|let open%foo [@foo] M in ();|foo} ;
+     o_output = OK {foo|let _ = [%foo (let open M in ())[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((let open M in ())[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (let open M in ())[@foo];];
 |foo}
     }
 ]

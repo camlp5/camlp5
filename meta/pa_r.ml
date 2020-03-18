@@ -334,6 +334,28 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value expr_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:expr< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
+value expr_to_inline loc e ext attrs =
+  let e = expr_wrap_attrs loc e attrs in
+  match ext with [ None -> e
+  | Some attrid ->
+   <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+  ]
+;
+
+value str_item_to_inline loc si ext =
+  match ext with [ None -> si
+  | Some attrid ->
+   <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
+  ]
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -488,11 +510,7 @@ EXTEND
           <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
 
       | "value"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
-          let si = <:str_item< value $_flag:r$ $_list:l$ >> in
-          match ext with [ None -> si
-          | Some attrid ->
-            <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
-          ]
+          str_item_to_inline loc <:str_item< value $_flag:r$ $_list:l$ >> ext
 
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:str_item< # $_lid:n$ $_opt:dp$ >>
@@ -640,20 +658,16 @@ EXTEND
 
       | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
-          let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
-          match ext with [ None -> e
-          | Some attrid ->
-            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
-          ]
+          expr_to_inline loc <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext []
 
       | letop = letop ; b = letop_binding ; l = LIST0 andop_binding; "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
-      | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
-          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
-      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = SELF →
-          <:expr< let open $m$ in $e$ >>
+      | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
+          expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
+      | check_let_not_exception ; "let"; "open"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = SELF →
+          expr_to_inline loc <:expr< let open $m$ in $e$ >> ext attrs
       | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = ipatt; e = fun_def → <:expr< fun $p$ → $e$ >>
       | "match"; e = SELF; "with"; l = closed_case_list →
@@ -806,11 +820,11 @@ EXTEND
       [ "let"; rf = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and");
         "in"; el = SELF →
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
-      | "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
+      | "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
-          [<:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >>]
-      | "let"; "open"; m = module_expr; "in"; el = SELF →
-          [<:expr< let open $m$ in $mksequence loc el$ >>]
+          [expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >> ext attrs]
+      | "let"; "open"; (ext,attrs) = ext_attributes; m = module_expr; "in"; el = SELF →
+          [expr_to_inline loc <:expr< let open $m$ in $mksequence loc el$ >> ext attrs]
       | e = expr; ";"; el = SELF → [e :: el]
       | e = expr; ";" → [e]
       | e = expr → [e] ] ]
