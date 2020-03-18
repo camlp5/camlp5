@@ -594,13 +594,19 @@ and mkwithc =
             Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
           | Left msg -> error loc msg
       end
-  | WcTys (loc, id, tpl, t) ->
+  | WcTys (loc, ids, tpl, t) ->
       match ocaml_pwith_typesubst with
         Some pwith_typesubst ->
-          begin match type_decl_of_with_type loc "" tpl false t with
+          let ids = uv ids in
+          let last =
+            match List.rev ids with
+              h :: _ -> h
+            | _ -> failwith "INTERNAL ERROR mkwithc: no id supplied"
+          in
+          begin match type_decl_of_with_type loc last tpl false t with
             Right td ->
-              let li = long_id_of_string_list loc (uv id) in
-              li, pwith_typesubst (mkloc loc) td
+              let li = long_id_of_string_list loc ids in
+              li, pwith_typesubst (mkloc loc) li td
           | Left msg -> error loc msg
           end
       | None -> error loc "no with type := in this ocaml version"

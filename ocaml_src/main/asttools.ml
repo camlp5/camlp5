@@ -13,3 +13,10 @@ let longid_concat li1 li2 =
   in
   crec li2
 ;;
+
+let rec longid_last =
+  function
+    MLast.LiUid (_, _) as z -> z
+  | MLast.LiAcc (loc, _, uid) -> MLast.LiUid (loc, uid)
+  | _ -> failwith "longid_last"
+;;

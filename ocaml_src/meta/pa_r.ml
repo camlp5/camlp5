@@ -1682,9 +1682,11 @@ Grammar.safe_extend
                       (Grammar.s_nterm
                          (type_parameter : 'type_parameter Grammar.Entry.e))))
                 (Grammar.s_token ("", ":=")))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) _ (tpl : 'type_parameter list) (i : 'mod_ident) _
-                (loc : Ploc.t) ->
+             (Grammar.s_nterm
+                (ctyp_below_alg_attribute :
+                 'ctyp_below_alg_attribute Grammar.Entry.e)),
+           (fun (t : 'ctyp_below_alg_attribute) _ (tpl : 'type_parameter list)
+                (i : 'mod_ident) _ (loc : Ploc.t) ->
               (MLast.WcTys (loc, i, tpl, t) : 'with_constr)));
         Grammar.production
           (Grammar.r_next
@@ -1702,9 +1704,12 @@ Grammar.safe_extend
                              'type_parameter Grammar.Entry.e))))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_flag (Grammar.s_token ("", "private"))))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) (pf : bool) _ (tpl : 'type_parameter list)
-                (i : 'mod_ident) _ (loc : Ploc.t) ->
+             (Grammar.s_nterm
+                (ctyp_below_alg_attribute :
+                 'ctyp_below_alg_attribute Grammar.Entry.e)),
+           (fun (t : 'ctyp_below_alg_attribute) (pf : bool) _
+                (tpl : 'type_parameter list) (i : 'mod_ident) _
+                (loc : Ploc.t) ->
               (MLast.WcTyp (loc, i, tpl, pf, t) : 'with_constr)))]];
     Grammar.extension (uidopt : 'uidopt Grammar.Entry.e) None
       [None, None,

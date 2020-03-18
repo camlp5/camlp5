@@ -869,7 +869,7 @@ let ocaml_pwith_module loc mname me =
 ;;
 
 let ocaml_pwith_typesubst =
-  Some (fun loc td -> Pwith_typesubst (mkloc loc (Lident ""), td))
+  Some (fun loc lid td -> Pwith_typesubst (mkloc loc lid, td))
 ;;
 
 let module_prefix_can_be_in_first_record_label_only = true;;
