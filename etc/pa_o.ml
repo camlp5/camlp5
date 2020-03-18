@@ -635,6 +635,7 @@ EXTEND
         <:extension_constructor< $_uid:ci$ $_algattrs:alg_attrs$ >>
     ] ]
   ;
+  ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
   str_item:
     [ "top"
       [ "exception"; ec = V extension_constructor "excon" ; item_attrs = item_attributes →
@@ -668,17 +669,26 @@ EXTEND
         "in" ; x = expr ; attrs = item_attributes ->
         let e = <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >> in
         <:str_item< $exp:e$ $_itemattrs:attrs$ >>
-      | check_let_not_exception ; "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
           let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
+          let e = match ext with [ None -> e
+          | Some attrid ->
+            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+          ] in
           <:str_item< $exp:e$ >>
-      | check_let_not_exception ; "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
-          match l with
+
+      | check_let_not_exception ; "let"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
+          let si = match l with
           [ <:vala< [(p, e, attrs)] >> ->
               match p with
               [ <:patt< _ >> -> <:str_item< $exp:e$ >> (* TODO FIX THIS CHET *)
               | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
-          | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
+          | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ] in
+          match ext with [ None -> si
+          | Some attrid ->
+            <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
+          ]
       | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
           <:str_item< let module $_uidopt:m$ = $mb$ in $e$ >>
@@ -813,9 +823,13 @@ EXTEND
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
         <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
-      | check_let_not_exception ; "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      | check_let_not_exception ; "let"; ext = ext_opt; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
-          <:expr< let $_flag:o$ $_list:l$ in $x$ >>
+          let e = <:expr< let $_flag:o$ $_list:l$ in $x$ >> in
+          match ext with [ None -> e
+          | Some attrid ->
+            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+          ]
 
       | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->

@@ -1499,6 +1499,29 @@ and t2 = bool[@@foo];
      o_output = SKIP "" "";
      official_output = OK {foo|include ((module type of M with type  t :=  M.t)[@foo ])|foo} ;
      r_output = SKIP "" ""
+    };
+    {name="inline-extensions1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let%foo x = 42|foo} ;
+     official_input = OK {foo|let%foo x = 42|foo} ;
+     r_input = OK {foo|value%foo x = 42;|foo} ;
+     o_output = OK {foo|[%%foo let x = 42;;];;
+|foo};
+     official_output = OK {foo|[%%foo let x = 42]|foo} ;
+     r_output = OK {foo|[%%foo value x = 42;];
+|foo}
+    };
+    {name="inline-extensions2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let%foo x = 42 in ()|foo} ;
+     official_input = OK {foo|let%foo x = 42 in ()|foo} ;
+     r_input = OK {foo|let%foo x = 42 in ();|foo} ;
+     o_output = OK {foo|let _ = [%foo let x = 42 in ()];;
+|foo};
+     official_output = OK {foo|;;[%foo let x = 42 in ()]|foo} ;
+     r_output = OK {foo|[%foo let x = 42 in
+();];
+|foo}
     }
 ]
 ;

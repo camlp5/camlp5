@@ -483,8 +483,13 @@ EXTEND
 
           <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
 
-      | "value"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
-          <:str_item< value $_flag:r$ $_list:l$ >>
+      | "value"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
+          let si = <:str_item< value $_flag:r$ $_list:l$ >> in
+          match ext with [ None -> si
+          | Some attrid ->
+            <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
+          ]
+
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:str_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = str_item → (si, loc) ]) →
@@ -618,6 +623,7 @@ EXTEND
   andop_binding:
   [ [ op = andop ; b = letop_binding -> (op, b) ] ]
   ;
+  ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
   expr:
     [ "top" RIGHTA
       [ check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
@@ -627,9 +633,13 @@ EXTEND
         "in" ; x = SELF ->
         <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
 
-      | check_let_not_exception ; "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
-          <:expr< let $_flag:r$ $_list:l$ in $x$ >>
+          let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
+          match ext with [ None -> e
+          | Some attrid ->
+            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+          ]
 
       | letop = letop ; b = letop_binding ; l = LIST0 andop_binding; "in";
         x = expr LEVEL "top" ->
