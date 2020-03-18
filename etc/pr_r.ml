@@ -1973,8 +1973,8 @@ EXTEND_PRINTER
             external_decl_original pc (loc, n, t, sl, attrs)
           else
             external_decl pc (loc, n, t, sl, attrs)
-      | <:sig_item< include $mt$ >> ->
-          pprintf pc "include %p" module_type mt
+      | <:sig_item< include $mt$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "include %p%p" module_type mt (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt, attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, attrs)) mdl in
           let rf = if rf then " rec" else "" in

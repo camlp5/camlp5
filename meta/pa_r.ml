@@ -597,10 +597,10 @@ EXTEND
   ;
   with_constr:
     [ [ "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
-        "="; pf = V (FLAG "private"); t = ctyp →
+        "="; pf = V (FLAG "private"); t = ctyp_below_alg_attribute →
           <:with_constr< type $_:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
       | "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
-        ":="; t = ctyp →
+        ":="; t = ctyp_below_alg_attribute →
           <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
       | "module"; i = V mod_ident "list" ""; "="; me = module_expr →
           <:with_constr< module $_:i$ = $me$ >>

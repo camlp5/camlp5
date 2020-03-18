@@ -1463,6 +1463,42 @@ and t2 = bool[@@foo];
      o_output = SKIP "meh" "meh" ;
      official_output = OK {foo|let (((x)[@foo ]) : ((unit)[@foo ])) = ((())[@foo ])[@@foo ]|foo} ;
      r_output = SKIP "meh" "meh"
+    };
+    {name="attributes-in-odd-locations3-stripped"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|include (module type of M) with type t := M.t|foo} ;
+     official_input = OK {foo|include (module type of M) with type t := M.t|foo} ;
+     r_input = OK {foo|include (module type of M) with type t := M.t;|foo} ;
+     o_output = OK {foo|include module type of M with type t := M.t;;
+|foo};
+     official_output = OK {foo|include module type of M with type  t :=  M.t|foo} ;
+     r_output = OK {foo|include module type of M with type t := M.t;
+|foo}
+    };
+    {name="attributes-in-odd-locations3"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|include (module type of (M[@foo]))[@foo] with type t := M.t[@foo]
+    [@@foo]|foo} ;
+     official_input = OK {foo|include (module type of (M[@foo]))[@foo] with type t := M.t[@foo]
+    [@@foo]|foo} ;
+     r_input = OK {foo|include (module type of (M[@foo]))[@foo] with type t := M.t[@foo]
+    [@@foo];|foo} ;
+     o_output = OK {foo|include module type of M[@foo][@foo] with type t := M.t[@foo][@@foo];;
+|foo};
+     official_output = OK {foo|include
+  ((((module type of ((M)[@foo ]))[@foo ]) with type  t :=  M.t)[@foo ])
+[@@foo ]|foo} ;
+     r_output = OK {foo|include module type of M[@foo][@foo] with type t := M.t[@foo][@@foo];
+|foo}
+    };
+    {name="attributes-in-odd-locations3test"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|include (module type of M) with type t := M.t[@foo]|foo} ;
+     official_input = OK {foo|include (module type of M) with type t := M.t[@foo]|foo} ;
+     r_input = SKIP "" "" ;
+     o_output = SKIP "" "";
+     official_output = OK {foo|include ((module type of M with type  t :=  M.t)[@foo ])|foo} ;
+     r_output = SKIP "" ""
     }
 ]
 ;

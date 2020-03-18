@@ -1719,9 +1719,9 @@ value ocaml_pwith_module loc mname me =
 
 value ocaml_pwith_typesubst =
   IFDEF OCAML_VERSION < OCAML_4_06_0 THEN
-    Some (fun loc td -> Pwith_typesubst td)
+    Some (fun loc lid td -> Pwith_typesubst td)
   ELSE
-    Some (fun loc td -> Pwith_typesubst (mkloc loc (Lident "")) td)
+    Some (fun loc lid td -> Pwith_typesubst (mkloc loc lid) td)
  END
 ;
 

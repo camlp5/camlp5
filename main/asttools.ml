@@ -15,3 +15,10 @@ value longid_concat li1 li2 =
   ] in
   crec li2
 ;
+
+value rec longid_last = fun [
+  <:extended_longident< $uid:_$ >> as z -> z
+| <:extended_longident:< $longid:_$ . $uid:uid$ >> -> <:extended_longident< $uid:uid$ >>
+| _ -> failwith "longid_last"
+]
+;

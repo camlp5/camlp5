@@ -744,8 +744,8 @@ EXTEND
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes ->
           <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-      | "include"; mt = module_type ->
-          <:sig_item< include $mt$ >>
+      | "include"; mt = module_type ; attrs = item_attributes →
+          <:sig_item< include $mt$ $_itemattrs:attrs$ >>
       | check_module_not_alias; "module"; rf = FLAG "rec";
         l = LIST1 mod_decl_binding SEP "and" ->
           <:sig_item< module $flag:rf$ $list:l$ >>
@@ -786,10 +786,10 @@ EXTEND
      components) *)
   with_constr:
     [ [ "type"; tpl = V type_parameters "list"; i = V mod_ident ""; "=";
-        pf = V (FLAG "private"); t = ctyp ->
+        pf = V (FLAG "private"); t = ctyp LEVEL "below_alg_attribute" ->
           <:with_constr< type $_:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
       | "type"; tpl = V type_parameters "list"; i = V mod_ident ""; ":=";
-        t = ctyp ->
+        t = ctyp LEVEL "below_alg_attribute" ->
           <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
       | "module"; i = V mod_ident ""; "="; me = module_expr ->
           <:with_constr< module $_:i$ = $me$ >>

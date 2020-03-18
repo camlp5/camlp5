@@ -1806,8 +1806,8 @@ EXTEND_PRINTER
           exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           external_decl pc (loc, n, t, sl, attrs)
-      | <:sig_item< include $mt$ >> ->
-          pprintf pc "include %p" module_type mt
+      | <:sig_item< include $mt$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "include %p%p" module_type mt (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< declare $list:sil$ end >> ->
           if sil = [] then
             let pc = {(pc) with aft = ""} in
