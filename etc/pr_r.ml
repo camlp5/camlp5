@@ -90,7 +90,9 @@ value has_special_chars s =
 
 value rec is_irrefut_patt =
   fun
-  [ <:patt< $lid:_$ >> -> True
+  [ 
+    <:patt< $p$ [@ $_attribute:_$ ] >> -> is_irrefut_patt p
+  | <:patt< $lid:_$ >> -> True
   | <:patt< () >> -> True
   | <:patt< _ >> -> True
   | <:patt< ($x$ as $y$) >> -> is_irrefut_patt x && is_irrefut_patt y

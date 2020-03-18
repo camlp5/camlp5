@@ -1443,6 +1443,26 @@ and t2 = bool[@@foo];
   let ( let+ ) f x = 1 in
   ();
 |foo}
+    };
+    {name="attributes-in-odd-locations1"; implem = True ;
+     exclude=["official2official"];
+     o_input = OK {foo|let (x[@foo1]) : unit [@foo2] = ()[@foo3]  [@@foo4]|foo} ;
+     official_input = SKIP "meh" "meh" ;
+     r_input = OK {foo|value x[@foo1] : unit [@foo2] = ()[@foo3]  [@@foo4];|foo} ;
+     o_output = OK {foo|let (x[@foo1]) = (()[@foo3] : unit[@foo2])[@@foo4];;
+|foo};
+     official_output = OK {foo|let ((x)[@foo1 ]) = (((())[@foo3 ]) : ((unit)[@foo2 ]))[@@foo4 ]|foo} ;
+     r_output = OK {foo|value x[@foo1] : unit[@foo2] = ()[@foo3][@@foo4];
+|foo}
+    };
+    {name="attributes-in-odd-locations1-official2official"; implem = True ;
+     exclude=[];
+     o_input = SKIP "meh" "meh" ;
+     official_input = OK {foo|let (x[@foo]) : unit [@foo] = ()[@foo]  [@@foo]|foo} ;
+     r_input = SKIP "meh" "meh" ;
+     o_output = SKIP "meh" "meh" ;
+     official_output = OK {foo|let (((x)[@foo ]) : ((unit)[@foo ])) = ((())[@foo ])[@@foo ]|foo} ;
+     r_output = SKIP "meh" "meh"
     }
 ]
 ;

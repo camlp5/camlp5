@@ -1010,7 +1010,7 @@ EXTEND
         p = patt; ":"; t = poly_type; "="; e = expr ;
         item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-        (<:patt< ($p$ : $t$) >>, e, attrs)
+        (p, <:expr< ( $e$ : $t$ ) >>, attrs)
       ] ]
   ;
   letop_binding:
