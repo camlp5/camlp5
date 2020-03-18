@@ -11,18 +11,18 @@ open Pcaml;
 (* Syntax extensions in Revised Syntax grammar *)
 
 EXTEND
-  GLOBAL: expr ipatt;
+  GLOBAL: expr ipatt ext_attributes;
   expr: LEVEL "top"
     [ [ "parser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|"; "]" ->
           <:expr< $cparser loc (po, pcl)$ >>
       | "parser"; po = OPT ipatt; pc = parser_case ->
           <:expr< $cparser loc (po, [pc])$ >>
-      | "match"; e = SELF; "with"; "parser"; po = OPT ipatt; "[";
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "parser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
-          <:expr< $cparser_match loc e (po, pcl)$ >>
-      | "match"; e = SELF; "with"; "parser"; po = OPT ipatt;
+          Pa_r.expr_to_inline loc <:expr< $cparser_match loc e (po, pcl)$ >> ext attrs
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "parser"; po = OPT ipatt;
         pc = parser_case ->
-          <:expr< $cparser_match loc e (po, [pc])$ >> ] ]
+          Pa_r.expr_to_inline loc <:expr< $cparser_match loc e (po, [pc])$ >> ext attrs ] ]
   ;
   parser_case:
     [ [ "[:"; sp = stream_patt; ":]"; po = OPT ipatt; "->"; e = expr ->

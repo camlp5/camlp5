@@ -280,7 +280,8 @@ and payload = [
 | PaAttr of loc and V patt and option (V expr)
 ]
 and attribute_body = V (V string * payload)
-and attributes = V (list attribute_body)
+and attributes_no_anti = list attribute_body
+and attributes = V attributes_no_anti
 ;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";

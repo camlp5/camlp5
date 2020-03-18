@@ -55,6 +55,7 @@ do {
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry alg_attribute;
   Grammar.Unsafe.clear_entry alg_attributes;
+  Grammar.Unsafe.clear_entry ext_attributes;
   Grammar.Unsafe.clear_entry class_sig_item;
   Grammar.Unsafe.clear_entry class_str_item
 };
@@ -366,6 +367,7 @@ EXTEND
     constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant attribute_body alg_attribute alg_attributes
     check_type_decl check_type_extension check_dot_uid
+    ext_attributes
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
@@ -668,27 +670,30 @@ EXTEND
           expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
       | check_let_not_exception ; "let"; "open"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = SELF →
           expr_to_inline loc <:expr< let open $m$ in $e$ >> ext attrs
-      | "fun"; l = closed_case_list → <:expr< fun [ $_list:l$ ] >>
-      | "fun"; p = ipatt; e = fun_def → <:expr< fun $p$ → $e$ >>
-      | "match"; e = SELF; "with"; l = closed_case_list →
-          <:expr< match $e$ with [ $_list:l$ ] >>
-      | "match"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF →
-          <:expr< match $e$ with $p1$ → $e1$ >>
-      | "try"; e = SELF; "with"; l = closed_case_list →
-          <:expr< try $e$ with [ $_list:l$ ] >>
-      | "try"; e = SELF; "with"; mc = match_case →
-          <:expr< try $e$ with [ $list:[mc]$ ] >>
-      | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF →
-          <:expr< if $e1$ then $e2$ else $e3$ >>
-      | "do"; "{"; seq = V sequence "list"; "}" → mksequence2 loc seq
-      | "for"; i = patt; "="; e1 = SELF; df = V direction_flag "to";
+      | "fun"; (ext,attrs) = ext_attributes; l = closed_case_list →
+          expr_to_inline loc <:expr< fun [ $_list:l$ ] >> ext attrs
+      | "fun"; (ext,attrs) = ext_attributes; p = ipatt; e = fun_def →
+          expr_to_inline loc <:expr< fun $p$ → $e$ >> ext attrs
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; l = closed_case_list →
+          expr_to_inline loc <:expr< match $e$ with [ $_list:l$ ] >> ext attrs
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF →
+          expr_to_inline loc <:expr< match $e$ with $p1$ → $e1$ >> ext attrs
+      | "try"; (ext,attrs) = ext_attributes; e = SELF; "with"; l = closed_case_list →
+          expr_to_inline loc <:expr< try $e$ with [ $_list:l$ ] >> ext attrs
+      | "try"; (ext,attrs) = ext_attributes; e = SELF; "with"; mc = match_case →
+          expr_to_inline loc <:expr< try $e$ with [ $list:[mc]$ ] >> ext attrs
+      | "if"; (ext,attrs) = ext_attributes; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF →
+          expr_to_inline loc <:expr< if $e1$ then $e2$ else $e3$ >> ext attrs
+      | "do"; (ext,attrs) = ext_attributes; "{"; seq = V sequence "list"; "}" →
+         expr_to_inline loc (mksequence2 loc seq) ext attrs
+      | "for"; (ext,attrs) = ext_attributes; i = patt; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; "{"; seq = V sequence "list"; "}" →
-          <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >>
-      | "while"; e = SELF; "do"; "{"; seq = V sequence "list"; "}" →
-          <:expr< while $e$ do { $_list:seq$ } >> ]
+          expr_to_inline loc <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >> ext attrs
+      | "while"; (ext,attrs) = ext_attributes; e = SELF; "do"; "{"; seq = V sequence "list"; "}" →
+          expr_to_inline loc <:expr< while $e$ do { $_list:seq$ } >> ext attrs ]
     | "where"
-      [ e = SELF; "where"; rf = V (FLAG "rec"); lb = let_binding →
-          <:expr< let $_flag:rf$ $list:[lb]$ in $e$ >> ]
+      [ e = SELF; "where"; (ext,attrs) = ext_attributes; rf = V (FLAG "rec"); lb = let_binding →
+          expr_to_inline loc <:expr< let $_flag:rf$ $list:[lb]$ in $e$ >> ext attrs ]
     | ":=" NONA
       [ e1 = SELF; ":="; e2 = SELF; dummy → <:expr< $e1$ := $e2$ >> ]
     | "||" RIGHTA
@@ -756,8 +761,10 @@ EXTEND
       ]
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF → <:expr< $e1$ $e2$ >>
-      | "assert"; e = SELF → <:expr< assert $e$ >>
-      | "lazy"; e = SELF → <:expr< lazy $e$ >> ]
+      | "assert"; (ext,attrs) = ext_attributes; e = SELF →
+          expr_to_inline loc <:expr< assert $e$ >> ext attrs
+      | "lazy"; (ext,attrs) = ext_attributes; e = SELF → 
+          expr_to_inline loc <:expr< lazy $e$ >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
           <:expr< $e1$ .( $lid:op$ ) >>
@@ -1281,10 +1288,11 @@ EXTEND
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; i = V class_longident "list" → <:expr< new $_list:i$ >>
-      | "object"; cspo = V (OPT class_self_patt); cf = class_structure;
+      [ "new"; (ext,attrs) = ext_attributes; i = V class_longident "list" → 
+          expr_to_inline loc <:expr< new $_list:i$ >> ext attrs
+      | "object"; (ext,attrs) = ext_attributes; cspo = V (OPT class_self_patt); cf = class_structure;
         "end" →
-          <:expr< object $_opt:cspo$ $_list:cf$ end >> ] ]
+          expr_to_inline loc <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = V lident "lid" "" →

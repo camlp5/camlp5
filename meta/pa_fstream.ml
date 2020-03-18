@@ -249,30 +249,30 @@ value mparser loc m bpo pc =
 ;
 
 EXTEND
-  GLOBAL: expr;
+  GLOBAL: expr ext_attributes;
   expr: LEVEL "top"
     [ [ "fparser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|";
         "]" ->
           <:expr< $cparser loc po pcl$ >>
       | "fparser"; po = OPT ipatt; pc = parser_case ->
           <:expr< $cparser loc po [pc]$ >>
-      | "match"; e = SELF; "with"; "fparser"; po = OPT ipatt; "[";
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "fparser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
-          <:expr< $cparser_match loc e po pcl$ >>
-      | "match"; e = SELF; "with"; "fparser"; po = OPT ipatt;
+          Pa_r.expr_to_inline loc <:expr< $cparser_match loc e po pcl$ >> ext attrs
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "fparser"; po = OPT ipatt;
         pc = parser_case ->
-          <:expr< $cparser_match loc e po [pc]$ >>
+          Pa_r.expr_to_inline loc <:expr< $cparser_match loc e po [pc]$ >> ext attrs
       | "bparser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|";
         "]" ->
           <:expr< $mparser loc "Fstream" po pcl$ >>
       | "bparser"; po = OPT ipatt; pc = parser_case ->
           <:expr< $mparser loc "Fstream" po [pc]$ >>
-      | "match"; e = SELF; "with"; "bparser"; po = OPT ipatt; "[";
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "bparser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
-          <:expr< $mparser_match loc "Fstream" e po pcl$ >>
-      | "match"; e = SELF; "with"; "bparser"; po = OPT ipatt;
+          Pa_r.expr_to_inline loc <:expr< $mparser_match loc "Fstream" e po pcl$ >> ext attrs
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "bparser"; po = OPT ipatt;
         pc = parser_case ->
-          <:expr< $mparser_match loc "Fstream" e po [pc]$ >> ] ]
+          Pa_r.expr_to_inline loc <:expr< $mparser_match loc "Fstream" e po [pc]$ >> ext attrs ] ]
   ;
   parser_case:
     [ [ "[:"; sp = stream_patt; ":]"; po = OPT ipatt; "->"; e = expr ->

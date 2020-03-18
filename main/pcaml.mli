@@ -71,6 +71,7 @@ value class_expr : Grammar.Entry.e MLast.class_expr;
 value class_type : Grammar.Entry.e MLast.class_type;
 value alg_attribute : Grammar.Entry.e MLast.attribute_body;
 value alg_attributes : Grammar.Entry.e MLast.attributes;
+value ext_attributes : Grammar.Entry.e (option string * MLast.attributes_no_anti);
    (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
 
 

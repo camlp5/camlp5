@@ -1555,6 +1555,174 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;[%foo ((let open M in ())[@foo ])]|foo} ;
      r_output = OK {foo|[%foo (let open M in ())[@foo];];
 |foo}
+    };
+    {name="inline-extensions5"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|(fun%foo[@foo] x -> ())|foo} ;
+     official_input = OK {foo|(fun%foo[@foo] x -> ())|foo} ;
+     r_input = OK {foo|(fun%foo[@foo] x -> ());|foo} ;
+     o_output = OK {foo|let _ = [%foo (fun x -> ())[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((fun x -> ())[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (fun x → ())[@foo];];
+|foo}
+    };
+    {name="inline-extensions6"; implem = True ;
+     exclude=["official2official"];
+     o_input = OK {foo|(function%foo[@foo] x -> ())|foo} ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|(fun%foo[@foo] x -> ());|foo} ;
+     o_output = OK {foo|let _ = [%foo (fun x -> ())[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((fun x -> ())[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (fun x → ())[@foo];];
+|foo}
+    };
+    {name="inline-extensions6-official2official"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "" ;
+     official_input = OK {foo|(function%foo[@foo] x -> ())|foo} ;
+     r_input = SKIP "" "" ;
+     o_output = SKIP "" "" ;
+     official_output = OK {foo|;;[%foo ((function | x -> ())[@foo ])]|foo} ;
+     r_output = SKIP "" ""
+    };
+    {name="inline-extensions7"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|(try%foo[@foo] () with _ -> ())|foo} ;
+     official_input = OK {foo|(try%foo[@foo] () with _ -> ())|foo} ;
+     r_input = OK {foo|(try%foo[@foo] () with _ -> ());|foo} ;
+     o_output = OK {foo|let _ = [%foo (try () with _ -> ())[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((try () with | _ -> ())[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (try () with _ → ())[@foo];];
+|foo}
+    };
+    {name="inline-extensions8"; implem = True ;
+     exclude=["official2official"];
+     o_input = OK {foo|(if%foo[@foo] () then () else ())|foo} ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|(if%foo[@foo] () then () else ());|foo} ;
+     o_output = OK {foo|let _ = [%foo (if () then ())[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((if () then ())[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (if () then () else ())[@foo];];
+|foo}
+    };
+    {name="inline-extensions8-official2official"; implem = True ;
+     exclude=[];
+     o_input = SKIP "" "" ;
+     official_input = OK {foo|(if%foo[@foo] () then () else ())|foo} ;
+     r_input = SKIP "" "" ;
+     o_output = SKIP "" "" ;
+     official_output = OK {foo|;;[%foo ((if () then () else ())[@foo ])]|foo} ;
+     r_output = SKIP "" ""
+    };
+    {name="inline-extensions9"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|while%foo[@foo] () do () done|foo} ;
+     official_input = OK {foo|while%foo[@foo] () do () done|foo} ;
+     r_input = OK {foo|while%foo[@foo] () do { () };|foo} ;
+     o_output = OK {foo|let _ = [%foo (while () do () done)[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((while () do () done)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (while () do { () })[@foo];];
+|foo}
+    };
+    {name="inline-extensions10"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|for%foo[@foo] x = () to () do () done|foo} ;
+     official_input = OK {foo|for%foo[@foo] x = () to () do () done|foo} ;
+     r_input = OK {foo|for%foo[@foo] x = () to () do { () };|foo} ;
+     o_output = OK {foo|let _ = [%foo (for x = () to () do () done)[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((for x = () to () do () done)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (for x = () to () do { () })[@foo];];
+|foo}
+    };
+    {name="inline-extensions11"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|assert%foo[@foo] true|foo} ;
+     official_input = OK {foo|assert%foo[@foo] true|foo} ;
+     r_input = OK {foo|assert%foo[@foo] True;|foo} ;
+     o_output = OK {foo|let _ = [%foo assert true[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((assert true)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo assert True[@foo];];
+|foo}
+    };
+    {name="inline-extensions12"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|lazy%foo[@foo] x|foo} ;
+     official_input = OK {foo|lazy%foo[@foo] x|foo} ;
+     r_input = OK {foo|lazy%foo[@foo] x;|foo} ;
+     o_output = OK {foo|let _ = [%foo lazy x[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((lazy x)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo lazy x[@foo];];
+|foo}
+    };
+    {name="inline-extensions13"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|object%foo[@foo] end|foo} ;
+     official_input = OK {foo|object%foo[@foo] end|foo} ;
+     r_input = OK {foo|object%foo[@foo] end;|foo} ;
+     o_output = OK {foo|let _ = [%foo object  end[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((object  end)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo object  end[@foo];];
+|foo}
+    };
+    {name="inline-extensions14"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|begin%foo[@foo] 3; 4 end|foo} ;
+     official_input = OK {foo|begin%foo[@foo] 3; 4 end;|foo} ;
+     r_input = OK {foo|do%foo[@foo] { 3; 4 };|foo} ;
+     o_output = OK {foo|let _ = [%foo begin 3; 4 end[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((3; 4)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (do { 3; 4 })[@foo];];
+|foo}
+    };
+    {name="inline-extensions15"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|new%foo[@foo] x|foo} ;
+     official_input = OK {foo|new%foo[@foo] x|foo} ;
+     r_input = OK {foo|new%foo[@foo] x;|foo} ;
+     o_output = OK {foo|let _ = [%foo new x[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((new x)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo new x[@foo];];
+|foo}
+    };
+    {name="inline-extensions16"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match%foo[@foo] () with x -> x|foo} ;
+     official_input = OK {foo|match%foo[@foo] () with x -> x|foo} ;
+     r_input = OK {foo|match%foo[@foo] () with x -> x;|foo} ;
+     o_output = OK {foo|let _ = [%foo (match () with x -> x)[@foo]];;
+|foo};
+     official_output = OK {foo|;;[%foo ((match () with | x -> x)[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (match () with x → x)[@foo];];
+|foo}
+    };
+    {name="inline-extensions12"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensions12"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     }
 ]
 ;

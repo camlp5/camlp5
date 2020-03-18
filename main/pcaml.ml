@@ -75,6 +75,7 @@ value class_expr = Grammar.Entry.create gram "class_expr";
 
 value alg_attribute = Grammar.Entry.create gram "alg_attribute";
 value alg_attributes = Grammar.Entry.create gram "alg_attributes";
+value ext_attributes = Grammar.Entry.create gram "ext_attributes";
 
 value parse_interf = ref (Grammar.Entry.parse interf);
 value parse_implem = ref (Grammar.Entry.parse implem);

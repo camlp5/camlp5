@@ -50,6 +50,7 @@ do {
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry alg_attribute;
   Grammar.Unsafe.clear_entry alg_attributes;
+  Grammar.Unsafe.clear_entry ext_attributes;
   Grammar.Unsafe.clear_entry class_sig_item;
   Grammar.Unsafe.clear_entry class_str_item
 };
@@ -517,6 +518,7 @@ EXTEND
     constructor_declaration label_declaration
     match_case with_constr poly_variant lbl_expr lbl_expr_list
     attribute_body alg_attribute alg_attributes
+    ext_attributes
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
@@ -858,32 +860,32 @@ EXTEND
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
-      | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
-          <:expr< fun [ $_list:l$ ] >>
-      | "fun"; p = patt LEVEL "simple"; (eo, e) = fun_def ->
-          <:expr< fun [$p$ $opt:eo$ -> $e$] >>
-      | "match"; e = SELF; "with"; OPT "|";
+      | "function"; (ext,attrs) = ext_attributes; OPT "|"; l = V (LIST1 match_case SEP "|") ->
+          expr_to_inline loc <:expr< fun [ $_list:l$ ] >> ext attrs
+      | "fun"; (ext,attrs) = ext_attributes; p = patt LEVEL "simple"; (eo, e) = fun_def ->
+          expr_to_inline loc <:expr< fun [$p$ $opt:eo$ -> $e$] >> ext attrs
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; OPT "|";
         l = V (LIST1 match_case SEP "|") ->
-          <:expr< match $e$ with [ $_list:l$ ] >>
-      | "try"; e = SELF; "with"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
-          <:expr< try $e$ with [ $_list:l$ ] >>
-      | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1"; "else";
+          expr_to_inline loc <:expr< match $e$ with [ $_list:l$ ] >> ext attrs
+      | "try"; (ext,attrs) = ext_attributes; e = SELF; "with"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
+          expr_to_inline loc <:expr< try $e$ with [ $_list:l$ ] >> ext attrs
+      | "if"; (ext,attrs) = ext_attributes; e1 = SELF; "then"; e2 = expr LEVEL "expr1"; "else";
         e3 = expr LEVEL "expr1" ->
-          <:expr< if $e1$ then $e2$ else $e3$ >>
-      | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1" ->
-          <:expr< if $e1$ then $e2$ else () >>
-      | "for"; i = patt; "="; e1 = SELF; df = V direction_flag "to";
+          expr_to_inline loc <:expr< if $e1$ then $e2$ else $e3$ >> ext attrs
+      | "if"; (ext,attrs) = ext_attributes; e1 = SELF; "then"; e2 = expr LEVEL "expr1" ->
+          expr_to_inline loc <:expr< if $e1$ then $e2$ else () >> ext attrs
+      | "for"; (ext,attrs) = ext_attributes; i = patt; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e in
-          <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
-      | "for"; "("; i = operator_rparen; "="; e1 = SELF; df = V direction_flag "to";
+          expr_to_inline loc <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
+      | "for"; (ext,attrs) = ext_attributes; "("; i = operator_rparen; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let i = Ploc.VaVal i in
           let el = Pcaml.vala_map get_seq e in
-          <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
-      | "while"; e1 = SELF; "do"; e2 = V SELF "list"; "done" ->
+          expr_to_inline loc <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
+      | "while"; (ext,attrs) = ext_attributes; e1 = SELF; "do"; e2 = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e2 in
-          <:expr< while $e1$ do { $_list:el$ } >> ]
+          expr_to_inline loc <:expr< while $e1$ do { $_list:el$ } >> ext attrs ]
     | [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
           <:expr< ( $list:[e :: el]$ ) >> ]
     | ":=" NONA
@@ -965,8 +967,10 @@ EXTEND
               [ <:expr< ( $list:el$ ) >> ->
                   List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>) e1 el
               | _ -> <:expr< $e1$ $e2$ >> ] ]
-      | "assert"; e = SELF -> <:expr< assert $e$ >>
-      | "lazy"; e = SELF -> <:expr< lazy ($e$) >> ]
+      | "assert"; (ext,attrs) = ext_attributes; e = SELF ->
+          expr_to_inline loc <:expr< assert $e$ >> ext attrs
+      | "lazy"; (ext,attrs) = ext_attributes; e = SELF -> 
+          expr_to_inline loc <:expr< lazy ($e$) >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
           <:expr< $e1$ .( $lid:op$ ) >>
@@ -1020,8 +1024,10 @@ EXTEND
       | "("; el = V e_phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ")" -> concat_comm loc <:expr< $e$ >>
-      | "begin"; e = SELF; "end" -> concat_comm loc <:expr< $e$ >>
-      | "begin"; "end" -> <:expr< () >>
+      | "begin"; (ext,attrs) = ext_attributes; e = SELF; "end" -> 
+          expr_to_inline loc (concat_comm loc <:expr< $e$ >>) ext attrs
+      | "begin"; (ext,attrs) = ext_attributes; "end" -> 
+          expr_to_inline loc <:expr< () >> ext attrs
       | x = QUOTATION ->
           let con = quotation_content x in
           Pcaml.handle_expr_quotation loc con ] ]
@@ -1665,10 +1671,11 @@ EXTEND
   (* Expressions *)
   expr: LEVEL "simple"
     [ LEFTA
-      [ "new"; i = V class_longident "list" -> <:expr< new $_list:i$ >>
-      | "object"; cspo = V (OPT class_self_patt);
+      [ "new"; (ext,attrs) = ext_attributes; i = V class_longident "list" -> 
+          expr_to_inline loc <:expr< new $_list:i$ >> ext attrs
+      | "object"; (ext,attrs) = ext_attributes; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
-          <:expr< object $_opt:cspo$ $_list:cf$ end >> ] ]
+          expr_to_inline loc <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = V LIDENT "lid" -> <:expr< $e$ # $_lid:lab$ >>
@@ -1763,8 +1770,8 @@ EXTEND
     [ [ "`"; i = ident -> i ] ]
   ;
   expr: LEVEL "expr1"
-    [ [ "fun"; p = labeled_patt; (eo, e) = fun_def ->
-          <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >> ] ]
+    [ [ "fun"; (ext,attrs) = ext_attributes; p = labeled_patt; (eo, e) = fun_def ->
+          expr_to_inline loc <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >> ext attrs ] ]
   ;
   expr: AFTER "apply"
     [ "label"
