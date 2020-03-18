@@ -1644,7 +1644,7 @@ EXTEND_PRINTER
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
         <:patt< exception $_$ >> |
-        <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
+        <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> | <:patt< $_$ . $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" patt z
       | z ->
           Ploc.raise (MLast.loc_of_patt z)
