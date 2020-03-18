@@ -1522,6 +1522,27 @@ and t2 = bool[@@foo];
      r_output = OK {foo|[%foo let x = 42 in
 ();];
 |foo}
+    };
+    {name="inline-extensions3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let module%foo [@foo] M = M in ()|foo} ;
+     official_input = OK {foo|let module%foo [@foo] M = M in ()|foo} ;
+     r_input = OK {foo|let module%foo [@foo] M = M in ();|foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|;;[%foo ((let module M = M in ())[@foo ])]|foo} ;
+     r_output = OK {foo|[%foo (let module M = M in ())[@foo];];
+|foo}
+    };
+    {name="inline-attributes-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let module [@foo] M = M in ()|foo} ;
+     official_input = OK {foo|let module [@foo] M = M in ()|foo} ;
+     r_input = OK {foo|let module [@foo] M = M in ();|foo} ;
+     o_output = OK {foo|let _ = (let module M = M in ())[@foo];;
+|foo};
+     official_output = OK {foo|;;((let module M = M in ())[@foo ])|foo} ;
+     r_output = OK {foo|(let module M = M in ())[@foo];
+|foo}
     }
 ]
 ;

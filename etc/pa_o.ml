@@ -458,6 +458,12 @@ value check_module_not_alias =
     check_module_not_alias_f
 ;
 
+value expr_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:expr< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
 
 value merge_left_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} left_attrs right_attrs =
   match (left_attrs, right_attrs) with [
@@ -636,6 +642,7 @@ EXTEND
     ] ]
   ;
   ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
+  ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   str_item:
     [ "top"
       [ "exception"; ec = V extension_constructor "excon" ; item_attrs = item_attributes →
@@ -689,11 +696,23 @@ EXTEND
           | Some attrid ->
             <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
           ]
-      | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
+      | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
-          <:str_item< let module $_uidopt:m$ = $mb$ in $e$ >>
-      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = expr ->
-          <:str_item< let open $m$ in $e$ >>
+          let e = <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> in
+          let e = expr_wrap_attrs loc e attrs in
+          let e = match ext with [ None -> e
+          | Some attrid ->
+            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+          ] in
+          <:str_item< $exp:e$ >>
+
+      | check_let_not_exception ; "let"; "open"; (ext, attrs) = ext_attributes; m = module_expr; "in"; e = expr ->
+          let si = <:str_item< let open $m$ in $e$ $itemattrs:attrs$ >> in
+          match ext with [ None -> si
+          | Some attrid ->
+            <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
+          ]
+
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension -> <:str_item< [%% $_extension:e$ ] >>
@@ -831,11 +850,22 @@ EXTEND
             <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
           ]
 
-      | check_let_not_exception ; "let"; "module"; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
+      | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          <:expr< let module $_uidopt:m$ = $mb$ in $e$ >>
-      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = expr LEVEL "top" ->
-          <:expr< let open $m$ in $e$ >>
+          let e = <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> in
+          let e = expr_wrap_attrs loc e attrs in
+          match ext with [ None -> e
+          | Some attrid ->
+            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+          ]
+
+      | check_let_not_exception ; "let"; "open"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
+          let e = <:expr< let open $m$ in $e$ >> in
+          let e = expr_wrap_attrs loc e attrs in
+          match ext with [ None -> e
+          | Some attrid ->
+            <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+          ]
 
       | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->

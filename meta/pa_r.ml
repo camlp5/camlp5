@@ -391,6 +391,10 @@ EXTEND
   [ [ l = V (LIST0 alg_attribute) "algattrs" -> l ]
   ]
   ;
+  alg_attributes_no_anti:
+  [ [ l = (LIST0 alg_attribute) -> l ]
+  ]
+  ;
   item_extension:
   [ [ "[%%" ; e = V attribute_body "extension"; "]" -> e
     ] ]
@@ -624,6 +628,7 @@ EXTEND
   [ [ op = andop ; b = letop_binding -> (op, b) ] ]
   ;
   ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
+  ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   expr:
     [ "top" RIGHTA
       [ check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
