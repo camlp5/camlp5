@@ -462,9 +462,9 @@ and sig_item floc sh =
     | SgOpn loc x1 x2 →
         let loc = floc loc in
         SgOpn loc x1 x2
-    | SgTyp loc x1 →
+    | SgTyp loc x1 x2 →
         let loc = floc loc in
-        SgTyp loc (vala_map (List.map (type_decl floc sh)) x1)
+        SgTyp loc x1 (vala_map (List.map (type_decl floc sh)) x2)
     | SgTypExten loc x1 →
         let loc = floc loc in
         SgTypExten loc (type_extension floc sh x1)

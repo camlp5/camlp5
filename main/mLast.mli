@@ -170,7 +170,7 @@ and sig_item =
   | SgMtyAbs of loc and V string and attributes
   | SgMtyAlias of loc and V string and V (list string) and attributes
   | SgOpn of loc and longid and attributes
-  | SgTyp of loc and V (list type_decl)
+  | SgTyp of loc and V bool and V (list type_decl)
   | SgTypExten of loc and type_extension
   | SgUse of loc and V string and V (list (sig_item * loc))
   | SgVal of loc and V string and ctyp and attributes

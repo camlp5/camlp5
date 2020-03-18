@@ -2752,7 +2752,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
                            'e__72)))])),
            (fun (tdl : 'e__72) _ _ (loc : Ploc.t) ->
-              (Qast.Node ("SgTyp", [Qast.Loc; tdl]) : 'sig_item)));
+              (Qast.Node ("SgTyp", [Qast.Loc; Qast.VaVal (Qast.Bool false); tdl]) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

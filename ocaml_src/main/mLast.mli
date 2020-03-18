@@ -156,7 +156,7 @@ and sig_item =
   | SgMtyAbs of loc * string * attributes
   | SgMtyAlias of loc * string * string list * attributes
   | SgOpn of loc * longid * attributes
-  | SgTyp of loc * type_decl list
+  | SgTyp of loc * bool * type_decl list
   | SgTypExten of loc * type_extension
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp * attributes

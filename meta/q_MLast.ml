@@ -616,8 +616,8 @@ EXTEND
       | "module"; "type"; i = SV ident "" ; attrs = item_attributes →
           Qast.Node "SgMtyAbs" [Qast.Loc; i; attrs]
       | "open"; i = extended_longident ; attrs = item_attributes → Qast.Node "SgOpn" [Qast.Loc; i; attrs]
-      | "type" ; check_type_decl ; tdl = SV (LIST1 type_decl SEP "and") →
-          Qast.Node "SgTyp" [Qast.Loc; tdl]
+      | "type" ; check_type_decl ; nrfl = SV (FLAG "nonrec") ; tdl = SV (LIST1 type_decl SEP "and") →
+          Qast.Node "SgTyp" [Qast.Loc; nrfl; tdl]
       | "type" ; check_type_extension ; te = type_extension →
           Qast.Node "SgTypExten" [Qast.Loc; te]
       | "value"; i = SV LIDENT; ":"; t = ctyp ; attrs = item_attributes →

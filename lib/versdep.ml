@@ -1223,14 +1223,14 @@ value ocaml_psig_recmodule =
   END
 ;
 
-value ocaml_psig_type stl =
+value ocaml_psig_type is_nonrec stl =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let stl = List.map (fun (s, t) → (mknoloc s, t)) stl in
     Psig_type stl
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     let stl = List.map (fun (s, t) -> t) stl in Psig_type stl
   ELSE
-    let stl = List.map (fun (s, t) -> t) stl in Psig_type Recursive stl
+    let stl = List.map (fun (s, t) -> t) stl in Psig_type (if is_nonrec then Nonrecursive else Recursive) stl
   END
 ;
 
