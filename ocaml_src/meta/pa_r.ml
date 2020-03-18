@@ -1451,10 +1451,12 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "open")))
-                (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (extended_longident :
+                    'extended_longident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
-           (fun (attrs : 'item_attributes) (i : 'mod_ident) _
+           (fun (attrs : 'item_attributes) (i : 'extended_longident) _
                 (loc : Ploc.t) ->
               (MLast.SgOpn (loc, i, attrs) : 'sig_item)));
         Grammar.production
