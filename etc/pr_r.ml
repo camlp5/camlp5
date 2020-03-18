@@ -1986,8 +1986,8 @@ EXTEND_PRINTER
           pprintf pc "module type %s%p" m  (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item< open $longid:i$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "open %p%p" longident i (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
-      | <:sig_item< type $list:tdl$ >> ->
-          pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
+      | <:sig_item< type $flag:nonrf$ $list:tdl$ >> ->
+          pprintf pc "type%s %p" (if nonrf then " nonrec" else "") (vlist2 type_decl (and_before type_decl)) tdl
       | MLast.SgTypExten _ te ->
           pprintf pc "type %p" type_extension te
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_operator s ->

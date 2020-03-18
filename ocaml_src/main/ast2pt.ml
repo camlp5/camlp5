@@ -1497,8 +1497,9 @@ and sig_item s l =
         (ocaml_psig_open ~item_attributes:(item_attributes attrs) (mkloc loc)
            lid) ::
       l
-  | SgTyp (loc, _, tdl) ->
-      mksig loc (ocaml_psig_type (List.map mktype_decl (uv tdl))) :: l
+  | SgTyp (loc, flg, tdl) ->
+      mksig loc (ocaml_psig_type (uv flg) (List.map mktype_decl (uv tdl))) ::
+      l
   | SgTypExten (loc, te) ->
       mksig loc (ocaml_psig_typext (type_extension loc te)) :: l
   | SgUse (loc, fn, sl) ->

@@ -566,7 +566,7 @@ EXTEND
       | "open"; i = extended_longident ; attrs = item_attributes → 
           <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
-          <:sig_item< type $_list:tdl$ >>
+          <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
 (*
           <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
 *)

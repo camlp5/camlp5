@@ -641,8 +641,9 @@ let ocaml_psig_recmodule =
   Some f
 ;;
 
-let ocaml_psig_type stl =
-  let stl = List.map (fun (s, t) -> t) stl in Psig_type (Recursive, stl)
+let ocaml_psig_type is_nonrec stl =
+  let stl = List.map (fun (s, t) -> t) stl in
+  Psig_type ((if is_nonrec then Nonrecursive else Recursive), stl)
 ;;
 
 let ocaml_psig_value s vd = Psig_value vd;;

@@ -1386,6 +1386,28 @@ and t2 = bool[@@foo];
      official_output = OK {foo|open A.B(C)|foo} ;
      r_output = OK {foo|open A.B(C);
 |foo}
+    };
+    {name="sig-item-type-nonrec"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|module type S = sig type nonrec t = t end|foo} ;
+     official_input = OK {foo|module type S = sig type nonrec t = t end|foo} ;
+     r_input = OK {foo|module type S = sig type nonrec t = t ; end;|foo} ;
+     o_output = OK {foo|module type S = sig type nonrec t = t end;;
+|foo};
+     official_output = OK {foo|module type S  = sig type nonrec t = t end|foo} ;
+     r_output = OK {foo|module type S = sig type nonrec t = t; end;
+|foo}
+    };
+    {name="sig-item-type-rec"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|module type S = sig type t = t end|foo} ;
+     official_input = OK {foo|module type S = sig type t = t end|foo} ;
+     r_input = OK {foo|module type S = sig type t = t ; end;|foo} ;
+     o_output = OK {foo|module type S = sig type t = t end;;
+|foo};
+     official_output = OK {foo|module type S  = sig type t = t end|foo} ;
+     r_output = OK {foo|module type S = sig type t = t; end;
+|foo}
     }
 ]
 ;

@@ -757,8 +757,8 @@ EXTEND
           <:sig_item< module type $_:i$ $_itemattrs:attrs$ >>
       | "open"; i = extended_longident ; attrs = item_attributes ->
           <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
-      | "type"; check_type_decl; tdl = V (LIST1 type_decl SEP "and") ->
-          <:sig_item< type $_list:tdl$ >>
+      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
+          <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
       | "type" ; check_type_extension ; te = type_extension →
           <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
 

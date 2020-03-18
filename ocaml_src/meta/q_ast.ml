@@ -368,7 +368,8 @@ module Meta_make (C : MetaSig) =
             [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
       | SgOpn (_, li, attrs) ->
           let attrs = assert false in C.node "SgOpn" [longid li; attrs]
-      | SgTyp (_, _, ltd) -> C.node "SgTyp" [C.vala (C.list type_decl) ltd]
+      | SgTyp (_, b, ltd) ->
+          C.node "SgTyp" [C.vala C.bool b; C.vala (C.list type_decl) ltd]
       | SgTypExten (_, te) -> C.node "SgTypExten" [type_extension te]
       | SgUse (_, s, lsil) ->
           C.node "SgUse"

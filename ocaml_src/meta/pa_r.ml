@@ -1439,13 +1439,16 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "type")))
-                (Grammar.s_nterm
-                   (check_type_decl : 'check_type_decl Grammar.Entry.e)))
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "type")))
+                   (Grammar.s_nterm
+                      (check_type_decl : 'check_type_decl Grammar.Entry.e)))
+                (Grammar.s_flag (Grammar.s_token ("", "nonrec"))))
              (Grammar.s_list1sep
                 (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
-           (fun (tdl : 'type_decl list) _ _ (loc : Ploc.t) ->
+           (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
               (MLast.SgTyp (loc, false, tdl) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
