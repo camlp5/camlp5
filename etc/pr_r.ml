@@ -1648,7 +1648,7 @@ EXTEND_PRINTER
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
       | <:expr< . >> -> pprintf pc "."
-      | <:expr:< $lid:s$ >> when is_operator s ->
+      | <:expr:< $lid:s$ >> when is_operator s || is_letop s || is_andop s ->
           pprintf pc "( %s )" s
       | <:expr:< $lid:s$ >> ->
           var_escaped pc (loc, s)
@@ -1758,7 +1758,7 @@ EXTEND_PRINTER
           else pprintf pc "%sn" s
       | <:patt< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
-      | <:patt:< $lid:s$ >> when is_operator s ->
+      | <:patt:< $lid:s$ >> when is_operator s || is_letop s || is_andop s ->
           pprintf pc "( %s )" s
       | <:patt:< $lid:s$ >> ->
           var_escaped pc (loc, s)

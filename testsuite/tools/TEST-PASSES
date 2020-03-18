@@ -41,7 +41,7 @@ our @patchindex_dirs ;
 #
 # RETURNS: code -- typically zero, but maybe nonzero to indicate error
 
-our $ocamlformat = $ENV{'HOME'}."/Hack/Ocaml/GENERIC/4.09.0/bin/ocamlformat" ;
+our $ocamlformat = $ENV{'HOME'}."/Hack/Ocaml/GENERIC/4.10.0/bin/ocamlformat" ;
 
 our %tools = (
   generate_step('roundtrip-revised', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r', "-no-pa-opt"]),

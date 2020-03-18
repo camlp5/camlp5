@@ -142,7 +142,7 @@ value expand_lprintf pc loc f =
 value var_escaped pc (loc, v) =
   let x =
     if v.[0] = '*' || v.[String.length v - 1] = '*' then "( " ^ v ^ " )"
-    else if is_infix v || has_special_chars v then "(" ^ v ^ ")"
+    else if is_infix v || has_special_chars v || is_letop v || is_andop v then "(" ^ v ^ ")"
     else v
   in
   lprintf pc "%s" x

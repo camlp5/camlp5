@@ -1408,6 +1408,41 @@ and t2 = bool[@@foo];
      official_output = OK {foo|module type S  = sig type t = t end|foo} ;
      r_output = OK {foo|module type S = sig type t = t; end;
 |foo}
+    };
+    {name="printing-letop1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (let+) = 1|foo} ;
+     official_input = OK {foo|let (let+) = 1|foo} ;
+     r_input = OK {foo|value (let+) = 1;|foo} ;
+     o_output = OK {foo|let (let+) = 1;;
+|foo};
+     official_output = OK {foo|let (let+) = 1|foo} ;
+     r_output = OK {foo|value ( let+ ) = 1;
+|foo}
+    };
+    {name="printing-letop2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (let+) f x = 1|foo} ;
+     official_input = OK {foo|let (let+) f x = 1|foo} ;
+     r_input = OK {foo|value (let+) f x = 1;|foo} ;
+     o_output = OK {foo|let (let+) f x = 1;;
+|foo};
+     official_output = OK {foo|let (let+) f x = 1|foo} ;
+     r_output = OK {foo|value ( let+ ) f x = 1;
+|foo}
+    };
+    {name="printing-letop3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = let (let+) f x = 1 in ()|foo} ;
+     official_input = OK {foo|let x = let (let+) f x = 1 in ()|foo} ;
+     r_input = OK {foo|value x = let (let+) f x = 1 in ();|foo} ;
+     o_output = OK {foo|let x = let (let+) f x = 1 in ();;
+|foo};
+     official_output = OK {foo|let x = let (let+) f x = 1 in ()|foo} ;
+     r_output = OK {foo|value x =
+  let ( let+ ) f x = 1 in
+  ();
+|foo}
     }
 ]
 ;

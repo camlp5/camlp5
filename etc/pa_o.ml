@@ -106,7 +106,7 @@ value check_not_part_of_patt =
        let tok =
          match Stream.npeek 4 strm with
          [ [("LIDENT", _); tok :: _] -> tok
-         | [("", "("); ("", s); ("", ")"); tok] when is_operator s -> tok
+         | [("", "("); ("", s); ("", ")"); tok] when is_operator s || is_letop s || is_andop s -> tok
          | _ -> raise Stream.Failure ]
        in
        match tok with
@@ -1022,7 +1022,8 @@ EXTEND
   ;
   val_ident:
     [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>
-      | check_not_part_of_patt; "("; s = ANY; ")" -> <:patt< $lid:s$ >> ] ]
+      | check_not_part_of_patt; "(" ; op = operator_rparen -> <:patt< $lid:op$ >>
+      ] ]
   ;
   fun_binding:
     [ RIGHTA

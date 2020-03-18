@@ -265,4 +265,8 @@ ocaml-4.10.0:
       - testsuite/tests/lib-dynlink-private/plugin4/chicken.mli
       - testsuite/tests/lib-dynlink-private/plugin6/pheasant.mli
       - testsuite/tests/lexing/escape.ml
+      - testsuite/tests/regression/pr8769/fortuna.ml
+      - testsuite/tests/tool-ocamldep-shadowing/dir1/b.ml
+      - testsuite/tests/tool-ocamldep-shadowing/dir2/b.mli
+      - testsuite/tests/tool-ocamldep-shadowing/dir2/c.mli
   files: []
