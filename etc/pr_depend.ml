@@ -201,11 +201,7 @@ and sig_item =
   | <:sig_item< module $flag:_$ $list:ntl$ >> ->
       list (fun (_, mt,_) -> module_type mt) ntl
   | SgMty _ _ mt _ -> module_type mt
-(*
-  | <:sig_item< open $[s :: _]$ >> ->
-*)
-  | MLast.SgOpn _ li _ ->
- longident li
+  | <:sig_item< open $longid:li$ $itemattrs:_$ >> -> longident li
   | <:sig_item< type $list:tdl$ >> -> list type_decl tdl
   | SgVal _ _ t _ -> ctyp t
   | <:sig_item< # $_$ $_$ >> -> ()
