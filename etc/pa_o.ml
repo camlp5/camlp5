@@ -1359,8 +1359,8 @@ EXTEND
       | (a,b,c,d, attrs1) = label_declaration -> [(a,b,c,d, attrs1)] ] ]
   ;
   label_declaration:
-    [ [ i = LIDENT; ":"; t = poly_type ; attrs = alg_attributes -> (loc, i, False, t, attrs)
-      | "mutable"; i = LIDENT; ":"; t = poly_type ; attrs = alg_attributes -> (loc, i, True, t, attrs) ] ]
+    [ [ i = LIDENT; ":"; t = poly_type_below_alg_attribute ; attrs = alg_attributes -> (loc, i, False, t, attrs)
+      | "mutable"; i = LIDENT; ":"; t = poly_type_below_alg_attribute ; attrs = alg_attributes -> (loc, i, True, t, attrs) ] ]
   ;
   (* Core types *)
   extended_longident:
@@ -1525,21 +1525,21 @@ EXTEND
         ":"; t = ctyp ; attrs = item_attributes ->
           <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ; attrs = item_attributes ->
+        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_str_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ; attrs = item_attributes ->
+        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_str_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = item_attributes ->
+      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_str_item< method virtual $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
-        ":"; t = poly_type; "="; e = expr ; attrs = item_attributes ->
+        ":"; t = poly_type_below_alg_attribute; "="; e = expr ; attrs = item_attributes ->
           <:class_str_item< method $_!:ov$ private $_lid:l$ : $t$ = $e$ $_itemattrs:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
         sb = fun_binding ; attrs = item_attributes ->
           <:class_str_item< method $_!:ov$ private $_lid:l$ = $sb$ $_itemattrs:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" ""; ":";
-        t = poly_type; "="; e = expr ; attrs = item_attributes ->
+        t = poly_type_below_alg_attribute; "="; e = expr ; attrs = item_attributes ->
           <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ $_itemattrs:attrs$ >>
       | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" "";
         sb = fun_binding ; attrs = item_attributes ->
@@ -1602,16 +1602,16 @@ EXTEND
       | "val"; (mf, vf) = mut_virt; l = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes ->
         <:class_sig_item< value $flag:mf$ $flag:vf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ; attrs = item_attributes ->
+        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_sig_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
-        t = poly_type ; attrs = item_attributes ->
+        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_sig_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = item_attributes ->
+      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_sig_item< method virtual $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "private"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = item_attributes ->
+      | "method"; "private"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_sig_item< method private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type ; attrs = item_attributes ->
+      | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
           <:class_sig_item< method $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
           <:class_sig_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
@@ -1675,13 +1675,20 @@ EXTEND
       | f = field -> [f] ] ]
   ;
   field:
-    [ [ lab = LIDENT; ":"; t = poly_type -> (lab, t) ] ]
+    [ [ lab = LIDENT; ":"; t = poly_type_below_alg_attribute -> (lab, t) ] ]
   ;
   (* Polymorphic types *)
   typevar:
     [ [ "'"; i = ident -> i ] ]
   ;
   poly_type:
+    [ [ "type"; nt = LIST1 LIDENT; "."; ct = ctyp ->
+          <:ctyp< type $list:nt$ . $ct$ >>
+      | test_typevar_list_dot; tpl = LIST1 typevar; "."; t2 = ctyp ->
+          <:ctyp< ! $list:tpl$ . $t2$ >>
+      | t = ctyp -> t ] ]
+  ;
+  poly_type_below_alg_attribute:
     [ [ "type"; nt = LIST1 LIDENT; "."; ct = ctyp ->
           <:ctyp< type $list:nt$ . $ct$ >>
       | test_typevar_list_dot; tpl = LIST1 typevar; "."; t2 = ctyp ->
