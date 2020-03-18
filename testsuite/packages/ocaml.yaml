@@ -269,4 +269,22 @@ ocaml-4.10.0:
       - testsuite/tests/tool-ocamldep-shadowing/dir1/b.ml
       - testsuite/tests/tool-ocamldep-shadowing/dir2/b.mli
       - testsuite/tests/tool-ocamldep-shadowing/dir2/c.mli
+      - testsuite/tests/parse-errors/escape_error.ml
+      - testsuite/tests/parse-errors/expecting.ml
+      - testsuite/tests/parse-errors/pr7847.ml
+      - testsuite/tests/parse-errors/unclosed_class_signature.mli
+      - testsuite/tests/parse-errors/unclosed_class_simpl_expr1.ml
+      - testsuite/tests/parse-errors/unclosed_class_simpl_expr2.ml
+      - testsuite/tests/parse-errors/unclosed_class_simpl_expr3.ml
+      - testsuite/tests/parse-errors/unclosed_object.ml
+      - testsuite/tests/parse-errors/unclosed_paren_module_expr1.ml
+      - testsuite/tests/parse-errors/unclosed_paren_module_expr2.ml
+      - testsuite/tests/parse-errors/unclosed_paren_module_expr3.ml
+      - testsuite/tests/parse-errors/unclosed_paren_module_expr4.ml
+      - testsuite/tests/parse-errors/unclosed_paren_module_expr5.ml
+      - testsuite/tests/parse-errors/unclosed_paren_module_type.mli
+      - testsuite/tests/parse-errors/unclosed_sig.mli
+      - testsuite/tests/parse-errors/unclosed_simple_expr.ml
+      - testsuite/tests/parse-errors/unclosed_simple_pattern.ml
+      - testsuite/tests/parse-errors/unclosed_struct.ml
   files: []
