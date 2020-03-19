@@ -1969,14 +1969,44 @@ and t2 = bool[@@foo];
      r_output = OK {foo|type t = [%foo: (module M[@foo])];
 |foo}
     };
-    {name="inline-extensions19"; implem = True ;
+    {name="inline-attributes-4a"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|module M =
+  functor (M : S) ->
+    (val x)
+    (struct end)
+|foo} ;
+     official_input = OK {foo|module M =
+  functor (M : S) ->
+    (val x)
+    (struct end)
+|foo} ;
+     r_input = OK {foo|module M (M : S) = (value x) (struct  end);|foo} ;
+     o_output = OK {foo|module M (M : S) = (val x) (struct  end);;
+|foo};
+     official_output = OK {foo|module M(M:S) = ((val x))(struct  end)|foo} ;
+     r_output = OK {foo|module M (M : S) = (value x) (struct  end);
+|foo}
+    };
+    {name="inline-attributes-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module M =
+  functor[@foo1] (M : S) ->
+    (val[@foo2] x)
+    (struct[@foo3] end)
+|foo} ;
+     official_input = OK {foo|module M =
+  functor[@foo1] (M : S) ->
+    (val[@foo2] x)
+    (struct[@foo3] end)
+|foo} ;
+     r_input = OK {foo|module M = (functor (M : S) -> ((value x)[@foo2]) (struct  end[@foo3]))[@foo1];|foo} ;
+     o_output = OK {foo|module M = (functor (M : S) -> ((val x)[@foo2]) (struct  end[@foo3]))[@foo1];;
+|foo};
+     official_output = OK {foo|module M = ((functor (M : S) -> ((((val
+  x))[@foo2 ]))(((struct  end)[@foo3 ])))[@foo1 ])|foo} ;
+     r_output = OK {foo|module M = (functor (M : S) → ((value x)[@foo2]) (struct  end[@foo3]))[@foo1];
+|foo}
     };
     {name="inline-extensions19"; implem = True ;
      exclude=[];

@@ -1917,7 +1917,9 @@ EXTEND_PRINTER
           pprintf pc "%p" (pr_extension "%") e
       | <:module_expr< functor $_fp:_$ -> $_$ >> |
         <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
-        <:module_expr< $_$ $_$ >> as z ->
+        <:module_expr< $_$ $_$ >> |
+        <:module_expr< $_$ [@ $attribute:_$] >>
+        as z ->
           pprintf pc "@[<1>(%p)@]" module_expr z
       ] ]
   ;

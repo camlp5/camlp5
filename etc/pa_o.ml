@@ -555,6 +555,13 @@ let rec wrec e = fun [
 ] in wrec e l
 ;
 
+value module_expr_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:module_expr< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
 value str_item_to_inline loc si ext =
   match ext with [ None -> si
   | Some attrid ->
@@ -639,15 +646,15 @@ EXTEND
     ]
   ;
   module_expr:
-    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp";
+    [ [ "functor"; alg_attrs = alg_attributes_no_anti; arg = V functor_parameter "functor_parameter" "fp";
         "->"; me = SELF ->
-          <:module_expr< functor $_fp:arg$ -> $me$ >> ]
+          module_expr_wrap_attrs loc <:module_expr< functor $_fp:arg$ -> $me$ >> alg_attrs ]
     | "alg_attribute" LEFTA
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:module_expr< $e1$ [@ $_attribute:attr$ ] >>
       ]
-    | [ "struct"; OPT ";;"; st = structure; "end" ->
-          <:module_expr< struct $_list:st$ end >> ]
+    | [ "struct"; alg_attrs = alg_attributes_no_anti; OPT ";;"; st = structure; "end" ->
+          module_expr_wrap_attrs loc <:module_expr< struct $_list:st$ end >> alg_attrs ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
     | [ me1 = SELF; me2 = paren_module_expr -> <:module_expr< $me1$ $me2$ >>
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
@@ -661,12 +668,12 @@ EXTEND
   ;
   paren_module_expr:
     [
-      [  "("; "val"; e = expr; ":"; mt1 = module_type; ":>"; mt2 = module_type; ")" ->
-         <:module_expr< (value $e$ : $mt1$ :> $mt2$) >>
-      |  "("; "val"; e = expr; ":"; mt1 = module_type; ")" ->
-         <:module_expr< (value $e$ : $mt1$) >>
-      | "("; "val"; e = expr; ")" ->
-         <:module_expr< (value $e$) >>
+      [ "("; "val"; alg_attrs = alg_attributes_no_anti; e = expr; ":"; mt1 = module_type; ":>"; mt2 = module_type; ")" ->
+         module_expr_wrap_attrs loc <:module_expr< (value $e$ : $mt1$ :> $mt2$) >> alg_attrs
+      | "("; "val"; alg_attrs = alg_attributes_no_anti; e = expr; ":"; mt1 = module_type; ")" ->
+         module_expr_wrap_attrs loc <:module_expr< (value $e$ : $mt1$) >> alg_attrs
+      | "("; "val"; alg_attrs = alg_attributes_no_anti; e = expr; ")" ->
+         module_expr_wrap_attrs loc <:module_expr< (value $e$) >> alg_attrs
       | "("; me = module_expr; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "("; me = module_expr; ")" -> <:module_expr< $me$ >>
