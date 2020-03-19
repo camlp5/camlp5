@@ -1242,7 +1242,7 @@ EXTEND
       | ".." -> Qast.Node "TyOpn" [Qast.Loc]
       | "_" → Qast.Node "TyAny" [Qast.Loc]
       | e = alg_extension -> Qast.Node "TyExten" [Qast.Loc; e]
-      | "module"; mt = module_type → Qast.Node "TyPck" [Qast.Loc; mt]
+      | "("; "module"; mt = module_type ; ")" → Qast.Node "TyPck" [Qast.Loc; mt]
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" →
           mktuptyp Qast.Loc t tl
       | "("; t = SELF; ")" → t

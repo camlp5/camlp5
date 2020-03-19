@@ -1075,7 +1075,7 @@ EXTEND
       | ".." -> <:ctyp< .. >>
       | "_" → <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
-      | "module"; mt = module_type → <:ctyp< module $mt$ >>
+      | "(" ; "module"; mt = module_type ; ")" → <:ctyp< ( module $mt$ ) >>
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" → mktuptyp loc t tl
       | "("; t = SELF; ")" → <:ctyp< $t$ >>
       | "("; tl = V (LIST1 ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>

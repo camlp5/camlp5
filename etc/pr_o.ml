@@ -1709,7 +1709,7 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "  %p"
                    (vlist2 cons_decl (bar_before cons_decl)) vdl)
-      | <:ctyp< module $mt$ >> ->
+      | <:ctyp< ( module $mt$ ) >> ->
           pprintf pc "@[<1>(module@ %p)@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)

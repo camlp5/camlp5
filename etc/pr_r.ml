@@ -1851,8 +1851,8 @@ EXTEND_PRINTER
       | <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
           pprintf pc "@[<1>(%p)@]" (plist ctyp 0) tl
-      | <:ctyp< module $mt$ >> ->
-          pprintf pc "@[module@ %p@]" module_type mt
+      | <:ctyp< ( module $mt$ ) >> ->
+          pprintf pc "@[(module@ %p)@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
       | <:ctyp:< ' $s$ >> ->

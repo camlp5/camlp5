@@ -1495,7 +1495,7 @@ EXTEND
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | "("; "module"; (ext,attrs) = ext_attributes; mt = module_type; ")" -> 
           let mt = module_type_wrap_attrs loc mt attrs in
-          let ct = <:ctyp< module $mt$ >> in
+          let ct = <:ctyp< ( module $mt$ ) >> in
           ctyp_to_inline loc ct ext []
 
       | "("; t = SELF; ","; tl = LIST1 ctyp SEP ","; ")";
