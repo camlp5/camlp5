@@ -2031,7 +2031,7 @@ and t2 = bool[@@foo];
     (sig[@foo3] end)|foo} ;
      r_input = OK {foo|module type S =
   (functor (M : S) →
-    (module type of M[@foo2]) -> sig  end[@foo3])[@foo1];
+    ((module type of M)[@foo2]) -> sig  end[@foo3])[@foo1];
 |foo} ;
      o_output = OK {foo|module type S =
   (functor (M : S) ->
