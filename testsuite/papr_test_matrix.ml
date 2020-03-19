@@ -1751,80 +1751,152 @@ and t2 = bool[@@foo];
      r_output = OK {foo|class x = (fun x -> object  end)[@foo];
 |foo}
     };
-    {name="inline-extensions19"; implem = True ;
+    {name="inline-attributes-2a"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|class type t =
+  object[@foo1]
+    val[@foo4] mutable x : t
+  end
+|foo} ;
+     official_input = OK {foo|class type t =
+  object[@foo1]
+    val[@foo4] mutable x : t
+  end
+|foo} ;
+     r_input = OK {foo|class type t =
+  object
+    value mutable x : t[@@foo4];
+  end[@foo1];|foo} ;
+     o_output = OK {foo|class type t = object val mutable x : t[@@foo4] end[@foo1];;
+|foo};
+     official_output = OK {foo|class type t = object val  mutable x : t[@@foo4 ] end[@foo1 ]|foo} ;
+     r_output = OK {foo|class type t = object value mutable x : t[@@foo4]; end[@foo1];
+|foo}
     };
     {name="inline-attributes-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|class type t =
-  object[@foo]
-(*
-    inherit[@foo] t
-    val[@foo] x : t
-    val[@foo] mutable x : t
-    method[@foo] x : t
-    method[@foo] private x : t
-    constraint[@foo] t = t'
+  object[@foo1]
+    inherit[@foo2] t
+    val[@foo3] x : t
+    val[@foo4] mutable x : t
+    method[@foo5] x : t
+    method[@foo6] private x : t
+    constraint[@foo7] t = t'
     [@@@abc]
     [%%id]
     [@@@aaa]
-*)
   end
 |foo} ;
      official_input = OK {foo|class type t =
-  object[@foo]
-    inherit[@foo] t
-    val[@foo] x : t
-    val[@foo] mutable x : t
-    method[@foo] x : t
-    method[@foo] private x : t
-    constraint[@foo] t = t'
+  object[@foo1]
+    inherit[@foo2] t
+    val[@foo3] x : t
+    val[@foo4] mutable x : t
+    method[@foo5] x : t
+    method[@foo6] private x : t
+    constraint[@foo7] t = t'
     [@@@abc]
     [%%id]
     [@@@aaa]
   end
 |foo} ;
      r_input = OK {foo|class type t =
-  object[@foo]
-    inherit[@foo] t
-    val[@foo] x : t
-    val[@foo] mutable x : t
-    method[@foo] x : t
-    method[@foo] private x : t
-    constraint[@foo] t = t'
+  object
+    inherit t[@@foo2];
+    value x : t[@@foo3];
+    value mutable x : t[@@foo4];
+    method x : t[@@foo5];
+    method private x : t[@@foo6];
+    type t = t'[@@foo7];
+    [@@@abc];
+    [%%id];
+    [@@@aaa];
+  end[@foo1];|foo} ;
+     o_output = OK {foo|class type t =
+  object
+    inherit t[@@foo2]
+    val x : t[@@foo3]
+    val mutable x : t[@@foo4]
+    method x : t[@@foo5]
+    method private x : t[@@foo6]
+    constraint t = t'[@@foo7]
     [@@@abc]
     [%%id]
     [@@@aaa]
-  end ;
-|foo} ;
-     o_output = OK {foo||foo};
+  end[@foo1];;
+|foo};
      official_output = OK {foo|class type t =
   object
-    inherit t[@@foo ]
-    val  x : t[@@foo ]
-    val  mutable x : t[@@foo ]
-    method  x : t[@@foo ]
-    method private  x : t[@@foo ]
-    constraint t = t'[@@foo ]
+    inherit t[@@foo2 ]
+    val  x : t[@@foo3 ]
+    val  mutable x : t[@@foo4 ]
+    method  x : t[@@foo5 ]
+    method private  x : t[@@foo6 ]
+    constraint t = t'[@@foo7 ]
     [@@@abc ]
     [%%id ]
     [@@@aaa ]
-  end[@foo ]|foo} ;
-     r_output = OK {foo||foo}
+  end[@foo1 ]|foo} ;
+     r_output = OK {foo|class type t =
+  object
+    inherit t[@@foo2];
+    value x : t[@@foo3];
+    value mutable x : t[@@foo4];
+    method x : t[@@foo5];
+    method private x : t[@@foo6];
+    type t = t'[@@foo7];
+    [@@@abc];
+    [%%id];
+    [@@@aaa];
+  end[@foo1];
+|foo}
     };
-    {name="inline-extensions19"; implem = True ;
+    {name="inline-attributes-3"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|class x =
+  fun[@foo] x ->
+  let[@foo] x = 3 in
+  object[@foo]
+    inherit[@foo] x
+(*
+    val[@foo] x = 3
+    val[@foo] virtual x : t
+    val![@foo] mutable x = 3
+    method[@foo] x = 3
+    method[@foo] virtual x : t
+    method![@foo] private x = 3
+    initializer[@foo] x
+*)
+  end
+|foo} ;
+     official_input = OK {foo|class x =
+  fun[@foo] x ->
+  let[@foo] x = 3 in
+  object[@foo]
+    inherit[@foo] x
+    val[@foo] x = 3
+    val[@foo] virtual x : t
+    val![@foo] mutable x = 3
+    method[@foo] x = 3
+    method[@foo] virtual x : t
+    method![@foo] private x = 3
+    initializer[@foo] x
+  end
+|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|class x = ((fun x  -> let x = 3[@@foo ] in
+  ((object
+      inherit  x[@@foo ]
+      val x = 3[@@foo ]
+      val virtual x : t[@@foo ]
+      val! mutable x = 3[@@foo ]
+      method x = 3[@@foo ]
+      method virtual  x : t[@@foo ]
+      method! private x = 3[@@foo ]
+      initializer x[@@foo ]
+    end)[@foo ]))[@foo ])|foo} ;
      r_output = OK {foo||foo}
     };
     {name="inline-extensions19"; implem = True ;

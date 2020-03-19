@@ -503,19 +503,22 @@ EXTEND_PRINTER
   ;
   pr_class_sig_item:
     [ "top"
-      [ <:class_sig_item< inherit $ct$ >> ->
-          pprintf pc "inherit@;%p" class_type ct
+      [ <:class_sig_item< inherit $ct$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "inherit@;%p%p" class_type ct
+            (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ $_itemattrs:attrs$ >> ->
           sig_method_or_method_virtual pc "" priv s t attrs
       | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:attrs$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t attrs
-      | <:class_sig_item< type $t1$ = $t2$ >> ->
-          pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
-      | <:class_sig_item< value $flag:mf$ $flag:vf$ $lid:s$ : $t$ >> ->
-          pprintf pc "value%s%s %p :@;%p"
+      | <:class_sig_item< type $t1$ = $t2$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "type %p =@;%p%p" ctyp t1 ctyp t2
+            (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
+      | <:class_sig_item< value $flag:mf$ $flag:vf$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "value%s%s %p :@;%p%p"
             (if mf then " mutable" else "")
-            (if mf then " virtual" else "")
+            (if vf then " virtual" else "")
             var_escaped s ctyp t
+            (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_attribute "@@@") attr
       | <:class_sig_item< [%% $_extension:e$ ] >> ->

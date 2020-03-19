@@ -1281,18 +1281,19 @@ EXTEND
   class_sig_item:
     [ [ "declare"; st = V (LIST0 [ s = class_sig_item; ";" → s ]); "end" →
           <:class_sig_item< declare $_list:st$ end >>
-      | "inherit"; cs = class_type → <:class_sig_item< inherit $cs$ >>
+      | "inherit"; cs = class_type ; attrs = item_attributes →
+          <:class_sig_item< inherit $cs$ $_itemattrs:attrs$ >>
       | "value"; mf = V (FLAG "mutable"); vf = V (FLAG "virtual"); l = V lident "lid" ""; ":";
-        t = ctyp →
-          <:class_sig_item< value $_flag:mf$ $_flag:vf$  $_lid:l$ : $t$ >>
+        t = ctyp ; attrs = item_attributes →
+          <:class_sig_item< value $_flag:mf$ $_flag:vf$  $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; "virtual"; pf = V (FLAG "private"); l = V lident "lid" "";
         ":"; t = ctyp ; attrs = item_attributes →
           <:class_sig_item< method virtual $_flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
       | "method"; pf = V (FLAG "private"); l = V lident "lid" ""; ":";
         t = ctyp ; attrs = item_attributes →
           <:class_sig_item< method $_flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "type"; t1 = ctyp; "="; t2 = ctyp →
-          <:class_sig_item< type $t1$ = $t2$ >>
+      | "type"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes →
+          <:class_sig_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:class_sig_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension -> <:class_sig_item< [%% $_extension:e$ ] >>
       ] ]

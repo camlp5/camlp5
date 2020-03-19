@@ -525,6 +525,13 @@ let rec wrec e = fun [
 ] in wrec e l
 ;
 
+value class_type_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:class_type< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
 value str_item_to_inline loc si ext =
   match ext with [ None -> si
   | Some attrid ->
@@ -1555,9 +1562,9 @@ EXTEND
       | "["; ct = ctyp; "]"; ci = class_longident ->
           <:class_expr< [ $ct$ ] $list:ci$ >>
       | ci = class_longident -> <:class_expr< $list:ci$ >>
-      | "object"; cspo = V (OPT class_self_patt);
+      | "object"; alg_attrs = alg_attributes_no_anti; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
-          <:class_expr< object $_opt:cspo$ $_list:cf$ end >>
+          class_expr_wrap_attrs loc <:class_expr< object $_opt:cspo$ $_list:cf$ end >> alg_attrs
       | "("; ce = class_expr; ":"; ct = class_type; ")" ->
           <:class_expr< ($ce$ : $ct$) >>
       | "("; ce = class_expr; ")" -> ce
@@ -1639,9 +1646,9 @@ EXTEND
 
     | [ "["; tl = LIST1 ctyp SEP ","; "]"; id = SELF ->
           <:class_type< $id$ [ $list:tl$ ] >>
-      | "object"; cst = V (OPT class_self_type);
+      | "object"; alg_attrs = alg_attributes_no_anti; cst = V (OPT class_self_type);
         csf = V (LIST0 class_sig_item); "end" ->
-          <:class_type< object $_opt:cst$ $_list:csf$ end >> ]
+          class_type_wrap_attrs loc <:class_type< object $_opt:cst$ $_list:csf$ end >> alg_attrs ]
     | [ li = extended_longident; "."; i = V LIDENT → <:class_type< $longid:li$ . $_lid:i$ >>
       | li = extended_longident → <:class_type< $longid:li$ >>
       | i = V LIDENT → <:class_type< $_lid:i$ >>
@@ -1660,23 +1667,31 @@ EXTEND
     ] ]
   ;
   class_sig_item:
-    [ [ "inherit"; cs = class_signature ; attrs = item_attributes ->
+    [ [ "inherit"; alg_attrs = alg_attributes_no_anti; cs = class_signature ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_sig_item< inherit $cs$ $_itemattrs:attrs$ >>
-      | "val"; (mf, vf) = mut_virt; l = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes ->
-        <:class_sig_item< value $flag:mf$ $flag:vf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
-        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
+      | "val"; alg_attrs = alg_attributes_no_anti; (mf, vf) = mut_virt; l = V LIDENT "lid" ""; ":"; t = ctyp ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          <:class_sig_item< value $flag:mf$ $flag:vf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
+      | "method"; alg_attrs = alg_attributes_no_anti; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
+        t = poly_type_below_alg_attribute ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_sig_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
-        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
+      | "method"; alg_attrs = alg_attributes_no_anti; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
+        t = poly_type_below_alg_attribute ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_sig_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
+      | "method"; alg_attrs = alg_attributes_no_anti; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_sig_item< method virtual $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "private"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
+      | "method"; alg_attrs = alg_attributes_no_anti; "private"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_sig_item< method private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
+      | "method"; alg_attrs = alg_attributes_no_anti; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_sig_item< method $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
+      | "constraint"; alg_attrs = alg_attributes_no_anti; t1 = ctyp; "="; t2 = ctyp ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="csig-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_sig_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:class_sig_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension -> <:class_sig_item< [%% $_extension:e$ ] >>
