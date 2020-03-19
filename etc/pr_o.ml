@@ -1963,7 +1963,10 @@ EXTEND_PRINTER
       [ <:module_type< $uid:s$ >> ->
           pprintf pc "%s" s
       | <:module_type< [% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%") e
+          pprintf pc "%p" (pr_extension "%") e ]
+    | "bottom"
+      [ <:module_type< functor $fp:_$ -> $_$ >>
+        as z -> pprintf pc "(%p)" module_type z
       | z ->
           error (MLast.loc_of_module_type z)
             (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z))) ] ]

@@ -797,9 +797,9 @@ EXTEND
   ;
   (* Module types *)
   module_type:
-    [ [ "functor"; arg = V functor_parameter "functor_parameter" "fp"; "->";
+    [ [ "functor"; alg_attrs = alg_attributes_no_anti; arg = V functor_parameter "functor_parameter" "fp"; "->";
         mt = SELF ->
-          <:module_type< functor $_fp:arg$ -> $mt$ >>
+          module_type_wrap_attrs loc <:module_type< functor $_fp:arg$ -> $mt$ >> alg_attrs
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
@@ -812,10 +812,10 @@ EXTEND
       ]
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]
-    | [ "sig"; sg = signature; "end" ->
-          <:module_type< sig $_list:sg$ end >>
-      | "module"; "type"; "of"; me = module_expr ->
-          <:module_type< module type of $me$ >>
+    | [ "sig"; alg_attrs = alg_attributes_no_anti; sg = signature; "end" ->
+          module_type_wrap_attrs loc <:module_type< sig $_list:sg$ end >> alg_attrs
+      | "module"; "type"; "of"; alg_attrs = alg_attributes_no_anti; me = module_expr ->
+          module_type_wrap_attrs loc <:module_type< module type of $me$ >> alg_attrs
       | li = extended_longident; "."; i = V LIDENT → <:module_type< $longid:li$ . $_lid:i$ >>
       | li = extended_longident → <:module_type< $longid:li$ >>
       | i = V LIDENT → <:module_type< $_lid:i$ >>

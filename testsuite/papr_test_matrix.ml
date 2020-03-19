@@ -2008,14 +2008,31 @@ and t2 = bool[@@foo];
      r_output = OK {foo|module M = (functor (M : S) → ((value x)[@foo2]) (struct  end[@foo3]))[@foo1];
 |foo}
     };
-    {name="inline-extensions19"; implem = True ;
+    {name="inline-attributes-5"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|module type S =
+  functor[@foo1] (M:S) ->
+    (module type of[@foo2] M) ->
+    (sig[@foo3] end)|foo} ;
+     official_input = OK {foo|module type S =
+  functor[@foo1] (M:S) ->
+    (module type of[@foo2] M) ->
+    (sig[@foo3] end)|foo} ;
+     r_input = OK {foo|module type S =
+  (functor (M : S) →
+    functor (_ : module type of M[@foo2]) → sig  end[@foo3])[@foo1];
+|foo} ;
+     o_output = OK {foo|module type S =
+  (functor (M : S) ->
+    functor (_ : module type of M[@foo2]) -> sig  end[@foo3])[@foo1];;
+|foo};
+     official_output = OK {foo|module type S  =
+  ((functor (M : S) -> ((module type of M)[@foo2 ]) -> ((sig  end)[@foo3 ]))
+  [@foo1 ])|foo} ;
+     r_output = OK {foo|module type S =
+  (functor (M : S) →
+    functor (_ : module type of M[@foo2]) → sig  end[@foo3])[@foo1];
+|foo}
     };
     {name="inline-extensions19"; implem = True ;
      exclude=[];
