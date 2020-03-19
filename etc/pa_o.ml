@@ -1607,22 +1607,28 @@ EXTEND
             let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
             <:class_str_item< value virtual $flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
 
-      | "method"; ov = V (FLAG "!") "!"; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
+      | "method"; ov = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; item_attrs = item_attributes ->
           if Pcaml.unvala ov then
             Ploc.raise loc (Stream.Error "method without definition is not being overriden!")
           else if not vf then
             Ploc.raise loc (Stream.Error "method without definition must be virtual")
           else
-           <:class_str_item< method virtual $flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; ov = V (FLAG "!") "!"; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute; "="; e = expr ; attrs = item_attributes ->
+            let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+            <:class_str_item< method virtual $flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
+
+      | "method"; ov = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute; "="; e = expr ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_str_item< method $_!:ov$ $priv:pf$ $_lid:l$ : $t$ = $e$ $_itemattrs:attrs$ >>
 
-      | "method"; ov = V (FLAG "!") "!"; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; sb = fun_binding ; attrs = item_attributes ->
+      | "method"; ov = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; sb = fun_binding ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_str_item< method $_!:ov$ $priv:pf$ $_lid:l$ = $sb$ $_itemattrs:attrs$ >>
 
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
           <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
-      | "initializer"; se = expr ; attrs = item_attributes -> <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
+      | "initializer"; alg_attrs = alg_attributes_no_anti; se = expr ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:class_str_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension -> <:class_str_item< [%% $_extension:e$ ] >>
       ] ]

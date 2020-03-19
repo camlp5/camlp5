@@ -2580,8 +2580,9 @@ EXTEND_PRINTER
                | None -> pprintf pc "" ])
             pb
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
-      | <:class_str_item< initializer $e$ >> ->
-          pprintf pc "initializer@;%p" expr e
+      | <:class_str_item< initializer $e$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "initializer@;%p%p" expr e
+            (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t item_attrs
       | <:class_str_item<

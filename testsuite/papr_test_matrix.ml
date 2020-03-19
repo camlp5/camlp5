@@ -1862,12 +1862,10 @@ and t2 = bool[@@foo];
     val[@foo] x = 3
     val[@foo] virtual x : t
     val![@foo] mutable x = 3
-(*
     method[@foo] x = 3
     method[@foo] virtual x : t
     method![@foo] private x = 3
     initializer[@foo] x
-*)
   end
 |foo} ;
      official_input = OK {foo|class x =
@@ -1884,8 +1882,33 @@ and t2 = bool[@@foo];
     initializer[@foo] x
   end
 |foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|class x =
+  (fun x ->
+     let x = 3[@@foo] in
+     object
+       inherit x[@@foo];
+       value x = 3[@@foo];
+       value virtual x : t[@@foo];
+       value! mutable x = 3[@@foo];
+       method x = 3[@@foo];
+       method virtual x : t[@@foo];
+       method! private x = 3[@@foo];
+       initializer x[@@foo];
+     end[@foo])[@foo];|foo} ;
+     o_output = OK {foo|class x =
+  (fun x ->
+     let x = 3[@@foo] in
+     object
+       inherit x[@@foo]
+       val x = 3[@@foo]
+       val virtual x : t[@@foo]
+       val! mutable x = 3[@@foo]
+       method x = 3[@@foo]
+       method virtual x : t[@@foo]
+       method! private x = 3[@@foo]
+       initializer x[@@foo]
+     end[@foo])[@foo];;
+|foo};
      official_output = OK {foo|class x = ((fun x  -> let x = 3[@@foo ] in
   ((object
       inherit  x[@@foo ]
@@ -1897,7 +1920,20 @@ and t2 = bool[@@foo];
       method! private x = 3[@@foo ]
       initializer x[@@foo ]
     end)[@foo ]))[@foo ])|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|class x =
+  (fun x ->
+     let x = 3[@@foo] in
+     object
+       inherit x[@@foo];
+       value x = 3[@@foo];
+       value virtual x : t[@@foo];
+       value! mutable x = 3[@@foo];
+       method x = 3[@@foo];
+       method virtual x : t[@@foo];
+       method! private x = 3[@@foo];
+       initializer x[@@foo];
+     end[@foo])[@foo];
+|foo}
     };
     {name="inline-extensions19"; implem = True ;
      exclude=[];
