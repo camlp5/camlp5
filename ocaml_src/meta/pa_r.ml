@@ -396,6 +396,15 @@ let patt_to_inline loc p ext attrs =
   | Some attrid -> MLast.PaExten (loc, (attrid, MLast.PaAttr (loc, p, None)))
 ;;
 
+let class_expr_wrap_attrs loc e l =
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.CeAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
 let str_item_to_inline loc si ext =
   match ext with
     None -> si
@@ -4175,12 +4184,20 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "fun")))
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "fun")))
+                   (Grammar.s_nterm
+                      (alg_attributes_no_anti :
+                       'alg_attributes_no_anti Grammar.Entry.e)))
                 (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
              (Grammar.s_nterm
                 (class_fun_def : 'class_fun_def Grammar.Entry.e)),
-           (fun (ce : 'class_fun_def) (p : 'ipatt) _ (loc : Ploc.t) ->
-              (MLast.CeFun (loc, p, ce) : 'class_expr)))];
+           (fun (ce : 'class_fun_def) (p : 'ipatt)
+                (alg_attrs : 'alg_attributes_no_anti) _ (loc : Ploc.t) ->
+              (class_expr_wrap_attrs loc (MLast.CeFun (loc, p, ce))
+                 alg_attrs :
+               'class_expr)))];
        Some "alg_attribute", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
@@ -4668,13 +4685,17 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "type")))
-                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
-                (Grammar.s_token ("", "=")))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t2 : 'ctyp) _ (t1 : 'ctyp) _ (loc : Ploc.t) ->
-              (MLast.CgCtr (loc, t1, t2, []) : 'class_sig_item)));
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "type")))
+                      (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                   (Grammar.s_token ("", "=")))
+                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (t2 : 'ctyp) _ (t1 : 'ctyp) _
+                (loc : Ploc.t) ->
+              (MLast.CgCtr (loc, t1, t2, attrs) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4717,22 +4738,31 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "value")))
-                         (Grammar.s_flag (Grammar.s_token ("", "mutable"))))
-                      (Grammar.s_flag (Grammar.s_token ("", "virtual"))))
-                   (Grammar.s_nterm (lident : 'lident Grammar.Entry.e)))
-                (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) _ (l : 'lident) (vf : bool) (mf : bool) _
-                (loc : Ploc.t) ->
-              (MLast.CgVal (loc, mf, vf, l, t, []) : 'class_sig_item)));
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "value")))
+                            (Grammar.s_flag
+                               (Grammar.s_token ("", "mutable"))))
+                         (Grammar.s_flag (Grammar.s_token ("", "virtual"))))
+                      (Grammar.s_nterm (lident : 'lident Grammar.Entry.e)))
+                   (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (t : 'ctyp) _ (l : 'lident)
+                (vf : bool) (mf : bool) _ (loc : Ploc.t) ->
+              (MLast.CgVal (loc, mf, vf, l, t, attrs) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "inherit")))
-             (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)),
-           (fun (cs : 'class_type) _ (loc : Ploc.t) ->
-              (MLast.CgInh (loc, cs, []) : 'class_sig_item)));
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "inherit")))
+                (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (cs : 'class_type) _
+                (loc : Ploc.t) ->
+              (MLast.CgInh (loc, cs, attrs) : 'class_sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

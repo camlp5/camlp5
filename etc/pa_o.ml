@@ -1577,43 +1577,49 @@ EXTEND
     [ [ "("; p = patt; ")" -> p
       | "("; p = patt; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >> ] ]
   ;
+  priv_virt:
+  [ [
+      "private" ; "virtual" -> (True, True)
+    | "private" -> (True, False)
+    | "virtual"; "private" -> (True, True)
+    | "virtual" -> (False, True)
+    | -> (False, False)
+    ] ]
+  ;
   class_str_item:
     [ [ "inherit"; ovf = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ $_itemattrs:attrs$ >>
 
-      | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
-        lab = V LIDENT "lid" ""; e = cvalue_binding ; attrs = item_attributes ->
-          <:class_str_item< value $_!:ov$ $_flag:mf$ $_lid:lab$ = $e$ $_itemattrs:attrs$ >>
-      | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
-        "virtual"; lab = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes ->
-          if Pcaml.unvala ov then
+      | "val"; ov = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; (mf, vf) = mut_virt; lab = V LIDENT "lid" ""; e = cvalue_binding ; item_attrs = item_attributes ->
+          if vf then
+            Ploc.raise loc (Stream.Error "val with definition cannot be virtual")
+          else
+            let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+            <:class_str_item< value $_!:ov$ $flag:mf$ $_lid:lab$ = $e$ $_itemattrs:attrs$ >>
+
+      | "val"; ov = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; (mf, vf) = mut_virt; lab = V LIDENT "lid" ""; ":"; t = ctyp ; item_attrs = item_attributes ->
+          if not vf then
+            Ploc.raise loc (Stream.Error "val without definition must be virtual")
+          else if Pcaml.unvala ov then
             Ploc.raise loc (Stream.Error "virtual value cannot override")
           else
-            <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
-      | "val"; "virtual"; mf = V (FLAG "mutable"); lab = V LIDENT "lid" "";
-        ":"; t = ctyp ; attrs = item_attributes ->
-          <:class_str_item< value virtual $_flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "private"; "virtual"; l = V LIDENT "lid" ""; ":";
-        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
-          <:class_str_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "virtual"; "private"; l = V LIDENT "lid" ""; ":";
-        t = poly_type_below_alg_attribute ; attrs = item_attributes ->
-          <:class_str_item< method virtual private $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; "virtual"; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
-          <:class_str_item< method virtual $_lid:l$ : $t$ $_itemattrs:attrs$ >>
-      | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
-        ":"; t = poly_type_below_alg_attribute; "="; e = expr ; attrs = item_attributes ->
-          <:class_str_item< method $_!:ov$ private $_lid:l$ : $t$ = $e$ $_itemattrs:attrs$ >>
-      | "method"; ov = V (FLAG "!") "!"; "private"; l = V LIDENT "lid" "";
-        sb = fun_binding ; attrs = item_attributes ->
-          <:class_str_item< method $_!:ov$ private $_lid:l$ = $sb$ $_itemattrs:attrs$ >>
-      | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" ""; ":";
-        t = poly_type_below_alg_attribute; "="; e = expr ; attrs = item_attributes ->
-          <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ $_itemattrs:attrs$ >>
-      | "method"; ov = V (FLAG "!") "!"; l = V LIDENT "lid" "";
-        sb = fun_binding ; attrs = item_attributes ->
-          <:class_str_item< method $_!:ov$ $_lid:l$ = $sb$ $_itemattrs:attrs$ >>
+            let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+            <:class_str_item< value virtual $flag:mf$ $_lid:lab$ : $t$ $_itemattrs:attrs$ >>
+
+      | "method"; ov = V (FLAG "!") "!"; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute ; attrs = item_attributes ->
+          if Pcaml.unvala ov then
+            Ploc.raise loc (Stream.Error "method without definition is not being overriden!")
+          else if not vf then
+            Ploc.raise loc (Stream.Error "method without definition must be virtual")
+          else
+           <:class_str_item< method virtual $flag:pf$ $_lid:l$ : $t$ $_itemattrs:attrs$ >>
+      | "method"; ov = V (FLAG "!") "!"; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; ":"; t = poly_type_below_alg_attribute; "="; e = expr ; attrs = item_attributes ->
+          <:class_str_item< method $_!:ov$ $priv:pf$ $_lid:l$ : $t$ = $e$ $_itemattrs:attrs$ >>
+
+      | "method"; ov = V (FLAG "!") "!"; (pf, vf) = priv_virt; l = V LIDENT "lid" ""; sb = fun_binding ; attrs = item_attributes ->
+          <:class_str_item< method $_!:ov$ $priv:pf$ $_lid:l$ = $sb$ $_itemattrs:attrs$ >>
+
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ; attrs = item_attributes ->
           <:class_str_item< type $t1$ = $t2$ $_itemattrs:attrs$ >>
       | "initializer"; se = expr ; attrs = item_attributes -> <:class_str_item< initializer $se$ $_itemattrs:attrs$ >>
