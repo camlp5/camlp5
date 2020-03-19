@@ -7169,9 +7169,14 @@ Grammar.safe_extend
               (mktuptyp Qast.Loc t tl : 'ctyp)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
-             (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)),
-           (fun (mt : 'module_type) _ (loc : Ploc.t) ->
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                   (Grammar.s_token ("", "module")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           (fun _ (mt : 'module_type) _ _ (loc : Ploc.t) ->
               (Qast.Node ("TyPck", [Qast.Loc; mt]) : 'ctyp)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop

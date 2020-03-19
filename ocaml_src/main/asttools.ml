@@ -20,3 +20,12 @@ let rec longid_last =
   | MLast.LiAcc (loc, _, uid) -> MLast.LiUid (loc, uid)
   | _ -> failwith "longid_last"
 ;;
+
+let module_type_unwrap_attrs mt =
+  let rec arec acc =
+    function
+      MLast.MtAtt (_, mt, attr) -> arec (attr :: acc) mt
+    | mt -> mt, List.rev acc
+  in
+  arec [] mt
+;;
