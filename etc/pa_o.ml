@@ -503,6 +503,22 @@ value expr_to_inline loc e ext attrs =
   ]
 ;
 
+
+value ctyp_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:ctyp< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
+value ctyp_to_inline loc e ext attrs =
+  let e = ctyp_wrap_attrs loc e attrs in
+  match ext with [ None -> e
+  | Some attrid ->
+   <:ctyp< [% $attrid:attrid$ : $type:e$ ] >>
+  ]
+;
+
 value patt_wrap_attrs loc e l =
 let rec wrec e = fun [
   [] -> e
@@ -1477,9 +1493,11 @@ EXTEND
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
       | "_" -> <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
-      | "("; "module"; alg_attrs = alg_attributes_no_anti; mt = module_type; ")" -> 
-          let mt = module_type_wrap_attrs loc mt alg_attrs in
-          <:ctyp< module $mt$ >>
+      | "("; "module"; (ext,attrs) = ext_attributes; mt = module_type; ")" -> 
+          let mt = module_type_wrap_attrs loc mt attrs in
+          let ct = <:ctyp< module $mt$ >> in
+          ctyp_to_inline loc ct ext []
+
       | "("; t = SELF; ","; tl = LIST1 ctyp SEP ","; ")";
         i = ctyp LEVEL "ctyp2" ->
           List.fold_left (fun c a -> <:ctyp< $c$ $a$ >>) i [t :: tl]
