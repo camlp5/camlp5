@@ -7,7 +7,7 @@ include $(TOP)/config/Makefile
 DIFF=diff -Bwi -u20
 RM=rm
 
-TESTS=o2r_test r2r_test r2o_test o2o_test o2official_test r2official_test official2official_test r2sch_test \
+TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test r2official_test r2sch_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
 	extfun_test
 

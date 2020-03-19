@@ -532,6 +532,13 @@ let rec wrec e = fun [
 ] in wrec e l
 ;
 
+value module_type_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:module_type< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
 value str_item_to_inline loc si ext =
   match ext with [ None -> si
   | Some attrid ->
@@ -1470,7 +1477,9 @@ EXTEND
       [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
       | "_" -> <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
-      | "("; "module"; mt = module_type; ")" -> <:ctyp< module $mt$ >>
+      | "("; "module"; alg_attrs = alg_attributes_no_anti; mt = module_type; ")" -> 
+          let mt = module_type_wrap_attrs loc mt alg_attrs in
+          <:ctyp< module $mt$ >>
       | "("; t = SELF; ","; tl = LIST1 ctyp SEP ","; ")";
         i = ctyp LEVEL "ctyp2" ->
           List.fold_left (fun c a -> <:ctyp< $c$ $a$ >>) i [t :: tl]

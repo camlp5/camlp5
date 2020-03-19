@@ -1935,13 +1935,39 @@ and t2 = bool[@@foo];
      end[@foo])[@foo];
 |foo}
     };
-    {name="inline-extensions19"; implem = True ;
+    {name="firstclass-modules1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|type t = (module M)|foo} ;
+     official_input = OK {foo|type t = (module M)|foo} ;
+     r_input = OK {foo|type t = module M;|foo} ;
+     o_output = OK {foo|type t = (module M);;
+|foo};
+     official_output = OK {foo|type t = (module M)|foo} ;
+     r_output = OK {foo|type t = module M;
+|foo}
+    };
+    {name="firstclass-modules2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = (module[@foo] M)|foo} ;
+     official_input = OK {foo|type t = (module[@foo] M)|foo} ;
+     r_input = OK {foo|type t = module M[@foo];|foo} ;
+     o_output = OK {foo|type t = (module M[@foo]);;
+|foo};
+     official_output = OK {foo|type t = (((module M))[@foo ])|foo} ;
+     r_output = OK {foo|type t = module M[@foo];
+|foo}
+    };
+    {name="inline-extensions20"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t =
+  (module%foo[@foo] M)
+|foo} ;
+     official_input = OK {foo|type t =
+  (module%foo[@foo] M)
+|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|type t = [%foo :(((module M))[@foo ])]|foo} ;
      r_output = OK {foo||foo}
     };
     {name="inline-extensions19"; implem = True ;
