@@ -22,3 +22,11 @@ value rec longid_last = fun [
 | _ -> failwith "longid_last"
 ]
 ;
+
+value module_type_unwrap_attrs mt =
+  let rec arec acc = fun [
+    <:module_type< $mt$ [@ $_attribute:attr$ ] >> -> arec [ attr :: acc ] mt
+  | mt -> (mt, List.rev acc)
+  ] in
+  arec [] mt
+;

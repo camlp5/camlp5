@@ -6,6 +6,7 @@
 open Parsetree;
 open Longident;
 open Asttypes;
+open Asttools;
 open Versdep;
 
 open MLast;
@@ -472,7 +473,7 @@ and mktvariant loc ctl priv =
     List.map
       (fun (loc, c, tl, rto, alg_attrs) →
          (conv_con (uv c), sumbranch_ctyp ~{priv=priv} loc (uv tl), option_map ctyp rto,
-          mkloc loc, alg_attributes alg_attrs))
+          mkloc loc, uv_alg_attributes alg_attrs))
       ctl
   in
   match ocaml_ptype_variant ctl priv with
@@ -485,7 +486,7 @@ and mktrecord ltl priv =
          let loc = mkloc loc in
          let m = mkmutable m in
          let t = add_polytype t in
-         let attrs = alg_attributes attrs in
+         let attrs = uv_alg_attributes attrs in
          (n, m, t, loc, attrs))
       ltl
   in
@@ -532,8 +533,9 @@ and ctyp =
   | TyPck loc mt →
       match ocaml_ptyp_package with
       [ Some ptyp_package →
+          let (mt, attrs) = module_type_unwrap_attrs mt in
           let pt = package_of_module_type loc mt in
-          mktyp loc (ptyp_package pt)
+          mktyp ~{alg_attributes=conv_attributes attrs} loc (ptyp_package pt)
       | None → error loc "no package type in this ocaml version" ]
   | TyPol loc pl t →
       match ocaml_ptyp_poly with
@@ -550,7 +552,7 @@ and ctyp =
       let catl =
         List.map
           (fun
-           [ PvTag loc c a t alg_attrs → Left (uv c, uv a, List.map ctyp (uv t), alg_attributes alg_attrs)
+           [ PvTag loc c a t alg_attrs → Left (uv c, uv a, List.map ctyp (uv t), uv_alg_attributes alg_attrs)
            | PvInh loc t → Right (ctyp t) ])
           (uv catl)
       in
@@ -651,9 +653,9 @@ and extension_constructor loc ec = match ec with [
       EcTuple n tl alg_attrs ->
       match sumbranch_ctyp loc (uv tl) with [
         Left x -> 
-          ocaml_ec_tuple ~{alg_attributes=alg_attributes alg_attrs} (mkloc loc) (uv n) x
+          ocaml_ec_tuple ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) x
       | Right x -> 
-          ocaml_ec_record ~{alg_attributes=alg_attributes alg_attrs} (mkloc loc) (uv n) x
+          ocaml_ec_record ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) x
       ]
     | EcRebind n sl alg_attrs ->
       let sl = uv sl in
@@ -662,7 +664,7 @@ and extension_constructor loc ec = match ec with [
 and type_extension loc te =
   let pf = uv te.tePrv in
   let ecstrs = List.map (extension_constructor loc) (uv te.teECs) in
-  ocaml_type_extension ~{item_attributes=item_attributes te.teAttributes} (mkloc loc)
+  ocaml_type_extension ~{item_attributes=uv_item_attributes te.teAttributes} (mkloc loc)
     (long_id_of_string_list loc (uv (snd (uv te.teNam))))
     (List.map (fun (p,v) -> (uv p, variance_of_var v)) (uv te.tePrm))
     (if pf then Private else Public)
@@ -794,8 +796,9 @@ and patt =
           let p = mkpat loc (ppat_unpack (mkloc loc) (option_map uv (uv s))) in
           match mto with
           [ Some mt →
+              let (mt, alg_attrs) = module_type_unwrap_attrs mt in
               let pt = package_of_module_type loc mt in
-              mkpat loc (Ppat_constraint p (mktyp loc (ptyp_package pt)))
+              mkpat loc (Ppat_constraint p (mktyp ~{alg_attributes=conv_attributes alg_attrs} loc (ptyp_package pt)))
           | None → p ]
       | None → error loc "no unpack pattern in this ocaml version" ]
   | PaVrn loc s →
@@ -1008,7 +1011,7 @@ and expr =
   | ExLet loc rf pel e →
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
   | ExLEx loc exnname exntyl body alg_attrs ->
-      let exdef = ocaml_extension_exception (mkloc loc) (uv exnname) (List.map ctyp (uv exntyl)) (alg_attributes alg_attrs) in
+      let exdef = ocaml_extension_exception (mkloc loc) (uv exnname) (List.map ctyp (uv exntyl)) (uv_alg_attributes alg_attrs) in
       mkexp loc (ocaml_pexp_letexception exdef (expr body))
   | ExLid loc s → mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident (uv s)))
   | ExLmd loc i me e →
@@ -1170,7 +1173,7 @@ and mkpe (p, e, attrs) =
     [ PaTyc loc p (TyPot loc1 nt ct) → expand_gadt_type loc p loc1 nt ct e
     | p → (p, e) ]
   in
-  ocaml_value_binding ~{item_attributes=item_attributes attrs} (mkloc loc) (patt p) (expr e)
+  ocaml_value_binding ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (patt p) (expr e)
 and expand_gadt_type loc p loc1 nt ct e =
   let nt = uv nt in
   let e = <:expr< ($e$ : $ct$) >> in
@@ -1200,7 +1203,7 @@ and mktype_decl td =
       (uv td.tdCon)
   in
   let tn = uv (snd (uv td.tdNam)) in
-  (tn, type_decl ~{item_attributes=item_attributes td.tdAttributes} tn (uv td.tdPrm) priv cl td.tdDef)
+  (tn, type_decl ~{item_attributes=uv_item_attributes td.tdAttributes} tn (uv td.tdPrm) priv cl td.tdDef)
 and module_type =
   fun
   [ MtAtt loc e a ->
@@ -1231,12 +1234,12 @@ and sig_item s l =
   match s with
   [ 
     SgCls loc cd →
-      [mksig loc (Psig_class (List.map (class_info item_attributes class_type) (uv cd))) :: l]
+      [mksig loc (Psig_class (List.map (class_info uv_item_attributes class_type) (uv cd))) :: l]
   | SgClt loc ctd →
       match ocaml_psig_class_type with
       [ Some psig_class_type →
           [mksig loc
-             (psig_class_type (List.map (class_info item_attributes class_type) (uv ctd))) ::
+             (psig_class_type (List.map (class_info uv_item_attributes class_type) (uv ctd))) ::
            l]
       | None → error loc "no class type in this ocaml version" ]
   | SgDcl loc sl → List.fold_right sig_item (uv sl) l
@@ -1244,25 +1247,25 @@ and sig_item s l =
   | SgExc loc n tl alg_attrs item_attrs →
       let tl = sumbranch_ctyp loc (uv tl) in
       [mksig loc
-         (ocaml_psig_exception ~{alg_attributes=alg_attributes alg_attrs} (mkloc loc) (uv n) tl) ::
+         (ocaml_psig_exception ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) tl) ::
        l]
   | SgExt loc n t p attrs →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t (uv p))) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn t (uv p))) :: l]
   | SgInc loc mt attrs →
-      [mksig loc (ocaml_psig_include ~{item_attributes=item_attributes attrs} (mkloc loc) (module_type mt)) :: l]
+      [mksig loc (ocaml_psig_include ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (module_type mt)) :: l]
   | SgMod loc rf ntl →
       if not (uv rf) then
         List.fold_right
           (fun (nopt, mt, item_attrs) l →
              [mksig loc
-                (ocaml_psig_module ~{item_attributes=item_attributes item_attrs} (mkloc loc) (option_map uv (uv nopt)) (module_type mt)) :: l])
+                (ocaml_psig_module ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (option_map uv (uv nopt)) (module_type mt)) :: l])
           (uv ntl) l
       else
         match ocaml_psig_recmodule with
         [ Some psig_recmodule →
             let ntl =
-              List.map (fun (nopt, mt, item_attrs) → (option_map uv (uv nopt), module_type mt, item_attributes item_attrs)) (uv ntl)
+              List.map (fun (nopt, mt, item_attrs) → (option_map uv (uv nopt), module_type mt, uv_item_attributes item_attrs)) (uv ntl)
             in
             [mksig loc (psig_recmodule ntl) :: l]
         | None → error loc "no recursive module in this ocaml version" ]
@@ -1273,22 +1276,22 @@ and sig_item s l =
         | _ -> Some (module_type mt)
         end
       in
-      [mksig loc (ocaml_psig_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
+      [mksig loc (ocaml_psig_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
 
   | SgMtyAbs loc n item_attrs →
       let mto = None in
-      [mksig loc (ocaml_psig_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
+      [mksig loc (ocaml_psig_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
 
   | SgMtyAlias loc n li item_attrs ->
       let li = long_id_of_string_list loc (uv li) in
       let mty = mkmty loc (ocaml_pmty_alias (mkloc loc) li) in
-      let m = ocaml_psig_module ~{item_attributes=item_attributes item_attrs} (mkloc loc) (Some (uv n)) mty in
+      let m = ocaml_psig_module ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (Some (uv n)) mty in
       [mksig loc m :: l]
 
   | SgOpn loc lid attrs →
       let lid = longid_long_id lid in
       [mksig loc
-         (ocaml_psig_open ~{item_attributes=item_attributes attrs} (mkloc loc) lid) ::
+         (ocaml_psig_open ~{item_attributes=uv_item_attributes attrs} (mkloc loc) lid) ::
        l]
   | SgTyp loc flg tdl →
       [mksig loc (ocaml_psig_type (uv flg) (List.map mktype_decl (uv tdl))) :: l]
@@ -1299,7 +1302,7 @@ and sig_item s l =
         (fun () → List.fold_right (fun (si, _) → sig_item si) (uv sl) l) ()
   | SgVal loc n t attrs →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t [])) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn t [])) :: l]
   | SgXtr loc _ _ → error loc "bad ast SgXtr"
   | SgFlAtt loc float_attr →
       [mksig loc
@@ -1353,12 +1356,12 @@ and module_expr =
 and str_item s l =
   match s with
   [ StCls loc cd →
-      [mkstr loc (Pstr_class (List.map (class_info item_attributes class_expr) (uv cd))) :: l]
+      [mkstr loc (Pstr_class (List.map (class_info uv_item_attributes class_expr) (uv cd))) :: l]
   | StClt loc ctd →
       match ocaml_pstr_class_type with
       [ Some pstr_class_type →
           [mkstr loc
-             (pstr_class_type (List.map (class_info item_attributes class_type) (uv ctd))) ::
+             (pstr_class_type (List.map (class_info uv_item_attributes class_type) (uv ctd))) ::
            l]
       | None → error loc "no class type in this ocaml version" ]
   | StDcl loc sl → List.fold_right str_item (uv sl) l
@@ -1368,7 +1371,7 @@ and str_item s l =
       EcTuple n tl alg_attrs ->
       let tl = sumbranch_ctyp loc (uv tl) in
       let si =
-            ocaml_pstr_exception ~{alg_attributes=alg_attributes alg_attrs} ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) tl
+            ocaml_pstr_exception ~{alg_attributes=uv_alg_attributes alg_attrs} ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) tl
       in
       [mkstr loc si :: l]
 
@@ -1385,20 +1388,20 @@ and str_item s l =
       in
       [mkstr loc si :: l]
     ]
-  | StExp loc e attrs → [mkstr loc (ocaml_pstr_eval ~{item_attributes=item_attributes attrs} (expr e)) :: l]
+  | StExp loc e attrs → [mkstr loc (ocaml_pstr_eval ~{item_attributes=uv_item_attributes attrs} (expr e)) :: l]
   | StExt loc n t p attrs →
       let vn = uv n in
-      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=item_attributes attrs} vn t (uv p))) :: l]
+      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn t (uv p))) :: l]
   | StInc loc me attrs →
       match ocaml_pstr_include with
       [ Some pstr_include →
-          [mkstr loc (pstr_include ~{item_attributes=item_attributes attrs} (mkloc loc) (module_expr me)) :: l]
+          [mkstr loc (pstr_include ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (module_expr me)) :: l]
       | None → error loc "no include in this ocaml version" ]
   | StMod loc rf nel →
       if not (uv rf) then
         List.fold_right
           (fun (nopt, me, attrs) l →
-             let m = ocaml_pstr_module ~{item_attributes=item_attributes attrs} (mkloc loc) (option_map uv (uv nopt)) (module_expr me) in
+             let m = ocaml_pstr_module ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (option_map uv (uv nopt)) (module_expr me) in
              [mkstr loc m :: l])
           (uv nel) l
       else
@@ -1407,7 +1410,7 @@ and str_item s l =
             let nel =
               List.map
                 (fun (nopt, me, attrs) →
-                   let attrs = item_attributes attrs in
+                   let attrs = uv_item_attributes attrs in
                    let (me, mt) =
                      match me with
                      [ MeTyc _ me mt → (module_expr me, module_type mt)
@@ -1421,14 +1424,14 @@ and str_item s l =
             [mkstr loc (pstr_recmodule nel) :: l]
         | None → error loc "no recursive module in this ocaml version" ]
   | StMty loc n mt item_attrs →
-      let m = ocaml_pstr_modtype ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) (module_type mt) in
+      let m = ocaml_pstr_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) (module_type mt) in
       [mkstr loc m :: l]
   | StMtyAbs loc n item_attrs →
-      let m = ocaml_pstr_modtype_abs ~{item_attributes=item_attributes item_attrs} (mkloc loc) (uv n) in
+      let m = ocaml_pstr_modtype_abs ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) in
       [mkstr loc m :: l]
   | StOpn loc ovf me attrs →
       [mkstr loc
-         (ocaml_pstr_open ~{item_attributes=item_attributes attrs} (mkoverride (uv ovf)) (mkloc loc) (module_expr me)) ::
+         (ocaml_pstr_open ~{item_attributes=uv_item_attributes attrs} (mkoverride (uv ovf)) (mkloc loc) (module_expr me)) ::
        l]
   | StTyp loc flg tdl →
       [mkstr loc (ocaml_pstr_type (uv flg) (List.map mktype_decl (uv tdl))) :: l]
@@ -1501,24 +1504,24 @@ and class_sig_item c l =
       match ocaml_pctf_cstr with
       [ Some pctf_cstr →
           let loc = mkloc loc in
-          [ocaml_class_type_field ~{item_attributes=item_attributes item_attrs} loc (pctf_cstr (ctyp t1, ctyp t2, loc)) ::
+          [ocaml_class_type_field ~{item_attributes=uv_item_attributes item_attrs} loc (pctf_cstr (ctyp t1, ctyp t2, loc)) ::
            l]
       | None → error loc "no class constraint in this ocaml version" ]
   | CgDcl loc cl → List.fold_right class_sig_item (uv cl) l
   | CgInh loc ct item_attrs →
-      [ocaml_class_type_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
+      [ocaml_class_type_field ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc)
          (ocaml_pctf_inher (class_type ct)) :: l]
   | CgMth loc pf s t item_attrs →
-      [ocaml_class_type_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
+      [ocaml_class_type_field ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc)
          (ocaml_pctf_meth
             (uv s, mkprivate (uv pf), add_polytype t, mkloc loc)) ::
        l]
   | CgVal loc mf vf s t item_attrs →
-      [ocaml_class_type_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
+      [ocaml_class_type_field ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc)
          (ocaml_pctf_val (uv s, mkmutable (uv mf), mkvirtual (uv vf), ctyp t, mkloc loc)) ::
        l]
   | CgVir loc b s t item_attrs →
-      [ocaml_class_type_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
+      [ocaml_class_type_field ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc)
          (ocaml_pctf_virt
             (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
        l]
@@ -1610,18 +1613,18 @@ and class_str_item c l =
       match ocaml_pcf_cstr with
       [ Some pcf_cstr →
           let loc = mkloc loc in
-          [ocaml_class_field ~{item_attributes=item_attributes attrs} loc (pcf_cstr (ctyp t1, ctyp t2, loc)) :: l]
+          [ocaml_class_field ~{item_attributes=uv_item_attributes attrs} loc (pcf_cstr (ctyp t1, ctyp t2, loc)) :: l]
       | None → error loc "no constraint in this ocaml version" ]
   | CrDcl loc cl → List.fold_right class_str_item (uv cl) l
   | CrInh loc ovflag ce pb attrs →
       let ovflag = mkoverride (uv ovflag) in
-      [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc)
+      [ocaml_class_field ~{item_attributes=uv_item_attributes attrs} (mkloc loc)
          (ocaml_pcf_inher (mkloc loc) ovflag (class_expr ce) (uv pb)) ::
        l]
   | CrIni loc e attrs →
       match ocaml_pcf_init with
       [ Some pcf_init →
-          [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc) (pcf_init (expr e)) :: l]
+          [ocaml_class_field ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (pcf_init (expr e)) :: l]
       | None → error loc "no initializer in this ocaml version" ]
   | CrMth loc ovf pf s ot e item_attrs →
       let e =
@@ -1633,22 +1636,22 @@ and class_str_item c l =
             if uv ot = None then expr e
             else error loc "no method with label in this ocaml version" ]
       in
-      [ocaml_class_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
+      [ocaml_class_field ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc)
          (ocaml_pcf_meth (uv s, uv pf, uv ovf, e, mkloc loc)) ::
        l]
   | CrVal loc ovf mf s e attrs →
-      [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc)
+      [ocaml_class_field ~{item_attributes=uv_item_attributes attrs} (mkloc loc)
          (ocaml_pcf_val (uv s, uv mf, uv ovf, expr e, mkloc loc)) ::
        l]
   | CrVav loc mf s t attrs →
       match ocaml_pcf_valvirt with
       [ Some pcf_valvirt →
-          [ocaml_class_field ~{item_attributes=item_attributes attrs} (mkloc loc)
+          [ocaml_class_field ~{item_attributes=uv_item_attributes attrs} (mkloc loc)
              (pcf_valvirt (uv s, uv mf, ctyp t, mkloc loc)) ::
            l]
       | None → error loc "no virtual value in this ocaml version" ]
   | CrVir loc b s t item_attrs →
-      [ocaml_class_field ~{item_attributes=item_attributes item_attrs} (mkloc loc)
+      [ocaml_class_field ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc)
          (ocaml_pcf_virt
             (uv s, mkprivate (uv b), add_polytype t, mkloc loc)) ::
        l]
@@ -1659,16 +1662,15 @@ and class_str_item c l =
   | CrExten loc ebody -> 
       [ocaml_class_field (mkloc loc) (ocaml_pcf_extension (extension (uv ebody))) :: l]
   ]
-and item_attributes attrs =
-    let x = uv attrs in
+and uv_item_attributes attrs =
+    conv_attributes (uv attrs)
+and uv_alg_attributes attrs =
+    conv_attributes (uv attrs)
+and conv_attributes x =
     let x = List.map uv x in
     let x = List.map attr x in
     x
-and alg_attributes attrs =
-    let x = uv attrs in
-    let x = List.map uv x in
-    let x = List.map attr x in
-    x
+
 and attr (id, payload) =
   match payload with [
     StAttr loc st ->
