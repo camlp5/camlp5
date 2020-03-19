@@ -739,10 +739,12 @@ EXTEND
           <:str_item< module type $_:i$ $_itemattrs:attrs$ >>
       | "open"; ovf = V (FLAG "!") "!"; me = module_expr ; attrs = item_attributes ->
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
-      | "type"; check_type_decl; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
-          <:str_item< type $_flag:nr$ $_list:tdl$ >>
-      | "type" ; check_type_extension ; te = type_extension →
-          <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
+      | "type"; ext = ext_opt; check_type_decl; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
+          str_item_to_inline loc <:str_item< type $_flag:nr$ $_list:tdl$ >> ext
+      | "type"; ext = ext_opt; attrs = alg_attributes_no_anti; check_type_extension ; te = type_extension →
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in
+          let te = { (te) with MLast.teAttributes = attrs } in
+          str_item_to_inline loc <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >> ext
 
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
@@ -1333,11 +1335,13 @@ EXTEND
   ;
   (* Type declaration *)
   type_decl:
-    [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
-        tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+    [ [ alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
+        tk = type_kind; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
-      | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+      | alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
           let tk = <:ctyp< '$choose_tvar tpl$ >> in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
   ;
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)

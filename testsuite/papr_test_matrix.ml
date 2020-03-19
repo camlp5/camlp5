@@ -2045,14 +2045,24 @@ and t2 = bool[@@foo];
     functor (_ : (module type of M)[@foo2]) → sig  end[@foo3])[@foo1];
 |foo}
     };
-    {name="inline-extensions19"; implem = True ;
+    {name="inline-extensions21"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type%foo[@foo] t = int
+and[@foo] t = int
+|foo} ;
+     official_input = OK {foo|type%foo[@foo] t = int
+and[@foo] t = int
+|foo} ;
+     r_input = OK {foo|[%%foo type t = int[@@foo]
+and t = int[@@foo];];|foo} ;
+     o_output = OK {foo|[%%foo type t = int[@@foo]
+and t = int[@@foo];;];;
+|foo};
+     official_output = OK {foo|[%%foo type t = int[@@foo ]
+       and t = int[@@foo ]]|foo} ;
+     r_output = OK {foo|[%%foo type t = int[@@foo]
+and t = int[@@foo];];
+|foo}
     }
 ]
 ;
