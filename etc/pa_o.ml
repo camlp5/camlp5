@@ -705,15 +705,19 @@ EXTEND
     ]
   ;
   extension_constructor:
-  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+  [ [ attrs = alg_attributes_no_anti; ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
         <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
-    | ci = cons_ident; "of"; tl = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
+    | attrs = alg_attributes_no_anti; ci = cons_ident; "of"; tl = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
         <:extension_constructor< $_uid:ci$ of $_list:tl$ $_algattrs:alg_attrs$ >>
 
-    | ci = cons_ident; "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
+    | attrs = alg_attributes_no_anti; ci = cons_ident; "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
         <:extension_constructor< $_uid:ci$ of $list:[cdrec]$ $_algattrs:alg_attrs$ >>
 
-    | ci = cons_ident ; alg_attrs = alg_attributes ->
+    | attrs = alg_attributes_no_anti; ci = cons_ident ; alg_attrs = alg_attributes ->
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
         <:extension_constructor< $_uid:ci$ $_algattrs:alg_attrs$ >>
     ] ]
   ;
@@ -721,22 +725,29 @@ EXTEND
   ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   str_item:
     [ "top"
-      [ "exception"; ec = V extension_constructor "excon" ; item_attrs = item_attributes →
-          <:str_item< exception $_excon:ec$ $_itemattrs:item_attrs$ >>
+      [ "exception"; ext = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes →
+          str_item_to_inline loc <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext
 
-      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ; attrs = item_attributes ->
-          <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-      | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ; attrs = item_attributes ->
-          <:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
+      | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          str_item_to_inline loc <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+      | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          str_item_to_inline loc<:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "include"; me = module_expr ; attrs = item_attributes -> <:str_item< include $me$ $_itemattrs:attrs$ >>
-      | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
-          <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes ->
-          <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
-      | "module"; "type"; i = V ident "" ; attrs = item_attributes ->
-          <:str_item< module type $_:i$ $_itemattrs:attrs$ >>
+      | "module"; (ext,alg_attrs) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding ->
+          let (i,me,attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs attrs in
+          let h = (i,me,attrs) in
+          str_item_to_inline loc <:str_item< module $_flag:r$ $list:[h::t]$ >> ext
+      | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; "="; mt = module_type ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          str_item_to_inline loc <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
+      | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          str_item_to_inline loc <:str_item< module type $_:i$ $_itemattrs:attrs$ >> ext
       | "open"; ovf = V (FLAG "!") "!"; me = module_expr ; attrs = item_attributes ->
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
       | "type"; ext = ext_opt; check_type_decl; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
@@ -785,9 +796,16 @@ EXTEND
   rebind_exn:
     [ [ "="; sl = V mod_ident "list" -> sl ] ]
   ;
-  mod_binding:
-    [ [ i = V uidopt "uidopt"; me = mod_fun_binding ;
-        attrs = item_attributes -> (i, me, attrs) ] ]
+  first_mod_binding:
+    [ [ i = V uidopt "uidopt"; me = mod_fun_binding ; item_attrs = item_attributes ->
+          (i, me, item_attrs)
+      ] ]
+  ;
+  rest_mod_binding:
+    [ [ "and"; alg_attrs = alg_attributes_no_anti; i = V uidopt "uidopt"; me = mod_fun_binding ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="mod_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          (i, me, attrs)
+      ] ]
   ;
   mod_fun_binding:
     [ RIGHTA

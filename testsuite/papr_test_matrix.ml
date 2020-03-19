@@ -2091,28 +2091,34 @@ and t = int[@@foo];];
      exclude=[];
      o_input = OK {foo|external%foo[@foo] x : _  = ""|foo} ;
      official_input = OK {foo|external%foo[@foo] x : _  = ""|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|[%%foo external x : _ = ""[@@foo];];|foo} ;
+     o_output = OK {foo|[%%foo external x : _ = ""[@@foo];;];;
+|foo};
      official_output = OK {foo|[%%foo external x : _ = ""[@@foo ]]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|[%%foo external x : _ = ""[@@foo];];
+|foo}
     };
     {name="inline-extensions25"; implem = True ;
      exclude=[];
      o_input = OK {foo|exception%foo[@foo] X|foo} ;
      official_input = OK {foo|exception%foo[@foo] X|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|[%%foo exception X [@foo ];];|foo} ;
+     o_output = OK {foo|[%%foo exception X[@foo];;];;
+|foo};
      official_output = OK {foo|[%%foo exception X [@foo ]]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|[%%foo exception X[@foo];];
+|foo}
     };
     {name="inline-extensions26"; implem = True ;
      exclude=[];
      o_input = OK {foo|module%foo[@foo] M = M|foo} ;
      official_input = OK {foo|module%foo[@foo] M = M|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|[%%foo module M = M[@@foo];];|foo} ;
+     o_output = OK {foo|[%%foo module M = M[@@foo];;];;
+|foo};
      official_output = OK {foo|[%%foo module M = M[@@foo ]]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|[%%foo module M = M[@@foo];];
+|foo}
     };
     {name="inline-extensions27"; implem = True ;
      exclude=[];
@@ -2120,19 +2126,26 @@ and t = int[@@foo];];
 and[@foo] M : S = M|foo} ;
      official_input = OK {foo|module%foo[@foo] rec M : S = M
 and[@foo] M : S = M|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|[%%foo module rec M : S = M[@@foo]
+and M : S = M[@@foo];];|foo} ;
+     o_output = OK {foo|[%%foo module rec M : S = M[@@foo]
+and M : S = M[@@foo];;];;
+|foo};
      official_output = OK {foo|[%%foo module rec M:S = M[@@foo ]  and M:S = M[@@foo ]]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|[%%foo module rec M : S = M[@@foo]
+and M : S = M[@@foo];];
+|foo}
     };
     {name="inline-extensions28"; implem = True ;
      exclude=[];
      o_input = OK {foo|module type%foo[@foo] S = S|foo} ;
      official_input = OK {foo|module type%foo[@foo] S = S|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|[%%foo module type S = S[@@foo];];|foo} ;
+     o_output = OK {foo|[%%foo module type S = S[@@foo];;];;
+|foo};
      official_output = OK {foo|[%%foo module type S  = S[@@foo ]]|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|[%%foo module type S = S[@@foo];];
+|foo}
     }
 ]
 ;
