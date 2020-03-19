@@ -206,7 +206,8 @@ let make_lookahd loc pll sl cl errk =
 let gcl = ref [];;
 
 Grammar.safe_extend
-  (let _ = (expr : 'expr Grammar.Entry.e) in
+  (let _ = (expr : 'expr Grammar.Entry.e)
+   and _ = (ext_attributes : 'ext_attributes Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in
@@ -233,14 +234,20 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "match")))
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "match")))
+                         (Grammar.s_nterm
+                            (ext_attributes :
+                             'ext_attributes Grammar.Entry.e)))
                       Grammar.s_self)
                    (Grammar.s_token ("", "with")))
                 (Grammar.s_token ("", "lexer")))
              (Grammar.s_nterm (rules : 'rules Grammar.Entry.e)),
-           (fun (rl : 'rules) _ _ (e : 'expr) _ (loc : Ploc.t) ->
-              (mk_lexer_match loc e rl : 'expr)));
+           (fun (rl : 'rules) _ _ (e : 'expr) (ext, attrs : 'ext_attributes) _
+                (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (mk_lexer_match loc e rl) ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lexer")))

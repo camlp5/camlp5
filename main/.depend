@@ -5,8 +5,8 @@ ast2pt.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo ast2pt.cmi \
 ast2pt.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx ast2pt.cmi \
     mLast.cmi pcaml.cmx prtools.cmx
 ast2pt.cmi: ../lib/ploc.cmi mLast.cmi
-asttools.cmo: mLast.cmi
-asttools.cmx: mLast.cmi
+asttools.cmo: ../lib/ploc.cmi mLast.cmi
+asttools.cmx: ../lib/ploc.cmx mLast.cmi
 exparser.cmo: ../lib/ploc.cmi exparser.cmi mLast.cmi pcaml.cmi reloc.cmi
 exparser.cmx: ../lib/ploc.cmx exparser.cmi mLast.cmi pcaml.cmx reloc.cmx
 exparser.cmi: mLast.cmi

@@ -261,7 +261,8 @@ and payload =
   | TyAttr of loc * ctyp
   | PaAttr of loc * patt * expr option
 and attribute_body = string * payload
-and attributes = attribute_body list;;
+and attributes_no_anti = attribute_body list
+and attributes = attributes_no_anti;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;

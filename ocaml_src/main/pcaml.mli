@@ -72,6 +72,8 @@ val class_expr : MLast.class_expr Grammar.Entry.e;;
 val class_type : MLast.class_type Grammar.Entry.e;;
 val alg_attribute : MLast.attribute_body Grammar.Entry.e;;
 val alg_attributes : MLast.attributes Grammar.Entry.e;;
+val ext_attributes :
+  (string option * MLast.attributes_no_anti) Grammar.Entry.e;;
    (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
 
 

@@ -459,7 +459,8 @@ let mparser loc m bpo pc =
 ;;
 
 Grammar.safe_extend
-  (let _ = (expr : 'expr Grammar.Entry.e) in
+  (let _ = (expr : 'expr Grammar.Entry.e)
+   and _ = (ext_attributes : 'ext_attributes Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in
@@ -482,17 +483,23 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "match")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "match")))
+                            (Grammar.s_nterm
+                               (ext_attributes :
+                                'ext_attributes Grammar.Entry.e)))
                          Grammar.s_self)
                       (Grammar.s_token ("", "with")))
                    (Grammar.s_token ("", "bparser")))
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
-                (loc : Ploc.t) ->
-              (mparser_match loc "Fstream" e po [pc] : 'expr)));
+           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (mparser_match loc "Fstream" e po [pc])
+                 ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -501,8 +508,12 @@ Grammar.safe_extend
                       (Grammar.r_next
                          (Grammar.r_next
                             (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "match")))
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_token ("", "match")))
+                                  (Grammar.s_nterm
+                                     (ext_attributes :
+                                      'ext_attributes Grammar.Entry.e)))
                                Grammar.s_self)
                             (Grammar.s_token ("", "with")))
                          (Grammar.s_token ("", "bparser")))
@@ -515,8 +526,10 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
-                (e : 'expr) _ (loc : Ploc.t) ->
-              (mparser_match loc "Fstream" e po pcl : 'expr)));
+                (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (mparser_match loc "Fstream" e po pcl)
+                 ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -551,17 +564,23 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "match")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "match")))
+                            (Grammar.s_nterm
+                               (ext_attributes :
+                                'ext_attributes Grammar.Entry.e)))
                          Grammar.s_self)
                       (Grammar.s_token ("", "with")))
                    (Grammar.s_token ("", "fparser")))
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
-                (loc : Ploc.t) ->
-              (cparser_match loc e po [pc] : 'expr)));
+           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (cparser_match loc e po [pc]) ext
+                 attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -570,8 +589,12 @@ Grammar.safe_extend
                       (Grammar.r_next
                          (Grammar.r_next
                             (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "match")))
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_token ("", "match")))
+                                  (Grammar.s_nterm
+                                     (ext_attributes :
+                                      'ext_attributes Grammar.Entry.e)))
                                Grammar.s_self)
                             (Grammar.s_token ("", "with")))
                          (Grammar.s_token ("", "fparser")))
@@ -584,8 +607,10 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
-                (e : 'expr) _ (loc : Ploc.t) ->
-              (cparser_match loc e po pcl : 'expr)));
+                (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (cparser_match loc e po pcl) ext
+                 attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

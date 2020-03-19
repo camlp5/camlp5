@@ -54,6 +54,7 @@ Grammar.Unsafe.clear_entry class_type;
 Grammar.Unsafe.clear_entry class_expr;
 Grammar.Unsafe.clear_entry alg_attribute;
 Grammar.Unsafe.clear_entry alg_attributes;
+Grammar.Unsafe.clear_entry ext_attributes;
 Grammar.Unsafe.clear_entry class_sig_item;
 Grammar.Unsafe.clear_entry class_str_item;;
 
@@ -419,7 +420,8 @@ Grammar.safe_extend
    and _ = (alg_attributes : 'alg_attributes Grammar.Entry.e)
    and _ = (check_type_decl : 'check_type_decl Grammar.Entry.e)
    and _ = (check_type_extension : 'check_type_extension Grammar.Entry.e)
-   and _ = (check_dot_uid : 'check_dot_uid Grammar.Entry.e) in
+   and _ = (check_dot_uid : 'check_dot_uid Grammar.Entry.e)
+   and _ = (ext_attributes : 'ext_attributes Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
@@ -455,8 +457,6 @@ Grammar.safe_extend
    and andop_binding : 'andop_binding Grammar.Entry.e =
      grammar_entry_create "andop_binding"
    and ext_opt : 'ext_opt Grammar.Entry.e = grammar_entry_create "ext_opt"
-   and ext_attributes : 'ext_attributes Grammar.Entry.e =
-     grammar_entry_create "ext_attributes"
    and closed_case_list : 'closed_case_list Grammar.Entry.e =
      grammar_entry_create "closed_case_list"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
@@ -1806,15 +1806,21 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "while")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "while")))
+                            (Grammar.s_nterm
+                               (ext_attributes :
+                                'ext_attributes Grammar.Entry.e)))
                          Grammar.s_self)
                       (Grammar.s_token ("", "do")))
                    (Grammar.s_token ("", "{")))
                 (Grammar.s_nterm (sequence : 'sequence Grammar.Entry.e)))
              (Grammar.s_token ("", "}")),
-           (fun _ (seq : 'sequence) _ _ (e : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExWhi (loc, e, seq) : 'expr)));
+           (fun _ (seq : 'sequence) _ _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExWhi (loc, e, seq)) ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1825,8 +1831,12 @@ Grammar.safe_extend
                             (Grammar.r_next
                                (Grammar.r_next
                                   (Grammar.r_next
-                                     (Grammar.r_next Grammar.r_stop
-                                        (Grammar.s_token ("", "for")))
+                                     (Grammar.r_next
+                                        (Grammar.r_next Grammar.r_stop
+                                           (Grammar.s_token ("", "for")))
+                                        (Grammar.s_nterm
+                                           (ext_attributes :
+                                            'ext_attributes Grammar.Entry.e)))
                                      (Grammar.s_nterm
                                         (patt : 'patt Grammar.Entry.e)))
                                   (Grammar.s_token ("", "=")))
@@ -1840,99 +1850,145 @@ Grammar.safe_extend
                 (Grammar.s_nterm (sequence : 'sequence Grammar.Entry.e)))
              (Grammar.s_token ("", "}")),
            (fun _ (seq : 'sequence) _ _ (e2 : 'expr) (df : 'direction_flag)
-                (e1 : 'expr) _ (i : 'patt) _ (loc : Ploc.t) ->
-              (MLast.ExFor (loc, i, e1, e2, df, seq) : 'expr)));
+                (e1 : 'expr) _ (i : 'patt) (ext, attrs : 'ext_attributes) _
+                (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExFor (loc, i, e1, e2, df, seq)) ext
+                 attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "do")))
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "do")))
+                      (Grammar.s_nterm
+                         (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                    (Grammar.s_token ("", "{")))
                 (Grammar.s_nterm (sequence : 'sequence Grammar.Entry.e)))
              (Grammar.s_token ("", "}")),
-           (fun _ (seq : 'sequence) _ _ (loc : Ploc.t) ->
-              (mksequence2 loc seq : 'expr)));
+           (fun _ (seq : 'sequence) _ (ext, attrs : 'ext_attributes) _
+                (loc : Ploc.t) ->
+              (expr_to_inline loc (mksequence2 loc seq) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "if")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "if")))
+                            (Grammar.s_nterm
+                               (ext_attributes :
+                                'ext_attributes Grammar.Entry.e)))
                          Grammar.s_self)
                       (Grammar.s_token ("", "then")))
                    Grammar.s_self)
                 (Grammar.s_token ("", "else")))
              Grammar.s_self,
-           (fun (e3 : 'expr) _ (e2 : 'expr) _ (e1 : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExIfe (loc, e1, e2, e3) : 'expr)));
+           (fun (e3 : 'expr) _ (e2 : 'expr) _ (e1 : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExIfe (loc, e1, e2, e3)) ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "try")))
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "try")))
+                      (Grammar.s_nterm
+                         (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                    Grammar.s_self)
                 (Grammar.s_token ("", "with")))
              (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)),
-           (fun (mc : 'match_case) _ (e : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExTry (loc, e, [mc]) : 'expr)));
+           (fun (mc : 'match_case) _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExTry (loc, e, [mc])) ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "try")))
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "try")))
+                      (Grammar.s_nterm
+                         (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                    Grammar.s_self)
                 (Grammar.s_token ("", "with")))
              (Grammar.s_nterm
                 (closed_case_list : 'closed_case_list Grammar.Entry.e)),
-           (fun (l : 'closed_case_list) _ (e : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExTry (loc, e, l) : 'expr)));
+           (fun (l : 'closed_case_list) _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExTry (loc, e, l)) ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "match")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "match")))
+                            (Grammar.s_nterm
+                               (ext_attributes :
+                                'ext_attributes Grammar.Entry.e)))
                          Grammar.s_self)
                       (Grammar.s_token ("", "with")))
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
                 (Grammar.s_token ("", "->")))
              Grammar.s_self,
-           (fun (e1 : 'expr) _ (p1 : 'ipatt) _ (e : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExMat (loc, e, [p1, None, e1]) : 'expr)));
+           (fun (e1 : 'expr) _ (p1 : 'ipatt) _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExMat (loc, e, [p1, None, e1])) ext
+                 attrs :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "match")))
+                      (Grammar.s_nterm
+                         (ext_attributes : 'ext_attributes Grammar.Entry.e)))
+                   Grammar.s_self)
+                (Grammar.s_token ("", "with")))
+             (Grammar.s_nterm
+                (closed_case_list : 'closed_case_list Grammar.Entry.e)),
+           (fun (l : 'closed_case_list) _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExMat (loc, e, l)) ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "match")))
-                   Grammar.s_self)
-                (Grammar.s_token ("", "with")))
-             (Grammar.s_nterm
-                (closed_case_list : 'closed_case_list Grammar.Entry.e)),
-           (fun (l : 'closed_case_list) _ (e : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExMat (loc, e, l) : 'expr)));
+                      (Grammar.s_token ("", "fun")))
+                   (Grammar.s_nterm
+                      (ext_attributes : 'ext_attributes Grammar.Entry.e)))
+                (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+             (Grammar.s_nterm (fun_def : 'fun_def Grammar.Entry.e)),
+           (fun (e : 'fun_def) (p : 'ipatt) (ext, attrs : 'ext_attributes) _
+                (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExFun (loc, [p, None, e])) ext
+                 attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "fun")))
-                (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
-             (Grammar.s_nterm (fun_def : 'fun_def Grammar.Entry.e)),
-           (fun (e : 'fun_def) (p : 'ipatt) _ (loc : Ploc.t) ->
-              (MLast.ExFun (loc, [p, None, e]) : 'expr)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "fun")))
+                (Grammar.s_nterm
+                   (ext_attributes : 'ext_attributes Grammar.Entry.e)))
              (Grammar.s_nterm
                 (closed_case_list : 'closed_case_list Grammar.Entry.e)),
-           (fun (l : 'closed_case_list) _ (loc : Ploc.t) ->
-              (MLast.ExFun (loc, l) : 'expr)));
+           (fun (l : 'closed_case_list) (ext, attrs : 'ext_attributes) _
+                (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExFun (loc, l)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2080,13 +2136,18 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                   (Grammar.s_token ("", "where")))
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                      (Grammar.s_token ("", "where")))
+                   (Grammar.s_nterm
+                      (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                 (Grammar.s_flag (Grammar.s_token ("", "rec"))))
              (Grammar.s_nterm (let_binding : 'let_binding Grammar.Entry.e)),
-           (fun (lb : 'let_binding) (rf : bool) _ (e : 'expr)
-                (loc : Ploc.t) ->
-              (MLast.ExLet (loc, rf, [lb], e) : 'expr)))];
+           (fun (lb : 'let_binding) (rf : bool) (ext, attrs : 'ext_attributes)
+                _ (e : 'expr) (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExLet (loc, rf, [lb], e)) ext attrs :
+               'expr)))];
        Some ":=", Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
@@ -2446,16 +2507,23 @@ Grammar.safe_extend
        Some "apply", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lazy")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lazy")))
+                (Grammar.s_nterm
+                   (ext_attributes : 'ext_attributes Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (e : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExLaz (loc, e) : 'expr)));
+           (fun (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExLaz (loc, e)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "assert")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "assert")))
+                (Grammar.s_nterm
+                   (ext_attributes : 'ext_attributes Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (e : 'expr) _ (loc : Ploc.t) ->
-              (MLast.ExAsr (loc, e) : 'expr)));
+           (fun (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExAsr (loc, e)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
              Grammar.s_self,
@@ -4722,8 +4790,11 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "object")))
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "object")))
+                      (Grammar.s_nterm
+                         (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                    (Grammar.s_opt
                       (Grammar.s_nterm
                          (class_self_patt :
@@ -4731,16 +4802,22 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (class_structure : 'class_structure Grammar.Entry.e)))
              (Grammar.s_token ("", "end")),
-           (fun _ (cf : 'class_structure) (cspo : 'class_self_patt option) _
-                (loc : Ploc.t) ->
-              (MLast.ExObj (loc, cspo, cf) : 'expr)));
+           (fun _ (cf : 'class_structure) (cspo : 'class_self_patt option)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExObj (loc, cspo, cf)) ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "new")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "new")))
+                (Grammar.s_nterm
+                   (ext_attributes : 'ext_attributes Grammar.Entry.e)))
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (i : 'class_longident) _ (loc : Ploc.t) ->
-              (MLast.ExNew (loc, i) : 'expr)))]];
+           (fun (i : 'class_longident) (ext, attrs : 'ext_attributes) _
+                (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExNew (loc, i)) ext attrs :
+               'expr)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "."))
       [None, None,
