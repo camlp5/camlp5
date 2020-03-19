@@ -518,6 +518,13 @@ value patt_to_inline loc p ext attrs =
   ]
 ;
 
+value class_expr_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:class_expr< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
 value str_item_to_inline loc si ext =
   match ext with [ None -> si
   | Some attrid ->
@@ -1517,7 +1524,8 @@ EXTEND
   ;
   class_expr:
     [ "top"
-      [ "fun"; cfd = class_fun_def -> cfd
+      [ "fun"; alg_attrs = alg_attributes_no_anti ;
+        cfd = class_fun_def -> class_expr_wrap_attrs loc cfd alg_attrs
       | "let"; rf = V (FLAG "rec"); lb = V (LIST1 let_binding SEP "and");
         "in"; ce = SELF ->
           <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >> ]
@@ -1563,8 +1571,10 @@ EXTEND
       | "("; p = patt; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >> ] ]
   ;
   class_str_item:
-    [ [ "inherit"; ovf = V (FLAG "!") "!"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ; attrs = item_attributes ->
+    [ [ "inherit"; ovf = V (FLAG "!") "!"; alg_attrs = alg_attributes_no_anti; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="cstr-inherit"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:class_str_item< inherit $_!:ovf$ $ce$ $_opt:pb$ $_itemattrs:attrs$ >>
+
       | "val"; ov = V (FLAG "!") "!"; mf = V (FLAG "mutable");
         lab = V LIDENT "lid" ""; e = cvalue_binding ; attrs = item_attributes ->
           <:class_str_item< value $_!:ov$ $_flag:mf$ $_lid:lab$ = $e$ $_itemattrs:attrs$ >>

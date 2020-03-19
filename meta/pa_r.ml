@@ -365,6 +365,13 @@ value patt_to_inline loc p ext attrs =
   ]
 ;
 
+value class_expr_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:class_expr< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
 value str_item_to_inline loc si ext =
   match ext with [ None -> si
   | Some attrid ->
@@ -1162,8 +1169,8 @@ EXTEND
   ;
   class_expr:
     [ "top"
-      [ "fun"; p = ipatt; ce = class_fun_def →
-          <:class_expr< fun $p$ → $ce$ >>
+      [ "fun"; alg_attrs = alg_attributes_no_anti; p = ipatt; ce = class_fun_def →
+          class_expr_wrap_attrs loc <:class_expr< fun $p$ → $ce$ >> alg_attrs
       | "let"; rf = V (FLAG "rec"); lb = V (LIST1 let_binding SEP "and");
         "in"; ce = SELF →
           <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >> ]

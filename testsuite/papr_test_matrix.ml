@@ -1727,6 +1727,141 @@ and t2 = bool[@@foo];
      official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> ()|foo} ;
      r_output = OK {foo|match x with [ [%foo? exception x[@foo]] → () ];
 |foo}
+    };
+    {name="inline-extensions19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|class x =
+  fun[@foo] x ->
+  object
+  end
+|foo} ;
+     official_input = OK {foo|class x =
+  fun[@foo] x ->
+  object
+  end
+|foo} ;
+     r_input = OK {foo|class x =
+  fun[@foo] x ->
+  object
+  end;
+|foo} ;
+     o_output = OK {foo|class x = (fun x -> object  end)[@foo];;
+|foo};
+     official_output = OK {foo|class x = ((fun x  -> object  end)[@foo ])|foo} ;
+     r_output = OK {foo|class x = (fun x -> object  end)[@foo];
+|foo}
+    };
+    {name="inline-extensions19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-attributes-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|class type t =
+  object[@foo]
+(*
+    inherit[@foo] t
+    val[@foo] x : t
+    val[@foo] mutable x : t
+    method[@foo] x : t
+    method[@foo] private x : t
+    constraint[@foo] t = t'
+    [@@@abc]
+    [%%id]
+    [@@@aaa]
+*)
+  end
+|foo} ;
+     official_input = OK {foo|class type t =
+  object[@foo]
+    inherit[@foo] t
+    val[@foo] x : t
+    val[@foo] mutable x : t
+    method[@foo] x : t
+    method[@foo] private x : t
+    constraint[@foo] t = t'
+    [@@@abc]
+    [%%id]
+    [@@@aaa]
+  end
+|foo} ;
+     r_input = OK {foo|class type t =
+  object[@foo]
+    inherit[@foo] t
+    val[@foo] x : t
+    val[@foo] mutable x : t
+    method[@foo] x : t
+    method[@foo] private x : t
+    constraint[@foo] t = t'
+    [@@@abc]
+    [%%id]
+    [@@@aaa]
+  end ;
+|foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|class type t =
+  object
+    inherit t[@@foo ]
+    val  x : t[@@foo ]
+    val  mutable x : t[@@foo ]
+    method  x : t[@@foo ]
+    method private  x : t[@@foo ]
+    constraint t = t'[@@foo ]
+    [@@@abc ]
+    [%%id ]
+    [@@@aaa ]
+  end[@foo ]|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensions19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensions19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensions19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensions19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensions19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     }
 ]
 ;
