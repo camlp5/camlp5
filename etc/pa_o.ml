@@ -1532,10 +1532,10 @@ EXTEND
   ;
   (* Objects and Classes *)
   str_item:
-    [ [ "class"; cd = V (LIST1 class_declaration SEP "and") ->
-          <:str_item< class $_list:cd$ >>
-      | "class"; "type"; ctd = V (LIST1 class_type_declaration SEP "and") ->
-          <:str_item< class type $_list:ctd$ >> ] ]
+    [ [ "class"; ext = ext_opt; cd = V (LIST1 class_declaration SEP "and") ->
+          str_item_to_inline loc <:str_item< class $_list:cd$ >> ext
+      | "class"; "type"; ext = ext_opt; ctd = V (LIST1 class_type_declaration SEP "and") ->
+          str_item_to_inline loc <:str_item< class type $_list:ctd$ >> ext ] ]
   ;
   sig_item:
     [ [ "class"; cd = V (LIST1 class_description SEP "and") ->
@@ -1545,8 +1545,9 @@ EXTEND
   ;
   (* Class expressions *)
   class_declaration:
-    [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; i = V LIDENT;
-        cfb = class_fun_binding ; attrs = item_attributes ->
+    [ [ alg_attrs = alg_attributes_no_anti; vf = V (FLAG "virtual"); ctp = class_type_parameters; i = V LIDENT;
+        cfb = class_fun_binding ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="class-decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = i; MLast.ciExp = cfb; MLast.ciAttributes = attrs} ] ]
   ;
@@ -1754,8 +1755,9 @@ EXTEND
            MLast.ciNam = n; MLast.ciExp = ct; MLast.ciAttributes = attrs} ] ]
   ;
   class_type_declaration:
-    [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
-        "="; cs = class_signature ; attrs = item_attributes ->
+    [ [ alg_attrs = alg_attributes_no_anti; vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
+        "="; cs = class_signature ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="class-type-decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = cs; MLast.ciAttributes = attrs} ] ]
   ;
