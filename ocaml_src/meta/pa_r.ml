@@ -380,6 +380,22 @@ let expr_to_inline loc e ext attrs =
         (loc, (attrid, MLast.StAttr (loc, [MLast.StExp (loc, e, [])])))
 ;;
 
+let patt_wrap_attrs loc e l =
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.PaAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let patt_to_inline loc p ext attrs =
+  let p = patt_wrap_attrs loc p attrs in
+  match ext with
+    None -> p
+  | Some attrid -> MLast.PaExten (loc, (attrid, MLast.PaAttr (loc, p, None)))
+;;
+
 let str_item_to_inline loc si ext =
   match ext with
     None -> si
@@ -3050,11 +3066,15 @@ Grammar.safe_extend
        None, Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_token ("", "exception")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "exception")))
+                (Grammar.s_nterm
+                   (ext_attributes : 'ext_attributes Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (p : 'patt) _ (loc : Ploc.t) ->
-              (MLast.PaExc (loc, p) : 'patt)))];
+           (fun (p : 'patt) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (patt_to_inline loc (MLast.PaExc (loc, p)) ext attrs :
+               'patt)))];
        None, Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
@@ -3066,10 +3086,13 @@ Grammar.safe_extend
        None, Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lazy")))
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lazy")))
+                (Grammar.s_nterm
+                   (ext_attributes : 'ext_attributes Grammar.Entry.e)))
              Grammar.s_self,
-           (fun (p : 'patt) _ (loc : Ploc.t) ->
-              (MLast.PaLaz (loc, p) : 'patt)));
+           (fun (p : 'patt) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (patt_to_inline loc (MLast.PaLaz (loc, p)) ext attrs : 'patt)));
         Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
              Grammar.s_self,

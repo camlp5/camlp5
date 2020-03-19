@@ -350,6 +350,21 @@ value expr_to_inline loc e ext attrs =
   ]
 ;
 
+value patt_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:patt< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
+value patt_to_inline loc p ext attrs =
+  let p = patt_wrap_attrs loc p attrs in
+  match ext with [ None -> p
+  | Some attrid ->
+   <:patt< [% $attrid:attrid$ ? $patt:p$ ] >>
+  ]
+;
+
 value str_item_to_inline loc si ext =
   match ext with [ None -> si
   | Some attrid ->
@@ -875,14 +890,15 @@ EXTEND
       [ p = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:patt< $p$ [@ $_attribute:attr$ ] >>
       ]
-    | NONA [ "exception"; p = patt →
-        <:patt< exception $p$ >>
+    | NONA [ "exception"; (ext,attrs) = ext_attributes; p = patt →
+        patt_to_inline loc <:patt< exception $p$ >> ext attrs
       ]
     | NONA
       [ p1 = SELF; ".."; p2 = SELF → <:patt< $p1$ .. $p2$ >> ]
     | LEFTA
       [ p1 = SELF; p2 = SELF → <:patt< $p1$ $p2$ >>
-      | "lazy"; p = SELF → <:patt< lazy $p$ >> ]
+      | "lazy"; (ext,attrs) = ext_attributes; p = SELF → 
+          patt_to_inline loc <:patt< lazy $p$ >> ext attrs ]
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF → <:patt< $p1$ . $p2$ >> ]
     | "simple"

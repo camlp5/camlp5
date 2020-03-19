@@ -1714,7 +1714,8 @@ EXTEND_PRINTER
       [ <:patt< $x$ . $y$ >> ->
           pprintf pc "%p.%p" curr x curr y ]
     | "simple"
-      [ <:patt< ($x$ as $y$) >> ->
+      [ <:patt< lazy $p$ >> -> pprintf pc "lazy@;%p" curr p
+      | <:patt< ($x$ as $y$) >> ->
           pprintf pc "@[<1>(%p@ as %p)@]" patt x patt y
       | <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
@@ -1778,6 +1779,10 @@ EXTEND_PRINTER
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
       |  <:patt< exception $_$ >>
+      | <:patt< $_$ [@ $attribute:_$] >>
+(*
+      | <:patt< [% $_extension:_$ ] >>
+*)
         as z ->
           pprintf pc "@[<1>(%p)@]" patt z
       | z ->

@@ -1706,23 +1706,27 @@ and t2 = bool[@@foo];
      r_output = OK {foo|[%foo (match () with x → x)[@foo];];
 |foo}
     };
-    {name="inline-extensions12"; implem = True ;
+    {name="inline-extensions17"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|match x with lazy%foo[@foo] x -> ()|foo} ;
+     official_input = OK {foo|match x with lazy%foo[@foo] x -> ()|foo} ;
+     r_input = OK {foo|match x with [ lazy%foo[@foo] x -> () ];|foo} ;
+     o_output = OK {foo|let _ = match x with [%foo? lazy x[@foo]] -> ();;
+|foo};
+     official_output = OK {foo|;;match x with | [%foo ?(((lazy x))[@foo ])] -> ()|foo} ;
+     r_output = OK {foo|match x with [ [%foo? lazy x[@foo]] → () ];
+|foo}
     };
-    {name="inline-extensions12"; implem = True ;
+    {name="inline-extensions18"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|match x with exception%foo[@foo] x -> ()|foo} ;
+     official_input = OK {foo|match x with exception%foo[@foo] x -> ()|foo} ;
+     r_input = OK {foo|match x with [ exception%foo[@foo] x -> () ];|foo} ;
+     o_output = OK {foo|let _ = match x with [%foo? exception x[@foo]] -> ();;
+|foo};
+     official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> ()|foo} ;
+     r_output = OK {foo|match x with [ [%foo? exception x[@foo]] → () ];
+|foo}
     }
 ]
 ;

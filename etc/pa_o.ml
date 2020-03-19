@@ -459,13 +459,6 @@ value check_module_not_alias =
     check_module_not_alias_f
 ;
 
-value expr_wrap_attrs loc e l =
-let rec wrec e = fun [
-  [] -> e
-| [h :: t] -> wrec <:expr< $e$ [@ $_attribute:h$ ] >> t
-] in wrec e l
-;
-
 value merge_left_auxiliary_attrs ~{nonterm_name} ~{left_name} ~{right_name} left_attrs right_attrs =
   match (left_attrs, right_attrs) with [
     (l1, Ploc.VaVal l2) -> Ploc.VaVal (l1@l2)
@@ -495,11 +488,33 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value expr_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:expr< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
 value expr_to_inline loc e ext attrs =
   let e = expr_wrap_attrs loc e attrs in
   match ext with [ None -> e
   | Some attrid ->
    <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
+  ]
+;
+
+value patt_wrap_attrs loc e l =
+let rec wrec e = fun [
+  [] -> e
+| [h :: t] -> wrec <:patt< $e$ [@ $_attribute:h$ ] >> t
+] in wrec e l
+;
+
+value patt_to_inline loc p ext attrs =
+  let p = patt_wrap_attrs loc p attrs in
+  match ext with [ None -> p
+  | Some attrid ->
+   <:patt< [% $attrid:attrid$ ? $patt:p$ ] >>
   ]
 ;
 
@@ -1155,8 +1170,8 @@ EXTEND
         <:patt< $p$ [@ $_attribute:attr$ ] >>
       ]
   | NONA
-      [ "exception"; p = SELF →
-         <:patt< exception $p$ >>
+      [ "exception"; (ext,attrs) = ext_attributes; p = SELF →
+         patt_to_inline loc <:patt< exception $p$ >> ext attrs
       ]
   | NONA
       [ p1 = SELF; ".."; p2 = SELF -> <:patt< $p1$ .. $p2$ >> ]
@@ -1186,7 +1201,8 @@ EXTEND
               [ <:patt< ( $list:pl$ ) >> ->
                   List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>) p1 pl
               | _ -> <:patt< $p1$ $p2$ >> ] ]
-      | "lazy"; p = SELF -> <:patt< lazy $p$ >> ]
+      | "lazy"; (ext,attrs) = ext_attributes; p = SELF -> 
+          patt_to_inline loc <:patt< lazy $p$ >> ext attrs ]
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
 (*
