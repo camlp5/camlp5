@@ -2079,7 +2079,11 @@ EXTEND_PRINTER
   pr_module_type:
     [ "top"
       [ <:module_type< functor $fp:arg$ -> $mt2$ >> ->
-          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2 ]
+          str_or_sig_functor pc (functor_parameter_unvala arg) module_type mt2
+      ]
+    | [ <:module_type< module type of $me$ >> ->
+          pprintf pc "@[module type of@ %p@]" module_expr me ]
+
     | "alg_attribute"
       [ <:module_type< $ct$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr ct attribute_body attr
@@ -2094,8 +2098,6 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "@[<b>sig@;%p@ end@]"
                  (vlist (semi_after sig_item)) sil)
-      | <:module_type< module type of $me$ >> ->
-          pprintf pc "@[module type of@ %p@]" module_expr me
       | <:module_type< $mt$ with $list:wcl$ >> ->
           pprintf pc "%p with@;%p" module_type mt
             (vlist2 with_constraint (and_before with_constraint)) wcl ]
@@ -2114,6 +2116,7 @@ EXTEND_PRINTER
           pprintf pc "%p" (pr_extension "%") e ]
     | "bottom"
       [ <:module_type< functor $fp:_$ -> $_$ >>
+      | <:module_type< module type of $_$ >>
         as z -> pprintf pc "(%p)" module_type z
       | z ->
           Ploc.raise (MLast.loc_of_module_type z)
