@@ -1092,10 +1092,8 @@ EXTEND
   extension_constructor:
   [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
         <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
-    | ci = cons_ident; "of"; tl = V (LIST1 ctyp_below_alg_attribute SEP "and") ; alg_attrs = alg_attributes →
-        <:extension_constructor< $_uid:ci$ of $_list:tl$ $_algattrs:alg_attrs$ >>
-    | ci = cons_ident ; alg_attrs = alg_attributes →
-        <:extension_constructor< $_uid:ci$ $_algattrs:alg_attrs$ >>
+    | ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
+        MLast.EcTuple (loc, ci, tl, rto, attrs)
     ] ]
   ;
 
