@@ -1461,7 +1461,10 @@ Grammar.safe_extend
            (fun (alg_attrs : 'alg_attributes) (ci : 'cons_ident)
                 (loc : Ploc.t) ->
               (Qast.Node
-                 ("EcTuple", [Qast.Tuple[Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs]]) :
+                 ("EcTuple",
+                  [Qast.Tuple
+                     [Qast.Loc; ci; Qast.VaVal (Qast.List []);
+                      Qast.Option None; alg_attrs]]) :
                'extension_constructor)));
         Grammar.production
           (Grammar.r_next
@@ -1496,7 +1499,10 @@ Grammar.safe_extend
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
            (fun (alg_attrs : 'alg_attributes) (tl : 'e__29) _
                 (ci : 'cons_ident) (loc : Ploc.t) ->
-              (Qast.Node ("EcTuple", [Qast.Tuple [Qast.Loc; ci; tl; Qast.Option None; alg_attrs]]) :
+              (Qast.Node
+                 ("EcTuple",
+                  [Qast.Tuple
+                     [Qast.Loc; ci; tl; Qast.Option None; alg_attrs]]) :
                'extension_constructor)));
         Grammar.production
           (Grammar.r_next
@@ -3103,7 +3109,11 @@ Grammar.safe_extend
                    Qast.Tuple [xx1; xx2; xx3; xx4] -> xx1, xx2, xx3, xx4
                  | _ -> raise (Match_failure ("q_MLast.ml", 602, 20))
                in
-               Qast.Node ("SgExc", [Qast.Loc; Qast.Tuple [Qast.Loc; c; tl; Qast.Option None; alg_attrs]; item_attrs]) :
+               Qast.Node
+                 ("SgExc",
+                  [Qast.Loc;
+                   Qast.Tuple [Qast.Loc; c; tl; Qast.Option None; alg_attrs];
+                   item_attrs]) :
                'sig_item)));
         Grammar.production
           (Grammar.r_next

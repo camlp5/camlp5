@@ -977,7 +977,8 @@ Grammar.safe_extend
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
            (fun (alg_attrs : 'alg_attributes) (ci : 'cons_ident)
                 (loc : Ploc.t) ->
-              (MLast.EcTuple (ci, [], alg_attrs) : 'extension_constructor)));
+              (MLast.EcTuple (loc, ci, [], None, alg_attrs) :
+               'extension_constructor)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -996,7 +997,8 @@ Grammar.safe_extend
            (fun (alg_attrs : 'alg_attributes)
                 (tl : 'ctyp_below_alg_attribute list) _ (ci : 'cons_ident)
                 (loc : Ploc.t) ->
-              (MLast.EcTuple (ci, tl, alg_attrs) : 'extension_constructor)));
+              (MLast.EcTuple (loc, ci, tl, None, alg_attrs) :
+               'extension_constructor)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1660,7 +1662,8 @@ Grammar.safe_extend
            (fun (item_attrs : 'item_attributes) (alg_attrs : 'alg_attributes)
                 (_, c, tl, _ : 'constructor_declaration_sans_alg_attrs) _
                 (loc : Ploc.t) ->
-              (MLast.SgExc (loc, c, tl, alg_attrs, item_attrs) : 'sig_item)));
+              (MLast.SgExc (loc, (loc, c, tl, None, alg_attrs), item_attrs) :
+               'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

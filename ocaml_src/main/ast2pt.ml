@@ -805,7 +805,7 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
         Ptype_abstract priv m
 and extension_constructor loc ec =
   match ec with
-    EcTuple (n, tl, alg_attrs) ->
+    EcTuple (_, n, tl, _, alg_attrs) ->
       begin match sumbranch_ctyp loc (uv tl) with
         Left x ->
           ocaml_ec_tuple ~alg_attributes:(uv_alg_attributes alg_attrs)
@@ -1441,7 +1441,7 @@ and sig_item s l =
       end
   | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
-  | SgExc (loc, n, tl, alg_attrs, item_attrs) ->
+  | SgExc (loc, (_, n, tl, _, alg_attrs), item_attrs) ->
       let tl = sumbranch_ctyp loc (uv tl) in
       mksig loc
         (ocaml_psig_exception ~alg_attributes:(uv_alg_attributes alg_attrs)
@@ -1605,7 +1605,7 @@ and str_item s l =
   | StDir (loc, _, _) -> l
   | StExc (loc, ec, item_attrs) ->
       begin match uv ec with
-        EcTuple (n, tl, alg_attrs) ->
+        EcTuple (_, n, tl, _, alg_attrs) ->
           let tl = sumbranch_ctyp loc (uv tl) in
           let si =
             ocaml_pstr_exception ~alg_attributes:(uv_alg_attributes alg_attrs)

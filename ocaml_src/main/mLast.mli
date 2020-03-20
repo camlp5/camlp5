@@ -48,7 +48,7 @@ and ctyp =
   | TyPot of loc * string list * ctyp
   | TyQuo of loc * string
   | TyRec of loc * (loc * string * bool * ctyp * attributes) list
-  | TySum of loc * (loc * string * ctyp list * ctyp option * attributes) list
+  | TySum of loc * generic_constructor list
   | TyTup of loc * ctyp list
   | TyVrn of loc * poly_variant list * string list option option
   | TyXtr of loc * string * ctyp option
@@ -148,7 +148,7 @@ and sig_item =
   | SgClt of loc * class_type class_infos list
   | SgDcl of loc * sig_item list
   | SgDir of loc * string * expr option
-  | SgExc of loc * string * ctyp list * attributes * attributes
+  | SgExc of loc * generic_constructor * attributes
   | SgExt of loc * string * ctyp * string list * attributes
   | SgInc of loc * module_type * attributes
   | SgMod of loc * bool * (string option * module_type * attributes) list
@@ -206,8 +206,9 @@ and type_decl =
     tdDef : ctyp;
     tdCon : (ctyp * ctyp) list;
     tdAttributes : attributes }
+and generic_constructor = loc * string * ctyp list * ctyp option * attributes
 and extension_constructor =
-    EcTuple of string * ctyp list * attributes
+    EcTuple of generic_constructor
   | EcRebind of string * string list * attributes
 and type_extension =
   { teNam : loc * string list;

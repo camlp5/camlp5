@@ -82,14 +82,7 @@ let rec ctyp floc sh =
              x1)
     | TySum (loc, x1) ->
         let loc = floc loc in
-        TySum
-          (loc,
-           vala_map
-             (List.map
-                (fun (loc, x1, x2, x3, x4) ->
-                   floc loc, x1, vala_map (List.map self) x2,
-                   option_map self x3, x4))
-             x1)
+        TySum (loc, vala_map (List.map (generic_constructor floc sh)) x1)
     | TyTup (loc, x1) ->
         let loc = floc loc in TyTup (loc, vala_map (List.map self) x1)
     | TyVrn (loc, x1, x2) ->
@@ -100,6 +93,9 @@ let rec ctyp floc sh =
     | TyExten (loc, exten) -> TyExten (floc loc, exten)
   in
   self
+and generic_constructor floc sh (loc, x1, x2, x3, x4) =
+  floc loc, x1, vala_map (List.map (ctyp floc sh)) x2,
+  option_map (ctyp floc sh) x3, x4
 and poly_variant floc sh =
   function
     PvTag (loc, x1, x2, x3, x4) ->
@@ -338,9 +334,8 @@ and sig_item floc sh =
     | SgDir (loc, x1, x2) ->
         let loc = floc loc in
         SgDir (loc, x1, vala_map (option_map (expr floc sh)) x2)
-    | SgExc (loc, x1, x2, x3, x4) ->
-        let loc = floc loc in
-        SgExc (loc, x1, vala_map (List.map (ctyp floc sh)) x2, x3, x4)
+    | SgExc (loc, x1, x2) ->
+        let loc = floc loc in SgExc (loc, generic_constructor floc sh x1, x2)
     | SgExt (loc, x1, x2, x3, x4) ->
         let loc = floc loc in SgExt (loc, x1, ctyp floc sh x2, x3, x4)
     | SgInc (loc, x1, x2) ->
@@ -502,8 +497,7 @@ and type_extension floc sh x =
    teAttributes = x.teAttributes}
 and extension_constructor floc sh =
   function
-    EcTuple (x1, x2, x3) ->
-      EcTuple (x1, vala_map (List.map (ctyp floc sh)) x2, x3)
+    EcTuple x1 -> EcTuple (generic_constructor floc sh x1)
   | EcRebind (x1, x2, x3) -> EcRebind (x1, x2, x3)
 and class_type floc sh =
   let rec self =
