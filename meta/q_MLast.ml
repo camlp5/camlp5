@@ -1258,10 +1258,8 @@ EXTEND
   extension_constructor:
   [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
         Qast.Node "EcRebind" [ci; b; alg_attrs]
-    | ci = cons_ident; "of"; tl = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
-        Qast.Node "EcTuple" [Qast.Tuple [Qast.Loc; ci; tl; Qast.Option None; alg_attrs]]
-    | ci = cons_ident ; alg_attrs = alg_attributes →
-        Qast.Node "EcTuple" [Qast.Tuple[Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs]]
+    | ci = cons_ident; l = rest_constructor_declaration →
+        Qast.Node "EcTuple" [Qast.Tuple [Qast.Loc; ci :: l]]
     ] ]
   ;
   label_declaration:
