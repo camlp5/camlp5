@@ -55,7 +55,7 @@ and ctyp =
   | TyPot of loc and V (list string) and ctyp
   | TyQuo of loc and V string
   | TyRec of loc and V (list (loc * string * bool * ctyp * attributes))
-  | TySum of loc and V (list (loc * V string * V (list ctyp) * option ctyp * attributes))
+  | TySum of loc and V (list generic_constructor)
   | TyTup of loc and V (list ctyp)
   | TyVrn of loc and V (list poly_variant) and
       option (option (V (list string)))
@@ -162,7 +162,7 @@ and sig_item =
   | SgClt of loc and V (list (class_infos class_type))
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and V string and V (option expr)
-  | SgExc of loc and V string and V (list ctyp) and attributes and attributes
+  | SgExc of loc and generic_constructor and attributes
   | SgExt of loc and V string and ctyp and V (list string) and attributes
   | SgInc of loc and module_type and attributes
   | SgMod of loc and V bool and V (list (V (option (V string)) * module_type * attributes))
@@ -220,8 +220,9 @@ and type_decl =
     tdDef : ctyp;
     tdCon : V (list (ctyp * ctyp));
     tdAttributes: attributes }
+and generic_constructor = (loc * V string * V (list ctyp) * option ctyp * attributes)
 and extension_constructor = [
-    EcTuple of V string and V (list ctyp) and attributes
+    EcTuple of generic_constructor
   | EcRebind of V string and V (list string) and attributes
   ]
 and type_extension =

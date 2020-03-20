@@ -650,7 +650,7 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
       in
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 and extension_constructor loc ec = match ec with [
-      EcTuple n tl alg_attrs ->
+      EcTuple (_, n, tl,_, alg_attrs) ->
       match sumbranch_ctyp loc (uv tl) with [
         Left x -> 
           ocaml_ec_tuple ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) x
@@ -1244,7 +1244,7 @@ and sig_item s l =
       | None → error loc "no class type in this ocaml version" ]
   | SgDcl loc sl → List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ → l
-  | SgExc loc n tl alg_attrs item_attrs →
+  | SgExc loc (_, n, tl,_, alg_attrs) item_attrs →
       let tl = sumbranch_ctyp loc (uv tl) in
       [mksig loc
          (ocaml_psig_exception ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) tl) ::
@@ -1368,7 +1368,7 @@ and str_item s l =
   | StDir loc _ _ → l
   | StExc loc ec item_attrs ->
     match uv ec with [
-      EcTuple n tl alg_attrs ->
+      EcTuple (_, n,  tl, _, alg_attrs) ->
       let tl = sumbranch_ctyp loc (uv tl) in
       let si =
             ocaml_pstr_exception ~{alg_attributes=uv_alg_attributes alg_attrs} ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) tl

@@ -137,11 +137,7 @@ module Meta_make (C : MetaSig) =
           C.node "TySum"
             [C.vala
                (C.list
-                  (fun (_, s, lt, ot, attrs) →
-                     let attrs = assert False in
-                     C.tuple
-                       [C.loc_v (); C.vala C.string s;
-                        C.vala (C.list ctyp) lt; C.option ctyp ot; attrs]))
+                  generic_constructor)
                llsltot]
       | TyTup _ lt → C.node "TyTup" [C.vala (C.list ctyp) lt]
       | TyVrn _ lpv ools →
@@ -153,6 +149,11 @@ module Meta_make (C : MetaSig) =
           let exten = assert False in
           C.node "TyExten" [exten]
       ]
+    and generic_constructor = fun (_, s, lt, ot, attrs) →
+      let attrs = assert False in
+        C.tuple
+          [C.loc_v (); C.vala C.string s;
+           C.vala (C.list ctyp) lt; C.option ctyp ot; attrs]
     and poly_variant =
       fun
       [ PvTag _ s b lt attrs →
@@ -334,10 +335,9 @@ module Meta_make (C : MetaSig) =
       | SgDcl _ lsi → C.node "SgDcl" [C.vala (C.list sig_item) lsi]
       | SgDir _ s oe →
           C.node "SgDir" [C.vala C.string s; C.vala (C.option expr) oe]
-      | SgExc _ s lt alg_attrs item_attrs →
-          let alg_attrs = assert False in
+      | SgExc _ gc item_attrs →
           let item_attrs = assert False in
-          C.node "SgExc" [C.vala C.string s; C.vala (C.list ctyp) lt; alg_attrs; item_attrs]
+          C.node "SgExc" [generic_constructor gc; item_attrs]
       | SgExt _ s t ls attrs →
           let attrs = assert False in
           C.node "SgExt"
@@ -508,9 +508,8 @@ module Meta_make (C : MetaSig) =
             x.tdCon);
          (record_label "tdAttributes", attrs)]
     and extension_constructor = fun [
-      EcTuple s lt attrs ->
-        let attrs = assert False in
-        C.node_no_loc "EcTuple" [C.vala C.string s; C.vala (C.list ctyp) lt; attrs]
+      EcTuple gc ->
+        C.node_no_loc "EcTuple" [generic_constructor gc]
     | EcRebind s ls attrs ->
         let attrs = assert False in
         C.node_no_loc "EcRebind" [C.vala C.string s; C.vala (C.list C.string) ls; attrs]

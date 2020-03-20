@@ -57,10 +57,7 @@ value type_extension : Grammar.Entry.e MLast.type_extension;
 value extension_constructor : Grammar.Entry.e MLast.extension_constructor;
 value match_case :
   Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);
-value constructor_declaration :
-  Grammar.Entry.e
-    (MLast.loc * MLast.v string * MLast.v (list MLast.ctyp) *
-     option MLast.ctyp * MLast.attributes);
+value constructor_declaration : Grammar.Entry.e MLast.generic_constructor;
 value label_declaration :
   Grammar.Entry.e (MLast.loc * string * bool * MLast.ctyp * MLast.attributes);
 value with_constr : Grammar.Entry.e MLast.with_constr;

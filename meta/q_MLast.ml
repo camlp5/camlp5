@@ -494,9 +494,9 @@ EXTEND
   [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
         Qast.Node "EcRebind" [ci; b; alg_attrs]
     | ci = cons_ident; "of"; tl = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
-        Qast.Node "EcTuple" [ci; tl; alg_attrs]
+        Qast.Node "EcTuple" [Qast.Tuple [Qast.Loc; ci; tl; Qast.Option None; alg_attrs]]
     | ci = cons_ident ; alg_attrs = alg_attributes →
-        Qast.Node "EcTuple" [ci; Qast.VaVal (Qast.List []); alg_attrs]
+        Qast.Node "EcTuple" [Qast.Tuple[Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs]]
     ] ]
   ;
   str_item:
@@ -601,7 +601,7 @@ EXTEND
             [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
             | _ → match () with [] ]
           in
-          Qast.Node "SgExc" [Qast.Loc; c; tl; alg_attrs; item_attrs]
+          Qast.Node "SgExc" [Qast.Loc; Qast.Tuple [Qast.Loc; c; tl; Qast.Option None; alg_attrs]; item_attrs]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
           Qast.Node "SgExt" [Qast.Loc; i; t; pd; attrs]
