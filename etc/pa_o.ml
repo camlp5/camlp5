@@ -569,6 +569,13 @@ value str_item_to_inline loc si ext =
   ]
 ;
 
+value sig_item_to_inline loc si ext =
+  match ext with [ None -> si
+  | Some attrid ->
+   <:sig_item< [%% $attrid:attrid$ : $sigi:si$ ; ] >>
+  ]
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr extended_longident
@@ -736,7 +743,9 @@ EXTEND
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline loc<:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
-      | "include"; me = module_expr ; attrs = item_attributes -> <:str_item< include $me$ $_itemattrs:attrs$ >>
+      | "include"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          str_item_to_inline loc <:str_item< include $me$ $_itemattrs:attrs$ >> ext
       | "module"; (ext,alg_attrs) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding ->
           let (i,me,attrs) = h in
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs attrs in
@@ -748,8 +757,9 @@ EXTEND
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline loc <:str_item< module type $_:i$ $_itemattrs:attrs$ >> ext
-      | "open"; ovf = V (FLAG "!") "!"; me = module_expr ; attrs = item_attributes ->
-          <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
+      | "open"; (ext,alg_attrs) = ext_attributes; ovf = V (FLAG "!") "!"; me = module_expr ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          str_item_to_inline loc <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
       | "type"; ext = ext_opt; check_type_decl; nr = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
           str_item_to_inline loc <:str_item< type $_flag:nr$ $_list:tdl$ >> ext
       | "type"; ext = ext_opt; attrs = alg_attributes_no_anti; check_type_extension ; te = type_extension →
@@ -847,16 +857,20 @@ EXTEND
   ;
   sig_item:
     [ "top"
-      [ "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ; item_attrs = item_attributes ->
-          <:sig_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
-      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ; attrs = item_attributes ->
-          <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-      | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
-        pd = V (LIST1 STRING) ; attrs = item_attributes ->
-          <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-      | "include"; mt = module_type ; attrs = item_attributes →
-          <:sig_item< include $mt$ $_itemattrs:attrs$ >>
+      [ "exception"; (ext,alg_attrs0) = ext_attributes; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs1 = alg_attributes ; item_attrs = item_attributes ->
+          let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-exception"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs0 alg_attrs1 in
+          sig_item_to_inline loc <:sig_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >> ext
+      | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          sig_item_to_inline loc <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+      | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          sig_item_to_inline loc <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+      | "include"; (ext,alg_attrs) = ext_attributes; mt = module_type ; item_attrs = item_attributes →
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          sig_item_to_inline loc <:sig_item< include $mt$ $_itemattrs:attrs$ >> ext
       | check_module_not_alias; "module"; rf = FLAG "rec";
         l = LIST1 mod_decl_binding SEP "and" ->
           <:sig_item< module $flag:rf$ $list:l$ >>
@@ -866,19 +880,20 @@ EXTEND
           <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
       | "module"; "type"; i = V ident "" ; attrs = item_attributes ->
           <:sig_item< module type $_:i$ $_itemattrs:attrs$ >>
-      | "open"; i = extended_longident ; attrs = item_attributes ->
-          <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
+      | "open"; (ext,alg_attrs) = ext_attributes; i = extended_longident ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          sig_item_to_inline loc <:sig_item< open $longid:i$ $_itemattrs:attrs$ >> ext
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") ->
           <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
       | "type" ; check_type_extension ; te = type_extension →
           <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
 
-      | "val"; attrs1 = alg_attributes_no_anti; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
+      | "val"; (ext,attrs1) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
-      | "val"; attrs1 = alg_attributes_no_anti; "("; i = operator_rparen; ":"; t = ctyp ; attrs2 = item_attributes ->
+          sig_item_to_inline loc <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >> ext
+      | "val"; (ext,attrs1) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
+          sig_item_to_inline loc <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension -> <:sig_item< [%% $_extension:e$ ] >>
       ] ]
@@ -1556,10 +1571,10 @@ EXTEND
           str_item_to_inline loc <:str_item< class type $_list:ctd$ >> ext ] ]
   ;
   sig_item:
-    [ [ "class"; cd = V (LIST1 class_description SEP "and") ->
-          <:sig_item< class $_list:cd$ >>
-      | "class"; "type"; ctd = V (LIST1 class_type_declaration SEP "and") ->
-          <:sig_item< class type $_list:ctd$ >> ] ]
+    [ [ "class"; ext = ext_opt; cd = V (LIST1 class_description SEP "and") ->
+          sig_item_to_inline loc <:sig_item< class $_list:cd$ >> ext
+      | "class"; "type"; ext = ext_opt; ctd = V (LIST1 class_type_declaration SEP "and") ->
+          sig_item_to_inline loc <:sig_item< class type $_list:ctd$ >> ext ] ]
   ;
   (* Class expressions *)
   class_declaration:
@@ -1767,8 +1782,9 @@ EXTEND
       ] ]
   ;
   class_description:
-    [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
-        ":"; ct = class_type ; attrs = item_attributes ->
+    [ [ alg_attrs = alg_attributes_no_anti; vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
+        ":"; ct = class_type ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="class-description"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = ct; MLast.ciAttributes = attrs} ] ]
   ;
