@@ -2333,23 +2333,62 @@ and M : S[@@foo];];
      r_output = OK {foo|[%%foo: class type x = x[@@foo];];
 |foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+    {name="gadt-nats1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type zero = Zero
+	type 'a succ = Succ of 'a
+	type _ nat =
+	  | NZ : zero nat
+	  | NS : 'a nat -> 'a succ nat
+|foo} ;
+     official_input = OK {foo|type zero = Zero
+	type 'a succ = Succ of 'a
+	type _ nat =
+	  | NZ : zero nat
+	  | NS : 'a nat -> 'a succ nat
+|foo} ;
+     r_input = OK {foo|type zero = [ Zero ];
+type succ α =
+  [ Succ of α ];
+type nat _ =
+  [ NZ : nat zero
+  | NS : nat α → nat (succ α) ];|foo} ;
+     o_output = OK {foo|type zero = Zero;;
+type 'a succ =
+    Succ of 'a;;
+type _ nat =
+    NZ : zero nat
+  | NS : 'a nat -> 'a succ nat;;
+|foo};
+     official_output = OK {foo|type zero =
+  | Zero 
+type 'a succ =
+  | Succ of 'a 
+type _ nat =
+  | NZ: zero nat 
+  | NS: 'a nat -> 'a succ nat |foo} ;
+     r_output = OK {foo|type zero = [ Zero ];
+type succ α =
+  [ Succ of α ];
+type nat _ =
+  [ NZ : nat zero
+  | NS : nat α → nat (succ α) ];
+|foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+    {name="gadt-basic-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type t = Foo : int -> t|foo} ;
+     official_input = OK {foo|type t = Foo : int -> t|foo} ;
+     r_input = OK {foo|type t =
+  [ Foo : int → t ];|foo} ;
+     o_output = OK {foo|type t =
+    Foo : int -> t;;
+|foo};
+     official_output = OK {foo|type t =
+  | Foo: int -> t |foo} ;
+     r_output = OK {foo|type t =
+  [ Foo : int → t ];
+|foo}
     };
     {name="inline-extensionsXX"; implem = True ;
      exclude=[];

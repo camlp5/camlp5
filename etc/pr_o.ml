@@ -581,6 +581,12 @@ value extension_constructor loc pc ec = match ec with [
             (hlist (pr_attribute "@")) alg_attrs
       ]
 
+| MLast.EcTuple (loc, Ploc.VaVal uid, Ploc.VaVal tl, Some rt, Ploc.VaVal alg_attrs) ->
+     let genty = List.fold_right (fun t rt -> <:ctyp< $t$ -> $rt$ >>) tl rt in
+       pprintf pc "%p : %p%p" cons_escaped (loc,uid)
+          ctyp_below_alg_attribute genty
+          (hlist (pr_attribute "@")) alg_attrs
+
 | <:extension_constructor:< $uid:e$ = $id$ $algattrs:alg_attrs$ >> ->
       pprintf pc "%p@;= %p%p" cons_escaped (loc, e) mod_ident (loc, id)
         (hlist (pr_attribute "@")) alg_attrs

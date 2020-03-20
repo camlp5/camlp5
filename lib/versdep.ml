@@ -465,14 +465,15 @@ in
 END
 ;
 value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
-    match list_map_check (fun s_opt -> s_opt) params with
+         IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+     match list_map_check (fun s_opt -> s_opt) params with
     [ Some params ->
-        IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-          let params = List.map (fun os -> Some (mkloc loc os)) params in
+        let params = List.map (fun os -> Some (mkloc loc os)) params in
           Right
             {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
              ptype_variance = variance}
+    | None -> Left "no '_' type param in this ocaml version" ]
         ELSE
           let _ =
             if List.length params <> List.length variance then
@@ -481,8 +482,10 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
           in
           let params =
             List.map2
-              (fun os va ->
-                 (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va))
+              (fun os va -> match os with [
+                    None -> (ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va)
+                  | Some os ->  (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+               ])
               params variance
           in
           Right
@@ -490,7 +493,6 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
              ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
              ptype_name = mkloc loc tn; ptype_attributes = attrs}
         END
-    | None -> Left "no '_' type param in this ocaml version" ]
 ;
 
 value ocaml_class_type =
@@ -593,19 +595,17 @@ value ocaml_ptype_variant ctl priv =
         let ctl =
           List.map
             (fun (c, tl, rto, loc, attrs) ->
-               if rto <> None then raise Exit
-               else
                  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN
                    do { assert (attrs = []) ;
                    let tl = match tl with [ Left x -> x | Right _ -> raise Exit ] in
-                   {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
+                   {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = []} }
                  ELSE
                    let tl = match tl with [
                      Left x -> Pcstr_tuple x
                    | Right (Ptype_record x) -> Pcstr_record x
                    | _ -> assert False ] in
-                   {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
+                   {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = attrs}
                  END)
             ctl
