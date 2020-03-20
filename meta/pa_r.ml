@@ -486,24 +486,6 @@ EXTEND
   structure:
     [ [ st = V (LIST0 [ s = str_item; ";" → s ]) → st ] ]
   ;
-(*
-  extension_constructor:
-  [ [ check_extension_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
-        <:extension_constructor< $_uid:c$ = $_list:b$ $_algattrs:alg_attrs$ >>
-    | check_extension_decl ; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ->
-        <:extension_constructor< $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ >>
-    ] ]
-  ;
-*)
-  extension_constructor:
-  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
-        <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
-    | ci = cons_ident; "of"; tl = V (LIST1 ctyp_below_alg_attribute SEP "and") ; alg_attrs = alg_attributes →
-        <:extension_constructor< $_uid:ci$ of $_list:tl$ $_algattrs:alg_attrs$ >>
-    | ci = cons_ident ; alg_attrs = alg_attributes →
-        <:extension_constructor< $_uid:ci$ $_algattrs:alg_attrs$ >>
-    ] ]
-  ;
 
   str_item:
     [ "top"
@@ -596,7 +578,7 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" → s ]); "end" →
           <:sig_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
+      | "exception"; (_, c, tl, _, alg_attrs) = constructor_declaration ; item_attrs = item_attributes →
           <:sig_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
@@ -1095,23 +1077,28 @@ EXTEND
     | "(" ; "::" ; ")" -> <:vala< "::" >>
     ] ] ;
   constructor_declaration:
-    [ [ ci = cons_ident; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = alg_attributes →
-          (loc, ci, cal, None, attrs)
-      | ci = cons_ident; ":"; t = ctyp_below_alg_attribute ; attrs = alg_attributes →
-          let (tl, rt) = generalized_type_of_type t in
-          (loc, ci, <:vala< tl >>, Some rt, attrs)
-      | ci = cons_ident; attrs = alg_attributes →
-          (loc, ci, <:vala< [] >>, None, attrs) ] ]
+    [ [ ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
+          (loc, ci, tl, rto, attrs) ] ]
   ;
-  constructor_declaration_sans_alg_attrs:
-    [ [ ci = cons_ident; "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") →
-          (loc, ci, cal, None)
-      | ci = cons_ident; ":"; t = ctyp_below_alg_attribute →
+  rest_constructor_declaration:
+    [ [ "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = alg_attributes →
+          (cal, None, attrs)
+      | ":"; t = ctyp_below_alg_attribute ; attrs = alg_attributes →
           let (tl, rt) = generalized_type_of_type t in
-          (loc, ci, <:vala< tl >>, Some rt)
-      | ci = cons_ident →
-          (loc, ci, <:vala< [] >>, None) ] ]
+          (<:vala< tl >>, Some rt, attrs)
+      | attrs = alg_attributes →
+          (<:vala< [] >>, None, attrs) ] ]
   ;
+  extension_constructor:
+  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+        <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
+    | ci = cons_ident; "of"; tl = V (LIST1 ctyp_below_alg_attribute SEP "and") ; alg_attrs = alg_attributes →
+        <:extension_constructor< $_uid:ci$ of $_list:tl$ $_algattrs:alg_attrs$ >>
+    | ci = cons_ident ; alg_attrs = alg_attributes →
+        <:extension_constructor< $_uid:ci$ $_algattrs:alg_attrs$ >>
+    ] ]
+  ;
+
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp LEVEL "below_alg_attribute" ; attrs = alg_attributes →
           mklabdecl loc i mf t attrs ] ]

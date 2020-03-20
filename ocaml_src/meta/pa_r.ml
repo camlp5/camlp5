@@ -527,8 +527,8 @@ Grammar.safe_extend
      grammar_entry_create "ctyp_below_alg_attribute"
    and cons_ident : 'cons_ident Grammar.Entry.e =
      grammar_entry_create "cons_ident"
-   and constructor_declaration_sans_alg_attrs : 'constructor_declaration_sans_alg_attrs Grammar.Entry.e =
-     grammar_entry_create "constructor_declaration_sans_alg_attrs"
+   and rest_constructor_declaration : 'rest_constructor_declaration Grammar.Entry.e =
+     grammar_entry_create "rest_constructor_declaration"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
    and mod_ident : 'mod_ident Grammar.Entry.e =
      grammar_entry_create "mod_ident"
@@ -957,61 +957,6 @@ Grammar.safe_extend
                        (fun _ (s : 'str_item) (loc : Ploc.t) ->
                           (s : 'e__4)))])),
            (fun (st : 'e__4 list) (loc : Ploc.t) -> (st : 'structure)))]];
-    (*
-      extension_constructor:
-      [ [ check_extension_rebind ; c = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
-            <:extension_constructor< $_uid:c$ = $_list:b$ $_algattrs:alg_attrs$ >>
-        | check_extension_decl ; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ->
-            <:extension_constructor< $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ >>
-        ] ]
-      ;
-    *)
-    Grammar.extension
-      (extension_constructor : 'extension_constructor Grammar.Entry.e) None
-      [None, None,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm (cons_ident : 'cons_ident Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
-           (fun (alg_attrs : 'alg_attributes) (ci : 'cons_ident)
-                (loc : Ploc.t) ->
-              (MLast.EcTuple (loc, ci, [], None, alg_attrs) :
-               'extension_constructor)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_nterm
-                         (cons_ident : 'cons_ident Grammar.Entry.e)))
-                   (Grammar.s_token ("", "of")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm
-                      (ctyp_below_alg_attribute :
-                       'ctyp_below_alg_attribute Grammar.Entry.e))
-                   (Grammar.s_token ("", "and")) false))
-             (Grammar.s_nterm
-                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
-           (fun (alg_attrs : 'alg_attributes)
-                (tl : 'ctyp_below_alg_attribute list) _ (ci : 'cons_ident)
-                (loc : Ploc.t) ->
-              (MLast.EcTuple (loc, ci, tl, None, alg_attrs) :
-               'extension_constructor)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_nterm
-                      (cons_ident : 'cons_ident Grammar.Entry.e)))
-                (Grammar.s_nterm (rebind_exn : 'rebind_exn Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
-           (fun (alg_attrs : 'alg_attributes) (b : 'rebind_exn)
-                (ci : 'cons_ident) (loc : Ploc.t) ->
-              (MLast.EcRebind (ci, b, alg_attrs) :
-               'extension_constructor)))]];
     Grammar.extension (str_item : 'str_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
@@ -1648,19 +1593,15 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "exception")))
-                   (Grammar.s_nterm
-                      (constructor_declaration_sans_alg_attrs :
-                       'constructor_declaration_sans_alg_attrs
-                         Grammar.Entry.e)))
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("", "exception")))
                 (Grammar.s_nterm
-                   (alg_attributes : 'alg_attributes Grammar.Entry.e)))
+                   (constructor_declaration :
+                    'constructor_declaration Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
-           (fun (item_attrs : 'item_attributes) (alg_attrs : 'alg_attributes)
-                (_, c, tl, _ : 'constructor_declaration_sans_alg_attrs) _
+           (fun (item_attrs : 'item_attributes)
+                (_, c, tl, _, alg_attrs : 'constructor_declaration) _
                 (loc : Ploc.t) ->
               (MLast.SgExc (loc, (loc, c, tl, None, alg_attrs), item_attrs) :
                'sig_item)));
@@ -3897,27 +3838,63 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_nterm (cons_ident : 'cons_ident Grammar.Entry.e)))
              (Grammar.s_nterm
+                (rest_constructor_declaration :
+                 'rest_constructor_declaration Grammar.Entry.e)),
+           (fun (tl, rto, attrs : 'rest_constructor_declaration)
+                (ci : 'cons_ident) (loc : Ploc.t) ->
+              (loc, ci, tl, rto, attrs : 'constructor_declaration)))]];
+    Grammar.extension
+      (rest_constructor_declaration :
+       'rest_constructor_declaration Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
-           (fun (attrs : 'alg_attributes) (ci : 'cons_ident) (loc : Ploc.t) ->
-              (loc, ci, [], None, attrs : 'constructor_declaration)));
+           (fun (attrs : 'alg_attributes) (loc : Ploc.t) ->
+              ([], None, attrs : 'rest_constructor_declaration)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_nterm
-                         (cons_ident : 'cons_ident Grammar.Entry.e)))
-                   (Grammar.s_token ("", ":")))
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ":")))
                 (Grammar.s_nterm
                    (ctyp_below_alg_attribute :
                     'ctyp_below_alg_attribute Grammar.Entry.e)))
              (Grammar.s_nterm
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
            (fun (attrs : 'alg_attributes) (t : 'ctyp_below_alg_attribute) _
-                (ci : 'cons_ident) (loc : Ploc.t) ->
+                (loc : Ploc.t) ->
               (let (tl, rt) = generalized_type_of_type t in
-               loc, ci, tl, Some rt, attrs :
-               'constructor_declaration)));
+               tl, Some rt, attrs :
+               'rest_constructor_declaration)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "of")))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm
+                      (ctyp_below_alg_attribute :
+                       'ctyp_below_alg_attribute Grammar.Entry.e))
+                   (Grammar.s_token ("", "and")) false))
+             (Grammar.s_nterm
+                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
+           (fun (attrs : 'alg_attributes)
+                (cal : 'ctyp_below_alg_attribute list) _ (loc : Ploc.t) ->
+              (cal, None, attrs : 'rest_constructor_declaration)))]];
+    Grammar.extension
+      (extension_constructor : 'extension_constructor Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (cons_ident : 'cons_ident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
+           (fun (alg_attrs : 'alg_attributes) (ci : 'cons_ident)
+                (loc : Ploc.t) ->
+              (MLast.EcTuple (loc, ci, [], None, alg_attrs) :
+               'extension_constructor)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3933,51 +3910,24 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "and")) false))
              (Grammar.s_nterm
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
-           (fun (attrs : 'alg_attributes)
-                (cal : 'ctyp_below_alg_attribute list) _ (ci : 'cons_ident)
+           (fun (alg_attrs : 'alg_attributes)
+                (tl : 'ctyp_below_alg_attribute list) _ (ci : 'cons_ident)
                 (loc : Ploc.t) ->
-              (loc, ci, cal, None, attrs : 'constructor_declaration)))]];
-    Grammar.extension
-      (constructor_declaration_sans_alg_attrs :
-       'constructor_declaration_sans_alg_attrs Grammar.Entry.e)
-      None
-      [None, None,
-       [Grammar.production
-          (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm (cons_ident : 'cons_ident Grammar.Entry.e)),
-           (fun (ci : 'cons_ident) (loc : Ploc.t) ->
-              (loc, ci, [], None : 'constructor_declaration_sans_alg_attrs)));
+              (MLast.EcTuple (loc, ci, tl, None, alg_attrs) :
+               'extension_constructor)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_nterm
                       (cons_ident : 'cons_ident Grammar.Entry.e)))
-                (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm (rebind_exn : 'rebind_exn Grammar.Entry.e)))
              (Grammar.s_nterm
-                (ctyp_below_alg_attribute :
-                 'ctyp_below_alg_attribute Grammar.Entry.e)),
-           (fun (t : 'ctyp_below_alg_attribute) _ (ci : 'cons_ident)
-                (loc : Ploc.t) ->
-              (let (tl, rt) = generalized_type_of_type t in
-               loc, ci, tl, Some rt :
-               'constructor_declaration_sans_alg_attrs)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_nterm
-                      (cons_ident : 'cons_ident Grammar.Entry.e)))
-                (Grammar.s_token ("", "of")))
-             (Grammar.s_list1sep
-                (Grammar.s_nterm
-                   (ctyp_below_alg_attribute :
-                    'ctyp_below_alg_attribute Grammar.Entry.e))
-                (Grammar.s_token ("", "and")) false),
-           (fun (cal : 'ctyp_below_alg_attribute list) _ (ci : 'cons_ident)
-                (loc : Ploc.t) ->
-              (loc, ci, cal, None :
-               'constructor_declaration_sans_alg_attrs)))]];
+                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
+           (fun (alg_attrs : 'alg_attributes) (b : 'rebind_exn)
+                (ci : 'cons_ident) (loc : Ploc.t) ->
+              (MLast.EcRebind (ci, b, alg_attrs) :
+               'extension_constructor)))]];
     Grammar.extension (label_declaration : 'label_declaration Grammar.Entry.e)
       None
       [None, None,
