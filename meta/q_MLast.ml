@@ -490,15 +490,6 @@ EXTEND
   structure:
     [ [ st = SV (LIST0 [ s = str_item; ";" → s ]) → st ] ]
   ;
-  extension_constructor:
-  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
-        Qast.Node "EcRebind" [ci; b; alg_attrs]
-    | ci = cons_ident; "of"; tl = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
-        Qast.Node "EcTuple" [Qast.Tuple [Qast.Loc; ci; tl; Qast.Option None; alg_attrs]]
-    | ci = cons_ident ; alg_attrs = alg_attributes →
-        Qast.Node "EcTuple" [Qast.Tuple[Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs]]
-    ] ]
-  ;
   str_item:
     [ "top" LEFTA
       [ si = SELF ; "[@@" ; attr = SV attribute_body "attribute"; "]" ->
@@ -595,13 +586,8 @@ EXTEND
     | "simple"
       [ "declare"; st = SV (LIST0 [ s = sig_item; ";" → s ]); "end" →
           Qast.Node "SgDcl" [Qast.Loc; st]
-      | "exception"; ctl = constructor_declaration_sans_alg_attrs ; alg_attrs = alg_attributes ; item_attrs = item_attributes →
-          let (_, c, tl, _) =
-            match ctl with
-            [ Qast.Tuple [xx1; xx2; xx3; xx4] → (xx1, xx2, xx3, xx4)
-            | _ → match () with [] ]
-          in
-          Qast.Node "SgExc" [Qast.Loc; Qast.Tuple [Qast.Loc; c; tl; Qast.Option None; alg_attrs]; item_attrs]
+      | "exception"; ctl = constructor_declaration ; item_attrs = item_attributes →
+          Qast.Node "SgExc" [Qast.Loc; ctl; item_attrs]
       | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
           Qast.Node "SgExt" [Qast.Loc; i; t; pd; attrs]
@@ -1257,24 +1243,26 @@ EXTEND
   [ [ ci = SV UIDENT -> ci
     ] ] ;
   constructor_declaration:
-    [ [ ci = cons_ident; "of"; cal = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
-          Qast.Tuple [Qast.Loc; ci; cal; Qast.Option None; alg_attrs]
-      | ci = cons_ident; ":"; t = ctyp ; alg_attrs = alg_attributes →
-          let (tl, rt) = generalized_type_of_type t in
-          Qast.Tuple [Qast.Loc; ci; Qast.VaVal tl; Qast.Option (Some rt); alg_attrs]
-      | ci = cons_ident ; alg_attrs = alg_attributes →
-          Qast.Tuple
-            [Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs] ] ]
+    [ [ ci = cons_ident; l = rest_constructor_declaration →
+          Qast.Tuple [Qast.Loc; ci :: l] ] ]
   ;
-  constructor_declaration_sans_alg_attrs:
-    [ [ ci = cons_ident; "of"; cal = SV (LIST1 ctyp SEP "and") →
-          Qast.Tuple [Qast.Loc; ci; cal; Qast.Option None]
-      | ci = cons_ident; ":"; t = ctyp →
+  rest_constructor_declaration:
+    [ [ "of"; cal = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
+          [cal; Qast.Option None; alg_attrs]
+      | ":"; t = ctyp ; alg_attrs = alg_attributes →
           let (tl, rt) = generalized_type_of_type t in
-          Qast.Tuple [Qast.Loc; ci; Qast.VaVal tl; Qast.Option (Some rt)]
-      | ci = cons_ident →
-          Qast.Tuple
-            [Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None] ] ]
+          [Qast.VaVal tl; Qast.Option (Some rt); alg_attrs]
+      | alg_attrs = alg_attributes →
+          [Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs] ] ]
+  ;
+  extension_constructor:
+  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+        Qast.Node "EcRebind" [ci; b; alg_attrs]
+    | ci = cons_ident; "of"; tl = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
+        Qast.Node "EcTuple" [Qast.Tuple [Qast.Loc; ci; tl; Qast.Option None; alg_attrs]]
+    | ci = cons_ident ; alg_attrs = alg_attributes →
+        Qast.Node "EcTuple" [Qast.Tuple[Qast.Loc; ci; Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs]]
+    ] ]
   ;
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp LEVEL "below_alg_attribute" ; alg_attrs = alg_attributes →
