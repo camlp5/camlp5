@@ -494,7 +494,8 @@ let rec wrec e = fun [
 ] in wrec e l
 ;
 
-value expr_to_inline loc e ext attrs =
+value expr_to_inline e ext attrs =
+  let loc = MLast.loc_of_expr e in
   let e = expr_wrap_attrs loc e attrs in
   match ext with [ None -> e
   | Some attrid ->
@@ -503,72 +504,82 @@ value expr_to_inline loc e ext attrs =
 ;
 
 
-value ctyp_wrap_attrs loc e l =
+value ctyp_wrap_attrs e l =
+let loc = MLast.loc_of_ctyp e in
 let rec wrec e = fun [
   [] -> e
 | [h :: t] -> wrec <:ctyp< $e$ [@ $_attribute:h$ ] >> t
 ] in wrec e l
 ;
 
-value ctyp_to_inline loc e ext attrs =
-  let e = ctyp_wrap_attrs loc e attrs in
+value ctyp_to_inline e ext attrs =
+  let loc = MLast.loc_of_ctyp e in
+  let e = ctyp_wrap_attrs e attrs in
   match ext with [ None -> e
   | Some attrid ->
    <:ctyp< [% $attrid:attrid$ : $type:e$ ] >>
   ]
 ;
 
-value patt_wrap_attrs loc e l =
+value patt_wrap_attrs e l =
+let loc = MLast.loc_of_patt e in
 let rec wrec e = fun [
   [] -> e
 | [h :: t] -> wrec <:patt< $e$ [@ $_attribute:h$ ] >> t
 ] in wrec e l
 ;
 
-value patt_to_inline loc p ext attrs =
-  let p = patt_wrap_attrs loc p attrs in
+value patt_to_inline p ext attrs =
+  let loc = MLast.loc_of_patt p in
+  let p = patt_wrap_attrs p attrs in
   match ext with [ None -> p
   | Some attrid ->
    <:patt< [% $attrid:attrid$ ? $patt:p$ ] >>
   ]
 ;
 
-value class_expr_wrap_attrs loc e l =
+value class_expr_wrap_attrs e l =
+let loc = MLast.loc_of_class_expr e in
 let rec wrec e = fun [
   [] -> e
 | [h :: t] -> wrec <:class_expr< $e$ [@ $_attribute:h$ ] >> t
 ] in wrec e l
 ;
 
-value class_type_wrap_attrs loc e l =
+value class_type_wrap_attrs e l =
+let loc = MLast.loc_of_class_type e in
 let rec wrec e = fun [
   [] -> e
 | [h :: t] -> wrec <:class_type< $e$ [@ $_attribute:h$ ] >> t
 ] in wrec e l
 ;
 
-value module_type_wrap_attrs loc e l =
+value module_type_wrap_attrs e l =
+let loc = MLast.loc_of_module_type e in
 let rec wrec e = fun [
   [] -> e
 | [h :: t] -> wrec <:module_type< $e$ [@ $_attribute:h$ ] >> t
 ] in wrec e l
 ;
 
-value module_expr_wrap_attrs loc e l =
+value module_expr_wrap_attrs e l =
+let loc = MLast.loc_of_module_expr e in
 let rec wrec e = fun [
   [] -> e
 | [h :: t] -> wrec <:module_expr< $e$ [@ $_attribute:h$ ] >> t
 ] in wrec e l
 ;
 
-value str_item_to_inline loc si ext =
+value str_item_to_inline si ext =
+let loc = MLast.loc_of_str_item si in
   match ext with [ None -> si
   | Some attrid ->
    <:str_item< [%% $attrid:attrid$ $stri:si$ ; ] >>
   ]
 ;
 
-value sig_item_to_inline loc si ext =
+value sig_item_to_inline si ext =
+let loc = MLast.loc_of_sig_item si in
   match ext with [ None -> si
   | Some attrid ->
    <:sig_item< [%% $attrid:attrid$ : $sigi:si$ ; ] >>
@@ -654,13 +665,13 @@ EXTEND
   module_expr:
     [ [ "functor"; alg_attrs = alg_attributes_no_anti; arg = V functor_parameter "functor_parameter" "fp";
         "->"; me = SELF ->
-          module_expr_wrap_attrs loc <:module_expr< functor $_fp:arg$ -> $me$ >> alg_attrs ]
+          module_expr_wrap_attrs <:module_expr< functor $_fp:arg$ -> $me$ >> alg_attrs ]
     | "alg_attribute" LEFTA
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:module_expr< $e1$ [@ $_attribute:attr$ ] >>
       ]
     | [ "struct"; alg_attrs = alg_attributes_no_anti; OPT ";;"; st = structure; "end" ->
-          module_expr_wrap_attrs loc <:module_expr< struct $_list:st$ end >> alg_attrs ]
+          module_expr_wrap_attrs <:module_expr< struct $_list:st$ end >> alg_attrs ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
     | [ me1 = SELF; me2 = paren_module_expr -> <:module_expr< $me1$ $me2$ >>
       | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
@@ -675,11 +686,11 @@ EXTEND
   paren_module_expr:
     [
       [ "("; "val"; alg_attrs = alg_attributes_no_anti; e = expr; ":"; mt1 = module_type; ":>"; mt2 = module_type; ")" ->
-         module_expr_wrap_attrs loc <:module_expr< (value $e$ : $mt1$ :> $mt2$) >> alg_attrs
+         module_expr_wrap_attrs <:module_expr< (value $e$ : $mt1$ :> $mt2$) >> alg_attrs
       | "("; "val"; alg_attrs = alg_attributes_no_anti; e = expr; ":"; mt1 = module_type; ")" ->
-         module_expr_wrap_attrs loc <:module_expr< (value $e$ : $mt1$) >> alg_attrs
+         module_expr_wrap_attrs <:module_expr< (value $e$ : $mt1$) >> alg_attrs
       | "("; "val"; alg_attrs = alg_attributes_no_anti; e = expr; ")" ->
-         module_expr_wrap_attrs loc <:module_expr< (value $e$) >> alg_attrs
+         module_expr_wrap_attrs <:module_expr< (value $e$) >> alg_attrs
       | "("; me = module_expr; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "("; me = module_expr; ")" -> <:module_expr< $me$ >>
@@ -732,42 +743,42 @@ EXTEND
   str_item:
     [ "top"
       [ "exception"; ext = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes →
-          str_item_to_inline loc <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext
 
       | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline loc <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline loc<:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "include"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline loc <:str_item< include $me$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< include $me$ $_itemattrs:attrs$ >> ext
       | "module"; (ext,alg_attrs) = ext_attributes; r = V (FLAG "rec"); h = first_mod_binding ; t = LIST0 rest_mod_binding ->
           let (i,me,attrs) = h in
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs attrs in
           let h = (i,me,attrs) in
-          str_item_to_inline loc <:str_item< module $_flag:r$ $list:[h::t]$ >> ext
+          str_item_to_inline <:str_item< module $_flag:r$ $list:[h::t]$ >> ext
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; "="; mt = module_type ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline loc <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline loc <:str_item< module type $_:i$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< module type $_:i$ $_itemattrs:attrs$ >> ext
       | "open"; (ext,alg_attrs) = ext_attributes; ovf = V (FLAG "!") "!"; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline loc <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
       | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = V (FLAG "nonrec");
         htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
           let htd = {(htd) with tdAttributes = attrs } in
-          str_item_to_inline loc <:str_item< type $_flag:nr$ $list:[htd::ttd]$ >> ext
+          str_item_to_inline <:str_item< type $_flag:nr$ $list:[htd::ttd]$ >> ext
       | "type"; (ext,attrs) = ext_attributes; check_type_extension ; te = type_extension →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in
           let te = { (te) with MLast.teAttributes = attrs } in
-          str_item_to_inline loc <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >> ext
+          str_item_to_inline <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >> ext
 
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
@@ -779,7 +790,7 @@ EXTEND
         <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
-          let e = expr_to_inline loc <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext [] in
+          let e = expr_to_inline <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext [] in
           <:str_item< $exp:e$ >>
 
       | check_let_not_exception ; "let"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
@@ -789,15 +800,15 @@ EXTEND
               [ <:patt< _ >> -> <:str_item< $exp:e$ >> (* TODO FIX THIS CHET *)
               | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ] in
-          str_item_to_inline loc si ext
+          str_item_to_inline si ext
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr ->
-          let e = expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs in
+          let e = expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs in
           <:str_item< $exp:e$ >>
 
       | check_let_not_exception ; "let"; "open"; (ext, attrs) = ext_attributes; m = module_expr; "in"; e = expr ->
-          let e = expr_to_inline loc <:expr< let open $m$ in $e$ >> ext attrs in
+          let e = expr_to_inline <:expr< let open $m$ in $e$ >> ext attrs in
           <:str_item< $exp:e$ >>
 
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
@@ -831,7 +842,7 @@ EXTEND
   module_type:
     [ [ "functor"; alg_attrs = alg_attributes_no_anti; arg = V functor_parameter "functor_parameter" "fp"; "->";
         mt = SELF ->
-          module_type_wrap_attrs loc <:module_type< functor $_fp:arg$ -> $mt$ >> alg_attrs
+          module_type_wrap_attrs <:module_type< functor $_fp:arg$ -> $mt$ >> alg_attrs
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
@@ -845,9 +856,9 @@ EXTEND
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]
     | [ "sig"; alg_attrs = alg_attributes_no_anti; sg = signature; "end" ->
-          module_type_wrap_attrs loc <:module_type< sig $_list:sg$ end >> alg_attrs
+          module_type_wrap_attrs <:module_type< sig $_list:sg$ end >> alg_attrs
       | "module"; "type"; "of"; alg_attrs = alg_attributes_no_anti; me = module_expr ->
-          module_type_wrap_attrs loc <:module_type< module type of $me$ >> alg_attrs
+          module_type_wrap_attrs <:module_type< module type of $me$ >> alg_attrs
       | li = extended_longident; "."; i = V LIDENT → <:module_type< $longid:li$ . $_lid:i$ >>
       | li = extended_longident → <:module_type< $longid:li$ >>
       | i = V LIDENT → <:module_type< $_lid:i$ >>
@@ -861,57 +872,57 @@ EXTEND
     [ "top"
       [ "exception"; (ext,alg_attrs0) = ext_attributes; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs1 = alg_attributes ; item_attrs = item_attributes ->
           let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-exception"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs0 alg_attrs1 in
-          sig_item_to_inline loc <:sig_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >> ext
+          sig_item_to_inline <:sig_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >> ext
       | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline loc <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline loc <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "include"; (ext,alg_attrs) = ext_attributes; mt = module_type ; item_attrs = item_attributes →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline loc <:sig_item< include $mt$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< include $mt$ $_itemattrs:attrs$ >> ext
 
       | "module"; (ext,alg_attrs) = ext_attributes; check_module_not_alias; rf = FLAG "rec";
         h = first_mod_decl_binding ; t = LIST0 rest_mod_decl_binding ->
           let (i, mt, item_attrs) = h in
           let item_attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           let h = (i, mt, item_attrs) in
-          sig_item_to_inline loc <:sig_item< module $flag:rf$ $list:[h::t]$ >> ext
+          sig_item_to_inline <:sig_item< module $flag:rf$ $list:[h::t]$ >> ext
 
       | "module"; (ext,alg_attrs) = ext_attributes; check_module_alias; i = UIDENT; "="; li = mod_ident ; item_attrs = item_attributes →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline loc <:sig_item< module alias $i$ = $li$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< module alias $i$ = $li$ $_itemattrs:attrs$ >> ext
 
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; "="; mt = module_type ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline loc <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline loc <:sig_item< module type $_:i$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< module type $_:i$ $_itemattrs:attrs$ >> ext
       | "open"; (ext,alg_attrs) = ext_attributes; i = extended_longident ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline loc <:sig_item< open $longid:i$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< open $longid:i$ $_itemattrs:attrs$ >> ext
 
 
       | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = V (FLAG "nonrec");
         htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
           let htd = {(htd) with tdAttributes = attrs } in
-          sig_item_to_inline loc <:sig_item< type $_flag:nr$ $list:[htd::ttd]$ >> ext
+          sig_item_to_inline <:sig_item< type $_flag:nr$ $list:[htd::ttd]$ >> ext
       | "type"; (ext,attrs) = ext_attributes; check_type_extension ; te = type_extension →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in
           let te = { (te) with MLast.teAttributes = attrs } in
-          sig_item_to_inline loc <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >> ext
+          sig_item_to_inline <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >> ext
 
       | "val"; (ext,attrs1) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          sig_item_to_inline loc <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | "val"; (ext,attrs1) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          sig_item_to_inline loc <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension -> <:sig_item< [%% $_extension:e$ ] >>
       ] ]
@@ -964,45 +975,45 @@ EXTEND
         <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
       | check_let_not_exception ; "let"; ext = ext_opt; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
-          expr_to_inline loc <:expr< let $_flag:o$ $_list:l$ in $x$ >> ext []
+          expr_to_inline <:expr< let $_flag:o$ $_list:l$ in $x$ >> ext []
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
+          expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
 
       | check_let_not_exception ; "let"; "open"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
-          expr_to_inline loc <:expr< let open $m$ in $e$ >> ext attrs
+          expr_to_inline <:expr< let open $m$ in $e$ >> ext attrs
 
       | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
       | "function"; (ext,attrs) = ext_attributes; OPT "|"; l = V (LIST1 match_case SEP "|") ->
-          expr_to_inline loc <:expr< fun [ $_list:l$ ] >> ext attrs
+          expr_to_inline <:expr< fun [ $_list:l$ ] >> ext attrs
       | "fun"; (ext,attrs) = ext_attributes; p = patt LEVEL "simple"; (eo, e) = fun_def ->
-          expr_to_inline loc <:expr< fun [$p$ $opt:eo$ -> $e$] >> ext attrs
+          expr_to_inline <:expr< fun [$p$ $opt:eo$ -> $e$] >> ext attrs
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; OPT "|";
         l = V (LIST1 match_case SEP "|") ->
-          expr_to_inline loc <:expr< match $e$ with [ $_list:l$ ] >> ext attrs
+          expr_to_inline <:expr< match $e$ with [ $_list:l$ ] >> ext attrs
       | "try"; (ext,attrs) = ext_attributes; e = SELF; "with"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
-          expr_to_inline loc <:expr< try $e$ with [ $_list:l$ ] >> ext attrs
+          expr_to_inline <:expr< try $e$ with [ $_list:l$ ] >> ext attrs
       | "if"; (ext,attrs) = ext_attributes; e1 = SELF; "then"; e2 = expr LEVEL "expr1"; "else";
         e3 = expr LEVEL "expr1" ->
-          expr_to_inline loc <:expr< if $e1$ then $e2$ else $e3$ >> ext attrs
+          expr_to_inline <:expr< if $e1$ then $e2$ else $e3$ >> ext attrs
       | "if"; (ext,attrs) = ext_attributes; e1 = SELF; "then"; e2 = expr LEVEL "expr1" ->
-          expr_to_inline loc <:expr< if $e1$ then $e2$ else () >> ext attrs
+          expr_to_inline <:expr< if $e1$ then $e2$ else () >> ext attrs
       | "for"; (ext,attrs) = ext_attributes; i = patt; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e in
-          expr_to_inline loc <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
+          expr_to_inline <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
       | "for"; (ext,attrs) = ext_attributes; "("; i = operator_rparen; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let i = Ploc.VaVal i in
           let el = Pcaml.vala_map get_seq e in
-          expr_to_inline loc <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
+          expr_to_inline <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >> ext attrs
       | "while"; (ext,attrs) = ext_attributes; e1 = SELF; "do"; e2 = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e2 in
-          expr_to_inline loc <:expr< while $e1$ do { $_list:el$ } >> ext attrs ]
+          expr_to_inline <:expr< while $e1$ do { $_list:el$ } >> ext attrs ]
     | [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
           <:expr< ( $list:[e :: el]$ ) >> ]
     | ":=" NONA
@@ -1085,9 +1096,9 @@ EXTEND
                   List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>) e1 el
               | _ -> <:expr< $e1$ $e2$ >> ] ]
       | "assert"; (ext,attrs) = ext_attributes; e = SELF ->
-          expr_to_inline loc <:expr< assert $e$ >> ext attrs
+          expr_to_inline <:expr< assert $e$ >> ext attrs
       | "lazy"; (ext,attrs) = ext_attributes; e = SELF -> 
-          expr_to_inline loc <:expr< lazy ($e$) >> ext attrs ]
+          expr_to_inline <:expr< lazy ($e$) >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
           <:expr< $e1$ .( $lid:op$ ) >>
@@ -1142,9 +1153,9 @@ EXTEND
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ")" -> concat_comm loc <:expr< $e$ >>
       | "begin"; (ext,attrs) = ext_attributes; e = SELF; "end" -> 
-          expr_to_inline loc (concat_comm loc <:expr< $e$ >>) ext attrs
+          expr_to_inline (concat_comm loc <:expr< $e$ >>) ext attrs
       | "begin"; (ext,attrs) = ext_attributes; "end" -> 
-          expr_to_inline loc <:expr< () >> ext attrs
+          expr_to_inline <:expr< () >> ext attrs
       | x = QUOTATION ->
           let con = quotation_content x in
           Pcaml.handle_expr_quotation loc con ] ]
@@ -1273,7 +1284,7 @@ EXTEND
       ]
   | NONA
       [ "exception"; (ext,attrs) = ext_attributes; p = SELF →
-         patt_to_inline loc <:patt< exception $p$ >> ext attrs
+         patt_to_inline <:patt< exception $p$ >> ext attrs
       ]
   | NONA
       [ p1 = SELF; ".."; p2 = SELF -> <:patt< $p1$ .. $p2$ >> ]
@@ -1304,7 +1315,7 @@ EXTEND
                   List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>) p1 pl
               | _ -> <:patt< $p1$ $p2$ >> ] ]
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF -> 
-          patt_to_inline loc <:patt< lazy $p$ >> ext attrs ]
+          patt_to_inline <:patt< lazy $p$ >> ext attrs ]
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
 (*
@@ -1570,9 +1581,9 @@ EXTEND
       | "_" -> <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
       | "("; "module"; (ext,attrs) = ext_attributes; mt = module_type; ")" -> 
-          let mt = module_type_wrap_attrs loc mt attrs in
+          let mt = module_type_wrap_attrs mt attrs in
           let ct = <:ctyp< ( module $mt$ ) >> in
-          ctyp_to_inline loc ct ext []
+          ctyp_to_inline ct ext []
 
       | "("; t = SELF; ","; tl = LIST1 ctyp SEP ","; ")";
         i = ctyp LEVEL "ctyp2" ->
@@ -1598,15 +1609,15 @@ EXTEND
   (* Objects and Classes *)
   str_item:
     [ [ "class"; ext = ext_opt; cd = V (LIST1 class_declaration SEP "and") ->
-          str_item_to_inline loc <:str_item< class $_list:cd$ >> ext
+          str_item_to_inline <:str_item< class $_list:cd$ >> ext
       | "class"; "type"; ext = ext_opt; ctd = V (LIST1 class_type_declaration SEP "and") ->
-          str_item_to_inline loc <:str_item< class type $_list:ctd$ >> ext ] ]
+          str_item_to_inline <:str_item< class type $_list:ctd$ >> ext ] ]
   ;
   sig_item:
     [ [ "class"; ext = ext_opt; cd = V (LIST1 class_description SEP "and") ->
-          sig_item_to_inline loc <:sig_item< class $_list:cd$ >> ext
+          sig_item_to_inline <:sig_item< class $_list:cd$ >> ext
       | "class"; "type"; ext = ext_opt; ctd = V (LIST1 class_type_declaration SEP "and") ->
-          sig_item_to_inline loc <:sig_item< class type $_list:ctd$ >> ext ] ]
+          sig_item_to_inline <:sig_item< class type $_list:ctd$ >> ext ] ]
   ;
   (* Class expressions *)
   class_declaration:
@@ -1636,7 +1647,7 @@ EXTEND
   class_expr:
     [ "top"
       [ "fun"; alg_attrs = alg_attributes_no_anti ;
-        cfd = class_fun_def -> class_expr_wrap_attrs loc cfd alg_attrs
+        cfd = class_fun_def -> class_expr_wrap_attrs cfd alg_attrs
       | "let"; rf = V (FLAG "rec"); lb = V (LIST1 let_binding SEP "and");
         "in"; ce = SELF ->
           <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >> ]
@@ -1668,7 +1679,7 @@ EXTEND
       | ci = class_longident -> <:class_expr< $list:ci$ >>
       | "object"; alg_attrs = alg_attributes_no_anti; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
-          class_expr_wrap_attrs loc <:class_expr< object $_opt:cspo$ $_list:cf$ end >> alg_attrs
+          class_expr_wrap_attrs <:class_expr< object $_opt:cspo$ $_list:cf$ end >> alg_attrs
       | "("; ce = class_expr; ":"; ct = class_type; ")" ->
           <:class_expr< ($ce$ : $ct$) >>
       | "("; ce = class_expr; ")" -> ce
@@ -1764,7 +1775,7 @@ EXTEND
           <:class_type< $id$ [ $list:tl$ ] >>
       | "object"; alg_attrs = alg_attributes_no_anti; cst = V (OPT class_self_type);
         csf = V (LIST0 class_sig_item); "end" ->
-          class_type_wrap_attrs loc <:class_type< object $_opt:cst$ $_list:csf$ end >> alg_attrs ]
+          class_type_wrap_attrs <:class_type< object $_opt:cst$ $_list:csf$ end >> alg_attrs ]
     | [ li = extended_longident; "."; i = V LIDENT → <:class_type< $longid:li$ . $_lid:i$ >>
       | li = extended_longident → <:class_type< $longid:li$ >>
       | i = V LIDENT → <:class_type< $_lid:i$ >>
@@ -1831,10 +1842,10 @@ EXTEND
   expr: LEVEL "simple"
     [ LEFTA
       [ "new"; (ext,attrs) = ext_attributes; i = V class_longident "list" -> 
-          expr_to_inline loc <:expr< new $_list:i$ >> ext attrs
+          expr_to_inline <:expr< new $_list:i$ >> ext attrs
       | "object"; (ext,attrs) = ext_attributes; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
-          expr_to_inline loc <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
+          expr_to_inline <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = V LIDENT "lid" -> <:expr< $e$ # $_lid:lab$ >>
@@ -1930,7 +1941,7 @@ EXTEND
   ;
   expr: LEVEL "expr1"
     [ [ "fun"; (ext,attrs) = ext_attributes; p = labeled_patt; (eo, e) = fun_def ->
-          expr_to_inline loc <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >> ext attrs ] ]
+          expr_to_inline <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >> ext attrs ] ]
   ;
   expr: AFTER "apply"
     [ "label"
