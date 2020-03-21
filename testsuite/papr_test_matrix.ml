@@ -2390,6 +2390,18 @@ type nat _ =
   [ Foo : int → t ];
 |foo}
     };
+    {name="gadt-basic-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t += Foo : int -> t|foo} ;
+     official_input = OK {foo|type t += Foo : int -> t|foo} ;
+     r_input = OK {foo|type t += [ Foo : int → t ];|foo} ;
+     o_output = OK {foo|type t += Foo : int -> t;;
+|foo};
+     official_output = OK {foo|type t +=  
+  | Foo: int -> t |foo} ;
+     r_output = OK {foo|type t += [ Foo : int → t ];
+|foo}
+    };
     {name="inline-extensionsXX"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;

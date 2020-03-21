@@ -721,23 +721,6 @@ EXTEND
       ]
     ]
   ;
-  extension_constructor:
-  [ [ attrs = alg_attributes_no_anti; ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
-        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
-        <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
-    | attrs = alg_attributes_no_anti; ci = cons_ident; "of"; tl = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
-        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
-        <:extension_constructor< $_uid:ci$ of $_list:tl$ $_algattrs:alg_attrs$ >>
-
-    | attrs = alg_attributes_no_anti; ci = cons_ident; "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
-        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
-        <:extension_constructor< $_uid:ci$ of $list:[cdrec]$ $_algattrs:alg_attrs$ >>
-
-    | attrs = alg_attributes_no_anti; ci = cons_ident ; alg_attrs = alg_attributes ->
-        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
-        <:extension_constructor< $_uid:ci$ $_algattrs:alg_attrs$ >>
-    ] ]
-  ;
   ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
   ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   str_item:
@@ -870,7 +853,7 @@ EXTEND
   ;
   sig_item:
     [ "top"
-      [ "exception"; (ext,alg_attrs0) = ext_attributes; (_, c, tl, _) = constructor_declaration_sans_alg_attrs ; alg_attrs1 = alg_attributes ; item_attrs = item_attributes ->
+      [ "exception"; (ext,alg_attrs0) = ext_attributes; (_, c, tl, _,alg_attrs1) = constructor_declaration ; item_attrs = item_attributes ->
           let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-exception"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs0 alg_attrs1 in
           sig_item_to_inline <:sig_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >> ext
       | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
@@ -1476,42 +1459,38 @@ EXTEND
     [ [ "{"; ldl = V label_declarations "list"; "}" ->
       <:ctyp< { $_list:ldl$ } >> ] ]
   ;
-  constructor_declaration_sans_alg_attrs:
-    [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
-          (loc, ci, cal, None)
-      | ci = cons_ident; "of"; cdrec = record_type ->
-          (loc, ci, Ploc.VaVal [cdrec], None)
-      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*");
-        "->"; t = ctyp ->
-          (loc, ci, cal, Some t)
-      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
-          let t =
-            match cal with
-            [ <:vala< [t] >> -> t
-            | <:vala< [t :: tl] >> -> <:ctyp< ($list:[t :: tl]$) >>
-            | _ -> assert False ]
-          in
-          (loc, ci, <:vala< [] >>, Some t)
-      | ci = cons_ident -> (loc, ci, <:vala< [] >>, None) ] ]
-  ;
   constructor_declaration:
-    [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
-          (loc, ci, cal, None, alg_attrs)
-      | ci = cons_ident; "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
-          (loc, ci, Ploc.VaVal [cdrec], None, alg_attrs)
-      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*");
+    [ [ ci = cons_ident; (tl, rto, alg_attrs) = rest_constructor_declaration ->
+          (loc, ci, tl, rto, alg_attrs) ] ]
+  ;
+  rest_constructor_declaration:
+    [ [ "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
+          (cal, None, alg_attrs)
+      | "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
+          (Ploc.VaVal [cdrec], None, alg_attrs)
+      | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*");
         "->"; t = ctyp ; alg_attrs = alg_attributes ->
-          (loc, ci, cal, Some t, alg_attrs)
-      | ci = cons_ident; ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
+          (cal, Some t, alg_attrs)
+      | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
           let t =
             match cal with
             [ <:vala< [t] >> -> t
             | <:vala< [t :: tl] >> -> <:ctyp< ($list:[t :: tl]$) >>
             | _ -> assert False ]
           in
-          (loc, ci, <:vala< [] >>, Some t, alg_attrs)
-      | ci = cons_ident; alg_attrs = alg_attributes ->
-          (loc, ci, <:vala< [] >>, None, alg_attrs) ] ]
+          (<:vala< [] >>, Some t, alg_attrs)
+      | alg_attrs = alg_attributes ->
+          (<:vala< [] >>, None, alg_attrs) ] ]
+  ;
+  extension_constructor:
+  [ [ attrs = alg_attributes_no_anti; ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
+        <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
+
+    | attrs = alg_attributes_no_anti; ci = cons_ident; (tl, rto, alg_attrs) = rest_constructor_declaration ->
+        let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="(right) algebraic attributes"} attrs alg_attrs in
+        MLast.EcTuple (loc, ci, tl, rto, alg_attrs)
+    ] ]
   ;
   cons_ident:
     [ [ i = V UIDENT "uid" "" -> i
