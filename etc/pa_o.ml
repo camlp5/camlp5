@@ -7,6 +7,7 @@
 #load "pa_macro.cmo";
 #load "pa_macro_gram.cmo";
 
+open Asttools;
 open Pcaml;
 open Mlsyntax.Original;
 
@@ -485,6 +486,38 @@ value check_dot_uid_f strm =
 value check_dot_uid =
   Grammar.Entry.of_parser gram "check_dot_uid"
     check_dot_uid_f
+;
+
+value is_new_type_extended strm =
+  let rec isrec n =
+    let l = Stream.npeek n strm in
+    if l = [] then False
+    else match sep_last l with [
+      (("",")"), [("","("); ("","type"); ("LIDENT",_) :: l ]) ->
+        l <> [] && List.for_all (fun [ ("LIDENT",_) -> True | _ -> False ]) l
+    | (("",")"), _) -> False
+    | (("","EOI"), _) -> False
+    | _ -> isrec (n+1)
+    ]
+  in isrec 4
+;
+
+value check_new_type_extended_f strm =
+  if is_new_type_extended strm then () else raise Stream.Failure
+;
+
+value check_new_type_extended =
+  Grammar.Entry.of_parser gram "check_new_type_extended"
+    check_new_type_extended_f
+;
+
+value check_not_new_type_extended_f strm =
+  if not (is_new_type_extended strm) then () else raise Stream.Failure
+;
+
+value check_not_new_type_extended =
+  Grammar.Entry.of_parser gram "check_not_new_type_extended"
+    check_not_new_type_extended_f
 ;
 
 value expr_wrap_attrs loc e l =
@@ -975,7 +1008,17 @@ EXTEND
 
       | "function"; (ext,attrs) = ext_attributes; OPT "|"; l = V (LIST1 match_case SEP "|") ->
           expr_to_inline <:expr< fun [ $_list:l$ ] >> ext attrs
-      | "fun"; (ext,attrs) = ext_attributes; p = patt LEVEL "simple"; (eo, e) = fun_def ->
+
+      | "fun"; (ext,attrs) = ext_attributes; check_new_type_extended ;
+        "("; "type"; l = LIST1 LIDENT ; ")" ; (eo, e) = fun_def ->
+          if eo <> None then failwith "new-type cannot have when-clause"
+          else
+            let e = List.fold_right (fun id e ->
+                <:expr< fun [(type $lid:id$) -> $e$] >>)
+                l e in
+            expr_to_inline e ext attrs
+
+      | "fun"; (ext,attrs) = ext_attributes; check_not_new_type_extended ; p = patt LEVEL "simple"; (eo, e) = fun_def ->
           expr_to_inline <:expr< fun [$p$ $opt:eo$ -> $e$] >> ext attrs
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; OPT "|";
         l = V (LIST1 match_case SEP "|") ->

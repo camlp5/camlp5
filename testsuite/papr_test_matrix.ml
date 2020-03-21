@@ -2530,16 +2530,37 @@ type nat _ =
     };
     {name="gadt-5"; implem = True ;
      exclude=[];
-     o_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
-  fun (type a) (x : a) -> x
+     o_input = OK {foo| fun (type a) (x : a) -> x |foo} ;
+     official_input = OK {foo| fun (type a) (x : a) -> x|foo} ;
+     r_input = OK {foo|fun (type a) (x : a) -> x;|foo} ;
+     o_output = OK {foo|let _ = fun (type a) (x : a) -> x;;
+|foo};
+     official_output = OK {foo|;;fun (type a) -> fun (x : a) -> x|foo} ;
+     r_output = OK {foo|fun (type a) (x : a) → x;
+|foo}
+    };
+    {name="gadt-5b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| fun (type a b) (x : a) -> x |foo} ;
+     official_input = OK {foo| fun (type a b) (x : a) -> x|foo} ;
+     r_input = OK {foo|fun (type a)(type b) (x : a) -> x;|foo} ;
+     o_output = OK {foo|let _ = fun (type a) (type b) (x : a) -> x;;
+|foo};
+     official_output = OK {foo|;;fun (type a) -> fun (type b) -> fun (x : a) -> x|foo} ;
+     r_output = OK {foo|fun (type a) (type b) (x : a) → x;
+|foo}
+    };
+    {name="gadt-6a"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()
 |foo} ;
-     official_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
-  fun (type a) (x : a) -> x
+     official_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()|foo} ;
+     r_input = OK {foo|value magic : ! 'a 'b . 'a → 'b = ();|foo} ;
+     o_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ();;
 |foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     official_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ()|foo} ;
+     r_output = OK {foo|value magic : ! α β . α → β = ();
+|foo}
     };
     {name="gadt-6"; implem = True ;
      exclude=[];
@@ -2563,8 +2584,32 @@ type nat _ =
         (struct type 'a t = unit end)
     in M.f Refl
 |foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|value magic : ! 'a 'b . 'a → 'b =
+  fun (type a) (type b) (x : a) →
+    let module M =
+      (functor (T : sig type t α = β; end) →
+         struct
+           value f =
+             fun
+             [ (Refl : eq (T.t a) (T.t b)) → (x :> b) ]
+           ;
+         end)
+        (struct type t α = unit; end)
+    in
+    M.f Refl;|foo} ;
+     o_output = OK {foo|let magic : 'a 'b . 'a -> 'b =
+  fun (type a) (type b) (x : a) ->
+    let module M =
+      (functor (T : sig type 'a t end) ->
+         struct
+           let f =
+             function
+               (Refl : (a T.t, b T.t) eq) -> (x :> b)
+         end)
+        (struct type 'a t = unit end)
+    in
+    M.f Refl;;
+|foo};
      official_output = OK {foo|let magic : 'a 'b . 'a -> 'b =
   fun (type a) ->
     fun (type b) ->
@@ -2576,7 +2621,20 @@ type nat _ =
                                                                     unit
                                                                   end) in
           M.f Refl|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|value magic : ! α β . α → β =
+  fun (type a) (type b) (x : a) →
+    let module M =
+      (functor (T : sig type t α = β; end) →
+         struct
+           value f =
+             fun
+             [ (Refl : eq (T.t a) (T.t b)) → (x :> b) ]
+           ;
+         end)
+        (struct type t α = unit; end)
+    in
+    M.f Refl;
+|foo}
     };
     {name="inline-extensionsXX"; implem = True ;
      exclude=[];

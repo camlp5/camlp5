@@ -30,3 +30,11 @@ value module_type_unwrap_attrs mt =
   ] in
   arec [] mt
 ;
+
+value rec sep_last = fun [
+    [] -> failwith "sep_last"
+  | [ hd ] -> (hd,[])
+  | [ hd::tl ] ->
+      let (l,tl) = sep_last tl in (l,[ hd::tl ])
+  ]
+;
