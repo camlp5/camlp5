@@ -420,12 +420,22 @@ IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
 END;
 
 
+IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
+value ocaml_ec_tuple ?{alg_attributes=[]} _ _ _ = assert False ;
+ELSE
 value ocaml_ec_tuple ?{alg_attributes=[]} loc s (x, rto) =
   {pext_name = mkloc loc s;
    pext_kind = Pext_decl (Pcstr_tuple x) rto;
    pext_loc = loc; pext_attributes = alg_attributes}
 ;
+END
+;
 
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_ec_record ?{alg_attributes=[]} _ _ _ = assert False ;
+value ocaml_ec_rebind  _ _ _ = assert False ;
+value ocaml_type_extension ?{item_attributes=[]} lo pathlid params priv cstrs = assert False ;
+ELSE
 value ocaml_ec_record ?{alg_attributes=[]} loc s x =
   let x = match x with [
       (Ptype_record x) -> Pcstr_record x
@@ -442,9 +452,6 @@ value ocaml_ec_rebind loc s li =
    pext_loc = loc; pext_attributes = []}
 ;
 
-IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_type_extension ?{item_attributes=[]} lo pathlid params priv cstrs = assert False ;
-ELSE
 value ocaml_type_extension ?{item_attributes=[]} loc pathlid params priv ecstrs =
 let params =
   List.map

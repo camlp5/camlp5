@@ -28,6 +28,12 @@ let mustLeft symbol =
   | Right _ -> failwith ("choice: " ^ symbol)
 ;;
 
+let mustRight symbol =
+  function
+    Left _ -> failwith ("choice: " ^ symbol)
+  | Right x -> x
+;;
+
 let ocaml_name = "ocaml";;
 
 let sys_ocaml_version = Sys.ocaml_version;;
@@ -158,6 +164,10 @@ let ocaml_mkfield_var loc = [{pfield_desc = Pfield_var; pfield_loc = loc}];;
 (* *)
 
 
+let ocaml_ec_tuple ?(alg_attributes = []) _ _ _ = assert false;;
+
+let ocaml_ec_record ?(alg_attributes = []) _ _ _ = assert false;;
+let ocaml_ec_rebind _ _ _ = assert false;;
 let ocaml_type_extension ?(item_attributes = []) lo pathlid params priv
     cstrs =
   assert false
@@ -211,8 +221,8 @@ let ocaml_ptype_variant ctl priv =
   try
     let ctl =
       List.map
-        (fun (c, tl, rto, loc, attrs) ->
-           let tl =
+        (fun (c, tl, loc, attrs) ->
+           let (tl, rto) =
              match tl with
                Left x -> x
              | Right _ -> raise Exit
@@ -423,8 +433,10 @@ let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
   assert (alg_attributes = []);
   assert (item_attributes = []);
-  let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
-  Psig_exception (mkloc loc s, ed)
+  let (ed, rto) =
+    mustLeft "ocaml_psig_exception (record-types not allowed)" ed
+  in
+  assert (None = rto); Psig_exception (mkloc loc s, ed)
 ;;
 
 let ocaml_psig_include ?(item_attributes = []) loc mt =
@@ -464,7 +476,7 @@ let ocaml_psig_recmodule =
   Some f
 ;;
 
-let ocaml_psig_type stl =
+let ocaml_psig_type is_nonrec stl =
   let stl = List.map (fun (s, t) -> mknoloc s, t) stl in Psig_type stl
 ;;
 
@@ -480,8 +492,10 @@ let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
   assert (alg_attributes = []);
   assert (item_attributes = []);
-  let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
-  Pstr_exception (mkloc loc s, ed)
+  let (ed, rto) =
+    mustLeft "ocaml_pstr_exception (record-types not allowed)" ed
+  in
+  assert (None = rto); Pstr_exception (mkloc loc s, ed)
 ;;
 
 let ocaml_pstr_exn_rebind =
@@ -637,7 +651,7 @@ let ocaml_pwith_type loc (i, td) = Pwith_type td;;
 
 let ocaml_pwith_module loc mname me = Pwith_module (mkloc loc me);;
 
-let ocaml_pwith_typesubst = Some (fun loc td -> Pwith_typesubst td);;
+let ocaml_pwith_typesubst = Some (fun loc lid td -> Pwith_typesubst td);;
 
 let module_prefix_can_be_in_first_record_label_only = true;;
 

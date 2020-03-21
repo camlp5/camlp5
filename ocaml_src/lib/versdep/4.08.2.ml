@@ -28,6 +28,12 @@ let mustLeft symbol =
   | Right _ -> failwith ("choice: " ^ symbol)
 ;;
 
+let mustRight symbol =
+  function
+    Left _ -> failwith ("choice: " ^ symbol)
+  | Right x -> x
+;;
+
 let ocaml_name = "ocaml";;
 
 let sys_ocaml_version = Sys.ocaml_version;;
@@ -171,28 +177,34 @@ let variance_of_bool_bool =
 ;;
 
 
+let ocaml_ec_tuple ?(alg_attributes = []) loc s (x, rto) =
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple x, rto);
+   pext_loc = loc; pext_attributes = alg_attributes}
+;;
+
+let ocaml_ec_record ?(alg_attributes = []) _ _ _ = assert false;;
+let ocaml_ec_rebind _ _ _ = assert false;;
 let ocaml_type_extension ?(item_attributes = []) lo pathlid params priv
     cstrs =
   assert false
 ;;
 let ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
-  match list_map_check (fun s_opt -> s_opt) params with
-    Some params ->
-      let _ =
-        if List.length params <> List.length variance then
-          failwith "internal error: ocaml_type_declaration"
-      in
-      let params =
-        List.map2
-          (fun os va ->
-             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
-          params variance
-      in
-      Right
-        {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-         ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-         ptype_name = mkloc loc tn; ptype_attributes = attrs}
-  | None -> Left "no '_' type param in this ocaml version"
+  let _ =
+    if List.length params <> List.length variance then
+      failwith "internal error: ocaml_type_declaration"
+  in
+  let params =
+    List.map2
+      (fun os va ->
+         match os with
+           None -> ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va
+         | Some os -> ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+      params variance
+  in
+  Right
+    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+     ptype_name = mkloc loc tn; ptype_attributes = attrs}
 ;;
 
 let ocaml_class_type =
@@ -236,17 +248,15 @@ let ocaml_ptype_variant ctl priv =
   try
     let ctl =
       List.map
-        (fun (c, tl, rto, loc, attrs) ->
-           if rto <> None then raise Exit
-           else
-             let tl =
-               match tl with
-                 Left x -> Pcstr_tuple x
-               | Right (Ptype_record x) -> Pcstr_record x
-               | _ -> assert false
-             in
-             {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-              pcd_loc = loc; pcd_attributes = attrs})
+        (fun (c, tl, loc, attrs) ->
+           let (tl, rto) =
+             match tl with
+               Left (x, rto) -> Pcstr_tuple x, rto
+             | Right (Ptype_record x) -> Pcstr_record x, None
+             | _ -> assert false
+           in
+           {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto;
+            pcd_loc = loc; pcd_attributes = attrs})
         ctl
     in
     Some (Ptype_variant ctl)
@@ -488,17 +498,15 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
-  let ed =
+  let ec =
     match ed with
-      Left x -> Pcstr_tuple x
-    | Right (Ptype_record x) -> Pcstr_record x
-    | _ -> assert false
+      Left (x, rto) ->
+        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
+    | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
   in
   Psig_exception
-    {ptyexn_constructor =
-      {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
-       pext_loc = loc; pext_attributes = alg_attributes};
-     ptyexn_attributes = item_attributes; ptyexn_loc = loc}
+    {ptyexn_constructor = ec; ptyexn_attributes = item_attributes;
+     ptyexn_loc = loc}
 ;;
 
 let ocaml_psig_include ?(item_attributes = []) loc mt =
@@ -544,8 +552,9 @@ let ocaml_psig_recmodule =
   Some f
 ;;
 
-let ocaml_psig_type stl =
-  let stl = List.map (fun (s, t) -> t) stl in Psig_type (Recursive, stl)
+let ocaml_psig_type is_nonrec stl =
+  let stl = List.map (fun (s, t) -> t) stl in
+  Psig_type ((if is_nonrec then Nonrecursive else Recursive), stl)
 ;;
 
 let ocaml_psig_value s vd = Psig_value vd;;
@@ -558,26 +567,22 @@ let ocaml_pstr_eval ?(item_attributes = []) e =
 
 let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
-  let ed =
+  let ec =
     match ed with
-      Left x -> Pcstr_tuple x
-    | Right (Ptype_record x) -> Pcstr_record x
-    | _ -> assert false
+      Left (x, rto) ->
+        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
+    | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
   in
   Pstr_exception
-    {ptyexn_constructor =
-      {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
-       pext_loc = loc; pext_attributes = alg_attributes};
-     ptyexn_attributes = item_attributes; ptyexn_loc = loc}
+    {ptyexn_constructor = ec; ptyexn_attributes = item_attributes;
+     ptyexn_loc = loc}
 ;;
 
 let ocaml_pstr_exn_rebind =
   Some
     (fun loc s li ->
        Pstr_exception
-         {ptyexn_constructor =
-           {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
-            pext_loc = loc; pext_attributes = []};
+         {ptyexn_constructor = ocaml_ec_rebind loc s li;
           ptyexn_attributes = []; ptyexn_loc = loc})
 ;;
 
@@ -773,7 +778,7 @@ let ocaml_pwith_module loc mname me =
 ;;
 
 let ocaml_pwith_typesubst =
-  Some (fun loc td -> Pwith_typesubst (mkloc loc (Lident ""), td))
+  Some (fun loc lid td -> Pwith_typesubst (mkloc loc lid, td))
 ;;
 
 let module_prefix_can_be_in_first_record_label_only = true;;

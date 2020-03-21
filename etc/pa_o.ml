@@ -756,7 +756,7 @@ EXTEND
       | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = V (FLAG "nonrec");
         htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
-          let htd = {(htd) with tdAttributes = attrs } in
+          let htd = {(htd) with MLast.tdAttributes = attrs } in
           str_item_to_inline <:str_item< type $_flag:nr$ $list:[htd::ttd]$ >> ext
       | "type"; (ext,attrs) = ext_attributes; check_type_extension ; te = type_extension →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in
@@ -895,7 +895,7 @@ EXTEND
       | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = V (FLAG "nonrec");
         htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
-          let htd = {(htd) with tdAttributes = attrs } in
+          let htd = {(htd) with MLast.tdAttributes = attrs } in
           sig_item_to_inline <:sig_item< type $_flag:nr$ $list:[htd::ttd]$ >> ext
       | "type"; (ext,attrs) = ext_attributes; check_type_extension ; te = type_extension →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in

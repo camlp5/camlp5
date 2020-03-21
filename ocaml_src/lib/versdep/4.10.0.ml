@@ -249,12 +249,10 @@ let ocaml_ec_record ?(alg_attributes = []) loc s x =
   {pext_name = mkloc loc s; pext_kind = Pext_decl (x, None); pext_loc = loc;
    pext_attributes = alg_attributes}
 ;;
-
 let ocaml_ec_rebind loc s li =
   {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
    pext_loc = loc; pext_attributes = []}
 ;;
-
 let ocaml_type_extension ?(item_attributes = []) loc pathlid params priv
     ecstrs =
   let params =
