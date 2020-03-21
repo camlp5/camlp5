@@ -613,19 +613,16 @@ and mkwithc =
       | None -> error loc "no with type := in this ocaml version"
 and mkvalue_desc ~item_attributes vn t p =
   ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
-and sumbranch_ctyp ?(priv = false) loc l =
+and sumbranch_ctyp ?(priv = false) loc l rto =
   match l with
-    [TyRec (loc, ltl)] -> Right (mktrecord (uv ltl) priv)
+    [TyRec (loc, ltl)] -> assert (None = rto); Right (mktrecord (uv ltl) priv)
   | TyRec (_, _) :: _ -> error loc "only ONE record type allowed here"
-  | l -> Left (List.map ctyp l)
+  | l -> Left (List.map ctyp l, option_map ctyp rto)
+and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
+  conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tl) rto, mkloc loc,
+  uv_alg_attributes alg_attrs
 and mktvariant loc ctl priv =
-  let ctl =
-    List.map
-      (fun (loc, c, tl, rto, alg_attrs) ->
-         conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tl),
-         option_map ctyp rto, mkloc loc, uv_alg_attributes alg_attrs)
-      ctl
-  in
+  let ctl = List.map (conv_constructor priv) ctl in
   match ocaml_ptype_variant ctl priv with
     Some x -> x
   | None -> error loc "no generalized data types in this ocaml version"
@@ -805,14 +802,11 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
         Ptype_abstract priv m
 and extension_constructor loc ec =
   match ec with
-    EcTuple (_, n, tl, _, alg_attrs) ->
-      begin match sumbranch_ctyp loc (uv tl) with
-        Left x ->
-          ocaml_ec_tuple ~alg_attributes:(uv_alg_attributes alg_attrs)
-            (mkloc loc) (uv n) x
-      | Right x ->
-          ocaml_ec_record ~alg_attributes:(uv_alg_attributes alg_attrs)
-            (mkloc loc) (uv n) x
+    EcTuple gc ->
+      let (n, tl, _, alg_attrs) = conv_constructor false gc in
+      begin match tl with
+        Left x -> ocaml_ec_tuple ~alg_attributes:alg_attrs (mkloc loc) n x
+      | Right x -> ocaml_ec_record ~alg_attributes:alg_attrs (mkloc loc) n x
       end
   | EcRebind (n, sl, alg_attrs) ->
       let sl = uv sl in
@@ -1441,11 +1435,10 @@ and sig_item s l =
       end
   | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
-  | SgExc (loc, (_, n, tl, _, alg_attrs), item_attrs) ->
-      let tl = sumbranch_ctyp loc (uv tl) in
+  | SgExc (loc, gc, item_attrs) ->
+      let (n, tl, _, alg_attrs) = conv_constructor false gc in
       mksig loc
-        (ocaml_psig_exception ~alg_attributes:(uv_alg_attributes alg_attrs)
-           (mkloc loc) (uv n) tl) ::
+        (ocaml_psig_exception ~alg_attributes:alg_attrs (mkloc loc) n tl) ::
       l
   | SgExt (loc, n, t, p, attrs) ->
       let vn = uv n in
@@ -1605,12 +1598,12 @@ and str_item s l =
   | StDir (loc, _, _) -> l
   | StExc (loc, ec, item_attrs) ->
       begin match uv ec with
-        EcTuple (_, n, tl, _, alg_attrs) ->
-          let tl = sumbranch_ctyp loc (uv tl) in
+        EcTuple gc ->
+          let (n, tl, _, alg_attrs) = conv_constructor false gc in
           let si =
-            ocaml_pstr_exception ~alg_attributes:(uv_alg_attributes alg_attrs)
-              ~item_attributes:(uv_item_attributes item_attrs) (mkloc loc)
-              (uv n) tl
+            ocaml_pstr_exception ~alg_attributes:alg_attrs
+              ~item_attributes:(uv_item_attributes item_attrs) (mkloc loc) n
+              tl
           in
           mkstr loc si :: l
       | EcRebind (n, sl, alg_attrs) ->

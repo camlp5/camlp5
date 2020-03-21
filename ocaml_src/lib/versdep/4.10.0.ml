@@ -235,8 +235,8 @@ let variance_of_bool_bool =
 ;;
 
 
-let ocaml_ec_tuple ?(alg_attributes = []) loc s x =
-  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple x, None);
+let ocaml_ec_tuple ?(alg_attributes = []) loc s (x, rto) =
+  {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple x, rto);
    pext_loc = loc; pext_attributes = alg_attributes}
 ;;
 
@@ -260,11 +260,9 @@ let ocaml_type_extension ?(item_attributes = []) loc pathlid params priv
   let params =
     List.map
       (fun (os, va) ->
-         let s =
-           mustSome
-             "ocaml_type_extension: blank type-params ('_') not allowed" os
-         in
-         ocaml_mktyp loc (Ptyp_var s), variance_of_bool_bool va)
+         match os with
+           None -> ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va
+         | Some s -> ocaml_mktyp loc (Ptyp_var s), variance_of_bool_bool va)
       params
   in
   {ptyext_path = mkloc loc pathlid; ptyext_params = params;
@@ -272,23 +270,22 @@ let ocaml_type_extension ?(item_attributes = []) loc pathlid params priv
    ptyext_attributes = item_attributes}
 ;;
 let ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
-  match list_map_check (fun s_opt -> s_opt) params with
-    Some params ->
-      let _ =
-        if List.length params <> List.length variance then
-          failwith "internal error: ocaml_type_declaration"
-      in
-      let params =
-        List.map2
-          (fun os va ->
-             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
-          params variance
-      in
-      Right
-        {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-         ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-         ptype_name = mkloc loc tn; ptype_attributes = attrs}
-  | None -> Left "no '_' type param in this ocaml version"
+  let _ =
+    if List.length params <> List.length variance then
+      failwith "internal error: ocaml_type_declaration"
+  in
+  let params =
+    List.map2
+      (fun os va ->
+         match os with
+           None -> ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va
+         | Some os -> ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+      params variance
+  in
+  Right
+    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+     ptype_name = mkloc loc tn; ptype_attributes = attrs}
 ;;
 
 let ocaml_class_type =
@@ -335,17 +332,15 @@ let ocaml_ptype_variant ctl priv =
   try
     let ctl =
       List.map
-        (fun (c, tl, rto, loc, attrs) ->
-           if rto <> None then raise Exit
-           else
-             let tl =
-               match tl with
-                 Left x -> Pcstr_tuple x
-               | Right (Ptype_record x) -> Pcstr_record x
-               | _ -> assert false
-             in
-             {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = None;
-              pcd_loc = loc; pcd_attributes = attrs})
+        (fun (c, tl, loc, attrs) ->
+           let (tl, rto) =
+             match tl with
+               Left (x, rto) -> Pcstr_tuple x, rto
+             | Right (Ptype_record x) -> Pcstr_record x, None
+             | _ -> assert false
+           in
+           {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto;
+            pcd_loc = loc; pcd_attributes = attrs})
         ctl
     in
     Some (Ptype_variant ctl)
@@ -594,7 +589,8 @@ let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
   let ec =
     match ed with
-      Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s x
+      Left (x, rto) ->
+        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
     | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
   in
   Psig_exception
@@ -658,7 +654,8 @@ let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     ed =
   let ec =
     match ed with
-      Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s x
+      Left (x, rto) ->
+        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
     | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
   in
   Pstr_exception

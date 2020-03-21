@@ -309,7 +309,8 @@ let word_keywordp s =
         Stream.junk strm__; let strm = strm__ in wrec strm
     | _ -> false
   in
-  try check (Stream.of_string s) with Stream.Failure | Stream.Error _ -> false
+  try check (Stream.of_string s) && s <> "_" with
+    Stream.Failure | Stream.Error _ -> false
 ;;
 
 let is_type_decl_not_extension strm =
@@ -1601,10 +1602,8 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            (fun (item_attrs : 'item_attributes)
-                (_, c, tl, _, alg_attrs : 'constructor_declaration) _
-                (loc : Ploc.t) ->
-              (MLast.SgExc (loc, (loc, c, tl, None, alg_attrs), item_attrs) :
-               'sig_item)));
+                (gc : 'constructor_declaration) _ (loc : Ploc.t) ->
+              (MLast.SgExc (loc, gc, item_attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
