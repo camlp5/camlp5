@@ -389,7 +389,7 @@ value word_keywordp s =
     [: `('a'..'z'|'A'..'Z'|'_') ; strm :] -> wrec strm
   | [:  :] -> False
   ] in
-  try check (Stream.of_string s)
+  try check (Stream.of_string s) && s <> "_"
   with Stream.Failure | (Stream.Error _) -> False
 ;
 

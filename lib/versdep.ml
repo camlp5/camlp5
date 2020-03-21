@@ -448,9 +448,11 @@ ELSE
 value ocaml_type_extension ?{item_attributes=[]} loc pathlid params priv ecstrs =
 let params =
   List.map
-    (fun (os, va) ->
-       let s = mustSome "ocaml_type_extension: blank type-params ('_') not allowed" os in
-       (ocaml_mktyp loc (Ptyp_var s), variance_of_bool_bool va))
+    (fun (os, va) -> match os with [
+       None -> (ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va)
+     | Some s ->
+         (ocaml_mktyp loc (Ptyp_var s), variance_of_bool_bool va)
+     ])
     params
 in
   {

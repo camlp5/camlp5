@@ -1309,6 +1309,18 @@ and t2 = bool[@@foo];
      r_output = OK {foo|type M.t += [ A of int | B of { a : int } ];
 |foo}
     };
+    {name="type-extension-str-item4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type 'a t += A of int |foo} ;
+     official_input = OK {foo|type 'a t += A of int|foo} ;
+     r_input = OK {foo|type t 'a += [ A of int ];|foo} ;
+     o_output = OK {foo|type 'a t += A of int;;
+|foo} ;
+     official_output = OK {foo|type 'a t +=  
+  | A of int |foo} ;
+     r_output = OK {foo|type t α += [ A of int ];
+|foo}
+    };
     {name="type-extension-sig-item1"; implem = False ;
      exclude=[];
      o_input = OK {foo|type t += A of int | B of { a : int }|foo} ;
@@ -2469,6 +2481,18 @@ type nat _ =
      r_output = OK {foo|type t += [ Foo : int → t ];
 |foo}
     };
+    {name="gadt-basic-2b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type _ t += Foo : int -> t|foo} ;
+     official_input = OK {foo|type _ t += Foo : int -> t|foo} ;
+     r_input = OK {foo|type t _ += [ Foo : int → t ];|foo} ;
+     o_output = OK {foo|type _ t += Foo : int -> t;;
+|foo};
+     official_output = OK {foo|type _ t +=  
+  | Foo: int -> t |foo} ;
+     r_output = OK {foo|type t _ += [ Foo : int → t ];
+|foo}
+    };
     {name="gadt-basic-3"; implem = True ;
      exclude=[];
      o_input = OK {foo|exception Foo : int -> t|foo} ;
@@ -2491,15 +2515,19 @@ type nat _ =
      r_output = OK {foo|exception Foo : int → t;
 |foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+(*
+    {name="gadt-basic-5"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
+     official_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|type _ foo +=  
+  | A: int -> int foo 
+  | B: int foo |foo} ;
      r_output = OK {foo||foo}
     };
+*)
     {name="inline-extensionsXX"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
