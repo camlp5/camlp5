@@ -468,13 +468,13 @@ and sumbranch_ctyp ?{priv=False} loc l =
     | l -> Left (List.map ctyp l)
     ]
 
+and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
+    (conv_con (uv c), sumbranch_ctyp ~{priv=priv} loc (uv tl), option_map ctyp rto,
+     mkloc loc, uv_alg_attributes alg_attrs)
+
 and mktvariant loc ctl priv =
   let ctl =
-    List.map
-      (fun (loc, c, tl, rto, alg_attrs) →
-         (conv_con (uv c), sumbranch_ctyp ~{priv=priv} loc (uv tl), option_map ctyp rto,
-          mkloc loc, uv_alg_attributes alg_attrs))
-      ctl
+    List.map (conv_constructor priv) ctl
   in
   match ocaml_ptype_variant ctl priv with
   [ Some x → x
@@ -650,12 +650,13 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
       in
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 and extension_constructor loc ec = match ec with [
-      EcTuple (_, n, tl,_, alg_attrs) ->
-      match sumbranch_ctyp loc (uv tl) with [
+      EcTuple gc ->
+      let (n, tl, rto, _, alg_attrs) = conv_constructor False gc in
+      match tl with [
         Left x -> 
-          ocaml_ec_tuple ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) x
+          ocaml_ec_tuple ~{alg_attributes=alg_attrs} (mkloc loc) n x
       | Right x -> 
-          ocaml_ec_record ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) x
+          ocaml_ec_record ~{alg_attributes=alg_attrs} (mkloc loc) n x
       ]
     | EcRebind n sl alg_attrs ->
       let sl = uv sl in
