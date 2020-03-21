@@ -2515,19 +2515,19 @@ type nat _ =
      r_output = OK {foo|exception Foo : int → t;
 |foo}
     };
-(*
     {name="gadt-basic-5"; implem = True ;
      exclude=[];
      o_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
      official_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|type foo _ += [ A : int → foo int | B : foo int ];|foo} ;
+     o_output = OK {foo|type _ foo += A : int -> int foo | B : int foo;;
+|foo};
      official_output = OK {foo|type _ foo +=  
   | A: int -> int foo 
   | B: int foo |foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|type foo _ += [ A : int → foo int | B : foo int ];
+|foo}
     };
-*)
     {name="inline-extensionsXX"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
