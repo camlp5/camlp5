@@ -461,15 +461,18 @@ and mkwithc =
 and mkvalue_desc ~{item_attributes} vn t p =
  ocaml_value_description ~{item_attributes=item_attributes} vn (ctyp t) p
 
-and sumbranch_ctyp ?{priv=False} loc l =
+and sumbranch_ctyp ?{priv=False} loc l rto =
     match l with [
-      [TyRec loc ltl] -> Right (mktrecord (uv ltl) priv)
+      [TyRec loc ltl] -> do {
+        assert (None = rto) ;
+        Right (mktrecord (uv ltl) priv)
+      }
     | [TyRec _ _ :: _] -> error loc "only ONE record type allowed here"
-    | l -> Left (List.map ctyp l)
+    | l -> Left (List.map ctyp l, option_map ctyp rto)
     ]
 
 and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
-    (conv_con (uv c), sumbranch_ctyp ~{priv=priv} loc (uv tl), option_map ctyp rto,
+    (conv_con (uv c), sumbranch_ctyp ~{priv=priv} loc (uv tl) rto,
      mkloc loc, uv_alg_attributes alg_attrs)
 
 and mktvariant loc ctl priv =
@@ -651,12 +654,13 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
       mktype ~{item_attributes=item_attributes} (loc_of_ctyp t) tn tl cl Ptype_abstract priv m ]
 and extension_constructor loc ec = match ec with [
       EcTuple gc ->
-      let (n, tl, rto, _, alg_attrs) = conv_constructor False gc in
+      let (n, tl, _, alg_attrs) = conv_constructor False gc in
       match tl with [
         Left x -> 
           ocaml_ec_tuple ~{alg_attributes=alg_attrs} (mkloc loc) n x
-      | Right x -> 
+      | Right x -> do {
           ocaml_ec_record ~{alg_attributes=alg_attrs} (mkloc loc) n x
+        }
       ]
     | EcRebind n sl alg_attrs ->
       let sl = uv sl in
@@ -1245,10 +1249,10 @@ and sig_item s l =
       | None → error loc "no class type in this ocaml version" ]
   | SgDcl loc sl → List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ → l
-  | SgExc loc (_, n, tl,_, alg_attrs) item_attrs →
-      let tl = sumbranch_ctyp loc (uv tl) in
+  | SgExc loc gc item_attrs ->
+      let (n, tl, _, alg_attrs) = conv_constructor False gc in
       [mksig loc
-         (ocaml_psig_exception ~{alg_attributes=uv_alg_attributes alg_attrs} (mkloc loc) (uv n) tl) ::
+         (ocaml_psig_exception ~{alg_attributes=alg_attrs} (mkloc loc) n tl) ::
        l]
   | SgExt loc n t p attrs →
       let vn = uv n in
@@ -1369,10 +1373,10 @@ and str_item s l =
   | StDir loc _ _ → l
   | StExc loc ec item_attrs ->
     match uv ec with [
-      EcTuple (_, n,  tl, _, alg_attrs) ->
-      let tl = sumbranch_ctyp loc (uv tl) in
+      EcTuple gc ->
+      let (n, tl, _, alg_attrs) = conv_constructor False gc in
       let si =
-            ocaml_pstr_exception ~{alg_attributes=uv_alg_attributes alg_attrs} ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) tl
+            ocaml_pstr_exception ~{alg_attributes=alg_attrs} ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) n tl
       in
       [mkstr loc si :: l]
 

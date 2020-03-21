@@ -420,9 +420,9 @@ IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
 END;
 
 
-value ocaml_ec_tuple ?{alg_attributes=[]} loc s x =
+value ocaml_ec_tuple ?{alg_attributes=[]} loc s (x, rto) =
   {pext_name = mkloc loc s;
-   pext_kind = Pext_decl (Pcstr_tuple x) None;
+   pext_kind = Pext_decl (Pcstr_tuple x) rto;
    pext_loc = loc; pext_attributes = alg_attributes}
 ;
 
@@ -585,8 +585,8 @@ value ocaml_ptype_variant ctl priv =
       IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
         let ctl =
           List.map
-            (fun (c, tl, rto, loc, attrs) ->
-               let tl = match tl with [ Left x -> x | Right _ -> raise Exit ] in
+            (fun (c, tl, loc, attrs) ->
+               let (tl,rto) = match tl with [ Left x -> x | Right _ -> raise Exit ] in
                if rto <> None || attrs <> [] then raise Exit else (mknoloc c, tl, None, loc))
             ctl
         in
@@ -594,16 +594,16 @@ value ocaml_ptype_variant ctl priv =
       ELSE
         let ctl =
           List.map
-            (fun (c, tl, rto, loc, attrs) ->
+            (fun (c, tl, loc, attrs) ->
                  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN
                    do { assert (attrs = []) ;
-                   let tl = match tl with [ Left x -> x | Right _ -> raise Exit ] in
+                   let (tl,rto) = match tl with [ Left x -> x | Right _ -> raise Exit ] in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = []} }
                  ELSE
-                   let tl = match tl with [
-                     Left x -> Pcstr_tuple x
-                   | Right (Ptype_record x) -> Pcstr_record x
+                   let (tl,rto) = match tl with [
+                     Left (x,rto) -> (Pcstr_tuple x, rto)
+                   | Right (Ptype_record x) -> (Pcstr_record x, None)
                    | _ -> assert False ] in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = attrs}
@@ -1079,12 +1079,14 @@ value ocaml_psig_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
-         let ed = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
+         let (ed,rto) = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
+         assert (None = rto) ;
          Psig_exception (mkloc loc s) ed }
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
-      let ed = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
+      let (ed,rto) = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
+      assert (None = rto) ;
       Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
@@ -1092,14 +1094,15 @@ value ocaml_psig_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     do { assert (item_attributes = []) ;
          assert (alg_attributes = []) ;
-    let ed = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
+    let (ed,rto) = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
+    assert (None = rto) ;
     Psig_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
     }
   ELSE
     let ec = match ed with [
-      Left x -> ocaml_ec_tuple ~{alg_attributes=alg_attributes} loc s x
+      Left (x,rto) -> ocaml_ec_tuple ~{alg_attributes=alg_attributes} loc s (x,rto)
     | Right x -> ocaml_ec_record ~{alg_attributes=alg_attributes} loc s x
     ] in
     Psig_exception
@@ -1255,13 +1258,15 @@ value ocaml_pstr_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
-    let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
+    let (ed,rto) = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
+    assert (None = rto) ;
     Pstr_exception (mkloc loc s) ed
     }
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
-    let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
+    let (ed,rto) = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
+    assert (None = rto) ;
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl ed None;
        pext_loc = loc; pext_attributes = []}
@@ -1269,14 +1274,15 @@ value ocaml_pstr_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s ed =
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     do { assert (alg_attributes = []) ;
          assert (item_attributes = []) ;
-    let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
+    let (ed,rto) = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
+    assert (None = rto) ;
     Pstr_exception
       {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed) None;
        pext_loc = loc; pext_attributes = []}
     }
   ELSE
     let ec = match ed with [
-      Left x -> ocaml_ec_tuple ~{alg_attributes=alg_attributes} loc s x
+      Left (x,rto) -> ocaml_ec_tuple ~{alg_attributes=alg_attributes} loc s (x, rto)
     | Right x -> ocaml_ec_record ~{alg_attributes=alg_attributes} loc s x
     ] in
     Pstr_exception
