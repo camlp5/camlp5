@@ -2636,14 +2636,18 @@ type nat _ =
     M.f Refl;
 |foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+    {name="functor-syntax-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|module Y = functor (X: sig end) (Y:sig end) -> functor (Z: sig end) ->
+  struct end|foo} ;
+     official_input = OK {foo|module Y = functor (X: sig end) (Y:sig end) -> functor (Z: sig end) ->
+  struct end|foo} ;
+     r_input = OK {foo|module Y (X : sig  end) (Y : sig  end) (Z : sig  end) = struct  end;|foo} ;
+     o_output = OK {foo|module Y (X : sig  end) (Y : sig  end) (Z : sig  end) = struct  end;;
+|foo};
+     official_output = OK {foo|module Y(X:sig  end)(Y:sig  end)(Z:sig  end) = struct  end|foo} ;
+     r_output = OK {foo|module Y (X : sig  end) (Y : sig  end) (Z : sig  end) = struct  end;
+|foo}
     };
     {name="inline-extensionsXX"; implem = True ;
      exclude=[];

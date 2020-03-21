@@ -696,9 +696,13 @@ EXTEND
     ]
   ;
   module_expr:
-    [ [ "functor"; alg_attrs = alg_attributes_no_anti; arg = V functor_parameter "functor_parameter" "fp";
+    [ [ "functor"; alg_attrs = alg_attributes_no_anti; argl = LIST1 functor_parameter;
         "->"; me = SELF ->
-          module_expr_wrap_attrs <:module_expr< functor $_fp:arg$ -> $me$ >> alg_attrs ]
+          let me = List.fold_right (fun arg me ->
+                     <:module_expr< functor $fp:arg$ -> $me$ >>)
+            argl me in
+          module_expr_wrap_attrs me alg_attrs
+      ]
     | "alg_attribute" LEFTA
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:module_expr< $e1$ [@ $_attribute:attr$ ] >>
