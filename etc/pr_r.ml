@@ -782,62 +782,6 @@ value type_constraint pc (t1, t2) =
   pprintf pc " constraint %p =@;%p" ctyp t1 ctyp t2
 ;
 
-
-value extension_constructor loc pc ec = match ec with [
-  <:extension_constructor:< $uid:e$ of $list:tl$ $algattrs:alg_attrs$ >> ->
-    match tl with
-      [ [] -> pprintf pc "%p%p" cons_escaped e
-            (hlist (pr_attribute "@")) alg_attrs
-
-      | tl ->
-          let tl = List.map (fun t -> (t, " and")) tl in
-          pprintf pc "%p of@;%p%p" cons_escaped e (plist ctyp_below_alg_attribute 0) tl
-            (hlist (pr_attribute "@")) alg_attrs
-      ]
-
-| MLast.EcTuple (loc, Ploc.VaVal uid, Ploc.VaVal tl, Some rt, Ploc.VaVal alg_attrs) ->
-     let genty = List.fold_right (fun t rt -> <:ctyp< $t$ -> $rt$ >>) tl rt in
-       pprintf pc "%p : %p%p" cons_escaped uid
-          ctyp_below_alg_attribute genty
-          (hlist (pr_attribute "@")) alg_attrs
-
-| <:extension_constructor:< $uid:e$ = $id$ $algattrs:alg_attrs$ >> ->
-      pprintf pc "%p@;= %p%p" cons_escaped e mod_ident (loc, id)
-        (hlist (pr_attribute "@")) alg_attrs
-| _ -> error loc "extension_constructor: internal error"
-]
-;
-
-value type_extension pc te =
-  let ((loc, tn), tp, pf, ecstrs, attrs) =
-    (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
-     te.MLast.teECs, te.MLast.teAttributes)
-  in
-  horiz_vertic
-    (fun () ->
-       pprintf pc "%p%s%p += %s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
-         (if Pcaml.unvala tp = [] then "" else " ")
-         (hlist type_var) (Pcaml.unvala tp)
-         (if pf then "private " else "")
-         (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
-         (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
-    (fun () ->
-       if pc.aft = "" then
-         pprintf pc "%p%s%p +=@;%s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
-           (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp)
-           (if pf then "private " else "")
-           (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
-           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
-       else
-         pprintf pc "@[<a>%p%s%p +=@;%s[ %p ]%p@ @]" mod_ident
-           (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp)
-           (if pf then "private " else "")
-           (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
-           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
-;
-
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl, attrs) =
     (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
@@ -880,23 +824,66 @@ value cons_decl pc (_, c, tl, rto, alg_attrs) =
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
     match rto with
-    [ Some rt -> pprintf pc "%p : %p%p" cons_escaped c ctyp rt
+    [ Some rt -> pprintf pc "%p : %p%p" cons_escaped c ctyp_below_alg_attribute rt
                    (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
-    | None -> cons_escaped pc c ]
+    | None -> pprintf pc "%p%p" cons_escaped c
+                   (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
+    ]
   }
   else do {
     match rto with
     [ Some rt ->
         let loc = Ploc.dummy in
         let t = List.fold_right (fun t rt -> <:ctyp< $t$ -> $rt$ >>) tl rt in
-        pprintf pc "%p :@;<1 4>%p%p" cons_escaped c ctyp t
+        pprintf pc "%p :@;<1 4>%p%p" cons_escaped c ctyp_below_alg_attribute t
           (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None ->
         let tl = List.map (fun t -> (t, " and")) tl in
-        pprintf pc "%p of@;<1 4>%p%p" cons_escaped c (plist ctyp 2) tl
+        pprintf pc "%p of@;<1 4>%p%p" cons_escaped c (plist ctyp_below_alg_attribute 2) tl
           (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     ]
   }
+;
+
+
+value extension_constructor loc pc ec = match ec with [
+  MLast.EcTuple gc -> cons_decl pc gc
+
+| <:extension_constructor:< $uid:e$ = $id$ $algattrs:alg_attrs$ >> ->
+      pprintf pc "%p@;= %p%p" cons_escaped e mod_ident (loc, id)
+        (hlist (pr_attribute "@")) alg_attrs
+| _ -> error loc "extension_constructor: internal error"
+]
+;
+
+value type_extension pc te =
+  let ((loc, tn), tp, pf, ecstrs, attrs) =
+    (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
+     te.MLast.teECs, te.MLast.teAttributes)
+  in
+  horiz_vertic
+    (fun () ->
+       pprintf pc "%p%s%p += %s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
+         (if Pcaml.unvala tp = [] then "" else " ")
+         (hlist type_var) (Pcaml.unvala tp)
+         (if pf then "private " else "")
+         (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
+         (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
+    (fun () ->
+       if pc.aft = "" then
+         pprintf pc "%p%s%p +=@;%s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
+           (if Pcaml.unvala tp = [] then "" else " ")
+           (hlist type_var) (Pcaml.unvala tp)
+           (if pf then "private " else "")
+           (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
+           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
+       else
+         pprintf pc "@[<a>%p%s%p +=@;%s[ %p ]%p@ @]" mod_ident
+           (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
+           (hlist type_var) (Pcaml.unvala tp)
+           (if pf then "private " else "")
+           (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
+           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
 ;
 
 value has_cons_with_params vdl =
@@ -1911,10 +1898,10 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after str_item)) sil)
-      | <:str_item:< exception $uid:e$ of $list:tl$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
-          exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
-      | <:str_item:< exception $uid:e$ = $id$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
-          exception_decl pc (loc, e, [], id, alg_attrs, item_attrs)
+
+      | <:str_item:< exception $excon:ec$ $_itemattrs:item_attrs$ >> ->
+          pprintf pc "exception %p%p" (extension_constructor loc) ec
+            (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           if is_operator n then
             external_decl_original pc (loc, n, t, sl, attrs)
@@ -1977,8 +1964,8 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after sig_item)) sil)
-      | <:sig_item:< exception $uid:e$ of $list:tl$ $algattrs:alg_attrs$ $itemattrs:item_attrs$ >> ->
-          exception_decl pc (loc, e, tl, [], alg_attrs, item_attrs)
+      | MLast.SgExc _ gc item_attrs -> pprintf pc "exception %p%p" cons_decl gc
+            (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           if is_operator n then
             external_decl_original pc (loc, n, t, sl, attrs)

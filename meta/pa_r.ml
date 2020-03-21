@@ -578,8 +578,8 @@ EXTEND
     [ "top"
       [ "declare"; st = V (LIST0 [ s = sig_item; ";" → s ]); "end" →
           <:sig_item< declare $_list:st$ end >>
-      | "exception"; (_, c, tl, _, alg_attrs) = constructor_declaration ; item_attrs = item_attributes →
-          <:sig_item< exception $_uid:c$ of $_list:tl$ $_algattrs:alg_attrs$ $_itemattrs:item_attrs$ >>
+      | "exception"; gc = constructor_declaration ; item_attrs = item_attributes →
+          MLast.SgExc loc gc item_attrs
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>

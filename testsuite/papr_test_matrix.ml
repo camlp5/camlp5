@@ -430,6 +430,28 @@ and t2 = bool[@@foo];
      r_output = OK {foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];
 |foo}
     };
+    {name="exception-decl-attributes3"; implem = True ;
+     exclude=[];
+     o_input = OK"exception Foo [@foo]" ;
+     official_input = OK"exception Foo [@foo]" ;
+     r_input = OK"exception Foo [@foo];" ;
+     o_output = OK {foo|exception Foo[@foo];;
+|foo} ;
+     official_output = OK {foo|exception Foo [@foo ]|foo} ;
+     r_output = OK {foo|exception Foo[@foo];
+|foo}
+    };
+    {name="exception-decl-attributes3b"; implem = False ;
+     exclude=[];
+     o_input = OK"exception Foo [@foo]" ;
+     official_input = OK"exception Foo [@foo]" ;
+     r_input = OK"exception Foo [@foo];" ;
+     o_output = OK {foo|exception Foo[@foo];;
+|foo} ;
+     official_output = OK {foo|exception Foo [@foo ]|foo} ;
+     r_output = OK {foo|exception Foo[@foo];
+|foo}
+    };
     {name="constructor-decl-attributes1"; implem = True ;
      exclude=[];
      o_input = OK"type t = A of int * bool [@alg_foo] | B of bool * string [@alg_bar] [@@item_bar]" ;
@@ -445,6 +467,51 @@ and t2 = bool[@@foo];
      r_output = OK {foo|type t =
   [ A of int and bool[@alg_foo]
   | B of bool and string[@alg_bar] ][@@item_bar];
+|foo}
+    };
+    {name="constructor-decl-attributes2a"; implem = True ;
+     exclude=[];
+     o_input = OK{foo|type t = A of int [@alg_bar] [@@item_bar]|foo} ;
+     official_input = OK {foo|type t = A of int [@alg_bar] [@@item_bar]|foo} ;
+     r_input = OK {foo|type t =
+  [ A of int[@alg_bar] ][@@item_bar];|foo} ;
+     o_output = OK {foo|type t =
+    A of int[@alg_bar][@@item_bar];;
+|foo} ;
+     official_output = OK {foo|type t =
+  | A of int [@alg_bar ][@@item_bar ]|foo} ;
+     r_output = OK {foo|type t =
+  [ A of int[@alg_bar] ][@@item_bar];
+|foo}
+    };
+    {name="constructor-decl-attributes2b"; implem = True ;
+     exclude=[];
+     o_input = OK{foo|type t = A of (int [@alg_foo]) [@@item_bar]|foo} ;
+     official_input = OK {foo|type t = A of (int [@alg_foo]) [@@item_bar]|foo} ;
+     r_input = OK {foo|type t =
+  [ A of (int[@alg_foo]) ][@@item_bar];|foo} ;
+     o_output = OK {foo|type t =
+    A of (int[@alg_foo])[@@item_bar];;
+|foo} ;
+     official_output = OK {foo|type t =
+  | A of ((int)[@alg_foo ]) [@@item_bar ]|foo} ;
+     r_output = OK {foo|type t =
+  [ A of (int[@alg_foo]) ][@@item_bar];
+|foo}
+    };
+    {name="constructor-decl-attributes2c"; implem = True ;
+     exclude=[];
+     o_input = OK{foo|type t = A of (int [@alg_foo]) [@alg_bar] [@@item_bar]|foo} ;
+     official_input = OK {foo|type t = A of (int [@alg_foo]) [@alg_bar] [@@item_bar]|foo} ;
+     r_input = OK {foo|type t =
+  [ A of (int[@alg_foo])[@alg_bar] ][@@item_bar];|foo} ;
+     o_output = OK {foo|type t =
+    A of (int[@alg_foo])[@alg_bar][@@item_bar];;
+|foo} ;
+     official_output = OK {foo|type t =
+  | A of ((int)[@alg_foo ]) [@alg_bar ][@@item_bar ]|foo} ;
+     r_output = OK {foo|type t =
+  [ A of (int[@alg_foo])[@alg_bar] ][@@item_bar];
 |foo}
     };
     {name="module-expr-item-attributes1"; implem = True ;
@@ -2400,6 +2467,28 @@ type nat _ =
      official_output = OK {foo|type t +=  
   | Foo: int -> t |foo} ;
      r_output = OK {foo|type t += [ Foo : int → t ];
+|foo}
+    };
+    {name="gadt-basic-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|exception Foo : int -> t|foo} ;
+     official_input = OK {foo|exception Foo : int -> t|foo} ;
+     r_input = OK {foo|exception Foo : int -> t;|foo} ;
+     o_output = OK {foo|exception Foo : int -> t;;
+|foo};
+     official_output = OK {foo|exception Foo: int -> t |foo} ;
+     r_output = OK {foo|exception Foo : int → t;
+|foo}
+    };
+    {name="gadt-basic-4"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|exception Foo : int -> t|foo} ;
+     official_input = OK {foo|exception Foo : int -> t|foo} ;
+     r_input = OK {foo|exception Foo : int -> t;|foo} ;
+     o_output = OK {foo|exception Foo : int -> t;;
+|foo};
+     official_output = OK {foo|exception Foo: int -> t |foo} ;
+     r_output = OK {foo|exception Foo : int → t;
 |foo}
     };
     {name="inline-extensionsXX"; implem = True ;
