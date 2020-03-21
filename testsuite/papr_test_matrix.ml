@@ -2528,6 +2528,92 @@ type nat _ =
      r_output = OK {foo|type foo _ += [ A : int → foo int | B : foo int ];
 |foo}
     };
+    {name="gadt-5"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
+  fun (type a) (x : a) -> x
+|foo} ;
+     official_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
+  fun (type a) (x : a) -> x
+|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="gadt-6"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
+  fun (type a b) (x : a) ->
+    let module M =
+      (functor (T : sig type 'a t end) ->
+       struct
+         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
+       end)
+        (struct type 'a t = unit end)
+    in M.f Refl
+|foo} ;
+     official_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
+  fun (type a b) (x : a) ->
+    let module M =
+      (functor (T : sig type 'a t end) ->
+       struct
+         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
+       end)
+        (struct type 'a t = unit end)
+    in M.f Refl
+|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|let magic : 'a 'b . 'a -> 'b =
+  fun (type a) ->
+    fun (type b) ->
+      fun (x : a) ->
+        let module M = (functor (T : sig type 'a t end) ->
+          struct let f (Refl : (a T.t, b T.t) eq) = (x :> b) end)(struct
+                                                                    type 
+                                                                    'a t =
+                                                                    unit
+                                                                  end) in
+          M.f Refl|foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensionsXX"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensionsXX"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensionsXX"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="inline-extensionsXX"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
     {name="inline-extensionsXX"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
