@@ -1408,7 +1408,10 @@ EXTEND
   class_type:
     [ "top" RIGHTA
       [ "["; t = ctyp; "]"; "->"; ct = SELF →
-          Qast.Node "CtFun" [Qast.Loc; t; ct] ]
+          Qast.Node "CtFun" [Qast.Loc; t; ct]
+      | "let"; "open"; ovf = SV (FLAG "!") "!"; i = extended_longident; "in"; ce = SELF →
+          Qast.Node "CtLop" [Qast.Loc; ovf; i; ce]
+      ]
     | "alg_attribute" LEFTA
       [ t1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->
         Qast.Node "CtAtt" [Qast.Loc; t1; attr]

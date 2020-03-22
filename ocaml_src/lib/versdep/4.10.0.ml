@@ -816,6 +816,12 @@ let ocaml_pcl_open loc li ovf ce =
       popen_attributes = []},
      ce)
 ;;
+let ocaml_pcty_open loc li ovf ct =
+  Pcty_open
+    ({popen_expr = mknoloc li; popen_override = ovf; popen_loc = loc;
+      popen_attributes = []},
+     ct)
+;;
 
 let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 

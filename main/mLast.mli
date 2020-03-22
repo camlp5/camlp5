@@ -235,6 +235,7 @@ and class_type =
   [ CtLong of loc and longid
   | CtLongLid of loc and longid and V string
   | CtLid of loc and V string
+  | CtLop of loc and V bool and longid and class_type
   | CtCon of loc and class_type and V (list ctyp)
   | CtFun of loc and ctyp and class_type
   | CtSig of loc and V (option ctyp) and V (list class_sig_item)

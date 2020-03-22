@@ -636,6 +636,9 @@ and class_type floc sh =
     | CtLid loc x1 →
         let loc = floc loc in
         CtLid loc x1
+    | CtLop loc x1 x2 x3 →
+        let loc = floc loc in
+        CtLop loc x1 (longid floc sh x2) (self x3)
     | CtCon loc x1 x2 →
         let loc = floc loc in
         CtCon loc (self x1) (vala_map (List.map (ctyp floc sh)) x2)

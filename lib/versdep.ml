@@ -1630,12 +1630,20 @@ value ocaml_pcl_let =
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
 value ocaml_pcl_open loc li ovf ce = assert False
 ;
+value ocaml_pcty_open loc li ovf ct = assert False
+;
 ELSE
 value ocaml_pcl_open loc li ovf ce =
   Pcl_open
     {popen_expr = mknoloc li; popen_override = ovf; popen_loc = loc;
      popen_attributes = []}
     ce
+;
+value ocaml_pcty_open loc li ovf ct =
+  Pcty_open
+    {popen_expr = mknoloc li; popen_override = ovf; popen_loc = loc;
+     popen_attributes = []}
+    ct
 ;
 END
 ;

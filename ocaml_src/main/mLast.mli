@@ -220,6 +220,7 @@ and class_type =
     CtLong of loc * longid
   | CtLongLid of loc * longid * string
   | CtLid of loc * string
+  | CtLop of loc * bool * longid * class_type
   | CtCon of loc * class_type * ctyp list
   | CtFun of loc * ctyp * class_type
   | CtSig of loc * ctyp option * class_sig_item list

@@ -1717,6 +1717,10 @@ and class_type =
         Some pcty_constr -> mkcty loc (pcty_constr li [])
       | None -> error loc "no class type desc in this ocaml version"
       end
+  | CtLop (loc, ovf, me, ct) ->
+      let li = longid_long_id me in
+      mkcty loc
+        (ocaml_pcty_open (mkloc loc) li (mkoverride (uv ovf)) (class_type ct))
   | CtCon (loc, ct, tl) ->
       let li = class_type_long_id ct in
       begin match ocaml_pcty_constr with
