@@ -1025,7 +1025,13 @@ EXTEND
                 l e in
             expr_to_inline e ext attrs
 
-      | "fun"; (ext,attrs) = ext_attributes; check_not_new_type_extended ; p = patt LEVEL "simple"; (eo, e) = fun_def ->
+      | "fun"; (ext,attrs) = ext_attributes; check_not_new_type_extended ; p = patt LEVEL "simple";
+        tyopt = OPT [ ":"; t = ctyp LEVEL "apply" -> t ] ;
+        (eo, e) = fun_def ->
+          let e = match tyopt with [
+            None -> e
+          | Some ty -> <:expr< ( $e$ : $ty$ ) >>
+          ] in
           expr_to_inline <:expr< fun [$p$ $opt:eo$ -> $e$] >> ext attrs
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; OPT "|";
         l = V (LIST1 match_case SEP "|") ->

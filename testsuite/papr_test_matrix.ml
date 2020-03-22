@@ -2738,6 +2738,98 @@ type nat _ =
      r_output = OK {foo|type succ α =
   [ Succ of α ];
 |foo}
+    };
+    {name="type-variable-slots-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
+     official_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
+     r_input = OK {foo|fun b → (if b then "x" else "y" : format _ _ _);|foo} ;
+     o_output = OK {foo|let _ = fun b -> (if b then "x" else "y" : (_, _, _) format);;
+|foo};
+     official_output = OK {foo|;;fun b -> (if b then "x" else "y" : (_, _, _) format)|foo} ;
+     r_output = OK {foo|fun b → (if b then "x" else "y" : format _ _ _);
+|foo}
+    };
+    {name="class-type-member-attribute"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = < foo: int [@foo] >|foo} ;
+     official_input = OK {foo|type t = < foo: int [@foo] >|foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo|type t = < foo: int [@foo ]  > |foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     }
 ]
 ;
