@@ -128,7 +128,7 @@ let ocaml_patt_addattr _ _ = assert false;;
 let ocaml_pmty_addattr _ _ = assert false;;
 let ocaml_pmod_addattr _ _ = assert false;;
 let ocaml_pcty_addattr _ _ = assert false;;
-let ocaml_pcl_addattr _ _ = assert false;;
+let ocaml_pcl_addattrs _ _ = assert false;;
 let ocaml_psig_attribute _ = assert false;;
 let ocaml_pstr_attribute _ = assert false;;
 let ocaml_pctf_attribute _ = assert false;;
@@ -165,7 +165,9 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield loc (lab, x) fl = (lab, x) :: fl;;
+let ocaml_mkfield ?(alg_attributes = []) loc (lab, x) fl =
+  assert (alg_attributes = []); (lab, x) :: fl
+;;
 let ocaml_mkfield_var loc = [];;
 
 let variance_of_bool_bool =
@@ -208,7 +210,9 @@ let ocaml_class_type =
 ;;
 
 let ocaml_class_expr =
-  Some (fun d loc -> {pcl_desc = d; pcl_loc = loc; pcl_attributes = []})
+  Some
+    (fun ?(alg_attributes = []) d loc ->
+       {pcl_desc = d; pcl_loc = loc; pcl_attributes = alg_attributes})
 ;;
 
 let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
@@ -691,6 +695,8 @@ let ocaml_pcl_constraint = Some (fun ce ct -> Pcl_constraint (ce, ct));;
 let ocaml_pcl_fun = Some (fun lab ceo p ce -> Pcl_fun (lab, ceo, p, ce));;
 
 let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
+
+let ocaml_pcl_open loc li ovf ce = assert false;;
 
 let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 

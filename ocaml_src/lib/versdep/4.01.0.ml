@@ -125,7 +125,7 @@ let ocaml_patt_addattr _ _ = assert false;;
 let ocaml_pmty_addattr _ _ = assert false;;
 let ocaml_pmod_addattr _ _ = assert false;;
 let ocaml_pcty_addattr _ _ = assert false;;
-let ocaml_pcl_addattr _ _ = assert false;;
+let ocaml_pcl_addattrs _ _ = assert false;;
 let ocaml_psig_attribute _ = assert false;;
 let ocaml_pstr_attribute _ = assert false;;
 let ocaml_pctf_attribute _ = assert false;;
@@ -156,7 +156,8 @@ let ocaml_ppat_exception _ = assert false;;
 let ocaml_mkexp loc x = {pexp_desc = x; pexp_loc = loc};;
 let ocaml_mkmty loc x = {pmty_desc = x; pmty_loc = loc};;
 let ocaml_mkmod loc x = {pmod_desc = x; pmod_loc = loc};;
-let ocaml_mkfield loc (lab, x) fl =
+let ocaml_mkfield ?(alg_attributes = []) loc (lab, x) fl =
+  assert (alg_attributes = []);
   {pfield_desc = Pfield (lab, x); pfield_loc = loc} :: fl
 ;;
 let ocaml_mkfield_var loc = [{pfield_desc = Pfield_var; pfield_loc = loc}];;
@@ -185,7 +186,11 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
 
 let ocaml_class_type = Some (fun d loc -> {pcty_desc = d; pcty_loc = loc});;
 
-let ocaml_class_expr = Some (fun d loc -> {pcl_desc = d; pcl_loc = loc});;
+let ocaml_class_expr =
+  Some
+    (fun ?(alg_attributes = []) d loc ->
+       assert (alg_attributes = []); {pcl_desc = d; pcl_loc = loc})
+;;
 
 let ocaml_class_structure p cil = {pcstr_pat = p; pcstr_fields = cil};;
 
@@ -606,6 +611,8 @@ let ocaml_pcl_constraint = Some (fun ce ct -> Pcl_constraint (ce, ct));;
 let ocaml_pcl_fun = Some (fun lab ceo p ce -> Pcl_fun (lab, ceo, p, ce));;
 
 let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
+
+let ocaml_pcl_open loc li ovf ce = assert false;;
 
 let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 
