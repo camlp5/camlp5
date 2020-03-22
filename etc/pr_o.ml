@@ -2239,7 +2239,9 @@ value rec class_longident pc cl =
   | [c :: cl] -> pprintf pc "%s.%p" c class_longident cl ]
 ;
 
-value field pc (s, t) = pprintf pc "%s :@;%p" s ctyp t;
+value field pc (s, t,attrs) = pprintf pc "%s :@;%p%p" s ctyp t
+    (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
+;
 
 value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 
@@ -2321,7 +2323,7 @@ EXTEND_PRINTER
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s
       | <:expr< $lid:op$ $e1$ $e2$ >> when is_hashop op ->
-        pprintf pc "%p %s@;<0 0>%p" curr e1 op next e2
+        pprintf pc "%p %s@;<1 0>%p" curr e1 op next e2
       ] ]
   ;
   pr_expr: LEVEL "simple"

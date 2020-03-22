@@ -90,7 +90,7 @@ value rec ctyp floc sh =
         TyMan loc (self x1) x2 (self x3)
     | TyObj loc x1 x2 →
         let loc = floc loc in
-        TyObj loc (vala_map (List.map (fun (x1, x2) → (x1, self x2))) x1) x2
+        TyObj loc (vala_map (List.map (fun (x1, x2, x3) → (x1, self x2, x3))) x1) x2
     | TyOlb loc x1 x2 →
         let loc = floc loc in
         TyOlb loc x1 (self x2)

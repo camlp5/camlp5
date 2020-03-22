@@ -1488,7 +1488,7 @@ EXTEND
           Qast.Node "TyObj" [Qast.Loc; ml; v] ] ]
   ;
   field:
-    [ [ lab = LIDENT; ":"; t = ctyp → Qast.Tuple [mkident lab; t] ] ]
+    [ [ lab = LIDENT; ":"; t = ctyp ; alg_attrs = alg_attributes → Qast.Tuple [mkident lab; t; alg_attrs] ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF → Qast.Cons (mkident m) l

@@ -1327,7 +1327,7 @@ EXTEND
           <:ctyp< < $_list:ml$ $_flag:v$ > >> ] ]
   ;
   field:
-    [ [ lab = LIDENT; ":"; t = ctyp → (mkident lab, t) ] ]
+    [ [ lab = LIDENT; ":"; t = ctyp_below_alg_attribute; alg_attrs = alg_attributes → (mkident lab, t, alg_attrs) ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF → [mkident m :: l]

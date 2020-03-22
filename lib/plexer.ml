@@ -115,12 +115,17 @@ value rec ident =
   [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | misc_letter ] ident! | ]
 ;
 
-value rec ident2 =
+value rec ident2_or other =
   lexer
   [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-      '%' | '.' | ':' | '<' | '>' | '|' | '$' | misc_punct ]
-      ident2!
+      '%' | '.' | ':' | '<' | '>' | '|' | '$' | other | misc_punct ]
+      (ident2_or other)!
   | ]
+;
+
+value ident2 = ident2_or (fun buf strm -> raise Stream.Failure)
+;
+value hash_follower_chars = ident2_or (lexer [ '#' ])
 ;
 
 value rec ident3 =
@@ -589,7 +594,7 @@ value next_token_after_spaces ctx bp =
   | (utf8_equiv ctx bp)
   | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "\\"/ ident3! -> ("LIDENT", $buf)
-  | "#" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "#" hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 

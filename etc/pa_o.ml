@@ -1924,7 +1924,8 @@ EXTEND
       | f = field -> [f] ] ]
   ;
   field:
-    [ [ lab = LIDENT; ":"; t = poly_type_below_alg_attribute -> (lab, t) ] ]
+    [ [ lab = LIDENT; ":"; t = poly_type_below_alg_attribute; alg_attrs = alg_attributes ->
+       (lab, t, alg_attrs) ] ]
   ;
   (* Polymorphic types *)
   typevar:

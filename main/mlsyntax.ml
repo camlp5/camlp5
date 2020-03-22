@@ -2,16 +2,18 @@
 (* mlsyntax.ml *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-value symbolchar =
+value symbolchar_or f =
   let list =
     ['!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/'; ':'; '<'; '='; '>'; '?';
      '@'; '^'; '|'; '~']
   in
   loop where rec loop s i =
     if i == String.length s then True
-    else if List.mem s.[i] list then loop s (i + 1)
+    else if List.mem s.[i] list || f s.[i] then loop s (i + 1)
     else False
 ;
+
+value symbolchar = symbolchar_or (fun x -> False) ;
 
 value dotsymbolchar_star = 
   let list = [ '!'; '$'; '%'; '&'; '*'; '+'; '-'; '/'; ':'; '='; '>'; '?';
@@ -104,7 +106,7 @@ value is_hashop =
   let excl = ["#"] in
   fun x ->
     not (List.mem x excl) && String.length x >= 2 &&
-    List.mem x.[0] list && symbolchar x 1
+    List.mem x.[0] list && symbolchar_or (fun x -> '#' = x)  x 1
 ;
 
 value is_operator0 = do {

@@ -248,7 +248,8 @@ value rec class_longident pc cl =
 value binding elem pc (p, e, item_attrs) =
   pprintf pc "%p =@;%p%p" patt p expr e
     (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs);
-value field pc (s, t) = pprintf pc "%s :@;%p" s ctyp t;
+value field pc (s, t, attrs) = pprintf pc "%s :@;%p%p" s ctyp t
+    (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala attrs) ;
 value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 
 value patt_tcon pc p =
@@ -326,7 +327,7 @@ EXTEND_PRINTER
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s
       | <:expr< $lid:op$ $e1$ $e2$ >> when is_hashop op ->
-          pprintf pc "%p %s@;<0 0>%p" curr e1 op next e2
+          pprintf pc "%p %s@;<1 0>%p" curr e1 op next e2
       ] ]
   ;
   pr_expr: LEVEL "simple"
