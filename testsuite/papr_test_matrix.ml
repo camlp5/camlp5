@@ -2795,10 +2795,12 @@ type nat _ =
   object
     method f : t
   end|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|class type ct = let open M in object method f : t; end;|foo} ;
+     o_output = OK {foo|class type ct = let open M in object method f : t end;;
+|foo};
      official_output = OK {foo|class type ct = let open M in object method  f : t end|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|class type ct = let open M in object method f : t; end;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

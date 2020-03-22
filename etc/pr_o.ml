@@ -2504,7 +2504,14 @@ EXTEND_PRINTER
     [ "top"
       [ <:class_type< [ $t$ ] -> $ct$ >> ->
           pprintf pc "%p ->@;%p" (Eprinter.apply_level pr_ctyp "star") t curr
-            ct ]
+            ct
+      | <:class_type< let open $_!:ovf$ $longid:li$ in $ce$ >> ->
+          let ovf = if (Pcaml.unvala ovf) then "!" else "" in
+          if pc.dang = ";" then
+            pprintf pc "(@[<a>let open%s %p@ in@]@ %p)" ovf longident li curr ce
+          else
+            pprintf pc "@[<a>let open%s %p@ in@]@ %p" ovf longident li curr ce
+      ]
     | "alg_attribute"
       [ <:class_type< $ct$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr ct attribute_body attr

@@ -1813,6 +1813,8 @@ EXTEND
     [ "alg_attribute" LEFTA
       [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:class_type< $ct$ [@ $_attribute:attr$ ] >>
+      | "let"; "open"; ovf = V (FLAG "!") "!"; i = extended_longident; "in"; ce = SELF →
+        <:class_type< let open $_!:ovf$ $longid:i$ in $ce$ >>
       ]
 
     | [ "["; tl = LIST1 ctyp SEP ","; "]"; id = SELF ->

@@ -1246,7 +1246,10 @@ EXTEND
   class_type:
     [ "top" RIGHTA
       [ "["; t = ctyp; "]"; "->"; ct = SELF →
-          <:class_type< [ $t$ ] → $ct$ >> ]
+          <:class_type< [ $t$ ] → $ct$ >>
+      | "let"; "open"; ovf = V (FLAG "!") "!"; i = extended_longident; "in"; ce = SELF →
+          <:class_type< let open $_!:ovf$ $longid:i$ in $ce$ >>
+      ]
     | "alg_attribute" LEFTA
       [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:class_type< $ct$ [@ $_attribute:attr$ ] >>

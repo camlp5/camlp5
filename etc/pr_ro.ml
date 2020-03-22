@@ -463,7 +463,14 @@ EXTEND_PRINTER
           [ <:ctyp< < $list:_$ $flag:_$ > >> ->
               pprintf pc "[ %p ] ->@;%p" ctyp t curr ct
           | _ ->
-              pprintf pc "[%p] ->@;%p" ctyp t curr ct ] ]
+              pprintf pc "[%p] ->@;%p" ctyp t curr ct ]
+      | <:class_type< let open $_!:ovf$ $longid:li$ in $ce$ >> ->
+          let ovf = if (Pcaml.unvala ovf) then "!" else "" in
+          if pc.dang = ";" then
+            pprintf pc "(@[<a>let open%s %p@ in@]@ %p)" ovf Pr_r.longident li curr ce
+          else
+            pprintf pc "@[<a>let open%s %p@ in@]@ %p" ovf Pr_r.longident li curr ce
+      ]
     | "alg_attribute"
       [ <:class_type< $ct$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr ct Pr_r.attribute_body attr
