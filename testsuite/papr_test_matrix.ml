@@ -2802,14 +2802,22 @@ type nat _ =
      r_output = OK {foo|class type ct = let open M in object method f : t; end;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="exotic-list-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type ('a,'b) t = [] | (::) of 'a * 'b *  ('a,'b) t|foo} ;
+     official_input = OK {foo|type ('a,'b) t = [] | (::) of 'a * 'b *  ('a,'b) t|foo} ;
+     r_input = OK {foo|type  t 'a 'b = [ [] | (::) of 'a and 'b and  t 'a 'b ];|foo} ;
+     o_output = OK {foo|type ('a, 'b) t =
+    []
+  | ( :: ) of 'a * 'b * ('a, 'b) t;;
+|foo};
+     official_output = OK {foo|type ('a, 'b) t =
+  | [] 
+  | (::) of 'a * 'b * ('a, 'b) t |foo} ;
+     r_output = OK {foo|type t α β =
+  [ []
+  | ( :: ) of α and β and t α β ];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
