@@ -612,7 +612,7 @@ value ocaml_ptype_variant ctl priv =
                  ELSE
                    let (tl,rto) = match tl with [
                      (Left x,rto) -> (Pcstr_tuple x, rto)
-                   | (Right (Ptype_record x),None) -> (Pcstr_record x, None)
+                   | (Right (Ptype_record x),rto) -> (Pcstr_record x, rto)
                    | _ -> assert False ] in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = attrs}

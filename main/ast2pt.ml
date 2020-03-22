@@ -462,13 +462,13 @@ and mkvalue_desc ~{item_attributes} vn t p =
  ocaml_value_description ~{item_attributes=item_attributes} vn (ctyp t) p
 
 and sumbranch_ctyp ?{priv=False} loc l rto =
+    let rto = option_map ctyp rto in
     match l with [
       [TyRec loc ltl] -> do {
-        assert (None = rto) ;
-        (Right (mktrecord (uv ltl) priv), None)
+        (Right (mktrecord (uv ltl) priv), rto)
       }
     | [TyRec _ _ :: _] -> error loc "only ONE record type allowed here"
-    | l -> (Left (List.map ctyp l), option_map ctyp rto)
+    | l -> (Left (List.map ctyp l), rto)
     ]
 
 and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
