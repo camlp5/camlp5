@@ -181,6 +181,10 @@ value test_constr_decl =
            | [_ :: _] -> ()
            | _ -> raise Stream.Failure ]
        | [("", "|")] -> ()
+       | [("", "[")] ->
+           match Stream.npeek 2 strm with
+           [ [_; ("", "]")] -> ()
+           | _ -> raise Stream.Failure ]
        | _ -> raise Stream.Failure ])
 ;
 
