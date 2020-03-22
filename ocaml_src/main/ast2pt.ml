@@ -614,11 +614,11 @@ and mkwithc =
 and mkvalue_desc ~item_attributes vn t p =
   ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
 and sumbranch_ctyp ?(priv = false) loc l rto =
+  let rto = option_map ctyp rto in
   match l with
-    [TyRec (loc, ltl)] ->
-      assert (None = rto); Right (mktrecord (uv ltl) priv), None
+    [TyRec (loc, ltl)] -> Right (mktrecord (uv ltl) priv), rto
   | TyRec (_, _) :: _ -> error loc "only ONE record type allowed here"
-  | l -> Left (List.map ctyp l), option_map ctyp rto
+  | l -> Left (List.map ctyp l), rto
 and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
   conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tl) rto, mkloc loc,
   uv_alg_attributes alg_attrs
@@ -808,9 +808,8 @@ and extension_constructor loc ec =
       begin match tl with
         Left x, y ->
           ocaml_ec_tuple ~alg_attributes:alg_attrs (mkloc loc) n (x, y)
-      | Right x, None ->
-          ocaml_ec_record ~alg_attributes:alg_attrs (mkloc loc) n x
-      | Right _, Some _ -> assert false
+      | Right x, y ->
+          ocaml_ec_record ~alg_attributes:alg_attrs (mkloc loc) n (x, y)
       end
   | EcRebind (n, sl, alg_attrs) ->
       let sl = uv sl in
