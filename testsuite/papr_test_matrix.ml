@@ -2783,13 +2783,21 @@ type nat _ =
      r_output = OK {foo|class c = (let open! M in object  end)[@foo];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="class-type-local-open-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|class type ct =
+  let open M in
+  object
+    method f : t
+  end|foo} ;
+     official_input = OK {foo|class type ct =
+  let open M in
+  object
+    method f : t
+  end|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|class type ct = let open M in object method  f : t end|foo} ;
      r_output = OK {foo||foo}
     };
     {name="test-prototype"; implem = True ;
