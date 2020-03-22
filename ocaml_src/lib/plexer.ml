@@ -174,7 +174,7 @@ let rec ident buf (strm__ : _ Stream.t) =
   | _ -> buf
 ;;
 
-let rec ident2 buf (strm__ : _ Stream.t) =
+let rec ident2_or other buf (strm__ : _ Stream.t) =
   match
     try
       Some
@@ -183,11 +183,22 @@ let rec ident2 buf (strm__ : _ Stream.t) =
              ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' |
               '/' | '%' | '.' | ':' | '<' | '>' | '|' | '$' as c) ->
              Stream.junk strm__; Plexing.Lexbuf.add c buf
-         | _ -> misc_punct buf strm__)
+         | _ ->
+             try other buf strm__ with
+               Stream.Failure -> misc_punct buf strm__)
     with Stream.Failure -> None
   with
-    Some buf -> ident2 buf strm__
+    Some buf -> ident2_or other buf strm__
   | _ -> buf
+;;
+
+let ident2 = ident2_or (fun buf strm -> raise Stream.Failure);;
+let hash_follower_chars =
+  ident2_or
+    (fun buf (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some '#' -> Stream.junk strm__; Plexing.Lexbuf.add '#' buf
+       | _ -> raise Stream.Failure)
 ;;
 
 let rec ident3 buf (strm__ : _ Stream.t) =
@@ -1280,7 +1291,8 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                           | Some '#' ->
                               Stream.junk strm__;
                               let buf =
-                                ident2 (Plexing.Lexbuf.add '#' buf) strm__
+                                hash_follower_chars
+                                  (Plexing.Lexbuf.add '#' buf) strm__
                               in
                               keyword_or_error ctx (bp, Stream.count strm__)
                                 (Plexing.Lexbuf.get buf)
@@ -1730,11 +1742,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 897, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 897, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 897, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 898, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 898, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 902, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 902, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 902, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 903, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 903, 37)));
        tok_comm = None}
   in
   let glex =

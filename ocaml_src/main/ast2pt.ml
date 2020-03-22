@@ -48,7 +48,9 @@ let mkmty loc d = ocaml_mkmty (mkloc loc) d;;
 let mksig loc d = {psig_desc = d; psig_loc = mkloc loc};;
 let mkmod loc d = ocaml_mkmod (mkloc loc) d;;
 let mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};;
-let mkfield loc d fl = ocaml_mkfield (mkloc loc) d fl;;
+let mkfield ~alg_attributes:alg_attributes loc d fl =
+  ocaml_mkfield ~alg_attributes:alg_attributes (mkloc loc) d fl
+;;
 let mkfield_var loc = ocaml_mkfield_var (mkloc loc);;
 
 let mkcty loc d =
@@ -724,7 +726,9 @@ and ctyp =
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then mkfield_var loc else []
-  | (lab, t) :: fl -> mkfield loc (lab, add_polytype t) (meth_list loc fl v)
+  | (lab, t, attrs) :: fl ->
+      mkfield ~alg_attributes:(uv_alg_attributes attrs) loc
+        (lab, add_polytype t) (meth_list loc fl v)
 and add_polytype t =
   match ocaml_ptyp_poly with
     Some ptyp_poly ->

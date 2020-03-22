@@ -4914,12 +4914,18 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_token ("LIDENT", "")))
-                (Grammar.s_token ("", ":")))
-             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
-           (fun (t : 'ctyp) _ (lab : string) (loc : Ploc.t) ->
-              (mkident lab, t : 'field)))]];
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("LIDENT", "")))
+                   (Grammar.s_token ("", ":")))
+                (Grammar.s_nterm
+                   (ctyp_below_alg_attribute :
+                    'ctyp_below_alg_attribute Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
+           (fun (alg_attrs : 'alg_attributes) (t : 'ctyp_below_alg_attribute)
+                _ (lab : string) (loc : Ploc.t) ->
+              (mkident lab, t, alg_attrs : 'field)))]];
     Grammar.extension (class_longident : 'class_longident Grammar.Entry.e)
       None
       [None, None,

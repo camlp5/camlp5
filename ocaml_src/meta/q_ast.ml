@@ -115,7 +115,12 @@ module Meta_make (C : MetaSig) =
           C.node "TyMan" [ctyp t1; C.vala C.bool b; ctyp t2]
       | TyObj (_, lst, b) ->
           C.node "TyObj"
-            [C.vala (C.list (fun (s, t) -> C.tuple [C.string s; ctyp t])) lst;
+            [C.vala
+               (C.list
+                  (fun (s, t, attrs) ->
+                     let attrs = assert false in
+                     C.tuple [C.string s; ctyp t; attrs]))
+               lst;
              C.vala C.bool b]
       | TyOlb (_, s, t) -> C.node "TyOlb" [C.vala C.string s; ctyp t]
       | TyOpn _ -> C.node "TyOpn" []

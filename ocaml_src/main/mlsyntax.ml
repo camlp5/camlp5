@@ -2,18 +2,20 @@
 (* mlsyntax.ml *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-let symbolchar =
+let symbolchar_or f =
   let list =
     ['!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/'; ':'; '<'; '='; '>'; '?';
      '@'; '^'; '|'; '~']
   in
   let rec loop s i =
     if i == String.length s then true
-    else if List.mem s.[i] list then loop s (i + 1)
+    else if List.mem s.[i] list || f s.[i] then loop s (i + 1)
     else false
   in
   loop
 ;;
+
+let symbolchar = symbolchar_or (fun x -> false);;
 
 let dotsymbolchar_star =
   let list =
@@ -91,7 +93,7 @@ module Original =
       let excl = ["#"] in
       fun x ->
         not (List.mem x excl) && String.length x >= 2 &&
-        List.mem x.[0] list && symbolchar x 1
+        List.mem x.[0] list && symbolchar_or (fun x -> '#' = x) x 1
     ;;
     let is_operator0 =
       let ht = Hashtbl.create 73 in

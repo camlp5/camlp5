@@ -221,8 +221,9 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield loc (lab, x) fl =
-  {pof_desc = Otag (mkloc loc lab, x); pof_loc = loc; pof_attributes = []} ::
+let ocaml_mkfield ?(alg_attributes = []) loc (lab, x) fl =
+  {pof_desc = Otag (mkloc loc lab, x); pof_loc = loc;
+   pof_attributes = alg_attributes} ::
   fl
 ;;
 let ocaml_mkfield_var loc = [];;
