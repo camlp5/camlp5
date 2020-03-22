@@ -245,8 +245,8 @@ let ocaml_ptype_variant ctl priv =
         (fun (c, tl, loc, attrs) ->
            let (tl, rto) =
              match tl with
-               Left (x, rto) -> Pcstr_tuple x, rto
-             | Right (Ptype_record x) -> Pcstr_record x, None
+               Left x, rto -> Pcstr_tuple x, rto
+             | Right (Ptype_record x), None -> Pcstr_record x, None
              | _ -> assert false
            in
            {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto;
@@ -472,12 +472,10 @@ let ocaml_ppat_variant =
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
-    ed =
+    (ed, rto) =
   assert (item_attributes = []);
   assert (alg_attributes = []);
-  let (ed, rto) =
-    mustLeft "ocaml_psig_exception (record-types not allowed)" ed
-  in
+  let ed = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
   assert (None = rto);
   Psig_exception
     {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
@@ -542,12 +540,10 @@ let ocaml_pstr_eval ?(item_attributes = []) e =
 ;;
 
 let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
-    ed =
+    (ed, rto) =
   assert (alg_attributes = []);
   assert (item_attributes = []);
-  let (ed, rto) =
-    mustLeft "ocaml_pstr_exception (record-types not allowed)" ed
-  in
+  let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
   assert (None = rto);
   Pstr_exception
     {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
