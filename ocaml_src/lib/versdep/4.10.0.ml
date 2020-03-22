@@ -333,8 +333,8 @@ let ocaml_ptype_variant ctl priv =
         (fun (c, tl, loc, attrs) ->
            let (tl, rto) =
              match tl with
-               Left (x, rto) -> Pcstr_tuple x, rto
-             | Right (Ptype_record x) -> Pcstr_record x, None
+               Left x, rto -> Pcstr_tuple x, rto
+             | Right (Ptype_record x), None -> Pcstr_record x, None
              | _ -> assert false
            in
            {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto;
@@ -584,11 +584,10 @@ let ocaml_ppat_variant =
 let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
-    ed =
+    (ed, rto) =
   let ec =
     match ed with
-      Left (x, rto) ->
-        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
+      Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
     | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
   in
   Psig_exception
@@ -649,11 +648,10 @@ let ocaml_pstr_eval ?(item_attributes = []) e =
 ;;
 
 let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
-    ed =
+    (ed, rto) =
   let ec =
     match ed with
-      Left (x, rto) ->
-        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
+      Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
     | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
   in
   Pstr_exception
