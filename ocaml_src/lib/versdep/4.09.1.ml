@@ -252,7 +252,7 @@ let ocaml_ptype_variant ctl priv =
            let (tl, rto) =
              match tl with
                Left x, rto -> Pcstr_tuple x, rto
-             | Right (Ptype_record x), None -> Pcstr_record x, None
+             | Right (Ptype_record x), rto -> Pcstr_record x, rto
              | _ -> assert false
            in
            {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto;
@@ -501,7 +501,7 @@ let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
   let ec =
     match ed with
       Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
-    | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
+    | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s (x, rto)
   in
   Psig_exception
     {ptyexn_constructor = ec; ptyexn_attributes = item_attributes;
@@ -569,7 +569,7 @@ let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
   let ec =
     match ed with
       Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
-    | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s x
+    | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s (x, rto)
   in
   Pstr_exception
     {ptyexn_constructor = ec; ptyexn_attributes = item_attributes;

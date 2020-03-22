@@ -246,7 +246,7 @@ let ocaml_ptype_variant ctl priv =
            let (tl, rto) =
              match tl with
                Left x, rto -> Pcstr_tuple x, rto
-             | Right (Ptype_record x), None -> Pcstr_record x, None
+             | Right (Ptype_record x), rto -> Pcstr_record x, rto
              | _ -> assert false
            in
            {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto;
