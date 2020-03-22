@@ -4525,6 +4525,24 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "let")))
+                         (Grammar.s_token ("", "open")))
+                      (Grammar.s_flag (Grammar.s_token ("", "!"))))
+                   (Grammar.s_nterm
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             Grammar.s_self,
+           (fun (ce : 'class_type) _ (i : 'extended_longident) (ovf : bool) _
+                _ (loc : Ploc.t) ->
+              (MLast.CtLop (loc, ovf, i, ce) : 'class_type)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("", "[")))
                       (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
