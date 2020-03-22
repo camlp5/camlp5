@@ -1541,7 +1541,7 @@ and class_sig_item c l =
 and class_expr =
   fun
   [ CeAtt loc e a ->
-    ocaml_pcl_addattr (attr (uv a)) (class_expr e)
+    ocaml_pcl_addattrs [attr (uv a)] (class_expr e)
   | CeApp loc _ _ as c →
       match ocaml_pcl_apply with
       [ Some pcl_apply →
@@ -1593,6 +1593,12 @@ and class_expr =
           mkpcl loc
             (pcl_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (class_expr ce))
       | None → error loc "no class expr desc in this ocaml version" ]
+  | CeLop loc ovf me ce attrs →
+      let li = longid_long_id me in
+      let attrs = uv_alg_attributes attrs in
+      ocaml_pcl_addattrs attrs
+        (mkpcl loc
+          (ocaml_pcl_open (mkloc loc) li (mkoverride (uv ovf)) (class_expr ce)))
   | CeStr loc po cfl →
       match ocaml_pcl_structure with
       [ Some pcl_structure →

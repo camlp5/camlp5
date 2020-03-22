@@ -181,7 +181,7 @@ value ocaml_patt_addattr _ _ = assert False ;
 value ocaml_pmty_addattr _ _ = assert False ;
 value ocaml_pmod_addattr _ _ = assert False ;
 value ocaml_pcty_addattr _ _ = assert False ;
-value ocaml_pcl_addattr _ _ = assert False ;
+value ocaml_pcl_addattrs _ _ = assert False ;
 
 (* floating attributes *)
 value ocaml_psig_attribute _ = assert False ;
@@ -325,7 +325,7 @@ value ocaml_pcty_addattr attr {
     }
 ;
 
-value ocaml_pcl_addattr attr {
+value ocaml_pcl_addattrs attrs {
      pcl_desc = pcl_desc;
      pcl_loc = pcl_loc;
      pcl_attributes = pcl_attributes
@@ -333,7 +333,7 @@ value ocaml_pcl_addattr attr {
     {
      pcl_desc = pcl_desc;
      pcl_loc = pcl_loc;
-     pcl_attributes = pcl_attributes @ [ attr ]
+     pcl_attributes = pcl_attributes @ attrs
     }
 ;
 
@@ -520,9 +520,10 @@ value ocaml_class_type =
 
 value ocaml_class_expr =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun d loc -> {pcl_desc = d; pcl_loc = loc})
+    Some (fun ?{alg_attributes=[]} d loc ->
+      do { assert (alg_attributes = []) ;  {pcl_desc = d; pcl_loc = loc} })
   ELSE
-    Some (fun d loc -> {pcl_desc = d; pcl_loc = loc; pcl_attributes = []})
+    Some (fun ?{alg_attributes=[]} d loc -> {pcl_desc = d; pcl_loc = loc; pcl_attributes = alg_attributes})
   END
 ;
 
@@ -1624,6 +1625,19 @@ value ocaml_pcl_fun =
 
 value ocaml_pcl_let =
   Some (fun rf pel ce -> Pcl_let rf pel ce)
+;
+
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_pcl_open loc li ovf ce = assert False
+;
+ELSE
+value ocaml_pcl_open loc li ovf ce =
+  Pcl_open
+    {popen_expr = mknoloc li; popen_override = ovf; popen_loc = loc;
+     popen_attributes = []}
+    ce
+;
+END
 ;
 
 value ocaml_pcl_structure =
