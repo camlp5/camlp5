@@ -7,6 +7,7 @@
 #load "pa_macro.cmo";
 #load "pa_macro_gram.cmo";
 
+open Asttools;
 open Pcaml;
 open Mlsyntax.Revised;
 
@@ -333,6 +334,17 @@ value check_dot_uid_f strm =
 value check_dot_uid =
   Grammar.Entry.of_parser gram "check_dot_uid"
     check_dot_uid_f
+;
+
+value test_label_eq =
+  Grammar.Entry.of_parser gram "test_label_eq"
+    (test 1 where rec test lev strm =
+       match stream_peek_nth lev strm with
+       [ Some (("UIDENT", _) | ("LIDENT", _) | ("", ".")) ->
+           test (lev + 1) strm
+       | Some ("ANTIQUOT_LOC", _) -> ()
+       | Some ("", "=" | ";" | "}" | ":") -> ()
+       | _ -> raise Stream.Failure ])
 ;
 
 value expr_wrap_attrs loc e l =
@@ -774,8 +786,19 @@ EXTEND
           <:expr< $e1$ . $lid:op$ >>
       | e1 = SELF; "."; "("; e2 = SELF; ")" → <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" → <:expr< $e1$ .[ $e2$ ] >>
-      | e = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →
-          <:expr< $e$ . { $_list:el$ } >>
+
+      | e1 = SELF; "."; "{"; test_label_eq ; lel = V (LIST1 label_expr SEP ";"); "}" →
+          let e2 = <:expr< { $_list:lel$ } >> in
+          <:expr< $e1$ . $e2$ >>
+
+      | e1 = SELF; "."; "{"; "("; e = SELF; ")"; "with"; lel = V (LIST1 label_expr SEP ";");
+        "}" →
+          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
+          <:expr< $e1$ . $e2$ >>
+
+      | e1 = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →
+          <:expr< $e1$ . { $_list:el$ } >>
+
       | e1 = SELF; "."; e2 = SELF → <:expr< $e1$ . $e2$ >> ]
     | "~-" NONA
       [ "~-"; e = SELF → <:expr< ~- $e$ >>

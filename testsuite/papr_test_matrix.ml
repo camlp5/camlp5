@@ -743,11 +743,11 @@ and t2 = bool[@@foo];
      exclude=[];
      o_input = OK {foo|M.{a = b}|foo} ;
      official_input = OK {foo|M.{a = b}|foo} ;
-     r_input = OK {foo|M.({a = b});|foo} ;
-     o_output = OK {foo|let _ = M.({a = b});;
+     r_input = OK {foo|M.{a = b};|foo} ;
+     o_output = OK {foo|let _ = M.{a = b};;
 |foo};
      official_output = OK {foo|;;let open M in { a = b }|foo} ;
-     r_output = OK {foo|M.({a = b});
+     r_output = OK {foo|M.{a = b};
 |foo}
     };
     {name="module-record2a"; implem = True ;
@@ -780,18 +780,18 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = M.N.{a = b};;
 |foo};
      official_output = OK {foo|;;let open M.N in { a = b }|foo} ;
-     r_output = OK {foo|let open M.N in {a = b};
+     r_output = OK {foo|M.N.{a = b};
 |foo}
     };
     {name="module-record3"; implem = True ;
      exclude=[];
      o_input = OK {foo|M.N.{e with a = b}|foo} ;
      official_input = OK {foo|M.N.{e with a = b}|foo} ;
-     r_input = OK {foo|M.N.({(e) with a = b});|foo} ;
-     o_output = OK {foo|let _ = M.N.({e with a = b});;
+     r_input = OK {foo|M.N.{(e) with a = b};|foo} ;
+     o_output = OK {foo|let _ = M.N.{e with a = b};;
 |foo};
      official_output = OK {foo|;;let open M.N in { e with a = b }|foo} ;
-     r_output = OK {foo|M.N.({(e) with a = b});
+     r_output = OK {foo|M.N.{(e) with a = b};
 |foo}
     };
     {name="module-alias1"; implem = False ;
