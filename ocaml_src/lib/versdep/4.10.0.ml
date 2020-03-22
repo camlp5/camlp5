@@ -172,11 +172,11 @@ let ocaml_pcty_addattr attr
   {pcty_desc = pcty_desc; pcty_loc = pcty_loc;
    pcty_attributes = pcty_attributes @ [attr]}
 ;;
-let ocaml_pcl_addattr attr
+let ocaml_pcl_addattrs attrs
     {pcl_desc = pcl_desc; pcl_loc = pcl_loc;
      pcl_attributes = pcl_attributes} =
   {pcl_desc = pcl_desc; pcl_loc = pcl_loc;
-   pcl_attributes = pcl_attributes @ [attr]}
+   pcl_attributes = pcl_attributes @ attrs}
 ;;
 let ocaml_psig_attribute attr = Psig_attribute attr;;
 let ocaml_pstr_attribute attr = Pstr_attribute attr;;
@@ -292,7 +292,9 @@ let ocaml_class_type =
 ;;
 
 let ocaml_class_expr =
-  Some (fun d loc -> {pcl_desc = d; pcl_loc = loc; pcl_attributes = []})
+  Some
+    (fun ?(alg_attributes = []) d loc ->
+       {pcl_desc = d; pcl_loc = loc; pcl_attributes = alg_attributes})
 ;;
 
 let ocaml_class_structure p cil = {pcstr_self = p; pcstr_fields = cil};;
@@ -807,6 +809,13 @@ let ocaml_pcl_fun =
 ;;
 
 let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
+
+let ocaml_pcl_open loc li ovf ce =
+  Pcl_open
+    ({popen_expr = mknoloc li; popen_override = ovf; popen_loc = loc;
+      popen_attributes = []},
+     ce)
+;;
 
 let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 

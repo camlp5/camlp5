@@ -2772,13 +2772,13 @@ type nat _ =
      r_output = OK {foo|value () = foo ##. bar.val := ();
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="class-expr-local-open-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|class c = let open! M in object end|foo} ;
+     official_input = OK {foo|class c = let open! M in object end|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|class c = let open! M in object  end|foo} ;
      r_output = OK {foo||foo}
     };
     {name="test-prototype"; implem = True ;
