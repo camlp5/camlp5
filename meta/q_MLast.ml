@@ -1326,7 +1326,7 @@ EXTEND
         "in"; ce = SELF →
           Qast.Node "CeLet" [Qast.Loc; rf; lb; ce]
       | "let"; "open"; ovf = SV (FLAG "!") "!"; i = extended_longident; "in"; ce = SELF →
-          Qast.List [Qast.Node "CeLop" [Qast.Loc; ovf; i; ce]]
+          Qast.Node "CeLop" [Qast.Loc; ovf; i; ce]
       ]
     | "alg_attribute" LEFTA
       [ t1 = SELF ; "[@" ; attr = SV attribute_body "attribute"; "]" ->

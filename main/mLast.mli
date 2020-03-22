@@ -256,7 +256,7 @@ and class_expr =
   | CeCon of loc and V (list string) and V (list ctyp)
   | CeFun of loc and patt and class_expr
   | CeLet of loc and V bool and V (list (patt * expr * attributes)) and class_expr
-  | CeLop of loc and V bool and longid and class_expr and attributes
+  | CeLop of loc and V bool and longid and class_expr
   | CeStr of loc and V (option patt) and V (list class_str_item)
   | CeTyc of loc and class_expr and class_type
   | CeXtr of loc and string and option (V class_expr)

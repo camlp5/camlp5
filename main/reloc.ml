@@ -696,9 +696,9 @@ and class_expr floc sh =
              (List.map (fun (x1, x2, x3) → (patt floc sh x1, expr floc sh x2, x3)))
              x2)
           (self x3)
-    | CeLop loc x1 x2 x3 x4 →
+    | CeLop loc x1 x2 x3 →
         let loc = floc loc in
-        CeLop loc x1 (longid floc sh x2) (self x3) x4
+        CeLop loc x1 (longid floc sh x2) (self x3)
     | CeStr loc x1 x2 →
         let loc = floc loc in
         CeStr loc (vala_map (option_map (patt floc sh)) x1)

@@ -2460,7 +2460,14 @@ EXTEND_PRINTER
             (fun () ->
                pprintf pc "let%s %p in@ %p" (if rf then " rec" else "")
                  (vlist2 (binding expr) (and_before (binding expr))) pel
-                 class_expr ce) ]
+                 class_expr ce)
+      | <:class_expr< let open $_!:ovf$ $longid:li$ in $ce$ >> ->
+          let ovf = if (Pcaml.unvala ovf) then "!" else "" in
+          if pc.dang = ";" then
+            pprintf pc "(@[<a>let open%s %p@ in@]@ %p)" ovf longident li curr ce
+          else
+            pprintf pc "@[<a>let open%s %p@ in@]@ %p" ovf longident li curr ce
+      ]
     | "alg_attribute"
       [ <:class_expr< $ct$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr ct attribute_body attr
@@ -2485,6 +2492,8 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p :@ %p)@]" class_expr ce class_type ct
       | <:class_expr< $_$ $_$ >> | <:class_expr< fun $_$ -> $_$ >>
         | <:class_expr< [% $_extension:_$ ] >>
+        | <:class_expr< let $flag:_$ $list:_$ in $_$ >>
+        | <:class_expr< let open $_!:_$ $longid:_$ in $_$ >>
         as z ->
           pprintf pc "@[<1>(%p)@]" class_expr z
       | z ->

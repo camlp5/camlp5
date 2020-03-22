@@ -1160,7 +1160,10 @@ EXTEND
           class_expr_wrap_attrs loc <:class_expr< fun $p$ → $ce$ >> alg_attrs
       | "let"; rf = V (FLAG "rec"); lb = V (LIST1 let_binding SEP "and");
         "in"; ce = SELF →
-          <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >> ]
+          <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >>
+      | "let"; "open"; ovf = V (FLAG "!") "!"; i = extended_longident; "in"; ce = SELF →
+          <:class_expr< let open $_!:ovf$ $longid:i$ in $ce$ >>
+      ]
     | "alg_attribute" LEFTA
       [ ct = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:class_expr< $ct$ [@ $_attribute:attr$ ] >>
