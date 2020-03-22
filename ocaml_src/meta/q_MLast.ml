@@ -7664,8 +7664,7 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (ce : 'class_expr) _ (i : 'extended_longident) (ovf : 'e__184)
                 _ _ (loc : Ploc.t) ->
-              (Qast.Node ("CeLop", [Qast.Loc; ovf; i; ce]) :
-               'class_expr)));
+              (Qast.Node ("CeLop", [Qast.Loc; ovf; i; ce]) : 'class_expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

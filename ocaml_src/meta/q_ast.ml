@@ -577,9 +577,8 @@ module Meta_make (C : MetaSig) =
                      C.tuple [patt p; expr e; attrs]))
                lpe;
              class_expr ce]
-      | CeLop (_, ovf, me, e, attrs) ->
-          let attrs = assert false in
-          C.node "CeLop" [C.vala C.bool ovf; longid me; class_expr e; attrs]
+      | CeLop (_, ovf, me, e) ->
+          C.node "CeLop" [C.vala C.bool ovf; longid me; class_expr e]
       | CeStr (_, op, lcsi) ->
           C.node "CeStr"
             [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]

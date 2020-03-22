@@ -240,7 +240,7 @@ and class_expr =
   | CeCon of loc * string list * ctyp list
   | CeFun of loc * patt * class_expr
   | CeLet of loc * bool * (patt * expr * attributes) list * class_expr
-  | CeLop of loc * bool * longid * class_expr * attributes
+  | CeLop of loc * bool * longid * class_expr
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
   | CeXtr of loc * string * class_expr option
