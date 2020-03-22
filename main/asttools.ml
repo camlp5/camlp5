@@ -38,3 +38,21 @@ value rec sep_last = fun [
       let (l,tl) = sep_last tl in (l,[ hd::tl ])
   ]
 ;
+
+value expr_to_path_module_expr e =
+  let rec erec = fun [
+    <:expr:< $uid:i$ >> -> <:module_expr< $uid:i$ >>
+  | <:expr:< $a$ . $b$ >> -> <:module_expr< $erec a$ . $erec b$ >>
+  | _ -> failwith "caught"
+  ] in
+  try Some (erec e) with Failure _ -> None
+;
+
+value expr_last_is_uid e =
+  let rec erec = fun [
+    <:expr< $uid:_$ >> -> True
+  | <:expr< $_$ . $e$ >> -> erec e
+  | _ -> False
+  ]
+  in erec e
+;

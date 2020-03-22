@@ -771,7 +771,7 @@ EXTEND
           expr_to_inline loc <:expr< lazy $e$ >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
-          <:expr< $e1$ .( $lid:op$ ) >>
+          <:expr< $e1$ . $lid:op$ >>
       | e1 = SELF; "."; "("; e2 = SELF; ")" → <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" → <:expr< $e1$ .[ $e2$ ] >>
       | e = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →

@@ -750,15 +750,37 @@ and t2 = bool[@@foo];
      r_output = OK {foo|M.({a = b});
 |foo}
     };
+    {name="module-record2a"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|M.N.a|foo} ;
+     official_input = OK {foo|M.N.a|foo} ;
+     r_input = OK {foo|M.N.a;|foo} ;
+     o_output = OK {foo|let _ = M.N.a;;
+|foo};
+     official_output = OK {foo|;;M.N.a|foo} ;
+     r_output = OK {foo|M.N.a;
+|foo}
+    };
+    {name="module-record2b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|M.N.(::)|foo} ;
+     official_input = OK {foo|M.N.(::)|foo} ;
+     r_input = OK {foo|M.N.(::);|foo} ;
+     o_output = OK {foo|let _ = M.N.(::);;
+|foo};
+     official_output = OK {foo|;;M.N.(::)|foo} ;
+     r_output = OK {foo|M.N.( :: );
+|foo}
+    };
     {name="module-record2"; implem = True ;
      exclude=[];
      o_input = OK {foo|M.N.{a = b}|foo} ;
      official_input = OK {foo|M.N.{a = b}|foo} ;
-     r_input = OK {foo|M.N.({a = b});|foo} ;
-     o_output = OK {foo|let _ = M.N.({a = b});;
+     r_input = OK {foo|M.N.{a = b};|foo} ;
+     o_output = OK {foo|let _ = M.N.{a = b};;
 |foo};
      official_output = OK {foo|;;let open M.N in { a = b }|foo} ;
-     r_output = OK {foo|M.N.({a = b});
+     r_output = OK {foo|let open M.N in {a = b};
 |foo}
     };
     {name="module-record3"; implem = True ;
@@ -2819,24 +2841,38 @@ type nat _ =
   | ( :: ) of α and β and t α β ];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+(*
+    {name="exotic-list-2"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|let Inner.(::)(x,y, Inner.[]) = Inner.(::)(1,"one",Inner.[])|foo} ;
+     official_input = OK {foo|let Inner.(::)(x,y, Inner.[]) = Inner.(::)(1,"one",Inner.[])|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|let Inner.(::) (x, y, Inner.[] ) =
+  Inner.(::) (1, "one", (let open Inner in []))|foo} ;
      r_output = OK {foo||foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="exotic-list-3"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|let x = M.[ ]|foo} ;
+     official_input = OK {foo|let x = M.[ ]|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|let x = let open M in []|foo} ;
      r_output = OK {foo||foo}
     };
+    {name="exotic-list-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = M.N.(::)|foo} ;
+     official_input = OK {foo|let x = M.N.(::)|foo} ;
+     r_input = SKIP "" "" ;
+     o_output = OK {foo|let x = M.N.(::);;
+|foo};
+     official_output = OK {foo|let x = M.N.(::)|foo} ;
+     r_output = OK {foo|value x = let open M.N in ( :: );
+|foo}
+    };
+*)
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
