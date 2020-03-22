@@ -595,7 +595,7 @@ value ocaml_ptype_variant ctl priv =
         let ctl =
           List.map
             (fun (c, tl, loc, attrs) ->
-               let (tl,rto) = match tl with [ (Left x,y) -> (x,y) | Right _ -> raise Exit ] in
+               let (tl,rto) = match tl with [ (Left x,y) -> (x,y) | (Right _,_) -> raise Exit ] in
                if rto <> None || attrs <> [] then raise Exit else (mknoloc c, tl, None, loc))
             ctl
         in
@@ -606,7 +606,7 @@ value ocaml_ptype_variant ctl priv =
             (fun (c, tl, loc, attrs) ->
                  IFDEF OCAML_VERSION < OCAML_4_03_0 THEN
                    do { assert (attrs = []) ;
-                   let (tl,rto) = match tl with [ (Left x,y) -> (x,y) | Right _ -> raise Exit ] in
+                   let (tl,rto) = match tl with [ (Left x,y) -> (x,y) | (Right _,_) -> raise Exit ] in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = []} }
                  ELSE
