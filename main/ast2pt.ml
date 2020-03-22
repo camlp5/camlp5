@@ -658,10 +658,9 @@ and extension_constructor loc ec = match ec with [
       match tl with [
         (Left x,y) -> 
           ocaml_ec_tuple ~{alg_attributes=alg_attrs} (mkloc loc) n (x,y)
-      | (Right x, None) -> do {
-          ocaml_ec_record ~{alg_attributes=alg_attrs} (mkloc loc) n x
+      | (Right x, y) -> do {
+          ocaml_ec_record ~{alg_attributes=alg_attrs} (mkloc loc) n (x,y)
         }
-      | (Right _,Some _) -> assert False
       ]
     | EcRebind n sl alg_attrs ->
       let sl = uv sl in

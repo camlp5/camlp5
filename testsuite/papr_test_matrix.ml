@@ -2515,6 +2515,30 @@ type nat _ =
      r_output = OK {foo|exception Foo : int → t;
 |foo}
     };
+    {name="gadt-basic-4b"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
+     official_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
+     r_input = OK {foo|exception Foo : {a : int } -> t;|foo} ;
+     o_output = OK {foo|exception Foo : { a : int } -> t;;
+|foo};
+     official_output = OK {foo|exception Foo: {
+  a: int } -> t |foo} ;
+     r_output = OK {foo|exception Foo : { a : int } → t;
+|foo}
+    };
+    {name="gadt-basic-4c"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
+     official_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
+     r_input = OK {foo|exception Foo : {a : int } -> t;|foo} ;
+     o_output = OK {foo|exception Foo : { a : int } -> t;;
+|foo};
+     official_output = OK {foo|exception Foo: {
+  a: int } -> t |foo} ;
+     r_output = OK {foo|exception Foo : { a : int } → t;
+|foo}
+    };
     {name="gadt-basic-5"; implem = True ;
      exclude=[];
      o_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;

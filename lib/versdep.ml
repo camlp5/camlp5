@@ -436,13 +436,13 @@ value ocaml_ec_record ?{alg_attributes=[]} _ _ _ = assert False ;
 value ocaml_ec_rebind  _ _ _ = assert False ;
 value ocaml_type_extension ?{item_attributes=[]} lo pathlid params priv cstrs = assert False ;
 ELSE
-value ocaml_ec_record ?{alg_attributes=[]} loc s x =
+value ocaml_ec_record ?{alg_attributes=[]} loc s (x, rto) =
   let x = match x with [
       (Ptype_record x) -> Pcstr_record x
     | _ -> assert False
     ] in
   {pext_name = mkloc loc s;
-   pext_kind = Pext_decl x None;
+   pext_kind = Pext_decl x rto;
    pext_loc = loc; pext_attributes = alg_attributes}
 ;
 
@@ -1112,7 +1112,7 @@ value ocaml_psig_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s (ed,
   ELSE
     let ec = match ed with [
       Left x -> ocaml_ec_tuple ~{alg_attributes=alg_attributes} loc s (x,rto)
-    | Right x -> ocaml_ec_record ~{alg_attributes=alg_attributes} loc s x
+    | Right x -> ocaml_ec_record ~{alg_attributes=alg_attributes} loc s (x,rto)
     ] in
     Psig_exception
       {ptyexn_constructor = ec;
@@ -1292,7 +1292,7 @@ value ocaml_pstr_exception ?{alg_attributes=[]} ?{item_attributes=[]} loc s (ed,
   ELSE
     let ec = match ed with [
       Left x -> ocaml_ec_tuple ~{alg_attributes=alg_attributes} loc s (x, rto)
-    | Right x -> ocaml_ec_record ~{alg_attributes=alg_attributes} loc s x
+    | Right x -> ocaml_ec_record ~{alg_attributes=alg_attributes} loc s (x, rto)
     ] in
     Pstr_exception
       {ptyexn_constructor = ec;
