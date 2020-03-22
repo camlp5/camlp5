@@ -2649,41 +2649,71 @@ type nat _ =
      r_output = OK {foo|module Y (X : sig  end) (Y : sig  end) (Z : sig  end) = struct  end;
 |foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+    {name="module-type-syntax-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|module GZ : functor (X: sig end) () (Z: sig end) -> sig end
+          = functor (X: sig end) () (Z: sig end) -> struct end|foo} ;
+     official_input = OK {foo|module GZ : functor (X: sig end) () (Z: sig end) -> sig end
+          = functor (X: sig end) () (Z: sig end) -> struct end|foo} ;
+     r_input = OK {foo|module GZ :
+  functor (X : sig  end) → functor () → functor (Z : sig  end) → sig  end =
+  functor (X : sig  end) → functor () → functor (Z : sig  end) → struct  end;|foo} ;
+     o_output = OK {foo|module GZ :
+  functor (X : sig  end) -> functor () -> functor (Z : sig  end) -> sig  end =
+  functor (X : sig  end) ->
+    functor () -> functor (Z : sig  end) -> struct  end;;
+|foo};
+     official_output = OK {foo|module GZ =
+  (functor (X : sig  end) -> functor () -> functor (Z : sig  end) ->
+    struct  end :
+    functor (X : sig  end) ->
+      functor () -> functor (Z : sig  end) -> sig  end)|foo} ;
+     r_output = OK {foo|module GZ :
+  functor (X : sig  end) → functor () → functor (Z : sig  end) → sig  end =
+  functor (X : sig  end) → functor () → functor (Z : sig  end) → struct  end;
+|foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+    {name="type-decl-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type _ t = A: {x : 'a; y : 'b} -> 'a t|foo} ;
+     official_input = OK {foo|type _ t = A: {x : 'a; y : 'b} -> 'a t|foo} ;
+     r_input = OK {foo|type t _ = [ A: {x : 'a; y : 'b} -> t 'a ];|foo} ;
+     o_output = OK {foo|type _ t =
+    A : { x : 'a; y : 'b } -> 'a t;;
+|foo};
+     official_output = OK {foo|type _ t =
+  | A: {
+  x: 'a ;
+  y: 'b } -> 'a t |foo} ;
+     r_output = OK {foo|type t _ =
+  [ A : { x : α; y : β } → t α ];
+|foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+    {name="greek-type-variables-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()
+|foo} ;
+     official_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()|foo} ;
+     r_input = OK {foo|value magic : ! α β . α → β = ();|foo} ;
+     o_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ();;
+|foo} ;
+     official_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ()|foo} ;
+     r_output = OK {foo|value magic : ! α β . α → β = ();
+|foo}
     };
-    {name="inline-extensionsXX"; implem = True ;
+    {name="greek-type-variables-2"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type 'a succ = Succ of 'a|foo} ;
+     official_input = OK {foo|type 'a succ = Succ of 'a|foo} ;
+     r_input = OK {foo|type succ α = [ Succ of α ];|foo} ;
+     o_output = OK {foo|type 'a succ =
+    Succ of 'a;;
+|foo};
+     official_output = OK {foo|type 'a succ =
+  | Succ of 'a |foo} ;
+     r_output = OK {foo|type succ α =
+  [ Succ of α ];
+|foo}
     }
 ]
 ;

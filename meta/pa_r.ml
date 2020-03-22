@@ -1116,7 +1116,9 @@ EXTEND
       | "downto" → False ] ]
   ;
   typevar:
-    [ [ "'"; i = ident → i ] ]
+    [ [ "'"; i = ident → i 
+      | i = GIDENT -> greek_ascii_equiv i
+      ] ]
   ;
   (* Objects and Classes *)
   str_item:

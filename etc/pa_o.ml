@@ -860,9 +860,12 @@ EXTEND
   ;
   (* Module types *)
   module_type:
-    [ [ "functor"; alg_attrs = alg_attributes_no_anti; arg = V functor_parameter "functor_parameter" "fp"; "->";
+    [ [ "functor"; alg_attrs = alg_attributes_no_anti; argl = LIST1 functor_parameter; "->";
         mt = SELF ->
-          module_type_wrap_attrs <:module_type< functor $_fp:arg$ -> $mt$ >> alg_attrs
+          let mt = List.fold_right (fun arg mt ->
+            <:module_type< functor $fp:arg$ -> $mt$ >>)
+            argl mt in
+          module_type_wrap_attrs mt alg_attrs
       ]
     | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN ELSE
       RIGHTA [ mt1=SELF ; "->" ; mt2=SELF ->
@@ -1517,8 +1520,8 @@ EXTEND
           (cal, None, alg_attrs)
       | "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
           (Ploc.VaVal [cdrec], None, alg_attrs)
-      | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*");
-        "->"; t = ctyp ; alg_attrs = alg_attributes ->
+
+      | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*"); "->"; t = ctyp ; alg_attrs = alg_attributes ->
           (cal, Some t, alg_attrs)
       | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
           let t =
@@ -1528,6 +1531,10 @@ EXTEND
             | _ -> assert False ]
           in
           (<:vala< [] >>, Some t, alg_attrs)
+
+      | ":"; cdrec = record_type; "->"; t = ctyp ; alg_attrs = alg_attributes ->
+          (Ploc.VaVal [cdrec], Some t, alg_attrs)
+
       | alg_attrs = alg_attributes ->
           (<:vala< [] >>, None, alg_attrs) ] ]
   ;
