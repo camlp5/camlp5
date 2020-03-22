@@ -3963,6 +3963,10 @@ Grammar.safe_extend
     Grammar.extension (typevar : 'typevar Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) ->
+              (greek_ascii_equiv i : 'typevar)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "'")))
              (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)),

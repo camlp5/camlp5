@@ -29,3 +29,10 @@ let module_type_unwrap_attrs mt =
   in
   arec [] mt
 ;;
+
+let rec sep_last =
+  function
+    [] -> failwith "sep_last"
+  | [hd] -> hd, []
+  | hd :: tl -> let (l, tl) = sep_last tl in l, hd :: tl
+;;
