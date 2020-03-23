@@ -791,15 +791,6 @@ EXTEND
             <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" → <:expr< $e1$ .[ $e2$ ] >>
 
-      | e1 = SELF; "."; "{"; test_label_eq ; lel = V (LIST1 label_expr SEP ";"); "}" →
-          let e2 = <:expr< { $_list:lel$ } >> in
-          <:expr< $e1$ . $e2$ >>
-
-      | e1 = SELF; "."; "{"; "("; e = SELF; ")"; "with"; lel = V (LIST1 label_expr SEP ";");
-        "}" →
-          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
-          <:expr< $e1$ . $e2$ >>
-
       | e1 = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →
           <:expr< $e1$ . { $_list:el$ } >>
 
@@ -821,7 +812,7 @@ EXTEND
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | i = V LIDENT → <:expr< $_lid:i$ >>
       | i = V GIDENT → <:expr< $_lid:i$ >>
-      | i = V UIDENT → <:expr< $_uid:i$ >>
+      | e = expr_uident → e
       | "["; "]" → <:expr< [] >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
           mklistexp loc last el
@@ -841,6 +832,28 @@ EXTEND
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" → mktupexp loc e el
       | "("; e = SELF; ")" → <:expr< $e$ >>
       | "("; el = V (LIST1 expr SEP ","); ")" → <:expr< ($_list:el$) >> ] ]
+  ;
+  expr_uident:
+    [ RIGHTA
+      [ i = UIDENT -> <:expr< $uid:i$ >>
+      | i = UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $uid:i$ . $j$ >>
+      | i = UIDENT ; "." ; "("; op = operator_rparen ->
+          <:expr< $uid:i$ . $lid:op$ >>
+      | i = UIDENT ; "." ; j = LIDENT ->
+          <:expr< $uid:i$ . $lid:j$ >>
+      | i = UIDENT ; "."; "("; e2 = expr; ")" ->
+            <:expr< $uid:i$ . $e2$ >>
+
+
+      | i = UIDENT ; "."; "{"; test_label_eq; lel = V (LIST1 label_expr SEP ";"); "}" ->
+          let e2 = <:expr< { $_list:lel$ } >> in
+          <:expr< $uid:i$ . $e2$ >>
+
+      | i = UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V (LIST1 label_expr SEP ";"); "}" ->
+          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
+          <:expr< $uid:i$ . $e2$ >>
+
+      ] ]
   ;
   closed_case_list:
     [ [ "["; l = V (LIST0 match_case SEP "|"); "]" → l
