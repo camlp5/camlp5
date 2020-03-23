@@ -56,3 +56,11 @@ value expr_last_is_uid e =
   ]
   in erec e
 ;
+
+value expr_left_assoc_acc e =
+  let rec arec = fun [
+    <:expr:< $e1$ . ( $e2$  . $e3$ ) >> ->
+      arec <:expr< ( $e1$ . $e2$ ) . $e3$ >>
+  | e -> e
+  ] in arec e
+;

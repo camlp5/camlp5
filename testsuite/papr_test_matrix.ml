@@ -883,18 +883,22 @@ and t2 = bool[@@foo];
      o_input = OK {foo|n.{a}|foo} ;
      official_input = OK {foo|n.{a}|foo} ;
      r_input = OK {foo|n.{a}|foo} ;
-     o_output = OK {foo||foo};
+     o_output = OK {foo|let _ = n.{a};;
+|foo};
      official_output = OK {foo|;;n.{a}|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|n.{a};
+|foo}
     };
     {name="dot-curly-6"; implem = True ;
      exclude=[];
      o_input = OK {foo|n.{M.a}|foo} ;
      official_input = OK {foo|n.{M.a}|foo} ;
      r_input = OK {foo|n.{M.a}|foo} ;
-     o_output = OK {foo||foo};
+     o_output = OK {foo|let _ = n.{M.a};;
+|foo};
      official_output = OK {foo|;;n.{M.a}|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|n.{M.a};
+|foo}
     };
     {name="module-record3"; implem = True ;
      exclude=[];

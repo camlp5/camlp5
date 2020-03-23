@@ -1149,22 +1149,13 @@ EXTEND
           <:expr< $e1$ . $lid:op$ >>
       | e1 = SELF; "."; "("; e2 = SELF; ")" ->
           if expr_last_is_uid e1 then
-            <:expr< $e1$ . $e2$ >>
+            failwith "internal error in original-syntax parser at dot-lparen"
           else
             <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
 
-      | e1 = SELF; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
-          let e2 = <:expr< { $_list:lel$ } >> in
-          <:expr< $e1$ . $e2$ >>
-
-      | e1 = SELF; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
-        "}" ->
-          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
-          <:expr< $e1$ . $e2$ >>
-
-      | e1 = SELF; "."; "{"; e = expr LEVEL "apply"; el = LIST0 [ ","; e = expr LEVEL "+" -> e]; "}" ->
-          <:expr< $e1$ .{ $list:[e::el]$ } >>
+      | e1 = SELF; "."; "{"; el = LIST1 expr LEVEL "+" SEP ","; "}" ->
+          <:expr< $e1$ .{ $list:el$ } >>
 
 
       | e1 = SELF; "."; e2 = SELF ->
@@ -1192,7 +1183,8 @@ EXTEND
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | UIDENT "True" -> <:expr< True_ >>
       | UIDENT "False" -> <:expr< False_ >>
-      | i = expr_ident -> i
+      | i = V LIDENT -> <:expr< $_lid:i$ >>
+      | i = expr_uident -> i
       | "false" -> <:expr< False >>
       | "true" -> <:expr< True >>
       | "["; "]" -> <:expr< [] >>
@@ -1299,9 +1291,27 @@ EXTEND
       | eo = OPT [ "when"; e = expr -> e ]; "->"; e = expr ->
           (eo, <:expr< $e$ >>) ] ]
   ;
-  expr_ident:
-    [ [ i = V LIDENT -> <:expr< $_lid:i$ >>
-      | i = V UIDENT -> <:expr< $_uid:i$ >>
+  expr_uident:
+    [ RIGHTA
+      [ i = UIDENT -> <:expr< $uid:i$ >>
+      | i = UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $uid:i$ . $j$ >>
+      | i = UIDENT ; "." ; "("; op = operator_rparen ->
+          <:expr< $uid:i$ . $lid:op$ >>
+      | i = UIDENT ; "." ; j = LIDENT ->
+          <:expr< $uid:i$ . $lid:j$ >>
+      | i = UIDENT ; "."; "("; e2 = expr; ")" ->
+            <:expr< $uid:i$ . $e2$ >>
+
+
+      | i = UIDENT ; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
+          let e2 = <:expr< { $_list:lel$ } >> in
+          <:expr< $uid:i$ . $e2$ >>
+
+      | i = UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
+        "}" ->
+          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
+          <:expr< $uid:i$ . $e2$ >>
+
       ] ]
   ;
   (* Patterns *)
