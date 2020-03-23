@@ -40,6 +40,17 @@ type instance_t = {
 }
 ;
 
+value skip =
+  {name="test-prototype"; implem = True ;
+   exclude=[];
+   o_input = SKIP "" "" ;
+   official_input = SKIP "" "" ;
+   r_input = SKIP "" "" ;
+   o_output = SKIP "" "";
+   official_output = SKIP "" "" ;
+   r_output = SKIP "" ""
+  } ;
+
 value test_matrix = [
     {name="test-prototype"; implem = True ;
      exclude=[];
@@ -781,6 +792,46 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|;;let open M.N in { a = b }|foo} ;
      r_output = OK {foo|M.N.{a = b};
+|foo}
+    };
+    {name="dot-parens-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|M.N.(::)|foo} ;
+     official_input = OK {foo|M.N.(::)|foo} ;
+     r_input = OK {foo|M.N.( :: );|foo} ;
+     o_output = OK {foo|let _ = M.N.(::);;
+|foo};
+     official_output = OK {foo|;;M.N.(::)|foo} ;
+     r_output = OK {foo|M.N.( :: );
+|foo}
+    };
+    {name="dot-parens-2"; implem = True ;
+     exclude=["r2official";"o2official"];
+     o_input = OK {foo|M.N.(x)|foo} ;
+     official_input = OK {foo|M.N.(x)|foo} ;
+     r_input = OK {foo|M.N.(x);|foo} ;
+     o_output = OK {foo|let _ = M.N.x;;
+|foo};
+     official_output = OK {foo|;;let open M.N in x|foo} ;
+     r_output = OK {foo|M.N.x;
+|foo}
+    };
+    {(skip) with
+     name="dot-parens-2-[ro]2official"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|M.N.(x)|foo} ;
+     r_input = OK {foo|M.N.(x);|foo} ;
+     official_output = OK {foo|;;M.N.x|foo}
+    };
+    {name="dot-parens-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|M.N.(a + b)|foo} ;
+     official_input = OK {foo|M.N.(a + b)|foo} ;
+     r_input = OK {foo|M.N.(a + b);|foo} ;
+     o_output = OK {foo|let _ = M.N.(a + b);;
+|foo};
+     official_output = OK {foo|;;let open M.N in a + b|foo} ;
+     r_output = OK {foo|M.N.(a + b);
 |foo}
     };
     {name="module-record3"; implem = True ;

@@ -784,7 +784,11 @@ EXTEND
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
           <:expr< $e1$ . $lid:op$ >>
-      | e1 = SELF; "."; "("; e2 = SELF; ")" → <:expr< $e1$ .( $e2$ ) >>
+      | e1 = SELF; "."; "("; e2 = SELF; ")" →
+          if expr_last_is_uid e1 then
+            <:expr< $e1$ . $e2$ >>
+          else
+            <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" → <:expr< $e1$ .[ $e2$ ] >>
 
       | e1 = SELF; "."; "{"; test_label_eq ; lel = V (LIST1 label_expr SEP ";"); "}" →

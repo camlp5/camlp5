@@ -7,6 +7,7 @@
 (* #load "pa_macro.cmo" *)
 (* #load "pa_macro_gram.cmo" *)
 
+open Asttools;;
 open Pcaml;;
 open Mlsyntax.Revised;;
 
@@ -361,6 +362,18 @@ let check_dot_uid_f strm =
 
 let check_dot_uid =
   Grammar.Entry.of_parser gram "check_dot_uid" check_dot_uid_f
+;;
+
+let test_label_eq =
+  Grammar.Entry.of_parser gram "test_label_eq"
+    (let rec test lev strm =
+       match stream_peek_nth lev strm with
+         Some ("UIDENT", _ | "LIDENT", _ | "", ".") -> test (lev + 1) strm
+       | Some ("ANTIQUOT_LOC", _) -> ()
+       | Some ("", ("=" | ";" | "}" | ":")) -> ()
+       | _ -> raise Stream.Failure
+     in
+     test 1)
 ;;
 
 let expr_wrap_attrs loc e l =
@@ -2517,8 +2530,56 @@ Grammar.safe_extend
                    (Grammar.s_nterm (expr : 'expr Grammar.Entry.e))
                    (Grammar.s_token ("", ",")) false))
              (Grammar.s_token ("", "}")),
-           (fun _ (el : 'expr list) _ _ (e : 'expr) (loc : Ploc.t) ->
-              (MLast.ExBae (loc, e, el) : 'expr)));
+           (fun _ (el : 'expr list) _ _ (e1 : 'expr) (loc : Ploc.t) ->
+              (MLast.ExBae (loc, e1, el) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     Grammar.s_self)
+                                  (Grammar.s_token ("", ".")))
+                               (Grammar.s_token ("", "{")))
+                            (Grammar.s_token ("", "(")))
+                         Grammar.s_self)
+                      (Grammar.s_token ("", ")")))
+                   (Grammar.s_token ("", "with")))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm
+                      (label_expr : 'label_expr Grammar.Entry.e))
+                   (Grammar.s_token ("", ";")) false))
+             (Grammar.s_token ("", "}")),
+           (fun _ (lel : 'label_expr list) _ _ (e : 'expr) _ _ _ (e1 : 'expr)
+                (loc : Ploc.t) ->
+              (let e2 = MLast.ExRec (loc, lel, Some e) in
+               MLast.ExAcc (loc, e1, e2) :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                         (Grammar.s_token ("", ".")))
+                      (Grammar.s_token ("", "{")))
+                   (Grammar.s_nterm
+                      (test_label_eq : 'test_label_eq Grammar.Entry.e)))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm
+                      (label_expr : 'label_expr Grammar.Entry.e))
+                   (Grammar.s_token ("", ";")) false))
+             (Grammar.s_token ("", "}")),
+           (fun _ (lel : 'label_expr list) _ _ _ (e1 : 'expr)
+                (loc : Ploc.t) ->
+              (let e2 = MLast.ExRec (loc, lel, None) in
+               MLast.ExAcc (loc, e1, e2) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2552,7 +2613,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (operator_rparen : 'operator_rparen Grammar.Entry.e)),
            (fun (op : 'operator_rparen) _ _ (e1 : 'expr) (loc : Ploc.t) ->
-              (MLast.ExAre (loc, e1, MLast.ExLid (loc, op)) : 'expr)))];
+              (MLast.ExAcc (loc, e1, MLast.ExLid (loc, op)) : 'expr)))];
        Some "~-", Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next

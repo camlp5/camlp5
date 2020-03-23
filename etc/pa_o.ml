@@ -1296,7 +1296,7 @@ EXTEND
       | i = V UIDENT; "."; "("; j = operator_rparen ->
           <:expr< $_uid:i$ . $lid:j$ >>
       | i = V UIDENT; "."; "("; e = expr; ")" ->
-          <:expr< $_uid:i$ . ( $e$ ) >>
+          <:expr< $_uid:i$ . $e$ >>
       | i = V UIDENT; "."; "["; el = expr1_semi_list; "]" ->
           <:expr< $_uid:i$ . ( $exp:mklistexp loc None el$ ) >>
       | i = V UIDENT; "."; "[|"; el = V expr1_semi_list "list"; "|]" ->

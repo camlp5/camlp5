@@ -36,3 +36,23 @@ let rec sep_last =
   | [hd] -> hd, []
   | hd :: tl -> let (l, tl) = sep_last tl in l, hd :: tl
 ;;
+
+let expr_to_path_module_expr e =
+  let rec erec =
+    function
+      MLast.ExUid (loc, i) -> MLast.MeUid (loc, i)
+    | MLast.ExAcc (loc, a, b) -> MLast.MeAcc (loc, erec a, erec b)
+    | _ -> failwith "caught"
+  in
+  try Some (erec e) with Failure _ -> None
+;;
+
+let expr_last_is_uid e =
+  let rec erec =
+    function
+      MLast.ExUid (_, _) -> true
+    | MLast.ExAcc (_, _, e) -> erec e
+    | _ -> false
+  in
+  erec e
+;;
