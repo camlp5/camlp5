@@ -1146,19 +1146,36 @@ EXTEND
           expr_to_inline <:expr< lazy ($e$) >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
-          <:expr< $e1$ .( $lid:op$ ) >>
+          <:expr< $e1$ . $lid:op$ >>
       | e1 = SELF; "."; "("; e2 = SELF; ")" ->
-          <:expr< $e1$ .( $e2$ ) >>
+          if expr_last_is_uid e1 then
+            <:expr< $e1$ . $e2$ >>
+          else
+            <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
-      | e = SELF; "."; "{"; el = V (LIST1 expr LEVEL "+" SEP ","); "}" ->
-          <:expr< $e$ .{ $_list:el$ } >>
+
+      | e1 = SELF; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
+          let e2 = <:expr< { $_list:lel$ } >> in
+          <:expr< $e1$ . $e2$ >>
+
+      | e1 = SELF; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
+        "}" ->
+          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
+          <:expr< $e1$ . $e2$ >>
+
+      | e1 = SELF; "."; "{"; e = expr LEVEL "apply"; el = LIST0 [ ","; e = expr LEVEL "+" -> e]; "}" ->
+          <:expr< $e1$ .{ $list:[e::el]$ } >>
+
+
       | e1 = SELF; "."; e2 = SELF ->
           let rec loop m =
             fun
             [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
             | e -> <:expr< $m$ . $e$ >> ]
           in
-          loop e1 e2 ]
+          loop e1 e2
+      ]
+
     | "~-" NONA
       [ "!"; e = SELF -> <:expr< $e$ . val >>
       | "~-"; e = SELF -> <:expr< ~- $e$ >>
@@ -1283,36 +1300,8 @@ EXTEND
           (eo, <:expr< $e$ >>) ] ]
   ;
   expr_ident:
-    [ RIGHTA
-      [ i = V LIDENT -> <:expr< $_lid:i$ >>
+    [ [ i = V LIDENT -> <:expr< $_lid:i$ >>
       | i = V UIDENT -> <:expr< $_uid:i$ >>
-      | i = V UIDENT; "."; j = SELF ->
-          let rec loop m =
-            fun
-            [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
-            | e -> <:expr< $m$ . $e$ >> ]
-          in
-          loop <:expr< $_uid:i$ >> j
-      | i = V UIDENT; "."; "("; j = operator_rparen ->
-          <:expr< $_uid:i$ . $lid:j$ >>
-      | i = V UIDENT; "."; "("; e = expr; ")" ->
-          <:expr< $_uid:i$ . $e$ >>
-      | i = V UIDENT; "."; "["; el = expr1_semi_list; "]" ->
-          <:expr< $_uid:i$ . ( $exp:mklistexp loc None el$ ) >>
-      | i = V UIDENT; "."; "[|"; el = V expr1_semi_list "list"; "|]" ->
-          <:expr< $_uid:i$ . ( [| $_list:el$ |] ) >>
-
-      | i = V UIDENT; "."; "{<"; ">}" -> <:expr< $_uid:i$ . ( {< >} ) >>
-      | i = V UIDENT; "."; "{<"; fel = V field_expr_list "list"; ">}" ->
-          <:expr< $_uid:i$ . ( {< $_list:fel$ >} ) >>
-
-      | i = V UIDENT; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
-          let e2 = <:expr< { $_list:lel$ } >> in
-          <:expr< $_uid:i$ . $e2$ >>
-      | i = V UIDENT; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
-        "}" ->
-          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
-          <:expr< $_uid:i$ . $e2$ >>
       ] ]
   ;
   (* Patterns *)
