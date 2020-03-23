@@ -10,6 +10,7 @@
 #load "pa_macro_print.cmo";
 #load "pa_pprintf.cmo";
 
+open Asttools;
 open Pretty;
 open Pcaml;
 open Prtools;
@@ -1421,7 +1422,15 @@ EXTEND_PRINTER
                 left_operator pc loc 2 unfold next z ] ]
     | "dot"
       [ <:expr< $x$ . val >> -> pprintf pc "!%p" next x
-      | <:expr< $x$ . $y$ >> -> pprintf pc "%p.@;<0 0>%p" curr x curr y
+
+      | <:expr< $x$ . $y$ >> ->
+        match y with [
+          <:expr:< do { $list:el$ } >> ->
+            let pc = {(pc) with dang = ""} in
+            pprintf pc "%p.@;<0 0>@[<a>(@;%p@ )@]" curr x
+              (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
+        | _ -> pprintf pc "%p.@;<0 0>%p" curr x curr y ]
+
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p@;<0 0>.(%p)" curr x expr_short y
       | <:expr< $x$ .[ $y$ ] >> ->

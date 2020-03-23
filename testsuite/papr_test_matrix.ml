@@ -761,6 +761,17 @@ and t2 = bool[@@foo];
      r_output = OK {foo|M.{a = b};
 |foo}
     };
+    {name="module-begin1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|M.(a; b; c)|foo} ;
+     official_input = OK {foo|M.(a; b; c)|foo} ;
+     r_input = OK {foo|M.(do { a; b; c });|foo} ;
+     o_output = OK {foo|let _ = M.( a; b; c );;
+|foo};
+     official_output = OK {foo|;;let open M in a; b; c|foo} ;
+     r_output = OK {foo|M.(do { a; b; c });
+|foo}
+    };
     {name="module-record2a"; implem = True ;
      exclude=[];
      o_input = OK {foo|M.N.a|foo} ;
