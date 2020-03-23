@@ -117,21 +117,20 @@ let ocaml_mkpat loc x =
 ;;
 
 let ocaml_attribute_implem loc (name : string) sl =
-  Parsetree
-  .({attr_name = mkloc loc name; attr_payload = PStr sl; attr_loc = loc})
+  Parsetree.
+  {attr_name = mkloc loc name; attr_payload = PStr sl; attr_loc = loc}
 ;;
 let ocaml_attribute_interf loc (name : string) si =
-  Parsetree
-  .({attr_name = mkloc loc name; attr_payload = PSig si; attr_loc = loc})
+  Parsetree.
+  {attr_name = mkloc loc name; attr_payload = PSig si; attr_loc = loc}
 ;;
 let ocaml_attribute_type loc (name : string) ty =
-  Parsetree
-  .({attr_name = mkloc loc name; attr_payload = PTyp ty; attr_loc = loc})
+  Parsetree.
+  {attr_name = mkloc loc name; attr_payload = PTyp ty; attr_loc = loc}
 ;;
 let ocaml_attribute_patt loc (name : string) p eopt =
-  Parsetree
-  .({attr_name = mkloc loc name; attr_payload = PPat (p, eopt);
-   attr_loc = loc})
+  Parsetree.
+  {attr_name = mkloc loc name; attr_payload = PPat (p, eopt); attr_loc = loc}
 ;;
 let ocaml_expr_addattr attr
     {pexp_desc = pexp_desc; pexp_loc = pexp_loc;

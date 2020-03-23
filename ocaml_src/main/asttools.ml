@@ -56,3 +56,13 @@ let expr_last_is_uid e =
   in
   erec e
 ;;
+
+let expr_left_assoc_acc e =
+  let rec arec =
+    function
+      MLast.ExAre (loc, e1, MLast.ExAcc (_, e2, e3)) ->
+        arec (MLast.ExAcc (loc, MLast.ExAcc (loc, e1, e2), e3))
+    | e -> e
+  in
+  arec e
+;;

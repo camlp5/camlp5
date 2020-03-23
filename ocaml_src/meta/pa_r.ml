@@ -496,6 +496,8 @@ Grammar.safe_extend
    and andop_binding : 'andop_binding Grammar.Entry.e =
      grammar_entry_create "andop_binding"
    and ext_opt : 'ext_opt Grammar.Entry.e = grammar_entry_create "ext_opt"
+   and expr_uident : 'expr_uident Grammar.Entry.e =
+     grammar_entry_create "expr_uident"
    and closed_case_list : 'closed_case_list Grammar.Entry.e =
      grammar_entry_create "closed_case_list"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
@@ -2537,54 +2539,6 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next
-                            (Grammar.r_next
-                               (Grammar.r_next
-                                  (Grammar.r_next Grammar.r_stop
-                                     Grammar.s_self)
-                                  (Grammar.s_token ("", ".")))
-                               (Grammar.s_token ("", "{")))
-                            (Grammar.s_token ("", "(")))
-                         Grammar.s_self)
-                      (Grammar.s_token ("", ")")))
-                   (Grammar.s_token ("", "with")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm
-                      (label_expr : 'label_expr Grammar.Entry.e))
-                   (Grammar.s_token ("", ";")) false))
-             (Grammar.s_token ("", "}")),
-           (fun _ (lel : 'label_expr list) _ _ (e : 'expr) _ _ _ (e1 : 'expr)
-                (loc : Ploc.t) ->
-              (let e2 = MLast.ExRec (loc, lel, Some e) in
-               MLast.ExAcc (loc, e1, e2) :
-               'expr)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                         (Grammar.s_token ("", ".")))
-                      (Grammar.s_token ("", "{")))
-                   (Grammar.s_nterm
-                      (test_label_eq : 'test_label_eq Grammar.Entry.e)))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm
-                      (label_expr : 'label_expr Grammar.Entry.e))
-                   (Grammar.s_token ("", ";")) false))
-             (Grammar.s_token ("", "}")),
-           (fun _ (lel : 'label_expr list) _ _ _ (e1 : 'expr)
-                (loc : Ploc.t) ->
-              (let e2 = MLast.ExRec (loc, lel, None) in
-               MLast.ExAcc (loc, e1, e2) :
-               'expr)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop Grammar.s_self)
                       (Grammar.s_token ("", ".")))
                    (Grammar.s_token ("", "[")))
@@ -2603,7 +2557,9 @@ Grammar.safe_extend
                 Grammar.s_self)
              (Grammar.s_token ("", ")")),
            (fun _ (e2 : 'expr) _ _ (e1 : 'expr) (loc : Ploc.t) ->
-              (MLast.ExAre (loc, e1, e2) : 'expr)));
+              (if expr_last_is_uid e1 then MLast.ExAcc (loc, e1, e2)
+               else MLast.ExAre (loc, e1, e2) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2783,9 +2739,9 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            (fun _ _ (loc : Ploc.t) -> (MLast.ExUid (loc, "[]") : 'expr)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) ->
-              (MLast.ExUid (loc, i) : 'expr)));
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (expr_uident : 'expr_uident Grammar.Entry.e)),
+           (fun (e : 'expr_uident) (loc : Ploc.t) -> (e : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
            (fun (i : string) (loc : Ploc.t) ->
@@ -2831,6 +2787,106 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("INT", "")),
            (fun (s : string) (loc : Ploc.t) ->
               (MLast.ExInt (loc, s, "") : 'expr)))]];
+    Grammar.extension (expr_uident : 'expr_uident Grammar.Entry.e) None
+      [None, Some Gramext.RightA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("UIDENT", "")))
+                            (Grammar.s_token ("", ".")))
+                         (Grammar.s_token ("", "{")))
+                      (Grammar.s_nterml (expr : 'expr Grammar.Entry.e)
+                         "apply"))
+                   (Grammar.s_token ("", "with")))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm
+                      (label_expr : 'label_expr Grammar.Entry.e))
+                   (Grammar.s_token ("", ";")) false))
+             (Grammar.s_token ("", "}")),
+           (fun _ (lel : 'label_expr list) _ (e : 'expr) _ _ (i : string)
+                (loc : Ploc.t) ->
+              (let e2 = MLast.ExRec (loc, lel, Some e) in
+               MLast.ExAcc (loc, MLast.ExUid (loc, i), e2) :
+               'expr_uident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("UIDENT", "")))
+                         (Grammar.s_token ("", ".")))
+                      (Grammar.s_token ("", "{")))
+                   (Grammar.s_nterm
+                      (test_label_eq : 'test_label_eq Grammar.Entry.e)))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm
+                      (label_expr : 'label_expr Grammar.Entry.e))
+                   (Grammar.s_token ("", ";")) false))
+             (Grammar.s_token ("", "}")),
+           (fun _ (lel : 'label_expr list) _ _ _ (i : string)
+                (loc : Ploc.t) ->
+              (let e2 = MLast.ExRec (loc, lel, None) in
+               MLast.ExAcc (loc, MLast.ExUid (loc, i), e2) :
+               'expr_uident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("UIDENT", "")))
+                      (Grammar.s_token ("", ".")))
+                   (Grammar.s_token ("", "(")))
+                (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           (fun _ (e2 : 'expr) _ _ (i : string) (loc : Ploc.t) ->
+              (MLast.ExAcc (loc, MLast.ExUid (loc, i), e2) : 'expr_uident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("UIDENT", "")))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("LIDENT", "")),
+           (fun (j : string) _ (i : string) (loc : Ploc.t) ->
+              (MLast.ExAcc (loc, MLast.ExUid (loc, i), MLast.ExLid (loc, j)) :
+               'expr_uident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("UIDENT", "")))
+                   (Grammar.s_token ("", ".")))
+                (Grammar.s_token ("", "(")))
+             (Grammar.s_nterm
+                (operator_rparen : 'operator_rparen Grammar.Entry.e)),
+           (fun (op : 'operator_rparen) _ _ (i : string) (loc : Ploc.t) ->
+              (MLast.ExAcc
+                 (loc, MLast.ExUid (loc, i), MLast.ExLid (loc, op)) :
+               'expr_uident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("UIDENT", "")))
+                (Grammar.s_token ("", ".")))
+             Grammar.s_self,
+           (fun (j : 'expr_uident) _ (i : string) (loc : Ploc.t) ->
+              (expr_left_assoc_acc
+                 (MLast.ExAcc (loc, MLast.ExUid (loc, i), j)) :
+               'expr_uident)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) ->
+              (MLast.ExUid (loc, i) : 'expr_uident)))]];
     Grammar.extension (closed_case_list : 'closed_case_list Grammar.Entry.e)
       None
       [None, None,
