@@ -324,9 +324,6 @@ value rec class_expr_fa al =
 value rec sep_expr_acc l =
   fun
   [ <:expr< $e1$ . $e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
-  | <:expr< $e1$ . ( $e2$ ) >>
-    when match e1 with [ <:expr< $uid:_$ >> -> True | _ -> False ] ->
-     sep_expr_acc (sep_expr_acc l e2) e1
   | <:expr< $uid:s$ >> as e →
       let loc = MLast.loc_of_expr e in
       match l with
