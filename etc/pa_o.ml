@@ -1566,7 +1566,7 @@ EXTEND
   ;
   type_kind:
     [ [ test_constr_decl; OPT "|";
-        cdl = LIST1 constructor_declaration SEP "|" ->
+        cdl = LIST0 constructor_declaration SEP "|" ->
           <:ctyp< [ $list:cdl$ ] >>
       | ".." -> <:ctyp< .. >>
       | t = ctyp ->
