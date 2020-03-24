@@ -788,7 +788,7 @@ and t2 = bool[@@foo];
      o_input = OK {foo|M.N.(::)|foo} ;
      official_input = OK {foo|M.N.(::)|foo} ;
      r_input = OK {foo|M.N.(::);|foo} ;
-     o_output = OK {foo|let _ = M.N.(::);;
+     o_output = OK {foo|let _ = M.N.( :: );;
 |foo};
      official_output = OK {foo|;;M.N.(::)|foo} ;
      r_output = OK {foo|M.N.( :: );
@@ -810,7 +810,7 @@ and t2 = bool[@@foo];
      o_input = OK {foo|M.N.(::)|foo} ;
      official_input = OK {foo|M.N.(::)|foo} ;
      r_input = OK {foo|M.N.( :: );|foo} ;
-     o_output = OK {foo|let _ = M.N.(::);;
+     o_output = OK {foo|let _ = M.N.( :: );;
 |foo};
      official_output = OK {foo|;;M.N.(::)|foo} ;
      r_output = OK {foo|M.N.( :: );
@@ -3036,14 +3036,32 @@ type nat _ =
 |foo}
     };
     {name="exotic-list-2"; implem = True ;
-     exclude=[];
+     exclude=["o2official"];
      o_input = OK {foo|let Inner.(::)(x,y, Inner.[]) = Inner.(::)(1,"one",Inner.[])|foo} ;
      official_input = OK {foo|let Inner.(::)(x,y, Inner.[]) = Inner.(::)(1,"one",Inner.[])|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = SKIP "" "" ;
+     o_output = OK {foo|let (Inner.( :: ) (x, y, Inner.[])) = Inner.( :: ) (1, "one", Inner.[]);;
+|foo};
      official_output = OK {foo|let Inner.(::) (x, y, Inner.[] ) =
   Inner.(::) (1, "one", (let open Inner in []))|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|value (x, y) =
+  match Inner.( :: ) 1 "one" Inner.[] with
+  [ Inner.( :: ) x y Inner.[] → (x, y) ];
+|foo}
+    };
+    {(skip) with
+     name="exotic-list-2-o2official";
+     o_input = OK {foo|let Inner.(::)(x,y, Inner.[]) = Inner.(::)(1,"one",Inner.[])|foo} ;
+     official_output = OK {foo|let Inner.(::) (x, y, Inner.[]) = Inner.(::) (1, "one", Inner.[])|foo}
+    };
+    {(skip) with
+     name="exotic-list-2-r2official";
+     r_input = OK {foo|value (x, y) =
+  match Inner.( :: ) 1 "one" Inner.[] with
+  [ Inner.( :: ) x y Inner.[] → (x, y) ];|foo} ;
+     official_output = OK {foo|let (x, y) =
+  match ((Inner.(::) (1, "one", Inner.[]))[@ocaml.explicit_arity ]) with
+  | ((Inner.(::) (x, y, Inner.[]))[@ocaml.explicit_arity ]) -> (x, y)|foo}
     };
     {name="exotic-list-3"; implem = True ;
      exclude=["o2official";"r2official"];
@@ -3067,7 +3085,7 @@ type nat _ =
      o_input = OK {foo|let x = M.N.(::)|foo} ;
      official_input = OK {foo|let x = M.N.(::)|foo} ;
      r_input = SKIP "" "" ;
-     o_output = OK {foo|let x = M.N.(::);;
+     o_output = OK {foo|let x = M.N.( :: );;
 |foo};
      official_output = OK {foo|let x = M.N.(::)|foo} ;
      r_output = OK {foo|value x = M.N.( :: );

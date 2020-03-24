@@ -783,7 +783,10 @@ EXTEND
           expr_to_inline loc <:expr< lazy $e$ >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
-          <:expr< $e1$ . $lid:op$ >>
+          if op = "::" then
+            <:expr< $e1$ . $uid:op$ >>
+          else
+            <:expr< $e1$ . $lid:op$ >>
       | e1 = SELF; "."; "("; e2 = SELF; ")" →
           if expr_last_is_uid e1 then
             <:expr< $e1$ . $e2$ >>
@@ -827,7 +830,11 @@ EXTEND
           <:expr< (module $me$ : $mt$) >>
       | "("; "module"; me = module_expr; ")" →
           <:expr< (module $me$) >>
-      | "("; op = operator_rparen -> <:expr< $lid:op$ >>
+      | "("; op = operator_rparen ->
+          if op = "::" then
+            <:expr< $uid:op$ >>
+          else
+            <:expr< $lid:op$ >>
       | "("; e = SELF; ":"; t = ctyp; ")" → <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" → mktupexp loc e el
       | "("; e = SELF; ")" → <:expr< $e$ >>
@@ -838,7 +845,10 @@ EXTEND
       [ i = V UIDENT -> <:expr< $_uid:i$ >>
       | i = V UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $_uid:i$ . $j$ >>
       | i = V UIDENT ; "." ; "("; op = operator_rparen ->
-          <:expr< $_uid:i$ . $lid:op$ >>
+          if op = "::" then
+            <:expr< $_uid:i$ . $uid:op$ >>
+          else
+            <:expr< $_uid:i$ . $lid:op$ >>
       | i = V UIDENT ; "." ; j = V LIDENT ->
           <:expr< $_uid:i$ . $_lid:j$ >>
       | i = V UIDENT ; "."; "("; e2 = expr; ")" ->
@@ -963,7 +973,11 @@ EXTEND
       | "[|"; pl = V (LIST0 patt SEP ";"); "|]" → <:patt< [| $_list:pl$ |] >>
       | "{"; lpl = V (LIST1 label_patt SEP ";"); "}" →
           <:patt< { $_list:lpl$ } >>
-      | "("; op = operator_rparen -> <:patt< $lid:op$ >>
+      | "("; op = operator_rparen ->
+          if op = "::" then
+            <:patt< $uid:op$ >>
+          else
+            <:patt< $lid:op$ >>
       | "("; p = paren_patt; ")" → p
       | "_" → <:patt< _ >> ] ]
   ;
@@ -1001,7 +1015,11 @@ EXTEND
         <:patt< $e1$ [@ $_attribute:attr$ ] >>
       ]
     | "simple"
-      [ "("; op = operator_rparen -> <:patt< $lid:op$ >>
+      [ "("; op = operator_rparen ->
+          if op = "::" then
+            <:patt< $uid:op$ >>
+          else
+            <:patt< $lid:op$ >>
       | "{"; lpl = V (LIST1 label_ipatt SEP ";"); "}" →
           <:patt< { $_list:lpl$ } >>
       | "("; p = paren_ipatt; ")" → p

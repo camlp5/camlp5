@@ -1150,7 +1150,10 @@ EXTEND
           expr_to_inline <:expr< lazy ($e$) >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
-          <:expr< $e1$ . $lid:op$ >>
+          if op = "::" then
+            <:expr< $e1$ . $uid:op$ >>
+          else
+            <:expr< $e1$ . $lid:op$ >>
       | e1 = SELF; "."; "("; e2 = SELF; ")" ->
           if expr_last_is_uid e1 then
             failwith "internal error in original-syntax parser at dot-lparen"
@@ -1206,7 +1209,11 @@ EXTEND
           <:expr< (module $me$ : $mt$) >>
       | "("; "module"; me = module_expr; ")" ->
           <:expr< (module $me$) >>
-      | "("; op = operator_rparen -> <:expr< $lid:op$ >>
+      | "("; op = operator_rparen ->
+        if op = "::" then
+          <:expr< $uid:op$ >>
+        else
+          <:expr< $lid:op$ >>
       | "("; el = V e_phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ")" -> concat_comm loc <:expr< $e$ >>
@@ -1245,7 +1252,11 @@ EXTEND
   ;
   val_ident:
     [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>
-      | check_not_part_of_patt; "(" ; op = operator_rparen -> <:patt< $lid:op$ >>
+      | check_not_part_of_patt; "(" ; op = operator_rparen ->
+        if op = "::" then
+          <:patt< $uid:op$ >>
+        else
+          <:patt< $lid:op$ >>
       ] ]
   ;
   fun_binding:
@@ -1300,7 +1311,10 @@ EXTEND
       [ i = UIDENT -> <:expr< $uid:i$ >>
       | i = UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $uid:i$ . $j$ >>
       | i = UIDENT ; "." ; "("; op = operator_rparen ->
-          <:expr< $uid:i$ . $lid:op$ >>
+          if op = "::" then
+            <:expr< $uid:i$ . $uid:op$ >>
+          else
+            <:expr< $uid:i$ . $lid:op$ >>
       | i = UIDENT ; "." ; j = LIDENT ->
           <:expr< $uid:i$ . $lid:j$ >>
       | i = UIDENT ; "."; "("; e2 = expr; ")" ->
@@ -1410,7 +1424,11 @@ EXTEND
       | "{"; lpl = V lbl_patt_list "list"; "}" ->
           <:patt< { $_list:lpl$ } >>
       | "("; ")" -> <:patt< () >>
-      | "("; op = operator_rparen -> <:patt< $lid:op$ >>
+      | "("; op = operator_rparen -> 
+          if op = "::" then
+            <:patt< $uid:op$ >>
+          else
+            <:patt< $lid:op$ >>
       | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
