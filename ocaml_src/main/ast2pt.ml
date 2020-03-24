@@ -1063,7 +1063,12 @@ and expr =
           expr
             (MLast.ExApp
                (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1), e2))
-      | dotop, e2l -> assert false
+      | dotop, e2l ->
+          let dotop = dotop ^ "(;..)" in
+          let aexp = MLast.ExArr (loc, e2l) in
+          expr
+            (MLast.ExApp
+               (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1), aexp))
       end
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss (loc, e, v) ->
@@ -1098,7 +1103,16 @@ and expr =
                       (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1),
                        e2),
                     v))
-          | dotop, e2l -> assert false
+          | dotop, e2l ->
+              let dotop = dotop ^ "(;..)<-" in
+              let aexp = MLast.ExArr (loc, e2l) in
+              expr
+                (MLast.ExApp
+                   (loc,
+                    MLast.ExApp
+                      (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1),
+                       aexp),
+                    v))
           end
       | ExBae (loc, dotop, e, el) ->
           if Pcaml.unvala dotop <> "." then assert false
