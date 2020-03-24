@@ -835,23 +835,23 @@ EXTEND
   ;
   expr_uident:
     [ RIGHTA
-      [ i = UIDENT -> <:expr< $uid:i$ >>
-      | i = UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $uid:i$ . $j$ >>
-      | i = UIDENT ; "." ; "("; op = operator_rparen ->
-          <:expr< $uid:i$ . $lid:op$ >>
-      | i = UIDENT ; "." ; j = LIDENT ->
-          <:expr< $uid:i$ . $lid:j$ >>
-      | i = UIDENT ; "."; "("; e2 = expr; ")" ->
-            <:expr< $uid:i$ . $e2$ >>
+      [ i = V UIDENT -> <:expr< $_uid:i$ >>
+      | i = V UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $_uid:i$ . $j$ >>
+      | i = V UIDENT ; "." ; "("; op = operator_rparen ->
+          <:expr< $_uid:i$ . $lid:op$ >>
+      | i = V UIDENT ; "." ; j = V LIDENT ->
+          <:expr< $_uid:i$ . $_lid:j$ >>
+      | i = V UIDENT ; "."; "("; e2 = expr; ")" ->
+            <:expr< $_uid:i$ . $e2$ >>
 
 
-      | i = UIDENT ; "."; "{"; test_label_eq; lel = V (LIST1 label_expr SEP ";"); "}" ->
+      | i = V UIDENT ; "."; "{"; test_label_eq; lel = V (LIST1 label_expr SEP ";"); "}" ->
           let e2 = <:expr< { $_list:lel$ } >> in
-          <:expr< $uid:i$ . $e2$ >>
+          <:expr< $_uid:i$ . $e2$ >>
 
-      | i = UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V (LIST1 label_expr SEP ";"); "}" ->
+      | i = V UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V (LIST1 label_expr SEP ";"); "}" ->
           let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
-          <:expr< $uid:i$ . $e2$ >>
+          <:expr< $_uid:i$ . $e2$ >>
 
       ] ]
   ;
