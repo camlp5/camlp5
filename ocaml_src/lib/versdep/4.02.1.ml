@@ -697,6 +697,7 @@ let ocaml_pcl_fun = Some (fun lab ceo p ce -> Pcl_fun (lab, ceo, p, ce));;
 let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
 
 let ocaml_pcl_open loc li ovf ce = assert false;;
+let ocaml_pcty_open loc li ovf ct = assert false;;
 
 let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
 
