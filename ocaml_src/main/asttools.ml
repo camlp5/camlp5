@@ -57,6 +57,17 @@ let expr_last_is_uid e =
   erec e
 ;;
 
+let expr_first_is_id e =
+  let rec erec =
+    function
+      MLast.ExUid (_, _) -> true
+    | MLast.ExLid (_, _) -> true
+    | MLast.ExAcc (_, e, _) -> erec e
+    | _ -> false
+  in
+  erec e
+;;
+
 let expr_left_assoc_acc e =
   let rec arec =
     function
