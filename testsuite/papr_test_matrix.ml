@@ -3091,6 +3091,78 @@ type nat _ =
      r_output = OK {foo|value x = M.N.( :: );
 |foo}
     };
+    {name="dotop-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|
+    let ( .%[] ) = Hashtbl.find
+    let ( .%[] <- ) = Hashtbl.add
+    let ( .%() ) = Hashtbl.find
+    let ( .%() <- ) = Hashtbl.add
+    let ( .%{} ) = Hashtbl.find
+    let ( .%{} <- ) = Hashtbl.add
+|foo} ;
+     official_input = OK {foo|
+    let ( .%[] ) = Hashtbl.find
+    let ( .%[] <- ) = Hashtbl.add
+    let ( .%() ) = Hashtbl.find
+    let ( .%() <- ) = Hashtbl.add
+    let ( .%{} ) = Hashtbl.find
+    let ( .%{} <- ) = Hashtbl.add
+|foo} ;
+     r_input = OK {foo|value ( .%[] ) = Hashtbl.find;
+value ( .%[]<- ) = Hashtbl.add;
+value ( .%() ) = Hashtbl.find;
+value ( .%()<- ) = Hashtbl.add;
+value ( .%{} ) = Hashtbl.find;
+value ( .%{}<- ) = Hashtbl.add;|foo} ;
+     o_output = OK {foo|let (.%[]) = Hashtbl.find;;
+let (.%[]<-) = Hashtbl.add;;
+let (.%()) = Hashtbl.find;;
+let (.%()<-) = Hashtbl.add;;
+let (.%{}) = Hashtbl.find;;
+let (.%{}<-) = Hashtbl.add;;
+|foo};
+     official_output = OK {foo|let (.%[]) = Hashtbl.find
+let (.%[]<-) = Hashtbl.add
+let (.%()) = Hashtbl.find
+let (.%()<-) = Hashtbl.add
+let (.%{}) = Hashtbl.find
+let (.%{}<-) = Hashtbl.add|foo} ;
+     r_output = OK {foo|value ( .%[] ) = Hashtbl.find;
+value ( .%[]<- ) = Hashtbl.add;
+value ( .%() ) = Hashtbl.find;
+value ( .%()<- ) = Hashtbl.add;
+value ( .%{} ) = Hashtbl.find;
+value ( .%{}<- ) = Hashtbl.add;
+|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;

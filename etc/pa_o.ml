@@ -89,17 +89,41 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
+value operator_rparen_f strm =
+  let check1 n pred xform suffixes =
+    match Stream.npeek n strm with [
+      [("",s) :: l] ->
+        if pred s && List.exists (fun sl -> sl = l) suffixes then
+          Some (xform s)
+        else None
+    | _ -> None ] in
+  let id x = x in
+  let app suff s = s^suff in 
+  let trials = [
+    (2, is_operator, id, [[("",")")]]);
+    (2, is_letop, id, [[("",")")]]);
+    (2, is_andop, id, [[("",")")]]);
+    (3, is_dotop, id, [[("",")")]]);
+    (4, is_dotop, app "()", [[("","("); ("",")"); ("",")")]]);
+    (4, is_dotop, app "{}", [[("","{"); ("","}"); ("",")")]]);
+    (4, is_dotop, app "[]", [[("","["); ("","]"); ("",")")]]);
+    (5, is_dotop, app "()<-", [[("","("); ("",")"); ("","<-"); ("",")")]]);
+    (5, is_dotop, app "{}<-", [[("","{"); ("","}"); ("","<-"); ("",")")]]);
+    (5, is_dotop, app "[]<-", [[("","["); ("","]"); ("","<-"); ("",")")]])
+  ] in
+  let rec tryrec = fun [
+    [] -> raise Stream.Failure
+  | [ (n, pred, xform, suffixes) :: trials ] ->
+    match check1 n pred xform suffixes with  [
+      None -> tryrec trials
+    | Some s -> do { for i = 1 to n do { Stream.junk strm } ; s }
+    ]
+  ] in tryrec trials
+;
+
 value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
-    (fun strm ->
-       match Stream.npeek 2 strm with
-         [ [("", s); ("", ")")] when
-                is_special_op s -> do {
-           Stream.junk strm;
-           Stream.junk strm;
-           s
-         }
-       | _ -> raise Stream.Failure ])
+    operator_rparen_f
 ;
 
 value check_not_part_of_patt =
