@@ -1433,8 +1433,11 @@ EXTEND_PRINTER
 
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p@;<0 0>.(%p)" curr x expr_short y
-      | <:expr< $x$ $dotop:op$ ( $y$ ) >> ->
-          pprintf pc "%p@;<0 0>%s(%p)" curr x op expr_short y
+
+      | <:expr< $x$ $dotop:op$ ( $list:el$ ) >> ->
+          let el = List.map (fun e -> (e, ";")) el in
+          pprintf pc "%p@;<0 0>%s(%p)" curr x op (plist expr_short 0) el
+
       | <:expr< $x$ .[ $y$ ] >> ->
           pprintf pc "%p@;<0 0>.[%p]" curr x expr_short y
       | <:expr< $e$ .{ $list:el$ } >> ->

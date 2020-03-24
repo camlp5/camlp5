@@ -905,7 +905,11 @@ and expr =
       | (dotop, [e2]) -> 
         let dotop = dotop ^ "()" in
         expr <:expr< $lid:dotop$ $e1$ $e2$ >>
-      | (dotop, e2l) -> assert False ]
+      | (dotop, e2l) ->
+         let dotop = dotop ^ "(;..)" in
+         let aexp = <:expr< [| $list:e2l$ |] >> in
+         expr <:expr< $lid:dotop$ $e1$ $aexp$ >>
+      ]
   | ExArr loc el → mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v →
       match e with
@@ -932,7 +936,11 @@ and expr =
           | (dotop, [e2]) ->
             let dotop = dotop ^ "()<-" in
             expr <:expr< $lid:dotop$ $e1$ $e2$ $v$ >>
-          | (dotop, e2l) -> assert False ]
+          | (dotop, e2l) ->
+            let dotop = dotop ^ "(;..)<-" in
+            let aexp = <:expr< [| $list:e2l$ |] >> in
+            expr <:expr< $lid:dotop$ $e1$ $aexp$ $v$ >>
+          ]
       | ExBae loc dotop e el →
           if Pcaml.unvala dotop <> "." then
             assert False

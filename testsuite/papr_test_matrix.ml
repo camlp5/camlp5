@@ -3181,7 +3181,7 @@ value ( .%{;..} ) = Hashtbl.find;
 value ( .%{;..}<- ) = Hashtbl.add;
 |foo}
     };
-    {name="dotop-array-1"; implem = True ;
+    {name="dot-array-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.(y)|foo} ;
      official_input = OK {foo|x.(y)|foo} ;
@@ -3192,7 +3192,7 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|x.(y);
 |foo}
     };
-    {name="dotop-array-2"; implem = True ;
+    {name="dot-array-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.(y) <- z|foo} ;
      official_input = OK {foo|x.(y) <- z|foo} ;
@@ -3203,7 +3203,7 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|x.(y) := z;
 |foo}
     };
-    {name="dotop-array-ext-1"; implem = True ;
+    {name="dotop-array-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.%(y)|foo} ;
      official_input = OK {foo|x.%(y)|foo} ;
@@ -3214,7 +3214,7 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|x.%(y);
 |foo}
     };
-    {name="dotop-array-ext-2"; implem = True ;
+    {name="dotop-array-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.%(y) <- z|foo} ;
      official_input = OK {foo|x.%(y) <- z|foo} ;
@@ -3225,7 +3225,30 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|x.%(y) := z;
 |foo}
     };
-    {name="dotop-bigarray-1"; implem = True ;
+
+    {name="dotop-array-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.%(y; z)|foo} ;
+     official_input = OK {foo|x.%(y;z)|foo} ;
+     r_input = OK {foo|x.%(y;z);|foo} ;
+     o_output = OK {foo|let _ = x.%(y; z);;
+|foo};
+     official_output = OK {foo|;;x.%(y;z)|foo} ;
+     r_output = OK {foo|x.%(y; z);
+|foo}
+    };
+    {name="dotop-array-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.%(y;y2) <- z|foo} ;
+     official_input = OK {foo|x.%(y;y2) <- z|foo} ;
+     r_input = OK {foo|x.%(y;y2) := z;|foo} ;
+     o_output = OK {foo|let _ = x.%(y; y2) <- z;;
+|foo};
+     official_output = OK {foo|;;x.%(y;y2) <- z|foo} ;
+     r_output = OK {foo|x.%(y; y2) := z;
+|foo}
+    };
+    {name="dot-bigarray-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.{y}|foo} ;
      official_input = OK {foo|x.{y}|foo} ;
@@ -3236,7 +3259,7 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|x.{y};
 |foo}
     };
-    {name="dotop-bigarray-2"; implem = True ;
+    {name="dot-bigarray-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.{y} <- z|foo} ;
      official_input = OK {foo|x.{y} <- z|foo} ;
@@ -3247,7 +3270,7 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|x.{y} := z;
 |foo}
     };
-    {name="dotop-string-1"; implem = True ;
+    {name="dot-string-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.[y]|foo} ;
      official_input = OK {foo|x.[y]|foo} ;
@@ -3258,7 +3281,7 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|x.[y];
 |foo}
     };
-    {name="dotop-string-2"; implem = True ;
+    {name="dot-string-2"; implem = True ;
      exclude=["r2official"; "o2official"];
      o_input = OK {foo|x.[y] <- z|foo} ;
      official_input = OK {foo|x.[y] <- z|foo} ;
@@ -3270,7 +3293,7 @@ value ( .%{;..}<- ) = Hashtbl.add;
 |foo}
     };
     {(skip) with
-     name="dotop-string-2-[or]2official" ;
+     name="dot-string-2-[or]2official" ;
      o_input = OK {foo|x.[y] <- z|foo} ;
      r_input = OK {foo|x.[y] := z;|foo} ;
      official_output = OK {foo|;;Bytes.set x y z|foo}

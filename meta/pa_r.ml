@@ -829,18 +829,24 @@ EXTEND
             <:expr< $e1$ . $lid:op$ >>
       | e1 = SELF; "."; "("; e2 = SELF; ")" →
           if expr_last_is_uid e1 then
-            <:expr< $e1$ . $e2$ >>
+            failwith "internal error in original-syntax parser at dot-lparen"
           else
             <:expr< $e1$ .( $e2$ ) >>
-      | e1 = SELF; op = V dotop "dotop"; "("; e2 = SELF; ")" →
-          if expr_last_is_uid e1 then
-            <:expr< $e1$ . $e2$ >>
-          else
-            <:expr< $e1$ $_dotop:op$ ( $e2$ ) >>
-      | e1 = SELF; "."; "["; e2 = SELF; "]" → <:expr< $e1$ .[ $e2$ ] >>
+
+      | e1 = SELF; op = V dotop "dotop"; "("; el = V (LIST1 expr SEP ";"); ")" →
+          <:expr< $e1$ $_dotop:op$ ( $_list:el$ ) >>
+
+      | e1 = SELF; "."; "["; e2 = SELF; "]" →
+          <:expr< $e1$ .[ $e2$ ] >>
+
+      | e1 = SELF; op = V dotop "dotop"; "["; el = V (LIST1 expr SEP ";"); "]" →
+          <:expr< $e1$ $_dotop:op$ [ $_list:el$ ] >>
 
       | e1 = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →
           <:expr< $e1$ . { $_list:el$ } >>
+
+      | e1 = SELF; op = V dotop "dotop"; "{"; el = V (LIST1 expr SEP ";"); "}" →
+          <:expr< $e1$ $_dotop:op$ { $_list:el$ } >>
 
       | e1 = SELF; "."; e2 = SELF → <:expr< $e1$ . $e2$ >> ]
     | "~-" NONA

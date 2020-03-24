@@ -1102,7 +1102,7 @@ EXTEND
       | "while"; (ext,attrs) = ext_attributes; e1 = SELF; "do"; e2 = V SELF "list"; "done" ->
           let el = Pcaml.vala_map get_seq e2 in
           expr_to_inline <:expr< while $e1$ do { $_list:el$ } >> ext attrs ]
-    | [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
+    | "," [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
           <:expr< ( $list:[e :: el]$ ) >> ]
     | ":=" NONA
       [ e1 = SELF; ":="; e2 = expr LEVEL "expr1" ->
@@ -1199,16 +1199,19 @@ EXTEND
           else
             <:expr< $e1$ .( $e2$ ) >>
 
-      | e1 = SELF; op = V dotop "dotop"; "("; e2 = SELF; ")" ->
-          if expr_last_is_uid e1 then
-            failwith "internal error in original-syntax parser at dot-lparen"
-          else
-            <:expr< $e1$ $_dotop:op$ ( $e2$ ) >>
+      | e1 = SELF; op = V dotop "dotop"; "("; el = LIST1 expr LEVEL "+" SEP ";"; ")" ->
+          <:expr< $e1$ $_dotop:op$ ( $list:el$ ) >>
 
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
 
+      | e1 = SELF; op = V dotop "dotop"; "["; el = LIST1 expr LEVEL "+" SEP ";"; "]" ->
+          <:expr< $e1$ $_dotop:op$ [ $list:el$ ] >>
+
       | e1 = SELF; "."; "{"; el = LIST1 expr LEVEL "+" SEP ","; "}" ->
           <:expr< $e1$ .{ $list:el$ } >>
+
+      | e1 = SELF; op = V dotop "dotop"; "{"; el = LIST1 expr LEVEL "+" SEP ";"; "}" ->
+          <:expr< $e1$ $_dotop:op$ { $list:el$ } >>
 
 
       | e1 = SELF; "."; e2 = SELF ->
