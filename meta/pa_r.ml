@@ -122,7 +122,7 @@ value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
        match Stream.npeek 2 strm with
-       [ [("", s); ("", ")")] when is_operator s || is_letop s || is_andop s -> do {
+       [ [("", s); ("", ")")] when is_special_op s -> do {
            Stream.junk strm;
            Stream.junk strm;
            s
@@ -136,7 +136,7 @@ value check_not_part_of_patt =
        let tok =
          match Stream.npeek 4 strm with
          [ [("LIDENT", _); tok :: _] -> tok
-         | [("", "("); ("", s); ("", ")"); tok] when is_operator s -> tok
+         | [("", "("); ("", s); ("", ")"); tok] when is_special_op s -> tok
          | _ -> raise Stream.Failure ]
        in
        match tok with

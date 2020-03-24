@@ -152,6 +152,9 @@ value is_dotop s =
   dotsymbolchar 1 ~{lim=2} s &&
   symbolchar 2 s
 ;
+
+value is_special_op s = is_operator s || is_letop s || is_andop s || is_dotop s ;
+
 end ;
 
 module Revised = struct
@@ -180,5 +183,14 @@ value is_operator s =
 value is_infix_operator op =
   is_operator op && (match op.[0] with [ '!'| '?'| '~' -> False | _ -> True ])
 ;
+
+value is_dotop s =
+  String.length s >= 2 &&
+  String.get s 0 = '.' &&
+  dotsymbolchar 1 ~{lim=2} s &&
+  symbolchar 2 s
+;
+
+value is_special_op s = is_operator s || is_letop s || is_andop s || is_dotop s ;
 
 end ;

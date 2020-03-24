@@ -1643,7 +1643,7 @@ EXTEND_PRINTER
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
       | <:expr< . >> -> pprintf pc "."
-      | <:expr:< $lid:s$ >> when is_operator s || is_letop s || is_andop s ->
+      | <:expr:< $lid:s$ >> when is_special_op s ->
           pprintf pc "( %s )" s
       | <:expr:< $lid:s$ >> ->
           var_escaped pc (loc, s)
@@ -1754,7 +1754,7 @@ EXTEND_PRINTER
           else pprintf pc "%sn" s
       | <:patt< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e
-      | <:patt:< $lid:s$ >> when is_operator s || is_letop s || is_andop s ->
+      | <:patt:< $lid:s$ >> when is_special_op s ->
           pprintf pc "( %s )" s
       | <:patt:< $lid:s$ >> ->
           var_escaped pc (loc, s)
@@ -1903,7 +1903,7 @@ EXTEND_PRINTER
           pprintf pc "exception %p%p" (extension_constructor loc) ec
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
-          if is_operator n then
+          if is_special_op n then
             external_decl_original pc (loc, n, t, sl, attrs)
           else
             external_decl pc (loc, n, t, sl, attrs)
@@ -1967,7 +1967,7 @@ EXTEND_PRINTER
       | MLast.SgExc _ gc item_attrs -> pprintf pc "exception %p%p" cons_decl gc
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
-          if is_operator n then
+          if is_special_op n then
             external_decl_original pc (loc, n, t, sl, attrs)
           else
             external_decl pc (loc, n, t, sl, attrs)
@@ -1990,7 +1990,7 @@ EXTEND_PRINTER
           pprintf pc "type%s %p" (if nonrf then " nonrec" else "") (vlist2 type_decl (and_before type_decl)) tdl
       | MLast.SgTypExten _ te ->
           pprintf pc "type %p" type_extension te
-      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_operator s ->
+      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_special_op s ->
           pprintf pc "value ( %s ) :@;%p%p" s ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
           pprintf pc "value %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
