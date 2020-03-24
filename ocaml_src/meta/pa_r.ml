@@ -2795,6 +2795,40 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("UIDENT", "")))
+                         (Grammar.s_token ("", ".")))
+                      (Grammar.s_token ("", "[")))
+                   (Grammar.s_list1sep
+                      (Grammar.s_nterm (expr : 'expr Grammar.Entry.e))
+                      (Grammar.s_token ("", ";")) false))
+                (Grammar.s_nterm
+                   (cons_expr_opt : 'cons_expr_opt Grammar.Entry.e)))
+             (Grammar.s_token ("", "]")),
+           (fun _ (last : 'cons_expr_opt) (el : 'expr list) _ _ (i : string)
+                (loc : Ploc.t) ->
+              (let e2 = mklistexp loc last el in
+               MLast.ExAcc (loc, MLast.ExUid (loc, i), e2) :
+               'expr_uident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("UIDENT", "")))
+                   (Grammar.s_token ("", ".")))
+                (Grammar.s_token ("", "[")))
+             (Grammar.s_token ("", "]")),
+           (fun _ _ _ (i : string) (loc : Ploc.t) ->
+              (let e2 = MLast.ExUid (loc, "[]") in
+               MLast.ExAcc (loc, MLast.ExUid (loc, i), e2) :
+               'expr_uident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
                          (Grammar.r_next
                             (Grammar.r_next Grammar.r_stop
                                (Grammar.s_token ("UIDENT", "")))
