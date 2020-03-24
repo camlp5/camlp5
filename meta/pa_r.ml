@@ -853,6 +853,14 @@ EXTEND
           let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
           <:expr< $_uid:i$ . $e2$ >>
 
+      | i = V UIDENT ; "."; "["; "]" ->
+          let e2 = <:expr< [] >> in
+          <:expr< $_uid:i$ . $e2$ >>
+
+      | i = V UIDENT ; "."; "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
+          let e2 = mklistexp loc last el in
+          <:expr< $_uid:i$ . $e2$ >>
+
       ] ]
   ;
   closed_case_list:

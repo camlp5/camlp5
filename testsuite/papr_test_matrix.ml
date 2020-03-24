@@ -911,6 +911,72 @@ and t2 = bool[@@foo];
      r_output = OK {foo|n.{M.a};
 |foo}
     };
+    {name="constructors-1"; implem = True ;
+     exclude=["r2official"];
+     o_input = OK {foo|A(b,c)|foo} ;
+     official_input = OK {foo|A(b,c)|foo} ;
+     r_input = OK {foo|A b c;|foo} ;
+     o_output = OK {foo|let _ = A (b, c);;
+|foo};
+     official_output = OK {foo|;;A (b, c)|foo} ;
+     r_output = OK {foo|A b c;
+|foo}
+    };
+    {(skip) with
+     name="constructors-1-r2official";
+     r_input = OK {foo|A b c;|foo} ;
+     official_output = OK {foo|;;((A (b, c))[@ocaml.explicit_arity ])|foo}
+    };
+    {name="dot-lbracket-0"; implem = True ;
+     exclude=["r2official"];
+     o_input = OK {foo|[a;b]|foo} ;
+     official_input = OK {foo|[a;b]|foo} ;
+     r_input = OK {foo|[a;b];|foo} ;
+     o_output = OK {foo|let _ = [a; b];;
+|foo};
+     official_output = OK {foo|;;[a; b]|foo} ;
+     r_output = OK {foo|[a; b];
+|foo}
+    };
+    {(skip) with
+     name="dot-lbracket-0-r2official";
+     r_input = OK {foo|[a;b];|foo} ;
+     official_output = OK {foo|;;((a :: (([b])[@ocaml.explicit_arity ]))[@ocaml.explicit_arity ])|foo}
+    };
+    {name="dot-lbracket-1"; implem = True ;
+     exclude=["r2official"];
+     o_input = OK {foo|M.[a;b]|foo} ;
+     official_input = OK {foo|M.[a;b]|foo} ;
+     r_input = OK {foo|M.[a;b];|foo} ;
+     o_output = OK {foo|let _ = M.[a; b];;
+|foo};
+     official_output = OK {foo|;;let open M in [a; b]|foo} ;
+     r_output = OK {foo|M.[a; b];
+|foo}
+    };
+    {(skip) with
+     name="dot-lbracket-1-r2official";
+     r_input = OK {foo|M.[a;b];|foo} ;
+     official_output = OK {foo|;;let open M in ((a :: (([b])[@ocaml.explicit_arity ]))
+    [@ocaml.explicit_arity ])|foo}
+    };
+    {name="dot-lbracket-2"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK {foo|M.[]|foo} ;
+     official_input = OK {foo|M.[]|foo} ;
+     r_input = OK {foo|M.[];|foo} ;
+     o_output = OK {foo|let _ = M.[];;
+|foo};
+     official_output = OK {foo|;;let open M in []|foo} ;
+     r_output = OK {foo|M.[];
+|foo}
+    };
+    {(skip) with
+     name="dot-lbracket-2-[or]2official";
+     o_input = OK {foo|M.[]|foo} ;
+     r_input = OK {foo|M.[];|foo} ;
+     official_output = OK {foo|;;M.[]|foo}
+    };
     {name="module-record3"; implem = True ;
      exclude=[];
      o_input = OK {foo|M.N.{e with a = b}|foo} ;

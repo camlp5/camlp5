@@ -492,16 +492,20 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value stream_npeek n s = (Stream.npeek n s : list (string * string)) ;
 value is_new_type_extended strm =
   let rec isrec n =
-    let l = Stream.npeek n strm in
+    let l = stream_npeek n strm in
     if l = [] then False
-    else match sep_last l with [
-      (("",")"), [("","("); ("","type"); ("LIDENT",_) :: l ]) ->
-        l <> [] && List.for_all (fun [ ("LIDENT",_) -> True | _ -> False ]) l
-    | (("",")"), _) -> False
-    | (("","EOI"), _) -> False
-    | _ -> isrec (n+1)
+    else match l with [
+      [("","("); ("","type") :: l] ->
+        match sep_last l with [
+          (("",")"), l) ->
+            l <> [] && List.for_all (fun [ ("LIDENT",_) -> True | _ -> False ]) l
+        | (("LIDENT",_), _) -> isrec (n+1)
+        | _ -> False
+        ]
+    | _ -> False
     ]
   in isrec 4
 ;
@@ -1310,6 +1314,13 @@ EXTEND
       | i = UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
         "}" ->
           let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
+          <:expr< $uid:i$ . $e2$ >>
+
+      | i = UIDENT ; "."; "["; "]" ->
+          let e2 = <:expr< [] >> in
+          <:expr< $uid:i$ . $e2$ >>
+      | i = UIDENT ; "."; "["; el = expr1_semi_list; "]" ->
+          let e2 = <:expr< $mklistexp loc None el$ >> in
           <:expr< $uid:i$ . $e2$ >>
 
       ] ]
