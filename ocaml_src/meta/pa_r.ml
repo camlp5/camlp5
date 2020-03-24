@@ -247,6 +247,14 @@ let andop =
        | _ -> raise Stream.Failure)
 ;;
 
+let dotop =
+  Grammar.Entry.of_parser gram "dotop"
+    (fun (strm__ : _ Stream.t) ->
+       match Stream.peek strm__ with
+         Some ("", x) when is_dotop x -> Stream.junk strm__; x
+       | _ -> raise Stream.Failure)
+;;
+
 let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
 let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
 let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
@@ -2574,6 +2582,20 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            (fun _ (e2 : 'expr) _ _ (e1 : 'expr) (loc : Ploc.t) ->
               (MLast.ExSte (loc, ".", e1, e2) : 'expr)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                      (Grammar.s_nterm (dotop : 'dotop Grammar.Entry.e)))
+                   (Grammar.s_token ("", "(")))
+                Grammar.s_self)
+             (Grammar.s_token ("", ")")),
+           (fun _ (e2 : 'expr) _ (op : 'dotop) (e1 : 'expr) (loc : Ploc.t) ->
+              (if expr_last_is_uid e1 then MLast.ExAcc (loc, e1, e2)
+               else MLast.ExAre (loc, op, e1, e2) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
