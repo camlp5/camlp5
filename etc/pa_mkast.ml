@@ -84,7 +84,7 @@ value rec expr_of_type loc t =
   match t with
   [ <:ctyp< $lid:tn$ >> ->
       match tn with
-      [ "bool" | "string" -> <:expr< C.$lid:tn$ >>
+      [ "bool" | "string" -> <:expr< C . $lid:tn$ >>
       | _ -> <:expr< $lid:tn$ >> ]
   | <:ctyp< ($list:tl$) >> ->
       let tnl = name_of_vars tl in
@@ -188,7 +188,7 @@ value expr_of_type_decl loc td =
       let rev_lel =
         list_rev_map
           (fun (loc, l, mf, t, _) ->
-             let e = <:expr< x.$lid:l$ >> in
+             let e = <:expr< x . $lid:l$ >> in
              let e =
                match t with
                [ <:ctyp< loc >> -> <:expr< C.loc_v () >>

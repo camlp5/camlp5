@@ -92,7 +92,7 @@ module Meta_make (C : MetaSig) =
     ;
     value record_label lab =
       let loc = Ploc.dummy in
-      <:patt< MLast.$lid:lab$ >>
+      <:patt< MLast . $lid:lab$ >>
     ;
     value class_infos f ci =
       C.record
@@ -648,11 +648,11 @@ module Meta_E =
        value loc_v () = <:expr< $lid:Ploc.name.val$ >>;
        value node con el =
          List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-           <:expr< MLast.$uid:con$ $loc_v ()$ >> el
+           <:expr< MLast . $uid:con$ $loc_v ()$ >> el
        ;
        value node_no_loc con el =
          List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-           <:expr< MLast.$uid:con$ >> el
+           <:expr< MLast . $uid:con$ >> el
        ;
        value list elem el =
          loop el where rec loop el =
@@ -721,11 +721,11 @@ module Meta_P =
        value loc_v () = <:patt< _ >>;
        value node con pl =
          List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
-           <:patt< MLast.$uid:con$ _ >> pl
+           <:patt< MLast . $uid:con$ _ >> pl
        ;
        value node_no_loc con pl =
          List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
-           <:patt< MLast.$uid:con$ >> pl
+           <:patt< MLast . $uid:con$ >> pl
        ;
        value list elem el =
          loop el where rec loop el =

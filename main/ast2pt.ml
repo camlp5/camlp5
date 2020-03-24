@@ -294,14 +294,14 @@ value rec mkrangepat loc c1 c2 =
 
 value rec patt_long_id il =
   fun
-  [ <:patt< $p$.$uid:i$ >> → patt_long_id [i :: il] p
+  [ <:patt< $p$ . $uid:i$ >> → patt_long_id [i :: il] p
   | p → (p, il) ]
 ;
 
 value rec patt_label_long_id =
   fun
-  [ <:patt< $m$.$lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
-  | <:patt< $m$.$uid:s$ >> → Ldot (patt_label_long_id m) s
+  [ <:patt< $m$ . $lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
+  | <:patt< $m$ . $uid:s$ >> → Ldot (patt_label_long_id m) s
   | <:patt< $uid:s$ >> → Lident s
   | <:patt< $lid:s$ >> → Lident (conv_lab s)
   | p → error (loc_of_patt p) "bad label" ]
@@ -323,7 +323,7 @@ value rec class_expr_fa al =
 
 value rec sep_expr_acc l =
   fun
-  [ <:expr< $e1$.$e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
+  [ <:expr< $e1$ . $e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
   | <:expr< $e1$ . ( $e2$ ) >>
     when match e1 with [ <:expr< $uid:_$ >> -> True | _ -> False ] ->
      sep_expr_acc (sep_expr_acc l e2) e1
@@ -1748,8 +1748,8 @@ value directive loc =
           fun
           [ <:expr< $lid:i$ >> → [i]
           | <:expr< $uid:i$ >> → [i]
-          | <:expr< $e$.$lid:i$ >> → loop e @ [i]
-          | <:expr< $e$.$uid:i$ >> → loop e @ [i]
+          | <:expr< $e$ . $lid:i$ >> → loop e @ [i]
+          | <:expr< $e$ . $uid:i$ >> → loop e @ [i]
           | e → Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
       in
       Pdir_ident (long_id_of_string_list loc sl) ]

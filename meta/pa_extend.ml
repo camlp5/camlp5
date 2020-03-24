@@ -421,10 +421,10 @@ value quot_expr psl e =
         [ <:expr< $uid:c$ >> ->
             let al = List.map loop al in
             <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
-        | <:expr< MLast.$uid:c$ >> ->
+        | <:expr< MLast . $uid:c$ >> ->
             let al = List.map loop al in
             <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
-        | <:expr< $uid:m$.$uid:c$ >> ->
+        | <:expr< $uid:m$ . $uid:c$ >> ->
             let al = List.map loop al in
             <:expr< Qast.Node $str:m ^ "." ^ c$ $mklistexp loc al$ >>
         | <:expr< $lid:f$ >> ->
@@ -442,7 +442,7 @@ value quot_expr psl e =
                  let lab =
                    match p with
                    [ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
-                   | <:patt< $_$.$lid:c$ >> -> <:expr< $str:c$ >>
+                   | <:patt< $_$ . $lid:c$ >> -> <:expr< $str:c$ >>
                    | _ -> raise Not_found ]
                  in
                  <:expr< ($lab$, $loop e$) >>)
@@ -453,8 +453,8 @@ value quot_expr psl e =
         [ Not_found -> e ]
     | <:expr< $lid:s$ >> ->
         if s = Ploc.name.val then <:expr< Qast.Loc >> else e
-    | <:expr< MLast.$uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
-    | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
+    | <:expr< MLast . $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
+    | <:expr< $uid:m$ . $uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
     | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
     | <:expr< $str:s$ >> -> <:expr< Qast.Str $str:s$ >>
     | <:expr< ($list:el$) >> ->
@@ -1163,7 +1163,7 @@ EXTEND
           ASkeyw loc e
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
-          let v = <:expr< $uid:i$.$snd e$ >> in
+          let v = <:expr< $uid:i$ . $snd e$ >> in
           ASnterm loc (i ^ "__" ^ fst e, v) lev
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           ASnterm loc n lev

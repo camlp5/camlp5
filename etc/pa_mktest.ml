@@ -137,7 +137,7 @@ value expr_of_cons_decl (loc, c, tl, rto, _) = do {
     let tl = Pcaml.unvala tl in
     let tnl = name_of_vars (fun t -> t) tl in
     let el =
-      loop <:expr< MLast.$uid:c$ >> tnl where rec loop e1 =
+      loop <:expr< MLast . $uid:c$ >> tnl where rec loop e1 =
         fun
         [ [(t, n) :: tnl] ->
             let f e2 = loop <:expr< $e1$ $e2$ >> tnl in
@@ -213,7 +213,7 @@ value expr_list_of_type_decl loc td =
         loop ldnl where rec loop =
           fun
           [ [((loc, l, mf, t, _), n) :: ldnl] ->
-              let p = <:patt< MLast.$lid:l$ >> in
+              let p = <:patt< MLast . $lid:l$ >> in
               let pell = loop ldnl in
               let f e = List.map (fun pel -> [(p, e) :: pel]) pell in
               patt_expr_list_of_type loc f n t

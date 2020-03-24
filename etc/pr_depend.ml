@@ -104,13 +104,13 @@ and patt =
 and patt_module =
   fun
   [ <:patt< $uid:m$ >> -> addmodule m
-  | <:patt< $p$.$_$ >> -> patt_module p
+  | <:patt< $p$ . $_$ >> -> patt_module p
   | x -> not_impl "patt_module" x ]
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =
   fun
-  [ <:expr< $lid:s$.$e2$ >> -> do { expr_module e2 }
-  | <:expr< $e1$.$e2$ >> -> do { expr_module e1; expr e2 }
+  [ <:expr< $lid:s$ . $e2$ >> -> do { expr_module e2 }
+  | <:expr< $e1$ . $e2$ >> -> do { expr_module e1; expr e2 }
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
   | ExAre _ e1 e2 -> do { expr e1; expr e2 }
   | <:expr< [| $list:el$ |] >> -> list expr el

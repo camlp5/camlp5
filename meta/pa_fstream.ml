@@ -144,7 +144,7 @@ value patt_expr_of_patt p =
 value no_compute =
   fun
   [ <:expr< $lid:_$ >> -> True
-  | <:expr< $uid:_$.$lid:_$ >> -> True
+  | <:expr< $uid:_$ . $lid:_$ >> -> True
   | _ -> False ]
 ;
 

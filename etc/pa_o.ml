@@ -270,7 +270,7 @@ value constr_arity = ref [("Some", 1); ("Match_Failure", 1)];
 value rec is_expr_constr_call =
   fun
   [ <:expr< $uid:_$ >> -> True
-  | <:expr< $uid:_$.$e$ >> -> is_expr_constr_call e
+  | <:expr< $uid:_$ . $e$ >> -> is_expr_constr_call e
   | <:expr< $e$ $_$ >> -> is_expr_constr_call e
   | _ -> False ]
 ;
@@ -279,7 +279,7 @@ value rec constr_expr_arity loc =
   fun
   [ <:expr< $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
-  | <:expr< $uid:_$.$e$ >> -> constr_expr_arity loc e
+  | <:expr< $uid:_$ . $e$ >> -> constr_expr_arity loc e
   | _ -> 1 ]
 ;
 
@@ -287,7 +287,7 @@ value rec constr_patt_arity loc =
   fun
   [ <:patt< $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
-  | <:patt< $uid:_$.$p$ >> -> constr_patt_arity loc p
+  | <:patt< $uid:_$ . $p$ >> -> constr_patt_arity loc p
   | _ -> 1 ]
 ;
 

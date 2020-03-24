@@ -519,6 +519,13 @@ value kwdopchar = lexer
   [ '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|' ]
 ;
 
+value symbolchar = lexer
+  ['!' | '$' | '%' | '&' | '*' | '+' | '-' | '.' | '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~']
+;
+value rec symbolchar_star = lexer
+  [ symbolchar symbolchar_star | ]
+;
+
 value word_operators ctx id = lexer
   [ [ kwdopchar dotsymbolchar_star ->
       ("", id ^ $buf)
@@ -531,6 +538,20 @@ value keyword = fun ctx buf strm ->
   else
     try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
 ;
+
+value dot ctx (bp, pos) buf strm =
+  match Stream.peek strm with [
+    None ->
+      let id =
+        if ctx.specific_space_dot && ctx.after_space then " ." else "."
+      in
+      keyword_or_error ctx (bp, pos) id
+
+  | Some '\n' -> keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
+  | _ -> match strm with lexer [ [ -> $add "." ] dotsymbolchar_star! -> keyword_or_error ctx (bp, $pos) $buf ]
+  ]
+;
+
 
 value next_token_after_spaces ctx bp =
   lexer
@@ -584,6 +605,8 @@ value next_token_after_spaces ctx bp =
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
   | "." ?= [ "\n" ] -> keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
+  | "." dotsymbolchar symbolchar_star ->
+      keyword_or_error ctx (bp, $pos) $buf
   | "." ->
       let id =
         if ctx.specific_space_dot && ctx.after_space then " ." else "."
