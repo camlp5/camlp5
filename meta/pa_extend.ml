@@ -261,8 +261,8 @@ module MetaAction =
           <:expr< MLast.ExRec $mloc$ $pel$ $moption mexpr eo$ >>
       | MLast.ExSeq loc el ->
           <:expr< MLast.ExSeq $mloc$ $mvala (mlist mexpr) el$ >>
-      | MLast.ExSte loc e1 e2 ->
-          <:expr< MLast.ExSte $mloc$ $mexpr e1$ $mexpr e2$ >>
+      | MLast.ExSte loc s e1 e2 ->
+          <:expr< MLast.ExSte $mvala mstring s$ $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExStr loc s ->
           <:expr< MLast.ExStr $mloc$ $mvala mstring_escaped s$ >>
       | MLast.ExTry loc e pwel ->

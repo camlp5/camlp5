@@ -3136,14 +3136,71 @@ value ( .%{} ) = Hashtbl.find;
 value ( .%{}<- ) = Hashtbl.add;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="dotop-array-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|x.(y)|foo} ;
+     official_input = OK {foo|x.(y)|foo} ;
+     r_input = OK {foo|x.(y);|foo} ;
+     o_output = OK {foo|let _ = x.(y);;
+|foo};
+     official_output = OK {foo|;;x.(y)|foo} ;
+     r_output = OK {foo|x.(y);
+|foo}
+    };
+    {name="dotop-array-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.(y) <- z|foo} ;
+     official_input = OK {foo|x.(y) <- z|foo} ;
+     r_input = OK {foo|x.(y) := z;|foo} ;
+     o_output = OK {foo|let _ = x.(y) <- z;;
+|foo};
+     official_output = OK {foo|;;x.(y) <- z|foo} ;
+     r_output = OK {foo|x.(y) := z;
+|foo}
+    };
+    {name="dotop-bigarray-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.{y}|foo} ;
+     official_input = OK {foo|x.{y}|foo} ;
+     r_input = OK {foo|x.{y};|foo} ;
+     o_output = OK {foo|let _ = x.{y};;
+|foo};
+     official_output = OK {foo|;;x.{y}|foo} ;
+     r_output = OK {foo|x.{y};
+|foo}
+    };
+    {name="dotop-bigarray-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.{y} <- z|foo} ;
+     official_input = OK {foo|x.{y} <- z|foo} ;
+     r_input = OK {foo|x.{y} := z;|foo} ;
+     o_output = OK {foo|let _ = x.{y} <- z;;
+|foo};
+     official_output = OK {foo|;;x.{y} <- z|foo} ;
+     r_output = OK {foo|x.{y} := z;
+|foo}
+    };
+    {name="dotop-string-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.[y]|foo} ;
+     official_input = OK {foo|x.[y]|foo} ;
+     r_input = OK {foo|x.[y];|foo} ;
+     o_output = OK {foo|let _ = x.[y];;
+|foo};
+     official_output = OK {foo|;;x.[y]|foo} ;
+     r_output = OK {foo|x.[y];
+|foo}
+    };
+    {name="dotop-string-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.[y] <- z|foo} ;
+     official_input = OK {foo|x.[y] <- z|foo} ;
+     r_input = OK {foo|x.[y] := z;|foo} ;
+     o_output = OK {foo|let _ = x.[y] <- z;;
+|foo};
+     official_output = OK {foo|;;x.[y] <- z|foo} ;
+     r_output = OK {foo|x.[y] := z;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
