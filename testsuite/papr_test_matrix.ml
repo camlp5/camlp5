@@ -3192,7 +3192,7 @@ value ( .%{}<- ) = Hashtbl.add;
 |foo}
     };
     {name="dotop-string-2"; implem = True ;
-     exclude=[];
+     exclude=["r2official"; "o2official"];
      o_input = OK {foo|x.[y] <- z|foo} ;
      official_input = OK {foo|x.[y] <- z|foo} ;
      r_input = OK {foo|x.[y] := z;|foo} ;
@@ -3201,6 +3201,12 @@ value ( .%{}<- ) = Hashtbl.add;
      official_output = OK {foo|;;x.[y] <- z|foo} ;
      r_output = OK {foo|x.[y] := z;
 |foo}
+    };
+    {(skip) with
+     name="dotop-string-2-[or]2official" ;
+     o_input = OK {foo|x.[y] <- z|foo} ;
+     r_input = OK {foo|x.[y] := z;|foo} ;
+     official_output = OK {foo|;;Bytes.set x y z|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

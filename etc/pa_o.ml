@@ -1188,6 +1188,13 @@ EXTEND
             failwith "internal error in original-syntax parser at dot-lparen"
           else
             <:expr< $e1$ .( $e2$ ) >>
+
+      | e1 = SELF; op = V dotop "dotop"; "("; e2 = SELF; ")" ->
+          if expr_last_is_uid e1 then
+            failwith "internal error in original-syntax parser at dot-lparen"
+          else
+            <:expr< $e1$ $_dotop:op$ ( $e2$ ) >>
+
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
 
       | e1 = SELF; "."; "{"; el = LIST1 expr LEVEL "+" SEP ","; "}" ->
