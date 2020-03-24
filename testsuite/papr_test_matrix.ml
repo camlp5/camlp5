@@ -3136,6 +3136,51 @@ value ( .%{} ) = Hashtbl.find;
 value ( .%{}<- ) = Hashtbl.add;
 |foo}
     };
+    {name="dotop-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|
+    let ( .%[;..] ) = Hashtbl.find
+    let ( .%[;..] <- ) = Hashtbl.add
+    let ( .%(;..) ) = Hashtbl.find
+    let ( .%(;..) <- ) = Hashtbl.add
+    let ( .%{;..} ) = Hashtbl.find
+    let ( .%{;..} <- ) = Hashtbl.add
+|foo} ;
+     official_input = OK {foo|
+    let ( .%[;..] ) = Hashtbl.find
+    let ( .%[;..] <- ) = Hashtbl.add
+    let ( .%(;..) ) = Hashtbl.find
+    let ( .%(;..) <- ) = Hashtbl.add
+    let ( .%{;..} ) = Hashtbl.find
+    let ( .%{;..} <- ) = Hashtbl.add
+|foo} ;
+     r_input = OK {foo|value ( .%[;..] ) = Hashtbl.find;
+value ( .%[;..]<- ) = Hashtbl.add;
+value ( .%(;..) ) = Hashtbl.find;
+value ( .%(;..)<- ) = Hashtbl.add;
+value ( .%{;..} ) = Hashtbl.find;
+value ( .%{;..}<- ) = Hashtbl.add;|foo} ;
+     o_output = OK {foo|let (.%[;..]) = Hashtbl.find;;
+let (.%[;..]<-) = Hashtbl.add;;
+let (.%(;..)) = Hashtbl.find;;
+let (.%(;..)<-) = Hashtbl.add;;
+let (.%{;..}) = Hashtbl.find;;
+let (.%{;..}<-) = Hashtbl.add;;
+|foo};
+     official_output = OK {foo|let (.%[;..]) = Hashtbl.find
+let (.%[;..]<-) = Hashtbl.add
+let (.%(;..)) = Hashtbl.find
+let (.%(;..)<-) = Hashtbl.add
+let (.%{;..}) = Hashtbl.find
+let (.%{;..}<-) = Hashtbl.add|foo} ;
+     r_output = OK {foo|value ( .%[;..] ) = Hashtbl.find;
+value ( .%[;..]<- ) = Hashtbl.add;
+value ( .%(;..) ) = Hashtbl.find;
+value ( .%(;..)<- ) = Hashtbl.add;
+value ( .%{;..} ) = Hashtbl.find;
+value ( .%{;..}<- ) = Hashtbl.add;
+|foo}
+    };
     {name="dotop-array-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.(y)|foo} ;
