@@ -2592,7 +2592,7 @@ Grammar.safe_extend
                 Grammar.s_self)
              (Grammar.s_token ("", "]")),
            (fun _ (e2 : 'expr) _ _ (e1 : 'expr) (loc : Ploc.t) ->
-              (MLast.ExSte (loc, ".", e1, e2) : 'expr)));
+              (MLast.ExSte (loc, ".", e1, [e2]) : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2605,7 +2605,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            (fun _ (e2 : 'expr) _ (op : 'dotop) (e1 : 'expr) (loc : Ploc.t) ->
               (if expr_last_is_uid e1 then MLast.ExAcc (loc, e1, e2)
-               else MLast.ExAre (loc, op, e1, e2) :
+               else MLast.ExAre (loc, op, e1, [e2]) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2619,7 +2619,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            (fun _ (e2 : 'expr) _ _ (e1 : 'expr) (loc : Ploc.t) ->
               (if expr_last_is_uid e1 then MLast.ExAcc (loc, e1, e2)
-               else MLast.ExAre (loc, ".", e1, e2) :
+               else MLast.ExAre (loc, ".", e1, [e2]) :
                'expr)));
         Grammar.production
           (Grammar.r_next

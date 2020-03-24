@@ -4659,7 +4659,9 @@ Grammar.safe_extend
                 Grammar.s_self)
              (Grammar.s_token ("", "]")),
            (fun _ (e2 : 'expr) _ (op : 'e__102) (e1 : 'expr) (loc : Ploc.t) ->
-              (Qast.Node ("ExSte", [Qast.Loc; op; e1; e2]) : 'expr)));
+              (Qast.Node
+                 ("ExSte", [Qast.Loc; op; e1; Qast.VaVal (Qast.List [e2])]) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4672,7 +4674,9 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            (fun _ (e2 : 'expr) _ _ (e1 : 'expr) (loc : Ploc.t) ->
               (Qast.Node
-                 ("ExSte", [Qast.Loc; Qast.VaVal (Qast.Str "."); e1; e2]) :
+                 ("ExSte",
+                  [Qast.Loc; Qast.VaVal (Qast.Str "."); e1;
+                   Qast.VaVal (Qast.List [e2])]) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -4705,7 +4709,9 @@ Grammar.safe_extend
                 Grammar.s_self)
              (Grammar.s_token ("", ")")),
            (fun _ (e2 : 'expr) _ (op : 'e__101) (e1 : 'expr) (loc : Ploc.t) ->
-              (Qast.Node ("ExAre", [Qast.Loc; op; e1; e2]) : 'expr)));
+              (Qast.Node
+                 ("ExAre", [Qast.Loc; op; e1; Qast.VaVal (Qast.List [e2])]) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4718,7 +4724,9 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            (fun _ (e2 : 'expr) _ _ (e1 : 'expr) (loc : Ploc.t) ->
               (Qast.Node
-                 ("ExAre", [Qast.Loc; Qast.VaVal (Qast.Str "."); e1; e2]) :
+                 ("ExAre",
+                  [Qast.Loc; Qast.VaVal (Qast.Str "."); e1;
+                   Qast.VaVal (Qast.List [e2])]) :
                'expr)))];
        Some "~-", Some Gramext.NonA,
        [Grammar.production

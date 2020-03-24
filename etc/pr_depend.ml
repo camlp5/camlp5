@@ -112,7 +112,7 @@ and expr =
   [ <:expr< $lid:s$ . $e2$ >> -> do { expr_module e2 }
   | <:expr< $e1$ . $e2$ >> -> do { expr_module e1; expr e2 }
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
-  | ExAre _ _ e1 e2 -> do { expr e1; expr e2 }
+  | ExAre _ _ e1 e2 -> do { expr e1; list expr (Pcaml.unvala e2) }
   | <:expr< [| $list:el$ |] >> -> list expr el
   | ExAsr _ e -> expr e
   | ExAss _ e1 e2 -> do { expr e1; expr e2 }
@@ -152,7 +152,7 @@ and expr =
     }
   | <:expr< do { $list:el$ } >> -> list expr el
   | ExSnd _ e _ -> expr e
-  | ExSte _ _ e1 e2 -> do { expr e1; expr e2 }
+  | ExSte _ _ e1 e2 -> do { expr e1; list expr (Pcaml.unvala e2) }
   | <:expr< $str:_$ >> -> ()
   | <:expr< try $e$ with [ $list:pwel$ ] >> -> do {
       expr e;

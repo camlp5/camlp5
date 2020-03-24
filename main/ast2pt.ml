@@ -892,18 +892,20 @@ and expr =
               | Some _ | None →
                   mkexp loc (ocaml_pexp_apply (expr f) al) ]
           | None → mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
-  | ExAre loc dotop e1 e2 →
-      if Pcaml.unvala dotop <> "." then
-        let dotop = Pcaml.unvala dotop in
-        let dotop = dotop ^ "()" in
-        expr <:expr< $lid:dotop$ $e1$ $e2$ >>
-      else
+  | ExAre loc dotop e1 e2l →
+      match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+        (".", [e2]) ->
           let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc
                   (ocaml_pexp_ident cloc (array_function "Array" "get")))
                [("", expr e1); ("", expr e2)])
+      | (".", e2l) -> assert False
+      | (dotop, [e2]) -> 
+        let dotop = dotop ^ "()" in
+        expr <:expr< $lid:dotop$ $e1$ $e2$ >>
+      | (dotop, e2l) -> assert False ]
   | ExArr loc el → mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v →
       match e with
@@ -917,35 +919,40 @@ and expr =
           match (expr e).pexp_desc with
           [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
           | _ → error loc "bad record access" ]
-      | ExAre _ dotop e1 e2 →
-          if Pcaml.unvala dotop <> "." then
-            let dotop = Pcaml.unvala dotop in
+      | ExAre _ dotop e1 e2l →
+          match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+            (".", [e2]) ->
+              let cloc = mkloc loc in
+              mkexp loc
+                (ocaml_pexp_apply
+                   (mkexp loc
+                      (ocaml_pexp_ident cloc (array_function "Array" "set")))
+                   [("", expr e1); ("", expr e2); ("", expr v)])
+          | (".", e2l) -> assert False
+          | (dotop, [e2]) ->
             let dotop = dotop ^ "()<-" in
             expr <:expr< $lid:dotop$ $e1$ $e2$ $v$ >>
-          else
-          let cloc = mkloc loc in
-          mkexp loc
-            (ocaml_pexp_apply
-               (mkexp loc
-                  (ocaml_pexp_ident cloc (array_function "Array" "set")))
-               [("", expr e1); ("", expr e2); ("", expr v)])
+          | (dotop, e2l) -> assert False ]
       | ExBae loc dotop e el →
           if Pcaml.unvala dotop <> "." then
             assert False
           else
             expr (bigarray_set loc e (uv el) v)
       | ExLid _ lab → mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
-      | ExSte _ dotop e1 e2 →
-          if Pcaml.unvala dotop <> "." then
-            assert False
-          else
-          let cloc = mkloc loc in
-          mkexp loc
-            (ocaml_pexp_apply
-               (mkexp loc
-                  (ocaml_pexp_ident cloc
-                     (array_function bytes_modname "set")))
-               [("", expr e1); ("", expr e2); ("", expr v)])
+      | ExSte _ dotop e1 e2l →
+          match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+            (".", [e2]) ->
+              let cloc = mkloc loc in
+              mkexp loc
+                (ocaml_pexp_apply
+                   (mkexp loc
+                      (ocaml_pexp_ident cloc
+                         (array_function bytes_modname "set")))
+                   [("", expr e1); ("", expr e2); ("", expr v)])
+          | (".", e2l) -> assert False
+          | (dotop, [e2]) -> assert False
+          | (dotop, e2l) -> assert False ]
+
       | _ → error loc "bad left part of assignment"
       ]
   | ExAsr loc <:expr< False >> →
@@ -1113,15 +1120,17 @@ and expr =
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
   | ExSnd loc e s → mkexp loc (ocaml_pexp_send (mkloc loc) (expr e) (uv s))
-  | ExSte loc dotop e1 e2 →
-      if Pcaml.unvala dotop <> "." then
-        assert False
-      else
-      let cloc = mkloc loc in
-      mkexp loc
-        (ocaml_pexp_apply
-           (mkexp loc (ocaml_pexp_ident cloc (array_function "String" "get")))
-           [("", expr e1); ("", expr e2)])
+  | ExSte loc dotop e1 e2l →
+      match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+        (".", [e2]) ->
+          let cloc = mkloc loc in
+          mkexp loc
+            (ocaml_pexp_apply
+               (mkexp loc (ocaml_pexp_ident cloc (array_function "String" "get")))
+               [("", expr e1); ("", expr e2)])
+      | (".", e2l) -> assert False
+      | (dotop, [e2]) -> assert False
+      | (dotop, e2l) -> assert False ]
   | ExStr loc s →
       mkexp loc
         (Pexp_constant

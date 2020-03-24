@@ -403,7 +403,7 @@ module MetaAction =
                       mvala mstring s),
                    mloc),
                 mexpr e1),
-             mexpr e2)
+             mvala (mlist mexpr) e2)
       | MLast.ExStr (loc, s) ->
           MLast.ExApp
             (loc,

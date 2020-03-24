@@ -247,7 +247,7 @@ and expr floc sh =
         ExApp loc (self x1) (self x2)
     | ExAre loc x1 x2 x3 →
         let loc = floc loc in
-        ExAre loc x1 (self x2) (self x3)
+        ExAre loc x1 (self x2) (vala_map (List.map self) x3)
     | ExArr loc x1 →
         let loc = floc loc in
         ExArr loc (vala_map (List.map self) x1)
@@ -352,7 +352,7 @@ and expr floc sh =
         ExSnd loc (self x1) x2
     | ExSte loc x1 x2 x3 →
         let loc = floc loc in
-        ExSte loc x1 (self x2) (self x3)
+        ExSte loc x1 (self x2) (vala_map (List.map self) x3)
     | ExStr loc x1 →
         let loc = floc loc in
         ExStr loc x1

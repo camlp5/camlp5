@@ -98,7 +98,7 @@ and expr =
   [ ExAcc of loc and expr and expr
   | ExAnt of loc and expr
   | ExApp of loc and expr and expr
-  | ExAre of loc and V string and expr and expr
+  | ExAre of loc and V string and expr and V (list expr)
   | ExArr of loc and V (list expr)
   | ExAsr of loc and expr
   | ExAss of loc and expr and expr
@@ -126,7 +126,7 @@ and expr =
   | ExRec of loc and V (list (patt * expr)) and option expr
   | ExSeq of loc and V (list expr)
   | ExSnd of loc and expr and V string
-  | ExSte of loc and V string and expr and expr
+  | ExSte of loc and V string and expr and V (list expr)
   | ExStr of loc and V string
   | ExTry of loc and expr and V (list (patt * V (option expr) * expr))
   | ExTup of loc and V (list expr)

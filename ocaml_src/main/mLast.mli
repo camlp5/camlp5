@@ -90,7 +90,7 @@ and expr =
     ExAcc of loc * expr * expr
   | ExAnt of loc * expr
   | ExApp of loc * expr * expr
-  | ExAre of loc * string * expr * expr
+  | ExAre of loc * string * expr * expr list
   | ExArr of loc * expr list
   | ExAsr of loc * expr
   | ExAss of loc * expr * expr
@@ -118,7 +118,7 @@ and expr =
   | ExRec of loc * (patt * expr) list * expr option
   | ExSeq of loc * expr list
   | ExSnd of loc * expr * string
-  | ExSte of loc * string * expr * expr
+  | ExSte of loc * string * expr * expr list
   | ExStr of loc * string
   | ExTry of loc * expr * (patt * expr option * expr) list
   | ExTup of loc * expr list

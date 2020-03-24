@@ -930,14 +930,14 @@ EXTEND
     | "." LEFTA
       [ 
         e1 = SELF; "."; "("; e2 = SELF; ")" →
-          Qast.Node "ExAre" [Qast.Loc; Qast.VaVal(Qast.Str "."); e1; e2]
+          Qast.Node "ExAre" [Qast.Loc; Qast.VaVal(Qast.Str "."); e1; Qast.VaVal (Qast.List [e2])]
       | e1 = SELF; op = SV dotop "dotop"; "("; e2 = SELF; ")" →
-          Qast.Node "ExAre" [Qast.Loc; op; e1; e2]
+          Qast.Node "ExAre" [Qast.Loc; op; e1; Qast.VaVal (Qast.List [e2])]
 
       | e1 = SELF; "."; "["; e2 = SELF; "]" →
-          Qast.Node "ExSte" [Qast.Loc; Qast.VaVal(Qast.Str "."); e1; e2]
+          Qast.Node "ExSte" [Qast.Loc; Qast.VaVal(Qast.Str "."); e1; Qast.VaVal (Qast.List [e2])]
       | e1 = SELF; op = SV dotop "dotop"; "["; e2 = SELF; "]" →
-          Qast.Node "ExSte" [Qast.Loc; op; e1; e2]
+          Qast.Node "ExSte" [Qast.Loc; op; e1; Qast.VaVal (Qast.List [e2])]
 
       | e = SELF; "."; "{"; el = SV (LIST1 expr SEP ","); "}" →
           Qast.Node "ExBae" [Qast.Loc; Qast.VaVal(Qast.Str "."); e; el]

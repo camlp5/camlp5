@@ -213,7 +213,7 @@ module Meta_make (C : MetaSig) =
       | ExAcc _ e1 e2 → C.node "ExAcc" [expr e1; expr e2]
       | ExAnt _ e → C.node "ExAnt" [expr e]
       | ExApp _ e1 e2 → C.node "ExApp" [expr e1; expr e2]
-      | ExAre _ s e1 e2 → C.node "ExAre" [C.vala C.string s; expr e1; expr e2]
+      | ExAre _ s e1 e2 → C.node "ExAre" [C.vala C.string s; expr e1; C.vala (C.list expr) e2]
       | ExArr _ le → C.node "ExArr" [C.vala (C.list expr) le]
       | ExAsr _ e → C.node "ExAsr" [expr e]
       | ExAss _ e1 e2 → C.node "ExAss" [expr e1; expr e2]
@@ -282,7 +282,7 @@ module Meta_make (C : MetaSig) =
              C.option expr oe]
       | ExSeq _ le → C.node "ExSeq" [C.vala (C.list expr) le]
       | ExSnd _ e s → C.node "ExSnd" [expr e; C.vala C.string s]
-      | ExSte _ s e1 e2 → C.node "ExSte" [C.vala C.string s; expr e1; expr e2]
+      | ExSte _ s e1 e2 → C.node "ExSte" [C.vala C.string s; expr e1; C.vala (C.list expr) e2]
       | ExStr _ s → C.node "ExStr" [C.vala C.string s]
       | ExTry _ e lpoee →
           C.node "ExTry"
