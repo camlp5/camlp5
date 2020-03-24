@@ -1440,9 +1440,19 @@ EXTEND_PRINTER
 
       | <:expr< $x$ .[ $y$ ] >> ->
           pprintf pc "%p@;<0 0>.[%p]" curr x expr_short y
+
+      | <:expr< $x$ $dotop:op$ [ $list:el$ ] >> ->
+          let el = List.map (fun e -> (e, ";")) el in
+          pprintf pc "%p@;<0 0>%s[%p]" curr x op (plist expr_short 0) el
+
       | <:expr< $e$ .{ $list:el$ } >> ->
           let el = List.map (fun e -> (e, ",")) el in
-          pprintf pc "%p.{%p}" curr e (plist expr_short 0) el ]
+          pprintf pc "%p.{%p}" curr e (plist expr_short 0) el
+
+      | <:expr< $x$ $dotop:op$ { $list:el$ } >> ->
+          let el = List.map (fun e -> (e, ";")) el in
+          pprintf pc "%p@;<0 0>%s{%p}" curr x op (plist expr_short 0) el
+      ]
     | "~."
       [ <:expr< $lid:op$ $x$ >> as z ->
         let in_ops x = is_prefixop x in

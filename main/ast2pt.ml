@@ -177,8 +177,8 @@ value rec longid_long_id =
   fun
   [ <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> ->
       Lapply (longid_long_id me1) (longid_long_id me2)
-  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (longid_long_id me1) (Pcaml.unvala uid)
-  | <:extended_longident< $_uid:s$ >> → Lident (Pcaml.unvala s)
+  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (longid_long_id me1) (uv uid)
+  | <:extended_longident< $_uid:s$ >> → Lident (uv s)
   ]
 ;
 
@@ -224,7 +224,7 @@ value rec ctyp_long_id =
 ;
 
 value module_type_long_id = fun [
-  <:module_type< $longid:li$ . $_lid:lid$ >> -> Ldot (longid_long_id li) (Pcaml.unvala lid)
+  <:module_type< $longid:li$ . $_lid:lid$ >> -> Ldot (longid_long_id li) (uv lid)
 | <:module_type< $longid:li$ >> -> longid_long_id li
 | _ -> failwith "module_type_long_id"
 ]
@@ -232,11 +232,11 @@ value module_type_long_id = fun [
 
 value class_type_long_id = fun [
   <:class_type< $longid:li$ . $_lid:lid$ >> ->
-    Ldot (longid_long_id li) (Pcaml.unvala lid)
+    Ldot (longid_long_id li) (uv lid)
 | <:class_type< $longid:li$ >> ->
     longid_long_id li
 | <:class_type< $_lid:lid$ >> ->
-    Lident (Pcaml.unvala lid)
+    Lident (uv lid)
 | _ -> failwith "class_type_long_id"
 ]
 ;
@@ -893,7 +893,7 @@ and expr =
                   mkexp loc (ocaml_pexp_apply (expr f) al) ]
           | None → mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
   | ExAre loc dotop e1 e2l →
-      match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+      match (uv dotop, uv e2l) with [
         (".", [e2]) ->
           let cloc = mkloc loc in
           mkexp loc
@@ -924,7 +924,7 @@ and expr =
           [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
           | _ → error loc "bad record access" ]
       | ExAre _ dotop e1 e2l →
-          match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+          match (uv dotop, uv e2l) with [
             (".", [e2]) ->
               let cloc = mkloc loc in
               mkexp loc
@@ -941,14 +941,20 @@ and expr =
             let aexp = <:expr< [| $list:e2l$ |] >> in
             expr <:expr< $lid:dotop$ $e1$ $aexp$ $v$ >>
           ]
-      | ExBae loc dotop e el →
-          if Pcaml.unvala dotop <> "." then
-            assert False
-          else
-            expr (bigarray_set loc e (uv el) v)
+      | ExBae loc dotop e1 el →
+          match (uv dotop, uv el) with [
+            (".", el) -> expr (bigarray_set loc e1 el v)
+          | (dotop, [e2]) ->
+            let dotop = dotop ^ "{}<-" in
+            expr <:expr< $lid:dotop$ $e1$ $e2$ $v$ >>
+          | (dotop, e2l) ->
+            let dotop = dotop ^ "{;..}<-" in
+            let aexp = <:expr< [| $list:e2l$ |] >> in
+            expr <:expr< $lid:dotop$ $e1$ $aexp$ $v$ >>
+          ]
       | ExLid _ lab → mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
       | ExSte _ dotop e1 e2l →
-          match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+          match (uv dotop, uv e2l) with [
             (".", [e2]) ->
               let cloc = mkloc loc in
               mkexp loc
@@ -958,8 +964,14 @@ and expr =
                          (array_function bytes_modname "set")))
                    [("", expr e1); ("", expr e2); ("", expr v)])
           | (".", e2l) -> assert False
-          | (dotop, [e2]) -> assert False
-          | (dotop, e2l) -> assert False ]
+          | (dotop, [e2]) ->
+            let dotop = dotop ^ "[]<-" in
+            expr <:expr< $lid:dotop$ $e1$ $e2$ $v$ >>
+          | (dotop, e2l) ->
+            let dotop = dotop ^ "[;..]<-" in
+            let aexp = <:expr< [| $list:e2l$ |] >> in
+            expr <:expr< $lid:dotop$ $e1$ $aexp$ $v$ >>
+          ]
 
       | _ → error loc "bad left part of assignment"
       ]
@@ -967,11 +979,17 @@ and expr =
       mkexp loc (ocaml_pexp_assertfalse glob_fname.val (mkloc loc))
   | ExAsr loc e →
       mkexp loc (ocaml_pexp_assert glob_fname.val (mkloc loc) (expr e))
-  | ExBae loc dotop e el →
-      if Pcaml.unvala dotop <> "." then
-        assert False
-      else
-        expr (bigarray_get loc e (uv el))
+  | ExBae loc dotop e1 el →
+      match (uv dotop, uv el) with [
+        (".", el) -> expr (bigarray_get loc e1 el)
+      | (dotop, [e2]) ->
+        let dotop = dotop ^ "{}" in
+        expr <:expr< $lid:dotop$ $e1$ $e2$ >>
+      | (dotop, e2l) ->
+        let dotop = dotop ^ "{;..}" in
+        let aexp = <:expr< [| $list:e2l$ |] >> in
+        expr <:expr< $lid:dotop$ $e1$ $aexp$ >>
+      ]
   | ExChr loc s →
       mkexp loc
         (Pexp_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
@@ -1129,7 +1147,7 @@ and expr =
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
   | ExSnd loc e s → mkexp loc (ocaml_pexp_send (mkloc loc) (expr e) (uv s))
   | ExSte loc dotop e1 e2l →
-      match (Pcaml.unvala dotop, Pcaml.unvala e2l) with [
+      match (uv dotop, uv e2l) with [
         (".", [e2]) ->
           let cloc = mkloc loc in
           mkexp loc
@@ -1137,8 +1155,14 @@ and expr =
                (mkexp loc (ocaml_pexp_ident cloc (array_function "String" "get")))
                [("", expr e1); ("", expr e2)])
       | (".", e2l) -> assert False
-      | (dotop, [e2]) -> assert False
-      | (dotop, e2l) -> assert False ]
+      | (dotop, [e2]) ->
+        let dotop = dotop ^ "[]" in
+        expr <:expr< $lid:dotop$ $e1$ $e2$ >>
+      | (dotop, e2l) ->
+        let dotop = dotop ^ "[;..]" in
+        let aexp = <:expr< [| $list:e2l$ |] >> in
+        expr <:expr< $lid:dotop$ $e1$ $aexp$ >>
+      ]
   | ExStr loc s →
       mkexp loc
         (Pexp_constant
