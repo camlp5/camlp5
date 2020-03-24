@@ -1077,7 +1077,16 @@ and expr =
           | _ -> error loc "bad record access"
           end
       | ExAre (_, dotop, e1, e2) ->
-          if Pcaml.unvala dotop <> "." then assert false
+          if Pcaml.unvala dotop <> "." then
+            let dotop = Pcaml.unvala dotop in
+            let dotop = dotop ^ "()<-" in
+            expr
+              (MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1),
+                     e2),
+                  v))
           else
             let cloc = mkloc loc in
             mkexp loc
