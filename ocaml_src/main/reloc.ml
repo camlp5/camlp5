@@ -172,16 +172,16 @@ and expr floc sh =
         expr new_floc sh x1
     | ExApp (loc, x1, x2) ->
         let loc = floc loc in ExApp (loc, self x1, self x2)
-    | ExAre (loc, x1, x2) ->
-        let loc = floc loc in ExAre (loc, self x1, self x2)
+    | ExAre (loc, x1, x2, x3) ->
+        let loc = floc loc in ExAre (loc, x1, self x2, self x3)
     | ExArr (loc, x1) ->
         let loc = floc loc in ExArr (loc, vala_map (List.map self) x1)
     | ExAsr (loc, x1) -> let loc = floc loc in ExAsr (loc, self x1)
     | ExAss (loc, x1, x2) ->
         let loc = floc loc in ExAss (loc, self x1, self x2)
-    | ExBae (loc, x1, x2) ->
+    | ExBae (loc, x1, x2, x3) ->
         let loc = floc loc in
-        ExBae (loc, self x1, vala_map (List.map self) x2)
+        ExBae (loc, x1, self x2, vala_map (List.map self) x3)
     | ExChr (loc, x1) -> let loc = floc loc in ExChr (loc, x1)
     | ExCoe (loc, x1, x2, x3) ->
         let loc = floc loc in
@@ -263,8 +263,8 @@ and expr floc sh =
     | ExSeq (loc, x1) ->
         let loc = floc loc in ExSeq (loc, vala_map (List.map self) x1)
     | ExSnd (loc, x1, x2) -> let loc = floc loc in ExSnd (loc, self x1, x2)
-    | ExSte (loc, x1, x2) ->
-        let loc = floc loc in ExSte (loc, self x1, self x2)
+    | ExSte (loc, x1, x2, x3) ->
+        let loc = floc loc in ExSte (loc, x1, self x2, self x3)
     | ExStr (loc, x1) -> let loc = floc loc in ExStr (loc, x1)
     | ExTry (loc, x1, x2) ->
         let loc = floc loc in

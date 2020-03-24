@@ -71,8 +71,12 @@ let expr_first_is_id e =
 let expr_left_assoc_acc e =
   let rec arec =
     function
-      MLast.ExAre (loc, e1, MLast.ExAcc (_, e2, e3)) ->
-        arec (MLast.ExAcc (loc, MLast.ExAcc (loc, e1, e2), e3))
+      MLast.ExAcc (loc, e1, e2) ->
+        begin match e2 with
+          MLast.ExAcc (_, e2, e3) ->
+            arec (MLast.ExAcc (loc, MLast.ExAcc (loc, e1, e2), e3))
+        | _ -> e
+        end
     | e -> e
   in
   arec e

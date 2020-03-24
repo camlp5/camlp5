@@ -901,8 +901,10 @@ and expr =
               | Some _ | None →
                   mkexp loc (ocaml_pexp_apply (expr f) al) ]
           | None → mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
-  | ExAre loc (Ploc.VaVal ".") e1 e2 →
-      if is_module_path e1 then
+  | ExAre loc dotop e1 e2 →
+      if Pcaml.unvala dotop <> "." then
+        assert False
+      else if is_module_path e1 then
           match ocaml_pexp_open with
           [ Some pexp_open →
               let li = expr_long_id e1 in
@@ -915,7 +917,6 @@ and expr =
                (mkexp loc
                   (ocaml_pexp_ident cloc (array_function "Array" "get")))
                [("", expr e1); ("", expr e2)])
-  | ExAre loc _ e1 e2 → assert False
   | ExArr loc el → mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v →
       match e with
@@ -929,18 +930,26 @@ and expr =
           match (expr e).pexp_desc with
           [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
           | _ → error loc "bad record access" ]
-      | ExAre _ (Ploc.VaVal ".") e1 e2 →
+      | ExAre _ dotop e1 e2 →
+          if Pcaml.unvala dotop <> "." then
+            assert False
+          else
           let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc
                   (ocaml_pexp_ident cloc (array_function "Array" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
-      | ExAre _ _ e1 e2 → assert False
-      | ExBae loc (Ploc.VaVal ".") e el → expr (bigarray_set loc e (uv el) v)
-      | ExBae loc _ e el → assert False
+      | ExBae loc dotop e el →
+          if Pcaml.unvala dotop <> "." then
+            assert False
+          else
+            expr (bigarray_set loc e (uv el) v)
       | ExLid _ lab → mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
-      | ExSte _ (Ploc.VaVal ".") e1 e2 →
+      | ExSte _ dotop e1 e2 →
+          if Pcaml.unvala dotop <> "." then
+            assert False
+          else
           let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
@@ -948,15 +957,17 @@ and expr =
                   (ocaml_pexp_ident cloc
                      (array_function bytes_modname "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
-      | ExSte _ _ e1 e2 → assert False
       | _ → error loc "bad left part of assignment"
       ]
   | ExAsr loc <:expr< False >> →
       mkexp loc (ocaml_pexp_assertfalse glob_fname.val (mkloc loc))
   | ExAsr loc e →
       mkexp loc (ocaml_pexp_assert glob_fname.val (mkloc loc) (expr e))
-  | ExBae loc (Ploc.VaVal ".") e el → expr (bigarray_get loc e (uv el))
-  | ExBae loc _ e el → assert False
+  | ExBae loc dotop e el →
+      if Pcaml.unvala dotop <> "." then
+        assert False
+      else
+        expr (bigarray_get loc e (uv el))
   | ExChr loc s →
       mkexp loc
         (Pexp_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
@@ -1113,13 +1124,15 @@ and expr =
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
   | ExSnd loc e s → mkexp loc (ocaml_pexp_send (mkloc loc) (expr e) (uv s))
-  | ExSte loc (Ploc.VaVal ".") e1 e2 →
+  | ExSte loc dotop e1 e2 →
+      if Pcaml.unvala dotop <> "." then
+        assert False
+      else
       let cloc = mkloc loc in
       mkexp loc
         (ocaml_pexp_apply
            (mkexp loc (ocaml_pexp_ident cloc (array_function "String" "get")))
            [("", expr e1); ("", expr e2)])
-  | ExSte loc _ e1 e2 → assert False
   | ExStr loc s →
       mkexp loc
         (Pexp_constant
