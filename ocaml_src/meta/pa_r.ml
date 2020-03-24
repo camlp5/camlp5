@@ -138,7 +138,7 @@ let operator_rparen_f strm =
   let app suff s = s ^ suff in
   let trials =
     [2, is_operator, id, [["", ")"]]; 2, is_letop, id, [["", ")"]];
-     2, is_andop, id, [["", ")"]]; 3, is_dotop, id, [["", ")"]];
+     2, is_andop, id, [["", ")"]];
      4, is_dotop, app "()", [["", "("; "", ")"; "", ")"]];
      4, is_dotop, app "{}", [["", "{"; "", "}"; "", ")"]];
      4, is_dotop, app "[]", [["", "["; "", "]"; "", ")"]];
