@@ -3035,7 +3035,6 @@ type nat _ =
   | ( :: ) of α and β and t α β ];
 |foo}
     };
-(*
     {name="exotic-list-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|let Inner.(::)(x,y, Inner.[]) = Inner.(::)(1,"one",Inner.[])|foo} ;
@@ -3047,13 +3046,21 @@ type nat _ =
      r_output = OK {foo||foo}
     };
     {name="exotic-list-3"; implem = True ;
-     exclude=[];
+     exclude=["o2official";"r2official"];
      o_input = OK {foo|let x = M.[ ]|foo} ;
      official_input = OK {foo|let x = M.[ ]|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
+     r_input = OK {foo|value x = M.[];|foo} ;
+     o_output = OK {foo|let x = M.[];;
+|foo};
      official_output = OK {foo|let x = let open M in []|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|value x = M.[];
+|foo}
+    };
+    {(skip) with
+     name="exotic-list-3-[or]2official";
+     o_input = OK {foo|let x = M.[ ]|foo} ;
+     r_input = OK {foo|value x = M.[];|foo} ;
+     official_output = OK {foo|let x = M.[]|foo}
     };
     {name="exotic-list-4"; implem = True ;
      exclude=[];
@@ -3063,10 +3070,9 @@ type nat _ =
      o_output = OK {foo|let x = M.N.(::);;
 |foo};
      official_output = OK {foo|let x = M.N.(::)|foo} ;
-     r_output = OK {foo|value x = let open M.N in ( :: );
+     r_output = OK {foo|value x = M.N.( :: );
 |foo}
     };
-*)
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
