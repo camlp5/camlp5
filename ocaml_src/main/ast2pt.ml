@@ -194,8 +194,8 @@ let rec longid_long_id =
   function
     MLast.LiApp (_, me1, me2) ->
       Lapply (longid_long_id me1, longid_long_id me2)
-  | MLast.LiAcc (_, me1, uid) -> Ldot (longid_long_id me1, Pcaml.unvala uid)
-  | MLast.LiUid (_, s) -> Lident (Pcaml.unvala s)
+  | MLast.LiAcc (_, me1, uid) -> Ldot (longid_long_id me1, uv uid)
+  | MLast.LiUid (_, s) -> Lident (uv s)
 ;;
 
 let rec ctyp_fa al =
@@ -239,16 +239,16 @@ let rec ctyp_long_id =
 
 let module_type_long_id =
   function
-    MLast.MtLongLid (_, li, lid) -> Ldot (longid_long_id li, Pcaml.unvala lid)
+    MLast.MtLongLid (_, li, lid) -> Ldot (longid_long_id li, uv lid)
   | MLast.MtLong (_, li) -> longid_long_id li
   | _ -> failwith "module_type_long_id"
 ;;
 
 let class_type_long_id =
   function
-    MLast.CtLongLid (_, li, lid) -> Ldot (longid_long_id li, Pcaml.unvala lid)
+    MLast.CtLongLid (_, li, lid) -> Ldot (longid_long_id li, uv lid)
   | MLast.CtLong (_, li) -> longid_long_id li
-  | MLast.CtLid (_, lid) -> Lident (Pcaml.unvala lid)
+  | MLast.CtLid (_, lid) -> Lident (uv lid)
   | _ -> failwith "class_type_long_id"
 ;;
 
@@ -1049,7 +1049,7 @@ and expr =
           | None -> mkexp loc (ocaml_pexp_apply (expr f) al)
       end
   | ExAre (loc, dotop, e1, e2l) ->
-      begin match Pcaml.unvala dotop, Pcaml.unvala e2l with
+      begin match uv dotop, uv e2l with
         ".", [e2] ->
           let cloc = mkloc loc in
           mkexp loc
@@ -1085,7 +1085,7 @@ and expr =
           | _ -> error loc "bad record access"
           end
       | ExAre (_, dotop, e1, e2l) ->
-          begin match Pcaml.unvala dotop, Pcaml.unvala e2l with
+          begin match uv dotop, uv e2l with
             ".", [e2] ->
               let cloc = mkloc loc in
               mkexp loc
@@ -1114,12 +1114,32 @@ and expr =
                        aexp),
                     v))
           end
-      | ExBae (loc, dotop, e, el) ->
-          if Pcaml.unvala dotop <> "." then assert false
-          else expr (bigarray_set loc e (uv el) v)
+      | ExBae (loc, dotop, e1, el) ->
+          begin match uv dotop, uv el with
+            ".", el -> expr (bigarray_set loc e1 el v)
+          | dotop, [e2] ->
+              let dotop = dotop ^ "{}<-" in
+              expr
+                (MLast.ExApp
+                   (loc,
+                    MLast.ExApp
+                      (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1),
+                       e2),
+                    v))
+          | dotop, e2l ->
+              let dotop = dotop ^ "{;..}<-" in
+              let aexp = MLast.ExArr (loc, e2l) in
+              expr
+                (MLast.ExApp
+                   (loc,
+                    MLast.ExApp
+                      (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1),
+                       aexp),
+                    v))
+          end
       | ExLid (_, lab) -> mkexp loc (ocaml_pexp_setinstvar (uv lab) (expr v))
       | ExSte (_, dotop, e1, e2l) ->
-          begin match Pcaml.unvala dotop, Pcaml.unvala e2l with
+          begin match uv dotop, uv e2l with
             ".", [e2] ->
               let cloc = mkloc loc in
               mkexp loc
@@ -1129,8 +1149,25 @@ and expr =
                          (array_function bytes_modname "set")))
                    ["", expr e1; "", expr e2; "", expr v])
           | ".", e2l -> assert false
-          | dotop, [e2] -> assert false
-          | dotop, e2l -> assert false
+          | dotop, [e2] ->
+              let dotop = dotop ^ "[]<-" in
+              expr
+                (MLast.ExApp
+                   (loc,
+                    MLast.ExApp
+                      (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1),
+                       e2),
+                    v))
+          | dotop, e2l ->
+              let dotop = dotop ^ "[;..]<-" in
+              let aexp = MLast.ExArr (loc, e2l) in
+              expr
+                (MLast.ExApp
+                   (loc,
+                    MLast.ExApp
+                      (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1),
+                       aexp),
+                    v))
           end
       | _ -> error loc "bad left part of assignment"
       end
@@ -1138,9 +1175,21 @@ and expr =
       mkexp loc (ocaml_pexp_assertfalse !glob_fname (mkloc loc))
   | ExAsr (loc, e) ->
       mkexp loc (ocaml_pexp_assert !glob_fname (mkloc loc) (expr e))
-  | ExBae (loc, dotop, e, el) ->
-      if Pcaml.unvala dotop <> "." then assert false
-      else expr (bigarray_get loc e (uv el))
+  | ExBae (loc, dotop, e1, el) ->
+      begin match uv dotop, uv el with
+        ".", el -> expr (bigarray_get loc e1 el)
+      | dotop, [e2] ->
+          let dotop = dotop ^ "{}" in
+          expr
+            (MLast.ExApp
+               (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1), e2))
+      | dotop, e2l ->
+          let dotop = dotop ^ "{;..}" in
+          let aexp = MLast.ExArr (loc, e2l) in
+          expr
+            (MLast.ExApp
+               (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1), aexp))
+      end
   | ExChr (loc, s) ->
       mkexp loc
         (Pexp_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
@@ -1313,7 +1362,7 @@ and expr =
   | ExSnd (loc, e, s) ->
       mkexp loc (ocaml_pexp_send (mkloc loc) (expr e) (uv s))
   | ExSte (loc, dotop, e1, e2l) ->
-      begin match Pcaml.unvala dotop, Pcaml.unvala e2l with
+      begin match uv dotop, uv e2l with
         ".", [e2] ->
           let cloc = mkloc loc in
           mkexp loc
@@ -1322,8 +1371,17 @@ and expr =
                   (ocaml_pexp_ident cloc (array_function "String" "get")))
                ["", expr e1; "", expr e2])
       | ".", e2l -> assert false
-      | dotop, [e2] -> assert false
-      | dotop, e2l -> assert false
+      | dotop, [e2] ->
+          let dotop = dotop ^ "[]" in
+          expr
+            (MLast.ExApp
+               (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1), e2))
+      | dotop, e2l ->
+          let dotop = dotop ^ "[;..]" in
+          let aexp = MLast.ExArr (loc, e2l) in
+          expr
+            (MLast.ExApp
+               (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1), aexp))
       end
   | ExStr (loc, s) ->
       mkexp loc
