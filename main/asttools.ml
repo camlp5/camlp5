@@ -69,8 +69,10 @@ value expr_first_is_id e =
 
 value expr_left_assoc_acc e =
   let rec arec = fun [
-    <:expr:< $e1$ . ( $e2$  . $e3$ ) >> ->
-      arec <:expr< ( $e1$ . $e2$ ) . $e3$ >>
+    <:expr:< $e1$ . $e2$ >> ->
+      match e2 with [
+        <:expr< $e2$  . $e3$ >> -> arec <:expr< ( $e1$ . $e2$ ) . $e3$ >>
+      | _ -> e ]
   | e -> e
   ] in arec e
 ;
