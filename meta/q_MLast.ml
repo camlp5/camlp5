@@ -7,6 +7,8 @@
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
 
+open Mlsyntax.Original ;
+
 value gram = Grammar.gcreate (Plexer.gmake ());
 
 value antiquot k loc s f =
@@ -390,6 +392,12 @@ value check_dot_uid_f strm =
 value check_dot_uid =
   Grammar.Entry.of_parser gram "check_dot_uid"
     check_dot_uid_f
+;
+
+value dotop =
+  Grammar.Entry.of_parser gram "dotop"
+    (parser
+       [: `("", x) when is_dotop x :] -> Qast.Str x)
 ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -922,6 +930,8 @@ EXTEND
     | "." LEFTA
       [ e1 = SELF; "."; "("; e2 = SELF; ")" →
           Qast.Node "ExAre" [Qast.Loc; Qast.VaVal(Qast.Str "."); e1; e2]
+      | e1 = SELF; op = SV dotop "dotop"; "("; e2 = SELF; ")" →
+          Qast.Node "ExAre" [Qast.Loc; op; e1; e2]
       | e1 = SELF; "."; "["; e2 = SELF; "]" →
           Qast.Node "ExSte" [Qast.Loc; Qast.VaVal(Qast.Str "."); e1; e2]
       | e = SELF; "."; "{"; el = SV (LIST1 expr SEP ","); "}" →

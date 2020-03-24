@@ -103,7 +103,6 @@ value operator_rparen_f strm =
     (2, is_operator, id, [[("",")")]]);
     (2, is_letop, id, [[("",")")]]);
     (2, is_andop, id, [[("",")")]]);
-    (3, is_dotop, id, [[("",")")]]);
     (4, is_dotop, app "()", [[("","("); ("",")"); ("",")")]]);
     (4, is_dotop, app "{}", [[("","{"); ("","}"); ("",")")]]);
     (4, is_dotop, app "[]", [[("","["); ("","]"); ("",")")]]);
@@ -192,6 +191,12 @@ value andop =
   Grammar.Entry.of_parser gram "andop"
     (parser
        [: `("", x) when is_andop x :] -> x)
+;
+
+value dotop =
+  Grammar.Entry.of_parser gram "dotop"
+    (parser
+       [: `("", x) when is_dotop x :] -> x)
 ;
 
 value test_constr_decl =
