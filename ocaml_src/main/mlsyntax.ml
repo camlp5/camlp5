@@ -136,6 +136,9 @@ module Original =
       String.length s >= 2 && String.get s 0 = '.' &&
       dotsymbolchar 1 ~lim:2 s && symbolchar 2 s
     ;;
+    let is_special_op s =
+      is_operator s || is_letop s || is_andop s || is_dotop s
+    ;;
   end
 ;;
 
@@ -159,6 +162,13 @@ module Revised =
       (match op.[0] with
          '!' | '?' | '~' -> false
        | _ -> true)
+    ;;
+    let is_dotop s =
+      String.length s >= 2 && String.get s 0 = '.' &&
+      dotsymbolchar 1 ~lim:2 s && symbolchar 2 s
+    ;;
+    let is_special_op s =
+      is_operator s || is_letop s || is_andop s || is_dotop s
     ;;
   end
 ;;
