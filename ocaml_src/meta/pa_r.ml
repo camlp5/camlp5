@@ -2569,7 +2569,9 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (operator_rparen : 'operator_rparen Grammar.Entry.e)),
            (fun (op : 'operator_rparen) _ _ (e1 : 'expr) (loc : Ploc.t) ->
-              (MLast.ExAcc (loc, e1, MLast.ExLid (loc, op)) : 'expr)))];
+              (if op = "::" then MLast.ExAcc (loc, e1, MLast.ExUid (loc, op))
+               else MLast.ExAcc (loc, e1, MLast.ExLid (loc, op)) :
+               'expr)))];
        Some "~-", Some Gramext.NonA,
        [Grammar.production
           (Grammar.r_next
@@ -2642,7 +2644,9 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (operator_rparen : 'operator_rparen Grammar.Entry.e)),
            (fun (op : 'operator_rparen) _ (loc : Ploc.t) ->
-              (MLast.ExLid (loc, op) : 'expr)));
+              (if op = "::" then MLast.ExUid (loc, op)
+               else MLast.ExLid (loc, op) :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2903,8 +2907,12 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (operator_rparen : 'operator_rparen Grammar.Entry.e)),
            (fun (op : 'operator_rparen) _ _ (i : string) (loc : Ploc.t) ->
-              (MLast.ExAcc
-                 (loc, MLast.ExUid (loc, i), MLast.ExLid (loc, op)) :
+              (if op = "::" then
+                 MLast.ExAcc
+                   (loc, MLast.ExUid (loc, i), MLast.ExUid (loc, op))
+               else
+                 MLast.ExAcc
+                   (loc, MLast.ExUid (loc, i), MLast.ExLid (loc, op)) :
                'expr_uident)));
         Grammar.production
           (Grammar.r_next
@@ -3226,7 +3234,9 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (operator_rparen : 'operator_rparen Grammar.Entry.e)),
            (fun (op : 'operator_rparen) _ (loc : Ploc.t) ->
-              (MLast.PaLid (loc, op) : 'patt)));
+              (if op = "::" then MLast.PaUid (loc, op)
+               else MLast.PaLid (loc, op) :
+               'patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3522,7 +3532,9 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (operator_rparen : 'operator_rparen Grammar.Entry.e)),
            (fun (op : 'operator_rparen) _ (loc : Ploc.t) ->
-              (MLast.PaLid (loc, op) : 'ipatt)))]];
+              (if op = "::" then MLast.PaUid (loc, op)
+               else MLast.PaLid (loc, op) :
+               'ipatt)))]];
     Grammar.extension (paren_ipatt : 'paren_ipatt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
