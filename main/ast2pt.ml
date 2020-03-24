@@ -397,15 +397,6 @@ value label_of_patt =
   | p → error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
 ;
 
-value is_module_path e0 =
-  let rec isrec = fun [
-    <:expr< $uid:_$ >> -> True
-  | <:expr< $e1$ . $e2$ >> -> isrec e1 && isrec e2
-  | _ -> False
-  ]
-  in isrec e0
-;
-
 value rec type_decl_of_with_type loc tn tpl pf ct =
   let (params, var_list) = List.split (uv tpl) in
   let variance = List.map variance_of_var var_list in
@@ -903,13 +894,9 @@ and expr =
           | None → mkexp loc (ocaml_pexp_apply (expr f) al) ] ]
   | ExAre loc dotop e1 e2 →
       if Pcaml.unvala dotop <> "." then
-        assert False
-      else if is_module_path e1 then
-          match ocaml_pexp_open with
-          [ Some pexp_open →
-              let li = expr_long_id e1 in
-              mkexp loc (pexp_open li (expr e2))
-          | None → error loc "no expression open in this ocaml version" ]
+        let dotop = Pcaml.unvala dotop in
+        let dotop = dotop ^ "()" in
+        expr <:expr< $lid:dotop$ $e1$ $e2$ >>
       else
           let cloc = mkloc loc in
           mkexp loc

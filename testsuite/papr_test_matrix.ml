@@ -3158,6 +3158,17 @@ value ( .%{}<- ) = Hashtbl.add;
      r_output = OK {foo|x.(y) := z;
 |foo}
     };
+    {name="dotop-array-ext-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x.%(y)|foo} ;
+     official_input = OK {foo|x.%(y)|foo} ;
+     r_input = OK {foo|x.%(y);|foo} ;
+     o_output = OK {foo|let _ = x.%(y);;
+|foo};
+     official_output = OK {foo|;;x.%(y)|foo} ;
+     r_output = OK {foo|x.%(y);
+|foo}
+    };
     {name="dotop-bigarray-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x.{y}|foo} ;

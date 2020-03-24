@@ -1433,6 +1433,8 @@ EXTEND_PRINTER
 
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p@;<0 0>.(%p)" curr x expr_short y
+      | <:expr< $x$ $dotop:op$ ( $y$ ) >> ->
+          pprintf pc "%p@;<0 0>%s(%p)" curr x op expr_short y
       | <:expr< $x$ .[ $y$ ] >> ->
           pprintf pc "%p@;<0 0>.[%p]" curr x expr_short y
       | <:expr< $e$ .{ $list:el$ } >> ->

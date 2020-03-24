@@ -223,6 +223,12 @@ value andop =
        [: `("", x) when is_andop x :] -> x)
 ;
 
+value dotop =
+  Grammar.Entry.of_parser gram "dotop"
+    (parser
+       [: `("", x) when is_dotop x :] -> x)
+;
+
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
 value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
@@ -817,6 +823,11 @@ EXTEND
             <:expr< $e1$ . $e2$ >>
           else
             <:expr< $e1$ .( $e2$ ) >>
+      | e1 = SELF; op = V dotop "dotop"; "("; e2 = SELF; ")" →
+          if expr_last_is_uid e1 then
+            <:expr< $e1$ . $e2$ >>
+          else
+            <:expr< $e1$ $_dotop:op$ ( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" → <:expr< $e1$ .[ $e2$ ] >>
 
       | e1 = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →
