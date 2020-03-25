@@ -427,6 +427,8 @@ let ocaml_value_binding ?(item_attributes = []) loc p e =
   {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
 ;;
 
+let ocaml_ppat_open loc li p = assert false;;
+
 let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
