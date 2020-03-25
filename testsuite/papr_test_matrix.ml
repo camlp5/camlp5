@@ -2324,10 +2324,10 @@ and t2 = bool[@@foo];
      o_input = OK {foo|module type S = (module type of[@foo2] M)|foo} ;
      official_input = OK {foo|module type S = (module type of[@foo2] M)|foo} ;
      r_input = OK {foo|module type S = (module type of M)[@foo2];|foo} ;
-     o_output = OK {foo|module type S = (module type of M)[@foo2];;
+     o_output = OK {foo|module type S = ((module type of M)[@foo2]);;
 |foo};
      official_output = OK {foo|module type S  = ((module type of M)[@foo2 ])|foo} ;
-     r_output = OK {foo|module type S = (module type of M)[@foo2];
+     r_output = OK {foo|module type S = ((module type of M)[@foo2]);
 |foo}
     };
     {name="inline-attributes-5"; implem = True ;
@@ -2345,15 +2345,15 @@ and t2 = bool[@@foo];
     ((module type of M)[@foo2]) -> sig  end[@foo3])[@foo1];
 |foo} ;
      o_output = OK {foo|module type S =
-  (functor (M : S) ->
-    functor (_ : (module type of M)[@foo2]) -> sig  end[@foo3])[@foo1];;
+  ((functor (M : S) ->
+    functor (_ : (module type of M)[@foo2]) -> sig  end[@foo3])[@foo1]);;
 |foo};
      official_output = OK {foo|module type S  =
   ((functor (M : S) -> ((module type of M)[@foo2 ]) -> ((sig  end)[@foo3 ]))
   [@foo1 ])|foo} ;
      r_output = OK {foo|module type S =
-  (functor (M : S) →
-    functor (_ : (module type of M)[@foo2]) → sig  end[@foo3])[@foo1];
+  ((functor (M : S) →
+    functor (_ : (module type of M)[@foo2]) → sig  end[@foo3])[@foo1]);
 |foo}
     };
     {name="inline-extensions21"; implem = True ;
@@ -3439,6 +3439,74 @@ value ( .%{;..}<- ) = Hashtbl.add;
      o_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
      r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];|foo} ;
      official_output = OK {foo|let [%foo :[ `Foo ]] = ([%foo :< foo: t   > ] : [%foo :t -> t])|foo}
+    };
+    {name="module-type-with-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type S = sig
+  module rec A : (S with type t = t)
+  and B : (S with type t = t)
+end
+|foo} ;
+     official_input = OK {foo|module type S = sig
+  module rec A : (S with type t = t)
+  and B : (S with type t = t)
+end
+|foo} ;
+     r_input = OK {foo|module type S =
+  sig
+    module rec A : (S with type t = t)
+    and B : (S with type t = t);
+  end;|foo} ;
+     o_output = OK {foo|module type S =
+  sig
+    module rec A : (S with type t = t)
+    and B : (S with type t = t)
+  end;;
+|foo};
+     official_output = OK {foo|module type S  =
+  sig module rec A: (S with type  t =  t) and B: (S with type  t =  t) end|foo} ;
+     r_output = OK {foo|module type S =
+  sig
+    module rec A : (S with type t = t)
+    and B : (S with type t = t);
+  end;
+|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

@@ -261,6 +261,7 @@ value sig_item = Eprinter.apply pr_sig_item;
 value longident = Eprinter.apply pr_longident;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
+value module_type_level_sig = Eprinter.apply_level pr_module_type "sig";
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 value attribute_body = Eprinter.apply pr_attribute_body;
 value pr_attribute atstring pc attr =
@@ -1204,11 +1205,11 @@ value sig_module_or_module_type pref defc pc ((m : option string), mt, item_attr
   let mal = List.map (fun ma -> (ma, "")) mal in
   if pc.aft = "" then
     pprintf pc "%s %s%p %c@;%p%p" pref m (plistb module_arg 2) mal defc
-      module_type mt
+      module_type_level_sig mt
       (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
   else
     pprintf pc "@[<a>%s %s%p %c@;%p%p@;<0 0>@]" pref m (plistb module_arg 2) mal
-      defc module_type mt
+      defc module_type_level_sig mt
       (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
 ;
 
@@ -2096,8 +2097,11 @@ EXTEND_PRINTER
       [ <:module_type< $ct$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr ct attribute_body attr
       ]
+    | "with" [ <:module_type< $mt$ with $list:wcl$ >> ->
+        pprintf pc "%p with@;%p" module_type mt
+          (vlist2 with_constraint (and_before with_constraint)) wcl ]
 
-    | [ <:module_type< sig $list:sil$ end >> ->
+    | "sig" [ <:module_type< sig $list:sil$ end >> ->
          (* Heuristic : I don't like to print sigs horizontally
             when alone in a line. *)
           horiz_vertic_if (alone_in_line pc)
@@ -2105,10 +2109,7 @@ EXTEND_PRINTER
                pprintf pc "sig %p end" (hlist (semi_after sig_item)) sil)
             (fun () ->
                pprintf pc "@[<b>sig@;%p@ end@]"
-                 (vlist (semi_after sig_item)) sil)
-      | <:module_type< $mt$ with $list:wcl$ >> ->
-          pprintf pc "%p with@;%p" module_type mt
-            (vlist2 with_constraint (and_before with_constraint)) wcl ]
+                 (vlist (semi_after sig_item)) sil) ]
     | "dot"
       [ <:module_type< $longid:li$ . $lid:s$ >> ->
           pprintf pc "%p.%s" longident li s
@@ -2125,6 +2126,8 @@ EXTEND_PRINTER
     | "bottom"
       [ <:module_type< functor $fp:_$ -> $_$ >>
       | <:module_type< module type of $_$ >>
+      | <:module_type< $_$ [@ $attribute:_$] >>
+      | <:module_type< $_$ with $list:_$ >>
         as z -> pprintf pc "(%p)" module_type z
       | z ->
           Ploc.raise (MLast.loc_of_module_type z)
