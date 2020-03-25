@@ -172,18 +172,67 @@ let operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen" operator_rparen_f
 ;;
 
+let check_not_part_of_patt_f strm =
+  let tok =
+    match stream_npeek 9 strm with
+      ("LIDENT", _) :: tok :: _ -> tok
+    | ("", "(") :: ("", s) :: ("", ")") :: tok :: _ when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
+      ("", ")") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
+      ("", "}") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
+      ("", "]") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", "<-") ::
+      ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", "<-") ::
+      ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", "<-") ::
+      ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
+      ("", ")") :: ("", "<-") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
+      ("", "}") :: ("", "<-") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
+      ("", "]") :: ("", "<-") :: ("", ")") :: tok :: _
+      when is_special_op s ->
+        tok
+    | _ -> raise Stream.Failure
+  in
+  match tok with
+    "", ("," | "as" | "|" | "::") -> raise Stream.Failure
+  | _ -> ()
+;;
+
 let check_not_part_of_patt =
   Grammar.Entry.of_parser gram "check_not_part_of_patt"
-    (fun strm ->
-       let tok =
-         match Stream.npeek 4 strm with
-           ("LIDENT", _) :: tok :: _ -> tok
-         | ["", "("; "", s; "", ")"; tok] when is_special_op s -> tok
-         | _ -> raise Stream.Failure
-       in
-       match tok with
-         "", ("," | "as" | "|" | "::") -> raise Stream.Failure
-       | _ -> ())
+    check_not_part_of_patt_f
 ;;
 
 let prefixop =

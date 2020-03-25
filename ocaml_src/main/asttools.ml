@@ -4,6 +4,8 @@
 
 (* #load "q_MLast.cmo" *)
 
+let stream_npeek n s : (string * string) list = Stream.npeek n s;;
+
 let longid_concat li1 li2 =
   let rec crec =
     function
