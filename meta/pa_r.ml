@@ -1178,8 +1178,10 @@ EXTEND
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" → mktuptyp loc t tl
       | "("; t = SELF; ")" → <:ctyp< $t$ >>
       | "("; tl = V (LIST1 ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>
-      | "["; cdl = V (LIST0 constructor_declaration SEP "|"); "]" →
+      | "["; cdl = V (LIST1 constructor_declaration SEP "|"); "]" →
           <:ctyp< [ $_list:cdl$ ] >>
+      | "["; "|"; "]" →
+          <:ctyp< [ $list:[]$ ] >>
       | "{"; ldl = V (LIST1 label_declaration SEP ";"); "}" →
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;

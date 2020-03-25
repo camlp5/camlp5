@@ -425,7 +425,10 @@ value rec rawstring1 delimtok (ofs, delim) ctx buf =
     ctx.line_cnt bp c;
     let buf = $add c in
     if String.get delim ofs <> c then
-      rawstring1 delimtok (0, delim) ctx buf strm
+       if String.get delim 0 = c then
+         rawstring1 delimtok (1, delim) ctx buf strm
+       else
+         rawstring1 delimtok (0, delim) ctx buf strm
     else if ofs+1 < String.length delim then
       rawstring1 delimtok (ofs+1, delim) ctx buf strm
     else

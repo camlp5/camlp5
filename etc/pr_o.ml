@@ -1717,7 +1717,7 @@ EXTEND_PRINTER
           pprintf pc "@[<a>@[<2>{ %p }@]@]"
             (hvlistl (semi_after label_decl) label_decl) ltl
       | <:ctyp:< [ $list:vdl$ ] >> ->
-          if vdl = [] then pprintf pc "[]"
+          if vdl = [] then pprintf pc "|"
           else
             horiz_vertic
               (fun () ->

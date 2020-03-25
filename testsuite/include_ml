@@ -70,6 +70,11 @@ let pp_plexing_lexbuf b = Fmt.(pf stdout "<<%s>>" (Plexing.Lexbuf.get b)) ;;
 let pp_loc (loc : Location.t) = Format.print_string "<loc>" ;;
 #install_printer pp_loc ;;
 
+let pp_char_stream strm =
+  let l = Stream.npeek !Toploop.max_printer_depth strm in
+  Fmt.(pf stdout "<strm<[%a]>>" (list char) l)
+;;
+#install_printer pp_char_stream ;;
 (*
 ;;; Local Variables: ***
 ;;; mode:tuareg ***

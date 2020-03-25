@@ -3387,12 +3387,14 @@ value ( .%{;..}<- ) = Hashtbl.add;
     };
     {name="empty-constructor-decl"; implem = True ;
      exclude=[];
-     o_input = OK {foo|type t = | |foo} ;
-     official_input = OK {foo|type t = | |foo} ;
-     r_input = OK {foo|type t = [];|foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo|type t = | |foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type t = ||foo} ;
+     official_input = OK {foo|type t = ||foo} ;
+     r_input = OK {foo|type t = [ | ];|foo} ;
+     o_output = OK {foo|type t = |;;
+|foo};
+     official_output = OK {foo|type t = ||foo} ;
+     r_output = OK {foo|type t = [ | ];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
