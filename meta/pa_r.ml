@@ -997,8 +997,8 @@ EXTEND
       [ p1 = SELF; p2 = SELF → <:patt< $p1$ $p2$ >>
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF → 
           patt_to_inline loc <:patt< lazy $p$ >> ext attrs ]
-    | LEFTA
-      [ p1 = SELF; "."; p2 = SELF → <:patt< $p1$ . $p2$ >> ]
+    | RIGHTA
+      [ p1 = V UIDENT; "."; p2 = SELF → <:patt< $_uid:p1$ . $p2$ >> ]
     | "simple"
       [ s = V LIDENT → <:patt< $_lid:s$ >>
       | s = V GIDENT → <:patt< $_lid:s$ >>
@@ -1065,6 +1065,8 @@ EXTEND
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:patt< $e1$ [@ $_attribute:attr$ ] >>
       ]
+    | RIGHTA
+      [ p1 = V UIDENT; "."; p2 = SELF → <:patt< $_uid:p1$ . $p2$ >> ]
     | "simple"
       [ "("; op = operator_rparen ->
           if op = "::" then

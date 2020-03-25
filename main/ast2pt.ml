@@ -292,10 +292,12 @@ value rec mkrangepat loc c1 c2 =
          (mkrangepat loc (Char.chr (Char.code c1 + 1)) c2))
 ;
 
-value rec patt_long_id il =
+value rec patt_long_id =
   fun
-  [ <:patt< $p$ . $uid:i$ >> → patt_long_id [i :: il] p
-  | p → (p, il) ]
+  [ <:patt< $p$ . $uid:i$ >> → Ldot (patt_long_id p) i
+  | <:patt< $uid:i$ >> -> Lident i
+  | z -> error (loc_of_patt z) "patt_long_id: bad label"
+  ]
 ;
 
 value rec patt_label_long_id =
@@ -666,18 +668,20 @@ and patt =
   fun
   [ PaAtt loc p1 a ->
     ocaml_patt_addattr (attr (uv a)) (patt p1)
-  | PaAcc loc p1 p2 →
-      let p =
-        match patt_long_id [] p1 with
-        [ (<:patt:< $uid:i$ >>, il) →
-            match p2 with
+  | PaAcc _ _ _ as z →
+      match patt_left_assoc_acc z with [
+        PaAcc loc p1 p2 ->
+        let li = patt_long_id p1 in
+        let p =
+          match p2 with
             [ <:patt< $uid:s$ >> →
-                ocaml_ppat_construct (mkloc loc) (mkli (conv_con s) [i :: il])
-                  None (not Prtools.no_constructors_arity.val)
-            | _ → error (loc_of_patt p2) "bad access pattern" ]
-        | _ → error (loc_of_patt p2) "bad pattern" ]
-      in
-      mkpat loc p
+                ocaml_ppat_construct (mkloc loc) (Ldot li (conv_con s))
+                None (not Prtools.no_constructors_arity.val)
+            | _ -> ocaml_ppat_open (mkloc loc) li (patt p2) ]
+        in
+        mkpat loc p
+      | _ -> error (loc_of_patt z) "internal error in patt_left_assoc"
+      ]
   | PaAli loc p1 p2 →
       let (p, i, iloc) =
         match (p1, p2) with

@@ -1009,6 +1009,13 @@ value ocaml_value_binding ?{item_attributes=[]} loc p e =
   END
 ;
 
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_ppat_open loc li p = assert False ;
+ELSE
+value ocaml_ppat_open loc li p = Ppat_open (mkloc loc li) p ;
+END
+;
+
 value ocaml_ppat_alias p i iloc = Ppat_alias p (mkloc iloc i);
 
 value ocaml_ppat_array =

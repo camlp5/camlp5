@@ -3472,23 +3472,27 @@ end
   end;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="irrefut-module-prefix-patt-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|let f M.N.(x) = ()|foo} ;
+     official_input = OK {foo|let f M.N.(x) = ()|foo} ;
+     r_input = OK {foo|value f M.N.x = ();|foo} ;
+     o_output = OK {foo|let f M.N.(x) = ();;
+|foo};
+     official_output = OK {foo|let f M.N.(x)  = ()|foo} ;
+     r_output = OK {foo|value f M.N.x = ();
+|foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="module-prefix-patt-2"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|match x with M.N.(a,b) -> ()|foo} ;
+     official_input = OK {foo|match x with M.N.(a,b) -> ()|foo} ;
+     r_input = OK {foo|match x with M.N.(a, b) → ();|foo} ;
+     o_output = OK {foo|let _ = match x with M.N.(a, b) -> ();;
+|foo};
+     official_output = OK {foo|;;match x with | M.N.((a, b))  -> ()|foo} ;
+     r_output = OK {foo|match x with M.N.(a, b) → ();
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

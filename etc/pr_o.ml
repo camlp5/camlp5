@@ -21,6 +21,7 @@ value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 value flag_expand_letop_syntax = Pcaml.flag_expand_letop_syntax;
+value flag_extensions_are_irrefutable = ref True;
 
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
@@ -75,6 +76,7 @@ value rec is_irrefut_patt =
   [ <:patt< $lid:_$ >> -> True
   | <:patt< () >> -> True
   | <:patt< _ >> -> True
+  | <:patt< $x$ . $y$ >> -> patt_is_module_path x && is_irrefut_patt y
   | <:patt< ($x$ as $y$) >> -> is_irrefut_patt x && is_irrefut_patt y
   | <:patt< { $list:fpl$ } >> ->
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
@@ -85,6 +87,7 @@ value rec is_irrefut_patt =
   | <:patt< (module $uidopt:_$) >> -> True
   | <:patt< ~{$list:_$} >> -> True
   | <:patt< ?{$_$ $opt:_$} >> -> True
+  | <:patt< [% $_extension:_$ ] >> -> flag_extensions_are_irrefutable.val
   | _ -> False ]
 ;
 
@@ -325,8 +328,8 @@ value patt_as pc z =
    Some functions follow (some of them with '_binding' in their name) which
    use syntax or pretty printing shortcuts.
 *)
-value binding elem pc (p, e, attrs) =
-  pprintf pc "%p =@;%p%p" patt p elem e
+value binding pelem eelem pc (p, e, attrs) =
+  pprintf pc "%p =@;%p%p" pelem p eelem e
   (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
 ;
 
@@ -1599,10 +1602,11 @@ EXTEND_PRINTER
               let patt = Eprinter.apply_level pr_patt "range" in
               let al = List.map (fun a -> (a, ",")) pl in
               pprintf pc "%p@;@[<1>(%p)@]" next p (plist patt 0) al ] ]
-    | "dot"
-      [ <:patt< $x$ . $y$ >> ->
-          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
+      [ <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.(%p)" curr x var_escaped (loc, y)
+      | <:patt< $x$ . $y$ >> -> pprintf pc "%p.%p" curr x curr y
+      ]
+    | "atomic"
       [ 
         <:patt< lazy $p$ >> -> pprintf pc "lazy@;%p" curr p
       | <:patt< {$list:lpl$} >> ->
@@ -1615,7 +1619,15 @@ EXTEND_PRINTER
               lpl ([], False)
           in
           let lxl = List.map (fun (a,b) -> ((a,b,<:vala< []>>), ";")) lpl in
-          pprintf pc "@[<1>{%p%s}@]" (plist (binding patt) 0) lxl
+          let label pc p =
+            let p = patt_left_assoc_acc p in
+            match p with [
+              <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.%p" patt x var_escaped (loc, y)
+            | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
+            | z -> Ploc.raise (MLast.loc_of_patt z)
+                (Failure (sprintf "pr_patt/simple/label %d" (Obj.tag (Obj.repr z))))
+            ] in
+          pprintf pc "@[<1>{%p%s}@]" (plist (binding label patt) 0) lxl
             (if closed then "; _" else "")
       | <:patt< [| $list:pl$ |] >> ->
           if pl = [] then pprintf pc "[| |]"
@@ -2073,11 +2085,13 @@ value set_flags s =
           flag_comments_in_phrases.val := is_upp;
           flag_equilibrate_cases.val := is_upp;
           flag_expand_letop_syntax.val := is_upp;
+          flag_extensions_are_irrefutable.val := is_upp;
           flag_horiz_let_in.val := is_upp;
           flag_semi_semi.val := is_upp;
         }
       | 'C' | 'c' -> flag_comments_in_phrases.val := is_upp
       | 'E' | 'e' -> flag_equilibrate_cases.val := is_upp
+      | 'I' | 'i' -> flag_extensions_are_irrefutable.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_upp
       | 'M' | 'm' -> flag_semi_semi.val := is_upp
       | 'O' | 'o' -> flag_add_locations.val := is_upp
@@ -2091,9 +2105,10 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s%s%s"
+    sprintf "%s%s%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_equilibrate_cases.val "E" "e")
+      (flag flag_extensions_are_irrefutable.val "I" "i")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
       (flag flag_add_locations.val "O" "o")
@@ -2110,6 +2125,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        A/a enable/disable all flags
        C/c enable/disable comments in phrases
        E/e enable/disable equilibrate cases
+       I/i enable/disable extensions in patterns treated as irrefutable
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
        O/o enable/disable adding location comments
@@ -2487,11 +2503,11 @@ EXTEND_PRINTER
           horiz_vertic
             (fun () ->
                pprintf pc "let%s %p in %p" (if rf then " rec" else "")
-                 (hlist2 (binding expr) (and_before (binding expr))) pel
+                 (hlist2 (binding patt expr) (and_before (binding patt expr))) pel
                  class_expr ce)
             (fun () ->
                pprintf pc "let%s %p in@ %p" (if rf then " rec" else "")
-                 (vlist2 (binding expr) (and_before (binding expr))) pel
+                 (vlist2 (binding patt expr) (and_before (binding patt expr))) pel
                  class_expr ce)
       | <:class_expr< let open $_!:ovf$ $longid:li$ in $ce$ >> ->
           let ovf = if (Pcaml.unvala ovf) then "!" else "" in

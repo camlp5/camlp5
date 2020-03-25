@@ -10,6 +10,7 @@
 #load "pa_macro_print.cmo";
 #load "pa_pprintf.cmo";
 
+open Asttools;
 open Pretty;
 open Pcaml;
 open Prtools;
@@ -96,6 +97,7 @@ value rec is_irrefut_patt =
   | <:patt< $lid:_$ >> -> True
   | <:patt< () >> -> True
   | <:patt< _ >> -> True
+  | <:patt< $x$ . $y$ >> -> patt_is_module_path x && is_irrefut_patt y
   | <:patt< ($x$ as $y$) >> -> is_irrefut_patt x && is_irrefut_patt y
   | <:patt< { $list:fpl$ } >> ->
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl

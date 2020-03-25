@@ -1436,14 +1436,9 @@ EXTEND
               | _ -> <:patt< $p1$ $p2$ >> ] ]
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF -> 
           patt_to_inline <:patt< lazy $p$ >> ext attrs ]
-    | LEFTA
-      [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
-(*
-    | "lazy" [
-        "lazy"; p = SELF -> <:patt< lazy $p$ >>
-      ]
-*)
-    | "simple"
+    | "simple" RIGHTA
+      [ p1 = V UIDENT; "."; p2 = SELF → <:patt< $_uid:p1$ . $p2$ >> ]
+    | "atomic"
       [ s = V LIDENT -> <:patt< $_lid:s$ >>
       | s = V UIDENT -> <:patt< $_uid:s$ >>
       | s = V INT -> <:patt< $_int:s$ >>

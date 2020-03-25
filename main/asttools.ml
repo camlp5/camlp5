@@ -67,12 +67,38 @@ value expr_first_is_id e =
   in erec e
 ;
 
+value expr_is_module_path e =
+ let rec erec = fun [
+   <:expr< $uid:_$ >> -> True
+ | <:expr< $a$ . $b$ >> -> erec a && erec b
+ | _ -> False
+ ] in erec e
+;
+
+value patt_is_module_path e =
+ let rec erec = fun [
+   <:patt< $uid:_$ >> -> True
+ | <:patt< $a$ . $b$ >> -> erec a && erec b
+ | _ -> False
+ ] in erec e
+;
+ 
 value expr_left_assoc_acc e =
   let rec arec = fun [
-    <:expr:< $e1$ . $e2$ >> ->
+    <:expr:< $e1$ . $e2$ >> as z ->
       match e2 with [
         <:expr< $e2$  . $e3$ >> -> arec <:expr< ( $e1$ . $e2$ ) . $e3$ >>
-      | _ -> e ]
+      | _ -> z ]
+  | e -> e
+  ] in arec e
+;
+ 
+value patt_left_assoc_acc e =
+  let rec arec = fun [
+    <:patt:< $e1$ . $e2$ >> as z ->
+      match e2 with [
+        <:patt< $e2$  . $e3$ >> -> arec <:patt< ( $e1$ . $e2$ ) . $e3$ >>
+      | _ -> z ]
   | e -> e
   ] in arec e
 ;
