@@ -1,0 +1,35 @@
+#use "topfind";;
+
+(* Add "#camlp5o" directive: *)
+
+let _ =
+Hashtbl.add
+    Toploop.directive_table
+    "camlp5o"
+    (Toploop.Directive_none
+       Topfind.(fun () ->
+	  (*protect*) (fun () ->
+		     syntax "camlp5o" ;
+		     load_deeply ["camlp5"]) ()
+       )) ;
+
+
+(* Add "#camlp4r" directive: *)
+
+Hashtbl.add
+    Toploop.directive_table
+    "camlp5r"
+    (Toploop.Directive_none
+       Topfind.(fun () ->
+	  (*protect*) (fun () ->
+		     syntax "camlp5r";
+		     load_deeply ["camlp5"]) ()
+       )) ;
+
+
+print_endline
+  ("Additional Camlp5 directives:\n" ^
+   "  #camlp5o;;                to load camlp5 (standard syntax)\n" ^
+   "  #camlp5r;;                to load camlp5 (revised syntax)\n" ^
+   "")
+;;
