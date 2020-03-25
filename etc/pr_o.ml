@@ -1156,6 +1156,9 @@ EXTEND_PRINTER
                      (if_then force_vertic curr) (e1, e2) "else"
                      (loop_else_if_and_else force_vertic curr) (eel, e3) ])
       | <:expr:< fun [ $list:pwel$ ] >> as ge ->
+          let use_function =
+            List.exists (fun [ (_, _, <:expr< . >>) -> True | _ -> False ]) pwel in
+          let funtok = if use_function then "function" else "fun" in
           match pwel with
           [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
               let (pl, e1) = expr_fun_args e1 in
@@ -1165,13 +1168,14 @@ EXTEND_PRINTER
               let comm_expr expr =
                 match e1 with
                 [ <:expr< do { $list:_$ } >> -> expr
+                | <:expr< . >> -> (fun pc _ -> pprintf pc ".")
                 | _ -> comm_expr expr ]
               in
               if List.mem pc.dang ["|"; ";"] then
-                pprintf pc "(fun %p ->@;<1 3>%q)" (plist simple_patt 4) pl
+                pprintf pc "(%s %p ->@;<1 3>%q)" funtok (plist simple_patt 4) pl
                   (comm_expr expr) e1 ""
               else
-                pprintf pc "fun %p ->@;%p" (plist simple_patt 4) pl
+                pprintf pc "%s %p ->@;%p" funtok (plist simple_patt 4) pl
                   (comm_expr expr) e1
           | [] ->
               let loc = MLast.loc_of_expr ge in

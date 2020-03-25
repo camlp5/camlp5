@@ -3396,14 +3396,16 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|type t = [ | ];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="function-unreached-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|function _ -> .|foo} ;
+     official_input = OK {foo|function _ -> .|foo} ;
+     r_input = OK {foo|fun _ -> .;|foo} ;
+     o_output = OK {foo|let _ = function _ -> .;;
+|foo};
+     official_output = OK {foo|;;function | _ -> .|foo} ;
+     r_output = OK {foo|fun _ → .;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

@@ -902,6 +902,8 @@ value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Pexp_function lab eo pel
   ELSE
     match pel with
+    | [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable}}] when lab = "" && eo = None ->
+        Pexp_function pel
     | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
         IFDEF OCAML_VERSION < OCAML_4_03_0 THEN Pexp_fun lab eo p e
         ELSE Pexp_fun (labelled lab) eo p e END
