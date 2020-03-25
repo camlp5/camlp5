@@ -18,6 +18,7 @@ open Mlsyntax.Revised;
 
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
+value flag_extensions_are_irrefutable = ref True;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
@@ -106,6 +107,7 @@ value rec is_irrefut_patt =
   | <:patt< ~{$list:lppo$} >> ->
       List.for_all (fun (p, _) -> is_irrefut_patt p) lppo
   | <:patt< ?{$p$ $opt:_$} >> -> is_irrefut_patt p
+  | <:patt< [% $_extension:_$ ] >> -> flag_extensions_are_irrefutable.val
   | _ -> False ]
 ;
 
@@ -2184,12 +2186,14 @@ value set_flags s =
           flag_expand_declare.val := v;
           flag_expand_letop_syntax.val := v;
           flag_equilibrate_cases.val := v;
+          flag_extensions_are_irrefutable.val := v;
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
         }
       | 'C' | 'c' -> flag_comments_in_phrases.val := is_uppercase s.[i]
       | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
       | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
+      | 'I' | 'i' -> flag_extensions_are_irrefutable.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
       | 'O' | 'o' -> flag_add_locations.val := is_uppercase s.[i]
       | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
@@ -2203,10 +2207,11 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    Printf.sprintf "%s%s%s%s%s%s%s"
+    Printf.sprintf "%s%s%s%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_expand_declare.val "D" "d")
       (flag flag_equilibrate_cases.val "E" "e")
+      (flag flag_extensions_are_irrefutable.val "I" "i")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_add_locations.val "O" "o")
       (flag flag_sequ_begin_at_eol.val "S" "s")
@@ -2275,6 +2280,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        C/c enable/disable comments in phrases
        D/d enable/disable allowing expanding 'declare'
        E/e enable/disable equilibrate cases
+       I/i enable/disable extensions in patterns treated as irrefutable
        L/l enable/disable allowing printing 'let..in' horizontally
        O/o enable/disable adding location comments
        S/s enable/disable printing sequences beginners at end of lines

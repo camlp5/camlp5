@@ -1136,7 +1136,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = match x with x, [%a] -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | (x, [%a ]) -> 1|foo} ;
-     r_output = OK {foo|match x with [ (x, [%a]) → 1 ];
+     r_output = OK {foo|match x with (x, [%a]) → 1;
 |foo}
     };
     {name="alg-extension-expr"; implem = True ;
@@ -2009,7 +2009,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = match x with [%foo? lazy x[@foo]] -> ();;
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?(((lazy x))[@foo ])] -> ()|foo} ;
-     r_output = OK {foo|match x with [ [%foo? lazy x[@foo]] → () ];
+     r_output = OK {foo|match x with [%foo? lazy x[@foo]] → ();
 |foo}
     };
     {name="inline-extensions18"; implem = True ;
@@ -2020,7 +2020,23 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = match x with [%foo? exception x[@foo]] -> ();;
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> ()|foo} ;
-     r_output = OK {foo|match x with [ [%foo? exception x[@foo]] → () ];
+     r_output = OK {foo|match x with [%foo? exception x[@foo]] → ();
+|foo}
+    };
+    {name="inline-extensions18b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with exception%foo[@foo] x -> ()| Y -> ()|foo} ;
+     official_input = OK {foo|match x with exception%foo[@foo] x -> ()| Y -> ()|foo} ;
+     r_input = OK {foo|match x with [ exception%foo[@foo] x -> () | Y -> ()];|foo} ;
+     o_output = OK {foo|let _ =
+  match x with
+    [%foo? exception x[@foo]] -> ()
+  | Y -> ();;
+|foo};
+     official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> () | Y -> ()|foo} ;
+     r_output = OK {foo|match x with
+[ [%foo? exception x[@foo]] → ()
+| Y → () ];
 |foo}
     };
     {name="inline-extensions19"; implem = True ;
@@ -2971,10 +2987,10 @@ type nat _ =
      o_input = OK {foo|type t = < foo: int [@foo] >|foo} ;
      official_input = OK {foo|type t = < foo: int [@foo] >|foo} ;
      r_input = OK {foo|type t = < foo : int[@foo] >;|foo} ;
-     o_output = OK {foo|type t = < foo : int[@foo] >;;
+     o_output = OK {foo|type t = < foo : int[@foo] > ;;
 |foo};
      official_output = OK {foo|type t = < foo: int [@foo ]  > |foo} ;
-     r_output = OK {foo|type t = < foo : int[@foo] >;
+     r_output = OK {foo|type t = < foo : int[@foo] > ;
 |foo}
     };
     {name="hashop-1"; implem = True ;
@@ -3407,14 +3423,22 @@ value ( .%{;..}<- ) = Hashtbl.add;
      r_output = OK {foo|fun _ → .;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
-     exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+    {name="extension-type-object-1"; implem = True ;
+     exclude=["o2official";"r2official"];
+     o_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
+     official_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
+     r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];|foo} ;
+     o_output = OK {foo|let [%foo: [ `Foo ]] = ([%foo: < foo : t > ] : [%foo: t -> t]);;
+|foo};
+     official_output = OK {foo|let ([%foo :[ `Foo ]] : [%foo :t -> t]) = [%foo :< foo: t   > ]|foo} ;
+     r_output = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];
+|foo}
+    };
+    {(skip) with
+     name="extension-type-object-1-[or]2official" ;
+     o_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
+     r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];|foo} ;
+     official_output = OK {foo|let [%foo :[ `Foo ]] = ([%foo :< foo: t   > ] : [%foo :t -> t])|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

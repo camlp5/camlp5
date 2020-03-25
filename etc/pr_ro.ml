@@ -354,10 +354,10 @@ EXTEND_PRINTER
   ;
   pr_ctyp: LEVEL "simple"
     [ [ <:ctyp< < $list:ml$ $flag:v$ > >> ->
-          if ml = [] then pprintf pc "<%s >" (if v then " .." else "")
+          if ml = [] then pprintf pc "<%s >@;<1 0>" (if v then " .." else "")
           else
             let ml = List.map (fun e -> (e, ";")) ml in
-            pprintf pc "< %p%s >" (plist field 0) ml (if v then " .." else "")
+            pprintf pc "< %p%s >@;<1 0>" (plist field 0) ml (if v then " .." else "")
       | <:ctyp< # $list:id$ >> ->
           pprintf pc "#%p" class_longident id
       | <:ctyp< [ = $list:pvl$ ] >> ->
