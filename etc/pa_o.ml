@@ -135,18 +135,33 @@ value operator_rparen =
     operator_rparen_f
 ;
 
+value check_not_part_of_patt_f strm =
+  let tok =
+    match stream_npeek 9 strm with
+      [ [("LIDENT", _); tok :: _] -> tok
+      | [("", "("); ("", s); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "["); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "("); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "{"); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "["); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> tok
+    | _ -> raise Stream.Failure ]
+  in
+  match tok with
+    [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
+    | _ -> () ]
+;
+
 value check_not_part_of_patt =
   Grammar.Entry.of_parser gram "check_not_part_of_patt"
-    (fun strm ->
-       let tok =
-         match Stream.npeek 4 strm with
-         [ [("LIDENT", _); tok :: _] -> tok
-         | [("", "("); ("", s); ("", ")"); tok] when is_special_op s -> tok
-         | _ -> raise Stream.Failure ]
-       in
-       match tok with
-       [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
-       | _ -> () ])
+    check_not_part_of_patt_f
 ;
 
 value prefixop =
@@ -396,9 +411,6 @@ value build_letop_binder loc letop b l e = do {
   }
 ;
 
-value lbl_expr = Grammar.Entry.create Pcaml.gram "lbl_expr";
-value lbl_expr_list = Grammar.Entry.create Pcaml.gram "lbl_expr_list";
-
 value check_let_exception =
   Grammar.Entry.of_parser gram "check_let_exception"
     (fun strm ->
@@ -531,7 +543,6 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
-value stream_npeek n s = (Stream.npeek n s : list (string * string)) ;
 value is_new_type_extended strm =
   let rec isrec n =
     let l = stream_npeek n strm in
@@ -666,15 +677,20 @@ let loc = MLast.loc_of_sig_item si in
   ]
 ;
 
+value val_ident = Grammar.Entry.create Pcaml.gram "val_ident";
+value fun_binding = Grammar.Entry.create Pcaml.gram "fun_binding";
+
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr extended_longident
     signature structure class_type class_expr class_sig_item class_str_item
     let_binding type_decl type_extension extension_constructor
     constructor_declaration label_declaration
-    match_case with_constr poly_variant lbl_expr lbl_expr_list
+    match_case with_constr poly_variant
     attribute_body alg_attribute alg_attributes
     ext_attributes
+    val_ident fun_binding
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l

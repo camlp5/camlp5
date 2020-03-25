@@ -3116,6 +3116,12 @@ type nat _ =
     let ( .%() <- ) = Hashtbl.add
     let ( .%{} ) = Hashtbl.find
     let ( .%{} <- ) = Hashtbl.add
+    let ( .%[;..] ) = Hashtbl.find
+    let ( .%[;..] <- ) = Hashtbl.add
+    let ( .%(;..) ) = Hashtbl.find
+    let ( .%(;..) <- ) = Hashtbl.add
+    let ( .%{;..} ) = Hashtbl.find
+    let ( .%{;..} <- ) = Hashtbl.add
 |foo} ;
      official_input = OK {foo|
     let ( .%[] ) = Hashtbl.find
@@ -3124,77 +3130,145 @@ type nat _ =
     let ( .%() <- ) = Hashtbl.add
     let ( .%{} ) = Hashtbl.find
     let ( .%{} <- ) = Hashtbl.add
+    let ( .%[;..] ) = Hashtbl.find
+    let ( .%[;..] <- ) = Hashtbl.add
+    let ( .%(;..) ) = Hashtbl.find
+    let ( .%(;..) <- ) = Hashtbl.add
+    let ( .%{;..} ) = Hashtbl.find
+    let ( .%{;..} <- ) = Hashtbl.add
 |foo} ;
-     r_input = OK {foo|value ( .%[] ) = Hashtbl.find;
+     r_input = OK {foo|
+value ( .%[] ) = Hashtbl.find;
 value ( .%[]<- ) = Hashtbl.add;
 value ( .%() ) = Hashtbl.find;
 value ( .%()<- ) = Hashtbl.add;
 value ( .%{} ) = Hashtbl.find;
-value ( .%{}<- ) = Hashtbl.add;|foo} ;
+value ( .%{}<- ) = Hashtbl.add;
+value ( .%[;..] ) = Hashtbl.find;
+value ( .%[;..]<- ) = Hashtbl.add;
+value ( .%(;..) ) = Hashtbl.find;
+value ( .%(;..)<- ) = Hashtbl.add;
+value ( .%{;..} ) = Hashtbl.find;
+value ( .%{;..}<- ) = Hashtbl.add;|foo} ;
      o_output = OK {foo|let (.%[]) = Hashtbl.find;;
 let (.%[]<-) = Hashtbl.add;;
 let (.%()) = Hashtbl.find;;
 let (.%()<-) = Hashtbl.add;;
 let (.%{}) = Hashtbl.find;;
 let (.%{}<-) = Hashtbl.add;;
-|foo};
-     official_output = OK {foo|let (.%[]) = Hashtbl.find
-let (.%[]<-) = Hashtbl.add
-let (.%()) = Hashtbl.find
-let (.%()<-) = Hashtbl.add
-let (.%{}) = Hashtbl.find
-let (.%{}<-) = Hashtbl.add|foo} ;
-     r_output = OK {foo|value ( .%[] ) = Hashtbl.find;
-value ( .%[]<- ) = Hashtbl.add;
-value ( .%() ) = Hashtbl.find;
-value ( .%()<- ) = Hashtbl.add;
-value ( .%{} ) = Hashtbl.find;
-value ( .%{}<- ) = Hashtbl.add;
-|foo}
-    };
-    {name="dotop-2"; implem = True ;
-     exclude=[];
-     o_input = OK {foo|
-    let ( .%[;..] ) = Hashtbl.find
-    let ( .%[;..] <- ) = Hashtbl.add
-    let ( .%(;..) ) = Hashtbl.find
-    let ( .%(;..) <- ) = Hashtbl.add
-    let ( .%{;..} ) = Hashtbl.find
-    let ( .%{;..} <- ) = Hashtbl.add
-|foo} ;
-     official_input = OK {foo|
-    let ( .%[;..] ) = Hashtbl.find
-    let ( .%[;..] <- ) = Hashtbl.add
-    let ( .%(;..) ) = Hashtbl.find
-    let ( .%(;..) <- ) = Hashtbl.add
-    let ( .%{;..} ) = Hashtbl.find
-    let ( .%{;..} <- ) = Hashtbl.add
-|foo} ;
-     r_input = OK {foo|value ( .%[;..] ) = Hashtbl.find;
-value ( .%[;..]<- ) = Hashtbl.add;
-value ( .%(;..) ) = Hashtbl.find;
-value ( .%(;..)<- ) = Hashtbl.add;
-value ( .%{;..} ) = Hashtbl.find;
-value ( .%{;..}<- ) = Hashtbl.add;|foo} ;
-     o_output = OK {foo|let (.%[;..]) = Hashtbl.find;;
+let (.%[;..]) = Hashtbl.find;;
 let (.%[;..]<-) = Hashtbl.add;;
 let (.%(;..)) = Hashtbl.find;;
 let (.%(;..)<-) = Hashtbl.add;;
 let (.%{;..}) = Hashtbl.find;;
 let (.%{;..}<-) = Hashtbl.add;;
 |foo};
-     official_output = OK {foo|let (.%[;..]) = Hashtbl.find
+     official_output = OK {foo|let (.%[]) = Hashtbl.find
+let (.%[]<-) = Hashtbl.add
+let (.%()) = Hashtbl.find
+let (.%()<-) = Hashtbl.add
+let (.%{}) = Hashtbl.find
+let (.%{}<-) = Hashtbl.add
+let (.%[;..]) = Hashtbl.find
 let (.%[;..]<-) = Hashtbl.add
 let (.%(;..)) = Hashtbl.find
 let (.%(;..)<-) = Hashtbl.add
 let (.%{;..}) = Hashtbl.find
 let (.%{;..}<-) = Hashtbl.add|foo} ;
-     r_output = OK {foo|value ( .%[;..] ) = Hashtbl.find;
+     r_output = OK {foo|value ( .%[] ) = Hashtbl.find;
+value ( .%[]<- ) = Hashtbl.add;
+value ( .%() ) = Hashtbl.find;
+value ( .%()<- ) = Hashtbl.add;
+value ( .%{} ) = Hashtbl.find;
+value ( .%{}<- ) = Hashtbl.add;
+value ( .%[;..] ) = Hashtbl.find;
 value ( .%[;..]<- ) = Hashtbl.add;
 value ( .%(;..) ) = Hashtbl.find;
 value ( .%(;..)<- ) = Hashtbl.add;
 value ( .%{;..} ) = Hashtbl.find;
 value ( .%{;..}<- ) = Hashtbl.add;
+|foo}
+    };
+    {name="dotop-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|
+    let ( .%[] ) x y = Hashtbl.find
+    let ( .%[] <- ) x y = Hashtbl.add
+    let ( .%() ) x y = Hashtbl.find
+    let ( .%() <- ) x y = Hashtbl.add
+    let ( .%{} ) x y = Hashtbl.find
+    let ( .%{} <- ) x y = Hashtbl.add
+    let ( .%[;..] ) x y = Hashtbl.find
+    let ( .%[;..] <- ) x y = Hashtbl.add
+    let ( .%(;..) ) x y = Hashtbl.find
+    let ( .%(;..) <- ) x y = Hashtbl.add
+    let ( .%{;..} ) x y = Hashtbl.find
+    let ( .%{;..} <- ) x y = Hashtbl.add
+|foo} ;
+     official_input = OK {foo|
+    let ( .%[] ) x y = Hashtbl.find
+    let ( .%[] <- ) x y = Hashtbl.add
+    let ( .%() ) x y = Hashtbl.find
+    let ( .%() <- ) x y = Hashtbl.add
+    let ( .%{} ) x y = Hashtbl.find
+    let ( .%{} <- ) x y = Hashtbl.add
+    let ( .%[;..] ) x y = Hashtbl.find
+    let ( .%[;..] <- ) x y = Hashtbl.add
+    let ( .%(;..) ) x y = Hashtbl.find
+    let ( .%(;..) <- ) x y = Hashtbl.add
+    let ( .%{;..} ) x y = Hashtbl.find
+    let ( .%{;..} <- ) x y = Hashtbl.add
+|foo} ;
+     r_input = OK {foo|
+value ( .%[] ) x y = Hashtbl.find;
+value ( .%[]<- ) x y = Hashtbl.add;
+value ( .%() ) x y = Hashtbl.find;
+value ( .%()<- ) x y = Hashtbl.add;
+value ( .%{} ) x y = Hashtbl.find;
+value ( .%{}<- ) x y = Hashtbl.add;
+value ( .%[;..] ) x y = Hashtbl.find;
+value ( .%[;..]<- ) x y = Hashtbl.add;
+value ( .%(;..) ) x y = Hashtbl.find;
+value ( .%(;..)<- ) x y = Hashtbl.add;
+value ( .%{;..} ) x y = Hashtbl.find;
+value ( .%{;..}<- ) x y = Hashtbl.add;|foo} ;
+     o_output = OK {foo|let (.%[]) x y = Hashtbl.find;;
+let (.%[]<-) x y = Hashtbl.add;;
+let (.%()) x y = Hashtbl.find;;
+let (.%()<-) x y = Hashtbl.add;;
+let (.%{}) x y = Hashtbl.find;;
+let (.%{}<-) x y = Hashtbl.add;;
+let (.%[;..]) x y = Hashtbl.find;;
+let (.%[;..]<-) x y = Hashtbl.add;;
+let (.%(;..)) x y = Hashtbl.find;;
+let (.%(;..)<-) x y = Hashtbl.add;;
+let (.%{;..}) x y = Hashtbl.find;;
+let (.%{;..}<-) x y = Hashtbl.add;;
+|foo};
+     official_output = OK {foo|let (.%[]) x y = Hashtbl.find
+let (.%[]<-) x y = Hashtbl.add
+let (.%()) x y = Hashtbl.find
+let (.%()<-) x y = Hashtbl.add
+let (.%{}) x y = Hashtbl.find
+let (.%{}<-) x y = Hashtbl.add
+let (.%[;..]) x y = Hashtbl.find
+let (.%[;..]<-) x y = Hashtbl.add
+let (.%(;..)) x y = Hashtbl.find
+let (.%(;..)<-) x y = Hashtbl.add
+let (.%{;..}) x y = Hashtbl.find
+let (.%{;..}<-) x y = Hashtbl.add|foo} ;
+     r_output = OK {foo|value ( .%[] ) x y = Hashtbl.find;
+value ( .%[]<- ) x y = Hashtbl.add;
+value ( .%() ) x y = Hashtbl.find;
+value ( .%()<- ) x y = Hashtbl.add;
+value ( .%{} ) x y = Hashtbl.find;
+value ( .%{}<- ) x y = Hashtbl.add;
+value ( .%[;..] ) x y = Hashtbl.find;
+value ( .%[;..]<- ) x y = Hashtbl.add;
+value ( .%(;..) ) x y = Hashtbl.find;
+value ( .%(;..)<- ) x y = Hashtbl.add;
+value ( .%{;..} ) x y = Hashtbl.find;
+value ( .%{;..}<- ) x y = Hashtbl.add;
 |foo}
     };
     {name="dot-array-1"; implem = True ;
@@ -3494,14 +3568,16 @@ end
      r_output = OK {foo|match x with M.N.(a, b) → ();
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="type-variables-with-quotes-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type ' a' t = ' a'|foo} ;
+     official_input = OK {foo|type ' a' t = ' a'|foo} ;
+     r_input = OK {foo|type t ' a' = ' a';|foo} ;
+     o_output = OK {foo|type ' a' t = ' a';;
+|foo};
+     official_output = OK {foo|type ' a' t = ' a'|foo} ;
+     r_output = OK {foo|type t ' a' = ' a';
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

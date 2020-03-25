@@ -515,16 +515,26 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
-value type_var pc (loc, (tv, vari)) =
+value type_var pc v =
+  if String.contains v '\'' then
+    pprintf pc "' %s" v
+  else pprintf pc "'%s" v
+;
+
+value tv_or_blank pc = fun [
+  Some v -> pprintf pc "%p" type_var v
+| None -> pprintf pc "_"
+]
+;
+
+value type_param pc (loc, (tv, vari)) =
   let tv = Pcaml.unvala tv in
-  pprintf pc "%s%s"
+  pprintf pc "%s%p"
     (match vari with
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
-    (match tv with
-     [ Some v -> "'" ^ v
-     | None -> "_" ])
+    tv_or_blank tv
 ;
 
 value type_constraint pc (t1, t2) =
@@ -534,10 +544,10 @@ value type_constraint pc (t1, t2) =
 value type_params pc (loc, tvl) =
   match tvl with
   [ [] -> pprintf pc ""
-  | [tv] -> pprintf pc "%p " type_var (loc, tv)
+  | [tv] -> pprintf pc "%p " type_param (loc, tv)
   | _ ->
       let tvl = List.map (fun tv -> (loc, tv)) tvl in
-      pprintf pc "(%p) " (hlistl (comma_after type_var) type_var) tvl ]
+      pprintf pc "(%p) " (hlistl (comma_after type_param) type_param) tvl ]
 ;
 
 value mem_tvar s tpl =
@@ -1016,10 +1026,10 @@ value con_typ_pat pc (loc, sl, tpl) =
   let tpl = List.map (fun tp -> (loc, tp)) tpl in
   match tpl with
   [ [] -> pprintf pc "%p" mod_ident (loc, sl)
-  | [tp] -> pprintf pc "%p %p" type_var tp mod_ident (loc, sl)
+  | [tp] -> pprintf pc "%p %p" type_param tp mod_ident (loc, sl)
   | _ ->
       pprintf pc "(%p) %p"
-        (hlistl (comma_after type_var) type_var) tpl mod_ident (loc, sl) ]
+        (hlistl (comma_after type_param) type_param) tpl mod_ident (loc, sl) ]
 ;
 
 value with_constraint pc wc =
@@ -1751,7 +1761,7 @@ EXTEND_PRINTER
       | <:ctyp:< $lid:t$ >> ->
           var_escaped pc (loc, t)
       | <:ctyp:< ' $s$ >> ->
-          pprintf pc "'%p" var_escaped (loc, s)
+          pprintf pc "%p" type_var s
       | <:ctyp< _ >> ->
           pprintf pc "_"
       | <:ctyp< .. >> -> pprintf pc ".."
@@ -2170,7 +2180,7 @@ value class_type_params pc (loc, ctp) =
   if ctp = [] then pprintf pc ""
   else
     let ctp = List.map (fun ct -> ((loc, ct), ",")) ctp in
-    pprintf pc "[%p]@;" (plist type_var 1) ctp
+    pprintf pc "[%p]@;" (plist type_param 1) ctp
 ;
 
 value class_def pc ci =

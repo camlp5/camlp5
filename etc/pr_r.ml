@@ -771,26 +771,35 @@ value try_greek s = do {
       let c = Char.code s.[0] - Char.code 'a' in
       let g = greek_tab.(c mod Array.length greek_tab) in
       let n = c / Array.length greek_tab in
-      if n < Array.length index_tab then ("", g ^ index_tab.(n))
-      else ("'", s)
+      if n < Array.length index_tab then Some (g ^ index_tab.(n))
+      else None
     }
-    else ("'", s)
+    else None
   }
-  else ("'", s)
+  else None
 };
 
-value type_var pc (tv, vari) =
+value typevar pc s =
+  match try_greek s with [
+    Some s -> pprintf pc "%s" s
+  | None ->
+    if String.contains s '\'' then
+      pprintf pc "' %s" s
+    else pprintf pc "'%s" s
+   ]
+;
+
+value type_param pc (tv, vari) =
   let tv = Pcaml.unvala tv in
-  pprintf pc "%s%s"
+  let tv_or_blank pc = fun [
+    Some tv -> pprintf pc "%p" typevar tv
+  | None -> pprintf pc "_" ] in
+  pprintf pc "%s%p"
     (match vari with
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
-    (match tv with
-     [ Some s ->
-         let (q, s) = try_greek s in
-         q ^ s
-     | None -> "_" ])
+    tv_or_blank tv
 ;
 
 value type_constraint pc (t1, t2) =
@@ -807,7 +816,7 @@ value type_decl pc td =
     (fun () ->
        pprintf pc "%p%s%p = %s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
          (if Pcaml.unvala tp = [] then "" else " ")
-         (hlist type_var) (Pcaml.unvala tp)
+         (hlist type_param) (Pcaml.unvala tp)
          (if pf then "private " else "") ctyp te
          (hlist type_constraint) (Pcaml.unvala cl)
         (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
@@ -815,14 +824,14 @@ value type_decl pc td =
        if pc.aft = "" then
          pprintf pc "%p%s%p =@;%s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp)
+           (hlist type_param) (Pcaml.unvala tp)
            (if pf then "private " else "") ctyp te
            (hlist type_constraint) (Pcaml.unvala cl)
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
        else
          pprintf pc "@[<a>%p%s%p =@;%s%p%p%p@ @]" var_escaped
            (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp)
+           (hlist type_param) (Pcaml.unvala tp)
            (if pf then "private " else "") ctyp te
            (hlist type_constraint) (Pcaml.unvala cl)
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
@@ -880,7 +889,7 @@ value type_extension pc te =
     (fun () ->
        pprintf pc "%p%s%p += %s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
          (if Pcaml.unvala tp = [] then "" else " ")
-         (hlist type_var) (Pcaml.unvala tp)
+         (hlist type_param) (Pcaml.unvala tp)
          (if pf then "private " else "")
          (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
          (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
@@ -888,14 +897,14 @@ value type_extension pc te =
        if pc.aft = "" then
          pprintf pc "%p%s%p +=@;%s[ %p ]%p" mod_ident (loc, Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp)
+           (hlist type_param) (Pcaml.unvala tp)
            (if pf then "private " else "")
            (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
        else
          pprintf pc "@[<a>%p%s%p +=@;%s[ %p ]%p@ @]" mod_ident
            (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
-           (hlist type_var) (Pcaml.unvala tp)
+           (hlist type_param) (Pcaml.unvala tp)
            (if pf then "private " else "")
            (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
@@ -1078,10 +1087,6 @@ value expr_short pc x =
 
 value string pc s = pprintf pc "\"%s\"" s;
 value lident pc s = pprintf pc "%s" s;
-value typevar pc tv =
-  let (q, s) = try_greek tv in
-  pprintf pc "%s%s" q s
-;
 
 value external_decl pc (loc, n, t, sl, attrs) =
   pprintf pc "external %p :@;%p = %s%p" var_escaped (loc, n) ctyp t
@@ -1250,7 +1255,7 @@ value con_typ_pat pc (loc, sl, tpl) =
   if tpl = [] then
     pprintf pc "%p" mod_ident (loc, sl)
   else
-    pprintf pc "%p %p" mod_ident (loc, sl) (hlist type_var) tpl
+    pprintf pc "%p %p" mod_ident (loc, sl) (hlist type_param) tpl
 ;
 
 value string_eval s =

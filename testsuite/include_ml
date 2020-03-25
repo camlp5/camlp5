@@ -75,6 +75,17 @@ let pp_char_stream strm =
   Fmt.(pf stdout "<strm<[%a]>>" (list char) l)
 ;;
 #install_printer pp_char_stream ;;
+
+let pp_token_stream strm =
+  let l = Stream.npeek !Toploop.max_printer_depth strm in
+  let rec trim_eoi = function
+    ("EOI",_ as x)::_ -> [x]
+  | h::t -> h::(trim_eoi t)
+  | [] -> []
+  in 
+  Fmt.(pf stdout "<strm<[%a]>>" (list ~sep:comma (parens (pair ~sep:comma (quote string) (quote string)))) (trim_eoi l))
+;;
+#install_printer pp_token_stream ;;
 (*
 ;;; Local Variables: ***
 ;;; mode:tuareg ***
