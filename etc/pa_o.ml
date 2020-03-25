@@ -1326,7 +1326,12 @@ EXTEND
   ;
   fun_binding:
     [ RIGHTA
-      [ p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
+      [ 
+        check_new_type_extended ; "("; "type"; l = LIST1 LIDENT ; ")" ; e = SELF ->
+        List.fold_right (fun id e ->
+            <:expr< fun [(type $lid:id$) -> $e$] >>)
+          l e
+      | check_not_new_type_extended ; p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "="; e = expr -> <:expr< $e$ >>
       | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >>
       | ":"; t = poly_type; ":>"; t2 = poly_type ; "="; e = expr -> <:expr< ( ( $e$ : $t$ ) :> $t2$ ) >>

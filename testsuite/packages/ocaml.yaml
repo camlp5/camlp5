@@ -287,4 +287,11 @@ ocaml-4.10.0:
       - testsuite/tests/parse-errors/unclosed_simple_expr.ml
       - testsuite/tests/parse-errors/unclosed_simple_pattern.ml
       - testsuite/tests/parse-errors/unclosed_struct.ml
+      - testsuite/tests/parsing/pr6604.ml
+      - testsuite/tests/parsing/pr6604_2.ml
+      - testsuite/tests/tool-toplevel/error_highlighting.ml
+      - testsuite/tests/tool-toplevel/error_highlighting_use2.ml
+      - testsuite/tests/tool-toplevel/error_highlighting_use3.ml
+      - testsuite/tests/tool-toplevel/pr7060.ml
+      - testsuite/tests/tool-toplevel/tracing.ml
   files: []

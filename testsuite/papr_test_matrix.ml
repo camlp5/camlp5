@@ -2806,6 +2806,42 @@ type nat _ =
      r_output = OK {foo|fun (type a) (type b) (x : a) → x;
 |foo}
     };
+    {name="gadt-5c"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| let f (type a b) (x : a) = x |foo} ;
+     official_input = OK {foo| let f (type a b) (x : a) = x|foo} ;
+     r_input = OK {foo|value f (type a)(type b) (x : a) = x;|foo} ;
+     o_output = OK {foo|let f (type a) (type b) (x : a) = x;;
+|foo};
+     official_output = OK {foo|let f (type a) (type b) (x : a) = x|foo} ;
+     r_output = OK {foo|value f (type a) (type b) (x : a) = x;
+|foo}
+    };
+    {name="gadt-5d"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| let f (type a b) (x : a) = x in () |foo} ;
+     official_input = OK {foo| let f (type a b) (x : a) = x in ()|foo} ;
+     r_input = OK {foo|let f (type a)(type b) (x : a) = x in ();|foo} ;
+     o_output = OK {foo|let _ = let f (type a) (type b) (x : a) = x in ();;
+|foo};
+     official_output = OK {foo|;;let f (type a) (type b) (x : a) = x in ()|foo} ;
+     r_output = OK {foo|let f (type a) (type b) (x : a) = x in
+();
+|foo}
+    };
+    {name="gadt-5e"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| let x = let f (type a b) (x : a) = x in () |foo} ;
+     official_input = OK {foo| let x = let f (type a b) (x : a) = x in ()|foo} ;
+     r_input = OK {foo|value x = let f (type a)(type b) (x : a) = x in ();|foo} ;
+     o_output = OK {foo|let x = let f (type a) (type b) (x : a) = x in ();;
+|foo};
+     official_output = OK {foo|let x = let f (type a) (type b) (x : a) = x in ()|foo} ;
+     r_output = OK {foo|value x =
+  let f (type a) (type b) (x : a) = x in
+  ();
+|foo}
+    };
     {name="gadt-6a"; implem = True ;
      exclude=[];
      o_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()
