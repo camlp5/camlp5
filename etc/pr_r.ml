@@ -673,6 +673,16 @@ value match_assoc force_vertic pc (p, w, e) =
              (comm_expr expr_wh) e ])
 ;
 
+
+value label_patt pc p =
+  let p = patt_left_assoc_acc p in
+  match p with [
+    <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.%p" patt x var_escaped (loc, y)
+  | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
+  | z -> Ploc.raise (MLast.loc_of_patt z)
+      (Failure (sprintf "label_patt %d" (Obj.tag (Obj.repr z))))
+  ]
+;
 (* Pretty printing improvements (optional):
    - prints "field x = e" instead of "field = fun x -> e" in a record
    - if vertical and "e" is a sequence, put the "do {" at after the "="
@@ -691,7 +701,7 @@ value record_binding pc (p, e) =
            sequence_box (fun pc () -> pprintf pc "%p = " (hlist patt) pl) pc
              el)
   | None ->
-      pprintf pc "%p =@;%p" (hlist patt) pl (comm_expr expr_wh) e ]
+      pprintf pc "%p =@;%p" (hlist label_patt) pl (comm_expr expr_wh) e ]
 ;
 
 value match_assoc_sh force_vertic pc pwe =

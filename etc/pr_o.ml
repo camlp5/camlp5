@@ -321,6 +321,17 @@ value patt_as pc z =
 
 (* utilities specific to pr_o *)
 
+value label_patt pc p =
+  let p = patt_left_assoc_acc p in
+  match p with [
+    <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.%p" patt x var_escaped (loc, y)
+  | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
+  | z -> Ploc.raise (MLast.loc_of_patt z)
+      (Failure (sprintf "label_patt %d" (Obj.tag (Obj.repr z))))
+  ]
+;
+
+
 (* Basic displaying of a 'binding' (let, value, expr or patt record field).
    The pretty printing is done correctly, but there are no syntax shortcuts
    (e.g. "let f = fun x -> y" is *not* shortened as "let f x = y")
@@ -334,15 +345,7 @@ value binding pelem eelem pc (p, e, attrs) =
 ;
 
 value record_binding is_last pc (p, e) =
-let label pc p =
-  let p = patt_left_assoc_acc p in
-  match p with [
-    <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.%p" patt x var_escaped (loc, y)
-  | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
-  | z -> Ploc.raise (MLast.loc_of_patt z)
-      (Failure (sprintf "record_binding/label %d" (Obj.tag (Obj.repr z))))
-  ] in
-  pprintf pc "%p =@;%q" label p expr1 e (if is_last then pc.dang else ";")
+  pprintf pc "%p =@;%q" label_patt p expr1 e (if is_last then pc.dang else ";")
 ;
 
 pr_expr_fun_args.val :=
@@ -1627,15 +1630,7 @@ EXTEND_PRINTER
               lpl ([], False)
           in
           let lxl = List.map (fun (a,b) -> ((a,b,<:vala< []>>), ";")) lpl in
-          let label pc p =
-            let p = patt_left_assoc_acc p in
-            match p with [
-              <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.%p" patt x var_escaped (loc, y)
-            | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
-            | z -> Ploc.raise (MLast.loc_of_patt z)
-                (Failure (sprintf "pr_patt/simple/label %d" (Obj.tag (Obj.repr z))))
-            ] in
-          pprintf pc "@[<1>{%p%s}@]" (plist (binding label patt) 0) lxl
+          pprintf pc "@[<1>{%p%s}@]" (plist (binding label_patt patt) 0) lxl
             (if closed then "; _" else "")
       | <:patt< [| $list:pl$ |] >> ->
           if pl = [] then pprintf pc "[| |]"

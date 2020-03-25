@@ -68,14 +68,48 @@ let expr_first_is_id e =
   erec e
 ;;
 
+let expr_is_module_path e =
+  let rec erec =
+    function
+      MLast.ExUid (_, _) -> true
+    | MLast.ExAcc (_, a, b) -> erec a && erec b
+    | _ -> false
+  in
+  erec e
+;;
+
+let patt_is_module_path e =
+  let rec erec =
+    function
+      MLast.PaUid (_, _) -> true
+    | MLast.PaAcc (_, a, b) -> erec a && erec b
+    | _ -> false
+  in
+  erec e
+;;
+ 
 let expr_left_assoc_acc e =
   let rec arec =
     function
-      MLast.ExAcc (loc, e1, e2) ->
+      MLast.ExAcc (loc, e1, e2) as z ->
         begin match e2 with
           MLast.ExAcc (_, e2, e3) ->
             arec (MLast.ExAcc (loc, MLast.ExAcc (loc, e1, e2), e3))
-        | _ -> e
+        | _ -> z
+        end
+    | e -> e
+  in
+  arec e
+;;
+ 
+let patt_left_assoc_acc e =
+  let rec arec =
+    function
+      MLast.PaAcc (loc, e1, e2) as z ->
+        begin match e2 with
+          MLast.PaAcc (_, e2, e3) ->
+            arec (MLast.PaAcc (loc, MLast.PaAcc (loc, e1, e2), e3))
+        | _ -> z
         end
     | e -> e
   in

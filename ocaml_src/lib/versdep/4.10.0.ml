@@ -469,7 +469,10 @@ let ocaml_case (p, wo, loc, e) =
 
 let ocaml_pexp_function lab eo pel =
   match pel with
-    [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
+    [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable}}]
+    when lab = "" && eo = None ->
+      Pexp_function pel
+  | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
       Pexp_fun (labelled lab, eo, p, e)
   | pel ->
       if lab = "" && eo = None then Pexp_function pel
@@ -534,6 +537,8 @@ let ocaml_pexp_variant =
 let ocaml_value_binding ?(item_attributes = []) loc p e =
   {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
 ;;
+
+let ocaml_ppat_open loc li p = Ppat_open (mkloc loc li, p);;
 
 let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 

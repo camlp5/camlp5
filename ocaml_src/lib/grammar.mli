@@ -265,7 +265,7 @@ module type S =
          type (instead of (string * string)); the module parameter
          must specify a way to show them as (string * string) *)
 
-module GMake (L : GLexerType) : S with type te = L.te;;
+module GMake (L : GLexerType) : (S with type te = L.te);;
 
 (** {6 Miscellaneous} *)
 
