@@ -3980,7 +3980,14 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[")))
-                (Grammar.s_list0sep
+                (Grammar.s_token ("", "|")))
+             (Grammar.s_token ("", "]")),
+           (fun _ _ _ (loc : Ploc.t) -> (MLast.TySum (loc, []) : 'ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[")))
+                (Grammar.s_list1sep
                    (Grammar.s_nterm
                       (constructor_declaration :
                        'constructor_declaration Grammar.Entry.e))

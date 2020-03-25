@@ -795,7 +795,9 @@ let rec rawstring1 delimtok (ofs, delim) ctx buf (strm__ : _ Stream.t) =
       ctx.line_cnt bp c;
       let buf = Plexing.Lexbuf.add c buf in
       if String.get delim ofs <> c then
-        rawstring1 delimtok (0, delim) ctx buf strm
+        if String.get delim 0 = c then
+          rawstring1 delimtok (1, delim) ctx buf strm
+        else rawstring1 delimtok (0, delim) ctx buf strm
       else if ofs + 1 < String.length delim then
         rawstring1 delimtok (ofs + 1, delim) ctx buf strm
       else
@@ -1792,11 +1794,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 925, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 925, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 925, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 926, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 926, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 928, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 928, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 928, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 929, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 929, 37)));
        tok_comm = None}
   in
   let glex =
