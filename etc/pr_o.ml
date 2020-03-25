@@ -334,7 +334,15 @@ value binding pelem eelem pc (p, e, attrs) =
 ;
 
 value record_binding is_last pc (p, e) =
-  pprintf pc "%p =@;%q" patt p expr1 e (if is_last then pc.dang else ";")
+let label pc p =
+  let p = patt_left_assoc_acc p in
+  match p with [
+    <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.%p" patt x var_escaped (loc, y)
+  | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
+  | z -> Ploc.raise (MLast.loc_of_patt z)
+      (Failure (sprintf "record_binding/label %d" (Obj.tag (Obj.repr z))))
+  ] in
+  pprintf pc "%p =@;%q" label p expr1 e (if is_last then pc.dang else ";")
 ;
 
 pr_expr_fun_args.val :=
