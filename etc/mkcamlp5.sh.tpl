@@ -4,7 +4,7 @@
 OLIB=`OCAMLNc -where`
 LIB=LIBDIR/CAMLP5N
 
-RM=rm -f
+RM="rm -f"
 INTERFACES=
 OPTS=
 INCL="-I ."
