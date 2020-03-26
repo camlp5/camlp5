@@ -28,6 +28,24 @@ archive(syntax,preprocessor,camlp5scheme) = "pa_scheme.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5lisp) = "pa_lisp.cmo pr_dump.cmo"
 preprocessor = "camlp5 -nolib"
 
+package "pr_r" (
+  requires(toploop) = "camlp5"
+  archive(syntax,preprocessor) = "pr_r.cmo"
+  archive(syntax,toploop)      = "pr_r.cmo"
+)
+
+package "pr_o" (
+  requires(toploop) = "camlp5"
+  archive(syntax,preprocessor) = "pr_o.cmo"
+  archive(syntax,toploop)      = "pr_o.cmo"
+)
+
+package "pr_dump" (
+  requires(toploop) = "camlp5"
+  archive(syntax,preprocessor) = "pr_dump.cmo"
+  archive(syntax,toploop)      = "pr_dump.cmo"
+)
+
 package "gramlib" (
   requires(toploop) = "camlp5"
   version = "@VERSION@"
