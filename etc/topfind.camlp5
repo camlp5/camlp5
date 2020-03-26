@@ -14,7 +14,7 @@ Hashtbl.add
        )) ;
 
 
-(* Add "#camlp4r" directive: *)
+(* Add "#camlp5r" directive: *)
 
 Hashtbl.add
     Toploop.directive_table

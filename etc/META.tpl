@@ -28,6 +28,12 @@ archive(syntax,preprocessor,camlp5scheme) = "pa_scheme.cmo pr_dump.cmo"
 archive(syntax,preprocessor,camlp5lisp) = "pa_lisp.cmo pr_dump.cmo"
 preprocessor = "camlp5 -nolib"
 
+package "pr_r" (
+  requires(toploop) = "camlp5"
+  archive(syntax,preprocessor) = "pr_r.cmo"
+  archive(syntax,toploop)      = "pr_r.cmo"
+)
+
 package "pr_o" (
   requires(toploop) = "camlp5"
   archive(syntax,preprocessor) = "pr_o.cmo"
