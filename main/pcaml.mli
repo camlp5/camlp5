@@ -169,6 +169,7 @@ END;
 
 value unvala : V 'a -> 'a;
 value vala_map : ('a -> 'b) -> V 'a -> V 'b;
+value vala_it : ('a -> unit) -> V 'a -> unit;
 value vala_mapa : ('a -> 'b) -> (string -> 'b) -> V 'a -> 'b;
 
 (**/**)

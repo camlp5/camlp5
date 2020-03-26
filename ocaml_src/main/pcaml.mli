@@ -165,6 +165,7 @@ val strict_mode : bool ref;;
 
 val unvala : 'a -> 'a;;
 val vala_map : ('a -> 'b) -> 'a -> 'b;;
+val vala_it : ('a -> unit) -> 'a -> unit;;
 val vala_mapa : ('a -> 'b) -> (string -> 'b) -> 'a -> 'b;;
 
 (**/**)

@@ -473,6 +473,8 @@ let greek_ascii_equiv s =
 let strict_mode = ref false;;
 
 let unvala x = x;;
+let vala_it f x = ignore (f x);;
+
 let vala_map f x = f x;;
 let vala_mapa f g x = f x;;
 

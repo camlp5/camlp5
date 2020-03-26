@@ -508,6 +508,15 @@ value unvala x =
     | Ploc.VaAnt a -> failwith ("unexpected antiquotation value " ^ a) ]
   END
 ;
+value vala_it f x =
+  IFNDEF STRICT THEN ignore(f x)
+  ELSE
+    match x with
+    [ Ploc.VaVal x ->  ignore (f x)
+    | Ploc.VaAnt a -> () ]
+  END
+;
+
 value vala_map f x =
   IFNDEF STRICT THEN f x
   ELSE
