@@ -1327,6 +1327,17 @@ and t2 = bool[@@foo];
      r_output = OK {foo|value set_int2 c = {contents = (c : int)};
 |foo}
     };
+    {name="record-label-expression3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|{ M.contents }|foo} ;
+     official_input = OK {foo|{ M.contents }|foo} ;
+     r_input = OK {foo|{ M.contents = contents };|foo} ;
+     o_output = OK {foo|let _ = {M.contents = contents};;
+|foo};
+     official_output = OK {foo|;;{ M.contents = contents }|foo} ;
+     r_output = OK {foo|{M.contents = contents};
+|foo}
+    };
     {name="module-expr-unpack-module1"; implem = True ;
      exclude=[];
      o_input = OK {foo|module M = F(val string)|foo} ;

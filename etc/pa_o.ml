@@ -1444,10 +1444,15 @@ EXTEND
     [ [ i = patt_label_ident ;
         tycon = OPT [ ":" ; c = ctyp -> c ];
         e = OPT [ "="; e = expr LEVEL "expr1" -> e] ->
-        let rhs = match e with [
-          None -> expr_of_patt i
-        | Some e -> e
+        let i = patt_left_assoc_acc i in
+        let last = match i with [
+          <:patt< $_$ . $lid:j$ >> -> j
+        | <:patt< $lid:j$ >> -> j
+        | _ -> failwith "internal error: lbl_expr"
         ] in
+        let rhs = match e with [
+          None -> <:expr< $lid:last$ >>
+        | Some e -> e ] in
         let rhs = match tycon with [
           None -> rhs
         | Some ty -> <:expr< ($rhs$ : $ty$) >>
@@ -1608,26 +1613,26 @@ EXTEND
   ;
   lbl_patt:
     [ [ i = patt_label_ident ; tycon = OPT [ ":" ; c = ctyp -> c ]; p = OPT [ "="; p = patt -> p ] ->
-        let rec loop = fun [
-          <:patt< $_$ . $p$ >> -> loop p
-        | p -> p
+        let i = patt_left_assoc_acc i in
+        let last = match i with [
+          <:patt< $_$ . $lid:j$ >> -> j
+        | <:patt< $lid:j$ >> -> j
+        | _ -> failwith "internal error: lbl_patt"
         ] in
         let rhs = match p with [
-          None -> loop i
-        | Some p -> p
-        ] in
-        let rhs = match tycon with [
+          None -> <:patt< $lid:last$ >>
+        | Some p -> p ] in 
+         let rhs = match tycon with [
           None -> rhs
-        | Some ty -> <:patt< ($rhs$ : $ty$) >>
-        ] in (i, rhs)
+        | Some ty -> <:patt< ( $rhs$ : $ty$ ) >>
+        ] in 
+        (i, rhs)
       | "_" -> (<:patt< _ >>, <:patt< _ >>) ] ]
   ;
   patt_label_ident:
-    [ LEFTA
-      [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
-    | RIGHTA
-      [ i = UIDENT -> <:patt< $uid:i$ >>
-      | i = LIDENT -> <:patt< $lid:i$ >> ] ]
+    [ RIGHTA
+      [ i = UIDENT; "."; p2 = SELF -> <:patt< $uid:i$ . $p2$ >> ]
+    | [ i = LIDENT -> <:patt< $lid:i$ >> ] ]
   ;
   (* Type declaration *)
   first_type_decl:
