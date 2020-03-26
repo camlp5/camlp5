@@ -1,6 +1,12 @@
 Camlp5 Version 7.11:
 --------------------
 
+* [26 Mar 20] forgot to add that this supports ocaml version 4.10.0.
+  added findlib packages for "camlp5.pr_o", "camlp5.pr_r" and "camlp5.pr_dump",
+  which load the appropriate archives into the toploop and preprocessor.
+  Added a "topfind.camlp5" file that can be "#use"ed instead of "topfind",
+  and will provide the commands "#camlp5o" and "#camlp5r".
+
 * [29 Oct 19] Added compatibility with ocaml version 4.08.2.
 * [29 Oct 19] Added compatibility with ocaml version 4.09.1.
 * [03 Feb 20] Added compatibility with ocaml version 4.10+beta2.
