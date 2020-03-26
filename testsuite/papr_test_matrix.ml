@@ -3648,14 +3648,17 @@ end
      r_output = OK {foo|type t = < a : int;  b; c : int;  d > ;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="object-val-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|class ['a] c x =  object val x' : 'b = x  end|foo} ;
+     official_input = OK {foo|class ['a] c x =  object val x' : 'b = x end|foo} ;
+     r_input = OK {foo|class c ['a] x = object value x' : 'b = x; end;
+|foo} ;
+     o_output = OK {foo|class ['a] c x = object val x' = (x : 'b) end;;
+|foo};
+     official_output = OK {foo|class ['a] c x = object val x' = (x : 'b) end|foo} ;
+     r_output = OK {foo|class c ['a] x = object value x' = (x : β); end;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

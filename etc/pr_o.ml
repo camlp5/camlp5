@@ -73,7 +73,9 @@ value ocaml_char =
 
 value rec is_irrefut_patt =
   fun
-  [ <:patt< $lid:_$ >> -> True
+  [
+    <:patt< $p$ [@ $_attribute:_$ ] >> -> is_irrefut_patt p
+  |  <:patt< $lid:_$ >> -> True
   | <:patt< () >> -> True
   | <:patt< _ >> -> True
   | <:patt< $x$ . $y$ >> -> patt_is_module_path x && is_irrefut_patt y

@@ -7,11 +7,6 @@
 (open Exparser)
 (open Versdep)
 
-(type (choice 'a 'b)
- (sum
-  (Left 'a)
-  (Right 'b)))
-
 ; Buffer
 
 (module Buff

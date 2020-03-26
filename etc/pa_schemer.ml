@@ -7,11 +7,6 @@ open Pcaml;
 open Exparser;
 open Versdep;
 
-type choice α β =
-  [ Left of α
-  | Right of β ]
-;
-
 (* Buffer *)
 
 module Buff =
