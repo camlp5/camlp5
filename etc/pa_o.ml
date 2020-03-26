@@ -608,6 +608,19 @@ value check_not_new_type_extended =
     check_not_new_type_extended_f
 ;
 
+value check_uident_coloneq_f strm =
+  match stream_npeek 2 strm with [
+    [("UIDENT",_) ; ("", ":=")] -> ()
+  | [("ANTIQUOT",qs); ("", ":=")] when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_uident_coloneq =
+  Grammar.Entry.of_parser gram "check_uident_coloneq"
+    check_uident_coloneq_f
+;
+
 value expr_wrap_attrs loc e l =
 let rec wrec e = fun [
   [] -> e
@@ -1003,6 +1016,9 @@ EXTEND
       | "include"; (ext,alg_attrs) = ext_attributes; mt = module_type ; item_attrs = item_attributes →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           sig_item_to_inline <:sig_item< include $mt$ $_itemattrs:attrs$ >> ext
+
+      | "module"; check_uident_coloneq ; i = V UIDENT ; ":="; li = extended_longident ; attrs = item_attributes →
+        <:sig_item< module $_uid:i$ := $longid:li$ $_itemattrs:attrs$ >>
 
       | "module"; (ext,alg_attrs) = ext_attributes; check_module_not_alias; rf = FLAG "rec";
         h = first_mod_decl_binding ; t = LIST0 rest_mod_decl_binding ->

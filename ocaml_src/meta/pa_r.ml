@@ -483,6 +483,19 @@ let check_not_lident_colon =
     check_not_lident_colon_f
 ;;
 
+let check_uident_coloneq_f strm =
+  match stream_npeek 2 strm with
+    ["UIDENT", _; "", ":="] -> ()
+  | ["ANTIQUOT", qs; "", ":="]
+    when prefix_eq "uid:" qs || prefix_eq "_uid:" qs ->
+      ()
+  | _ -> raise Stream.Failure
+;;
+
+let check_uident_coloneq =
+  Grammar.Entry.of_parser gram "check_uident_coloneq" check_uident_coloneq_f
+;;
+
 let test_label_eq =
   Grammar.Entry.of_parser gram "test_label_eq"
     (let rec test lev strm =
@@ -1681,6 +1694,27 @@ Grammar.safe_extend
            (fun (attrs : 'item_attributes) (mt : 'module_type) _ (i : 'ident)
                 _ _ (loc : Ploc.t) ->
               (MLast.SgMty (loc, i, mt, attrs) : 'sig_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "module")))
+                         (Grammar.s_nterm
+                            (check_uident_coloneq :
+                             'check_uident_coloneq Grammar.Entry.e)))
+                      (Grammar.s_token ("UIDENT", "")))
+                   (Grammar.s_token ("", ":=")))
+                (Grammar.s_nterm
+                   (extended_longident :
+                    'extended_longident Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (li : 'extended_longident) _
+                (i : string) _ _ (loc : Ploc.t) ->
+              (MLast.SgModSubst (loc, i, li, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

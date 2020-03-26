@@ -2015,6 +2015,8 @@ EXTEND_PRINTER
           let rf = if rf then " rec" else "" in
           vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
             (sig_module_or_module_type "and" ':') pc mdl
+      | <:sig_item:< module $uid:i$ := $longid:li$  $_itemattrs:item_attrs$ >> ->
+          pprintf pc "module %s := %p%p" i longident li (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< module alias $i$ = $li$ $itemattrs:item_attrs$ >> ->
           pprintf pc "module alias %s = %p%p" i mod_ident (loc, li) (hlist (pr_attribute "@@")) item_attrs
       | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->

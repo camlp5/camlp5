@@ -4,6 +4,11 @@
 
 #load "q_MLast.cmo";
 
+value prefix_eq s0 s1 =
+  let s0len = String.length s0 in
+  s0len <= String.length s1 && s0 = (String.sub s1 0 s0len)
+;
+
 type choice 'a 'b =
   [ Left of 'a
   | Right of 'b ]

@@ -417,6 +417,19 @@ value check_not_lident_colon =
     check_not_lident_colon_f
 ;
 
+value check_uident_coloneq_f strm =
+  match stream_npeek 2 strm with [
+    [("UIDENT",_) ; ("", ":=")] -> ()
+  | [("ANTIQUOT",qs); ("", ":=")] when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_uident_coloneq =
+  Grammar.Entry.of_parser gram "check_uident_coloneq"
+    check_uident_coloneq_f
+;
+
 value test_label_eq =
   Grammar.Entry.of_parser gram "test_label_eq"
     (test 1 where rec test lev strm =
@@ -688,6 +701,10 @@ EXTEND
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") →
           <:sig_item< module $_flag:rf$ $_list:l$ >>
+
+      | "module"; check_uident_coloneq ; i = V UIDENT ; ":="; li = extended_longident ; attrs = item_attributes →
+        <:sig_item< module $_uid:i$ := $longid:li$ $_itemattrs:attrs$ >>
+
       | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes →
           <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
       | "module"; "type"; i = V ident "" ; attrs = item_attributes →

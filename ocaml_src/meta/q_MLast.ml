@@ -7,6 +7,7 @@
 (* #load "q_MLast.cmo" *)
 (* #load "pa_macro.cmo" *)
 
+open Asttools;;
 open Mlsyntax.Original;;
 
 let gram = Grammar.gcreate (Plexer.gmake ());;
@@ -423,10 +424,6 @@ let check_type_extension =
 ;;
 
 let stream_npeek n (strm : (string * string) Stream.t) = Stream.npeek n strm;;
-let prefix_eq s0 s1 =
-  let s0len = String.length s0 in
-  s0len <= String.length s1 && s0 = String.sub s1 0 s0len
-;;
 
 let check_dot_uid_f strm =
   match stream_npeek 5 strm with
@@ -450,6 +447,9 @@ let check_dot_uid =
 let check_uident_coloneq_f strm =
   match stream_npeek 2 strm with
     ["UIDENT", _; "", ":="] -> ()
+  | ["ANTIQUOT", qs; "", ":="]
+    when prefix_eq "uid:" qs || prefix_eq "_uid:" qs ->
+      ()
   | _ -> raise Stream.Failure
 ;;
 

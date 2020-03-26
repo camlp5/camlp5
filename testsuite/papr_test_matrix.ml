@@ -3689,9 +3689,11 @@ end
      o_input = OK {foo|module M := T|foo} ;
      official_input = OK {foo|module M := T|foo} ;
      r_input = OK {foo|module M := T;|foo} ;
-     o_output = OK {foo||foo};
+     o_output = OK {foo|module M := T;;
+|foo};
      official_output = OK {foo|module M := T|foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|module M := T;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
