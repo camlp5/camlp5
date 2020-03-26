@@ -3615,6 +3615,75 @@ end
      r_output = OK {foo|type t ' a' = ' a';
 |foo}
     };
+    {name="object-type-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = < a : int >|foo} ;
+     official_input = OK {foo|type t = < a : int >|foo} ;
+     r_input = OK {foo|type t = < a : int >;|foo} ;
+     o_output = OK {foo|type t = < a : int > ;;
+|foo};
+     official_output = OK {foo|type t = < a: int   > |foo} ;
+     r_output = OK {foo|type t = < a : int > ;
+|foo}
+    };
+    {name="object-type-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = < a >|foo} ;
+     official_input = OK {foo|type t = < a >|foo} ;
+     r_input = OK {foo|type t = < a >;|foo} ;
+     o_output = OK {foo|type t = <  a > ;;
+|foo};
+     official_output = OK {foo|type t = < a  > |foo} ;
+     r_output = OK {foo|type t = <  a > ;
+|foo}
+    };
+    {name="object-type-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = < a : int; b ; c : int ; d >|foo} ;
+     official_input = OK {foo|type t = < a : int; b ; c : int ; d >|foo} ;
+     r_input = OK {foo|type t = < a : int; b ; c : int ; d >;|foo} ;
+     o_output = OK {foo|type t = < a : int;  b; c : int;  d > ;;
+|foo};
+     official_output = OK {foo|type t = < a: int  ;b ;c: int  ;d  > |foo} ;
+     r_output = OK {foo|type t = < a : int;  b; c : int;  d > ;
+|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;

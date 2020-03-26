@@ -1541,7 +1541,7 @@ and object_field_list_se sel =
     (fun
      [ Sexpr loc [Slid _ s; se] →
          let t = ctyp_se se in
-         (s, t, <:vala< [] >>)
+         (Some s, t, <:vala< [] >>)
      | se → error_loc (loc_of_sexpr se) "object field" ])
     sel
 and constructor_declaration_se =

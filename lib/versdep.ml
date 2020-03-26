@@ -394,7 +394,19 @@ value ocaml_mkmod loc x =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN {pmod_desc = x; pmod_loc = loc}
   ELSE {pmod_desc = x; pmod_loc = loc; pmod_attributes = []} END
 ;
-value ocaml_mkfield ?{alg_attributes=[]} loc (lab, x) fl =
+
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_mkfield_inh ?{alg_attributes=[]} loc x fl = assert False
+;
+ELSE
+value ocaml_mkfield_inh ?{alg_attributes=[]} loc x fl =
+    [{pof_desc = Oinherit x; pof_loc = loc;
+      pof_attributes = alg_attributes} :: fl]
+;
+END
+;
+
+value ocaml_mkfield_tag ?{alg_attributes=[]} loc (lab, x) fl =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     do {
       assert (alg_attributes = []) ;

@@ -468,7 +468,7 @@ EXTEND
       | "{"; x1 = LIST1 tlabel SEP ","; "}" ->
           if ocaml_records.val then <:ctyp< { $list:x1$ } >>
           else
-            let list = List.map (fun (_, l, _, t, _) -> (l, t, <:vala< [] >>)) x1 in
+            let list = List.map (fun (_, l, _, t, _) -> (Some l, t, <:vala< [] >>)) x1 in
             <:ctyp< < $list:list$ > >>
       | "{"; "}" -> not_impl loc "ty' 3"
       | "("; x1 = ctyp; ","; x2 = LIST1 ctyp SEP ","; ")"; x3 = tycon ->

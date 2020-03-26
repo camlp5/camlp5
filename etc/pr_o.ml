@@ -2300,8 +2300,12 @@ value rec class_longident pc cl =
   | [c :: cl] -> pprintf pc "%s.%p" c class_longident cl ]
 ;
 
-value field pc (s, t,attrs) = pprintf pc "%s :@;%p%p" s ctyp t
+value field pc = fun [
+  (Some s, t,attrs) -> pprintf pc "%s :@;%p%p" s ctyp t
     (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
+| (None, t,attrs) -> pprintf pc "@;%p%p" ctyp t
+    (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
+]
 ;
 
 value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;

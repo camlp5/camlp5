@@ -46,7 +46,8 @@ value mkmty loc d = ocaml_mkmty (mkloc loc) d;
 value mksig loc d = {psig_desc = d; psig_loc = mkloc loc};
 value mkmod loc d = ocaml_mkmod (mkloc loc) d;
 value mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};
-value mkfield ~{alg_attributes=alg_attributes} loc d fl = ocaml_mkfield ~{alg_attributes=alg_attributes} (mkloc loc) d fl;
+value mkfield_tag ~{alg_attributes=alg_attributes} loc d fl = ocaml_mkfield_tag ~{alg_attributes=alg_attributes} (mkloc loc) d fl;
+value mkfield_inh ~{alg_attributes=alg_attributes} loc d fl = ocaml_mkfield_inh ~{alg_attributes=alg_attributes} (mkloc loc) d fl;
 value mkfield_var loc = ocaml_mkfield_var (mkloc loc);
 
 value mkcty loc d =
@@ -566,8 +567,12 @@ and ctyp =
 and meth_list loc fl v =
   match fl with
   [ [] → if uv v then mkfield_var loc else []
-  | [(lab, t, attrs) :: fl] →
-      mkfield ~{alg_attributes=uv_alg_attributes attrs} loc (lab, add_polytype t) (meth_list loc fl v) ]
+  | [(Some lab, t, attrs) :: fl] →
+          mkfield_tag ~{alg_attributes=uv_alg_attributes attrs} loc (lab, add_polytype t) (meth_list loc fl v)
+  | [(None, t, attrs) :: fl] →
+          mkfield_inh ~{alg_attributes=uv_alg_attributes attrs} loc (add_polytype t) (meth_list loc fl v)
+  ]
+    
 and add_polytype t =
   match ocaml_ptyp_poly with
   [ Some ptyp_poly →

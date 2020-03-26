@@ -1175,7 +1175,7 @@
  ((object_field_list_se sel)
   (anti_list_map
    (lambda_match
-    ((Sexpr loc [(Slid _ s) se]) (let ((t (ctyp_se se))) (values s t <:vala< [] >>)))
+    ((Sexpr loc [(Slid _ s) se]) (let ((t (ctyp_se se))) (values (Some s) t <:vala< [] >>)))
     (se (error_loc (loc_of_sexpr se) "object field")))
    sel))
  (constructor_declaration_se

@@ -248,8 +248,14 @@ value rec class_longident pc cl =
 value binding elem pc (p, e, item_attrs) =
   pprintf pc "%p =@;%p%p" patt p expr e
     (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs);
-value field pc (s, t, attrs) = pprintf pc "%s :@;%p%p" s ctyp t
-    (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala attrs) ;
+value field pc = fun [
+  (Some s, t, attrs) -> pprintf pc "%s :@;%p%p" s ctyp t
+    (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala attrs)
+| (None, t, attrs) -> pprintf pc "@;%p%p" ctyp t
+    (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala attrs)
+]
+;
+
 value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 
 value patt_tcon pc p =

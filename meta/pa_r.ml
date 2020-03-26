@@ -391,6 +391,31 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value is_lident_colon_f strm =
+  match Stream.npeek 2 strm with [
+    [("LIDENT",_) ; ("",":") :: _] -> True
+  | _ -> False
+  ]
+;
+
+value check_lident_colon_f strm =
+  if is_lident_colon_f strm then () else raise Stream.Failure
+;
+
+value check_lident_colon =
+  Grammar.Entry.of_parser gram "check_lident_colon"
+    check_lident_colon_f
+;
+
+value check_not_lident_colon_f strm =
+  if not (is_lident_colon_f strm) then () else raise Stream.Failure
+;
+
+value check_not_lident_colon =
+  Grammar.Entry.of_parser gram "check_not_lident_colon"
+    check_not_lident_colon_f
+;
+
 value test_label_eq =
   Grammar.Entry.of_parser gram "test_label_eq"
     (test 1 where rec test lev strm =
@@ -1469,7 +1494,11 @@ EXTEND
           <:ctyp< < $_list:ml$ $_flag:v$ > >> ] ]
   ;
   field:
-    [ [ lab = LIDENT; ":"; t = ctyp_below_alg_attribute; alg_attrs = alg_attributes → (mkident lab, t, alg_attrs) ] ]
+    [ [ check_lident_colon ; lab = LIDENT; ":"; t = ctyp_below_alg_attribute; alg_attrs = alg_attributes →
+        (Some (mkident lab), t, alg_attrs)
+      | check_not_lident_colon ; t = ctyp_below_alg_attribute; alg_attrs = alg_attributes ->
+        (None, t, alg_attrs)
+      ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF → [mkident m :: l]
