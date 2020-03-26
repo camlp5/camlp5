@@ -460,6 +460,29 @@ let check_dot_uid =
   Grammar.Entry.of_parser gram "check_dot_uid" check_dot_uid_f
 ;;
 
+let is_lident_colon_f strm =
+  match Stream.npeek 2 strm with
+    ("LIDENT", _) :: ("", ":") :: _ -> true
+  | _ -> false
+;;
+
+let check_lident_colon_f strm =
+  if is_lident_colon_f strm then () else raise Stream.Failure
+;;
+
+let check_lident_colon =
+  Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f
+;;
+
+let check_not_lident_colon_f strm =
+  if not (is_lident_colon_f strm) then () else raise Stream.Failure
+;;
+
+let check_not_lident_colon =
+  Grammar.Entry.of_parser gram "check_not_lident_colon"
+    check_not_lident_colon_f
+;;
+
 let test_label_eq =
   Grammar.Entry.of_parser gram "test_label_eq"
     (let rec test lev strm =
@@ -5275,8 +5298,27 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (check_not_lident_colon :
+                       'check_not_lident_colon Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (ctyp_below_alg_attribute :
+                    'ctyp_below_alg_attribute Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (alg_attributes : 'alg_attributes Grammar.Entry.e)),
+           (fun (alg_attrs : 'alg_attributes) (t : 'ctyp_below_alg_attribute)
+                _ (loc : Ploc.t) ->
+              (None, t, alg_attrs : 'field)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_nterm
+                            (check_lident_colon :
+                             'check_lident_colon Grammar.Entry.e)))
                       (Grammar.s_token ("LIDENT", "")))
                    (Grammar.s_token ("", ":")))
                 (Grammar.s_nterm
@@ -5285,8 +5327,8 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
            (fun (alg_attrs : 'alg_attributes) (t : 'ctyp_below_alg_attribute)
-                _ (lab : string) (loc : Ploc.t) ->
-              (mkident lab, t, alg_attrs : 'field)))]];
+                _ (lab : string) _ (loc : Ploc.t) ->
+              (Some (mkident lab), t, alg_attrs : 'field)))]];
     Grammar.extension (class_longident : 'class_longident Grammar.Entry.e)
       None
       [None, None,

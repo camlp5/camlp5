@@ -40,7 +40,7 @@ and ctyp =
   | TyLab of loc * string * ctyp
   | TyLid of loc * string
   | TyMan of loc * ctyp * bool * ctyp
-  | TyObj of loc * (string * ctyp * attributes) list * bool
+  | TyObj of loc * (string option * ctyp * attributes) list * bool
   | TyOlb of loc * string * ctyp
   | TyOpn of loc
   | TyPck of loc * module_type

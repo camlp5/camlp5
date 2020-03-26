@@ -119,7 +119,7 @@ module Meta_make (C : MetaSig) =
                (C.list
                   (fun (s, t, attrs) ->
                      let attrs = assert false in
-                     C.tuple [C.string s; ctyp t; attrs]))
+                     C.tuple [C.option C.string s; ctyp t; attrs]))
                lst;
              C.vala C.bool b]
       | TyOlb (_, s, t) -> C.node "TyOlb" [C.vala C.string s; ctyp t]
