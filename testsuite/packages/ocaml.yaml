@@ -297,4 +297,5 @@ ocaml-4.10.0:
       - testsuite/tests/typing-modules/printing.ml
       - testsuite/tests/typing-sigsubst/sig_local_aliases_syntax_errors.ml
       - testsuite/tests/typing-warnings/pr7261.ml
+      - testsuite/tests/typing-shadowing-of-pervasives-submodules/redefine_largefile_top.ml
   files: []

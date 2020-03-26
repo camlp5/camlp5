@@ -318,7 +318,8 @@ value setup_syntax () =
   | "original" -> do {
   Plexer.dollar_for_antiquotation.val := False;
   Plexer.simplest_raw_strings.val := True;
-  Plexer.utf8_lexing.val := True
+  Plexer.utf8_lexing.val := True ;
+  Plexer.no_quotations.val := True
     }
   | _ -> failwith (Printf.sprintf "syntax <<%s>> not recognized" syntax.val)
 ];

@@ -49,14 +49,14 @@ our %tools = (
   generate_step('roundtrip-revised.byte', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r.byte', "-no-pa-opt"]),
   generate_step('roundtrip-revised.opt', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r.opt', "-no-pa-opt"]),
 
-  generate_step('roundtrip-official', 'original', ['tools/ROUNDTRIP-pa_o-pr_official', "-no-pa-opt"]),
+  generate_step('roundtrip-official', 'original', ['tools/ROUNDTRIP-pa_o-pr_official', "-no-pa-opt", "-no_quot"]),
   generate_step('papr-official', 'original', ['./papr_official.byte']),
 
-  generate_step('roundtrip-original', 'original', ['tools/ROUNDTRIP-pa_o-pr_o', "-flag", "M", "-no-pa-opt"]),
-  generate_step('roundtrip-original.byte', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.byte', "-flag", "M", "-no-pa-opt"]),
-  generate_step('roundtrip-original.opt', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.opt', "-flag", "M", "-no-pa-opt"]),
+  generate_step('roundtrip-original', 'original', ['tools/ROUNDTRIP-pa_o-pr_o', "-flag", "M", "-no-pa-opt", "-no_quot"]),
+  generate_step('roundtrip-original.byte', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.byte', "-flag", "M", "-no-pa-opt", "-no_quot"]),
+  generate_step('roundtrip-original.opt', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.opt', "-flag", "M", "-no-pa-opt", "-no_quot"]),
 
-  generate_step('roundtrip-original-streams', 'original', ['tools/ROUNDTRIP-pa_op-pr_op', "-flag", "M", "-no-pa-opt"]),
+  generate_step('roundtrip-original-streams', 'original', ['tools/ROUNDTRIP-pa_op-pr_op', "-flag", "M", "-no-pa-opt", "-no_quot"]),
 
   'cp' =>
   {

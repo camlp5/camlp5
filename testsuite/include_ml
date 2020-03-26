@@ -55,10 +55,10 @@ Exparser.optim := false ;;
 open OUnit2 ;;
 open Testutil ;;
 open Testutil2 ;;
-(*
+
 #load "roundtrip_lexer.cmo";;
 open Roundtrip_lexer ;;
-*)
+
 let pp_plexing_lexbuf b = Fmt.(pf stdout "<<%s>>" (Plexing.Lexbuf.get b)) ;;
 #install_printer pp_plexing_lexbuf ;;
 
