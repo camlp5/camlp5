@@ -1415,7 +1415,8 @@ and type_declaration_se =
         | se → error se "type declaration" ]
       in
       let n = (loc1, <:vala< n1 >>) in
-      {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
+      {MLast.tdIsDecl = True ;
+       MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
        MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
        MLast.tdCon = <:vala< [] >>;
        MLast.tdAttributes = <:vala< [] >>}
@@ -1432,7 +1433,8 @@ and type_declaration_list_se =
       in
       let n = (loc1, <:vala< n1 >>) in
       let td =
-        {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
+        {MLast.tdIsDecl = True ;
+         MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
          MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
          MLast.tdCon = <:vala< [] >>;
          MLast.tdAttributes = <:vala< [] >>}

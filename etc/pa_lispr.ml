@@ -585,7 +585,8 @@ and type_declaration_list_se =
       let empty = [] in
       let n = (loc1, <:vala< n1 >>) in
       let td =
-        {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
+        {MLast.tdIsDecl = True ;
+         MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
          MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
          MLast.tdCon = <:vala< empty >>;
          MLast.tdAttributes = <:vala< [] >>}

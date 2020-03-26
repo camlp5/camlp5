@@ -1282,6 +1282,14 @@ value ocaml_psig_type is_nonrec stl =
   END
 ;
 
+value ocaml_psig_typesubst stl =
+  IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    assert False
+  ELSE
+    let stl = List.map (fun (s, t) -> t) stl in Psig_typesubst stl
+  END
+;
+
 value ocaml_psig_value s vd =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Psig_value (mknoloc s) vd
   ELSE Psig_value vd END

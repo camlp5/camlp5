@@ -294,4 +294,5 @@ ocaml-4.10.0:
       - testsuite/tests/tool-toplevel/error_highlighting_use3.ml
       - testsuite/tests/tool-toplevel/pr7060.ml
       - testsuite/tests/tool-toplevel/tracing.ml
+      - testsuite/tests/typing-modules/printing.ml
   files: []

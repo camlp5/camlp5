@@ -187,7 +187,8 @@ value extract_label_types loc tn tal cdol =
              let new_tn = tn ^ "_" ^ c in
              let loc = MLast.loc_of_ctyp anon_record_type in
              let aux_def =
-               {MLast.tdNam = <:vala< (loc, <:vala< new_tn >>) >>;
+               {MLast.tdIsDecl = True ;
+                MLast.tdNam = <:vala< (loc, <:vala< new_tn >>) >>;
                 MLast.tdPrm = <:vala< [] >>; MLast.tdPrv = <:vala< False >>;
                 MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>;
                 MLast.tdAttributes = <:vala< [] >>}
@@ -200,7 +201,8 @@ value extract_label_types loc tn tal cdol =
       cdol ([], [])
   in
   let td1 =
-    {MLast.tdNam = <:vala< (loc, <:vala< tn >>) >>;
+    {MLast.tdIsDecl = True ;
+     MLast.tdNam = <:vala< (loc, <:vala< tn >>) >>;
      MLast.tdPrm = <:vala< tal >>; MLast.tdPrv = <:vala< False >>;
      MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = <:vala< [] >>;
      MLast.tdAttributes = <:vala< [] >>}
@@ -656,7 +658,8 @@ EXTEND
   ;
   tb:
     [ [ x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+          {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>;
            MLast.tdAttributes = <:vala< [] >>}
@@ -666,7 +669,8 @@ EXTEND
               (fun (loc, c, tl, _, alg_attrs) -> (loc, <:vala< c>>, <:vala< tl >>, None, alg_attrs))
               x4
           in
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+          {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< $x3$ == [ $list:x4$ ] >>;
            MLast.tdCon = <:vala< [] >>;
@@ -771,13 +775,15 @@ EXTEND
   ;
   tyspec:
     [ [ x1 = tyvars; x2 = idd ->
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+          {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< '$choose_tvar x1$ >>;
            MLast.tdCon = <:vala< [] >>;
            MLast.tdAttributes = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+           {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>;
            MLast.tdAttributes = <:vala< [] >>} ] ]

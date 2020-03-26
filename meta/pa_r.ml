@@ -342,6 +342,7 @@ value is_type_decl_not_extension strm =
       None -> assert False
     | Some (
         ("","=")
+      | ("",":=")
       | ("",";")
       | ("",";;")
       ) -> True
@@ -1140,7 +1141,11 @@ EXTEND
   type_decl:
     [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter); "=";
         pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = item_attributes →
-          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
+          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | n = V type_patt "tp"; tpl = V (LIST0 type_parameter); ":=";
+        pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = item_attributes →
+          <:type_decl< $_tp:n$ $_list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      ] ]
   ;
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:

@@ -584,7 +584,7 @@
                   (error se "type declaration")))))
      (let* ((empty (list))
             (n (, loc1 <:vala< n1 >>))
-            (td ({} (MLast.tdNam <:vala< n >>)
+            (td ({} (MLast.tdIsDecl True)(MLast.tdNam <:vala< n >>)
                     (MLast.tdPrm <:vala< tpl >>) (MLast.tdPrv <:vala< False >>)
                     (MLast.tdDef (ctyp_se se2))
                     (MLast.tdCon <:vala< empty >>)

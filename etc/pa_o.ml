@@ -484,6 +484,7 @@ value is_type_decl_not_extension strm =
       None -> assert False
     | Some (
         ("","=")
+      | ("",":=")
       | ("",";")
       | ("",";;")
       ) -> True

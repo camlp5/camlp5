@@ -200,7 +200,8 @@ and str_item =
   | StFlAtt of loc * attribute_body
   | StExten of loc * attribute_body
 and type_decl =
-  { tdNam : loc * string;
+  { tdIsDecl : bool;
+    tdNam : loc * string;
     tdPrm : type_var list;
     tdPrv : bool;
     tdDef : ctyp;

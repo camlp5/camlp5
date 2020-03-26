@@ -414,7 +414,7 @@ let is_type_decl_not_extension strm =
   let rec wrec n =
     match stream_peek_nth n strm with
       None -> assert false
-    | Some ("", "=" | "", ";" | "", ";;") -> true
+    | Some ("", "=" | "", ":=" | "", ";" | "", ";;") -> true
     | Some ("", s) when word_keywordp s -> true
     | Some ("EOI", "") -> true
     | Some ("", "+=") -> false
@@ -3809,6 +3809,35 @@ Grammar.safe_extend
                                (Grammar.s_nterm
                                   (type_parameter :
                                    'type_parameter Grammar.Entry.e))))
+                         (Grammar.s_token ("", ":=")))
+                      (Grammar.s_flag (Grammar.s_token ("", "private"))))
+                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                (Grammar.s_list0
+                   (Grammar.s_nterm
+                      (constrain : 'constrain Grammar.Entry.e))))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           (fun (attrs : 'item_attributes) (cl : 'constrain list) (tk : 'ctyp)
+                (pf : bool) _ (tpl : 'type_parameter list) (n : 'type_patt)
+                (loc : Ploc.t) ->
+              ({MLast.tdIsDecl = false; MLast.tdNam = n; MLast.tdPrm = tpl;
+                MLast.tdPrv = pf; MLast.tdDef = tk; MLast.tdCon = cl;
+                MLast.tdAttributes = attrs} :
+               'type_decl)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_nterm
+                                  (type_patt : 'type_patt Grammar.Entry.e)))
+                            (Grammar.s_list0
+                               (Grammar.s_nterm
+                                  (type_parameter :
+                                   'type_parameter Grammar.Entry.e))))
                          (Grammar.s_token ("", "=")))
                       (Grammar.s_flag (Grammar.s_token ("", "private"))))
                    (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
@@ -3820,8 +3849,8 @@ Grammar.safe_extend
            (fun (attrs : 'item_attributes) (cl : 'constrain list) (tk : 'ctyp)
                 (pf : bool) _ (tpl : 'type_parameter list) (n : 'type_patt)
                 (loc : Ploc.t) ->
-              ({MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = pf;
-                MLast.tdDef = tk; MLast.tdCon = cl;
+              ({MLast.tdIsDecl = true; MLast.tdNam = n; MLast.tdPrm = tpl;
+                MLast.tdPrv = pf; MLast.tdDef = tk; MLast.tdCon = cl;
                 MLast.tdAttributes = attrs} :
                'type_decl)))]];
     (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
