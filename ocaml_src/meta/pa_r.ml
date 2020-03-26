@@ -2172,7 +2172,7 @@ Grammar.safe_extend
            (fun (e : 'expr) _ (m : 'module_expr)
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _ _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExLop (loc, false, m, e)) ext attrs :
+              (expr_to_inline loc (MLast.ExLop (loc, ovf, m, e)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -3235,8 +3235,7 @@ Grammar.safe_extend
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _
                 (loc : Ploc.t) ->
               ([expr_to_inline loc
-                  (MLast.ExLop (loc, false, m, mksequence loc el)) ext
-                  attrs] :
+                  (MLast.ExLop (loc, ovf, m, mksequence loc el)) ext attrs] :
                'sequence)));
         Grammar.production
           (Grammar.r_next
