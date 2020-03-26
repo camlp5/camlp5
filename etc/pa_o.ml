@@ -878,11 +878,17 @@ EXTEND
       | "open"; (ext,alg_attrs) = ext_attributes; ovf = V (FLAG "!") "!"; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
-      | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = V (FLAG "nonrec");
+      | "type"; (ext,attrs) = ext_attributes; check_type_decl; nr = FLAG "nonrec";
         htd = first_type_decl ; ttd = LIST0 rest_type_decl ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
           let htd = {(htd) with MLast.tdAttributes = attrs } in
-          str_item_to_inline <:str_item< type $_flag:nr$ $list:[htd::ttd]$ >> ext
+          let tdl = [htd :: ttd] in do {
+            if List.for_all (fun td -> td.MLast.tdIsDecl) tdl then ()
+            else if List.for_all (fun td -> not td.MLast.tdIsDecl) tdl then
+              if nr then failwith "type-subst declaration must not specify <<nonrec>>" else ()
+            else failwith "type-declaration cannot mix decl and subst" ;
+            str_item_to_inline <:str_item< type $flag:nr$ $list:tdl$ >> ext
+          }
       | "type"; (ext,attrs) = ext_attributes; check_type_extension ; te = type_extension →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_extension"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs te.MLast.teAttributes in
           let te = { (te) with MLast.teAttributes = attrs } in
@@ -1570,6 +1576,9 @@ EXTEND
     [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
         tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
           <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | tpl = type_parameters; n = V type_patt; ":="; pf = V (FLAG "private");
+        tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+          <:type_decl< $_tp:n$ $list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
       | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; attrs = item_attributes ->
           let tk = <:ctyp< '$choose_tvar tpl$ >> in
           <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]

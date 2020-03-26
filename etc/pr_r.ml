@@ -807,31 +807,35 @@ value type_constraint pc (t1, t2) =
 ;
 
 value type_decl pc td =
-  let ((_, tn), tp, pf, te, cl, attrs) =
-    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
+  let ((_, tn), is_decl, tp, pf, te, cl, attrs) =
+    (Pcaml.unvala td.MLast.tdNam, td.tdIsDecl, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
+  let asgn = if is_decl then "=" else ":=" in
   let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p%s%p = %s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
+       pprintf pc "%p%s%p %s %s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
          (if Pcaml.unvala tp = [] then "" else " ")
          (hlist type_param) (Pcaml.unvala tp)
+         asgn
          (if pf then "private " else "") ctyp te
          (hlist type_constraint) (Pcaml.unvala cl)
         (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
     (fun () ->
        if pc.aft = "" then
-         pprintf pc "%p%s%p =@;%s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
+         pprintf pc "%p%s%p %s@;%s%p%p%p" var_escaped (loc, Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_param) (Pcaml.unvala tp)
+           asgn
            (if pf then "private " else "") ctyp te
            (hlist type_constraint) (Pcaml.unvala cl)
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
        else
-         pprintf pc "@[<a>%p%s%p =@;%s%p%p%p@ @]" var_escaped
+         pprintf pc "@[<a>%p%s%p %s@;%s%p%p%p@ @]" var_escaped
            (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_param) (Pcaml.unvala tp)
+           asgn
            (if pf then "private " else "") ctyp te
            (hlist type_constraint) (Pcaml.unvala cl)
            (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))

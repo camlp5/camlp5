@@ -1181,7 +1181,13 @@ Grammar.safe_extend
                 (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
            (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
-              (MLast.StTyp (loc, nrfl, tdl) : 'str_item)));
+              (vala_it
+                 (fun tdl ->
+                    if List.exists (fun td -> not td.MLast.tdIsDecl) tdl then
+                      failwith "type-declaration cannot mix decl and subst")
+                 tdl;
+               MLast.StTyp (loc, nrfl, tdl) :
+               'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1599,7 +1605,23 @@ Grammar.safe_extend
                 (Grammar.s_nterm (type_decl : 'type_decl Grammar.Entry.e))
                 (Grammar.s_token ("", "and")) false),
            (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
-              (MLast.SgTyp (loc, nrfl, tdl) : 'sig_item)));
+              (vala_it
+                 (fun tdl ->
+                    if List.for_all (fun td -> td.MLast.tdIsDecl) tdl then ()
+                    else if
+                      List.for_all (fun td -> not td.MLast.tdIsDecl) tdl
+                    then
+                      vala_it
+                        (fun nrfl ->
+                           if nrfl then
+                             failwith
+                               "type-subst declaration must not specify <<nonrec>>")
+                        nrfl
+                    else
+                      failwith "type-declaration cannot mix decl and subst")
+                 tdl;
+               MLast.SgTyp (loc, nrfl, tdl) :
+               'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

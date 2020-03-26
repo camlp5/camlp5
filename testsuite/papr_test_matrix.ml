@@ -3673,14 +3673,16 @@ end
      r_output = OK {foo|type wrong = [ False | True ];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
-     exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+    {name="type-subst-1"; implem = False ;
+     exclude=["skip_reparse"];
+     o_input = OK {foo|type t := int|foo} ;
+     official_input = OK {foo|type t := int|foo} ;
+     r_input = OK {foo|type t := int;|foo} ;
+     o_output = OK {foo|type t := int;;
+|foo};
+     official_output = OK {foo|type nonrec t := int|foo} ;
+     r_output = OK {foo|type t := int;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
@@ -3722,6 +3724,7 @@ value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_op
     | (False,Some (_,f)) -> ignore(f s)
     ] in
     let official_reparse implem s =
+    if List.mem "skip_reparse" i.exclude then () else
     try official_reparse0 implem s
     with exn -> do {
       Printf.fprintf stderr "Exception during reparse of <<%s>>:\n\t" s ;

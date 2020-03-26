@@ -1612,8 +1612,16 @@ and sig_item s l =
            (mkloc loc) lid) ::
       l
   | SgTyp (loc, flg, tdl) ->
-      mksig loc (ocaml_psig_type (uv flg) (List.map mktype_decl (uv tdl))) ::
-      l
+      let si_desc =
+        if List.for_all (fun td -> td.tdIsDecl) (uv tdl) then
+          ocaml_psig_type (uv flg) (List.map mktype_decl (uv tdl))
+        else if List.for_all (fun td -> not td.tdIsDecl) (uv tdl) then
+          if not (uv flg) then
+            ocaml_psig_typesubst (List.map mktype_decl (uv tdl))
+          else error loc "type-subst with nonrec flag specified"
+        else error loc "type-decl/subst with mixed decl/subst"
+      in
+      mksig loc si_desc :: l
   | SgTypExten (loc, te) ->
       mksig loc (ocaml_psig_typext (type_extension loc te)) :: l
   | SgUse (loc, fn, sl) ->

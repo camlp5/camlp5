@@ -557,10 +557,11 @@ value mem_tvar s tpl =
 ;
 
 value type_decl pc td =
-  let ((_, tn), tp, pf, te, cl,attrs) =
-    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
+  let ((_, tn), is_decl, tp, pf, te, cl,attrs) =
+    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdIsDecl, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
+  let asgn = if is_decl then "=" else ":=" in
   match te with
   [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
       pprintf pc "%p%p%p%p" type_params (loc, Pcaml.unvala tp)
@@ -570,9 +571,10 @@ value type_decl pc td =
   | _ ->
       let loc = MLast.loc_of_ctyp te in
       if pc.aft = "" then
-        pprintf pc "%p%p =@;%s%p%p%p"
+        pprintf pc "%p%p %s@;%s%p%p%p"
           type_params (loc, Pcaml.unvala tp)
           var_escaped (loc, Pcaml.unvala tn)
+          asgn
           (if pf then "private " else "")
           ctyp te
           (hlist type_constraint) (Pcaml.unvala cl)
@@ -580,17 +582,19 @@ value type_decl pc td =
       else
         horiz_vertic
           (fun () ->
-             pprintf pc "%p%p = %s%p%p%p"
+             pprintf pc "%p%p %s %s%p%p%p"
                type_params (loc, Pcaml.unvala tp)
                var_escaped (loc, Pcaml.unvala tn)
+               asgn
                (if pf then "private " else "")
                ctyp te
                (hlist type_constraint) (Pcaml.unvala cl)
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
           (fun () ->
-             pprintf pc "@[<a>%p%p =@;%s%p%p%p@ @]"
+             pprintf pc "@[<a>%p%p %s@;%s%p%p%p@ @]"
                type_params
                (loc, Pcaml.unvala tp) var_escaped (loc, Pcaml.unvala tn)
+               asgn
                (if pf then "private " else "")
                ctyp
                te (hlist type_constraint) (Pcaml.unvala cl)

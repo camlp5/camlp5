@@ -602,8 +602,13 @@ EXTEND
           <:str_item< module type $_:i$ $_itemattrs:attrs$ >>
       | "open"; ovf = V (FLAG "!") "!"; me = module_expr; attrs = item_attributes ->
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
-      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
-          <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
+      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
+          vala_it (fun tdl ->
+            if List.exists (fun td -> not td.MLast.tdIsDecl) tdl then
+              failwith "type-declaration cannot mix decl and subst"
+            else ()) tdl ;
+            <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
+          }
       | "type" ; check_type_extension ; te = type_extension →
 
           <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
@@ -691,8 +696,15 @@ EXTEND
           <:sig_item< module alias $_:i$ = $_:li$ $_itemattrs:attrs$ >>
       | "open"; i = extended_longident ; attrs = item_attributes → 
           <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
-      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") →
-          <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
+      | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
+            vala_it (fun tdl ->
+              if List.for_all (fun td -> td.MLast.tdIsDecl) tdl then ()
+              else if List.for_all (fun td -> not td.MLast.tdIsDecl) tdl then
+                vala_it (fun nrfl ->
+                    if nrfl then failwith "type-subst declaration must not specify <<nonrec>>" else ()) nrfl
+              else failwith "type-declaration cannot mix decl and subst") tdl ;
+            <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
+          }
       | "type" ; check_type_extension ; te = type_extension →
           <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
 
