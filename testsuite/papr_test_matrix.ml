@@ -3660,14 +3660,18 @@ end
      r_output = OK {foo|class c ['a] x = object value x' = (x : β); end;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="another-bool"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type wrong = false | true|foo} ;
+     official_input = OK {foo|type wrong = false | true|foo} ;
+     r_input = OK {foo|type wrong = [ False | True ];|foo} ;
+     o_output = OK {foo|type wrong = false | true;;
+|foo};
+     official_output = OK {foo|type wrong =
+  | false 
+  | true |foo} ;
+     r_output = OK {foo|type wrong = [ False | True ];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

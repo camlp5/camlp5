@@ -224,22 +224,26 @@ value dotop =
        [: `("", x) when is_dotop x :] -> x)
 ;
 
+value test_constr_decl_f strm =
+  match Stream.npeek 1 strm with
+    [ [("UIDENT", _)] ->
+      match Stream.npeek 2 strm with
+        [ [_; ("", ".")] -> raise Stream.Failure
+        | [_; ("", "(")] -> raise Stream.Failure
+        | [_ :: _] -> ()
+        | _ -> raise Stream.Failure ]
+      | [("", ("true"|"false")) :: _] -> ()
+      | [("", "|")] -> ()
+      | [("", "[")] ->
+        match Stream.npeek 2 strm with
+          [ [_; ("", "]")] -> ()
+          | _ -> raise Stream.Failure ]
+        | _ -> raise Stream.Failure ]
+;
+
 value test_constr_decl =
   Grammar.Entry.of_parser gram "test_constr_decl"
-    (fun strm ->
-       match Stream.npeek 1 strm with
-       [ [("UIDENT", _)] ->
-           match Stream.npeek 2 strm with
-           [ [_; ("", ".")] -> raise Stream.Failure
-           | [_; ("", "(")] -> raise Stream.Failure
-           | [_ :: _] -> ()
-           | _ -> raise Stream.Failure ]
-       | [("", "|")] -> ()
-       | [("", "[")] ->
-           match Stream.npeek 2 strm with
-           [ [_; ("", "]")] -> ()
-           | _ -> raise Stream.Failure ]
-       | _ -> raise Stream.Failure ])
+    test_constr_decl_f
 ;
 
 value stream_peek_nth n (strm : Stream.t (string * string)) =
@@ -702,10 +706,6 @@ let loc = MLast.loc_of_sig_item si in
   ]
 ;
 
-value val_ident = Grammar.Entry.create Pcaml.gram "val_ident";
-value fun_binding = Grammar.Entry.create Pcaml.gram "fun_binding";
-
-
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr extended_longident
@@ -715,7 +715,6 @@ EXTEND
     match_case with_constr poly_variant
     attribute_body alg_attribute alg_attributes
     ext_attributes
-    val_ident fun_binding
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
