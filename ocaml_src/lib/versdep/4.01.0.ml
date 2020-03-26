@@ -156,7 +156,10 @@ let ocaml_ppat_exception _ = assert false;;
 let ocaml_mkexp loc x = {pexp_desc = x; pexp_loc = loc};;
 let ocaml_mkmty loc x = {pmty_desc = x; pmty_loc = loc};;
 let ocaml_mkmod loc x = {pmod_desc = x; pmod_loc = loc};;
-let ocaml_mkfield ?(alg_attributes = []) loc (lab, x) fl =
+
+let ocaml_mkfield_inh ?(alg_attributes = []) loc x fl = assert false;;
+
+let ocaml_mkfield_tag ?(alg_attributes = []) loc (lab, x) fl =
   assert (alg_attributes = []);
   {pfield_desc = Pfield (lab, x); pfield_loc = loc} :: fl
 ;;

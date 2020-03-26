@@ -165,7 +165,10 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield ?(alg_attributes = []) loc (lab, x) fl =
+
+let ocaml_mkfield_inh ?(alg_attributes = []) loc x fl = assert false;;
+
+let ocaml_mkfield_tag ?(alg_attributes = []) loc (lab, x) fl =
   assert (alg_attributes = []); (lab, x) :: fl
 ;;
 let ocaml_mkfield_var loc = [];;
