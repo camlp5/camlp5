@@ -538,6 +538,8 @@ let ocaml_psig_type is_nonrec stl =
   let stl = List.map (fun (s, t) -> t) stl in Psig_type stl
 ;;
 
+let ocaml_psig_typesubst stl = assert false;;
+
 let ocaml_psig_value s vd = Psig_value vd;;
 
 let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;

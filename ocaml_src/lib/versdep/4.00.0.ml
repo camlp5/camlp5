@@ -488,6 +488,8 @@ let ocaml_psig_type is_nonrec stl =
   let stl = List.map (fun (s, t) -> mknoloc s, t) stl in Psig_type stl
 ;;
 
+let ocaml_psig_typesubst stl = assert false;;
+
 let ocaml_psig_value s vd = Psig_value (mknoloc s, vd);;
 
 let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;

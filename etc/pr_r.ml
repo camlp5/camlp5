@@ -808,7 +808,7 @@ value type_constraint pc (t1, t2) =
 
 value type_decl pc td =
   let ((_, tn), is_decl, tp, pf, te, cl, attrs) =
-    (Pcaml.unvala td.MLast.tdNam, td.tdIsDecl, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
+    (Pcaml.unvala td.MLast.tdNam, td.MLast.tdIsDecl, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
   let asgn = if is_decl then "=" else ":=" in
