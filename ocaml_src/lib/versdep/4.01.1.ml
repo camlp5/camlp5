@@ -456,6 +456,8 @@ let ocaml_psig_module ?(item_attributes = []) loc (s : string option) mt =
   let s = mustSome "ocaml_psig_module" s in Psig_module (mknoloc s, mt)
 ;;
 
+let ocaml_psig_modsubst ?(item_attributes = []) loc s li = assert false;;
+
 let ocaml_psig_modtype ?(item_attributes = []) loc s mto =
   assert (item_attributes = []);
   let mtd =

@@ -367,6 +367,9 @@ module Meta_make (C : MetaSig) =
       | SgMtyAlias _ s ls attrs →
            let attrs = assert False in
            C.node "SgMtyAlias" [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
+      | SgModSubst _ s li attrs ->
+           let attrs = assert False in
+           C.node "SgModSubst" [C.vala C.string s; longid li; attrs]
       | SgOpn _ li attrs →
           let attrs = assert False in
            C.node "SgOpn" [longid li; attrs]

@@ -169,6 +169,7 @@ and sig_item =
   | SgMty of loc and V string and module_type and attributes
   | SgMtyAbs of loc and V string and attributes
   | SgMtyAlias of loc and V string and V (list string) and attributes
+  | SgModSubst of loc and V string and longid and attributes
   | SgOpn of loc and longid and attributes
   | SgTyp of loc and V bool and V (list type_decl)
   | SgTypExten of loc and type_extension

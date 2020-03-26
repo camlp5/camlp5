@@ -395,6 +395,18 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value check_uident_coloneq_f strm =
+  match stream_npeek 2 strm with [
+    [("UIDENT",_) ; ("", ":=")] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_uident_coloneq =
+  Grammar.Entry.of_parser gram "check_uident_coloneq"
+    check_uident_coloneq_f
+;
+
 value dotop =
   Grammar.Entry.of_parser gram "dotop"
     (parser
@@ -606,6 +618,8 @@ EXTEND
           Qast.Node "SgMod" [Qast.Loc; rf; l]
       | "module"; "alias"; i = SV UIDENT; "="; li = SV mod_ident "list" "" ; attrs = item_attributes →
           Qast.Node "SgMtyAlias" [Qast.Loc; i; li; attrs]
+      | "module"; check_uident_coloneq; i = SV UIDENT ; ":=" ; li = extended_longident ; attrs = item_attributes ->
+          Qast.Node "SgModSubst" [Qast.Loc; i;  li; attrs]
       | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = item_attributes →
           Qast.Node "SgMty" [Qast.Loc; i; mt; attrs]
       | "module"; "type"; i = SV ident "" ; attrs = item_attributes →

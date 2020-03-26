@@ -1605,6 +1605,13 @@ and sig_item s l =
           (mkloc loc) (Some (uv n)) mty
       in
       mksig loc m :: l
+  | SgModSubst (loc, s, li, item_attrs) ->
+      let li = longid_long_id li in
+      let attrs = uv_item_attributes item_attrs in
+      let m =
+        ocaml_psig_modsubst ~item_attributes:attrs (mkloc loc) (uv s) li
+      in
+      mksig loc m :: l
   | SgOpn (loc, lid, attrs) ->
       let lid = longid_long_id lid in
       mksig loc

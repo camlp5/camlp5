@@ -460,6 +460,9 @@ and sig_item floc sh =
     | SgMtyAlias loc x1 x2 x3 →
         let loc = floc loc in
         SgMtyAlias loc x1 x2 x3
+    | SgModSubst loc x1 x2 x3 →
+        let loc = floc loc in
+        SgModSubst loc x1 (longid floc sh x2) x3
     | SgOpn loc x1 x2 →
         let loc = floc loc in
         SgOpn loc x1 x2

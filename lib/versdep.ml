@@ -1187,6 +1187,20 @@ value ocaml_psig_module ?{item_attributes=[]} loc (s : option string) mt =
   END
 ;
 
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+value ocaml_psig_modsubst ?{item_attributes=[]} loc s li = assert False ;
+ELSE
+value ocaml_psig_modsubst ?{item_attributes=[]} loc s li =
+  Psig_modsubst {
+    pms_name = mkloc loc s;
+    pms_manifest = mkloc loc li;
+    pms_attributes = item_attributes; (* ... [@@id1] [@@id2] *)
+    pms_loc = loc
+  }
+;
+END
+;
+
 value ocaml_psig_modtype ?{item_attributes=[]} loc s mto =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     do { assert (item_attributes = []) ;

@@ -3684,13 +3684,13 @@ end
      r_output = OK {foo|type t := int;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="sig-item-module-subst-2"; implem = False ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
+     o_input = OK {foo|module M := T|foo} ;
+     official_input = OK {foo|module M := T|foo} ;
+     r_input = OK {foo|module M := T;|foo} ;
      o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
+     official_output = OK {foo|module M := T|foo} ;
      r_output = OK {foo||foo}
     };
     {name="test-prototype"; implem = True ;
