@@ -4,6 +4,34 @@
 
 (* #load "q_MLast.cmo" *)
 
+type ('a, 'b) choice =
+    Left of 'a
+  | Right of 'b
+;;
+
+let option_map f x =
+  match x with
+    Some x -> Some (f x)
+  | None -> None
+;;
+let mustSome symbol =
+  function
+    Some x -> x
+  | None -> failwith ("Some: " ^ symbol)
+;;
+
+let mustLeft symbol =
+  function
+    Left x -> x
+  | Right _ -> failwith ("choice: " ^ symbol)
+;;
+
+let mustRight symbol =
+  function
+    Left _ -> failwith ("choice: " ^ symbol)
+  | Right x -> x
+;;
+
 let stream_npeek n s : (string * string) list = Stream.npeek n s;;
 
 let longid_concat li1 li2 =
