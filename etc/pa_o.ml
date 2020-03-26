@@ -1467,8 +1467,12 @@ EXTEND
     [ RIGHTA
       [ p = patt LEVEL "simple"; (eo, e) = SELF ->
           (None, <:expr< fun [ $p$ $opt:eo$ -> $e$ ] >>)
-      | eo = OPT [ "when"; e = expr -> e ]; "->"; e = expr ->
-          (eo, <:expr< $e$ >>) ] ]
+      | eo = OPT [ "when"; e = expr -> e ]; tyo = OPT [ ":" ; ty = ctyp LEVEL "apply" -> ty ]; "->"; e = expr ->
+          let e = match tyo with [
+            None -> e
+          | Some ty -> <:expr< ( $e$ : $ty$ ) >> ] in
+          (eo, <:expr< $e$ >>)
+      ] ]
   ;
   expr_uident:
     [ RIGHTA

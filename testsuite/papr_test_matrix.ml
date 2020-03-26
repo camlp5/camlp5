@@ -3758,14 +3758,16 @@ and u := bool;
      r_output = OK {foo|module M := T;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="fun-types-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|fun ?x y : t -> x|foo} ;
+     official_input = OK {foo|fun ?x y : t -> x|foo} ;
+     r_input = OK {foo|fun ?{x} y -> (x : t);|foo} ;
+     o_output = OK {foo|let _ = fun ?x y -> (x : t);;
+|foo};
+     official_output = OK {foo|;;fun ?x -> fun y -> (x : t)|foo} ;
+     r_output = OK {foo|fun ?{x} y → (x : t);
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
