@@ -915,18 +915,26 @@ EXTEND
         "in" ; x = expr ; attrs = item_attributes ->
         let e = <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >> in
         <:str_item< $exp:e$ $_itemattrs:attrs$ >>
-      | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      | check_let_not_exception ; "let"; (ext, alg_attrs) = ext_attributes ; r = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
         x = expr ->
-          let e = expr_to_inline <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext [] in
+          let (a, b, item_attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          let h = (a, b, attrs) in
+          let l = [h::t] in
+          let e = expr_to_inline <:expr< let $_flag:r$ $list:l$ in $x$ >> ext [] in
           <:str_item< $exp:e$ >>
 
-      | check_let_not_exception ; "let"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
+      | check_let_not_exception ; "let"; (ext, alg_attrs) = ext_attributes; r = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding ->
+          let (a, b, item_attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          let h = (a, b, attrs) in
+          let l = [h::t] in
           let si = match l with
-          [ <:vala< [(p, e, attrs)] >> ->
+          [ [(p, e, attrs)] ->
               match p with
               [ <:patt< _ >> -> <:str_item< $exp:e$ >> (* TODO FIX THIS CHET *)
-              | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
-          | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ] in
+              | _ -> <:str_item< value $_flag:r$ $list:l$ >> ]
+          | _ -> <:str_item< value $_flag:r$ $list:l$ >> ] in
           str_item_to_inline si ext
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
@@ -1108,9 +1116,13 @@ EXTEND
       | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
         <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
-      | check_let_not_exception ; "let"; ext = ext_opt; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+      | check_let_not_exception ; "let"; (ext,alg_attrs) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
         x = expr LEVEL "top" ->
-          expr_to_inline <:expr< let $_flag:o$ $_list:l$ in $x$ >> ext []
+          let (a, b, item_attrs) = h in
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          let h = (a, b, attrs) in
+          let l = [h::t] in
+          expr_to_inline <:expr< let $_flag:o$ $list:l$ in $x$ >> ext []
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
@@ -1349,6 +1361,36 @@ EXTEND
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
         (p, e, attrs)
       | alg_attrs = alg_attributes_no_anti ;
+        p = patt; ":"; t = poly_type; "="; e = expr ;
+        item_attrs = item_attributes ->
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+        (p, <:expr< ( $e$ : $t$ ) >>, attrs)
+      ] ]
+  ;
+  first_let_binding:
+    [ [ p = val_ident; e = fun_binding ;
+        item_attrs = item_attributes ->
+        (p, e, item_attrs)
+      | p = patt; "="; e = expr ;
+        item_attrs = item_attributes ->
+        (p, e, item_attrs)
+      | p = patt; ":"; t = poly_type; "="; e = expr ;
+        item_attrs = item_attributes ->
+        (p, <:expr< ( $e$ : $t$ ) >>, item_attrs)
+      ] ]
+  ;
+  and_let_binding:
+    [ [ "and"; alg_attrs = alg_attributes_no_anti ;
+        p = val_ident; e = fun_binding ;
+        item_attrs = item_attributes ->
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+        (p, e, attrs)
+      | "and"; alg_attrs = alg_attributes_no_anti ;
+        p = patt; "="; e = expr ;
+        item_attrs = item_attributes ->
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+        (p, e, attrs)
+      | "and"; alg_attrs = alg_attributes_no_anti ;
         p = patt; ":"; t = poly_type; "="; e = expr ;
         item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
@@ -1605,6 +1647,12 @@ EXTEND
         tk = type_kind; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+
+      | "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt; ":="; pf = V (FLAG "private");
+        tk = type_kind; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          <:type_decl< $_tp:n$ $list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+
       | "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
           let tk = <:ctyp< '$choose_tvar tpl$ >> in
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in

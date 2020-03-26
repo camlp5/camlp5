@@ -2356,6 +2356,33 @@ and t2 = bool[@@foo];
     functor (_ : (module type of M)[@foo2]) → sig  end[@foo3])[@foo1]);
 |foo}
     };
+    {name="inline-attributes-6"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let [@foo] rec g x = 1 [@@foo2] and[@bar] h y = 2 [@@bar2]|foo} ;
+     official_input = OK {foo|let [@foo] rec g x = 1 [@@foo2] and[@bar] h y = 2 [@@bar2]|foo} ;
+     r_input = OK {foo|value  rec g x = 1 [@@foo][@@foo2] and h y = 2 [@@bar][@@bar2];|foo} ;
+     o_output = OK {foo|let rec g x = 1[@@foo] [@@foo2] and h y = 2[@@bar] [@@bar2];;
+|foo};
+     official_output = OK {foo|let rec g x = 1[@@foo ][@@foo2 ]
+and h y = 2[@@bar ][@@bar2 ]|foo} ;
+     r_output = OK {foo|value rec g x = 1[@@foo] [@@foo2] and h y = 2[@@bar] [@@bar2];
+|foo}
+    };
+    {name="inline-attributes-7"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = let [@foo] rec g x = 1 [@@foo2] and[@bar] h y = 2 [@@bar2] in ()|foo} ;
+     official_input = OK {foo|let x = let [@foo] rec g x = 1 [@@foo2] and[@bar] h y = 2 [@@bar2] in ()|foo} ;
+     r_input = OK {foo|value x = let rec g x = 1 [@@foo][@@foo2] and h y = 2 [@@bar][@@bar2] in ();|foo} ;
+     o_output = OK {foo|let x = let rec g x = 1[@@foo] [@@foo2] and h y = 2[@@bar] [@@bar2] in ();;
+|foo};
+     official_output = OK {foo|let x = let rec g x = 1[@@foo ][@@foo2 ]
+        and h y = 2[@@bar ][@@bar2 ] in ()|foo} ;
+     r_output = OK {foo|value x =
+  let rec g x = 1[@@foo] [@@foo2]
+  and h y = 2[@@bar] [@@bar2] in
+  ();
+|foo}
+    };
     {name="inline-extensions21"; implem = True ;
      exclude=[];
      o_input = OK {foo|type%foo[@foo] t = int
@@ -3682,6 +3709,20 @@ end
 |foo};
      official_output = OK {foo|type nonrec t := int|foo} ;
      r_output = OK {foo|type t := int;
+|foo}
+    };
+    {name="type-subst-2"; implem = False ;
+     exclude=["skip_reparse"];
+     o_input = OK {foo|type t := int and u := bool|foo} ;
+     official_input = OK {foo|type t := int and u := bool|foo} ;
+     r_input = OK {foo|type t := int and u := bool;|foo} ;
+     o_output = OK {foo|type t := int
+and u := bool;;
+|foo};
+     official_output = OK {foo|type nonrec t := int
+and u := bool|foo} ;
+     r_output = OK {foo|type t := int
+and u := bool;
 |foo}
     };
     {name="sig-item-module-subst-2"; implem = False ;
