@@ -2154,12 +2154,15 @@ Grammar.safe_extend
                    (Grammar.r_next
                       (Grammar.r_next
                          (Grammar.r_next
-                            (Grammar.r_next Grammar.r_stop
-                               (Grammar.s_nterm
-                                  (check_let_not_exception :
-                                   'check_let_not_exception Grammar.Entry.e)))
-                            (Grammar.s_token ("", "let")))
-                         (Grammar.s_token ("", "open")))
+                            (Grammar.r_next
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_nterm
+                                     (check_let_not_exception :
+                                      'check_let_not_exception
+                                        Grammar.Entry.e)))
+                               (Grammar.s_token ("", "let")))
+                            (Grammar.s_token ("", "open")))
+                         (Grammar.s_flag (Grammar.s_token ("", "!"))))
                       (Grammar.s_nterm
                          (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                    (Grammar.s_nterm
@@ -2167,8 +2170,9 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
            (fun (e : 'expr) _ (m : 'module_expr)
-                (ext, attrs : 'ext_attributes) _ _ _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExLop (loc, m, e)) ext attrs :
+                (ext, attrs : 'ext_attributes) (ovf : bool) _ _ _
+                (loc : Ploc.t) ->
+              (expr_to_inline loc (MLast.ExLop (loc, false, m, e)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -3216,9 +3220,11 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "let")))
-                         (Grammar.s_token ("", "open")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "let")))
+                            (Grammar.s_token ("", "open")))
+                         (Grammar.s_flag (Grammar.s_token ("", "!"))))
                       (Grammar.s_nterm
                          (ext_attributes : 'ext_attributes Grammar.Entry.e)))
                    (Grammar.s_nterm
@@ -3226,9 +3232,11 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "in")))
              Grammar.s_self,
            (fun (el : 'sequence) _ (m : 'module_expr)
-                (ext, attrs : 'ext_attributes) _ _ (loc : Ploc.t) ->
-              ([expr_to_inline loc (MLast.ExLop (loc, m, mksequence loc el))
-                  ext attrs] :
+                (ext, attrs : 'ext_attributes) (ovf : bool) _ _
+                (loc : Ploc.t) ->
+              ([expr_to_inline loc
+                  (MLast.ExLop (loc, false, m, mksequence loc el)) ext
+                  attrs] :
                'sequence)));
         Grammar.production
           (Grammar.r_next

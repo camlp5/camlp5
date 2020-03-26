@@ -679,8 +679,8 @@ EXTEND
       | check_let_not_exception ; "let"; "module"; m = SV uidopt "uidopt"; mb = mod_fun_binding; "in";
         e = SELF →
           Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
-      | check_let_not_exception ; "let"; "open"; m = module_expr; "in"; e = SELF →
-          Qast.Node "ExLop" [Qast.Loc; m; e]
+      | check_let_not_exception ; "let"; "open"; ovf = SV (FLAG "!") "!"; m = module_expr; "in"; e = SELF →
+          Qast.Node "ExLop" [Qast.Loc; ovf; m; e]
       | "fun"; l = closed_case_list → Qast.Node "ExFun" [Qast.Loc; l]
       | "fun"; p = ipatt; e = fun_def →
           Qast.Node "ExFun"
@@ -1023,8 +1023,8 @@ EXTEND
         el = SELF →
           Qast.List
             [Qast.Node "ExLmd" [Qast.Loc; m; mb; mksequence Qast.Loc el]]
-      | "let"; "open"; m = module_expr; "in"; el = SELF →
-          Qast.List [Qast.Node "ExLop" [Qast.Loc; m; mksequence Qast.Loc el]]
+      | "let"; "open"; ovf = SV (FLAG "!") "!"; m = module_expr; "in"; el = SELF →
+          Qast.List [Qast.Node "ExLop" [Qast.Loc; ovf; m; mksequence Qast.Loc el]]
       | e = expr; ";"; el = SELF → Qast.Cons e el
       | e = expr; ";" → Qast.List [e]
       | e = expr → Qast.List [e] ] ]

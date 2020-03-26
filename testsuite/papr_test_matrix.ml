@@ -3067,6 +3067,17 @@ type nat _ =
      r_output = OK {foo|value () = foo ##. bar.val := ();
 |foo}
     };
+    {name="expr-local-open-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = let open! [@foo] M in ()|foo} ;
+     official_input = OK {foo|let x = let open! [@foo] M in ()|foo} ;
+     r_input = OK {foo|value x = (let open! M in ()) [@foo];|foo} ;
+     o_output = OK {foo|let x = (let open! M in ())[@foo];;
+|foo};
+     official_output = OK {foo|let x = ((let open! M in ())[@foo ])|foo} ;
+     r_output = OK {foo|value x = (let open! M in ())[@foo];
+|foo}
+    };
     {name="class-expr-local-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|class c = let open! [@foo] M in object end|foo} ;

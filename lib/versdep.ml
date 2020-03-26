@@ -964,18 +964,18 @@ value ocaml_pexp_object =
 
 value ocaml_pexp_open =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN
-    Some (fun li e -> Pexp_open (mknoloc li) e)
+    Some (fun ovf li e -> do { assert (ovf = Fresh); Pexp_open (mknoloc li) e })
   ELSIFDEF OCAML_VERSION < OCAML_4_08 THEN
-    Some (fun li e -> Pexp_open Fresh (mknoloc li) e)
+    Some (fun ovf li e -> do { assert (ovf = Fresh); Pexp_open Fresh (mknoloc li) e})
   ELSE
-    Some (fun li e ->
+    Some (fun ovf li e ->
       Pexp_open
         { popen_expr =
           { pmod_desc = Pmod_ident (mknoloc li)
           ; pmod_loc = loc_none
           ; pmod_attributes = []
         }
-          ; popen_override = Fresh
+          ; popen_override = ovf
           ; popen_loc = loc_none
           ; popen_attributes = []
         }

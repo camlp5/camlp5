@@ -390,7 +390,7 @@ pr_expr_fun_args.val :=
 type seq =
   [ SE_let of Ploc.t and bool and list (MLast.patt * MLast.expr * MLast.attributes) and seq
   | SE_let_module of Ploc.t and option (Ploc.vala string) and MLast.module_expr and seq
-  | SE_let_open of Ploc.t and MLast.module_expr and seq
+  | SE_let_open of Ploc.t and bool and MLast.module_expr and seq
   | SE_closed of MLast.expr and seq
   | SE_other of MLast.expr and option seq ]
 ;
@@ -403,8 +403,8 @@ value rec seq_of_expr e =
       SE_let loc rf pel (seq_of_expr e)
   | <:expr:< let module $uidopt:s$ = $me$ in $e$ >> ->
       SE_let_module loc s me (seq_of_expr e)
-  | <:expr:< let open $m$ in $e$ >> ->
-      SE_let_open loc m (seq_of_expr e)
+  | <:expr:< let open $!:ovf$ $m$ in $e$ >> ->
+      SE_let_open loc ovf m (seq_of_expr e)
   | e ->
       SE_other e None ]
 and seq_of_expr_ne_list e1 el =
@@ -419,9 +419,9 @@ and seq_of_expr_ne_list e1 el =
       match el with
       [ [] -> SE_let_module loc s me (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
-  | <:expr:< let open $m$ in $e$ >> ->
+  | <:expr:< let open $!:ovf$ $m$ in $e$ >> ->
       match el with
-      [ [] -> SE_let_open loc m (seq_of_expr e)
+      [ [] -> SE_let_open loc ovf m (seq_of_expr e)
       | [e2 :: el] -> SE_closed e1 (seq_of_expr_ne_list e2 el) ]
   | e1 ->
       let seo =
@@ -436,7 +436,7 @@ value rec true_sequence =
   fun
   [ SE_let _ _ _ s -> true_sequence s
   | SE_let_module _ _ _ s -> true_sequence s
-  | SE_let_open _ _ s -> true_sequence s
+  | SE_let_open _ _ _ s -> true_sequence s
   | SE_closed _ _ -> True
   | SE_other _ (Some _) -> True
   | SE_other _ None  -> False ]
@@ -583,9 +583,9 @@ and hvseq pc se =
         sprintf "%s%s" (comm_bef pc loc)
           (pprintf pc "@[<i>%p@ %p@]" force_vertic let_module_up_to_in
             (s, me) loop se)
-    | SE_let_open loc m se ->
+    | SE_let_open loc ovf m se ->
         sprintf "%s%s" (comm_bef pc loc)
-          (pprintf pc "@[<i>%p@ %p@]" force_vertic let_open_up_to_in m
+          (pprintf pc "@[<i>%p@ %p@]" force_vertic let_open_up_to_in (ovf, m)
              loop se)
     | SE_closed e se ->
         pprintf pc "@[<i>@[<1>(%p);@]@ %p@]" force_vertic (comm_expr expr_wh)
@@ -614,8 +614,8 @@ and letop_up_to_in letop pc (rf, pel) =
 and let_module_up_to_in pc (s, me) =
     let s = uidopt_to_maybe_blank s in
     pprintf pc "@[<a>let module %s =@;%p@ in@]" s module_expr me
-and let_open_up_to_in pc m =
-  pprintf pc "@[<a>let open %p@ in@]" module_expr m
+and let_open_up_to_in pc (ovf, m) =
+  pprintf pc "@[<a>let open%s %p@ in@]" (if ovf then "!" else "") module_expr m
 
 (* Pretty printing improvement (optional):
    - display a "let" binding with the "where" construct
@@ -1477,10 +1477,10 @@ EXTEND_PRINTER
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
           | None -> pprintf pc "%p@ %p" let_module_up_to_in (s, me) curr e ]
-      | <:expr< let open $m$ in $e$ >> as ge ->
+      | <:expr< let open $!:ovf$ $m$ in $e$ >> as ge ->
           match flatten_sequence ge with
           [ Some se -> pprintf pc "do {@;%p@ }" hvseq se
-          | None -> pprintf pc "%p@ %p" let_open_up_to_in m curr e ]
+          | None -> pprintf pc "%p@ %p" let_open_up_to_in (ovf, m) curr e ]
       | <:expr< do { $list:el$ } >> ->
           match el with
           [ [] -> pprintf pc "do {}"
@@ -1704,7 +1704,7 @@ EXTEND_PRINTER
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
-        <:expr< let open $_$ in $_$ >> |
+        <:expr< let open $_!:_$ $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< $_$ [@ $_attribute:_$] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->

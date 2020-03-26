@@ -116,7 +116,7 @@ and expr =
   | ExLEx of loc and V string and V (list ctyp) and expr and attributes
   | ExLid of loc and V string
   | ExLmd of loc and V (option (V string)) and module_expr and expr
-  | ExLop of loc and module_expr and expr
+  | ExLop of loc and V bool and module_expr and expr
   | ExMat of loc and expr and V (list (patt * V (option expr) * expr))
   | ExNew of loc and V (list string)
   | ExObj of loc and V (option patt) and V (list class_str_item)

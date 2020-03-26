@@ -942,8 +942,8 @@ EXTEND
           let e = expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs in
           <:str_item< $exp:e$ >>
 
-      | check_let_not_exception ; "let"; "open"; (ext, attrs) = ext_attributes; m = module_expr; "in"; e = expr ->
-          let e = expr_to_inline <:expr< let open $m$ in $e$ >> ext attrs in
+      | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext, attrs) = ext_attributes; m = module_expr; "in"; e = expr ->
+          let e = expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs in
           <:str_item< $exp:e$ >>
 
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
@@ -1128,8 +1128,8 @@ EXTEND
         e = expr LEVEL "top" ->
           expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
 
-      | check_let_not_exception ; "let"; "open"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
-          expr_to_inline <:expr< let open $m$ in $e$ >> ext attrs
+      | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = expr LEVEL "top" ->
+          expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs
 
       | letop = letop ; b = letop_binding ; l = (LIST0 andop_binding); "in";
         x = expr LEVEL "top" ->

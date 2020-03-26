@@ -992,7 +992,7 @@ and expr =
                 (fun me uid -> MLast.MeAcc (loc, me, MLast.MeUid (loc, uid)))
                 (MLast.MeUid (loc, mh)) mtl
             in
-            let e = MLast.ExLop (loc, mexp, e) in expr e, l
+            let e = MLast.ExLop (loc, false, mexp, e) in expr e, l
         | _ -> error loc "bad ast"
       in
       let (_, e) =
@@ -1277,10 +1277,11 @@ and expr =
             (pexp_letmodule (option_map uv (uv i)) (module_expr me) (expr e))
       | None -> error loc "no 'let module' in this ocaml version"
       end
-  | ExLop (loc, me, e) ->
+  | ExLop (loc, ovf, me, e) ->
       begin match ocaml_pexp_open with
         Some pexp_open ->
-          let li = module_expr_long_id me in mkexp loc (pexp_open li (expr e))
+          let li = module_expr_long_id me in
+          mkexp loc (pexp_open (mkoverride (uv ovf)) li (expr e))
       | None -> error loc "no expression open in this ocaml version"
       end
   | ExMat (loc, e, pel) ->

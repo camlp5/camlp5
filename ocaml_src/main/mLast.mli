@@ -108,7 +108,7 @@ and expr =
   | ExLEx of loc * string * ctyp list * expr * attributes
   | ExLid of loc * string
   | ExLmd of loc * string option * module_expr * expr
-  | ExLop of loc * module_expr * expr
+  | ExLop of loc * bool * module_expr * expr
   | ExMat of loc * expr * (patt * expr option * expr) list
   | ExNew of loc * string list
   | ExObj of loc * patt option * class_str_item list

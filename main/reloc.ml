@@ -311,9 +311,9 @@ and expr floc sh =
     | ExLmd loc x1 x2 x3 →
         let loc = floc loc in
         ExLmd loc x1 (module_expr floc sh x2) (self x3)
-    | ExLop loc x1 x2 →
+    | ExLop loc b x1 x2 →
         let loc = floc loc in
-        ExLop loc (module_expr floc sh x1) (self x2)
+        ExLop loc b (module_expr floc sh x1) (self x2)
     | ExMat loc x1 x2 →
         let loc = floc loc in
         ExMat loc (self x1)
