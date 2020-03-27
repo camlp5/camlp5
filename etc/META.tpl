@@ -30,14 +30,14 @@ preprocessor = "camlp5 -nolib"
 
 package "pr_r" (
   requires(toploop) = "camlp5"
-  archive(syntax,preprocessor) = "pr_r.cmo"
-  archive(syntax,toploop)      = "pr_r.cmo"
+  archive(syntax,preprocessor) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
+  archive(syntax,toploop)      = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
 )
 
 package "pr_o" (
   requires(toploop) = "camlp5"
-  archive(syntax,preprocessor) = "pr_o.cmo"
-  archive(syntax,toploop)      = "pr_o.cmo"
+  archive(syntax,preprocessor) = "pr_o.cmo pr_op.cmo"
+  archive(syntax,toploop)      = "pr_o.cmo pr_op.cmo"
 )
 
 package "pr_dump" (

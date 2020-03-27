@@ -461,19 +461,31 @@ value build_letop_binder loc letop b l e = do {
   }
 ;
 
-value check_let_exception =
-  Grammar.Entry.of_parser gram "check_let_exception"
-    (fun strm ->
-       match Stream.npeek 2 strm with
-       [ [("", "let"); ("", "exception")] -> ()
-       | _ -> raise Stream.Failure ])
+value is_let_exception_f strm =
+  Stream.npeek 1 strm = [("","let")] &&
+  match Stream.npeek 2 strm with
+    [ [("", "let"); ("", "exception")] -> True
+    | _ -> False ]
 ;
 
-value check_let_not_exception_f = (fun strm ->
-       match Stream.npeek 2 strm with
-       [ [("", "let"); ("", "exception")] -> raise Stream.Failure
-       | [("", "let"); _] -> ()
-       | _ -> raise Stream.Failure ])
+value check_let_exception_f strm =
+  if is_let_exception_f strm then () else raise Stream.Failure
+;
+
+value check_let_exception =
+  Grammar.Entry.of_parser gram "check_let_exception"
+    check_let_exception_f
+;
+value is_let_not_exception_f strm =
+  Stream.npeek 1 strm = [("","let")] &&
+  match Stream.npeek 2 strm with
+    [ [("", "let"); ("", "exception")] -> False
+    | _ -> True ]
+;
+
+
+value check_let_not_exception_f strm =
+  if is_let_not_exception_f strm then () else raise Stream.Failure
 ;
 
 value check_let_not_exception =
