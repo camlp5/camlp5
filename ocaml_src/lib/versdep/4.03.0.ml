@@ -394,7 +394,10 @@ let ocaml_pexp_newtype = Some (fun loc s e -> Pexp_newtype (s, e));;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
-let ocaml_pexp_open = Some (fun li e -> Pexp_open (Fresh, mknoloc li, e));;
+let ocaml_pexp_open =
+  Some
+    (fun ovf li e -> assert (ovf = Fresh); Pexp_open (Fresh, mknoloc li, e))
+;;
 
 let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel

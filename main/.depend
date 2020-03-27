@@ -1,9 +1,9 @@
 argl.cmo: ../lib/versdep.cmo argl.cmi
 argl.cmx: ../lib/versdep.cmx argl.cmi
 ast2pt.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo ast2pt.cmi \
-    mLast.cmi pcaml.cmi prtools.cmi
+    asttools.cmo mLast.cmi prtools.cmi
 ast2pt.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx ast2pt.cmi \
-    mLast.cmi pcaml.cmx prtools.cmx
+    asttools.cmx mLast.cmi prtools.cmx
 ast2pt.cmi: ../lib/ploc.cmi mLast.cmi
 asttools.cmo: ../lib/ploc.cmi mLast.cmi
 asttools.cmx: ../lib/ploc.cmx mLast.cmi

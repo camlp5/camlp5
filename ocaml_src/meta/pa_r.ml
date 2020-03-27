@@ -173,58 +173,92 @@ let operator_rparen =
 ;;
 
 let check_not_part_of_patt_f strm =
-  let tok =
-    match stream_npeek 9 strm with
-      ("LIDENT", _) :: tok :: _ -> tok
-    | ("", "(") :: ("", s) :: ("", ")") :: tok :: _ when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
-      ("", ")") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
-      ("", "}") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
-      ("", "]") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", "<-") ::
-      ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", "<-") ::
-      ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", "<-") ::
-      ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
-      ("", ")") :: ("", "<-") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
-      ("", "}") :: ("", "<-") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
-      ("", "]") :: ("", "<-") :: ("", ")") :: tok :: _
-      when is_special_op s ->
-        tok
-    | _ -> raise Stream.Failure
+  let matchers =
+    [2,
+     (function
+        ("LIDENT", _) :: tok :: _ -> Some tok
+      | _ -> None);
+     4,
+     (function
+        ("", "(") :: ("", s) :: ("", ")") :: tok :: _ when is_special_op s ->
+          Some tok
+      | _ -> None);
+     6,
+     (function
+        ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", ")") :: tok ::
+        _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", ")") :: tok ::
+        _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", ")") :: tok ::
+        _
+        when is_special_op s ->
+          Some tok
+      | _ -> None);
+     7,
+     (function
+        ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", "<-") ::
+        ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", "<-") ::
+        ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", "<-") ::
+        ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | _ -> None);
+     8,
+     (function
+        ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
+        ("", ")") :: ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
+        ("", "}") :: ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
+        ("", "]") :: ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | _ -> None);
+     9,
+     (function
+        ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
+        ("", ")") :: ("", "<-") :: ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
+        ("", "}") :: ("", "<-") :: ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
+        ("", "]") :: ("", "<-") :: ("", ")") :: tok :: _
+        when is_special_op s ->
+          Some tok
+      | _ -> None)]
   in
+  let rec crec i =
+    function
+      (n, _) :: _ as ml when i < n ->
+        let l = stream_npeek i strm in
+        let last = fst (sep_last l) in
+        if last = ("EOI", "") || last = ("", ";;") then raise Stream.Failure
+        else crec (i + 1) ml
+    | (n, f) :: t ->
+        begin match f (stream_npeek n strm) with
+          None -> crec (i + 1) t
+        | Some tok -> tok
+        end
+    | [] -> raise Stream.Failure
+  in
+  let tok = crec 1 matchers in
   match tok with
     "", ("," | "as" | "|" | "::") -> raise Stream.Failure
   | _ -> ()
