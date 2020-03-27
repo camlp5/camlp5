@@ -164,18 +164,54 @@ value operator_rparen =
     operator_rparen_f
 ;
 
+value check_not_part_of_patt_f strm =
+  let matchers = [
+    (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
+  ; (4, fun [ [("", "("); ("", s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
+  ; (6, fun [
+              [("", "("); ("", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "["); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | _ -> None ])
+  ; (7, fun [
+              [("", "("); ("", s); ("", "("); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "{"); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "["); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | _ -> None ])
+  ; (8, fun [
+              [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | _ -> None ])
+  ; (9, fun [
+              [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | _ -> None ])
+
+  ] in
+  let rec crec i = fun [
+    [ (n,_) :: _ ] as ml when i < n ->
+      let l = stream_npeek i strm in
+      let last = fst (sep_last l) in
+      if last = ("EOI","") || last = ("",";;") then raise Stream.Failure
+      else crec (i+1) ml
+  | [ (n, f) :: t ] ->
+      match f (stream_npeek n strm) with [
+        None -> crec (i+1) t
+      | Some tok -> tok
+     ]
+  | [] -> raise Stream.Failure
+  ] in
+  let tok = crec 1 matchers in
+  match tok with
+    [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
+    | _ -> () ]
+;
+
 value check_not_part_of_patt =
   Grammar.Entry.of_parser gram "check_not_part_of_patt"
-    (fun strm ->
-       let tok =
-         match Stream.npeek 4 strm with
-         [ [("LIDENT", _); tok :: _] -> tok
-         | [("", "("); ("", s); ("", ")"); tok] when is_special_op s -> tok
-         | _ -> raise Stream.Failure ]
-       in
-       match tok with
-       [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
-       | _ -> () ])
+    check_not_part_of_patt_f
 ;
 
 value prefixop =

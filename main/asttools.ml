@@ -4,6 +4,8 @@
 
 #load "q_MLast.cmo";
 
+value stream_npeek n s = (Stream.npeek n s : list (string * string)) ;
+
 value longid_concat li1 li2 =
   let rec crec = fun [
     <:extended_longident:< $longid:a$ . $_uid:b$ >> ->
