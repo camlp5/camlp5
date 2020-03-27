@@ -50,7 +50,7 @@ papr_phony_macro.cmo papr_phony_macro.cmx: papr_phony_macro.ml
 pr_official.cmo pr_official.cmx: pr_official.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 
-META: META.tpl
+META:: META.tpl
 	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(LIBDIR)/$(CAMLP5N)|" META.tpl > META
 
 
@@ -103,6 +103,7 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_lex.cmo"
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(DESTDIR)$(LIBDIR)/$(CAMLP5N)|" META.tpl > META
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."

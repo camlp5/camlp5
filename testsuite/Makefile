@@ -33,6 +33,7 @@ all: \
 	tools/ROUNDTRIP-pa_o-pr_o.opt
 
 OCAMLFIND=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: ocamlfind
+OCAMLTOPLEVEL=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
 MKCAMLP5=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: $(TOP)/local-install/bin/mkcamlp5
 CAMLP5R=$(TOP)/local-install/bin/camlp5r -I $(CAMLP5LIB)
@@ -169,6 +170,9 @@ setup-ocaml:
 
 setup: setup-ocaml
 	sudo apt-get install libstring-shellquote-perl libdigest-md5-file-perl
+
+toplevel::
+	$(OCAMLTOPLEVEL) -nopromptcont
 
 clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt

@@ -52,7 +52,6 @@ depend:
 local-install::
 	$(RM) -rf local-install && mkdir -p local-install/lib/ocaml
 	$(MAKE) DESTDIR=`pwd`/local-install/ LIBDIR=lib BINDIR=bin MANDIR=man install
-	perl -p -i -e 's,directory =.*,directory = "'`pwd`/local-install/lib/camlp5'",' local-install/lib/camlp5/META
 
 install:
 	$(NOVERBOSE) if test -z "$(LIBDIR)"; then \
