@@ -627,7 +627,7 @@ sub setup_package {
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
     Log::flush() ;
-    Log::log("==== SETUP $f ====\n");
+    Log::log("==== SETUP $f\n");
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
@@ -667,6 +667,7 @@ sub setup_package {
     }
 
   }
+  Log::flush() ;
 }
 
 sub create_patchindex {
@@ -696,7 +697,7 @@ sub create_patchindex {
     my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
 
     next unless -r $all_patch ;
-    Log::log( "==== PATCHINDEX $f ====\n");
+    Log::log( "==== PATCHINDEX $f\n");
 
     my $digest = file_md5_hex($origf) ;
     $patchindex{$digest} = {
@@ -741,7 +742,7 @@ sub discover_patches {
     my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
     my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
 
-    Log::log( "==== PATCHINDEX $f ====\n");
+    Log::log( "==== PATCHINDEX $f\n");
     my $digest = file_md5_hex($origf) ;
     next unless exists $patchindex{$digest} ;
 
@@ -772,7 +773,7 @@ sub run_package {
   my @files = package_run_files($workroot, $profh, $pkgh) ;
   F: foreach my $f (@files) {
     Log::flush() ;
-    Log::log( "==== RUN $f ====\n");
+    Log::log( "==== RUN $f\n");
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
@@ -850,6 +851,7 @@ sub run_package {
       }
     }
   }
+  Log::flush() ;
 }
 
 sub diff_package {
@@ -863,9 +865,10 @@ sub diff_package {
   my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
 
   my @files = package_run_files($workroot, $profh, $pkgh) ;
+#  local $main::quiet = 0 ;
   F: foreach my $f (@files) {
     Log::flush() ;
-    Log::log( "==== DIFF $f ====\n");
+    Log::log( "==== DIFF $f\n");
     my $bangf = bang_escape($f) ;
     my $filetype ;
     if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
@@ -1009,11 +1012,11 @@ sub extended_diff {
   }
   if ($wordeq_ok) {
     Log::log( "== $f1 <-> $f2\n") ;
-    Log::log( "WHITE SPACE DIFFERENCES from wordeq\n") ;
+    Log::carp( "WHITE SPACE DIFFERENCES from wordeq\n") ;
     return 1 ;
   }
 
-  print STDERR $diff_output ;
+  Log::carp($diff_output) ;
   return 2 ;
 }
 
