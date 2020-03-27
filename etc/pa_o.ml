@@ -135,6 +135,26 @@ value operator_rparen =
     operator_rparen_f
 ;
 
+
+value check_matchers ?{avoid_tokens=[]} matchers strm =
+  let avoid_tokens = [("EOI","") ; ("",";;") :: avoid_tokens] in
+  let rec crec i = fun [
+    [ (n,_) :: _ ] as ml when i < n ->
+      let l = stream_npeek i strm in
+      let last = fst (sep_last l) in
+      if List.mem last avoid_tokens then raise Stream.Failure
+      else crec (i+1) ml
+  | [ (n, f) :: t ] ->
+      match f (stream_npeek n strm) with [
+        None -> crec (i+1) t
+      | Some tok -> tok
+     ]
+  | [] -> raise Stream.Failure
+  ] in
+  crec 1 matchers
+;
+
+
 value check_not_part_of_patt_f strm =
   let matchers = [
     (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
@@ -161,20 +181,7 @@ value check_not_part_of_patt_f strm =
             | _ -> None ])
 
   ] in
-  let rec crec i = fun [
-    [ (n,_) :: _ ] as ml when i < n ->
-      let l = stream_npeek i strm in
-      let last = fst (sep_last l) in
-      if last = ("EOI","") || last = ("",";;") then raise Stream.Failure
-      else crec (i+1) ml
-  | [ (n, f) :: t ] ->
-      match f (stream_npeek n strm) with [
-        None -> crec (i+1) t
-      | Some tok -> tok
-     ]
-  | [] -> raise Stream.Failure
-  ] in
-  let tok = crec 1 matchers in
+  let tok = check_matchers matchers strm in
   match tok with
     [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
     | _ -> () ]
