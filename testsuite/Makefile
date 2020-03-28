@@ -9,7 +9,7 @@ RM=rm
 
 TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test r2official_test r2sch_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
-	extfun_test
+	extfun_test o_top_test
 
 all-tests: all $(TESTS)
 
@@ -27,6 +27,7 @@ all: \
 	extfun_test.byte \
 	roundtrip_lexer.byte \
 	papr_official.byte \
+	o_top_test.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.opt \
 	tools/ROUNDTRIP-pa_o-pr_o.byte \
@@ -135,6 +136,13 @@ r2sch_test:: all
 r2sch_test.byte: r2sch_test.ml testutil.cmo
 	$(CAMLP5R) -I . -mode S -o r2sch_test.ppo r2sch_test.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg odyl.cma camlp5.cma pa_r.cmo pr_scheme.cmo testutil.cmo -impl r2sch_test.ppo -o r2sch_test.byte
+
+o_top_test:: all
+	./o_top_test.byte
+
+o_top_test.byte: o_top_test.ml testutil.cmo
+	$(CAMLP5R) -I . -mode S -o o_top_test.ppo o_top_test.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),compiler-libs.toplevel -linkall -linkpkg odyl.cma camlp5.cma pa_o.cmo -I ../etc pr_official.cmo -I ../top ../top/camlp5_top_funs.cmo testutil.cmo testutil2.cmo -impl o_top_test.ppo -o o_top_test.byte
 
 sch2r_test.cmo: sch2r_test.ml testutil.cmo testutil2.cmo
 	$(CAMLP5R) -I . -mode S -o sch2r_test.ppo sch2r_test.ml
