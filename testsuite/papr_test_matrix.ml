@@ -1757,7 +1757,7 @@ and t2 = bool[@@foo];
      r_input = OK {foo|value x[@foo1] : unit [@foo2] = ()[@foo3]  [@@foo4];|foo} ;
      o_output = OK {foo|let (x[@foo1]) = (()[@foo3] : unit[@foo2])[@@foo4];;
 |foo};
-     official_output = OK {foo|let ((x)[@foo1 ]) = (((())[@foo3 ]) : ((unit)[@foo2 ]))[@@foo4 ]|foo} ;
+     official_output = OK {foo|let (((x)[@foo1 ]) : ((unit)[@foo2 ])) = ((())[@foo3 ])[@@foo4 ]|foo} ;
      r_output = OK {foo|value x[@foo1] : unit[@foo2] = ()[@foo3][@@foo4];
 |foo}
     };
@@ -3583,7 +3583,7 @@ value ( .%{;..}<- ) x y = Hashtbl.add;
 |foo}
     };
     {name="extension-type-object-1"; implem = True ;
-     exclude=["o2official";"r2official"];
+     exclude=[];
      o_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
      official_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
      r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];|foo} ;
@@ -3592,12 +3592,6 @@ value ( .%{;..}<- ) x y = Hashtbl.add;
      official_output = OK {foo|let ([%foo :[ `Foo ]] : [%foo :t -> t]) = [%foo :< foo: t   > ]|foo} ;
      r_output = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];
 |foo}
-    };
-    {(skip) with
-     name="extension-type-object-1-[or]2official" ;
-     o_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
-     r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];|foo} ;
-     official_output = OK {foo|let [%foo :[ `Foo ]] = ([%foo :< foo: t   > ] : [%foo :t -> t])|foo}
     };
     {name="module-type-with-1"; implem = True ;
      exclude=[];
@@ -3768,6 +3762,64 @@ and u := bool;
      official_output = OK {foo|;;fun ?x -> fun y -> (x : t)|foo} ;
      r_output = OK {foo|fun ?{x} y → (x : t);
 |foo}
+    };
+    {name="let-type-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let a = (b : t)|foo} ;
+     official_input = OK {foo|let a : t = b|foo} ;
+     r_input = OK {foo|value a = (b : t);|foo} ;
+     o_output = OK {foo|let a : t = b;;
+|foo};
+     official_output = OK {foo|let a : t = b|foo} ;
+     r_output = OK {foo|value a : t = b;
+|foo}
+    };
+    {name="let-type-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let a : t = b|foo} ;
+     official_input = OK {foo|let a : t = b|foo} ;
+     r_input = OK {foo|value a : t = b;|foo} ;
+     o_output = OK {foo|let a : t = b;;
+|foo};
+     official_output = OK {foo|let a : t = b|foo} ;
+     r_output = OK {foo|value a : t = b;
+|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

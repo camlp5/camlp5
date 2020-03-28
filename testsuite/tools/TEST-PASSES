@@ -132,6 +132,7 @@ our %tools = (
 	  my $txt = v_capturex([0..1],
 			       [$ocamlformat, 
 			       "--enable-outside-detected-project", "--no-comment-check",
+				"--format-invalid-files=auto",
 			       "-".$filetype, $inputf]) ;
 	  if (0 != $EXITVAL) { return $EXITVAL ; }
 	  f_write($outputf, $txt) ;

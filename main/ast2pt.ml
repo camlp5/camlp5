@@ -1226,7 +1226,7 @@ and mkpe (p, e, attrs) =
   let (p, e) =
     match e with
     [ ExTyc loc e (TyPol _ _ _ as t) → (PaTyc loc p t, e)
-    | ExTyc loc e (TyPot _ _ _ as t) → (PaTyc loc p t, e)
+    | ExTyc loc e t → (PaTyc loc p t, e)
     | _ → (p, e) ]
   in
   let (p, e) =

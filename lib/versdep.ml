@@ -41,6 +41,12 @@ value sys_ocaml_version =
   Sys.ocaml_version
 ;
 
+value to_ghost_loc loc = {
+  (loc) with
+  Location.loc_ghost = True
+}
+;
+
 value ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
     let loc_at n lnum bolp =
       {Lexing.pos_fname = if lnum = -1 then "" else fname;
@@ -1024,7 +1030,22 @@ value ocaml_value_binding ?{item_attributes=[]} loc p e =
     do { assert (item_attributes = []) ;
     (p, e)
     }
+  ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
   ELSE
+    let p = match p with [
+      {ppat_desc = Ppat_constraint _ {ptyp_desc = Ptyp_poly _ _}} -> p
+    | {ppat_desc = Ppat_constraint {ppat_desc = Ppat_extension _} _} -> p
+    | {ppat_desc = Ppat_constraint p1 t} as p0 ->
+      let t = {
+        ptyp_desc = Ptyp_poly [] t ;
+        ptyp_loc = to_ghost_loc t.ptyp_loc ;
+        ptyp_loc_stack = [] ;
+        ptyp_attributes = []
+      } in
+      { (p0) with ppat_desc = Ppat_constraint p1 t }
+    | p -> p
+    ] in
     {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
   END
 ;
