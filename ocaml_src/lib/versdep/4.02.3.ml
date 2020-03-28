@@ -38,6 +38,8 @@ let ocaml_name = "ocaml";;
 
 let sys_ocaml_version = Sys.ocaml_version;;
 
+let to_ghost_loc loc = {loc with Location.loc_ghost = true};;
+
 let ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep) =
   let loc_at n lnum bolp =
     {Lexing.pos_fname = if lnum = -1 then "" else fname;

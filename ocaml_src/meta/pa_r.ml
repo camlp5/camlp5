@@ -125,47 +125,62 @@ let mklistpat loc last =
 ;;
 
 let operator_rparen_f strm =
-  let check1 n pred xform suffixes =
-    match Stream.npeek n strm with
-      ("", s) :: l ->
-        if pred s && List.exists (fun sl -> sl = l) suffixes then
-          Some (xform s)
-        else None
-    | _ -> None
-  in
   let id x = x in
   let app suff s = s ^ suff in
   let trials =
-    [2, is_operator, id, [["", ")"]]; 2, is_letop, id, [["", ")"]];
-     2, is_andop, id, [["", ")"]];
-     4, is_dotop, app "()", [["", "("; "", ")"; "", ")"]];
-     4, is_dotop, app "{}", [["", "{"; "", "}"; "", ")"]];
-     4, is_dotop, app "[]", [["", "["; "", "]"; "", ")"]];
-     6, is_dotop, app "(;..)",
-     [["", "("; "", ";"; "", ".."; "", ")"; "", ")"]];
-     6, is_dotop, app "{;..}",
-     [["", "{"; "", ";"; "", ".."; "", "}"; "", ")"]];
-     6, is_dotop, app "[;..]",
-     [["", "["; "", ";"; "", ".."; "", "]"; "", ")"]];
-     5, is_dotop, app "()<-", [["", "("; "", ")"; "", "<-"; "", ")"]];
-     5, is_dotop, app "{}<-", [["", "{"; "", "}"; "", "<-"; "", ")"]];
-     5, is_dotop, app "[]<-", [["", "["; "", "]"; "", "<-"; "", ")"]];
-     7, is_dotop, app "(;..)<-",
-     [["", "("; "", ";"; "", ".."; "", ")"; "", "<-"; "", ")"]];
-     7, is_dotop, app "{;..}<-",
-     [["", "{"; "", ";"; "", ".."; "", "}"; "", "<-"; "", ")"]];
-     7, is_dotop, app "[;..]<-",
-     [["", "["; "", ";"; "", ".."; "", "]"; "", "<-"; "", ")"]]]
+    [1,
+     Right
+       (function
+          ("LIDENT", _) :: _ -> true
+        | _ -> false);
+     2, Left (is_operator, id, [["", ")"]]);
+     2, Left (is_letop, id, [["", ")"]]); 2, Left (is_andop, id, [["", ")"]]);
+     4, Left (is_dotop, app "()", [["", "("; "", ")"; "", ")"]]);
+     4, Left (is_dotop, app "{}", [["", "{"; "", "}"; "", ")"]]);
+     4, Left (is_dotop, app "[]", [["", "["; "", "]"; "", ")"]]);
+     6,
+     Left
+       (is_dotop, app "(;..)",
+        [["", "("; "", ";"; "", ".."; "", ")"; "", ")"]]);
+     6,
+     Left
+       (is_dotop, app "{;..}",
+        [["", "{"; "", ";"; "", ".."; "", "}"; "", ")"]]);
+     6,
+     Left
+       (is_dotop, app "[;..]",
+        [["", "["; "", ";"; "", ".."; "", "]"; "", ")"]]);
+     5, Left (is_dotop, app "()<-", [["", "("; "", ")"; "", "<-"; "", ")"]]);
+     5, Left (is_dotop, app "{}<-", [["", "{"; "", "}"; "", "<-"; "", ")"]]);
+     5, Left (is_dotop, app "[]<-", [["", "["; "", "]"; "", "<-"; "", ")"]]);
+     7,
+     Left
+       (is_dotop, app "(;..)<-",
+        [["", "("; "", ";"; "", ".."; "", ")"; "", "<-"; "", ")"]]);
+     7,
+     Left
+       (is_dotop, app "{;..}<-",
+        [["", "{"; "", ";"; "", ".."; "", "}"; "", "<-"; "", ")"]]);
+     7,
+     Left
+       (is_dotop, app "[;..]<-",
+        [["", "["; "", ";"; "", ".."; "", "]"; "", "<-"; "", ")"]])]
   in
-  let rec tryrec =
-    function
-      [] -> raise Stream.Failure
-    | (n, pred, xform, suffixes) :: trials ->
-        match check1 n pred xform suffixes with
-          None -> tryrec trials
-        | Some s -> for i = 1 to n do Stream.junk strm done; s
+  let matchers =
+    List.map
+      (function
+         n, Left (pred, xform, suffixes) ->
+           n,
+           Left
+             (function
+                ("", s) :: l when pred s && List.mem l suffixes ->
+                  Some (xform s)
+              | _ -> None)
+       | n, Right f -> n, Right f)
+      trials
   in
-  tryrec trials
+  let (n, tok) = check_stream matchers strm in
+  for i = 1 to n do Stream.junk strm done; tok
 ;;
 
 let operator_rparen =
