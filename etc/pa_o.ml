@@ -89,92 +89,29 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
-value check_matchers ?{avoid_tokens=[]} matchers strm =
-  let avoid_tokens = [("EOI","") ; ("",";;") :: avoid_tokens] in
-  let rec crec i = fun [
-    [ (n,_) :: _ ] as ml when i < n ->
-      let l = stream_npeek i strm in
-      let last = fst (sep_last l) in
-      if List.mem last avoid_tokens then raise Stream.Failure
-      else crec (i+1) ml
-  | [ (n, Left f) :: t ] ->
-      match f (stream_npeek n strm) with [
-        None -> crec i t
-      | Some tok -> (n,tok)
-     ]
-  | [ (n, Right f) :: t ] ->
-      if f (stream_npeek n strm) then
-        raise Stream.Failure
-      else crec i t
-  | [] -> raise Stream.Failure
-  ] in
-  crec 1 matchers
-;
-
-value operator_rparen_f strm =
-  let check1 n pred xform suffixes =
-    match Stream.npeek n strm with [
-      [("",s) :: l] ->
-        if pred s && List.exists (fun sl -> sl = l) suffixes then
-          Some (xform s)
-        else None
-    | _ -> None ] in
-  let id x = x in
-  let app suff s = s^suff in 
-  let trials = [
-    (2, is_operator, id, [[("",")")]]);
-    (2, is_letop, id, [[("",")")]]);
-    (2, is_andop, id, [[("",")")]]);
-    (4, is_dotop, app "()", [[("","("); ("",")"); ("",")")]]);
-    (4, is_dotop, app "{}", [[("","{"); ("","}"); ("",")")]]);
-    (4, is_dotop, app "[]", [[("","["); ("","]"); ("",")")]]);
-
-    (6, is_dotop, app "(;..)", [[("","("); ("",";"); ("",".."); ("",")"); ("",")")]]);
-    (6, is_dotop, app "{;..}", [[("","{"); ("",";"); ("",".."); ("","}"); ("",")")]]);
-    (6, is_dotop, app "[;..]", [[("","["); ("",";"); ("",".."); ("","]"); ("",")")]]);
-
-    (5, is_dotop, app "()<-", [[("","("); ("",")"); ("","<-"); ("",")")]]);
-    (5, is_dotop, app "{}<-", [[("","{"); ("","}"); ("","<-"); ("",")")]]);
-    (5, is_dotop, app "[]<-", [[("","["); ("","]"); ("","<-"); ("",")")]]);
-
-    (7, is_dotop, app "(;..)<-", [[("","("); ("",";"); ("",".."); ("",")"); ("","<-"); ("",")")]]);
-    (7, is_dotop, app "{;..}<-", [[("","{"); ("",";"); ("",".."); ("","}"); ("","<-"); ("",")")]]);
-    (7, is_dotop, app "[;..]<-", [[("","["); ("",";"); ("",".."); ("","]"); ("","<-"); ("",")")]])
-
-  ] in
-  let rec tryrec = fun [
-    [] -> raise Stream.Failure
-  | [ (n, pred, xform, suffixes) :: trials ] ->
-    match check1 n pred xform suffixes with  [
-      None -> tryrec trials
-    | Some s -> do { for i = 1 to n do { Stream.junk strm } ; s }
-    ]
-  ] in tryrec trials
-;
-
 value operator_rparen_f strm =
   let id x = x in
   let app suff s = s^suff in 
   let trials = [
-    (2, Left (is_operator, id, [[("",")")]]));
-    (2, Left (is_letop, id, [[("",")")]]));
-    (2, Left (is_andop, id, [[("",")")]]));
-    (4, Left (is_dotop, app "()", [[("","("); ("",")"); ("",")")]]));
-    (4, Left (is_dotop, app "{}", [[("","{"); ("","}"); ("",")")]]));
-    (4, Left (is_dotop, app "[]", [[("","["); ("","]"); ("",")")]]));
+    (1, Right (fun [ [("LIDENT",_) :: _] -> True | _ -> False ]))
+  ; (2, Left (is_operator, id, [[("",")")]]))
+  ; (2, Left (is_letop, id, [[("",")")]]))
+  ; (2, Left (is_andop, id, [[("",")")]]))
+  ; (4, Left (is_dotop, app "()", [[("","("); ("",")"); ("",")")]]))
+  ; (4, Left (is_dotop, app "{}", [[("","{"); ("","}"); ("",")")]]))
+  ; (4, Left (is_dotop, app "[]", [[("","["); ("","]"); ("",")")]]))
 
-    (6, Left (is_dotop, app "(;..)", [[("","("); ("",";"); ("",".."); ("",")"); ("",")")]]));
-    (6, Left (is_dotop, app "{;..}", [[("","{"); ("",";"); ("",".."); ("","}"); ("",")")]]));
-    (6, Left (is_dotop, app "[;..]", [[("","["); ("",";"); ("",".."); ("","]"); ("",")")]]));
+  ; (6, Left (is_dotop, app "(;..)", [[("","("); ("",";"); ("",".."); ("",")"); ("",")")]]))
+  ; (6, Left (is_dotop, app "{;..}", [[("","{"); ("",";"); ("",".."); ("","}"); ("",")")]]))
+  ; (6, Left (is_dotop, app "[;..]", [[("","["); ("",";"); ("",".."); ("","]"); ("",")")]]))
 
-    (5, Left (is_dotop, app "()<-", [[("","("); ("",")"); ("","<-"); ("",")")]]));
-    (5, Left (is_dotop, app "{}<-", [[("","{"); ("","}"); ("","<-"); ("",")")]]));
-    (5, Left (is_dotop, app "[]<-", [[("","["); ("","]"); ("","<-"); ("",")")]]));
+  ; (5, Left (is_dotop, app "()<-", [[("","("); ("",")"); ("","<-"); ("",")")]]))
+  ; (5, Left (is_dotop, app "{}<-", [[("","{"); ("","}"); ("","<-"); ("",")")]]))
+  ; (5, Left (is_dotop, app "[]<-", [[("","["); ("","]"); ("","<-"); ("",")")]]))
 
-    (7, Left (is_dotop, app "(;..)<-", [[("","("); ("",";"); ("",".."); ("",")"); ("","<-"); ("",")")]]));
-    (7, Left (is_dotop, app "{;..}<-", [[("","{"); ("",";"); ("",".."); ("","}"); ("","<-"); ("",")")]]));
-    (7, Left (is_dotop, app "[;..]<-", [[("","["); ("",";"); ("",".."); ("","]"); ("","<-"); ("",")")]]))
-
+  ; (7, Left (is_dotop, app "(;..)<-", [[("","("); ("",";"); ("",".."); ("",")"); ("","<-"); ("",")")]]))
+  ; (7, Left (is_dotop, app "{;..}<-", [[("","{"); ("",";"); ("",".."); ("","}"); ("","<-"); ("",")")]]))
+  ; (7, Left (is_dotop, app "[;..]<-", [[("","["); ("",";"); ("",".."); ("","]"); ("","<-"); ("",")")]]))
   ] in
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
@@ -183,7 +120,7 @@ value operator_rparen_f strm =
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
-  let (n, tok) = check_matchers matchers strm in
+  let (n, tok) = check_stream matchers strm in
   do { for i = 1 to n do { Stream.junk strm } ; tok }
 ;
 
@@ -192,35 +129,46 @@ value operator_rparen =
     operator_rparen_f
 ;
 
-
-
 value check_not_part_of_patt_f strm =
   let matchers = [
-    (2, Left (fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ]))
-  ; (4, Left (fun [ [("", "("); ("", s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ]))
-  ; (6, Left (fun [
+    (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
+  ; (4, fun [ [("", "("); ("", s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
+  ; (6, fun [
               [("", "("); ("", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "["); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ]))
-  ; (7, Left (fun [
+            | _ -> None ])
+  ; (7, fun [
               [("", "("); ("", s); ("", "("); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "{"); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "["); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ]))
-  ; (8, Left (fun [
+            | _ -> None ])
+  ; (8, fun [
               [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ]))
-  ; (9, Left (fun [
+            | _ -> None ])
+  ; (9, fun [
               [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ]))
+            | _ -> None ])
 
   ] in
-  let (_, tok) = check_matchers matchers strm in
+  let rec crec i = fun [
+    [ (n,_) :: _ ] as ml when i < n ->
+      let l = stream_npeek i strm in
+      let last = fst (sep_last l) in
+      if last = ("EOI","") || last = ("",";;") then raise Stream.Failure
+      else crec (i+1) ml
+  | [ (n, f) :: t ] ->
+      match f (stream_npeek n strm) with [
+        None -> crec (i+1) t
+      | Some tok -> tok
+     ]
+  | [] -> raise Stream.Failure
+  ] in
+  let tok = crec 1 matchers in
   match tok with
     [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
     | _ -> () ]

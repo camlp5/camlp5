@@ -138,3 +138,25 @@ value patt_left_assoc_acc e =
   | e -> e
   ] in arec e
 ;
+
+value check_stream ?{avoid_tokens=[]} matchers strm =
+  let avoid_tokens = [("EOI","") ; ("",";;") :: avoid_tokens] in
+  let rec crec i = fun [
+    [ (n,_) :: _ ] as ml when i < n ->
+      let l = stream_npeek i strm in
+      let last = fst (sep_last l) in
+      if List.mem last avoid_tokens then raise Stream.Failure
+      else crec (i+1) ml
+  | [ (n, Left f) :: t ] ->
+      match f (stream_npeek n strm) with [
+        None -> crec i t
+      | Some tok -> (n,tok)
+     ]
+  | [ (n, Right f) :: t ] ->
+      if f (stream_npeek n strm) then
+        raise Stream.Failure
+      else crec i t
+  | [] -> raise Stream.Failure
+  ] in
+  crec 1 matchers
+;
