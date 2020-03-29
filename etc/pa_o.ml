@@ -1563,8 +1563,8 @@ EXTEND
   ;
   patt_label_ident:
     [ RIGHTA
-      [ i = UIDENT; "."; p2 = SELF -> <:patt< $uid:i$ . $p2$ >> ]
-    | [ i = LIDENT -> <:patt< $lid:i$ >> ] ]
+      [ i = UIDENT; "."; p2 = SELF -> <:patt< $uid:i$ . $p2$ >>
+      | i = LIDENT -> <:patt< $lid:i$ >> ] ]
   ;
   (* Type declaration *)
   first_type_decl:
