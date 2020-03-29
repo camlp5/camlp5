@@ -171,3 +171,113 @@ let check_stream ?(avoid_tokens = []) matchers strm =
   in
   crec 1 matchers
 ;;
+
+let expr_wrap_attrs loc e l =
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.ExAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let expr_to_inline e ext attrs =
+  let loc = MLast.loc_of_expr e in
+  let e = expr_wrap_attrs loc e attrs in
+  match ext with
+    None -> e
+  | Some attrid ->
+      MLast.ExExten
+        (loc, (attrid, MLast.StAttr (loc, [MLast.StExp (loc, e, [])])))
+;;
+
+
+let ctyp_wrap_attrs e l =
+  let loc = MLast.loc_of_ctyp e in
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.TyAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let ctyp_to_inline e ext attrs =
+  let loc = MLast.loc_of_ctyp e in
+  let e = ctyp_wrap_attrs e attrs in
+  match ext with
+    None -> e
+  | Some attrid -> MLast.TyExten (loc, (attrid, MLast.TyAttr (loc, e)))
+;;
+
+let patt_wrap_attrs e l =
+  let loc = MLast.loc_of_patt e in
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.PaAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let patt_to_inline p ext attrs =
+  let loc = MLast.loc_of_patt p in
+  let p = patt_wrap_attrs p attrs in
+  match ext with
+    None -> p
+  | Some attrid -> MLast.PaExten (loc, (attrid, MLast.PaAttr (loc, p, None)))
+;;
+
+let class_expr_wrap_attrs e l =
+  let loc = MLast.loc_of_class_expr e in
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.CeAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let class_type_wrap_attrs e l =
+  let loc = MLast.loc_of_class_type e in
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.CtAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let module_type_wrap_attrs e l =
+  let loc = MLast.loc_of_module_type e in
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.MtAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let module_expr_wrap_attrs e l =
+  let loc = MLast.loc_of_module_expr e in
+  let rec wrec e =
+    function
+      [] -> e
+    | h :: t -> wrec (MLast.MeAtt (loc, e, h)) t
+  in
+  wrec e l
+;;
+
+let str_item_to_inline si ext =
+  let loc = MLast.loc_of_str_item si in
+  match ext with
+    None -> si
+  | Some attrid -> MLast.StExten (loc, (attrid, MLast.StAttr (loc, [si])))
+;;
+
+let sig_item_to_inline si ext =
+  let loc = MLast.loc_of_sig_item si in
+  match ext with
+    None -> si
+  | Some attrid -> MLast.SgExten (loc, (attrid, MLast.SiAttr (loc, [si])))
+;;
