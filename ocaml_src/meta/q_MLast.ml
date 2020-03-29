@@ -9071,12 +9071,6 @@ Grammar.safe_extend
            (fun (i : 'e__225) (loc : Ploc.t) ->
               (Qast.Node ("CtLid", [Qast.Loc; i]) : 'class_type)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm
-                (extended_longident : 'extended_longident Grammar.Entry.e)),
-           (fun (li : 'extended_longident) (loc : Ploc.t) ->
-              (Qast.Node ("CtLong", [Qast.Loc; li]) : 'class_type)));
-        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop

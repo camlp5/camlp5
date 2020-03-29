@@ -234,8 +234,6 @@ value module_type_long_id = fun [
 value class_type_long_id = fun [
   <:class_type< $longid:li$ . $_lid:lid$ >> ->
     Ldot (longid_long_id li) (uv lid)
-| <:class_type< $longid:li$ >> ->
-    longid_long_id li
 | <:class_type< $_lid:lid$ >> ->
     Lident (uv lid)
 | _ -> failwith "class_type_long_id"
@@ -1530,7 +1528,7 @@ and class_type =
   fun
   [ CtAtt loc e a ->
     ocaml_pcty_addattr (attr (uv a)) (class_type e)
-  | CtLongLid loc _ _ | CtLong loc _ | CtLid loc _ as ct ->
+  | CtLongLid loc _ _ | CtLid loc _ as ct ->
     let li = class_type_long_id ct in
       match ocaml_pcty_constr with
       [ Some pcty_constr → mkcty loc (pcty_constr li [])

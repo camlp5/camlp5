@@ -5108,12 +5108,6 @@ Grammar.safe_extend
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.CtLid (loc, i) : 'class_type)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm
-                (extended_longident : 'extended_longident Grammar.Entry.e)),
-           (fun (li : 'extended_longident) (loc : Ploc.t) ->
-              (MLast.CtLong (loc, li) : 'class_type)));
-        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop

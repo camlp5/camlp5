@@ -219,8 +219,7 @@ and type_extension =
     teECs : extension_constructor list;
     teAttributes : attributes }
 and class_type =
-    CtLong of loc * longid
-  | CtLongLid of loc * longid * string
+    CtLongLid of loc * longid * string
   | CtLid of loc * string
   | CtLop of loc * bool * longid * class_type
   | CtCon of loc * class_type * ctyp list

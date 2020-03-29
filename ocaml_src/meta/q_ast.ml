@@ -530,7 +530,6 @@ module Meta_make (C : MetaSig) =
     and class_type =
       function
         CtAtt (_, e, att) -> assert false
-      | CtLong (_, mt1) -> C.node "CtLong" [longid mt1]
       | CtLongLid (_, mt1, lid) ->
           C.node "CtLongLid" [longid mt1; C.vala C.string lid]
       | CtLid (_, s) -> C.node "CtLid" [C.vala C.string s]

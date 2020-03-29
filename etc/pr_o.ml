@@ -2622,8 +2622,6 @@ EXTEND_PRINTER
       [
         <:class_type< $longid:li$ . $lid:s$ >> ->
           pprintf pc "%p.%s" longident li s
-      | <:class_type< $longid:li$ >> ->
-          pprintf pc "%p" longident li
       | <:class_type< $lid:s$ >> ->
           pprintf pc "%s" s
     ]

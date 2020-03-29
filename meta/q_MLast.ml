@@ -1456,7 +1456,6 @@ EXTEND
           Qast.Node "CtCon" [Qast.Loc; ct; tl] ]
     | "simple"
       [ li = extended_longident; "."; i = SV LIDENT → Qast.Node "CtLongLid" [Qast.Loc; li; i]
-      | li = extended_longident → Qast.Node "CtLong" [Qast.Loc; li]
       | i = SV LIDENT → Qast.Node "CtLid" [Qast.Loc; i]
       | "("; ct = SELF; ")" → ct
       | e = alg_extension -> Qast.Node "CtExten" [Qast.Loc; e]

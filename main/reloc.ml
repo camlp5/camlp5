@@ -631,9 +631,6 @@ and class_type floc sh =
     fun
     [ CtAtt loc e attr ->
        CtAtt loc (self e) attr
-    | CtLong loc x1 →
-        let loc = floc loc in
-        CtLong loc (longid floc sh x1)
     | CtLongLid loc x1 x2 →
         let loc = floc loc in
         CtLongLid loc (longid floc sh x1) x2

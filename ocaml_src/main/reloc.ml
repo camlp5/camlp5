@@ -510,8 +510,6 @@ and class_type floc sh =
   let rec self =
     function
       CtAtt (loc, e, attr) -> CtAtt (loc, self e, attr)
-    | CtLong (loc, x1) ->
-        let loc = floc loc in CtLong (loc, longid floc sh x1)
     | CtLongLid (loc, x1, x2) ->
         let loc = floc loc in CtLongLid (loc, longid floc sh x1, x2)
     | CtLid (loc, x1) -> let loc = floc loc in CtLid (loc, x1)

@@ -1956,7 +1956,6 @@ EXTEND
         csf = V (LIST0 class_sig_item); "end" ->
           class_type_wrap_attrs <:class_type< object $_opt:cst$ $_list:csf$ end >> alg_attrs ]
     | [ li = extended_longident; "."; i = V LIDENT → <:class_type< $longid:li$ . $_lid:i$ >>
-      | li = extended_longident → <:class_type< $longid:li$ >>
       | i = V LIDENT → <:class_type< $_lid:i$ >>
       ] ]
   ;

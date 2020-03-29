@@ -250,7 +250,6 @@ let module_type_long_id =
 let class_type_long_id =
   function
     MLast.CtLongLid (_, li, lid) -> Ldot (longid_long_id li, uv lid)
-  | MLast.CtLong (_, li) -> longid_long_id li
   | MLast.CtLid (_, lid) -> Lident (uv lid)
   | _ -> failwith "class_type_long_id"
 ;;
@@ -1826,7 +1825,7 @@ and str_item s l =
 and class_type =
   function
     CtAtt (loc, e, a) -> ocaml_pcty_addattr (attr (uv a)) (class_type e)
-  | CtLongLid (loc, _, _) | CtLong (loc, _) | CtLid (loc, _) as ct ->
+  | CtLongLid (loc, _, _) | CtLid (loc, _) as ct ->
       let li = class_type_long_id ct in
       begin match ocaml_pcty_constr with
         Some pcty_constr -> mkcty loc (pcty_constr li [])
