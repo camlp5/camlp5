@@ -49,9 +49,11 @@ pa_oop.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
 pa_oop.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
     ../main/mLast.cmi ../main/pcaml.cmx
 pa_op.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
+    ../main/asttools.cmo ../main/exparser.cmi ../main/mLast.cmi \
+    ../main/pcaml.cmi
 pa_op.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
+    ../main/asttools.cmx ../main/exparser.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx
 pa_pprintf.cmo: ../lib/fstream.cmi ../lib/gramext.cmi ../lib/grammar.cmi \
     ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
 pa_pprintf.cmx: ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx \

@@ -7,8 +7,17 @@
 #require "bos";;
 
 #require "camlp5.pa_op";;
-#require "camlp5.pr_o";;
 Pcaml.inter_phrases := Some ";;\n";;
+(*
+#require "camlp5.pa_r";;
+Pcaml.inter_phrases := Some ";\n";;
+*)
+
+(*
+#require "camlp5.pr_r";;
+*)
+
+#require "camlp5.pr_o";;
 
 (*
 #require "camlp5.pr_r";;
