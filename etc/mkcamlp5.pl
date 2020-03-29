@@ -73,7 +73,6 @@ EOF
 	    ($opt ? "ocamlopt" : "ocamlc"),
 	    "-package", "camlp5",
 	    "-linkall", "-linkpkg",
-	    ($opt ? ("odyl.cmxa", "camlp5.cmxa") : ("odyl.cma", "camlp5.cma")),
 	    @link, @options,
 	    ($opt ? "odyl.cmx" : "odyl.cmo")
 	   ) ;
