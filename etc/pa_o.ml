@@ -49,6 +49,7 @@ do {
   Grammar.Unsafe.clear_entry poly_variant;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
+  Grammar.Unsafe.clear_entry class_expr_simple;
   Grammar.Unsafe.clear_entry alg_attribute;
   Grammar.Unsafe.clear_entry alg_attributes;
   Grammar.Unsafe.clear_entry ext_attributes;
@@ -651,7 +652,7 @@ value check_uident_coloneq =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr extended_longident
-    signature structure class_type class_expr class_sig_item class_str_item
+    signature structure class_type class_expr class_expr_simple class_sig_item class_str_item
     let_binding type_decl type_extension extension_constructor
     constructor_declaration label_declaration
     match_case with_constr poly_variant
@@ -1567,6 +1568,17 @@ EXTEND
       | i = LIDENT -> <:patt< $lid:i$ >> ] ]
   ;
   (* Type declaration *)
+  type_decl:
+    [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
+        tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+          <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | tpl = type_parameters; n = V type_patt; ":="; pf = V (FLAG "private");
+        tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+          <:type_decl< $_tp:n$ $list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+          let tk = <:ctyp< '$choose_tvar tpl$ >> in
+          <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
+  ;
   first_type_decl:
     [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
         tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->

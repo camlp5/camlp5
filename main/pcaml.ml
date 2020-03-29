@@ -72,6 +72,7 @@ value class_sig_item = Grammar.Entry.create gram "class_sig_item";
 value class_str_item = Grammar.Entry.create gram "class_str_item";
 value class_type = Grammar.Entry.create gram "class_type";
 value class_expr = Grammar.Entry.create gram "class_expr";
+value class_expr_simple = Grammar.Entry.create gram "class_expr_simple";
 
 value alg_attribute = Grammar.Entry.create gram "alg_attribute";
 value alg_attributes = Grammar.Entry.create gram "alg_attributes";

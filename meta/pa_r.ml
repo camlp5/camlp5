@@ -54,6 +54,7 @@ do {
   Grammar.Unsafe.clear_entry poly_variant;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
+  Grammar.Unsafe.clear_entry class_expr_simple;
   Grammar.Unsafe.clear_entry alg_attribute;
   Grammar.Unsafe.clear_entry alg_attributes;
   Grammar.Unsafe.clear_entry ext_attributes;
@@ -505,7 +506,7 @@ value str_item_to_inline loc si ext =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
     module_expr extended_longident signature
-    structure class_type class_expr class_sig_item class_str_item let_binding
+    structure class_type class_expr class_expr_simple class_sig_item class_str_item let_binding
     type_decl type_extension extension_constructor
     constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant attribute_body alg_attribute alg_attributes

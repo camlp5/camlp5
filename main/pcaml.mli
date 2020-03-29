@@ -65,6 +65,7 @@ value poly_variant : Grammar.Entry.e MLast.poly_variant;
 value class_sig_item : Grammar.Entry.e MLast.class_sig_item;
 value class_str_item : Grammar.Entry.e MLast.class_str_item;
 value class_expr : Grammar.Entry.e MLast.class_expr;
+value class_expr_simple : Grammar.Entry.e MLast.class_expr;
 value class_type : Grammar.Entry.e MLast.class_type;
 value alg_attribute : Grammar.Entry.e MLast.attribute_body;
 value alg_attributes : Grammar.Entry.e MLast.attributes;
