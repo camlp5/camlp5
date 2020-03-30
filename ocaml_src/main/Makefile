@@ -72,6 +72,7 @@ install:
 	cp $(CAMLP5) "$(DESTDIR)$(BINDIR)/."
 	cp ast2pt.mli mLast.mli quotation.mli pcaml.mli prtools.mli reloc.mli "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp asttools.cmi ast2pt.cmi mLast.cmi quotation.cmi pcaml.cmi prtools.cmi reloc.cmi "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp asttools.cmx ast2pt.cmx quotation.cmx pcaml.cmx prtools.cmx reloc.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N).cma "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	if test -f $(CAMLP5N).cmxa; then \
 	  cp $(CAMLP5N).cmxa "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \

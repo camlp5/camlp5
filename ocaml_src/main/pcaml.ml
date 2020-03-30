@@ -52,6 +52,7 @@ let sig_item = Grammar.Entry.create gram "sig_item";;
 let str_item = Grammar.Entry.create gram "str_item";;
 let functor_parameter = Grammar.Entry.create gram "functor_parameter";;
 let module_type = Grammar.Entry.create gram "module_type";;
+let longident = Grammar.Entry.create gram "longident";;
 let extended_longident = Grammar.Entry.create gram "extended_longident";;
 let module_expr = Grammar.Entry.create gram "module_expr";;
 let expr = Grammar.Entry.create gram "expr";;
@@ -76,6 +77,7 @@ let class_sig_item = Grammar.Entry.create gram "class_sig_item";;
 let class_str_item = Grammar.Entry.create gram "class_str_item";;
 let class_type = Grammar.Entry.create gram "class_type";;
 let class_expr = Grammar.Entry.create gram "class_expr";;
+let class_expr_simple = Grammar.Entry.create gram "class_expr_simple";;
 
 let alg_attribute = Grammar.Entry.create gram "alg_attribute";;
 let alg_attributes = Grammar.Entry.create gram "alg_attributes";;

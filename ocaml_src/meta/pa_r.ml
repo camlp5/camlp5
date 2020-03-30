@@ -32,6 +32,7 @@ Grammar.Unsafe.clear_entry top_phrase;
 Grammar.Unsafe.clear_entry use_file;
 Grammar.Unsafe.clear_entry functor_parameter;
 Grammar.Unsafe.clear_entry module_type;
+Grammar.Unsafe.clear_entry longident;
 Grammar.Unsafe.clear_entry extended_longident;
 Grammar.Unsafe.clear_entry module_expr;
 Grammar.Unsafe.clear_entry sig_item;
@@ -53,6 +54,7 @@ Grammar.Unsafe.clear_entry with_constr;
 Grammar.Unsafe.clear_entry poly_variant;
 Grammar.Unsafe.clear_entry class_type;
 Grammar.Unsafe.clear_entry class_expr;
+Grammar.Unsafe.clear_entry class_expr_simple;
 Grammar.Unsafe.clear_entry alg_attribute;
 Grammar.Unsafe.clear_entry alg_attributes;
 Grammar.Unsafe.clear_entry ext_attributes;
@@ -617,11 +619,13 @@ Grammar.safe_extend
    and _ = (functor_parameter : 'functor_parameter Grammar.Entry.e)
    and _ = (module_type : 'module_type Grammar.Entry.e)
    and _ = (module_expr : 'module_expr Grammar.Entry.e)
+   and _ = (longident : 'longident Grammar.Entry.e)
    and _ = (extended_longident : 'extended_longident Grammar.Entry.e)
    and _ = (signature : 'signature Grammar.Entry.e)
    and _ = (structure : 'structure Grammar.Entry.e)
    and _ = (class_type : 'class_type Grammar.Entry.e)
    and _ = (class_expr : 'class_expr Grammar.Entry.e)
+   and _ = (class_expr_simple : 'class_expr_simple Grammar.Entry.e)
    and _ = (class_sig_item : 'class_sig_item Grammar.Entry.e)
    and _ = (class_str_item : 'class_str_item Grammar.Entry.e)
    and _ = (let_binding : 'let_binding Grammar.Entry.e)
@@ -742,8 +746,6 @@ Grammar.safe_extend
      grammar_entry_create "class_fun_def"
    and class_expr_apply : 'class_expr_apply Grammar.Entry.e =
      grammar_entry_create "class_expr_apply"
-   and class_expr_simple : 'class_expr_simple Grammar.Entry.e =
-     grammar_entry_create "class_expr_simple"
    and class_structure : 'class_structure Grammar.Entry.e =
      grammar_entry_create "class_structure"
    and class_self_patt : 'class_self_patt Grammar.Entry.e =
@@ -4068,6 +4070,22 @@ Grammar.safe_extend
              (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)),
            (fun (i : 'ident) _ (loc : Ploc.t) ->
               (Some i : 'simple_type_parameter)))]];
+    Grammar.extension (longident : 'longident Grammar.Entry.e) None
+      [None, Some Gramext.LeftA,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           (fun (i : string) (loc : Ploc.t) ->
+              (MLast.LiUid (loc, i) : 'longident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                   (Grammar.s_nterm
+                      (check_dot_uid : 'check_dot_uid Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("UIDENT", "")),
+           (fun (i : string) _ _ (me1 : 'longident) (loc : Ploc.t) ->
+              (MLast.LiAcc (loc, me1, i) : 'longident)))]];
     Grammar.extension
       (extended_longident : 'extended_longident Grammar.Entry.e) None
       [None, Some Gramext.LeftA,

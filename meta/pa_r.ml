@@ -33,6 +33,7 @@ do {
   Grammar.Unsafe.clear_entry use_file;
   Grammar.Unsafe.clear_entry functor_parameter;
   Grammar.Unsafe.clear_entry module_type;
+  Grammar.Unsafe.clear_entry longident;
   Grammar.Unsafe.clear_entry extended_longident;
   Grammar.Unsafe.clear_entry module_expr;
   Grammar.Unsafe.clear_entry sig_item;
@@ -505,7 +506,7 @@ value str_item_to_inline loc si ext =
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
-    module_expr extended_longident signature
+    module_expr longident extended_longident signature
     structure class_type class_expr class_expr_simple class_sig_item class_str_item let_binding
     type_decl type_extension extension_constructor
     constructor_declaration label_declaration match_case ipatt
@@ -1218,6 +1219,12 @@ EXTEND
     [ [ "'"; i = ident → Some i
       | i = GIDENT → Some (greek_ascii_equiv i)
       | "_" → None ] ]
+  ;
+  longident:
+    [ LEFTA
+      [ me1 = SELF; check_dot_uid ; "."; i = V UIDENT "uid" → <:extended_longident< $longid:me1$ . $_uid:i$ >>
+      | i = V UIDENT "uid" → <:extended_longident< $_uid:i$ >>
+      ] ]
   ;
   extended_longident:
     [ LEFTA
