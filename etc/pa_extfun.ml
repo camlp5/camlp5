@@ -26,10 +26,27 @@ value rec mexpr p =
         [ <:patt< $p1$ $p2$ >> -> loop <:expr< [$mexpr p2$ :: $el$] >> p1
         | p -> <:expr< Extfun.Eapp [$mexpr p$ :: $el$] >> ]
   | <:patt< $p1$ . $p2$ >> ->
+      let rec loop p el =
+        match p with
+        [ <:patt< $p1$ . $p2$ >> -> loop p1 [p2::el]
+        | p -> <:expr< Extfun.Eacc $mexpr_list loc [p::el]$ >> ] in
+      loop p1 [p2]
+
+(*
+      let rec loop p el =
+        match p with
+        [ <:patt< $p1$ . $p2$ >> -> loop p1 <:expr< [$mexpr p2$ :: $el$] >>
+        | p -> <:expr< Extfun.Eacc [$mexpr p$ :: $el$] >> ] in
+      loop p1 <:expr< [$mexpr p2$] >>
+*)
+
+(*
       loop <:expr< [$mexpr p2$] >> p1 where rec loop el =
         fun
         [ <:patt< $p1$ . $p2$ >> -> loop <:expr< [$mexpr p2$ :: $el$] >> p1
         | p -> <:expr< Extfun.Eacc [$mexpr p$ :: $el$] >> ]
+*)
+
   | <:patt< ($list:pl$) >> -> <:expr< Extfun.Etup $mexpr_list loc pl$ >>
   | <:patt< $uid:id$ >> -> <:expr< Extfun.Econ $str:id$ >>
   | <:patt< ` $id$ >> -> <:expr< Extfun.Econ $str:id$ >>
