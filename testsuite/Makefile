@@ -7,7 +7,8 @@ include $(TOP)/config/Makefile
 DIFF=diff -Bwi -u20
 RM=rm
 
-TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test r2official_test r2sch_test \
+TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test r2official_test \
+        r2sch_test q_MLast_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
 	extfun_test o_top_test
 
@@ -22,6 +23,7 @@ all: \
 	r2official_test.byte \
 	official2official_test.byte \
 	r2sch_test.byte \
+	q_MLast_test.byte \
 	sch2r_test.pa_scheme.byte \
 	sch2r_test.pa_schemer.byte \
 	extfun_test.byte \
@@ -134,6 +136,13 @@ r2sch_test:: r2sch_test.byte
 
 r2sch_test.byte: r2sch_test.ml testutil.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_scheme -syntax camlp5r -linkall -linkpkg testutil.cmo -impl r2sch_test.ml -o r2sch_test.byte
+
+q_MLast_test:: q_MLast_test.byte
+	./q_MLast_test.byte
+
+q_MLast_test.byte: q_MLast_test.ml testutil.cmo
+	$(OCAMLFIND) ocamlc -verbose $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r,camlp5.quotations -syntax camlp5r -linkall -linkpkg testutil.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
+
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte

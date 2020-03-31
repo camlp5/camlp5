@@ -148,8 +148,13 @@ package "quotations" (
   requires = "camlp5"
   version = "@VERSION@"
   description = "Syntax extension: Quotations to create AST nodes"
-  archive(syntax,preprocessor) = "q_MLast.cmo"
-  archive(syntax,toploop) = "q_MLast.cmo"
+
+  package "syntax" (
+    archive(syntax,preprocessor) = "q_MLast.cmo"
+    archive(syntax,toploop) = "q_MLast.cmo"
+  )
+
+  archive(byte) = "q_MLast.cmo"
 )
 
 package "phony_quotations" (
