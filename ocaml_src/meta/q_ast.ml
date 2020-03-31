@@ -167,7 +167,6 @@ module Meta_make (C : MetaSig) =
         PaAtt (_, e, att) -> assert false
       | PaPfx (_, li, p) -> C.node "PaPfx" [longid li; patt p]
       | PaLong (_, li) -> C.node "PaLong" [longid li]
-      | PaAcc (_, p1, p2) -> C.node "PaAcc" [patt p1; patt p2]
       | PaAli (_, p1, p2) -> C.node "PaAli" [patt p1; patt p2]
       | PaAnt (_, p) -> C.node "PaAnt" [patt p]
       | PaAny _ -> C.node "PaAny" []
@@ -197,7 +196,6 @@ module Meta_make (C : MetaSig) =
       | PaTup (_, lp) -> C.node "PaTup" [C.vala (C.list patt) lp]
       | PaTyc (_, p, t) -> C.node "PaTyc" [patt p; ctyp t]
       | PaTyp (_, ls) -> C.node "PaTyp" [C.vala (C.list C.string) ls]
-      | PaUid (_, s) -> C.node "PaUid" [C.vala C.string s]
       | PaUnp (_, s, omt) ->
           let c_vala x = C.vala C.string x in
           let c_vala_opt sopt = C.option c_vala sopt in

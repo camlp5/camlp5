@@ -108,8 +108,6 @@ and patt floc sh =
   let rec self =
     function
       PaAtt (loc, p, attr) -> PaAtt (floc loc, self p, attr)
-    | PaAcc (loc, x1, x2) ->
-        let loc = floc loc in PaAcc (loc, self x1, self x2)
     | PaPfx (loc, li, p) -> PaPfx (floc loc, longid floc sh li, self p)
     | PaLong (loc, li) -> PaLong (floc loc, longid floc sh li)
     | PaAli (loc, x1, x2) ->
@@ -153,7 +151,6 @@ and patt floc sh =
     | PaTyc (loc, x1, x2) ->
         let loc = floc loc in PaTyc (loc, self x1, ctyp floc sh x2)
     | PaTyp (loc, x1) -> let loc = floc loc in PaTyp (loc, x1)
-    | PaUid (loc, x1) -> let loc = floc loc in PaUid (loc, x1)
     | PaUnp (loc, x1, x2) ->
         let loc = floc loc in
         PaUnp (loc, x1, option_map (module_type floc sh) x2)

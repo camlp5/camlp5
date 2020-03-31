@@ -574,16 +574,6 @@ module MetaAction =
                    mloc),
                 mpatt p),
              mctyp t)
-      | MLast.PaUid (loc, s) ->
-          MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "PaUid")),
-                mloc),
-             mvala mstring s)
       | x -> not_impl "mpatt" x
     and mlongid =
       function

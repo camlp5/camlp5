@@ -778,13 +778,6 @@ value val_tab = do {
              MLast.loc -> list MLast.sig_item -> MLast.module_type >>;
          expr = Obj.repr (fun loc sil -> MLast.MtSig loc sil);
          patt = no_patt loc});
-     ("MLast.PaAcc",
-      fun loc ->
-        {ctyp =
-           <:ctyp<
-             MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
-         expr = Obj.repr (fun loc p1 p2 -> MLast.PaAcc loc p1 p2);
-         patt = no_patt loc});
      ("MLast.PaAli",
       fun loc ->
         {ctyp =
@@ -839,11 +832,6 @@ value val_tab = do {
            <:ctyp<
              MLast.loc -> MLast.patt -> MLast.ctyp -> MLast.patt >>;
          expr = Obj.repr (fun loc p t -> MLast.PaTyc loc p t);
-         patt = no_patt loc});
-     ("MLast.PaUid",
-      fun loc ->
-        {ctyp = <:ctyp< MLast.loc -> string -> MLast.patt >>;
-         expr = Obj.repr (fun loc s -> MLast.PaUid loc s);
          patt = no_patt loc});
      ("MLast.SgVal",
       fun loc ->

@@ -312,9 +312,7 @@ let rec mkrangepat loc c1 c2 =
 
 let rec patt_label_long_id =
   function
-    MLast.PaAcc (_, _, _) -> assert false
-  | MLast.PaUid (_, _) -> assert false
-  | MLast.PaPfx (_, li, MLast.PaLid (_, s)) ->
+    MLast.PaPfx (_, li, MLast.PaLid (_, s)) ->
       Ldot (longid_long_id li, conv_lab s)
   | MLast.PaLong (_, li) -> longid_long_id li
   | MLast.PaLid (_, s) -> Lident (conv_lab s)
@@ -812,7 +810,6 @@ and type_extension loc te =
 and patt =
   function
     PaAtt (loc, p1, a) -> ocaml_patt_addattr (attr (uv a)) (patt p1)
-  | PaAcc (_, _, _) -> assert false
   | PaPfx (loc, li, p2) ->
       mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
   | PaLong (loc, li) ->
@@ -928,7 +925,6 @@ and patt =
             (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
       | None -> error loc "no #type in this ocaml version"
       end
-  | PaUid (_, _) -> assert false
   | PaUnp (loc, s, mto) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->

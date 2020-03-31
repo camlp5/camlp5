@@ -79,7 +79,8 @@ and ctyp_module =
 
 and patt =
   fun
-  [ PaAcc _ p _ -> patt_module p
+  [ PaPfx _ li _ -> longident li
+  | PaLong _ li -> longident li
   | PaAli _ p1 p2 -> do { patt p1; patt p2 }
   | PaAny _ -> ()
   | PaApp _ p1 p2 -> do { patt p1; patt p2 }
@@ -97,7 +98,6 @@ and patt =
   | <:patt< $str:_$ >> -> ()
   | <:patt< ($list:pl$) >> -> list patt pl
   | <:patt< ($p$ : $t$) >> -> do { patt p; ctyp t }
-  | <:patt< $uid:_$ >> -> ()
   | <:patt< (module $_$ : $mt$) >> -> module_type mt
   | PaVrn _ _ -> ()
   | x -> not_impl "patt" x ]
