@@ -674,7 +674,6 @@ value match_assoc force_vertic pc (p, w, e) =
 
 
 value label_patt pc p =
-  let p = patt_left_assoc_acc p in
   match p with [
     <:patt:< $longid:x$ . $lid:y$ >> -> pprintf pc "%p.%p" longident x var_escaped (loc, y)
   | <:patt:< $longid:x$ >> -> pprintf pc "%p" longident x

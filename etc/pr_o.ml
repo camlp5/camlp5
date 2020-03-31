@@ -324,7 +324,6 @@ value patt_as pc z =
 (* utilities specific to pr_o *)
 
 value label_patt pc p =
-  let p = patt_left_assoc_acc p in
   match p with [
     <:patt:< $longid:x$ . $lid:y$ >> -> pprintf pc "%p.%p" longident x var_escaped (loc, y)
   | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)

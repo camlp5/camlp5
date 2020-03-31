@@ -101,6 +101,7 @@ Added statements:
 
 *)
 
+open Asttools;;
 open Pcaml;;
 open Printf;;
 open Versdep;;
@@ -208,7 +209,17 @@ let subst mloc env =
 let substp mloc env =
   let rec loop =
     function
-      MLast.ExAcc (loc, e1, e2) -> MLast.PaAcc (loc, loop e1, loop e2)
+      MLast.ExAcc (loc, e1, e2) ->
+        let rec expr2longid =
+          function
+            MLast.ExUid (_, x) -> MLast.LiUid (loc, x)
+          | MLast.ExAcc (_, e1, e2) ->
+              let li1 = expr2longid e1 in
+              let li2 = expr2longid e2 in longid_concat li1 li2
+          | _ -> failwith "substp/expr2long: bad expr"
+        in
+        let li = expr2longid (expr_left_assoc_acc e1) in
+        MLast.PaPfx (loc, li, loop e2)
     | MLast.ExApp (_, e1, e2) -> MLast.PaApp (loc, loop e1, loop e2)
     | MLast.ExLid (_, x) ->
         begin try MLast.PaAnt (loc, List.assoc x env) with

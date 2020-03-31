@@ -101,6 +101,7 @@ Added statements:
 
 *)
 
+open Asttools;
 open Pcaml;
 open Printf;
 open Versdep;
@@ -205,7 +206,18 @@ value subst mloc env =
 value substp mloc env =
   loop where rec loop =
     fun
-    [ <:expr:< $e1$ . $e2$ >> -> MLast.PaAcc loc (loop e1) (loop e2)
+    [ <:expr:< $e1$ . $e2$ >> ->
+        let rec expr2longid = fun [
+          <:expr< $uid:x$ >> ->
+            <:extended_longident< $uid:x$ >>
+        | <:expr< $e1$ . $e2$ >> ->
+            let li1 = expr2longid e1 in
+            let li2 = expr2longid e2 in
+            longid_concat li1 li2
+        | _ -> failwith "substp/expr2long: bad expr"
+        ] in
+        let li = expr2longid (expr_left_assoc_acc e1) in
+        MLast.PaPfx loc li (loop e2)
     | <:expr< $e1$ $e2$ >> -> <:patt< $loop e1$ $loop e2$ >>
     | <:expr< $lid:x$ >> ->
         try <:patt< $anti:List.assoc x env$ >> with
