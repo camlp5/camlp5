@@ -387,10 +387,8 @@ value rec constr_patt_arity loc =
   fun
   [ <:patt< $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
-  | <:patt< $uid:_$ . $p$ >> -> constr_patt_arity loc p
 
-  | MLast.PaLong _ <:extended_longident< $uid:c$ >> ->
-      try List.assoc c constr_arity.val with [ Not_found -> 0 ]
+  | <:patt< $uid:_$ . $p$ >> -> constr_patt_arity loc p
 
   | MLast.PaLong _ <:extended_longident< $longid:_$ . $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
@@ -1344,7 +1342,7 @@ EXTEND
     [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>
       | check_not_part_of_patt; "(" ; op = operator_rparen ->
         if op = "::" then
-          <:patt< $uid:op$ >>
+          MLast.PaLong loc (LiUid loc (Ploc.VaVal op))
         else
           <:patt< $lid:op$ >>
       ] ]
@@ -1380,9 +1378,8 @@ EXTEND
     [ [ i = patt_label_ident ;
         tycon = OPT [ ":" ; c = ctyp -> c ];
         e = OPT [ "="; e = expr LEVEL "expr1" -> e] ->
-        let i = patt_left_assoc_acc i in
         let last = match i with [
-          <:patt< $_$ . $lid:j$ >> -> j
+          <:patt< $longid:_$ . $lid:j$ >> -> j
         | <:patt< $lid:j$ >> -> j
         | _ -> failwith "internal error: lbl_expr"
         ] in
@@ -1449,7 +1446,7 @@ EXTEND
     | s = V GIDENT → <:patt< $_lid:s$ >>
     | li = longident ; "." ; p = patt LEVEL "simple" → 
       match p with [
-        <:patt< $uid:i$ >> ->
+        MLast.PaLong loc (LiUid _ (Ploc.VaVal i)) ->
         let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
         MLast.PaLong loc li
       | _ -> 
@@ -1514,14 +1511,8 @@ MLast.PaLong loc li
               | _ -> <:patt< $p1$ $p2$ >> ] ]
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF -> 
           patt_to_inline <:patt< lazy $p$ >> ext attrs ]
-    | "simple" RIGHTA
-      [ p1 = V UIDENT; "."; p2 = SELF → <:patt< $_uid:p1$ . $p2$ >> ]
-    | "atomic"
-      [ s = V LIDENT -> <:patt< $_lid:s$ >>
-      | s = V UIDENT -> <:patt< $_uid:s$ >>
-(*
-      | p = patt_ident -> p
-*)
+    | "simple"
+      [ p = patt_ident -> p
       | s = V INT -> <:patt< $_int:s$ >>
       | s = V INT_l -> <:patt< $_int32:s$ >>
       | s = V INT_L -> <:patt< $_int64:s$ >>
@@ -1548,10 +1539,10 @@ MLast.PaLong loc li
           <:patt< [| $_list:pl$ |] >>
       | "{"; lpl = V lbl_patt_list "list"; "}" ->
           <:patt< { $_list:lpl$ } >>
-      | "("; ")" -> <:patt< () >>
+      | "("; ")" -> MLast.PaLong loc (LiUid loc (Ploc.VaVal "()"))
       | "("; op = operator_rparen -> 
           if op = "::" then
-            <:patt< $uid:op$ >>
+            MLast.PaLong loc (LiUid loc (Ploc.VaVal op))
           else
             <:patt< $lid:op$ >>
       | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
@@ -1579,9 +1570,8 @@ MLast.PaLong loc li
   ;
   lbl_patt:
     [ [ i = patt_label_ident ; tycon = OPT [ ":" ; c = ctyp -> c ]; p = OPT [ "="; p = patt -> p ] ->
-        let i = patt_left_assoc_acc i in
         let last = match i with [
-          <:patt< $_$ . $lid:j$ >> -> j
+          <:patt< $longid:_$ . $lid:j$ >> -> j
         | <:patt< $lid:j$ >> -> j
         | _ -> failwith "internal error: lbl_patt"
         ] in
@@ -1597,16 +1587,8 @@ MLast.PaLong loc li
   ;
   patt_label_ident:
     [ RIGHTA
-      [ i = UIDENT; "."; p2 = SELF -> <:patt< $uid:i$ . $p2$ >>
+      [ li = longident; "."; p2 = SELF -> <:patt< $longid:li$ . $p2$ >>
       | i = LIDENT -> <:patt< $lid:i$ >>
-(*
-      | li = longident; "."; p2 = SELF -> 
-PaPfx loc li p2
-(*
-<:patt< $longid:li$ . $p2$ >>
-*)
-      | i = LIDENT -> <:patt< $lid:i$ >>
-*)
      ] ]
   ;
   (* Type declaration *)

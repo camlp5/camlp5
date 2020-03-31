@@ -537,25 +537,21 @@
   ((Squot loc typ txt) (Pcaml.handle_patt_quotation loc (, typ txt))))
  patt_ident_se
  (lambda (loc s)
-   (let rec
-     ((loop
-       (lambda (ibeg i)
-         (if (= i (String.length s))
-             (if (> i ibeg)
-                 (patt_id loc (String.sub s ibeg (- i ibeg)))
-               (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                               (Stream.Error "patt expected")))
-           (if (= ([] s i) '.')
-               (if (> i ibeg)
-                   (let* ((p1 (patt_id
-                               loc
-                               (String.sub s ibeg (- i ibeg))))
-                          (p2 (loop (+ i 1) (+ i 1))))
-                     <:patt< $p1$ . $p2$ >>)
-                 (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                 (Stream.Error "patt expected")))
-             (loop ibeg (+ i 1)))))))
-     (loop 0 0)))
+  (let* ((sl (split_at_dots loc s))
+         ((, hdl lid) (split_last sl)))
+         (if (not (List.for_all capitalized hdl))
+             (Ploc.raise loc (Stream.Error "patt expected, but components aren't capitalized"))
+             ())
+         (match hdl
+                  ((list) (patt_id loc lid))
+                  ((list h :: t)
+                     (let ((me (List.fold_left (lambda (me uid) <:extended_longident< $longid:me$ . $uid:uid$ >>)
+                                  <:extended_longident< $uid:h$ >> t)))
+                         (<:patt< $longid:me$ . $lid:lid$ >>))
+                  )
+         )
+  )
+  )
  ipatt_se
  (lambda se
    (match (ipatt_opt_se se)

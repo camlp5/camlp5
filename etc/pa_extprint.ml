@@ -40,20 +40,10 @@ value rec mlongid li acc =
 value rec mexpr p =
   let loc = MLast.loc_of_patt p in
   match p with
-  [
-(*
- <:patt< $longid:li$ . $p$ >>
-*)
-PaPfx _ li p
- ->
+  [ <:patt< $longid:li$ . $p$ >> ->
       let ml = mlongid li <:expr< [$mexpr p$] >> in
       <:expr< Extfun.Eacc $ml$ >>
-  |
-(*
- <:patt< $longid:li$ >>
-*)
-PaLong _ li
- ->
+  | <:patt< $longid:li$ >> ->
       let ml = mlongid li <:expr< [] >> in
       <:expr< Extfun.Eacc $ml$ >>
 
@@ -63,13 +53,7 @@ PaLong _ li
         fun
         [ <:patt< $p1$ $p2$ >> -> loop <:expr< [$mexpr p2$ :: $el$] >> p1
         | p -> <:expr< Extfun.Eapp [$mexpr p$ :: $el$] >> ]
-  | <:patt< $p1$ . $p2$ >> ->
-      loop <:expr< [$mexpr p2$] >> p1 where rec loop el =
-        fun
-        [ <:patt< $p1$ . $p2$ >> -> loop <:expr< [$mexpr p2$ :: $el$] >> p1
-        | p -> <:expr< Extfun.Eacc [$mexpr p$ :: $el$] >> ]
   | <:patt< ($list:pl$) >> -> <:expr< Extfun.Etup $mexpr_list loc pl$ >>
-  | <:patt< $uid:id$ >> -> <:expr< Extfun.Econ $str:id$ >>
   | <:patt< ` $id$ >> -> <:expr< Extfun.Econ $str:id$ >>
   | <:patt< $int:s$ >> -> <:expr< Extfun.Eint $str:s$ >>
   | <:patt< $str:s$ >> -> <:expr< Extfun.Estr $str:s$ >>

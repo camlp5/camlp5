@@ -684,7 +684,7 @@ and t2 = bool[@@foo];
      r_output = OK {foo|match x with [ exception E → 1 ];
 |foo}
     };
-    {name="pat-exception1"; implem = True ;
+    {name="pat-exception2"; implem = True ;
      exclude=[];
      o_input = OK {foo|match x with exception E.F -> 1|foo} ;
      official_input = OK {foo|match x with exception E.F -> 1|foo} ;
@@ -695,7 +695,7 @@ and t2 = bool[@@foo];
      r_output = OK {foo|match x with [ exception E.F → 1 ];
 |foo}
     };
-    {name="pat-exception2"; implem = True ;
+    {name="pat-exception3"; implem = True ;
      exclude=["r2official"];
      o_input = OK {foo|match x with exception E.F _ -> 1|foo} ;
      official_input = OK {foo|match x with exception E.F _ -> 1|foo} ;

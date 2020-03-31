@@ -547,17 +547,18 @@ and patt_se =
   | Sexpr loc [] → <:patt< () >>
   | Squot loc typ txt → Pcaml.handle_patt_quotation loc (typ, txt) ]
 and patt_ident_se loc s =
-  loop 0 0 where rec loop ibeg i =
-    if i = String.length s then
-      if i > ibeg then patt_id loc (String.sub s ibeg (i - ibeg))
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "patt expected")
-    else if s.[i] = '.' then
-      if i > ibeg then
-        let p1 = patt_id loc (String.sub s ibeg (i - ibeg)) in
-        let p2 = loop (i + 1) (i + 1) in
-        <:patt< $p1$ . $p2$ >>
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "patt expected")
-    else loop ibeg (i + 1)
+  let sl = split_at_dots loc s in
+  let (hdl, lid) = split_last sl in do {
+  if not (List.for_all capitalized hdl) then
+    Ploc.raise loc (Stream.Error "patt expected, but components aren't capitalized")
+  else () ;
+  match hdl with [
+    [] -> patt_id loc lid
+  | [ h :: t ] ->
+    let me = List.fold_left (fun me uid -> <:extended_longident< $longid:me$ . $uid:uid$ >>)
+      <:extended_longident< $uid:h$ >> t in
+    <:patt< $longid:me$ . $lid:lid$ >>
+  ]}
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p → p

@@ -95,10 +95,9 @@ value rec is_irrefut_patt =
   [ 
     <:patt< $p$ [@ $_attribute:_$ ] >> -> is_irrefut_patt p
   | <:patt< $lid:_$ >> -> True
-  | <:patt< () >> -> True
+  | MLast.PaLong _ (LiUid _ (Ploc.VaVal "()")) -> True
   | <:patt< _ >> -> True
-  | MLast.PaPfx _ _ p -> is_irrefut_patt p
-  | <:patt< $x$ . $y$ >> -> patt_is_module_path x && is_irrefut_patt y
+  | <:patt< $longid:_$ . $p$ >> -> is_irrefut_patt p
   | <:patt< ($x$ as $y$) >> -> is_irrefut_patt x && is_irrefut_patt y
   | <:patt< { $list:fpl$ } >> ->
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
@@ -116,7 +115,7 @@ value rec is_irrefut_patt =
 
 value rec get_defined_ident =
   fun
-  [ <:patt< $_$ . $_$ >> -> []
+  [ <:patt< $longid:_$ . $p$ >> -> get_defined_ident p
   | <:patt< _ >> -> []
   | <:patt< $lid:x$ >> -> [x]
   | <:patt< ($p1$ as $p2$) >> -> get_defined_ident p1 @ get_defined_ident p2
@@ -126,7 +125,6 @@ value rec get_defined_ident =
   | <:patt< $chr:_$ >> -> []
   | <:patt< [| $list:pl$ |] >> -> List.flatten (List.map get_defined_ident pl)
   | <:patt< ($list:pl$) >> -> List.flatten (List.map get_defined_ident pl)
-  | <:patt< $uid:_$ >> -> []
   | <:patt< ` $_$ >> -> []
   | <:patt< # $list:_$ >> -> []
   | <:patt< $p1$ $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
@@ -678,7 +676,8 @@ value match_assoc force_vertic pc (p, w, e) =
 value label_patt pc p =
   let p = patt_left_assoc_acc p in
   match p with [
-    <:patt:< $x$ . $lid:y$ >> -> pprintf pc "%p.%p" patt x var_escaped (loc, y)
+    <:patt:< $longid:x$ . $lid:y$ >> -> pprintf pc "%p.%p" longident x var_escaped (loc, y)
+  | <:patt:< $longid:x$ >> -> pprintf pc "%p" longident x
   | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
   | z -> Ploc.raise (MLast.loc_of_patt z)
       (Failure (sprintf "label_patt %d" (Obj.tag (Obj.repr z))))
@@ -1742,10 +1741,8 @@ EXTEND_PRINTER
           in
           left_operator pc 2 unfold next z ]
     | "dot"
-      [ MLast.PaPfx _ li p -> pprintf pc "%p.%p" longident li curr p
-      | MLast.PaLong _ li -> pprintf pc "%p" longident li
-      | <:patt< $x$ . $y$ >> ->
-          pprintf pc "%p.%p" curr x curr y
+      [ <:patt< $longid:li$ . $p$ >> -> pprintf pc "%p.%p" longident li curr p
+      | <:patt< $longid:li$ >> -> pprintf pc "%p" longident li
       ]
     | "simple"
       [ <:patt< lazy $p$ >> -> pprintf pc "lazy@;%p" curr p
@@ -1799,8 +1796,6 @@ EXTEND_PRINTER
           pprintf pc "( %s )" s
       | <:patt:< $lid:s$ >> ->
           var_escaped pc (loc, s)
-      | <:patt< $uid:s$ >> ->
-          cons_escaped pc s
       | <:patt< $chr:s$ >> ->
           pprintf pc "'%s'" s
       | <:patt< $str:s$ >> ->

@@ -352,9 +352,22 @@ value idd =
 
 value uncap s = string_uncapitalize s;
 
+value check_dot_uid_f strm =
+  match Stream.npeek 5 strm with [
+    [("",".") ; ("UIDENT",_) :: _] -> ()
+  | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_dot_uid =
+  Grammar.Entry.of_parser gram "check_dot_uid"
+    check_dot_uid_f
+;
+
 EXTEND
   GLOBAL: implem interf top_phrase use_file sig_item str_item ctyp patt expr
-    module_type module_expr;
+    module_type module_expr check_dot_uid;
 
   implem:
     [ [ x = interdec; EOI -> x ] ]
@@ -597,6 +610,13 @@ EXTEND
       | "infixr"; x1 = INT -> ("infixr", Some x1)
       | "nonfix" -> not_impl loc "fixity 5" ] ]
   ;
+  longident:
+    [ LEFTA
+      [ li = SELF; check_dot_uid ; "."; i = V UIDENT "uid" →
+          <:extended_longident< $longid:li$ . $_uid:i$ >>
+      | i = V UIDENT "uid" → <:extended_longident< $_uid:i$ >>
+      ] ]
+  ;
   patt:
     [ [ x1 = patt; "as"; x2 = patt -> <:patt< ($x1$ as $x2$) >> ]
     | LEFTA
@@ -608,7 +628,7 @@ EXTEND
           [ <:patt< ref >> -> <:patt< {contents = $x2$} >>
           | _ -> <:patt< $x1$ $x2$ >> ] ]
     | "apat"
-      [ x1 = patt; "."; x2 = patt -> <:patt< $x1$ . $x2$ >>
+      [ li = longident; "."; x2 = patt -> <:patt< $longid:li$ . $x2$ >>
       | x1 = INT -> <:patt< $int:x1$ >>
       | x1 = UIDENT -> <:patt< $uid:x1$ >>
       | x1 = STRING -> <:patt< $str:x1$ >>

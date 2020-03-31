@@ -1070,7 +1070,7 @@ EXTEND
     | s = V GIDENT → <:patt< $_lid:s$ >>
     | li = longident ; "." ; p = patt LEVEL "simple" → 
       match p with [
-        <:patt< $uid:i$ >> ->
+        MLast.PaLong loc (LiUid _ (Ploc.VaVal i)) ->
         let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
         MLast.PaLong loc li
       | _ -> 
@@ -1146,7 +1146,9 @@ MLast.PaLong loc li
           <:patt< (module $_uidopt:s$ : $mt$) >>
       | "module"; s = V uidopt "uidopt" →
           <:patt< (module $_uidopt:s$) >>
-      | → <:patt< () >> ] ]
+      | →
+MLast.PaLong loc (LiUid loc (Ploc.VaVal "()"))
+ ] ]
   ;
   cons_patt_opt:
     [ [ "::"; p = patt → Some p
@@ -1156,22 +1158,19 @@ MLast.PaLong loc li
     [ [ i = patt_label_ident; "="; p = patt → (i, p) ] ]
   ;
   patt_label_ident:
-    [ LEFTA
-      [ p1 = SELF; "."; p2 = SELF → <:patt< $p1$ . $p2$ >> ]
-    | "simple" RIGHTA
-      [ i = V UIDENT → <:patt< $_uid:i$ >>
+    [
+      [ p1 = longident; "."; p2 = SELF → MLast.PaPfx loc p1 p2
       | i = V LIDENT → <:patt< $_lid:i$ >>
-      | "_" → <:patt< _ >> ] ]
+      ] ]
   ;
   ipatt:
     [ "top" LEFTA
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:patt< $e1$ [@ $_attribute:attr$ ] >>
       ]
-    | RIGHTA
-      [ p1 = V UIDENT; "."; p2 = SELF → <:patt< $_uid:p1$ . $p2$ >> ]
     | "simple"
-      [ "("; op = operator_rparen ->
+      [ p = patt_ident -> p
+      | "("; op = operator_rparen ->
           if op = "::" then
             <:patt< $uid:op$ >>
           else
@@ -1180,8 +1179,6 @@ MLast.PaLong loc li
           <:patt< { $_list:lpl$ } >>
       | "("; p = paren_ipatt; ")" → p
       | e = alg_extension -> <:patt< [% $_extension:e$ ] >>
-      | s = V LIDENT → <:patt< $_lid:s$ >>
-      | s = V GIDENT → <:patt< $_lid:s$ >>
       | "_" → <:patt< _ >> ] ]
   ;
   paren_ipatt:
@@ -1195,7 +1192,9 @@ MLast.PaLong loc li
           <:patt< (module $_uidopt:s$ : $mt$) >>
       | "module"; s = V uidopt "uidopt" →
           <:patt< (module $_uidopt:s$) >>
-      | → <:patt< () >> ] ]
+      | →
+MLast.PaLong loc (LiUid loc (Ploc.VaVal "()"))
+ ] ]
   ;
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt → (i, p) ] ]

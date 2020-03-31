@@ -114,7 +114,7 @@ value expr_is_module_path e =
 value patt_is_module_path e =
  let rec erec = fun [
    <:patt< $uid:_$ >> -> True
- | <:patt< $a$ . $b$ >> -> erec a && erec b
+ | MLast.PaAcc _ a b -> erec a && erec b
  | _ -> False
  ] in erec e
 ;
@@ -131,9 +131,9 @@ value expr_left_assoc_acc e =
  
 value patt_left_assoc_acc e =
   let rec arec = fun [
-    <:patt:< $e1$ . $e2$ >> as z ->
+    MLast.PaAcc _ e1 e2 as z ->
       match e2 with [
-        <:patt< $e2$  . $e3$ >> -> arec <:patt< ( $e1$ . $e2$ ) . $e3$ >>
+        MLast.PaAcc loc e2 e3 -> arec (MLast.PaAcc loc (MLast.PaAcc loc e1 e2) e3)
       | _ -> z ]
   | e -> e
   ] in arec e

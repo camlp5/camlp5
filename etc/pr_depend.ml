@@ -103,8 +103,8 @@ and patt =
   | x -> not_impl "patt" x ]
 and patt_module =
   fun
-  [ <:patt< $uid:m$ >> -> addmodule m
-  | <:patt< $p$ . $_$ >> -> patt_module p
+  [ <:patt< $longid:p$ . $_$ >> -> longident p
+  | <:patt< $longid:p$ >> -> longident p
   | x -> not_impl "patt_module" x ]
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =

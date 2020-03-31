@@ -293,7 +293,7 @@ value rec mkrangepat loc c1 c2 =
 
 value rec patt_long_id =
   fun
-  [ <:patt< $p$ . $uid:i$ >> → Ldot (patt_long_id p) i
+  [ MLast.PaAcc _ p (PaUid _ (Ploc.VaVal i)) → Ldot (patt_long_id p) i
   | <:patt< $uid:i$ >> -> Lident i
   | z -> error (loc_of_patt z) "patt_long_id: bad label"
   ]
@@ -301,8 +301,8 @@ value rec patt_long_id =
 
 value rec patt_label_long_id =
   fun
-  [ <:patt< $m$ . $lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
-  | <:patt< $m$ . $uid:s$ >> → Ldot (patt_label_long_id m) s
+  [ MLast.PaAcc _ m <:patt< $lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
+  | MLast.PaAcc _ m (MLast.PaUid _ (Ploc.VaVal s)) → Ldot (patt_label_long_id m) s
   | <:patt< $uid:s$ >> → Lident s
   |
 MLast.PaPfx _ li <:patt< $lid:s$ >>

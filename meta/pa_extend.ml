@@ -299,8 +299,8 @@ module MetaAction =
       | x -> not_impl "mpatt" x ]
     and mlongid =
       fun
-      [ MLast.LiApp loc me1 me2 -> <:expr< MLast.LiApp $mlongid me1$ $mlongid me2$ >>
-      | MLast.LiAcc loc me1 uid -> <:expr< MLast.LiAcc $mlongid me1$ $mvala mstring uid$ >>
+      [ MLast.LiApp loc me1 me2 -> <:expr< MLast.LiApp $mloc$ $mlongid me1$ $mlongid me2$ >>
+      | MLast.LiAcc loc me1 uid -> <:expr< MLast.LiAcc $mloc$ $mlongid me1$ $mvala mstring uid$ >>
       | MLast.LiUid loc s -> <:expr< MLast.LiUid $mloc$ $mvala mstring s$ >> ]
     and mctyp =
       fun
@@ -446,7 +446,7 @@ value quot_expr psl e =
                  let lab =
                    match p with
                    [ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
-                   | <:patt< $_$ . $lid:c$ >> -> <:expr< $str:c$ >>
+                   | MLast.PaAcc _ _ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
                    | _ -> raise Not_found ]
                  in
                  <:expr< ($lab$, $loop e$) >>)

@@ -230,14 +230,14 @@ value mklistpat _ last =
         match last with
         [ Qast.Option (Some p) -> p
         | Qast.Option None ->
-            Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
+          Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]]
         | a -> a ]
     | [p1 :: pl] ->
         Qast.Node "PaApp"
           [Qast.Loc;
            Qast.Node "PaApp"
              [Qast.Loc;
-              Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "::")]; p1];
+              Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "::")]]; p1];
            loop False pl] ]
 ;
 
@@ -1092,14 +1092,10 @@ EXTEND
     | LEFTA
       [ p1 = SELF; p2 = SELF → Qast.Node "PaApp" [Qast.Loc; p1; p2]
       | "lazy"; p = SELF → Qast.Node "PaLaz" [Qast.Loc; p] ]
-    | LEFTA
-      [ p1 = SELF; "."; p2 = SELF → Qast.Node "PaAcc" [Qast.Loc; p1; p2] ]
     | "simple"
       [ 
         e = alg_extension -> Qast.Node "PaExten" [Qast.Loc; e]
-      | s = SV LIDENT → Qast.Node "PaLid" [Qast.Loc; s]
-      | s = SV GIDENT → Qast.Node "PaLid" [Qast.Loc; s]
-      | s = SV UIDENT → Qast.Node "PaUid" [Qast.Loc; s]
+      | p = patt_ident -> p
       | s = SV INT → Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
       | s = SV INT_l → Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "l"]
       | s = SV INT_L → Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "L"]
@@ -1120,7 +1116,7 @@ EXTEND
             [Qast.Loc; Qast.VaVal (neg_string s); Qast.Str "n"]
       | "-"; s = FLOAT →
           Qast.Node "PaFlo" [Qast.Loc; Qast.VaVal (neg_string s)]
-      | "["; "]" → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
+      | "["; "]" → Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]]
       | "["; pl = LIST1 patt SEP ";"; last = cons_patt_opt; "]" →
           mklistpat Qast.Loc last pl
       | "[|"; pl = SV (LIST0 patt SEP ";"); "|]" →
@@ -1152,11 +1148,11 @@ EXTEND
   ;
   patt_label_ident:
     [ LEFTA
-      [ p1 = SELF; "."; p2 = SELF → Qast.Node "PaAcc" [Qast.Loc; p1; p2] ]
-    | "simple" RIGHTA
-      [ i = SV UIDENT → Qast.Node "PaUid" [Qast.Loc; i]
+      [ p1 = longident; "."; p2 = SELF → Qast.Node "PaPfx" [Qast.Loc; p1; p2]
+      | p1 = longident → Qast.Node "PaLong" [Qast.Loc; p1]
       | i = SV LIDENT → Qast.Node "PaLid" [Qast.Loc; i]
-      | "_" → Qast.Node "PaAny" [Qast.Loc] ] ]
+      | "_" → Qast.Node "PaAny" [Qast.Loc]
+      ] ]
   ;
   ipatt:
     [ [ "{"; lpl = SV (LIST1 label_ipatt SEP ";"); "}" →
@@ -1178,7 +1174,8 @@ EXTEND
           Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option (Some mt)]
       | "module"; s = SV uidopt "uidopt" →
           Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
-      | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
+
+      | → Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]] ] ]
   ;
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt → Qast.Tuple [i; p] ] ]

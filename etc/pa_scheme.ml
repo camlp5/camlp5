@@ -942,7 +942,14 @@
  (patt_se
   (lambda_match
    ((Sacc loc se1 se2)
-    (let* ((p1 (patt_se se1)) (p2 (patt_se se2))) <:patt< $p1$ . $p2$ >>))
+    (let* ((me1 (longid_se se1)))
+      (match (patt_se se2)
+             (<:patt< $longid:me2$ . $lid:lid$ >>
+                <:patt< $longid:(longid_concat me1 me2)$ . $lid:lid$ >>)
+             (p <:patt< $longid:me1$ . $p$ >>)
+      )
+    )
+   )
    ((Slid loc "_") <:patt< _ >>)
    ((Slid loc s) <:patt< $lid:(rename_id s)$ >>)
    ((Slidv loc s) <:patt< $_lid:s$ >>)

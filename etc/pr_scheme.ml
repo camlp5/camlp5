@@ -1023,9 +1023,9 @@ EXTEND_PRINTER
           plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc p, "")]
-      | <:patt< $p1$ . $p2$ >> ->
+      | <:patt< $longid:p1$ . $p2$ >> ->
            sprintf "%s.%s"
-             (curr {(pc) with aft = ""} p1)
+             (longident {(pc) with aft = ""} p1)
              (curr {(pc) with bef = ""} p2)
       | <:patt< $lid:s$ >> ->
           sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
