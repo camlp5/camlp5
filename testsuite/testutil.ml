@@ -86,9 +86,20 @@ value wrap_err ?{exit=True} f arg =
 try f arg with exc -> report_error_and_exit ~{exit=exit} exc
 ;
 
+value with_input_file fname f arg =
+  let oinput_file = Pcaml.input_file.val in do {
+    Pcaml.input_file.val := fname ;
+    try let rv = f arg in do { Pcaml.input_file.val := oinput_file ; rv }
+    with exc -> do {
+      Pcaml.input_file.val := oinput_file ;
+      raise exc
+    }
+  }
+;
+
 module PAPR = struct
 module Implem = struct
-value pa strm = let (ast, _) = Pcaml.parse_implem.val strm in ast ;
+value pa strm = let (ast, _) = with_input_file "-" Pcaml.parse_implem.val strm in ast ;
 value pa1 s = let ast = pa (Stream.of_string s) in ast ;
 value pa_all s =
   let strm = Stream.of_string s in

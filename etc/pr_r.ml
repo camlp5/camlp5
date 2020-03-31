@@ -97,6 +97,7 @@ value rec is_irrefut_patt =
   | <:patt< $lid:_$ >> -> True
   | <:patt< () >> -> True
   | <:patt< _ >> -> True
+  | MLast.PaPfx _ _ p -> is_irrefut_patt p
   | <:patt< $x$ . $y$ >> -> patt_is_module_path x && is_irrefut_patt y
   | <:patt< ($x$ as $y$) >> -> is_irrefut_patt x && is_irrefut_patt y
   | <:patt< { $list:fpl$ } >> ->
@@ -1741,8 +1742,11 @@ EXTEND_PRINTER
           in
           left_operator pc 2 unfold next z ]
     | "dot"
-      [ <:patt< $x$ . $y$ >> ->
-          pprintf pc "%p.%p" curr x curr y ]
+      [ MLast.PaPfx _ li p -> pprintf pc "%p.%p" longident li curr p
+      | MLast.PaLong _ li -> pprintf pc "%p" longident li
+      | <:patt< $x$ . $y$ >> ->
+          pprintf pc "%p.%p" curr x curr y
+      ]
     | "simple"
       [ <:patt< lazy $p$ >> -> pprintf pc "lazy@;%p" curr p
       | <:patt< ($x$ as $y$) >> ->
@@ -2047,11 +2051,11 @@ EXTEND_PRINTER
   pr_longident:
         [ "dot"
       [ <:extended_longident< $longid:x$ . $uid:uid$ >> ->
-          pprintf pc "%p.%s" curr x uid
+          pprintf pc "%p.%p" curr x cons_escaped uid
       | <:extended_longident< $longid:x$ ( $longid:y$ ) >> ->
           pprintf pc "%p(%p)" longident x longident y
       | <:extended_longident< $uid:s$ >> ->
-          pprintf pc "%s" s
+          pprintf pc "%p" cons_escaped s
       ]
     | "bottom" [
         z -> pprintf pc "[INTERNAL ERROR(pr_module_longident): unexpected longident]"

@@ -388,6 +388,12 @@ value rec constr_patt_arity loc =
   [ <:patt< $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
   | <:patt< $uid:_$ . $p$ >> -> constr_patt_arity loc p
+
+  | MLast.PaLong _ <:extended_longident< $uid:c$ >> ->
+      try List.assoc c constr_arity.val with [ Not_found -> 0 ]
+
+  | MLast.PaLong _ <:extended_longident< $longid:_$ . $uid:c$ >> ->
+      try List.assoc c constr_arity.val with [ Not_found -> 0 ]
   | _ -> 1 ]
 ;
 
@@ -1438,6 +1444,29 @@ EXTEND
       ] ]
   ;
   (* Patterns *)
+  patt_ident: [
+    [ s = V LIDENT → <:patt< $_lid:s$ >>
+    | s = V GIDENT → <:patt< $_lid:s$ >>
+    | li = longident ; "." ; p = patt LEVEL "simple" → 
+      match p with [
+        <:patt< $uid:i$ >> ->
+        let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
+        MLast.PaLong loc li
+      | _ -> 
+MLast.PaPfx loc li p
+(*
+          <:patt< $longid:li$ . $p$ >>
+*)
+
+      ]
+    | li = longident → 
+MLast.PaLong loc li
+(*
+          <:patt< $longid:li$ >>
+*)
+    ]
+  ]
+  ;
   patt:
     [ LEFTA
       [ p1 = SELF; "as"; i = LIDENT -> <:patt< ($p1$ as $lid:i$) >>
@@ -1490,6 +1519,9 @@ EXTEND
     | "atomic"
       [ s = V LIDENT -> <:patt< $_lid:s$ >>
       | s = V UIDENT -> <:patt< $_uid:s$ >>
+(*
+      | p = patt_ident -> p
+*)
       | s = V INT -> <:patt< $_int:s$ >>
       | s = V INT_l -> <:patt< $_int32:s$ >>
       | s = V INT_L -> <:patt< $_int64:s$ >>
@@ -1566,7 +1598,16 @@ EXTEND
   patt_label_ident:
     [ RIGHTA
       [ i = UIDENT; "."; p2 = SELF -> <:patt< $uid:i$ . $p2$ >>
-      | i = LIDENT -> <:patt< $lid:i$ >> ] ]
+      | i = LIDENT -> <:patt< $lid:i$ >>
+(*
+      | li = longident; "."; p2 = SELF -> 
+PaPfx loc li p2
+(*
+<:patt< $longid:li$ . $p2$ >>
+*)
+      | i = LIDENT -> <:patt< $lid:i$ >>
+*)
+     ] ]
   ;
   (* Type declaration *)
   type_decl:

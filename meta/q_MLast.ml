@@ -1066,6 +1066,16 @@ EXTEND
                (Qast.List [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]
       | "->"; e = expr → e ] ]
   ;
+  patt_ident: [
+    [ s = SV LIDENT → Qast.Node "PaLid" [Qast.Loc; s]
+    | s = SV GIDENT → Qast.Node "PaLid" [Qast.Loc; s]
+    | li = extended_longident ; "." ; p = patt LEVEL "simple" → 
+      Qast.Node "PaPfx" [Qast.Loc; li; p]
+    | li = extended_longident → 
+      Qast.Node "PaLong" [Qast.Loc; li]
+    ]
+  ]
+  ;
   patt:
     [ LEFTA
       [ p1 = SELF; "|"; p2 = SELF → Qast.Node "PaOrp" [Qast.Loc; p1; p2] ]

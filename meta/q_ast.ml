@@ -166,6 +166,8 @@ module Meta_make (C : MetaSig) =
     and patt =
       fun
       [ PaAtt _ e att -> assert False
+      | PaPfx _ li p -> C.node "PaPfx" [longid li; patt p]
+      | PaLong _ li -> C.node "PaLong" [longid li]
       | PaAcc _ p1 p2 → C.node "PaAcc" [patt p1; patt p2]
       | PaAli _ p1 p2 → C.node "PaAli" [patt p1; patt p2]
       | PaAnt _ p → C.node "PaAnt" [patt p]

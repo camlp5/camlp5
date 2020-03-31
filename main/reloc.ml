@@ -146,10 +146,14 @@ and patt floc sh =
   self where rec self =
     fun
     [ PaAtt loc p attr ->
-       PaAtt loc (self p) attr
+       PaAtt (floc loc) (self p) attr
     | PaAcc loc x1 x2 →
         let loc = floc loc in
         PaAcc loc (self x1) (self x2)
+    | PaPfx loc li p ->
+       PaPfx (floc loc) (longid floc sh li) (self p)
+    | PaLong loc li ->
+       PaLong (floc loc) (longid floc sh li)
     | PaAli loc x1 x2 →
         let loc = floc loc in
         PaAli loc (self x1) (self x2)

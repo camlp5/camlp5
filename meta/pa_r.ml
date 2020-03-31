@@ -1065,6 +1065,29 @@ EXTEND
       [ p = ipatt; e = SELF → <:expr< fun $p$ → $e$ >>
       | "->"; e = expr → e ] ]
   ;
+  patt_ident: [
+    [ s = V LIDENT → <:patt< $_lid:s$ >>
+    | s = V GIDENT → <:patt< $_lid:s$ >>
+    | li = longident ; "." ; p = patt LEVEL "simple" → 
+      match p with [
+        <:patt< $uid:i$ >> ->
+        let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
+        MLast.PaLong loc li
+      | _ -> 
+MLast.PaPfx loc li p
+(*
+          <:patt< $longid:li$ . $p$ >>
+*)
+
+      ]
+    | li = longident → 
+MLast.PaLong loc li
+(*
+          <:patt< $longid:li$ >>
+*)
+    ]
+  ]
+  ;
   patt:
     [ LEFTA
       [ p1 = SELF; "|"; p2 = SELF → <:patt< $p1$ | $p2$ >> ]
@@ -1081,12 +1104,8 @@ EXTEND
       [ p1 = SELF; p2 = SELF → <:patt< $p1$ $p2$ >>
       | "lazy"; (ext,attrs) = ext_attributes; p = SELF → 
           patt_to_inline loc <:patt< lazy $p$ >> ext attrs ]
-    | RIGHTA
-      [ p1 = V UIDENT; "."; p2 = SELF → <:patt< $_uid:p1$ . $p2$ >> ]
     | "simple"
-      [ s = V LIDENT → <:patt< $_lid:s$ >>
-      | s = V GIDENT → <:patt< $_lid:s$ >>
-      | s = V UIDENT → <:patt< $_uid:s$ >>
+      [ p = patt_ident -> p
       | e = alg_extension -> <:patt< [% $_extension:e$ ] >>
       | s = V INT → <:patt< $_int:s$ >>
       | s = V INT_l → <:patt< $_int32:s$ >>

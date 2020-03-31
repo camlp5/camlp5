@@ -275,7 +275,11 @@ module MetaAction =
       | x -> not_impl "mexpr" x ]
     and mpatt =
       fun
-      [ MLast.PaAcc loc p1 p2 ->
+      [ MLast.PaPfx loc li p ->
+          <:expr< MLast.PaPfx $mloc$ $mlongid li$ $mpatt p$ >>
+      | MLast.PaLong loc li ->
+          <:expr< MLast.PaLong $mloc$ $mlongid li$ >>
+      | MLast.PaAcc loc p1 p2 ->
           <:expr< MLast.PaAcc $mloc$ $mpatt p1$ $mpatt p2$ >>
       | MLast.PaAny loc -> <:expr< MLast.PaAny $mloc$ >>
       | MLast.PaApp loc p1 p2 ->

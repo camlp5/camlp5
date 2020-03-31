@@ -304,6 +304,18 @@ value rec patt_label_long_id =
   [ <:patt< $m$ . $lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
   | <:patt< $m$ . $uid:s$ >> → Ldot (patt_label_long_id m) s
   | <:patt< $uid:s$ >> → Lident s
+  |
+MLast.PaPfx _ li <:patt< $lid:s$ >>
+(*
+ <:patt< $longid:li$ . $lid:s$ >>
+*)
+ → Ldot (longid_long_id li) (conv_lab s)
+  |
+MLast.PaLong _ li
+(*
+ <:patt< $longid:li$ . $uid:s$ >>
+*)
+ → longid_long_id li
   | <:patt< $lid:s$ >> → Lident (conv_lab s)
   | p → error (loc_of_patt p) "bad label" ]
 ;
@@ -685,6 +697,17 @@ and patt =
         mkpat loc p
       | _ -> error (loc_of_patt z) "internal error in patt_left_assoc"
       ]
+  | PaPfx loc li p2 ->
+    mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
+  | PaLong loc li ->
+    let li = longid_long_id li in
+    let li = match li with [
+        Lident s -> Lident (conv_con s)
+      | Ldot li s -> Ldot li (conv_con s)
+      | _ -> failwith "Lapply not allowed here" ] in
+    mkpat loc (ocaml_ppat_construct (mkloc loc) li
+                 None (not Prtools.no_constructors_arity.val))
+
   | PaAli loc p1 p2 →
       let (p, i, iloc) =
         match (p1, p2) with

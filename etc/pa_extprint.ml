@@ -24,10 +24,41 @@ value not_impl name x = do {
   failwith ("pa_extprint: not impl " ^ name ^ " " ^ desc)
 };
 
+value rec mlongid li acc =
+  let loc = MLast.loc_of_longid li in
+  match li with [
+    <:extended_longident< $uid:id$ >> ->
+      <:expr< [(Extfun.Econ $str:id$) :: $acc$] >>
+
+  | <:extended_longident< $longid:li$ . $uid:id$ >> ->
+      mlongid li <:expr< [(Extfun.Econ $str:id$) :: $acc$] >>
+  | <:extended_longident< $longid:_$ ( $longid:_$ ) >> -> failwith "mlongid: LiApp not allowed"
+  | _ -> assert False
+  ]
+;
+
 value rec mexpr p =
   let loc = MLast.loc_of_patt p in
   match p with
-  [ <:patt< $p1$ $p2$ >> ->
+  [
+(*
+ <:patt< $longid:li$ . $p$ >>
+*)
+PaPfx _ li p
+ ->
+      let ml = mlongid li <:expr< [$mexpr p$] >> in
+      <:expr< Extfun.Eacc $ml$ >>
+  |
+(*
+ <:patt< $longid:li$ >>
+*)
+PaLong _ li
+ ->
+      let ml = mlongid li <:expr< [] >> in
+      <:expr< Extfun.Eacc $ml$ >>
+
+
+  |  <:patt< $p1$ $p2$ >> ->
       loop <:expr< [$mexpr p2$] >> p1 where rec loop el =
         fun
         [ <:patt< $p1$ $p2$ >> -> loop <:expr< [$mexpr p2$ :: $el$] >> p1

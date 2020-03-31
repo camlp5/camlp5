@@ -67,6 +67,8 @@ and poly_variant =
   | PvInh of loc and ctyp ]
 and patt =
   [ PaAcc of loc and patt and patt
+  | PaPfx of loc and longid and patt
+  | PaLong of loc and longid
   | PaAli of loc and patt and patt
   | PaAnt of loc and patt
   | PaAny of loc
@@ -86,9 +88,9 @@ and patt =
   | PaRng of loc and patt and patt
   | PaStr of loc and V string
   | PaTup of loc and V (list patt)
+  | PaUid of loc and V string
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and V (list string)
-  | PaUid of loc and V string
   | PaUnp of loc and V (option (V string)) and option module_type
   | PaVrn of loc and V string
   | PaXtr of loc and string and option (V patt)
@@ -288,6 +290,7 @@ and attributes_no_anti = list attribute_body
 and attributes = V attributes_no_anti
 ;
 
+external loc_of_longid : longid -> loc = "%field0";
 external loc_of_ctyp : ctyp -> loc = "%field0";
 external loc_of_patt : patt -> loc = "%field0";
 external loc_of_expr : expr -> loc = "%field0";
