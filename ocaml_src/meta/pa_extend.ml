@@ -605,9 +605,12 @@ module MetaAction =
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "LiApp")),
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "LiApp")),
+                   mloc),
                 mlongid me1),
              mlongid me2)
       | MLast.LiAcc (loc, me1, uid) ->
@@ -615,9 +618,12 @@ module MetaAction =
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "LiAcc")),
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "LiAcc")),
+                   mloc),
                 mlongid me1),
              mvala mstring uid)
       | MLast.LiUid (loc, s) ->
@@ -723,11 +729,13 @@ let mklistexp loc =
 let mklistpat loc =
   let rec loop top =
     function
-      [] -> MLast.PaUid (loc, "[]")
+      [] -> MLast.PaLong (loc, MLast.LiUid (loc, "[]"))
     | p1 :: pl ->
         let loc = if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc in
         MLast.PaApp
-          (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), loop false pl)
+          (loc,
+           MLast.PaApp (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::")), p1),
+           loop false pl)
   in
   loop true
 ;;
@@ -1057,9 +1065,10 @@ let quotify_action psl act =
                  (loc, MLast.ExLid (loc, pname),
                   [MLast.PaApp
                      (loc,
-                      MLast.PaAcc
-                        (loc, MLast.PaUid (loc, "Qast"),
-                         MLast.PaUid (loc, "Tuple")),
+                      MLast.PaLong
+                        (loc,
+                         MLast.LiAcc
+                           (loc, MLast.LiUid (loc, "Qast"), "Tuple")),
                       mklistpat loc pl1),
                    None, MLast.ExTup (loc, el1);
                    MLast.PaAny loc, None,
@@ -1826,7 +1835,7 @@ let text_of_extend loc gmod gl el f =
               [MLast.PaLid (loc, "aux"),
                MLast.ExFun
                  (loc,
-                  [MLast.PaUid (loc, "()"), None,
+                  [MLast.PaLong (loc, MLast.LiUid (loc, "[]")), None,
                    MLast.ExApp
                      (loc, f,
                       MLast.ExApp
@@ -1894,7 +1903,10 @@ let text_of_functorial_extend loc gmod gl el =
              MLast.ExLet
                (loc, false,
                 [MLast.PaLid (loc, "aux"),
-                 MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, e]), []],
+                 MLast.ExFun
+                   (loc,
+                    [MLast.PaLong (loc, MLast.LiUid (loc, "[]")), None, e]),
+                 []],
                 MLast.ExApp
                   (loc, MLast.ExLid (loc, "aux"), MLast.ExUid (loc, "()")))
            else e)

@@ -66,8 +66,8 @@ let rec handle_failure e =
   match e with
     MLast.ExTry
       (_, te,
-       [MLast.PaAcc
-          (_, MLast.PaUid (_, "Stream"), MLast.PaUid (_, "Failure")),
+       [MLast.PaLong
+          (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
         None, e]) ->
       handle_failure e
   | MLast.ExMat (_, me, pel) ->
@@ -146,7 +146,8 @@ let stream_pattern_component skont ckont =
     SpTrm (loc, p, wo) ->
       MLast.ExMat
         (loc, MLast.ExApp (loc, peek_fun loc, MLast.ExLid (loc, strm_n)),
-         [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), wo,
+         [MLast.PaApp (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), p),
+          wo,
           MLast.ExSeq
             (loc,
              [MLast.ExApp (loc, junk_fun loc, MLast.ExLid (loc, strm_n));
@@ -174,9 +175,9 @@ let stream_pattern_component skont ckont =
           else
             MLast.ExTry
               (loc, e,
-               [MLast.PaAcc
-                  (loc, MLast.PaUid (loc, "Stream"),
-                   MLast.PaUid (loc, "Failure")),
+               [MLast.PaLong
+                  (loc,
+                   MLast.LiAcc (loc, MLast.LiUid (loc, "Stream"), "Failure")),
                 None, ckont])
         else if is_raise_failure ckont then
           let p = wildcard_if_not_bound p skont in
@@ -187,44 +188,52 @@ let stream_pattern_component skont ckont =
             else
               MLast.ExTry
                 (loc, e,
-                 [MLast.PaAcc
-                    (loc, MLast.PaUid (loc, "Stream"),
-                     MLast.PaUid (loc, "Failure")),
+                 [MLast.PaLong
+                    (loc,
+                     MLast.LiAcc
+                       (loc, MLast.LiUid (loc, "Stream"), "Failure")),
                   None, ckont])
           in
           let p = wildcard_if_not_bound p skont in
           MLast.ExLet (loc, false, [p, tst, []], skont)
         else if
           pattern_eq_expression
-            (MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p)) skont
+            (MLast.PaApp
+               (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), p))
+            skont
         then
           MLast.ExTry
             (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
-             [MLast.PaAcc
-                (loc, MLast.PaUid (loc, "Stream"),
-                 MLast.PaUid (loc, "Failure")),
+             [MLast.PaLong
+                (loc,
+                 MLast.LiAcc (loc, MLast.LiUid (loc, "Stream"), "Failure")),
               None, ckont])
         else
           MLast.ExMat
             (loc,
              MLast.ExTry
                (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
-                [MLast.PaAcc
-                   (loc, MLast.PaUid (loc, "Stream"),
-                    MLast.PaUid (loc, "Failure")),
+                [MLast.PaLong
+                   (loc,
+                    MLast.LiAcc
+                      (loc, MLast.LiUid (loc, "Stream"), "Failure")),
                  None, MLast.ExUid (loc, "None")]),
-             [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), None, skont;
+             [MLast.PaApp
+                (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), p),
+              None, skont;
               MLast.PaAny loc, None, ckont])
       else
         MLast.ExMat
           (loc,
            MLast.ExTry
              (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
-              [MLast.PaAcc
-                 (loc, MLast.PaUid (loc, "Stream"),
-                  MLast.PaUid (loc, "Failure")),
+              [MLast.PaLong
+                 (loc,
+                  MLast.LiAcc (loc, MLast.LiUid (loc, "Stream"), "Failure")),
                None, MLast.ExUid (loc, "None")]),
-           [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), None, skont;
+           [MLast.PaApp
+              (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), p),
+            None, skont;
             MLast.PaAny loc, None, ckont])
   | SpLet (_, _, _) -> assert false
   | SpLhd (loc, pl :: pll) ->
@@ -232,8 +241,11 @@ let stream_pattern_component skont ckont =
         List.fold_right
           (fun p1 p2 ->
              MLast.PaApp
-               (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), p2))
-          pl (MLast.PaUid (loc, "[]"))
+               (loc,
+                MLast.PaApp
+                  (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::")), p1),
+                p2))
+          pl (MLast.PaLong (loc, MLast.LiUid (loc, "[]")))
       in
       let len = List.length pl in
       if List.exists (fun pl -> List.length pl <> len) pll then
@@ -329,7 +341,9 @@ let stream_patterns_term loc ekont tspel =
   let pel =
     List.map
       (fun (p, w, loc, spcl, epo, e) ->
-         let p = MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p) in
+         let p =
+           MLast.PaApp (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), p)
+         in
          let e =
            let ekont =
              function

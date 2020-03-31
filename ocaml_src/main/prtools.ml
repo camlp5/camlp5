@@ -432,10 +432,10 @@ let expand_module_prefix m =
       (p, e) :: rest ->
         let p =
           match p with
-            MLast.PaAcc (_, MLast.PaUid (_, _), _) -> p
+            MLast.PaPfx (_, MLast.LiUid (_, _), _) -> p
           | _ ->
               let loc = MLast.loc_of_patt p in
-              MLast.PaAcc (loc, MLast.PaUid (loc, m), p)
+              MLast.PaPfx (loc, MLast.LiUid (loc, m), p)
         in
         loop ((p, e) :: rev_lel) rest
     | [] -> List.rev rev_lel
@@ -496,7 +496,7 @@ let record_without_with loc e lel =
           (fun (p, _) (m, sl) ->
              match p with
                MLast.PaLid (_, lab) -> m, lab :: sl
-             | MLast.PaAcc (_, MLast.PaUid (_, m), MLast.PaLid (_, lab)) ->
+             | MLast.PaPfx (_, MLast.LiUid (_, m), MLast.PaLid (_, lab)) ->
                  m, lab :: sl
              | _ -> raise Exit)
           lel ("", [])

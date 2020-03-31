@@ -114,7 +114,7 @@ value mklistpat loc last =
     [ [] →
         match last with
         [ Some p → p
-        | None → <:patt< [] >> ]
+        | None → MLast.PaLong loc (LiUid loc <:vala< "[]" >>) ]
     | [p1 :: pl] →
         let loc = if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc in
         <:patt< [$p1$ :: $loop False pl$] >> ]
@@ -1070,7 +1070,7 @@ EXTEND
     | s = V GIDENT → <:patt< $_lid:s$ >>
     | li = longident ; "." ; p = patt LEVEL "simple" → 
       match p with [
-        MLast.PaLong loc (LiUid _ (Ploc.VaVal i)) ->
+        MLast.PaLong loc (LiUid _ <:vala< i >>) ->
         let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
         MLast.PaLong loc li
       | _ -> 
@@ -1121,7 +1121,7 @@ MLast.PaLong loc li
       | "-"; s = INT_L → <:patt< $int64:neg_string s$ >>
       | "-"; s = INT_n → <:patt< $nativeint:neg_string s$ >>
       | "-"; s = FLOAT → <:patt< $flo:neg_string s$ >>
-      | "["; "]" → <:patt< [] >>
+      | "["; "]" → MLast.PaLong loc (LiUid loc <:vala< "[]" >>)
       | "["; pl = LIST1 patt SEP ";"; last = cons_patt_opt; "]" →
           mklistpat loc last pl
       | "[|"; pl = V (LIST0 patt SEP ";"); "|]" → <:patt< [| $_list:pl$ |] >>
@@ -1147,7 +1147,7 @@ MLast.PaLong loc li
       | "module"; s = V uidopt "uidopt" →
           <:patt< (module $_uidopt:s$) >>
       | →
-MLast.PaLong loc (LiUid loc (Ploc.VaVal "()"))
+MLast.PaLong loc (LiUid loc <:vala< "()" >>)
  ] ]
   ;
   cons_patt_opt:
@@ -1193,7 +1193,7 @@ MLast.PaLong loc (LiUid loc (Ploc.VaVal "()"))
       | "module"; s = V uidopt "uidopt" →
           <:patt< (module $_uidopt:s$) >>
       | →
-MLast.PaLong loc (LiUid loc (Ploc.VaVal "()"))
+MLast.PaLong loc (LiUid loc <:vala< "()" >>)
  ] ]
   ;
   label_ipatt:

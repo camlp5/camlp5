@@ -89,7 +89,7 @@ module Meta_make (C : MetaSig) =
     ;;
     let record_label lab =
       let loc = Ploc.dummy in
-      MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, lab))
+      MLast.PaPfx (loc, MLast.LiUid (loc, "MLast"), MLast.PaLid (loc, lab))
     ;;
     let class_infos f ci =
       C.record
@@ -718,36 +718,41 @@ module Meta_P =
         List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
           (MLast.PaApp
              (loc,
-              MLast.PaAcc
-                (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, con)),
+              MLast.PaLong
+                (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), con)),
               MLast.PaAny loc))
           pl
       ;;
       let node_no_loc con pl =
         List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
-          (MLast.PaAcc
-             (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, con)))
+          (MLast.PaLong
+             (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), con)))
           pl
       ;;
       let list elem el =
         let rec loop el =
           match el with
-            [] -> MLast.PaUid (loc, "[]")
+            [] -> MLast.PaLong (loc, MLast.LiUid (loc, "[]"))
           | e :: el ->
               MLast.PaApp
-                (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), elem e),
+                (loc,
+                 MLast.PaApp
+                   (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::")), elem e),
                  loop el)
         in
         loop el
       ;;
       let option elem oe =
         match oe with
-          None -> MLast.PaUid (loc, "None")
-        | Some e -> MLast.PaApp (loc, MLast.PaUid (loc, "Some"), elem e)
+          None -> MLast.PaLong (loc, MLast.LiUid (loc, "None"))
+        | Some e ->
+            MLast.PaApp
+              (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), elem e)
       ;;
       let vala elem p = elem p;;
       let bool b =
-        if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
+        if b then MLast.PaLong (loc, MLast.LiUid (loc, "True"))
+        else MLast.PaLong (loc, MLast.LiUid (loc, "False"))
       ;;
       let string s = MLast.PaStr (loc, s);;
       let tuple lp = MLast.PaTup (loc, lp);;
@@ -1262,9 +1267,9 @@ Grammar.safe_extend
               if !(Pcaml.strict_mode) then
                 MLast.PaApp
                   (loc,
-                   MLast.PaAcc
-                     (loc, MLast.PaUid (loc, "Ploc"),
-                      MLast.PaUid (loc, "VaVal")),
+                   MLast.PaLong
+                     (loc,
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal")),
                    MLast.PaAnt (loc, e))
               else MLast.PaAnt (loc, e) :
               'patt_eoi)));
@@ -1284,9 +1289,9 @@ Grammar.safe_extend
                 in
                 MLast.PaApp
                   (loc,
-                   MLast.PaAcc
-                     (loc, MLast.PaUid (loc, "Ploc"),
-                      MLast.PaUid (loc, "VaAnt")),
+                   MLast.PaLong
+                     (loc,
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaAnt")),
                    MLast.PaAnt (loc, a))
               else MLast.PaAny loc :
               'patt_eoi)))]]];

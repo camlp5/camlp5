@@ -28,7 +28,7 @@ let next_fun loc =
 let rec pattern_eq_expression p e =
   match p, e with
     MLast.PaLid (_, a), MLast.ExLid (_, b) -> a = b
-  | MLast.PaUid (_, a), MLast.ExUid (_, b) -> a = b
+  | MLast.PaLong (_, MLast.LiUid (_, a)), MLast.ExUid (_, b) -> a = b
   | MLast.PaApp (_, p1, p2), MLast.ExApp (_, e1, e2) ->
       pattern_eq_expression p1 e1 && pattern_eq_expression p2 e2
   | MLast.PaTup (_, pl), MLast.ExTup (_, el) ->
@@ -47,7 +47,7 @@ let stream_pattern_component skont =
     SpTrm (loc, p, wo) ->
       let p =
         MLast.PaApp
-          (loc, MLast.PaUid (loc, "Some"),
+          (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")),
            MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)]))
       in
       if wo = None && pattern_eq_expression p skont then
@@ -59,7 +59,7 @@ let stream_pattern_component skont =
   | SpNtr (loc, p, e) ->
       let p =
         MLast.PaApp
-          (loc, MLast.PaUid (loc, "Some"),
+          (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")),
            MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)]))
       in
       if pattern_eq_expression p skont then
@@ -74,7 +74,7 @@ let stream_pattern_component skont =
   | SpCut loc ->
       MLast.ExMat
         (loc, skont,
-         [MLast.PaUid (loc, "None"), None,
+         [MLast.PaLong (loc, MLast.LiUid (loc, "None")), None,
           MLast.ExApp
             (loc, MLast.ExLid (loc, "raise"),
              MLast.ExAcc
@@ -121,10 +121,11 @@ let rec parser_cases loc =
              [MLast.PaAli
                 (loc,
                  MLast.PaApp
-                   (loc, MLast.PaUid (loc, "Some"), MLast.PaAny loc),
+                   (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")),
+                    MLast.PaAny loc),
                  MLast.PaLid (loc, "x")),
               None, MLast.ExLid (loc, "x");
-              MLast.PaUid (loc, "None"), None, pc])
+              MLast.PaLong (loc, MLast.LiUid (loc, "None")), None, pc])
 ;;
 
 let cparser_match loc me bpo pc =
@@ -186,7 +187,9 @@ let cparser loc bpo pc =
 
 (* streams *)
 
-let slazy loc x = MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, x]);;
+let slazy loc x =
+  MLast.ExFun (loc, [MLast.PaLong (loc, MLast.LiUid (loc, "[]")), None, x])
+;;
 
 let rec cstream loc =
   function
@@ -237,7 +240,8 @@ let patt_expr_of_patt p =
   let loc = MLast.loc_of_patt p in
   match p with
     MLast.PaLid (_, x) -> p, MLast.ExLid (loc, x)
-  | MLast.PaApp (_, MLast.PaUid (_, _), MLast.PaLid (_, x)) ->
+  | MLast.PaApp
+      (_, MLast.PaLong (_, MLast.LiUid (_, _)), MLast.PaLid (_, x)) ->
       MLast.PaLid (loc, x), MLast.ExLid (loc, x)
   | MLast.PaAli (_, _, MLast.PaLid (_, x)) ->
       MLast.PaLid (loc, x), MLast.ExLid (loc, x)
@@ -332,7 +336,7 @@ let mstream_pattern_component m skont =
   | SpCut loc ->
       MLast.ExMat
         (loc, skont,
-         [MLast.PaUid (loc, "None"), None,
+         [MLast.PaLong (loc, MLast.LiUid (loc, "None")), None,
           MLast.ExApp
             (loc, MLast.ExLid (loc, "raise"),
              MLast.ExAcc

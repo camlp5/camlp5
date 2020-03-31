@@ -293,7 +293,7 @@ value rec mkrangepat loc c1 c2 =
 
 value rec patt_long_id =
   fun
-  [ MLast.PaAcc _ p (PaUid _ (Ploc.VaVal i)) → Ldot (patt_long_id p) i
+  [ MLast.PaAcc _ p (PaUid _ <:vala< i>>) → Ldot (patt_long_id p) i
   | <:patt< $uid:i$ >> -> Lident i
   | z -> error (loc_of_patt z) "patt_long_id: bad label"
   ]
@@ -302,7 +302,7 @@ value rec patt_long_id =
 value rec patt_label_long_id =
   fun
   [ MLast.PaAcc _ m <:patt< $lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
-  | MLast.PaAcc _ m (MLast.PaUid _ (Ploc.VaVal s)) → Ldot (patt_label_long_id m) s
+  | MLast.PaAcc _ m (MLast.PaUid _ <:vala< s >>) → Ldot (patt_label_long_id m) s
   | <:patt< $uid:s$ >> → Lident s
   |
 MLast.PaPfx _ li <:patt< $lid:s$ >>
@@ -683,6 +683,8 @@ and patt =
   fun
   [ PaAtt loc p1 a ->
     ocaml_patt_addattr (attr (uv a)) (patt p1)
+  | PaAcc _ _ _ → assert False
+(*
   | PaAcc _ _ _ as z →
       match patt_left_assoc_acc z with [
         PaAcc loc p1 p2 ->
@@ -697,6 +699,7 @@ and patt =
         mkpat loc p
       | _ -> error (loc_of_patt z) "internal error in patt_left_assoc"
       ]
+*)
   | PaPfx loc li p2 ->
     mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
   | PaLong loc li ->

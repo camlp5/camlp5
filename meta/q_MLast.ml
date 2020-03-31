@@ -1137,7 +1137,9 @@ EXTEND
           Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option (Some mt)]
       | "module"; s = SV uidopt "uidopt" →
           Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
-      | → Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")] ] ]
+      | → 
+Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str "()"))]]
+      ] ]
   ;
   cons_patt_opt:
     [ [ "::"; p = patt → Qast.Option (Some p)

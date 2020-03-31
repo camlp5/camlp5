@@ -103,7 +103,5 @@ let slist0sep entry = gen_fold0sep List.rev cons nil entry;;
 let slist1sep entry = gen_fold1sep List.rev cons nil entry;;
 
 let sopt entry symbl psymb (strm__ : _ Stream.t) =
-  match try Some (psymb strm__) with Stream.Failure -> None with
-    Some a -> Some a
-  | _ -> None
+  try Some (psymb strm__) with Stream.Failure -> None
 ;;

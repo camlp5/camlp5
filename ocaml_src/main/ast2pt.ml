@@ -312,8 +312,8 @@ let rec mkrangepat loc c1 c2 =
 
 let rec patt_long_id =
   function
-    MLast.PaAcc (_, p, MLast.PaUid (_, i)) -> Ldot (patt_long_id p, i)
-  | MLast.PaUid (_, i) -> Lident i
+    MLast.PaAcc (_, p, PaUid (_, i)) -> Ldot (patt_long_id p, i)
+  | MLast.PaLong (_, MLast.LiUid (_, i)) -> Lident i
   | z -> error (loc_of_patt z) "patt_long_id: bad label"
 ;;
 
@@ -321,8 +321,9 @@ let rec patt_label_long_id =
   function
     MLast.PaAcc (_, m, MLast.PaLid (_, s)) ->
       Ldot (patt_label_long_id m, conv_lab s)
-  | MLast.PaAcc (_, m, MLast.PaUid (_, s)) -> Ldot (patt_label_long_id m, s)
-  | MLast.PaUid (_, s) -> Lident s
+  | MLast.PaAcc (_, m, MLast.PaUid (_,  s)) ->
+      Ldot (patt_label_long_id m, s)
+  | MLast.PaLong (_, MLast.LiUid (_, s)) -> Lident s
   | MLast.PaPfx (_, li, MLast.PaLid (_, s)) ->
       Ldot (longid_long_id li, conv_lab s)
   | MLast.PaLong (_, li) -> longid_long_id li
@@ -821,20 +822,7 @@ and type_extension loc te =
 and patt =
   function
     PaAtt (loc, p1, a) -> ocaml_patt_addattr (attr (uv a)) (patt p1)
-  | PaAcc (_, _, _) as z ->
-      begin match patt_left_assoc_acc z with
-        PaAcc (loc, p1, p2) ->
-          let li = patt_long_id p1 in
-          let p =
-            match p2 with
-              MLast.PaUid (_, s) ->
-                ocaml_ppat_construct (mkloc loc) (Ldot (li, conv_con s)) None
-                  (not !(Prtools.no_constructors_arity))
-            | _ -> ocaml_ppat_open (mkloc loc) li (patt p2)
-          in
-          mkpat loc p
-      | _ -> error (loc_of_patt z) "internal error in patt_left_assoc"
-      end
+  | PaAcc (_, _, _) -> assert false
   | PaPfx (loc, li, p2) ->
       mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
   | PaLong (loc, li) ->

@@ -116,7 +116,7 @@ let expr_is_module_path e =
 let patt_is_module_path e =
   let rec erec =
     function
-      MLast.PaUid (_, _) -> true
+      MLast.PaLong (_, MLast.LiUid (_, _)) -> true
     | MLast.PaAcc (_, a, b) -> erec a && erec b
     | _ -> false
   in
@@ -140,9 +140,9 @@ let expr_left_assoc_acc e =
 let patt_left_assoc_acc e =
   let rec arec =
     function
-      MLast.PaAcc (loc, e1, e2) as z ->
+      MLast.PaAcc (_, e1, e2) as z ->
         begin match e2 with
-          MLast.PaAcc (_, e2, e3) ->
+          MLast.PaAcc (loc, e2, e3) ->
             arec (MLast.PaAcc (loc, MLast.PaAcc (loc, e1, e2), e3))
         | _ -> z
         end
