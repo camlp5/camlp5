@@ -279,8 +279,6 @@ module MetaAction =
           <:expr< MLast.PaPfx $mloc$ $mlongid li$ $mpatt p$ >>
       | MLast.PaLong loc li ->
           <:expr< MLast.PaLong $mloc$ $mlongid li$ >>
-      | MLast.PaAcc loc p1 p2 ->
-          <:expr< MLast.PaAcc $mloc$ $mpatt p1$ $mpatt p2$ >>
       | MLast.PaAny loc -> <:expr< MLast.PaAny $mloc$ >>
       | MLast.PaApp loc p1 p2 ->
           <:expr< MLast.PaApp $mloc$ $mpatt p1$ $mpatt p2$ >>
@@ -446,7 +444,7 @@ value quot_expr psl e =
                  let lab =
                    match p with
                    [ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
-                   | MLast.PaAcc _ _ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
+                   | MLast.PaPfx _ _ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
                    | _ -> raise Not_found ]
                  in
                  <:expr< ($lab$, $loop e$) >>)

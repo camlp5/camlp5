@@ -486,19 +486,6 @@ module MetaAction =
                    MLast.ExUid (loc, "PaLong")),
                 mloc),
              mlongid li)
-      | MLast.PaAcc (loc, p1, p2) ->
-          MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExApp
-                  (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "MLast"),
-                      MLast.ExUid (loc, "PaAcc")),
-                   mloc),
-                mpatt p1),
-             mpatt p2)
       | MLast.PaAny loc ->
           MLast.ExApp
             (loc,
@@ -961,7 +948,7 @@ let quot_expr psl e =
                  let lab =
                    match p with
                      MLast.PaLid (_, c) -> MLast.ExStr (loc, c)
-                   | MLast.PaAcc (_, _, MLast.PaLid (_, c)) ->
+                   | MLast.PaPfx (_, _, MLast.PaLid (_, c)) ->
                        MLast.ExStr (loc, c)
                    | _ -> raise Not_found
                  in
