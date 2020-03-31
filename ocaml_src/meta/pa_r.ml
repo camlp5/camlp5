@@ -116,7 +116,7 @@ let mklistpat loc last =
       [] ->
         begin match last with
           Some p -> p
-        | None -> MLast.PaLong (loc, LiUid (loc,  "[]"))
+        | None -> MLast.PaLong (loc, LiUid (loc, "[]"))
         end
     | p1 :: pl ->
         let loc = if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc in
@@ -3667,8 +3667,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_stop,
            (fun (loc : Ploc.t) ->
-              (MLast.PaLong (loc, LiUid (loc, "()")) :
-               'paren_patt)));
+              (MLast.PaLong (loc, LiUid (loc, "()")) : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
@@ -3828,8 +3827,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_stop,
            (fun (loc : Ploc.t) ->
-              (MLast.PaLong (loc, LiUid (loc, "()")) :
-               'paren_ipatt)));
+              (MLast.PaLong (loc, LiUid (loc, "()")) : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))

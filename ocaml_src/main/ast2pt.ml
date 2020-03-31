@@ -321,8 +321,7 @@ let rec patt_label_long_id =
   function
     MLast.PaAcc (_, m, MLast.PaLid (_, s)) ->
       Ldot (patt_label_long_id m, conv_lab s)
-  | MLast.PaAcc (_, m, MLast.PaUid (_,  s)) ->
-      Ldot (patt_label_long_id m, s)
+  | MLast.PaAcc (_, m, MLast.PaUid (_, s)) -> Ldot (patt_label_long_id m, s)
   | MLast.PaLong (_, MLast.LiUid (_, s)) -> Lident s
   | MLast.PaPfx (_, li, MLast.PaLid (_, s)) ->
       Ldot (longid_long_id li, conv_lab s)
