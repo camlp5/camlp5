@@ -463,7 +463,30 @@ module MetaAction =
       | x -> not_impl "mexpr" x
     and mpatt =
       function
-        MLast.PaAcc (loc, p1, p2) ->
+        MLast.PaPfx (loc, li, p) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "PaPfx")),
+                   mloc),
+                mlongid li),
+             mpatt p)
+      | MLast.PaLong (loc, li) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "MLast"),
+                   MLast.ExUid (loc, "PaLong")),
+                mloc),
+             mlongid li)
+      | MLast.PaAcc (loc, p1, p2) ->
           MLast.ExApp
             (loc,
              MLast.ExApp

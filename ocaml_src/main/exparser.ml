@@ -40,7 +40,7 @@ let junk_fun loc =
 let rec pattern_eq_expression p e =
   match p, e with
     MLast.PaLid (_, a), MLast.ExLid (_, b) -> a = b
-  | MLast.PaUid (_, a), MLast.ExUid (_, b) -> a = b
+  | PaLong (_, MLast.LiUid (_, a)), MLast.ExUid (_, b) -> a = b
   | MLast.PaApp (_, p1, p2), MLast.ExApp (_, e1, e2) ->
       pattern_eq_expression p1 e1 && pattern_eq_expression p2 e2
   | _ -> false

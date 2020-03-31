@@ -59,6 +59,8 @@ and poly_variant =
   | PvInh of loc * ctyp
 and patt =
     PaAcc of loc * patt * patt
+  | PaPfx of loc * longid * patt
+  | PaLong of loc * longid
   | PaAli of loc * patt * patt
   | PaAnt of loc * patt
   | PaAny of loc
@@ -78,9 +80,9 @@ and patt =
   | PaRng of loc * patt * patt
   | PaStr of loc * string
   | PaTup of loc * patt list
+  | PaUid of loc * string
   | PaTyc of loc * patt * ctyp
   | PaTyp of loc * string list
-  | PaUid of loc * string
   | PaUnp of loc * string option * module_type option
   | PaVrn of loc * string
   | PaXtr of loc * string * patt option
@@ -268,6 +270,7 @@ and attribute_body = string * payload
 and attributes_no_anti = attribute_body list
 and attributes = attributes_no_anti;;
 
+external loc_of_longid : longid -> loc = "%field0";;
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;
 external loc_of_expr : expr -> loc = "%field0";;

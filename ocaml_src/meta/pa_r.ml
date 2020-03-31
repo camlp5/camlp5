@@ -700,6 +700,8 @@ Grammar.safe_extend
    and label_expr : 'label_expr Grammar.Entry.e =
      grammar_entry_create "label_expr"
    and fun_def : 'fun_def Grammar.Entry.e = grammar_entry_create "fun_def"
+   and patt_ident : 'patt_ident Grammar.Entry.e =
+     grammar_entry_create "patt_ident"
    and paren_patt : 'paren_patt Grammar.Entry.e =
      grammar_entry_create "paren_patt"
    and cons_patt_opt : 'cons_patt_opt Grammar.Entry.e =
@@ -3434,6 +3436,34 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (e : 'fun_def) (p : 'ipatt) (loc : Ploc.t) ->
               (MLast.ExFun (loc, [p, None, e]) : 'fun_def)))]];
+    Grammar.extension (patt_ident : 'patt_ident Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)),
+           (fun (li : 'longident) (loc : Ploc.t) ->
+              (MLast.PaLong (loc, li) : 'patt_ident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_nterml (patt : 'patt Grammar.Entry.e) "simple"),
+           (fun (p : 'patt) _ (li : 'longident) (loc : Ploc.t) ->
+              (match p with
+                 MLast.PaUid (_, i) ->
+                   let li = MLast.LiAcc (loc, li, i) in MLast.PaLong (loc, li)
+               | _ -> MLast.PaPfx (loc, li, p) :
+               'patt_ident)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
+           (fun (s : string) (loc : Ploc.t) ->
+              (MLast.PaLid (loc, s) : 'patt_ident)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           (fun (s : string) (loc : Ploc.t) ->
+              (MLast.PaLid (loc, s) : 'patt_ident)))]];
     Grammar.extension (patt : 'patt Grammar.Entry.e) None
       [None, Some Gramext.LeftA,
        [Grammar.production
@@ -3489,16 +3519,6 @@ Grammar.safe_extend
              Grammar.s_self,
            (fun (p2 : 'patt) (p1 : 'patt) (loc : Ploc.t) ->
               (MLast.PaApp (loc, p1, p2) : 'patt)))];
-       None, Some Gramext.RightA,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_token ("UIDENT", "")))
-                (Grammar.s_token ("", ".")))
-             Grammar.s_self,
-           (fun (p2 : 'patt) _ (p1 : string) (loc : Ploc.t) ->
-              (MLast.PaAcc (loc, MLast.PaUid (loc, p1), p2) : 'patt)))];
        Some "simple", None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
@@ -3636,17 +3656,9 @@ Grammar.safe_extend
            (fun (e : 'alg_extension) (loc : Ploc.t) ->
               (MLast.PaExten (loc, e) : 'patt)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
-           (fun (s : string) (loc : Ploc.t) ->
-              (MLast.PaUid (loc, s) : 'patt)));
-        Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("GIDENT", "")),
-           (fun (s : string) (loc : Ploc.t) ->
-              (MLast.PaLid (loc, s) : 'patt)));
-        Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
-           (fun (s : string) (loc : Ploc.t) ->
-              (MLast.PaLid (loc, s) : 'patt)))]];
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (patt_ident : 'patt_ident Grammar.Entry.e)),
+           (fun (p : 'patt_ident) (loc : Ploc.t) -> (p : 'patt)))]];
     Grammar.extension (paren_patt : 'paren_patt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
