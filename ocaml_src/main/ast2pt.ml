@@ -310,19 +310,10 @@ let rec mkrangepat loc c1 c2 =
           mkrangepat loc (Char.chr (Char.code c1 + 1)) c2))
 ;;
 
-let rec patt_long_id =
-  function
-    MLast.PaAcc (_, p, PaUid (_, i)) -> Ldot (patt_long_id p, i)
-  | MLast.PaLong (_, MLast.LiUid (_, i)) -> Lident i
-  | z -> error (loc_of_patt z) "patt_long_id: bad label"
-;;
-
 let rec patt_label_long_id =
   function
-    MLast.PaAcc (_, m, MLast.PaLid (_, s)) ->
-      Ldot (patt_label_long_id m, conv_lab s)
-  | MLast.PaAcc (_, m, MLast.PaUid (_, s)) -> Ldot (patt_label_long_id m, s)
-  | MLast.PaLong (_, MLast.LiUid (_, s)) -> Lident s
+    MLast.PaAcc (_, _, _) -> assert false
+  | MLast.PaUid (_, _) -> assert false
   | MLast.PaPfx (_, li, MLast.PaLid (_, s)) ->
       Ldot (longid_long_id li, conv_lab s)
   | MLast.PaLong (_, li) -> longid_long_id li
@@ -937,10 +928,7 @@ and patt =
             (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
       | None -> error loc "no #type in this ocaml version"
       end
-  | PaUid (loc, s) ->
-      let ca = not !(Prtools.no_constructors_arity) in
-      mkpat loc
-        (ocaml_ppat_construct (mkloc loc) (Lident (conv_con (uv s))) None ca)
+  | PaUid (_, _) -> assert false
   | PaUnp (loc, s, mto) ->
       begin match ocaml_ppat_unpack with
         Some (ppat_unpack, ptyp_package) ->
@@ -1346,14 +1334,6 @@ and expr =
             end
         | None -> assert false
       else
-        let lel =
-          if module_prefix_can_be_in_first_record_label_only then lel
-          else
-            match lel with
-              ((PaAcc (_, PaUid (_, m), _) as p), e) :: rest ->
-                Prtools.expand_module_prefix (uv m) [p, e] rest
-            | _ -> lel
-        in
         let eo =
           match eo with
             Some e -> Some (expr e)

@@ -291,19 +291,10 @@ value rec mkrangepat loc c1 c2 =
          (mkrangepat loc (Char.chr (Char.code c1 + 1)) c2))
 ;
 
-value rec patt_long_id =
-  fun
-  [ MLast.PaAcc _ p (PaUid _ <:vala< i>>) → Ldot (patt_long_id p) i
-  | <:patt< $uid:i$ >> -> Lident i
-  | z -> error (loc_of_patt z) "patt_long_id: bad label"
-  ]
-;
-
 value rec patt_label_long_id =
   fun
-  [ MLast.PaAcc _ m <:patt< $lid:s$ >> → Ldot (patt_label_long_id m) (conv_lab s)
-  | MLast.PaAcc _ m (MLast.PaUid _ <:vala< s >>) → Ldot (patt_label_long_id m) s
-  | <:patt< $uid:s$ >> → Lident s
+  [ MLast.PaAcc _ _ _ -> assert False
+  | MLast.PaUid _ _ -> assert False
   |
 MLast.PaPfx _ li <:patt< $lid:s$ >>
 (*
@@ -684,22 +675,6 @@ and patt =
   [ PaAtt loc p1 a ->
     ocaml_patt_addattr (attr (uv a)) (patt p1)
   | PaAcc _ _ _ → assert False
-(*
-  | PaAcc _ _ _ as z →
-      match patt_left_assoc_acc z with [
-        PaAcc loc p1 p2 ->
-        let li = patt_long_id p1 in
-        let p =
-          match p2 with
-            [ <:patt< $uid:s$ >> →
-                ocaml_ppat_construct (mkloc loc) (Ldot li (conv_con s))
-                None (not Prtools.no_constructors_arity.val)
-            | _ -> ocaml_ppat_open (mkloc loc) li (patt p2) ]
-        in
-        mkpat loc p
-      | _ -> error (loc_of_patt z) "internal error in patt_left_assoc"
-      ]
-*)
   | PaPfx loc li p2 ->
     mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
   | PaLong loc li ->
@@ -812,10 +787,7 @@ and patt =
           mkpat loc
             (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
       | None → error loc "no #type in this ocaml version" ]
-  | PaUid loc s →
-      let ca = not Prtools.no_constructors_arity.val in
-      mkpat loc
-        (ocaml_ppat_construct (mkloc loc) (Lident (conv_con (uv s))) None ca)
+  | PaUid _ _ -> assert False
   | PaUnp loc s mto →
       match ocaml_ppat_unpack with
       [ Some (ppat_unpack, ptyp_package) →
@@ -1156,14 +1128,6 @@ and expr =
             | None → error loc "cannot convert record" ]
         | None → assert False ]
       else
-        let lel =
-          if module_prefix_can_be_in_first_record_label_only then lel
-          else
-            match lel with
-            [ [((PaAcc _ (PaUid _ m) _ as p), e) :: rest] →
-                Prtools.expand_module_prefix (uv m) [(p, e)] rest
-            | _ → lel ]
-        in
         let eo =
           match eo with
           [ Some e → Some (expr e)
