@@ -2682,6 +2682,41 @@ and M : S[@@foo];];
      r_output = OK {foo|[%%foo: class type x = x[@@foo];];
 |foo}
     };
+    {name="refutable-funarg-1"; implem = True ;
+     exclude=["r2official"];
+     o_input = OK {foo|let f (Some x) = 1|foo} ;
+     official_input = OK {foo|let f (Some x) = 1|foo} ;
+     r_input = OK {foo|value f = fun [ Some x → 1 ];|foo} ;
+     o_output = OK {foo|let f =
+  function
+    Some x -> 1;;
+|foo};
+     official_output = OK {foo|let f (Some x) = 1|foo} ;
+     r_output = OK {foo|value f =
+  fun
+  [ Some x → 1 ];
+|foo}
+    };
+    {(skip) with
+     name="refutable-funarg-1-r2official" ;
+     r_input = OK {foo|value f = fun [ Some x → 1 ];|foo} ;
+     official_output = OK {foo|let f ((Some (x))[@ocaml.explicit_arity ]) = 1|foo}
+    };
+    {name="refutable-funarg-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f (A : t) = 1|foo} ;
+     official_input = OK {foo|let f (A : t) = 1|foo} ;
+     r_input = OK {foo|value f = fun [ (A : t) → 1 ];|foo} ;
+     o_output = OK {foo|let f =
+  function
+    (A : t) -> 1;;
+|foo};
+     official_output = OK {foo|let f (A : t) = 1|foo} ;
+     r_output = OK {foo|value f =
+  fun
+  [ (A : t) → 1 ];
+|foo}
+    };
     {name="gadt-nats1"; implem = True ;
      exclude=[];
      o_input = OK {foo|type zero = Zero
