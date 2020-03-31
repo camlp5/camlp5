@@ -293,10 +293,7 @@ value rec mkrangepat loc c1 c2 =
 
 value rec patt_label_long_id =
   fun
-  [ MLast.PaAcc _ _ _ -> assert False
-  | MLast.PaUid _ _ -> assert False
-  |
-MLast.PaPfx _ li <:patt< $lid:s$ >>
+  [ MLast.PaPfx _ li <:patt< $lid:s$ >>
 (*
  <:patt< $longid:li$ . $lid:s$ >>
 *)
@@ -674,7 +671,6 @@ and patt =
   fun
   [ PaAtt loc p1 a ->
     ocaml_patt_addattr (attr (uv a)) (patt p1)
-  | PaAcc _ _ _ → assert False
   | PaPfx loc li p2 ->
     mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
   | PaLong loc li ->
@@ -787,7 +783,6 @@ and patt =
           mkpat loc
             (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
       | None → error loc "no #type in this ocaml version" ]
-  | PaUid _ _ -> assert False
   | PaUnp loc s mto →
       match ocaml_ppat_unpack with
       [ Some (ppat_unpack, ptyp_package) →

@@ -147,9 +147,6 @@ and patt floc sh =
     fun
     [ PaAtt loc p attr ->
        PaAtt (floc loc) (self p) attr
-    | PaAcc loc x1 x2 →
-        let loc = floc loc in
-        PaAcc loc (self x1) (self x2)
     | PaPfx loc li p ->
        PaPfx (floc loc) (longid floc sh li) (self p)
     | PaLong loc li ->
@@ -221,9 +218,6 @@ and patt floc sh =
     | PaTyp loc x1 →
         let loc = floc loc in
         PaTyp loc x1
-    | PaUid loc x1 →
-        let loc = floc loc in
-        PaUid loc x1
     | PaUnp loc x1 x2 →
         let loc = floc loc in
         PaUnp loc x1 (option_map (module_type floc sh) x2)

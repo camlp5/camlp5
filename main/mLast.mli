@@ -66,8 +66,7 @@ and poly_variant =
   [ PvTag of loc and V string and V bool and V (list ctyp) and attributes
   | PvInh of loc and ctyp ]
 and patt =
-  [ PaAcc of loc and patt and patt
-  | PaPfx of loc and longid and patt
+  [ PaPfx of loc and longid and patt
   | PaLong of loc and longid
   | PaAli of loc and patt and patt
   | PaAnt of loc and patt
@@ -88,7 +87,6 @@ and patt =
   | PaRng of loc and patt and patt
   | PaStr of loc and V string
   | PaTup of loc and V (list patt)
-  | PaUid of loc and V string
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and V (list string)
   | PaUnp of loc and V (option (V string)) and option module_type

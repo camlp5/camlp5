@@ -293,7 +293,6 @@ module MetaAction =
           <:expr< MLast.PaTup $mloc$ $mvala (mlist mpatt) pl$ >>
       | MLast.PaTyc loc p t ->
           <:expr< MLast.PaTyc $mloc$ $mpatt p$ $mctyp t$ >>
-      | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mpatt" x ]
     and mlongid =
       fun
