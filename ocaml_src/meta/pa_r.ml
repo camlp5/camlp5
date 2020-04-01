@@ -116,7 +116,7 @@ let mklistpat loc last =
       [] ->
         begin match last with
           Some p -> p
-        | None -> MLast.PaLong (loc, LiUid (loc, "[]"))
+        | None -> MLast.PaLong (loc, MLast.LiUid (loc, "[]"))
         end
     | p1 :: pl ->
         let loc = if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc in
@@ -3454,7 +3454,7 @@ Grammar.safe_extend
              (Grammar.s_nterml (patt : 'patt Grammar.Entry.e) "simple"),
            (fun (p : 'patt) _ (li : 'longident) (loc : Ploc.t) ->
               (match p with
-                 MLast.PaLong (loc, LiUid (_, i)) ->
+                 MLast.PaLong (_, MLast.LiUid (_, i)) ->
                    let li = MLast.LiAcc (loc, li, i) in MLast.PaLong (loc, li)
                | _ -> MLast.PaPfx (loc, li, p) :
                'patt_ident)));
@@ -3581,7 +3581,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[")))
              (Grammar.s_token ("", "]")),
            (fun _ _ (loc : Ploc.t) ->
-              (MLast.PaLong (loc, LiUid (loc, "[]")) : 'patt)));
+              (MLast.PaLong (loc, MLast.LiUid (loc, "[]")) : 'patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-")))
@@ -3667,7 +3667,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_stop,
            (fun (loc : Ploc.t) ->
-              (MLast.PaLong (loc, LiUid (loc, "()")) : 'paren_patt)));
+              (MLast.PaLong (loc, MLast.LiUid (loc, "()")) : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))
@@ -3827,7 +3827,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_stop,
            (fun (loc : Ploc.t) ->
-              (MLast.PaLong (loc, LiUid (loc, "()")) : 'paren_ipatt)));
+              (MLast.PaLong (loc, MLast.LiUid (loc, "()")) : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "module")))

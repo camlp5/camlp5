@@ -390,7 +390,7 @@ value rec constr_patt_arity loc =
 
   | <:patt< $uid:_$ . $p$ >> -> constr_patt_arity loc p
 
-  | MLast.PaLong _ <:extended_longident< $longid:_$ . $uid:c$ >> ->
+  | <:patt< $longid:_$ . $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
   | _ -> 1 ]
 ;
@@ -1342,7 +1342,7 @@ EXTEND
     [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>
       | check_not_part_of_patt; "(" ; op = operator_rparen ->
         if op = "::" then
-          MLast.PaLong loc (LiUid loc (Ploc.VaVal op))
+          <:patt< $uid:op$ >>
         else
           <:patt< $lid:op$ >>
       ] ]
@@ -1446,9 +1446,9 @@ EXTEND
     | s = V GIDENT → <:patt< $_lid:s$ >>
     | li = longident ; "." ; p = patt LEVEL "simple" → 
       match p with [
-        MLast.PaLong loc (LiUid _ (Ploc.VaVal i)) ->
+        <:patt< $uid:i$ >> ->
         let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
-        MLast.PaLong loc li
+        <:patt< $longid:li$ >>
       | _ -> <:patt< $longid:li$ . $p$ >>
       ]
     | li = longident → <:patt< $longid:li$ >>
@@ -1530,10 +1530,10 @@ EXTEND
           <:patt< [| $_list:pl$ |] >>
       | "{"; lpl = V lbl_patt_list "list"; "}" ->
           <:patt< { $_list:lpl$ } >>
-      | "("; ")" -> MLast.PaLong loc (LiUid loc (Ploc.VaVal "()"))
+      | "("; ")" -> <:patt< $uid:"()"$ >>
       | "("; op = operator_rparen -> 
           if op = "::" then
-            MLast.PaLong loc (LiUid loc (Ploc.VaVal op))
+            <:patt< $uid:op$ >>
           else
             <:patt< $lid:op$ >>
       | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>

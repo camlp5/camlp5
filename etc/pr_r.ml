@@ -95,7 +95,7 @@ value rec is_irrefut_patt =
   [ 
     <:patt< $p$ [@ $_attribute:_$ ] >> -> is_irrefut_patt p
   | <:patt< $lid:_$ >> -> True
-  | MLast.PaLong _ (LiUid _ (Ploc.VaVal "()")) -> True
+  | <:patt< $uid:"()"$ >> -> True
   | <:patt< _ >> -> True
   | <:patt< $longid:_$ . $p$ >> -> is_irrefut_patt p
   | <:patt< ($x$ as $y$) >> -> is_irrefut_patt x && is_irrefut_patt y

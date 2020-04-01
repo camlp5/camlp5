@@ -36,7 +36,7 @@ value junk_fun loc = <:expr< Stream.junk >>;
 value rec pattern_eq_expression p e =
   match (p, e) with
   [ (<:patt< $lid:a$ >>, <:expr< $lid:b$ >>) -> a = b
-  | (PaLong _ <:extended_longident< $uid:a$ >>, <:expr< $uid:b$ >>) -> a = b
+  | (<:patt< $uid:a$ >>, <:expr< $uid:b$ >>) -> a = b
   | (<:patt< $p1$ $p2$ >>, <:expr< $e1$ $e2$ >>) ->
       pattern_eq_expression p1 e1 && pattern_eq_expression p2 e2
   | _ -> False ]
