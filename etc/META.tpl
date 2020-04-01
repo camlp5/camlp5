@@ -196,3 +196,11 @@ package "macro" (
   archive(syntax,preprocessor) = "pa_macro.cmo"
   archive(syntax,toploop) = "pa_macro.cmo"
 )
+
+package "pragma" (
+  requires = "camlp5"
+  version = "@VERSION@"
+  description = "Syntax extension: (experimental) Pragmas"
+  archive(syntax,preprocessor) = "pa_pragma.cmo"
+  archive(syntax,toploop) = "pa_pragma.cmo"
+)
