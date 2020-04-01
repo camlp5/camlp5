@@ -1404,14 +1404,20 @@ EXTEND
     ;
   class_expr_simple:
     [ "simple"
-      [ ci = V class_longident "list" →
+      [ (lio, s) = class_longident →
+          CeCon loc lio s <:vala< [] >>
+(*
           <:class_expr< $_list:ci$ >>
+*)
       | "object"; cspo = V (OPT class_self_patt); cf = class_structure;
         "end" →
           <:class_expr< object $_opt:cspo$ $_list:cf$ end >>
       | "["; ctcl = V (LIST1 ctyp SEP ","); "]";
-        ci = V class_longident "list" →
+        (lio, s) = class_longident →
+          CeCon loc lio s ctcl
+(*
           <:class_expr< [ $_list:ctcl$ ] $_list:ci$ >>
+*)
       | "("; ce = class_expr; ":"; ct = class_type; ")" →
           <:class_expr< ($ce$ : $ct$) >>
       | "("; ce = class_expr; ")" → ce
@@ -1526,8 +1532,13 @@ EXTEND
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; (ext,attrs) = ext_attributes; i = V class_longident "list" → 
-          expr_to_inline loc <:expr< new $_list:i$ >> ext attrs
+      [ "new"; (ext,attrs) = ext_attributes; (lio, s) = class_longident → 
+          expr_to_inline loc
+(ExNew loc lio s)
+(*
+ <:expr< new $_list:i$ >>
+*)
+ ext attrs
       | "object"; (ext,attrs) = ext_attributes; cspo = V (OPT class_self_patt); cf = class_structure;
         "end" →
           expr_to_inline loc <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
@@ -1549,7 +1560,11 @@ EXTEND
     [ [ l = lident; "="; e = expr → (l, e) ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; id = V class_longident "list" → <:ctyp< # $_list:id$ >>
+    [ [ "#"; (lio,s) = class_longident → 
+(TyCls loc lio s)
+(*
+<:ctyp< # $_list:id$ >>
+*)
       | "<"; ml = V (LIST0 field SEP ";"); v = V (FLAG ".."); ">" →
           <:ctyp< < $_list:ml$ $_flag:v$ > >> ] ]
   ;
@@ -1561,8 +1576,9 @@ EXTEND
       ] ]
   ;
   class_longident:
-    [ [ m = UIDENT; "."; l = SELF → [mkident m :: l]
-      | i = LIDENT → [mkident i] ] ]
+    [ [ li = longident; "."; i = V LIDENT → (Some li, i)
+      | i = V LIDENT → (None, i)
+      ] ]
   ;
   (* Labels *)
   ctyp: AFTER "arrow"

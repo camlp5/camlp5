@@ -633,6 +633,22 @@ value anti_longident_se =
   | se → <:vala< (longident_se se) >> ]
 ;
 
+value longid_of_string_list loc sl =
+  let (h,t) = match sl with [ [h::t] -> (h,t) | [] -> failwith "longid_of_string_list" ] in
+  List.fold_left (fun li s -> <:extended_longident< $longid:li$ . $uid:s$ >>)
+    <:extended_longident< $uid:h$ >> t
+;
+
+value class_longident_se se =
+  let loc = loc_of_sexpr se in
+  let sl = longident_se se in
+  let (id, sl) = sep_last sl in
+  match sl with [
+    [] -> (None, id)
+  | [_::_] -> (Some (longid_of_string_list loc sl), id)
+  ]
+;
+
 value anti_lid =
   fun
   [ Slid _ s →
@@ -1138,8 +1154,11 @@ and expr_se =
       let e = expr_se se in
       <:expr< lazy $e$ >>
   | Sexpr loc [Slid _ "new"; se] →
-      let sl = anti_longident_se se in
-      <:expr< new $_list:sl$ >>
+      match class_longident_se se with [
+        (None, id) -> <:expr< new $lid:id$ >>
+      | (Some li, id) ->
+        <:expr< new $longid:li$ . $lid:id$ >>
+      ]
   | Sexpr loc [Slid _ "`"; Suid _ s] → <:expr< ` $s$ >>
   | Sexpr loc [Slid _ "send"; se; Slid _ s] →
       let e = expr_se se in
@@ -1674,9 +1693,13 @@ and class_expr_se =
             loop <:class_expr< $ce$ $e$ >> sel
         | [] → ce ]
   | se →
-      let sl = longident_se se in
       let loc = loc_of_sexpr se in
-      <:class_expr< $list:sl$ >> ]
+      match class_longident_se se with [
+        (None, id) ->  <:class_expr< $lid:id$ >>
+      | (Some li, id) ->
+        <:class_expr< $longid:li$ . $lid:id$ >>
+      ]
+   ]
 ;
 
 value directive_se =

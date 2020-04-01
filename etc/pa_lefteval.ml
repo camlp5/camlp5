@@ -177,8 +177,9 @@ value rec expr x =
   | <:expr< $e1$.[$e2$] >> -> <:expr< $expr e1$.[$expr e2$] >>
   | <:expr< $_$ . $_$ >> | <:expr< $uid:_$ >> | <:expr< $lid:_$ >> |
     <:expr< $str:_$ >> | <:expr< $chr:_$ >> | <:expr< $int:_$ >> |
-    <:expr< $flo:_$ >> | <:expr< new $list:_$ >> ->
-      x
+    <:expr< $flo:_$ >>
+  | <:expr< new $longid:_$ . $lid:_$ >> | <:expr< new $lid:_$ >>
+     -> x
   | x -> not_impl "expr" x ]
 and let_binding (p, e, attrs) = (p, expr e, attrs)
 and match_assoc (p, eo, e) = (p, map_vala (map_option expr) eo, expr e)

@@ -48,7 +48,7 @@ value rec ctyp =
   | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyAny _ -> ()
   | TyArr _ t1 t2 -> do { ctyp t1; ctyp t2 }
-  | <:ctyp< # $list:li$ >> -> id_list li
+  | <:ctyp< # $longid:li$ . $lid:_$ >> -> longident li
   | TyLab _ _ t -> ctyp t
   | TyLid _ _ -> ()
   | TyMan _ t1 _ t2 -> do { ctyp t1; ctyp t2 }
@@ -143,7 +143,7 @@ and expr =
       expr e;
       list match_case pwel
     }
-  | <:expr< new $list:li$ >> -> id_list li
+  | <:expr< new $longid:li$ . $lid:_$ >> -> longident li
   | ExOlb _ _ eo -> option expr (Pcaml.unvala eo)
   | <:expr< {$list:lel$} >> -> list label_expr lel
   | <:expr< {($w$) with $list:lel$} >> -> do {
@@ -248,8 +248,8 @@ and type_decl td = ctyp td.MLast.tdDef
 and class_expr =
   fun
   [ <:class_expr< $ce$ $e$ >> -> do { class_expr ce; expr e }
-  | <:class_expr< [ $list:tl$ ] $list:li$ >> -> do {
-      id_list li;
+  | <:class_expr< [ $list:tl$ ] $longid:li$ . $lid:_$ >> -> do {
+      longident li;
       list ctyp tl
     }
   | <:class_expr< fun $p$ -> $ce$ >> -> do { patt p; class_expr ce }

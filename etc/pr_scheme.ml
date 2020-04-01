@@ -310,6 +310,12 @@ value field_expr pc (l, e) =
     [(fun pc -> pprintf pc "%s" l, ""); (fun pc -> expr pc e, "")]
 ;
 
+value class_longident pc = fun [
+  (None, id) -> pprintf pc "%s" id
+| (Some li, id) -> pprintf pc "%p.%s" longident li id
+]
+;
+
 value string pc s = pprintf pc "\"%s\"" s;
 
 value int_repr s =
@@ -585,8 +591,10 @@ EXTEND_PRINTER
           sprintf "%s'%s%s" pc.bef s pc.aft
       | <:ctyp< _ >> ->
           sprintf "%s_%s" pc.bef pc.aft
-      | <:ctyp< # $list:sl$ >> ->
-          pprintf pc "(# %p)" id_list sl
+      | <:ctyp< # $longid:li$ . $lid:id$ >> ->
+          pprintf pc "(# %p)" class_longident (Some li, id)
+      | <:ctyp< # $lid:id$ >> ->
+          pprintf pc "(# %p)" class_longident (None, id)
       | <:ctyp< ! $list:pl$ . $t$ >> ->
           pprintf pc "(! (%p)@;<1 1>%p)" (hlist type_var) pl ctyp t
       | x ->
@@ -813,10 +821,14 @@ EXTEND_PRINTER
           plistf 0 (paren pc "")
             [(fun pc -> sprintf "%slazy%s" pc.bef pc.aft, "");
              (fun pc -> curr pc x, "")]
-      | <:expr< new $list:x$ >> ->
+      | <:expr< new $longid:li$ . $lid:id$ >> ->
           plistf 0 (paren pc "")
             [(fun pc -> sprintf "%snew%s" pc.bef pc.aft, "");
-             (fun pc -> id_list pc x, "")]
+             (fun pc -> class_longident pc (Some li, id), "")]
+      | <:expr< new $lid:id$ >> ->
+          plistf 0 (paren pc "")
+            [(fun pc -> sprintf "%snew%s" pc.bef pc.aft, "");
+             (fun pc -> class_longident pc (None, id), "")]
 (*
       | <:expr< $lid:s$ $e1$ $e2$ >>
         when List.mem s assoc_right_parsed_op_list ->
@@ -1416,10 +1428,14 @@ EXTEND_PRINTER
           plistf 0 (paren pc "")
             [(fun pc -> curr pc ce, "") ::
              List.map (fun e -> (fun pc -> expr pc e, "")) el]
-      | <:class_expr< $list:sl$ >> ->
-          id_list pc sl
-      | <:class_expr< [ $list:ctcl$ ] $list:sl$ >> ->
-          not_impl "CeCon" pc sl
+      | <:class_expr< $longid:li$ . $lid:id$ >> ->
+          class_longident pc (Some li, id)
+      | <:class_expr< $lid:id$ >> ->
+          class_longident pc (None, id)
+      | <:class_expr< [ $list:ctcl$ ] $longid:li$ . $lid:id$ >> ->
+          not_impl "CeCon" pc ()
+      | <:class_expr< [ $list:ctcl$ ] $lid:id$ >> ->
+          not_impl "CeCon" pc ()
       | x ->
           not_impl "class_expr" pc x ] ]
   ;

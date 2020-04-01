@@ -1392,14 +1392,14 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       ]
 
     | "simple"
-      [ ci = SV class_longident "list" →
-          Qast.Node "CeCon" [Qast.Loc; ci; Qast.VaVal (Qast.List [])]
+      [ (lio, s) = class_longident →
+          Qast.Node "CeCon" [Qast.Loc; lio; s; Qast.VaVal (Qast.List [])]
       | "object"; cspo = SV (OPT class_self_patt); cf = class_structure;
         "end" →
           Qast.Node "CeStr" [Qast.Loc; cspo; cf]
       | "["; ctcl = SV (LIST1 ctyp SEP ","); "]";
-        ci = SV class_longident "list" →
-          Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
+        (lio, s) = class_longident →
+          Qast.Node "CeCon" [Qast.Loc; lio; s; ctcl]
       | "("; ce = SELF; ":"; ct = class_type; ")" →
           Qast.Node "CeTyc" [Qast.Loc; ce; ct]
       | "("; ce = SELF; ")" → ce
@@ -1517,7 +1517,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; i = SV class_longident "list" → Qast.Node "ExNew" [Qast.Loc; i]
+      [ "new"; (lio, s) = class_longident → Qast.Node "ExNew" [Qast.Loc; lio; s]
       | "object"; cspo = SV (OPT class_self_patt); cf = class_structure;
         "end" →
           Qast.Node "ExObj" [Qast.Loc; cspo; cf] ] ]
@@ -1538,7 +1538,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
     [ [ l = lident; "="; e = expr → Qast.Tuple [l; e] ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; id = SV class_longident "list" → Qast.Node "TyCls" [Qast.Loc; id]
+    [ [ "#"; (lio, s) = class_longident → Qast.Node "TyCls" [Qast.Loc; lio; s]
       | "<"; ml = SV (LIST0 field SEP ";"); v = SV (FLAG ".."); ">" →
           Qast.Node "TyObj" [Qast.Loc; ml; v] ] ]
   ;
@@ -1546,8 +1546,9 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
     [ [ lab = LIDENT; ":"; t = ctyp ; alg_attrs = alg_attributes → Qast.Tuple [mkident lab; t; alg_attrs] ] ]
   ;
   class_longident:
-    [ [ m = UIDENT; "."; l = SELF → Qast.Cons (mkident m) l
-      | i = LIDENT → Qast.List [mkident i] ] ]
+    [ [ li = longident; "."; i = SV LIDENT → (Qast.Option (Some li), i)
+      | i = SV LIDENT → (Qast.Option None, i)
+      ] ]
   ;
   (* Labels *)
   ctyp: AFTER "arrow"

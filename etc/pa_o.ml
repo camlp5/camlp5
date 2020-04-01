@@ -1883,11 +1883,21 @@ EXTEND
   class_expr_simple:
     [ "simple"
       [ "["; ct = ctyp; ","; ctcl = LIST1 ctyp SEP ","; "]";
-        ci = class_longident ->
+        (lio, s) = class_longident ->
+          MLast.CeCon loc lio s <:vala< [ct :: ctcl] >>
+(*
           <:class_expr< [ $list:[ct :: ctcl]$ ] $list:ci$ >>
-      | "["; ct = ctyp; "]"; ci = class_longident ->
+*)
+      | "["; ct = ctyp; "]"; (lio,s) = class_longident ->
+          MLast.CeCon loc lio s <:vala< [ct] >>
+(*
           <:class_expr< [ $ct$ ] $list:ci$ >>
-      | ci = class_longident -> <:class_expr< $list:ci$ >>
+*)
+      | (lio, s) = class_longident -> 
+          MLast.CeCon loc lio s <:vala< [] >>
+(*
+<:class_expr< $list:ci$ >>
+*)
       | "object"; alg_attrs = alg_attributes_no_anti; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
           class_expr_wrap_attrs <:class_expr< object $_opt:cspo$ $_list:cf$ end >> alg_attrs
@@ -2052,8 +2062,13 @@ EXTEND
   (* Expressions *)
   expr: LEVEL "simple"
     [ LEFTA
-      [ "new"; (ext,attrs) = ext_attributes; i = V class_longident "list" -> 
-          expr_to_inline <:expr< new $_list:i$ >> ext attrs
+      [ "new"; (ext,attrs) = ext_attributes; (lio, s) = class_longident -> 
+          expr_to_inline
+(ExNew loc lio s)
+(*
+ <:expr< new $_list:i$ >>
+*)
+ ext attrs
       | "object"; (ext,attrs) = ext_attributes; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
           expr_to_inline <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
@@ -2079,8 +2094,11 @@ EXTEND
   ;
   (* Core types *)
   ctyp: LEVEL "simple"
-    [ [ "#"; id = V class_longident "list" ->
+    [ [ "#"; (lio, s) = class_longident ->
+(TyCls loc lio s)
+(*
          <:ctyp< # $_list:id$ >>
+*)
       | "<"; ml = V meth_list "list"; v = V (FLAG ".."); ">" ->
           <:ctyp< < $_list:ml$ $_flag:v$ > >>
       | "<"; ".."; ">" ->
@@ -2120,8 +2138,9 @@ EXTEND
   ;
   (* Identifiers *)
   class_longident:
-    [ [ m = UIDENT; "."; l = SELF -> [m :: l]
-      | i = LIDENT -> [i] ] ]
+    [ [ li = longident; "."; i = V LIDENT → (Some li, i)
+      | i = V LIDENT → (None, i)
+      ] ]
   ;
   (* Labels *)
   ctyp: AFTER "arrow"

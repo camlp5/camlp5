@@ -364,6 +364,28 @@
   ((Santi _ (or "list" "_list" "" "_") s) <:vala< $s$ >>)
   (se <:vala< (longident_se se) >>)))
 
+(define (longid_of_string_list loc sl)
+   (let (((values h t)
+           (match sl
+             ([h . t] (values h t))
+             ([] (failwith "longid_of_string_list"))
+           )))
+     (List.fold_left (lambda (li s) <:extended_longident< $longid:li$ . $uid:s$ >>)
+        <:extended_longident< $uid:h$ >> t)
+   )
+)
+
+(define (class_longident_se se)
+   (let* ((loc (loc_of_sexpr se))
+          (sl (longident_se se))
+          ((values id sl) (sep_last sl)))
+     (match sl
+       ([] (values None id))
+       (_ (values (Some (longid_of_string_list loc sl)) id))
+     )
+   )
+)
+
 (define anti_lid
  (lambda_match
   ((Slid _ s) (let ((s (rename_id s))) (Some <:vala< s >>)))
@@ -822,7 +844,11 @@
    ((Sexpr loc [(Slid _ "lazy") se])
     (let ((e (expr_se se))) <:expr< lazy $e$ >>))
    ((Sexpr loc [(Slid _ "new") se])
-    (let ((sl (anti_longident_se se))) <:expr< new $_list:sl$ >>))
+      (match (class_longident_se se)
+        ((values (Some li) id) <:expr< new $longid:li$ . $lid:id$ >>)
+        ((values None id) <:expr< new $lid:id$ >>)
+      )
+   )
    ((Sexpr loc [(Slid _ "`") (Suid _ s)]) <:expr< ` $s$ >>)
    ((Sexpr loc [(Slid _ "send") se (Slid _ s)])
     (let ((e (expr_se se))) <:expr< $e$ # $s$ >>))
@@ -1294,8 +1320,13 @@
         ([] ce))))
      (loop (class_expr_se se) sel)))
    (se
-    (let* ((sl (longident_se se)) (loc (loc_of_sexpr se)))
-     <:class_expr< $list:sl$ >>)))))
+      (let ((loc (loc_of_sexpr se)))
+        (match (class_longident_se se)
+          ((values None id) <:class_expr< $lid:id$ >>)
+          ((values (Some li) id) <:class_expr< $longid:li$ . $lid:id$ >>)
+        )
+      )
+   ))))
 
 (define directive_se
  (lambda_match

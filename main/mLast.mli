@@ -43,7 +43,7 @@ and ctyp =
   | TyAny of loc
   | TyApp of loc and ctyp and ctyp
   | TyArr of loc and ctyp and ctyp
-  | TyCls of loc and V (list string)
+  | TyCls of loc and option longid and V string
   | TyLab of loc and V string and ctyp
   | TyLid of loc and V string
   | TyMan of loc and ctyp and V bool and ctyp
@@ -118,7 +118,7 @@ and expr =
   | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and V bool and module_expr and expr
   | ExMat of loc and expr and V (list (patt * V (option expr) * expr))
-  | ExNew of loc and V (list string)
+  | ExNew of loc and option longid and V string
   | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and patt and V (option expr)
   | ExOvr of loc and V (list (string * expr))
@@ -255,7 +255,7 @@ and class_sig_item =
   | CgExten of loc and attribute_body ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
-  | CeCon of loc and V (list string) and V (list ctyp)
+  | CeCon of loc and option longid and V string and V (list ctyp)
   | CeFun of loc and patt and class_expr
   | CeLet of loc and V bool and V (list (patt * expr * attributes)) and class_expr
   | CeLop of loc and V bool and longid and class_expr
