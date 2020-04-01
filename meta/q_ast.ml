@@ -105,7 +105,7 @@ module Meta_make (C : MetaSig) =
     ;
     value rec ctyp =
       fun
-      [ TyAtt _ ct att -> assert False
+      [ TyAtt _ ct att -> C.node "TyAtt" [ctyp ct; conv_attribute_body att]
       | TyAcc _ m1 t2 → C.node "TyAcc" [longid m1; C.vala C.string t2]
       | TyAli _ t1 t2 → C.node "TyAli" [ctyp t1; ctyp t2]
       | TyAny _ → C.node "TyAny" []
@@ -118,7 +118,7 @@ module Meta_make (C : MetaSig) =
       | TyObj _ lst b →
           C.node "TyObj"
             [C.vala (C.list (fun (s, t, attrs) → 
-                              let attrs = assert False in
+                              let attrs = conv_attributes attrs in
                               C.tuple [C.option C.string s; ctyp t; attrs])) lst;
              C.vala C.bool b]
       | TyOlb _ s t → C.node "TyOlb" [C.vala C.string s; ctyp t]
@@ -132,7 +132,7 @@ module Meta_make (C : MetaSig) =
             [C.vala
                (C.list
                   (fun (_, s, b, t, attrs) →
-                     let attrs = assert False in
+                     let attrs = conv_attributes attrs in
                      C.tuple [C.loc_v (); C.string s; C.bool b; ctyp t; attrs]))
                llsbt]
       | TySum _ llsltot →
@@ -148,24 +148,35 @@ module Meta_make (C : MetaSig) =
              C.option (C.option (C.vala (C.list C.string))) ools]
       | TyXtr loc s _ → C.xtr loc s
       | TyExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "TyExten" [exten]
       ]
+    and conv_attributes attrs =
+      C.vala (C.list conv_attribute_body) attrs
+    and conv_extension e = conv_attribute_body e
+    and conv_attribute_body b =
+      C.vala (fun (s, p) -> C.tuple [C.vala C.string s; conv_payload p]) b
+    and conv_payload = fun [
+      StAttr _ lsi -> C.node "StAttr" [C.vala (C.list str_item) lsi]
+    | SiAttr _ lsi -> C.node "SiAttr" [C.vala (C.list sig_item) lsi]
+    | TyAttr _ t -> C.node "TyAttr" [C.vala ctyp t]
+    | PaAttr _ p eo -> C.node "PaAttr" [C.vala patt p; C.option (C.vala expr) eo]
+    ]
     and generic_constructor = fun (_, s, lt, ot, attrs) →
-      let attrs = assert False in
+      let attrs = conv_attributes attrs in
         C.tuple
           [C.loc_v (); C.vala C.string s;
            C.vala (C.list ctyp) lt; C.option ctyp ot; attrs]
     and poly_variant =
       fun
       [ PvTag _ s b lt attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "PvTag"
             [C.vala C.string s; C.vala C.bool b; C.vala (C.list ctyp) lt; attrs]
       | PvInh _ t → C.node "PvInh" [ctyp t] ]
     and patt =
       fun
-      [ PaAtt _ e att -> assert False
+      [ PaAtt _ e att -> C.node "PaAtt" [patt e; conv_attribute_body att]
       | PaPfx _ li p -> C.node "PaPfx" [longid li; patt p]
       | PaLong _ li -> C.node "PaLong" [longid li]
       | PaAli _ p1 p2 → C.node "PaAli" [patt p1; patt p2]
@@ -204,12 +215,12 @@ module Meta_make (C : MetaSig) =
       | 
           PaXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "PaAnt" [r]) s
       | PaExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "PaExten" [exten]
       ]
     and expr =
       fun
-      [ ExAtt _ e att -> assert False
+      [ ExAtt _ e att -> C.node "ExAtt" [expr e; conv_attribute_body att]
       | ExAcc _ e1 e2 → C.node "ExAcc" [expr e1; expr e2]
       | ExAnt _ e → C.node "ExAnt" [expr e]
       | ExApp _ e1 e2 → C.node "ExApp" [expr e1; expr e2]
@@ -245,11 +256,11 @@ module Meta_make (C : MetaSig) =
           C.node "ExLet"
             [C.vala C.bool b;
              C.vala (C.list (fun (p, e, attrs) →
-               let attrs = assert False in
+               let attrs = conv_attributes attrs in
                C.tuple [patt p; expr e; attrs])) lpe;
              expr e]
       | ExLEx _ id lt e attrs ->
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "ExLEx"
             [C.vala C.string id; C.vala (C.list ctyp) lt; expr e; attrs]
       | ExLid _ s → C.node "ExLid" [C.vala C.string s]
@@ -300,13 +311,13 @@ module Meta_make (C : MetaSig) =
       | 
           ExXtr loc s _ → C.xtr_or_anti loc (fun r → C.node "ExAnt" [r]) s
       | ExExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "ExExten" [exten]
       | ExUnr loc -> C.node "ExUnr" []
       ]
     and module_type =
       fun
-      [ MtAtt _ e att -> assert False
+      [ MtAtt _ e att -> C.node "MtAtt" [module_type e; conv_attribute_body att]
       | MtLong _ mt1 → C.node "MtLong" [longid mt1]
       | MtLongLid _ mt1 lid → C.node "MtLongLid" [longid mt1; C.vala C.string lid]
       | MtLid _ s → C.node "MtLid" [C.vala C.string s]
@@ -325,7 +336,7 @@ module Meta_make (C : MetaSig) =
       | 
           MtXtr loc s _ → C.xtr loc s
       | MtExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "MtExten" [exten]
       ]
     and sig_item =
@@ -338,14 +349,14 @@ module Meta_make (C : MetaSig) =
       | SgDir _ s oe →
           C.node "SgDir" [C.vala C.string s; C.vala (C.option expr) oe]
       | SgExc _ gc item_attrs →
-          let item_attrs = assert False in
+          let item_attrs = conv_attributes item_attrs in
           C.node "SgExc" [generic_constructor gc; item_attrs]
       | SgExt _ s t ls attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "SgExt"
             [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
       | SgInc _ mt attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "SgInc" [module_type mt; attrs]
       | SgMod _ b lsmt →
           let c_vala x = C.vala C.string x in
@@ -355,23 +366,23 @@ module Meta_make (C : MetaSig) =
              C.vala
                (C.list
                   (fun (sopt, mt, attrs) →
-                     let attrs = assert False in
+                     let attrs = conv_attributes attrs in
                      C.tuple [C.vala c_vala_opt sopt; module_type mt; attrs]))
                lsmt]
       | SgMty _ s mt attrs →
-           let attrs = assert False in
+           let attrs = conv_attributes attrs in
            C.node "SgMty" [C.vala C.string s; module_type mt; attrs]
       | SgMtyAbs _ s attrs →
-           let attrs = assert False in
+           let attrs = conv_attributes attrs in
            C.node "SgMtyAbs" [C.vala C.string s; attrs]
       | SgMtyAlias _ s ls attrs →
-           let attrs = assert False in
+           let attrs = conv_attributes attrs in
            C.node "SgMtyAlias" [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
       | SgModSubst _ s li attrs ->
-           let attrs = assert False in
+           let attrs = conv_attributes attrs in
            C.node "SgModSubst" [C.vala C.string s; longid li; attrs]
       | SgOpn _ li attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
            C.node "SgOpn" [longid li; attrs]
       | SgTyp _ b ltd → C.node "SgTyp" [C.vala C.bool b; C.vala (C.list type_decl) ltd]
       | SgTypExten _ te ->
@@ -382,11 +393,11 @@ module Meta_make (C : MetaSig) =
              C.vala (C.list (fun (si, _) → C.tuple [sig_item si; C.loc_v ()]))
                lsil]
       | SgVal _ s t attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "SgVal" [C.vala C.string s; ctyp t; attrs]
       | SgXtr loc s _ → C.xtr loc s
       | SgFlAtt loc attr ->
-          let attr = assert False in
+          let attr = conv_attribute_body attr in
           C.node "SgFlAtt" [attr]
       | SgExten loc exten ->
           let exten = assert False in
@@ -414,7 +425,7 @@ module Meta_make (C : MetaSig) =
       ]
     and module_expr =
       fun
-      [ MeAtt _ e att -> assert False
+      [ MeAtt _ e att -> C.node "MeAtt" [module_expr e; conv_attribute_body att]
       | MeAcc _ me1 me2 → C.node "MeAcc" [module_expr me1; module_expr me2]
       | MeApp _ me1 me2 → C.node "MeApp" [module_expr me1; module_expr me2]
       | MeFun _ arg me →
@@ -431,7 +442,7 @@ module Meta_make (C : MetaSig) =
       | 
           MeXtr loc s _ → C.xtr loc s
       | MeExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "MeExten" [exten]
       ]
     and str_item =
@@ -444,17 +455,17 @@ module Meta_make (C : MetaSig) =
       | StDir _ s oe →
           C.node "StDir" [C.vala C.string s; C.vala (C.option expr) oe]
       | StExc _ extc attrs ->
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "StExc" [C.vala extension_constructor extc; attrs] 
       | StExp _ e attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "StExp" [expr e; attrs]
       | StExt _ s t ls attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "StExt"
             [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
       | StInc _ me attrs → 
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "StInc" [module_expr me; attrs]
       | StMod _ b lsme →
           let c_vala x = C.vala C.string x in
@@ -464,17 +475,17 @@ module Meta_make (C : MetaSig) =
              C.vala
                (C.list
                   (fun (sopt, me, attrs) → 
-                    let attrs = assert False in
+                    let attrs = conv_attributes attrs in
                     C.tuple [C.vala c_vala_opt sopt; module_expr me; attrs]))
                lsme]
       | StMty _ s mt attrs →
-           let attrs = assert False in
+           let attrs = conv_attributes attrs in
            C.node "StMty" [C.vala C.string s; module_type mt; attrs]
       | StMtyAbs _ s attrs →
-           let attrs = assert False in
+           let attrs = conv_attributes attrs in
            C.node "StMtyAbs" [C.vala C.string s; attrs]
       | StOpn _ b1 me attrs →
-           let attrs = assert False in
+           let attrs = conv_attributes attrs in
            C.node "StOpn" [C.vala C.bool b1; module_expr me; attrs]
       | StTyp _ b ltd →
           C.node "StTyp" [C.vala C.bool b; C.vala (C.list type_decl) ltd]
@@ -489,18 +500,18 @@ module Meta_make (C : MetaSig) =
           C.node "StVal"
             [C.vala C.bool b;
              C.vala (C.list (fun (p, e, attrs) →
-               let attrs = assert False in
+               let attrs = conv_attributes attrs in
                C.tuple [patt p; expr e; attrs])) lpe]
       | StXtr loc s _ → C.xtr loc s
       | StFlAtt loc attr ->
-          let attr = assert False in
+          let attr = conv_attribute_body attr in
           C.node "StFlAtt" [attr]
       | StExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "StExten" [exten]
       ]
     and type_decl x =
-      let attrs = assert False in
+      let attrs = conv_attributes x.tdAttributes in
       C.record
         [(record_label "tdNam",
           C.vala (fun (_, s) → C.tuple [C.loc_v (); C.vala C.string s])
@@ -516,23 +527,23 @@ module Meta_make (C : MetaSig) =
       EcTuple gc ->
         C.node_no_loc "EcTuple" [generic_constructor gc]
     | EcRebind s ls attrs ->
-        let attrs = assert False in
+        let attrs = conv_attributes attrs in
         C.node_no_loc "EcRebind" [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
     ]
     and type_extension x =
-      let attrs = assert False in
-      let teDef = assert False in
+      let attrs = conv_attributes x.teAttributes in
+      let ecs = C.vala (C.list extension_constructor) x.teECs in
       C.record
         [(record_label "teNam",
           C.vala (fun (_, s) → C.tuple [C.loc_v (); C.vala (C.list C.string) s])
             x.teNam);
          (record_label "tePrm", C.vala (C.list type_var) x.tePrm);
          (record_label "tePrv", C.vala C.bool x.tePrv);
-         (record_label "teDef", teDef);
+         (record_label "teECs", ecs);
          (record_label "teAttributes", attrs)]
     and class_type =
       fun
-      [ CtAtt _ e att -> assert False
+      [ CtAtt _ e att -> C.node "CtAtt" [class_type e; conv_attribute_body att]
       | CtLongLid _ mt1 lid → C.node "CtLongLid" [longid mt1; C.vala C.string lid]
       | CtLid _ s → C.node "CtLid" [C.vala C.string s]
       | CtLop _ ovf me e →
@@ -546,37 +557,37 @@ module Meta_make (C : MetaSig) =
       | 
           CtXtr loc s _ → C.xtr loc s
       | CtExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "CtExten" [exten]
       ]
     and class_sig_item =
       fun
       [ CgCtr _ t1 t2 attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CgCtr" [ctyp t1; ctyp t2; attrs]
       | CgDcl _ lcsi → C.node "CgDcl" [C.vala (C.list class_sig_item) lcsi]
       | CgInh _ ct attrs → 
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CgInh" [class_type ct; attrs]
       | CgMth _ b s t attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CgMth" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CgVal _ mf vf s t attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CgVal" [C.vala C.bool mf; C.vala C.bool vf; C.vala C.string s; ctyp t; attrs]
       | CgVir _ b s t attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CgFlAtt loc attr ->
-          let attr = assert False in
+          let attr = conv_attribute_body attr in
           C.node "CgFlAtt" [attr]
       | CgExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "CgExten" [exten]
       ]
     and class_expr =
       fun
-      [ CeAtt _ e att -> assert False
+      [ CeAtt _ e att -> C.node "CeAtt" [class_expr e; conv_attribute_body att]
       | CeApp _ ce e → C.node "CeApp" [class_expr ce; expr e]
       | CeCon _ ls lt →
           C.node "CeCon"
@@ -586,7 +597,7 @@ module Meta_make (C : MetaSig) =
           C.node "CeLet"
             [C.vala C.bool b;
              C.vala (C.list (fun (p, e, attrs) →
-               let attrs = assert False in
+               let attrs = conv_attributes attrs in
                C.tuple [patt p; expr e; attrs])) lpe;
              class_expr ce]
       | CeLop _ ovf me e →
@@ -598,41 +609,41 @@ module Meta_make (C : MetaSig) =
       | 
           CeXtr loc s _ → C.xtr loc s
       | CeExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "CeExten" [exten]
       ]
     and class_str_item =
       fun
       [ CrCtr _ t1 t2 attrs →
-        let attrs = assert False in
+        let attrs = conv_attributes attrs in
         C.node "CrCtr" [ctyp t1; ctyp t2; attrs]
       | CrDcl _ lcsi → C.node "CrDcl" [C.vala (C.list class_str_item) lcsi]
       | CrInh loc b1 ce os attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CrInh" [C.vala C.bool b1; class_expr ce; C.vala (C.option C.string) os; attrs]
       | CrIni _ e attrs →
-        let attrs = assert False in
+        let attrs = conv_attributes attrs in
         C.node "CrIni" [expr e; attrs]
       | CrMth _ b1 b2 s ot e attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CrMth"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s;
              C.vala (C.option ctyp) ot; expr e; attrs]
       | CrVal _ b1 b2 s e attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CrVal"
             [C.vala C.bool b1; C.vala C.bool b2; C.vala C.string s; expr e; attrs]
       | CrVav _ b s t attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CrVav" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CrVir _ b s t attrs →
-          let attrs = assert False in
+          let attrs = conv_attributes attrs in
           C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CrFlAtt loc attr ->
-          let attr = assert False in
+          let attr = conv_attribute_body attr in
           C.node "CrFlAtt" [attr]
       | CrExten loc exten ->
-          let exten = assert False in
+          let exten = conv_extension exten in
           C.node "CrExten" [exten]
       ]
     ;
