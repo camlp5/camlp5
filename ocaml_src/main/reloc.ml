@@ -57,8 +57,8 @@ let rec ctyp floc sh =
         let loc = floc loc in TyApp (loc, self x1, self x2)
     | TyArr (loc, x1, x2) ->
         let loc = floc loc in TyArr (loc, self x1, self x2)
-    | TyCls (loc, x1, x2) ->
-        let loc = floc loc in TyCls (loc, option_map (longid floc sh) x1, x2)
+    | TyCls (loc, x1) ->
+        let loc = floc loc in TyCls (loc, class_longid floc sh x1)
     | TyLab (loc, x1, x2) -> let loc = floc loc in TyLab (loc, x1, self x2)
     | TyLid (loc, x1) -> let loc = floc loc in TyLid (loc, x1)
     | TyMan (loc, x1, x2, x3) ->
@@ -239,8 +239,8 @@ and expr floc sh =
                 (fun (x1, x2, x3) ->
                    patt floc sh x1, vala_map (option_map self) x2, self x3))
              x2)
-    | ExNew (loc, x1, x2) ->
-        let loc = floc loc in ExNew (loc, option_map (longid floc sh) x1, x2)
+    | ExNew (loc, x1) ->
+        let loc = floc loc in ExNew (loc, class_longid floc sh x1)
     | ExObj (loc, x1, x2) ->
         let loc = floc loc in
         ExObj
@@ -557,11 +557,11 @@ and class_expr floc sh =
       CeAtt (loc, e, attr) -> CeAtt (loc, self e, attr)
     | CeApp (loc, x1, x2) ->
         let loc = floc loc in CeApp (loc, self x1, expr floc sh x2)
-    | CeCon (loc, x1, x2, x3) ->
+    | CeCon (loc, x1, x2) ->
         let loc = floc loc in
         CeCon
-          (loc, option_map (longid floc sh) x1, x2,
-           vala_map (List.map (ctyp floc sh)) x3)
+          (loc, class_longid floc sh x1,
+           vala_map (List.map (ctyp floc sh)) x2)
     | CeFun (loc, x1, x2) ->
         let loc = floc loc in CeFun (loc, patt floc sh x1, self x2)
     | CeLet (loc, x1, x2, x3) ->
@@ -614,7 +614,7 @@ and class_str_item floc sh =
     | CrExten (loc, exten) -> CrExten (floc loc, exten)
   in
   self
-;;
+and class_longid floc sh (x1, x2) = option_map (longid floc sh) x1, x2;;
 
 (* Equality over syntax trees *)
 

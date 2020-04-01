@@ -36,7 +36,7 @@ and ctyp =
   | TyAny of loc
   | TyApp of loc * ctyp * ctyp
   | TyArr of loc * ctyp * ctyp
-  | TyCls of loc * longid option * string
+  | TyCls of loc * class_longid
   | TyLab of loc * string * ctyp
   | TyLid of loc * string
   | TyMan of loc * ctyp * bool * ctyp
@@ -110,7 +110,7 @@ and expr =
   | ExLmd of loc * string option * module_expr * expr
   | ExLop of loc * bool * module_expr * expr
   | ExMat of loc * expr * (patt * expr option * expr) list
-  | ExNew of loc * longid option * string
+  | ExNew of loc * class_longid
   | ExObj of loc * patt option * class_str_item list
   | ExOlb of loc * patt * expr option
   | ExOvr of loc * (string * expr) list
@@ -239,7 +239,7 @@ and class_sig_item =
   | CgExten of loc * attribute_body
 and class_expr =
     CeApp of loc * class_expr * expr
-  | CeCon of loc * longid option * string * ctyp list
+  | CeCon of loc * class_longid * ctyp list
   | CeFun of loc * patt * class_expr
   | CeLet of loc * bool * (patt * expr * attributes) list * class_expr
   | CeLop of loc * bool * longid * class_expr
@@ -259,6 +259,7 @@ and class_str_item =
   | CrVir of loc * bool * string * ctyp * attributes
   | CrFlAtt of loc * attribute_body
   | CrExten of loc * attribute_body
+and class_longid = longid option * string
 and payload =
     StAttr of loc * str_item list
   | SiAttr of loc * sig_item list

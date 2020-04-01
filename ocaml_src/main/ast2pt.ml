@@ -226,7 +226,7 @@ let rec expr_long_id =
   | _ -> failwith "expr_long_id: unexpected expr"
 ;;
 
-let class_path_long_id lio s =
+let class_path_long_id (lio, s) =
   match lio, s with
     Some li, s -> Ldot (longid_long_id li, uv s)
   | None, s -> Lident (uv s)
@@ -242,7 +242,7 @@ let rec ctyp_long_id =
       let (is_cls, li2) = ctyp_long_id (MLast.TyLid (loc, id)) in
       is_cls, concat_long_ids li1 li2
   | MLast.TyLid (_, s) -> false, Lident s
-  | TyCls (loc, lio, s) -> true, class_path_long_id lio s
+  | TyCls (loc, cli) -> true, class_path_long_id cli
   | t -> error (loc_of_ctyp t) "incorrect type"
 ;;
 
@@ -654,8 +654,8 @@ and ctyp =
   | TyObj (loc, fl, v) ->
       mktyp loc
         (ocaml_ptyp_object (mkloc loc) (meth_list loc (uv fl) v) (uv v))
-  | TyCls (loc, lio, id) ->
-      mktyp loc (ocaml_ptyp_class (class_path_long_id lio id) [] [])
+  | TyCls (loc, cli) ->
+      mktyp loc (ocaml_ptyp_class (class_path_long_id cli) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
   | TyLid (loc, s) ->
       mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
@@ -1284,8 +1284,8 @@ and expr =
         else pel
       in
       mkexp loc (Pexp_match (expr e, List.map mkpwe pel))
-  | ExNew (loc, lio, id) ->
-      mkexp loc (ocaml_pexp_new (mkloc loc) (class_path_long_id lio id))
+  | ExNew (loc, cli) ->
+      mkexp loc (ocaml_pexp_new (mkloc loc) (class_path_long_id cli))
   | ExObj (loc, po, cfl) ->
       begin match ocaml_pexp_object with
         Some pexp_object ->
@@ -1919,11 +1919,11 @@ and class_expr =
           mkpcl loc (pcl_apply (class_expr ce) el)
       | None -> error loc "no class expr desc in this ocaml version"
       end
-  | CeCon (loc, lio, id, tl) ->
+  | CeCon (loc, cli, tl) ->
       begin match ocaml_pcl_constr with
         Some pcl_constr ->
           mkpcl loc
-            (pcl_constr (class_path_long_id lio id) (List.map ctyp (uv tl)))
+            (pcl_constr (class_path_long_id cli) (List.map ctyp (uv tl)))
       | None -> error loc "no class expr desc in this ocaml version"
       end
   | CeFun (loc, PaLab (ploc, lppo), ce) ->

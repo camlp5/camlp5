@@ -4738,9 +4738,9 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "]")))
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) _ (ctcl : 'ctyp list) _
+           (fun (cli : 'class_longident) _ (ctcl : 'ctyp list) _
                 (loc : Ploc.t) ->
-              (CeCon (loc, lio, s, ctcl) : 'class_expr_simple)));
+              (CeCon (loc, cli, ctcl) : 'class_expr_simple)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4761,8 +4761,8 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) (loc : Ploc.t) ->
-              (CeCon (loc, lio, s, []) : 'class_expr_simple)))]];
+           (fun (cli : 'class_longident) (loc : Ploc.t) ->
+              (CeCon (loc, cli, []) : 'class_expr_simple)))]];
     Grammar.extension (class_structure : 'class_structure Grammar.Entry.e)
       None
       [None, None,
@@ -5342,10 +5342,9 @@ Grammar.safe_extend
                    (ext_attributes : 'ext_attributes Grammar.Entry.e)))
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) (ext, attrs : 'ext_attributes) _
+           (fun (cli : 'class_longident) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (ExNew (loc, lio, s)) ext attrs :
-               'expr)))]];
+              (expr_to_inline loc (ExNew (loc, cli)) ext attrs : 'expr)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "."))
       [None, None,
@@ -5440,8 +5439,8 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "#")))
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) _ (loc : Ploc.t) ->
-              (TyCls (loc, lio, s) : 'ctyp)))]];
+           (fun (cli : 'class_longident) _ (loc : Ploc.t) ->
+              (TyCls (loc, cli) : 'ctyp)))]];
     Grammar.extension (field : 'field Grammar.Entry.e) None
       [None, None,
        [Grammar.production

@@ -8184,9 +8184,9 @@ Grammar.safe_extend
                 (Grammar.s_token ("", "]")))
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) _ (ctcl : 'e__198) _
+           (fun (cli : 'class_longident) _ (ctcl : 'e__198) _
                 (loc : Ploc.t) ->
-              (Qast.Node ("CeCon", [Qast.Loc; lio; s; ctcl]) : 'class_expr)));
+              (Qast.Node ("CeCon", [Qast.Loc; cli; ctcl]) : 'class_expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -8224,9 +8224,9 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) (loc : Ploc.t) ->
+           (fun (cli : 'class_longident) (loc : Ploc.t) ->
               (Qast.Node
-                 ("CeCon", [Qast.Loc; lio; s; Qast.VaVal (Qast.List [])]) :
+                 ("CeCon", [Qast.Loc; cli; Qast.VaVal (Qast.List [])]) :
                'class_expr)))]];
     Grammar.extension (class_structure : 'class_structure Grammar.Entry.e)
       None
@@ -9707,8 +9707,8 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "new")))
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) _ (loc : Ploc.t) ->
-              (Qast.Node ("ExNew", [Qast.Loc; lio; s]) : 'expr)))]];
+           (fun (cli : 'class_longident) _ (loc : Ploc.t) ->
+              (Qast.Node ("ExNew", [Qast.Loc; cli]) : 'expr)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "."))
       [None, None,
@@ -9886,8 +9886,8 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "#")))
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
-           (fun (lio, s : 'class_longident) _ (loc : Ploc.t) ->
-              (Qast.Node ("TyCls", [Qast.Loc; lio; s]) : 'ctyp)))]];
+           (fun (cli : 'class_longident) _ (loc : Ploc.t) ->
+              (Qast.Node ("TyCls", [Qast.Loc; cli]) : 'ctyp)))]];
     Grammar.extension (field : 'field Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -9937,7 +9937,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                            'e__243)))])),
            (fun (i : 'e__243) (loc : Ploc.t) ->
-              (Qast.Option None, i : 'class_longident)));
+              (Qast.Tuple [Qast.Option None; i] : 'class_longident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -9973,7 +9973,7 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                            'e__242)))])),
            (fun (i : 'e__242) _ (li : 'longident) (loc : Ploc.t) ->
-              (Qast.Option (Some li), i : 'class_longident)))]];
+              (Qast.Tuple [Qast.Option (Some li); i] : 'class_longident)))]];
     (* Labels *)
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
       (Some (Gramext.After "arrow"))

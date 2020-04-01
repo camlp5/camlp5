@@ -109,8 +109,7 @@ module Meta_make (C : MetaSig) =
       | TyAny _ -> C.node "TyAny" []
       | TyApp (_, t1, t2) -> C.node "TyApp" [ctyp t1; ctyp t2]
       | TyArr (_, t1, t2) -> C.node "TyArr" [ctyp t1; ctyp t2]
-      | TyCls (_, lio, s) ->
-          C.node "TyCls" [C.option longid lio; C.vala C.string s]
+      | TyCls (_, cli) -> C.node "TyCls" [class_longid cli]
       | TyLab (_, s, t) -> C.node "TyLab" [C.vala C.string s; ctyp t]
       | TyLid (_, s) -> C.node "TyLid" [C.vala C.string s]
       | TyMan (_, t1, b, t2) ->
@@ -151,6 +150,8 @@ module Meta_make (C : MetaSig) =
       | TyXtr (loc, s, _) -> C.xtr loc s
       | TyExten (loc, exten) ->
           let exten = conv_extension exten in C.node "TyExten" [exten]
+    and class_longid (lio, s) =
+      C.tuple [C.option longid lio; C.vala C.string s]
     and conv_attributes attrs = C.vala (C.list conv_attribute_body) attrs
     and conv_extension e = conv_attribute_body e
     and conv_attribute_body b =
@@ -284,8 +285,7 @@ module Meta_make (C : MetaSig) =
                   (fun (p, oe, e) ->
                      C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
                lpoee]
-      | ExNew (_, lio, s) ->
-          C.node "ExNew" [C.option longid lio; C.vala C.string s]
+      | ExNew (_, cli) -> C.node "ExNew" [class_longid cli]
       | ExObj (_, op, lcsi) ->
           C.node "ExObj"
             [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]
@@ -594,9 +594,8 @@ module Meta_make (C : MetaSig) =
         CeAtt (_, e, att) ->
           C.node "CeAtt" [class_expr e; conv_attribute_body att]
       | CeApp (_, ce, e) -> C.node "CeApp" [class_expr ce; expr e]
-      | CeCon (_, lio, s, lt) ->
-          C.node "CeCon"
-            [C.option longid lio; C.vala C.string s; C.vala (C.list ctyp) lt]
+      | CeCon (_, cli, lt) ->
+          C.node "CeCon" [class_longid cli; C.vala (C.list ctyp) lt]
       | CeFun (_, p, ce) -> C.node "CeFun" [patt p; class_expr ce]
       | CeLet (_, b, lpe, ce) ->
           C.node "CeLet"
