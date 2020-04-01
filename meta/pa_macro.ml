@@ -217,7 +217,7 @@ value substp mloc env =
         | _ -> failwith "substp/expr2long: bad expr"
         ] in
         let li = expr2longid (expr_left_assoc_acc e1) in
-        MLast.PaPfx loc li (loop e2)
+        <:patt< $longid:li$ . $(loop e2)$ >>
     | <:expr< $e1$ $e2$ >> -> <:patt< $loop e1$ $loop e2$ >>
     | <:expr< $lid:x$ >> ->
         try <:patt< $anti:List.assoc x env$ >> with

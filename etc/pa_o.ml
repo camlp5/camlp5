@@ -1449,18 +1449,9 @@ EXTEND
         MLast.PaLong loc (LiUid _ (Ploc.VaVal i)) ->
         let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
         MLast.PaLong loc li
-      | _ -> 
-MLast.PaPfx loc li p
-(*
-          <:patt< $longid:li$ . $p$ >>
-*)
-
+      | _ -> <:patt< $longid:li$ . $p$ >>
       ]
-    | li = longident → 
-MLast.PaLong loc li
-(*
-          <:patt< $longid:li$ >>
-*)
+    | li = longident → <:patt< $longid:li$ >>
     ]
   ]
   ;

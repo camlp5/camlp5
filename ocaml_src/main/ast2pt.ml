@@ -314,7 +314,7 @@ let rec patt_label_long_id =
   function
     MLast.PaPfx (_, li, MLast.PaLid (_, s)) ->
       Ldot (longid_long_id li, conv_lab s)
-  | MLast.PaLong (_, li) -> longid_long_id li
+  | MLast.PaLong (_, MLast.LiAcc (_, li, s)) -> longid_long_id li
   | MLast.PaLid (_, s) -> Lident (conv_lab s)
   | p -> error (loc_of_patt p) "bad label"
 ;;

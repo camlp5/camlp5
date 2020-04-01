@@ -1073,18 +1073,9 @@ EXTEND
         MLast.PaLong loc (LiUid _ <:vala< i >>) ->
         let li = <:extended_longident< $longid:li$ . $uid:i$ >> in
         MLast.PaLong loc li
-      | _ -> 
-MLast.PaPfx loc li p
-(*
-          <:patt< $longid:li$ . $p$ >>
-*)
-
+      | _ -> <:patt< $longid:li$ . $p$ >>
       ]
-    | li = longident → 
-MLast.PaLong loc li
-(*
-          <:patt< $longid:li$ >>
-*)
+    | li = longident → <:patt< $longid:li$ >>
     ]
   ]
   ;
@@ -1159,7 +1150,7 @@ MLast.PaLong loc (LiUid loc <:vala< "()" >>)
   ;
   patt_label_ident:
     [
-      [ p1 = longident; "."; p2 = SELF → MLast.PaPfx loc p1 p2
+      [ p1 = longident; "."; p2 = SELF → <:patt< $longid:p1$ . $p2$ >>
       | i = V LIDENT → <:patt< $_lid:i$ >>
       ] ]
   ;

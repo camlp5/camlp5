@@ -1629,9 +1629,9 @@ EXTEND_PRINTER
               let al = List.map (fun a -> (a, ",")) pl in
               pprintf pc "%p@;@[<1>(%p)@]" next p (plist patt 0) al ] ]
     | "simple"
-      [ MLast.PaPfx loc li <:patt< $lid:y$ >> -> pprintf pc "%p.(%p)" longident li var_escaped (loc, y)
-      | MLast.PaPfx _ li p -> pprintf pc "%p.%p" longident li curr p
-      | MLast.PaLong _ li -> pprintf pc "%p" longident li
+      [ <:patt:< $longid:li$ . $lid:y$ >> -> pprintf pc "%p.(%p)" longident li var_escaped (loc, y)
+      | <:patt< $longid:li$ . $p$ >> -> pprintf pc "%p.%p" longident li curr p
+      | <:patt< $longid:li$ >> -> pprintf pc "%p" longident li
       ]
     | "atomic"
       [ 

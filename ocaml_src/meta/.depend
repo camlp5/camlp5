@@ -17,11 +17,11 @@ pa_lexer.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
     ../lib/ploc.cmx ../lib/versdep.cmx ../main/exparser.cmx ../main/mLast.cmi \
     ../main/pcaml.cmx pa_r.cmx
 pa_macro.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
-    ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi \
-    ../main/reloc.cmi
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/asttools.cmo ../main/mLast.cmi \
+    ../main/pcaml.cmi ../main/reloc.cmi
 pa_macro.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
-    ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx \
-    ../main/reloc.cmx
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/asttools.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx ../main/reloc.cmx
 pa_macro_gram.cmo: ../lib/grammar.cmi ../lib/ploc.cmi pa_extend.cmo \
     pa_macro.cmo
 pa_macro_gram.cmx: ../lib/grammar.cmx ../lib/ploc.cmx pa_extend.cmx \

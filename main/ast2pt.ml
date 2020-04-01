@@ -293,17 +293,8 @@ value rec mkrangepat loc c1 c2 =
 
 value rec patt_label_long_id =
   fun
-  [ MLast.PaPfx _ li <:patt< $lid:s$ >>
-(*
- <:patt< $longid:li$ . $lid:s$ >>
-*)
- → Ldot (longid_long_id li) (conv_lab s)
-  |
-MLast.PaLong _ li
-(*
- <:patt< $longid:li$ . $uid:s$ >>
-*)
- → longid_long_id li
+  [ <:patt< $longid:li$ . $lid:s$ >> → Ldot (longid_long_id li) (conv_lab s)
+  | <:patt< $longid:li$ . $uid:s$ >> → longid_long_id li
   | <:patt< $lid:s$ >> → Lident (conv_lab s)
   | p → error (loc_of_patt p) "bad label" ]
 ;
