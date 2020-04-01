@@ -1404,8 +1404,8 @@ EXTEND
     ;
   class_expr_simple:
     [ "simple"
-      [ (lio, s) = class_longident →
-          CeCon loc lio s <:vala< [] >>
+      [ cli = class_longident →
+          CeCon loc cli <:vala< [] >>
 (*
           <:class_expr< $_list:ci$ >>
 *)
@@ -1413,8 +1413,8 @@ EXTEND
         "end" →
           <:class_expr< object $_opt:cspo$ $_list:cf$ end >>
       | "["; ctcl = V (LIST1 ctyp SEP ","); "]";
-        (lio, s) = class_longident →
-          CeCon loc lio s ctcl
+        cli = class_longident →
+          CeCon loc cli ctcl
 (*
           <:class_expr< [ $_list:ctcl$ ] $_list:ci$ >>
 *)
@@ -1532,9 +1532,9 @@ EXTEND
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; (ext,attrs) = ext_attributes; (lio, s) = class_longident → 
+      [ "new"; (ext,attrs) = ext_attributes; cli = class_longident → 
           expr_to_inline loc
-(ExNew loc lio s)
+(ExNew loc cli)
 (*
  <:expr< new $_list:i$ >>
 *)
@@ -1560,8 +1560,8 @@ EXTEND
     [ [ l = lident; "="; e = expr → (l, e) ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; (lio,s) = class_longident → 
-(TyCls loc lio s)
+    [ [ "#"; cli = class_longident → 
+(TyCls loc cli)
 (*
 <:ctyp< # $_list:id$ >>
 *)

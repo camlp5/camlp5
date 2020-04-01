@@ -14,6 +14,8 @@ TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test
 
 all-tests: all $(TESTS)
 
+work:: q_MLast_test
+
 all: \
 	o2r_test.byte \
 	r2r_test.byte \
@@ -88,7 +90,7 @@ o2r_test:: o2r_test.byte
 	./o2r_test.byte
 
 o2r_test.byte: o2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc -verbose $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op,camlp5.pr_r -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op,camlp5.pr_r -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
 
 r2r_test:: r2r_test.byte
 	./r2r_test.byte
@@ -108,7 +110,7 @@ o2o_test:: o2o_test.byte
 	./o2o_test.byte
 
 o2o_test.byte: o2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc -verbose $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op,camlp5.pr_o -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.ml -o o2o_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op,camlp5.pr_o -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.ml -o o2o_test.byte
 
 o2official_test:: o2official_test.byte
 	./o2official_test.byte
@@ -141,7 +143,7 @@ q_MLast_test:: q_MLast_test.byte
 	./q_MLast_test.byte
 
 q_MLast_test.byte: q_MLast_test.ml testutil.cmo
-	$(OCAMLFIND) ocamlc -verbose $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r,camlp5.quotations -syntax camlp5r -linkall -linkpkg testutil.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r,camlp5.quotations -syntax camlp5r -linkall -linkpkg testutil.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
 
 
 o_top_test:: o_top_test.byte

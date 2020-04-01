@@ -76,9 +76,9 @@ value rec ctyp floc sh =
     | TyArr loc x1 x2 →
         let loc = floc loc in
         TyArr loc (self x1) (self x2)
-    | TyCls loc x1 x2 →
+    | TyCls loc x1 →
         let loc = floc loc in
-        TyCls loc (option_map (longid floc sh) x1) x2
+TyCls loc ((*vala_map*) (class_longid floc sh) x1)
     | TyLab loc x1 x2 →
         let loc = floc loc in
         TyLab loc x1 (self x2)
@@ -320,9 +320,9 @@ and expr floc sh =
                 (fun (x1, x2, x3) →
                    (patt floc sh x1, vala_map (option_map self) x2, self x3)))
              x2)
-    | ExNew loc x1 x2 →
+    | ExNew loc x1 →
         let loc = floc loc in
-        ExNew loc (option_map (longid floc sh) x1) x2
+ExNew loc ((*vala_map*) (class_longid floc sh) x1)
     | ExObj loc x1 x2 →
         let loc = floc loc in
         ExObj loc (vala_map (option_map (patt floc sh)) x1)
@@ -685,9 +685,9 @@ and class_expr floc sh =
     | CeApp loc x1 x2 →
         let loc = floc loc in
         CeApp loc (self x1) (expr floc sh x2)
-    | CeCon loc x1 x2 x3 →
+    | CeCon loc x1 x2 →
         let loc = floc loc in
-        CeCon loc (option_map (longid floc sh) x1) x2 (vala_map (List.map (ctyp floc sh)) x3)
+CeCon loc ((*vala_map*) (class_longid floc sh) x1) (vala_map (List.map (ctyp floc sh)) x2)
     | CeFun loc x1 x2 →
         let loc = floc loc in
         CeFun loc (patt floc sh x1) (self x2)
@@ -744,6 +744,8 @@ and class_str_item floc sh =
     | CrFlAtt loc a -> CrFlAtt (floc loc) a
     | CrExten loc exten -> CrExten (floc loc) exten
     ]
+and class_longid floc sh (x1, x2) =
+    (option_map (longid floc sh) x1, x2)
 ;
 
 (* Equality over syntax trees *)
