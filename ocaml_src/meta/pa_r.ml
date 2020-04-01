@@ -4740,7 +4740,7 @@ Grammar.safe_extend
                 (class_longident : 'class_longident Grammar.Entry.e)),
            (fun (cli : 'class_longident) _ (ctcl : 'ctyp list) _
                 (loc : Ploc.t) ->
-              (CeCon (loc, cli, ctcl) : 'class_expr_simple)));
+              (MLast.CeCon (loc, cli, ctcl) : 'class_expr_simple)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4762,7 +4762,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
            (fun (cli : 'class_longident) (loc : Ploc.t) ->
-              (CeCon (loc, cli, []) : 'class_expr_simple)))]];
+              (MLast.CeCon (loc, cli, []) : 'class_expr_simple)))]];
     Grammar.extension (class_structure : 'class_structure Grammar.Entry.e)
       None
       [None, None,
@@ -5344,7 +5344,8 @@ Grammar.safe_extend
                 (class_longident : 'class_longident Grammar.Entry.e)),
            (fun (cli : 'class_longident) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (ExNew (loc, cli)) ext attrs : 'expr)))]];
+              (expr_to_inline loc (MLast.ExNew (loc, cli)) ext attrs :
+               'expr)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "."))
       [None, None,
@@ -5440,7 +5441,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (class_longident : 'class_longident Grammar.Entry.e)),
            (fun (cli : 'class_longident) _ (loc : Ploc.t) ->
-              (TyCls (loc, cli) : 'ctyp)))]];
+              (MLast.TyCls (loc, cli) : 'ctyp)))]];
     Grammar.extension (field : 'field Grammar.Entry.e) None
       [None, None,
        [Grammar.production

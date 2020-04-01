@@ -1884,20 +1884,12 @@ EXTEND
     [ "simple"
       [ "["; ct = ctyp; ","; ctcl = LIST1 ctyp SEP ","; "]";
         cli = V class_longident "clongid" ->
-          MLast.CeCon loc cli <:vala< [ct :: ctcl] >>
-(*
-          <:class_expr< [ $list:[ct :: ctcl]$ ] $list:ci$ >>
-*)
+          <:class_expr< [ $list:[ct :: ctcl]$ ] $_clongid:cli$ >>
+
       | "["; ct = ctyp; "]"; cli = V class_longident "clongid" ->
-          MLast.CeCon loc cli <:vala< [ct] >>
-(*
-          <:class_expr< [ $ct$ ] $list:ci$ >>
-*)
+          <:class_expr< [ $ct$ ] $_clongid:cli$ >>
       | cli = V class_longident "clongid" -> 
-          MLast.CeCon loc cli <:vala< [] >>
-(*
-<:class_expr< $list:ci$ >>
-*)
+          <:class_expr< $_clongid:cli$ >>
       | "object"; alg_attrs = alg_attributes_no_anti; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
           class_expr_wrap_attrs <:class_expr< object $_opt:cspo$ $_list:cf$ end >> alg_attrs
@@ -2063,12 +2055,7 @@ EXTEND
   expr: LEVEL "simple"
     [ LEFTA
       [ "new"; (ext,attrs) = ext_attributes; cli = V class_longident "clongid" -> 
-          expr_to_inline
-(ExNew loc cli)
-(*
- <:expr< new $_list:i$ >>
-*)
- ext attrs
+          expr_to_inline <:expr< new $_clongid:cli$ >> ext attrs
       | "object"; (ext,attrs) = ext_attributes; cspo = V (OPT class_self_patt);
         cf = V class_structure "list"; "end" ->
           expr_to_inline <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
@@ -2095,10 +2082,7 @@ EXTEND
   (* Core types *)
   ctyp: LEVEL "simple"
     [ [ "#"; cli = V class_longident "clongid" ->
-(TyCls loc cli)
-(*
-         <:ctyp< # $_list:id$ >>
-*)
+         <:ctyp< # $_clongid:cli$ >>
       | "<"; ml = V meth_list "list"; v = V (FLAG ".."); ">" ->
           <:ctyp< < $_list:ml$ $_flag:v$ > >>
       | "<"; ".."; ">" ->
