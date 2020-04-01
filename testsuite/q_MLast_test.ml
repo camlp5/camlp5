@@ -81,7 +81,7 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
       ; { name = "expr-new-5" ; 
           expect = {foo|MLast.ExNew loc (Ploc.VaVal li);
 |foo} ;
-          code = {foo|<:expr< new $clongid:li$ >>;|foo}
+          code = {foo|<:expr< new $lilongid:li$ >>;|foo}
         }
       ; { name = "ctyp-tycls-1" ; 
           expect = {foo|MLast.TyCls loc (Ploc.VaVal (None, Ploc.VaVal "a"));
@@ -102,7 +102,7 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
       ; { name = "ctyp-tycls-4" ; 
           expect = {foo|MLast.TyCls loc (Ploc.VaVal li);
 |foo} ;
-          code = {foo|<:ctyp< # $clongid:li$ >> ;|foo}
+          code = {foo|<:ctyp< # $lilongid:li$ >> ;|foo}
         }
       ; { name = "class-expr-cecon-1" ; 
           expect = {foo|MLast.CeCon loc (Ploc.VaVal (None, Ploc.VaVal "a"))
@@ -131,7 +131,7 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
   (Ploc.VaVal
      [MLast.TyLid loc (Ploc.VaVal "b"); MLast.TyLid loc (Ploc.VaVal "c")]);
 |foo} ;
-          code = {foo|<:class_expr< [ b, c ] $clongid:li$ >> ;|foo}
+          code = {foo|<:class_expr< [ b, c ] $lilongid:li$ >> ;|foo}
         }
 
       ; { name = "class-expr-cecon-5" ; 
@@ -154,7 +154,7 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
       ; { name = "class-expr-cecon-8" ; 
           expect = {foo|MLast.CeCon loc (Ploc.VaVal li) (Ploc.VaVal []);
 |foo} ;
-          code = {foo|<:class_expr< $clongid:li$ >> ;|foo}
+          code = {foo|<:class_expr< $lilongid:li$ >> ;|foo}
         }
       ; { name = "prototype" ; 
           expect = {foo||foo} ;

@@ -8193,14 +8193,14 @@ Grammar.safe_extend
                           (Qast.VaVal a : 'e__200)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "_lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_clongid", loc, a) : 'e__200)));
+                          (Qast.VaAnt ("_lilongid", loc, a) : 'e__200)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("clongid", loc, a)) :
+                          (Qast.VaVal (Qast.VaAnt ("lilongid", loc, a)) :
                            'e__200)))])),
            (fun (cli : 'e__200) _ (ctcl : 'e__199) _ (loc : Ploc.t) ->
               (Qast.Node ("CeCon", [Qast.Loc; cli; ctcl]) : 'class_expr)));
@@ -8250,14 +8250,14 @@ Grammar.safe_extend
                           (Qast.VaVal a : 'e__197)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "_lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_clongid", loc, a) : 'e__197)));
+                          (Qast.VaAnt ("_lilongid", loc, a) : 'e__197)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("clongid", loc, a)) :
+                          (Qast.VaVal (Qast.VaAnt ("lilongid", loc, a)) :
                            'e__197)))])),
            (fun (cli : 'e__197) (loc : Ploc.t) ->
               (Qast.Node
@@ -9751,14 +9751,14 @@ Grammar.safe_extend
                           (Qast.VaVal a : 'e__239)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "_lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_clongid", loc, a) : 'e__239)));
+                          (Qast.VaAnt ("_lilongid", loc, a) : 'e__239)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("clongid", loc, a)) :
+                          (Qast.VaVal (Qast.VaAnt ("lilongid", loc, a)) :
                            'e__239)))])),
            (fun (cli : 'e__239) _ (loc : Ploc.t) ->
               (Qast.Node ("ExNew", [Qast.Loc; cli]) : 'expr)))]];
@@ -9948,14 +9948,14 @@ Grammar.safe_extend
                           (Qast.VaVal a : 'e__243)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "_lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_clongid", loc, a) : 'e__243)));
+                          (Qast.VaAnt ("_lilongid", loc, a) : 'e__243)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "clongid")),
+                         (Grammar.s_token ("ANTIQUOT", "lilongid")),
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("clongid", loc, a)) :
+                          (Qast.VaVal (Qast.VaAnt ("lilongid", loc, a)) :
                            'e__243)))])),
            (fun (cli : 'e__243) _ (loc : Ploc.t) ->
               (Qast.Node ("TyCls", [Qast.Loc; cli]) : 'ctyp)))]];
