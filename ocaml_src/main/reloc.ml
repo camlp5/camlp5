@@ -58,7 +58,7 @@ let rec ctyp floc sh =
     | TyArr (loc, x1, x2) ->
         let loc = floc loc in TyArr (loc, self x1, self x2)
     | TyCls (loc, x1) ->
-        let loc = floc loc in TyCls (loc, class_longid floc sh x1)
+        let loc = floc loc in TyCls (loc, vala_map (class_longid floc sh) x1)
     | TyLab (loc, x1, x2) -> let loc = floc loc in TyLab (loc, x1, self x2)
     | TyLid (loc, x1) -> let loc = floc loc in TyLid (loc, x1)
     | TyMan (loc, x1, x2, x3) ->
@@ -240,7 +240,7 @@ and expr floc sh =
                    patt floc sh x1, vala_map (option_map self) x2, self x3))
              x2)
     | ExNew (loc, x1) ->
-        let loc = floc loc in ExNew (loc, class_longid floc sh x1)
+        let loc = floc loc in ExNew (loc, vala_map (class_longid floc sh) x1)
     | ExObj (loc, x1, x2) ->
         let loc = floc loc in
         ExObj
@@ -560,7 +560,7 @@ and class_expr floc sh =
     | CeCon (loc, x1, x2) ->
         let loc = floc loc in
         CeCon
-          (loc, class_longid floc sh x1,
+          (loc, vala_map (class_longid floc sh) x1,
            vala_map (List.map (ctyp floc sh)) x2)
     | CeFun (loc, x1, x2) ->
         let loc = floc loc in CeFun (loc, patt floc sh x1, self x2)

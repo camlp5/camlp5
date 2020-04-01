@@ -1883,17 +1883,17 @@ EXTEND
   class_expr_simple:
     [ "simple"
       [ "["; ct = ctyp; ","; ctcl = LIST1 ctyp SEP ","; "]";
-        cli = class_longident ->
+        cli = V class_longident "clongid" ->
           MLast.CeCon loc cli <:vala< [ct :: ctcl] >>
 (*
           <:class_expr< [ $list:[ct :: ctcl]$ ] $list:ci$ >>
 *)
-      | "["; ct = ctyp; "]"; cli = class_longident ->
+      | "["; ct = ctyp; "]"; cli = V class_longident "clongid" ->
           MLast.CeCon loc cli <:vala< [ct] >>
 (*
           <:class_expr< [ $ct$ ] $list:ci$ >>
 *)
-      | cli = class_longident -> 
+      | cli = V class_longident "clongid" -> 
           MLast.CeCon loc cli <:vala< [] >>
 (*
 <:class_expr< $list:ci$ >>
@@ -2062,7 +2062,7 @@ EXTEND
   (* Expressions *)
   expr: LEVEL "simple"
     [ LEFTA
-      [ "new"; (ext,attrs) = ext_attributes; cli = class_longident -> 
+      [ "new"; (ext,attrs) = ext_attributes; cli = V class_longident "clongid" -> 
           expr_to_inline
 (ExNew loc cli)
 (*
@@ -2094,7 +2094,7 @@ EXTEND
   ;
   (* Core types *)
   ctyp: LEVEL "simple"
-    [ [ "#"; cli = class_longident ->
+    [ [ "#"; cli = V class_longident "clongid" ->
 (TyCls loc cli)
 (*
          <:ctyp< # $_list:id$ >>

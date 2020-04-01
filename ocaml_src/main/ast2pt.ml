@@ -242,7 +242,7 @@ let rec ctyp_long_id =
       let (is_cls, li2) = ctyp_long_id (MLast.TyLid (loc, id)) in
       is_cls, concat_long_ids li1 li2
   | MLast.TyLid (_, s) -> false, Lident s
-  | TyCls (loc, cli) -> true, class_path_long_id cli
+  | TyCls (loc, cli) -> true, class_path_long_id (uv cli)
   | t -> error (loc_of_ctyp t) "incorrect type"
 ;;
 
@@ -655,7 +655,7 @@ and ctyp =
       mktyp loc
         (ocaml_ptyp_object (mkloc loc) (meth_list loc (uv fl) v) (uv v))
   | TyCls (loc, cli) ->
-      mktyp loc (ocaml_ptyp_class (class_path_long_id cli) [] [])
+      mktyp loc (ocaml_ptyp_class (class_path_long_id (uv cli)) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
   | TyLid (loc, s) ->
       mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
@@ -1285,7 +1285,7 @@ and expr =
       in
       mkexp loc (Pexp_match (expr e, List.map mkpwe pel))
   | ExNew (loc, cli) ->
-      mkexp loc (ocaml_pexp_new (mkloc loc) (class_path_long_id cli))
+      mkexp loc (ocaml_pexp_new (mkloc loc) (class_path_long_id (uv cli)))
   | ExObj (loc, po, cfl) ->
       begin match ocaml_pexp_object with
         Some pexp_object ->
@@ -1923,7 +1923,7 @@ and class_expr =
       begin match ocaml_pcl_constr with
         Some pcl_constr ->
           mkpcl loc
-            (pcl_constr (class_path_long_id cli) (List.map ctyp (uv tl)))
+            (pcl_constr (class_path_long_id (uv cli)) (List.map ctyp (uv tl)))
       | None -> error loc "no class expr desc in this ocaml version"
       end
   | CeFun (loc, PaLab (ploc, lppo), ce) ->

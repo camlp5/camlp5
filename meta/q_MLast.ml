@@ -1392,13 +1392,13 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       ]
 
     | "simple"
-      [ cli = class_longident →
+      [ cli = SV class_longident "clongid" →
           Qast.Node "CeCon" [Qast.Loc; cli; Qast.VaVal (Qast.List [])]
       | "object"; cspo = SV (OPT class_self_patt); cf = class_structure;
         "end" →
           Qast.Node "CeStr" [Qast.Loc; cspo; cf]
       | "["; ctcl = SV (LIST1 ctyp SEP ","); "]";
-        cli = class_longident →
+        cli = SV class_longident "clongid" →
           Qast.Node "CeCon" [Qast.Loc; cli; ctcl]
       | "("; ce = SELF; ":"; ct = class_type; ")" →
           Qast.Node "CeTyc" [Qast.Loc; ce; ct]
@@ -1517,7 +1517,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; cli = class_longident → Qast.Node "ExNew" [Qast.Loc; cli]
+      [ "new"; cli = SV class_longident "clongid" → Qast.Node "ExNew" [Qast.Loc; cli]
       | "object"; cspo = SV (OPT class_self_patt); cf = class_structure;
         "end" →
           Qast.Node "ExObj" [Qast.Loc; cspo; cf] ] ]
@@ -1538,7 +1538,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
     [ [ l = lident; "="; e = expr → Qast.Tuple [l; e] ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; cli = class_longident → Qast.Node "TyCls" [Qast.Loc; cli]
+    [ [ "#"; cli = SV class_longident "clongid" → Qast.Node "TyCls" [Qast.Loc; cli]
       | "<"; ml = SV (LIST0 field SEP ";"); v = SV (FLAG ".."); ">" →
           Qast.Node "TyObj" [Qast.Loc; ml; v] ] ]
   ;
