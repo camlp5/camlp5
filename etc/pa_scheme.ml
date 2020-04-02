@@ -584,8 +584,8 @@
     (let* ((c (anti_uid_or_error se)) (tl (anti_list_map ctyp_se sel)))
      <:str_item< exception $_:c$ of $_list:tl$ >>))
    ((Sexpr loc [(Slid _ "exceptionrebind") se1 se2])
-    (let* ((c (anti_uid_or_error se1)) (id (anti_longident_se se2)))
-     <:str_item< exception $_uid:c$ = $_:id$ >>))
+    (let* ((c (anti_uid_or_error se1)) (li (longid_se se2)))
+     <:str_item< exception $_uid:c$ = $longid:li$ >>))
    ((Sexpr loc [(Slid _ "external") se1 se2 . sel])
     (let*
      ((i (anti_lid_or_error se1))

@@ -859,8 +859,8 @@ and str_item_se se =
       <:str_item< exception $_:c$ of $_list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; se1; se2] →
       let c = anti_uid_or_error se1 in
-      let id = anti_longident_se se2 in
-      <:str_item< exception $_uid:c$ = $_:id$ >>
+      let id = longid_se se2 in
+      <:str_item< exception $_uid:c$ = $longid:id$ >>
   | Sexpr loc [Slid _ "external"; se1; se2 :: sel] →
       let i = anti_lid_or_error se1 in
       let t = ctyp_se se2 in

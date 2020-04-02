@@ -724,9 +724,9 @@ EXTEND
           | _ -> (loc, x2, [x3], None, <:vala< [] >>) ] ] ]
   ;
   eb:
-    [ [ x1 = op_op; x2 = ident -> (x2, [], [])
-      | x1 = op_op; x2 = ident; "of"; x3 = ctyp -> (x2, [x3], [])
-      | x1 = op_op; x2 = ident; "="; x3 = sqid -> (x2, [], x3) ] ]
+    [ [ x1 = op_op; x2 = ident -> (x2, [], None)
+      | x1 = op_op; x2 = ident; "of"; x3 = ctyp -> (x2, [x3], None)
+      | x1 = op_op; x2 = ident; "="; x3 = longident -> (x2, [], Some x3) ] ]
   ;
   ldec1:
     [ [ "val"; x1 = LIST1 vb SEP "and" -> x1
@@ -905,10 +905,9 @@ EXTEND
           let dl =
             List.map
               (fun (s, tl, eqn) ->
-                 if eqn = [] then
-                 <:str_item< exception $uid:s$ of $list:tl$ >>
-                 else
-                 <:str_item< exception $uid:s$ = $eqn$ >>)
+                 match eqn with [
+                   None -> <:str_item< exception $uid:s$ of $list:tl$ >>
+                 | Some eqn -> <:str_item< exception $uid:s$ = $longid:eqn$ >> ])
               x1
           in
           str_declare loc dl
