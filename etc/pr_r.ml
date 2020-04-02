@@ -126,7 +126,7 @@ value rec get_defined_ident =
   | <:patt< [| $list:pl$ |] >> -> List.flatten (List.map get_defined_ident pl)
   | <:patt< ($list:pl$) >> -> List.flatten (List.map get_defined_ident pl)
   | <:patt< ` $_$ >> -> []
-  | <:patt< # $list:_$ >> -> []
+  | <:patt< # $lilongid:_$ >> -> []
   | <:patt< $p1$ $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< { $list:lpl$ } >> ->
       List.flatten (List.map (fun (lab, p) -> get_defined_ident p) lpl)

@@ -109,7 +109,7 @@ module Meta_make (C : MetaSig) =
       | TyAny _ -> C.node "TyAny" []
       | TyApp (_, t1, t2) -> C.node "TyApp" [ctyp t1; ctyp t2]
       | TyArr (_, t1, t2) -> C.node "TyArr" [ctyp t1; ctyp t2]
-      | TyCls (_, cli) -> C.node "TyCls" [C.vala class_longid cli]
+      | TyCls (_, cli) -> C.node "TyCls" [C.vala longid_lident cli]
       | TyLab (_, s, t) -> C.node "TyLab" [C.vala C.string s; ctyp t]
       | TyLid (_, s) -> C.node "TyLid" [C.vala C.string s]
       | TyMan (_, t1, b, t2) ->
@@ -150,7 +150,7 @@ module Meta_make (C : MetaSig) =
       | TyXtr (loc, s, _) -> C.xtr loc s
       | TyExten (loc, exten) ->
           let exten = conv_extension exten in C.node "TyExten" [exten]
-    and class_longid (lio, s) =
+    and longid_lident (lio, s) =
       C.tuple [C.option longid lio; C.vala C.string s]
     and conv_attributes attrs = C.vala (C.list conv_attribute_body) attrs
     and conv_extension e = conv_attribute_body e
@@ -209,7 +209,7 @@ module Meta_make (C : MetaSig) =
       | PaStr (_, s) -> C.node "PaStr" [C.vala C.string s]
       | PaTup (_, lp) -> C.node "PaTup" [C.vala (C.list patt) lp]
       | PaTyc (_, p, t) -> C.node "PaTyc" [patt p; ctyp t]
-      | PaTyp (_, ls) -> C.node "PaTyp" [C.vala (C.list C.string) ls]
+      | PaTyp (_, lili) -> C.node "PaTyp" [C.vala longid_lident lili]
       | PaUnp (_, s, omt) ->
           let c_vala x = C.vala C.string x in
           let c_vala_opt sopt = C.option c_vala sopt in
@@ -285,7 +285,7 @@ module Meta_make (C : MetaSig) =
                   (fun (p, oe, e) ->
                      C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
                lpoee]
-      | ExNew (_, cli) -> C.node "ExNew" [C.vala class_longid cli]
+      | ExNew (_, cli) -> C.node "ExNew" [C.vala longid_lident cli]
       | ExObj (_, op, lcsi) ->
           C.node "ExObj"
             [C.vala (C.option patt) op; C.vala (C.list class_str_item) lcsi]
@@ -595,7 +595,7 @@ module Meta_make (C : MetaSig) =
           C.node "CeAtt" [class_expr e; conv_attribute_body att]
       | CeApp (_, ce, e) -> C.node "CeApp" [class_expr ce; expr e]
       | CeCon (_, cli, lt) ->
-          C.node "CeCon" [C.vala class_longid cli; C.vala (C.list ctyp) lt]
+          C.node "CeCon" [C.vala longid_lident cli; C.vala (C.list ctyp) lt]
       | CeFun (_, p, ce) -> C.node "CeFun" [patt p; class_expr ce]
       | CeLet (_, b, lpe, ce) ->
           C.node "CeLet"

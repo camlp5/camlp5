@@ -226,7 +226,7 @@ let rec expr_long_id =
   | _ -> failwith "expr_long_id: unexpected expr"
 ;;
 
-let class_path_long_id (lio, s) =
+let longid_lident_long_id (lio, s) =
   match lio, s with
     Some li, s -> Ldot (longid_long_id li, uv s)
   | None, s -> Lident (uv s)
@@ -242,7 +242,7 @@ let rec ctyp_long_id =
       let (is_cls, li2) = ctyp_long_id (MLast.TyLid (loc, id)) in
       is_cls, concat_long_ids li1 li2
   | MLast.TyLid (_, s) -> false, Lident s
-  | TyCls (loc, cli) -> true, class_path_long_id (uv cli)
+  | TyCls (loc, cli) -> true, longid_lident_long_id (uv cli)
   | t -> error (loc_of_ctyp t) "incorrect type"
 ;;
 
@@ -655,7 +655,7 @@ and ctyp =
       mktyp loc
         (ocaml_ptyp_object (mkloc loc) (meth_list loc (uv fl) v) (uv v))
   | TyCls (loc, cli) ->
-      mktyp loc (ocaml_ptyp_class (class_path_long_id (uv cli)) [] [])
+      mktyp loc (ocaml_ptyp_class (longid_lident_long_id (uv cli)) [] [])
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
   | TyLid (loc, s) ->
       mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
@@ -924,11 +924,10 @@ and patt =
            (ocaml_pconst_string (string_of_string_token loc (uv s)) None))
   | PaTup (loc, pl) -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc (loc, p, t) -> mkpat loc (Ppat_constraint (patt p, ctyp t))
-  | PaTyp (loc, sl) ->
+  | PaTyp (loc, lili) ->
       begin match ocaml_ppat_type with
         Some ppat_type ->
-          mkpat loc
-            (ppat_type (mkloc loc) (long_id_of_string_list loc (uv sl)))
+          mkpat loc (ppat_type (mkloc loc) (longid_lident_long_id (uv lili)))
       | None -> error loc "no #type in this ocaml version"
       end
   | PaUnp (loc, s, mto) ->
@@ -1285,7 +1284,7 @@ and expr =
       in
       mkexp loc (Pexp_match (expr e, List.map mkpwe pel))
   | ExNew (loc, cli) ->
-      mkexp loc (ocaml_pexp_new (mkloc loc) (class_path_long_id (uv cli)))
+      mkexp loc (ocaml_pexp_new (mkloc loc) (longid_lident_long_id (uv cli)))
   | ExObj (loc, po, cfl) ->
       begin match ocaml_pexp_object with
         Some pexp_object ->
@@ -1923,7 +1922,8 @@ and class_expr =
       begin match ocaml_pcl_constr with
         Some pcl_constr ->
           mkpcl loc
-            (pcl_constr (class_path_long_id (uv cli)) (List.map ctyp (uv tl)))
+            (pcl_constr (longid_lident_long_id (uv cli))
+               (List.map ctyp (uv tl)))
       | None -> error loc "no class expr desc in this ocaml version"
       end
   | CeFun (loc, PaLab (ploc, lppo), ce) ->

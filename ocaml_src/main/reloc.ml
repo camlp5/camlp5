@@ -58,7 +58,7 @@ let rec ctyp floc sh =
     | TyArr (loc, x1, x2) ->
         let loc = floc loc in TyArr (loc, self x1, self x2)
     | TyCls (loc, x1) ->
-        let loc = floc loc in TyCls (loc, vala_map (class_longid floc sh) x1)
+        let loc = floc loc in TyCls (loc, vala_map (longid_lident floc sh) x1)
     | TyLab (loc, x1, x2) -> let loc = floc loc in TyLab (loc, x1, self x2)
     | TyLid (loc, x1) -> let loc = floc loc in TyLid (loc, x1)
     | TyMan (loc, x1, x2, x3) ->
@@ -151,7 +151,8 @@ and patt floc sh =
         let loc = floc loc in PaTup (loc, vala_map (List.map self) x1)
     | PaTyc (loc, x1, x2) ->
         let loc = floc loc in PaTyc (loc, self x1, ctyp floc sh x2)
-    | PaTyp (loc, x1) -> let loc = floc loc in PaTyp (loc, x1)
+    | PaTyp (loc, x1) ->
+        let loc = floc loc in PaTyp (loc, vala_map (longid_lident floc sh) x1)
     | PaUnp (loc, x1, x2) ->
         let loc = floc loc in
         PaUnp (loc, x1, option_map (module_type floc sh) x2)
@@ -240,7 +241,7 @@ and expr floc sh =
                    patt floc sh x1, vala_map (option_map self) x2, self x3))
              x2)
     | ExNew (loc, x1) ->
-        let loc = floc loc in ExNew (loc, vala_map (class_longid floc sh) x1)
+        let loc = floc loc in ExNew (loc, vala_map (longid_lident floc sh) x1)
     | ExObj (loc, x1, x2) ->
         let loc = floc loc in
         ExObj
@@ -560,7 +561,7 @@ and class_expr floc sh =
     | CeCon (loc, x1, x2) ->
         let loc = floc loc in
         CeCon
-          (loc, vala_map (class_longid floc sh) x1,
+          (loc, vala_map (longid_lident floc sh) x1,
            vala_map (List.map (ctyp floc sh)) x2)
     | CeFun (loc, x1, x2) ->
         let loc = floc loc in CeFun (loc, patt floc sh x1, self x2)
@@ -614,7 +615,7 @@ and class_str_item floc sh =
     | CrExten (loc, exten) -> CrExten (floc loc, exten)
   in
   self
-and class_longid floc sh (x1, x2) = option_map (longid floc sh) x1, x2;;
+and longid_lident floc sh (x1, x2) = option_map (longid floc sh) x1, x2;;
 
 (* Equality over syntax trees *)
 

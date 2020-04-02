@@ -2180,7 +2180,7 @@ EXTEND
   ;
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:patt< ` $_:s$ >>
-      | "#"; t = V mod_ident "list" "" -> <:patt< # $_list:t$ >>
+      | "#"; lili = V longident_lident "lilongid" -> <:patt< # $_lilongid:lili$ >>
       | p = labeled_patt -> p ] ]
   ;
   labeled_patt:

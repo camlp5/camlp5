@@ -107,7 +107,7 @@ value rec get_defined_ident =
   | <:patt< ($list:pl$) >> -> List.flatten (List.map get_defined_ident pl)
   | <:patt< $uid:_$ >> -> []
   | <:patt< ` $_$ >> -> []
-  | <:patt< # $list:_$ >> -> []
+  | <:patt< # $lilongid:_$ >> -> []
   | <:patt< $p1$ $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< { $list:lpl$ } >> ->
       List.flatten (List.map (fun (lab, p) -> get_defined_ident p) lpl)
@@ -2305,8 +2305,8 @@ value variant_decl_list char loc pc pvl sl =
 
 value longident_lident pc (lio, id) =
   match lio with
-  [ None -> pprintf pc "%s" id
-  | Some li -> pprintf pc "%p.%s" longident li id
+  [ None -> pprintf pc "%s" (Pcaml.unvala id)
+  | Some li -> pprintf pc "%p.%s" longident li (Pcaml.unvala id)
   ]
 ;
 
@@ -2383,17 +2383,15 @@ EXTEND_PRINTER
 
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
-      | <:patt:< # $list:sl$ >> ->
-          pprintf pc "#%p" mod_ident (loc, sl)
+      | <:patt:< # $lilongid:lili$ >> ->
+          pprintf pc "#%p" longident_lident lili
       | z ->
           Ploc.raise (MLast.loc_of_patt z)
             (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_expr: LEVEL "apply"
-    [ [ <:expr< new $longid:li$ . $lid:id$ >> ->
-          pprintf pc "new@;%p" longident_lident (Some li, id)
-      | <:expr< new $lid:id$ >> ->
-          pprintf pc "new@;%p" longident_lident (None, id)
+    [ [ <:expr< new $lilongid:lili$ >> ->
+          pprintf pc "new@;%p" longident_lident lili
       | <:expr:< object $opt:csp$ $list:csl$ end >> ->
           class_object loc pc (csp, csl) ] ]
   ;
@@ -2432,10 +2430,8 @@ EXTEND_PRINTER
             let ml = List.map (fun e -> (e, ";")) ml in
             pprintf pc "< %p%s >@;<1 0>" (plist field 0) ml
               (if v then "; .." else "")
-      | <:ctyp< # $longid:li$ . $lid:id$ >> ->
-          pprintf pc "#%p" longident_lident (Some li, id)
-      | <:ctyp< # $lid:id$ >> ->
-          pprintf pc "#%p" longident_lident (None, id)
+      | <:ctyp< # $lilongid:lili$ >> ->
+          pprintf pc "#%p" longident_lident lili
       | <:ctyp:< [ = $list:pvl$ ] >> ->
           variant_decl_list "" loc pc pvl []
       | <:ctyp:< [ > $list:pvl$ ] >> ->
@@ -2562,14 +2558,10 @@ EXTEND_PRINTER
           pprintf pc "%p@;%p" curr ce (Eprinter.apply_level pr_expr "label")
             e ]
     | "simple"
-      [ <:class_expr< $longid:li$ . $lid:id$ >> -> longident_lident pc (Some li, id)
-      | <:class_expr< $lid:id$ >> -> longident_lident pc (None, id)
-      | <:class_expr< [ $list:ctcl$ ] $longid:li$ . $lid:id$ >> ->
+      [ <:class_expr< $lilongid:lili$ >> -> longident_lident pc lili
+      | <:class_expr< [ $list:ctcl$ ] $lilongid:lili$ >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl longident_lident (Some li, id)
-      | <:class_expr< [ $list:ctcl$ ] $lid:id$ >> ->
-          let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl longident_lident (None, id)
+          pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl longident_lident lili
       | <:class_expr:< object $opt:csp$ $list:csl$ end >> ->
           class_object loc pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->

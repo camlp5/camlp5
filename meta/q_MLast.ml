@@ -1592,7 +1592,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   patt: LEVEL "simple"
     [ [ "`"; s = SV ident "" → Qast.Node "PaVrn" [Qast.Loc; s]
-      | "#"; sl = SV mod_ident "list" "" → Qast.Node "PaTyp" [Qast.Loc; sl]
+      | "#"; lili = SV longident_lident "lilongid" → Qast.Node "PaTyp" [Qast.Loc; lili]
       | "~"; "{"; lppo = SV (LIST1 patt_tcon_opt_eq_patt SEP ";"); "}" →
           Qast.Node "PaLab" [Qast.Loc; lppo]
       | "?"; "{"; p = patt_tcon; eo = SV (OPT [ "="; e = expr → e ]); "}" →

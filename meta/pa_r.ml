@@ -1598,7 +1598,7 @@ EXTEND
   ;
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" → <:patt< ` $_:s$ >>
-      | "#"; sl = V mod_ident "list" "" → <:patt< # $_:sl$ >>
+      | "#"; lili = V longident_lident "lilongid" → <:patt< # $_lilongid:lili$ >>
       | "~"; "{"; lppo = V (LIST1 patt_tcon_opt_eq_patt SEP ";"); "}" →
           <:patt< ~{$_list:lppo$} >>
       | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr → e ]); "}" →
