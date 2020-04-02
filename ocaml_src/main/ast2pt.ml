@@ -803,9 +803,8 @@ and extension_constructor loc ec =
       | Right x, y ->
           ocaml_ec_record ~alg_attributes:alg_attrs (mkloc loc) n (x, y)
       end
-  | EcRebind (n, sl, alg_attrs) ->
-      let sl = uv sl in
-      ocaml_ec_rebind (mkloc loc) (uv n) (long_id_of_string_list loc sl)
+  | EcRebind (n, li, alg_attrs) ->
+      ocaml_ec_rebind (mkloc loc) (uv n) (longid_long_id li)
 and type_extension loc te =
   let pf = uv te.tePrv in
   let ecstrs = List.map (extension_constructor loc) (uv te.teECs) in
@@ -1710,13 +1709,11 @@ and str_item s l =
               tl
           in
           mkstr loc si :: l
-      | EcRebind (n, sl, alg_attrs) ->
-          let sl = uv sl in
+      | EcRebind (n, li, alg_attrs) ->
           let si =
             match ocaml_pstr_exn_rebind with
               Some pstr_exn_rebind ->
-                pstr_exn_rebind (mkloc loc) (uv n)
-                  (long_id_of_string_list loc sl)
+                pstr_exn_rebind (mkloc loc) (uv n) (longid_long_id li)
             | None -> error loc "no exception renaming in this ocaml version"
           in
           mkstr loc si :: l

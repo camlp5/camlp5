@@ -527,9 +527,9 @@ module Meta_make (C : MetaSig) =
     and extension_constructor = fun [
       EcTuple gc ->
         C.node_no_loc "EcTuple" [generic_constructor gc]
-    | EcRebind s ls attrs ->
+    | EcRebind s li attrs ->
         let attrs = conv_attributes attrs in
-        C.node_no_loc "EcRebind" [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
+        C.node_no_loc "EcRebind" [C.vala C.string s; longid li; attrs]
     ]
     and type_extension x =
       let attrs = conv_attributes x.teAttributes in

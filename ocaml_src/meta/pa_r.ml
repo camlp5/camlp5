@@ -1401,8 +1401,8 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")))
-             (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)),
-           (fun (a : 'mod_ident) _ (loc : Ploc.t) -> (a : 'rebind_exn)))]];
+             (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)),
+           (fun (a : 'longident) _ (loc : Ploc.t) -> (a : 'rebind_exn)))]];
     Grammar.extension (mod_binding : 'mod_binding Grammar.Entry.e) None
       [None, None,
        [Grammar.production

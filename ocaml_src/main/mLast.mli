@@ -211,7 +211,7 @@ and type_decl =
 and generic_constructor = loc * string * ctyp list * ctyp option * attributes
 and extension_constructor =
     EcTuple of generic_constructor
-  | EcRebind of string * string list * attributes
+  | EcRebind of string * longid * attributes
 and type_extension =
   { teNam : loc * string list;
     tePrm : type_var list;

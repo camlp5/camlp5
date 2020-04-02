@@ -551,7 +551,7 @@ EXTEND
       ] ]
   ;
   rebind_exn:
-    [ [ "="; a = SV mod_ident "list" "" → a ] ]
+    [ [ "="; a = longident → a ] ]
   ;
   mod_binding:
     [ [ i = SV uidopt "uidopt"; me = mod_fun_binding ; attrs = item_attributes →

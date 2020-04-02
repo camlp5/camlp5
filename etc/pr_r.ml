@@ -876,8 +876,8 @@ value cons_decl pc (_, c, tl, rto, alg_attrs) =
 value extension_constructor loc pc ec = match ec with [
   MLast.EcTuple gc -> cons_decl pc gc
 
-| <:extension_constructor:< $uid:e$ = $id$ $algattrs:alg_attrs$ >> ->
-      pprintf pc "%p@;= %p%p" cons_escaped e mod_ident (loc, id)
+| <:extension_constructor:< $uid:e$ = $longid:li$ $algattrs:alg_attrs$ >> ->
+      pprintf pc "%p@;= %p%p" cons_escaped e longident li
         (hlist (pr_attribute "@")) alg_attrs
 | _ -> error loc "extension_constructor: internal error"
 ]

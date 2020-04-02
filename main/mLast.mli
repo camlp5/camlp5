@@ -225,7 +225,7 @@ and type_decl =
 and generic_constructor = (loc * V string * V (list ctyp) * option ctyp * attributes)
 and extension_constructor = [
     EcTuple of generic_constructor
-  | EcRebind of V string and V (list string) and attributes
+  | EcRebind of V string and longid and attributes
   ]
 and type_extension =
   { teNam : V (loc * V (list string));

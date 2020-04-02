@@ -886,7 +886,7 @@ EXTEND
       ] ]
   ;
   rebind_exn:
-    [ [ "="; sl = V mod_ident "list" -> sl ] ]
+    [ [ "="; sl = longident -> sl ] ]
   ;
   first_mod_binding:
     [ [ i = V uidopt "uidopt"; me = mod_fun_binding ; item_attrs = item_attributes ->
@@ -1708,7 +1708,7 @@ EXTEND
   extension_constructor:
   [ [ attrs = alg_attributes_no_anti; ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
         let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs alg_attrs in
-        <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
+        <:extension_constructor< $_uid:ci$ = $longid:b$ $_algattrs:alg_attrs$ >>
 
     | attrs = alg_attributes_no_anti; ci = cons_ident; (tl, rto, alg_attrs) = rest_constructor_declaration ->
         let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="(right) algebraic attributes"} attrs alg_attrs in
