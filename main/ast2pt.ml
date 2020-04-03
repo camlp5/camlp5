@@ -592,10 +592,8 @@ and package_of_module_type loc mt =
                  let id_or_li =
                    match uv id with
                    [ [] → error loc "bad ast"
-                   | sl →
-                       match ocaml_id_or_li_of_string_list loc sl with
-                       [ Some li → li
-                       | None → error loc "simple identifier expected" ] ]
+                   | sl → long_id_of_string_list loc sl
+                   ]
                  in
                  if uv tpl <> [] then
                    error loc "no type parameters allowed here"
