@@ -417,29 +417,20 @@ and mkwithc =
            pwith_modsubst (mkloc loc) li (module_expr_long_id m))
       | None → error loc "no with module := in this ocaml version" ]
   | WcTyp loc id tpl pf ct →
-      match uv id with
-      | [] -> error loc "Empty list as type name is not allowed there"
-      | xs ->
-        (* Last element of this list is actual declaration. List begins from
-           optional module path. We pass actual name to make type declaration
-           and a whole list to make With_type constraint.
-           See Parsetree.with_constaint type in compiler sources for more
-           details *)
-          let li = long_id_of_string_list loc xs in
-          let tname = List.hd (List.rev xs) in
-          match type_decl_of_with_type loc tname tpl (uv pf) ct with
+          let li = longid_lident_long_id (uv id) in
+          let (_, tname) = (uv id) in
+          match type_decl_of_with_type loc (uv tname) tpl (uv pf) ct with
           | Right td -> (li, ocaml_pwith_type (mkloc loc) (li, td))
           | Left msg → error loc msg
           end
-      end
   | WcTys loc ids tpl t →
       match ocaml_pwith_typesubst with
       [ Some pwith_typesubst →
           let ids = uv ids in
-          let last = match List.rev ids with [ [ h::_ ] -> h | _ -> failwith "INTERNAL ERROR mkwithc: no id supplied" ] in
-          match type_decl_of_with_type loc last tpl False t with
+          let (_,last) = ids in
+          match type_decl_of_with_type loc (uv last) tpl False t with
           [ Right td →
-              let li = long_id_of_string_list loc ids in
+              let li = longid_lident_long_id ids in
               (li, pwith_typesubst (mkloc loc) li td)
           | Left msg →
               error loc msg ]
@@ -589,11 +580,7 @@ and package_of_module_type loc mt =
           List.map
             (fun
              [ WcTyp loc id tpl pf ct → do {
-                 let id_or_li =
-                   match uv id with
-                   [ [] → error loc "bad ast"
-                   | sl → long_id_of_string_list loc sl
-                   ]
+                 let id_or_li = longid_lident_long_id (uv id)
                  in
                  if uv tpl <> [] then
                    error loc "no type parameters allowed here"

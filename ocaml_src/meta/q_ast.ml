@@ -414,12 +414,11 @@ module Meta_make (C : MetaSig) =
       | WcMos (_, ls, me) -> C.node "WcMos" [C.vala longid ls; module_expr me]
       | WcTyp (_, ls, ltv, b, t) ->
           C.node "WcTyp"
-            [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
+            [C.vala longid_lident ls; C.vala (C.list type_var) ltv;
              C.vala C.bool b; ctyp t]
       | WcTys (_, ls, ltv, t) ->
           C.node "WcTys"
-            [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;
-             ctyp t]
+            [C.vala longid_lident ls; C.vala (C.list type_var) ltv; ctyp t]
     and longid =
       function
         LiAcc (_, me1, s) -> C.node "LiAcc" [longid me1; C.vala C.string s]

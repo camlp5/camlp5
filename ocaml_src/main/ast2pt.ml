@@ -568,32 +568,20 @@ and mkwithc =
       | None -> error loc "no with module := in this ocaml version"
       end
   | WcTyp (loc, id, tpl, pf, ct) ->
-      begin match uv id with
-        [] -> error loc "Empty list as type name is not allowed there"
-      | xs ->
-          (* Last element of this list is actual declaration. List begins from
-             optional module path. We pass actual name to make type declaration
-             and a whole list to make With_type constraint.
-             See Parsetree.with_constaint type in compiler sources for more
-             details *)
-          let li = long_id_of_string_list loc xs in
-          let tname = List.hd (List.rev xs) in
-          match type_decl_of_with_type loc tname tpl (uv pf) ct with
-            Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
-          | Left msg -> error loc msg
+      let li = longid_lident_long_id (uv id) in
+      let (_, tname) = uv id in
+      begin match type_decl_of_with_type loc (uv tname) tpl (uv pf) ct with
+        Right td -> li, ocaml_pwith_type (mkloc loc) (li, td)
+      | Left msg -> error loc msg
       end
   | WcTys (loc, ids, tpl, t) ->
       match ocaml_pwith_typesubst with
         Some pwith_typesubst ->
           let ids = uv ids in
-          let last =
-            match List.rev ids with
-              h :: _ -> h
-            | _ -> failwith "INTERNAL ERROR mkwithc: no id supplied"
-          in
-          begin match type_decl_of_with_type loc last tpl false t with
+          let (_, last) = ids in
+          begin match type_decl_of_with_type loc (uv last) tpl false t with
             Right td ->
-              let li = long_id_of_string_list loc ids in
+              let li = longid_lident_long_id ids in
               li, pwith_typesubst (mkloc loc) li td
           | Left msg -> error loc msg
           end
@@ -738,14 +726,7 @@ and package_of_module_type loc mt =
           List.map
             (function
                WcTyp (loc, id, tpl, pf, ct) ->
-                 let id_or_li =
-                   match uv id with
-                     [] -> error loc "bad ast"
-                   | sl ->
-                       match ocaml_id_or_li_of_string_list loc sl with
-                         Some li -> li
-                       | None -> error loc "simple identifier expected"
-                 in
+                 let id_or_li = longid_lident_long_id (uv id) in
                  if uv tpl <> [] then
                    error loc "no type parameters allowed here";
                  if uv pf then error loc "no 'private' allowed here";

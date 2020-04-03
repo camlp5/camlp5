@@ -650,12 +650,12 @@ EXTEND
           Qast.Node "MtFun" [Qast.Loc; arg; mt] ] ]
   ;
   with_constr:
-    [ [ "type"; i = SV mod_ident "list" ""; tpl = SV (LIST0 type_parameter);
+    [ [ "type"; lili = SV longident_lident "lilongid"; tpl = SV (LIST0 type_parameter);
         "="; pf = SV (FLAG "private"); t = ctyp →
-          Qast.Node "WcTyp" [Qast.Loc; i; tpl; pf; t]
-      | "type"; i = SV mod_ident "list" ""; tpl = SV (LIST0 type_parameter);
+          Qast.Node "WcTyp" [Qast.Loc; lili; tpl; pf; t]
+      | "type"; lili = SV longident_lident "lilongid"; tpl = SV (LIST0 type_parameter);
         ":="; t = ctyp →
-          Qast.Node "WcTys" [Qast.Loc; i; tpl; t]
+          Qast.Node "WcTys" [Qast.Loc; lili; tpl; t]
       | "module"; i = SV longident "longid"; "="; me = module_expr →
           Qast.Node "WcMod" [Qast.Loc; i; me]
       | "module"; i = SV longident "longid"; ":="; me = module_expr →

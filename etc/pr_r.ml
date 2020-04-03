@@ -272,6 +272,13 @@ value pr_extension atstring pc attr =
   pprintf pc "[%s%p]" atstring attribute_body (Pcaml.unvala attr)
 ;
 
+value longident_lident pc (lio, id) =
+  match lio with
+  [ None -> pprintf pc "%s" (Pcaml.unvala id)
+  | Some li -> pprintf pc "%p.%s" longident li (Pcaml.unvala id)
+  ]
+;
+
 value comm_bef pc loc =
   if flag_comments_in_phrases.val then Prtools.comm_bef pc.ind loc else ""
 ;
@@ -1256,9 +1263,9 @@ value str_or_sig_functor pc farg module_expr_or_type met =
 
 value con_typ_pat pc (loc, sl, tpl) =
   if tpl = [] then
-    pprintf pc "%p" mod_ident (loc, sl)
+    pprintf pc "%p" longident_lident sl
   else
-    pprintf pc "%p %p" mod_ident (loc, sl) (hlist type_param) tpl
+    pprintf pc "%p %p" longident_lident sl (hlist type_param) tpl
 ;
 
 value string_eval s =
@@ -1279,10 +1286,10 @@ value string_eval s =
 
 value with_constraint pc wc =
   match wc with
-  [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
+  [ <:with_constr:< type $lilongid:sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
       pprintf pc "type %p =@;%s%p" con_typ_pat (loc, sl, tpl)
         (if pf then "private " else "") ctyp t
-  | <:with_constr:< type $sl$ $list:tpl$ := $t$ >> ->
+  | <:with_constr:< type $lilongid:sl$ $list:tpl$ := $t$ >> ->
       pprintf pc "type %p :=@;%p" con_typ_pat (loc, sl, tpl) ctyp t
   | <:with_constr:< module $longid:sl$ = $me$ >> ->
       pprintf pc "module %p =@;%p" longident sl module_expr me

@@ -736,6 +736,16 @@ and longid_se =
   | Suid loc s → <:extended_longident< $uid:(rename_id s)$ >>
   | Suidv loc s → <:extended_longident< $_uid:s$ >>
   | se → error se "longid_se" ]
+and longid_lident_se =
+  fun
+  [ Sacc loc se1 se2 →
+      let li1 = longid_se se1 in
+      match longid_lident_se se2 with [
+        (Some li2, s) -> (Some (longid_concat li1 li2), s)
+      | (None, s) -> (Some li1, s) ]
+  | Slid loc s → (None, <:vala< s >>)
+  | se → error se "longid_lident_se" ]
+
 and module_type_se =
   fun
   [ Sexpr loc [Slid _ "functor"; se1; se2; se3] →
@@ -765,16 +775,15 @@ and with_constr_se =
   [ Sexpr loc [Slid _ ("type" | "typeprivate" as pf); se1; se2] →
       let (tn, tp) =
         match se1 with
-        [ Santi _ ("list" | "_list") s → (<:vala< $s$ >>, <:vala< [] >>)
-        | Sexpr _ [se :: sel] →
-            let tn = anti_longident_se se in
+        [ Sexpr _ [se :: sel] →
+            let tn = longid_lident_se se in
             let tp = anti_list_map type_param_se sel in
             (tn, tp)
-        | se → (<:vala< (longident_se se) >>, <:vala< [] >>) ]
+        | se → (longid_lident_se se, <:vala< [] >>) ]
       in
       let pf = pf = "typeprivate" in
       let te = ctyp_se se2 in
-      <:with_constr< type $_:tn$ $_list:tp$ = $flag:pf$ $te$ >>
+      <:with_constr< type $lilongid:tn$ $_list:tp$ = $flag:pf$ $te$ >>
   | se → error se "with constr" ]
 and sig_item_se =
   fun

@@ -1933,7 +1933,8 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("", "type")))
                       (Grammar.s_nterm
-                         (mod_ident : 'mod_ident Grammar.Entry.e)))
+                         (longident_lident :
+                          'longident_lident Grammar.Entry.e)))
                    (Grammar.s_list0
                       (Grammar.s_nterm
                          (type_parameter : 'type_parameter Grammar.Entry.e))))
@@ -1942,7 +1943,7 @@ Grammar.safe_extend
                 (ctyp_below_alg_attribute :
                  'ctyp_below_alg_attribute Grammar.Entry.e)),
            (fun (t : 'ctyp_below_alg_attribute) _ (tpl : 'type_parameter list)
-                (i : 'mod_ident) _ (loc : Ploc.t) ->
+                (i : 'longident_lident) _ (loc : Ploc.t) ->
               (MLast.WcTys (loc, i, tpl, t) : 'with_constr)));
         Grammar.production
           (Grammar.r_next
@@ -1953,7 +1954,8 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "type")))
                          (Grammar.s_nterm
-                            (mod_ident : 'mod_ident Grammar.Entry.e)))
+                            (longident_lident :
+                             'longident_lident Grammar.Entry.e)))
                       (Grammar.s_list0
                          (Grammar.s_nterm
                             (type_parameter :
@@ -1964,7 +1966,7 @@ Grammar.safe_extend
                 (ctyp_below_alg_attribute :
                  'ctyp_below_alg_attribute Grammar.Entry.e)),
            (fun (t : 'ctyp_below_alg_attribute) (pf : bool) _
-                (tpl : 'type_parameter list) (i : 'mod_ident) _
+                (tpl : 'type_parameter list) (i : 'longident_lident) _
                 (loc : Ploc.t) ->
               (MLast.WcTyp (loc, i, tpl, pf, t) : 'with_constr)))]];
     Grammar.extension (uidopt : 'uidopt Grammar.Entry.e) None

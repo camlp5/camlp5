@@ -238,13 +238,6 @@ value ipatt_tcon_opt_eq_patt pc (p, po) =
   | None -> patt pc p ]
 ;
 
-value longident_lident pc (lio, id) =
-  match lio with
-  [ None -> pprintf pc "%s" (Pcaml.unvala id)
-  | Some li -> pprintf pc "%p.%s" Pr_r.longident li (Pcaml.unvala id)
-  ]
-;
-
 value binding elem pc (p, e, item_attrs) =
   pprintf pc "%p =@;%p%p" patt p expr e
     (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs);
@@ -311,14 +304,14 @@ EXTEND_PRINTER
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
       | <:patt< # $lilongid:lili$ >> ->
-          pprintf pc "#%p" longident_lident lili
+          pprintf pc "#%p" Pr_r.longident_lident lili
       | z ->
           Ploc.raise (MLast.loc_of_patt z)
             (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $lilongid:lili$ >> ->
-          pprintf pc "new@;%p" longident_lident lili
+          pprintf pc "new@;%p" Pr_r.longident_lident lili
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
@@ -365,7 +358,7 @@ EXTEND_PRINTER
             let ml = List.map (fun e -> (e, ";")) ml in
             pprintf pc "< %p%s >@;<1 0>" (plist field 0) ml (if v then " .." else "")
       | <:ctyp< # $lilongid:lili$ >> ->
-          pprintf pc "#%p" longident_lident lili
+          pprintf pc "#%p" Pr_r.longident_lident lili
       | <:ctyp< [ = $list:pvl$ ] >> ->
           variant_decl_list '=' pc pvl []
       | <:ctyp< [ > $list:pvl$ ] >> ->
@@ -444,10 +437,10 @@ EXTEND_PRINTER
                el] ]
     | "simple"
       [ <:class_expr< $lilongid:lili$ >> ->
-          longident_lident pc lili
+          Pr_r.longident_lident pc lili
       | <:class_expr< [ $list:ctcl$ ] $lilongid:lili$ >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          pprintf pc "@[<1>[%p]@;%p@]" (plist ctyp 0) ctcl longident_lident lili
+          pprintf pc "@[<1>[%p]@;%p@]" (plist ctyp 0) ctcl Pr_r.longident_lident lili
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->

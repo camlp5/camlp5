@@ -765,22 +765,16 @@ EXTEND
  ] ]
   ;
   with_constr:
-    [ [ "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
+    [ [ "type"; i = V longident_lident "lilongid"; tpl = V (LIST0 type_parameter);
         "="; pf = V (FLAG "private"); t = ctyp_below_alg_attribute →
-          <:with_constr< type $_:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
-      | "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
+          <:with_constr< type $_lilongid:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
+      | "type"; i = V longident_lident "lilongid"; tpl = V (LIST0 type_parameter);
         ":="; t = ctyp_below_alg_attribute →
-          <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
+          <:with_constr< type $_lilongid:i$ $_list:tpl$ := $t$ >>
       | "module"; li = V longident "longid"; "="; me = module_expr →
-MLast.WcMod loc li me
-(*
-          <:with_constr< module $_:i$ = $me$ >>
-*)
+          <:with_constr< module $_longid:li$ = $me$ >>
       | "module"; li = V longident "longid"; ":="; me = module_expr →
-MLast.WcMos loc li me
-(*
-          <:with_constr< module $_:i$ := $me$ >>
-*)
+          <:with_constr< module $_longid:li$ := $me$ >>
       ] ]
   ;
   uidopt:

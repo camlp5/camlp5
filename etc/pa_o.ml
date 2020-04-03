@@ -1022,12 +1022,12 @@ EXTEND
   (* "with" constraints (additional type equations over signature
      components) *)
   with_constr:
-    [ [ "type"; tpl = V type_parameters "list"; i = V mod_ident ""; "=";
+    [ [ "type"; tpl = V type_parameters "list"; i = V longident_lident "lilongid"; "=";
         pf = V (FLAG "private"); t = ctyp LEVEL "below_alg_attribute" ->
-          <:with_constr< type $_:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
-      | "type"; tpl = V type_parameters "list"; i = V mod_ident ""; ":=";
+          <:with_constr< type $_lilongid:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
+      | "type"; tpl = V type_parameters "list"; i = V longident_lident "lilongid"; ":=";
         t = ctyp LEVEL "below_alg_attribute" ->
-          <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
+          <:with_constr< type $_lilongid:i$ $_list:tpl$ := $t$ >>
       | "module"; i = V longident "longid"; "="; me = module_expr ->
           <:with_constr< module $_longid:i$ = $me$ >>
       | "module"; i = V longident "longid"; ":="; me = module_expr ->

@@ -336,13 +336,13 @@ value int_repr s =
 
 value with_constraint pc =
   fun
-  [ <:with_constr< type $sl$ $list:tvl$ = $flag:pf$ $t$ >> ->
+  [ <:with_constr< type $lilongid:sl$ $list:tvl$ = $flag:pf$ $t$ >> ->
       pprintf pc "(type%s %p@;<1 1>%p)" (if pf then "private" else "")
         (fun pc ->
            fun
-           [ [] -> id_list pc sl
+           [ [] -> longident_lident pc sl
            | tvl ->
-               pprintf pc "(%p %p)" id_list sl
+               pprintf pc "(%p %p)" longident_lident sl
                  (hlist type_param) tvl ])
         tvl ctyp t
   | wc -> not_impl "with_constraint" pc wc ]

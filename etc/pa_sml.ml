@@ -617,6 +617,11 @@ EXTEND
       | i = V UIDENT "uid" → <:extended_longident< $_uid:i$ >>
       ] ]
   ;
+  longident_lident:
+    [ [ li = longident; "."; i = V LIDENT → (Some li, i)
+      | i = V LIDENT → (None, i)
+      ] ]
+  ;
   patt:
     [ [ x1 = patt; "as"; x2 = patt -> <:patt< ($x1$ as $x2$) >> ]
     | LEFTA
@@ -829,8 +834,8 @@ EXTEND
       | x = qid -> ([], x) ] ]
   ;
   whspec:
-    [ [ "type"; x1 = tyvars; x2 = sqid; "="; x3 = ctyp ->
-          <:with_constr< type $x2$ $list:x1$ = $x3$ >>
+    [ [ "type"; x1 = tyvars; x2 = longident_lident; "="; x3 = ctyp ->
+          <:with_constr< type $lilongid:x2$ $list:x1$ = $x3$ >>
       | x1 = longident; "="; x2 = qid ->
           <:with_constr< module $longid:x1$ = $x2$ >> ] ]
   ;

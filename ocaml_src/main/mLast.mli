@@ -167,8 +167,8 @@ and sig_item =
 and with_constr =
     WcMod of loc * longid * module_expr
   | WcMos of loc * longid * module_expr
-  | WcTyp of loc * string list * type_var list * bool * ctyp
-  | WcTys of loc * string list * type_var list * ctyp
+  | WcTyp of loc * longid_lident * type_var list * bool * ctyp
+  | WcTys of loc * longid_lident * type_var list * ctyp
 and module_expr =
     MeAcc of loc * module_expr * module_expr
   | MeApp of loc * module_expr * module_expr
