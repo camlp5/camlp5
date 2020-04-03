@@ -550,9 +550,6 @@ EXTEND
       | e = item_extension -> Qast.Node "StExten" [Qast.Loc; e]
       ] ]
   ;
-  rebind_exn:
-    [ [ "="; a = longident → a ] ]
-  ;
   mod_binding:
     [ [ i = SV uidopt "uidopt"; me = mod_fun_binding ; attrs = item_attributes →
         Qast.Tuple [i; me; attrs] ] ]
@@ -1302,7 +1299,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
           [Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs] ] ]
   ;
   extension_constructor:
-  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
+  [ [ ci = cons_ident ; "="; b = SV longident "longid" ; alg_attrs = alg_attributes ->
         Qast.Node "EcRebind" [ci; b; alg_attrs]
     | ci = cons_ident; l = rest_constructor_declaration →
         Qast.Node "EcTuple" [Qast.Tuple [Qast.Loc; ci :: l]]

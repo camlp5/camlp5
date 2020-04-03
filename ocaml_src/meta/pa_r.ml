@@ -669,8 +669,6 @@ Grammar.safe_extend
      grammar_entry_create "item_extension"
    and alg_extension : 'alg_extension Grammar.Entry.e =
      grammar_entry_create "alg_extension"
-   and rebind_exn : 'rebind_exn Grammar.Entry.e =
-     grammar_entry_create "rebind_exn"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
@@ -1228,7 +1226,12 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (MLast.StTypExten (loc, te) : 'str_item)));
+              (MLast.StTypExten
+                 (loc,
+                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
+                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
+                   MLast.teAttributes = te.MLast.teAttributes}) :
+               'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1389,13 +1392,6 @@ Grammar.safe_extend
              (Grammar.s_token ("", "end")),
            (fun _ (st : 'e__5 list) _ (loc : Ploc.t) ->
               (MLast.StDcl (loc, st) : 'str_item)))]];
-    Grammar.extension (rebind_exn : 'rebind_exn Grammar.Entry.e) None
-      [None, None,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")))
-             (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)),
-           (fun (a : 'longident) _ (loc : Ploc.t) -> (a : 'rebind_exn)))]];
     Grammar.extension (mod_binding : 'mod_binding Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -1647,7 +1643,12 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (MLast.SgTypExten (loc, te) : 'sig_item)));
+              (MLast.SgTypExten
+                 (loc,
+                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
+                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
+                   MLast.teAttributes = te.MLast.teAttributes}) :
+               'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3953,7 +3954,6 @@ Grammar.safe_extend
                 MLast.tdPrv = pf; MLast.tdDef = tk; MLast.tdCon = cl;
                 MLast.tdAttributes = attrs} :
                'type_decl)))]];
-    (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
     Grammar.extension (type_extension : 'type_extension Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -4384,13 +4384,15 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_nterm
-                      (cons_ident : 'cons_ident Grammar.Entry.e)))
-                (Grammar.s_nterm (rebind_exn : 'rebind_exn Grammar.Entry.e)))
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_nterm
+                         (cons_ident : 'cons_ident Grammar.Entry.e)))
+                   (Grammar.s_token ("", "=")))
+                (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
-           (fun (alg_attrs : 'alg_attributes) (b : 'rebind_exn)
+           (fun (alg_attrs : 'alg_attributes) (b : 'longident) _
                 (ci : 'cons_ident) (loc : Ploc.t) ->
               (MLast.EcRebind (ci, b, alg_attrs) :
                'extension_constructor)))]];

@@ -653,9 +653,6 @@ EXTEND
       | e = item_extension -> <:str_item< [%% $_extension:e$ ] >>
       ] ]
   ;
-  rebind_exn:
-    [ [ "="; a = longident → a ] ]
-  ;
   mod_binding:
     [ [ i = V uidopt "uidopt"; me = mod_fun_binding ;
         attrs = item_attributes → (i, me, attrs)
@@ -1306,11 +1303,8 @@ EXTEND
           (<:vala< [] >>, None, attrs) ] ]
   ;
   extension_constructor:
-  [ [ ci = cons_ident ; b = rebind_exn ; alg_attrs = alg_attributes ->
-MLast.EcRebind ci b alg_attrs
-(*
-        <:extension_constructor< $_uid:ci$ = $_list:b$ $_algattrs:alg_attrs$ >>
-*)
+  [ [ ci = cons_ident ; "="; b = V longident "longid" ; alg_attrs = alg_attributes ->
+        <:extension_constructor< $_uid:ci$ = $_longid:b$ $_algattrs:alg_attrs$ >>
     | ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
         MLast.EcTuple (loc, ci, tl, rto, attrs)
     ] ]

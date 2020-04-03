@@ -639,7 +639,7 @@ and extension_constructor loc ec = match ec with [
         }
       ]
     | EcRebind n li alg_attrs ->
-      ocaml_ec_rebind (mkloc loc) (uv n) (longid_long_id li)
+      ocaml_ec_rebind (mkloc loc) (uv n) (longid_long_id (uv li))
     ]
 and type_extension loc te =
   let pf = uv te.tePrv in
@@ -1423,7 +1423,7 @@ and str_item s l =
             match ocaml_pstr_exn_rebind with
             [ Some pstr_exn_rebind →
                 pstr_exn_rebind (mkloc loc) (uv n)
-                  (longid_long_id li)
+                  (longid_long_id (uv li))
             | None →
                 error loc "no exception renaming in this ocaml version" ]
       in
