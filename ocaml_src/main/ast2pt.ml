@@ -563,8 +563,8 @@ and mkwithc =
   | WcMos (loc, id, m) ->
       begin match ocaml_pwith_modsubst with
         Some pwith_modsubst ->
-          longid_long_id (uv id),
-          pwith_modsubst (mkloc loc) (module_expr_long_id m)
+          let li = longid_long_id (uv id) in
+          li, pwith_modsubst (mkloc loc) li (module_expr_long_id m)
       | None -> error loc "no with module := in this ocaml version"
       end
   | WcTyp (loc, id, tpl, pf, ct) ->

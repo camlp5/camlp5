@@ -1814,11 +1814,11 @@ value ocaml_ptop_dir loc s da =
 
 value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Some (fun loc me -> Pwith_modsubst (mkloc loc me))
+    Some (fun loc li me -> Pwith_modsubst (mkloc loc me))
   ELSIFDEF OCAML_VERSION < OCAML_4_06_0 THEN
-    Some (fun loc me -> Pwith_modsubst (mkloc loc "") (mkloc loc me))
+    Some (fun loc li me -> Pwith_modsubst (mkloc loc "") (mkloc loc me))
   ELSE
-    Some (fun loc me -> Pwith_modsubst (mkloc loc (Lident "")) (mkloc loc me))
+    Some (fun loc li me -> Pwith_modsubst (mkloc loc li) (mkloc loc me))
   END
 ;
 

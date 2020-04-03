@@ -782,7 +782,7 @@ let ocaml_ptop_dir loc s da =
 ;;
 
 let ocaml_pwith_modsubst =
-  Some (fun loc me -> Pwith_modsubst (mkloc loc (Lident ""), mkloc loc me))
+  Some (fun loc li me -> Pwith_modsubst (mkloc loc li, mkloc loc me))
 ;;
 
 let ocaml_pwith_type loc (i, td) = Pwith_type (mkloc loc i, td);;

@@ -661,7 +661,7 @@ let ocaml_pdir_none = Pdir_none;;
 let ocaml_ptop_dir loc s da = Ptop_dir (s, da);;
 
 let ocaml_pwith_modsubst =
-  Some (fun loc me -> Pwith_modsubst (mkloc loc me))
+  Some (fun loc li me -> Pwith_modsubst (mkloc loc me))
 ;;
 
 let ocaml_pwith_type loc (i, td) = Pwith_type td;;

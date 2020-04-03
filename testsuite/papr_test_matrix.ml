@@ -3875,14 +3875,27 @@ and u := bool;
      r_output = OK {foo|{M.x = 1; M.y = 2};
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="module-type-with-module-constraint-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|module type S = T with module M.N.P = A(B)|foo} ;
+     official_input = OK {foo|module type S = T with module M.N.P = A(B)|foo} ;
+     r_input = OK {foo|module type S = (T with module M.N.P = A B);|foo} ;
+     o_output = OK {foo|module type S = (T with module M.N.P = A (B));;
+|foo};
+     official_output = OK {foo|module type S  = T with module M.N.P = A(B)|foo} ;
+     r_output = OK {foo|module type S = (T with module M.N.P = A B);
+|foo}
+    };
+    {name="module-type-with-module-constraint-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type S = T with module M.N.P := A(B)|foo} ;
+     official_input = OK {foo|module type S = T with module M.N.P := A(B)|foo} ;
+     r_input = OK {foo|module type S = (T with module M.N.P := A B);|foo} ;
+     o_output = OK {foo|module type S = (T with module M.N.P := A (B));;
+|foo};
+     official_output = OK {foo|module type S  = T with module M.N.P := A(B)|foo} ;
+     r_output = OK {foo|module type S = (T with module M.N.P := A B);
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
