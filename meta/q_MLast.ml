@@ -656,9 +656,9 @@ EXTEND
       | "type"; i = SV mod_ident "list" ""; tpl = SV (LIST0 type_parameter);
         ":="; t = ctyp →
           Qast.Node "WcTys" [Qast.Loc; i; tpl; t]
-      | "module"; i = SV mod_ident "list" ""; "="; me = module_expr →
+      | "module"; i = SV longident "longid"; "="; me = module_expr →
           Qast.Node "WcMod" [Qast.Loc; i; me]
-      | "module"; i = SV mod_ident "list" ""; ":="; me = module_expr →
+      | "module"; i = SV longident "longid"; ":="; me = module_expr →
           Qast.Node "WcMos" [Qast.Loc; i; me] ] ]
   ;
   uidopt:

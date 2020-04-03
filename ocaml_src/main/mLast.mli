@@ -165,8 +165,8 @@ and sig_item =
   | SgFlAtt of loc * attribute_body
   | SgExten of loc * attribute_body
 and with_constr =
-    WcMod of loc * string list * module_expr
-  | WcMos of loc * string list * module_expr
+    WcMod of loc * longid * module_expr
+  | WcMos of loc * longid * module_expr
   | WcTyp of loc * string list * type_var list * bool * ctyp
   | WcTys of loc * string list * type_var list * ctyp
 and module_expr =

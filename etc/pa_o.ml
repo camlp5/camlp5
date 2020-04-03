@@ -1028,10 +1028,10 @@ EXTEND
       | "type"; tpl = V type_parameters "list"; i = V mod_ident ""; ":=";
         t = ctyp LEVEL "below_alg_attribute" ->
           <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
-      | "module"; i = V mod_ident ""; "="; me = module_expr ->
-          <:with_constr< module $_:i$ = $me$ >>
-      | "module"; i = V mod_ident ""; ":="; me = module_expr ->
-          <:with_constr< module $_:i$ := $me$ >> ] ]
+      | "module"; i = V longident "longid"; "="; me = module_expr ->
+          <:with_constr< module $_longid:i$ = $me$ >>
+      | "module"; i = V longident "longid"; ":="; me = module_expr ->
+          <:with_constr< module $_longid:i$ := $me$ >> ] ]
   ;
   andop_binding:
   [ [ op = andop ; b = letop_binding -> (op, b) ] ]

@@ -179,8 +179,8 @@ and sig_item =
   | SgFlAtt of loc and attribute_body
   | SgExten of loc and attribute_body ]
 and with_constr =
-  [ WcMod of loc and V (list string) and module_expr
-  | WcMos of loc and V (list string) and module_expr
+  [ WcMod of loc and V longid and module_expr
+  | WcMos of loc and V longid and module_expr
   | WcTyp of loc and V (list string) and V (list type_var) and V bool and ctyp
   | WcTys of loc and V (list string) and V (list type_var) and ctyp ]
 and module_expr =

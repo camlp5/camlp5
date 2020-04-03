@@ -407,9 +407,9 @@ module Meta_make (C : MetaSig) =
     and with_constr =
       fun
       [ WcMod _ ls me →
-          C.node "WcMod" [C.vala (C.list C.string) ls; module_expr me]
+          C.node "WcMod" [C.vala longid ls; module_expr me]
       | WcMos _ ls me →
-          C.node "WcMos" [C.vala (C.list C.string) ls; module_expr me]
+          C.node "WcMos" [C.vala longid ls; module_expr me]
       | WcTyp _ ls ltv b t →
           C.node "WcTyp"
             [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;

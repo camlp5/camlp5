@@ -771,10 +771,17 @@ EXTEND
       | "type"; i = V mod_ident "list" ""; tpl = V (LIST0 type_parameter);
         ":="; t = ctyp_below_alg_attribute →
           <:with_constr< type $_:i$ $_list:tpl$ := $t$ >>
-      | "module"; i = V mod_ident "list" ""; "="; me = module_expr →
+      | "module"; li = V longident "longid"; "="; me = module_expr →
+MLast.WcMod loc li me
+(*
           <:with_constr< module $_:i$ = $me$ >>
-      | "module"; i = V mod_ident "list" ""; ":="; me = module_expr →
-          <:with_constr< module $_:i$ := $me$ >> ] ]
+*)
+      | "module"; li = V longident "longid"; ":="; me = module_expr →
+MLast.WcMos loc li me
+(*
+          <:with_constr< module $_:i$ := $me$ >>
+*)
+      ] ]
   ;
   uidopt:
     [ [ m = V UIDENT -> Some m

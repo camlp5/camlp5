@@ -1909,22 +1909,22 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "module")))
-                   (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
+                   (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
                 (Grammar.s_token ("", ":=")))
              (Grammar.s_nterm (module_expr : 'module_expr Grammar.Entry.e)),
-           (fun (me : 'module_expr) _ (i : 'mod_ident) _ (loc : Ploc.t) ->
-              (MLast.WcMos (loc, i, me) : 'with_constr)));
+           (fun (me : 'module_expr) _ (li : 'longident) _ (loc : Ploc.t) ->
+              (MLast.WcMos (loc, li, me) : 'with_constr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop
                       (Grammar.s_token ("", "module")))
-                   (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
+                   (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (module_expr : 'module_expr Grammar.Entry.e)),
-           (fun (me : 'module_expr) _ (i : 'mod_ident) _ (loc : Ploc.t) ->
-              (MLast.WcMod (loc, i, me) : 'with_constr)));
+           (fun (me : 'module_expr) _ (li : 'longident) _ (loc : Ploc.t) ->
+              (MLast.WcMod (loc, li, me) : 'with_constr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

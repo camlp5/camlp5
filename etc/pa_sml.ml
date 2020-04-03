@@ -776,11 +776,11 @@ EXTEND
                           let m1 =
                             loop m1 where rec loop =
                               fun
-                              [ <:module_expr< $uid:x$ >> -> x
+                              [ <:module_expr< $uid:x$ >> -> <:longident< $uid:x$ >>
                               | <:module_expr< $uid:x$ . $y$ >> -> loop y
                               | _ -> not_impl loc "strspec 2" ]
                           in
-                          <:module_type< $mt$ with module $[m1]$ = $m2$ >>
+                          <:module_type< $mt$ with module $longid:m1$ = $m2$ >>
                       | _ -> not_impl loc "strspec 1" ])
                    sdl mt)
               x2 x3
@@ -831,8 +831,8 @@ EXTEND
   whspec:
     [ [ "type"; x1 = tyvars; x2 = sqid; "="; x3 = ctyp ->
           <:with_constr< type $x2$ $list:x1$ = $x3$ >>
-      | x1 = sqid; "="; x2 = qid ->
-          <:with_constr< module $x1$ = $x2$ >> ] ]
+      | x1 = longident; "="; x2 = qid ->
+          <:with_constr< module $longid:x1$ = $x2$ >> ] ]
   ;
   module_type:
     [ [ x1 = ident -> <:module_type< $uid:x1$ >>

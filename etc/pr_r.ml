@@ -1284,10 +1284,10 @@ value with_constraint pc wc =
         (if pf then "private " else "") ctyp t
   | <:with_constr:< type $sl$ $list:tpl$ := $t$ >> ->
       pprintf pc "type %p :=@;%p" con_typ_pat (loc, sl, tpl) ctyp t
-  | <:with_constr:< module $sl$ = $me$ >> ->
-      pprintf pc "module %p =@;%p" mod_ident (loc, sl) module_expr me
-  | <:with_constr:< module $sl$ := $me$ >> ->
-      pprintf pc "module %p :=@;%p" mod_ident (loc, sl) module_expr me
+  | <:with_constr:< module $longid:sl$ = $me$ >> ->
+      pprintf pc "module %p =@;%p" longident sl module_expr me
+  | <:with_constr:< module $longid:sl$ := $me$ >> ->
+      pprintf pc "module %p :=@;%p" longident sl module_expr me
   | IFDEF STRICT THEN
       x ->
          not_impl "with_constraint" pc x

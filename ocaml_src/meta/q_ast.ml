@@ -410,10 +410,8 @@ module Meta_make (C : MetaSig) =
           let exten = assert false in C.node "SgExten" [exten]
     and with_constr =
       function
-        WcMod (_, ls, me) ->
-          C.node "WcMod" [C.vala (C.list C.string) ls; module_expr me]
-      | WcMos (_, ls, me) ->
-          C.node "WcMos" [C.vala (C.list C.string) ls; module_expr me]
+        WcMod (_, ls, me) -> C.node "WcMod" [C.vala longid ls; module_expr me]
+      | WcMos (_, ls, me) -> C.node "WcMos" [C.vala longid ls; module_expr me]
       | WcTyp (_, ls, ltv, b, t) ->
           C.node "WcTyp"
             [C.vala (C.list C.string) ls; C.vala (C.list type_var) ltv;

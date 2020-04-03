@@ -407,12 +407,12 @@ value rec type_decl_of_with_type loc tn tpl pf ct =
 and mkwithc =
   fun
   [ WcMod loc id m →
-      let mname = long_id_of_string_list loc (uv id) in
+      let mname = longid_long_id (uv id) in
       (mname, ocaml_pwith_module (mkloc loc) mname (module_expr_long_id m))
   | WcMos loc id m →
       match ocaml_pwith_modsubst with
       [ Some pwith_modsubst →
-          (long_id_of_string_list loc (uv id),
+          (longid_long_id (uv id),
            pwith_modsubst (mkloc loc) (module_expr_long_id m))
       | None → error loc "no with module := in this ocaml version" ]
   | WcTyp loc id tpl pf ct →
