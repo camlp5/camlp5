@@ -716,8 +716,6 @@ Grammar.safe_extend
      grammar_entry_create "paren_ipatt"
    and label_ipatt : 'label_ipatt Grammar.Entry.e =
      grammar_entry_create "label_ipatt"
-   and mod_ident_patt : 'mod_ident_patt Grammar.Entry.e =
-     grammar_entry_create "mod_ident_patt"
    and type_patt : 'type_patt Grammar.Entry.e =
      grammar_entry_create "type_patt"
    and constrain : 'constrain Grammar.Entry.e =
@@ -1230,12 +1228,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (MLast.StTypExten
-                 (loc,
-                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
-                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
-                   MLast.teAttributes = te.MLast.teAttributes}) :
-               'str_item)));
+              (MLast.StTypExten (loc, te) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1654,12 +1647,7 @@ Grammar.safe_extend
              (Grammar.s_nterm
                 (type_extension : 'type_extension Grammar.Entry.e)),
            (fun (te : 'type_extension) _ _ (loc : Ploc.t) ->
-              (MLast.SgTypExten
-                 (loc,
-                  {MLast.teNam = te.MLast.teNam; MLast.tePrm = te.MLast.tePrm;
-                   MLast.tePrv = te.MLast.tePrv; MLast.teECs = te.MLast.teECs;
-                   MLast.teAttributes = te.MLast.teAttributes}) :
-               'sig_item)));
+              (MLast.SgTypExten (loc, te) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -3978,8 +3966,8 @@ Grammar.safe_extend
                             (Grammar.r_next
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_nterm
-                                     (mod_ident_patt :
-                                      'mod_ident_patt Grammar.Entry.e)))
+                                     (longident_lident :
+                                      'longident_lident Grammar.Entry.e)))
                                (Grammar.s_list0
                                   (Grammar.s_nterm
                                      (type_parameter :
@@ -3997,18 +3985,11 @@ Grammar.safe_extend
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            (fun (attrs : 'item_attributes) _
                 (ecs : 'extension_constructor list) _ (pf : bool) _
-                (tpl : 'type_parameter list) (n : 'mod_ident_patt)
+                (tpl : 'type_parameter list) (n : 'longident_lident)
                 (loc : Ploc.t) ->
               ({MLast.teNam = n; tePrm = tpl; tePrv = pf;
                 teAttributes = attrs; teECs = ecs} :
                'type_extension)))]];
-    Grammar.extension (mod_ident_patt : 'mod_ident_patt Grammar.Entry.e) None
-      [None, None,
-       [Grammar.production
-          (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)),
-           (fun (n : 'mod_ident) (loc : Ploc.t) ->
-              (loc, n : 'mod_ident_patt)))]];
     Grammar.extension (type_patt : 'type_patt Grammar.Entry.e) None
       [None, None,
        [Grammar.production

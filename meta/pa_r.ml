@@ -640,9 +640,7 @@ EXTEND
             <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
           }
       | "type" ; check_type_extension ; te = type_extension →
-
-          <:str_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
-
+          <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           str_item_to_inline loc <:str_item< value $_flag:r$ $_list:l$ >> ext
 
@@ -740,8 +738,7 @@ EXTEND
             <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
           }
       | "type" ; check_type_extension ; te = type_extension →
-          <:sig_item< type $_tp:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
-
+          <:sig_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
       | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes →
@@ -1198,9 +1195,8 @@ EXTEND
           <:type_decl< $_tp:n$ $_list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
       ] ]
   ;
-  (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
-    [ [ n = V mod_ident_patt "tp"; tpl = V (LIST0 type_parameter); "+=";
+    [ [ n = V longident_lident "lilongid"; tpl = V (LIST0 type_parameter); "+=";
         pf = V (FLAG "private") "priv"; "[" ; ecs = V (LIST1 extension_constructor SEP "|") ; "]" ;
         attrs = item_attributes →
 (*
@@ -1208,9 +1204,6 @@ EXTEND
 *)
           {MLast.teNam=n; tePrm=tpl; tePrv=pf; teAttributes=attrs; teECs = ecs }
       ] ]
-  ;
-  mod_ident_patt:
-    [ [ n = V mod_ident → (loc, n) ] ]
   ;
   type_patt:
     [ [ n = V LIDENT → (loc, n) ] ]

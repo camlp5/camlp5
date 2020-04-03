@@ -1193,17 +1193,13 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
-    [ [ n = SV mod_ident_patt "tp"; tpl = SV (LIST0 type_parameter); "+=";
+    [ [ n = SV longident_lident "lilongid"; tpl = SV (LIST0 type_parameter); "+=";
         pf = SV (FLAG "private") "priv"; ecs = SV (LIST1 extension_constructor SEP "|") ;
         attrs = item_attributes →
           Qast.Record
             [("teNam", n); ("tePrm", tpl); ("tePrv", pf);
              ("teECs", ecs);
              ("teAttributes", attrs)] ] ]
-  ;
-  (* why is this called what it's called? *)
-  mod_ident_patt:
-    [ [ n = SV mod_ident → Qast.Tuple [Qast.Loc; n] ] ]
   ;
   type_patt:
     [ [ n = SV LIDENT → Qast.Tuple [Qast.Loc; n] ] ]

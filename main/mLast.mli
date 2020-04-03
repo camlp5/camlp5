@@ -228,7 +228,7 @@ and extension_constructor = [
   | EcRebind of V string and longid and attributes
   ]
 and type_extension =
-  { teNam : V (loc * V (list string));
+  { teNam : V longid_lident;
     tePrm : V (list type_var);
     tePrv : V bool;
     teECs : V (list extension_constructor) ;

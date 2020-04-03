@@ -645,7 +645,7 @@ and type_extension loc te =
   let pf = uv te.tePrv in
   let ecstrs = List.map (extension_constructor loc) (uv te.teECs) in
   ocaml_type_extension ~{item_attributes=uv_item_attributes te.teAttributes} (mkloc loc)
-    (long_id_of_string_list loc (uv (snd (uv te.teNam))))
+    (longid_lident_long_id (uv te.teNam))
     (List.map (fun (p,v) -> (uv p, variance_of_var v)) (uv te.tePrm))
     (if pf then Private else Public)
     ecstrs

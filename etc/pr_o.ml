@@ -647,15 +647,15 @@ value extension_constructor loc pc ec = match ec with [
 ]
 ;
 
-value type_extension pc te =
-  let ((loc, tn), tp, pf, ecstrs, attrs) =
+value type_extension loc pc te =
+  let (tn, tp, pf, ecstrs, attrs) =
     (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
      te.MLast.teECs, te.MLast.teAttributes)
   in
       if pc.aft = "" then
         pprintf pc "%p%p +=@;%s%p%p"
           type_params (loc, Pcaml.unvala tp)
-          mod_ident (loc, Pcaml.unvala tn)
+          longident_lident tn
           (if pf then "private " else "")
           (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
@@ -664,14 +664,14 @@ value type_extension pc te =
           (fun () ->
              pprintf pc "%p%p += %s%p%p"
                type_params (loc, Pcaml.unvala tp)
-               mod_ident (loc, Pcaml.unvala tn)
+               longident_lident tn
                (if pf then "private " else "")
                (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
           (fun () ->
              pprintf pc "@[<a>%p%p +=@;%s%p%p@ @]"
                type_params
-               (loc, Pcaml.unvala tp) mod_ident (loc, Pcaml.unvala tn)
+               (loc, Pcaml.unvala tp) longident_lident tn
                (if pf then "private " else "")
                (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
@@ -1833,8 +1833,8 @@ EXTEND_PRINTER
       | <:str_item:< type $flag:nonrf$ $list:tdl$ >> ->
           pprintf pc "type%s %p" (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl
-      | MLast.StTypExten _ te ->
-          pprintf pc "type %p" type_extension te
+      | MLast.StTypExten loc te ->
+          pprintf pc "type %p" (type_extension loc) te
       | <:str_item:< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
@@ -1899,8 +1899,8 @@ EXTEND_PRINTER
           pprintf pc "type%s %p"
             (if nonrf then " nonrec" else "")
             (vlist2 type_decl (and_before type_decl)) tdl
-      | MLast.SgTypExten _ te ->
-          pprintf pc "type %p" type_extension te
+      | MLast.SgTypExten loc te ->
+          pprintf pc "type %p" (type_extension loc) te
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
           pprintf pc "val %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->

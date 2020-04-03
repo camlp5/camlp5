@@ -213,7 +213,7 @@ and extension_constructor =
     EcTuple of generic_constructor
   | EcRebind of string * longid * attributes
 and type_extension =
-  { teNam : loc * string list;
+  { teNam : longid_lident;
     tePrm : type_var list;
     tePrv : bool;
     teECs : extension_constructor list;

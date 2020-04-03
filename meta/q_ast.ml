@@ -535,9 +535,7 @@ module Meta_make (C : MetaSig) =
       let attrs = conv_attributes x.teAttributes in
       let ecs = C.vala (C.list extension_constructor) x.teECs in
       C.record
-        [(record_label "teNam",
-          C.vala (fun (_, s) → C.tuple [C.loc_v (); C.vala (C.list C.string) s])
-            x.teNam);
+        [(record_label "teNam", C.vala longid_lident x.teNam);
          (record_label "tePrm", C.vala (C.list type_var) x.tePrm);
          (record_label "tePrv", C.vala C.bool x.tePrv);
          (record_label "teECs", ecs);
