@@ -1561,7 +1561,7 @@ and sig_item s l =
            (mkloc loc) (uv n) mto) ::
       l
   | SgMtyAlias (loc, n, li, item_attrs) ->
-      let li = long_id_of_string_list loc (uv li) in
+      let li = longid_long_id (uv li) in
       let mty = mkmty loc (ocaml_pmty_alias (mkloc loc) li) in
       let m =
         ocaml_psig_module ~item_attributes:(uv_item_attributes item_attrs)

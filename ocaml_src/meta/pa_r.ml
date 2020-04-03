@@ -731,8 +731,6 @@ Grammar.safe_extend
    and rest_constructor_declaration : 'rest_constructor_declaration Grammar.Entry.e =
      grammar_entry_create "rest_constructor_declaration"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
-   and mod_ident : 'mod_ident Grammar.Entry.e =
-     grammar_entry_create "mod_ident"
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
@@ -1702,10 +1700,10 @@ Grammar.safe_extend
                          (Grammar.s_token ("", "alias")))
                       (Grammar.s_token ("UIDENT", "")))
                    (Grammar.s_token ("", "=")))
-                (Grammar.s_nterm (mod_ident : 'mod_ident Grammar.Entry.e)))
+                (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
-           (fun (attrs : 'item_attributes) (li : 'mod_ident) _ (i : string) _
+           (fun (attrs : 'item_attributes) (li : 'longident) _ (i : string) _
                 _ (loc : Ploc.t) ->
               (MLast.SgMtyAlias (loc, i, li, attrs) : 'sig_item)));
         Grammar.production
@@ -4423,23 +4421,6 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
            (fun (i : string) (loc : Ploc.t) -> (mkident i : 'ident)))]];
-    Grammar.extension (mod_ident : 'mod_ident Grammar.Entry.e) None
-      [None, Some Gramext.RightA,
-       [Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_token ("UIDENT", "")))
-                (Grammar.s_token ("", ".")))
-             Grammar.s_self,
-           (fun (j : 'mod_ident) _ (i : string) (loc : Ploc.t) ->
-              (mkident i :: j : 'mod_ident)));
-        Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'mod_ident)));
-        Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'mod_ident)))]];
     Grammar.extension (direction_flag : 'direction_flag Grammar.Entry.e) None
       [None, None,
        [Grammar.production

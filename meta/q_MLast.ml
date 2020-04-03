@@ -612,7 +612,7 @@ EXTEND
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") →
           Qast.Node "SgMod" [Qast.Loc; rf; l]
-      | "module"; "alias"; i = SV UIDENT; "="; li = SV mod_ident "list" "" ; attrs = item_attributes →
+      | "module"; "alias"; i = SV UIDENT; "="; li = SV longident "longid" ; attrs = item_attributes →
           Qast.Node "SgMtyAlias" [Qast.Loc; i; li; attrs]
       | "module"; check_uident_coloneq; i = SV UIDENT ; ":=" ; li = extended_longident ; attrs = item_attributes ->
           Qast.Node "SgModSubst" [Qast.Loc; i;  li; attrs]
@@ -1312,12 +1312,6 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ident:
     [ [ i = LIDENT → mkident i
       | i = UIDENT → mkident i ] ]
-  ;
-  mod_ident:
-    [ RIGHTA
-      [ i = UIDENT → Qast.List [mkident i]
-      | i = LIDENT → Qast.List [mkident i]
-      | i = UIDENT; "."; j = SELF → Qast.Cons (mkident i) j ] ]
   ;
   direction_flag:
     [ [ "to" → Qast.Bool True

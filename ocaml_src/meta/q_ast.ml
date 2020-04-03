@@ -383,8 +383,7 @@ module Meta_make (C : MetaSig) =
           C.node "SgMtyAbs" [C.vala C.string s; attrs]
       | SgMtyAlias (_, s, ls, attrs) ->
           let attrs = conv_attributes attrs in
-          C.node "SgMtyAlias"
-            [C.vala C.string s; C.vala (C.list C.string) ls; attrs]
+          C.node "SgMtyAlias" [C.vala C.string s; C.vala longid ls; attrs]
       | SgModSubst (_, s, li, attrs) ->
           let attrs = conv_attributes attrs in
           C.node "SgModSubst" [C.vala C.string s; longid li; attrs]

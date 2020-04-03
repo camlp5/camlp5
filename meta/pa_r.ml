@@ -721,8 +721,8 @@ EXTEND
           <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
       | "module"; "type"; i = V ident "" ; attrs = item_attributes →
           <:sig_item< module type $_:i$ $_itemattrs:attrs$ >>
-      | "module"; "alias"; i = V UIDENT; "="; li = V mod_ident "list" "" ; attrs = item_attributes →
-          <:sig_item< module alias $_:i$ = $_:li$ $_itemattrs:attrs$ >>
+      | "module"; "alias"; i = V UIDENT; "="; li = V longident "longid" ; attrs = item_attributes →
+          <:sig_item< module alias $_:i$ = $_longid:li$ $_itemattrs:attrs$ >>
       | "open"; i = extended_longident ; attrs = item_attributes → 
           <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
@@ -1317,12 +1317,6 @@ EXTEND
   ident:
     [ [ i = LIDENT → mkident i
       | i = UIDENT → mkident i ] ]
-  ;
-  mod_ident:
-    [ RIGHTA
-      [ i = UIDENT → [mkident i]
-      | i = LIDENT → [mkident i]
-      | i = UIDENT; "."; j = SELF → [mkident i :: j] ] ]
   ;
   direction_flag:
     [ [ "to" → True

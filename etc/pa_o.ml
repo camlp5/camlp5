@@ -966,9 +966,12 @@ EXTEND
           let h = (i, mt, item_attrs) in
           sig_item_to_inline <:sig_item< module $flag:rf$ $list:[h::t]$ >> ext
 
-      | "module"; (ext,alg_attrs) = ext_attributes; check_module_alias; i = UIDENT; "="; li = mod_ident ; item_attrs = item_attributes →
+      | "module"; (ext,alg_attrs) = ext_attributes; check_module_alias; i = UIDENT; "="; li = longident ; item_attrs = item_attributes →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline <:sig_item< module alias $i$ = $li$ $_itemattrs:attrs$ >> ext
+(*
+MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
+*)
+          sig_item_to_inline <:sig_item< module alias $i$ = $longid:li$ $_itemattrs:attrs$ >> ext
 
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; "="; mt = module_type ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
@@ -1796,12 +1799,6 @@ EXTEND
   ident:
     [ [ i = LIDENT -> i
       | i = UIDENT -> i ] ]
-  ;
-  mod_ident:
-    [ RIGHTA
-      [ i = UIDENT -> [i]
-      | i = LIDENT -> [i]
-      | i = UIDENT; "."; j = SELF -> [i :: j] ] ]
   ;
   (* Miscellaneous *)
   direction_flag:
