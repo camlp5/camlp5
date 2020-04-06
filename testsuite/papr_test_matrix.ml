@@ -3908,14 +3908,16 @@ and u := bool;
      r_output = OK {foo|type t = (module A.B.C);
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="record-labels-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|{Plexing.tok_func = fun _ -> f x}|foo} ;
+     official_input = OK {foo|{ Plexing.tok_func = fun _ -> f x}|foo} ;
+     r_input = OK {foo|{Plexing.tok_func _ = f x};|foo} ;
+     o_output = OK {foo|let _ = {Plexing.tok_func = fun _ -> f x};;
+|foo};
+     official_output = OK {foo|;;{ Plexing.tok_func = (fun _ -> f x) }|foo} ;
+     r_output = OK {foo|{Plexing.tok_func _ = f x};
+|foo}
     }
 ]
 ;

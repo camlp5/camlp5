@@ -685,6 +685,7 @@ value label_patt pc p =
     <:patt:< $longid:x$ . $lid:y$ >> -> pprintf pc "%p.%p" longident x var_escaped (loc, y)
   | <:patt:< $longid:x$ >> -> pprintf pc "%p" longident x
   | <:patt:< $lid:y$ >> -> var_escaped pc (loc, y)
+  | <:patt:< _ >> -> pprintf pc "_"
   | z -> Ploc.raise (MLast.loc_of_patt z)
       (Failure (sprintf "label_patt %d" (Obj.tag (Obj.repr z))))
   ]
