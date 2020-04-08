@@ -69,6 +69,9 @@ value tests () = "little_lang" >::: [
     ; "expr-top-add" >:: (fun [ _ ->
       assert_equal (EADD (EINT "1") (EINT "2")) (expression_top "1 + 2")
     ])
+    ; "expr-top-add-pow" >:: (fun [ _ ->
+      assert_equal (EADD (EINT "1") (EPOW (EINT "2") (EINT "3"))) (expression_top "1 + 2 ** 3")
+    ])
 ]
 ;
 
