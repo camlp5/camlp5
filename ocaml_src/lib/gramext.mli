@@ -55,7 +55,7 @@ and 'te g_symbol =
 and g_action = Obj.t
 and 'te g_tree =
     Node of 'te g_node
-  | LocAct of g_action * g_action list
+  | LocAct of (string * g_action) * (string * g_action) list
   | DeadEnd
 and 'te g_node =
   { node : 'te g_symbol; son : 'te g_tree; brother : 'te g_tree }
@@ -72,10 +72,11 @@ type position =
 
 val levels_of_rules :
   'te g_entry -> position option ->
-    (string option * g_assoc option * ('te g_symbol list * g_action) list)
+    (string option * g_assoc option *
+       ('te g_symbol list * string * g_action) list)
       list ->
     'te g_level list;;
-val srules : ('te g_symbol list * g_action) list -> 'te g_symbol;;
+val srules : ('te g_symbol list * string * g_action) list -> 'te g_symbol;;
 external action : 'a -> g_action = "%identity";;
 val eq_symbol : 'a g_symbol -> 'a g_symbol -> bool;;
 

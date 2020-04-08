@@ -586,13 +586,13 @@ let token_ematch gram (tok, vala) =
 let rec parser_of_tree entry nlevn alevn =
   function
     DeadEnd -> (fun (strm__ : _ Stream.t) -> raise Stream.Failure)
-  | LocAct (act, _) -> (fun (strm__ : _ Stream.t) -> act)
-  | Node {node = Sself; son = LocAct (act, _); brother = DeadEnd} ->
+  | LocAct ((_, act), _) -> (fun (strm__ : _ Stream.t) -> act)
+  | Node {node = Sself; son = LocAct ((_, act), _); brother = DeadEnd} ->
       (fun (strm__ : _ Stream.t) ->
          let a = entry.estart alevn strm__ in app act a)
   | Node {node = Scut; son = son; brother = _} ->
       parser_of_tree entry nlevn alevn son
-  | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
+  | Node {node = Sself; son = LocAct ((_, act), _); brother = bro} ->
       let p2 = parser_of_tree entry nlevn alevn bro in
       (fun (strm__ : _ Stream.t) ->
          match
@@ -1172,13 +1172,14 @@ let fparser_of_token entry tok =
 let rec fparser_of_tree entry next_levn assoc_levn =
   function
     DeadEnd -> (fun err (strm__ : _ Fstream.t) -> None)
-  | LocAct (act, _) -> (fun err (strm__ : _ Fstream.t) -> Some (act, strm__))
-  | Node {node = Sself; son = LocAct (act, _); brother = DeadEnd} ->
+  | LocAct ((_, act), _) ->
+      (fun err (strm__ : _ Fstream.t) -> Some (act, strm__))
+  | Node {node = Sself; son = LocAct ((_, act), _); brother = DeadEnd} ->
       (fun err (strm__ : _ Fstream.t) ->
          match entry.fstart assoc_levn err strm__ with
            Some (a, strm__) -> Some (app act a, strm__)
          | _ -> None)
-  | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
+  | Node {node = Sself; son = LocAct ((_, act), _); brother = bro} ->
       let p2 = fparser_of_tree entry next_levn assoc_levn bro in
       (fun err (strm__ : _ Fstream.t) ->
          match
@@ -1624,13 +1625,13 @@ let bparser_of_token entry tok =
 let rec bparser_of_tree entry next_levn assoc_levn =
   function
     DeadEnd -> (fun err (strm__ : _ Fstream.t) -> None)
-  | LocAct (act, _) ->
+  | LocAct ((_, act), _) ->
       (fun err (strm__ : _ Fstream.t) -> Fstream.b_act act strm__)
-  | Node {node = Sself; son = LocAct (act, _); brother = DeadEnd} ->
+  | Node {node = Sself; son = LocAct ((_, act), _); brother = DeadEnd} ->
       (fun err (strm__ : _ Fstream.t) ->
          Fstream.b_seq (fun strm__ -> entry.bstart assoc_levn err strm__)
            (fun a strm__ -> Fstream.b_act (app act a) strm__) strm__)
-  | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
+  | Node {node = Sself; son = LocAct ((_, act), _); brother = bro} ->
       let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       (fun err (strm__ : _ Fstream.t) ->
          Fstream.b_or
@@ -2249,7 +2250,9 @@ type g = token Gramext.grammar;;
 
 type ('self, 'a) ty_symbol = token Gramext.g_symbol;;
 type ('self, 'f, 'r) ty_rule = ('self, Obj.t) ty_symbol list;;
-type 'a ty_production = ('a, Obj.t, Obj.t) ty_rule * Gramext.g_action;;
+type 'a ty_production =
+  ('a, Obj.t, Obj.t) ty_rule * string * Gramext.g_action
+;;
 type ty_extension =
   token Gramext.g_entry * Gramext.position option *
     (string option * Gramext.g_assoc option * Obj.t ty_production list) list
@@ -2274,7 +2277,8 @@ let r_stop = [];;
 let r_next r s = r @ [s];;
 let r_cut r = r @ [Scut];;
 
-let production (p : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f) : 'a ty_production =
+let production
+    (p : ('a, 'f, Ploc.t -> 'a) ty_rule * string * 'f) : 'a ty_production =
   Obj.magic p
 ;;
 let extension e pos
@@ -2802,7 +2806,8 @@ module type S =
       ('self, 'a, 'r) ty_rule -> ('self, 'b) ty_symbol ->
         ('self, 'b -> 'a, 'r) ty_rule;;
     val r_cut : ('self, 'a, 'r) ty_rule -> ('self, 'a, 'r) ty_rule;;
-    val production : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f -> 'a ty_production;;
+    val production :
+      ('a, 'f, Ploc.t -> 'a) ty_rule * string * 'f -> 'a ty_production;;
     module Unsafe :
       sig
         val gram_reinit : te Plexing.lexer -> unit;;
@@ -2812,7 +2817,7 @@ module type S =
     val extend :
       'a Entry.e -> Gramext.position option ->
         (string option * Gramext.g_assoc option *
-           (te Gramext.g_symbol list * Gramext.g_action) list)
+           (te Gramext.g_symbol list * string * Gramext.g_action) list)
           list ->
         unit;;
     val safe_extend :
@@ -2911,7 +2916,9 @@ module GMake (L : GLexerType) =
     ;;
     type ('self, 'a) ty_symbol = te Gramext.g_symbol;;
     type ('self, 'f, 'r) ty_rule = ('self, Obj.t) ty_symbol list;;
-    type 'a ty_production = ('a, Obj.t, Obj.t) ty_rule * Gramext.g_action;;
+    type 'a ty_production =
+      ('a, Obj.t, Obj.t) ty_rule * string * Gramext.g_action
+    ;;
     let s_facto s = Sfacto s;;
     let s_nterm e = Snterm e;;
     let s_nterml e l = Snterml (e, l);;
@@ -2932,7 +2939,7 @@ module GMake (L : GLexerType) =
     let r_next r s = r @ [s];;
     let r_cut r = r @ [Scut];;
     let production
-        (p : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f) : 'a ty_production =
+        (p : ('a, 'f, Ploc.t -> 'a) ty_rule * string * 'f) : 'a ty_production =
       Obj.magic p
     ;;
     module Unsafe =

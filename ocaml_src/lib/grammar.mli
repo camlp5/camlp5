@@ -109,7 +109,8 @@ val r_next :
     ('self, 'b -> 'a, 'r) ty_rule;;
 val r_cut : ('self, 'a, 'r) ty_rule -> ('self, 'a, 'r) ty_rule;;
 
-val production : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f -> 'a ty_production;;
+val production :
+  ('a, 'f, Ploc.t -> 'a) ty_rule * string * 'f -> 'a ty_production;;
 
 val extension :
   'a Entry.e -> Gramext.position option ->
@@ -233,7 +234,8 @@ module type S =
       ('self, 'a, 'r) ty_rule -> ('self, 'b) ty_symbol ->
         ('self, 'b -> 'a, 'r) ty_rule;;
     val r_cut : ('self, 'a, 'r) ty_rule -> ('self, 'a, 'r) ty_rule;;
-    val production : ('a, 'f, Ploc.t -> 'a) ty_rule * 'f -> 'a ty_production;;
+    val production :
+      ('a, 'f, Ploc.t -> 'a) ty_rule * string * 'f -> 'a ty_production;;
     module Unsafe :
       sig
         val gram_reinit : te Plexing.lexer -> unit;;
@@ -243,7 +245,7 @@ module type S =
     val extend :
       'a Entry.e -> Gramext.position option ->
         (string option * Gramext.g_assoc option *
-           (te Gramext.g_symbol list * Gramext.g_action) list)
+           (te Gramext.g_symbol list * string * Gramext.g_action) list)
           list ->
         unit;;
     val safe_extend :
@@ -317,7 +319,7 @@ val loc_of_token_interval : int -> int -> Ploc.t;;
 val extend :
   ('te Gramext.g_entry * Gramext.position option *
      (string option * Gramext.g_assoc option *
-        ('te Gramext.g_symbol list * Gramext.g_action) list)
+        ('te Gramext.g_symbol list * string * Gramext.g_action) list)
        list)
     list ->
     unit;;

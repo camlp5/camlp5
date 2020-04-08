@@ -822,6 +822,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
    Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
      [None, None,
@@ -830,6 +831,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]];
    Grammar.extension (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e) None
      [None, None,
@@ -838,6 +840,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__ctyp) (loc : Ploc.t) -> (x : 'ctyp_eoi)))]];
    Grammar.extension (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e) None
      [None, None,
@@ -847,6 +850,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__sig_item) (loc : Ploc.t) ->
              (x : 'sig_item_eoi)))]];
    Grammar.extension (str_item_eoi : 'str_item_eoi Grammar.Entry.e) None
@@ -857,6 +861,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__str_item) (loc : Ploc.t) ->
              (x : 'str_item_eoi)))]];
    Grammar.extension (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e) None
@@ -867,6 +872,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.module_expr : 'Pcaml__module_expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__module_expr) (loc : Ploc.t) ->
              (x : 'module_expr_eoi)))]];
    Grammar.extension (module_type_eoi : 'module_type_eoi Grammar.Entry.e) None
@@ -877,6 +883,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.module_type : 'Pcaml__module_type Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__module_type) (loc : Ploc.t) ->
              (x : 'module_type_eoi)))]];
    Grammar.extension (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e) None
@@ -887,6 +894,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.with_constr : 'Pcaml__with_constr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__with_constr) (loc : Ploc.t) ->
              (x : 'with_constr_eoi)))]];
    Grammar.extension (poly_variant_eoi : 'poly_variant_eoi Grammar.Entry.e)
@@ -899,6 +907,7 @@ Grammar.safe_extend
                   (Pcaml.poly_variant :
                    'Pcaml__poly_variant Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__poly_variant) (loc : Ploc.t) ->
              (x : 'poly_variant_eoi)))]];
    Grammar.extension (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e) None
@@ -909,6 +918,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.class_expr : 'Pcaml__class_expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__class_expr) (loc : Ploc.t) ->
              (x : 'class_expr_eoi)))]];
    Grammar.extension (class_type_eoi : 'class_type_eoi Grammar.Entry.e) None
@@ -919,6 +929,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.class_type : 'Pcaml__class_type Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__class_type) (loc : Ploc.t) ->
              (x : 'class_type_eoi)))]];
    Grammar.extension
@@ -931,6 +942,7 @@ Grammar.safe_extend
                   (Pcaml.class_str_item :
                    'Pcaml__class_str_item Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__class_str_item) (loc : Ploc.t) ->
              (x : 'class_str_item_eoi)))]];
    Grammar.extension
@@ -943,6 +955,7 @@ Grammar.safe_extend
                   (Pcaml.class_sig_item :
                    'Pcaml__class_sig_item Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__class_sig_item) (loc : Ploc.t) ->
              (x : 'class_sig_item_eoi)))]];
    Grammar.extension (type_decl_eoi : 'type_decl_eoi Grammar.Entry.e) None
@@ -953,6 +966,7 @@ Grammar.safe_extend
                (Grammar.s_nterm
                   (Pcaml.type_decl : 'Pcaml__type_decl Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'Pcaml__type_decl) (loc : Ploc.t) ->
              (x : 'type_decl_eoi)))]]];;
 
@@ -1227,6 +1241,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (e : 'Pcaml__expr) (loc : Ploc.t) ->
              (let loc = Ploc.make_unlined (0, 0) in
               if !(Pcaml.strict_mode) then
@@ -1243,6 +1258,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_token ("ANTIQUOT_LOC", "")))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (a : string) (loc : Ploc.t) ->
              (let loc = Ploc.make_unlined (0, 0) in
               if !(Pcaml.strict_mode) then
@@ -1276,6 +1292,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (e : 'Pcaml__patt) (loc : Ploc.t) ->
              (let loc = Ploc.make_unlined (0, 0) in
               if !(Pcaml.strict_mode) then
@@ -1292,6 +1309,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_token ("ANTIQUOT_LOC", "")))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (a : string) (loc : Ploc.t) ->
              (let loc = Ploc.make_unlined (0, 0) in
               if !(Pcaml.strict_mode) then
