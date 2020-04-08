@@ -1310,7 +1310,7 @@ and make_expr_rules loc gmod rl tvar =
                 MLast.ExAcc
                   (loc, MLast.ExUid (loc, gmod),
                    MLast.ExLid (loc, "production")),
-                MLast.ExTup (loc, [sl; ac]))),
+                MLast.ExTup (loc, [sl; MLast.ExStr (loc, ""); ac]))),
           txt))
     (MLast.ExUid (loc, "[]")) rl
 ;;

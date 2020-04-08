@@ -163,7 +163,7 @@ value rec unrule =
       in
       let sl = unpsymbol_list (List.rev pl) e1 in
       (sl, a)
-  | <:expr< Grammar.production ($e1$, $e2$) >> ->
+  | <:expr< Grammar.production ($e1$, $hash$, $e2$) >> ->
       let (pl, a) =
         match unaction e2 with
         [ ([], None) -> let loc = Ploc.dummy in ([], Some <:expr< () >>)

@@ -56,7 +56,7 @@ and g_symbol 'te =
 and g_action = Obj.t
 and g_tree 'te =
   [ Node of g_node 'te
-  | LocAct of g_action and list g_action
+  | LocAct of (string * g_action) and list (string * g_action)
   | DeadEnd ]
 and g_node 'te =
   { node : g_symbol 'te; son : g_tree 'te; brother : g_tree 'te }
@@ -105,21 +105,22 @@ value rec eq_symbol s1 s2 =
   | (Sflag s1, Sflag s2) -> eq_symbol s1 s2
   | (Sopt s1, Sopt s2) -> eq_symbol s1 s2
   | (Svala ls1 s1, Svala ls2 s2) -> ls1 = ls2 && eq_symbol s1 s2
-  | (Stree _, Stree _) -> False
+  | (Stree t1, Stree t2) -> eq_tree t1 t2
   | (Sfacto (Stree t1), Sfacto (Stree t2)) ->
       (* The only goal of the node 'Sfacto' is to allow tree comparison
          (therefore factorization) without looking at the semantic
          actions; allow factorization of rules like "SV foo" which are
          actually expanded into a tree. *)
-      eq_tree t1 t2 where rec eq_tree t1 t2 =
+      eq_tree t1 t2
+  | _ -> s1 = s2 ]
+and eq_tree t1 t2 =
         match (t1, t2) with
         [ (Node n1, Node n2) ->
             eq_symbol n1.node n2.node && eq_tree n1.son n2.son &&
             eq_tree n1.brother n2.brother
-        | (LocAct _ _, LocAct _ _) -> True
+        | (LocAct (hash1, _) _, LocAct (hash2, _) _) -> hash1 = hash2
         | (DeadEnd, DeadEnd) -> True
         | _ -> False ]
-  | _ -> s1 = s2 ]
 ;
 
 value is_before s1 s2 =
@@ -190,7 +191,7 @@ value insert_tree entry_name gsymbols action tree =
 value srules rl =
   let t =
     List.fold_left
-      (fun tree (symbols, action) -> insert_tree "" symbols action tree)
+      (fun tree (symbols, hash, action) -> insert_tree "" symbols (hash, action) tree)
       DeadEnd rl
   in
   Stree t
@@ -448,12 +449,12 @@ value levels_of_rules entry position rules =
            let lev = make_lev lname assoc in
            let lev =
              List.fold_left
-               (fun lev (symbols, action) -> do {
+               (fun lev (symbols, hash, action) -> do {
                   let symbols = List.map (change_to_self entry) symbols in
                   List.iter (check_gram entry) symbols;
                   let (e1, symbols) = get_initial entry symbols in
                   insert_tokens entry.egram symbols;
-                  insert_level entry.ename e1 symbols action lev
+                  insert_level entry.ename e1 symbols (hash, action) lev
                 })
                lev level
            in

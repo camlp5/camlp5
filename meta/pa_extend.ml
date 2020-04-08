@@ -625,7 +625,8 @@ and make_expr_rules loc gmod rl tvar =
                 <:expr< $uid:gmod$.r_next $txt$ $x$ >>)
            <:expr< $uid:gmod$.r_stop >> sl
        in
-       <:expr< [$uid:gmod$.production ($sl$, $ac$) :: $txt$] >>)
+       let hash = Printf.sprintf "%08x" (Hashtbl.hash (Reloc.expr (fun _ -> Ploc.dummy) 0 ac)) in
+       <:expr< [$uid:gmod$.production ($sl$, $str:hash$, $ac$) :: $txt$] >>)
     <:expr< [] >> rl
 ;
 

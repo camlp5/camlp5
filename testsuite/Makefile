@@ -10,7 +10,7 @@ RM=rm
 TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test r2official_test \
         r2sch_test q_MLast_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
-	extfun_test o_top_test
+	extfun_test o_top_test grammar_bug_test
 
 all-tests: all $(TESTS)
 
@@ -35,7 +35,8 @@ all: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.opt \
 	tools/ROUNDTRIP-pa_o-pr_o.byte \
-	tools/ROUNDTRIP-pa_o-pr_o.opt
+	tools/ROUNDTRIP-pa_o-pr_o.opt \
+	grammar_bug_test
 
 OCAMLFIND=tools/LAUNCH ocamlfind
 OCAMLTOPLEVEL=tools/LAUNCH ocaml
@@ -145,6 +146,12 @@ q_MLast_test:: q_MLast_test.byte
 q_MLast_test.byte: q_MLast_test.ml testutil.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r,camlp5.quotations -syntax camlp5r -linkall -linkpkg testutil.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
 
+
+grammar_bug_test:: grammar_bug_test.byte
+	HAS_ARGLE=true ./grammar_bug_test.byte
+
+grammar_bug_test.byte: grammar_bug_test.ml alt_pa_o.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.ml grammar_bug_test.ml -o grammar_bug_test.byte
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte

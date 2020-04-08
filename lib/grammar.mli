@@ -103,7 +103,7 @@ value r_stop : ty_rule 'self 'r 'r;
 value r_next : ty_rule 'self 'a 'r -> ty_symbol 'self 'b -> ty_rule 'self ('b -> 'a) 'r;
 value r_cut : ty_rule 'self 'a 'r -> ty_rule 'self 'a 'r;
 
-value production : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f) -> ty_production 'a;
+value production : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f) -> ty_production 'a;
 
 value extension : Entry.e 'a -> option Gramext.position ->
   list (option string * option Gramext.g_assoc * list (ty_production 'a)) -> ty_extension;
@@ -232,7 +232,7 @@ module type S =
     value r_next : ty_rule 'self 'a 'r -> ty_symbol 'self 'b -> ty_rule 'self ('b -> 'a) 'r;
     value r_cut : ty_rule 'self 'a 'r -> ty_rule 'self 'a 'r;
 
-    value production : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f) -> ty_production 'a;
+    value production : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f) -> ty_production 'a;
 
     module Unsafe :
       sig
@@ -244,7 +244,7 @@ module type S =
       Entry.e 'a -> option Gramext.position ->
         list
           (option string * option Gramext.g_assoc *
-           list (list (Gramext.g_symbol te) * Gramext.g_action)) ->
+           list (list (Gramext.g_symbol te) * string * Gramext.g_action)) ->
         unit;
     value safe_extend :
       Entry.e 'a -> option Gramext.position ->
@@ -320,7 +320,7 @@ value extend :
     (Gramext.g_entry 'te * option Gramext.position *
      list
        (option string * option Gramext.g_assoc *
-        list (list (Gramext.g_symbol 'te) * Gramext.g_action))) ->
+        list (list (Gramext.g_symbol 'te) * string * Gramext.g_action))) ->
     unit;
 value delete_rule : Entry.e 'a -> list (Gramext.g_symbol token) -> unit;
 

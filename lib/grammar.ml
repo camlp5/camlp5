@@ -583,12 +583,12 @@ value token_ematch gram (tok, vala) =
 value rec parser_of_tree entry nlevn alevn =
   fun
   [ DeadEnd -> parser []
-  | LocAct act _ -> parser [: :] -> act
-  | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
+  | LocAct (_, act) _ -> parser [: :] -> act
+  | Node {node = Sself; son = LocAct (_, act) _; brother = DeadEnd} ->
       parser [: a = entry.estart alevn :] -> app act a
   | Node {node = Scut; son = son; brother = _} ->
       parser_of_tree entry nlevn alevn son
-  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+  | Node {node = Sself; son = LocAct (_, act) _; brother = bro} ->
       let p2 = parser_of_tree entry nlevn alevn bro in
       parser
       [ [: a = entry.estart alevn :] -> app act a
@@ -1144,10 +1144,10 @@ value fparser_of_token entry tok =
 value rec fparser_of_tree entry next_levn assoc_levn =
   fun
   [ DeadEnd -> fun err -> fparser []
-  | LocAct act _ -> fun err -> fparser [: :] -> act
-  | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
+  | LocAct (_, act) _ -> fun err -> fparser [: :] -> act
+  | Node {node = Sself; son = LocAct (_, act) _; brother = DeadEnd} ->
       fun err -> fparser [: a = entry.fstart assoc_levn err :] -> app act a
-  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+  | Node {node = Sself; son = LocAct (_, act) _; brother = bro} ->
       let p2 = fparser_of_tree entry next_levn assoc_levn bro in
       fun err ->
         fparser
@@ -1441,10 +1441,10 @@ value bparser_of_token entry tok =
 value rec bparser_of_tree entry next_levn assoc_levn =
   fun
   [ DeadEnd -> fun err -> bparser []
-  | LocAct act _ -> fun err -> bparser [: :] -> act
-  | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
+  | LocAct (_, act) _ -> fun err -> bparser [: :] -> act
+  | Node {node = Sself; son = LocAct (_, act) _; brother = DeadEnd} ->
       fun err -> bparser [: a = entry.bstart assoc_levn err :] -> app act a
-  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+  | Node {node = Sself; son = LocAct (_, act) _; brother = bro} ->
       let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       fun err ->
         bparser
@@ -1910,7 +1910,7 @@ type g = Gramext.grammar token;
 
 type ty_symbol 'self 'a = Gramext.g_symbol token;
 type ty_rule 'self 'f 'r = list (ty_symbol 'self Obj.t);
-type ty_production 'a = (ty_rule 'a Obj.t Obj.t * Gramext.g_action);
+type ty_production 'a = (ty_rule 'a Obj.t Obj.t * string * Gramext.g_action);
 type ty_extension =
   (Gramext.g_entry token * option Gramext.position * list (option string * option Gramext.g_assoc * list (ty_production Obj.t)));
 
@@ -1933,7 +1933,7 @@ value r_stop = [];
 value r_next r s = r @ [s];
 value r_cut r = r @ [Scut];
 
-value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f)) = (Obj.magic p : ty_production 'a);
+value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f)) = (Obj.magic p : ty_production 'a);
 value extension e pos (r : list (option string * option Gramext.g_assoc * list (ty_production Obj.t))) = ((e, pos, Obj.magic r) : ty_extension);
 
 value safe_extend (l : list ty_extension) = extend (Obj.magic l);
@@ -2509,7 +2509,7 @@ module type S =
     value r_next : ty_rule 'self 'a 'r -> ty_symbol 'self 'b -> ty_rule 'self ('b -> 'a) 'r;
     value r_cut : ty_rule 'self 'a 'r -> ty_rule 'self 'a 'r;
 
-    value production : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f) -> ty_production 'a;
+    value production : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f) -> ty_production 'a;
 
     module Unsafe :
       sig
@@ -2521,7 +2521,7 @@ module type S =
       Entry.e 'a -> option Gramext.position ->
         list
           (option string * option Gramext.g_assoc *
-           list (list (Gramext.g_symbol te) * Gramext.g_action)) ->
+           list (list (Gramext.g_symbol te) * string * Gramext.g_action)) ->
         unit;
     value safe_extend :
       Entry.e 'a -> option Gramext.position ->
@@ -2623,7 +2623,7 @@ module GMake (L : GLexerType) =
     ;
     type ty_symbol 'self 'a = Gramext.g_symbol te;
     type ty_rule 'self 'f 'r = list (ty_symbol 'self Obj.t);
-    type ty_production 'a = (ty_rule 'a Obj.t Obj.t * Gramext.g_action);
+    type ty_production 'a = (ty_rule 'a Obj.t Obj.t * string * Gramext.g_action);
 
     value s_facto s = Sfacto s;
     value s_nterm e = Snterm e;
@@ -2644,7 +2644,7 @@ module GMake (L : GLexerType) =
     value r_next r s = r @ [s];
     value r_cut r = r @ [Scut];
 
-    value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f)) = (Obj.magic p : ty_production 'a);
+    value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f)) = (Obj.magic p : ty_production 'a);
 
     module Unsafe =
       struct

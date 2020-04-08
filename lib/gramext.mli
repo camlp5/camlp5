@@ -54,7 +54,7 @@ and g_symbol 'te =
 and g_action = Obj.t
 and g_tree 'te =
   [ Node of g_node 'te
-  | LocAct of g_action and list g_action
+  | LocAct of (string * g_action) and list (string * g_action)
   | DeadEnd ]
 and g_node 'te =
   { node : g_symbol 'te; son : g_tree 'te; brother : g_tree 'te }
@@ -73,9 +73,9 @@ value levels_of_rules :
   g_entry 'te -> option position ->
     list
       (option string * option g_assoc *
-       list (list (g_symbol 'te) * g_action)) ->
+       list (list (g_symbol 'te) * string * g_action)) ->
     list (g_level 'te);
-value srules : list (list (g_symbol 'te) * g_action) -> g_symbol 'te;
+value srules : list (list (g_symbol 'te) * string * g_action) -> g_symbol 'te;
 external action : 'a -> g_action = "%identity";
 value eq_symbol : g_symbol 'a -> g_symbol 'a -> bool;
 
