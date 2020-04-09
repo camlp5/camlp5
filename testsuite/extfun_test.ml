@@ -7,7 +7,7 @@ open Testutil;
 open OUnit2;
 open OUnitTest;
 
-value tests = "test pa_o -> pr_r" >::: [
+value tests = "extfun" >::: [
   "simplest" >:: (fun [ _ ->
   let f = Extfun.empty in
   let f = extfun f with [ 1 -> 1 ] in do {
