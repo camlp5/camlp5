@@ -8,6 +8,7 @@
 #load "pa_extfun.cmo";
 #load "pa_extprint.cmo";
 #load "pa_pprintf.cmo";
+#load "pa_extfun.cmo";
 
 open Testutil;
 open Testutil2;
@@ -27,12 +28,12 @@ EXTEND
   GLOBAL: expression
   ;
   expression:
-    [ LEFTA [ x = SELF; "+"; y = SELF -> Op "+" x y
+    [ "add" LEFTA [ x = SELF; "+"; y = SELF -> Op "+" x y
       | x = SELF; "-"; y = SELF -> Op "-" x y ]
-    | LEFTA [ x = SELF; "*"; y = SELF -> Op "*" x y
+    | "mul" LEFTA [ x = SELF; "*"; y = SELF -> Op "*" x y
       | x = SELF; "/"; y = SELF -> Op "/" x y ]
-    | RIGHTA [ x = SELF; "**"; y = SELF -> Op "**" x y]
-    | [ x = INT -> Int (int_of_string x)
+    | "pos" RIGHTA [ x = SELF; "**"; y = SELF -> Op "**" x y]
+    | "simple" [ x = INT -> Int (int_of_string x)
       | x = LIDENT -> Var x
       | "("; x = SELF; ")" -> x ] ]
   ;
@@ -89,6 +90,26 @@ END;
 
 end ;
 
+module Eval = struct
+  value do_eval = ref (Extfun.empty) ;
+  value eval e = Extfun.apply do_eval.val e ;
+
+  value rec pow a = fun [
+    0 -> 1
+  | 1 -> a
+  | n -> 
+    let b = pow a (n / 2) in
+    b * b * (if n mod 2 = 0 then 1 else a) ] ;
+
+  do_eval.val :=
+  extfun do_eval.val with [
+    Int n -> n
+  | Op "+" a b -> (eval a) + (eval b)
+  | Op "**" a b -> pow (eval a) (eval b)
+  ]
+  ;
+end ;
+
 value roundtrip s = s |> Pa.expression_top |> (Pr.expression Pprintf.empty_pc) ;
 value bad_roundtrip s = s |> Pa.expression_top |> (Pr.bad Pprintf.empty_pc) ;
 
@@ -122,6 +143,9 @@ value parse_tests = "parse" >::: Pa.[
     ; "expr-top-add-pow-2" >:: (fun [ _ ->
       assert_equal (Op "**" (Op "+" (Int 1) (Int 2)) (Int 3)) (expression_top "(1 + 2) ** 3")
     ])
+   ; "expr-top-pow-pow" >:: (fun [ _ ->
+      assert_equal (Op "**" (Int 2) (Op "**" (Int 2) (Int 2))) (expression_top "2 ** 2 ** 2")
+    ])
 ]
 ;
 
@@ -150,9 +174,25 @@ value roundtrip_tests = "roundtrip" >::: Pa.[
 ]
 ;
 
+value eval_pa s = s |> Pa.expression_top |> Eval.eval ;
+
+value extfun_tests = "extfun" >::: [
+  "simplest" >:: (fun [ _ ->
+    assert_equal 1 (eval_pa "1")
+  ])
+  ; "add" >:: (fun [ _ ->
+    assert_equal 2 (eval_pa "1+1")
+  ])
+   ; "add-pow" >:: (fun [ _ ->
+    assert_equal 65537 (eval_pa "1+2**2**2**2")
+  ])
+]
+;
+
 value tests = "little_lang" >::: Pa.[
-    "parse" >: parse_tests ;
-    "roundtrip" >: roundtrip_tests
+    "parse" >: parse_tests
+    ; "roundtrip" >: roundtrip_tests
+    ; "extfun" >: extfun_tests
 ]
 ;
 
