@@ -12,13 +12,10 @@
 open Testutil;
 open Testutil2;
 
-type expr = [
-    EINT of string
-  | EADD of expr and expr
-  | ESUB of expr and expr
-  | EDIV of expr and expr
-  | EMUL of expr and expr
-  | EPOW of expr and expr ]
+type expr =
+  [ Op of string and expr and expr
+  | Int of int
+  | Var of string ]
 ;
 
 module Pa = struct
@@ -30,21 +27,14 @@ EXTEND
   GLOBAL: expression
   ;
   expression:
-    [ "add"
-      [ e1 = expression ; "+" ; e2 = expression -> EADD e1 e2
-      | e1 = expression ; "-" ; e2 = expression -> ESUB e1 e2
-      ]
-    | "mul"
-      [ e1 = expression ; "*" ; e2 = expression -> EMUL e1 e2
-      | e1 = expression ; "/" ; e2 = expression -> EDIV e1 e2
-      ]
-    | "pow"
-      [ e1 = expression ; "**" ; e2 = expression -> EPOW e1 e2
-      ]
-    | "simple"
-      [ i = INT -> EINT i
-      | "(" ; e = expression ; ")" -> e
-      ] ]
+    [ LEFTA [ x = SELF; "+"; y = SELF -> Op "+" x y
+      | x = SELF; "-"; y = SELF -> Op "-" x y ]
+    | LEFTA [ x = SELF; "*"; y = SELF -> Op "*" x y
+      | x = SELF; "/"; y = SELF -> Op "/" x y ]
+    | RIGHTA [ x = SELF; "**"; y = SELF -> Op "**" x y]
+    | [ x = INT -> Int (int_of_string x)
+      | x = LIDENT -> Var x
+      | "("; x = SELF; ")" -> x ] ]
   ;
 
 END
@@ -67,15 +57,17 @@ value bad = Eprinter.apply pr_bad;
 EXTEND_PRINTER
   pr_expression:
     [ "add"
-      [ EADD x y -> pprintf pc "%p + %p" curr x curr y
-      | ESUB x y -> pprintf pc "%p - %p" curr x curr y ]
+      [ Op "+" x y -> pprintf pc "%p + %p" curr x curr y
+      | Op "-" x y -> pprintf pc "%p - %p" curr x curr y ]
     | "mul"
-      [ EMUL x y -> pprintf pc "%p * %p" curr x curr y
-      | EDIV x y -> pprintf pc "%p / %p" curr x curr y ]
+      [ Op "*" x y -> pprintf pc "%p * %p" curr x curr y
+      | Op "/" x y -> pprintf pc "%p / %p" curr x curr y ]
     | "pow"
-      [ EPOW x y -> pprintf pc "%p ** %p" curr x curr y ]
+      [ Op "**"  x y -> pprintf pc "%p ** %p" curr x curr y ]
     | "simple"
-      [ EINT i -> pprintf pc "%s" i ]
+      [ Int i -> pprintf pc "%d" i
+      | Var x -> pprintf pc "%s" x
+      ]
     | "bottom"
       [ z ->
         let fail() = 
@@ -85,7 +77,7 @@ EXTEND_PRINTER
   ;
   pr_bad:
     [ "simple"
-      [ EINT i -> pprintf pc "%s" i ]
+      [ Int i -> pprintf pc "%d" i ]
     | "bottom"
       [ z ->
         let fail() = 
@@ -104,31 +96,31 @@ open OUnit2;
 
 value parse_tests = "parse" >::: Pa.[
     "expr-top-simple" >:: (fun [ _ ->
-      assert_equal (EINT "1") (expression_top "1")
+      assert_equal (Int 1) (expression_top "1")
     ])
     ; "expr-top-pow" >:: (fun [ _ ->
-      assert_equal (EPOW (EINT "1") (EINT "2")) (expression_top "1 ** 2")
+      assert_equal (Op "**" (Int 1) (Int 2)) (expression_top "1 ** 2")
     ])
     ; "expr-top-mul" >:: (fun [ _ ->
-      assert_equal (EMUL (EINT "1") (EINT "2")) (expression_top "1 * 2")
+      assert_equal (Op "*" (Int 1) (Int 2)) (expression_top "1 * 2")
     ])
     ; "expr-top-div" >:: (fun [ _ ->
-      assert_equal (EDIV (EINT "1") (EINT "2")) (expression_top "1 / 2")
+      assert_equal (Op "/" (Int 1) (Int 2)) (expression_top "1 / 2")
     ])
     ; "expr-top-sub" >:: (fun [ _ ->
-      assert_equal (ESUB (EINT "1") (EINT "2")) (expression_top "1 - 2")
+      assert_equal (Op "-" (Int 1) (Int 2)) (expression_top "1 - 2")
     ])
     ; "expr-top-add" >:: (fun [ _ ->
-      assert_equal (EADD (EINT "1") (EINT "2")) (expression_top "1 + 2")
+      assert_equal (Op "+" (Int 1) (Int 2)) (expression_top "1 + 2")
     ])
     ; "expr-top-add-pow" >:: (fun [ _ ->
-      assert_equal (EADD (EINT "1") (EPOW (EINT "2") (EINT "3"))) (expression_top "1 + 2 ** 3")
+      assert_equal (Op "+" (Int 1) (Op "**" (Int 2) (Int 3))) (expression_top "1 + 2 ** 3")
     ])
     ; "expr-top-add-pow-1" >:: (fun [ _ ->
-      assert_equal (EADD (EINT "1") (EPOW (EINT "2") (EINT "3"))) (expression_top "1 + 2 ** 3")
+      assert_equal (Op "+" (Int 1) (Op "**" (Int 2) (Int 3))) (expression_top "1 + 2 ** 3")
     ])
     ; "expr-top-add-pow-2" >:: (fun [ _ ->
-      assert_equal (EPOW (EADD (EINT "1") (EINT "2")) (EINT "3")) (expression_top "(1 + 2) ** 3")
+      assert_equal (Op "**" (Op "+" (Int 1) (Int 2)) (Int 3)) (expression_top "(1 + 2) ** 3")
     ])
 ]
 ;
@@ -152,7 +144,7 @@ value roundtrip_tests = "roundtrip" >::: Pa.[
       assert_equal "1" (bad_roundtrip "1")
     ])
     ; "bad-add" >:: (fun [ _ ->
-      assert_raises (Failure("pr_bad 1"))
+      assert_raises (Failure("pr_bad 0"))
       (fun () -> bad_roundtrip "1+2")
     ])
 ]
