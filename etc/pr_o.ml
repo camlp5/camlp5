@@ -1566,26 +1566,15 @@ EXTEND_PRINTER
       | <:expr:< do { $list:el$ } >> ->
           let pc = {(pc) with dang = ""} in
           pprintf pc "@[<a>begin@;%p@ end@]"
-            (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
-      | <:expr< lazy $e$ >> -> pprintf pc "lazy@;%p" curr e
-      | <:expr< $_$ $_$ >> | <:expr< $_$ . $_$ >> | <:expr< $_$ .( $_$ ) >> |
-        <:expr< $_$ .[ $_$ ] >> | <:expr< $_$ .{ $_$ } >> |
-        <:expr< assert $_$ >> | <:expr< lazy $_$ >> | <:expr< ($list:_$) >> |
-        <:expr< $_$ := $_$ >> | <:expr< fun [ $list:_$ ] >> |
-        <:expr< if $_$ then $_$ else $_$ >> |
-        <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
-        <:expr< while $_$ do { $list:_$ } >> |
-        <:expr< let $flag:_$ $list:_$ in $_$ >> |
-        <:expr< let module $uidopt:_$ = $_$ in $_$ >> |
-        <:expr< let open $_!:_$ $_$ in $_$ >> |
-        <:expr< match $_$ with [ $list:_$ ] >> |
-        <:expr< try $_$ with [ $list:_$ ] >> |
-        <:expr< $_$ [@ $_attribute:_$] >>
-          as z ->
-          pprintf pc "@[<1>(%q)@]" expr z ""
-      | z ->
+            (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el ]
+
+    | "bottom"
+      [ z ->
+        let fail () =
           Ploc.raise (MLast.loc_of_expr z)
-            (Failure (sprintf "pr_expr %d" (Obj.tag (Obj.repr z)))) ] ]
+            (Failure (sprintf "pr_expr %d" (Obj.tag (Obj.repr z)))) in
+          pprintf pc "@[<1>(%q)@]" (bottom ~{fail=fail}) z ""
+      ] ]
   ;
   pr_patt:
     [ "top"
@@ -1701,18 +1690,15 @@ EXTEND_PRINTER
         <:patt:< ~{$list:_$} >> ->
           error loc "labels not pretty printed (in patt)"
       | <:patt< `$s$ >> ->
-          failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
-      | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
-        <:patt< exception $_$ >> |
-        <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >>
-      | <:patt< $longid:_$ . $_$ >>
-      | <:patt< $longid:_$ >>
-      | <:patt< $_$ [@ $attribute:_$] >>
-        as z ->
-          pprintf pc "@[<1>(%p)@]" patt z
-      | z ->
+          failwith "polymorphic variants not pretty printed; add pr_ro.cmo" ]
+
+    | "bottom"
+      [ z ->
+          let fail () = 
           Ploc.raise (MLast.loc_of_patt z)
-            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
+            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) in
+          pprintf pc "@[<1>(%p)@]" (bottom ~{fail=fail}) z
+      ] ]
   ;
   pr_ctyp:
     [ "top"
@@ -1789,11 +1775,11 @@ EXTEND_PRINTER
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
       ]
     | "bottom"
-      [
-        <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> | <:ctyp< ($list:_$) >>
-      | <:ctyp< $_$ [@ $attribute:_$ ] >>
-        as z ->
-          pprintf pc "@[<1>(%p)@]" ctyp z
+      [ z ->
+          let fail() = 
+          Ploc.raise (MLast.loc_of_ctyp z)
+            (Failure (sprintf "[INTERNAL ERROR] pr_ctyp %d" (Obj.tag (Obj.repr z)))) in
+          pprintf pc "@[<1>(%p)@]" (bottom ~{fail=fail}) z
       ] ]
   ;
   pr_str_item:
@@ -1978,13 +1964,12 @@ EXTEND_PRINTER
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< [% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%") e
-      | <:module_expr< functor $_fp:_$ -> $_$ >> |
-        <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
-        <:module_expr< $_$ $_$ >> |
-        <:module_expr< $_$ [@ $attribute:_$] >>
-        as z ->
-          pprintf pc "@[<1>(%p)@]" module_expr z
+          pprintf pc "%p" (pr_extension "%") e ]
+    | [ z ->
+          let fail() =
+          Ploc.raise (MLast.loc_of_module_expr z)
+            (Failure (sprintf "pr_module_expr %d" (Obj.tag (Obj.repr z)))) in
+          pprintf pc "@[<1>(%p)@]" (bottom ~{fail=fail}) z
       ] ]
   ;
   pr_module_type:
@@ -2030,14 +2015,11 @@ EXTEND_PRINTER
       | <:module_type< [% $_extension:e$ ] >> ->
           pprintf pc "%p" (pr_extension "%") e ]
     | "bottom"
-      [ <:module_type< functor $fp:_$ -> $_$ >>
-      | <:module_type< module type of $_$ >>
-      | <:module_type< $_$ [@ $attribute:_$] >>
-      | <:module_type< $_$ with $list:_$ >>
-        as z -> pprintf pc "(%p)" module_type z
-      | z ->
-          error (MLast.loc_of_module_type z)
-            (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z))) ] ]
+      [ z ->
+          let fail() =
+          Ploc.raise (MLast.loc_of_module_type z)
+            (Failure (sprintf "pr_module_type %d" (Obj.tag (Obj.repr z)))) in
+          pprintf pc "(%p)" (bottom ~{fail=fail}) z ] ]
   ;
 END;
 
@@ -2384,10 +2366,7 @@ EXTEND_PRINTER
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
       | <:patt:< # $lilongid:lili$ >> ->
-          pprintf pc "#%p" longident_lident lili
-      | z ->
-          Ploc.raise (MLast.loc_of_patt z)
-            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) ] ]
+          pprintf pc "#%p" longident_lident lili ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $lilongid:lili$ >> ->
@@ -2441,10 +2420,7 @@ EXTEND_PRINTER
       | <:ctyp:< [ < $list:pvl$ > $list:vdl$ ] >> ->
           variant_decl_list "<" loc pc pvl vdl
       | <:ctyp< $_$ as $_$ >> as z ->
-          pprintf pc "@[<1>(%p)@]" ctyp z
-      | z ->
-          error (MLast.loc_of_ctyp z)
-            (sprintf "pr_ctyp %d" (Obj.tag (Obj.repr z))) ] ]
+          pprintf pc "@[<1>(%p)@]" ctyp z ] ]
   ;
   pr_sig_item: LEVEL "top"
     [ [ <:sig_item:< class $list:cd$ >> ->
@@ -2571,8 +2547,9 @@ EXTEND_PRINTER
         | <:class_expr< let $flag:_$ $list:_$ in $_$ >>
         | <:class_expr< let open $_!:_$ $longid:_$ in $_$ >>
         as z ->
-          pprintf pc "@[<1>(%p)@]" class_expr z
-      | z ->
+          pprintf pc "@[<1>(%p)@]" class_expr z ]
+    | "bottom"
+      [ z ->
           error (MLast.loc_of_class_expr z)
             (sprintf "pr_class_expr %d" (Obj.tag (Obj.repr z))) ] ]
   ;
@@ -2630,8 +2607,9 @@ EXTEND_PRINTER
     ]
 
     | [ <:class_type< [% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%") e
-      | z ->
+          pprintf pc "%p" (pr_extension "%") e ]
+    | "bottom"
+      [ z ->
           error (MLast.loc_of_class_type z)
             (sprintf "pr_class_type %d" (Obj.tag (Obj.repr z))) ] ]
   ;
@@ -2656,8 +2634,9 @@ EXTEND_PRINTER
       | <:class_sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       | <:class_sig_item< [%% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%%") e
-      | z ->
+          pprintf pc "%p" (pr_extension "%%") e ]
+    | "bottom"
+      [ z ->
           error (MLast.loc_of_class_sig_item z)
             (sprintf "pr_class_sig_item %d" (Obj.tag (Obj.repr z))) ] ]
   ;
@@ -2710,8 +2689,9 @@ EXTEND_PRINTER
       | <:class_str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
       | <:class_str_item< [%% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%%") e
-      | z ->
+          pprintf pc "%p" (pr_extension "%%") e ]
+    | "bottom"
+      [ z ->
           error (MLast.loc_of_class_str_item z)
             (sprintf "pr_class_str_item %d" (Obj.tag (Obj.repr z)))
       ] ]

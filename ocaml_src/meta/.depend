@@ -1,7 +1,7 @@
 pa_extend.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/mLast.cmi ../main/pcaml.cmi
+    ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi
 pa_extend.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/mLast.cmi ../main/pcaml.cmx
+    ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx
 pa_extend_m.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi pa_extend.cmo
 pa_extend_m.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \

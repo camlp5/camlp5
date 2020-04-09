@@ -48,7 +48,7 @@ type position =
 type pr_fun 'a = Pprintf.pr_fun 'a;
 
 type pr_rule 'a =
-  Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_context -> string)
+  Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_fun 'a -> (~fail:(unit -> string) -> pr_fun 'a) -> pr_context -> string)
 ;
 
 value extend :

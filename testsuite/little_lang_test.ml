@@ -57,6 +57,12 @@ end ;
 module Pr = struct
 value pr_expression = Eprinter.make "expression";
 value expression = Eprinter.apply pr_expression;
+value expression_pow = Eprinter.apply_level pr_expression "pow";
+value expression_simple = Eprinter.apply_level pr_expression "simple";
+
+value pr_bad = Eprinter.make "bad";
+value bad = Eprinter.apply pr_bad;
+
 
 EXTEND_PRINTER
   pr_expression:
@@ -71,7 +77,20 @@ EXTEND_PRINTER
     | "simple"
       [ EINT i -> pprintf pc "%s" i ]
     | "bottom"
-      [ z -> pprintf pc "(%p)" expression z ]
+      [ z ->
+        let fail() = 
+          failwith (Printf.sprintf "[internal error] pr_expression %d" (Obj.tag (Obj.repr z))) in
+        pprintf pc "(%p)" (bottom ~{fail=fail}) z ]
+    ]
+  ;
+  pr_bad:
+    [ "simple"
+      [ EINT i -> pprintf pc "%s" i ]
+    | "bottom"
+      [ z ->
+        let fail() = 
+          failwith (Printf.sprintf "pr_bad %d" (Obj.tag (Obj.repr z))) in
+        pprintf pc "(%p)" (bottom ~{fail=fail}) z ]
     ]
   ;
 END;
@@ -79,6 +98,7 @@ END;
 end ;
 
 value roundtrip s = s |> Pa.expression_top |> (Pr.expression Pprintf.empty_pc) ;
+value bad_roundtrip s = s |> Pa.expression_top |> (Pr.bad Pprintf.empty_pc) ;
 
 open OUnit2;
 
@@ -104,8 +124,11 @@ value parse_tests = "parse" >::: Pa.[
     ; "expr-top-add-pow" >:: (fun [ _ ->
       assert_equal (EADD (EINT "1") (EPOW (EINT "2") (EINT "3"))) (expression_top "1 + 2 ** 3")
     ])
-    ; "roundtrip-top-add-pow" >:: (fun [ _ ->
+    ; "expr-top-add-pow-1" >:: (fun [ _ ->
       assert_equal (EADD (EINT "1") (EPOW (EINT "2") (EINT "3"))) (expression_top "1 + 2 ** 3")
+    ])
+    ; "expr-top-add-pow-2" >:: (fun [ _ ->
+      assert_equal (EPOW (EADD (EINT "1") (EINT "2")) (EINT "3")) (expression_top "(1 + 2) ** 3")
     ])
 ]
 ;
@@ -123,7 +146,15 @@ value roundtrip_tests = "roundtrip" >::: Pa.[
     ; rt "expr-top-div" "1 / 2"
     ; rt "expr-top-sub" "1 - 2"
     ; rt "expr-top-add" "1 + 2"
-    ; rt "expr-top-add-pow" "1 + 2 ** 3"
+    ; rt "expr-top-add-pow-1" "1 + 2 ** 3"
+    ; rt "expr-top-add-pow-2" "(1 + 2) ** 3"
+    ; "bad-simple" >:: (fun [ _ ->
+      assert_equal "1" (bad_roundtrip "1")
+    ])
+    ; "bad-add" >:: (fun [ _ ->
+      assert_raises (Failure("pr_bad 1"))
+      (fun () -> bad_roundtrip "1+2")
+    ])
 ]
 ;
 

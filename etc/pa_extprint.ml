@@ -104,7 +104,7 @@ value rec catch_any =
 
 value conv loc (p, wo, e) =
   let tst = mexpr p in
-  let e = <:expr< fun curr next pc -> $e$ >> in
+  let e = <:expr< fun curr next top bottom pc -> $e$ >> in
   let e =
     if wo = None && catch_any p then <:expr< fun $p$ -> Some $e$ >>
     else <:expr< fun [ $p$ $opt:wo$ -> Some $e$ | _ -> None ] >>

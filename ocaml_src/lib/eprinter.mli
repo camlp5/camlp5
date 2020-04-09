@@ -48,7 +48,9 @@ type position =
 type 'a pr_fun = 'a Pprintf.pr_fun;;
 
 type 'a pr_rule =
-  ('a, 'a pr_fun -> 'a pr_fun -> pr_context -> string) Extfun.t
+  ('a, 'a pr_fun -> 'a pr_fun -> 'a pr_fun -> (fail:(unit -> string) -> 'a pr_fun) ->
+    pr_context -> string)
+    Extfun.t
 ;;
 
 val extend :

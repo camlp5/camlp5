@@ -3918,6 +3918,107 @@ and u := bool;
      official_output = OK {foo|;;{ Plexing.tok_func = (fun _ -> f x) }|foo} ;
      r_output = OK {foo|{Plexing.tok_func _ = f x};
 |foo}
+    };
+    {name="ref-lazy-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|ref (lazy 1)|foo} ;
+     official_input = OK {foo|ref (lazy 1)|foo} ;
+     r_input = OK {foo|ref (lazy 1);|foo} ;
+     o_output = OK {foo|let _ = ref (lazy 1);;
+|foo};
+     official_output = OK {foo|;;ref (lazy 1)|foo} ;
+     r_output = OK {foo|ref (lazy 1);
+|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     }
 ]
 ;
