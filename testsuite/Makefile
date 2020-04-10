@@ -43,8 +43,8 @@ all: \
 OCAMLFIND=tools/LAUNCH ocamlfind
 OCAMLTOPLEVEL=tools/LAUNCH ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
-MKCAMLP5=PATH=$(TOP)/local-install/bin:$(PATH) OCAMLPATH=$(TOP)/local-install/lib: $(TOP)/local-install/bin/mkcamlp5
-CAMLP5R=$(TOP)/local-install/bin/camlp5r -I $(CAMLP5LIB)
+MKCAMLP5=tools/LAUNCH mkcamlp5
+CAMLP5R=tools/lAUNCH camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
