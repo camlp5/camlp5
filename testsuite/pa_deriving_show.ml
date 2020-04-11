@@ -14,6 +14,7 @@ open Pa_passthru ;
 
 ef_str_item.val :=
   extfun ef_str_item.val with [
-    <:str_item< type $tp:tyname$ $list:params$ = $tk$ [@@deriving show;] >> as z -> z
+    <:str_item< type $tp:tyname$ $list:params$ = $tk$ [@@deriving show;] >> as z ->
+    fun arg -> z
   ]
 ;

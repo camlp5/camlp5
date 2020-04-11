@@ -142,8 +142,8 @@ r2sch_test.byte: r2sch_test.ml testutil.cmo
 q_MLast_test:: q_MLast_test.byte
 	./q_MLast_test.byte
 
-q_MLast_test.byte: q_MLast_test.ml testutil.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r,camlp5.quotations -syntax camlp5r -linkall -linkpkg testutil.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
+q_MLast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r,camlp5.quotations -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
 
 
 pa_passthru.cmo: pa_passthru.ml

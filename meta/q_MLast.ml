@@ -424,7 +424,7 @@ EXTEND
     check_type_decl check_type_extension check_dot_uid ctyp_ident
     ;
   attribute_id:
-  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> Qast.VaVal (Qast.Str (String.concat "." l))
+  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> Qast.Str (String.concat "." l)
     ] ]
   ;
   attribute_structure:

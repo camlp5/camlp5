@@ -3,6 +3,7 @@
 #load "pa_macro.cmo";
 
 open Testutil ;
+open Testutil2 ;
 open OUnit2 ;
 open OUnitTest ;
 
@@ -30,11 +31,6 @@ i.name >:: (fun  [ _ ->
 value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
     [
       {
-        name = "prototype";
-        code = {foo||foo};
-        expect = {foo||foo}
-      }
-      ;{
         name = "prototype";
         code = {foo||foo};
         expect = {foo||foo}
@@ -156,6 +152,43 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:class_expr< $lilongid:li$ >> ;|foo}
         }
+      ; { name = "attribute-1" ; 
+          expect = {foo|MLast.ExExten loc
+  (Ploc.VaVal (Ploc.VaVal "a", MLast.StAttr loc (Ploc.VaVal [])));
+|foo} ;
+          code = {foo| <:expr< [%a] >> ; |foo}
+        }
+      ; { name = "attribute-2" ; 
+          expect = {foo|MLast.ExExten loc
+  (Ploc.VaVal
+     (Ploc.VaVal "a",
+      MLast.StAttr loc
+        (Ploc.VaVal
+           [MLast.StExp loc (MLast.ExLid loc (Ploc.VaVal "b"))
+              (Ploc.VaVal [])])));
+|foo} ;
+          code = {foo| <:expr< [%a b;] >> ; |foo}
+        }
+      ; { name = "prototype" ; 
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
+      ; { name = "prototype" ; 
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
+      ; { name = "prototype" ; 
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
+      ; { name = "prototype" ; 
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
+      ; { name = "prototype" ; 
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
       ; { name = "prototype" ; 
           expect = {foo||foo} ;
           code = {foo||foo}
@@ -163,7 +196,11 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
     ])
  ;
 
-value _ = run_test_tt_main tests ;
+value _ = 
+if invoked_with "q_MLast_test" then
+  run_test_tt_main tests
+else ()
+;
   
 (*
 ;;; Local Variables: ***
