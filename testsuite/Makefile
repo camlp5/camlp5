@@ -146,6 +146,9 @@ q_MLast_test.byte: q_MLast_test.ml testutil.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r,camlp5.quotations -syntax camlp5r -linkall -linkpkg testutil.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
 
 
+pa_passthru.cmo: pa_passthru.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_passthru.ml
+
 grammar_bug_test:: grammar_bug_test.byte
 	HAS_ARGLE=true ./grammar_bug_test.byte
 
