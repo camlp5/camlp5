@@ -35,27 +35,27 @@ value class_infos_map arg ~{attributes} f x =
    ciNam = x.ciNam; ciExp = f x.ciExp; ciAttributes = attributes arg x.ciAttributes }
 ;
 
-value ef_ctyp = Extfun.empty ;
-value ef_generic_constructor = Extfun.empty ;
-value ef_patt = Extfun.empty ;
-value ef_expr = Extfun.empty ;
-value ef_module_type = Extfun.empty ;
-value ef_sig_item = Extfun.empty ;
-value ef_with_constr = Extfun.empty ;
-value ef_longid = Extfun.empty ;
-value ef_module_expr = Extfun.empty ;
-value ef_str_item = Extfun.empty ;
-value ef_type_decl = Extfun.empty ;
-value ef_type_extension = Extfun.empty ;
-value ef_extension_constructor = Extfun.empty ;
-value ef_class_type = Extfun.empty ;
-value ef_class_sig_item = Extfun.empty ;
-value ef_class_expr = Extfun.empty ;
-value ef_class_str_item = Extfun.empty ;
-value ef_attribute_body = Extfun.empty ;
+value ef_ctyp = ref Extfun.empty ;
+value ef_generic_constructor = ref Extfun.empty ;
+value ef_patt = ref Extfun.empty ;
+value ef_expr = ref Extfun.empty ;
+value ef_module_type = ref Extfun.empty ;
+value ef_sig_item = ref Extfun.empty ;
+value ef_with_constr = ref Extfun.empty ;
+value ef_longid = ref Extfun.empty ;
+value ef_module_expr = ref Extfun.empty ;
+value ef_str_item = ref Extfun.empty ;
+value ef_type_decl = ref Extfun.empty ;
+value ef_type_extension = ref Extfun.empty ;
+value ef_extension_constructor = ref Extfun.empty ;
+value ef_class_type = ref Extfun.empty ;
+value ef_class_sig_item = ref Extfun.empty ;
+value ef_class_expr = ref Extfun.empty ;
+value ef_class_str_item = ref Extfun.empty ;
+value ef_attribute_body = ref Extfun.empty ;
 
 value rec ctyp arg x =
-  match Extfun.apply ef_ctyp x arg with [
+  match Extfun.apply ef_ctyp.val x arg with [
     x -> x
   | exception Extfun.Failure -> ctyp0 arg x
   ]
@@ -118,7 +118,7 @@ and ctyp0 arg =
     ]
 
 and generic_constructor arg x =
-  match Extfun.apply ef_generic_constructor x arg with [
+  match Extfun.apply ef_generic_constructor.val x arg with [
     x -> x
   | exception Extfun.Failure -> generic_constructor0 arg x
   ]
@@ -132,7 +132,7 @@ and poly_variant arg =
   | PvInh loc x1 →
       PvInh loc (ctyp arg x1) ]
 and patt arg x =
-  match Extfun.apply ef_patt x arg with [
+  match Extfun.apply ef_patt.val x arg with [
     x -> x
   | exception Extfun.Failure -> patt0 arg x
   ]
@@ -200,7 +200,7 @@ and patt0 arg =
         PaExten loc (attribute_body arg exten)
     ]
 and expr arg x =
-  match Extfun.apply ef_expr x arg with [
+  match Extfun.apply ef_expr.val x arg with [
     x -> x
   | exception Extfun.Failure -> expr0 arg x
   ]
@@ -320,7 +320,7 @@ and expr0 arg =
         ExUnr loc
     ]
 and module_type arg x =
-  match Extfun.apply ef_module_type x arg with [
+  match Extfun.apply ef_module_type.val x arg with [
     x -> x
   | exception Extfun.Failure -> module_type0 arg x
   ]
@@ -352,7 +352,7 @@ and module_type0 arg =
         MtExten loc (attribute_body arg exten)
     ]
 and sig_item arg x =
-  match Extfun.apply ef_sig_item x arg with [
+  match Extfun.apply ef_sig_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> sig_item0 arg x
   ]
@@ -406,7 +406,7 @@ and sig_item0 arg =
         SgExten loc (attribute_body arg exten)
     ]
 and with_constr arg x =
-  match Extfun.apply ef_with_constr x arg with [
+  match Extfun.apply ef_with_constr.val x arg with [
     x -> x
   | exception Extfun.Failure -> with_constr0 arg x
   ]
@@ -421,7 +421,7 @@ and with_constr0 arg =
   | WcTys loc x1 x2 x3 →
       WcTys loc (vala_map (longid_lident arg) x1) x2 (ctyp arg x3) ]
 and longid arg x =
-  match Extfun.apply ef_longid x arg with [
+  match Extfun.apply ef_longid.val x arg with [
     x -> x
   | exception Extfun.Failure -> longid0 arg x
   ]
@@ -436,7 +436,7 @@ and longid0 arg =
         LiUid loc x1
     ]
 and module_expr arg x =
-  match Extfun.apply ef_module_expr x arg with [
+  match Extfun.apply ef_module_expr.val x arg with [
     x -> x
   | exception Extfun.Failure -> module_expr0 arg x
   ]
@@ -466,7 +466,7 @@ and module_expr0 arg =
         MeExten loc (attribute_body arg exten)
     ]
 and str_item arg x =
-  match Extfun.apply ef_str_item x arg with [
+  match Extfun.apply ef_str_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> str_item0 arg x
   ]
@@ -521,7 +521,7 @@ and str_item0 arg =
         StExten loc (attribute_body arg exten)
     ]
 and type_decl arg x =
-  match Extfun.apply ef_type_decl x arg with [
+  match Extfun.apply ef_type_decl.val x arg with [
     x -> x
   | exception Extfun.Failure -> type_decl0 arg x
   ]
@@ -534,7 +534,7 @@ and type_decl0 arg x =
        x.tdCon;
    tdAttributes = attributes arg x.tdAttributes}
 and type_extension arg x =
-  match Extfun.apply ef_type_extension x arg with [
+  match Extfun.apply ef_type_extension.val x arg with [
     x -> x
   | exception Extfun.Failure -> type_extension0 arg x
   ]
@@ -544,7 +544,7 @@ and type_extension0 arg x =
    teECs = vala_map (List.map (extension_constructor arg)) x.teECs ;
    teAttributes = attributes arg x.teAttributes}
 and extension_constructor arg x =
-  match Extfun.apply ef_extension_constructor x arg with [
+  match Extfun.apply ef_extension_constructor.val x arg with [
     x -> x
   | exception Extfun.Failure -> extension_constructor0 arg x
   ]
@@ -553,7 +553,7 @@ and extension_constructor0 arg = fun [
   | EcRebind x1 x2 x3 -> EcRebind x1 x2 (attributes arg x3)
 ]
 and class_type arg x =
-  match Extfun.apply ef_class_type x arg with [
+  match Extfun.apply ef_class_type.val x arg with [
     x -> x
   | exception Extfun.Failure -> class_type0 arg x
   ]
@@ -581,7 +581,7 @@ and class_type0 arg =
         CtExten loc (attribute_body arg exten)
     ]
 and class_sig_item arg x =
-  match Extfun.apply ef_class_sig_item x arg with [
+  match Extfun.apply ef_class_sig_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> class_sig_item0 arg x
   ]
@@ -606,7 +606,7 @@ and class_sig_item0 arg =
         CgExten loc (attribute_body arg exten)
     ]
 and class_expr arg x =
-  match Extfun.apply ef_class_expr x arg with [
+  match Extfun.apply ef_class_expr.val x arg with [
     x -> x
   | exception Extfun.Failure -> class_expr0 arg x
   ]
@@ -640,7 +640,7 @@ and class_expr0 arg =
         CeExten loc (attribute_body arg exten)
     ]
 and class_str_item arg x =
-  match Extfun.apply ef_class_str_item x arg with [
+  match Extfun.apply ef_class_str_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> class_str_item0 arg x
   ]
@@ -672,7 +672,7 @@ and class_str_item0 arg =
 and longid_lident arg (x1, x2) =
     (option_map (longid arg) x1, x2)
 and attribute_body arg x =
-  match Extfun.apply ef_attribute_body x arg with [
+  match Extfun.apply ef_attribute_body.val x arg with [
     x -> x
   | exception Extfun.Failure -> attribute_body0 arg x
   ]

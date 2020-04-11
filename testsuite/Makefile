@@ -149,6 +149,9 @@ q_MLast_test.byte: q_MLast_test.ml testutil.cmo
 pa_passthru.cmo: pa_passthru.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_passthru.ml
 
+pa_deriving_show.cmo: pa_deriving_show.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_show.ml
+
 grammar_bug_test:: grammar_bug_test.byte
 	HAS_ARGLE=true ./grammar_bug_test.byte
 
