@@ -3979,10 +3979,10 @@ and u := bool;
 | `Bar (a, b) → 2 ];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="type-attributes-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
+     o_input = OK {foo|type t1 = (a[@a1]) t[@a2]|foo} ;
+     official_input = OK {foo|type t1 = (a[@a1]) t[@a2]|foo} ;
      r_input = OK {foo||foo} ;
      o_output = OK {foo||foo};
      official_output = OK {foo||foo} ;
