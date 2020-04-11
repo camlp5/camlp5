@@ -3930,23 +3930,27 @@ and u := bool;
      r_output = OK {foo|ref (lazy 1);
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="variant-type-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type t = [ `Foo | `Bar of int * string ]|foo} ;
+     official_input = OK {foo|type t = [ `Foo | `Bar of int * string ]|foo} ;
+     r_input = OK {foo|type t = [= `Foo | `Bar of (int * string) ];|foo} ;
+     o_output = OK {foo|type t = [ `Foo | `Bar of int * string ];;
+|foo};
+     official_output = OK {foo|type t = [ `Foo  | `Bar of (int * string) ]|foo} ;
+     r_output = OK {foo|type t = [ = `Foo | `Bar of (int * string) ];
+|foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="variant-type-2"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type pv2 = [ `Baz | pv1 ]|foo} ;
+     official_input = OK {foo|type pv2 = [ `Baz | pv1 ]|foo} ;
+     r_input = OK {foo|type pv2 = [ = `Baz | pv1 ];|foo} ;
+     o_output = OK {foo|type pv2 = [ `Baz | pv1 ];;
+|foo};
+     official_output = OK {foo|type pv2 = [ `Baz  | pv1]|foo} ;
+     r_output = OK {foo|type pv2 = [ = `Baz | pv1 ];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

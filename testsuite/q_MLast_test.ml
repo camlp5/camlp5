@@ -169,9 +169,10 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo| <:expr< [%a b;] >> ; |foo}
         }
-      ; { name = "prototype" ; 
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "variants-1" ; 
+          expect = {foo|MLast.TyVrn loc (Ploc.VaVal l) None;
+|foo} ;
+          code = {foo|<:ctyp< [= $list:l$ ] >>; |foo}
         }
       ; { name = "prototype" ; 
           expect = {foo||foo} ;
