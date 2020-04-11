@@ -3952,23 +3952,32 @@ and u := bool;
      r_output = OK {foo|type pv2 = [ = `Baz | pv1 ];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="PaTyp-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|match x with #A.foo as z -> 1|foo} ;
+     official_input = OK {foo|match x with #A.foo as z -> 1|foo} ;
+     r_input = OK {foo|match x with [ ( #A.foo ) as z → 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with #A.foo as z -> 1;;
+|foo};
+     official_output = OK {foo|;;match x with | #A.foo as z -> 1|foo} ;
+     r_output = OK {foo|match x with [ #A.foo as z → 1 ];
+|foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="variant-type-3"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|match x with `Foo -> 1 | `Bar (a, b) -> 2|foo} ;
+     official_input = OK {foo|match x with `Foo -> 1 | `Bar (a, b) -> 2|foo} ;
+     r_input = OK {foo|match x with [ `Foo → 1 | `Bar (a, b) → 2 ];|foo} ;
+     o_output = OK {foo|let _ =
+  match x with
+    `Foo -> 1
+  | `Bar (a, b) -> 2;;
+|foo};
+     official_output = OK {foo|;;match x with | `Foo -> 1 | `Bar (a, b) -> 2|foo} ;
+     r_output = OK {foo|match x with
+[ `Foo → 1
+| `Bar (a, b) → 2 ];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

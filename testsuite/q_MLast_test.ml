@@ -174,9 +174,15 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:ctyp< [= $list:l$ ] >>; |foo}
         }
-      ; { name = "prototype" ; 
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "variants-2" ; 
+          expect = {foo|MLast.PaVrn loc (Ploc.VaVal "Foo");
+|foo} ;
+          code = {foo|<:patt< `Foo >> ;|foo}
+        }
+      ; { name = "variants-3" ; 
+          expect = {foo|MLast.PaVrn loc (Ploc.VaVal "foo");
+|foo} ;
+          code = {foo|<:patt< `foo >> ;|foo}
         }
       ; { name = "prototype" ; 
           expect = {foo||foo} ;
