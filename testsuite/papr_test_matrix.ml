@@ -3983,10 +3983,12 @@ and u := bool;
      exclude=[];
      o_input = OK {foo|type t1 = (a[@a1]) t[@a2]|foo} ;
      official_input = OK {foo|type t1 = (a[@a1]) t[@a2]|foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     r_input = OK {foo|type t1 = t (a[@a1])[@a2];|foo} ;
+     o_output = OK {foo|type t1 = (a[@a1]) t[@a2];;
+|foo};
+     official_output = OK {foo|type t1 = ((((a)[@a1 ]) t)[@a2 ])|foo} ;
+     r_output = OK {foo|type t1 = t (a[@a1])[@a2];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
