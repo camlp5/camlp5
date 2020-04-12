@@ -270,6 +270,6 @@ let suite = "Test deriving(show)" >::: [
   ]
 
 let _ = 
-if Testutil2.invoked_with "test_deriving_show" then
+if Testutil2.invoked_with "test_deriving_show" || Testutil2.invoked_with "test_deriving_show.ppx" then
   run_test_tt_main suite
 else ()
