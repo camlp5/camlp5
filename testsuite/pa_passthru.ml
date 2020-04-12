@@ -35,6 +35,22 @@ value class_infos_map arg ~{attributes} f x =
    ciNam = x.ciNam; ciExp = f x.ciExp; ciAttributes = attributes arg x.ciAttributes }
 ;
 
+module Ctxt = struct
+type t = { module_path : string } ;
+value mk loc =
+  let fname = Ploc.file_name loc in
+  let path = String.split_on_char '/' fname in
+  let (last, _) = Asttools.sep_last path in
+  let base = match String.split_on_char '.' last with [
+    [base :: _] -> base | _ -> assert False ] in
+  let modname = String.capitalize_ascii base in
+  { module_path = modname }
+;
+value append_module ctxt s =
+  { (ctxt) with module_path = Printf.sprintf "%s.%s" ctxt.module_path s }
+;
+end ;
+
 value ef_ctyp = ref Extfun.empty ;
 value ef_generic_constructor = ref Extfun.empty ;
 value ef_patt = ref Extfun.empty ;
@@ -54,9 +70,7 @@ value ef_class_expr = ref Extfun.empty ;
 value ef_class_str_item = ref Extfun.empty ;
 value ef_attribute_body = ref Extfun.empty ;
 
-type deriving_context_t = unit ;
-
-value rec ctyp (arg : deriving_context_t)  x =
+value rec ctyp (arg : Ctxt.t)  x =
   match Extfun.apply ef_ctyp.val x arg with [
     x -> x
   | exception Extfun.Failure -> ctyp0 arg x
@@ -510,7 +524,12 @@ and str_item0 arg =
         StInc loc (module_expr arg x1) (attributes arg x2)
     | StMod loc x1 x2 →
         StMod loc x1
-          (vala_map (List.map (fun (x1, x2, x3) → (x1, module_expr arg x2, attributes arg x3)))
+          (vala_map (List.map (fun (x1, x2, x3) →
+           let arg = match Pcaml.unvala x1  with [
+             Some s -> Ctxt.append_module arg (Pcaml.unvala s)
+           | None -> arg
+           ] in
+           (x1, module_expr arg x2, attributes arg x3)))
              x2)
     | StMty loc x1 x2 x3 →
         StMty loc x1 (module_type arg x2) (attributes arg x3)
@@ -722,7 +741,10 @@ and attributes arg x1 = vala_map (attributes_no_anti arg) x1
 value passthru pa_before arg = do {
   let rv = pa_before arg in
   let (l, status) = rv in
-  (List.map (fun (si, loc) -> (str_item () si, loc)) l, status)
+  assert (l <> []) ;
+  let (_, loc) = List.hd l in
+  let ctxt = Ctxt.mk loc in
+  (List.map (fun (si, loc) -> (str_item ctxt si, loc)) l, status)
 }
 ;
 Pcaml.parse_implem.val := passthru Pcaml.parse_implem.val;

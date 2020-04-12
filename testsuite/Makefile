@@ -150,7 +150,7 @@ pa_passthru.cmo: pa_passthru.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_passthru.ml
 
 pa_deriving_show.cmo: pa_deriving_show.ml pa_passthru.cmo
-	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo'  'pa_deriving_show.ml' > pa_deriving_show.ppo
+	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo' pr_ro.cmo 'pa_deriving_show.ml' > pa_deriving_show.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_show.ml
 
 test_deriving_show.ppx: test_deriving_show.ppx.byte

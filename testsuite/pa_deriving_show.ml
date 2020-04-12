@@ -34,6 +34,12 @@ value arrows_list loc l ty =
     l ty
 ;
 
+value ctyp_wrap_attrs ty al =
+  let loc = loc_of_ctyp ty in
+  List.fold_left (fun ty attr -> <:ctyp< $ty$  [@ $_attribute:attr$ ] >>)
+    ty al
+;
+
 value ctyp_applist e el =
   List.fold_left (fun e arg -> let loc = loc_of_ctyp arg in <:ctyp< $e$ $arg$ >>) e el
 ;
@@ -145,7 +151,9 @@ value fmt_expression arg param_map ty0 =
   let branches = List.map (fun [
     (loc, cid, <:vala< [TyRec _ fields] >>, None, _) ->
     let cid = Pcaml.unvala cid in
-    let (recpat, body) = fmt_record loc (Pcaml.unvala fields) in
+    let prefix_txt =
+      Printf.sprintf "%s.%s " arg.Pa_passthru.Ctxt.module_path cid in
+    let (recpat, body) = fmt_record ~{with_path=False} ~{prefix_txt=prefix_txt} ~{bracket_space=""} loc arg (Pcaml.unvala fields) in
 
     let conspat = <:patt< $uid:cid$ $recpat$ >> in
     (conspat, <:vala< None >>, body)
@@ -155,8 +163,16 @@ value fmt_expression arg param_map ty0 =
     let tyl = Pcaml.unvala tyl in
     let vars = List.mapi (fun n _ -> Printf.sprintf "v%d" n) tyl in
     let fmts = List.map fmtrec tyl in
-    let fmtstring = Printf.sprintf "(@[<2>%s (@,%s@,))@]" cid
-        (String.concat ",@ " (List.map (fun _ -> "%a") vars)) in
+    let fmtstring =
+      if vars = [] then
+        Printf.sprintf "@[<2>%s.%s@]" arg.Pa_passthru.Ctxt.module_path cid
+      else if List.length vars = 1 then
+        Printf.sprintf "(@[<2>%s.%s @,%s@,)@]" arg.Pa_passthru.Ctxt.module_path cid
+        (String.concat ",@ " (List.map (fun _ -> "%a") vars))
+      else
+        Printf.sprintf "(@[<2>%s.%s (@,%s@,))@]" arg.Pa_passthru.Ctxt.module_path cid
+        (String.concat ",@ " (List.map (fun _ -> "%a") vars))
+    in
     let varpats = List.map (fun v -> <:patt< $lid:v$ >>) vars in
     let conspat = List.fold_left (fun p vp -> <:patt< $p$ $vp$ >>)
         <:patt< $uid:cid$ >> varpats in
@@ -175,8 +191,16 @@ value fmt_expression arg param_map ty0 =
     let tyl = Pcaml.unvala tyl in
     let vars = List.mapi (fun n _ -> Printf.sprintf "v%d" n) tyl in
     let fmts = List.map fmtrec tyl in
-    let fmtstring = Printf.sprintf "(@[<2>`%s (@,%s@,))@]" cid
-        (String.concat ",@ " (List.map (fun _ -> "%a") vars)) in
+    let fmtstring =
+      if vars = [] then
+        Printf.sprintf "@[<2>`%s@]" cid
+      else if List.length vars = 1 then
+        Printf.sprintf "@[<2>`%s (@,%s@,)@]" cid
+          (String.concat ",@ " (List.map (fun _ -> "%a") vars))
+      else
+        Printf.sprintf "@[<2>`%s (@,%s@,)@]" cid
+          (String.concat ",@ " (List.map (fun _ -> "%a") vars))
+    in
     let varpats = List.map (fun v -> <:patt< $lid:v$ >>) vars in
     let conspat = List.fold_left (fun p vp -> <:patt< $p$ $vp$ >>)
         <:patt< ` $cid$ >> varpats in
@@ -203,16 +227,24 @@ value fmt_expression arg param_map ty0 =
   <:expr< fun ofmt -> fun [ $list:branches$ ] >>
 
 | <:ctyp:< { $list:fields$ } >> ->
-  let (recpat, body) = fmt_record loc fields in
+  let (recpat, body) = fmt_record ~{with_path=True} ~{prefix_txt=""} ~{bracket_space=" "} loc arg fields in
   <:expr< fun ofmt $recpat$ -> $body$ >>
 ]
-and fmt_record loc fields = 
-  let labels_vars_fmts = List.map (fun (_, fname, _, ty, _) ->
+and fmt_record ~{with_path} ~{prefix_txt} ~{bracket_space} loc arg fields = 
+  let labels_vars_fmts = List.map (fun (_, fname, _, ty, attrs) ->
+        let ty = ctyp_wrap_attrs ty (Pcaml.unvala attrs) in
         (fname, Printf.sprintf "v_%s" fname, fmtrec ty)) fields in
 
-  let fmt = Printf.sprintf "@{,%s@]}"
-      (String.concat ";@ " (List.map (fun (f, _, _) ->
-                            Printf.sprintf "@[%s =@ %s@]" f "%a") labels_vars_fmts)) in
+  let field_text i f =
+    if with_path && i = 0 then Printf.sprintf "%s.%s" arg.Pa_passthru.Ctxt.module_path f
+    else f in
+  let fmt = Printf.sprintf "@[<2>%s{%s%s%s}@]"
+      prefix_txt
+      bracket_space
+      (String.concat ";@ " (List.mapi (fun i (f, _, _) ->
+                            Printf.sprintf "@[%s =@ %s@]" (field_text i f) "%a") labels_vars_fmts))
+      bracket_space
+  in
   let e = List.fold_left (fun e (f,v,fmtf) ->
       <:expr< $e$ $fmtf$ $lid:v$ >>)
       <:expr< pf ofmt $str:fmt$ >> labels_vars_fmts in
