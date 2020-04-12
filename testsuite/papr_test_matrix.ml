@@ -1750,12 +1750,51 @@ and t2 = bool[@@foo];
   ();
 |foo}
     };
+    {name="let-type-constraint-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x : unit  = ()|foo} ;
+     official_input = OK {foo|let x : unit  = ()|foo} ;
+     r_input = OK {foo|value x : unit = ();|foo} ;
+     o_output = OK {foo|let x : unit = ();;
+|foo};
+     official_output = OK {foo|let x : unit = ()|foo} ;
+     r_output = OK {foo|value x : unit = ();
+|foo}
+    };
+    {name="let-type-constraint-2"; implem = True ;
+     exclude=["o2official";"r2official"];
+     o_input = OK {foo|let (x : unit)  = ()|foo} ;
+     official_input = OK {foo|let (x : unit)  = ()|foo} ;
+     r_input = OK {foo|value (x : unit) = ();|foo} ;
+     o_output = OK {foo|let x : unit = ();;
+|foo};
+     official_output = OK {foo|let (x : unit) = ()|foo} ;
+     r_output = OK {foo|value x : unit = ();
+|foo}
+    };
+    {(skip) with
+     name="let-type-constraint-2-[ro]2official";
+     o_input = OK {foo|let (x : unit)  = ()|foo} ;
+     r_input = OK {foo|value (x : unit) = ();|foo} ;
+     official_output = OK {foo|let x : unit = ()|foo}
+    };
+    {name="let-type-constraint-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f : 'a . 'a -> 'a  = fun x -> x|foo} ;
+     official_input = OK {foo|let f : 'a . 'a -> 'a  = fun x -> x|foo} ;
+     r_input = OK {foo|value (f : ! 'a . 'a → 'a) = fun x -> x;|foo} ;
+     o_output = OK {foo|let f : 'a . 'a -> 'a = fun x -> x;;
+|foo};
+     official_output = OK {foo|let f : 'a . 'a -> 'a = fun x -> x|foo} ;
+     r_output = OK {foo|value f : ! α . α → α = fun x → x;
+|foo}
+    };
     {name="attributes-in-odd-locations1"; implem = True ;
      exclude=["official2official"];
      o_input = OK {foo|let (x[@foo1]) : unit [@foo2] = ()[@foo3]  [@@foo4]|foo} ;
      official_input = SKIP "meh" "meh" ;
      r_input = OK {foo|value x[@foo1] : unit [@foo2] = ()[@foo3]  [@@foo4];|foo} ;
-     o_output = OK {foo|let (x[@foo1]) = (()[@foo3] : unit[@foo2])[@@foo4];;
+     o_output = OK {foo|let (x[@foo1]) : unit[@foo2] = ()[@foo3][@@foo4];;
 |foo};
      official_output = OK {foo|let (((x)[@foo1 ]) : ((unit)[@foo2 ])) = ((())[@foo3 ])[@@foo4 ]|foo} ;
      r_output = OK {foo|value x[@foo1] : unit[@foo2] = ()[@foo3][@@foo4];
@@ -3622,7 +3661,7 @@ value ( .%{;..}<- ) x y = Hashtbl.add;
      o_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
      official_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
      r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];|foo} ;
-     o_output = OK {foo|let [%foo: [ `Foo ]] = ([%foo: < foo : t > ] : [%foo: t -> t]);;
+     o_output = OK {foo|let [%foo: [ `Foo ]] : [%foo: t -> t] = [%foo: < foo : t > ];;
 |foo};
      official_output = OK {foo|let ([%foo :[ `Foo ]] : [%foo :t -> t]) = [%foo :< foo: t   > ]|foo} ;
      r_output = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];
@@ -3801,12 +3840,12 @@ and u := bool;
     {name="let-type-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let a = (b : t)|foo} ;
-     official_input = OK {foo|let a : t = b|foo} ;
+     official_input = OK {foo|let a = (b : t)|foo} ;
      r_input = OK {foo|value a = (b : t);|foo} ;
-     o_output = OK {foo|let a : t = b;;
+     o_output = OK {foo|let a = (b : t);;
 |foo};
-     official_output = OK {foo|let a : t = b|foo} ;
-     r_output = OK {foo|value a : t = b;
+     official_output = OK {foo|let a = (b : t)|foo} ;
+     r_output = OK {foo|value a = (b : t);
 |foo}
     };
     {name="let-type-2"; implem = True ;

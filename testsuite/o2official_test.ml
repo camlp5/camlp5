@@ -24,7 +24,7 @@ end ;
 value both_pr = (Implem.pr, Interf.pr) ;
 end ;
 
-value tests = "test pa_o -> official" >::: (Papr_test_matrix.o2official PAPR.both_pa1 Official.both_pr (Some Testutil.Official.both_pa) ()) ;
+value tests = "matrix" >::: (Papr_test_matrix.o2official PAPR.both_pa1 Official.both_pr (Some Testutil.Official.both_pa) ()) ;
 
 
 value _ =
