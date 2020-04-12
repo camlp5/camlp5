@@ -87,40 +87,40 @@ papr_test_matrix.cmo: papr_test_matrix.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl papr_test_matrix.ml
 
 o2r_test:: o2r_test.byte
-	./o2r_test.byte
+	./o2r_test.byte $(TESTARGS)
 
 o2r_test.byte: o2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op,camlp5.pr_r -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
 
 r2r_test:: r2r_test.byte
-	./r2r_test.byte
+	./r2r_test.byte $(TESTARGS)
 
 r2r_test.byte: r2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_r -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.ml -o r2r_test.byte
 
 
 r2o_test:: r2o_test.byte
-	./r2o_test.byte
+	./r2o_test.byte $(TESTARGS)
 
 r2o_test.byte: r2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_o -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_test.ml -o r2o_test.byte
 
 
 o2o_test:: o2o_test.byte
-	./o2o_test.byte
+	./o2o_test.byte $(TESTARGS)
 
 o2o_test.byte: o2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op,camlp5.pr_o -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.ml -o o2o_test.byte
 
 o2official_test:: o2official_test.byte
-	./o2official_test.byte
+	./o2official_test.byte $(TESTARGS)
 
 o2official_test.byte: o2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op,camlp5.pr_official -syntax camlp5r -I ../etc -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_test.ml -o o2official_test.byte
 
 
 r2official_test:: r2official_test.byte
-	./r2official_test.byte
+	./r2official_test.byte $(TESTARGS)
 
 r2official_test.byte: r2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r,camlp5.pr_official -syntax camlp5r -I ../etc -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_test.ml -o r2official_test.byte
@@ -128,7 +128,7 @@ r2official_test.byte: r2official_test.ml testutil.cmo testutil2.cmo papr_test_ma
 
 
 official2official_test:: official2official_test.byte
-	./official2official_test.byte
+	./official2official_test.byte $(TESTARGS)
 
 official2official_test.byte: official2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo official2official_test.ml -o official2official_test.byte
