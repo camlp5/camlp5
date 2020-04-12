@@ -94,8 +94,6 @@ value fmt_expression arg param_map ty0 =
   let argfmts = List.map fmtrec argtys in
   expr_applist <:expr< $e$ >> argfmts
 
-| <:ctyp< $t1$ == $_priv:_$ $t2$ >> -> fmtrec t2
-
 | <:ctyp:< list $ty$ >> ->
   let fmt1 = fmtrec ty in
   <:expr< fun (ofmt : Format.formatter) arg -> Fmt.(pf ofmt $str:"@[<2>[%a@,]@]"$ (list ~{sep=semi} $fmt1$) arg) >>
@@ -270,11 +268,22 @@ and fmt_record ~{without_path} ~{prefix_txt} ~{bracket_space} loc arg fields =
 in fmtrec ty0
 ;
 
+value fmt_top arg params = fun [
+  <:ctyp< $t1$ == $_priv:_$ $t2$ >> ->
+  let arg = match t1 with [
+    <:ctyp< $longid:li$ . $lid:_$ >> -> Ctxt.module_path arg li
+  | _ -> arg
+  ] in
+  fmt_expression arg params t2
+| t -> fmt_expression arg params t
+]
+;
+
 value str_item_top_funs arg (loc, tyname) param_map ty =
   let tyname = Pcaml.unvala tyname in
   let ppfname = pp_fname arg tyname in
   let showfname = show_fname arg tyname in
-  let e = fmt_expression arg param_map ty in
+  let e = fmt_top arg param_map ty in
 
   let paramfun_patts = List.map (fun (_,ppf) -> <:patt< $lid:ppf$ >>) param_map in
   let paramfun_exprs = List.map (fun (_,ppf) -> <:expr< $lid:ppf$ >>) param_map in
@@ -370,7 +379,7 @@ value sig_item_gen_show loc arg tdl =
 
 value expr_show arg ty =
   let loc = loc_of_ctyp ty in
-  let e = fmt_expression arg [] ty in
+  let e = fmt_top arg [] ty in
   <:expr< fun arg -> Format.asprintf "%a" $e$ arg >>
 ;
 

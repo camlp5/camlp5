@@ -55,6 +55,14 @@ value prefixed_name ctxt id =
 ;
 value with_path ctxt b = { (ctxt) with with_path = b } ;
 
+value module_path ctxt li =
+  let rec li2string = fun [
+    <:longident< $uid:uid$ >> -> uid
+  | <:longident< $longid:li$ . $uid:uid$ >> ->
+    Printf.sprintf "%s.%s" (li2string li) uid
+  ] in
+  { (ctxt) with module_path = li2string li }
+;
 end ;
 
 value ef_ctyp = ref Extfun.empty ;
