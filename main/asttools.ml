@@ -75,6 +75,13 @@ value rec sep_last = fun [
   ]
 ;
 
+value try_find f = 
+ let rec try_find_f = fun [
+     [] -> failwith "try_find"
+   | [h::t] -> try f h with [ Failure _ -> try_find_f t ]
+ ] in try_find_f
+;
+
 value expr_to_path_module_expr e =
   let rec erec = fun [
     <:expr:< $uid:i$ >> -> <:module_expr< $uid:i$ >>
