@@ -44,7 +44,7 @@ OCAMLFIND=tools/LAUNCH ocamlfind
 OCAMLTOPLEVEL=tools/LAUNCH ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
 MKCAMLP5=tools/LAUNCH mkcamlp5
-CAMLP5R=tools/lAUNCH camlp5r -I $(CAMLP5LIB)
+CAMLP5R=tools/LAUNCH camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
@@ -150,7 +150,21 @@ pa_passthru.cmo: pa_passthru.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_passthru.ml
 
 pa_deriving_show.cmo: pa_deriving_show.ml
+	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo'  'pa_deriving_show.ml' > pa_deriving_show.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_show.ml
+
+test_deriving_show.ppx: test_deriving_show.ppx.byte
+	./test_deriving_show.ppx.byte
+
+test_deriving_show.ppx.byte: test_deriving_show.ml pa_deriving_show.ml testutil.cmo testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.show -linkall -linkpkg testutil.cmo testutil2.cmo test_deriving_show.ml -o test_deriving_show.ppx.byte
+
+test_deriving_show: test_deriving_show.byte
+	./test_deriving_show.byte
+
+test_deriving_show.byte: test_deriving_show.ml pa_deriving_show.cmo testutil.cmo testutil2.cmo
+	tools/LAUNCH camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./pa_deriving_show.cmo test_deriving_show.ml > test_deriving_show.ppo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg testutil.cmo testutil2.cmo -impl test_deriving_show.ppo -o test_deriving_show.byte
 
 grammar_bug_test:: grammar_bug_test.byte
 	HAS_ARGLE=true ./grammar_bug_test.byte

@@ -54,13 +54,16 @@ value ef_class_expr = ref Extfun.empty ;
 value ef_class_str_item = ref Extfun.empty ;
 value ef_attribute_body = ref Extfun.empty ;
 
-value rec ctyp arg x =
+type deriving_context_t = unit ;
+
+value rec ctyp (arg : deriving_context_t)  x =
   match Extfun.apply ef_ctyp.val x arg with [
     x -> x
   | exception Extfun.Failure -> ctyp0 arg x
   ]
 and ctyp0 arg =
-  self where rec self =
+  let rec self x = ctyp arg x
+  and self0 =
     fun
     [ TyAtt loc ct attr ->
        TyAtt loc (self ct) (attribute_body arg attr)
@@ -115,7 +118,8 @@ and ctyp0 arg =
         TyXtr loc x1 (option_map (vala_map self) x2)
     | TyExten loc exten ->
         TyExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 
 and generic_constructor arg x =
   match Extfun.apply ef_generic_constructor.val x arg with [
@@ -137,7 +141,8 @@ and patt arg x =
   | exception Extfun.Failure -> patt0 arg x
   ]
 and patt0 arg =
-  self where rec self =
+  let rec self x = patt arg x
+  and self0 =
     fun
     [ PaAtt loc p attr ->
        PaAtt loc (self p) (attribute_body arg attr)
@@ -198,14 +203,16 @@ and patt0 arg =
         PaXtr loc x1 (option_map (vala_map self) x2)
     | PaExten loc exten ->
         PaExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 and expr arg x =
   match Extfun.apply ef_expr.val x arg with [
     x -> x
   | exception Extfun.Failure -> expr0 arg x
   ]
 and expr0 arg =
-  self where rec self =
+  let rec self x = expr arg x
+  and self0 =
     fun
     [ ExAtt loc e attr ->
        ExAtt loc (self e) (attribute_body arg attr)
@@ -318,14 +325,16 @@ and expr0 arg =
         ExExten loc exten
     | ExUnr loc ->
         ExUnr loc
-    ]
+    ] in
+  self0
 and module_type arg x =
   match Extfun.apply ef_module_type.val x arg with [
     x -> x
   | exception Extfun.Failure -> module_type0 arg x
   ]
 and module_type0 arg =
-  self where rec self =
+  let rec self x = module_type arg x
+  and self0 =
     fun
     [ MtAtt loc e attr ->
        MtAtt loc (self e) (attribute_body arg attr)
@@ -350,14 +359,16 @@ and module_type0 arg =
         MtXtr loc x1 (option_map (vala_map self) x2)
     | MtExten loc exten ->
         MtExten loc (attribute_body arg exten)
-    ]
+    ] in
+    self0
 and sig_item arg x =
   match Extfun.apply ef_sig_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> sig_item0 arg x
   ]
 and sig_item0 arg =
-  self where rec self =
+  let rec self x = sig_item arg x
+  and self0 =
     fun
     [ SgCls loc x1 →
         SgCls loc
@@ -404,7 +415,8 @@ and sig_item0 arg =
         SgFlAtt loc (attribute_body arg a)
     | SgExten loc exten ->
         SgExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 and with_constr arg x =
   match Extfun.apply ef_with_constr.val x arg with [
     x -> x
@@ -426,7 +438,8 @@ and longid arg x =
   | exception Extfun.Failure -> longid0 arg x
   ]
 and longid0 arg =
-  self where rec self =
+  let rec self x = longid arg x
+  and self0 =
     fun
     [ LiAcc loc x1 x2 →
         LiAcc loc (self x1) x2
@@ -434,14 +447,16 @@ and longid0 arg =
         LiApp loc (self x1) (self x2)
     | LiUid loc x1 →
         LiUid loc x1
-    ]
+    ] in
+  self0
 and module_expr arg x =
   match Extfun.apply ef_module_expr.val x arg with [
     x -> x
   | exception Extfun.Failure -> module_expr0 arg x
   ]
 and module_expr0 arg =
-  self where rec self =
+  let rec self x = module_expr arg x
+  and self0 =
     fun
     [ MeAtt loc e attr ->
        MeAtt loc (self e) (attribute_body arg attr)
@@ -449,9 +464,9 @@ and module_expr0 arg =
         MeAcc loc (self x1) (self x2)
     | MeApp loc x1 x2 →
         MeApp loc (self x1) (self x2)
-    | MeFun loc arg x3 →
-        let arg = vala_map (option_map (fun (idopt, m) -> (idopt, module_type arg m))) arg in
-        MeFun loc arg (self x3)
+    | MeFun loc farg x3 →
+        let farg = vala_map (option_map (fun (idopt, m) -> (idopt, module_type arg m))) farg in
+        MeFun loc farg (self x3)
     | MeStr loc x1 →
         MeStr loc (vala_map (List.map (str_item arg)) x1)
     | MeTyc loc x1 x2 →
@@ -464,14 +479,16 @@ and module_expr0 arg =
         MeXtr loc x1 (option_map (vala_map self) x2)
     | MeExten loc exten ->
         MeExten loc (attribute_body arg exten)
-    ]
+    ] in
+    self0
 and str_item arg x =
   match Extfun.apply ef_str_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> str_item0 arg x
   ]
 and str_item0 arg =
-  self where rec self =
+  let rec self x = str_item arg x
+  and self0 =
     fun
     [ StCls loc x1 →
         StCls loc
@@ -519,7 +536,8 @@ and str_item0 arg =
         StFlAtt loc (attribute_body arg a)
     | StExten loc exten ->
         StExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 and type_decl arg x =
   match Extfun.apply ef_type_decl.val x arg with [
     x -> x
@@ -558,7 +576,8 @@ and class_type arg x =
   | exception Extfun.Failure -> class_type0 arg x
   ]
 and class_type0 arg =
-  self where rec self =
+  let rec self x = class_type arg x
+  and self0 =
     fun
     [ CtAtt loc e attr ->
         CtAtt loc (self e) (attribute_body arg attr)
@@ -579,14 +598,16 @@ and class_type0 arg =
         CtXtr loc x1 (option_map (vala_map self) x2)
     | CtExten loc exten ->
         CtExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 and class_sig_item arg x =
   match Extfun.apply ef_class_sig_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> class_sig_item0 arg x
   ]
 and class_sig_item0 arg =
-  self where rec self =
+  let rec self x = class_sig_item arg x
+  and self0 =
     fun
     [ CgCtr loc x1 x2 x3 →
         CgCtr loc (ctyp arg x1) (ctyp arg x2) (attributes arg x3)
@@ -604,14 +625,16 @@ and class_sig_item0 arg =
         CgFlAtt loc (attribute_body arg a)
     | CgExten loc exten ->
         CgExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 and class_expr arg x =
   match Extfun.apply ef_class_expr.val x arg with [
     x -> x
   | exception Extfun.Failure -> class_expr0 arg x
   ]
 and class_expr0 arg =
-  self where rec self =
+  let rec self x = class_expr arg x
+  and self0 =
     fun
     [ CeAtt loc e attr ->
        CeAtt loc (self e) (attribute_body arg attr)
@@ -638,14 +661,16 @@ and class_expr0 arg =
         CeXtr loc x1 (option_map (vala_map self) x2)
     | CeExten loc exten ->
         CeExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 and class_str_item arg x =
   match Extfun.apply ef_class_str_item.val x arg with [
     x -> x
   | exception Extfun.Failure -> class_str_item0 arg x
   ]
 and class_str_item0 arg =
-  self where rec self =
+  let rec self x = class_str_item arg x
+  and self0 =
     fun
     [ CrCtr loc x1 x2 x3 →
         CrCtr loc (ctyp arg x1) (ctyp arg x2) (attributes arg x3)
@@ -668,7 +693,8 @@ and class_str_item0 arg =
         CrFlAtt loc (attribute_body arg a)
     | CrExten loc exten -> 
         CrExten loc (attribute_body arg exten)
-    ]
+    ] in
+  self0
 and longid_lident arg (x1, x2) =
     (option_map (longid arg) x1, x2)
 and attribute_body arg x =
@@ -694,10 +720,9 @@ and attributes arg x1 = vala_map (attributes_no_anti arg) x1
 ;
 
 value passthru pa_before arg = do {
-  Printf.fprintf stdout "[BEFORE PASSTHRU]\n" ; flush stdout ;
   let rv = pa_before arg in
-  Printf.fprintf stdout "[AFTER PASSTHRU]\n" ; flush stdout ;
-  rv
+  let (l, status) = rv in
+  (List.map (fun (si, loc) -> (str_item () si, loc)) l, status)
 }
 ;
 Pcaml.parse_implem.val := passthru Pcaml.parse_implem.val;

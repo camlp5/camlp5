@@ -35,6 +35,8 @@ Exparser.optim := false ;;
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
 
+#load "pa_passthru.cmo";;
+#load "pa_deriving_show.cmo";;
 
 open OUnit2 ;;
 open Testutil ;;
@@ -85,6 +87,11 @@ let pp_lexbuf lb =
 ;;
 #install_printer pp_lexbuf ;;
 
+#trace Pa_deriving_show.fmt_expression ;;
+#trace Pa_deriving_show.is_deriving_show ;;
+"test_deriving_show.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
+
+#use "test_deriving_show.ppo";;
 
 (*
 ;;; Local Variables: ***
