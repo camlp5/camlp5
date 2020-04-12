@@ -43,6 +43,7 @@ test_deriving_show.ppx: test_deriving_show.ppx.byte
 	./test_deriving_show.ppx.byte
 
 test_deriving_show.ppx.byte: test_deriving_show.ml pa_deriving_show.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite -dsource test_deriving_show.ml > test_deriving_show.ppx.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.show -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo test_deriving_show.ml -o test_deriving_show.ppx.byte
 
 test_deriving_show: test_deriving_show.byte
@@ -60,6 +61,7 @@ test_deriving_eq.ppx: test_deriving_eq.ppx.byte
 	./test_deriving_eq.ppx.byte
 
 test_deriving_eq.ppx.byte: test_deriving_eq.ml pa_deriving_eq.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite -dsource test_deriving_eq.ml > test_deriving_eq.ppx.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo test_deriving_eq.ml -o test_deriving_eq.ppx.byte
 
 test_deriving_eq: test_deriving_eq.byte
