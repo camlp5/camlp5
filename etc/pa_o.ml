@@ -654,6 +654,30 @@ value check_uident_coloneq =
     check_uident_coloneq_f
 ;
 
+value check_colon_f strm =
+  match stream_npeek 1 strm with [
+    [("", ":")] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_colon =
+  Grammar.Entry.of_parser gram "check_colon"
+    check_colon_f
+;
+
+value check_not_colon_f strm =
+  match stream_npeek 1 strm with [
+    [("", ":")] -> raise Stream.Failure
+  | _ -> ()
+  ]
+;
+
+value check_not_colon =
+  Grammar.Entry.of_parser gram "check_not_colon"
+    check_not_colon_f
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -1285,7 +1309,16 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   let_binding:
     [ [ alg_attrs = alg_attributes_no_anti ;
-        p = val_ident; e = fun_binding ;
+        p = val_ident; check_colon ; e = fun_binding ;
+        item_attrs = item_attributes ->
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+        let (p,e) = match e with [
+          <:expr< ( $e$ : $t$ ) >> -> (<:patt< ($p$ : $t$) >>, e)
+        | _ -> (p,e)
+        ] in
+        (p, e, attrs)
+      | alg_attrs = alg_attributes_no_anti ;
+        p = val_ident; check_not_colon ; e = fun_binding ;
         item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
         (p, e, attrs)
@@ -1302,7 +1335,14 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       ] ]
   ;
   first_let_binding:
-    [ [ p = val_ident; e = fun_binding ;
+    [ [ p = val_ident; check_colon; e = fun_binding ;
+        item_attrs = item_attributes ->
+        let (p,e) = match e with [
+          <:expr< ( $e$ : $t$ ) >> -> (<:patt< ($p$ : $t$) >>, e)
+        | _ -> (p,e)
+        ] in
+        (p, e, item_attrs)
+      | p = val_ident; check_not_colon; e = fun_binding ;
         item_attrs = item_attributes ->
         (p, e, item_attrs)
       | p = patt; "="; e = expr ;
@@ -1310,12 +1350,21 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
         (p, e, item_attrs)
       | p = patt; ":"; t = poly_type; "="; e = expr ;
         item_attrs = item_attributes ->
-        (p, <:expr< ( $e$ : $t$ ) >>, item_attrs)
+        (<:patt< ($p$ : $t$) >>, e, item_attrs)
       ] ]
   ;
   and_let_binding:
     [ [ "and"; alg_attrs = alg_attributes_no_anti ;
-        p = val_ident; e = fun_binding ;
+        p = val_ident; check_colon; e = fun_binding ;
+        item_attrs = item_attributes ->
+        let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+        let (p,e) = match e with [
+          <:expr< ( $e$ : $t$ ) >> -> (<:patt< ($p$ : $t$) >>, e)
+        | _ -> (p,e)
+        ] in
+        (p, e, attrs)
+      | "and"; alg_attrs = alg_attributes_no_anti ;
+        p = val_ident; check_not_colon; e = fun_binding ;
         item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
         (p, e, attrs)
@@ -1328,7 +1377,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
         p = patt; ":"; t = poly_type; "="; e = expr ;
         item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-        (p, <:expr< ( $e$ : $t$ ) >>, attrs)
+        (<:patt< ($p$ : $t$) >>, e, attrs)
       ] ]
   ;
   letop_binding:

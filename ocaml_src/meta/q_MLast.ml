@@ -662,8 +662,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ".")) false),
            "1154dceb",
            (fun (l : 'e__1 list) (loc : Ploc.t) ->
-              (Qast.VaVal (Qast.Str (String.concat "." l)) :
-               'attribute_id)))]];
+              (Qast.Str (String.concat "." l) : 'attribute_id)))]];
     Grammar.extension
       (attribute_structure : 'attribute_structure Grammar.Entry.e) None
       [None, None,

@@ -356,6 +356,12 @@ value record_binding is_last pc (p, e) =
   pprintf pc "%p =@;%q" label_patt p expr1 e (if is_last then pc.dang else ";")
 ;
 
+value is_polytype_constraint = fun [
+  <:patt< ( $_$ : ! $list:_$ . $_$ ) >> -> True
+| _ -> False
+]
+;
+
 pr_expr_fun_args.val :=
   extfun Extfun.empty with
   [ <:expr< fun $p$ -> $e$ >> as z ->
@@ -394,17 +400,21 @@ value let_binding pc (p, e, attrs) =
     [ <:patt< ($_$ : $_$) >> -> ([], e)
     | _ -> expr_fun_args e ]
   in
-  let pl = [p :: pl] in
-  let (e, tyo) =
-    match (p, e) with
-    [ (<:patt< $lid:_$ >>, <:expr< ($e$ : $t$) >>) -> (e, Some t)
-    | _ -> (e, None) ]
+  let (p, e, tyo) =
+    match (p, e) with [
+      (<:patt< (_ : $_$) >>, _)  -> (p, e, None)
+    | (<:patt< _ >>, _)  -> (p, e, None)
+    | (<:patt< ($p0$ : $t$) >>, _) when is_polytype_constraint p -> (p0, e, Some t)
+    | (<:patt< ($_$ : $_$) >>, _) -> (p, e, None)
+    | (_, <:expr< ( $e$ : $t$ ) >>) -> (p, e, Some t)
+    | _ -> (p, e, None) ]
   in
   let patt_tycon tyo pc p =
     match tyo with
     [ Some t -> pprintf pc "%p : %p" simple_patt p ctyp t
     | None -> simple_patt pc p ]
   in
+  let pl = [p :: pl] in
   let pl = List.map (fun p -> (p, "")) pl in
   let pc = {(pc) with dang = ""} in
   match pc.aft with

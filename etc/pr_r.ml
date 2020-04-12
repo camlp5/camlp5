@@ -383,6 +383,14 @@ value arrow () = if utf8 then "→" else "->";
 *)
 value binding elem pc (p, e) = pprintf pc "%p =@;%p" patt p elem e;
 
+
+value is_polytype_constraint = fun [
+  <:patt< ( $_$ : ! $list:_$ . $_$ ) >> -> True
+| _ -> False
+]
+;
+
+
 pr_expr_fun_args.val :=
   extfun Extfun.empty with
   [ <:expr< fun $p$ -> $e$ >> as z ->
@@ -507,18 +515,23 @@ value value_or_let_binding sequence_box pc (p, e, attrs) =
       let (up, ue) = un_irrefut_patt p in
       (up, <:expr< match $e$ with [ $p$ -> $ue$ ] >>)
   in
-  let (pl, e) = expr_fun_args e in
-  let pl = [p :: pl] in
-  let (e, tyo) =
-    match e with
-    [ <:expr< ($e$ : $t$) >> -> (e, Some t)
-    | _ -> (e, None) ]
+  let (pl, e) = if is_polytype_constraint p then ([], e)
+    else expr_fun_args e in
+  let (p, tyo) =
+    match p with
+    [ <:patt< ($p$ : $t$) >> -> (p, Some t)
+    | _ -> (p, None) ]
   in
+  let (e, tyo) = match (e, tyo) with [
+    (<:expr< ($e$ : $t$) >>, None) -> (e, Some t)
+  | _ -> (e, tyo)
+  ] in
   let patt_tycon pc p =
     match tyo with
     [ Some t -> pprintf pc "%p : %p" patt p ctyp t
     | None -> patt pc p ]
   in
+  let pl = [p :: pl] in
   horiz_vertic
     (fun () ->
        pprintf pc "%p = %p%p%s" (hlistl patt patt_tycon) pl (comm_expr expr_wh)

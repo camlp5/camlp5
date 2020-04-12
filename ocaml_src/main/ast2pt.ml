@@ -1411,12 +1411,6 @@ and label_expr rev_al =
 and mkpe (p, e, attrs) =
   let loc = Ploc.encl (loc_of_patt p) (loc_of_expr e) in
   let (p, e) =
-    match e with
-      ExTyc (loc, e, (TyPol (_, _, _) as t)) -> PaTyc (loc, p, t), e
-    | ExTyc (loc, e, t) -> PaTyc (loc, p, t), e
-    | _ -> p, e
-  in
-  let (p, e) =
     match p with
       PaTyc (loc, p, TyPot (loc1, nt, ct)) ->
         expand_gadt_type loc p loc1 nt ct e

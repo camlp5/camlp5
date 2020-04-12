@@ -447,6 +447,30 @@ value check_uident_coloneq =
     check_uident_coloneq_f
 ;
 
+value check_colon_f strm =
+  match stream_npeek 1 strm with [
+    [("", ":")] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_colon =
+  Grammar.Entry.of_parser gram "check_colon"
+    check_colon_f
+;
+
+value check_not_colon_f strm =
+  match stream_npeek 1 strm with [
+    [("", ":")] -> raise Stream.Failure
+  | _ -> ()
+  ]
+;
+
+value check_not_colon =
+  Grammar.Entry.of_parser gram "check_not_colon"
+    check_not_colon_f
+;
+
 value test_label_eq =
   Grammar.Entry.of_parser gram "test_label_eq"
     (test 1 where rec test lev strm =
@@ -1029,7 +1053,15 @@ EXTEND
       | e = expr → [e] ] ]
   ;
   let_binding:
-    [ [ p = ipatt; e = fun_binding ; attrs = item_attributes → (p, e, attrs) ] ]
+    [ [ p = ipatt; check_colon ; e = fun_binding ; attrs = item_attributes →
+          let (p,e) = match e with [
+            <:expr< ( $e$ : $t$ ) >> -> (<:patt< ($p$ : $t$) >>, e)
+          | _ -> (p,e)
+          ] in
+          (p, e, attrs)
+      | p = ipatt; check_not_colon ; e = fun_binding ; attrs = item_attributes →
+          (p, e, attrs)
+      ] ]
   ;
   letop_binding:
     [ [ p = ipatt; e = fun_binding → (p, e) ] ]

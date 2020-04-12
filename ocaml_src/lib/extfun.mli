@@ -31,6 +31,7 @@ and patt =
   | Estr of string
   | Eint of string
   | Etup of patt list
+  | Erec of (patt * patt) list
   | Evar of unit
 and ('a, 'b) expr = 'a -> 'b option;;
 

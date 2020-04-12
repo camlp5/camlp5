@@ -48,6 +48,7 @@ let rec ctyp floc sh =
   let rec self =
     function
       TyAtt (loc, ct, attr) ->
+        let loc = floc loc in
         TyAtt (loc, self ct, attribute_body floc sh attr)
     | TyAcc (loc, x1, x2) ->
         let loc = floc loc in TyAcc (loc, longid floc sh x1, x2)
@@ -74,7 +75,7 @@ let rec ctyp floc sh =
              x1,
            x2)
     | TyOlb (loc, x1, x2) -> let loc = floc loc in TyOlb (loc, x1, self x2)
-    | TyOpn loc -> TyOpn (floc loc)
+    | TyOpn loc -> let loc = floc loc in TyOpn loc
     | TyPck (loc, x1) ->
         let loc = floc loc in TyPck (loc, module_type floc sh x1)
     | TyPol (loc, x1, x2) -> let loc = floc loc in TyPol (loc, x1, self x2)
@@ -99,7 +100,8 @@ let rec ctyp floc sh =
         TyVrn (loc, vala_map (List.map (poly_variant floc sh)) x1, x2)
     | TyXtr (loc, x1, x2) ->
         let loc = floc loc in TyXtr (loc, x1, option_map (vala_map self) x2)
-    | TyExten (loc, exten) -> TyExten (floc loc, attribute_body floc sh exten)
+    | TyExten (loc, exten) ->
+        let loc = floc loc in TyExten (loc, attribute_body floc sh exten)
   in
   self
 and generic_constructor floc sh (loc, x1, x2, x3, x4) =
@@ -117,9 +119,11 @@ and patt floc sh =
   let rec self =
     function
       PaAtt (loc, p, attr) ->
-        PaAtt (floc loc, self p, attribute_body floc sh attr)
-    | PaPfx (loc, li, p) -> PaPfx (floc loc, longid floc sh li, self p)
-    | PaLong (loc, li) -> PaLong (floc loc, longid floc sh li)
+        let loc = floc loc in PaAtt (loc, self p, attribute_body floc sh attr)
+    | PaPfx (loc, li, p) ->
+        let loc = floc loc in PaPfx (loc, longid floc sh li, self p)
+    | PaLong (loc, li) ->
+        let loc = floc loc in PaLong (loc, longid floc sh li)
     | PaAli (loc, x1, x2) ->
         let loc = floc loc in PaAli (loc, self x1, self x2)
     | PaAnt (loc, x1) ->
@@ -168,13 +172,15 @@ and patt floc sh =
     | PaVrn (loc, x1) -> let loc = floc loc in PaVrn (loc, x1)
     | PaXtr (loc, x1, x2) ->
         let loc = floc loc in PaXtr (loc, x1, option_map (vala_map self) x2)
-    | PaExten (loc, exten) -> PaExten (floc loc, attribute_body floc sh exten)
+    | PaExten (loc, exten) ->
+        let loc = floc loc in PaExten (loc, attribute_body floc sh exten)
   in
   self
 and expr floc sh =
   let rec self =
     function
-      ExAtt (loc, e, attr) -> ExAtt (loc, self e, attribute_body floc sh attr)
+      ExAtt (loc, e, attr) ->
+        let loc = floc loc in ExAtt (loc, self e, attribute_body floc sh attr)
     | ExAcc (loc, x1, x2) ->
         let loc = floc loc in ExAcc (loc, self x1, self x2)
     | ExAnt (loc, x1) ->
@@ -304,23 +310,25 @@ and expr floc sh =
         ExWhi (loc, self x1, vala_map (List.map self) x2)
     | ExXtr (loc, x1, x2) ->
         let loc = floc loc in ExXtr (loc, x1, option_map (vala_map self) x2)
-    | ExExten (loc, exten) -> ExExten (floc loc, exten)
-    | ExUnr loc -> ExUnr (floc loc)
+    | ExExten (loc, exten) -> let loc = floc loc in ExExten (loc, exten)
+    | ExUnr loc -> let loc = floc loc in ExUnr loc
   in
   self
 and module_type floc sh =
   let rec self =
     function
-      MtAtt (loc, e, attr) -> MtAtt (loc, self e, attribute_body floc sh attr)
+      MtAtt (loc, e, attr) ->
+        let loc = floc loc in MtAtt (loc, self e, attribute_body floc sh attr)
     | MtLong (loc, x1) ->
         let loc = floc loc in MtLong (loc, longid floc sh x1)
     | MtLongLid (loc, x1, x2) ->
         let loc = floc loc in MtLongLid (loc, longid floc sh x1, x2)
     | MtFun (loc, arg, x3) ->
+        let loc = floc loc in
         let arg =
           vala_map (option_map (fun (idopt, m) -> idopt, self m)) arg
         in
-        let loc = floc loc in MtFun (loc, arg, self x3)
+        MtFun (loc, arg, self x3)
     | MtLid (loc, x1) -> let loc = floc loc in MtLid (loc, x1)
     | MtQuo (loc, x1) -> let loc = floc loc in MtQuo (loc, x1)
     | MtSig (loc, x1) ->
@@ -333,7 +341,8 @@ and module_type floc sh =
         MtWit (loc, self x1, vala_map (List.map (with_constr floc sh)) x2)
     | MtXtr (loc, x1, x2) ->
         let loc = floc loc in MtXtr (loc, x1, option_map (vala_map self) x2)
-    | MtExten (loc, exten) -> MtExten (floc loc, attribute_body floc sh exten)
+    | MtExten (loc, exten) ->
+        let loc = floc loc in MtExten (loc, attribute_body floc sh exten)
   in
   self
 and sig_item floc sh =
@@ -410,8 +419,10 @@ and sig_item floc sh =
         SgVal (loc, x1, ctyp floc sh x2, attributes floc sh x3)
     | SgXtr (loc, x1, x2) ->
         let loc = floc loc in SgXtr (loc, x1, option_map (vala_map self) x2)
-    | SgFlAtt (loc, a) -> SgFlAtt (floc loc, attribute_body floc sh a)
-    | SgExten (loc, exten) -> SgExten (floc loc, attribute_body floc sh exten)
+    | SgFlAtt (loc, a) ->
+        let loc = floc loc in SgFlAtt (loc, attribute_body floc sh a)
+    | SgExten (loc, exten) ->
+        let loc = floc loc in SgExten (loc, attribute_body floc sh exten)
   in
   self
 and with_constr floc sh =
@@ -441,17 +452,19 @@ and longid floc sh =
 and module_expr floc sh =
   let rec self =
     function
-      MeAtt (loc, e, attr) -> MeAtt (loc, self e, attribute_body floc sh attr)
+      MeAtt (loc, e, attr) ->
+        let loc = floc loc in MeAtt (loc, self e, attribute_body floc sh attr)
     | MeAcc (loc, x1, x2) ->
         let loc = floc loc in MeAcc (loc, self x1, self x2)
     | MeApp (loc, x1, x2) ->
         let loc = floc loc in MeApp (loc, self x1, self x2)
     | MeFun (loc, arg, x3) ->
+        let loc = floc loc in
         let arg =
           vala_map
             (option_map (fun (idopt, m) -> idopt, module_type floc sh m)) arg
         in
-        let loc = floc loc in MeFun (loc, arg, self x3)
+        MeFun (loc, arg, self x3)
     | MeStr (loc, x1) ->
         let loc = floc loc in
         MeStr (loc, vala_map (List.map (str_item floc sh)) x1)
@@ -465,7 +478,8 @@ and module_expr floc sh =
            option_map (module_type floc sh) x3)
     | MeXtr (loc, x1, x2) ->
         let loc = floc loc in MeXtr (loc, x1, option_map (vala_map self) x2)
-    | MeExten (loc, exten) -> MeExten (floc loc, attribute_body floc sh exten)
+    | MeExten (loc, exten) ->
+        let loc = floc loc in MeExten (loc, attribute_body floc sh exten)
   in
   self
 and str_item floc sh =
@@ -546,8 +560,10 @@ and str_item floc sh =
              x2)
     | StXtr (loc, x1, x2) ->
         let loc = floc loc in StXtr (loc, x1, option_map (vala_map self) x2)
-    | StFlAtt (loc, a) -> StFlAtt (floc loc, attribute_body floc sh a)
-    | StExten (loc, exten) -> StExten (floc loc, attribute_body floc sh exten)
+    | StFlAtt (loc, a) ->
+        let loc = floc loc in StFlAtt (loc, attribute_body floc sh a)
+    | StExten (loc, exten) ->
+        let loc = floc loc in StExten (loc, attribute_body floc sh exten)
   in
   self
 and type_decl floc sh x =
@@ -570,7 +586,8 @@ and extension_constructor floc sh =
 and class_type floc sh =
   let rec self =
     function
-      CtAtt (loc, e, attr) -> CtAtt (loc, self e, attribute_body floc sh attr)
+      CtAtt (loc, e, attr) ->
+        let loc = floc loc in CtAtt (loc, self e, attribute_body floc sh attr)
     | CtLongLid (loc, x1, x2) ->
         let loc = floc loc in CtLongLid (loc, longid floc sh x1, x2)
     | CtLid (loc, x1) -> let loc = floc loc in CtLid (loc, x1)
@@ -588,7 +605,8 @@ and class_type floc sh =
            vala_map (List.map (class_sig_item floc sh)) x2)
     | CtXtr (loc, x1, x2) ->
         let loc = floc loc in CtXtr (loc, x1, option_map (vala_map self) x2)
-    | CtExten (loc, exten) -> CtExten (floc loc, attribute_body floc sh exten)
+    | CtExten (loc, exten) ->
+        let loc = floc loc in CtExten (loc, attribute_body floc sh exten)
   in
   self
 and class_sig_item floc sh =
@@ -611,14 +629,17 @@ and class_sig_item floc sh =
     | CgVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in
         CgVir (loc, x1, x2, ctyp floc sh x3, attributes floc sh x4)
-    | CgFlAtt (loc, a) -> CgFlAtt (floc loc, attribute_body floc sh a)
-    | CgExten (loc, exten) -> CgExten (floc loc, attribute_body floc sh exten)
+    | CgFlAtt (loc, a) ->
+        let loc = floc loc in CgFlAtt (loc, attribute_body floc sh a)
+    | CgExten (loc, exten) ->
+        let loc = floc loc in CgExten (loc, attribute_body floc sh exten)
   in
   self
 and class_expr floc sh =
   let rec self =
     function
-      CeAtt (loc, e, attr) -> CeAtt (loc, self e, attribute_body floc sh attr)
+      CeAtt (loc, e, attr) ->
+        let loc = floc loc in CeAtt (loc, self e, attribute_body floc sh attr)
     | CeApp (loc, x1, x2) ->
         let loc = floc loc in CeApp (loc, self x1, expr floc sh x2)
     | CeCon (loc, x1, x2) ->
@@ -649,7 +670,8 @@ and class_expr floc sh =
         let loc = floc loc in CeTyc (loc, self x1, class_type floc sh x2)
     | CeXtr (loc, x1, x2) ->
         let loc = floc loc in CeXtr (loc, x1, option_map (vala_map self) x2)
-    | CeExten (loc, exten) -> CeExten (floc loc, attribute_body floc sh exten)
+    | CeExten (loc, exten) ->
+        let loc = floc loc in CeExten (loc, attribute_body floc sh exten)
   in
   self
 and class_str_item floc sh =
@@ -680,8 +702,10 @@ and class_str_item floc sh =
     | CrVir (loc, x1, x2, x3, x4) ->
         let loc = floc loc in
         CrVir (loc, x1, x2, ctyp floc sh x3, attributes floc sh x4)
-    | CrFlAtt (loc, a) -> CrFlAtt (floc loc, attribute_body floc sh a)
-    | CrExten (loc, exten) -> CrExten (floc loc, attribute_body floc sh exten)
+    | CrFlAtt (loc, a) ->
+        let loc = floc loc in CrFlAtt (loc, attribute_body floc sh a)
+    | CrExten (loc, exten) ->
+        let loc = floc loc in CrExten (loc, attribute_body floc sh exten)
   in
   self
 and longid_lident floc sh (x1, x2) = option_map (longid floc sh) x1, x2
@@ -691,13 +715,17 @@ and attribute_body floc sh x1 =
        let p =
          match p with
            StAttr (loc, x1) ->
-             StAttr (floc loc, vala_map (List.map (str_item floc sh)) x1)
+             let loc = floc loc in
+             StAttr (loc, vala_map (List.map (str_item floc sh)) x1)
          | SiAttr (loc, x1) ->
-             SiAttr (floc loc, vala_map (List.map (sig_item floc sh)) x1)
-         | TyAttr (loc, x1) -> TyAttr (floc loc, vala_map (ctyp floc sh) x1)
+             let loc = floc loc in
+             SiAttr (loc, vala_map (List.map (sig_item floc sh)) x1)
+         | TyAttr (loc, x1) ->
+             let loc = floc loc in TyAttr (loc, vala_map (ctyp floc sh) x1)
          | PaAttr (loc, x1, x2) ->
+             let loc = floc loc in
              PaAttr
-               (floc loc, vala_map (patt floc sh) x1,
+               (loc, vala_map (patt floc sh) x1,
                 option_map (vala_map (expr floc sh)) x2)
        in
        s, p)

@@ -549,6 +549,24 @@ let check_uident_coloneq =
   Grammar.Entry.of_parser gram "check_uident_coloneq" check_uident_coloneq_f
 ;;
 
+let check_colon_f strm =
+  match stream_npeek 1 strm with
+    ["", ":"] -> ()
+  | _ -> raise Stream.Failure
+;;
+
+let check_colon = Grammar.Entry.of_parser gram "check_colon" check_colon_f;;
+
+let check_not_colon_f strm =
+  match stream_npeek 1 strm with
+    ["", ":"] -> raise Stream.Failure
+  | _ -> ()
+;;
+
+let check_not_colon =
+  Grammar.Entry.of_parser gram "check_not_colon" check_not_colon_f
+;;
+
 let test_label_eq =
   Grammar.Entry.of_parser gram "test_label_eq"
     (let rec test lev strm =
@@ -3545,16 +3563,41 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+                   (Grammar.s_nterm
+                      (check_not_colon : 'check_not_colon Grammar.Entry.e)))
                 (Grammar.s_nterm
                    (fun_binding : 'fun_binding Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            "1154dceb",
-           (fun (attrs : 'item_attributes) (e : 'fun_binding) (p : 'ipatt)
+           (fun (attrs : 'item_attributes) (e : 'fun_binding) _ (p : 'ipatt)
                 (loc : Ploc.t) ->
-              (p, e, attrs : 'let_binding)))]];
+              (p, e, attrs : 'let_binding)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+                   (Grammar.s_nterm
+                      (check_colon : 'check_colon Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (fun_binding : 'fun_binding Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           "1154dceb",
+           (fun (attrs : 'item_attributes) (e : 'fun_binding) _ (p : 'ipatt)
+                (loc : Ploc.t) ->
+              (let (p, e) =
+                 match e with
+                   MLast.ExTyc (_, e, t) -> MLast.PaTyc (loc, p, t), e
+                 | _ -> p, e
+               in
+               p, e, attrs :
+               'let_binding)))]];
     Grammar.extension (letop_binding : 'letop_binding Grammar.Entry.e) None
       [None, None,
        [Grammar.production
