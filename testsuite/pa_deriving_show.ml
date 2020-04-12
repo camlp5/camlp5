@@ -61,6 +61,18 @@ value show_fname arg tyname =
   else "show_"^tyname
 ;
 
+value extract_printer (attrs : MLast.attributes_no_anti) =
+  let ex1 = fun [
+    <:attribute_body< printer $exp:e$ ; >> -> Some e
+  | _ -> None
+  ] in
+  let rec exrec = fun [
+    [] -> None
+  | [h::t] -> match ex1 (Pcaml.unvala h) with [ Some x -> Some x | None -> exrec t ]
+  ] in
+  exrec attrs
+;
+
 value fmt_expression arg param_map ty0 =
   let rec fmtrec = fun [
   <:ctyp:< _ >> -> <:expr< Fmt.(const string "_") >>
@@ -112,8 +124,8 @@ value fmt_expression arg param_map ty0 =
 
 | (<:ctyp:< result $ty1$ $ty2$ >> | <:ctyp:< Result.result $ty1$ $ty2$ >>) ->
   <:expr< fun ofmt -> fun [
-          Result.Ok ok -> $(fmtrec ty1)$ ofmt ok
-        | Result.Error e -> $(fmtrec ty2)$ ofmt e
+          Result.Ok ok -> Fmt.(pf ofmt "(Ok %a)" $(fmtrec ty1)$ ok)
+        | Result.Error e -> Fmt.(pf ofmt "(Error %a)" $(fmtrec ty2)$ e)
       ] >>
 
 | <:ctyp:< $t1$ $t2$ >> -> <:expr< $fmtrec t1$ $fmtrec t2$ >>
@@ -151,35 +163,40 @@ value fmt_expression arg param_map ty0 =
   let branches = List.map (fun [
     (loc, cid, <:vala< [TyRec _ fields] >>, None, _) ->
     let cid = Pcaml.unvala cid in
-    let prefix_txt =
-      Printf.sprintf "%s.%s " arg.Pa_passthru.Ctxt.module_path cid in
-    let (recpat, body) = fmt_record ~{with_path=False} ~{prefix_txt=prefix_txt} ~{bracket_space=""} loc arg (Pcaml.unvala fields) in
+    let prefix_txt = (Ctxt.prefixed_name arg cid)^" " in
+    let (recpat, body) = fmt_record ~{without_path=True} ~{prefix_txt=prefix_txt} ~{bracket_space=""} loc arg (Pcaml.unvala fields) in
 
     let conspat = <:patt< $uid:cid$ $recpat$ >> in
     (conspat, <:vala< None >>, body)
 
-  | (loc, cid, tyl, None, _) ->
+  | (loc, cid, tyl, None, attrs) ->
     let cid = Pcaml.unvala cid in
     let tyl = Pcaml.unvala tyl in
     let vars = List.mapi (fun n _ -> Printf.sprintf "v%d" n) tyl in
-    let fmts = List.map fmtrec tyl in
-    let fmtstring =
-      if vars = [] then
-        Printf.sprintf "@[<2>%s.%s@]" arg.Pa_passthru.Ctxt.module_path cid
-      else if List.length vars = 1 then
-        Printf.sprintf "(@[<2>%s.%s @,%s@,)@]" arg.Pa_passthru.Ctxt.module_path cid
-        (String.concat ",@ " (List.map (fun _ -> "%a") vars))
-      else
-        Printf.sprintf "(@[<2>%s.%s (@,%s@,))@]" arg.Pa_passthru.Ctxt.module_path cid
-        (String.concat ",@ " (List.map (fun _ -> "%a") vars))
-    in
     let varpats = List.map (fun v -> <:patt< $lid:v$ >>) vars in
     let conspat = List.fold_left (fun p vp -> <:patt< $p$ $vp$ >>)
         <:patt< $uid:cid$ >> varpats in
+    match extract_printer (Pcaml.unvala attrs) with [
+      Some printerf -> 
+      let varexprs = List.map (fun v -> <:expr< $lid:v$ >>) vars in
+      let tupleexpr = if varexprs <> [] then <:expr< ( $list:varexprs$ ) >> else <:expr< () >> in
+      (conspat, <:vala< None >>, <:expr< $printerf$ ofmt $tupleexpr$ >>)
+    | None ->
+    let fmts = List.map fmtrec tyl in
+    let fmtstring =
+      if vars = [] then
+        Printf.sprintf "@[<2>%s@]" (Ctxt.prefixed_name arg cid)
+      else if List.length vars = 1 then
+        Printf.sprintf "(@[<2>%s@ %s)@]" (Ctxt.prefixed_name arg cid)
+        (String.concat ",@ " (List.map (fun _ -> "%a") vars))
+      else
+        Printf.sprintf "(@[<2>%s@ (@,%s@,))@]" (Ctxt.prefixed_name arg cid)
+        (String.concat ",@ " (List.map (fun _ -> "%a") vars))
+    in
     let e = List.fold_left2 (fun e f v -> <:expr< $e$ $f$ $lid:v$ >>)
         <:expr< pf ofmt $str:fmtstring$ >> fmts vars in
     (conspat, <:vala< None >>, <:expr< Fmt.($e$) >>)
-
+    ]
   | (_, _, _, Some _, _) -> assert False
   ]) l in
   <:expr< fun ofmt -> fun [ $list:branches$ ] >>
@@ -227,16 +244,16 @@ value fmt_expression arg param_map ty0 =
   <:expr< fun ofmt -> fun [ $list:branches$ ] >>
 
 | <:ctyp:< { $list:fields$ } >> ->
-  let (recpat, body) = fmt_record ~{with_path=True} ~{prefix_txt=""} ~{bracket_space=" "} loc arg fields in
+  let (recpat, body) = fmt_record ~{without_path=False} ~{prefix_txt=""} ~{bracket_space=" "} loc arg fields in
   <:expr< fun ofmt $recpat$ -> $body$ >>
 ]
-and fmt_record ~{with_path} ~{prefix_txt} ~{bracket_space} loc arg fields = 
+and fmt_record ~{without_path} ~{prefix_txt} ~{bracket_space} loc arg fields = 
   let labels_vars_fmts = List.map (fun (_, fname, _, ty, attrs) ->
         let ty = ctyp_wrap_attrs ty (Pcaml.unvala attrs) in
         (fname, Printf.sprintf "v_%s" fname, fmtrec ty)) fields in
 
   let field_text i f =
-    if with_path && i = 0 then Printf.sprintf "%s.%s" arg.Pa_passthru.Ctxt.module_path f
+    if not without_path && i = 0 then Ctxt.prefixed_name arg f
     else f in
   let fmt = Printf.sprintf "@[<2>%s{%s%s%s}@]"
       prefix_txt
@@ -318,7 +335,16 @@ value is_deriving_show attr = match Pcaml.unvala attr with [
 ]
 ;
 
+value apply_deriving_show ctxt attr = match Pcaml.unvala attr with [
+  <:attribute_body< deriving show ; >> -> ctxt
+| <:attribute_body< deriving show { with_path = True } ; >> -> Ctxt.with_path ctxt True
+| <:attribute_body< deriving show { with_path = False } ; >> -> Ctxt.with_path ctxt False
+| _ -> ctxt
+]
+;
+
 value str_item_gen_show0 arg td =
+  let arg = List.fold_left apply_deriving_show arg (Pcaml.unvala td.tdAttributes) in
   let tyname = Pcaml.unvala td.tdNam
   and params = Pcaml.unvala td.tdPrm
   and tk = td.tdDef in

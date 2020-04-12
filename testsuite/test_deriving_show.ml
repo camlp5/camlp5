@@ -218,10 +218,10 @@ type 'a std_clash = 'a List.t option
 
 type variant_printer =
   | First [@printer fun fmt _ -> Format.pp_print_string fmt "first"]
-  | Second of int [@printer fun fmt i -> fprintf fmt "second: %d" i]
+  | Second of int [@printer fun fmt i -> Format.fprintf fmt "second: %d" i]
   | Third
   | Fourth of int * int
-                [@printer fun fmt (a,b) -> fprintf fmt "fourth: %d %d" a b]
+                [@printer fun fmt (a,b) -> Format.fprintf fmt "fourth: %d %d" a b]
 [@@deriving show]
 
 let test_variant_printer ctxt =

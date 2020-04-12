@@ -36,7 +36,7 @@ value class_infos_map arg ~{attributes} f x =
 ;
 
 module Ctxt = struct
-type t = { module_path : string } ;
+type t = { module_path : string; with_path : bool } ;
 value mk loc =
   let fname = Ploc.file_name loc in
   let path = String.split_on_char '/' fname in
@@ -44,11 +44,17 @@ value mk loc =
   let base = match String.split_on_char '.' last with [
     [base :: _] -> base | _ -> assert False ] in
   let modname = String.capitalize_ascii base in
-  { module_path = modname }
+  { module_path = modname ; with_path = True }
 ;
 value append_module ctxt s =
   { (ctxt) with module_path = Printf.sprintf "%s.%s" ctxt.module_path s }
 ;
+value prefixed_name ctxt id =
+  if ctxt.with_path then Printf.sprintf "%s.%s" ctxt.module_path id
+  else id
+;
+value with_path ctxt b = { (ctxt) with with_path = b } ;
+
 end ;
 
 value ef_ctyp = ref Extfun.empty ;
