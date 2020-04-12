@@ -58,16 +58,16 @@ value show_fname arg tyname =
 value fmt_expression arg param_map ty0 =
   let rec fmtrec = fun [
   <:ctyp:< _ >> -> <:expr< Fmt.(const string "_") >>
-| <:ctyp:< int >> -> <:expr< Fmt.int >>
+| <:ctyp:< int >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%d" arg) >>
 | <:ctyp:< bool >> -> <:expr<  Fmt.bool >>
-| <:ctyp:< int32 >> -> <:expr< Fmt.int32 >>
-| <:ctyp:< int64 >> -> <:expr<  Fmt.int64 >>
+| <:ctyp:< int32 >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%ldl" arg) >>
+| <:ctyp:< int64 >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%LdL" arg) >>
 | (<:ctyp:< string >> | <:ctyp:< Stdlib.String.t >> | <:ctyp:< String.t >>) ->
   <:expr< fun ofmt arg -> Fmt.(pf ofmt "%S" arg) >>
 | <:ctyp:< bytes >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%S" (Bytes.to_string arg)) >>
-| <:ctyp:< char >> -> <:expr<  Fmt.char >>
-| <:ctyp:< nativeint >> -> <:expr<  Fmt.nativeint >>
-| <:ctyp:< float >> -> <:expr<  Fmt.float >>
+| <:ctyp:< char >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%C" arg) >>
+| <:ctyp:< nativeint >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%an" nativeint arg) >>
+| <:ctyp:< float >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%F" arg) >>
 
 | <:ctyp:< $t$ [@opaque] >> -> <:expr< Fmt.(const string "<opaque>") >>
 | <:ctyp:< $t$ [@printer $exp:e$ ;] >> -> e
@@ -234,12 +234,7 @@ value str_item_top_funs arg (loc, tyname) param_map ty =
   [(ppfname, abstract_over paramfun_patts
       <:expr< fun (ofmt : Format.formatter) arg -> $e$ ofmt arg >>);
    (showfname, abstract_over paramfun_patts
-      <:expr< fun arg ->
-  let buf = Buffer.create 23 in
-  let ofmt = Format.formatter_of_buffer buf in do {
-  $(expr_applist ppfexp paramfun_exprs)$ ofmt arg ;
-  Buffer.contents buf
-  }>>)]
+      <:expr< fun arg -> Format.asprintf "%a" $(expr_applist ppfexp paramfun_exprs)$ arg >>)]
 ;
 
 value sig_item_top_funs arg (loc, tyname) param_map ty =
@@ -318,12 +313,7 @@ value sig_item_gen_show loc arg tdl =
 value expr_show arg ty =
   let loc = loc_of_ctyp ty in
   let e = fmt_expression arg [] ty in
-  <:expr< fun arg ->
-  let buf = Buffer.create 23 in
-  let ofmt = Format.formatter_of_buffer buf in do {
-  $e$ ofmt arg ;
-  Buffer.contents buf
-  }>>
+  <:expr< fun arg -> Format.asprintf "%a" $e$ arg >>
 ;
 
 ef_str_item.val :=

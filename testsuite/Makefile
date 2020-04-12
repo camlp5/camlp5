@@ -149,7 +149,7 @@ q_MLast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
 pa_passthru.cmo: pa_passthru.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_passthru.ml
 
-pa_deriving_show.cmo: pa_deriving_show.ml
+pa_deriving_show.cmo: pa_deriving_show.ml pa_passthru.cmo
 	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo'  'pa_deriving_show.ml' > pa_deriving_show.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_show.ml
 
@@ -162,7 +162,7 @@ test_deriving_show.ppx.byte: test_deriving_show.ml pa_deriving_show.ml testutil.
 test_deriving_show: test_deriving_show.byte
 	./test_deriving_show.byte
 
-test_deriving_show.byte: test_deriving_show.ml pa_deriving_show.cmo testutil.cmo testutil2.cmo
+test_deriving_show.byte: test_deriving_show.ml pa_passthru.cmo pa_deriving_show.cmo testutil.cmo testutil2.cmo
 	tools/LAUNCH camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./pa_deriving_show.cmo test_deriving_show.ml > test_deriving_show.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg testutil.cmo testutil2.cmo -impl test_deriving_show.ppo -o test_deriving_show.byte
 
