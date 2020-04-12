@@ -32,7 +32,10 @@ PACKAGES=$(PACKAGES_NOCAMLP5),camlp5
 pa_passthru.cmo: pa_passthru.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_passthru.ml
 
-pa_deriving_show.cmo: pa_deriving_show.ml pa_passthru.cmo
+ppxutil.cmo: ppxutil.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c ppxutil.ml
+
+pa_deriving_show.cmo: pa_deriving_show.ml pa_passthru.cmo ppxutil.cmo
 	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo' pr_ro.cmo 'pa_deriving_show.ml' > pa_deriving_show.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_show.ml
 
@@ -45,8 +48,8 @@ test_deriving_show.ppx.byte: test_deriving_show.ml pa_deriving_show.ml ../testsu
 test_deriving_show: test_deriving_show.byte
 	./test_deriving_show.byte
 
-test_deriving_show.byte: test_deriving_show.ml pa_passthru.cmo pa_deriving_show.cmo ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
-	$(LAUNCH) camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./pa_deriving_show.cmo test_deriving_show.ml > test_deriving_show.ppo
+test_deriving_show.byte: test_deriving_show.ml pa_passthru.cmo pa_deriving_show.cmo ../testsuite/testutil.cmo ../testsuite/testutil2.cmo ppxutil.cmo
+	$(LAUNCH) camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./ppxutil.cmo ./pa_deriving_show.cmo test_deriving_show.ml > test_deriving_show.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo -impl test_deriving_show.ppo -o test_deriving_show.byte
 
 pa_deriving_eq.cmo: pa_deriving_eq.ml pa_passthru.cmo
