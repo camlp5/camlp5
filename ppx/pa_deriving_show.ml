@@ -52,9 +52,9 @@ value fmt_expression arg param_map ty0 =
 | <:ctyp:< $t$ [@opaque] >> -> <:expr< Fmt.(const string "<opaque>") >>
 | <:ctyp:< $t$ [@printer $exp:e$ ;] >> -> e
 | <:ctyp:< $t$ [@polyprinter $exp:e$ ;] >> ->
-  let (t0, argtys) = ctyp_unapplist t in
+  let (t0, argtys) = Ctyp.unapplist t in
   let argfmts = List.map fmtrec argtys in
-  expr_applist <:expr< $e$ >> argfmts
+  Expr.applist <:expr< $e$ >> argfmts
 
 | <:ctyp:< list $ty$ >> ->
   let fmt1 = fmtrec ty in
@@ -105,7 +105,7 @@ value fmt_expression arg param_map ty0 =
   <:expr< $lid:fname$ >>
 | <:ctyp:< $longid:li$ . $lid:lid$ >> ->
   let fname = pp_fname arg lid in
-  prepend_longident li <:expr< $lid:fname$ >>
+  Expr.prepend_longident li <:expr< $lid:fname$ >>
 
 | <:ctyp:< $_$ -> $_$ >> -> <:expr< Fmt.(const string "<fun>") >>
 
@@ -197,7 +197,7 @@ value fmt_expression arg param_map ty0 =
         <:expr< $lid:f$ >>
     | <:ctyp< $longid:li$ . $lid:lid$ >> ->
         let f = pp_fname arg lid in
-        prepend_longident li <:expr< $lid:f$ >>
+        Expr.prepend_longident li <:expr< $lid:f$ >>
     ] in
     (conspat, <:vala< None >>, <:expr< Fmt.($fmtf$ ofmt z) >>)
   ]) l in
@@ -251,10 +251,10 @@ value str_item_top_funs arg (loc, tyname) param_map ty =
   let paramfun_exprs = List.map (fun (_,ppf) -> <:expr< $lid:ppf$ >>) param_map in
   let ppfexp = <:expr< $lid:ppfname$ >> in
 
-  [(ppfname, abstract_over paramfun_patts
+  [(ppfname, Expr.abstract_over paramfun_patts
       <:expr< fun (ofmt : Format.formatter) arg -> $e$ ofmt arg >>);
-   (showfname, abstract_over paramfun_patts
-      <:expr< fun arg -> Format.asprintf "%a" $(expr_applist ppfexp paramfun_exprs)$ arg >>)]
+   (showfname, Expr.abstract_over paramfun_patts
+      <:expr< fun arg -> Format.asprintf "%a" $(Expr.applist ppfexp paramfun_exprs)$ arg >>)]
 ;
 
 value sig_item_top_funs arg (loc, tyname) param_map ty =
@@ -264,8 +264,8 @@ value sig_item_top_funs arg (loc, tyname) param_map ty =
   let paramtys = List.map (fun (tyna, _) -> <:ctyp< '$tyna$ >>) param_map in
   let argfmttys = List.map (fun pty -> <:ctyp< Fmt.t $pty$ >>) paramtys in  
   let ty = <:ctyp< $lid:tyname$ >> in
-  let ppftype = arrows_list loc argfmttys <:ctyp< Fmt.t $(ctyp_applist ty paramtys)$ >> in
-  let showftype = arrows_list loc argfmttys <:ctyp< $(ctyp_applist ty paramtys)$ -> Stdlib.String.t >> in
+  let ppftype = Ctyp.arrows_list loc argfmttys <:ctyp< Fmt.t $(Ctyp.applist ty paramtys)$ >> in
+  let showftype = Ctyp.arrows_list loc argfmttys <:ctyp< $(Ctyp.applist ty paramtys)$ -> Stdlib.String.t >> in
   [(ppfname, ppftype) ;
    (showfname, showftype)]
 ;
