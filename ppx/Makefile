@@ -42,8 +42,8 @@ pa_deriving_show.cmo: pa_deriving_show.ml pa_passthru.cmo ppxutil.cmo
 test_deriving_show.ppx: test_deriving_show.ppx.byte
 	./test_deriving_show.ppx.byte
 
-test_deriving_show.ppx.byte: test_deriving_show.ml pa_deriving_show.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite -dsource test_deriving_show.ml > test_deriving_show.ppx.ppo
+test_deriving_show.ppx.byte: test_deriving_show.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite -dsource test_deriving_show.ml > test_deriving_show.ppx.ppo 2>&1 || true
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.show -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo test_deriving_show.ml -o test_deriving_show.ppx.byte
 
 test_deriving_show: test_deriving_show.byte
@@ -60,15 +60,15 @@ pa_deriving_eq.cmo: pa_deriving_eq.ml pa_passthru.cmo
 test_deriving_eq.ppx: test_deriving_eq.ppx.byte
 	./test_deriving_eq.ppx.byte
 
-test_deriving_eq.ppx.byte: test_deriving_eq.ml pa_deriving_eq.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite -dsource test_deriving_eq.ml > test_deriving_eq.ppx.ppo
+test_deriving_eq.ppx.byte: test_deriving_eq.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite -dsource test_deriving_eq.ml > test_deriving_eq.ppx.ppo 2>&1 || true
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo test_deriving_eq.ml -o test_deriving_eq.ppx.byte
 
 test_deriving_eq: test_deriving_eq.byte
 	./test_deriving_eq.byte
 
 test_deriving_eq.byte: test_deriving_eq.ml pa_passthru.cmo pa_deriving_eq.cmo ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
-	$(LAUNCH) camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./pa_deriving_eq.cmo test_deriving_eq.ml > test_deriving_eq.ppo
+	$(LAUNCH) camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./ppxutil.cmo ./pa_deriving_eq.cmo test_deriving_eq.ml > test_deriving_eq.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo -impl test_deriving_eq.ppo -o test_deriving_eq.byte
 
 
