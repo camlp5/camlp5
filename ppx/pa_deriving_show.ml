@@ -368,11 +368,6 @@ ef_sig_item.val :=
 ;
 
 
-value argle = fun [
-  <:expr:< [%show: $type:t$ ] >> as z -> z
-]
-;
-
 ef_expr.val :=
   extfun ef_expr.val with [
     <:expr:< [%show: $type:t$ ] >> as z ->
