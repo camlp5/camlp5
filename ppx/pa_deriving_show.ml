@@ -38,6 +38,7 @@ value extract_printer (attrs : MLast.attributes_no_anti) =
 value fmt_expression arg param_map ty0 =
   let rec fmtrec = fun [
   <:ctyp:< _ >> -> <:expr< Fmt.(const string "_") >>
+| <:ctyp:< unit >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "()") >>
 | <:ctyp:< int >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%d" arg) >>
 | <:ctyp:< bool >> -> <:expr<  Fmt.bool >>
 | <:ctyp:< int32 >> -> <:expr< fun ofmt arg -> Fmt.(pf ofmt "%ldl" arg) >>

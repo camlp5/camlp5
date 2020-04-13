@@ -28,6 +28,13 @@ value applist e el =
 ;
 end ;
 
+module Patt = struct
+
+value applist e el =
+  List.fold_left (fun e arg -> let loc = loc_of_patt arg in <:patt< $e$ $arg$ >>) e el
+;
+end ;
+
 module Ctyp = struct
 
 value arrows_list loc l ty =

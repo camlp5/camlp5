@@ -21,6 +21,7 @@ value eq_fname arg tyname =
 value fmt_expression arg param_map ty0 =
   let rec fmtrec = fun [
     <:ctyp:< _ >> -> <:expr< fun a b -> True >>
+  | <:ctyp:< unit >> -> <:expr< fun a b -> True >>
   | <:ctyp:< int >> -> <:expr< fun a b -> a=b >>
   | <:ctyp:< int32 >> -> <:expr< fun a b -> a=b >>
   | <:ctyp:< int64 >> -> <:expr< fun a b -> a=b >>
@@ -114,8 +115,7 @@ value fmt_expression arg param_map ty0 =
   let branches = List.map (fun [
     (loc, cid, <:vala< [TyRec _ fields] >>, None, _) ->
     let cid = Pcaml.unvala cid in
-    let prefix_txt = (Ctxt.prefixed_name arg cid)^" " in
-    let (rec1pat, rec2pat, body) = fmt_record ~{without_path=True} ~{prefix_txt=prefix_txt} ~{bracket_space=""} loc arg (Pcaml.unvala fields) in
+    let (rec1pat, rec2pat, body) = fmt_record loc arg (Pcaml.unvala fields) in
 
     let conspat = <:patt< ($uid:cid$ $rec1pat$, $uid:cid$ $rec2pat$) >> in
     (conspat, <:vala< None >>, body)
@@ -190,11 +190,11 @@ value fmt_expression arg param_map ty0 =
   <:expr< fun a b -> match (a,b) with [ $list:branches$ ] >>
 
   | <:ctyp:< { $list:fields$ } >> ->
-  let (rec1pat, rec2pat, body) = fmt_record ~{without_path=False} ~{prefix_txt=""} ~{bracket_space=" "} loc arg fields in
+  let (rec1pat, rec2pat, body) = fmt_record loc arg fields in
   <:expr< fun $rec1pat$ -> fun $rec2pat$ -> $body$ >>
 
   ]
-  and fmt_record ~{without_path} ~{prefix_txt} ~{bracket_space} loc arg fields = 
+  and fmt_record loc arg fields = 
   let labels_vars_fmts = List.map (fun (_, fname, _, ty, attrs) ->
         let ty = ctyp_wrap_attrs ty (Pcaml.unvala attrs) in
         (fname, Printf.sprintf "a_%s" fname, Printf.sprintf "b_%s" fname, fmtrec ty)) fields in
