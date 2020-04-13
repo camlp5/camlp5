@@ -368,43 +368,15 @@ value expr_ord arg = fun [
 | _ -> assert False ]
 ;
 
-ef.val := EF.{ (ef.val) with
-  str_item = extfun ef.val.str_item with [
-    <:str_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_ord (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-    let f = str_item_gen_ord arg z in
-      <:str_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-ef.val := EF.{ (ef.val) with
-  sig_item = extfun ef.val.sig_item with [
-    <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_ord (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-    let f = sig_item_gen_ord arg z in
-      <:sig_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-
-ef.val := EF.{ (ef.val) with
-  expr = extfun ef.val.expr with [
-    <:expr:< [%ord: $type:_$ ] >> as z ->
-      fun arg -> expr_ord arg z
-  ] }
-;
-
-value plugin = Pa_deriving.{
+Pa_deriving.(add_plugin {
   name = "ord"
 ; options = ["optional"]
+; default_options = let loc = Ploc.dummy in [ ("optional", <:expr< False >>) ]
 ; alg_attributes = ["compare"; "nobuiltin"]
 ; extensions = ["ord"]
 ; expr = expr_ord
 ; str_item = str_item_gen_ord
 ; sig_item = sig_item_gen_ord
-}
+})
 ;
+

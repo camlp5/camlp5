@@ -368,51 +368,15 @@ value expr_show arg = fun [
 | _ -> assert False ]
 ;
 
-value default_options =
-  let loc = Ploc.dummy in
-  [ ("with_path", <:expr< True >>) ] ;
-
-ef.val := EF.{ (ef.val) with
-            str_item = extfun ef.val.str_item with [
-    <:str_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-  let arg = Ctxt.add_options arg default_options in
-    let f = str_item_gen_show arg z in
-      <:str_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-ef.val := EF.{ (ef.val) with
-  sig_item = extfun ef.val.sig_item with [
-    <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-    let arg = Ctxt.add_options arg default_options in
-    let f = sig_item_gen_show arg z in
-      <:sig_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-
-ef.val := EF.{ (ef.val) with
-  expr = extfun ef.val.expr with [
-    <:expr:< [%show: $type:_$ ] >> as z ->
-      fun arg ->
-        let arg = Ctxt.add_options arg default_options in
-        expr_show arg z
-  ] }
-;
-
-value plugin = Pa_deriving.{
+Pa_deriving.(add_plugin {
   name = "show"
 ; options = ["with_path"; "optional"]
+; default_options = let loc = Ploc.dummy in [ ("optional", <:expr< False >>) ; ("with_path", <:expr< True >>) ]
 ; alg_attributes = ["opaque"; "printer"; "polyprinter"; "nobuiltin"]
 ; extensions = ["show"]
 ; expr = expr_show
 ; str_item = str_item_gen_show
 ; sig_item = sig_item_gen_show
-}
+})
 ;
+

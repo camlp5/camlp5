@@ -210,35 +210,15 @@ value sig_item_gen_enum arg = fun [
 | _ -> assert False ]
 ;
 
-ef.val := EF.{ (ef.val) with
-  str_item = extfun ef.val.str_item with [
-    <:str_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_enum (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-    let f = str_item_gen_enum arg z in
-      <:str_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-ef.val := EF.{ (ef.val) with
-  sig_item = extfun ef.val.sig_item with [
-    <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_enum (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-    let f = sig_item_gen_enum arg z in
-      <:sig_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-value plugin = Pa_deriving.{
+Pa_deriving.(add_plugin {
   name = "enum"
 ; options = ["optional"]
+; default_options = let loc = Ploc.dummy in [ ("optional", <:expr< False >>) ]
 ; alg_attributes = ["value"]
 ; extensions = []
 ; expr = (fun _ _ -> assert False)
 ; str_item = str_item_gen_enum
 ; sig_item = sig_item_gen_enum
-}
+})
 ;
+

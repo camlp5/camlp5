@@ -310,43 +310,15 @@ value expr_eq arg = fun [
 | _ -> assert False ]
 ;
 
-ef.val := EF.{ (ef.val) with
-  str_item = extfun ef.val.str_item with [
-    <:str_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_eq (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-    let f = str_item_gen_eq arg z in
-      <:str_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-ef.val := EF.{ (ef.val) with
-  sig_item = extfun ef.val.sig_item with [
-    <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
-    when List.exists (fun td -> List.exists is_deriving_eq (Pcaml.unvala td.tdAttributes)) tdl ->
-    fun arg -> do {
-    let f = sig_item_gen_eq arg z in
-      <:sig_item< declare $list:[z ; f ]$ end >>
-}
-  ] }
-;
-
-
-ef.val := EF.{ (ef.val) with
-  expr = extfun ef.val.expr with [
-    <:expr:< [%eq: $type:_$ ] >> as z ->
-      fun arg -> expr_eq arg z
-  ] }
-;
-
-value plugin = Pa_deriving.{
+Pa_deriving.(add_plugin{
   name = "eq"
 ; options = ["optional"]
+; default_options = let loc = Ploc.dummy in [ ("optional", <:expr< False >>) ]
 ; alg_attributes = ["equal"; "nobuiltin"]
 ; extensions = ["eq"]
 ; expr = expr_eq
 ; str_item = str_item_gen_eq
 ; sig_item = sig_item_gen_eq
-}
+})
 ;
+

@@ -63,5 +63,108 @@ type plugin_t = {
 ; expr : Ctxt.t -> expr -> expr
 ; str_item : Ctxt.t -> str_item -> str_item
 ; sig_item : Ctxt.t -> sig_item -> sig_item
+; default_options : list (string * expr)
 }
+;
+
+value plugin_registry = ref [] ;
+value extension2plugin = ref [] ;
+value algattr2plugin = ref [] ;
+
+value push r v = r.val := [v :: r.val] ;
+
+value add_plugin t = do {
+  if List.mem_assoc t.name plugin_registry.val then
+    failwith (Printf.sprintf "plugin %s already registered" t.name)
+  else () ;
+  List.iter (fun ename ->
+    if List.mem_assoc ename extension2plugin.val then
+      failwith (Printf.sprintf "extension %s already registered" ename)
+    else ()) t.extensions;
+  List.iter (fun aname ->
+    if List.mem_assoc aname algattr2plugin.val then
+      failwith (Printf.sprintf "algebraic %s already registered" aname)
+    else ()) t.alg_attributes ;
+  push plugin_registry (t.name, t) ;
+  List.iter (fun ename -> push extension2plugin (ename, t.name)) t.extensions ;
+  List.iter (fun aname -> push algattr2plugin (aname, t.name)) t.alg_attributes
+}
+;
+
+value registered_str_item arg pi = fun [
+  <:str_item:< type $_flag:_$ $list:tdl$ >> as z ->
+    let attrs = Pcaml.unvala (fst (sep_last tdl)).tdAttributes in
+    let arg = Ctxt.add_options arg pi.default_options in
+    let arg = List.fold_left (apply_deriving pi.name) arg attrs in
+    pi.str_item arg z
+
+| _ -> assert False
+]
+;
+
+value registered_sig_item arg pi = fun [
+  <:sig_item:< type $_flag:_$ $list:tdl$ >> as z ->
+    let attrs = Pcaml.unvala (fst (sep_last tdl)).tdAttributes in
+    let arg = Ctxt.add_options arg pi.default_options in
+    let arg = List.fold_left (apply_deriving pi.name) arg attrs in
+    pi.sig_item arg z
+
+| _ -> assert False
+]
+;
+
+value registered_expr_extension arg = fun [
+  <:expr:< [% $extension:e$ ] >> as z ->
+    let ename = Pcaml.unvala (fst e) in
+    let piname = List.assoc ename extension2plugin.val in
+    let pi = List.assoc piname plugin_registry.val in
+    let arg = Ctxt.add_options arg pi.default_options in
+    pi.expr arg z
+| _ -> assert False
+]
+;
+
+
+value is_registered_deriving attr =
+  List.exists (fun (name, _) -> is_deriving name attr) plugin_registry.val ;
+
+ef.val := EF.{ (ef.val) with
+            str_item = extfun ef.val.str_item with [
+    <:str_item:< type $_flag:_$ $list:tdl$ >> as z
+    when  List.exists is_registered_deriving (Pcaml.unvala (fst (sep_last tdl)).tdAttributes) ->
+    fun arg ->
+      let attrs = Pcaml.unvala (fst (sep_last tdl)).tdAttributes in
+      let ll = plugin_registry.val |> List.map (fun (name, pi) ->
+        if List.exists (is_deriving name) attrs then
+          [registered_str_item arg pi z]
+        else []) in
+      let l = List.concat ll in
+      <:str_item< declare $list:[z :: l ]$ end >>
+  ] }
+;
+
+ef.val := EF.{ (ef.val) with
+            sig_item = extfun ef.val.sig_item with [
+    <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
+    when  List.exists is_registered_deriving (Pcaml.unvala (fst (sep_last tdl)).tdAttributes) ->
+    fun arg ->
+      let attrs = Pcaml.unvala (fst (sep_last tdl)).tdAttributes in
+      let ll = plugin_registry.val |> List.map (fun (name, pi) ->
+        if List.exists (is_deriving name) attrs then
+          [registered_sig_item arg pi z]
+        else []) in
+      let l = List.concat ll in
+      <:sig_item< declare $list:[z :: l ]$ end >>
+  ] }
+;
+
+value is_registered_extension attr =
+  List.mem_assoc (Pcaml.unvala (fst attr)) extension2plugin.val ;
+
+ef.val := EF.{ (ef.val) with
+  expr = extfun ef.val.expr with [
+    <:expr:< [% $extension:e$ ] >> as z when is_registered_extension e ->
+      fun arg ->
+        registered_expr_extension arg z
+  ] }
 ;
