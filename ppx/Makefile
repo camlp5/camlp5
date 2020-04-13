@@ -10,6 +10,7 @@ RM=rm
 TESTS=test_deriving_show test_deriving_show.ppx \
       test_deriving_eq test_deriving_eq.ppx \
       test_deriving_ord test_deriving_ord.ppx \
+      test_deriving_enum test_deriving_enum.ppx \
 
 all-tests: all $(TESTS)
 
@@ -17,6 +18,8 @@ all: \
 	test_deriving_show test_deriving_show.ppx \
 	test_deriving_eq test_deriving_eq.ppx \
 	test_deriving_ord test_deriving_ord.ppx \
+	test_deriving_enum test_deriving_enum.ppx \
+
 
 LAUNCH=env TOP=$(TOP) $(TOP)/tools/LAUNCH
 OCAMLFIND=$(LAUNCH) ocamlfind
@@ -44,8 +47,8 @@ test_deriving_show.ppx: test_deriving_show.ppx.byte
 	./test_deriving_show.ppx.byte
 
 test_deriving_show.ppx.byte: test_deriving_show.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq -linkall -linkpkg -I ../testsuite -dsource test_deriving_show.ml > test_deriving_show.ppx.ppo 2>&1 || true
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.show -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo test_deriving_show.ml -o test_deriving_show.ppx.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq,ppx_deriving.show -linkall -linkpkg -I ../testsuite -dsource test_deriving_show.ml > test_deriving_show.ppx.ppo 2>&1 || true
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.eq,ppx_deriving.show -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo test_deriving_show.ml -o test_deriving_show.ppx.byte
 
 test_deriving_show: test_deriving_show.byte
 	./test_deriving_show.byte
@@ -91,6 +94,24 @@ test_deriving_ord.byte: test_deriving_ord.ml pa_passthru.cmo pa_deriving_ord.cmo
 	$(LAUNCH) camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./ppxutil.cmo ./pa_deriving_ord.cmo test_deriving_ord.ml > test_deriving_ord.ppo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo -impl test_deriving_ord.ppo -o test_deriving_ord.byte
 
+
+pa_deriving_enum.cmo: pa_deriving_enum.ml pa_passthru.cmo
+	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo' pr_ro.cmo 'pa_deriving_enum.ml' > pa_deriving_enum.ppo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_enum.ml
+
+test_deriving_enum.ppx: test_deriving_enum.ppx.byte
+	./test_deriving_enum.ppx.byte
+
+test_deriving_enum.ppx.byte: test_deriving_enum.ml ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.show,ppx_deriving.enum -linkall -linkpkg -I ../testsuite -dsource test_deriving_enum.ml > test_deriving_enum.ppx.ppo 2>&1 || true
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,ppx_deriving.show,ppx_deriving.enum -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo test_deriving_enum.ml -o test_deriving_enum.ppx.byte
+
+test_deriving_enum: test_deriving_enum.byte
+	./test_deriving_enum.byte
+
+test_deriving_enum.byte: test_deriving_enum.ml pa_passthru.cmo pa_deriving_enum.cmo pa_deriving_show.cmo ../testsuite/testutil.cmo ../testsuite/testutil2.cmo
+	$(LAUNCH) camlp5 -nolib -I $(CAMLP5LIB) pa_o.cmo pa_op.cmo pr_o.cmo ./pa_passthru.cmo ./ppxutil.cmo ./pa_deriving_show.cmo ./pa_deriving_enum.cmo test_deriving_enum.ml > test_deriving_enum.ppo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo -impl test_deriving_enum.ppo -o test_deriving_enum.byte
 
 clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo

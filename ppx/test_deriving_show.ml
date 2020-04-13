@@ -234,8 +234,8 @@ let test_variant_printer ctxt =
   assert_equal ~printer
     "fourth: 8 4" (show_variant_printer (Fourth(8,4)))
 
-type no_full    = NoFull   of int [@@deriving show { with_path = false }]
-type with_full  = WithFull of int [@@deriving show { with_path = true  }]
+type no_full    = NoFull   of int [@@deriving eq, show { with_path = false }]
+type with_full  = WithFull of int [@@deriving show { with_path = true  }, eq]
 module WithFull = struct
   type t = A of int [@@deriving show ]
 end
