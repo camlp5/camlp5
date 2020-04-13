@@ -36,7 +36,7 @@ PACKAGES=$(PACKAGES_NOCAMLP5),camlp5
 pa_passthru.cmo: pa_passthru.ml ppxutil.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_passthru.ml
 
-pa_deriving.cmo: pa_deriving.ml ppxutil.cmo
+pa_deriving.cmo: pa_deriving.ml pa_passthru.cmo ppxutil.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving.ml
 
 ppxutil.cmo: ppxutil.ml

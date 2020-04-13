@@ -105,7 +105,6 @@ end
 and Ctxt : sig
   type t = {
     module_path : string; 
-    with_path : bool ;
     options : list (string * expr) ;
     ef : EF.t } ;
   value mk : EF.t -> Ploc.t -> t ;
@@ -116,7 +115,6 @@ and Ctxt : sig
 end = struct
   type t = {
     module_path : string;
-    with_path : bool ;
     options : list (string * expr) ;
     ef : EF.t } ;
 value mk ef loc =
@@ -126,7 +124,7 @@ value mk ef loc =
   let base = match String.split_on_char '.' last with [
     [base :: _] -> base | _ -> assert False ] in
   let modname = String.capitalize_ascii base in
-  { module_path = modname ; with_path = True ; options = [] ; ef = ef  }
+  { module_path = modname ; options = [] ; ef = ef  }
 ;
 value append_module ctxt s =
   { (ctxt) with module_path = Printf.sprintf "%s.%s" ctxt.module_path s }
