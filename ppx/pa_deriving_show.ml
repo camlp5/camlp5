@@ -302,6 +302,11 @@ value is_deriving_show attr = match Pcaml.unvala attr with [
     List.exists (fun [
       <:str_item< show >> -> True
     | <:str_item< show $_$ >> -> True
+    | <:str_item< ( $list:l$ ) >> ->
+      List.exists (fun [
+          <:expr< show >> -> True
+        | <:expr< show $_ $ >> -> True
+        | _ -> False ]) l
     | _ -> False ]) sil
 | _ -> False
 ]
@@ -346,33 +351,33 @@ value expr_show arg ty =
   <:expr< fun arg -> Format.asprintf "%a" $e$ arg >>
 ;
 
-ef_str_item.val :=
-  extfun ef_str_item.val with [
+ef.val := EF.{ (ef.val) with
+            str_item = extfun ef.val.str_item with [
     <:str_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
     let f = str_item_gen_show loc arg tdl in
       <:str_item< declare $list:[z ; f ]$ end >>
 }
-  ]
+  ] }
 ;
 
-ef_sig_item.val :=
-  extfun ef_sig_item.val with [
+ef.val := EF.{ (ef.val) with
+  sig_item = extfun ef.val.sig_item with [
     <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
     let f = sig_item_gen_show loc arg tdl in
       <:sig_item< declare $list:[z ; f ]$ end >>
 }
-  ]
+  ] }
 ;
 
 
-ef_expr.val :=
-  extfun ef_expr.val with [
+ef.val := EF.{ (ef.val) with
+  expr = extfun ef.val.expr with [
     <:expr:< [%show: $type:t$ ] >> as z ->
       fun arg -> expr_show arg t
-  ]
+  ] }
 ;
 

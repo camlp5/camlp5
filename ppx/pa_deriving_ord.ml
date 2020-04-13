@@ -362,32 +362,32 @@ value expr_ord arg ty =
   <:expr< fun a b ->  $e$ a b >>
 ;
 
-ef_str_item.val :=
-  extfun ef_str_item.val with [
+ef.val := EF.{ (ef.val) with
+  str_item = extfun ef.val.str_item with [
     <:str_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_ord (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
     let f = str_item_gen_ord loc arg tdl in
       <:str_item< declare $list:[z ; f ]$ end >>
 }
-  ]
+  ] }
 ;
 
-ef_sig_item.val :=
-  extfun ef_sig_item.val with [
+ef.val := EF.{ (ef.val) with
+  sig_item = extfun ef.val.sig_item with [
     <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_ord (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
     let f = sig_item_gen_ord loc arg tdl in
       <:sig_item< declare $list:[z ; f ]$ end >>
 }
-  ]
+  ] }
 ;
 
 
-ef_expr.val :=
-  extfun ef_expr.val with [
+ef.val := EF.{ (ef.val) with
+  expr = extfun ef.val.expr with [
     <:expr:< [%ord: $type:t$ ] >> ->
       fun arg -> expr_ord arg t
-  ]
+  ] }
 ;

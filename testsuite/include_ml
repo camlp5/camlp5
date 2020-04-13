@@ -90,12 +90,16 @@ let pp_lexbuf lb =
 #directory "../ppx";;
 #load "../ppx/pa_passthru.cmo";;
 #load "../ppx/ppxutil.cmo";;
-#load "../ppx/pa_deriving_ord.cmo";;
+(*
+#load "../ppx/pa_deriving_show.cmo";;
+#trace Pa_deriving_show.fmt_expression ;;
+#trace Pa_deriving_show.is_deriving_show ;;
+*)
+#load "../ppx/pa_deriving_enum.cmo";;
+#trace Pa_deriving_enum.fmt_expression ;;
+#trace Pa_deriving_enum.is_deriving_enum ;;
 
-#trace Pa_deriving_ord.fmt_expression ;;
-#trace Pa_deriving_ord.is_deriving_ord ;;
-#trace Pa_deriving_eq.expr_ord ;;
-"../ppx/test_deriving_ord.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
+"../ppx/test_deriving_enum.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
 
 
 (*
