@@ -540,6 +540,7 @@ EXTEND
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
+    | s = STRING -> s
     ] ]
   ;
   attribute_structure:

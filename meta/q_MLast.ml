@@ -425,6 +425,7 @@ EXTEND
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> Qast.Str (String.concat "." l)
+    | s = STRING -> Qast.Str s
     ] ]
   ;
   attribute_structure:

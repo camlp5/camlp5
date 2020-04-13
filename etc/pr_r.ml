@@ -1341,19 +1341,21 @@ value map_option f =
   | None -> None ]
 ;
 
+value qs pc s = pprintf pc "\"%s\"" s ;
+
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
       [ <:attribute_body< $attrid:id$ $structure:st$ >> ->
-        pprintf pc "%s%p" id (hlist (space_before (semi_after str_item))) st
+        pprintf pc "%p%p" qs id (hlist (space_before (semi_after str_item))) st
       | <:attribute_body< $attrid:id$ : $signature:si$ >> ->
-        pprintf pc "%s:%p" id (hlist (space_before (semi_after sig_item))) si
+        pprintf pc "%p:%p" qs id (hlist (space_before (semi_after sig_item))) si
       | <:attribute_body< $attrid:id$ : $type:ty$ >> ->
-        pprintf pc "%s:%p" id (space_before ctyp) ty
+        pprintf pc "%p:%p" qs id (space_before ctyp) ty
       | <:attribute_body< $attrid:id$ ? $patt:p$ >> ->
-        pprintf pc "%s?%p" id (space_before patt) p
+        pprintf pc "%p?%p" qs id (space_before patt) p
       | <:attribute_body< $attrid:id$ ? $patt:p$ when $expr:e$ >> ->
-        pprintf pc "%s?%p when %p" id (space_before patt) p expr e
+        pprintf pc "%p?%p when %p" qs id (space_before patt) p expr e
       ]
     ]
     ;

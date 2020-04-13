@@ -123,15 +123,26 @@ value x = 1;
      r_output = OK {foo|\$  a c;
 |foo}
     };
+    {name="value-attribute-1"; implem = True ;
+     exclude=[];
+     o_input = OK"a[@value];;" ;
+     official_input = OK"a[@value];;" ;
+     r_input = OK {foo|a [@"value"];|foo} ;
+     o_output = OK {foo|let _ = a[@value];;
+|foo} ;
+     official_output = OK {foo|;;((a)[@value ])|foo} ;
+     r_output = OK {foo|a[@"value"];
+|foo}
+    };
     {name="alg_attribute1"; implem = True ;
      exclude=[];
-     o_input = OK"a[@foo];;" ;
-     official_input = OK"a[@foo];;" ;
-     r_input = OK"a [@foo];" ;
+     o_input = OK {foo|a[@foo];;|foo} ;
+     official_input = OK {foo|a[@foo];;|foo} ;
+     r_input = OK {foo|a [@foo];|foo} ;
      o_output = OK {foo|let _ = a[@foo];;
 |foo} ;
      official_output = OK {foo|;;((a)[@foo ])|foo} ;
-     r_output = OK {foo|a[@foo];
+     r_output = OK {foo|a[@"foo"];
 |foo}
     };
     {name="alg_attribute2"; implem = True ;
@@ -142,7 +153,7 @@ value x = 1;
      o_output = OK {foo|let _ = a + b[@foo];;
 |foo} ;
      official_output = OK {foo|;;((a + b)[@foo ])|foo} ;
-     r_output = OK {foo|a + b[@foo];
+     r_output = OK {foo|a + b[@"foo"];
 |foo}
     };
     {name="alg_attribute3"; implem = True ;
@@ -153,7 +164,7 @@ value x = 1;
      o_output = OK {foo|let _ = a[@foo][@bar];;
 |foo} ;
      official_output = OK {foo|;;((a)[@foo ][@bar ])|foo} ;
-     r_output = OK {foo|a[@foo][@bar];
+     r_output = OK {foo|a[@"foo"][@"bar"];
 |foo}
     };
     {name="alg_attribute4"; implem = True ;
@@ -164,7 +175,7 @@ value x = 1;
      o_output = OK {foo|let _ = a[@foo: type t = int;;];;
 |foo} ;
      official_output = OK {foo|;;((a)[@foo :type t = int])|foo} ;
-     r_output = OK{foo|a[@foo: type t = int;];
+     r_output = OK{foo|a[@"foo": type t = int;];
 |foo}
     };
     {name="alg_attribute5"; implem = True ;
@@ -175,7 +186,7 @@ value x = 1;
      o_output = OK {foo|let _ = a[@foo: int];;
 |foo} ;
      official_output = OK {foo|;;((a)[@foo :int])|foo} ;
-     r_output = OK {foo|a[@foo: int];
+     r_output = OK {foo|a[@"foo": int];
 |foo}
     };
     {name="alg_attribute6"; implem = True ;
@@ -186,7 +197,7 @@ value x = 1;
      o_output = OK {foo|let _ = a[@foo? _, _];;
 |foo} ;
      official_output = OK {foo|;;((a)[@foo ?(_, _)])|foo} ;
-     r_output = OK {foo|a[@foo? (_, _)];
+     r_output = OK {foo|a[@"foo"? (_, _)];
 |foo}
     };
     {name="alg_attribute7"; implem = True ;
@@ -197,7 +208,7 @@ value x = 1;
      o_output = OK {foo|let _ = a[@foo? _, _ when true];;
 |foo} ;
      official_output = OK {foo|;;((a)[@foo ?(_, _) when true])|foo} ;
-     r_output = OK {foo|a[@foo? (_, _) when True];
+     r_output = OK {foo|a[@"foo"? (_, _) when True];
 |foo}
     };
     {name="alg_attribute8"; implem = True ;
@@ -208,8 +219,8 @@ value x = 1;
      o_output = OK {foo|let _ = a[@foo? _, _ when true];;
 |foo} ;
      official_output = OK {foo|;;((a)[@foo ?(_, _) when true])|foo} ;
-     r_output = OK "a[@foo? (_, _) when True];
-"
+     r_output = OK {foo|a[@"foo"? (_, _) when True];
+|foo}
     };
     {name="alg_attribute9"; implem = True ;
      exclude=[];
@@ -219,7 +230,7 @@ value x = 1;
      o_output = OK {foo|type t = int[@foo];;
 |foo} ;
      official_output = OK {foo|type t = ((int)[@foo ])|foo} ;
-     r_output = OK {foo|type t = int[@foo];
+     r_output = OK {foo|type t = int[@"foo"];
 |foo}
     };
     {name="alg_attribute10"; implem = True ;
@@ -230,7 +241,7 @@ value x = 1;
      o_output = OK {foo|type t = int[@foo][@bar];;
 |foo} ;
      official_output = OK {foo|type t = ((int)[@foo ][@bar ])|foo} ;
-     r_output = OK {foo|type t = int[@foo][@bar];
+     r_output = OK {foo|type t = int[@"foo"][@"bar"];
 |foo}
     };
     {name="alg_attribute11"; implem = True ;
@@ -244,7 +255,7 @@ value x = 1;
 |foo} ;
      official_output = OK {foo|;;fun (x|((y)[@foo ])) -> 1|foo} ;
      r_output = OK {foo|fun
-[ x | y[@foo] → 1 ];
+[ x | y[@"foo"] → 1 ];
 |foo}
     };
     {name="alg_attribute12"; implem = True ;
@@ -255,7 +266,7 @@ value x = 1;
      o_output = OK {foo|module M = struct  end[@foo];;
 |foo} ;
      official_output = OK {foo|module M = ((struct  end)[@foo ])|foo} ;
-     r_output = OK {foo|module M = struct  end[@foo];
+     r_output = OK {foo|module M = struct  end[@"foo"];
 |foo}
     };
     {name="alg_attribute13"; implem = True ;
@@ -266,7 +277,7 @@ value x = 1;
      o_output = OK {foo|class t = object  end[@foo];;
 |foo} ;
      official_output = OK {foo|class t = ((object  end)[@foo ])|foo} ;
-     r_output = OK {foo|class t = object  end[@foo];
+     r_output = OK {foo|class t = object  end[@"foo"];
 |foo}
     };
     {name="alg_attribute13"; implem = True ;
@@ -277,7 +288,7 @@ value x = 1;
      o_output = OK {foo|class type ['a] t = object  end[@foo];;
 |foo} ;
      official_output = OK {foo|class type ['a] t = object  end[@foo ]|foo} ;
-     r_output = OK {foo|class type t ['a] = object  end[@foo];
+     r_output = OK {foo|class type t ['a] = object  end[@"foo"];
 |foo}
     };
     {name="alg_attribute14"; implem = True ;
@@ -289,7 +300,7 @@ value x = 1;
 |foo} ;
      official_output = OK {foo|type t = {
   a: int [@foo ]}|foo} ;
-     r_output = OK {foo|type t = { a : int[@foo] };
+     r_output = OK {foo|type t = { a : int[@"foo"] };
 |foo}
     };
     {name="alg_attribute15"; implem = True ;
@@ -301,7 +312,7 @@ value x = 1;
 |foo} ;
      official_output = OK {foo|type t = {
   a: ((int)[@bar ]) [@foo ]}|foo} ;
-     r_output = OK {foo|type t = { a : (int[@bar])[@foo] };
+     r_output = OK {foo|type t = { a : (int[@"bar"])[@"foo"] };
 |foo}
     };
     {name="alg_attribute16"; implem = True ;
@@ -312,7 +323,7 @@ value x = 1;
      o_output = OK {foo|type t = a * (b[@bar]);;
 |foo} ;
      official_output = OK {foo|type t = (a * ((b)[@bar ]))|foo} ;
-     r_output = OK {foo|type t = (a * b[@bar]);
+     r_output = OK {foo|type t = (a * b[@"bar"]);
 |foo}
     };
     {name="alg_attribute17"; implem = True ;
@@ -323,7 +334,7 @@ value x = 1;
      o_output = OK {foo|type t = a * b[@bar];;
 |foo} ;
      official_output = OK {foo|type t = (((a * b))[@bar ])|foo} ;
-     r_output = OK {foo|type t = (a * b)[@bar];
+     r_output = OK {foo|type t = (a * b)[@"bar"];
 |foo}
     };
     {name="alg_attribute19"; implem = True ;
@@ -335,7 +346,7 @@ value x = 1;
 |foo} ;
      official_output = OK {foo|type t = {
   a: (((int * bool))[@bar ]) [@foo ]}|foo} ;
-     r_output = OK {foo|type t = { a : ((int * bool)[@bar])[@foo] };
+     r_output = OK {foo|type t = { a : ((int * bool)[@"bar"])[@"foo"] };
 |foo}
     };
     {name="poly-variant-alg-attribute1"; implem = True ;
@@ -346,7 +357,7 @@ value x = 1;
      o_output = OK {foo|type t = [ `Foo[@alg_foo] ];;
 |foo} ;
      official_output = OK {foo|type t = [ `Foo [@alg_foo ]]|foo} ;
-     r_output = OK {foo|type t = [ = `Foo[@alg_foo] ];
+     r_output = OK {foo|type t = [ = `Foo[@"alg_foo"] ];
 |foo}
     };
     {name="poly-variant-alg-attribute2"; implem = True ;
@@ -357,7 +368,7 @@ value x = 1;
      o_output = OK {foo|type t = [ `Foo of int[@alg_bar][@alg_foo] ];;
 |foo} ;
      official_output = OK {foo|type t = [ `Foo of ((int)[@alg_bar ]) [@alg_foo ]]|foo} ;
-     r_output = OK {foo|type t = [ = `Foo of int[@alg_bar][@alg_foo] ];
+     r_output = OK {foo|type t = [ = `Foo of int[@"alg_bar"][@"alg_foo"] ];
 |foo}
     };
 
@@ -380,7 +391,7 @@ value x = 1;
      o_output = OK {foo|val x : int[@@foo];;
 |foo} ;
      official_output = OK {foo|val x : int[@@foo ]|foo} ;
-     r_output = OK {foo|value x : int[@@foo];
+     r_output = OK {foo|value x : int[@@"foo"];
 |foo}
     };
     {name="item_attribute2"; implem = True ;
@@ -391,7 +402,7 @@ value x = 1;
      o_output = OK {foo|let _ = 1[@@foo];;
 |foo} ;
      official_output = OK {foo|;;1[@@foo ]|foo} ;
-     r_output = OK {foo|1[@@foo];
+     r_output = OK {foo|1[@@"foo"];
 |foo}
     };
     {name="item_attribute3"; implem = True ;
@@ -404,8 +415,8 @@ and t2 = bool[@@foo];;
 |foo} ;
      official_output = OK {foo|type nonrec t1 = int[@@bar ]
 and t2 = bool[@@foo ]|foo} ;
-     r_output = OK {foo|type nonrec t1 = int[@@bar]
-and t2 = bool[@@foo];
+     r_output = OK {foo|type nonrec t1 = int[@@"bar"]
+and t2 = bool[@@"foo"];
 |foo}
     };
     {name="item_attribute4"; implem = True ;
@@ -416,7 +427,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|type t[@@a];;
 |foo};
      official_output = OK {foo|type t[@@a ]|foo} ;
-     r_output = OK {foo|type t = α[@@a];
+     r_output = OK {foo|type t = α[@@"a"];
 |foo}
     };
     {name="exception-decl-attributes1"; implem = True ;
@@ -427,7 +438,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|exception Foo of int[@@foo];;
 |foo} ;
      official_output = OK {foo|exception Foo of int [@@foo ]|foo} ;
-     r_output = OK {foo|exception Foo of int[@@foo];
+     r_output = OK {foo|exception Foo of int[@@"foo"];
 |foo}
     };
     {name="exception-decl-attributes2"; implem = True ;
@@ -438,7 +449,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];;
 |foo} ;
      official_output = OK {foo|exception T of ((int)[@alg_foo ]) [@alg_bar ][@@item_bar ]|foo} ;
-     r_output = OK {foo|exception T of (int[@alg_foo])[@alg_bar][@@item_bar];
+     r_output = OK {foo|exception T of (int[@"alg_foo"])[@"alg_bar"][@@"item_bar"];
 |foo}
     };
     {name="exception-decl-attributes3"; implem = True ;
@@ -449,7 +460,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|exception Foo[@foo];;
 |foo} ;
      official_output = OK {foo|exception Foo [@foo ]|foo} ;
-     r_output = OK {foo|exception Foo[@foo];
+     r_output = OK {foo|exception Foo[@"foo"];
 |foo}
     };
     {name="exception-decl-attributes3b"; implem = False ;
@@ -460,7 +471,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|exception Foo[@foo];;
 |foo} ;
      official_output = OK {foo|exception Foo [@foo ]|foo} ;
-     r_output = OK {foo|exception Foo[@foo];
+     r_output = OK {foo|exception Foo[@"foo"];
 |foo}
     };
     {name="constructor-decl-attributes1"; implem = True ;
@@ -476,8 +487,8 @@ and t2 = bool[@@foo];
   | A of int * bool [@alg_foo ]
   | B of bool * string [@alg_bar ][@@item_bar ]|foo} ;
      r_output = OK {foo|type t =
-  [ A of int and bool[@alg_foo]
-  | B of bool and string[@alg_bar] ][@@item_bar];
+  [ A of int and bool[@"alg_foo"]
+  | B of bool and string[@"alg_bar"] ][@@"item_bar"];
 |foo}
     };
     {name="constructor-decl-attributes2a"; implem = True ;
@@ -492,7 +503,7 @@ and t2 = bool[@@foo];
      official_output = OK {foo|type t =
   | A of int [@alg_bar ][@@item_bar ]|foo} ;
      r_output = OK {foo|type t =
-  [ A of int[@alg_bar] ][@@item_bar];
+  [ A of int[@"alg_bar"] ][@@"item_bar"];
 |foo}
     };
     {name="constructor-decl-attributes2b"; implem = True ;
@@ -507,7 +518,7 @@ and t2 = bool[@@foo];
      official_output = OK {foo|type t =
   | A of ((int)[@alg_foo ]) [@@item_bar ]|foo} ;
      r_output = OK {foo|type t =
-  [ A of (int[@alg_foo]) ][@@item_bar];
+  [ A of (int[@"alg_foo"]) ][@@"item_bar"];
 |foo}
     };
     {name="constructor-decl-attributes2c"; implem = True ;
@@ -522,7 +533,7 @@ and t2 = bool[@@foo];
      official_output = OK {foo|type t =
   | A of ((int)[@alg_foo ]) [@alg_bar ][@@item_bar ]|foo} ;
      r_output = OK {foo|type t =
-  [ A of (int[@alg_foo])[@alg_bar] ][@@item_bar];
+  [ A of (int[@"alg_foo"])[@"alg_bar"] ][@@"item_bar"];
 |foo}
     };
     {name="module-expr-item-attributes1"; implem = True ;
@@ -533,7 +544,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|module M = struct  end[@alg_foo][@@item_bar];;
 |foo} ;
      official_output = OK {foo|module M = ((struct  end)[@alg_foo ])[@@item_bar ]|foo} ;
-     r_output = OK {foo|module M = struct  end[@alg_foo][@@item_bar];
+     r_output = OK {foo|module M = struct  end[@"alg_foo"][@@"item_bar"];
 |foo}
     };
     {name="module-expr-item-attributes2"; implem = True ;
@@ -544,7 +555,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|module M = N[@alg_foo][@@item_bar];;
 |foo} ;
      official_output = OK {foo|module M = ((N)[@alg_foo ])[@@item_bar ]|foo} ;
-     r_output = OK {foo|module M = N[@alg_foo][@@item_bar];
+     r_output = OK {foo|module M = N[@"alg_foo"][@@"item_bar"];
 |foo}
     };
     {name="method-class-sig-item-attributes1"; implem = True ;
@@ -555,7 +566,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class type ct = object method m : int[@@argle] end;;
 |foo} ;
      official_output = OK {foo|class type ct = object method  m : int[@@argle ] end|foo} ;
-     r_output = OK {foo|class type ct = object method m : int[@@argle]; end;
+     r_output = OK {foo|class type ct = object method m : int[@@"argle"]; end;
 |foo}
     };
     {name="method-class-struct-item-attributes1"; implem = True ;
@@ -566,7 +577,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class c = object method foo = 1[@@argle] end;;
 |foo} ;
      official_output = OK {foo|class c = object method foo = 1[@@argle ] end|foo} ;
-     r_output = OK {foo|class c = object method foo = 1[@@argle]; end;
+     r_output = OK {foo|class c = object method foo = 1[@@"argle"]; end;
 |foo}
     };
     {name="class-decl-item-attributes1"; implem = True ;
@@ -577,7 +588,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class c = object  end[@@argle];;
 |foo} ;
      official_output = OK {foo|class c = object  end[@@argle ]|foo} ;
-     r_output = OK {foo|class c = object  end[@@argle];
+     r_output = OK {foo|class c = object  end[@@"argle"];
 |foo}
     };
     {name="let-binding-item-attributes1"; implem = True ;
@@ -588,7 +599,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = let x = 1[@@argle] in 2;;
 |foo};
      official_output = OK {foo|;;let x = 1[@@argle ] in 2|foo};
-     r_output = OK {foo|let x = 1[@@argle] in
+     r_output = OK {foo|let x = 1[@@"argle"] in
 2;
 |foo}
     };
@@ -600,7 +611,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = let x = 1[@@argle] in 2;;
 |foo};
      official_output = OK {foo|;;let x = 1[@@argle ] in 2|foo};
-     r_output = OK {foo|let x = 1[@@argle] in
+     r_output = OK {foo|let x = 1[@@"argle"] in
 2;
 |foo}
     };
@@ -626,7 +637,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|open Foo[@@argle];;
 |foo};
      official_output = OK {foo|open Foo[@@argle ]|foo};
-     r_output = OK {foo|open Foo[@@argle];
+     r_output = OK {foo|open Foo[@@"argle"];
 |foo}
     };
     {name="floating-attributes1"; implem = True ;
@@ -637,7 +648,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|[@@@argle];;
 |foo};
      official_output = OK {foo|[@@@argle ]|foo};
-     r_output = OK {foo|[@@@argle];
+     r_output = OK {foo|[@@@"argle"];
 |foo}
     };
     {name="floating-attributes2"; implem = False ;
@@ -648,7 +659,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|[@@@argle];;
 |foo};
      official_output = OK {foo|[@@@argle ]|foo};
-     r_output = OK {foo|[@@@argle];
+     r_output = OK {foo|[@@@"argle"];
 |foo}
     };
     {name="let-exception1"; implem = True ;
@@ -659,7 +670,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = let exception E[@algattr] in 1[@@itemattr];;
 |foo};
      official_output = OK {foo|;;let exception E [@algattr ] in 1[@@itemattr ]|foo};
-     r_output = OK {foo|let exception E[@algattr] in 1[@@itemattr];
+     r_output = OK {foo|let exception E[@"algattr"] in 1[@@"itemattr"];
 |foo}
     };
     {name="let-exception2"; implem = True ;
@@ -670,7 +681,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = let exception E of (int[@algattr2])[@algattr] in 1[@@itemattr];;
 |foo};
      official_output = OK {foo|;;let exception E of ((int)[@algattr2 ]) [@algattr ] in 1[@@itemattr ]|foo};
-     r_output = OK {foo|let exception E of (int[@algattr2])[@algattr] in 1[@@itemattr];
+     r_output = OK {foo|let exception E of (int[@"algattr2"])[@"algattr"] in 1[@@"itemattr"];
 |foo}
     };
     {name="pat-exception1"; implem = True ;
@@ -1008,7 +1019,7 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|type t = {
   a: int [@attr ]}|foo} ;
-     r_output = OK {foo|type t = { a : int[@attr] };
+     r_output = OK {foo|type t = { a : int[@"attr"] };
 |foo}
     };
     {name="labeled-field-alg-attribute2"; implem = True ;
@@ -1020,7 +1031,7 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|type t = {
   a: int [@attr ][@attr2 ]}|foo} ;
-     r_output = OK {foo|type t = { a : int[@attr] [@attr2] };
+     r_output = OK {foo|type t = { a : int[@"attr"] [@"attr2"] };
 |foo}
     };
     {name="val-attributes1"; implem = False ;
@@ -1031,7 +1042,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|val x : int[@@attr2];;
 |foo};
      official_output = OK {foo|val x : int[@@attr2 ]|foo} ;
-     r_output = OK {foo|value x : int[@@attr2];
+     r_output = OK {foo|value x : int[@@"attr2"];
 |foo}
     };
     {name="val-attributes2"; implem = False ;
@@ -1042,7 +1053,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|val x : int[@@attr1] [@@attr2];;
 |foo};
      official_output = OK {foo|val x : int[@@attr1 ][@@attr2 ]|foo} ;
-     r_output = OK {foo|value x : int[@@attr1] [@@attr2];
+     r_output = OK {foo|value x : int[@@"attr1"] [@@"attr2"];
 |foo}
     };
     {name="external-operator-sig-item"; implem = False ;
@@ -1056,7 +1067,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"];;
 |foo};
      official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
-     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@a "msg";];
+     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@"a" "msg";];
 |foo}
     };
     {name="external-operator-str-item"; implem = True ;
@@ -1070,7 +1081,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"];;
 |foo};
      official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
-     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@a "msg";];
+     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@"a" "msg";];
 |foo}
     };
     {name="expr-1"; implem = True ;
@@ -1081,7 +1092,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let () = (f[@inlined never]) ();;
 |foo};
      official_output = OK {foo|let () = ((f)[@inlined never]) ()|foo} ;
-     r_output = OK {foo|value () = (f[@inlined never;]) ();
+     r_output = OK {foo|value () = (f[@"inlined" never;]) ();
 |foo}
     };
     {name="anon-module-argumet"; implem = True ;
@@ -1125,7 +1136,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|type t = int * [%a];;
 |foo};
      official_output = OK {foo|type t = (int * [%a ])|foo} ;
-     r_output = OK {foo|type t = (int * [%a]);
+     r_output = OK {foo|type t = (int * [%"a"]);
 |foo}
     };
     {name="alg-extension-patt"; implem = True ;
@@ -1136,7 +1147,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = match x with x, [%a] -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | (x, [%a ]) -> 1|foo} ;
-     r_output = OK {foo|match x with (x, [%a]) → 1;
+     r_output = OK {foo|match x with (x, [%"a"]) → 1;
 |foo}
     };
     {name="alg-extension-expr"; implem = True ;
@@ -1147,7 +1158,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let x = 1 + [%a];;
 |foo};
      official_output = OK {foo|let x = 1 + ([%a ])|foo} ;
-     r_output = OK {foo|value x = 1 + [%a];
+     r_output = OK {foo|value x = 1 + [%"a"];
 |foo}
     };
     {name="alg-extension-module-type"; implem = True ;
@@ -1158,7 +1169,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|module type S = sig module M : [%a] end;;
 |foo};
      official_output = OK {foo|module type S  = sig module M : [%a ] end|foo} ;
-     r_output = OK {foo|module type S = sig module M : [%a]; end;
+     r_output = OK {foo|module type S = sig module M : [%"a"]; end;
 |foo}
     };
     {name="alg-extension-sig-item"; implem = True ;
@@ -1169,7 +1180,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|module type S = sig [%%a] type t end;;
 |foo};
      official_output = OK {foo|module type S  = sig [%%a ] type t end|foo} ;
-     r_output = OK {foo|module type S = sig [%%a]; type t = α; end;
+     r_output = OK {foo|module type S = sig [%%"a"]; type t = α; end;
 |foo}
     };
     {name="alg-extension-module-expr"; implem = True ;
@@ -1180,7 +1191,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|module M = F ([%a]);;
 |foo};
      official_output = OK {foo|module M = (F)([%a ])|foo} ;
-     r_output = OK {foo|module M = F [%a];
+     r_output = OK {foo|module M = F [%"a"];
 |foo}
     };
     {name="alg-extension-str-item"; implem = True ;
@@ -1192,7 +1203,7 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|module S = struct [%%a ]
                   type t end|foo} ;
-     r_output = OK {foo|module S = struct [%%a]; type t = α; end;
+     r_output = OK {foo|module S = struct [%%"a"]; type t = α; end;
 |foo}
     };
     {name="alg-extension-class-sig-item"; implem = True ;
@@ -1203,7 +1214,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class type ct = object val x : int [%%a] end;;
 |foo};
      official_output = OK {foo|class type ct = object val  x : int [%%a ] end|foo} ;
-     r_output = OK {foo|class type ct = object value x : int; [%%a]; end;
+     r_output = OK {foo|class type ct = object value x : int; [%%"a"]; end;
 |foo}
     };
     {name="alg-extension-class-str-item"; implem = True ;
@@ -1214,7 +1225,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class ct = object val x = 1 [%%a] end;;
 |foo};
      official_output = OK {foo|class ct = object val x = 1 [%%a ] end|foo} ;
-     r_output = OK {foo|class ct = object value x = 1; [%%a]; end;
+     r_output = OK {foo|class ct = object value x = 1; [%%"a"]; end;
 |foo}
     };
     {name="alg-extension-class-expr"; implem = True ;
@@ -1225,7 +1236,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class c = ([%a]) 1;;
 |foo};
      official_output = OK {foo|class c = (([%a ]) 1)|foo} ;
-     r_output = OK {foo|class c = ([%a]) 1;
+     r_output = OK {foo|class c = ([%"a"]) 1;
 |foo}
     };
     {name="alg-extension-class-str-item"; implem = True ;
@@ -1236,7 +1247,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class type ct = object val x : int [%%a] end;;
 |foo};
      official_output = OK {foo|class type ct = object val  x : int [%%a ] end|foo} ;
-     r_output = OK {foo|class type ct = object value x : int; [%%a]; end;
+     r_output = OK {foo|class type ct = object value x : int; [%%"a"]; end;
 |foo}
     };
     {name="for-loop-index-var1"; implem = True ;
@@ -1797,7 +1808,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let (x[@foo1] : unit[@foo2]) = ()[@foo3][@@foo4];;
 |foo};
      official_output = OK {foo|let (((x)[@foo1 ]) : ((unit)[@foo2 ])) = ((())[@foo3 ])[@@foo4 ]|foo} ;
-     r_output = OK {foo|value x[@foo1] : unit[@foo2] = ()[@foo3][@@foo4];
+     r_output = OK {foo|value x[@"foo1"] : unit[@"foo2"] = ()[@"foo3"][@@"foo4"];
 |foo}
     };
     {name="attributes-in-odd-locations1-official2official"; implem = True ;
@@ -1833,7 +1844,7 @@ and t2 = bool[@@foo];
      official_output = OK {foo|include
   ((((module type of ((M)[@foo ]))[@foo ]) with type  t :=  M.t)[@foo ])
 [@@foo ]|foo} ;
-     r_output = OK {foo|include (module type of M[@foo])[@foo] with type t := M.t[@foo][@@foo];
+     r_output = OK {foo|include (module type of M[@"foo"])[@"foo"] with type t := M.t[@"foo"][@@"foo"];
 |foo}
     };
     {name="attributes-in-odd-locations3test"; implem = False ;
@@ -1853,7 +1864,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|[%%foo let x = 42;;];;
 |foo};
      official_output = OK {foo|[%%foo let x = 42]|foo} ;
-     r_output = OK {foo|[%%foo value x = 42;];
+     r_output = OK {foo|[%%"foo" value x = 42;];
 |foo}
     };
     {name="inline-extensions2"; implem = True ;
@@ -1864,7 +1875,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo let x = 42 in ()];;
 |foo};
      official_output = OK {foo|;;[%foo let x = 42 in ()]|foo} ;
-     r_output = OK {foo|[%foo let x = 42 in
+     r_output = OK {foo|[%"foo" let x = 42 in
 ();];
 |foo}
     };
@@ -1876,7 +1887,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (let module M = M in ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((let module M = M in ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (let module M = M in ())[@foo];];
+     r_output = OK {foo|[%"foo" (let module M = M in ())[@"foo"];];
 |foo}
     };
     {name="inline-attributes-1"; implem = True ;
@@ -1887,7 +1898,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = (let module M = M in ())[@foo];;
 |foo};
      official_output = OK {foo|;;((let module M = M in ())[@foo ])|foo} ;
-     r_output = OK {foo|(let module M = M in ())[@foo];
+     r_output = OK {foo|(let module M = M in ())[@"foo"];
 |foo}
     };
     {name="inline-extensions4"; implem = True ;
@@ -1898,7 +1909,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (let open M in ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((let open M in ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (let open M in ())[@foo];];
+     r_output = OK {foo|[%"foo" (let open M in ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions5"; implem = True ;
@@ -1909,7 +1920,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (fun x -> ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((fun x -> ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (fun x → ())[@foo];];
+     r_output = OK {foo|[%"foo" (fun x → ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions6"; implem = True ;
@@ -1920,7 +1931,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (fun x -> ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((fun x -> ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (fun x → ())[@foo];];
+     r_output = OK {foo|[%"foo" (fun x → ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions6-official2official"; implem = True ;
@@ -1940,7 +1951,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (try () with _ -> ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((try () with | _ -> ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (try () with _ → ())[@foo];];
+     r_output = OK {foo|[%"foo" (try () with _ → ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions8"; implem = True ;
@@ -1951,7 +1962,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (if () then ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((if () then ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (if () then () else ())[@foo];];
+     r_output = OK {foo|[%"foo" (if () then () else ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions8-official2official"; implem = True ;
@@ -1971,7 +1982,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (while () do () done)[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((while () do () done)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (while () do { () })[@foo];];
+     r_output = OK {foo|[%"foo" (while () do { () })[@"foo"];];
 |foo}
     };
     {name="inline-extensions10"; implem = True ;
@@ -1982,7 +1993,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (for x = () to () do () done)[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((for x = () to () do () done)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (for x = () to () do { () })[@foo];];
+     r_output = OK {foo|[%"foo" (for x = () to () do { () })[@"foo"];];
 |foo}
     };
     {name="inline-extensions11"; implem = True ;
@@ -1993,7 +2004,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo assert true[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((assert true)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo assert True[@foo];];
+     r_output = OK {foo|[%"foo" assert True[@"foo"];];
 |foo}
     };
     {name="inline-extensions12"; implem = True ;
@@ -2004,7 +2015,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo lazy x[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((lazy x)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo lazy x[@foo];];
+     r_output = OK {foo|[%"foo" lazy x[@"foo"];];
 |foo}
     };
     {name="inline-extensions13"; implem = True ;
@@ -2015,7 +2026,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo object  end[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((object  end)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo object  end[@foo];];
+     r_output = OK {foo|[%"foo" object  end[@"foo"];];
 |foo}
     };
     {name="inline-extensions14"; implem = True ;
@@ -2026,7 +2037,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo begin 3; 4 end[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((3; 4)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (do { 3; 4 })[@foo];];
+     r_output = OK {foo|[%"foo" (do { 3; 4 })[@"foo"];];
 |foo}
     };
     {name="inline-extensions15"; implem = True ;
@@ -2037,7 +2048,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo new x[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((new x)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo new x[@foo];];
+     r_output = OK {foo|[%"foo" new x[@"foo"];];
 |foo}
     };
     {name="inline-extensions16"; implem = True ;
@@ -2048,7 +2059,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = [%foo (match () with x -> x)[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((match () with | x -> x)[@foo ])]|foo} ;
-     r_output = OK {foo|[%foo (match () with x → x)[@foo];];
+     r_output = OK {foo|[%"foo" (match () with x → x)[@"foo"];];
 |foo}
     };
     {name="inline-extensions17"; implem = True ;
@@ -2059,7 +2070,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = match x with [%foo? lazy x[@foo]] -> ();;
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?(((lazy x))[@foo ])] -> ()|foo} ;
-     r_output = OK {foo|match x with [%foo? lazy x[@foo]] → ();
+     r_output = OK {foo|match x with [%"foo"? lazy x[@"foo"]] → ();
 |foo}
     };
     {name="inline-extensions18"; implem = True ;
@@ -2070,7 +2081,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|let _ = match x with [%foo? exception x[@foo]] -> ();;
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> ()|foo} ;
-     r_output = OK {foo|match x with [%foo? exception x[@foo]] → ();
+     r_output = OK {foo|match x with [%"foo"? exception x[@"foo"]] → ();
 |foo}
     };
     {name="inline-extensions18b"; implem = True ;
@@ -2085,7 +2096,7 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> () | Y -> ()|foo} ;
      r_output = OK {foo|match x with
-[ [%foo? exception x[@foo]] → ()
+[ [%"foo"? exception x[@"foo"]] → ()
 | Y → () ];
 |foo}
     };
@@ -2109,7 +2120,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class x = (fun x -> object  end)[@foo];;
 |foo};
      official_output = OK {foo|class x = ((fun x  -> object  end)[@foo ])|foo} ;
-     r_output = OK {foo|class x = (fun x -> object  end)[@foo];
+     r_output = OK {foo|class x = (fun x -> object  end)[@"foo"];
 |foo}
     };
     {name="inline-attributes-2a"; implem = True ;
@@ -2131,7 +2142,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|class type t = object val mutable x : t[@@foo4] end[@foo1];;
 |foo};
      official_output = OK {foo|class type t = object val  mutable x : t[@@foo4 ] end[@foo1 ]|foo} ;
-     r_output = OK {foo|class type t = object value mutable x : t[@@foo4]; end[@foo1];
+     r_output = OK {foo|class type t = object value mutable x : t[@@"foo4"]; end[@"foo1"];
 |foo}
     };
     {name="inline-attributes-2"; implem = True ;
@@ -2201,16 +2212,16 @@ and t2 = bool[@@foo];
   end[@foo1 ]|foo} ;
      r_output = OK {foo|class type t =
   object
-    inherit t[@@foo2];
-    value x : t[@@foo3];
-    value mutable x : t[@@foo4];
-    method x : t[@@foo5];
-    method private x : t[@@foo6];
-    type t = t'[@@foo7];
-    [@@@abc];
-    [%%id];
-    [@@@aaa];
-  end[@foo1];
+    inherit t[@@"foo2"];
+    value x : t[@@"foo3"];
+    value mutable x : t[@@"foo4"];
+    method x : t[@@"foo5"];
+    method private x : t[@@"foo6"];
+    type t = t'[@@"foo7"];
+    [@@@"abc"];
+    [%%"id"];
+    [@@@"aaa"];
+  end[@"foo1"];
 |foo}
     };
     {name="inline-attributes-3"; implem = True ;
@@ -2283,17 +2294,17 @@ and t2 = bool[@@foo];
     end)[@foo ]))[@foo ])|foo} ;
      r_output = OK {foo|class x =
   (fun x ->
-     let x = 3[@@foo] in
+     let x = 3[@@"foo"] in
      object
-       inherit x[@@foo];
-       value x = 3[@@foo];
-       value virtual x : t[@@foo];
-       value! mutable x = 3[@@foo];
-       method x = 3[@@foo];
-       method virtual x : t[@@foo];
-       method! private x = 3[@@foo];
-       initializer x[@@foo];
-     end[@foo])[@foo];
+       inherit x[@@"foo"];
+       value x = 3[@@"foo"];
+       value virtual x : t[@@"foo"];
+       value! mutable x = 3[@@"foo"];
+       method x = 3[@@"foo"];
+       method virtual x : t[@@"foo"];
+       method! private x = 3[@@"foo"];
+       initializer x[@@"foo"];
+     end[@"foo"])[@"foo"];
 |foo}
     };
     {name="firstclass-modules1"; implem = True ;
@@ -2315,7 +2326,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|type t = (module M[@foo]);;
 |foo};
      official_output = OK {foo|type t = (((module M))[@foo ])|foo} ;
-     r_output = OK {foo|type t = (module M[@foo]);
+     r_output = OK {foo|type t = (module M[@"foo"]);
 |foo}
     };
     {name="inline-extensions20"; implem = True ;
@@ -2327,7 +2338,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|type t = [%foo: (module M[@foo])];;
 |foo};
      official_output = OK {foo|type t = [%foo :(((module M))[@foo ])]|foo} ;
-     r_output = OK {foo|type t = [%foo: (module M[@foo])];
+     r_output = OK {foo|type t = [%"foo": (module M[@"foo"])];
 |foo}
     };
     {name="inline-attributes-4a"; implem = True ;
@@ -2366,7 +2377,8 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|module M = ((functor (M : S) -> ((((val
   x))[@foo2 ]))(((struct  end)[@foo3 ])))[@foo1 ])|foo} ;
-     r_output = OK {foo|module M = (functor (M : S) → ((value x)[@foo2]) (struct  end[@foo3]))[@foo1];
+     r_output = OK {foo|module M =
+  (functor (M : S) → ((value x)[@"foo2"]) (struct  end[@"foo3"]))[@"foo1"];
 |foo}
     };
     {name="inline-attributes-5a"; implem = True ;
@@ -2377,7 +2389,7 @@ and t2 = bool[@@foo];
      o_output = OK {foo|module type S = ((module type of M)[@foo2]);;
 |foo};
      official_output = OK {foo|module type S  = ((module type of M)[@foo2 ])|foo} ;
-     r_output = OK {foo|module type S = ((module type of M)[@foo2]);
+     r_output = OK {foo|module type S = ((module type of M)[@"foo2"]);
 |foo}
     };
     {name="inline-attributes-5"; implem = True ;
@@ -2403,7 +2415,7 @@ and t2 = bool[@@foo];
   [@foo1 ])|foo} ;
      r_output = OK {foo|module type S =
   ((functor (M : S) →
-    functor (_ : (module type of M)[@foo2]) → sig  end[@foo3])[@foo1]);
+    functor (_ : (module type of M)[@"foo2"]) → sig  end[@"foo3"])[@"foo1"]);
 |foo}
     };
     {name="inline-attributes-6"; implem = True ;
@@ -2415,7 +2427,7 @@ and t2 = bool[@@foo];
 |foo};
      official_output = OK {foo|let rec g x = 1[@@foo ][@@foo2 ]
 and h y = 2[@@bar ][@@bar2 ]|foo} ;
-     r_output = OK {foo|value rec g x = 1[@@foo] [@@foo2] and h y = 2[@@bar] [@@bar2];
+     r_output = OK {foo|value rec g x = 1[@@"foo"] [@@"foo2"] and h y = 2[@@"bar"] [@@"bar2"];
 |foo}
     };
     {name="inline-attributes-7"; implem = True ;
@@ -2428,8 +2440,8 @@ and h y = 2[@@bar ][@@bar2 ]|foo} ;
      official_output = OK {foo|let x = let rec g x = 1[@@foo ][@@foo2 ]
         and h y = 2[@@bar ][@@bar2 ] in ()|foo} ;
      r_output = OK {foo|value x =
-  let rec g x = 1[@@foo] [@@foo2]
-  and h y = 2[@@bar] [@@bar2] in
+  let rec g x = 1[@@"foo"] [@@"foo2"]
+  and h y = 2[@@"bar"] [@@"bar2"] in
   ();
 |foo}
     };
@@ -2448,8 +2460,8 @@ and t = int[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo type t = int[@@foo ]
        and t = int[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo type t = int[@@foo]
-and t = int[@@foo];];
+     r_output = OK {foo|[%%"foo" type t = int[@@"foo"]
+and t = int[@@"foo"];];
 |foo}
     };
     {name="inline-extensions21nonrec"; implem = True ;
@@ -2467,8 +2479,8 @@ and t = int[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo type nonrec t = int[@@foo ]
        and t = int[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo type nonrec t = int[@@foo]
-and t = int[@@foo];];
+     r_output = OK {foo|[%%"foo" type nonrec t = int[@@"foo"]
+and t = int[@@"foo"];];
 |foo}
     };
     {name="inline-extensions22"; implem = True ;
@@ -2480,7 +2492,7 @@ and t = int[@@foo];];
 |foo};
      official_output = OK {foo|[%%foo class x = x[@@foo ]
        and y = y[@@bar ]]|foo} ;
-     r_output = OK {foo|[%%foo class x = x[@@foo] and y = y[@@bar];];
+     r_output = OK {foo|[%%"foo" class x = x[@@"foo"] and y = y[@@"bar"];];
 |foo}
     };
     {name="inline-extensions23"; implem = True ;
@@ -2491,7 +2503,7 @@ and t = int[@@foo];];
      o_output = OK {foo|[%%foo class type x = x[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo class type x = x[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo class type x = x[@@foo];];
+     r_output = OK {foo|[%%"foo" class type x = x[@@"foo"];];
 |foo}
     };
     {name="inline-extensions24"; implem = True ;
@@ -2502,7 +2514,7 @@ and t = int[@@foo];];
      o_output = OK {foo|[%%foo external x : _ = ""[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo external x : _ = ""[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo external x : _ = ""[@@foo];];
+     r_output = OK {foo|[%%"foo" external x : _ = ""[@@"foo"];];
 |foo}
     };
     {name="inline-extensions25"; implem = True ;
@@ -2513,7 +2525,7 @@ and t = int[@@foo];];
      o_output = OK {foo|[%%foo exception X[@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo exception X [@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo exception X[@foo];];
+     r_output = OK {foo|[%%"foo" exception X[@"foo"];];
 |foo}
     };
     {name="inline-extensions26"; implem = True ;
@@ -2524,7 +2536,7 @@ and t = int[@@foo];];
      o_output = OK {foo|[%%foo module M = M[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo module M = M[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo module M = M[@@foo];];
+     r_output = OK {foo|[%%"foo" module M = M[@@"foo"];];
 |foo}
     };
     {name="inline-extensions27"; implem = True ;
@@ -2539,8 +2551,8 @@ and M : S = M[@@foo];];|foo} ;
 and M : S = M[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo module rec M:S = M[@@foo ]  and M:S = M[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo module rec M : S = M[@@foo]
-and M : S = M[@@foo];];
+     r_output = OK {foo|[%%"foo" module rec M : S = M[@@"foo"]
+and M : S = M[@@"foo"];];
 |foo}
     };
     {name="inline-extensions28"; implem = True ;
@@ -2551,7 +2563,7 @@ and M : S = M[@@foo];];
      o_output = OK {foo|[%%foo module type S = S[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo module type S  = S[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo module type S = S[@@foo];];
+     r_output = OK {foo|[%%"foo" module type S = S[@@"foo"];];
 |foo}
     };
     {name="inline-extensions29"; implem = True ;
@@ -2562,7 +2574,7 @@ and M : S = M[@@foo];];
      o_output = OK {foo|[%%foo include M[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo include M[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo include M[@@foo];];
+     r_output = OK {foo|[%%"foo" include M[@@"foo"];];
 |foo}
     };
     {name="inline-extensions30"; implem = True ;
@@ -2573,7 +2585,7 @@ and M : S = M[@@foo];];
      o_output = OK {foo|[%%foo open M[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo open M[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo open M[@@foo];];
+     r_output = OK {foo|[%%"foo" open M[@@"foo"];];
 |foo}
     };
 
@@ -2585,7 +2597,7 @@ and M : S = M[@@foo];];
      o_output = OK {foo|[%%foo: val x : t[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :val x : t[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: value x : t[@@foo];];
+     r_output = OK {foo|[%%"foo": value x : t[@@"foo"];];
 |foo}
     };
     {name="inline-extensions32"; implem = False ;
@@ -2596,7 +2608,7 @@ and M : S = M[@@foo];];
      o_output = OK {foo|[%%foo: external x : t = ""[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :external x : t = ""[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: external x : t = ""[@@foo];];
+     r_output = OK {foo|[%%"foo": external x : t = ""[@@"foo"];];
 |foo}
     };
     {name="inline-extensions33"; implem = False ;
@@ -2612,8 +2624,8 @@ and t' = int[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :type t = int[@@foo ]
         and t' = int[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: type t = int[@@foo]
-and t' = int[@@foo];];
+     r_output = OK {foo|[%%"foo": type t = int[@@"foo"]
+and t' = int[@@"foo"];];
 |foo}
     };
     {name="inline-extensions34"; implem = False ;
@@ -2625,7 +2637,7 @@ and t' = int[@@foo];];
 |foo};
      official_output = OK {foo|[%%foo :type t +=  
           | T [@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: type t += [ T ][@@foo];];
+     r_output = OK {foo|[%%"foo": type t += [ T ][@@"foo"];];
 |foo}
     };
     {name="inline-extensions35"; implem = False ;
@@ -2636,7 +2648,7 @@ and t' = int[@@foo];];
      o_output = OK {foo|[%%foo: exception X[@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :exception X [@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: exception X[@foo];];
+     r_output = OK {foo|[%%"foo": exception X[@"foo"];];
 |foo}
     };
     {name="inline-extensions36"; implem = False ;
@@ -2647,7 +2659,7 @@ and t' = int[@@foo];];
      o_output = OK {foo|[%%foo: module M : S[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :module M : S[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: module M : S[@@foo];];
+     r_output = OK {foo|[%%"foo": module M : S[@@"foo"];];
 |foo}
     };
     {name="inline-extensions37"; implem = False ;
@@ -2662,8 +2674,8 @@ and M : S[@@foo];];|foo} ;
 and M : S[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :module rec M: S[@@foo ] and M: S[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: module rec M : S[@@foo]
-and M : S[@@foo];];
+     r_output = OK {foo|[%%"foo": module rec M : S[@@"foo"]
+and M : S[@@"foo"];];
 |foo}
     };
     {name="inline-extensions38"; implem = False ;
@@ -2674,7 +2686,7 @@ and M : S[@@foo];];
      o_output = OK {foo|[%%foo: module M = M[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :module M = M[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: module alias M = M[@@foo];];
+     r_output = OK {foo|[%%"foo": module alias M = M[@@"foo"];];
 |foo}
     };
     {name="inline-extensions39"; implem = False ;
@@ -2685,7 +2697,7 @@ and M : S[@@foo];];
      o_output = OK {foo|[%%foo: module type S = S[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :module type S  = S[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: module type S = S[@@foo];];
+     r_output = OK {foo|[%%"foo": module type S = S[@@"foo"];];
 |foo}
     };
     {name="inline-extensions40"; implem = False ;
@@ -2696,7 +2708,7 @@ and M : S[@@foo];];
      o_output = OK {foo|[%%foo: include M[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :include M[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: include M[@@foo];];
+     r_output = OK {foo|[%%"foo": include M[@@"foo"];];
 |foo}
     };
     {name="inline-extensions41"; implem = False ;
@@ -2707,7 +2719,7 @@ and M : S[@@foo];];
      o_output = OK {foo|[%%foo: class x : t[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :class x : t[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: class x : t[@@foo];];
+     r_output = OK {foo|[%%"foo": class x : t[@@"foo"];];
 |foo}
     };
     {name="inline-extensions42"; implem = False ;
@@ -2718,7 +2730,7 @@ and M : S[@@foo];];
      o_output = OK {foo|[%%foo: class type x = x[@@foo];;];;
 |foo};
      official_output = OK {foo|[%%foo :class type x = x[@@foo ]]|foo} ;
-     r_output = OK {foo|[%%foo: class type x = x[@@foo];];
+     r_output = OK {foo|[%%"foo": class type x = x[@@"foo"];];
 |foo}
     };
     {name="refutable-funarg-1"; implem = True ;
@@ -3138,7 +3150,7 @@ type nat _ =
      o_output = OK {foo|type t = < foo : int[@foo] > ;;
 |foo};
      official_output = OK {foo|type t = < foo: int [@foo ]  > |foo} ;
-     r_output = OK {foo|type t = < foo : int[@foo] > ;
+     r_output = OK {foo|type t = < foo : int[@"foo"] > ;
 |foo}
     };
     {name="hashop-1"; implem = True ;
@@ -3160,7 +3172,7 @@ type nat _ =
      o_output = OK {foo|let x = (let open! M in ())[@foo];;
 |foo};
      official_output = OK {foo|let x = ((let open! M in ())[@foo ])|foo} ;
-     r_output = OK {foo|value x = (let open! M in ())[@foo];
+     r_output = OK {foo|value x = (let open! M in ())[@"foo"];
 |foo}
     };
     {name="class-expr-local-open-1"; implem = True ;
@@ -3171,7 +3183,7 @@ type nat _ =
      o_output = OK {foo|class c = (let open! M in object  end)[@foo];;
 |foo};
      official_output = OK {foo|class c = ((let open! M in object  end)[@foo ])|foo} ;
-     r_output = OK {foo|class c = (let open! M in object  end)[@foo];
+     r_output = OK {foo|class c = (let open! M in object  end)[@"foo"];
 |foo}
     };
     {name="class-type-local-open-1"; implem = True ;
@@ -3664,7 +3676,7 @@ value ( .%{;..}<- ) x y = Hashtbl.add;
      o_output = OK {foo|let ([%foo: [ `Foo ]] : [%foo: t -> t]) = [%foo: < foo : t > ];;
 |foo};
      official_output = OK {foo|let ([%foo :[ `Foo ]] : [%foo :t -> t]) = [%foo :< foo: t   > ]|foo} ;
-     r_output = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];
+     r_output = OK {foo|value [%"foo": [ = `Foo ]] : [%"foo": t → t] = [%"foo": < foo : t > ];
 |foo}
     };
     {name="module-type-with-1"; implem = True ;
@@ -4037,7 +4049,7 @@ and u := bool;
      o_output = OK {foo|type t1 = (a[@a1]) t[@a2];;
 |foo};
      official_output = OK {foo|type t1 = ((((a)[@a1 ]) t)[@a2 ])|foo} ;
-     r_output = OK {foo|type t1 = t (a[@a1])[@a2];
+     r_output = OK {foo|type t1 = t (a[@"a1"])[@"a2"];
 |foo}
     };
     {name="test-prototype"; implem = True ;
