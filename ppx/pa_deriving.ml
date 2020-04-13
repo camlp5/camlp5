@@ -54,3 +54,14 @@ value apply_deriving name ctxt attr =
   | Some l -> update_ctxt ctxt l
   ]
 ;
+
+type plugin_t = {
+  name : string
+; options : list string
+; alg_attributes : list string
+; extensions : list string
+; expr : Ctxt.t -> expr -> expr
+; str_item : Ctxt.t -> str_item -> str_item
+; sig_item : Ctxt.t -> sig_item -> sig_item
+}
+;

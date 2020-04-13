@@ -335,9 +335,14 @@ value str_item_gen_show0 arg td =
   str_item_funs arg tyname params tk
 ;
 
-value str_item_gen_show loc arg tdl =
-  let l = List.concat (List.map (str_item_gen_show0 arg) tdl) in
-  <:str_item< value rec $list:l$ >>
+value loc_of_type_decl td = fst (Pcaml.unvala td.tdNam) ;
+
+value str_item_gen_show arg = fun [
+  <:str_item:< type $_flag:_$ $list:tdl$ >> ->
+    let loc = loc_of_type_decl (List.hd tdl) in
+    let l = List.concat (List.map (str_item_gen_show0 arg) tdl) in
+    <:str_item< value rec $list:l$ >>
+| _ -> assert False ]
 ;
 
 value sig_item_gen_show0 arg td =
@@ -347,15 +352,20 @@ value sig_item_gen_show0 arg td =
   sig_item_funs arg tyname params tk
 ;
 
-value sig_item_gen_show loc arg tdl =
-  let l = List.concat (List.map (sig_item_gen_show0 arg) tdl) in
-  <:sig_item< declare $list:l$ end >>
+value sig_item_gen_show arg = fun [
+  <:sig_item:< type $_flag:_$ $list:tdl$ >> ->
+    let loc = loc_of_type_decl (List.hd tdl) in
+    let l = List.concat (List.map (sig_item_gen_show0 arg) tdl) in
+    <:sig_item< declare $list:l$ end >>
+| _ -> assert False ]
 ;
 
-value expr_show arg ty =
-  let loc = loc_of_ctyp ty in
-  let e = fmt_top arg [] ty in
-  <:expr< fun arg -> Format.asprintf "%a" $e$ arg >>
+value expr_show arg = fun [
+  <:expr:< [%show: $type:ty$ ] >> ->
+    let loc = loc_of_ctyp ty in
+    let e = fmt_top arg [] ty in
+    <:expr< fun arg -> Format.asprintf "%a" $e$ arg >>
+| _ -> assert False ]
 ;
 
 value default_options =
@@ -368,7 +378,7 @@ ef.val := EF.{ (ef.val) with
     when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
   let arg = Ctxt.add_options arg default_options in
-    let f = str_item_gen_show loc arg tdl in
+    let f = str_item_gen_show arg z in
       <:str_item< declare $list:[z ; f ]$ end >>
 }
   ] }
@@ -380,7 +390,7 @@ ef.val := EF.{ (ef.val) with
     when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
     let arg = Ctxt.add_options arg default_options in
-    let f = sig_item_gen_show loc arg tdl in
+    let f = sig_item_gen_show arg z in
       <:sig_item< declare $list:[z ; f ]$ end >>
 }
   ] }
@@ -389,10 +399,20 @@ ef.val := EF.{ (ef.val) with
 
 ef.val := EF.{ (ef.val) with
   expr = extfun ef.val.expr with [
-    <:expr:< [%show: $type:t$ ] >> as z ->
+    <:expr:< [%show: $type:_$ ] >> as z ->
       fun arg ->
         let arg = Ctxt.add_options arg default_options in
-        expr_show arg t
+        expr_show arg z
   ] }
 ;
 
+value plugin = Pa_deriving.{
+  name = "show"
+; options = ["with_path"; "optional"]
+; alg_attributes = ["opaque"; "printer"; "polyprinter"; "nobuiltin"]
+; extensions = ["show"]
+; expr = expr_show
+; str_item = str_item_gen_show
+; sig_item = sig_item_gen_show
+}
+;

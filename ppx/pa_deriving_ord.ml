@@ -335,9 +335,14 @@ value str_item_gen_ord0 arg td =
   str_item_funs arg tyname params tk
 ;
 
-value str_item_gen_ord loc arg tdl =
-  let l = List.concat (List.map (str_item_gen_ord0 arg) tdl) in
-  <:str_item< value rec $list:l$ >>
+value loc_of_type_decl td = fst (Pcaml.unvala td.tdNam) ;
+
+value str_item_gen_ord arg = fun [
+  <:str_item:< type $_flag:_$ $list:tdl$ >> ->
+    let loc = loc_of_type_decl (List.hd tdl) in
+    let l = List.concat (List.map (str_item_gen_ord0 arg) tdl) in
+    <:str_item< value rec $list:l$ >>
+| _ -> assert False ]
 ;
 
 value sig_item_gen_ord0 arg td =
@@ -347,15 +352,20 @@ value sig_item_gen_ord0 arg td =
   sig_item_funs arg tyname params tk
 ;
 
-value sig_item_gen_ord loc arg tdl =
-  let l = List.concat (List.map (sig_item_gen_ord0 arg) tdl) in
-  <:sig_item< declare $list:l$ end >>
+value sig_item_gen_ord arg = fun [
+  <:sig_item:< type $_flag:_$ $list:tdl$ >> as z ->
+    let loc = loc_of_type_decl (List.hd tdl) in
+    let l = List.concat (List.map (sig_item_gen_ord0 arg) tdl) in
+    <:sig_item< declare $list:l$ end >>
+| _ -> assert False ]
 ;
 
-value expr_ord arg ty =
-  let loc = loc_of_ctyp ty in
-  let e = fmt_top arg [] ty in
-  <:expr< fun a b ->  $e$ a b >>
+value expr_ord arg = fun [
+  <:expr:< [%ord: $type:ty$ ] >> ->
+    let loc = loc_of_ctyp ty in
+    let e = fmt_top arg [] ty in
+    <:expr< fun a b ->  $e$ a b >>
+| _ -> assert False ]
 ;
 
 ef.val := EF.{ (ef.val) with
@@ -363,7 +373,7 @@ ef.val := EF.{ (ef.val) with
     <:str_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_ord (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
-    let f = str_item_gen_ord loc arg tdl in
+    let f = str_item_gen_ord arg z in
       <:str_item< declare $list:[z ; f ]$ end >>
 }
   ] }
@@ -374,7 +384,7 @@ ef.val := EF.{ (ef.val) with
     <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_ord (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
-    let f = sig_item_gen_ord loc arg tdl in
+    let f = sig_item_gen_ord arg z in
       <:sig_item< declare $list:[z ; f ]$ end >>
 }
   ] }
@@ -383,7 +393,18 @@ ef.val := EF.{ (ef.val) with
 
 ef.val := EF.{ (ef.val) with
   expr = extfun ef.val.expr with [
-    <:expr:< [%ord: $type:t$ ] >> ->
-      fun arg -> expr_ord arg t
+    <:expr:< [%ord: $type:_$ ] >> as z ->
+      fun arg -> expr_ord arg z
   ] }
+;
+
+value plugin = Pa_deriving.{
+  name = "ord"
+; options = ["optional"]
+; alg_attributes = ["compare"; "nobuiltin"]
+; extensions = ["ord"]
+; expr = expr_ord
+; str_item = str_item_gen_ord
+; sig_item = sig_item_gen_ord
+}
 ;

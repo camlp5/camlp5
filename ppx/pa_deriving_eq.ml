@@ -267,14 +267,8 @@ value sig_item_funs arg ((loc,_) as tyname) params ty =
       <:sig_item< value $lid:fname$ : $ty$>>) l
 ;
 
-value is_deriving_eq attr = match Pcaml.unvala attr with [
-  <:attribute_body< deriving $structure:sil$ >> ->
-    List.exists (fun [
-      <:str_item< eq >> -> True
-    | _ -> False ]) sil
-| _ -> False
-]
-;
+value is_deriving_eq attr = Pa_deriving.is_deriving "eq" attr ;
+value apply_deriving_eq ctxt attr = Pa_deriving.apply_deriving "eq" ctxt attr ;
 
 value str_item_gen_eq0 arg td =
   let tyname = Pcaml.unvala td.tdNam
@@ -283,9 +277,14 @@ value str_item_gen_eq0 arg td =
   str_item_funs arg tyname params tk
 ;
 
-value str_item_gen_eq loc arg tdl =
+value loc_of_type_decl td = fst (Pcaml.unvala td.tdNam) ;
+
+value str_item_gen_eq arg = fun [
+  <:str_item:< type $_flag:_$ $list:tdl$ >> ->
+    let loc = loc_of_type_decl (List.hd tdl) in
   let l = List.concat (List.map (str_item_gen_eq0 arg) tdl) in
   <:str_item< value rec $list:l$ >>
+| _ -> assert False ]
 ;
 
 value sig_item_gen_eq0 arg td =
@@ -295,15 +294,20 @@ value sig_item_gen_eq0 arg td =
   sig_item_funs arg tyname params tk
 ;
 
-value sig_item_gen_eq loc arg tdl =
-  let l = List.concat (List.map (sig_item_gen_eq0 arg) tdl) in
-  <:sig_item< declare $list:l$ end >>
+value sig_item_gen_eq arg = fun [
+  <:sig_item:< type $_flag:_$ $list:tdl$ >> ->
+    let loc = loc_of_type_decl (List.hd tdl) in
+    let l = List.concat (List.map (sig_item_gen_eq0 arg) tdl) in
+    <:sig_item< declare $list:l$ end >>
+| _ -> assert False ]
 ;
 
-value expr_eq arg ty =
-  let loc = loc_of_ctyp ty in
-  let e = fmt_top arg [] ty in
-  <:expr< fun a b ->  $e$ a b >>
+value expr_eq arg = fun [
+  <:expr:< [%eq: $type:ty$ ] >> ->
+    let loc = loc_of_ctyp ty in
+    let e = fmt_top arg [] ty in
+    <:expr< fun a b ->  $e$ a b >>
+| _ -> assert False ]
 ;
 
 ef.val := EF.{ (ef.val) with
@@ -311,7 +315,7 @@ ef.val := EF.{ (ef.val) with
     <:str_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_eq (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
-    let f = str_item_gen_eq loc arg tdl in
+    let f = str_item_gen_eq arg z in
       <:str_item< declare $list:[z ; f ]$ end >>
 }
   ] }
@@ -322,7 +326,7 @@ ef.val := EF.{ (ef.val) with
     <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_eq (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
-    let f = sig_item_gen_eq loc arg tdl in
+    let f = sig_item_gen_eq arg z in
       <:sig_item< declare $list:[z ; f ]$ end >>
 }
   ] }
@@ -331,7 +335,18 @@ ef.val := EF.{ (ef.val) with
 
 ef.val := EF.{ (ef.val) with
   expr = extfun ef.val.expr with [
-    <:expr:< [%eq: $type:t$ ] >> ->
-      fun arg -> expr_eq arg t
+    <:expr:< [%eq: $type:_$ ] >> as z ->
+      fun arg -> expr_eq arg z
   ] }
+;
+
+value plugin = Pa_deriving.{
+  name = "eq"
+; options = ["optional"]
+; alg_attributes = ["equal"; "nobuiltin"]
+; extensions = ["eq"]
+; expr = expr_eq
+; str_item = str_item_gen_eq
+; sig_item = sig_item_gen_eq
+}
 ;

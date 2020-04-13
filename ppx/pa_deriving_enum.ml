@@ -182,9 +182,14 @@ value str_item_gen_enum0 arg td =
     str_item_funs arg tyname tk
 ;
 
-value str_item_gen_enum loc arg tdl =
-  let l = List.concat (List.map (str_item_gen_enum0 arg) tdl) in
-  <:str_item< value rec $list:l$ >>
+value loc_of_type_decl td = fst (Pcaml.unvala td.tdNam) ;
+
+value str_item_gen_enum arg = fun [
+  <:str_item:< type $_flag:_$ $list:tdl$ >> ->
+    let loc = loc_of_type_decl (List.hd tdl) in
+    let l = List.concat (List.map (str_item_gen_enum0 arg) tdl) in
+    <:str_item< value rec $list:l$ >>
+| _ -> assert False ]
 ;
 
 value sig_item_gen_enum0 arg td =
@@ -197,9 +202,12 @@ value sig_item_gen_enum0 arg td =
     sig_item_funs arg tyname tk
 ;
 
-value sig_item_gen_enum loc arg tdl =
-  let l = List.concat (List.map (sig_item_gen_enum0 arg) tdl) in
-  <:sig_item< declare $list:l$ end >>
+value sig_item_gen_enum arg = fun [
+  <:sig_item:< type $_flag:_$ $list:tdl$ >> ->
+    let loc = loc_of_type_decl (List.hd tdl) in
+    let l = List.concat (List.map (sig_item_gen_enum0 arg) tdl) in
+    <:sig_item< declare $list:l$ end >>
+| _ -> assert False ]
 ;
 
 ef.val := EF.{ (ef.val) with
@@ -207,7 +215,7 @@ ef.val := EF.{ (ef.val) with
     <:str_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_enum (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
-    let f = str_item_gen_enum loc arg tdl in
+    let f = str_item_gen_enum arg z in
       <:str_item< declare $list:[z ; f ]$ end >>
 }
   ] }
@@ -218,8 +226,19 @@ ef.val := EF.{ (ef.val) with
     <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_enum (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
-    let f = sig_item_gen_enum loc arg tdl in
+    let f = sig_item_gen_enum arg z in
       <:sig_item< declare $list:[z ; f ]$ end >>
 }
   ] }
+;
+
+value plugin = Pa_deriving.{
+  name = "enum"
+; options = ["optional"]
+; alg_attributes = ["value"]
+; extensions = []
+; expr = (fun _ _ -> assert False)
+; str_item = str_item_gen_enum
+; sig_item = sig_item_gen_enum
+}
 ;
