@@ -103,14 +103,22 @@ end = struct
 end
 
 and Ctxt : sig
-  type t = { module_path : string; with_path : bool ; ef : EF.t } ;
+  type t = {
+    module_path : string; 
+    with_path : bool ;
+    options : list (string * expr) ;
+    ef : EF.t } ;
   value mk : EF.t -> Ploc.t -> t ;
   value append_module : t -> string -> t ;
-  value prefixed_name : t -> string -> string ;
-  value with_path : t -> bool -> t ;
-  value module_path : t -> MLast.longid -> t ;
+  value set_module_path : t -> string -> t ;
+  value add_options : t -> list (string * expr) -> t ;
+  value option : t -> string -> expr ;
 end = struct
-type t = { module_path : string; with_path : bool ; ef : EF.t } ;
+  type t = {
+    module_path : string;
+    with_path : bool ;
+    options : list (string * expr) ;
+    ef : EF.t } ;
 value mk ef loc =
   let fname = Ploc.file_name loc in
   let path = String.split_on_char '/' fname in
@@ -118,24 +126,22 @@ value mk ef loc =
   let base = match String.split_on_char '.' last with [
     [base :: _] -> base | _ -> assert False ] in
   let modname = String.capitalize_ascii base in
-  { module_path = modname ; with_path = True ; ef = ef  }
+  { module_path = modname ; with_path = True ; options = [] ; ef = ef  }
 ;
 value append_module ctxt s =
   { (ctxt) with module_path = Printf.sprintf "%s.%s" ctxt.module_path s }
 ;
-value prefixed_name ctxt id =
-  if ctxt.with_path then Printf.sprintf "%s.%s" ctxt.module_path id
-  else id
-;
-value with_path ctxt b = { (ctxt) with with_path = b } ;
+value set_module_path ctxt s =
+  { (ctxt) with module_path = s } ;
 
-value module_path ctxt li =
-  let rec li2string = fun [
-    <:longident< $uid:uid$ >> -> uid
-  | <:longident< $longid:li$ . $uid:uid$ >> ->
-    Printf.sprintf "%s.%s" (li2string li) uid
-  ] in
-  { (ctxt) with module_path = li2string li }
+value add_options ctxt l = { (ctxt) with options = l @ ctxt.options } ;
+
+value option ctxt name =
+  match List.assoc name ctxt.options with [
+    e -> e
+  | exception Not_found ->
+    failwith (Printf.sprintf "Pa_deriving_show.Ctxt.option: option %s not found" name)
+  ]
 ;
 end ;
 

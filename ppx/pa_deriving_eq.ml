@@ -215,10 +215,6 @@ value fmt_expression arg param_map ty0 =
 
 value fmt_top arg params = fun [
   <:ctyp< $t1$ == $_priv:_$ $t2$ >> ->
-  let arg = match t1 with [
-    <:ctyp< $longid:li$ . $lid:_$ >> -> Ctxt.module_path arg li
-  | _ -> arg
-  ] in
   fmt_expression arg params t2
 | t -> fmt_expression arg params t
 ]

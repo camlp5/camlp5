@@ -13,6 +13,33 @@ open MLast;
 open Pa_passthru ;
 open Ppxutil ;
 
+module Ctxt = struct
+  include Pa_passthru.Ctxt ;
+
+value with_path ctxt =
+  match option ctxt "with_path" with [
+    <:expr< True >> -> True
+  | <:expr< False >> -> False
+  | _ -> failwith "Pa_deriving_show.Ctxt.with_path: option with_path had bad value"
+  ]
+;
+
+value prefixed_name ctxt id =
+  if with_path ctxt then Printf.sprintf "%s.%s" ctxt.module_path id
+  else id
+;
+
+value module_path ctxt li =
+  let rec li2string = fun [
+    <:longident< $uid:uid$ >> -> uid
+  | <:longident< $longid:li$ . $uid:uid$ >> ->
+    Printf.sprintf "%s.%s" (li2string li) uid
+  ] in
+  Ctxt.set_module_path ctxt (li2string li)
+;
+
+end ;
+
 value pp_fname arg tyname =
   if tyname = "t" then "pp"
   else "pp_"^tyname
@@ -297,28 +324,8 @@ value sig_item_funs arg ((loc,_) as tyname) params ty =
       <:sig_item< value $lid:fname$ : $ty$>>) l
 ;
 
-value is_deriving_show attr = match Pcaml.unvala attr with [
-  <:attribute_body< deriving $structure:sil$ >> ->
-    List.exists (fun [
-      <:str_item< show >> -> True
-    | <:str_item< show $_$ >> -> True
-    | <:str_item< ( $list:l$ ) >> ->
-      List.exists (fun [
-          <:expr< show >> -> True
-        | <:expr< show $_ $ >> -> True
-        | _ -> False ]) l
-    | _ -> False ]) sil
-| _ -> False
-]
-;
-
-value apply_deriving_show ctxt attr = match Pcaml.unvala attr with [
-  <:attribute_body< deriving show ; >> -> ctxt
-| <:attribute_body< deriving show { with_path = True } ; >> -> Ctxt.with_path ctxt True
-| <:attribute_body< deriving show { with_path = False } ; >> -> Ctxt.with_path ctxt False
-| _ -> ctxt
-]
-;
+value is_deriving_show attr = Pa_deriving.is_deriving "show" attr ;
+value apply_deriving_show ctxt attr = Pa_deriving.apply_deriving "show" ctxt attr ;
 
 value str_item_gen_show0 arg td =
   let arg = List.fold_left apply_deriving_show arg (Pcaml.unvala td.tdAttributes) in
@@ -351,11 +358,16 @@ value expr_show arg ty =
   <:expr< fun arg -> Format.asprintf "%a" $e$ arg >>
 ;
 
+value default_options =
+  let loc = Ploc.dummy in
+  [ ("with_path", <:expr< True >>) ] ;
+
 ef.val := EF.{ (ef.val) with
             str_item = extfun ef.val.str_item with [
     <:str_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
+  let arg = Ctxt.add_options arg default_options in
     let f = str_item_gen_show loc arg tdl in
       <:str_item< declare $list:[z ; f ]$ end >>
 }
@@ -367,6 +379,7 @@ ef.val := EF.{ (ef.val) with
     <:sig_item:< type $_flag:_$ $list:tdl$ >> as z
     when List.exists (fun td -> List.exists is_deriving_show (Pcaml.unvala td.tdAttributes)) tdl ->
     fun arg -> do {
+    let arg = Ctxt.add_options arg default_options in
     let f = sig_item_gen_show loc arg tdl in
       <:sig_item< declare $list:[z ; f ]$ end >>
 }
@@ -377,7 +390,9 @@ ef.val := EF.{ (ef.val) with
 ef.val := EF.{ (ef.val) with
   expr = extfun ef.val.expr with [
     <:expr:< [%show: $type:t$ ] >> as z ->
-      fun arg -> expr_show arg t
+      fun arg ->
+        let arg = Ctxt.add_options arg default_options in
+        expr_show arg t
   ] }
 ;
 

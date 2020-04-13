@@ -104,13 +104,9 @@ value of_expression arg map t =
 ;
 
 value fmt_top arg t =
-  let (arg, t) = match t with [
-  <:ctyp< $t1$ == $_priv:_$ $t2$ >> ->
-    let arg = match t1 with [
-      <:ctyp< $longid:li$ . $lid:_$ >> -> Ctxt.module_path arg li
-    | _ -> arg
-    ] in (arg, t2)
-  | t -> (arg, t)
+  let t = match t with [
+    <:ctyp< $t1$ == $_priv:_$ $t2$ >> -> t2
+  | t -> t
   ] in
   let (map, toexp) = to_expression arg t in
   let ofexp = of_expression arg map t in
