@@ -36,7 +36,7 @@ value class_infos_map arg ~{attributes} f x =
 ;
 
 module rec EF : sig
-  type extension_point 'a = Extfun.t 'a (Ctxt.t -> 'a) ;
+  type extension_point 'a = Extfun.t 'a (Ctxt.t -> option 'a) ;
   type t = {
     ctyp : extension_point ctyp ;
     generic_constructor : extension_point generic_constructor ;
@@ -59,7 +59,7 @@ module rec EF : sig
   } ;
   value mk : unit -> t ;
 end = struct
-  type extension_point 'a = Extfun.t 'a (Ctxt.t -> 'a) ;
+  type extension_point 'a = Extfun.t 'a (Ctxt.t -> option 'a) ;
   type t = {
     ctyp : extension_point ctyp ;
     generic_constructor : extension_point generic_constructor ;
@@ -147,7 +147,8 @@ value ef = ref (EF.mk ()) ;
 
 value rec ctyp (arg : Ctxt.t)  x =
   match Extfun.apply arg.Ctxt.ef.EF.ctyp x arg with [
-    x -> x
+    Some x -> x
+  | None -> ctyp0 arg x
   | exception Extfun.Failure -> ctyp0 arg x
   ]
 and ctyp0 arg =
@@ -212,7 +213,8 @@ and ctyp0 arg =
 
 and generic_constructor arg x =
   match Extfun.apply arg.Ctxt.ef.EF.generic_constructor x arg with [
-    x -> x
+    Some x -> x
+  | None -> generic_constructor0 arg x
   | exception Extfun.Failure -> generic_constructor0 arg x
   ]
 and generic_constructor0 arg = fun (loc, x1, x2, x3, x4) ->
@@ -226,7 +228,8 @@ and poly_variant arg =
       PvInh loc (ctyp arg x1) ]
 and patt arg x =
   match Extfun.apply arg.Ctxt.ef.EF.patt x arg with [
-    x -> x
+    Some x -> x
+  | None -> patt0 arg x
   | exception Extfun.Failure -> patt0 arg x
   ]
 and patt0 arg =
@@ -296,7 +299,8 @@ and patt0 arg =
   self0
 and expr arg x =
   match Extfun.apply arg.Ctxt.ef.EF.expr x arg with [
-    x -> x
+    Some x -> x
+  | None -> expr0 arg x
   | exception Extfun.Failure -> expr0 arg x
   ]
 and expr0 arg =
@@ -418,7 +422,8 @@ and expr0 arg =
   self0
 and module_type arg x =
   match Extfun.apply arg.Ctxt.ef.EF.module_type x arg with [
-    x -> x
+    Some x -> x
+  | None -> module_type0 arg x
   | exception Extfun.Failure -> module_type0 arg x
   ]
 and module_type0 arg =
@@ -452,7 +457,8 @@ and module_type0 arg =
     self0
 and sig_item arg x =
   match Extfun.apply arg.Ctxt.ef.EF.sig_item x arg with [
-    x -> x
+    Some x -> x
+  | None -> sig_item0 arg x
   | exception Extfun.Failure -> sig_item0 arg x
   ]
 and sig_item0 arg =
@@ -508,7 +514,8 @@ and sig_item0 arg =
   self0
 and with_constr arg x =
   match Extfun.apply arg.Ctxt.ef.EF.with_constr x arg with [
-    x -> x
+    Some x -> x
+  | None -> with_constr0 arg x
   | exception Extfun.Failure -> with_constr0 arg x
   ]
 and with_constr0 arg =
@@ -523,7 +530,8 @@ and with_constr0 arg =
       WcTys loc (vala_map (longid_lident arg) x1) x2 (ctyp arg x3) ]
 and longid arg x =
   match Extfun.apply arg.Ctxt.ef.EF.longid x arg with [
-    x -> x
+    Some x -> x
+  | None -> longid0 arg x
   | exception Extfun.Failure -> longid0 arg x
   ]
 and longid0 arg =
@@ -540,7 +548,8 @@ and longid0 arg =
   self0
 and module_expr arg x =
   match Extfun.apply arg.Ctxt.ef.EF.module_expr x arg with [
-    x -> x
+    Some x -> x
+  | None -> module_expr0 arg x
   | exception Extfun.Failure -> module_expr0 arg x
   ]
 and module_expr0 arg =
@@ -572,7 +581,8 @@ and module_expr0 arg =
     self0
 and str_item arg x =
   match Extfun.apply arg.Ctxt.ef.EF.str_item x arg with [
-    x -> x
+    Some x -> x
+  | None -> str_item0 arg x
   | exception Extfun.Failure -> str_item0 arg x
   ]
 and str_item0 arg =
@@ -634,7 +644,8 @@ and str_item0 arg =
   self0
 and type_decl arg x =
   match Extfun.apply arg.Ctxt.ef.EF.type_decl x arg with [
-    x -> x
+    Some x -> x
+  | None -> type_decl0 arg x
   | exception Extfun.Failure -> type_decl0 arg x
   ]
 and type_decl0 arg x =
@@ -647,7 +658,8 @@ and type_decl0 arg x =
    tdAttributes = attributes arg x.tdAttributes}
 and type_extension arg x =
   match Extfun.apply arg.Ctxt.ef.EF.type_extension x arg with [
-    x -> x
+    Some x -> x
+  | None -> type_extension0 arg x
   | exception Extfun.Failure -> type_extension0 arg x
   ]
 and type_extension0 arg x =
@@ -657,7 +669,8 @@ and type_extension0 arg x =
    teAttributes = attributes arg x.teAttributes}
 and extension_constructor arg x =
   match Extfun.apply arg.Ctxt.ef.EF.extension_constructor x arg with [
-    x -> x
+    Some x -> x
+  | None -> extension_constructor0 arg x
   | exception Extfun.Failure -> extension_constructor0 arg x
   ]
 and extension_constructor0 arg = fun [
@@ -666,7 +679,8 @@ and extension_constructor0 arg = fun [
 ]
 and class_type arg x =
   match Extfun.apply arg.Ctxt.ef.EF.class_type x arg with [
-    x -> x
+    Some x -> x
+  | None -> class_type0 arg x
   | exception Extfun.Failure -> class_type0 arg x
   ]
 and class_type0 arg =
@@ -696,7 +710,8 @@ and class_type0 arg =
   self0
 and class_sig_item arg x =
   match Extfun.apply arg.Ctxt.ef.EF.class_sig_item x arg with [
-    x -> x
+    Some x -> x
+  | None -> class_sig_item0 arg x
   | exception Extfun.Failure -> class_sig_item0 arg x
   ]
 and class_sig_item0 arg =
@@ -723,7 +738,8 @@ and class_sig_item0 arg =
   self0
 and class_expr arg x =
   match Extfun.apply arg.Ctxt.ef.EF.class_expr x arg with [
-    x -> x
+    Some x -> x
+  | None -> class_expr0 arg x
   | exception Extfun.Failure -> class_expr0 arg x
   ]
 and class_expr0 arg =
@@ -759,7 +775,8 @@ and class_expr0 arg =
   self0
 and class_str_item arg x =
   match Extfun.apply arg.Ctxt.ef.EF.class_str_item x arg with [
-    x -> x
+    Some x -> x
+  | None -> class_str_item0 arg x
   | exception Extfun.Failure -> class_str_item0 arg x
   ]
 and class_str_item0 arg =
@@ -793,7 +810,8 @@ and longid_lident arg (x1, x2) =
     (option_map (longid arg) x1, x2)
 and attribute_body arg x =
   match Extfun.apply arg.Ctxt.ef.EF.attribute_body x arg with [
-    x -> x
+    Some x -> x
+  | None -> attribute_body0 arg x
   | exception Extfun.Failure -> attribute_body0 arg x
   ]
 and attribute_body0 arg x1 =

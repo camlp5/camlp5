@@ -119,7 +119,7 @@ value registered_expr_extension arg = fun [
     let piname = List.assoc ename extension2plugin.val in
     let pi = List.assoc piname plugin_registry.val in
     let arg = Ctxt.add_options arg pi.default_options in
-    pi.expr arg z
+    Some (pi.expr arg z)
 | _ -> assert False
 ]
 ;
@@ -139,7 +139,7 @@ ef.val := EF.{ (ef.val) with
           [registered_str_item arg pi z]
         else []) in
       let l = List.concat ll in
-      <:str_item< declare $list:[z :: l ]$ end >>
+      Some <:str_item< declare $list:[z :: l ]$ end >>
   ] }
 ;
 
@@ -154,7 +154,7 @@ ef.val := EF.{ (ef.val) with
           [registered_sig_item arg pi z]
         else []) in
       let l = List.concat ll in
-      <:sig_item< declare $list:[z :: l ]$ end >>
+      Some <:sig_item< declare $list:[z :: l ]$ end >>
   ] }
 ;
 

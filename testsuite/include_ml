@@ -90,17 +90,23 @@ let pp_lexbuf lb =
 #directory "../ppx";;
 #load "../ppx/pa_passthru.cmo";;
 #load "../ppx/ppxutil.cmo";;
-(*
+#load "../ppx/pa_deriving.cmo";;
+
 #load "../ppx/pa_deriving_show.cmo";;
 #trace Pa_deriving_show.fmt_expression ;;
 #trace Pa_deriving_show.is_deriving_show ;;
-*)
+#trace Pa_deriving_show.apply_deriving_show ;;
+
+"../ppx/test_deriving_show.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
+
+
+(*
 #load "../ppx/pa_deriving_enum.cmo";;
 #trace Pa_deriving_enum.fmt_expression ;;
 #trace Pa_deriving_enum.is_deriving_enum ;;
 
 "../ppx/test_deriving_enum.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
-
+*)
 
 (*
 ;;; Local Variables: ***
