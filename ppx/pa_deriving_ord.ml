@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* pa_passthru.ml,v *)
+(* pa_deriving_ord.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
 #load "pa_extend.cmo";

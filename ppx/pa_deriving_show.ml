@@ -1,11 +1,8 @@
 (* camlp5r *)
-(* pa_passthru.ml,v *)
+(* pa_deriving_show.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-#load "pa_extend.cmo";
 #load "q_MLast.cmo";
-#load "pa_macro.cmo";
-#load "pa_macro_gram.cmo";
 #load "pa_extfun.cmo";
 
 open Asttools;
@@ -34,6 +31,7 @@ value module_path ctxt li =
     <:longident< $uid:uid$ >> -> uid
   | <:longident< $longid:li$ . $uid:uid$ >> ->
     Printf.sprintf "%s.%s" (li2string li) uid
+  | [%unmatched_vala] -> failwith "module_path"
   ] in
   Ctxt.set_module_path ctxt (li2string li)
 ;
@@ -217,7 +215,8 @@ value fmt_expression arg param_map ty0 =
     let lili = match ty with [
       <:ctyp< $_lid:lid$ >> -> (None, lid)
     | <:ctyp< $longid:li$ . $_lid:lid$ >> -> (Some li, lid)
-    ] in
+    | [%unmatched_vala] -> failwith "fmt_expression-PvInh"
+     ] in
     let conspat = <:patt< ( # $lilongid:lili$ as z ) >> in
     let fmtf = match ty with [
       <:ctyp< $lid:lid$ >> ->
@@ -226,6 +225,7 @@ value fmt_expression arg param_map ty0 =
     | <:ctyp< $longid:li$ . $lid:lid$ >> ->
         let f = pp_fname arg lid in
         Expr.prepend_longident li <:expr< $lid:f$ >>
+    | [%unmatched_vala] -> failwith "fmt_expression-PvInh-2"
     ] in
     (conspat, <:vala< None >>, <:expr< Fmt.($fmtf$ ofmt z) >>)
   ]) l in
@@ -234,6 +234,7 @@ value fmt_expression arg param_map ty0 =
 | <:ctyp:< { $list:fields$ } >> ->
   let (recpat, body) = fmt_record ~{without_path=False} ~{prefix_txt=""} ~{bracket_space=" "} loc arg fields in
   <:expr< fun ofmt $recpat$ -> $body$ >>
+| [%unmatched_vala] -> failwith "fmt_expression"
 ]
 and fmt_record ~{without_path} ~{prefix_txt} ~{bracket_space} loc arg fields = 
   let labels_vars_fmts = List.map (fun (_, fname, _, ty, attrs) ->

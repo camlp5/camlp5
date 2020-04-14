@@ -39,12 +39,16 @@ pa_passthru.cmo: pa_passthru.ml ppxutil.cmo
 pa_deriving.cmo: pa_deriving.ml pa_passthru.cmo ppxutil.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving.ml
 
+pa_unmatched_vala.cmo: pa_unmatched_vala.ml pa_passthru.cmo ppxutil.cmo
+	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo' pr_ro.cmo 'pa_unmatched_vala.ml' > pa_unmatched_vala.ppo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_unmatched_vala.ml
+
 ppxutil.cmo: ppxutil.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c ppxutil.ml
 
-pa_deriving_show.cmo: pa_deriving_show.ml pa_passthru.cmo pa_deriving.cmo ppxutil.cmo
-	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' 'pr_r.cmo' pr_ro.cmo 'pa_deriving_show.ml' > pa_deriving_show.ppo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_show.ml
+pa_deriving_show.cmo: pa_deriving_show.ml pa_passthru.cmo pa_unmatched_vala.cmo pa_deriving.cmo ppxutil.cmo
+	$(CAMLP5R) -nolib -I $(CAMLP5LIB) 'pa_r.cmo' 'pa_rp.cmo' ./pa_passthru.cmo ./pa_unmatched_vala.cmo 'pr_r.cmo' pr_ro.cmo 'pa_deriving_show.ml' > pa_deriving_show.ppo.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -c pa_deriving_show.ppo.ml -o pa_deriving_show.cmo
 
 test_deriving_show.ppx: test_deriving_show.ppx.byte
 	./test_deriving_show.ppx.byte
@@ -117,6 +121,6 @@ test_deriving_enum.byte: test_deriving_enum.ml pa_passthru.cmo pa_deriving.cmo p
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -linkall -linkpkg -I ../testsuite ../testsuite/testutil.cmo ../testsuite/testutil2.cmo -impl test_deriving_enum.ppo -o test_deriving_enum.byte
 
 clean:
-	$(RM) -f *.cm* *.byte *.log *.cache *.ppo
+	$(RM) -f *.cm* *.byte *.log *.cache *.ppo *.ppo.ml
 
 realclean: clean
