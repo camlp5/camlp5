@@ -16,13 +16,10 @@ Pcaml.no_constructors_arity := false;;
 
 let odfa = !(Plexer.dollar_for_antiquotation) in
 let osrs = !(Plexer.simplest_raw_strings) in
-let odni = !(Plexer.dot_newline_is) in
 Plexer.dollar_for_antiquotation := false;
 Plexer.simplest_raw_strings := false;
 Plexer.utf8_lexing := true;
-Plexer.dot_newline_is := ";";
 Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
-Plexer.dot_newline_is := odni;
 Plexer.dollar_for_antiquotation := odfa;
 Plexer.simplest_raw_strings := osrs;
 Grammar.Unsafe.clear_entry attribute_body;
@@ -802,6 +799,10 @@ Grammar.safe_extend
    [Grammar.extension (attribute_id : 'attribute_id Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
+           "1154dceb",
+           (fun (s : string) (loc : Ploc.t) -> (s : 'attribute_id)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_list1sep
                 (Grammar.s_rules

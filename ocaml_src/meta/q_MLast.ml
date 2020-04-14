@@ -646,6 +646,10 @@ Grammar.safe_extend
    [Grammar.extension (attribute_id : 'attribute_id Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
+           "1154dceb",
+           (fun (s : string) (loc : Ploc.t) -> (Qast.Str s : 'attribute_id)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_list1sep
                 (Grammar.s_rules

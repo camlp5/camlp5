@@ -12,7 +12,6 @@ let error_on_unknown_keywords = ref false;;
 
 let dollar_for_antiquotation = ref true;;
 let specific_space_dot = ref false;;
-let dot_newline_is = ref ".";;
 
 let force_antiquot_loc = ref false;;
 
@@ -21,7 +20,6 @@ type context =
     simplest_raw_strings : bool;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
-    dot_newline_is : string;
     find_kwd : string -> string;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
@@ -993,7 +991,6 @@ let dot ctx (bp, pos) buf strm =
         if ctx.specific_space_dot && ctx.after_space then " ." else "."
       in
       keyword_or_error ctx (bp, pos) id
-  | Some '\n' -> keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
   | _ ->
       let (strm__ : _ Stream.t) = strm in
       let buf = Plexing.Lexbuf.add '.' buf in
@@ -1287,33 +1284,27 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                       Stream.junk strm__;
                       keyword_or_error ctx (bp, Stream.count strm__) ".."
                   | _ ->
-                      match Stream.npeek 1 strm__ with
-                        ['\n'] ->
-                          keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
+                      match
+                        try
+                          Some
+                            (dotsymbolchar (Plexing.Lexbuf.add '.' buf)
+                               strm__)
+                        with Stream.Failure -> None
+                      with
+                        Some buf ->
+                          let buf =
+                            try symbolchar_star buf strm__ with
+                              Stream.Failure -> raise (Stream.Error "")
+                          in
+                          keyword_or_error ctx (bp, Stream.count strm__)
+                            (Plexing.Lexbuf.get buf)
                       | _ ->
-                          match
-                            try
-                              Some
-                                (dotsymbolchar (Plexing.Lexbuf.add '.' buf)
-                                   strm__)
-                            with Stream.Failure -> None
-                          with
-                            Some buf ->
-                              let buf =
-                                try symbolchar_star buf strm__ with
-                                  Stream.Failure -> raise (Stream.Error "")
-                              in
-                              keyword_or_error ctx (bp, Stream.count strm__)
-                                (Plexing.Lexbuf.get buf)
-                          | _ ->
-                              let id =
-                                if ctx.specific_space_dot && ctx.after_space
-                                then
-                                  " ."
-                                else "."
-                              in
-                              keyword_or_error ctx (bp, Stream.count strm__)
-                                id
+                          let id =
+                            if ctx.specific_space_dot && ctx.after_space then
+                              " ."
+                            else "."
+                          in
+                          keyword_or_error ctx (bp, Stream.count strm__) id
                   end
               | Some ';' ->
                   Stream.junk strm__;
@@ -1452,7 +1443,7 @@ let make_ctx kwd_table =
   let bol_pos = ref 0 in
   {after_space = false; dollar_for_antiquotation = !dollar_for_antiquotation;
    simplest_raw_strings = !simplest_raw_strings;
-   specific_space_dot = !specific_space_dot; dot_newline_is = !dot_newline_is;
+   specific_space_dot = !specific_space_dot;
    find_kwd = Hashtbl.find kwd_table;
    line_cnt =
      (fun bp1 c ->
@@ -1794,11 +1785,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 928, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 928, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 928, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 929, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 929, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 923, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 923, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 923, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 924, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 924, 37)));
        tok_comm = None}
   in
   let glex =

@@ -72,6 +72,15 @@ let rec sep_last =
   | hd :: tl -> let (l, tl) = sep_last tl in l, hd :: tl
 ;;
 
+let try_find f =
+  let rec try_find_f =
+    function
+      [] -> failwith "try_find"
+    | h :: t -> try f h with Failure _ -> try_find_f t
+  in
+  try_find_f
+;;
+
 let expr_to_path_module_expr e =
   let rec erec =
     function

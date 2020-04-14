@@ -73,15 +73,6 @@ val specific_space_dot : bool ref;;
        the ones which don't have spaces before return the keyword "."
        (dot alone). *)
 
-val dot_newline_is : string ref;;
-   (** experimental
-       Specific interpretation for a dot "." followed by a newline;
-       by default, it is just a dot. Setting another value makes
-       the lexer interpret it as this value. For example, in
-       revised syntax (pa_r.ml) setting it to ";" allows to end
-       phrases with a dot, instead of a semicolon. In normal syntax,
-       the same can be done by setting it with ";;". *)
-
 val no_quotations : bool ref;;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the
        quotation syntax. Default is False (quotations are lexed). *)
