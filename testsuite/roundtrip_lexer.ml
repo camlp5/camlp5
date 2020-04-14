@@ -312,8 +312,7 @@ value setup_syntax () =
     "revised" -> do {
   Plexer.dollar_for_antiquotation.val := False;
   Plexer.simplest_raw_strings.val := False;
-  Plexer.utf8_lexing.val := True;
-  Plexer.dot_newline_is.val := ";"
+  Plexer.utf8_lexing.val := True
     }
   | "original" -> do {
   Plexer.dollar_for_antiquotation.val := False;

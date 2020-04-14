@@ -17,13 +17,10 @@ Pcaml.no_constructors_arity.val := False;
 do {
   let odfa = Plexer.dollar_for_antiquotation.val in
   let osrs = Plexer.simplest_raw_strings.val in
-  let odni = Plexer.dot_newline_is.val in
   Plexer.dollar_for_antiquotation.val := False;
   Plexer.simplest_raw_strings.val := False;
   Plexer.utf8_lexing.val := True;
-  Plexer.dot_newline_is.val := ";";
   Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
-  Plexer.dot_newline_is.val := odni;
   Plexer.dollar_for_antiquotation.val := odfa;
   Plexer.simplest_raw_strings.val := osrs ;
   Grammar.Unsafe.clear_entry attribute_body;
