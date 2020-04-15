@@ -239,9 +239,18 @@ value any ctx buf =
   parser bp [: `c :] -> do { ctx.line_cnt bp c; $add c }
 ;
 
+value rec skiplws = lexer [
+  ' '/ skiplws!
+| '\t'/ skiplws!
+|
+]
+;
+
 value rec string ctx bp =
   lexer
   [ "\""/
+  | "\\"/ ?= [ "\n" ] "\n"/ skiplws! (string ctx bp)!
+  | "\\"/ ?= [ "\n" | " " ] (any ctx) (string ctx bp)!
   | "\\" (any ctx) (string ctx bp)!
   | (any ctx) (string ctx bp)!
   | -> err ctx (bp, $pos) "string not terminated" ]

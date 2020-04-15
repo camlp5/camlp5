@@ -4052,23 +4052,44 @@ and u := bool;
      r_output = OK {foo|type t1 = t (a[@"a1"])[@"a2"];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="linear-whitespace-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo| "abc\
+    d" |foo} ;
+     official_input = OK  {foo| "abc\
+    d" |foo} ;
+     r_input = OK {foo| "abc\
+    d"; |foo} ;
+     o_output = OK {foo|let _ = "abcd";;
+|foo};
+     official_output = OK {foo|;;"abcd"|foo} ;
+     r_output = OK {foo|"abcd";
+|foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="linear-whitespace-2"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo| "abc\
+    \ d" |foo} ;
+     official_input = OK  {foo| "abc\
+    \ d" |foo} ;
+     r_input = OK {foo| "abc\
+    \ d"; |foo} ;
+     o_output = OK {foo|let _ = "abc d";;
+|foo};
+     official_output = OK {foo|;;"abc d"|foo} ;
+     r_output = OK {foo|"abc d";
+|foo}
+    };
+    {name="string-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| "abc\ d" |foo} ;
+     official_input = OK {foo| "abc\ d" |foo} ;
+     r_input = OK {foo| "abc\ d"; |foo} ;
+     o_output = OK {foo|let _ = "abc d";;
+|foo};
+     official_output = OK {foo|;;"abc d"|foo} ;
+     r_output = OK {foo|"abc d";
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
