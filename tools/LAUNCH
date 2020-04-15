@@ -3,11 +3,15 @@
 use strict ;
 use IPC::System::Simple qw(systemx runx capturex $EXITVAL);
 use String::ShellQuote ;
+use File::Basename;
 
 our $verbose = 0 ;
-our $top = $ENV{'TOP'} || "..";
 
 {
+  my $wd = dirname(dirname($0)) ;
+
+  my $top = $ENV{'TOP'} || $wd;
+
   my %newenv ;
   $newenv{'PATH'} = "$top/local-install/bin:$ENV{'PATH'}" ;
   $newenv{'OCAMLPATH'} = "$top/local-install/lib:" ;
