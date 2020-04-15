@@ -36,7 +36,7 @@ our $verbose ;
       shift @ARGV ;
       $verbose = 1 ;
     }
-    elsif ($ARGV[0] eq '-v') {
+    elsif ($ARGV[0] eq '-package') {
       shift @ARGV ;
       @packages = split(/,/, shift @ARGV) ;
     }

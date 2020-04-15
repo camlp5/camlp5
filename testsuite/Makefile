@@ -186,7 +186,7 @@ tools/ROUNDTRIP-pa_o-pr_o.byte:
 	$(MKCAMLP5) -package fmt pa_o.cmo pr_o.cmo -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.opt:
-	$(MKCAMLP5OPT) -package fmt pa_o.cmx pr_o.cmx -o $@
+	$(MKCAMLP5OPT) pa_o.cmx pr_o.cmx -o $@
 
 setup-ocaml:
 	opam install -y rresult fmt pcre ounit2 bos
