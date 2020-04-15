@@ -43,6 +43,7 @@ OCAMLFIND=$(LAUNCH) ocamlfind
 OCAMLTOPLEVEL=$(LAUNCH) ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
 MKCAMLP5=$(LAUNCH) mkcamlp5
+MKCAMLP5OPT=$(LAUNCH) mkcamlp5.opt
 CAMLP5R=$(LAUNCH) camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
@@ -179,13 +180,13 @@ tools/ROUNDTRIP-pa_r-pr_r.byte:
 	$(MKCAMLP5) $(REVISED_KITS) -o $@
 
 tools/ROUNDTRIP-pa_r-pr_r.opt:
-	$(MKCAMLP5).opt $(REVISED_KITS:.cmo=.cmx) -o $@
+	$(MKCAMLP5OPT) $(REVISED_KITS:.cmo=.cmx) -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.byte:
-	$(MKCAMLP5) pa_o.cmo pr_o.cmo -o $@
+	$(MKCAMLP5) -package fmt pa_o.cmo pr_o.cmo -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.opt:
-	$(MKCAMLP5).opt pa_o.cmx pr_o.cmx -o $@
+	$(MKCAMLP5OPT) -package fmt pa_o.cmx pr_o.cmx -o $@
 
 setup-ocaml:
 	opam install -y rresult fmt pcre ounit2 bos

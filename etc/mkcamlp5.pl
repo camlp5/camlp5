@@ -20,6 +20,7 @@ our $verbose ;
 {
   my @interfaces ;
   my @options ;
+  my @packages = () ;
 
   my $opt ;
   if ($0 =~ /mkcamlp5\.opt.*/) {
@@ -34,6 +35,10 @@ our $verbose ;
     elsif ($ARGV[0] eq '-v') {
       shift @ARGV ;
       $verbose = 1 ;
+    }
+    elsif ($ARGV[0] eq '-v') {
+      shift @ARGV ;
+      @packages = split(/,/, shift @ARGV) ;
     }
     elsif ($ARGV[0] =~ m,([^\./]+)\.cmi$,) {
       die "cannot specify .cmi files for $0" if $opt ;
@@ -69,9 +74,10 @@ EOF
     push(@link, "link$$.ml") ;
   }
 
+  push(@packages, "camlp5") ;
   v_systemx("ocamlfind",
 	    ($opt ? "ocamlopt" : "ocamlc"),
-	    "-package", "camlp5",
+	    "-package", join(',', @packages),
 	    "-linkall", "-linkpkg",
 	    @link, @options,
 	    ($opt ? "odyl.cmx" : "odyl.cmo")
