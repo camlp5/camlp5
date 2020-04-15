@@ -14,7 +14,7 @@ TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test
 
 all-tests: all $(TESTS)
 
-all: \
+all: roundtrippers \
 	o2r_test.byte \
 	r2r_test.byte \
 	r2o_test.byte \
@@ -37,13 +37,18 @@ all: \
 	grammar_bug_test \
 	little_lang_test \
 
+roundtrippers: \
+	tools/ROUNDTRIP-pa_r-pr_r.byte \
+	tools/ROUNDTRIP-pa_r-pr_r.opt \
+	tools/ROUNDTRIP-pa_o-pr_o.byte \
+	tools/ROUNDTRIP-pa_o-pr_o.opt \
 
 LAUNCH=env TOP=$(TOP) $(TOP)/tools/LAUNCH
 OCAMLFIND=$(LAUNCH) ocamlfind
 OCAMLTOPLEVEL=$(LAUNCH) ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
-MKCAMLP5=$(LAUNCH) mkcamlp5
-MKCAMLP5OPT=$(LAUNCH) mkcamlp5.opt
+MKCAMLP5=$(LAUNCH) mkcamlp5 -verbose
+MKCAMLP5OPT=$(LAUNCH) mkcamlp5.opt -verbose
 CAMLP5R=$(LAUNCH) camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
@@ -175,18 +180,17 @@ sch2r_test.pa_schemer:: sch2r_test.pa_schemer.byte
 sch2r_test.pa_schemer.byte: sch2r_test.ml testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),camlp5.pr_r -syntax camlp5r -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.ml -o sch2r_test.pa_schemer.byte
 
-REVISED_KITS=pa_r.cmo pa_rp.cmo pa_macro.cmo pa_extend.cmo pa_extend_m.cmo pa_macro_gram.cmo q_phony.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_extend.cmo
 tools/ROUNDTRIP-pa_r-pr_r.byte:
-	$(MKCAMLP5) $(REVISED_KITS) -o $@
+	$(MKCAMLP5) -package camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@
 
 tools/ROUNDTRIP-pa_r-pr_r.opt:
-	$(MKCAMLP5OPT) $(REVISED_KITS:.cmo=.cmx) -o $@
+	$(MKCAMLP5OPT) -package camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.byte:
-	$(MKCAMLP5) -package fmt pa_o.cmo pr_o.cmo -o $@
+	$(MKCAMLP5) -package camlp5.pa_o,camlp5.pr_o -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.opt:
-	$(MKCAMLP5OPT) pa_o.cmx pr_o.cmx -o $@
+	$(MKCAMLP5OPT) -package camlp5.pa_o,camlp5.pr_o -o $@
 
 setup-ocaml:
 	opam install -y rresult fmt pcre ounit2 bos

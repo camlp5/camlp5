@@ -20,7 +20,7 @@ our $verbose ;
 {
   my @interfaces ;
   my @options ;
-  my @packages = () ;
+  my @packages = ("camlp5") ;
 
   my $opt ;
   if ($0 =~ /mkcamlp5\.opt.*/) {
@@ -32,9 +32,8 @@ our $verbose ;
       shift @ARGV ;
       usage() ; exit ;
     }
-    elsif ($ARGV[0] eq '-v') {
-      shift @ARGV ;
-      $verbose = 1 ;
+    elsif ($ARGV[0] eq '-verbose') {
+      $verbose = shift @ARGV ;
     }
     elsif ($ARGV[0] eq '-package') {
       shift @ARGV ;
@@ -74,13 +73,12 @@ EOF
     push(@link, "link$$.ml") ;
   }
 
-  push(@packages, "camlp5") ;
   v_systemx("ocamlfind",
 	    ($opt ? "ocamlopt" : "ocamlc"),
 	    "-package", join(',', @packages),
+	    $verbose,
 	    "-linkall", "-linkpkg",
-	    @link, @options,
-	    ($opt ? "odyl.cmx" : "odyl.cmo")
+	    @link, @options
 	   ) ;
 }
 

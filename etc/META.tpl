@@ -44,8 +44,9 @@ package "pa_r" (
     archive(syntax,preprocessor) = "pa_r.cmo pa_rp.cmo"
   )
 
-  requires(byte) = "camlp5"
+  requires = "camlp5"
   archive(byte) = "pa_r.cmo pa_rp.cmo"
+  archive(native) = "pa_r.cmx pa_rp.cmx"
 )
 
 package "pa_o" (
@@ -59,8 +60,9 @@ package "pa_o" (
     archive(syntax,preprocessor) = "pa_o.cmo"
   )
 
-  requires(byte) = "camlp5"
+  requires = "camlp5"
   archive(byte) = "pa_o.cmo"
+  archive(native) = "pa_o.cmx"
 )
 
 package "pa_op" (
@@ -75,8 +77,9 @@ package "pa_op" (
     archive(syntax,preprocessor) = "pa_op.cmo"
   )
 
-  requires(byte) = "camlp5.pa_o"
+  requires = "camlp5.pa_o"
   archive(byte) = "pa_op.cmo"
+  archive(native) = "pa_op.cmx"
 )
 
 package "pr_r" (
@@ -84,11 +87,14 @@ package "pr_r" (
   archive(syntax,toploop)      = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
 
   package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
     archive(syntax,preprocessor) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
   )
 
   requires(byte) = "camlp5"
   archive(byte) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "pr_r.cmx pr_ro.cmx pr_rp.cmx"
 )
 
 package "pr_o" (
@@ -96,11 +102,14 @@ package "pr_o" (
   archive(syntax,toploop)      = "pr_o.cmo pr_op.cmo"
 
   package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
     archive(syntax,preprocessor) = "pr_o.cmo pr_op.cmo"
   )
 
   requires(byte) = "camlp5"
   archive(byte) = "pr_o.cmo pr_op.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "pr_o.cmx pr_op.cmx"
 )
 
 package "pr_dump" (
@@ -108,16 +117,20 @@ package "pr_dump" (
   archive(syntax,toploop)      = "pr_dump.cmo"
 
   package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
     archive(syntax,preprocessor) = "pr_dump.cmo"
   )
 
   requires(byte) = "camlp5"
   archive(byte) = "pr_dump.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "pr_dump.cmx"
 )
 
 package "pr_official" (
-  requires(byte) = "camlp5"
+  requires = "camlp5"
   archive(byte) = "pr_official.cmo"
+  archive(native) = "pr_official.cmx"
 )
 
 package "pa_scheme" (
@@ -145,40 +158,76 @@ package "gramlib" (
 )
 
 package "quotations" (
-  requires = "camlp5"
   version = "@VERSION@"
   description = "Syntax extension: Quotations to create AST nodes"
 
+  requires(syntax,toploop) = "camlp5"
+  archive(syntax,toploop) = "q_MLast.cmo"
+
   package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
     archive(syntax,preprocessor) = "q_MLast.cmo"
-    archive(syntax,toploop) = "q_MLast.cmo"
   )
 
+  requires(byte) = "camlp5"
   archive(byte) = "q_MLast.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "q_MLast.cmx"
 )
 
 package "phony_quotations" (
-  requires = "camlp5"
   version = "@VERSION@"
   description = "Syntax extension: Phony quotations"
-  archive(syntax,preprocessor) = "q_phony.cmo"
+
+  requires(syntax,toploop) = "camlp5"
   archive(syntax,toploop) = "q_phony.cmo"
+
+  package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
+    archive(syntax,preprocessor) = "q_phony.cmo"
+  )
+
+  requires(byte) = "camlp5"
+  archive(byte) = "q_phony.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "q_phony.cmx"
 )
 
+
 package "extend" (
-  requires = "camlp5"
-  version = "@VERSION@"
-  description = "Syntax extension: EXTEND the camlp5 grammar"
-  archive(syntax,preprocessor) = "pa_extend.cmo"
-  archive(syntax,toploop) = "pa_extend.cmo"
+  error(camlp5o) = "camlp5.extend cannot be used with syntax camlp5o"
+  error(pkg_camlp5.pa_o) = "camlp5.extend cannot be used with camlp5.pa_o"
+
+  requires(syntax,toploop) = "camlp5"
+  archive(syntax,toploop,-camlp5o)      = "pa_extend.cmo"
+
+  package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
+    archive(syntax,preprocessor) = "pa_extend.cmo"
+  )
+
+  requires(byte) = "camlp5"
+  archive(byte) = "pa_extend.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "pa_extend.cmx"
 )
 
 package "extfun" (
-  requires = "camlp5"
   version = "@VERSION@"
   description = "Syntax extension: Extensible functions"
-  archive(syntax,preprocessor) = "pa_extfun.cmo"
-  archive(syntax,toploop) = "pa_extfun.cmo"
+
+  requires(syntax,toploop) = "camlp5"
+  archive(syntax,toploop,-camlp5o)      = "pa_extfun.cmo"
+
+  package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
+    archive(syntax,preprocessor) = "pa_extfun.cmo"
+  )
+
+  requires(byte) = "camlp5"
+  archive(byte) = "pa_extfun.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "pa_extfun.cmx"
 )
 
 package "fstream" (
