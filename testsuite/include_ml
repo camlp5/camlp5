@@ -24,6 +24,7 @@ Pcaml.inter_phrases := Some ";\n";;
 *)
 
 #require "camlp5.quotations";;
+#require "camlp5.extfun";;
 (*
 #require "camlp5.extend";;
 #require "camlp5.phony_quotations" ;;
@@ -34,9 +35,6 @@ Exparser.optim := false ;;
 
 #load "testutil.cmo";;
 #load "testutil2.cmo";;
-
-#load "pa_passthru.cmo";;
-#load "pa_deriving_show.cmo";;
 
 open OUnit2 ;;
 open Testutil ;;
@@ -87,18 +85,7 @@ let pp_lexbuf lb =
 ;;
 #install_printer pp_lexbuf ;;
 
-#directory "../ppx";;
-#load "../ppx/pa_passthru.cmo";;
-#load "../ppx/ppxutil.cmo";;
-#load "../ppx/pa_deriving.cmo";;
-
-#load "../ppx/pa_deriving_show.cmo";;
-#trace Pa_deriving_show.fmt_expression ;;
-#trace Pa_deriving_show.is_deriving_show ;;
-#trace Pa_deriving_show.apply_deriving_show ;;
-
-"../ppx/test_deriving_show.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
-
+print_string "================ START ================\n";; flush stdout ;;
 
 (*
 #load "../ppx/pa_deriving_enum.cmo";;
