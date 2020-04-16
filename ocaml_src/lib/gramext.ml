@@ -348,8 +348,8 @@ let rec check_gram entry =
     Snterm e ->
       if e.egram != entry.egram then
         begin
-          eprintf "\
-Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
+          eprintf
+            "Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
             entry.ename e.ename;
           flush stderr;
           failwith "Grammar.extend error"
@@ -357,8 +357,8 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
   | Snterml (e, _) ->
       if e.egram != entry.egram then
         begin
-          eprintf "\
-Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
+          eprintf
+            "Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
             entry.ename e.ename;
           flush stderr;
           failwith "Grammar.extend error"

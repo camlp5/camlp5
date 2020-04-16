@@ -443,16 +443,40 @@ let any ctx buf (strm__ : _ Stream.t) =
   | _ -> raise Stream.Failure
 ;;
 
+let rec skiplws buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ' ' -> Stream.junk strm__; skiplws buf strm__
+  | Some '\t' -> Stream.junk strm__; skiplws buf strm__
+  | _ -> buf
+;;
+
 let rec string ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '"' -> Stream.junk strm__; buf
   | Some '\\' ->
       Stream.junk strm__;
-      let buf =
-        try any ctx (Plexing.Lexbuf.add '\\' buf) strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-      in
-      string ctx bp buf strm__
+      begin try
+        match Stream.npeek 1 strm__ with
+          ['\n'] ->
+            begin match Stream.peek strm__ with
+              Some '\n' ->
+                Stream.junk strm__;
+                let buf = skiplws buf strm__ in string ctx bp buf strm__
+            | _ -> raise (Stream.Error "")
+            end
+        | _ ->
+            match Stream.npeek 1 strm__ with
+              ['\n'] | [' '] ->
+                let buf =
+                  try any ctx buf strm__ with
+                    Stream.Failure -> raise (Stream.Error "")
+                in
+                string ctx bp buf strm__
+            | _ ->
+                let buf = any ctx (Plexing.Lexbuf.add '\\' buf) strm__ in
+                string ctx bp buf strm__
+      with Stream.Failure -> raise (Stream.Error "")
+      end
   | _ ->
       match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf -> string ctx bp buf strm__
@@ -1785,11 +1809,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 923, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 923, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 923, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 924, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 924, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 932, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 932, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 932, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 933, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 933, 37)));
        tok_comm = None}
   in
   let glex =

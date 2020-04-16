@@ -163,8 +163,7 @@ let print_usage_list l =
 
 let usage ini_sl ext_sl =
   let name = Filename.basename Sys.argv.(0) in
-  eprintf "\
-Usage: %s [load-options] [--] [other-options]
+  eprintf "Usage: %s [load-options] [--] [other-options]
 Load options:
   -I directory  Add directory in search patch for object files.
   -where        Print camlp5 library directory and exit.

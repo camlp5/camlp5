@@ -688,8 +688,20 @@ EXTEND
     attribute_body alg_attribute alg_attributes
     ext_attributes
     ;
+  (* This is copied from parser.mly (nonterminal "single_attr_id") in the ocaml 4.10.0 distribution. *)
+  kwd_attribute_id:
+  [ [ s = [ "and" | "as" | "assert" | "begin" | "class" | "constraint" | "do" | "done"
+          | "downto" | "else" | "end" | "exception" | "external" | "false" | "for"
+          | "fun" | "function" | "functor" | "if" | "in" | "include" | "inherit"
+          | "initializer" | "lazy" | "let" | "match" | "method" | "module" | "mutable"
+          | "new" | "nonrec" | "object" | "of" | "open" | "or" | "private" | "rec"
+          | "sig" | "struct" | "then" | "to" | "true" | "try" | "type" | "val" | "virtual"
+          | "when" | "while" | "with" ] -> s
+    ] ]
+  ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
+    | s = kwd_attribute_id -> s
     ] ]
   ;
   attribute_structure:

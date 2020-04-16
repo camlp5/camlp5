@@ -4091,14 +4091,40 @@ and u := bool;
      r_output = OK {foo|"abc d";
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="attribute-body-expr-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|x [@with core_type    := Parsetree.core_type [@printer Pprintast.core_type];
+                 Asttypes.loc := Asttypes.loc [@polyprinter fun pp fmt x -> pp fmt x.Asttypes.txt];
+                 Longident.t  := Longident.t [@printer pp_longident]] ;|foo} ;
+     official_input = OK {foo|x [@with core_type    := Parsetree.core_type [@printer Pprintast.core_type];
+                 Asttypes.loc := Asttypes.loc [@polyprinter fun pp fmt x -> pp fmt x.Asttypes.txt];
+                 Longident.t  := Longident.t [@printer pp_longident]] ;|foo} ;
+     r_input = OK {foo|x[@"with" do {
+  core_type.val := Parsetree.core_type[@"printer" Pprintast.core_type;];
+  Asttypes.loc.val :=
+    Asttypes.loc[@"polyprinter" fun pp fmt x → pp fmt x.Asttypes.txt;];
+  Longident.t.val := Longident.t[@"printer" pp_longident;]
+};];
+|foo} ;
+     o_output = OK {foo|let _ =
+  x[@with core_type := Parsetree.core_type[@printer Pprintast.core_type];
+  Asttypes.loc :=
+    Asttypes.loc[@polyprinter (fun pp fmt x -> pp fmt x.Asttypes.txt)];
+  Longident.t := Longident.t[@printer pp_longident]];;
+|foo};
+     official_output = OK {foo|;;((x)
+  [@with
+    core_type := ((Parsetree.core_type)[@printer Pprintast.core_type]);
+    Asttypes.loc := ((Asttypes.loc)
+      [@polyprinter (fun pp -> fun fmt -> fun x -> pp fmt x.Asttypes.txt)]);
+    Longident.t := ((Longident.t)[@printer pp_longident])])|foo} ;
+     r_output = OK {foo|x[@"with" do {
+  core_type.val := Parsetree.core_type[@"printer" Pprintast.core_type;];
+  Asttypes.loc.val :=
+    Asttypes.loc[@"polyprinter" fun pp fmt x → pp fmt x.Asttypes.txt;];
+  Longident.t.val := Longident.t[@"printer" pp_longident;]
+};];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

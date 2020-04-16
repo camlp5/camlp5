@@ -107,11 +107,9 @@ let rise_string ind sh b s =
      double-quote) which contains newlines, attempt to concat its first
      line in the previous line, and, instead of displaying this:
               eprintf
-                "\
-           hello, world"
+                "hello, world"
      displays that:
-              eprintf "\
-           hello, world"
+              eprintf "hello, world"
      what "saves" one line.
    *)
   if String.length s > ind + sh && s.[ind+sh] = '"' then
