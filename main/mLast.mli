@@ -107,7 +107,7 @@ and expr =
   | ExCoe of loc and expr and option ctyp and ctyp
   | ExFlo of loc and V string
   | ExFor of loc and patt and expr and expr and V bool and V (list expr)
-  | ExFun of loc and V (list (patt * V (option expr) * expr))
+  | ExFun of loc and V (list case_branch)
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
   | ExLab of loc and V (list (patt * V (option expr)))
@@ -117,7 +117,7 @@ and expr =
   | ExLid of loc and V string
   | ExLmd of loc and V (option (V string)) and module_expr and expr
   | ExLop of loc and V bool and module_expr and expr
-  | ExMat of loc and expr and V (list (patt * V (option expr) * expr))
+  | ExMat of loc and expr and V (list case_branch)
   | ExNew of loc and V longid_lident
   | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and patt and V (option expr)
@@ -128,7 +128,7 @@ and expr =
   | ExSnd of loc and expr and V string
   | ExSte of loc and V string and expr and V (list expr)
   | ExStr of loc and V string
-  | ExTry of loc and expr and V (list (patt * V (option expr) * expr))
+  | ExTry of loc and expr and V (list case_branch)
   | ExTup of loc and V (list expr)
   | ExTyc of loc and expr and ctyp
   | ExUid of loc and V string
@@ -139,6 +139,7 @@ and expr =
   | ExExten of loc and attribute_body
   | ExUnr of loc
   ]
+and case_branch = (patt * V (option expr) * expr)
 and module_type =
   [ MtLong of loc and longid
   | MtLongLid of loc and longid and V string

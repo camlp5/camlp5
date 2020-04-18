@@ -99,7 +99,7 @@ and expr =
   | ExCoe of loc * expr * ctyp option * ctyp
   | ExFlo of loc * string
   | ExFor of loc * patt * expr * expr * bool * expr list
-  | ExFun of loc * (patt * expr option * expr) list
+  | ExFun of loc * case_branch list
   | ExIfe of loc * expr * expr * expr
   | ExInt of loc * string * string
   | ExLab of loc * (patt * expr option) list
@@ -109,7 +109,7 @@ and expr =
   | ExLid of loc * string
   | ExLmd of loc * string option * module_expr * expr
   | ExLop of loc * bool * module_expr * expr
-  | ExMat of loc * expr * (patt * expr option * expr) list
+  | ExMat of loc * expr * case_branch list
   | ExNew of loc * longid_lident
   | ExObj of loc * patt option * class_str_item list
   | ExOlb of loc * patt * expr option
@@ -120,7 +120,7 @@ and expr =
   | ExSnd of loc * expr * string
   | ExSte of loc * string * expr * expr list
   | ExStr of loc * string
-  | ExTry of loc * expr * (patt * expr option * expr) list
+  | ExTry of loc * expr * case_branch list
   | ExTup of loc * expr list
   | ExTyc of loc * expr * ctyp
   | ExUid of loc * string
@@ -130,6 +130,7 @@ and expr =
   | ExAtt of loc * expr * attribute_body
   | ExExten of loc * attribute_body
   | ExUnr of loc
+and case_branch = patt * expr option * expr
 and module_type =
     MtLong of loc * longid
   | MtLongLid of loc * longid * string

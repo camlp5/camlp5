@@ -127,6 +127,21 @@ package "pr_dump" (
   archive(native) = "pr_dump.cmx"
 )
 
+package "pr_depend" (
+  requires(syntax,toploop) = "camlp5"
+  archive(syntax,toploop)      = "pr_depend.cmo"
+
+  package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
+    archive(syntax,preprocessor) = "pr_depend.cmo"
+  )
+
+  requires(byte) = "camlp5"
+  archive(byte) = "pr_depend.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "pr_depend.cmx"
+)
+
 package "pr_official" (
   requires = "camlp5"
   archive(byte) = "pr_official.cmo"
