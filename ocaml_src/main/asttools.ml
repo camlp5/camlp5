@@ -257,12 +257,12 @@ let str_item_to_inline si ext =
   let loc = MLast.loc_of_str_item si in
   match ext with
     None -> si
-  | Some attrid -> MLast.StExten (loc, (attrid, MLast.StAttr (loc, [si])))
+  | Some attrid -> MLast.StExten (loc, (attrid, MLast.StAttr (loc, [si])), [])
 ;;
 
 let sig_item_to_inline si ext =
   let loc = MLast.loc_of_sig_item si in
   match ext with
     None -> si
-  | Some attrid -> MLast.SgExten (loc, (attrid, MLast.SiAttr (loc, [si])))
+  | Some attrid -> MLast.SgExten (loc, (attrid, MLast.SiAttr (loc, [si])), [])
 ;;

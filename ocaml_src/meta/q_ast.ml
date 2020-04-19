@@ -405,8 +405,9 @@ module Meta_make (C : MetaSig) =
       | SgXtr (loc, s, _) -> C.xtr loc s
       | SgFlAtt (loc, attr) ->
           let attr = conv_attribute_body attr in C.node "SgFlAtt" [attr]
-      | SgExten (loc, exten) ->
-          let exten = assert false in C.node "SgExten" [exten]
+      | SgExten (loc, exten, attrs) ->
+          let exten = conv_extension exten in
+          C.node "SgExten" [exten; conv_attributes attrs]
     and with_constr =
       function
         WcMod (_, ls, me) -> C.node "WcMod" [C.vala longid ls; module_expr me]
@@ -510,8 +511,9 @@ module Meta_make (C : MetaSig) =
       | StXtr (loc, s, _) -> C.xtr loc s
       | StFlAtt (loc, attr) ->
           let attr = conv_attribute_body attr in C.node "StFlAtt" [attr]
-      | StExten (loc, exten) ->
-          let exten = conv_extension exten in C.node "StExten" [exten]
+      | StExten (loc, exten, attrs) ->
+          let exten = conv_extension exten in
+          C.node "StExten" [exten; conv_attributes attrs]
     and type_decl x =
       let attrs = conv_attributes x.tdAttributes in
       C.record

@@ -400,9 +400,9 @@ module Meta_make (C : MetaSig) =
       | SgFlAtt loc attr ->
           let attr = conv_attribute_body attr in
           C.node "SgFlAtt" [attr]
-      | SgExten loc exten ->
-          let exten = assert False in
-          C.node "SgExten" [exten]
+      | SgExten loc exten attrs ->
+          let exten = conv_extension exten in
+          C.node "SgExten" [exten; conv_attributes attrs]
       ]
     and with_constr =
       fun
@@ -507,9 +507,9 @@ module Meta_make (C : MetaSig) =
       | StFlAtt loc attr ->
           let attr = conv_attribute_body attr in
           C.node "StFlAtt" [attr]
-      | StExten loc exten ->
+      | StExten loc exten attrs ->
           let exten = conv_extension exten in
-          C.node "StExten" [exten]
+          C.node "StExten" [exten; conv_attributes attrs]
       ]
     and type_decl x =
       let attrs = conv_attributes x.tdAttributes in

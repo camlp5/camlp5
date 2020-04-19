@@ -1632,12 +1632,16 @@ Grammar.safe_extend
               (Qast.Node ("StAtt", [Qast.Loc; si; attr]) : 'str_item)))];
        Some "simple", None,
        [Grammar.production
-          (Grammar.r_next Grammar.r_stop
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (item_extension : 'item_extension Grammar.Entry.e)))
              (Grammar.s_nterm
-                (item_extension : 'item_extension Grammar.Entry.e)),
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
            "1154dceb",
-           (fun (e : 'item_extension) (loc : Ploc.t) ->
-              (Qast.Node ("StExten", [Qast.Loc; e]) : 'str_item)));
+           (fun (attrs : 'item_attributes) (e : 'item_extension)
+                (loc : Ploc.t) ->
+              (Qast.Node ("StExten", [Qast.Loc; e; attrs]) : 'str_item)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
@@ -2744,12 +2748,16 @@ Grammar.safe_extend
               (Qast.Node ("SgAtt", [Qast.Loc; si; attr]) : 'sig_item)))];
        Some "simple", None,
        [Grammar.production
-          (Grammar.r_next Grammar.r_stop
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (item_extension : 'item_extension Grammar.Entry.e)))
              (Grammar.s_nterm
-                (item_extension : 'item_extension Grammar.Entry.e)),
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
            "1154dceb",
-           (fun (e : 'item_extension) (loc : Ploc.t) ->
-              (Qast.Node ("SgExten", [Qast.Loc; e]) : 'sig_item)));
+           (fun (attrs : 'item_attributes) (e : 'item_extension)
+                (loc : Ploc.t) ->
+              (Qast.Node ("SgExten", [Qast.Loc; e; attrs]) : 'sig_item)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm

@@ -1601,8 +1601,11 @@ and sig_item s l =
   | SgXtr (loc, _, _) -> error loc "bad ast SgXtr"
   | SgFlAtt (loc, float_attr) ->
       mksig loc (ocaml_psig_attribute (attr (uv float_attr))) :: l
-  | SgExten (loc, ebody) ->
-      mksig loc (ocaml_psig_extension (extension (uv ebody))) :: l
+  | SgExten (loc, ebody, attrs) ->
+      mksig loc
+        (ocaml_psig_extension ~item_attributes:(uv_item_attributes attrs)
+           (extension (uv ebody))) ::
+      l
 and module_expr =
   function
     MeAtt (loc, e, a) -> ocaml_pmod_addattr (attr (uv a)) (module_expr e)
@@ -1775,8 +1778,11 @@ and str_item s l =
   | StXtr (loc, _, _) -> error loc "bad ast StXtr"
   | StFlAtt (loc, float_attr) ->
       mkstr loc (ocaml_pstr_attribute (attr (uv float_attr))) :: l
-  | StExten (loc, ebody) ->
-      mkstr loc (ocaml_pstr_extension (extension (uv ebody))) :: l
+  | StExten (loc, ebody, attrs) ->
+      mkstr loc
+        (ocaml_pstr_extension ~item_attributes:(uv_item_attributes attrs)
+           (extension (uv ebody))) ::
+      l
 and class_type =
   function
     CtAtt (loc, e, a) -> ocaml_pcty_addattr (attr (uv a)) (class_type e)

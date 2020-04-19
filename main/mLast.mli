@@ -178,7 +178,7 @@ and sig_item =
   | SgVal of loc and V string and ctyp and attributes
   | SgXtr of loc and string and option (V sig_item)
   | SgFlAtt of loc and attribute
-  | SgExten of loc and attribute ]
+  | SgExten of loc and attribute and attributes ]
 and with_constr =
   [ WcMod of loc and V longid and module_expr
   | WcMos of loc and V longid and module_expr
@@ -214,7 +214,7 @@ and str_item =
   | StVal of loc and V bool and V (list (patt * expr * attributes))
   | StXtr of loc and string and option (V str_item)
   | StFlAtt of loc and attribute
-  | StExten of loc and attribute ]
+  | StExten of loc and attribute and attributes ]
 and type_decl =
   { tdIsDecl : bool ;
     tdNam : V (loc * V string);

@@ -1344,7 +1344,7 @@ and sig_item s l =
       [mksig loc
          (ocaml_psig_attribute (attr (uv float_attr))) ::
        l]
-  | SgExten loc ebody -> [mksig loc (ocaml_psig_extension (extension (uv ebody))) :: l]
+  | SgExten loc ebody attrs -> [mksig loc (ocaml_psig_extension ~{item_attributes=uv_item_attributes attrs} (extension (uv ebody))) :: l]
   ]
 and module_expr =
   fun
@@ -1482,7 +1482,7 @@ and str_item s l =
       [mkstr loc
          (ocaml_pstr_attribute (attr (uv float_attr))) ::
        l]
-  | StExten loc ebody -> [mkstr loc (ocaml_pstr_extension (extension (uv ebody))) :: l]
+  | StExten loc ebody attrs -> [mkstr loc (ocaml_pstr_extension ~{item_attributes=uv_item_attributes attrs} (extension (uv ebody))) :: l]
   ]
 and class_type =
   fun

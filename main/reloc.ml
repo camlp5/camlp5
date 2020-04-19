@@ -501,9 +501,9 @@ and sig_item floc sh =
     | SgFlAtt loc a ->
         let loc = floc loc in
         SgFlAtt loc (attribute_body floc sh a)
-    | SgExten loc exten ->
+    | SgExten loc exten attrs ->
         let loc = floc loc in
-        SgExten loc (attribute_body floc sh exten)
+        SgExten loc (attribute_body floc sh exten) (attributes floc sh attrs)
     ]
 and with_constr floc sh =
   fun
@@ -632,9 +632,9 @@ and str_item floc sh =
     | StFlAtt loc a ->
         let loc = floc loc in
         StFlAtt loc (attribute_body floc sh a)
-    | StExten loc exten ->
+    | StExten loc exten attrs ->
         let loc = floc loc in
-        StExten loc (attribute_body floc sh exten)
+        StExten loc (attribute_body floc sh exten) (attributes floc sh attrs)
     ]
 and type_decl floc sh x =
   {tdIsDecl = x.tdIsDecl ;

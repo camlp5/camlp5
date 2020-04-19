@@ -672,7 +672,8 @@ EXTEND
           <:str_item< # $_str:s$ $_list:sil$ >>
       | e = expr ; attrs = item_attributes → <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
-      | e = item_extension -> <:str_item< [%% $_extension:e$ ] >>
+      | e = item_extension ; attrs = item_attributes ->
+        <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs$ >>
       ] ]
   ;
   mod_binding:
@@ -767,7 +768,8 @@ EXTEND
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →
           <:sig_item< # $_str:s$ $_list:sil$ >>
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
-      | e = item_extension -> <:sig_item< [%% $_extension:e$ ] >>
+      | e = item_extension ; attrs = item_attributes ->
+        <:sig_item< [%% $_extension:e$ ] $_itemattrs:attrs$ >>
       ] ]
   ;
   mod_decl_binding:

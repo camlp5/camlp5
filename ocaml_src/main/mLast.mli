@@ -164,7 +164,7 @@ and sig_item =
   | SgVal of loc * string * ctyp * attributes
   | SgXtr of loc * string * sig_item option
   | SgFlAtt of loc * attribute
-  | SgExten of loc * attribute
+  | SgExten of loc * attribute * attributes
 and with_constr =
     WcMod of loc * longid * module_expr
   | WcMos of loc * longid * module_expr
@@ -200,7 +200,7 @@ and str_item =
   | StVal of loc * bool * (patt * expr * attributes) list
   | StXtr of loc * string * str_item option
   | StFlAtt of loc * attribute
-  | StExten of loc * attribute
+  | StExten of loc * attribute * attributes
 and type_decl =
   { tdIsDecl : bool;
     tdNam : loc * string;

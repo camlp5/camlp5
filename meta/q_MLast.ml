@@ -548,7 +548,7 @@ EXTEND
           Qast.Node "StUse" [Qast.Loc; s; sil]
       | e = expr ; attrs = item_attributes → Qast.Node "StExp" [Qast.Loc; e; attrs]
       | attr = floating_attribute -> Qast.Node "StFlAtt" [Qast.Loc; attr]
-      | e = item_extension -> Qast.Node "StExten" [Qast.Loc; e]
+      | e = item_extension ; attrs = item_attributes -> Qast.Node "StExten" [Qast.Loc; e; attrs]
       ] ]
   ;
   mod_binding:
@@ -634,7 +634,7 @@ EXTEND
         sil = SV (LIST0 [ si = sig_item → Qast.Tuple [si; Qast.Loc] ]) →
           Qast.Node "SgUse" [Qast.Loc; s; sil]
       | attr = floating_attribute -> Qast.Node "SgFlAtt" [Qast.Loc; attr]
-      | e = item_extension -> Qast.Node "SgExten" [Qast.Loc; e]
+      | e = item_extension ; attrs = item_attributes -> Qast.Node "SgExten" [Qast.Loc; e; attrs]
       ] ]
   ;
   mod_decl_binding:

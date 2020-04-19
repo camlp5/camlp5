@@ -1851,8 +1851,8 @@ EXTEND_PRINTER
           pprintf pc ""
       | <:str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
-      | <:str_item< [%% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%%") e
+      | <:str_item< [%% $_extension:e$ ] $itemattrs:attrs$ >> ->
+          pprintf pc "%p%p" (pr_extension "%%") e (hlist (pr_attribute "@@")) attrs
       ] ]
   ;
   pr_sig_item:
@@ -1903,8 +1903,8 @@ EXTEND_PRINTER
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | <:sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (pr_attribute "@@@") attr
-      | <:sig_item< [%% $_extension:e$ ] >> ->
-          pprintf pc "%p" (pr_extension "%%") e
+      | <:sig_item< [%% $_extension:e$ ] $itemattrs:attrs$ >> ->
+          pprintf pc "%p%p" (pr_extension "%%") e (hlist (pr_attribute "@@")) attrs
       ] ]
   ;
   pr_longident:

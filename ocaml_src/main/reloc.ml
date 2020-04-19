@@ -421,8 +421,9 @@ and sig_item floc sh =
         let loc = floc loc in SgXtr (loc, x1, option_map (vala_map self) x2)
     | SgFlAtt (loc, a) ->
         let loc = floc loc in SgFlAtt (loc, attribute_body floc sh a)
-    | SgExten (loc, exten) ->
-        let loc = floc loc in SgExten (loc, attribute_body floc sh exten)
+    | SgExten (loc, exten, attrs) ->
+        let loc = floc loc in
+        SgExten (loc, attribute_body floc sh exten, attributes floc sh attrs)
   in
   self
 and with_constr floc sh =
@@ -562,8 +563,9 @@ and str_item floc sh =
         let loc = floc loc in StXtr (loc, x1, option_map (vala_map self) x2)
     | StFlAtt (loc, a) ->
         let loc = floc loc in StFlAtt (loc, attribute_body floc sh a)
-    | StExten (loc, exten) ->
-        let loc = floc loc in StExten (loc, attribute_body floc sh exten)
+    | StExten (loc, exten, attrs) ->
+        let loc = floc loc in
+        StExten (loc, attribute_body floc sh exten, attributes floc sh attrs)
   in
   self
 and type_decl floc sh x =

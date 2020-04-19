@@ -918,7 +918,8 @@ EXTEND
 
       | e = expr ; attrs = item_attributes -> <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | attr = floating_attribute -> <:str_item< [@@@ $_attribute:attr$ ] >>
-      | e = item_extension -> <:str_item< [%% $_extension:e$ ] >>
+      | e = item_extension ; attrs = item_attributes ->
+        <:str_item< [%% $_extension:e$ ] $_itemattrs:attrs$ >>
       ] ]
   ;
   first_mod_binding:
@@ -1037,7 +1038,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
           sig_item_to_inline <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
-      | e = item_extension -> <:sig_item< [%% $_extension:e$ ] >>
+      | e = item_extension ; attrs = item_attributes ->
+        <:sig_item< [%% $_extension:e$ ] $_itemattrs:attrs$ >>
       ] ]
   ;
   first_mod_decl_binding:
