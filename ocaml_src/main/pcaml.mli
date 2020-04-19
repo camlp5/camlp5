@@ -34,7 +34,7 @@ val parse_implem :
 val gram : Grammar.g;;
    (** Grammar variable of the OCaml language *)
 
-val attribute_body : (string MLast.v * MLast.payload) Grammar.Entry.e;;
+val attribute_body : MLast.attribute_body Grammar.Entry.e;;
 val interf : ((MLast.sig_item * MLast.loc) list * status) Grammar.Entry.e;;
 val implem : ((MLast.str_item * MLast.loc) list * status) Grammar.Entry.e;;
 val top_phrase : MLast.str_item option Grammar.Entry.e;;
@@ -69,7 +69,7 @@ val class_str_item : MLast.class_str_item Grammar.Entry.e;;
 val class_expr : MLast.class_expr Grammar.Entry.e;;
 val class_expr_simple : MLast.class_expr Grammar.Entry.e;;
 val class_type : MLast.class_type Grammar.Entry.e;;
-val alg_attribute : MLast.attribute_body Grammar.Entry.e;;
+val alg_attribute : MLast.attribute Grammar.Entry.e;;
 val alg_attributes : MLast.attributes Grammar.Entry.e;;
 val ext_attributes :
   (string option * MLast.attributes_no_anti) Grammar.Entry.e;;
