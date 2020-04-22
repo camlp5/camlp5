@@ -1816,7 +1816,7 @@ let text_of_extend loc gmod gl el f =
               [MLast.PaLid (loc, "aux"),
                MLast.ExFun
                  (loc,
-                  [MLast.PaLong (loc, MLast.LiUid (loc, "[]")), None,
+                  [MLast.PaLong (loc, MLast.LiUid (loc, "()")), None,
                    MLast.ExApp
                      (loc, f,
                       MLast.ExApp
@@ -1886,7 +1886,7 @@ let text_of_functorial_extend loc gmod gl el =
                 [MLast.PaLid (loc, "aux"),
                  MLast.ExFun
                    (loc,
-                    [MLast.PaLong (loc, MLast.LiUid (loc, "[]")), None, e]),
+                    [MLast.PaLong (loc, MLast.LiUid (loc, "()")), None, e]),
                  []],
                 MLast.ExApp
                   (loc, MLast.ExLid (loc, "aux"), MLast.ExUid (loc, "()")))

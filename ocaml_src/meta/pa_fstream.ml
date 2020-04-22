@@ -188,7 +188,7 @@ let cparser loc bpo pc =
 (* streams *)
 
 let slazy loc x =
-  MLast.ExFun (loc, [MLast.PaLong (loc, MLast.LiUid (loc, "[]")), None, x])
+  MLast.ExFun (loc, [MLast.PaLong (loc, MLast.LiUid (loc, "()")), None, x])
 ;;
 
 let rec cstream loc =

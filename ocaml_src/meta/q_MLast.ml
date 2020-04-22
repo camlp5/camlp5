@@ -7127,7 +7127,7 @@ Grammar.safe_extend
                  ("PaLong",
                   [Qast.Loc;
                    Qast.Node
-                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "[]")])]) :
+                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "()")])]) :
                'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
