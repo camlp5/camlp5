@@ -184,9 +184,10 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:patt< `foo >> ;|foo}
         }
-      ; { name = "prototype" ; 
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "patt-empty-list" ; 
+          expect = {foo|MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "[]"));
+|foo} ;
+          code = {foo|<:patt< [] >> ;|foo}
         }
       ; { name = "prototype" ; 
           expect = {foo||foo} ;

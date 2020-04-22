@@ -1175,7 +1175,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       | "module"; s = SV uidopt "uidopt" →
           Qast.Node "PaUnp" [Qast.Loc; s; Qast.Option None]
 
-      | → Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]] ] ]
+      | → Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]] ] ]
   ;
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt → Qast.Tuple [i; p] ] ]

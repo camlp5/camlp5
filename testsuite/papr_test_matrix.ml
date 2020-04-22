@@ -4126,14 +4126,16 @@ and u := bool;
 };];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="fun-unit-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|fun () -> 1|foo} ;
+     official_input = OK {foo|fun () -> 1|foo} ;
+     r_input = OK {foo|fun () → 1;|foo} ;
+     o_output = OK {foo|let _ = fun () -> 1;;
+|foo};
+     official_output = OK {foo|;;fun () -> 1|foo} ;
+     r_output = OK {foo|fun () → 1;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
