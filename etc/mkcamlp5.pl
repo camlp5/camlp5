@@ -78,7 +78,8 @@ EOF
 	    "-package", join(',', @packages),
 	    $verbose,
 	    "-linkall", "-linkpkg",
-	    @link, @options
+	    @link, @options,
+	    ($opt ? "odyl.cmx" : "odyl.cmo")
 	   ) ;
 }
 
