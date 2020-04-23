@@ -14,6 +14,9 @@ type choice 'a 'b =
   | Right of 'b ]
 ;
 
+value isLeft = fun [ Left _ -> True | Right _ -> False ] ;
+value isRight = fun [ Left _ -> False | Right _ -> True ] ;
+
 value option_map f x =
   match x with
   | Some x -> Some (f x)
