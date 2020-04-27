@@ -700,8 +700,8 @@ EXTEND
     ] ]
   ;
   attribute_id:
-  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
-    | s = kwd_attribute_id -> s
+  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> (loc, String.concat "." l)
+    | s = kwd_attribute_id -> (loc, s)
     ] ]
   ;
   attribute_structure:

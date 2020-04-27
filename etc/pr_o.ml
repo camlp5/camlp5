@@ -1130,17 +1130,17 @@ value pr_letlike letop pc loc rf pel e =
 EXTEND_PRINTER
   pr_attribute_body:
     [ "top"
-      [ <:attribute_body< $attrid:id$ $exp:e$ ; >> ->
+      [ <:attribute_body< $attrid:(_, id)$ $exp:e$ ; >> ->
         pprintf pc "%s%p" id (space_before expr) e
-      | <:attribute_body< $attrid:id$ $structure:st$ >> ->
+      | <:attribute_body< $attrid:(_, id)$ $structure:st$ >> ->
         pprintf pc "%s%p" id (hlist (space_before (semi_semi_after str_item))) st
-      | <:attribute_body< $attrid:id$ : $signature:si$ >> ->
+      | <:attribute_body< $attrid:(_, id)$ : $signature:si$ >> ->
         pprintf pc "%s:%p" id (hlist (space_before (semi_semi_after sig_item))) si
-      | <:attribute_body< $attrid:id$ : $type:ty$ >> ->
+      | <:attribute_body< $attrid:(_, id)$ : $type:ty$ >> ->
         pprintf pc "%s:%p" id (space_before ctyp) ty
-      | <:attribute_body< $attrid:id$ ? $patt:p$ >> ->
+      | <:attribute_body< $attrid:(_, id)$ ? $patt:p$ >> ->
         pprintf pc "%s?%p" id (space_before patt) p
-      | <:attribute_body< $attrid:id$ ? $patt:p$ when $expr:e$ >> ->
+      | <:attribute_body< $attrid:(_, id)$ ? $patt:p$ when $expr:e$ >> ->
         pprintf pc "%s?%p when %p" id (space_before patt) p expr e
       ]
     ]

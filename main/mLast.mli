@@ -284,7 +284,7 @@ and payload = [
 | TyAttr of loc and V ctyp
 | PaAttr of loc and V patt and option (V expr)
 ]
-and attribute_body = (V string * payload)
+and attribute_body = (V (loc * string) * payload)
 and attribute = V attribute_body
 and attributes_no_anti = list attribute
 and attributes = V attributes_no_anti

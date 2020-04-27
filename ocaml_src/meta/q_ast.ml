@@ -155,7 +155,13 @@ module Meta_make (C : MetaSig) =
     and conv_attributes attrs = C.vala (C.list conv_attribute_body) attrs
     and conv_extension e = conv_attribute_body e
     and conv_attribute_body b =
-      C.vala (fun (s, p) -> C.tuple [C.vala C.string s; conv_payload p]) b
+      C.vala
+        (fun (locs, p) ->
+           let locs =
+             C.vala (fun (_, s) -> C.tuple [C.loc_v (); C.string s]) locs
+           in
+           C.tuple [locs; conv_payload p])
+        b
     and conv_payload =
       function
         StAttr (_, lsi) -> C.node "StAttr" [C.vala (C.list str_item) lsi]

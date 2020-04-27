@@ -648,7 +648,8 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
            "1154dceb",
-           (fun (s : string) (loc : Ploc.t) -> (Qast.Str s : 'attribute_id)));
+           (fun (s : string) (loc : Ploc.t) ->
+              (Qast.Tuple [Qast.Loc; Qast.Str s] : 'attribute_id)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_list1sep
@@ -666,7 +667,8 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ".")) false),
            "1154dceb",
            (fun (l : 'e__1 list) (loc : Ploc.t) ->
-              (Qast.Str (String.concat "." l) : 'attribute_id)))]];
+              (Qast.Tuple [Qast.Loc; Qast.Str (String.concat "." l)] :
+               'attribute_id)))]];
     Grammar.extension
       (attribute_structure : 'attribute_structure Grammar.Entry.e) None
       [None, None,

@@ -266,7 +266,7 @@ and payload =
   | SiAttr of loc * sig_item list
   | TyAttr of loc * ctyp
   | PaAttr of loc * patt * expr option
-and attribute_body = string * payload
+and attribute_body = (loc * string) * payload
 and attribute = attribute_body
 and attributes_no_anti = attribute list
 and attributes = attributes_no_anti;;

@@ -2041,35 +2041,38 @@ and uv_item_attributes attrs = conv_attributes (uv attrs)
 and uv_alg_attributes attrs = conv_attributes (uv attrs)
 and conv_attributes x = let x = List.map uv x in let x = List.map attr x in x
 and attr (id, payload) =
+  let (idloc, id) = uv id in
+  let locid = mkloc idloc, id in
   match payload with
     StAttr (loc, st) ->
       let st = List.fold_right str_item (uv st) [] in
-      ocaml_attribute_implem (mkloc loc) (uv id) st
+      ocaml_attribute_implem (mkloc loc) locid st
   | SiAttr (loc, si) ->
       let si = List.fold_right sig_item (uv si) [] in
-      ocaml_attribute_interf (mkloc loc) (uv id) si
+      ocaml_attribute_interf (mkloc loc) locid si
   | TyAttr (loc, ty) ->
-      let ty = ctyp (uv ty) in ocaml_attribute_type (mkloc loc) (uv id) ty
+      let ty = ctyp (uv ty) in ocaml_attribute_type (mkloc loc) locid ty
   | PaAttr (loc, p, eopt) ->
       let p = patt (uv p) in
       let eopt = option_map uv eopt in
       let eopt = option_map expr eopt in
-      ocaml_attribute_patt (mkloc loc) (uv id) p eopt
-and extension (id, payload) =
+      ocaml_attribute_patt (mkloc loc) locid p eopt
+and extension (idloc, payload) =
+  let (idloc, id) = uv idloc in
   match payload with
-    StAttr (loc, st) ->
+    StAttr (_, st) ->
       let st = List.fold_right str_item (uv st) [] in
-      ocaml_extension_implem (mkloc loc) (uv id) st
-  | SiAttr (loc, si) ->
+      ocaml_extension_implem (mkloc idloc, id) st
+  | SiAttr (_, si) ->
       let si = List.fold_right sig_item (uv si) [] in
-      ocaml_extension_interf (mkloc loc) (uv id) si
-  | TyAttr (loc, ty) ->
-      let ty = ctyp (uv ty) in ocaml_extension_type (mkloc loc) (uv id) ty
-  | PaAttr (loc, p, eopt) ->
+      ocaml_extension_interf (mkloc idloc, id) si
+  | TyAttr (_, ty) ->
+      let ty = ctyp (uv ty) in ocaml_extension_type (mkloc idloc, id) ty
+  | PaAttr (_, p, eopt) ->
       let p = patt (uv p) in
       let eopt = option_map uv eopt in
       let eopt = option_map expr eopt in
-      ocaml_extension_patt (mkloc loc) (uv id) p eopt
+      ocaml_extension_patt (mkloc idloc, id) p eopt
 ;;
 
 let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;

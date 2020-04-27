@@ -222,32 +222,32 @@ value ocaml_pstr_typext _ = assert False ;
 value ocaml_pexp_letexception exdef body = assert False ;
 value ocaml_ppat_exception _ = assert False ;
 ELSE
-value ocaml_attribute_implem loc (name: string) sl =
+value ocaml_attribute_implem loc (nameloc, name) sl =
   Parsetree.({
-    attr_name = mkloc loc name ;
+    attr_name = mkloc nameloc name ;
     attr_payload = PStr sl ;
     attr_loc = loc
   })
 ;
-value ocaml_attribute_interf loc (name: string) si =
+value ocaml_attribute_interf loc (nameloc, name) si =
   Parsetree.({
-    attr_name = mkloc loc name ;
+    attr_name = mkloc nameloc name ;
     attr_payload = PSig si ;
     attr_loc = loc
   })
 ;
 
-value ocaml_attribute_type loc (name: string) ty =
+value ocaml_attribute_type loc (nameloc, name) ty =
   Parsetree.({
-    attr_name = mkloc loc name ;
+    attr_name = mkloc nameloc name ;
     attr_payload = PTyp ty ;
     attr_loc = loc
   })
 ;
 
-value ocaml_attribute_patt loc (name: string) p eopt =
+value ocaml_attribute_patt loc (nameloc, name) p eopt =
   Parsetree.({
-    attr_name = mkloc loc name ;
+    attr_name = mkloc nameloc name ;
     attr_payload = PPat p eopt ;
     attr_loc = loc
   })
@@ -350,10 +350,10 @@ value ocaml_pctf_attribute attr = Pctf_attribute attr ;
 value ocaml_pcf_attribute attr = Pcf_attribute attr ;
 
 (* extension nodes *)
-value ocaml_extension_implem loc id pay = (mkloc loc id, PStr pay) ;
-value ocaml_extension_interf loc id pay = (mkloc loc id, PSig pay) ;
-value ocaml_extension_type loc id pay = (mkloc loc id, PTyp pay) ;
-value ocaml_extension_patt loc id p eopt = (mkloc loc id, PPat p eopt) ;
+value ocaml_extension_implem (idloc, id) pay = (mkloc idloc id, PStr pay) ;
+value ocaml_extension_interf (idloc, id) pay = (mkloc idloc id, PSig pay) ;
+value ocaml_extension_type (idloc, id) pay = (mkloc idloc id, PTyp pay) ;
+value ocaml_extension_patt (idloc, id) p eopt = (mkloc idloc id, PPat p eopt) ;
 value ocaml_ptyp_extension e = Ptyp_extension e ;
 value ocaml_pexp_extension e = Pexp_extension e ;
 value ocaml_ppat_extension e = Ppat_extension e ;

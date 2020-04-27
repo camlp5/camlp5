@@ -536,8 +536,8 @@ EXTEND
     ext_attributes
     ;
   attribute_id:
-  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> String.concat "." l
-    | s = STRING -> s
+  [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> (loc, String.concat "." l)
+    | s = STRING -> (loc, s)
     ] ]
   ;
   attribute_structure:

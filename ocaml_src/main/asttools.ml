@@ -14,6 +14,17 @@ type ('a, 'b) choice =
   | Right of 'b
 ;;
 
+let isLeft =
+  function
+    Left _ -> true
+  | Right _ -> false
+;;
+let isRight =
+  function
+    Left _ -> false
+  | Right _ -> true
+;;
+
 let option_map f x =
   match x with
     Some x -> Some (f x)

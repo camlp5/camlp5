@@ -154,14 +154,14 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
         }
       ; { name = "attribute-1" ; 
           expect = {foo|MLast.ExExten loc
-  (Ploc.VaVal (Ploc.VaVal "a", MLast.StAttr loc (Ploc.VaVal [])));
+  (Ploc.VaVal (Ploc.VaVal (loc, "a"), MLast.StAttr loc (Ploc.VaVal [])));
 |foo} ;
           code = {foo| <:expr< [%a] >> ; |foo}
         }
       ; { name = "attribute-2" ; 
           expect = {foo|MLast.ExExten loc
   (Ploc.VaVal
-     (Ploc.VaVal "a",
+     (Ploc.VaVal (loc, "a"),
       MLast.StAttr loc
         (Ploc.VaVal
            [MLast.StExp loc (MLast.ExLid loc (Ploc.VaVal "b"))

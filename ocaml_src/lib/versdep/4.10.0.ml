@@ -118,21 +118,22 @@ let ocaml_mkpat loc x =
   {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
 ;;
 
-let ocaml_attribute_implem loc (name : string) sl =
+let ocaml_attribute_implem loc (nameloc, name) sl =
   Parsetree.
-  {attr_name = mkloc loc name; attr_payload = PStr sl; attr_loc = loc}
+  {attr_name = mkloc nameloc name; attr_payload = PStr sl; attr_loc = loc}
 ;;
-let ocaml_attribute_interf loc (name : string) si =
+let ocaml_attribute_interf loc (nameloc, name) si =
   Parsetree.
-  {attr_name = mkloc loc name; attr_payload = PSig si; attr_loc = loc}
+  {attr_name = mkloc nameloc name; attr_payload = PSig si; attr_loc = loc}
 ;;
-let ocaml_attribute_type loc (name : string) ty =
+let ocaml_attribute_type loc (nameloc, name) ty =
   Parsetree.
-  {attr_name = mkloc loc name; attr_payload = PTyp ty; attr_loc = loc}
+  {attr_name = mkloc nameloc name; attr_payload = PTyp ty; attr_loc = loc}
 ;;
-let ocaml_attribute_patt loc (name : string) p eopt =
+let ocaml_attribute_patt loc (nameloc, name) p eopt =
   Parsetree.
-  {attr_name = mkloc loc name; attr_payload = PPat (p, eopt); attr_loc = loc}
+  {attr_name = mkloc nameloc name; attr_payload = PPat (p, eopt);
+   attr_loc = loc}
 ;;
 let ocaml_expr_addattr attr
     {pexp_desc = pexp_desc; pexp_loc = pexp_loc;
@@ -183,10 +184,10 @@ let ocaml_psig_attribute attr = Psig_attribute attr;;
 let ocaml_pstr_attribute attr = Pstr_attribute attr;;
 let ocaml_pctf_attribute attr = Pctf_attribute attr;;
 let ocaml_pcf_attribute attr = Pcf_attribute attr;;
-let ocaml_extension_implem loc id pay = mkloc loc id, PStr pay;;
-let ocaml_extension_interf loc id pay = mkloc loc id, PSig pay;;
-let ocaml_extension_type loc id pay = mkloc loc id, PTyp pay;;
-let ocaml_extension_patt loc id p eopt = mkloc loc id, PPat (p, eopt);;
+let ocaml_extension_implem (idloc, id) pay = mkloc idloc id, PStr pay;;
+let ocaml_extension_interf (idloc, id) pay = mkloc idloc id, PSig pay;;
+let ocaml_extension_type (idloc, id) pay = mkloc idloc id, PTyp pay;;
+let ocaml_extension_patt (idloc, id) p eopt = mkloc idloc id, PPat (p, eopt);;
 let ocaml_ptyp_extension e = Ptyp_extension e;;
 let ocaml_pexp_extension e = Pexp_extension e;;
 let ocaml_ppat_extension e = Ppat_extension e;;
