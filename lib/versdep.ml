@@ -583,14 +583,19 @@ value ocaml_pconst_float s =
   ELSE Pconst_float s None END
 ;
 
-value ocaml_const_string s =
+value ocaml_const_string s loc =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
-  ELSE Const_string s None END
+  ELSIFDEF OCAML_VERSION < OCAML_4_11_0 THEN
+    Const_string s None
+  ELSE
+    Const_string s loc None
+  END
 ;
-value ocaml_pconst_string s so =
+value ocaml_pconst_string s loc so =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Const_string s
   ELSIFDEF OCAML_VERSION < OCAML_4_03_0 THEN Const_string s so
-  ELSE Pconst_string s so END
+  ELSIFDEF OCAML_VERSION < OCAML_4_11_0 THEN Pconst_string s so
+  ELSE Pconst_string s loc so END
 ;
 
 value pconst_of_const =
@@ -617,7 +622,11 @@ value pconst_of_const =
     fun
     [ Const_int i -> ocaml_pconst_int i
     | Const_char c -> ocaml_pconst_char c
-    | Const_string s so -> ocaml_pconst_string s so
+    | IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
+        Const_string s so -> ocaml_pconst_string s so
+      ELSE
+        Const_string s loc so -> ocaml_pconst_string s loc so
+      END
     | Const_float s -> ocaml_pconst_float s
     | Const_int32 i32 -> Pconst_integer (Int32.to_string i32) (Some 'l')
     | Const_int64 i64 -> Pconst_integer (Int64.to_string i64) (Some 'L')
