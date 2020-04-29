@@ -146,8 +146,8 @@ let ocaml_pconst_char c = Const_char c;;
 let ocaml_pconst_int i = Const_int i;;
 let ocaml_pconst_float s = Const_float s;;
 
-let ocaml_const_string s = Const_string s;;
-let ocaml_pconst_string s so = Const_string s;;
+let ocaml_const_string s loc = Const_string s;;
+let ocaml_pconst_string s loc so = Const_string s;;
 
 let pconst_of_const =
   function

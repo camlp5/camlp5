@@ -629,7 +629,8 @@ let rec patt =
   | PaStr (loc, s) ->
       mkpat loc
         (Ppat_constant
-           (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None))
+           (ocaml_pconst_string (string_of_string_token loc (uv s))
+              (mkloc loc) None))
   | PaTup (loc, pl) -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc (loc, p, t) -> mkpat loc (Ppat_constraint (patt p, ctyp t))
   | PaTyp (loc, sl) ->
@@ -1225,7 +1226,8 @@ let rec expr =
   | ExStr (loc, s) ->
       mkexp loc
         (Pexp_constant
-           (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None))
+           (ocaml_pconst_string (string_of_string_token loc (uv s))
+              (mkloc loc) None))
   | ExTry (loc, e, pel) ->
       mkexp loc (Pexp_try (expr e, List.map mkpwe (uv pel)))
   | ExTup (loc, el) -> mkexp loc (Pexp_tuple (List.map expr (uv el)))

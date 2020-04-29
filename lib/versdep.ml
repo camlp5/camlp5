@@ -610,9 +610,9 @@ value pconst_of_const =
     [ Const_int i -> ocaml_pconst_int i
     | Const_char c -> ocaml_pconst_char c
     | IFDEF OCAML_VERSION < OCAML_4_02 THEN
-        Const_string s -> ocaml_pconst_string s None
+        Const_string s -> ocaml_pconst_string s loc_none None
       ELSE
-        Const_string s so -> ocaml_pconst_string s so
+        Const_string s so -> ocaml_pconst_string s loc_none so
       END
     | Const_float s -> ocaml_pconst_float s
     | Const_int32 i32 -> Const_int32 i32
@@ -623,7 +623,7 @@ value pconst_of_const =
     [ Const_int i -> ocaml_pconst_int i
     | Const_char c -> ocaml_pconst_char c
     | IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
-        Const_string s so -> ocaml_pconst_string s so
+        Const_string s so -> ocaml_pconst_string s loc_none so
       ELSE
         Const_string s loc so -> ocaml_pconst_string s loc so
       END
