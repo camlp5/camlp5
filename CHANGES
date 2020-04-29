@@ -1,3 +1,11 @@
+Camlp5 Version 7.12:
+--------------------
+
+* [29 Apr 20] upgrade to minimal support for Ocaml 4.11.0
+  (specifically 4.11.0+dev2-2020-04-22).  This does not provide
+  support for any new stuff in 4.11.0; indeed, stuff may break.  This
+  is just minimal "build and bootstrap" support.
+
 Camlp5 Version 7.11:
 --------------------
 
