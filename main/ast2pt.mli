@@ -15,3 +15,6 @@ value mkloc : Ploc.t -> Location.t;
    (** Convert a Camlp5 location into an OCaml location. *)
 value fast : ref bool;
    (** Flag to generate fast (unsafe) access to arrays. Default: False. *)
+value ctyp : MLast.ctyp -> Parsetree.core_type ;
+value expr : MLast.expr -> Parsetree.expression ;
+value patt : MLast.patt -> Parsetree.pattern ;
