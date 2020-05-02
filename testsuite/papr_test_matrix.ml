@@ -4137,6 +4137,69 @@ and u := bool;
      r_output = OK {foo|fun () → 1;
 |foo}
     };
+    {name="module-expr-include"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module Foo = struct include Bar end|foo} ;
+     official_input = OK {foo|module Foo = struct include Bar end|foo} ;
+     r_input = OK {foo|module Foo = struct include Bar; end;|foo} ;
+     o_output = OK {foo|module Foo = struct include Bar end;;
+|foo};
+     official_output = OK {foo|module Foo = struct include Bar end|foo} ;
+     r_output = OK {foo|module Foo = struct include Bar; end;
+|foo}
+    };
+    {name="printing-1"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK {foo|let (f : t) = fun x -> b|foo} ;
+     official_input = OK {foo|let (f : t) = fun x -> b|foo} ;
+     r_input = OK {foo|value (f : t) = fun x -> b;|foo} ;
+     o_output = OK {foo|let (f : t) = fun x -> b;;
+|foo};
+     official_output = OK {foo|let (f : t) = fun x -> b|foo} ;
+     r_output = OK {foo|value f : t = fun x → b;
+|foo}
+    };
+    {(skip) with name="printing-1-[or]2official";
+     o_input = OK {foo|let (f : t) = fun x -> b|foo} ;
+     r_input = OK {foo|value (f : t) = fun x -> b;|foo} ;
+     official_output = OK {foo|let f : t = fun x -> b|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;

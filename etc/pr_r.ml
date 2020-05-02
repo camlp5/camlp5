@@ -390,6 +390,12 @@ value is_polytype_constraint = fun [
 ]
 ;
 
+value is_type_constraint = fun [
+  <:patt< ( $_$ : $_$ ) >> -> True
+| _ -> False
+]
+;
+
 
 pr_expr_fun_args.val :=
   extfun Extfun.empty with
@@ -515,7 +521,7 @@ value value_or_let_binding sequence_box pc (p, e, attrs) =
       let (up, ue) = un_irrefut_patt p in
       (up, <:expr< match $e$ with [ $p$ -> $ue$ ] >>)
   in
-  let (pl, e) = if is_polytype_constraint p then ([], e)
+  let (pl, e) = if is_type_constraint p then ([], e)
     else expr_fun_args e in
   let (p, tyo) =
     match p with
