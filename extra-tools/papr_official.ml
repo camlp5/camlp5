@@ -9,23 +9,6 @@ value rec sep_last = fun [
   ]
 ;
 
-value invoked_with ?{flag} cmdna =
-  let variant_names = [cmdna; cmdna^".byte"; cmdna^".native"; cmdna^".opt"] in
-
-  let argv = Array.to_list Sys.argv in
-  let path = Str.(split (regexp "/") (List.hd argv)) in
-  let (fname, _) = sep_last path in
-
-  List.exists ((=) fname) variant_names &&
-  match flag with [
-    None -> True
-  | Some flag ->
-    let flag' = "-"^flag in
-    let flag'' = "--"^flag in
-    List.exists ((=) flag') (List.tl argv) ||
-      List.exists ((=) flag'') (List.tl argv) ]
-;
-
 value input_magic ic magic = do {
   let maglen = String.length magic in
   let b = Bytes.create maglen in
@@ -94,11 +77,7 @@ value papr_official () = do {
   }
 ;
 
-value _ =
-if invoked_with "papr_official" then
-  papr_official ()
-else ()
-;
+papr_official () ;
 
 (*
 ;;; Local Variables: ***
