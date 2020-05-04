@@ -902,7 +902,7 @@ EXTEND
           let si = match l with
           [ [(p, e, attrs)] ->
               match p with
-              [ <:patt< _ >> -> <:str_item< $exp:e$ >> (* TODO FIX THIS CHET *)
+              [ <:patt< _ >> -> <:str_item< $exp:e$ $_itemattrs:attrs$ >> (* TODO FIX THIS CHET *)
               | _ -> <:str_item< value $_flag:r$ $list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $list:l$ >> ] in
           str_item_to_inline si ext
