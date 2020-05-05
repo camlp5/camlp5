@@ -39,22 +39,33 @@ value output_magic oc magic =
   output_string oc magic
 ;
 
-value output_interf oc (pt : Parsetree.signature) = do {
+value output_interf fname oc (pt : Parsetree.signature) = do {
   output_string oc Config.ast_intf_magic_number;
-  output_value oc "";
+  output_value oc fname;
   output_value oc pt;
   flush oc;
 };
 
-value output_implem oc (pt : Parsetree.structure) = do {
+value output_implem fname oc (pt : Parsetree.structure) = do {
   output_string oc Config.ast_impl_magic_number;
-  output_value oc "";
+  output_value oc fname;
   output_value oc pt;
   flush oc;
 };
 
-value parse_interf ic = ic |> Lexing.from_channel |> Parse.interface ;
-value parse_implem ic = ic |> Lexing.from_channel |> Parse.implementation ;
+value parse_interf fname ic = do {
+  let lb = Lexing.from_channel ic in
+  Location.init lb fname ;
+  Parse.interface lb
+}
+;
+
+value parse_implem fname ic = do {
+  let lb = Lexing.from_channel ic in
+  Location.init lb fname ;
+  Parse.implementation lb
+}
+;
 
 value print_interf oc v = do {
   let ofmt = Format.formatter_of_out_channel oc in
@@ -90,12 +101,12 @@ value papr_official () = do {
       (fun s -> files.val := [ s :: files.val ])
       "papr_official: usage") ;
       let open_or opener ifminus = fun [
-        "-" -> ifminus | f -> opener f
+        "-" -> (ifminus, "") | f -> (opener f, f)
       ] in
-      let (ic, oc) = match List.rev files.val with [
-        [] -> (stdin, stdout)
+      let ((ic, ifile), (oc, _)) = match List.rev files.val with [
+        [] -> ((stdin, ""), (stdout, ""))
       | [ifile] -> do {
-        (open_or open_in stdin ifile, stdout)
+        (open_or open_in stdin ifile, (stdout, ""))
       }
       | [ifile; ofile] -> do {
         (open_or open_in stdin ifile,
@@ -105,22 +116,22 @@ value papr_official () = do {
       ] in
     match (filetype.val, binary_input.val, binary_output.val) with [
       (Some "-impl", True, True) ->
-      passthru input_implem output_implem ic oc
+      failwith "cannot have both binary input and output"
     | (Some "-impl", True, False) ->
       passthru input_implem print_implem ic oc
     | (Some "-impl", False, True) ->
-      passthru parse_implem output_implem ic oc
+      passthru (parse_implem ifile) (output_implem file) ic oc
     | (Some "-impl", False, False) ->
-      passthru parse_implem print_implem ic oc
+      passthru (parse_implem ifile) print_implem ic oc
 
     | (Some "-intf", True, True) ->
-      passthru input_interf output_interf ic oc
+      failwith "cannot have both binary input and output"
     | (Some "-intf", True, False) ->
       passthru input_interf print_interf ic oc
     | (Some "-intf", False, True) ->
-      passthru parse_interf output_interf ic oc
+      passthru (parse_interf ifile) (output_interf ifile) ic oc
     | (Some "-intf", False, False) ->
-      passthru parse_interf print_interf ic oc
+      passthru (parse_interf ifile) print_interf ic oc
 
     | _ -> failwith "unrecognized filetype"
     ] ;
