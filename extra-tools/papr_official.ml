@@ -13,35 +13,77 @@ value input_magic ic magic = do {
   let maglen = String.length magic in
   let b = Bytes.create maglen in
   really_input ic b 0 maglen ;
-  let s = Bytes.to_string b in
-  magic = s
+  Bytes.to_string b
 }
 ;
 
 value input_implem ic = do {
-  assert (input_magic ic Config.ast_impl_magic_number) ;
-  let _ = input_value ic in
-  (input_value ic : Parsetree.structure)
+  if Config.ast_impl_magic_number <> input_magic ic Config.ast_impl_magic_number then
+    failwith "input_implem: bad magic number"
+  else
+    let _ = input_value ic in
+    (input_value ic : Parsetree.structure)
 }
 ;
 
 value input_interf ic = do {
-  assert (input_magic ic Config.ast_intf_magic_number) ;
-  let _ = input_value ic in
-  (input_value ic : Parsetree.signature)
+  if Config.ast_intf_magic_number <> input_magic ic Config.ast_intf_magic_number then
+    failwith "input_interf: bad magic number"
+  else
+    let _ = input_value ic in
+    (input_value ic : Parsetree.signature)
 }
 ;
 
+value output_magic oc magic =
+  output_string oc magic
+;
+
+value output_interf oc (pt : Parsetree.signature) = do {
+  output_string oc Config.ast_intf_magic_number;
+  output_value oc "";
+  output_value oc pt;
+  flush oc;
+};
+
+value output_implem oc (pt : Parsetree.structure) = do {
+  output_string oc Config.ast_impl_magic_number;
+  output_value oc "";
+  output_value oc pt;
+  flush oc;
+};
+
+value parse_interf ic = ic |> Lexing.from_channel |> Parse.interface ;
+value parse_implem ic = ic |> Lexing.from_channel |> Parse.implementation ;
+
+value print_interf oc v = do {
+  let ofmt = Format.formatter_of_out_channel oc in
+  Pprintast.signature ofmt v ;
+  Format.pp_print_flush ofmt ()
+};
+
+value print_implem oc v = do {
+  let ofmt = Format.formatter_of_out_channel oc in
+  Pprintast.structure ofmt v ;
+  Format.pp_print_flush ofmt ()
+};
+
 value binary_input = ref False ;
+value binary_output = ref False ;
 value files = ref [] ;
 value filetype = ref None ;
 
 value set_impl s = filetype.val := Some "-impl" ;
 value set_intf s = filetype.val := Some "-intf" ;
 
+value passthru paf prf ic oc =
+  ic |> paf |> prf oc
+;
+
 value papr_official () = do {
     Arg.(parse [
              ("-binary-input",Set binary_input," binary input");
+             ("-binary-output",Set binary_output," binary output");
              ("-impl", Unit set_impl , " implementation");
              ("-intf", Unit set_intf , " interface")
       ]
@@ -52,26 +94,36 @@ value papr_official () = do {
       ] in
       let (ic, oc) = match List.rev files.val with [
         [] -> (stdin, stdout)
-      | [ifile] -> (open_or open_in stdin ifile,
-                    stdout)
-      | [ifile; ofile] -> (open_or open_in stdin ifile,
-                           open_or open_out stdout ofile)
+      | [ifile] -> do {
+        (open_or open_in stdin ifile, stdout)
+      }
+      | [ifile; ofile] -> do {
+        (open_or open_in stdin ifile,
+         open_or open_out stdout ofile)
+      }
       | _ -> failwith "too many filenames provided"
       ] in
-    let ofmt = Format.formatter_of_out_channel oc in
-      match (filetype.val, binary_input.val) with [
-        (None,_) -> failwith "must specify filetype (-impl or -intf)"
-      | (Some "-impl", False) ->
-        ic |> Lexing.from_channel |> Parse.implementation |> Pprintast.structure ofmt
-      | (Some "-impl", True) ->
-        ic |> input_implem |> Pprintast.structure ofmt
-      | (Some "-intf", False) ->
-        ic |> Lexing.from_channel |> Parse.interface |> Pprintast.signature ofmt
-      | (Some "-intf", True) ->
-        ic |> input_interf |> Pprintast.signature ofmt
-      | _ -> failwith "unrecognized filetype"
-      ] ;
-      Format.pp_print_flush ofmt () ;
+    match (filetype.val, binary_input.val, binary_output.val) with [
+      (Some "-impl", True, True) ->
+      passthru input_implem output_implem ic oc
+    | (Some "-impl", True, False) ->
+      passthru input_implem print_implem ic oc
+    | (Some "-impl", False, True) ->
+      passthru parse_implem output_implem ic oc
+    | (Some "-impl", False, False) ->
+      passthru parse_implem print_implem ic oc
+
+    | (Some "-intf", True, True) ->
+      passthru input_interf output_interf ic oc
+    | (Some "-intf", True, False) ->
+      passthru input_interf print_interf ic oc
+    | (Some "-intf", False, True) ->
+      passthru parse_interf output_interf ic oc
+    | (Some "-intf", False, False) ->
+      passthru parse_interf print_interf ic oc
+
+    | _ -> failwith "unrecognized filetype"
+    ] ;
     close_out oc ;
     close_in ic
   }
