@@ -1193,7 +1193,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
     [ [ n = SV longident_lident "lilongid"; tpl = SV (LIST0 type_parameter); "+=";
-        pf = SV (FLAG "private") "priv"; ecs = SV (LIST1 extension_constructor SEP "|") ;
+        pf = SV (FLAG "private") "priv"; "[" ; ecs = SV (LIST1 extension_constructor SEP "|") ; "]" ;
         attrs = item_attributes →
           Qast.Record
             [("teNam", n); ("tePrm", tpl); ("tePrv", pf);

@@ -189,9 +189,17 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:patt< [] >> ;|foo}
         }
-      ; { name = "prototype" ; 
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "type-extension" ; 
+          expect = {foo|MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal (None, Ploc.VaVal "t");
+   MLast.tePrm = Ploc.VaVal []; MLast.tePrv = Ploc.VaVal False;
+   MLast.teECs =
+     Ploc.VaVal
+       [MLast.EcTuple
+          (loc, Ploc.VaVal "A", Ploc.VaVal [], None, Ploc.VaVal [])];
+   MLast.teAttributes = Ploc.VaVal []};
+|foo} ;
+          code = {foo|<:str_item< type t += [ A ] >> ;|foo}
         }
       ; { name = "prototype" ; 
           expect = {foo||foo} ;

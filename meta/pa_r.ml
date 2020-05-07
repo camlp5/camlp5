@@ -662,7 +662,7 @@ EXTEND
             <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
           }
       | "type" ; check_type_extension ; te = type_extension →
-          <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
+          <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; ext = ext_opt; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
           str_item_to_inline loc <:str_item< value $_flag:r$ $_list:l$ >> ext
 
@@ -758,7 +758,7 @@ EXTEND
             <:sig_item< type $_flag:nrfl$ $_list:tdl$ >>
           }
       | "type" ; check_type_extension ; te = type_extension →
-          <:sig_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ $_list:te.MLast.teECs$ $_itemattrs:te.MLast.teAttributes$ >>
+          <:sig_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
       | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes →
