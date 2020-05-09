@@ -99,8 +99,8 @@ value with_input_file fname f arg =
 
 module PAPR = struct
 module Implem = struct
-value pa strm = let (ast, _) = with_input_file "-" Pcaml.parse_implem.val strm in ast ;
-value pa1 s = let ast = pa (Stream.of_string s) in ast ;
+value pa ?{input_file="-"} strm = let (ast, _) = with_input_file input_file Pcaml.parse_implem.val strm in ast ;
+value pa1 ?{input_file="-"} s = let ast = pa ~{input_file=input_file} (Stream.of_string s) in ast ;
 value pa_all s =
   let strm = Stream.of_string s in
   let rec pall = parser [
@@ -125,8 +125,8 @@ value pr l = do {
 end;
 
 module Interf = struct
-value pa strm = let (ast, _) = Pcaml.parse_interf.val strm in ast ;
-value pa1 s = let ast = pa (Stream.of_string s) in ast ;
+value pa ?{input_file="-"} strm = let (ast, _) = with_input_file input_file Pcaml.parse_interf.val strm in ast ;
+value pa1 ?{input_file="-"} s = let ast = pa ~{input_file=input_file} (Stream.of_string s) in ast ;
 value pa_all s =
   let strm = Stream.of_string s in
   let rec pall = parser [
@@ -149,8 +149,8 @@ value pr l = do {
 }
 ;
 end;
-value both_pa1 = (Implem.pa1, Interf.pa1) ;
-value both_pr = (Implem.pr, Interf.pr) ;
+value both_pa1 = ((fun x -> Implem.pa1 x), (fun x -> Interf.pa1 x)) ;
+value both_pr = ((fun x -> Implem.pr x), (fun x -> Interf.pr x)) ;
 end;
 
 module Official = struct
