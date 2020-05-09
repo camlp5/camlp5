@@ -2422,7 +2422,12 @@ EXTEND_PRINTER
       | <:ctyp< # $lilongid:lili$ >> ->
           pprintf pc "#%p" longident_lident lili
       | <:ctyp:< [ = $list:pvl$ ] >> ->
-          variant_decl_list "" loc pc pvl []
+          let prefix = match pvl with [
+            [] -> ""
+          | [ <:poly_variant< $_$ >> :: _ ] -> " |"
+          | _ -> ""
+          ] in
+          variant_decl_list prefix loc pc pvl []
       | <:ctyp:< [ > $list:pvl$ ] >> ->
           variant_decl_list ">" loc pc pvl []
       | <:ctyp:< [ < $list:pvl$ ] >> ->

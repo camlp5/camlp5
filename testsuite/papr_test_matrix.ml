@@ -4164,23 +4164,16 @@ and u := bool;
      r_input = OK {foo|value (f : t) = fun x -> b;|foo} ;
      official_output = OK {foo|let f : t = fun x -> b|foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="variant-type-4"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
-    };
-    {name="test-prototype"; implem = True ;
-     exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type t = [ | u ]|foo} ;
+     official_input = OK {foo|type t = [ | u ]|foo} ;
+     r_input = OK {foo|type t = [ = u ];|foo} ;
+     o_output = OK {foo|type t = [ | u ];;
+|foo};
+     official_output = SKIP "" "" ;
+     r_output = OK {foo|type t = [ = u ];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
