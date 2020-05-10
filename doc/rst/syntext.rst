@@ -1,3 +1,6 @@
+Extensions of syntax
+====================
+
 .. container::
    :name: menu
 
@@ -299,5 +302,3 @@
    printing <opretty.html>`__.
 
    .. container:: trailer
-
-

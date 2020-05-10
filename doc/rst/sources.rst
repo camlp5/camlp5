@@ -1,3 +1,6 @@
+Camlp5 sources
+==============
+
 .. container::
    :name: menu
 
@@ -345,7 +348,7 @@
       ::
 
                PaLaz of loc and patt
-             
+
 
    -  Try to compile (do 'make' in the main directory). You are going to
       have some errors in files telling you that nodes are missing in
@@ -608,5 +611,3 @@
    (see above) rebuilts it.
 
    .. container:: trailer
-
-

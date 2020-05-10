@@ -1,3 +1,6 @@
+Stream parsers
+==============
+
 .. container::
    :name: menu
 
@@ -690,5 +693,3 @@
    same advantages and drawbacks than the functional parsers.
 
    .. container:: trailer
-
-

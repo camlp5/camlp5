@@ -1,3 +1,6 @@
+Commands and Files
+==================
+
 .. container::
    :name: menu
 
@@ -347,5 +350,3 @@
    *not* included.
 
    .. container:: trailer
-
-

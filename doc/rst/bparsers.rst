@@ -1,3 +1,6 @@
+Backtracking parsers
+====================
+
 .. container::
    :name: menu
 
@@ -175,5 +178,3 @@
          ["C"; "C"; "A"]; ["C"; "C"; "B"]; ["C"; "C"; "C"]]
 
    .. container:: trailer
-
-

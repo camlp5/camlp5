@@ -1,3 +1,7 @@
+Macros
+======
+
+
 .. container::
    :name: menu
 
@@ -266,5 +270,3 @@
         camlp5r pa_macro.cmo -defined
 
    .. container:: trailer
-
-

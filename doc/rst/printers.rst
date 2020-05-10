@@ -1,3 +1,6 @@
+Extensible printers
+===================
+
 .. container::
    :name: menu
 
@@ -289,5 +292,3 @@
    See the chapter entitled "`Printing programs <opretty.html>`__".
 
    .. container:: trailer
-
-

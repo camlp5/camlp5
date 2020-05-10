@@ -1,3 +1,6 @@
+Extensions of printing
+======================
+
 .. container::
    :name: menu
 
@@ -485,5 +488,3 @@
         until x.val > 70;
 
    .. container:: trailer
-
-

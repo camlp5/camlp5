@@ -1,3 +1,6 @@
+Directives
+==========
+
 .. container::
    :name: menu
 
@@ -146,5 +149,3 @@
    "add_directive" of the module `Pcaml <pcaml.html>`__.
 
    .. container:: trailer
-
-

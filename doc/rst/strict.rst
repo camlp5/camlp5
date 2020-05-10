@@ -1,3 +1,6 @@
+Transitional and Strict modes
+=============================
+
 .. container::
    :name: menu
 
@@ -81,5 +84,3 @@
    compiled in transitional mode.
 
    .. container:: trailer
-
-

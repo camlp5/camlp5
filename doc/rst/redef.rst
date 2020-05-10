@@ -1,3 +1,6 @@
+Redefining OCaml syntax
+=======================
+
 .. container::
    :name: menu
 
@@ -109,5 +112,3 @@
    system.
 
    .. container:: trailer
-
-

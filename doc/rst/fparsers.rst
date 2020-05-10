@@ -1,3 +1,6 @@
+Functional parsers
+==================
+
 .. container::
    :name: menu
 
@@ -142,5 +145,3 @@
    stream in this case, if possible.
 
    .. container:: trailer
-
-

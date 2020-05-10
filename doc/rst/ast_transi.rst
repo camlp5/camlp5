@@ -1,3 +1,6 @@
+Syntax tree - transitional mode
+===============================
+
 .. container::
    :name: menu
 
@@ -721,5 +724,3 @@
    ===========
 
    .. container:: trailer
-
-

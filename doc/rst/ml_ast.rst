@@ -1,3 +1,6 @@
+Syntax tree
+===========
+
 .. container::
    :name: menu
 
@@ -115,5 +118,3 @@
    mode <ast_strict.html>`__.
 
    .. container:: trailer
-
-

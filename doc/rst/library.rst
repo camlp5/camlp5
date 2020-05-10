@@ -1,3 +1,6 @@
+Library
+=======
+
 .. container::
    :name: menu
 
@@ -1148,5 +1151,3 @@
    "``Stdpp``" and "``Token``" will disappear from Camlp5.
 
    .. container:: trailer
-
-

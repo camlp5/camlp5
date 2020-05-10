@@ -1,3 +1,7 @@
+
+Syntax tree - strict mode
+=========================
+
 .. container::
    :name: menu
 
@@ -2274,5 +2278,3 @@
    The field "``ciExp``" is the class definition, depending of its kind.
 
    .. container:: trailer
-
-

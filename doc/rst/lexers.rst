@@ -1,3 +1,6 @@
+Stream lexers
+=============
+
 .. container::
    :name: menu
 
@@ -317,5 +320,3 @@
         camlp5r pa_lexer.cmo pr_r.cmo pr_rp.cmo bar.ml
 
    .. container:: trailer
-
-

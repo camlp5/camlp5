@@ -1,3 +1,6 @@
+Extensible functions
+====================
+
 .. container::
    :name: menu
 
@@ -84,5 +87,3 @@
       internal syntax tree, the new one is inserted before the old one.
 
    .. container:: trailer
-
-

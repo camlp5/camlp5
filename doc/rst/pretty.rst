@@ -1,3 +1,6 @@
+Pretty print
+============
+
 .. container::
    :name: menu
 
@@ -252,5 +255,3 @@
    is corrected.
 
    .. container:: trailer
-
-
