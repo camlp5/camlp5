@@ -19,7 +19,7 @@ type glexer 'te = Plexing.lexer 'te ==
     tok_comm : mutable option (list Ploc.t) }
 ;
 
-type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function)
+type lexer_func 'te = Stream.t char -> (Stream.t 'te * Plexing.Locations.t)
 and location_function = int -> Ploc.t;
 
 value lexer_text : pattern -> string;
@@ -34,7 +34,7 @@ value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
    (** Use now [Plexing.lexer_func_of_ocamllex] *)
 
 value make_stream_and_location :
-  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * location_function);
+  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * Plexing.Locations.t);
    (** Use now [Plexing.make_stream_and_location] *)
 
 value eval_char : string -> char;

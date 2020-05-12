@@ -1975,7 +1975,8 @@ value fstream_of_stream ts =
 ;
 
 value parsable g cs =
-  let (ts, lf) = g.glexer.Plexing.tok_func cs in
+  let (ts, loct) = g.glexer.Plexing.tok_func cs in
+  let lf = Plexing.Locations.lookup loct in
   let fts = fstream_of_stream ts in
   {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts; pa_loc_func = lf}
 ;
@@ -2540,7 +2541,8 @@ module GMake (L : GLexerType) =
     type parsable = gen_parsable te;
     value gram = gcreate L.lexer;
     value parsable cs =
-      let (ts, lf) = L.lexer.Plexing.tok_func cs in
+      let (ts, loct) = L.lexer.Plexing.tok_func cs in
+      let lf = Plexing.Locations.lookup loct in
       let fts = fstream_of_stream ts in
       {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts;
        pa_loc_func = lf}

@@ -25,9 +25,9 @@ value lex_string gram s =
   list_of_stream_eof ("EOI","") strm
 ;
 
-value lex_string_loc s =
-  let lexer = Plexer.gmake() in
-  let (strm, locfun) = lexer.Plexing.tok_func (Stream.of_string s) in
+value lex_string_loc gram s =
+  let lexer = Grammar.glexer gram in
+  let (strm, loct) = lexer.Plexing.tok_func (Stream.of_string s) in
   let rec tolist acc i =
     match Stream.peek strm with [
       None -> List.rev acc
@@ -37,7 +37,7 @@ value lex_string_loc s =
     }
     | Some p -> do {
         Stream.junk strm ;
-        let loc = locfun i in
+        let loc = Plexing.Locations.lookup loct i in
         let comm = Ploc.comment loc in
         tolist [(comm, p) :: acc] (i+1)
       }

@@ -22,6 +22,16 @@ type pattern = string * string;;
 exception Error of string;;
     (** A lexing error exception to be used by lexers. *)
 
+(** location array, used by lexer to find locations based on token-index *)
+module Locations :
+  sig
+    type t = { locations : Ploc.t option array ref; overflow : bool ref };;
+    val create : unit -> t;;
+    val lookup : t -> int -> Ploc.t;;
+    val add : t -> int -> Ploc.t -> unit;;
+  end
+;;
+
 (** Lexer type *)
 
 type 'te lexer =
@@ -31,7 +41,7 @@ type 'te lexer =
     mutable tok_match : pattern -> 'te -> string;
     tok_text : pattern -> string;
     mutable tok_comm : Ploc.t list option }
-and 'te lexer_func = char Stream.t -> 'te Stream.t * location_function
+and 'te lexer_func = char Stream.t -> 'te Stream.t * Locations.t
 and location_function = int -> Ploc.t;;
   (** The type of a function giving the location of a token in the
       source from the token number in the stream (starting from zero). *)
@@ -73,7 +83,7 @@ val lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> 'te lexer_func;;
 (** Function to build a stream and a location function *)
 
 val make_stream_and_location :
-  (unit -> 'te * Ploc.t) -> 'te Stream.t * location_function;;
+  (unit -> 'te * Ploc.t) -> 'te Stream.t * Locations.t;;
    (** General function *)
 
 (** Useful functions and values *)

@@ -22,6 +22,17 @@ type pattern = (string * string);
 exception Error of string;
     (** A lexing error exception to be used by lexers. *)
 
+(** location array, used by lexer to find locations based on token-index *)
+module Locations : sig
+  type t = { locations : ref (array (option Ploc.t)) ; overflow : ref bool } ;
+  value create : unit -> t ;
+
+  (** Gives the location of a token in the
+      source from the token number in the stream (starting from zero). *)
+  value lookup : t -> int -> Ploc.t ;
+  value add : t -> int -> Ploc.t -> unit ;
+end ;
+
 (** Lexer type *)
 
 type lexer 'te =
@@ -60,7 +71,7 @@ type lexer 'te =
        put the locations of the comments, if its initial value is not
        [None]. If it is [None], nothing has to be done by the lexer. *)
 
-and lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function)
+and lexer_func 'te = Stream.t char -> (Stream.t 'te * Locations.t)
   (** The type of a lexer function (field [tok_func] of the type
       [glexer]). The character stream is the input stream to be
       lexed. The result is a pair of a token stream and a location
@@ -107,7 +118,7 @@ value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
 (** Function to build a stream and a location function *)
 
 value make_stream_and_location :
-  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * location_function);
+  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * Locations.t);
    (** General function *)
 
 (** Useful functions and values *)

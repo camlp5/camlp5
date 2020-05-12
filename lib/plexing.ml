@@ -10,29 +10,17 @@ exception Error of string;
 
 type location = Ploc.t;
 type location_function = int -> location;
-type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
-
-type lexer 'te =
-  { tok_func : lexer_func 'te;
-    tok_using : pattern -> unit;
-    tok_removing : pattern -> unit;
-    tok_match : mutable pattern -> 'te -> string;
-    tok_text : pattern -> string;
-    tok_comm : mutable option (list location) }
-;
 
 value make_loc = Ploc.make_unlined;
 value dummy_loc = Ploc.dummy;
 
-value lexer_text (con, prm) =
-  if con = "" then "'" ^ prm ^ "'"
-  else if prm = "" then con
-  else con ^ " '" ^ prm ^ "'"
-;
+module Locations = struct
+  type t = { locations : ref (array (option Ploc.t)) ; overflow : ref bool } ;
+  value locerr () = failwith "Lexer: location function" ;
+  value create () = { locations = ref (array_create 1024 None) ; overflow = ref False } ;
 
-value locerr () = failwith "Lexer: location function";
-value loct_create () = (ref (array_create 1024 None), ref False);
-value loct_func (loct, ov) i =
+value lookup t i =
+  let (loct, ov) = (t.locations, t.overflow) in
   match
     if i < 0 || i >= Array.length loct.val then
       if ov.val then Some dummy_loc else None
@@ -41,7 +29,8 @@ value loct_func (loct, ov) i =
   [ Some loc -> loc
   | None -> locerr () ]
 ;
-value loct_add (loct, ov) i loc =
+value add t i loc =
+  let (loct, ov) = (t.locations, t.overflow) in
   if i >= Array.length loct.val then
     let new_tmax = Array.length loct.val * 2 in
     if new_tmax < Sys.max_array_length then do {
@@ -54,17 +43,36 @@ value loct_add (loct, ov) i loc =
   else loct.val.(i) := Some loc
 ;
 
+end ;
+
+type lexer_func 'te = Stream.t char -> (Stream.t 'te * Locations.t);
+
+type lexer 'te =
+  { tok_func : lexer_func 'te;
+    tok_using : pattern -> unit;
+    tok_removing : pattern -> unit;
+    tok_match : mutable pattern -> 'te -> string;
+    tok_text : pattern -> string;
+    tok_comm : mutable option (list location) }
+;
+
+value lexer_text (con, prm) =
+  if con = "" then "'" ^ prm ^ "'"
+  else if prm = "" then con
+  else con ^ " '" ^ prm ^ "'"
+;
+
 value make_stream_and_location next_token_loc =
-  let loct = loct_create () in
+  let loct = Locations.create () in
   let ts =
     Stream.from
       (fun i -> do {
          let (tok, loc) = next_token_loc () in
-         loct_add loct i loc;
+         Locations.add loct i loc;
          Some tok
        })
   in
-  (ts, loct_func loct)
+  (ts, loct)
 ;
 
 value lexer_func_of_parser next_token_loc cs =

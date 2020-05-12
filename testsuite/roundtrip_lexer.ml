@@ -326,13 +326,13 @@ value setup_syntax () =
 value lex_stream1 is = do {
   setup_syntax() ;
   let lexer = Plexer.gmake() in
-  let (strm, locfun) = lexer.Plexing.tok_func is in
+  let (strm, loct) = lexer.Plexing.tok_func is in
   let rec addloc i =
     parser
       [
         [: `(("EOI",_) as p) :] -> [: `(Ploc.dummy,p) :]
       | [: `p ; strm :] ->
-        let loc = i |> locfun in
+        let loc = Plexing.Locations.lookup loct i in
         [: `(loc,p) ; addloc (i+1) strm :]
       ] in
   addloc 0 strm

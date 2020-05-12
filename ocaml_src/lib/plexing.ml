@@ -10,7 +10,43 @@ exception Error of string;;
 
 type location = Ploc.t;;
 type location_function = int -> location;;
-type 'te lexer_func = char Stream.t -> 'te Stream.t * location_function;;
+
+let make_loc = Ploc.make_unlined;;
+let dummy_loc = Ploc.dummy;;
+
+module Locations =
+  struct
+    type t = { locations : Ploc.t option array ref; overflow : bool ref };;
+    let locerr () = failwith "Lexer: location function";;
+    let create () =
+      {locations = ref (array_create 1024 None); overflow = ref false}
+    ;;
+    let lookup t i =
+      let (loct, ov) = t.locations, t.overflow in
+      match
+        if i < 0 || i >= Array.length !loct then
+          if !ov then Some dummy_loc else None
+        else Array.unsafe_get !loct i
+      with
+        Some loc -> loc
+      | None -> locerr ()
+    ;;
+    let add t i loc =
+      let (loct, ov) = t.locations, t.overflow in
+      if i >= Array.length !loct then
+        let new_tmax = Array.length !loct * 2 in
+        if new_tmax < Sys.max_array_length then
+          let new_loct = array_create new_tmax None in
+          Array.blit !loct 0 new_loct 0 (Array.length !loct);
+          loct := new_loct;
+          !loct.(i) <- Some loc
+        else ov := true
+      else !loct.(i) <- Some loc
+    ;;
+  end
+;;
+
+type 'te lexer_func = char Stream.t -> 'te Stream.t * Locations.t;;
 
 type 'te lexer =
   { tok_func : 'te lexer_func;
@@ -21,46 +57,21 @@ type 'te lexer =
     mutable tok_comm : location list option }
 ;;
 
-let make_loc = Ploc.make_unlined;;
-let dummy_loc = Ploc.dummy;;
-
 let lexer_text (con, prm) =
   if con = "" then "'" ^ prm ^ "'"
   else if prm = "" then con
   else con ^ " '" ^ prm ^ "'"
 ;;
 
-let locerr () = failwith "Lexer: location function";;
-let loct_create () = ref (array_create 1024 None), ref false;;
-let loct_func (loct, ov) i =
-  match
-    if i < 0 || i >= Array.length !loct then
-      if !ov then Some dummy_loc else None
-    else Array.unsafe_get !loct i
-  with
-    Some loc -> loc
-  | None -> locerr ()
-;;
-let loct_add (loct, ov) i loc =
-  if i >= Array.length !loct then
-    let new_tmax = Array.length !loct * 2 in
-    if new_tmax < Sys.max_array_length then
-      let new_loct = array_create new_tmax None in
-      Array.blit !loct 0 new_loct 0 (Array.length !loct);
-      loct := new_loct;
-      !loct.(i) <- Some loc
-    else ov := true
-  else !loct.(i) <- Some loc
-;;
-
 let make_stream_and_location next_token_loc =
-  let loct = loct_create () in
+  let loct = Locations.create () in
   let ts =
     Stream.from
       (fun i ->
-         let (tok, loc) = next_token_loc () in loct_add loct i loc; Some tok)
+         let (tok, loc) = next_token_loc () in
+         Locations.add loct i loc; Some tok)
   in
-  ts, loct_func loct
+  ts, loct
 ;;
 
 let lexer_func_of_parser next_token_loc cs =
