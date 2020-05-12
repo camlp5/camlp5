@@ -245,6 +245,24 @@ package "extfun" (
   archive(native) = "pa_extfun.cmx"
 )
 
+package "lexer" (
+  version = "@VERSION@"
+  description = "Syntax extension: Stream lexers"
+
+  requires(syntax,toploop) = "camlp5"
+  archive(syntax,toploop,-camlp5o)      = "pa_lexer.cmo"
+
+  package "syntax" (
+    requires(syntax,preprocessor) = "camlp5"
+    archive(syntax,preprocessor) = "pa_lexer.cmo"
+  )
+
+  requires(byte) = "camlp5"
+  archive(byte) = "pa_lexer.cmo"
+  requires(native) = "camlp5"
+  archive(native) = "pa_lexer.cmx"
+)
+
 package "fstream" (
   requires = "camlp5"
   version = "@VERSION@"
