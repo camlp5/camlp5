@@ -71,14 +71,6 @@ testutil2.cmo: testutil2.ml
 roundtrip_lexer.byte: roundtrip_lexer.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg roundtrip_lexer.ml -o roundtrip_lexer.byte
 
-.PRECIOUS: papr_official.ppo.ml
-
-papr_official.ppo.ml: papr_official.ml
-	$(CAMLP5R) pr_o.cmo -I . -mode S -o papr_official.ppo.ml papr_official.ml
-
-papr_official.byte: papr_official.ppo.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package compiler-libs.common,str -linkall -linkpkg papr_official.ppo.ml -o papr_official.byte
-
 extfun_test:: extfun_test.byte
 	./extfun_test.byte
 
@@ -202,4 +194,3 @@ clean:
 	$(RM) -f *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt
 
 realclean: clean
-	$(RM) -f papr_official.ppo.ml
