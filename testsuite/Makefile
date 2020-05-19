@@ -28,7 +28,6 @@ all: roundtrippers \
 	sch2r_test.pa_schemer.byte \
 	extfun_test.byte \
 	roundtrip_lexer.byte \
-	papr_official.byte \
 	o_top_test.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.opt \
