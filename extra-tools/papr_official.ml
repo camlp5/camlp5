@@ -120,7 +120,7 @@ value papr_official () = do {
     | (Some "-impl", True, False) ->
       passthru input_implem print_implem ic oc
     | (Some "-impl", False, True) ->
-      passthru (parse_implem ifile) (output_implem file) ic oc
+      passthru (parse_implem ifile) (output_implem ifile) ic oc
     | (Some "-impl", False, False) ->
       passthru (parse_implem ifile) print_implem ic oc
 
