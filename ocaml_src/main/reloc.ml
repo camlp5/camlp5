@@ -295,11 +295,9 @@ and module_type floc sh =
         let loc = floc loc in MtAcc (loc, self x1, self x2)
     | MtApp (loc, x1, x2) ->
         let loc = floc loc in MtApp (loc, self x1, self x2)
-    | MtFun (loc, arg, x3) ->
-        let arg =
-          vala_map (option_map (fun (idopt, m) -> idopt, self m)) arg
-        in
-        let loc = floc loc in MtFun (loc, arg, self x3)
+    | MtFun (loc, x1, x2) ->
+        let loc = floc loc in
+        MtFun (loc, vala_map (functor_parameter floc sh) x1, self x2)
     | MtLid (loc, x1) -> let loc = floc loc in MtLid (loc, x1)
     | MtQuo (loc, x1) -> let loc = floc loc in MtQuo (loc, x1)
     | MtSig (loc, x1) ->
@@ -315,6 +313,8 @@ and module_type floc sh =
         let loc = floc loc in MtXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
+and functor_parameter floc sh =
+  option_map (fun (idopt, m) -> idopt, module_type floc sh m)
 and sig_item floc sh =
   let rec self =
     function
@@ -380,12 +380,9 @@ and module_expr floc sh =
         let loc = floc loc in MeAcc (loc, self x1, self x2)
     | MeApp (loc, x1, x2) ->
         let loc = floc loc in MeApp (loc, self x1, self x2)
-    | MeFun (loc, arg, x3) ->
-        let arg =
-          vala_map
-            (option_map (fun (idopt, m) -> idopt, module_type floc sh m)) arg
-        in
-        let loc = floc loc in MeFun (loc, arg, self x3)
+    | MeFun (loc, x1, x2) ->
+        let loc = floc loc in
+        MeFun (loc, vala_map (functor_parameter floc sh) x1, self x2)
     | MeStr (loc, x1) ->
         let loc = floc loc in
         MeStr (loc, vala_map (List.map (str_item floc sh)) x1)
