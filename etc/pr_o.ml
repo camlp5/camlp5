@@ -657,6 +657,28 @@ value extension_constructor loc pc ec = match ec with [
 ]
 ;
 
+value has_ecs_with_params vdl =
+  List.exists
+    (fun [
+       MLast.EcTuple (_, _, tl, rto,_) ->
+       match tl with
+         [ <:vala< [] >> -> False
+         | _ -> True ]
+       | EcRebind _ _ _ -> True
+     ])
+    vdl
+;
+
+value extension_constructors loc pc vdl =
+  horiz_vertic
+    (fun () ->
+       if has_ecs_with_params vdl then sprintf "\n"
+       else hlist2 (extension_constructor loc) (bar_before (extension_constructor loc)) pc vdl)
+    (fun () ->
+       pprintf pc "  %p"
+         (vlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) vdl)
+;
+
 value type_extension loc pc te =
   let (tn, tp, pf, ecstrs, attrs) =
     (Pcaml.unvala te.MLast.teNam, te.MLast.tePrm, Pcaml.unvala te.MLast.tePrv,
@@ -667,7 +689,7 @@ value type_extension loc pc te =
           type_params (loc, Pcaml.unvala tp)
           longident_lident tn
           (if pf then "private " else "")
-          (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
+          (extension_constructors loc) (Pcaml.unvala ecstrs)
           (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
       else
         horiz_vertic
@@ -676,14 +698,14 @@ value type_extension loc pc te =
                type_params (loc, Pcaml.unvala tp)
                longident_lident tn
                (if pf then "private " else "")
-               (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
+               (extension_constructors loc) (Pcaml.unvala ecstrs)
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
           (fun () ->
              pprintf pc "@[<a>%p%p +=@;%s%p%p@ @]"
                type_params
                (loc, Pcaml.unvala tp) longident_lident tn
                (if pf then "private " else "")
-               (hlist2 (extension_constructor loc) (bar_before (extension_constructor loc))) (Pcaml.unvala ecstrs)
+               (extension_constructors loc) (Pcaml.unvala ecstrs)
                (hlist (pr_attribute "@@")) (Pcaml.unvala attrs))
 ;
 

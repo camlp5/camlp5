@@ -1513,13 +1513,17 @@ and t2 = bool[@@"foo"];
      o_input = OK {foo|type t += A of int | B of { a : int }|foo} ;
      official_input = OK {foo|type t += A of int | B of { a : int }|foo} ;
      r_input = OK {foo|type t += [ A of int | B of { a : int } ];|foo} ;
-     o_output = OK {foo|type t += A of int | B of { a : int };;
+     o_output = OK {foo|type t +=
+    A of int
+  | B of { a : int };;
 |foo};
      official_output = OK {foo|type t +=  
   | A of int 
   | B of {
   a: int } |foo} ;
-     r_output = OK {foo|type t += [ A of int | B of { a : int } ];
+     r_output = OK {foo|type t +=
+  [ A of int
+  | B of { a : int } ];
 |foo}
     };
     {name="type-extension-str-item2"; implem = True ;
@@ -1538,13 +1542,17 @@ and t2 = bool[@@"foo"];
      o_input = OK {foo|type M.N.t += A of int | B of { a : int }|foo} ;
      official_input = OK {foo|type M.N.t += A of int | B of { a : int }|foo} ;
      r_input = OK {foo|type M.N.t += [ A of int | B of { a : int } ];|foo} ;
-     o_output = OK {foo|type M.N.t += A of int | B of { a : int };;
+     o_output = OK {foo|type M.N.t +=
+    A of int
+  | B of { a : int };;
 |foo};
      official_output = OK {foo|type M.N.t +=  
   | A of int 
   | B of {
   a: int } |foo} ;
-     r_output = OK {foo|type M.N.t += [ A of int | B of { a : int } ];
+     r_output = OK {foo|type M.N.t +=
+  [ A of int
+  | B of { a : int } ];
 |foo}
     };
     {name="type-extension-str-item4"; implem = True ;
@@ -1552,11 +1560,13 @@ and t2 = bool[@@"foo"];
      o_input = OK {foo|type 'a t += A of int |foo} ;
      official_input = OK {foo|type 'a t += A of int|foo} ;
      r_input = OK {foo|type t 'a += [ A of int ];|foo} ;
-     o_output = OK {foo|type 'a t += A of int;;
+     o_output = OK {foo|type 'a t +=
+    A of int;;
 |foo} ;
      official_output = OK {foo|type 'a t +=  
   | A of int |foo} ;
-     r_output = OK {foo|type t α += [ A of int ];
+     r_output = OK {foo|type t α +=
+  [ A of int ];
 |foo}
     };
     {name="type-extension-sig-item1"; implem = False ;
@@ -1564,13 +1574,17 @@ and t2 = bool[@@"foo"];
      o_input = OK {foo|type t += A of int | B of { a : int }|foo} ;
      official_input = OK {foo|type t += A of int | B of { a : int }|foo} ;
      r_input = OK {foo|type t += [ A of int | B of { a : int } ];|foo} ;
-     o_output = OK {foo|type t += A of int | B of { a : int };;
+     o_output = OK {foo|type t +=
+    A of int
+  | B of { a : int };;
 |foo};
      official_output = OK {foo|type t +=  
   | A of int 
   | B of {
   a: int } |foo} ;
-     r_output = OK {foo|type t += [ A of int | B of { a : int } ];
+     r_output = OK {foo|type t +=
+  [ A of int
+  | B of { a : int } ];
 |foo}
     };
     {name="list-type-def1"; implem = True ;
@@ -1597,12 +1611,16 @@ and t2 = bool[@@"foo"];
      o_input = OK {foo|type t += A = A.A | B = A.B|foo} ;
      official_input = OK {foo|type t += A = A.A | B = A.B|foo} ;
      r_input = OK {foo|type t += [ A = A.A | B = A.B ];|foo} ;
-     o_output = OK {foo|type t += A = A.A | B = A.B;;
+     o_output = OK {foo|type t +=
+    A = A.A
+  | B = A.B;;
 |foo};
      official_output = OK {foo|type t +=  
   | A = A.A
   | B = A.B|foo} ;
-     r_output = OK {foo|type t += [ A = A.A | B = A.B ];
+     r_output = OK {foo|type t +=
+  [ A = A.A
+  | B = A.B ];
 |foo}
     };
     {name="lowercase-module-type1"; implem = True ;
@@ -2830,11 +2848,13 @@ type nat _ =
      o_input = OK {foo|type t += Foo : int -> t|foo} ;
      official_input = OK {foo|type t += Foo : int -> t|foo} ;
      r_input = OK {foo|type t += [ Foo : int → t ];|foo} ;
-     o_output = OK {foo|type t += Foo : int -> t;;
+     o_output = OK {foo|type t +=
+    Foo : int -> t;;
 |foo};
      official_output = OK {foo|type t +=  
   | Foo: int -> t |foo} ;
-     r_output = OK {foo|type t += [ Foo : int → t ];
+     r_output = OK {foo|type t +=
+  [ Foo : int → t ];
 |foo}
     };
     {name="gadt-basic-2b"; implem = True ;
@@ -2842,11 +2862,13 @@ type nat _ =
      o_input = OK {foo|type _ t += Foo : int -> t|foo} ;
      official_input = OK {foo|type _ t += Foo : int -> t|foo} ;
      r_input = OK {foo|type t _ += [ Foo : int → t ];|foo} ;
-     o_output = OK {foo|type _ t += Foo : int -> t;;
+     o_output = OK {foo|type _ t +=
+    Foo : int -> t;;
 |foo};
      official_output = OK {foo|type _ t +=  
   | Foo: int -> t |foo} ;
-     r_output = OK {foo|type t _ += [ Foo : int → t ];
+     r_output = OK {foo|type t _ +=
+  [ Foo : int → t ];
 |foo}
     };
     {name="gadt-basic-3"; implem = True ;
@@ -2900,12 +2922,16 @@ type nat _ =
      o_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
      official_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
      r_input = OK {foo|type foo _ += [ A : int → foo int | B : foo int ];|foo} ;
-     o_output = OK {foo|type _ foo += A : int -> int foo | B : int foo;;
+     o_output = OK {foo|type _ foo +=
+    A : int -> int foo
+  | B : int foo;;
 |foo};
      official_output = OK {foo|type _ foo +=  
   | A: int -> int foo 
   | B: int foo |foo} ;
-     r_output = OK {foo|type foo _ += [ A : int → foo int | B : foo int ];
+     r_output = OK {foo|type foo _ +=
+  [ A : int → foo int
+  | B : foo int ];
 |foo}
     };
     {name="gadt-5"; implem = True ;
