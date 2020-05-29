@@ -1501,7 +1501,9 @@ and sig_item s l =
   | SgExc (loc, gc, item_attrs) ->
       let (n, tl, _, alg_attrs) = conv_constructor false gc in
       mksig loc
-        (ocaml_psig_exception ~alg_attributes:alg_attrs (mkloc loc) n tl) ::
+        (ocaml_psig_exception ~alg_attributes:alg_attrs
+           ~item_attributes:(uv_item_attributes item_attrs) (mkloc loc) n
+           tl) ::
       l
   | SgExt (loc, n, t, p, attrs) ->
       let vn = uv n in

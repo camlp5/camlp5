@@ -4,6 +4,10 @@
 
 val expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
 val patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
+val sig_item :
+  (MLast.loc -> MLast.loc) -> int -> MLast.sig_item -> MLast.sig_item;;
+val str_item :
+  (MLast.loc -> MLast.loc) -> int -> MLast.str_item -> MLast.str_item;;
 
 (* Equality over syntax trees *)
 
