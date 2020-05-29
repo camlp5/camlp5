@@ -664,7 +664,7 @@ value has_ecs_with_params vdl =
        match tl with
          [ <:vala< [] >> -> False
          | _ -> True ]
-       | EcRebind _ _ _ -> True
+       | MLast.EcRebind _ _ _ -> True
      ])
     vdl
 ;
