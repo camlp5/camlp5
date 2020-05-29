@@ -307,14 +307,14 @@ let ocaml_pconst_char c = Pconst_char c;;
 let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
 let ocaml_pconst_float s = Pconst_float (s, None);;
 
-let ocaml_const_string s = Const_string (s, None);;
-let ocaml_pconst_string s so = Pconst_string (s, so);;
+let ocaml_const_string s loc = Const_string (s, None);;
+let ocaml_pconst_string s loc so = Pconst_string (s, so);;
 
 let pconst_of_const =
   function
     Const_int i -> ocaml_pconst_int i
   | Const_char c -> ocaml_pconst_char c
-  | Const_string (s, so) -> ocaml_pconst_string s so
+  | Const_string (s, so) -> ocaml_pconst_string s loc_none so
   | Const_float s -> ocaml_pconst_float s
   | Const_int32 i32 -> Pconst_integer (Int32.to_string i32, Some 'l')
   | Const_int64 i64 -> Pconst_integer (Int64.to_string i64, Some 'L')

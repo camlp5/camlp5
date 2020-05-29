@@ -325,10 +325,7 @@ and module_type floc sh =
         let loc = floc loc in MtLongLid (loc, longid floc sh x1, x2)
     | MtFun (loc, arg, x3) ->
         let loc = floc loc in
-        let arg =
-          vala_map (option_map (fun (idopt, m) -> idopt, self m)) arg
-        in
-        MtFun (loc, arg, self x3)
+        MtFun (loc, vala_map (functor_parameter floc sh) arg, self x3)
     | MtLid (loc, x1) -> let loc = floc loc in MtLid (loc, x1)
     | MtQuo (loc, x1) -> let loc = floc loc in MtQuo (loc, x1)
     | MtSig (loc, x1) ->
@@ -345,6 +342,8 @@ and module_type floc sh =
         let loc = floc loc in MtExten (loc, attribute_body floc sh exten)
   in
   self
+and functor_parameter floc sh =
+  option_map (fun (idopt, m) -> idopt, module_type floc sh m)
 and sig_item floc sh =
   let rec self =
     function
@@ -461,11 +460,7 @@ and module_expr floc sh =
         let loc = floc loc in MeApp (loc, self x1, self x2)
     | MeFun (loc, arg, x3) ->
         let loc = floc loc in
-        let arg =
-          vala_map
-            (option_map (fun (idopt, m) -> idopt, module_type floc sh m)) arg
-        in
-        MeFun (loc, arg, self x3)
+        MeFun (loc, vala_map (functor_parameter floc sh) arg, self x3)
     | MeStr (loc, x1) ->
         let loc = floc loc in
         MeStr (loc, vala_map (List.map (str_item floc sh)) x1)
