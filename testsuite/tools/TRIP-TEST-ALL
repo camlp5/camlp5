@@ -2,7 +2,9 @@
 
 set -e
 
-for v in     4.00.0 \
+for v in \
+    ocaml-variants.4.11.0+alpha1 \
+    4.00.0 \
     4.00.1 \
     4.01.0 \
     4.02.0 \

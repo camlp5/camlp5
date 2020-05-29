@@ -84,6 +84,15 @@ The file DEVEL gives information for people who want to make changes
 in Camlp5, or who are just curious of how it is implemented. The same
 explanations are also in the chapter "Camlp5 sources" in the documentation.
 
+## Testsuite
+
+There is a rather extensive testsuite (to which any suggestions or
+contributions are welcome) in `testsuite`.  To build/run it, one must install a number of packages:
+```
+opam install ocamlfind pcre ounit2
+make -C testsuite all-tests
+```
+
 ## Problems
 
 If you have problems to compile your source files with this version of
