@@ -41,7 +41,8 @@ package "pa_r" (
   archive(syntax,toploop,camlp5r)      = ""
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pa_r.cmo pa_rp.cmo"
+  archive(syntax,preprocessor,-native) = "pa_r.cmo pa_rp.cmo"
+  archive(syntax,preprocessor,native) = "pa_r.cmx pa_rp.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -58,7 +59,8 @@ package "pa_o" (
   archive(syntax,toploop,camlp5o)      = ""
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pa_o.cmo"
+  archive(syntax,preprocessor,-native) = "pa_o.cmo"
+  archive(syntax,preprocessor,native) = "pa_o.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -75,7 +77,8 @@ package "pa_op" (
   archive(syntax,toploop,camlp5o)      = ""
 
   requires(syntax,preprocessor) = "camlp5.pa_o"
-  archive(syntax,preprocessor) = "pa_op.cmo"
+  archive(syntax,preprocessor,-native) = "pa_op.cmo"
+  archive(syntax,preprocessor,native) = "pa_op.cmx"
 
   package "link" (
     requires = "camlp5.pa_o.link"
@@ -89,7 +92,8 @@ package "pr_r" (
   archive(syntax,toploop)      = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
+  archive(syntax,preprocessor,-native) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
+  archive(syntax,preprocessor,native) = "pr_r.cmx pr_ro.cmx pr_rp.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -103,7 +107,8 @@ package "pr_o" (
   archive(syntax,toploop)      = "pr_o.cmo pr_op.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pr_o.cmo pr_op.cmo"
+  archive(syntax,preprocessor,-native) = "pr_o.cmo pr_op.cmo"
+  archive(syntax,preprocessor,native) = "pr_o.cmx pr_op.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -117,7 +122,8 @@ package "pr_dump" (
   archive(syntax,toploop)      = "pr_dump.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pr_dump.cmo"
+  archive(syntax,preprocessor,-native) = "pr_dump.cmo"
+  archive(syntax,preprocessor,native) = "pr_dump.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -131,7 +137,8 @@ package "pr_depend" (
   archive(syntax,toploop)      = "pr_depend.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pr_depend.cmo"
+  archive(syntax,preprocessor,-native) = "pr_depend.cmo"
+  archive(syntax,preprocessor,native) = "pr_depend.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -145,7 +152,8 @@ package "pr_official" (
   archive(syntax,toploop)      = "pr_official.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pr_official.cmo"
+  archive(syntax,preprocessor,-native) = "pr_official.cmo"
+  archive(syntax,preprocessor,native) = "pr_official.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -159,7 +167,8 @@ package "pa_scheme" (
   archive(syntax,toploop)      = "pa_scheme.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pa_scheme.cmo"
+  archive(syntax,preprocessor,-native) = "pa_scheme.cmo"
+  archive(syntax,preprocessor,native) = "pa_scheme.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -178,7 +187,8 @@ package "pr_scheme" (
   archive(syntax,toploop)      = "pr_scheme.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pr_scheme.cmo"
+  archive(syntax,preprocessor,-native) = "pr_scheme.cmo"
+  archive(syntax,preprocessor,native) = "pr_scheme.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -204,7 +214,8 @@ package "quotations" (
   archive(syntax,toploop) = "q_MLast.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "q_MLast.cmo"
+  archive(syntax,preprocessor,-native) = "q_MLast.cmo"
+  archive(syntax,preprocessor,native) = "q_MLast.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -221,7 +232,8 @@ package "phony_quotations" (
   archive(syntax,toploop) = "q_phony.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "q_phony.cmo"
+  archive(syntax,preprocessor,-native) = "q_phony.cmo"
+  archive(syntax,preprocessor,native) = "q_phony.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -239,7 +251,8 @@ package "extend" (
   archive(syntax,toploop,-camlp5o)      = "pa_extend.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pa_extend.cmo"
+  archive(syntax,preprocessor,-native) = "pa_extend.cmo"
+  archive(syntax,preprocessor,native) = "pa_extend.cmx"
 
   package "link" (
   requires = "camlp5"
@@ -256,7 +269,8 @@ package "extfun" (
   archive(syntax,toploop,-camlp5o)      = "pa_extfun.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pa_extfun.cmo"
+  archive(syntax,preprocessor,-native) = "pa_extfun.cmo"
+  archive(syntax,preprocessor,native) = "pa_extfun.cmx"
 
   package "link" (
     requires = "camlp5"
@@ -273,7 +287,8 @@ package "lexer" (
   archive(syntax,toploop,-camlp5o)      = "pa_lexer.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor) = "pa_lexer.cmo"
+  archive(syntax,preprocessor,-native) = "pa_lexer.cmo"
+  archive(syntax,preprocessor,native) = "pa_lexer.cmx"
 
   package "link" (
     requires = "camlp5"

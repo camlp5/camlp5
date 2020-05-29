@@ -20,11 +20,16 @@ our $verbose ;
 {
   my @interfaces ;
   my @options ;
+  my @predicates = ("syntax","preprocessor") ;
   my @packages = ("camlp5") ;
 
   my $opt ;
   if ($0 =~ /mkcamlp5\.opt.*/) {
     $opt = 1 ;
+    push(@predicates,"native") ;
+  }
+  else {
+    push(@predicates,"byte") ;
   }
 
   while (@ARGV) {
@@ -38,6 +43,10 @@ our $verbose ;
     elsif ($ARGV[0] eq '-package') {
       shift @ARGV ;
       @packages = split(/,/, shift @ARGV) ;
+    }
+    elsif ($ARGV[0] eq '-predicates') {
+      shift @ARGV ;
+      @predicates = split(/,/, shift @ARGV) ;
     }
     elsif ($ARGV[0] =~ m,([^\./]+)\.cmi$,) {
       die "cannot specify .cmi files for $0" if $opt ;
@@ -75,6 +84,7 @@ EOF
 
   v_systemx("ocamlfind",
 	    ($opt ? "ocamlopt" : "ocamlc"),
+	    "-predicates", join(',', @predicates),
 	    "-package", join(',', @packages),
 	    $verbose,
 	    "-linkall", "-linkpkg",
