@@ -655,9 +655,10 @@ Extensible grammars
    error by applying the "continue" function of the previous symbol (if
    this symbol is a call to an entry).
 
-   When a SELF or the current entry name is encountered in the middle of
-   the rule (i.e. if it is not the last symbol), there is a call to the
-   "start" function of the first level of the current entry.
+   When a SELF or the current entry name is encountered in the middle
+   of the rule (i.e. if it is neither the first nor the last symbol),
+   there is a call to the "start" function of the first level of the
+   current entry.
 
    Example. Let us consider the following grammar:
 
