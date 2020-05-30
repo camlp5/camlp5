@@ -57,7 +57,7 @@ install:
 	for i in $(DIRS) compile; do \
 	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
 	done
-	cp etc/topfind.camlp5 "$(DESTDIR)$(LIBDIR)/$(OCAMLN)/."
+	cp etc/topfind.camlp5 `ocamlc -where`/.
 
 uninstall:
 	@if test -z "$(LIBDIR)"; then \
@@ -67,7 +67,7 @@ uninstall:
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	cd "$(DESTDIR)$(BINDIR)"; $(RM) -f *$(CAMLP5N)* odyl ocpp; cd ..
 	cd "$(DESTDIR)$(MANDIR)/man1"; $(RM) -f *$(CAMLP5N)* odyl ocpp
-	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(OCAMLN)/"topfind.camlp5
+	$(RM) -f `ocamlc -where`/topfind.camlp5
 
 clean::
 	$(MAKE) clean_hot clean_cold
