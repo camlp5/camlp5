@@ -31,7 +31,6 @@ doc: "https://camlp5.github.io/doc/html"
 
 depends: [
   "ocaml"       { >= "4.02" & < "4.12.0" }
-  "ocamlfind"   { >= "1.8.0" }
 ]
 
 build: [
