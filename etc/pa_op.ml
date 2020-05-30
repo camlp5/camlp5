@@ -5,19 +5,21 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
+open Asttools;
 open Exparser;
 open Pcaml;
 
 (* Syntax extensions in Ocaml grammar *)
 
 EXTEND
-  GLOBAL: expr ipatt;
+  GLOBAL: expr ipatt ext_attributes;
   expr: LEVEL "expr1"
     [ [ "parser"; po = OPT ipatt; OPT "|"; pcl = LIST1 parser_case SEP "|" ->
-          <:expr< $cparser loc po pcl$ >>
-      | "match"; e = SELF; "with"; "parser"; po = OPT ipatt; OPT "|";
+          <:expr< $cparser loc (po, pcl)$ >>
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "parser"; po = OPT ipatt; OPT "|";
         pcl = LIST1 parser_case SEP "|" ->
-          <:expr< $cparser_match loc e po pcl$ >> ] ]
+          expr_to_inline <:expr< $cparser_match loc e (po, pcl)$ >> ext attrs
+      ] ]
   ;
   parser_case:
     [ [ "[<"; sp = stream_patt; ">]"; po = OPT ipatt; "->"; e = expr ->

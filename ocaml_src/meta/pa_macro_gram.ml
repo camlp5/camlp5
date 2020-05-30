@@ -56,12 +56,14 @@ Grammar.safe_extend
                       (rule_or_ifdef0 : 'rule_or_ifdef0 Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (rules : 'rule_or_ifdef0 list) _ (loc : Ploc.t) ->
               ({au_loc = loc; au_rules = List.concat rules} : 'rule_list)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[")))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ _ (loc : Ploc.t) ->
               ({au_loc = loc; au_rules = []} : 'rule_list)))]];
     Grammar.extension (rule_or_ifdef0 : 'rule_or_ifdef0 Grammar.Entry.e) None
@@ -83,6 +85,7 @@ Grammar.safe_extend
                    (else_rule_or_ifdef :
                     'else_rule_or_ifdef Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e2 : 'else_rule_or_ifdef) (e1 : 'rule_or_ifdef_list) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then e1 else e2 : 'rule_or_ifdef0)))];
@@ -90,6 +93,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (rule : 'rule Grammar.Entry.e)),
+           "1154dceb",
            (fun (r : 'rule) (loc : Ploc.t) -> ([r] : 'rule_or_ifdef0)))]];
     Grammar.extension (rule_or_ifdef : 'rule_or_ifdef Grammar.Entry.e) None
       [None, None,
@@ -110,6 +114,7 @@ Grammar.safe_extend
                    (else_rule_or_ifdef :
                     'else_rule_or_ifdef Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e2 : 'else_rule_or_ifdef) (e1 : 'rule_or_ifdef_list) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then e1 else e2 : 'rule_or_ifdef)))];
@@ -118,6 +123,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "|")))
              (Grammar.s_nterm (rule : 'rule Grammar.Entry.e)),
+           "1154dceb",
            (fun (r : 'rule) _ (loc : Ploc.t) -> ([r] : 'rule_or_ifdef)))]];
     Grammar.extension
       (rule_or_ifdef_list : 'rule_or_ifdef_list Grammar.Entry.e) None
@@ -127,6 +133,7 @@ Grammar.safe_extend
              (Grammar.s_list0
                 (Grammar.s_nterm
                    (rule_or_ifdef : 'rule_or_ifdef Grammar.Entry.e))),
+           "1154dceb",
            (fun (l : 'rule_or_ifdef list) (loc : Ploc.t) ->
               (List.concat l : 'rule_or_ifdef_list)))]];
     Grammar.extension
@@ -137,6 +144,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm
                 (rule_or_ifdef_list : 'rule_or_ifdef_list Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'rule_or_ifdef_list) _ (loc : Ploc.t) ->
               (e : 'else_rule_or_ifdef)));
         Grammar.production
@@ -152,6 +160,7 @@ Grammar.safe_extend
                    (rule_or_ifdef_list :
                     'rule_or_ifdef_list Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (e2 : 'else_rule_or_ifdef) (e1 : 'rule_or_ifdef_list) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if not e then e1 else e2 : 'else_rule_or_ifdef)));
@@ -168,6 +177,7 @@ Grammar.safe_extend
                    (rule_or_ifdef_list :
                     'rule_or_ifdef_list Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (e2 : 'else_rule_or_ifdef) (e1 : 'rule_or_ifdef_list) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then e1 else e2 : 'else_rule_or_ifdef)))]];
@@ -183,6 +193,7 @@ Grammar.safe_extend
                        'level_or_ifdef_opt Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (ll : 'level_or_ifdef_opt list) _ (loc : Ploc.t) ->
               (must_flatten_opts ll : 'level_list)))]];
     Grammar.extension
@@ -205,6 +216,7 @@ Grammar.safe_extend
                    (else_levels_or_ifdef_opt :
                     'else_levels_or_ifdef_opt Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt)
                 _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then e1 else e2 : 'level_or_ifdef_opt)))];
@@ -212,11 +224,12 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (level : 'level Grammar.Entry.e)),
+           "1154dceb",
            (fun (l : 'level) (loc : Ploc.t) ->
               (Some [l] : 'level_or_ifdef_opt)))];
        None, None,
        [Grammar.production
-          (Grammar.r_stop,
+          (Grammar.r_stop, "1154dceb",
            (fun (loc : Ploc.t) -> (None : 'level_or_ifdef_opt)))]];
     Grammar.extension
       (levels_or_ifdef_opt : 'levels_or_ifdef_opt Grammar.Entry.e) None
@@ -236,6 +249,7 @@ Grammar.safe_extend
                    (else_levels_or_ifdef_opt :
                     'else_levels_or_ifdef_opt Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt)
                 _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then e1 else e2 : 'levels_or_ifdef_opt)))];
@@ -245,11 +259,12 @@ Grammar.safe_extend
              (Grammar.s_list1sep
                 (Grammar.s_nterm (level : 'level Grammar.Entry.e))
                 (Grammar.s_token ("", "|")) false),
+           "1154dceb",
            (fun (ll : 'level list) (loc : Ploc.t) ->
               (Some ll : 'levels_or_ifdef_opt)))];
        None, None,
        [Grammar.production
-          (Grammar.r_stop,
+          (Grammar.r_stop, "1154dceb",
            (fun (loc : Ploc.t) -> (None : 'levels_or_ifdef_opt)))]];
     Grammar.extension
       (else_levels_or_ifdef_opt : 'else_levels_or_ifdef_opt Grammar.Entry.e)
@@ -260,6 +275,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm
                 (levels_or_ifdef_opt : 'levels_or_ifdef_opt Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'levels_or_ifdef_opt) _ (loc : Ploc.t) ->
               (e : 'else_levels_or_ifdef_opt)));
         Grammar.production
@@ -275,6 +291,7 @@ Grammar.safe_extend
                    (levels_or_ifdef_opt :
                     'levels_or_ifdef_opt Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if not e then e1 else e2 : 'else_levels_or_ifdef_opt)));
@@ -291,6 +308,7 @@ Grammar.safe_extend
                    (levels_or_ifdef_opt :
                     'levels_or_ifdef_opt Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (e2 : 'else_levels_or_ifdef_opt) (e1 : 'levels_or_ifdef_opt) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then e1 else e2 : 'else_levels_or_ifdef_opt)))]]]);;

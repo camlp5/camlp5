@@ -1,0 +1,19 @@
+---
+name: pa_o-pr_o.byte
+recipes:
+  cp:
+    name: cp
+    steps:
+      - cp
+      - brave-comment-stripper.original
+      - cowardly-arrow
+      - ocamlformat
+#      - nuke:mli-ending-double-semi
+  roundtrip-original:
+    name: roundtrip-original
+    steps:
+      - roundtrip-original.byte
+      - brave-comment-stripper.original
+      - cowardly-arrow
+      - ocamlformat
+#      - nuke:mli-ending-double-semi

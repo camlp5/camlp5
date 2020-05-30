@@ -1,0 +1,25 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/examples_camltk/winskel.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!examples_camltk!winskel.ml.INPUT	2020-02-11 16:40:41.912364691 -0800
+@@ -46,18 +46,17 @@
+    Menu.add_radiobutton m [Label "Courier"; Variable font; Value "courier"];
+    Menu.add_separator m;
+    Menu.add_command m [Label "Insert Bullet";
+-                        Command (function () ->
++                        Command (fun () ->
+                                   print_string "Insert Bullet\n";
+                                   flush stdout)];
+    Menu.add_command m [Label "Margins and Tags...";
+-                        Command (function () ->
++                        Command (fun () ->
+                                   print_string "margins\n";
+                                   flush stdout)];
+    Menubutton.configure text [Menu m];
+ 
+     mainLoop()
++;;
+ 
+-
+-
+-let _ =
+  Printexc.catch main ()
++;;

@@ -1,0 +1,19 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/debugger/exec.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/debugger!exec.ml.INPUT	2020-02-11 10:44:10.243675585 -0800
+@@ -23,14 +23,13 @@
+   if !is_protected
+   then interrupted := true
+   else raise Sys.Break
+-
+-let _ =
++;;
+   match Sys.os_type with
+     "Win32" -> ()
+   | _ ->
+       Sys.set_signal Sys.sigint (Sys.Signal_handle break);
+       Sys.set_signal Sys.sigpipe (Sys.Signal_handle (fun _ -> raise End_of_file))
+-
++;;
+ let protect f =
+   if !is_protected then
+     f ()

@@ -1,0 +1,1169 @@
+#!/usr/bin/perl
+
+use strict ;
+use Data::Dumper ;
+use Digest::MD5::File qw(file_md5_hex);
+use Carp ;
+use Carp::Assert ;
+use File::Basename;
+use File::Find ;
+use File::Spec ;
+use File::stat ;
+use Getopt::Long;
+use IPC::System::Simple qw(systemx runx capturex $EXITVAL);
+use String::ShellQuote ;
+use YAML::Tiny;
+
+our $quiet = 0 ;
+our $verbose = 0 ;
+our @verbose_passthru = () ;
+our $continue_error = 0 ;
+our @dopackages ;
+our @onlyfiles ;
+our $tool ;
+our $tool1 ;
+our $tool2 ;
+our $packages_file ;
+our $profile_file ;
+our @patchindex_files ;
+our @patchindex_dirs ;
+
+# step takes as arguments:
+#
+# (1) 'input-filename': input filename
+# (2) 'base-name': base-name for this step (so it can construct its own filenames)
+#     THIS NAME is for this step only
+# (3) 'step-number': step-number in sequence
+#     so the files it constructs will be <base-name>.<number>
+# (4) 'step-name'
+# (5) 'output-filename': the output filename
+# (6) 'file-type': "-intf" or "-impl" -- suitable for passing to ocaml/camlp5 tools.
+#
+# RETURNS: code -- typically zero, but maybe nonzero to indicate error
+
+#our $ocamlformat = $ENV{'HOME'}."/Hack/Ocaml/GENERIC/4.10.0/bin/ocamlformat" ;
+our $ocamlformat = $ENV{'HOME'}."/Hack/Camlp5/src/ocamlformat/_build/default/bin/ocamlformat.exe" ;;
+
+our %tools = (
+  generate_step('roundtrip-revised', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r', "-no-pa-opt"]),
+  generate_step('roundtrip-revised.byte', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r.byte', "-no-pa-opt"]),
+  generate_step('roundtrip-revised.opt', 'revised', ['tools/ROUNDTRIP-pa_r-pr_r.opt', "-no-pa-opt"]),
+
+  generate_step('roundtrip-official', 'original', ['tools/ROUNDTRIP-pa_o-pr_official', "-no-pa-opt", "-no_quot"]),
+  generate_step('papr-official', 'original', ['./papr_official.byte']),
+
+  generate_step('roundtrip-original', 'original', ['tools/ROUNDTRIP-pa_o-pr_o', "-flag", "M", "-no-pa-opt", "-no_quot"]),
+  generate_step('roundtrip-original.byte', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.byte', "-flag", "M", "-no-pa-opt", "-no_quot"]),
+  generate_step('roundtrip-original.opt', 'original', ['tools/ROUNDTRIP-pa_o-pr_o.opt', "-flag", "M", "-no-pa-opt", "-no_quot"]),
+
+  generate_step('roundtrip-original-streams', 'original', ['tools/ROUNDTRIP-pa_op-pr_op', "-flag", "M", "-no-pa-opt", "-no_quot"]),
+
+  'cp' =>
+  {
+    'name' => 'cp',
+    'command' => sub {
+      my %args = @_ ;
+      my $inputf = $args{'input-filename'} ;
+      my $outputf = $args{'output-filename'} ;
+      
+      my $code = v_systemx([0..2], ["cp", $inputf, $outputf]) ;
+      return $code ;
+    },
+  },
+
+  'cowardly-comment-stripper' => {
+    'name' => 'cowardly-comment-stripper',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|\(\*.*?\*\)| onlynl($&) |gse ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'brave-comment-stripper.original' => {
+    'name' => 'brave-comment-stripper',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = v_capturex([0],
+			       [ "./roundtrip_lexer.byte",
+			       "-mode","lexer-passthru",
+                               "-syntax","original",
+			       "-strip-comments",
+				 $inputf],
+	      'output-filename' => $outputf) ;
+	  return 0 ;
+    },
+  },
+
+  'brave-comment-stripper.revised' => {
+    'name' => 'brave-comment-stripper',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = v_capturex([0],
+			       [ "./roundtrip_lexer.byte",
+			       "-mode","lexer-passthru",
+                               "-syntax","revised",
+			       "-strip-comments",
+				 $inputf],
+	      'output-filename' => $outputf) ;
+	  return 0 ;
+    },
+  },
+
+  'ocamlformat' => {
+    'name' => 'ocamlformat',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+	  my $filetype = $args{'file-type'} ;
+
+	  my $txt = v_capturex([0..1],
+			       [$ocamlformat, 
+			       "--enable-outside-detected-project", "--no-comment-check",
+				"--format-invalid-files=auto",
+			       "-".$filetype, $inputf]) ;
+	  if (0 != $EXITVAL) { return $EXITVAL ; }
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:multi-semi:declare-end:directives' => {
+    'name' => 'nuke:multi-semi:declare-end:directives',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|^#load.*$||gm ;
+	  $txt =~ s,;(?:\s*;)*,;,gs ;
+	  $txt =~ s,\s*declare\s*end\s*;,,gm ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:revised-load' => {
+    'name' => 'nuke:revised-load',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|^#load.*$||gm ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:revised-qmod' => {
+    'name' => 'nuke:revised-load',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s|^#qmod.*$||gm ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:ending-double-semi' => {
+    'name' => 'nuke:ending-double-semi',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s,;;$,,gm ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'nuke:mli-ending-double-semi' => {
+    'name' => 'nuke:mli-ending-double-semi',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+	  my $filetype = $args{'file-type'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s,;;$,,gm if $filetype eq '-intf' ;
+	  $txt =~ s,;;(\s*\(\*)?,$1,gs ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'cowardly-arrow' => {
+    'name' => 'cowardly-arrow',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $txt = f_read($inputf) ;
+	  $txt =~ s,→,->,gs ;
+	  f_write($outputf, $txt) ;
+	  return 0 ;
+    },
+  },
+
+  'lexer-passthru' => {
+    'name' => 'lexer-passthru',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $code = v_systemx([0..2], ["./roundtrip_lexer.byte","-mode","lexer-passthru", $inputf, $outputf]) ;
+	  return $code ;
+    },
+  },
+
+  'lexer-pa-pr' => {
+    'name' => 'lexer-pa-pr',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $code = v_systemx([0..2], ["./roundtrip_lexer.byte","-mode","parse-pp", $inputf, $outputf]) ;
+	  return $code ;
+    },
+  },
+
+  'ifdef-eval' => {
+    'name' => 'ifdef-eval',
+	'command' => sub {
+	  my %args = @_ ;
+	  my $inputf = $args{'input-filename'} ;
+	  my $outputf = $args{'output-filename'} ;
+
+	  my $code = v_systemx([0..2], ["./roundtrip_lexer.byte","-D", "STRICT", "-mode","ifdef-eval", $inputf, $outputf]) ;
+	  return $code ;
+    },
+  },
+    ) ;
+
+sub generate_step {
+  my $stepna = shift ;
+  my $syntax = shift ;
+  my @cmd = @{ shift @_ } ;
+
+  return (  $stepna =>
+	    {
+	      'name' => $stepna,
+		  'syntax' => $syntax,
+		  'command' => sub {
+		    my %args = @_ ;
+		    my $inputf = $args{'input-filename'} ;
+		    my $outputf = $args{'output-filename'} ;
+		    my $filetype = $args{'file-type'} ;
+		    
+		    v_capturex([0..2],
+			       [@cmd, $filetype, $inputf],
+			       'output-filename' => $outputf,
+			       'ENV'=> { 'LANG' => 'C' },
+			) ;
+		    return $EXITVAL ;
+	      },
+	    }) ;
+}
+
+{
+  GetOptions(
+    "tool=s" => \$tool,
+    "tool1=s" => \$tool1,
+    "tool2=s" => \$tool2,
+    "package=s{}" => \@dopackages,
+    "only-files=s{}" => \@onlyfiles,
+    "quiet" => \$quiet,
+    "verbose" => \$verbose,
+    "continue-on-error" => \$continue_error,
+    "packages-file=s" => \$packages_file,
+    "profile-file=s" => \$profile_file,
+    "patchindex-file=s{}" => \@patchindex_files,
+    "patchindex-directory=s{}" => \@patchindex_dirs,
+      )
+      or croak("Error in command line arguments\n");
+
+  $Carp::Verbose = 1 if $verbose ;
+  @verbose_passthru = ("--verbose") if $verbose ;
+
+  $quiet = 0 if $verbose ;
+
+  croak "must specify packages-file"
+      unless defined $packages_file ;
+
+  my %packages ;
+  {
+    my $yaml = YAML::Tiny->read($packages_file) ;
+    %packages = %{ $yaml->[0] } ;
+  }
+
+  my $cmds = shift @ARGV ;
+  $cmds = "clean,setup,run,diff" if $cmds eq 'run-full' ;
+  my @cmd = split(/,/, $cmds) ;
+  foreach my $cmd (@cmd) {
+    if ($cmd eq 'override-file') {
+      croak "tool $tool not recognized"
+	  unless $tool eq 'ALL' || exists $tools{$tool} ;
+
+      croak "must specify a single package"
+	  unless 1 == int(@dopackages) ;
+      croak "must specify files"
+	  unless int(@onlyfiles) || int(@ARGV) ;
+
+      foreach my $file (@ARGV, @onlyfiles) {
+	my $pkgna = $dopackages[0] ;
+	my $pkgh = $packages{$pkgna} ;
+	my %pkg = %{ $pkgh };
+
+	my $fullsrcname = "$pkg{'location'}/$file" ;
+	croak "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	    unless (-r $fullsrcname) ;
+	my $bangf = bang_escape($file) ;
+	my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+	my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
+	croak "overridden input file $inputname already exists"
+	    unless (!(-r $inputname)) ;
+
+	v_systemx([0], ["mkdir", "-p", "$patchdir/$tool"]) ;
+	v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
+      }
+    }
+    elsif ($cmd eq 'override-to-patch') {
+      croak "tool $tool not recognized"
+	  unless $tool eq 'ALL' || exists $tools{$tool} ;
+
+      croak "must specify a single package"
+	  unless 1 == int(@dopackages) ;
+      croak "must specify files"
+	  unless int(@onlyfiles) || int(@ARGV) ;
+
+      foreach my $file (@ARGV, @onlyfiles) {
+	my $pkgna = $dopackages[0] ;
+	my $pkgh = $packages{$pkgna} ;
+	my %pkg = %{ $pkgh };
+
+	my $fullsrcname = "$pkg{'location'}/$file" ;
+	croak "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	    unless (-r $fullsrcname) ;
+	my $bangf = bang_escape($file) ;
+	my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+	my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
+	croak "overridden input file $inputname does not exist"
+	    unless (-r $inputname) ;
+
+	my $patchname = "$patchdir/$tool/$bangf.PATCH" ;
+	croak "patch file $patchname alrady exists"
+	    unless (!(-r $patchname)) ;
+
+	my $diff_output = v_capturex([0..1], ["diff", "-Bwiu", $fullsrcname, $inputname],
+				     'output-filename' => $patchname) ;
+	v_systemx([0], ["mv",$inputname,"$inputname-MOVED"]) ;
+      }
+    }
+    elsif ($cmd eq 'patch-to-override') {
+      croak "tool $tool not recognized"
+	  unless $tool eq 'ALL' || exists $tools{$tool} ;
+
+      croak "must specify a single package"
+	  unless 1 == int(@dopackages) ;
+      croak "must specify files"
+	  unless int(@onlyfiles) || int(@ARGV) ;
+
+      foreach my $file (@ARGV, @onlyfiles) {
+	my $pkgna = $dopackages[0] ;
+	my $pkgh = $packages{$pkgna} ;
+	my %pkg = %{ $pkgh };
+
+	my $fullsrcname = "$pkg{'location'}/$file" ;
+	croak "file $file in package $pkg{'package'} does not exist ($fullsrcname)"
+	    unless (-r $fullsrcname) ;
+	my $bangf = bang_escape($file) ;
+	my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+	my $patchname = "$patchdir/$tool/$bangf.PATCH" ;
+	croak "patch file $patchname does not exist"
+	    unless (-r $patchname) ;
+
+	my $inputname = "$patchdir/$tool/$bangf.INPUT" ;
+	croak "input file $inputname alrady exists"
+	    unless (!(-r $inputname)) ;
+
+	v_systemx([0], ["cp", $fullsrcname, $inputname]) ;
+	v_systemx([0], ["patch", $inputname, $patchname]) ;
+      }
+    }
+    elsif ($cmd eq 'setup' ||
+	   $cmd eq 'run' ||
+	   $cmd eq 'diff' ||
+	   $cmd eq 'clean' ||
+	   $cmd eq 'create-patchindex' ||
+	   $cmd eq 'discover-patches') {
+      croak "must specify profile-file"
+	  unless defined $profile_file ;
+
+      my %profile ;
+      {
+	my $yaml = YAML::Tiny->read($profile_file) ;
+	%profile = %{ $yaml->[0] } ;
+      }
+
+      my $workdir = "workdir" ;
+
+      foreach my $recna (keys %{ $profile{'recipes'} }) {
+	my %recipe = %{ $profile{'recipes'}->{$recna} } ;
+	foreach my $t (@{ $recipe{'steps'} }) {
+	  croak "unrecognized step $t" unless exists $tools{$t} ;
+	}
+      }
+
+      push(@dopackages, @ARGV) ;
+      @ARGV = () ;
+
+      croak "must specify packages" unless @dopackages ;
+
+      foreach my $pkgna (@dopackages) {
+	croak "package $pkgna not recognized"
+	    unless exists $packages{$pkgna} ;
+      }
+
+      if (@onlyfiles) {
+	croak "can only specify a single package if also specifying --only-files"
+	    unless 1 == int(@dopackages) ;
+      }
+
+      foreach my $pkgna (@dopackages) {
+	my $pkgh = $packages{$pkgna} ;
+	$pkgh->{'onlyfiles'} = [ @onlyfiles ] if @onlyfiles ; 
+	if ($cmd eq 'setup') {
+	  setup_package($workdir,
+			\%profile,
+			$pkgh);
+	}
+	elsif ($cmd eq 'run') {
+	  run_package($workdir,
+		      \%profile,
+		      $pkgh);
+	}
+	elsif ($cmd eq 'diff') {
+	  diff_package($workdir,
+		       \%profile,
+		       $pkgh);
+	}
+	elsif ($cmd eq 'create-patchindex') {
+	  create_patchindex($workdir,
+			    \%profile,
+			    $pkgh);
+	}
+	elsif ($cmd eq 'discover-patches') {
+	  discover_patches($workdir,
+			    \%profile,
+			    $pkgh);
+	}
+	elsif ($cmd eq 'clean') {
+	  clean_package($workdir,
+			\%profile,
+			$pkgh);
+	}
+	else { croak "command $cmd unexpected" ; }
+      }
+    }
+    else {
+      croak "unrecognized command $cmd" ;
+    }
+  }
+}
+
+sub bang_escape {
+  my $f = shift ;
+  $f =~ s,^\./,,;
+  $f =~ s,/,!,g ;
+  return $f ;
+}
+
+sub package_run_files {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$pkg{'package'} ;
+  my @dirs = @{ $pkg{'dirs'} };
+  my @files = @{  $pkg{'files'} } ;
+
+  my %onlyfiles ;
+  {
+    my @l = () ;
+    push (@l, @{ $pkg{'onlyfiles'} })
+	if (exists $pkg{'onlyfiles'}) ;
+    foreach my $f (@l) {
+      $onlyfiles{$f} = 1 ;
+    }
+  }
+
+  my %used_steps = () ;
+  foreach my $recna (keys %{ $profile{'recipes'} }) {
+    my @l = @{ $profile{'recipes'}->{$recna}->{'steps'} } ;
+    foreach my $s (@l) { $used_steps{$s} = 1 ; }
+  }
+
+  foreach my $stepna (keys %used_steps) {
+    if (exists $tools{$stepna}->{'syntax'}) {
+      Log::croak( "package syntax <<$pkg{'syntax'}>> <> tool step <<$stepna>> syntax <<$tools{$stepna}->{'syntax'}>>")
+	  unless $pkg{'syntax'} eq $tools{$stepna}->{'syntax'} ;
+    }
+  }
+  my %exclude ;
+  {
+    my @l = () ;
+    my @exclude_patterns = keys %{ $pkg{'exclude'} } ;
+    foreach my $epat (@exclude_patterns) {
+      STEPS: foreach my $stepna (keys %used_steps) {
+	if ($stepna =~ /^${epat}$/) {
+	  my @exclude_files = @{ $pkg{'exclude'}->{$epat} } ;
+	  Log::vlog( "EXCLUDE (step $stepna): ".join("\n\t", @exclude_files)."\n") 
+	      if @exclude_files;
+	  push (@l, @exclude_files) ;
+	  last STEPS ;
+	}
+      }
+    }
+
+    foreach my $f (@l) {
+      $exclude{$f} = 1 ;
+    }
+  }
+
+  {
+    my @newfiles ;
+    my $perfile = sub {
+      my $f = $File::Find::name ;
+      if ($f =~ /\.ml$/ || $f =~ /\.mli$/) {
+	push(@newfiles, $f) ;
+      }
+    } ;
+
+    Log::croak( "package $pkg{'package'} has location $location not found in filesystem")
+	unless (-d $location) ;
+    find( { wanted => $perfile, no_chdir => 1 }, 
+	  (map { $location."/".$_ } @dirs) ) ;
+
+    @newfiles = map { $_ =~ s,^$location/,,; $_ } @newfiles ;
+
+    push(@files, @newfiles) ;
+  }
+
+  @files = sort @files ;
+  my @ofiles ;
+  F: foreach my $f (@files) {
+    next if exists $exclude{$f} && !int(%onlyfiles);
+    next if int(%onlyfiles) && !(exists $onlyfiles{$f}) ;
+    push(@ofiles, $f) ;
+  }
+  return @ofiles ;
+}
+
+sub clean_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  v_systemx([0], ["rm", "-rf", "$workdir"]) ;
+}
+
+sub setup_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  my @recipes = keys %{ $profile{'recipes'} } ;
+  foreach my $recna (@recipes) {
+    v_systemx([0], ["mkdir", "-p", "$workdir/work/$recna"]) ;
+  }
+
+  assert (2 == @recipes) ;
+  foreach my $recna (@recipes) {
+    v_systemx([0], ["mkdir", "-p", "$workdir/diff/$recna"]) ;
+  }
+  my ($rec1name, $rec2name) = sort @recipes ;
+  my $errordir = "$workdir/diff/$rec1name!$rec2name.ERRORS" ;
+  foreach my $recna (@recipes) {
+    v_systemx([0], ["mkdir", "-p", "$workdir/diff/$recna"]) ;
+  }
+  v_systemx([0], ["mkdir", "-p", $errordir]) ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    Log::flush() ;
+    Log::log("==== SETUP $f\n");
+    my $bangf = bang_escape($f) ;
+    my $filetype ;
+    if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
+    elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
+    else { Log::croak( "unrecognized filetype $f") ; }
+
+    my $origf = "$location/".$f ;
+
+    Log::vlog( "SRC: $origf\n") ;
+
+    # so we know if any step failed
+    my $failure = 0 ;
+
+    my @recipes = keys %{ $profile{'recipes'} } ;
+    RECIPE: foreach my $recna (@recipes) {
+      my %recipe = %{ $profile{'recipes'}->{$recna} } ;
+      my $recbase = "$workdir/work/$recna/".$bangf ;
+      my @steps = @{ $recipe{'steps'} } ;
+
+      my $inputf = "$recbase.0-$steps[0].INPUT" ;
+      if (-r $inputf) {
+	Log::log( "REMOVING $inputf and all downstream files\n") ;
+	v_systemx([0], ["rm", <$recbase.*>]) ;
+      }
+      my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+      generate_input(
+	'input-filename' => $origf ,
+	'output-filename' => $inputf ,
+	'recipe-name' => $recna,
+	'escaped-filename' => $bangf,
+	'patch-directory' => $patchdir,
+	'package-name' => $pkg{'package'},
+	  ) ;
+      if (! (-s $inputf)) {
+	Log::carp("ZERO-SIZED INPUT file $inputf") ;
+      }
+    }
+
+  }
+  Log::flush() ;
+}
+
+sub create_patchindex {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  die "must specify exactly one patchindex-directory"
+      unless 1 == int(@patchindex_dirs) ;
+  my $pidir = $patchindex_dirs[0] ;
+  die "no such directory $pidir" unless (-d $pidir) ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+
+  my %patchindex = () ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    Log::flush() ;
+    my $bangf = bang_escape($f) ;
+
+    my $origf = "$location/".$f ;
+
+    my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+    my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
+
+    next unless -r $all_patch ;
+    Log::log( "==== PATCHINDEX $f\n");
+
+    my $digest = file_md5_hex($origf) ;
+    $patchindex{$digest} = {
+      'package' => $pkg{'package'},
+      'filename' => $f ,
+      'original-filename' => "$location/".$f ,
+      'escaped-filename' => $bangf ,
+      'digest' => $digest ,
+      'patch-filename' => $all_patch ,
+    } ;
+  }
+  my $yaml = new YAML::Tiny( \%patchindex ) ;
+  $yaml->write("$pidir/$pkg{'package'}.patchindex") ;
+}
+
+sub discover_patches {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+
+  foreach my $pidir (@patchindex_dirs) {
+    push(@patchindex_files, <$pidir/*.patchindex>) ;
+  }
+  my %patchindex = () ;
+  foreach my $pifile (@patchindex_files) {
+    my $yaml = YAML::Tiny->read($pifile) ;
+    my %newindex = %{ $yaml->[0] } ;
+    %patchindex = (%patchindex, %newindex) ;
+  }
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    Log::flush() ;
+    my $bangf = bang_escape($f) ;
+
+    my $origf = "$location/".$f ;
+
+    my $patchdir = $pkg{'patches'} || "patches/$pkg{'package'}" ;
+    my $all_patch = "$patchdir/ALL/$bangf.PATCH" ;
+
+    Log::log( "==== PATCHINDEX $f\n");
+    my $digest = file_md5_hex($origf) ;
+    next unless exists $patchindex{$digest} ;
+
+    my %h = %{ $patchindex{$digest} } ;
+
+    # just in case we end up applying a patchindex on a package from
+    # which it was derived
+    next if $all_patch eq $h{'patch-filename'} ;
+
+    if (-r $all_patch) {
+      Log::log( "OVERWRITING patch $all_patch\n") ;
+    }
+      
+    v_systemx([0], ["cp", $h{'patch-filename'}, $all_patch]) ;
+  }
+}
+
+sub run_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+  F: foreach my $f (@files) {
+    Log::flush() ;
+    Log::log( "==== RUN $f\n");
+    my $bangf = bang_escape($f) ;
+    my $filetype ;
+    if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
+    elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
+    else { Log::croak( "unrecognized filetype $f") ; }
+
+    my $origf = "$location/".$f ;
+
+    Log::vlog( "SRC: $origf\n") ;
+
+    my @recipes = keys %{ $profile{'recipes'} } ;
+    RECIPE: foreach my $recna (@recipes) {
+      my %recipe = %{ $profile{'recipes'}->{$recna} } ;
+      my $recbase = "$workdir/work/$recna/".$bangf ;
+      my @steps = @{ $recipe{'steps'} } ;
+
+      Log::log( "== $f : recipe $recna\n");
+    
+      my $inputf = "$recbase.0-$steps[0].INPUT" ;
+      if (! (-s $inputf)) {
+	Log::carp("Aborting processing of $f recipe $recna: ZERO-SIZED INPUT file $inputf") ;
+	next RECIPE ;
+      }
+      {
+	my $laststep = int(@steps) - 1 ;
+	my $laststepname = $steps[$laststep] ;
+	my $laststepbase = "$recbase.$laststep-$laststepname" ;
+	my $lastoutput = "$laststepbase.OUTPUT" ;
+	if (-r $lastoutput) {
+	  Log::log( "SKIP\n") ;
+	  next RECIPE ;
+	}
+	else {
+	  my @toremove = <$recbase.*> ;
+	  for(my $i = 0 ; $i < @toremove ; $i++) {
+	    if ($inputf eq $toremove[$i]) {
+	      splice @toremove, $i, 1 ;
+	      $i-- ;
+	    }
+	  }
+	  if (@toremove) { 
+	    Log::log( "CLEAN/REDO\n") ;
+	    v_systemx([0], ["rm", "-f", @toremove]) ;
+	  }
+	}
+      }
+
+      for (my $stepi = 0 ; $stepi < @steps ; $stepi++) {
+	my $stepname = $steps[$stepi] ;
+	my $stepbase = "$recbase.$stepi-$stepname" ;
+	my $outputf = $stepbase.".OUTPUT" ;
+	
+	my $tool = $tools{$stepname} ;
+	my $code = &{ $tool->{'command'} }(
+	  'input-filename' => $inputf ,
+	  'output-filename' => $outputf ,
+	  'base-name' => $stepbase ,
+	  'step-number' => $stepi ,
+	  'step-name' => $stepname ,
+	  'file-type' => $filetype ,
+	) ;
+
+	if ($code != 0) {
+	  Log::carp( "aborting processing of $f recipe $recna at step $stepname: $@") ;
+	  print STDERR "NOT OK $f\n";
+	  if ($main::continue_error) {
+	    next RECIPE;
+	  }
+	  else {
+	    Log::croak( "aborting entire test") ;
+	  }
+	}
+	# setup for next step
+	$inputf = $outputf;
+      }
+    }
+  }
+  Log::flush() ;
+}
+
+sub diff_package {
+  my $workroot = shift ;
+  my $profh = shift ;
+  my $pkgh = shift ;
+
+  my %profile = %{ $profh } ;
+  my %pkg = %{ $pkgh };
+  my $location = $pkg{'location'} ;
+  my $workdir = $workroot."/".$profile{'name'}.":".$pkg{'package'} ;
+
+  my @files = package_run_files($workroot, $profh, $pkgh) ;
+#  local $main::quiet = 0 ;
+  F: foreach my $f (@files) {
+    Log::flush() ;
+    Log::log( "==== DIFF $f\n");
+    my $bangf = bang_escape($f) ;
+    my $filetype ;
+    if ($f =~ /\.mli$/) { $filetype = "-intf" ; }
+    elsif ($f =~ /\.ml$/) { $filetype = "-impl" ; }
+    else { Log::croak( "unrecognized filetype $f") ; }
+
+    my $origf = "$location/".$f ;
+
+    Log::vlog( "SRC: $origf\n") ;
+
+    my %recipe_outputs ;
+    my %recipe_base ;
+    my @recipes = keys %{ $profile{'recipes'} } ;
+    foreach my $recna (@recipes) {
+      my %recipe = %{ $profile{'recipes'}->{$recna} } ;
+      my $recbase = "$workdir/work/$recna/".$bangf ;
+      $recipe_base{$recna} = $recbase ;
+      my @steps = @{ $recipe{'steps'} } ;
+      
+      my $laststep = int(@steps)-1 ;
+      my $stepname = $steps[$laststep] ;
+      my $stepbase = "$recbase.$laststep-$stepname" ;
+      my $outputf = $stepbase.".OUTPUT" ;
+      die "aborting diff: output-file for recipe $recna <<$outputf>> does not exist"
+	  unless -r $outputf ;
+      $recipe_outputs{$recna} = $outputf ;
+    }
+
+    assert (2 == @recipes) ;
+    my ($rec1name, $rec2name) = sort @recipes ;
+
+    my $errordir = "$workdir/diff/$rec1name!$rec2name.ERRORS" ;
+    my $errorbase = "$errordir/$bangf" ;
+	v_systemx([0], ["rm", "-f", <$errorbase.*>]) ;
+    my $code = extended_diff($recipe_outputs{$rec1name}, $recipe_outputs{$rec2name},
+	'errorbase' => $errorbase,
+	) ;
+    if (0 != $code) {
+      foreach my $recna (@recipes) {
+	my $diffdir = "$workdir/diff/$recna" ;
+	my $diffbase = "$workdir/diff/$recna/".$bangf ;
+	v_systemx([0], ["rm", "-f", <$diffbase.*>]) ;
+	my @recfiles = <$recipe_base{$recna}.*> ;
+	v_systemx([0], ["ln", @recfiles, $diffdir]) ;
+      }
+    }
+    if (0 == $code || 1 == $code) {
+      Log::log( "OK $f\n") ;
+    } else {
+      print STDERR "NOT OK $f\n";
+      Log::croak( "stopping due to errors in $f") unless $main::continue_error ;
+    }
+  }
+}
+
+
+# if there is both a PATCH and an INPUT file, that's a crash-error
+# if there is a PATCH/INPUT for this recipe, use it
+# if not and there is one for ALL recipes, use that
+# otherwise, return the original input-filename.
+sub generate_input {
+  my %args = @_ ;
+  my $inputf = $args{'input-filename'} ;
+  my $outputf = $args{'output-filename'} ;
+  my $recna = $args{'recipe-name'} ;
+  my $escf = $args{'escaped-filename'} ;
+  my $patchdir = $args{'patch-directory'} ;
+  my $pkgna = $args{'package-name'} ;
+  
+  my $all_input = "$patchdir/ALL/$escf.INPUT" ;
+  my $all_patch = "$patchdir/ALL/$escf.PATCH" ;
+
+  my $recipe_input = "$patchdir/$recna/$escf.INPUT" ;
+  my $recipe_patch = "$patchdir/$recna/$escf.PATCH" ;
+
+  Log::croak( "both PATCH & INPUT exist for package=$pkgna recipe=ALL file=$inputf")
+      if ((-r $all_input) && (-r $all_patch)) ;
+
+  Log::croak( "both PATCH & INPUT exist for package=$pkgna recipe=$recna file=$inputf")
+      if ((-r $recipe_input) && (-r $recipe_patch)) ;
+
+  v_systemx([0], ["cp", $inputf, $outputf]) ;
+
+  my @silent ;
+  push(@silent, "-s") unless $main::verbose ;
+
+  if (-r $recipe_patch) {
+    v_systemx([0], ["patch", @silent, $outputf, $recipe_patch]) ;
+  }
+  elsif (-r $recipe_input) {
+    v_systemx([0], ["cp", $recipe_input, $outputf]) ;
+  }
+  elsif (-r $all_patch) {
+    v_systemx([0], ["patch", @silent, $outputf, $all_patch]) ;
+  }
+  elsif (-r $all_input) {
+    v_systemx([0], ["cp", $all_input, $outputf]) ;
+  }
+}
+
+# returns
+# 0 for OK
+# 1 for OK, but diffs
+# 2 NOT OK
+sub extended_diff {
+  my $f1 = shift ;
+  my $f2 = shift ;
+  my %args = @_ ;
+
+  my @generated_files ;
+  assert (exists $args{'errorbase'}) ;
+  my @cmd = ("diff", "-Bwiu", $f1, $f2) ;
+  my $diff_output = v_capturex([0..1], [@cmd],
+			       'output-filename' => "$args{'errorbase'}.DIFF") ;
+
+  my $diff_ok = (0 == $EXITVAL) ;
+
+  v_capturex([0..1], ["wdiff", "-3", $f1, $f2],
+	     'output-filename' => "$args{'errorbase'}.WDIFF") ;
+
+  v_capturex([0..1], ["wdiff", $f1, $f2],
+	     'output-filename' => "$args{'errorbase'}.WDIFF-FULL") ;
+  my $wdiff_ok = (0 == $EXITVAL) ;
+
+  push(@generated_files,
+       "$args{'errorbase'}.DIFF",
+       "$args{'errorbase'}.WDIFF",
+       "$args{'errorbase'}.WDIFF-FULL") ;
+
+  my $wordeq_ok = wordeq($f1, $f2, 'generated-files' => \@generated_files) ;
+
+  if ($diff_ok) {
+    v_systemx([0], ["rm", "-rf", @generated_files]) ;
+    return 0 ;
+  }
+
+  if ($wdiff_ok) {
+    Log::log( "== DIFF $f1 <-> $f2\n") ;
+    Log::log( "WDIFF SAYS OK\n") ;
+    return 1 ;
+  }
+  if ($wordeq_ok) {
+    Log::log( "== $f1 <-> $f2\n") ;
+    Log::carp( "WHITE SPACE DIFFERENCES from wordeq\n") ;
+    return 1 ;
+  }
+
+  Log::carp($diff_output) ;
+  return 2 ;
+}
+
+sub wordeq {
+  my $f1 = shift ;
+  my $f2 = shift ;
+  my %args = @_ ;
+
+  my $txt1 = f_read($f1) ;
+  my $txt2 = f_read($f2) ;
+
+  $txt1 =~ s,\s,,gs ;
+  $txt2 =~ s,\s,,gs ;
+  if ($txt1 eq $txt2) {
+    return 1 ;
+  }
+  else {
+    f_write("$f1.NO-WS", $txt1) ;
+    f_write("$f2.NO-WS", $txt2) ;
+    push(@{ $args{'generated-files'} }, "$f1.NO-WS", "$f2.NO-WS") ;
+
+    return 0 ;
+  }
+}
+
+sub runtool {
+  my %args = @_ ;
+  my $tool = $args{'tool'} ;
+  my $srcf = $args{'src-filename'} ;
+  my $dstf = $args{'dst-filename'} ;
+
+  Log::vlog( "$tool->{'name'}: $srcf -> $dstf\n") ;
+  my @cmd = &{ $tool->{'command'}, }($srcf, $dstf) ;
+  my $code = v_systemx([0..2], [@cmd]) ;
+  if ($code != 0) {
+    if (!$continue_error) {
+      Log::croak ("command <<".join(' ', @cmd).">> croakd with $@") ;
+    }
+    else {
+      Log::carp ("command <<".join(' ', @cmd).">> croakd with $@") ;
+      return $code ;
+    }
+  }
+  return 0 ;
+}
+
+sub v_systemx {
+  Log::croak( "v_systemx: must specify exit codes") unless (ref($_[0]) eq 'ARRAY') ;
+  my $codes = shift ;
+  my @cmd = @{ shift @_ } ;
+  my %args = @_ ;
+
+  Log::vlog( join(' ', map { shell_quote($_) } @cmd)."\n") ;
+
+  return runx($codes, @cmd) ;
+}
+
+sub v_capturex {
+  Log::croak( "v_capturex: must specify exit codes") unless (ref($_[0]) eq 'ARRAY') ;
+  my $codes = shift ;
+  my @cmd = @{ shift @_ } ;
+  my %args = @_ ;
+
+  Log::vlog( join(' ', map { shell_quote($_) } @cmd)."\n") ;
+
+  my $txt ;
+  if (exists $args{'ENV'}) {
+    my %newenv = %{ $args{'ENV'} } ;
+    local %ENV = (%ENV, %newenv) ;
+
+    $txt = capturex($codes, @cmd) ;
+  }
+  else {
+    $txt = capturex($codes, @cmd) ;
+  }
+
+  if (exists $args{'output-filename'}) {
+    if (length($txt) > 0 || exists $args{'empty-output-ok'}) {
+      f_write($args{'output-filename'}, $txt) ;
+    }
+  }
+  return $txt ;
+}
+
+sub onlynl {
+  my $s = shift ;
+  $s =~ s,[^\n],,gs;
+  return $s;
+}
+
+sub f_read {
+  my $f = shift;
+  open(F,"<$f") || Log::croak( "cannot open $f for reading");
+  my @l = <F>;
+  close(F);
+  return (wantarray ? @l : join('', @l)) ;
+}
+
+sub f_write {
+  my $f = shift;
+  open(F,">$f") || Log::croak( "cannot open $f for writing");
+  print F @_;
+  close(F);
+}
+
+1;
+
+package Log ;
+
+require Exporter;
+our @ISA       = ('Exporter');
+our @EXPORT    = qw(croak carp log);
+
+use Carp ;
+use Carp::Assert ;
+
+our $buffer ;
+END { show() ; }
+
+sub log {
+  if ($main::quiet && !$main::verbose) {
+    $buffer .= join('', @_) ;
+  }
+  else {
+    print STDERR @_ ;
+  }
+}
+
+sub vlog {
+  if ($main::verbose) {
+    print STDERR @_ ;
+  }
+  else {
+    $buffer .= join('', @_) ;
+  }
+}
+
+sub flush { $buffer = "" ; }
+sub show { if ($buffer) { print STDERR $buffer; } flush() ; }
+
+sub croak {
+  show() ; Carp::croak(@_) ;
+}
+
+sub carp {
+  show() ; Carp::carp(@_) ;
+}
+
+1;

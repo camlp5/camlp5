@@ -1,0 +1,19 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/tools/profiling.ml	2012-10-15 10:50:56.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/tools!profiling.ml.INPUT	2020-02-15 23:48:33.729807516 -0800
+@@ -27,7 +27,7 @@
+   in
+   begin try
+     let ic = open_in_bin dumpfile in
+-    let prevl = (input_value ic : profiling_counters) in
++    let prevl : profiling_counters = input_value ic in
+     close_in ic;
+     List.iter2
+       (fun (curname, (curmodes,curcount)) (prevname, (prevmodes,prevcount)) ->
+@@ -50,5 +50,5 @@
+     close_out oc
+   with _ -> ()
+   end
+-
+-let _ = at_exit dump_counters
++;;
++at_exit dump_counters ;;

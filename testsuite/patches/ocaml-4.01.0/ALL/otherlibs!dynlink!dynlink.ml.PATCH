@@ -1,0 +1,27 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/dynlink/dynlink.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/otherlibs!dynlink!dynlink.ml.INPUT	2020-02-15 21:35:14.149807516 -0800
+@@ -227,7 +227,7 @@
+   let digest = Digest.string (file_digest ^ compunit.cu_name) in
+   register_code_fragment code code_size digest;
+   begin try
+-    ignore((Meta.reify_bytecode code code_size) ())
++    ignore(Meta.reify_bytecode code code_size ())
+   with exn ->
+     Symtable.restore_state initial_symtable;
+     raise exn
+@@ -248,13 +248,13 @@
+     if buffer = Config.cmo_magic_number then begin
+       let compunit_pos = input_binary_int ic in  (* Go to descriptor *)
+       seek_in ic compunit_pos;
+-      let cu = (input_value ic : compilation_unit) in
++      let cu : compilation_unit = input_value ic in
+       load_compunit ic file_name file_digest cu
+     end else
+     if buffer = Config.cma_magic_number then begin
+       let toc_pos = input_binary_int ic in  (* Go to table of contents *)
+       seek_in ic toc_pos;
+-      let lib = (input_value ic : library) in
++      let lib : library = input_value ic in
+       begin try
+         Dll.open_dlls Dll.For_execution
+                       (List.map Dll.extract_dll_name lib.lib_dllibs)

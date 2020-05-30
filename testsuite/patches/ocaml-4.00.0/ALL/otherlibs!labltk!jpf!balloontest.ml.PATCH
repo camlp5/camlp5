@@ -1,0 +1,17 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/jpf/balloontest.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!jpf!balloontest.ml.INPUT	2020-02-11 17:15:54.782681975 -0800
+@@ -20,8 +20,8 @@
+ open Widget
+ open Balloon
+ open Protocol
++;;
+ 
+-let _ =
+   let t = openTk () in
+   Balloon.init ();
+   let b = Button.create t ~text: "hello" in
+@@ -29,3 +29,4 @@
+   pack [b];
+   Balloon.put ~on: b ~ms: 1000 "Balloon";
+   Printexc.catch mainLoop ()
++;;

@@ -1,0 +1,13 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/support/textvariable.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!support!textvariable.ml.INPUT	2020-02-11 17:18:30.555184833 -0800
+@@ -114,8 +114,9 @@
+     Hashtbl.remove memo w
+   with
+     Not_found -> ()
++;;
+ 
+-let _ = add_destroy_hook freew
++add_destroy_hook freew;;
+ 
+ (* Allocate a new variable *)
+ let counter = ref 0

@@ -215,7 +215,7 @@ value make_lookahd loc pll sl cl errk =
 value gcl = ref [];
 
 EXTEND
-  GLOBAL: expr;
+  GLOBAL: expr ext_attributes;
   expr: LIKE "match"
     [ [ "lexer"; rl = rules ->
           let rl =
@@ -227,8 +227,8 @@ EXTEND
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
-      | "match"; e = SELF; "with"; "lexer"; rl = rules ->
-          mk_lexer_match loc e rl ] ]
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "lexer"; rl = rules ->
+          Pa_r.expr_to_inline loc (mk_lexer_match loc e rl) ext attrs ] ]
   ;
   expr: LEVEL "simple"
     [ [ "$"; LIDENT "add"; s = STRING ->

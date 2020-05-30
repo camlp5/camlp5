@@ -1,0 +1,43 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/typing/parmatch.ml	2013-04-25 06:32:17.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/typing!parmatch.ml.INPUT	2020-02-16 00:02:01.257807516 -0800
+@@ -903,34 +903,34 @@
+ | ({pat_desc=(Tpat_constant (Const_int _))} as p,_) :: _ ->
+     build_other_constant
+       (function Tpat_constant(Const_int i) -> i | _ -> assert false)
+-      (function i -> Tpat_constant(Const_int i))
++      (fun i -> Tpat_constant(Const_int i))
+       0 succ p env
+ | ({pat_desc=(Tpat_constant (Const_int32 _))} as p,_) :: _ ->
+     build_other_constant
+       (function Tpat_constant(Const_int32 i) -> i | _ -> assert false)
+-      (function i -> Tpat_constant(Const_int32 i))
++      (fun i -> Tpat_constant(Const_int32 i))
+       0l Int32.succ p env
+ | ({pat_desc=(Tpat_constant (Const_int64 _))} as p,_) :: _ ->
+     build_other_constant
+       (function Tpat_constant(Const_int64 i) -> i | _ -> assert false)
+-      (function i -> Tpat_constant(Const_int64 i))
++      (fun i -> Tpat_constant(Const_int64 i))
+       0L Int64.succ p env
+ | ({pat_desc=(Tpat_constant (Const_nativeint _))} as p,_) :: _ ->
+     build_other_constant
+       (function Tpat_constant(Const_nativeint i) -> i | _ -> assert false)
+-      (function i -> Tpat_constant(Const_nativeint i))
++      (fun i -> Tpat_constant(Const_nativeint i))
+       0n Nativeint.succ p env
+ | ({pat_desc=(Tpat_constant (Const_string _))} as p,_) :: _ ->
+     build_other_constant
+       (function Tpat_constant(Const_string s) -> String.length s
+               | _ -> assert false)
+-      (function i -> Tpat_constant(Const_string(String.make i '*')))
++      (fun i -> Tpat_constant(Const_string(String.make i '*')))
+       0 succ p env
+ | ({pat_desc=(Tpat_constant (Const_float _))} as p,_) :: _ ->
+     build_other_constant
+       (function Tpat_constant(Const_float f) -> float_of_string f
+               | _ -> assert false)
+-      (function f -> Tpat_constant(Const_float (string_of_float f)))
++      (fun f -> Tpat_constant(Const_float (string_of_float f)))
+       0.0 (fun f -> f +. 1.0) p env
+ 
+ | ({pat_desc = Tpat_array args} as p,_)::_ ->

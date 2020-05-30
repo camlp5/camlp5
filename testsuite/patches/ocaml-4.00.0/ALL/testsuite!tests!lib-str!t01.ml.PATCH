@@ -1,0 +1,13 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-str/t01.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-str!t01.ml.INPUT	2020-02-11 20:11:20.301557935 -0800
+@@ -998,8 +998,9 @@
+     print_newline()
+   with Not_found ->
+     printf "Not matched\n"
++;;
+ 
+-let _ =
+   if Array.length Sys.argv >= 3
+   then manual_test Sys.argv.(1) Sys.argv.(2)
+   else automated_test()
++;;

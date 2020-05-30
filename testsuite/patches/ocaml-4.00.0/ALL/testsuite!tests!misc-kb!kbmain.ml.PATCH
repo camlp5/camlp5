@@ -1,0 +1,12 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/misc-kb/kbmain.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!misc-kb!kbmain.ml.INPUT	2020-02-11 20:20:59.274383261 -0800
+@@ -76,7 +76,8 @@
+ 
+ let greater pair =
+   match group_order pair with Greater -> true | _ -> false
++;;
+ 
+-let _ =
+   for i = 1 to 20 do kb_complete greater [] geom_rules done
++;;
+ 

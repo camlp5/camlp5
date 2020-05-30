@@ -1,0 +1,15 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/arm/arch.ml	2012-02-24 02:13:02.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/asmcomp!arm!arch.ml.INPUT	2020-02-10 13:36:10.105026055 -0800
+@@ -140,9 +140,10 @@
+ 
+ let identity_addressing = Iindexed 0
+ 
+-let offset_addressing (Iindexed n) delta = Iindexed(n + delta)
++let offset_addressing = function
++    (Iindexed n) -> fun delta -> Iindexed(n + delta)
+ 
+-let num_args_addressing (Iindexed n) = 1
++let num_args_addressing = function (Iindexed n) -> 1
+ 
+ (* Printing operations and addressing modes *)
+ 

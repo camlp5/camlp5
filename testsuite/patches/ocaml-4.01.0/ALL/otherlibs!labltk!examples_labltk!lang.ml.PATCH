@@ -1,0 +1,24 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/labltk/examples_labltk/lang.ml	2012-07-30 11:04:46.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/otherlibs!labltk!examples_labltk!lang.ml.INPUT	2020-02-15 21:53:10.499807516 -0800
+@@ -18,13 +18,13 @@
+ open Tk
+ 
+ let top = opentk ()
+-
++;;
+ (* declare Tk that we use utf-8 to communicate *)
+ (* problem: Text display is highly dependent on your font installation
+    and configulation. The fonts with no-scale setting are selected
+    only if the point sizes are exactly same???
+ *)
+-let _ =
++
+   Encoding.system_set "utf-8";
+   let l = Label.create top ~text: "???" in
+   pack [l];
+@@ -72,4 +72,4 @@
+      "Hangul (한글)", "안녕하세요, 안녕하십니까" ]
+ ;;
+ 
+-let _ = Printexc.print mainLoop ()
++Printexc.print mainLoop () ;;

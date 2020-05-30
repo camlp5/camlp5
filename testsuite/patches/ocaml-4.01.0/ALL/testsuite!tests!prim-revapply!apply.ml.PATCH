@@ -1,0 +1,34 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/prim-revapply/apply.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!prim-revapply!apply.ml.INPUT	2020-02-15 23:11:46.684807516 -0800
+@@ -16,8 +16,8 @@
+ let g x = x * x
+ let h x = x + 1
+ let add x y = x + y
++;;
+ 
+-let _ =
+   List.iter (fun x ->
+     print_int x; print_newline ()
+   )
+@@ -28,14 +28,15 @@
+       h @@ g @@ f @@ 3; (* 37 *)
+       add 4 @@ g @@ f @@ add 3 @@ add 2 @@ 3; (* 260 *)
+     ]
++;;
+ external ( @@ ) :  ('a -> 'b) -> 'a -> 'b = "%apply"
+ 
+ let f x = x + x
+ let g x = x * x
+ let h x = x + 1
+ let add x y = x + y
++;;
+ 
+-let _ =
+   List.iter (fun x ->
+     print_int x; print_newline ()
+   )
+@@ -46,3 +47,4 @@
+       h @@ g @@ f @@ 3; (* 37 *)
+       add 4 @@ g @@ f @@ add 3 @@ add 2 @@ 3; (* 260 *)
+     ]
++;;

@@ -1,0 +1,102 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/typeclass.ml	2012-06-19 03:51:33.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/typing!typeclass.ml.INPUT	2020-02-11 21:28:31.401175223 -0800
+@@ -773,7 +773,7 @@
+   if !Clflags.principal then
+     List.iter (fun (_,_,ty) -> Ctype.unify val_env ty (Ctype.newvar ()))
+       methods;
+-  let meths = Meths.map (function (id, ty) -> id) !meths in
++  let meths = Meths.map (fun (id, ty) -> id) !meths in
+ 
+   (* Check for private methods made public *)
+   let pub_meths' =
+@@ -1300,7 +1300,7 @@
+     let (fields, _) =
+       Ctype.flatten_fields (Ctype.object_fields (Ctype.expand_head env obj_ty))
+     in
+-    List.map (function (lab, _, _) -> lab) fields
++    List.map (fun (lab, _, _) -> lab) fields
+   in
+ 
+   (* Final definitions *)
+@@ -1384,8 +1384,8 @@
+   | Some reason ->
+       let printer =
+         if define_class
+-        then function ppf -> Printtyp.class_declaration id ppf clty
+-        else function ppf -> Printtyp.cltype_declaration id ppf cltydef
++        then fun ppf -> Printtyp.class_declaration id ppf clty
++        else fun ppf -> Printtyp.cltype_declaration id ppf cltydef
+       in
+       raise(Error(cl.pci_loc, Unbound_type_var(printer, reason)))
+   end;
+@@ -1463,7 +1463,7 @@
+ let type_classes define_class approx kind env cls =
+   let cls =
+     List.map
+-      (function cl ->
++      (fun cl ->
+          (cl,
+           Ident.create cl.pci_name.txt, Ident.create cl.pci_name.txt,
+           Ident.create cl.pci_name.txt, Ident.create ("#" ^ cl.pci_name.txt)))
+@@ -1507,7 +1507,7 @@
+     type_classes false approx_description class_description env cls
+   in
+   (List.map
+-     (function
++     (fun
+        (_, id_loc, _, ty_id, cltydef, obj_id, obj_abbr, cl_id, cl_abbr,
+         _, _, ci) ->
+        (ty_id, id_loc, cltydef, obj_id, obj_abbr, cl_id, cl_abbr, ci))
+@@ -1581,9 +1581,9 @@
+         (fun ppf -> fprintf ppf "is not compatible with type")
+   | Field_type_mismatch (k, m, trace) ->
+       Printtyp.report_unification_error ppf trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "The %s %s@ has type" k m)
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but is expected to have type")
+   | Structure_expected clty ->
+       fprintf ppf
+@@ -1620,13 +1620,13 @@
+        Printtyp.type_expr expected
+   | Constructor_type_mismatch (c, trace) ->
+       Printtyp.report_unification_error ppf trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "The expression \"new %s\" has type" c)
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but is used with type")
+   | Virtual_class (cl, mets, vals) ->
+       let print_mets ppf mets =
+-        List.iter (function met -> fprintf ppf "@ %s" met) mets in
++        List.iter (fun met -> fprintf ppf "@ %s" met) mets in
+       let cl_mark = if cl then "" else " type" in
+       let missings =
+         match mets, vals with
+@@ -1645,9 +1645,9 @@
+         Printtyp.longident lid expected provided
+   | Parameter_mismatch trace ->
+       Printtyp.report_unification_error ppf trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "The type parameter")
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "does not meet its constraint: it should be")
+   | Bad_parameters (id, params, cstrs) ->
+       Printtyp.reset_and_mark_loops_list [params; cstrs];
+@@ -1706,9 +1706,9 @@
+         (fun ppf -> fprintf ppf "is not compatible with type")
+   | Final_self_clash trace ->
+       Printtyp.report_unification_error ppf trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "This object is expected to have type")
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but actually has type")
+   | Mutability_mismatch (lab, mut) ->
+       let mut1, mut2 =

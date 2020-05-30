@@ -1,0 +1,15 @@
+---
+name: lexer-pa-pr
+recipes:
+  cp:
+    name: cp
+    steps:
+      - cp
+      - cowardly-comment-stripper
+      - cowardly-arrow
+  lexer-pa-pr:
+    name: lexer-pa-pr
+    steps:
+      - lexer-pa-pr
+      - cowardly-comment-stripper
+      - cowardly-arrow

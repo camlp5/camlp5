@@ -1,0 +1,23 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/tools/ocamldep.ml	2013-08-20 08:32:13.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/tools!ocamldep.ml.INPUT	2020-02-15 23:45:49.932807516 -0800
+@@ -322,7 +322,6 @@
+     file_dependencies_as ML source_file
+   else if List.exists (Filename.check_suffix source_file) !mli_synonyms then
+     file_dependencies_as MLI source_file
+-  else ()
+ 
+ let sort_files_by_dependencies files =
+   let h = Hashtbl.create 31 in
+@@ -411,7 +410,6 @@
+   exit 0;
+ ;;
+ 
+-let _ =
+   Clflags.classic := false;
+   first_include_dirs := Filename.current_dir_name :: !first_include_dirs;
+   Compenv.readenv ppf Before_args;
+@@ -452,3 +450,4 @@
+   Compenv.readenv ppf Before_link;
+   if !sort_files then sort_files_by_dependencies !files;
+   exit (if !error_occurred then 2 else 0)
++;;

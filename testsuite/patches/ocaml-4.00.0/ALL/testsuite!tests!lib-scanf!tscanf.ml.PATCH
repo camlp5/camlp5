@@ -1,0 +1,68 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-scanf/tscanf.ml	2012-03-08 11:52:03.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-scanf!tscanf.ml.INPUT	2020-02-11 20:10:38.565070394 -0800
+@@ -25,12 +25,12 @@
+ 
+ (* Testing space scanning. *)
+ let test0 () =
+-  (sscanf "" "" id) 1 +
+-  (sscanf "" " " id) 2 +
+-  (sscanf " " " " id) 3 +
+-  (sscanf "\t" " " id) 4 +
+-  (sscanf "\n" " " id) 5 +
+-  (sscanf "\n\t 6" " %d" id)
++  sscanf "" "" id 1 +
++  sscanf "" " " id 2 +
++  sscanf " " " " id 3 +
++  sscanf "\t" " " id 4 +
++  sscanf "\n" " " id 5 +
++  sscanf "\n\t 6" " %d" id
+ ;;
+ 
+ test (test0 () = 21)
+@@ -808,7 +808,7 @@
+      let accu = elem :: accu in
+      kscanf ib (fun ib exc -> accu)
+        " %1[;] "
+-       (function
++       (fun
+         | "" -> accu
+         | _ -> scan_elems ib scan_elem accu))
+ ;;
+@@ -818,16 +818,16 @@
+ let rec scan_elems scan_elem accu ib =
+   kscanf ib (fun ib exc -> accu)
+     "%r"
+-    (function ib ->
++    (fun ib ->
+      scan_elem ib
+-       (function elem ->
++       (fun elem ->
+         let accu = elem :: accu in
+         bscanf ib
+           " %1[;] "
+           (function
+            | "" -> accu
+            | _ -> scan_elems scan_elem accu ib)))
+-    (function l -> l)
++    (fun l -> l)
+ ;;
+ 
+ let scan_list scan_elem ib =
+@@ -955,7 +955,7 @@
+ let rec read_elems read_elem accu ib =
+   kscanf ib (fun ib exc -> accu)
+     "%r %1[;] "
+-    (read_elem (function elem -> elem :: accu))
++    (read_elem (fun elem -> elem :: accu))
+     (fun accu s -> if s = "" then accu else read_elems read_elem accu ib)
+ ;;
+ 
+@@ -1222,7 +1222,7 @@
+ and writer ib ob =
+   Scanf.bscanf ib "%s\n" (function
+     | "start" -> send_string ob "Hello World!"; reader ib ob
+-    | "stop" -> Scanf.bscanf ib "%i" (function i -> i)
++    | "stop" -> Scanf.bscanf ib "%i" (fun i -> i)
+     | s -> send_int ob (int_of_string s); reader ib ob);;
+ 
+ let go () =

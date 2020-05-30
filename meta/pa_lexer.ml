@@ -45,11 +45,11 @@ value conv_rules loc rl =
 ;
 
 value mk_lexer loc rl =
-  cparser loc None (conv_rules loc rl)
+  cparser loc (None, (conv_rules loc rl))
 ;
 
 value mk_lexer_match loc e rl =
-  cparser_match loc e None (conv_rules loc rl)
+  cparser_match loc e (None, (conv_rules loc rl))
 ;
 
 (* group together consecutive rules just containing one character *)
@@ -110,7 +110,7 @@ value make_rules loc rl sl cl errk =
         else
           let s =
             let b = accum_chars loc cl in
-            let e = cparser loc None [([], None, b)] in
+            let e = cparser loc (None, [([], None, b)]) in
             (SpNtr loc <:patt< $lid:var ()$ >> e, SpoBang)
           in
           [s :: sl]
@@ -186,7 +186,7 @@ value make_lookahd loc pll sl cl errk =
 value gcl = ref [];
 
 EXTEND
-  GLOBAL: expr;
+  GLOBAL: expr ext_attributes;
   expr: LIKE "match"
     [ [ "lexer"; rl = rules ->
           let rl =
@@ -199,8 +199,8 @@ EXTEND
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
-      | "match"; e = SELF; "with"; "lexer"; rl = rules ->
-          mk_lexer_match loc e rl ] ]
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "lexer"; rl = rules ->
+          Pa_r.expr_to_inline loc (mk_lexer_match loc e rl) ext attrs ] ]
   ;
   expr: LEVEL "simple"
     [ [ "$"; LIDENT "add"; s = STRING ->

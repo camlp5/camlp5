@@ -1,0 +1,18 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/basic/equality.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!basic!equality.ml.INPUT	2020-02-11 17:34:10.547938745 -0800
+@@ -30,8 +30,8 @@
+   let l = ref Nil in
+   for i = 1 to len do l := Cons(!l, i) done;
+   !l
++;;
+ 
+-let _ =
+   test 1 eq0 (compare 0 0);
+   test 2 eqm1 (compare 0 1);
+   test 3 eq1 (compare 1 0);
+@@ -102,4 +102,5 @@
+   test 53 eqtrue (testcmpfloat 0.0 0.0);
+   test 54 eqtrue (testcmpfloat 1.0 0.0);
+   test 55 eqtrue (testcmpfloat 0.0 1.0)
++;;
+ 

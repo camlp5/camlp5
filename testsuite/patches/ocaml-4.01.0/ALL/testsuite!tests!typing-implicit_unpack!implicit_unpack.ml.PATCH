@@ -1,0 +1,16 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/typing-implicit_unpack/implicit_unpack.ml	2012-07-30 11:04:46.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!typing-implicit_unpack!implicit_unpack.ml.INPUT	2020-02-15 23:32:41.086807516 -0800
+@@ -150,10 +150,10 @@
+    MapT with type key = string and type data = string and type map = SSMap.map)
+ ;;
+ 
+-let ssmap =
+-  (let module S = struct include SSMap end in (module S) :
++let ssmap :
+   (module
+-   MapT with type key = string and type data = string and type map = SSMap.map))
++   MapT with type key = string and type data = string and type map = SSMap.map) =
++  (let module S = struct include SSMap end in (module S))
+ ;;
+ 
+ let ssmap =

@@ -42,8 +42,6 @@ and a_symbol 'e 'p =
   | ASnext of loc
   | ASnterm of loc and (string * 'e) and option string
   | ASopt of loc and a_symbol 'e 'p
-  | ASfold of loc and string and string and 'e and 'e and a_symbol 'e 'p
-      and option (a_symbol 'e 'p)
   | ASquot of loc and a_symbol 'e 'p
   | ASrules of loc and a_rules 'e 'p
   | ASself of loc
@@ -73,7 +71,6 @@ type styp =
 
 type text 'e 'p =
   [ TXfacto of loc and text 'e 'p
-  | TXmeta of loc and string and list (text 'e 'p) and 'e and styp
   | TXlist of loc and lmin_len and text 'e 'p and option (text 'e 'p * bool)
   | TXnext of loc
   | TXnterm of loc and name 'e and option string
@@ -250,10 +247,12 @@ module MetaAction =
           <:expr< MLast.ExIfe $mloc$ $mexpr e1$ $mexpr e2$ $mexpr e3$ >>
       | MLast.ExInt loc s c ->
           <:expr< MLast.ExInt $mloc$ $mvala mstring s$ $str:c$ >>
+      | MLast.ExLab loc peoptl ->
+          <:expr< MLast.ExLab $mloc$ $mvala (mlist mpeopt) peoptl$ >>
       | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $mvala mstring s$ >>
       | MLast.ExLet loc rf pel e ->
           let rf = mvala mbool rf in
-          <:expr< MLast.ExLet $mloc$ $rf$ $mvala (mlist mpe) pel$ $mexpr e$ >>
+          <:expr< MLast.ExLet $mloc$ $rf$ $mvala (mlist mpea) pel$ $mexpr e$ >>
       | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $mvala mstring s$ >>
       | MLast.ExMat loc e pwel ->
           <:expr< MLast.ExMat $mloc$ $mexpr e$ $mvala (mlist mpwe) pwel$ >>
@@ -262,8 +261,8 @@ module MetaAction =
           <:expr< MLast.ExRec $mloc$ $pel$ $moption mexpr eo$ >>
       | MLast.ExSeq loc el ->
           <:expr< MLast.ExSeq $mloc$ $mvala (mlist mexpr) el$ >>
-      | MLast.ExSte loc e1 e2 ->
-          <:expr< MLast.ExSte $mloc$ $mexpr e1$ $mexpr e2$ >>
+      | MLast.ExSte loc s e1 e2 ->
+          <:expr< MLast.ExSte $mvala mstring s$ $mloc$ $mexpr e1$ $mvala (mlist mexpr) e2$ >>
       | MLast.ExStr loc s ->
           <:expr< MLast.ExStr $mloc$ $mvala mstring_escaped s$ >>
       | MLast.ExTry loc e pwel ->
@@ -276,8 +275,10 @@ module MetaAction =
       | x -> not_impl "mexpr" x ]
     and mpatt =
       fun
-      [ MLast.PaAcc loc p1 p2 ->
-          <:expr< MLast.PaAcc $mloc$ $mpatt p1$ $mpatt p2$ >>
+      [ MLast.PaPfx loc li p ->
+          <:expr< MLast.PaPfx $mloc$ $mlongid li$ $mpatt p$ >>
+      | MLast.PaLong loc li ->
+          <:expr< MLast.PaLong $mloc$ $mlongid li$ >>
       | MLast.PaAny loc -> <:expr< MLast.PaAny $mloc$ >>
       | MLast.PaApp loc p1 p2 ->
           <:expr< MLast.PaApp $mloc$ $mpatt p1$ $mpatt p2$ >>
@@ -292,23 +293,33 @@ module MetaAction =
           <:expr< MLast.PaTup $mloc$ $mvala (mlist mpatt) pl$ >>
       | MLast.PaTyc loc p t ->
           <:expr< MLast.PaTyc $mloc$ $mpatt p$ $mctyp t$ >>
-      | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mpatt" x ]
+    and mlongid =
+      fun
+      [ MLast.LiApp loc me1 me2 -> <:expr< MLast.LiApp $mloc$ $mlongid me1$ $mlongid me2$ >>
+      | MLast.LiAcc loc me1 uid -> <:expr< MLast.LiAcc $mloc$ $mlongid me1$ $mvala mstring uid$ >>
+      | MLast.LiUid loc s -> <:expr< MLast.LiUid $mloc$ $mvala mstring s$ >> ]
     and mctyp =
       fun
-      [ MLast.TyAcc loc t1 t2 ->
-          <:expr< MLast.TyAcc $mloc$ $mctyp t1$ $mctyp t2$ >>
+      [ MLast.TyAcc loc m1 t2 ->
+          <:expr< MLast.TyAcc $mloc$ $mlongid m1$ $mvala mstring t2$ >>
       | MLast.TyApp loc t1 t2 ->
           <:expr< MLast.TyApp $mloc$ $mctyp t1$ $mctyp t2$ >>
       | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>
       | MLast.TyQuo loc s -> <:expr< MLast.TyQuo $mloc$ $mvala mstring s$ >>
       | MLast.TyTup loc tl ->
           <:expr< MLast.TyTup $mloc$ $mvala (mlist mctyp) tl$ >>
-      | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mctyp" x ]
-    and mpe (p, e) = <:expr< ($mpatt p$, $mexpr e$) >>
+    and mpea (p, e, attrs) =
+      do { assert ([] = Pcaml.unvala attrs) ;
+      <:expr< ($mpatt p$, $mexpr e$, Ploc.VaVal []) >>
+      }
+    and mpe (p, e) =
+      <:expr< ($mpatt p$, $mexpr e$) >>
     and mpwe (p, w, e) =
-      <:expr< ($mpatt p$, $mvala (moption mexpr) w$, $mexpr e$) >>;
+      <:expr< ($mpatt p$, $mvala (moption mexpr) w$, $mexpr e$) >>
+    and mpeopt (p, eopt) =
+      <:expr< ($mpatt p$, $mvala (moption mexpr) eopt$) >>;
   end
 ;
 
@@ -411,10 +422,10 @@ value quot_expr psl e =
         [ <:expr< $uid:c$ >> ->
             let al = List.map loop al in
             <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
-        | <:expr< MLast.$uid:c$ >> ->
+        | <:expr< MLast . $uid:c$ >> ->
             let al = List.map loop al in
             <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
-        | <:expr< $uid:m$.$uid:c$ >> ->
+        | <:expr< $uid:m$ . $uid:c$ >> ->
             let al = List.map loop al in
             <:expr< Qast.Node $str:m ^ "." ^ c$ $mklistexp loc al$ >>
         | <:expr< $lid:f$ >> ->
@@ -432,7 +443,7 @@ value quot_expr psl e =
                  let lab =
                    match p with
                    [ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
-                   | <:patt< $_$.$lid:c$ >> -> <:expr< $str:c$ >>
+                   | MLast.PaPfx _ _ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
                    | _ -> raise Not_found ]
                  in
                  <:expr< ($lab$, $loop e$) >>)
@@ -443,15 +454,15 @@ value quot_expr psl e =
         [ Not_found -> e ]
     | <:expr< $lid:s$ >> ->
         if s = Ploc.name.val then <:expr< Qast.Loc >> else e
-    | <:expr< MLast.$uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
-    | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
+    | <:expr< MLast . $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
+    | <:expr< $uid:m$ . $uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
     | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
     | <:expr< $str:s$ >> -> <:expr< Qast.Str $str:s$ >>
     | <:expr< ($list:el$) >> ->
         let el = List.map loop el in
         <:expr< Qast.Tuple $mklistexp loc el$ >>
     | <:expr< let $flag:r$ $list:pel$ in $e$ >> ->
-        let pel = List.map (fun (p, e) -> (p, loop e)) pel in
+        let pel = List.map (fun (p, e, attrs) -> (p, loop e, attrs)) pel in
         <:expr< let $flag:r$ $list:pel$ in $loop e$ >>
     | _ -> e ]
 ;
@@ -564,14 +575,6 @@ value is_cut =
 value rec make_expr gmod tvar =
   fun
   [ TXfacto loc t -> <:expr< $uid:gmod$.s_facto $make_expr gmod tvar t$ >>
-  | TXmeta loc n tl e t ->
-      let el =
-        List.fold_right
-          (fun t el -> <:expr< [$make_expr gmod "" t$ :: $el$] >>) tl
-          <:expr< [] >>
-      in
-      <:expr<
-        $uid:gmod$.s_meta $str:n$ $el$ (Obj.repr ($e$ : $make_ctyp t tvar$)) >>
   | TXlist loc min t ts ->
       let txt = make_expr gmod "" t in
       match (min, ts) with
@@ -622,7 +625,8 @@ and make_expr_rules loc gmod rl tvar =
                 <:expr< $uid:gmod$.r_next $txt$ $x$ >>)
            <:expr< $uid:gmod$.r_stop >> sl
        in
-       <:expr< [$uid:gmod$.production ($sl$, $ac$) :: $txt$] >>)
+       let hash = Printf.sprintf "%08x" (Hashtbl.hash (Reloc.expr (fun _ -> Ploc.dummy) 0 ac)) in
+       <:expr< [$uid:gmod$.production ($sl$, $str:hash$, $ac$) :: $txt$] >>)
     <:expr< [] >> rl
 ;
 
@@ -647,23 +651,6 @@ value slist loc min sep symb =
     | None -> None ]
   in
   TXlist loc min symb.text t
-;
-
-value sfold loc n foldfun f e s =
-  let styp = STquo loc (new_type_var ()) in
-  let e = <:expr< Extfold.$lid:foldfun$ $f$ $e$ >> in
-  let t = STapp loc (STapp loc (STtyp <:ctyp< Extfold.t _ >>) s.styp) styp in
-  {used = s.used; text = TXmeta loc n [s.text] e t; styp = styp}
-;
-
-value sfoldsep loc n foldfun f e s sep =
-  let styp = STquo loc (new_type_var ()) in
-  let e = <:expr< Extfold.$lid:foldfun$ $f$ $e$ >> in
-  let t =
-    STapp loc (STapp loc (STtyp <:ctyp< Extfold.tsep _ >>) s.styp) styp
-  in
-  {used = s.used @ sep.used; text = TXmeta loc n [s.text; sep.text] e t;
-   styp = styp}
 ;
 
 value mk_psymbol p s t =
@@ -766,11 +753,6 @@ value rec symbol_of_a =
       let text = TXflag loc s.text in
       let styp = STlid loc "bool" in
       {used = s.used; text = text; styp = styp}
-  | ASfold loc n foldfun f e s sep ->
-      let s = symbol_of_a s in
-      match sep with
-      [ Some sep -> sfoldsep loc n foldfun f e s (symbol_of_a sep)
-      | None -> sfold loc n foldfun f e s ]
   | ASkeyw loc s ->
       let text = TXtok loc "" (string_of_a s) in
       {used = []; text = text; styp = STlid loc "string"}
@@ -952,7 +934,7 @@ value let_in_of_extend loc gmod functor_version gl el args =
       let globals =
         List.map
           (fun {expr = e; tvar = x; loc = loc} ->
-             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>))
+             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>, <:vala< [] >>))
           nl
       in
       let locals =
@@ -966,7 +948,8 @@ value let_in_of_extend loc gmod functor_version gl el args =
              (<:patt< $lid:i$ >>,
               <:expr<
                 (grammar_entry_create $str:i$ : $uid:gmod$.Entry.e '$x$)
-              >>))
+              >>,
+             <:vala< [] >>))
           ll
       in
       let e =
@@ -1182,7 +1165,7 @@ EXTEND
           ASkeyw loc e
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
-          let v = <:expr< $uid:i$.$snd e$ >> in
+          let v = <:expr< $uid:i$ . $snd e$ >> in
           ASnterm loc (i ^ "__" ^ fst e, v) lev
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           ASnterm loc n lev

@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/frx/frx_listbox.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!frx!frx_listbox.ml.INPUT	2020-02-11 17:06:46.301230925 -0800
+@@ -71,7 +71,7 @@
+ 
+   bind lb [[], KeyPress]
+       (BindSet([Ev_Char; Ev_Time],
+-          (function ev ->
++          (fun ev ->
+              (* consider only keys producing characters. The callback is called
+               * even if you press Shift.
+               *)

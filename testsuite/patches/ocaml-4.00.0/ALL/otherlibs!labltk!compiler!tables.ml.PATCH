@@ -1,0 +1,26 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/compiler/tables.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!compiler!tables.ml.INPUT	2020-02-11 14:36:09.660714265 -0800
+@@ -103,17 +103,17 @@
+ (******************** The tables ********************)
+ 
+ (* the table of all explicitly defined types *)
+-let types_table = (Hashtbl.create 37 : (string, type_def) Hashtbl.t)
++let types_table : (string, type_def) Hashtbl.t = Hashtbl.create 37
+ (* "builtin" types *)
+-let types_external = ref ([] : (string * parser_arity) list)
++let types_external : (string * parser_arity) list = ref []
+ (* dependancy order *)
+-let types_order = (Tsort.create () : string Tsort.porder)
++let types_order : string Tsort.porder = Tsort.create ()
+ (* Types of atomic values returned by Tk functions *)
+-let types_returned = ref ([] : string list)
++let types_returned : string list = ref []
+ (* Function table *)
+-let function_table = ref ([] : fullcomponent list)
++let function_table : fullcomponent list = ref []
+ (* Widget/Module table *)
+-let module_table = (Hashtbl.create 37 : (string, module_def) Hashtbl.t)
++let module_table : (string, module_def) Hashtbl.t = Hashtbl.create 37
+ 
+ 
+ (* variant name *)

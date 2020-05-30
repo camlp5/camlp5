@@ -87,7 +87,7 @@ value tree_failed entry prev_symb tree =
 value rec find_act =
   fun
   [ DeadEnd -> failwith "find_act"
-  | LocAct act _ -> (magic_act act, 0)
+  | LocAct (_, act) _ -> (magic_act act, 0)
   | Node {son = son; brother = bro} ->
       let (act, n) = try find_act son with [ Failure _ -> find_act bro ] in
       (act, n + 1) ]
@@ -193,10 +193,10 @@ value patt_of_token patt tok =
 value rec parse_tree entry nlevn alevn (tree, fst_symb) act_kont kont =
   match tree with
   [ DeadEnd -> kont
-  | LocAct act _ ->
+  | LocAct (_, act) _ ->
       let act = magic_act act in
       act_kont False act
-  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+  | Node {node = Sself; son = LocAct (_, act) _; brother = bro} ->
       let act = magic_act act in
       let n = entry.ename ^ "_" ^ string_of_int alevn in
       let e =
@@ -210,7 +210,7 @@ value rec parse_tree entry nlevn alevn (tree, fst_symb) act_kont kont =
       in
       let p1 = act_kont True act in
       parse_standard_symbol e p1 p2 (act, 0)
-  | Node {node = s; son = LocAct act _; brother = bro} ->
+  | Node {node = s; son = LocAct (_, act) _; brother = bro} ->
       let act = magic_act act in
       let p2 = parse_tree entry nlevn alevn (bro, fst_symb) act_kont kont in
       let p1 = act_kont False act in
@@ -518,12 +518,13 @@ value compile_entry entry =
   let pel1 = start_parser_of_entry entry in
   let pel2 = continue_parser_of_entry entry in
   let pel = list_alternate pel1 pel2 in
-  List.fold_right
+  let pel = List.fold_right
     (fun pe list ->
        match pe with
        [ Some pe -> [pe :: list]
        | None -> list ])
-    pel (continue_parser_of_entry_again entry)
+    pel (continue_parser_of_entry_again entry) in
+  List.map (fun (p,e) -> (p,e,<:vala< [] >>)) pel
 ;
 
 (* get all entries connected together *)
@@ -550,7 +551,7 @@ and scan_symbol list =
   | Sflag s -> scan_symbol list s
   | Stree t -> scan_tree list t
   | Svala _ s -> scan_symbol list s
-  | Smeta _ _ _ | Sself | Snext | Scut | Stoken _ -> list ]
+  | Sself | Snext | Scut | Stoken _ -> list ]
 and scan_level list lev =
   let list = scan_tree list lev.lsuffix in
   let list = scan_tree list lev.lprefix in
@@ -582,22 +583,12 @@ value rec expr_list =
   | [x :: l] -> <:expr< [$str:String.escaped x$ :: $expr_list l$] >> ]
 ;
 
-value list_filter =
-  IFDEF OCAML_VERSION <= OCAML_2_01 THEN
-    fun f ->
-      loop [] where rec loop accu =
-        fun
-        [ [x :: l] -> loop (if f x then [x :: accu] else accu) l
-        | [] -> List.rev accu ]
-  ELSE List.filter END
-;
-
 value compile () =
   let _ = keywords.val := [] in
   let list = List.fold_left all_entries_in_graph [] entries.val in
   let list =
-    list_filter (fun e -> List.memq e list) entries.val @
-    list_filter (fun e -> not (List.memq e entries.val)) list
+    List.filter (fun e -> List.memq e list) entries.val @
+    List.filter (fun e -> not (List.memq e entries.val)) list
   in
   let list =
     let set = ref [] in

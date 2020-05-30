@@ -1,0 +1,15 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-threads/testsignal2.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-threads!testsignal2.ml.INPUT	2020-02-11 20:16:24.012445678 -0800
+@@ -2,10 +2,11 @@
+   while true do
+     print_char c; flush stdout; Thread.delay delay
+   done
++;;
+ 
+-let _ =
+   Thread.sigmask Unix.SIG_BLOCK [Sys.sigint; Sys.sigterm];
+   let th1 = Thread.create (print_message 0.6666666666) 'a' in
+   let th2 = Thread.create (print_message 1.0) 'b' in
+   let s = Thread.wait_signal [Sys.sigint; Sys.sigterm] in
+   Printf.printf "Got signal %d, exiting...\n" s
++;;

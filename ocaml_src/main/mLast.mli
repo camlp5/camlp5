@@ -24,42 +24,49 @@ type 'a class_infos =
     ciVir : bool;
     ciPrm : loc * type_var list;
     ciNam : string;
-    ciExp : 'a }
-;;
-
-type ctyp =
-    TyAcc of loc * ctyp * ctyp
+    ciExp : 'a;
+    ciAttributes : attributes }
+and longid =
+    LiAcc of loc * longid * string
+  | LiApp of loc * longid * longid
+  | LiUid of loc * string
+and ctyp =
+    TyAcc of loc * longid * string
   | TyAli of loc * ctyp * ctyp
   | TyAny of loc
   | TyApp of loc * ctyp * ctyp
   | TyArr of loc * ctyp * ctyp
-  | TyCls of loc * string list
+  | TyCls of loc * longid_lident
   | TyLab of loc * string * ctyp
   | TyLid of loc * string
   | TyMan of loc * ctyp * bool * ctyp
-  | TyObj of loc * (string * ctyp) list * bool
+  | TyObj of loc * (string option * ctyp * attributes) list * bool
   | TyOlb of loc * string * ctyp
+  | TyOpn of loc
   | TyPck of loc * module_type
   | TyPol of loc * string list * ctyp
   | TyPot of loc * string list * ctyp
   | TyQuo of loc * string
-  | TyRec of loc * (loc * string * bool * ctyp) list
-  | TySum of loc * (loc * string * ctyp list * ctyp option) list
+  | TyRec of loc * (loc * string * bool * ctyp * attributes) list
+  | TySum of loc * generic_constructor list
   | TyTup of loc * ctyp list
-  | TyUid of loc * string
   | TyVrn of loc * poly_variant list * string list option option
   | TyXtr of loc * string * ctyp option
+  | TyAtt of loc * ctyp * attribute
+  | TyExten of loc * attribute
 and poly_variant =
-    PvTag of loc * string * bool * ctyp list
+    PvTag of loc * string * bool * ctyp list * attributes
   | PvInh of loc * ctyp
 and patt =
-    PaAcc of loc * patt * patt
+    PaPfx of loc * longid * patt
+  | PaLong of loc * longid
   | PaAli of loc * patt * patt
   | PaAnt of loc * patt
   | PaAny of loc
   | PaApp of loc * patt * patt
   | PaArr of loc * patt list
   | PaChr of loc * string
+  | PaExc of loc * patt
   | PaFlo of loc * string
   | PaInt of loc * string * string
   | PaLab of loc * (patt * patt option) list
@@ -73,156 +80,198 @@ and patt =
   | PaStr of loc * string
   | PaTup of loc * patt list
   | PaTyc of loc * patt * ctyp
-  | PaTyp of loc * string list
-  | PaUid of loc * string
+  | PaTyp of loc * longid_lident
   | PaUnp of loc * string option * module_type option
   | PaVrn of loc * string
   | PaXtr of loc * string * patt option
+  | PaAtt of loc * patt * attribute
+  | PaExten of loc * attribute
 and expr =
     ExAcc of loc * expr * expr
   | ExAnt of loc * expr
   | ExApp of loc * expr * expr
-  | ExAre of loc * expr * expr
+  | ExAre of loc * string * expr * expr list
   | ExArr of loc * expr list
   | ExAsr of loc * expr
   | ExAss of loc * expr * expr
-  | ExBae of loc * expr * expr list
+  | ExBae of loc * string * expr * expr list
   | ExChr of loc * string
   | ExCoe of loc * expr * ctyp option * ctyp
   | ExFlo of loc * string
-  | ExFor of loc * string * expr * expr * bool * expr list
-  | ExFun of loc * (patt * expr option * expr) list
+  | ExFor of loc * patt * expr * expr * bool * expr list
+  | ExFun of loc * case_branch list
   | ExIfe of loc * expr * expr * expr
   | ExInt of loc * string * string
-  | ExJdf of loc * joinclause list * expr
   | ExLab of loc * (patt * expr option) list
   | ExLaz of loc * expr
-  | ExLet of loc * bool * (patt * expr) list * expr
+  | ExLet of loc * bool * (patt * expr * attributes) list * expr
+  | ExLEx of loc * string * ctyp list * expr * attributes
   | ExLid of loc * string
   | ExLmd of loc * string option * module_expr * expr
-  | ExLop of loc * module_expr * expr
-  | ExMat of loc * expr * (patt * expr option * expr) list
-  | ExNew of loc * string list
+  | ExLop of loc * bool * module_expr * expr
+  | ExMat of loc * expr * case_branch list
+  | ExNew of loc * longid_lident
   | ExObj of loc * patt option * class_str_item list
   | ExOlb of loc * patt * expr option
   | ExOvr of loc * (string * expr) list
-  | ExPar of loc * expr * expr
   | ExPck of loc * module_expr * module_type option
   | ExRec of loc * (patt * expr) list * expr option
-  | ExRpl of loc * expr option * (loc * string)
   | ExSeq of loc * expr list
-  | ExSpw of loc * expr
   | ExSnd of loc * expr * string
-  | ExSte of loc * expr * expr
+  | ExSte of loc * string * expr * expr list
   | ExStr of loc * string
-  | ExTry of loc * expr * (patt * expr option * expr) list
+  | ExTry of loc * expr * case_branch list
   | ExTup of loc * expr list
   | ExTyc of loc * expr * ctyp
   | ExUid of loc * string
   | ExVrn of loc * string
   | ExWhi of loc * expr * expr list
   | ExXtr of loc * string * expr option
+  | ExAtt of loc * expr * attribute
+  | ExExten of loc * attribute
+  | ExUnr of loc
+and case_branch = patt * expr option * expr
 and module_type =
-    MtAcc of loc * module_type * module_type
-  | MtApp of loc * module_type * module_type
-  | MtFun of loc * functor_parameter * module_type
+    MtLong of loc * longid
+  | MtLongLid of loc * longid * string
   | MtLid of loc * string
+  | MtFun of loc * (string option * module_type) option * module_type
   | MtQuo of loc * string
   | MtSig of loc * sig_item list
   | MtTyo of loc * module_expr
-  | MtUid of loc * string
   | MtWit of loc * module_type * with_constr list
   | MtXtr of loc * string * module_type option
+  | MtAtt of loc * module_type * attribute
+  | MtExten of loc * attribute
 and functor_parameter = (string option * module_type) option
 and sig_item =
     SgCls of loc * class_type class_infos list
   | SgClt of loc * class_type class_infos list
   | SgDcl of loc * sig_item list
   | SgDir of loc * string * expr option
-  | SgExc of loc * string * ctyp list
-  | SgExt of loc * string * ctyp * string list
-  | SgInc of loc * module_type
-  | SgMod of loc * bool * (string option * module_type) list
-  | SgMty of loc * string * module_type
-  | SgOpn of loc * string list
-  | SgTyp of loc * type_decl list
+  | SgExc of loc * generic_constructor * attributes
+  | SgExt of loc * string * ctyp * string list * attributes
+  | SgInc of loc * module_type * attributes
+  | SgMod of loc * bool * (string option * module_type * attributes) list
+  | SgMty of loc * string * module_type * attributes
+  | SgMtyAbs of loc * string * attributes
+  | SgMtyAlias of loc * string * longid * attributes
+  | SgModSubst of loc * string * longid * attributes
+  | SgOpn of loc * longid * attributes
+  | SgTyp of loc * bool * type_decl list
+  | SgTypExten of loc * type_extension
   | SgUse of loc * string * (sig_item * loc) list
-  | SgVal of loc * string * ctyp
+  | SgVal of loc * string * ctyp * attributes
   | SgXtr of loc * string * sig_item option
+  | SgFlAtt of loc * attribute
+  | SgExten of loc * attribute * attributes
 and with_constr =
-    WcMod of loc * string list * module_expr
-  | WcMos of loc * string list * module_expr
-  | WcTyp of loc * string list * type_var list * bool * ctyp
-  | WcTys of loc * string list * type_var list * ctyp
+    WcMod of loc * longid * module_expr
+  | WcMos of loc * longid * module_expr
+  | WcTyp of loc * longid_lident * type_var list * bool * ctyp
+  | WcTys of loc * longid_lident * type_var list * ctyp
 and module_expr =
     MeAcc of loc * module_expr * module_expr
   | MeApp of loc * module_expr * module_expr
-  | MeFun of loc * functor_parameter * module_expr
+  | MeFun of loc * (string option * module_type) option * module_expr
   | MeStr of loc * str_item list
   | MeTyc of loc * module_expr * module_type
   | MeUid of loc * string
-  | MeUnp of loc * expr * module_type option
+  | MeUnp of loc * expr * module_type option * module_type option
   | MeXtr of loc * string * module_expr option
+  | MeAtt of loc * module_expr * attribute
+  | MeExten of loc * attribute
 and str_item =
     StCls of loc * class_expr class_infos list
   | StClt of loc * class_type class_infos list
   | StDcl of loc * str_item list
-  | StDef of loc * joinclause list
   | StDir of loc * string * expr option
-  | StExc of loc * string * ctyp list * string list
-  | StExp of loc * expr
-  | StExt of loc * string * ctyp * string list
-  | StInc of loc * module_expr
-  | StMod of loc * bool * (string option * module_expr) list
-  | StMty of loc * string * module_type
-  | StOpn of loc * string list
+  | StExc of loc * extension_constructor * attributes
+  | StExp of loc * expr * attributes
+  | StExt of loc * string * ctyp * string list * attributes
+  | StInc of loc * module_expr * attributes
+  | StMod of loc * bool * (string option * module_expr * attributes) list
+  | StMty of loc * string * module_type * attributes
+  | StMtyAbs of loc * string * attributes
+  | StOpn of loc * bool * module_expr * attributes
   | StTyp of loc * bool * type_decl list
+  | StTypExten of loc * type_extension
   | StUse of loc * string * (str_item * loc) list
-  | StVal of loc * bool * (patt * expr) list
+  | StVal of loc * bool * (patt * expr * attributes) list
   | StXtr of loc * string * str_item option
-and joinclause =
-  { jcLoc : loc;
-    jcVal : (loc * (loc * (loc * string) * patt option) list * expr) list }
+  | StFlAtt of loc * attribute
+  | StExten of loc * attribute * attributes
 and type_decl =
-  { tdNam : loc * string;
+  { tdIsDecl : bool;
+    tdNam : loc * string;
     tdPrm : type_var list;
     tdPrv : bool;
     tdDef : ctyp;
-    tdCon : (ctyp * ctyp) list }
+    tdCon : (ctyp * ctyp) list;
+    tdAttributes : attributes }
+and generic_constructor = loc * string * ctyp list * ctyp option * attributes
+and extension_constructor =
+    EcTuple of generic_constructor
+  | EcRebind of string * longid * attributes
+and type_extension =
+  { teNam : longid_lident;
+    tePrm : type_var list;
+    tePrv : bool;
+    teECs : extension_constructor list;
+    teAttributes : attributes }
 and class_type =
-    CtAcc of loc * class_type * class_type
-  | CtApp of loc * class_type * class_type
+    CtLongLid of loc * longid * string
+  | CtLid of loc * string
+  | CtLop of loc * bool * longid * class_type
   | CtCon of loc * class_type * ctyp list
   | CtFun of loc * ctyp * class_type
-  | CtIde of loc * string
   | CtSig of loc * ctyp option * class_sig_item list
   | CtXtr of loc * string * class_type option
+  | CtAtt of loc * class_type * attribute
+  | CtExten of loc * attribute
 and class_sig_item =
-    CgCtr of loc * ctyp * ctyp
+    CgCtr of loc * ctyp * ctyp * attributes
   | CgDcl of loc * class_sig_item list
-  | CgInh of loc * class_type
-  | CgMth of loc * bool * string * ctyp
-  | CgVal of loc * bool * string * ctyp
-  | CgVir of loc * bool * string * ctyp
+  | CgInh of loc * class_type * attributes
+  | CgMth of loc * bool * string * ctyp * attributes
+  | CgVal of loc * bool * bool * string * ctyp * attributes
+  | CgVir of loc * bool * string * ctyp * attributes
+  | CgFlAtt of loc * attribute
+  | CgExten of loc * attribute
 and class_expr =
     CeApp of loc * class_expr * expr
-  | CeCon of loc * string list * ctyp list
+  | CeCon of loc * longid_lident * ctyp list
   | CeFun of loc * patt * class_expr
-  | CeLet of loc * bool * (patt * expr) list * class_expr
+  | CeLet of loc * bool * (patt * expr * attributes) list * class_expr
+  | CeLop of loc * bool * longid * class_expr
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
   | CeXtr of loc * string * class_expr option
+  | CeAtt of loc * class_expr * attribute
+  | CeExten of loc * attribute
 and class_str_item =
-    CrCtr of loc * ctyp * ctyp
+    CrCtr of loc * ctyp * ctyp * attributes
   | CrDcl of loc * class_str_item list
-  | CrInh of loc * class_expr * string option
-  | CrIni of loc * expr
-  | CrMth of loc * bool * bool * string * ctyp option * expr
-  | CrVal of loc * bool * bool * string * expr
-  | CrVav of loc * bool * string * ctyp
-  | CrVir of loc * bool * string * ctyp
-;;
+  | CrInh of loc * bool * class_expr * string option * attributes
+  | CrIni of loc * expr * attributes
+  | CrMth of loc * bool * bool * string * ctyp option * expr * attributes
+  | CrVal of loc * bool * bool * string * expr * attributes
+  | CrVav of loc * bool * string * ctyp * attributes
+  | CrVir of loc * bool * string * ctyp * attributes
+  | CrFlAtt of loc * attribute
+  | CrExten of loc * attribute
+and longid_lident = longid option * string
+and payload =
+    StAttr of loc * str_item list
+  | SiAttr of loc * sig_item list
+  | TyAttr of loc * ctyp
+  | PaAttr of loc * patt * expr option
+and attribute_body = (loc * string) * payload
+and attribute = attribute_body
+and attributes_no_anti = attribute list
+and attributes = attributes_no_anti;;
 
+external loc_of_longid : longid -> loc = "%field0";;
 external loc_of_ctyp : ctyp -> loc = "%field0";;
 external loc_of_patt : patt -> loc = "%field0";;
 external loc_of_expr : expr -> loc = "%field0";;

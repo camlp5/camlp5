@@ -8,6 +8,7 @@
 #load "pa_extprint.cmo";
 #load "pa_pprintf.cmo";
 
+open Exparser;
 open Parserify;
 open Pcaml;
 open Pretty;
@@ -66,6 +67,12 @@ value ident_option pc =
   | None -> pprintf pc "" ]
 ;
 
+value patt_option pc =
+  fun
+  [ Some s -> pprintf pc " %p" patt s
+  | None -> pprintf pc "" ]
+;
+
 value stream_patt_comp pc spc =
   match spc with
   [ SpTrm _ p <:vala< None >> ->
@@ -107,11 +114,11 @@ value parser_case force_vertic pc (sp, po, e) =
       horiz_vertic
         (fun () ->
            if force_vertic then sprintf "\n"
-           else pprintf pc "[< >]%p -> %q" ident_option po expr e "|")
+           else pprintf pc "[< >]%p -> %q" patt_option po expr e "|")
         (fun () ->
-           pprintf pc "[< >]%p ->@;%q" ident_option po expr e "|")
+           pprintf pc "[< >]%p ->@;%q" patt_option po expr e "|")
   | _ ->
-      pprintf pc "[< %p@[ >]%p ->@]@;%q" stream_patt sp ident_option po
+      pprintf pc "[< %p@[ >]%p ->@]@;%q" stream_patt sp patt_option po
         expr e "|" ]
 ;
 
@@ -128,7 +135,7 @@ value parser_body pc (po, spel) =
         horiz_vertic
           (fun () ->
              let s =
-               pprintf pc "%p %p" ident_option po (parser_case False) spe
+               pprintf pc "%p %p" patt_option po (parser_case False) spe
              in
              Some s)
           (fun () -> None)
@@ -139,7 +146,7 @@ value parser_body pc (po, spel) =
   | None ->
       match spel with
       [ [] -> pprintf pc " []"
-      | [spe] -> pprintf pc "%p@;%p" ident_option po (parser_case False) spe
+      | [spe] -> pprintf pc "%p@;%p" patt_option po (parser_case False) spe
       | _ ->
           let force_vertic =
             if flag_equilibrate_cases.val then
@@ -158,7 +165,7 @@ value parser_body pc (po, spel) =
               has_vertic
             else False
           in
-          pprintf pc "%p@   %p" ident_option po
+          pprintf pc "%p@   %p" patt_option po
             (vlist2 (parser_case_sh force_vertic)
                (bar_before (parser_case_sh force_vertic)))
             spel ] ]

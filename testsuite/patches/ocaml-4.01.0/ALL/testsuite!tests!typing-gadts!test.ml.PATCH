@@ -1,0 +1,106 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/typing-gadts/test.ml	2013-06-16 20:03:37.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!typing-gadts!test.ml.INPUT	2020-02-15 23:29:20.954807516 -0800
+@@ -16,7 +16,7 @@
+         | Pair (x,y) ->
+             (eval x,eval y)
+         | App (f,a) ->
+-            (eval f) (eval a)
++            eval f (eval a)
+         | Abs f -> f
+ 
+     let discern : type a. a t -> _ = function
+@@ -95,19 +95,19 @@
+   struct
+     type _ t = C : int -> int t
+     type u = D : 'a t -> u
+-    let eval (D x) = x
++    let eval = function D x -> x
+   end
+ ;;
+ 
+ module Rectype =
+   struct
+-    type (_,_) t = C : ('a,'a) t
+-    let _ =
++    type (_,_) t = C : ('a,'a) t ;;
++
+       fun (type s) ->
+         let a : (s, s * s) t = failwith "foo" in
+         match a with
+           C ->
+-            ()
++            () ;;
+   end
+ ;;
+ 
+@@ -271,13 +271,13 @@
+ 
+ let f (type a) (x : a t) y =
+   match x with Int ->
+-    let module M = struct type b = a let z = (y : b) end
++    let module M = struct type b = a let z : b = y end
+     in M.z
+ ;; (* fails because of aliasing... *)
+ 
+ let f (type a) (x : a t) y =
+   match x with Int ->
+-    let module M = struct type b = int let z = (y : b) end
++    let module M = struct type b = int let z : b = y end
+     in M.z
+ ;; (* ok *)
+ 
+@@ -303,18 +303,18 @@
+ type (_,_) eq = Eq : ('a,'a) eq ;;
+ 
+ let f : type a b. (a,b) eq -> (<m : a; ..> as 'c) -> (<m : b; ..> as 'c) =
+-  fun Eq o -> o
++  function Eq -> fun o -> o
+ ;; (* fail *)
+ 
+ let f : type a b. (a,b) eq -> <m : a; ..> -> <m : b; ..> =
+-  fun Eq o -> o
++  function Eq -> fun o -> o
+ ;; (* fail *)
+ 
+ let f (type a) (type b) (eq : (a,b) eq) (o : <m : a; ..>) : <m : b; ..> =
+   match eq with Eq -> o ;; (* should fail *)
+ 
+ let f : type a b. (a,b) eq -> <m : a> -> <m : b> =
+-  fun Eq o -> o
++  function Eq -> fun o -> o
+ ;; (* ok *)
+ 
+ let int_of_bool : (bool,int) eq = Obj.magic Eq;;
+@@ -323,7 +323,7 @@
+ let y = (x, f int_of_bool x);;
+ 
+ let f : type a. (a, int) eq -> <m : a> -> bool =
+-  fun Eq o -> ignore (o : <m : int; ..>); o#m = 3
++  function Eq -> fun o -> ignore (o : <m : int; ..>); o#m = 3
+ ;; (* should be ok *)
+ 
+ let f : type a b. (a,b) eq -> < m : a; .. > -> < m : b > =
+@@ -339,19 +339,19 @@
+     r;;
+ 
+ let f : type a b. (a,b) eq -> [> `A of a] -> [> `A of b] =
+-  fun Eq o -> o ;; (* fail *)
++  function Eq -> fun o -> o ;; (* fail *)
+ 
+ let f (type a) (type b) (eq : (a,b) eq) (v : [> `A of a]) : [> `A of b] =
+   match eq with Eq -> v ;; (* should fail *)
+ 
+ let f : type a b. (a,b) eq -> [< `A of a | `B] -> [< `A of b | `B] =
+-  fun Eq o -> o ;; (* fail *)
++  function Eq -> fun o -> o ;; (* fail *)
+ 
+ let f : type a b. (a,b) eq -> [`A of a | `B] -> [`A of b | `B] =
+-  fun Eq o -> o ;; (* ok *)
++  function Eq -> fun o -> o ;; (* ok *)
+ 
+ let f : type a. (a, int) eq -> [`A of a] -> bool =
+-  fun Eq v -> match v with `A 1 -> true | _ -> false
++  function Eq -> fun v -> match v with `A 1 -> true | _ -> false
+ ;; (* ok *)
+ 
+ let f : type a b. (a,b) eq -> [> `A of a | `B] -> [`A of b | `B] =

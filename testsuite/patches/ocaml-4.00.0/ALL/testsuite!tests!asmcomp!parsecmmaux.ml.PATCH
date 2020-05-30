@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/asmcomp/parsecmmaux.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!asmcomp!parsecmmaux.ml.INPUT	2020-02-11 17:29:30.960842852 -0800
+@@ -19,7 +19,7 @@
+ 
+ exception Error of error
+ 
+-let tbl_ident = (Hashtbl.create 57 : (string, Ident.t) Hashtbl.t)
++let tbl_ident : (string, Ident.t) Hashtbl.t = Hashtbl.create 57
+ 
+ let bind_ident s =
+   let id = Ident.create s in

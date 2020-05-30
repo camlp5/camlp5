@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/labltk/frx/frx_lbutton.ml	2012-07-17 08:31:12.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/otherlibs!labltk!frx!frx_lbutton.ml.INPUT	2020-02-15 21:55:22.300807516 -0800
+@@ -37,7 +37,7 @@
+   let b = Button.create f (but@com)
+   and l = Label.create f (lab@com) in
+     pack [b;l][];
+-    bind l [[],ButtonPressDetail 1] (BindSet ([],(function _ -> Button.invoke b)));
++    bind l [[],ButtonPressDetail 1] (BindSet ([],(fun _ -> Button.invoke b)));
+     f
+ 
+ let configure f options =

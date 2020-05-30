@@ -35,7 +35,7 @@ value option f =
 
 value vala f v = Pcaml.vala_mapa f (fun _ -> ()) v;
 
-value longident =
+value id_list =
   fun
   [ [s; _ :: _] -> addmodule s
   | _ -> () ]
@@ -43,12 +43,12 @@ value longident =
 
 value rec ctyp =
   fun
-  [ TyAcc _ t _ -> ctyp_module t
+  [ <:ctyp< $longid:t$ . $lid:_$ >> -> longident t
   | TyAli _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyAny _ -> ()
   | TyArr _ t1 t2 -> do { ctyp t1; ctyp t2 }
-  | <:ctyp< # $list:li$ >> -> longident li
+  | <:ctyp< # $longid:li$ . $lid:_$ >> -> longident li
   | TyLab _ _ t -> ctyp t
   | TyLid _ _ -> ()
   | TyMan _ t1 _ t2 -> do { ctyp t1; ctyp t2 }
@@ -61,8 +61,8 @@ value rec ctyp =
   | <:ctyp< [ > $list:sbtll$ ] >> -> list variant sbtll
   | <:ctyp< [ < $list:sbtll$ > $list:_$ ] >> -> list variant sbtll
   | x -> not_impl "ctyp" x ]
-and constr_decl (_, _, tl, rto) = list ctyp (Pcaml.unvala tl)
-and label_decl (_, _, _, t) = ctyp t
+and constr_decl (_, _, tl, rto,_) = list ctyp (Pcaml.unvala tl)
+and label_decl (_, _, _, t, _) = ctyp t
 and variant =
   fun
   [ <:poly_variant< ` $_$ of $flag:_$ $list:tl$ >> -> list ctyp tl
@@ -72,15 +72,15 @@ and variant =
     END ]
 and ctyp_module =
   fun
-  [ <:ctyp< $t$.$_$ >> -> ctyp_module t
+  [ 
+    <:ctyp< $longid:t$ . $lid:_$ >> -> longident t
   | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
-  | <:ctyp< $uid:m$ >> -> addmodule m
   | x -> not_impl "ctyp_module" x ]
-;
 
-value rec patt =
+and patt =
   fun
-  [ PaAcc _ p _ -> patt_module p
+  [ PaPfx _ li _ -> longident li
+  | PaLong _ li -> longident li
   | PaAli _ p1 p2 -> do { patt p1; patt p2 }
   | PaAny _ -> ()
   | PaApp _ p1 p2 -> do { patt p1; patt p2 }
@@ -98,22 +98,21 @@ value rec patt =
   | <:patt< $str:_$ >> -> ()
   | <:patt< ($list:pl$) >> -> list patt pl
   | <:patt< ($p$ : $t$) >> -> do { patt p; ctyp t }
-  | <:patt< $uid:_$ >> -> ()
   | <:patt< (module $_$ : $mt$) >> -> module_type mt
   | PaVrn _ _ -> ()
   | x -> not_impl "patt" x ]
 and patt_module =
   fun
-  [ <:patt< $uid:m$ >> -> addmodule m
-  | <:patt< $p$.$_$ >> -> patt_module p
+  [ <:patt< $longid:p$ . $_$ >> -> longident p
+  | <:patt< $longid:p$ >> -> longident p
   | x -> not_impl "patt_module" x ]
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =
   fun
-  [ <:expr< $lid:s$.$e2$ >> -> do { expr_module e2 }
-  | <:expr< $e1$.$e2$ >> -> do { expr_module e1; expr e2 }
+  [ <:expr< $lid:s$ . $e2$ >> -> do { expr_module e2 }
+  | <:expr< $e1$ . $e2$ >> -> do { expr_module e1; expr e2 }
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
-  | ExAre _ e1 e2 -> do { expr e1; expr e2 }
+  | ExAre _ _ e1 e2 -> do { expr e1; list expr (Pcaml.unvala e2) }
   | <:expr< [| $list:el$ |] >> -> list expr el
   | ExAsr _ e -> expr e
   | ExAss _ e1 e2 -> do { expr e1; expr e2 }
@@ -144,7 +143,7 @@ and expr =
       expr e;
       list match_case pwel
     }
-  | <:expr< new $list:li$ >> -> longident li
+  | <:expr< new $longid:li$ . $lid:_$ >> -> longident li
   | ExOlb _ _ eo -> option expr (Pcaml.unvala eo)
   | <:expr< {$list:lel$} >> -> list label_expr lel
   | <:expr< {($w$) with $list:lel$} >> -> do {
@@ -153,7 +152,7 @@ and expr =
     }
   | <:expr< do { $list:el$ } >> -> list expr el
   | ExSnd _ e _ -> expr e
-  | ExSte _ e1 e2 -> do { expr e1; expr e2 }
+  | ExSte _ _ e1 e2 -> do { expr e1; list expr (Pcaml.unvala e2) }
   | <:expr< $str:_$ >> -> ()
   | <:expr< try $e$ with [ $list:pwel$ ] >> -> do {
       expr e;
@@ -169,7 +168,7 @@ and expr_module =
   fun
   [ <:expr< $uid:m$ >> -> addmodule m
   | e -> expr e ]
-and let_binding (p, e) = do { patt p; expr e }
+and let_binding (p, e, _) = do { patt p; expr e }
 and label_expr (p, e) = do { patt p; expr e }
 and match_case (p, w, e) = do { patt p; vala (option expr) w; expr e }
 and module_type =
@@ -197,14 +196,14 @@ and sig_item =
   fun
   [ <:sig_item< declare $list:sil$ end >> -> list sig_item sil
   | <:sig_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
-  | SgExt _ _ t _ -> ctyp t
+  | SgExt _ _ t _ _ -> ctyp t
   | <:sig_item< include $mt$ >> -> module_type mt
   | <:sig_item< module $flag:_$ $list:ntl$ >> ->
-      list (fun (_, mt) -> module_type mt) ntl
-  | SgMty _ _ mt -> module_type mt
-  | <:sig_item< open $[s :: _]$ >> -> addmodule s
+      list (fun (_, mt,_) -> module_type mt) ntl
+  | SgMty _ _ mt _ -> module_type mt
+  | <:sig_item< open $longid:li$ $itemattrs:_$ >> -> longident li
   | <:sig_item< type $list:tdl$ >> -> list type_decl tdl
-  | SgVal _ _ t -> ctyp t
+  | SgVal _ _ t _ -> ctyp t
   | <:sig_item< # $_$ $_$ >> -> ()
   | x -> not_impl "sig_item" x ]
 and module_expr =
@@ -219,20 +218,28 @@ and module_expr =
   | <:module_expr< ($me$ : $mt$) >> -> do { module_expr me; module_type mt }
   | <:module_expr< $uid:_$ >> -> ()
   | x -> not_impl "module_expr" x ]
+and longident =
+  fun
+  [ <:extended_longident< $longid:m$ . $uid:_$ >> -> longident m
+  | <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> -> do { longident me1; longident me2 }
+  | <:extended_longident< $uid:m$ >> -> addmodule m
+  | x -> not_impl "longident" x ]
 and str_item =
   fun
   [ <:str_item< class $list:cil$ >> ->
       list (fun ci -> class_expr ci.ciExp) cil
   | <:str_item< declare $list:sil$ end >> -> list str_item sil
   | StDir _ _ _ -> ()
-  | <:str_item< exception $uid:_$ of $list:tl$ = $list:_$ >> -> list ctyp tl
+  | <:str_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
   | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
   | <:str_item< include $me$ >> -> module_expr me
   | <:str_item< module $flag:_$ $list:nel$ >> ->
-      list (fun (_, me) -> module_expr me) nel
+      list (fun (_, me,_) -> module_expr me) nel
   | <:str_item< module type $_$ = $mt$ >> -> module_type mt
-  | <:str_item< open $[s :: _]$ >> -> addmodule s
+  | <:str_item< open $!:_$ $uid:s$ >> -> addmodule s
+  | <:str_item< open $!:_$ $uid:s$ . $_$ >> -> addmodule s
+  | <:str_item< open $!:_$ $me$ >> -> module_expr me
   | <:str_item< type $list:tdl$ >> -> list type_decl tdl
   | <:str_item< value $flag:_$ $list:pel$ >> -> list let_binding pel
   | StUse _ _ _ -> ()
@@ -241,7 +248,7 @@ and type_decl td = ctyp td.MLast.tdDef
 and class_expr =
   fun
   [ <:class_expr< $ce$ $e$ >> -> do { class_expr ce; expr e }
-  | <:class_expr< [ $list:tl$ ] $list:li$ >> -> do {
+  | <:class_expr< [ $list:tl$ ] $longid:li$ . $lid:_$ >> -> do {
       longident li;
       list ctyp tl
     }
@@ -257,15 +264,15 @@ and class_expr =
   | x -> not_impl "class_expr" x ]
 and class_str_item =
   fun
-  [ CrInh _ ce _ -> class_expr ce
-  | CrIni _ e -> expr e
+  [ CrInh _ _ ce _ _ -> class_expr ce
+  | CrIni _ e _ -> expr e
   | <:class_str_item< method $priv:_$ $lid:_$ = $e$ >> -> expr e
   | <:class_str_item< method $priv:_$ $lid:_$ : $t$ = $e$ >> -> do {
       expr e;
       ctyp t
     }
-  | CrVal _ _ _ _ e -> expr e
-  | CrVir _ _ _ t -> ctyp t
+  | CrVal _ _ _ _ e _ -> expr e
+  | CrVir _ _ _ t _ -> ctyp t
   | x -> not_impl "class_str_item" x ]
 ;
 

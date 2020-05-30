@@ -1,0 +1,12 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-threads/test3.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-threads!test3.ml.INPUT	2020-02-11 20:13:17.146792351 -0800
+@@ -2,7 +2,8 @@
+   while true do
+     print_char c; flush stdout; Thread.delay delay
+   done
++;;
+ 
+-let _ =
+   Thread.create (print_message 0.6666666666) 'a';
+   print_message 1.0 'b'
++;;

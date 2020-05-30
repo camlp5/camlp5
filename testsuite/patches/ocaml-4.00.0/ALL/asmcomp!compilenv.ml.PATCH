@@ -1,0 +1,31 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/compilenv.ml	2012-03-07 09:50:17.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/asmcomp!compilenv.ml.INPUT	2020-02-10 13:38:54.451928409 -0800
+@@ -26,8 +26,8 @@
+ 
+ exception Error of error
+ 
+-let global_infos_table =
+-  (Hashtbl.create 17 : (string, unit_infos option) Hashtbl.t)
++let global_infos_table : (string, unit_infos option) Hashtbl.t =
++  Hashtbl.create 17
+ 
+ let structured_constants = ref ([] : (string * bool * Lambda.structured_constant) list)
+ 
+@@ -92,7 +92,7 @@
+       close_in ic;
+       raise(Error(Not_a_unit_info filename))
+     end;
+-    let ui = (input_value ic : unit_infos) in
++    let ui : unit_infos = input_value ic in
+     let crc = Digest.input ic in
+     close_in ic;
+     (ui, crc)
+@@ -105,7 +105,7 @@
+   let buffer = input_bytes ic (String.length cmxa_magic_number) in
+   if buffer <> cmxa_magic_number then
+     raise(Error(Not_a_unit_info filename));
+-  let infos = (input_value ic : library_infos) in
++  let infos : library_infos = input_value ic in
+   close_in ic;
+   infos
+ 

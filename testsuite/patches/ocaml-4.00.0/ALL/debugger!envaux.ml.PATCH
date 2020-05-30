@@ -1,0 +1,13 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/debugger/envaux.ml	2012-05-30 06:29:48.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/debugger!envaux.ml.INPUT	2020-02-10 14:08:03.710164052 -0800
+@@ -22,8 +22,8 @@
+ 
+ exception Error of error
+ 
+-let env_cache =
+-  (Hashtbl.create 59 : ((Env.summary * Subst.t), Env.t) Hashtbl.t)
++let env_cache : ((Env.summary * Subst.t), Env.t) Hashtbl.t =
++  Hashtbl.create 59
+ 
+ let reset_cache () =
+   Hashtbl.clear env_cache;

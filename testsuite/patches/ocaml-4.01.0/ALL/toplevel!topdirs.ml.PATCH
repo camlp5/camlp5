@@ -1,0 +1,128 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/toplevel/topdirs.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/toplevel!topdirs.ml.INPUT	2020-02-15 23:55:05.121807516 -0800
+@@ -26,8 +26,8 @@
+ (* To quit *)
+ 
+ let dir_quit () = exit 0
+-
+-let _ = Hashtbl.add directive_table "quit" (Directive_none dir_quit)
++;;
++Hashtbl.add directive_table "quit" (Directive_none dir_quit) ;;
+ 
+ (* To add a directory to the load path *)
+ 
+@@ -35,24 +35,24 @@
+   let d = expand_directory Config.standard_library s in
+   Config.load_path := d :: !Config.load_path;
+   Dll.add_path [d]
+-
+-let _ = Hashtbl.add directive_table "directory" (Directive_string dir_directory)
++;;
++Hashtbl.add directive_table "directory" (Directive_string dir_directory) ;;
+ 
+ (* To remove a directory from the load path *)
+ let dir_remove_directory s =
+   let d = expand_directory Config.standard_library s in
+   Config.load_path := List.filter (fun d' -> d' <> d) !Config.load_path;
+   Dll.remove_path [d]
++;;
+ 
+-let _ =
+   Hashtbl.add directive_table "remove_directory"
+-    (Directive_string dir_remove_directory)
++    (Directive_string dir_remove_directory) ;;
+ 
+ (* To change the current directory *)
+ 
+ let dir_cd s = Sys.chdir s
+-
+-let _ = Hashtbl.add directive_table "cd" (Directive_string dir_cd)
++;;
++Hashtbl.add directive_table "cd" (Directive_string dir_cd) ;;
+ 
+ (* Load in-core a .cmo file *)
+ 
+@@ -83,7 +83,7 @@
+   Symtable.update_global_table();
+   begin try
+     may_trace := true;
+-    ignore((Meta.reify_bytecode code code_size) ());
++    ignore(Meta.reify_bytecode code code_size ());
+     may_trace := false;
+   with exn ->
+     may_trace := false;
+@@ -139,7 +139,7 @@
+       if buffer = Config.cma_magic_number then begin
+         let toc_pos = input_binary_int ic in  (* Go to table of contents *)
+         seek_in ic toc_pos;
+-        let lib = (input_value ic : library) in
++        let lib : library = input_value ic in
+         List.iter
+           (fun dllib ->
+             let name = Dll.extract_dll_name dllib in
+@@ -159,13 +159,13 @@
+   with Load_failed -> false
+ 
+ let dir_load ppf name = ignore (load_file false ppf name)
+-
+-let _ = Hashtbl.add directive_table "load" (Directive_string (dir_load std_out))
++;;
++Hashtbl.add directive_table "load" (Directive_string (dir_load std_out)) ;;
+ 
+ let dir_load_rec ppf name = ignore (load_file true ppf name)
+-
+-let _ = Hashtbl.add directive_table "load_rec"
+-                    (Directive_string (dir_load_rec std_out))
++;;
++Hashtbl.add directive_table "load_rec"
++                    (Directive_string (dir_load_rec std_out)) ;;
+ 
+ let load_file = load_file false
+ 
+@@ -173,10 +173,10 @@
+ 
+ let dir_use ppf name = ignore(Toploop.use_file ppf name)
+ let dir_mod_use ppf name = ignore(Toploop.mod_use_file ppf name)
+-
+-let _ = Hashtbl.add directive_table "use" (Directive_string (dir_use std_out))
+-let _ = Hashtbl.add directive_table "mod_use"
+-                    (Directive_string (dir_mod_use std_out))
++;;
++Hashtbl.add directive_table "use" (Directive_string (dir_use std_out)) ;;
++Hashtbl.add directive_table "mod_use"
++                    (Directive_string (dir_mod_use std_out)) ;;
+ 
+ (* Install, remove a printer *)
+ 
+@@ -239,11 +239,11 @@
+       fprintf ppf "No printer named %a.@." Printtyp.longident lid
+     end
+   with Exit -> ()
+-
+-let _ = Hashtbl.add directive_table "install_printer"
+-             (Directive_ident (dir_install_printer std_out))
+-let _ = Hashtbl.add directive_table "remove_printer"
+-             (Directive_ident (dir_remove_printer std_out))
++;;
++Hashtbl.add directive_table "install_printer"
++             (Directive_ident (dir_install_printer std_out)) ;;
++Hashtbl.add directive_table "remove_printer"
++             (Directive_ident (dir_remove_printer std_out)) ;;
+ 
+ (* The trace *)
+ 
+@@ -317,8 +317,8 @@
+ let parse_warnings ppf iserr s =
+   try Warnings.parse_options iserr s
+   with Arg.Bad err -> fprintf ppf "%s.@." err
++;;
+ 
+-let _ =
+   Hashtbl.add directive_table "trace" (Directive_ident (dir_trace std_out));
+   Hashtbl.add directive_table "untrace" (Directive_ident (dir_untrace std_out));
+   Hashtbl.add directive_table
+@@ -347,3 +347,4 @@
+ 
+   Hashtbl.add directive_table "warn_error"
+              (Directive_string (parse_warnings std_out true))
++;;

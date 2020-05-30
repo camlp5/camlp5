@@ -1,0 +1,65 @@
+diff --git a/main/ast2pt.ml b/main/ast2pt.ml
+index b280ac19..f73a455b 100644
+--- a/main/ast2pt.ml
++++ b/main/ast2pt.ml
+@@ -453,7 +453,7 @@ value mkwithc =
+       | None → error loc "no with module := in this ocaml version" ]
+   | WcTyp loc id tpl pf ct →
+       match uv id with
+-      | [] -> error loc "Empty list as type name is not allowed there"
++      [ [] -> error loc "Empty list as type name is not allowed there"
+       | xs ->
+         (* Last element of this list is actual declaration. List begins from
+            optional module path. We pass actual name to make type declaration
+@@ -463,10 +463,10 @@ value mkwithc =
+           let li = long_id_of_string_list loc xs in
+           let tname = List.hd (List.rev xs) in
+           match type_decl_of_with_type loc tname tpl (uv pf) ct with
+-          | Right td -> (li, ocaml_pwith_type (mkloc loc) (li, td))
++          [ Right td -> (li, ocaml_pwith_type (mkloc loc) (li, td))
+           | Left msg → error loc msg
+-          end
+-      end
++          ]
++      ]
+   | WcTys loc id tpl t →
+       match ocaml_pwith_typesubst with
+       [ Some pwith_typesubst →
+@@ -930,11 +930,11 @@ value rec expr =
+       | None → error loc "no 'let module' in this ocaml version" ]
+   | ExLop loc me e →
+       match ocaml_pexp_open with
+-      | Some pexp_open →
++      [ Some pexp_open →
+           let li = module_expr_long_id me in
+           mkexp loc (pexp_open li (expr e))
+       | None → error loc "no expression open in this ocaml version"
+-      end
++      ]
+   | ExMat loc e pel →
+       let pel = uv pel in
+       let pel =
+@@ -1215,9 +1215,9 @@ and sig_item s l =
+   | SgMty loc n mt →
+       let mto =
+         match mt with
+-        | MtQuo _ _ -> None
++        [ MtQuo _ _ -> None
+         | _ -> Some (module_type mt)
+-        end
++        ]
+       in
+       [mksig loc (ocaml_psig_modtype (mkloc loc) (uv n) mto) :: l]
+   | SgOpn loc id →
+@@ -1577,9 +1577,9 @@ value directive loc =
+ 
+ value directive_args loc d =
+   match d with
+-  | Some d -> ocaml_pdir_some (directive loc d)
++  [ Some d -> ocaml_pdir_some (directive loc d)
+   | None -> ocaml_pdir_none
+-  end
++  ]
+ ;
+ 
+ value phrase =

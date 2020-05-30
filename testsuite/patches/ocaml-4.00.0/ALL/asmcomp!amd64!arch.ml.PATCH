@@ -1,0 +1,29 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/amd64/arch.ml	2012-02-24 02:13:02.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/asmcomp!amd64!arch.ml.INPUT	2020-02-10 12:24:27.234773048 -0800
+@@ -78,7 +78,7 @@
+ 
+ let print_addressing printreg addr ppf arg =
+   match addr with
+-  | Ibased(s, 0) ->
++    Ibased(s, 0) ->
+       fprintf ppf "\"%s\"" s
+   | Ibased(s, n) ->
+       fprintf ppf "\"%s\" + %i" s n
+@@ -97,7 +97,7 @@
+ 
+ let print_specific_operation printreg op ppf arg =
+   match op with
+-  | Ilea addr -> print_addressing printreg addr ppf arg
++    Ilea addr -> print_addressing printreg addr ppf arg
+   | Istore_int(n, addr) ->
+       fprintf ppf "[%a] := %nd" (print_addressing printreg addr) arg n
+   | Istore_symbol(lbl, addr) ->
+@@ -106,7 +106,7 @@
+       fprintf ppf "[%a] +:= %i" (print_addressing printreg addr) arg n
+   | Ifloatarithmem(op, addr) ->
+       let op_name = function
+-      | Ifloatadd -> "+f"
++        Ifloatadd -> "+f"
+       | Ifloatsub -> "-f"
+       | Ifloatmul -> "*f"
+       | Ifloatdiv -> "/f" in

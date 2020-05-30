@@ -1,2 +1,7 @@
 *.ml[tu]
 tmp.*
+*.cm*
+*.byte
+*.log
+*.cache
+*.ppo

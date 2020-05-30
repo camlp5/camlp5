@@ -22,7 +22,7 @@ It works as a shell command and can also be used in the OCaml toplevel.
 """
 opam-version: "2.0"
 maintainer: "https://github.com/ocaml/opam-repository/issues"
-authors: ["Daniel de Rauglaudre"]
+authors: ["Daniel de Rauglaudre" "Chet Murthy"]
 homepage: "https://camlp5.github.io"
 license: "BSD-3-Clause"
 bug-reports: "https://github.com/camlp5/camlp5/issues"

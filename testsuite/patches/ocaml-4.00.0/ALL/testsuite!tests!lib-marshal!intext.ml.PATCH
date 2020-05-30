@@ -1,0 +1,26 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-marshal/intext.ml	2012-05-08 06:48:33.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-marshal!intext.ml.INPUT	2020-02-11 19:59:15.783982490 -0800
+@@ -130,7 +130,7 @@
+   test 24 (match input_value ic with
+     G((D "sharing" as t1), (D "sharing" as t2)) -> t1 != t2
+   | _ -> false);
+-  test 25 (let fib = (input_value ic : int -> int) in fib 5 = 8 && fib 10 = 89);
++  test 25 (let fib : int -> int = input_value ic in fib 5 = 8 && fib 10 = 89);
+   test 26 (input_value ic = Int32.of_string "0");
+   test 27 (input_value ic = Int32.of_string "123456");
+   test 28 (input_value ic = Int32.of_string "-123456");
+@@ -547,7 +547,7 @@
+   if Sys.argv.(1) = "test" then begin
+     let n = int_of_string Sys.argv.(2) in
+     let ic = open_in_bin "intext.data" in
+-    let b = (input_value ic : t) in
++    let b : t = input_value ic in
+     Gc.full_major();
+     close_in ic;
+     counter := 0;
+@@ -558,4 +558,4 @@
+     print_newline()
+   end
+ 
+-let _ = Printexc.catch main (); exit 0
++Printexc.catch main (); exit 0 ;;

@@ -1,0 +1,20 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/bytecomp/bytelink.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/bytecomp!bytelink.ml.INPUT	2020-02-15 20:45:20.418807516 -0800
+@@ -120,7 +120,7 @@
+          requires. *)
+       let compunit_pos = input_binary_int ic in  (* Go to descriptor *)
+       seek_in ic compunit_pos;
+-      let compunit = (input_value ic : compilation_unit) in
++      let compunit : compilation_unit = input_value ic in
+       close_in ic;
+       List.iter add_required compunit.cu_reloc;
+       Link_object(file_name, compunit) :: tolink
+@@ -130,7 +130,7 @@
+          in only if needed. *)
+       let pos_toc = input_binary_int ic in    (* Go to table of contents *)
+       seek_in ic pos_toc;
+-      let toc = (input_value ic : library) in
++      let toc : library = input_value ic in
+       close_in ic;
+       add_ccobjs toc;
+       let required =

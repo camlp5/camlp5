@@ -13,6 +13,7 @@ and patt =
   | Estr of string
   | Eint of string
   | Etup of patt list
+  | Erec of (patt * patt) list
   | Evar of unit
 and ('a, 'b) expr = 'a -> 'b option;;
 
@@ -51,6 +52,8 @@ let rec print_patt =
   function
     Eapp pl -> list_iter_sep print_patt2 (fun () -> print_string " ") pl
   | p -> print_patt2 p
+and print_labeled_patt_pair (p1, p2) =
+  print_patt p1; print_string " = "; print_patt p2
 and print_patt2 =
   function
     Eacc pl -> list_iter_sep print_patt1 (fun () -> print_string ".") pl
@@ -65,6 +68,10 @@ and print_patt1 =
       print_string "(";
       list_iter_sep print_patt (fun () -> print_string ", ") pl;
       print_string ")"
+  | Erec l ->
+      print_string "{";
+      list_iter_sep print_labeled_patt_pair (fun () -> print_string "; ") l;
+      print_string "}"
   | Eapp _ | Eacc _ as p -> print_string "("; print_patt p; print_string ")"
 ;;
 

@@ -1,0 +1,12 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/lib-set/testmap.ml	2013-03-19 00:22:12.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!lib-set!testmap.ml.INPUT	2020-02-15 22:47:15.627807516 -0800
+@@ -128,7 +128,8 @@
+   let s = ref M.empty in
+   for i = 1 to Random.int 10 do s := M.add (rkey()) (rdata()) !s done;
+   !s
++;;
+ 
+-let _ =
+   Random.init 42;
+   for i = 1 to 25000 do test (rkey()) (rdata()) (rmap()) (rmap()) done
++;;

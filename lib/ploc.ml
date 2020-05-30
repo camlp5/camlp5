@@ -42,19 +42,6 @@ value bol_pos_last loc = loc.bol_pos_last;
 value comment loc = loc.comm;
 value comment_last loc = loc.ecomm;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_bp_ep l bp ep =
-    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
-     line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = bp;
-     ep = ep; comm = l.comm; ecomm = l.ecomm}
-  ;
-  value with_comm l comm =
-    {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
-     line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = l.bp;
-     ep = l.ep; comm = comm; ecomm = l.ecomm}
-  ;
-END;
-
 value encl loc1 loc2 =
   if loc1.bp < loc2.bp then
     if loc1.ep < loc2.ep then

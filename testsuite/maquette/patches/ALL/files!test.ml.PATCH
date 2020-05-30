@@ -1,0 +1,10 @@
+--- maquette/files/test.ml	2020-02-10 12:43:36.886158998 -0800
++++ maquette/patches/ALL/test.ml.INPUT	2020-02-10 12:54:41.278515759 -0800
+@@ -2,6 +2,6 @@
+ 
+ type t = {
+   a : int ;
+-  b : string ;
++  b : string
+ } ;
+   

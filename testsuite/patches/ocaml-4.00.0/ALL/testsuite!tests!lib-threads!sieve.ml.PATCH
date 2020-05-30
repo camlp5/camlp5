@@ -1,0 +1,10 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-threads/sieve.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-threads!sieve.ml.INPUT	2020-02-11 20:12:21.998232112 -0800
+@@ -28,6 +28,5 @@
+   in Thread.create (integers 2) ch;
+      print_primes ch max;;
+ 
+-let _ = go 1000
+-
++go 1000
+ ;;

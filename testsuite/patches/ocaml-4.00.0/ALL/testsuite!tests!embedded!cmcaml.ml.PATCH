@@ -1,0 +1,15 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/embedded/cmcaml.ml	2012-02-10 08:15:24.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!embedded!cmcaml.ml.INPUT	2020-02-11 17:39:12.321863664 -0800
+@@ -8,9 +8,10 @@
+   (* Allocate gratuitously to test GC *)
+   for i = 1 to 1500 do ignore (String.create 256) done;
+   r
+-
++;;
+ (* Registration *)
+ 
+-let _ =
++
+   Callback.register "fib" fib;
+   Callback.register "format_result" format_result
++;;

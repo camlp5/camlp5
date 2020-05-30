@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/debugger/eval.ml	2013-03-22 11:18:26.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/debugger!eval.ml.INPUT	2020-02-15 21:01:09.596807516 -0800
+@@ -121,7 +121,7 @@
+               nth (pos + 1) (Debugcom.Remote_value.field v 1)
+           in nth 0 v
+       | Tconstr(path, [], _) when Path.same path Predef.path_string ->
+-          let s = (Debugcom.Remote_value.obj v : string) in
++          let s : string = Debugcom.Remote_value.obj v in
+           if n >= String.length s
+           then raise(Error(String_index(s, String.length s, n)))
+           else (Debugcom.Remote_value.of_int(Char.code s.[n]),

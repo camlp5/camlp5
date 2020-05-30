@@ -2,8 +2,8 @@
 
 include ../config/Makefile
 
-INCLUDES=-I ../main -I ../meta -I ../lib
-OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
+INCLUDES=-I ../main -I ../meta -I ../lib -I +compiler-libs
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPWITH=new
 
 all:
@@ -19,5 +19,7 @@ pr_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 q_phony.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+papr_phony_macro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_official.cmo:
 
 include .depend

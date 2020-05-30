@@ -1,0 +1,23 @@
+diff --git a/etc/pa_op.ml b/etc/pa_op.ml
+index 993e9756..79649f59 100644
+--- a/etc/pa_op.ml
++++ b/etc/pa_op.ml
+@@ -28,15 +28,15 @@ EXTEND
+       | spc = stream_patt_comp; ";" -> [(spc, SpoNoth)]
+       | spc = stream_patt_comp; ";"; sp = stream_patt_kont ->
+           [(spc, SpoNoth) :: sp]
+-      | spc = stream_patt_let; sp = stream_patt -> [spc :: sp]
++      | spc = stream_patt_let; sp = SELF -> [spc :: sp]
+       | -> [] ] ]
+   ;
+   stream_patt_kont:
+     [ RIGHTA
+       [ spc = stream_patt_comp_err -> [spc]
+       | spc = stream_patt_comp_err; ";" -> [spc]
+-      | spc = stream_patt_comp_err; ";"; sp = stream_patt_kont -> [spc :: sp]
+-      | spc = stream_patt_let; sp = stream_patt_kont -> [spc :: sp] ] ]
++      | spc = stream_patt_comp_err; ";"; sp = SELF -> [spc :: sp]
++      | spc = stream_patt_let; sp = SELF -> [spc :: sp] ] ]
+   ;
+   stream_patt_comp_err:
+     [ [ spc = stream_patt_comp; "??"; e = expr LEVEL "expr1" ->

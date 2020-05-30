@@ -2,14 +2,10 @@
 (* pa_scheme.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
+open Asttools;
 open Pcaml;
 open Exparser;
 open Versdep;
-
-type choice α β =
-  [ Left of α
-  | Right of β ]
-;
 
 (* Buffer *)
 
@@ -637,6 +633,22 @@ value anti_longident_se =
   | se → <:vala< (longident_se se) >> ]
 ;
 
+value longid_of_string_list loc sl =
+  let (h,t) = match sl with [ [h::t] -> (h,t) | [] -> failwith "longid_of_string_list" ] in
+  List.fold_left (fun li s -> <:extended_longident< $longid:li$ . $uid:s$ >>)
+    <:extended_longident< $uid:h$ >> t
+;
+
+value class_longident_se se =
+  let loc = loc_of_sexpr se in
+  let sl = longident_se se in
+  let (id, sl) = sep_last sl in
+  match sl with [
+    [] -> (None, id)
+  | [_::_] -> (Some (longid_of_string_list loc sl), id)
+  ]
+;
+
 value anti_lid =
   fun
   [ Slid _ s →
@@ -663,7 +675,25 @@ value anti_uid_or_error =
       let s = rename_id s in
       <:vala< s >>
   | Suidv _ s → s
-  | Santi _ ("" | "_") s → <:vala< $s$ >>
+  | Santi _ ("" | "_") s → <:vala< s >>
+  | se → error se "uppercase identifier" ]
+;
+
+value anti_uidopt_or_error =
+  fun
+  [ Suid _ s →
+      let s = rename_id s in
+      let sopt = Some <:vala< s >> in
+      <:vala< sopt >>
+  | Suidv _ s →
+      let sopt = Some s in
+      <:vala< sopt >>
+  | Santi _ ("" | "_") s →
+      let sopt = Some <:vala< s >> in
+      <:vala< sopt >>
+  | Slid _ "_" →
+      let sopt = None in
+      <:vala< sopt >>
   | se → error se "uppercase identifier" ]
 ;
 
@@ -693,6 +723,29 @@ value rec module_expr_se =
   | Suidv loc s → <:module_expr< $_uid:s$ >>
   | Santi loc "" s → <:module_expr< $xtr:s$ >>
   | se → error se "module expr" ]
+and longid_se =
+  fun
+  [ Sexpr loc [se1; se2] →
+      let li1 = longid_se se1 in
+      let li2 = longid_se se2 in
+      <:extended_longident< $longid:li1$ ( $longid:li2$ ) >>
+  | Sacc loc se1 se2 →
+      let li1 = longid_se se1 in
+      let li2 = longid_se se2 in
+      longid_concat li1 li2
+  | Suid loc s → <:extended_longident< $uid:(rename_id s)$ >>
+  | Suidv loc s → <:extended_longident< $_uid:s$ >>
+  | se → error se "longid_se" ]
+and longid_lident_se =
+  fun
+  [ Sacc loc se1 se2 →
+      let li1 = longid_se se1 in
+      match longid_lident_se se2 with [
+        (Some li2, s) -> (Some (longid_concat li1 li2), s)
+      | (None, s) -> (Some li1, s) ]
+  | Slid loc s → (None, <:vala< s >>)
+  | se → error se "longid_lident_se" ]
+
 and module_type_se =
   fun
   [ Sexpr loc [Slid _ "functor"; se1; se2; se3] →
@@ -707,18 +760,14 @@ and module_type_se =
       let mt = module_type_se se in
       let wcl = anti_list_map with_constr_se sel in
       <:module_type< $mt$ with $_list:wcl$ >>
-  | Sexpr loc [se1; se2] →
-      let mt1 = module_type_se se1 in
-      let mt2 = module_type_se se2 in
-      <:module_type< $mt1$ $mt2$ >>
-  | Sacc loc se1 se2 →
-      let mt1 = module_type_se se1 in
-      let mt2 = module_type_se se2 in
-      <:module_type< $mt1$ . $mt2$ >>
+  | Sacc loc se1 (Slid _ s) →
+      let li1 = longid_se se1 in
+      <:module_type< $longid:li1$ . $lid:(rename_id s)$ >>
+  | Sacc loc _ (Suid _ _) as se →
+      let li = longid_se se in
+      <:module_type< $longid:li$ >>
   | Slid loc s → <:module_type< $lid:(rename_id s)$ >>
   | Slidv loc s → <:module_type< $_lid:s$ >>
-  | Suid loc s → <:module_type< $uid:(rename_id s)$ >>
-  | Suidv loc s → <:module_type< $_uid:s$ >>
   | Santi loc "" s → <:module_type< $xtr:s$ >>
   | se → error se "module type" ]
 and with_constr_se =
@@ -726,16 +775,15 @@ and with_constr_se =
   [ Sexpr loc [Slid _ ("type" | "typeprivate" as pf); se1; se2] →
       let (tn, tp) =
         match se1 with
-        [ Santi _ ("list" | "_list") s → (<:vala< $s$ >>, <:vala< [] >>)
-        | Sexpr _ [se :: sel] →
-            let tn = anti_longident_se se in
+        [ Sexpr _ [se :: sel] →
+            let tn = longid_lident_se se in
             let tp = anti_list_map type_param_se sel in
             (tn, tp)
-        | se → (<:vala< (longident_se se) >>, <:vala< [] >>) ]
+        | se → (longid_lident_se se, <:vala< [] >>) ]
       in
       let pf = pf = "typeprivate" in
       let te = ctyp_se se2 in
-      <:with_constr< type $_:tn$ $_list:tp$ = $flag:pf$ $te$ >>
+      <:with_constr< type $lilongid:tn$ $_list:tp$ = $flag:pf$ $te$ >>
   | se → error se "with constr" ]
 and sig_item_se =
   fun
@@ -749,7 +797,7 @@ and sig_item_se =
       let cd =
         {MLast.ciLoc = loc; MLast.ciVir = <:vala< False >>;
          MLast.ciPrm = (loc, <:vala< tvl >>); MLast.ciNam = <:vala< n >>;
-         MLast.ciExp = class_type_se se2}
+         MLast.ciExp = class_type_se se2; MLast.ciAttributes = <:vala< [] >>}
       in
       <:sig_item< class $list:[cd]$ >>
   | Sexpr loc [Slid _ "exception"; se :: sel] →
@@ -777,8 +825,8 @@ and sig_item_se =
       let mt = module_type_se se2 in
       <:sig_item< module type $_:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] →
-      let s = anti_longident_se se in
-      <:sig_item< open $_:s$ >>
+      let lid = longid_se se in
+      <:sig_item< open $longid:lid$ >>
   | Sexpr loc [Slid _ "type" :: sel] →
       let tdl = type_declaration_list_se sel in
       <:sig_item< type $list:tdl$ >>
@@ -808,7 +856,7 @@ and str_item_se se =
       <:str_item< class $s$ [ $list:tpl$ ] = $ce$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] →
       let r = r = "definerec" in
-      let (p, e) = fun_binding_se se (begin_se loc sel) in
+      let (p, e, _) = fun_binding_se se (begin_se loc sel) in
       <:str_item< value $flag:r$ $p$ = $e$ >>
   | Sexpr loc [Slid _ ("define*" | "definerec*" as rf) :: sel] →
       let rf = rf = "definerec*" in
@@ -820,8 +868,8 @@ and str_item_se se =
       <:str_item< exception $_:c$ of $_list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; se1; se2] →
       let c = anti_uid_or_error se1 in
-      let id = anti_longident_se se2 in
-      <:str_item< exception $_uid:c$ = $_:id$ >>
+      let id = longid_se se2 in
+      <:str_item< exception $_uid:c$ = $longid:id$ >>
   | Sexpr loc [Slid _ "external"; se1; se2 :: sel] →
       let i = anti_lid_or_error se1 in
       let t = ctyp_se se2 in
@@ -831,8 +879,8 @@ and str_item_se se =
       let me = module_expr_se se in
       <:str_item< include $me$ >>
   | Sexpr loc [Slid _ "module"; se1; se2] →
-      let (i, mb) = str_module_se (Sexpr loc [se1; se2]) in
-      <:str_item< module $_uidopt:i$ = $mb$ >>
+      let (i, mb, attrs) = str_module_se (Sexpr loc [se1; se2]) in
+      <:str_item< module $_uidopt:i$ = $mb$ $_itemattrs:attrs$ >>
   | Sexpr loc [Slid _ ("module*" | "modulerec*" as rf) :: sel] →
       let rf = rf = "modulerec*" in
       let lmb = anti_list_map str_module_se sel in
@@ -842,8 +890,8 @@ and str_item_se se =
       let mt = module_type_se se2 in
       <:str_item< module type $_:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] →
-      let s = anti_longident_se se in
-      <:str_item< open $_:s$ >>
+      let me = module_expr_se se in
+      <:str_item< open $me$ >>
   | Sexpr loc [Slid _ "type" :: sel] →
       let tdl = type_declaration_list_se sel in
       <:str_item< type $list:tdl$ >>
@@ -873,12 +921,12 @@ and str_item_se se =
 and str_module_se =
   fun
   [ Sexpr loc [se1; se2] →
-      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_expr_se se2)
+      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_expr_se se2, <:vala< [] >>)
   | se → error se "module binding" ]
 and sig_module_se =
   fun
   [ Sexpr loc [se1; se2] →
-      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_type_se se2)
+      (Ploc.VaVal (Some (anti_uid_or_error se1)), module_type_se se2, <:vala< [] >>)
   | se → error se "module binding" ]
 and expr_se =
   fun
@@ -1034,16 +1082,20 @@ and expr_se =
       [ [Sexpr _ sel1 :: sel2] →
           List.fold_right
             (fun se ek →
-               let (p, e) = let_binding_se se in
+               let (p, e, _) = let_binding_se se in
                <:expr< let $p$ = $e$ in $ek$ >>)
             sel1 (begin_se loc sel2)
       | [se :: _] → error se "let_binding"
       | _ → error_loc loc "let_binding" ]
   | Sexpr loc [Slid _ "letmodule"; se1; se2; se3] →
-      let s = anti_uid_or_error se1 in
+      let s = anti_uidopt_or_error se1 in
       let me = module_expr_se se2 in
       let e = expr_se se3 in
-      <:expr< let module $_:s$ = $me$ in $e$ >>
+      <:expr< let module $_uidopt:s$ = $me$ in $e$ >>
+  | Sexpr loc [Slid _ "letopen"; se1; se3] →
+      let s = anti_uid_or_error se1 in
+      let e = expr_se se3 in
+      <:expr< let open $_uid:s$ in $e$ >>
   | Sexpr loc [Slid _ "match"; se :: sel] →
       let e = expr_se se in
       let pel =
@@ -1059,7 +1111,7 @@ and expr_se =
         | sel → (None, sel) ]
       in
       let pcl = List.map parser_case_se sel in
-      Exparser.cparser loc po pcl
+      Exparser.cparser loc (po, pcl)
   | Sexpr loc [Slid _ "match_with_parser"; se :: sel] →
       let e = expr_se se in
       let (po, sel) =
@@ -1068,7 +1120,7 @@ and expr_se =
         | sel → (None, sel) ]
       in
       let pcl = List.map parser_case_se sel in
-      Exparser.cparser_match loc e po pcl
+      Exparser.cparser_match loc e (po, pcl)
   | Sexpr loc [Slid _ "try"; se :: sel] →
       let e = expr_se se in
       let pel =
@@ -1111,8 +1163,11 @@ and expr_se =
       let e = expr_se se in
       <:expr< lazy $e$ >>
   | Sexpr loc [Slid _ "new"; se] →
-      let sl = anti_longident_se se in
-      <:expr< new $_list:sl$ >>
+      match class_longident_se se with [
+        (None, id) -> <:expr< new $lid:id$ >>
+      | (Some li, id) ->
+        <:expr< new $longid:li$ . $lid:id$ >>
+      ]
   | Sexpr loc [Slid _ "`"; Suid _ s] → <:expr< ` $s$ >>
   | Sexpr loc [Slid _ "send"; se; Slid _ s] →
       let e = expr_se se in
@@ -1151,13 +1206,13 @@ and let_binding_se =
   [ Sexpr loc [se :: sel] →
       let e = begin_se loc sel in
       match ipatt_opt_se se with
-      [ Left p → (p, e)
+      [ Left p → (p, e, <:vala< [] >>)
       | Right _ → fun_binding_se se e ]
   | se → error se "let_binding" ]
 and fun_binding_se se e =
   match se with
-  [ Sexpr _ [Slid _ "values" :: _] → (ipatt_se se, e)
-  | Sexpr _ [Slid _ ":"; _; _] → (ipatt_se se, e)
+  [ Sexpr _ [Slid _ "values" :: _] → (ipatt_se se, e, <:vala< [] >>)
+  | Sexpr _ [Slid _ ":"; _; _] → (ipatt_se se, e, <:vala< []>>)
   | Sexpr _ [se1 :: sel] →
       match ipatt_opt_se se1 with
       [ Left p →
@@ -1171,9 +1226,9 @@ and fun_binding_se se e =
                  <:expr< fun $p$ -> $e$ >>)
               sel e
           in
-          (p, e)
-      | Right _ → (ipatt_se se, e) ]
-  | _ → (ipatt_se se, e) ]
+          (p, e, <:vala< [] >>)
+      | Right _ → (ipatt_se se, e, <:vala< [] >>) ]
+  | _ → (ipatt_se se, e, <:vala< [] >>) ]
 and match_case loc =
   fun
   [ Sexpr loc [Sexpr _ [Slid _ "when"; se; sew] :: sel] →
@@ -1240,9 +1295,13 @@ and stream_patt_comp_se =
 and patt_se =
   fun
   [ Sacc loc se1 se2 →
-      let p1 = patt_se se1 in
-      let p2 = patt_se se2 in
-      <:patt< $p1$ . $p2$ >>
+      let me1 = longid_se se1 in
+      match patt_se se2 with [
+        <:patt< $longid:me2$ . $lid:lid$ >> ->
+          let me = longid_concat me1 me2 in
+          <:patt< $longid:me$ . $lid:lid$ >>
+      | p -> <:patt< $longid:me1$ . $p$ >>
+      ]
   | Slid loc "_" → <:patt< _ >>
   | Slid loc s → <:patt< $lid:(rename_id s)$ >>
   | Slidv loc s → <:patt< $_lid:s$ >>
@@ -1388,9 +1447,11 @@ and type_declaration_se =
         | se → error se "type declaration" ]
       in
       let n = (loc1, <:vala< n1 >>) in
-      {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
+      {MLast.tdIsDecl = True ;
+       MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
        MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
-       MLast.tdCon = <:vala< [] >>}
+       MLast.tdCon = <:vala< [] >>;
+       MLast.tdAttributes = <:vala< [] >>}
   | se → error se "type_decl" ]
 and type_declaration_list_se =
   fun
@@ -1404,9 +1465,11 @@ and type_declaration_list_se =
       in
       let n = (loc1, <:vala< n1 >>) in
       let td =
-        {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
+        {MLast.tdIsDecl = True ;
+         MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
          MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
-         MLast.tdCon = <:vala< [] >>}
+         MLast.tdCon = <:vala< [] >>;
+         MLast.tdAttributes = <:vala< [] >>}
       in
       [td :: type_declaration_list_se sel]
   | [] → []
@@ -1483,9 +1546,14 @@ and ctyp_se =
            <:ctyp< $t$ $t2$ >>)
         (ctyp_se se) sel
   | Sacc loc se1 se2 →
-      let t1 = ctyp_se se1 in
-      let t2 = ctyp_se se2 in
-      <:ctyp< $t1$ . $t2$ >>
+      let me1 = longid_se se1 in
+      match ctyp_se se2 with [
+        <:ctyp< $longid:me2$ . $lid:lid$ >> ->
+          let me = longid_concat me1 me2 in
+          <:ctyp< $longid:me$ . $lid:lid$ >>
+      | <:ctyp< $lid:lid$ >> -> <:ctyp< $longid:me1$ . $lid:lid$ >>
+      | _ -> failwith "pa_schemer: only TyAcc and TyLid allowed here"
+      ]
   | Slid loc "_" → <:ctyp< _ >>
   | Slid loc s →
       if s.[0] = ''' then
@@ -1493,8 +1561,8 @@ and ctyp_se =
         <:ctyp< '$s$ >>
       else <:ctyp< $lid:(rename_id s)$ >>
   | Slidv loc s → <:ctyp< $_lid:s$ >>
-  | Suid loc s → <:ctyp< $uid:(rename_id s)$ >>
-  | Suidv loc s → <:ctyp< $_uid:s$ >>
+  | Suid loc s as se → error se "ctyp_se: UID not allowed here"
+  | Suidv loc s as se → error se "ctyp_se: UIDv not allowed here"
   | Santi loc "" s → <:ctyp< $xtr:s$ >>
   | se → error se "ctyp" ]
 and object_field_list_se sel =
@@ -1502,14 +1570,14 @@ and object_field_list_se sel =
     (fun
      [ Sexpr loc [Slid _ s; se] →
          let t = ctyp_se se in
-         (s, t)
+         (Some s, t, <:vala< [] >>)
      | se → error_loc (loc_of_sexpr se) "object field" ])
     sel
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Suid _ ci :: sel] →
       (loc, <:vala< (rename_id ci) >>, <:vala< (List.map ctyp_se sel) >>,
-       None)
+       None, <:vala< [] >>)
   | se → error se "constructor_declaration" ]
 and variant_declaration_se =
   fun
@@ -1529,8 +1597,8 @@ and variant_declaration_se =
 and label_declaration_se =
   fun
   [ Sexpr loc [Slid _ lab; Slid _ "mutable"; se] →
-      (loc, rename_id lab, True, ctyp_se se)
-  | Sexpr loc [Slid _ lab; se] → (loc, rename_id lab, False, ctyp_se se)
+      (loc, rename_id lab, True, ctyp_se se, <:vala< [] >>)
+  | Sexpr loc [Slid _ lab; se] → (loc, rename_id lab, False, ctyp_se se, <:vala< [] >>)
   | se → error se "label_declaration" ]
 and class_sig_item_se =
   fun
@@ -1634,9 +1702,13 @@ and class_expr_se =
             loop <:class_expr< $ce$ $e$ >> sel
         | [] → ce ]
   | se →
-      let sl = longident_se se in
       let loc = loc_of_sexpr se in
-      <:class_expr< $list:sl$ >> ]
+      match class_longident_se se with [
+        (None, id) ->  <:class_expr< $lid:id$ >>
+      | (Some li, id) ->
+        <:class_expr< $longid:li$ . $lid:id$ >>
+      ]
+   ]
 ;
 
 value directive_se =

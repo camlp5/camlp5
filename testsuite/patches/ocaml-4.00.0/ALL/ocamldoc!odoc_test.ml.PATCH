@@ -1,0 +1,8 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamldoc/odoc_test.ml	2012-03-12 10:57:46.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamldoc!odoc_test.ml.INPUT	2020-02-11 13:52:20.871714265 -0800
+@@ -120,4 +120,4 @@
+     end
+ end;;
+ 
+-let _ = Odoc_args.extend_base_generator (module Generator : Odoc_gen.Base_functor);;
++Odoc_args.extend_base_generator (module Generator : Odoc_gen.Base_functor);;

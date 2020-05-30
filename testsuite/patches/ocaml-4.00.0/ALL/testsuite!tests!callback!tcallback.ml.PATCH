@@ -1,0 +1,26 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/callback/tcallback.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!callback!tcallback.ml.INPUT	2020-02-11 17:39:01.833604379 -0800
+@@ -13,7 +13,7 @@
+ 
+ let tak4 x y z u = tak (x, y, z + u)
+ 
+-let raise_exit () = (raise Exit : unit)
++let raise_exit () : unit = raise Exit
+ 
+ let trapexit () =
+   begin try
+@@ -54,8 +54,8 @@
+   (* Allocate some more so that the signal will be tested *)
+   let u = (s, s) in
+   fst u
++;;
+ 
+-let _ =
+   print_int(mycallback1 tak (18, 12, 6)); print_newline();
+   print_int(mycallback2 tak2 18 (12, 6)); print_newline();
+   print_int(mycallback3 tak3 18 12 6); print_newline();
+@@ -66,3 +66,4 @@
+   Sys.set_signal Sys.sigusr1 (Sys.Signal_handle sighandler);
+   print_string(callbacksig ()); print_newline()
+ 
++;;

@@ -1,0 +1,15 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/basic-more/bounds.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!basic-more!bounds.ml.INPUT	2020-02-15 22:26:32.712807516 -0800
+@@ -29,10 +29,11 @@
+        | _ -> "bad exception"
+   in
+     print_int n; print_string ": "; print_string result; print_newline()
++;;
+ 
+-let _ =
+   test 0; test 1; test 2; test 3; test 4; test (-1);
+   Gc.full_major();
+   print_string "Trail:";
+   List.iter (fun n -> print_string " "; print_int n) !trail;
+   print_newline()
++;;

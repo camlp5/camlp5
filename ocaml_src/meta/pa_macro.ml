@@ -101,6 +101,7 @@ Added statements:
 
 *)
 
+open Asttools;;
 open Pcaml;;
 open Printf;;
 open Versdep;;
@@ -163,10 +164,7 @@ let defined_version loc =
 ;;
 
 let is_defined i =
-  i = "STRICT" && !(Pcaml.strict_mode) ||
-  i = "COMPATIBLE_WITH_OLD_OCAML" &&
-  !(Pcaml.flag_compatible_old_versions_of_ocaml) ||
-  List.mem_assoc i !defined
+  i = "STRICT" && !(Pcaml.strict_mode) || List.mem_assoc i !defined
 ;;
 
 let print_defined () =
@@ -192,14 +190,12 @@ let subst mloc env =
   let rec loop =
     function
       MLast.ExLet (_, rf, pel, e) ->
-        let pel = List.map (fun (p, e) -> p, loop e) pel in
+        let pel = List.map (fun (p, e, attrs) -> p, loop e, attrs) pel in
         MLast.ExLet (loc, rf, pel, loop e)
     | MLast.ExIfe (_, e1, e2, e3) ->
         MLast.ExIfe (loc, loop e1, loop e2, loop e3)
     | MLast.ExApp (_, e1, e2) -> MLast.ExApp (loc, loop e1, loop e2)
-    | MLast.ExLid (_, x) as e ->
-        (try MLast.ExAnt (loc, List.assoc x env) with Not_found -> e)
-    | MLast.ExUid (_, x) as e ->
+    | MLast.ExLid (_, x) | MLast.ExUid (_, x) as e ->
         (try MLast.ExAnt (loc, List.assoc x env) with Not_found -> e)
     | MLast.ExTup (_, x) -> MLast.ExTup (loc, List.map loop x)
     | MLast.ExRec (_, pel, None) ->
@@ -213,7 +209,17 @@ let subst mloc env =
 let substp mloc env =
   let rec loop =
     function
-      MLast.ExAcc (_, e1, e2) -> MLast.PaAcc (loc, loop e1, loop e2)
+      MLast.ExAcc (loc, e1, e2) ->
+        let rec expr2longid =
+          function
+            MLast.ExUid (_, x) -> MLast.LiUid (loc, x)
+          | MLast.ExAcc (_, e1, e2) ->
+              let li1 = expr2longid e1 in
+              let li2 = expr2longid e2 in longid_concat li1 li2
+          | _ -> failwith "substp/expr2long: bad expr"
+        in
+        let li = expr2longid (expr_left_assoc_acc e1) in
+        MLast.PaPfx (loc, li, loop e2)
     | MLast.ExApp (_, e1, e2) -> MLast.PaApp (loc, loop e1, loop e2)
     | MLast.ExLid (_, x) ->
         begin try MLast.PaAnt (loc, List.assoc x env) with
@@ -221,7 +227,7 @@ let substp mloc env =
         end
     | MLast.ExUid (_, x) ->
         begin try MLast.PaAnt (loc, List.assoc x env) with
-          Not_found -> MLast.PaUid (loc, x)
+          Not_found -> MLast.PaLong (loc, MLast.LiUid (loc, x))
         end
     | MLast.ExInt (_, x, "") -> MLast.PaInt (loc, x, "")
     | MLast.ExChr (_, x) -> MLast.PaChr (loc, x)
@@ -245,7 +251,6 @@ let substt mloc env =
     | MLast.TyApp (_, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
     | MLast.TyTup (_, tl) -> MLast.TyTup (loc, List.map loop tl)
     | MLast.TyLid (_, x) as t -> (try List.assoc x env with Not_found -> t)
-    | MLast.TyUid (_, x) as t -> (try List.assoc x env with Not_found -> t)
     | t -> t
   in
   loop
@@ -322,6 +327,7 @@ let define eo x =
            [None, None,
             [Grammar.production
                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)),
+                "1154dceb",
                 (fun _ (loc : Ploc.t) ->
                    (may_eval (Reloc.expr (fun _ -> loc) 0 e) : 'expr)))]];
          Grammar.extension (patt : 'patt Grammar.Entry.e)
@@ -329,6 +335,7 @@ let define eo x =
            [None, None,
             [Grammar.production
                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)),
+                "1154dceb",
                 (fun _ (loc : Ploc.t) ->
                    (let p = substp loc [] e in Reloc.patt (fun _ -> loc) 0 p :
                     'patt)))]]]
@@ -342,6 +349,7 @@ let define eo x =
                   (Grammar.r_next Grammar.r_stop
                      (Grammar.s_token ("UIDENT", x)))
                   Grammar.s_self,
+                "1154dceb",
                 (fun (param : 'expr) _ (loc : Ploc.t) ->
                    (let el =
                       match param with
@@ -362,6 +370,7 @@ let define eo x =
                   (Grammar.r_next Grammar.r_stop
                      (Grammar.s_token ("UIDENT", x)))
                   Grammar.s_self,
+                "1154dceb",
                 (fun (param : 'patt) _ (loc : Ploc.t) ->
                    (let pl =
                       match param with
@@ -382,7 +391,7 @@ let define eo x =
            [None, None,
             [Grammar.production
                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", x)),
-                (fun _ (loc : Ploc.t) -> (t : 'ctyp)))]]]
+                "1154dceb", (fun _ (loc : Ploc.t) -> (t : 'ctyp)))]]]
   | MvType (sl, t) ->
       Grammar.safe_extend
         [Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
@@ -393,6 +402,7 @@ let define eo x =
                   (Grammar.r_next Grammar.r_stop
                      (Grammar.s_token ("UIDENT", x)))
                   Grammar.s_self,
+                "1154dceb",
                 (fun (param : 'ctyp) _ (loc : Ploc.t) ->
                    (let tl = [param] in
                     if List.length tl = List.length sl then
@@ -491,6 +501,7 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (str_macro_def : 'str_macro_def Grammar.Entry.e)),
+           "1154dceb",
            (fun (x : 'str_macro_def) (loc : Ploc.t) ->
               (match x with
                  SdStr sil ->
@@ -515,6 +526,7 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (sig_macro_def : 'sig_macro_def Grammar.Entry.e)),
+           "1154dceb",
            (fun (x : 'sig_macro_def) (loc : Ploc.t) ->
               (match x with
                  SdStr sil ->
@@ -549,6 +561,7 @@ Grammar.safe_extend
                        'structure_or_macro Grammar.Entry.e)))
                 (Grammar.s_nterm (else_str : 'else_str Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then d1 else d2 : 'str_macro_def)));
@@ -567,6 +580,7 @@ Grammar.safe_extend
                        'structure_or_macro Grammar.Entry.e)))
                 (Grammar.s_nterm (else_str : 'else_str Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then d1 else d2 : 'str_macro_def)));
@@ -574,6 +588,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "UNDEF")))
              (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           "1154dceb",
            (fun (i : 'uident) _ (loc : Ploc.t) ->
               (SdUnd i : 'str_macro_def)));
         Grammar.production
@@ -584,6 +599,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (opt_macro_type : 'opt_macro_type Grammar.Entry.e)),
+           "1154dceb",
            (fun (ome : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
               (SdDef (i, ome) : 'str_macro_def)));
         Grammar.production
@@ -594,17 +610,20 @@ Grammar.safe_extend
                 (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (ome : 'opt_macro_expr) (i : 'uident) _ (loc : Ploc.t) ->
               (SdDef (i, ome) : 'str_macro_def)))]];
     Grammar.extension (else_str : 'else_str Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, (fun (loc : Ploc.t) -> (SdNop : 'else_str)));
+          (Grammar.r_stop, "1154dceb",
+           (fun (loc : Ploc.t) -> (SdNop : 'else_str)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm
                 (structure_or_macro : 'structure_or_macro Grammar.Entry.e)),
+           "1154dceb",
            (fun (d1 : 'structure_or_macro) _ (loc : Ploc.t) ->
               (d1 : 'else_str)));
         Grammar.production
@@ -620,6 +639,7 @@ Grammar.safe_extend
                    (structure_or_macro :
                     'structure_or_macro Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then d1 else d2 : 'else_str)));
@@ -636,6 +656,7 @@ Grammar.safe_extend
                    (structure_or_macro :
                     'structure_or_macro Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then d1 else d2 : 'else_str)))]];
@@ -656,6 +677,7 @@ Grammar.safe_extend
                        'signature_or_macro Grammar.Entry.e)))
                 (Grammar.s_nterm (else_sig : 'else_sig Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then d1 else d2 : 'sig_macro_def)));
@@ -674,6 +696,7 @@ Grammar.safe_extend
                        'signature_or_macro Grammar.Entry.e)))
                 (Grammar.s_nterm (else_sig : 'else_sig Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then d1 else d2 : 'sig_macro_def)));
@@ -681,6 +704,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "UNDEF")))
              (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           "1154dceb",
            (fun (i : 'uident) _ (loc : Ploc.t) ->
               (SdUnd i : 'sig_macro_def)));
         Grammar.production
@@ -691,6 +715,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (opt_macro_type : 'opt_macro_type Grammar.Entry.e)),
+           "1154dceb",
            (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
               (SdDef (i, omt) : 'sig_macro_def)));
         Grammar.production
@@ -701,17 +726,20 @@ Grammar.safe_extend
                 (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)))
              (Grammar.s_nterm
                 (opt_macro_type : 'opt_macro_type Grammar.Entry.e)),
+           "1154dceb",
            (fun (omt : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
               (SdDef (i, omt) : 'sig_macro_def)))]];
     Grammar.extension (else_sig : 'else_sig Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, (fun (loc : Ploc.t) -> (SdNop : 'else_sig)));
+          (Grammar.r_stop, "1154dceb",
+           (fun (loc : Ploc.t) -> (SdNop : 'else_sig)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm
                 (signature_or_macro : 'signature_or_macro Grammar.Entry.e)),
+           "1154dceb",
            (fun (d1 : 'signature_or_macro) _ (loc : Ploc.t) ->
               (d1 : 'else_sig)));
         Grammar.production
@@ -727,6 +755,7 @@ Grammar.safe_extend
                    (signature_or_macro :
                     'signature_or_macro Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then d1 else d2 : 'else_sig)));
@@ -743,6 +772,7 @@ Grammar.safe_extend
                    (signature_or_macro :
                     'signature_or_macro Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then d1 else d2 : 'else_sig)))]];
@@ -752,12 +782,14 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (structure : 'structure Grammar.Entry.e)),
+           "1154dceb",
            (fun (sil : 'structure) (loc : Ploc.t) ->
               (SdStr sil : 'structure_or_macro)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (str_macro_def : 'str_macro_def Grammar.Entry.e)),
+           "1154dceb",
            (fun (d : 'str_macro_def) (loc : Ploc.t) ->
               (d : 'structure_or_macro)))]];
     Grammar.extension
@@ -766,23 +798,26 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (signature : 'signature Grammar.Entry.e)),
+           "1154dceb",
            (fun (sil : 'signature) (loc : Ploc.t) ->
               (SdStr sil : 'signature_or_macro)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (sig_macro_def : 'sig_macro_def Grammar.Entry.e)),
+           "1154dceb",
            (fun (d : 'sig_macro_def) (loc : Ploc.t) ->
               (d : 'signature_or_macro)))]];
     Grammar.extension (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop,
+          (Grammar.r_stop, "1154dceb",
            (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) _ (loc : Ploc.t) ->
               (MvExpr ([], e) : 'opt_macro_expr)));
         Grammar.production
@@ -793,17 +828,19 @@ Grammar.safe_extend
                       (macro_param : 'macro_param Grammar.Entry.e)))
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) _ (pl : 'macro_param) (loc : Ploc.t) ->
               (MvExpr (pl, e) : 'opt_macro_expr)))]];
     Grammar.extension (opt_macro_type : 'opt_macro_type Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop,
+          (Grammar.r_stop, "1154dceb",
            (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_type)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           "1154dceb",
            (fun (t : 'ctyp) _ (loc : Ploc.t) ->
               (MvType ([], t) : 'opt_macro_type)));
         Grammar.production
@@ -813,6 +850,7 @@ Grammar.safe_extend
                    (Grammar.s_list1 (Grammar.s_token ("LIDENT", ""))))
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           "1154dceb",
            (fun (t : 'ctyp) _ (pl : string list) (loc : Ploc.t) ->
               (MvType (pl, t) : 'opt_macro_type)))]];
     Grammar.extension (macro_param : 'macro_param Grammar.Entry.e) None
@@ -824,11 +862,13 @@ Grammar.safe_extend
                 (Grammar.s_list1sep (Grammar.s_token ("LIDENT", ""))
                    (Grammar.s_token ("", ",")) false))
              (Grammar.s_token ("", ")")),
+           "1154dceb",
            (fun _ (sl : string list) _ (loc : Ploc.t) ->
               (sl : 'macro_param)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_list1 (Grammar.s_token ("LIDENT", ""))),
+           "1154dceb",
            (fun (sl : string list) (loc : Ploc.t) -> (sl : 'macro_param)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "top"))
@@ -846,6 +886,7 @@ Grammar.safe_extend
                    Grammar.s_self)
                 (Grammar.s_nterm (else_expr : 'else_expr Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then e1 else e2 : 'expr)));
@@ -862,6 +903,7 @@ Grammar.safe_extend
                    Grammar.s_self)
                 (Grammar.s_nterm (else_expr : 'else_expr Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then e1 else e2 : 'expr)))]];
@@ -871,6 +913,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) _ (loc : Ploc.t) -> (e : 'else_expr)));
         Grammar.production
           (Grammar.r_next
@@ -883,6 +926,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then e1 else e2 : 'else_expr)));
@@ -897,6 +941,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (e2 : 'else_expr) (e1 : 'expr) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then e1 else e2 : 'else_expr)))]];
@@ -906,6 +951,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_token ("LIDENT", "__LOCATION__")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) ->
               (let bp = string_of_int (Ploc.first_pos loc) in
                let ep = string_of_int (Ploc.last_pos loc) in
@@ -916,6 +962,7 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_token ("LIDENT", "__FILE__")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) ->
               (MLast.ExStr (loc, Ploc.file_name loc) : 'expr)))]];
     Grammar.extension (patt : 'patt Grammar.Entry.e) (Some Gramext.First)
@@ -933,6 +980,7 @@ Grammar.safe_extend
                    Grammar.s_self)
                 (Grammar.s_nterm (else_patt : 'else_patt Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then p2 else p1 : 'patt)));
@@ -949,6 +997,7 @@ Grammar.safe_extend
                    Grammar.s_self)
                 (Grammar.s_nterm (else_patt : 'else_patt Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then p1 else p2 : 'patt)))]];
@@ -958,6 +1007,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
+           "1154dceb",
            (fun (p : 'patt) _ (loc : Ploc.t) -> (p : 'else_patt)));
         Grammar.production
           (Grammar.r_next
@@ -970,6 +1020,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then p1 else p2 : 'else_patt)));
@@ -984,6 +1035,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (p2 : 'else_patt) (p1 : 'patt) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then p1 else p2 : 'else_patt)))]];
@@ -1007,6 +1059,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "ELSE")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (y : 'constructor_declaration) _
                 (x : 'constructor_declaration) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
@@ -1022,6 +1075,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then Grammar.skip_item x else x :
@@ -1042,6 +1096,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "ELSE")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (y : 'constructor_declaration) _
                 (x : 'constructor_declaration) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
@@ -1057,6 +1112,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then x else Grammar.skip_item x :
@@ -1080,6 +1136,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "ELSE")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then y else x : 'label_declaration)));
@@ -1094,6 +1151,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then Grammar.skip_item x else x : 'label_declaration)));
         Grammar.production
@@ -1112,6 +1170,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "ELSE")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
                 (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then x else y : 'label_declaration)));
@@ -1126,6 +1185,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then x else Grammar.skip_item x : 'label_declaration)))]];
     Grammar.extension (match_case : 'match_case Grammar.Entry.e)
@@ -1142,6 +1202,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if not e then x else Grammar.skip_item x : 'match_case)));
         Grammar.production
@@ -1158,6 +1219,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (else_match_case : 'else_match_case Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then x else y : 'match_case)));
@@ -1172,6 +1234,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 Grammar.s_self)
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then x else Grammar.skip_item x : 'match_case)));
         Grammar.production
@@ -1188,6 +1251,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (else_match_case : 'else_match_case Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then x else y : 'match_case)))]];
@@ -1198,6 +1262,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "ELSE")))
              (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)),
+           "1154dceb",
            (fun (x : 'match_case) _ (loc : Ploc.t) ->
               (x : 'else_match_case)));
         Grammar.production
@@ -1209,6 +1274,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
                 (Grammar.s_token ("", "THEN")))
              (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)),
+           "1154dceb",
            (fun (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if not e then x else Grammar.skip_item x : 'else_match_case)));
         Grammar.production
@@ -1222,6 +1288,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if not e then x else y : 'else_match_case)));
@@ -1234,6 +1301,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (dexpr : 'dexpr Grammar.Entry.e)))
                 (Grammar.s_token ("", "THEN")))
              (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)),
+           "1154dceb",
            (fun (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
               (if e then x else Grammar.skip_item x : 'else_match_case)));
         Grammar.production
@@ -1247,6 +1315,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "THEN")))
                 (Grammar.s_nterm (match_case : 'match_case Grammar.Entry.e)))
              Grammar.s_self,
+           "1154dceb",
            (fun (y : 'else_match_case) (x : 'match_case) _ (e : 'dexpr) _
                 (loc : Ploc.t) ->
               (if e then x else y : 'else_match_case)))]];
@@ -1257,6 +1326,7 @@ Grammar.safe_extend
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "OR")))
              Grammar.s_self,
+           "1154dceb",
            (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
               (x || y : 'dexpr)))];
        None, None,
@@ -1265,6 +1335,7 @@ Grammar.safe_extend
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", "AND")))
              Grammar.s_self,
+           "1154dceb",
            (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
               (x && y : 'dexpr)))];
        None, None,
@@ -1275,6 +1346,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "OCAML_VERSION")))
                 (Grammar.s_nterm (op : 'op Grammar.Entry.e)))
              (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           "1154dceb",
            (fun (y : 'uident) (f : 'op) _ (loc : Ploc.t) ->
               (f (defined_version loc) y : 'dexpr)))];
        None, None,
@@ -1282,6 +1354,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "NOT")))
              Grammar.s_self,
+           "1154dceb",
            (fun (x : 'dexpr) _ (loc : Ploc.t) -> (not x : 'dexpr)))];
        None, None,
        [Grammar.production
@@ -1290,36 +1363,37 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
                 Grammar.s_self)
              (Grammar.s_token ("", ")")),
-           (fun _ (x : 'dexpr) _ (loc : Ploc.t) -> (x : 'dexpr)));
+           "1154dceb", (fun _ (x : 'dexpr) _ (loc : Ploc.t) -> (x : 'dexpr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (uident : 'uident Grammar.Entry.e)),
+           "1154dceb",
            (fun (i : 'uident) (loc : Ploc.t) -> (is_defined i : 'dexpr)))]];
     Grammar.extension (op : 'op Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ">=")),
-           (fun _ (loc : Ploc.t) -> ((>=) : 'op)));
+           "1154dceb", (fun _ (loc : Ploc.t) -> ((>=) : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ">")),
-           (fun _ (loc : Ploc.t) -> ((>) : 'op)));
+           "1154dceb", (fun _ (loc : Ploc.t) -> ((>) : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<>")),
-           (fun _ (loc : Ploc.t) -> ((<>) : 'op)));
+           "1154dceb", (fun _ (loc : Ploc.t) -> ((<>) : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")),
-           (fun _ (loc : Ploc.t) -> ((=) : 'op)));
+           "1154dceb", (fun _ (loc : Ploc.t) -> ((=) : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<")),
-           (fun _ (loc : Ploc.t) -> ((<) : 'op)));
+           "1154dceb", (fun _ (loc : Ploc.t) -> ((<) : 'op)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<=")),
-           (fun _ (loc : Ploc.t) -> ((<=) : 'op)))]];
+           "1154dceb", (fun _ (loc : Ploc.t) -> ((<=) : 'op)))]];
     Grammar.extension (uident : 'uident Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
-           (fun (i : string) (loc : Ploc.t) -> (i : 'uident)))]]]);;
+           "1154dceb", (fun (i : string) (loc : Ploc.t) -> (i : 'uident)))]]]);;
 
 Pcaml.add_option "-D" (Arg.String (define MvNone))
   "<string> Define for IFDEF instruction.";;

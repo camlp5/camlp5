@@ -1,0 +1,21 @@
+---
+name: pa_r-pr_r.byte
+recipes:
+  ifdef-eval:
+    name: ifdef-eval
+    steps:
+      - nuke:revised-load
+      - nuke:revised-qmod
+      - ifdef-eval
+      - cowardly-comment-stripper
+      - cowardly-arrow
+      - nuke:multi-semi:declare-end:directives
+  roundtrip-revised:
+    name: roundtrip-revised
+    steps:
+      - nuke:revised-load
+      - nuke:revised-qmod
+      - roundtrip-revised.byte
+      - cowardly-comment-stripper
+      - cowardly-arrow
+      - nuke:multi-semi:declare-end:directives

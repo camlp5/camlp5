@@ -1,0 +1,70 @@
+--- ../meta/q_MLast.ml	2020-02-12 19:28:40.270105000 -0800
++++ patches/camlp5.7.11/ALL/meta!q_MLast.ml.INPUT	2020-02-13 19:31:48.990847385 -0800
+@@ -9,6 +9,8 @@
+ 
+ IFDEF OCAML_VERSION <= OCAML_3_00 AND NOT COMPATIBLE_WITH_OLD_OCAML THEN
+   #option "-split_ext";
++ELSE
++  declare end ;
+ END;
+ 
+ value gram = Grammar.gcreate (Plexer.gmake ());
+@@ -1492,7 +1494,7 @@
+   ;
+   expr: LEVEL "simple"
+     [ [ a = ANTIQUOT "exp" -> Qast.VaAnt "exp" loc a
+-      | a = ANTIQUOT "" -> Qast.VaAnt "" loc a
++      | a = ANTIQUOT -> Qast.VaAnt "" loc a
+       | a = ANTIQUOT "xtr" -> antiquot_xtr loc "ExXtr" a
+       | a = ANTIQUOT "anti" ->
+           Qast.Node "ExAnt" [Qast.Loc; Qast.VaAnt "anti" loc a] ] ]
+@@ -1535,7 +1537,7 @@
+ value quot_mod = ref [];
+ value any_quot_mod = ref "MLast";
+ 
+-value set_qmod s = do {
++value set_qmod s =
+   match try Some (String.index s ',') with [ Not_found -> None ] with
+   [ Some i ->
+       let q = String.sub s 0 i in
+@@ -1543,7 +1545,7 @@
+       quot_mod.val := [(q, m) :: quot_mod.val]
+   | None ->
+       any_quot_mod.val := s ]
+-};
++;
+ 
+ Pcaml.add_directive "qmod"
+   (fun
+@@ -1582,6 +1584,7 @@
+   Quotation.ExAst (expr, patt)
+ ;
+ 
++do {
+ let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in
+ let str_item_eoi = Grammar.Entry.create gram "str_item_eoi" in
+ let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
+@@ -1596,7 +1599,6 @@
+ let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
+ let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
+ let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
+-do {
+   EXTEND
+     sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
+     str_item_eoi: [ [ x = str_item; EOI -> x ] ];
+@@ -1627,7 +1629,7 @@
+      ("class_str_item", apply_entry class_str_item_eoi);
+      ("with_constr", apply_entry with_constr_eoi);
+      ("poly_variant", apply_entry poly_variant_eoi);
+-     ("type_decl", apply_entry type_decl_eoi)];
++     ("type_decl", apply_entry type_decl_eoi)]
+ };
+ 
+ do {
+@@ -1679,5 +1681,5 @@
+     Ploc.call_with Plexer.force_antiquot_loc True
+       (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
+   in
+-  Quotation.add "vala" (Quotation.ExAst (expr, patt));
++  Quotation.add "vala" (Quotation.ExAst (expr, patt))
+ };

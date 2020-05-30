@@ -1,0 +1,20 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/labltk/examples_labltk/eyes.ml	2013-02-27 09:45:59.000000000 -0800
++++ patches/ocaml-4.01.0/ALL/otherlibs!labltk!examples_labltk!eyes.ml.INPUT	2020-02-15 21:52:06.490807516 -0800
+@@ -17,8 +17,8 @@
+ (* $Id$ *)
+ 
+ open Tk
++;;
+ 
+-let _ =
+   let top = openTk () in
+   let fw = Frame.create top in
+   pack [fw];
+@@ -58,5 +58,5 @@
+   create_eye 60 100 30 40 5 6 0.6;
+   create_eye 140 100 30 40 5 6 0.6;
+   pack [c]
+-
+-let _ = Printexc.print mainLoop ()
++;;
++Printexc.print mainLoop () ;;

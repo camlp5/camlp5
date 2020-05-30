@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/typing-objects-bugs/yamagata021012_ok.ml	2012-07-30 11:04:46.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!typing-objects-bugs!yamagata021012_ok.ml.INPUT	2020-02-15 23:36:15.093807516 -0800
+@@ -39,7 +39,7 @@
+     method iter proc =
+       let p = self#first in
+       for i = 0 to self#len - 2 do proc p#get; p#incr () done;
+-      if self#len > 0 then proc p#get else ()
++      if self#len > 0 then proc p#get
+   end
+ 
+ class type ['a] obj_input_channel =

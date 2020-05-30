@@ -49,18 +49,3 @@ value sprint_break_all :
        or "@[<b>" and "@]". *)
 
 #load "pa_macro.cmo";
-
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_ind : pr_context -> int -> pr_context;
-  value with_ind_bef : pr_context -> int -> string -> pr_context;
-  value with_ind_bef_aft :
-    pr_context -> int -> string -> string -> pr_context;
-  value with_bef : pr_context -> string -> pr_context;
-  value with_bef_aft : pr_context -> string -> string -> pr_context;
-  value with_bef_aft_dang :
-    pr_context -> string -> string -> string -> pr_context;
-  value with_bef_dang : pr_context -> string -> string -> pr_context;
-  value with_aft : pr_context -> string -> pr_context;
-  value with_aft_dang : pr_context -> string -> string -> pr_context;
-  value with_dang : pr_context -> string -> pr_context;
-END;

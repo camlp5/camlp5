@@ -38,7 +38,6 @@ and 'te g_level =
 and g_assoc = NonA | RightA | LeftA
 and 'te g_symbol =
     Sfacto of 'te g_symbol
-  | Smeta of string * 'te g_symbol list * Obj.t
   | Snterm of 'te g_entry
   | Snterml of 'te g_entry * string
   | Slist0 of 'te g_symbol
@@ -56,7 +55,7 @@ and 'te g_symbol =
 and g_action = Obj.t
 and 'te g_tree =
     Node of 'te g_node
-  | LocAct of g_action * g_action list
+  | LocAct of (string * g_action) * (string * g_action) list
   | DeadEnd
 and 'te g_node =
   { node : 'te g_symbol; son : 'te g_tree; brother : 'te g_tree }
@@ -73,10 +72,11 @@ type position =
 
 val levels_of_rules :
   'te g_entry -> position option ->
-    (string option * g_assoc option * ('te g_symbol list * g_action) list)
+    (string option * g_assoc option *
+       ('te g_symbol list * string * g_action) list)
       list ->
     'te g_level list;;
-val srules : ('te g_symbol list * g_action) list -> 'te g_symbol;;
+val srules : ('te g_symbol list * string * g_action) list -> 'te g_symbol;;
 external action : 'a -> g_action = "%identity";;
 val eq_symbol : 'a g_symbol -> 'a g_symbol -> bool;;
 

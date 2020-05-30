@@ -101,6 +101,7 @@ Added statements:
 
 *)
 
+open Asttools;
 open Pcaml;
 open Printf;
 open Versdep;
@@ -161,8 +162,6 @@ value defined_version loc =
 
 value is_defined i =
   (i = "STRICT" && Pcaml.strict_mode.val) ||
-  (i = "COMPATIBLE_WITH_OLD_OCAML" &&
-   Pcaml.flag_compatible_old_versions_of_ocaml.val) ||
   List.mem_assoc i defined.val
 ;
 
@@ -190,7 +189,7 @@ value subst mloc env =
   loop where rec loop =
     fun
     [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
-        let pel = List.map (fun (p, e) -> (p, loop e)) pel in
+        let pel = List.map (fun (p, e, attrs) -> (p, loop e, attrs)) pel in
         <:expr< let $flag:rf$ $list:pel$ in $loop e$ >>
     | <:expr< if $e1$ then $e2$ else $e3$ >> ->
         <:expr< if $loop e1$ then $loop e2$ else $loop e3$ >>
@@ -207,7 +206,18 @@ value subst mloc env =
 value substp mloc env =
   loop where rec loop =
     fun
-    [ <:expr< $e1$ . $e2$ >> -> <:patt< $loop e1$ . $loop e2$ >>
+    [ <:expr:< $e1$ . $e2$ >> ->
+        let rec expr2longid = fun [
+          <:expr< $uid:x$ >> ->
+            <:extended_longident< $uid:x$ >>
+        | <:expr< $e1$ . $e2$ >> ->
+            let li1 = expr2longid e1 in
+            let li2 = expr2longid e2 in
+            longid_concat li1 li2
+        | _ -> failwith "substp/expr2long: bad expr"
+        ] in
+        let li = expr2longid (expr_left_assoc_acc e1) in
+        <:patt< $longid:li$ . $(loop e2)$ >>
     | <:expr< $e1$ $e2$ >> -> <:patt< $loop e1$ $loop e2$ >>
     | <:expr< $lid:x$ >> ->
         try <:patt< $anti:List.assoc x env$ >> with
@@ -234,7 +244,7 @@ value substt mloc env =
     [ <:ctyp< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
     | <:ctyp< $t1$ $t2$ >> -> <:ctyp< $loop t1$ $loop t2$ >>
     | <:ctyp< ($list:tl$) >> -> <:ctyp< ($list:List.map loop tl$) >>
-    | <:ctyp< $lid:x$ >> | <:ctyp< $uid:x$ >> as t ->
+    | <:ctyp< $lid:x$ >> as t ->
         try List.assoc x env with [ Not_found -> t ]
     | t -> t ]
 ;

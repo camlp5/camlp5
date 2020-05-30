@@ -9,6 +9,7 @@
 #load "pa_pprintf.cmo";
 #load "pa_macro.cmo";
 
+open Exparser;
 open Parserify;
 open Pcaml;
 open Pretty;
@@ -28,47 +29,22 @@ value not_impl name pc x =
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-  value with_bef_aft = Pprintf.with_bef_aft;
-END;
-
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 value semi_after elem pc x = pprintf pc "%p;" elem x;
 
 value loc = Ploc.dummy;
-
-(* Streams *)
-
-value stream pc e =
-  let rec get =
-    fun
-    [ <:expr< Stream.iapp $x$ $y$ >> -> [(False, x) :: get y]
-    | <:expr< Stream.icons $x$ $y$ >> -> [(True, x) :: get y]
-    | <:expr< Stream.ising $x$ >> -> [(True, x)]
-    | <:expr< Stream.lapp (fun _ -> $x$) $y$ >> -> [(False, x) :: get y]
-    | <:expr< Stream.lcons (fun _ -> $x$) $y$ >> -> [(True, x) :: get y]
-    | <:expr< Stream.lsing (fun _ -> $x$) >> -> [(True, x)]
-    | <:expr< Stream.sempty >> -> []
-    | <:expr< Stream.slazy (fun _ -> $x$) >> -> [(False, x)]
-    | <:expr< Stream.slazy $x$ >> -> [(False, <:expr< $x$ () >>)]
-    | e -> [(False, e)] ]
-  in
-  let elem pc e =
-    match e with
-    [ (True, e) -> pprintf pc "`%p" expr e
-    | (False, e) -> expr pc e ]
-  in
-  let el = List.map (fun e -> (e, ";")) (get e) in
-  if el = [] then pprintf pc "[: :]"
-  else pprintf pc "@[<3>[: %p :]@]" (plist elem 0) el
-;
 
 (* Parsers *)
 
 value ident_option pc =
   fun
   [ Some s -> pprintf pc " %s" s
+  | None -> pprintf pc "" ]
+;
+
+value patt_option pc =
+  fun
+  [ Some s -> pprintf pc " %p" patt s
   | None -> pprintf pc "" ]
 ;
 
@@ -113,33 +89,33 @@ value parser_case force_vertic pc (sp, po, e) =
       horiz_vertic
         (fun () ->
            if force_vertic then sprintf "\n"
-           else pprintf pc "[: :]%p -> %p" ident_option po expr e)
+           else pprintf pc "[: :]%p -> %p" patt_option po expr e)
         (fun () ->
            match Pr_r.flatten_sequence e with
            [ Some se ->
                Pr_r.sequence_box
-                 (fun pc () -> pprintf pc "[: :]%p -> " ident_option po)
+                 (fun pc () -> pprintf pc "[: :]%p -> " patt_option po)
                  pc se
            | None ->
-               pprintf pc "[: :]%p ->@;%p" ident_option po expr e ])
+               pprintf pc "[: :]%p ->@;%p" patt_option po expr e ])
   | _ ->
       horiz_vertic
         (fun () ->
            if force_vertic then sprintf "\n"
            else
-             pprintf pc "[: %p :]%p -> %p" stream_patt sp ident_option po
+             pprintf pc "[: %p :]%p -> %p" stream_patt sp patt_option po
                expr e)
         (fun () ->
            match Pr_r.flatten_sequence e with
            [ Some se ->
                Pr_r.sequence_box
                  (fun pc () ->
-                    pprintf pc "[: %p :]%p -> " stream_patt sp ident_option
-                      po)
+                    pprintf pc "[: %p :]%p -> " stream_patt sp
+                            patt_option po)
                     pc se
            | None ->
                pprintf pc "[: %p :]%s ->@;%p" stream_patt sp
-                 (ident_option {(pc) with bef = ""; aft = ""} po)
+                 (patt_option {(pc) with bef = ""; aft = ""} po)
                  expr e ]) ]
 ;
 
@@ -149,10 +125,10 @@ value parser_case_sh force_vertic pc spe =
 
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 
-value parser_body pc (po, spel) =
+value parser_body pc ((po, spel) : Exparser.spat_parser_ast) =
   match spel with
-  [ [] -> pprintf pc "%p []" ident_option po
-  | [spe] -> pprintf pc "%p@;%p" ident_option po (parser_case False) spe
+  [ [] -> pprintf pc "%p []" patt_option po
+  | [spe] -> pprintf pc "%p@;%p" patt_option po (parser_case False) spe
   | _ ->
       let force_vertic =
         if flag_equilibrate_cases.val then
@@ -171,7 +147,7 @@ value parser_body pc (po, spel) =
           has_vertic
         else False
       in
-      pprintf pc "%p@ [ %p ]" ident_option po
+      pprintf pc "%p@ [ %p ]" patt_option po
         (vlist2 (parser_case_sh force_vertic)
            (bar_before (parser_case_sh force_vertic)))
         spel ]
@@ -270,7 +246,7 @@ value unparser_body e =
   let (po, e) =
     match e with
     [ <:expr< let $lid:bp$ = Stream.count $lid:strm_n$ in $e$ >> ->
-        (Some bp, e)
+        (Some <:patt< $lid:bp$ >>, e)
     | _ ->
         (None, e) ]
   in
@@ -282,7 +258,7 @@ value unparser_body e =
 value print_parser pc e =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
-      let pa = unparser_body e in
+      let pa = Parserify.unparser_body e in
       pprintf pc "parser%p" parser_body pa
   | e -> expr pc e ]
 ;
@@ -290,17 +266,43 @@ value print_parser pc e =
 value print_match_with_parser pc e =
   match e with
   [ <:expr< let ($_$ : Stream.t _) = $e1$ in $e2$ >> ->
-      let pa = unparser_body e2 in
+      let pa = Parserify.unparser_body e2 in
       pprintf pc "@[match %p with parser@]%p" expr e1 parser_body pa
   | <:expr<
       match Stream.peek strm__ with
       [ Some $_$ → do { Stream.junk strm__; $_$ }
       | _ → $_$ ]
     >> as e →
-      let pa = unparser_body e in
+      let pa = Parserify.unparser_body e in
       pprintf pc "@[match strm__ with parser@]%p" parser_body pa
   | e ->
       expr pc e ]
+;
+
+(* Streams *)
+
+value stream pc e =
+  let rec get =
+    fun
+    [ <:expr< Stream.iapp $x$ $y$ >> -> [(False, x) :: get y]
+    | <:expr< Stream.icons $x$ $y$ >> -> [(True, x) :: get y]
+    | <:expr< Stream.ising $x$ >> -> [(True, x)]
+    | <:expr< Stream.lapp (fun _ -> $x$) $y$ >> -> [(False, x) :: get y]
+    | <:expr< Stream.lcons (fun _ -> $x$) $y$ >> -> [(True, x) :: get y]
+    | <:expr< Stream.lsing (fun _ -> $x$) >> -> [(True, x)]
+    | <:expr< Stream.sempty >> -> []
+    | <:expr< Stream.slazy (fun _ -> $x$) >> -> [(False, x)]
+    | <:expr< Stream.slazy $x$ >> -> [(False, <:expr< $x$ () >>)]
+    | e -> [(False, e)] ]
+  in
+  let elem pc e =
+    match e with
+    [ (True, e) -> pprintf pc "`%p" expr e
+    | (False, e) -> expr pc e ]
+  in
+  let el = List.map (fun e -> (e, ";")) (get e) in
+  if el = [] then pprintf pc "[: :]"
+  else pprintf pc "@[<3>[: %p :]@]" (plist elem 0) el
 ;
 
 (* Printers extensions *)

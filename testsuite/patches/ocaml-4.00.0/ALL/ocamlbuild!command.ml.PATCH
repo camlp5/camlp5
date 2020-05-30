@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamlbuild/command.ml	2012-04-02 08:17:24.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamlbuild!command.ml.INPUT	2020-02-10 14:14:31.564068995 -0800
+@@ -375,7 +375,7 @@
+ let all_deps_of_tags = ref []
+ 
+ let cons deps acc =
+-  List.rev&
++  List.rev &&
+     List.fold_left begin fun acc dep ->
+       if List.mem dep acc then acc else dep :: acc
+     end acc deps

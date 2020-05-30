@@ -1,0 +1,22 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/tool-lexyacc/lexgen.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!tool-lexyacc!lexgen.ml.INPUT	2020-02-11 20:31:09.937580468 -0800
+@@ -93,7 +93,7 @@
+   Empty
+ 
+ 
+-let encode_lexdef (Lexdef(_, ld)) =
++let encode_lexdef = function (Lexdef(_, ld)) ->
+   chars := [];
+   chars_count := 0;
+   actions := [];
+@@ -196,8 +196,8 @@
+     (no_action, [])
+ 
+ 
+-let memory = (Hashtbl.create 131 : (transition list, int) Hashtbl.t)
+-let todo = ref ([] : (transition list * int) list)
++let memory : (transition list, int) Hashtbl.t = Hashtbl.create 131
++let todo : (transition list * int) list = ref []
+ let next = ref 0
+ 
+ let get_state st = 

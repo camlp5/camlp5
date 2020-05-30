@@ -1,0 +1,18 @@
+#!/bin/bash -x
+
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/lexer-passthru.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_r-pr_r.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_r-pr_r.byte.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_r-pr_r.opt.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
+
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.byte.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11-ORIGINAL
+
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.byte.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.00.0
+
+/usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/pa_o-pr_o.opt.yaml --packages-file packages/ocaml.yaml run-full ocaml-4.09.0

@@ -1,0 +1,10 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-threads/close.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-threads!close.ml.INPUT	2020-02-11 20:12:01.518014145 -0800
+@@ -11,5 +11,6 @@
+   print_endline "reading...";
+   ignore (Unix.read rd buf 0 10);
+   print_endline "read returned"
++;;
+ 
+-let _ = Unix.handle_unix_error main ()
++Unix.handle_unix_error main () ;;

@@ -143,7 +143,7 @@ value map_vala f x = <:vala< f (Pcaml.unvala x) >>;
 value class_infos f ci =
   {MLast.ciLoc = ci.MLast.ciLoc; MLast.ciVir = ci.MLast.ciVir;
    MLast.ciPrm = ci.MLast.ciPrm; MLast.ciNam = ci.MLast.ciNam;
-   MLast.ciExp = f ci.MLast.ciExp}
+   MLast.ciExp = f ci.MLast.ciExp; MLast.ciAttributes = ci.MLast.ciAttributes}
 ;
 
 value rec expr x =
@@ -177,10 +177,11 @@ value rec expr x =
   | <:expr< $e1$.[$e2$] >> -> <:expr< $expr e1$.[$expr e2$] >>
   | <:expr< $_$ . $_$ >> | <:expr< $uid:_$ >> | <:expr< $lid:_$ >> |
     <:expr< $str:_$ >> | <:expr< $chr:_$ >> | <:expr< $int:_$ >> |
-    <:expr< $flo:_$ >> | <:expr< new $list:_$ >> ->
-      x
+    <:expr< $flo:_$ >>
+  | <:expr< new $longid:_$ . $lid:_$ >> | <:expr< new $lid:_$ >>
+     -> x
   | x -> not_impl "expr" x ]
-and let_binding (p, e) = (p, expr e)
+and let_binding (p, e, attrs) = (p, expr e, attrs)
 and match_assoc (p, eo, e) = (p, map_vala (map_option expr) eo, expr e)
 and module_expr x =
   let loc = MLast.loc_of_module_expr x in
@@ -205,7 +206,8 @@ and str_item x =
       <:str_item< class $list:List.map (class_infos class_expr) ce$ >>
   | <:str_item< $exp:e$ >> -> <:str_item< $exp:expr e$ >>
   | <:str_item< open $_$ >> | <:str_item< type $list:_$ >> |
-    <:str_item< exception $uid:_$ of $list:_$ = $_$ >> |
+    <:str_item< exception $uid:_$ of $list:_$ >> |
+    <:str_item< exception $uid:_$ = $longid:_$ >> |
     <:str_item< module type $_$ = $_$ >> |
     <:str_item< # $lid:_$ $opt:_$ >> ->
       x

@@ -15,14 +15,6 @@ type pr_context =
 
 type pr_fun 'a = pr_context -> 'a -> string;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_ind_bef = Pprintf.with_ind_bef;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft_dang = Pprintf.with_bef_aft_dang;
-  value with_aft = Pprintf.with_aft;
-  value with_aft_dang = Pprintf.with_aft_dang;
-END;
-
 value tab ind = String.make ind ' ';
 
 (* horizontal list *)
@@ -438,10 +430,10 @@ value expand_module_prefix m =
     [ [(p, e) :: rest] -> do {
         let p =
           match p with
-          [ <:patt< $uid:_$.$_$ >> -> p
+          [ <:patt< $uid:_$ . $_$ >> -> p
           | _ ->
               let loc = MLast.loc_of_patt p in
-              <:patt< $uid:m$.$p$ >> ]
+              <:patt< $uid:m$ . $p$ >> ]
         in
         loop [(p, e) :: rev_lel] rest
       }
@@ -495,7 +487,7 @@ value record_without_with loc e lel =
           (fun (p, _) (m, sl) ->
              match p with
               [ <:patt< $lid:lab$ >> -> (m, [lab :: sl])
-              | <:patt< $uid:m$.$lid:lab$ >> -> (m, [lab :: sl])
+              | <:patt< $uid:m$ . $lid:lab$ >> -> (m, [lab :: sl])
               | _ -> raise Exit ])
           lel ("", [])
       in
@@ -503,7 +495,7 @@ value record_without_with loc e lel =
     in
     let f =
       let f = <:expr< $lid:name$ >> in
-      if m = "" then f else <:expr< $uid:m$.$f$ >>
+      if m = "" then f else <:expr< $uid:m$ . $f$ >>
     in
     let e =
       List.fold_left (fun e1 (_, e2) -> <:expr< $e1$ $e2$ >>)

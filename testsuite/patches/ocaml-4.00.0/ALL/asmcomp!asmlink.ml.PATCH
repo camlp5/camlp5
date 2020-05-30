@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/asmlink.ml	2012-03-07 09:40:17.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/asmcomp!asmlink.ml.INPUT	2020-02-10 13:36:41.117557175 -0800
+@@ -123,7 +123,7 @@
+ 
+ (* First pass: determine which units are needed *)
+ 
+-let missing_globals = (Hashtbl.create 17 : (string, string list ref) Hashtbl.t)
++let missing_globals : (string, string list ref) Hashtbl.t = Hashtbl.create 17
+ 
+ let is_required name =
+   try ignore (Hashtbl.find missing_globals name); true

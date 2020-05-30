@@ -40,7 +40,6 @@ and 'te g_level =
 and g_assoc = NonA | RightA | LeftA
 and 'te g_symbol =
     Sfacto of 'te g_symbol
-  | Smeta of string * 'te g_symbol list * Obj.t
   | Snterm of 'te g_entry
   | Snterml of 'te g_entry * string
   | Slist0 of 'te g_symbol
@@ -58,7 +57,7 @@ and 'te g_symbol =
 and g_action = Obj.t
 and 'te g_tree =
     Node of 'te g_node
-  | LocAct of g_action * g_action list
+  | LocAct of (string * g_action) * (string * g_action) list
   | DeadEnd
 and 'te g_node =
   { node : 'te g_symbol; son : 'te g_tree; brother : 'te g_tree }
@@ -83,8 +82,8 @@ let rec derive_eps =
   | Sfacto s -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Svala (_, s) -> derive_eps s
-  | Smeta (_, _, _) | Slist1 _ | Slist1sep (_, _, _) | Snterm _ |
-    Snterml (_, _) | Snext | Sself | Scut | Stoken _ ->
+  | Slist1 _ | Slist1sep (_, _, _) | Snterm _ | Snterml (_, _) | Snext |
+    Sself | Scut | Stoken _ ->
       false
 and tree_derive_eps =
   function
@@ -107,23 +106,22 @@ let rec eq_symbol s1 s2 =
   | Sflag s1, Sflag s2 -> eq_symbol s1 s2
   | Sopt s1, Sopt s2 -> eq_symbol s1 s2
   | Svala (ls1, s1), Svala (ls2, s2) -> ls1 = ls2 && eq_symbol s1 s2
-  | Stree _, Stree _ -> false
+  | Stree t1, Stree t2 -> eq_tree t1 t2
   | Sfacto (Stree t1), Sfacto (Stree t2) ->
       (* The only goal of the node 'Sfacto' is to allow tree comparison
          (therefore factorization) without looking at the semantic
          actions; allow factorization of rules like "SV foo" which are
          actually expanded into a tree. *)
-      let rec eq_tree t1 t2 =
-        match t1, t2 with
-          Node n1, Node n2 ->
-            eq_symbol n1.node n2.node && eq_tree n1.son n2.son &&
-            eq_tree n1.brother n2.brother
-        | LocAct (_, _), LocAct (_, _) -> true
-        | DeadEnd, DeadEnd -> true
-        | _ -> false
-      in
       eq_tree t1 t2
   | _ -> s1 = s2
+and eq_tree t1 t2 =
+  match t1, t2 with
+    Node n1, Node n2 ->
+      eq_symbol n1.node n2.node && eq_tree n1.son n2.son &&
+      eq_tree n1.brother n2.brother
+  | LocAct ((hash1, _), _), LocAct ((hash2, _), _) -> hash1 = hash2
+  | DeadEnd, DeadEnd -> true
+  | _ -> false
 ;;
 
 let is_before s1 s2 =
@@ -198,7 +196,8 @@ let insert_tree entry_name gsymbols action tree =
 let srules rl =
   let t =
     List.fold_left
-      (fun tree (symbols, action) -> insert_tree "" symbols action tree)
+      (fun tree (symbols, hash, action) ->
+         insert_tree "" symbols (hash, action) tree)
       DeadEnd rl
   in
   Stree t
@@ -223,7 +222,6 @@ and token_exists_in_tree f =
 and token_exists_in_symbol f =
   function
     Sfacto sy -> token_exists_in_symbol f sy
-  | Smeta (_, syl, _) -> List.exists (token_exists_in_symbol f) syl
   | Slist0 sy -> token_exists_in_symbol f sy
   | Slist0sep (sy, sep, _) ->
       token_exists_in_symbol f sy || token_exists_in_symbol f sep
@@ -350,8 +348,8 @@ let rec check_gram entry =
     Snterm e ->
       if e.egram != entry.egram then
         begin
-          eprintf "\
-Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
+          eprintf
+            "Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
             entry.ename e.ename;
           flush stderr;
           failwith "Grammar.extend error"
@@ -359,14 +357,13 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
   | Snterml (e, _) ->
       if e.egram != entry.egram then
         begin
-          eprintf "\
-Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
+          eprintf
+            "Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
             entry.ename e.ename;
           flush stderr;
           failwith "Grammar.extend error"
         end
   | Sfacto s -> check_gram entry s
-  | Smeta (_, sl, _) -> List.iter (check_gram entry) sl
   | Slist0sep (s, t, _) -> check_gram entry t; check_gram entry s
   | Slist1sep (s, t, _) -> check_gram entry t; check_gram entry s
   | Slist0 s -> check_gram entry s
@@ -399,7 +396,6 @@ let insert_tokens gram symbols =
   let rec insert =
     function
       Sfacto s -> insert s
-    | Smeta (_, sl, _) -> List.iter insert sl
     | Slist0 s -> insert s
     | Slist1 s -> insert s
     | Slist0sep (s, t, _) -> insert s; insert t
@@ -444,12 +440,12 @@ let levels_of_rules entry position rules =
            let lev = make_lev lname assoc in
            let lev =
              List.fold_left
-               (fun lev (symbols, action) ->
+               (fun lev (symbols, hash, action) ->
                   let symbols = List.map (change_to_self entry) symbols in
                   List.iter (check_gram entry) symbols;
                   let (e1, symbols) = get_initial entry symbols in
                   insert_tokens entry.egram symbols;
-                  insert_level entry.ename e1 symbols action lev)
+                  insert_level entry.ename e1 symbols (hash, action) lev)
                lev level
            in
            lev :: levs, empty_lev)
@@ -539,7 +535,6 @@ let rec decr_keyw_use gram =
           gram.glexer.Plexing.tok_removing tok
         end
   | Sfacto s -> decr_keyw_use gram s
-  | Smeta (_, sl, _) -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s
   | Slist1 s -> decr_keyw_use gram s
   | Slist0sep (s1, s2, _) -> decr_keyw_use gram s1; decr_keyw_use gram s2

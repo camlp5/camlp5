@@ -302,12 +302,6 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $nativeint:s1$ >>;
 <:expr< $_nativeint:s1$ >>;
 
-(* jocaml def *)
-(* <:expr< def $list:lx$ in $e$ >>; *)
-(* <:expr< def $_list:lx$ in $e$ >>; *)
-MLast.ExJdf loc (Ploc.VaVal lx) e;
-MLast.ExJdf loc lx e;
-
 (* label *)
 <:expr< ~{$list:lpe$} >>;
 <:expr< ~{$_list:lpe$} >>;
@@ -372,10 +366,6 @@ MLast.ExLmd loc (Ploc.VaVal None) me e;
 <:expr< {< $list:lse$ >} >>;
 <:expr< {< $_list:lse$ >} >>;
 
-(* jocaml & *)
-(* <:expr< $e1$ & $e2$ >>; *)
-MLast.ExPar loc e1 e2;
-
 (* module packing *)
 <:expr< (module $me$) >>;
 <:expr< (module $me$ : $mt$) >>;
@@ -389,35 +379,9 @@ MLast.ExRec loc (Ploc.VaVal lpe) oe;
 <:expr< {($e$) with $_list:lpe$} >>;
 MLast.ExRec loc lpe oe;
 
-(* jocaml reply *)
-(* <:expr< reply to $jid:ls$ >>; *)
-(* <:expr< reply to $_jid:ls$ >>; *)
-(* <:expr< reply $e$ to $jid:ls$ >>; *)
-(* <:expr< reply $e$ to $_jid:ls$ >>; *)
-(* <:expr< reply $opt:oe$ to $jid:ls$ >>; *)
-(* <:expr< reply $opt:oe$ to $_jid:ls$ >>; *)
-(* <:expr< reply $_opt:oe$ to $jid:ls$ >>; *)
-(* <:expr< reply $_opt:oe$ to $_jid:ls$ >>; *)
-MLast.ExRpl loc (Ploc.VaVal None) (Ploc.VaVal (loc, Ploc.VaVal lsf2));
-MLast.ExRpl loc (Ploc.VaVal None) (Ploc.VaVal (loc, lsf2));
-MLast.ExRpl loc (Ploc.VaVal None) ls;
-MLast.ExRpl loc (Ploc.VaVal (Some e)) (Ploc.VaVal (loc, Ploc.VaVal lsf2));
-MLast.ExRpl loc (Ploc.VaVal (Some e)) (Ploc.VaVal (loc, lsf2));
-MLast.ExRpl loc (Ploc.VaVal (Some e)) ls;
-MLast.ExRpl loc (Ploc.VaVal oe) (Ploc.VaVal (loc, Ploc.VaVal lsf2));
-MLast.ExRpl loc (Ploc.VaVal oe) (Ploc.VaVal (loc, lsf2));
-MLast.ExRpl loc (Ploc.VaVal oe) ls;
-MLast.ExRpl loc oe (Ploc.VaVal (loc, Ploc.VaVal lsf2));
-MLast.ExRpl loc oe (Ploc.VaVal (loc, lsf2));
-MLast.ExRpl loc oe ls;
-
 (* sequence *)
 <:expr< do { $list:le$ } >>;
 <:expr< do { $_list:le$ } >>;
-
-(* jocaml spawn *)
-(* <:expr< spawn $e$ >>; *)
-MLast.ExSpw loc e;
 
 (* method call *)
 <:expr< $e$ # $s$ >>;
@@ -451,6 +415,12 @@ MLast.ExSpw loc e;
 (* while *)
 <:expr< while $e$ do { $list:le$ } >>;
 <:expr< while $e$ do { $_list:le$ } >>;
+
+(* expr attributes *)
+(* CHET TODO: FIX THIS *)
+MLast.ExAtt loc e (Ploc.VaVal (Ploc.VaVal sxf1, sxf2));
+MLast.ExAtt loc e (Ploc.VaVal (sxf1, sxf2));
+MLast.ExAtt loc e sx;
 
 (* access *)
 <:module_type< $mt1$ . $mt2$ >>;
@@ -494,6 +464,9 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 (* with construction *)
 <:module_type< $mt$ with $list:lwc$ >>;
 <:module_type< $mt$ with $_list:lwc$ >>;
+
+(* a zero, b/c the test is BROKEN; TODO: Chet fix the test *)
+0;
 
 (* class *)
 <:sig_item< class $list:lcict$ >>;
@@ -652,12 +625,6 @@ MLast.MeUnp loc e omt;
 (* declare *)
 <:str_item< declare $list:lsi$ end >>;
 <:str_item< declare $_list:lsi$ end >>;
-
-(* jocaml def *)
-(* <:str_item< def $list:lx$ >>; *)
-(* <:str_item< def $_list:lx$ >>; *)
-MLast.StDef loc (Ploc.VaVal lx);
-MLast.StDef loc lx;
 
 (* directive *)
 <:str_item< # $lid:s$ >>;
@@ -854,6 +821,7 @@ MLast.StDef loc lx;
 <:class_sig_item< method $_flag:b$ $_lid:s$ : $t$ >>;
 
 (* value *)
+(*
 <:class_sig_item< value mutable $lid:s$ : $t$ >>;
 <:class_sig_item< value mutable $_lid:s$ : $t$ >>;
 <:class_sig_item< value $lid:s$ : $t$ >>;
@@ -862,6 +830,43 @@ MLast.StDef loc lx;
 <:class_sig_item< value $flag:b$ $_lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $lid:s$ : $t$ >>;
 <:class_sig_item< value $_flag:b$ $_lid:s$ : $t$ >>;
+*)
+
+<:class_sig_item< value mutable virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $_lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value mutable $_flag:b2$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< value virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value $lid:s$ : $t$ >>;
+<:class_sig_item< value $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:False$ $_flag:b2$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< value $flag:b1$ virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ $_flag:b2$ $_lid:s$ : $t$ >>;
+
+<:class_sig_item< value $_flag:b1$ virtual $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ virtual $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $_flag:b2$ $lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ $_flag:b2$ $_lid:s$ : $t$ >>;
 
 (* virtual method *)
 <:class_sig_item< method virtual private $lid:s$ : $t$ >>;
@@ -922,6 +927,10 @@ MLast.StDef loc lx;
 <:class_str_item< inherit $ce$ $opt:Some s$ >>;
 <:class_str_item< inherit $ce$ $opt:os$ >>;
 <:class_str_item< inherit $ce$ $_opt:os$ >>;
+<:class_str_item< inherit! $ce$ >>;
+<:class_str_item< inherit! $ce$ $opt:Some s$ >>;
+<:class_str_item< inherit! $ce$ $opt:os$ >>;
+<:class_str_item< inherit! $ce$ $_opt:os$ >>;
 
 (* initialization *)
 <:class_str_item< initializer $e$ >>;
@@ -1109,3 +1118,21 @@ MLast.StDef loc lx;
 <:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
 <:class_str_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
+
+(* CHET TODO: FIX THESE, make them meaningful *)
+MLast.Fresh;
+MLast.Override;
+MLast.StAttr loc (Ploc.VaVal lsi);
+MLast.StAttr loc lsi;
+MLast.SiAttr loc (Ploc.VaVal lsi);
+MLast.SiAttr loc lsi;
+MLast.TyAttr loc (Ploc.VaVal t);
+MLast.TyAttr loc t;
+MLast.PaAttr loc (Ploc.VaVal p) None;
+MLast.PaAttr loc (Ploc.VaVal p) (Some (Ploc.VaVal e));
+MLast.PaAttr loc (Ploc.VaVal p) (Some e);
+MLast.PaAttr loc (Ploc.VaVal p) oe;
+MLast.PaAttr loc p None;
+MLast.PaAttr loc p (Some (Ploc.VaVal e));
+MLast.PaAttr loc p (Some e);
+MLast.PaAttr loc p oe;

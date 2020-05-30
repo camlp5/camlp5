@@ -2,7 +2,7 @@
 
 include config/Makefile
 
-DIRS=lib odyl main meta etc top ocpp man
+DIRS=lib odyl main meta etc top ocpp man compile
 FDIRS=lib odyl main meta
 OPTDIRS=ocaml_stuff lib odyl main meta etc
 OPTOPTDIRS=compile
@@ -15,6 +15,7 @@ DIFF_OPT=-Bwiu
 DESTDIR=
 
 all: world.opt
+	$(MAKE) $(MAKEFLAGS) local-install
 
 out: boot/$(CAMLP5N)$(EXE)
 	set -e; cd ocaml_stuff; $(MAKE); cd ..
@@ -48,21 +49,25 @@ depend:
 	cd ocaml_stuff; $(MAKE) depend; cd ..
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend; cd ..); done
 
+local-install::
+	$(RM) -rf local-install && mkdir -p local-install/lib/ocaml
+	$(MAKE) DESTDIR=`pwd`/local-install/ LIBDIR=lib BINDIR=bin MANDIR=man install
+
 install:
-	@if test -z "$(LIBDIR)"; then \
+	$(NOVERBOSE) if test -z "$(LIBDIR)"; then \
 	  echo "*** Variable LIBDIR not set"; exit 1; fi
-	@if test -z "$(CAMLP5N)"; then \
+	$(NOVERBOSE) if test -z "$(CAMLP5N)"; then \
 	  echo "*** Variable CAMLP5N not set"; exit 1; fi
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	for i in $(DIRS) compile; do \
-	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR); cd ..); \
+	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR) LIBDIR=$(LIBDIR) BINDIR=$(BINDIR) MANDIR=$(MANDIR); cd ..); \
 	done
 	cp etc/topfind.camlp5 `ocamlc -where`/. || true
 
 uninstall:
-	@if test -z "$(LIBDIR)"; then \
+	$(NOVERBOSE) if test -z "$(LIBDIR)"; then \
 	  echo "*** Variable LIBDIR not set"; exit 1; fi
-	@if test -z "$(CAMLP5N)"; then \
+	$(NOVERBOSE) if test -z "$(CAMLP5N)"; then \
 	  echo "*** Variable CAMLP5N not set"; exit 1; fi
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	cd "$(DESTDIR)$(BINDIR)"; $(RM) -f *$(CAMLP5N)* odyl ocpp; cd ..
@@ -73,7 +78,9 @@ clean::
 	$(MAKE) clean_hot clean_cold
 	$(RM) -f boot/*.cm[oi] boot/$(CAMLP5N)*
 	$(RM) -rf boot/SAVED
-	cd test; $(MAKE) clean; cd ..
+	$(RM) -rf local-install
+	$(MAKE) -C test clean
+	$(MAKE) -C testsuite clean
 
 scratch: clean
 
@@ -104,7 +111,7 @@ promote:
 	for i in $(FDIRS); do (cd $$i; $(MAKE) promote; cd ..); done
 
 compare:
-	@if (for i in $(FDIRS); do \
+	$(NOVERBOSE) if (for i in $(FDIRS); do \
 		cd $$i; \
 		if $(MAKE) compare 2>/dev/null; then cd ..; \
 		else exit 1; fi; \
@@ -114,7 +121,7 @@ compare:
 	fi
 
 compare_test:
-	@(for i in $(FDIRS); do \
+	$(NOVERBOSE) (for i in $(FDIRS); do \
 		cd $$i; \
 		if $(MAKE) compare 2>/dev/null; then cd ..; \
 		else exit 1; fi; \
@@ -209,20 +216,17 @@ bootstrap_source:
 	rmdir ocaml_src.new
 
 new_sources: oprinter
-	@-for i in $(FDIRS); do \
+	$(NOVERBOSE) for i in $(FDIRS); do \
 	   mkdir ocaml_src.new/$$i; \
 	   $(MAKE) $(NO_PR_DIR) new_source DIR=$$i FILE=Makefile; \
 	   echo ============================================; \
 	   echo ocaml_src.new/$$i/.depend; \
            (cd ocaml_src.new/$$i; cp ../../$$i/.depend .); \
 	 done
-	@-mkdir ocaml_src.new/lib/versdep
-	@-(cd ocaml_src/lib/versdep; \
+	$(NOVERBOSE) mkdir ocaml_src.new/lib/versdep
+	$(NOVERBOSE) (cd ocaml_src/lib/versdep; \
 	   cp *.ml ../../../ocaml_src.new/lib/versdep/.)
-	@-mkdir ocaml_src.new/lib/versdep/jocaml
-	@-(cd ocaml_src/lib/versdep/jocaml; \
-	   cp *.ml ../../../../ocaml_src.new/lib/versdep/jocaml)
-	@-for i in $(FDIRS); do \
+	$(NOVERBOSE) for i in $(FDIRS); do \
           files="$$(cd $$i; ls *.ml*)"; \
 	  for j in $$files; do \
 	    if [ "$$j" != "odyl_config.ml" ]; then \
@@ -232,7 +236,7 @@ new_sources: oprinter
 	done
 
 new_source:
-	@cd $$DIR; k=$$FILE; opt=""; \
+	$(NOVERBOSE) cd $$DIR; k=$$FILE; opt=""; \
 	if [ "$$k" = "versdep.ml" ]; then \
 	  k=versdep$(VERSDIR)/$(OVERSION).ml; \
 	  VERSDIR="$(OCAMLN)"; \
@@ -253,13 +257,13 @@ new_source:
 	../ocaml_src.new/$$DIR/$$k
 
 compare_sources: oprinter
-	@-for i in $(FDIRS); do \
+	$(NOVERBOSE) for i in $(FDIRS); do \
 	   $(MAKE) $(NO_PR_DIR) compare_source DIR=$$i FILE=Makefile; \
 	   echo ============================================; \
 	   echo ocaml_src/$$i/.depend; \
 	   (cd ocaml_src/$$i; diff $(DIFF_OPT) . ../../$$i/.depend); \
 	 done
-	@-for i in $(FDIRS); do \
+	$(NOVERBOSE) for i in $(FDIRS); do \
           files="$$(cd $$i; ls *.ml*)"; \
 	  for j in $$files; do \
 	    if [ "$$j" != "odyl_config.ml" ]; then \
@@ -269,7 +273,7 @@ compare_sources: oprinter
 	done
 
 compare_source:
-	@cd $$DIR; k=$$FILE; opt=""; \
+	$(NOVERBOSE) cd $$DIR; k=$$FILE; opt=""; \
 	if [ "$$k" = "versdep.ml" ]; then \
 	  k=versdep$(VERSDIR)/$(OVERSION).ml; \
 	  VERSDIR="$(OCAMLN)"; \
@@ -290,16 +294,12 @@ compare_source:
 	diff $(DIFF_OPT) ../ocaml_src/$$DIR/$$k - || :
 
 bootstrap_all_versdep: oprinter
-	@-for i in ocaml_src/lib/versdep/*.ml; do \
+	$(NOVERBOSE) for i in ocaml_src/lib/versdep/*.ml; do \
 	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=ocaml; \
-	done; \
-	for i in ocaml_src/lib/versdep/*/*.ml; do \
-	  n="$$(basename $$(dirname $$i))"; \
-	  $(MAKE) $(NO_PR_DIR) bootstrap_versdep i=$$i n=$$n; \
 	done
 
 bootstrap_versdep:
-	@cd lib; \
+	$(NOVERBOSE) cd lib; \
 	echo ============================================; \
 	echo $$i; \
 	j=$$(echo $$(basename $$i) | \
@@ -312,7 +312,7 @@ bootstrap_versdep:
 	  versdep.ml > ../$$i
 
 compare_all_versdep: oprinter
-	@-for i in ocaml_src/lib/versdep/*.ml; do \
+	$(NOVERBOSE) for i in ocaml_src/lib/versdep/*.ml; do \
 	  $(MAKE) $(NO_PR_DIR) compare_versdep i=$$i n=ocaml; \
 	done; \
 	for i in ocaml_src/lib/versdep/*/*.ml; do \
@@ -321,7 +321,7 @@ compare_all_versdep: oprinter
 	done
 
 compare_versdep:
-	@cd lib; \
+	$(NOVERBOSE) cd lib; \
 	echo ============================================; \
 	echo $$i; \
 	j=$$(echo $$(basename $$i) | \
@@ -338,7 +338,7 @@ oprinter:
 	cd etc; $(MAKE) $(PR_O)
 
 untouch_sources:
-	@-cd ocaml_src; \
+	$(NOVERBOSE) cd ocaml_src; \
 	for i in $(FDIRS) lib/versdep; do \
 	  for j in $$i/*.ml* $$i/Makefile*; do \
 	    if cmp -s $$j ../ocaml_src.new/$$j 2>/dev/null; then \
@@ -349,7 +349,7 @@ untouch_sources:
 
 promote_sources:
 	$(MAKE) mv_git FROM=ocaml_src TO=ocaml_src.new
-	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
+	for i in $(FDIRS) lib/versdep; do \
 	  $(MAKE) mv_git FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
@@ -360,7 +360,7 @@ unpromote_sources:
 	mv ocaml_src ocaml_src.new
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
-	for i in $(FDIRS) lib/versdep lib/versdep/jocaml; do \
+	for i in $(FDIRS) lib/versdep; do \
 	  $(MAKE) mv_git FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
 	$(MAKE) mv_git FROM=ocaml_src.new TO=ocaml_src

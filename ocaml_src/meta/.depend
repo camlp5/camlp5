@@ -1,47 +1,51 @@
 pa_extend.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/mLast.cmi ../main/pcaml.cmi
+    ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi
 pa_extend.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/mLast.cmi ../main/pcaml.cmx
+    ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx
 pa_extend_m.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi pa_extend.cmo
 pa_extend_m.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
     ../main/mLast.cmi pa_extend.cmx
 pa_fstream.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
+    ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi pa_r.cmo
 pa_fstream.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+    ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx pa_r.cmx
 pa_lexer.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
     ../lib/ploc.cmi ../lib/versdep.cmo ../main/exparser.cmi ../main/mLast.cmi \
-    ../main/pcaml.cmi
+    ../main/pcaml.cmi pa_r.cmo
 pa_lexer.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
     ../lib/ploc.cmx ../lib/versdep.cmx ../main/exparser.cmx ../main/mLast.cmi \
-    ../main/pcaml.cmx
+    ../main/pcaml.cmx pa_r.cmx
 pa_macro.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
-    ../lib/ploc.cmi ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi \
-    ../main/reloc.cmi
+    ../lib/ploc.cmi ../lib/versdep.cmo ../main/asttools.cmo ../main/mLast.cmi \
+    ../main/pcaml.cmi ../main/reloc.cmi
 pa_macro.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
-    ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx \
-    ../main/reloc.cmx
+    ../lib/ploc.cmx ../lib/versdep.cmx ../main/asttools.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx ../main/reloc.cmx
 pa_macro_gram.cmo: ../lib/grammar.cmi ../lib/ploc.cmi pa_extend.cmo \
     pa_macro.cmo
 pa_macro_gram.cmx: ../lib/grammar.cmx ../lib/ploc.cmx pa_extend.cmx \
     pa_macro.cmx
 pa_r.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi
+    ../lib/ploc.cmi ../main/asttools.cmo ../main/mLast.cmi \
+    ../main/mlsyntax.cmo ../main/pcaml.cmi
 pa_r.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
-    ../lib/ploc.cmx ../main/mLast.cmi ../main/pcaml.cmx
+    ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
+    ../main/mlsyntax.cmx ../main/pcaml.cmx
 pa_rp.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/exparser.cmi ../main/pcaml.cmi
+    ../main/exparser.cmi ../main/pcaml.cmi pa_r.cmo
 pa_rp.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/exparser.cmx ../main/pcaml.cmx
+    ../main/exparser.cmx ../main/pcaml.cmx pa_r.cmx
 pr_dump.cmo: ../lib/ploc.cmi ../lib/versdep.cmo ../main/ast2pt.cmi \
     ../main/pcaml.cmi
 pr_dump.cmx: ../lib/ploc.cmx ../lib/versdep.cmx ../main/ast2pt.cmx \
     ../main/pcaml.cmx
 q_MLast.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi
+    ../lib/ploc.cmi ../main/asttools.cmo ../main/mLast.cmi \
+    ../main/mlsyntax.cmo ../main/pcaml.cmi ../main/quotation.cmi
 q_MLast.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
-    ../lib/ploc.cmx ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx
+    ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
+    ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/quotation.cmx
 q_ast.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/plexing.cmi ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi \
     ../main/quotation.cmi

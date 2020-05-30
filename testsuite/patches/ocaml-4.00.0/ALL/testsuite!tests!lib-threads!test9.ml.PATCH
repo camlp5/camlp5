@@ -1,0 +1,13 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/lib-threads/test9.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!lib-threads!test9.ml.INPUT	2020-02-11 20:15:09.639828198 -0800
+@@ -19,8 +19,9 @@
+ let g () =
+   let res = sync (swap "G" ch) in
+   print_string "g "; print_string res; print_newline()
++;;
+ 
+-let _ =
+   let id = Thread.create f () in
+   g ();
+   Thread.join id
++;;

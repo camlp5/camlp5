@@ -1,0 +1,16 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/backtrace/backtrace2.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!backtrace!backtrace2.ml.INPUT	2020-02-11 17:30:00.868188029 -0800
+@@ -18,11 +18,12 @@
+   with exn ->
+     Printf.printf "Uncaught exception %s\n" (Printexc.to_string exn);
+     Printexc.print_backtrace stdout
++;;
+ 
+-let _ =
+   Printexc.record_backtrace true;
+   run [| "a" |];
+   run [| "b" |];
+   run [| "c" |];
+   run [| "d" |];
+   run [| |]
++;;

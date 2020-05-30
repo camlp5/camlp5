@@ -7,7 +7,7 @@
 
 open Printf;;
 
-let version = "7.12";;
+let version = "8.00-alpha01";;
 let syntax_name = ref "";;
 
 let ocaml_version =
@@ -41,6 +41,7 @@ variable CAMLP5PARAM to f or b.
 
 type status = Ploc.t option;;
 
+let attribute_body = Grammar.Entry.create gram "attribute_body";;
 let interf = Grammar.Entry.create gram "interf";;
 let implem = Grammar.Entry.create gram "implem";;
 let top_phrase = Grammar.Entry.create gram "top_phrase";;
@@ -51,6 +52,8 @@ let sig_item = Grammar.Entry.create gram "sig_item";;
 let str_item = Grammar.Entry.create gram "str_item";;
 let functor_parameter = Grammar.Entry.create gram "functor_parameter";;
 let module_type = Grammar.Entry.create gram "module_type";;
+let longident = Grammar.Entry.create gram "longident";;
+let extended_longident = Grammar.Entry.create gram "extended_longident";;
 let module_expr = Grammar.Entry.create gram "module_expr";;
 let expr = Grammar.Entry.create gram "expr";;
 let patt = Grammar.Entry.create gram "patt";;
@@ -58,6 +61,10 @@ let ipatt = Grammar.Entry.create gram "ipatt";;
 let ctyp = Grammar.Entry.create gram "ctyp";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
 let type_decl = Grammar.Entry.create gram "type_declaration";;
+let type_extension = Grammar.Entry.create gram "type_extension";;
+let extension_constructor =
+  Grammar.Entry.create gram "extension_constructor"
+;;
 let match_case = Grammar.Entry.create gram "match_case";;
 let constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration"
@@ -70,6 +77,11 @@ let class_sig_item = Grammar.Entry.create gram "class_sig_item";;
 let class_str_item = Grammar.Entry.create gram "class_str_item";;
 let class_type = Grammar.Entry.create gram "class_type";;
 let class_expr = Grammar.Entry.create gram "class_expr";;
+let class_expr_simple = Grammar.Entry.create gram "class_expr_simple";;
+
+let alg_attribute = Grammar.Entry.create gram "alg_attribute";;
+let alg_attributes = Grammar.Entry.create gram "alg_attributes";;
+let ext_attributes = Grammar.Entry.create gram "ext_attributes";;
 
 let parse_interf = ref (Grammar.Entry.parse interf);;
 let parse_implem = ref (Grammar.Entry.parse implem);;
@@ -217,6 +229,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
    Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
      [None, None,
@@ -225,6 +238,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
+          "1154dceb",
           (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]]];;
 
 let handle_expr_quotation loc x =
@@ -386,6 +400,7 @@ let pr_patt = Eprinter.make "patt";;
 let pr_ctyp = Eprinter.make "type";;
 let pr_str_item = Eprinter.make "str_item";;
 let pr_sig_item = Eprinter.make "sig_item";;
+let pr_longident = Eprinter.make "longident";;
 let pr_module_expr = Eprinter.make "module_expr";;
 let pr_module_type = Eprinter.make "module_type";;
 let pr_class_sig_item = Eprinter.make "class_sig_item";;
@@ -396,7 +411,7 @@ let pr_expr_fun_args = ref Extfun.empty;;
 
 let flag_comments_in_phrases = ref true;;
 let flag_equilibrate_cases = ref false;;
-let flag_compatible_old_versions_of_ocaml = ref false;;
+let flag_expand_letop_syntax = ref false;;
 
 let inter_phrases = ref None;;
 
@@ -462,6 +477,8 @@ let greek_ascii_equiv s =
 let strict_mode = ref false;;
 
 let unvala x = x;;
+let vala_it f x = ignore (f x);;
+
 let vala_map f x = f x;;
 let vala_mapa f g x = f x;;
 

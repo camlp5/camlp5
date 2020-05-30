@@ -90,8 +90,7 @@ val do_split_or_patterns_with_bindings :
   (MLast.patt * 'a * 'b) list -> (MLast.patt * 'a * 'b) list;;
 
 val record_without_with :
-  Ploc.t -> MLast.expr -> (MLast.patt * MLast.expr) list ->
-    MLast.expr option;;
+  Ploc.t -> MLast.expr -> (MLast.patt * MLast.expr) list -> MLast.expr option;;
 
 val no_constructors_arity : bool ref;;
    (** Flag to generate nodes telling that constructor arity is not taken

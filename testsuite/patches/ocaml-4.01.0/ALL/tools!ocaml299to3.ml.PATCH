@@ -1,0 +1,17 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/tools/ocaml299to3.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/tools!ocaml299to3.ml.INPUT	2020-02-15 23:45:14.135807516 -0800
+@@ -115,8 +115,8 @@
+     Buffer.output_buffer oc output_buffer;
+     close_out oc
+   end
++;;
+ 
+-let _ =
+   if Array.length Sys.argv < 2 || Sys.argv.(1) = "-h" || Sys.argv.(1) = "-help"
+   then begin
+     print_endline "Usage: ocaml299to3 <source file> ...";
+@@ -136,3 +136,4 @@
+     prerr_endline ("Converting " ^ name);
+     Printexc.catch convert_file name
+   done
++;;

@@ -16,12 +16,12 @@ depend:
 .SUFFIXES: .mli .cmi .ml .cmo .cmx
 
 .mli.cmi:
-	$(OCAMLN)c $(INCL) -c $<
+	$(OCAMLN)c -g $(INCL) -c $<
 
 .ml.cmo:
-	$(OCAMLN)c $(INCL) -c $<
+	$(OCAMLN)c -g $(INCL) -c $<
 
 .ml.cmx:
-	$(OCAMLN)opt $(INCL) -c $<
+	$(OCAMLN)opt -g $(INCL) -c $<
 
 include .depend

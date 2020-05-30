@@ -1,0 +1,19 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/basic-io-2/io.ml	2013-04-29 02:44:59.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!basic-io-2!io.ml.INPUT	2020-02-15 22:24:59.068807516 -0800
+@@ -90,10 +90,9 @@
+     output_string oc (String.make (i*64) '.'); output_char oc '\n'
+   done;
+   close_out oc
+-
++;;
+ (* The test *)
+ 
+-let _ =
+   let src = Sys.argv.(1) in
+   let testio = Filename.temp_file "testio" "" in
+   let lines = Filename.temp_file "lines" "" in
+@@ -113,3 +112,4 @@
+   Sys.remove lines;
+   Sys.remove testio;
+   exit 0
++;;

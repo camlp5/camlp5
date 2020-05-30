@@ -1,0 +1,65 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/labltk/frx/frx_text.ml	2012-07-17 08:31:12.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/otherlibs!labltk!frx!frx_text.ml.INPUT	2020-02-15 21:57:35.155807516 -0800
+@@ -164,7 +164,7 @@
+ 
+ (* We use Mod1 instead of Meta or Alt *)
+ let init () =
+-  List.iter (function ev ->
++  List.iter (fun ev ->
+              tag_bind "TEXT_RO" ev
+                   (BindSetBreakable ([Ev_Widget],
+                                  (fun ei -> page_up ei.ev_Widget; break()))))
+@@ -175,7 +175,7 @@
+             [[], KeyPressDetail "b"];
+             [[Mod1], KeyPressDetail "v"]
+            ];
+-  List.iter (function ev ->
++  List.iter (fun ev ->
+              tag_bind "TEXT_RO" ev
+                   (BindSetBreakable ([Ev_Widget],
+                                  (fun ei -> page_down ei.ev_Widget; break()))))
+@@ -184,7 +184,7 @@
+             [[], KeyPressDetail "Next"];
+             [[Control], KeyPressDetail "v"]
+            ];
+-  List.iter (function ev ->
++  List.iter (fun ev ->
+              tag_bind "TEXT_RO" ev
+                   (BindSetBreakable ([Ev_Widget],
+                                  (fun ei -> line_up ei.ev_Widget; break()))))
+@@ -192,7 +192,7 @@
+             [[], KeyPressDetail "Up"];
+             [[Mod1], KeyPressDetail "z"]
+            ];
+-  List.iter (function ev ->
++  List.iter (fun ev ->
+              tag_bind "TEXT_RO" ev
+                   (BindSetBreakable ([Ev_Widget],
+                                  (fun ei -> line_down ei.ev_Widget; break()))))
+@@ -201,7 +201,7 @@
+             [[Control], KeyPressDetail "z"]
+            ];
+ 
+-  List.iter (function ev ->
++  List.iter (fun ev ->
+              tag_bind "TEXT_RO" ev
+                   (BindSetBreakable ([Ev_Widget],
+                                  (fun ei -> top ei.ev_Widget; break()))))
+@@ -210,7 +210,7 @@
+             [[Mod1], KeyPressDetail "less"]
+            ];
+ 
+-  List.iter (function ev ->
++  List.iter (fun ev ->
+              tag_bind "TEXT_RO" ev
+                   (BindSetBreakable ([Ev_Widget],
+                                  (fun ei -> bottom ei.ev_Widget; break()))))
+@@ -219,7 +219,7 @@
+             [[Mod1], KeyPressDetail "greater"]
+            ];
+ 
+-  List.iter (function ev ->
++  List.iter (fun ev ->
+               tag_bind "SEARCH" ev
+                    (BindSetBreakable ([Ev_Widget],
+                              (fun ei -> topsearch ei.ev_Widget; break()))))

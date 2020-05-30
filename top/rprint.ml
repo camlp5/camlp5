@@ -2,8 +2,6 @@
 (* rprint.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-IFDEF OCAML_VERSION >= OCAML_3_03 THEN
-
 open Format;
 open Outcometree;
 
@@ -58,15 +56,9 @@ value print_out_value ppf tree =
   and print_simple_tree ppf =
     fun
     [ Oval_int i -> fprintf ppf "%i" i
-    | IFDEF OCAML_VERSION >= OCAML_3_07 THEN
-        Oval_int32 i -> fprintf ppf "%lil" i
-      END
-    | IFDEF OCAML_VERSION >= OCAML_3_07 THEN
-        Oval_int64 i -> fprintf ppf "%LiL" i
-      END
-    | IFDEF OCAML_VERSION >= OCAML_3_07 THEN
-        Oval_nativeint i -> fprintf ppf "%nin" i
-      END
+    | Oval_int32 i -> fprintf ppf "%lil" i
+    | Oval_int64 i -> fprintf ppf "%LiL" i
+    | Oval_nativeint i -> fprintf ppf "%nin" i
     | Oval_float f -> fprintf ppf "%.12g" f
     | Oval_char c -> fprintf ppf "'%s'" (Char.escaped c)
     | IFDEF OCAML_VERSION < OCAML_4_06 THEN
@@ -258,12 +250,9 @@ and print_simple_out_type ppf =
     END
   | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
-  | IFDEF OCAML_VERSION >= OCAML_3_05 THEN
-      Otyp_poly _ _ as ty ->
+  | Otyp_poly _ _ as ty ->
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
-    END
-  | IFDEF OCAML_VERSION >= OCAML_3_12_0 THEN
-      Otyp_module p n tyl -> do {
+  | Otyp_module p n tyl -> do {
         IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
           fprintf ppf "@[<1>(module %s" p
         ELSE
@@ -279,39 +268,17 @@ and print_simple_out_type ppf =
           n tyl;
         fprintf ppf ")@]"
       }
-    END
-  | IFDEF OCAML_VERSION >= OCAML_3_13_0 AND NOT JOCAML THEN
-      Otyp_sum constrs ->
+  | Otyp_sum constrs ->
         fprintf ppf "@[<hv>[ %a ]@]"
           (print_list print_out_constr_gadt_opt
              (fun ppf -> fprintf ppf "@ | "))
           constrs
-    ELSIFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
-      Otyp_sum constrs _ ->
-        fprintf ppf "@[<hv>[ %a ]@]"
-          (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
-          constrs
-    ELSE
-      Otyp_sum constrs ->
-        fprintf ppf "@[<hv>[ %a ]@]"
-          (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
-          constrs
-    END
-  | IFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
-      Otyp_record lbls _ ->
+    
+  | Otyp_record lbls ->
         fprintf ppf "@[<hv 2>{ %a }@]"
           (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
-    ELSE
-      Otyp_record lbls ->
-        fprintf ppf "@[<hv 2>{ %a }@]"
-          (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
-    END
   | IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
       Otyp_attribute _ _ -> ()
-    END
-  | IFDEF JOCAML THEN
-      Otyp_proc ->
-        failwith "Rprint: Otyp_proc not impl"
     END ]
 and print_out_constr ppf (name, tyl) =
   match tyl with
@@ -418,16 +385,8 @@ and print_out_class_sig_item ppf =
         (if priv then "private " else "") (if virt then "virtual " else "")
         name print_out_type ty
   | x ->
-      IFDEF OCAML_VERSION >= OCAML_3_10 THEN
         failwith "Rprint.print_out_class_sig_item: not impl"
-      ELSE
-        match x with
-        [ Ocsg_value name mut ty ->
-            fprintf ppf "@[<2>value %s%s :@ %a;@]"
-               (if mut then "mutable " else "") name
-               print_out_type ty
-        | _ -> assert False ]
-      END ]
+       ]
 ;
 
 value rec print_out_module_type ppf =
@@ -482,24 +441,12 @@ and print_out_sig_item ppf =
       fprintf ppf "@[<2>module type %s = 'a@]" name
   | Osig_modtype name mty ->
       fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
-  | IFDEF OCAML_VERSION <= OCAML_3_07 THEN
-      Osig_module name mty ->
-        fprintf ppf "@[<2>module %s :@ %a@]" name print_out_module_type mty
-    ELSE
-      Osig_module name mty _ ->
+  | Osig_module name mty _ ->
         fprintf ppf "@[<2>module %s :@ %a@]" name
           print_out_module_type mty
-    END
-  | IFDEF OCAML_VERSION <= OCAML_3_07 THEN
-      Osig_type tdl -> do {
-        print_out_type_decl "type" ppf (List.hd tdl);
-        List.iter (print_out_type_decl "and" ppf) (List.tl tdl);
-      }
-    ELSE
-      Osig_type td rs ->
+  | Osig_type td rs ->
         print_out_type_decl (if rs = Orec_next then "and" else "type" )
           ppf td
-    END
   | IFDEF OCAML_VERSION < OCAML_4_03 THEN
       Osig_value name ty prims ->
         let kwd = if prims = [] then "value" else "external" in
@@ -533,10 +480,7 @@ and print_out_sig_item ppf =
           print_out_type ty pr_prims prims
       END
   | x ->
-      IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
-        failwith "Rprint.print_out_sig_item: not implemented case"
-      ELSE
-        match x with
+      match x with
         [ Osig_class vir_flag name params clt _ ->
             fprintf ppf "@[<2>class%s@ %a%s@ :@ %a@]"
               (if vir_flag then " virtual" else "") print_out_class_params
@@ -546,13 +490,10 @@ and print_out_sig_item ppf =
               (if vir_flag then " virtual" else "") print_out_class_params
               params name print_out_class_type clt
         | _ -> assert False ]
-      END ]
+    ]
 and print_out_type_decl kwd ppf x =
   let (name, args, ty, priv, constraints) =
-    IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
-      let (name, args, ty, priv) = x in
-      (name, args, ty, priv, [])
-    ELSIFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
       x
     ELSE
       (x.otype_name, x.otype_params, x.otype_type, x.otype_private,
@@ -619,12 +560,8 @@ value print_out_phrase ppf =
 
 Toploop.print_out_value.val := print_out_value;
 Toploop.print_out_type.val := print_out_type;
-IFDEF OCAML_VERSION >= OCAML_3_05 THEN
   Toploop.print_out_class_type.val := print_out_class_type;
   Toploop.print_out_module_type.val := print_out_module_type;
   Toploop.print_out_signature.val := print_out_signature;
-END;
 Toploop.print_out_sig_item.val := print_out_sig_item;
 Toploop.print_out_phrase.val := print_out_phrase;
-
-END;

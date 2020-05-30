@@ -1,0 +1,15 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/bytecomp/translmod.ml	2013-07-17 08:20:26.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/bytecomp!translmod.ml.INPUT	2020-02-15 20:52:14.920807516 -0800
+@@ -353,10 +353,9 @@
+                rebind_idents (pos + 1) (id :: newfields) ids) in
+       Llet(Strict, mid, transl_module Tcoerce_none None modl,
+            rebind_idents 0 fields ids)
+-
++;;
+ (* Update forward declaration in Translcore *)
+-let _ =
+-  Translcore.transl_module := transl_module
++  Translcore.transl_module := transl_module ;;
+ 
+ (* Compile an implementation *)
+ 

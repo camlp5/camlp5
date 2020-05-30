@@ -1,0 +1,8 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/stdlib/std_exit.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/stdlib!std_exit.ml.INPUT	2020-02-11 17:28:32.162077186 -0800
+@@ -15,4 +15,4 @@
+ 
+ (* Ensure that [at_exit] functions are called at the end of every program *)
+ 
+-let _ = do_at_exit()
++do_at_exit() ;;

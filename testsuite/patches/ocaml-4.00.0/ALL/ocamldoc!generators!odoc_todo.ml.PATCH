@@ -1,0 +1,12 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamldoc/generators/odoc_todo.ml	2012-02-19 09:30:02.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/ocamldoc!generators!odoc_todo.ml.INPUT	2020-02-11 13:45:57.751714265 -0800
+@@ -219,7 +219,8 @@
+        scanner <- new scanner self
+   end
+ end
++;;
+ 
+-let _ = Odoc_args.set_generator
++Odoc_args.set_generator
+  (Odoc_gen.Html (module Generator : Odoc_html.Html_generator))
+  ;;

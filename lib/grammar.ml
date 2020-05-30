@@ -49,7 +49,6 @@ value print_str ppf s = fprintf ppf "\"%s\"" (string_escaped s);
 value rec print_symbol ppf =
   fun
   [ Sfacto s -> print_symbol ppf s
-  | Smeta n sl _ -> print_meta ppf n sl
   | Slist0 s -> fprintf ppf "LIST0 %a" print_symbol1 s
   | Slist0sep s t osep ->
       fprintf ppf "LIST0 %a SEP %a%s" print_symbol1 s print_symbol1 t
@@ -90,7 +89,7 @@ and print_symbol1 ppf =
   | Stoken ("", s) -> print_str ppf s
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
-  | Smeta _ _ _ | Snterml _ _ | Slist0 _ | Slist0sep _ _ _ | Slist1 _ |
+  | Snterml _ _ | Slist0 _ | Slist0sep _ _ _ | Slist1 _ |
     Slist1sep _ _ _ | Sopt _ | Sflag _ | Stoken _ | Svala _ _ as s ->
       fprintf ppf "(%a)" print_symbol s ]
 and print_rule ppf symbols = do {
@@ -171,7 +170,6 @@ value iter_entry f e =
   and do_symbol =
     fun
     [ Sfacto s -> do_symbol s
-    | Smeta _ sl _ -> List.iter do_symbol sl
     | Snterm e -> do_entry e
     | Snterml e _ -> do_entry e
     | Slist0 s -> do_symbol s
@@ -212,7 +210,6 @@ value fold_entry f e init =
   and do_symbol accu =
     fun
     [ Sfacto s -> do_symbol accu s
-    | Smeta _ sl _ -> List.fold_left do_symbol accu sl
     | Snterm e -> do_entry accu e
     | Snterml e _ -> do_entry accu e
     | Slist0 s -> do_symbol accu s
@@ -271,7 +268,6 @@ value rec name_of_symbol_failed entry =
   | Sflag s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
   | Svala _ s -> name_of_symbol_failed entry s
-  | Smeta _ [s :: _] _ -> name_of_symbol_failed entry s
   | s -> name_of_symbol entry s ]
 and name_of_tree_failed entry =
   fun
@@ -587,12 +583,12 @@ value token_ematch gram (tok, vala) =
 value rec parser_of_tree entry nlevn alevn =
   fun
   [ DeadEnd -> parser []
-  | LocAct act _ -> parser [: :] -> act
-  | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
+  | LocAct (_, act) _ -> parser [: :] -> act
+  | Node {node = Sself; son = LocAct (_, act) _; brother = DeadEnd} ->
       parser [: a = entry.estart alevn :] -> app act a
   | Node {node = Scut; son = son; brother = _} ->
       parser_of_tree entry nlevn alevn son
-  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+  | Node {node = Sself; son = LocAct (_, act) _; brother = bro} ->
       let p2 = parser_of_tree entry nlevn alevn bro in
       parser
       [ [: a = entry.estart alevn :] -> app act a
@@ -720,12 +716,6 @@ and parser_of_token_list entry s son p1 p2 rev_tokl last_tok =
 and parser_of_symbol entry nlevn =
   fun
   [ Sfacto s -> parser_of_symbol entry nlevn s
-  | Smeta _ symbl act ->
-      let act = Obj.magic act entry symbl in
-      Obj.magic
-        (List.fold_left
-           (fun act symb -> Obj.magic act (parser_of_symbol entry nlevn symb))
-           act symbl)
   | Slist0 s ->
       let ps = call_and_push (parser_of_symbol entry nlevn s) in
       let rec loop al =
@@ -1154,10 +1144,10 @@ value fparser_of_token entry tok =
 value rec fparser_of_tree entry next_levn assoc_levn =
   fun
   [ DeadEnd -> fun err -> fparser []
-  | LocAct act _ -> fun err -> fparser [: :] -> act
-  | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
+  | LocAct (_, act) _ -> fun err -> fparser [: :] -> act
+  | Node {node = Sself; son = LocAct (_, act) _; brother = DeadEnd} ->
       fun err -> fparser [: a = entry.fstart assoc_levn err :] -> app act a
-  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+  | Node {node = Sself; son = LocAct (_, act) _; brother = bro} ->
       let p2 = fparser_of_tree entry next_levn assoc_levn bro in
       fun err ->
         fparser
@@ -1192,14 +1182,6 @@ and fparser_cont p1 entry next_levn assoc_levn son err =
 and fparser_of_symbol entry next_levn =
   fun
   [ Sfacto s -> fparser_of_symbol entry next_levn s
-  | Smeta _ symbl act ->
-      let _ = failwith "Smeta for fparser not impl" in
-      let act = Obj.magic act entry symbl in
-      Obj.magic
-        (List.fold_left
-           (fun act symb ->
-              Obj.magic act (fparser_of_symbol entry next_levn symb))
-           act symbl)
   | Slist0 s ->
       let ps = fparser_of_symbol entry next_levn s in
       let ps = fcall_and_push ps in
@@ -1459,10 +1441,10 @@ value bparser_of_token entry tok =
 value rec bparser_of_tree entry next_levn assoc_levn =
   fun
   [ DeadEnd -> fun err -> bparser []
-  | LocAct act _ -> fun err -> bparser [: :] -> act
-  | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
+  | LocAct (_, act) _ -> fun err -> bparser [: :] -> act
+  | Node {node = Sself; son = LocAct (_, act) _; brother = DeadEnd} ->
       fun err -> bparser [: a = entry.bstart assoc_levn err :] -> app act a
-  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+  | Node {node = Sself; son = LocAct (_, act) _; brother = bro} ->
       let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       fun err ->
         bparser
@@ -1497,14 +1479,6 @@ and bparser_cont p1 entry next_levn assoc_levn son err =
 and bparser_of_symbol entry next_levn =
   fun
   [ Sfacto s -> bparser_of_symbol entry next_levn s
-  | Smeta _ symbl act ->
-      let _ = failwith "Smeta for bparser not impl" in
-      let act = Obj.magic act entry symbl in
-      Obj.magic
-        (List.fold_left
-           (fun act symb ->
-              Obj.magic act (bparser_of_symbol entry next_levn symb))
-           act symbl)
   | Slist0 s ->
       let ps = bparser_of_symbol entry next_levn s in
       let ps = bcall_and_push ps in
@@ -1936,7 +1910,7 @@ type g = Gramext.grammar token;
 
 type ty_symbol 'self 'a = Gramext.g_symbol token;
 type ty_rule 'self 'f 'r = list (ty_symbol 'self Obj.t);
-type ty_production 'a = (ty_rule 'a Obj.t Obj.t * Gramext.g_action);
+type ty_production 'a = (ty_rule 'a Obj.t Obj.t * string * Gramext.g_action);
 type ty_extension =
   (Gramext.g_entry token * option Gramext.position * list (option string * option Gramext.g_assoc * list (ty_production Obj.t)));
 
@@ -1959,7 +1933,7 @@ value r_stop = [];
 value r_next r s = r @ [s];
 value r_cut r = r @ [Scut];
 
-value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f)) = (Obj.magic p : ty_production 'a);
+value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f)) = (Obj.magic p : ty_production 'a);
 value extension e pos (r : list (option string * option Gramext.g_assoc * list (ty_production Obj.t))) = ((e, pos, Obj.magic r) : ty_extension);
 
 value safe_extend (l : list ty_extension) = extend (Obj.magic l);
@@ -2001,7 +1975,8 @@ value fstream_of_stream ts =
 ;
 
 value parsable g cs =
-  let (ts, lf) = g.glexer.Plexing.tok_func cs in
+  let (ts, loct) = g.glexer.Plexing.tok_func cs in
+  let lf = Plexing.Locations.lookup loct in
   let fts = fstream_of_stream ts in
   {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts; pa_loc_func = lf}
 ;
@@ -2261,7 +2236,6 @@ value find_entry e s =
     [ Sfacto s -> find_symbol s
     | Snterm e -> if e.ename = s then Some e else None
     | Snterml e _ -> if e.ename = s then Some e else None
-    | Smeta _ sl _ -> find_symbol_list sl
     | Slist0 s -> find_symbol s
     | Slist0sep s _ _ -> find_symbol s
     | Slist1 s -> find_symbol s
@@ -2271,13 +2245,6 @@ value find_entry e s =
     | Stree t -> find_tree t
     | Svala _ s -> find_symbol s
     | Sself | Snext | Scut | Stoken _ -> None ]
-  and find_symbol_list =
-    fun
-    [ [s :: sl] ->
-        match find_symbol s with
-        [ None -> find_symbol_list sl
-        | x -> x ]
-    | [] -> None ]
   and find_tree =
     fun
     [ Node {node = s; brother = bro; son = son} ->
@@ -2525,7 +2492,6 @@ module type S =
     type ty_production 'a = 'x;
 
     value s_facto : ty_symbol 'self 'a -> ty_symbol 'self 'a;
-    (*   | Smeta of string and list (g_symbol 'te) and Obj.t *)
     value s_nterm : Entry.e 'a -> ty_symbol 'self 'a;
     value s_nterml : Entry.e 'a -> string -> ty_symbol 'self 'a;
     value s_list0 : ty_symbol 'self 'a -> ty_symbol 'self (list 'a);
@@ -2544,7 +2510,7 @@ module type S =
     value r_next : ty_rule 'self 'a 'r -> ty_symbol 'self 'b -> ty_rule 'self ('b -> 'a) 'r;
     value r_cut : ty_rule 'self 'a 'r -> ty_rule 'self 'a 'r;
 
-    value production : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f) -> ty_production 'a;
+    value production : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f) -> ty_production 'a;
 
     module Unsafe :
       sig
@@ -2556,7 +2522,7 @@ module type S =
       Entry.e 'a -> option Gramext.position ->
         list
           (option string * option Gramext.g_assoc *
-           list (list (Gramext.g_symbol te) * Gramext.g_action)) ->
+           list (list (Gramext.g_symbol te) * string * Gramext.g_action)) ->
         unit;
     value safe_extend :
       Entry.e 'a -> option Gramext.position ->
@@ -2575,7 +2541,8 @@ module GMake (L : GLexerType) =
     type parsable = gen_parsable te;
     value gram = gcreate L.lexer;
     value parsable cs =
-      let (ts, lf) = L.lexer.Plexing.tok_func cs in
+      let (ts, loct) = L.lexer.Plexing.tok_func cs in
+      let lf = Plexing.Locations.lookup loct in
       let fts = fstream_of_stream ts in
       {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts;
        pa_loc_func = lf}
@@ -2658,7 +2625,7 @@ module GMake (L : GLexerType) =
     ;
     type ty_symbol 'self 'a = Gramext.g_symbol te;
     type ty_rule 'self 'f 'r = list (ty_symbol 'self Obj.t);
-    type ty_production 'a = (ty_rule 'a Obj.t Obj.t * Gramext.g_action);
+    type ty_production 'a = (ty_rule 'a Obj.t Obj.t * string * Gramext.g_action);
 
     value s_facto s = Sfacto s;
     value s_nterm e = Snterm e;
@@ -2679,7 +2646,7 @@ module GMake (L : GLexerType) =
     value r_next r s = r @ [s];
     value r_cut r = r @ [Scut];
 
-    value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * 'f)) = (Obj.magic p : ty_production 'a);
+    value production (p : (ty_rule 'a 'f (Ploc.t -> 'a) * string * 'f)) = (Obj.magic p : ty_production 'a);
 
     module Unsafe =
       struct

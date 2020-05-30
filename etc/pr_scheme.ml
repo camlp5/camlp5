@@ -20,6 +20,7 @@ do {
   Eprinter.clear pr_ctyp;
   Eprinter.clear pr_str_item;
   Eprinter.clear pr_sig_item;
+  Eprinter.clear pr_longident;
   Eprinter.clear pr_module_expr;
   Eprinter.clear pr_module_type;
   Eprinter.clear pr_class_sig_item;
@@ -50,19 +51,11 @@ value to_be_renamed = ["cond"; "sum"];
 
 value rename_id s = if List.mem s to_be_renamed then s ^ "#" else s;
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ind_bef = Pprintf.with_ind_bef;
-  value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
-END;
-
-value rec longident pc sl =
+value rec id_list pc sl =
   match sl with
   [ [] -> pprintf pc ""
   | [s] -> pprintf pc "%s" s
-  | [s :: sl] -> pprintf pc "%s.%p" s longident sl ]
+  | [s :: sl] -> pprintf pc "%s.%p" s id_list sl ]
 ;
 
 (*
@@ -74,6 +67,7 @@ value patt = Eprinter.apply pr_patt;
 value ctyp = Eprinter.apply pr_ctyp;
 value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
+value longident = Eprinter.apply pr_longident;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
 value class_str_item = Eprinter.apply pr_class_str_item;
@@ -111,7 +105,7 @@ pr_expr_fun_args.val :=
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl, rto) ->
+    (fun (_, _, tl, rto, _) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])
@@ -177,7 +171,7 @@ value exception_decl pc (c, tl) =
      List.map (fun t -> (fun pc -> ctyp pc t, "")) tl]
 ;
 
-value value_binding b pc (p, e) =
+value value_binding b pc (p, e, _) =
   let (pl, e) = expr_fun_args e in
   horiz_vertic
     (fun () ->
@@ -216,7 +210,7 @@ value value_binding b pc (p, e) =
 value value_binding_list pc (rf, pel) =
   let b = if rf then "definerec" else "define" in
   match pel with
-  [ [(p, e)] -> value_binding b pc (p, e)
+  [ [((_, _, _) as x)] -> value_binding b pc x
   | _ ->
       horiz_vertic
         (fun () ->
@@ -225,7 +219,7 @@ value value_binding_list pc (rf, pel) =
            pprintf pc "(%s*@;<1 1>%p)" b (vlist (value_binding "")) pel) ]
 ;
 
-value let_binding pc (p, e) =
+value let_binding pc (p, e,_) =
   let (pl, e) = expr_fun_args e in
   plistf 0 (paren pc "")
     [(fun pc ->
@@ -261,7 +255,8 @@ value match_assoc pc (p, we, e) =
   plistf 0 (paren pc "") list
 ;
 
-value constr_decl pc (_, c, tl, rto) =
+value constr_decl pc (_, c, tl, rto, alg_attrs) = do {
+  assert (alg_attrs = <:vala< [] >>) ;
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   match tl with
@@ -270,6 +265,7 @@ value constr_decl pc (_, c, tl, rto) =
       plistf 0 (paren pc "")
         [(fun pc -> pprintf pc "%s" c, "") ::
          List.map (fun t -> (fun pc -> ctyp pc t, "")) tl] ]
+}
 ;
 
 value poly_variant_decl pc =
@@ -294,11 +290,13 @@ value poly_variant_decl pc =
     END ]
 ;
 
-value label_decl pc (_, l, m, t) =
+value label_decl pc (_, l, m, t, attrs) = do {
+  assert(attrs = Ploc.VaVal []) ;
   let list = [(fun pc -> ctyp pc t, "")] in
   plistf 0 (paren pc "")
     [(fun pc -> pprintf pc "%s" l, "") ::
      if m then [(fun pc -> pprintf pc "mutable", "") :: list] else list]
+}
 ;
 
 value module_type_decl pc (s, mt) =
@@ -310,6 +308,12 @@ value module_type_decl pc (s, mt) =
 value field_expr pc (l, e) =
   plistf 0 (paren pc "")
     [(fun pc -> pprintf pc "%s" l, ""); (fun pc -> expr pc e, "")]
+;
+
+value longident_lident pc = fun [
+  (None, id) -> pprintf pc "%s" (Pcaml.unvala id)
+| (Some li, id) -> pprintf pc "%p.%s" longident li (Pcaml.unvala id)
+]
 ;
 
 value string pc s = pprintf pc "\"%s\"" s;
@@ -332,13 +336,13 @@ value int_repr s =
 
 value with_constraint pc =
   fun
-  [ <:with_constr< type $sl$ $list:tvl$ = $flag:pf$ $t$ >> ->
+  [ <:with_constr< type $lilongid:sl$ $list:tvl$ = $flag:pf$ $t$ >> ->
       pprintf pc "(type%s %p@;<1 1>%p)" (if pf then "private" else "")
         (fun pc ->
            fun
-           [ [] -> longident pc sl
+           [ [] -> longident_lident pc sl
            | tvl ->
-               pprintf pc "(%p %p)" longident sl
+               pprintf pc "(%p %p)" longident_lident sl
                  (hlist type_param) tvl ])
         tvl ctyp t
   | wc -> not_impl "with_constraint" pc wc ]
@@ -567,10 +571,8 @@ EXTEND_PRINTER
           plistb curr 0 (paren pc "==") [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ as $t2$ >> ->
           plistb curr 0 (paren pc "as") [(t1, ""); (t2, "")]
-      | <:ctyp< $t1$ . $t2$ >> ->
-          sprintf "%s.%s"
-            (curr {(pc) with aft = ""} t1)
-            (curr {(pc) with bef = ""} t2)
+      | <:ctyp< $longid:me1$ . $lid:lid$ >> ->
+          pprintf pc "%p.%s" longident me1 lid
       | <:ctyp< < $list:fl$ $flag:v$ > >> ->
           let b = if v then "objectvar" else "object" in
           if fl = [] then sprintf "%s(%s)%s" pc.bef b pc.aft
@@ -585,14 +587,12 @@ EXTEND_PRINTER
              (fun pc -> curr pc t, "")]
       | <:ctyp< $lid:s$ >> ->
           sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
-      | <:ctyp< $uid:s$ >> ->
-          sprintf "%s%s%s" pc.bef s pc.aft
       | <:ctyp< ' $s$ >> ->
           sprintf "%s'%s%s" pc.bef s pc.aft
       | <:ctyp< _ >> ->
           sprintf "%s_%s" pc.bef pc.aft
-      | <:ctyp< # $list:sl$ >> ->
-          pprintf pc "(# %p)" longident sl
+      | <:ctyp< # $lilongid:lili$ >> ->
+          pprintf pc "(# %p)" longident_lident lili
       | <:ctyp< ! $list:pl$ . $t$ >> ->
           pprintf pc "(! (%p)@;<1 1>%p)" (hlist type_var) pl ctyp t
       | x ->
@@ -666,10 +666,10 @@ EXTEND_PRINTER
                sprintf "%s\n%s" s1 s2)
       | <:expr< let $p1$ = $e1$ in $e2$ >> ->
           let (pel, e) =
-            loop [(p1, e1)] e2 where rec loop pel =
+            loop [(p1, e1, <:vala< [] >>)] e2 where rec loop pel =
               fun
               [ <:expr< let $p1$ = $e1$ in $e2$ >> ->
-                  loop [(p1, e1) :: pel] e2
+                  loop [(p1, e1, <:vala< [] >>) :: pel] e2
               | e -> (List.rev pel, e) ]
           in
           let b =
@@ -681,10 +681,15 @@ EXTEND_PRINTER
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
-      | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
+      | <:expr< let module $uidopt:s$ = $me$ in $e$ >> ->
+        let s = match s with [ None -> "_" | Some uid -> Pcaml.unvala uid ] in
           plistbf 0 (paren pc "letmodule")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
+             (fun pc -> curr pc e, "")]
+      | <:expr< let open $uid:s$ in $e$ >> ->
+          plistbf 0 (paren pc "letopen")
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
       | <:expr< if $e1$ then $e2$ else () >> ->
           plistb curr 0 (paren pc "if") [(e1, ""); (e2, "")]
@@ -814,10 +819,10 @@ EXTEND_PRINTER
           plistf 0 (paren pc "")
             [(fun pc -> sprintf "%slazy%s" pc.bef pc.aft, "");
              (fun pc -> curr pc x, "")]
-      | <:expr< new $list:x$ >> ->
+      | <:expr< new $lilongid:lili$ >> ->
           plistf 0 (paren pc "")
             [(fun pc -> sprintf "%snew%s" pc.bef pc.aft, "");
-             (fun pc -> longident pc x, "")]
+             (fun pc -> longident_lident pc lili, "")]
 (*
       | <:expr< $lid:s$ $e1$ $e2$ >>
         when List.mem s assoc_right_parsed_op_list ->
@@ -1024,9 +1029,9 @@ EXTEND_PRINTER
           plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc p, "")]
-      | <:patt< $p1$ . $p2$ >> ->
+      | <:patt< $longid:p1$ . $p2$ >> ->
            sprintf "%s.%s"
-             (curr {(pc) with aft = ""} p1)
+             (longident {(pc) with aft = ""} p1)
              (curr {(pc) with bef = ""} p2)
       | <:patt< $lid:s$ >> ->
           sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
@@ -1052,8 +1057,8 @@ EXTEND_PRINTER
           sprintf "%s(` %s)%s" pc.bef s pc.aft
       | <:patt< _ >> ->
           sprintf "%s_%s" pc.bef pc.aft
-      | <:patt< # $list:sl$ >> ->
-          pprintf pc "(# %p)" longident sl
+      | <:patt< # $lilongid:lili$ >> ->
+          pprintf pc "(# %p)" longident_lident lili
       | x ->
           not_impl "patt" pc x ] ]
   ;
@@ -1063,18 +1068,18 @@ EXTEND_PRINTER
           class_decl_list pc cdl
       | <:str_item< class type $list:ctdl$ >> ->
           class_type_decl_list pc ctdl
-      | <:str_item< open $i$ >> ->
-          plistb longident 0 (paren pc "open") [(i, "")]
+      | <:str_item< open $me$ >> ->
+          plistb module_expr 0 (paren pc "open") [(me, "")]
       | <:str_item< include $me$ >> ->
           plistb module_expr 0 (paren pc "include") [(me, "")]
       | <:str_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->
           exception_decl pc (c, tl)
-      | <:str_item< exception $uid:c$ of $list:_$ = $id$ >> ->
+      | <:str_item< exception $uid:c$ = $longid:li$ >> ->
           plistbf 0 (paren pc "exceptionrebind")
             [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "");
-             (fun pc -> longident pc id, "")]
+             (fun pc -> longident pc li, "")]
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           value_binding_list pc (rf, pel)
       | <:str_item< module $uid:s$ = $me$ >> ->
@@ -1130,7 +1135,7 @@ EXTEND_PRINTER
              (fun pc -> module_type pc mt, "")]
       | <:sig_item< module type $s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
-      | <:sig_item< open $i$ >> ->
+      | <:sig_item< open $longid:i$ >> ->
           plistb longident 0 (paren pc "open") [(i, "")]
       | <:sig_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
@@ -1146,6 +1151,20 @@ EXTEND_PRINTER
 *)
       | x ->
           not_impl "sig_item" pc x ] ]
+  ;
+  pr_longident:
+    [ "dot"
+      [ <:extended_longident< $longid:x$ . $uid:uid$ >> ->
+          pprintf pc "%p.%s" curr x uid
+      | <:extended_longident< $longid:x$ ( $longid:y$ ) >> ->
+          pprintf pc "%p(%p)" longident x longident y
+      | <:extended_longident< $uid:s$ >> ->
+          pprintf pc "%s" s
+      ]
+    | "bottom" [
+        z -> pprintf pc "[INTERNAL ERROR(pr_longident): unexpected longident]"
+      ]
+    ]
   ;
   pr_module_expr:
     [ "top"
@@ -1205,12 +1224,13 @@ EXTEND_PRINTER
                sprintf "%s\n%s" s1 s2)
       | <:module_type< $mt$ with $list:wcl$ >> ->
           pprintf pc "(with %p@;<1 1>%p)" curr mt (hlist with_constraint) wcl
-      | <:module_type< $me1$ . $me2$ >> ->
-           sprintf "%s.%s"
-             (curr {(pc) with aft = ""} me1)
-             (curr {(pc) with bef = ""} me2)
-      | <:module_type< $uid:s$ >> ->
-          sprintf "%s%s%s" pc.bef s pc.aft
+
+      | <:module_type< $longid:li$ . $lid:s$ >> ->
+          pprintf pc "%p.%s" longident li s
+      | <:module_type< $longid:li$ >> ->
+          pprintf pc "%p" longident li
+      | <:module_type< $lid:s$ >> ->
+          pprintf pc "%s" s
       | x ->
           not_impl "module_type" pc x ] ]
   ;
@@ -1402,10 +1422,12 @@ EXTEND_PRINTER
           plistf 0 (paren pc "")
             [(fun pc -> curr pc ce, "") ::
              List.map (fun e -> (fun pc -> expr pc e, "")) el]
-      | <:class_expr< $list:sl$ >> ->
-          longident pc sl
-      | <:class_expr< [ $list:ctcl$ ] $list:sl$ >> ->
-          not_impl "CeCon" pc sl
+      | <:class_expr< $lilongid:lili$ >> ->
+          longident_lident pc lili
+      | <:class_expr< [ $list:ctcl$ ] $longid:li$ . $lid:id$ >> ->
+          not_impl "CeCon" pc ()
+      | <:class_expr< [ $list:ctcl$ ] $lid:id$ >> ->
+          not_impl "CeCon" pc ()
       | x ->
           not_impl "class_expr" pc x ] ]
   ;

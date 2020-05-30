@@ -1,0 +1,30 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/bigarray/bigarray.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/otherlibs!bigarray!bigarray.ml.INPUT	2020-02-15 21:34:14.562807516 -0800
+@@ -14,8 +14,8 @@
+ (* Module [Bigarray]: large, multi-dimensional, numerical arrays *)
+ 
+ external init : unit -> unit = "caml_ba_init"
+-
+-let _ = init()
++;;
++init() ;;
+ 
+ type ('a, 'b) kind = int
+ 
+@@ -240,14 +240,14 @@
+ 
+ (* Force caml_ba_get_{1,2,3,N} to be linked in, since we don't refer
+    to those primitives directly in this file *)
++;;
+ 
+-let _ =
+   let _ = Genarray.get in
+   let _ = Array1.get in
+   let _ = Array2.get in
+   let _ = Array3.get in
+   ()
+-
++;;
+ external get1: unit -> unit = "caml_ba_get_1"
+ external get2: unit -> unit = "caml_ba_get_2"
+ external get3: unit -> unit = "caml_ba_get_3"

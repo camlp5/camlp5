@@ -5,6 +5,7 @@
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
 #qmod "ctyp,Type";
+#qmod "extended_longident,LI";
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -25,20 +26,53 @@ value not_impl loc name x =
   Ploc.raise loc (Failure ("pa_pragma: not impl " ^ name ^ " " ^ desc))
 ;
 
+module Types = struct
+    type loc = Ploc.t;
+    type ctyp_t =
+      [ TyAcc of loc and li_t and MLast.v string
+      | TyAny of loc
+      | TyApp of loc and ctyp_t and ctyp_t
+      | TyArr of loc and ctyp_t and ctyp_t
+      | TyLid of loc and MLast.v string
+      | TyQuo of loc and MLast.v (ref (option ctyp_t))
+      | TyTup of loc and MLast.v (list ctyp_t) ]
+    and li_t =
+      [ LiApp of loc and li_t and li_t
+      | LiAcc of loc and li_t and MLast.v string
+      | LiUid of loc and MLast.v string
+      ]
+      ;
+end
+;
+
 module Type =
   struct
     type loc = Ploc.t;
-    type t =
-      [ TyAcc of loc and t and t
+    type t = Types.ctyp_t ==
+      [ TyAcc of loc and Types.li_t and MLast.v string
       | TyAny of loc
       | TyApp of loc and t and t
       | TyArr of loc and t and t
       | TyLid of loc and MLast.v string
       | TyQuo of loc and MLast.v (ref (option t))
-      | TyTup of loc and MLast.v (list t)
-      | TyUid of loc and MLast.v string ]
-    ;
+      | TyTup of loc and MLast.v (list t) ] ;
+    type li_t = Types.li_t ==
+      [ LiApp of loc and li_t and li_t
+      | LiAcc of loc and li_t and MLast.v string
+      | LiUid of loc and MLast.v string
+      ]
+      ;
   end
+;
+module LI = struct
+    type loc = Ploc.t;
+    type t = Types.li_t ==
+      [ LiApp of loc and t and t
+      | LiAcc of loc and t and MLast.v string
+      | LiUid of loc and MLast.v string
+      ]
+      ;
+end
 ;
 
 type expr_v 'e =
@@ -56,9 +90,19 @@ value ty_var =
 ;
 
 value vars = ref [];
+value type_longid_of_longident t =
+  let rec merec = fun [
+    MLast.LiAcc loc me1 uid -> <:extended_longident< $longid:(merec me1)$ . $_uid:uid$ >>
+  | MLast.LiApp loc me1 me2 -> <:extended_longident< $longid:(merec me1)$ ( $longid:(merec me2)$ ) >>
+  | MLast.LiUid loc uid -> <:extended_longident< $_uid:uid$ >>
+  ]
+  in merec t
+;
+
 value rec type_of_ctyp t =
   match t with
-  [ MLast.TyAcc loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
+  [ MLast.TyAcc loc me1 t2 ->
+      <:ctyp< $longid:type_longid_of_longident me1$ . $_lid:t2$ >>
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
   | MLast.TyArr loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ -> $type_of_ctyp t2$ >>
@@ -70,7 +114,6 @@ value rec type_of_ctyp t =
           vars.val := [(s, v) :: vars.val];
           v
         } ]
-  | MLast.TyUid loc s -> <:ctyp< $_uid:s$ >>
   | t -> not_impl (MLast.loc_of_ctyp t) "Type.of_ctyp" t ]
 ;
 
@@ -90,6 +133,13 @@ and str_of_ty2 loc =
       let s2 = str_of_ty3 loc t2 in
       s1 ^ " " ^ s2
   | t -> str_of_ty3 loc t ]
+and str_of_longid loc me =
+  let rec srec = fun [
+    <:extended_longident< $longid:me1$ . $_uid:uid$ >> -> srec me1 ^ "." ^ (Pcaml.unvala uid)
+  | <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> -> srec me1 ^ "(" ^ srec me2 ^ ")"
+  | <:extended_longident< $_uid:uid$ >> -> (Pcaml.unvala uid)
+  ]
+  in srec me
 and str_of_ty3 loc t =
   match t with
   [ <:ctyp< ( $list:tl$ ) >> ->
@@ -97,7 +147,7 @@ and str_of_ty3 loc t =
       "(" ^
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
-  | <:ctyp< $t1$ . $t2$ >> -> str_of_ty1 loc t1 ^ "." ^ str_of_ty1 loc t2
+    | <:ctyp< $longid:me1$ . $lid:t2$ >> -> str_of_longid loc me1 ^ "." ^ t2
   | <:ctyp< '$s$ >> ->
       match s.val with
       [ Some t -> str_of_ty3 loc t
@@ -110,7 +160,6 @@ and str_of_ty3 loc t =
               n
             } ] ]
   | <:ctyp< $lid:s$ >> -> s
-  | <:ctyp< $uid:s$ >> -> s
   | <:ctyp< _ >> -> "_"
   | <:ctyp< $_$ $_$ >> -> "(" ^ str_of_ty1 loc t ^ ")"
   | t -> not_impl loc "str_of_ty3" t ]
@@ -120,8 +169,7 @@ value rec eval_type loc t =
   match t with
   [ <:ctyp< $t1$ -> $t2$ >> ->
       <:ctyp< $eval_type loc t1$ -> $eval_type loc t2$ >>
-  | <:ctyp< $t1$ . $t2$ >> ->
-      <:ctyp< $eval_type loc t1$ . $eval_type loc t2$ >>
+  | <:ctyp< $longid:me$ . $lid:t2$ >> -> <:ctyp< $longid:me$ . $lid:t2$ >>
   | <:ctyp< $t1$ $t2$ >> ->
       <:ctyp< $eval_type loc t1$ $eval_type loc t2$ >>
   | <:ctyp< ( $list:tl$ ) >> ->
@@ -130,7 +178,7 @@ value rec eval_type loc t =
       match s.val with
       [ Some t -> eval_type loc t
       | None -> t ]
-  | <:ctyp< $_lid:_$ >> | <:ctyp< $uid:_$ >> | <:ctyp< _ >> -> t
+  | <:ctyp< $_lid:_$ >> | <:ctyp< _ >> -> t
   | IFDEF STRICT THEN
       _ -> failwith "eval_type"
     END ]
@@ -181,22 +229,35 @@ value rec inst loc t =
               inst_vars.val := [(s, t) :: inst_vars.val];
               t
             } ] ]
-  | <:ctyp< $_$ . $_$ >> | <:ctyp< $lid:_$ >> -> t
+| Type.TyAcc _ _ _
+ | <:ctyp< $lid:_$ >> -> t
   | t -> not_impl loc "instantiate" t ]
 ;
 
 value instantiate loc s t = do { inst_vars.val := []; inst loc t };
 
+value unify_longid loc me1 me2 =
+  let rec urec = fun [
+    (<:extended_longident< $longid:me11$ . $uid:uid12$ >>, <:extended_longident< $longid:me21$ . $uid:uid22$ >>) ->
+      urec (me11, me21) && uid12 =  uid22
+  | (<:extended_longident< $longid:me11$ ( $longid:me12$ ) >>, <:extended_longident< $longid:me21$ ( $longid:me22$ ) >>) ->
+      urec (me11, me21) && urec (me12, me22)
+  | (<:extended_longident< $_uid:s1$ >>, <:extended_longident< $_uid:s2$ >>) ->
+      s1 = s2
+  | _ -> False
+  ] in
+  urec (me1, me2)
+;
 value rec unify loc t1 t2 =
   match (eval_type loc t1, eval_type loc t2) with
-  [ (<:ctyp< MLast.loc >>, t2) ->
+  [ (<:ctyp< Mlast.loc >>, t2) ->
       let t1 = <:ctyp< Ploc.t >> in
       unify loc t1 t2
 
   | (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
-  | (<:ctyp< $t11$ . $t12$ >>, <:ctyp< $t21$ . $t22$ >>) ->
-      unify loc t11 t21 && unify loc t12 t22
+  | (<:ctyp< $longid:me11$ . $lid:t12$ >>, <:ctyp< $longid:me21$ . $lid:t22$ >>) ->
+      unify_longid loc me11 me21 && t12 = t22
   | (<:ctyp< $t11$ -> $t12$ >>, <:ctyp< $t21$ -> $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< ( $list:tl1$ ) >>, <:ctyp< ( $list:tl2$ ) >>) ->
@@ -236,7 +297,6 @@ value rec unify loc t1 t2 =
       unify loc t1 t2
 
   | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) -> s1 = s2
-  | (<:ctyp< $uid:s1$ >>, <:ctyp< $uid:s2$ >>) -> s1 = s2
   | (<:ctyp< _ >>, _) -> True
   | (t1, t2) -> False ]
 ;
@@ -718,13 +778,6 @@ value val_tab = do {
              MLast.loc -> list MLast.sig_item -> MLast.module_type >>;
          expr = Obj.repr (fun loc sil -> MLast.MtSig loc sil);
          patt = no_patt loc});
-     ("MLast.PaAcc",
-      fun loc ->
-        {ctyp =
-           <:ctyp<
-             MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
-         expr = Obj.repr (fun loc p1 p2 -> MLast.PaAcc loc p1 p2);
-         patt = no_patt loc});
      ("MLast.PaAli",
       fun loc ->
         {ctyp =
@@ -780,17 +833,12 @@ value val_tab = do {
              MLast.loc -> MLast.patt -> MLast.ctyp -> MLast.patt >>;
          expr = Obj.repr (fun loc p t -> MLast.PaTyc loc p t);
          patt = no_patt loc});
-     ("MLast.PaUid",
-      fun loc ->
-        {ctyp = <:ctyp< MLast.loc -> string -> MLast.patt >>;
-         expr = Obj.repr (fun loc s -> MLast.PaUid loc s);
-         patt = no_patt loc});
      ("MLast.SgVal",
       fun loc ->
         {ctyp =
            <:ctyp<
-             MLast.loc -> string -> MLast.ctyp -> MLast.sig_item >>;
-         expr = Obj.repr (fun loc s t -> MLast.SgVal loc s t);
+             MLast.loc -> string -> MLast.ctyp -> (list (string * payload)) -> MLast.sig_item >>;
+         expr = Obj.repr (fun loc s t attrs -> MLast.SgVal loc s t attrs);
          patt = no_patt loc});
      ("MLast.StDcl",
       fun loc ->
@@ -826,8 +874,8 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             MLast.loc -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
-         expr = Obj.repr (fun loc t1 t2 -> MLast.TyAcc loc t1 t2);
+             MLast.loc -> MLast.module_expr -> MLast.ctyp -> MLast.ctyp >>;
+         expr = Obj.repr (fun loc me1 t2 -> MLast.TyAcc loc me1 t2);
          patt = no_patt loc});
      ("MLast.TyAny",
       fun loc ->
@@ -866,11 +914,6 @@ value val_tab = do {
                list (MLast.loc * string * bool * MLast.ctyp) ->
                MLast.ctyp >>;
          expr = Obj.repr (fun loc ldl -> MLast.TyRec loc ldl);
-         patt = no_patt loc});
-     ("MLast.TyUid",
-      fun loc ->
-        {ctyp = <:ctyp< MLast.loc -> string -> MLast.ctyp >>;
-         expr = Obj.repr (fun loc s -> MLast.TyUid loc s);
          patt = no_patt loc});
      ("module_expr",
       fun loc ->
@@ -1019,10 +1062,6 @@ value val_tab = do {
   ht
 };
 
-IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-  value with_ctyp e t = {ctyp = t; expr = e.expr; patt = e.patt};
-END;
-
 value rec eval_expr env e =
   let loc = MLast.loc_of_expr e in
   match e with
@@ -1134,7 +1173,7 @@ and eval_let loc env rf pel e =
     let extra_env =
       loop [] pel where rec loop extra_env =
         fun
-        [ [(p, e) :: pel] ->
+        [ [(p, e, _) :: pel] ->
             let extra_env =
               match p with
               [ <:patt< $lid:s$ >> ->
@@ -1155,7 +1194,7 @@ and eval_let loc env rf pel e =
     let new_env =
       loop env pel where rec loop new_env =
         fun
-        [ [(p, e) :: pel] ->
+        [ [(p, e, _) :: pel] ->
             let v = eval_expr env e in
             let new_env =
               loop new_env v p where rec loop new_env v =

@@ -1,0 +1,13 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/typing/envaux.ml	2013-07-23 07:48:47.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/typing!envaux.ml.INPUT	2020-02-15 23:59:40.629807516 -0800
+@@ -20,8 +20,8 @@
+ 
+ exception Error of error
+ 
+-let env_cache =
+-  (Hashtbl.create 59 : ((Env.summary * Subst.t), Env.t) Hashtbl.t)
++let env_cache : ((Env.summary * Subst.t), Env.t) Hashtbl.t =
++  Hashtbl.create 59
+ 
+ let reset_cache () =
+   Hashtbl.clear env_cache;

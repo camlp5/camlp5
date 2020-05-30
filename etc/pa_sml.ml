@@ -5,6 +5,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
+open Asttools;
 open Pcaml;
 open Versdep;
 
@@ -105,9 +106,9 @@ value apply_bind loc e bl =
     fun
     [ [] -> e
     | [<:str_item< value $p1$ = $e1$ >> :: list] ->
-        loop_let e [(p1, e1)] list
+        loop_let e [(p1, e1, <:vala< [] >>)] list
     | [<:str_item< value rec $p1$ = $e1$ >> :: list] ->
-        loop_letrec e [(p1, e1)] list
+        loop_letrec e [(p1, e1, <:vala< [] >>)] list
     | [<:str_item< module $uid:s_argle$ = $me$ >> :: list] ->
         let e = <:expr< let module $uid:s_argle$ = $me$ in $e$ >> in
         loop e list
@@ -116,14 +117,14 @@ value apply_bind loc e bl =
   and loop_let e pel =
     fun
     [ [<:str_item< value $p1$ = $e1$ >> :: list] ->
-        loop_let e [(p1, e1) :: pel] list
+        loop_let e [(p1, e1, <:vala< [] >>) :: pel] list
     | list ->
         let e = <:expr< let $list:pel$ in $e$ >> in
         loop e list ]
   and loop_letrec e pel =
     fun
     [ [<:str_item< value rec $p1$ = $e1$ >> :: list] ->
-        loop_letrec e [(p1, e1) :: pel] list
+        loop_letrec e [(p1, e1, <:vala< [] >>) :: pel] list
     | list ->
         let e = <:expr< let rec $list:pel$ in $e$ >> in
         loop e list ]
@@ -179,26 +180,32 @@ value sig_declare loc =
 value extract_label_types loc tn tal cdol =
   let (cdl, aux) =
     List.fold_right
-      (fun (loc, c, tl, aux_opt) (cdl, aux) ->
+      (fun (loc, c, tl, aux_opt, alg_attrs) (cdl, aux) -> do {
+         assert (alg_attrs = <:vala< [] >>) ;
          match aux_opt with
          [ Some anon_record_type ->
              let new_tn = tn ^ "_" ^ c in
              let loc = MLast.loc_of_ctyp anon_record_type in
              let aux_def =
-               {MLast.tdNam = <:vala< (loc, <:vala< new_tn >>) >>;
+               {MLast.tdIsDecl = True ;
+                MLast.tdNam = <:vala< (loc, <:vala< new_tn >>) >>;
                 MLast.tdPrm = <:vala< [] >>; MLast.tdPrv = <:vala< False >>;
-                MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>}
+                MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>;
+                MLast.tdAttributes = <:vala< [] >>}
              in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
-             ([(loc, <:vala< c >>, <:vala< tl >>, None) :: cdl],
+             ([(loc, <:vala< c >>, <:vala< tl >>, None, <:vala< [] >>) :: cdl],
                 [aux_def :: aux])
-         | None -> ([(loc, <:vala< c >>, <:vala< tl >>, None) :: cdl], aux) ])
+         | None -> ([(loc, <:vala< c >>, <:vala< tl >>, None, <:vala< [] >>) :: cdl], aux) ]
+         })
       cdol ([], [])
   in
   let td1 =
-    {MLast.tdNam = <:vala< (loc, <:vala< tn >>) >>;
+    {MLast.tdIsDecl = True ;
+     MLast.tdNam = <:vala< (loc, <:vala< tn >>) >>;
      MLast.tdPrm = <:vala< tal >>; MLast.tdPrv = <:vala< False >>;
-     MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = <:vala< [] >>}
+     MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = <:vala< [] >>;
+     MLast.tdAttributes = <:vala< [] >>}
   in
   [td1 :: aux]
 ;
@@ -254,7 +261,7 @@ value function_of_clause_list loc xl =
           in
           List.fold_right (fun s e -> <:expr< fun $lid:s$ -> $e$ >>) sl e ]
   in
-  (let loc = fname_loc in <:patt< $lid:fname$ >>, e)
+  (let loc = fname_loc in <:patt< $lid:fname$ >>, e, <:vala< [] >>)
 ;
 
 value record_expr loc x1 =
@@ -295,7 +302,7 @@ value record_expr loc x1 =
 ;
 
 value record_match_assoc loc lpl e =
-  if ocaml_records.val then (<:patt< { $list:lpl$ } >>, e)
+  if ocaml_records.val then (<:patt< { $list:lpl$ } >>, e, <:vala< [] >>)
   else
     let pl = List.map (fun (_, p) -> p) lpl in
     let e =
@@ -315,7 +322,7 @@ value record_match_assoc loc lpl e =
       <:expr< let v = $e$ in ($list:el$) >>
     in
     let p = <:patt< ($list:pl$) >> in
-    (p, e)
+    (p, e, <:vala< [] >>)
 ;
 
 value op =
@@ -345,9 +352,22 @@ value idd =
 
 value uncap s = string_uncapitalize s;
 
+value check_dot_uid_f strm =
+  match Stream.npeek 5 strm with [
+    [("",".") ; ("UIDENT",_) :: _] -> ()
+  | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_dot_uid =
+  Grammar.Entry.of_parser gram "check_dot_uid"
+    check_dot_uid_f
+;
+
 EXTEND
   GLOBAL: implem interf top_phrase use_file sig_item str_item ctyp patt expr
-    module_type module_expr;
+    module_type module_expr check_dot_uid;
 
   implem:
     [ [ x = interdec; EOI -> x ] ]
@@ -432,11 +452,14 @@ EXTEND
   tycon:
     [ [ LIDENT "real" -> <:ctyp< float >>
       | x1 = idd; "."; x2 = tycon ->
-          let r = <:ctyp< $uid:x1$ . $x2$ >> in
-          loop r where rec loop =
-            fun
-            [ <:ctyp< $a$ . ($b$ . $c$) >> -> <:ctyp< $a$ . $b$ . $loop c$ >>
-            | x -> x ]
+        match x2 with [
+          <:ctyp< $longid:b$ . $lid:c$ >> ->
+            let a = longid_concat <:extended_longident< $uid:x1$ >> b in
+            <:ctyp< $longid:a$ . $lid:c$ >>
+        | <:ctyp< $lid:c$ >> ->
+            <:ctyp< $uid:x1$ . $lid:c$ >>
+        | _ -> failwith "pa_sml: tycon: should be either TyAcc or TyLid"
+        ]
       | x1 = idd -> <:ctyp< $lid:uncap x1$ >> ] ]
   ;
   selector:
@@ -444,7 +467,7 @@ EXTEND
       | x1 = INT -> not_impl loc "selector 1" ] ]
   ;
   tlabel:
-    [ [ x1 = selector; ":"; x2 = ctyp -> (loc, x1, False, x2) ] ]
+    [ [ x1 = selector; ":"; x2 = ctyp -> (loc, x1, False, x2, <:vala< [] >>) ] ]
   ;
   tuple_ty:
     [ [ x1 = ctyp LEVEL "ty'"; "*"; x2 = tuple_ty -> [x1 :: x2]
@@ -460,7 +483,7 @@ EXTEND
       | "{"; x1 = LIST1 tlabel SEP ","; "}" ->
           if ocaml_records.val then <:ctyp< { $list:x1$ } >>
           else
-            let list = List.map (fun (_, l, _, t) -> (l, t)) x1 in
+            let list = List.map (fun (_, l, _, t, _) -> (Some l, t, <:vala< [] >>)) x1 in
             <:ctyp< < $list:list$ > >>
       | "{"; "}" -> not_impl loc "ty' 3"
       | "("; x1 = ctyp; ","; x2 = LIST1 ctyp SEP ","; ")"; x3 = tycon ->
@@ -549,21 +572,21 @@ EXTEND
             (fun pel x2 ->
                let loc =
                  match pel with
-                 [ [(p, _) :: _] ->
+                 [ [(p, _, _) :: _] ->
                      Ploc.encl (MLast.loc_of_patt p) (MLast.loc_of_expr x2)
                  | _ -> loc ]
                in
                match pel with
-               [ [(_, <:expr< fun [$list:_$] >>) :: _] ->
+               [ [(_, <:expr< fun [$list:_$] >>, _) :: _] ->
                    <:expr< let rec $list:pel$ in $x2$ >>
                | _ ->
                    let pel =
                      List.map
-                       (fun (p, e) ->
+                       (fun (p, e, _) ->
                           match p with
                           [ <:patt< { $list:lpl$ } >> ->
                               record_match_assoc (MLast.loc_of_patt p) lpl e
-                          | _ -> (p, e) ])
+                          | _ -> (p, e, <:vala< [] >>) ])
                        pel
                    in
                    <:expr< let $list:pel$ in $x2$ >> ])
@@ -587,6 +610,18 @@ EXTEND
       | "infixr"; x1 = INT -> ("infixr", Some x1)
       | "nonfix" -> not_impl loc "fixity 5" ] ]
   ;
+  longident:
+    [ LEFTA
+      [ li = SELF; check_dot_uid ; "."; i = V UIDENT "uid" →
+          <:extended_longident< $longid:li$ . $_uid:i$ >>
+      | i = V UIDENT "uid" → <:extended_longident< $_uid:i$ >>
+      ] ]
+  ;
+  longident_lident:
+    [ [ li = longident; "."; i = V LIDENT → (Some li, i)
+      | i = V LIDENT → (None, i)
+      ] ]
+  ;
   patt:
     [ [ x1 = patt; "as"; x2 = patt -> <:patt< ($x1$ as $x2$) >> ]
     | LEFTA
@@ -598,7 +633,7 @@ EXTEND
           [ <:patt< ref >> -> <:patt< {contents = $x2$} >>
           | _ -> <:patt< $x1$ $x2$ >> ] ]
     | "apat"
-      [ x1 = patt; "."; x2 = patt -> <:patt< $x1$ . $x2$ >>
+      [ li = longident; "."; x2 = patt -> <:patt< $longid:li$ . $x2$ >>
       | x1 = INT -> <:patt< $int:x1$ >>
       | x1 = UIDENT -> <:patt< $uid:x1$ >>
       | x1 = STRING -> <:patt< $str:x1$ >>
@@ -626,7 +661,7 @@ EXTEND
   ;
   vb:
     [ [ "lazy"; x1 = patt; "="; x2 = expr -> not_impl loc "vb 1"
-      | x1 = patt; "="; x2 = expr -> (x1, x2) ] ]
+      | x1 = patt; "="; x2 = expr -> (x1, x2, <:vala< [] >>) ] ]
   ;
   constrain:
     [ [ -> None
@@ -648,19 +683,23 @@ EXTEND
   ;
   tb:
     [ [ x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+          {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
-           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>}
+           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 =
             List.map
-              (fun (loc, c, tl, _) -> (loc, <:vala< c>>, <:vala< tl >>, None))
+              (fun (loc, c, tl, _, alg_attrs) -> (loc, <:vala< c>>, <:vala< tl >>, None, alg_attrs))
               x4
           in
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+          {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< $x3$ == [ $list:x4$ ] >>;
-           MLast.tdCon = <:vala< [] >>} ] ]
+           MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>} ] ]
   ;
   tyvars:
     [ [ "'"; x1 = V tyvar -> [(x1, None)]
@@ -683,16 +722,16 @@ EXTEND
       | "datatype"; x1 = tycon -> not_impl loc "dbrhs 2" ] ]
   ;
   constr:
-    [ [ x1 = op_op; x2 = ident -> (loc, x2, [], None)
+    [ [ x1 = op_op; x2 = ident -> (loc, x2, [], None, <:vala< [] >>)
       | x1 = op_op; x2 = ident; "of"; x3 = ctyp ->
           match x3 with
-          [ <:ctyp< {$list:_$} >> -> (loc, x2, [], Some x3)
-          | _ -> (loc, x2, [x3], None) ] ] ]
+          [ <:ctyp< {$list:_$} >> -> (loc, x2, [], Some x3, <:vala< [] >>)
+          | _ -> (loc, x2, [x3], None, <:vala< [] >>) ] ] ]
   ;
   eb:
-    [ [ x1 = op_op; x2 = ident -> (x2, [], [])
-      | x1 = op_op; x2 = ident; "of"; x3 = ctyp -> (x2, [x3], [])
-      | x1 = op_op; x2 = ident; "="; x3 = sqid -> (x2, [], x3) ] ]
+    [ [ x1 = op_op; x2 = ident -> (x2, [], None)
+      | x1 = op_op; x2 = ident; "of"; x3 = ctyp -> (x2, [x3], None)
+      | x1 = op_op; x2 = ident; "="; x3 = longident -> (x2, [], Some x3) ] ]
   ;
   ldec1:
     [ [ "val"; x1 = LIST1 vb SEP "and" -> x1
@@ -742,11 +781,11 @@ EXTEND
                           let m1 =
                             loop m1 where rec loop =
                               fun
-                              [ <:module_expr< $uid:x$ >> -> x
+                              [ <:module_expr< $uid:x$ >> -> <:longident< $uid:x$ >>
                               | <:module_expr< $uid:x$ . $y$ >> -> loop y
                               | _ -> not_impl loc "strspec 2" ]
                           in
-                          <:module_type< $mt$ with module $[m1]$ = $m2$ >>
+                          <:module_type< $mt$ with module $longid:m1$ = $m2$ >>
                       | _ -> not_impl loc "strspec 1" ])
                    sdl mt)
               x2 x3
@@ -761,14 +800,18 @@ EXTEND
   ;
   tyspec:
     [ [ x1 = tyvars; x2 = idd ->
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+          {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< '$choose_tvar x1$ >>;
-           MLast.tdCon = <:vala< [] >>}
+           MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
+           {MLast.tdIsDecl = True ;
+           MLast.tdNam = <:vala< (loc, <:vala< uncap x2 >>) >>;
            MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
-           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>} ] ]
+           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>;
+           MLast.tdAttributes = <:vala< [] >>} ] ]
   ;
   valspec:
     [ [ x1 = op_op; x2 = ident; ":"; x3 = ctyp ->
@@ -791,10 +834,10 @@ EXTEND
       | x = qid -> ([], x) ] ]
   ;
   whspec:
-    [ [ "type"; x1 = tyvars; x2 = sqid; "="; x3 = ctyp ->
-          <:with_constr< type $x2$ $list:x1$ = $x3$ >>
-      | x1 = sqid; "="; x2 = qid ->
-          <:with_constr< module $x1$ = $x2$ >> ] ]
+    [ [ "type"; x1 = tyvars; x2 = longident_lident; "="; x3 = ctyp ->
+          <:with_constr< type $lilongid:x2$ $list:x1$ = $x3$ >>
+      | x1 = longident; "="; x2 = qid ->
+          <:with_constr< module $longid:x1$ = $x2$ >> ] ]
   ;
   module_type:
     [ [ x1 = ident -> <:module_type< $uid:x1$ >>
@@ -867,12 +910,14 @@ EXTEND
           let dl =
             List.map
               (fun (s, tl, eqn) ->
-                 <:str_item< exception $uid:s$ of $list:tl$ = $eqn$ >>)
+                 match eqn with [
+                   None -> <:str_item< exception $uid:s$ of $list:tl$ >>
+                 | Some eqn -> <:str_item< exception $uid:s$ = $longid:eqn$ >> ])
               x1
           in
           str_declare loc dl
-      | "open"; x1 = LIST1 sqid ->
-          let dl = List.map (fun sl -> <:str_item< open $sl$ >>) x1 in
+      | "open"; x1 = LIST1 module_expr ->
+          let dl = List.map (fun me -> <:str_item< open $me$ >>) x1 in
           str_declare loc dl
       | LIDENT "use"; s = STRING ->
           <:str_item< #use $str:s$ >>

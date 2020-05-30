@@ -5,11 +5,6 @@
 open Pcaml;
 open Versdep;
 
-type choice α β =
-  [ Left of α
-  | Right of β ]
-;
-
 (* Buffer *)
 
 module Buff =
@@ -233,8 +228,33 @@ value ctyp_id loc s =
   [ ''' →
       let s = String.sub s 1 (String.length s - 1) in
       <:ctyp< '$s$ >>
-  | 'A'..'Z' → <:ctyp< $uid:s$ >>
+  | 'A'..'Z' → failwith "must not call ctyp_id with UIDs"
   | _ → <:ctyp< $lid:s$ >> ]
+;
+
+value split_at_dots loc s =
+  loop 0 0 where rec loop ibeg i =
+    if i = String.length s then
+      if i > ibeg then [ (String.sub s ibeg (i - ibeg)) ]
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
+    else if s.[i] = '.' then
+      if i > ibeg then
+        let t1 = [ (String.sub s ibeg (i - ibeg)) ] in
+        let t2 = loop (i + 1) (i + 1) in
+        t1 @ t2
+      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
+    else loop ibeg (i + 1)
+;
+
+value split_last l =
+  match List.rev l with [
+    [] -> failwith "split_last: empty list"
+  | [ h :: t ] -> (List.rev t, h)
+  ]
+;
+
+value capitalized s =
+  match s.[0] with [ 'A'..'Z' -> True | _ -> False ]
 ;
 
 value strm_n = "strm__";
@@ -257,8 +277,7 @@ and str_item_se se =
       let mb = module_binding_se se in
       <:str_item< module $uid:i$ = $mb$ >>
   | Sexpr loc [Satom _ Alid "open"; Satom _ Auid s] →
-      let s = [s] in
-      <:str_item< open $s$ >>
+      <:str_item< open $uid:s$ >>
   | Sexpr loc [Satom _ Alid "type" :: sel] →
       let tdl = type_declaration_list_se sel in
       <:str_item< type $list:tdl$ >>
@@ -275,7 +294,7 @@ and str_item_se se =
       <:str_item< $exp:e$ >> ]
 and value_binding_se =
   fun
-  [ [se1; se2 :: sel] → [(ipatt_se se1, expr_se se2) :: value_binding_se sel]
+  [ [se1; se2 :: sel] → [(ipatt_se se1, expr_se se2, <:vala< [] >>) :: value_binding_se sel]
   | [] → []
   | [se :: _] → error se "value_binding" ]
 and module_binding_se se = module_expr_se se
@@ -327,7 +346,7 @@ and expr_se =
       [ [Sexpr _ sel1 :: sel2] →
           List.fold_right
             (fun se ek →
-               let (p, e) = let_binding_se se in
+               let (p, e, _) = let_binding_se se in
                <:expr< let $p$ = $e$ in $ek$ >>)
             sel1 (progn_se loc sel2)
       | [se :: _] → error se "let_binding"
@@ -404,7 +423,7 @@ and progn_se loc =
       <:expr< do { $list:el$ } >> ]
 and let_binding_se =
   fun
-  [ Sexpr loc [se1; se2] → (ipatt_se se1, expr_se se2)
+  [ Sexpr loc [se1; se2] → (ipatt_se se1, expr_se se2, <:vala< [] >>)
   | se → error se "let_binding" ]
 and match_case loc =
   fun
@@ -528,17 +547,18 @@ and patt_se =
   | Sexpr loc [] → <:patt< () >>
   | Squot loc typ txt → Pcaml.handle_patt_quotation loc (typ, txt) ]
 and patt_ident_se loc s =
-  loop 0 0 where rec loop ibeg i =
-    if i = String.length s then
-      if i > ibeg then patt_id loc (String.sub s ibeg (i - ibeg))
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "patt expected")
-    else if s.[i] = '.' then
-      if i > ibeg then
-        let p1 = patt_id loc (String.sub s ibeg (i - ibeg)) in
-        let p2 = loop (i + 1) (i + 1) in
-        <:patt< $p1$ . $p2$ >>
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "patt expected")
-    else loop ibeg (i + 1)
+  let sl = split_at_dots loc s in
+  let (hdl, lid) = split_last sl in do {
+  if not (List.for_all capitalized hdl) then
+    Ploc.raise loc (Stream.Error "patt expected, but components aren't capitalized")
+  else () ;
+  match hdl with [
+    [] -> patt_id loc lid
+  | [ h :: t ] ->
+    let me = List.fold_left (fun me uid -> <:extended_longident< $longid:me$ . $uid:uid$ >>)
+      <:extended_longident< $uid:h$ >> t in
+    <:patt< $longid:me$ . $lid:lid$ >>
+  ]}
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p → p
@@ -566,9 +586,11 @@ and type_declaration_list_se =
       let empty = [] in
       let n = (loc1, <:vala< n1 >>) in
       let td =
-        {MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
+        {MLast.tdIsDecl = True ;
+         MLast.tdNam = <:vala< n >>; MLast.tdPrm = <:vala< tpl >>;
          MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
-         MLast.tdCon = <:vala< empty >>}
+         MLast.tdCon = <:vala< empty >>;
+         MLast.tdAttributes = <:vala< [] >>}
       in
       [td :: type_declaration_list_se sel]
   | [] → []
@@ -593,21 +615,22 @@ and ctyp_se =
   | Satom loc (Alid | Auid) s → ctyp_ident_se loc s
   | se → error se "ctyp" ]
 and ctyp_ident_se loc s =
-  loop 0 0 where rec loop ibeg i =
-    if i = String.length s then
-      if i > ibeg then ctyp_id loc (String.sub s ibeg (i - ibeg))
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
-    else if s.[i] = '.' then
-      if i > ibeg then
-        let t1 = ctyp_id loc (String.sub s ibeg (i - ibeg)) in
-        let t2 = loop (i + 1) (i + 1) in
-        <:ctyp< $t1$ . $t2$ >>
-      else Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "ctyp expected")
-    else loop ibeg (i + 1)
+  let sl = split_at_dots loc s in
+  let (hdl, lid) = split_last sl in do {
+  if not (List.for_all capitalized hdl) then
+    Ploc.raise loc (Stream.Error "ctyp expected, but components aren't capitalized")
+  else () ;
+  match hdl with [
+    [] -> ctyp_id loc lid
+  | [ h :: t ] ->
+    let me = List.fold_left (fun me uid -> <:extended_longident< $longid:me$ . $uid:uid$ >>)
+      <:extended_longident< $uid:h$ >> t in
+    <:ctyp< $longid:me$ . $lid:lid$ >>
+  ]}
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Satom _ Auid ci :: sel] →
-      (loc, <:vala< ci >>, <:vala< (List.map ctyp_se sel) >>, None)
+      (loc, <:vala< ci >>, <:vala< (List.map ctyp_se sel) >>, None, <:vala< [] >>)
   | se → error se "constructor_declaration" ]
 ;
 

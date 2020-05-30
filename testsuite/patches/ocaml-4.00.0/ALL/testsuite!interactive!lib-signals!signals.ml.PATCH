@@ -1,0 +1,17 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/interactive/lib-signals/signals.ml	2011-07-20 02:17:07.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/testsuite!interactive!lib-signals!signals.ml.INPUT	2020-02-11 17:28:57.129819655 -0800
+@@ -11,8 +11,8 @@
+   print_string "Thank you for pressing ctrl-Z."; print_newline();
+   print_string "Now raising an exception..."; print_newline();
+   raise Exit
++;;
+ 
+-let _ =
+   ignore (Sys.signal Sys.sigint (Sys.Signal_handle break_handler));
+   ignore (Sys.signal Sys.sigtstp (Sys.Signal_handle stop_handler));
+   begin try
+@@ -30,3 +30,4 @@
+     print_string "Got Exit, exiting."; print_newline()
+   end;
+   exit 0
++;;

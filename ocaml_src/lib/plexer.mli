@@ -54,6 +54,12 @@ val gmake : unit -> (string * string) Plexing.lexer;;
        to convert them into the real corresponding string or char
        value. *)
 
+val simplest_raw_strings : bool ref;;
+   (** When False (default), the next call to [Plexer.gmake ()] returns a
+       lexer where {|...|} is not a valid raw-string.  Setting it to True
+       will allow such strings to be valid raw-strings, while checking for
+       and throwing an error if "{|" and "|}" are specified  as keywords. *)
+
 val dollar_for_antiquotation : bool ref;;
    (** When True (default), the next call to [Plexer.gmake ()] returns a
        lexer where the dollar sign is used for antiquotations. If False,
@@ -66,15 +72,6 @@ val specific_space_dot : bool ref;;
        which have spaces before return the keyword " ." (space dot) and
        the ones which don't have spaces before return the keyword "."
        (dot alone). *)
-
-val dot_newline_is : string ref;;
-   (** experimental
-       Specific interpretation for a dot "." followed by a newline;
-       by default, it is just a dot. Setting another value makes
-       the lexer interpret it as this value. For example, in
-       revised syntax (pa_r.ml) setting it to ";" allows to end
-       phrases with a dot, instead of a semicolon. In normal syntax,
-       the same can be done by setting it with ";;". *)
 
 val no_quotations : bool ref;;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the

@@ -1,0 +1,71 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/debugger/program_loading.ml	2012-10-15 10:50:56.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/debugger!program_loading.ml.INPUT	2020-02-15 21:07:43.519807516 -0800
+@@ -25,7 +25,7 @@
+ (*** Load a program. ***)
+ 
+ (* Function used for launching the program. *)
+-let launching_func = ref (function () -> ())
++let launching_func = ref (fun () -> ())
+ 
+ let load_program () =
+   !launching_func ();
+@@ -67,7 +67,7 @@
+   Buffer.contents res
+ 
+ (* A generic function for launching the program *)
+-let generic_exec_unix cmdline = function () ->
++let generic_exec_unix cmdline = fun () ->
+   if !debug_loading then
+     prerr_endline "Launching program...";
+   let child =
+@@ -94,7 +94,7 @@
+        (_, WEXITED 0) -> ()
+      | _ -> raise Toplevel
+ 
+-let generic_exec_win cmdline = function () ->
++let generic_exec_win cmdline = fun () ->
+   if !debug_loading then
+     prerr_endline "Launching program...";
+   try ignore(create_process "cmd.exe" [| "/C"; cmdline() |] stdin stdout stderr)
+@@ -110,7 +110,7 @@
+ (* Execute the program by calling the runtime explicitly *)
+ let exec_with_runtime =
+   generic_exec
+-    (function () ->
++    (fun () ->
+       match Sys.os_type with
+         "Win32" ->
+           (* This fould fail on a file name with spaces
+@@ -133,7 +133,7 @@
+ (* Excute the program directly *)
+ let exec_direct =
+   generic_exec
+-    (function () ->
++    (fun () ->
+       match Sys.os_type with
+         "Win32" ->
+           (* See the comment above *)
+@@ -150,7 +150,7 @@
+ 
+ (* Ask the user. *)
+ let exec_manual =
+-  function () ->
++  fun () ->
+     print_newline ();
+     print_string "Waiting for connection...";
+     print_string ("(the socket is " ^ !socket_name ^ ")");
+@@ -167,11 +167,11 @@
+ 
+ let set_launching_function func =
+   launching_func := func
+-
++;;
+ (* Initialization *)
+ 
+-let _ =
+-  set_launching_function exec_direct
++
++  set_launching_function exec_direct ;;
+ 
+ (*** Connection. ***)
+ 

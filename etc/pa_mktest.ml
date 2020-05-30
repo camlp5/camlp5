@@ -114,6 +114,9 @@ value rec expr_list_of_type_gen loc f n =
       expr_list_of_type_gen loc (fun e -> f <:expr< Some $e$ >>) n t @
       let n = add_o ("o" ^ n) t in
       f <:expr< $lid:n$ >>
+  | <:ctyp< override_flag >> ->
+      f <:expr< MLast.Fresh >> @
+      f <:expr< MLast.Override >>
   | _ ->
       f <:expr< $lid:n$ >> ]
 ;
@@ -127,14 +130,14 @@ value patt_expr_list_of_type loc (f : MLast.expr -> list (list (MLast.patt * MLa
   List.concat (List.map f el)
 ;
 
-value expr_of_cons_decl (loc, c, tl, rto) = do {
+value expr_of_cons_decl (loc, c, tl, rto, _) = do {
   let c = Pcaml.unvala c in
   if String.length c = 5 && String.sub c 2 3 = "Xtr" then []
   else do {
     let tl = Pcaml.unvala tl in
     let tnl = name_of_vars (fun t -> t) tl in
     let el =
-      loop <:expr< MLast.$uid:c$ >> tnl where rec loop e1 =
+      loop <:expr< MLast . $uid:c$ >> tnl where rec loop e1 =
         fun
         [ [(t, n) :: tnl] ->
             let f e2 = loop <:expr< $e1$ $e2$ >> tnl in
@@ -205,12 +208,12 @@ value expr_list_of_type_decl loc td =
   [ <:ctyp< [ $list:cdl$ ] >> ->
       List.fold_right (fun cd el -> expr_of_cons_decl cd @ el) cdl []
   | <:ctyp< { $list:ldl$ } >> ->
-      let ldnl = name_of_vars (fun (loc, l, mf, t) -> t) ldl in
+      let ldnl = name_of_vars (fun (loc, l, mf, t, _) -> t) ldl in
       let pell =
         loop ldnl where rec loop =
           fun
-          [ [((loc, l, mf, t), n) :: ldnl] ->
-              let p = <:patt< MLast.$lid:l$ >> in
+          [ [((loc, l, mf, t, _), n) :: ldnl] ->
+              let p = <:patt< MLast . $lid:l$ >> in
               let pell = loop ldnl in
               let f e = List.map (fun pel -> [(p, e) :: pel]) pell in
               patt_expr_list_of_type loc f n t

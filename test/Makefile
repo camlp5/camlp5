@@ -9,10 +9,10 @@ DIFF=diff -Bwi -u20
 DEP=../etc/pr_r.cmo quot_r.out.ml
 RM=rm
 
-all: quot_r.mlt quot_r.mlu #quot_o.mlu
+all: quot_r.mlt quot_r.mlu
 
 clean:
-	$(RM) -f *.ml[tu] tmp.*
+	$(RM) -f *.ml[tu] tmp.* *.cm* *.log *.cache *.ppo
 
 compare_quot:
 	./mkquot.sh | $(DIFF) quot_r.out.ml -

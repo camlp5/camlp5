@@ -1,0 +1,12 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamlbuild/options.ml	2012-04-25 17:17:16.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamlbuild!options.ml.INPUT	2020-02-11 21:58:47.244185611 -0800
+@@ -124,8 +124,7 @@
+ let add_to' rxs x =
+   if x <> dummy then
+     rxs := [x] :: !rxs
+-  else
+-    ()
++
+ let set_cmd rcmd = String (fun s -> rcmd := Sh s)
+ let set_build_dir s =
+   make_links := false;

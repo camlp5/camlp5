@@ -1,0 +1,20 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamlbuild/ocamlbuild_executor.ml	2010-01-22 04:48:24.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/ocamlbuild!ocamlbuild_executor.ml.INPUT	2020-02-11 13:42:53.213714265 -0800
+@@ -176,8 +176,6 @@
+         job.job_dying <- true;
+         Queue.add (job, continue) jobs_to_terminate
+       end
+-    else
+-      ()
+   in
+   (* ***)
+   (*** add_more_jobs_if_possible *)
+@@ -212,8 +210,6 @@
+                 Buffer.add_substring job.job_buffer u 0 m;
+                 if loop then
+                   iteration ()
+-                else
+-                  ()
+               end
+           in
+           iteration ()

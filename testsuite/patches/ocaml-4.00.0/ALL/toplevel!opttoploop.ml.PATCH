@@ -1,0 +1,29 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/toplevel/opttoploop.ml	2012-01-27 04:48:15.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/toplevel!opttoploop.ml.INPUT	2020-02-11 21:17:17.560669585 -0800
+@@ -214,7 +214,7 @@
+ (* The table of toplevel directives.
+    Filled by functions from module topdirs. *)
+ 
+-let directive_table = (Hashtbl.create 13 : (string, directive_fun) Hashtbl.t)
++let directive_table : (string, directive_fun) Hashtbl.t = Hashtbl.create 13
+ 
+ (* Execute a toplevel phrase *)
+ 
+@@ -380,8 +380,8 @@
+ (* Toplevel initialization. Performed here instead of at the
+    beginning of loop() so that user code linked in with ocamlmktop
+    can call directives from Topdirs. *)
++;;
+ 
+-let _ =
+   Sys.interactive := true;
+   Dynlink.init ();
+   Optcompile.init_path();
+@@ -407,6 +407,7 @@
+   load_path := !load_path @ [Filename.concat Config.standard_library "camlp4"];
+   load_path := "" :: (List.rev !Clflags.include_dirs @ !load_path);
+   ()
++;;
+ 
+ let initialize_toplevel_env () =
+   toplevel_env := Optcompile.initial_env()

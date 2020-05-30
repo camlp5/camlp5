@@ -3,17 +3,19 @@
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../boot -I ../lib -I ../meta
-OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
-OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_lefteval.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
+OTHERLANGS=pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_schemer.cmo pa_lefteval.cmo  pr_scheme.cmo pr_schemep.cmo
+OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo  $(OTHERLANGS)
 CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
 SHELL=/bin/sh
-COUT=$(OBJS) $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE)
+OTHEROUT=$(CAMLP5N)sch$(EXE)
+COUT=$(OBJS) $(CAMLP5N)o$(EXE) $(OTHEROUT)
 COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)o.opt
 
-all: $(COUT) mk$(CAMLP5N).sh META
-opt: $(COPT) mk$(CAMLP5N).opt.sh
+all: $(COUT) META
+opt: $(COPT)
 
 # these ones must be compiled with new created camlp5:
 
@@ -45,8 +47,12 @@ pr_extprint.cmo pr_extprint.cmx: pr_extprint.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 q_phony.cmo q_phony.cmx: q_phony.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
+papr_phony_macro.cmo papr_phony_macro.cmx: papr_phony_macro.ml
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
+pr_official.cmo pr_official.cmx: pr_official.ml
+	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 
-META: META.tpl
+META:: META.tpl
 	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(LIBDIR)/$(CAMLP5N)|" META.tpl > META
 
 
@@ -61,12 +67,6 @@ $(CAMLP5N)sch$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5SCHM)
 $(CAMLP5N)o.opt: $(CAMLP5OMX)
 	$(RM) -f $(CAMLP5N)o.opt
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../etc/$(CAMLP5N)o.opt CAMLP5M="-I ../etc $(CAMLP5OMX)"
-
-mk$(CAMLP5N).sh: mkcamlp5.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s!OCAMLN!$(OCAMLN)!g" -e "s!CAMLP5N!$(CAMLP5N)!g" mkcamlp5.sh.tpl > mk$(CAMLP5N).sh
-
-mk$(CAMLP5N).opt.sh: mkcamlp5.opt.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s!OCAMLN!$(OCAMLN)!g" -e "s!CAMLP5N!$(CAMLP5N)!g" mkcamlp5.opt.sh.tpl > mk$(CAMLP5N).opt.sh
 
 bootstrap_scheme:
 	@$(MAKE) $(NO_PR_DIR) bootstrap_l L=scheme
@@ -88,7 +88,7 @@ compare_l:
 
 clean::
 	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
-	$(RM) -f mk$(CAMLP5N).sh mk$(CAMLP5N).opt.sh $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE)
+	$(RM) -f $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE)
 	$(RM) -f META
 
 depend:
@@ -105,10 +105,11 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_lex.cmo"
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(DESTDIR)$(LIBDIR)/$(CAMLP5N)|" META.tpl > META
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
-	cp mk$(CAMLP5N).sh "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
+	cp mk$(CAMLP5N).pl "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	if test -f pa_o.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
@@ -116,7 +117,7 @@ install:
 	    cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  done; \
 	  cp $(CAMLP5N)o.opt "$(DESTDIR)$(BINDIR)/."; \
-	  cp mk$(CAMLP5N).opt.sh "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
+	  cp mk$(CAMLP5N).pl "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
 	  chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
 	fi
 
@@ -133,5 +134,6 @@ pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_scheme.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 pr_schemep.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 q_phony.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+papr_phony_macro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 
 include .depend

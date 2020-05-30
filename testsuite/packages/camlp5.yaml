@@ -1,0 +1,78 @@
+---
+camlp5.7.11:
+  syntax: revised
+  dirs:
+    - lib
+    - main
+    - meta
+    - etc
+    - top
+    - odyl
+    - ocpp
+    - compile
+  exclude:
+    roundtrip-revised.*:
+# has "lexer", for which no printers yet
+      - lib/plexer.ml
+# fparsers, bparsers (ugh): no printers for these yet
+      - lib/grammar.ml
+# uses DEFINE_TYPE
+      - main/mLast.mli
+      - main/pcaml.mli
+# uses DELETE_RULE, no printers
+      - meta/pa_macro.ml
+# uses extensible grammars, doesn't print back out
+      - etc/elexer.ml
+# wrong syntax (LISP)
+      - etc/pa_lisp.ml
+# wrong syntax (Scheme)
+      - etc/pa_scheme.ml
+# unimplemented AST printer
+      - etc/pa_mkast.ml
+# unimplemented fparser printer
+      - etc/pa_pprintf.ml
+# unimplemented AST printer
+      - etc/pa_reloc.ml
+# pretty-printing for grammar EXTEND not up to snuff
+      - etc/pa_sml.ml
+# UGH, this has all sorts of (raw) parsers that need to be converted to pretty form
+      - etc/pa_schemer.ml
+# uses pprintf, but nothing exists to rebuild pprintf (pr_pprintf)
+# applies to all these printers
+      - etc/pr_extend.ml
+      - etc/pr_extfun.ml
+      - etc/pr_extprint.ml
+      - etc/pr_op.ml
+      - etc/pr_ro.ml
+      - etc/pr_rp.ml
+      - etc/pr_schemep.ml
+      - etc/pr_scheme.ml
+      - etc/pr_o.ml
+      - etc/pr_r.ml
+      - etc/papr_phony_macro.ml
+# unimplemented AST printer
+      - etc/pa_mktest.ml
+# TODO: use GITIGNORE to ignore temporary files
+      - compile/tmp.o_concat.ml
+      - compile/tmp.ml
+      - compile/tmp.mli
+      - compile/pa_o_fast.ml
+# this seems like original syntax -- skip
+      - odyl/odyl_config.ml
+  files: []
+  location: ..
+  package: camlp5.7.11
+camlp5.7.11-ORIGINAL:
+  syntax: original
+  dirs:
+    - ocaml_src
+    - ocaml_stuff
+  exclude:
+    roundtrip-original.*:
+      - ocaml_stuff/1.06/utils/warnings.mli
+      - ocaml_stuff/1.06/utils/warnings.mli
+      - ocaml_stuff/1.07/utils/warnings.mli
+      - ocaml_stuff/2.00/utils/warnings.mli
+  files: []
+  location: ..
+  package: camlp5.7.11-ORIGINAL

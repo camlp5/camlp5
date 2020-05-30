@@ -1,0 +1,103 @@
+#use "../local-install/lib/ocaml/topfind.camlp5";;
+#require "compiler-libs.common" ;;
+#require "ounit2";;
+#require "fmt";;
+#require "rresult";;
+#require "pcre";;
+#require "bos";;
+
+
+#require "camlp5.pa_op";;
+Pcaml.inter_phrases := Some ";;\n";;
+(*
+#require "camlp5.pa_r";;
+Pcaml.inter_phrases := Some ";\n";;
+*)
+(*
+#require "camlp5.pr_o";;
+*)
+#require "camlp5.pr_r";;
+
+(*
+#require "camlp5.pr_r";;
+Pcaml.inter_phrases := Some ";\n";;
+*)
+
+#require "camlp5.quotations";;
+#require "camlp5.extfun";;
+(*
+#require "camlp5.extend";;
+#require "camlp5.phony_quotations" ;;
+*)
+
+#directory "../main";;
+Exparser.optim := false ;;
+
+#load "testutil.cmo";;
+#load "testutil2.cmo";;
+
+open OUnit2 ;;
+open Testutil ;;
+open Testutil2 ;;
+
+#load "roundtrip_lexer.cmo";;
+open Roundtrip_lexer ;;
+
+let pp_plexing_lexbuf b = Fmt.(pf stdout "<<%s>>" (Plexing.Lexbuf.get b)) ;;
+#install_printer pp_plexing_lexbuf ;;
+
+(*
+#load "papr_matrix_test.cmo" ;;
+#load "r2r_test.cmo" ;;
+*)
+
+let pp_loc (loc : Location.t) = Format.print_string "<loc>" ;;
+#install_printer pp_loc ;;
+
+let pp_char_stream strm =
+  let l = Stream.npeek !Toploop.max_printer_depth strm in
+  Fmt.(pf stdout "<strm<[%a]>>" (list char) l)
+;;
+#install_printer pp_char_stream ;;
+
+let pp_token_stream strm =
+  let l = Stream.npeek !Toploop.max_printer_depth strm in
+  let rec trim_eoi = function
+    ("EOI",_ as x)::_ -> [x]
+  | h::t -> h::(trim_eoi t)
+  | [] -> []
+  in 
+  Fmt.(pf stdout "<strm<[%a]>>" (list ~sep:comma (parens (pair ~sep:comma (quote string) (quote string)))) (trim_eoi l))
+;;
+#install_printer pp_token_stream ;;
+
+let lexbuf_contents lb =
+  let open Lexing in
+  let pos = lb.lex_curr_pos in
+  let len = lb.lex_buffer_len - lb.lex_curr_pos in
+  (Bytes.to_string (Bytes.sub lb.lex_buffer pos len))
+;;
+
+let pp_lexbuf lb =
+  Format.print_string "#<lexbuf:<";
+  Format.print_string (lexbuf_contents lb);
+  Format.print_string ">>"
+;;
+#install_printer pp_lexbuf ;;
+
+print_string "================ START ================\n";; flush stdout ;;
+
+(*
+#load "../ppx/pa_deriving_enum.cmo";;
+#trace Pa_deriving_enum.fmt_expression ;;
+#trace Pa_deriving_enum.is_deriving_enum ;;
+
+"../ppx/test_deriving_enum.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
+*)
+
+(*
+;;; Local Variables: ***
+;;; mode:tuareg ***
+;;; End: ***
+
+*)

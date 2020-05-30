@@ -1,0 +1,20 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/systhreads/thread.ml	2012-02-19 09:30:02.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/otherlibs!systhreads!thread.ml.INPUT	2020-02-11 17:19:34.394451293 -0800
+@@ -56,8 +56,8 @@
+   match Sys.os_type with
+   | "Win32" -> Sys.sigterm
+   | _       -> Sys.sigvtalrm
++;;
+ 
+-let _ =
+   Sys.set_signal preempt_signal (Sys.Signal_handle preempt);
+   thread_initialize();
+   at_exit
+@@ -69,6 +69,7 @@
+            default handler. *)
+         Sys.set_signal preempt_signal Sys.Signal_default
+     )
++;;
+ 
+ (* Wait functions *)
+ 

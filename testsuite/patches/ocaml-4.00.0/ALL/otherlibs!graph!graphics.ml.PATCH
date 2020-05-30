@@ -1,0 +1,16 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/graph/graphics.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!graph!graphics.ml.INPUT	2020-02-11 13:54:12.885714265 -0800
+@@ -14,11 +14,12 @@
+ (* $Id: graphics.ml 11156 2011-07-27 14:17:02Z doligez $ *)
+ 
+ exception Graphic_failure of string
++;;
+ 
+ (* Initializations *)
+ 
+-let _ =
+   Callback.register_exception "Graphics.Graphic_failure" (Graphic_failure "")
++;;
+ 
+ external raw_open_graph: string -> unit = "caml_gr_open_graph"
+ external raw_close_graph: unit -> unit = "caml_gr_close_graph"

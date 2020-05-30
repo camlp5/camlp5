@@ -5,8 +5,6 @@
 (open Pcaml)
 (open Versdep)
 
-(type (choice 'a 'b) (sum (Left 'a) (Right 'b)))
-
 ;; Buffer
 
 (module Buff
@@ -202,8 +200,42 @@
          (match ([] s 0)
                 (''' (let ((s (String.sub s 1 (- (String.length s) 1))))
                        <:ctyp< '$s$ >>))
-                ((range 'A' 'Z') <:ctyp< $uid:s$ >>)
+                ((range 'A' 'Z')
+                   (failwith "must not call ctyp_id with UIDs"))
                 (_ <:ctyp< $lid:s$ >>))))
+
+(value split_at_dots
+  (lambda (loc s)
+   (let rec
+     ((loop (lambda (ibeg i)
+              (if (= i (String.length s))
+                  (if (> i ibeg)
+                      (list (String.sub s ibeg (- i ibeg)))
+                    (Ploc.raise (Ploc.sub loc (- i 1) 1)
+                                    (Stream.Error "ctyp expected")))
+                (if (= ([] s i) '.')
+                    (if (> i ibeg)
+                        (let* ((t1 (list (String.sub s ibeg (- i ibeg))))
+                               (t2 (loop (+ i 1) (+ i 1))))
+                          (List.append t1 t2))
+                      (Ploc.raise (Ploc.sub loc (- i 1) 1)
+                                      (Stream.Error "ctyp expected")))
+                  (loop ibeg (+ i 1)))))))
+     (loop 0 0))
+  ))
+
+(value split_last
+  (lambda (l)
+    (match (List.rev l)
+      ((list) (failwith "split_last: empty list"))
+      ((list h :: t) (, (List.rev t) h))
+    )
+  ))
+
+(value capitalized
+  (lambda (s)
+     (match ([] s 0) ((range 'A' 'Z') True) (_ False))
+  ))
 
 (value strm_n "strm__")
 (value peek_fun (lambda loc <:expr< Stream.peek >>))
@@ -228,8 +260,7 @@
            (let ((mb (module_binding_se se)))
              <:str_item< module $uid:i$ = $mb$ >>))
           ((Sexpr loc (list (Satom _ Alid "open") (Satom _ Auid s)))
-           (let ((s (list s)))
-             <:str_item< open $s$ >>))
+             <:str_item< open $uid:s$ >>)
           ((Sexpr loc (list (Satom _ Alid "type") :: sel))
            (let ((tdl (type_declaration_list_se sel)))
              <:str_item< type $list:tdl$ >>))
@@ -246,7 +277,7 @@
  value_binding_se
  (lambda_match
   ((list se1 se2 :: sel)
-   (list (, (ipatt_se se1) (expr_se se2)) :: (value_binding_se sel)))
+   (list (, (ipatt_se se1) (expr_se se2) <:vala< (list) >>) :: (value_binding_se sel)))
   ((list) (list))
   ((list se :: _) (error se "value_binding")))
  module_binding_se
@@ -302,7 +333,7 @@
           ((list (Sexpr _ sel1) :: sel2)
            (List.fold_right
             (lambda (se ek)
-              (let (((, p e) (let_binding_se se)))
+              (let (((, p e _) (let_binding_se se)))
                 <:expr< let $p$ = $e$ in $ek$ >>))
             sel1 (progn_se loc sel2)))
           ((list se :: _) (error se "let_binding"))
@@ -372,7 +403,7 @@
      ((sel) (let ((el (List.map expr_se sel))) <:expr< do { $list:el$ } >>))))
  let_binding_se
  (lambda_match
-  ((Sexpr loc (list se1 se2)) (, (ipatt_se se1) (expr_se se2)))
+  ((Sexpr loc (list se1 se2)) (, (ipatt_se se1) (expr_se se2) <:vala< (list)>>))
   (se (error se "let_binding")))
  match_case
  (lambda loc
@@ -506,25 +537,21 @@
   ((Squot loc typ txt) (Pcaml.handle_patt_quotation loc (, typ txt))))
  patt_ident_se
  (lambda (loc s)
-   (let rec
-     ((loop
-       (lambda (ibeg i)
-         (if (= i (String.length s))
-             (if (> i ibeg)
-                 (patt_id loc (String.sub s ibeg (- i ibeg)))
-               (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                               (Stream.Error "patt expected")))
-           (if (= ([] s i) '.')
-               (if (> i ibeg)
-                   (let* ((p1 (patt_id
-                               loc
-                               (String.sub s ibeg (- i ibeg))))
-                          (p2 (loop (+ i 1) (+ i 1))))
-                     <:patt< $p1$ . $p2$ >>)
-                 (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                 (Stream.Error "patt expected")))
-             (loop ibeg (+ i 1)))))))
-     (loop 0 0)))
+  (let* ((sl (split_at_dots loc s))
+         ((, hdl lid) (split_last sl)))
+         (if (not (List.for_all capitalized hdl))
+             (Ploc.raise loc (Stream.Error "patt expected, but components aren't capitalized"))
+             ())
+         (match hdl
+                  ((list) (patt_id loc lid))
+                  ((list h :: t)
+                     (let ((me (List.fold_left (lambda (me uid) <:extended_longident< $longid:me$ . $uid:uid$ >>)
+                                  <:extended_longident< $uid:h$ >> t)))
+                         (<:patt< $longid:me$ . $lid:lid$ >>))
+                  )
+         )
+  )
+  )
  ipatt_se
  (lambda se
    (match (ipatt_opt_se se)
@@ -553,10 +580,11 @@
                   (error se "type declaration")))))
      (let* ((empty (list))
             (n (, loc1 <:vala< n1 >>))
-            (td ({} (MLast.tdNam <:vala< n >>)
+            (td ({} (MLast.tdIsDecl True)(MLast.tdNam <:vala< n >>)
                     (MLast.tdPrm <:vala< tpl >>) (MLast.tdPrv <:vala< False >>)
                     (MLast.tdDef (ctyp_se se2))
-                    (MLast.tdCon <:vala< empty >>))))
+                    (MLast.tdCon <:vala< empty >>)
+                    (MLast.tdAttributes <:vala< empty >>))))
           (list td :: (type_declaration_list_se sel)))))
   ((list) (list))
   ((list se :: _) (error se "type_decl")))
@@ -582,27 +610,25 @@
    (error se "ctyp")))
  ctyp_ident_se
  (lambda (loc s)
-   (let rec
-     ((loop (lambda (ibeg i)
-              (if (= i (String.length s))
-                  (if (> i ibeg)
-                      (ctyp_id loc (String.sub s ibeg (- i ibeg)))
-                    (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                    (Stream.Error "ctyp expected")))
-                (if (= ([] s i) '.')
-                    (if (> i ibeg)
-                        (let* ((t1 (ctyp_id
-                                    loc (String.sub s ibeg (- i ibeg))))
-                               (t2 (loop (+ i 1) (+ i 1))))
-                          <:ctyp< $t1$ . $t2$ >>)
-                      (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                      (Stream.Error "ctyp expected")))
-                  (loop ibeg (+ i 1)))))))
-     (loop 0 0)))
+  (let* ((sl (split_at_dots loc s))
+         ((, hdl lid) (split_last sl)))
+         (if (not (List.for_all capitalized hdl))
+             (Ploc.raise loc (Stream.Error "ctyp expected, but components aren't capitalized"))
+             ())
+         (match hdl
+                  ((list) (ctyp_id loc lid))
+                  ((list h :: t)
+                     (let ((me (List.fold_left (lambda (me uid) <:extended_longident< $longid:me$ . $uid:uid$ >>)
+                                  <:extended_longident< $uid:h$ >> t)))
+                         (<:ctyp< $longid:me$ . $lid:lid$ >>))
+                  )
+         )
+  )
+)
  constructor_declaration_se
  (lambda_match
   ((Sexpr loc (list (Satom _ Auid ci) :: sel))
-   (, loc <:vala< ci >> <:vala< (List.map ctyp_se sel) >> None))
+   (, loc <:vala< ci >> <:vala< (List.map ctyp_se sel) >> None <:vala< (list) >>))
   (se
    (error se "constructor_declaration"))))
 

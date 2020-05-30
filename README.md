@@ -6,7 +6,7 @@ It is (theoretically) compatible with all versions of ocaml from 1.07
 to 4.11.0 (when they compile), and jocaml 3.12.0 to 3.12.1, but
 maintainers only test against versions of ocaml >= 4.00.0.
 
-This Camlp5 version is 7.12.
+This Camlp5 version is 8.00-alpha01.
 
 ## Requirements
 
@@ -83,6 +83,15 @@ This creates the Sphinx documentation in `doc/rst/_build`.
 The file DEVEL gives information for people who want to make changes
 in Camlp5, or who are just curious of how it is implemented. The same
 explanations are also in the chapter "Camlp5 sources" in the documentation.
+
+## Testsuite
+
+There is a rather extensive testsuite (to which any suggestions or
+contributions are welcome) in `testsuite`.  To build/run it, one must install a number of packages:
+```
+opam install ocamlfind pcre ounit2
+make -C testsuite all-tests
+```
 
 ## Problems
 

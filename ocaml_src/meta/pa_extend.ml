@@ -38,9 +38,6 @@ and ('e, 'p) a_symbol =
   | ASnext of loc
   | ASnterm of loc * (string * 'e) * string option
   | ASopt of loc * ('e, 'p) a_symbol
-  | ASfold of
-      loc * string * string * 'e * 'e * ('e, 'p) a_symbol *
-        ('e, 'p) a_symbol option
   | ASquot of loc * ('e, 'p) a_symbol
   | ASrules of loc * ('e, 'p) a_rules
   | ASself of loc
@@ -67,7 +64,6 @@ type styp =
 
 type ('e, 'p) text =
     TXfacto of loc * ('e, 'p) text
-  | TXmeta of loc * string * ('e, 'p) text list * 'e * styp
   | TXlist of loc * lmin_len * ('e, 'p) text * (('e, 'p) text * bool) option
   | TXnext of loc
   | TXnterm of loc * 'e name * string option
@@ -308,6 +304,16 @@ module MetaAction =
                    mloc),
                 mvala mstring s),
              MLast.ExStr (loc, c))
+      | MLast.ExLab (loc, peoptl) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "MLast"),
+                   MLast.ExUid (loc, "ExLab")),
+                mloc),
+             mvala (mlist mpeopt) peoptl)
       | MLast.ExFlo (loc, s) ->
           MLast.ExApp
             (loc,
@@ -333,7 +339,7 @@ module MetaAction =
                          MLast.ExUid (loc, "ExLet")),
                       mloc),
                    rf),
-                mvala (mlist mpe) pel),
+                mvala (mlist mpea) pel),
              mexpr e)
       | MLast.ExLid (loc, s) ->
           MLast.ExApp
@@ -382,19 +388,22 @@ module MetaAction =
                    MLast.ExUid (loc, "ExSeq")),
                 mloc),
              mvala (mlist mexpr) el)
-      | MLast.ExSte (loc, e1, e2) ->
+      | MLast.ExSte (loc, s, e1, e2) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
                (loc,
                 MLast.ExApp
                   (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "MLast"),
-                      MLast.ExUid (loc, "ExSte")),
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExAcc
+                        (loc, MLast.ExUid (loc, "MLast"),
+                         MLast.ExUid (loc, "ExSte")),
+                      mvala mstring s),
                    mloc),
                 mexpr e1),
-             mexpr e2)
+             mvala (mlist mexpr) e2)
       | MLast.ExStr (loc, s) ->
           MLast.ExApp
             (loc,
@@ -454,7 +463,7 @@ module MetaAction =
       | x -> not_impl "mexpr" x
     and mpatt =
       function
-        MLast.PaAcc (loc, p1, p2) ->
+        MLast.PaPfx (loc, li, p) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -463,10 +472,20 @@ module MetaAction =
                   (loc,
                    MLast.ExAcc
                      (loc, MLast.ExUid (loc, "MLast"),
-                      MLast.ExUid (loc, "PaAcc")),
+                      MLast.ExUid (loc, "PaPfx")),
                    mloc),
-                mpatt p1),
-             mpatt p2)
+                mlongid li),
+             mpatt p)
+      | MLast.PaLong (loc, li) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "MLast"),
+                   MLast.ExUid (loc, "PaLong")),
+                mloc),
+             mlongid li)
       | MLast.PaAny loc ->
           MLast.ExApp
             (loc,
@@ -555,20 +574,48 @@ module MetaAction =
                    mloc),
                 mpatt p),
              mctyp t)
-      | MLast.PaUid (loc, s) ->
+      | x -> not_impl "mpatt" x
+    and mlongid =
+      function
+        MLast.LiApp (loc, me1, me2) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "LiApp")),
+                   mloc),
+                mlongid me1),
+             mlongid me2)
+      | MLast.LiAcc (loc, me1, uid) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "LiAcc")),
+                   mloc),
+                mlongid me1),
+             mvala mstring uid)
+      | MLast.LiUid (loc, s) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
                (loc,
                 MLast.ExAcc
                   (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "PaUid")),
+                   MLast.ExUid (loc, "LiUid")),
                 mloc),
              mvala mstring s)
-      | x -> not_impl "mpatt" x
     and mctyp =
       function
-        MLast.TyAcc (loc, t1, t2) ->
+        MLast.TyAcc (loc, m1, t2) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -579,8 +626,8 @@ module MetaAction =
                      (loc, MLast.ExUid (loc, "MLast"),
                       MLast.ExUid (loc, "TyAcc")),
                    mloc),
-                mctyp t1),
-             mctyp t2)
+                mlongid m1),
+             mvala mstring t2)
       | MLast.TyApp (loc, t1, t2) ->
           MLast.ExApp
             (loc,
@@ -624,20 +671,22 @@ module MetaAction =
                    MLast.ExUid (loc, "TyTup")),
                 mloc),
              mvala (mlist mctyp) tl)
-      | MLast.TyUid (loc, s) ->
+      | x -> not_impl "mctyp" x
+    and mpea (p, e, attrs) =
+      assert ([] = Pcaml.unvala attrs);
+      MLast.ExTup
+        (loc,
+         [mpatt p; mexpr e;
           MLast.ExApp
             (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "TyUid")),
-                mloc),
-             mvala mstring s)
-      | x -> not_impl "mctyp" x
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
+             MLast.ExUid (loc, "[]"))])
     and mpe (p, e) = MLast.ExTup (loc, [mpatt p; mexpr e])
     and mpwe (p, w, e) =
       MLast.ExTup (loc, [mpatt p; mvala (moption mexpr) w; mexpr e])
+    and mpeopt (p, eopt) =
+      MLast.ExTup (loc, [mpatt p; mvala (moption mexpr) eopt])
     ;;
   end
 ;;
@@ -657,11 +706,13 @@ let mklistexp loc =
 let mklistpat loc =
   let rec loop top =
     function
-      [] -> MLast.PaUid (loc, "[]")
+      [] -> MLast.PaLong (loc, MLast.LiUid (loc, "[]"))
     | p1 :: pl ->
         let loc = if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc in
         MLast.PaApp
-          (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), loop false pl)
+          (loc,
+           MLast.PaApp (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::")), p1),
+           loop false pl)
   in
   loop true
 ;;
@@ -887,7 +938,7 @@ let quot_expr psl e =
                  let lab =
                    match p with
                      MLast.PaLid (_, c) -> MLast.ExStr (loc, c)
-                   | MLast.PaAcc (_, _, MLast.PaLid (_, c)) ->
+                   | MLast.PaPfx (_, _, MLast.PaLid (_, c)) ->
                        MLast.ExStr (loc, c)
                    | _ -> raise Not_found
                  in
@@ -947,7 +998,7 @@ let quot_expr psl e =
              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Tuple")),
            mklistexp loc el)
     | MLast.ExLet (_, r, pel, e) ->
-        let pel = List.map (fun (p, e) -> p, loop e) pel in
+        let pel = List.map (fun (p, e, attrs) -> p, loop e, attrs) pel in
         MLast.ExLet (loc, r, pel, loop e)
     | _ -> e
   in
@@ -991,13 +1042,15 @@ let quotify_action psl act =
                  (loc, MLast.ExLid (loc, pname),
                   [MLast.PaApp
                      (loc,
-                      MLast.PaAcc
-                        (loc, MLast.PaUid (loc, "Qast"),
-                         MLast.PaUid (loc, "Tuple")),
+                      MLast.PaLong
+                        (loc,
+                         MLast.LiAcc
+                           (loc, MLast.LiUid (loc, "Qast"), "Tuple")),
                       mklistpat loc pl1),
                    None, MLast.ExTup (loc, el1);
                    MLast.PaAny loc, None,
-                   MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])])],
+                   MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])]),
+               []],
               e)
        | _ -> e)
     e psl
@@ -1018,9 +1071,7 @@ let rec make_ctyp styp tvar =
   | STnone -> failwith "make_ctyp: internal error"
   | STvala (loc, t) ->
       MLast.TyApp
-        (loc,
-         MLast.TyAcc
-           (loc, MLast.TyUid (loc, "Ploc"), MLast.TyLid (loc, "vala")),
+        (loc, MLast.TyAcc (loc, MLast.LiUid (loc, "Ploc"), "vala"),
          make_ctyp t tvar)
 ;;
 
@@ -1035,9 +1086,7 @@ let text_of_action loc psl rtvar act tvar =
     MLast.ExFun
       (loc,
        [MLast.PaTyc
-          (loc, locid,
-           MLast.TyAcc
-             (loc, MLast.TyUid (loc, "Ploc"), MLast.TyLid (loc, "t"))),
+          (loc, locid, MLast.TyAcc (loc, MLast.LiUid (loc, "Ploc"), "t")),
         None, MLast.ExTyc (loc, act, MLast.TyQuo (loc, rtvar))])
   in
   let txt =
@@ -1093,32 +1142,6 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, gmod), MLast.ExLid (loc, "s_facto")),
          make_expr gmod tvar t)
-  | TXmeta (loc, n, tl, e, t) ->
-      let el =
-        List.fold_right
-          (fun t el ->
-             MLast.ExApp
-               (loc,
-                MLast.ExApp
-                  (loc, MLast.ExUid (loc, "::"), make_expr gmod "" t),
-                el))
-          tl (MLast.ExUid (loc, "[]"))
-      in
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExApp
-              (loc,
-               MLast.ExAcc
-                 (loc, MLast.ExUid (loc, gmod), MLast.ExLid (loc, "s_meta")),
-               MLast.ExStr (loc, n)),
-            el),
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Obj"), MLast.ExLid (loc, "repr")),
-            MLast.ExTyc (loc, e, make_ctyp t tvar)))
   | TXlist (loc, min, t, ts) ->
       let txt = make_expr gmod "" t in
       begin match min, ts with
@@ -1189,10 +1212,8 @@ let rec make_expr gmod tvar =
                      (loc,
                       MLast.TyAcc
                         (loc,
-                         MLast.TyAcc
-                           (loc, MLast.TyUid (loc, gmod),
-                            MLast.TyUid (loc, "Entry")),
-                         MLast.TyLid (loc, "e")),
+                         MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
+                         "e"),
                       MLast.TyQuo (loc, n.tvar)))),
              MLast.ExStr (loc, lab))
       | None ->
@@ -1210,10 +1231,8 @@ let rec make_expr gmod tvar =
                     (loc,
                      MLast.TyAcc
                        (loc,
-                        MLast.TyAcc
-                          (loc, MLast.TyUid (loc, gmod),
-                           MLast.TyUid (loc, "Entry")),
-                        MLast.TyLid (loc, "e")),
+                        MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
+                        "e"),
                      MLast.TyQuo (loc, n.tvar))))
       end
   | TXopt (loc, t) ->
@@ -1282,6 +1301,10 @@ and make_expr_rules loc gmod rl tvar =
               (loc, MLast.ExUid (loc, gmod), MLast.ExLid (loc, "r_stop")))
            sl
        in
+       let hash =
+         Printf.sprintf "%08x"
+           (Hashtbl.hash (Reloc.expr (fun _ -> Ploc.dummy) 0 ac))
+       in
        MLast.ExApp
          (loc,
           MLast.ExApp
@@ -1291,7 +1314,7 @@ and make_expr_rules loc gmod rl tvar =
                 MLast.ExAcc
                   (loc, MLast.ExUid (loc, gmod),
                    MLast.ExLid (loc, "production")),
-                MLast.ExTup (loc, [sl; ac]))),
+                MLast.ExTup (loc, [sl; MLast.ExStr (loc, hash); ac]))),
           txt))
     (MLast.ExUid (loc, "[]")) rl
 ;;
@@ -1316,66 +1339,6 @@ let slist loc min sep symb =
     | None -> None
   in
   TXlist (loc, min, symb.text, t)
-;;
-
-let sfold loc n foldfun f e s =
-  let styp = STquo (loc, new_type_var ()) in
-  let e =
-    MLast.ExApp
-      (loc,
-       MLast.ExApp
-         (loc,
-          MLast.ExAcc
-            (loc, MLast.ExUid (loc, "Extfold"), MLast.ExLid (loc, foldfun)),
-          f),
-       e)
-  in
-  let t =
-    STapp
-      (loc,
-       STapp
-         (loc,
-          STtyp
-            (MLast.TyApp
-               (loc,
-                MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Extfold"), MLast.TyLid (loc, "t")),
-                MLast.TyAny loc)),
-          s.styp),
-       styp)
-  in
-  {used = s.used; text = TXmeta (loc, n, [s.text], e, t); styp = styp}
-;;
-
-let sfoldsep loc n foldfun f e s sep =
-  let styp = STquo (loc, new_type_var ()) in
-  let e =
-    MLast.ExApp
-      (loc,
-       MLast.ExApp
-         (loc,
-          MLast.ExAcc
-            (loc, MLast.ExUid (loc, "Extfold"), MLast.ExLid (loc, foldfun)),
-          f),
-       e)
-  in
-  let t =
-    STapp
-      (loc,
-       STapp
-         (loc,
-          STtyp
-            (MLast.TyApp
-               (loc,
-                MLast.TyAcc
-                  (loc, MLast.TyUid (loc, "Extfold"),
-                   MLast.TyLid (loc, "tsep")),
-                MLast.TyAny loc)),
-          s.styp),
-       styp)
-  in
-  {used = s.used @ sep.used; text = TXmeta (loc, n, [s.text; sep.text], e, t);
-   styp = styp}
 ;;
 
 let mk_psymbol p s t =
@@ -1550,12 +1513,6 @@ let rec symbol_of_a =
       let text = TXflag (loc, s.text) in
       let styp = STlid (loc, "bool") in
       {used = s.used; text = text; styp = styp}
-  | ASfold (loc, n, foldfun, f, e, s, sep) ->
-      let s = symbol_of_a s in
-      begin match sep with
-        Some sep -> sfoldsep loc n foldfun f e s (symbol_of_a sep)
-      | None -> sfold loc n foldfun f e s
-      end
   | ASkeyw (loc, s) ->
       let text = TXtok (loc, "", string_of_a s) in
       {used = []; text = text; styp = STlid (loc, "string")}
@@ -1706,10 +1663,7 @@ let text_of_entry loc gmod e =
        MLast.TyApp
          (loc,
           MLast.TyAcc
-            (loc,
-             MLast.TyAcc
-               (loc, MLast.TyUid (loc, gmod), MLast.TyUid (loc, "Entry")),
-             MLast.TyLid (loc, "e")),
+            (loc, MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"), "e"),
           MLast.TyQuo (loc, x.tvar)))
   in
   let loc = Ploc.with_comment loc "" in
@@ -1775,11 +1729,10 @@ let let_in_of_extend loc gmod functor_version gl el args =
                   (loc,
                    MLast.TyAcc
                      (loc,
-                      MLast.TyAcc
-                        (loc, MLast.TyUid (loc, gmod),
-                         MLast.TyUid (loc, "Entry")),
-                      MLast.TyLid (loc, "e")),
-                   MLast.TyQuo (loc, x))))
+                      MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
+                      "e"),
+                   MLast.TyQuo (loc, x))),
+             [])
           nl
       in
       let locals =
@@ -1800,11 +1753,10 @@ let let_in_of_extend loc gmod functor_version gl el args =
                   (loc,
                    MLast.TyAcc
                      (loc,
-                      MLast.TyAcc
-                        (loc, MLast.TyUid (loc, gmod),
-                         MLast.TyUid (loc, "Entry")),
-                      MLast.TyLid (loc, "e")),
-                   MLast.TyQuo (loc, x))))
+                      MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
+                      "e"),
+                   MLast.TyQuo (loc, x))),
+             [])
           ll
       in
       let e =
@@ -1817,7 +1769,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
                 (loc,
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, gmod), MLast.ExUid (loc, "Entry")),
-                 MLast.ExLid (loc, "create"))],
+                 MLast.ExLid (loc, "create")),
+              []],
              MLast.ExLet (loc, false, locals, args))
         else
           MLast.ExLet
@@ -1839,7 +1792,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
                              (loc, MLast.ExUid (loc, gmod),
                               MLast.ExLid (loc, "of_entry")),
                            locate n1)),
-                     MLast.ExLid (loc, "s"))])],
+                     MLast.ExLid (loc, "s"))]),
+              []],
              MLast.ExLet (loc, false, locals, args))
       in
       MLast.ExLet (loc, false, globals, e)
@@ -1862,12 +1816,13 @@ let text_of_extend loc gmod gl el f =
               [MLast.PaLid (loc, "aux"),
                MLast.ExFun
                  (loc,
-                  [MLast.PaUid (loc, "()"), None,
+                  [MLast.PaLong (loc, MLast.LiUid (loc, "()")), None,
                    MLast.ExApp
                      (loc, f,
                       MLast.ExApp
                         (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), e),
-                         MLast.ExUid (loc, "[]")))])],
+                         MLast.ExUid (loc, "[]")))]),
+               []],
               MLast.ExApp
                 (loc, MLast.ExLid (loc, "aux"), MLast.ExUid (loc, "()"))))
         el
@@ -1929,7 +1884,10 @@ let text_of_functorial_extend loc gmod gl el =
              MLast.ExLet
                (loc, false,
                 [MLast.PaLid (loc, "aux"),
-                 MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, e])],
+                 MLast.ExFun
+                   (loc,
+                    [MLast.PaLong (loc, MLast.LiUid (loc, "()")), None, e]),
+                 []],
                 MLast.ExApp
                   (loc, MLast.ExLid (loc, "aux"), MLast.ExUid (loc, "()")))
            else e)
@@ -2008,6 +1966,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (gdelete_rule_body : 'gdelete_rule_body Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e : 'gdelete_rule_body) _ (loc : Ploc.t) -> (e : 'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2018,6 +1977,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (delete_rule_body : 'delete_rule_body Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e : 'delete_rule_body) _ (loc : Ploc.t) -> (e : 'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2028,6 +1988,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (gextend_body : 'gextend_body Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e : 'gextend_body) _ (loc : Ploc.t) -> (e : 'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2038,6 +1999,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (extend_body : 'extend_body Grammar.Entry.e)))
              (Grammar.s_token ("", "END")),
+           "1154dceb",
            (fun _ (e : 'extend_body) _ (loc : Ploc.t) -> (e : 'expr)))]];
     Grammar.extension (extend_body : 'extend_body Grammar.Entry.e) None
       [None, None,
@@ -2057,7 +2019,9 @@ Grammar.safe_extend
                                (entry : 'entry Grammar.Entry.e)))
                          (Grammar.s_nterm
                             (semi_sep : 'semi_sep Grammar.Entry.e)),
+                       "1154dceb",
                        (fun _ (e : 'entry) (loc : Ploc.t) -> (e : 'e__1)))])),
+           "1154dceb",
            (fun (el : 'e__1 list) (sl : 'global option) (f : 'efunction)
                 (loc : Ploc.t) ->
               (text_of_extend loc "Grammar" sl el f : 'extend_body)))]];
@@ -2079,7 +2043,9 @@ Grammar.safe_extend
                                (entry : 'entry Grammar.Entry.e)))
                          (Grammar.s_nterm
                             (semi_sep : 'semi_sep Grammar.Entry.e)),
+                       "1154dceb",
                        (fun _ (e : 'entry) (loc : Ploc.t) -> (e : 'e__2)))])),
+           "1154dceb",
            (fun (el : 'e__2 list) (sl : 'global option) (g : string)
                 (loc : Ploc.t) ->
               (text_of_functorial_extend loc g sl el : 'gextend_body)))]];
@@ -2096,6 +2062,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (symbol : 'symbol Grammar.Entry.e))
                 (Grammar.s_nterm (semi_sep : 'semi_sep Grammar.Entry.e))
                 false),
+           "1154dceb",
            (fun (sl : 'symbol list) _ (n : 'name) (loc : Ploc.t) ->
               (let (e, b) = expr_of_delete_rule loc "Grammar" n sl in
                MLast.ExApp
@@ -2123,6 +2090,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (symbol : 'symbol Grammar.Entry.e))
                 (Grammar.s_nterm (semi_sep : 'semi_sep Grammar.Entry.e))
                 false),
+           "1154dceb",
            (fun (sl : 'symbol list) _ (n : 'name) (g : string)
                 (loc : Ploc.t) ->
               (let (e, b) = expr_of_delete_rule loc g n sl in
@@ -2139,7 +2107,7 @@ Grammar.safe_extend
     Grammar.extension (efunction : 'efunction Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop,
+          (Grammar.r_stop, "1154dceb",
            (fun (loc : Ploc.t) ->
               (MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Grammar"),
@@ -2154,6 +2122,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", ":")))
                 (Grammar.s_nterm (qualid : 'qualid Grammar.Entry.e)))
              (Grammar.s_nterm (semi_sep : 'semi_sep Grammar.Entry.e)),
+           "1154dceb",
            (fun _ (f : 'qualid) _ _ (loc : Ploc.t) ->
               (snd f : 'efunction)))]];
     Grammar.extension (global : 'global Grammar.Entry.e) None
@@ -2168,6 +2137,7 @@ Grammar.safe_extend
                 (Grammar.s_list1
                    (Grammar.s_nterm (name : 'name Grammar.Entry.e))))
              (Grammar.s_nterm (semi_sep : 'semi_sep Grammar.Entry.e)),
+           "1154dceb",
            (fun _ (sl : 'name list) _ _ (loc : Ploc.t) -> (sl : 'global)))]];
     Grammar.extension (entry : 'entry Grammar.Entry.e) None
       [None, None,
@@ -2181,6 +2151,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (position : 'position Grammar.Entry.e))))
              (Grammar.s_nterm (level_list : 'level_list Grammar.Entry.e)),
+           "1154dceb",
            (fun (ll : 'level_list) (pos : 'position option) _ (n : 'name)
                 (loc : Ploc.t) ->
               ({ae_loc = loc; ae_name = n; ae_pos = pos; ae_levels = ll} :
@@ -2192,6 +2163,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "LEVEL")))
              (Grammar.s_nterm (string : 'string Grammar.Entry.e)),
+           "1154dceb",
            (fun (n : 'string) _ (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc,
@@ -2205,6 +2177,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "LIKE")))
              (Grammar.s_nterm (string : 'string Grammar.Entry.e)),
+           "1154dceb",
            (fun (n : 'string) _ (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc,
@@ -2218,6 +2191,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "AFTER")))
              (Grammar.s_nterm (string : 'string Grammar.Entry.e)),
+           "1154dceb",
            (fun (n : 'string) _ (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc,
@@ -2231,6 +2205,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "BEFORE")))
              (Grammar.s_nterm (string : 'string Grammar.Entry.e)),
+           "1154dceb",
            (fun (n : 'string) _ (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc,
@@ -2241,6 +2216,7 @@ Grammar.safe_extend
                'position)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "LAST")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) ->
               (MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
@@ -2249,6 +2225,7 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_token ("UIDENT", "FIRST")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) ->
               (MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
@@ -2264,6 +2241,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (level : 'level Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (ll : 'level list) _ (loc : Ploc.t) ->
               (ll : 'level_list)))]];
     Grammar.extension (level : 'level Grammar.Entry.e) None
@@ -2276,6 +2254,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (assoc : 'assoc Grammar.Entry.e))))
              (Grammar.s_nterm (rule_list : 'rule_list Grammar.Entry.e)),
+           "1154dceb",
            (fun (rules : 'rule_list) (ass : 'assoc option)
                 (lab : string option) (loc : Ploc.t) ->
               ({al_loc = loc; al_label = lab; al_assoc = ass;
@@ -2285,6 +2264,7 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "NONA")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) ->
               (MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
@@ -2293,6 +2273,7 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_token ("UIDENT", "RIGHTA")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) ->
               (MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
@@ -2301,6 +2282,7 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_token ("UIDENT", "LEFTA")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) ->
               (MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
@@ -2316,12 +2298,14 @@ Grammar.safe_extend
                    (Grammar.s_nterm (rule : 'rule Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (rules : 'rule list) _ (loc : Ploc.t) ->
               ({au_loc = loc; au_rules = rules} : 'rule_list)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "[")))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ _ (loc : Ploc.t) ->
               ({au_loc = loc; au_rules = []} : 'rule_list)))]];
     Grammar.extension (rule : 'rule Grammar.Entry.e) None
@@ -2332,6 +2316,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm (psymbol : 'psymbol Grammar.Entry.e))
                 (Grammar.s_nterm (semi_sep : 'semi_sep Grammar.Entry.e))
                 false),
+           "1154dceb",
            (fun (psl : 'psymbol list) (loc : Ploc.t) ->
               ({ar_loc = loc; ar_psymbols = psl; ar_action = None} : 'rule)));
         Grammar.production
@@ -2344,6 +2329,7 @@ Grammar.safe_extend
                       false))
                 (Grammar.s_token ("", "->")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (act : 'expr) _ (psl : 'psymbol list) (loc : Ploc.t) ->
               ({ar_loc = loc; ar_psymbols = psl; ar_action = Some act} :
                'rule)))]];
@@ -2352,6 +2338,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (symbol : 'symbol Grammar.Entry.e)),
+           "1154dceb",
            (fun (s : 'symbol) (loc : Ploc.t) ->
               ({ap_loc = loc; ap_patt = None; ap_symb = s} : 'psymbol)));
         Grammar.production
@@ -2361,6 +2348,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (pattern : 'pattern Grammar.Entry.e)))
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (symbol : 'symbol Grammar.Entry.e)),
+           "1154dceb",
            (fun (s : 'symbol) _ (p : 'pattern) (loc : Ploc.t) ->
               ({ap_loc = loc; ap_patt = Some p; ap_symb = s} : 'psymbol)));
         Grammar.production
@@ -2373,7 +2361,9 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("UIDENT", "LEVEL")))
                          (Grammar.s_token ("STRING", "")),
+                       "1154dceb",
                        (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__3)))])),
+           "1154dceb",
            (fun (lev : 'e__3 option) (i : string) (loc : Ploc.t) ->
               (let n = MLast.ExLid (loc, i) in
                {ap_loc = loc; ap_patt = None;
@@ -2386,6 +2376,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("LIDENT", "")))
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (symbol : 'symbol Grammar.Entry.e)),
+           "1154dceb",
            (fun (s : 'symbol) _ (p : string) (loc : Ploc.t) ->
               ({ap_loc = loc; ap_patt = Some (MLast.PaLid (loc, p));
                 ap_symb = s} :
@@ -2403,7 +2394,9 @@ Grammar.safe_extend
                    [Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("UIDENT", "OPT_SEP")),
+                       "1154dceb",
                        (fun (x : string) (loc : Ploc.t) -> (x : 'e__4)))])),
+           "1154dceb",
            (fun (b : bool) (t : 'symbol) (sep : string) (loc : Ploc.t) ->
               (t, b : 'sep_opt_sep)))]];
     Grammar.extension (symbol : 'symbol Grammar.Entry.e) None
@@ -2413,6 +2406,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "FLAG")))
              Grammar.s_self,
+           "1154dceb",
            (fun (s : 'symbol) _ (loc : Ploc.t) ->
               (ASflag (loc, s) : 'symbol)));
         Grammar.production
@@ -2420,6 +2414,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "OPT")))
              Grammar.s_self,
+           "1154dceb",
            (fun (s : 'symbol) _ (loc : Ploc.t) ->
               (ASopt (loc, s) : 'symbol)));
         Grammar.production
@@ -2431,6 +2426,7 @@ Grammar.safe_extend
              (Grammar.s_opt
                 (Grammar.s_nterm
                    (sep_opt_sep : 'sep_opt_sep Grammar.Entry.e))),
+           "1154dceb",
            (fun (sep : 'sep_opt_sep option) (s : 'symbol) _ (loc : Ploc.t) ->
               (ASlist (loc, LML_1, s, sep) : 'symbol)));
         Grammar.production
@@ -2442,6 +2438,7 @@ Grammar.safe_extend
              (Grammar.s_opt
                 (Grammar.s_nterm
                    (sep_opt_sep : 'sep_opt_sep Grammar.Entry.e))),
+           "1154dceb",
            (fun (sep : 'sep_opt_sep option) (s : 'symbol) _ (loc : Ploc.t) ->
               (ASlist (loc, LML_0, s, sep) : 'symbol)))];
        Some "vala", None,
@@ -2452,6 +2449,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "V")))
                 Grammar.s_next)
              (Grammar.s_list0 (Grammar.s_token ("STRING", ""))),
+           "1154dceb",
            (fun (al : string list) (s : 'symbol) _ (loc : Ploc.t) ->
               (ASvala (loc, s, al) : 'symbol)));
         Grammar.production
@@ -2461,6 +2459,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "V")))
                 (Grammar.s_token ("UIDENT", "")))
              (Grammar.s_list0 (Grammar.s_token ("STRING", ""))),
+           "1154dceb",
            (fun (al : string list) (x : string) _ (loc : Ploc.t) ->
               (let s = AStok (loc, x, None) in ASvala (loc, s, al) :
                'symbol)));
@@ -2471,6 +2470,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "V")))
                 (Grammar.s_token ("UIDENT", "NEXT")))
              (Grammar.s_list0 (Grammar.s_token ("STRING", ""))),
+           "1154dceb",
            (fun (al : string list) _ _ (loc : Ploc.t) ->
               (let s = ASnext loc in ASvala (loc, s, al) : 'symbol)));
         Grammar.production
@@ -2480,6 +2480,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "V")))
                 (Grammar.s_token ("UIDENT", "SELF")))
              (Grammar.s_list0 (Grammar.s_token ("STRING", ""))),
+           "1154dceb",
            (fun (al : string list) _ _ (loc : Ploc.t) ->
               (let s = ASself loc in ASvala (loc, s, al) : 'symbol)))];
        Some "simple", None,
@@ -2489,10 +2490,11 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
                 Grammar.s_self)
              (Grammar.s_token ("", ")")),
+           "1154dceb",
            (fun _ (s_t : 'symbol) _ (loc : Ploc.t) -> (s_t : 'symbol)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "/")),
-           (fun _ (loc : Ploc.t) -> (AScut loc : 'symbol)));
+           "1154dceb", (fun _ (loc : Ploc.t) -> (AScut loc : 'symbol)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
@@ -2504,7 +2506,9 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("UIDENT", "LEVEL")))
                          (Grammar.s_token ("STRING", "")),
+                       "1154dceb",
                        (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__6)))])),
+           "1154dceb",
            (fun (lev : 'e__6 option) (n : 'name) (loc : Ploc.t) ->
               (ASnterm (loc, n, lev) : 'symbol)));
         Grammar.production
@@ -2522,7 +2526,9 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("UIDENT", "LEVEL")))
                          (Grammar.s_token ("STRING", "")),
+                       "1154dceb",
                        (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__5)))])),
+           "1154dceb",
            (fun (lev : 'e__5 option) (e : 'qualid) _ (i : string)
                 (loc : Ploc.t) ->
               (let v = MLast.ExAcc (loc, MLast.ExUid (loc, i), snd e) in
@@ -2531,15 +2537,18 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (string : 'string Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'string) (loc : Ploc.t) -> (ASkeyw (loc, e) : 'symbol)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")))
              (Grammar.s_nterm (string : 'string Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'string) (x : string) (loc : Ploc.t) ->
               (AStok (loc, x, Some e) : 'symbol)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           "1154dceb",
            (fun (x : string) (loc : Ploc.t) ->
               (AStok (loc, x, None) : 'symbol)));
         Grammar.production
@@ -2550,14 +2559,15 @@ Grammar.safe_extend
                    (Grammar.s_nterm (rule : 'rule Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (rl : 'rule list) _ (loc : Ploc.t) ->
               (ASrules (loc, {au_loc = loc; au_rules = rl}) : 'symbol)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "NEXT")),
-           (fun _ (loc : Ploc.t) -> (ASnext loc : 'symbol)));
+           "1154dceb", (fun _ (loc : Ploc.t) -> (ASnext loc : 'symbol)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "SELF")),
-           (fun _ (loc : Ploc.t) -> (ASself loc : 'symbol)))]];
+           "1154dceb", (fun _ (loc : Ploc.t) -> (ASself loc : 'symbol)))]];
     Grammar.extension (pattern : 'pattern Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -2572,6 +2582,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (patterns_comma : 'patterns_comma Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
+           "1154dceb",
            (fun _ (pl : 'patterns_comma) _ (p : 'pattern) _ (loc : Ploc.t) ->
               (MLast.PaTup (loc, p :: pl) : 'pattern)));
         Grammar.production
@@ -2580,12 +2591,15 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
                 Grammar.s_self)
              (Grammar.s_token ("", ")")),
+           "1154dceb",
            (fun _ (p : 'pattern) _ (loc : Ploc.t) -> (p : 'pattern)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'pattern)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           "1154dceb",
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.PaLid (loc, i) : 'pattern)))]];
     Grammar.extension (patterns_comma : 'patterns_comma Grammar.Entry.e) None
@@ -2595,19 +2609,21 @@ Grammar.safe_extend
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", ",")))
              (Grammar.s_nterm (pattern : 'pattern Grammar.Entry.e)),
+           "1154dceb",
            (fun (p : 'pattern) _ (pl : 'patterns_comma) (loc : Ploc.t) ->
               (pl @ [p] : 'patterns_comma)))];
        None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (pattern : 'pattern Grammar.Entry.e)),
+           "1154dceb",
            (fun (p : 'pattern) (loc : Ploc.t) -> ([p] : 'patterns_comma)))]];
     Grammar.extension (name : 'name Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (qualid : 'qualid Grammar.Entry.e)),
-           (fun (e : 'qualid) (loc : Ploc.t) -> (e : 'name)))]];
+           "1154dceb", (fun (e : 'qualid) (loc : Ploc.t) -> (e : 'name)))]];
     Grammar.extension (qualid : 'qualid Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -2615,16 +2631,19 @@ Grammar.safe_extend
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_token ("", ".")))
              Grammar.s_self,
+           "1154dceb",
            (fun (e2 : 'qualid) _ (e1 : 'qualid) (loc : Ploc.t) ->
               (fst e1 ^ "__" ^ fst e2, MLast.ExAcc (loc, snd e1, snd e2) :
                'qualid)))];
        None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           "1154dceb",
            (fun (i : string) (loc : Ploc.t) ->
               (i, MLast.ExLid (loc, i) : 'qualid)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           "1154dceb",
            (fun (i : string) (loc : Ploc.t) ->
               (i, MLast.ExUid (loc, i) : 'qualid)))]];
     Grammar.extension (string : 'string Grammar.Entry.e) None
@@ -2635,10 +2654,12 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "$")))
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              (Grammar.s_token ("", "$")),
+           "1154dceb",
            (fun _ (e : 'expr) _ (loc : Ploc.t) ->
               (ATexpr (loc, e) : 'string)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
+           "1154dceb",
            (fun (s : string) (loc : Ploc.t) ->
               (ATstring (loc, s) : 'string)))]]]);;
 

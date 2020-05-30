@@ -1,0 +1,14 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/debugger/printval.ml	2012-07-10 07:54:19.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/debugger!printval.ml.INPUT	2020-02-10 14:09:20.082343293 -0800
+@@ -22,8 +22,9 @@
+ 
+ (* To name printed and ellipsed values *)
+ 
+-let named_values =
+-  (Hashtbl.create 29 : (int, Debugcom.Remote_value.t * type_expr) Hashtbl.t)
++let named_values : (int, Debugcom.Remote_value.t * type_expr) Hashtbl.t =
++  Hashtbl.create 29
++
+ let next_name = ref 1
+ 
+ let reset_named_values () =

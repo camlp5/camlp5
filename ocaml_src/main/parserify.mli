@@ -2,21 +2,10 @@
 (* parserify.mli,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-type spat_comp =
-    SpTrm of MLast.loc * MLast.patt * MLast.expr option MLast.v
-  | SpNtr of MLast.loc * MLast.patt * MLast.expr
-  | SpLet of MLast.loc * MLast.patt * MLast.expr
-  | SpLhd of MLast.loc * MLast.patt list list
-  | SpStr of MLast.loc * MLast.patt
-;;
+type spat_comp = Exparser.spat_comp;;
 
-type spat_comp_opt =
-    SpoNoth
-  | SpoBang
-  | SpoQues of MLast.expr
-;;
+type spat_comp_opt = Exparser.spat_comp_opt;;
 
-val unparser_body :
-  MLast.expr ->
-    string option *
-      ((spat_comp * spat_comp_opt) list * string option * MLast.expr) list;;
+type spat_parser_ast = Exparser.spat_parser_ast;;
+
+val unparser_body : MLast.expr -> spat_parser_ast;;

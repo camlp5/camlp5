@@ -84,7 +84,7 @@ value rec expr_of_type loc t =
   match t with
   [ <:ctyp< $lid:tn$ >> ->
       match tn with
-      [ "bool" | "string" -> <:expr< C.$lid:tn$ >>
+      [ "bool" | "string" -> <:expr< C . $lid:tn$ >>
       | _ -> <:expr< $lid:tn$ >> ]
   | <:ctyp< ($list:tl$) >> ->
       let tnl = name_of_vars tl in
@@ -130,7 +130,7 @@ value rec expr_of_type loc t =
       <:expr< error >> ]
 ;
 
-value expr_of_cons_decl (loc, c, tl, rto) =
+value expr_of_cons_decl (loc, c, tl, rto, _) =
   let tl = Pcaml.unvala tl in
   let tnl = name_of_vars tl in
   let p =
@@ -187,8 +187,8 @@ value expr_of_type_decl loc td =
   | <:ctyp< { $list:ldl$ } >> ->
       let rev_lel =
         list_rev_map
-          (fun (loc, l, mf, t) ->
-             let e = <:expr< x.$lid:l$ >> in
+          (fun (loc, l, mf, t, _) ->
+             let e = <:expr< x . $lid:l$ >> in
              let e =
                match t with
                [ <:ctyp< loc >> -> <:expr< C.loc_v () >>
@@ -240,7 +240,7 @@ value gen_ast loc tdl =
           (fun td ->
              let tn = Pcaml.unvala (snd (Pcaml.unvala td.MLast.tdNam)) in
              let e = expr_of_type_decl loc td in
-             (<:patt< $lid:tn$ >>, e))
+             (<:patt< $lid:tn$ >>, e, <:vala< [] >>))
           tdl
       in
       <:str_item<

@@ -42,17 +42,6 @@ let bol_pos_last loc = loc.bol_pos_last;;
 let comment loc = loc.comm;;
 let comment_last loc = loc.ecomm;;
 
-let with_bp_ep l bp ep =
-  {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
-   line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = bp;
-   ep = ep; comm = l.comm; ecomm = l.ecomm}
-;;
-let with_comm l comm =
-  {fname = l.fname; line_nb = l.line_nb; bol_pos = l.bol_pos;
-   line_nb_last = l.line_nb_last; bol_pos_last = l.bol_pos_last; bp = l.bp;
-   ep = l.ep; comm = comm; ecomm = l.ecomm}
-;;
-
 let encl loc1 loc2 =
   if loc1.bp < loc2.bp then
     if loc1.ep < loc2.ep then
@@ -66,10 +55,10 @@ let encl loc1 loc2 =
      bp = loc2.bp; ep = loc1.ep; comm = loc2.comm; ecomm = loc1.comm}
   else loc2
 ;;
-let shift sh loc = with_bp_ep loc (sh + loc.bp) (sh + loc.ep);;
-let sub loc sh len = with_bp_ep loc (loc.bp + sh) (loc.bp + sh + len);;
-let after loc sh len = with_bp_ep loc (loc.ep + sh) (loc.ep + sh + len);;
-let with_comment loc comm = with_comm loc comm;;
+let shift sh loc = {loc with bp = sh + loc.bp; ep = sh + loc.ep};;
+let sub loc sh len = {loc with bp = loc.bp + sh; ep = loc.bp + sh + len};;
+let after loc sh len = {loc with bp = loc.ep + sh; ep = loc.ep + sh + len};;
+let with_comment loc comm = {loc with comm = comm};;
 
 let name = ref "loc";;
 
@@ -94,12 +83,13 @@ let from_file fname loc =
       let rec a_line_dir str n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
           Some '\n' -> Stream.junk strm__; loop str n
-        | Some _ -> Stream.junk strm__; a_line_dir str n (col + 1) strm__
+        | Some _ ->
+            Stream.junk strm__; let s = strm__ in a_line_dir str n (col + 1) s
         | _ -> raise Stream.Failure
       in
       let rec spaces col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
-          Some ' ' -> Stream.junk strm__; spaces (col + 1) strm__
+          Some ' ' -> Stream.junk strm__; let s = strm__ in spaces (col + 1) s
         | _ -> col
       in
       let rec check_string str n col (strm__ : _ Stream.t) =
@@ -110,23 +100,29 @@ let from_file fname loc =
               try spaces (col + 1) strm__ with
                 Stream.Failure -> raise (Stream.Error "")
             in
-            a_line_dir str n col strm__
+            let s = strm__ in a_line_dir str n col s
         | Some c when c <> '\n' ->
             Stream.junk strm__;
-            check_string (str ^ String.make 1 c) n (col + 1) strm__
+            let s = strm__ in
+            check_string (str ^ String.make 1 c) n (col + 1) s
         | _ -> not_a_line_dir col strm__
       in
       let check_quote n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
-          Some '"' -> Stream.junk strm__; check_string "" n (col + 1) strm__
+          Some '"' ->
+            Stream.junk strm__;
+            let s = strm__ in check_string "" n (col + 1) s
         | _ -> not_a_line_dir col strm__
       in
       let rec check_num n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
           Some ('0'..'9' as c) ->
             Stream.junk strm__;
-            check_num (10 * n + Char.code c - Char.code '0') (col + 1) strm__
-        | _ -> let col = spaces col strm__ in check_quote n col strm__
+            let s = strm__ in
+            check_num (10 * n + Char.code c - Char.code '0') (col + 1) s
+        | _ ->
+            let col = spaces col strm__ in
+            let s = strm__ in check_quote n col s
       in
       let begin_line (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
@@ -136,7 +132,7 @@ let from_file fname loc =
               try spaces 1 strm__ with
                 Stream.Failure -> raise (Stream.Error "")
             in
-            check_num 0 col strm__
+            let s = strm__ in check_num 0 col s
         | _ -> not_a_line_dir 0 strm__
       in
       begin_line strm

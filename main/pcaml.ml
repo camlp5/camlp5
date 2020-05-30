@@ -7,7 +7,7 @@
 
 open Printf;
 
-value version = "7.12";
+value version = "8.00-alpha01";
 value syntax_name = ref "";
 
 value ocaml_version =
@@ -39,6 +39,7 @@ variable CAMLP5PARAM to f or b.
 
 type status = option Ploc.t;
 
+value attribute_body = Grammar.Entry.create gram "attribute_body";
 value interf = Grammar.Entry.create gram "interf";
 value implem = Grammar.Entry.create gram "implem";
 value top_phrase = Grammar.Entry.create gram "top_phrase";
@@ -49,6 +50,8 @@ value sig_item = Grammar.Entry.create gram "sig_item";
 value str_item = Grammar.Entry.create gram "str_item";
 value functor_parameter = Grammar.Entry.create gram "functor_parameter";
 value module_type = Grammar.Entry.create gram "module_type";
+value longident = Grammar.Entry.create gram "longident";
+value extended_longident = Grammar.Entry.create gram "extended_longident";
 value module_expr = Grammar.Entry.create gram "module_expr";
 value expr = Grammar.Entry.create gram "expr";
 value patt = Grammar.Entry.create gram "patt";
@@ -56,6 +59,8 @@ value ipatt = Grammar.Entry.create gram "ipatt";
 value ctyp = Grammar.Entry.create gram "ctyp";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_decl = Grammar.Entry.create gram "type_declaration";
+value type_extension = Grammar.Entry.create gram "type_extension";
+value extension_constructor = Grammar.Entry.create gram "extension_constructor";
 value match_case = Grammar.Entry.create gram "match_case";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";
@@ -68,6 +73,11 @@ value class_sig_item = Grammar.Entry.create gram "class_sig_item";
 value class_str_item = Grammar.Entry.create gram "class_str_item";
 value class_type = Grammar.Entry.create gram "class_type";
 value class_expr = Grammar.Entry.create gram "class_expr";
+value class_expr_simple = Grammar.Entry.create gram "class_expr_simple";
+
+value alg_attribute = Grammar.Entry.create gram "alg_attribute";
+value alg_attributes = Grammar.Entry.create gram "alg_attributes";
+value ext_attributes = Grammar.Entry.create gram "ext_attributes";
 
 value parse_interf = ref (Grammar.Entry.parse interf);
 value parse_implem = ref (Grammar.Entry.parse implem);
@@ -416,6 +426,7 @@ value pr_patt = Eprinter.make "patt";
 value pr_ctyp = Eprinter.make "type";
 value pr_str_item = Eprinter.make "str_item";
 value pr_sig_item = Eprinter.make "sig_item";
+value pr_longident = Eprinter.make "longident";
 value pr_module_expr = Eprinter.make "module_expr";
 value pr_module_type = Eprinter.make "module_type";
 value pr_class_sig_item = Eprinter.make "class_sig_item";
@@ -426,7 +437,7 @@ value pr_expr_fun_args = ref Extfun.empty;
 
 value flag_comments_in_phrases = ref True;
 value flag_equilibrate_cases = ref False;
-value flag_compatible_old_versions_of_ocaml = ref False;
+value flag_expand_letop_syntax = ref False ;
 
 value inter_phrases = ref None;
 
@@ -499,6 +510,15 @@ value unvala x =
     | Ploc.VaAnt a -> failwith ("unexpected antiquotation value " ^ a) ]
   END
 ;
+value vala_it f x =
+  IFNDEF STRICT THEN ignore(f x)
+  ELSE
+    match x with
+    [ Ploc.VaVal x ->  ignore (f x)
+    | Ploc.VaAnt a -> () ]
+  END
+;
+
 value vala_map f x =
   IFNDEF STRICT THEN f x
   ELSE

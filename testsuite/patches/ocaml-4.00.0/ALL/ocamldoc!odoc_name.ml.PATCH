@@ -1,0 +1,28 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamldoc/odoc_name.ml	2012-06-20 22:46:28.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamldoc!odoc_name.ml.INPUT	2020-02-11 13:56:49.693714265 -0800
+@@ -151,10 +151,10 @@
+     _ -> 1
+ 
+ let prefix n1 n2 =
+-  (n1 <> n2) &
++  (n1 <> n2) &&
+   (try
+     let len1 = String.length n1 in
+-    ((String.sub n2 0 len1) = n1) &
++    ((String.sub n2 0 len1) = n1) &&
+     (n2.[len1] = '.')
+   with _ -> false)
+ 
+@@ -162,10 +162,10 @@
+   let (f1,s1) = head_and_tail n1 in
+   let (f2,s2) = head_and_tail n2 in
+   if f1 = f2 then
+-    if f2 = s2 or s2 = "" then
++    if f2 = s2 || s2 = "" then
+       s2
+     else
+-      if f1 = s1 or s1 = "" then
++      if f1 = s1 || s1 = "" then
+         s2
+       else
+         get_relative_raw s1 s2

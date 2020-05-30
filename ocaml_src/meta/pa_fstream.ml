@@ -28,7 +28,7 @@ let next_fun loc =
 let rec pattern_eq_expression p e =
   match p, e with
     MLast.PaLid (_, a), MLast.ExLid (_, b) -> a = b
-  | MLast.PaUid (_, a), MLast.ExUid (_, b) -> a = b
+  | MLast.PaLong (_, MLast.LiUid (_, a)), MLast.ExUid (_, b) -> a = b
   | MLast.PaApp (_, p1, p2), MLast.ExApp (_, e1, e2) ->
       pattern_eq_expression p1 e1 && pattern_eq_expression p2 e2
   | MLast.PaTup (_, pl), MLast.ExTup (_, el) ->
@@ -47,7 +47,7 @@ let stream_pattern_component skont =
     SpTrm (loc, p, wo) ->
       let p =
         MLast.PaApp
-          (loc, MLast.PaUid (loc, "Some"),
+          (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")),
            MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)]))
       in
       if wo = None && pattern_eq_expression p skont then
@@ -59,7 +59,7 @@ let stream_pattern_component skont =
   | SpNtr (loc, p, e) ->
       let p =
         MLast.PaApp
-          (loc, MLast.PaUid (loc, "Some"),
+          (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")),
            MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)]))
       in
       if pattern_eq_expression p skont then
@@ -69,12 +69,12 @@ let stream_pattern_component skont =
           (loc, MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n)),
            [p, None, skont; MLast.PaAny loc, None, MLast.ExUid (loc, "None")])
   | SpStr (loc, p) ->
-      MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n)], skont)
+      MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n), []], skont)
   | SpWhn (loc, e) -> MLast.ExIfe (loc, e, skont, MLast.ExUid (loc, "None"))
   | SpCut loc ->
       MLast.ExMat
         (loc, skont,
-         [MLast.PaUid (loc, "None"), None,
+         [MLast.PaLong (loc, MLast.LiUid (loc, "None")), None,
           MLast.ExApp
             (loc, MLast.ExLid (loc, "raise"),
              MLast.ExAcc
@@ -96,7 +96,8 @@ let rec stream_pattern loc epo e =
                    MLast.ExAcc
                      (loc, MLast.ExUid (loc, "Fstream"),
                       MLast.ExLid (loc, "count")),
-                   MLast.ExLid (loc, strm_n))],
+                   MLast.ExLid (loc, strm_n)),
+                []],
                e)
         | None -> e
       in
@@ -120,10 +121,11 @@ let rec parser_cases loc =
              [MLast.PaAli
                 (loc,
                  MLast.PaApp
-                   (loc, MLast.PaUid (loc, "Some"), MLast.PaAny loc),
+                   (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")),
+                    MLast.PaAny loc),
                  MLast.PaLid (loc, "x")),
               None, MLast.ExLid (loc, "x");
-              MLast.PaUid (loc, "None"), None, pc])
+              MLast.PaLong (loc, MLast.LiUid (loc, "None")), None, pc])
 ;;
 
 let cparser_match loc me bpo pc =
@@ -139,7 +141,8 @@ let cparser_match loc me bpo pc =
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Fstream"),
                   MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            pc)
     | None -> pc
   in
@@ -148,11 +151,9 @@ let cparser_match loc me bpo pc =
      [MLast.PaTyc
         (loc, MLast.PaLid (loc, strm_n),
          MLast.TyApp
-           (loc,
-            MLast.TyAcc
-              (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+           (loc, MLast.TyAcc (loc, MLast.LiUid (loc, "Fstream"), "t"),
             MLast.TyAny loc)),
-      me],
+      me, []],
      e)
 ;;
 
@@ -169,7 +170,8 @@ let cparser loc bpo pc =
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Fstream"),
                   MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            e)
     | None -> e
   in
@@ -177,9 +179,7 @@ let cparser loc bpo pc =
     MLast.PaTyc
       (loc, MLast.PaLid (loc, strm_n),
        MLast.TyApp
-         (loc,
-          MLast.TyAcc
-            (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+         (loc, MLast.TyAcc (loc, MLast.LiUid (loc, "Fstream"), "t"),
           MLast.TyAny loc))
   in
   MLast.ExFun (loc, [p, None, e])
@@ -187,7 +187,9 @@ let cparser loc bpo pc =
 
 (* streams *)
 
-let slazy loc x = MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, x]);;
+let slazy loc x =
+  MLast.ExFun (loc, [MLast.PaLong (loc, MLast.LiUid (loc, "()")), None, x])
+;;
 
 let rec cstream loc =
   function
@@ -238,7 +240,8 @@ let patt_expr_of_patt p =
   let loc = MLast.loc_of_patt p in
   match p with
     MLast.PaLid (_, x) -> p, MLast.ExLid (loc, x)
-  | MLast.PaApp (_, MLast.PaUid (_, _), MLast.PaLid (_, x)) ->
+  | MLast.PaApp
+      (_, MLast.PaLong (_, MLast.LiUid (_, _)), MLast.PaLid (_, x)) ->
       MLast.PaLid (loc, x), MLast.ExLid (loc, x)
   | MLast.PaAli (_, _, MLast.PaLid (_, x)) ->
       MLast.PaLid (loc, x), MLast.ExLid (loc, x)
@@ -333,7 +336,7 @@ let mstream_pattern_component m skont =
   | SpCut loc ->
       MLast.ExMat
         (loc, skont,
-         [MLast.PaUid (loc, "None"), None,
+         [MLast.PaLong (loc, MLast.LiUid (loc, "None")), None,
           MLast.ExApp
             (loc, MLast.ExLid (loc, "raise"),
              MLast.ExAcc
@@ -363,7 +366,8 @@ let rec mstream_pattern loc m (spcl, epo, e) =
                 (loc,
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
-                 MLast.ExLid (loc, strm_n))],
+                 MLast.ExLid (loc, strm_n)),
+              []],
              e)
       | None -> e
       end
@@ -412,7 +416,8 @@ let mparser_match loc m me bpo pc =
               (loc,
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            pc)
     | None -> pc
   in
@@ -425,10 +430,9 @@ let mparser_match loc m me bpo pc =
      [MLast.PaTyc
         (loc, p,
          MLast.TyApp
-           (loc,
-            MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),
+           (loc, MLast.TyAcc (loc, MLast.LiUid (loc, m), "t"),
             MLast.TyAny loc)),
-      me],
+      me, []],
      e)
 ;;
 
@@ -444,7 +448,8 @@ let mparser loc m bpo pc =
               (loc,
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, strm_n))],
+               MLast.ExLid (loc, strm_n)),
+            []],
            e)
     | None -> e
   in
@@ -452,15 +457,14 @@ let mparser loc m bpo pc =
     MLast.PaTyc
       (loc, MLast.PaLid (loc, strm_n),
        MLast.TyApp
-         (loc,
-          MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),
-          MLast.TyAny loc))
+         (loc, MLast.TyAcc (loc, MLast.LiUid (loc, m), "t"), MLast.TyAny loc))
   in
   MLast.ExFun (loc, [p, None, e])
 ;;
 
 Grammar.safe_extend
-  (let _ = (expr : 'expr Grammar.Entry.e) in
+  (let _ = (expr : 'expr Grammar.Entry.e)
+   and _ = (ext_attributes : 'ext_attributes Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in
@@ -483,17 +487,24 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "match")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "match")))
+                            (Grammar.s_nterm
+                               (ext_attributes :
+                                'ext_attributes Grammar.Entry.e)))
                          Grammar.s_self)
                       (Grammar.s_token ("", "with")))
                    (Grammar.s_token ("", "bparser")))
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
-                (loc : Ploc.t) ->
-              (mparser_match loc "Fstream" e po [pc] : 'expr)));
+           "1154dceb",
+           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (mparser_match loc "Fstream" e po [pc])
+                 ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -502,8 +513,12 @@ Grammar.safe_extend
                       (Grammar.r_next
                          (Grammar.r_next
                             (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "match")))
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_token ("", "match")))
+                                  (Grammar.s_nterm
+                                     (ext_attributes :
+                                      'ext_attributes Grammar.Entry.e)))
                                Grammar.s_self)
                             (Grammar.s_token ("", "with")))
                          (Grammar.s_token ("", "bparser")))
@@ -515,9 +530,12 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
-                (e : 'expr) _ (loc : Ploc.t) ->
-              (mparser_match loc "Fstream" e po pcl : 'expr)));
+                (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (mparser_match loc "Fstream" e po pcl)
+                 ext attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -526,6 +544,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
+           "1154dceb",
            (fun (pc : 'parser_case) (po : 'ipatt option) _ (loc : Ploc.t) ->
               (mparser loc "Fstream" po [pc] : 'expr)));
         Grammar.production
@@ -543,6 +562,7 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
                 (loc : Ploc.t) ->
               (mparser loc "Fstream" po pcl : 'expr)));
@@ -552,17 +572,24 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "match")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "match")))
+                            (Grammar.s_nterm
+                               (ext_attributes :
+                                'ext_attributes Grammar.Entry.e)))
                          Grammar.s_self)
                       (Grammar.s_token ("", "with")))
                    (Grammar.s_token ("", "fparser")))
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
-                (loc : Ploc.t) ->
-              (cparser_match loc e po [pc] : 'expr)));
+           "1154dceb",
+           (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr)
+                (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (cparser_match loc e po [pc]) ext
+                 attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -571,8 +598,12 @@ Grammar.safe_extend
                       (Grammar.r_next
                          (Grammar.r_next
                             (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "match")))
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_token ("", "match")))
+                                  (Grammar.s_nterm
+                                     (ext_attributes :
+                                      'ext_attributes Grammar.Entry.e)))
                                Grammar.s_self)
                             (Grammar.s_token ("", "with")))
                          (Grammar.s_token ("", "fparser")))
@@ -584,9 +615,12 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
-                (e : 'expr) _ (loc : Ploc.t) ->
-              (cparser_match loc e po pcl : 'expr)));
+                (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
+              (Pa_r.expr_to_inline loc (cparser_match loc e po pcl) ext
+                 attrs :
+               'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -595,6 +629,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
+           "1154dceb",
            (fun (pc : 'parser_case) (po : 'ipatt option) _ (loc : Ploc.t) ->
               (cparser loc po [pc] : 'expr)));
         Grammar.production
@@ -612,6 +647,7 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
+           "1154dceb",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
                 (loc : Ploc.t) ->
               (cparser loc po pcl : 'expr)))]];
@@ -632,13 +668,15 @@ Grammar.safe_extend
                       (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
                 (Grammar.s_token ("", "->")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) _ (po : 'ipatt option) _ (sp : 'stream_patt) _
                 (loc : Ploc.t) ->
               (sp, po, e : 'parser_case)))]];
     Grammar.extension (stream_patt : 'stream_patt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, (fun (loc : Ploc.t) -> ([] : 'stream_patt)));
+          (Grammar.r_stop, "1154dceb",
+           (fun (loc : Ploc.t) -> ([] : 'stream_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -650,6 +688,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e))
                 (Grammar.s_token ("", ";")) false),
+           "1154dceb",
            (fun (sp : 'stream_patt_comp list) _ (spc : 'stream_patt_comp)
                 (loc : Ploc.t) ->
               (spc :: sp : 'stream_patt)));
@@ -657,6 +696,7 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e)),
+           "1154dceb",
            (fun (spc : 'stream_patt_comp) (loc : Ploc.t) ->
               ([spc] : 'stream_patt)))]];
     Grammar.extension (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e)
@@ -664,16 +704,19 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")),
+           "1154dceb",
            (fun _ (loc : Ploc.t) -> (SpCut loc : 'stream_patt_comp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "when")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) _ (loc : Ploc.t) ->
               (SpWhn (loc, e) : 'stream_patt_comp)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
+           "1154dceb",
            (fun (p : 'patt) (loc : Ploc.t) ->
               (SpStr (loc, p) : 'stream_patt_comp)));
         Grammar.production
@@ -683,6 +726,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) _ (p : 'patt) (loc : Ploc.t) ->
               (SpNtr (loc, p, e) : 'stream_patt_comp)));
         Grammar.production
@@ -697,13 +741,16 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "when")))
                          (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+                       "1154dceb",
                        (fun (e : 'expr) _ (loc : Ploc.t) -> (e : 'e__1)))])),
+           "1154dceb",
            (fun (eo : 'e__1 option) (p : 'patt) _ (loc : Ploc.t) ->
               (SpTrm (loc, p, eo) : 'stream_patt_comp)))]];
     Grammar.extension (ipatt : 'ipatt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           "1154dceb",
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.PaLid (loc, i) : 'ipatt)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
@@ -721,6 +768,7 @@ Grammar.safe_extend
                       (stream_expr_comp : 'stream_expr_comp Grammar.Entry.e))
                    (Grammar.s_token ("", ";")) false))
              (Grammar.s_token ("", ":]")),
+           "1154dceb",
            (fun _ (se : 'stream_expr_comp list) _ _ (loc : Ploc.t) ->
               (cstream loc se : 'expr)))]];
     Grammar.extension (stream_expr_comp : 'stream_expr_comp Grammar.Entry.e)
@@ -729,11 +777,13 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) (loc : Ploc.t) ->
               (SeNtr (loc, e) : 'stream_expr_comp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "`")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+           "1154dceb",
            (fun (e : 'expr) _ (loc : Ploc.t) ->
               (SeTrm (loc, e) : 'stream_expr_comp)))]]]);;

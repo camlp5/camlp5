@@ -1,0 +1,29 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/toplevel/genprintval.ml	2012-07-10 07:54:19.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/toplevel!genprintval.ml.INPUT	2020-02-11 21:15:19.800280242 -0800
+@@ -81,7 +81,7 @@
+       else []
+ 
+     let outval_of_untyped_exception bucket =
+-      let name = (O.obj(O.field(O.field bucket 0) 0) : string) in
++      let name : string = O.obj(O.field(O.field bucket 0) 0) in
+       let args =
+         if (name = "Match_failure"
+             || name = "Assert_failure"
+@@ -260,7 +260,7 @@
+ 		    in
+                     let ty_args =
+                       List.map
+-                        (function ty ->
++                        (fun ty ->
+                            try Ctype.apply env type_params ty ty_list with
+                              Ctype.Cannot_apply -> abstract_type)
+                         constr_args in
+@@ -346,7 +346,7 @@
+         Oval_constr (lid, args)
+ 
+     and tree_of_exception depth bucket =
+-      let name = (O.obj(O.field(O.field bucket 0) 0) : string) in
++      let name : string = O.obj(O.field(O.field bucket 0) 0) in
+       let lid = Longident.parse name in
+       try
+         (* Attempt to recover the constructor description for the exn

@@ -17,6 +17,25 @@ value not_impl name x = do {
   failwith ("pa_extfun: not impl " ^ name ^ " " ^ desc)
 };
 
+value rec mlongid li acc =
+  let loc = MLast.loc_of_longid li in
+  match li with [
+    <:extended_longident< $uid:id$ >> ->
+      <:expr< [(Extfun.Econ $str:id$) :: $acc$] >>
+
+  | <:extended_longident< $longid:li$ . $uid:id$ >> ->
+      mlongid li <:expr< [(Extfun.Econ $str:id$) :: $acc$] >>
+  | <:extended_longident< $longid:_$ ( $longid:_$ ) >> -> failwith "mlongid: LiApp not allowed"
+  | _ -> assert False
+  ]
+;
+
+value rec conv_list f loc =
+  fun
+  [ [] -> <:expr< [] >>
+  | [e :: el] -> <:expr< [$f e$ :: $conv_list f loc el$] >> ]
+;
+
 value rec mexpr p =
   let loc = MLast.loc_of_patt p in
   match p with
@@ -25,26 +44,27 @@ value rec mexpr p =
         fun
         [ <:patt< $p1$ $p2$ >> -> loop <:expr< [$mexpr p2$ :: $el$] >> p1
         | p -> <:expr< Extfun.Eapp [$mexpr p$ :: $el$] >> ]
-  | <:patt< $p1$ . $p2$ >> ->
-      loop <:expr< [$mexpr p2$] >> p1 where rec loop el =
-        fun
-        [ <:patt< $p1$ . $p2$ >> -> loop <:expr< [$mexpr p2$ :: $el$] >> p1
-        | p -> <:expr< Extfun.Eacc [$mexpr p$ :: $el$] >> ]
-  | <:patt< ($list:pl$) >> -> <:expr< Extfun.Etup $mexpr_list loc pl$ >>
-  | <:patt< $uid:id$ >> -> <:expr< Extfun.Econ $str:id$ >>
+  | <:patt< $longid:li$ . $p$ >> ->
+      let l = mlongid li <:expr< [$mexpr p$] >> in
+      <:expr< Extfun.Eacc $l$ >>
+
+  | <:patt< $longid:li$ >> ->
+      let l = mlongid li <:expr< [] >> in
+      <:expr< Extfun.Eacc $l$ >>
+
+  | <:patt< ($list:pl$) >> -> <:expr< Extfun.Etup $conv_list mexpr loc pl$ >>
   | <:patt< ` $id$ >> -> <:expr< Extfun.Econ $str:id$ >>
   | <:patt< $int:s$ >> -> <:expr< Extfun.Eint $str:s$ >>
   | <:patt< $str:s$ >> -> <:expr< Extfun.Estr $str:s$ >>
   | <:patt< ($p1$ as $_$) >> -> mexpr p1
   | <:patt< $lid:_$ >> -> <:expr< Extfun.Evar () >>
   | <:patt< _ >> -> <:expr< Extfun.Evar () >>
+  | <:patt< { $list:l$ } >> -> 
+    let mpair (p1,p2) = <:expr< ( $mexpr p1$, $mexpr p2$ ) >> in
+    <:expr< Extfun.Erec $conv_list mpair loc l$ >>
   | <:patt< $p1$ | $p2$ >> ->
       Ploc.raise loc (Failure "or patterns not allowed in extfun")
   | p -> not_impl "mexpr" p ]
-and mexpr_list loc =
-  fun
-  [ [] -> <:expr< [] >>
-  | [e :: el] -> <:expr< [$mexpr e$ :: $mexpr_list loc el$] >> ]
 ;
 
 value rec catch_any =
@@ -54,6 +74,7 @@ value rec catch_any =
   | <:patt< $lid:_$ >> -> True
   | <:patt< _ >> -> True
   | <:patt< ($list:pl$) >> -> List.for_all catch_any pl
+  | <:patt< { $list:lpl$ } >> -> List.for_all (fun (_, p) -> catch_any p) lpl
   | <:patt< $p1$ $p2$ >> -> False
   | <:patt< $p1$ | $p2$ >> -> False
   | <:patt< $int:_$ >> -> False

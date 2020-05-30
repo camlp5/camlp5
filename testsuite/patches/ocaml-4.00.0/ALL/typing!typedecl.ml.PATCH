@@ -1,0 +1,23 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/typing/typedecl.ml	2012-06-14 03:47:30.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/typing!typedecl.ml.INPUT	2020-02-11 21:30:24.457099773 -0800
+@@ -939,7 +939,7 @@
+   if arity_ok then
+     List.iter2 (Ctype.unify_var env) params orig_decl.type_params;
+   let constraints = List.map
+-    (function (ty, ty', loc) ->
++    (fun (ty, ty', loc) ->
+        try
+ 	 let cty = transl_simple_type env false ty in
+ 	 let cty' = transl_simple_type env false ty' in
+@@ -1106,9 +1106,9 @@
+         (fun ppf -> fprintf ppf "is not compatible with type")
+   | Type_clash trace ->
+       Printtyp.report_unification_error ppf trace
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "This type constructor expands to type")
+-        (function ppf ->
++        (fun ppf ->
+            fprintf ppf "but is used here with type")
+   | Null_arity_external ->
+       fprintf ppf "External identifiers must be functions"

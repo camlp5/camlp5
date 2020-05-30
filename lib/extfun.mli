@@ -30,6 +30,7 @@ and patt =
   | Estr of string
   | Eint of string
   | Etup of list patt
+  | Erec of list (patt * patt)
   | Evar of unit ]
 and expr 'a 'b = 'a -> option 'b;
 

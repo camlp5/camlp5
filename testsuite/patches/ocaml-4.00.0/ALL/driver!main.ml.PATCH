@@ -1,0 +1,10 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/driver/main.ml	2012-05-30 06:29:48.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/driver!main.ml.INPUT	2020-02-10 14:11:50.393512377 -0800
+@@ -209,5 +209,6 @@
+   with x ->
+     Errors.report_error ppf x;
+     exit 2
++;;
+ 
+-let _ = main ()
++main () ;;

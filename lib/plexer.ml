@@ -6,20 +6,20 @@
 
 open Versdep;
 
+value simplest_raw_strings = ref False ;
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
 
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
-value dot_newline_is = ref ".";
 
 value force_antiquot_loc = ref False;
 
 type context =
   { after_space : mutable bool;
+    simplest_raw_strings : bool ;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
-    dot_newline_is : string;
     find_kwd : string -> string;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
@@ -113,12 +113,17 @@ value rec ident =
   [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | misc_letter ] ident! | ]
 ;
 
-value rec ident2 =
+value rec ident2_or other =
   lexer
   [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-      '%' | '.' | ':' | '<' | '>' | '|' | '$' | misc_punct ]
-      ident2!
+      '%' | '.' | ':' | '<' | '>' | '|' | '$' | other | misc_punct ]
+      (ident2_or other)!
   | ]
+;
+
+value ident2 = ident2_or (fun buf strm -> raise Stream.Failure)
+;
+value hash_follower_chars = ident2_or (lexer [ '#' ])
 ;
 
 value rec ident3 =
@@ -175,6 +180,48 @@ value number =
   | decimal_digits_under end_integer! ]
 ;
 
+(*
+let hex_float_literal =
+  '0' ['x' 'X']
+  ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
+  ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
+  (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+let literal_modifier = ['G'-'Z' 'g'-'z']
+
+let hex_float_literal =
+  '0' ['x' 'X']
+  ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
+  ('.' ['0'-'9' 'A'-'F' 'a'-'f' '_']* )?
+  (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
+let literal_modifier = ['G'-'Z' 'g'-'z']
+*)
+
+(* hex_digits* *)
+value rec hex_digits_under_star =
+  lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' | '_' ] hex_digits_under_star! | ]
+;
+value rec hex_under_integer =
+  lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' ] hex_digits_under_star ]
+;
+value rec decimal_under_integer =
+  lexer [ [ '0'-'9' | ] decimal_digits_under! ]
+;
+
+value hex_exponent_part =
+  lexer
+  [ [ 'p' | 'P' ] [ '+' | '-' | ]
+    decimal_under_integer! ]
+;
+
+value hex_number =
+  lexer
+  [ hex_under_integer '.' hex_digits_under_star! hex_exponent_part -> ("FLOAT", $buf)
+  | hex_under_integer '.' hex_digits_under_star! -> ("FLOAT", $buf)
+  | hex_under_integer hex_exponent_part -> ("FLOAT", $buf)
+  | hex_under_integer exponent_part -> ("FLOAT", $buf)
+  | hex_under_integer end_integer! ]
+;
+
 value char_after_bslash =
   lexer
   [ "'"/
@@ -192,27 +239,21 @@ value any ctx buf =
   parser bp [: `c :] -> do { ctx.line_cnt bp c; $add c }
 ;
 
+value rec skiplws = lexer [
+  ' '/ skiplws!
+| '\t'/ skiplws!
+|
+]
+;
+
 value rec string ctx bp =
   lexer
   [ "\""/
+  | "\\"/ ?= [ "\n" ] "\n"/ skiplws! (string ctx bp)!
+  | "\\"/ ?= [ "\n" | " " ] (any ctx) (string ctx bp)!
   | "\\" (any ctx) (string ctx bp)!
   | (any ctx) (string ctx bp)!
   | -> err ctx (bp, $pos) "string not terminated" ]
-;
-
-value comment ctx bp =
-  comment where rec comment =
-    lexer
-    [ "*)"
-    | "*" comment!
-    | "(*" comment! comment!
-    | "(" comment!
-    | "\"" (string ctx bp)! [ -> $add "\"" ] comment!
-    | "'*)"
-    | "'*" comment!
-    | "'" (any ctx) comment!
-    | (any ctx) comment!
-    | -> err ctx (bp, $pos) "comment not terminated" ]
 ;
 
 value rec quotation ctx bp =
@@ -386,28 +427,29 @@ value rec any_to_nl =
   | ]
 ;
 
-value rec rawstring1 (ofs, delim) ctx buf =
+value rec rawstring1 delimtok (ofs, delim) ctx buf =
   parser bp [: `c ; strm :] -> do {
     ctx.line_cnt bp c;
     let buf = $add c in
     if String.get delim ofs <> c then
-      if String.get delim 0 = c then
-        rawstring1 (1, delim) ctx buf strm
-      else 
-        rawstring1 (0, delim) ctx buf strm
+       if String.get delim 0 = c then
+         rawstring1 delimtok (1, delim) ctx buf strm
+       else
+         rawstring1 delimtok (0, delim) ctx buf strm
     else if ofs+1 < String.length delim then
-      rawstring1 (ofs+1, delim) ctx buf strm
+      rawstring1 delimtok (ofs+1, delim) ctx buf strm
     else
       let s = $buf in
-      let slen = String.length s in
-      ("STRING", String.escaped (String.sub s 0 (slen - (String.length delim))))
+      let slen = String.length s in do {
+      (delimtok, String.sub s 0 (slen - (String.length delim)))
+      }
   }
 ;
 
 value rec rawstring0 ctx bp buf =
   parser bp [
     [: `'|' ; strm :] -> do {
-      rawstring1 (0, "|" ^ $buf ^ "}") ctx $empty strm
+      rawstring1 $buf (0, "|" ^ $buf ^ "}") ctx $empty strm
     }
   | [: `('a'..'z' | '_' as c) ; strm :] -> do {
       rawstring0 ctx bp ($add c) strm
@@ -415,33 +457,110 @@ value rec rawstring0 ctx bp buf =
   ]
 ;
 
+value add_string buf s =
+  let slen = String.length s in
+  let rec addrec buf i =
+    if i = slen then buf
+    else addrec ($add (String.get s i)) (i+1)
+  in addrec buf 0
+;
+
 (*
- * predicate checks that the stream contains "[:alpha:]+|", and it gets
- * called when the main lexer has already seen a "{".  To check for at least
- * one alpha, require that the offset of the "|" be > 1 (which means that
- * offset 1 must be [:alpha:].
- *
- * The further check for alpha here is unnecessary, since the main lexer will
- * NOT call this function in the case where the input is "{|" (because that's
- * a valid token, and precedes the branch where this code is invoked.
+ * This predicate checks that the stream contains a valid raw-string starter.  
+ * The definition of "valid raw string starter" depends on the value of 
+ * the variable [simplest_raw_strings]: if it is [False], then a valid
+ * raw-string starter is "[:alpha:]+|"; if it is [True], a valid raw-string
+ * starter is "[:alpha:]*|".  [simplest_raw_strings] is set to True in
+ * original syntax.
+
+ * This predicate gets called when the main lexer has already seen a "{".
 *)
-value raw_string_starter_p strm =
+value raw_string_starter_p ctx strm =
   let rec predrec n =
     match stream_peek_nth n strm with
       [ None -> False
       | Some ('a'..'z' | '_') ->
          predrec (n+1)
-      | Some '|' when n > 1 -> True
+      | Some '|' when ctx.simplest_raw_strings || n > 1 -> True
       | Some _ -> False ]
   in predrec 1
 ;
 
+value comment_rawstring ctx bp (buf : Plexing.Lexbuf.t) strm =
+  if not (raw_string_starter_p ctx strm) then
+    buf
+  else
+  let (delim, s) = rawstring0 ctx bp $empty strm in
+  let rs = Printf.sprintf "{%s|%s|%s}" delim s delim in
+  add_string buf rs
+;
+
+value comment ctx bp =
+  comment where rec comment =
+    lexer
+    [ "*)"
+    | "*" comment!
+    | "{" (comment_rawstring ctx bp)! comment!
+    | "(*" comment! comment!
+    | "(" comment!
+    | "\"" (string ctx bp)! [ -> $add "\"" ] comment!
+    | "'*)"
+    | "'*" comment!
+    | "'" (any ctx) comment!
+    | (any ctx) comment!
+    | -> err ctx (bp, $pos) "comment not terminated" ]
+;
+
 value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
-  if not (raw_string_starter_p strm) then
+  if not (raw_string_starter_p ctx strm) then
     keyword_or_error ctx loc "{"
   else
-    rawstring0 ctx bp $empty strm
+    let (delim, s) = rawstring0 ctx bp $empty strm in
+    ("STRING", String.escaped s)
 ;
+
+value dotsymbolchar = lexer
+  [ '!' | '$' | '%' | '&' | '*' | '+' | '-' | '/' | ':' | '=' | '>' | '?' | '@' | '^' | '|' ]
+;
+value rec dotsymbolchar_star = lexer
+  [ dotsymbolchar dotsymbolchar_star | ]
+;
+value kwdopchar = lexer
+  [ '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|' ]
+;
+
+value symbolchar = lexer
+  ['!' | '$' | '%' | '&' | '*' | '+' | '-' | '.' | '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~']
+;
+value rec symbolchar_star = lexer
+  [ symbolchar symbolchar_star | ]
+;
+
+value word_operators ctx id = lexer
+  [ [ kwdopchar dotsymbolchar_star ->
+      ("", id ^ $buf)
+    | -> try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+    ] ]
+;
+value keyword = fun ctx buf strm ->
+  let id = $buf in
+  if id = "let" || id = "and" then word_operators ctx id $empty strm
+  else
+    try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+;
+
+value dot ctx (bp, pos) buf strm =
+  match Stream.peek strm with [
+    None ->
+      let id =
+        if ctx.specific_space_dot && ctx.after_space then " ." else "."
+      in
+      keyword_or_error ctx (bp, pos) id
+
+  | _ -> match strm with lexer [ [ -> $add "." ] dotsymbolchar_star! -> keyword_or_error ctx (bp, $pos) $buf ]
+  ]
+;
+
 
 value next_token_after_spaces ctx bp =
   lexer
@@ -449,12 +568,10 @@ value next_token_after_spaces ctx bp =
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
   | greek_letter ident! -> ("GIDENT", $buf)
-  | [ 'a'-'z' | '_' | misc_letter ] ident! ->
-      let id = $buf in
-      try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+  | [ 'a'-'z' | '_' | misc_letter ] ident! (keyword ctx)
   | '1'-'9' number!
   | "0" [ 'o' | 'O' ] (digits octal)!
-  | "0" [ 'x' | 'X' ] (digits hexa)!
+  | "0" [ 'x' | 'X' ] (hex_number)!
   | "0" [ 'b' | 'B' ] (digits binary)!
   | "0" number!
   | "'"/ ?= [ '\\' 'a'-'z' 'a'-'z' ] -> keyword_or_error ctx (bp, $pos) "'"
@@ -482,17 +599,22 @@ value next_token_after_spaces ctx bp =
   | "|}" -> keyword_or_error ctx (bp, $pos) $buf
   | "|" ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "[" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
+  | "[@" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[@@" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[@@@" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[%" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[%%" -> keyword_or_error ctx (bp, $pos) $buf
   | "[|" -> keyword_or_error ctx (bp, $pos) $buf
   | "[<" -> keyword_or_error ctx (bp, $pos) $buf
   | "[:" -> keyword_or_error ctx (bp, $pos) $buf
   | "[" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
-  | "{|" -> keyword_or_error ctx (bp, $pos) $buf
   | "{<" -> keyword_or_error ctx (bp, $pos) $buf
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
-  | "." ?= [ "\n" ] -> keyword_or_error ctx (bp, bp + 1) ctx.dot_newline_is
+  | "." dotsymbolchar symbolchar_star ->
+      keyword_or_error ctx (bp, $pos) $buf
   | "." ->
       let id =
         if ctx.specific_space_dot && ctx.after_space then " ." else "."
@@ -503,6 +625,7 @@ value next_token_after_spaces ctx bp =
   | (utf8_equiv ctx bp)
   | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "\\"/ ident3! -> ("LIDENT", $buf)
+  | "#" hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
@@ -583,14 +706,13 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
       err ctx (Stream.count cstrm, Stream.count cstrm + 1) str ]
 ;
 
-value func kwd_table glexr =
-  let ctx =
+value make_ctx kwd_table =
     let line_nb = ref 0 in
     let bol_pos = ref 0 in
     {after_space = False;
      dollar_for_antiquotation = dollar_for_antiquotation.val;
+     simplest_raw_strings = simplest_raw_strings.val ;
      specific_space_dot = specific_space_dot.val;
-     dot_newline_is = dot_newline_is.val;
      find_kwd = Hashtbl.find kwd_table;
      line_cnt bp1 c =
        match c with
@@ -605,7 +727,9 @@ value func kwd_table glexr =
      };
      make_lined_loc loc comm =
        Ploc.make_loc Plexing.input_file.val line_nb.val bol_pos.val loc comm}
-  in
+;
+
+value func ctx kwd_table glexr =
   Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;
 
@@ -632,6 +756,11 @@ and check =
   | "|}"
   | "|" check_ident2!
   | "[" ?= [ "<<" | "<:" ]
+  | "[@"
+  | "[@@"
+  | "[@@@"
+  | "[%"
+  | "[%%"
   | "[|"
   | "[<"
   | "[:"
@@ -656,8 +785,10 @@ and check_ident2 =
     check_ident2! | ]
 ;
 
-value check_keyword s =
-  try check_keyword_stream (Stream.of_string s) with _ -> False
+value check_keyword ctx s =
+  if ctx.simplest_raw_strings && (s = "{|" || s = "|}") then False
+  else
+    try check_keyword_stream (Stream.of_string s) with _ -> False
 ;
 
 value error_no_respect_rules p_con p_prm =
@@ -670,11 +801,11 @@ value error_no_respect_rules p_con p_prm =
           " does not respect Plexer rules"))
 ;
 
-value using_token kwd_table (p_con, p_prm) =
+value using_token ctx kwd_table (p_con, p_prm) =
   match p_con with
   [ "" ->
       if not (hashtbl_mem kwd_table p_prm) then
-        if check_keyword p_prm then Hashtbl.add kwd_table p_prm p_prm
+        if check_keyword ctx p_prm then Hashtbl.add kwd_table p_prm p_prm
         else error_no_respect_rules p_con p_prm
       else ()
   | "LIDENT" ->
@@ -795,14 +926,15 @@ value tok_match =
 
 value gmake () =
   let kwd_table = Hashtbl.create 301 in
+  let ctx = make_ctx kwd_table in
   let glexr =
     ref
      {Plexing.tok_func = fun []; tok_using = fun []; tok_removing = fun [];
       tok_match = fun []; tok_text = fun []; tok_comm = None}
   in
   let glex =
-    {Plexing.tok_func = func kwd_table glexr;
-     tok_using = using_token kwd_table;
+    {Plexing.tok_func = func ctx kwd_table glexr;
+     tok_using = using_token ctx kwd_table;
      tok_removing = removing_token kwd_table;
      tok_match = tok_match; tok_text = text; tok_comm = None}
   in

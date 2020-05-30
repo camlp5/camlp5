@@ -1,0 +1,56 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/debugger/main.ml	2012-05-30 06:29:48.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/debugger!main.ml.INPUT	2020-02-11 10:46:47.260675585 -0800
+@@ -40,7 +40,7 @@
+     loop ppf
+   with
+   | End_of_file ->
+-      protect ppf restart (function ppf ->
++      protect ppf restart (fun ppf ->
+         forget_process
+           !current_checkpoint.c_fd
+           !current_checkpoint.c_pid;
+@@ -48,14 +48,14 @@
+         stop_user_input ();
+         restart ppf)
+   | Toplevel ->
+-      protect ppf restart (function ppf ->
++      protect ppf restart (fun ppf ->
+         pp_print_flush ppf ();
+         stop_user_input ();
+         restart ppf)
+   | Sys.Break ->
+-      protect ppf restart (function ppf ->
++      protect ppf restart (fun ppf ->
+         fprintf ppf "Interrupted.@.";
+-        Exec.protect (function () ->
++        Exec.protect (fun () ->
+           stop_user_input ();
+           if !loaded then begin
+             try_select_frame 0;
+@@ -63,7 +63,7 @@
+           end);
+         restart ppf)
+   | Current_checkpoint_lost ->
+-      protect ppf restart (function ppf ->
++      protect ppf restart (fun ppf ->
+         fprintf ppf "Trying to recover...@.";
+         stop_user_input ();
+         recover ();
+@@ -71,7 +71,7 @@
+         show_current_event ppf;
+         restart ppf)
+   | Current_checkpoint_lost_start_at (time, init_duration) ->
+-      protect ppf restart (function ppf ->
++      protect ppf restart (fun ppf ->
+         let b =
+           if !current_duration = -1L then begin
+             let msg = sprintf "Restart from time %Ld and try to get closer of the problem" time in
+@@ -229,6 +229,7 @@
+       Cmi_format.report_error err_formatter e;
+       eprintf "@]@.";
+       exit 2
++;;
+ 
+-let _ =
+   Printexc.catch (Unix.handle_unix_error main) ()
++;;

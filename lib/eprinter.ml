@@ -10,7 +10,7 @@ type t 'a =
     pr_levels : mutable list (pr_level 'a) }
 and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
 and pr_rule 'a =
-  Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_context -> string)
+  Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_fun 'a -> (~fail:(unit -> string) -> pr_fun 'a) -> pr_context -> string)
 and pr_fun 'a = pr_context -> 'a -> string
 and pr_context =
   Pprintf.pr_context ==
@@ -34,12 +34,6 @@ value add_lev (lab, extf) levs =
   let lev = {pr_label = lab; pr_rules = extf Extfun.empty} in
   [lev :: levs]
 ;
-
-IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_pr_rules lev pr_rules =
-    {pr_label = lev.pr_label; pr_rules = pr_rules}
-  ;
-END;
 
 value extend pr pos levs =
   match pos with
@@ -91,21 +85,26 @@ value extend pr pos levs =
       failwith "not impl EXTEND_PRINTER entry with at level parameter" ]
 ;
 
-value pr_fun name pr lab =
-  loop False pr.pr_levels where rec loop app =
-    fun
+value rec pr_fun name pr lab0 pc z =
+  let rec top prev pc z = loop "" False pr.pr_levels pc (prev, z)
+  and bottom lab prev ~{fail: unit -> string} pc z =
+    if prev = Some z then 
+          fail ()
+    else top (Some z) pc z
+  and loop lab app levl pc (prev, z) =
+    match levl with
     [ [] ->
-        fun pc z ->
           failwith
             (Printf.sprintf
                "cannot print %s%s; a missing case in camlp5; please report"
                name (if lab = "" then "" else " \"" ^ lab ^ "\""))
     | [lev :: levl] ->
         if lab = "" || app || lev.pr_label = lab then
-          let next = loop True levl in
-          curr where rec curr pc z =
-            Extfun.apply lev.pr_rules z curr next pc
-        else loop app levl ]
+          let next pc z = loop lab True levl pc (prev, z) in
+          curr pc z where rec curr pc z =
+            Extfun.apply lev.pr_rules z curr next (top None) (bottom lab prev) pc
+        else loop lab app levl pc (prev, z) ]
+  in loop lab0 False pr.pr_levels pc (None, z)
 ;
 
 value make name = do {

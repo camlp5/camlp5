@@ -1,0 +1,47 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/typing-gadts/omega07.ml	2013-04-29 22:26:57.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!typing-gadts!omega07.ml.INPUT	2020-02-15 23:18:20.096807516 -0800
+@@ -138,7 +138,7 @@
+ 
+ type (_,_) equal = Eq : ('a,'a) equal
+ 
+-let convert : type a b. (a,b) equal -> a -> b = fun Eq x -> x
++let convert : type a b. (a,b) equal -> a -> b = function Eq x -> x
+ 
+ let rec sameNat : type a b. a nat -> b nat -> (a,b) equal option = fun a b ->
+   match a, b with
+@@ -308,7 +308,7 @@
+       end
+ ;;
+ 
+-let insert x (Avl t) =
++let insert x = function (Avl t) ->
+   match ins x t with
+   | Inl t -> Avl t
+   | Inr t -> Avl t
+@@ -379,7 +379,7 @@
+       end
+ ;;
+ 
+-let delete x (Avl t) =
++let delete x = function (Avl t) ->
+   match del x t with
+   | Dsame t -> Avl t
+   | Ddecr (_, t) -> Avl t
+@@ -437,7 +437,7 @@
+   | LeftD, LeftD -> Rnode (uncle, gE, Bnode (sib, pE, t))
+   | RightD, LeftD -> Rnode (uncle, gE, Bnode (t, pE, sib))
+ ;;
+-let rotate d1 pE sib d2 gE uncle (Rnode (x, e, y)) =
++let rotate d1 pE sib d2 gE uncle = function (Rnode (x, e, y)) ->
+   match d1, d2 with
+   | RightD, RightD -> Bnode (Rnode (x,e,y), pE, Rnode (sib, gE, uncle))
+   | LeftD,  RightD -> Bnode (Rnode (sib, pE, x), e, Rnode (y, gE, uncle))
+@@ -466,7 +466,7 @@
+                 else ins e r (CBlk (e', LeftD, l, ct))
+   | Bleaf -> repair (Rnode (Bleaf, e, Bleaf)) ct
+ ;;
+-let insert e (Root t) = ins e t CNil
++let insert e = function Root t -> ins e t CNil
+ ;;
+ 
+ (* 5.7 typed object languages using GADTs *)

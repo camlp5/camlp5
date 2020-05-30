@@ -1,0 +1,38 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamldoc/odoc_cross.ml	2012-03-20 05:00:11.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamldoc!odoc_cross.ml.INPUT	2020-02-11 13:48:48.712714265 -0800
+@@ -328,7 +328,7 @@
+                None -> (acc_b, (Name.head m.m_name) :: acc_inc,
+                         (* we don't want to output warning messages for
+                            "sig ... end" or "struct ... end" modules not found *)
+-                        (if ma.ma_name = Odoc_messages.struct_end or
++                        (if ma.ma_name = Odoc_messages.struct_end ||
+                           ma.ma_name = Odoc_messages.sig_end then
+                           acc_names
+                         else
+@@ -376,7 +376,7 @@
+                 None -> (acc_b, (Name.head m.m_name) :: acc_inc,
+                    (* we don't want to output warning messages for
+                       "sig ... end" or "struct ... end" modules not found *)
+-                   (if mta.mta_name = Odoc_messages.struct_end or
++                   (if mta.mta_name = Odoc_messages.struct_end ||
+                       mta.mta_name = Odoc_messages.sig_end then
+                       acc_names
+                     else
+@@ -418,7 +418,7 @@
+                 None -> (acc_b, (Name.head mt.mt_name) :: acc_inc,
+                    (* we don't want to output warning messages for
+                       "sig ... end" or "struct ... end" modules not found *)
+-                   (if mta.mta_name = Odoc_messages.struct_end or
++                   (if mta.mta_name = Odoc_messages.struct_end ||
+                       mta.mta_name = Odoc_messages.sig_end then
+                       acc_names
+                     else
+@@ -454,7 +454,7 @@
+               None -> (acc_b_modif, (Name.head m_name) :: acc_incomplete_top_module_names,
+                        (* we don't want to output warning messages for
+                            "sig ... end" or "struct ... end" modules not found *)
+-                        (if im.im_name = Odoc_messages.struct_end or
++                        (if im.im_name = Odoc_messages.struct_end ||
+                           im.im_name = Odoc_messages.sig_end then
+                           acc_names_not_found
+                         else

@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/examples_labltk/calc.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!examples_labltk!calc.ml.INPUT	2020-02-11 16:41:01.090087191 -0800
+@@ -125,5 +125,7 @@
+ let top = openTk ()
+ 
+ let applet = new calculator ~parent:top
++;;
+ 
+-let _ = mainLoop ()
++mainLoop ()
++;;

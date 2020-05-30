@@ -1,0 +1,46 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/otherlibs/labltk/examples_camltk/tetris.ml	2011-07-27 07:17:02.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/otherlibs!labltk!examples_camltk!tetris.ml.INPUT	2020-02-11 16:39:48.095635258 -0800
+@@ -345,15 +345,11 @@
+         begin
+           try cell_set field (ix + x) (iy + y) col with _ -> ()
+         end
+-      else
+-        begin
+-        (* cell_set field (ix + x) (iy + y) 0 *) ()
+-        end;
+       base := !base lsl 1
+     done
+   done
+ 
+-let timer_ref = (ref None : Timer.t option ref)
++let timer_ref : Timer.t option ref = ref None
+ (* I know, this should be timer ref, but I'm not sure what should be
+    the initial value ... *)
+ 
+@@ -372,8 +368,8 @@
+     y= !c.y;
+     d= !c.d;
+     alive= !c.alive }
++;;
+ 
+-let _ =
+   let top = opentk () in
+   let lb = Label.create top []
+   and fw = Frame.create top []
+@@ -524,7 +520,6 @@
+               ignore (sub m)
+             end
+         end
+-    else ()
+   in
+ 
+   let image_load =
+@@ -680,5 +675,6 @@
+    Button.configure newg [Command game_init];
+    Button.configure exitg [Command (fun () -> closeTk (); exit 0)];
+    game_init ()
+-
+-let _ = Printexc.print mainLoop ()
++;;
++Printexc.print mainLoop ()
++;;

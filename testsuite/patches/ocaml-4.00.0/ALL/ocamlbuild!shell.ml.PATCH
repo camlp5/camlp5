@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamlbuild/shell.ml	2012-04-02 08:17:24.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/ocamlbuild!shell.ml.INPUT	2020-02-11 13:45:32.885714265 -0800
+@@ -41,8 +41,6 @@
+       let st = sys_command cmd in
+       if st <> 0 then
+         failwith (Printf.sprintf "Error during command `%s'.\nExit code %d.\n" cmd st)
+-      else
+-        ()
+     end
+   else
+     match My_unix.execute_many ~ticker:Log.update ~display:Log.display [[(fun () -> cmd)]] with

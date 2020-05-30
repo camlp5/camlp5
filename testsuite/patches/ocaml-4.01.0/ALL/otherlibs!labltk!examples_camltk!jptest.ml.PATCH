@@ -1,0 +1,10 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/otherlibs/labltk/examples_camltk/jptest.ml	2012-07-30 11:04:46.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/otherlibs!labltk!examples_camltk!jptest.ml.INPUT	2020-02-15 21:44:49.660807516 -0800
+@@ -18,6 +18,6 @@
+ let win = opentk();;
+ 
+ let b = Button.create win [ Text "こんちは" ];;
+-let _ = pack [b] [];;
++pack [b] [];;
+ 
+ mainLoop();;

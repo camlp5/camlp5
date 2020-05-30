@@ -1,0 +1,25 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/lib-threads/testA.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!lib-threads!testA.ml.INPUT	2020-02-15 22:56:22.094807516 -0800
+@@ -10,7 +10,7 @@
+ (*                                                                     *)
+ (***********************************************************************)
+ 
+-let private_data = (Hashtbl.create 17 : (Thread.t, string) Hashtbl.t)
++let private_data : (Thread.t, string) Hashtbl.t = Hashtbl.create 17
+ let private_data_lock = Mutex.create()
+ let output_lock = Mutex.create()
+ 
+@@ -28,11 +28,12 @@
+   print_int id; print_string " --> "; print_string(get_private_data());
+   Mutex.unlock output_lock;
+   print_newline()
++;;
+ 
+-let _ =
+   let t1 = Thread.create (process 1) "un" in
+   let t2 = Thread.create (process 2) "deux" in
+   let t3 = Thread.create (process 3) "trois" in
+   let t4 = Thread.create (process 4) "quatre" in
+   let t5 = Thread.create (process 5) "cinq" in
+   List.iter Thread.join [t1;t2;t3;t4;t5]
++;;

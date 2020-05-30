@@ -1,0 +1,63 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/basic/boxedints.ml	2012-02-24 02:13:02.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/testsuite!tests!basic!boxedints.ml.INPUT	2020-02-11 17:33:55.287765105 -0800
+@@ -61,8 +61,8 @@
+ struct
+   open M
+   open Ops
++;;
+ 
+-  let _ =
+     testing_function "of_int, to_int";
+     test 1 (to_int (of_int 0)) 0;
+     test 2 (to_int (of_int 123)) 123;
+@@ -284,6 +284,7 @@
+            (false,true,false,true,false,true,1);
+ 
+     ()
++;;
+ end
+ 
+ (********* Tests on 64-bit arithmetic ***********)
+@@ -292,8 +293,8 @@
+ struct
+   open M
+   open Ops
++;;
+ 
+-  let _ =
+     testing_function "of_int, to_int";
+     test 1 (to_int (of_int 0)) 0;
+     test 2 (to_int (of_int 123)) 123;
+@@ -502,6 +503,7 @@
+            (false,true,false,true,false,true,1);
+ 
+     ()
++;;
+ end
+ 
+ (******** The test proper **********)
+@@ -512,8 +514,8 @@
+   (a = b, a <> b, a < b, a > b, a <= b, a >= b, compare a b)
+ let testcomp_nativeint (a : nativeint) (b : nativeint) =
+   (a = b, a <> b, a < b, a > b, a <= b, a >= b, compare a b)
++;;
+ 
+-let _ =
+   testing_function "-------- Int32 --------";
+   let module A = Test32(struct type t = int32
+                                module Ops = Int32
+@@ -570,12 +572,12 @@
+          (if Sys.word_size = 64
+           then Nativeint.of_string "0x123456789ABCDEF0"
+           else Nativeint.of_string "0x9ABCDEF0")
+-
++;;
+ (********* End of test *********)
+ 
+-let _ =
+   print_newline();
+   if !error_occurred then begin
+     prerr_endline "************* TEST FAILED ****************"; exit 2
+   end else
+     exit 0
++;;

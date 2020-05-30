@@ -1,0 +1,23 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/misc/sorts.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!misc!sorts.ml.INPUT	2020-02-15 23:10:00.874807516 -0800
+@@ -2343,9 +2343,9 @@
+ 
+ type iilist = Cons of int * iilist Lazy.t;;
+ 
+-let rec mult n (Cons (x,l)) = Cons (n*x, lazy (mult n (force l)))
++let rec mult n = function Cons (x,l) -> Cons (n*x, lazy (mult n (force l)))
+ 
+-let rec merge (Cons (x1, t1) as l1) (Cons (x2, t2) as l2) =
++let rec merge = function Cons (x1, t1) as l1 -> function Cons (x2, t2) as l2 ->
+   if x1 = x2 then Cons (x1, lazy (merge (force t1) (force t2)))
+   else if x1 < x2 then Cons (x1, lazy (merge (force t1) l2))
+   else Cons (x2, lazy (merge l1 (force t2)))
+@@ -2355,7 +2355,7 @@
+ 
+ let ashell_4 cmp a =
+   let l = Array.length a in
+-  let rec loop1 accu (Cons (x, t)) =
++  let rec loop1 accu = function Cons (x, t) ->
+     if x > l then accu else loop1 (x::accu) (force t)
+   in
+   let sc = loop1 [] scale in

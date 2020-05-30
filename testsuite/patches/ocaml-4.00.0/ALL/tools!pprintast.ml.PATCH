@@ -1,0 +1,11 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/tools/pprintast.ml	2012-05-30 06:29:48.000000000 -0700
++++ patches/ocaml-4.00.0/ALL/tools!pprintast.ml.INPUT	2020-02-11 21:11:25.291006761 -0800
+@@ -1852,7 +1852,7 @@
+       pp_close_box ppf () ;
+   | (p,e)::r  -> (* not last  *)
+       pp_open_hvbox ppf (indent + 2) ;
+-      if ((first=true) & (special_first_case=false)) then begin
++      if ((first=true) && (special_first_case=false)) then begin
+           pp_print_if_newline ppf () ;
+           pp_print_string ppf "  "
+         end else

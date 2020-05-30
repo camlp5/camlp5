@@ -1,0 +1,17 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/tool-ocamldoc/odoc_test.ml	2012-10-15 10:50:56.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!tool-ocamldoc!odoc_test.ml.INPUT	2020-02-15 23:15:41.902807516 -0800
+@@ -104,8 +104,8 @@
+       Format.pp_print_flush fmt ();
+       close_out oc
+   end
++;;
+ 
+-let _ =
+   let module My_generator = struct
+     class generator =
+     let inst = new string_gen in
+@@ -114,3 +114,4 @@
+     end
+   end in
+   Odoc_args.set_generator (Odoc_gen.Base (module My_generator : Odoc_gen.Base))
++;;

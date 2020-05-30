@@ -8,7 +8,7 @@ exception Error of string;
 
 type location = Ploc.t;
 type location_function = int -> location;
-type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
+type lexer_func 'te = Stream.t char -> (Stream.t 'te * Plexing.Locations.t);
 
 type glexer 'te = Plexing.lexer 'te ==
   { tok_func : lexer_func 'te;

@@ -1,0 +1,55 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/toplevel/toploop.ml	2013-06-05 09:34:40.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/toplevel!toploop.ml.INPUT	2020-02-15 23:55:54.113807516 -0800
+@@ -30,8 +30,8 @@
+ 
+ (* The table of toplevel value bindings and its accessors *)
+ 
+-let toplevel_value_bindings =
+-  (Hashtbl.create 37 : (string, Obj.t) Hashtbl.t)
++let toplevel_value_bindings : (string, Obj.t) Hashtbl.t =
++  Hashtbl.create 37
+ 
+ let getvalue name =
+   try
+@@ -145,7 +145,7 @@
+   Symtable.update_global_table();
+   try
+     may_trace := true;
+-    let retval = (Meta.reify_bytecode code code_size) () in
++    let retval = Meta.reify_bytecode code code_size () in
+     may_trace := false;
+     if can_free then begin
+       Meta.static_release_bytecode code code_size;
+@@ -225,7 +225,7 @@
+ (* The table of toplevel directives.
+    Filled by functions from module topdirs. *)
+ 
+-let directive_table = (Hashtbl.create 13 : (string, directive_fun) Hashtbl.t)
++let directive_table : (string, directive_fun) Hashtbl.t = Hashtbl.create 13
+ 
+ (* Execute a toplevel phrase *)
+ 
+@@ -400,12 +400,12 @@
+     end else
+       len
+   end
+-
++;;
+ (* Toplevel initialization. Performed here instead of at the
+    beginning of loop() so that user code linked in with ocamlmktop
+    can call directives from Topdirs. *)
+ 
+-let _ =
++
+   Sys.interactive := true;
+   let crc_intfs = Symtable.init_toplevel() in
+   Compmisc.init_path false;
+@@ -413,7 +413,7 @@
+     (fun (name, crc) ->
+       Consistbl.set Env.crc_units name crc Sys.executable_name)
+     crc_intfs
+-
++;;
+ let load_ocamlinit ppf =
+   match !Clflags.init_file with
+   | Some f -> if Sys.file_exists f then ignore (use_silently ppf f)

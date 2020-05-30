@@ -1,0 +1,13 @@
+diff --git a/lib/fstream.ml b/lib/fstream.ml
+index 928df3b0..4f80e376 100644
+--- a/lib/fstream.ml
++++ b/lib/fstream.ml
+@@ -111,7 +111,7 @@ value count_unfrozen s =
+ type kont 'a 'b = [ K of unit -> option ('b * t 'a * kont 'a 'b) ];
+ type bp 'a 'b = t 'a -> option ('b * t 'a * kont 'a 'b);
+ 
+-value bcontinue = fun [ (K k) -> k () ];
++value bcontinue = fun [ K k -> k () ];
+ 
+ value bparse_all p strm =
+   loop (fun () -> p strm) where rec loop p =

@@ -1,0 +1,11 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/debugger/program_management.ml	2012-10-15 10:50:56.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/debugger!program_management.ml.INPUT	2020-02-15 21:08:27.596807516 -0800
+@@ -127,7 +127,7 @@
+   if !debug_loading then
+     prerr_endline "Opening a socket...";
+   open_connection !socket_name
+-    (function () ->
++    (fun () ->
+       go_to _0;
+       Symbols.set_all_events();
+       exit_main_loop ())

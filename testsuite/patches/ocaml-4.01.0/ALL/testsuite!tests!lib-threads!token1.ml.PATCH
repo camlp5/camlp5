@@ -1,0 +1,10 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/lib-threads/token1.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!lib-threads!token1.ml.INPUT	2020-02-15 22:59:54.532807516 -0800
+@@ -44,5 +44,5 @@
+   niter := iter;
+   for i = 0 to nprocs - 1 do Thread.create process (i, conds, nprocs) done;
+   Thread.delay 3600.
+-
+-let _ = main()
++;;
++main() ;;

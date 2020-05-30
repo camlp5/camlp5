@@ -1,0 +1,20 @@
+--- /home/chetsky/Hack/Ocaml/GENERIC/4.01.0/.opam-switch/sources/ocaml-base-compiler.4.01.0/testsuite/tests/basic/recvalues.ml	2012-10-17 13:09:16.000000000 -0700
++++ patches/ocaml-4.01.0/ALL/testsuite!tests!basic!recvalues.ml.INPUT	2020-02-15 22:35:08.471807516 -0800
+@@ -12,7 +12,7 @@
+ 
+ (* Recursive value definitions *)
+ 
+-let _ =
++
+   let rec x = 1 :: x in
+   if match x with
+        1 :: x' -> x == x'
+@@ -45,6 +45,7 @@
+ ;;
+ 
+ Gc.minor ();;
+-if (List.hd (!(snd (x2.(0))))) () == s
++if List.hd (!(snd (x2.(0)))) () == s
+ then print_string "Test 4: passed\n"
+ else print_string "Test 4: FAILED\n"
++;;

@@ -4,11 +4,16 @@ TOP=..
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../boot -I ../lib
-OCAMLCFLAGS=$(OCAMLC_W_Y) $(WARNERR) $(INCLUDES)
-SRC=../etc/pa_o.ml ../etc/pa_op.ml
+OCAMLCFLAGS=$(DEBUG) $(OCAMLC_W_Y) $(WARNERR) $(INCLUDES)
 D=o
+SRC=../etc/pa_$(D).ml ../etc/pa_$(D)p.ml
 COMP_OPT=-strict_parsing
-COMP_OPT=-e "Grammar.Entry.obj Pcaml.interf" -e "Grammar.Entry.obj Pcaml.implem" -e "Grammar.Entry.obj Pcaml.top_phrase" -e "Grammar.Entry.obj Pcaml.use_file"
+COMP_OPT=-e "Grammar.Entry.obj Pcaml.interf" \
+         -e "Grammar.Entry.obj Pcaml.implem" \
+         -e "Grammar.Entry.obj Pcaml.top_phrase" \
+         -e "Grammar.Entry.obj Pcaml.use_file" \
+
+
 RM=rm
 
 all: out
@@ -24,19 +29,12 @@ $(CAMLP5N)$D.fast.opt: pa_$D_fast.cmx
 	$(RM) -f $(CAMLP5N)$D.fast.opt
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$(CAMLP5N)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
-pa_o.ml.ppo: ../etc/pa_o.ml
-	../meta/camlp5r -I ../meta -I ../etc pa_extend.cmo pa_macro.cmo pa_macro_gram.cmo pr_r.cmo pr_extend.cmo ../etc/pa_o.ml > pa_o.ppo.TMP && mv pa_o.ppo.TMP pa_o.ml.ppo
-
-pa_op.ml.ppo: ../etc/pa_op.ml
-	../meta/camlp5r -I ../meta -I ../etc pa_extend.cmo pa_macro.cmo pa_macro_gram.cmo pr_r.cmo pr_extend.cmo ../etc/pa_op.ml > pa_op.ppo.TMP && mv pa_op.ppo.TMP pa_op.ml.ppo
-
-SRCPPO=pa_o.ml.ppo pa_op.ml.ppo
-
-pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl $(SRCPPO)
-	cat $(SRCPPO) | sed -e "s/Plexer.gmake ()/Lazy.force P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | grep -v '#load' | grep -v "^IFDEF" | grep -v "^END" | grep -v DELETE_RULE | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
-
-$D_fast.ml.tmp: compile.cmo $(SRC)
+pa_$D_fast.ml: compile.cmo comp_head.ml.tpl comp_trail.ml.tpl $(SRC)
+	cat $(SRC) > tmp.$D_concat.ml
+	../meta/camlp5r -I ../meta -I ../etc pa_extend.cmo pa_macro.cmo pa_macro_gram.cmo pr_r.cmo pr_ro.cmo pr_extend.cmo tmp.$D_concat.ml > tmp.$D_postprocessed.ml.ppo.TMP && mv tmp.$D_postprocessed.ml.ppo.TMP tmp.$D_postprocessed.ml.ppo
+	./strip-parser.pl tmp.$D_postprocessed.ml.ppo > $D_stripped.tmp
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) EXE=$(EXE) RM=$(RM) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
+	cat comp_head.ml.tpl $D_stripped.tmp $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 install:
 	if test -f $(CAMLP5N)o.fast.opt; then \

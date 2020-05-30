@@ -1,0 +1,23 @@
+--- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/toplevel/expunge.ml	2012-01-20 07:43:29.000000000 -0800
++++ patches/ocaml-4.00.0/ALL/toplevel!expunge.ml.INPUT	2020-02-11 21:14:12.147989237 -0800
+@@ -65,10 +65,10 @@
+     (fun (name, len) ->
+       begin match name with
+         "SYMB" ->
+-          let global_map = (input_value ic : Symtable.global_map) in
++          let global_map : Symtable.global_map = input_value ic in
+           output_value oc (expunge_map global_map)
+       | "CRCS" ->
+-          let crcs = (input_value ic : (string * Digest.t) list) in
++          let crcs : (string * Digest.t) list = input_value ic in
+           output_value oc (expunge_crcs crcs)
+       | _ ->
+           copy_file_chunk ic oc len
+@@ -80,5 +80,6 @@
+   (* Done *)
+   close_in ic;
+   close_out oc
++;;
+ 
+-let _ = Printexc.catch main (); exit 0
++Printexc.catch main (); exit 0 ;;
