@@ -18,3 +18,5 @@ value fast : ref bool;
 value ctyp : MLast.ctyp -> Parsetree.core_type ;
 value expr : MLast.expr -> Parsetree.expression ;
 value patt : MLast.patt -> Parsetree.pattern ;
+value module_expr : MLast.module_expr -> Parsetree.module_expr ;
+value module_type : MLast.module_type -> Parsetree.module_type ;

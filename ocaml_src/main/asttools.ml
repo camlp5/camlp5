@@ -71,7 +71,16 @@ let module_type_unwrap_attrs mt =
   let rec arec acc =
     function
       MLast.MtAtt (_, mt, attr) -> arec (attr :: acc) mt
-    | mt -> mt, List.rev acc
+    | mt -> mt, acc
+  in
+  arec [] mt
+;;
+
+let module_expr_unwrap_attrs mt =
+  let rec arec acc =
+    function
+      MLast.MeAtt (_, mt, attr) -> arec (attr :: acc) mt
+    | mt -> mt, acc
   in
   arec [] mt
 ;;
@@ -277,3 +286,21 @@ let sig_item_to_inline si ext =
     None -> si
   | Some attrid -> MLast.SgExten (loc, (attrid, MLast.SiAttr (loc, [si])), [])
 ;;
+
+let longident_of_string_list loc =
+  function
+    [] -> failwith "longident_of_string_list"
+  | h :: t ->
+      List.fold_left (fun li s -> MLast.LiAcc (loc, li, s))
+        (MLast.LiUid (loc, h)) t
+;;
+
+let longident_lident_of_string_list loc =
+  function
+    [] -> assert false
+  | [h] -> None, h
+  | l ->
+      let (clsna, path) = sep_last l in
+      let li = longident_of_string_list loc path in Some li, clsna
+;;
+

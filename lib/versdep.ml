@@ -979,17 +979,17 @@ value ocaml_pexp_object =
 
 value ocaml_pexp_open =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN
-    Some (fun ovf li e -> do { assert (ovf = Fresh); Pexp_open (mknoloc li) e })
+    Some (fun ovf me e ->
+          let li = match me with [ {pmod_desc=Pmod_ident li} -> li | _ -> assert False ] in
+          do { assert (ovf = Fresh); Pexp_open (mknoloc li) e })
   ELSIFDEF OCAML_VERSION < OCAML_4_08 THEN
-    Some (fun ovf li e -> do { assert (ovf = Fresh); Pexp_open Fresh (mknoloc li) e})
+    Some (fun ovf me e ->
+          let li = match me with [ {pmod_desc=Pmod_ident li} -> li | _ -> assert False ] in
+          do { assert (ovf = Fresh); Pexp_open Fresh (mknoloc li) e})
   ELSE
-    Some (fun ovf li e ->
+    Some (fun ovf me e ->
       Pexp_open
-        { popen_expr =
-          { pmod_desc = Pmod_ident (mknoloc li)
-          ; pmod_loc = loc_none
-          ; pmod_attributes = []
-        }
+        { popen_expr = me
           ; popen_override = ovf
           ; popen_loc = loc_none
           ; popen_attributes = []

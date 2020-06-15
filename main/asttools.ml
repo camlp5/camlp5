@@ -65,7 +65,15 @@ value rec longid_last = fun [
 value module_type_unwrap_attrs mt =
   let rec arec acc = fun [
     <:module_type< $mt$ [@ $_attribute:attr$ ] >> -> arec [ attr :: acc ] mt
-  | mt -> (mt, List.rev acc)
+  | mt -> (mt, acc)
+  ] in
+  arec [] mt
+;
+
+value module_expr_unwrap_attrs mt =
+  let rec arec acc = fun [
+    <:module_expr< $mt$ [@ $_attribute:attr$ ] >> -> arec [ attr :: acc ] mt
+  | mt -> (mt, acc)
   ] in
   arec [] mt
 ;
@@ -251,3 +259,22 @@ let loc = MLast.loc_of_sig_item si in
    <:sig_item< [%% $attrid:attrid$ : $sigi:si$ ; ] >>
   ]
 ;
+
+value longident_of_string_list loc = fun [
+  [] -> failwith "longident_of_string_list"
+| [h :: t] ->
+  List.fold_left (fun li s -> <:extended_longident:< $longid:li$ . $uid:s$ >>) 
+    <:extended_longident< $uid:h$ >> t
+]
+;
+
+value longident_lident_of_string_list loc = fun [
+  [] -> assert False
+| [h] -> (None, <:vala< h >>)
+| l ->
+  let (clsna, path) = sep_last l in
+  let li = longident_of_string_list loc path in
+  (Some li, <:vala< clsna >>)
+]
+;
+

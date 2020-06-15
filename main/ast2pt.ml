@@ -1045,8 +1045,8 @@ and expr =
   | ExLop loc ovf me e →
       match ocaml_pexp_open with
       | Some pexp_open →
-          let li = module_expr_long_id me in
-          mkexp loc (pexp_open (mkoverride (uv ovf)) li (expr e))
+          let me = module_expr me in
+          mkexp loc (pexp_open (mkoverride (uv ovf)) me (expr e))
       | None → error loc "no expression open in this ocaml version"
       end
   | ExMat loc e pel →

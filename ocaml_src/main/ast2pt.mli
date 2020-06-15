@@ -18,3 +18,5 @@ val fast : bool ref;;
 val ctyp : MLast.ctyp -> Parsetree.core_type;;
 val expr : MLast.expr -> Parsetree.expression;;
 val patt : MLast.patt -> Parsetree.pattern;;
+val module_expr : MLast.module_expr -> Parsetree.module_expr;;
+val module_type : MLast.module_type -> Parsetree.module_type;;
