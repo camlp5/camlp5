@@ -1,10 +1,22 @@
 # Makefile,v
 
+TOP=../..
+include $(TOP)/config/Makefile
+
 H=../html
 OBJS=$H/index.html $H/about.html $H/ast_strict.html $H/ast_transi.html $H/bparsers.html $H/commands.html $H/conclusion.html $H/directives.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pprintf.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/q_ast.html $H/quot.html $H/redef.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
 RSS=$H/rss/camlp5.rss
 INDEX=index.html
 NO_PR_DIR=--no-print-directory
+
+install-to-pages: ../html/index.html camlp5.info camlp5.dvi camlp5.pdf camlp5.ps
+	test -d $(PAGESROOT) || (echo PAGESROOT $(PAGESROOT) not a directory; false)
+	cp camlp5.dvi $(PAGESROOT)/doc/dvi/camlp5-$(VERSION).dvi
+	cp camlp5.pdf $(PAGESROOT)/doc/pdf/camlp5-$(VERSION).pdf
+	cp camlp5.ps $(PAGESROOT)/doc/ps/camlp5-$(VERSION).ps
+	rm -rf $(PAGESROOT)/doc/htmlc && cp -r ../html $(PAGESROOT)/doc/htmlc
+	tar -C .. -zcf $(PAGESROOT)/doc/htmlz/camlp5-$(VERSION).html.tgz html
+	tar -zcf $(PAGESROOT)/doc/info/camlp5-$(VERSION).info.tgz camlp5.info*
 
 all: $(OBJS) $(RSS)
 

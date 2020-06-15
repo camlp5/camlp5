@@ -16,7 +16,9 @@ Then go to cloned directory camlp5.github.io and
 2. Copy README.md from camlp5.
 3. Edit file index.html, change the version number, the release date
    and the tar.gz link and name.
-4. Commit and push. After some minutes, the home dir of camlp5
+4. VERIFY that the opam file does not contain a "uninstall" stanza,
+   and that the version number in the filename is NN.MM, viz. "camlp5.7.12".
+5. Commit and push. After some minutes, the home dir of camlp5
       https://camlp5.github.io/
    should be updated
 
