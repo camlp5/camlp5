@@ -444,13 +444,13 @@ Stream parsers
           [: `Lparen;
              e =
                parser
-               [ [: ?= [ _ Rparen ]; `Minus; `Rparen :] -> minus_op
+               [ [: ?= [ _ ; Rparen ]; `Minus; `Rparen :] -> minus_op
                | [: e = expr; `Rparen :] -> e ] :] -> e
 
-   It is possible to put several lists of patterns separated by a
-   vertical bar in the lookahead construction, but with a limitation
-   (due to the implementation): all lists of patterns must have the same
-   number of elements.
+   It is possible to put several lists of (semicolon-separated)
+   patterns separated by a vertical bar in the lookahead construction,
+   but with a limitation (due to the implementation): all lists of
+   patterns must have the same number of elements.
 
    .. rubric:: No error optimization
       :name: no-error-optimization

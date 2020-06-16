@@ -459,14 +459,14 @@
     [: `Lparen;
        e =
          parser
-         [ [: ?= [ _ Rparen ]; `Minus; `Rparen :] -> minus_op
+         [ [: ?= [ _ ; Rparen ]; `Minus; `Rparen :] -> minus_op
          | [: e = expr; `Rparen :] -> e ] :] -> e
 </pre>
 
-<p>It is possible to put several lists of patterns separated by a
-  vertical bar in the lookahead construction, but with a limitation
-  (due to the implementation): all lists of patterns must have the
-  same number of elements.</p>
+<p>It is possible to put several lists of (semicolon-separated)
+  patterns separated by a vertical bar in the lookahead construction,
+  but with a limitation (due to the implementation): all lists of
+  patterns must have the same number of elements.</p>
 
 <h3>No error optimization</h3>
 
