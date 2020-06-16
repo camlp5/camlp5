@@ -122,6 +122,9 @@ value call_with : ref 'a -> 'a -> ('b -> 'c) -> 'b -> 'c;
        an exception, its initial value is also reset and the exception is
        re-raised. The result is the result of [f a]. *)
 
+value string_of_location : t -> string;
+  (** formats a location suitable for printing *)
+
 (**/**)
 
 value make : int -> int -> (int * int) -> t;
