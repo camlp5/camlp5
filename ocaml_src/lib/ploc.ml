@@ -207,3 +207,19 @@ let make line_nb bol_pos (bp, ep) =
   {fname = ""; line_nb = line_nb; bol_pos = bol_pos; line_nb_last = line_nb;
    bol_pos_last = bol_pos; bp = bp; ep = ep; comm = ""; ecomm = ""}
 ;;
+
+
+let string_of_loc fname line bp ep =
+  match Sys.os_type with
+    "MacOS" ->
+      Printf.sprintf "File \"%s\"; line %d; characters %d to %d\n### " fname
+        line bp ep
+  | _ ->
+      Printf.sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp
+        ep
+;;
+
+let string_of_location
+    {fname = fname; bp = bp; ep = ep; line_nb = line; bol_pos = bol} =
+  string_of_loc fname line (bp - bol + 1) (ep - bol + 1)
+;;

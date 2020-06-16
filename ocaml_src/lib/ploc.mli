@@ -122,6 +122,9 @@ val call_with : 'a ref -> 'a -> ('b -> 'c) -> 'b -> 'c;;
        an exception, its initial value is also reset and the exception is
        re-raised. The result is the result of [f a]. *)
 
+val string_of_location : t -> string;;
+  (** formats a location suitable for printing *)
+
 (**/**)
 
 val make : int -> int -> int * int -> t;;
