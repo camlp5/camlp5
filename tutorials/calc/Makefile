@@ -11,13 +11,8 @@ all: calc calc.opt
 calc: calc.ml
 	$(OCAMLFIND) ocamlc -package $(PACKAGES) -linkall -linkpkg -syntax camlp5r calc.ml -o $@
 
-calc.opt: calc.ml calclexer.ml
+calc.opt: calc.ml
 	$(OCAMLFIND) ocamlopt -package $(PACKAGES) -linkall -linkpkg -syntax camlp5r calc.ml -o $@
-
-.SUFFIXES: .mll
-
-.mll.ml:
-	ocamllex $<
 
 clean:
 	rm -f calc calc.opt *.cm* *.o

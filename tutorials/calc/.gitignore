@@ -2,4 +2,3 @@
 *.o
 calc
 calc.opt
-calclexer.ml
