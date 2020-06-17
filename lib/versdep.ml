@@ -981,11 +981,11 @@ value ocaml_pexp_open =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN
     Some (fun ovf me e ->
           let li = match me with [ {pmod_desc=Pmod_ident li} -> li | _ -> assert False ] in
-          do { assert (ovf = Fresh); Pexp_open (mknoloc li) e })
+          do { assert (ovf = Fresh); Pexp_open li e })
   ELSIFDEF OCAML_VERSION < OCAML_4_08 THEN
     Some (fun ovf me e ->
           let li = match me with [ {pmod_desc=Pmod_ident li} -> li | _ -> assert False ] in
-          do { assert (ovf = Fresh); Pexp_open Fresh (mknoloc li) e})
+          do { assert (ovf = Fresh); Pexp_open Fresh li e})
   ELSE
     Some (fun ovf me e ->
       Pexp_open

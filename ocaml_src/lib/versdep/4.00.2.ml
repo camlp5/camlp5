@@ -357,7 +357,14 @@ let ocaml_pexp_newtype = Some (fun loc s e -> Pexp_newtype (s, e));;
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
 let ocaml_pexp_open =
-  Some (fun ovf li e -> assert (ovf = Fresh); Pexp_open (mknoloc li, e))
+  Some
+    (fun ovf me e ->
+       let li =
+         match me with
+           {pmod_desc = Pmod_ident li} -> li
+         | _ -> assert false
+       in
+       assert (ovf = Fresh); Pexp_open (li, e))
 ;;
 
 let ocaml_pexp_override sel =

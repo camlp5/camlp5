@@ -409,12 +409,10 @@ let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
 let ocaml_pexp_open =
   Some
-    (fun ovf li e ->
+    (fun ovf me e ->
        Pexp_open
-         ({popen_expr =
-            {pmod_desc = Pmod_ident (mknoloc li); pmod_loc = loc_none;
-             pmod_attributes = []};
-           popen_override = ovf; popen_loc = loc_none; popen_attributes = []},
+         ({popen_expr = me; popen_override = ovf; popen_loc = loc_none;
+           popen_attributes = []},
           e))
 ;;
 
