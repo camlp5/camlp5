@@ -88,19 +88,19 @@ value misc_letter buf strm =
         else raise Stream.Failure
     | None -> raise Stream.Failure ]
   else
-    match strm with lexer [ '\128'-'\225' | '\227'-'\255' ]
+    match strm with pa_lexer [ '\128'-'\225' | '\227'-'\255' ]
 ;
 
 value misc_punct buf strm =
   if utf8_lexing.val then
-    match strm with lexer [ '\226' _ _ ]
+    match strm with pa_lexer [ '\226' _ _ ]
   else
     match strm with parser []
 ;
 
 value utf8_equiv ctx bp buf strm =
   if utf8_lexing.val then
-    match strm with lexer
+    match strm with pa_lexer
     [ "→" -> keyword_or_error ctx (bp, $pos) "->"
     | "≤" -> keyword_or_error ctx (bp, $pos) "<="
     | "≥" -> keyword_or_error ctx (bp, $pos) ">=" ]
@@ -109,12 +109,12 @@ value utf8_equiv ctx bp buf strm =
 ;
 
 value rec ident =
-  lexer
+  pa_lexer
   [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | misc_letter ] ident! | ]
 ;
 
 value rec ident2_or other =
-  lexer
+  pa_lexer
   [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
       '%' | '.' | ':' | '<' | '>' | '|' | '$' | other | misc_punct ]
       (ident2_or other)!
@@ -123,24 +123,24 @@ value rec ident2_or other =
 
 value ident2 = ident2_or (fun buf strm -> raise Stream.Failure)
 ;
-value hash_follower_chars = ident2_or (lexer [ '#' ])
+value hash_follower_chars = ident2_or (pa_lexer [ '#' ])
 ;
 
 value rec ident3 =
-  lexer
+  pa_lexer
   [ [ '0'-'9' | 'A'-'Z' | 'a'-'z' | '_' | '!' | '%' | '&' | '*' | '+' | '-' |
       '.' | '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' | ''' |
       '$' | '\128'-'\255' ] ident3!
   | ]
 ;
 
-value binary = lexer [ '0' | '1' ];
-value octal = lexer [ '0'-'7' ];
-value decimal = lexer [ '0'-'9' ];
-value hexa = lexer [ '0'-'9' | 'a'-'f' | 'A'-'F' ];
+value binary = pa_lexer [ '0' | '1' ];
+value octal = pa_lexer [ '0'-'7' ];
+value decimal = pa_lexer [ '0'-'9' ];
+value hexa = pa_lexer [ '0'-'9' | 'a'-'f' | 'A'-'F' ];
 
 value end_integer =
-  lexer
+  pa_lexer
   [ "l"/ -> ("INT_l", $buf)
   | "L"/ -> ("INT_L", $buf)
   | "n"/ -> ("INT_n", $buf)
@@ -148,31 +148,31 @@ value end_integer =
 ;
 
 value rec digits_under kind =
-  lexer
+  pa_lexer
   [ kind (digits_under kind)!
   | "_" (digits_under kind)!
   | end_integer ]
 ;
 
 value digits kind =
-  lexer
+  pa_lexer
   [ kind (digits_under kind)!
   | -> raise (Stream.Error "ill-formed integer constant") ]
 ;
 
 value rec decimal_digits_under =
-  lexer [ [ '0'-'9' | '_' ] decimal_digits_under! | ]
+  pa_lexer [ [ '0'-'9' | '_' ] decimal_digits_under! | ]
 ;
 
 value exponent_part =
-  lexer
+  pa_lexer
   [ [ 'e' | 'E' ] [ '+' | '-' | ]
     '0'-'9' ? "ill-formed floating-point constant"
     decimal_digits_under! ]
 ;
 
 value number =
-  lexer
+  pa_lexer
   [ decimal_digits_under "." decimal_digits_under! exponent_part ->
       ("FLOAT", $buf)
   | decimal_digits_under "." decimal_digits_under! -> ("FLOAT", $buf)
@@ -198,23 +198,23 @@ let literal_modifier = ['G'-'Z' 'g'-'z']
 
 (* hex_digits* *)
 value rec hex_digits_under_star =
-  lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' | '_' ] hex_digits_under_star! | ]
+  pa_lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' | '_' ] hex_digits_under_star! | ]
 ;
 value rec hex_under_integer =
-  lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' ] hex_digits_under_star ]
+  pa_lexer [ [ '0'-'9' | 'a'-'f' | 'A'-'F' ] hex_digits_under_star ]
 ;
 value rec decimal_under_integer =
-  lexer [ [ '0'-'9' | ] decimal_digits_under! ]
+  pa_lexer [ [ '0'-'9' | ] decimal_digits_under! ]
 ;
 
 value hex_exponent_part =
-  lexer
+  pa_lexer
   [ [ 'p' | 'P' ] [ '+' | '-' | ]
     decimal_under_integer! ]
 ;
 
 value hex_number =
-  lexer
+  pa_lexer
   [ hex_under_integer '.' hex_digits_under_star! hex_exponent_part -> ("FLOAT", $buf)
   | hex_under_integer '.' hex_digits_under_star! -> ("FLOAT", $buf)
   | hex_under_integer hex_exponent_part -> ("FLOAT", $buf)
@@ -223,13 +223,13 @@ value hex_number =
 ;
 
 value char_after_bslash =
-  lexer
+  pa_lexer
   [ "'"/
   | _ [ "'"/ | _ [ "'"/ | ] ] ]
 ;
 
 value char ctx bp =
-  lexer
+  pa_lexer
   [ "\\" _ char_after_bslash!
   | "\\" -> err ctx (bp, $pos) "char not terminated"
   | ?= [ _ '''] _! "'"/ ]
@@ -239,7 +239,7 @@ value any ctx buf =
   parser bp [: `c :] -> do { ctx.line_cnt bp c; $add c }
 ;
 
-value rec skiplws = lexer [
+value rec skiplws = pa_lexer [
   ' '/ skiplws!
 | '\t'/ skiplws!
 |
@@ -247,7 +247,7 @@ value rec skiplws = lexer [
 ;
 
 value rec string ctx bp =
-  lexer
+  pa_lexer
   [ "\""/
   | "\\"/ ?= [ "\n" ] "\n"/ skiplws! (string ctx bp)!
   | "\\"/ ?= [ "\n" | " " ] (any ctx) (string ctx bp)!
@@ -257,7 +257,7 @@ value rec string ctx bp =
 ;
 
 value rec quotation ctx bp =
-  lexer
+  pa_lexer
   [ ">>"/
   | ">" (quotation ctx bp)!
   | "<<" (quotation ctx bp)! [ -> $add ">>" ]! (quotation ctx bp)!
@@ -274,10 +274,10 @@ value less_expected = "character '<' expected";
 
 value less ctx bp buf strm =
   if no_quotations.val then
-    match strm with lexer
+    match strm with pa_lexer
     [ [ -> $add "<" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
   else
-    match strm with lexer
+    match strm with pa_lexer
     [ "<"/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
     | ":"/ ident! "<"/ ? less_expected [ -> $add ":" ]! (quotation ctx bp) ->
         ("QUOTATION", $buf)
@@ -287,7 +287,7 @@ value less ctx bp buf strm =
 ;
 
 value rec antiquot_rest ctx bp =
-  lexer
+  pa_lexer
   [ "$"/
   | "\\"/ (any ctx) (antiquot_rest ctx bp)!
   | (any ctx) (antiquot_rest ctx bp)!
@@ -295,7 +295,7 @@ value rec antiquot_rest ctx bp =
 ;
 
 value rec antiquot ctx bp =
-  lexer
+  pa_lexer
   [ "$"/ -> ":" ^ $buf
   | [ 'a'-'z' | 'A'-'Z' | '0'-'9' | '!' | '_' ] (antiquot ctx bp)!
   | ":" (antiquot_rest ctx bp)! -> $buf
@@ -307,7 +307,7 @@ value rec antiquot ctx bp =
 value antiloc bp ep s = Printf.sprintf "%d,%d:%s" bp ep s;
 
 value rec antiquot_loc ctx bp =
-  lexer
+  pa_lexer
   [ "$"/ -> antiloc bp $pos (":" ^ $buf)
   | [ 'a'-'z' | 'A'-'Z' | '0'-'9' | '!' | '_' ] (antiquot_loc ctx bp)!
   | ":" (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
@@ -322,7 +322,7 @@ value dollar ctx bp buf strm =
   else if force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc ctx bp buf strm)
   else
-    match strm with lexer
+    match strm with pa_lexer
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]
 ;
 
@@ -352,7 +352,7 @@ value question ctx bp buf strm =
     | [: `'$'; s = antiquot ctx bp $empty :] ->
         ("ANTIQUOT", "?" ^ s)
     | [: :] ->
-        match strm with lexer
+        match strm with pa_lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else if force_antiquot_loc.val then
     match strm with parser
@@ -361,10 +361,10 @@ value question ctx bp buf strm =
     | [: `'$'; s = antiquot_loc ctx bp $empty :] ->
         ("ANTIQUOT_LOC", "?" ^ s)
     | [: :] ->
-        match strm with lexer
+        match strm with pa_lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else
-    match strm with lexer
+    match strm with pa_lexer
     [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
@@ -376,7 +376,7 @@ value tilde ctx bp buf strm =
     | [: `'$'; s = antiquot ctx bp $empty :] ->
         ("ANTIQUOT", "~" ^ s)
     | [: :] ->
-        match strm with lexer
+        match strm with pa_lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else if force_antiquot_loc.val then
     match strm with parser
@@ -385,21 +385,21 @@ value tilde ctx bp buf strm =
     | [: `'$'; s = antiquot_loc ctx bp $empty :] ->
         ("ANTIQUOT_LOC", "~" ^ s)
     | [: :] ->
-        match strm with lexer
+        match strm with pa_lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else
-    match strm with lexer
+    match strm with pa_lexer
     [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
 value tildeident =
-  lexer
+  pa_lexer
   [ ":"/ -> ("TILDEIDENTCOLON", $buf)
   | -> ("TILDEIDENT", $buf) ]
 ;
 
 value questionident =
-  lexer
+  pa_lexer
   [ ":"/ -> ("QUESTIONIDENTCOLON", $buf)
   | -> ("QUESTIONIDENT", $buf) ]
 ;
@@ -421,7 +421,7 @@ and linedir_quote n s =
 ;
 
 value rec any_to_nl =
-  lexer
+  pa_lexer
   [ "\r" | "\n"
   | _ any_to_nl!
   | ]
@@ -497,7 +497,7 @@ value comment_rawstring ctx bp (buf : Plexing.Lexbuf.t) strm =
 
 value comment ctx bp =
   comment where rec comment =
-    lexer
+    pa_lexer
     [ "*)"
     | "*" comment!
     | "{" (comment_rawstring ctx bp)! comment!
@@ -519,24 +519,24 @@ value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
     ("STRING", String.escaped s)
 ;
 
-value dotsymbolchar = lexer
+value dotsymbolchar = pa_lexer
   [ '!' | '$' | '%' | '&' | '*' | '+' | '-' | '/' | ':' | '=' | '>' | '?' | '@' | '^' | '|' ]
 ;
-value rec dotsymbolchar_star = lexer
+value rec dotsymbolchar_star = pa_lexer
   [ dotsymbolchar dotsymbolchar_star | ]
 ;
-value kwdopchar = lexer
+value kwdopchar = pa_lexer
   [ '$' | '&' | '*' | '+' | '-' | '/' | '<' | '=' | '>' | '@' | '^' | '|' ]
 ;
 
-value symbolchar = lexer
+value symbolchar = pa_lexer
   ['!' | '$' | '%' | '&' | '*' | '+' | '-' | '.' | '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~']
 ;
-value rec symbolchar_star = lexer
+value rec symbolchar_star = pa_lexer
   [ symbolchar symbolchar_star | ]
 ;
 
-value word_operators ctx id = lexer
+value word_operators ctx id = pa_lexer
   [ [ kwdopchar dotsymbolchar_star ->
       ("", id ^ $buf)
     | -> try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
@@ -557,13 +557,13 @@ value dot ctx (bp, pos) buf strm =
       in
       keyword_or_error ctx (bp, pos) id
 
-  | _ -> match strm with lexer [ [ -> $add "." ] dotsymbolchar_star! -> keyword_or_error ctx (bp, $pos) $buf ]
+  | _ -> match strm with pa_lexer [ [ -> $add "." ] dotsymbolchar_star! -> keyword_or_error ctx (bp, $pos) $buf ]
   ]
 ;
 
 
 value next_token_after_spaces ctx bp =
-  lexer
+  pa_lexer
   [ 'A'-'Z' ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
@@ -736,7 +736,7 @@ value func ctx kwd_table glexr =
 value rec check_keyword_stream =
   parser [: _ = check $empty; _ = Stream.empty :] -> True
 and check =
-  lexer
+  pa_lexer
   [ [ 'A'-'Z' | 'a'-'z' | misc_letter ] check_ident!
   | [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
       '.' ]
@@ -775,11 +775,11 @@ and check =
   | misc_punct check_ident2!
   | _ ]
 and check_ident =
-  lexer
+  pa_lexer
   [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | misc_letter ]
     check_ident! | ]
 and check_ident2 =
-  lexer
+  pa_lexer
   [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
       '.' | ':' | '<' | '>' | '|' | misc_punct ]
     check_ident2! | ]

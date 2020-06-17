@@ -188,7 +188,7 @@ value gcl = ref [];
 EXTEND
   GLOBAL: expr ext_attributes;
   expr: LIKE "match"
-    [ [ "lexer"; rl = rules ->
+    [ [ "pa_lexer"; rl = rules ->
           let rl =
             match isolate_char_patt loc rl with
             [ (Some p, rl) ->
@@ -199,7 +199,7 @@ EXTEND
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
-      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "lexer"; rl = rules ->
+      | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "pa_lexer"; rl = rules ->
           Pa_r.expr_to_inline loc (mk_lexer_match loc e rl) ext attrs ] ]
   ;
   expr: LEVEL "simple"
