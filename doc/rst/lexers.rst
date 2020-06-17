@@ -54,9 +54,9 @@ Stream lexers
 
    ::
 
-        lexer [ "[<" | "[:" | "[" ]
+        pa_lexer [ "[<" | "[:" | "[" ]
 
-   The two codes are strictly equivalent, but the lexer version is
+   The two codes are strictly equivalent, but the pa_lexer version is
    easier to write and understand, and is much shorter.
 
    .. rubric:: Syntax
@@ -68,7 +68,7 @@ Stream lexers
    ::
 
                 expression ::= lexer
-                     lexer ::= "lexer" "[" rules "]"
+                     lexer ::= "pa_lexer" "[" rules "]"
                      rules ::= ne-rules rule
                              | <nothing>
                   ne-rules ::= ne-rules "|" rule
@@ -108,7 +108,7 @@ Stream lexers
 
    Moreover, together with that syntax extension, another extension is
    added the entry ``expression``, typically for the semantics actions
-   of the "``lexer``" statement above, but not only. It is:
+   of the "``pa_lexer``" statement above, but not only. It is:
 
    ::
 
@@ -119,7 +119,7 @@ Stream lexers
 
    Remark: the identifiers "add", "buf", "empty" and "pos" are not
    keywords (they are not reserved words) but just identifiers. On the
-   contrary, the identifier "``lexer``", which introduces the syntax, is
+   contrary, the identifier "``pa_lexer``", which introduces the syntax, is
    a new keyword and cannot be used as variable identifier any more.
 
    .. rubric:: Semantics
@@ -242,7 +242,7 @@ Stream lexers
 
    Sometimes, however, this left factorization is not possible. A
    lookahead of the stream to check the presence of some elements (these
-   elements being characters, if we are using this "lexer" syntax) might
+   elements being characters, if we are using this "pa_lexer" syntax) might
    be necessary to decide if is a good idea to start the rule. This
    lookahead feature may unfreeze several characters from the input
    stream but without removing them.
@@ -276,7 +276,7 @@ Stream lexers
    .. rubric:: Semantic actions of rules
       :name: semantic-actions-of-rules
 
-   By default, the result of a "lexer" is the current lexing buffer,
+   By default, the result of a "pa_lexer" is the current lexing buffer,
    which is of type "``Plexing.Lexbuf.t``". But it is possible to return
    other values, by adding "``->``" at end of rules followed by the
    expression you want to return, as in usual pattern matching in OCaml.
@@ -301,7 +301,7 @@ Stream lexers
    -  Either by adding ``pa_lexer.cmo`` among the Camlp5 options. See
       the Camlp5 manual page or documentation.
    -  Or by adding ``#load "pa_lexer.cmo";`` anywhere in the file,
-      before the usages of this "lexer" syntax.
+      before the usages of this "pa_lexer" syntax.
 
    .. rubric:: How to display the generated code
       :name: how-to-display-the-generated-code
