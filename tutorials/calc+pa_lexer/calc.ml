@@ -1,6 +1,74 @@
 #load "pa_extend.cmo";
+#load "pa_lexer.cmo";
 
-value lexer = Plexing.lexer_func_of_parser Calc_lexer.next_token_fun ;
+value input_file = ref "" ;
+
+type ctxt = {
+  line_nb : ref int ;
+  bol_pos : ref int
+} ;
+
+value rec number =
+  pa_lexer
+  [ '0'-'9' number!
+  | -> ("INT", $buf)
+  ]
+;
+
+value next_token_must ctxt =
+  pa_lexer
+  [ '0'-'9' number!
+  | [ '+' | '-' | '*' | '/' | '(' | ')' ] -> ("",$buf)
+  ]
+;
+
+value start_line ctxt ep = do {
+    ctxt.line_nb.val := 1 + ctxt.line_nb.val ;
+    ctxt.bol_pos.val := ep
+}
+;
+
+value rec comment_rest ctxt buf = parser
+  [ [: `'\n' :] ep -> do {
+      start_line ctxt ep ;
+      $add '\n'
+    }
+  | [: `c ; strm :] -> comment_rest ctxt ($add c) strm
+  ]
+;
+
+value comment ctxt =
+  pa_lexer
+  [ "//" (comment_rest ctxt)!
+  ]
+;
+
+value rec next_token ctxt buf = parser bp
+  [ [: ?= [ '/' ; '/' ] ; buf = comment ctxt buf ; strm :] ->
+      next_token ctxt buf strm
+  | [: `(' '|'\t'|'\r' as c) ; strm :] ->
+      next_token ctxt ($add c) strm
+  | [: `'\n' ; strm :] ep -> do {
+      start_line ctxt ep ;
+      next_token ctxt ($add '\n') strm
+    }
+  | [: tok = next_token_must ctxt $empty :] ep ->
+    let comm = $buf in
+    let loc = Ploc.make_loc input_file.val ctxt.line_nb.val ctxt.bol_pos.val (bp,ep) comm in
+    (tok, loc)
+  | [: _ = Stream.empty :] ep ->
+    let comm = $buf in
+    let loc = Ploc.make_loc input_file.val ctxt.line_nb.val ctxt.bol_pos.val (bp,ep) comm in
+    (("EOI",""), loc)
+  ]
+;
+
+value next_token_fun (cstrm, s_line_nb, s_bol_pos) =
+  let ctxt = { line_nb = s_line_nb ; bol_pos = s_bol_pos } in
+  next_token ctxt $empty cstrm
+;
+
+value lexer = Plexing.lexer_func_of_parser next_token_fun ;
 value lexer = {Plexing.tok_func = lexer;
  Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
  Plexing.tok_match = Plexing.default_match;
@@ -24,11 +92,15 @@ END;
 open Printf;
 
 try
-for i = 1 to Array.length Sys.argv - 1 do {
-  let r = Grammar.Entry.parse e (Stream.of_string Sys.argv.(i)) in
-  printf "%s = %d\n" Sys.argv.(i) r;
-  flush stdout;
-}
+if Array.length Sys.argv > 1 then
+  for i = 1 to Array.length Sys.argv - 1 do {
+    let r = Grammar.Entry.parse e (Stream.of_string Sys.argv.(i)) in
+    printf "%s = %d\n" Sys.argv.(i) r;
+    flush stdout;
+  }
+else
+    let r = Grammar.Entry.parse e (Stream.of_channel stdin) in
+    printf "<stdin> = %d\n" r
 with [ Ploc.Exc loc exc ->
     Fmt.(pf stderr "%s%a@.%!" (Ploc.string_of_location loc) exn exc)
   | exc -> Fmt.(pf stderr "%a@.%!" exn exc)
