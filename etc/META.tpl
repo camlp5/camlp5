@@ -279,6 +279,43 @@ package "extfun" (
   )
 )
 
+package "extprint" (
+  version = "@VERSION@"
+  description = "Syntax extension: Extensible printers"
+
+  requires(toploop) = "camlp5"
+  archive(toploop,-camlp5o)      = "pa_extprint.cmo"
+
+  requires(syntax,preprocessor) = "camlp5"
+  archive(syntax,preprocessor,-native) = "pa_extprint.cmo"
+  archive(syntax,preprocessor,native) = "pa_extprint.cmx"
+
+  package "link" (
+    requires = "camlp5"
+    archive(byte) = "pa_extprint.cmo"
+    archive(native) = "pa_extprint.cmx"
+  )
+)
+
+package "pprintf" (
+  version = "@VERSION@"
+  description = "Syntax extension: ``pprintf'' preprocessor support"
+
+  requires(toploop) = "camlp5"
+  archive(toploop,-camlp5o)      = "pa_pprintf.cmo"
+
+  requires(syntax,preprocessor) = "camlp5"
+  archive(syntax,preprocessor,-native) = "pa_pprintf.cmo"
+  archive(syntax,preprocessor,native) = "pa_pprintf.cmx"
+
+  package "link" (
+    requires = "camlp5"
+    archive(byte) = "pa_pprintf.cmo"
+    archive(native) = "pa_pprintf.cmx"
+  )
+)
+
+
 package "lexer" (
   version = "@VERSION@"
   description = "Syntax extension: Stream lexers"

@@ -1,5 +1,7 @@
 #load "pa_extend.cmo";
 #load "pa_lexer.cmo";
+#load "pa_extprint.cmo";
+#load "pa_pprintf.cmo";
 
 value input_file = ref "" ;
 
@@ -76,6 +78,13 @@ type t = [
 | INT of Ploc.t and int ]
 ;
 
+value loc_of_e = fun [
+  BINOP loc _ _ _ -> loc
+| UNOP loc _ _ -> loc
+| INT loc _ -> loc
+]
+;
+
 value lexer = Plexing.lexer_func_of_parser next_token_fun ;
 value lexer = {Plexing.tok_func = lexer;
  Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
@@ -86,18 +95,60 @@ value lexer = {Plexing.tok_func = lexer;
 value g = Grammar.gcreate lexer;
 value e = Grammar.Entry.create g "expression";
 
+value loc_strip_comment loc = Ploc.with_comment loc "" ;
+
 EXTEND
   e:
-    [ [ x = e; "+"; y = e -> BINOP loc ADD x y
-      | x = e; "-"; y = e -> BINOP loc SUB x y ]
-    | [ x = e; "*"; y = e -> BINOP loc MUL x y
-      | x = e; "/"; y = e -> BINOP loc DIV x  y ]
+    [ [ x = e; "+"; y = e -> BINOP (loc_strip_comment loc) ADD x y
+      | x = e; "-"; y = e -> BINOP (loc_strip_comment loc) SUB x y ]
+    | [ x = e; "*"; y = e -> BINOP (loc_strip_comment loc) MUL x y
+      | x = e; "/"; y = e -> BINOP (loc_strip_comment loc) DIV x  y ]
     | [ "-" ; x = e -> UNOP loc MINUS x
       | "+" ; x = e -> UNOP loc PLUS x ]
     | [ x = INT -> INT loc (int_of_string x)
       | "("; x = e; ")" -> x ] ]
   ;
 END;
+
+value parse_e = Grammar.Entry.parse e ;
+
+value pr_e = Eprinter.make "e";
+
+Eprinter.clear pr_e;
+value print_e = Eprinter.apply pr_e;
+
+EXTEND_PRINTER
+  pr_e:
+    [ "add"
+      [ BINOP _ ADD x y -> pprintf pc "@[%p +@ %p@]" curr x next y
+      | BINOP _ SUB x y -> pprintf pc "@[%p -@ %p@]" curr x next y ]
+    | "mul"
+      [ BINOP _ MUL x y -> pprintf pc "@[%p *@ %p@]" curr x next y
+      | BINOP _ DIV x y -> pprintf pc "@[%p /@ %p@]" curr x next y ]
+    | "uminus"
+      [ UNOP _ PLUS x -> pprintf pc "+ %p" curr x
+      | UNOP _ MINUS x -> pprintf pc "- %p" curr x ]
+    | "simple"
+      [ INT _ x -> pprintf pc "%d" x
+      | x -> pprintf pc "@[<2>(%p)@]" print_e x ]
+    ] ;
+END;
+
+value raw_comments e =
+  let rec crec acc = fun [
+    BINOP loc _ x y ->
+      let acc = crec acc y in
+      let acc = crec acc x in
+      [ (Ploc.comment loc) :: acc ]
+
+  | UNOP loc _ x ->
+      let acc = crec acc x in
+      [ (Ploc.comment loc) :: acc ]
+
+  | INT loc _ -> [ (Ploc.comment loc) :: acc ]
+  ]
+  in crec [] e
+;
 
 value eval e =
   let rec erec = fun [
@@ -114,11 +165,20 @@ value eval e =
 
 open Printf;
 
+Pretty.line_length.val := 10 ;
+value nonws_re = Pcre.regexp "\\S" ;
+value has_nonws s = Pcre.pmatch ~{rex=nonws_re} s;
+
+if not Sys.interactive.val then
 try
-    let r = Grammar.Entry.parse e (Stream.of_channel stdin) in
-    printf "<stdin> = %d\n" (eval r)
+    let r = parse_e (Stream.of_channel stdin) in do {
+      List.iter (fun s ->
+        if has_nonws s then print_string s else ()) (raw_comments r) ;
+      printf "%s" (pprintf Pprintf.empty_pc "%p = %d\n" print_e r (eval r))
+    }
 with [ Ploc.Exc loc exc ->
     Fmt.(pf stderr "%s%a@.%!" (Ploc.string_of_location loc) exn exc)
   | exc -> Fmt.(pf stderr "%a@.%!" exn exc)
 ]
+else ()
 ;
