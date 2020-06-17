@@ -11,22 +11,14 @@ type ctxt = {
 } ;
 
 value rec number =
-  lexer
+  pa_lexer
   [ '0'-'9' number!
   | -> ("INT", $buf)
   ]
 ;
 
-value nl ctxt c buf = parser bp
-  [  [: :] -> do {
-      if c = '\n' then ctxt.line_nb.val := 1 + ctxt.line_nb.val else () ;
-      ctxt.bol_pos.val := bp;
-      buf }
-  ]
-;
-
 value next_token_must ctxt =
-  lexer
+  pa_lexer
   [ '0'-'9' number!
   | [ '+' | '-' | '*' | '/' | '(' | ')' ] -> ("",$buf)
   ]
@@ -48,7 +40,7 @@ value rec comment_rest ctxt buf = parser
 ;
 
 value comment ctxt =
-  lexer
+  pa_lexer
   [ "//" (comment_rest ctxt)!
   ]
 ;
