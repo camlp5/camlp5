@@ -68,6 +68,14 @@ value next_token_fun (cstrm, s_line_nb, s_bol_pos) =
   next_token ctxt $empty cstrm
 ;
 
+type binop = [ ADD | SUB | DIV | MUL ] ;
+type unop = [ PLUS | MINUS ] ;
+type t = [
+  BINOP of Ploc.t and binop and t and t
+| UNOP of Ploc.t and unop and t
+| INT of Ploc.t and int ]
+;
+
 value lexer = Plexing.lexer_func_of_parser next_token_fun ;
 value lexer = {Plexing.tok_func = lexer;
  Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
@@ -80,27 +88,35 @@ value e = Grammar.Entry.create g "expression";
 
 EXTEND
   e:
-    [ [ x = e; "+"; y = e -> x + y
-      | x = e; "-"; y = e -> x - y ]
-    | [ x = e; "*"; y = e -> x * y
-      | x = e; "/"; y = e -> x / y ]
-    | [ x = INT -> int_of_string x
+    [ [ x = e; "+"; y = e -> BINOP loc ADD x y
+      | x = e; "-"; y = e -> BINOP loc SUB x y ]
+    | [ x = e; "*"; y = e -> BINOP loc MUL x y
+      | x = e; "/"; y = e -> BINOP loc DIV x  y ]
+    | [ "-" ; x = e -> UNOP loc MINUS x
+      | "+" ; x = e -> UNOP loc PLUS x ]
+    | [ x = INT -> INT loc (int_of_string x)
       | "("; x = e; ")" -> x ] ]
   ;
 END;
 
+value eval e =
+  let rec erec = fun [
+    BINOP _ ADD x y -> (erec x)+(erec y)
+  | BINOP _ SUB x y -> (erec x)-(erec y)
+  | BINOP _ DIV x y -> (erec x)/(erec y)
+  | BINOP _ MUL x y -> (erec x)*(erec y)
+  | UNOP _ MINUS x -> -(erec x)
+  | UNOP _ PLUS x -> erec x
+  | INT _ x -> x
+  ]
+  in erec e
+;
+
 open Printf;
 
 try
-if Array.length Sys.argv > 1 then
-  for i = 1 to Array.length Sys.argv - 1 do {
-    let r = Grammar.Entry.parse e (Stream.of_string Sys.argv.(i)) in
-    printf "%s = %d\n" Sys.argv.(i) r;
-    flush stdout;
-  }
-else
     let r = Grammar.Entry.parse e (Stream.of_channel stdin) in
-    printf "<stdin> = %d\n" r
+    printf "<stdin> = %d\n" (eval r)
 with [ Ploc.Exc loc exc ->
     Fmt.(pf stderr "%s%a@.%!" (Ploc.string_of_location loc) exn exc)
   | exc -> Fmt.(pf stderr "%a@.%!" exn exc)
