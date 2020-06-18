@@ -62,7 +62,7 @@ install:
 	for i in $(DIRS) compile; do \
 	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR) LIBDIR=$(LIBDIR) BINDIR=$(BINDIR) MANDIR=$(MANDIR); cd ..); \
 	done
-	cp etc/topfind.camlp5 `ocamlc -where`/. || true
+	cp etc/topfind.camlp5 "$(DESTDIR)$(LIBDIR)/$(OCAMLN)/." || true
 
 uninstall:
 	$(NOVERBOSE) if test -z "$(LIBDIR)"; then \
@@ -72,7 +72,7 @@ uninstall:
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	cd "$(DESTDIR)$(BINDIR)"; $(RM) -f *$(CAMLP5N)* odyl ocpp; cd ..
 	cd "$(DESTDIR)$(MANDIR)/man1"; $(RM) -f *$(CAMLP5N)* odyl ocpp
-	$(RM) -f `ocamlc -where`/topfind.camlp5
+	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(OCAMLN)"/topfind.camlp5
 
 clean::
 	$(MAKE) clean_hot clean_cold
