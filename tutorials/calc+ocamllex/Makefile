@@ -3,7 +3,7 @@ TOP=../..
 
 LAUNCH=env TOP=$(TOP) $(TOP)/tools/LAUNCH
 OCAMLFIND=$(LAUNCH) ocamlfind
-PACKAGES=camlp5,fmt
+PACKAGES=camlp5,fmt,camlp5.extprint,camlp5.extend,camlp5.pprintf,pcre
 
 all: calc calc.opt
 
@@ -33,3 +33,10 @@ calc.cmx: calc.ml
 clean:
 	rm -f calc calc.opt *.cm* *.o
 
+
+depend::
+	$(OCAMLFIND) ocamldep $(DEBUG) -package $(PACKAGES) -syntax camlp5o calclexer.ml > .depend.NEW || true
+	$(OCAMLFIND) ocamldep $(DEBUG) -package $(PACKAGES) -syntax camlp5r calc.ml >> .depend.NEW \
+		&& mv .depend.NEW .depend
+
+-include .depend
