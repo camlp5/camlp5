@@ -9,7 +9,7 @@ value input_file = ref "" ;
 value nonws_re = Pcre.regexp "\\S" ;
 value has_nonws s = Pcre.pmatch ~{rex=nonws_re} s;
 
-value lexer = Plexing.lexer_func_of_ocamllex Calclexer.token ;
+value lexer = Plexing.lexer_func_of_ocamllex_located Calclexer.token ;
 value lexer = {Plexing.tok_func = lexer;
  Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
  Plexing.tok_match = Plexing.default_match;

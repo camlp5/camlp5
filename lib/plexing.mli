@@ -112,6 +112,11 @@ value lexer_func_of_parser :
        returning the next token and its location. The two references
        with the char stream contain the current line number and the
        position of the beginning of the current line. *)
+value lexer_func_of_ocamllex_located : (Lexing.lexbuf -> ('te * Ploc.t)) -> lexer_func 'te;
+   (** A lexer function from a lexer created by [ocamllex],
+       but that returns camlp5 locations, too.  This can be used to get comments properly
+       transmitted to the parser.
+    *)
 value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
    (** A lexer function from a lexer created by [ocamllex] *)
 
