@@ -39,12 +39,20 @@ type type_name_t = { root : bool ; fid : fullident_t } ;
 type type_t = [ DOUBLE | FLOAT | INT32 | INT64 | UINT32 | UINT64
       | SINT32 | SINT64 | FIXED32 | FIXED64 | SFIXED32 | SFIXED64
       | BOOL | STRING | BYTES | NAMED of type_name_t ] ;
-type field_t = { field_label : label_t ; field_typ : type_t ; field_name : string ; field_num : int ; field_options : list (option_name_t * constant_t) } ;
+type message_field_t = { mf_label : label_t ; mf_typ : type_t ; mf_name : string ; mf_num : int ; mf_options : list (option_name_t * constant_t) } ;
 
-type group_t = { group_label : label_t ; group_name : string ; group_num : int ; group_body : list member_t }
-and member_t = [
-  MemFIELD of Ploc.t and field_t
-| MemGROUP of Ploc.t and group_t
+type group_t = { group_label : label_t ; group_name : string ; group_num : int ; group_body : list message_member_t }
+and message_member_t = [
+  MM_FIELD of Ploc.t and message_field_t
+| MM_GROUP of Ploc.t and group_t
+| MM_ONEOF of Ploc.t and string and list oneof_member_t
+| MM_MAP of Ploc.t and type_t and type_t and string and int and list (option_name_t * constant_t)
+]
+and oneof_field_t = { of_type : type_t ; of_name : string ; of_num : int ; of_options : list (option_name_t * constant_t) }
+and oneof_member_t = [
+  OM_FIELD of Ploc.t and oneof_field_t
+| OM_OPTION of Ploc.t and (option_name_t * constant_t)
+| OM_EMPTY of Ploc.t
 ]
 ;
 
@@ -54,13 +62,22 @@ type stmt = [
 | IMPORT of Ploc.t and option visibility_t and string
 | PACKAGE of Ploc.t and fullident_t
 | OPTION of Ploc.t and option_name_t and constant_t
-| MESSAGE of Ploc.t and string and list member_t
+| MESSAGE of Ploc.t and string and list message_member_t
 ]
 ;
 
 value loc_of_member = fun [
-  MemFIELD loc _ -> loc
-| MemGROUP loc _ -> loc
+  MM_FIELD loc _ -> loc
+| MM_GROUP loc _ -> loc
+| MM_ONEOF loc _ _ -> loc
+| MM_MAP loc _ _ _ _ _ -> loc
+]
+;
+
+value loc_of_oneof_member = fun [
+  OM_FIELD loc _ -> loc
+| OM_OPTION loc _ -> loc
+| OM_EMPTY loc -> loc
 ]
 ;
 
@@ -87,7 +104,7 @@ EXTEND
   label : [ [ "required" -> REQUIRED | "optional" -> OPTIONAL | "repeated" -> REPEATED ] ] ;
   option_binding : [ [ n = option_name ; "=" ; c = constant -> (n,c) ] ] ;
   options : [ [ "[" ; l = LIST1 option_binding SEP "," ; "]" -> l | -> [] ] ] ;
-  typ :
+  keytyp :
     [ [ "double" ->  DOUBLE
       | "float" ->  FLOAT
       | "int32"  ->  INT32
@@ -102,14 +119,27 @@ EXTEND
       | "sfixed64" ->  SFIXED64
       | "bool"  ->  BOOL
       | "string"  ->  STRING
+    ] ] ;
+  typ :
+    [ [ t = keytyp -> t
       | "bytes"  ->  BYTES
       | root = [ "." -> True | -> False ] ; fid = fullident -> NAMED { root = root ; fid = fid }
     ] ] ;
+  oneof_member:
+  [ [ ";" -> OM_EMPTY loc
+    | "option" ; b = option_binding ; ";" -> OM_OPTION loc b
+    | ty = typ ; n = ident ; "=" ; num = INT ; opts = options ; ";" ->
+      OM_FIELD loc {of_type = ty ; of_name = n ; of_num = int_of_string num ; of_options = opts }
+  ] ] ;
   member:
   [ [ l = label ; t = typ ; n = ident ; "=" ; num = INT ; opts = options ; ";" ->
-      MemFIELD loc { field_label=l; field_typ=t; field_name=n; field_num=int_of_string num; field_options = opts }
+      MM_FIELD loc { mf_label=l; mf_typ=t; mf_name=n; mf_num=int_of_string num; mf_options = opts }
     | l = label ; "group" ; gn = UIDENT ; "=" ; num = INT ;  "{" ; body = LIST0 member ; "}" ->
-      MemGROUP loc { group_label=l; group_name = gn ; group_num = int_of_string num ; group_body = body }
+      MM_GROUP loc { group_label=l; group_name = gn ; group_num = int_of_string num ; group_body = body }
+    | "oneof" ; n = ident ; "{" ; l = LIST1 oneof_member ; "}" ->
+      MM_ONEOF loc n l
+    | "map" ; "<" ; keyty = keytyp ; "," ; valty = typ ; ">" ; n = ident ; "=" ; num = INT ; opts = options ; ";" ->
+      MM_MAP loc keyty valty n (int_of_string num) opts
   ] ] ;
   stmt:
     [ [ ";" -> EMPTY loc
@@ -154,10 +184,12 @@ value parse_stmts = Grammar.Entry.parse stmts ;
 value parse_stmts_eoi = Grammar.Entry.parse stmts_eoi ;
 
 value pr_member = Eprinter.make "member";
+value pr_oneof_member = Eprinter.make "oneof_member";
 value pr_stmt = Eprinter.make "stmt";
 value pr_stmts = Eprinter.make "stmts";
 
 Eprinter.clear pr_member;
+Eprinter.clear pr_oneof_member;
 Eprinter.clear pr_stmt;
 Eprinter.clear pr_stmts;
 
@@ -167,6 +199,15 @@ value print_commented_member pc member =
   let comment = Ploc.comment loc in
   let comment = if has_nonws comment then comment else "" in
   let pp = (fun () -> pprintf pc "%s%p" comment print_member member) in
+    Pretty.horiz_vertic pp pp
+;
+
+value print_oneof_member = Eprinter.apply pr_oneof_member;
+value print_commented_oneof_member pc member =
+  let loc = loc_of_oneof_member member in
+  let comment = Ploc.comment loc in
+  let comment = if has_nonws comment then comment else "" in
+  let pp = (fun () -> pprintf pc "%s%p" comment print_oneof_member member) in
     Pretty.horiz_vertic pp pp
 ;
 
@@ -239,18 +280,28 @@ value options pc l =
 ;
 
 EXTEND_PRINTER
+  pr_oneof_member:
+    [ [ OM_EMPTY _ -> pprintf pc ";"
+      | OM_OPTION _ (n, c) -> pprintf pc "option %p;" option_binding (n,c)
+      | OM_FIELD _ f -> pprintf pc "%p %s = %d %p;"
+          typ f.of_type f.of_name f.of_num options f.of_options
+    ] ] ;
   pr_member:
-    [ [ MemFIELD _ f ->
+    [ [ MM_FIELD _ f ->
         pprintf pc "%s %p %s = %d%p;"
-          (match f.field_label with [ REQUIRED -> "required" | OPTIONAL -> "optional" | REPEATED -> "repeated"])
-          typ f.field_typ
-          f.field_name f.field_num
-          options f.field_options
-      | MemGROUP _ g ->
+          (match f.mf_label with [ REQUIRED -> "required" | OPTIONAL -> "optional" | REPEATED -> "repeated"])
+          typ f.mf_typ
+          f.mf_name f.mf_num
+          options f.mf_options
+      | MM_GROUP _ g ->
         pprintf pc "%s %s = %d @[<2>{@ %p@ }@]"
           (match g.group_label with [ REQUIRED -> "required" | OPTIONAL -> "optional" | REPEATED -> "repeated"])
           g.group_name g.group_num
           (plist print_commented_member 2) g.group_body
+      | MM_ONEOF _ n l ->
+        pprintf pc "oneof %s @[<2>{@ %p@ }@]" n (plist print_commented_oneof_member 2) l
+      | MM_MAP _ keyty valty n num opts ->
+        pprintf pc "map<%p,%p>%s = %d%p;" typ keyty typ valty n num options opts
     ] ] ;
   pr_stmt:
     [ [ EMPTY _ -> pprintf pc ";"
