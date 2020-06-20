@@ -46,12 +46,16 @@ type range_t = (int * option int_or_max) ;
 
 type group_t = { group_label : label_t ; group_name : string ; group_num : int ; group_body : list message_member_t }
 and message_member_t = [
-  MM_FIELD of Ploc.t and message_field_t
+  MM_EMPTY of Ploc.t
+| MM_OPTION of Ploc.t and (option_name_t * constant_t)
+| MM_FIELD of Ploc.t and message_field_t
 | MM_GROUP of Ploc.t and group_t
 | MM_ONEOF of Ploc.t and string and list oneof_member_t
 | MM_MAP of Ploc.t and type_t and type_t and string and int and list (option_name_t * constant_t)
 | MM_EXTENSIONS of Ploc.t and list range_t
 | MM_RESERVED of Ploc.t and choice (list range_t) (list string)
+| MM_MESSAGE of Ploc.t and string and list message_member_t
+| MM_ENUM of Ploc.t and string and list enum_member_t
 ]
 and oneof_field_t = { of_type : type_t ; of_name : string ; of_num : int ; of_options : list (option_name_t * constant_t) }
 and oneof_member_t = [
@@ -59,9 +63,8 @@ and oneof_member_t = [
 | OM_OPTION of Ploc.t and (option_name_t * constant_t)
 | OM_EMPTY of Ploc.t
 ]
-;
 
-type enum_member_t = [
+and enum_member_t = [
   EM_EMPTY of Ploc.t
 | EM_OPTION of Ploc.t and (option_name_t * constant_t)
 | EM_FIELD of Ploc.t and string and int and list (option_name_t * constant_t)
@@ -73,19 +76,23 @@ type stmt = [
 | SYNTAX of Ploc.t and version_t
 | IMPORT of Ploc.t and option visibility_t and string
 | PACKAGE of Ploc.t and fullident_t
-| OPTION of Ploc.t and option_name_t and constant_t
+| OPTION of Ploc.t and (option_name_t * constant_t)
 | MESSAGE of Ploc.t and string and list message_member_t
 | ENUM of Ploc.t and string and list enum_member_t
 ]
 ;
 
 value loc_of_member = fun [
-  MM_FIELD loc _ -> loc
+  MM_EMPTY loc -> loc
+| MM_OPTION loc _ -> loc
+| MM_FIELD loc _ -> loc
 | MM_GROUP loc _ -> loc
 | MM_ONEOF loc _ _ -> loc
 | MM_MAP loc _ _ _ _ _ -> loc
 | MM_EXTENSIONS loc _ -> loc
 | MM_RESERVED loc _ -> loc
+| MM_MESSAGE loc _ _ -> loc
+| MM_ENUM loc _ _ -> loc
 ]
 ;
 
@@ -108,7 +115,7 @@ value loc_of_stmt = fun [
 | SYNTAX loc _ -> loc
 | IMPORT loc _ _ -> loc
 | PACKAGE loc _ -> loc
-| OPTION loc _ _ -> loc
+| OPTION loc _ -> loc
 | MESSAGE loc _ _ -> loc
 | ENUM loc _ _ -> loc
 ]
@@ -161,7 +168,10 @@ EXTEND
       EM_FIELD loc n num opts
   ] ] ;
   member:
-  [ [ l = label ; t = typ ; n = ident ; "=" ; num = int ; opts = options ; ";" ->
+  [ [ ";" -> MM_EMPTY loc
+    | "option" ; (n,c) = option_binding ; ";" ->
+      MM_OPTION loc (n, c)
+    | l = label ; t = typ ; n = ident ; "=" ; num = int ; opts = options ; ";" ->
       MM_FIELD loc { mf_label=l; mf_typ=t; mf_name=n; mf_num=num; mf_options = opts }
     | l = label ; "group" ; gn = UIDENT ; "=" ; num = int ;  "{" ; body = LIST0 member ; "}" ->
       MM_GROUP loc { group_label=l; group_name = gn ; group_num = num ; group_body = body }
@@ -173,6 +183,10 @@ EXTEND
       MM_EXTENSIONS loc l
     | "reserved" ; l = LIST1 range SEP "," ; ";" -> MM_RESERVED loc (Left l)
     | "reserved" ; l = LIST1 ident SEP "," ; ";" -> MM_RESERVED loc (Right l)
+    | "message" ; n = ident ; "{" ; l = LIST0 member ; "}" ->
+      MM_MESSAGE loc n l
+    | "enum" ; n = ident ; "{" ; l = LIST1 enum_member ; "}" ->
+      MM_ENUM loc n l
   ] ] ;
   range :
   [ [ n = int -> (n, None)
@@ -192,7 +206,7 @@ EXTEND
       | "package"; fid = fullident ; ";" ->
         PACKAGE loc fid
       | "option" ; (n,c) = option_binding ; ";" ->
-        OPTION loc n c
+        OPTION loc (n, c)
       | "message" ; n = ident ; "{" ; l = LIST0 member ; "}" ->
         MESSAGE loc n l
       | "enum" ; n = ident ; "{" ; l = LIST1 enum_member ; "}" ->
@@ -354,7 +368,9 @@ EXTEND_PRINTER
           n num options opts
     ] ] ;
   pr_member:
-    [ [ MM_FIELD _ f ->
+    [ [ MM_EMPTY _ -> pprintf pc ";"
+      | MM_OPTION _ (n, c) -> pprintf pc "option %p;" option_binding (n,c)
+      | MM_FIELD _ f ->
         pprintf pc "%s %p %s = %d%p;"
           (match f.mf_label with [ REQUIRED -> "required" | OPTIONAL -> "optional" | REPEATED -> "repeated"])
           typ f.mf_typ
@@ -371,8 +387,12 @@ EXTEND_PRINTER
         pprintf pc "map<%p,%p>%s = %d%p;" typ keyty typ valty n num options opts
       | MM_EXTENSIONS _ l ->
          pprintf pc "extensions %p;" (plist ~{sep=","} pp_range 2) l
-       | MM_RESERVED _ (Left l) -> pprintf pc "reserved %p;" (plist ~{sep=","} pp_range 2) l
-       | MM_RESERVED _ (Right l) -> pprintf pc "reserved %p;" (plist ~{sep=","} pp_ident 2) l
+      | MM_RESERVED _ (Left l) -> pprintf pc "reserved %p;" (plist ~{sep=","} pp_range 2) l
+      | MM_RESERVED _ (Right l) -> pprintf pc "reserved %p;" (plist ~{sep=","} pp_ident 2) l
+      | MM_MESSAGE _ n l -> pprintf pc "message %s @[<2>{@ %p@ }@]"
+          n (plist print_commented_member 2) l
+      | MM_ENUM _ n l -> pprintf pc "enum %s @[<2>{@ %p@ }@]"
+          n (plist print_commented_enum_member 2) l
     ] ] ;
   pr_stmt:
     [ [ EMPTY _ -> pprintf pc ";"
@@ -381,7 +401,7 @@ EXTEND_PRINTER
       | IMPORT _ v s -> pprintf pc "import%s\"%s\";"
           (match v with [ Some WEAK -> " weak " | Some PUBLIC -> " public " | _ -> " " ]) s
       | PACKAGE _ fid -> pprintf pc "package %p;" fullident fid
-      | OPTION _ n c -> pprintf pc "option %p;" option_binding (n,c)
+      | OPTION _ (n, c) -> pprintf pc "option %p;" option_binding (n,c)
       | MESSAGE _ n l -> pprintf pc "message %s @[<2>{@ %p@ }@]"
           n (plist print_commented_member 2) l
       | ENUM _ n l -> pprintf pc "enum %s @[<2>{@ %p@ }@]"
