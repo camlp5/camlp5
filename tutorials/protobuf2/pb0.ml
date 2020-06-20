@@ -41,12 +41,15 @@ type type_t = [ DOUBLE | FLOAT | INT32 | INT64 | UINT32 | UINT64
       | BOOL | STRING | BYTES | NAMED of type_name_t ] ;
 type message_field_t = { mf_label : label_t ; mf_typ : type_t ; mf_name : string ; mf_num : int ; mf_options : list (option_name_t * constant_t) } ;
 
+type int_or_max = [ MAX | NUM of int ] ;
+
 type group_t = { group_label : label_t ; group_name : string ; group_num : int ; group_body : list message_member_t }
 and message_member_t = [
   MM_FIELD of Ploc.t and message_field_t
 | MM_GROUP of Ploc.t and group_t
 | MM_ONEOF of Ploc.t and string and list oneof_member_t
 | MM_MAP of Ploc.t and type_t and type_t and string and int and list (option_name_t * constant_t)
+| MM_EXTENSIONS of Ploc.t and list (int * option int_or_max)
 ]
 and oneof_field_t = { of_type : type_t ; of_name : string ; of_num : int ; of_options : list (option_name_t * constant_t) }
 and oneof_member_t = [
@@ -71,6 +74,7 @@ value loc_of_member = fun [
 | MM_GROUP loc _ -> loc
 | MM_ONEOF loc _ _ -> loc
 | MM_MAP loc _ _ _ _ _ -> loc
+| MM_EXTENSIONS loc _ -> loc
 ]
 ;
 
@@ -128,18 +132,25 @@ EXTEND
   oneof_member:
   [ [ ";" -> OM_EMPTY loc
     | "option" ; b = option_binding ; ";" -> OM_OPTION loc b
-    | ty = typ ; n = ident ; "=" ; num = INT ; opts = options ; ";" ->
-      OM_FIELD loc {of_type = ty ; of_name = n ; of_num = int_of_string num ; of_options = opts }
+    | ty = typ ; n = ident ; "=" ; num = int ; opts = options ; ";" ->
+      OM_FIELD loc {of_type = ty ; of_name = n ; of_num = num ; of_options = opts }
   ] ] ;
   member:
-  [ [ l = label ; t = typ ; n = ident ; "=" ; num = INT ; opts = options ; ";" ->
-      MM_FIELD loc { mf_label=l; mf_typ=t; mf_name=n; mf_num=int_of_string num; mf_options = opts }
-    | l = label ; "group" ; gn = UIDENT ; "=" ; num = INT ;  "{" ; body = LIST0 member ; "}" ->
-      MM_GROUP loc { group_label=l; group_name = gn ; group_num = int_of_string num ; group_body = body }
+  [ [ l = label ; t = typ ; n = ident ; "=" ; num = int ; opts = options ; ";" ->
+      MM_FIELD loc { mf_label=l; mf_typ=t; mf_name=n; mf_num=num; mf_options = opts }
+    | l = label ; "group" ; gn = UIDENT ; "=" ; num = int ;  "{" ; body = LIST0 member ; "}" ->
+      MM_GROUP loc { group_label=l; group_name = gn ; group_num = num ; group_body = body }
     | "oneof" ; n = ident ; "{" ; l = LIST1 oneof_member ; "}" ->
       MM_ONEOF loc n l
-    | "map" ; "<" ; keyty = keytyp ; "," ; valty = typ ; ">" ; n = ident ; "=" ; num = INT ; opts = options ; ";" ->
-      MM_MAP loc keyty valty n (int_of_string num) opts
+    | "map" ; "<" ; keyty = keytyp ; "," ; valty = typ ; ">" ; n = ident ; "=" ; num = int ; opts = options ; ";" ->
+      MM_MAP loc keyty valty n num opts
+    | "extensions" ; l = LIST1 range SEP "," ; ";" ->
+      MM_EXTENSIONS loc l
+  ] ] ;
+  range :
+  [ [ n = int -> (n, None)
+    | n = int ; "to" ; m = int -> (n, Some (NUM m))
+    | n = int ; "to" ; "max" -> (n, Some MAX)
   ] ] ;
   stmt:
     [ [ ";" -> EMPTY loc
@@ -176,6 +187,7 @@ EXTEND
   ] ] ;
   fullident : [ [ fid = LIST1 ident SEP "." -> fid ] ] ;
   ident: [ [ id = LIDENT -> id | id = UIDENT -> id ] ] ;
+  int : [ [ n = INT -> int_of_string n ] ] ;
 END;
 
 value parse_member = Grammar.Entry.parse member ;
@@ -222,8 +234,8 @@ value print_commented_stmt pc stmt =
 
 value print_stmts = Eprinter.apply pr_stmts;
 
-value plist f sh pc l =
-  let l = List.map (fun s -> (s, "")) l in
+value plist ?{sep=""} f sh pc l =
+  let l = List.map (fun s -> (s, sep)) l in
   pprintf pc "%p" (Prtools.plist f sh) l
 ;
 
@@ -276,7 +288,7 @@ value option_binding pc (n,c) =
 
 value options pc l =
   if l = [] then pprintf pc ""
-  else pprintf pc "[%p]" (Prtools.plist option_binding 2) (List.map (fun b -> (b, ",")) l)
+  else pprintf pc "[%p]" (plist ~{sep=","} option_binding 2) l
 ;
 
 EXTEND_PRINTER
@@ -302,6 +314,13 @@ EXTEND_PRINTER
         pprintf pc "oneof %s @[<2>{@ %p@ }@]" n (plist print_commented_oneof_member 2) l
       | MM_MAP _ keyty valty n num opts ->
         pprintf pc "map<%p,%p>%s = %d%p;" typ keyty typ valty n num options opts
+      | MM_EXTENSIONS _ l ->
+        let pp_range pc = fun [
+          (n, None) -> pprintf pc "%d" n
+       | (n, Some (NUM m)) -> pprintf pc "%d to %d" n m
+       | (n, Some MAX) -> pprintf pc "%d to max" n
+       ] in
+        pprintf pc "extensions %p;" (plist ~{sep=","} pp_range 2) l
     ] ] ;
   pr_stmt:
     [ [ EMPTY _ -> pprintf pc ";"
