@@ -28,6 +28,10 @@ clexer.cmo: clexer.ml
 clexer.cmx: clexer.ml
 	$(OCAMLFIND) ocamlopt $(DEBUG) -package $(PACKAGES) -syntax camlp5r -c $<
 
+test: pb0
+	./test1 ../../../ocaml-protoc/src/tests/benchmark/benchmark.proto
+	./pb0 < ../../../ocaml-protoc/src/tests/bs/bs_unittest.proto
+
 clean:
 	rm -f calc calc.opt *.cm* *.o *.ppo.ml
 

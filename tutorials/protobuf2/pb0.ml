@@ -131,7 +131,7 @@ value loc_strip_comment loc = Ploc.with_comment loc "" ;
 
 EXTEND
   GLOBAL: member stmt stmts stmts_eoi ;
-  label : [ [ "required" -> REQUIRED | "optional" -> OPTIONAL | "repeated" -> REPEATED ] ] ;
+  label : [ [ "required" -> REQUIRED | "optional" -> OPTIONAL | "repeated" -> REPEATED | -> REQUIRED ] ] ;
   option_binding : [ [ n = option_name ; "=" ; c = constant -> (n,c) ] ] ;
   options : [ [ "[" ; l = LIST1 option_binding SEP "," ; "]" -> l | -> [] ] ] ;
   keytyp :
@@ -377,10 +377,10 @@ EXTEND_PRINTER
           f.mf_name f.mf_num
           options f.mf_options
       | MM_GROUP _ g ->
-        pprintf pc "%s %s = %d @[<2>{@ %p@ }@]"
+        pprintf pc "%s %s = %d @[<2>{\n%p\n}@]"
           (match g.group_label with [ REQUIRED -> "required" | OPTIONAL -> "optional" | REPEATED -> "repeated"])
           g.group_name g.group_num
-          (plist print_commented_member 2) g.group_body
+          (plist ~{sep="\n"} print_commented_member 2) g.group_body
       | MM_ONEOF _ n l ->
         pprintf pc "oneof %s @[<2>{@ %p@ }@]" n (plist print_commented_oneof_member 2) l
       | MM_MAP _ keyty valty n num opts ->
@@ -389,8 +389,8 @@ EXTEND_PRINTER
          pprintf pc "extensions %p;" (plist ~{sep=","} pp_range 2) l
       | MM_RESERVED _ (Left l) -> pprintf pc "reserved %p;" (plist ~{sep=","} pp_range 2) l
       | MM_RESERVED _ (Right l) -> pprintf pc "reserved %p;" (plist ~{sep=","} pp_ident 2) l
-      | MM_MESSAGE _ n l -> pprintf pc "message %s @[<2>{@ %p@ }@]"
-          n (plist print_commented_member 2) l
+      | MM_MESSAGE _ n l -> pprintf pc "message %s @[<2>{\n%p\n}@]"
+          n (plist ~{sep="\n"} print_commented_member 2) l
       | MM_ENUM _ n l -> pprintf pc "enum %s @[<2>{@ %p@ }@]"
           n (plist print_commented_enum_member 2) l
     ] ] ;
@@ -402,8 +402,8 @@ EXTEND_PRINTER
           (match v with [ Some WEAK -> " weak " | Some PUBLIC -> " public " | _ -> " " ]) s
       | PACKAGE _ fid -> pprintf pc "package %p;" fullident fid
       | OPTION _ (n, c) -> pprintf pc "option %p;" option_binding (n,c)
-      | MESSAGE _ n l -> pprintf pc "message %s @[<2>{@ %p@ }@]"
-          n (plist print_commented_member 2) l
+      | MESSAGE _ n l -> pprintf pc "message %s @[<2>{\n%p\n}@]"
+          n (plist ~{sep="\n"} print_commented_member 2) l
       | ENUM _ n l -> pprintf pc "enum %s @[<2>{@ %p@ }@]"
           n (plist print_commented_enum_member 2) l
       ]
@@ -417,7 +417,7 @@ END;
 
 open Printf;
 
-Pretty.line_length.val := 10 ;
+(* Pretty.line_length.val := 10 ; *)
 
 if not Sys.interactive.val then
 try
