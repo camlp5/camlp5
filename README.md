@@ -91,10 +91,10 @@ contributions are welcome) in `testsuite`.  It assumes only that
 camlp5 has been successfully built, but not installed.  To build/run
 it, one must install a number of packages:
 
-  - 'rresult'
-  - 'fmt'
-  - 'pcre'
-  - 'ounit2'
+  - `rresult`
+  - `fmt`
+  - `pcre`
+  - `ounit2`
   - `IPC::System::Simple`
   - `String::ShellQuote`
 
