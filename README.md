@@ -10,18 +10,31 @@ This Camlp5 version is 8.00-alpha01.
 
 ## Requirements
 
-You need the ocaml compiler installed. It must be accessible in the path.
+1. You need the ocaml compiler installed. It must be accessible in the path.
+
+2. To build and run the testsuite, you will need a few Perl modules:
+
+  - IPC::System::Simple
+  - String::ShellQuote
+
+  On Debian/Ubuntu systems, these can be installed with:
+  ```apt-get install libstring-shellquote-perl libipc-system-simple-perl```
+
+  These Perl packages are *not* required to build/install camlp5, but
+  only to build and run the testsuite.  However, for add-on packages
+  (like `pa_ppx`) they are required, and so it is probably wisest to
+  go ahead and install them now.
 
 ## Installation
 
-1) First, run the "configure" script by typing:
+1. First, run the "configure" script by typing:
 ```shell
    ./configure
 ```
 The `configure` script has a few options. Use the `--help` option to get a
 list and short description of each option.
 
-2) It creates a Makefile, which can be invoked by:
+2. It creates a Makefile, which can be invoked by:
 ```shell
    make
 ```

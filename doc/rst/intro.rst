@@ -32,9 +32,21 @@ toplevel.
 .. contents::
   :local:
 
+Quickstart with `ocamlfind`
+---------------------------
 
-Shell usage
------------
+The quickest way to use camlp5 is with `ocamlfind`.  Once installed,
+`ocamlfind list | grep camlp5` produces a long list of packages.  Each
+of these corresponds to a feature of camlp5, and this documentation
+will explain how to use them.  Camlp5 can be used in the ocaml
+toplevel, and the tutorials in this documentation will use this
+capability.
+
+
+
+
+Low-level Shell usage
+---------------------
 
 The main shell commands are:
 

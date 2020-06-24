@@ -14,7 +14,7 @@ TESTS=official2official_test o2r_test r2r_test r2o_test o2o_test o2official_test
 
 all-tests: all $(TESTS)
 
-all: roundtrippers \
+all: prereqs roundtrippers \
 	o2r_test.byte \
 	r2r_test.byte \
 	r2o_test.byte \
@@ -35,6 +35,10 @@ all: roundtrippers \
 	tools/ROUNDTRIP-pa_o-pr_o.opt \
 	grammar_bug_test \
 	little_lang_test \
+
+prereqs:
+	(perl -MIPC::System::Simple -e 1 > /dev/null 2>&1) || (echo "MUST install Perl module IPC::System::Simple" && exit -1)
+	(perl -MString::ShellQuote -e 1 > /dev/null 2>&1) || (echo "MUST install Perl module String::ShellQuote" && exit -1)
 
 roundtrippers: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
