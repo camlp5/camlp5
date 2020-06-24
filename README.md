@@ -14,8 +14,8 @@ This Camlp5 version is 8.00-alpha01.
 
 2. To build and run the testsuite, you will need a few Perl modules:
 
-  - IPC::System::Simple
-  - String::ShellQuote
+  - `IPC::System::Simple`
+  - `String::ShellQuote`
 
   On Debian/Ubuntu systems, these can be installed with:
   ```apt-get install libstring-shellquote-perl libipc-system-simple-perl```
