@@ -80,18 +80,23 @@ let lexer_func_of_parser next_token_loc cs =
   make_stream_and_location (fun () -> next_token_loc (cs, line_nb, bolpos))
 ;;
 
-let lexer_func_of_ocamllex lexfun cs =
+let lexer_func_of_ocamllex_located lexfun cs =
   let lb =
     Lexing.from_function
       (fun s n ->
          try string_set s 0 (Stream.next cs); 1 with Stream.Failure -> 0)
   in
-  let next_token_loc _ =
+  let next_token_func () = lexfun lb in
+  make_stream_and_location next_token_func
+;;
+
+let lexer_func_of_ocamllex lexfun cs =
+  let lexfun_located lb =
     let tok = lexfun lb in
     let loc = make_loc (Lexing.lexeme_start lb, Lexing.lexeme_end lb) in
     tok, loc
   in
-  make_stream_and_location next_token_loc
+  lexer_func_of_ocamllex_located lexfun_located cs
 ;;
 
 (* Char and string tokens to real chars and string *)

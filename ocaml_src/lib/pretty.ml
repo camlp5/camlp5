@@ -37,4 +37,6 @@ let horiz_vertic horiz vertic =
     GiveUp -> if !horiz_ctx then raise GiveUp else vertic ()
 ;;
 
+let vertic v = horiz_vertic (fun () -> raise GiveUp) v;;
+
 let horizontally () = !horiz_ctx;;
