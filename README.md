@@ -87,7 +87,9 @@ explanations are also in the chapter "Camlp5 sources" in the documentation.
 ## Testsuite
 
 There is a rather extensive testsuite (to which any suggestions or
-contributions are welcome) in `testsuite`.  To build/run it, one must install a number of packages:
+contributions are welcome) in `testsuite`.  It assumes only that
+camlp5 has been successfully built, but not installed.  To build/run
+it, one must install a number of packages:
 
   - 'rresult'
   - 'fmt'
@@ -112,6 +114,17 @@ contributions are welcome) in `testsuite`.  To build/run it, one must install a 
 Then to build/run it:
 
   ```make -C testsuite all-tests```
+
+## Tutorial examples
+
+There are a number of tutorial examples in the directory `tutorial`.
+They assume that camlp5 has been installed (and hence, do not
+reference the build-tree).  To build the tutorial examples:
+
+  ```make -C tutorial all```
+
+The documentation uses these examples to explain how to write code
+using Camlp5.
 
 ## Problems
 
