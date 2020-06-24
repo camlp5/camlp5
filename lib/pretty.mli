@@ -11,6 +11,10 @@ value horiz_vertic : (unit -> 'a) -> (unit -> 'a) -> 'a;
       below), then the function [h] stops and the function [v] is called
       which can print using several lines. *)
 
+value vertic : (unit -> 'a) -> 'a;
+  (** [vertic v] [vertic v] is just like [horiz_vertic _ v], but it short-circuits
+      past printing horizontally, so you always get breaks. *)
+
 value sprintf : format 'a unit string -> 'a;
   (** [sprintf fmt ...] formats some string like [Printf.sprintf]
       does, except that, if it is called in the context of the *first*

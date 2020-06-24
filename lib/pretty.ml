@@ -35,4 +35,8 @@ value horiz_vertic horiz vertic =
   [ GiveUp -> if horiz_ctx.val then raise GiveUp else vertic () ]
 ;
 
+value vertic v =
+  horiz_vertic (fun () -> raise GiveUp) v
+;
+
 value horizontally () = horiz_ctx.val;
