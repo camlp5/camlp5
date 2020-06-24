@@ -2,8 +2,7 @@
 TOP=../..
 include $(TOP)/config/Makefile
 
-LAUNCH=env TOP=$(TOP) $(TOP)/tools/LAUNCH
-OCAMLFIND=$(LAUNCH) ocamlfind
+OCAMLFIND=ocamlfind
 PACKAGES=camlp5,fmt
 
 all: calc calc.opt

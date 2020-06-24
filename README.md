@@ -10,21 +10,7 @@ This Camlp5 version is 8.00-alpha01.
 
 ## Requirements
 
-1. You need the ocaml compiler installed. It must be accessible in the path.
-
-2. To build and run the testsuite, you will need a few Perl modules:
-
-  - `IPC::System::Simple`
-  - `String::ShellQuote`
-
-  On Debian/Ubuntu systems, these can be installed with:
-
-  ```apt-get install libstring-shellquote-perl libipc-system-simple-perl```
-
-  These Perl packages are *not* required to build/install camlp5, but
-  only to build and run the testsuite.  However, for add-on packages
-  (like `pa_ppx`) they are required, and so it is probably wisest to
-  go ahead and install them now.
+You need the ocaml compiler installed. It must be accessible in the path.
 
 ## Installation
 
@@ -102,10 +88,30 @@ explanations are also in the chapter "Camlp5 sources" in the documentation.
 
 There is a rather extensive testsuite (to which any suggestions or
 contributions are welcome) in `testsuite`.  To build/run it, one must install a number of packages:
-```
-opam install ocamlfind pcre ounit2
-make -C testsuite all-tests
-```
+
+  - 'rresult'
+  - 'fmt'
+  - 'pcre'
+  - 'ounit2'
+  - `IPC::System::Simple`
+  - `String::ShellQuote`
+
+  On Debian/Ubuntu systems, the Perl packages can be installed with:
+
+  ```apt-get install libstring-shellquote-perl libipc-system-simple-perl```
+
+  and using opam:
+
+  ```opam install rresult fmt pcre ounit2```
+
+  These packages are *not* required to build/install camlp5, but
+  only to build and run the testsuite.  However, for add-on packages
+  (like `pa_ppx`) they are required, and so it is probably wisest to
+  go ahead and install them now.
+
+Then to build/run it:
+
+  ```make -C testsuite all-tests```
 
 ## Problems
 
