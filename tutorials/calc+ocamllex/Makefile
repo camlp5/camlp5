@@ -1,6 +1,4 @@
 
-TOP=../..
-
 OCAMLFIND=ocamlfind
 PACKAGES=camlp5,fmt,camlp5.extprint,camlp5.extend,camlp5.pprintf,pcre
 
@@ -33,7 +31,7 @@ calc.cmx: calc.ml
 	ocamllex $<
 
 clean:
-	rm -f calc calc.opt *.cm* *.o
+	rm -f calc calc.opt *.cm* *.o calclexer.ml
 
 
 depend::

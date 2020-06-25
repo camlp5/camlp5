@@ -1,7 +1,4 @@
 
-TOP=../..
-include $(TOP)/config/Makefile
-
 OCAMLFIND=ocamlfind
 PACKAGES=camlp5,fmt
 
