@@ -2,7 +2,7 @@
 TOP=../..
 
 OCAMLFIND=ocamlfind
-PACKAGES=camlp5,fmt
+PACKAGES=camlp5,fmt,camlp5.extend
 
 all: calc calc.opt
 
@@ -25,6 +25,9 @@ calc.cmo: calc.ml
 
 calc.cmx: calc.ml
 	$(OCAMLFIND) ocamlopt $(DEBUG) -package $(PACKAGES) -linkall -linkpkg -syntax camlp5r -c $<
+
+test:: all
+	./calc '1+1' '1 - 1' '1 + (2 * 3)'
 
 .mll.ml:
 	ocamllex $<

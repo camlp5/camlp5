@@ -1,4 +1,5 @@
-#load "pa_extend.cmo";
+(* camlp5r *)
+(* calc.ml,v *)
 
 value g = Grammar.gcreate (Plexer.gmake ());
 value e = Grammar.Entry.create g "expression";

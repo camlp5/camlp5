@@ -1,9 +1,6 @@
-(*
-#load "pa_extend.cmo";
-#load "pa_lexer.cmo";
-#load "pa_extprint.cmo";
-#load "pa_pprintf.cmo";
-*)
+(* camlp5r *)
+(* calc.ml,v *)
+
 value input_file = ref "" ;
 value nonws_re = Pcre.regexp "\\S" ;
 value has_nonws s = Pcre.pmatch ~{rex=nonws_re} s;

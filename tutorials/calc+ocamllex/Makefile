@@ -12,6 +12,9 @@ calc: calclexer.cmo calc.cmo
 calc.opt: calclexer.cmx calc.cmx
 	$(OCAMLFIND) ocamlopt $(DEBUG) -package $(PACKAGES) -linkall -linkpkg -syntax camlp5r $^ -o $@
 
+test:: all
+	echo '1+1 ; 1 - 1; 1 + (2 * 3)' | ./calc
+
 .SUFFIXES: .mll .ml .cmo .cmx
 
 calclexer.cmo: calclexer.ml

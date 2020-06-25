@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* plexer.ml,v *)
+(* clexer.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
 #load "pa_lexer.cmo";

@@ -1,4 +1,5 @@
-#load "pa_extend.cmo";
+(* camlp5r *)
+(* calc.ml,v *)
 
 module Ocamllex_L = struct
 type te = (string * string) ;

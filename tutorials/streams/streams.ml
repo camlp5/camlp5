@@ -1,3 +1,5 @@
+(* camlp5o *)
+(* streams.ml,v *)
 
 open Genlex
 

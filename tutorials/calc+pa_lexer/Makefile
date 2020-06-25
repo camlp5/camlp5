@@ -22,6 +22,9 @@ calc.cmo: calc.ml
 calc.cmx: calc.ml
 	$(OCAMLFIND) ocamlopt $(DEBUG) -package $(PACKAGES) -syntax camlp5r -c $<
 
+test:: all
+	echo '1+1 ; 1 - 1; 1 + (2 * 3)' | ./calc
+
 clean:
 	rm -f calc calc.opt *.cm* *.o *.ppo.ml
 
