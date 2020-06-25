@@ -134,4 +134,7 @@ abstract. Consider looking at the file UPGRADING.
 
 ## Author
 
-Daniel de Rauglaudre <daniel.roglo@free.fr>
+Originally written by Daniel de Rauglaudre <daniel.roglo@free.fr>.
+Maintenance and upgrades by Chet Murthy <chetsky@gmail.com>.
+
+All bugs are my (Chet's) fault, all good ideas are Daniel's.
