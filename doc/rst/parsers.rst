@@ -1,3 +1,5 @@
+.. _stream_parsers:
+
 Stream parsers
 ==============
 

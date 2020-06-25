@@ -316,7 +316,7 @@ package "pprintf" (
 )
 
 
-package "lexer" (
+package "pa_lexer" (
   version = "@VERSION@"
   description = "Syntax extension: Stream lexers"
 

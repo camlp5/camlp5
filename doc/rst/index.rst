@@ -6,6 +6,7 @@ Welcome to Camlp5's documentation! (Only stub for now)
    :maxdepth: 3
 
    intro
+   tutorial
    strict
    ptools
    parsing-tools

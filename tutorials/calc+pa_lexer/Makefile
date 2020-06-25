@@ -3,7 +3,7 @@ TOP=../..
 
 OCAMLFIND=ocamlfind
 NOT_OCAMLFIND=not-ocamlfind
-PACKAGES=camlp5,fmt,camlp5.extprint,camlp5.extend,camlp5.lexer,camlp5.pprintf,pcre
+PACKAGES=camlp5,fmt,camlp5.extprint,camlp5.extend,camlp5.pa_lexer,camlp5.pprintf,pcre
 
 all: calc calc.opt
 

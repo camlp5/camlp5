@@ -1,5 +1,7 @@
+.. _revised_syntax:
+
 The revised syntax
-==================
+===================
 
 
 .. container::

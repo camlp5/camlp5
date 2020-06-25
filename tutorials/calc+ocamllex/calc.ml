@@ -88,10 +88,6 @@ value pr_expr = Eprinter.make "expr";
 value pr_stmt = Eprinter.make "stmt";
 value pr_stmts = Eprinter.make "stmts";
 
-Eprinter.clear pr_expr;
-Eprinter.clear pr_stmt;
-Eprinter.clear pr_stmts;
-
 value print_expr = Eprinter.apply pr_expr;
 value print_stmt = Eprinter.apply pr_stmt;
 value print_commented_stmt pc stmt =
@@ -112,17 +108,17 @@ value plist_semi f sh pc l =
 EXTEND_PRINTER
   pr_expr:
     [ "add"
-      [ BINOP _ ADD x y -> pprintf pc "@[%p +@ %p@]" curr x next y
-      | BINOP _ SUB x y -> pprintf pc "@[%p -@ %p@]" curr x next y ]
+      [ BINOP _ ADD x y -> pprintf pc "%p + %p" curr x next y
+      | BINOP _ SUB x y -> pprintf pc "%p - %p" curr x next y ]
     | "mul"
-      [ BINOP _ MUL x y -> pprintf pc "@[%p *@ %p@]" curr x next y
-      | BINOP _ DIV x y -> pprintf pc "@[%p /@ %p@]" curr x next y ]
+      [ BINOP _ MUL x y -> pprintf pc "%p * %p" curr x next y
+      | BINOP _ DIV x y -> pprintf pc "%p / %p" curr x next y ]
     | "uminus"
       [ UNOP _ PLUS x -> pprintf pc "+ %p" curr x
       | UNOP _ MINUS x -> pprintf pc "- %p" curr x ]
     | "simple"
       [ INT _ x -> pprintf pc "%d" x
-      | x -> pprintf pc "@[<2>(%p)@]" print_expr x ]
+      | x -> pprintf pc "(%p)" print_expr x ]
     ] ;
   pr_stmt:
     [ [ ASSIGN _ id e -> pprintf pc "@[%s := %p@]" id print_expr e
@@ -145,7 +141,9 @@ value expr env e =
   | UNOP _ MINUS x -> -(erec x)
   | UNOP _ PLUS x -> erec x
   | INT _ x -> x
-  | VAR _ s -> List.assoc s env
+  | VAR loc s -> match List.assoc s env with [
+      x -> x
+    | exception Not_found -> Ploc.raise loc (Failure (Printf.sprintf "variable %s not found in environment" s)) ]
   ]
   in erec e
 ;
@@ -163,7 +161,7 @@ end
 
 open Printf;
 
-Pretty.line_length.val := 10 ;
+Pretty.line_length.val := 100 ;
 
 if not Sys.interactive.val then
 try

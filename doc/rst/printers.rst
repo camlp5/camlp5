@@ -1,3 +1,5 @@
+.. _extensible_printers:
+
 Extensible printers
 ===================
 
