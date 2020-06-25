@@ -1,4 +1,4 @@
-# Camlp5 Tutorials
+# Camlp5 Tutorial Examples
 
 This directory contains tutorial examples for Camlp5.  Many of these
 examples are written in "revised syntax", because they use
