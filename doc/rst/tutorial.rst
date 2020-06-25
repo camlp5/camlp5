@@ -229,7 +229,7 @@ Camlp5 location (``Ploc.t``) to return along with the token:
 ::
 
    let locate ~comments lb v =
-     let loc = Ploc.make_unlined (Lexing.lexeme_start lb, Lexing.lexeme_end lb)
+     let loc = Ploc.make_unlined (Lexing.lexeme_start lb, Lexing.lexeme_end lb) in
      let loc = Ploc.with_comment loc comments in
     (v, loc)
 
