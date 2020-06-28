@@ -253,6 +253,7 @@ package "extend" (
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_extend.cmo"
   archive(syntax,preprocessor,native) = "pa_extend.cmx"
+  requires = "camlp5"
 
   package "link" (
   requires = "camlp5"
@@ -289,6 +290,7 @@ package "extprint" (
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_extprint.cmo"
   archive(syntax,preprocessor,native) = "pa_extprint.cmx"
+  requires = "camlp5"
 
   package "link" (
     requires = "camlp5"
@@ -307,6 +309,7 @@ package "pprintf" (
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_pprintf.cmo"
   archive(syntax,preprocessor,native) = "pa_pprintf.cmx"
+  requires = "camlp5"
 
   package "link" (
     requires = "camlp5"
@@ -326,6 +329,7 @@ package "pa_lexer" (
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_lexer.cmo"
   archive(syntax,preprocessor,native) = "pa_lexer.cmx"
+  requires = "camlp5"
 
   package "link" (
     requires = "camlp5"
@@ -356,4 +360,15 @@ package "pragma" (
   description = "Syntax extension: (experimental) Pragmas"
   archive(syntax,preprocessor) = "pa_pragma.cmo"
   archive(toploop) = "pa_pragma.cmo"
+)
+
+package "toploop" (
+  package "link" (
+  requires = "camlp5"
+  version = "@VERSION@"
+  description = "Internal support for toploop to use Camlp5"
+  archive(byte) = "camlp5_top_funs.cmo"
+  )
+
+  error(toploop) = "camlp5.toploop cannot be loaded alone into the toploop"
 )

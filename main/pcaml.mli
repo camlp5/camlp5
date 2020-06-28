@@ -31,6 +31,12 @@ value parse_implem :
        default, they use the grammars entries [implem] and [interf]
        defined below. *)
 
+value parse_top_phrase :
+  ref (Stream.t char -> (option MLast.str_item));
+value parse_use_file :
+  ref (Stream.t char -> (list MLast.str_item * bool));
+
+
 value gram : Grammar.g;
    (** Grammar variable of the OCaml language *)
 

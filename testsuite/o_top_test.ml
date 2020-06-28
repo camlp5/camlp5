@@ -11,8 +11,7 @@ open Camlp5_top_funs;
 Pcaml.inter_phrases.val := Some (";;") ;
 
 value pr t =
-  Pr_official.(with_buffer_formatter Pprintast.toplevel_phrase t)
-;
+  with_buffer_formatter Pprintast.toplevel_phrase t;
 
 value lexbuf_contents lb =
   let open Lexing in

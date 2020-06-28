@@ -85,6 +85,8 @@ let ext_attributes = Grammar.Entry.create gram "ext_attributes";;
 
 let parse_interf = ref (Grammar.Entry.parse interf);;
 let parse_implem = ref (Grammar.Entry.parse implem);;
+let parse_top_phrase = ref (Grammar.Entry.parse top_phrase);;
+let parse_use_file = ref (Grammar.Entry.parse use_file);;
 
 let rec skip_to_eol cs =
   match Stream.peek cs with

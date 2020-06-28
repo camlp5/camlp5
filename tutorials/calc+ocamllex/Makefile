@@ -1,6 +1,6 @@
 
 OCAMLFIND=ocamlfind
-PACKAGES=camlp5,fmt,camlp5.extprint,camlp5.extend,camlp5.pprintf,pcre
+PACKAGES=fmt,camlp5.extprint,camlp5.extend,camlp5.pprintf,pcre
 
 all: calc calc.opt
 

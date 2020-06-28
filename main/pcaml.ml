@@ -81,6 +81,8 @@ value ext_attributes = Grammar.Entry.create gram "ext_attributes";
 
 value parse_interf = ref (Grammar.Entry.parse interf);
 value parse_implem = ref (Grammar.Entry.parse implem);
+value parse_top_phrase = ref (Grammar.Entry.parse top_phrase);
+value parse_use_file = ref (Grammar.Entry.parse use_file);
 
 value rec skip_to_eol cs =
   match Stream.peek cs with

@@ -49,5 +49,6 @@ get_promote:
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	cp $(TARGET) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp camlp5_top_funs.cmi camlp5_top_funs.cmo "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 
 include .depend

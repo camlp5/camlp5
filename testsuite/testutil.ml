@@ -153,6 +153,15 @@ value both_pa1 = ((fun x -> Implem.pa1 x), (fun x -> Interf.pa1 x)) ;
 value both_pr = ((fun x -> Implem.pr x), (fun x -> Interf.pr x)) ;
 end;
 
+value with_buffer_formatter f arg = do {
+  let b = Buffer.create 23 in
+  let bfmt = Format.formatter_of_buffer b in
+  f bfmt arg ;
+  Format.pp_print_flush bfmt () ;
+  Buffer.contents b
+}
+;
+
 module Official = struct
 
 module Implem = struct
@@ -169,15 +178,6 @@ module Interf = struct
 value pa s =
   let lb = Lexing.from_string s in
   Parse.interface lb
-;
-
-value with_buffer_formatter f arg = do {
-  let b = Buffer.create 23 in
-  let bfmt = Format.formatter_of_buffer b in
-  f bfmt arg ;
-  Format.pp_print_flush bfmt () ;
-  Buffer.contents b
-}
 ;
 
 value pr st =
