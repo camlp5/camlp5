@@ -41,6 +41,9 @@ value tests = "test o top" >::: [
     ]) ;
     "bug-2" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} (";;let open M.N in a b"," ") (papr {foo| M.N.(a b);; |foo})
+    ]) ;
+    "directive-1" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#require  "foo"|foo}," ") (papr {foo| #require "foo";; |foo})
     ])
   ]
  ;
