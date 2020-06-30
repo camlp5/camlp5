@@ -33,7 +33,7 @@ toplevel.
   :local:
 
 Quickstart with `ocamlfind`
----------------------------
+===========================
 
 The easiest (and the one I use) way to use camlp5 is with ``ocamlfind``.
 Once Camlp5 is installed, ``ocamlfind list | grep camlp5`` produces a
@@ -77,7 +77,7 @@ as a collection of ocamlfind packages, which are used in exactly the
 same manner as above.
 
 Camlp5 Package Naming and Overview
-----------------------------------
+==================================
 
 Briefly, there is a ``camlp5`` package, and a number of sub-packages.
 Below is a list, and basically *everything* in Camlp5 is exposed as an
@@ -143,8 +143,70 @@ Notice that for use #3, we supply the name ``X.link`` instead of
 ``X``.  For example, to link revised-syntax grammar support into a
 program, we'd use package ``camlp5.pa_r.link``.
 
+The Ocaml Toplevel
+==================
+
+A warning for users who use some frontend to interact with the Ocaml
+toplevel: many frontends have a baked-in understanding of Ocaml's
+syntax, and specifically that toplevel phrases always end with ``;;``
+(e.g. ``tuareg-mode`` in Emacs).  If you load the revised syntax into
+an Ocaml toplevel accessed via one of these front-ends, you will find
+that it doesn't work: you may various find that you get no response
+back to input, or that the front-end inserts extra semicolons, or
+other weirdness.  When I use Emacs with revised syntax Ocaml, I
+typically do so in a ``M-x shell RET`` window.
+
+To use camlp5 from the toplevel, first decide which syntax you wish to use. Then
+
+1. Start the ocaml toplevel.
+2. "use" the findlib/camlp5 include file.
+3. then select your syntax.
+4. Proceed to use the toplevel.
+
+For original syntax:
+
+::
+
+           OCaml version 4.10.0
+
+   # #use "topfind.camlp5";;
+   - : unit = ()
+   Findlib has been successfully loaded. Additional directives:
+     #require "package";;      to load a package
+     #list;;                   to list the available packages
+     #camlp4o;;                to load camlp4 (standard syntax)
+     #camlp4r;;                to load camlp4 (revised syntax)
+     #predicates "p,q,...";;   to set these predicates
+     Topfind.reset();;         to force that packages will be reloaded
+     #thread;;                 to enable threads
+
+   - : unit = ()
+   Additional Camlp5 directives:
+     #camlp5o;;                to load camlp5 (standard syntax)
+     #camlp5r;;                to load camlp5 (revised syntax)
+
+   - : unit = ()
+   # #camlp5o ;;
+   /home/chetsky/Hack/Ocaml/GENERIC/4.10.0/lib/camlp5: added to search path
+   /home/chetsky/Hack/Ocaml/GENERIC/4.10.0/lib/camlp5/camlp5o.cma: loaded
+   	Camlp5 parsing version 8.00-alpha01
+
+   # 
+
+Again, just the commands:
+
+::
+
+   #use "topfind.camlp5";;
+   #camlp5o ;;
+
+For the revised syntax, just replace the last line with ``#camlp5r
+;;`` The tutorial has examples of loading packages and code into a
+toplevel using camlp5. [Again, I reiterate that revised syntax and
+(e.g.) the ``tuareg-mode`` front-end will *not* interact well.]
+
 Low-level Shell usage
----------------------
+=====================
 
 The main shell commands are:
 
@@ -203,7 +265,7 @@ where "directory" is the directory path where the Camlp5 library
 files are installed.
 
 Parsing and Printing kits
--------------------------
+=========================
 
 Parsing and printing extensions are OCaml object files, i.e. files
 with the extension "``.cmo``" or "``.cma``". They are the result of
@@ -227,7 +289,7 @@ In the OCaml toplevel, it is possible to use a kit by simply loading
 it with the directive "``#load``".
 
 Extending syntax
-----------------
+================
 
 A syntax extension is a Camlp5 parsing kit. There are two ways to use
 a syntax extension:
@@ -255,7 +317,7 @@ Several syntax extensions can be used for a single file. The way to
 create one's own syntax extensions is explained in this document.
 
 Pretty printing
----------------
+===============
 
 As for syntax extensions, the pretty printing is defined or extended
 through Camlp5 printing kits. Some pretty printing kits are provided
@@ -284,7 +346,7 @@ The way to create one's own pretty printing extensions is explained
 in this document.
 
 Note: the revised syntax
-------------------------
+========================
 
 The *revised syntax* is a specific syntax whose aim is to resolve
 some problems and inconsistencies of the normal OCaml syntax. A

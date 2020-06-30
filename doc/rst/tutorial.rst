@@ -1,6 +1,6 @@
-========
-Tutorial
-========
+==========
+ Tutorial
+==========
 
 In this tutorial, we'll start with the simplest program that uses
 Camlp5 features, and progressively move to more and more complicated
@@ -87,6 +87,43 @@ The ``camlp5`` package has built-in support for stream-parsers.
 To run this example::
 
   ./streams '1+1' '1 - 1' '1 + (2*6)'
+
+Loading and testing in the toplevel
+-----------------------------------
+
+To load and test this example in the toplevel:
+
+::
+
+   $ ocaml
+        OCaml version 4.10.0
+
+   #use "topfind.camlp5";;
+   #camlp5o ;;
+   #require "fmt";;
+   #use "streams.ml";;
+
+   val lexer : char Stream.t -> Genlex.token Stream.t = <fun>
+   val list_of_stream : 'a Stream.t -> 'a list = <fun>
+   val pleft :
+     ('a Stream.t -> 'b) -> ('a Stream.t -> 'b -> 'b -> 'b) -> 'a Stream.t -> 'b =
+     <fun>
+   val additives : Genlex.token Stream.t -> int -> int -> int = <fun>
+   val multiplicatives : Genlex.token Stream.t -> int -> int -> int = <fun>
+   val expr : Genlex.token Stream.t -> int = <fun>
+   val expr1 : Genlex.token Stream.t -> int = <fun>
+   val expr2 : Genlex.token Stream.t -> int = <fun>
+   val expr3 : Genlex.token Stream.t -> int = <fun>
+   - : unit = ()
+
+And to calculate:
+
+::
+
+   # {| 1 + 1 |} |> Stream.of_string |> lexer |> expr ;;
+- : int = 2
+
+etc.
 
 Stream parsers in revised syntax: the simplest program using Camlp5 features
 ============================================================================

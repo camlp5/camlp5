@@ -42,6 +42,7 @@ and expr3 = parser
 
 open Printf
 
+if not !Sys.interactive then
 try
 for i = 1 to Array.length Sys.argv - 1 do
   let r = Sys.argv.(i) |> Stream.of_string |> lexer |> expr in
