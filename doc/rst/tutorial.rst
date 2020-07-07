@@ -79,7 +79,7 @@ The documentation section
 :ref:`stream_parsers` explains the syntax and semantics of stream parsers.  To
 compile this file, we invoke::
 
-  ocamlfind ocamlc -package camlp5,fmt -linkall -linkpkg \
+  ocamlfind ocamlc -package camlp5,fmt -linkpkg \
       -syntax camlp5o streams.ml -o streams
 
 The ``camlp5`` package has built-in support for stream-parsers.
@@ -150,7 +150,7 @@ combinator here:
 
 To compile this file::
 
-  ocamlfind ocamlc -package camlp5,fmt -linkall -linkpkg -syntax camlp5r \
+  ocamlfind ocamlc -package camlp5,fmt -linkpkg -syntax camlp5r \
       streams.ml -o streams
 
 Note that the only change in the compile line is to replace ``-syntax
@@ -193,7 +193,7 @@ two things:
 
 To compile this example::
 
-  ocamlfind ocamlc -package camlp5,fmt,camlp5.extend -linkall -linkpkg \
+  ocamlfind ocamlc -package camlp5,fmt,camlp5.extend -linkpkg \
       -syntax camlp5r calc.ml -o calc
 
 and the only difference is that we have to add the Camlp5 package

@@ -6,10 +6,10 @@ PACKAGES=fmt,camlp5.extprint,camlp5.extend,camlp5.pa_lexer,camlp5.pprintf,pcre
 all: pb0 pb0.opt
 
 pb0: clexer.cmo pb0.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkall -linkpkg -syntax camlp5r $^ -o $@
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -linkpkg -syntax camlp5r $^ -o $@
 
 pb0.opt: clexer.cmx pb0.cmx
-	$(OCAMLFIND) ocamlopt $(DEBUG) -package $(PACKAGES) -linkall -linkpkg -syntax camlp5r $^ -o $@
+	$(OCAMLFIND) ocamlopt $(DEBUG) -package $(PACKAGES) -linkpkg -syntax camlp5r $^ -o $@
 
 .SUFFIXES: .ml .cmo .cmx
 

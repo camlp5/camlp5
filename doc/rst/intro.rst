@@ -47,7 +47,7 @@ specifying their syntax (typically ``camlp5o``, but perhaps ``camlp5r``),
 and requiring the ``camlp5`` package and maybe other packages.  So for
 instance, to compile an original-syntax ocaml file::
 
-  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5o -linkall -linkpkg streams.ml -o streams
+  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5o -linkpkg streams.ml -o streams
 
 Let's unpack that:
 
@@ -57,15 +57,15 @@ Let's unpack that:
 
 3. specify original syntax: ``-syntax camlp5o``
 
-4. various link-flags: ``-linkall -linkpkg``
+4. link-flags: ``-linkpkg``
 
 If the file were in revised syntax, we would compile it thus::
 
-  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5r -linkall -linkpkg streams.ml -o streams
+  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5r -linkpkg streams.ml -o streams
 
 And if it contained code that worked with extensible grammars, we'd use::
 
-  ocamlfind ocamlc -package camlp5,fmt,camlp5.extend -syntax camlp5r -linkall -linkpkg streams.ml -o streams
+  ocamlfind ocamlc -package camlp5,fmt,camlp5.extend -syntax camlp5r -linkpkg streams.ml -o streams
 
 Note the package ``camlp5.extend`` (that provides extensible grammar syntax support).
 
