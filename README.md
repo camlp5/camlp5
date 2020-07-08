@@ -55,8 +55,9 @@ or, if you install to a system location but are not an administrator
 ## Documentation
 
 There are two forms of documentation: HTML and RST (ReStructured Text)
-(for Sphinx).  We're switching to RST, but for now will maintain both
-in parallel.
+(for Sphinx).  From this release forward, the Sphinx documentation
+will be updated and improved; the HTML documentation will soon be
+removed.
 
 The directory doc/rst contains the sources of the RST documentation.  To build it requires:
 *`python3` (tested with version 3.6.9)
