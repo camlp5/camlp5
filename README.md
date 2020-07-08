@@ -6,7 +6,12 @@ It is (theoretically) compatible with all versions of ocaml from 1.07
 to 4.11.0 (when they compile), and jocaml 3.12.0 to 3.12.1, but
 maintainers only test against versions of ocaml >= 4.00.0.
 
-This Camlp5 version is 8.00~alpha01.
+This Camlp5 version is 8.00~alpha01.  NOTE WELL that this is an
+**alpha** release, and as such, may break your code.  If it does,
+please do reach out to me, and I'll be happy to help upgrade it.  I'm
+still working on the documentation, but .... that could take a while,
+so I figured I had better get this out and find out where code breaks,
+so I can fix that.
 
 ## Requirements
 
@@ -137,9 +142,13 @@ write code using Camlp5.
 
 ## Problems
 
-If you have problems to compile your source files with this version of
-Camlp5, the reason can be that there the new type 'location' is now
-abstract. Consider looking at the file UPGRADING.
+If you have problems compiling your source files with this version of
+Camlp5, please contact me (Chet Murthy <chetsky@gmail.com>) and I'll
+help you resolve them.  I can't promise, but it's likely I can just
+fork your repo, fix the problem, and send you a PR.
+
+For really old code, the reason can be that there the new type
+'location' is now abstract. Consider looking at the file UPGRADING.
 
 ## Author
 
