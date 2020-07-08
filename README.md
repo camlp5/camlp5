@@ -64,7 +64,13 @@ The directory doc/rst contains the sources of the RST documentation.  To build i
 * Sphinx (tested with version 3.0.3)
 * sphinx-rtd-theme (tested with 0.4.3)
 
-The easiest way to do that is to use Python's `venv` and install them with `pip3`.  Then
+The easiest way to do that is to use Python's `venv` and install them with `pip3` (e.g.):
+```
+python3 -m venv ~/Sphinx
+source ~/Sphinx/bin/activate
+pip3 install sphinx-rtd-theme
+```
+Then
 ```
 make -C doc/rst all
 ```
