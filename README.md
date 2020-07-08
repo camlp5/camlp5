@@ -132,8 +132,8 @@ reference the build-tree).  To build the tutorial examples:
 
   ```make -C tutorial all```
 
-The documentation uses these examples to explain how to write code
-using Camlp5.
+The Sphinx/RST documentation uses these examples to explain how to
+write code using Camlp5.
 
 ## Problems
 
