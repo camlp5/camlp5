@@ -31,12 +31,12 @@ doc: "https://camlp5.github.io/doc/html"
 
 depends: [
   "ocaml"       { >= "4.02" & < "4.12.0" }
+  "conf-perl"
 ]
 depexts: [
   [
     "libstring-shellquote-perl"
     "libipc-system-simple-perl"
-    "perl"
   ] {os-family = "debian"}
 ]
 
