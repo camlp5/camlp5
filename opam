@@ -36,6 +36,7 @@ depexts: [
   [
     "libstring-shellquote-perl"
     "libipc-system-simple-perl"
+    "perl"
   ] {os-family = "debian"}
 ]
 
