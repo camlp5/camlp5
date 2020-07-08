@@ -2,10 +2,70 @@
 Camlp5 Version 8.00-alpha01:
 --------------------
 
+* [07 Jul 2020] Massive number of changes to support PPX
+  extension/attribute syntax, PPX rewriters, and syntax changes thru
+  Ocaml 4.10.0.  Also support for Ocaml 4.11.0, but not for syntax
+  changes therein (that'll come in the next release).
+
+  It is fair to say that this release has lots of incompatibilities
+  with the previous stream, hence the bump in major version number.
+  Many camlp5 users will find that things continue to work; others
+  will find that they do not, I'm happy to help them upgrade their
+  code.  I'll maintain the 7.xx stream of code as long as I can (in
+  the face of Ocaml changes), but new function will appear here as
+  part of 8.xx.  I'll try to list big changes below:
+
+  * New set of packages in META file, so you should be able to use
+    camlp5 almost exclusively via ocamlfind (not having to resort to
+    the camlp5{,r,o} commands).
+
+  * New documentation in Sphinx/RST format (thanks to Kakadu@ !) and
+    this is the documentation that will be updated, going forward.
+    I'll keep the old docs around for the next few releases until the
+    new docs are fully-updated and cleaned-up, but eventually they'll
+    get deleted.
+
+  * Support for all the syntax up to 4.10.0, including all PPX
+    attributes and extensions, parsed, represented in parsetree,
+    pretty-printed, passed properly to Ocaml compiler.  Of course, all
+    the syntax is supported in "original" syntax; with few exceptions,
+    all of it is also supported in "revised" syntax.
+
+  * Most of the places where Ocaml introduced module-prefixes
+    (e.g. "M.N.(A e1 e2)") are now supported.  The glaring exception
+    is in *expressions*, and this will be fixed in a coming release.
+    This means that instead of pattern-matching on (for instance)
+    patterns to take apart a module-prefix, you pattern-match to
+    extract a "longid" and that longid itself can be pattern-matched
+    to reveal the module-identifiers.
+
+  * Camlp5 version 7.11 added support for "blank module-binders" in
+    all syntax locatinos where module-names can be introduced (to
+    follow Ocaml's introduction of same), and also "empty" functor
+    arguments and argument-types", viz:
+
+    in struct-items:
+
+    module _ = struct ... end
+    module F = functor () -> struct ... end
+    module F = functor (_ : sig ... end) -> struct ... end
+
+    and many other locations (look in the Ocaml documentation for
+    those locations).
+
+    in signature-items:
+
+    module _ : sig ... end
+
+    This necessarily means that in places where there was a string
+    (module-id binder), you'll now have a string option; in places
+    where there was a "string * ctyp" (bound module-type) you'll have
+    "(string option * ctyp) option".
+
 Camlp5 Version 7.12:
 --------------------
 
-* [29 Apr 20] Added a new "topfind.camlp5" script that can be #used
+* [29 Apr 20] Added a new "topfind.camlp5" script that can be "#use"-ed
   just like "topfind"; it defines #camlp5o and #camlp5r commands (like
   topfind's #camlp4o and $camlp4r commands)
 

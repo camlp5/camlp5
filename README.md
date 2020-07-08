@@ -58,14 +58,6 @@ There are two forms of documentation: HTML and RST (ReStructured Text)
 (for Sphinx).  We're switching to RST, but for now will maintain both
 in parallel.
 
-The directory doc/htmlp contains the sources of the HTML documentation.
-To build it, cd doc/htmlp, and:
-* for its html version, type "make", result in directory ../html
-* for its latex version, type "make tex", result camlp5.tex
-* for its ps version x-rtype "make ps", result camlp5.ps
-* for its pdf version, type "make pdf", result camlp5.pdf
-* for its info version, type "make info", result camlp5.info*
-
 The directory doc/rst contains the sources of the RST documentation.  To build it requires:
 *`python3` (tested with version 3.6.9)
 * Sphinx (tested with version 3.0.3)
@@ -77,6 +69,16 @@ make -C doc/rst all
 ```
 
 This creates the Sphinx documentation in `doc/rst/_build`.
+
+### Outdated HTML Documentation
+
+The directory doc/htmlp contains the sources of the HTML documentation.
+To build it, cd doc/htmlp, and:
+* for its html version, type "make", result in directory ../html
+* for its latex version, type "make tex", result camlp5.tex
+* for its ps version x-rtype "make ps", result camlp5.ps
+* for its pdf version, type "make pdf", result camlp5.pdf
+* for its info version, type "make info", result camlp5.info*
 
 ## Developers
 
