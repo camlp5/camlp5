@@ -576,24 +576,6 @@ let test_label_eq =
      test 1)
 ;;
 
-let expr_wrap_attrs loc e l =
-  let rec wrec e =
-    function
-      [] -> e
-    | h :: t -> wrec (MLast.ExAtt (loc, e, h)) t
-  in
-  wrec e l
-;;
-
-let expr_to_inline loc e ext attrs =
-  let e = expr_wrap_attrs loc e attrs in
-  match ext with
-    None -> e
-  | Some attrid ->
-      MLast.ExExten
-        (loc, (attrid, MLast.StAttr (loc, [MLast.StExp (loc, e, [])])))
-;;
-
 let patt_wrap_attrs loc e l =
   let rec wrec e =
     function
@@ -2156,7 +2138,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun _ (seq : 'sequence) _ _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExWhi (loc, e, seq)) ext attrs :
+              (expr_to_inline (MLast.ExWhi (loc, e, seq)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2190,7 +2172,7 @@ Grammar.safe_extend
            (fun _ (seq : 'sequence) _ _ (e2 : 'expr) (df : 'direction_flag)
                 (e1 : 'expr) _ (i : 'patt) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExFor (loc, i, e1, e2, df, seq)) ext
+              (expr_to_inline (MLast.ExFor (loc, i, e1, e2, df, seq)) ext
                  attrs :
                'expr)));
         Grammar.production
@@ -2208,7 +2190,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun _ (seq : 'sequence) _ (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (mksequence2 loc seq) ext attrs : 'expr)));
+              (expr_to_inline (mksequence2 loc seq) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2229,7 +2211,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (e3 : 'expr) _ (e2 : 'expr) _ (e1 : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExIfe (loc, e1, e2, e3)) ext attrs :
+              (expr_to_inline (MLast.ExIfe (loc, e1, e2, e3)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2246,7 +2228,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (mc : 'match_case) _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExTry (loc, e, [mc])) ext attrs :
+              (expr_to_inline (MLast.ExTry (loc, e, [mc])) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2264,8 +2246,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (l : 'closed_case_list) _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExTry (loc, e, l)) ext attrs :
-               'expr)));
+              (expr_to_inline (MLast.ExTry (loc, e, l)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2286,7 +2267,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (e1 : 'expr) _ (p1 : 'ipatt) _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExMat (loc, e, [p1, None, e1])) ext
+              (expr_to_inline (MLast.ExMat (loc, e, [p1, None, e1])) ext
                  attrs :
                'expr)));
         Grammar.production
@@ -2305,8 +2286,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (l : 'closed_case_list) _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExMat (loc, e, l)) ext attrs :
-               'expr)));
+              (expr_to_inline (MLast.ExMat (loc, e, l)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2320,8 +2300,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (e : 'fun_def) (p : 'ipatt) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExFun (loc, [p, None, e])) ext
-                 attrs :
+              (expr_to_inline (MLast.ExFun (loc, [p, None, e])) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2334,7 +2313,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (l : 'closed_case_list) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExFun (loc, l)) ext attrs : 'expr)));
+              (expr_to_inline (MLast.ExFun (loc, l)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2361,7 +2340,7 @@ Grammar.safe_extend
            (fun (e : 'expr) _ (m : 'module_expr)
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _ _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExLop (loc, ovf, m, e)) ext attrs :
+              (expr_to_inline (MLast.ExLop (loc, ovf, m, e)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2389,7 +2368,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'uidopt)
                 (ext, attrs : 'ext_attributes) _ _ _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExLmd (loc, m, mb, e)) ext attrs :
+              (expr_to_inline (MLast.ExLmd (loc, m, mb, e)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -2433,8 +2412,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (x : 'expr) _ (l : 'let_binding list) (r : bool)
                 (ext : 'ext_opt) _ _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExLet (loc, r, l, x)) ext [] :
-               'expr)));
+              (expr_to_inline (MLast.ExLet (loc, r, l, x)) ext [] : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2503,7 +2481,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (lb : 'let_binding) (rf : bool) (ext, attrs : 'ext_attributes)
                 _ (e : 'expr) (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExLet (loc, rf, [lb], e)) ext attrs :
+              (expr_to_inline (MLast.ExLet (loc, rf, [lb], e)) ext attrs :
                'expr)))];
        Some ":=", Some Gramext.NonA,
        [Grammar.production
@@ -2910,7 +2888,7 @@ Grammar.safe_extend
              Grammar.s_self,
            "1154dceb",
            (fun (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExLaz (loc, e)) ext attrs : 'expr)));
+              (expr_to_inline (MLast.ExLaz (loc, e)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2921,7 +2899,7 @@ Grammar.safe_extend
              Grammar.s_self,
            "1154dceb",
            (fun (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExAsr (loc, e)) ext attrs : 'expr)));
+              (expr_to_inline (MLast.ExAsr (loc, e)) ext attrs : 'expr)));
         Grammar.production
           (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
              Grammar.s_self,
@@ -3522,8 +3500,8 @@ Grammar.safe_extend
            (fun (el : 'sequence) _ (m : 'module_expr)
                 (ext, attrs : 'ext_attributes) (ovf : bool) _ _
                 (loc : Ploc.t) ->
-              ([expr_to_inline loc
-                  (MLast.ExLop (loc, ovf, m, mksequence loc el)) ext attrs] :
+              ([expr_to_inline (MLast.ExLop (loc, ovf, m, mksequence loc el))
+                  ext attrs] :
                'sequence)));
         Grammar.production
           (Grammar.r_next
@@ -3546,8 +3524,8 @@ Grammar.safe_extend
            "1154dceb",
            (fun (el : 'sequence) _ (mb : 'mod_fun_binding) (m : 'uidopt)
                 (ext, attrs : 'ext_attributes) _ _ (loc : Ploc.t) ->
-              ([expr_to_inline loc
-                  (MLast.ExLmd (loc, m, mb, mksequence loc el)) ext attrs] :
+              ([expr_to_inline (MLast.ExLmd (loc, m, mb, mksequence loc el))
+                  ext attrs] :
                'sequence)));
         Grammar.production
           (Grammar.r_next
@@ -5755,7 +5733,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun _ (cf : 'class_structure) (cspo : 'class_self_patt option)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExObj (loc, cspo, cf)) ext attrs :
+              (expr_to_inline (MLast.ExObj (loc, cspo, cf)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -5768,8 +5746,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (cli : 'longident_lident) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (expr_to_inline loc (MLast.ExNew (loc, cli)) ext attrs :
-               'expr)))]];
+              (expr_to_inline (MLast.ExNew (loc, cli)) ext attrs : 'expr)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "."))
       [None, None,

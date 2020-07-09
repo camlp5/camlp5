@@ -5,6 +5,7 @@
 (* #load "pa_extend.cmo" *)
 (* #load "q_MLast.cmo" *)
 
+open Asttools;;
 open Exparser;;
 open Pcaml;;
 
@@ -58,8 +59,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (Pa_r.expr_to_inline loc (cparser_match loc e (po, [pc])) ext
-                 attrs :
+              (expr_to_inline (cparser_match loc e (po, [pc])) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -89,8 +89,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
                 (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
-              (Pa_r.expr_to_inline loc (cparser_match loc e (po, pcl)) ext
-                 attrs :
+              (expr_to_inline (cparser_match loc e (po, pcl)) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next

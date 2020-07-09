@@ -247,7 +247,7 @@ Grammar.safe_extend
            "1154dceb",
            (fun (rl : 'rules) _ _ (e : 'expr) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
-              (Pa_r.expr_to_inline loc (mk_lexer_match loc e rl) ext attrs :
+              (Asttools.expr_to_inline (mk_lexer_match loc e rl) ext attrs :
                'expr)));
         Grammar.production
           (Grammar.r_next
