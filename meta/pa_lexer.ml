@@ -200,7 +200,7 @@ EXTEND
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "pa_lexer"; rl = rules ->
-          Pa_r.expr_to_inline loc (mk_lexer_match loc e rl) ext attrs ] ]
+          Asttools.expr_to_inline (mk_lexer_match loc e rl) ext attrs ] ]
   ;
   expr: LEVEL "simple"
     [ [ "$"; LIDENT "add"; s = STRING ->

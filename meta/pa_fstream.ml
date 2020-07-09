@@ -4,6 +4,7 @@
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
+open Asttools;
 open Pcaml;
 
 type spat_comp =
@@ -258,10 +259,10 @@ EXTEND
           <:expr< $cparser loc po [pc]$ >>
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "fparser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
-          Pa_r.expr_to_inline loc <:expr< $cparser_match loc e po pcl$ >> ext attrs
+          expr_to_inline <:expr< $cparser_match loc e po pcl$ >> ext attrs
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "fparser"; po = OPT ipatt;
         pc = parser_case ->
-          Pa_r.expr_to_inline loc <:expr< $cparser_match loc e po [pc]$ >> ext attrs
+          expr_to_inline <:expr< $cparser_match loc e po [pc]$ >> ext attrs
       | "bparser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|";
         "]" ->
           <:expr< $mparser loc "Fstream" po pcl$ >>
@@ -269,10 +270,10 @@ EXTEND
           <:expr< $mparser loc "Fstream" po [pc]$ >>
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "bparser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
-          Pa_r.expr_to_inline loc <:expr< $mparser_match loc "Fstream" e po pcl$ >> ext attrs
+          expr_to_inline <:expr< $mparser_match loc "Fstream" e po pcl$ >> ext attrs
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "bparser"; po = OPT ipatt;
         pc = parser_case ->
-          Pa_r.expr_to_inline loc <:expr< $mparser_match loc "Fstream" e po [pc]$ >> ext attrs ] ]
+          expr_to_inline <:expr< $mparser_match loc "Fstream" e po [pc]$ >> ext attrs ] ]
   ;
   parser_case:
     [ [ "[:"; sp = stream_patt; ":]"; po = OPT ipatt; "->"; e = expr ->

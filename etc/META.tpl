@@ -323,16 +323,16 @@ package "pa_lexer" (
   version = "@VERSION@"
   description = "Syntax extension: Stream lexers"
 
-  requires(toploop) = "camlp5.pa_r"
+  requires(toploop) = "camlp5"
   archive(toploop,-camlp5o)      = "pa_lexer.cmo"
 
-  requires(syntax,preprocessor) = "camlp5.pa_r"
+  requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_lexer.cmo"
   archive(syntax,preprocessor,native) = "pa_lexer.cmx"
   requires = "camlp5"
 
   package "link" (
-    requires = "camlp5.pa_r.link"
+    requires = "camlp5"
     archive(byte) = "pa_lexer.cmo"
     archive(native) = "pa_lexer.cmx"
   )

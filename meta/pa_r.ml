@@ -479,21 +479,6 @@ value test_label_eq =
        | _ -> raise Stream.Failure ])
 ;
 
-value expr_wrap_attrs loc e l =
-let rec wrec e = fun [
-  [] -> e
-| [h :: t] -> wrec <:expr< $e$ [@ $_attribute:h$ ] >> t
-] in wrec e l
-;
-
-value expr_to_inline loc e ext attrs =
-  let e = expr_wrap_attrs loc e attrs in
-  match ext with [ None -> e
-  | Some attrid ->
-   <:expr< [% $attrid:attrid$ $exp:e$ ; ] >>
-  ]
-;
-
 value patt_wrap_attrs loc e l =
 let rec wrec e = fun [
   [] -> e
@@ -819,40 +804,40 @@ EXTEND
 
       | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →
-          expr_to_inline loc <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext []
+          expr_to_inline <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext []
 
       | letop = letop ; b = letop_binding ; l = LIST0 andop_binding; "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 
       | check_let_not_exception ; "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in"; e = SELF →
-          expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
+          expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $e$ >> ext attrs
       | check_let_not_exception ; "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; e = SELF →
-          expr_to_inline loc <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs
+          expr_to_inline <:expr< let open $_!:ovf$ $m$ in $e$ >> ext attrs
       | "fun"; (ext,attrs) = ext_attributes; l = closed_case_list →
-          expr_to_inline loc <:expr< fun [ $_list:l$ ] >> ext attrs
+          expr_to_inline <:expr< fun [ $_list:l$ ] >> ext attrs
       | "fun"; (ext,attrs) = ext_attributes; p = ipatt; e = fun_def →
-          expr_to_inline loc <:expr< fun $p$ → $e$ >> ext attrs
+          expr_to_inline <:expr< fun $p$ → $e$ >> ext attrs
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; l = closed_case_list →
-          expr_to_inline loc <:expr< match $e$ with [ $_list:l$ ] >> ext attrs
+          expr_to_inline <:expr< match $e$ with [ $_list:l$ ] >> ext attrs
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF →
-          expr_to_inline loc <:expr< match $e$ with $p1$ → $e1$ >> ext attrs
+          expr_to_inline <:expr< match $e$ with $p1$ → $e1$ >> ext attrs
       | "try"; (ext,attrs) = ext_attributes; e = SELF; "with"; l = closed_case_list →
-          expr_to_inline loc <:expr< try $e$ with [ $_list:l$ ] >> ext attrs
+          expr_to_inline <:expr< try $e$ with [ $_list:l$ ] >> ext attrs
       | "try"; (ext,attrs) = ext_attributes; e = SELF; "with"; mc = match_case →
-          expr_to_inline loc <:expr< try $e$ with [ $list:[mc]$ ] >> ext attrs
+          expr_to_inline <:expr< try $e$ with [ $list:[mc]$ ] >> ext attrs
       | "if"; (ext,attrs) = ext_attributes; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF →
-          expr_to_inline loc <:expr< if $e1$ then $e2$ else $e3$ >> ext attrs
+          expr_to_inline <:expr< if $e1$ then $e2$ else $e3$ >> ext attrs
       | "do"; (ext,attrs) = ext_attributes; "{"; seq = V sequence "list"; "}" →
-         expr_to_inline loc (mksequence2 loc seq) ext attrs
+         expr_to_inline (mksequence2 loc seq) ext attrs
       | "for"; (ext,attrs) = ext_attributes; i = patt; "="; e1 = SELF; df = V direction_flag "to";
         e2 = SELF; "do"; "{"; seq = V sequence "list"; "}" →
-          expr_to_inline loc <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >> ext attrs
+          expr_to_inline <:expr< for $i$ = $e1$ $_to:df$ $e2$ do { $_list:seq$ } >> ext attrs
       | "while"; (ext,attrs) = ext_attributes; e = SELF; "do"; "{"; seq = V sequence "list"; "}" →
-          expr_to_inline loc <:expr< while $e$ do { $_list:seq$ } >> ext attrs ]
+          expr_to_inline <:expr< while $e$ do { $_list:seq$ } >> ext attrs ]
     | "where"
       [ e = SELF; "where"; (ext,attrs) = ext_attributes; rf = V (FLAG "rec"); lb = let_binding →
-          expr_to_inline loc <:expr< let $_flag:rf$ $list:[lb]$ in $e$ >> ext attrs ]
+          expr_to_inline <:expr< let $_flag:rf$ $list:[lb]$ in $e$ >> ext attrs ]
     | ":=" NONA
       [ e1 = SELF; ":="; e2 = SELF; dummy → <:expr< $e1$ := $e2$ >> ]
     | "||" RIGHTA
@@ -921,9 +906,9 @@ EXTEND
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF → <:expr< $e1$ $e2$ >>
       | "assert"; (ext,attrs) = ext_attributes; e = SELF →
-          expr_to_inline loc <:expr< assert $e$ >> ext attrs
+          expr_to_inline <:expr< assert $e$ >> ext attrs
       | "lazy"; (ext,attrs) = ext_attributes; e = SELF → 
-          expr_to_inline loc <:expr< lazy $e$ >> ext attrs ]
+          expr_to_inline <:expr< lazy $e$ >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; op = operator_rparen ->
           if op = "::" then
@@ -1045,9 +1030,9 @@ EXTEND
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
       | "let"; "module"; (ext,attrs) = ext_attributes; m = V uidopt "uidopt"; mb = mod_fun_binding; "in";
         el = SELF →
-          [expr_to_inline loc <:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >> ext attrs]
+          [expr_to_inline <:expr< let module $_uidopt:m$ = $mb$ in $mksequence loc el$ >> ext attrs]
       | "let"; "open"; ovf = V (FLAG "!") "!"; (ext,attrs) = ext_attributes; m = module_expr; "in"; el = SELF →
-          [expr_to_inline loc <:expr< let open $_!:ovf$ $m$ in $mksequence loc el$ >> ext attrs]
+          [expr_to_inline <:expr< let open $_!:ovf$ $m$ in $mksequence loc el$ >> ext attrs]
       | e = expr; ";"; el = SELF → [e :: el]
       | e = expr; ";" → [e]
       | e = expr → [e] ] ]
@@ -1544,10 +1529,10 @@ EXTEND
   expr: LEVEL "apply"
     [ LEFTA
       [ "new"; (ext,attrs) = ext_attributes; cli = V longident_lident "lilongid" → 
-          expr_to_inline loc <:expr< new $_lilongid:cli$ >> ext attrs
+          expr_to_inline <:expr< new $_lilongid:cli$ >> ext attrs
       | "object"; (ext,attrs) = ext_attributes; cspo = V (OPT class_self_patt); cf = class_structure;
         "end" →
-          expr_to_inline loc <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
+          expr_to_inline <:expr< object $_opt:cspo$ $_list:cf$ end >> ext attrs ] ]
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = V lident "lid" "" →
