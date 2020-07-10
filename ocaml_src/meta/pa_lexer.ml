@@ -242,7 +242,7 @@ Grammar.safe_extend
                              'ext_attributes Grammar.Entry.e)))
                       Grammar.s_self)
                    (Grammar.s_token ("", "with")))
-                (Grammar.s_token ("", "pa_lexer")))
+                (Grammar.s_token ("", "lexer")))
              (Grammar.s_nterm (rules : 'rules Grammar.Entry.e)),
            "1154dceb",
            (fun (rl : 'rules) _ _ (e : 'expr) (ext, attrs : 'ext_attributes) _
@@ -251,8 +251,7 @@ Grammar.safe_extend
                'expr)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_token ("", "pa_lexer")))
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lexer")))
              (Grammar.s_nterm (rules : 'rules Grammar.Entry.e)),
            "1154dceb",
            (fun (rl : 'rules) _ (loc : Ploc.t) ->

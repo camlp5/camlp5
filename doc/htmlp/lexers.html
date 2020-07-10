@@ -62,10 +62,10 @@
 <p>With the new syntax, it is possible to write it as:</p>
 
 <pre>
-  pa_lexer [ "[&lt;" | "[:" | "[" ]
+  lexer [ "[&lt;" | "[:" | "[" ]
 </pre>
 
-<p>The two codes are strictly equivalent, but the pa_lexer version is
+<p>The two codes are strictly equivalent, but the lexer version is
   easier to write and understand, and is much shorter.</p>
 
 <h2>Syntax</h2>
@@ -75,7 +75,7 @@
 
 <pre>
           expression ::= lexer
-               lexer ::= "pa_lexer" "[" rules "]"
+               lexer ::= "lexer" "[" rules "]"
                rules ::= ne-rules rule
                        | &lt;nothing&gt;
             ne-rules ::= ne-rules "|" rule
@@ -116,7 +116,7 @@
 
 <p>Moreover, together with that syntax extension, another extension is
   added the entry <tt>expression</tt>, typically for the semantics
-  actions of the "<tt>pa_lexer</tt>" statement above, but not only. It
+  actions of the "<tt>lexer</tt>" statement above, but not only. It
   is:</p>
 
 <pre>
@@ -128,7 +128,7 @@
 
 <p>Remark: the identifiers "add", "buf", "empty" and "pos" are not
   keywords (they are not reserved words) but just identifiers. On the
-  contrary, the identifier "<tt>pa_lexer</tt>", which introduces the
+  contrary, the identifier "<tt>lexer</tt>", which introduces the
   syntax, is a new keyword and cannot be used as variable identifier
   any more.</p>
 
@@ -261,7 +261,7 @@
 
 <p>Sometimes, however, this left factorization is not possible. A
   lookahead of the stream to check the presence of some elements
-  (these elements being characters, if we are using this "pa_lexer"
+  (these elements being characters, if we are using this "lexer"
   syntax) might be necessary to decide if is a good idea to start the
   rule. This lookahead feature may unfreeze several characters from
   the input stream but without removing them.</p>
@@ -296,7 +296,7 @@
 
 <h3>Semantic actions of rules</h3>
 
-<p>By default, the result of a "pa_lexer" is the current lexing buffer,
+<p>By default, the result of a "lexer" is the current lexing buffer,
   which is of type "<tt>Plexing.Lexbuf.t</tt>". But it is possible to
   return other values, by adding "<tt>-&gt;</tt>" at end of rules
   followed by the expression you want to return, as in usual pattern
@@ -321,7 +321,7 @@
   <li>Either by adding <tt>pa_lexer.cmo</tt> among the Camlp5
     options. See the Camlp5 manual page or documentation.</li>
   <li>Or by adding <tt>#load "pa_lexer.cmo";</tt> anywhere in the
-    file, before the usages of this "pa_lexer" syntax.</li>
+    file, before the usages of this "lexer" syntax.</li>
 </ul>
 
 <h3>How to display the generated code</h3>

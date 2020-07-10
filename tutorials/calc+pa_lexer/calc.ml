@@ -11,21 +11,21 @@ type ctxt = {
 } ;
 
 value rec number =
-  pa_lexer
+  lexer
   [ '0'-'9' number!
   | -> ("INT", $buf)
   ]
 ;
 
 value rec ident =
-  pa_lexer
+  lexer
   [ [ 'a'-'z' | 'A'-'Z' | '_' | '0'-'9'] ident!
   | -> ("IDENT",$buf)
   ]
 ;
 
 value next_token_must ctxt =
-  pa_lexer
+  lexer
   [ '0'-'9' number!
   | [ '+' | '-' | '*' | '/' | '(' | ')' ] -> ("",$buf)
   | ":=" -> ("",$buf)
@@ -50,7 +50,7 @@ value rec comment_rest ctxt buf = parser
 ;
 
 value comment ctxt =
-  pa_lexer
+  lexer
   [ "//" (comment_rest ctxt)!
   ]
 ;
@@ -106,14 +106,14 @@ value loc_of_stmt = fun [
 ]
 ;
 
-value lexer = Plexing.lexer_func_of_parser next_token_fun ;
-value lexer = {Plexing.tok_func = lexer;
+value lexer_ = Plexing.lexer_func_of_parser next_token_fun ;
+value lexer_ = {Plexing.tok_func = lexer_;
  Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
  Plexing.tok_match = Plexing.default_match;
  Plexing.tok_text = Plexing.lexer_text;
  Plexing.tok_comm = None} ;
 
-value g = Grammar.gcreate lexer;
+value g = Grammar.gcreate lexer_;
 value expr = Grammar.Entry.create g "expression";
 value stmt = Grammar.Entry.create g "statement";
 value stmts = Grammar.Entry.create g "statements";

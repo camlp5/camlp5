@@ -87,6 +87,12 @@ Camlp5 Version 8.00-alpha01:
     because implicitly, the OPT symbol involves an action that returns
     "()".
 
+  * a breaking change to the Plexing API of lib/plexing.mli.  This can
+    only affect code that defines its own lexer (for example, defining
+    a new language wholly in camlp5).  Please consult the definition
+    of the type "Plexing.Location' for details.  The only downstream
+    package affected (that I know of) is "elpi".
+
 Camlp5 Version 7.12:
 --------------------
 
