@@ -62,6 +62,31 @@ Camlp5 Version 8.00-alpha01:
     where there was a "string * ctyp" (bound module-type) you'll have
     "(string option * ctyp) option".
 
+  * This new version preserves compatibility with Ocaml versions >=
+    4.00.0, though new function (e.g. PPX syntax, is ONLY tested with
+    ocaml version 4.10.0 and above).
+
+    More precise: all pre-existing camlp5 function (module bugfixes
+    and API changes) should work with all ocaml versions; new function
+    only works with ocaml >= 4.10.0.
+
+  * A breaking change to the Grammar API of lib/grammar.mli.  This can
+    only affect code that constructs grammar-rules programmatically,
+    rather than by using the "pa_extend.cmo" syntax.  So literally no
+    code in camlp5 is affected.  The only example I know of that is
+    affected is the "elip" package.
+
+    Previously, a grammar-rule consisted in a tuple of a list of
+    symbols, and an "action" (code).  Now, it is a thruple of: a list
+    of symbols, a hashcode (of the AST of the action), and the action.
+    This change is necessary to allow left-factorization to work
+    properly for, e.g. rules like
+
+    [ [ OPT [ "foo" ] ; x = INT ] | [ OPT [ "foo" ] ; x = STRING ] ]
+
+    because implicitly, the OPT symbol involves an action that returns
+    "()".
+
 Camlp5 Version 7.12:
 --------------------
 
