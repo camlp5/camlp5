@@ -1,3 +1,5 @@
+name: "camlp5"
+version: "8.00~alpha02"
 synopsis: "Preprocessor-pretty-printer of OCaml"
 description:
 """

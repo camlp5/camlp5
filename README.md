@@ -6,7 +6,7 @@ It is (theoretically) compatible with all versions of ocaml from 1.07
 to 4.11.0 (when they compile), and jocaml 3.12.0 to 3.12.1, but
 maintainers only test against versions of ocaml >= 4.00.0.
 
-This Camlp5 version is 8.00~alpha01.  NOTE WELL that this is an
+This Camlp5 version is 8.00~alpha02.  NOTE WELL that this is an
 **alpha** release, and as such, may break your code.  If it does,
 please do reach out to me, and I'll be happy to help upgrade it.  I'm
 still working on the documentation, but .... that could take a while,

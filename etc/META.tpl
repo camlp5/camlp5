@@ -248,7 +248,7 @@ package "extend" (
   error(pkg_camlp5.pa_o) = "camlp5.extend cannot be used with camlp5.pa_o"
 
   requires(toploop) = "camlp5"
-  archive(toploop,-camlp5o)      = "pa_extend.cmo"
+  archive(toploop)      = "pa_extend.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_extend.cmo"
@@ -267,7 +267,7 @@ package "extfun" (
   description = "Syntax extension: Extensible functions"
 
   requires(toploop) = "camlp5"
-  archive(toploop,-camlp5o)      = "pa_extfun.cmo"
+  archive(toploop)      = "pa_extfun.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_extfun.cmo"
@@ -285,7 +285,7 @@ package "extprint" (
   description = "Syntax extension: Extensible printers"
 
   requires(toploop) = "camlp5"
-  archive(toploop,-camlp5o)      = "pa_extprint.cmo"
+  archive(toploop)      = "pa_extprint.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_extprint.cmo"
@@ -304,7 +304,7 @@ package "pprintf" (
   description = "Syntax extension: ``pprintf'' preprocessor support"
 
   requires(toploop) = "camlp5"
-  archive(toploop,-camlp5o)      = "pa_pprintf.cmo"
+  archive(toploop)      = "pa_pprintf.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_pprintf.cmo"
@@ -324,7 +324,7 @@ package "pa_lexer" (
   description = "Syntax extension: Stream lexers"
 
   requires(toploop) = "camlp5"
-  archive(toploop,-camlp5o)      = "pa_lexer.cmo"
+  archive(toploop)      = "pa_lexer.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
   archive(syntax,preprocessor,-native) = "pa_lexer.cmo"

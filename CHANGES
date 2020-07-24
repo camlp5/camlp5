@@ -1,4 +1,12 @@
 
+Camlp5 Version 8.00-alpha02:
+--------------------
+
+* [24 Jul 2020] update META to allow use of all syntax-extension kids
+  with original syntax.  Some of these will be breaking; we'll undo
+  them as we find that they break (assuming nothing can be done to fix
+  the breakage).
+
 Camlp5 Version 8.00-alpha01:
 --------------------
 
