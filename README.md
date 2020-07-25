@@ -30,8 +30,24 @@ documentation has been moved over to Sphinx/RST, and is available in
   trying one of the tutorials.
 
 - Building, Requirements & Installation: `doc/rst/_build/building.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/building.html).
+
+  This covers building Camlp5 "manually", as well as building the
+  documentation, testsuite, and tutorial examples.
+
 - Tutorials (using Camlp5): `doc/rst/_build/tutorial-language-processing.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/tutorial-language-processing.html).
+
+  This covers how to use Camlp5 to write new language processors (the
+  running example of a calculator with parsing, pretty-printing, and
+  evaluation), using Camlp5 infrastructure, as well as interfacing with
+  Ocamllex.
+
 - Tutorials (extending OCaml Syntax): `doc/rst/_build/tutorial-extending-camlp5.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/tutorial-extending-camlp5.html).
+
+  This covers how to use Camlp5 to write new syntax-extensions for
+  Ocaml, using the example new syntax ``sum 1 ; 2 end``.
+
+Some tutorials are provided in both original and revised syntax:
+eventually all will be provided in both forms.
 
 ### Outdated HTML Documentation
 
