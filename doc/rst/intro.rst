@@ -49,7 +49,8 @@ specifying their syntax (typically ``camlp5o``, but perhaps ``camlp5r``),
 and requiring the ``camlp5`` package and maybe other packages.  So for
 instance, to compile an original-syntax ocaml file::
 
-  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5o -linkpkg streams.ml -o streams
+  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5o \
+      -linkpkg streams.ml -o streams
 
 Let's unpack that:
 
@@ -63,11 +64,13 @@ Let's unpack that:
 
 If the file were in revised syntax, we would compile it thus::
 
-  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5r -linkpkg streams.ml -o streams
+  ocamlfind ocamlc -package camlp5,fmt -syntax camlp5r \
+      -linkpkg streams.ml -o streams
 
 And if it contained code that worked with extensible grammars, we'd use::
 
-  ocamlfind ocamlc -package camlp5,fmt,camlp5.extend -syntax camlp5r -linkpkg streams.ml -o streams
+  ocamlfind ocamlc -package camlp5,fmt,camlp5.extend -syntax camlp5r \
+      -linkpkg streams.ml -o streams
 
 Note the package ``camlp5.extend`` (that provides extensible grammar syntax support).
 
@@ -246,13 +249,15 @@ it with camlp5 and pretty-print it in original syntax:
 
 ::
 
-   not-ocamlfind preprocess -package camlp5.pr_o -syntax camlp5r tutorials/streams/streams.ml
+   not-ocamlfind preprocess -package camlp5.pr_o -syntax camlp5r \
+       tutorials/streams/streams.ml
 
 And we can pretty-print the original-syntax version of the example:
 
 ::
    
-   not-ocamlfind preprocess -package camlp5.pr_r -syntax camlp5o tutorials/streams-original/streams.ml
+   not-ocamlfind preprocess -package camlp5.pr_r -syntax camlp5o \
+       tutorials/streams-original/streams.ml
 
 It is possible to use lower-level access to the camlp5 command-line
 executables, but typically using ``not-ocamlfind`` and findlib
