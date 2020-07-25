@@ -1,11 +1,11 @@
 # Camlp5
 
-Camlp5 is a preprocessor-pretty-printer of ocaml.
+Camlp5 is a preprocessor-pretty-printer of OCaml.
 
-It is compatible with all versions of ocaml from 4.00.0 thru 4.11.0.
-Previous versions of Camlp5 have supported Ocaml versions down to 1.07
+It is compatible with all versions of OCaml from 4.00.0 thru 4.11.0.
+Previous versions of Camlp5 have supported OCaml versions down to 1.07
 and jocaml 3.12.0 to 3.12.1, but this version cuts off support at
-4.00.0.  Camlp5 is heavily tested with Ocaml versions from 4.10.0
+4.00.0.  Camlp5 is heavily tested with OCaml versions from 4.10.0
 forward, with an extensive and ever-growing testsuite.
 
 This Camlp5 version is 8.00~alpha02.  NOTE WELL that this is an
@@ -17,15 +17,21 @@ so I can fix that.
 
 ## Documentation: Installation, Testsuite, Tutorial
 
-Since most Ocaml users will install Camlp5 via opam, all the
+Since most OCaml users will install Camlp5 via opam, all the
 documentation has been moved over to Sphinx/RST, and is available in
 `doc/rst/_build` as well as
 [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/).
 
 - Introduction: `doc/rst/_build/intro.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/intro.html).
+
+  This introduction explains how to use Camlp5 from the commandline
+  and toplevel: compiling files, loading into toplevel, selecting
+  syntax (original or revised).  I'd recommend starting here before
+  trying one of the tutorials.
+
 - Building, Requirements & Installation: `doc/rst/_build/building.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/building.html).
 - Tutorials (using Camlp5): `doc/rst/_build/tutorial-language-processing.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/tutorial-language-processing.html).
-- Tutorials (extending Ocaml Syntax): `doc/rst/_build/tutorial-extending-camlp5.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/tutorial-extending-camlp5.html).
+- Tutorials (extending OCaml Syntax): `doc/rst/_build/tutorial-extending-camlp5.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/tutorial-extending-camlp5.html).
 
 ### Outdated HTML Documentation
 
