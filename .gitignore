@@ -5,3 +5,6 @@ local-install
 .tramp_history
 */.tramp_history
 */*/.tramp_history
+.merlin
+*/.merlin
+*/*/.merlin
