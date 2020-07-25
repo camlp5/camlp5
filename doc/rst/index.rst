@@ -12,5 +12,6 @@ Welcome to Camlp5's documentation! (Only stub for now)
    parsing-tools
    printing-tools
    language-extensions
+   deprecated
    conclusion
    appendix

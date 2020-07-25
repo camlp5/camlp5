@@ -109,6 +109,7 @@ it, one must install a number of packages:
   - `fmt`
   - `pcre`
   - `ounit2`
+  - `patdiff`
   - `IPC::System::Simple`
   - `String::ShellQuote`
 
@@ -118,7 +119,7 @@ it, one must install a number of packages:
 
   and using opam:
 
-  ```opam install rresult fmt pcre ounit2```
+  ```opam install rresult fmt pcre ounit2 patdiff```
 
   These packages are *not* required to build/install camlp5, but
   only to build and run the testsuite.  However, for add-on packages
@@ -133,9 +134,14 @@ Then to build/run it:
 
 There are a number of tutorial examples in the directory `tutorial`.
 They assume that camlp5 has been installed (and hence, do not
-reference the build-tree).  To build the tutorial examples:
+reference the build-tree).  They also assume that the testsuite
+prereqs have been installed.  To build (and run) the tutorial
+examples:
 
-  ```make -C tutorial all```
+```
+make -C tutorial all
+make -C tutorial test
+```
 
 The Sphinx/RST documentation uses these examples to explain how to
 write code using Camlp5.

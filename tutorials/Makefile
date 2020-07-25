@@ -1,5 +1,6 @@
 
-DIRS=streams streams-revised calc calc+ocamllex calc+functorial calc+pa_lexer protobuf2
+DIRS=streams-original streams calc calc+ocamllex calc+functorial \
+	calc+pa_lexer calc+pa_lexer-original protobuf2
 
 all:
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done

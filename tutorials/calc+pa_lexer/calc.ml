@@ -244,7 +244,7 @@ try
       let print_int pc n = pprintf pc "%d" n in
       printf "%s" (pprintf Pprintf.empty_pc "%p =@;@[[%p]@]\n"
                      print_stmts l
-                     (plist_semi print_int 2) (snd(Eval.stmts [] l)))
+                     (plist_semi print_int 2) (List.rev(snd(Eval.stmts [] l))))
     }
 with [ Ploc.Exc loc exc ->
     Fmt.(pf stderr "%s%a@.%!" (Ploc.string_of_location loc) exn exc)

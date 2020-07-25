@@ -2,8 +2,6 @@
 Introduction
 ============
 
-
-
 Camlp5 is a preprocessor and pretty-printer for OCaml programs. It
 also provides parsing and printing tools.
 
@@ -123,7 +121,7 @@ packages:
 
 There are three ways that a piece of Ocaml code can be used, and this
 applies equally to Camlp5 packages.  So, for a camlp5
-package ``X`` above, we can done one of:
+package ``X`` above, we can do one of:
 
 1. load into the preprocessor::
 
@@ -149,12 +147,16 @@ The Ocaml Toplevel
 A warning for users who use some frontend to interact with the Ocaml
 toplevel: many frontends have a baked-in understanding of Ocaml's
 syntax, and specifically that toplevel phrases always end with ``;;``
-(e.g. ``tuareg-mode`` in Emacs).  If you load the revised syntax into
-an Ocaml toplevel accessed via one of these front-ends, you will find
-that it doesn't work: you may various find that you get no response
-back to input, or that the front-end inserts extra semicolons, or
-other weirdness.  When I use Emacs with revised syntax Ocaml, I
-typically do so in a ``M-x shell RET`` window.
+(e.g. ``tuareg-mode`` in Emacs).  **If you load the revised syntax**
+into an Ocaml toplevel accessed via one of these front-ends (which is
+almost-never necessary), you will find that it doesn't work: you may
+various find that you get no response back to input, or that the
+front-end inserts extra semicolons, or other weirdness.  When I use
+Emacs with revised syntax Ocaml, I typically do so in a ``M-x shell
+RET`` window.
+
+NOTE: It would be useful to fix ``tuareg-mode`` to understand revised
+syntax.
 
 To use camlp5 from the toplevel, first decide which syntax you wish to use. Then
 
@@ -205,73 +207,18 @@ For the revised syntax, just replace the last line with ``#camlp5r
 toplevel using camlp5. [Again, I reiterate that revised syntax and
 (e.g.) the ``tuareg-mode`` front-end will *not* interact well.]
 
-Low-level Shell usage
-=====================
-
-The main shell commands are:
-
--  ``camlp5o`` : to treat files written in normal OCaml syntax,
--  ``camlp5r`` : to treat files written in a new syntax named :ref:`revised_syntax` .
-
-These commands can be given as parameters of the option ``-pp`` of
-the OCaml compiler. Examples:
-
-::
-
-    ocamlc -pp camlp5o foo.ml
-    ocamlc -pp camlp5r bar.ml
-
-This way, the parsing is done by Camlp5. In case of syntax errors,
-the parsing fails with an error message and the compilation is
-aborted. Otherwise, the OCaml compiler continues with the syntax tree
-provided by Camlp5.
-
-In the toplevel, it is possible to preprocess the input phrases by
-loading one of the files "``camlp5o.cma``" or "``camlp5r.cma``". The
-common usage is:
-
-::
-
-    ocaml -I +camlp5 camlp5o.cma
-    ocaml -I +camlp5 camlp5r.cma
-
-It is possible that, in your installation, the Camlp5 library is not
-in the OCaml directory. In this case, the commands must be:
-
-::
-
-    ocaml -I `camlp5 -where` camlp5o.cma
-    ocaml -I `camlp5 -where` camlp5r.cma
-
-In general, in this documentation, when a command requires:
-
-::
-
-    -I +camlp5
-
-it can be replaced by:
-
-::
-
-    -I `camlp5 -where`
-
-or, by:
-
-::
-
-    -I <directory>
-
-where "directory" is the directory path where the Camlp5 library
-files are installed.
-
 Parsing and Printing kits
 =========================
 
-Parsing and printing extensions are OCaml object files, i.e. files
-with the extension "``.cmo``" or "``.cma``". They are the result of
-the compilation of OCaml source files containing what is necessary to
-do the parsing or printing. These object files are named parsing and
-printing *kits*.
+Parsing and printing extensions are (of course) OCaml object files,
+i.e. files with the extension "``.cmo``" or "``.cma``".  But one
+almost never has to deal with them in this way; instead, one use
+standard ``ocamlfind`` package-names as described in
+`Camlp5 Package Naming and Overview`_.
+
+They are the result of the compilation of OCaml source files
+containing what is necessary to do the parsing or printing. These
+object files are named parsing and printing *kits*.
 
 These files cannot be linked to produce executables because they
 generally call functions and use variables defined only in Camlp5

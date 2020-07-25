@@ -8,10 +8,18 @@ programs, until we arrive at a parser/pretty-printer for Google
 Protocol Buffers IDL.
 
 For users who only wish to *use* Camlp5 packages (and packages built
-on Camlp5), it suffices to work thru the "stream" and "stream-revised"
+on Camlp5), it suffices to work thru the "streams-original" and "streams"
 examples: after that, all the examples are really for users who wish
 to actually write programs with grammars, extensible printers, and
 other Camlp5 features.
+
+Camlp5's syntax-extensions were meant to work with revised syntax, but
+typically they work just as well with original syntax.  To demonstrate
+that, the most-complicated example (using lexer, grammar, and printer
+syntax-extensions) is available in both revised and original syntax
+(though only the revised-syntax version is described herein).  A quick
+diff of the two versions will show that the differences are entirely
+superficial.
 
 .. contents::
   :local:
@@ -20,23 +28,24 @@ Here is a list of all the calculator examples with their locations.
 In each case, you'll find a buildable tree (with Makefile), and simple
 tests.
 
-1. Stream parser (original syntax): ``tutorials/streams``
-2. Stream parser (revised syntax): ``tutorials/streams-revised``
+1. Stream parser (original syntax): ``tutorials/streams-original``
+2. Stream parser (revised syntax): ``tutorials/streams``
 3. Extensible grammars (built-in Camlp5 lexer): ``tutorials/calc``
 4. AST, Extensible grammars, extensible printers, evaluator (ocamllex lexer): ``tutorials/calc+ocamllex``
 5. Extensible grammars (functorial interface) and ocamllex lexer: ``tutorials/calc+functorial``
 6. like #4, but with ``pa_lexer``-implementation of a lexer:  ``tutorials/calc+pa_lexer``
+7. a translation of #6 into original syntax.
 
 Stream parsers in original syntax: the simplest program using Camlp5 features
 =============================================================================
 
-The code for this example is in ``tutorials/streams``.
+The code for this example is in ``tutorials/streams-original``.
 
 A very simple program that uses Camlp5 features is one that uses
 :ref:`stream_parsers` .  In this example you'll find a parser for
 integer expressions (addition, subtraction, multiplication, division).
 It is written using the "original syntax stream parsers" syntax: the
-code is in ``tutorials/streams/streams.ml``, and the critical bit, the
+code is in ``tutorials/streams-original/streams.ml``, and the critical bit, the
 parser is as follows:
 
 1. First a left-associative parser-combinator:
@@ -128,7 +137,7 @@ etc.
 Stream parsers in revised syntax: the simplest program using Camlp5 features
 ============================================================================
 
-The code for this example is in ``tutorials/streams-revised``.
+The code for this example is in ``tutorials/streams``.
 
 Since the rest of the tutorial will be written in
 :ref:`revised_syntax` , we have transliterated (it's not very hard)
@@ -535,7 +544,7 @@ When we pretty-print the exception, we can pretty-print the location:
          let print_int pc n = pprintf pc "%d" n in
          printf "%s" (pprintf Pprintf.empty_pc "%p =@;@[[%p]@]\n"
                         print_stmts l
-                        (plist_semi print_int 2) (snd(Eval.stmts [] l)))
+                        (plist_semi print_int 2) (List.rev(snd(Eval.stmts [] l))))
        }
    with [ Ploc.Exc loc exc ->
        Fmt.(pf stderr "%s%a@.%!" (Ploc.string_of_location loc) exn exc)
