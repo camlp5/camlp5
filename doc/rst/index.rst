@@ -1,12 +1,14 @@
-======================================================
-Welcome to Camlp5's documentation! (Only stub for now)
-======================================================
+====================
+Camlp5 Documentation
+====================
 
 .. toctree::
    :maxdepth: 3
 
    intro
-   tutorial
+   building
+   tutorial-extending-camlp5
+   tutorial-language-processing
    strict
    ptools
    parsing-tools

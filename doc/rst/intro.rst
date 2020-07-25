@@ -1,3 +1,5 @@
+.. _introduction:
+
 ============
 Introduction
 ============
@@ -29,6 +31,8 @@ toplevel.
 
 .. contents::
   :local:
+
+.. _introduction_quickstart:
 
 Quickstart with `ocamlfind`
 ===========================
@@ -141,6 +145,8 @@ Notice that for use #3, we supply the name ``X.link`` instead of
 ``X``.  For example, to link revised-syntax grammar support into a
 program, we'd use package ``camlp5.pa_r.link``.
 
+.. _introduction_toplevel:
+
 The Ocaml Toplevel
 ==================
 
@@ -212,85 +218,54 @@ Parsing and Printing kits
 
 Parsing and printing extensions are (of course) OCaml object files,
 i.e. files with the extension "``.cmo``" or "``.cma``".  But one
-almost never has to deal with them in this way; instead, one use
+almost never has to deal with them in this way; instead, one uses
 standard ``ocamlfind`` package-names as described in
 `Camlp5 Package Naming and Overview`_.
 
-They are the result of the compilation of OCaml source files
-containing what is necessary to do the parsing or printing. These
-object files are named parsing and printing *kits*.
-
-These files cannot be linked to produce executables because they
-generally call functions and use variables defined only in Camlp5
-core, typically belonging to the module "``Pcaml``". The kits are
-designed to be loaded by the Camlp5 commands, either through their
-command arguments or through directives in the source files.
-
-It is therefore important to compile the *kits* with the option
-"``-c``" of the OCaml compiler (i.e. just compilation, not producing
-an executable) and with the option "``-I   +camlp5``" (or
-":literal:`-I `camlp5 -where\``") to inform the compiler to find
-module interfaces in installed Camlp5 library.
-
-In the OCaml toplevel, it is possible to use a kit by simply loading
-it with the directive "``#load``".
+For instance, in :ref:`tutorial_extending_ocaml` the parsing kits
+``camlp5.extend``, ``camlp5.extfold``, and ``camlp5.quotations`` are
+used both on the command-line and in the toplevel.  Typically this is
+how all kits are used: it is rare to need to reference the
+``.cmo``/``.cma`` files directly.
 
 Extending syntax
 ================
 
-A syntax extension is a Camlp5 parsing kit. There are two ways to use
-a syntax extension:
-
--  Either by giving this object file as parameter to the Camlp5
-  command. For example:
-
-  ::
-
-        ocamlc -pp "camlp5o ./myext.cmo" foo.ml
-
--  Or by adding the directive "``#load``" in the source file:
-
-  ::
-
-        #load "./myext.cmo";;
-
-  and then compile it simply like this:
-
-  ::
-
-        ocamlc -pp camlp5o foo.ml
-
-Several syntax extensions can be used for a single file. The way to
-create one's own syntax extensions is explained in this document.
+There is a detailed example of extending the syntax of Ocaml in 
+ :ref:`tutorial_extending_ocaml`.
 
 Pretty printing
 ===============
 
-As for syntax extensions, the pretty printing is defined or extended
-through Camlp5 printing kits. Some pretty printing kits are provided
-by Camlp5, the main ones being:
-
--  ``pr_o.cmo``: to pretty print in normal syntax,
--  ``pr_r.cmo``: to pretty print in revised syntax.
-
-Examples: if we have a file, ``foo.ml``, written in normal syntax and
-and another one, ``bar.ml``, written in revised syntax, here are the
-commands to pretty print them in their own syntax:
+It is oftentimes really useful to see the result of camlp5 processing
+(for debugging).  Camlp5 pretty-printing kits are designed for this
+purpose.  Just as parsing kits are named and used via findlib
+packages, so are pretty printing kits.  For instance, the file
+``tutorials/streams/streams.ml`` is in revised syntax.  We can parse
+it with camlp5 and pretty-print it in original syntax:
 
 ::
 
-    camlp5o pr_o.cmo foo.ml
-    camlp5r pr_r.cmo bar.ml
+   not-ocamlfind preprocess -package camlp5.pr_o -syntax camlp5r tutorials/streams/streams.ml
 
-And how to convert them into the other syntax:
+And we can pretty-print the original-syntax version of the example:
 
 ::
+   
+   not-ocamlfind preprocess -package camlp5.pr_r -syntax camlp5o tutorials/streams-original/streams.ml
 
-    camlp5o pr_r.cmo foo.ml
-    camlp5r pr_o.cmo foo.ml
+It is possible to use lower-level access to the camlp5 command-line
+executables, but typically using ``not-ocamlfind`` and findlib
+packages is both easier and more compatible with the syntax used for
+building code:
 
-The way to create one's own pretty printing extensions is explained
-in this document.
+1. take the ``ocamlfind ocamlc`` line
+2.remove non-preprocessing options
+3. replace the prefix with ``not-ocamlfind preprocess``
+4. add a pretty-printing kit package (e.g. ``camlp5.pr_r``)
+
+and you get a commandline for preprocessing a file and seeing the
+output.
 
 Note: the revised syntax
 ========================
@@ -300,9 +275,22 @@ some problems and inconsistencies of the normal OCaml syntax. A
 chapter will explain the differences between the normal and the
 revised syntax.
 
-All examples of this documentation are written in that revised
-syntax. Even if you don't know it, it is not difficult to understand.
-The same examples can be written in normal syntax. In case of
-problems, refer to the chapter describing it.
+The one place in Camlp5 where revised syntax is mandatory is in
+*quotations* -- bits of syntax that are converted into patterns and
+expressions in Ocaml.  This is because Ocaml's original syntax has
+gaps that make inserting *anti-quotations* in some places difficult;
+revised syntax was designed to remedy these gaps.
+
+Many examples in this documentation are written using revised syntax,
+but over time we'll convert all that are possible, to original syntax.
+The tutorial examples are all available in both revised syntax and
+original syntax, and use many of the syntax-extensions provided by
+Camlp5: nothing prevents users from writing extensions in original
+syntax, and of course applying Camlp5 extensions to code written in
+original syntax.
+
+Even if you don't know revised syntax, it is not difficult to
+understand.  And as mentioned above, it is almost never *necessary* to
+use revised syntax to use Camlp5 (again, aside from quotations).
 
 .. container:: trailer

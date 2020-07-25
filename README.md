@@ -2,9 +2,11 @@
 
 Camlp5 is a preprocessor-pretty-printer of ocaml.
 
-It is (theoretically) compatible with all versions of ocaml from 1.07
-to 4.11.0 (when they compile), and jocaml 3.12.0 to 3.12.1, but
-maintainers only test against versions of ocaml >= 4.00.0.
+It is compatible with all versions of ocaml from 4.00.0 thru 4.11.0.
+Previous versions of Camlp5 have supported Ocaml versions down to 1.07
+and jocaml 3.12.0 to 3.12.1, but this version cuts off support at
+4.00.0.  Camlp5 is heavily tested with Ocaml versions from 4.10.0
+forward, with an extensive and ever-growing testsuite.
 
 This Camlp5 version is 8.00~alpha02.  NOTE WELL that this is an
 **alpha** release, and as such, may break your code.  If it does,
@@ -13,138 +15,30 @@ still working on the documentation, but .... that could take a while,
 so I figured I had better get this out and find out where code breaks,
 so I can fix that.
 
-## Requirements
+## Documentation: Installation, Testsuite, Tutorial
 
-You need the ocaml compiler installed. It must be accessible in the path.
+Since most Ocaml users will install Camlp5 via opam, all the
+documentation has been moved over to Sphinx/RST, and is available in
+`doc/rst/_build` as well as
+[on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/).
 
-## Installation
-
-1. First, run the "configure" script by typing:
-```shell
-   ./configure
-```
-The `configure` script has a few options. Use the `--help` option to get a
-list and short description of each option.
-
-2. It creates a Makefile, which can be invoked by:
-```shell
-   make
-```
-
-Alternatively, you can decompose the operations into:
-```shell
-   make out
-```
-Then, to make camlp5 check itself:
-```shell
-   make bootstrap
-```
-Further, to make the native-code library:
-```shell
-   make opt
-```
-At end, to make more native-code programs:
-```shell
-   make opt.opt
-```
-
-3) The binaries are installed by typing:
-```shell
-   make install
-```
-or, if you install to a system location but are not an administrator
-```
-   sudo make install
-```
-
-## Documentation
-
-There are two forms of documentation: HTML and RST (ReStructured Text)
-(for Sphinx).  From this release forward, the Sphinx documentation
-will be updated and improved; the HTML documentation will soon be
-removed.
-
-The directory doc/rst contains the sources of the RST documentation.  To build it requires:
-*`python3` (tested with version 3.6.9)
-* Sphinx (tested with version 3.0.3)
-* sphinx-rtd-theme (tested with 0.4.3)
-
-The easiest way to do that is to use Python's `venv` and install them with `pip3` (e.g.):
-```
-python3 -m venv ~/Sphinx
-source ~/Sphinx/bin/activate
-pip3 install sphinx-rtd-theme
-```
-Then
-```
-make -C doc/rst all
-```
-
-This creates the Sphinx documentation in `doc/rst/_build`.
+- Introduction: `doc/rst/_build/intro.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/intro.html).
+- Building, Requirements & Installation: `doc/rst/_build/building.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/building.html).
+- Tutorials (using Camlp5): `doc/rst/_build/tutorial-language-processing.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/tutorial-language-processing.html).
+- Tutorials (extending Ocaml Syntax): `doc/rst/_build/tutorial-extending-camlp5.html`, [on ReadTheDocs](https://camlp5.readthedocs.io/en/latest/tutorial-extending-camlp5.html).
 
 ### Outdated HTML Documentation
 
-The directory doc/htmlp contains the sources of the HTML documentation.
+The directory doc/htmlp contains the sources of outdated HTML
+documentation.  It will be removed once the Sphinx documentation is
+fully updated.
+
 To build it, cd doc/htmlp, and:
 * for its html version, type "make", result in directory ../html
 * for its latex version, type "make tex", result camlp5.tex
 * for its ps version x-rtype "make ps", result camlp5.ps
 * for its pdf version, type "make pdf", result camlp5.pdf
 * for its info version, type "make info", result camlp5.info*
-
-## Developers
-
-The file DEVEL gives information for people who want to make changes
-in Camlp5, or who are just curious of how it is implemented. The same
-explanations are also in the chapter "Camlp5 sources" in the documentation.
-
-## Testsuite
-
-There is a rather extensive testsuite (to which any suggestions or
-contributions are welcome) in `testsuite`.  It assumes only that
-camlp5 has been successfully built, but not installed.  To build/run
-it, one must install a number of packages:
-
-  - `rresult`
-  - `fmt`
-  - `pcre`
-  - `ounit2`
-  - `patdiff`
-  - `IPC::System::Simple`
-  - `String::ShellQuote`
-
-  On Debian/Ubuntu systems, the Perl packages can be installed with:
-
-  ```apt-get install libstring-shellquote-perl libipc-system-simple-perl```
-
-  and using opam:
-
-  ```opam install rresult fmt pcre ounit2 patdiff```
-
-  These packages are *not* required to build/install camlp5, but
-  only to build and run the testsuite.  However, for add-on packages
-  (like `pa_ppx`) they are required, and so it is probably wisest to
-  go ahead and install them now.
-
-Then to build/run it:
-
-  ```make -C testsuite all-tests```
-
-## Tutorial examples
-
-There are a number of tutorial examples in the directory `tutorial`.
-They assume that camlp5 has been installed (and hence, do not
-reference the build-tree).  They also assume that the testsuite
-prereqs have been installed.  To build (and run) the tutorial
-examples:
-
-```
-make -C tutorial all
-make -C tutorial test
-```
-
-The Sphinx/RST documentation uses these examples to explain how to
-write code using Camlp5.
 
 ## Problems
 
@@ -156,7 +50,7 @@ fork your repo, fix the problem, and send you a PR.
 For really old code, the reason can be that there the new type
 'location' is now abstract. Consider looking at the file UPGRADING.
 
-## Author
+## Author(s)
 
 Originally written by Daniel de Rauglaudre <daniel.roglo@free.fr>.
 Maintenance and upgrades by Chet Murthy <chetsky@gmail.com>.

@@ -2,3 +2,6 @@
 myconfig
 */.depend.bak
 local-install
+.tramp_history
+*/.tramp_history
+*/*/.tramp_history

@@ -280,6 +280,26 @@ package "extfun" (
   )
 )
 
+
+package "extfold" (
+  version = "@VERSION@"
+  description = "Syntax extension: Extensible folders"
+
+  requires(toploop) = "camlp5.extend"
+  archive(toploop)      = "pa_extfold.cmo"
+
+  requires(syntax,preprocessor) = "camlp5.extend"
+  archive(syntax,preprocessor,-native) = "pa_extfold.cmo"
+  archive(syntax,preprocessor,native) = "pa_extfold.cmx"
+  requires = "camlp5"
+
+  package "link" (
+    requires = "camlp5.extend.link"
+    archive(byte) = "pa_extfold.cmo"
+    archive(native) = "pa_extfold.cmx"
+  )
+)
+
 package "extprint" (
   version = "@VERSION@"
   description = "Syntax extension: Extensible printers"
