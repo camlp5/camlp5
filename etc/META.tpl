@@ -390,5 +390,6 @@ package "toploop" (
   archive(byte) = "camlp5_top_funs.cmo"
   )
 
+  archive(byte,toploop) = "camlp5_top_funs.cmo"
   error(toploop) = "camlp5.toploop cannot be loaded alone into the toploop"
 )

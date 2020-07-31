@@ -121,7 +121,7 @@ value operator_rparen_f strm =
   let id x = x in
   let app suff s = s^suff in 
   let trials = [
-    (1, Right (fun [ [("LIDENT",_) :: _] -> True | _ -> False ]))
+    (1, Right (fun [ [(("LIDENT"|"UIDENT"),_) :: _] -> True | _ -> False ]))
   ; (2, Left (is_operator, id, [[("",")")]]))
   ; (2, Left (is_letop, id, [[("",")")]]))
   ; (2, Left (is_andop, id, [[("",")")]]))
