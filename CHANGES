@@ -2,6 +2,10 @@
 Camlp5 Version 8.00-alpha02:
 --------------------
 
+* [30 Jul 2020] fixed parser lookahead-too-far bug in revised syntax.
+  Input {|(F.f 1);|} was causing lookahead to the token after the
+  semicolon.
+
 * [25 Jul 2020] add "extfold" to META.  Move much documentation from
   README.md to Sphinx/RST docs.  Add example of extending Ocaml syntax
   to tutorial.
