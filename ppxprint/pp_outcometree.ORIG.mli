@@ -20,6 +20,7 @@ open Pp_parsetree
 [%%import: Outcometree.out_phrase [@with exn := Exceptions.t]] [@@deriving show]
 
 ELSE
+val pp_out_sig_item : Format.formatter -> Outcometree.out_sig_item list -> unit
 END
 
 

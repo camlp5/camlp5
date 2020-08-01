@@ -20,6 +20,9 @@ open Pp_parsetree
 [%%import: Outcometree.out_phrase [@with exn := Exceptions.t]] [@@deriving show]
 
 ELSE
+
+let pp_out_sig_item pps x = Format.fprintf pps "<unrecognized out_sig_item list>"
+
 END
 
 

@@ -2,34 +2,34 @@
 module Ploc :
   sig
     include module type of Ploc with type t = Ploc.t;
-    value pp : Fmt.t t;
-    type vala 'a =
-      Ploc.vala 'a ==
+    value pp : Format.formatter → t → unit;
+    type vala α =
+      Ploc.vala α ==
         [ VaAnt of string
-        | VaVal of 'a ][@@"deriving_inline" show;]
+        | VaVal of α ][@@"deriving_inline" show;]
     ;
-    value pp_vala : Fmt.t 'a -> Fmt.t (vala 'a);
-    value show_vala : Fmt.t 'a -> vala 'a -> Stdlib.String.t;
+    value pp_vala : Fmt.t α → Fmt.t (vala α);
+    value show_vala : Fmt.t α → vala α → Stdlib.String.t;
     [@@@"end"];
   end
 ;
 type loc = Ploc.t[@@"deriving_inline" show;];
 value pp_loc : Fmt.t loc;
-value show_loc : loc -> Stdlib.String.t;
+value show_loc : loc → Stdlib.String.t;
 [@@@"end"];
 type type_var =
   (Ploc.vala (option string) * option bool)[@@"deriving_inline" show;]
 ;
 value pp_type_var : Fmt.t type_var;
-value show_type_var : type_var -> Stdlib.String.t;
+value show_type_var : type_var → Stdlib.String.t;
 [@@@"end"];
-type class_infos 'a =
-  MLast.class_infos 'a ==
+type class_infos α =
+  MLast.class_infos α ==
     { ciLoc : loc;
       ciVir : Ploc.vala bool;
       ciPrm : (loc * Ploc.vala (list type_var));
       ciNam : Ploc.vala string;
-      ciExp : 'a;
+      ciExp : α;
       ciAttributes : attributes }
 and longid =
   MLast.longid ==
@@ -354,60 +354,60 @@ and attribute_body = (Ploc.vala (loc * string) * payload)
 and attribute = Ploc.vala attribute_body
 and attributes_no_anti = list attribute
 and attributes = Ploc.vala attributes_no_anti[@@"deriving_inline" show;];
-value pp_class_infos : Fmt.t 'a -> Fmt.t (class_infos 'a);
-value show_class_infos : Fmt.t 'a -> class_infos 'a -> Stdlib.String.t;
+value pp_class_infos : Fmt.t α → Fmt.t (class_infos α);
+value show_class_infos : Fmt.t α → class_infos α → Stdlib.String.t;
 value pp_longid : Fmt.t longid;
-value show_longid : longid -> Stdlib.String.t;
+value show_longid : longid → Stdlib.String.t;
 value pp_ctyp : Fmt.t ctyp;
-value show_ctyp : ctyp -> Stdlib.String.t;
+value show_ctyp : ctyp → Stdlib.String.t;
 value pp_poly_variant : Fmt.t poly_variant;
-value show_poly_variant : poly_variant -> Stdlib.String.t;
+value show_poly_variant : poly_variant → Stdlib.String.t;
 value pp_patt : Fmt.t patt;
-value show_patt : patt -> Stdlib.String.t;
+value show_patt : patt → Stdlib.String.t;
 value pp_expr : Fmt.t expr;
-value show_expr : expr -> Stdlib.String.t;
+value show_expr : expr → Stdlib.String.t;
 value pp_case_branch : Fmt.t case_branch;
-value show_case_branch : case_branch -> Stdlib.String.t;
+value show_case_branch : case_branch → Stdlib.String.t;
 value pp_module_type : Fmt.t module_type;
-value show_module_type : module_type -> Stdlib.String.t;
+value show_module_type : module_type → Stdlib.String.t;
 value pp_functor_parameter : Fmt.t functor_parameter;
-value show_functor_parameter : functor_parameter -> Stdlib.String.t;
+value show_functor_parameter : functor_parameter → Stdlib.String.t;
 value pp_sig_item : Fmt.t sig_item;
-value show_sig_item : sig_item -> Stdlib.String.t;
+value show_sig_item : sig_item → Stdlib.String.t;
 value pp_with_constr : Fmt.t with_constr;
-value show_with_constr : with_constr -> Stdlib.String.t;
+value show_with_constr : with_constr → Stdlib.String.t;
 value pp_module_expr : Fmt.t module_expr;
-value show_module_expr : module_expr -> Stdlib.String.t;
+value show_module_expr : module_expr → Stdlib.String.t;
 value pp_str_item : Fmt.t str_item;
-value show_str_item : str_item -> Stdlib.String.t;
+value show_str_item : str_item → Stdlib.String.t;
 value pp_type_decl : Fmt.t type_decl;
-value show_type_decl : type_decl -> Stdlib.String.t;
+value show_type_decl : type_decl → Stdlib.String.t;
 value pp_generic_constructor : Fmt.t generic_constructor;
-value show_generic_constructor : generic_constructor -> Stdlib.String.t;
+value show_generic_constructor : generic_constructor → Stdlib.String.t;
 value pp_extension_constructor : Fmt.t extension_constructor;
-value show_extension_constructor : extension_constructor -> Stdlib.String.t;
+value show_extension_constructor : extension_constructor → Stdlib.String.t;
 value pp_type_extension : Fmt.t type_extension;
-value show_type_extension : type_extension -> Stdlib.String.t;
+value show_type_extension : type_extension → Stdlib.String.t;
 value pp_class_type : Fmt.t class_type;
-value show_class_type : class_type -> Stdlib.String.t;
+value show_class_type : class_type → Stdlib.String.t;
 value pp_class_sig_item : Fmt.t class_sig_item;
-value show_class_sig_item : class_sig_item -> Stdlib.String.t;
+value show_class_sig_item : class_sig_item → Stdlib.String.t;
 value pp_class_expr : Fmt.t class_expr;
-value show_class_expr : class_expr -> Stdlib.String.t;
+value show_class_expr : class_expr → Stdlib.String.t;
 value pp_class_str_item : Fmt.t class_str_item;
-value show_class_str_item : class_str_item -> Stdlib.String.t;
+value show_class_str_item : class_str_item → Stdlib.String.t;
 value pp_longid_lident : Fmt.t longid_lident;
-value show_longid_lident : longid_lident -> Stdlib.String.t;
+value show_longid_lident : longid_lident → Stdlib.String.t;
 value pp_payload : Fmt.t payload;
-value show_payload : payload -> Stdlib.String.t;
+value show_payload : payload → Stdlib.String.t;
 value pp_attribute_body : Fmt.t attribute_body;
-value show_attribute_body : attribute_body -> Stdlib.String.t;
+value show_attribute_body : attribute_body → Stdlib.String.t;
 value pp_attribute : Fmt.t attribute;
-value show_attribute : attribute -> Stdlib.String.t;
+value show_attribute : attribute → Stdlib.String.t;
 value pp_attributes_no_anti : Fmt.t attributes_no_anti;
-value show_attributes_no_anti : attributes_no_anti -> Stdlib.String.t;
+value show_attributes_no_anti : attributes_no_anti → Stdlib.String.t;
 value pp_attributes : Fmt.t attributes;
-value show_attributes : attributes -> Stdlib.String.t;
+value show_attributes : attributes → Stdlib.String.t;
 [@@@"end"];
 
 

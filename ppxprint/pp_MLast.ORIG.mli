@@ -6,7 +6,7 @@ IFDEF BOOTSTRAP THEN
 module Ploc : sig
 include (module type of Ploc with type t = Ploc.t)
 
-val pp : t Fmt.t
+val pp : Format.formatter -> t -> unit
 type 'a vala = [%import: 'a Ploc.vala] [@@deriving show]
 end
 

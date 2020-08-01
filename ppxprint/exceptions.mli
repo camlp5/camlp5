@@ -4,7 +4,7 @@ type t = exn == ..[@@"deriving_inline" show;];
 module M_pp : sig type nonrec pp = { f : mutable Fmt.t t }; value f : pp; end;
 [@@@"ocaml.text" "/*";];
 value pp : Fmt.t t;
-value show : t -> Stdlib.String.t;
+value show : t → Stdlib.String.t;
 [@@@"end"];
 type t +=
   [ Help of string[@"rebind_to" Arg.Help;]

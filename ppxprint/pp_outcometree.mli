@@ -5,7 +5,7 @@ module Type_immediacy :
       Type_immediacy.t == [ Unknown | Always | Always_on_64bits ][@@"deriving_inline" show;]
     ;
     value pp : Fmt.t t;
-    value show : t -> Stdlib.String.t;
+    value show : t → Stdlib.String.t;
     [@@@"end"];
   end
 ;
@@ -14,7 +14,7 @@ type out_name =
   Outcometree.out_name == { printed_name : mutable string }[@@"deriving_inline" show;]
 ;
 value pp_out_name : Fmt.t out_name;
-value show_out_name : out_name -> Stdlib.String.t;
+value show_out_name : out_name → Stdlib.String.t;
 [@@@"end"];
 type out_ident =
   Outcometree.out_ident ==
@@ -23,19 +23,19 @@ type out_ident =
     | Oide_ident of out_name ][@@"deriving_inline" show;]
 ;
 value pp_out_ident : Fmt.t out_ident;
-value show_out_ident : out_ident -> Stdlib.String.t;
+value show_out_ident : out_ident → Stdlib.String.t;
 [@@@"end"];
 type out_string =
   Outcometree.out_string == [ Ostr_string | Ostr_bytes ][@@"deriving_inline" show;]
 ;
 value pp_out_string : Fmt.t out_string;
-value show_out_string : out_string -> Stdlib.String.t;
+value show_out_string : out_string → Stdlib.String.t;
 [@@@"end"];
 type out_attribute =
   Outcometree.out_attribute == { oattr_name : string }[@@"deriving_inline" show;]
 ;
 value pp_out_attribute : Fmt.t out_attribute;
-value show_out_attribute : out_attribute -> Stdlib.String.t;
+value show_out_attribute : out_attribute → Stdlib.String.t;
 [@@@"end"];
 type out_value =
   Outcometree.out_value ==
@@ -49,7 +49,7 @@ type out_value =
     | Oval_int64 of int64
     | Oval_nativeint of nativeint
     | Oval_list of list out_value
-    | Oval_printer of Format.formatter -> unit
+    | Oval_printer of Format.formatter → unit
     | Oval_record of list (out_ident * out_value)
     | Oval_string of string and int and out_string
     | Oval_stuff of string
@@ -57,7 +57,7 @@ type out_value =
     | Oval_variant of string and option out_value ][@@"deriving_inline" show;]
 ;
 value pp_out_value : Fmt.t out_value;
-value show_out_value : out_value -> Stdlib.String.t;
+value show_out_value : out_value → Stdlib.String.t;
 [@@@"end"];
 type out_type =
   Outcometree.out_type ==
@@ -84,9 +84,9 @@ and out_variant =
     | Ovar_typ of out_type ][@@"deriving_inline" show;]
 ;
 value pp_out_type : Fmt.t out_type;
-value show_out_type : out_type -> Stdlib.String.t;
+value show_out_type : out_type → Stdlib.String.t;
 value pp_out_variant : Fmt.t out_variant;
-value show_out_variant : out_variant -> Stdlib.String.t;
+value show_out_variant : out_variant → Stdlib.String.t;
 [@@@"end"];
 type out_class_type =
   Outcometree.out_class_type ==
@@ -100,9 +100,9 @@ and out_class_sig_item =
     | Ocsg_value of string and bool and bool and out_type ][@@"deriving_inline" show;]
 ;
 value pp_out_class_type : Fmt.t out_class_type;
-value show_out_class_type : out_class_type -> Stdlib.String.t;
+value show_out_class_type : out_class_type → Stdlib.String.t;
 value pp_out_class_sig_item : Fmt.t out_class_sig_item;
-value show_out_class_sig_item : out_class_sig_item -> Stdlib.String.t;
+value show_out_class_sig_item : out_class_sig_item → Stdlib.String.t;
 [@@@"end"];
 type out_module_type =
   Outcometree.out_module_type ==
@@ -161,22 +161,22 @@ and out_ext_status =
   Outcometree.out_ext_status == [ Oext_first | Oext_next | Oext_exception ][@@"deriving_inline" show;]
 ;
 value pp_out_module_type : Fmt.t out_module_type;
-value show_out_module_type : out_module_type -> Stdlib.String.t;
+value show_out_module_type : out_module_type → Stdlib.String.t;
 value pp_out_sig_item : Fmt.t out_sig_item;
-value show_out_sig_item : out_sig_item -> Stdlib.String.t;
+value show_out_sig_item : out_sig_item → Stdlib.String.t;
 value pp_out_type_decl : Fmt.t out_type_decl;
-value show_out_type_decl : out_type_decl -> Stdlib.String.t;
+value show_out_type_decl : out_type_decl → Stdlib.String.t;
 value pp_out_extension_constructor : Fmt.t out_extension_constructor;
 value show_out_extension_constructor :
-  out_extension_constructor -> Stdlib.String.t;
+  out_extension_constructor → Stdlib.String.t;
 value pp_out_type_extension : Fmt.t out_type_extension;
-value show_out_type_extension : out_type_extension -> Stdlib.String.t;
+value show_out_type_extension : out_type_extension → Stdlib.String.t;
 value pp_out_val_decl : Fmt.t out_val_decl;
-value show_out_val_decl : out_val_decl -> Stdlib.String.t;
+value show_out_val_decl : out_val_decl → Stdlib.String.t;
 value pp_out_rec_status : Fmt.t out_rec_status;
-value show_out_rec_status : out_rec_status -> Stdlib.String.t;
+value show_out_rec_status : out_rec_status → Stdlib.String.t;
 value pp_out_ext_status : Fmt.t out_ext_status;
-value show_out_ext_status : out_ext_status -> Stdlib.String.t;
+value show_out_ext_status : out_ext_status → Stdlib.String.t;
 [@@@"end"];
 type out_phrase =
   Outcometree.out_phrase ==
@@ -185,7 +185,7 @@ type out_phrase =
     | Ophr_exception of (Exceptions.t * out_value) ][@@"deriving_inline" show;]
 ;
 value pp_out_phrase : Fmt.t out_phrase;
-value show_out_phrase : out_phrase -> Stdlib.String.t;
+value show_out_phrase : out_phrase → Stdlib.String.t;
 [@@@"end"];
 
 

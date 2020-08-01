@@ -6,7 +6,7 @@ IFDEF BOOTSTRAP THEN
 module Ploc = struct
 include Ploc
 
-let pp ppf x = Fmt.(const string "<loc>" ppf ())
+let pp ppf x = Format.fprintf ppf "<loc>"
 type 'a vala = [%import: 'a Ploc.vala] [@@deriving show]
 end
 

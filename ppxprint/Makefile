@@ -3,9 +3,15 @@
 TOP=..
 include ../config/Makefile
 
+
+ifeq ($(BOOTSTRAPPED),1)
 FMTDIR=$(shell ocamlfind query fmt)
+FMTINCLUDES=-I $(FMTDIR)
+else
+FMTINCLUDES=
+endif
 INCLUDES=-I ../main -I ../boot
-OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) -I $(FMTDIR) -I "$(OCLIBDIR)" -I $(OTOPU) -I $(OTOPP)
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) $(FMTINCLUDES) -I "$(OCLIBDIR)" -I $(OTOPU) -I $(OTOPP)
 
 NOT_OCAMLFIND=not-ocamlfind
 PREPROCESS_PACKAGES := unix,compiler-libs.common,camlp5.quotations,camlp5.extfun,rresult,fmt
@@ -21,10 +27,34 @@ all: $(TARGET)
 ppxprint.cma: $(OBJ)
 	$(OCAMLC) $(OBJ) $(DEBUG) -linkall -a -o ppxprint.cma
 
-bootstrap: bootstrap-pp-MLast-i bootstrap-pp-MLast \
+bootstrap: bootstrap-ppxprint-runtime \
+	bootstrap-pp-MLast-i bootstrap-pp-MLast \
 	bootstrap-exceptions-i bootstrap-exceptions \
 	bootstrap-pp-parsetree-i bootstrap-pp-parsetree \
 	bootstrap-pp-outcometree-i bootstrap-pp-outcometree \
+
+initialize: initialize-ppxprint-runtime \
+	initialize-pp-MLast-i initialize-pp-MLast \
+	initialize-exceptions-i initialize-exceptions \
+	initialize-pp-parsetree-i initialize-pp-parsetree \
+	initialize-pp-outcometree-i initialize-pp-outcometree \
+
+initialize-ppxprint-runtime:: ppxprint_runtime.ORIG.ml
+	echo "(* camlp5r *)" >> $@.NEW
+	$(NOT_OCAMLFIND) preprocess $(DEBUG) -package camlp5.macro,camlp5.pr_r -syntax camlp5o $< >> $@.NEW
+	mv $@.NEW ppxprint_runtime.ml
+
+bootstrap-ppxprint-runtime: ppxprint_runtime.ORIG.ml
+	echo "(* camlp5r *)" >> $@.NEW
+	$(NOT_OCAMLFIND) preprocess $(DEBUG) -package $(PREPROCESS_PACKAGES),camlp5.macro,camlp5.pr_r,pa_ppx.import,pa_ppx.deriving_plugins.std \
+	-syntax camlp5o -ppopt -D -ppopt BOOTSTRAP \
+	-ppopt -pa_ppx-runtime -ppopt "Ppxprint_runtime" \
+	-ppopt -pa_import-package -ppopt $(PREPROCESS_PACKAGES) \
+	-ppopt -pa_import-I -ppopt . \
+	-ppopt -sep -ppopt "\n" \
+	$< >> $@.NEW
+	mv $@.NEW  ppxprint_runtime.ml
+
 
 initialize-pp-MLast-i:: pp_MLast.ORIG.mli
 	echo "(* camlp5r *)" > $@.NEW

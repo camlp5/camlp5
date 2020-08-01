@@ -35,7 +35,7 @@ type t +=
 ELSE
 type t = exn = ..
 val show : exn -> string
-val pp : exn Fmt.t
+val pp : Format.formatter -> exn -> unit
 IFDEF FAT THEN
 val sexp_of_t : exn -> Sexplib.Sexp.t
 val t_of_sexp : Sexplib.Sexp.t -> exn
