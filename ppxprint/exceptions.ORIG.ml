@@ -37,16 +37,6 @@ let print_exn exn = Some (show exn) ;;
 Printexc.register_printer print_exn ;;
 
 ELSE
-type t = exn = ..
-let show _ = "<exn>"
-let pp pps _ = Format.fprintf pps "<exn>"
-IFDEF FAT THEN
-let sexp_of_t _ = failwith "no sexp marshallers compiled in yet"
-let t_of_sexp _ = failwith "no sexp marshallers compiled in yet"
-let to_yojson _ = failwith "no yojson marshaller compiled in yet"
-let of_yojson _ = failwith "no yojson marshaller compiled in yet"
-let equal _ _ = failwith "no derived equality compiled in yet"
-END
 END
 
 

@@ -33,16 +33,6 @@ type t +=
 [@@deriving show]
 
 ELSE
-type t = exn = ..
-val show : exn -> string
-val pp : Format.formatter -> exn -> unit
-IFDEF FAT THEN
-val sexp_of_t : exn -> Sexplib.Sexp.t
-val t_of_sexp : Sexplib.Sexp.t -> exn
-val to_yojson : exn -> Yojson.Safe.t
-val of_yojson : Yojson.Safe.t -> (exn, string) Rresult.result
-val equal : exn -> exn -> bool
-END
 END
 
 
