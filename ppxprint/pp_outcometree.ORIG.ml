@@ -19,10 +19,12 @@ open Pp_parsetree
 [%%import: Outcometree.out_module_type] [@@deriving show]
 [%%import: Outcometree.out_phrase [@with exn := Exceptions.t]] [@@deriving show]
 
+let pp_out_sig_item_list pps x = Fmt.(pf pps "[%a]" (list pp_out_sig_item) x)
+
 ELSE
 
-let pp_out_sig_item pps x = Format.fprintf pps "<unrecognized out_sig_item list>"
+let pp_out_sig_item pps x = Format.fprintf pps "<unrecognized out_sig_item>"
+let pp_out_sig_item_list pps x = Format.fprintf pps "<unrecognized out_sig_item list>"
 
 END
-
 
