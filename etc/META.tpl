@@ -10,8 +10,8 @@ archive(native) = "odyl.cmxa camlp5.cmxa"
 
 # For the toploop:
 archive(byte,toploop) = "odyl.cma camlp5.cma"
-archive(byte,toploop,syntax,camlp5o) = "ppxprint.cma camlp5o.cma"
-archive(byte,toploop,syntax,camlp5r) = "ppxprint.cma camlp5r.cma"
+archive(byte,toploop,syntax,camlp5o) = "camlp5o.cma"
+archive(byte,toploop,syntax,camlp5r) = "camlp5r.cma"
 
 # Scheme-like syntax:
 # Do #predicates "syntax,camlp5scheme", followed by #require "camlp5"
@@ -387,9 +387,9 @@ package "toploop" (
   requires = "camlp5"
   version = "@VERSION@"
   description = "Internal support for toploop to use Camlp5"
-  archive(byte) = "camlp5_top_funs.cmo ppxprint.cma"
+  archive(byte) = "ppxprint.cma camlp5_top_funs.cmo"
   )
 
-  archive(byte,toploop) = "camlp5_top_funs.cmo ppxprint.cma"
+  archive(byte,toploop) = "ppxprint.cma camlp5_top_funs.cmo"
   error(toploop) = "camlp5.toploop cannot be loaded alone into the toploop"
 )

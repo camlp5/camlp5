@@ -4,8 +4,8 @@
 
 declare
   type t = exn == ..;
-  value show : exn -> string;
-  value pp : Format.formatter -> exn -> unit;
+  value show : exn → string;
+  value pp : Format.formatter → exn → unit;
   declare end;
 end;
 
