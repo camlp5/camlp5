@@ -2,9 +2,20 @@
 Camlp5 Version 8.00-alpha02:
 --------------------
 
+* [05 Aug 2020] Fixed top/rprint so that in revised syntax toplevel
+  mode, exceptions get printed out correctly.
+
+  TODO: Devise a unit-test for this, and go thru and verify that it
+  works for all "outcometree" types.
+
 * [01 Aug 2020] Added purely-internal "ppxprint" (PPX-derived printers
   for AST types) so we can use it to debug.  It's disabled by default,
   so no external users should need to worry about it.
+
+  To enable, build camlp5 with "BOOTSTRAPPED=1" as an extra toplevel
+  make argument.
+
+  TODO: add this to the "configure" script.
 
 * [30 Jul 2020] fixed parser lookahead-too-far bug in revised syntax.
   Input {|(F.f 1);|} was causing lookahead to the token after the
@@ -94,7 +105,7 @@ Camlp5 Version 8.00-alpha01:
     only affect code that constructs grammar-rules programmatically,
     rather than by using the "pa_extend.cmo" syntax.  So literally no
     code in camlp5 is affected.  The only example I know of that is
-    affected is the "elip" package.
+    affected is the "elpi" package.
 
     Previously, a grammar-rule consisted in a tuple of a list of
     symbols, and an "action" (code).  Now, it is a thruple of: a list

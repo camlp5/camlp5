@@ -436,6 +436,39 @@ and print_out_sig_item ppf =
   [ IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Osig_exception id tyl ->
       fprintf ppf "@[<2>exception %a@]" print_out_constr (id, tyl)
+    ELSE
+    Osig_typext ext _es ->
+      match _es with [
+        Oext_exception ->
+          fprintf ppf "@[<2>exception %a@]"
+            print_out_constr_gadt_opt (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+      | _ ->
+        let print_out_extension_constructor ppf ext =
+          let pr_var = Pprintast.tyvar in
+          let print_type_parameter ppf s =
+            if s = "_" then fprintf ppf "_" else pr_var ppf s in
+          let print_extended_type ppf =
+            match ext.oext_type_params with [
+              [] -> fprintf ppf "%s" ext.oext_type_name
+            | [ty_param] ->
+              fprintf ppf "@[%a@ %s@]"
+                print_type_parameter
+                ty_param
+                ext.oext_type_name
+            | _ ->
+              fprintf ppf "@[(@[%a)@]@ %s@]"
+                (print_list print_type_parameter (fun ppf -> fprintf ppf ",@ "))
+                ext.oext_type_params
+                ext.oext_type_name
+            ]
+          in
+          fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
+            print_extended_type
+            (if ext.oext_private = Asttypes.Private then " private" else "")
+            print_out_constr_gadt_opt (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+        in
+        print_out_extension_constructor ppf ext
+      ]
     END
   | Osig_modtype name Omty_abstract ->
       fprintf ppf "@[<2>module type %s = 'a@]" name
@@ -489,7 +522,7 @@ and print_out_sig_item ppf =
             fprintf ppf "@[<2>class type%s@ %a%s@ =@ %a@]"
               (if vir_flag then " virtual" else "") print_out_class_params
               params name print_out_class_type clt
-        | _ -> assert False ]
+        | _ -> Pp_outcometree.pp_out_sig_item ppf x ]
     ]
 and print_out_type_decl kwd ppf x =
   let (name, args, ty, priv, constraints) =
@@ -558,10 +591,21 @@ value print_out_phrase ppf =
   | Ophr_exception (exn, outv) -> print_out_exception ppf exn outv ]
 ;
 
+value recover_from_print_failure ~{fname} f fallbackf ppf v =
+  try f ppf v
+  with e -> do {
+    Format.fprintf ppf "%!\n================\n%!EXN %s\nPlease report this error\n%!" (Printexc.to_string e) ;
+    fallbackf ppf v
+  }
+;
+
 Toploop.print_out_value.val := print_out_value;
 Toploop.print_out_type.val := print_out_type;
   Toploop.print_out_class_type.val := print_out_class_type;
-  Toploop.print_out_module_type.val := print_out_module_type;
-  Toploop.print_out_signature.val := print_out_signature;
-Toploop.print_out_sig_item.val := print_out_sig_item;
+  Toploop.print_out_module_type.val :=
+  recover_from_print_failure ~{fname="print_out_module_type"} print_out_module_type Toploop.print_out_module_type.val;
+Toploop.print_out_signature.val :=
+  recover_from_print_failure ~{fname="print_out_signature"} print_out_signature Pp_outcometree.pp_out_sig_item_list;
+  Toploop.print_out_sig_item.val :=
+  recover_from_print_failure ~{fname="print_out_sig_item"} print_out_sig_item Toploop.print_out_sig_item.val;
 Toploop.print_out_phrase.val := print_out_phrase;

@@ -3,10 +3,19 @@
 TOP=..
 include ../config/Makefile
 
-INCLUDES=-I ../main -I ../boot
+ifeq ($(BOOTSTRAPPED),1)
+FMTDIR=$(shell ocamlfind query fmt)
+FMTINCLUDES=-I $(FMTDIR)
+else
+FMTINCLUDES=
+endif
+INCLUDES=-I ../main -I ../boot $(FMTINCLUDES) -I ../ppxprint
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) -I "$(OCLIBDIR)" -I $(OTOPU) -I $(OTOPP)
 
-CAMLP5_OBJS=$(OTOPU)/pconfig.cmo ../boot/versdep.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/fstream.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/diff.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/pretty.cmo ../boot/pprintf.cmo ../boot/eprinter.cmo ../main/asttools.cmo ../main/mlsyntax.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtools.cmo ../main/ast2pt.cmo ../main/pcaml.cmo ../main/parserify.cmo ../main/exparser.cmo ../boot/stdpp.cmo ../boot/token.cmo
+CAMLP5_OBJS=$(OTOPU)/pconfig.cmo ../boot/versdep.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/fstream.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/diff.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/pretty.cmo ../boot/pprintf.cmo ../boot/eprinter.cmo ../main/asttools.cmo ../main/mlsyntax.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtools.cmo ../main/ast2pt.cmo ../main/pcaml.cmo ../main/parserify.cmo ../main/exparser.cmo ../boot/stdpp.cmo ../boot/token.cmo \
+	../ppxprint/ppxprint_runtime.cmo ../ppxprint/exceptions.cmo ../ppxprint/pp_MLast.cmo \
+	../ppxprint/pp_parsetree.cmo ../ppxprint/pp_outcometree.cmo
+
 CTOP=camlp5_top_funs.cmo camlp5_top.cmo
 ROBJS=$(CAMLP5_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
 OOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)

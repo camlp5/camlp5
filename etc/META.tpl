@@ -11,6 +11,8 @@ archive(native) = "odyl.cmxa camlp5.cmxa"
 # For the toploop:
 archive(byte,toploop) = "odyl.cma camlp5.cma"
 archive(byte,toploop,syntax,camlp5o) = "camlp5o.cma"
+
+requires(byte,toploop,syntax,camlp5r) = "compiler-libs.common"
 archive(byte,toploop,syntax,camlp5r) = "camlp5r.cma"
 
 # Scheme-like syntax:
