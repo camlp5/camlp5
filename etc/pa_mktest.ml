@@ -10,6 +10,8 @@
 
 open Versdep;
 
+value ignored_types = ref [] ;
+value ignore_type s = ignored_types.val := [s :: ignored_types.val] ;
 Pcaml.strict_mode.val := True;
 
 value rec pfx short t =
@@ -82,6 +84,18 @@ value rec add_o n =
   | _ -> n ]
 ;
 
+value cross_product ll =
+  let acc = ref [] in
+  let rec crec pfx = fun [
+    [] -> acc.val := [(List.rev pfx) :: acc.val]
+  | [hl :: t] ->
+      List.iter (fun h -> crec [h::pfx] t) hl
+  ] in do {
+    crec [] ll ;
+    List.rev acc.val
+  }
+;
+
 value rec expr_list_of_type_gen loc f n =
   fun
   [ <:ctyp< Ploc.vala $t$ >> ->
@@ -94,6 +108,13 @@ value rec expr_list_of_type_gen loc f n =
       f <:expr< $lid:n$ >>
   | <:ctyp< loc >> ->
       f <:expr< loc >>
+
+  | <:ctyp<( $list:l$ )>> -> 
+    let ll = List.mapi (fun i t -> expr_list_of_type_gen loc (fun x -> [x]) (n^"f"^(string_of_int (i+1))) t) l in
+    let l = cross_product ll in
+    List.concat (List.map (fun l -> f <:expr< ( $list:l$ ) >>) l)
+
+(*
   | <:ctyp<( $t1$ * $t2$ )>> ->
     let l1 = expr_list_of_type_gen loc (fun x -> [x]) (n^"f1") t1 in
     let l2 = expr_list_of_type_gen loc (fun x -> [x]) (n^"f2") t2 in
@@ -104,6 +125,7 @@ value rec expr_list_of_type_gen loc f n =
     else
       let (pairs : list MLast.expr) = List.concat (List.map (fun e1 -> List.map (fun e2 -> <:expr< ($e1$, $e2$) >>) l2) l1) in
       List.concat (List.map f pairs)
+*)
   | <:ctyp< option $t$ >> ->
       f <:expr< None >> @
       match t with
@@ -204,39 +226,55 @@ value expr_of_cons_decl (loc, c, tl, rto, _) = do {
 };
 
 value expr_list_of_type_decl loc td =
-  match td.MLast.tdDef with
-  [ <:ctyp< [ $list:cdl$ ] >> ->
-      List.fold_right (fun cd el -> expr_of_cons_decl cd @ el) cdl []
-  | <:ctyp< { $list:ldl$ } >> ->
-      let ldnl = name_of_vars (fun (loc, l, mf, t, _) -> t) ldl in
-      let pell =
-        loop ldnl where rec loop =
+  let tname = Pcaml.unvala (snd (Pcaml.unvala td.MLast.tdNam)) in
+  if not (List.mem tname ignored_types.val) then
+    match td.MLast.tdDef with
+      [ <:ctyp< [ $list:cdl$ ] >> ->
+        List.fold_right (fun cd el -> expr_of_cons_decl cd @ el) cdl []
+      | <:ctyp< { $list:ldl$ } >> ->
+        let ldnl = name_of_vars (fun (loc, l, mf, t, _) -> t) ldl in
+        let pell =
+          loop ldnl where rec loop =
           fun
-          [ [((loc, l, mf, t, _), n) :: ldnl] ->
+            [ [((loc, l, mf, t, _), n) :: ldnl] ->
               let p = <:patt< MLast . $lid:l$ >> in
               let pell = loop ldnl in
               let f e = List.map (fun pel -> [(p, e) :: pel]) pell in
               patt_expr_list_of_type loc f n t
-          | [] -> [[]] ]
-      in
-      List.map (fun pel -> <:expr< {$list:pel$} >>) pell
-  | _ -> [<:expr< 0 >>] ]
+            | [] -> [[]] ]
+        in
+        List.map (fun pel -> <:expr< {$list:pel$} >>) pell
+      | _ -> [] ]
+  else []
 ;
 
-value gen_ast loc tdl =
-  match tdl with
-  [ [{MLast.tdNam = <:vala< (_, <:vala< "ctyp" >>) >>} :: _] ->
+value our_decls_p tdl =
+  List.exists (fun [ {MLast.tdNam = <:vala< (_, <:vala< "ctyp" >>) >>} -> True | _ -> False ]) tdl
+;
+
+value type_decls_gen_ast loc tdl =
+  if our_decls_p tdl then
       let ell = List.map (fun td -> expr_list_of_type_decl loc td) tdl in
       let el = List.flatten ell in
-      let sil = List.map (fun e -> <:str_item< $exp:e$ >>) el in
-      let sil = [<:str_item< begin_stuff >> :: sil] in
-      let sil = sil @ [<:str_item< end_stuff >>] in
-      <:str_item< declare $list:sil$ end >>
-  | _ -> <:str_item< type $list:tdl$ >> ]
+      List.map (fun e -> <:str_item< $exp:e$ >>) el
+  else []
 ;
 
-EXTEND
-  Pcaml.str_item:
-    [ [ "type"; tdl = LIST1 Pcaml.type_decl SEP "and" -> gen_ast loc tdl ] ]
-  ;
-END;
+value str_item_gen_ast loc = fun [
+  <:str_item< type $_flag:nrfl$ $_list:tdl$ >> ->
+    type_decls_gen_ast loc (Pcaml.unvala tdl)
+| si -> []
+]
+;
+
+value implem_gen_ast (l, status) =
+  (List.concat (List.map (fun (si, loc) ->
+    let sil = str_item_gen_ast loc si in
+    List.map (fun si -> (si, loc)) sil) l), status)
+;
+
+value before_implem = Pcaml.parse_implem.val ;
+Pcaml.parse_implem.val := (fun arg ->  implem_gen_ast (before_implem arg));
+
+Pcaml.add_option "-pa_mktest-ignore-type" (Arg.String ignore_type)
+  "ignore specified type";

@@ -1,9 +1,19 @@
 (* quot_r.ml,v *)
 
+(* longid: Long identifiers for modules and module types *)
+
+<:extended_longident< $longid:x$ . $uid:s$ >> ;
+<:extended_longident< $longid:x$ . $_uid:s$ >> ;
+<:extended_longident< $longid:x1$ ( $longid:x2$ ) >> ;
+<:extended_longident< $uid:s$ >> ;
+<:extended_longident< $_uid:s$ >> ;
+
 (* ctyp: Type expressions of the language. *)
 
 (* access *)
-<:ctyp< $t1$ . $t2$ >>;
+<:ctyp< $longid:x$ . $lid:s$ >>;
+<:ctyp< $longid:x$ . $_lid:s$ >>;
+
 (* alias *)
 <:ctyp< $t1$ as $t2$ >>;
 (* wildcard *)
@@ -13,8 +23,8 @@
 (* arrow *)
 <:ctyp< $t1$ -> $t2$ >>;
 (* class *)
-<:ctyp< # $list:ls$ >>;
-<:ctyp< # $_list:ls$ >>;
+<:ctyp< # $lilongid:x$ >>;
+<:ctyp< # $_lilongid:x$ >>;
 
 (* label *)
 <:ctyp< ~$s$: $t$ >>;
@@ -31,18 +41,21 @@
 <:ctyp< $t1$ == $_priv:b$ $t2$ >>;
 
 (* object *)
-<:ctyp< < $list:lst$ .. > >>;
-<:ctyp< < $list:lst$ > >>;
-<:ctyp< < $list:lst$ $flag:b$ > >>;
-<:ctyp< < $list:lst$ $_flag:b$ > >>;
-<:ctyp< < $_list:lst$ .. > >>;
-<:ctyp< < $_list:lst$ > >>;
-<:ctyp< < $_list:lst$ $flag:b$ > >>;
-<:ctyp< < $_list:lst$ $_flag:b$ > >>;
+<:ctyp< < $list:lstx$ .. > >>;
+<:ctyp< < $list:lstx$ > >>;
+<:ctyp< < $list:lstx$ $flag:b$ > >>;
+<:ctyp< < $list:lstx$ $_flag:b$ > >>;
+<:ctyp< < $_list:lstx$ .. > >>;
+<:ctyp< < $_list:lstx$ > >>;
+<:ctyp< < $_list:lstx$ $flag:b$ > >>;
+<:ctyp< < $_list:lstx$ $_flag:b$ > >>;
 
 (* option label *)
 <:ctyp< ?$s$: $t$ >>;
 <:ctyp< ?$_:s$: $t$ >>;
+
+(* open type (e.g. type t = .. ) *)
+<:ctyp< .. >> ;
 
 (* package *)
 <:ctyp< (module $mt$) >>;
@@ -60,20 +73,16 @@
 <:ctyp< '$_:s$ >>;
 
 (* record *)
-<:ctyp< { $list:llsbt$ } >>;
-<:ctyp< { $_list:llsbt$ } >>;
+<:ctyp< { $list:llsbtx$ } >>;
+<:ctyp< { $_list:llsbtx$ } >>;
 
 (* sum *)
-<:ctyp< [ $list:llsltt$ ] >>;
-<:ctyp< [ $_list:llsltt$ ] >>;
+<:ctyp< [ $list:lx$ ] >>;
+<:ctyp< [ $_list:lx$ ] >>;
 
 (* t-uple *)
 <:ctyp< ( $list:lt$ ) >>;
 <:ctyp< ( $_list:lt$ ) >>;
-
-(* uppercase identifier *)
-<:ctyp< $uid:s$ >>;
-<:ctyp< $_uid:s$ >>;
 
 (* variant *)
 <:ctyp< [ = $list:lpv$ ] >>;
@@ -91,27 +100,31 @@ MLast.TyVrn loc (Ploc.VaVal lpv) ools;
 MLast.TyVrn loc lpv (Some ols);
 MLast.TyVrn loc lpv ools;
 
+(* ctyp PPX attributes and exceptions *)
+
+<:ctyp< $t$ [@ $_attribute:x$ ] >> ;
+<:ctyp< [% $_extension:x$ ] >> ;
+
 (* poly_variant: Polymorphic variants. *)
 
 (* constructor *)
-<:poly_variant< `$s$ >>;
-<:poly_variant< `$s$ of & $list:lt$ >>;
-<:poly_variant< `$s$ of & $_list:lt$ >>;
-<:poly_variant< `$s$ of $list:lt$ >>;
-<:poly_variant< `$s$ of $_list:lt$ >>;
-<:poly_variant< `$s$ of $flag:b$ $list:lt$ >>;
-<:poly_variant< `$s$ of $flag:b$ $_list:lt$ >>;
-<:poly_variant< `$s$ of $_flag:b$ $list:lt$ >>;
-<:poly_variant< `$s$ of $_flag:b$ $_list:lt$ >>;
-<:poly_variant< `$_:s$ >>;
-<:poly_variant< `$_:s$ of & $list:lt$ >>;
-<:poly_variant< `$_:s$ of & $_list:lt$ >>;
-<:poly_variant< `$_:s$ of $list:lt$ >>;
-<:poly_variant< `$_:s$ of $_list:lt$ >>;
-<:poly_variant< `$_:s$ of $flag:b$ $list:lt$ >>;
-<:poly_variant< `$_:s$ of $flag:b$ $_list:lt$ >>;
-<:poly_variant< `$_:s$ of $_flag:b$ $list:lt$ >>;
-<:poly_variant< `$_:s$ of $_flag:b$ $_list:lt$ >>;
+<:poly_variant< `$s$ of & $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$s$ of & $_list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$s$ of $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$s$ of $_list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$s$ of $flag:b$ $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$s$ of $flag:b$ $_list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$s$ of $_flag:b$ $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$s$ of $_flag:b$ $_list:lt$ $_algattrs:x$ >> ;
+
+<:poly_variant< `$_:s$ of & $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$_:s$ of & $_list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$_:s$ of $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$_:s$ of $_list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$_:s$ of $flag:b$ $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$_:s$ of $flag:b$ $_list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$_:s$ of $_flag:b$ $list:lt$ $_algattrs:x$ >> ;
+<:poly_variant< `$_:s$ of $_flag:b$ $_list:lt$ $_algattrs:x$ >> ;
 
 (* type *)
 <:poly_variant< $t$ >>;
@@ -119,7 +132,8 @@ MLast.TyVrn loc lpv ools;
 (* patt: Patterns of the language. *)
 
 (* access *)
-<:patt< $p1$ . $p2$ >>;
+<:patt< $longid:x$ . $p$ >>;
+<:patt< $longid:x$ >>;
 (* alias *)
 <:patt< ($p1$ as $p2$) >>;
 (* antiquotation <a href="#patt_1">(1)</a> *)
@@ -134,6 +148,9 @@ MLast.TyVrn loc lpv ools;
 (* character *)
 <:patt< $chr:s$ >>;
 <:patt< $_chr:s$ >>;
+
+(* exception *)
+<:patt< exception $p$ >> ;
 
 (* float *)
 <:patt< $flo:s$ >>;
@@ -194,22 +211,18 @@ MLast.TyVrn loc lpv ools;
 <:patt< ($p$ : $t$) >>;
 
 (* type pattern *)
-<:patt< # $list:ls$ >>;
-<:patt< # $_list:ls$ >>;
-
-(* uppercase identifier *)
-<:patt< $uid:s$ >>;
-<:patt< $_uid:s$ >>;
+<:patt< # $lilongid:x$ >>;
+<:patt< # $_lilongid:x$ >>;
 
 (* module unpacking *)
 #ifdef QMLAST
-<:patt< (module _) >>;
+  <:patt< (module _) >>;
 <:patt< (module _ : $mt$) >>;
 #else
-MLast.PaUnp loc (Ploc.VaVal None) None;
+  MLast.PaUnp loc (Ploc.VaVal None) None;
 MLast.PaUnp loc (Ploc.VaVal None) (Some mt);
 #endif
-MLast.PaUnp loc (Ploc.VaVal None) omt;
+  MLast.PaUnp loc (Ploc.VaVal None) omt;
 <:patt< (module $uid:s$) >>;
 <:patt< (module $uid:s$ : $mt$) >>;
 MLast.PaUnp loc (Ploc.VaVal (Some (Ploc.VaVal s))) omt;
@@ -227,6 +240,11 @@ MLast.PaUnp loc os omt;
 <:patt< ` $s$ >>;
 <:patt< ` $_:s$ >>;
 
+(* patt PPX attributes and exceptions *)
+
+<:patt< $p$ [@ $_attribute:x$ ] >> ;
+<:patt< [% $_extension:x$ ] >> ;
+
 (* expr: Expressions of the language. *)
 
 (* access *)
@@ -235,8 +253,12 @@ MLast.PaUnp loc os omt;
 <:expr< $anti:e$ >>;
 (* application *)
 <:expr< $e1$ $e2$ >>;
-(* array element *)
-<:expr< $e1$ .( $e2$ ) >>;
+(* array element ops *)
+<:expr< $e$ $dotop:s$ ( $list:le$ ) >> ;
+<:expr< $e$ $dotop:s$ ( $_list:le$ ) >> ;
+<:expr< $e$ $_dotop:s$ ( $list:le$ ) >> ;
+<:expr< $e$ $_dotop:s$ ( $_list:le$ ) >> ;
+(* UGH: this isn't produced by pa_mktest, sigh: <:expr< $e1$ .( $e2$ ) >>; *)
 
 (* array *)
 <:expr< [| $list:le$ |] >>;
@@ -247,8 +269,12 @@ MLast.PaUnp loc os omt;
 (* assignment *)
 <:expr< $e1$ := $e2$ >>;
 (* big array element *)
-<:expr< $e$ .{ $list:le$ } >>;
-<:expr< $e$ .{ $_list:le$ } >>;
+<:expr< $e$ $dotop:s$ { $list:le$ } >> ;
+<:expr< $e$ $dotop:s$ { $_list:le$ } >> ;
+<:expr< $e$ $_dotop:s$ { $list:le$ } >> ;
+<:expr< $e$ $_dotop:s$ { $_list:le$ } >> ;
+(* ExBae: this isn't produced by pa_mktest: <:expr< $e$ .{ $list:le$ } >>; *)
+(* ExBae: this isn't produced by pa_mktest: <:expr< $e$ .{ $_list:le$ } >>; *)
 (* character constant *)
 <:expr< $chr:s$ >>;
 <:expr< $_chr:s$ >>;
@@ -263,28 +289,22 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $_flo:s$ >>;
 
 (* for (increasing) *)
-<:expr< for $lid:s$ = $e1$ to $e2$ do { $list:le$ } >>;
-<:expr< for $lid:s$ = $e1$ to $e2$ do { $_list:le$ } >>;
+<:expr< for $p$ = $e1$ to $e2$ do { $list:le$ } >>;
+<:expr< for $p$ = $e1$ to $e2$ do { $_list:le$ } >>;
+
 (* for (decreasing) *)
-<:expr< for $lid:s$ = $e1$ downto $e2$ do { $list:le$ } >>;
-<:expr< for $lid:s$ = $e1$ downto $e2$ do { $_list:le$ } >>;
-(* for *)
-<:expr< for $lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ } >>;
-<:expr< for $lid:s$ = $e1$ $to:b$ $e2$ do { $_list:le$ } >>;
-<:expr< for $lid:s$ = $e1$ $_to:b$ $e2$ do { $list:le$ } >>;
-<:expr< for $lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ to $e2$ do { $list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ to $e2$ do { $_list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ downto $e2$ do { $list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ downto $e2$ do { $_list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ $to:b$ $e2$ do { $_list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $list:le$ } >>;
-<:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>;
+<:expr< for $p$ = $e1$ downto $e2$ do { $list:le$ } >>;
+<:expr< for $p$ = $e1$ downto $e2$ do { $_list:le$ } >>;
+
+<:expr< for $p$ = $e1$ $to:b$ $e2$ do { $list:le$ } >>;
+<:expr< for $p$ = $e1$ $to:b$ $e2$ do { $_list:le$ } >>;
+
+<:expr< for $p$ = $e1$ $_to:b$ $e2$ do { $list:le$ } >>;
+<:expr< for $p$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>;
 
 (* function <a href="#expr_2">(2)</a> *)
-<:expr< fun [ $list:lpee$ ] >>;
-<:expr< fun [ $_list:lpee$ ] >>;
+<:expr< fun [ $list:lx$ ] >>;
+<:expr< fun [ $_list:lx$ ] >>;
 
 (* if *)
 <:expr< if $e1$ then $e2$ else $e3$ >>;
@@ -310,16 +330,22 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< lazy $e$ >>;
 
 (* let rec *)
-<:expr< let rec $list:lpe$ in $e$ >>;
-<:expr< let rec $_list:lpe$ in $e$ >>;
+<:expr< let rec $list:lpex$ in $e$ >>;
+<:expr< let rec $_list:lpex$ in $e$ >>;
 (* let not rec *)
-<:expr< let $list:lpe$ in $e$ >>;
-<:expr< let $_list:lpe$ in $e$ >>;
+<:expr< let $list:lpex$ in $e$ >>;
+<:expr< let $_list:lpex$ in $e$ >>;
 (* let *)
-<:expr< let $flag:b$ $list:lpe$ in $e$ >>;
-<:expr< let $flag:b$ $_list:lpe$ in $e$ >>;
-<:expr< let $_flag:b$ $list:lpe$ in $e$ >>;
-<:expr< let $_flag:b$ $_list:lpe$ in $e$ >>;
+<:expr< let $flag:b$ $list:lpex$ in $e$ >>;
+<:expr< let $flag:b$ $_list:lpex$ in $e$ >>;
+<:expr< let $_flag:b$ $list:lpex$ in $e$ >>;
+<:expr< let $_flag:b$ $_list:lpex$ in $e$ >>;
+
+(* let exception *)
+<:expr< let exception $s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
+<:expr< let exception $s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
+<:expr< let exception $_:s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
+<:expr< let exception $_:s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
 
 (* lowercase identifier *)
 <:expr< $lid:s$ >>;
@@ -327,24 +353,27 @@ MLast.ExCoe loc e ot1 t2;
 
 (* let module *)
 #ifdef OCAML_4_10_0
-<:expr< let module _ = $me$ in $e$ >>;
+  <:expr< let module _ = $me$ in $e$ >>;
 #else
-MLast.ExLmd loc (Ploc.VaVal None) me e;
+  MLast.ExLmd loc (Ploc.VaVal None) me e;
 #endif
-<:expr< let module $uid:s$ = $me$ in $e$ >>;
+  <:expr< let module $uid:s$ = $me$ in $e$ >>;
 <:expr< let module $_uid:s$ = $me$ in $e$ >>;
 <:expr< let module $uidopt:os$ = $me$ in $e$ >>;
 <:expr< let module $_uidopt:os$ = $me$ in $e$ >>;
 (* let open *)
+<:expr< let open! $me$ in $e$ >>;
 <:expr< let open $me$ in $e$ >>;
+<:expr< let open $!:b$ $me$ in $e$ >>;
+<:expr< let open $_!:b$ $me$ in $e$ >>;
 
 (* match <a href="#expr_2">(2)</a> *)
-<:expr< match $e$ with [ $list:lpee$ ] >>;
-<:expr< match $e$ with [ $_list:lpee$ ] >>;
+<:expr< match $e$ with [ $list:lx$ ] >>;
+<:expr< match $e$ with [ $_list:lx$ ] >>;
 
 (* new *)
-<:expr< new $list:ls$ >>;
-<:expr< new $_list:ls$ >>;
+<:expr< new $lilongid:x$ >>;
+<:expr< new $_lilongid:x$ >>;
 
 (* object expression *)
 <:expr< object $list:lcsi$ end >>;
@@ -388,15 +417,20 @@ MLast.ExRec loc lpe oe;
 <:expr< $e$ # $_:s$ >>;
 
 (* string element *)
-<:expr< $e1$ .[ $e2$ ] >>;
+<:expr< $e$ $dotop:s$ [ $list:le$ ] >> ;
+<:expr< $e$ $dotop:s$ [ $_list:le$ ] >> ;
+<:expr< $e$ $_dotop:s$ [ $list:le$ ] >> ;
+<:expr< $e$ $_dotop:s$ [ $_list:le$ ] >> ;
+(* ExSte: this isn't produced by pa_mktest: <:expr< $e1$ .[ $e2$ ] >>; *)
+
 
 (* string *)
 <:expr< $str:s$ >>;
 <:expr< $_str:s$ >>;
 
 (* try <a href="#expr_2">(2)</a> *)
-<:expr< try $e$ with [ $list:lpee$ ] >>;
-<:expr< try $e$ with [ $_list:lpee$ ] >>;
+<:expr< try $e$ with [ $list:lx$ ] >>;
+<:expr< try $e$ with [ $_list:lx$ ] >>;
 
 (* t-uple *)
 <:expr< ($list:le$) >>;
@@ -416,16 +450,22 @@ MLast.ExRec loc lpe oe;
 <:expr< while $e$ do { $list:le$ } >>;
 <:expr< while $e$ do { $_list:le$ } >>;
 
-(* expr attributes *)
-(* CHET TODO: FIX THIS *)
-MLast.ExAtt loc e (Ploc.VaVal (Ploc.VaVal sxf1, sxf2));
-MLast.ExAtt loc e (Ploc.VaVal (sxf1, sxf2));
-MLast.ExAtt loc e sx;
+(* expr PPX attributes and exceptions *)
+
+<:expr< $e$ [@ $_attribute:x$ ] >> ;
+<:expr< [% $_extension:x$ ] >> ;
+
+(* unreachable *)
+<:expr< . >> ;
 
 (* access *)
-<:module_type< $mt1$ . $mt2$ >>;
-(* application *)
-<:module_type< $mt1$ $mt2$ >>;
+<:module_type< $longid:x$ >>;
+<:module_type< $longid:x$ . $lid:s$ >>;
+<:module_type< $longid:x$ . $_lid:s$ >>;
+
+(* lowercase identifier *)
+<:module_type< $lid:s$ >>;
+<:module_type< $_lid:s$ >>;
 
 (* functor *)
 #ifdef OCAML_4_10_0
@@ -442,10 +482,6 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:module_type< functor $fp:osmt$ -> $mt$ >>;
 <:module_type< functor $_fp:osmt$ -> $mt$ >>;
 
-(* lowercase identifier *)
-<:module_type< $lid:s$ >>;
-<:module_type< $_lid:s$ >>;
-
 (* abstract *)
 <:module_type< ' $s$ >>;
 <:module_type< ' $_:s$ >>;
@@ -457,16 +493,14 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 (* of module expression *)
 <:module_type< module type of $me$ >>;
 
-(* uppercase identifier *)
-<:module_type< $uid:s$ >>;
-<:module_type< $_uid:s$ >>;
-
 (* with construction *)
 <:module_type< $mt$ with $list:lwc$ >>;
 <:module_type< $mt$ with $_list:lwc$ >>;
 
-(* a zero, b/c the test is BROKEN; TODO: Chet fix the test *)
-0;
+(* module_type PPX attributes and exceptions *)
+
+<:module_type< $mt$ [@ $_attribute:x$ ] >> ;
+<:module_type< [% $_extension:x$ ] >> ;
 
 (* class *)
 <:sig_item< class $list:lcict$ >>;
@@ -491,7 +525,7 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:sig_item< # $_lid:s$ $_opt:oe$ >>;
 
 (* exception *)
-<:sig_item< exception $s$ >>;
+<:sig_item< exception $x1$ $_itemattrs:x2$ >>;
 <:sig_item< exception $s$ of $list:lt$ >>;
 <:sig_item< exception $s$ of $_list:lt$ >>;
 <:sig_item< exception $_:s$ >>;
@@ -524,8 +558,7 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:sig_item< module type $_:s$ = $mt$ >>;
 
 (* open *)
-<:sig_item< open $list:ls$ >>;
-<:sig_item< open $_list:ls$ >>;
+<:sig_item< open $longid:ls$ >>;
 
 (* type declaration *)
 <:sig_item< type $list:ltd$ >>;
@@ -544,36 +577,36 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 (* with_constr: "With" possibly following a module type. *)
 
 (* with module *)
-<:with_constr< module $list:ls$ = $me$ >>;
-<:with_constr< module $_list:ls$ = $me$ >>;
+<:with_constr< module $longid:ls$ = $me$ >>;
+<:with_constr< module $_longid:ls$ = $me$ >>;
 
 (* with module substitution *)
-<:with_constr< module $list:ls$ := $me$ >>;
-<:with_constr< module $_list:ls$ := $me$ >>;
+<:with_constr< module $longid:ls$ := $me$ >>;
+<:with_constr< module $_longid:ls$ := $me$ >>;
 
 (* with type *)
-<:with_constr< type $list:ls$ $list:ltv$ = private $t$ >>;
-<:with_constr< type $list:ls$ $list:ltv$ = $t$ >>;
-<:with_constr< type $list:ls$ $list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $list:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
-<:with_constr< type $list:ls$ $_list:ltv$ = private $t$ >>;
-<:with_constr< type $list:ls$ $_list:ltv$ = $t$ >>;
-<:with_constr< type $list:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $list:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
-<:with_constr< type $_list:ls$ $list:ltv$ = private $t$ >>;
-<:with_constr< type $_list:ls$ $list:ltv$ = $t$ >>;
-<:with_constr< type $_list:ls$ $list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $_list:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
-<:with_constr< type $_list:ls$ $_list:ltv$ = private $t$ >>;
-<:with_constr< type $_list:ls$ $_list:ltv$ = $t$ >>;
-<:with_constr< type $_list:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $_list:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $lilongid:ls$ $list:ltv$ = private $t$ >>;
+<:with_constr< type $lilongid:ls$ $list:ltv$ = $t$ >>;
+<:with_constr< type $lilongid:ls$ $list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $lilongid:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $lilongid:ls$ $_list:ltv$ = private $t$ >>;
+<:with_constr< type $lilongid:ls$ $_list:ltv$ = $t$ >>;
+<:with_constr< type $lilongid:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $lilongid:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:ls$ $list:ltv$ = private $t$ >>;
+<:with_constr< type $_lilongid:ls$ $list:ltv$ = $t$ >>;
+<:with_constr< type $_lilongid:ls$ $list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:ls$ $_list:ltv$ = private $t$ >>;
+<:with_constr< type $_lilongid:ls$ $_list:ltv$ = $t$ >>;
+<:with_constr< type $_lilongid:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
 
 (* with type substitution *)
-<:with_constr< type $list:ls$ $list:ltv$ := $t$ >>;
-<:with_constr< type $list:ls$ $_list:ltv$ := $t$ >>;
-<:with_constr< type $_list:ls$ $list:ltv$ := $t$ >>;
-<:with_constr< type $_list:ls$ $_list:ltv$ := $t$ >>;
+<:with_constr< type $lilongid:ls$ $list:ltv$ := $t$ >>;
+<:with_constr< type $lilongid:ls$ $_list:ltv$ := $t$ >>;
+<:with_constr< type $_lilongid:ls$ $list:ltv$ := $t$ >>;
+<:with_constr< type $_lilongid:ls$ $_list:ltv$ := $t$ >>;
 
 (* access *)
 <:module_expr< $me1$ . $me2$ >>;
@@ -639,22 +672,13 @@ MLast.MeUnp loc e omt;
 (* exception *)
 <:str_item< exception $uid:s$ >>;
 <:str_item< exception $uid:s$ of $list:lt$ >>;
-<:str_item< exception $uid:s$ = $list:ls$ >>;
-<:str_item< exception $uid:s$ of $list:lt$ = $list:ls$ >>;
-<:str_item< exception $uid:s$ = $_list:ls$ >>;
-<:str_item< exception $uid:s$ of $list:lt$ = $_list:ls$ >>;
+<:str_item< exception $uid:s$ = $longid:ls$ >>;
+<:str_item< exception $uid:s$ = $_longid:ls$ >>;
 <:str_item< exception $uid:s$ of $_list:lt$ >>;
-<:str_item< exception $uid:s$ of $_list:lt$ = $list:ls$ >>;
-<:str_item< exception $uid:s$ of $_list:lt$ = $_list:ls$ >>;
 <:str_item< exception $_uid:s$ >>;
 <:str_item< exception $_uid:s$ of $list:lt$ >>;
-<:str_item< exception $_uid:s$ = $list:ls$ >>;
-<:str_item< exception $_uid:s$ of $list:lt$ = $list:ls$ >>;
-<:str_item< exception $_uid:s$ = $_list:ls$ >>;
-<:str_item< exception $_uid:s$ of $list:lt$ = $_list:ls$ >>;
+<:str_item< exception $_uid:s$ = $_longid:ls$ >>;
 <:str_item< exception $_uid:s$ of $_list:lt$ >>;
-<:str_item< exception $_uid:s$ of $_list:lt$ = $list:ls$ >>;
-<:str_item< exception $_uid:s$ of $_list:lt$ = $_list:ls$ >>;
 
 (* expression *)
 <:str_item< $exp:e$ >>;
@@ -685,8 +709,8 @@ MLast.MeUnp loc e omt;
 <:str_item< module type $_:s$ = $mt$ >>;
 
 (* open *)
-<:str_item< open $list:ls$ >>;
-<:str_item< open $_list:ls$ >>;
+<:str_item< open $ls$ >>;
+<:str_item< open $_:ls$ >>;
 
 (* type declaration *)
 <:str_item< type nonrec $list:ltd$ >>;
@@ -772,9 +796,7 @@ MLast.MeUnp loc e omt;
 <:type_decl< $_tp:ls$ $_list:ltv$ = $_priv:b$ $t$ $_list:ltt$ >>;
 
 (* access *)
-<:class_type< $ct1$ . $ct2$ >>;
-(* application *)
-<:class_type< $ct1$ $ct2$ >>;
+<:class_type< $longid:ct1$ . $lid:ct2$ >>;
 
 (* constructor *)
 <:class_type< $ct$ [ $list:lt$ ] >>;
@@ -784,8 +806,8 @@ MLast.MeUnp loc e omt;
 <:class_type< [ $t$ ] -> $ct$ >>;
 
 (* identifier *)
-<:class_type< $id:s$ >>;
-<:class_type< $_id:s$ >>;
+<:class_type< $lid:s$ >>;
+<:class_type< $_lid:s$ >>;
 
 (* object *)
 <:class_type< object $list:lcsi$ end >>;
@@ -882,10 +904,10 @@ MLast.MeUnp loc e omt;
 <:class_expr< $ce$ $e$ >>;
 
 (* constructor *)
-<:class_expr< [ $list:lt$ ] $list:ls$ >>;
-<:class_expr< [ $_list:lt$ ] $list:ls$ >>;
-<:class_expr< [ $list:lt$ ] $_list:ls$ >>;
-<:class_expr< [ $_list:lt$ ] $_list:ls$ >>;
+<:class_expr< [ $list:lt$ ] $lilongid:ls$ >>;
+<:class_expr< [ $_list:lt$ ] $lilongid:ls$ >>;
+<:class_expr< [ $list:lt$ ] $_lilongid:ls$ >>;
+<:class_expr< [ $_list:lt$ ] $_lilongid:ls$ >>;
 
 (* function *)
 <:class_expr< fun $p$ -> $ce$ >>;
