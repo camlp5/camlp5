@@ -525,44 +525,74 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:sig_item< # $_lid:s$ $_opt:oe$ >>;
 
 (* exception *)
-<:sig_item< exception $x1$ $_itemattrs:x2$ >>;
-<:sig_item< exception $s$ of $list:lt$ >>;
-<:sig_item< exception $s$ of $_list:lt$ >>;
-<:sig_item< exception $_:s$ >>;
-<:sig_item< exception $_:s$ of $list:lt$ >>;
-<:sig_item< exception $_:s$ of $_list:lt$ >>;
+
+(* TODO CHET: GADT quotation support isn't so great yet *)
+<:sig_item< exception $x1f2$ of $list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+MLast.SgExc loc (loc, Ploc.VaVal x1f2, Ploc.VaVal x1f3, Some x1f4, x1f5) x2;
+MLast.SgExc loc (loc, Ploc.VaVal x1f2, Ploc.VaVal x1f3, ox1f4, x1f5) x2;
+<:sig_item< exception $x1f2$ of $_list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+MLast.SgExc loc (loc, Ploc.VaVal x1f2, x1f3, Some x1f4, x1f5) x2;
+MLast.SgExc loc (loc, Ploc.VaVal x1f2, x1f3, ox1f4, x1f5) x2;
+<:sig_item< exception $_:x1f2$ of $list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+MLast.SgExc loc (loc, x1f2, Ploc.VaVal x1f3, Some x1f4, x1f5) x2;
+MLast.SgExc loc (loc, x1f2, Ploc.VaVal x1f3, ox1f4, x1f5) x2;
+<:sig_item< exception $_:x1f2$ of $_list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+MLast.SgExc loc (loc, x1f2, x1f3, Some x1f4, x1f5) x2;
+MLast.SgExc loc (loc, x1f2, x1f3, ox1f4, x1f5) x2;
 
 (* external *)
-<:sig_item< external $s$ : $t$ = $list:ls$ >>;
-<:sig_item< external $s$ : $t$ = $_list:ls$ >>;
-<:sig_item< external $_:s$ : $t$ = $list:ls$ >>;
-<:sig_item< external $_:s$ : $t$ = $_list:ls$ >>;
+<:sig_item< external $s$ : $t$ = $list:ls$ $_itemattrs:x$ >> ;
+<:sig_item< external $s$ : $t$ = $_list:ls$ $_itemattrs:x$ >> ;
+<:sig_item< external $_:s$ : $t$ = $list:ls$ $_itemattrs:x$ >> ;
+<:sig_item< external $_:s$ : $t$ = $_list:ls$ $_itemattrs:x$ >> ;
 
 (* include *)
-<:sig_item< include $mt$ >>;
+<:sig_item< include $mt$ $_itemattrs:x$ >>;
 
 (* module rec *)
-<:sig_item< module rec $list:lsmt$ >>;
-<:sig_item< module rec $_list:lsmt$ >>;
+<:sig_item< module rec $list:lsmtx$ >>;
+<:sig_item< module rec $_list:lsmtx$ >>;
 (* module non rec *)
-<:sig_item< module $list:lsmt$ >>;
-<:sig_item< module $_list:lsmt$ >>;
+<:sig_item< module $list:lsmtx$ >>;
+<:sig_item< module $_list:lsmtx$ >>;
 (* module *)
-<:sig_item< module $flag:b$ $list:lsmt$ >>;
-<:sig_item< module $flag:b$ $_list:lsmt$ >>;
-<:sig_item< module $_flag:b$ $list:lsmt$ >>;
-<:sig_item< module $_flag:b$ $_list:lsmt$ >>;
+<:sig_item< module $flag:b$ $list:lsmtx$ >>;
+<:sig_item< module $flag:b$ $_list:lsmtx$ >>;
+<:sig_item< module $_flag:b$ $list:lsmtx$ >>;
+<:sig_item< module $_flag:b$ $_list:lsmtx$ >>;
 
 (* module type *)
-<:sig_item< module type $s$ = $mt$ >>;
-<:sig_item< module type $_:s$ = $mt$ >>;
+<:sig_item< module type $s$ = $mt$ $_itemattrs:x$ >>;
+<:sig_item< module type $_:s$ = $mt$ $_itemattrs:x$ >>;
+
+(* module type (abstract) *)
+<:sig_item< module type $s$ $_itemattrs:x$ >>;
+<:sig_item< module type $_:s$ $_itemattrs:x$ >>;
+
+(* module alias *)
+
+<:sig_item< module alias $s$ = $longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module alias $s$ = $_longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module alias $_:s$ = $longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module alias $_:s$ = $_longid:x1$ $_itemattrs:x2$ >>;
+
+(* module substitution *)
+
+<:sig_item< module $uid:s$ := $longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module $_uid:s$ := $longid:x1$ $_itemattrs:x2$ >>;
 
 (* open *)
-<:sig_item< open $longid:ls$ >>;
+<:sig_item< open $longid:x1$ $_itemattrs:x2$ >>;
 
 (* type declaration *)
+<:sig_item< type nonrec $list:ltd$ >>;
+<:sig_item< type nonrec $_list:ltd$ >>;
 <:sig_item< type $list:ltd$ >>;
 <:sig_item< type $_list:ltd$ >>;
+<:sig_item< type $flag:b$ $list:ltd$ >>;
+<:sig_item< type $flag:b$ $_list:ltd$ >>;
+<:sig_item< type $_flag:b$ $list:ltd$ >>;
+<:sig_item< type $_flag:b$ $_list:ltd$ >>;
 
 (* ... internal use ... <a href="#t_sig_item_1">(1)</a> *)
 <:sig_item< # $str:s$ $list:lsil$ >>;

@@ -11,7 +11,17 @@
 open Versdep;
 
 value ignored_types = ref [] ;
-value ignore_type s = ignored_types.val := [s :: ignored_types.val] ;
+value add_ignored_type s = ignored_types.val := [s :: ignored_types.val] ;
+
+value expanded_types = ref [] ;
+value add_expanded_type s = expanded_types.val := [s :: expanded_types.val] ;
+value expanded_type n = List.mem n expanded_types.val ;
+
+value expansion_dict = ref [] ;
+value add_expansion n v = expansion_dict.val := [(n,v) :: expansion_dict.val] ;
+value expand_type n = List.assoc n expansion_dict.val ;
+value has_expansion n = List.mem_assoc n expansion_dict.val ;
+
 Pcaml.strict_mode.val := True;
 
 value rec pfx short t =
@@ -98,7 +108,9 @@ value cross_product ll =
 
 value rec expr_list_of_type_gen loc f n =
   fun
-  [ <:ctyp< Ploc.vala $t$ >> ->
+  [ <:ctyp< $lid:tname$ >> when has_expansion tname ->
+    expr_list_of_type_gen loc f n (expand_type tname)
+  | <:ctyp< Ploc.vala $t$ >> ->
       expr_list_of_type_gen loc (fun e -> f <:expr< Ploc.VaVal $e$ >>) n t @
       let n = add_o n t in
       f <:expr< $lid:n$ >>
@@ -114,18 +126,6 @@ value rec expr_list_of_type_gen loc f n =
     let l = cross_product ll in
     List.concat (List.map (fun l -> f <:expr< ( $list:l$ ) >>) l)
 
-(*
-  | <:ctyp<( $t1$ * $t2$ )>> ->
-    let l1 = expr_list_of_type_gen loc (fun x -> [x]) (n^"f1") t1 in
-    let l2 = expr_list_of_type_gen loc (fun x -> [x]) (n^"f2") t2 in
-    if List.length l1 = 1 && List.length l2 = 1 then
-      let e1 = List.hd l1 in
-      let e2 = List.hd l2 in
-      f <:expr< ($e1$, $e2$) >>
-    else
-      let (pairs : list MLast.expr) = List.concat (List.map (fun e1 -> List.map (fun e2 -> <:expr< ($e1$, $e2$) >>) l2) l1) in
-      List.concat (List.map f pairs)
-*)
   | <:ctyp< option $t$ >> ->
       f <:expr< None >> @
       match t with
@@ -261,20 +261,37 @@ value type_decls_gen_ast loc tdl =
 ;
 
 value str_item_gen_ast loc = fun [
-  <:str_item< type $_flag:nrfl$ $_list:tdl$ >> ->
-    type_decls_gen_ast loc (Pcaml.unvala tdl)
+  <:str_item< type $_flag:nrfl$ $list:tdl$ >> ->
+    type_decls_gen_ast loc tdl
 | si -> []
 ]
 ;
 
-value implem_gen_ast (l, status) =
-  (List.concat (List.map (fun (si, loc) ->
-    let sil = str_item_gen_ast loc si in
-    List.map (fun si -> (si, loc)) sil) l), status)
+value rec store_expandable_types = fun [
+  <:str_item< declare $list:l$ end >> -> List.iter store_expandable_types l
+| <:str_item< type $_flag:_$ $list:tdl$ >> ->
+    List.iter (fun ({MLast.tdNam=n} as td) ->
+      let n = n |> Pcaml.unvala |> snd |> Pcaml.unvala in
+      if expanded_type n then
+        add_expansion n td.MLast.tdDef
+      else ()
+    ) tdl
+| _ -> ()
+]
+;
+value implem_gen_ast (l, status) = do {
+    List.iter store_expandable_types (List.map fst l) ;
+    (List.concat (List.map (fun (si, loc) ->
+      let sil = str_item_gen_ast loc si in
+      List.map (fun si -> (si, loc)) sil) l), status)
+  }
 ;
 
 value before_implem = Pcaml.parse_implem.val ;
 Pcaml.parse_implem.val := (fun arg ->  implem_gen_ast (before_implem arg));
 
-Pcaml.add_option "-pa_mktest-ignore-type" (Arg.String ignore_type)
+Pcaml.add_option "-pa_mktest-ignore-type" (Arg.String add_ignored_type)
   "ignore specified type";
+
+Pcaml.add_option "-pa_mktest-expand-type" (Arg.String add_expanded_type)
+  "expand specified type";
