@@ -6,4 +6,5 @@ echo
 ../meta/camlp5r -nolib -I ../meta ../etc/pa_mktest.cmo ../meta/pa_macro.cmo ../etc/pr_r.cmo \
 	-pa_mktest-ignore-type class_infos \
 	-pa_mktest-expand-type generic_constructor \
+	-pa_mktest-expand-type type_extension \
 	-flag D -sep '\n' -impl ../main/mLast.mli

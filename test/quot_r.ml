@@ -100,7 +100,7 @@ MLast.TyVrn loc (Ploc.VaVal lpv) ools;
 MLast.TyVrn loc lpv (Some ols);
 MLast.TyVrn loc lpv ools;
 
-(* ctyp PPX attributes and exceptions *)
+(* ctyp PPX attributes and extensions *)
 
 <:ctyp< $t$ [@ $_attribute:x$ ] >> ;
 <:ctyp< [% $_extension:x$ ] >> ;
@@ -240,7 +240,7 @@ MLast.PaUnp loc os omt;
 <:patt< ` $s$ >>;
 <:patt< ` $_:s$ >>;
 
-(* patt PPX attributes and exceptions *)
+(* patt PPX attributes and extensions *)
 
 <:patt< $p$ [@ $_attribute:x$ ] >> ;
 <:patt< [% $_extension:x$ ] >> ;
@@ -450,7 +450,7 @@ MLast.ExRec loc lpe oe;
 <:expr< while $e$ do { $list:le$ } >>;
 <:expr< while $e$ do { $_list:le$ } >>;
 
-(* expr PPX attributes and exceptions *)
+(* expr PPX attributes and extensions *)
 
 <:expr< $e$ [@ $_attribute:x$ ] >> ;
 <:expr< [% $_extension:x$ ] >> ;
@@ -497,7 +497,7 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:module_type< $mt$ with $list:lwc$ >>;
 <:module_type< $mt$ with $_list:lwc$ >>;
 
-(* module_type PPX attributes and exceptions *)
+(* module_type PPX attributes and extensions *)
 
 <:module_type< $mt$ [@ $_attribute:x$ ] >> ;
 <:module_type< [% $_extension:x$ ] >> ;
@@ -594,6 +594,41 @@ MLast.SgExc loc (loc, x1f2, x1f3, ox1f4, x1f5) x2;
 <:sig_item< type $_flag:b$ $list:ltd$ >>;
 <:sig_item< type $_flag:b$ $_list:ltd$ >>;
 
+(* extensible variant types *)
+
+<:sig_item< type $lilongid:x1$ $list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:sig_item< type $_lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+
 (* ... internal use ... <a href="#t_sig_item_1">(1)</a> *)
 <:sig_item< # $str:s$ $list:lsil$ >>;
 <:sig_item< # $str:s$ $_list:lsil$ >>;
@@ -601,42 +636,45 @@ MLast.SgExc loc (loc, x1f2, x1f3, ox1f4, x1f5) x2;
 <:sig_item< # $_str:s$ $_list:lsil$ >>;
 
 (* value *)
-<:sig_item< value $s$ : $t$ >>;
-<:sig_item< value $_:s$ : $t$ >>;
+<:sig_item< value $s$ : $t$ $_itemattrs:x$ >>;
+<:sig_item< value $_:s$ : $t$ $_itemattrs:x$ >>;
+
+<:sig_item< [@@@ $_attribute:x$ ] >> ;
+<:sig_item< [%% $_extension:x1$ ] $_itemattrs:x2$ >> ;
 
 (* with_constr: "With" possibly following a module type. *)
 
 (* with module *)
-<:with_constr< module $longid:ls$ = $me$ >>;
-<:with_constr< module $_longid:ls$ = $me$ >>;
+<:with_constr< module $longid:x$ = $me$ >>;
+<:with_constr< module $_longid:x$ = $me$ >>;
 
 (* with module substitution *)
-<:with_constr< module $longid:ls$ := $me$ >>;
-<:with_constr< module $_longid:ls$ := $me$ >>;
+<:with_constr< module $longid:x$ := $me$ >>;
+<:with_constr< module $_longid:x$ := $me$ >>;
 
 (* with type *)
-<:with_constr< type $lilongid:ls$ $list:ltv$ = private $t$ >>;
-<:with_constr< type $lilongid:ls$ $list:ltv$ = $t$ >>;
-<:with_constr< type $lilongid:ls$ $list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $lilongid:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
-<:with_constr< type $lilongid:ls$ $_list:ltv$ = private $t$ >>;
-<:with_constr< type $lilongid:ls$ $_list:ltv$ = $t$ >>;
-<:with_constr< type $lilongid:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $lilongid:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
-<:with_constr< type $_lilongid:ls$ $list:ltv$ = private $t$ >>;
-<:with_constr< type $_lilongid:ls$ $list:ltv$ = $t$ >>;
-<:with_constr< type $_lilongid:ls$ $list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $_lilongid:ls$ $list:ltv$ = $_flag:b$ $t$ >>;
-<:with_constr< type $_lilongid:ls$ $_list:ltv$ = private $t$ >>;
-<:with_constr< type $_lilongid:ls$ $_list:ltv$ = $t$ >>;
-<:with_constr< type $_lilongid:ls$ $_list:ltv$ = $flag:b$ $t$ >>;
-<:with_constr< type $_lilongid:ls$ $_list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $lilongid:x$ $list:ltv$ = private $t$ >>;
+<:with_constr< type $lilongid:x$ $list:ltv$ = $t$ >>;
+<:with_constr< type $lilongid:x$ $list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $lilongid:x$ $list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $lilongid:x$ $_list:ltv$ = private $t$ >>;
+<:with_constr< type $lilongid:x$ $_list:ltv$ = $t$ >>;
+<:with_constr< type $lilongid:x$ $_list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $lilongid:x$ $_list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:x$ $list:ltv$ = private $t$ >>;
+<:with_constr< type $_lilongid:x$ $list:ltv$ = $t$ >>;
+<:with_constr< type $_lilongid:x$ $list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:x$ $list:ltv$ = $_flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:x$ $_list:ltv$ = private $t$ >>;
+<:with_constr< type $_lilongid:x$ $_list:ltv$ = $t$ >>;
+<:with_constr< type $_lilongid:x$ $_list:ltv$ = $flag:b$ $t$ >>;
+<:with_constr< type $_lilongid:x$ $_list:ltv$ = $_flag:b$ $t$ >>;
 
 (* with type substitution *)
-<:with_constr< type $lilongid:ls$ $list:ltv$ := $t$ >>;
-<:with_constr< type $lilongid:ls$ $_list:ltv$ := $t$ >>;
-<:with_constr< type $_lilongid:ls$ $list:ltv$ := $t$ >>;
-<:with_constr< type $_lilongid:ls$ $_list:ltv$ := $t$ >>;
+<:with_constr< type $lilongid:x$ $list:ltv$ := $t$ >>;
+<:with_constr< type $lilongid:x$ $_list:ltv$ := $t$ >>;
+<:with_constr< type $_lilongid:x$ $list:ltv$ := $t$ >>;
+<:with_constr< type $_lilongid:x$ $_list:ltv$ := $t$ >>;
 
 (* access *)
 <:module_expr< $me1$ . $me2$ >>;
@@ -671,8 +709,19 @@ MLast.MeFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) me;
 
 (* module unpacking *)
 <:module_expr< (value $e$) >>;
-<:module_expr< (value $e$ : $mt$) >>;
-MLast.MeUnp loc e omt;
+MLast.MeUnp loc e None (Some mt2);
+MLast.MeUnp loc e None omt2;
+<:module_expr< (value $e$ : $mt1$) >>;
+<:module_expr< (value $e$ : $mt1$ :> $mt2$) >>;
+MLast.MeUnp loc e (Some mt1) omt2;
+MLast.MeUnp loc e omt1 None;
+MLast.MeUnp loc e omt1 (Some mt2);
+MLast.MeUnp loc e omt1 omt2;
+
+(* module_expr PPX attributes and extensions *)
+
+<:module_expr< $me$ [@ $_attribute:x$ ] >> ;
+<:module_expr< [% $_extension:x$ ] >> ;
 
 (* str_item: Structure items, i.e. phrases in a ".ml" file or "struct" *)
 (* str_item:   elements. *)

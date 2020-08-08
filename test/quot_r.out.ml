@@ -339,7 +339,109 @@ MLast.SgTyp loc (Ploc.VaVal b) (Ploc.VaVal ltd);
 MLast.SgTyp loc (Ploc.VaVal b) ltd;
 MLast.SgTyp loc b (Ploc.VaVal ltd);
 MLast.SgTyp loc b ltd;
-MLast.SgTypExten loc x;
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal b; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal b; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal True;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal True;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal False;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal False;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.SgTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = b; MLast.teECs = lx;
+   MLast.teAttributes = x2};
 MLast.SgUse loc (Ploc.VaVal s) (Ploc.VaVal lsil);
 MLast.SgUse loc (Ploc.VaVal s) lsil;
 MLast.SgUse loc s (Ploc.VaVal lsil);
@@ -446,7 +548,109 @@ MLast.StTyp loc (Ploc.VaVal b) (Ploc.VaVal ltd);
 MLast.StTyp loc (Ploc.VaVal b) ltd;
 MLast.StTyp loc b (Ploc.VaVal ltd);
 MLast.StTyp loc b ltd;
-MLast.StTypExten loc x;
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal b; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal b; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = Ploc.VaVal x1; MLast.tePrm = ltv; MLast.tePrv = b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal True; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = Ploc.VaVal lx;
+   MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv;
+   MLast.tePrv = Ploc.VaVal False; MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = Ploc.VaVal ltv; MLast.tePrv = b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal True;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal True;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal False;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal False;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = Ploc.VaVal b;
+   MLast.teECs = lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = b;
+   MLast.teECs = Ploc.VaVal lx; MLast.teAttributes = x2};
+MLast.StTypExten loc
+  {MLast.teNam = x1; MLast.tePrm = ltv; MLast.tePrv = b; MLast.teECs = lx;
+   MLast.teAttributes = x2};
 MLast.StUse loc (Ploc.VaVal s) (Ploc.VaVal lsil);
 MLast.StUse loc (Ploc.VaVal s) lsil;
 MLast.StUse loc s (Ploc.VaVal lsil);

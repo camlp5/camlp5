@@ -121,6 +121,8 @@ value rec expr_list_of_type_gen loc f n =
   | <:ctyp< loc >> ->
       f <:expr< loc >>
 
+  | <:ctyp<{ $list:_$ }>> as ct -> expr_list_of_record_ctyp f ct
+
   | <:ctyp<( $list:l$ )>> -> 
     let ll = List.mapi (fun i t -> expr_list_of_type_gen loc (fun x -> [x]) (n^"f"^(string_of_int (i+1))) t) l in
     let l = cross_product ll in
@@ -141,13 +143,28 @@ value rec expr_list_of_type_gen loc f n =
       f <:expr< MLast.Override >>
   | _ ->
       f <:expr< $lid:n$ >> ]
-;
 
-value expr_list_of_type loc (f : MLast.expr -> list MLast.expr) n ty =
+and expr_list_of_record_ctyp (f : MLast.expr -> list MLast.expr) = fun [
+  <:ctyp:< { $list:ldl$ } >> ->
+    let ldnl = name_of_vars (fun (loc, l, mf, t, _) -> t) ldl in
+    let pell =
+      loop ldnl where rec loop =
+      fun
+        [ [((loc, l, mf, t, _), n) :: ldnl] ->
+          let p = <:patt< MLast . $lid:l$ >> in
+          let pell = loop ldnl in
+          let f e = List.map (fun pel -> [(p, e) :: pel]) pell in
+          patt_expr_list_of_type loc f n t
+        | [] -> [[]] ]
+    in
+    List.concat (List.map (fun pel -> f <:expr< {$list:pel$} >>) pell)
+| ct -> Ploc.raise (MLast.loc_of_ctyp ct) (Failure "expr_list_of_record_ctyp: not a record ctyp")
+]
+
+and expr_list_of_type loc (f : MLast.expr -> list MLast.expr) n ty =
   expr_list_of_type_gen loc f n ty
-;
 
-value patt_expr_list_of_type loc (f : MLast.expr -> list (list (MLast.patt * MLast.expr))) n ty =
+and patt_expr_list_of_type loc (f : MLast.expr -> list (list (MLast.patt * MLast.expr))) n ty =
   let el = expr_list_of_type loc (fun x -> [x]) n ty in
   List.concat (List.map f el)
 ;
