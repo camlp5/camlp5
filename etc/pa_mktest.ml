@@ -106,8 +106,12 @@ value cross_product ll =
   }
 ;
 
-value rec expr_list_of_type_gen loc f n =
-  fun
+value expr_list_cross_product (ll : list (list MLast.expr)) = cross_product ll ;
+
+value rec expr_list_of_type_gen loc f n x =
+  expr_list_of_type_gen_uncurried (loc, f, n, x)
+and expr_list_of_type_gen_uncurried (loc, f, n, x) =
+  match x with
   [ <:ctyp< $lid:tname$ >> when has_expansion tname ->
     expr_list_of_type_gen loc f n (expand_type tname)
   | <:ctyp< Ploc.vala $t$ >> ->
@@ -123,9 +127,11 @@ value rec expr_list_of_type_gen loc f n =
 
   | <:ctyp<{ $list:_$ }>> as ct -> expr_list_of_record_ctyp f ct
 
+  | <:ctyp<[ $list:_$ ]>> as ct -> expr_list_of_variant_ctyp f ct
+
   | <:ctyp<( $list:l$ )>> -> 
     let ll = List.mapi (fun i t -> expr_list_of_type_gen loc (fun x -> [x]) (n^"f"^(string_of_int (i+1))) t) l in
-    let l = cross_product ll in
+    let l = expr_list_cross_product ll in
     List.concat (List.map (fun l -> f <:expr< ( $list:l$ ) >>) l)
 
   | <:ctyp< option $t$ >> ->
@@ -161,28 +167,33 @@ and expr_list_of_record_ctyp (f : MLast.expr -> list MLast.expr) = fun [
 | ct -> Ploc.raise (MLast.loc_of_ctyp ct) (Failure "expr_list_of_record_ctyp: not a record ctyp")
 ]
 
+and expr_list_of_variant_ctyp (f : MLast.expr -> list MLast.expr) = fun [
+  <:ctyp:< [ $list:cdl$ ] >> ->
+    let el = List.fold_right (fun cd el -> expr_of_cons_decl cd @ el) cdl [] in
+    List.concat (List.map f el)
+| ct -> Ploc.raise (MLast.loc_of_ctyp ct) (Failure "expr_list_of_variant_ctyp: not a variant ctyp")
+]
+
 and expr_list_of_type loc (f : MLast.expr -> list MLast.expr) n ty =
   expr_list_of_type_gen loc f n ty
 
 and patt_expr_list_of_type loc (f : MLast.expr -> list (list (MLast.patt * MLast.expr))) n ty =
   let el = expr_list_of_type loc (fun x -> [x]) n ty in
   List.concat (List.map f el)
-;
 
-value expr_of_cons_decl (loc, c, tl, rto, _) = do {
+and expr_of_cons_decl (loc, c, tl, rto, _) = do {
   let c = Pcaml.unvala c in
   if String.length c = 5 && String.sub c 2 3 = "Xtr" then []
   else do {
     let tl = Pcaml.unvala tl in
     let tnl = name_of_vars (fun t -> t) tl in
-    let el =
-      loop <:expr< MLast . $uid:c$ >> tnl where rec loop e1 =
-        fun
-        [ [(t, n) :: tnl] ->
-            let f e2 = loop <:expr< $e1$ $e2$ >> tnl in
-            expr_list_of_type loc f n t
-        | [] -> [e1] ]
-    in
+    let exprs1 (t, tn) =
+      expr_list_of_type_gen loc (fun x -> [x]) tn t in
+    let ell = List.map exprs1 tnl in
+    let el = expr_list_cross_product ell in
+    let mkapp l =
+      List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>) <:expr< MLast . $uid:c$ >> l in
+    let el = List.map mkapp el in
     match c with
     [ "ExInt" | "PaInt" ->
         List.fold_right
@@ -204,36 +215,6 @@ value expr_of_cons_decl (loc, c, tl, rto, _) = do {
                match e with
                [ <:expr< $f$ (Ploc.VaVal True) (Ploc.VaVal $_$) >> ->
                    [<:expr< $f$ (Ploc.VaVal True) (Ploc.VaVal []) >> :: el]
-               | _ -> el ]
-             in
-             el)
-          el []
-    | "SgExc" ->
-        List.fold_right
-          (fun e el ->
-             let el = [e :: el] in
-             let el =
-               match e with
-               [ <:expr< $f$ (Ploc.VaVal $_$) >> ->
-                   [<:expr< $f$ (Ploc.VaVal []) >> :: el]
-               | _ -> el ]
-             in
-             el)
-          el []
-    | "StExc" ->
-        List.fold_right
-          (fun e el ->
-             let el = [e :: el] in
-             let el =
-               match e with
-               [ <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal $e2$) >> ->
-                   [<:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal []) >>;
-                    <:expr< $f$ (Ploc.VaVal $e1$) (Ploc.VaVal []) >>;
-                    <:expr< $f$ (Ploc.VaVal []) (Ploc.VaVal $e2$) >> :: el]
-               | <:expr< $f$ (Ploc.VaVal $_$) >> ->
-                   [<:expr< $f$ (Ploc.VaVal []) >> :: el]
-               | <:expr< $f$ (Ploc.VaVal $_$) $e$ >> ->
-                   [<:expr< $f$ (Ploc.VaVal []) $e$ >> :: el]
                | _ -> el ]
              in
              el)
