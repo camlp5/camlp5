@@ -8,4 +8,4 @@ echo
 	-pa_mktest-expand-type generic_constructor \
 	-pa_mktest-expand-type extension_constructor \
 	-pa_mktest-expand-type type_extension \
-	-l 200 -flag D -sep '\n' -impl ../main/mLast.mli
+	-l 400 -flag D -sep '\n' -impl ../main/mLast.mli
