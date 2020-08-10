@@ -105,7 +105,7 @@ module Meta_make (C : MetaSig) =
     ;
     value rec ctyp =
       fun
-      [ TyAtt _ ct att -> C.node "TyAtt" [ctyp ct; conv_attribute_body att]
+      [ TyAtt _ ct att -> C.node "TyAtt" [ctyp ct; attribute att]
       | TyAcc _ m1 t2 → C.node "TyAcc" [longid m1; C.vala C.string t2]
       | TyAli _ t1 t2 → C.node "TyAli" [ctyp t1; ctyp t2]
       | TyAny _ → C.node "TyAny" []
@@ -153,12 +153,12 @@ module Meta_make (C : MetaSig) =
       ]
     and longid_lident (lio, s) = C.tuple [C.option longid lio; C.vala C.string s]
     and conv_attributes attrs =
-      C.vala (C.list conv_attribute_body) attrs
-    and conv_extension e = conv_attribute_body e
-    and conv_attribute_body b =
-      C.vala (fun (locs, p) ->
-          let locs = C.vala (fun (_, s) -> C.tuple [C.loc_v (); C.string s]) locs in
-          C.tuple [locs; conv_payload p]) b
+      C.vala (C.list attribute) attrs
+    and conv_extension e = attribute e
+    and attribute a = C.vala attribute_body a
+    and attribute_body (locs, p) =
+      let locs = C.vala (fun (_, s) -> C.tuple [C.loc_v (); C.string s]) locs in
+      C.tuple [locs; conv_payload p]
     and conv_payload = fun [
       StAttr _ lsi -> C.node "StAttr" [C.vala (C.list str_item) lsi]
     | SiAttr _ lsi -> C.node "SiAttr" [C.vala (C.list sig_item) lsi]
@@ -179,7 +179,7 @@ module Meta_make (C : MetaSig) =
       | PvInh _ t → C.node "PvInh" [ctyp t] ]
     and patt =
       fun
-      [ PaAtt _ e att -> C.node "PaAtt" [patt e; conv_attribute_body att]
+      [ PaAtt _ e att -> C.node "PaAtt" [patt e; attribute att]
       | PaPfx _ li p -> C.node "PaPfx" [longid li; patt p]
       | PaLong _ li -> C.node "PaLong" [longid li]
       | PaAli _ p1 p2 → C.node "PaAli" [patt p1; patt p2]
@@ -223,7 +223,7 @@ module Meta_make (C : MetaSig) =
       ]
     and expr =
       fun
-      [ ExAtt _ e att -> C.node "ExAtt" [expr e; conv_attribute_body att]
+      [ ExAtt _ e att -> C.node "ExAtt" [expr e; attribute att]
       | ExAcc _ e1 e2 → C.node "ExAcc" [expr e1; expr e2]
       | ExAnt _ e → C.node "ExAnt" [expr e]
       | ExApp _ e1 e2 → C.node "ExApp" [expr e1; expr e2]
@@ -320,7 +320,7 @@ module Meta_make (C : MetaSig) =
       ]
     and module_type =
       fun
-      [ MtAtt _ e att -> C.node "MtAtt" [module_type e; conv_attribute_body att]
+      [ MtAtt _ e att -> C.node "MtAtt" [module_type e; attribute att]
       | MtLong _ mt1 → C.node "MtLong" [longid mt1]
       | MtLongLid _ mt1 lid → C.node "MtLongLid" [longid mt1; C.vala C.string lid]
       | MtLid _ s → C.node "MtLid" [C.vala C.string s]
@@ -400,7 +400,7 @@ module Meta_make (C : MetaSig) =
           C.node "SgVal" [C.vala C.string s; ctyp t; attrs]
       | SgXtr loc s _ → C.xtr loc s
       | SgFlAtt loc attr ->
-          let attr = conv_attribute_body attr in
+          let attr = attribute attr in
           C.node "SgFlAtt" [attr]
       | SgExten loc exten attrs ->
           let exten = conv_extension exten in
@@ -428,7 +428,7 @@ module Meta_make (C : MetaSig) =
       ]
     and module_expr =
       fun
-      [ MeAtt _ e att -> C.node "MeAtt" [module_expr e; conv_attribute_body att]
+      [ MeAtt _ e att -> C.node "MeAtt" [module_expr e; attribute att]
       | MeAcc _ me1 me2 → C.node "MeAcc" [module_expr me1; module_expr me2]
       | MeApp _ me1 me2 → C.node "MeApp" [module_expr me1; module_expr me2]
       | MeFun _ arg me →
@@ -507,7 +507,7 @@ module Meta_make (C : MetaSig) =
                C.tuple [patt p; expr e; attrs])) lpe]
       | StXtr loc s _ → C.xtr loc s
       | StFlAtt loc attr ->
-          let attr = conv_attribute_body attr in
+          let attr = attribute attr in
           C.node "StFlAtt" [attr]
       | StExten loc exten attrs ->
           let exten = conv_extension exten in
@@ -545,7 +545,7 @@ module Meta_make (C : MetaSig) =
          (record_label "teAttributes", attrs)]
     and class_type =
       fun
-      [ CtAtt _ e att -> C.node "CtAtt" [class_type e; conv_attribute_body att]
+      [ CtAtt _ e att -> C.node "CtAtt" [class_type e; attribute att]
       | CtLongLid _ mt1 lid → C.node "CtLongLid" [longid mt1; C.vala C.string lid]
       | CtLid _ s → C.node "CtLid" [C.vala C.string s]
       | CtLop _ ovf me e →
@@ -581,7 +581,7 @@ module Meta_make (C : MetaSig) =
           let attrs = conv_attributes attrs in
           C.node "CgVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CgFlAtt loc attr ->
-          let attr = conv_attribute_body attr in
+          let attr = attribute attr in
           C.node "CgFlAtt" [attr]
       | CgExten loc exten ->
           let exten = conv_extension exten in
@@ -589,7 +589,7 @@ module Meta_make (C : MetaSig) =
       ]
     and class_expr =
       fun
-      [ CeAtt _ e att -> C.node "CeAtt" [class_expr e; conv_attribute_body att]
+      [ CeAtt _ e att -> C.node "CeAtt" [class_expr e; attribute att]
       | CeApp _ ce e → C.node "CeApp" [class_expr ce; expr e]
       | CeCon _ cli lt →
           C.node "CeCon"
@@ -642,7 +642,7 @@ module Meta_make (C : MetaSig) =
           let attrs = conv_attributes attrs in
           C.node "CrVir" [C.vala C.bool b; C.vala C.string s; ctyp t; attrs]
       | CrFlAtt loc attr ->
-          let attr = conv_attribute_body attr in
+          let attr = attribute attr in
           C.node "CrFlAtt" [attr]
       | CrExten loc exten ->
           let exten = conv_extension exten in
@@ -801,12 +801,16 @@ module Meta_P =
      end)
 ;
 
+value attribute_body_eoi = Grammar.Entry.create Pcaml.gram "attribute_body_eoi";
 value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
 value class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";
 value class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";
 value class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";
 value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
+value extended_longident_eoi = Grammar.Entry.create Pcaml.gram "extended_longident_eoi";
+value extension_constructor_eoi = Grammar.Entry.create Pcaml.gram "extension_constructor_eoi";
+value longident_eoi = Grammar.Entry.create Pcaml.gram "longident_eoi";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
 value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
@@ -814,15 +818,20 @@ value poly_variant_eoi = Grammar.Entry.create Pcaml.gram "poly_variant";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
 value type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";
+value type_extension_eoi = Grammar.Entry.create Pcaml.gram "type_extension_eoi";
 value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
 
 EXTEND
+  attribute_body_eoi: [ [ x = Pcaml.attribute_body; EOI -> x ] ];
   class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
   class_sig_item_eoi: [ [ x = Pcaml.class_sig_item; EOI -> x ] ];
   class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
   class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
   ctyp_eoi: [ [ x = Pcaml.ctyp; EOI -> x ] ];
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
+  extended_longident_eoi: [ [ x = Pcaml.extended_longident; EOI -> x ] ];
+  extension_constructor_eoi: [ [ x = Pcaml.extension_constructor; EOI -> x ] ];
+  longident_eoi: [ [ x = Pcaml.longident; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
   module_type_eoi: [ [ x = Pcaml.module_type; EOI -> x ] ];
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
@@ -830,6 +839,7 @@ EXTEND
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
   str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
   type_decl_eoi: [ [ x = Pcaml.type_decl; EOI -> x ] ];
+  type_extension_eoi: [ [ x = Pcaml.type_extension; EOI -> x ] ];
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
 END;
 
@@ -1119,12 +1129,16 @@ value apply_entry e me mp =
 List.iter
   (fun (q, f) -> Quotation.add q f)
   [
+    ("attribute_body", apply_entry attribute_body_eoi Meta_E.attribute_body Meta_P.attribute_body);
     ("class_expr", apply_entry class_expr_eoi Meta_E.class_expr Meta_P.class_expr);
     ("class_sig_item", apply_entry class_sig_item_eoi Meta_E.class_sig_item Meta_P.class_sig_item);
     ("class_str_item", apply_entry class_str_item_eoi Meta_E.class_str_item Meta_P.class_str_item);
     ("class_type", apply_entry class_type_eoi Meta_E.class_type Meta_P.class_type);
     ("ctyp", apply_entry ctyp_eoi Meta_E.ctyp Meta_P.ctyp);
     ("expr", apply_entry expr_eoi Meta_E.expr Meta_P.expr);
+    ("extended_longident", apply_entry extended_longident_eoi Meta_E.longid Meta_P.longid);
+    ("extension_constructor", apply_entry extension_constructor_eoi Meta_E.extension_constructor Meta_P.extension_constructor);
+    ("longident", apply_entry longident_eoi Meta_E.longid Meta_P.longid);
     ("module_expr", apply_entry module_expr_eoi Meta_E.module_expr Meta_P.module_expr);
     ("module_type", apply_entry module_type_eoi Meta_E.module_type Meta_P.module_type);
     ("patt", apply_entry patt_eoi Meta_E.patt Meta_P.patt);
@@ -1132,6 +1146,7 @@ List.iter
     ("sig_item", apply_entry sig_item_eoi Meta_E.sig_item Meta_P.sig_item);
     ("str_item", apply_entry str_item_eoi Meta_E.str_item Meta_P.str_item);
     ("type_decl", apply_entry type_decl_eoi Meta_E.type_decl Meta_P.type_decl);
+    ("type_extension", apply_entry type_extension_eoi Meta_E.type_extension Meta_P.type_extension);
     ("with_constr", apply_entry with_constr_eoi Meta_E.with_constr Meta_P.with_constr)
   ]
 ;
