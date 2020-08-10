@@ -1527,8 +1527,6 @@ MLast.EcTuple (loc, xf2, xf3, oxf4, xf5);
 <:class_str_item< [%% $_extension:x$ ] >> ;
 
 (* CHET TODO: FIX THESE, make them meaningful *)
-MLast.Fresh;
-MLast.Override;
 MLast.StAttr loc (Ploc.VaVal lsi);
 MLast.StAttr loc lsi;
 MLast.SiAttr loc (Ploc.VaVal lsi);

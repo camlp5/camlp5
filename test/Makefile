@@ -35,7 +35,7 @@ quot_r.mlt: quot_r.ml ../meta/camlp5r ../meta/q_MLast.cmo $(DEP)
 
 quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast.cmo $(DEP)
 	cpp -E -DQAST -D$(OVERSION_NAME) quot_r.ml > tmp.quot_r.ml
-	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo -sep '\n' tmp.quot_r.ml | \
+	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo -l 400 -sep '\n' tmp.quot_r.ml | \
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
