@@ -520,6 +520,7 @@ module Meta_make (C : MetaSig) =
           C.vala (fun (_, s) → C.tuple [C.loc_v (); C.vala C.string s])
             x.tdNam);
          (record_label "tdPrm", C.vala (C.list type_var) x.tdPrm);
+         (record_label "tdIsDecl", C.vala C.bool x.tdIsDecl);
          (record_label "tdPrv", C.vala C.bool x.tdPrv);
          (record_label "tdDef", ctyp x.tdDef);
          (record_label "tdCon",

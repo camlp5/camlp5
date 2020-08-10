@@ -1213,10 +1213,10 @@ EXTEND
     [ [ n = V longident_lident "lilongid"; tpl = V (LIST0 type_parameter); "+=";
         pf = V (FLAG "private") "priv"; "[" ; ecs = V (LIST1 extension_constructor SEP "|") ; "]" ;
         attrs = item_attributes →
+          <:type_extension< $_lilongid:n$ $_list:tpl$ += $_priv:pf$ [ $_list:ecs$ ] $_itemattrs:attrs$ >>
 (*
-          <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
-*)
           {MLast.teNam=n; tePrm=tpl; tePrv=pf; teAttributes=attrs; teECs = ecs }
+*)
       ] ]
   ;
   type_patt:

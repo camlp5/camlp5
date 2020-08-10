@@ -4313,8 +4313,8 @@ Grammar.safe_extend
                 (ecs : 'extension_constructor list) _ (pf : bool) _
                 (tpl : 'type_parameter list) (n : 'longident_lident)
                 (loc : Ploc.t) ->
-              ({MLast.teNam = n; tePrm = tpl; tePrv = pf;
-                teAttributes = attrs; teECs = ecs} :
+              ({MLast.teNam = n; MLast.tePrm = tpl; MLast.tePrv = pf;
+                MLast.teECs = ecs; MLast.teAttributes = attrs} :
                'type_extension)))]];
     Grammar.extension (type_patt : 'type_patt Grammar.Entry.e) None
       [None, None,

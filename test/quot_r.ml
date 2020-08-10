@@ -1112,8 +1112,56 @@ MLast.EcTuple (loc, xf2, xf3, oxf4, xf5);
 <:extension_constructor< $_uid:s$ = $longid:x1$ $_algattrs:x2$ >> ;
 <:extension_constructor< $_uid:s$ = $_longid:x1$ $_algattrs:x2$ >> ;
 
+(* type extension *)
+
+<:type_extension< $lilongid:x1$ $list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+
+<:type_extension< $_lilongid:x1$ $list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += private [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += private [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += $priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += $priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $list:lx$ ] $_itemattrs:x2$ >> ;
+<:type_extension< $_lilongid:x1$ $_list:ltv$ += $_priv:b$ [ $_list:lx$ ] $_itemattrs:x2$ >> ;
+
 (* access *)
-<:class_type< $longid:ct1$ . $lid:ct2$ >>;
+<:class_type< $longid:x$ . $lid:s$ >>;
+<:class_type< $longid:x$ . $_lid:s$ >>;
+
+(* identifier *)
+<:class_type< $lid:s$ >>;
+<:class_type< $_lid:s$ >>;
+
+(* let-open *)
+
+<:class_type< let open! $longid:x$ in $ct$ >> ;
+<:class_type< let open $longid:x$ in $ct$ >> ;
+<:class_type< let open $!:b$ $longid:x$ in $ct$ >> ;
+<:class_type< let open $_!:b$ $longid:x$ in $ct$ >> ;
 
 (* constructor *)
 <:class_type< $ct$ [ $list:lt$ ] >>;
@@ -1121,10 +1169,6 @@ MLast.EcTuple (loc, xf2, xf3, oxf4, xf5);
 
 (* arrow *)
 <:class_type< [ $t$ ] -> $ct$ >>;
-
-(* identifier *)
-<:class_type< $lid:s$ >>;
-<:class_type< $_lid:s$ >>;
 
 (* object *)
 <:class_type< object $list:lcsi$ end >>;
@@ -1136,110 +1180,116 @@ MLast.EcTuple (loc, xf2, xf3, oxf4, xf5);
 <:class_type< object $_opt:ot$ $list:lcsi$ end >>;
 <:class_type< object $_opt:ot$ $_list:lcsi$ end >>;
 
+(* class_type PPX attributes and extensions *)
+
+<:class_type< $ct$ [@ $_attribute:x$ ] >> ;
+<:class_type< [% $_extension:x$ ] >> ;
+
 (* sig_item: Signature items, i.e. phrases in a ".mli" file or elements *)
 (* sig_item:   inside "sig ... end". *)
 
 (* type constraint *)
-<:class_sig_item< type $t1$ = $t2$ >>;
+<:class_sig_item< type $t1$ = $t2$ $_itemattrs:x$ >>;
 
 (* declare *)
 <:class_sig_item< declare $list:lcsi$ end >>;
 <:class_sig_item< declare $_list:lcsi$ end >>;
 
 (* inheritance *)
-<:class_sig_item< inherit $ct$ >>;
+<:class_sig_item< inherit $ct$ $_itemattrs:x$ >>;
 
 (* method *)
-<:class_sig_item< method private $lid:s$ : $t$ >>;
-<:class_sig_item< method private $_lid:s$ : $t$ >>;
-<:class_sig_item< method $lid:s$ : $t$ >>;
-<:class_sig_item< method $_lid:s$ : $t$ >>;
-<:class_sig_item< method $flag:b$ $lid:s$ : $t$ >>;
-<:class_sig_item< method $flag:b$ $_lid:s$ : $t$ >>;
-<:class_sig_item< method $_flag:b$ $lid:s$ : $t$ >>;
-<:class_sig_item< method $_flag:b$ $_lid:s$ : $t$ >>;
+<:class_sig_item< method private $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method private $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method $flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method $flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method $_flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method $_flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
 
 (* value *)
-(*
-<:class_sig_item< value mutable $lid:s$ : $t$ >>;
-<:class_sig_item< value mutable $_lid:s$ : $t$ >>;
-<:class_sig_item< value $lid:s$ : $t$ >>;
-<:class_sig_item< value $_lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b$ $_lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b$ $_lid:s$ : $t$ >>;
-*)
 
-<:class_sig_item< value mutable virtual $lid:s$ : $t$ >>;
-<:class_sig_item< value mutable virtual $_lid:s$ : $t$ >>;
-<:class_sig_item< value mutable $lid:s$ : $t$ >>;
-<:class_sig_item< value mutable $_lid:s$ : $t$ >>;
-<:class_sig_item< value mutable $flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value mutable $flag:b2$ $_lid:s$ : $t$ >>;
-<:class_sig_item< value mutable $_flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value mutable $_flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value mutable virtual $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value mutable virtual $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value mutable $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value mutable $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value mutable $flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value mutable $flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value mutable $_flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value mutable $_flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
 
-<:class_sig_item< value virtual $lid:s$ : $t$ >>;
-<:class_sig_item< value virtual $_lid:s$ : $t$ >>;
-<:class_sig_item< value $lid:s$ : $t$ >>;
-<:class_sig_item< value $_lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:False$ $flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:False$ $flag:b2$ $_lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:False$ $_flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:False$ $_flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value virtual $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value virtual $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:False$ $flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:False$ $flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:False$ $_flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:False$ $_flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
 
-<:class_sig_item< value $flag:b1$ virtual $lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b1$ virtual $_lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b1$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b1$ $_lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b1$ $flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b1$ $flag:b2$ $_lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b1$ $_flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $flag:b1$ $_flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $flag:b1$ virtual $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:b1$ virtual $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:b1$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:b1$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:b1$ $flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:b1$ $flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:b1$ $_flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $flag:b1$ $_flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
 
-<:class_sig_item< value $_flag:b1$ virtual $lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b1$ virtual $_lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b1$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b1$ $_lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b1$ $flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b1$ $flag:b2$ $_lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b1$ $_flag:b2$ $lid:s$ : $t$ >>;
-<:class_sig_item< value $_flag:b1$ $_flag:b2$ $_lid:s$ : $t$ >>;
+<:class_sig_item< value $_flag:b1$ virtual $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_flag:b1$ virtual $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_flag:b1$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_flag:b1$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_flag:b1$ $flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_flag:b1$ $flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_flag:b1$ $_flag:b2$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< value $_flag:b1$ $_flag:b2$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
 
 (* virtual method *)
-<:class_sig_item< method virtual private $lid:s$ : $t$ >>;
-<:class_sig_item< method virtual private $_lid:s$ : $t$ >>;
-<:class_sig_item< method virtual $lid:s$ : $t$ >>;
-<:class_sig_item< method virtual $_lid:s$ : $t$ >>;
-<:class_sig_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
-<:class_sig_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
-<:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
-<:class_sig_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
+<:class_sig_item< method virtual private $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method virtual private $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method virtual $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method virtual $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method virtual $flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method virtual $flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method virtual $_flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_sig_item< method virtual $_flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+
+(* class_sig_item PPX attributes and extensions *)
+
+<:class_sig_item< [@@@ $_attribute:x$ ] >> ;
+<:class_sig_item< [%% $_extension:x$ ] >> ;
 
 (* application *)
 <:class_expr< $ce$ $e$ >>;
 
 (* constructor *)
-<:class_expr< [ $list:lt$ ] $lilongid:ls$ >>;
-<:class_expr< [ $_list:lt$ ] $lilongid:ls$ >>;
-<:class_expr< [ $list:lt$ ] $_lilongid:ls$ >>;
-<:class_expr< [ $_list:lt$ ] $_lilongid:ls$ >>;
+<:class_expr< [ $list:lt$ ] $lilongid:x$ >>;
+<:class_expr< [ $_list:lt$ ] $lilongid:x$ >>;
+<:class_expr< [ $list:lt$ ] $_lilongid:x$ >>;
+<:class_expr< [ $_list:lt$ ] $_lilongid:x$ >>;
 
 (* function *)
 <:class_expr< fun $p$ -> $ce$ >>;
 
 (* let rec *)
-<:class_expr< let rec $list:lpe$ in $ce$ >>;
-<:class_expr< let rec $_list:lpe$ in $ce$ >>;
+<:class_expr< let rec $list:lpex$ in $ce$ >>;
+<:class_expr< let rec $_list:lpex$ in $ce$ >>;
 (* let non rec *)
-<:class_expr< let $list:lpe$ in $ce$ >>;
-<:class_expr< let $_list:lpe$ in $ce$ >>;
+<:class_expr< let $list:lpex$ in $ce$ >>;
+<:class_expr< let $_list:lpex$ in $ce$ >>;
 (* let *)
-<:class_expr< let $flag:b$ $list:lpe$ in $ce$ >>;
-<:class_expr< let $flag:b$ $_list:lpe$ in $ce$ >>;
-<:class_expr< let $_flag:b$ $list:lpe$ in $ce$ >>;
-<:class_expr< let $_flag:b$ $_list:lpe$ in $ce$ >>;
+<:class_expr< let $flag:b$ $list:lpex$ in $ce$ >>;
+<:class_expr< let $flag:b$ $_list:lpex$ in $ce$ >>;
+<:class_expr< let $_flag:b$ $list:lpex$ in $ce$ >>;
+<:class_expr< let $_flag:b$ $_list:lpex$ in $ce$ >>;
+
+(* let open *)
+<:class_expr< let open! $longid:x$ in $ce$ >> ;
+<:class_expr< let open $longid:x$ in $ce$ >> ;
+<:class_expr< let open $!:b$ $longid:x$ in $ce$ >> ;
+<:class_expr< let open $_!:b$ $longid:x$ in $ce$ >> ;
 
 (* object *)
 <:class_expr< object $list:lcsi$ end >>;
@@ -1254,209 +1304,227 @@ MLast.EcTuple (loc, xf2, xf3, oxf4, xf5);
 (* class type constraint *)
 <:class_expr< ($ce$ : $ct$) >>;
 
+(* class_expr PPX attributes and extensions *)
+
+<:class_expr< $ce$ [@ $_attribute:x$ ] >> ;
+<:class_expr< [% $_extension:x$ ] >> ;
+
 (* type constraint *)
-<:class_str_item< type $t1$ = $t2$ >>;
+<:class_str_item< type $t1$ = $t2$ $_itemattrs:x$ >>;
 
 (* declaration list *)
 <:class_str_item< declare $list:lcsi$ end >>;
 <:class_str_item< declare $_list:lcsi$ end >>;
 
 (* inheritance *)
-<:class_str_item< inherit $ce$ >>;
-<:class_str_item< inherit $ce$ $opt:Some s$ >>;
-<:class_str_item< inherit $ce$ $opt:os$ >>;
-<:class_str_item< inherit $ce$ $_opt:os$ >>;
-<:class_str_item< inherit! $ce$ >>;
-<:class_str_item< inherit! $ce$ $opt:Some s$ >>;
-<:class_str_item< inherit! $ce$ $opt:os$ >>;
-<:class_str_item< inherit! $ce$ $_opt:os$ >>;
+<:class_str_item< inherit! $ce$ $_itemattrs:x$ >>;
+<:class_str_item< inherit! $ce$ $opt:Some s$ $_itemattrs:x$ >>;
+<:class_str_item< inherit! $ce$ $opt:os$ $_itemattrs:x$ >>;
+<:class_str_item< inherit! $ce$ $_opt:os$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $ce$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $ce$ $opt:Some s$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $ce$ $opt:os$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $ce$ $_opt:os$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $!:b$ $ce$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $!:b$ $ce$ $opt:Some s$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $!:b$ $ce$ $opt:os$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $!:b$ $ce$ $_opt:os$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $_!:b$ $ce$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $_!:b$ $ce$ $opt:Some s$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $_!:b$ $ce$ $opt:os$ $_itemattrs:x$ >>;
+<:class_str_item< inherit $_!:b$ $ce$ $_opt:os$ $_itemattrs:x$ >>;
 
 (* initialization *)
-<:class_str_item< initializer $e$ >>;
+<:class_str_item< initializer $e$ $_itemattrs:x$ >>;
 
 (* method *)
-<:class_str_item< method! private $lid:s$ = $e$ >>;
-<:class_str_item< method! private $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! private $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! private $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method! private $_lid:s$ = $e$ >>;
-<:class_str_item< method! private $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! private $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! private $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method! $lid:s$ = $e$ >>;
-<:class_str_item< method! $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method! $_lid:s$ = $e$ >>;
-<:class_str_item< method! $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method! $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method private $lid:s$ = $e$ >>;
-<:class_str_item< method private $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method private $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method private $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method private $_lid:s$ = $e$ >>;
-<:class_str_item< method private $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method private $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method private $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $lid:s$ = $e$ >>;
-<:class_str_item< method $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_lid:s$ = $e$ >>;
-<:class_str_item< method $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $_lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ private $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $_lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ private $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ : $t$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ >>;
-<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ >>;
+<:class_str_item< method! private $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! private $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! private $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! private $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! private $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! private $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! private $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! private $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method! $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method private $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ private $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $!:b1$ $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ private $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ : $t$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $opt:ot$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< method $_!:b1$ $_priv:b2$ $_lid:s$ $_opt:ot$ = $e$ $_itemattrs:x$ >>;
 
 (* value *)
-<:class_str_item< value! mutable $lid:s$ = $e$ >>;
-<:class_str_item< value! mutable $_lid:s$ = $e$ >>;
-<:class_str_item< value! $lid:s$ = $e$ >>;
-<:class_str_item< value! $_lid:s$ = $e$ >>;
-<:class_str_item< value! $flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value! $flag:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< value! $_flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value! $_flag:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< value mutable $lid:s$ = $e$ >>;
-<:class_str_item< value mutable $_lid:s$ = $e$ >>;
-<:class_str_item< value $lid:s$ = $e$ >>;
-<:class_str_item< value $_lid:s$ = $e$ >>;
-<:class_str_item< value $flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value $flag:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< value $_flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value $_flag:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ mutable $lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ mutable $_lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ $lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ $_lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ $flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ $flag:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value $!:b1$ $_flag:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ mutable $lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ mutable $_lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ $lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ $_lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ $flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ $flag:b2$ $_lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ $_flag:b2$ $lid:s$ = $e$ >>;
-<:class_str_item< value $_!:b1$ $_flag:b2$ $_lid:s$ = $e$ >>;
+<:class_str_item< value! mutable $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value! mutable $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value! $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value! $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value! $flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value! $flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value! $_flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value! $_flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value mutable $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value mutable $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ mutable $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ mutable $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ $flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ $flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ $_flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $!:b1$ $_flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ mutable $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ mutable $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ $flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ $flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ $_flag:b2$ $lid:s$ = $e$ $_itemattrs:x$ >>;
+<:class_str_item< value $_!:b1$ $_flag:b2$ $_lid:s$ = $e$ $_itemattrs:x$ >>;
 
 (* virtual value *)
-<:class_str_item< value virtual mutable $lid:s$ : $t$ >>;
-<:class_str_item< value virtual mutable $_lid:s$ : $t$ >>;
-<:class_str_item< value virtual $lid:s$ : $t$ >>;
-<:class_str_item< value virtual $_lid:s$ : $t$ >>;
-<:class_str_item< value virtual $flag:b$ $lid:s$ : $t$ >>;
-<:class_str_item< value virtual $flag:b$ $_lid:s$ : $t$ >>;
-<:class_str_item< value virtual $_flag:b$ $lid:s$ : $t$ >>;
-<:class_str_item< value virtual $_flag:b$ $_lid:s$ : $t$ >>;
+<:class_str_item< value virtual mutable $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< value virtual mutable $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< value virtual $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< value virtual $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< value virtual $flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< value virtual $flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< value virtual $_flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< value virtual $_flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
 
 (* virtual method *)
-<:class_str_item< method virtual private $lid:s$ : $t$ >>;
-<:class_str_item< method virtual private $_lid:s$ : $t$ >>;
-<:class_str_item< method virtual $lid:s$ : $t$ >>;
-<:class_str_item< method virtual $_lid:s$ : $t$ >>;
-<:class_str_item< method virtual $flag:b$ $lid:s$ : $t$ >>;
-<:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ >>;
-<:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ >>;
-<:class_str_item< method virtual $_flag:b$ $_lid:s$ : $t$ >>;
+<:class_str_item< method virtual private $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< method virtual private $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< method virtual $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< method virtual $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< method virtual $flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< method virtual $flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< method virtual $_flag:b$ $lid:s$ : $t$ $_itemattrs:x$ >>;
+<:class_str_item< method virtual $_flag:b$ $_lid:s$ : $t$ $_itemattrs:x$ >>;
+
+(* class_str_item PPX attributes and extensions *)
+
+<:class_str_item< [@@@ $_attribute:x$ ] >> ;
+<:class_str_item< [%% $_extension:x$ ] >> ;
 
 (* CHET TODO: FIX THESE, make them meaningful *)
 MLast.Fresh;
