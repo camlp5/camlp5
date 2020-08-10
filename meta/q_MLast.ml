@@ -1918,45 +1918,47 @@ let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 do {
   EXTEND
     attribute_body_eoi: [ [ x = attribute_body; EOI -> x ] ];
-    sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
-    str_item_eoi: [ [ x = str_item; EOI -> x ] ];
-    ctyp_eoi: [ [ x = ctyp; EOI -> x ] ];
-    patt_eoi: [ [ x = patt; EOI -> x ] ];
-    expr_eoi: [ [ x = expr; EOI -> x ] ];
-    module_type_eoi: [ [ x = module_type; EOI -> x ] ];
-    module_expr_eoi: [ [ x = module_expr; EOI -> x ] ];
-    longident_eoi: [ [ x = longident; EOI -> x ] ];
-    extended_longident_eoi: [ [ x = extended_longident; EOI -> x ] ];
-    class_type_eoi: [ [ x = class_type; EOI -> x ] ];
     class_expr_eoi: [ [ x = class_expr; EOI -> x ] ];
     class_sig_item_eoi: [ [ x = class_sig_item; EOI -> x ] ];
     class_str_item_eoi: [ [ x = class_str_item; EOI -> x ] ];
-    with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
+    class_type_eoi: [ [ x = class_type; EOI -> x ] ];
+    ctyp_eoi: [ [ x = ctyp; EOI -> x ] ];
+    expr_eoi: [ [ x = expr; EOI -> x ] ];
+    extended_longident_eoi: [ [ x = extended_longident; EOI -> x ] ];
+    extension_constructor_eoi: [ [ x = extension_constructor; EOI -> x ] ];
+    longident_eoi: [ [ x = longident; EOI -> x ] ];
+    module_expr_eoi: [ [ x = module_expr; EOI -> x ] ];
+    module_type_eoi: [ [ x = module_type; EOI -> x ] ];
+    patt_eoi: [ [ x = patt; EOI -> x ] ];
     poly_variant_eoi: [ [ x = poly_variant; EOI -> x ] ];
+    sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
+    str_item_eoi: [ [ x = str_item; EOI -> x ] ];
     type_decl_eoi: [ [ x = type_decl; EOI -> x ] ];
     type_extension_eoi: [ [ x = type_extension; EOI -> x ] ];
-    extension_constructor_eoi: [ [ x = extension_constructor; EOI -> x ] ];
+    with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
   END;
   List.iter (fun (q, f) -> Quotation.add q (f q))
-    [("attribute_body", apply_entry attribute_body_eoi);
-     ("sig_item", apply_entry sig_item_eoi);
-     ("str_item", apply_entry str_item_eoi);
-     ("ctyp", apply_entry ctyp_eoi);
-     ("patt", apply_entry patt_eoi);
-     ("expr", apply_entry expr_eoi);
-     ("module_type", apply_entry module_type_eoi);
-     ("module_expr", apply_entry module_expr_eoi);
-     ("longident", apply_entry longident_eoi);
-     ("extended_longident", apply_entry extended_longident_eoi);
-     ("class_type", apply_entry class_type_eoi);
-     ("class_expr", apply_entry class_expr_eoi);
-     ("class_sig_item", apply_entry class_sig_item_eoi);
-     ("class_str_item", apply_entry class_str_item_eoi);
-     ("with_constr", apply_entry with_constr_eoi);
-     ("poly_variant", apply_entry poly_variant_eoi);
-     ("type_decl", apply_entry type_decl_eoi);
-     ("type_extension", apply_entry type_extension_eoi);
-     ("extension_constructor", apply_entry extension_constructor_eoi)];
+    [
+      ("attribute_body", apply_entry attribute_body_eoi);
+      ("class_expr", apply_entry class_expr_eoi);
+      ("class_sig_item", apply_entry class_sig_item_eoi);
+      ("class_str_item", apply_entry class_str_item_eoi);
+      ("class_type", apply_entry class_type_eoi);
+      ("ctyp", apply_entry ctyp_eoi);
+      ("expr", apply_entry expr_eoi);
+      ("extended_longident", apply_entry extended_longident_eoi);
+      ("extension_constructor", apply_entry extension_constructor_eoi);
+      ("longident", apply_entry longident_eoi);
+      ("module_expr", apply_entry module_expr_eoi);
+      ("module_type", apply_entry module_type_eoi);
+      ("patt", apply_entry patt_eoi);
+      ("poly_variant", apply_entry poly_variant_eoi);
+      ("sig_item", apply_entry sig_item_eoi);
+      ("str_item", apply_entry str_item_eoi);
+      ("type_decl", apply_entry type_decl_eoi);
+      ("type_extension", apply_entry type_extension_eoi);
+      ("with_constr", apply_entry with_constr_eoi)
+    ];
 };
 
 do {

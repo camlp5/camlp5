@@ -817,45 +817,39 @@ value type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";
 value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
 
 EXTEND
-  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
-  patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
+  class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
+  class_sig_item_eoi: [ [ x = Pcaml.class_sig_item; EOI -> x ] ];
+  class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
+  class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
   ctyp_eoi: [ [ x = Pcaml.ctyp; EOI -> x ] ];
-  sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
-  str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
+  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
   module_type_eoi: [ [ x = Pcaml.module_type; EOI -> x ] ];
-  with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
+  patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
   poly_variant_eoi: [ [ x = Pcaml.poly_variant; EOI -> x ] ];
-  class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
-  class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
-  class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
-  class_sig_item_eoi: [ [ x = Pcaml.class_sig_item; EOI -> x ] ];
+  sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
+  str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
   type_decl_eoi: [ [ x = Pcaml.type_decl; EOI -> x ] ];
+  with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
   EXTEND
-    Pcaml.expr: LAST
-      [ [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc s None
-        | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc s None ] ]
+    Pcaml.class_expr: LAST
+      [ [ s = ANTIQUOT_LOC -> MLast.CeXtr loc s None ] ]
     ;
-    Pcaml.patt: LAST
-      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None
-        | s = ANTIQUOT_LOC "anti" -> MLast.PaXtr loc s None ] ]
-    ;
-    Pcaml.ipatt: LAST
-      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None ] ]
+    Pcaml.class_type: LAST
+      [ [ s = ANTIQUOT_LOC -> MLast.CtXtr loc s None ] ]
     ;
     Pcaml.ctyp: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
     ;
-    Pcaml.str_item: FIRST
-      [ [ s = ANTIQUOT_LOC -> MLast.StXtr loc s None
-        | s = ANTIQUOT_LOC "exp" ->
-            MLast.StExp loc (MLast.ExXtr loc s None) (Ploc.VaVal []) ] ]
+    Pcaml.expr: LAST
+      [ [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc s None
+        | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc s None ] ]
     ;
-    Pcaml.sig_item: FIRST
-      [ [ s = ANTIQUOT_LOC -> MLast.SgXtr loc s None ] ]
+    Pcaml.ipatt: LAST
+      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None ] ]
     ;
     Pcaml.module_expr: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.MeXtr loc s None ] ]
@@ -863,11 +857,17 @@ IFDEF STRICT THEN
     Pcaml.module_type: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.MtXtr loc s None ] ]
     ;
-    Pcaml.class_expr: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.CeXtr loc s None ] ]
+    Pcaml.patt: LAST
+      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None
+        | s = ANTIQUOT_LOC "anti" -> MLast.PaXtr loc s None ] ]
     ;
-    Pcaml.class_type: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.CtXtr loc s None ] ]
+    Pcaml.sig_item: FIRST
+      [ [ s = ANTIQUOT_LOC -> MLast.SgXtr loc s None ] ]
+    ;
+    Pcaml.str_item: FIRST
+      [ [ s = ANTIQUOT_LOC -> MLast.StXtr loc s None
+        | s = ANTIQUOT_LOC "exp" ->
+            MLast.StExp loc (MLast.ExXtr loc s None) (Ploc.VaVal []) ] ]
     ;
   END;
 END;
@@ -1118,31 +1118,22 @@ value apply_entry e me mp =
 
 List.iter
   (fun (q, f) -> Quotation.add q f)
-  [("expr", apply_entry expr_eoi Meta_E.expr Meta_P.expr);
-   ("patt", apply_entry patt_eoi Meta_E.patt Meta_P.patt);
-   ("ctyp", apply_entry ctyp_eoi Meta_E.ctyp Meta_P.ctyp);
-   ("str_item", apply_entry str_item_eoi Meta_E.str_item Meta_P.str_item);
-   ("sig_item", apply_entry sig_item_eoi Meta_E.sig_item Meta_P.sig_item);
-   ("module_expr",
-    apply_entry module_expr_eoi Meta_E.module_expr Meta_P.module_expr);
-   ("module_type",
-    apply_entry module_type_eoi Meta_E.module_type Meta_P.module_type);
-   ("with_constr",
-    apply_entry with_constr_eoi Meta_E.with_constr Meta_P.with_constr);
-   ("poly_variant",
-    apply_entry poly_variant_eoi Meta_E.poly_variant Meta_P.poly_variant);
-   ("class_expr",
-    apply_entry class_expr_eoi Meta_E.class_expr Meta_P.class_expr);
-   ("class_type",
-    apply_entry class_type_eoi Meta_E.class_type Meta_P.class_type);
-   ("class_str_item",
-    apply_entry class_str_item_eoi Meta_E.class_str_item
-      Meta_P.class_str_item);
-   ("class_sig_item",
-    apply_entry class_sig_item_eoi Meta_E.class_sig_item
-      Meta_P.class_sig_item);
-   ("type_decl",
-    apply_entry type_decl_eoi Meta_E.type_decl Meta_P.type_decl)]
+  [
+    ("class_expr", apply_entry class_expr_eoi Meta_E.class_expr Meta_P.class_expr);
+    ("class_sig_item", apply_entry class_sig_item_eoi Meta_E.class_sig_item Meta_P.class_sig_item);
+    ("class_str_item", apply_entry class_str_item_eoi Meta_E.class_str_item Meta_P.class_str_item);
+    ("class_type", apply_entry class_type_eoi Meta_E.class_type Meta_P.class_type);
+    ("ctyp", apply_entry ctyp_eoi Meta_E.ctyp Meta_P.ctyp);
+    ("expr", apply_entry expr_eoi Meta_E.expr Meta_P.expr);
+    ("module_expr", apply_entry module_expr_eoi Meta_E.module_expr Meta_P.module_expr);
+    ("module_type", apply_entry module_type_eoi Meta_E.module_type Meta_P.module_type);
+    ("patt", apply_entry patt_eoi Meta_E.patt Meta_P.patt);
+    ("poly_variant", apply_entry poly_variant_eoi Meta_E.poly_variant Meta_P.poly_variant);
+    ("sig_item", apply_entry sig_item_eoi Meta_E.sig_item Meta_P.sig_item);
+    ("str_item", apply_entry str_item_eoi Meta_E.str_item Meta_P.str_item);
+    ("type_decl", apply_entry type_decl_eoi Meta_E.type_decl Meta_P.type_decl);
+    ("with_constr", apply_entry with_constr_eoi Meta_E.with_constr Meta_P.with_constr)
+  ]
 ;
 
 do {

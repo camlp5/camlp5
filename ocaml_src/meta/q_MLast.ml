@@ -13350,102 +13350,6 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'attribute_body) (loc : Ploc.t) ->
              (x : 'attribute_body_eoi)))]];
-   Grammar.extension (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (sig_item : 'sig_item Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'sig_item) (loc : Ploc.t) -> (x : 'sig_item_eoi)))]];
-   Grammar.extension (str_item_eoi : 'str_item_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (str_item : 'str_item Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'str_item) (loc : Ploc.t) -> (x : 'str_item_eoi)))]];
-   Grammar.extension (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'ctyp) (loc : Ploc.t) -> (x : 'ctyp_eoi)))]];
-   Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]];
-   Grammar.extension (expr_eoi : 'expr_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
-   Grammar.extension (module_type_eoi : 'module_type_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'module_type) (loc : Ploc.t) ->
-             (x : 'module_type_eoi)))]];
-   Grammar.extension (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (module_expr : 'module_expr Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'module_expr) (loc : Ploc.t) ->
-             (x : 'module_expr_eoi)))]];
-   Grammar.extension (longident_eoi : 'longident_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'longident) (loc : Ploc.t) -> (x : 'longident_eoi)))]];
-   Grammar.extension
-     (extended_longident_eoi : 'extended_longident_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm
-                  (extended_longident : 'extended_longident Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'extended_longident) (loc : Ploc.t) ->
-             (x : 'extended_longident_eoi)))]];
-   Grammar.extension (class_type_eoi : 'class_type_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'class_type) (loc : Ploc.t) ->
-             (x : 'class_type_eoi)))]];
    Grammar.extension (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -13480,16 +13384,98 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'class_str_item) (loc : Ploc.t) ->
              (x : 'class_str_item_eoi)))]];
-   Grammar.extension (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e) None
+   Grammar.extension (class_type_eoi : 'class_type_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (with_constr : 'with_constr Grammar.Entry.e)))
+               (Grammar.s_nterm (class_type : 'class_type Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'with_constr) (loc : Ploc.t) ->
-             (x : 'with_constr_eoi)))]];
+          (fun _ (x : 'class_type) (loc : Ploc.t) ->
+             (x : 'class_type_eoi)))]];
+   Grammar.extension (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'ctyp) (loc : Ploc.t) -> (x : 'ctyp_eoi)))]];
+   Grammar.extension (expr_eoi : 'expr_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
+   Grammar.extension
+     (extended_longident_eoi : 'extended_longident_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (extended_longident : 'extended_longident Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'extended_longident) (loc : Ploc.t) ->
+             (x : 'extended_longident_eoi)))]];
+   Grammar.extension
+     (extension_constructor_eoi : 'extension_constructor_eoi Grammar.Entry.e)
+     None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (extension_constructor :
+                   'extension_constructor Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'extension_constructor) (loc : Ploc.t) ->
+             (x : 'extension_constructor_eoi)))]];
+   Grammar.extension (longident_eoi : 'longident_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'longident) (loc : Ploc.t) -> (x : 'longident_eoi)))]];
+   Grammar.extension (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (module_expr : 'module_expr Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'module_expr) (loc : Ploc.t) ->
+             (x : 'module_expr_eoi)))]];
+   Grammar.extension (module_type_eoi : 'module_type_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (module_type : 'module_type Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'module_type) (loc : Ploc.t) ->
+             (x : 'module_type_eoi)))]];
+   Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]];
    Grammar.extension (poly_variant_eoi : 'poly_variant_eoi Grammar.Entry.e)
      None
      [None, None,
@@ -13502,6 +13488,24 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'poly_variant) (loc : Ploc.t) ->
              (x : 'poly_variant_eoi)))]];
+   Grammar.extension (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (sig_item : 'sig_item Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'sig_item) (loc : Ploc.t) -> (x : 'sig_item_eoi)))]];
+   Grammar.extension (str_item_eoi : 'str_item_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm (str_item : 'str_item Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'str_item) (loc : Ploc.t) -> (x : 'str_item_eoi)))]];
    Grammar.extension (type_decl_eoi : 'type_decl_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -13523,37 +13527,33 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'type_extension) (loc : Ploc.t) ->
              (x : 'type_extension_eoi)))]];
-   Grammar.extension
-     (extension_constructor_eoi : 'extension_constructor_eoi Grammar.Entry.e)
-     None
+   Grammar.extension (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm
-                  (extension_constructor :
-                   'extension_constructor Grammar.Entry.e)))
+               (Grammar.s_nterm (with_constr : 'with_constr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'extension_constructor) (loc : Ploc.t) ->
-             (x : 'extension_constructor_eoi)))]]];
+          (fun _ (x : 'with_constr) (loc : Ploc.t) ->
+             (x : 'with_constr_eoi)))]]];
 List.iter (fun (q, f) -> Quotation.add q (f q))
   ["attribute_body", apply_entry attribute_body_eoi;
-   "sig_item", apply_entry sig_item_eoi; "str_item", apply_entry str_item_eoi;
-   "ctyp", apply_entry ctyp_eoi; "patt", apply_entry patt_eoi;
-   "expr", apply_entry expr_eoi; "module_type", apply_entry module_type_eoi;
-   "module_expr", apply_entry module_expr_eoi;
-   "longident", apply_entry longident_eoi;
-   "extended_longident", apply_entry extended_longident_eoi;
-   "class_type", apply_entry class_type_eoi;
    "class_expr", apply_entry class_expr_eoi;
    "class_sig_item", apply_entry class_sig_item_eoi;
    "class_str_item", apply_entry class_str_item_eoi;
-   "with_constr", apply_entry with_constr_eoi;
+   "class_type", apply_entry class_type_eoi; "ctyp", apply_entry ctyp_eoi;
+   "expr", apply_entry expr_eoi;
+   "extended_longident", apply_entry extended_longident_eoi;
+   "extension_constructor", apply_entry extension_constructor_eoi;
+   "longident", apply_entry longident_eoi;
+   "module_expr", apply_entry module_expr_eoi;
+   "module_type", apply_entry module_type_eoi; "patt", apply_entry patt_eoi;
    "poly_variant", apply_entry poly_variant_eoi;
+   "sig_item", apply_entry sig_item_eoi; "str_item", apply_entry str_item_eoi;
    "type_decl", apply_entry type_decl_eoi;
    "type_extension", apply_entry type_extension_eoi;
-   "extension_constructor", apply_entry extension_constructor_eoi];;
+   "with_constr", apply_entry with_constr_eoi];;
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
 Grammar.safe_extend

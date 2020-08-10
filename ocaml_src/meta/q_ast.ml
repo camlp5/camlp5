@@ -824,24 +824,54 @@ let type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";;
 let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
 
 Grammar.safe_extend
-  [Grammar.extension (expr_eoi : 'expr_eoi Grammar.Entry.e) None
+  [Grammar.extension (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e)))
+               (Grammar.s_nterm
+                  (Pcaml.class_expr : 'Pcaml__class_expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'Pcaml__expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
-   Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
+          (fun _ (x : 'Pcaml__class_expr) (loc : Ploc.t) ->
+             (x : 'class_expr_eoi)))]];
+   Grammar.extension
+     (class_sig_item_eoi : 'class_sig_item_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e)))
+               (Grammar.s_nterm
+                  (Pcaml.class_sig_item :
+                   'Pcaml__class_sig_item Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'Pcaml__patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]];
+          (fun _ (x : 'Pcaml__class_sig_item) (loc : Ploc.t) ->
+             (x : 'class_sig_item_eoi)))]];
+   Grammar.extension
+     (class_str_item_eoi : 'class_str_item_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (Pcaml.class_str_item :
+                   'Pcaml__class_str_item Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'Pcaml__class_str_item) (loc : Ploc.t) ->
+             (x : 'class_str_item_eoi)))]];
+   Grammar.extension (class_type_eoi : 'class_type_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (Pcaml.class_type : 'Pcaml__class_type Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'Pcaml__class_type) (loc : Ploc.t) ->
+             (x : 'class_type_eoi)))]];
    Grammar.extension (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -851,28 +881,15 @@ Grammar.safe_extend
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
           (fun _ (x : 'Pcaml__ctyp) (loc : Ploc.t) -> (x : 'ctyp_eoi)))]];
-   Grammar.extension (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e) None
+   Grammar.extension (expr_eoi : 'expr_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm
-                  (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e)))
+               (Grammar.s_nterm (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'Pcaml__sig_item) (loc : Ploc.t) ->
-             (x : 'sig_item_eoi)))]];
-   Grammar.extension (str_item_eoi : 'str_item_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm
-                  (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'Pcaml__str_item) (loc : Ploc.t) ->
-             (x : 'str_item_eoi)))]];
+          (fun _ (x : 'Pcaml__expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
    Grammar.extension (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -895,17 +912,15 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'Pcaml__module_type) (loc : Ploc.t) ->
              (x : 'module_type_eoi)))]];
-   Grammar.extension (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e) None
+   Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm
-                  (Pcaml.with_constr : 'Pcaml__with_constr Grammar.Entry.e)))
+               (Grammar.s_nterm (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'Pcaml__with_constr) (loc : Ploc.t) ->
-             (x : 'with_constr_eoi)))]];
+          (fun _ (x : 'Pcaml__patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]];
    Grammar.extension (poly_variant_eoi : 'poly_variant_eoi Grammar.Entry.e)
      None
      [None, None,
@@ -919,54 +934,28 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'Pcaml__poly_variant) (loc : Ploc.t) ->
              (x : 'poly_variant_eoi)))]];
-   Grammar.extension (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e) None
+   Grammar.extension (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm
-                  (Pcaml.class_expr : 'Pcaml__class_expr Grammar.Entry.e)))
+                  (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'Pcaml__class_expr) (loc : Ploc.t) ->
-             (x : 'class_expr_eoi)))]];
-   Grammar.extension (class_type_eoi : 'class_type_eoi Grammar.Entry.e) None
+          (fun _ (x : 'Pcaml__sig_item) (loc : Ploc.t) ->
+             (x : 'sig_item_eoi)))]];
+   Grammar.extension (str_item_eoi : 'str_item_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
          (Grammar.r_next
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm
-                  (Pcaml.class_type : 'Pcaml__class_type Grammar.Entry.e)))
+                  (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
-          (fun _ (x : 'Pcaml__class_type) (loc : Ploc.t) ->
-             (x : 'class_type_eoi)))]];
-   Grammar.extension
-     (class_str_item_eoi : 'class_str_item_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm
-                  (Pcaml.class_str_item :
-                   'Pcaml__class_str_item Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'Pcaml__class_str_item) (loc : Ploc.t) ->
-             (x : 'class_str_item_eoi)))]];
-   Grammar.extension
-     (class_sig_item_eoi : 'class_sig_item_eoi Grammar.Entry.e) None
-     [None, None,
-      [Grammar.production
-         (Grammar.r_next
-            (Grammar.r_next Grammar.r_stop
-               (Grammar.s_nterm
-                  (Pcaml.class_sig_item :
-                   'Pcaml__class_sig_item Grammar.Entry.e)))
-            (Grammar.s_token ("EOI", "")),
-          "1154dceb",
-          (fun _ (x : 'Pcaml__class_sig_item) (loc : Ploc.t) ->
-             (x : 'class_sig_item_eoi)))]];
+          (fun _ (x : 'Pcaml__str_item) (loc : Ploc.t) ->
+             (x : 'str_item_eoi)))]];
    Grammar.extension (type_decl_eoi : 'type_decl_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -977,7 +966,18 @@ Grammar.safe_extend
             (Grammar.s_token ("EOI", "")),
           "1154dceb",
           (fun _ (x : 'Pcaml__type_decl) (loc : Ploc.t) ->
-             (x : 'type_decl_eoi)))]]];;
+             (x : 'type_decl_eoi)))]];
+   Grammar.extension (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (Pcaml.with_constr : 'Pcaml__with_constr Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'Pcaml__with_constr) (loc : Ploc.t) ->
+             (x : 'with_constr_eoi)))]]];;
 
 (* *)
 
@@ -1218,28 +1218,26 @@ let apply_entry e me mp =
 ;;
 
 List.iter (fun (q, f) -> Quotation.add q f)
-  ["expr", apply_entry expr_eoi Meta_E.expr Meta_P.expr;
-   "patt", apply_entry patt_eoi Meta_E.patt Meta_P.patt;
+  ["class_expr",
+   apply_entry class_expr_eoi Meta_E.class_expr Meta_P.class_expr;
+   "class_sig_item",
+   apply_entry class_sig_item_eoi Meta_E.class_sig_item Meta_P.class_sig_item;
+   "class_str_item",
+   apply_entry class_str_item_eoi Meta_E.class_str_item Meta_P.class_str_item;
+   "class_type",
+   apply_entry class_type_eoi Meta_E.class_type Meta_P.class_type;
    "ctyp", apply_entry ctyp_eoi Meta_E.ctyp Meta_P.ctyp;
-   "str_item", apply_entry str_item_eoi Meta_E.str_item Meta_P.str_item;
-   "sig_item", apply_entry sig_item_eoi Meta_E.sig_item Meta_P.sig_item;
-   "module_expr",
+   "expr", apply_entry expr_eoi Meta_E.expr Meta_P.expr; "module_expr",
    apply_entry module_expr_eoi Meta_E.module_expr Meta_P.module_expr;
    "module_type",
    apply_entry module_type_eoi Meta_E.module_type Meta_P.module_type;
-   "with_constr",
-   apply_entry with_constr_eoi Meta_E.with_constr Meta_P.with_constr;
-   "poly_variant",
+   "patt", apply_entry patt_eoi Meta_E.patt Meta_P.patt; "poly_variant",
    apply_entry poly_variant_eoi Meta_E.poly_variant Meta_P.poly_variant;
-   "class_expr",
-   apply_entry class_expr_eoi Meta_E.class_expr Meta_P.class_expr;
-   "class_type",
-   apply_entry class_type_eoi Meta_E.class_type Meta_P.class_type;
-   "class_str_item",
-   apply_entry class_str_item_eoi Meta_E.class_str_item Meta_P.class_str_item;
-   "class_sig_item",
-   apply_entry class_sig_item_eoi Meta_E.class_sig_item Meta_P.class_sig_item;
-   "type_decl", apply_entry type_decl_eoi Meta_E.type_decl Meta_P.type_decl];;
+   "sig_item", apply_entry sig_item_eoi Meta_E.sig_item Meta_P.sig_item;
+   "str_item", apply_entry str_item_eoi Meta_E.str_item Meta_P.str_item;
+   "type_decl", apply_entry type_decl_eoi Meta_E.type_decl Meta_P.type_decl;
+   "with_constr",
+   apply_entry with_constr_eoi Meta_E.with_constr Meta_P.with_constr];;
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
 Grammar.safe_extend
