@@ -1897,24 +1897,24 @@ value apply_entry e q =
 ;
 
 let attribute_body_eoi = Grammar.Entry.create gram "attribute_body_eoi" in
-let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in
-let str_item_eoi = Grammar.Entry.create gram "str_item_eoi" in
-let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
-let patt_eoi = Grammar.Entry.create gram "patt_eoi" in
-let expr_eoi = Grammar.Entry.create gram "expr_eoi" in
-let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
-let longident_eoi = Grammar.Entry.create gram "longident_eoi" in
-let extended_longident_eoi = Grammar.Entry.create gram "extended_longident_eoi" in
-let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
-let class_type_eoi = Grammar.Entry.create gram "class_type_eoi" in
 let class_expr_eoi = Grammar.Entry.create gram "class_expr_eoi" in
 let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item_eoi" in
 let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
-let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
+let class_type_eoi = Grammar.Entry.create gram "class_type_eoi" in
+let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
+let expr_eoi = Grammar.Entry.create gram "expr_eoi" in
+let extended_longident_eoi = Grammar.Entry.create gram "extended_longident_eoi" in
+let extension_constructor_eoi = Grammar.Entry.create gram "extension_constructor_eoi" in
+let longident_eoi = Grammar.Entry.create gram "longident_eoi" in
+let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
+let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
+let patt_eoi = Grammar.Entry.create gram "patt_eoi" in
 let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
+let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in
+let str_item_eoi = Grammar.Entry.create gram "str_item_eoi" in
 let type_decl_eoi = Grammar.Entry.create gram "type_decl_eoi" in
 let type_extension_eoi = Grammar.Entry.create gram "type_extension_eoi" in
-let extension_constructor_eoi = Grammar.Entry.create gram "extension_constructor_eoi" in
+let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
 do {
   EXTEND
     attribute_body_eoi: [ [ x = attribute_body; EOI -> x ] ];

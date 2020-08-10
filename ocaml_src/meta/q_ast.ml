@@ -808,20 +808,20 @@ module Meta_P =
     end)
 ;;
 
-let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
-let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
+let class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";;
+let class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";;
+let class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";;
+let class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";;
 let ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";;
-let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
-let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
+let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 let module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";;
-let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
+let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
 let poly_variant_eoi = Grammar.Entry.create Pcaml.gram "poly_variant";;
-let class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";;
-let class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";;
-let class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";;
-let class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";;
+let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
+let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
 let type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";;
+let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
 
 Grammar.safe_extend
   [Grammar.extension (expr_eoi : 'expr_eoi Grammar.Entry.e) None

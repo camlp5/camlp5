@@ -801,20 +801,20 @@ module Meta_P =
      end)
 ;
 
-value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
-value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
+value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
+value class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";
+value class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";
+value class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";
 value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
-value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
-value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
+value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
-value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
+value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
 value poly_variant_eoi = Grammar.Entry.create Pcaml.gram "poly_variant";
-value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
-value class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";
-value class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";
-value class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";
+value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
+value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
 value type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";
+value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
 
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
