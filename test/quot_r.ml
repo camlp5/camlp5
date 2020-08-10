@@ -984,7 +984,133 @@ MLast.StExc loc x1 x2;
 <:type_decl<$_tp:ls$ $_list:ltv$ := $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
 <:type_decl<$_tp:ls$ $_list:ltv$ := $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
 
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
 
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl< $_lid:lsf2$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ private $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ private $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $list:ltt$ $_itemattrs:x$ >>;
+<:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
+
+(* extension constructor *)
+
+<:extension_constructor< $uid:xf2$ of $list:xf3$ $_algattrs:xf5$ >> ;
+MLast.EcTuple (loc, Ploc.VaVal xf2, Ploc.VaVal xf3, Some xf4, xf5);
+MLast.EcTuple (loc, Ploc.VaVal xf2, Ploc.VaVal xf3, oxf4, xf5);
+<:extension_constructor< $uid:xf2$ of $_list:xf3$ $_algattrs:xf5$ >> ;
+MLast.EcTuple (loc, Ploc.VaVal xf2, xf3, Some xf4, xf5);
+MLast.EcTuple (loc, Ploc.VaVal xf2, xf3, oxf4, xf5);
+<:extension_constructor< $_uid:xf2$ of $list:xf3$ $_algattrs:xf5$ >> ;
+MLast.EcTuple (loc, xf2, Ploc.VaVal xf3, Some xf4, xf5);
+MLast.EcTuple (loc, xf2, Ploc.VaVal xf3, oxf4, xf5);
+<:extension_constructor< $_uid:xf2$ of $_list:xf3$ $_algattrs:xf5$ >> ;
+MLast.EcTuple (loc, xf2, xf3, Some xf4, xf5);
+MLast.EcTuple (loc, xf2, xf3, oxf4, xf5);
+<:extension_constructor< $uid:s$ = $longid:x1$ $_algattrs:x2$ >> ;
+<:extension_constructor< $uid:s$ = $_longid:x1$ $_algattrs:x2$ >> ;
+<:extension_constructor< $_uid:s$ = $longid:x1$ $_algattrs:x2$ >> ;
+<:extension_constructor< $_uid:s$ = $_longid:x1$ $_algattrs:x2$ >> ;
 
 (* access *)
 <:class_type< $longid:ct1$ . $lid:ct2$ >>;

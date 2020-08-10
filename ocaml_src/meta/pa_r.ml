@@ -132,7 +132,7 @@ let operator_rparen_f strm =
     [1,
      Right
        (function
-          ("LIDENT", _) :: _ -> true
+          (("LIDENT" | "UIDENT"), _) :: _ -> true
         | _ -> false);
      2, Left (is_operator, id, [["", ")"]]);
      2, Left (is_letop, id, [["", ")"]]); 2, Left (is_andop, id, [["", ")"]]);
@@ -1296,7 +1296,9 @@ Grammar.safe_extend
            (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
               (vala_it
                  (fun tdl ->
-                    if List.exists (fun td -> not td.MLast.tdIsDecl) tdl then
+                    if List.exists
+                         (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl
+                    then
                       failwith "type-declaration cannot mix decl and subst")
                  tdl;
                MLast.StTyp (loc, nrfl, tdl) :
@@ -1754,9 +1756,13 @@ Grammar.safe_extend
            (fun (tdl : 'type_decl list) (nrfl : bool) _ _ (loc : Ploc.t) ->
               (vala_it
                  (fun tdl ->
-                    if List.for_all (fun td -> td.MLast.tdIsDecl) tdl then ()
+                    if List.for_all (fun td -> Pcaml.unvala td.MLast.tdIsDecl)
+                         tdl
+                    then
+                      ()
                     else if
-                      List.for_all (fun td -> not td.MLast.tdIsDecl) tdl
+                      List.for_all
+                        (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl
                     then
                       vala_it
                         (fun nrfl ->

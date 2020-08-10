@@ -866,8 +866,8 @@ EXTEND
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs htd.MLast.tdAttributes in
           let htd = {(htd) with MLast.tdAttributes = attrs } in
           let tdl = [htd :: ttd] in do {
-            if List.for_all (fun td -> td.MLast.tdIsDecl) tdl then ()
-            else if List.for_all (fun td -> not td.MLast.tdIsDecl) tdl then
+  if List.for_all (fun td -> Pcaml.unvala td.MLast.tdIsDecl) tdl then ()
+            else if List.for_all (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
               if nr then failwith "type-subst declaration must not specify <<nonrec>>" else ()
             else failwith "type-declaration cannot mix decl and subst" ;
             str_item_to_inline <:str_item< type $flag:nr$ $list:tdl$ >> ext

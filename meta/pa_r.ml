@@ -641,7 +641,7 @@ EXTEND
           <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >>
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
           vala_it (fun tdl ->
-            if List.exists (fun td -> not td.MLast.tdIsDecl) tdl then
+            if List.exists (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
               failwith "type-declaration cannot mix decl and subst"
             else ()) tdl ;
             <:str_item< type $_flag:nrfl$ $_list:tdl$ >>
@@ -735,8 +735,8 @@ EXTEND
           <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
             vala_it (fun tdl ->
-              if List.for_all (fun td -> td.MLast.tdIsDecl) tdl then ()
-              else if List.for_all (fun td -> not td.MLast.tdIsDecl) tdl then
+              if List.for_all (fun td -> Pcaml.unvala td.MLast.tdIsDecl) tdl then ()
+              else if List.for_all (fun td -> not (Pcaml.unvala td.MLast.tdIsDecl)) tdl then
                 vala_it (fun nrfl ->
                     if nrfl then failwith "type-subst declaration must not specify <<nonrec>>" else ()) nrfl
               else failwith "type-declaration cannot mix decl and subst") tdl ;

@@ -216,7 +216,7 @@ and str_item =
   | StFlAtt of loc and attribute
   | StExten of loc and attribute and attributes ]
 and type_decl =
-  { tdIsDecl : bool ;
+  { tdIsDecl : V bool ;
     tdNam : V (loc * V string);
     tdPrm : V (list type_var);
     tdPrv : V bool;

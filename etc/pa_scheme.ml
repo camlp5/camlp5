@@ -1103,7 +1103,7 @@
         ((Slid loc n) (values (rename_id n) loc []))
         (se (error se "type declaration"))))
       (n (values loc1 <:vala< n1 >>)))
-     {(MLast.tdIsDecl True)
+     {(MLast.tdIsDecl <:vala< True >>)
       (MLast.tdNam <:vala< n >>) (MLast.tdPrm <:vala< tpl >>)
       (MLast.tdPrv <:vala< False >>) (MLast.tdDef (ctyp_se se2))
       (MLast.tdCon <:vala< [] >>)
@@ -1121,7 +1121,7 @@
         (se (error se "type declaration"))))
       (n (values loc1 <:vala< n1 >>))
       (td
-       {(MLast.tdIsDecl True)
+       {(MLast.tdIsDecl <:vala< True >>)
         (MLast.tdNam <:vala< n >>) (MLast.tdPrm <:vala< tpl >>)
         (MLast.tdPrv <:vala< False >>) (MLast.tdDef (ctyp_se se2))
         (MLast.tdCon <:vala< [] >>)

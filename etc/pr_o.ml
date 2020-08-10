@@ -577,7 +577,7 @@ value type_decl pc td =
     (Pcaml.unvala td.MLast.tdNam, td.MLast.tdIsDecl, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
-  let asgn = if is_decl then "=" else ":=" in
+  let asgn = if Pcaml.unvala is_decl then "=" else ":=" in
   match te with
   [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
       pprintf pc "%p%p%p%p" type_params (loc, Pcaml.unvala tp)

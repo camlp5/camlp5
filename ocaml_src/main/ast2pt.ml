@@ -1581,9 +1581,9 @@ and sig_item s l =
       l
   | SgTyp (loc, flg, tdl) ->
       let si_desc =
-        if List.for_all (fun td -> td.tdIsDecl) (uv tdl) then
+        if List.for_all (fun td -> uv td.tdIsDecl) (uv tdl) then
           ocaml_psig_type (uv flg) (List.map mktype_decl (uv tdl))
-        else if List.for_all (fun td -> not td.tdIsDecl) (uv tdl) then
+        else if List.for_all (fun td -> not (uv td.tdIsDecl)) (uv tdl) then
           if not (uv flg) then
             ocaml_psig_typesubst (List.map mktype_decl (uv tdl))
           else error loc "type-subst with nonrec flag specified"

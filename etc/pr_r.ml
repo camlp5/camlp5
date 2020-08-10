@@ -837,7 +837,7 @@ value type_decl pc td =
     (Pcaml.unvala td.MLast.tdNam, td.MLast.tdIsDecl, td.MLast.tdPrm, Pcaml.unvala td.MLast.tdPrv,
      td.MLast.tdDef, td.MLast.tdCon, td.MLast.tdAttributes)
   in
-  let asgn = if is_decl then "=" else ":=" in
+  let asgn = if Pcaml.unvala is_decl then "=" else ":=" in
   let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->

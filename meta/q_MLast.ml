@@ -1183,11 +1183,11 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   type_decl:
     [ [ n = SV type_patt "tp"; tpl = SV (LIST0 type_parameter);
-        isDecl = [ "=" -> True | ":=" -> False ];
+        isDecl = SV [ "=" -> Qast.Bool True | ":=" -> Qast.Bool False ] "isdecl";
         pf = SV (FLAG "private") "priv"; tk = ctyp;
         cl = SV (LIST0 constrain) ; attrs = item_attributes →
           Qast.Record
-            [("tdIsDecl", (Qast.Bool isDecl)); ("tdNam", n); ("tdPrm", tpl); ("tdPrv", pf); ("tdDef", tk);
+            [("tdIsDecl", isDecl); ("tdNam", n); ("tdPrm", tpl); ("tdPrv", pf); ("tdDef", tk);
              ("tdCon", cl); ("tdAttributes", attrs)] ] ]
   ;
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
