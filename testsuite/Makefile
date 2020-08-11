@@ -85,12 +85,14 @@ papr_test_matrix.cmo: papr_test_matrix.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl papr_test_matrix.ml
 
 o2r_test:: o2r_test.byte
+	$(NOVERBOSE) mkdir -p _build
 	./o2r_test.byte $(TESTARGS)
 
 o2r_test.byte: o2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
 
 r2r_test:: r2r_test.byte
+	$(NOVERBOSE) mkdir -p _build
 	./r2r_test.byte $(TESTARGS)
 
 r2r_test.byte: r2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
@@ -98,6 +100,7 @@ r2r_test.byte: r2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 
 
 r2o_test:: r2o_test.byte
+	$(NOVERBOSE) mkdir -p _build
 	./r2o_test.byte $(TESTARGS)
 
 r2o_test.byte: r2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
@@ -105,12 +108,14 @@ r2o_test.byte: r2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 
 
 o2o_test:: o2o_test.byte
+	$(NOVERBOSE) mkdir -p _build
 	./o2o_test.byte $(TESTARGS)
 
 o2o_test.byte: o2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.ml -o o2o_test.byte
 
 o2official_test:: o2official_test.byte
+	$(NOVERBOSE) mkdir -p _build
 	./o2official_test.byte $(TESTARGS)
 
 o2official_test.byte: o2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
@@ -118,6 +123,7 @@ o2official_test.byte: o2official_test.ml testutil.cmo testutil2.cmo papr_test_ma
 
 
 r2official_test:: r2official_test.byte
+	$(NOVERBOSE) mkdir -p _build
 	./r2official_test.byte $(TESTARGS)
 
 r2official_test.byte: r2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
@@ -126,6 +132,7 @@ r2official_test.byte: r2official_test.ml testutil.cmo testutil2.cmo papr_test_ma
 
 
 official2official_test:: official2official_test.byte
+	$(NOVERBOSE) mkdir -p _build
 	./official2official_test.byte $(TESTARGS)
 
 official2official_test.byte: official2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
@@ -144,13 +151,15 @@ q_MLast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
 
 grammar_bug_test:: grammar_bug_test.byte
-	HAS_ARGLE=true ./grammar_bug_test.byte
+	$(NOVERBOSE) mkdir -p _build
+	HAS_ARGLE=true ./grammar_bug_test.byte $(TESTARGS)
 
 grammar_bug_test.byte: grammar_bug_test.ml alt_pa_o.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.ml grammar_bug_test.ml -o grammar_bug_test.byte
 
 little_lang_test:: little_lang_test.byte
-	./little_lang_test.byte
+	$(NOVERBOSE) mkdir -p _build
+	./little_lang_test.byte $(TESTARGS)
 
 little_lang_test.byte: little_lang_test.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo little_lang_test.ml -o little_lang_test.byte
