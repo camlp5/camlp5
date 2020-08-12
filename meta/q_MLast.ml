@@ -614,9 +614,9 @@ EXTEND
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") →
           Qast.Node "SgMod" [Qast.Loc; rf; l]
-      | "module"; "alias"; i = SV UIDENT; "="; li = SV longident "longid" ; attrs = item_attributes →
+      | "module"; "alias"; i = SV UIDENT "uid"; "="; li = SV longident "longid" ; attrs = item_attributes →
           Qast.Node "SgMtyAlias" [Qast.Loc; i; li; attrs]
-      | "module"; check_uident_coloneq; i = SV UIDENT ; ":=" ; li = extended_longident ; attrs = item_attributes ->
+      | "module"; check_uident_coloneq; i = SV UIDENT "uid" ; ":=" ; li = extended_longident ; attrs = item_attributes ->
           Qast.Node "SgModSubst" [Qast.Loc; i;  li; attrs]
       | "module"; "type"; i = SV ident ""; "="; mt = module_type ; attrs = item_attributes →
           Qast.Node "SgMty" [Qast.Loc; i; mt; attrs]
@@ -666,11 +666,11 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ check_let_exception ; "let" ; "exception" ; id = SV UIDENT ;
+      [ check_let_exception ; "let" ; "exception" ; id = SV UIDENT "uid" ;
         "of"; tyl = SV (LIST1 ctyp LEVEL "below_alg_attribute") ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
           Qast.Node "ExLEx" [Qast.Loc ; id ; tyl ; x; alg_attrs]
-      | check_let_exception ; "let" ; "exception" ; id = SV UIDENT ; alg_attrs = alg_attributes ;
+      | check_let_exception ; "let" ; "exception" ; id = SV UIDENT "uid"; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
           Qast.Node "ExLEx" [Qast.Loc ; id ; Qast.VaVal(Qast.List[]) ; x; alg_attrs]
       | check_let_not_exception ; "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
@@ -1787,7 +1787,8 @@ EXTEND
     [ [ a = ANTIQUOT "longid" -> Qast.VaAnt "longid" loc a ] ]
   ;
   extended_longident: LEVEL "simple"
-    [ [ a = ANTIQUOT "longid" -> Qast.VaAnt "longid" loc a ] ]
+    [ [ a = ANTIQUOT "longid" -> Qast.VaAnt "longid" loc a
+      ] ]
   ;
   str_item: LEVEL "top"
     [ [ a = ANTIQUOT "stri" -> Qast.VaAnt "stri" loc a
@@ -1828,7 +1829,8 @@ EXTEND
   ctyp: LEVEL "simple"
     [ [ a = ANTIQUOT "typ" -> Qast.VaAnt "typ" loc a
       | a = ANTIQUOT "xtr" -> antiquot_xtr loc "TyXtr" a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
+      | a = ANTIQUOT -> Qast.VaAnt "" loc a
+      ] ]
   ;
   class_expr: LEVEL "simple"
     [ [ a = ANTIQUOT "xtr" -> antiquot_xtr loc "CeXtr" a

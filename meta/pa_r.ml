@@ -305,12 +305,15 @@ value build_letop_binder loc letop b l e =
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
+value check_let_exception_f = (fun strm ->
+    match Stream.npeek 2 strm with
+      [ [("", "let"); ("", "exception")] -> ()
+      | _ -> raise Stream.Failure ])
+;
+
 value check_let_exception =
   Grammar.Entry.of_parser gram "check_let_exception"
-    (fun strm ->
-       match Stream.npeek 2 strm with
-       [ [("", "let"); ("", "exception")] -> ()
-       | _ -> raise Stream.Failure ])
+    check_let_exception_f
 ;
 
 value check_let_not_exception_f = (fun strm ->
@@ -369,6 +372,10 @@ value is_type_decl_not_extension strm =
       | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
       | ("ANTIQUOT",_)
     ) -> wrec (n+1)
+    | Some ("ANTIQUOT_LOC",s)
+      when (match Plexer.parse_antiloc s with [ Some(_, ("list"|"_list"|"lid"|"_lid"|"flag"|"_flag"), _) -> True | _ -> False ]) -> wrec (n+1)
+    | Some ("ANTIQUOT_LOC",s)
+      when (match Plexer.parse_antiloc s with [ Some(_, ("lilongid"|"_lilongid"), _) -> True | _ -> False ]) -> False
     | Some (a,b) -> raise (Stream.Error (Printf.sprintf "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")" a b))
  ]
   in wrec 1
@@ -397,6 +404,8 @@ value check_type_extension =
 value check_dot_uid_f strm =
   match Stream.npeek 5 strm with [
     [("",".") ; ("UIDENT",_) :: _] -> ()
+  | [("",".") ; ("ANTIQUOT_LOC",s) :: _]
+    when (match Plexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
   | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":") ; ("LIDENT", _) :: _] -> ()
   | _ -> raise Stream.Failure
   ]
@@ -436,6 +445,8 @@ value check_uident_coloneq_f strm =
   match stream_npeek 2 strm with [
     [("UIDENT",_) ; ("", ":=")] -> ()
   | [("ANTIQUOT",qs); ("", ":=")] when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
+  | [("ANTIQUOT_LOC",s) ; ("", ":=") :: _]
+    when (match Plexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
   | _ -> raise Stream.Failure
   ]
 ;
@@ -723,15 +734,15 @@ EXTEND
         l = V (LIST1 mod_decl_binding SEP "and") →
           <:sig_item< module $_flag:rf$ $_list:l$ >>
 
-      | "module"; check_uident_coloneq ; i = V UIDENT ; ":="; li = extended_longident ; attrs = item_attributes →
+      | "module"; check_uident_coloneq ; i = V UIDENT "uid" ; ":="; li = extended_longident ; attrs = item_attributes →
         <:sig_item< module $_uid:i$ := $longid:li$ $_itemattrs:attrs$ >>
 
       | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes →
           <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
       | "module"; "type"; i = V ident "" ; attrs = item_attributes →
           <:sig_item< module type $_:i$ $_itemattrs:attrs$ >>
-      | "module"; "alias"; i = V UIDENT; "="; li = V longident "longid" ; attrs = item_attributes →
-          <:sig_item< module alias $_:i$ = $_longid:li$ $_itemattrs:attrs$ >>
+      | "module"; "alias"; i = V UIDENT "uid"; "="; li = V longident "longid" ; attrs = item_attributes →
+          <:sig_item< module alias $_uid:i$ = $_longid:li$ $_itemattrs:attrs$ >>
       | "open"; i = extended_longident ; attrs = item_attributes → 
           <:sig_item< open $longid:i$ $_itemattrs:attrs$ >>
       | "type"; check_type_decl ; nrfl = V (FLAG "nonrec"); tdl = V (LIST1 type_decl SEP "and") → do {
@@ -796,12 +807,12 @@ EXTEND
   ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   expr:
     [ "top" RIGHTA
-      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
+      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
         "of" ; tyl = V (LIST1 ctyp_below_alg_attribute) ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
-        <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
-      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
+        <:expr< let exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
-        <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
+        <:expr< let exception $_uid:id$ $_algattrs:alg_attrs$ in $x$ >>
 
       | check_let_not_exception ; "let"; ext = ext_opt ; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = SELF →

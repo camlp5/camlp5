@@ -342,10 +342,10 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< let $_flag:b$ $_list:lpex$ in $e$ >>;
 
 (* let exception *)
-<:expr< let exception $s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
-<:expr< let exception $s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
-<:expr< let exception $_:s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
-<:expr< let exception $_:s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
+<:expr< let exception $uid:s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
+<:expr< let exception $uid:s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
+<:expr< let exception $_uid:s$ of $list:lt$ $_algattrs:x$ in $e$ >> ;
+<:expr< let exception $_uid:s$ of $_list:lt$ $_algattrs:x$ in $e$ >> ;
 
 (* lowercase identifier *)
 <:expr< $lid:s$ >>;
@@ -571,10 +571,10 @@ MLast.SgExc loc (loc, x1f2, x1f3, ox1f4, x1f5) x2;
 
 (* module alias *)
 
-<:sig_item< module alias $s$ = $longid:x1$ $_itemattrs:x2$ >>;
-<:sig_item< module alias $s$ = $_longid:x1$ $_itemattrs:x2$ >>;
-<:sig_item< module alias $_:s$ = $longid:x1$ $_itemattrs:x2$ >>;
-<:sig_item< module alias $_:s$ = $_longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module alias $uid:s$ = $longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module alias $uid:s$ = $_longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module alias $_uid:s$ = $longid:x1$ $_itemattrs:x2$ >>;
+<:sig_item< module alias $_uid:s$ = $_longid:x1$ $_itemattrs:x2$ >>;
 
 (* module substitution *)
 

@@ -1905,7 +1905,7 @@ EXTEND_PRINTER
             (sig_module_or_module_type "and" True ':') pc mdl
       | <:sig_item< module $uid:i$ := $longid:li$  $_itemattrs:item_attrs$ >> ->
           pprintf pc "module %s := %p%p" i longident li (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
-      | <:sig_item:< module alias $i$ = $longid:li$ $itemattrs:item_attrs$ >> ->
+      | <:sig_item:< module alias $uid:i$ = $longid:li$ $itemattrs:item_attrs$ >> ->
           pprintf pc "module %s = %p%p" i longident li (hlist (pr_attribute "@@")) item_attrs
       | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
           sig_module_or_module_type "module type" False '=' pc (Some m, mt, item_attrs)

@@ -79,6 +79,7 @@ module type MetaSig =
     value string : string -> t;
     value tuple : list t -> t;
     value record : list (MLast.patt * t) -> t;
+    value xtr_typed : string -> Ploc.t -> string -> t;
     value xtr : Ploc.t -> string -> t;
     value xtr_or_anti : Ploc.t -> (t -> t) -> string -> t;
   end
@@ -425,7 +426,7 @@ module Meta_make (C : MetaSig) =
       [ LiAcc _ me1 s → C.node "LiAcc" [longid me1; C.vala C.string s]
       | LiApp _ me1 me2 → C.node "LiApp" [longid me1; longid me2]
       | LiUid _ s → C.node "LiUid" [C.vala C.string s]
-      | LiXtr loc s _ → C.xtr loc s
+      | LiXtr loc s _ → C.xtr_typed "longid" loc s
       ]
     and module_expr =
       fun
@@ -702,6 +703,13 @@ module Meta_E =
        value string s = <:expr< $str:s$ >>;
        value tuple le = <:expr< ($list:le$) >>;
        value record lfe = <:expr< {$list:lfe$} >>;
+       value xtr_typed wantty loc s =
+         match get_anti_loc s with
+         [ Some (_, typ, str) when typ = wantty ->
+             let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+             <:expr< $anti:r$ >>
+         | _ -> assert False ]
+       ;
        value xtr loc s =
          match get_anti_loc s with
          [ Some (_, typ, str) ->
@@ -775,6 +783,13 @@ module Meta_P =
        value string s = <:patt< $str:s$ >>;
        value tuple lp = <:patt< ($list:lp$) >>;
        value record lfp = <:patt< {$list:lfp$} >>;
+       value xtr_typed wantty loc s =
+         match get_anti_loc s with
+         [ Some (_, typ, str) when typ = wantty ->
+             let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+             <:patt< $anti:r$ >>
+         | _ -> assert False ]
+       ;
        value xtr loc s =
          match get_anti_loc s with
          [ Some (_, typ, str) ->
@@ -821,6 +836,15 @@ value type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";
 value type_extension_eoi = Grammar.Entry.create Pcaml.gram "type_extension_eoi";
 value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
 
+
+value sense_token_stream_f (strm : Stream.t (string * string)) = ()
+;
+
+value sense_token_stream =
+  Grammar.Entry.of_parser Pcaml.gram "sense_token_stream"
+    sense_token_stream_f
+;
+
 EXTEND
   attribute_body_eoi: [ [ x = Pcaml.attribute_body; EOI -> x ] ];
   class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
@@ -828,8 +852,8 @@ EXTEND
   class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
   class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
   ctyp_eoi: [ [ x = Pcaml.ctyp; EOI -> x ] ];
-  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
-  extended_longident_eoi: [ [ x = Pcaml.extended_longident; EOI -> x ] ];
+  expr_eoi: [ [ sense_token_stream ; x = Pcaml.expr; EOI -> x ] ];
+  extended_longident_eoi: [ [ sense_token_stream ; x = Pcaml.extended_longident; EOI -> x ] ];
   extension_constructor_eoi: [ [ x = Pcaml.extension_constructor; EOI -> x ] ];
   longident_eoi: [ [ x = Pcaml.longident; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
@@ -837,7 +861,7 @@ EXTEND
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
   poly_variant_eoi: [ [ x = Pcaml.poly_variant; EOI -> x ] ];
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
-  str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
+  str_item_eoi: [ [ sense_token_stream ; x = Pcaml.str_item; sense_token_stream ; EOI -> x ] ];
   type_decl_eoi: [ [ x = Pcaml.type_decl; EOI -> x ] ];
   type_extension_eoi: [ [ x = Pcaml.type_extension; EOI -> x ] ];
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
@@ -853,6 +877,12 @@ IFDEF STRICT THEN
     ;
     Pcaml.ctyp: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
+    ;
+    Pcaml.longident: LAST
+      [ [ s = ANTIQUOT_LOC "longid" -> MLast.LiXtr loc s None ] ]
+    ;
+    Pcaml.extended_longident: LAST
+      [ [ s = ANTIQUOT_LOC "longid" -> MLast.LiXtr loc s None ] ]
     ;
     Pcaml.expr: LAST
       [ [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc s None

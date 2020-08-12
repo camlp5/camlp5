@@ -877,13 +877,13 @@ EXTEND
           let te = { (te) with MLast.teAttributes = attrs } in
           str_item_to_inline <:str_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >> ext
 
-      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = expr ; attrs = item_attributes ->
-        let e = <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >> in
+        let e = <:expr< let exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >> in
         <:str_item< $exp:e$ $_itemattrs:attrs$ >>
-      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ; alg_attrs = alg_attributes ;
         "in" ; x = expr ; attrs = item_attributes ->
-        let e = <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >> in
+        let e = <:expr< let exception $_uid:id$ $_algattrs:alg_attrs$ in $x$ >> in
         <:str_item< $exp:e$ $_itemattrs:attrs$ >>
       | check_let_not_exception ; "let"; (ext, alg_attrs) = ext_attributes ; r = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
         x = expr ->
@@ -1003,12 +1003,12 @@ EXTEND
           let h = (i, mt, item_attrs) in
           sig_item_to_inline <:sig_item< module $flag:rf$ $list:[h::t]$ >> ext
 
-      | "module"; (ext,alg_attrs) = ext_attributes; check_module_alias; i = UIDENT; "="; li = longident ; item_attrs = item_attributes →
+      | "module"; (ext,alg_attrs) = ext_attributes; check_module_alias; i = V UIDENT "uid"; "="; li = longident ; item_attrs = item_attributes →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
 (*
 MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
 *)
-          sig_item_to_inline <:sig_item< module alias $i$ = $longid:li$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< module alias $_uid:i$ = $longid:li$ $_itemattrs:attrs$ >> ext
 
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; "="; mt = module_type ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
@@ -1082,12 +1082,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | e1 = SELF; ";" -> e1
       | el = V e_phony "list" -> <:expr< do { $_list:el$ } >> ]
     | "expr1"
-      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT ;
+      [ check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ;
         "of" ; tyl = V (LIST1 ctyp LEVEL "apply") ; alg_attrs = alg_attributes ; "in" ; x = SELF ->
-        <:expr< let exception $_:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
-      | check_let_exception ; "let" ; "exception" ; id = V UIDENT ; alg_attrs = alg_attributes ;
+        <:expr< let exception $_uid:id$ of $_list:tyl$ $_algattrs:alg_attrs$ in $x$ >>
+      | check_let_exception ; "let" ; "exception" ; id = V UIDENT "uid" ; alg_attrs = alg_attributes ;
         "in" ; x = SELF ->
-        <:expr< let exception $_:id$ $_algattrs:alg_attrs$ in $x$ >>
+        <:expr< let exception $_uid:id$ $_algattrs:alg_attrs$ in $x$ >>
       | check_let_not_exception ; "let"; (ext,alg_attrs) = ext_attributes; o = V (FLAG "rec"); h = first_let_binding ; t = LIST0 and_let_binding; "in";
         x = expr LEVEL "top" ->
           let (a, b, item_attrs) = h in
