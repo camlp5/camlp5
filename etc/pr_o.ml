@@ -260,7 +260,7 @@ value pr_extension atstring pc attr =
 value longident_lident pc (lio, id) =
   match lio with
   [ None -> pprintf pc "%s" (Pcaml.unvala id)
-  | Some li -> pprintf pc "%p.%s" longident li (Pcaml.unvala id)
+  | Some li -> pprintf pc "%p.%s" longident (Pcaml.unvala li) (Pcaml.unvala id)
   ]
 ;
 

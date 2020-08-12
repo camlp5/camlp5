@@ -533,6 +533,9 @@ and longid floc sh =
     | LiUid loc x1 →
         let loc = floc loc in
         LiUid loc x1
+    | LiXtr loc x1 x2 →
+        let loc = floc loc in
+        LiXtr loc x1 (option_map (vala_map self) x2)
     ]
 and module_expr floc sh =
   self where rec self =
@@ -789,7 +792,7 @@ and class_str_item floc sh =
         CrExten loc (attribute_body floc sh exten)
     ]
 and longid_lident floc sh (x1, x2) =
-    (option_map (longid floc sh) x1, x2)
+    (option_map (vala_map (longid floc sh)) x1, x2)
 and attribute_body floc sh x1 =
     vala_map (fun (s, p) ->
         let p = match p with [

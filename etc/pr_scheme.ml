@@ -312,7 +312,7 @@ value field_expr pc (l, e) =
 
 value longident_lident pc = fun [
   (None, id) -> pprintf pc "%s" (Pcaml.unvala id)
-| (Some li, id) -> pprintf pc "%p.%s" longident li (Pcaml.unvala id)
+| (Some li, id) -> pprintf pc "%p.%s" longident (Pcaml.unvala li) (Pcaml.unvala id)
 ]
 ;
 

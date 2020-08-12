@@ -28,7 +28,7 @@ i.name >:: (fun  [ _ ->
                          ])
 ;
 
-value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
+value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
     [
       {
         name = "prototype";
@@ -55,7 +55,8 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
       }
       ; { name = "expr-new-1" ; 
           expect = {foo|MLast.ExNew loc
-  (Ploc.VaVal (Some (MLast.LiUid loc (Ploc.VaVal "A")), Ploc.VaVal "x"));
+  (Ploc.VaVal
+     (Some (Ploc.VaVal (MLast.LiUid loc (Ploc.VaVal "A"))), Ploc.VaVal "x"));
 |foo} ;
           code = {foo|<:expr< new A.x >>;|foo}
         }
@@ -65,7 +66,7 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
           code = {foo|<:expr< new x >>;|foo}
         }
       ; { name = "expr-new-3" ; 
-          expect = {foo|MLast.ExNew loc (Ploc.VaVal (Some li, Ploc.VaVal id));
+          expect = {foo|MLast.ExNew loc (Ploc.VaVal (Some (Ploc.VaVal li), Ploc.VaVal id));
 |foo} ;
           code = {foo|<:expr< new $longid:li$ . $lid:id$ >>;|foo}
         }
@@ -86,12 +87,13 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
         }
       ; { name = "ctyp-tycls-2" ; 
           expect = {foo|MLast.TyCls loc
-  (Ploc.VaVal (Some (MLast.LiUid loc (Ploc.VaVal "A")), Ploc.VaVal "a"));
+  (Ploc.VaVal
+     (Some (Ploc.VaVal (MLast.LiUid loc (Ploc.VaVal "A"))), Ploc.VaVal "a"));
 |foo} ;
           code = {foo|<:ctyp< # A.a >> ;|foo}
         }
       ; { name = "ctyp-tycls-3" ; 
-          expect = {foo|MLast.TyCls loc (Ploc.VaVal (Some li, Ploc.VaVal id));
+          expect = {foo|MLast.TyCls loc (Ploc.VaVal (Some (Ploc.VaVal li), Ploc.VaVal id));
 |foo} ;
           code = {foo|<:ctyp< # $longid:li$ . $lid:id$ >> ;|foo}
         }
@@ -109,14 +111,15 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
         }
       ; { name = "class-expr-cecon-2" ; 
           expect = {foo|MLast.CeCon loc
-  (Ploc.VaVal (Some (MLast.LiUid loc (Ploc.VaVal "A")), Ploc.VaVal "a"))
+  (Ploc.VaVal
+     (Some (Ploc.VaVal (MLast.LiUid loc (Ploc.VaVal "A"))), Ploc.VaVal "a"))
   (Ploc.VaVal
      [MLast.TyLid loc (Ploc.VaVal "b"); MLast.TyLid loc (Ploc.VaVal "c")]);
 |foo} ;
           code = {foo|<:class_expr< [ b, c ] A.a >> ;|foo}
         }
       ; { name = "class-expr-cecon-3" ; 
-          expect = {foo|MLast.CeCon loc (Ploc.VaVal (Some li, Ploc.VaVal id))
+          expect = {foo|MLast.CeCon loc (Ploc.VaVal (Some (Ploc.VaVal li), Ploc.VaVal id))
   (Ploc.VaVal
      [MLast.TyLid loc (Ploc.VaVal "b"); MLast.TyLid loc (Ploc.VaVal "c")]);
 |foo} ;
@@ -137,13 +140,15 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
         }
       ; { name = "class-expr-cecon-6" ; 
           expect = {foo|MLast.CeCon loc
-  (Ploc.VaVal (Some (MLast.LiUid loc (Ploc.VaVal "A")), Ploc.VaVal "a"))
+  (Ploc.VaVal
+     (Some (Ploc.VaVal (MLast.LiUid loc (Ploc.VaVal "A"))), Ploc.VaVal "a"))
   (Ploc.VaVal []);
 |foo} ;
           code = {foo|<:class_expr< A.a >> ;|foo}
         }
       ; { name = "class-expr-cecon-7" ; 
-          expect = {foo|MLast.CeCon loc (Ploc.VaVal (Some li, Ploc.VaVal id)) (Ploc.VaVal []);
+          expect = {foo|MLast.CeCon loc (Ploc.VaVal (Some (Ploc.VaVal li), Ploc.VaVal id))
+  (Ploc.VaVal []);
 |foo} ;
           code = {foo|<:class_expr< $longid:li$ . $lid:id$ >> ;|foo}
         }
@@ -213,7 +218,7 @@ value tests = "test pa_r+q_MLast -> pr_r" >::: (List.map mktest
  ;
 
 value _ = 
-if invoked_with "q_MLast_test" then
+if not Sys.interactive.val then
   run_test_tt_main tests
 else ()
 ;

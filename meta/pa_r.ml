@@ -31,6 +31,7 @@ do {
   Grammar.Unsafe.clear_entry functor_parameter;
   Grammar.Unsafe.clear_entry module_type;
   Grammar.Unsafe.clear_entry longident;
+  Grammar.Unsafe.clear_entry longident_lident;
   Grammar.Unsafe.clear_entry extended_longident;
   Grammar.Unsafe.clear_entry module_expr;
   Grammar.Unsafe.clear_entry sig_item;
@@ -512,7 +513,7 @@ value str_item_to_inline loc si ext =
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr functor_parameter module_type
-    module_expr longident extended_longident signature
+    module_expr longident longident_lident extended_longident signature
     structure class_type class_expr class_expr_simple class_sig_item class_str_item let_binding
     type_decl type_extension extension_constructor
     constructor_declaration label_declaration match_case ipatt
@@ -1564,7 +1565,7 @@ EXTEND
       ] ]
   ;
   longident_lident:
-    [ [ li = longident; "."; i = V LIDENT → (Some li, i)
+    [ [ li = V longident "longid" ; "."; i = V LIDENT → (Some li, i)
       | i = V LIDENT → (None, i)
       ] ]
   ;

@@ -180,6 +180,7 @@ value rec longid_long_id =
       Lapply (longid_long_id me1) (longid_long_id me2)
   | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (longid_long_id me1) (uv uid)
   | <:extended_longident< $_uid:s$ >> → Lident (uv s)
+  | LiXtr loc _ _ -> Ploc.raise loc (Failure "longid_long_id: LiXtr forbidden here")
   ]
 ;
 
@@ -209,7 +210,7 @@ value rec expr_long_id = fun
 ;
 
 value longid_lident_long_id (lio,s) = match (lio, s) with [
-    (Some li, s) → Ldot (longid_long_id li) (uv s)
+    (Some li, s) → Ldot (longid_long_id (uv li)) (uv s)
   | (None, s) → Lident (uv s)
 ]
 ;

@@ -225,6 +225,24 @@ package "quotations" (
     archive(native) = "q_MLast.cmx"
   )
 )
+ 
+package "parser_quotations" (
+  version = "@VERSION@"
+  description = "Syntax extension: Quotations to create AST nodes, but using pa_r/pa_o"
+
+  requires(toploop) = "camlp5"
+  archive(toploop) = "q_ast.cmo"
+
+  requires(syntax,preprocessor) = "camlp5"
+  archive(syntax,preprocessor,-native) = "q_ast.cmo"
+  archive(syntax,preprocessor,native) = "q_ast.cmx"
+
+  package "link" (
+    requires = "camlp5"
+    archive(byte) = "q_ast.cmo"
+    archive(native) = "q_ast.cmx"
+  )
+)
 
 package "phony_quotations" (
   version = "@VERSION@"

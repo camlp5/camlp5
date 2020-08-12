@@ -11190,7 +11190,7 @@ Grammar.safe_extend
                            'e__246)))])),
            "1154dceb",
            (fun (i : 'e__246) _ (li : 'longident) (loc : Ploc.t) ->
-              (Qast.Tuple [Qast.Option (Some li); i] : 'longident_lident)))]];
+              (Qast.Tuple [Qast.Option (Some (Qast.VaVal li)); i] : 'longident_lident )))]];
     (* Labels *)
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
       (Some (Gramext.After "arrow"))

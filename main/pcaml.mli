@@ -48,6 +48,7 @@ value use_file : Grammar.Entry.e (list MLast.str_item * bool);
 value functor_parameter : Grammar.Entry.e MLast.functor_parameter;
 value module_type : Grammar.Entry.e MLast.module_type;
 value longident : Grammar.Entry.e MLast.longid;
+value longident_lident : Grammar.Entry.e MLast.longid_lident;
 value extended_longident : Grammar.Entry.e MLast.longid;
 value module_expr : Grammar.Entry.e MLast.module_expr;
 value signature : Grammar.Entry.e (MLast.v (list MLast.sig_item));

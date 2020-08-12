@@ -741,8 +741,10 @@ and longid_lident_se =
   [ Sacc loc se1 se2 →
       let li1 = longid_se se1 in
       match longid_lident_se se2 with [
-        (Some li2, s) -> (Some (longid_concat li1 li2), s)
-      | (None, s) -> (Some li1, s) ]
+        (Some <:vala< li2 >>, s) -> (Some <:vala< (longid_concat li1 li2) >>, s)
+      | (None, s) -> (Some <:vala< li1 >>, s)
+      | _ -> error se2 "longid_lident_se(2)"
+      ]
   | Slid loc s → (None, <:vala< s >>)
   | se → error se "longid_lident_se" ]
 

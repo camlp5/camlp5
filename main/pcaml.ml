@@ -51,6 +51,7 @@ value str_item = Grammar.Entry.create gram "str_item";
 value functor_parameter = Grammar.Entry.create gram "functor_parameter";
 value module_type = Grammar.Entry.create gram "module_type";
 value longident = Grammar.Entry.create gram "longident";
+value longident_lident = Grammar.Entry.create gram "longident_lident";
 value extended_longident = Grammar.Entry.create gram "extended_longident";
 value module_expr = Grammar.Entry.create gram "module_expr";
 value expr = Grammar.Entry.create gram "expr";
@@ -273,10 +274,10 @@ value string_of_loc fname line bp ep =
       sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep ]
 ;
 
-value report_quotation_error name ctx = do {
+value pp_report_quotation_error pps name ctx = do {
   let name = if name = "" then Quotation.default.val else name in
-  Format.print_flush ();
-  Format.open_hovbox 2;
+  Format.pp_print_flush pps ();
+  Format.pp_open_hovbox pps 2;
   eprintf "While %s \"%s\":"
     (match ctx with
      [ Finding -> "finding quotation"
@@ -315,9 +316,9 @@ value report_quotation_error name ctx = do {
   | _ -> do { eprintf "\n"; flush stderr } ]
 };
 
-value print_format str = do {
+value pp_print_format pps str = do {
   let flush ini cnt =
-    if cnt > ini then Format.print_string (String.sub str ini (cnt - ini))
+    if cnt > ini then Format.pp_print_string pps (String.sub str ini (cnt - ini))
     else ()
   in
   let rec loop ini cnt =
@@ -326,88 +327,96 @@ value print_format str = do {
       match str.[cnt] with
       [ '\n' -> do {
           flush ini cnt;
-          Format.close_box ();
-          Format.force_newline ();
-          Format.open_box 2;
+          Format.pp_close_box pps ();
+          Format.pp_force_newline pps ();
+          Format.pp_open_box pps 2;
           loop (cnt + 1) (cnt + 1)
         }
       | ' ' -> do {
           flush ini cnt;
-          Format.print_space ();
+          Format.pp_print_space pps ();
           loop (cnt + 1) (cnt + 1)
         }
       | _ -> loop ini (cnt + 1) ]
   in
-  Format.open_box 2;
+  Format.pp_open_box pps 2;
   loop 0 0;
-  Format.close_box ()
+  Format.pp_close_box pps ()
 };
 
-value print_file_failed file line char = do {
-  Format.print_string ", file \"";
-  Format.print_string file;
-  Format.print_string "\", line ";
-  Format.print_int line;
-  Format.print_string ", char ";
-  Format.print_int char
+value pp_print_file_failed pps file line char = do {
+  Format.pp_print_string pps ", file \"";
+  Format.pp_print_string pps file;
+  Format.pp_print_string pps "\", line ";
+  Format.pp_print_int pps line;
+  Format.pp_print_string pps ", char ";
+  Format.pp_print_int pps char
 };
 
-value print_exn =
+value pp_print_exn pps =
   fun
-  [ Out_of_memory -> Format.print_string "Out of memory\n"
+  [ Out_of_memory -> Format.pp_print_string pps "Out of memory\n"
   | Assert_failure (file, line, char) -> do {
-      Format.print_string "Assertion failed";
-      print_file_failed file line char
+      Format.pp_print_string pps "Assertion failed";
+      pp_print_file_failed pps file line char
     }
   | Match_failure (file, line, char) -> do {
-      Format.print_string "Pattern matching failed";
-      print_file_failed file line char
+      Format.pp_print_string pps "Pattern matching failed";
+      pp_print_file_failed pps file line char
     }
   | Stream.Error str ->
-      if str = "" then Format.print_string "Parse error"
-      else print_format ("Parse error: " ^ str)
-  | Stream.Failure -> Format.print_string "Parse failure"
+      if str = "" then Format.pp_print_string pps "Parse error"
+      else pp_print_format pps ("Parse error: " ^ str)
+  | Stream.Failure -> Format.pp_print_string pps "Parse failure"
   | Plexing.Error str -> do {
-      Format.print_string "Lexing error";
+      Format.pp_print_string pps "Lexing error";
       if str <> "" then do {
-        Format.print_string ": ";
-        Format.print_string str
+        Format.pp_print_string pps ": ";
+        Format.pp_print_string pps str
       }
-      else Format.print_string ".";
+      else Format.pp_print_string pps ".";
     }
   | Failure str -> do {
-      Format.print_string "Failure: ";
-      Format.print_string str
+      Format.pp_print_string pps "Failure: ";
+      Format.pp_print_string pps str
     }
   | Invalid_argument str -> do {
-      Format.print_string "Invalid argument: ";
-      Format.print_string str
+      Format.pp_print_string pps "Invalid argument: ";
+      Format.pp_print_string pps str
     }
   | Sys_error msg -> do {
-      Format.print_string "I/O error: ";
-      Format.print_string msg
+      Format.pp_print_string pps "I/O error: ";
+      Format.pp_print_string pps msg
     }
   | x -> do {
-      Format.print_string "Uncaught exception: ";
-      Format.print_string (Printexc.to_string x);
+      Format.pp_print_string pps "Uncaught exception: ";
+      Format.pp_print_string pps (Printexc.to_string x);
     } ]
 ;
 
-value report_error exn =
+value pp_report_error pps exn =
   match exn with
   [ Qerror name Finding Not_found -> do {
       let name = if name = "" then Quotation.default.val else name in
-      Format.print_flush ();
-      Format.open_hovbox 2;
-      Format.printf "Unbound quotation: \"%s\"" name;
-      Format.close_box ()
+      Format.pp_print_flush pps ();
+      Format.pp_open_hovbox pps 2;
+      Format.fprintf pps "Unbound quotation: \"%s\"" name;
+      Format.pp_close_box pps ()
     }
   | Qerror name ctx exn -> do {
-      report_quotation_error name ctx;
-      print_exn exn
+      pp_report_quotation_error pps name ctx;
+      pp_print_exn pps exn
     }
-  | e -> print_exn exn ]
+  | e -> pp_print_exn pps exn ]
 ;
+
+value report_error exn = pp_report_error Format.std_formatter exn ;
+
+Printexc.register_printer (fun [
+    (Qerror _ _ _) as exn ->
+    Some(Format.asprintf "%a" pp_report_error exn)
+  | _ -> None
+]) ;
 
 value no_constructors_arity = Prtools.no_constructors_arity;
 

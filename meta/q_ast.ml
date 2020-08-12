@@ -151,7 +151,7 @@ module Meta_make (C : MetaSig) =
           let exten = conv_extension exten in
           C.node "TyExten" [exten]
       ]
-    and longid_lident (lio, s) = C.tuple [C.option longid lio; C.vala C.string s]
+    and longid_lident (lio, s) = C.tuple [C.option (C.vala longid) lio; C.vala C.string s]
     and conv_attributes attrs =
       C.vala (C.list attribute) attrs
     and conv_extension e = attribute e
@@ -425,6 +425,7 @@ module Meta_make (C : MetaSig) =
       [ LiAcc _ me1 s → C.node "LiAcc" [longid me1; C.vala C.string s]
       | LiApp _ me1 me2 → C.node "LiApp" [longid me1; longid me2]
       | LiUid _ s → C.node "LiUid" [C.vala C.string s]
+      | LiXtr loc s _ → C.xtr loc s
       ]
     and module_expr =
       fun
@@ -442,8 +443,7 @@ module Meta_make (C : MetaSig) =
       | MeTyc _ me mt → C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid _ s → C.node "MeUid" [C.vala C.string s]
       | MeUnp _ e omt1 omt2 → C.node "MeUnp" [expr e; C.option module_type omt1; C.option module_type omt2]
-      | 
-          MeXtr loc s _ → C.xtr loc s
+      | MeXtr loc s _ → C.xtr loc s
       | MeExten loc exten ->
           let exten = conv_extension exten in
           C.node "MeExten" [exten]

@@ -224,6 +224,16 @@ value assert_raises_exn_pred ?{msg} ?{exnmsg} exnpred (f: unit -> 'a) =
           assert_bool ~{printer=(pexn,e)} msg (exnpred e) ]
 ;
 
+value print_exceptions =
+  let open Pcaml in
+  fun [
+    Ploc.Exc loc exn ->
+      let msg = Printf.sprintf "%s: %s" (Ploc.string_of_location loc) (Printexc.to_string exn) in
+      Some msg
+    | _ -> None
+  ]
+;
+Printexc.register_printer print_exceptions ;
 
 (*
 ;;; Local Variables: ***

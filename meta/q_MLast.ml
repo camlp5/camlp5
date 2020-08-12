@@ -1535,7 +1535,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
     [ [ lab = LIDENT; ":"; t = ctyp ; alg_attrs = alg_attributes → Qast.Tuple [mkident lab; t; alg_attrs] ] ]
   ;
   longident_lident:
-    [ [ li = longident; "."; i = SV LIDENT → Qast.Tuple [Qast.Option (Some li); i]
+    [ [ li = SV longident "longid"; "."; i = SV LIDENT → Qast.Tuple [Qast.Option (Some li); i]
       | i = SV LIDENT → Qast.Tuple [Qast.Option None; i]
       ] ]
   ;

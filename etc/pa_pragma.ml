@@ -95,6 +95,7 @@ value type_longid_of_longident t =
     MLast.LiAcc loc me1 uid -> <:extended_longident< $longid:(merec me1)$ . $_uid:uid$ >>
   | MLast.LiApp loc me1 me2 -> <:extended_longident< $longid:(merec me1)$ ( $longid:(merec me2)$ ) >>
   | MLast.LiUid loc uid -> <:extended_longident< $_uid:uid$ >>
+  | t -> not_impl (MLast.loc_of_longid t) "Type.of_longid" t
   ]
   in merec t
 ;
