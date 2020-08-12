@@ -30,6 +30,7 @@ Grammar.Unsafe.clear_entry use_file;
 Grammar.Unsafe.clear_entry functor_parameter;
 Grammar.Unsafe.clear_entry module_type;
 Grammar.Unsafe.clear_entry longident;
+Grammar.Unsafe.clear_entry longident_lident;
 Grammar.Unsafe.clear_entry extended_longident;
 Grammar.Unsafe.clear_entry module_expr;
 Grammar.Unsafe.clear_entry sig_item;
@@ -619,6 +620,7 @@ Grammar.safe_extend
    and _ = (module_type : 'module_type Grammar.Entry.e)
    and _ = (module_expr : 'module_expr Grammar.Entry.e)
    and _ = (longident : 'longident Grammar.Entry.e)
+   and _ = (longident_lident : 'longident_lident Grammar.Entry.e)
    and _ = (extended_longident : 'extended_longident Grammar.Entry.e)
    and _ = (signature : 'signature Grammar.Entry.e)
    and _ = (structure : 'structure Grammar.Entry.e)
@@ -760,8 +762,6 @@ Grammar.safe_extend
    and field_expr : 'field_expr Grammar.Entry.e =
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
-   and longident_lident : 'longident_lident Grammar.Entry.e =
-     grammar_entry_create "longident_lident"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
      grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"

@@ -11120,6 +11120,69 @@ Grammar.safe_extend
                          (Grammar.s_token ("LIDENT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.Str a) : 'e__248)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "_")),
+                       "1154dceb",
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaAnt ("_", loc, a) : 'e__248)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "")),
+                       "1154dceb",
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__248)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "_lid")),
+                       "1154dceb",
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaAnt ("_lid", loc, a) : 'e__248)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "lid")),
+                       "1154dceb",
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
+                           'e__248)))])),
+           "1154dceb",
+           (fun (i : 'e__248) (loc : Ploc.t) ->
+              (Qast.Tuple [Qast.Option None; i] : 'longident_lident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_facto
+                      (Grammar.s_rules
+                         [Grammar.production
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_nterm
+                                  (longident : 'longident Grammar.Entry.e)),
+                             "1154dceb",
+                             (fun (a : 'longident) (loc : Ploc.t) ->
+                                (Qast.VaVal a : 'e__246)));
+                          Grammar.production
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("ANTIQUOT", "_longid")),
+                             "1154dceb",
+                             (fun (a : string) (loc : Ploc.t) ->
+                                (Qast.VaAnt ("_longid", loc, a) : 'e__246)));
+                          Grammar.production
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("ANTIQUOT", "longid")),
+                             "1154dceb",
+                             (fun (a : string) (loc : Ploc.t) ->
+                                (Qast.VaVal (Qast.VaAnt ("longid", loc, a)) :
+                                 'e__246)))])))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_facto
+                (Grammar.s_rules
+                   [Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("LIDENT", "")),
+                       "1154dceb",
+                       (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.Str a) : 'e__247)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
@@ -11147,50 +11210,8 @@ Grammar.safe_extend
                           (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                            'e__247)))])),
            "1154dceb",
-           (fun (i : 'e__247) (loc : Ploc.t) ->
-              (Qast.Tuple [Qast.Option None; i] : 'longident_lident)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop
-                   (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)))
-                (Grammar.s_token ("", ".")))
-             (Grammar.s_facto
-                (Grammar.s_rules
-                   [Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("LIDENT", "")),
-                       "1154dceb",
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Str a) : 'e__246)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_")),
-                       "1154dceb",
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_", loc, a) : 'e__246)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "")),
-                       "1154dceb",
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'e__246)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "_lid")),
-                       "1154dceb",
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_lid", loc, a) : 'e__246)));
-                    Grammar.production
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("ANTIQUOT", "lid")),
-                       "1154dceb",
-                       (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
-                           'e__246)))])),
-           "1154dceb",
-           (fun (i : 'e__246) _ (li : 'longident) (loc : Ploc.t) ->
-              (Qast.Tuple [Qast.Option (Some (Qast.VaVal li)); i] : 'longident_lident )))]];
+           (fun (i : 'e__247) _ (li : 'e__246) (loc : Ploc.t) ->
+              (Qast.Tuple [Qast.Option (Some li); i] : 'longident_lident)))]];
     (* Labels *)
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
       (Some (Gramext.After "arrow"))
@@ -11205,29 +11226,29 @@ Grammar.safe_extend
                             (Grammar.s_nterm
                                (a_qic : 'a_qic Grammar.Entry.e)),
                           "1154dceb",
-                          (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__249)));
+                          (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__250)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("QUESTIONIDENTCOLON", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__249)));
+                             (Qast.VaVal (Qast.Str a) : 'e__250)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "?_:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("?_:", loc, a) : 'e__249)));
+                             (Qast.VaAnt ("?_:", loc, a) : 'e__250)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "?:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) :
-                              'e__249)))])))
+                              'e__250)))])))
              Grammar.s_self,
            "1154dceb",
-           (fun (t : 'ctyp) (i : 'e__249) (loc : Ploc.t) ->
+           (fun (t : 'ctyp) (i : 'e__250) (loc : Ploc.t) ->
               (Qast.Node ("TyOlb", [Qast.Loc; i; t]) : 'ctyp)));
         Grammar.production
           (Grammar.r_next
@@ -11239,29 +11260,29 @@ Grammar.safe_extend
                             (Grammar.s_nterm
                                (a_tic : 'a_tic Grammar.Entry.e)),
                           "1154dceb",
-                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__248)));
+                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__249)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("TILDEIDENTCOLON", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__248)));
+                             (Qast.VaVal (Qast.Str a) : 'e__249)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~_:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("~_:", loc, a) : 'e__248)));
+                             (Qast.VaAnt ("~_:", loc, a) : 'e__249)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) :
-                              'e__248)))])))
+                              'e__249)))])))
              Grammar.s_self,
            "1154dceb",
-           (fun (t : 'ctyp) (i : 'e__248) (loc : Ploc.t) ->
+           (fun (t : 'ctyp) (i : 'e__249) (loc : Ploc.t) ->
               (Qast.Node ("TyLab", [Qast.Loc; i; t]) : 'ctyp)))]];
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
       (Some (Gramext.Level "simple"))
@@ -11288,23 +11309,23 @@ Grammar.safe_extend
                                   (name_tag : 'name_tag Grammar.Entry.e))),
                           "1154dceb",
                           (fun (a : 'name_tag list) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.List a) : 'e__250)));
+                             (Qast.VaVal (Qast.List a) : 'e__251)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_list", loc, a) : 'e__250)));
+                             (Qast.VaAnt ("_list", loc, a) : 'e__251)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
-                              'e__250)))])))
+                              'e__251)))])))
              (Grammar.s_token ("", "]")),
            "1154dceb",
-           (fun _ (ntl : 'e__250) _ (rfl : 'poly_variant_list) _ _
+           (fun _ (ntl : 'e__251) _ (rfl : 'poly_variant_list) _ _
                 (loc : Ploc.t) ->
               (Qast.Node
                  ("TyVrn",
@@ -11372,22 +11393,22 @@ Grammar.safe_extend
                             (Grammar.s_token ("", "|")) false),
                        "1154dceb",
                        (fun (a : 'poly_variant list) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.List a) : 'e__251)));
+                          (Qast.VaVal (Qast.List a) : 'e__252)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "_list")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_list", loc, a) : 'e__251)));
+                          (Qast.VaAnt ("_list", loc, a) : 'e__252)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "list")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
-                           'e__251)))])),
+                           'e__252)))])),
            "1154dceb",
-           (fun (rfl : 'e__251) (loc : Ploc.t) ->
+           (fun (rfl : 'e__252) (loc : Ploc.t) ->
               (rfl : 'poly_variant_list)))]];
     Grammar.extension (poly_variant : 'poly_variant Grammar.Entry.e) None
       [None, None,
@@ -11413,20 +11434,20 @@ Grammar.safe_extend
                                         (ident : 'ident Grammar.Entry.e)),
                                    "1154dceb",
                                    (fun (a : 'ident) (loc : Ploc.t) ->
-                                      (Qast.VaVal a : 'e__253)));
+                                      (Qast.VaVal a : 'e__254)));
                                 Grammar.production
                                   (Grammar.r_next Grammar.r_stop
                                      (Grammar.s_token ("ANTIQUOT", "_")),
                                    "1154dceb",
                                    (fun (a : string) (loc : Ploc.t) ->
-                                      (Qast.VaAnt ("_", loc, a) : 'e__253)));
+                                      (Qast.VaAnt ("_", loc, a) : 'e__254)));
                                 Grammar.production
                                   (Grammar.r_next Grammar.r_stop
                                      (Grammar.s_token ("ANTIQUOT", "")),
                                    "1154dceb",
                                    (fun (a : string) (loc : Ploc.t) ->
                                       (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                                       'e__253)))])))
+                                       'e__254)))])))
                       (Grammar.s_token ("", "of")))
                    (Grammar.s_facto
                       (Grammar.s_rules
@@ -11435,33 +11456,33 @@ Grammar.safe_extend
                                (Grammar.s_flag (Grammar.s_token ("", "&"))),
                              "1154dceb",
                              (fun (a : bool) (loc : Ploc.t) ->
-                                (Qast.VaVal (Qast.Bool a) : 'e__254)));
+                                (Qast.VaVal (Qast.Bool a) : 'e__255)));
                           Grammar.production
                             (Grammar.r_next Grammar.r_stop
                                (Grammar.s_token ("ANTIQUOT", "_opt")),
                              "1154dceb",
                              (fun (a : string) (loc : Ploc.t) ->
-                                (Qast.VaAnt ("_opt", loc, a) : 'e__254)));
+                                (Qast.VaAnt ("_opt", loc, a) : 'e__255)));
                           Grammar.production
                             (Grammar.r_next Grammar.r_stop
                                (Grammar.s_token ("ANTIQUOT", "opt")),
                              "1154dceb",
                              (fun (a : string) (loc : Ploc.t) ->
                                 (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                                 'e__254)));
+                                 'e__255)));
                           Grammar.production
                             (Grammar.r_next Grammar.r_stop
                                (Grammar.s_token ("ANTIQUOT", "_flag")),
                              "1154dceb",
                              (fun (a : string) (loc : Ploc.t) ->
-                                (Qast.VaAnt ("_flag", loc, a) : 'e__254)));
+                                (Qast.VaAnt ("_flag", loc, a) : 'e__255)));
                           Grammar.production
                             (Grammar.r_next Grammar.r_stop
                                (Grammar.s_token ("ANTIQUOT", "flag")),
                              "1154dceb",
                              (fun (a : string) (loc : Ploc.t) ->
                                 (Qast.VaVal (Qast.VaAnt ("flag", loc, a)) :
-                                 'e__254)))])))
+                                 'e__255)))])))
                 (Grammar.s_facto
                    (Grammar.s_rules
                       [Grammar.production
@@ -11473,25 +11494,25 @@ Grammar.safe_extend
                                (Grammar.s_token ("", "&")) false),
                           "1154dceb",
                           (fun (a : 'ctyp list) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.List a) : 'e__255)));
+                             (Qast.VaVal (Qast.List a) : 'e__256)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_list", loc, a) : 'e__255)));
+                             (Qast.VaAnt ("_list", loc, a) : 'e__256)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
-                              'e__255)))])))
+                              'e__256)))])))
              (Grammar.s_nterm
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
            "1154dceb",
-           (fun (alg_attrs : 'alg_attributes) (l : 'e__255) (ao : 'e__254) _
-                (i : 'e__253) _ (loc : Ploc.t) ->
+           (fun (alg_attrs : 'alg_attributes) (l : 'e__256) (ao : 'e__255) _
+                (i : 'e__254) _ (loc : Ploc.t) ->
               (Qast.Node ("PvTag", [Qast.Loc; i; ao; l; alg_attrs]) :
                'poly_variant)));
         Grammar.production
@@ -11506,24 +11527,24 @@ Grammar.safe_extend
                                (ident : 'ident Grammar.Entry.e)),
                           "1154dceb",
                           (fun (a : 'ident) (loc : Ploc.t) ->
-                             (Qast.VaVal a : 'e__252)));
+                             (Qast.VaVal a : 'e__253)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_", loc, a) : 'e__252)));
+                             (Qast.VaAnt ("_", loc, a) : 'e__253)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                              'e__252)))])))
+                              'e__253)))])))
              (Grammar.s_nterm
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
            "1154dceb",
-           (fun (alg_attrs : 'alg_attributes) (i : 'e__252) _
+           (fun (alg_attrs : 'alg_attributes) (i : 'e__253) _
                 (loc : Ploc.t) ->
               (Qast.Node
                  ("PvTag",
@@ -11556,28 +11577,28 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_nterm (a_ti : 'a_ti Grammar.Entry.e)),
                        "1154dceb",
-                       (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__262)));
+                       (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__263)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("TILDEIDENT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Str a) : 'e__262)));
+                          (Qast.VaVal (Qast.Str a) : 'e__263)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "~_")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("~_", loc, a) : 'e__262)));
+                          (Qast.VaAnt ("~_", loc, a) : 'e__263)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "~")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("~", loc, a)) :
-                           'e__262)))])),
+                           'e__263)))])),
            "1154dceb",
-           (fun (i : 'e__262) (loc : Ploc.t) ->
+           (fun (i : 'e__263) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("PaLab",
@@ -11598,29 +11619,29 @@ Grammar.safe_extend
                             (Grammar.s_nterm
                                (a_tic : 'a_tic Grammar.Entry.e)),
                           "1154dceb",
-                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__261)));
+                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__262)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("TILDEIDENTCOLON", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__261)));
+                             (Qast.VaVal (Qast.Str a) : 'e__262)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~_:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("~_:", loc, a) : 'e__261)));
+                             (Qast.VaAnt ("~_:", loc, a) : 'e__262)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) :
-                              'e__261)))])))
+                              'e__262)))])))
              Grammar.s_self,
            "1154dceb",
-           (fun (p : 'patt) (i : 'e__261) (loc : Ploc.t) ->
+           (fun (p : 'patt) (i : 'e__262) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("PaLab",
@@ -11654,26 +11675,26 @@ Grammar.safe_extend
                                            (expr : 'expr Grammar.Entry.e)),
                                       "1154dceb",
                                       (fun (e : 'expr) _ (loc : Ploc.t) ->
-                                         (e : 'e__259)))])),
+                                         (e : 'e__260)))])),
                           "1154dceb",
-                          (fun (a : 'e__259 option) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Option a) : 'e__260)));
+                          (fun (a : 'e__260 option) (loc : Ploc.t) ->
+                             (Qast.VaVal (Qast.Option a) : 'e__261)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_opt")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_opt", loc, a) : 'e__260)));
+                             (Qast.VaAnt ("_opt", loc, a) : 'e__261)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "opt")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                              'e__260)))])))
+                              'e__261)))])))
              (Grammar.s_token ("", "}")),
            "1154dceb",
-           (fun _ (eo : 'e__260) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
+           (fun _ (eo : 'e__261) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
               (Qast.Node ("PaOlb", [Qast.Loc; p; eo]) : 'patt)));
         Grammar.production
           (Grammar.r_next
@@ -11693,23 +11714,23 @@ Grammar.safe_extend
                           "1154dceb",
                           (fun (a : 'patt_tcon_opt_eq_patt list)
                                (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.List a) : 'e__258)));
+                             (Qast.VaVal (Qast.List a) : 'e__259)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_list", loc, a) : 'e__258)));
+                             (Qast.VaAnt ("_list", loc, a) : 'e__259)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
-                              'e__258)))])))
+                              'e__259)))])))
              (Grammar.s_token ("", "}")),
            "1154dceb",
-           (fun _ (lppo : 'e__258) _ _ (loc : Ploc.t) ->
+           (fun _ (lppo : 'e__259) _ _ (loc : Ploc.t) ->
               (Qast.Node ("PaLab", [Qast.Loc; lppo]) : 'patt)));
         Grammar.production
           (Grammar.r_next
@@ -11723,22 +11744,22 @@ Grammar.safe_extend
                              'longident_lident Grammar.Entry.e)),
                        "1154dceb",
                        (fun (a : 'longident_lident) (loc : Ploc.t) ->
-                          (Qast.VaVal a : 'e__257)));
+                          (Qast.VaVal a : 'e__258)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "_lilongid")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_lilongid", loc, a) : 'e__257)));
+                          (Qast.VaAnt ("_lilongid", loc, a) : 'e__258)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "lilongid")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("lilongid", loc, a)) :
-                           'e__257)))])),
+                           'e__258)))])),
            "1154dceb",
-           (fun (lili : 'e__257) _ (loc : Ploc.t) ->
+           (fun (lili : 'e__258) _ (loc : Ploc.t) ->
               (Qast.Node ("PaTyp", [Qast.Loc; lili]) : 'patt)));
         Grammar.production
           (Grammar.r_next
@@ -11750,22 +11771,22 @@ Grammar.safe_extend
                          (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)),
                        "1154dceb",
                        (fun (a : 'ident) (loc : Ploc.t) ->
-                          (Qast.VaVal a : 'e__256)));
+                          (Qast.VaVal a : 'e__257)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "_")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_", loc, a) : 'e__256)));
+                          (Qast.VaAnt ("_", loc, a) : 'e__257)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                           'e__256)))])),
+                           'e__257)))])),
            "1154dceb",
-           (fun (s : 'e__256) _ (loc : Ploc.t) ->
+           (fun (s : 'e__257) _ (loc : Ploc.t) ->
               (Qast.Node ("PaVrn", [Qast.Loc; s]) : 'patt)))]];
     Grammar.extension
       (patt_tcon_opt_eq_patt : 'patt_tcon_opt_eq_patt Grammar.Entry.e) None
@@ -11788,25 +11809,25 @@ Grammar.safe_extend
                                         (patt : 'patt Grammar.Entry.e)),
                                    "1154dceb",
                                    (fun (p : 'patt) _ (loc : Ploc.t) ->
-                                      (p : 'e__263)))])),
+                                      (p : 'e__264)))])),
                        "1154dceb",
-                       (fun (a : 'e__263 option) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Option a) : 'e__264)));
+                       (fun (a : 'e__264 option) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.Option a) : 'e__265)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "_opt")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_opt", loc, a) : 'e__264)));
+                          (Qast.VaAnt ("_opt", loc, a) : 'e__265)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "opt")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                           'e__264)))])),
+                           'e__265)))])),
            "1154dceb",
-           (fun (po : 'e__264) (p : 'patt_tcon) (loc : Ploc.t) ->
+           (fun (po : 'e__265) (p : 'patt_tcon) (loc : Ploc.t) ->
               (Qast.Tuple [p; po] : 'patt_tcon_opt_eq_patt)))]];
     Grammar.extension (patt_tcon : 'patt_tcon Grammar.Entry.e) None
       [None, None,
@@ -11842,28 +11863,28 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_nterm (a_ti : 'a_ti Grammar.Entry.e)),
                        "1154dceb",
-                       (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__269)));
+                       (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__270)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("TILDEIDENT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Str a) : 'e__269)));
+                          (Qast.VaVal (Qast.Str a) : 'e__270)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "~_")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("~_", loc, a) : 'e__269)));
+                          (Qast.VaAnt ("~_", loc, a) : 'e__270)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "~")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("~", loc, a)) :
-                           'e__269)))])),
+                           'e__270)))])),
            "1154dceb",
-           (fun (i : 'e__269) (loc : Ploc.t) ->
+           (fun (i : 'e__270) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("PaLab",
@@ -11884,29 +11905,29 @@ Grammar.safe_extend
                             (Grammar.s_nterm
                                (a_tic : 'a_tic Grammar.Entry.e)),
                           "1154dceb",
-                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__268)));
+                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__269)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("TILDEIDENTCOLON", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__268)));
+                             (Qast.VaVal (Qast.Str a) : 'e__269)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~_:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("~_:", loc, a) : 'e__268)));
+                             (Qast.VaAnt ("~_:", loc, a) : 'e__269)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) :
-                              'e__268)))])))
+                              'e__269)))])))
              Grammar.s_self,
            "1154dceb",
-           (fun (p : 'ipatt) (i : 'e__268) (loc : Ploc.t) ->
+           (fun (p : 'ipatt) (i : 'e__269) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("PaLab",
@@ -11941,26 +11962,26 @@ Grammar.safe_extend
                                            (expr : 'expr Grammar.Entry.e)),
                                       "1154dceb",
                                       (fun (e : 'expr) _ (loc : Ploc.t) ->
-                                         (e : 'e__266)))])),
+                                         (e : 'e__267)))])),
                           "1154dceb",
-                          (fun (a : 'e__266 option) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Option a) : 'e__267)));
+                          (fun (a : 'e__267 option) (loc : Ploc.t) ->
+                             (Qast.VaVal (Qast.Option a) : 'e__268)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_opt")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_opt", loc, a) : 'e__267)));
+                             (Qast.VaAnt ("_opt", loc, a) : 'e__268)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "opt")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                              'e__267)))])))
+                              'e__268)))])))
              (Grammar.s_token ("", "}")),
            "1154dceb",
-           (fun _ (eo : 'e__267) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
+           (fun _ (eo : 'e__268) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
               (Qast.Node ("PaOlb", [Qast.Loc; p; eo]) : 'ipatt)));
         Grammar.production
           (Grammar.r_next
@@ -11980,23 +12001,23 @@ Grammar.safe_extend
                           "1154dceb",
                           (fun (a : 'ipatt_tcon_opt_eq_patt list)
                                (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.List a) : 'e__265)));
+                             (Qast.VaVal (Qast.List a) : 'e__266)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_list", loc, a) : 'e__265)));
+                             (Qast.VaAnt ("_list", loc, a) : 'e__266)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
-                              'e__265)))])))
+                              'e__266)))])))
              (Grammar.s_token ("", "}")),
            "1154dceb",
-           (fun _ (lppo : 'e__265) _ _ (loc : Ploc.t) ->
+           (fun _ (lppo : 'e__266) _ _ (loc : Ploc.t) ->
               (Qast.Node ("PaLab", [Qast.Loc; lppo]) : 'ipatt)))]];
     Grammar.extension
       (ipatt_tcon_opt_eq_patt : 'ipatt_tcon_opt_eq_patt Grammar.Entry.e) None
@@ -12019,25 +12040,25 @@ Grammar.safe_extend
                                         (patt : 'patt Grammar.Entry.e)),
                                    "1154dceb",
                                    (fun (p : 'patt) _ (loc : Ploc.t) ->
-                                      (p : 'e__270)))])),
+                                      (p : 'e__271)))])),
                        "1154dceb",
-                       (fun (a : 'e__270 option) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Option a) : 'e__271)));
+                       (fun (a : 'e__271 option) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.Option a) : 'e__272)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "_opt")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_opt", loc, a) : 'e__271)));
+                          (Qast.VaAnt ("_opt", loc, a) : 'e__272)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "opt")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                           'e__271)))])),
+                           'e__272)))])),
            "1154dceb",
-           (fun (po : 'e__271) (p : 'ipatt_tcon) (loc : Ploc.t) ->
+           (fun (po : 'e__272) (p : 'ipatt_tcon) (loc : Ploc.t) ->
               (Qast.Tuple [p; po] : 'ipatt_tcon_opt_eq_patt)))]];
     Grammar.extension (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e) None
       [None, None,
@@ -12072,40 +12093,93 @@ Grammar.safe_extend
                             (Grammar.s_token ("LIDENT", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__284)));
+                             (Qast.VaVal (Qast.Str a) : 'e__285)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_", loc, a) : 'e__284)));
+                             (Qast.VaAnt ("_", loc, a) : 'e__285)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                              'e__284)));
+                              'e__285)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_lid")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_lid", loc, a) : 'e__284)));
+                             (Qast.VaAnt ("_lid", loc, a) : 'e__285)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "lid")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
-                              'e__284)))])))
+                              'e__285)))])))
              (Grammar.s_token ("", ")")),
            "1154dceb",
-           (fun _ (i : 'e__284) _ _ (loc : Ploc.t) ->
+           (fun _ (i : 'e__285) _ _ (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
                   [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
                    Qast.VaVal (Qast.Option None)]) :
+               'patt_option_label)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "?")))
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_facto
+                         (Grammar.s_rules
+                            [Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("LIDENT", "")),
+                                "1154dceb",
+                                (fun (a : string) (loc : Ploc.t) ->
+                                   (Qast.VaVal (Qast.Str a) : 'e__284)));
+                             Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("ANTIQUOT", "_")),
+                                "1154dceb",
+                                (fun (a : string) (loc : Ploc.t) ->
+                                   (Qast.VaAnt ("_", loc, a) : 'e__284)));
+                             Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("ANTIQUOT", "")),
+                                "1154dceb",
+                                (fun (a : string) (loc : Ploc.t) ->
+                                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
+                                    'e__284)));
+                             Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("ANTIQUOT", "_lid")),
+                                "1154dceb",
+                                (fun (a : string) (loc : Ploc.t) ->
+                                   (Qast.VaAnt ("_lid", loc, a) : 'e__284)));
+                             Grammar.production
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("ANTIQUOT", "lid")),
+                                "1154dceb",
+                                (fun (a : string) (loc : Ploc.t) ->
+                                   (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
+                                    'e__284)))])))
+                   (Grammar.s_token ("", "=")))
+                (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           "1154dceb",
+           (fun _ (e : 'expr) _ (i : 'e__284) _ _ (loc : Ploc.t) ->
+              (Qast.Node
+                 ("PaOlb",
+                  [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
+                   Qast.VaVal (Qast.Option (Some e))]) :
                'patt_option_label)));
         Grammar.production
           (Grammar.r_next
@@ -12150,64 +12224,11 @@ Grammar.safe_extend
                                 (fun (a : string) (loc : Ploc.t) ->
                                    (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
                                     'e__283)))])))
-                   (Grammar.s_token ("", "=")))
-                (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
-             (Grammar.s_token ("", ")")),
-           "1154dceb",
-           (fun _ (e : 'expr) _ (i : 'e__283) _ _ (loc : Ploc.t) ->
-              (Qast.Node
-                 ("PaOlb",
-                  [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
-                   Qast.VaVal (Qast.Option (Some e))]) :
-               'patt_option_label)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "?")))
-                         (Grammar.s_token ("", "(")))
-                      (Grammar.s_facto
-                         (Grammar.s_rules
-                            [Grammar.production
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("LIDENT", "")),
-                                "1154dceb",
-                                (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaVal (Qast.Str a) : 'e__282)));
-                             Grammar.production
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("ANTIQUOT", "_")),
-                                "1154dceb",
-                                (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaAnt ("_", loc, a) : 'e__282)));
-                             Grammar.production
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("ANTIQUOT", "")),
-                                "1154dceb",
-                                (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                                    'e__282)));
-                             Grammar.production
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("ANTIQUOT", "_lid")),
-                                "1154dceb",
-                                (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaAnt ("_lid", loc, a) : 'e__282)));
-                             Grammar.production
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("ANTIQUOT", "lid")),
-                                "1154dceb",
-                                (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
-                                    'e__282)))])))
                    (Grammar.s_token ("", ":")))
                 (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            "1154dceb",
-           (fun _ (t : 'ctyp) _ (i : 'e__282) _ _ (loc : Ploc.t) ->
+           (fun _ (t : 'ctyp) _ (i : 'e__283) _ _ (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
                   [Qast.Loc;
@@ -12235,14 +12256,14 @@ Grammar.safe_extend
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal (Qast.Str a) :
-                                          'e__281)));
+                                          'e__282)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "_")),
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaAnt ("_", loc, a) :
-                                          'e__281)));
+                                          'e__282)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "")),
@@ -12250,7 +12271,7 @@ Grammar.safe_extend
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal
                                             (Qast.VaAnt ("", loc, a)) :
-                                          'e__281)));
+                                          'e__282)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token
@@ -12258,7 +12279,7 @@ Grammar.safe_extend
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaAnt ("_lid", loc, a) :
-                                          'e__281)));
+                                          'e__282)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "lid")),
@@ -12266,14 +12287,14 @@ Grammar.safe_extend
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal
                                             (Qast.VaAnt ("lid", loc, a)) :
-                                          'e__281)))])))
+                                          'e__282)))])))
                          (Grammar.s_token ("", ":")))
                       (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            "1154dceb",
-           (fun _ (e : 'expr) _ (t : 'ctyp) _ (i : 'e__281) _ _
+           (fun _ (e : 'expr) _ (t : 'ctyp) _ (i : 'e__282) _ _
                 (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
@@ -12291,28 +12312,28 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_nterm (a_qi : 'a_qi Grammar.Entry.e)),
                        "1154dceb",
-                       (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__280)));
+                       (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__281)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("QUESTIONIDENT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Str a) : 'e__280)));
+                          (Qast.VaVal (Qast.Str a) : 'e__281)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "?_")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("?_", loc, a) : 'e__280)));
+                          (Qast.VaAnt ("?_", loc, a) : 'e__281)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "?")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("?", loc, a)) :
-                           'e__280)))])),
+                           'e__281)))])),
            "1154dceb",
-           (fun (i : 'e__280) (loc : Ploc.t) ->
+           (fun (i : 'e__281) (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
                   [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
@@ -12331,27 +12352,27 @@ Grammar.safe_extend
                                      (a_qic : 'a_qic Grammar.Entry.e)),
                                 "1154dceb",
                                 (fun (a : 'a_qic) (loc : Ploc.t) ->
-                                   (a : 'e__278)));
+                                   (a : 'e__279)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token
                                      ("QUESTIONIDENTCOLON", "")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaVal (Qast.Str a) : 'e__278)));
+                                   (Qast.VaVal (Qast.Str a) : 'e__279)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "?_:")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaAnt ("?_:", loc, a) : 'e__278)));
+                                   (Qast.VaAnt ("?_:", loc, a) : 'e__279)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "?:")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
                                    (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) :
-                                    'e__278)))])))
+                                    'e__279)))])))
                    (Grammar.s_token ("", "(")))
                 (Grammar.s_facto
                    (Grammar.s_rules
@@ -12360,36 +12381,36 @@ Grammar.safe_extend
                             (Grammar.s_token ("LIDENT", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__279)));
+                             (Qast.VaVal (Qast.Str a) : 'e__280)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_", loc, a) : 'e__279)));
+                             (Qast.VaAnt ("_", loc, a) : 'e__280)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                              'e__279)));
+                              'e__280)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_lid")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_lid", loc, a) : 'e__279)));
+                             (Qast.VaAnt ("_lid", loc, a) : 'e__280)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "lid")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
-                              'e__279)))])))
+                              'e__280)))])))
              (Grammar.s_token ("", ")")),
            "1154dceb",
-           (fun _ (j : 'e__279) _ (i : 'e__278) (loc : Ploc.t) ->
+           (fun _ (j : 'e__280) _ (i : 'e__279) (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
                   [Qast.Loc; Qast.Node ("PaLid", [Qast.Loc; i]);
@@ -12412,7 +12433,7 @@ Grammar.safe_extend
                                            (a_qic : 'a_qic Grammar.Entry.e)),
                                       "1154dceb",
                                       (fun (a : 'a_qic) (loc : Ploc.t) ->
-                                         (a : 'e__276)));
+                                         (a : 'e__277)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token
@@ -12420,14 +12441,14 @@ Grammar.safe_extend
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal (Qast.Str a) :
-                                          'e__276)));
+                                          'e__277)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "?_:")),
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaAnt ("?_:", loc, a) :
-                                          'e__276)));
+                                          'e__277)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "?:")),
@@ -12435,7 +12456,7 @@ Grammar.safe_extend
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal
                                             (Qast.VaAnt ("?:", loc, a)) :
-                                          'e__276)))])))
+                                          'e__277)))])))
                          (Grammar.s_token ("", "(")))
                       (Grammar.s_facto
                          (Grammar.s_rules
@@ -12444,38 +12465,38 @@ Grammar.safe_extend
                                   (Grammar.s_token ("LIDENT", "")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaVal (Qast.Str a) : 'e__277)));
+                                   (Qast.VaVal (Qast.Str a) : 'e__278)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "_")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaAnt ("_", loc, a) : 'e__277)));
+                                   (Qast.VaAnt ("_", loc, a) : 'e__278)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
                                    (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                                    'e__277)));
+                                    'e__278)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "_lid")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaAnt ("_lid", loc, a) : 'e__277)));
+                                   (Qast.VaAnt ("_lid", loc, a) : 'e__278)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "lid")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
                                    (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
-                                    'e__277)))])))
+                                    'e__278)))])))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            "1154dceb",
-           (fun _ (e : 'expr) _ (j : 'e__277) _ (i : 'e__276)
+           (fun _ (e : 'expr) _ (j : 'e__278) _ (i : 'e__277)
                 (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
@@ -12503,7 +12524,7 @@ Grammar.safe_extend
                                            (a_qic : 'a_qic Grammar.Entry.e)),
                                       "1154dceb",
                                       (fun (a : 'a_qic) (loc : Ploc.t) ->
-                                         (a : 'e__274)));
+                                         (a : 'e__275)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token
@@ -12511,14 +12532,14 @@ Grammar.safe_extend
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal (Qast.Str a) :
-                                          'e__274)));
+                                          'e__275)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "?_:")),
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaAnt ("?_:", loc, a) :
-                                          'e__274)));
+                                          'e__275)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "?:")),
@@ -12526,7 +12547,7 @@ Grammar.safe_extend
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal
                                             (Qast.VaAnt ("?:", loc, a)) :
-                                          'e__274)))])))
+                                          'e__275)))])))
                          (Grammar.s_token ("", "(")))
                       (Grammar.s_facto
                          (Grammar.s_rules
@@ -12535,38 +12556,38 @@ Grammar.safe_extend
                                   (Grammar.s_token ("LIDENT", "")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaVal (Qast.Str a) : 'e__275)));
+                                   (Qast.VaVal (Qast.Str a) : 'e__276)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "_")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaAnt ("_", loc, a) : 'e__275)));
+                                   (Qast.VaAnt ("_", loc, a) : 'e__276)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
                                    (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                                    'e__275)));
+                                    'e__276)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "_lid")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
-                                   (Qast.VaAnt ("_lid", loc, a) : 'e__275)));
+                                   (Qast.VaAnt ("_lid", loc, a) : 'e__276)));
                              Grammar.production
                                (Grammar.r_next Grammar.r_stop
                                   (Grammar.s_token ("ANTIQUOT", "lid")),
                                 "1154dceb",
                                 (fun (a : string) (loc : Ploc.t) ->
                                    (Qast.VaVal (Qast.VaAnt ("lid", loc, a)) :
-                                    'e__275)))])))
+                                    'e__276)))])))
                    (Grammar.s_token ("", ":")))
                 (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            "1154dceb",
-           (fun _ (t : 'ctyp) _ (j : 'e__275) _ (i : 'e__274)
+           (fun _ (t : 'ctyp) _ (j : 'e__276) _ (i : 'e__275)
                 (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
@@ -12601,7 +12622,7 @@ Grammar.safe_extend
                                             "1154dceb",
                                             (fun (a : 'a_qic)
                                                  (loc : Ploc.t) ->
-                                               (a : 'e__272)));
+                                               (a : 'e__273)));
                                          Grammar.production
                                            (Grammar.r_next Grammar.r_stop
                                               (Grammar.s_token
@@ -12610,7 +12631,7 @@ Grammar.safe_extend
                                             (fun (a : string)
                                                  (loc : Ploc.t) ->
                                                (Qast.VaVal (Qast.Str a) :
-                                                'e__272)));
+                                                'e__273)));
                                          Grammar.production
                                            (Grammar.r_next Grammar.r_stop
                                               (Grammar.s_token
@@ -12619,7 +12640,7 @@ Grammar.safe_extend
                                             (fun (a : string)
                                                  (loc : Ploc.t) ->
                                                (Qast.VaAnt ("?_:", loc, a) :
-                                                'e__272)));
+                                                'e__273)));
                                          Grammar.production
                                            (Grammar.r_next Grammar.r_stop
                                               (Grammar.s_token
@@ -12630,7 +12651,7 @@ Grammar.safe_extend
                                                (Qast.VaVal
                                                   (Qast.VaAnt
                                                      ("?:", loc, a)) :
-                                                'e__272)))])))
+                                                'e__273)))])))
                                (Grammar.s_token ("", "(")))
                             (Grammar.s_facto
                                (Grammar.s_rules
@@ -12640,14 +12661,14 @@ Grammar.safe_extend
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal (Qast.Str a) :
-                                          'e__273)));
+                                          'e__274)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "_")),
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaAnt ("_", loc, a) :
-                                          'e__273)));
+                                          'e__274)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "")),
@@ -12655,7 +12676,7 @@ Grammar.safe_extend
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal
                                             (Qast.VaAnt ("", loc, a)) :
-                                          'e__273)));
+                                          'e__274)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token
@@ -12663,7 +12684,7 @@ Grammar.safe_extend
                                       "1154dceb",
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaAnt ("_lid", loc, a) :
-                                          'e__273)));
+                                          'e__274)));
                                    Grammar.production
                                      (Grammar.r_next Grammar.r_stop
                                         (Grammar.s_token ("ANTIQUOT", "lid")),
@@ -12671,14 +12692,14 @@ Grammar.safe_extend
                                       (fun (a : string) (loc : Ploc.t) ->
                                          (Qast.VaVal
                                             (Qast.VaAnt ("lid", loc, a)) :
-                                          'e__273)))])))
+                                          'e__274)))])))
                          (Grammar.s_token ("", ":")))
                       (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            "1154dceb",
-           (fun _ (e : 'expr) _ (t : 'ctyp) _ (j : 'e__273) _ (i : 'e__272)
+           (fun _ (e : 'expr) _ (t : 'ctyp) _ (j : 'e__274) _ (i : 'e__273)
                 (loc : Ploc.t) ->
               (Qast.Node
                  ("PaOlb",
@@ -12705,28 +12726,28 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_nterm (a_qi : 'a_qi Grammar.Entry.e)),
                        "1154dceb",
-                       (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__290)));
+                       (fun (a : 'a_qi) (loc : Ploc.t) -> (a : 'e__291)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("QUESTIONIDENT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Str a) : 'e__290)));
+                          (Qast.VaVal (Qast.Str a) : 'e__291)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "?_")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("?_", loc, a) : 'e__290)));
+                          (Qast.VaAnt ("?_", loc, a) : 'e__291)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "?")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("?", loc, a)) :
-                           'e__290)))])),
+                           'e__291)))])),
            "1154dceb",
-           (fun (i : 'e__290) (loc : Ploc.t) ->
+           (fun (i : 'e__291) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("ExOlb",
@@ -12743,29 +12764,29 @@ Grammar.safe_extend
                             (Grammar.s_nterm
                                (a_qic : 'a_qic Grammar.Entry.e)),
                           "1154dceb",
-                          (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__289)));
+                          (fun (a : 'a_qic) (loc : Ploc.t) -> (a : 'e__290)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("QUESTIONIDENTCOLON", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__289)));
+                             (Qast.VaVal (Qast.Str a) : 'e__290)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "?_:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("?_:", loc, a) : 'e__289)));
+                             (Qast.VaAnt ("?_:", loc, a) : 'e__290)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "?:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("?:", loc, a)) :
-                              'e__289)))])))
+                              'e__290)))])))
              Grammar.s_self,
            "1154dceb",
-           (fun (e : 'expr) (i : 'e__289) (loc : Ploc.t) ->
+           (fun (e : 'expr) (i : 'e__290) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("ExOlb",
@@ -12780,28 +12801,28 @@ Grammar.safe_extend
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_nterm (a_ti : 'a_ti Grammar.Entry.e)),
                        "1154dceb",
-                       (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__288)));
+                       (fun (a : 'a_ti) (loc : Ploc.t) -> (a : 'e__289)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("TILDEIDENT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Str a) : 'e__288)));
+                          (Qast.VaVal (Qast.Str a) : 'e__289)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "~_")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("~_", loc, a) : 'e__288)));
+                          (Qast.VaAnt ("~_", loc, a) : 'e__289)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "~")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("~", loc, a)) :
-                           'e__288)))])),
+                           'e__289)))])),
            "1154dceb",
-           (fun (i : 'e__288) (loc : Ploc.t) ->
+           (fun (i : 'e__289) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("ExLab",
@@ -12822,29 +12843,29 @@ Grammar.safe_extend
                             (Grammar.s_nterm
                                (a_tic : 'a_tic Grammar.Entry.e)),
                           "1154dceb",
-                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__287)));
+                          (fun (a : 'a_tic) (loc : Ploc.t) -> (a : 'e__288)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("TILDEIDENTCOLON", "")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Str a) : 'e__287)));
+                             (Qast.VaVal (Qast.Str a) : 'e__288)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~_:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("~_:", loc, a) : 'e__287)));
+                             (Qast.VaAnt ("~_:", loc, a) : 'e__288)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "~:")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("~:", loc, a)) :
-                              'e__287)))])))
+                              'e__288)))])))
              Grammar.s_self,
            "1154dceb",
-           (fun (e : 'expr) (i : 'e__287) (loc : Ploc.t) ->
+           (fun (e : 'expr) (i : 'e__288) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
                Qast.Node
                  ("ExLab",
@@ -12875,23 +12896,23 @@ Grammar.safe_extend
                                    'fun_binding Grammar.Entry.e))),
                           "1154dceb",
                           (fun (a : 'fun_binding option) (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.Option a) : 'e__286)));
+                             (Qast.VaVal (Qast.Option a) : 'e__287)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_opt")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_opt", loc, a) : 'e__286)));
+                             (Qast.VaAnt ("_opt", loc, a) : 'e__287)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "opt")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                              'e__286)))])))
+                              'e__287)))])))
              (Grammar.s_token ("", "}")),
            "1154dceb",
-           (fun _ (eo : 'e__286) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
+           (fun _ (eo : 'e__287) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
               (Qast.Node ("ExOlb", [Qast.Loc; p; eo]) : 'expr)));
         Grammar.production
           (Grammar.r_next
@@ -12911,23 +12932,23 @@ Grammar.safe_extend
                           "1154dceb",
                           (fun (a : 'ipatt_tcon_fun_binding list)
                                (loc : Ploc.t) ->
-                             (Qast.VaVal (Qast.List a) : 'e__285)));
+                             (Qast.VaVal (Qast.List a) : 'e__286)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "_list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
-                             (Qast.VaAnt ("_list", loc, a) : 'e__285)));
+                             (Qast.VaAnt ("_list", loc, a) : 'e__286)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("ANTIQUOT", "list")),
                           "1154dceb",
                           (fun (a : string) (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.VaAnt ("list", loc, a)) :
-                              'e__285)))])))
+                              'e__286)))])))
              (Grammar.s_token ("", "}")),
            "1154dceb",
-           (fun _ (lpeo : 'e__285) _ _ (loc : Ploc.t) ->
+           (fun _ (lpeo : 'e__286) _ _ (loc : Ploc.t) ->
               (Qast.Node ("ExLab", [Qast.Loc; lpeo]) : 'expr)))]];
     Grammar.extension
       (ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e) None
@@ -12945,22 +12966,22 @@ Grammar.safe_extend
                                (fun_binding : 'fun_binding Grammar.Entry.e))),
                        "1154dceb",
                        (fun (a : 'fun_binding option) (loc : Ploc.t) ->
-                          (Qast.VaVal (Qast.Option a) : 'e__291)));
+                          (Qast.VaVal (Qast.Option a) : 'e__292)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "_opt")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_opt", loc, a) : 'e__291)));
+                          (Qast.VaAnt ("_opt", loc, a) : 'e__292)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "opt")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("opt", loc, a)) :
-                           'e__291)))])),
+                           'e__292)))])),
            "1154dceb",
-           (fun (eo : 'e__291) (p : 'ipatt_tcon) (loc : Ploc.t) ->
+           (fun (eo : 'e__292) (p : 'ipatt_tcon) (loc : Ploc.t) ->
               (Qast.Tuple [p; eo] : 'ipatt_tcon_fun_binding)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "simple"))
@@ -12975,22 +12996,22 @@ Grammar.safe_extend
                          (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)),
                        "1154dceb",
                        (fun (a : 'ident) (loc : Ploc.t) ->
-                          (Qast.VaVal a : 'e__292)));
+                          (Qast.VaVal a : 'e__293)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "_")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
-                          (Qast.VaAnt ("_", loc, a) : 'e__292)));
+                          (Qast.VaAnt ("_", loc, a) : 'e__293)));
                     Grammar.production
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("ANTIQUOT", "")),
                        "1154dceb",
                        (fun (a : string) (loc : Ploc.t) ->
                           (Qast.VaVal (Qast.VaAnt ("", loc, a)) :
-                           'e__292)))])),
+                           'e__293)))])),
            "1154dceb",
-           (fun (s : 'e__292) _ (loc : Ploc.t) ->
+           (fun (s : 'e__293) _ (loc : Ploc.t) ->
               (Qast.Node ("ExVrn", [Qast.Loc; s]) : 'expr)))]];
     (* -- end copy from pa_r to q_MLast -- *)
     Grammar.extension (a_ti : 'a_ti Grammar.Entry.e) None

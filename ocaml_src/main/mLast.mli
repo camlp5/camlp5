@@ -30,6 +30,7 @@ and longid =
     LiAcc of loc * longid * string
   | LiApp of loc * longid * longid
   | LiUid of loc * string
+  | LiXtr of loc * string * longid option
 and ctyp =
     TyAcc of loc * longid * string
   | TyAli of loc * ctyp * ctyp

@@ -199,6 +199,8 @@ let rec longid_long_id =
       Lapply (longid_long_id me1, longid_long_id me2)
   | MLast.LiAcc (_, me1, uid) -> Ldot (longid_long_id me1, uv uid)
   | MLast.LiUid (_, s) -> Lident (uv s)
+  | LiXtr (loc, _, _) ->
+      Ploc.raise loc (Failure "longid_long_id: LiXtr forbidden here")
 ;;
 
 let rec ctyp_fa al =
@@ -228,7 +230,7 @@ let rec expr_long_id =
 
 let longid_lident_long_id (lio, s) =
   match lio, s with
-    Some li, s -> Ldot (longid_long_id li, uv s)
+    Some li, s -> Ldot (longid_long_id (uv li), uv s)
   | None, s -> Lident (uv s)
 ;;
 

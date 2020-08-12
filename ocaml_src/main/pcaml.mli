@@ -46,6 +46,7 @@ val use_file : (MLast.str_item list * bool) Grammar.Entry.e;;
 val functor_parameter : MLast.functor_parameter Grammar.Entry.e;;
 val module_type : MLast.module_type Grammar.Entry.e;;
 val longident : MLast.longid Grammar.Entry.e;;
+val longident_lident : MLast.longid_lident Grammar.Entry.e;;
 val extended_longident : MLast.longid Grammar.Entry.e;;
 val module_expr : MLast.module_expr Grammar.Entry.e;;
 val signature : MLast.sig_item list MLast.v Grammar.Entry.e;;

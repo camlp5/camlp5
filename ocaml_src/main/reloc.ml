@@ -447,6 +447,8 @@ and longid floc sh =
     | LiApp (loc, x1, x2) ->
         let loc = floc loc in LiApp (loc, self x1, self x2)
     | LiUid (loc, x1) -> let loc = floc loc in LiUid (loc, x1)
+    | LiXtr (loc, x1, x2) ->
+        let loc = floc loc in LiXtr (loc, x1, option_map (vala_map self) x2)
   in
   self
 and module_expr floc sh =
@@ -705,7 +707,8 @@ and class_str_item floc sh =
         let loc = floc loc in CrExten (loc, attribute_body floc sh exten)
   in
   self
-and longid_lident floc sh (x1, x2) = option_map (longid floc sh) x1, x2
+and longid_lident floc sh (x1, x2) =
+  option_map (vala_map (longid floc sh)) x1, x2
 and attribute_body floc sh x1 =
   vala_map
     (fun (s, p) ->

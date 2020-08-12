@@ -56,6 +56,8 @@ let longid_concat li1 li2 =
       MLast.LiAcc (loc, a, b) -> MLast.LiAcc (loc, crec a, b)
     | MLast.LiApp (loc, a, b) -> MLast.LiApp (loc, crec a, b)
     | MLast.LiUid (loc, b) -> MLast.LiAcc (loc, li1, b)
+    | LiXtr (loc, _, _) ->
+        Ploc.raise loc (Failure "longid_concat: LiXtr forbidden here")
   in
   crec li2
 ;;

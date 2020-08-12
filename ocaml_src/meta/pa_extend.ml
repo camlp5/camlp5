@@ -613,6 +613,7 @@ module MetaAction =
                    MLast.ExUid (loc, "LiUid")),
                 mloc),
              mvala mstring s)
+      | x -> not_impl "mlongid" x
     and mctyp =
       function
         MLast.TyAcc (loc, m1, t2) ->
