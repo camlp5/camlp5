@@ -862,7 +862,7 @@ EXTEND
   poly_variant_eoi: [ [ x = Pcaml.poly_variant; EOI -> x ] ];
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
   str_item_eoi: [ [ sense_token_stream ; x = Pcaml.str_item; sense_token_stream ; EOI -> x ] ];
-  type_decl_eoi: [ [ x = Pcaml.type_decl; EOI -> x ] ];
+  type_decl_eoi: [ [ sense_token_stream ; x = Pcaml.type_decl; EOI -> x ] ];
   type_extension_eoi: [ [ x = Pcaml.type_extension; EOI -> x ] ];
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
 END;
@@ -886,7 +886,9 @@ IFDEF STRICT THEN
     ;
     Pcaml.expr: LAST
       [ [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc s None
-        | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc s None ] ]
+        | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc s None
+        | s = ANTIQUOT_LOC "exp" -> MLast.ExXtr loc s None
+        ] ]
     ;
     Pcaml.ipatt: LAST
       [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None ] ]
@@ -906,8 +908,7 @@ IFDEF STRICT THEN
     ;
     Pcaml.str_item: FIRST
       [ [ s = ANTIQUOT_LOC -> MLast.StXtr loc s None
-        | s = ANTIQUOT_LOC "exp" ->
-            MLast.StExp loc (MLast.ExXtr loc s None) (Ploc.VaVal []) ] ]
+        ] ]
     ;
   END;
 END;
