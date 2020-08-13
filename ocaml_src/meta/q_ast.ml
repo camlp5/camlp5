@@ -76,6 +76,7 @@ module type MetaSig =
     val string : string -> t;;
     val tuple : t list -> t;;
     val record : (MLast.patt * t) list -> t;;
+    val xtr_typed : string -> Ploc.t -> string -> t;;
     val xtr : Ploc.t -> string -> t;;
     val xtr_or_anti : Ploc.t -> (t -> t) -> string -> t;;
   end
@@ -426,7 +427,7 @@ module Meta_make (C : MetaSig) =
         LiAcc (_, me1, s) -> C.node "LiAcc" [longid me1; C.vala C.string s]
       | LiApp (_, me1, me2) -> C.node "LiApp" [longid me1; longid me2]
       | LiUid (_, s) -> C.node "LiUid" [C.vala C.string s]
-      | LiXtr (loc, s, _) -> C.xtr loc s
+      | LiXtr (loc, s, _) -> C.xtr_typed "longid" loc s
     and module_expr =
       function
         MeAtt (_, e, att) -> C.node "MeAtt" [module_expr e; attribute att]
@@ -519,11 +520,11 @@ module Meta_make (C : MetaSig) =
     and type_decl x =
       let attrs = conv_attributes x.tdAttributes in
       C.record
-        [record_label "tdNam",
+        [record_label "tdIsDecl", C.vala C.bool x.tdIsDecl;
+         record_label "tdNam",
          C.vala (fun (_, s) -> C.tuple [C.loc_v (); C.vala C.string s])
            x.tdNam;
          record_label "tdPrm", C.vala (C.list type_var) x.tdPrm;
-         record_label "tdIsDecl", C.vala C.bool x.tdIsDecl;
          record_label "tdPrv", C.vala C.bool x.tdPrv;
          record_label "tdDef", ctyp x.tdDef;
          record_label "tdCon",
@@ -531,11 +532,10 @@ module Meta_make (C : MetaSig) =
          record_label "tdAttributes", attrs]
     and extension_constructor =
       function
-        EcTuple gc -> C.node_no_loc "EcTuple" [generic_constructor gc]
-      | EcRebind (s, li, attrs) ->
+        EcTuple (loc, gc) -> C.node "EcTuple" [generic_constructor gc]
+      | EcRebind (loc, s, li, attrs) ->
           let attrs = conv_attributes attrs in
-          C.node_no_loc "EcRebind"
-            [C.vala C.string s; C.vala longid li; attrs]
+          C.node "EcRebind" [C.vala C.string s; C.vala longid li; attrs]
     and type_extension x =
       let attrs = conv_attributes x.teAttributes in
       let ecs = C.vala (C.list extension_constructor) x.teECs in
@@ -697,6 +697,13 @@ module Meta_E =
       let string s = MLast.ExStr (loc, s);;
       let tuple le = MLast.ExTup (loc, le);;
       let record lfe = MLast.ExRec (loc, lfe, None);;
+      let xtr_typed wantty loc s =
+        match get_anti_loc s with
+          Some (_, typ, str) when typ = wantty ->
+            let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+            MLast.ExAnt (loc, r)
+        | _ -> assert false
+      ;;
       let xtr loc s =
         match get_anti_loc s with
           Some (_, typ, str) ->
@@ -774,6 +781,13 @@ module Meta_P =
       let string s = MLast.PaStr (loc, s);;
       let tuple lp = MLast.PaTup (loc, lp);;
       let record lfp = MLast.PaRec (loc, lfp);;
+      let xtr_typed wantty loc s =
+        match get_anti_loc s with
+          Some (_, typ, str) when typ = wantty ->
+            let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+            MLast.PaAnt (loc, r)
+        | _ -> assert false
+      ;;
       let xtr loc s =
         match get_anti_loc s with
           Some (_, typ, str) ->

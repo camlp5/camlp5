@@ -1333,7 +1333,7 @@ EXTEND
   [ [ ci = cons_ident ; "="; b = V longident "longid" ; alg_attrs = alg_attributes ->
         <:extension_constructor< $_uid:ci$ = $_longid:b$ $_algattrs:alg_attrs$ >>
     | ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
-        MLast.EcTuple (loc, ci, tl, rto, attrs)
+        MLast.EcTuple loc (loc, ci, tl, rto, attrs)
     ] ]
   ;
 

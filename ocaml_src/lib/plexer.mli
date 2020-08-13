@@ -82,6 +82,11 @@ val utf8_lexing : bool ref;;
        to specify letters and punctuation marks. Default is False (all
        characters between '\128' and '\255' are considered as letters) *)
 
+val parse_antiloc : string -> (Ploc.t * string * string) option;;
+   (** breaks apart the payload of an ANTIQUOT_LOC
+       (which is <begin-pos>,<end-pos>:<type>:<token-string>)
+       into its colon-separated parts *)
+
 (*** For system use *)
 
 val force_antiquot_loc : bool ref;;

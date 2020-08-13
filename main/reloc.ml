@@ -654,8 +654,8 @@ and type_extension floc sh x =
    teECs = vala_map (List.map (extension_constructor floc sh)) x.teECs ;
    teAttributes = attributes floc sh x.teAttributes}
 and extension_constructor floc sh = fun [
-    EcTuple x1 -> EcTuple (generic_constructor floc sh x1)
-  | EcRebind x1 x2 x3 -> EcRebind x1 x2 (attributes floc sh x3)
+    EcTuple loc x1 -> EcTuple (floc loc) (generic_constructor floc sh x1)
+  | EcRebind loc x1 x2 x3 -> EcRebind (floc loc) x1 x2 (attributes floc sh x3)
 ]
 and class_type floc sh =
   self where rec self =

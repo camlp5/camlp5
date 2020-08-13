@@ -648,7 +648,7 @@ value cons_decl pc (loc, c, tl, rto, alg_attrs) =
 ;
 
 value extension_constructor loc pc ec = match ec with [
-  MLast.EcTuple gc -> cons_decl pc gc
+  MLast.EcTuple _ gc -> cons_decl pc gc
 
 | <:extension_constructor:< $uid:e$ = $longid:li$ $algattrs:alg_attrs$ >> ->
       pprintf pc "%p@;= %p%p" cons_escaped (loc, e) longident li
@@ -660,11 +660,11 @@ value extension_constructor loc pc ec = match ec with [
 value has_ecs_with_params vdl =
   List.exists
     (fun [
-       MLast.EcTuple (_, _, tl, rto,_) ->
+       MLast.EcTuple _ (_, _, tl, rto,_) ->
        match tl with
          [ <:vala< [] >> -> False
          | _ -> True ]
-       | MLast.EcRebind _ _ _ -> True
+       | MLast.EcRebind _ _ _ _ -> True
      ])
     vdl
 ;

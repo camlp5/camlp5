@@ -531,11 +531,11 @@ module Meta_make (C : MetaSig) =
           (record_label "tdAttributes", attrs)
         ]
     and extension_constructor = fun [
-      EcTuple gc ->
-        C.node_no_loc "EcTuple" [generic_constructor gc]
-    | EcRebind s li attrs ->
+      EcTuple loc gc ->
+        C.node "EcTuple" [generic_constructor gc]
+    | EcRebind loc s li attrs ->
         let attrs = conv_attributes attrs in
-        C.node_no_loc "EcRebind" [C.vala C.string s; C.vala longid li; attrs]
+        C.node "EcRebind" [C.vala C.string s; C.vala longid li; attrs]
     ]
     and type_extension x =
       let attrs = conv_attributes x.teAttributes in

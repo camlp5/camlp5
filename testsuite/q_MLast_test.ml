@@ -200,7 +200,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
    MLast.tePrm = Ploc.VaVal []; MLast.tePrv = Ploc.VaVal False;
    MLast.teECs =
      Ploc.VaVal
-       [MLast.EcTuple
+       [MLast.EcTuple loc
           (loc, Ploc.VaVal "A", Ploc.VaVal [], None, Ploc.VaVal [])];
    MLast.teAttributes = Ploc.VaVal []};
 |foo} ;

@@ -212,8 +212,8 @@ and type_decl =
     tdAttributes : attributes }
 and generic_constructor = loc * string * ctyp list * ctyp option * attributes
 and extension_constructor =
-    EcTuple of generic_constructor
-  | EcRebind of string * longid * attributes
+    EcTuple of loc * generic_constructor
+  | EcRebind of loc * string * longid * attributes
 and type_extension =
   { teNam : longid_lident;
     tePrm : type_var list;
@@ -281,6 +281,8 @@ external loc_of_module_expr : module_expr -> loc = "%field0";;
 external loc_of_sig_item : sig_item -> loc = "%field0";;
 external loc_of_str_item : str_item -> loc = "%field0";;
 external loc_of_with_constr : with_constr -> loc = "%field0";;
+external loc_of_extension_constructor :
+  extension_constructor -> loc = "%field0";;
 
 external loc_of_class_type : class_type -> loc = "%field0";;
 external loc_of_class_sig_item : class_sig_item -> loc = "%field0";;

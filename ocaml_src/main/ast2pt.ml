@@ -776,9 +776,9 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
       in
       mktype ~item_attributes:item_attributes (loc_of_ctyp t) tn tl cl
         Ptype_abstract priv m
-and extension_constructor loc ec =
+and extension_constructor ec =
   match ec with
-    EcTuple gc ->
+    EcTuple (loc, gc) ->
       let (n, tl, _, alg_attrs) = conv_constructor false gc in
       begin match tl with
         Left x, y ->
@@ -786,11 +786,11 @@ and extension_constructor loc ec =
       | Right x, y ->
           ocaml_ec_record ~alg_attributes:alg_attrs (mkloc loc) n (x, y)
       end
-  | EcRebind (n, li, alg_attrs) ->
+  | EcRebind (loc, n, li, alg_attrs) ->
       ocaml_ec_rebind (mkloc loc) (uv n) (longid_long_id (uv li))
 and type_extension loc te =
   let pf = uv te.tePrv in
-  let ecstrs = List.map (extension_constructor loc) (uv te.teECs) in
+  let ecstrs = List.map extension_constructor (uv te.teECs) in
   ocaml_type_extension ~item_attributes:(uv_item_attributes te.teAttributes)
     (mkloc loc) (longid_lident_long_id (uv te.teNam))
     (List.map (fun (p, v) -> uv p, variance_of_var v) (uv te.tePrm))
@@ -1685,7 +1685,7 @@ and str_item s l =
   | StDir (loc, _, _) -> l
   | StExc (loc, ec, item_attrs) ->
       begin match uv ec with
-        EcTuple gc ->
+        EcTuple (loc, gc) ->
           let (n, tl, _, alg_attrs) = conv_constructor false gc in
           let si =
             ocaml_pstr_exception ~alg_attributes:alg_attrs
@@ -1693,7 +1693,7 @@ and str_item s l =
               tl
           in
           mkstr loc si :: l
-      | EcRebind (n, li, alg_attrs) ->
+      | EcRebind (loc, n, li, alg_attrs) ->
           let si =
             match ocaml_pstr_exn_rebind with
               Some pstr_exn_rebind ->

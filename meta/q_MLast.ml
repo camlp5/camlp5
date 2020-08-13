@@ -1302,9 +1302,9 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   extension_constructor:
   [ [ ci = cons_ident ; "="; b = SV longident "longid" ; alg_attrs = alg_attributes ->
-        Qast.Node "EcRebind" [ci; b; alg_attrs]
+        Qast.Node "EcRebind" [Qast.Loc; ci; b; alg_attrs]
     | ci = cons_ident; l = rest_constructor_declaration →
-        Qast.Node "EcTuple" [Qast.Tuple [Qast.Loc; ci :: l]]
+        Qast.Node "EcTuple" [Qast.Loc; Qast.Tuple [Qast.Loc; ci :: l]]
     ] ]
   ;
   label_declaration:

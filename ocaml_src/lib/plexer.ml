@@ -630,6 +630,34 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
 
 let antiloc bp ep s = Printf.sprintf "%d,%d:%s" bp ep s;;
 
+
+let skip_to_next_colon s i =
+  let rec loop j =
+    if j = String.length s then i, 0
+    else
+      match s.[j] with
+        ':' -> j, j - i - 1
+      | 'a'..'z' | 'A'..'Z' | '0'..'9' | '!' | '_' -> loop (j + 1)
+      | _ -> i, 0
+  in
+  loop (i + 1)
+;;
+
+let parse_antiloc s =
+  try
+    let i = String.index s ':' in
+    let (j, len) = skip_to_next_colon s i in
+    let kind = String.sub s (i + 1) len in
+    let loc =
+      let k = String.index s ',' in
+      let bp = int_of_string (String.sub s 0 k) in
+      let ep = int_of_string (String.sub s (k + 1) (i - k - 1)) in
+      Ploc.make_unlined (bp, ep)
+    in
+    Some (loc, kind, String.sub s (j + 1) (String.length s - j - 1))
+  with Not_found | Failure _ -> None
+;;
+
 let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' ->
@@ -1809,11 +1837,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 932, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 932, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 932, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 933, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 933, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 959, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 959, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 959, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 960, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 960, 37)));
        tok_comm = None}
   in
   let glex =

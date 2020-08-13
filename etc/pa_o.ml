@@ -1772,7 +1772,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
 
     | attrs = alg_attributes_no_anti; ci = cons_ident; (tl, rto, alg_attrs) = rest_constructor_declaration ->
         let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="(right) algebraic attributes"} attrs alg_attrs in
-        MLast.EcTuple (loc, ci, tl, rto, alg_attrs)
+        MLast.EcTuple loc (loc, ci, tl, rto, alg_attrs)
     ] ]
   ;
   cons_ident:
