@@ -2,6 +2,14 @@
 Camlp5 Version 8.00-alpha02:
 --------------------
 
+* [13 Aug 2020] rehabilitated q_ast parsing kit and verified that it
+  works just as q_MLast does (for revised syntax).  Still haven't done
+  so original syntax (and it won't, since original syntax has
+  ambiguities when introducing antiquotations everywhere).
+
+  Also rehabbed the "test" tests, but not all of them work
+  (e.g. "quot_o").
+
 * [05 Aug 2020] Fixed top/rprint so that in revised syntax toplevel
   mode, exceptions get printed out correctly.
 
