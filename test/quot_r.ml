@@ -1262,7 +1262,7 @@ MLast.EcTuple (loc, xf2, xf3, oxf4, xf5);
 <:class_sig_item< [%% $_extension:x$ ] >> ;
 
 (* application *)
-<:class_expr< $ce$ $e$ >>;
+<:class_expr< $ce$ $exp:e$ >>;
 
 (* constructor *)
 <:class_expr< [ $list:lt$ ] $lilongid:x$ >>;

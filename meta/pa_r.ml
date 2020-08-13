@@ -1213,12 +1213,10 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = ipatt → (i, p) ] ]
   ;
   type_decl:
-    [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter); "=";
+    [ [ n = V type_patt "tp"; tpl = V (LIST0 type_parameter);
+        isDecl = V [ "=" -> True | ":=" -> False ] "isdecl" ;
         pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = item_attributes →
-          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
-      | n = V type_patt "tp"; tpl = V (LIST0 type_parameter); ":=";
-        pf = V (FLAG "private") "priv"; tk = ctyp; cl = V (LIST0 constrain) ; attrs = item_attributes →
-          <:type_decl< $_tp:n$ $_list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+          <:type_decl< $_tp:n$ $_list:tpl$ $_isdecl:isDecl$ $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
       ] ]
   ;
   type_extension:
@@ -1412,7 +1410,7 @@ EXTEND
   class_expr_apply:
     [ "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" →
-          <:class_expr< $ce$ $e$ >> ]
+          <:class_expr< $ce$ $exp:e$ >> ]
     | [ ce = class_expr_simple -> ce ]
     ]
     ;

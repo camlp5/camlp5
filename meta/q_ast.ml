@@ -517,17 +517,19 @@ module Meta_make (C : MetaSig) =
     and type_decl x =
       let attrs = conv_attributes x.tdAttributes in
       C.record
-        [(record_label "tdNam",
-          C.vala (fun (_, s) → C.tuple [C.loc_v (); C.vala C.string s])
-            x.tdNam);
-         (record_label "tdPrm", C.vala (C.list type_var) x.tdPrm);
+        [
          (record_label "tdIsDecl", C.vala C.bool x.tdIsDecl);
-         (record_label "tdPrv", C.vala C.bool x.tdPrv);
-         (record_label "tdDef", ctyp x.tdDef);
-         (record_label "tdCon",
-          C.vala (C.list (fun (t1, t2) → C.tuple [ctyp t1; ctyp t2]))
-            x.tdCon);
-         (record_label "tdAttributes", attrs)]
+          (record_label "tdNam",
+           C.vala (fun (_, s) → C.tuple [C.loc_v (); C.vala C.string s])
+             x.tdNam);
+          (record_label "tdPrm", C.vala (C.list type_var) x.tdPrm);
+          (record_label "tdPrv", C.vala C.bool x.tdPrv);
+          (record_label "tdDef", ctyp x.tdDef);
+          (record_label "tdCon",
+           C.vala (C.list (fun (t1, t2) → C.tuple [ctyp t1; ctyp t2]))
+             x.tdCon);
+          (record_label "tdAttributes", attrs)
+        ]
     and extension_constructor = fun [
       EcTuple gc ->
         C.node_no_loc "EcTuple" [generic_constructor gc]
@@ -836,24 +838,15 @@ value type_decl_eoi = Grammar.Entry.create Pcaml.gram "type_declaration";
 value type_extension_eoi = Grammar.Entry.create Pcaml.gram "type_extension_eoi";
 value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
 
-
-value sense_token_stream_f (strm : Stream.t (string * string)) = ()
-;
-
-value sense_token_stream =
-  Grammar.Entry.of_parser Pcaml.gram "sense_token_stream"
-    sense_token_stream_f
-;
-
 EXTEND
   attribute_body_eoi: [ [ x = Pcaml.attribute_body; EOI -> x ] ];
-  class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
+  class_expr_eoi: [ [ x = Pcaml.class_expr ; EOI -> x ] ];
   class_sig_item_eoi: [ [ x = Pcaml.class_sig_item; EOI -> x ] ];
   class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
   class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
   ctyp_eoi: [ [ x = Pcaml.ctyp; EOI -> x ] ];
-  expr_eoi: [ [ sense_token_stream ; x = Pcaml.expr; EOI -> x ] ];
-  extended_longident_eoi: [ [ sense_token_stream ; x = Pcaml.extended_longident; EOI -> x ] ];
+  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
+  extended_longident_eoi: [ [ x = Pcaml.extended_longident; EOI -> x ] ];
   extension_constructor_eoi: [ [ x = Pcaml.extension_constructor; EOI -> x ] ];
   longident_eoi: [ [ x = Pcaml.longident; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
@@ -861,15 +854,15 @@ EXTEND
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
   poly_variant_eoi: [ [ x = Pcaml.poly_variant; EOI -> x ] ];
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
-  str_item_eoi: [ [ sense_token_stream ; x = Pcaml.str_item; sense_token_stream ; EOI -> x ] ];
-  type_decl_eoi: [ [ sense_token_stream ; x = Pcaml.type_decl; EOI -> x ] ];
+  str_item_eoi: [ [ x = Pcaml.str_item ; EOI -> x ] ];
+  type_decl_eoi: [ [ x = Pcaml.type_decl; EOI -> x ] ];
   type_extension_eoi: [ [ x = Pcaml.type_extension; EOI -> x ] ];
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
   EXTEND
-    Pcaml.class_expr: LAST
+    Pcaml.class_expr_simple: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.CeXtr loc s None ] ]
     ;
     Pcaml.class_type: LAST
