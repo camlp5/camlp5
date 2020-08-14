@@ -2252,18 +2252,33 @@ MLast.MeUnp loc e omt1 omt2;
 <:class_str_item< [@@@ $_attribute:x$ ] >> ;
 <:class_str_item< [%% $_extension:x$ ] >> ;
 
-(* CHET TODO: FIX THESE, make them meaningful *)
-MLast.StAttr loc (Ploc.VaVal lsi);
-MLast.StAttr loc lsi;
-MLast.SiAttr loc (Ploc.VaVal lsi);
-MLast.SiAttr loc lsi;
-MLast.TyAttr loc (Ploc.VaVal t);
-MLast.TyAttr loc t;
-MLast.PaAttr loc (Ploc.VaVal p) None;
-MLast.PaAttr loc (Ploc.VaVal p) (Some (Ploc.VaVal e));
-MLast.PaAttr loc (Ploc.VaVal p) (Some e);
-MLast.PaAttr loc (Ploc.VaVal p) oe;
-MLast.PaAttr loc p None;
-MLast.PaAttr loc p (Some (Ploc.VaVal e));
-MLast.PaAttr loc p (Some e);
-MLast.PaAttr loc p oe;
+(* PPX attribute body *)
+
+<:attribute_body< $attrid:(loc, lsf2)$ $structure:lsi$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ $_structure:lsi$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ : $signature:lsi$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ : $_signature:lsi$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ : $type:t$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ : $_type:t$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ ? $patt:p$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ ? $patt:p$ when $expr:e$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ ? $patt:p$ when $_expr:e$ >>;
+(Ploc.VaVal (loc, lsf2), MLast.PaAttr loc (Ploc.VaVal p) oe);
+<:attribute_body< $attrid:(loc, lsf2)$ ? $_patt:p$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ ? $_patt:p$ when $expr:e$ >>;
+<:attribute_body< $attrid:(loc, lsf2)$ ? $_patt:p$ when $_expr:e$ >>;
+(Ploc.VaVal (loc, lsf2), MLast.PaAttr loc p oe);
+<:attribute_body< $_attrid:ls$ $structure:lsi$ >>;
+<:attribute_body< $_attrid:ls$ $_structure:lsi$ >>;
+<:attribute_body< $_attrid:ls$ : $signature:lsi$ >>;
+<:attribute_body< $_attrid:ls$ : $_signature:lsi$ >>;
+<:attribute_body< $_attrid:ls$ : $type:t$ >>;
+<:attribute_body< $_attrid:ls$ : $_type:t$ >>;
+<:attribute_body< $_attrid:ls$ ? $patt:p$ >>;
+<:attribute_body< $_attrid:ls$ ? $patt:p$ when $expr:e$ >>;
+<:attribute_body< $_attrid:ls$ ? $patt:p$ when $_expr:e$ >>;
+(ls, MLast.PaAttr loc (Ploc.VaVal p) oe);
+<:attribute_body< $_attrid:ls$ ? $_patt:p$ >>;
+<:attribute_body< $_attrid:ls$ ? $_patt:p$ when $expr:e$ >>;
+<:attribute_body< $_attrid:ls$ ? $_patt:p$ when $_expr:e$ >>;
+(ls, MLast.PaAttr loc p oe);

@@ -125,11 +125,11 @@ and expr_list_of_type_gen_uncurried (loc, f, n, x) =
   | <:ctyp< loc >> ->
       f <:expr< loc >>
 
-  | <:ctyp<{ $list:_$ }>> as ct -> expr_list_of_record_ctyp f ct
+  | <:ctyp< { $list:_$ }>> as ct -> expr_list_of_record_ctyp f ct
 
-  | <:ctyp<[ $list:_$ ]>> as ct -> expr_list_of_variant_ctyp f ct
+  | <:ctyp< [ $list:_$ ]>> as ct -> expr_list_of_variant_ctyp f ct
 
-  | <:ctyp<( $list:l$ )>> -> 
+  | <:ctyp< ( $list:l$ )>> -> 
     let ll = List.mapi (fun i t -> expr_list_of_type_gen loc (fun x -> [x]) (n^"f"^(string_of_int (i+1))) t) l in
     let l = expr_list_cross_product ll in
     List.concat (List.map (fun l -> f <:expr< ( $list:l$ ) >>) l)
@@ -242,6 +242,12 @@ value expr_list_of_type_decl loc td =
             | [] -> [[]] ]
         in
         List.map (fun pel -> <:expr< {$list:pel$} >>) pell
+      | <:ctyp< ( $list:tl$ ) >> ->
+        let nl = name_of_vars (fun t -> t) tl in
+        let ell = List.map (fun (t,n) -> expr_list_of_type_gen loc (fun x -> [x]) n t) nl in
+        let el = expr_list_cross_product ell in
+        List.map (fun l -> <:expr< ( $list:l$ ) >>) el
+
       | _ -> [] ]
   else []
 ;
