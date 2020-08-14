@@ -42,6 +42,16 @@ value value_ident ppf name =
     | _ -> fprintf ppf "( %s )" name ]
 ;
 
+(* copied from Ocaml 4.10.0 sources *)
+value tyvar ppf s =
+  if String.length s >= 2 && s.[1] = '\'' then
+    (* without the space, this would be parsed as
+       a character literal *)
+    Format.fprintf ppf "' %s" s
+  else
+    Format.fprintf ppf "'%s" s
+;
+
 (* Values *)
 
 value print_out_value ppf tree =
@@ -444,7 +454,7 @@ and print_out_sig_item ppf =
             print_out_constr_gadt_opt (ext.oext_name, ext.oext_args, ext.oext_ret_type)
       | _ ->
         let print_out_extension_constructor ppf ext =
-          let pr_var = Pprintast.tyvar in
+          let pr_var = tyvar in
           let print_type_parameter ppf s =
             if s = "_" then fprintf ppf "_" else pr_var ppf s in
           let print_extended_type ppf =

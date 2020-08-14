@@ -400,7 +400,9 @@ let report_error exn = pp_report_error Format.std_formatter exn;;
 Printexc.register_printer
   (function
      Qerror (_, _, _) as exn ->
-       Some (Format.asprintf "%a" pp_report_error exn)
+       let b = Buffer.create 23 in
+       let pps = Format.formatter_of_buffer b in
+       Format.fprintf pps "%a%!" pp_report_error exn; Some (Buffer.contents b)
    | _ -> None);;
 
 let no_constructors_arity = Prtools.no_constructors_arity;;

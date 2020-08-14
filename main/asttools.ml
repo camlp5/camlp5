@@ -51,7 +51,7 @@ value longid_concat li1 li2 =
       <:extended_longident< $longid:(crec a)$ ( $longid:b$ ) >>
   | <:extended_longident:< $_uid:b$ >> ->
       <:extended_longident< $longid:li1$ . $_uid:b$ >>
-  | LiXtr loc _ _ -> Ploc.raise loc (Failure "longid_concat: LiXtr forbidden here")
+  | MLast.LiXtr loc _ _ -> Ploc.raise loc (Failure "longid_concat: LiXtr forbidden here")
   ] in
   crec li2
 ;

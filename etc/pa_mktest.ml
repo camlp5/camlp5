@@ -275,7 +275,7 @@ value rec store_expandable_types = fun [
   <:str_item< declare $list:l$ end >> -> List.iter store_expandable_types l
 | <:str_item< type $_flag:_$ $list:tdl$ >> ->
     List.iter (fun ({MLast.tdNam=n} as td) ->
-      let n = n |> Pcaml.unvala |> snd |> Pcaml.unvala in
+      let n = Pcaml.unvala (snd (Pcaml.unvala n)) in
       if expanded_type n then
         add_expansion n td.MLast.tdDef
       else ()

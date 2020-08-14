@@ -597,7 +597,7 @@ and sumbranch_ctyp ?(priv = false) loc l rto =
   | TyRec (_, _) :: _ -> error loc "only ONE record type allowed here"
   | l -> Left (List.map ctyp l), rto
 and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
-  conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tl) rto, mkloc loc,
+  conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tl) (uv rto), mkloc loc,
   uv_alg_attributes alg_attrs
 and mktvariant loc ctl priv =
   let ctl = List.map (conv_constructor priv) ctl in
