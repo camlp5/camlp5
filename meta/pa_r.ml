@@ -1321,13 +1321,12 @@ EXTEND
           (loc, ci, tl, rto, attrs) ] ]
   ;
   rest_constructor_declaration:
-    [ [ "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ; attrs = alg_attributes →
-          (cal, None, attrs)
-      | ":"; t = ctyp_below_alg_attribute ; attrs = alg_attributes →
-          let (tl, rt) = generalized_type_of_type t in
-          (<:vala< tl >>, Some rt, attrs)
-      | attrs = alg_attributes →
-          (<:vala< [] >>, None, attrs) ] ]
+    [ [ "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ;
+        rto = V (OPT [ ":"; t = ctyp_below_alg_attribute -> t ]) "rto" ; attrs = alg_attributes →
+          (cal, rto, attrs)
+      | rto = V (OPT [ ":"; t = ctyp_below_alg_attribute -> t ]) "rto" ; attrs = alg_attributes →
+          (<:vala< [] >>, rto, attrs)
+      ] ]
   ;
   extension_constructor:
   [ [ ci = cons_ident ; "="; b = V longident "longid" ; alg_attrs = alg_attributes ->

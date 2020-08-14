@@ -138,7 +138,7 @@ value rec ctyp floc sh =
     ]
 and generic_constructor floc sh = fun (loc, x1, x2, x3, x4) ->
     (floc loc, x1, vala_map (List.map (ctyp floc sh)) x2,
-     option_map (ctyp floc sh) x3, attributes floc sh x4)
+     vala_map (option_map (ctyp floc sh)) x3, attributes floc sh x4)
 and poly_variant floc sh =
   fun
   [ PvTag loc x1 x2 x3 x4 →

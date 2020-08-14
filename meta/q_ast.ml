@@ -170,7 +170,7 @@ module Meta_make (C : MetaSig) =
       let attrs = conv_attributes attrs in
         C.tuple
           [C.loc_v (); C.vala C.string s;
-           C.vala (C.list ctyp) lt; C.option ctyp ot; attrs]
+           C.vala (C.list ctyp) lt; C.vala (C.option ctyp) ot; attrs]
     and poly_variant =
       fun
       [ PvTag _ s b lt attrs →

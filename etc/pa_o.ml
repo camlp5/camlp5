@@ -1744,12 +1744,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   rest_constructor_declaration:
     [ [ "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
-          (cal, None, alg_attrs)
+          (cal, <:vala< None >>, alg_attrs)
       | "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
-          (Ploc.VaVal [cdrec], None, alg_attrs)
+          (Ploc.VaVal [cdrec], <:vala< None >>, alg_attrs)
 
       | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*"); "->"; t = ctyp ; alg_attrs = alg_attributes ->
-          (cal, Some t, alg_attrs)
+          (cal, <:vala< Some t >>, alg_attrs)
       | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
           let t =
             match cal with
@@ -1757,13 +1757,13 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
             | <:vala< [t :: tl] >> -> <:ctyp< ($list:[t :: tl]$) >>
             | _ -> assert False ]
           in
-          (<:vala< [] >>, Some t, alg_attrs)
+          (<:vala< [] >>, <:vala< Some t >>, alg_attrs)
 
       | ":"; cdrec = record_type; "->"; t = ctyp ; alg_attrs = alg_attributes ->
-          (Ploc.VaVal [cdrec], Some t, alg_attrs)
+          (Ploc.VaVal [cdrec], <:vala< Some t >>, alg_attrs)
 
       | alg_attrs = alg_attributes ->
-          (<:vala< [] >>, None, alg_attrs) ] ]
+          (<:vala< [] >>, <:vala< None >>, alg_attrs) ] ]
   ;
   extension_constructor:
   [ [ attrs = alg_attributes_no_anti; ci = cons_ident; "=" ; b = V longident "longid" ; alg_attrs = alg_attributes ->

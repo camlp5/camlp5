@@ -451,7 +451,7 @@ and sumbranch_ctyp ?{priv=False} loc l rto =
     ]
 
 and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
-    (conv_con (uv c), sumbranch_ctyp ~{priv=priv} loc (uv tl) rto,
+    (conv_con (uv c), sumbranch_ctyp ~{priv=priv} loc (uv tl) (uv rto),
      mkloc loc, uv_alg_attributes alg_attrs)
 
 and mktvariant loc ctl priv =

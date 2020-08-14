@@ -2805,7 +2805,7 @@ type succ α =
   [ Succ of α ];
 type nat _ =
   [ NZ : nat zero
-  | NS : nat α → nat (succ α) ];|foo} ;
+  | NS of nat α : nat (succ α) ];|foo} ;
      o_output = OK {foo|type zero = Zero;;
 type 'a succ =
     Succ of 'a;;
@@ -2825,7 +2825,7 @@ type succ α =
   [ Succ of α ];
 type nat _ =
   [ NZ : nat zero
-  | NS : nat α → nat (succ α) ];
+  | NS of nat α : nat (succ α) ];
 |foo}
     };
     {name="gadt-basic-1"; implem = True ;
@@ -2833,95 +2833,95 @@ type nat _ =
      o_input = OK {foo|type t = Foo : int -> t|foo} ;
      official_input = OK {foo|type t = Foo : int -> t|foo} ;
      r_input = OK {foo|type t =
-  [ Foo : int → t ];|foo} ;
+  [ Foo of int : t ];|foo} ;
      o_output = OK {foo|type t =
     Foo : int -> t;;
 |foo};
      official_output = OK {foo|type t =
   | Foo: int -> t |foo} ;
      r_output = OK {foo|type t =
-  [ Foo : int → t ];
+  [ Foo of int : t ];
 |foo}
     };
     {name="gadt-basic-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t += Foo : int -> t|foo} ;
      official_input = OK {foo|type t += Foo : int -> t|foo} ;
-     r_input = OK {foo|type t += [ Foo : int → t ];|foo} ;
+     r_input = OK {foo|type t += [ Foo of int : t ];|foo} ;
      o_output = OK {foo|type t +=
     Foo : int -> t;;
 |foo};
      official_output = OK {foo|type t +=  
   | Foo: int -> t |foo} ;
      r_output = OK {foo|type t +=
-  [ Foo : int → t ];
+  [ Foo of int : t ];
 |foo}
     };
     {name="gadt-basic-2b"; implem = True ;
      exclude=[];
      o_input = OK {foo|type _ t += Foo : int -> t|foo} ;
      official_input = OK {foo|type _ t += Foo : int -> t|foo} ;
-     r_input = OK {foo|type t _ += [ Foo : int → t ];|foo} ;
+     r_input = OK {foo|type t _ += [ Foo of int : t ];|foo} ;
      o_output = OK {foo|type _ t +=
     Foo : int -> t;;
 |foo};
      official_output = OK {foo|type _ t +=  
   | Foo: int -> t |foo} ;
      r_output = OK {foo|type t _ +=
-  [ Foo : int → t ];
+  [ Foo of int : t ];
 |foo}
     };
     {name="gadt-basic-3"; implem = True ;
      exclude=[];
      o_input = OK {foo|exception Foo : int -> t|foo} ;
      official_input = OK {foo|exception Foo : int -> t|foo} ;
-     r_input = OK {foo|exception Foo : int -> t;|foo} ;
+     r_input = OK {foo|exception Foo of int : t;|foo} ;
      o_output = OK {foo|exception Foo : int -> t;;
 |foo};
      official_output = OK {foo|exception Foo: int -> t |foo} ;
-     r_output = OK {foo|exception Foo : int → t;
+     r_output = OK {foo|exception Foo of int : t;
 |foo}
     };
     {name="gadt-basic-4"; implem = False ;
      exclude=[];
      o_input = OK {foo|exception Foo : int -> t|foo} ;
      official_input = OK {foo|exception Foo : int -> t|foo} ;
-     r_input = OK {foo|exception Foo : int -> t;|foo} ;
+     r_input = OK {foo|exception Foo of int : t;|foo} ;
      o_output = OK {foo|exception Foo : int -> t;;
 |foo};
      official_output = OK {foo|exception Foo: int -> t |foo} ;
-     r_output = OK {foo|exception Foo : int → t;
+     r_output = OK {foo|exception Foo of int : t;
 |foo}
     };
     {name="gadt-basic-4b"; implem = False ;
      exclude=[];
      o_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
      official_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
-     r_input = OK {foo|exception Foo : {a : int } -> t;|foo} ;
+     r_input = OK {foo|exception Foo of {a : int } : t;|foo} ;
      o_output = OK {foo|exception Foo : { a : int } -> t;;
 |foo};
      official_output = OK {foo|exception Foo: {
   a: int } -> t |foo} ;
-     r_output = OK {foo|exception Foo : { a : int } → t;
+     r_output = OK {foo|exception Foo of { a : int } : t;
 |foo}
     };
     {name="gadt-basic-4c"; implem = True ;
      exclude=[];
      o_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
      official_input = OK {foo|exception Foo : {a : int } -> t|foo} ;
-     r_input = OK {foo|exception Foo : {a : int } -> t;|foo} ;
+     r_input = OK {foo|exception Foo of {a : int } : t;|foo} ;
      o_output = OK {foo|exception Foo : { a : int } -> t;;
 |foo};
      official_output = OK {foo|exception Foo: {
   a: int } -> t |foo} ;
-     r_output = OK {foo|exception Foo : { a : int } → t;
+     r_output = OK {foo|exception Foo of { a : int } : t;
 |foo}
     };
     {name="gadt-basic-5"; implem = True ;
      exclude=[];
      o_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
      official_input = OK {foo|type _ foo += A : int -> int foo | B : int foo|foo} ;
-     r_input = OK {foo|type foo _ += [ A : int → foo int | B : foo int ];|foo} ;
+     r_input = OK {foo|type foo _ += [ A of int : foo int | B : foo int ];|foo} ;
      o_output = OK {foo|type _ foo +=
     A : int -> int foo
   | B : int foo;;
@@ -2930,7 +2930,7 @@ type nat _ =
   | A: int -> int foo 
   | B: int foo |foo} ;
      r_output = OK {foo|type foo _ +=
-  [ A : int → foo int
+  [ A of int : foo int
   | B : foo int ];
 |foo}
     };
@@ -3119,7 +3119,7 @@ type nat _ =
      exclude=[];
      o_input = OK {foo|type _ t = A: {x : 'a; y : 'b} -> 'a t|foo} ;
      official_input = OK {foo|type _ t = A: {x : 'a; y : 'b} -> 'a t|foo} ;
-     r_input = OK {foo|type t _ = [ A: {x : 'a; y : 'b} -> t 'a ];|foo} ;
+     r_input = OK {foo|type t _ = [ A of {x : 'a; y : 'b} : t 'a ];|foo} ;
      o_output = OK {foo|type _ t =
     A : { x : 'a; y : 'b } -> 'a t;;
 |foo};
@@ -3128,7 +3128,7 @@ type nat _ =
   x: 'a ;
   y: 'b } -> 'a t |foo} ;
      r_output = OK {foo|type t _ =
-  [ A : { x : α; y : β } → t α ];
+  [ A of { x : α; y : β } : t α ];
 |foo}
     };
     {name="greek-type-variables-1"; implem = True ;

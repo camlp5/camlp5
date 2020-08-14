@@ -201,7 +201,8 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
    MLast.teECs =
      Ploc.VaVal
        [MLast.EcTuple loc
-          (loc, Ploc.VaVal "A", Ploc.VaVal [], None, Ploc.VaVal [])];
+          (loc, Ploc.VaVal "A", Ploc.VaVal [], Ploc.VaVal None,
+           Ploc.VaVal [])];
    MLast.teAttributes = Ploc.VaVal []};
 |foo} ;
           code = {foo|<:str_item< type t += [ A ] >> ;|foo}

@@ -10,6 +10,20 @@ Camlp5 Version 8.00-alpha02:
   Also rehabbed the "test" tests, but not all of them work
   (e.g. "quot_o").
 
+  Changed revised syntax (only revised -- original syntax remains the
+  same) of GADT declarations to allow them to be pattern-matched with
+  quotations.  Example: instead of
+
+  type t = A : t1 -> t2 -> t
+
+  use
+
+  type t = A of t1 and t2 : t
+  
+  This allows quotations like
+
+  type t = [ A of $list:args$ : $t$ ] ;
+
 * [05 Aug 2020] Fixed top/rprint so that in revised syntax toplevel
   mode, exceptions get printed out correctly.
 

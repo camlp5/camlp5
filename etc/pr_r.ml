@@ -877,7 +877,7 @@ value cons_decl pc (_, c, tl, rto, alg_attrs) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
-    match rto with
+    match Pcaml.unvala rto with
     [ Some rt -> pprintf pc "%p : %p%p" cons_escaped c ctyp_below_alg_attribute rt
                    (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None -> pprintf pc "%p%p" cons_escaped c
@@ -885,11 +885,11 @@ value cons_decl pc (_, c, tl, rto, alg_attrs) =
     ]
   }
   else do {
-    match rto with
+    match Pcaml.unvala rto with
     [ Some rt ->
-        let loc = Ploc.dummy in
-        let t = List.fold_right (fun t rt -> <:ctyp< $t$ -> $rt$ >>) tl rt in
-        pprintf pc "%p :@;<1 4>%p%p" cons_escaped c ctyp_below_alg_attribute t
+        let tl = List.map (fun t -> (t, " and")) tl in
+        pprintf pc "%p of@;<1 4>%p : %p%p" cons_escaped c (plist ctyp_below_alg_attribute 2) tl
+          ctyp_below_alg_attribute rt
           (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None ->
         let tl = List.map (fun t -> (t, " and")) tl in

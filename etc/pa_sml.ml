@@ -194,9 +194,9 @@ value extract_label_types loc tn tal cdol =
                 MLast.tdAttributes = <:vala< [] >>}
              in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
-             ([(loc, <:vala< c >>, <:vala< tl >>, None, <:vala< [] >>) :: cdl],
+             ([(loc, <:vala< c >>, <:vala< tl >>, <:vala< None >>, <:vala< [] >>) :: cdl],
                 [aux_def :: aux])
-         | None -> ([(loc, <:vala< c >>, <:vala< tl >>, None, <:vala< [] >>) :: cdl], aux) ]
+         | None -> ([(loc, <:vala< c >>, <:vala< tl >>, <:vala< None >>, <:vala< [] >>) :: cdl], aux) ]
          })
       cdol ([], [])
   in
@@ -691,7 +691,7 @@ EXTEND
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 =
             List.map
-              (fun (loc, c, tl, _, alg_attrs) -> (loc, <:vala< c>>, <:vala< tl >>, None, alg_attrs))
+              (fun (loc, c, tl, _, alg_attrs) -> (loc, <:vala< c>>, <:vala< tl >>, <:vala< None >>, alg_attrs))
               x4
           in
           {MLast.tdIsDecl = <:vala< True >> ;

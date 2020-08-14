@@ -1292,13 +1292,12 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
           Qast.Tuple [Qast.Loc; ci :: l] ] ]
   ;
   rest_constructor_declaration:
-    [ [ "of"; cal = SV (LIST1 ctyp SEP "and") ; alg_attrs = alg_attributes →
-          [cal; Qast.Option None; alg_attrs]
-      | ":"; t = ctyp ; alg_attrs = alg_attributes →
-          let (tl, rt) = generalized_type_of_type t in
-          [Qast.VaVal tl; Qast.Option (Some rt); alg_attrs]
-      | alg_attrs = alg_attributes →
-          [Qast.VaVal (Qast.List []); Qast.Option None; alg_attrs] ] ]
+    [ [ "of"; cal = SV (LIST1 ctyp SEP "and") ;
+        rto = SV (OPT [ ":" ; t = ctyp -> t ]) "rto" ; alg_attrs = alg_attributes →
+          [cal; rto; alg_attrs]
+      | rto = SV (OPT [ ":" ; t = ctyp -> t ]) "rto" ; alg_attrs = alg_attributes →
+          [Qast.VaVal (Qast.List []); rto; alg_attrs]
+      ] ]
   ;
   extension_constructor:
   [ [ ci = cons_ident ; "="; b = SV longident "longid" ; alg_attrs = alg_attributes ->

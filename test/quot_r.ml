@@ -528,17 +528,21 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 
 (* TODO CHET: GADT quotation support isn't so great yet *)
 <:sig_item< exception $x1f2$ of $list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
-MLast.SgExc loc (loc, Ploc.VaVal x1f2, Ploc.VaVal x1f3, Some x1f4, x1f5) x2;
-MLast.SgExc loc (loc, Ploc.VaVal x1f2, Ploc.VaVal x1f3, ox1f4, x1f5) x2;
+<:sig_item< exception $x1f2$ of $list:x1f3$ : $x1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $x1f2$ of $list:x1f3$ $rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $x1f2$ of $list:x1f3$ $_rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
 <:sig_item< exception $x1f2$ of $_list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
-MLast.SgExc loc (loc, Ploc.VaVal x1f2, x1f3, Some x1f4, x1f5) x2;
-MLast.SgExc loc (loc, Ploc.VaVal x1f2, x1f3, ox1f4, x1f5) x2;
+<:sig_item< exception $x1f2$ of $_list:x1f3$ : $x1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $x1f2$ of $_list:x1f3$ $rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $x1f2$ of $_list:x1f3$ $_rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
 <:sig_item< exception $_:x1f2$ of $list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
-MLast.SgExc loc (loc, x1f2, Ploc.VaVal x1f3, Some x1f4, x1f5) x2;
-MLast.SgExc loc (loc, x1f2, Ploc.VaVal x1f3, ox1f4, x1f5) x2;
+<:sig_item< exception $_:x1f2$ of $list:x1f3$ : $x1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $_:x1f2$ of $list:x1f3$ $rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $_:x1f2$ of $list:x1f3$ $_rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
 <:sig_item< exception $_:x1f2$ of $_list:x1f3$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
-MLast.SgExc loc (loc, x1f2, x1f3, Some x1f4, x1f5) x2;
-MLast.SgExc loc (loc, x1f2, x1f3, ox1f4, x1f5) x2;
+<:sig_item< exception $_:x1f2$ of $_list:x1f3$ : $x1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $_:x1f2$ of $_list:x1f3$ $rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
+<:sig_item< exception $_:x1f2$ of $_list:x1f3$ $_rto:ox1f4$ $_algattrs:x1f5$ $_itemattrs:x2$ >>;
 
 (* external *)
 <:sig_item< external $s$ : $t$ = $list:ls$ $_itemattrs:x$ >> ;
@@ -750,22 +754,26 @@ MLast.MeUnp loc e omt1 omt2;
 
 (* exception *)
 <:str_item< exception $uid:xf2$ of $list:xf3$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, Ploc.VaVal xf2, Ploc.VaVal xf3, Some xf4, xf5))) x2;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, Ploc.VaVal xf2, Ploc.VaVal xf3, oxf4, xf5))) x2;
+<:str_item< exception $uid:xf2$ of $list:xf3$ : $xf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $uid:xf2$ of $list:xf3$ $rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $uid:xf2$ of $list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
 <:str_item< exception $uid:xf2$ of $_list:xf3$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, Ploc.VaVal xf2, xf3, Some xf4, xf5))) x2;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, Ploc.VaVal xf2, xf3, oxf4, xf5))) x2;
+<:str_item< exception $uid:xf2$ of $_list:xf3$ : $xf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $uid:xf2$ of $_list:xf3$ $rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $uid:xf2$ of $_list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
 <:str_item< exception $_uid:xf2$ of $list:xf3$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, xf2, Ploc.VaVal xf3, Some xf4, xf5))) x2;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, xf2, Ploc.VaVal xf3, oxf4, xf5))) x2;
+<:str_item< exception $_uid:xf2$ of $list:xf3$ : $xf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $_uid:xf2$ of $list:xf3$ $rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $_uid:xf2$ of $list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
 <:str_item< exception $_uid:xf2$ of $_list:xf3$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, xf2, xf3, Some xf4, xf5))) x2;
-MLast.StExc loc (Ploc.VaVal (MLast.EcTuple loc (loc, xf2, xf3, oxf4, xf5))) x2;
+<:str_item< exception $_uid:xf2$ of $_list:xf3$ : $xf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $_uid:xf2$ of $_list:xf3$ $rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
+<:str_item< exception $_uid:xf2$ of $_list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ $_itemattrs:x2$ >>;
 <:str_item< exception $uid:s$ = $longid:x1$ $_algattrs:x2$ $_itemattrs:x2$ >>;
 <:str_item< exception $uid:s$ = $_longid:x1$ $_algattrs:x2$ $_itemattrs:x2$ >>;
 <:str_item< exception $_uid:s$ = $longid:x1$ $_algattrs:x2$ $_itemattrs:x2$ >>;
 <:str_item< exception $_uid:s$ = $_longid:x1$ $_algattrs:x2$ $_itemattrs:x2$ >>;
-MLast.StExc loc x1 x2;
+<:str_item< exception $_excon:x1$ $_itemattrs:x2$ >>;
 
 (* expression *)
 <:str_item< $exp:e$ $_itemattrs:x$ >>;
@@ -1096,17 +1104,21 @@ MLast.StExc loc x1 x2;
 (* extension constructor *)
 
 <:extension_constructor< $uid:xf2$ of $list:xf3$ $_algattrs:xf5$ >> ;
-MLast.EcTuple loc (loc, Ploc.VaVal xf2, Ploc.VaVal xf3, Some xf4, xf5);
-MLast.EcTuple loc (loc, Ploc.VaVal xf2, Ploc.VaVal xf3, oxf4, xf5);
+<:extension_constructor< $uid:xf2$ of $list:xf3$ : $xf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $uid:xf2$ of $list:xf3$ $rto:oxf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $uid:xf2$ of $list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ >> ;
 <:extension_constructor< $uid:xf2$ of $_list:xf3$ $_algattrs:xf5$ >> ;
-MLast.EcTuple loc (loc, Ploc.VaVal xf2, xf3, Some xf4, xf5);
-MLast.EcTuple loc (loc, Ploc.VaVal xf2, xf3, oxf4, xf5);
+<:extension_constructor< $uid:xf2$ of $_list:xf3$ : $xf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $uid:xf2$ of $_list:xf3$ $rto:oxf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $uid:xf2$ of $_list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ >> ;
 <:extension_constructor< $_uid:xf2$ of $list:xf3$ $_algattrs:xf5$ >> ;
-MLast.EcTuple loc (loc, xf2, Ploc.VaVal xf3, Some xf4, xf5);
-MLast.EcTuple loc (loc, xf2, Ploc.VaVal xf3, oxf4, xf5);
+<:extension_constructor< $_uid:xf2$ of $list:xf3$ : $xf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $_uid:xf2$ of $list:xf3$ $rto:oxf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $_uid:xf2$ of $list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ >> ;
 <:extension_constructor< $_uid:xf2$ of $_list:xf3$ $_algattrs:xf5$ >> ;
-MLast.EcTuple loc (loc, xf2, xf3, Some xf4, xf5);
-MLast.EcTuple loc (loc, xf2, xf3, oxf4, xf5);
+<:extension_constructor< $_uid:xf2$ of $_list:xf3$ : $xf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $_uid:xf2$ of $_list:xf3$ $rto:oxf4$ $_algattrs:xf5$ >> ;
+<:extension_constructor< $_uid:xf2$ of $_list:xf3$ $_rto:oxf4$ $_algattrs:xf5$ >> ;
 <:extension_constructor< $uid:s$ = $longid:x1$ $_algattrs:x2$ >> ;
 <:extension_constructor< $uid:s$ = $_longid:x1$ $_algattrs:x2$ >> ;
 <:extension_constructor< $_uid:s$ = $longid:x1$ $_algattrs:x2$ >> ;

@@ -626,7 +626,7 @@ value cons_decl pc (loc, c, tl, rto, alg_attrs) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
-    match rto with
+    match Pcaml.unvala rto with
     [ Some rt -> pprintf pc "%p : %p%p" cons_escaped (loc, c) ctyp_below_alg_attribute rt
                    (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     | None -> pprintf pc "%p%p" cons_escaped (loc, c)
@@ -636,7 +636,7 @@ value cons_decl pc (loc, c, tl, rto, alg_attrs) =
   else do {
     let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
     let tl = List.map (fun t -> (t, " *")) tl in
-    match rto with
+    match Pcaml.unvala rto with
     [ Some rt ->
         pprintf pc "%p :@;<1 4>%p -> %p%p" cons_escaped (loc, c)
           (plist ctyp_apply 2) tl ctyp_below_alg_attribute rt
