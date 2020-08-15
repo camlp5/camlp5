@@ -15,6 +15,11 @@ Commands and Files
    bytecode (compiled with ocamlc, not ocamlopt), able to dynamically
    load OCaml object files (ending with ".cmo" and ".cma").
 
+   We repeat (as explained in ::ref:`introduction`) that it should
+   almost never be necessary to use the ``camlp5`` command directly:
+   instead, specifying ``-syntax`` and various preprocessor packages to
+   ocamlfind should be sufficient.
+
    Most other Camlp5 commands derive from that one: they are the command
    "``camlp5``" with some implicitely applied parameters.
 
@@ -279,13 +284,14 @@ Commands and Files
    ``mkcamlp5``
       creates camlp5 executables with almost the same options than
       ocamlmktop. The interfaces to be visible must be explicitly added
-      in the command line as ".cmi" files. For example, how to add the
-      the OCaml module "str":
-      "``mkcamlp5 -custom str.cmi str.cma     -cclib -lstr -o camlp5str``"
+      in the command line as ".cmi" files. ``mkcamlp5`` is a wrapper around
+      ``ocamlfind``, and typically arguments to ocamlfind are passed-thru.
+      So for instance, to add the OCaml module "str":
+      "``mkcamlp5 -package camlp5,str str.cmi -o camlp5str``"
    ``mkcamlp5.opt``
       creates camlp5 executables like ``mkcamlp5``, except that it is in
       native code, therefore faster, but not extensible; the added kits
-      must be cmx or cmxa files
+      must be ocamlfind packages (or cmx or cmxa files)
 
    .. rubric:: Environment variable
       :name: environment-variable
