@@ -2,6 +2,9 @@
 Camlp5 Version 8.00-alpha02:
 --------------------
 
+* [15 Aug 2020] fixed "-verbose" bug in mkcamlp5 (and updated doc)
+
+
 * [13 Aug 2020] rehabilitated q_ast parsing kit and verified that it
   works just as q_MLast does (for revised syntax).  Still haven't done
   so original syntax (and it won't, since original syntax has
