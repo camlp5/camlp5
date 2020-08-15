@@ -82,11 +82,13 @@ EOF
     push(@link, "link$$.ml") ;
   }
 
+  my @verbose ;
+  @verbose = ( "-verbose" ) if $verbose ;
   v_systemx("ocamlfind",
 	    ($opt ? "ocamlopt" : "ocamlc"),
 	    "-predicates", join(',', @predicates),
 	    "-package", join(',', @packages),
-	    $verbose,
+	    @verbose,
 	    "-linkall", "-linkpkg",
 	    @link, @options,
 	    ($opt ? "odyl.cmx" : "odyl.cmo")
