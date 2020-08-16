@@ -1519,6 +1519,44 @@ MLast.MeUnp loc e omt1 omt2;
 <:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $itemattrs:x$ >>;
 <:type_decl<$_tp:ls$ $_list:ltv$ $_isdecl:b1$ $_priv:b2$ $t$ $_list:ltt$ $_itemattrs:x$ >>;
 
+(* generic constructor *)
+
+<:constructor< $uid:s$ of $list:lt$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $list:lt$ $_algattrs:x$ >>;
+<:constructor< $uid:s$ of $list:lt$ : $t$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $list:lt$ : $t$ $_algattrs:x$ >>;
+<:constructor< $uid:s$ of $list:lt$ $rto:ot$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $list:lt$ $rto:ot$ $_algattrs:x$ >>;
+<:constructor< $uid:s$ of $list:lt$ $_rto:ot$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $list:lt$ $_rto:ot$ $_algattrs:x$ >>;
+
+<:constructor< $uid:s$ of $_list:lt$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $_list:lt$ $_algattrs:x$ >>;
+<:constructor< $uid:s$ of $_list:lt$ : $t$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $_list:lt$ : $t$ $_algattrs:x$ >>;
+<:constructor< $uid:s$ of $_list:lt$ $rto:ot$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $_list:lt$ $rto:ot$ $_algattrs:x$ >>;
+<:constructor< $uid:s$ of $_list:lt$ $_rto:ot$ $algattrs:x$ >>;
+<:constructor< $uid:s$ of $_list:lt$ $_rto:ot$ $_algattrs:x$ >>;
+
+<:constructor< $_uid:s$ of $list:lt$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $list:lt$ $_algattrs:x$ >>;
+<:constructor< $_uid:s$ of $list:lt$ : $t$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $list:lt$ : $t$ $_algattrs:x$ >>;
+<:constructor< $_uid:s$ of $list:lt$ $rto:ot$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $list:lt$ $rto:ot$ $_algattrs:x$ >>;
+<:constructor< $_uid:s$ of $list:lt$ $_rto:ot$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $list:lt$ $_rto:ot$ $_algattrs:x$ >>;
+
+<:constructor< $_uid:s$ of $_list:lt$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $_list:lt$ $_algattrs:x$ >>;
+<:constructor< $_uid:s$ of $_list:lt$ : $t$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $_list:lt$ : $t$ $_algattrs:x$ >>;
+<:constructor< $_uid:s$ of $_list:lt$ $rto:ot$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $_list:lt$ $rto:ot$ $_algattrs:x$ >>;
+<:constructor< $_uid:s$ of $_list:lt$ $_rto:ot$ $algattrs:x$ >>;
+<:constructor< $_uid:s$ of $_list:lt$ $_rto:ot$ $_algattrs:x$ >>;
+
 (* extension constructor *)
 
 <:extension_constructor< $uid:xf2$ of $list:xf3$ $algattrs:xf5$ >> ;

@@ -827,6 +827,7 @@ value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
 value extended_longident_eoi = Grammar.Entry.create Pcaml.gram "extended_longident_eoi";
 value extension_constructor_eoi = Grammar.Entry.create Pcaml.gram "extension_constructor_eoi";
+value constructor_eoi = Grammar.Entry.create Pcaml.gram "constructor_eoi";
 value longident_eoi = Grammar.Entry.create Pcaml.gram "longident_eoi";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
@@ -848,6 +849,7 @@ EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
   extended_longident_eoi: [ [ x = Pcaml.extended_longident; EOI -> x ] ];
   extension_constructor_eoi: [ [ x = Pcaml.extension_constructor; EOI -> x ] ];
+  constructor_eoi: [ [ x = Pcaml.constructor_declaration; EOI -> x ] ];
   longident_eoi: [ [ x = Pcaml.longident; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
   module_type_eoi: [ [ x = Pcaml.module_type; EOI -> x ] ];
@@ -1162,6 +1164,7 @@ List.iter
     ("expr", apply_entry expr_eoi Meta_E.expr Meta_P.expr);
     ("extended_longident", apply_entry extended_longident_eoi Meta_E.longid Meta_P.longid);
     ("extension_constructor", apply_entry extension_constructor_eoi Meta_E.extension_constructor Meta_P.extension_constructor);
+    ("constructor", apply_entry constructor_eoi Meta_E.generic_constructor Meta_P.generic_constructor);
     ("longident", apply_entry longident_eoi Meta_E.longid Meta_P.longid);
     ("module_expr", apply_entry module_expr_eoi Meta_E.module_expr Meta_P.module_expr);
     ("module_type", apply_entry module_type_eoi Meta_E.module_type Meta_P.module_type);
