@@ -1318,7 +1318,11 @@ EXTEND
     ] ] ;
   constructor_declaration:
     [ [ ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
-          (loc, ci, tl, rto, attrs) ] ]
+          <:constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
+(*
+          (loc, ci, tl, rto, attrs)
+*)
+      ] ]
   ;
   rest_constructor_declaration:
     [ [ "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ;

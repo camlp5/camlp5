@@ -873,7 +873,8 @@ value label_decl pc (loc, l, m, t, attrs) =
     (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
 ;
 
-value cons_decl pc (_, c, tl, rto, alg_attrs) =
+value cons_decl pc = fun [
+  <:constructor< $_uid:c$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >> ->
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
@@ -897,6 +898,7 @@ value cons_decl pc (_, c, tl, rto, alg_attrs) =
           (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     ]
   }
+]
 ;
 
 

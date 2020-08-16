@@ -622,7 +622,8 @@ value label_decl pc (_, l, m, t, attrs) =
   (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
 ;
 
-value cons_decl pc (loc, c, tl, rto, alg_attrs) =
+value cons_decl pc = fun [
+  <:constructor:< $_uid:c$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >> ->
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
@@ -645,6 +646,7 @@ value cons_decl pc (loc, c, tl, rto, alg_attrs) =
         pprintf pc "%p of@;<1 4>%p%p" cons_escaped (loc, c) (plist ctyp_apply 2)
           tl (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs) ]
   }
+]
 ;
 
 value extension_constructor loc pc ec = match ec with [

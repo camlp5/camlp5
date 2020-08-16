@@ -13327,6 +13327,7 @@ let apply_entry e q =
       if locate then
         match qast with
           Qast.Node (n, Qast.Loc :: nl) -> Qast.Node (n, Qast.TrueLoc :: nl)
+        | Qast.Tuple (Qast.Loc :: nl) -> Qast.Tuple (Qast.TrueLoc :: nl)
         | x -> x
       else qast
     in
@@ -13348,6 +13349,7 @@ in
 let extension_constructor_eoi =
   Grammar.Entry.create gram "extension_constructor_eoi"
 in
+let constructor_eoi = Grammar.Entry.create gram "constructor_eoi" in
 let longident_eoi = Grammar.Entry.create gram "longident_eoi" in
 let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
 let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
@@ -13459,6 +13461,18 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'extension_constructor) (loc : Ploc.t) ->
              (x : 'extension_constructor_eoi)))]];
+   Grammar.extension (constructor_eoi : 'constructor_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (constructor_declaration :
+                   'constructor_declaration Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'constructor_declaration) (loc : Ploc.t) ->
+             (x : 'constructor_eoi)))]];
    Grammar.extension (longident_eoi : 'longident_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -13567,6 +13581,7 @@ List.iter (fun (q, f) -> Quotation.add q (f q))
    "expr", apply_entry expr_eoi;
    "extended_longident", apply_entry extended_longident_eoi;
    "extension_constructor", apply_entry extension_constructor_eoi;
+   "constructor", apply_entry constructor_eoi;
    "longident", apply_entry longident_eoi;
    "module_expr", apply_entry module_expr_eoi;
    "module_type", apply_entry module_type_eoi; "patt", apply_entry patt_eoi;

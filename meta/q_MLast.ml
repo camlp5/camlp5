@@ -1889,6 +1889,7 @@ value apply_entry e q =
       if locate then
         match qast with
         [ Qast.Node n [Qast.Loc :: nl] -> Qast.Node n [Qast.TrueLoc :: nl]
+        | Qast.Tuple [Qast.Loc :: nl] -> Qast.Tuple [Qast.TrueLoc :: nl]
         | x -> x ]
       else qast
     in
@@ -1906,6 +1907,7 @@ let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
 let expr_eoi = Grammar.Entry.create gram "expr_eoi" in
 let extended_longident_eoi = Grammar.Entry.create gram "extended_longident_eoi" in
 let extension_constructor_eoi = Grammar.Entry.create gram "extension_constructor_eoi" in
+let constructor_eoi = Grammar.Entry.create gram "constructor_eoi" in
 let longident_eoi = Grammar.Entry.create gram "longident_eoi" in
 let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
 let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
@@ -1927,6 +1929,7 @@ do {
     expr_eoi: [ [ x = expr; EOI -> x ] ];
     extended_longident_eoi: [ [ x = extended_longident; EOI -> x ] ];
     extension_constructor_eoi: [ [ x = extension_constructor; EOI -> x ] ];
+    constructor_eoi: [ [ x = constructor_declaration; EOI -> x ] ];
     longident_eoi: [ [ x = longident; EOI -> x ] ];
     module_expr_eoi: [ [ x = module_expr; EOI -> x ] ];
     module_type_eoi: [ [ x = module_type; EOI -> x ] ];
@@ -1949,6 +1952,7 @@ do {
       ("expr", apply_entry expr_eoi);
       ("extended_longident", apply_entry extended_longident_eoi);
       ("extension_constructor", apply_entry extension_constructor_eoi);
+      ("constructor", apply_entry constructor_eoi);
       ("longident", apply_entry longident_eoi);
       ("module_expr", apply_entry module_expr_eoi);
       ("module_type", apply_entry module_type_eoi);

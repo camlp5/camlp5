@@ -1740,7 +1740,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   constructor_declaration:
     [ [ ci = cons_ident; (tl, rto, alg_attrs) = rest_constructor_declaration ->
-          (loc, ci, tl, rto, alg_attrs) ] ]
+          <:constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
+(*
+          (loc, ci, tl, rto, alg_attrs)
+*)
+      ] ]
   ;
   rest_constructor_declaration:
     [ [ "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
