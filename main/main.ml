@@ -155,14 +155,14 @@ value file_kind_of_name name =
 ;
 
 value print_verbose_version () = do {
-  eprintf "Camlp5 version %s (ocaml %s)\n" Pcaml.version Pcaml.ocaml_version;
-  flush stderr;
+  printf "Camlp5 version %s (ocaml %s)\n" Pcaml.version Pcaml.ocaml_version;
+  flush stdout;
   exit 0
 };
 
 value print_succinct_version () = do {
-  eprintf "%s\n" Pcaml.version;
-  flush stderr;
+  printf "%s\n" Pcaml.version;
+  flush stdout;
   exit 0
 };
 
