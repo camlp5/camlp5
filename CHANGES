@@ -2,8 +2,10 @@
 Camlp5 Version 8.00-alpha02:
 --------------------
 
-* [15 Aug 2020] fixed "-verbose" bug in mkcamlp5 (and updated doc)
+* [16 Aug 2020] added "-version" to succinctly print out camlp5 version
+  (like "ocamlc --version").
 
+* [15 Aug 2020] fixed "-verbose" bug in mkcamlp5 (and updated doc)
 
 * [13 Aug 2020] rehabilitated q_ast parsing kit and verified that it
   works just as q_MLast does (for revised syntax).  Still haven't done

@@ -154,8 +154,14 @@ value file_kind_of_name name =
   else raise (Arg.Bad ("don't know what to do with " ^ name))
 ;
 
-value print_version () = do {
+value print_verbose_version () = do {
   eprintf "Camlp5 version %s (ocaml %s)\n" Pcaml.version Pcaml.ocaml_version;
+  flush stderr;
+  exit 0
+};
+
+value print_succinct_version () = do {
+  eprintf "%s\n" Pcaml.version;
   flush stderr;
   exit 0
 };
@@ -180,7 +186,8 @@ value initial_spec_list =
     "<file> Dump quotation expander result in case of syntax error.");
    ("-o", Arg.String (fun x -> Pcaml.output_file.val := Some x),
     "<file> Output on <file> instead of standard output.");
-   ("-v", Arg.Unit print_version, "Print Camlp5 version and exit.")]
+   ("-version", Arg.Unit print_succinct_version, "Print succinct Camlp5 version and exit.");
+   ("-v", Arg.Unit print_verbose_version, "Print verbose Camlp5 version and exit.")]
 ;
 
 value anon_fun x = do {
