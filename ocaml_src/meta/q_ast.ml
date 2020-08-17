@@ -831,6 +831,7 @@ let extended_longident_eoi =
 let extension_constructor_eoi =
   Grammar.Entry.create Pcaml.gram "extension_constructor_eoi"
 ;;
+let constructor_eoi = Grammar.Entry.create Pcaml.gram "constructor_eoi";;
 let longident_eoi = Grammar.Entry.create Pcaml.gram "longident_eoi";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 let module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";;
@@ -951,6 +952,18 @@ Grammar.safe_extend
           "1154dceb",
           (fun _ (x : 'Pcaml__extension_constructor) (loc : Ploc.t) ->
              (x : 'extension_constructor_eoi)))]];
+   Grammar.extension (constructor_eoi : 'constructor_eoi Grammar.Entry.e) None
+     [None, None,
+      [Grammar.production
+         (Grammar.r_next
+            (Grammar.r_next Grammar.r_stop
+               (Grammar.s_nterm
+                  (Pcaml.constructor_declaration :
+                   'Pcaml__constructor_declaration Grammar.Entry.e)))
+            (Grammar.s_token ("EOI", "")),
+          "1154dceb",
+          (fun _ (x : 'Pcaml__constructor_declaration) (loc : Ploc.t) ->
+             (x : 'constructor_eoi)))]];
    Grammar.extension (longident_eoi : 'longident_eoi Grammar.Entry.e) None
      [None, None,
       [Grammar.production
@@ -1319,6 +1332,9 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "extension_constructor",
    apply_entry extension_constructor_eoi Meta_E.extension_constructor
      Meta_P.extension_constructor;
+   "constructor",
+   apply_entry constructor_eoi Meta_E.generic_constructor
+     Meta_P.generic_constructor;
    "longident", apply_entry longident_eoi Meta_E.longid Meta_P.longid;
    "module_expr",
    apply_entry module_expr_eoi Meta_E.module_expr Meta_P.module_expr;

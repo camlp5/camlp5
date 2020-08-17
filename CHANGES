@@ -5,6 +5,9 @@ Camlp5 Version 8.00-alpha02:
 * [16 Aug 2020] added "-version" to succinctly print out camlp5 version
   (like "ocamlc --version").
 
+  Added "constructor" quotation to q_MLast and q_ast, we can
+  pattern-match with quotations, on constructor-declarations.
+
 * [15 Aug 2020] fixed "-verbose" bug in mkcamlp5 (and updated doc)
 
 * [13 Aug 2020] rehabilitated q_ast parsing kit and verified that it
