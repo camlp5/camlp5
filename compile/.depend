@@ -3,7 +3,7 @@ compile.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexing.cmi \
 compile.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexing.cmx \
     ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
 pa_o_fast.cmo: ../lib/grammar.cmi ../lib/plexer.cmi ../lib/plexing.cmi \
-    ../lib/ploc.cmi ../main/asttools.cmo ../main/exparser.cmi \
+    ../lib/ploc.cmi ../main/asttools.cmi ../main/exparser.cmi \
     ../main/mLast.cmi ../main/mlsyntax.cmo ../main/pcaml.cmi \
     ../main/reloc.cmi
 pa_o_fast.cmx: ../lib/grammar.cmx ../lib/plexer.cmx ../lib/plexing.cmx \
@@ -11,7 +11,7 @@ pa_o_fast.cmx: ../lib/grammar.cmx ../lib/plexer.cmx ../lib/plexing.cmx \
     ../main/mLast.cmi ../main/mlsyntax.cmx ../main/pcaml.cmx \
     ../main/reloc.cmx
 tmp.o_concat.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/ploc.cmi ../main/asttools.cmo ../main/exparser.cmi \
+    ../lib/ploc.cmi ../main/asttools.cmi ../main/exparser.cmi \
     ../main/mLast.cmi ../main/mlsyntax.cmo ../main/pcaml.cmi \
     ../main/reloc.cmi
 tmp.o_concat.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \

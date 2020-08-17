@@ -275,7 +275,7 @@ value longident_lident_of_string_list loc = fun [
 | l ->
   let (clsna, path) = sep_last l in
   let li = longident_of_string_list loc path in
-  (Some li, <:vala< clsna >>)
+  (Some <:vala< li >>, <:vala< clsna >>)
 ]
 ;
 

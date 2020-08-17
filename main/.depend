@@ -1,12 +1,13 @@
 argl.cmo: ../lib/versdep.cmo argl.cmi
 argl.cmx: ../lib/versdep.cmx argl.cmi
 ast2pt.cmo: ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo ast2pt.cmi \
-    asttools.cmo mLast.cmi prtools.cmi
+    asttools.cmi mLast.cmi prtools.cmi
 ast2pt.cmx: ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx ast2pt.cmi \
     asttools.cmx mLast.cmi prtools.cmx
 ast2pt.cmi: ../lib/ploc.cmi mLast.cmi
-asttools.cmo: ../lib/ploc.cmi mLast.cmi
-asttools.cmx: ../lib/ploc.cmx mLast.cmi
+asttools.cmo: ../lib/ploc.cmi asttools.cmi mLast.cmi
+asttools.cmx: ../lib/ploc.cmx asttools.cmi mLast.cmi
+asttools.cmi: mLast.cmi
 exparser.cmo: ../lib/ploc.cmi exparser.cmi mLast.cmi pcaml.cmi reloc.cmi
 exparser.cmx: ../lib/ploc.cmx exparser.cmi mLast.cmi pcaml.cmx reloc.cmx
 exparser.cmi: mLast.cmi
