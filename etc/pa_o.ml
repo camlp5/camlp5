@@ -857,7 +857,7 @@ EXTEND
           str_item_to_inline <:str_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline <:str_item< module type $_:i$ $_itemattrs:attrs$ >> ext
+          str_item_to_inline <:str_item< module type $_:i$ = 'abstract $_itemattrs:attrs$ >> ext
       | "open"; (ext,alg_attrs) = ext_attributes; ovf = V (FLAG "!") "!"; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ext
@@ -1015,7 +1015,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           sig_item_to_inline <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline <:sig_item< module type $_:i$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline <:sig_item< module type $_:i$ = 'abstract $_itemattrs:attrs$ >> ext
       | "open"; (ext,alg_attrs) = ext_attributes; i = extended_longident ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-open"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           sig_item_to_inline <:sig_item< open $longid:i$ $_itemattrs:attrs$ >> ext

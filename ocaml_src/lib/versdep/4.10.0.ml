@@ -712,17 +712,9 @@ let ocaml_pstr_include =
           pincl_attributes = item_attributes})
 ;;
 
-let ocaml_pstr_modtype ?(item_attributes = []) loc s mt =
+let ocaml_pstr_modtype ?(item_attributes = []) loc s mto =
   let pmtd =
-    {pmtd_name = mkloc loc s; pmtd_type = Some mt;
-     pmtd_attributes = item_attributes; pmtd_loc = loc}
-  in
-  Pstr_modtype pmtd
-;;
-
-let ocaml_pstr_modtype_abs ?(item_attributes = []) loc s =
-  let pmtd =
-    {pmtd_name = mkloc loc s; pmtd_type = None;
+    {pmtd_name = mkloc loc s; pmtd_type = mto;
      pmtd_attributes = item_attributes; pmtd_loc = loc}
   in
   Pstr_modtype pmtd

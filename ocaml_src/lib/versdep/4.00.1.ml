@@ -529,11 +529,11 @@ let ocaml_pstr_include =
        assert (item_attributes = []); Pstr_include me)
 ;;
 
-let ocaml_pstr_modtype ?(item_attributes = []) loc s mt =
-  assert (item_attributes = []); Pstr_modtype (mkloc loc s, mt)
+let ocaml_pstr_modtype ?(item_attributes = []) loc s mto =
+  assert (item_attributes = []);
+  assert (mto <> None);
+  Pstr_modtype (mkloc loc s, mustSome "ocaml_pstr_modtype" mto)
 ;;
-
-let ocaml_pstr_modtype_abs ?(item_attributes = []) loc s = assert false;;
 
 let ocaml_pstr_module ?(item_attributes = []) loc (s : string option) me =
   assert (item_attributes = []);

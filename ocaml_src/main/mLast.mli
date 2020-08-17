@@ -155,7 +155,6 @@ and sig_item =
   | SgInc of loc * module_type * attributes
   | SgMod of loc * bool * (string option * module_type * attributes) list
   | SgMty of loc * string * module_type * attributes
-  | SgMtyAbs of loc * string * attributes
   | SgMtyAlias of loc * string * longid * attributes
   | SgModSubst of loc * string * longid * attributes
   | SgOpn of loc * longid * attributes
@@ -193,7 +192,6 @@ and str_item =
   | StInc of loc * module_expr * attributes
   | StMod of loc * bool * (string option * module_expr * attributes) list
   | StMty of loc * string * module_type * attributes
-  | StMtyAbs of loc * string * attributes
   | StOpn of loc * bool * module_expr * attributes
   | StTyp of loc * bool * type_decl list
   | StTypExten of loc * type_extension

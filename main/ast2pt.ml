@@ -1299,10 +1299,6 @@ and sig_item s l =
       in
       [mksig loc (ocaml_psig_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
 
-  | SgMtyAbs loc n item_attrs →
-      let mto = None in
-      [mksig loc (ocaml_psig_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
-
   | SgMtyAlias loc n li item_attrs ->
       let li = longid_long_id (uv li) in
       let mty = mkmty loc (ocaml_pmty_alias (mkloc loc) li) in
@@ -1460,10 +1456,13 @@ and str_item s l =
             [mkstr loc (pstr_recmodule nel) :: l]
         | None → error loc "no recursive module in this ocaml version" ]
   | StMty loc n mt item_attrs →
-      let m = ocaml_pstr_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) (module_type mt) in
-      [mkstr loc m :: l]
-  | StMtyAbs loc n item_attrs →
-      let m = ocaml_pstr_modtype_abs ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) in
+      let mto =
+        match mt with
+        | MtQuo _ _ -> None
+        | _ -> Some (module_type mt)
+        end
+      in
+      let m = ocaml_pstr_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) mto in
       [mkstr loc m :: l]
   | StOpn loc ovf me attrs →
       [mkstr loc

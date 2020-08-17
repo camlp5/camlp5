@@ -644,12 +644,6 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:sig_item< module type $_:s$ = $mt$ $itemattrs:x$ >>;
 <:sig_item< module type $_:s$ = $mt$ $_itemattrs:x$ >>;
 
-(* module type (abstract) *)
-<:sig_item< module type $s$ $itemattrs:x$ >>;
-<:sig_item< module type $s$ $_itemattrs:x$ >>;
-<:sig_item< module type $_:s$ $itemattrs:x$ >>;
-<:sig_item< module type $_:s$ $_itemattrs:x$ >>;
-
 (* module alias *)
 
 <:sig_item< module alias $uid:s$ = $longid:x1$ $itemattrs:x2$ >>;
@@ -990,12 +984,6 @@ MLast.MeUnp loc e omt1 omt2;
 <:str_item< module type $s$ = $mt$ $_itemattrs:x$ >>;
 <:str_item< module type $_:s$ = $mt$ $itemattrs:x$ >>;
 <:str_item< module type $_:s$ = $mt$ $_itemattrs:x$ >>;
-
-(* module type *)
-<:str_item< module type $s$ $itemattrs:x$ >>;
-<:str_item< module type $s$ $_itemattrs:x$ >>;
-<:str_item< module type $_:s$ $itemattrs:x$ >>;
-<:str_item< module type $_:s$ $_itemattrs:x$ >>;
 
 (* open *)
 (* TODO: should be able to put variables on $me$ *)

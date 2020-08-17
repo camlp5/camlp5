@@ -1350,19 +1350,6 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "module")))
-                   (Grammar.s_token ("", "type")))
-                (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (item_attributes : 'item_attributes Grammar.Entry.e)),
-           "1154dceb",
-           (fun (attrs : 'item_attributes) (i : 'ident) _ _ (loc : Ploc.t) ->
-              (MLast.StMtyAbs (loc, i, attrs) : 'str_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
                          (Grammar.r_next Grammar.r_stop
@@ -1834,19 +1821,6 @@ Grammar.safe_extend
            (fun (attrs : 'item_attributes) (li : 'longident) _ (i : string) _
                 _ (loc : Ploc.t) ->
               (MLast.SgMtyAlias (loc, i, li, attrs) : 'sig_item)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "module")))
-                   (Grammar.s_token ("", "type")))
-                (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
-             (Grammar.s_nterm
-                (item_attributes : 'item_attributes Grammar.Entry.e)),
-           "1154dceb",
-           (fun (attrs : 'item_attributes) (i : 'ident) _ _ (loc : Ploc.t) ->
-              (MLast.SgMtyAbs (loc, i, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

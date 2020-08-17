@@ -1121,11 +1121,11 @@ and t2 = bool[@@"foo"];
      exclude=[];
      o_input = OK {foo|module type S|foo} ;
      official_input = OK {foo|module type S|foo} ;
-     r_input = OK {foo|module type S;|foo} ;
+     r_input = OK {foo|module type S = 'abstract;|foo} ;
      o_output = OK {foo|module type S;;
 |foo};
      official_output = OK {foo|module type S|foo} ;
-     r_output = OK {foo|module type S;
+     r_output = OK {foo|module type S = 'abstract;
 |foo}
     };
     {name="alg-extension-ctyp"; implem = True ;
@@ -1627,11 +1627,11 @@ and t2 = bool[@@"foo"];
      exclude=[];
      o_input = OK {foo|module type S = sig module type t module M: t end|foo} ;
      official_input = OK {foo|module type S = sig module type t module M: t end|foo} ;
-     r_input = OK {foo|module type S = sig module type t; module M: t; end;|foo} ;
+     r_input = OK {foo|module type S = sig module type t = 'abstract; module M: t; end;|foo} ;
      o_output = OK {foo|module type S = sig module type t module M : t end;;
 |foo};
      official_output = OK {foo|module type S  = sig module type t module M : t end|foo} ;
-     r_output = OK {foo|module type S = sig module type t; module M : t; end;
+     r_output = OK {foo|module type S = sig module type t = 'abstract; module M : t; end;
 |foo}
     };
     {name="extended-module-path1"; implem = True ;
