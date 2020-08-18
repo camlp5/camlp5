@@ -2283,7 +2283,7 @@ value class_decl pc ci =
                    (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm)))
                 (Pcaml.unvala ci.MLast.ciNam)}
          in
-         pprintf pc "%p%p =" (plistl patt patt 4) pl class_type_opt ct_opt)
+         pprintf pc "%p%p =" (plistl simple_patt simple_patt 4) pl class_type_opt ct_opt)
   in
   pprintf pc "@[%p@;%p%p@]" cdef () class_expr ce
     (hlist (pr_attribute "@@")) (Pcaml.unvala ci.MLast.ciAttributes)

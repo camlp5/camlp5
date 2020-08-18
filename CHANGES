@@ -2,6 +2,8 @@
 Camlp5 Version 8.00-alpha02:
 --------------------
 
+* [18 Aug 2020] fixed original-syntax pretty-printing bug in class-decl params.
+
 * [16 Aug 2020] added "-version" to succinctly print out camlp5 version
   (like "ocamlc --version").
 

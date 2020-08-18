@@ -4201,6 +4201,23 @@ and u := bool;
      r_output = OK {foo|type t = [ = u ];
 |foo}
     };
+    {name="class-decl-pp-bug-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|class ['a, 'b, 'extra_a] show_a_t_stub (fself_a, show_b as _mutuals_pack) fa fb = object end|foo} ;
+     official_input = OK {foo|class ['a, 'b, 'extra_a] show_a_t_stub (fself_a, show_b as _mutuals_pack) fa fb = object end|foo} ;
+     r_input = OK {foo|class show_a_t_stub ['a, 'b, 'extra_a] =
+  fun ((fself_a, show_b) as _mutuals_pack) -> fun fa -> fun fb -> object  end;
+|foo} ;
+     o_output = OK {foo|class ['a, 'b, 'extra_a] show_a_t_stub (fself_a, show_b as _mutuals_pack) fa
+    fb =
+  object  end;;
+|foo};
+     official_output = OK {foo|class ['a,'b,'extra_a] show_a_t_stub ((fself_a, show_b) as _mutuals_pack)  fa
+   fb = object  end|foo} ;
+     r_output = OK {foo|class show_a_t_stub ['a, 'b, 'extra_a] =
+  fun ((fself_a, show_b) as _mutuals_pack) -> fun fa -> fun fb -> object  end;
+|foo}
+    };
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
