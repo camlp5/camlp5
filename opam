@@ -1,8 +1,8 @@
 name: "camlp5"
-version: "8.00~alpha02"
+version: "8.00~alpha03"
+opam-version: "2.0"
 synopsis: "Preprocessor-pretty-printer of OCaml"
-description:
-"""
+description: """
 Camlp5 is a preprocessor and pretty-printer for OCaml programs. It also provides parsing and printing tools.
 
 As a preprocessor, it allows to:
@@ -20,30 +20,43 @@ extensible grammars
 extensible printers
 stream parsers and lexers
 pretty print module
-It works as a shell command and can also be used in the OCaml toplevel.
-"""
-opam-version: "2.0"
+It works as a shell command and can also be used in the OCaml toplevel."""
 maintainer: "https://github.com/ocaml/opam-repository/issues"
 authors: ["Daniel de Rauglaudre" "Chet Murthy"]
-homepage: "https://camlp5.github.io"
 license: "BSD-3-Clause"
-bug-reports: "https://github.com/camlp5/camlp5/issues"
-dev-repo: "git+https://github.com/camlp5/camlp5.git"
+homepage: "https://camlp5.github.io"
 doc: "https://camlp5.github.io/doc/html"
-
+bug-reports: "https://github.com/camlp5/camlp5/issues"
 depends: [
-  "ocaml"       { >= "4.02" & < "4.12.0" }
+  "ocaml" {>= "4.02" & < "4.12.0"}
   "conf-perl"
 ]
-depexts: [
-  [
-    "libstring-shellquote-perl"
-    "libipc-system-simple-perl"
-  ] {os-family = "debian"}
-]
-
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
   [make "world.opt"]
 ]
 install: [make "install"]
+depexts: [
+  [
+    "libstring-shellquote-perl"
+    "libipc-system-simple-perl"
+  ] {os-family = "debian"}
+  [
+    "perl-string-shellquote"
+    "perl-ipc-system-simple"
+  ] {os-distribution = "alpine"}
+  [
+    "perl-String-ShellQuote"
+    "perl-IPC-System-Simple"
+  ] {os-distribution = "centos"}
+  [
+    "perl-String-ShellQuote"
+    "perl-IPC-System-Simple"
+  ] {os-family = "suse"}
+  [
+    "perl-String-ShellQuote"
+    "perl-IPC-System-Simple"
+  ] {os-family = "fedora"}
+]
+
+dev-repo: "git+https://github.com/camlp5/camlp5.git"

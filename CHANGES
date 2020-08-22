@@ -1,4 +1,9 @@
 
+Camlp5 Version 8.00-alpha03:
+--------------------
+
+* [22 Aug 2020] Add support for Ocaml 4.10.1.
+
 Camlp5 Version 8.00-alpha02:
 --------------------
 
