@@ -23,6 +23,8 @@ for v in \
     4.08.1 \
     4.09.0 \
     4.10.0 \
+    4.10.1 \
+    4.11.0 \
 	     ;
     do
     testsuite/tools/TRIP-TEST $v
