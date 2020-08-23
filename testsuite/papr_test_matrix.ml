@@ -4320,7 +4320,7 @@ and u := bool;
      r_output = OK {foo|type t = #A.B.C.x;
 |foo}
     };
-IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
     skip
 ELSE
     {name="typeconstr-path-4"; implem = True ;
