@@ -1522,7 +1522,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
     [ [ l = lident; "="; e = expr → Qast.Tuple [l; e] ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; cli = SV longident_lident "lilongid" → Qast.Node "TyCls" [Qast.Loc; cli]
+    [ [ "#"; cli = SV extended_longident_lident "lilongid" → Qast.Node "TyCls" [Qast.Loc; cli]
       | "<"; ml = SV (LIST0 field SEP ";"); v = SV (FLAG ".."); ">" →
           Qast.Node "TyObj" [Qast.Loc; ml; v] ] ]
   ;
@@ -1531,6 +1531,11 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   longident_lident:
     [ [ li = SV longident "longid"; "."; i = SV LIDENT → Qast.Tuple [Qast.Option (Some li); i]
+      | i = SV LIDENT → Qast.Tuple [Qast.Option None; i]
+      ] ]
+  ;
+  extended_longident_lident:
+    [ [ li = SV extended_longident "longid"; "."; i = SV LIDENT → Qast.Tuple [Qast.Option (Some li); i]
       | i = SV LIDENT → Qast.Tuple [Qast.Option None; i]
       ] ]
   ;
@@ -1576,7 +1581,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   ;
   patt: LEVEL "simple"
     [ [ "`"; s = SV ident "" → Qast.Node "PaVrn" [Qast.Loc; s]
-      | "#"; lili = SV longident_lident "lilongid" → Qast.Node "PaTyp" [Qast.Loc; lili]
+      | "#"; lili = SV extended_longident_lident "lilongid" → Qast.Node "PaTyp" [Qast.Loc; lili]
       | "~"; "{"; lppo = SV (LIST1 patt_tcon_opt_eq_patt SEP ";"); "}" →
           Qast.Node "PaLab" [Qast.Loc; lppo]
       | "?"; "{"; p = patt_tcon; eo = SV (OPT [ "="; e = expr → e ]); "}" →

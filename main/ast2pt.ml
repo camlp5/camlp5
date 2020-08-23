@@ -174,15 +174,20 @@ let rec crec lhs = fun [
 crec l1 l2
 ;
 
-value rec longid_long_id =
-  fun
-  [ <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> ->
-      Lapply (longid_long_id me1) (longid_long_id me2)
-  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (longid_long_id me1) (uv uid)
+value longid_long_id_gen ~{extended} =
+  let rec lrec = fun
+  [ <:extended_longident< $longid:me1$ ( $longid:me2$ ) >> when extended ->
+      Lapply (lrec me1) (lrec me2)
+  | <:extended_longident:< $longid:_$ ( $longid:_$ ) >>  ->
+      Ploc.raise loc (Failure "longid_long_id: extended longid forbidden here (application not allowed)")
+  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (lrec me1) (uv uid)
   | <:extended_longident< $_uid:s$ >> → Lident (uv s)
   | LiXtr loc _ _ -> Ploc.raise loc (Failure "longid_long_id: LiXtr forbidden here")
   ]
+  in lrec
 ;
+value longid_long_id = longid_long_id_gen ~{extended=False} ;
+value extended_longid_long_id = longid_long_id_gen ~{extended=True} ;
 
 value rec ctyp_fa al =
   fun
@@ -209,11 +214,13 @@ value rec expr_long_id = fun
   ]
 ;
 
-value longid_lident_long_id (lio,s) = match (lio, s) with [
-    (Some li, s) → Ldot (longid_long_id (uv li)) (uv s)
+value longid_lident_long_id_gen ~{extended} (lio,s) = match (lio, s) with [
+    (Some li, s) → Ldot (longid_long_id_gen ~{extended=extended} (uv li)) (uv s)
   | (None, s) → Lident (uv s)
 ]
 ;
+value longid_lident_long_id = longid_lident_long_id_gen ~{extended=False} ;
+value extended_longid_lident_long_id = longid_lident_long_id_gen ~{extended=True} ;
 
 value rec ctyp_long_id =
   fun
@@ -223,24 +230,24 @@ value rec ctyp_long_id =
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
   | <:ctyp:< $longid:m$ . $lid:id$ >> →
-      let li1 = longid_long_id m in
+      let li1 = extended_longid_long_id m in
       let (is_cls, li2) = ctyp_long_id <:ctyp< $lid:id$ >> in
       (is_cls, concat_long_ids li1 li2)
   | <:ctyp< $lid:s$ >> → (False, Lident s)
-  | TyCls loc cli → (True, longid_lident_long_id (uv cli))
+  | TyCls loc cli → (True, extended_longid_lident_long_id (uv cli))
   | t → error (loc_of_ctyp t) "incorrect type" ]
 ;
 
 value module_type_long_id = fun [
-  <:module_type< $longid:li$ . $_lid:lid$ >> -> Ldot (longid_long_id li) (uv lid)
-| <:module_type< $longid:li$ >> -> longid_long_id li
+  <:module_type< $longid:li$ . $_lid:lid$ >> -> Ldot (extended_longid_long_id li) (uv lid)
+| <:module_type< $longid:li$ >> -> extended_longid_long_id li
 | _ -> failwith "module_type_long_id"
 ]
 ;
 
 value class_type_long_id = fun [
   <:class_type< $longid:li$ . $_lid:lid$ >> ->
-    Ldot (longid_long_id li) (uv lid)
+    Ldot (extended_longid_long_id li) (uv lid)
 | <:class_type< $_lid:lid$ >> ->
     Lident (uv lid)
 | _ -> failwith "class_type_long_id"
@@ -506,7 +513,7 @@ and ctyp =
       mktyp loc
         (ocaml_ptyp_object (mkloc loc) (meth_list loc (uv fl) v) (uv v))
   | TyCls loc cli →
-      mktyp loc (ocaml_ptyp_class (longid_lident_long_id (uv cli)) [] [])
+      mktyp loc (ocaml_ptyp_class (extended_longid_lident_long_id (uv cli)) [] [])
   | TyLab loc _ _ → error loc "labeled type not allowed here"
   | TyLid loc s → mktyp loc (ocaml_ptyp_constr (mkloc loc) (Lident (uv s)) [])
   | TyMan loc _ _ _ → error loc "type manifest not allowed here"
@@ -764,7 +771,7 @@ and patt =
       match ocaml_ppat_type with
       [ Some ppat_type →
           mkpat loc
-            (ppat_type (mkloc loc) (longid_lident_long_id (uv lili)))
+            (ppat_type (mkloc loc) (extended_longid_lident_long_id (uv lili)))
       | None → error loc "no #type in this ocaml version" ]
   | PaUnp loc s mto →
       match ocaml_ppat_unpack with
@@ -1312,7 +1319,7 @@ and sig_item s l =
       [mksig loc m :: l]
 
   | SgOpn loc lid attrs →
-      let lid = longid_long_id lid in
+      let lid = extended_longid_long_id lid in
       [mksig loc
          (ocaml_psig_open ~{item_attributes=uv_item_attributes attrs} (mkloc loc) lid) ::
        l]

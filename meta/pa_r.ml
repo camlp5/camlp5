@@ -1560,7 +1560,7 @@ EXTEND
     [ [ l = lident; "="; e = expr → (l, e) ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; cli = V longident_lident "lilongid" → <:ctyp< # $_lilongid:cli$ >>
+    [ [ "#"; cli = V extended_longident_lident "lilongid" → <:ctyp< # $_lilongid:cli$ >>
 
       | "<"; ml = V (LIST0 field SEP ";"); v = V (FLAG ".."); ">" →
           <:ctyp< < $_list:ml$ $_flag:v$ > >> ] ]
@@ -1574,6 +1574,11 @@ EXTEND
   ;
   longident_lident:
     [ [ li = V longident "longid" ; "."; i = V LIDENT → (Some li, i)
+      | i = V LIDENT → (None, i)
+      ] ]
+  ;
+  extended_longident_lident:
+    [ [ li = V extended_longident "longid" ; "."; i = V LIDENT → (Some li, i)
       | i = V LIDENT → (None, i)
       ] ]
   ;
@@ -1609,7 +1614,7 @@ EXTEND
   ;
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" → <:patt< ` $_:s$ >>
-      | "#"; lili = V longident_lident "lilongid" → <:patt< # $_lilongid:lili$ >>
+      | "#"; lili = V extended_longident_lident "lilongid" → <:patt< # $_lilongid:lili$ >>
       | "~"; "{"; lppo = V (LIST1 patt_tcon_opt_eq_patt SEP ";"); "}" →
           <:patt< ~{$_list:lppo$} >>
       | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr → e ]); "}" →

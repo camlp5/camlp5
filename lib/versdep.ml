@@ -85,6 +85,15 @@ value ocaml_id_or_li_of_string_list loc sl =
     | [s :: sl] -> Some (mkli s (List.rev sl)) ]
 ;
 
+value not_extended_longident =
+  let rec not_extended = fun [
+    Lident _ -> True
+  | Ldot li _ -> not_extended li
+  | Lapply _ _ -> False
+  ] in 
+  not_extended
+;
+
 value list_map_check f l =
   loop [] l where rec loop rev_l =
     fun
@@ -657,7 +666,15 @@ value ocaml_ptyp_arrow lab t1 t2 =
 
 value ocaml_ptyp_class li tl ll =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Ptyp_class (mknoloc li) tl ll
-  ELSE Ptyp_class (mknoloc li) tl END
+  ELSIFDEF OCAML_VERSION < OCAML_4_11_0 THEN
+    do {
+      if (not_extended_longident li) then ()
+      else failwith "#-types cannot contain extended-longidents (with apply) until ocaml 4.11.0" ;
+      Ptyp_class (mknoloc li) tl
+    }
+  ELSE
+    Ptyp_class (mknoloc li) tl
+  END
 ;
 
 value ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li) tl;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* papr_patrix_test.ml *)
+(* papr_matrix_test.ml *)
 
 open Testutil;
 open Testutil2;
@@ -4051,6 +4051,17 @@ and u := bool;
      r_output = OK {foo|match x with [ #A.foo as z → 1 ];
 |foo}
     };
+    {name="PaTyp-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with #A.B(C).D.foo as z -> 1|foo} ;
+     official_input = OK {foo|match x with #A.B(C).D.foo as z -> 1|foo} ;
+     r_input = OK {foo|match x with [ ( #A.B(C).D.foo ) as z → 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with #A.B(C).D.foo as z -> 1;;
+|foo};
+     official_output = OK {foo|;;match x with | #A.B(C).D.foo as z -> 1|foo} ;
+     r_output = OK {foo|match x with [ #A.B(C).D.foo as z → 1 ];
+|foo}
+    };
     {name="variant-type-3"; implem = True ;
      exclude=[];
      o_input = OK {foo|match x with `Foo -> 1 | `Bar (a, b) -> 2|foo} ;
@@ -4217,6 +4228,210 @@ and u := bool;
      r_output = OK {foo|class show_a_t_stub ['a, 'b, 'extra_a] =
   fun ((fself_a, show_b) as _mutuals_pack) -> fun fa -> fun fb -> object  end;
 |foo}
+    };
+    {name="typeconstr-class-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun (x : #ct) -> ()|foo} ;
+     official_input = OK {foo|fun (x : #ct) -> ()|foo} ;
+     r_input = OK {foo|fun (x : #ct) → ();|foo} ;
+     o_output = OK {foo|let _ = fun (x : #ct) -> ();;
+|foo};
+     official_output = OK {foo|;;fun (x : #ct) -> ()|foo} ;
+     r_output = OK {foo|fun (x : #ct) → ();
+|foo}
+    };
+    {name="typeconstr-class-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun (x : #A.B.C.ct) -> ()|foo} ;
+     official_input = OK {foo|fun (x : #A.B.C.ct) -> ()|foo} ;
+     r_input = OK {foo|fun (x : #A.B.C.ct) → ();|foo} ;
+     o_output = OK {foo|let _ = fun (x : #A.B.C.ct) -> ();;
+|foo};
+     official_output = OK {foo|;;fun (x : #A.B.C.ct) -> ()|foo} ;
+     r_output = OK {foo|fun (x : #A.B.C.ct) → ();
+|foo}
+    };
+    {name="TyCls-args-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = (int, string) #ct|foo} ;
+     official_input = OK {foo|type t = (int, string) #ct|foo} ;
+     r_input = OK {foo|type t = #ct int string;|foo} ;
+     o_output = OK {foo|type t = (int, string) #ct;;
+|foo};
+     official_output = OK {foo|type t = (int,string)#ct|foo} ;
+     r_output = OK {foo|type t = #ct int string;
+|foo}
+    };
+    (* value-path	::=	[ module-path . ]  value-name   *)
+    {name="value-path-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|A.B.x|foo} ;
+     official_input = OK {foo|A.B.x|foo} ;
+     r_input = OK {foo|A.B.x;|foo} ;
+     o_output = OK {foo|let _ = A.B.x;;
+|foo};
+     official_output = OK {foo|;;A.B.x|foo} ;
+     r_output = OK {foo|A.B.x;
+|foo}
+    };
+    (* constr	::=	[ module-path . ]  constr-name   *)
+    {name="constr-path-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|A.B.X|foo} ;
+     official_input = OK {foo|A.B.X|foo} ;
+     r_input = OK {foo|A.B.X;|foo} ;
+     o_output = OK {foo|let _ = A.B.X;;
+|foo};
+     official_output = OK {foo|;;A.B.X|foo} ;
+     r_output = OK {foo|A.B.X;
+|foo}
+    };
+    (* typeconstr	::=	[ extended-module-path . ]  typeconstr-name   *)
+    {name="typeconstr-path-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = A.B.x|foo} ;
+     official_input = OK {foo|type t = A.B.x|foo} ;
+     r_input = OK {foo|type t = A.B.x;|foo} ;
+     o_output = OK {foo|type t = A.B.x;;
+|foo};
+     official_output = OK {foo|type t = A.B.x|foo} ;
+     r_output = OK {foo|type t = A.B.x;
+|foo}
+    };
+    {name="typeconstr-path-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = A.B(D).C.x|foo} ;
+     official_input = OK {foo|type t = A.B(D).C.x|foo} ;
+     r_input = OK {foo|type t = A.B(D).C.x;|foo} ;
+     o_output = OK {foo|type t = A.B(D).C.x;;
+|foo};
+     official_output = OK {foo|type t = A.B(D).C.x|foo} ;
+     r_output = OK {foo|type t = A.B(D).C.x;
+|foo}
+    };
+    {name="typeconstr-path-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = #A.B.C.x|foo} ;
+     official_input = OK {foo|type t = #A.B.C.x|foo} ;
+     r_input = OK {foo|type t = #A.B.C.x;|foo} ;
+     o_output = OK {foo|type t = #A.B.C.x;;
+|foo};
+     official_output = OK {foo|type t = #A.B.C.x|foo} ;
+     r_output = OK {foo|type t = #A.B.C.x;
+|foo}
+    };
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+    skip
+ELSE
+    {name="typeconstr-path-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = #A.B(D).C.x|foo} ;
+     official_input = OK {foo|type t = #A.B(D).C.x|foo} ;
+     r_input = OK {foo|type t = #A.B(D).C.x;|foo} ;
+     o_output = OK {foo|type t = #A.B(D).C.x;;
+|foo};
+     official_output = OK {foo|type t = #A.B(D).C.x|foo} ;
+     r_output = OK {foo|type t = #A.B(D).C.x;
+|foo}
+    }
+END
+;
+    (* NO NEED field	::=	[ module-path . ]  field-name   *)
+    (* modtype-path	::=	[ extended-module-path . ]  modtype-name   *)
+    {name="module-type-path-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type t = A.B.x|foo} ;
+     official_input = OK {foo|module type t = A.B.x|foo} ;
+     r_input = OK {foo|module type t = A.B.x;|foo} ;
+     o_output = OK {foo|module type t = A.B.x;;
+|foo};
+     official_output = OK {foo|module type t  = A.B.x|foo} ;
+     r_output = OK {foo|module type t = A.B.x;
+|foo}
+    };
+    {name="module-type-path-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type t = A.B.X|foo} ;
+     official_input = OK {foo|module type t = A.B.X|foo} ;
+     r_input = OK {foo|module type t = A.B.X;|foo} ;
+     o_output = OK {foo|module type t = A.B.X;;
+|foo};
+     official_output = OK {foo|module type t  = A.B.X|foo} ;
+     r_output = OK {foo|module type t = A.B.X;
+|foo}
+    };
+    {name="module-type-path-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type t = A.B(C).D.X|foo} ;
+     official_input = OK {foo|module type t = A.B(C).D.X|foo} ;
+     r_input = OK {foo|module type t = A.B(C).D.X;|foo} ;
+     o_output = OK {foo|module type t = A.B(C).D.X;;
+|foo};
+     official_output = OK {foo|module type t  = A.B(C).D.X|foo} ;
+     r_output = OK {foo|module type t = A.B(C).D.X;
+|foo}
+    };
+    (* class-path	::=	[ module-path . ]  class-name   *)
+    {name="class-path-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|class t = A.B.x|foo} ;
+     official_input = OK {foo|class t = A.B.x|foo} ;
+     r_input = OK {foo|class t = A.B.x;|foo} ;
+     o_output = OK {foo|class t = A.B.x;;
+|foo};
+     official_output = OK {foo|class t = A.B.x|foo} ;
+     r_output = OK {foo|class t = A.B.x;
+|foo}
+    };
+    (* classtype-path	::=	[ extended-module-path . ]  class-name   *)
+    {name="class-type-path-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|class type t = A.B.x|foo} ;
+     official_input = OK {foo|class type t = A.B.x|foo} ;
+     r_input = OK {foo|class type t = A.B.x;|foo} ;
+     o_output = OK {foo|class type t = A.B.x;;
+|foo};
+     official_output = OK {foo|class type t = A.B.x|foo} ;
+     r_output = OK {foo|class type t = A.B.x;
+|foo}
+    };
+    {name="class-type-path-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|class type t = A.B(C).D.x|foo} ;
+     official_input = OK {foo|class type t = A.B(C).D.x|foo} ;
+     r_input = OK {foo|class type t = A.B(C).D.x;|foo} ;
+     o_output = OK {foo|class type t = A.B(C).D.x;;
+|foo};
+     official_output = OK {foo|class type t = A.B(C).D.x|foo} ;
+     r_output = OK {foo|class type t = A.B(C).D.x;
+|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

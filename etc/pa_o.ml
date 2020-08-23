@@ -2139,7 +2139,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   (* Core types *)
   ctyp: LEVEL "simple"
-    [ [ "#"; cli = V longident_lident "lilongid" ->
+    [ [ "#"; cli = V extended_longident_lident "lilongid" ->
          <:ctyp< # $_lilongid:cli$ >>
       | "<"; ml = V meth_list "list"; v = V (FLAG ".."); ">" ->
           <:ctyp< < $_list:ml$ $_flag:v$ > >>
@@ -2181,6 +2181,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   (* Identifiers *)
   longident_lident:
     [ [ li = V longident "longid"; "."; i = V LIDENT → (Some li, i)
+      | i = V LIDENT → (None, i)
+      ] ]
+  ;
+  extended_longident_lident:
+    [ [ li = V extended_longident "longid"; "."; i = V LIDENT → (Some li, i)
       | i = V LIDENT → (None, i)
       ] ]
   ;
@@ -2238,7 +2243,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:patt< ` $_:s$ >>
-      | "#"; lili = V longident_lident "lilongid" -> <:patt< # $_lilongid:lili$ >>
+      | "#"; lili = V extended_longident_lident "lilongid" -> <:patt< # $_lilongid:lili$ >>
       | p = labeled_patt -> p ] ]
   ;
   labeled_patt:
