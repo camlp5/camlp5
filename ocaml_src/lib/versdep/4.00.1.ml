@@ -75,6 +75,16 @@ let ocaml_id_or_li_of_string_list loc sl =
   | s :: sl -> Some (mkli s (List.rev sl))
 ;;
 
+let not_extended_longident =
+  let rec not_extended =
+    function
+      Lident _ -> true
+    | Ldot (li, _) -> not_extended li
+    | Lapply (_, _) -> false
+  in
+  not_extended
+;;
+
 let list_map_check f l =
   let rec loop rev_l =
     function

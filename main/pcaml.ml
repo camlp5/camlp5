@@ -7,7 +7,7 @@
 
 open Printf;
 
-value version = "8.00-alpha03";
+value version = "8.00-alpha04";
 value syntax_name = ref "";
 
 value ocaml_version =

@@ -790,6 +790,8 @@ Grammar.safe_extend
    and field_expr : 'field_expr Grammar.Entry.e =
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
+   and extended_longident_lident : 'extended_longident_lident Grammar.Entry.e =
+     grammar_entry_create "extended_longident_lident"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
      grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"
@@ -5850,9 +5852,10 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "#")))
              (Grammar.s_nterm
-                (longident_lident : 'longident_lident Grammar.Entry.e)),
+                (extended_longident_lident :
+                 'extended_longident_lident Grammar.Entry.e)),
            "1154dceb",
-           (fun (cli : 'longident_lident) _ (loc : Ploc.t) ->
+           (fun (cli : 'extended_longident_lident) _ (loc : Ploc.t) ->
               (MLast.TyCls (loc, cli) : 'ctyp)))]];
     Grammar.extension (field : 'field Grammar.Entry.e) None
       [None, None,
@@ -5910,6 +5913,27 @@ Grammar.safe_extend
            "1154dceb",
            (fun (i : string) _ (li : 'longident) (loc : Ploc.t) ->
               (Some li, i : 'longident_lident)))]];
+    Grammar.extension
+      (extended_longident_lident : 'extended_longident_lident Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           "1154dceb",
+           (fun (i : string) (loc : Ploc.t) ->
+              (None, i : 'extended_longident_lident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
+             (Grammar.s_token ("LIDENT", "")),
+           "1154dceb",
+           (fun (i : string) _ (li : 'extended_longident) (loc : Ploc.t) ->
+              (Some li, i : 'extended_longident_lident)))]];
     (* Labels *)
     Grammar.extension (ctyp : 'ctyp Grammar.Entry.e)
       (Some (Gramext.After "arrow"))
@@ -6118,9 +6142,10 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "#")))
              (Grammar.s_nterm
-                (longident_lident : 'longident_lident Grammar.Entry.e)),
+                (extended_longident_lident :
+                 'extended_longident_lident Grammar.Entry.e)),
            "1154dceb",
-           (fun (lili : 'longident_lident) _ (loc : Ploc.t) ->
+           (fun (lili : 'extended_longident_lident) _ (loc : Ploc.t) ->
               (MLast.PaTyp (loc, lili) : 'patt)));
         Grammar.production
           (Grammar.r_next

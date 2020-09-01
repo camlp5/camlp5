@@ -1,4 +1,11 @@
 
+Camlp5 Version 8.00-alpha04:
+--------------------
+
+* [01 Sep 2020] Add support for Ocaml 4.11.1.
+
+  Support "#-types" with extended longidents (module-applications).  Test support for same.
+
 Camlp5 Version 8.00-alpha03:
 --------------------
 

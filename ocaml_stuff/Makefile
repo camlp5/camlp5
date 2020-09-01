@@ -33,10 +33,10 @@ depend:
 	fi
 
 steal:
-	@if test "$(OCAML_SRC)" = ""; then \
+	$(NOVERBOSE) if test "$(OCAML_SRC)" = ""; then \
 		echo "usage: $(MAKE) steal OCAML_SRC=..."; exit 1; \
 	fi
-	@$(MAKE) real_steal OCAML_SRC="$$(cd ..; cd $(OCAML_SRC); pwd)"
+	$(NOVERBOSE) $(MAKE) real_steal OCAML_SRC="$$(cd ..; cd $(OCAML_SRC); pwd)"
 
 real_steal:
 	mkdir -p "$(VERSSDIR)"
