@@ -6,7 +6,12 @@ It is (theoretically) compatible with all versions of ocaml from 1.07
 to 4.11.0 (when they compile), and jocaml 3.12.0 to 3.12.1, but
 maintainers only test against versions of ocaml >= 4.00.0.
 
-This Camlp5 version is 7.12.
+This Camlp5 version is 7.13.  It is a bugfix release, with only
+minimal support for modern versions of ocaml, but maintaining as much
+as possible backward-compatibility with previous versions of camlp5.
+For full support of modern Ocaml syntax, please use Camlp5 versions
+starting with 8.00 (8.00~alpha01 and subsequent, until the full 8.00
+release is made).
 
 ## Requirements
 
