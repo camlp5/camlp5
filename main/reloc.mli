@@ -4,6 +4,7 @@
 
 value expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
 value patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
+value ctyp : (MLast.loc -> MLast.loc) -> int -> MLast.ctyp -> MLast.ctyp;
 value sig_item : (MLast.loc -> MLast.loc) -> int -> MLast.sig_item -> MLast.sig_item;
 value str_item : (MLast.loc -> MLast.loc) -> int -> MLast.str_item -> MLast.str_item;
 
