@@ -225,7 +225,7 @@ package "quotations" (
     archive(native) = "q_MLast.cmx"
   )
 )
- 
+
 package "parser_quotations" (
   version = "@VERSION@"
   description = "Syntax extension: Quotations to create AST nodes, but using pa_r/pa_o"
@@ -379,27 +379,40 @@ package "pa_lexer" (
 )
 
 package "fstream" (
-  requires = "camlp5"
   version = "@VERSION@"
   description = "Syntax extension: Functional stream parsers"
-  archive(syntax,preprocessor) = "pa_fstream.cmo"
+
+  requires(toploop) = "camlp5"
   archive(toploop) = "pa_fstream.cmo"
+
+  archive(syntax,preprocessor) = "pa_fstream.cmo"
+  archive(syntax,preprocessor,-native) = "pa_fstream.cmo"
+  archive(syntax,preprocessor,native) = "pa_fstream.cmx"
+
+  requires = "camlp5"
 )
 
 package "macro" (
-  requires = "camlp5"
   version = "@VERSION@"
   description = "Syntax extension: Conditional compilation"
-  archive(syntax,preprocessor) = "pa_macro.cmo"
+
+  requires(toploop) = "camlp5"
   archive(toploop) = "pa_macro.cmo"
+
+  archive(syntax,preprocessor) = "pa_macro.cmo"
+  archive(syntax,preprocessor,-native) = "pa_macro.cmo"
+  archive(syntax,preprocessor,native) = "pa_macro.cmx"
+  requires = "camlp5"
 )
 
 package "pragma" (
-  requires = "camlp5"
   version = "@VERSION@"
   description = "Syntax extension: (experimental) Pragmas"
+
   archive(syntax,preprocessor) = "pa_pragma.cmo"
-  archive(toploop) = "pa_pragma.cmo"
+  archive(syntax,preprocessor,-native) = "pa_pragma.cmo"
+  archive(syntax,preprocessor,native) = "pa_pragma.cmx"
+  requires = "camlp5"
 )
 
 package "toploop" (
