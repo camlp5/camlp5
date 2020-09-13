@@ -4,6 +4,7 @@
 
 val expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
 val patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
+val ctyp : (MLast.loc -> MLast.loc) -> int -> MLast.ctyp -> MLast.ctyp;;
 val sig_item :
   (MLast.loc -> MLast.loc) -> int -> MLast.sig_item -> MLast.sig_item;;
 val str_item :

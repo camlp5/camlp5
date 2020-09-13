@@ -40,7 +40,7 @@ pa_mktest.cmx: ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi \
     ../main/pcaml.cmx
 pa_o.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/asttools.cmi ../main/mLast.cmi \
-    ../main/mlsyntax.cmo ../main/pcaml.cmi ../main/reloc.cmi
+    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/reloc.cmi
 pa_o.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
     ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
     ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/reloc.cmx
@@ -118,7 +118,7 @@ pr_null.cmo: ../main/pcaml.cmi
 pr_null.cmx: ../main/pcaml.cmx
 pr_o.cmo: ../lib/diff.cmi ../lib/eprinter.cmi ../lib/extfun.cmi \
     ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi ../lib/versdep.cmo \
-    ../main/asttools.cmi ../main/mLast.cmi ../main/mlsyntax.cmo \
+    ../main/asttools.cmi ../main/mLast.cmi ../main/mlsyntax.cmi \
     ../main/pcaml.cmi ../main/prtools.cmi
 pr_o.cmx: ../lib/diff.cmx ../lib/eprinter.cmx ../lib/extfun.cmx \
     ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx ../lib/versdep.cmx \
@@ -138,7 +138,7 @@ pr_op.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
     ../main/prtools.cmx
 pr_r.cmo: ../lib/diff.cmi ../lib/eprinter.cmi ../lib/extfun.cmi \
     ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi ../lib/versdep.cmo \
-    ../main/asttools.cmi ../main/mLast.cmi ../main/mlsyntax.cmo \
+    ../main/asttools.cmi ../main/mLast.cmi ../main/mlsyntax.cmi \
     ../main/pcaml.cmi ../main/prtools.cmi
 pr_r.cmx: ../lib/diff.cmx ../lib/eprinter.cmx ../lib/extfun.cmx \
     ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx ../lib/versdep.cmx \
@@ -146,7 +146,7 @@ pr_r.cmx: ../lib/diff.cmx ../lib/eprinter.cmx ../lib/extfun.cmx \
     ../main/pcaml.cmx ../main/prtools.cmx
 pr_ro.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/ploc.cmi \
     ../lib/pprintf.cmi ../lib/pretty.cmi ../main/mLast.cmi \
-    ../main/mlsyntax.cmo ../main/pcaml.cmi ../main/prtools.cmi pr_r.cmo
+    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/prtools.cmi pr_r.cmo
 pr_ro.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/ploc.cmx \
     ../lib/pprintf.cmx ../lib/pretty.cmx ../main/mLast.cmi \
     ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/prtools.cmx pr_r.cmx

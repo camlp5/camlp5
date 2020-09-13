@@ -18,6 +18,8 @@ main.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
 main.cmx: ../lib/grammar.cmx ../lib/plexing.cmx ../lib/ploc.cmx \
     ../lib/versdep.cmx ../odyl/odyl_main.cmx argl.cmx ast2pt.cmx mLast.cmi \
     pcaml.cmx
+mlsyntax.cmo: mlsyntax.cmi
+mlsyntax.cmx: mlsyntax.cmi
 parserify.cmo: ../lib/ploc.cmi ../lib/pretty.cmi ../lib/versdep.cmo \
     exparser.cmi mLast.cmi parserify.cmi prtools.cmi
 parserify.cmx: ../lib/ploc.cmx ../lib/pretty.cmx ../lib/versdep.cmx \

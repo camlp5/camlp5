@@ -30,7 +30,7 @@ pa_macro_gram.cmx: ../lib/grammar.cmx ../lib/ploc.cmx pa_extend.cmx \
     pa_macro.cmx
 pa_r.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/asttools.cmi ../main/mLast.cmi \
-    ../main/mlsyntax.cmo ../main/pcaml.cmi
+    ../main/mlsyntax.cmi ../main/pcaml.cmi
 pa_r.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
     ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
     ../main/mlsyntax.cmx ../main/pcaml.cmx
@@ -44,7 +44,7 @@ pr_dump.cmx: ../lib/ploc.cmx ../lib/versdep.cmx ../main/ast2pt.cmx \
     ../main/pcaml.cmx
 q_MLast.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/asttools.cmi ../main/mLast.cmi \
-    ../main/mlsyntax.cmo ../main/pcaml.cmi ../main/quotation.cmi
+    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/quotation.cmi
 q_MLast.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
     ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
     ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/quotation.cmx
