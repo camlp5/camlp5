@@ -4406,14 +4406,80 @@ END
      r_output = OK {foo|class type t = A.B(C).D.x;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="expr-true"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|true|foo} ;
+     official_input = OK {foo|true|foo} ;
+     r_input = OK {foo|True;|foo} ;
+     o_output = OK {foo|let _ = true;;
+|foo};
+     official_output = OK {foo|;;true|foo} ;
+     r_output = OK {foo|True;
+|foo}
+    };
+    {name="expr-True"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|True|foo} ;
+     official_input = OK {foo|True|foo} ;
+     r_input = OK {foo|True_;|foo} ;
+     o_output = OK {foo|let _ = True;;
+|foo};
+     official_output = OK {foo|;;True|foo} ;
+     r_output = OK {foo|True_;
+|foo}
+    };
+    {name="expr-True-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|A.True|foo} ;
+     official_input = OK {foo|A.True|foo} ;
+     r_input = OK {foo|A.True_;|foo} ;
+     o_output = OK {foo|let _ = A.True;;
+|foo};
+     official_output = OK {foo|;;A.True|foo} ;
+     r_output = OK {foo|A.True_;
+|foo}
+    };
+    {name="patt-true"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun true -> 1|foo} ;
+     official_input = OK {foo|fun true -> 1|foo} ;
+     r_input = OK {foo|fun [ True -> 1 ];|foo} ;
+     o_output = OK {foo|let _ =
+  function
+    true -> 1;;
+|foo};
+     official_output = OK {foo|;;fun (true) -> 1|foo} ;
+     r_output = OK {foo|fun
+[ True → 1 ];
+|foo}
+    };
+    {name="patt-True"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun True -> 1|foo} ;
+     official_input = OK {foo|fun True -> 1|foo} ;
+     r_input = OK {foo|fun [ True_ -> 1 ];|foo} ;
+     o_output = OK {foo|let _ =
+  function
+    True -> 1;;
+|foo};
+     official_output = OK {foo|;;fun (True) -> 1|foo} ;
+     r_output = OK {foo|fun
+[ True_ → 1 ];
+|foo}
+    };
+    {name="patt-True-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun A.True -> 1|foo} ;
+     official_input = OK {foo|fun A.True -> 1|foo} ;
+     r_input = OK {foo|fun [ A.True_ -> 1 ];|foo} ;
+     o_output = OK {foo|let _ =
+  function
+    A.True -> 1;;
+|foo};
+     official_output = OK {foo|;;fun (A.True) -> 1|foo} ;
+     r_output = OK {foo|fun
+[ A.True_ → 1 ];
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

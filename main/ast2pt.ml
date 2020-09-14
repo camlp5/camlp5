@@ -327,11 +327,19 @@ value rec class_expr_fa al =
   | ce → (ce, al) ]
 ;
 
+value uident_True__True = fun [
+  "True_" -> "True"
+| "False_" -> "False"
+| x -> x
+]
+;
+
 value rec sep_expr_acc l =
   fun
   [ <:expr< $e1$ . $e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
-  | <:expr< $uid:s$ >> as e →
-      let loc = MLast.loc_of_expr e in
+  | <:expr:< $uid:s$ >> →
+      let s = uident_True__True s in
+      let e = <:expr< $uid:s$ >> in
       match l with
       [ [] → [(loc, [], e)]
       | [(loc2, sl, e) :: l] → [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
