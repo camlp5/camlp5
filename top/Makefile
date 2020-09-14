@@ -40,7 +40,7 @@ $(CAMLP5N)sch.cma: $(SOBJS)
 	$(OCAMLC) $(SOBJS) $(DEBUG) -linkall -a -o $(CAMLP5N)sch.cma
 
 $(CAMLP5N)_top.cma: $(OBJS)
-	$(OCAMLC) $(OBJS) $(DEBUG) -a -o $(CAMLP5N)_top.cma
+	$(OCAMLC) $(OBJS) $(DEBUG) -linkall -a -o $(CAMLP5N)_top.cma
 
 clean::
 	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)

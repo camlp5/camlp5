@@ -21,11 +21,11 @@ archive(byte,toploop,camlp5scheme) = "camlp5sch.cma"
 
 # Standard ML-like syntax:
 # Do #predicates "syntax,camlp5sml", followed by #require "camlp5"
-archive(byte,toploop,camlp5sml) = "gramlib.cma camlp5_top.cma pa_sml.cmo"
+archive(byte,toploop,camlp5sml) = "odyl.cma camlp5.cma camlp5_top.cma pa_sml.cmo"
 
 # Lisp-like syntax:
 # Do #predicates "syntax,camlp5lisp", followed by #require "camlp5"
-archive(byte,toploop,camlp5lisp) = "gramlib.cma camlp5_top.cma pa_lisp.cmo"
+archive(byte,toploop,camlp5lisp) = "odyl.cma camlp5.cma camlp5_top.cma pa_lisp.cmo"
 
 # For the preprocessor itself:
 archive(syntax,preprocessor,camlp5o) = "pa_o.cmo pa_op.cmo pr_dump.cmo"
@@ -423,6 +423,5 @@ package "toploop" (
   archive(byte) = "ppxprint.cma camlp5_top_funs.cmo"
   )
 
-  archive(byte,toploop) = "ppxprint.cma camlp5_top_funs.cmo"
-  error(toploop) = "camlp5.toploop cannot be loaded alone into the toploop"
+  archive(byte,toploop) = "ppxprint.cma camlp5_top.cma"
 )

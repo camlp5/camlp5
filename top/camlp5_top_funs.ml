@@ -106,7 +106,7 @@ value first_phrase = ref True;
 value toplevel_phrase cs = do {
   if Sys.interactive.val && first_phrase.val then do {
     first_phrase.val := False;
-    Printf.eprintf "\tCamlp5 parsing version %s\n\n" Pcaml.version;
+    Printf.eprintf "\tCamlp5 parsing version (%s) %s\n\n" Pcaml.syntax_name.val Pcaml.version;
     flush stderr
   }
   else ();
