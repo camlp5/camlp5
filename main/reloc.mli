@@ -10,6 +10,7 @@ value str_item : (MLast.loc -> MLast.loc) -> int -> MLast.str_item -> MLast.str_
 
 (* Equality over syntax trees *)
 
+value eq_longid : MLast.longid -> MLast.longid -> bool;
 value eq_expr : MLast.expr -> MLast.expr -> bool;
 value eq_patt : MLast.patt -> MLast.patt -> bool;
 value eq_ctyp : MLast.ctyp -> MLast.ctyp -> bool;
