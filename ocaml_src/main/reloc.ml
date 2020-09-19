@@ -732,6 +732,9 @@ and attributes floc sh x1 = vala_map (attributes_no_anti floc sh) x1;;
 
 (* Equality over syntax trees *)
 
+let eq_longid x y =
+  longid (fun _ -> Ploc.dummy) 0 x = longid (fun _ -> Ploc.dummy) 0 y
+;;
 let eq_expr x y =
   expr (fun _ -> Ploc.dummy) 0 x = expr (fun _ -> Ploc.dummy) 0 y
 ;;

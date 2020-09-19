@@ -56,10 +56,26 @@ module Qast =
     ;
     value loc = Ploc.dummy;
     value expr_node m n =
-      if m = "" then <:expr< $uid:n$ >> else <:expr< $uid:m$ . $uid:n$ >>
+      let l = String.split_on_char '.' n in
+      let (n, l) = sep_last l in
+      match (m, l) with [
+        ("", []) -> <:expr< $uid:n$ >>
+      | (m, []) -> <:expr< $uid:m$ . $uid:n$ >>
+      | (_, [h :: t]) ->
+        let lhs = List.fold_left (fun e1 e2 -> <:expr< $e1$ . $uid:e2$ >>) <:expr< $uid:h$ >> t in
+        <:expr< $lhs$ . $uid:n$ >>
+      ]
     ;
     value patt_node m n =
-      if m = "" then <:patt< $uid:n$ >> else <:patt< $uid:m$ . $uid:n$ >>
+      let l = String.split_on_char '.' n in
+      let (n, l) = sep_last l in
+      match (m, l) with [
+        ("", []) -> <:patt< $uid:n$ >>
+      | (m, []) -> <:patt< $uid:m$ . $uid:n$ >>
+      | (_, [h :: t]) ->
+        let lhs = List.fold_left (fun e1 e2 -> <:longident< $longid:e1$ . $uid:e2$ >>) <:longident< $uid:h$ >> t in
+        <:patt< $longid:lhs$ . $uid:n$ >>
+      ]
     ;
     value patt_label m n =
       if m = "" then <:patt< $lid:n$ >> else <:patt< $uid:m$ . $lid:n$ >>

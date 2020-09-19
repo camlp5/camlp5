@@ -2,6 +2,14 @@
 Camlp5 Version 8.00-alpha04:
 --------------------
 
+* [19 Sep 2020] multiple small changes
+
+  * export more names from Reloc
+
+  * in Q_MLast, allow Qast.Node to take a dotted name, e.g. Qast.Node
+    "A.B.C" and convert it into an access-expression, so we can use
+    quotations over types not in MLast.
+
 * [01 Sep 2020] Add support for Ocaml 4.11.1.
 
   Support "#-types" with extended longidents (module-applications).  Test support for same.

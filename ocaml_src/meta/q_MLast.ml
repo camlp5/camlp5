@@ -55,12 +55,32 @@ module Qast =
     ;;
     let loc = Ploc.dummy;;
     let expr_node m n =
-      if m = "" then MLast.ExUid (loc, n)
-      else MLast.ExAcc (loc, MLast.ExUid (loc, m), MLast.ExUid (loc, n))
+      let l = String.split_on_char '.' n in
+      let (n, l) = sep_last l in
+      match m, l with
+        "", [] -> MLast.ExUid (loc, n)
+      | m, [] -> MLast.ExAcc (loc, MLast.ExUid (loc, m), MLast.ExUid (loc, n))
+      | _, h :: t ->
+          let lhs =
+            List.fold_left
+              (fun e1 e2 -> MLast.ExAcc (loc, e1, MLast.ExUid (loc, e2)))
+              (MLast.ExUid (loc, h)) t
+          in
+          MLast.ExAcc (loc, lhs, MLast.ExUid (loc, n))
     ;;
     let patt_node m n =
-      if m = "" then MLast.PaLong (loc, MLast.LiUid (loc, n))
-      else MLast.PaLong (loc, MLast.LiAcc (loc, MLast.LiUid (loc, m), n))
+      let l = String.split_on_char '.' n in
+      let (n, l) = sep_last l in
+      match m, l with
+        "", [] -> MLast.PaLong (loc, MLast.LiUid (loc, n))
+      | m, [] ->
+          MLast.PaLong (loc, MLast.LiAcc (loc, MLast.LiUid (loc, m), n))
+      | _, h :: t ->
+          let lhs =
+            List.fold_left (fun e1 e2 -> MLast.LiAcc (loc, e1, e2))
+              (MLast.LiUid (loc, h)) t
+          in
+          MLast.PaLong (loc, MLast.LiAcc (loc, lhs, n))
     ;;
     let patt_label m n =
       if m = "" then MLast.PaLid (loc, n)

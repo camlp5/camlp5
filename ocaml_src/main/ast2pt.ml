@@ -353,11 +353,19 @@ let rec class_expr_fa al =
   | ce -> ce, al
 ;;
 
+let uident_True__True =
+  function
+    "True_" -> "True"
+  | "False_" -> "False"
+  | x -> x
+;;
+
 let rec sep_expr_acc l =
   function
     MLast.ExAcc (_, e1, e2) -> sep_expr_acc (sep_expr_acc l e2) e1
-  | MLast.ExUid (_, s) as e ->
-      let loc = MLast.loc_of_expr e in
+  | MLast.ExUid (loc, s) ->
+      let s = uident_True__True s in
+      let e = MLast.ExUid (loc, s) in
       begin match l with
         [] -> [loc, [], e]
       | (loc2, sl, e) :: l -> (Ploc.encl loc loc2, s :: sl, e) :: l

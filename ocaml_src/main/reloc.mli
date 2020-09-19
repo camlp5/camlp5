@@ -12,6 +12,7 @@ val str_item :
 
 (* Equality over syntax trees *)
 
+val eq_longid : MLast.longid -> MLast.longid -> bool;;
 val eq_expr : MLast.expr -> MLast.expr -> bool;;
 val eq_patt : MLast.patt -> MLast.patt -> bool;;
 val eq_ctyp : MLast.ctyp -> MLast.ctyp -> bool;;
