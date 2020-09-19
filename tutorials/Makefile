@@ -1,6 +1,6 @@
 
 DIRS=streams-original streams calc calc+ocamllex calc+functorial \
-	calc+pa_lexer calc+pa_lexer-original protobuf2
+	calc+pa_lexer calc+pa_lexer-original protobuf2 pa_sexp eg_sexp
 
 all:
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done
