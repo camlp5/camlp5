@@ -30,12 +30,6 @@ EXTEND
     | s = ANTIQUOT_LOC "anti" -> Sexp.SeXtr loc s
     | s = ANTIQUOT_LOC "exp" -> Sexp.SeXtr loc s
     | s = ANTIQUOT_LOC "atom" -> do {
-(*
-      let s = match String.split_on_char ':' s with [
-        [a;"atom";c] -> String.concat ":" [a;"exp";c]
-      | _ -> Ploc.raise loc (Failure Fmt.(str "bad atom antiquotation: <<%s>>\n%!" s))
-      ] in
-*)
       Sexp.SeXtr loc s
     }
     ]
