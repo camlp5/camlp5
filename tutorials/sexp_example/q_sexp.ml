@@ -23,12 +23,7 @@ value expr_cons e1 e2 =
 ;
 
 EXTEND
-  GLOBAL: sexp_eoi expr;
-
-  expr: BEFORE "apply" [[
-    "SEXP" ; se = sexp -> se
-  ]]
-  ;
+  GLOBAL: sexp_eoi;
 
   sexp: [
     [
@@ -56,3 +51,6 @@ EXTEND
   ;
 
 END;
+
+Quotation.add "sexp" (Q_MLast.apply_entry sexp_eoi "sexp") ;
+  

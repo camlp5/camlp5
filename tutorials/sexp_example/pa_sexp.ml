@@ -43,12 +43,17 @@ EXTEND
     | "(" ; ")" ->
         expr_nil
     ]
-(*
   | [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc s None
     | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc s None
     | s = ANTIQUOT_LOC "exp" -> MLast.ExXtr loc s None
+    | s = ANTIQUOT_LOC "atom" -> do {
+      let s = match String.split_on_char ':' s with [
+        [a;"atom";c] -> String.concat ":" [a;"exp";c]
+      | _ -> Ploc.raise loc (Failure Fmt.(str "bad atom antiquotation: <<%s>>\n%!" s))
+      ] in
+      MLast.ExApp loc (MLast.ExAcc loc (MLast.ExUid loc <:vala< "Sexp" >>) (MLast.ExUid loc <:vala< "Atom" >>)) (MLast.ExXtr loc s None)
+    }
     ]
-*)
   ]
   ;
 
