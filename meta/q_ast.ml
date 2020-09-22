@@ -69,9 +69,10 @@ value get_anti_loc s =
 module type MetaSig =
   sig
     type t = 'abstract;
+    type prefix_t = 'abstract;
     value loc_v : unit -> t;
-    value node : string -> list t -> t;
-    value node_no_loc : string -> list t -> t;
+    value node : ?prefix:prefix_t -> string -> list t -> t;
+    value node_no_loc : ?prefix:prefix_t -> string -> list t -> t;
     value list : ('a -> t) -> list 'a -> t;
     value option : ('a -> t) -> option 'a -> t;
     value vala : ('a -> t) -> MLast.v 'a -> t;
@@ -87,6 +88,7 @@ module type MetaSig =
 
 module Meta_make (C : MetaSig) =
   struct
+    module C = C ;
     open MLast;
     value type_var (s, tv) =
       C.tuple [C.vala (C.option C.string) s; C.option C.bool tv]
@@ -656,15 +658,18 @@ module Meta_E =
   Meta_make
     (struct
        type t = MLast.expr;
+       type prefix_t = MLast.expr;
        value loc = Ploc.dummy;
        value loc_v () = <:expr< $lid:Ploc.name.val$ >>;
-       value node con el =
+       value node ?{prefix} con el =
+         let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
          List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-           <:expr< MLast . $uid:con$ $loc_v ()$ >> el
+           <:expr< $prefix$ . $uid:con$ $loc_v ()$ >> el
        ;
-       value node_no_loc con el =
+       value node_no_loc ?{prefix} con el =
+         let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
          List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-           <:expr< MLast . $uid:con$ >> el
+           <:expr< $prefix$ . $uid:con$ >> el
        ;
        value list elem el =
          loop el where rec loop el =
@@ -736,15 +741,18 @@ module Meta_P =
   Meta_make
     (struct
        type t = MLast.patt;
+       type prefix_t = MLast.longid;
        value loc = Ploc.dummy;
        value loc_v () = <:patt< _ >>;
-       value node con pl =
+       value node ?{prefix} con pl =
+         let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
          List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
-           <:patt< MLast . $uid:con$ _ >> pl
+           <:patt< $longid:prefix$ . $uid:con$ _ >> pl
        ;
-       value node_no_loc con pl =
+       value node_no_loc ?{prefix} con pl =
+         let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
          List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
-           <:patt< MLast . $uid:con$ >> pl
+           <:patt< $longid:prefix$ . $uid:con$ >> pl
        ;
        value list elem el =
          loop el where rec loop el =

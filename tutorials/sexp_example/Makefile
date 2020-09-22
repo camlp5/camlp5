@@ -15,7 +15,7 @@ PACKAGES := $(PACKAGES),fmt,camlp5.extend,camlp5.quotations
 SYNTAX = camlp5r
 
 ML=\
-	sexp.ml q_sexp.ml pa_sexp.ml \
+	sexp.ml q_sexp.ml q_ast_sexp.ml pa_sexp.ml \
 
 MLI=
 CMO := $(ML:.ml=.cmo)

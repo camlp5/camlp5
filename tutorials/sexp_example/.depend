@@ -1,0 +1,29 @@
+sexp.cmo q_sexp.cmo q_ast_sexp.cmo pa_sexp.cmo sexp.cmi q_sexp.cmi q_ast_sexp.cmi pa_sexp.cmi sexp.cmx q_sexp.cmx q_ast_sexp.cmx pa_sexp.cmx: /home/chet/Hack/Ocaml/GENERIC/4.10.0/lib/fmt/META ../../local-install/lib/camlp5/META ../../local-install/lib/camlp5/META
+pa_sexp.cmo.ppo.cmo : \
+    sexp.cmo
+pa_sexp.cmo.ppo.cmx : \
+    sexp.cmx
+pa_sexp.cmo : \
+    sexp.cmo
+pa_sexp.cmx : \
+    sexp.cmx
+q_ast_sexp.cmo.ppo.cmo : \
+    sexp.cmo \
+    pa_sexp.cmo
+q_ast_sexp.cmo.ppo.cmx : \
+    sexp.cmx \
+    pa_sexp.cmx
+q_ast_sexp.cmo : \
+    sexp.cmo \
+    pa_sexp.cmo
+q_ast_sexp.cmx : \
+    sexp.cmx \
+    pa_sexp.cmx
+q_sexp.cmo.ppo.cmo :
+q_sexp.cmo.ppo.cmx :
+q_sexp.cmo :
+q_sexp.cmx :
+sexp.cmo.ppo.cmo :
+sexp.cmo.ppo.cmx :
+sexp.cmo :
+sexp.cmx :

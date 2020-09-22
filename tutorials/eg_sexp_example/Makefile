@@ -22,10 +22,10 @@ eg_quotations.cmo: eg_quotations.ml
 	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.quotations" $@
 
 eg_parsing.cmo: eg_parsing.ml
-	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.pa_sexp" $@
+	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.parser" $@
 
 eg_q_ast.cmo: eg_q_ast.ml
-	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.pa_sexp,camlp5.parser_quotations" $@
+	$(MAKE) -f Makefile.one PACKAGES="$(PACKAGES),sexp_example.parser_quotations" $@
 
 .SUFFIXES: .cmo .cmi .ml .mli .cmx .cma .cmxa .cmt .cmti
 
