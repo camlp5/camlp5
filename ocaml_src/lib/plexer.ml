@@ -977,6 +977,57 @@ let keyword_or_error_or_rawstring ctx bp (loc, s) buf strm =
     "STRING", String.escaped s
 ;;
 
+let zerobuf f buf strm = f Plexing.Lexbuf.empty strm;;
+
+let rec ws buf (strm__ : _ Stream.t) =
+  let buf =
+    match Stream.peek strm__ with
+      Some ' ' -> Stream.junk strm__; buf
+    | Some '\t' -> Stream.junk strm__; buf
+    | Some '\n' -> Stream.junk strm__; buf
+    | _ -> raise Stream.Failure
+  in
+  try ws buf strm__ with Stream.Failure -> buf
+;;
+
+let rec extattrident buf (strm__ : _ Stream.t) =
+  let buf = ident buf strm__ in
+  match Stream.peek strm__ with
+    Some '.' ->
+      Stream.junk strm__;
+      begin try extattrident (Plexing.Lexbuf.add '.' buf) strm__ with
+        Stream.Failure -> raise (Stream.Error "")
+      end
+  | _ -> buf
+;;
+
+let quoted_extension1 ctx (bp, _) extid buf strm =
+  let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
+  "QUOTEDEXTENSION", extid ^ ":" ^ String.escaped s
+;;
+
+let quoted_extension0 ctx (bp, _) extid buf (strm__ : _ Stream.t) =
+  match try Some (ws buf strm__) with Stream.Failure -> None with
+    Some buf ->
+      begin try
+        zerobuf (quoted_extension1 ctx (bp, Stream.count strm__) extid) buf
+          strm__
+      with Stream.Failure -> raise (Stream.Error "")
+      end
+  | _ ->
+      zerobuf (quoted_extension1 ctx (bp, Stream.count strm__) extid) buf
+        strm__
+;;
+
+let quoted_extension ctx (bp, _) buf (strm__ : _ Stream.t) =
+  let buf = extattrident buf strm__ in
+  try
+    zerobuf
+      (quoted_extension0 ctx (bp, Stream.count strm__)
+         (Plexing.Lexbuf.get buf))
+      buf strm__
+  with Stream.Failure -> raise (Stream.Error "")
+;;
 let dotsymbolchar buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
@@ -1316,6 +1367,15 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                               (Plexing.Lexbuf.get
                                  (Plexing.Lexbuf.add '<'
                                     (Plexing.Lexbuf.add '{' buf)))
+                        | Some '%' ->
+                            Stream.junk strm__;
+                            begin try
+                              zerobuf
+                                (quoted_extension ctx
+                                   (bp, Stream.count strm__))
+                                buf strm__
+                            with Stream.Failure -> raise (Stream.Error "")
+                            end
                         | Some ':' ->
                             Stream.junk strm__;
                             keyword_or_error ctx (bp, Stream.count strm__)
@@ -1730,8 +1790,8 @@ let using_token ctx kwd_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "CHAR" | "STRING" | "QUOTATION" | "GIDENT" | "ANTIQUOT" | "ANTIQUOT_LOC" |
-    "EOI" ->
+    "QUOTEDEXTENSION" | "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
+    "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise
@@ -1837,11 +1897,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 959, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 959, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 959, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 960, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 960, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 993, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 993, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 993, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 994, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 994, 37)));
        tok_comm = None}
   in
   let glex =

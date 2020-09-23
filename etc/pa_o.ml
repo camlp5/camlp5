@@ -685,6 +685,13 @@ value uident_True_True_ = fun [
 ]
 ;
 
+value make_string_extension loc s =
+  let colonpos = String.index s ':' in
+  let attrid = String.sub s 0 colonpos in
+  let strpayload = String.sub s (colonpos+1) (String.length s - (colonpos+1)) in
+  <:attribute_body< $attrid:(loc,attrid)$ $str:strpayload$ ; >>
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -759,10 +766,12 @@ EXTEND
   ;
   item_extension:
   [ [ "[%%" ; e = V attribute_body "extension"; "]" -> e
+    | s = QUOTEDEXTENSION -> <:vala< make_string_extension loc s >>
     ] ]
   ;
   alg_extension:
   [ [ "[%" ; e = V attribute_body "extension"; "]" -> e
+    | s = QUOTEDEXTENSION -> <:vala< make_string_extension loc s >>
     ] ]
   ;
   functor_parameter:

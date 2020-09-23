@@ -66,9 +66,10 @@ let get_anti_loc s =
 module type MetaSig =
   sig
     type t;;
+    type prefix_t;;
     val loc_v : unit -> t;;
-    val node : string -> t list -> t;;
-    val node_no_loc : string -> t list -> t;;
+    val node : ?prefix:prefix_t -> string -> t list -> t;;
+    val node_no_loc : ?prefix:prefix_t -> string -> t list -> t;;
     val list : ('a -> t) -> 'a list -> t;;
     val option : ('a -> t) -> 'a option -> t;;
     val vala : ('a -> t) -> 'a MLast.v -> t;;
@@ -84,6 +85,7 @@ module type MetaSig =
 
 module Meta_make (C : MetaSig) =
   struct
+    module C = C;;
     open MLast;;
     let type_var (s, tv) =
       C.tuple [C.vala (C.option C.string) s; C.option C.bool tv]
@@ -651,22 +653,29 @@ module Meta_E =
   Meta_make
     (struct
       type t = MLast.expr;;
+      type prefix_t = MLast.expr;;
       let loc = Ploc.dummy;;
       let loc_v () = MLast.ExLid (loc, !(Ploc.name));;
-      let node con el =
+      let node ?prefix con el =
+        let prefix =
+          match prefix with
+            None -> MLast.ExUid (loc, "MLast")
+          | Some p -> p
+        in
         List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
           (MLast.ExApp
-             (loc,
-              MLast.ExAcc
-                (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, con)),
+             (loc, MLast.ExAcc (loc, prefix, MLast.ExUid (loc, con)),
               loc_v ()))
           el
       ;;
-      let node_no_loc con el =
+      let node_no_loc ?prefix con el =
+        let prefix =
+          match prefix with
+            None -> MLast.ExUid (loc, "MLast")
+          | Some p -> p
+        in
         List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
-          (MLast.ExAcc
-             (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, con)))
-          el
+          (MLast.ExAcc (loc, prefix, MLast.ExUid (loc, con))) el
       ;;
       let list elem el =
         let rec loop el =
@@ -730,22 +739,29 @@ module Meta_P =
   Meta_make
     (struct
       type t = MLast.patt;;
+      type prefix_t = MLast.longid;;
       let loc = Ploc.dummy;;
       let loc_v () = MLast.PaAny loc;;
-      let node con pl =
+      let node ?prefix con pl =
+        let prefix =
+          match prefix with
+            None -> MLast.LiUid (loc, "MLast")
+          | Some p -> p
+        in
         List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
           (MLast.PaApp
-             (loc,
-              MLast.PaLong
-                (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), con)),
+             (loc, MLast.PaLong (loc, MLast.LiAcc (loc, prefix, con)),
               MLast.PaAny loc))
           pl
       ;;
-      let node_no_loc con pl =
+      let node_no_loc ?prefix con pl =
+        let prefix =
+          match prefix with
+            None -> MLast.LiUid (loc, "MLast")
+          | Some p -> p
+        in
         List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
-          (MLast.PaLong
-             (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), con)))
-          pl
+          (MLast.PaLong (loc, MLast.LiAcc (loc, prefix, con))) pl
       ;;
       let list elem el =
         let rec loop el =

@@ -4516,17 +4516,60 @@ END
      o_output = OK {foo||foo};
      official_output = OK {foo||foo} ;
      r_output = OK {foo||foo}
-    };
-    {name="test-prototype"; implem = True ;
-     exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
     }
-]
+] @
+IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
+  []
+ELSE
+  [{name="quoted-extension-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|[%goo.ha "argle"]|foo} ;
+     official_input = OK {foo|[%goo.ha "argle"]|foo} ;
+     r_input = OK {foo| [%goo.ha "argle";]; |foo} ;
+     o_output = OK {foo|let _ = [%goo.ha "argle"];;
+|foo};
+     official_output = OK {foo|;;[%goo.ha "argle"]|foo} ;
+     r_output = OK {foo|[%"goo.ha" "argle";];
+|foo}
+    };
+    {name="quoted-extension-1"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK {foo|{%goo.ha|argle|}|foo} ;
+     official_input = OK {foo|{%goo.ha|argle|}|foo} ;
+     r_input = OK {foo| [%goo.ha {bar|argle|bar};]; |foo} ;
+     o_output = OK {foo|let _ = [%goo.ha "argle"];;
+|foo};
+     official_output = OK {foo|;;[%goo.ha {|argle|}]|foo} ;
+     r_output = OK {foo|[%"goo.ha" "argle";];
+|foo}
+    };
+    {(skip) with
+     name="quoted-extension-1-[ro]2official"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK {foo|{%goo.ha|argle|}|foo} ;
+     r_input = OK {foo| [%goo.ha {bar|argle|bar};]; |foo} ;
+     official_output = OK {foo|;;[%goo.ha "argle"]|foo}
+    };
+    {name="quoted-extension-2"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK "{%goo.ha \t\nbar|argle|bar}" ;
+     official_input = OK {foo|{%goo.ha bar|argle|bar}|foo} ;
+     r_input = OK {foo| [%goo.ha {bar|argle|bar};]; |foo} ;
+     o_output = OK {foo|let _ = [%goo.ha "argle"];;
+|foo};
+     official_output = OK {foo|;;[%goo.ha {bar|argle|bar}]|foo} ;
+     r_output = OK {foo|[%"goo.ha" "argle";];
+|foo}
+    };
+    {(skip) with
+     name="quoted-extension-2-[ro]2official"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK {foo|{%goo.ha bar|argle|bar}|foo} ;
+     r_input = OK {foo| [%goo.ha {bar|argle|bar};]; |foo} ;
+     official_output = OK {foo|;;[%goo.ha "argle"]|foo}
+    }
+  ]
+END
 ;
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
