@@ -7,5 +7,4 @@ open Fmt ;;
 let x = 1 ;;
 let nil = Sexp.Nil ;;
 let nil' = {| () |} |> Stream.of_string |> Grammar.Entry.parse Pa_sexp.sexp_eoi ;;
-(*Probably gonna ask a question HERE*)
 let l = {| (a b (c . ()) . d) |} |> Stream.of_string |> Grammar.Entry.parse Pa_sexp.sexp_eoi ;;

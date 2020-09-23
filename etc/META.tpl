@@ -263,6 +263,25 @@ package "phony_quotations" (
 )
 
 
+package "extend_m" (
+  error(camlp5o) = "camlp5.extend_m cannot be used with syntax camlp5o"
+  error(pkg_camlp5.pa_o) = "camlp5.extend_m cannot be used with camlp5.pa_o"
+
+  requires(toploop) = "camlp5.extend"
+  archive(toploop)      = "pa_extend_m.cmo"
+
+  requires(syntax,preprocessor) = "camlp5.extend"
+  archive(syntax,preprocessor,-native) = "pa_extend_m.cmo"
+  archive(syntax,preprocessor,native) = "pa_extend_m.cmx"
+  requires = "camlp5.extend"
+
+  package "link" (
+  requires = "camlp5.extend"
+  archive(byte) = "pa_extend_m.cmo"
+  archive(native) = "pa_extend_m.cmx"
+  )
+)
+
 package "extend" (
   error(camlp5o) = "camlp5.extend cannot be used with syntax camlp5o"
   error(pkg_camlp5.pa_o) = "camlp5.extend cannot be used with camlp5.pa_o"
