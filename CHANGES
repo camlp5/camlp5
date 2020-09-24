@@ -1,6 +1,9 @@
 
-Camlp5 Version 8.00-alpha04:
+Camlp5 Version 8.00-alpha05:
 --------------------
+
+* [24 Sep 2020] add support for 4.11.0 quoted-extension, viz {%foo|argle|} and
+  {foo bar|argle|bar}
 
 * [19 Sep 2020] multiple small changes
 
@@ -9,6 +12,9 @@ Camlp5 Version 8.00-alpha04:
   * in Q_MLast, allow Qast.Node to take a dotted name, e.g. Qast.Node
     "A.B.C" and convert it into an access-expression, so we can use
     quotations over types not in MLast.
+
+Camlp5 Version 8.00-alpha04:
+--------------------
 
 * [01 Sep 2020] Add support for Ocaml 4.11.1.
 
