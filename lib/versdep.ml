@@ -104,6 +104,23 @@ value list_map_check f l =
     | [] -> Some (List.rev rev_l) ]
 ;
 
+IFDEF OCAML_VERSION < OCAML_4_04_0 THEN
+value split_on_char sep s = do {
+  let r = ref [] in
+  let j = ref (length s) in
+  for i = length s - 1 downto 0 do {
+    if unsafe_get s i = sep then do {
+      r.val := [sub s (i + 1) (j.val - i - 1) :: r.val];
+      j.val := i
+    }
+    else ()
+  };
+  [sub s 0 j.val :: r.val]
+};
+ELSE
+value split_on_char = String.split_on_char ;
+END;
+
 IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
   value labelled lab =
     if lab = "" then Nolabel

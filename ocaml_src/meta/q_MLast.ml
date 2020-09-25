@@ -69,7 +69,7 @@ module Qast =
           MLast.ExAcc (loc, lhs, MLast.ExUid (loc, n))
     ;;
     let patt_node m n =
-      let l = String.split_on_char '.' n in
+      let l = Versdep.split_on_char '.' n in
       let (n, l) = sep_last l in
       match m, l with
         "", [] -> MLast.PaLong (loc, MLast.LiUid (loc, n))

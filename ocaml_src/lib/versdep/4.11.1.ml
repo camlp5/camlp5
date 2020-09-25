@@ -98,6 +98,8 @@ let list_map_check f l =
   loop [] l
 ;;
 
+let split_on_char = String.split_on_char;;
+
 let labelled lab =
   if lab = "" then Nolabel
   else if lab.[0] = '?' then
