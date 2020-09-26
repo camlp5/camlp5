@@ -56,7 +56,7 @@ module Qast =
     ;
     value loc = Ploc.dummy;
     value expr_node m n =
-      let l = String.split_on_char '.' n in
+      let l = Versdep.split_on_char '.' n in
       let (n, l) = sep_last l in
       match (m, l) with [
         ("", []) -> <:expr< $uid:n$ >>

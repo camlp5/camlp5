@@ -105,7 +105,8 @@ value list_map_check f l =
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_04_0 THEN
-value split_on_char sep s = do {
+value split_on_char sep s = 
+  let open String in do {
   let r = ref [] in
   let j = ref (length s) in
   for i = length s - 1 downto 0 do {

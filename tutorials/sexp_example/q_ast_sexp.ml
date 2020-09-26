@@ -20,7 +20,8 @@ value meta_e_sexp se =
   | Sexp.Cons a b -> node_no_loc "Cons" [sexp a ; sexp b]
   | Sexp.Atom a -> node_no_loc "Atom" [C.string a]
   | Sexp.SeXtr loc s →
-      match String.split_on_char ':' s with [
+      let open String in let open Versdep in
+      match split_on_char ':' s with [
         [a;"atom";c] ->
         let s = String.concat ":" [a;"exp";c] in
         node_no_loc "Atom" [C.xtr_typed "exp" loc s]
@@ -42,7 +43,8 @@ value meta_p_sexp se =
   | Sexp.Cons a b -> node_no_loc "Cons" [sexp a ; sexp b]
   | Sexp.Atom a -> node_no_loc "Atom" [C.string a]
   | Sexp.SeXtr loc s →
-      match String.split_on_char ':' s with [
+      let open String in let open Versdep in
+      match split_on_char ':' s with [
         [a;"atom";c] ->
         let s = String.concat ":" [a;"exp";c] in
         node_no_loc "Atom" [C.xtr_typed "exp" loc s]
