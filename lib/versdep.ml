@@ -204,50 +204,50 @@ value ocaml_mkpat loc x =
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_attribute_implem _ _ _ = assert False ;
-value ocaml_attribute_interf _ _ _ = assert False ;
-value ocaml_attribute_type _ _ _ = assert False ;
-value ocaml_attribute_patt _ _ _ _ = assert False ;
-value ocaml_expr_addattr _ _ = assert False ;
-value ocaml_coretype_addattr _ _ = assert False ;
-value ocaml_patt_addattr _ _ = assert False ;
-value ocaml_pmty_addattr _ _ = assert False ;
-value ocaml_pmod_addattr _ _ = assert False ;
-value ocaml_pcty_addattr _ _ = assert False ;
-value ocaml_pcl_addattrs _ _ = assert False ;
+value ocaml_attribute_implem _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_attribute_interf _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_attribute_type _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_attribute_patt _ _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_expr_addattr _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_coretype_addattr _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_patt_addattr _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pmty_addattr _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pmod_addattr _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pcty_addattr _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pcl_addattrs _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 
 (* floating attributes *)
-value ocaml_psig_attribute _ = assert False ;
-value ocaml_pstr_attribute _ = assert False ;
-value ocaml_pctf_attribute _ = assert False ;
-value ocaml_pcf_attribute _ = assert False ;
+value ocaml_psig_attribute _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pstr_attribute _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pctf_attribute _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pcf_attribute _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 
 (* extension nodes *)
-value ocaml_extension_implem _ _ _ = assert False ;
-value ocaml_extension_interf _ _ _ = assert False ;
-value ocaml_extension_type _ _ _ = assert False ;
-value ocaml_extension_patt _ _ _ _ k= assert False ;
-value ocaml_ptyp_extension _ = assert False ;
-value ocaml_pexp_extension _ = assert False ;
-value ocaml_ppat_extension _ = assert False ;
-value ocaml_pmty_extension _ = assert False ;
-value ocaml_pmod_extension _ = assert False ;
-value ocaml_psig_extension ?{item_attributes=[]} _ = assert False ;
-value ocaml_pstr_extension ?{item_attributes=[]} _ = assert False ;
-value ocaml_pcl_extension _ = assert False ;
-value ocaml_pcty_extension _ = assert False ;
-value ocaml_pctf_extension _ = assert False ;
-value ocaml_pcf_extension _ = assert False ;
-value ocaml_extension_exception _ _ _ _ = assert False ;
+value ocaml_extension_implem _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_extension_interf _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_extension_type _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_extension_patt _ _ _ _ k= failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_ptyp_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pexp_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_ppat_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pmty_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pmod_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_psig_extension ?{item_attributes=[]} _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pstr_extension ?{item_attributes=[]} _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pcl_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pcty_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pctf_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pcf_extension _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_extension_exception _ _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 
-value ocaml_pexp_unreachable () = assert False ;
-value ocaml_ptype_open () = assert False ;
+value ocaml_pexp_unreachable () = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_ptype_open () = failwith "Only available in OCaml versions >= 4.10.0" ;
 
-value ocaml_psig_typext _ = assert False ;
-value ocaml_pstr_typext _ = assert False ;
+value ocaml_psig_typext _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_pstr_typext _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 
-value ocaml_pexp_letexception exdef body = assert False ;
-value ocaml_ppat_exception _ = assert False ;
+value ocaml_pexp_letexception exdef body = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_ppat_exception _ = failwith "Only available in OCaml versions >= 4.10.0" ;
 ELSE
 value ocaml_attribute_implem loc (nameloc, name) sl =
   Parsetree.({
@@ -429,7 +429,7 @@ value ocaml_mkmod loc x =
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_mkfield_inh ?{alg_attributes=[]} loc x fl = assert False
+value ocaml_mkfield_inh ?{alg_attributes=[]} loc x fl = failwith "Only available in OCaml versions >= 4.10.0"
 ;
 ELSE
 value ocaml_mkfield_inh ?{alg_attributes=[]} loc x fl =
@@ -483,9 +483,9 @@ END
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_ec_record ?{alg_attributes=[]} _ _ _ = assert False ;
-value ocaml_ec_rebind  _ _ _ = assert False ;
-value ocaml_type_extension ?{item_attributes=[]} lo pathlid params priv cstrs = assert False ;
+value ocaml_ec_record ?{alg_attributes=[]} _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_ec_rebind  _ _ _ = failwith "Only available in OCaml versions >= 4.10.0" ;
+value ocaml_type_extension ?{item_attributes=[]} lo pathlid params priv cstrs = failwith "Only available in OCaml versions >= 4.10.0" ;
 ELSE
 value ocaml_ec_record ?{alg_attributes=[]} loc s (x, rto) =
   let x = match x with [
@@ -581,7 +581,7 @@ value ocaml_class_structure p cil =
 value ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_pmty_alias loc li = assert False ;
+value ocaml_pmty_alias loc li = failwith "Only available in OCaml versions >= 4.10.0" ;
 ELSE
 value ocaml_pmty_alias loc li = Pmty_alias (mkloc loc li);
 END
@@ -1095,7 +1095,7 @@ value ocaml_value_binding ?{item_attributes=[]} loc p e =
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_ppat_open loc li p = assert False ;
+value ocaml_ppat_open loc li p = failwith "Only available in OCaml versions >= 4.10.0" ;
 ELSE
 value ocaml_ppat_open loc li p = Ppat_open (mkloc loc li) p ;
 END
@@ -1253,7 +1253,7 @@ value ocaml_psig_module ?{item_attributes=[]} loc (s : option string) mt =
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_psig_modsubst ?{item_attributes=[]} loc s li = assert False ;
+value ocaml_psig_modsubst ?{item_attributes=[]} loc s li = failwith "Only available in OCaml versions >= 4.10.0" ;
 ELSE
 value ocaml_psig_modsubst ?{item_attributes=[]} loc s li =
   Psig_modsubst {
@@ -1363,7 +1363,7 @@ value ocaml_psig_type is_nonrec stl =
 
 value ocaml_psig_typesubst stl =
   IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-    assert False
+    failwith "Only available in OCaml versions >= 4.10.0"
   ELSE
     let stl = List.map (fun (s, t) -> t) stl in Psig_typesubst stl
   END
@@ -1733,9 +1733,9 @@ value ocaml_pcl_let =
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
-value ocaml_pcl_open loc li ovf ce = assert False
+value ocaml_pcl_open loc li ovf ce = failwith "Only available in OCaml versions >= 4.10.0"
 ;
-value ocaml_pcty_open loc li ovf ct = assert False
+value ocaml_pcty_open loc li ovf ct = failwith "Only available in OCaml versions >= 4.10.0"
 ;
 ELSE
 value ocaml_pcl_open loc li ovf ce =
