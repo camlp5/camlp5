@@ -654,171 +654,170 @@ module Meta_make (C : MetaSig) =
 value anti_anti n = "_" ^ n;
 value is_anti_anti n = String.length n > 0 && n.[0] = '_';
 
-module Meta_E =
-  Meta_make
-    (struct
-       type t = MLast.expr;
-       type prefix_t = MLast.expr;
-       value loc = Ploc.dummy;
-       value loc_v () = <:expr< $lid:Ploc.name.val$ >>;
-       value node ?{prefix} con el =
-         let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
-         List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-           <:expr< $prefix$ . $uid:con$ $loc_v ()$ >> el
-       ;
-       value node_no_loc ?{prefix} con el =
-         let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
-         List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-           <:expr< $prefix$ . $uid:con$ >> el
-       ;
-       value list elem el =
-         loop el where rec loop el =
-           match el with
-           [ [] -> <:expr< [] >>
-           | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ]
-       ;
-       value option elem oe =
-         match oe with
-         [ None -> <:expr< None >>
-         | Some e -> <:expr< Some $elem e$ >> ]
-       ;
-       value vala elem =
-         IFNDEF STRICT THEN
-           fun e -> elem e
-         ELSE
-           fun
-           [ Ploc.VaAnt s ->
-               match get_anti_loc s with
-               [ Some (loc, typ, str) ->
-                   let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
-                   if is_anti_anti typ then <:expr< $anti:r$ >>
-                   else if not Pcaml.strict_mode.val then <:expr< $anti:r$ >>
-                   else <:expr< Ploc.VaVal $anti:r$ >>
-               | None -> assert False ]
-           | Ploc.VaVal v ->
-               if not Pcaml.strict_mode.val then elem v
-               else <:expr< Ploc.VaVal $elem v$ >> ]
-         END
-       ;
-       value bool b = if b then <:expr< True >> else <:expr< False >>;
-       value string s = <:expr< $str:s$ >>;
-       value tuple le = <:expr< ($list:le$) >>;
-       value record lfe = <:expr< {$list:lfe$} >>;
-       value xtr_typed wantty loc s =
-         match get_anti_loc s with
-         [ Some (_, typ, str) when typ = wantty ->
-             let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
-             <:expr< $anti:r$ >>
-         | _ -> assert False ]
-       ;
-       value xtr loc s =
-         match get_anti_loc s with
-         [ Some (_, typ, str) ->
-             match typ with
-             [ "" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
-                 <:expr< $anti:r$ >>
-             | _ -> assert False ]
-         | None -> assert False ]
-       ;
-       value xtr_or_anti loc f s =
-         match get_anti_loc s with
-         [ Some (_, typ, str) ->
-             match typ with
-             [ "" | "exp" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
-                 <:expr< $anti:r$ >>
-             | "anti" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
-                 f <:expr< $anti:r$ >>
-             | _ -> assert False ]
-         | None -> assert False ]
-       ;
-     end)
+module E_MetaSig = struct
+  type t = MLast.expr;
+  type prefix_t = MLast.expr;
+  value loc = Ploc.dummy;
+  value loc_v () = <:expr< $lid:Ploc.name.val$ >>;
+  value node ?{prefix} con el =
+    let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
+    List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
+      <:expr< $prefix$ . $uid:con$ $loc_v ()$ >> el
+  ;
+  value node_no_loc ?{prefix} con el =
+    let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
+    List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
+      <:expr< $prefix$ . $uid:con$ >> el
+  ;
+  value list elem el =
+    loop el where rec loop el =
+      match el with
+      [ [] -> <:expr< [] >>
+      | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ]
+  ;
+  value option elem oe =
+    match oe with
+    [ None -> <:expr< None >>
+    | Some e -> <:expr< Some $elem e$ >> ]
+  ;
+  value vala elem =
+    IFNDEF STRICT THEN
+      fun e -> elem e
+    ELSE
+      fun
+      [ Ploc.VaAnt s ->
+          match get_anti_loc s with
+          [ Some (loc, typ, str) ->
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
+              if is_anti_anti typ then <:expr< $anti:r$ >>
+              else if not Pcaml.strict_mode.val then <:expr< $anti:r$ >>
+              else <:expr< Ploc.VaVal $anti:r$ >>
+          | None -> assert False ]
+      | Ploc.VaVal v ->
+          if not Pcaml.strict_mode.val then elem v
+          else <:expr< Ploc.VaVal $elem v$ >> ]
+    END
+  ;
+  value bool b = if b then <:expr< True >> else <:expr< False >>;
+  value string s = <:expr< $str:s$ >>;
+  value tuple le = <:expr< ($list:le$) >>;
+  value record lfe = <:expr< {$list:lfe$} >>;
+  value xtr_typed wantty loc s =
+    match get_anti_loc s with
+    [ Some (_, typ, str) when typ = wantty ->
+        let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+        <:expr< $anti:r$ >>
+    | _ -> assert False ]
+  ;
+  value xtr loc s =
+    match get_anti_loc s with
+    [ Some (_, typ, str) ->
+        match typ with
+        [ "" ->
+            let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+            <:expr< $anti:r$ >>
+        | _ -> assert False ]
+    | None -> assert False ]
+  ;
+  value xtr_or_anti loc f s =
+    match get_anti_loc s with
+    [ Some (_, typ, str) ->
+        match typ with
+        [ "" | "exp" ->
+            let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
+            <:expr< $anti:r$ >>
+        | "anti" ->
+            let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
+            f <:expr< $anti:r$ >>
+        | _ -> assert False ]
+    | None -> assert False ]
+  ;
+end
 ;
 
-module Meta_P =
-  Meta_make
-    (struct
-       type t = MLast.patt;
-       type prefix_t = MLast.longid;
-       value loc = Ploc.dummy;
-       value loc_v () = <:patt< _ >>;
-       value node ?{prefix} con pl =
-         let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
-         List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
-           <:patt< $longid:prefix$ . $uid:con$ _ >> pl
-       ;
-       value node_no_loc ?{prefix} con pl =
-         let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
-         List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
-           <:patt< $longid:prefix$ . $uid:con$ >> pl
-       ;
-       value list elem el =
-         loop el where rec loop el =
-           match el with
-           [ [] -> <:patt< [] >>
-           | [e :: el] -> <:patt< [$elem e$ :: $loop el$] >> ]
-       ;
-       value option elem oe =
-         match oe with
-         [ None -> <:patt< None >>
-         | Some e -> <:patt< Some $elem e$ >> ]
-       ;
-       value vala elem =
-         IFNDEF STRICT THEN
-           fun p -> elem p
-         ELSE
-           fun
-           [ Ploc.VaAnt s ->
-               match get_anti_loc s with
-               [ Some (loc, typ, str) ->
-                   let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-                   if is_anti_anti typ then <:patt< $anti:r$ >>
-                   else if not Pcaml.strict_mode.val then <:patt< $anti:r$ >>
-                   else <:patt< Ploc.VaVal $anti:r$ >>
-               | None -> assert False ]
-           | Ploc.VaVal v ->
-               if not Pcaml.strict_mode.val then elem v
-               else <:patt< Ploc.VaVal $elem v$ >> ]
-         END
-       ;
-       value bool b = if b then <:patt< True >> else <:patt< False >>;
-       value string s = <:patt< $str:s$ >>;
-       value tuple lp = <:patt< ($list:lp$) >>;
-       value record lfp = <:patt< {$list:lfp$} >>;
-       value xtr_typed wantty loc s =
-         match get_anti_loc s with
-         [ Some (_, typ, str) when typ = wantty ->
-             let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
-             <:patt< $anti:r$ >>
-         | _ -> assert False ]
-       ;
-       value xtr loc s =
-         match get_anti_loc s with
-         [ Some (_, typ, str) ->
-             match typ with
-             [ "" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
-                 <:patt< $anti:r$ >>
-             | _ -> assert False ]
-         | None -> assert False ]
-       ;
-       value xtr_or_anti loc f s =
-         match get_anti_loc s with
-         [ Some (_, typ, str) ->
-             match typ with
-             [ "" | "exp" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
-                 <:patt< $anti:r$ >>
-             | "anti" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
-                 f <:patt< $anti:r$ >>
-             | _ -> assert False ]
-         | None -> assert False ]
-       ;
-     end)
+module P_MetaSig = struct
+  type t = MLast.patt;
+  type prefix_t = MLast.longid;
+  value loc = Ploc.dummy;
+  value loc_v () = <:patt< _ >>;
+  value node ?{prefix} con pl =
+    let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
+    List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
+      <:patt< $longid:prefix$ . $uid:con$ _ >> pl
+  ;
+  value node_no_loc ?{prefix} con pl =
+    let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
+    List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
+      <:patt< $longid:prefix$ . $uid:con$ >> pl
+  ;
+  value list elem el =
+    loop el where rec loop el =
+      match el with
+      [ [] -> <:patt< [] >>
+      | [e :: el] -> <:patt< [$elem e$ :: $loop el$] >> ]
+  ;
+  value option elem oe =
+    match oe with
+    [ None -> <:patt< None >>
+    | Some e -> <:patt< Some $elem e$ >> ]
+  ;
+  value vala elem =
+    IFNDEF STRICT THEN
+      fun p -> elem p
+    ELSE
+      fun
+      [ Ploc.VaAnt s ->
+          match get_anti_loc s with
+          [ Some (loc, typ, str) ->
+              let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
+              if is_anti_anti typ then <:patt< $anti:r$ >>
+              else if not Pcaml.strict_mode.val then <:patt< $anti:r$ >>
+              else <:patt< Ploc.VaVal $anti:r$ >>
+          | None -> assert False ]
+      | Ploc.VaVal v ->
+          if not Pcaml.strict_mode.val then elem v
+          else <:patt< Ploc.VaVal $elem v$ >> ]
+    END
+  ;
+  value bool b = if b then <:patt< True >> else <:patt< False >>;
+  value string s = <:patt< $str:s$ >>;
+  value tuple lp = <:patt< ($list:lp$) >>;
+  value record lfp = <:patt< {$list:lfp$} >>;
+  value xtr_typed wantty loc s =
+    match get_anti_loc s with
+    [ Some (_, typ, str) when typ = wantty ->
+        let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+        <:patt< $anti:r$ >>
+    | _ -> assert False ]
+  ;
+  value xtr loc s =
+    match get_anti_loc s with
+    [ Some (_, typ, str) ->
+        match typ with
+        [ "" ->
+            let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+            <:patt< $anti:r$ >>
+        | _ -> assert False ]
+    | None -> assert False ]
+  ;
+  value xtr_or_anti loc f s =
+    match get_anti_loc s with
+    [ Some (_, typ, str) ->
+        match typ with
+        [ "" | "exp" ->
+            let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
+            <:patt< $anti:r$ >>
+        | "anti" ->
+            let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
+            f <:patt< $anti:r$ >>
+        | _ -> assert False ]
+    | None -> assert False ]
+  ;
+end
 ;
+
+module Meta_E = Meta_make(E_MetaSig) ;
+module Meta_P = Meta_make(P_MetaSig) ;
 
 value attribute_body_eoi = Grammar.Entry.create Pcaml.gram "attribute_body_eoi";
 value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
