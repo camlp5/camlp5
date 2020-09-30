@@ -54,6 +54,7 @@ compare:
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+        cp odyl_main.cmi odyl_main.cmo odyl_main.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	if test -f odyl.cmxa; then \
 	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  cp odyl$(EXT_LIB) odyl$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
