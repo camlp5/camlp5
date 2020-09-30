@@ -230,17 +230,35 @@ package "parser_quotations" (
   version = "@VERSION@"
   description = "Syntax extension: Quotations to create AST nodes, but using pa_r/pa_o"
 
-  requires(toploop) = "camlp5"
+  requires(toploop) = "camlp5.parser_quotations_base"
   archive(toploop) = "q_ast.cmo"
 
-  requires(syntax,preprocessor) = "camlp5"
+  requires(syntax,preprocessor) = "camlp5.parser_quotations_base"
   archive(syntax,preprocessor,-native) = "q_ast.cmo"
   archive(syntax,preprocessor,native) = "q_ast.cmx"
 
   package "link" (
-    requires = "camlp5"
+    requires = "camlp5.parser_quotations_base.link"
     archive(byte) = "q_ast.cmo"
     archive(native) = "q_ast.cmx"
+  )
+)
+
+package "parser_quotations_base" (
+  version = "@VERSION@"
+  description = "Syntax extension: Quotations to create AST nodes (this is the base module), but using pa_r/pa_o"
+
+  requires(toploop) = "camlp5"
+  archive(toploop) = "q_ast_base.cmo"
+
+  requires(syntax,preprocessor) = "camlp5"
+  archive(syntax,preprocessor,-native) = "q_ast_base.cmo"
+  archive(syntax,preprocessor,native) = "q_ast_base.cmx"
+
+  package "link" (
+    requires = "camlp5"
+    archive(byte) = "q_ast_base.cmo"
+    archive(native) = "q_ast_base.cmx"
   )
 )
 

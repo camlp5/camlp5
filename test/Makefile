@@ -33,17 +33,17 @@ quot_r.mlt: quot_r.ml ../meta/camlp5r ../meta/q_MLast.cmo $(DEP)
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
-quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast.cmo $(DEP)
+quot_r.mlu: quot_r.ml ../meta/camlp5r ../meta/q_ast_base.cmo ../meta/q_ast.cmo $(DEP)
 	cpp -E -DQAST -D$(OVERSION_NAME) quot_r.ml > tmp.quot_r.ml
-	../meta/camlp5r ../meta/q_ast.cmo ../etc/pr_r.cmo -l 400 -sep '\n' tmp.quot_r.ml | \
+	../meta/camlp5r ../meta/q_ast_base.cmo ../meta/q_ast.cmo ../etc/pr_r.cmo -l 400 -sep '\n' tmp.quot_r.ml | \
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
-quot_o.mlu: quot_o.ml ../etc/camlp5o ../meta/q_ast.cmo $(DEP)
-	../etc/camlp5o ../meta/q_ast.cmo ../etc/pr_r.cmo -l 400 -sep '\n' quot_o.ml | \
+quot_o.mlu: quot_o.ml ../etc/camlp5o ../meta/q_ast_base.cmo ../meta/q_ast.cmo $(DEP)
+	../etc/camlp5o ../meta/q_ast_base.cmo ../meta/q_ast.cmo ../etc/pr_r.cmo -l 400 -sep '\n' quot_o.ml | \
 	$(DIFF) -I '(\*' -B quot_r.out.ml -
 	@touch $@
 
-quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast.cmo $(DEP)
-	../etc/camlp5sch ../meta/q_ast.cmo ../etc/pr_r.cmo quot_sch.ml | $(DIFF) quot_r.out.ml -
+quot_sch.mlu: quot_sch.ml ../etc/camlp5sch ../meta/q_ast_base.cmo ../meta/q_ast.cmo $(DEP)
+	../etc/camlp5sch ../meta/q_ast_base.cmo ../meta/q_ast.cmo ../etc/pr_r.cmo quot_sch.ml | $(DIFF) quot_r.out.ml -
 	@touch $W

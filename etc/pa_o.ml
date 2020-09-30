@@ -1488,36 +1488,36 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   expr_uident:
     [ RIGHTA
-      [ i = UIDENT ->
-        let i = uident_True_True_ i in
-        <:expr< $uid:i$ >>
-      | i = UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $uid:i$ . $j$ >>
-      | i = UIDENT ; "." ; "("; op = operator_rparen ->
+      [ i = V UIDENT ->
+        let i = vala_map uident_True_True_ i in
+        <:expr< $_uid:i$ >>
+      | i = V UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $_uid:i$ . $j$ >>
+      | i = V UIDENT ; "." ; "("; op = operator_rparen ->
           if op = "::" then
-            <:expr< $uid:i$ . $uid:op$ >>
+            <:expr< $_uid:i$ . $uid:op$ >>
           else
-            <:expr< $uid:i$ . $lid:op$ >>
-      | i = UIDENT ; "." ; j = LIDENT ->
-          <:expr< $uid:i$ . $lid:j$ >>
-      | i = UIDENT ; "."; "("; e2 = expr; ")" ->
-            <:expr< $uid:i$ . $e2$ >>
+            <:expr< $_uid:i$ . $lid:op$ >>
+      | i = V UIDENT ; "." ; j = LIDENT ->
+          <:expr< $_uid:i$ . $lid:j$ >>
+      | i = V UIDENT ; "."; "("; e2 = expr; ")" ->
+            <:expr< $_uid:i$ . $e2$ >>
 
 
-      | i = UIDENT ; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
+      | i = V UIDENT ; "."; "{"; test_label_eq ; lel = V lbl_expr_list "list"; "}" ->
           let e2 = <:expr< { $_list:lel$ } >> in
-          <:expr< $uid:i$ . $e2$ >>
+          <:expr< $_uid:i$ . $e2$ >>
 
-      | i = UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
+      | i = V UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
         "}" ->
           let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
-          <:expr< $uid:i$ . $e2$ >>
+          <:expr< $_uid:i$ . $e2$ >>
 
-      | i = UIDENT ; "."; "["; "]" ->
+      | i = V UIDENT ; "."; "["; "]" ->
           let e2 = <:expr< [] >> in
-          <:expr< $uid:i$ . $e2$ >>
-      | i = UIDENT ; "."; "["; el = expr1_semi_list; "]" ->
+          <:expr< $_uid:i$ . $e2$ >>
+      | i = V UIDENT ; "."; "["; el = expr1_semi_list; "]" ->
           let e2 = <:expr< $mklistexp loc None el$ >> in
-          <:expr< $uid:i$ . $e2$ >>
+          <:expr< $_uid:i$ . $e2$ >>
 
       ] ]
   ;
