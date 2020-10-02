@@ -48,6 +48,23 @@ let skip_to_next_colon s i =
   loop (i + 1)
 ;;
 
+let split_anti_loc s =
+  try
+    let i = String.index s ':' in
+    let (j, len) = skip_to_next_colon s i in
+    let locs = String.sub s 0 i in
+    let kind = String.sub s (i + 1) len in
+    let rest = String.sub s (j + 1) (String.length s - j - 1) in
+    Some (locs, kind, rest)
+  with Not_found | Failure _ -> None
+;;
+
+let replace_antiloc_kind ~newkind s =
+  match split_anti_loc s with
+    None -> s
+  | Some (locs, _, rest) -> String.concat ":" [locs; newkind; rest]
+;;
+
 let get_anti_loc s =
   try
     let i = String.index s ':' in
