@@ -20,4 +20,12 @@ value expander_name name =
 
 value find name = List.assoc (expander_name name) expanders_table.val;
 
-value add name f = expanders_table.val := [(name, f) :: expanders_table.val];
+value add name f =
+  if List.mem_assoc name expanders_table.val then do {
+    Printf.fprintf stderr "Failure: Quotation.add: cannot add the quotation \"%s\" twice\n%!" name ;
+    Ploc.raise Ploc.dummy (Failure Printf.(sprintf"Quotation.add: cannot add the quotation \"%s\" twice" name))
+  }
+  else
+    expanders_table.val := [(name, f) :: expanders_table.val]
+;
+

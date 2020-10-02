@@ -38,8 +38,8 @@ prtools.cmo: ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi \
 prtools.cmx: ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx \
     ../lib/versdep.cmx mLast.cmi prtools.cmi
 prtools.cmi: ../lib/ploc.cmi ../lib/pprintf.cmi mLast.cmi
-quotation.cmo: mLast.cmi quotation.cmi
-quotation.cmx: mLast.cmi quotation.cmi
+quotation.cmo: ../lib/ploc.cmi mLast.cmi quotation.cmi
+quotation.cmx: ../lib/ploc.cmx mLast.cmi quotation.cmi
 quotation.cmi: mLast.cmi
 reloc.cmo: ../lib/ploc.cmi mLast.cmi reloc.cmi
 reloc.cmx: ../lib/ploc.cmx mLast.cmi reloc.cmi
