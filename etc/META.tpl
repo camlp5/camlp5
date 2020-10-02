@@ -442,6 +442,19 @@ package "macro" (
   requires = "camlp5"
 )
 
+package "macro_gram" (
+  version = "@VERSION@"
+  description = "Syntax extension: Conditional compilation"
+
+  requires(toploop) = "camlp5,camlp5.macro"
+  archive(toploop) = "pa_macro_gram.cmo"
+
+  archive(syntax,preprocessor) = "pa_macro_gram.cmo"
+  archive(syntax,preprocessor,-native) = "pa_macro_gram.cmo"
+  archive(syntax,preprocessor,native) = "pa_macro_gram.cmx"
+  requires = "camlp5,camlp5.macro"
+)
+
 package "pragma" (
   version = "@VERSION@"
   description = "Syntax extension: (experimental) Pragmas"

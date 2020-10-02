@@ -661,6 +661,9 @@ IFDEF STRICT THEN
     ;
     Pcaml.str_item: FIRST
       [ [ s = ANTIQUOT_LOC -> MLast.StXtr loc s None
+        | s = ANTIQUOT_LOC "stri" ->
+          let s = replace_antiloc_kind ~{newkind=""} s in
+          MLast.StXtr loc s None
         ] ]
     ;
   END;

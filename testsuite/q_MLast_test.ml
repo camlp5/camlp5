@@ -53,6 +53,17 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         expect = {foo|match x with [ MLast.PaAny _ → 1 ];
 |foo}
       }
+      ; { name = "expr-apply-1" ;
+          expect = {foo|MLast.ExApp loc e1 e2;
+|foo} ;
+          code = {foo|<:expr< $e1$ $e2$ >>;|foo}
+        }
+      ; { name = "expr-apply-2" ;
+          expect = {foo|fun
+[ MLast.ExApp _ _ e2 → 1 ];
+|foo} ;
+          code = {foo|fun [ <:expr< $_$ $e2$ >> -> 1 ];|foo}
+        }
       ; { name = "expr-new-1" ; 
           expect = {foo|MLast.ExNew loc
   (Ploc.VaVal
@@ -194,7 +205,17 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:patt< [] >> ;|foo}
         }
-      ; { name = "type-extension" ; 
+      ; { name = "patt-type-0" ;
+          expect = {foo|MLast.PaNty loc (Ploc.VaVal "a");
+|foo} ;
+          code = {foo|<:patt< (type a) >> ;|foo}
+        }
+      ; { name = "patt-type-1" ;
+          expect = {foo|MLast.PaNty loc (Ploc.VaVal (PM.type_id p));
+|foo} ;
+          code = {foo|<:patt< (type $lid:PM.type_id p$) >> ;|foo}
+        }
+      ; { name = "type-extension" ;
           expect = {foo|MLast.StTypExten loc
   {MLast.teNam = Ploc.VaVal (None, Ploc.VaVal "t");
    MLast.tePrm = Ploc.VaVal []; MLast.tePrv = Ploc.VaVal False;
@@ -230,7 +251,59 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:expr< $uid:e1$ . $lid:m$ >> ;|foo}
         }
-      ; { name = "prototype" ; 
+      ; { name = "typedecl-0" ;
+          expect = {foo|MLast.StTyp loc (Ploc.VaVal False)
+  (Ploc.VaVal
+     [{MLast.tdIsDecl = Ploc.VaVal True;
+       MLast.tdNam = Ploc.VaVal (loc, Ploc.VaVal li);
+       MLast.tdPrm = Ploc.VaVal []; MLast.tdPrv = Ploc.VaVal False;
+       MLast.tdDef =
+         MLast.TySum loc
+           (Ploc.VaVal
+              [(loc, Ploc.VaVal "A", Ploc.VaVal [], Ploc.VaVal None,
+                Ploc.VaVal [])]);
+       MLast.tdCon = Ploc.VaVal []; MLast.tdAttributes = Ploc.VaVal []}]);
+|foo} ;
+          code = {foo|<:str_item< type $lid:li$ = [ A ] >>;|foo}
+        }
+      ; { name = "typedecl-1" ;
+          expect = {foo|fun
+[ MLast.SgTyp _ (Ploc.VaVal False)
+    (Ploc.VaVal
+       [{MLast.tdIsDecl = Ploc.VaVal True;
+         MLast.tdNam = Ploc.VaVal (_, Ploc.VaVal x);
+         MLast.tdPrm = Ploc.VaVal _; MLast.tdPrv = Ploc.VaVal _;
+         MLast.tdDef = MLast.TyOpn _; MLast.tdCon = Ploc.VaVal [];
+         MLast.tdAttributes = _}]) →
+    1 ];
+|foo} ;
+          code = {foo|fun [ <:sig_item< type $lid:x$ $list:_$ = $priv:_$ .. $_itemattrs:_$ >> -> 1 ] ;|foo}
+        }
+(*
+      ; { name = "typedecl-1" ;
+          expect = {foo||foo} ;
+          code = {foo|<:type_decl< $tp:x$ $list:_$ = $priv:_$ .. $_itemattrs:_$ >>;|foo}
+        }
+*)
+      ; { name = "attribute-body-1" ;
+          expect = {foo|fun
+[ (Ploc.VaVal (_, "add"), MLast.StAttr _ (Ploc.VaVal [si])) → si ];
+|foo} ;
+          code = {foo|fun [ <:attribute_body< "add" $stri:si$ ; >> -> si ] ;|foo}
+        }
+      ; { name = "prototype" ;
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
+      ; { name = "prototype" ;
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
+      ; { name = "prototype" ;
+          expect = {foo||foo} ;
+          code = {foo||foo}
+        }
+      ; { name = "prototype" ;
           expect = {foo||foo} ;
           code = {foo||foo}
         }

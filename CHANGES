@@ -1,4 +1,13 @@
 
+Camlp5 Version 8.00-alpha06:
+--------------------
+
+* [01 Oct 2020] multiple small changes
+
+  * export "pa_macro_gram.cmo" as the findlib package "camlp5.macro_gram": this provides IFDEF support in grammars.
+
+  * in Q_ast, add "stri" as a valid antiquotation for str_item.  And add tests.
+
 Camlp5 Version 8.00-alpha05:
 --------------------
 
