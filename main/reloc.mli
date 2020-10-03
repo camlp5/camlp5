@@ -3,6 +3,8 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 value expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
+value longid : (MLast.loc -> MLast.loc) -> int -> MLast.longid -> MLast.longid;
+value longid_lident : (MLast.loc -> MLast.loc) -> int -> MLast.longid_lident -> MLast.longid_lident;
 value patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
 value ctyp : (MLast.loc -> MLast.loc) -> int -> MLast.ctyp -> MLast.ctyp;
 value sig_item : (MLast.loc -> MLast.loc) -> int -> MLast.sig_item -> MLast.sig_item;
@@ -11,6 +13,7 @@ value str_item : (MLast.loc -> MLast.loc) -> int -> MLast.str_item -> MLast.str_
 (* Equality over syntax trees *)
 
 value eq_longid : MLast.longid -> MLast.longid -> bool;
+value eq_longid_lident : MLast.longid_lident -> MLast.longid_lident -> bool;
 value eq_expr : MLast.expr -> MLast.expr -> bool;
 value eq_patt : MLast.patt -> MLast.patt -> bool;
 value eq_ctyp : MLast.ctyp -> MLast.ctyp -> bool;

@@ -814,6 +814,11 @@ value eq_longid x y =
   longid (fun _ -> Ploc.dummy) 0 x =
   longid (fun _ -> Ploc.dummy) 0 y
 ;
+
+value eq_longid_lident x y =
+  longid_lident (fun _ -> Ploc.dummy) 0 x =
+  longid_lident (fun _ -> Ploc.dummy) 0 y
+;
 value eq_expr x y =
   expr (fun _ -> Ploc.dummy) 0 x =
   expr (fun _ -> Ploc.dummy) 0 y

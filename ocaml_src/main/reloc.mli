@@ -3,6 +3,10 @@
 (* Copyright (c) INRIA 2007-2017 *)
 
 val expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
+val longid : (MLast.loc -> MLast.loc) -> int -> MLast.longid -> MLast.longid;;
+val longid_lident :
+  (MLast.loc -> MLast.loc) -> int -> MLast.longid_lident ->
+    MLast.longid_lident;;
 val patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
 val ctyp : (MLast.loc -> MLast.loc) -> int -> MLast.ctyp -> MLast.ctyp;;
 val sig_item :
@@ -13,6 +17,7 @@ val str_item :
 (* Equality over syntax trees *)
 
 val eq_longid : MLast.longid -> MLast.longid -> bool;;
+val eq_longid_lident : MLast.longid_lident -> MLast.longid_lident -> bool;;
 val eq_expr : MLast.expr -> MLast.expr -> bool;;
 val eq_patt : MLast.patt -> MLast.patt -> bool;;
 val eq_ctyp : MLast.ctyp -> MLast.ctyp -> bool;;
