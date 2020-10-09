@@ -59,6 +59,10 @@ depexts: [
     "perl-String-ShellQuote"
     "perl-IPC-System-Simple"
   ] {os-family = "fedora"}
+  [
+    "perl-string-shellquote"
+    "perl-ipc-system-simple"
+  ] {os-family = "arch"}
 ]
 
 dev-repo: "git+https://github.com/camlp5/camlp5.git"
