@@ -6,26 +6,24 @@
 #require "pcre";;
 #require "bos";;
 
-(*
+
 #require "camlp5.pa_op";;
 Pcaml.inter_phrases := Some ";;\n";;
-*)
+(*
 #require "camlp5.pa_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
-(*
-#require "camlp5.pr_o";;
 *)
-#require "camlp5.pr_r";;
+
+#require "camlp5.pr_o";;
 
 (*
 #require "camlp5.pr_r";;
 Pcaml.inter_phrases := Some ";\n";;
 *)
 
+(*
 #require "camlp5.quotations";;
 #require "camlp5.extfun";;
-(*
 #require "camlp5.extend";;
 #require "camlp5.phony_quotations" ;;
 *)
@@ -87,13 +85,6 @@ let pp_lexbuf lb =
 
 print_string "================ START ================\n";; flush stdout ;;
 
-(*
-#load "../ppx/pa_deriving_enum.cmo";;
-#trace Pa_deriving_enum.fmt_expression ;;
-#trace Pa_deriving_enum.is_deriving_enum ;;
-
-"../ppx/test_deriving_enum.ml" |> Fpath.v |> Bos.OS.File.read |> Rresult.R.get_ok |> PAPR.Implem.pa1 ;;
-*)
 
 (*
 ;;; Local Variables: ***

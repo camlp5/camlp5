@@ -1188,7 +1188,7 @@ EXTEND_PRINTER
           horiz_vertic
             (fun () ->
                match e3 with
-               [ <:expr< () >> ->
+               [ MLast.ExLong _ <:longident< $uid:"()"$ >> ->
                    if pc.dang = "else" then next pc ge
                    else pprintf pc "if %q then %p" curr e1 "" curr e2
                | _ ->
@@ -1475,8 +1475,7 @@ EXTEND_PRINTER
               loop [] z where rec loop args =
                 fun
                 [ <:expr< $x$ $y$ >> -> loop [y :: args] x
-                | <:expr< $uid:_$ >> as e -> Some (e, args)
-                | <:expr< $_$ . $uid:_$ >> as e -> Some (e, args)
+                | ExLong _ _ as e -> Some (e, args)
                 | _ -> None ]
             in
             match cons_args_opt with
@@ -1496,15 +1495,23 @@ EXTEND_PRINTER
                 in
                 left_operator pc loc 2 unfold next z ] ]
     | "dot"
-      [ <:expr< $x$ . val >> -> pprintf pc "!%p" next x
+      [ ExFle _ x <:vala< (None, vs) >> when Pcaml.unvala vs = "val" -> pprintf pc "!%p" next x
 
-      | <:expr< $x$ . $y$ >> ->
-        match y with [
-          <:expr:< do { $list:el$ } >> ->
-            let pc = {(pc) with dang = ""} in
-            pprintf pc "%p.@;<0 0>@[<a>(@;%p@ )@]" curr x
-              (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
-        | _ -> pprintf pc "%p.@;<0 0>%p" curr x curr y ]
+      | ExOpen _ li (ExLong _ <:longident< $uid:"[]"$ >>) -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
+      | ExOpen _ li (<:expr< [ $_$ :: $_$ ] >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+
+      | ExOpen _ li (<:expr< { $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | ExOpen _ li (<:expr< {($_$) with $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | ExOpen _ li (<:expr< $lid:_$ >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+
+      | ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
+
+(*
+      | ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(@;%p@ )@]" longident li expr e
+*)
+      | ExFle _ e lili -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident (Pcaml.unvala lili)
+
+      | ExLong _ li -> longident pc li
 
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p@;<0 0>.(%p)" curr x expr_short y
@@ -1586,7 +1593,6 @@ EXTEND_PRINTER
           Ploc.raise loc
             (Failure "pr_expr of (PaUnr _) not allowed except at rhs of match-case")
       | <:expr:< $lid:s$ >> -> var_escaped pc (loc, s)
-      | <:expr:< $uid:s$ >> -> cons_escaped pc (loc, s)
       | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> ->

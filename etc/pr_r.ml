@@ -1658,7 +1658,23 @@ EXTEND_PRINTER
             in
             left_operator pc 2 unfold next z ]
     | "dot"
-      [ <:expr< $x$ . $y$ >> ->
+      [ 
+
+
+        ExOpen _ li (ExLong _ <:longident< $uid:"[]"$ >>) -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
+      | ExOpen _ li (<:expr< [ $_$ :: $_$ ] >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+
+      | ExOpen _ li (<:expr< { $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | ExOpen _ li (<:expr< {($_$) with $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | ExOpen _ li (<:expr< $lid:_$ >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+
+      | ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
+
+      | ExFle _ e lili -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident (Pcaml.unvala lili)
+
+      | ExLong _ li -> longident pc li
+
+      | <:expr< $x$ . $y$ >> ->
           pprintf pc "%p.@;<0 0>%p" curr x curr y
 
       | <:expr< $x$ .( $y$ ) >> ->

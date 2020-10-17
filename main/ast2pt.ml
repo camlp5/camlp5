@@ -152,6 +152,13 @@ value mkrf =
   | False → Nonrecursive ]
 ;
 
+value uident_True__True = fun [
+  "True_" -> "True"
+| "False_" -> "False"
+| x -> x
+]
+;
+
 value mkli s =
   loop (fun s → Lident s) where rec loop f =
     fun
@@ -180,8 +187,8 @@ value longid_long_id_gen ~{extended} =
       Lapply (lrec me1) (lrec me2)
   | <:extended_longident:< $longid:_$ ( $longid:_$ ) >>  ->
       Ploc.raise loc (Failure "longid_long_id: extended longid forbidden here (application not allowed)")
-  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (lrec me1) (uv uid)
-  | <:extended_longident< $_uid:s$ >> → Lident (uv s)
+  | <:extended_longident< $longid:me1$ . $_uid:uid$ >> → Ldot (lrec me1) (uident_True__True (uv uid))
+  | <:extended_longident< $_uid:s$ >> → Lident (uident_True__True(uv s))
   | LiXtr loc _ _ -> Ploc.raise loc (Failure "longid_long_id: LiXtr forbidden here")
   ]
   in lrec
@@ -325,13 +332,6 @@ value rec class_expr_fa al =
   fun
   [ CeApp _ ce a → class_expr_fa [a :: al] ce
   | ce → (ce, al) ]
-;
-
-value uident_True__True = fun [
-  "True_" -> "True"
-| "False_" -> "False"
-| x -> x
-]
 ;
 
 value rec sep_expr_acc l =
@@ -672,11 +672,12 @@ and patt =
   | PaPfx loc li p2 ->
     mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
   | PaLong loc li ->
-    let li = longid_long_id li in
     let li = match li with [
-        Lident s -> Lident (conv_con s)
-      | Ldot li s -> Ldot li (conv_con s)
-      | _ -> failwith "Lapply not allowed here" ] in
+      <:longident:< $uid:s$ >> -> <:longident< $uid:conv_con s$ >>
+    | <:longident:< $longid:li$ . $uid:s$ >> -> <:longident< $longid:li$ . $uid:conv_con s$ >>
+    | _ -> failwith "Lapply not allowed here"
+    ] in
+    let li = longid_long_id li in
     mkpat loc (ocaml_ppat_construct (mkloc loc) li
                  None (not Prtools.no_constructors_arity.val))
 
@@ -807,6 +808,50 @@ and expr =
   [ 
     ExAtt loc e a ->
     ocaml_expr_addattr (attr (uv a)) (expr e)
+  | ExLong loc li ->
+    let ca = not Prtools.no_constructors_arity.val in
+    let li = match li with [
+      <:longident:< $uid:s$ >> -> <:longident< $uid:conv_con s$ >>
+    | <:longident:< $longid:li$ . $uid:s$ >> -> <:longident< $longid:li$ . $uid:conv_con s$ >>
+    | _ -> failwith "Lapply not allowed here"
+    ] in
+    let li = longid_long_id li in
+    let cloc = mkloc loc in
+    mkexp loc (ocaml_pexp_construct cloc li None ca)
+
+  | ExOpen loc li <:expr< $lid:id$ >> ->
+    let vid = <:vala< id >> in
+    expr (ExFle loc (ExLong loc li) <:vala< (None, vid) >>)
+
+  | ExOpen loc li e ->
+    let li = longid_long_id li in
+    let me = mkmod loc (ocaml_pmod_ident li) in
+    match ocaml_pexp_open with [
+        Some pexp_open ->
+        mkexp loc (pexp_open (mkoverride False) me (expr e))
+      | None -> error loc "no expression open in this ocaml version"
+    ]
+
+  | ExFle loc e <:vala< (None, s) >> when uv s = "val" ->
+      mkexp loc
+        (ocaml_pexp_apply
+           (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
+           [("", expr e)])
+
+  | ExFle loc (ExLong _ li) <:vala< (None, s) >> ->
+    let li = longid_lident_long_id (Some <:vala< li >>, s) in
+    mkexp loc (ocaml_pexp_ident (mkloc loc) li)
+
+  | ExFle loc (ExLong _ li) <:vala< (Some _, _) >> ->
+    error loc "<lident>.<lident> not valid syntax (nor parseable)"
+
+  | ExFle loc e <:vala< (Some _, s) >> when uv s = "val" ->
+    error loc "().<lident>.val not valid syntax"
+
+  | ExFle loc e lili ->
+    let li = longid_lident_long_id (uv lili) in
+    mkexp loc (ocaml_pexp_field (mkloc loc) (expr e) li)
+
   | ExAcc loc x <:expr< val >> →
       mkexp loc
         (ocaml_pexp_apply
@@ -814,7 +859,7 @@ and expr =
            [("", expr x)])
   | ExAcc loc _ _ as e →
       let (e, l) =
-        match sep_expr_acc [] e with
+        match (sep_expr_acc [] e : list (loc * list string * expr)) with
         [ [(loc, ml, <:expr< $uid:s$ >>) :: l] →
             let ca = not Prtools.no_constructors_arity.val in
             let cloc = mkloc loc in
@@ -1039,7 +1084,7 @@ and expr =
   | ExIfe loc e1 e2 e3 →
       let e3o =
         match e3 with
-        [ <:expr< () >> → None
+        [ ExLong _ <:longident< $uid:"()"$ >> → None
         | _ → Some (expr e3) ]
       in
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) e3o)

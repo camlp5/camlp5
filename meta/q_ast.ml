@@ -149,6 +149,9 @@ module Meta_make (C : MetaSig) =
     and expr =
       fun
       [ ExAtt _ e att -> C.node "ExAtt" [expr e; attribute att]
+      | ExLong _ x1 -> C.node "ExLong" [longid x1]
+      | ExOpen _ x1 x2 -> C.node "ExOpen" [longid x1; expr x2]
+      | ExFle _ x1 x2 -> C.node "ExFle" [expr x1; C.vala longid_lident x2]
       | ExAcc _ e1 e2 → C.node "ExAcc" [expr e1; expr e2]
       | ExAnt _ e → C.node "ExAnt" [expr e]
       | ExApp _ e1 e2 → C.node "ExApp" [expr e1; expr e2]
