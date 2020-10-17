@@ -8,6 +8,9 @@ Camlp5 Version 8.00-alpha06:
 
   * in Q_ast, add "stri" as a valid antiquotation for str_item.  And add tests.
 
+  * factored out base of Q_ast, so we can use it in PPX derivers that
+    generate quotations for other types than Camlp5's AST
+
 Camlp5 Version 8.00-alpha05:
 --------------------
 
