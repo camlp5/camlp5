@@ -3273,6 +3273,7 @@ type nat _ =
      official_output = OK {foo|let Inner.(::) (x, y, Inner.[]) =
   Inner.(::) (1, "one", (let open Inner in []))|foo}
     };
+(*
     {(skip) with
      name="exotic-list-2-r2official";
      r_input = OK {foo|value (x, y) =
@@ -3282,6 +3283,7 @@ type nat _ =
   match ((Inner.(::) (1, "one", Inner.[]))[@ocaml.explicit_arity ]) with
   | ((Inner.(::) (x, y, Inner.[]))[@ocaml.explicit_arity ]) -> (x, y)|foo}
     };
+*)
     {(skip) with name="exotic-list-3"; implem = True ;
 (*
      exclude=["o2official";"r2official"];
@@ -4491,15 +4493,73 @@ END
 [ A.True_ → 1 ];
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="dotted-assignment-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|warned := true|foo} ;
+     official_input = OK {foo|warned := true|foo} ;
+     r_input = OK {foo|warned.val := True;|foo} ;
+     o_output = OK {foo|let _ = warned := true;;
+|foo};
+     official_output = OK {foo|;;warned := true|foo} ;
+     r_output = OK {foo|warned.val := True;
+|foo}
+    };
+    {name="val-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|!warned|foo} ;
+     official_input = OK {foo|!warned|foo} ;
+     r_input = OK {foo|warned.val;|foo} ;
+     o_output = OK {foo|let _ = !warned;;
+|foo};
+     official_output = OK {foo|;;!warned|foo} ;
+     r_output = OK {foo|warned.val;
+|foo}
+    };
+    {name="val-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|!warned.foo|foo} ;
+     official_input = OK {foo|!warned.foo|foo} ;
+     r_input = OK {foo|warned.val.foo;|foo} ;
+     o_output = OK {foo|let _ = !warned.foo;;
+|foo};
+     official_output = OK {foo|;;(!warned).foo|foo} ;
+     r_output = OK {foo|warned.val.foo;
+|foo}
+    };
+    {name="val-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|!(warned.foo)|foo} ;
+     official_input = OK {foo|!(warned.foo)|foo} ;
+     r_input = OK {foo|warned.foo.val;|foo} ;
+     o_output = OK {foo|let _ = !(warned.foo);;
+|foo};
+     official_output = OK {foo|;;!(warned.foo)|foo} ;
+     r_output = OK {foo|warned.foo.val;
+|foo}
+    };
+    {name="val-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|!glexr.Plexing.tok_comm|foo} ;
+     official_input = OK {foo|!glexr.Plexing.tok_comm|foo} ;
+     r_input = OK {foo|glexr.val.Plexing.tok_comm;|foo} ;
+     o_output = OK {foo|let _ = !glexr.Plexing.tok_comm;;
+|foo};
+     official_output = OK {foo|;;(!glexr).Plexing.tok_comm|foo} ;
+     r_output = OK {foo|glexr.val.Plexing.tok_comm;
+|foo}
+    };
+(*
+    {name="dotted-assignment-2"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
      official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
+     r_input = OK {foo|glexr.val.Plexing.tok_comm := Some [comm_loc :: list];|foo} ;
      o_output = OK {foo||foo};
      official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     r_output = OK {foo|glexr.val.Plexing.tok_comm := Some [comm_loc :: list];
+|foo}
     };
+*)
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;

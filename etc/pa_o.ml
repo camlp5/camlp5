@@ -1216,7 +1216,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           <:expr< ( $list:[e :: el]$ ) >> ]
     | ":=" NONA
       [ e1 = SELF; ":="; e2 = expr LEVEL "expr1" ->
-          <:expr< $e1$.val := $e2$ >>
+        let vval = <:vala< "val" >> in
+        let e1 = MLast.ExFle loc e1 <:vala< (None, vval) >> in
+          <:expr< $e1$ := $e2$ >>
       | e1 = SELF; "<-"; e2 = expr LEVEL "expr1" -> <:expr< $e1$ := $e2$ >> ]
     | "||" RIGHTA
       [ e1 = SELF; "or"; e2 = SELF -> <:expr< $lid:"or"$ $e1$ $e2$ >>
@@ -1329,7 +1331,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       ]
 
     | "~-" NONA
-      [ "!"; e = SELF -> <:expr< $e$ . val >>
+      [ "!"; e = SELF ->
+        let vval = <:vala< "val" >> in
+        MLast.ExFle loc e <:vala< (None, vval) >>
       | "~-"; e = SELF -> <:expr< ~- $e$ >>
       | "~-."; e = SELF -> <:expr< ~-. $e$ >>
       | f = prefixop; e = SELF -> <:expr< $lid:f$ $e$ >> ]

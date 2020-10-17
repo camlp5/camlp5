@@ -956,7 +956,19 @@ and expr =
   | ExArr loc el → mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v →
       match e with
-      [ ExAcc loc x <:expr< val >> →
+      [ ExFle loc x <:vala< (None, vval) >> when uv vval = "val" ->
+          let cloc = mkloc loc in
+          mkexp loc
+            (ocaml_pexp_apply
+               (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
+               [("", expr x); ("", expr v)])
+
+      | ExFle loc _ _ ->
+          match (expr e).pexp_desc with
+          [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
+          | _ → error loc "bad record access" ]
+
+      | ExAcc loc x <:expr< val >> →
           let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply

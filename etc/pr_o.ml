@@ -1362,7 +1362,7 @@ EXTEND_PRINTER
           let el = List.map (fun e -> (e, ",")) el in
           plist next 0 pc el ]
     | "assign"
-      [ <:expr:< $x$.val := $y$ >> -> operator pc next expr 2 (loc, ":=") x y
+      [ ExAss loc (ExFle _ x <:vala< (None, vval) >>) y when Pcaml.unvala vval = "val" -> operator pc next expr 2 (loc, ":=") x y
       | <:expr:< $x$ := $y$ >> -> operator pc next expr 2 (loc, "<-") x y ]
     | "or"
       [ z ->
@@ -1495,9 +1495,7 @@ EXTEND_PRINTER
                 in
                 left_operator pc loc 2 unfold next z ] ]
     | "dot"
-      [ ExFle _ x <:vala< (None, vs) >> when Pcaml.unvala vs = "val" -> pprintf pc "!%p" next x
-
-      | ExOpen _ li (ExLong _ <:longident< $uid:"[]"$ >>) -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
+      [ ExOpen _ li (ExLong _ <:longident< $uid:"[]"$ >>) -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
       | ExOpen _ li (<:expr< [ $_$ :: $_$ ] >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
 
       | ExOpen _ li (<:expr< { $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
@@ -1509,6 +1507,8 @@ EXTEND_PRINTER
 (*
       | ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(@;%p@ )@]" longident li expr e
 *)
+      | ExFle _ x <:vala< (None, vs) >> when Pcaml.unvala vs = "val" -> pprintf pc "!%p" next x
+
       | ExFle _ e lili -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident (Pcaml.unvala lili)
 
       | ExLong _ li -> longident pc li

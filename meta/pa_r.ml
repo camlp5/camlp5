@@ -416,6 +416,55 @@ value check_dot_uid =
     check_dot_uid_f
 ;
 
+value is_lbracket_f strm =
+  match Stream.npeek 1 strm with [
+    [("","[") ] -> True
+  | _ -> False
+  ]
+;
+
+value check_lbracket_f strm =
+  if is_lbracket_f strm then () else raise Stream.Failure
+;
+
+value check_lbracket =
+  Grammar.Entry.of_parser gram "check_lbracket"
+    check_lbracket_f
+;
+
+value is_lbracketbar_f strm =
+  match Stream.npeek 1 strm with [
+    [("","[|") ] -> True
+  | _ -> False
+  ]
+;
+
+value check_lbracketbar_f strm =
+  if is_lbracketbar_f strm then () else raise Stream.Failure
+;
+
+value check_lbracketbar =
+  Grammar.Entry.of_parser gram "check_lbracketbar"
+    check_lbracketbar_f
+;
+
+
+value is_lbrace_f strm =
+  match Stream.npeek 1 strm with [
+    [("","{") ] -> True
+  | _ -> False
+  ]
+;
+
+value check_lbrace_f strm =
+  if is_lbrace_f strm then () else raise Stream.Failure
+;
+
+value check_lbrace =
+  Grammar.Entry.of_parser gram "check_lbrace"
+    check_lbrace_f
+;
+
 value is_lident_colon_f strm =
   match Stream.npeek 2 strm with [
     [("LIDENT",_) ; ("",":") :: _] -> True
@@ -918,6 +967,36 @@ EXTEND
       | "lazy"; (ext,attrs) = ext_attributes; e = SELF → 
           expr_to_inline <:expr< lazy $e$ >> ext attrs ]
     | "." LEFTA
+      [ e1 = SELF; "."; lili = V longident_lident "lilongid" ->
+        MLast.ExFle loc e1 lili
+      | e1 = SELF; "."; "("; op = operator_rparen ->
+          if op = "::" then
+            Ploc.raise loc (Failure ".(::) (dot paren colon colon paren) cannot appear except after longident")
+          else
+            let vop = <:vala< op >> in
+            MLast.ExFle loc e1 <:vala< (None, vop) >>
+
+      | e1 = SELF; "."; "("; e2 = SELF; ")" ->
+          if expr_last_is_uid e1 then
+            failwith "internal error in original-syntax parser at dot-lparen"
+          else
+            <:expr< $e1$ .( $e2$ ) >>
+
+      | e1 = SELF; op = V dotop "dotop"; "("; el = LIST1 expr LEVEL "+" SEP ";"; ")" ->
+          <:expr< $e1$ $_dotop:op$ ( $list:el$ ) >>
+
+      | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
+
+      | e1 = SELF; op = V dotop "dotop"; "["; el = LIST1 expr LEVEL "+" SEP ";"; "]" ->
+          <:expr< $e1$ $_dotop:op$ [ $list:el$ ] >>
+
+      | e1 = SELF; "."; "{"; el = LIST1 expr LEVEL "+" SEP ","; "}" ->
+          <:expr< $e1$ .{ $list:el$ } >>
+
+      | e1 = SELF; op = V dotop "dotop"; "{"; el = LIST1 expr LEVEL "+" SEP ";"; "}" ->
+          <:expr< $e1$ $_dotop:op$ { $list:el$ } >>
+      ]
+(*
       [ e1 = SELF; "."; "("; op = operator_rparen ->
           if op = "::" then
             <:expr< $e1$ . $uid:op$ >>
@@ -945,6 +1024,7 @@ EXTEND
           <:expr< $e1$ $_dotop:op$ { $_list:el$ } >>
 
       | e1 = SELF; "."; e2 = SELF → <:expr< $e1$ . $e2$ >> ]
+*)
     | "~-" NONA
       [ "~-"; e = SELF → <:expr< ~- $e$ >>
       | "~-."; e = SELF → <:expr< ~-. $e$ >>
@@ -962,8 +1042,8 @@ EXTEND
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | i = V LIDENT → <:expr< $_lid:i$ >>
       | i = V GIDENT → <:expr< $_lid:i$ >>
-      | e = expr_uident → e
-      | "["; "]" → <:expr< [] >>
+      | e = expr_longident → e
+      | "["; "]" → ExLong loc <:longident< $uid:"[]"$ >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
           mklistexp loc last el
       | "[|"; el = V (LIST0 expr SEP ";"); "|]" → <:expr< [| $_list:el$ |] >>
@@ -972,7 +1052,7 @@ EXTEND
       | "{"; "("; e = SELF; ")"; "with"; lel = V (LIST1 label_expr SEP ";");
         "}" →
           <:expr< { ($e$) with $_list:lel$ } >>
-      | "("; ")" → <:expr< () >>
+      | "("; ")" → MLast.ExLong loc <:longident< $uid:"()"$ >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" →
           <:expr< (module $me$ : $mt$) >>
       | "("; "module"; me = module_expr; ")" →
@@ -986,6 +1066,26 @@ EXTEND
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" → mktupexp loc e el
       | "("; e = SELF; ")" → <:expr< $e$ >>
       | "("; el = V (LIST1 expr SEP ","); ")" → <:expr< ($_list:el$) >> ] ]
+  ;
+  expr_longident:
+    [
+      [ li = longident -> MLast.ExLong loc li
+      | li = longident ; "." ; "("; op = operator_rparen ->
+          if op = "::" then
+            let li = <:longident< $longid:li$ . $uid:op$ >> in
+            MLast.ExLong loc li
+          else
+            let vop = <:vala< op >> in
+            MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vop) >>
+
+      | li = longident ; "." ; "(" ; e = expr ; ")" -> MLast.ExOpen loc li e
+      | li = longident ; "." ; id = V LIDENT "lid" ->
+        MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, id) >>
+      | li = longident ; "." ; check_lbracket ; e = expr -> MLast.ExOpen loc li e
+      | li = longident ; "." ; check_lbrace ; e = expr -> MLast.ExOpen loc li e
+      | li = longident ; "." ; check_lbracketbar ; e = expr -> MLast.ExOpen loc li e
+      ]
+    ]
   ;
   expr_uident:
     [ RIGHTA

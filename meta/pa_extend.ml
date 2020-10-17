@@ -236,6 +236,15 @@ module MetaAction =
       fun
       [ MLast.ExAcc loc e1 e2 ->
           <:expr< MLast.ExAcc $mloc$ $mexpr e1$ $mexpr e2$ >>
+      | MLast.ExLong loc li ->
+          <:expr< MLast.ExLong $mloc$ $mlongid li$ >>
+
+      | MLast.ExOpen loc li e ->
+          <:expr< MLast.ExOpen $mloc$ $mlongid li$ $mexpr e$ >>
+
+      | MLast.ExFle loc e lili ->
+          <:expr< MLast.ExFle $mloc$ $mexpr e$ $mvala mlongid_lident lili$ >>
+
       | MLast.ExApp loc e1 e2 ->
           <:expr< MLast.ExApp $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExAsr loc e ->
@@ -300,6 +309,10 @@ module MetaAction =
       | MLast.LiAcc loc me1 uid -> <:expr< MLast.LiAcc $mloc$ $mlongid me1$ $mvala mstring uid$ >>
       | MLast.LiUid loc s -> <:expr< MLast.LiUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mlongid" x
+      ]
+    and mlongid_lident = fun
+      [ (Some li, id) -> <:expr< (Some $mvala mlongid li$, $mvala mstring id$) >>
+      | (None, id) -> <:expr< (None, $mvala mstring id$) >>
       ]
     and mctyp =
       fun
