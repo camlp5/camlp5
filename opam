@@ -32,10 +32,14 @@ depends: [
   "conf-perl"
   "pcre" { with-test }
   "ounit2" { with-test }
+  "rresult" { with-test }
+  "fmt" { with-test }
 ]
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
-  [make "world.opt"]
+  [make "world.opt" "all"]
+#  [make "-C" "testsuite" "clean" "all-tests"] { with-test & ocaml:version >= "4.10.0" }
+#  [make "-C" "test" "clean" "all"] {with-test & ocaml:version >= "4.10.0" }
 ]
 install: [make "install"]
 depexts: [
