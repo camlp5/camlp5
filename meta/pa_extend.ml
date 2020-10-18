@@ -1049,6 +1049,21 @@ value text_of_functorial_extend loc gmod gl el =
   let_in_of_extend loc gmod True gl el args
 ;
 
+value longname_of_raw_qualid (l, id) =
+  String.concat "__" (l@[id])
+;
+
+value expr_of_raw_qualid loc (l, id) =
+  match l with [
+    [ _ :: _ ] ->
+    let li = Asttools.longident_of_string_list loc l in
+    let vid = <:vala< id >> in
+    MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vid) >>
+  | [] ->
+    <:expr< $lid:id$ >>
+  ]
+;
+
 open Pcaml;
 value symbol = Grammar.Entry.create gram "symbol";
 value rule = Grammar.Entry.create gram "rule";
@@ -1186,12 +1201,18 @@ EXTEND
           AStok loc x (Some e)
       | e = string ->
           ASkeyw loc e
-      | i = UIDENT; "."; e = qualid;
+
+      | i = UIDENT; "."; (l, id) = raw_qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
-          let v = MLast.ExAcc loc (MLast.ExUid loc <:vala< i >>) (snd e) in
-          ASnterm loc (i ^ "__" ^ fst e, v) lev
-      | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
+        let l = [i :: l] in
+        let qidname = longname_of_raw_qualid (l, id) in
+        let v = expr_of_raw_qualid loc (l, id) in
+        ASnterm loc (qidname, v) lev
+
+      | n = name;
+        lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           ASnterm loc n lev
+
       | "/" ->
           AScut loc
       | "("; s_t = SELF; ")" -> s_t ] ]
@@ -1211,13 +1232,16 @@ EXTEND
     [ [ e = qualid -> e ] ]
   ;
   qualid:
-    [ [ l = LIST1 [ i = UIDENT ; "." -> i] ; id = LIDENT ->
-        let qidname = String.concat "__" (l@[id]) in
-        let li = Asttools.longident_of_string_list loc l in
-        let vid = <:vala< id >> in
-        (qidname, MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vid) >>)
-      | id = LIDENT ->
-        (id, <:expr< $lid:id$ >>)
+    [ [ (l, id) = raw_qualid ->
+        let qidname = longname_of_raw_qualid (l, id) in
+        let v = expr_of_raw_qualid loc (l, id) in
+        (qidname, v)
+      ]
+    ]
+  ;
+  raw_qualid:
+    [ [ l = LIST1 [ i = UIDENT ; "." -> i] ; id = LIDENT -> (l, id)
+      | id = LIDENT -> ([], id)
       ]
     ]
   ;
