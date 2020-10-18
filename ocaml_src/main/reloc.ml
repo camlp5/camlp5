@@ -181,8 +181,6 @@ and expr floc sh =
     function
       ExAtt (loc, e, attr) ->
         let loc = floc loc in ExAtt (loc, self e, attribute_body floc sh attr)
-    | ExAcc (loc, x1, x2) ->
-        let loc = floc loc in ExAcc (loc, self x1, self x2)
     | ExLong (loc, x1) ->
         let loc = floc loc in ExLong (loc, longid floc sh x1)
     | ExOpen (loc, x1, x2) ->
@@ -310,7 +308,6 @@ and expr floc sh =
         let loc = floc loc in ExTup (loc, vala_map (List.map self) x1)
     | ExTyc (loc, x1, x2) ->
         let loc = floc loc in ExTyc (loc, self x1, ctyp floc sh x2)
-    | ExUid (loc, x1) -> let loc = floc loc in ExUid (loc, x1)
     | ExVrn (loc, x1) -> let loc = floc loc in ExVrn (loc, x1)
     | ExWhi (loc, x1, x2) ->
         let loc = floc loc in

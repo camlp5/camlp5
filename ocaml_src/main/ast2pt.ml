@@ -235,11 +235,7 @@ let rec module_expr_long_id =
 
 let rec expr_long_id =
   function
-    MLast.ExLong (_, MLast.LiUid (_, uid)) -> Lident uid
-  | MLast.ExAcc (_, e1, e2) ->
-      let li1 = expr_long_id e1
-      and li2 = expr_long_id e2 in
-      concat_long_ids li1 li2
+    MLast.ExLong (_, li) -> longid_long_id li
   | _ -> failwith "expr_long_id: unexpected expr"
 ;;
 
@@ -358,19 +354,6 @@ let rec class_expr_fa al =
   function
     CeApp (_, ce, a) -> class_expr_fa (a :: al) ce
   | ce -> ce, al
-;;
-
-let rec sep_expr_acc l =
-  function
-    MLast.ExAcc (_, e1, e2) -> sep_expr_acc (sep_expr_acc l e2) e1
-  | MLast.ExLong (loc, MLast.LiUid (_, s)) ->
-      let s = uident_True__True s in
-      let e = MLast.ExLong (loc, MLast.LiUid (loc, s)) in
-      begin match l with
-        [] -> [loc, [], e]
-      | (loc2, sl, e) :: l -> (Ploc.encl loc loc2, s :: sl, e) :: l
-      end
-  | e -> (loc_of_expr e, [], e) :: l
 ;;
 
 let list_map_check f l =
@@ -1008,43 +991,6 @@ and expr =
   | ExFle (loc, e, lili) ->
       let li = longid_lident_long_id (uv lili) in
       mkexp loc (ocaml_pexp_field (mkloc loc) (expr e) li)
-  | ExAcc (loc, x, MLast.ExLid (_, "val")) ->
-      mkexp loc
-        (ocaml_pexp_apply
-           (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
-           ["", expr x])
-  | ExAcc (loc, _, _) as e ->
-      let (e, l) =
-        match (sep_expr_acc [] e : (loc * string list * expr) list) with
-          (loc, ml, MLast.ExLong (_, MLast.LiUid (_, s))) :: l ->
-            let ca = not !(Prtools.no_constructors_arity) in
-            let cloc = mkloc loc in
-            mkexp loc (ocaml_pexp_construct cloc (mkli s ml) None ca), l
-        | (loc, ml, MLast.ExLid (_, s)) :: l ->
-            mkexp loc (ocaml_pexp_ident (mkloc loc) (mkli s ml)), l
-        | (_, [], e) :: l -> expr e, l
-        | (loc, mh :: mtl, e) :: l ->
-            let mexp =
-              List.fold_left
-                (fun me uid -> MLast.MeAcc (loc, me, MLast.MeUid (loc, uid)))
-                (MLast.MeUid (loc, mh)) mtl
-            in
-            let e = MLast.ExLop (loc, false, mexp, e) in expr e, l
-        | _ -> error loc "bad ast"
-      in
-      let (_, e) =
-        List.fold_left
-          (fun (loc1, e1) (loc2, ml, e2) ->
-             match e2 with
-               MLast.ExLid (_, s) ->
-                 let loc = Ploc.encl loc1 loc2 in
-                 let li = mkli (conv_lab s) ml in
-                 let e = ocaml_pexp_field (mkloc loc) e1 li in
-                 loc, mkexp loc e
-             | _ -> error (loc_of_expr e2) "lowercase identifier expected")
-          (loc, e) l
-      in
-      e
   | ExAnt (_, e) -> expr e
   | ExApp (loc, ExLid (_, "-"), ExInt (_, s, c)) ->
       let s = neg_string (uv s) in
@@ -1125,17 +1071,6 @@ and expr =
                (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
                ["", expr x; "", expr v])
       | ExFle (loc, _, _) ->
-          begin match (expr e).pexp_desc with
-            Pexp_field (e, lab) -> mkexp loc (Pexp_setfield (e, lab, expr v))
-          | _ -> error loc "bad record access"
-          end
-      | ExAcc (loc, x, MLast.ExLid (_, "val")) ->
-          let cloc = mkloc loc in
-          mkexp loc
-            (ocaml_pexp_apply
-               (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
-               ["", expr x; "", expr v])
-      | ExAcc (loc, _, _) ->
           begin match (expr e).pexp_desc with
             Pexp_field (e, lab) -> mkexp loc (Pexp_setfield (e, lab, expr v))
           | _ -> error loc "bad record access"
@@ -1433,10 +1368,6 @@ and expr =
   | ExTup (loc, el) -> mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc (loc, e, t) ->
       mkexp loc (ocaml_pexp_constraint (expr e) (Some (ctyp t)) None)
-  | ExUid (loc, s) ->
-      let ca = not !(Prtools.no_constructors_arity) in
-      let cloc = mkloc loc in
-      mkexp loc (ocaml_pexp_construct cloc (Lident (conv_con (uv s))) None ca)
   | ExVrn (loc, s) ->
       begin match ocaml_pexp_variant with
         Some (_, pexp_variant) -> mkexp loc (pexp_variant (uv s, None))
@@ -2164,8 +2095,6 @@ let directive loc =
           function
             MLast.ExLid (_, i) -> [i]
           | MLast.ExLong (_, MLast.LiUid (_, i)) -> [i]
-          | MLast.ExAcc (_, e, MLast.ExLid (_, i)) -> loop e @ [i]
-          | MLast.ExAcc (_, e, MLast.ExUid (_, i)) -> loop e @ [i]
           | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast")
         in
         loop e

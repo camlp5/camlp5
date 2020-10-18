@@ -103,11 +103,21 @@ let try_find f =
   try_find_f
 ;;
 
+let longid_to_path_module_expr li =
+  let rec lirec =
+    function
+      MLast.LiUid (loc, i) -> MLast.MeUid (loc, i)
+    | MLast.LiAcc (loc, li, i) ->
+        MLast.MeAcc (loc, lirec li, MLast.MeUid (loc, i))
+    | _ -> assert false
+  in
+  lirec li
+;;
+
 let expr_to_path_module_expr e =
   let rec erec =
     function
-      MLast.ExLong (loc, MLast.LiUid (_, i)) -> MLast.MeUid (loc, i)
-    | MLast.ExAcc (loc, a, b) -> MLast.MeAcc (loc, erec a, erec b)
+      MLast.ExLong (loc, li) -> longid_to_path_module_expr li
     | _ -> failwith "caught"
   in
   try Some (erec e) with Failure _ -> None
@@ -116,8 +126,7 @@ let expr_to_path_module_expr e =
 let expr_last_is_uid e =
   let rec erec =
     function
-      MLast.ExLong (_, MLast.LiUid (_, _)) -> true
-    | MLast.ExAcc (_, _, e) -> erec e
+      MLast.ExLong (_, _) -> true
     | _ -> false
   in
   erec e
@@ -126,9 +135,8 @@ let expr_last_is_uid e =
 let expr_first_is_id e =
   let rec erec =
     function
-      MLast.ExLong (_, MLast.LiUid (_, _)) -> true
-    | MLast.ExLid (_, _) -> true
-    | MLast.ExAcc (_, e, _) -> erec e
+      MLast.ExLong (_, _) -> true
+    | MLast.ExFle (_, e, _) -> erec e
     | _ -> false
   in
   erec e
@@ -137,25 +145,10 @@ let expr_first_is_id e =
 let expr_is_module_path e =
   let rec erec =
     function
-      MLast.ExLong (_, MLast.LiUid (_, _)) -> true
-    | MLast.ExAcc (_, a, b) -> erec a && erec b
+      MLast.ExLong (_, _) -> true
     | _ -> false
   in
   erec e
-;;
-
-let expr_left_assoc_acc e =
-  let rec arec =
-    function
-      MLast.ExAcc (loc, e1, e2) as z ->
-        begin match e2 with
-          MLast.ExAcc (_, e2, e3) ->
-            arec (MLast.ExAcc (loc, MLast.ExAcc (loc, e1, e2), e3))
-        | _ -> z
-        end
-    | e -> e
-  in
-  arec e
 ;;
 
 let check_stream ?(avoid_tokens = []) matchers strm =

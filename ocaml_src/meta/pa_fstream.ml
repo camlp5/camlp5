@@ -529,7 +529,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
               (expr_to_inline (mparser_match loc "Fstream" e po [pc]) ext
@@ -560,7 +560,7 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
-           "3b6e03b5",
+           "194fe98d",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
                 (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
               (expr_to_inline (mparser_match loc "Fstream" e po pcl) ext
@@ -574,7 +574,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (pc : 'parser_case) (po : 'ipatt option) _ (loc : Ploc.t) ->
               (mparser loc "Fstream" po [pc] : 'expr)));
         Grammar.production
@@ -592,7 +592,7 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
-           "3b6e03b5",
+           "194fe98d",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
                 (loc : Ploc.t) ->
               (mparser loc "Fstream" po pcl : 'expr)));
@@ -614,7 +614,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr)
                 (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
               (expr_to_inline (cparser_match loc e po [pc]) ext attrs :
@@ -644,7 +644,7 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
-           "3b6e03b5",
+           "194fe98d",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
                 (e : 'expr) (ext, attrs : 'ext_attributes) _ (loc : Ploc.t) ->
               (expr_to_inline (cparser_match loc e po pcl) ext attrs :
@@ -657,7 +657,7 @@ Grammar.safe_extend
                 (Grammar.s_opt
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
              (Grammar.s_nterm (parser_case : 'parser_case Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (pc : 'parser_case) (po : 'ipatt option) _ (loc : Ploc.t) ->
               (cparser loc po [pc] : 'expr)));
         Grammar.production
@@ -675,7 +675,7 @@ Grammar.safe_extend
                       (parser_case : 'parser_case Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
-           "3b6e03b5",
+           "194fe98d",
            (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
                 (loc : Ploc.t) ->
               (cparser loc po pcl : 'expr)))]];
@@ -696,14 +696,14 @@ Grammar.safe_extend
                       (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))))
                 (Grammar.s_token ("", "->")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (e : 'expr) _ (po : 'ipatt option) _ (sp : 'stream_patt) _
                 (loc : Ploc.t) ->
               (sp, po, e : 'parser_case)))]];
     Grammar.extension (stream_patt : 'stream_patt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, "3b6e03b5",
+          (Grammar.r_stop, "194fe98d",
            (fun (loc : Ploc.t) -> ([] : 'stream_patt)));
         Grammar.production
           (Grammar.r_next
@@ -716,7 +716,7 @@ Grammar.safe_extend
                 (Grammar.s_nterm
                    (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e))
                 (Grammar.s_token ("", ";")) false),
-           "3b6e03b5",
+           "194fe98d",
            (fun (sp : 'stream_patt_comp list) _ (spc : 'stream_patt_comp)
                 (loc : Ploc.t) ->
               (spc :: sp : 'stream_patt)));
@@ -724,7 +724,7 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (spc : 'stream_patt_comp) (loc : Ploc.t) ->
               ([spc] : 'stream_patt)))]];
     Grammar.extension (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e)
@@ -732,19 +732,19 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")),
-           "3b6e03b5",
+           "194fe98d",
            (fun _ (loc : Ploc.t) -> (SpCut loc : 'stream_patt_comp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "when")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (e : 'expr) _ (loc : Ploc.t) ->
               (SpWhn (loc, e) : 'stream_patt_comp)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (p : 'patt) (loc : Ploc.t) ->
               (SpStr (loc, p) : 'stream_patt_comp)));
         Grammar.production
@@ -754,7 +754,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
                 (Grammar.s_token ("", "=")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (e : 'expr) _ (p : 'patt) (loc : Ploc.t) ->
               (SpNtr (loc, p, e) : 'stream_patt_comp)));
         Grammar.production
@@ -769,16 +769,16 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("", "when")))
                          (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
-                       "3b6e03b5",
+                       "194fe98d",
                        (fun (e : 'expr) _ (loc : Ploc.t) -> (e : 'e__1)))])),
-           "3b6e03b5",
+           "194fe98d",
            (fun (eo : 'e__1 option) (p : 'patt) _ (loc : Ploc.t) ->
               (SpTrm (loc, p, eo) : 'stream_patt_comp)))]];
     Grammar.extension (ipatt : 'ipatt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
-           "3b6e03b5",
+           "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.PaLid (loc, i) : 'ipatt)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
@@ -796,7 +796,7 @@ Grammar.safe_extend
                       (stream_expr_comp : 'stream_expr_comp Grammar.Entry.e))
                    (Grammar.s_token ("", ";")) false))
              (Grammar.s_token ("", ":]")),
-           "3b6e03b5",
+           "194fe98d",
            (fun _ (se : 'stream_expr_comp list) _ _ (loc : Ploc.t) ->
               (cstream loc se : 'expr)))]];
     Grammar.extension (stream_expr_comp : 'stream_expr_comp Grammar.Entry.e)
@@ -805,13 +805,13 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (e : 'expr) (loc : Ploc.t) ->
               (SeNtr (loc, e) : 'stream_expr_comp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "`")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
-           "3b6e03b5",
+           "194fe98d",
            (fun (e : 'expr) _ (loc : Ploc.t) ->
               (SeTrm (loc, e) : 'stream_expr_comp)))]]]);;

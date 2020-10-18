@@ -88,8 +88,7 @@ and patt =
   | PaAtt of loc * patt * attribute
   | PaExten of loc * attribute
 and expr =
-    ExAcc of loc * expr * expr
-  | ExLong of loc * longid
+    ExLong of loc * longid
   | ExOpen of loc * longid * expr
   | ExFle of loc * expr * longid_lident
   | ExAnt of loc * expr
@@ -127,7 +126,6 @@ and expr =
   | ExTry of loc * expr * case_branch list
   | ExTup of loc * expr list
   | ExTyc of loc * expr * ctyp
-  | ExUid of loc * string
   | ExVrn of loc * string
   | ExWhi of loc * expr * expr list
   | ExXtr of loc * string * expr option

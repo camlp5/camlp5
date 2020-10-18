@@ -21,7 +21,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "SFLAG")))
              Grammar.s_self,
-           "3b6e03b5",
+           "194fe98d",
            (fun (s : 'symbol) _ (loc : Ploc.t) ->
               (ASquot (loc, ASflag (loc, s)) : 'symbol)));
         Grammar.production
@@ -29,7 +29,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_token ("UIDENT", "SOPT")))
              Grammar.s_self,
-           "3b6e03b5",
+           "194fe98d",
            (fun (s : 'symbol) _ (loc : Ploc.t) ->
               (ASquot (loc, ASopt (loc, s)) : 'symbol)));
         Grammar.production
@@ -45,10 +45,10 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("UIDENT", "SEP")))
                          (Grammar.s_nterm (symbol : 'symbol Grammar.Entry.e)),
-                       "3b6e03b5",
+                       "194fe98d",
                        (fun (t : 'symbol) _ (loc : Ploc.t) ->
                           (t, false : 'e__2)))])),
-           "3b6e03b5",
+           "194fe98d",
            (fun (sep : 'e__2 option) (s : 'symbol) _ (loc : Ploc.t) ->
               (ASquot (loc, ASlist (loc, LML_1, s, sep)) : 'symbol)));
         Grammar.production
@@ -64,10 +64,10 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_token ("UIDENT", "SEP")))
                          (Grammar.s_nterm (symbol : 'symbol Grammar.Entry.e)),
-                       "3b6e03b5",
+                       "194fe98d",
                        (fun (t : 'symbol) _ (loc : Ploc.t) ->
                           (t, false : 'e__1)))])),
-           "3b6e03b5",
+           "194fe98d",
            (fun (sep : 'e__1 option) (s : 'symbol) _ (loc : Ploc.t) ->
               (ASquot (loc, ASlist (loc, LML_0, s, sep)) : 'symbol)))]];
     Grammar.extension (symbol : 'symbol Grammar.Entry.e)
@@ -82,7 +82,7 @@ Grammar.safe_extend
                    Grammar.s_next)
                 (Grammar.s_list0 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_opt (Grammar.s_nterm (name : 'name Grammar.Entry.e))),
-           "3b6e03b5",
+           "194fe98d",
            (fun (oe : 'name option) (al : string list) (s : 'symbol) _
                 (loc : Ploc.t) ->
               (ASvala2 (loc, s, al, oe) : 'symbol)));
@@ -95,7 +95,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "")))
                 (Grammar.s_list0 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_opt (Grammar.s_nterm (name : 'name Grammar.Entry.e))),
-           "3b6e03b5",
+           "194fe98d",
            (fun (oe : 'name option) (al : string list) (x : string) _
                 (loc : Ploc.t) ->
               (let s = AStok (loc, x, None) in ASvala2 (loc, s, al, oe) :
@@ -109,7 +109,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "NEXT")))
                 (Grammar.s_list0 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_opt (Grammar.s_nterm (name : 'name Grammar.Entry.e))),
-           "3b6e03b5",
+           "194fe98d",
            (fun (oe : 'name option) (al : string list) _ _ (loc : Ploc.t) ->
               (let s = ASnext loc in ASvala2 (loc, s, al, oe) : 'symbol)));
         Grammar.production
@@ -121,13 +121,13 @@ Grammar.safe_extend
                    (Grammar.s_token ("UIDENT", "SELF")))
                 (Grammar.s_list0 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_opt (Grammar.s_nterm (name : 'name Grammar.Entry.e))),
-           "3b6e03b5",
+           "194fe98d",
            (fun (oe : 'name option) (al : string list) _ _ (loc : Ploc.t) ->
               (let s = ASself loc in ASvala2 (loc, s, al, oe) : 'symbol)))]];
     Grammar.extension (name : 'name Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
-           "3b6e03b5",
+           "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
               (i, MLast.ExLid (loc, i) : 'name)))]]]);;

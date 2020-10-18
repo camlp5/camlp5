@@ -26,7 +26,6 @@ val expr_to_path_module_expr : expr -> module_expr option;;
 val expr_last_is_uid : expr -> bool;;
 val expr_first_is_id : expr -> bool;;
 val expr_is_module_path : expr -> bool;;
-val expr_left_assoc_acc : expr -> expr;;
 val check_stream :
   ?avoid_tokens:(string * string) list ->
     (int *
