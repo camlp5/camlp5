@@ -299,9 +299,10 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|fun [ <:attribute_body< "add" $stri:si$ ; >> -> si ] ;|foo}
         }
-      ; { name = "prototype" ;
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "dotop-1" ;
+          expect = {foo|MLast.ExAre loc (Ploc.VaVal s) e (Ploc.VaVal le);
+|foo} ;
+          code = {foo|<:expr< $e$ $dotop:s$ ( $list:le$ ) >> ;|foo}
         }
       ; { name = "prototype" ;
           expect = {foo||foo} ;

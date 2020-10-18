@@ -982,19 +982,19 @@ EXTEND
           else
             <:expr< $e1$ .( $e2$ ) >>
 
-      | e1 = SELF; op = V dotop "dotop"; "("; el = LIST1 expr LEVEL "+" SEP ";"; ")" ->
-          <:expr< $e1$ $_dotop:op$ ( $list:el$ ) >>
+      | e1 = SELF; op = V dotop "dotop"; "("; el = V (LIST1 expr LEVEL "+" SEP ";"); ")" ->
+          <:expr< $e1$ $_dotop:op$ ( $_list:el$ ) >>
 
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
 
-      | e1 = SELF; op = V dotop "dotop"; "["; el = LIST1 expr LEVEL "+" SEP ";"; "]" ->
-          <:expr< $e1$ $_dotop:op$ [ $list:el$ ] >>
+      | e1 = SELF; op = V dotop "dotop"; "["; el = V (LIST1 expr LEVEL "+" SEP ";"); "]" ->
+          <:expr< $e1$ $_dotop:op$ [ $_list:el$ ] >>
 
-      | e1 = SELF; "."; "{"; el = LIST1 expr LEVEL "+" SEP ","; "}" ->
-          <:expr< $e1$ .{ $list:el$ } >>
+      | e1 = SELF; "."; "{"; el = V (LIST1 expr LEVEL "+" SEP ","); "}" ->
+          <:expr< $e1$ .{ $_list:el$ } >>
 
-      | e1 = SELF; op = V dotop "dotop"; "{"; el = LIST1 expr LEVEL "+" SEP ";"; "}" ->
-          <:expr< $e1$ $_dotop:op$ { $list:el$ } >>
+      | e1 = SELF; op = V dotop "dotop"; "{"; el = V (LIST1 expr LEVEL "+" SEP ";"); "}" ->
+          <:expr< $e1$ $_dotop:op$ { $_list:el$ } >>
       ]
     | "~-" NONA
       [ "~-"; e = SELF → <:expr< ~- $e$ >>
