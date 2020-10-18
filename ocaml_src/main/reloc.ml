@@ -183,6 +183,13 @@ and expr floc sh =
         let loc = floc loc in ExAtt (loc, self e, attribute_body floc sh attr)
     | ExAcc (loc, x1, x2) ->
         let loc = floc loc in ExAcc (loc, self x1, self x2)
+    | ExLong (loc, x1) ->
+        let loc = floc loc in ExLong (loc, longid floc sh x1)
+    | ExOpen (loc, x1, x2) ->
+        let loc = floc loc in ExOpen (loc, longid floc sh x1, self x2)
+    | ExFle (loc, x1, x2) ->
+        let loc = floc loc in
+        ExFle (loc, self x1, vala_map (longid_lident floc sh) x2)
     | ExAnt (loc, x1) ->
         let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
         expr new_floc sh x1

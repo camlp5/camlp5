@@ -89,6 +89,9 @@ and patt =
   | PaExten of loc * attribute
 and expr =
     ExAcc of loc * expr * expr
+  | ExLong of loc * longid
+  | ExOpen of loc * longid * expr
+  | ExFle of loc * expr * longid_lident
   | ExAnt of loc * expr
   | ExApp of loc * expr * expr
   | ExAre of loc * string * expr * expr list

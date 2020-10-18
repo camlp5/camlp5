@@ -30,7 +30,7 @@ let add name f =
         (Failure
            Printf.
            (sprintf "Quotation.add: cannot add the quotation \"%s\" twice"
-              name))
+             name))
     end
   else expanders_table := (name, f) :: !expanders_table
 ;;

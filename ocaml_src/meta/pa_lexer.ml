@@ -12,33 +12,33 @@ open Exparser;;
 
 let var () = "buf";;
 let empty loc =
-  MLast.ExAcc
+  MLast.ExFle
     (loc,
-     MLast.ExAcc
-       (loc, MLast.ExUid (loc, "Plexing"), MLast.ExUid (loc, "Lexbuf")),
-     MLast.ExLid (loc, "empty"))
+     MLast.ExLong
+       (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Plexing"), "Lexbuf")),
+     (None, "empty"))
 ;;
 let add_char loc c cl =
   MLast.ExApp
     (loc,
      MLast.ExApp
        (loc,
-        MLast.ExAcc
+        MLast.ExFle
           (loc,
-           MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Plexing"), MLast.ExUid (loc, "Lexbuf")),
-           MLast.ExLid (loc, "add")),
+           MLast.ExLong
+             (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Plexing"), "Lexbuf")),
+           (None, "add")),
         c),
      cl)
 ;;
 let get_buf loc cl =
   MLast.ExApp
     (loc,
-     MLast.ExAcc
+     MLast.ExFle
        (loc,
-        MLast.ExAcc
-          (loc, MLast.ExUid (loc, "Plexing"), MLast.ExUid (loc, "Lexbuf")),
-        MLast.ExLid (loc, "get")),
+        MLast.ExLong
+          (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Plexing"), "Lexbuf")),
+        (None, "get")),
      cl)
 ;;
 
@@ -244,7 +244,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "with")))
                 (Grammar.s_token ("", "lexer")))
              (Grammar.s_nterm (rules : 'rules Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (rl : 'rules) _ _ (e : 'expr) (ext, attrs : 'ext_attributes) _
                 (loc : Ploc.t) ->
               (Asttools.expr_to_inline (mk_lexer_match loc e rl) ext attrs :
@@ -253,7 +253,7 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lexer")))
              (Grammar.s_nterm (rules : 'rules Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (rl : 'rules) _ (loc : Ploc.t) ->
               (let rl =
                  match isolate_char_patt loc rl with
@@ -273,25 +273,25 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "$")))
              (Grammar.s_token ("LIDENT", "pos")),
-           "1154dceb",
+           "3b6e03b5",
            (fun _ _ (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "Stream"),
-                     MLast.ExLid (loc, "count")),
+                  MLast.ExFle
+                    (loc, MLast.ExLong (loc, MLast.LiUid (loc, "Stream")),
+                     (None, "count")),
                   MLast.ExLid (loc, strm_n)) :
                'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "$")))
              (Grammar.s_token ("LIDENT", "empty")),
-           "1154dceb", (fun _ _ (loc : Ploc.t) -> (empty loc : 'expr)));
+           "3b6e03b5", (fun _ _ (loc : Ploc.t) -> (empty loc : 'expr)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "$")))
              (Grammar.s_token ("LIDENT", "buf")),
-           "1154dceb",
+           "3b6e03b5",
            (fun _ _ (loc : Ploc.t) ->
               (get_buf loc (accum_chars loc !gcl) : 'expr)));
         Grammar.production
@@ -300,7 +300,7 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "$")))
                 (Grammar.s_token ("LIDENT", "add")))
              (Grammar.s_nterm (simple_expr : 'simple_expr Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (e : 'simple_expr) _ _ (loc : Ploc.t) ->
               (add_char loc e (accum_chars loc !gcl) : 'expr)));
         Grammar.production
@@ -309,7 +309,7 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "$")))
                 (Grammar.s_token ("LIDENT", "add")))
              (Grammar.s_token ("STRING", "")),
-           "1154dceb",
+           "3b6e03b5",
            (fun (s : string) _ _ (loc : Ploc.t) ->
               (let s = Plexing.eval_string loc s in
                let rec loop v i =
@@ -330,7 +330,7 @@ Grammar.safe_extend
                    (Grammar.s_nterm (rule : 'rule Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
-           "1154dceb",
+           "3b6e03b5",
            (fun _ (rl : 'rule list) _ (loc : Ploc.t) -> (rl : 'rules)))]];
     Grammar.extension (rule : 'rule Grammar.Entry.e) None
       [None, None,
@@ -339,7 +339,7 @@ Grammar.safe_extend
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_nterm (symb_list : 'symb_list Grammar.Entry.e)))
              (Grammar.s_nterm (act : 'act Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (a : 'act) (sl, cl : 'symb_list) (loc : Ploc.t) ->
               (gcl := []; sl, cl, a : 'rule)))]];
     Grammar.extension (symb_list : 'symb_list Grammar.Entry.e) None
@@ -347,20 +347,20 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (symbs : 'symbs Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (sl, cl : 'symbs) (loc : Ploc.t) ->
               (gcl := cl; sl, cl : 'symb_list)))]];
     Grammar.extension (symbs : 'symbs Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, "1154dceb",
+          (Grammar.r_stop, "3b6e03b5",
            (fun (loc : Ploc.t) -> ([], [] : 'symbs)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
                 (Grammar.s_nterm (symb : 'symb Grammar.Entry.e)))
              (Grammar.s_nterm (err_kont : 'err_kont Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (kont : 'err_kont) (f : 'symb) (sl, cl : 'symbs)
                 (loc : Ploc.t) ->
               (f sl cl kont : 'symbs)))]];
@@ -369,7 +369,7 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (rules : 'rules Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (rl : 'rules) (loc : Ploc.t) -> (make_rules loc rl : 'symb)));
         Grammar.production
           (Grammar.r_next
@@ -382,13 +382,13 @@ Grammar.safe_extend
                    (Grammar.s_nterm (lookahead : 'lookahead Grammar.Entry.e))
                    (Grammar.s_token ("", "|")) false))
              (Grammar.s_token ("", "]")),
-           "1154dceb",
+           "3b6e03b5",
            (fun _ (pll : 'lookahead list) _ _ (loc : Ploc.t) ->
               (make_lookahd loc pll : 'symb)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (simple_expr : 'simple_expr Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (f : 'simple_expr) (loc : Ploc.t) ->
               (make_sub_lexer loc f : 'symb)));
         Grammar.production
@@ -400,7 +400,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", "-")))
                 (Grammar.s_token ("CHAR", "")))
              (Grammar.s_nterm (no_rec : 'no_rec Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (norec : 'no_rec) (d : string) _ (c : string)
                 (loc : Ploc.t) ->
               (make_range loc c d norec : 'symb)));
@@ -408,21 +408,21 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("CHAR", "")))
              (Grammar.s_nterm (no_rec : 'no_rec Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (norec : 'no_rec) (c : string) (loc : Ploc.t) ->
               (make_char loc c norec : 'symb)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")))
              (Grammar.s_nterm (no_rec : 'no_rec Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (norec : 'no_rec) (s : string) (loc : Ploc.t) ->
               (make_chars loc s norec : 'symb)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")))
              (Grammar.s_nterm (no_rec : 'no_rec Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (norec : 'no_rec) _ (loc : Ploc.t) ->
               (make_any loc norec : 'symb)))]];
     Grammar.extension (simple_expr : 'simple_expr Grammar.Entry.e) None
@@ -433,23 +433,23 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
                 (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
-           "1154dceb",
+           "3b6e03b5",
            (fun _ (e : 'expr) _ (loc : Ploc.t) -> (e : 'simple_expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("CHAR", "")),
-           "1154dceb",
+           "3b6e03b5",
            (fun (c : string) (loc : Ploc.t) ->
               (MLast.ExChr (loc, c) : 'simple_expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
-           "1154dceb",
+           "3b6e03b5",
            (fun (i : string) (loc : Ploc.t) ->
               (MLast.ExLid (loc, i) : 'simple_expr)))]];
     Grammar.extension (lookahead : 'lookahead Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
-           "1154dceb",
+           "3b6e03b5",
            (fun (s : string) (loc : Ploc.t) ->
               (let s = Plexing.eval_string loc s in
                List.rev
@@ -461,14 +461,14 @@ Grammar.safe_extend
              (Grammar.s_list1
                 (Grammar.s_nterm
                    (lookahead_char : 'lookahead_char Grammar.Entry.e))),
-           "1154dceb",
+           "3b6e03b5",
            (fun (pl : 'lookahead_char list) (loc : Ploc.t) ->
               (pl : 'lookahead)))]];
     Grammar.extension (lookahead_char : 'lookahead_char Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
-           "1154dceb",
+           "3b6e03b5",
            (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'lookahead_char)));
         Grammar.production
           (Grammar.r_next
@@ -476,52 +476,52 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("CHAR", "")))
                 (Grammar.s_token ("", "-")))
              (Grammar.s_token ("CHAR", "")),
-           "1154dceb",
+           "3b6e03b5",
            (fun (d : string) _ (c : string) (loc : Ploc.t) ->
               (MLast.PaRng (loc, MLast.PaChr (loc, c), MLast.PaChr (loc, d)) :
                'lookahead_char)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("CHAR", "")),
-           "1154dceb",
+           "3b6e03b5",
            (fun (c : string) (loc : Ploc.t) ->
               (MLast.PaChr (loc, c) : 'lookahead_char)))]];
     Grammar.extension (no_rec : 'no_rec Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, "1154dceb",
+          (Grammar.r_stop, "3b6e03b5",
            (fun (loc : Ploc.t) -> (false : 'no_rec)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "/")),
-           "1154dceb", (fun _ (loc : Ploc.t) -> (true : 'no_rec)))]];
+           "3b6e03b5", (fun _ (loc : Ploc.t) -> (true : 'no_rec)))]];
     Grammar.extension (err_kont : 'err_kont Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, "1154dceb",
+          (Grammar.r_stop, "3b6e03b5",
            (fun (loc : Ploc.t) -> (SpoNoth : 'err_kont)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "?")))
              (Grammar.s_nterm (simple_expr : 'simple_expr Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (e : 'simple_expr) _ (loc : Ploc.t) ->
               (SpoQues e : 'err_kont)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "?")))
              (Grammar.s_token ("STRING", "")),
-           "1154dceb",
+           "3b6e03b5",
            (fun (s : string) _ (loc : Ploc.t) ->
               (SpoQues (MLast.ExStr (loc, s)) : 'err_kont)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")),
-           "1154dceb", (fun _ (loc : Ploc.t) -> (SpoBang : 'err_kont)))]];
+           "3b6e03b5", (fun _ (loc : Ploc.t) -> (SpoBang : 'err_kont)))]];
     Grammar.extension (act : 'act Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_stop, "1154dceb", (fun (loc : Ploc.t) -> (None : 'act)));
+          (Grammar.r_stop, "3b6e03b5", (fun (loc : Ploc.t) -> (None : 'act)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "->")))
              (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
-           "1154dceb",
+           "3b6e03b5",
            (fun (e : 'expr) _ (loc : Ploc.t) -> (Some e : 'act)))]]]);;

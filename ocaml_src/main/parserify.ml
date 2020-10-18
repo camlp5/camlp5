@@ -30,8 +30,8 @@ let rec handle_failure e =
         pel
   | MLast.ExApp (_, MLast.ExLid (_, "raise"), e) ->
       begin match e with
-        MLast.ExAcc
-          (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure")) ->
+        MLast.ExLong
+          (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")) ->
           false
       | _ -> true
       end
@@ -43,12 +43,12 @@ let rec handle_failure e =
       handle_failure e
   | MLast.ExApp (_, f, e) ->
       no_raising_failure_fun f && handle_failure f && handle_failure e
-  | MLast.ExLid (_, _) | MLast.ExUid (_, _) -> true
+  | MLast.ExLid (_, _) | MLast.ExLong (_, MLast.LiUid (_, _)) -> true
   | _ -> false
 and no_raising_failure_fun =
   function
     MLast.ExApp (_, x, y) -> no_raising_failure_fun x && handle_failure y
-  | MLast.ExUid (_, _) -> true
+  | MLast.ExLong (_, MLast.LiUid (_, _)) -> true
   | _ -> false
 ;;
 
@@ -73,19 +73,20 @@ let rec simpl =
     MLast.ExMat
       (_,
        MLast.ExTry
-         (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), f),
+         (_, MLast.ExApp (_, MLast.ExLong (_, MLast.LiUid (_, "Some")), f),
           [MLast.PaLong
              (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
-           None, MLast.ExUid (_, "None")]),
+           None, MLast.ExLong (_, MLast.LiUid (_, "None"))]),
        [MLast.PaApp
           (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), MLast.PaLid (_, s1)),
         None, MLast.ExLid (_, s2);
         MLast.PaAny _, None,
         MLast.ExApp
           (_, MLast.ExLid (_, "raise"),
-           MLast.ExAcc
-             (_, MLast.ExUid (_, "Stream"),
-              MLast.ExUid (_, "Failure")))]) as e ->
+           MLast.ExLong
+             (_,
+              MLast.LiAcc
+                (_, MLast.LiUid (_, "Stream"), "Failure")))]) as e ->
       if s1 = s2 then f else e
   | MLast.ExMat
       (_, e,
@@ -115,18 +116,18 @@ let rec unstream_pattern_kont =
               (_, MLast.ExLid (_, "raise"),
                MLast.ExApp
                  (_,
-                  MLast.ExAcc
-                    (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Error")),
+                  MLast.ExLong
+                    (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Error")),
                   e2))]),
         []],
        e) |
     MLast.ExMat
       (_,
        MLast.ExTry
-         (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), f),
+         (_, MLast.ExApp (_, MLast.ExLong (_, MLast.LiUid (_, "Some")), f),
           [MLast.PaLong
              (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
-           None, MLast.ExUid (_, "None")]),
+           None, MLast.ExLong (_, MLast.LiUid (_, "None"))]),
        [MLast.PaApp (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), p), None,
         e;
         MLast.PaAny _, None,
@@ -134,8 +135,8 @@ let rec unstream_pattern_kont =
           (_, MLast.ExLid (_, "raise"),
            MLast.ExApp
              (_,
-              MLast.ExAcc
-                (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Error")),
+              MLast.ExLong
+                (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Error")),
               e2))]) ->
       let f =
         match f with
@@ -158,8 +159,9 @@ let rec unstream_pattern_kont =
        [MLast.PaLid (_, p),
         MLast.ExApp
           (_,
-           MLast.ExAcc
-             (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
+           MLast.ExFle
+             (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")),
+              (None, "count")),
            MLast.ExLid (_, "strm__")),
         []],
        e) ->
@@ -172,20 +174,21 @@ let rec unstream_pattern_kont =
        MLast.ExTry
          (_,
           MLast.ExApp
-            (_, MLast.ExUid (_, "Some"),
+            (_, MLast.ExLong (_, MLast.LiUid (_, "Some")),
              MLast.ExApp (_, f, MLast.ExLid (_, "strm__"))),
           [MLast.PaLong
              (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
-           None, MLast.ExUid (_, "None")]),
+           None, MLast.ExLong (_, MLast.LiUid (_, "None"))]),
        [MLast.PaApp
           (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), MLast.PaLid (_, s1)),
         None, MLast.ExLid (_, s2);
         MLast.PaAny _, None,
         MLast.ExApp
           (_, MLast.ExLid (_, "raise"),
-           MLast.ExAcc
-             (_, MLast.ExUid (_, "Stream"),
-              MLast.ExUid (_, "Failure")))]) as e ->
+           MLast.ExLong
+             (_,
+              MLast.LiAcc
+                (_, MLast.LiUid (_, "Stream"), "Failure")))]) as e ->
       if s1 = s2 then
         [SpNtr (loc, MLast.PaLid (loc, "a"), f), SpoBang], None,
         MLast.ExLid (loc, "a")
@@ -193,18 +196,18 @@ let rec unstream_pattern_kont =
   | MLast.ExMat
       (_,
        MLast.ExTry
-         (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), e1),
+         (_, MLast.ExApp (_, MLast.ExLong (_, MLast.LiUid (_, "Some")), e1),
           [MLast.PaLong
              (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
-           None, MLast.ExUid (_, "None")]),
+           None, MLast.ExLong (_, MLast.LiUid (_, "None"))]),
        [MLast.PaApp
           (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), MLast.PaLid (_, s)),
         None, e2;
         MLast.PaAny _, None,
         MLast.ExApp
           (_, MLast.ExLid (_, "raise"),
-           MLast.ExAcc
-             (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure")))]) ->
+           MLast.ExLong
+             (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")))]) ->
       let e = MLast.ExLet (loc, false, [MLast.PaLid (loc, s), e1, []], e2) in
       unstream_pattern_kont e
   | MLast.ExLet (_, false, [p, e1, []], e2) as ge ->
@@ -237,15 +240,17 @@ let rec unstream_pattern_kont =
       (_,
        MLast.ExApp
          (_,
-          MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "peek")),
+          MLast.ExFle
+            (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")), (None, "peek")),
           MLast.ExLid (_, "strm__")),
        [MLast.PaApp (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), p), None,
         MLast.ExSeq
           (_,
            [MLast.ExApp
               (_,
-               MLast.ExAcc
-                 (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")),
+               MLast.ExFle
+                 (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")),
+                  (None, "junk")),
                MLast.ExLid (_, "strm__"));
             e]);
         MLast.PaAny _, None,
@@ -253,8 +258,8 @@ let rec unstream_pattern_kont =
           (_, MLast.ExLid (_, "raise"),
            MLast.ExApp
              (_,
-              MLast.ExAcc
-                (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Error")),
+              MLast.ExLong
+                (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Error")),
               e2))]) ->
       let (sp, epo, e) = unstream_pattern_kont e in
       let sp = (SpTrm (loc, p, None), err e2) :: sp in sp, epo, e
@@ -262,7 +267,8 @@ let rec unstream_pattern_kont =
       (_,
        MLast.ExApp
          (_,
-          MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "peek")),
+          MLast.ExFle
+            (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")), (None, "peek")),
           MLast.ExLid (_, "strm__")),
        _) |
     MLast.ExMat
@@ -270,11 +276,11 @@ let rec unstream_pattern_kont =
        MLast.ExTry
          (_,
           MLast.ExApp
-            (_, MLast.ExUid (_, "Some"),
+            (_, MLast.ExLong (_, MLast.LiUid (_, "Some")),
              MLast.ExApp (_, _, MLast.ExLid (_, "strm__"))),
           [MLast.PaLong
              (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
-           None, MLast.ExUid (_, "None")]),
+           None, MLast.ExLong (_, MLast.LiUid (_, "None"))]),
        [MLast.PaApp (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), _), None,
         _;
         MLast.PaAny _, None, _]) as ge ->
@@ -300,8 +306,8 @@ let rec unstream_pattern_kont =
           (_, MLast.ExLid (_, "raise"),
            MLast.ExApp
              (_,
-              MLast.ExAcc
-                (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Error")),
+              MLast.ExLong
+                (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Error")),
               e))]) ->
       [SpNtr (loc, MLast.PaLid (loc, "a"), f), err e], None,
       MLast.ExLid (loc, "a")
@@ -314,8 +320,8 @@ let rec unstream_pattern_kont =
           (_, MLast.ExLid (_, "raise"),
            MLast.ExApp
              (_,
-              MLast.ExAcc
-                (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Error")),
+              MLast.ExLong
+                (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Error")),
               e))]) ->
       let f =
         MLast.ExFun
@@ -360,8 +366,9 @@ let rec unparser_cases_list =
        [MLast.PaLid (_, p),
         MLast.ExApp
           (_,
-           MLast.ExAcc
-             (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
+           MLast.ExFle
+             (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")),
+              (None, "count")),
            MLast.ExLid (_, "strm__")),
         []],
        e) ->
@@ -377,7 +384,8 @@ let rec unparser_cases_list =
       (_,
        MLast.ExApp
          (_,
-          MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "peek")),
+          MLast.ExFle
+            (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")), (None, "peek")),
           MLast.ExLid (_, "strm__")),
        pel) as ge ->
       let rec loop rev_spel =
@@ -389,8 +397,9 @@ let rec unparser_cases_list =
              (_,
               [MLast.ExApp
                  (_,
-                  MLast.ExAcc
-                    (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")),
+                  MLast.ExFle
+                    (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")),
+                     (None, "junk")),
                   MLast.ExLid (_, "strm__"));
                e])) ::
           pel ->
@@ -407,11 +416,11 @@ let rec unparser_cases_list =
        MLast.ExTry
          (_,
           MLast.ExApp
-            (_, MLast.ExUid (_, "Some"),
+            (_, MLast.ExLong (_, MLast.LiUid (_, "Some")),
              MLast.ExApp (_, f, MLast.ExLid (_, "strm__"))),
           [MLast.PaLong
              (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
-           None, MLast.ExUid (_, "None")]),
+           None, MLast.ExLong (_, MLast.LiUid (_, "None"))]),
        [MLast.PaApp (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), p1), None,
         e1;
         MLast.PaAny _, None, e2]) ->
@@ -423,10 +432,10 @@ let rec unparser_cases_list =
   | MLast.ExMat
       (_,
        MLast.ExTry
-         (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), f),
+         (_, MLast.ExApp (_, MLast.ExLong (_, MLast.LiUid (_, "Some")), f),
           [MLast.PaLong
              (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
-           None, MLast.ExUid (_, "None")]),
+           None, MLast.ExLong (_, MLast.LiUid (_, "None"))]),
        [MLast.PaApp (_, MLast.PaLong (_, MLast.LiUid (_, "Some")), p1), None,
         e1;
         MLast.PaAny _, None, e2]) ->
@@ -434,11 +443,13 @@ let rec unparser_cases_list =
         MLast.ExMat
           (loc,
            MLast.ExTry
-             (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), simpl f),
+             (loc,
+              MLast.ExApp
+                (loc, MLast.ExLong (loc, MLast.LiUid (loc, "Some")), simpl f),
               [MLast.PaLong
                  (loc,
                   MLast.LiAcc (loc, MLast.LiUid (loc, "Stream"), "Failure")),
-               None, MLast.ExUid (loc, "None")]),
+               None, MLast.ExLong (loc, MLast.LiUid (loc, "None"))]),
            [MLast.PaApp
               (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), p1),
             None, simpl e1;
@@ -458,14 +469,16 @@ let rec unparser_cases_list =
   | MLast.ExTry
       (_,
        MLast.ExApp
-         (_, MLast.ExUid (_, "Some"),
+         (_, MLast.ExLong (_, MLast.LiUid (_, "Some")),
           MLast.ExApp (_, f, MLast.ExLid (_, "strm__"))),
        [MLast.PaLong
           (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure")),
         None, e]) ->
       let spe =
         [SpNtr (loc, MLast.PaLid (loc, "a"), f), SpoNoth], None,
-        MLast.ExApp (loc, MLast.ExUid (loc, "Some"), MLast.ExLid (loc, "a"))
+        MLast.ExApp
+          (loc, MLast.ExLong (loc, MLast.LiUid (loc, "Some")),
+           MLast.ExLid (loc, "a"))
       in
       let spel = unparser_cases_list e in spe :: spel
   | MLast.ExTry
@@ -496,8 +509,8 @@ let rec unparser_cases_list =
       [spe]
   | MLast.ExApp
       (_, MLast.ExLid (_, "raise"),
-       MLast.ExAcc
-         (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure"))) ->
+       MLast.ExLong
+         (_, MLast.LiAcc (_, MLast.LiUid (_, "Stream"), "Failure"))) ->
       []
   | e -> [[], None, e]
 ;;
@@ -510,8 +523,9 @@ let unparser_body e =
          [MLast.PaLid (_, bp),
           MLast.ExApp
             (_,
-             MLast.ExAcc
-               (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "count")),
+             MLast.ExFle
+               (_, MLast.ExLong (_, MLast.LiUid (_, "Stream")),
+                (None, "count")),
              MLast.ExLid (_, strm_n)),
           []],
          e) ->

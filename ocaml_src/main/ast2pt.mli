@@ -1,6 +1,9 @@
 (* camlp5r *)
 (* ast2pt.mli,v *)
 
+val longid_long_id : MLast.longid -> Longident.t;;
+val conv_con : string -> string;;
+
 (** Conversion between Camlp5 AST into OCaml AST *)
 
 val interf : string -> MLast.sig_item list -> Parsetree.signature;;

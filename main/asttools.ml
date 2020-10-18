@@ -275,8 +275,8 @@ value string_list_of_longident li =
   | <:longident< $longid:li$ . $uid:uid$ >> -> (lirec li) @ [uid]
   | <:extended_longident< $longid:_$ ( $longid:_$ ) >> ->
     failwith "string_list_of_longident: LiApp not allowed here"
-  | <:longident< $_uid:_$ >> | <:longident< $longid:_$ . $_uid:_$ >> | MLast.LiXtr _ _ _ ->
-    failwith "[internal error] string_list_of_longident: called with longid containing placeholders"
+  | _ ->
+    failwith "[internal error] string_list_of_longident: called with invalid longid"
   ] in
   lirec li
 ;

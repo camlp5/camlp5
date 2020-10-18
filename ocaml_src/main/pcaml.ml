@@ -232,7 +232,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
-          "1154dceb",
+          "3b6e03b5",
           (fun _ (x : 'expr) (loc : Ploc.t) -> (x : 'expr_eoi)))]];
    Grammar.extension (patt_eoi : 'patt_eoi Grammar.Entry.e) None
      [None, None,
@@ -241,7 +241,7 @@ Grammar.safe_extend
             (Grammar.r_next Grammar.r_stop
                (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
             (Grammar.s_token ("EOI", "")),
-          "1154dceb",
+          "3b6e03b5",
           (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi)))]]];;
 
 let handle_expr_quotation loc x =

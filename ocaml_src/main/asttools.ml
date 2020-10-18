@@ -106,7 +106,7 @@ let try_find f =
 let expr_to_path_module_expr e =
   let rec erec =
     function
-      MLast.ExUid (loc, i) -> MLast.MeUid (loc, i)
+      MLast.ExLong (loc, MLast.LiUid (_, i)) -> MLast.MeUid (loc, i)
     | MLast.ExAcc (loc, a, b) -> MLast.MeAcc (loc, erec a, erec b)
     | _ -> failwith "caught"
   in
@@ -116,7 +116,7 @@ let expr_to_path_module_expr e =
 let expr_last_is_uid e =
   let rec erec =
     function
-      MLast.ExUid (_, _) -> true
+      MLast.ExLong (_, MLast.LiUid (_, _)) -> true
     | MLast.ExAcc (_, _, e) -> erec e
     | _ -> false
   in
@@ -126,7 +126,7 @@ let expr_last_is_uid e =
 let expr_first_is_id e =
   let rec erec =
     function
-      MLast.ExUid (_, _) -> true
+      MLast.ExLong (_, MLast.LiUid (_, _)) -> true
     | MLast.ExLid (_, _) -> true
     | MLast.ExAcc (_, e, _) -> erec e
     | _ -> false
@@ -137,7 +137,7 @@ let expr_first_is_id e =
 let expr_is_module_path e =
   let rec erec =
     function
-      MLast.ExUid (_, _) -> true
+      MLast.ExLong (_, MLast.LiUid (_, _)) -> true
     | MLast.ExAcc (_, a, b) -> erec a && erec b
     | _ -> false
   in
@@ -296,6 +296,20 @@ let longident_of_string_list loc =
       List.fold_left (fun li s -> MLast.LiAcc (loc, li, s))
         (MLast.LiUid (loc, h)) t
 ;;
+  
+let string_list_of_longident li =
+  let rec lirec =
+    function
+      MLast.LiUid (_, uid) -> [uid]
+    | MLast.LiAcc (_, li, uid) -> lirec li @ [uid]
+    | MLast.LiApp (_, _, _) ->
+        failwith "string_list_of_longident: LiApp not allowed here"
+    | _ ->
+        failwith
+          "[internal error] string_list_of_longident: called with invalid longid"
+  in
+  lirec li
+;;
 
 let longident_lident_of_string_list loc =
   function
@@ -306,3 +320,58 @@ let longident_lident_of_string_list loc =
       let li = longident_of_string_list loc path in Some li, clsna
 ;;
 
+let is_uident s =
+  match s.[0] with
+    'A'..'Z' -> true
+  | _ -> false
+;;
+
+let consume_longident loc l =
+  let rec consrec acc =
+    function
+      h :: t when is_uident h -> consrec (h :: acc) t
+    | rest ->
+        if acc = [] then None, rest
+        else Some (longident_of_string_list loc (List.rev acc)), rest
+  in
+  consrec [] l
+;;
+
+let consume_longident_lident loc l =
+  match consume_longident loc l with
+    None, h :: t -> Some (None, h), t
+  | Some li, h :: t -> Some (Some li, h), t
+  | _, [] ->
+      Ploc.raise loc (Failure "consume_longident_lident: no lident found")
+;;
+
+let expr_of_string_list loc l =
+  let rec exrec acc l =
+    if l = [] then acc
+    else
+      match consume_longident_lident loc l with
+        None, [] -> acc
+      | Some lili, rest -> exrec (MLast.ExFle (loc, acc, lili)) rest
+      | _ -> assert false
+  in
+  match l with
+    [] -> Ploc.raise loc (Failure "expr_of_string_list: empty string list")
+  | h :: t when not (is_uident h) -> exrec (MLast.ExLid (loc, h)) t
+  | h :: _ ->
+      match consume_longident loc l with
+        None, _ -> assert false
+      | Some li, rest -> exrec (MLast.ExLong (loc, li)) rest
+;;
+
+let rec expr_concat e1 e2 =
+  let loc = MLast.loc_of_expr e1 in
+  match e1, e2 with
+    MLast.ExLong (_, li1), MLast.ExLong (_, li2) ->
+      MLast.ExLong (loc, longid_concat li1 li2)
+  | _, MLast.ExLid (_, vid) -> MLast.ExFle (loc, e1, (None, vid))
+  | _, MLast.ExFle (_, e, lili) -> MLast.ExFle (loc, expr_concat e1 e, lili)
+  | _ ->
+      Ploc.raise (MLast.loc_of_expr e1)
+        (Failure "expr_concat: invalid arguments")
+;;
+ 

@@ -106,48 +106,53 @@ let is_anti_anti n = String.length n > 0 && n.[0] = '_';;
 module E_MetaSig =
   struct
     type t = MLast.expr;;
-    type prefix_t = MLast.expr;;
+    type prefix_t = MLast.longid;;
     let loc = Ploc.dummy;;
     let loc_v () = MLast.ExLid (loc, !(Ploc.name));;
     let node ?prefix con el =
       let prefix =
         match prefix with
-          None -> MLast.ExUid (loc, "MLast")
+          None -> MLast.LiUid (loc, "MLast")
         | Some p -> p
       in
+      let li = MLast.LiAcc (loc, prefix, con) in
       List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
-        (MLast.ExApp
-           (loc, MLast.ExAcc (loc, prefix, MLast.ExUid (loc, con)), loc_v ()))
-        el
+        (MLast.ExApp (loc, MLast.ExLong (loc, li), loc_v ())) el
     ;;
     let node_no_loc ?prefix con el =
       let prefix =
         match prefix with
-          None -> MLast.ExUid (loc, "MLast")
+          None -> MLast.LiUid (loc, "MLast")
         | Some p -> p
       in
+      let li = MLast.LiAcc (loc, prefix, con) in
       List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
-        (MLast.ExAcc (loc, prefix, MLast.ExUid (loc, con))) el
+        (MLast.ExLong (loc, li)) el
     ;;
     let list elem el =
       let rec loop el =
         match el with
-          [] -> MLast.ExUid (loc, "[]")
+          [] -> MLast.ExLong (loc, MLast.LiUid (loc, "[]"))
         | e :: el ->
             MLast.ExApp
-              (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), elem e),
+              (loc,
+               MLast.ExApp
+                 (loc, MLast.ExLong (loc, MLast.LiUid (loc, "::")), elem e),
                loop el)
       in
       loop el
     ;;
     let option elem oe =
       match oe with
-        None -> MLast.ExUid (loc, "None")
-      | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
+        None -> MLast.ExLong (loc, MLast.LiUid (loc, "None"))
+      | Some e ->
+          MLast.ExApp
+            (loc, MLast.ExLong (loc, MLast.LiUid (loc, "Some")), elem e)
     ;;
     let vala elem e = elem e;;
     let bool b =
-      if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
+      if b then MLast.ExLong (loc, MLast.LiUid (loc, "True"))
+      else MLast.ExLong (loc, MLast.LiUid (loc, "False"))
     ;;
     let string s = MLast.ExStr (loc, s);;
     let tuple le = MLast.ExTup (loc, le);;

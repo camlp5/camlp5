@@ -168,6 +168,13 @@ let mkrf =
   | false -> Nonrecursive
 ;;
 
+let uident_True__True =
+  function
+    "True_" -> "True"
+  | "False_" -> "False"
+  | x -> x
+;;
+
 let mkli s =
   let rec loop f =
     function
@@ -201,8 +208,8 @@ let longid_long_id_gen ~extended =
         Ploc.raise loc
           (Failure
              "longid_long_id: extended longid forbidden here (application not allowed)")
-    | MLast.LiAcc (_, me1, uid) -> Ldot (lrec me1, uv uid)
-    | MLast.LiUid (_, s) -> Lident (uv s)
+    | MLast.LiAcc (_, me1, uid) -> Ldot (lrec me1, uident_True__True (uv uid))
+    | MLast.LiUid (_, s) -> Lident (uident_True__True (uv s))
     | LiXtr (loc, _, _) ->
         Ploc.raise loc (Failure "longid_long_id: LiXtr forbidden here")
   in
@@ -228,7 +235,7 @@ let rec module_expr_long_id =
 
 let rec expr_long_id =
   function
-    MLast.ExUid (_, uid) -> Lident uid
+    MLast.ExLong (_, MLast.LiUid (_, uid)) -> Lident uid
   | MLast.ExAcc (_, e1, e2) ->
       let li1 = expr_long_id e1
       and li2 = expr_long_id e2 in
@@ -353,19 +360,12 @@ let rec class_expr_fa al =
   | ce -> ce, al
 ;;
 
-let uident_True__True =
-  function
-    "True_" -> "True"
-  | "False_" -> "False"
-  | x -> x
-;;
-
 let rec sep_expr_acc l =
   function
     MLast.ExAcc (_, e1, e2) -> sep_expr_acc (sep_expr_acc l e2) e1
-  | MLast.ExUid (loc, s) ->
+  | MLast.ExLong (loc, MLast.LiUid (_, s)) ->
       let s = uident_True__True s in
-      let e = MLast.ExUid (loc, s) in
+      let e = MLast.ExLong (loc, MLast.LiUid (loc, s)) in
       begin match l with
         [] -> [loc, [], e]
       | (loc2, sl, e) :: l -> (Ploc.encl loc loc2, s :: sl, e) :: l
@@ -409,12 +409,12 @@ let bigarray_get loc e el =
         (loc,
          MLast.ExApp
            (loc,
-            MLast.ExAcc
+            MLast.ExFle
               (loc,
-               MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Bigarray"),
-                  MLast.ExUid (loc, "Array1")),
-               MLast.ExLid (loc, "get")),
+               MLast.ExLong
+                 (loc,
+                  MLast.LiAcc (loc, MLast.LiUid (loc, "Bigarray"), "Array1")),
+               (None, "get")),
             e),
          c1)
   | [c1; c2] ->
@@ -424,12 +424,13 @@ let bigarray_get loc e el =
            (loc,
             MLast.ExApp
               (loc,
-               MLast.ExAcc
+               MLast.ExFle
                  (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "Bigarray"),
-                     MLast.ExUid (loc, "Array2")),
-                  MLast.ExLid (loc, "get")),
+                  MLast.ExLong
+                    (loc,
+                     MLast.LiAcc
+                       (loc, MLast.LiUid (loc, "Bigarray"), "Array2")),
+                  (None, "get")),
                e),
             c1),
          c2)
@@ -442,12 +443,13 @@ let bigarray_get loc e el =
               (loc,
                MLast.ExApp
                  (loc,
-                  MLast.ExAcc
+                  MLast.ExFle
                     (loc,
-                     MLast.ExAcc
-                       (loc, MLast.ExUid (loc, "Bigarray"),
-                        MLast.ExUid (loc, "Array3")),
-                     MLast.ExLid (loc, "get")),
+                     MLast.ExLong
+                       (loc,
+                        MLast.LiAcc
+                          (loc, MLast.LiUid (loc, "Bigarray"), "Array3")),
+                     (None, "get")),
                   e),
                c1),
             c2),
@@ -457,12 +459,13 @@ let bigarray_get loc e el =
         (loc,
          MLast.ExApp
            (loc,
-            MLast.ExAcc
+            MLast.ExFle
               (loc,
-               MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Bigarray"),
-                  MLast.ExUid (loc, "Genarray")),
-               MLast.ExLid (loc, "get")),
+               MLast.ExLong
+                 (loc,
+                  MLast.LiAcc
+                    (loc, MLast.LiUid (loc, "Bigarray"), "Genarray")),
+               (None, "get")),
             e),
          MLast.ExArr (loc, el))
 ;;
@@ -476,12 +479,13 @@ let bigarray_set loc e el v =
            (loc,
             MLast.ExApp
               (loc,
-               MLast.ExAcc
+               MLast.ExFle
                  (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "Bigarray"),
-                     MLast.ExUid (loc, "Array1")),
-                  MLast.ExLid (loc, "set")),
+                  MLast.ExLong
+                    (loc,
+                     MLast.LiAcc
+                       (loc, MLast.LiUid (loc, "Bigarray"), "Array1")),
+                  (None, "set")),
                e),
             c1),
          v)
@@ -494,12 +498,13 @@ let bigarray_set loc e el v =
               (loc,
                MLast.ExApp
                  (loc,
-                  MLast.ExAcc
+                  MLast.ExFle
                     (loc,
-                     MLast.ExAcc
-                       (loc, MLast.ExUid (loc, "Bigarray"),
-                        MLast.ExUid (loc, "Array2")),
-                     MLast.ExLid (loc, "set")),
+                     MLast.ExLong
+                       (loc,
+                        MLast.LiAcc
+                          (loc, MLast.LiUid (loc, "Bigarray"), "Array2")),
+                     (None, "set")),
                   e),
                c1),
             c2),
@@ -515,12 +520,13 @@ let bigarray_set loc e el v =
                  (loc,
                   MLast.ExApp
                     (loc,
-                     MLast.ExAcc
+                     MLast.ExFle
                        (loc,
-                        MLast.ExAcc
-                          (loc, MLast.ExUid (loc, "Bigarray"),
-                           MLast.ExUid (loc, "Array3")),
-                        MLast.ExLid (loc, "set")),
+                        MLast.ExLong
+                          (loc,
+                           MLast.LiAcc
+                             (loc, MLast.LiUid (loc, "Bigarray"), "Array3")),
+                        (None, "set")),
                      e),
                   c1),
                c2),
@@ -533,12 +539,13 @@ let bigarray_set loc e el v =
            (loc,
             MLast.ExApp
               (loc,
-               MLast.ExAcc
+               MLast.ExFle
                  (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "Bigarray"),
-                     MLast.ExUid (loc, "Genarray")),
-                  MLast.ExLid (loc, "set")),
+                  MLast.ExLong
+                    (loc,
+                     MLast.LiAcc
+                       (loc, MLast.LiUid (loc, "Bigarray"), "Genarray")),
+                  (None, "set")),
                e),
             MLast.ExArr (loc, el)),
          v)
@@ -822,13 +829,13 @@ and patt =
   | PaPfx (loc, li, p2) ->
       mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
   | PaLong (loc, li) ->
-      let li = longid_long_id li in
       let li =
         match li with
-          Lident s -> Lident (conv_con s)
-        | Ldot (li, s) -> Ldot (li, conv_con s)
+          MLast.LiUid (loc, s) -> MLast.LiUid (loc, conv_con s)
+        | MLast.LiAcc (loc, li, s) -> MLast.LiAcc (loc, li, conv_con s)
         | _ -> failwith "Lapply not allowed here"
       in
+      let li = longid_long_id li in
       mkpat loc
         (ocaml_ppat_construct (mkloc loc) li None
            (not !(Prtools.no_constructors_arity)))
@@ -967,6 +974,40 @@ and mklabpat (lab, p) =
 and expr =
   function
     ExAtt (loc, e, a) -> ocaml_expr_addattr (attr (uv a)) (expr e)
+  | ExLong (loc, li) ->
+      let ca = not !(Prtools.no_constructors_arity) in
+      let li =
+        match li with
+          MLast.LiUid (loc, s) -> MLast.LiUid (loc, conv_con s)
+        | MLast.LiAcc (loc, li, s) -> MLast.LiAcc (loc, li, conv_con s)
+        | _ -> failwith "Lapply not allowed here"
+      in
+      let li = longid_long_id li in
+      let cloc = mkloc loc in mkexp loc (ocaml_pexp_construct cloc li None ca)
+  | ExOpen (loc, li, MLast.ExLid (_, id)) ->
+      let vid = id in expr (ExFle (loc, ExLong (loc, li), (None, vid)))
+  | ExOpen (loc, li, e) ->
+      let li = longid_long_id li in
+      let me = mkmod loc (ocaml_pmod_ident li) in
+      begin match ocaml_pexp_open with
+        Some pexp_open -> mkexp loc (pexp_open (mkoverride false) me (expr e))
+      | None -> error loc "no expression open in this ocaml version"
+      end
+  | ExFle (loc, e, (None, s)) when uv s = "val" ->
+      mkexp loc
+        (ocaml_pexp_apply
+           (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
+           ["", expr e])
+  | ExFle (loc, ExLong (_, li), (None, s)) ->
+      let li = longid_lident_long_id (Some li, s) in
+      mkexp loc (ocaml_pexp_ident (mkloc loc) li)
+  | ExFle (loc, ExLong (_, li), (Some _, _)) ->
+      error loc "<lident>.<lident> not valid syntax (nor parseable)"
+  | ExFle (loc, e, (Some _, s)) when uv s = "val" ->
+      error loc "().<lident>.val not valid syntax"
+  | ExFle (loc, e, lili) ->
+      let li = longid_lident_long_id (uv lili) in
+      mkexp loc (ocaml_pexp_field (mkloc loc) (expr e) li)
   | ExAcc (loc, x, MLast.ExLid (_, "val")) ->
       mkexp loc
         (ocaml_pexp_apply
@@ -974,8 +1015,8 @@ and expr =
            ["", expr x])
   | ExAcc (loc, _, _) as e ->
       let (e, l) =
-        match sep_expr_acc [] e with
-          (loc, ml, MLast.ExUid (_, s)) :: l ->
+        match (sep_expr_acc [] e : (loc * string list * expr) list) with
+          (loc, ml, MLast.ExLong (_, MLast.LiUid (_, s))) :: l ->
             let ca = not !(Prtools.no_constructors_arity) in
             let cloc = mkloc loc in
             mkexp loc (ocaml_pexp_construct cloc (mkli s ml) None ca), l
@@ -1077,7 +1118,18 @@ and expr =
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss (loc, e, v) ->
       begin match e with
-        ExAcc (loc, x, MLast.ExLid (_, "val")) ->
+        ExFle (loc, x, (None, vval)) when uv vval = "val" ->
+          let cloc = mkloc loc in
+          mkexp loc
+            (ocaml_pexp_apply
+               (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
+               ["", expr x; "", expr v])
+      | ExFle (loc, _, _) ->
+          begin match (expr e).pexp_desc with
+            Pexp_field (e, lab) -> mkexp loc (Pexp_setfield (e, lab, expr v))
+          | _ -> error loc "bad record access"
+          end
+      | ExAcc (loc, x, MLast.ExLid (_, "val")) ->
           let cloc = mkloc loc in
           mkexp loc
             (ocaml_pexp_apply
@@ -1175,7 +1227,7 @@ and expr =
           end
       | _ -> error loc "bad left part of assignment"
       end
-  | ExAsr (loc, MLast.ExUid (_, "False")) ->
+  | ExAsr (loc, MLast.ExLong (_, MLast.LiUid (_, "False"))) ->
       mkexp loc (ocaml_pexp_assertfalse !glob_fname (mkloc loc))
   | ExAsr (loc, e) ->
       mkexp loc (ocaml_pexp_assert !glob_fname (mkloc loc) (expr e))
@@ -1249,7 +1301,7 @@ and expr =
   | ExIfe (loc, e1, e2, e3) ->
       let e3o =
         match e3 with
-          MLast.ExUid (_, "()") -> None
+          ExLong (_, MLast.LiUid (_, "()")) -> None
         | _ -> Some (expr e3)
       in
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, e3o))
@@ -1330,14 +1382,6 @@ and expr =
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
-      else if eo <> None && not has_records_with_with then
-        match eo with
-          Some e ->
-            begin match Prtools.record_without_with loc e lel with
-              Some e -> expr e
-            | None -> error loc "cannot convert record"
-            end
-        | None -> assert false
       else
         let eo =
           match eo with
@@ -1348,7 +1392,7 @@ and expr =
   | ExSeq (loc, el) ->
       let rec loop =
         function
-          [] -> expr (MLast.ExUid (loc, "()"))
+          [] -> expr (MLast.ExLong (loc, MLast.LiUid (loc, "()")))
         | [e] -> expr e
         | e :: el ->
             let loc = Ploc.encl (loc_of_expr e) loc in
@@ -2104,12 +2148,12 @@ let directive loc =
   function
     MLast.ExStr (_, s) -> Pdir_string s
   | MLast.ExInt (_, i, "") -> ocaml_pdir_int i (int_of_string_l loc i)
-  | MLast.ExUid (_, "True") ->
+  | MLast.ExLong (_, MLast.LiUid (_, "True")) ->
       begin match ocaml_pdir_bool with
         Some pdir_bool -> pdir_bool true
       | None -> error loc "no such kind of directive in this ocaml version"
       end
-  | MLast.ExUid (_, "False") ->
+  | MLast.ExLong (_, MLast.LiUid (_, "False")) ->
       begin match ocaml_pdir_bool with
         Some pdir_bool -> pdir_bool false
       | None -> error loc "no such kind of directive in this ocaml version"
@@ -2119,7 +2163,7 @@ let directive loc =
         let rec loop =
           function
             MLast.ExLid (_, i) -> [i]
-          | MLast.ExUid (_, i) -> [i]
+          | MLast.ExLong (_, MLast.LiUid (_, i)) -> [i]
           | MLast.ExAcc (_, e, MLast.ExLid (_, i)) -> loop e @ [i]
           | MLast.ExAcc (_, e, MLast.ExUid (_, i)) -> loop e @ [i]
           | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast")
