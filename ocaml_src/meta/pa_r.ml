@@ -3340,7 +3340,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", ".")))
                 (Grammar.s_nterm
                    (check_lbracketbar : 'check_lbracketbar Grammar.Entry.e)))
-             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+             (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "simple"),
            "194fe98d",
            (fun (e : 'expr) _ _ (li : 'longident) (loc : Ploc.t) ->
               (MLast.ExOpen (loc, li, e) : 'expr_longident)));
@@ -3354,7 +3354,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", ".")))
                 (Grammar.s_nterm
                    (check_lbrace : 'check_lbrace Grammar.Entry.e)))
-             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+             (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "simple"),
            "194fe98d",
            (fun (e : 'expr) _ _ (li : 'longident) (loc : Ploc.t) ->
               (MLast.ExOpen (loc, li, e) : 'expr_longident)));
@@ -3368,7 +3368,7 @@ Grammar.safe_extend
                    (Grammar.s_token ("", ".")))
                 (Grammar.s_nterm
                    (check_lbracket : 'check_lbracket Grammar.Entry.e)))
-             (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+             (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "simple"),
            "194fe98d",
            (fun (e : 'expr) _ _ (li : 'longident) (loc : Ploc.t) ->
               (MLast.ExOpen (loc, li, e) : 'expr_longident)));

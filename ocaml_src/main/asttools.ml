@@ -313,6 +313,13 @@ let longident_lident_of_string_list loc =
       let li = longident_of_string_list loc path in Some li, clsna
 ;;
 
+let string_list_of_longident_lident =
+  (function
+     None, s -> [s]
+   | Some li, s -> string_list_of_longident li @ [s]
+   | _ -> assert false)[@ocaml.warning "-11"]
+;;
+
 let is_uident s =
   match s.[0] with
     'A'..'Z' -> true

@@ -48,5 +48,6 @@ val sig_item_to_inline : sig_item -> (loc * string) option -> sig_item;;
 val longident_of_string_list : loc -> string list -> longid;;
 val string_list_of_longident : longid -> string list;;
 val longident_lident_of_string_list : loc -> string list -> longid_lident;;
+val string_list_of_longident_lident : longid_lident -> string list;;
 val expr_of_string_list : loc -> string list -> expr;;
 val expr_concat : expr -> expr -> expr;;

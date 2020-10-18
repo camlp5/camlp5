@@ -985,7 +985,7 @@ and expr =
       let li = longid_lident_long_id (Some li, s) in
       mkexp loc (ocaml_pexp_ident (mkloc loc) li)
   | ExFle (loc, ExLong (_, li), (Some _, _)) ->
-      error loc "<lident>.<lident> not valid syntax (nor parseable)"
+      error loc "<longid>.<longid> not valid syntax (nor parseable)"
   | ExFle (loc, e, (Some _, s)) when uv s = "val" ->
       error loc "().<lident>.val not valid syntax"
   | ExFle (loc, e, lili) ->
