@@ -1170,13 +1170,6 @@ and expr =
   | ExRec loc lel eo →
       let lel = uv lel in
       if lel = [] then error loc "empty record"
-      else if eo <> None && not has_records_with_with then
-        match eo with
-        [ Some e →
-            match Prtools.record_without_with loc e lel with
-            [ Some e → expr e
-            | None → error loc "cannot convert record" ]
-        | None → assert False ]
       else
         let eo =
           match eo with

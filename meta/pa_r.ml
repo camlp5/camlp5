@@ -996,35 +996,6 @@ EXTEND
       | e1 = SELF; op = V dotop "dotop"; "{"; el = LIST1 expr LEVEL "+" SEP ";"; "}" ->
           <:expr< $e1$ $_dotop:op$ { $list:el$ } >>
       ]
-(*
-      [ e1 = SELF; "."; "("; op = operator_rparen ->
-          if op = "::" then
-            <:expr< $e1$ . $uid:op$ >>
-          else
-            <:expr< $e1$ . $lid:op$ >>
-      | e1 = SELF; "."; "("; e2 = SELF; ")" →
-          if expr_last_is_uid e1 then
-            failwith "internal error in original-syntax parser at dot-lparen"
-          else
-            <:expr< $e1$ .( $e2$ ) >>
-
-      | e1 = SELF; op = V dotop "dotop"; "("; el = V (LIST1 expr SEP ";"); ")" →
-          <:expr< $e1$ $_dotop:op$ ( $_list:el$ ) >>
-
-      | e1 = SELF; "."; "["; e2 = SELF; "]" →
-          <:expr< $e1$ .[ $e2$ ] >>
-
-      | e1 = SELF; op = V dotop "dotop"; "["; el = V (LIST1 expr SEP ";"); "]" →
-          <:expr< $e1$ $_dotop:op$ [ $_list:el$ ] >>
-
-      | e1 = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" →
-          <:expr< $e1$ . { $_list:el$ } >>
-
-      | e1 = SELF; op = V dotop "dotop"; "{"; el = V (LIST1 expr SEP ";"); "}" →
-          <:expr< $e1$ $_dotop:op$ { $_list:el$ } >>
-
-      | e1 = SELF; "."; e2 = SELF → <:expr< $e1$ . $e2$ >> ]
-*)
     | "~-" NONA
       [ "~-"; e = SELF → <:expr< ~- $e$ >>
       | "~-."; e = SELF → <:expr< ~-. $e$ >>
@@ -1086,39 +1057,6 @@ EXTEND
       | li = longident ; "." ; check_lbracketbar ; e = expr -> MLast.ExOpen loc li e
       ]
     ]
-  ;
-  expr_uident:
-    [ RIGHTA
-      [ i = V UIDENT -> <:expr< $_uid:i$ >>
-      | i = V UIDENT ; "." ; j = SELF -> expr_left_assoc_acc (MLast.ExAcc loc (MLast.ExUid loc i) j)
-      | i = V UIDENT ; "." ; "("; op = operator_rparen ->
-          if op = "::" then
-            MLast.ExAcc loc (MLast.ExUid loc i) (MLast.ExUid loc <:vala< op >>)
-          else
-            MLast.ExAcc loc (MLast.ExUid loc i) (MLast.ExLid loc <:vala< op >>)
-      | i = V UIDENT ; "." ; j = V LIDENT ->
-          MLast.ExAcc loc (MLast.ExUid loc i) (MLast.ExLid loc j)
-      | i = V UIDENT ; "."; "("; e2 = expr; ")" ->
-            MLast.ExAcc loc (MLast.ExUid loc i) e2
-
-
-      | i = V UIDENT ; "."; "{"; test_label_eq; lel = V (LIST1 label_expr SEP ";"); "}" ->
-          let e2 = <:expr< { $_list:lel$ } >> in
-          MLast.ExAcc loc (MLast.ExUid loc i) e2
-
-      | i = V UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V (LIST1 label_expr SEP ";"); "}" ->
-          let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
-          MLast.ExAcc loc (MLast.ExUid loc i) e2
-
-      | i = V UIDENT ; "."; "["; "]" ->
-          let e2 = MLast.ExLong loc <:longident< $uid:"[]"$ >> in
-          MLast.ExAcc loc (MLast.ExUid loc i) e2
-
-      | i = V UIDENT ; "."; "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
-          let e2 = mklistexp loc last el in
-          MLast.ExAcc loc (MLast.ExUid loc i) e2
-
-      ] ]
   ;
   closed_case_list:
     [ [ "["; l = V (LIST0 match_case SEP "|"); "]" → l

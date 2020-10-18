@@ -89,9 +89,6 @@ value expand_module_prefix :
 value do_split_or_patterns_with_bindings :
   list (MLast.patt * 'a * 'b) -> list (MLast.patt * 'a * 'b);
 
-value record_without_with :
-  Ploc.t -> MLast.expr -> list (MLast.patt * MLast.expr) -> option MLast.expr;
-
 value no_constructors_arity : ref bool;
    (** Flag to generate nodes telling that constructor arity is not taken
        into account in the AST (e.g. True for normal syntax, False for

@@ -478,30 +478,3 @@ value do_split_or_patterns_with_bindings pel =
         loop rev_pel pel
     | [] -> List.rev rev_pel ]
 ;
-
-value record_without_with loc e lel =
-  try
-    let (m, name) =
-      let (m, sl) =
-        List.fold_right
-          (fun (p, _) (m, sl) ->
-             match p with
-              [ <:patt< $lid:lab$ >> -> (m, [lab :: sl])
-              | <:patt< $uid:m$ . $lid:lab$ >> -> (m, [lab :: sl])
-              | _ -> raise Exit ])
-          lel ("", [])
-      in
-      (m, String.concat "_" ["with" :: sl])
-    in
-    let f =
-      let f = <:expr< $lid:name$ >> in
-      if m = "" then f else MLast.ExAcc loc (MLast.ExUid loc <:vala< m >>) f
-    in
-    let e =
-      List.fold_left (fun e1 (_, e2) -> <:expr< $e1$ $e2$ >>)
-        <:expr< $f$ $e$ >> lel
-    in
-    Some e
-  with
-  [ Exit -> None ]
-;
