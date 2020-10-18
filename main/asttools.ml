@@ -316,7 +316,7 @@ value expr_of_string_list loc l =
     match consume_longident_lident loc l with [
       (None, []) -> acc
     | (Some lili, rest) ->
-      exrec (MLast.ExFle loc acc <:vala< lili >>) rest
+      exrec <:expr< $acc$ . $lilongid:lili$ >> rest
     | _ -> assert False
     ] in
   match l with [
@@ -329,7 +329,7 @@ value expr_of_string_list loc l =
     match consume_longident loc l with [
       (None, _) -> assert False
     | (Some li, rest) ->
-      exrec (MLast.ExLong loc li) rest
+      exrec <:expr< $longid:li$ >> rest
     ]
   ]
 ;
@@ -337,11 +337,11 @@ value expr_of_string_list loc l =
 value rec expr_concat e1 e2 =
   let loc = MLast.loc_of_expr e1 in
   match (e1, e2) with [
-    (MLast.ExLong _ li1, MLast.ExLong _ li2) -> MLast.ExLong loc (longid_concat li1 li2)
+    (<:expr< $longid:li1$ >>, <:expr< $longid:li2$ >>) -> <:expr< $longid:longid_concat li1 li2$ >>
 
-  | (_, <:expr< $_lid:vid$ >>) -> MLast.ExFle loc e1 <:vala< (None, vid) >>
+  | (_, <:expr< $lid:id$ >>) -> <:expr< $e1$ . $lid:id$ >>
 
-  | (_, MLast.ExFle _ e lili) -> MLast.ExFle loc (expr_concat e1 e) lili
+  | (_, <:expr< $e$ . $lilongid:lili$ >>) -> <:expr< $expr_concat e1 e$ . $lilongid:lili$ >>
 
   | _ -> Ploc.raise (MLast.loc_of_expr e1) (Failure "expr_concat: invalid arguments")
 

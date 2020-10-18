@@ -418,14 +418,14 @@ value constr_arity = ref [("Some", 1); ("Match_Failure", 1)];
 
 value rec is_expr_constr_call =
   fun
-  [ MLast.ExLong _ _ -> True
+  [ <:expr< $longid:_$ >> -> True
   | <:expr< $e$ $_$ >> -> is_expr_constr_call e
   | _ -> False ]
 ;
 
 value rec constr_expr_arity loc =
   fun
-  [ MLast.ExLong _ ( <:longident< $uid:c$ >> | <:longident< $longid:_$ . $uid:c$ >> ) ->
+  [ <:expr< $uid:c$ >> | <:expr< $longid:_$ . $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
   | _ -> 1 ]
 ;
@@ -1216,9 +1216,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           <:expr< ( $list:[e :: el]$ ) >> ]
     | ":=" NONA
       [ e1 = SELF; ":="; e2 = expr LEVEL "expr1" ->
-        let vval = <:vala< "val" >> in
-        let e1 = MLast.ExFle loc e1 <:vala< (None, vval) >> in
-          <:expr< $e1$ := $e2$ >>
+          <:expr< $e1$ . val := $e2$ >>
       | e1 = SELF; "<-"; e2 = expr LEVEL "expr1" -> <:expr< $e1$ := $e2$ >> ]
     | "||" RIGHTA
       [ e1 = SELF; "or"; e2 = SELF -> <:expr< $lid:"or"$ $e1$ $e2$ >>
@@ -1301,13 +1299,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           expr_to_inline <:expr< lazy ($e$) >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; lili = V longident_lident "lilongid" ->
-        MLast.ExFle loc e1 lili
+        <:expr< $e1$ . $_lilongid:lili$ >>
       | e1 = SELF; "."; "("; op = operator_rparen ->
           if op = "::" then
             Ploc.raise loc (Failure ".(::) (dot paren colon colon paren) cannot appear except after longident")
           else
-            let vop = <:vala< op >> in
-            MLast.ExFle loc e1 <:vala< (None, vop) >>
+            <:expr< $e1$ . $lid:op$ >>
 
       | e1 = SELF; "."; "("; e2 = SELF; ")" ->
           if expr_last_is_uid e1 then
@@ -1331,9 +1328,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       ]
 
     | "~-" NONA
-      [ "!"; e = SELF ->
-        let vval = <:vala< "val" >> in
-        MLast.ExFle loc e <:vala< (None, vval) >>
+      [ "!"; e = SELF -> <:expr< $e$ . val >>
       | "~-"; e = SELF -> <:expr< ~- $e$ >>
       | "~-."; e = SELF -> <:expr< ~-. $e$ >>
       | f = prefixop; e = SELF -> <:expr< $lid:f$ $e$ >> ]
@@ -1346,13 +1341,13 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | s = V STRING -> <:expr< $_str:s$ >>
       | c = V CHAR -> <:expr< $_chr:c$ >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
-      | UIDENT "True" -> ExLong loc <:longident< True_ >>
-      | UIDENT "False" -> ExLong loc <:longident< False_ >>
+      | UIDENT "True" ->  <:expr< True_ >>
+      | UIDENT "False" -> <:expr< False_ >>
       | i = V LIDENT -> <:expr< $_lid:i$ >>
       | i = expr_longident -> i
-      | "true" -> ExLong loc <:longident< True >>
-      | "false" -> ExLong loc <:longident< False >>
-      | "["; "]" -> ExLong loc <:longident< $uid:"[]"$ >>
+      | "true" -> <:expr< True >>
+      | "false" -> <:expr< False >>
+      | "["; "]" -> <:expr< $uid:"[]"$ >>
       | "["; el = expr1_semi_list; "]" -> <:expr< $mklistexp loc None el$ >>
       | "[|"; "|]" -> <:expr< [| |] >>
       | "[|"; el = V expr1_semi_list "list"; "|]" ->
@@ -1362,7 +1357,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "{"; e = expr LEVEL "apply"; "with"; lel = V lbl_expr_list "list";
         "}" ->
           <:expr< { ($e$) with $_list:lel$ } >>
-      | "("; ")" -> MLast.ExLong loc <:longident< $uid:"()"$ >>
+      | "("; ")" -> <:expr< $uid:"()"$ >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" ->
           <:expr< (module $me$ : $mt$) >>
       | "("; "module"; me = module_expr; ")" ->
@@ -1378,7 +1373,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "begin"; (ext,attrs) = ext_attributes; e = SELF; "end" -> 
           expr_to_inline (concat_comm loc <:expr< $e$ >>) ext attrs
       | "begin"; (ext,attrs) = ext_attributes; "end" -> 
-          expr_to_inline (MLast.ExLong loc <:longident< $uid:"()"$ >>) ext attrs
+          expr_to_inline <:expr< $uid:"()"$ >> ext attrs
       | x = QUOTATION ->
           let con = quotation_content x in
           Pcaml.handle_expr_quotation loc con ] ]
@@ -1534,21 +1529,19 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   expr_longident:
     [
-      [ li = longident -> MLast.ExLong loc li
+      [ li = longident -> <:expr< $longid:li$ >>
       | li = longident ; "." ; "("; op = operator_rparen ->
           if op = "::" then
-            let li = <:longident< $longid:li$ . $uid:op$ >> in
-            MLast.ExLong loc li
+            <:expr< $longid:li$ . $uid:op$ >>
           else
-            let vop = <:vala< op >> in
-            MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vop) >>
+            <:expr< $longid:li$ . $lid:op$ >>
 
-      | li = longident ; "." ; "(" ; e = expr ; ")" -> MLast.ExOpen loc li e
+      | li = longident ; "." ; "(" ; e = expr ; ")" -> <:expr< $longid:li$ . ( $e$ ) >>
       | li = longident ; "." ; id = V LIDENT "lid" ->
-        MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, id) >>
-      | li = longident ; "." ; check_lbracket ; e = expr -> MLast.ExOpen loc li e
-      | li = longident ; "." ; check_lbrace ; e = expr -> MLast.ExOpen loc li e
-      | li = longident ; "." ; check_lbracketbar ; e = expr -> MLast.ExOpen loc li e
+        <:expr< $longid:li$ . $_lid:id$ >>
+      | li = longident ; "." ; check_lbracket ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; check_lbrace ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; check_lbracketbar ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
       ]
     ]
   ;

@@ -968,13 +968,12 @@ EXTEND
           expr_to_inline <:expr< lazy $e$ >> ext attrs ]
     | "." LEFTA
       [ e1 = SELF; "."; lili = V longident_lident "lilongid" ->
-        MLast.ExFle loc e1 lili
+        <:expr< $e1$ . $_lilongid:lili$ >>
       | e1 = SELF; "."; "("; op = operator_rparen ->
           if op = "::" then
             Ploc.raise loc (Failure ".(::) (dot paren colon colon paren) cannot appear except after longident")
           else
-            let vop = <:vala< op >> in
-            MLast.ExFle loc e1 <:vala< (None, vop) >>
+            <:expr< $e1$ . $lid:op$ >>
 
       | e1 = SELF; "."; "("; e2 = SELF; ")" ->
           if expr_last_is_uid e1 then
@@ -1014,7 +1013,7 @@ EXTEND
       | i = V LIDENT → <:expr< $_lid:i$ >>
       | i = V GIDENT → <:expr< $_lid:i$ >>
       | e = expr_longident → e
-      | "["; "]" → ExLong loc <:longident< $uid:"[]"$ >>
+      | "["; "]" → <:expr< $uid:"[]"$ >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
           mklistexp loc last el
       | "[|"; el = V (LIST0 expr SEP ";"); "|]" → <:expr< [| $_list:el$ |] >>
@@ -1023,7 +1022,7 @@ EXTEND
       | "{"; "("; e = SELF; ")"; "with"; lel = V (LIST1 label_expr SEP ";");
         "}" →
           <:expr< { ($e$) with $_list:lel$ } >>
-      | "("; ")" → MLast.ExLong loc <:longident< $uid:"()"$ >>
+      | "("; ")" → <:expr< $uid:"()"$ >>
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" →
           <:expr< (module $me$ : $mt$) >>
       | "("; "module"; me = module_expr; ")" →
@@ -1040,21 +1039,19 @@ EXTEND
   ;
   expr_longident:
     [
-      [ li = longident -> MLast.ExLong loc li
+      [ li = longident -> <:expr< $longid:li$ >>
       | li = longident ; "." ; "("; op = operator_rparen ->
           if op = "::" then
-            let li = <:longident< $longid:li$ . $uid:op$ >> in
-            MLast.ExLong loc li
+            <:expr< $longid:li$ . $uid:op$ >>
           else
-            let vop = <:vala< op >> in
-            MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vop) >>
+            <:expr< $longid:li$ . $lid:op$ >>
 
-      | li = longident ; "." ; "(" ; e = expr ; ")" -> MLast.ExOpen loc li e
+      | li = longident ; "." ; "(" ; e = expr ; ")" -> <:expr< $longid:li$ . ( $e$ ) >>
       | li = longident ; "." ; id = V LIDENT "lid" ->
-        MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, id) >>
-      | li = longident ; "." ; check_lbracket ; e = expr -> MLast.ExOpen loc li e
-      | li = longident ; "." ; check_lbrace ; e = expr -> MLast.ExOpen loc li e
-      | li = longident ; "." ; check_lbracketbar ; e = expr -> MLast.ExOpen loc li e
+        <:expr< $longid:li$ . $_lid:id$ >>
+      | li = longident ; "." ; check_lbracket ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; check_lbrace ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; check_lbracketbar ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
       ]
     ]
   ;

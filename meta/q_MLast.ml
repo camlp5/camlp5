@@ -64,7 +64,7 @@ module Qast =
         (longident_of_string_list loc l)
       | (_,[]) -> assert False
       ] in
-      MLast.ExLong loc li
+      <:expr< $longid:li$ >>
     ;
     value patt_node m n =
       let l = Versdep.split_on_char '.' n in

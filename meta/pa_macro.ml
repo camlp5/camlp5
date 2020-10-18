@@ -209,7 +209,7 @@ value substp mloc env =
     [ <:expr< $uid:x$ >> ->
         try <:patt< $anti:List.assoc x env$ >> with
         [ Not_found -> <:patt< $uid:x$ >> ]
-    | MLast.ExLong loc li ->
+    | <:expr:< $longid:li$ >> ->
       <:patt< $longid:li$ >>
 
     | <:expr< $e1$ $e2$ >> -> <:patt< $loop e1$ $loop e2$ >>

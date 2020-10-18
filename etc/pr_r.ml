@@ -1659,20 +1659,21 @@ EXTEND_PRINTER
             left_operator pc 2 unfold next z ]
     | "dot"
       [ 
+        <:expr< $longid:li$ . ( $e$ ) >> ->
+        match e with [
+          <:expr< $uid:"[]"$ >> -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
+        | <:expr< [ $_$ :: $_$ ] >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
 
+        | <:expr< { $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+        | <:expr< {($_$) with $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+        | <:expr< $lid:_$ >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
 
-        MLast.ExOpen _ li (ExLong _ <:longident< $uid:"[]"$ >>) -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
-      | MLast.ExOpen _ li (<:expr< [ $_$ :: $_$ ] >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+        | e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
+        ]
 
-      | MLast.ExOpen _ li (<:expr< { $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-      | MLast.ExOpen _ li (<:expr< {($_$) with $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-      | MLast.ExOpen _ li (<:expr< $lid:_$ >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | <:expr< $e$ . $lilongid:lili$ >> -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident lili
 
-      | MLast.ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
-
-      | MLast.ExFle _ e lili -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident (Pcaml.unvala lili)
-
-      | MLast.ExLong _ li -> longident pc li
+      | <:expr< $longid:li$ >> -> longident pc li
 
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p.(%p)" curr x expr_short y

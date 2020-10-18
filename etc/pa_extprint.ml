@@ -213,8 +213,7 @@ EXTEND
   qualid:
     [ [ l = LIST1 [ i = UIDENT ; "." -> i] ; id = LIDENT ->
         let li = Asttools.longident_of_string_list loc l in
-        let vid = <:vala< id >> in
-        MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vid) >>
+        <:expr< $longid:li$ . $lid:id$ >>
       | id = LIDENT ->
         <:expr< $lid:id$ >>
       ]
