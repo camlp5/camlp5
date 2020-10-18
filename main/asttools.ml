@@ -291,3 +291,65 @@ value longident_lident_of_string_list loc = fun [
 ]
 ;
 
+value is_uident s =
+  match s.[0] with
+  [ 'A'..'Z' → True
+  | _ → False ]
+;
+
+value consume_longident loc l =
+  let rec consrec acc = fun [
+    [h :: t] when is_uident h -> consrec [h::acc] t
+  | rest ->
+    if acc = [] then (None, rest)
+    else (Some (longident_of_string_list loc (List.rev acc)), rest)
+  ] in
+  consrec [] l
+;
+
+value consume_longident_lident loc l =
+  match consume_longident loc l with [
+    (None, [h :: t]) -> (Some (None, <:vala< h >>), t)
+  | (Some li, [h :: t]) -> (Some (Some <:vala< li >>, <:vala< h >>), t)
+  | (_, []) -> Ploc.raise loc (Failure "consume_longident_lident: no lident found")
+  ]
+;
+
+value expr_of_string_list loc l =
+  let rec exrec acc l =
+    if l = [] then acc else
+    match consume_longident_lident loc l with [
+      (None, []) -> acc
+    | (Some lili, rest) ->
+      exrec (MLast.ExFle loc acc <:vala< lili >>) rest
+    | _ -> assert False
+    ] in
+  match l with [
+    [] -> Ploc.raise loc (Failure "expr_of_string_list: empty string list")
+
+  | [h :: t] when not (is_uident h) ->
+    exrec <:expr< $lid:h$ >> t
+
+  | [h :: _] ->
+    match consume_longident loc l with [
+      (None, _) -> assert False
+    | (Some li, rest) ->
+      exrec (MLast.ExLong loc li) rest
+    ]
+  ]
+;
+
+value rec expr_concat e1 e2 =
+  let loc = MLast.loc_of_expr e1 in
+  match (e1, e2) with [
+    (MLast.ExLong _ li1, MLast.ExLong _ li2) -> MLast.ExLong loc (longid_concat li1 li2)
+
+  | (_, <:expr< $_lid:vid$ >>) -> MLast.ExFle loc e1 <:vala< (None, vid) >>
+
+  | (_, MLast.ExFle _ e lili) -> MLast.ExFle loc (expr_concat e1 e) lili
+
+  | _ -> Ploc.raise (MLast.loc_of_expr e1) (Failure "expr_concat: invalid arguments")
+
+  ]
+;
+ 

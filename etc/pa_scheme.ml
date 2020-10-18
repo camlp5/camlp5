@@ -656,7 +656,7 @@
      (match se2
       ((Slist loc [se2]) (let ((e2 (expr_se se2))) <:expr< $e1$ .[ $e2$ ] >>))
       ((Sexpr loc [se2]) (let ((e2 (expr_se se2))) <:expr< $e1$ .( $e2$ ) >>))
-      (_ (let ((e2 (expr_se se2))) (MLast.ExAcc loc e1 e2))))))
+      (_ (let ((e2 (expr_se se2))) (Asttools.expr_concat e1 e2))))))
    ((Slid loc s) (lident_expr loc s))
    ((Slidv loc s) <:expr< $_lid:s$ >>)
    ((Suid loc s) <:expr< $uid:(rename_id s)$ >>)

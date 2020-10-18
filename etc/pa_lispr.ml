@@ -217,6 +217,12 @@ value expr_id loc s =
   | _ → <:expr< $lid:s$ >> ]
 ;
 
+value is_lident s =
+  match s.[0] with
+  [ 'A'..'Z' → False
+  | _ → True ]
+;
+
 value patt_id loc s =
   match s.[0] with
   [ 'A'..'Z' → <:patt< $uid:s$ >>
@@ -438,19 +444,9 @@ and label_expr_se loc =
 and expr_ident_se loc s =
   if s.[0] = '<' then <:expr< $lid:s$ >>
   else
-    loop 0 0 where rec loop ibeg i =
-      if i = String.length s then
-        if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
-        else
-          Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "expr expected")
-      else if s.[i] = '.' then
-        if i > ibeg then
-          let e1 = expr_id loc (String.sub s ibeg (i - ibeg)) in
-          let e2 = loop (i + 1) (i + 1) in
-          MLast.ExAcc loc e1 e2
-        else
-          Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "expr expected")
-      else loop ibeg (i + 1)
+    let l = Versdep.split_on_char '.' s in
+    Asttools.expr_of_string_list loc l
+
 and parser_cases_se loc =
   fun
   [ [] → <:expr< raise Stream.Failure >>

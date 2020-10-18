@@ -109,8 +109,10 @@ and patt_module =
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =
   fun
-  [ MLast.ExAcc _ (MLast.ExLid _ <:vala< s >>) e2 -> do { expr_module e2 }
-  | MLast.ExAcc _ e1 e2 -> do { expr_module e1; expr e2 }
+  [ MLast.ExAcc loc _ _ -> Ploc.raise loc (Failure "pr_depend: ExAcc slipped thru")
+  | MLast.ExLong _ li -> longident li
+  | MLast.ExOpen _ li e -> do { longident li ; expr e }
+  | MLast.ExFle _ e _ -> expr e
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
   | ExAre _ _ e1 e2 -> do { expr e1; list expr (Pcaml.unvala e2) }
   | <:expr< [| $list:el$ |] >> -> list expr el
@@ -160,7 +162,6 @@ and expr =
     }
   | <:expr< ($list:el$) >> -> list expr el
   | <:expr< ($e$ : $t$) >> -> do { expr e; ctyp t }
-  | <:expr< $uid:_$ >> -> ()
   | ExVrn _ _ -> ()
   | <:expr< while $e$ do { $list:el$ } >> -> do { expr e; list expr el }
   | x -> not_impl "expr" x ]

@@ -55,7 +55,7 @@ value rec may_side_effect =
 value rec may_be_side_effect_victim =
   fun
   [ <:expr< $lid:_$ . $_$ >> -> True
-  | MLast.ExAcc _ _ e -> may_be_side_effect_victim e
+  | MLast.ExOpen _ _ e -> may_be_side_effect_victim e
   | _ -> False ]
 ;
 

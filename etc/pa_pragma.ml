@@ -643,11 +643,23 @@ value val_tab = do {
         {ctyp = <:ctyp< list $ta$ -> list $ta$ >>;
          expr = Obj.repr List.rev;
          patt = no_patt loc});
-     ("MLast.ExAcc",
+     ("MLast.ExLong",
       fun loc ->
         {ctyp =
-           <:ctyp< MLast.loc -> MLast.expr -> MLast.expr -> MLast.expr >>;
-         expr = Obj.repr (fun loc e1 e2 -> MLast.ExAcc loc e1 e2);
+           <:ctyp< MLast.loc -> MLast.longid -> MLast.expr >>;
+         expr = Obj.repr (fun loc li -> MLast.ExLong loc li);
+         patt = no_patt loc});
+     ("MLast.ExOpen",
+      fun loc ->
+        {ctyp =
+           <:ctyp< MLast.loc -> MLast.longid -> MLast.expr -> MLast.expr >>;
+         expr = Obj.repr (fun loc li e2 -> MLast.ExOpen loc li e2);
+         patt = no_patt loc});
+     ("MLast.ExFle",
+      fun loc ->
+        {ctyp =
+           <:ctyp< MLast.loc -> MLast.expr -> Ploc.vala MLast.longid_lident -> MLast.expr >>;
+         expr = Obj.repr (fun loc e lili -> MLast.ExFle loc e lili);
          patt = no_patt loc});
      ("MLast.ExApp",
       fun loc ->

@@ -872,10 +872,17 @@ EXTEND_PRINTER
           sprintf "%s%s.(%s)%s" pc.bef
             (curr {(pc) with bef = ""; aft = ""} e1)
             (curr {(pc) with bef = ""; aft = ""} e2) pc.aft
-      | MLast.ExAcc _ e1 e2 ->
+      | MLast.ExLong _ li -> sprintf "%s" (longident {(pc) with aft = ""} li)
+      | MLast.ExOpen _ li e ->
+          plistbf 0 (paren pc "letopen")
+            [(fun pc -> sprintf "%s%s%s" pc.bef (longident pc li)  pc.aft, "");
+             (fun pc -> curr pc e, "")]
+
+      | MLast.ExFle _ e <:vala< lili >> ->
            sprintf "%s.%s"
-             (curr {(pc) with aft = ""} e1)
-             (curr {(pc) with bef = ""} e2)
+             (curr {(pc) with aft = ""} e)
+             (longident_lident {(pc) with bef = ""} lili)
+
       | <:expr< $int:s$ >> ->
           sprintf "%s%s%s" pc.bef (int_repr s) pc.aft
       | <:expr< $int32:s$ >> ->

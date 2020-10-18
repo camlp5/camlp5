@@ -488,8 +488,9 @@ EXTEND
    ] ]
   ;
   variable:
-    [ [ e1 = SELF; "."; e2 = SELF -> MLast.ExAcc loc e1 e2 ]
-    | [ i = UIDENT -> <:expr< $uid:i$ >>
-      | i = LIDENT -> <:expr< $lid:i$ >> ] ]
+    [ [ l = LIST1 [ i = UIDENT -> i | i = LIDENT -> i ] SEP "." ->
+        Asttools.expr_of_string_list loc l
+      ]
+    ]
   ;
 END;

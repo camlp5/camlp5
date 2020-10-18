@@ -61,3 +61,5 @@ value sig_item_to_inline :
 value longident_of_string_list : loc → list string → longid;
 value string_list_of_longident : longid → list string;
 value longident_lident_of_string_list : loc → list string → longid_lident;
+value expr_of_string_list : loc -> list string -> expr ;
+value expr_concat : expr -> expr -> expr ;

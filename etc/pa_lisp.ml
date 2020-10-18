@@ -422,25 +422,9 @@
  (lambda (loc s)
    (if (= ([] s 0) '<')
        <:expr< $lid:s$ >>
-       (let rec
-         ((loop
-           (lambda (ibeg i)
-             (if (= i (String.length s))
-                 (if (> i ibeg)
-                     (expr_id loc (String.sub s ibeg (- i ibeg)))
-                   (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                   (Stream.Error "expr expected")))
-               (if (= ([] s i) '.')
-                   (if (> i ibeg)
-                       (let* ((e1 (expr_id
-                                   loc
-                                   (String.sub s ibeg (- i ibeg))))
-                              (e2 (loop (+ i 1) (+ i 1))))
-                         (MLast.ExAcc loc e1 e2))
-                     (Ploc.raise (Ploc.sub loc (- i 1) 1)
-                                     (Stream.Error "expr expected")))
-                 (loop ibeg (+ i 1)))))))
-         (loop 0 0))))
+       (let ((l (Versdep.split_on_char '.' s)))
+            (Asttools.expr_of_string_list loc l))
+   ))
  parser_cases_se
  (lambda loc
    (lambda_match
