@@ -110,19 +110,20 @@ value is_anti_anti n = String.length n > 0 && n.[0] = '_';
 
 module E_MetaSig = struct
   type t = MLast.expr;
-  type prefix_t = MLast.expr;
+  type prefix_t = MLast.longid;
   value loc = Ploc.dummy;
   value loc_v () = <:expr< $lid:Ploc.name.val$ >>;
   value node ?{prefix} con el =
-    let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
-    let vcon = <:vala< con >> in
+    let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
+    let li = <:longident< $longid:prefix$ . $uid:con$ >> in
     List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-      <:expr< $MLast.ExAcc loc prefix (MLast.ExUid loc vcon)$ $loc_v ()$ >> el
+      (MLast.ExApp loc (MLast.ExLong loc li) (loc_v ())) el
   ;
   value node_no_loc ?{prefix} con el =
-    let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
+    let prefix = match prefix with [ None -> <:longident< MLast >> | Some p -> p ] in
+    let li = <:longident< $longid:prefix$ . $uid:con$ >> in
     List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-      (MLast.ExAcc loc prefix (MLast.ExUid loc <:vala< con >>)) el
+      (MLast.ExLong loc li) el
   ;
   value list elem el =
     loop el where rec loop el =

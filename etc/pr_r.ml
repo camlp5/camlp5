@@ -1661,18 +1661,18 @@ EXTEND_PRINTER
       [ 
 
 
-        ExOpen _ li (ExLong _ <:longident< $uid:"[]"$ >>) -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
-      | ExOpen _ li (<:expr< [ $_$ :: $_$ ] >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+        MLast.ExOpen _ li (ExLong _ <:longident< $uid:"[]"$ >>) -> pprintf pc "%p.@;<0 0>@[<a>[]@]" longident li
+      | MLast.ExOpen _ li (<:expr< [ $_$ :: $_$ ] >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
 
-      | ExOpen _ li (<:expr< { $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-      | ExOpen _ li (<:expr< {($_$) with $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-      | ExOpen _ li (<:expr< $lid:_$ >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | MLast.ExOpen _ li (<:expr< { $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | MLast.ExOpen _ li (<:expr< {($_$) with $list:_$ } >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+      | MLast.ExOpen _ li (<:expr< $lid:_$ >> as e) -> pprintf pc "%p.@;<0 0>%p" longident li curr e
 
-      | ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
+      | MLast.ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
 
-      | ExFle _ e lili -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident (Pcaml.unvala lili)
+      | MLast.ExFle _ e lili -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident (Pcaml.unvala lili)
 
-      | ExLong _ li -> longident pc li
+      | MLast.ExLong _ li -> longident pc li
 
       | MLast.ExAcc loc x y ->
           pprintf pc "%p.@;<0 0>%p" curr x curr y
@@ -1751,8 +1751,11 @@ EXTEND_PRINTER
           pprintf pc "( %s )" s
       | <:expr:< $lid:s$ >> ->
           var_escaped pc (loc, s)
-      | <:expr< $uid:s$ >> ->
+      | MLast.ExUid loc <:vala< s >> -> Ploc.raise loc (Failure (Printf.sprintf "pr_r: expr: ExUid \"%s\" slipped thru\n" s))
+(*
+<:expr< $uid:s$ >> ->
           cons_escaped pc s
+*)
       | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> ->

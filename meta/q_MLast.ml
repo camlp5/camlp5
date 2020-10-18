@@ -996,7 +996,7 @@ EXTEND
       | i = longident → Qast.Node "ExLong" [Qast.Loc; i]
       | i = longident ; "." ; "(" ; e = expr ; ")" → Qast.Node "ExOpen" [Qast.Loc; i; e]
       | "." -> Qast.Node "ExUnr" [Qast.Loc]
-      | "["; "]" → Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
+      | "["; "]" → Qast.Node "ExLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]]
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
           mklistexp Qast.Loc last el
       | "[|"; el = SV (LIST0 expr SEP ";"); "|]" →

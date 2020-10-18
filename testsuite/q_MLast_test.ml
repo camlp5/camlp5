@@ -228,10 +228,16 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:str_item< type t += [ A ] >> ;|foo}
         }
+      ; { name = "expr-long-1" ; 
+          expect = {foo|MLast.ExLong loc
+  (MLast.LiAcc loc (MLast.LiUid loc (Ploc.VaVal "A")) (Ploc.VaVal "B"));
+|foo} ;
+          code = {foo|<:expr< A . B >>;|foo}
+        }
       ; { name = "expr-acc-1" ; 
           expect = {foo|MLast.ExAcc loc e1 e2;
 |foo} ;
-          code = {foo|<:expr< $e1$ . $e2$ >> ;|foo}
+          code = {foo|MLast.ExAcc loc e1 e2;|foo}
         }
 (* These two don't work b/c UIDENT followed by antiquotation
       ; { name = "expr-acc-1b" ; 
@@ -246,8 +252,8 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         }
 *)
       ; { name = "expr-acc-1d" ; 
-          expect = {foo|MLast.ExAcc loc (MLast.ExUid loc (Ploc.VaVal e1))
-  (MLast.ExLid loc (Ploc.VaVal m));
+          expect = {foo|MLast.ExFle loc (MLast.ExLong loc (MLast.LiUid loc (Ploc.VaVal e1)))
+  (Ploc.VaVal (None, Ploc.VaVal m));
 |foo} ;
           code = {foo|<:expr< $uid:e1$ . $lid:m$ >> ;|foo}
         }
