@@ -245,9 +245,6 @@ and expr floc sh =
     [ ExAtt loc e attr ->
         let loc = floc loc in
        ExAtt loc (self e) (attribute_body floc sh attr)
-    | ExAcc loc x1 x2 →
-        let loc = floc loc in
-        ExAcc loc (self x1) (self x2)
 
     | ExLong loc x1 ->
       let loc = floc loc in
@@ -392,9 +389,6 @@ and expr floc sh =
     | ExTyc loc x1 x2 →
         let loc = floc loc in
         ExTyc loc (self x1) (ctyp floc sh x2)
-    | ExUid loc x1 →
-        let loc = floc loc in
-        ExUid loc x1
     | ExVrn loc x1 →
         let loc = floc loc in
         ExVrn loc x1

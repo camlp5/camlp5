@@ -264,7 +264,11 @@ MLast.PaUnp loc os omt;
 (* expr: Expressions of the language. *)
 
 (* access *)
-<:expr< $e1$ . $e2$ >>;
+<:expr< $longid:x$ >>;
+<:expr< $longid:x$ . ( $e$ ) >> ;
+<:expr< $e$ . $lilongid:x$ >> ;
+<:expr< $e$ . $_lilongid:x$ >> ;
+
 (* antiquotation <a href="#expr_1">(1)</a> *)
 <:expr< $anti:e$ >>;
 (* application *)
@@ -458,9 +462,6 @@ MLast.ExRec loc lpe oe;
 
 (* type constraint *)
 <:expr< ($e$ : $t$) >>;
-(* uppercase identifier *)
-<:expr< $uid:s$ >>;
-<:expr< $_uid:s$ >>;
 
 (* variant *)
 <:expr< ` $s$ >>;

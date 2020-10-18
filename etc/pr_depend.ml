@@ -109,8 +109,7 @@ and patt_module =
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =
   fun
-  [ MLast.ExAcc loc _ _ -> Ploc.raise loc (Failure "pr_depend: ExAcc slipped thru")
-  | MLast.ExLong _ li -> longident li
+  [ MLast.ExLong _ li -> longident li
   | MLast.ExOpen _ li e -> do { longident li ; expr e }
   | MLast.ExFle _ e _ -> expr e
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }

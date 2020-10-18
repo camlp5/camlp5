@@ -212,11 +212,7 @@ value rec module_expr_long_id =
 ;
 
 value rec expr_long_id = fun
-  [ <:expr< $uid:uid$ >> -> Lident uid
-  | MLast.ExAcc _ e1 e2 ->
-    let li1 = expr_long_id e1 and
-        li2 = expr_long_id e2 in
-    concat_long_ids li1 li2
+  [ <:expr< $longid:li$ >> -> longid_long_id li
   | _ -> failwith "expr_long_id: unexpected expr"
   ]
 ;
@@ -332,18 +328,6 @@ value rec class_expr_fa al =
   fun
   [ CeApp _ ce a → class_expr_fa [a :: al] ce
   | ce → (ce, al) ]
-;
-
-value rec sep_expr_acc l =
-  fun
-  [ MLast.ExAcc _ e1 e2 → sep_expr_acc (sep_expr_acc l e2) e1
-  | <:expr:< $uid:s$ >> →
-      let s = uident_True__True s in
-      let e = <:expr< $uid:s$ >> in
-      match l with
-      [ [] → [(loc, [], e)]
-      | [(loc2, sl, e) :: l] → [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
-  | e → [(loc_of_expr e, [], e) :: l] ]
 ;
 
 value list_map_check f l =
@@ -852,42 +836,6 @@ and expr =
     let li = longid_lident_long_id (uv lili) in
     mkexp loc (ocaml_pexp_field (mkloc loc) (expr e) li)
 
-  | ExAcc loc x <:expr< val >> →
-      mkexp loc
-        (ocaml_pexp_apply
-           (mkexp loc (ocaml_pexp_ident (mkloc loc) (Lident "!")))
-           [("", expr x)])
-  | ExAcc loc _ _ as e →
-      let (e, l) =
-        match (sep_expr_acc [] e : list (loc * list string * expr)) with
-        [ [(loc, ml, <:expr< $uid:s$ >>) :: l] →
-            let ca = not Prtools.no_constructors_arity.val in
-            let cloc = mkloc loc in
-            (mkexp loc (ocaml_pexp_construct cloc (mkli s ml) None ca), l)
-        | [(loc, ml, <:expr< $lid:s$ >>) :: l] →
-            (mkexp loc (ocaml_pexp_ident (mkloc loc) (mkli s ml)), l)
-        | [(_, [], e) :: l] → (expr e, l)
-        | [(loc, [mh :: mtl], e) :: l] ->
-          let mexp = List.fold_left
-            (fun me uid -> <:module_expr< $me$ . $uid:uid$ >>)
-            <:module_expr< $uid:mh$ >> mtl in
-          let e = <:expr< let open $mexp$ in $e$ >> in
-          (expr e, l)
-        | _ → error loc "bad ast" ]
-      in
-      let (_, e) =
-        List.fold_left
-          (fun (loc1, e1) (loc2, ml, e2) →
-             match e2 with
-             [ <:expr< $lid:s$ >> →
-                 let loc = Ploc.encl loc1 loc2 in
-                 let li = mkli (conv_lab s) ml in
-                 let e = ocaml_pexp_field (mkloc loc) e1 li in
-                 (loc, mkexp loc e)
-             | _ → error (loc_of_expr e2) "lowercase identifier expected" ])
-          (loc, e) l
-      in
-      e
   | ExAnt _ e → expr e
   | ExApp loc (ExLid _ <:vala< "-" >>) (ExInt _ s c) →
       let s = neg_string (uv s) in
@@ -968,16 +916,6 @@ and expr =
           [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
           | _ → error loc "bad record access" ]
 
-      | ExAcc loc x <:expr< val >> →
-          let cloc = mkloc loc in
-          mkexp loc
-            (ocaml_pexp_apply
-               (mkexp loc (ocaml_pexp_ident cloc (Lident ":=")))
-               [("", expr x); ("", expr v)])
-      | ExAcc loc _ _ →
-          match (expr e).pexp_desc with
-          [ Pexp_field e lab → mkexp loc (Pexp_setfield e lab (expr v))
-          | _ → error loc "bad record access" ]
       | ExAre _ dotop e1 e2l →
           match (uv dotop, uv e2l) with [
             (".", [e2]) ->
@@ -1211,10 +1149,6 @@ and expr =
   | ExTup loc el → mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc loc e t →
       mkexp loc (ocaml_pexp_constraint (expr e) (Some (ctyp t)) None)
-  | ExUid loc s →
-      let ca = not Prtools.no_constructors_arity.val in
-      let cloc = mkloc loc in
-      mkexp loc (ocaml_pexp_construct cloc (Lident (conv_con (uv s))) None ca)
   | ExVrn loc s →
       match ocaml_pexp_variant with
       [ Some (_, pexp_variant) → mkexp loc (pexp_variant (uv s, None))
@@ -1846,8 +1780,6 @@ value directive loc =
           fun
           [ <:expr< $lid:i$ >> → [i]
           | <:expr< $uid:i$ >> → [i]
-          | MLast.ExAcc _ e (MLast.ExLid _ <:vala< i >>) → loop e @ [i]
-          | MLast.ExAcc _ e (MLast.ExUid _ <:vala< i >>) → loop e @ [i]
           | e → Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
       in
       Pdir_ident (long_id_of_string_list loc sl) ]

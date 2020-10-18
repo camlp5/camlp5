@@ -1674,11 +1674,6 @@ EXTEND_PRINTER
 
       | MLast.ExLong _ li -> longident pc li
 
-      | MLast.ExAcc loc x y ->
-        Ploc.raise loc (Failure "pr_r: expr: ExAcc slipped thru\n")
-(*
-          pprintf pc "%p.@;<0 0>%p" curr x curr y
-*)
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p.(%p)" curr x expr_short y
       | <:expr< $x$ $dotop:op$ ( $list:el$ ) >> ->
@@ -1753,11 +1748,6 @@ EXTEND_PRINTER
           pprintf pc "( %s )" s
       | <:expr:< $lid:s$ >> ->
           var_escaped pc (loc, s)
-      | MLast.ExUid loc <:vala< s >> -> Ploc.raise loc (Failure (Printf.sprintf "pr_r: expr: ExUid \"%s\" slipped thru\n" s))
-(*
-<:expr< $uid:s$ >> ->
-          cons_escaped pc s
-*)
       | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> ->

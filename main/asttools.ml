@@ -94,10 +94,18 @@ value try_find f =
  ] in try_find_f
 ;
 
+value longid_to_path_module_expr li =
+  let rec lirec = fun [
+    <:longident:< $uid:i$ >> -> <:module_expr< $uid:i$ >>
+  | <:longident:< $longid:li$ . $uid:i$ >> -> <:module_expr< $lirec li$ . $uid:i$ >>
+  | _ -> assert False
+  ] in
+  lirec li
+;
+
 value expr_to_path_module_expr e =
   let rec erec = fun [
-    <:expr:< $uid:i$ >> -> <:module_expr< $uid:i$ >>
-  | MLast.ExAcc loc a b -> <:module_expr< $erec a$ . $erec b$ >>
+    <:expr:< $longid:li$ >> -> longid_to_path_module_expr li
   | _ -> failwith "caught"
   ] in
   try Some (erec e) with Failure _ -> None
@@ -105,8 +113,7 @@ value expr_to_path_module_expr e =
 
 value expr_last_is_uid e =
   let rec erec = fun [
-    <:expr< $uid:_$ >> -> True
-  | MLast.ExAcc _ _ e -> erec e
+    <:expr< $longid:_$ >> -> True
   | _ -> False
   ]
   in erec e
@@ -114,9 +121,8 @@ value expr_last_is_uid e =
 
 value expr_first_is_id e =
   let rec erec = fun [
-    <:expr< $uid:_$ >> -> True
-  | <:expr< $lid:_$ >> -> True
-  | MLast.ExAcc _ e _ -> erec e
+    <:expr< $longid:_$ >> -> True
+  | <:expr< $exp:e$ . $lilongid:_$ >> -> erec e
   | _ -> False
   ]
   in erec e
@@ -124,20 +130,9 @@ value expr_first_is_id e =
 
 value expr_is_module_path e =
  let rec erec = fun [
-   <:expr< $uid:_$ >> -> True
- | MLast.ExAcc _ a b -> erec a && erec b
+   <:expr< $longid:_$ >> -> True
  | _ -> False
  ] in erec e
-;
-
-value expr_left_assoc_acc e =
-  let rec arec = fun [
-    (MLast.ExAcc loc e1 e2) as z ->
-      match e2 with [
-        MLast.ExAcc _ e2 e3 -> arec (MLast.ExAcc loc (MLast.ExAcc loc e1 e2) e3)
-      | _ -> z ]
-  | e -> e
-  ] in arec e
 ;
 
 value check_stream ?{avoid_tokens=[]} matchers strm =

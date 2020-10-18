@@ -28,7 +28,6 @@ value expr_to_path_module_expr : expr → option module_expr;
 value expr_last_is_uid : expr → bool;
 value expr_first_is_id : expr → bool;
 value expr_is_module_path : expr → bool;
-value expr_left_assoc_acc : expr → expr;
 value check_stream :
   ?avoid_tokens:list (string * string) →
     list

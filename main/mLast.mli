@@ -96,8 +96,7 @@ and patt =
   | PaAtt of loc and patt and attribute
   | PaExten of loc and attribute ]
 and expr =
-  [ ExAcc of loc and expr and expr
-  | ExLong of loc and longid
+  [ ExLong of loc and longid
   | ExOpen of loc and longid and expr
   | ExFle of loc and expr and V longid_lident
   | ExAnt of loc and expr
@@ -135,7 +134,6 @@ and expr =
   | ExTry of loc and expr and V (list case_branch)
   | ExTup of loc and V (list expr)
   | ExTyc of loc and expr and ctyp
-  | ExUid of loc and V string
   | ExVrn of loc and V string
   | ExWhi of loc and expr and V (list expr)
   | ExXtr of loc and string and option (V expr)
