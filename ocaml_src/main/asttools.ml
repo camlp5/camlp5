@@ -361,7 +361,7 @@ let rec expr_concat e1 e2 =
   match e1, e2 with
     MLast.ExLong (_, li1), MLast.ExLong (_, li2) ->
       MLast.ExLong (loc, longid_concat li1 li2)
-  | _, MLast.ExLid (_, vid) -> MLast.ExFle (loc, e1, (None, vid))
+  | _, MLast.ExLid (_, id) -> MLast.ExFle (loc, e1, (None, id))
   | _, MLast.ExFle (_, e, lili) -> MLast.ExFle (loc, expr_concat e1 e, lili)
   | _ ->
       Ploc.raise (MLast.loc_of_expr e1)

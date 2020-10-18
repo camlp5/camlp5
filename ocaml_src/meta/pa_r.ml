@@ -3069,7 +3069,7 @@ Grammar.safe_extend
                  Ploc.raise loc
                    (Failure
                       ".(::) (dot paren colon colon paren) cannot appear except after longident")
-               else let vop = op in MLast.ExFle (loc, e1, (None, vop)) :
+               else MLast.ExFle (loc, e1, (None, op)) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -3266,7 +3266,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", "]")),
            "194fe98d",
            (fun _ _ (loc : Ploc.t) ->
-              (ExLong (loc, MLast.LiUid (loc, "[]")) : 'expr)));
+              (MLast.ExLong (loc, MLast.LiUid (loc, "[]")) : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
@@ -3412,11 +3412,8 @@ Grammar.safe_extend
            "194fe98d",
            (fun (op : 'operator_rparen) _ _ (li : 'longident)
                 (loc : Ploc.t) ->
-              (if op = "::" then
-                 let li = MLast.LiAcc (loc, li, op) in MLast.ExLong (loc, li)
-               else
-                 let vop = op in
-                 MLast.ExFle (loc, MLast.ExLong (loc, li), (None, vop)) :
+              (if op = "::" then MLast.ExLong (loc, MLast.LiAcc (loc, li, op))
+               else MLast.ExFle (loc, MLast.ExLong (loc, li), (None, op)) :
                'expr_longident)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop

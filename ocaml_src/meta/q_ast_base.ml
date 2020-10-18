@@ -115,9 +115,11 @@ module E_MetaSig =
           None -> MLast.LiUid (loc, "MLast")
         | Some p -> p
       in
-      let li = MLast.LiAcc (loc, prefix, con) in
       List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
-        (MLast.ExApp (loc, MLast.ExLong (loc, li), loc_v ())) el
+        (MLast.ExApp
+           (loc, MLast.ExLong (loc, MLast.LiAcc (loc, prefix, con)),
+            loc_v ()))
+        el
     ;;
     let node_no_loc ?prefix con el =
       let prefix =
@@ -125,9 +127,8 @@ module E_MetaSig =
           None -> MLast.LiUid (loc, "MLast")
         | Some p -> p
       in
-      let li = MLast.LiAcc (loc, prefix, con) in
       List.fold_left (fun e1 e2 -> MLast.ExApp (loc, e1, e2))
-        (MLast.ExLong (loc, li)) el
+        (MLast.ExLong (loc, MLast.LiAcc (loc, prefix, con))) el
     ;;
     let list elem el =
       let rec loop el =
