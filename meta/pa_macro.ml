@@ -206,25 +206,16 @@ value subst mloc env =
 value substp mloc env =
   loop where rec loop =
     fun
-    [ MLast.ExAcc loc e1 e2 ->
-        let rec expr2longid = fun [
-          <:expr< $uid:x$ >> ->
-            <:extended_longident< $uid:x$ >>
-        | MLast.ExAcc _ e1 e2 ->
-            let li1 = expr2longid e1 in
-            let li2 = expr2longid e2 in
-            longid_concat li1 li2
-        | _ -> failwith "substp/expr2long: bad expr"
-        ] in
-        let li = expr2longid (expr_left_assoc_acc e1) in
-        <:patt< $longid:li$ . $(loop e2)$ >>
+    [ <:expr< $uid:x$ >> ->
+        try <:patt< $anti:List.assoc x env$ >> with
+        [ Not_found -> <:patt< $uid:x$ >> ]
+    | MLast.ExLong loc li ->
+      <:patt< $longid:li$ >>
+
     | <:expr< $e1$ $e2$ >> -> <:patt< $loop e1$ $loop e2$ >>
     | <:expr< $lid:x$ >> ->
         try <:patt< $anti:List.assoc x env$ >> with
         [ Not_found -> <:patt< $lid:x$ >> ]
-    | <:expr< $uid:x$ >> ->
-        try <:patt< $anti:List.assoc x env$ >> with
-        [ Not_found -> <:patt< $uid:x$ >> ]
     | <:expr< $int:x$ >> -> <:patt< $int:x$ >>
     | <:expr< $chr:x$ >> -> <:patt< $chr:x$ >>
     | <:expr< $str:x$ >> -> <:patt< $str:x$ >>

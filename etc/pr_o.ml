@@ -1504,9 +1504,6 @@ EXTEND_PRINTER
 
       | ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
 
-(*
-      | ExOpen _ li e -> pprintf pc "%p.@;<0 0>@[<a>(@;%p@ )@]" longident li expr e
-*)
       | ExFle _ x <:vala< (None, vs) >> when Pcaml.unvala vs = "val" -> pprintf pc "!%p" next x
 
       | ExFle _ e lili -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident (Pcaml.unvala lili)

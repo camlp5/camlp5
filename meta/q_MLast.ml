@@ -57,25 +57,25 @@ module Qast =
     value loc = Ploc.dummy;
     value expr_node m n =
       let l = Versdep.split_on_char '.' n in
-      let (n, l) = sep_last l in
-      match (m, l) with [
-        ("", []) -> <:expr< $uid:n$ >>
-      | (m, []) -> <:expr< $uid:m$ . $uid:n$ >>
-      | (_, [h :: t]) ->
-        let lhs = List.fold_left (fun e1 e2 -> MLast.ExAcc loc e1 (MLast.ExUid loc <:vala< e2 >>)) <:expr< $uid:h$ >> t in
-        MLast.ExAcc loc lhs (MLast.ExUid loc <:vala< n >>)
-      ]
+      let li = match (m, l) with [
+        ("", [n]) -> <:longident< $uid:n$ >>
+      | (m, [n]) -> <:longident< $uid:m$ . $uid:n$ >>
+      | (_, [_ :: _]) ->
+        (longident_of_string_list loc l)
+      | (_,[]) -> assert False
+      ] in
+      MLast.ExLong loc li
     ;
     value patt_node m n =
       let l = Versdep.split_on_char '.' n in
-      let (n, l) = sep_last l in
-      match (m, l) with [
-        ("", []) -> <:patt< $uid:n$ >>
-      | (m, []) -> <:patt< $uid:m$ . $uid:n$ >>
-      | (_, [h :: t]) ->
-        let lhs = List.fold_left (fun e1 e2 -> <:longident< $longid:e1$ . $uid:e2$ >>) <:longident< $uid:h$ >> t in
-        <:patt< $longid:lhs$ . $uid:n$ >>
-      ]
+      let li = match (m, l) with [
+        ("", [n]) -> <:longident< $uid:n$ >>
+      | (m, [n]) -> <:longident< $uid:m$ . $uid:n$ >>
+      | (_, [_ :: _]) ->
+        (longident_of_string_list loc l)
+      | (_,[]) -> assert False
+      ] in
+      <:patt< $longid:li$ >>
     ;
     value patt_label m n =
       if m = "" then <:patt< $lid:n$ >> else <:patt< $uid:m$ . $lid:n$ >>
@@ -228,14 +228,14 @@ value mklistexp _ last =
         match last with
         [ Qast.Option (Some e) -> e
         | Qast.Option None ->
-            Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
+            Qast.Node "ExLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]]
         | a -> a ]
     | [e1 :: el] ->
         Qast.Node "ExApp"
           [Qast.Loc;
            Qast.Node "ExApp"
              [Qast.Loc;
-              Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "::")]; e1];
+              Qast.Node "ExLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "::")]]; e1];
            loop False el] ]
 ;
 
@@ -969,9 +969,6 @@ EXTEND
           Qast.Node "ExBae" [Qast.Loc; Qast.VaVal(Qast.Str "."); e; el]
       | e = SELF; op = SV dotop "dotop"; "{"; el = SV (LIST1 expr SEP ";"); "}" →
           Qast.Node "ExBae" [Qast.Loc; op; e; el]
-(*
-      | e1 = SELF; "."; e2 = SELF → Qast.Node "ExAcc" [Qast.Loc; e1; e2]
-*)
       ]
     | "~-" NONA
       [ "~-"; e = SELF →
@@ -1006,7 +1003,7 @@ EXTEND
       | "{"; "("; e = SELF; ")"; "with"; lel = SV (LIST1 label_expr SEP ";");
         "}" →
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option (Some e)]
-      | "("; ")" → Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]
+      | "("; ")" → Qast.Node "ExLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]]
       | "("; "module"; me = module_expr; ":"; mt = module_type; ")" →
           Qast.Node "ExPck" [Qast.Loc; me; Qast.Option (Some mt)]
       | "("; "module"; me = module_expr; ")" →

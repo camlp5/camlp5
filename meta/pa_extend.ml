@@ -235,7 +235,7 @@ module MetaAction =
     value rec mexpr =
       fun
       [ MLast.ExAcc loc e1 e2 ->
-          <:expr< MLast.ExAcc $mloc$ $mexpr e1$ $mexpr e2$ >>
+          Ploc.raise loc (Failure "pa_extend: an ExAcc slipped thru")
       | MLast.ExLong loc li ->
           <:expr< MLast.ExLong $mloc$ $mlongid li$ >>
 
@@ -645,12 +645,20 @@ and make_expr_rules loc gmod rl tvar =
     <:expr< [] >> rl
 ;
 
+value rec ident_of_longid = fun [
+  <:longident< $uid:s$ >> -> s
+| <:longident< $longid:li$ . $uid:s$ >> -> (ident_of_longid li) ^ "__" ^ s
+| li -> Ploc.raise (MLast.loc_of_longid li) (Failure "ident_of_longid: internal error in pa_extend")
+]
+;
+
 value rec ident_of_expr =
   fun
   [ <:expr< $lid:s$ >> -> s
   | <:expr< $uid:s$ >> -> s
-  | MLast.ExAcc _ e1 e2 -> ident_of_expr e1 ^ "__" ^ ident_of_expr e2
-  | _ -> failwith "internal error in pa_extend" ]
+  | MLast.ExLong _ li -> ident_of_longid li
+  | e -> Ploc.raise (MLast.loc_of_expr e) (Failure "ident_of_expr: internal error in pa_extend")
+  ]
 ;
 
 value mk_name loc e = {expr = e; tvar = ident_of_expr e; loc = loc};
@@ -1203,12 +1211,15 @@ EXTEND
     [ [ e = qualid -> e ] ]
   ;
   qualid:
-    [ [ e1 = SELF; "."; e2 = SELF ->
-          (fst e1 ^ "__" ^ fst e2, (MLast.ExAcc loc (snd e1) (snd e2))) ]
-    | [ i = UIDENT ->
-          (i, <:expr< $uid:i$ >>)
-      | i = LIDENT ->
-          (i, <:expr< $lid:i$ >>) ] ]
+    [ [ l = LIST1 [ i = UIDENT ; "." -> i] ; id = LIDENT ->
+        let qidname = String.concat "__" (l@[id]) in
+        let li = Asttools.longident_of_string_list loc l in
+        let vid = <:vala< id >> in
+        (qidname, MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vid) >>)
+      | id = LIDENT ->
+        (id, <:expr< $lid:id$ >>)
+      ]
+    ]
   ;
   string:
     [ [ s = STRING -> ATstring loc s

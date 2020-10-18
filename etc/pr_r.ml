@@ -1675,8 +1675,10 @@ EXTEND_PRINTER
       | MLast.ExLong _ li -> longident pc li
 
       | MLast.ExAcc loc x y ->
+        Ploc.raise loc (Failure "pr_r: expr: ExAcc slipped thru\n")
+(*
           pprintf pc "%p.@;<0 0>%p" curr x curr y
-
+*)
       | <:expr< $x$ .( $y$ ) >> ->
           pprintf pc "%p.(%p)" curr x expr_short y
       | <:expr< $x$ $dotop:op$ ( $list:el$ ) >> ->

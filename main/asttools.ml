@@ -268,6 +268,18 @@ value longident_of_string_list loc = fun [
     <:extended_longident< $uid:h$ >> t
 ]
 ;
+  
+value string_list_of_longident li =
+  let rec lirec = fun [
+    <:longident< $uid:uid$ >> -> [uid]
+  | <:longident< $longid:li$ . $uid:uid$ >> -> (lirec li) @ [uid]
+  | <:extended_longident< $longid:_$ ( $longid:_$ ) >> ->
+    failwith "string_list_of_longident: LiApp not allowed here"
+  | <:longident< $_uid:_$ >> | <:longident< $longid:_$ . $_uid:_$ >> | MLast.LiXtr _ _ _ ->
+    failwith "[internal error] string_list_of_longident: called with longid containing placeholders"
+  ] in
+  lirec li
+;
 
 value longident_lident_of_string_list loc = fun [
   [] -> assert False

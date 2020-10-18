@@ -211,8 +211,13 @@ EXTEND
     [ [ e = qualid -> e ] ]
   ;
   qualid:
-    [ [ e1 = SELF; "."; e2 = SELF -> MLast.ExAcc loc e1 e2 ]
-    | [ i = UIDENT -> <:expr< $uid:i$ >>
-      | i = LIDENT -> <:expr< $lid:i$ >> ] ]
+    [ [ l = LIST1 [ i = UIDENT ; "." -> i] ; id = LIDENT ->
+        let li = Asttools.longident_of_string_list loc l in
+        let vid = <:vala< id >> in
+        MLast.ExFle loc (MLast.ExLong loc li) <:vala< (None, vid) >>
+      | id = LIDENT ->
+        <:expr< $lid:id$ >>
+      ]
+    ]
   ;
 END;

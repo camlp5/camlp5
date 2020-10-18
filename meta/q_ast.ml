@@ -152,7 +152,7 @@ module Meta_make (C : MetaSig) =
       | ExLong _ x1 -> C.node "ExLong" [longid x1]
       | ExOpen _ x1 x2 -> C.node "ExOpen" [longid x1; expr x2]
       | ExFle _ x1 x2 -> C.node "ExFle" [expr x1; C.vala longid_lident x2]
-      | ExAcc _ e1 e2 → C.node "ExAcc" [expr e1; expr e2]
+      | ExAcc loc e1 e2 → Ploc.raise loc (Failure "Q_ast: an ExAcc slipped thru")
       | ExAnt _ e → C.node "ExAnt" [expr e]
       | ExApp _ e1 e2 → C.node "ExApp" [expr e1; expr e2]
       | ExAre _ s e1 e2 → C.node "ExAre" [C.vala C.string s; expr e1; C.vala (C.list expr) e2]

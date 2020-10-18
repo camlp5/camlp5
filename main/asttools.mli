@@ -59,4 +59,5 @@ value str_item_to_inline :
 value sig_item_to_inline :
   sig_item → option (loc * string) → sig_item;
 value longident_of_string_list : loc → list string → longid;
+value string_list_of_longident : longid → list string;
 value longident_lident_of_string_list : loc → list string → longid_lident;
