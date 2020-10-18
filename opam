@@ -1,5 +1,5 @@
 name: "camlp5"
-version: "8.00~alpha06"
+version: "8.00~alpha07"
 opam-version: "2.0"
 synopsis: "Preprocessor-pretty-printer of OCaml"
 description: """

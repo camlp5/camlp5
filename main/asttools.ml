@@ -286,6 +286,13 @@ value longident_lident_of_string_list loc = fun [
 ]
 ;
 
+value string_list_of_longident_lident = fun [
+  (None, <:vala< s >>) -> [s]
+| (Some <:vala< li >>, <:vala<  s >>) -> (string_list_of_longident li)@[s]
+| _ -> assert False
+]
+;
+
 value is_uident s =
   match s.[0] with
   [ 'A'..'Z' → True

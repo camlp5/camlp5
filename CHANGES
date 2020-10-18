@@ -1,4 +1,31 @@
 
+Camlp5 Version 8.00-alpha07:
+--------------------
+
+* [18 Oct 2020] BIG change: the type of expressions (MLast.expr) is
+  switched to using longidents instead of the old "ExAcc"/"ExUid"
+  stuff.  This is a vast improvement in correctness as well as
+  allowing better support for things like "M.N.( ... expr ...)"
+
+  The old quotation syntax <:expr< $e1$ . $e2$ >> is discontinued.
+  Instead you should use:
+
+  <:expr< $longid:li$ >>:
+
+  for a module-path or constructor
+
+  <:expr< $longid:li$ . ( $e$ ) >>:
+
+  for a local-open
+
+  <:expr< $e$ . $longid:li$ . $lid:id$ >>:
+
+  for a qualified field-name, e.g. x.Location.txt
+
+  <:expr< $e$ . $lid:id$ >>:
+
+  for a simple field-name, e.g. x.txt
+
 Camlp5 Version 8.00-alpha06:
 --------------------
 

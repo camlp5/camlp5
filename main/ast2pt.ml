@@ -827,7 +827,7 @@ and expr =
     mkexp loc (ocaml_pexp_ident (mkloc loc) li)
 
   | ExFle loc (ExLong _ li) <:vala< (Some _, _) >> ->
-    error loc "<lident>.<lident> not valid syntax (nor parseable)"
+    error loc "<longid>.<longid> not valid syntax (nor parseable)"
 
   | ExFle loc e <:vala< (Some _, s) >> when uv s = "val" ->
     error loc "().<lident>.val not valid syntax"

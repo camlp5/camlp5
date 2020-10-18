@@ -1539,9 +1539,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | li = longident ; "." ; "(" ; e = expr ; ")" -> <:expr< $longid:li$ . ( $e$ ) >>
       | li = longident ; "." ; id = V LIDENT "lid" ->
         <:expr< $longid:li$ . $_lid:id$ >>
-      | li = longident ; "." ; check_lbracket ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
-      | li = longident ; "." ; check_lbrace ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
-      | li = longident ; "." ; check_lbracketbar ; e = expr -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; check_lbracket ; e = expr LEVEL "simple" -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; check_lbrace ; e = expr LEVEL "simple" -> <:expr< $longid:li$ . ( $e$ ) >>
+      | li = longident ; "." ; check_lbracketbar ; e = expr LEVEL "simple" -> <:expr< $longid:li$ . ( $e$ ) >>
       ]
     ]
   ;
