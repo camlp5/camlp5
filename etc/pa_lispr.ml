@@ -447,7 +447,7 @@ and expr_ident_se loc s =
         if i > ibeg then
           let e1 = expr_id loc (String.sub s ibeg (i - ibeg)) in
           let e2 = loop (i + 1) (i + 1) in
-          <:expr< $e1$ . $e2$ >>
+          MLast.ExAcc loc e1 e2
         else
           Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "expr expected")
       else loop ibeg (i + 1)

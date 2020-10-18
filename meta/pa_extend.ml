@@ -649,7 +649,7 @@ value rec ident_of_expr =
   fun
   [ <:expr< $lid:s$ >> -> s
   | <:expr< $uid:s$ >> -> s
-  | <:expr< $e1$ . $e2$ >> -> ident_of_expr e1 ^ "__" ^ ident_of_expr e2
+  | MLast.ExAcc _ e1 e2 -> ident_of_expr e1 ^ "__" ^ ident_of_expr e2
   | _ -> failwith "internal error in pa_extend" ]
 ;
 
@@ -1180,7 +1180,7 @@ EXTEND
           ASkeyw loc e
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
-          let v = <:expr< $uid:i$ . $snd e$ >> in
+          let v = MLast.ExAcc loc (MLast.ExUid loc <:vala< i >>) (snd e) in
           ASnterm loc (i ^ "__" ^ fst e, v) lev
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           ASnterm loc n lev
@@ -1204,7 +1204,7 @@ EXTEND
   ;
   qualid:
     [ [ e1 = SELF; "."; e2 = SELF ->
-          (fst e1 ^ "__" ^ fst e2, <:expr< $snd e1$ . $snd e2$ >>) ]
+          (fst e1 ^ "__" ^ fst e2, (MLast.ExAcc loc (snd e1) (snd e2))) ]
     | [ i = UIDENT ->
           (i, <:expr< $uid:i$ >>)
       | i = LIDENT ->

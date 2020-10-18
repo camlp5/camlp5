@@ -62,8 +62,8 @@ module Qast =
         ("", []) -> <:expr< $uid:n$ >>
       | (m, []) -> <:expr< $uid:m$ . $uid:n$ >>
       | (_, [h :: t]) ->
-        let lhs = List.fold_left (fun e1 e2 -> <:expr< $e1$ . $uid:e2$ >>) <:expr< $uid:h$ >> t in
-        <:expr< $lhs$ . $uid:n$ >>
+        let lhs = List.fold_left (fun e1 e2 -> MLast.ExAcc loc e1 (MLast.ExUid loc <:vala< e2 >>)) <:expr< $uid:h$ >> t in
+        MLast.ExAcc loc lhs (MLast.ExUid loc <:vala< n >>)
       ]
     ;
     value patt_node m n =
@@ -954,7 +954,8 @@ EXTEND
       | "lazy"; e = SELF → Qast.Node "ExLaz" [Qast.Loc; e] ]
     | "." LEFTA
       [ 
-        e1 = SELF; "."; "("; e2 = SELF; ")" →
+        e1 = SELF ; "." ; lili = SV longident_lident "lilongid" -> Qast.Node "ExFle" [Qast.Loc; e1;lili]
+      | e1 = SELF; "."; "("; e2 = SELF; ")" →
           Qast.Node "ExAre" [Qast.Loc; Qast.VaVal(Qast.Str "."); e1; Qast.VaVal (Qast.List [e2])]
       | e1 = SELF; op = SV dotop "dotop"; "("; el = SV (LIST1 expr SEP ";"); ")" →
           Qast.Node "ExAre" [Qast.Loc; op; e1; el]
@@ -968,8 +969,10 @@ EXTEND
           Qast.Node "ExBae" [Qast.Loc; Qast.VaVal(Qast.Str "."); e; el]
       | e = SELF; op = SV dotop "dotop"; "{"; el = SV (LIST1 expr SEP ";"); "}" →
           Qast.Node "ExBae" [Qast.Loc; op; e; el]
-
-      | e1 = SELF; "."; e2 = SELF → Qast.Node "ExAcc" [Qast.Loc; e1; e2] ]
+(*
+      | e1 = SELF; "."; e2 = SELF → Qast.Node "ExAcc" [Qast.Loc; e1; e2]
+*)
+      ]
     | "~-" NONA
       [ "~-"; e = SELF →
           Qast.Node "ExApp"
@@ -990,7 +993,8 @@ EXTEND
       | e = alg_extension -> Qast.Node "ExExten" [Qast.Loc; e]
       | i = SV LIDENT → Qast.Node "ExLid" [Qast.Loc; i]
       | i = SV GIDENT → Qast.Node "ExLid" [Qast.Loc; i]
-      | i = SV UIDENT → Qast.Node "ExUid" [Qast.Loc; i]
+      | i = longident → Qast.Node "ExLong" [Qast.Loc; i]
+      | i = longident ; "." ; "(" ; e = expr ; ")" → Qast.Node "ExOpen" [Qast.Loc; i; e]
       | "." -> Qast.Node "ExUnr" [Qast.Loc]
       | "["; "]" → Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →

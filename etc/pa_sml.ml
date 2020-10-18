@@ -438,7 +438,7 @@ EXTEND
       | x1 = "=" -> <:module_expr< $uid:x1$ >> ] ]
   ;
   eqid:
-    [ [ x1 = UIDENT; "."; x2 = eqid -> <:expr< $uid:x1$ . $x2$ >>
+    [ [ x1 = UIDENT; "."; x2 = eqid -> MLast.ExAcc loc (MLast.ExUid loc <:vala< x1 >>) x2
       | x1 = UIDENT -> <:expr< $uid:x1$ >>
       | x1 = idd -> <:expr< $lid:x1$ >>
       | x1 = "*" -> <:expr< $lid:x1$ >>
@@ -551,7 +551,7 @@ EXTEND
           if ocaml_records.val then <:expr< $x2$ . $lid:x1$ >>
           else <:expr< $x2$ # $lid:x1$ >>
       | x1 = expr; "ocaml_record_access"; x2 = expr ->
-          <:expr< $x1$ . $x2$ >> ]
+          MLast.ExAcc loc x1 x2 ]
     | [ "!"; x1 = expr -> <:expr< $x1$ . val >>
       | "~"; x1 = expr -> <:expr< - $x1$ >> ]
     | [ x1 = LIDENT ->
@@ -560,7 +560,7 @@ EXTEND
           | "nil" -> <:expr< [] >>
           | _ -> <:expr< $lid:x1$ >> ]
       | x1 = UIDENT -> <:expr< $uid:x1$ >>
-      | x1 = UIDENT; "."; x2 = eqid -> <:expr< $uid:x1$ . $x2$ >>
+      | x1 = UIDENT; "."; x2 = eqid -> MLast.ExAcc loc (MLast.ExUid loc <:vala< x1 >>) x2
       | x1 = INT -> <:expr< $int:x1$ >>
       | x1 = FLOAT -> <:expr< $flo:x1$ >>
       | x1 = STRING -> <:expr< $str:x1$ >>

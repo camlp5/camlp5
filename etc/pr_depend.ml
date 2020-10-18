@@ -109,8 +109,8 @@ and patt_module =
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =
   fun
-  [ <:expr< $lid:s$ . $e2$ >> -> do { expr_module e2 }
-  | <:expr< $e1$ . $e2$ >> -> do { expr_module e1; expr e2 }
+  [ MLast.ExAcc _ (MLast.ExLid _ <:vala< s >>) e2 -> do { expr_module e2 }
+  | MLast.ExAcc _ e1 e2 -> do { expr_module e1; expr e2 }
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
   | ExAre _ _ e1 e2 -> do { expr e1; list expr (Pcaml.unvala e2) }
   | <:expr< [| $list:el$ |] >> -> list expr el

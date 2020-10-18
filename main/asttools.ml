@@ -97,7 +97,7 @@ value try_find f =
 value expr_to_path_module_expr e =
   let rec erec = fun [
     <:expr:< $uid:i$ >> -> <:module_expr< $uid:i$ >>
-  | <:expr:< $a$ . $b$ >> -> <:module_expr< $erec a$ . $erec b$ >>
+  | MLast.ExAcc loc a b -> <:module_expr< $erec a$ . $erec b$ >>
   | _ -> failwith "caught"
   ] in
   try Some (erec e) with Failure _ -> None
@@ -106,7 +106,7 @@ value expr_to_path_module_expr e =
 value expr_last_is_uid e =
   let rec erec = fun [
     <:expr< $uid:_$ >> -> True
-  | <:expr< $_$ . $e$ >> -> erec e
+  | MLast.ExAcc _ _ e -> erec e
   | _ -> False
   ]
   in erec e
@@ -116,7 +116,7 @@ value expr_first_is_id e =
   let rec erec = fun [
     <:expr< $uid:_$ >> -> True
   | <:expr< $lid:_$ >> -> True
-  | <:expr< $e$ . $_$ >> -> erec e
+  | MLast.ExAcc _ e _ -> erec e
   | _ -> False
   ]
   in erec e
@@ -125,16 +125,16 @@ value expr_first_is_id e =
 value expr_is_module_path e =
  let rec erec = fun [
    <:expr< $uid:_$ >> -> True
- | <:expr< $a$ . $b$ >> -> erec a && erec b
+ | MLast.ExAcc _ a b -> erec a && erec b
  | _ -> False
  ] in erec e
 ;
 
 value expr_left_assoc_acc e =
   let rec arec = fun [
-    <:expr:< $e1$ . $e2$ >> as z ->
+    (MLast.ExAcc loc e1 e2) as z ->
       match e2 with [
-        <:expr< $e2$  . $e3$ >> -> arec <:expr< ( $e1$ . $e2$ ) . $e3$ >>
+        MLast.ExAcc _ e2 e3 -> arec (MLast.ExAcc loc (MLast.ExAcc loc e1 e2) e3)
       | _ -> z ]
   | e -> e
   ] in arec e

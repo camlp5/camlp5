@@ -2,7 +2,7 @@
 
 include config/Makefile
 
-DIRS=lib odyl main meta etc ppxprint top ocpp man compile
+DIRS=lib odyl main meta etc ppxprint top ocpp man 
 FDIRS=lib odyl main meta
 OPTDIRS=ocaml_stuff lib odyl main meta etc
 OPTOPTDIRS=compile

@@ -943,7 +943,7 @@ and expr_se =
           <:expr< $e1$ .( $e2$ ) >>
       | _ →
           let e2 = expr_se se2 in
-          <:expr< $e1$ . $e2$ >> ]
+          MLast.ExAcc loc e1 e2 ]
   | Slid loc s → lident_expr loc s
   | Slidv loc s → <:expr< $_lid:s$ >>
   | Suid loc s → <:expr< $uid:(rename_id s)$ >>

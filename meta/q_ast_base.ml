@@ -115,13 +115,14 @@ module E_MetaSig = struct
   value loc_v () = <:expr< $lid:Ploc.name.val$ >>;
   value node ?{prefix} con el =
     let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
+    let vcon = <:vala< con >> in
     List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-      <:expr< $prefix$ . $uid:con$ $loc_v ()$ >> el
+      <:expr< $MLast.ExAcc loc prefix (MLast.ExUid loc vcon)$ $loc_v ()$ >> el
   ;
   value node_no_loc ?{prefix} con el =
     let prefix = match prefix with [ None -> <:expr< MLast >> | Some p -> p ] in
     List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-      <:expr< $prefix$ . $uid:con$ >> el
+      (MLast.ExAcc loc prefix (MLast.ExUid loc <:vala< con >>)) el
   ;
   value list elem el =
     loop el where rec loop el =

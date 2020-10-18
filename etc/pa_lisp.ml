@@ -436,7 +436,7 @@
                                    loc
                                    (String.sub s ibeg (- i ibeg))))
                               (e2 (loop (+ i 1) (+ i 1))))
-                         <:expr< $e1$ . $e2$ >>)
+                         (MLast.ExAcc loc e1 e2))
                      (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                      (Stream.Error "expr expected")))
                  (loop ibeg (+ i 1)))))))

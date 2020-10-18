@@ -1090,33 +1090,33 @@ EXTEND
   expr_uident:
     [ RIGHTA
       [ i = V UIDENT -> <:expr< $_uid:i$ >>
-      | i = V UIDENT ; "." ; j = SELF -> expr_left_assoc_acc <:expr< $_uid:i$ . $j$ >>
+      | i = V UIDENT ; "." ; j = SELF -> expr_left_assoc_acc (MLast.ExAcc loc (MLast.ExUid loc i) j)
       | i = V UIDENT ; "." ; "("; op = operator_rparen ->
           if op = "::" then
-            <:expr< $_uid:i$ . $uid:op$ >>
+            MLast.ExAcc loc (MLast.ExUid loc i) (MLast.ExUid loc <:vala< op >>)
           else
-            <:expr< $_uid:i$ . $lid:op$ >>
+            MLast.ExAcc loc (MLast.ExUid loc i) (MLast.ExLid loc <:vala< op >>)
       | i = V UIDENT ; "." ; j = V LIDENT ->
-          <:expr< $_uid:i$ . $_lid:j$ >>
+          MLast.ExAcc loc (MLast.ExUid loc i) (MLast.ExLid loc j)
       | i = V UIDENT ; "."; "("; e2 = expr; ")" ->
-            <:expr< $_uid:i$ . $e2$ >>
+            MLast.ExAcc loc (MLast.ExUid loc i) e2
 
 
       | i = V UIDENT ; "."; "{"; test_label_eq; lel = V (LIST1 label_expr SEP ";"); "}" ->
           let e2 = <:expr< { $_list:lel$ } >> in
-          <:expr< $_uid:i$ . $e2$ >>
+          MLast.ExAcc loc (MLast.ExUid loc i) e2
 
       | i = V UIDENT ; "."; "{"; e = expr LEVEL "apply"; "with"; lel = V (LIST1 label_expr SEP ";"); "}" ->
           let e2 = <:expr< { ($e$) with $_list:lel$ } >> in
-          <:expr< $_uid:i$ . $e2$ >>
+          MLast.ExAcc loc (MLast.ExUid loc i) e2
 
       | i = V UIDENT ; "."; "["; "]" ->
-          let e2 = <:expr< [] >> in
-          <:expr< $_uid:i$ . $e2$ >>
+          let e2 = MLast.ExLong loc <:longident< $uid:"[]"$ >> in
+          MLast.ExAcc loc (MLast.ExUid loc i) e2
 
       | i = V UIDENT ; "."; "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" →
           let e2 = mklistexp loc last el in
-          <:expr< $_uid:i$ . $e2$ >>
+          MLast.ExAcc loc (MLast.ExUid loc i) e2
 
       ] ]
   ;

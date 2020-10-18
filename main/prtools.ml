@@ -495,7 +495,7 @@ value record_without_with loc e lel =
     in
     let f =
       let f = <:expr< $lid:name$ >> in
-      if m = "" then f else <:expr< $uid:m$ . $f$ >>
+      if m = "" then f else MLast.ExAcc loc (MLast.ExUid loc <:vala< m >>) f
     in
     let e =
       List.fold_left (fun e1 (_, e2) -> <:expr< $e1$ $e2$ >>)

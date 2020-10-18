@@ -872,7 +872,7 @@ EXTEND_PRINTER
           sprintf "%s%s.(%s)%s" pc.bef
             (curr {(pc) with bef = ""; aft = ""} e1)
             (curr {(pc) with bef = ""; aft = ""} e2) pc.aft
-      | <:expr< $e1$ . $e2$ >> ->
+      | MLast.ExAcc _ e1 e2 ->
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} e1)
              (curr {(pc) with bef = ""} e2)

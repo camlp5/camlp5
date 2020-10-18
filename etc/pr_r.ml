@@ -1674,7 +1674,7 @@ EXTEND_PRINTER
 
       | ExLong _ li -> longident pc li
 
-      | <:expr< $x$ . $y$ >> ->
+      | MLast.ExAcc loc x y ->
           pprintf pc "%p.@;<0 0>%p" curr x curr y
 
       | <:expr< $x$ .( $y$ ) >> ->

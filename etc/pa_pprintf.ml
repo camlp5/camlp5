@@ -488,7 +488,7 @@ EXTEND
    ] ]
   ;
   variable:
-    [ [ e1 = SELF; "."; e2 = SELF -> <:expr< $e1$ . $e2$ >> ]
+    [ [ e1 = SELF; "."; e2 = SELF -> MLast.ExAcc loc e1 e2 ]
     | [ i = UIDENT -> <:expr< $uid:i$ >>
       | i = LIDENT -> <:expr< $lid:i$ >> ] ]
   ;

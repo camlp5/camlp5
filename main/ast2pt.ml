@@ -213,7 +213,7 @@ value rec module_expr_long_id =
 
 value rec expr_long_id = fun
   [ <:expr< $uid:uid$ >> -> Lident uid
-  | <:expr< $e1$ . $e2$ >> ->
+  | MLast.ExAcc _ e1 e2 ->
     let li1 = expr_long_id e1 and
         li2 = expr_long_id e2 in
     concat_long_ids li1 li2
@@ -336,7 +336,7 @@ value rec class_expr_fa al =
 
 value rec sep_expr_acc l =
   fun
-  [ <:expr< $e1$ . $e2$ >> → sep_expr_acc (sep_expr_acc l e2) e1
+  [ MLast.ExAcc _ e1 e2 → sep_expr_acc (sep_expr_acc l e2) e1
   | <:expr:< $uid:s$ >> →
       let s = uident_True__True s in
       let e = <:expr< $uid:s$ >> in
@@ -1853,8 +1853,8 @@ value directive loc =
           fun
           [ <:expr< $lid:i$ >> → [i]
           | <:expr< $uid:i$ >> → [i]
-          | <:expr< $e$ . $lid:i$ >> → loop e @ [i]
-          | <:expr< $e$ . $uid:i$ >> → loop e @ [i]
+          | MLast.ExAcc _ e (MLast.ExLid _ <:vala< i >>) → loop e @ [i]
+          | MLast.ExAcc _ e (MLast.ExUid _ <:vala< i >>) → loop e @ [i]
           | e → Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
       in
       Pdir_ident (long_id_of_string_list loc sl) ]

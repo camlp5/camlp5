@@ -206,11 +206,11 @@ value subst mloc env =
 value substp mloc env =
   loop where rec loop =
     fun
-    [ <:expr:< $e1$ . $e2$ >> ->
+    [ MLast.ExAcc loc e1 e2 ->
         let rec expr2longid = fun [
           <:expr< $uid:x$ >> ->
             <:extended_longident< $uid:x$ >>
-        | <:expr< $e1$ . $e2$ >> ->
+        | MLast.ExAcc _ e1 e2 ->
             let li1 = expr2longid e1 in
             let li2 = expr2longid e2 in
             longid_concat li1 li2
