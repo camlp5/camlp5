@@ -236,7 +236,7 @@ module Meta_make (C : MetaSig) =
                lpoee]
       | ExTup _ le → C.node "ExTup" [C.vala (C.list expr) le]
       | ExTyc _ e t → C.node "ExTyc" [expr e; ctyp t]
-      | ExUid _ s → C.node "ExUid" [C.vala C.string s]
+      | ExUid loc s → Ploc.raise loc (Failure "Q_ast: an ExUid slipped thru")
       | ExVrn _ s → C.node "ExVrn" [C.vala C.string s]
       | ExWhi _ e le → C.node "ExWhi" [expr e; C.vala (C.list expr) le]
       | 

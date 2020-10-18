@@ -280,7 +280,8 @@ module MetaAction =
           <:expr< MLast.ExTup $mloc$ $mvala (mlist mexpr) el$ >>
       | MLast.ExTyc loc e t ->
           <:expr< MLast.ExTyc $mloc$ $mexpr e$ $mctyp t$ >>
-      | MLast.ExUid loc s -> <:expr< MLast.ExUid $mloc$ $mvala mstring s$ >>
+      | MLast.ExUid loc s ->
+          Ploc.raise loc (Failure "pa_extend: an ExUid slipped thru")
       | x -> not_impl "mexpr" x ]
     and mpatt =
       fun

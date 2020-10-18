@@ -757,17 +757,22 @@ value val_tab = do {
              MLast.loc -> MLast.expr -> MLast.ctyp -> MLast.expr >>;
          expr = Obj.repr (fun loc e t -> MLast.ExTyc loc e t);
          patt = no_patt loc});
-     ("MLast.ExUid",
-      fun loc ->
-        {ctyp = <:ctyp< MLast.loc -> string -> MLast.expr >>;
-         expr = Obj.repr (fun loc s -> MLast.ExUid loc s);
-         patt = no_patt loc});
      ("MLast.ExWhi",
       fun loc ->
         {ctyp =
            <:ctyp<
              MLast.loc -> MLast.expr -> list MLast.expr -> MLast.expr >>;
          expr = Obj.repr (fun loc e el -> MLast.ExWhi loc e el);
+         patt = no_patt loc});
+     ("MLast.LiUid",
+      fun loc ->
+        {ctyp = <:ctyp< MLast.loc -> Ploc.vala string -> MLast.longid >>;
+         expr = Obj.repr (fun loc s -> MLast.LiUid loc s);
+         patt = no_patt loc});
+     ("MLast.LiAcc",
+      fun loc ->
+        {ctyp = <:ctyp< MLast.loc -> MLast.longid -> Ploc.vala MLast.string -> MLast.longid >>;
+         expr = Obj.repr (fun loc s -> MLast.LiUid loc s);
          patt = no_patt loc});
      ("MLast.MeStr",
       fun loc ->
