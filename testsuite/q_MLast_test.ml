@@ -309,9 +309,21 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:expr< $e$ $dotop:s$ ( $list:le$ ) >> ;|foo}
         }
-      ; { name = "prototype" ;
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "two-level-expr-1" ;
+          expect = {foo|MLast.ExTup loc
+  (Ploc.VaVal
+     [MLast.ExLid loc (Ploc.VaVal x); MLast.ExLid loc (Ploc.VaVal y)]);
+|foo} ;
+          code = {foo|<:expr< ($lid:x$, $lid:y$) >> ;|foo}
+        }
+      ; { name = "two-level-patt-1" ;
+          expect = {foo|fun
+[ MLast.ExTup loc
+    (Ploc.VaVal
+       [MLast.ExLid _ (Ploc.VaVal x); MLast.ExLid _ (Ploc.VaVal y)]) →
+    1 ];
+|foo} ;
+          code = {foo|fun [ <:expr:< ($lid:x$, $lid:y$) >> -> 1 ] ;|foo}
         }
       ; { name = "prototype" ;
           expect = {foo||foo} ;
