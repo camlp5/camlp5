@@ -10,6 +10,8 @@ type choice α β =
 ;
 value isLeft : choice α β → bool;
 value isRight : choice α β → bool;
+value outLeft : choice α β → α ;
+value outRight : choice α β → β ;
 value option_map : (α → β) → option α → option β;
 value mustSome : string → option α → α;
 value mustLeft : string → choice α β → α;

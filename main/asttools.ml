@@ -17,6 +17,9 @@ type choice 'a 'b =
 value isLeft = fun [ Left _ -> True | Right _ -> False ] ;
 value isRight = fun [ Left _ -> False | Right _ -> True ] ;
 
+value outLeft = fun [ Left x -> x | _ -> failwith "outLeft" ] ;
+value outRight = fun [ Right x -> x | _ -> failwith "outRight" ] ;
+
 value option_map f x =
   match x with
   | Some x -> Some (f x)
