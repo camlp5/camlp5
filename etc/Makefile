@@ -6,6 +6,7 @@ INCLUDES=-I ../main -I ../boot -I ../lib -I ../meta
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 OTHERLANGS=pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_schemer.cmo pa_lefteval.cmo  pr_scheme.cmo pr_schemep.cmo
 OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_macro_print.cmo pa_mkast.cmo pa_mktest.cmo pa_pprintf.cmo pa_pragma.cmo pa_reloc.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_extend.cmo pr_extfun.cmo pr_extprint.cmo pr_depend.cmo pr_null.cmo q_phony.cmo  papr_phony_macro.cmo pr_official.cmo  $(OTHERLANGS)
+INSTALL_CMI=pr_o.cmi pr_r.cmi
 CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
@@ -104,7 +105,7 @@ get_promote:
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_lex.cmo"
-	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(OBJS) $(INSTALL_CMI) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(DESTDIR)$(LIBDIR)/$(CAMLP5N)|" META.tpl > META
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
