@@ -16,6 +16,7 @@ open Pcaml;
 open Prtools;
 open Versdep;
 open Mlsyntax.Original;
+open Pp_debug ;
 
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
@@ -1736,7 +1737,8 @@ EXTEND_PRINTER
       [ z ->
           let fail () = 
           Ploc.raise (MLast.loc_of_patt z)
-            (Failure (sprintf "pr_patt %d" (Obj.tag (Obj.repr z)))) in
+            (Failure (sprintf "pr_patt %d: %s" (Obj.tag (Obj.repr z))
+                        (Pp_MLast.show_patt z))) in
           pprintf pc "@[<1>(%p)@]" (bottom ~{fail=fail}) z
       ] ]
   ;

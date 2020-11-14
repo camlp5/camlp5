@@ -1,7 +1,9 @@
 pa_extend.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi
+    ../main/asttools.cmi ../main/mLast.cmi ../main/pcaml.cmi \
+    ../main/reloc.cmi
 pa_extend.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx
+    ../main/asttools.cmx ../main/mLast.cmi ../main/pcaml.cmx \
+    ../main/reloc.cmx
 pa_extend_m.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi pa_extend.cmo
 pa_extend_m.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
@@ -49,11 +51,11 @@ q_MLast.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
     ../lib/ploc.cmx ../lib/versdep.cmx ../main/asttools.cmx ../main/mLast.cmi \
     ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/quotation.cmx
 q_ast.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
-    ../lib/plexing.cmi ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi \
-    ../main/quotation.cmi q_ast_base.cmo
+    ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi \
+    q_ast_base.cmo
 q_ast.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
-    ../lib/plexing.cmx ../lib/ploc.cmx ../main/mLast.cmi ../main/pcaml.cmx \
-    ../main/quotation.cmx q_ast_base.cmx
+    ../lib/ploc.cmx ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx \
+    q_ast_base.cmx
 q_ast_base.cmo: ../lib/grammar.cmi ../lib/plexer.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi ../main/pcaml.cmi
 q_ast_base.cmx: ../lib/grammar.cmx ../lib/plexer.cmx ../lib/ploc.cmx \

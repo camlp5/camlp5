@@ -18,14 +18,19 @@ PREPROCESS_PACKAGES := unix,compiler-libs.common,camlp5.quotations,camlp5.extfun
 
 CMO=ppxprint_runtime.cmo exceptions.cmo pp_MLast.cmo pp_parsetree.cmo pp_outcometree.cmo
 CMI=$(CMO:.cmo=.cmi)
+CMX=$(CMO:.cmo=.cmx)
 OBJ=$(CMO)
 
 TARGET=ppxprint.cma
 
 all: $(TARGET)
+opt: $(TARGET:.cma=.cmxa)
 
-ppxprint.cma: $(OBJ)
-	$(OCAMLC) $(OBJ) $(DEBUG) -linkall -a -o ppxprint.cma
+ppxprint.cma: $(CMO)
+	$(OCAMLC) $(CMO) $(DEBUG) -linkall -a -o ppxprint.cma
+
+ppxprint.cmxa: $(CMX)
+	$(OCAMLOPT) $(CMX) $(DEBUG) -linkall -a -o ppxprint.cmxa
 
 bootstrap: bootstrap-ppxprint-runtime \
 	bootstrap-pp-MLast-i bootstrap-pp-MLast \
@@ -187,16 +192,18 @@ bootstrap-pp-outcometree: pp_outcometree.ORIG.ml
 
 
 clean::
-	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)
+	$(RM) -f *.cm[ioax] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)
 
-pp_MLast.cmo: pp_MLast.cmi ppxprint_runtime.cmo
-pp_parsetree.cmo: pp_parsetree.cmi ppxprint_runtime.cmo
-pp_outcometree.cmo: pp_parsetree.cmi pp_outcometree.cmi ppxprint_runtime.cmo
+ppxprint.cma: $(CMO)
+ppxprint.cmxa: $(CMX)
+pp_MLast.cmo pp_MLast.cmx: pp_MLast.cmi ppxprint_runtime.cmo
+pp_parsetree.cmo pp_parsetree.cmx: pp_parsetree.cmi ppxprint_runtime.cmo
+pp_outcometree.cmo pp_outcometree.cmx: pp_parsetree.cmi pp_outcometree.cmi ppxprint_runtime.cmo
 pp_outcometree.cmi: pp_parsetree.cmi
-exceptions.cmo: exceptions.cmi ppxprint_runtime.cmo
+exceptions.cmo exceptions.cmx: exceptions.cmi ppxprint_runtime.cmo
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
-	cp $(TARGET) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(TARGET) $(TARGET:.cma=.cmxa) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CMI) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 

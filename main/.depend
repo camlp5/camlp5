@@ -33,11 +33,13 @@ pcaml.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/grammar.cmx \
     prtools.cmx quotation.cmx reloc.cmx
 pcaml.cmi: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/grammar.cmi \
     ../lib/ploc.cmi mLast.cmi
+pp_debug.cmo: mLast.cmi
+pp_debug.cmx: mLast.cmi
 prtools.cmo: ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi \
     ../lib/versdep.cmo mLast.cmi prtools.cmi
 prtools.cmx: ../lib/ploc.cmx ../lib/pprintf.cmx ../lib/pretty.cmx \
     ../lib/versdep.cmx mLast.cmi prtools.cmi
-prtools.cmi: ../lib/ploc.cmi ../lib/pprintf.cmi mLast.cmi
+prtools.cmi: ../lib/pprintf.cmi mLast.cmi
 quotation.cmo: ../lib/ploc.cmi mLast.cmi quotation.cmi
 quotation.cmx: ../lib/ploc.cmx mLast.cmi quotation.cmi
 quotation.cmi: mLast.cmi

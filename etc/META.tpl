@@ -470,8 +470,8 @@ package "toploop" (
   requires = "camlp5"
   version = "@VERSION@"
   description = "Internal support for toploop to use Camlp5"
-  archive(byte) = "ppxprint.cma camlp5_top_funs.cmo"
+  archive(byte) = "camlp5_top_funs.cmo"
   )
 
-  archive(byte,toploop) = "ppxprint.cma camlp5_top.cma"
+  archive(byte,toploop) = "camlp5_top.cma"
 )

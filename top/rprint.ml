@@ -4,6 +4,7 @@
 
 open Format;
 open Outcometree;
+open Pp_debug ;
 
 value string_lowercase =
   IFDEF OCAML_VERSION < OCAML_4_03_0 THEN String.lowercase

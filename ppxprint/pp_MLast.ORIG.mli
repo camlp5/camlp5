@@ -2,7 +2,7 @@
 (* pp_MLast.mli,v *)
 
 IFDEF BOOTSTRAP THEN
-
+module Gen : sig
 module Ploc : sig
 include (module type of Ploc with type t = Ploc.t)
 
@@ -14,11 +14,5 @@ type loc = [%import: MLast.loc] [@@deriving show]
 type type_var = [%import: MLast.type_var] [@@deriving show]
 
 [%%import: MLast.expr] [@@deriving show]
-
-ELSE
-val show_longid : MLast.longid -> string
-val show_longid_lident : MLast.longid_lident -> string
-val show_ctyp : MLast.ctyp -> string
+end
 END
-
-

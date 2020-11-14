@@ -5,20 +5,20 @@
 #require "rresult";;
 #require "pcre";;
 #require "bos";;
-(*
+
 #require "camlp5.pa_op";;
 Pcaml.inter_phrases := Some ";;\n";;
-*)
+(*
 #require "camlp5.pa_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
-(*
-#require "camlp5.pr_o";;
 *)
 
+#require "camlp5.pr_o";;
+
+(*
 #require "camlp5.pr_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
+*)
 
 (*
 #require "camlp5.quotations";;
@@ -88,23 +88,22 @@ open Longident ;;
 
 let pp_ctyp ty = Fmt.(pf stdout "#<ctyp< %s >>" (Eprinter.apply Pcaml.pr_ctyp Pprintf.empty_pc ty));;
 let pp_expr ty = Fmt.(pf stdout "#<expr< %s >>" (Eprinter.apply Pcaml.pr_expr Pprintf.empty_pc ty));;
+let pp_patt ty = Fmt.(pf stdout "#<patt< %s >>" (Eprinter.apply Pcaml.pr_patt Pprintf.empty_pc ty));;
 
 let pp_str_item ty = Fmt.(pf stdout "#<str_item< %s >>" (Eprinter.apply Pcaml.pr_str_item Pprintf.empty_pc ty));;
 let pp_sig_item ty = Fmt.(pf stdout "#<str_item< %s >>" (Eprinter.apply Pcaml.pr_sig_item Pprintf.empty_pc ty));;
 (*
 let pp_ctyp ty = Fmt.(pf stdout "#<ctyp< %a >>" Pa_ppx_base.Pp_MLast.pp_ctyp ty);;
 let pp_expr ty = Fmt.(pf stdout "#<expr< %a >>" Pa_ppx_base.Pp_MLast.pp_expr ty);;
+let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty);;
 *)
 #install_printer pp_ctyp ;;
 #install_printer pp_expr ;;
+#install_printer pp_patt ;;
 #install_printer pp_str_item ;;
 #install_printer pp_sig_item ;;
 
 print_string "================ START ================\n";; flush stdout ;;
-
-#require "camlp5.parser_quotations";;
-#directory "../meta";;
-#trace Pa_r.check_dot_uid_f ;;
 
 (*
 ;;; Local Variables: ***

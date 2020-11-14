@@ -30,7 +30,6 @@ end
 [%%import: Parsetree.location_stack] [@@deriving show]
 [%%import: Parsetree.attribute] [@@deriving show]
 
-ELSE
 END
 
 

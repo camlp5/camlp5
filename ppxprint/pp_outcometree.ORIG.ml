@@ -21,10 +21,9 @@ open Pp_parsetree
 
 let pp_out_sig_item_list pps x = Fmt.(pf pps "[%a]" (list pp_out_sig_item) x)
 
-ELSE
-
-let pp_out_sig_item pps x = Format.fprintf pps "<unrecognized out_sig_item>"
-let pp_out_sig_item_list pps x = Format.fprintf pps "<unrecognized out_sig_item list>"
+open Pp_debug
+ref_pp_out_sig_item := pp_out_sig_item ;
+ref_pp_out_sig_item_list := pp_out_sig_item_list ;
 
 END
 
