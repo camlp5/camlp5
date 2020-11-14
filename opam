@@ -37,7 +37,7 @@ depends: [
 ]
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
-  [make "world.opt" "all"]
+  [make "DEBUG=-g" "world.opt" "all"]
 #  [make "-C" "testsuite" "clean" "all-tests"] { with-test & ocaml:version >= "4.10.0" }
 #  [make "-C" "test" "clean" "all"] {with-test & ocaml:version >= "4.10.0" }
 ]
