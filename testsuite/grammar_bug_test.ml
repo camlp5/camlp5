@@ -17,15 +17,6 @@ value rec sep_last = fun [
       let (l,tl) = sep_last tl in (l,[hd::tl])
 ]
 ;
-value invoked_with cmdna =
-  let variant_names = [cmdna; cmdna^".byte"; cmdna^".native"; cmdna^".opt"] in
-
-  let argv = Array.to_list Sys.argv in
-  let path = Pcre.split ~{rex=(Pcre.regexp "/")} (car argv) in
-  let (fname, _) = sep_last path in
-
-  List.exists ((=) fname) variant_names
-;
 
 value loc = Ploc.dummy ;
 
@@ -95,7 +86,7 @@ value tests () = "grammar_bug" >::: [
  ;
 
 value _ = 
-if invoked_with "grammar_bug_test" then
+if not Sys.interactive.val then
   run_test_tt_main (tests ())
 else ()
 ;

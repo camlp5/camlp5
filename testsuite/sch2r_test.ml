@@ -62,7 +62,7 @@ END
 
 (* Run the tests in test suite *)
 value _ =
-if invoked_with "sch2r_test.pa_scheme" || invoked_with "sch2r_test.pa_schemer" then
+if not Sys.interactive.val then
   run_test_tt_main ("all_tests" >::: [
         tests
     ])

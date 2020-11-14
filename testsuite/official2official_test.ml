@@ -16,7 +16,7 @@ value tests = "matrix" >::: (Papr_test_matrix.official2official both_pa both_pr 
 
 
 value _ =
-if invoked_with "official2official_test" then
+if not Sys.interactive.val then
   run_test_tt_main tests
 else ()
 ;  

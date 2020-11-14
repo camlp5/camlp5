@@ -12,7 +12,7 @@ Pcaml.inter_phrases.val := Some ";\n" ;
 value tests = "matrix" >::: (Papr_test_matrix.r2r PAPR.both_pa1 PAPR.both_pr None ()) ;
 
 value _ =
-if invoked_with "r2r_test" then
+if not Sys.interactive.val then
   run_test_tt_main tests
 else ()
 ;  

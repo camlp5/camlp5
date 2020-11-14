@@ -197,7 +197,7 @@ value tests = "little_lang" >::: Pa.[
 ;
 
 value _ = 
-if invoked_with "little_lang_test" then
+if not Sys.interactive.val then
   run_test_tt_main tests
 else ()
 ;

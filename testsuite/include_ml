@@ -6,7 +6,6 @@
 #require "pcre";;
 #require "bos";;
 
-
 #require "camlp5.pa_op";;
 Pcaml.inter_phrases := Some ";;\n";;
 (*

@@ -497,23 +497,6 @@ value rec sep_last = fun [
   ]
 ;
 
-value invoked_with ?{flag} cmdna =
-  let variant_names = [cmdna; cmdna^".byte"; cmdna^".native"; cmdna^".opt"] in
-
-  let argv = Array.to_list Sys.argv in
-  let path = Pcre.split ~{rex=(Pcre.regexp "/")} (List.hd argv) in
-  let (fname, _) = sep_last path in
-
-  List.exists ((=) fname) variant_names &&
-  match flag with [
-    None -> True
-  | Some flag ->
-    let flag' = "-"^flag in
-    let flag'' = "--"^flag in
-    List.exists ((=) flag') (List.tl argv) ||
-      List.exists ((=) flag'') (List.tl argv) ]
-;
-
 value files = ref [] ;
 value mode = ref "lexer-passthru" ;
 value env = ref [("OCAML_VERSION", Some ocaml_version)] ;
@@ -569,7 +552,7 @@ value roundtrip_lexer () = do {
 ;
 
 value _ =
-if invoked_with "roundtrip_lexer" then
+if not Sys.interactive.val then
   roundtrip_lexer ()
 else ()
 ;

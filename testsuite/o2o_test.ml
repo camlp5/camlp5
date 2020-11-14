@@ -14,7 +14,7 @@ value both_official_pa = (Official.Implem.pa, Official.Interf.pa) ;
 value tests = "matrix" >::: (Papr_test_matrix.o2o PAPR.both_pa1 PAPR.both_pr (Some both_official_pa) ()) ;
 
 value _ =
-if invoked_with "o2o_test" then
+if not Sys.interactive.val then
   run_test_tt_main tests
 else ()
 ;  

@@ -45,6 +45,9 @@ value tests = "test r top" >::: [
     "directive-1" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} ({foo|#require  "foo"|foo},"1") (papr {foo| #require "foo"; 1|foo})
     ]) ;
+    "show-1" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  List|foo},"1") (papr {foo| #show List; 1|foo})
+    ]) ;
     "bug-3" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} (";;F.f 1","1") (papr {foo| (F.f 1); 1|foo})
     ])
