@@ -645,7 +645,9 @@ value check_dot_uid_f strm =
     match stream_npeek n strm with [
       [(_, tok) :: _ ] when tok <> "." -> raise Stream.Failure
     | [("",".") ] -> crec (n+1)
-    | [("",".") ; ("UIDENT",_) :: _] -> ()
+    | [("",".") ; ("UIDENT",_)] -> ()
+    | [("",".") ; ("ANTIQUOT_LOC",s)]
+      when (match Plexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
     | [("",".") ; ("","$")] -> crec (n+1)
     | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid"))] -> crec (n+1)
     | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":")] -> ()

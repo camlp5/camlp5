@@ -325,6 +325,11 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|fun [ <:expr:< ($lid:x$, $lid:y$) >> -> 1 ] ;|foo}
         }
+      ; { name = "extended-longident-1" ; 
+          expect = {foo|MLast.LiAcc loc li (Ploc.VaVal m);
+|foo} ;
+          code = {foo|<:extended_longident< $longid:li$ . $uid:m$ >> ;|foo}
+        }
       ; { name = "prototype" ;
           expect = {foo||foo} ;
           code = {foo||foo}
