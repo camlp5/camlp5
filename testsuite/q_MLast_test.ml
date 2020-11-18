@@ -336,10 +336,44 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|fun [ <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:l$ >> -> 1 ];|foo}
         }
-      ; { name = "prototype" ;
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "generic-constructor-2" ;
+          expect = {foo|fun
+[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) as gc → 1 ];
+|foo} ;
+          code = {foo|fun [ <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:l$ >> as gc -> 1 ];|foo}
         }
+      ; { name = "generic-constructor-3" ;
+          expect = {foo|match b with
+[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, _) as gc → 1 ];
+|foo} ;
+          code = {foo|match b with [
+    <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:_$ >> as gc -> 1 ];|foo}
+        }
+      ; {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
+      ; {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
+      ; {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
+      ; {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
+      ; {
+        name = "prototype";
+        code = {foo||foo};
+        expect = {foo||foo}
+      }
     ])
  ;
 
