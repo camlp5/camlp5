@@ -330,9 +330,11 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:extended_longident< $longid:li$ . $uid:m$ >> ;|foo}
         }
-      ; { name = "prototype" ;
-          expect = {foo||foo} ;
-          code = {foo||foo}
+      ; { name = "generic-constructor-1" ;
+          expect = {foo|fun
+[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) → 1 ];
+|foo} ;
+          code = {foo|fun [ <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:l$ >> -> 1 ];|foo}
         }
       ; { name = "prototype" ;
           expect = {foo||foo} ;

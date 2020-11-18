@@ -904,10 +904,16 @@ value apply_entry e me mp =
           [ <:patt:< $p1$ $p2$ >> -> loop [(p2, loc) :: pl] p1
           | p -> (p, pl) ]
       in
-      match pl with
-      [ [(<:patt< _ >>, loc) :: pl] ->
+      match (p,pl) with
+      [ (_, [(<:patt< _ >>, loc) :: pl]) ->
           List.fold_left (fun p1 (p2, loc) -> <:patt< $p1$ $p2$ >>)
             <:patt< $p$ $lid:Ploc.name.val$ >> pl
+      | (<:patt:< ( $list:pl$ ) >>, []) ->
+        let pl = match pl with [
+          [ <:patt< _ >> :: pl ] -> [ <:patt< $lid:Ploc.name.val$ >> :: pl ]
+        | _ -> pl
+        ] in
+        <:patt< ( $list:pl$ ) >>
       | _ -> ast ]
     else ast
   in
