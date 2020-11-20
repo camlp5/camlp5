@@ -105,6 +105,8 @@ let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty)
 
 print_string "================ START ================\n";; flush stdout ;;
 
+#require "camlp5.parser_quotations";;
+
 (*
 ;;; Local Variables: ***
 ;;; mode:tuareg ***

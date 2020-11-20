@@ -419,7 +419,7 @@ let undef x = ref (fun _ -> failwith x);;
 let print_interf = undef "no printer";;
 let print_implem = undef "no printer";;
 
-let pr_expr = Eprinter.make "expr";;
+let pr_expr = Eprinter.make ~fail:Pp_debug.Pp_MLast.show_expr "expr";;
 let pr_patt = Eprinter.make "patt";;
 let pr_ctyp = Eprinter.make "type";;
 let pr_str_item = Eprinter.make "str_item";;

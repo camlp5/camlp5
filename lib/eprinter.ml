@@ -6,6 +6,7 @@
 
 type t 'a =
   { pr_name : string;
+    pr_fail : 'a -> string;
     pr_fun : mutable string -> pr_fun 'a;
     pr_levels : mutable list (pr_level 'a) }
 and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
@@ -96,8 +97,9 @@ value rec pr_fun name pr lab0 pc z =
     [ [] ->
           failwith
             (Printf.sprintf
-               "cannot print %s%s; a missing case in camlp5; please report"
-               name (if lab = "" then "" else " \"" ^ lab ^ "\""))
+               "cannot print %s%s; a missing case in camlp5; please report\n%s"
+               name (if lab = "" then "" else " \"" ^ lab ^ "\"")
+               (pr.pr_fail z))
     | [lev :: levl] ->
         if lab = "" || app || lev.pr_label = lab then
           let next pc z = loop lab True levl pc (prev, z) in
@@ -107,8 +109,9 @@ value rec pr_fun name pr lab0 pc z =
   in loop lab0 False pr.pr_levels pc (None, z)
 ;
 
-value make name = do {
-  let pr = {pr_name = name; pr_fun = fun []; pr_levels = []} in
+value make ?{fail} name = do {
+  let fail = match fail with [ None -> fun _ -> "<"^name^">" | Some f -> f ] in
+  let pr = {pr_name = name; pr_fail = fail; pr_fun = fun []; pr_levels = []} in
   pr.pr_fun := pr_fun name pr;
   pr
 };

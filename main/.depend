@@ -27,10 +27,10 @@ parserify.cmx: ../lib/ploc.cmx ../lib/pretty.cmx ../lib/versdep.cmx \
 parserify.cmi: exparser.cmi mLast.cmi
 pcaml.cmo: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/grammar.cmi \
     ../lib/plexing.cmi ../lib/ploc.cmi ../lib/versdep.cmo mLast.cmi pcaml.cmi \
-    prtools.cmi quotation.cmi reloc.cmi
+    pp_debug.cmo prtools.cmi quotation.cmi reloc.cmi
 pcaml.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/grammar.cmx \
     ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx mLast.cmi pcaml.cmi \
-    prtools.cmx quotation.cmx reloc.cmx
+    pp_debug.cmx prtools.cmx quotation.cmx reloc.cmx
 pcaml.cmi: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/grammar.cmi \
     ../lib/ploc.cmi mLast.cmi
 pp_debug.cmo: mLast.cmi

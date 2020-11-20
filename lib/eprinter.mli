@@ -16,7 +16,7 @@ type pr_context =
     { ind : int; bef : string; aft : string; dang : string }
 ;
 
-value make : string -> t 'a;
+value make : ?fail:('a -> string) -> string -> t 'a;
    (** Builds a printer. The string parameter is used in error messages.
        The printer is created empty and can be extended with the
        [EXTEND_PRINTER] statement. *)

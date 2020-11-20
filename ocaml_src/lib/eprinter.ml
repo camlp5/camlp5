@@ -6,6 +6,7 @@
 
 type 'a t =
   { pr_name : string;
+    pr_fail : 'a -> string;
     mutable pr_fun : string -> 'a pr_fun;
     mutable pr_levels : 'a pr_level list }
 and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
@@ -98,8 +99,9 @@ let rec pr_fun name pr lab0 pc z =
       [] ->
         failwith
           (Printf.sprintf
-             "cannot print %s%s; a missing case in camlp5; please report" name
-             (if lab = "" then "" else " \"" ^ lab ^ "\""))
+             "cannot print %s%s; a missing case in camlp5; please report\n%s"
+             name (if lab = "" then "" else " \"" ^ lab ^ "\"")
+             (pr.pr_fail z))
     | lev :: levl ->
         if lab = "" || app || lev.pr_label = lab then
           let next pc z = loop lab true levl pc (prev, z) in
@@ -113,10 +115,15 @@ let rec pr_fun name pr lab0 pc z =
   loop lab0 false pr.pr_levels pc (None, z)
 ;;
 
-let make name =
+let make ?fail name =
+  let fail =
+    match fail with
+      None -> (fun _ -> "<" ^ name ^ ">")
+    | Some f -> f
+  in
   let pr =
-    {pr_name = name;
-     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 111, 37)));
+    {pr_name = name; pr_fail = fail;
+     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 114, 53)));
      pr_levels = []}
   in
   pr.pr_fun <- pr_fun name pr; pr

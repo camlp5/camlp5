@@ -25,6 +25,17 @@ let isRight =
   | Right _ -> true
 ;;
 
+let outLeft =
+  function
+    Left x -> x
+  | _ -> failwith "outLeft"
+;;
+let outRight =
+  function
+    Right x -> x
+  | _ -> failwith "outRight"
+;;
+
 let option_map f x =
   match x with
     Some x -> Some (f x)

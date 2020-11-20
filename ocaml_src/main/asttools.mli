@@ -10,6 +10,8 @@ type ('a, 'b) choice =
 ;;
 val isLeft : ('a, 'b) choice -> bool;;
 val isRight : ('a, 'b) choice -> bool;;
+val outLeft : ('a, 'b) choice -> 'a;;
+val outRight : ('a, 'b) choice -> 'b;;
 val option_map : ('a -> 'b) -> 'a option -> 'b option;;
 val mustSome : string -> 'a option -> 'a;;
 val mustLeft : string -> ('a, 'b) choice -> 'a;;

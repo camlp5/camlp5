@@ -1064,10 +1064,17 @@ let apply_entry e me mp =
         in
         loop [] ast
       in
-      match pl with
-        (MLast.PaAny _, loc) :: pl ->
+      match p, pl with
+        _, (MLast.PaAny _, loc) :: pl ->
           List.fold_left (fun p1 (p2, loc) -> MLast.PaApp (loc, p1, p2))
             (MLast.PaApp (loc, p, MLast.PaLid (loc, !(Ploc.name)))) pl
+      | MLast.PaTup (loc, pl), [] ->
+          let pl =
+            match pl with
+              MLast.PaAny _ :: pl -> MLast.PaLid (loc, !(Ploc.name)) :: pl
+            | _ -> pl
+          in
+          MLast.PaTup (loc, pl)
       | _ -> ast
     else ast
   in

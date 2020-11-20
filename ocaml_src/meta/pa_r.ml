@@ -517,18 +517,23 @@ let check_type_extension =
 ;;
 
 let check_dot_uid_f strm =
-  match Stream.npeek 5 strm with
-    ("", ".") :: ("UIDENT", _) :: _ -> ()
-  | ("", ".") :: ("ANTIQUOT_LOC", s) :: _
-    when
-      match Plexer.parse_antiloc s with
-        Some (_, ("uid" | "_uid"), _) -> true
-      | _ -> false ->
-      ()
-  | ("", ".") :: ("", "$") :: ("LIDENT", ("uid" | "_uid")) :: ("", ":") ::
-    ("LIDENT", _) :: _ ->
-      ()
-  | _ -> raise Stream.Failure
+  let rec crec n =
+    match stream_npeek n strm with
+      (_, tok) :: _ when tok <> "." -> raise Stream.Failure
+    | ["", "."] -> crec (n + 1)
+    | ["", "."; "UIDENT", _] -> ()
+    | ["", "."; "ANTIQUOT_LOC", s]
+      when
+        match Plexer.parse_antiloc s with
+          Some (_, ("uid" | "_uid"), _) -> true
+        | _ -> false ->
+        ()
+    | ["", "."; "", "$"] -> crec (n + 1)
+    | ["", "."; "", "$"; "LIDENT", ("uid" | "_uid")] -> crec (n + 1)
+    | ["", "."; "", "$"; "LIDENT", ("uid" | "_uid"); "", ":"] -> ()
+    | _ -> raise Stream.Failure
+  in
+  crec 1
 ;;
 
 let check_dot_uid =
