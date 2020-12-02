@@ -400,7 +400,7 @@ and expr floc sh =
         ExXtr loc x1 (option_map (vala_map self) x2)
     | ExExten loc exten ->
         let loc = floc loc in
-        ExExten loc exten
+        ExExten loc (attribute_body floc sh exten)
     | ExUnr loc ->
         let loc = floc loc in
         ExUnr loc

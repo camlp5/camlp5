@@ -350,9 +350,13 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
     <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:_$ >> as gc -> 1 ];|foo}
         }
       ; {
-        name = "prototype";
-        code = {foo||foo};
-        expect = {foo||foo}
+        name = "expr-extension-type-1";
+        code = {foo|<:expr< [%typ: bool] >>;|foo};
+        expect = {foo|MLast.ExExten loc
+  (Ploc.VaVal
+     (Ploc.VaVal (loc, "typ"),
+      MLast.TyAttr loc (Ploc.VaVal (MLast.TyLid loc (Ploc.VaVal "bool")))));
+|foo}
       }
       ; {
         name = "prototype";
