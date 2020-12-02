@@ -796,6 +796,7 @@ and longid_lident floc sh (x1, x2) =
     (option_map (vala_map (longid floc sh)) x1, x2)
 and attribute_body floc sh x1 =
     vala_map (fun (s, p) ->
+        let s = vala_map (fun (loc, s) -> (floc loc, s)) s in
         let p = match p with [
           StAttr loc x1 ->
             let loc = floc loc in
