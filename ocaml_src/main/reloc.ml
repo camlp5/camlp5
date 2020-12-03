@@ -314,7 +314,8 @@ and expr floc sh =
         ExWhi (loc, self x1, vala_map (List.map self) x2)
     | ExXtr (loc, x1, x2) ->
         let loc = floc loc in ExXtr (loc, x1, option_map (vala_map self) x2)
-    | ExExten (loc, exten) -> let loc = floc loc in ExExten (loc, exten)
+    | ExExten (loc, exten) ->
+        let loc = floc loc in ExExten (loc, attribute_body floc sh exten)
     | ExUnr loc -> let loc = floc loc in ExUnr loc
   in
   self
@@ -713,6 +714,7 @@ and longid_lident floc sh (x1, x2) =
 and attribute_body floc sh x1 =
   vala_map
     (fun (s, p) ->
+       let s = vala_map (fun (loc, s) -> floc loc, s) s in
        let p =
          match p with
            StAttr (loc, x1) ->
