@@ -21,7 +21,7 @@ END;
 
 type v 'a = V 'a;
 
-type type_var = (V (option string) * option bool);
+type type_var = (V (option string) * (option bool * bool));
 
 type class_infos 'a =
   { ciLoc : loc;

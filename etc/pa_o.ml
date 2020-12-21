@@ -1777,9 +1777,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "("; tpl = LIST1 type_parameter SEP ","; ")" -> tpl ] ]
   ;
   type_parameter:
-    [ [ "+"; p = V simple_type_parameter -> (p, Some True)
-      | "-"; p = V simple_type_parameter -> (p, Some False)
-      | p = V simple_type_parameter -> (p, None) ] ]
+    [ [ "+"; p = V simple_type_parameter -> (p, (Some True, False))
+      | "-"; p = V simple_type_parameter -> (p, (Some False, False))
+      | p = V simple_type_parameter -> (p, (None, False)) ] ]
   ;
   simple_type_parameter:
     [ [ "'"; i = ident -> Some i

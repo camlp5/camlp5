@@ -816,16 +816,20 @@ value typevar pc s =
    ]
 ;
 
-value type_param pc (tv, vari) =
+value type_param pc (tv, (vari, inj)) =
   let tv = Pcaml.unvala tv in
   let tv_or_blank pc = fun [
     Some tv -> pprintf pc "%p" typevar tv
   | None -> pprintf pc "_" ] in
-  pprintf pc "%s%p"
+  pprintf pc "%s%s%p"
     (match vari with
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
+    (match inj with
+       [ True -> "!"
+       | False -> ""
+       ])
     tv_or_blank tv
 ;
 

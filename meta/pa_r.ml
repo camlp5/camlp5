@@ -1273,9 +1273,9 @@ EXTEND
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp → (t1, t2) ] ]
   ;
   type_parameter:
-    [ [ "+"; p = V simple_type_parameter → (p, Some True)
-      | "-"; p = V simple_type_parameter → (p, Some False)
-      | p = V simple_type_parameter → (p, None) ] ]
+    [ [ "+"; p = V simple_type_parameter → (p, (Some True, False))
+      | "-"; p = V simple_type_parameter → (p, (Some False, False))
+      | p = V simple_type_parameter → (p, (None, False)) ] ]
   ;
   simple_type_parameter:
     [ [ "'"; i = ident → Some i

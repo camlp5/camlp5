@@ -549,10 +549,19 @@ and print_out_type_decl kwd ppf x =
       print_out_type ty'
   in
   let print_constraints ppf params = List.iter (constrain ppf) params in
-  let type_parameter ppf (ty, (co, cn)) =
+  let type_parameter ppf (ty, var_inj) =
     let (q, ty) = try_greek ty in
+    IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
+    let (co, cn) = var_inj in
     fprintf ppf "%s%s%s" (if not cn then "+" else if not co then "-" else "")
       q ty
+    ELSE
+    let (vari, inj) = var_inj in
+    fprintf ppf "%s%s%s%s"
+      (match vari with [ Asttypes.Covariant -> "+" | Contravariant -> "-" | NoVariance -> "" ])
+      (match inj with [ Asttypes.Injective -> "!" | NoInjectivity -> "" ])
+      q ty
+    END
   in
   let type_defined ppf =
     match args with

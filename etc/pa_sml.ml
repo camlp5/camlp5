@@ -407,8 +407,8 @@ EXTEND
   tyvarseq: [ [ -> not_impl loc "tyvarseq" ] ];
 
   tyvar_pc:
-    [ [ "'"; x1 = V tyvar -> [(x1, None)]
-      | "'"; x1 = V tyvar; ","; l = tyvar_pc -> [(x1, None) :: l] ] ]
+    [ [ "'"; x1 = V tyvar -> [(x1, (None, False))]
+      | "'"; x1 = V tyvar; ","; l = tyvar_pc -> [(x1, (None, False)) :: l] ] ]
   ;
   tyvar:
     [ [ v = LIDENT -> Some v ] ]
@@ -703,7 +703,7 @@ EXTEND
            MLast.tdAttributes = <:vala< [] >>} ] ]
   ;
   tyvars:
-    [ [ "'"; x1 = V tyvar -> [(x1, None)]
+    [ [ "'"; x1 = V tyvar -> [(x1, (None, False))]
       | "("; x1 = tyvar_pc; ")" -> x1
       | -> [] ] ]
   ;

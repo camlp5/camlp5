@@ -1135,12 +1135,12 @@
   (match se
    ((when (Slid _ s) (&& (>= (String.length s) 2) (= s.[0] ''')))
     (let ((s (String.sub s 1 (- (String.length s) 1))))
-     (values <:vala< (Some s) >> None)))
+     (values <:vala< (Some s) >> (values None False))))
    ((when (Slid _ s) (&& (>= (String.length s) 3) (= s.[1] ''')))
     (let
      ((vara
-       (if (= s.[0] '+') (Some True)
-        (if (= s.[0] '-') (Some False) (error se "type_param"))))
+       (if (= s.[0] '+') (values (Some True) False)
+        (if (= s.[0] '-') (values (Some False) False) (error se "type_param"))))
       (s (String.sub s 2 (- (String.length s) 2))))
      (values <:vala< (Some s) >> vara)))
    (se (error se "type_param"))))

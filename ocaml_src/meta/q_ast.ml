@@ -12,8 +12,10 @@ module Meta_make (C : MetaSig) =
   struct
     module C = C;;
     open MLast;;
+    let variance (var, inj) =
+      C.tuple [C.option C.bool var; C.bool inj] ;;
     let type_var (s, tv) =
-      C.tuple [C.vala (C.option C.string) s; C.option C.bool tv]
+      C.tuple [C.vala (C.option C.string) s; variance tv]
     ;;
     let record_label lab =
       let loc = Ploc.dummy in

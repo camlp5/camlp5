@@ -546,13 +546,17 @@ value tv_or_blank pc = fun [
 ]
 ;
 
-value type_param pc (loc, (tv, vari)) =
+value type_param pc (loc, (tv, (vari, inj))) =
   let tv = Pcaml.unvala tv in
-  pprintf pc "%s%p"
+  pprintf pc "%s%s%p"
     (match vari with
      [ Some True -> "+"
      | Some False -> "-"
      | None -> "" ])
+    (match inj with
+       [ True -> "!"
+       | False -> ""
+       ])
     tv_or_blank tv
 ;
 

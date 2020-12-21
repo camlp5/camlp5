@@ -461,15 +461,26 @@ value ocaml_mkfield_var loc =
   ELSE [] END
 ;
 
-IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
-  value variance_of_bool_bool =
-    fun
-    [ (False, True) -> Contravariant
-    | (True, False) -> Covariant
-    | _ -> Invariant ]
+IFDEF OCAML_VERSION >= OCAML_4_12_0 THEN
+value convert_camlp5_variance (va, inj) =
+  let va = match va with [
+    Some False -> Contravariant
+  | Some True -> Covariant
+  | _ -> NoVariance ] in
+  let inj = match inj with [
+    True -> Injective
+  | False -> NoInjectivity ] in
+  (va, inj)
+  ;
+ELSIFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
+value convert_camlp5_variance (va, _) =
+  let va = match va with [
+    Some False -> Contravariant
+  | Some True -> Covariant
+  | _ -> NoVariance ] in
+  va
   ;
 END;
-
 
 IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
 value ocaml_ec_tuple ?{alg_attributes=[]} _ _ _ = assert False ;
@@ -507,9 +518,9 @@ value ocaml_type_extension ?{item_attributes=[]} loc pathlid params priv ecstrs 
 let params =
   List.map
     (fun (os, va) -> match os with [
-       None -> (ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va)
+       None -> (ocaml_mktyp loc Ptyp_any, convert_camlp5_variance va)
      | Some s ->
-         (ocaml_mktyp loc (Ptyp_var s), variance_of_bool_bool va)
+         (ocaml_mktyp loc (Ptyp_var s), convert_camlp5_variance va)
      ])
     params
 in
@@ -543,8 +554,8 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
           let params =
             List.map2
               (fun os va -> match os with [
-                    None -> (ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va)
-                  | Some os ->  (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+                    None -> (ocaml_mktyp loc Ptyp_any, convert_camlp5_variance va)
+                  | Some os ->  (ocaml_mktyp loc (Ptyp_var os), convert_camlp5_variance va)
                ])
               params variance
           in
@@ -1602,7 +1613,7 @@ value ocaml_class_infos =
          let params =
            List.map2
             (fun os va ->
-               (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va))
+               (ocaml_mktyp loc (Ptyp_var os), convert_camlp5_variance va))
             sl variance
          in
          {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;

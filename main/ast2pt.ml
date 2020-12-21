@@ -257,16 +257,8 @@ value class_type_long_id = fun [
 ]
 ;
 
-value variance_of_var =
-  fun
-  [ Some False → (False, True)
-  | Some True → (True, False)
-  | None → (False, False) ]
-;
-
 value mktype ~{item_attributes} loc tn tl cl tk pf tm =
-  let (params, var_list) = List.split tl in
-  let variance = List.map variance_of_var var_list in
+  let (params, variance) = List.split tl in
   let params = List.map uv params in
   match ocaml_type_declaration tn params cl tk pf tm (mkloc loc) variance item_attributes with
   [ Right td → td
@@ -341,8 +333,7 @@ value list_map_check f l =
 ;
 
 value class_info item_attributes_fun class_expr ci =
-  let (params, var_list) = List.split (uv (snd ci.ciPrm)) in
-  let variance = List.map variance_of_var var_list in
+  let (params, variance) = List.split (uv (snd ci.ciPrm)) in
   match ocaml_class_infos with
   [ Some class_infos →
       match list_map_check uv params with
@@ -396,8 +387,7 @@ value label_of_patt =
 ;
 
 value rec type_decl_of_with_type loc tn tpl pf ct =
-  let (params, var_list) = List.split (uv tpl) in
-  let variance = List.map variance_of_var var_list in
+  let (params, variance) = List.split (uv tpl) in
   let params = List.map uv params in
   let ct = Some (ctyp ct) in
   let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
@@ -646,7 +636,7 @@ and type_extension loc te =
   let ecstrs = List.map extension_constructor (uv te.teECs) in
   ocaml_type_extension ~{item_attributes=uv_item_attributes te.teAttributes} (mkloc loc)
     (longid_lident_long_id (uv te.teNam))
-    (List.map (fun (p,v) -> (uv p, variance_of_var v)) (uv te.tePrm))
+    (List.map (fun (p,v) -> (uv p, v)) (uv te.tePrm))
     (if pf then Private else Public)
     ecstrs
 and patt =

@@ -595,7 +595,7 @@ and type_parameter_se =
   fun
   [ Satom _ Alid s when String.length s >= 2 && s.[0] = ''' →
       let s = String.sub s 1 (String.length s - 1) in
-      (<:vala< (Some s) >>, None)
+      (<:vala< (Some s) >>, (None, False))
   | se → error se "type_parameter" ]
 and ctyp_se =
   fun

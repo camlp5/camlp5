@@ -17,7 +17,7 @@ type loc = Ploc.t;;
 
 type 'a v = 'a;;
 
-type type_var = string option * bool option;;
+type type_var = string option * (bool option * bool);;
 
 type 'a class_infos =
   { ciLoc : loc;

@@ -4332,7 +4332,7 @@ Grammar.safe_extend
                  'simple_type_parameter Grammar.Entry.e)),
            "194fe98d",
            (fun (p : 'simple_type_parameter) (loc : Ploc.t) ->
-              (p, None : 'type_parameter)));
+              (p, (None, false) : 'type_parameter)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-")))
@@ -4341,7 +4341,7 @@ Grammar.safe_extend
                  'simple_type_parameter Grammar.Entry.e)),
            "194fe98d",
            (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, Some false : 'type_parameter)));
+              (p, (Some false, false) : 'type_parameter)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")))
@@ -4350,7 +4350,7 @@ Grammar.safe_extend
                  'simple_type_parameter Grammar.Entry.e)),
            "194fe98d",
            (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, Some true : 'type_parameter)))]];
+              (p, (Some true, false) : 'type_parameter)))]];
     Grammar.extension
       (simple_type_parameter : 'simple_type_parameter Grammar.Entry.e) None
       [None, None,

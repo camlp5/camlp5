@@ -6,7 +6,7 @@ use Data::Dumper ;
 {
   my $oversion = $ARGV[0] ;
   die "mal-formatted ocaml version detected: please report to maintainer with this output: ".Dumper(\@ARGV)
-    unless $oversion =~ m,^(\d+(\.\d+)+)$, ;
+    unless $oversion =~ s,^(\d+(?:\.\d+)+)(?:[~-].*)?$,$1, ;
 
   if (-d "ocaml_stuff/$oversion" && -f "ocaml_src/lib/versdep/$oversion.ml") {
     print "$oversion\n";

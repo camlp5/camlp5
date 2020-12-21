@@ -1823,6 +1823,7 @@ and t2 = bool[@@"foo"];
      r_output = OK {foo|value f : ! α . α → α = fun x → x;
 |foo}
     };
+IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
     {name="attributes-in-odd-locations1"; implem = True ;
      exclude=["official2official"];
      o_input = OK {foo|let (x[@foo1]) : unit [@foo2] = ()[@foo3]  [@@foo4]|foo} ;
@@ -1833,7 +1834,20 @@ and t2 = bool[@@"foo"];
      official_output = OK {foo|let (((x)[@foo1 ]) : ((unit)[@foo2 ])) = ((())[@foo3 ])[@@foo4 ]|foo} ;
      r_output = OK {foo|value x[@"foo1"] : unit[@"foo2"] = ()[@"foo3"][@@"foo4"];
 |foo}
-    };
+    }
+ELSE
+    {name="attributes-in-odd-locations1"; implem = True ;
+     exclude=["official2official"];
+     o_input = OK {foo|let (x[@foo1]) : unit [@foo2] = ()[@foo3]  [@@foo4]|foo} ;
+     official_input = SKIP "meh" "meh" ;
+     r_input = OK {foo|value x[@foo1] : unit [@foo2] = ()[@foo3]  [@@foo4];|foo} ;
+     o_output = OK {foo|let (x[@foo1] : unit[@foo2]) = ()[@foo3][@@foo4];;
+|foo};
+     official_output = OK {foo|let ((x)[@foo1 ]) : ((unit)[@foo2 ]) = ((())[@foo3 ])[@@foo4 ]|foo} ;
+     r_output = OK {foo|value x[@"foo1"] : unit[@"foo2"] = ()[@"foo3"][@@"foo4"];
+|foo}
+    }
+END ;
     {name="attributes-in-odd-locations1-official2official"; implem = True ;
      exclude=[];
      o_input = SKIP "meh" "meh" ;
@@ -4644,7 +4658,30 @@ END
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
 
-value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf outputf i =
+value r_input i = i.r_input ;
+value r_output i = i.r_output ;
+value o_input i = i.o_input ;
+value o_output i = i.o_output ;
+value official_output i = i.official_output ;
+value official_input i = i.official_input ;
+
+type syntax_kind = [ KIND_Revised | KIND_Original | KIND_Official ] ;
+
+value stripws s = Pcre.(replace ~{pat="[ \n\t]"} ~{itempl=subst ""} s) ;
+
+value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf outputkind i =
+  let outputf = match outputkind with [
+    KIND_Revised -> r_output
+  | KIND_Original -> o_output
+  | KIND_Official -> official_output
+  ] in
+  let cmp_string (s1 : string) (s2 : string) =
+IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
+    s1=s2
+ELSE
+    stripws s1 = stripws s2
+END
+  in
   i.name >:: (fun _ ->
     let official_reparse0 implem s = match (implem,pa_official_opt) with [
       (_,None) -> ()
@@ -4674,13 +4711,13 @@ value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_op
     | (_,OK _, SKIP _ _ ) -> ()
 
     | (True, OK inputs, OK outputs) -> do {
-        assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}
+        assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{cmp=cmp_string} ~{printer=fmt_string}
           outputs (wrap_err pp_implem (wrap_err pa_implem inputs)) ;
           official_reparse True outputs
       }
 
     | (False, OK inputs, OK outputs) -> do {
-        assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{printer=fmt_string}
+        assert_equal ~{msg=Printf.sprintf "on input <<%s>>" inputs} ~{cmp=cmp_string} ~{printer=fmt_string}
           outputs (wrap_err pp_interf (wrap_err pa_interf inputs)) ;
           official_reparse False outputs
       }
@@ -4708,20 +4745,13 @@ value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_op
     ])
 ;
 
-value r_input i = i.r_input ;
-value r_output i = i.r_output ;
-value o_input i = i.o_input ;
-value o_output i = i.o_output ;
-value official_output i = i.official_output ;
-value official_input i = i.official_input ;
-
-value r2r pa pp opa () = List.map (i2test ~{kind="r2r"} pa pp opa r_input r_output ) test_matrix ;
-value r2o pa pp opa () = List.map (i2test ~{kind="r2o"} pa pp opa r_input o_output ) test_matrix ;
-value o2r pa pp opa () = List.map (i2test ~{kind="o2r"} pa pp opa o_input r_output ) test_matrix ;
-value o2o pa pp opa () = List.map (i2test ~{kind="o2o"} pa pp opa o_input o_output ) test_matrix ;
-value o2official pa pp opa () = List.map (i2test ~{kind="o2official"} pa pp opa o_input official_output ) test_matrix ;
-value r2official pa pp opa () = List.map (i2test ~{kind="r2official"} pa pp opa r_input official_output ) test_matrix ;
-value official2official pa pp opa () = List.map (i2test ~{kind="official2official"} pa pp opa official_input official_output ) test_matrix ;
+value r2r pa pp opa () = List.map (i2test ~{kind="r2r"} pa pp opa r_input KIND_Revised ) test_matrix ;
+value r2o pa pp opa () = List.map (i2test ~{kind="r2o"} pa pp opa r_input KIND_Original ) test_matrix ;
+value o2r pa pp opa () = List.map (i2test ~{kind="o2r"} pa pp opa o_input KIND_Revised ) test_matrix ;
+value o2o pa pp opa () = List.map (i2test ~{kind="o2o"} pa pp opa o_input KIND_Original ) test_matrix ;
+value o2official pa pp opa () = List.map (i2test ~{kind="o2official"} pa pp opa o_input KIND_Official ) test_matrix ;
+value r2official pa pp opa () = List.map (i2test ~{kind="r2official"} pa pp opa r_input KIND_Official ) test_matrix ;
+value official2official pa pp opa () = List.map (i2test ~{kind="official2official"} pa pp opa official_input KIND_Official ) test_matrix ;
 
 (*
 ;;; Local Variables: ***
