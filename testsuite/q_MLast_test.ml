@@ -287,12 +287,22 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|fun [ <:sig_item< type $lid:x$ $list:_$ = $priv:_$ .. $_itemattrs:_$ >> -> 1 ] ;|foo}
         }
-(*
       ; { name = "typedecl-1" ;
-          expect = {foo||foo} ;
-          code = {foo|<:type_decl< $tp:x$ $list:_$ = $priv:_$ .. $_itemattrs:_$ >>;|foo}
+          expect = {foo|{MLast.tdIsDecl = Ploc.VaVal True; MLast.tdNam = Ploc.VaVal x;
+ MLast.tdPrm = Ploc.VaVal pl; MLast.tdPrv = Ploc.VaVal False;
+ MLast.tdDef = tk; MLast.tdCon = Ploc.VaVal [];
+ MLast.tdAttributes = Ploc.VaVal []};
+|foo} ;
+          code = {foo|<:type_decl< $tp:x$ $list:pl$ = $tk$ >>;|foo}
         }
-*)
+      ; { name = "typedecl-2" ;
+          expect = {foo|{MLast.tdIsDecl = Ploc.VaVal True; MLast.tdNam = Ploc.VaVal (loc, x);
+ MLast.tdPrm = Ploc.VaVal pl; MLast.tdPrv = Ploc.VaVal False;
+ MLast.tdDef = tk; MLast.tdCon = Ploc.VaVal [];
+ MLast.tdAttributes = Ploc.VaVal []};
+|foo} ;
+          code = {foo|<:type_decl< $tp:(loc,x)$ $list:pl$ = $tk$ >>;|foo}
+        }
       ; { name = "attribute-body-1" ;
           expect = {foo|fun
 [ (Ploc.VaVal (_, "add"), MLast.StAttr _ (Ploc.VaVal [si])) → si ];
