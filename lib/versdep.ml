@@ -461,7 +461,15 @@ value ocaml_mkfield_var loc =
   ELSE [] END
 ;
 
-IFDEF OCAML_VERSION >= OCAML_4_12_0 THEN
+IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
+value convert_camlp5_variance (va, _) =
+  let va = match va with [
+    Some False -> Contravariant
+  | Some True -> Covariant
+  | _ -> Invariant ] in
+  va
+  ;
+ELSE
 value convert_camlp5_variance (va, inj) =
   let va = match va with [
     Some False -> Contravariant
@@ -471,14 +479,6 @@ value convert_camlp5_variance (va, inj) =
     True -> Injective
   | False -> NoInjectivity ] in
   (va, inj)
-  ;
-ELSIFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
-value convert_camlp5_variance (va, _) =
-  let va = match va with [
-    Some False -> Contravariant
-  | Some True -> Covariant
-  | _ -> NoVariance ] in
-  va
   ;
 END;
 

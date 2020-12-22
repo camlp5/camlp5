@@ -264,8 +264,15 @@ let ocaml_mkfield_tag ?(alg_attributes = []) loc (lab, x) fl =
 ;;
 let ocaml_mkfield_var loc = [{pfield_desc = Pfield_var; pfield_loc = loc}];;
 
-(* *)
-
+let convert_camlp5_variance (va, _) =
+  let va =
+    match va with
+      Some false -> Contravariant
+    | Some true -> Covariant
+    | _ -> Invariant
+  in
+  va
+;;
 
 let ocaml_ec_tuple ?(alg_attributes = []) _ _ _ = assert false;;
 

@@ -263,13 +263,15 @@ let ocaml_mkfield_tag ?(alg_attributes = []) loc (lab, x) fl =
 ;;
 let ocaml_mkfield_var loc = [];;
 
-let variance_of_bool_bool =
-  function
-    false, true -> Contravariant
-  | true, false -> Covariant
-  | _ -> Invariant
+let convert_camlp5_variance (va, _) =
+  let va =
+    match va with
+      Some false -> Contravariant
+    | Some true -> Covariant
+    | _ -> Invariant
+  in
+  va
 ;;
-
 
 let ocaml_ec_tuple ?(alg_attributes = []) loc s (x, rto) =
   {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple x, rto);
@@ -295,8 +297,9 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
     List.map2
       (fun os va ->
          match os with
-           None -> ocaml_mktyp loc Ptyp_any, variance_of_bool_bool va
-         | Some os -> ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+           None -> ocaml_mktyp loc Ptyp_any, convert_camlp5_variance va
+         | Some os ->
+             ocaml_mktyp loc (Ptyp_var os), convert_camlp5_variance va)
       params variance
   in
   Right
@@ -766,7 +769,7 @@ let ocaml_class_infos =
        let params =
          List.map2
            (fun os va ->
-              ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+              ocaml_mktyp loc (Ptyp_var os), convert_camlp5_variance va)
            sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;

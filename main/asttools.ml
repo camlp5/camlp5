@@ -293,7 +293,7 @@ value string_list_of_longident_lident = fun [
   (None, <:vala< s >>) -> [s]
 | (Some <:vala< li >>, <:vala<  s >>) -> (string_list_of_longident li)@[s]
 | _ -> assert False
-][@ocaml.warning "-11";]
+]
 ;
 
 value is_uident s =
@@ -357,4 +357,3 @@ value rec expr_concat e1 e2 =
 
   ]
 ;
- 

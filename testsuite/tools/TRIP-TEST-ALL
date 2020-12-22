@@ -24,9 +24,6 @@ for v in \
     4.02.2 \
     4.02.1 \
     4.02.0 \
-    4.01.0 \
-    4.00.1 \
-    4.00.0 \
 	     ;
     do
     testsuite/tools/TRIP-TEST $v
