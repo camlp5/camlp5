@@ -462,13 +462,15 @@ value ocaml_mkfield_var loc =
 ;
 
 IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
-value convert_camlp5_variance (va, _) =
+value convert_camlp5_variance (va, inj) = do {
+  assert (inj = False) ;
   let va = match va with [
     Some False -> Contravariant
   | Some True -> Covariant
   | _ -> Invariant ] in
   va
-  ;
+}
+;
 ELSE
 value convert_camlp5_variance (va, inj) =
   let va = match va with [

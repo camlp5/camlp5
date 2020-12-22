@@ -325,10 +325,10 @@ let longident_lident_of_string_list loc =
 ;;
 
 let string_list_of_longident_lident =
-  (function
-     None, s -> [s]
-   | Some li, s -> string_list_of_longident li @ [s]
-   | _ -> assert false)[@ocaml.warning "-11"]
+  function
+    None, s -> [s]
+  | Some li, s -> string_list_of_longident li @ [s]
+  | _ -> assert false
 ;;
 
 let is_uident s =
@@ -385,4 +385,3 @@ let rec expr_concat e1 e2 =
       Ploc.raise (MLast.loc_of_expr e1)
         (Failure "expr_concat: invalid arguments")
 ;;
- 
