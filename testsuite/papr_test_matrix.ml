@@ -4662,14 +4662,82 @@ END
      r_output = OK {foo|~-#x;
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="injective-type-parameter-syntax"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|module M = struct
+type ! 'a t = private 'a ref
+type +! 'a t = private 'a
+type -!'a t = private 'a -> unit
+type + !'a t = private 'a
+type - ! 'a t = private 'a -> unit
+type !+ 'a t = private 'a
+type !-'a t = private 'a -> unit
+type ! +'a t = private 'a
+type ! -'a t = private 'a -> unit
+end
+|foo} ;
+     official_input = OK {foo|module M = struct
+type ! 'a t = private 'a ref
+type +! 'a t = private 'a
+type -!'a t = private 'a -> unit
+type + !'a t = private 'a
+type - ! 'a t = private 'a -> unit
+type !+ 'a t = private 'a
+type !-'a t = private 'a -> unit
+type ! +'a t = private 'a
+type ! -'a t = private 'a -> unit
+end
+|foo} ;
+     r_input = OK {foo|module M = struct
+type t ! 'a = private ref 'a ;
+type t +! 'a = private 'a ;
+type t -!'a = private 'a -> unit ;
+type t + !'a = private 'a ;
+type t - ! 'a = private 'a -> unit ;
+type t !+ 'a = private 'a ;
+type t !-'a = private 'a -> unit ;
+type t ! +'a = private 'a ;
+type t ! -'a = private 'a -> unit ;
+end ;
+|foo} ;
+     o_output = OK {foo|module M =
+  struct
+    type !'a t = private 'a ref
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+  end;;
+|foo};
+     official_output = OK {foo|module M =
+  struct
+    type !'a t = private 'a ref
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+    type +!'a t = private 'a
+    type -!'a t = private 'a -> unit
+  end|foo} ;
+     r_output = OK {foo|module M =
+  struct
+    type t !α = private ref α;
+    type t +!α = private α;
+    type t -!α = private α → unit;
+    type t +!α = private α;
+    type t -!α = private α → unit;
+    type t +!α = private α;
+    type t -!α = private α → unit;
+    type t +!α = private α;
+    type t -!α = private α → unit;
+  end;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
