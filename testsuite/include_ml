@@ -1,24 +1,24 @@
 #use "../local-install/lib/ocaml/topfind.camlp5";;
 #require "compiler-libs.common" ;;
-#require "ounit2";;
+#require "oUnit";;
 #require "fmt";;
 #require "rresult";;
 #require "pcre";;
 #require "bos";;
-(*
+
 #require "camlp5.pa_op";;
 Pcaml.inter_phrases := Some ";;\n";;
-*)
+(*
 #require "camlp5.pa_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
-(*
-#require "camlp5.pr_o";;
 *)
 
+#require "camlp5.pr_o";;
+
+(*
 #require "camlp5.pr_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
+*)
 
 (*
 #require "camlp5.quotations";;

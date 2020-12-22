@@ -52,7 +52,7 @@ module Original =
       let excl = ["!="; "??"; "?!"] in
       fun x ->
         not (List.mem x excl) && String.length x >= 2 &&
-        List.mem x.[0] list && symbolchar 1 x
+        List.mem x.[0] list && symbolchar_or (fun x -> '#' = x) 1 x
     ;;
     let is_infixop0_0 =
       let list = ['|'] in

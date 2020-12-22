@@ -380,7 +380,7 @@ value question ctx bp buf strm =
         ("ANTIQUOT", "?" ^ s)
     | [: :] ->
         match strm with lexer
-        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+        [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else if force_antiquot_loc.val then
     match strm with parser
     [ [: `'$'; s = antiquot_loc ctx bp $empty; `':' :] ->
@@ -389,10 +389,10 @@ value question ctx bp buf strm =
         ("ANTIQUOT_LOC", "?" ^ s)
     | [: :] ->
         match strm with lexer
-        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+        [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else
     match strm with lexer
-    [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
+    [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
 value tilde ctx bp buf strm =
@@ -404,7 +404,7 @@ value tilde ctx bp buf strm =
         ("ANTIQUOT", "~" ^ s)
     | [: :] ->
         match strm with lexer
-        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+        [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else if force_antiquot_loc.val then
     match strm with parser
     [ [: `'$'; s = antiquot_loc ctx bp $empty; `':' :] ->
@@ -413,10 +413,10 @@ value tilde ctx bp buf strm =
         ("ANTIQUOT_LOC", "~" ^ s)
     | [: :] ->
         match strm with lexer
-        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+        [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else
     match strm with lexer
-    [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
+    [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
 value tildeident =
@@ -638,8 +638,9 @@ value next_token_after_spaces ctx bp =
   | "'" -> keyword_or_error ctx (bp, $pos) "'"
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
   | "$"/ (dollar ctx bp)!
-  | [ '!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
+  | [ '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
       keyword_or_error ctx (bp, $pos) $buf
+  | '!' hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
   | "~"/ 'a'-'z' ident! tildeident!
   | "~"/ '_' ident! tildeident!
   | "~" (tilde ctx bp)

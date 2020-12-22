@@ -730,7 +730,7 @@ let question ctx bp buf strm =
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
-        let buf = ident2 buf strm__ in
+        let buf = hash_follower_chars buf strm__ in
         keyword_or_error ctx (bp, Stream.count strm__)
           (Plexing.Lexbuf.get buf)
   else if !force_antiquot_loc then
@@ -748,12 +748,12 @@ let question ctx bp buf strm =
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
-        let buf = ident2 buf strm__ in
+        let buf = hash_follower_chars buf strm__ in
         keyword_or_error ctx (bp, Stream.count strm__)
           (Plexing.Lexbuf.get buf)
   else
     let (strm__ : _ Stream.t) = strm in
-    let buf = ident2 buf strm__ in
+    let buf = hash_follower_chars buf strm__ in
     keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
 ;;
 
@@ -773,7 +773,7 @@ let tilde ctx bp buf strm =
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
-        let buf = ident2 buf strm__ in
+        let buf = hash_follower_chars buf strm__ in
         keyword_or_error ctx (bp, Stream.count strm__)
           (Plexing.Lexbuf.get buf)
   else if !force_antiquot_loc then
@@ -791,12 +791,12 @@ let tilde ctx bp buf strm =
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
-        let buf = ident2 buf strm__ in
+        let buf = hash_follower_chars buf strm__ in
         keyword_or_error ctx (bp, Stream.count strm__)
           (Plexing.Lexbuf.get buf)
   else
     let (strm__ : _ Stream.t) = strm in
-    let buf = ident2 buf strm__ in
+    let buf = hash_follower_chars buf strm__ in
     keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
 ;;
 
@@ -1174,10 +1174,17 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                   "STRING", Plexing.Lexbuf.get buf
               | Some '$' -> Stream.junk strm__; dollar ctx bp buf strm__
               | Some
-                  ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
+                  ('=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
                    '%' as c) ->
                   Stream.junk strm__;
                   let buf = ident2 (Plexing.Lexbuf.add c buf) strm__ in
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get buf)
+              | Some '!' ->
+                  Stream.junk strm__;
+                  let buf =
+                    hash_follower_chars (Plexing.Lexbuf.add '!' buf) strm__
+                  in
                   keyword_or_error ctx (bp, Stream.count strm__)
                     (Plexing.Lexbuf.get buf)
               | Some '~' ->
@@ -1897,11 +1904,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 993, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 993, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 993, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 994, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 994, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 994, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 994, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 994, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 995, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 995, 37)));
        tok_comm = None}
   in
   let glex =

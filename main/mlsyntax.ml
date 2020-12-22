@@ -37,13 +37,13 @@ value kwdopchar =
 ;
 
 module Original = struct
-
+  
 value is_prefixop =
   let list = ['!'; '?'; '~'] in
   let excl = ["!="; "??"; "?!"] in
   fun x ->
     not (List.mem x excl) && String.length x >= 2 &&
-    List.mem x.[0] list && symbolchar 1 x
+    List.mem x.[0] list && symbolchar_or (fun x -> '#' = x)  1 x
 ;
 
 value is_infixop0_0 =

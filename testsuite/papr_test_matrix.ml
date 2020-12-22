@@ -4574,6 +4574,157 @@ END
 |foo}
     };
 *)
+    {name="hash-extension-operator-1-hash-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|o##x|foo} ;
+     official_input = OK {foo|o##x|foo} ;
+     r_input = OK {foo|o##x;|foo} ;
+     o_output = OK {foo|let _ = o ## x;;
+|foo};
+     official_output = OK {foo|;;o ## x|foo} ;
+     r_output = OK {foo|o ## x;
+|foo}
+    };
+    {name="hash-extension-operator-1-bang-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| !#x |foo} ;
+     official_input = OK {foo| !#x |foo} ;
+     r_input = OK {foo| !#x; |foo} ;
+     o_output = OK {foo|let _ = !#x;;
+|foo};
+     official_output = OK {foo|;;!# x|foo} ;
+     r_output = OK {foo|!#x;
+|foo}
+    };
+    {name="hash-extension-operator-1-question-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|?#x|foo} ;
+     official_input = OK {foo|?#x|foo} ;
+     r_input = OK {foo|?#x;|foo} ;
+     o_output = OK {foo|let _ = ?#x;;
+|foo};
+     official_output = OK {foo|;;?# x|foo} ;
+     r_output = OK {foo|?#x;
+|foo}
+    };
+    {name="hash-extension-operator-1-tilde-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|~#x|foo} ;
+     official_input = OK {foo|~#x|foo} ;
+     r_input = OK {foo|~#x;|foo} ;
+     o_output = OK {foo|let _ = ~#x;;
+|foo};
+     official_output = OK {foo|;;~# x|foo} ;
+     r_output = OK {foo|~#x;
+|foo}
+    };
+    {name="hash-extension-operator-1-hash-dash-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|o#-#x|foo} ;
+     official_input = OK {foo|o#-#x|foo} ;
+     r_input = OK {foo|o#-#x;|foo} ;
+     o_output = OK {foo|let _ = o #-# x;;
+|foo};
+     official_output = OK {foo|;;o #-# x|foo} ;
+     r_output = OK {foo|o #-# x;
+|foo}
+    };
+    {name="hash-extension-operator-1-bang-dash-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| !-#x |foo} ;
+     official_input = OK {foo| !-#x |foo} ;
+     r_input = OK {foo| !-#x; |foo} ;
+     o_output = OK {foo|let _ = !-#x;;
+|foo};
+     official_output = OK {foo|;;!-# x|foo} ;
+     r_output = OK {foo|!-#x;
+|foo}
+    };
+    {name="hash-extension-operator-1-question-dash-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|?-#x|foo} ;
+     official_input = OK {foo|?-#x|foo} ;
+     r_input = OK {foo|?-#x;|foo} ;
+     o_output = OK {foo|let _ = ?-#x;;
+|foo};
+     official_output = OK {foo|;;?-# x|foo} ;
+     r_output = OK {foo|?-#x;
+|foo}
+    };
+    {name="hash-extension-operator-1-tilde-dash-hash"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|~-#x|foo} ;
+     official_input = OK {foo|~-#x|foo} ;
+     r_input = OK {foo|~-#x;|foo} ;
+     o_output = OK {foo|let _ = ~-#x;;
+|foo};
+     official_output = OK {foo|;;~-# x|foo} ;
+     r_output = OK {foo|~-#x;
+|foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
+    {name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    };
     {name="test-prototype"; implem = True ;
      exclude=[];
      o_input = OK {foo||foo} ;
