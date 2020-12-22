@@ -794,7 +794,7 @@ and type_extension loc te =
   let ecstrs = List.map extension_constructor (uv te.teECs) in
   ocaml_type_extension ~item_attributes:(uv_item_attributes te.teAttributes)
     (mkloc loc) (longid_lident_long_id (uv te.teNam))
-    (List.map (fun (p, v) -> (uv p, v)) (uv te.tePrm))
+    (List.map (fun (p, v) -> uv p, v) (uv te.tePrm))
     (if pf then Private else Public) ecstrs
 and patt =
   function

@@ -249,14 +249,18 @@ let ocaml_mkfield_tag ?(alg_attributes = []) loc (lab, x) fl =
 let ocaml_mkfield_var loc = [];;
 
 let convert_camlp5_variance (va, inj) =
-  let va = match va with
-    Some false -> Contravariant
-  | Some true -> Covariant
-  | _ -> NoVariance in
-  let inj = match inj with
-    true -> Injective
-  | false -> NoInjectivity in
-  (va, inj)
+  let va =
+    match va with
+      Some false -> Contravariant
+    | Some true -> Covariant
+    | _ -> NoVariance
+  in
+  let inj =
+    match inj with
+      true -> Injective
+    | false -> NoInjectivity
+  in
+  va, inj
 ;;
 
 let ocaml_ec_tuple ?(alg_attributes = []) loc s (x, rto) =
@@ -301,7 +305,8 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance attrs =
       (fun os va ->
          match os with
            None -> ocaml_mktyp loc Ptyp_any, convert_camlp5_variance va
-         | Some os -> ocaml_mktyp loc (Ptyp_var os), convert_camlp5_variance va)
+         | Some os ->
+             ocaml_mktyp loc (Ptyp_var os), convert_camlp5_variance va)
       params variance
   in
   Right
