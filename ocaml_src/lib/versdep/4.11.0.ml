@@ -122,7 +122,11 @@ let variance_of_bool_bool =
   function
     false, true -> Contravariant
   | true, false -> Covariant
-  | _ -> Invariant
+  | _ -> NoVariance
+;;
+
+let variance_injectivity_of_bool_bool x =
+  variance_of_bool_bool x, NoInjectivity
 ;;
 
 let ocaml_type_declaration tn params cl tk pf tm loc variance =
@@ -135,7 +139,8 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
       let params =
         List.map2
           (fun os va ->
-             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+             ocaml_mktyp loc (Ptyp_var os),
+             variance_injectivity_of_bool_bool va)
           params variance
       in
       Right
@@ -564,7 +569,8 @@ let ocaml_class_infos =
        let params =
          List.map2
            (fun os va ->
-              ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+              ocaml_mktyp loc (Ptyp_var os),
+              variance_injectivity_of_bool_bool va)
            sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;

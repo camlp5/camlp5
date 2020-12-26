@@ -122,7 +122,11 @@ let variance_of_bool_bool =
   function
     false, true -> Contravariant
   | true, false -> Covariant
-  | _ -> Invariant
+  | _ -> NoVariance
+;;
+
+let variance_injectivity_of_bool_bool x =
+  variance_of_bool_bool x, NoInjectivity
 ;;
 
 let ocaml_type_declaration tn params cl tk pf tm loc variance =
@@ -135,7 +139,8 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
       let params =
         List.map2
           (fun os va ->
-             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+             ocaml_mktyp loc (Ptyp_var os),
+             variance_injectivity_of_bool_bool va)
           params variance
       in
       Right
@@ -244,14 +249,14 @@ let ocaml_pconst_char c = Pconst_char c;;
 let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
 let ocaml_pconst_float s = Pconst_float (s, None);;
 
-let ocaml_const_string s loc = Const_string (s, None);;
-let ocaml_pconst_string s loc so = Pconst_string (s, so);;
+let ocaml_const_string s loc = Const_string (s, loc, None);;
+let ocaml_pconst_string s loc so = Pconst_string (s, loc, so);;
 
 let pconst_of_const =
   function
     Const_int i -> ocaml_pconst_int i
   | Const_char c -> ocaml_pconst_char c
-  | Const_string (s, so) -> ocaml_pconst_string s loc_none so
+  | Const_string (s, loc, so) -> ocaml_pconst_string s loc so
   | Const_float s -> ocaml_pconst_float s
   | Const_int32 i32 -> Pconst_integer (Int32.to_string i32, Some 'l')
   | Const_int64 i64 -> Pconst_integer (Int64.to_string i64, Some 'L')
@@ -564,7 +569,8 @@ let ocaml_class_infos =
        let params =
          List.map2
            (fun os va ->
-              ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+              ocaml_mktyp loc (Ptyp_var os),
+              variance_injectivity_of_bool_bool va)
            sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;

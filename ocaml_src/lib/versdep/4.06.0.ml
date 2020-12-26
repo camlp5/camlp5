@@ -98,13 +98,13 @@ let ocaml_class_field loc cfd =
 ;;
 
 let ocaml_mktyp loc x =
-  {ptyp_desc = x; ptyp_loc = loc; ptyp_attributes = []}
+  {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = []; ptyp_attributes = []}
 ;;
 let ocaml_mkpat loc x =
-  {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
+  {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
 ;;
 let ocaml_mkexp loc x =
-  {pexp_desc = x; pexp_loc = loc; pexp_attributes = []}
+  {pexp_desc = x; pexp_loc = loc; pexp_loc_stack = []; pexp_attributes = []}
 ;;
 let ocaml_mkmty loc x =
   {pmty_desc = x; pmty_loc = loc; pmty_attributes = []}
@@ -112,14 +112,21 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkfield loc (lab, x) fl = (lab, x) :: fl;;
+let ocaml_mkfield loc (lab, x) fl =
+  {pof_desc = Otag (mkloc loc lab, x); pof_loc = loc; pof_attributes = []} ::
+  fl
+;;
 let ocaml_mkfield_var loc = [];;
 
 let variance_of_bool_bool =
   function
     false, true -> Contravariant
   | true, false -> Covariant
-  | _ -> Invariant
+  | _ -> NoVariance
+;;
+
+let variance_injectivity_of_bool_bool x =
+  variance_of_bool_bool x, NoInjectivity
 ;;
 
 let ocaml_type_declaration tn params cl tk pf tm loc variance =
@@ -132,7 +139,8 @@ let ocaml_type_declaration tn params cl tk pf tm loc variance =
       let params =
         List.map2
           (fun os va ->
-             ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+             ocaml_mktyp loc (Ptyp_var os),
+             variance_injectivity_of_bool_bool va)
           params variance
       in
       Right
@@ -156,9 +164,12 @@ let ocaml_pmty_ident loc li = Pmty_ident (mkloc loc li);;
 
 
 let ocaml_pmty_functor sloc mt1 mt2 =
-  let (s, mt1) = mustSome "ocaml_pmty_functor" mt1 in
-  let s = mustSome "ocaml_pmty_functor: s" s in
-  Pmty_functor (mkloc sloc s, Some mt1, mt2)
+  let mt1 =
+    match mt1 with
+      None -> Unit
+    | Some (idopt, mt) -> Named (mknoloc idopt, mt)
+  in
+  Pmty_functor (mt1, mt2)
 ;;
 
 let ocaml_pmty_typeof = Some (fun me -> Pmty_typeof me);;
@@ -201,7 +212,6 @@ let ocaml_ptyp_class li tl ll = Ptyp_class (mknoloc li, tl);;
 let ocaml_ptyp_constr loc li tl = Ptyp_constr (mkloc loc li, tl);;
 
 let ocaml_ptyp_object loc ml is_open =
-  let ml = List.map (fun (s, t) -> Otag (mkloc loc s, [], t)) ml in
   Ptyp_object (ml, (if is_open then Open else Closed))
 ;;
 
@@ -218,9 +228,13 @@ let ocaml_ptyp_poly =
 let ocaml_ptyp_variant loc catl clos sl_opt =
   let catl =
     List.map
-      (function
-         Left (c, a, tl) -> Rtag (mkloc loc c, [], a, tl)
-       | Right t -> Rinherit t)
+      (fun c ->
+         let d =
+           match c with
+             Left (c, a, tl) -> Rtag (mkloc loc c, a, tl)
+           | Right t -> Rinherit t
+         in
+         {prf_desc = d; prf_loc = loc; prf_attributes = []})
       catl
   in
   let clos = if clos then Closed else Open in
@@ -235,14 +249,14 @@ let ocaml_pconst_char c = Pconst_char c;;
 let ocaml_pconst_int i = Pconst_integer (string_of_int i, None);;
 let ocaml_pconst_float s = Pconst_float (s, None);;
 
-let ocaml_const_string s loc = Const_string (s, None);;
-let ocaml_pconst_string s loc so = Pconst_string (s, so);;
+let ocaml_const_string s loc = Const_string (s, loc, None);;
+let ocaml_pconst_string s loc so = Pconst_string (s, loc, so);;
 
 let pconst_of_const =
   function
     Const_int i -> ocaml_pconst_int i
   | Const_char c -> ocaml_pconst_char c
-  | Const_string (s, so) -> ocaml_pconst_string s loc_none so
+  | Const_string (s, loc, so) -> ocaml_pconst_string s loc so
   | Const_float s -> ocaml_pconst_float s
   | Const_int32 i32 -> Pconst_integer (Int32.to_string i32, Some 'l')
   | Const_int64 i64 -> Pconst_integer (Int64.to_string i64, Some 'L')
@@ -290,7 +304,10 @@ let ocaml_pexp_construct_args =
 let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
   let a = ocaml_mkexp loc (Pexp_tuple al) in
   {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
-   pexp_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
+   pexp_loc_stack = [];
+   pexp_attributes =
+     [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
+       attr_loc = loc}]}
 ;;
 
 let ocaml_pexp_field loc e li = Pexp_field (e, mkloc loc li);;
@@ -315,9 +332,7 @@ let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 let ocaml_pexp_ident loc li = Pexp_ident (mkloc loc li);;
 
 let ocaml_pexp_letmodule =
-  Some
-    (fun i me e ->
-       Pexp_letmodule (mknoloc (mustSome "ocaml_pexp_letmodule" i), me, e))
+  Some (fun i me e -> Pexp_letmodule (mknoloc i, me, e))
 ;;
 
 let ocaml_pexp_new loc li = Pexp_new (mkloc loc li);;
@@ -326,7 +341,17 @@ let ocaml_pexp_newtype = Some (fun loc s e -> Pexp_newtype (mkloc loc s, e));;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
-let ocaml_pexp_open = Some (fun li e -> Pexp_open (Fresh, mknoloc li, e));;
+let ocaml_pexp_open =
+  Some
+    (fun li e ->
+       Pexp_open
+         ({popen_expr =
+            {pmod_desc = Pmod_ident (mknoloc li); pmod_loc = loc_none;
+             pmod_attributes = []};
+           popen_override = Fresh; popen_loc = loc_none;
+           popen_attributes = []},
+          e))
+;;
 
 let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
@@ -378,7 +403,10 @@ let ocaml_ppat_construct_args =
 let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
   {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
-   ppat_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
+   ppat_loc_stack = [];
+   ppat_attributes =
+     [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
+       attr_loc = loc}]}
 ;;
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
@@ -391,9 +419,7 @@ let ocaml_ppat_record lpl is_closed =
 let ocaml_ppat_type = Some (fun loc li -> Ppat_type (mkloc loc li));;
 
 let ocaml_ppat_unpack =
-  Some
-    ((fun loc s -> Ppat_unpack (mkloc loc (mustSome "ocaml_ppat_unpack" s))),
-     (fun pt -> Ptyp_package pt))
+  Some ((fun loc s -> Ppat_unpack (mkloc loc s)), (fun pt -> Ptyp_package pt))
 ;;
 
 let ocaml_ppat_var loc s = Ppat_var (mkloc loc s);;
@@ -412,8 +438,10 @@ let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
 
 let ocaml_psig_exception loc s ed =
   Psig_exception
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {ptyexn_constructor =
+      {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
+       pext_loc = loc; pext_attributes = []};
+     ptyexn_attributes = []; ptyexn_loc = loc}
 ;;
 
 let ocaml_psig_include loc mt =
@@ -421,7 +449,6 @@ let ocaml_psig_include loc mt =
 ;;
 
 let ocaml_psig_module loc (s : string option) mt =
-  let s = mustSome "ocaml_psig_module" s in
   Psig_module
     {pmd_name = mkloc loc s; pmd_type = mt; pmd_attributes = [];
      pmd_loc = loc}
@@ -437,7 +464,7 @@ let ocaml_psig_modtype loc s mto =
 
 let ocaml_psig_open loc li =
   Psig_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
+    {popen_expr = mknoloc li; popen_override = Fresh; popen_loc = loc;
      popen_attributes = []}
 ;;
 
@@ -445,8 +472,7 @@ let ocaml_psig_recmodule =
   let f ntl =
     let ntl =
       List.map
-        (fun ((s : string option), mt) ->
-           let s = mustSome "ocaml_psig_recmodule" s in
+        (fun (s, mt) ->
            {pmd_name = mknoloc s; pmd_type = mt; pmd_attributes = [];
             pmd_loc = loc_none})
         ntl
@@ -468,16 +494,20 @@ let ocaml_pstr_eval e = Pstr_eval (e, []);;
 
 let ocaml_pstr_exception loc s ed =
   Pstr_exception
-    {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
-     pext_loc = loc; pext_attributes = []}
+    {ptyexn_constructor =
+      {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple ed, None);
+       pext_loc = loc; pext_attributes = []};
+     ptyexn_attributes = []; ptyexn_loc = loc}
 ;;
 
 let ocaml_pstr_exn_rebind =
   Some
     (fun loc s li ->
        Pstr_exception
-         {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
-          pext_loc = loc; pext_attributes = []})
+         {ptyexn_constructor =
+           {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
+            pext_loc = loc; pext_attributes = []};
+          ptyexn_attributes = []; ptyexn_loc = loc})
 ;;
 
 let ocaml_pstr_include =
@@ -495,7 +525,6 @@ let ocaml_pstr_modtype loc s mt =
 ;;
 
 let ocaml_pstr_module loc (s : string option) me =
-  let s = mustSome "ocaml_pstr_module" s in
   let mb =
     {pmb_name = mkloc loc s; pmb_expr = me; pmb_attributes = [];
      pmb_loc = loc}
@@ -505,8 +534,10 @@ let ocaml_pstr_module loc (s : string option) me =
 
 let ocaml_pstr_open loc li =
   Pstr_open
-    {popen_lid = mknoloc li; popen_override = Fresh; popen_loc = loc;
-     popen_attributes = []}
+    {popen_expr =
+      {pmod_desc = Pmod_ident (mknoloc li); pmod_loc = loc_none;
+       pmod_attributes = []};
+     popen_override = Fresh; popen_loc = loc; popen_attributes = []}
 ;;
 
 let ocaml_pstr_primitive s vd = Pstr_primitive vd;;
@@ -516,7 +547,6 @@ let ocaml_pstr_recmodule =
     Pstr_recmodule
       (List.map
          (fun ((s : string option), mt, me) ->
-            let s = mustSome "ocaml_pstr_recmodule" s in
             {pmb_name = mknoloc s; pmb_expr = me; pmb_attributes = [];
              pmb_loc = loc_none})
          nel)
@@ -539,7 +569,8 @@ let ocaml_class_infos =
        let params =
          List.map2
            (fun os va ->
-              ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va)
+              ocaml_mktyp loc (Ptyp_var os),
+              variance_injectivity_of_bool_bool va)
            sl variance
        in
        {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
@@ -553,9 +584,12 @@ let ocaml_pmod_constraint loc me mt =
 let ocaml_pmod_ident li = Pmod_ident (mknoloc li);;
 
 let ocaml_pmod_functor mt me =
-  let (s, mt) = mustSome "ocaml_pmod_functor" mt in
-  let s = mustSome "ocaml_pmod_functor: s" s in
-  Pmod_functor (mknoloc s, Some mt, me)
+  let mt =
+    match mt with
+      None -> Unit
+    | Some (idopt, mt) -> Named (mknoloc idopt, mt)
+  in
+  Pmod_functor (mt, me)
 ;;
 
 let ocaml_pmod_unpack : ('a -> 'b -> 'c, 'd) choice option =
@@ -640,9 +674,18 @@ let ocaml_pcty_signature =
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 let ocaml_pdir_int i s = Pdir_int (i, None);;
-let ocaml_pdir_some x = x;;
-let ocaml_pdir_none = Pdir_none;;
-let ocaml_ptop_dir loc s da = Ptop_dir (s, da);;
+let ocaml_pdir_some x = Some x;;
+let ocaml_pdir_none = None;;
+let ocaml_ptop_dir loc s da =
+  Ptop_dir
+    {pdir_name = mkloc loc s;
+     pdir_arg =
+       begin match da with
+         Some da -> Some {pdira_desc = da; pdira_loc = loc}
+       | None -> None
+       end;
+     pdir_loc = loc}
+;;
 
 let ocaml_pwith_modsubst =
   Some (fun loc me -> Pwith_modsubst (mkloc loc (Lident ""), mkloc loc me))

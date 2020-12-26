@@ -148,29 +148,26 @@ if [ "$oversion" = "" ]; then
   oversion=$(${ocamln}c -v | head -1 | sed 's/^.*version //; s/ .*$//')
 fi
 OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
+STUFFVERSION=$(./config/find_stuffversion.pl $OVERSION)
 
-verspfx=
-if [ "$ocamln" != "ocaml" ]; then verspfx=/$ocamln; fi
-
-if [ -d "ocaml_stuff$verspfx/$OVERSION" -a \
-     -f "ocaml_src/lib/versdep$verspfx/$OVERSION.ml" ]
+if [ -d "ocaml_stuff/$STUFFVERSION" -a \
+     -f "ocaml_src/lib/versdep/$STUFFVERSION.ml" ]
 then :
 else
   echo
   echo "Sorry: the compatibility with ocaml version \"$oversion\""
   echo "is not yet implemented. Please report."
   echo
-  if [ -d "ocaml_stuff$verspfx/$OVERSION" ]; then
-    echo "Information: file ocaml_src/lib/versdep$verspfx/$OVERSION.ml is missing."
+  if [ -d "ocaml_stuff/$STUFFVERSION" ]; then
+    echo "Information: file ocaml_src/lib/versdep/$STUFFVERSION.ml is missing."
   else
-    echo "Information: directory ocaml_stuff$verspfx/$OVERSION is missing."
+    echo "Information: directory ocaml_stuff/$STUFFVERSION is missing."
   fi
   echo
   echo "Configuration failed."
   # to give the ability to do "make steal":
   echo "OVERSION=$OVERSION" > config/Makefile
   echo "OCAMLN=$ocamln" >> config/Makefile
-  echo "VERSDIR=$verspfx" >> config/Makefile
   exit 2
 fi
 
@@ -246,8 +243,8 @@ else
   OCAMLC_W_Y=""
 fi
 
-if [ "$($ocamlc -warn-error A 2>&1)" = "" ]; then
-  WARNERR="-warn-error A"
+if [ "$($ocamlc -warn-error +A-11 2>&1)" = "" ]; then
+  WARNERR="-warn-error +A-11"
 else
   WARNERR=""
 fi
@@ -266,9 +263,8 @@ echo EXE=$EXE
 echo OPT=$OPT
 echo EXT_OBJ=$EXT_OBJ
 echo EXT_LIB=$EXT_LIB
-echo OVERSION=$OVERSION
+echo OVERSION=$STUFFVERSION
 echo VERSION=$VERSION
-echo VERSDIR=$verspfx
 echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo WARNERR=\"$WARNERR\"
 echo NO_PR_DIR=$NO_PR_DIR
@@ -278,13 +274,13 @@ if test "$prefix" != ""; then
   echo PREFIX=$prefix
 fi
 if test "$OVERSION" "<" "4.00.0"; then
-  echo "OTOPP=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/parsing"
-  echo "OTOPW=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/utils"
+  echo "OTOPP=\$(TOP)/ocaml_stuff/$STUFFVERSION/parsing"
+  echo "OTOPW=\$(TOP)/ocaml_stuff/$STUFFVERSION/utils"
 else
   echo "OTOPP=$OCLIBDIR"
   echo "OTOPW=$OCLIBDIR"
 fi
-echo "OTOPU=\$(TOP)/ocaml_stuff$verspfx/$OVERSION/utils"
+echo "OTOPU=\$(TOP)/ocaml_stuff/$STUFFVERSION/utils"
 echo BINDIR=$BINDIR
 echo LIBDIR=$LIBDIR
 echo MANDIR=$MANDIR
@@ -298,7 +294,7 @@ echo >> config/Makefile
 cat config/Makefile.cnf >> config/Makefile
 
 cd ocaml_src/lib
-cp "versdep$verspfx/$OVERSION.ml" versdep.ml
+cp "versdep/$STUFFVERSION.ml" versdep.ml
 cd ../..
 
 echo

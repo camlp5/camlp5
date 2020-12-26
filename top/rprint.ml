@@ -190,6 +190,20 @@ value try_greek s = do {
   else ("'", s)
 };
 
+IFDEF OCAML_VERSION >= OCAML_4_12_0 THEN
+value type_parameter ppf (ty, (var, _)) =
+  let (q, ty) = try_greek ty in
+  fprintf ppf "%s%s%s" (match var with [ Asttypes.Covariant -> "+" | Asttypes.Contravariant ->  "-" | Asttypes.NoVariance -> "" ])
+    q ty
+;
+ELSE
+value type_parameter ppf (ty, (co, cn)) =
+  let (q, ty) = try_greek ty in
+  fprintf ppf "%s%s%s" (if not cn then "+" else if not co then "-" else "")
+    q ty
+;
+END ;
+
 (* Types *)
 
 value rec print_out_type ppf =
@@ -564,11 +578,6 @@ and print_out_type_decl kwd ppf x =
       print_out_type ty'
   in
   let print_constraints ppf params = List.iter (constrain ppf) params in
-  let type_parameter ppf (ty, (co, cn)) =
-    let (q, ty) = try_greek ty in
-    fprintf ppf "%s%s%s" (if not cn then "+" else if not co then "-" else "")
-      q ty
-  in
   let type_defined ppf =
     match args with
     [ [] -> fprintf ppf "%s" name

@@ -210,13 +210,26 @@ value ocaml_mkfield_var loc =
   ELSE [] END
 ;
 
-IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
+IFDEF OCAML_VERSION >= OCAML_4_12_0 THEN
+  value variance_of_bool_bool =
+    fun
+    [ (False, True) -> Contravariant
+    | (True, False) -> Covariant
+    | _ -> NoVariance ]
+  ;
+ELSIFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
   value variance_of_bool_bool =
     fun
     [ (False, True) -> Contravariant
     | (True, False) -> Covariant
     | _ -> Invariant ]
   ;
+END;
+
+IFDEF OCAML_VERSION >= OCAML_4_12_0 THEN
+value variance_injectivity_of_bool_bool x = (variance_of_bool_bool x, NoInjectivity) ;
+ELSE
+value variance_injectivity_of_bool_bool x = variance_of_bool_bool x ;
 END;
 
 value ocaml_type_declaration tn params cl tk pf tm loc variance =
@@ -272,7 +285,7 @@ value ocaml_type_declaration tn params cl tk pf tm loc variance =
           let params =
             List.map2
               (fun os va ->
-                 (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va))
+                 (ocaml_mktyp loc (Ptyp_var os), variance_injectivity_of_bool_bool va))
               params variance
           in
           Right
@@ -1317,7 +1330,7 @@ value ocaml_class_infos =
          let params =
            List.map2
             (fun os va ->
-               (ocaml_mktyp loc (Ptyp_var os), variance_of_bool_bool va))
+               (ocaml_mktyp loc (Ptyp_var os), variance_injectivity_of_bool_bool va))
             sl variance
          in
          {pci_virt = virt; pci_params = params; pci_name = mkloc loc name;
