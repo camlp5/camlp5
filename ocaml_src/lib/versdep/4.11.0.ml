@@ -122,12 +122,10 @@ let variance_of_bool_bool =
   function
     false, true -> Contravariant
   | true, false -> Covariant
-  | _ -> NoVariance
+  | _ -> Invariant
 ;;
 
-let variance_injectivity_of_bool_bool x =
-  variance_of_bool_bool x, NoInjectivity
-;;
+let variance_injectivity_of_bool_bool x = variance_of_bool_bool x;;
 
 let ocaml_type_declaration tn params cl tk pf tm loc variance =
   match list_map_check (fun s_opt -> s_opt) params with

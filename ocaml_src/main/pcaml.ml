@@ -7,7 +7,7 @@
 
 open Printf;;
 
-let version = "7.13";;
+let version = "7.14";;
 let syntax_name = ref "";;
 
 let ocaml_version =
@@ -16,7 +16,7 @@ let ocaml_version =
       Versdep.sys_ocaml_version
     else
       match Versdep.sys_ocaml_version.[i] with
-        ' ' | '+' -> String.sub Versdep.sys_ocaml_version 0 i
+        ' ' | '+' | '~' -> String.sub Versdep.sys_ocaml_version 0 i
       | _ -> loop (i + 1)
   in
   loop 0

@@ -1,3 +1,10 @@
+Camlp5 Version 7.14:
+--------------------
+
+* [26 Dec 20] Support for Ocaml 4.12.0, also updated configure so that
+  if a base version (e.g. 4.10.0) is supported, then so are all minor
+  versions (e.g. 4.10.2).
+
 Camlp5 Version 7.13:
 --------------------
 
