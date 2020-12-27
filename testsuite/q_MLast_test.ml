@@ -50,7 +50,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
       ;{
         name = "patt-patt-any";
         code = {foo| match x with [ <:patt< _ >> -> 1 ]; |foo} ;
-        expect = {foo|match x with [ MLast.PaAny _ → 1 ];
+        expect = {foo|match x with [ MLast.PaAny _ -> 1 ];
 |foo}
       }
       ; { name = "expr-apply-1" ;
@@ -60,7 +60,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         }
       ; { name = "expr-apply-2" ;
           expect = {foo|fun
-[ MLast.ExApp _ _ e2 → 1 ];
+[ MLast.ExApp _ _ e2 -> 1 ];
 |foo} ;
           code = {foo|fun [ <:expr< $_$ $e2$ >> -> 1 ];|foo}
         }
@@ -282,7 +282,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
          MLast.tdNam = Ploc.VaVal (_, Ploc.VaVal x);
          MLast.tdPrm = Ploc.VaVal _; MLast.tdPrv = Ploc.VaVal _;
          MLast.tdDef = MLast.TyOpn _; MLast.tdCon = Ploc.VaVal [];
-         MLast.tdAttributes = _}]) →
+         MLast.tdAttributes = _}]) ->
     1 ];
 |foo} ;
           code = {foo|fun [ <:sig_item< type $lid:x$ $list:_$ = $priv:_$ .. $_itemattrs:_$ >> -> 1 ] ;|foo}
@@ -305,7 +305,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         }
       ; { name = "attribute-body-1" ;
           expect = {foo|fun
-[ (Ploc.VaVal (_, "add"), MLast.StAttr _ (Ploc.VaVal [si])) → si ];
+[ (Ploc.VaVal (_, "add"), MLast.StAttr _ (Ploc.VaVal [si])) -> si ];
 |foo} ;
           code = {foo|fun [ <:attribute_body< "add" $stri:si$ ; >> -> si ] ;|foo}
         }
@@ -330,7 +330,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
           expect = {foo|fun
 [ MLast.ExTup loc
     (Ploc.VaVal
-       [MLast.ExLid _ (Ploc.VaVal x); MLast.ExLid _ (Ploc.VaVal y)]) →
+       [MLast.ExLid _ (Ploc.VaVal x); MLast.ExLid _ (Ploc.VaVal y)]) ->
     1 ];
 |foo} ;
           code = {foo|fun [ <:expr:< ($lid:x$, $lid:y$) >> -> 1 ] ;|foo}
@@ -342,19 +342,19 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         }
       ; { name = "generic-constructor-1" ;
           expect = {foo|fun
-[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) → 1 ];
+[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) -> 1 ];
 |foo} ;
           code = {foo|fun [ <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:l$ >> -> 1 ];|foo}
         }
       ; { name = "generic-constructor-2" ;
           expect = {foo|fun
-[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) as gc → 1 ];
+[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) as gc -> 1 ];
 |foo} ;
           code = {foo|fun [ <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:l$ >> as gc -> 1 ];|foo}
         }
       ; { name = "generic-constructor-3" ;
           expect = {foo|match b with
-[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, _) as gc → 1 ];
+[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, _) as gc -> 1 ];
 |foo} ;
           code = {foo|match b with [
     <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:_$ >> as gc -> 1 ];|foo}

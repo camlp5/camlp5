@@ -12,6 +12,8 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
 	extfun_test reloc_test o_top_test r_top_test grammar_bug_test little_lang_test
 
+export LC_ALL=C
+
 all-tests: all $(TESTS)
 
 all: prereqs roundtrippers \

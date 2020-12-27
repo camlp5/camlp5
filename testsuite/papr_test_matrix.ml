@@ -255,7 +255,7 @@ value x = 1;
 |foo} ;
      official_output = OK {foo|;;fun (x|((y)[@foo ])) -> 1|foo} ;
      r_output = OK {foo|fun
-[ x | y[@"foo"] → 1 ];
+[ x | y[@"foo"] -> 1 ];
 |foo}
     };
     {name="alg_attribute12"; implem = True ;
@@ -427,7 +427,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|type t[@@a];;
 |foo};
      official_output = OK {foo|type t[@@a ]|foo} ;
-     r_output = OK {foo|type t = α[@@"a"];
+     r_output = OK {foo|type t = 'a[@@"a"];
 |foo}
     };
     {name="exception-decl-attributes1"; implem = True ;
@@ -692,7 +692,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|let _ = match x with exception E -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | exception E -> 1|foo};
-     r_output = OK {foo|match x with [ exception E → 1 ];
+     r_output = OK {foo|match x with [ exception E -> 1 ];
 |foo}
     };
     {name="pat-exception2"; implem = True ;
@@ -703,7 +703,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|let _ = match x with exception E.F -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | exception E.F -> 1|foo};
-     r_output = OK {foo|match x with [ exception E.F → 1 ];
+     r_output = OK {foo|match x with [ exception E.F -> 1 ];
 |foo}
     };
     {name="pat-exception3"; implem = True ;
@@ -714,7 +714,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|let _ = match x with exception E.F _ -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | exception E.F _ -> 1|foo};
-     r_output = OK {foo|match x with [ exception E.F _ → 1 ];
+     r_output = OK {foo|match x with [ exception E.F _ -> 1 ];
 |foo}
     };
     {name="unary-plus1"; implem = True ;
@@ -1072,7 +1072,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"];;
 |foo};
      official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
-     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@"a" "msg";];
+     r_output = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"[@@"a" "msg";];
 |foo}
     };
     {name="external-operator-str-item"; implem = True ;
@@ -1086,7 +1086,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"];;
 |foo};
      official_output = OK {foo|external (&) : bool -> bool -> bool = "%sequand"[@@a "msg"]|foo} ;
-     r_output = OK {foo|external ( & ) : bool → bool → bool = "%sequand"[@@"a" "msg";];
+     r_output = OK {foo|external ( & ) : bool -> bool -> bool = "%sequand"[@@"a" "msg";];
 |foo}
     };
     {name="expr-1"; implem = True ;
@@ -1152,7 +1152,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|let _ = match x with x, [%a] -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | (x, [%a ]) -> 1|foo} ;
-     r_output = OK {foo|match x with (x, [%"a"]) → 1;
+     r_output = OK {foo|match x with (x, [%"a"]) -> 1;
 |foo}
     };
     {name="alg-extension-expr"; implem = True ;
@@ -1185,7 +1185,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|module type S = sig [%%a] type t end;;
 |foo};
      official_output = OK {foo|module type S  = sig [%%a ] type t end|foo} ;
-     r_output = OK {foo|module type S = sig [%%"a"]; type t = α; end;
+     r_output = OK {foo|module type S = sig [%%"a"]; type t = 'a; end;
 |foo}
     };
     {name="alg-extension-module-expr"; implem = True ;
@@ -1208,7 +1208,7 @@ and t2 = bool[@@"foo"];
 |foo};
      official_output = OK {foo|module S = struct [%%a ]
                   type t end|foo} ;
-     r_output = OK {foo|module S = struct [%%"a"]; type t = α; end;
+     r_output = OK {foo|module S = struct [%%"a"]; type t = 'a; end;
 |foo}
     };
     {name="alg-extension-class-sig-item"; implem = True ;
@@ -1427,7 +1427,7 @@ and t2 = bool[@@"foo"];
 |foo};
      official_output = OK {foo|type tlist = {
   x: 'a . 'a list }|foo} ;
-     r_output = OK {foo|type tlist = { x : ! α . list α };
+     r_output = OK {foo|type tlist = { x : ! 'a . list 'a };
 |foo}
     };
     {name="unreachable-1"; implem = True ;
@@ -1438,7 +1438,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|let _ = match x with pat -> .;;
 |foo};
      official_output = OK {foo|;;match x with | pat -> .|foo} ;
-     r_output = OK {foo|match x with pat → .;
+     r_output = OK {foo|match x with pat -> .;
 |foo}
     };
     {name="unreachable-2"; implem = True ;
@@ -1570,7 +1570,7 @@ and t2 = bool[@@"foo"];
 |foo} ;
      official_output = OK {foo|type 'a t +=  
   | A of int |foo} ;
-     r_output = OK {foo|type t α +=
+     r_output = OK {foo|type t 'a +=
   [ A of int ];
 |foo}
     };
@@ -1605,10 +1605,10 @@ and t2 = bool[@@"foo"];
      official_output = OK {foo|type 'a t = 'a list =
   | [] 
   | (::) of 'a * 'a list |foo} ;
-     r_output = OK {foo|type t α =
-  list α ==
+     r_output = OK {foo|type t 'a =
+  list 'a ==
     [ []
-    | ( :: ) of α and list α ];
+    | ( :: ) of 'a and list 'a ];
 |foo}
     };
     {name="extend-types-with-reference1"; implem = True ;
@@ -1713,7 +1713,7 @@ and t2 = bool[@@"foo"];
      o_output = OK {foo|type ('a, 'b) s = ('b, 'a) M.N(P).t;;
 |foo};
      official_output = OK {foo|type ('a, 'b) s = ('b, 'a) M.N(P).t|foo} ;
-     r_output = OK {foo|type s α β = M.N(P).t β α;
+     r_output = OK {foo|type s 'a 'b = M.N(P).t 'b 'a;
 |foo}
     };
     {name="sig-open1"; implem = False ;
@@ -1816,11 +1816,11 @@ and t2 = bool[@@"foo"];
      exclude=[];
      o_input = OK {foo|let f : 'a . 'a -> 'a  = fun x -> x|foo} ;
      official_input = OK {foo|let f : 'a . 'a -> 'a  = fun x -> x|foo} ;
-     r_input = OK {foo|value (f : ! 'a . 'a → 'a) = fun x -> x;|foo} ;
+     r_input = OK {foo|value (f : ! 'a . 'a -> 'a) = fun x -> x;|foo} ;
      o_output = OK {foo|let f : 'a . 'a -> 'a = fun x -> x;;
 |foo};
      official_output = OK {foo|let f : 'a . 'a -> 'a = fun x -> x|foo} ;
-     r_output = OK {foo|value f : ! α . α → α = fun x → x;
+     r_output = OK {foo|value f : ! 'a . 'a -> 'a = fun x -> x;
 |foo}
     };
 IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
@@ -1957,7 +1957,7 @@ END ;
      o_output = OK {foo|let _ = [%foo (fun x -> ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((fun x -> ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%"foo" (fun x → ())[@"foo"];];
+     r_output = OK {foo|[%"foo" (fun x -> ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions6"; implem = True ;
@@ -1968,7 +1968,7 @@ END ;
      o_output = OK {foo|let _ = [%foo (fun x -> ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((fun x -> ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%"foo" (fun x → ())[@"foo"];];
+     r_output = OK {foo|[%"foo" (fun x -> ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions6-official2official"; implem = True ;
@@ -1988,7 +1988,7 @@ END ;
      o_output = OK {foo|let _ = [%foo (try () with _ -> ())[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((try () with | _ -> ())[@foo ])]|foo} ;
-     r_output = OK {foo|[%"foo" (try () with _ → ())[@"foo"];];
+     r_output = OK {foo|[%"foo" (try () with _ -> ())[@"foo"];];
 |foo}
     };
     {name="inline-extensions8"; implem = True ;
@@ -2096,7 +2096,7 @@ END ;
      o_output = OK {foo|let _ = [%foo (match () with x -> x)[@foo]];;
 |foo};
      official_output = OK {foo|;;[%foo ((match () with | x -> x)[@foo ])]|foo} ;
-     r_output = OK {foo|[%"foo" (match () with x → x)[@"foo"];];
+     r_output = OK {foo|[%"foo" (match () with x -> x)[@"foo"];];
 |foo}
     };
     {name="inline-extensions17"; implem = True ;
@@ -2107,7 +2107,7 @@ END ;
      o_output = OK {foo|let _ = match x with [%foo? lazy x[@foo]] -> ();;
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?(((lazy x))[@foo ])] -> ()|foo} ;
-     r_output = OK {foo|match x with [%"foo"? lazy x[@"foo"]] → ();
+     r_output = OK {foo|match x with [%"foo"? lazy x[@"foo"]] -> ();
 |foo}
     };
     {name="inline-extensions18"; implem = True ;
@@ -2118,7 +2118,7 @@ END ;
      o_output = OK {foo|let _ = match x with [%foo? exception x[@foo]] -> ();;
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> ()|foo} ;
-     r_output = OK {foo|match x with [%"foo"? exception x[@"foo"]] → ();
+     r_output = OK {foo|match x with [%"foo"? exception x[@"foo"]] -> ();
 |foo}
     };
     {name="inline-extensions18b"; implem = True ;
@@ -2133,8 +2133,8 @@ END ;
 |foo};
      official_output = OK {foo|;;match x with | [%foo ?((exception x)[@foo ])] -> () | Y -> ()|foo} ;
      r_output = OK {foo|match x with
-[ [%"foo"? exception x[@"foo"]] → ()
-| Y → () ];
+[ [%"foo"? exception x[@"foo"]] -> ()
+| Y -> () ];
 |foo}
     };
     {name="inline-extensions19"; implem = True ;
@@ -2415,7 +2415,7 @@ END ;
      official_output = OK {foo|module M = ((functor (M : S) -> ((((val
   x))[@foo2 ]))(((struct  end)[@foo3 ])))[@foo1 ])|foo} ;
      r_output = OK {foo|module M =
-  (functor (M : S) → ((value x)[@"foo2"]) (struct  end[@"foo3"]))[@"foo1"];
+  (functor (M : S) -> ((value x)[@"foo2"]) (struct  end[@"foo3"]))[@"foo1"];
 |foo}
     };
     {name="inline-attributes-5a"; implem = True ;
@@ -2440,7 +2440,7 @@ END ;
     (module type of[@foo2] M) ->
     (sig[@foo3] end)|foo} ;
      r_input = OK {foo|module type S =
-  (functor (M : S) →
+  (functor (M : S) ->
     ((module type of M)[@foo2]) -> sig  end[@foo3])[@foo1];
 |foo} ;
      o_output = OK {foo|module type S =
@@ -2451,8 +2451,8 @@ END ;
   ((functor (M : S) -> ((module type of M)[@foo2 ]) -> ((sig  end)[@foo3 ]))
   [@foo1 ])|foo} ;
      r_output = OK {foo|module type S =
-  ((functor (M : S) →
-    functor (_ : (module type of M)[@"foo2"]) → sig  end[@"foo3"])[@"foo1"]);
+  ((functor (M : S) ->
+    functor (_ : (module type of M)[@"foo2"]) -> sig  end[@"foo3"])[@"foo1"]);
 |foo}
     };
     {name="inline-attributes-6"; implem = True ;
@@ -2774,7 +2774,7 @@ and M : S[@@"foo"];];
      exclude=["r2official"];
      o_input = OK {foo|let f (Some x) = 1|foo} ;
      official_input = OK {foo|let f (Some x) = 1|foo} ;
-     r_input = OK {foo|value f = fun [ Some x → 1 ];|foo} ;
+     r_input = OK {foo|value f = fun [ Some x -> 1 ];|foo} ;
      o_output = OK {foo|let f =
   function
     Some x -> 1;;
@@ -2782,19 +2782,19 @@ and M : S[@@"foo"];];
      official_output = OK {foo|let f (Some x) = 1|foo} ;
      r_output = OK {foo|value f =
   fun
-  [ Some x → 1 ];
+  [ Some x -> 1 ];
 |foo}
     };
     {(skip) with
      name="refutable-funarg-1-r2official" ;
-     r_input = OK {foo|value f = fun [ Some x → 1 ];|foo} ;
+     r_input = OK {foo|value f = fun [ Some x -> 1 ];|foo} ;
      official_output = OK {foo|let f ((Some (x))[@ocaml.explicit_arity ]) = 1|foo}
     };
     {name="refutable-funarg-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f (A : t) = 1|foo} ;
      official_input = OK {foo|let f (A : t) = 1|foo} ;
-     r_input = OK {foo|value f = fun [ (A : t) → 1 ];|foo} ;
+     r_input = OK {foo|value f = fun [ (A : t) -> 1 ];|foo} ;
      o_output = OK {foo|let f =
   function
     (A : t) -> 1;;
@@ -2802,7 +2802,7 @@ and M : S[@@"foo"];];
      official_output = OK {foo|let f (A : t) = 1|foo} ;
      r_output = OK {foo|value f =
   fun
-  [ (A : t) → 1 ];
+  [ (A : t) -> 1 ];
 |foo}
     };
     {name="gadt-nats1"; implem = True ;
@@ -2820,11 +2820,11 @@ and M : S[@@"foo"];];
 	  | NS : 'a nat -> 'a succ nat
 |foo} ;
      r_input = OK {foo|type zero = [ Zero ];
-type succ α =
-  [ Succ of α ];
+type succ 'a =
+  [ Succ of 'a ];
 type nat _ =
   [ NZ : nat zero
-  | NS of nat α : nat (succ α) ];|foo} ;
+  | NS of nat 'a : nat (succ 'a) ];|foo} ;
      o_output = OK {foo|type zero = Zero;;
 type 'a succ =
     Succ of 'a;;
@@ -2840,11 +2840,11 @@ type _ nat =
   | NZ: zero nat 
   | NS: 'a nat -> 'a succ nat |foo} ;
      r_output = OK {foo|type zero = [ Zero ];
-type succ α =
-  [ Succ of α ];
+type succ 'a =
+  [ Succ of 'a ];
 type nat _ =
   [ NZ : nat zero
-  | NS of nat α : nat (succ α) ];
+  | NS of nat 'a : nat (succ 'a) ];
 |foo}
     };
     {name="gadt-basic-1"; implem = True ;
@@ -2961,7 +2961,7 @@ type nat _ =
      o_output = OK {foo|let _ = fun (type a) (x : a) -> x;;
 |foo};
      official_output = OK {foo|;;fun (type a) -> fun (x : a) -> x|foo} ;
-     r_output = OK {foo|fun (type a) (x : a) → x;
+     r_output = OK {foo|fun (type a) (x : a) -> x;
 |foo}
     };
     {name="gadt-5b"; implem = True ;
@@ -2972,7 +2972,7 @@ type nat _ =
      o_output = OK {foo|let _ = fun (type a) (type b) (x : a) -> x;;
 |foo};
      official_output = OK {foo|;;fun (type a) -> fun (type b) -> fun (x : a) -> x|foo} ;
-     r_output = OK {foo|fun (type a) (type b) (x : a) → x;
+     r_output = OK {foo|fun (type a) (type b) (x : a) -> x;
 |foo}
     };
     {name="gadt-5c"; implem = True ;
@@ -3016,11 +3016,11 @@ type nat _ =
      o_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()
 |foo} ;
      official_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()|foo} ;
-     r_input = OK {foo|value magic : ! 'a 'b . 'a → 'b = ();|foo} ;
+     r_input = OK {foo|value magic : ! 'a 'b . 'a -> 'b = ();|foo} ;
      o_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ();;
 |foo} ;
      official_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ()|foo} ;
-     r_output = OK {foo|value magic : ! α β . α → β = ();
+     r_output = OK {foo|value magic : ! 'a 'b . 'a -> 'b = ();
 |foo}
     };
     {name="gadt-6"; implem = True ;
@@ -3045,17 +3045,17 @@ type nat _ =
         (struct type 'a t = unit end)
     in M.f Refl
 |foo} ;
-     r_input = OK {foo|value magic : ! 'a 'b . 'a → 'b =
-  fun (type a) (type b) (x : a) →
+     r_input = OK {foo|value magic : ! 'a 'b . 'a -> 'b =
+  fun (type a) (type b) (x : a) ->
     let module M =
-      (functor (T : sig type t α = β; end) →
+      (functor (T : sig type t 'a = 'b; end) ->
          struct
            value f =
              fun
-             [ (Refl : eq (T.t a) (T.t b)) → (x :> b) ]
+             [ (Refl : eq (T.t a) (T.t b)) -> (x :> b) ]
            ;
          end)
-        (struct type t α = unit; end)
+        (struct type t 'a = unit; end)
     in
     M.f Refl;|foo} ;
      o_output = OK {foo|let magic : 'a 'b . 'a -> 'b =
@@ -3082,17 +3082,17 @@ type nat _ =
                                                                     unit
                                                                   end) in
           M.f Refl|foo} ;
-     r_output = OK {foo|value magic : ! α β . α → β =
-  fun (type a) (type b) (x : a) →
+     r_output = OK {foo|value magic : ! 'a 'b . 'a -> 'b =
+  fun (type a) (type b) (x : a) ->
     let module M =
-      (functor (T : sig type t α = β; end) →
+      (functor (T : sig type t 'a = 'b; end) ->
          struct
            value f =
              fun
-             [ (Refl : eq (T.t a) (T.t b)) → (x :> b) ]
+             [ (Refl : eq (T.t a) (T.t b)) -> (x :> b) ]
            ;
          end)
-        (struct type t α = unit; end)
+        (struct type t 'a = unit; end)
     in
     M.f Refl;
 |foo}
@@ -3117,8 +3117,8 @@ type nat _ =
      official_input = OK {foo|module GZ : functor (X: sig end) () (Z: sig end) -> sig end
           = functor (X: sig end) () (Z: sig end) -> struct end|foo} ;
      r_input = OK {foo|module GZ :
-  functor (X : sig  end) → functor () → functor (Z : sig  end) → sig  end =
-  functor (X : sig  end) → functor () → functor (Z : sig  end) → struct  end;|foo} ;
+  functor (X : sig  end) -> functor () -> functor (Z : sig  end) -> sig  end =
+  functor (X : sig  end) -> functor () -> functor (Z : sig  end) -> struct  end;|foo} ;
      o_output = OK {foo|module GZ :
   functor (X : sig  end) -> functor () -> functor (Z : sig  end) -> sig  end =
   functor (X : sig  end) ->
@@ -3130,8 +3130,9 @@ type nat _ =
     functor (X : sig  end) ->
       functor () -> functor (Z : sig  end) -> sig  end)|foo} ;
      r_output = OK {foo|module GZ :
-  functor (X : sig  end) → functor () → functor (Z : sig  end) → sig  end =
-  functor (X : sig  end) → functor () → functor (Z : sig  end) → struct  end;
+  functor (X : sig  end) -> functor () -> functor (Z : sig  end) -> sig  end =
+  functor (X : sig  end) ->
+    functor () -> functor (Z : sig  end) -> struct  end;
 |foo}
     };
     {name="type-decl-1"; implem = True ;
@@ -3147,7 +3148,7 @@ type nat _ =
   x: 'a ;
   y: 'b } -> 'a t |foo} ;
      r_output = OK {foo|type t _ =
-  [ A of { x : α; y : β } : t α ];
+  [ A of { x : 'a; y : 'b } : t 'a ];
 |foo}
     };
     {name="greek-type-variables-1"; implem = True ;
@@ -3155,36 +3156,36 @@ type nat _ =
      o_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()
 |foo} ;
      official_input = OK {foo|let magic : 'a 'b. 'a -> 'b = ()|foo} ;
-     r_input = OK {foo|value magic : ! α β . α → β = ();|foo} ;
+     r_input = OK {foo|value magic : ! 'a 'b . 'a -> 'b = ();|foo} ;
      o_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ();;
 |foo} ;
      official_output = OK {foo|let magic : 'a 'b . 'a -> 'b = ()|foo} ;
-     r_output = OK {foo|value magic : ! α β . α → β = ();
+     r_output = OK {foo|value magic : ! 'a 'b . 'a -> 'b = ();
 |foo}
     };
     {name="greek-type-variables-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|type 'a succ = Succ of 'a|foo} ;
      official_input = OK {foo|type 'a succ = Succ of 'a|foo} ;
-     r_input = OK {foo|type succ α = [ Succ of α ];|foo} ;
+     r_input = OK {foo|type succ 'a = [ Succ of 'a ];|foo} ;
      o_output = OK {foo|type 'a succ =
     Succ of 'a;;
 |foo};
      official_output = OK {foo|type 'a succ =
   | Succ of 'a |foo} ;
-     r_output = OK {foo|type succ α =
-  [ Succ of α ];
+     r_output = OK {foo|type succ 'a =
+  [ Succ of 'a ];
 |foo}
     };
     {name="type-variable-slots-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
      official_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
-     r_input = OK {foo|fun b → (if b then "x" else "y" : format _ _ _);|foo} ;
+     r_input = OK {foo|fun b -> (if b then "x" else "y" : format _ _ _);|foo} ;
      o_output = OK {foo|let _ = fun b -> (if b then "x" else "y" : (_, _, _) format);;
 |foo};
      official_output = OK {foo|;;fun b -> (if b then "x" else "y" : (_, _, _) format)|foo} ;
-     r_output = OK {foo|fun b → (if b then "x" else "y" : format _ _ _);
+     r_output = OK {foo|fun b -> (if b then "x" else "y" : format _ _ _);
 |foo}
     };
     {name="class-type-member-attribute"; implem = True ;
@@ -3262,9 +3263,9 @@ type nat _ =
      official_output = OK {foo|type ('a, 'b) t =
   | [] 
   | (::) of 'a * 'b * ('a, 'b) t |foo} ;
-     r_output = OK {foo|type t α β =
+     r_output = OK {foo|type t 'a 'b =
   [ []
-  | ( :: ) of α and β and t α β ];
+  | ( :: ) of 'a and 'b and t 'a 'b ];
 |foo}
     };
     {name="exotic-list-2"; implem = True ;
@@ -3278,7 +3279,7 @@ type nat _ =
   Inner.(::) (1, "one", (let open Inner in []))|foo} ;
      r_output = OK {foo|value (x, y) =
   match Inner.( :: ) 1 "one" Inner.[] with
-  [ Inner.( :: ) x y Inner.[] → (x, y) ];
+  [ Inner.( :: ) x y Inner.[] -> (x, y) ];
 |foo}
     };
     {(skip) with
@@ -3292,7 +3293,7 @@ type nat _ =
      name="exotic-list-2-r2official";
      r_input = OK {foo|value (x, y) =
   match Inner.( :: ) 1 "one" Inner.[] with
-  [ Inner.( :: ) x y Inner.[] → (x, y) ];|foo} ;
+  [ Inner.( :: ) x y Inner.[] -> (x, y) ];|foo} ;
      official_output = OK {foo|let (x, y) =
   match ((Inner.(::) (1, "one", Inner.[]))[@ocaml.explicit_arity ]) with
   | ((Inner.(::) (x, y, Inner.[]))[@ocaml.explicit_arity ]) -> (x, y)|foo}
@@ -3717,18 +3718,18 @@ value ( .%{;..}<- ) x y = Hashtbl.add;
      o_output = OK {foo|let _ = function _ -> .;;
 |foo};
      official_output = OK {foo|;;function | _ -> .|foo} ;
-     r_output = OK {foo|fun _ → .;
+     r_output = OK {foo|fun _ -> .;
 |foo}
     };
     {name="extension-type-object-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
      official_input = OK {foo|let [%foo: [`Foo] ] : [%foo: t -> t ] = [%foo: < foo : t > ]|foo} ;
-     r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t → t] = [%foo: < foo : t > ];|foo} ;
+     r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t -> t] = [%foo: < foo : t > ];|foo} ;
      o_output = OK {foo|let ([%foo: [ `Foo ]] : [%foo: t -> t]) = [%foo: < foo : t > ];;
 |foo};
      official_output = OK {foo|let ([%foo :[ `Foo ]] : [%foo :t -> t]) = [%foo :< foo: t   > ]|foo} ;
-     r_output = OK {foo|value [%"foo": [ = `Foo ]] : [%"foo": t → t] = [%"foo": < foo : t > ];
+     r_output = OK {foo|value [%"foo": [ = `Foo ]] : [%"foo": t -> t] = [%"foo": < foo : t > ];
 |foo}
     };
     {name="module-type-with-1"; implem = True ;
@@ -3778,11 +3779,11 @@ end
      exclude=[];
      o_input = OK {foo|match x with M.N.(a,b) -> ()|foo} ;
      official_input = OK {foo|match x with M.N.(a,b) -> ()|foo} ;
-     r_input = OK {foo|match x with M.N.(a, b) → ();|foo} ;
+     r_input = OK {foo|match x with M.N.(a, b) -> ();|foo} ;
      o_output = OK {foo|let _ = match x with M.N.(a, b) -> ();;
 |foo};
      official_output = OK {foo|;;match x with | M.N.((a, b))  -> ()|foo} ;
-     r_output = OK {foo|match x with M.N.(a, b) → ();
+     r_output = OK {foo|match x with M.N.(a, b) -> ();
 |foo}
     };
     {name="type-variables-with-quotes-1"; implem = True ;
@@ -3838,7 +3839,7 @@ end
      o_output = OK {foo|class ['a] c x = object val x' = (x : 'b) end;;
 |foo};
      official_output = OK {foo|class ['a] c x = object val x' = (x : 'b) end|foo} ;
-     r_output = OK {foo|class c ['a] x = object value x' = (x : β); end;
+     r_output = OK {foo|class c ['a] x = object value x' = (x : 'b); end;
 |foo}
     };
     {name="another-bool"; implem = True ;
@@ -3898,7 +3899,7 @@ and u := bool;
      o_output = OK {foo|let _ = fun ?x y -> (x : t);;
 |foo};
      official_output = OK {foo|;;fun ?x -> fun y -> (x : t)|foo} ;
-     r_output = OK {foo|fun ?{x} y → (x : t);
+     r_output = OK {foo|fun ?{x} y -> (x : t);
 |foo}
     };
     {name="let-type-1"; implem = True ;
@@ -3938,22 +3939,22 @@ and u := bool;
      exclude=[];
      o_input = OK {foo|match x with { x } -> ()|foo} ;
      official_input = OK {foo|match x with { x } -> ()|foo} ;
-     r_input = OK {foo|match x with {x = x} → ();|foo} ;
+     r_input = OK {foo|match x with {x = x} -> ();|foo} ;
      o_output = OK {foo|let _ = match x with {x = x} -> ();;
 |foo};
      official_output = OK {foo|;;match x with | { x } -> ()|foo} ;
-     r_output = OK {foo|match x with {x = x} → ();
+     r_output = OK {foo|match x with {x = x} -> ();
 |foo}
     };
     {name="match-patt-record-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|match x with { M.N.x } -> ()|foo} ;
      official_input = OK {foo|match x with { M.N.x } -> ()|foo} ;
-     r_input = OK {foo|match x with {M.N.x = x} → ();|foo} ;
+     r_input = OK {foo|match x with {M.N.x = x} -> ();|foo} ;
      o_output = OK {foo|let _ = match x with {M.N.x = x} -> ();;
 |foo};
      official_output = OK {foo|;;match x with | { M.N.x = x } -> ()|foo} ;
-     r_output = OK {foo|match x with {M.N.x = x} → ();
+     r_output = OK {foo|match x with {M.N.x = x} -> ();
 |foo}
     };
     {name="expr-record-1"; implem = True ;
@@ -4070,29 +4071,29 @@ and u := bool;
      exclude=[];
      o_input = OK {foo|match x with #A.foo as z -> 1|foo} ;
      official_input = OK {foo|match x with #A.foo as z -> 1|foo} ;
-     r_input = OK {foo|match x with [ ( #A.foo ) as z → 1 ];|foo} ;
+     r_input = OK {foo|match x with [ ( #A.foo ) as z -> 1 ];|foo} ;
      o_output = OK {foo|let _ = match x with #A.foo as z -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | #A.foo as z -> 1|foo} ;
-     r_output = OK {foo|match x with [ #A.foo as z → 1 ];
+     r_output = OK {foo|match x with [ #A.foo as z -> 1 ];
 |foo}
     };
     {name="PaTyp-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|match x with #A.B(C).D.foo as z -> 1|foo} ;
      official_input = OK {foo|match x with #A.B(C).D.foo as z -> 1|foo} ;
-     r_input = OK {foo|match x with [ ( #A.B(C).D.foo ) as z → 1 ];|foo} ;
+     r_input = OK {foo|match x with [ ( #A.B(C).D.foo ) as z -> 1 ];|foo} ;
      o_output = OK {foo|let _ = match x with #A.B(C).D.foo as z -> 1;;
 |foo};
      official_output = OK {foo|;;match x with | #A.B(C).D.foo as z -> 1|foo} ;
-     r_output = OK {foo|match x with [ #A.B(C).D.foo as z → 1 ];
+     r_output = OK {foo|match x with [ #A.B(C).D.foo as z -> 1 ];
 |foo}
     };
     {name="variant-type-3"; implem = True ;
      exclude=[];
      o_input = OK {foo|match x with `Foo -> 1 | `Bar (a, b) -> 2|foo} ;
      official_input = OK {foo|match x with `Foo -> 1 | `Bar (a, b) -> 2|foo} ;
-     r_input = OK {foo|match x with [ `Foo → 1 | `Bar (a, b) → 2 ];|foo} ;
+     r_input = OK {foo|match x with [ `Foo -> 1 | `Bar (a, b) -> 2 ];|foo} ;
      o_output = OK {foo|let _ =
   match x with
     `Foo -> 1
@@ -4100,8 +4101,8 @@ and u := bool;
 |foo};
      official_output = OK {foo|;;match x with | `Foo -> 1 | `Bar (a, b) -> 2|foo} ;
      r_output = OK {foo|match x with
-[ `Foo → 1
-| `Bar (a, b) → 2 ];
+[ `Foo -> 1
+| `Bar (a, b) -> 2 ];
 |foo}
     };
     {name="type-attributes-1"; implem = True ;
@@ -4165,7 +4166,7 @@ and u := bool;
      r_input = OK {foo|x[@"with" do {
   core_type.val := Parsetree.core_type[@"printer" Pprintast.core_type;];
   Asttypes.loc.val :=
-    Asttypes.loc[@"polyprinter" fun pp fmt x → pp fmt x.Asttypes.txt;];
+    Asttypes.loc[@"polyprinter" fun pp fmt x -> pp fmt x.Asttypes.txt;];
   Longident.t.val := Longident.t[@"printer" pp_longident;]
 };];
 |foo} ;
@@ -4184,7 +4185,7 @@ and u := bool;
      r_output = OK {foo|x[@"with" do {
   core_type.val := Parsetree.core_type[@"printer" Pprintast.core_type;];
   Asttypes.loc.val :=
-    Asttypes.loc[@"polyprinter" fun pp fmt x → pp fmt x.Asttypes.txt;];
+    Asttypes.loc[@"polyprinter" fun pp fmt x -> pp fmt x.Asttypes.txt;];
   Longident.t.val := Longident.t[@"printer" pp_longident;]
 };];
 |foo}
@@ -4193,11 +4194,11 @@ and u := bool;
      exclude=[];
      o_input = OK {foo|fun () -> 1|foo} ;
      official_input = OK {foo|fun () -> 1|foo} ;
-     r_input = OK {foo|fun () → 1;|foo} ;
+     r_input = OK {foo|fun () -> 1;|foo} ;
      o_output = OK {foo|let _ = fun () -> 1;;
 |foo};
      official_output = OK {foo|;;fun () -> 1|foo} ;
-     r_output = OK {foo|fun () → 1;
+     r_output = OK {foo|fun () -> 1;
 |foo}
     };
     {name="module-expr-include"; implem = True ;
@@ -4219,7 +4220,7 @@ and u := bool;
      o_output = OK {foo|let (f : t) = fun x -> b;;
 |foo};
      official_output = OK {foo|let (f : t) = fun x -> b|foo} ;
-     r_output = OK {foo|value f : t = fun x → b;
+     r_output = OK {foo|value f : t = fun x -> b;
 |foo}
     };
     {(skip) with name="printing-1-[or]2official";
@@ -4259,22 +4260,22 @@ and u := bool;
      exclude=[];
      o_input = OK {foo|fun (x : #ct) -> ()|foo} ;
      official_input = OK {foo|fun (x : #ct) -> ()|foo} ;
-     r_input = OK {foo|fun (x : #ct) → ();|foo} ;
+     r_input = OK {foo|fun (x : #ct) -> ();|foo} ;
      o_output = OK {foo|let _ = fun (x : #ct) -> ();;
 |foo};
      official_output = OK {foo|;;fun (x : #ct) -> ()|foo} ;
-     r_output = OK {foo|fun (x : #ct) → ();
+     r_output = OK {foo|fun (x : #ct) -> ();
 |foo}
     };
     {name="typeconstr-class-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun (x : #A.B.C.ct) -> ()|foo} ;
      official_input = OK {foo|fun (x : #A.B.C.ct) -> ()|foo} ;
-     r_input = OK {foo|fun (x : #A.B.C.ct) → ();|foo} ;
+     r_input = OK {foo|fun (x : #A.B.C.ct) -> ();|foo} ;
      o_output = OK {foo|let _ = fun (x : #A.B.C.ct) -> ();;
 |foo};
      official_output = OK {foo|;;fun (x : #A.B.C.ct) -> ()|foo} ;
-     r_output = OK {foo|fun (x : #A.B.C.ct) → ();
+     r_output = OK {foo|fun (x : #A.B.C.ct) -> ();
 |foo}
     };
     {name="TyCls-args-1"; implem = True ;
@@ -4476,7 +4477,7 @@ END
 |foo};
      official_output = OK {foo|;;fun (true) -> 1|foo} ;
      r_output = OK {foo|fun
-[ True → 1 ];
+[ True -> 1 ];
 |foo}
     };
     {name="patt-True"; implem = True ;
@@ -4490,7 +4491,7 @@ END
 |foo};
      official_output = OK {foo|;;fun (True) -> 1|foo} ;
      r_output = OK {foo|fun
-[ True_ → 1 ];
+[ True_ -> 1 ];
 |foo}
     };
     {name="patt-True-2"; implem = True ;
@@ -4504,7 +4505,7 @@ END
 |foo};
      official_output = OK {foo|;;fun (A.True) -> 1|foo} ;
      r_output = OK {foo|fun
-[ A.True_ → 1 ];
+[ A.True_ -> 1 ];
 |foo}
     };
     {name="dotted-assignment-1"; implem = True ;
@@ -4865,15 +4866,15 @@ end ;
   end|foo} ;
      r_output = OK {foo|module M =
   struct
-    type t !α = private ref α;
-    type t +!α = private α;
-    type t -!α = private α → unit;
-    type t +!α = private α;
-    type t -!α = private α → unit;
-    type t +!α = private α;
-    type t -!α = private α → unit;
-    type t +!α = private α;
-    type t -!α = private α → unit;
+    type t !'a = private ref 'a;
+    type t +!'a = private 'a;
+    type t -!'a = private 'a -> unit;
+    type t +!'a = private 'a;
+    type t -!'a = private 'a -> unit;
+    type t +!'a = private 'a;
+    type t -!'a = private 'a -> unit;
+    type t +!'a = private 'a;
+    type t -!'a = private 'a -> unit;
   end;
 |foo}
     }
