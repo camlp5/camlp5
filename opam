@@ -1,5 +1,5 @@
 name: "camlp5"
-version: "8.00~alpha07"
+version: "8.00"
 opam-version: "2.0"
 synopsis: "Preprocessor-pretty-printer of OCaml"
 description: """
@@ -37,7 +37,8 @@ depends: [
 ]
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
-  [make "DEBUG=-g" "world.opt" "all"]
+  [make -j%{jobs}% "DEBUG=-g" "world.opt"]
+  [make -j%{jobs}% "DEBUG=-g" "all"]
 #  [make "-C" "testsuite" "clean" "all-tests"] { with-test & ocaml:version >= "4.10.0" }
 #  [make "-C" "test" "clean" "all"] {with-test & ocaml:version >= "4.10.0" }
 ]
