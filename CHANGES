@@ -1,4 +1,14 @@
 
+Camlp5 Version 8.00:
+--------------------
+
+* [26 Dec 2020] several changes
+
+  * support ocaml 4.12 syntax: injective type-parameters and prefix-ops containing hash.
+  * debug-printing via pa_ppx -- requiring 'pa_ppx.base' will load
+    'pa_ppx.deriving_plugins.show'-based pretty-printers for Camlp5's AST types.
+
+
 Camlp5 Version 8.00-alpha07:
 --------------------
 

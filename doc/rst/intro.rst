@@ -200,7 +200,7 @@ For original syntax:
    # #camlp5o ;;
    /home/chetsky/Hack/Ocaml/GENERIC/4.10.0/lib/camlp5: added to search path
    /home/chetsky/Hack/Ocaml/GENERIC/4.10.0/lib/camlp5/camlp5o.cma: loaded
-   	Camlp5 parsing version 8.00-alpha01
+   	Camlp5 parsing version 8.00
 
    # 
 
