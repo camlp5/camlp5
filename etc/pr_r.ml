@@ -1671,11 +1671,12 @@ EXTEND_PRINTER
 
         | <:expr< { $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
         | <:expr< {($_$) with $list:_$ } >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
-        | <:expr< $lid:_$ >> -> pprintf pc "%p.@;<0 0>%p" longident li curr e
+        | <:expr:< $lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" longident li var_escaped (loc,v)
 
         | e -> pprintf pc "%p.@;<0 0>@[<a>(%p)@]" longident li expr e
         ]
 
+      | <:expr:< $e$ . $lid:v$ >> -> pprintf pc "%p.@;<0 0>%p" curr e var_escaped (loc,v)
       | <:expr< $e$ . $lilongid:lili$ >> -> pprintf pc "%p.@;<0 0>%p" curr e longident_lident lili
 
       | <:expr< $longid:li$ >> -> longident pc li

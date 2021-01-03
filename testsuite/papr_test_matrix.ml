@@ -856,6 +856,17 @@ and t2 = bool[@@"foo"];
      r_output = OK {foo|M.N.(a + b);
 |foo}
     };
+    {name="dot-parens-5"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|M.N.(+)|foo} ;
+     official_input = OK {foo|M.N.(+)|foo} ;
+     r_input = OK {foo|M.N.(+);|foo} ;
+     o_output = OK {foo|let _ = M.N.(+);;
+|foo};
+     official_output = OK {foo|;;M.N.(+)|foo} ;
+     r_output = OK {foo|M.N.\+ ;
+|foo}
+    };
     {name="dot-curly-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|M.N.{a=b}|foo} ;
