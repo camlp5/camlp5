@@ -301,8 +301,8 @@ package "extend_m" (
 )
 
 package "extend" (
-  error(camlp5o) = "camlp5.extend cannot be used with syntax camlp5o"
-  error(pkg_camlp5.pa_o) = "camlp5.extend cannot be used with camlp5.pa_o"
+  warning(camlp5o) = "camlp5.extend SHOULD NOT be used with syntax camlp5o"
+  warning(pkg_camlp5.pa_o) = "camlp5.extend SHOULD NOT be used with camlp5.pa_o"
 
   requires(toploop) = "camlp5"
   archive(toploop)      = "pa_extend.cmo"
