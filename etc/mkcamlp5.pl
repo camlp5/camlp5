@@ -42,11 +42,11 @@ our $verbose ;
     }
     elsif ($ARGV[0] eq '-package') {
       shift @ARGV ;
-      @packages = split(/,/, shift @ARGV) ;
+      push(@packages, split(/,/, shift @ARGV)) ;
     }
     elsif ($ARGV[0] eq '-predicates') {
       shift @ARGV ;
-      @predicates = split(/,/, shift @ARGV) ;
+      push(@predicates, split(/,/, shift @ARGV)) ;
     }
     elsif ($ARGV[0] =~ m,([^\./]+)\.cmi$,) {
       die "cannot specify .cmi files for $0" if $opt ;
