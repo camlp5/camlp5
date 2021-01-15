@@ -612,7 +612,7 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
   | t →
       let m =
         match t with
-        [ <:ctyp< '$s$ >> →
+        [ <:ctyp< '$s$ >> when cl = [] →
             if List.exists (fun (t, _) → Some s = uv t) tl then Some (ctyp t)
             else None
         | _ → Some (ctyp t) ]

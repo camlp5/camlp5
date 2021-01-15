@@ -4586,14 +4586,16 @@ END
 |foo}
     };
 *)
-    {name="test-prototype"; implem = True ;
+    {name="typedef-with-constraint-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|type 'tuple fst = 'fst constraint 'tuple = 'fst * _ |foo} ;
+     official_input = OK {foo|type 'tuple fst = 'fst constraint 'tuple = 'fst * _ |foo} ;
+     r_input = OK {foo|type fst 'tuple = 'fst constraint 'tuple = ('fst * _); |foo} ;
+     o_output = OK {foo|type 'tuple fst = 'fst constraint 'tuple = 'fst * _;;
+|foo};
+     official_output = OK {foo|type 'tuple fst = 'fst constraint 'tuple = ('fst * _)|foo} ;
+     r_output = OK {foo|type fst 'tuple = 'fst constraint 'tuple = ('fst * _);
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];

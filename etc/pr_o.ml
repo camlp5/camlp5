@@ -584,7 +584,7 @@ value type_decl pc td =
   in
   let asgn = if Pcaml.unvala is_decl then "=" else ":=" in
   match te with
-  [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
+  [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) && Pcaml.unvala cl = [] ->
       pprintf pc "%p%p%p%p" type_params (loc, Pcaml.unvala tp)
         var_escaped (loc, Pcaml.unvala tn)
         (hlist type_constraint) (Pcaml.unvala cl)
