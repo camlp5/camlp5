@@ -51,7 +51,7 @@ depend:
 
 local-install::
 	$(RM) -rf local-install && mkdir -p local-install/lib/ocaml
-	$(MAKE) DESTDIR=`pwd`/local-install/ LIBDIR=lib BINDIR=bin MANDIR=man install
+	$(MAKE) DESTDIR= LIBDIR=`pwd`/local-install/lib BINDIR=`pwd`/local-install/bin MANDIR=man install
 
 install:
 	$(NOVERBOSE) if test -z "$(LIBDIR)"; then \
