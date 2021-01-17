@@ -1,4 +1,9 @@
 
+Camlp5 Version 8.00.01:
+--------------------
+
+* [17 Jan 2021] No big changes, only bugfixes and minor ocaml 4.12.0 changes that should not break any code.
+
 Camlp5 Version 8.00:
 --------------------
 
