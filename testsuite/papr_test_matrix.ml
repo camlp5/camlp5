@@ -4597,23 +4597,35 @@ END
      r_output = OK {foo|type fst 'tuple = 'fst constraint 'tuple = ('fst * _);
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="4.12.0-pr1655-pattern-aliases-do-not-ignore-type-constraints-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|let f = function ([] : int list) as x -> x | x -> x|foo} ;
+     official_input = OK {foo|let f = function ([] : int list) as x -> x | x -> x|foo} ;
+     r_input = OK {foo|value f =
+  fun
+  [ ([] : list int) as x -> x | x -> x ];|foo} ;
+     o_output = OK {foo|let f =
+  function
+    ([] : int list) as x -> x
+  | x -> x;;
+|foo};
+     official_output = OK {foo|let f = function | ([] : int list) as x -> x | x -> x|foo} ;
+     r_output = OK {foo|value f =
+  fun
+  [ ([] : list int) as x -> x
+  | x -> x ];
+|foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="4.12.0-pr9500-injectivity-annotations-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|module Vec : sig type !'a t end = struct type 'a t = 'a array end|foo} ;
+     official_input = OK {foo|module Vec : sig type !'a t end = struct type 'a t = 'a array end|foo} ;
+     r_input = OK {foo|module Vec : sig type t !'a = 'b; end = struct type t 'a = array 'a; end;|foo} ;
+     o_output = OK {foo|module Vec : sig type !'a t end = struct type 'a t = 'a array end;;
+|foo};
+     official_output = OK {foo|module Vec : sig type !'a t end = struct type 'a t = 'a array end |foo} ;
+     r_output = OK {foo|module Vec : sig type t !'a = 'b; end = struct type t 'a = array 'a; end;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
