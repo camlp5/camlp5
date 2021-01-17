@@ -4872,7 +4872,7 @@ end ;
     type t -!'a = private 'a -> unit;
   end;
 |foo}
-    }
+    };
     {name="4.12.0-pr1655-pattern-aliases-do-not-ignore-type-constraints-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f = function ([] : int list) as x -> x | x -> x|foo} ;
