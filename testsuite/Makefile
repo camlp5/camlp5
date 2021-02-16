@@ -83,7 +83,7 @@ extfun_test:: extfun_test.byte
 	./extfun_test.byte
 
 extfun_test.byte: extfun_test.ml testutil.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl extfun_test.ml -o extfun_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl extfun_test.ml -o extfun_test.byte
 
 reloc_test:: reloc_test.byte
 	./reloc_test.byte
@@ -172,14 +172,14 @@ grammar_bug_test:: grammar_bug_test.byte
 	HAS_ARGLE=true ./grammar_bug_test.byte $(TESTARGS)
 
 grammar_bug_test.byte: grammar_bug_test.ml alt_pa_o.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.ml grammar_bug_test.ml -o grammar_bug_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.quotations,camlp5.macro_gram -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.ml grammar_bug_test.ml -o grammar_bug_test.byte
 
 little_lang_test:: little_lang_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./little_lang_test.byte $(TESTARGS)
 
 little_lang_test.byte: little_lang_test.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo little_lang_test.ml -o little_lang_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo little_lang_test.ml -o little_lang_test.byte
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte

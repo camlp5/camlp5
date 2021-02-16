@@ -2,14 +2,6 @@
 (* pa_o.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-#load "pa_extend.cmo";
-#load "q_MLast.cmo";
-#load "pa_macro.cmo";
-#load "pa_extfun.cmo";
-#load "pa_extprint.cmo";
-#load "pa_pprintf.cmo";
-#load "pa_extfun.cmo";
-
 open Testutil;
 open Testutil2;
 

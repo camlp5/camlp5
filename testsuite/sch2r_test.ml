@@ -1,6 +1,5 @@
 (* camlp5r *)
 (* sch2r_test.ml *)
-#load "pa_macro.cmo";
 
 open Testutil ;
 open Testutil2 ;

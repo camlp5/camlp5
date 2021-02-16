@@ -1,9 +1,6 @@
 (* camlp5r *)
 (* pa_ounit2.ml,v *)
 
-#load "pa_extend.cmo";
-#load "q_MLast.cmo";
-
 open Pcaml;
 open Pa_extend;
 

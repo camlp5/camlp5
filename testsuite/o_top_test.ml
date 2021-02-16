@@ -1,6 +1,5 @@
 (* camlp5r *)
 (* o_top_test.ml *)
-#load "pa_macro.cmo";
 
 open OUnit2 ;
 open OUnitTest ;

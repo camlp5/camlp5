@@ -1,7 +1,5 @@
 (* camlp5r *)
 (* grammar_bug_test.ml *)
-#load "pa_macro.cmo";
-#load "q_MLast.cmo";
 
 open OUnit2 ;
 open OUnitTest ;

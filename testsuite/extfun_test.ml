@@ -1,7 +1,5 @@
 (* camlp5r *)
 (* extfun_test.ml *)
-#load "pa_extfun.cmo";
-#load "q_MLast.cmo";
 
 open Testutil;
 
