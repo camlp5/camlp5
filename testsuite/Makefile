@@ -10,7 +10,8 @@ RM=rm
 TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test r2official_test \
         r2sch_test q_MLast_test q_ast_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
-	extfun_test reloc_test o_top_test r_top_test grammar_bug_test little_lang_test
+	extfun_test reloc_test o_top_test r_top_test grammar_bug_test \
+	little_lang_test o_lexer_test r_lexer_test
 
 export LC_ALL=C
 
@@ -40,6 +41,8 @@ all: prereqs roundtrippers \
 	tools/ROUNDTRIP-pa_o-pr_o.opt \
 	grammar_bug_test \
 	little_lang_test \
+	o_lexer_test \
+	r_lexer_test \
 
 prereqs:
 	(perl -MIPC::System::Simple -e 1 > /dev/null 2>&1) || (echo "MUST install Perl module IPC::System::Simple" && exit -1)
@@ -180,6 +183,20 @@ little_lang_test:: little_lang_test.byte
 
 little_lang_test.byte: little_lang_test.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo little_lang_test.ml -o little_lang_test.byte
+
+o_lexer_test:: o_lexer_test.byte
+	$(NOVERBOSE) mkdir -p _build
+	./o_lexer_test.byte $(TESTARGS)
+
+o_lexer_test.byte: o_lexer_test.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo o_lexer_test.ml -o o_lexer_test.byte
+
+r_lexer_test:: r_lexer_test.byte
+	$(NOVERBOSE) mkdir -p _build
+	./r_lexer_test.byte $(TESTARGS)
+
+r_lexer_test.byte: r_lexer_test.ml
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo r_lexer_test.ml -o r_lexer_test.byte
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte

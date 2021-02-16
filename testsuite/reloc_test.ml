@@ -16,7 +16,7 @@ value suite = "reloc" >::: [
   "simplest" >:: (fun [ _ ->
     let a = {foo| [%"nterm"] |foo} |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr in
     let b = {foo|   [%"nterm"] |foo} |> Stream.of_string |> Grammar.Entry.parse Pcaml.expr in
-    assert_bool "should be equal" (Reloc.eq_expr a b)
+    assert_equal ~{msg="should be equal"} ~{cmp=Reloc.eq_expr} a b
   ])
 ]
 ;

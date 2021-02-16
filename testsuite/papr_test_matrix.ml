@@ -1404,7 +1404,7 @@ and t2 = bool[@@"foo"];
      official_input = OK {foo|{|argle|}|foo} ;
      r_input = EXN {foo|{|argle|}|foo}
                    (Ploc.Exc Ploc.dummy
-                              (Stdlib.Stream.Error "'(' or [label_expr] expected after '{' (in [expr])"));
+                              (Stdlib.Stream.Error "illegal begin of implem"));
      o_output = OK {foo|let _ = "argle";;
 |foo};
      official_output = SKIP "meh" "meh" ;

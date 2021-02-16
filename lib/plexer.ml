@@ -540,7 +540,13 @@ value comment ctx bp =
 
 value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
   if not (raw_string_starter_p ctx strm) then
-    keyword_or_error ctx loc "{"
+    match stream_peek_nth 1 strm with [
+      Some '|' when not ctx.simplest_raw_strings -> do {
+        Stream.junk strm ;
+        keyword_or_error ctx loc "{|" ;
+      }
+    | _ -> keyword_or_error ctx loc "{"
+    ]
   else
     let (delim, s) = rawstring0 ctx bp $empty strm in
     ("STRING", String.escaped s)
