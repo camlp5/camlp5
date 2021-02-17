@@ -30,7 +30,14 @@ value add : string -> expander -> unit;
 value upsert : string -> expander -> unit;
 (** [upsert name exp] adds or updates the quotation [name] associated
    with the expander [exp]. If it's an update (the quotation already
-   exists) then a warning message is emitted to stderr.  *)
+   exists) then a warning message is emitted to stderr.
+
+    WARNING: this should not be commonly-used, as it can and will lead
+   to interesting and hard-to-debug errors if quotations are overriden
+   and users are not aware of it (perhaps because they don't carefully
+   scan logfiles for warnings).
+
+  *)
 
 value find : string -> expander;
    (** [find name] returns the expander of the given quotation name. *)
