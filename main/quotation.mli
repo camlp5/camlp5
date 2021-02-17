@@ -27,6 +27,11 @@ value add : string -> expander -> unit;
    (** [add name exp] adds the quotation [name] associated with the
        expander [exp]. *)
 
+value upsert : string -> expander -> unit;
+(** [upsert name exp] adds or updates the quotation [name] associated
+   with the expander [exp]. If it's an update (the quotation already
+   exists) then a warning message is emitted to stderr.  *)
+
 value find : string -> expander;
    (** [find name] returns the expander of the given quotation name. *)
 

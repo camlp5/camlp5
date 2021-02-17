@@ -29,3 +29,10 @@ value add name f =
     expanders_table.val := [(name, f) :: expanders_table.val]
 ;
 
+value upsert name f = do {
+  if List.mem_assoc name expanders_table.val then
+    Printf.fprintf stderr "Warning: Quotation.upsert: overwriting the quotation \"%s\"\n%!" name
+  else () ;
+  expanders_table.val := [(name, f) :: expanders_table.val]
+}
+;
