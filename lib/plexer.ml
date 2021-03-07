@@ -246,10 +246,17 @@ value rec skiplws = lexer [
 ]
 ;
 
+value incrline ctx buf =
+  parser bp [: :] -> do {
+    ctx.line_cnt (bp-1) '\n'
+  ; buf
+  }
+;
+
 value rec string ctx bp =
   lexer
   [ "\""/
-  | "\\"/ ?= [ "\n" ] "\n"/ skiplws! (string ctx bp)!
+  | "\\"/ ?= [ "\n" ] "\n"/ (incrline ctx)! skiplws! (string ctx bp)!
   | "\\"/ ?= [ "\n" | " " ] (any ctx) (string ctx bp)!
   | "\\" (any ctx) (string ctx bp)!
   | (any ctx) (string ctx bp)!
