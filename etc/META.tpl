@@ -36,7 +36,7 @@ archive(syntax,preprocessor,camlp5lisp) = "pa_lisp.cmo pr_dump.cmo"
 preprocessor = "camlp5 -nolib"
 
 package "pa_r" (
-  error(camlp5o) = "camlp5.pa_r cannot be used with syntax camlp5o"
+  error(syntax_camlp5o) = "camlp5.pa_r cannot be used with syntax camlp5o"
 
   requires(toploop) = "camlp5"
   archive(toploop,-camlp5r)      = "pa_r.cmo pa_rp.cmo"
@@ -54,7 +54,7 @@ package "pa_r" (
 )
 
 package "pa_o" (
-  error(camlp5r) = "camlp5.pa_o cannot be used with syntax camlp5r"
+  error(syntax_camlp5r) = "camlp5.pa_o cannot be used with syntax camlp5r"
 
   requires(toploop) = "camlp5"
   archive(toploop,-camlp5o)      = "pa_o.cmo pa_op.cmo"
@@ -72,7 +72,7 @@ package "pa_o" (
 )
 
 package "pa_op" (
-  error(camlp5r) = "camlp5.pa_op cannot be used with syntax camlp5r"
+  error(syntax_camlp5r) = "camlp5.pa_op cannot be used with syntax camlp5r"
 
   requires(toploop) = "camlp5.pa_o"
   archive(toploop,-camlp5o)      = "pa_op.cmo"
@@ -282,8 +282,7 @@ package "phony_quotations" (
 
 
 package "extend_m" (
-  error(camlp5o) = "camlp5.extend_m cannot be used with syntax camlp5o"
-  error(pkg_camlp5.pa_o) = "camlp5.extend_m cannot be used with camlp5.pa_o"
+  error(syntax_camlp5o) = "camlp5.extend_m cannot be used with syntax camlp5o"
 
   requires(toploop) = "camlp5.extend"
   archive(toploop)      = "pa_extend_m.cmo"
@@ -301,8 +300,7 @@ package "extend_m" (
 )
 
 package "extend" (
-  warning(camlp5o) = "camlp5.extend SHOULD NOT be used with syntax camlp5o"
-  warning(pkg_camlp5.pa_o) = "camlp5.extend SHOULD NOT be used with camlp5.pa_o"
+  warning(syntax_camlp5o) = "camlp5.extend SHOULD NOT be used with syntax camlp5o"
 
   requires(toploop) = "camlp5"
   archive(toploop)      = "pa_extend.cmo"
