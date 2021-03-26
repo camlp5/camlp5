@@ -221,5 +221,5 @@ let string_of_loc fname line bp ep =
 
 let string_of_location
     {fname = fname; bp = bp; ep = ep; line_nb = line; bol_pos = bol} =
-  string_of_loc fname line (bp - bol + 1) (ep - bol + 1)
+  string_of_loc fname line (bp - bol) (ep - bol)
 ;;
