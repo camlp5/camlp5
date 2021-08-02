@@ -1123,7 +1123,10 @@ value ocaml_ppat_array =
 value ocaml_ppat_construct loc li po chk_arity  =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Ppat_construct (mkloc loc li) po chk_arity
+  ELSIFDEF OCAML_VERSION < OCAML_4_13_0 THEN
+    Ppat_construct (mkloc loc li) po
   ELSE
+    let po = option_map (fun p -> ([], p)) po in
     Ppat_construct (mkloc loc li) po
   END
 ;

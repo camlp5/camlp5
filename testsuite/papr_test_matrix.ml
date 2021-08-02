@@ -3866,6 +3866,7 @@ end
      r_output = OK {foo|type wrong = [ False | True ];
 |foo}
     };
+IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
     {name="type-subst-1"; implem = False ;
      exclude=["skip_reparse"];
      o_input = OK {foo|type t := int|foo} ;
@@ -3876,7 +3877,21 @@ end
      official_output = OK {foo|type nonrec t := int|foo} ;
      r_output = OK {foo|type t := int;
 |foo}
-    };
+    }
+ELSE
+    {name="type-subst-1"; implem = False ;
+     exclude=["skip_reparse"];
+     o_input = OK {foo|type t := int|foo} ;
+     official_input = OK {foo|type t := int|foo} ;
+     r_input = OK {foo|type t := int;|foo} ;
+     o_output = OK {foo|type t := int;;
+|foo};
+     official_output = OK {foo|type t := int|foo} ;
+     r_output = OK {foo|type t := int;
+|foo}
+    }
+END;
+IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
     {name="type-subst-2"; implem = False ;
      exclude=["skip_reparse"];
      o_input = OK {foo|type t := int and u := bool|foo} ;
@@ -3890,7 +3905,23 @@ and u := bool|foo} ;
      r_output = OK {foo|type t := int
 and u := bool;
 |foo}
-    };
+    }
+ELSE
+    {name="type-subst-2"; implem = False ;
+     exclude=["skip_reparse"];
+     o_input = OK {foo|type t := int and u := bool|foo} ;
+     official_input = OK {foo|type t := int and u := bool|foo} ;
+     r_input = OK {foo|type t := int and u := bool;|foo} ;
+     o_output = OK {foo|type t := int
+and u := bool;;
+|foo};
+     official_output = OK {foo|type t := int
+and u := bool|foo} ;
+     r_output = OK {foo|type t := int
+and u := bool;
+|foo}
+    }
+END;
     {name="sig-item-module-subst-2"; implem = False ;
      exclude=[];
      o_input = OK {foo|module M := T|foo} ;
