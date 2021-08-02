@@ -872,6 +872,10 @@ let ocaml_pdir_some x = x;;
 let ocaml_pdir_none = Pdir_none;;
 let ocaml_ptop_dir loc s da = Ptop_dir (s, da);;
 
+let ocaml_pwith_modtype = None;;
+
+let ocaml_pwith_modtypesubst = None;;
+
 let ocaml_pwith_modsubst =
   Some (fun loc li me -> Pwith_modsubst (mkloc loc "", mkloc loc me))
 ;;

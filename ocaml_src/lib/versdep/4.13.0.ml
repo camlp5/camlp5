@@ -583,8 +583,7 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct loc li po chk_arity =
-  let po = option_map (fun p -> ([], p)) po in
-  Ppat_construct (mkloc loc li, po)
+  let po = option_map (fun p -> [], p) po in Ppat_construct (mkloc loc li, po)
 ;;
 
 let ocaml_ppat_construct_args =
@@ -912,6 +911,14 @@ let ocaml_ptop_dir loc s da =
        | None -> None
        end;
      pdir_loc = loc}
+;;
+
+let ocaml_pwith_modtype =
+  Some (fun loc li mt -> Pwith_modtype (mkloc loc li, mt))
+;;
+
+let ocaml_pwith_modtypesubst =
+  Some (fun loc li mt -> Pwith_modtypesubst (mkloc loc li, mt))
 ;;
 
 let ocaml_pwith_modsubst =

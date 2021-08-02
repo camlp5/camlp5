@@ -913,6 +913,10 @@ let ocaml_ptop_dir loc s da =
      pdir_loc = loc}
 ;;
 
+let ocaml_pwith_modtype = None;;
+
+let ocaml_pwith_modtypesubst = None;;
+
 let ocaml_pwith_modsubst =
   Some (fun loc li me -> Pwith_modsubst (mkloc loc li, mkloc loc me))
 ;;

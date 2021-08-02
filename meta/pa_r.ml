@@ -841,12 +841,10 @@ EXTEND
           <:with_constr< module $_longid:li$ = $me$ >>
       | "module"; li = V longident "longid"; ":="; me = module_expr →
           <:with_constr< module $_longid:li$ := $me$ >>
-(*
       | "module"; "type"; li = V longident "longid"; "="; mt = module_type →
           <:with_constr< module type $_longid:li$ = $mt$ >>
       | "module"; "type"; li = V longident "longid"; ":="; mt = module_type →
           <:with_constr< module type $_longid:li$ := $mt$ >>
- *)
       ] ]
   ;
   uidopt:

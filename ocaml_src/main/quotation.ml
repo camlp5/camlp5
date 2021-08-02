@@ -35,3 +35,9 @@ let add name f =
   else expanders_table := (name, f) :: !expanders_table
 ;;
 
+let upsert name f =
+  if List.mem_assoc name !expanders_table then
+    Printf.fprintf stderr
+      "Warning: Quotation.upsert: overwriting the quotation \"%s\"\n%!" name;
+  expanders_table := (name, f) :: !expanders_table
+;;

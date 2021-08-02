@@ -674,7 +674,7 @@ EXTEND
       | "module"; "type"; i = SV longident "longid"; "="; mt = module_type →
           Qast.Node "WcMty" [Qast.Loc; i; mt]
       | "module"; "type"; i = SV longident "longid"; ":="; mt = module_type →
-          Qast.Node "WcMos" [Qast.Loc; i; mt]
+          Qast.Node "WcMts" [Qast.Loc; i; mt]
       ] ]
   ;
   uidopt:

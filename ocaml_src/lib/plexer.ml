@@ -450,6 +450,10 @@ let rec skiplws buf (strm__ : _ Stream.t) =
   | _ -> buf
 ;;
 
+let incrline ctx buf (strm__ : _ Stream.t) =
+  let bp = Stream.count strm__ in ctx.line_cnt (bp - 1) '\n'; buf
+;;
+
 let rec string ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '"' -> Stream.junk strm__; buf
@@ -461,6 +465,7 @@ let rec string ctx bp buf (strm__ : _ Stream.t) =
             begin match Stream.peek strm__ with
               Some '\n' ->
                 Stream.junk strm__;
+                let buf = incrline ctx buf strm__ in
                 let buf = skiplws buf strm__ in string ctx bp buf strm__
             | _ -> raise (Stream.Error "")
             end
@@ -971,7 +976,11 @@ let comment ctx bp =
 ;;
 
 let keyword_or_error_or_rawstring ctx bp (loc, s) buf strm =
-  if not (raw_string_starter_p ctx strm) then keyword_or_error ctx loc "{"
+  if not (raw_string_starter_p ctx strm) then
+    match stream_peek_nth 1 strm with
+      Some '|' when not ctx.simplest_raw_strings ->
+        Stream.junk strm; keyword_or_error ctx loc "{|"
+    | _ -> keyword_or_error ctx loc "{"
   else
     let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
     "STRING", String.escaped s
@@ -1904,11 +1913,12 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 994, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 994, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 994, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 995, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 995, 37)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1007, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1007, 45)));
+       tok_removing =
+         (fun _ -> raise (Match_failure ("plexer.ml", 1007, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1008, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1008, 37)));
        tok_comm = None}
   in
   let glex =

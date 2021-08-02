@@ -569,6 +569,20 @@ and mkwithc =
           li, pwith_modsubst (mkloc loc) li (module_expr_long_id m)
       | None -> error loc "no with module := in this ocaml version"
       end
+  | WcMty (loc, id, mty) ->
+      begin match ocaml_pwith_modtype with
+        Some pwith_modtype ->
+          let mname = longid_long_id (uv id) in
+          mname, pwith_modtype (mkloc loc) mname (module_type mty)
+      | None -> error loc "no with module := in this ocaml version"
+      end
+  | WcMts (loc, id, mty) ->
+      begin match ocaml_pwith_modtypesubst with
+        Some pwith_modtypesubst ->
+          let li = longid_long_id (uv id) in
+          li, pwith_modtypesubst (mkloc loc) li (module_type mty)
+      | None -> error loc "no with module type := in this ocaml version"
+      end
   | WcTyp (loc, id, tpl, pf, ct) ->
       let li = longid_lident_long_id (uv id) in
       let (_, tname) = uv id in
@@ -577,7 +591,7 @@ and mkwithc =
       | Left msg -> error loc msg
       end
   | WcTys (loc, ids, tpl, t) ->
-      begin match ocaml_pwith_typesubst with
+      match ocaml_pwith_typesubst with
         Some pwith_typesubst ->
           let ids = uv ids in
           let (_, last) = ids in
@@ -588,9 +602,6 @@ and mkwithc =
           | Left msg -> error loc msg
           end
       | None -> error loc "no with type := in this ocaml version"
-      end
-  | (WcMty (loc, _, _)|WcMts (loc, _, _)) ->
-     error loc "no with type := in this ocaml version"
 and mkvalue_desc ~item_attributes vn t p =
   ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
 and sumbranch_ctyp ?(priv = false) loc l rto =
@@ -741,9 +752,8 @@ and package_of_module_type loc mt =
                  error loc "package type with 'type :=' no allowed"
              | WcMod (loc, _, _) | WcMos (loc, _, _) ->
                  error loc "package type with 'module' no allowed"
-             | (WcMty (_, _, _)|WcMts (_, _, _)) ->
-                 error loc "package type with 'module type' no allowed"
-            )
+             | WcMty (loc, _, _) | WcMts (loc, _, _) ->
+                 error loc "package type with 'module type' no allowed")
             with_con
         in
         mt, with_con
@@ -776,7 +786,7 @@ and type_decl ?(item_attributes = []) tn tl priv cl =
   | t ->
       let m =
         match t with
-          MLast.TyQuo (_, s) ->
+          MLast.TyQuo (_, s) when cl = [] ->
             if List.exists (fun (t, _) -> Some s = uv t) tl then Some (ctyp t)
             else None
         | _ -> Some (ctyp t)

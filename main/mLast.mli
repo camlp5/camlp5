@@ -170,6 +170,9 @@ and sig_item =
   | SgInc of loc and module_type and attributes
   | SgMod of loc and V bool and V (list (V (option (V string)) * module_type * attributes))
   | SgMty of loc and V string and module_type and attributes
+(*
+  | SgMtySubst of loc and V string and module_type and attributes
+ *)
   | SgMtyAlias of loc and V string and V longid and attributes
   | SgModSubst of loc and V string and longid and attributes
   | SgOpn of loc and longid and attributes
