@@ -1883,6 +1883,25 @@ Grammar.safe_extend
                             (Grammar.s_token ("", "module")))
                          (Grammar.s_token ("", "type")))
                       (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
+                   (Grammar.s_token ("", ":=")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (item_attributes : 'item_attributes Grammar.Entry.e)),
+           "194fe98d",
+           (fun (attrs : 'item_attributes) (mt : 'module_type) _ (i : 'ident)
+                _ _ (loc : Ploc.t) ->
+              (MLast.SgMtySubst (loc, i, mt, attrs) : 'sig_item)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "module")))
+                         (Grammar.s_token ("", "type")))
+                      (Grammar.s_nterm (ident : 'ident Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_nterm
                    (module_type : 'module_type Grammar.Entry.e)))

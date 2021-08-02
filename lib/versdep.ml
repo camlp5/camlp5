@@ -1302,6 +1302,18 @@ value ocaml_psig_modtype ?{item_attributes=[]} loc s mto =
   END
 ;
 
+value ocaml_psig_modtypesubst ?{item_attributes=[]} loc s mto =
+  IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
+    failwith "no 'module type' substitution in this version of ocaml"
+  ELSE
+    let pmtd =
+      {pmtd_name = mkloc loc s; pmtd_type = mto; pmtd_attributes = item_attributes;
+       pmtd_loc = loc}
+    in
+    Psig_modtypesubst pmtd
+  END
+;
+
 value ocaml_psig_open ?{item_attributes=[]} loc li =
   IFDEF OCAML_VERSION < OCAML_4_01 THEN
     do { assert (item_attributes = []) ;

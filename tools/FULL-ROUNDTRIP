@@ -1,0 +1,15 @@
+#!/bin/bash -x
+
+./configure
+make clean
+./configure
+make world.opt all
+make bootstrap
+make bootstrap_sources
+
+./configure
+make clean
+./configure
+make world.opt all
+
+make -C testsuite clean all-tests

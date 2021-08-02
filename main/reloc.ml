@@ -479,6 +479,9 @@ and sig_item floc sh =
     | SgMty loc x1 x2 x3 →
         let loc = floc loc in
         SgMty loc x1 (module_type floc sh x2) (attributes floc sh x3)
+    | SgMtySubst loc x1 x2 x3 →
+        let loc = floc loc in
+        SgMtySubst loc x1 (module_type floc sh x2) (attributes floc sh x3)
     | SgMtyAlias loc x1 x2 x3 →
         let loc = floc loc in
         SgMtyAlias loc x1 (vala_map (longid floc sh) x2) (attributes floc sh x3)

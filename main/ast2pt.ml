@@ -1303,6 +1303,14 @@ and sig_item s l =
         end
       in
       [mksig loc (ocaml_psig_modtype ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
+  | SgMtySubst loc n mt item_attrs →
+      let mto =
+        match mt with
+        | MtQuo _ _ -> None
+        | _ -> Some (module_type mt)
+        end
+      in
+      [mksig loc (ocaml_psig_modtypesubst ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) (uv n) mto) :: l]
 
   | SgMtyAlias loc n li item_attrs ->
       let li = longid_long_id (uv li) in

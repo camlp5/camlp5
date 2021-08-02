@@ -792,6 +792,8 @@ EXTEND
 
       | "module"; "type"; i = V ident ""; "="; mt = module_type ; attrs = item_attributes →
           <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >>
+      | "module"; "type"; i = V ident ""; ":="; mt = module_type ; attrs = item_attributes →
+          <:sig_item< module type $_:i$ := $mt$ $_itemattrs:attrs$ >>
       | "module"; "alias"; i = V UIDENT "uid"; "="; li = V longident "longid" ; attrs = item_attributes →
           <:sig_item< module alias $_uid:i$ = $_longid:li$ $_itemattrs:attrs$ >>
       | "open"; i = extended_longident ; attrs = item_attributes → 

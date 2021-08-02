@@ -156,6 +156,7 @@ and sig_item =
   | SgInc of loc * module_type * attributes
   | SgMod of loc * bool * (string option * module_type * attributes) list
   | SgMty of loc * string * module_type * attributes
+  | SgMtySubst of loc * string * module_type * attributes
   | SgMtyAlias of loc * string * longid * attributes
   | SgModSubst of loc * string * longid * attributes
   | SgOpn of loc * longid * attributes

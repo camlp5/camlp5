@@ -667,6 +667,14 @@ let ocaml_psig_modtype ?(item_attributes = []) loc s mto =
   Psig_modtype pmtd
 ;;
 
+let ocaml_psig_modtypesubst ?(item_attributes = []) loc s mto =
+  let pmtd =
+    {pmtd_name = mkloc loc s; pmtd_type = mto;
+     pmtd_attributes = item_attributes; pmtd_loc = loc}
+  in
+  Psig_modtypesubst pmtd
+;;
+
 let ocaml_psig_open ?(item_attributes = []) loc li =
   Psig_open
     {popen_expr = mknoloc li; popen_override = Fresh; popen_loc = loc;
