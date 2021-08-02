@@ -577,7 +577,7 @@ and mkwithc =
       | Left msg -> error loc msg
       end
   | WcTys (loc, ids, tpl, t) ->
-      match ocaml_pwith_typesubst with
+      begin match ocaml_pwith_typesubst with
         Some pwith_typesubst ->
           let ids = uv ids in
           let (_, last) = ids in
@@ -588,6 +588,9 @@ and mkwithc =
           | Left msg -> error loc msg
           end
       | None -> error loc "no with type := in this ocaml version"
+      end
+  | (WcMty (loc, _, _)|WcMts (loc, _, _)) ->
+     error loc "no with type := in this ocaml version"
 and mkvalue_desc ~item_attributes vn t p =
   ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
 and sumbranch_ctyp ?(priv = false) loc l rto =
@@ -737,7 +740,10 @@ and package_of_module_type loc mt =
              | WcTys (loc, id, tpl, t) ->
                  error loc "package type with 'type :=' no allowed"
              | WcMod (loc, _, _) | WcMos (loc, _, _) ->
-                 error loc "package type with 'module' no allowed")
+                 error loc "package type with 'module' no allowed"
+             | (WcMty (_, _, _)|WcMts (_, _, _)) ->
+                 error loc "package type with 'module type' no allowed"
+            )
             with_con
         in
         mt, with_con

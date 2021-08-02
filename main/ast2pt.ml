@@ -406,6 +406,20 @@ and mkwithc =
           (li,
            pwith_modsubst (mkloc loc) li (module_expr_long_id m))
       | None → error loc "no with module := in this ocaml version" ]
+  | WcMty loc id mty ->
+      match ocaml_pwith_modtype with [
+        Some pwith_modtype ->
+      let mname = longid_long_id (uv id) in
+      (mname, pwith_modtype (mkloc loc) mname (module_type mty))
+      | None -> error loc "no with module := in this ocaml version"
+        ]
+  | WcMts loc id mty ->
+      match ocaml_pwith_modtypesubst with [
+        Some pwith_modtypesubst ->
+          let li = longid_long_id (uv id) in
+          (li, pwith_modtypesubst (mkloc loc) li (module_type mty))
+      | None -> error loc "no with module type := in this ocaml version"
+        ]
   | WcTyp loc id tpl pf ct →
           let li = longid_lident_long_id (uv id) in
           let (_, tname) = (uv id) in
@@ -581,7 +595,9 @@ and package_of_module_type loc mt =
              | WcTys loc id tpl t →
                  error loc "package type with 'type :=' no allowed"
              | WcMod loc _ _ | WcMos loc _ _ →
-                 error loc "package type with 'module' no allowed" ])
+                 error loc "package type with 'module' no allowed" 
+             | WcMty loc _ _ | WcMts loc _ _ →
+                 error loc "package type with 'module type' no allowed" ])
             with_con
         in
         (mt, with_con)

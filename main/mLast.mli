@@ -183,6 +183,8 @@ and sig_item =
 and with_constr =
   [ WcMod of loc and V longid and module_expr
   | WcMos of loc and V longid and module_expr
+  | WcMty of loc and V longid and module_type
+  | WcMts of loc and V longid and module_type
   | WcTyp of loc and V longid_lident and V (list type_var) and V bool and ctyp
   | WcTys of loc and V longid_lident and V (list type_var) and ctyp ]
 and module_expr =

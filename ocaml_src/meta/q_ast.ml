@@ -341,6 +341,8 @@ module Meta_make (C : MetaSig) =
       function
         WcMod (_, ls, me) -> C.node "WcMod" [C.vala longid ls; module_expr me]
       | WcMos (_, ls, me) -> C.node "WcMos" [C.vala longid ls; module_expr me]
+      | WcMty (_, ls, mt) -> C.node "WcMty" [C.vala longid ls; module_type mt]
+      | WcMts (_, ls, mt) -> C.node "WcMts" [C.vala longid ls; module_type mt]
       | WcTyp (_, ls, ltv, b, t) ->
           C.node "WcTyp"
             [C.vala longid_lident ls; C.vala (C.list type_var) ltv;

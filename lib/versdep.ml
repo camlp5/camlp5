@@ -1861,6 +1861,22 @@ value ocaml_ptop_dir loc s da =
   END
 ;
 
+value ocaml_pwith_modtype =
+  IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
+    None
+  ELSE
+    Some (fun loc li mt -> Pwith_modtype (mkloc loc li) mt)
+  END
+;
+
+value ocaml_pwith_modtypesubst =
+  IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
+    None
+  ELSE
+    Some (fun loc li mt -> Pwith_modtypesubst (mkloc loc li) mt)
+  END
+;
+
 value ocaml_pwith_modsubst =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     Some (fun loc li me -> Pwith_modsubst (mkloc loc me))

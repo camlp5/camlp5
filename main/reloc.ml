@@ -519,6 +519,12 @@ and with_constr floc sh =
   | WcMos loc x1 x2 →
       let loc = floc loc in
       WcMos loc (vala_map (longid floc sh) x1) (module_expr floc sh x2)
+  | WcMty loc x1 x2 →
+      let loc = floc loc in
+      WcMty loc (vala_map (longid floc sh) x1) (module_type floc sh x2)
+  | WcMts loc x1 x2 →
+      let loc = floc loc in
+      WcMts loc (vala_map (longid floc sh) x1) (module_type floc sh x2)
   | WcTyp loc x1 x2 x3 x4 →
       let loc = floc loc in
       WcTyp loc (vala_map (longid_lident floc sh) x1) x2 x3 (ctyp floc sh x4)
