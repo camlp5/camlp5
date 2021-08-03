@@ -575,6 +575,30 @@ value str_item_to_inline loc si ext =
   ]
 ;
 
+value is_lparen_f strm =
+  match Stream.npeek 1 strm with [
+    [("","(")] -> True
+  | _ -> False
+  ]
+;
+
+value is_lparen_type_f strm =
+  is_lparen_f strm &&
+  match Stream.npeek 2 strm with [
+    [("","(") ; ("","type")] -> True
+  | _ -> False
+  ]
+;
+
+value check_lparen_type_f strm =
+  if is_lparen_type_f strm then () else raise Stream.Failure
+;
+
+value check_lparen_type =
+  Grammar.Entry.of_parser gram "check_lparen_type"
+    check_lparen_type_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -1142,6 +1166,9 @@ EXTEND
         <:patt< $longid:li$ >>
       | _ -> <:patt< $longid:li$ . $p$ >>
       ]
+    | li = longident ; check_lparen_type ; "("; "type";
+      loc_ids = V (LIST1 [ s = LIDENT -> (loc,s) ]) ; ")" → 
+      <:patt< $longid:li$ (type $_list:loc_ids$ ) >>
     | li = longident → <:patt< $longid:li$ >>
     ]
   ]

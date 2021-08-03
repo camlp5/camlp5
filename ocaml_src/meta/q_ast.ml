@@ -113,6 +113,11 @@ module Meta_make (C : MetaSig) =
         PaAtt (_, e, att) -> C.node "PaAtt" [patt e; attribute att]
       | PaPfx (_, li, p) -> C.node "PaPfx" [longid li; patt p]
       | PaLong (_, li) -> C.node "PaLong" [longid li]
+      | PaLong2 (_, li, loc_ids) ->
+          C.node "PaLong2"
+            [longid li;
+             C.vala (C.list (fun (_, s) -> C.tuple [C.loc_v (); C.string s]))
+               loc_ids]
       | PaAli (_, p1, p2) -> C.node "PaAli" [patt p1; patt p2]
       | PaAnt (_, p) -> C.node "PaAnt" [patt p]
       | PaAny _ -> C.node "PaAny" []

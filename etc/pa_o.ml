@@ -747,6 +747,30 @@ value make_string_extension loc s =
   <:attribute_body< $attrid:(loc,attrid)$ $str:strpayload$ ; >>
 ;
 
+value is_lparen_f strm =
+  match Stream.npeek 1 strm with [
+    [("","(")] -> True
+  | _ -> False
+  ]
+;
+
+value is_lparen_type_f strm =
+  is_lparen_f strm &&
+  match Stream.npeek 2 strm with [
+    [("","(") ; ("","type")] -> True
+  | _ -> False
+  ]
+;
+
+value check_lparen_type_f strm =
+  if is_lparen_type_f strm then () else raise Stream.Failure
+;
+
+value check_lparen_type =
+  Grammar.Entry.of_parser gram "check_lparen_type"
+    check_lparen_type_f
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -1573,6 +1597,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
         <:patt< $longid:li$ >>
       | _ -> <:patt< $longid:li$ . $p$ >>
       ]
+    | li = longident ; check_lparen_type ; "("; "type";
+      loc_ids = V (LIST1 [ s = LIDENT -> (loc,s) ]) ; ")" → 
+      <:patt< $longid:li$ (type $_list:loc_ids$ ) >>
     | li = longident → <:patt< $longid:li$ >>
     ]
   ]

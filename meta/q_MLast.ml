@@ -428,6 +428,30 @@ value dotop =
        [: `("", x) when is_dotop x :] -> Qast.Str x)
 ;
 
+value is_lparen_f strm =
+  match Stream.npeek 1 strm with [
+    [("","(")] -> True
+  | _ -> False
+  ]
+;
+
+value is_lparen_type_f strm =
+  is_lparen_f strm &&
+  match Stream.npeek 2 strm with [
+    [("","(") ; ("","type")] -> True
+  | _ -> False
+  ]
+;
+
+value check_lparen_type_f strm =
+  if is_lparen_type_f strm then () else raise Stream.Failure
+;
+
+value check_lparen_type =
+  Grammar.Entry.of_parser gram "check_lparen_type"
+    check_lparen_type_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -1091,6 +1115,9 @@ EXTEND
     | s = SV GIDENT → Qast.Node "PaLid" [Qast.Loc; s]
     | li = longident ; "." ; p = patt LEVEL "simple" → 
       Qast.Node "PaPfx" [Qast.Loc; li; p]
+    | li = longident ; check_lparen_type ; "("; "type";
+      loc_ids = SV (LIST1 [ s = LIDENT -> Qast.Tuple [Qast.Loc; Qast.Str s] ]) ; ")" → 
+      Qast.Node "PaLong2" [Qast.Loc; li; loc_ids]
     | li = longident → 
       Qast.Node "PaLong" [Qast.Loc; li]
     ]

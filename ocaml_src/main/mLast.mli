@@ -61,6 +61,7 @@ and poly_variant =
 and patt =
     PaPfx of loc * longid * patt
   | PaLong of loc * longid
+  | PaLong2 of loc * longid * (loc * string) list
   | PaAli of loc * patt * patt
   | PaAnt of loc * patt
   | PaAny of loc

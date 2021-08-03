@@ -817,7 +817,7 @@ and patt =
     PaAtt (loc, p1, a) -> ocaml_patt_addattr (attr (uv a)) (patt p1)
   | PaPfx (loc, li, p2) ->
       mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
-  | PaLong (loc, li) ->
+  | PaLong (loc, li) | PaLong2 (loc, li, _) ->
       let li =
         match li with
           MLast.LiUid (loc, s) -> MLast.LiUid (loc, conv_con s)

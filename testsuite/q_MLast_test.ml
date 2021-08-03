@@ -368,9 +368,16 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo}
       }
       ; {
-        name = "prototype";
-        code = {foo||foo};
-        expect = {foo||foo}
+        name = "patt-PaLong2-1";
+        code = {foo|<:patt< $longid:li$ (type $_list:loc_ids$ ) >>;|foo};
+        expect = {foo|MLast.PaLong2 loc li loc_ids;
+|foo}
+      }
+      ; {
+        name = "patt-PaLong-2";
+        code = {foo|<:patt< $longid:li$ >>;|foo};
+        expect = {foo|MLast.PaLong loc li;
+|foo}
       }
       ; {
         name = "prototype";
