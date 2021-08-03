@@ -856,8 +856,10 @@ and patt =
                     [a] -> a
                   | _ -> mkpat loc (Ppat_tuple al)
                 in
-                mkpat loc (ocaml_ppat_construct li_loc li (Some a) false)
-              else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li al
+                mkpat loc
+                  (ocaml_ppat_construct li_loc li (Some ([], a)) false)
+              else
+                mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li [] al
           | Some _ | None ->
               match ocaml_ppat_variant with
                 Some (ppat_variant_pat, ppat_variant) ->

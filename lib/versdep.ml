@@ -1122,11 +1122,12 @@ value ocaml_ppat_array =
 
 value ocaml_ppat_construct loc li po chk_arity  =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
+    let po = option_map (fun (_, p) -> p) po in
     Ppat_construct (mkloc loc li) po chk_arity
   ELSIFDEF OCAML_VERSION < OCAML_4_13_0 THEN
+    let po = option_map (fun (_, p) -> p) po in
     Ppat_construct (mkloc loc li) po
   ELSE
-    let po = option_map (fun p -> ([], p)) po in
     Ppat_construct (mkloc loc li) po
   END
 ;
@@ -1145,18 +1146,18 @@ value ocaml_ppat_construct_args =
   END
 ;
 
-value mkpat_ocaml_ppat_construct_arity loc li_loc li al =
+value mkpat_ocaml_ppat_construct_arity loc li_loc li tyvl al =
   IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
     let a = ocaml_mkpat loc (Ppat_tuple al) in
-    ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some a) True)
+    ocaml_mkpat loc (ocaml_ppat_construct li_loc li (Some (tyvl, a)) True)
   ELSIFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     let a = ocaml_mkpat loc (Ppat_tuple al) in
-    {ppat_desc = ocaml_ppat_construct li_loc li (Some a) True;
+    {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) True;
      ppat_loc = loc;
      ppat_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
   ELSE
     let a = ocaml_mkpat loc (Ppat_tuple al) in
-    {ppat_desc = ocaml_ppat_construct li_loc li (Some a) True;
+    {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) True;
      ppat_loc = loc; ppat_loc_stack = [];
      ppat_attributes =
        [{attr_name = mkloc loc "ocaml.explicit_arity";

@@ -1084,6 +1084,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; "="; mt = module_type ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           sig_item_to_inline <:sig_item< module type $_:i$ = $mt$ $_itemattrs:attrs$ >> ext
+      | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident ""; ":="; mt = module_type ; item_attrs = item_attributes ->
+          let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+          sig_item_to_inline <:sig_item< module type $_:i$ := $mt$ $_itemattrs:attrs$ >> ext
       | "module"; "type"; (ext,alg_attrs) = ext_attributes; i = V ident "" ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-module-type"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           sig_item_to_inline <:sig_item< module type $_:i$ = 'abstract $_itemattrs:attrs$ >> ext
@@ -1140,7 +1143,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "module"; i = V longident "longid"; "="; me = module_expr ->
           <:with_constr< module $_longid:i$ = $me$ >>
       | "module"; i = V longident "longid"; ":="; me = module_expr ->
-          <:with_constr< module $_longid:i$ := $me$ >> ] ]
+          <:with_constr< module $_longid:i$ := $me$ >>
+      | "module"; "type"; li = V longident "longid"; "="; mt = module_type →
+          <:with_constr< module type $_longid:li$ = $mt$ >>
+      | "module"; "type"; li = V longident "longid"; ":="; mt = module_type →
+          <:with_constr< module type $_longid:li$ := $mt$ >>
+      ] ]
   ;
   andop_binding:
   [ [ op = andop ; b = letop_binding -> (op, b) ] ]

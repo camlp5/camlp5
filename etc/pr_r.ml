@@ -1252,7 +1252,7 @@ value str_module pref pc (m, me, item_attrs) =
     ]
 ;
 
-value sig_module_or_module_type pref defc pc ((m : option string), mt, item_attrs) =
+value sig_module_or_module_type pref defs pc ((m : option string), mt, item_attrs) =
   let m = match m with [ None -> "_" | Some s -> s ] in
   let (mal, mt) =
     loop mt where rec loop =
@@ -1279,12 +1279,12 @@ value sig_module_or_module_type pref defc pc ((m : option string), mt, item_attr
   ] in
   let mal = List.map (fun ma -> (ma, "")) mal in
   if pc.aft = "" then
-    pprintf pc "%s %s%p %c@;%p%p" pref m (plistb module_arg 2) mal defc
+    pprintf pc "%s %s%p %s@;%p%p" pref m (plistb module_arg 2) mal defs
       module_type_level_sig mt
       (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
   else
-    pprintf pc "@[<a>%s %s%p %c@;%p%p@;<0 0>@]" pref m (plistb module_arg 2) mal
-      defc module_type_level_sig mt
+    pprintf pc "@[<a>%s %s%p %s@;%p%p@;<0 0>@]" pref m (plistb module_arg 2) mal
+      defs module_type_level_sig mt
       (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
 ;
 
@@ -1343,6 +1343,10 @@ value with_constraint pc wc =
       pprintf pc "module %p =@;%p" longident sl module_expr me
   | <:with_constr:< module $longid:sl$ := $me$ >> ->
       pprintf pc "module %p :=@;%p" longident sl module_expr me
+  | <:with_constr:< module type $longid:sl$ = $mt$ >> ->
+      pprintf pc "module type %p =@;%p" longident sl module_type mt
+  | <:with_constr:< module type $longid:sl$ := $mt$ >> ->
+      pprintf pc "module type %p :=@;%p" longident sl module_type mt
   | IFDEF STRICT THEN
       x ->
          not_impl "with_constraint" pc x
@@ -2020,7 +2024,7 @@ EXTEND_PRINTER
           let rf = if rf then " rec" else "" in
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
-          sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
+          sig_module_or_module_type "module type" "=" pc (Some m, mt, item_attrs)
       | <:str_item< open $_!:ovf$ $me$ $_itemattrs:attrs$ >> ->
           pprintf pc "open%s %p%p" (if (Pcaml.unvala ovf) then "!" else "")
             module_expr me (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
@@ -2080,14 +2084,16 @@ EXTEND_PRINTER
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt, attrs) -> (map_option Pcaml.unvala (Pcaml.unvala m), mt, attrs)) mdl in
           let rf = if rf then " rec" else "" in
-          vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
-            (sig_module_or_module_type "and" ':') pc mdl
+          vlist2 (sig_module_or_module_type ("module" ^ rf) ":")
+            (sig_module_or_module_type "and" ":") pc mdl
       | <:sig_item:< module $uid:i$ := $longid:li$  $_itemattrs:item_attrs$ >> ->
           pprintf pc "module %s := %p%p" i longident li (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< module alias $uid:i$ = $longid:li$ $itemattrs:item_attrs$ >> ->
           pprintf pc "module alias %s = %p%p" i longident li (hlist (pr_attribute "@@")) item_attrs
       | <:sig_item< module type $m$ = $mt$ $_itemattrs:item_attrs$ >> ->
-          sig_module_or_module_type "module type" '=' pc (Some m, mt, item_attrs)
+          sig_module_or_module_type "module type" "=" pc (Some m, mt, item_attrs)
+      | <:sig_item< module type $m$ := $mt$ $_itemattrs:item_attrs$ >> ->
+          sig_module_or_module_type "module type" ":=" pc (Some m, mt, item_attrs)
       | <:sig_item< open $longid:i$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "open %p%p" longident i (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item< type $flag:nonrf$ $list:tdl$ >> ->

@@ -583,7 +583,7 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct loc li po chk_arity =
-  let po = option_map (fun p -> [], p) po in Ppat_construct (mkloc loc li, po)
+  Ppat_construct (mkloc loc li, po)
 ;;
 
 let ocaml_ppat_construct_args =
@@ -592,10 +592,10 @@ let ocaml_ppat_construct_args =
   | _ -> None
 ;;
 
-let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
+let mkpat_ocaml_ppat_construct_arity loc li_loc li tyvl al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
-  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
-   ppat_loc_stack = [];
+  {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) true;
+   ppat_loc = loc; ppat_loc_stack = [];
    ppat_attributes =
      [{attr_name = mkloc loc "ocaml.explicit_arity"; attr_payload = PStr [];
        attr_loc = loc}]}

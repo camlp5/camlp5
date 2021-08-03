@@ -4,8 +4,8 @@
 make clean
 ./configure
 make world.opt all
-make bootstrap
 make bootstrap_sources
+make bootstrap
 
 ./configure
 make clean

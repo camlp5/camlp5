@@ -4935,6 +4935,54 @@ end ;
 |foo}
     }
   ]
+END @
+IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
+  []
+ELSE
+  [
+    {name="module-type-with-module-type-constraints-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type T = T1 with module type S = S1|foo} ;
+     official_input = OK {foo|module type T = T1 with module type S = S1|foo} ;
+     r_input = OK {foo|module type T = T1 with module type S = S1;|foo} ;
+     o_output = OK {foo|module type T = (T1 with module type S = S1);;
+|foo};
+     official_output = OK {foo|module type T  = T1 with module type S = S1|foo} ;
+     r_output = OK {foo|module type T = (T1 with module type S = S1);
+|foo}
+    }
+   ;{name="module-type-with-module-type-subst-constraints-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type T = T1 with module type S := S1|foo} ;
+     official_input = OK {foo|module type T = T1 with module type S := S1|foo} ;
+     r_input = OK {foo|module type T = T1 with module type S := S1;|foo} ;
+     o_output = OK {foo|module type T = (T1 with module type S := S1);;
+|foo};
+     official_output = OK {foo|module type T  = T1 with module type S := S1|foo} ;
+     r_output = OK {foo|module type T = (T1 with module type S := S1);
+|foo}
+    }
+   ;{name="module-type-subst-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type S = sig module type t := s end|foo} ;
+     official_input = OK {foo|module type S = sig module type t := s end|foo} ;
+     r_input = OK {foo|module type S = sig module type t := s; end;|foo} ;
+     o_output = OK {foo|module type S = sig module type t := s end;;
+|foo};
+     official_output = OK {foo|module type S = sig module type t  := s end|foo} ;
+     r_output = OK {foo|module type S = sig module type t := s;
+end;|foo}
+    }
+   ;{name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    }
+  ]
 END
 ;
 

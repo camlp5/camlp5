@@ -100,10 +100,10 @@ let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty)
 #install_printer pp_ctyp ;;
 (*
 #install_printer pp_expr ;;
-*)
 #install_printer pp_patt ;;
 #install_printer pp_str_item ;;
 #install_printer pp_sig_item ;;
+*)
 
 print_string "================ START ================\n";; flush stdout ;;
 
