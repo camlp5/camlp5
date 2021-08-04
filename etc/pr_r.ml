@@ -1816,6 +1816,8 @@ EXTEND_PRINTER
     | "dot"
       [ <:patt< $longid:li$ . $p$ >> -> pprintf pc "%p.%p" longident li curr p
       | <:patt< $longid:li$ >> -> pprintf pc "%p" longident li
+      | <:patt< $longid:li$ (type $list:l$) >> ->
+        pprintf pc "%p (type %p)" longident li (hlist lident) (List.map snd l)
       ]
     | "simple"
       [ <:patt< lazy $p$ >> -> pprintf pc "lazy@;%p" curr p
