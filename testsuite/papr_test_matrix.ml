@@ -4628,14 +4628,41 @@ END
      r_output = OK {foo|type fst 'tuple = 'fst constraint 'tuple = ('fst * _);
 |foo}
     };
-    {name="test-prototype"; implem = True ;
+    {name="letop-1"; implem = True ;
      exclude=[];
-     o_input = OK {foo||foo} ;
-     official_input = OK {foo||foo} ;
-     r_input = OK {foo||foo} ;
-     o_output = OK {foo||foo};
-     official_output = OK {foo||foo} ;
-     r_output = OK {foo||foo}
+     o_input = OK {foo|let* x = 1 in 2|foo} ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|let* x = 1 in 2;|foo} ;
+     o_output = OK {foo|let _ = let* x = 1 in 2;;
+|foo};
+     official_output = OK {foo|;;( let* ) 1 (fun x -> 2)|foo} ;
+     r_output = OK {foo|let* x = 1 in
+2;
+|foo}
+    };
+    {name="letop-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let* x = 1 and* y=3 in 2|foo} ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|let* x = 1 and* y=3 in 2;|foo} ;
+     o_output = OK {foo|let _ = let* x = 1 and* y=3 in 2;;
+|foo};
+     official_output = OK {foo|;;( let* ) (( and* ) 1 3) (fun (x, y) -> 2)|foo} ;
+     r_output = OK {foo|let* x = 1 and* y=3 in
+2;
+|foo}
+    };
+    {name="letop-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let* x = 1 in let* y=3 in 2|foo} ;
+     official_input = SKIP "" "" ;
+     r_input = OK {foo|let* x = 1 in let* y=3 in 2;|foo} ;
+     o_output = OK {foo|let _ = let* x = 1 in let* y=3 in 2;;
+|foo};
+     official_output = OK {foo|;;( let* ) 1 (fun x -> ( let* ) 3 (fun y -> 2))|foo} ;
+     r_output = OK {foo|let* x = 1 in let* y=3 in
+2;
+|foo}
     };
     {name="test-prototype"; implem = True ;
      exclude=[];
@@ -4993,6 +5020,42 @@ end;|foo}
 |foo};
      official_output = SKIP ";;match x with | C (type 'a 'b 'c) y -> y" "ugh, compiler-libs bug" ;
      r_output = OK {foo|match x with [ C (type a b c) y -> y ];
+|foo}
+    }
+   ;{name="let-punning-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x in 1|foo} ;
+     official_input = SKIP "{foo|let x in 1|foo}" "" ;
+     r_input = OK {foo|let x = x in 1;|foo} ;
+     o_output = OK {foo|let _ = let x = x in 1;;
+|foo};
+     official_output = OK {foo|;;let x = x in 1|foo} ;
+     r_output = OK {foo|let x = x in
+1;
+|foo}
+    }
+   ;{name="let-punning-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let* x in 1|foo} ;
+     official_input = SKIP "{foo|let* x in 1|foo}" "" ;
+     r_input = OK {foo|let* x = x in 1;|foo} ;
+     o_output = OK {foo|let _ = let* x = x in 1;;
+|foo};
+     official_output = OK {foo|;;( let* ) x (fun x -> 1)|foo} ;
+     r_output = OK {foo|let* x = x in
+1;
+|foo}
+    }
+   ;{name="let-punning-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let%ext x in 1|foo} ;
+     official_input = SKIP "{foo|let%ext x in 1|foo}" "" ;
+     r_input = OK {foo|let%ext x = x in 1;|foo} ;
+     o_output = OK {foo|let _ = [%ext let x = x in 1];;
+|foo};
+     official_output = OK {foo|;;[%ext let x = x in 1]|foo} ;
+     r_output = OK {foo|[%"ext" let x = x in
+1;];
 |foo}
     }
    ;{name="test-prototype"; implem = True ;

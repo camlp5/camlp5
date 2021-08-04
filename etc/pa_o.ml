@@ -733,6 +733,18 @@ value check_not_colon =
     check_not_colon_f
 ;
 
+value check_and_or_in_f strm =
+  match stream_npeek 1 strm with [
+    [("", ("and"|"in"))] -> ()
+  | _ -> raise Stream.Failure
+  ]
+;
+
+value check_and_or_in =
+  Grammar.Entry.of_parser gram "check_and_or_in"
+    check_and_or_in_f
+;
+
 value uident_True_True_ = fun [
   "True" -> "True_"
 | "False" -> "False_"
@@ -1420,6 +1432,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   let_binding:
     [ [ alg_attrs = alg_attributes_no_anti ;
+        p = val_ident; check_and_or_in ->
+        match p with [
+            <:patt< $lid:s$ >> -> (p, <:expr< $lid:s$ >>, <:vala< alg_attrs >>)
+          | _ -> failwith "let punning: binder must be a lowercase ident (variable)"
+          ]
+      | alg_attrs = alg_attributes_no_anti ;
         p = val_ident; check_colon ; e = fun_binding ;
         item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
@@ -1446,7 +1464,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       ] ]
   ;
   first_let_binding:
-    [ [ p = val_ident; check_colon; e = fun_binding ;
+    [ [ p = val_ident; check_and_or_in ->
+        match p with [
+            <:patt< $lid:s$ >> -> (p, <:expr< $lid:s$ >>, <:vala< [] >>)
+          | _ -> failwith "let punning: binder must be a lowercase ident (variable)"
+          ]
+      | p = val_ident; check_colon; e = fun_binding ;
         item_attrs = item_attributes ->
         let (p,e) = match e with [
           <:expr< ( $e$ : $t$ ) >> -> (<:patt< ($p$ : $t$) >>, e)
@@ -1466,6 +1489,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   and_let_binding:
     [ [ "and"; alg_attrs = alg_attributes_no_anti ;
+        p = val_ident; check_and_or_in ->
+        match p with [
+            <:patt< $lid:s$ >> -> (p, <:expr< $lid:s$ >>, <:vala< alg_attrs >>)
+          | _ -> failwith "let punning: binder must be a lowercase ident (variable)"
+          ]
+      | "and"; alg_attrs = alg_attributes_no_anti ;
         p = val_ident; check_colon; e = fun_binding ;
         item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="let_binding"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
@@ -1493,6 +1522,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   letop_binding:
     [ [ p = val_ident; e = fun_binding -> (p, e)
+      | p = val_ident ->
+         match p with [
+             <:patt< $lid:s$ >> -> (p, <:expr< $lid:s$ >>)
+           | _ -> failwith "letop punning: binder must be a lowercase ident (variable)"
+           ]
       | p = patt; "="; e = expr -> (p, e)
       | p = patt; ":"; t = poly_type; "="; e = expr ->
           (<:patt< ($p$ : $t$) >>, e)
