@@ -149,7 +149,8 @@ MLast.TyVrn loc lpv ools;
 
 (* access *)
 <:patt< $longid:x$ . $p$ >>;
-<:patt< $longid:x$ >>;
+<:patt< $longid:x$ (type $list:lls$) >>;
+<:patt< $longid:x$ (type $_list:lls$) >>;
 (* alias *)
 <:patt< ($p1$ as $p2$) >>;
 (* antiquotation <a href="#patt_1">(1)</a> *)
@@ -645,6 +646,12 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 <:sig_item< module type $_:s$ = $mt$ $itemattrs:x$ >>;
 <:sig_item< module type $_:s$ = $mt$ $_itemattrs:x$ >>;
 
+(* module type substitution *)
+<:sig_item< module type $s$ := $mt$ $itemattrs:x$ >>;
+<:sig_item< module type $s$ := $mt$ $_itemattrs:x$ >>;
+<:sig_item< module type $_:s$ := $mt$ $itemattrs:x$ >>;
+<:sig_item< module type $_:s$ := $mt$ $_itemattrs:x$ >>;
+
 (* module alias *)
 
 <:sig_item< module alias $uid:s$ = $longid:x1$ $itemattrs:x2$ >>;
@@ -769,6 +776,14 @@ MLast.MtFun loc (Ploc.VaVal (Some (Ploc.VaVal None, smtf2))) mt;
 (* with module substitution *)
 <:with_constr< module $longid:x$ := $me$ >>;
 <:with_constr< module $_longid:x$ := $me$ >>;
+
+(* with module type *)
+<:with_constr< module type $longid:x$ = $mt$ >>;
+<:with_constr< module type $_longid:x$ = $mt$ >>;
+
+(* with module type substitution *)
+<:with_constr< module type $longid:x$ := $mt$ >>;
+<:with_constr< module type $_longid:x$ := $mt$ >>;
 
 (* with type *)
 <:with_constr< type $lilongid:x$ $list:ltv$ = private $t$ >>;
