@@ -5091,7 +5091,7 @@ value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_op
   | KIND_Official -> official_output
   ] in
   let cmp_string (s1 : string) (s2 : string) =
-IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
+IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     s1=s2
 ELSE
     stripws s1 = stripws s2

@@ -1874,7 +1874,7 @@ value ocaml_ptop_dir loc s da =
   END
 ;
 
-value ocaml_pwith_modtype =
+  value ocaml_pwith_modtype : option (Location.t -> Longident.t -> module_type -> with_constraint) =
   IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
     None
   ELSE
@@ -1882,7 +1882,7 @@ value ocaml_pwith_modtype =
   END
 ;
 
-value ocaml_pwith_modtypesubst =
+value ocaml_pwith_modtypesubst : option (Location.t -> Longident.t -> module_type -> with_constraint) =
   IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
     None
   ELSE

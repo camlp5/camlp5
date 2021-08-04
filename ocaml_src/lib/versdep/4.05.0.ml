@@ -553,6 +553,7 @@ let ocaml_ppat_alias p i iloc = Ppat_alias (p, mkloc iloc i);;
 let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_construct loc li po chk_arity =
+  let po = option_map (fun (_, p) -> p) po in
   Ppat_construct (mkloc loc li, po)
 ;;
 
@@ -562,9 +563,10 @@ let ocaml_ppat_construct_args =
   | _ -> None
 ;;
 
-let mkpat_ocaml_ppat_construct_arity loc li_loc li al =
+let mkpat_ocaml_ppat_construct_arity loc li_loc li tyvl al =
   let a = ocaml_mkpat loc (Ppat_tuple al) in
-  {ppat_desc = ocaml_ppat_construct li_loc li (Some a) true; ppat_loc = loc;
+  {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) true;
+   ppat_loc = loc;
    ppat_attributes = [mkloc loc "ocaml.explicit_arity", PStr []]}
 ;;
 
@@ -631,6 +633,10 @@ let ocaml_psig_modtype ?(item_attributes = []) loc s mto =
      pmtd_attributes = item_attributes; pmtd_loc = loc}
   in
   Psig_modtype pmtd
+;;
+
+let ocaml_psig_modtypesubst ?(item_attributes = []) loc s mto =
+  failwith "no 'module type' substitution in this version of ocaml"
 ;;
 
 let ocaml_psig_open ?(item_attributes = []) loc li =
@@ -876,9 +882,15 @@ let ocaml_pdir_some x = x;;
 let ocaml_pdir_none = Pdir_none;;
 let ocaml_ptop_dir loc s da = Ptop_dir (s, da);;
 
-let ocaml_pwith_modtype = None;;
+  let (ocaml_pwith_modtype :
+ (Location.t -> Longident.t -> module_type -> with_constraint) option) =
+  None
+;;
 
-let ocaml_pwith_modtypesubst = None;;
+let (ocaml_pwith_modtypesubst :
+ (Location.t -> Longident.t -> module_type -> with_constraint) option) =
+  None
+;;
 
 let ocaml_pwith_modsubst =
   Some (fun loc li me -> Pwith_modsubst (mkloc loc "", mkloc loc me))

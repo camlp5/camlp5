@@ -921,11 +921,13 @@ let ocaml_ptop_dir loc s da =
      pdir_loc = loc}
 ;;
 
-let ocaml_pwith_modtype =
+  let (ocaml_pwith_modtype :
+ (Location.t -> Longident.t -> module_type -> with_constraint) option) =
   Some (fun loc li mt -> Pwith_modtype (mkloc loc li, mt))
 ;;
 
-let ocaml_pwith_modtypesubst =
+let (ocaml_pwith_modtypesubst :
+ (Location.t -> Longident.t -> module_type -> with_constraint) option) =
   Some (fun loc li mt -> Pwith_modtypesubst (mkloc loc li, mt))
 ;;
 
