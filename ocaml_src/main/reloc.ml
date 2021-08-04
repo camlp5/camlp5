@@ -122,11 +122,9 @@ and patt floc sh =
         let loc = floc loc in PaAtt (loc, self p, attribute_body floc sh attr)
     | PaPfx (loc, li, p) ->
         let loc = floc loc in PaPfx (loc, longid floc sh li, self p)
-    | PaLong (loc, li) ->
-        let loc = floc loc in PaLong (loc, longid floc sh li)
-    | PaLong2 (loc, li, loc_ids) ->
+    | PaLong (loc, li, loc_ids) ->
         let loc = floc loc in
-        PaLong2
+        PaLong
           (loc, longid floc sh li,
            vala_map (List.map (fun (loc, id) -> floc loc, id)) loc_ids)
     | PaAli (loc, x1, x2) ->

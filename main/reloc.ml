@@ -156,12 +156,9 @@ and patt floc sh =
     | PaPfx loc li p ->
        let loc = floc loc in
        PaPfx loc (longid floc sh li) (self p)
-    | PaLong loc li ->
+    | PaLong loc li loc_ids ->
        let loc = floc loc in
-       PaLong loc (longid floc sh li)
-    | PaLong2 loc li loc_ids ->
-       let loc = floc loc in
-       PaLong2 loc (longid floc sh li) (vala_map (List.map (fun (loc, id) -> (floc loc, id))) loc_ids)
+       PaLong loc (longid floc sh li) (vala_map (List.map (fun (loc, id) -> (floc loc, id))) loc_ids)
     | PaAli loc x1 x2 →
         let loc = floc loc in
         PaAli loc (self x1) (self x2)

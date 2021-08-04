@@ -207,7 +207,7 @@ module P_MetaSig =
       in
       List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
         (MLast.PaApp
-           (loc, MLast.PaLong (loc, MLast.LiAcc (loc, prefix, con)),
+           (loc, MLast.PaLong (loc, MLast.LiAcc (loc, prefix, con), []),
             MLast.PaAny loc))
         pl
     ;;
@@ -218,32 +218,33 @@ module P_MetaSig =
         | Some p -> p
       in
       List.fold_left (fun p1 p2 -> MLast.PaApp (loc, p1, p2))
-        (MLast.PaLong (loc, MLast.LiAcc (loc, prefix, con))) pl
+        (MLast.PaLong (loc, MLast.LiAcc (loc, prefix, con), [])) pl
     ;;
     let list elem el =
       let rec loop el =
         match el with
-          [] -> MLast.PaLong (loc, MLast.LiUid (loc, "[]"))
+          [] -> MLast.PaLong (loc, MLast.LiUid (loc, "[]"), [])
         | e :: el ->
             MLast.PaApp
               (loc,
                MLast.PaApp
-                 (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::")), elem e),
+                 (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::"), []),
+                  elem e),
                loop el)
       in
       loop el
     ;;
     let option elem oe =
       match oe with
-        None -> MLast.PaLong (loc, MLast.LiUid (loc, "None"))
+        None -> MLast.PaLong (loc, MLast.LiUid (loc, "None"), [])
       | Some e ->
           MLast.PaApp
-            (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), elem e)
+            (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some"), []), elem e)
     ;;
     let vala elem p = elem p;;
     let bool b =
-      if b then MLast.PaLong (loc, MLast.LiUid (loc, "True"))
-      else MLast.PaLong (loc, MLast.LiUid (loc, "False"))
+      if b then MLast.PaLong (loc, MLast.LiUid (loc, "True"), [])
+      else MLast.PaLong (loc, MLast.LiUid (loc, "False"), [])
     ;;
     let string s = MLast.PaStr (loc, s);;
     let tuple lp = MLast.PaTup (loc, lp);;

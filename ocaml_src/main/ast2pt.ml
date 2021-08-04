@@ -329,7 +329,7 @@ let rec patt_label_long_id =
   function
     MLast.PaPfx (_, li, MLast.PaLid (_, s)) ->
       Ldot (longid_long_id li, conv_lab s)
-  | MLast.PaLong (_, MLast.LiAcc (_, li, s)) -> longid_long_id li
+  | MLast.PaLong (_, MLast.LiAcc (_, li, s), []) -> longid_long_id li
   | MLast.PaLid (_, s) -> Lident (conv_lab s)
   | p -> error (loc_of_patt p) "bad label"
 ;;
@@ -817,7 +817,7 @@ and patt =
     PaAtt (loc, p1, a) -> ocaml_patt_addattr (attr (uv a)) (patt p1)
   | PaPfx (loc, li, p2) ->
       mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
-  | PaLong (loc, li) | PaLong2 (loc, li, _) ->
+  | PaLong (loc, li, _) ->
       let li =
         match li with
           MLast.LiUid (loc, s) -> MLast.LiUid (loc, conv_con s)

@@ -200,26 +200,29 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
           code = {foo|<:patt< `foo >> ;|foo}
         }
       ; { name = "patt-empty-list" ; 
-          expect = {foo|MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "[]"));
+          expect = {foo|MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "[]")) (Ploc.VaVal []);
 |foo} ;
           code = {foo|<:patt< [] >> ;|foo}
         }
       ; { name = "patt-list-1" ; 
           expect = {foo|MLast.PaApp loc
-  (MLast.PaApp loc (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "::")))
+  (MLast.PaApp loc
+     (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "::")) (Ploc.VaVal []))
      (MLast.PaLid loc (Ploc.VaVal "a")))
-  (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "[]")));
+  (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "[]")) (Ploc.VaVal []));
 |foo} ;
           code = {foo|<:patt< [a] >> ;|foo}
         }
       ; { name = "patt-list-2" ; 
           expect = {foo|MLast.PaApp loc
-  (MLast.PaApp loc (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "::")))
+  (MLast.PaApp loc
+     (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "::")) (Ploc.VaVal []))
      (MLast.PaLid loc (Ploc.VaVal "a")))
   (MLast.PaApp loc
-     (MLast.PaApp loc (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "::")))
+     (MLast.PaApp loc
+        (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "::")) (Ploc.VaVal []))
         (MLast.PaLid loc (Ploc.VaVal "b")))
-     (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "[]"))));
+     (MLast.PaLong loc (MLast.LiUid loc (Ploc.VaVal "[]")) (Ploc.VaVal [])));
 |foo} ;
           code = {foo|<:patt< [a;b] >> ;|foo}
         }
@@ -368,15 +371,27 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo}
       }
       ; {
-        name = "patt-PaLong2-1";
+        name = "patt-PaLong-1";
         code = {foo|<:patt< $longid:li$ (type $_list:loc_ids$ ) >>;|foo};
-        expect = {foo|MLast.PaLong2 loc li loc_ids;
+        expect = {foo|MLast.PaLong loc li loc_ids;
 |foo}
       }
       ; {
         name = "patt-PaLong-2";
         code = {foo|<:patt< $longid:li$ >>;|foo};
-        expect = {foo|MLast.PaLong loc li;
+        expect = {foo|MLast.PaLong loc li (Ploc.VaVal []);
+|foo}
+      }
+      ; {
+        name = "patt-PaLong-3";
+        code = {foo|<:patt< $longid:li$ (type a) >>;|foo};
+        expect = {foo|MLast.PaLong loc li (Ploc.VaVal [(loc, "a")]);
+|foo}
+      }
+      ; {
+        name = "patt-PaLong-4";
+        code = {foo|<:patt< $longid:li$ (type a b c) >>;|foo};
+        expect = {foo|MLast.PaLong loc li (Ploc.VaVal [(loc, "a"); (loc, "b"); (loc, "c")]);
 |foo}
       }
       ; {

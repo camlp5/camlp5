@@ -661,7 +661,7 @@ and patt =
     ocaml_patt_addattr (attr (uv a)) (patt p1)
   | PaPfx loc li p2 ->
     mkpat loc (ocaml_ppat_open (mkloc loc) (longid_long_id li) (patt p2))
-  | PaLong loc li | PaLong2 loc li _ ->
+  | PaLong loc li _ ->
     let li = match li with [
       <:longident:< $uid:s$ >> -> <:longident< $uid:conv_con s$ >>
     | <:longident:< $longid:li$ . $uid:s$ >> -> <:longident< $longid:li$ . $uid:conv_con s$ >>

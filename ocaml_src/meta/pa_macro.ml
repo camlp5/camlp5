@@ -211,9 +211,9 @@ let substp mloc env =
     function
       MLast.ExLong (_, MLast.LiUid (_, x)) ->
         begin try MLast.PaAnt (loc, List.assoc x env) with
-          Not_found -> MLast.PaLong (loc, MLast.LiUid (loc, x))
+          Not_found -> MLast.PaLong (loc, MLast.LiUid (loc, x), [])
         end
-    | MLast.ExLong (loc, li) -> MLast.PaLong (loc, li)
+    | MLast.ExLong (loc, li) -> MLast.PaLong (loc, li, [])
     | MLast.ExApp (_, e1, e2) -> MLast.PaApp (loc, loop e1, loop e2)
     | MLast.ExLid (_, x) ->
         begin try MLast.PaAnt (loc, List.assoc x env) with

@@ -68,8 +68,7 @@ and poly_variant =
   | PvInh of loc and ctyp ]
 and patt =
   [ PaPfx of loc and longid and patt
-  | PaLong of loc and longid
-  | PaLong2 of loc and longid and V (list (loc * string))
+  | PaLong of loc and longid and V (list (loc * string))
   | PaAli of loc and patt and patt
   | PaAnt of loc and patt
   | PaAny of loc

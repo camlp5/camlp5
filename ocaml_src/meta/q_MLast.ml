@@ -74,7 +74,7 @@ module Qast =
         | _, _ :: _ -> longident_of_string_list loc l
         | _, [] -> assert false
       in
-      MLast.PaLong (loc, li)
+      MLast.PaLong (loc, li, [])
     ;;
     let patt_label m n =
       if m = "" then MLast.PaLid (loc, n)
@@ -155,24 +155,25 @@ module Qast =
                MLast.PaApp
                  (loc,
                   MLast.PaApp
-                    (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::")),
+                    (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::"), []),
                      to_patt m a),
                   p))
-            al (MLast.PaLong (loc, MLast.LiUid (loc, "[]")))
+            al (MLast.PaLong (loc, MLast.LiUid (loc, "[]"), []))
       | Tuple al -> MLast.PaTup (loc, List.map (to_patt m) al)
-      | Option None -> MLast.PaLong (loc, MLast.LiUid (loc, "None"))
+      | Option None -> MLast.PaLong (loc, MLast.LiUid (loc, "None"), [])
       | Option (Some a) ->
           MLast.PaApp
-            (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some")), to_patt m a)
+            (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some"), []),
+             to_patt m a)
       | Int s -> MLast.PaInt (loc, s, "")
       | Str s -> MLast.PaStr (loc, s)
-      | Bool true -> MLast.PaLong (loc, MLast.LiUid (loc, "True"))
-      | Bool false -> MLast.PaLong (loc, MLast.LiUid (loc, "False"))
+      | Bool true -> MLast.PaLong (loc, MLast.LiUid (loc, "True"), [])
+      | Bool false -> MLast.PaLong (loc, MLast.LiUid (loc, "False"), [])
       | Cons (a1, a2) ->
           MLast.PaApp
             (loc,
              MLast.PaApp
-               (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::")),
+               (loc, MLast.PaLong (loc, MLast.LiUid (loc, "::"), []),
                 to_patt m a1),
              to_patt m a2)
       | Apply (_, _) -> failwith "bad pattern"
@@ -193,8 +194,8 @@ module Qast =
                     (loc,
                      MLast.PaLong
                        (loc,
-                        MLast.LiAcc
-                          (loc, MLast.LiUid (loc, "Ploc"), "VaVal")),
+                        MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal"),
+                        []),
                      pp)
                 in
                 let loc = MLast.loc_of_patt p in MLast.PaAnt (loc, pp)
@@ -203,7 +204,8 @@ module Qast =
                   (loc,
                    MLast.PaLong
                      (loc,
-                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal")),
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal"),
+                      []),
                    p)
           else p
     and to_patt_label m (l, a) = patt_label m l, to_patt m a;;
@@ -319,7 +321,8 @@ let mklistpat _ last =
             Qast.Node
               ("PaLong",
                [Qast.Loc;
-                Qast.Node ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "[]")])])
+                Qast.Node ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "[]")]);
+                Qast.VaVal (Qast.List [])])
         | a -> a
         end
     | p1 :: pl ->
@@ -333,7 +336,8 @@ let mklistpat _ last =
                   ("PaLong",
                    [Qast.Loc;
                     Qast.Node
-                      ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "::")])]);
+                      ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "::")]);
+                    Qast.VaVal (Qast.List [])]);
                 p1]);
             loop false pl])
   in
@@ -6320,7 +6324,9 @@ Grammar.safe_extend
              (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)),
            "194fe98d",
            (fun (li : 'longident) (loc : Ploc.t) ->
-              (Qast.Node ("PaLong", [Qast.Loc; li]) : 'patt_ident)));
+              (Qast.Node
+                 ("PaLong", [Qast.Loc; li; Qast.VaVal (Qast.List [])]) :
+               'patt_ident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -6368,8 +6374,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun _ (loc_ids : 'e__134) _ _ _ (li : 'longident)
                 (loc : Ploc.t) ->
-              (Qast.Node ("PaLong2", [Qast.Loc; li; loc_ids]) :
-               'patt_ident)));
+              (Qast.Node ("PaLong", [Qast.Loc; li; loc_ids]) : 'patt_ident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -6609,7 +6614,8 @@ Grammar.safe_extend
                  ("PaLong",
                   [Qast.Loc;
                    Qast.Node
-                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "[]")])]) :
+                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "[]")]);
+                   Qast.VaVal (Qast.List [])]) :
                'patt)));
         Grammar.production
           (Grammar.r_next
@@ -6861,7 +6867,8 @@ Grammar.safe_extend
                  ("PaLong",
                   [Qast.Loc;
                    Qast.Node
-                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "()")])]) :
+                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "()")]);
+                   Qast.VaVal (Qast.List [])]) :
                'paren_patt)));
         Grammar.production
           (Grammar.r_next
@@ -7104,7 +7111,9 @@ Grammar.safe_extend
              (Grammar.s_nterm (longident : 'longident Grammar.Entry.e)),
            "194fe98d",
            (fun (p1 : 'longident) (loc : Ploc.t) ->
-              (Qast.Node ("PaLong", [Qast.Loc; p1]) : 'patt_label_ident)));
+              (Qast.Node
+                 ("PaLong", [Qast.Loc; p1; Qast.VaVal (Qast.List [])]) :
+               'patt_label_ident)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -7232,7 +7241,8 @@ Grammar.safe_extend
                  ("PaLong",
                   [Qast.Loc;
                    Qast.Node
-                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "()")])]) :
+                     ("LiUid", [Qast.Loc; Qast.VaVal (Qast.Str "()")]);
+                   Qast.VaVal (Qast.List [])]) :
                'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
@@ -13930,7 +13940,8 @@ Grammar.safe_extend
                   (loc,
                    MLast.PaLong
                      (loc,
-                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaAnt")),
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaAnt"),
+                      []),
                    MLast.PaAnt (loc, a))
               else MLast.PaAny loc :
               'patt_eoi)));
@@ -13947,7 +13958,8 @@ Grammar.safe_extend
                   (loc,
                    MLast.PaLong
                      (loc,
-                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal")),
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal"),
+                      []),
                    MLast.PaAnt (loc, p))
               else MLast.PaAnt (loc, p) :
               'patt_eoi)))]]];

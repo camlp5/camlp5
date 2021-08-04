@@ -80,7 +80,7 @@ and ctyp_module =
 and patt =
   fun
   [ PaPfx _ li _ -> longident li
-  | PaLong _ li -> longident li
+  | PaLong _ li _ -> longident li
   | PaAli _ p1 p2 -> do { patt p1; patt p2 }
   | PaAny _ -> ()
   | PaApp _ p1 p2 -> do { patt p1; patt p2 }

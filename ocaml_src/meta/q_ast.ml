@@ -112,9 +112,8 @@ module Meta_make (C : MetaSig) =
       function
         PaAtt (_, e, att) -> C.node "PaAtt" [patt e; attribute att]
       | PaPfx (_, li, p) -> C.node "PaPfx" [longid li; patt p]
-      | PaLong (_, li) -> C.node "PaLong" [longid li]
-      | PaLong2 (_, li, loc_ids) ->
-          C.node "PaLong2"
+      | PaLong (_, li, loc_ids) ->
+          C.node "PaLong"
             [longid li;
              C.vala (C.list (fun (_, s) -> C.tuple [C.loc_v (); C.string s]))
                loc_ids]
@@ -1195,7 +1194,8 @@ Grammar.safe_extend
                   (loc,
                    MLast.PaLong
                      (loc,
-                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal")),
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal"),
+                      []),
                    MLast.PaAnt (loc, e))
               else MLast.PaAnt (loc, e) :
               'patt_eoi)));
@@ -1218,7 +1218,8 @@ Grammar.safe_extend
                   (loc,
                    MLast.PaLong
                      (loc,
-                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaAnt")),
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaAnt"),
+                      []),
                    MLast.PaAnt (loc, a))
               else MLast.PaAny loc :
               'patt_eoi)))]]];

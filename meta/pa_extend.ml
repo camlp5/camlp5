@@ -283,8 +283,9 @@ module MetaAction =
       fun
       [ MLast.PaPfx loc li p ->
           <:expr< MLast.PaPfx $mloc$ $mlongid li$ $mpatt p$ >>
-      | MLast.PaLong loc li ->
-          <:expr< MLast.PaLong $mloc$ $mlongid li$ >>
+      | MLast.PaLong loc li <:vala< [] >> ->
+          <:expr< MLast.PaLong $mloc$ $mlongid li$ (Ploc.VaVal []) >>
+      | MLast.PaLong loc li _ -> assert False
       | MLast.PaAny loc -> <:expr< MLast.PaAny $mloc$ >>
       | MLast.PaApp loc p1 p2 ->
           <:expr< MLast.PaApp $mloc$ $mpatt p1$ $mpatt p2$ >>
