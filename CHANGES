@@ -1,4 +1,9 @@
 
+Camlp5 Version 8.00.02:
+--------------------
+
+* [03 Aug 2021] updates to support OCaml 4.13.0
+
 Camlp5 Version 8.00.01:
 --------------------
 
