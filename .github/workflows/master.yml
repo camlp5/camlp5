@@ -1,0 +1,51 @@
+name: Build Master
+
+on:
+  pull_request:
+    branches:
+      - 'master'
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+        ocaml-compiler:
+          - 4.10.x
+          #- ocaml-variants.4.11.2+flambda
+          - ocaml-variants.4.12.0+options,ocaml-option-flambda
+        opam-disable-sandboxing:
+          - true
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.7.0
+        with:
+          access_token: ${{ github.token }}
+
+      # checking out the code seems to be important because local switch is used
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 10
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2.0.0-beta3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      # Kakadu: no idea why it is required. Opam 2.1.x should be doing it by itself
+      - run: sudo apt install libstring-shellquote-perl libipc-system-simple-perl --yes
+
+      - name: Installing dependencies
+        run: opam install . --deps-only   --with-test --with-doc
+
+      - name: Building...
+        run: opam install . --with-test --with-doc --yes

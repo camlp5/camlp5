@@ -1,3 +1,5 @@
+[![Build Master](https://github.com/Kakadu/camlp5/actions/workflows/master.yml/badge.svg)](https://github.com/Kakadu/camlp5/actions/workflows/master.yml)
+
 # Camlp5
 
 Camlp5 is a preprocessor-pretty-printer of OCaml.
