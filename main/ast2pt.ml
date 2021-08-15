@@ -1788,6 +1788,10 @@ value directive loc =
       match ocaml_pdir_bool with
       [ Some pdir_bool → pdir_bool False
       | None → error loc "no such kind of directive in this ocaml version" ]
+  | <:expr< $longid:li$ >> -> Pdir_ident (longid_long_id li)
+  | <:expr< $longid:li$ >> -> Pdir_ident (longid_long_id li)
+  | <:expr< $longid:li$ . $lid:id$ >> -> Pdir_ident (longid_lident_long_id (Some <:vala< li >>,<:vala< id >>))
+  | <:expr<  $lid:id$ >> -> Pdir_ident (Lident id)
   | e →
       let sl =
         loop e where rec loop =

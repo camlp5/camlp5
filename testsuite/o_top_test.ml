@@ -47,12 +47,22 @@ value tests = "test o top" >::: [
     "show-1" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} ({foo|#show  List|foo}," 1") (papr {foo| #show List;; 1|foo})
     ]) ;
+    "show-2" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  Stdlib.List|foo}," 1") (papr {foo| #show Stdlib.List;; 1|foo})
+    ]) ;
+    "show-3" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  Stdlib.List.hd|foo}," 1") (papr {foo| #show Stdlib.List.hd;; 1|foo})
+    ]) ;
+    "show-4" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  hd|foo}," 1") (papr {foo| #show hd;; 1|foo})
+    ]) ;
     "bug-3" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} (";;F.f 1"," 1") (papr {foo| (F.f 1);; 1|foo})
     ])
   ]
  ;
 
+(* this needs to remain using invoked_with *)
 value _ =
 if invoked_with "o_top_test" then
   run_test_tt_main tests
