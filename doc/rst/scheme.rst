@@ -64,55 +64,49 @@ Camlp5 users are insterested.
 
 Some examples are given to show the principles:
 
-=========================================
-======================================
+========================================= ======================================
 OCaml                                     Scheme
-=========================================
-======================================
-``let x = 42;;``                          ``(define x  42)``
-``let f x = 0;;``                         ``(define (f x) 0)``
-``let rec f x y = 0;;``                   ``(definerec (f x y) 0)``
-``let x = 42 and y = 27 in x + y;;  ``    ``(let ((x 42) (y 27)) (+ x y))``
-``let x = 42 in let y = 27 in x + y;;  `` ``(let* ((x 42) (y 27)) (+ x y))``
-``module M = struct ... end;;``           ``(module M (struct ...))``
-``type 'a t = A of 'a * int | B``         ``(type (t 'a) (sum (A 'a int) (B)))``
-``fun x y -> x``                          ``(lambda (x y) x)``
-``x; y; z``                               ``(begin x y z)``
-``f x y``                                 ``(f x y)``
-``[1; 2; 3]``                             ``[1 2 3]``
-``x :: y :: z :: t``                      ``[x y z :: t]``
-``a, b, c``                               ``(values a b c)``
-``match x with 'A'..'Z' -> "x"``          ``(match x ((range 'A' 'Z') "x")))``
-``{x = y; z = t}``                        ``{(x y) (z t)}``
-=========================================
-======================================
+========================================= ======================================
+let x = 42;;                              (define x  42)
+let f x = 0;;                             (define (f x) 0)
+let rec f x y = 0;;                       (definerec (f x y) 0)
+let x = 42 and y = 27 in x + y;;          (let ((x 42) (y 27)) (+ x y))
+let x = 42 in let y = 27 in x + y;;       (let* ((x 42) (y 27)) (+ x y))
+module M = struct ... end;;               (module M (struct ...))
+type 'a t = A of 'a * int | B             (type (t 'a) (sum (A 'a int) (B)))
+fun x y -> x                              (lambda (x y) x)
+x; y; z                                   (begin x y z)
+f x y                                     (f x y)
+[1; 2; 3]                                 [1 2 3]
+x :: y :: z :: t                          [x y z :: t]
+a, b, c                                   (values a b c)
+match x with 'A'..'Z' -> "x"              (match x ((range 'A' 'Z') "x")))
+{x = y; z = t}                            {(x y) (z t)}
+========================================= ======================================
 
 .. rubric:: Lisp syntax
   :name: lisp-syntax
 
 The same examples:
 
-=========================================
-======================================
+========================================= ======================================
 OCaml                                     Lisp
-=========================================
-======================================
-``let x = 42;;``                          ``(value x  42)``
-``let f x = 0;;``                         ``(value f (lambda x 0))``
-``let rec f x y = 0;;``                   ``(value rec f (lambda (x y) 0))``
-``let x = 42 and y = 27 in x + y;;  ``    ``(let ((x 42) (y 27)) (+ x y))``
-``let x = 42 in let y = 27 in x + y;;  `` ``(let* ((x 42) (y 27)) (+ x y))``
-``module M = struct ... end;;``           ``(module M (struct ...))``
-``type 'a t = A of 'a * int | B``         ``(type (t 'a) (sum (A 'a int) (B)))``
-``fun x y -> x``                          ``(lambda (x y) x)``
-``x; y; z``                               ``(progn x y z)``
-``f x y``                                 ``(f x y)``
-``[1; 2; 3]``                             ``(list 1 2 3)``
-``x :: y :: z :: t``                      ``(list x y z :: t)``
-``a, b, c``                               ``(, a b c)``
-``match x with 'A'..'Z' -> "x"``          ``(match x ((range 'A' 'Z') "x")))``
-``{x = y; z = t}``                        ``({} (x y) (z t))``
-=========================================
-======================================
+========================================= ======================================
+let x = 42;;                              (value x  42)
+let f x = 0;;                             (value f (lambda x 0))
+let rec f x y = 0;;                       (value rec f (lambda (x y) 0))
+let x = 42 and y = 27 in x + y;;          (let ((x 42) (y 27)) (+ x y))
+let x = 42 in let y = 27 in x + y;;       (let* ((x 42) (y 27)) (+ x y))
+module M = struct ... end;;               (module M (struct ...))
+type 'a t = A of 'a * int | B             (type (t 'a) (sum (A 'a int) (B)))
+fun x y -> x                              (lambda (x y) x)
+x; y; z                                   (progn x y z)
+f x y                                     (f x y)
+[1; 2; 3]                                 (list 1 2 3)
+x :: y :: z :: t                          (list x y z :: t)
+a, b, c                                   (, a b c)
+match x with 'A'..'Z' -> "x"              (match x ((range 'A' 'Z') "x")))
+{x = y; z = t}                            ({} (x y) (z t))
+========================================= ======================================
 
 .. container:: trailer
