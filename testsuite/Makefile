@@ -64,7 +64,7 @@ CAMLP5R=$(LAUNCH) camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
-PACKAGES_NOCAMLP5=rresult,fmt,pcre,oUnit,compiler-libs.common
+PACKAGES_NOCAMLP5=rresult,fmt,pcre,ounit2,compiler-libs.common
 PACKAGES=$(PACKAGES_NOCAMLP5),camlp5,camlp5.macro
 
 pa_ounit2.cmo: pa_ounit2.ml
@@ -80,19 +80,19 @@ testutil2.cmo: testutil2.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -c testutil2.ml
 
 roundtrip_lexer.byte: roundtrip_lexer.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit -syntax camlp5r -linkall -linkpkg roundtrip_lexer.ml -o roundtrip_lexer.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg roundtrip_lexer.ml -o roundtrip_lexer.byte
 
 extfun_test:: extfun_test.byte
 	./extfun_test.byte
 
 extfun_test.byte: extfun_test.ml testutil.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl extfun_test.ml -o extfun_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.extfun,camlp5.quotations,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl extfun_test.ml -o extfun_test.byte
 
 reloc_test:: reloc_test.byte
 	./reloc_test.byte
 
 reloc_test.byte: reloc_test.ml testutil.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl reloc_test.ml -o reloc_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl reloc_test.ml -o reloc_test.byte
 
 papr_test_matrix.cmo: papr_test_matrix.ml
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES) -syntax camlp5r -warn-error A -c -impl papr_test_matrix.ml
@@ -102,14 +102,14 @@ o2r_test:: o2r_test.byte
 	./o2r_test.byte $(TESTARGS)
 
 o2r_test.byte: o2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_op.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2r_test.ml -o o2r_test.byte
 
 r2r_test:: r2r_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r2r_test.byte $(TESTARGS)
 
 r2r_test.byte: r2r_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.ml -o r2r_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2r_test.ml -o r2r_test.byte
 
 
 r2o_test:: r2o_test.byte
@@ -117,7 +117,7 @@ r2o_test:: r2o_test.byte
 	./r2o_test.byte $(TESTARGS)
 
 r2o_test.byte: r2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_test.ml -o r2o_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo r2o_test.ml -o r2o_test.byte
 
 
 o2o_test:: o2o_test.byte
@@ -125,14 +125,14 @@ o2o_test:: o2o_test.byte
 	./o2o_test.byte $(TESTARGS)
 
 o2o_test.byte: o2o_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_op.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.ml -o o2o_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo o2o_test.ml -o o2o_test.byte
 
 o2official_test:: o2official_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o2official_test.byte $(TESTARGS)
 
 o2official_test.byte: o2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_op.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_test.ml -o o2official_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_op.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc testutil.cmo testutil2.cmo papr_test_matrix.cmo o2official_test.ml -o o2official_test.byte
 
 
 r2official_test:: r2official_test.byte
@@ -140,7 +140,7 @@ r2official_test:: r2official_test.byte
 	./r2official_test.byte $(TESTARGS)
 
 r2official_test.byte: r2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_test.ml -o r2official_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_official.link -syntax camlp5r -linkall -linkpkg -I ../etc testutil.cmo testutil2.cmo papr_test_matrix.cmo r2official_test.ml -o r2official_test.byte
 
 
 
@@ -149,25 +149,25 @@ official2official_test:: official2official_test.byte
 	./official2official_test.byte $(TESTARGS)
 
 official2official_test.byte: official2official_test.ml testutil.cmo testutil2.cmo papr_test_matrix.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo official2official_test.ml -o official2official_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2 -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo papr_test_matrix.cmo official2official_test.ml -o official2official_test.byte
 
 r2sch_test:: r2sch_test.byte
 	./r2sch_test.byte
 
 r2sch_test.byte: r2sch_test.ml testutil.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_scheme.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl r2sch_test.ml -o r2sch_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_scheme.link -syntax camlp5r -linkall -linkpkg testutil.cmo -impl r2sch_test.ml -o r2sch_test.byte
 
 q_MLast_test:: q_MLast_test.byte
 	./q_MLast_test.byte
 
 q_MLast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o q_MLast_test.byte
 
 q_ast_test:: q_ast_test.byte
 	./q_ast_test.byte
 
 q_ast_test.byte: q_MLast_test.ml testutil.cmo testutil2.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o q_ast_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.pa_r.link,camlp5.pr_r.link,camlp5.parser_quotations.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl q_MLast_test.ml -o q_ast_test.byte
 
 
 grammar_bug_test:: grammar_bug_test.byte
@@ -175,28 +175,28 @@ grammar_bug_test:: grammar_bug_test.byte
 	HAS_ARGLE=true ./grammar_bug_test.byte $(TESTARGS)
 
 grammar_bug_test.byte: grammar_bug_test.ml alt_pa_o.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.quotations,camlp5.macro_gram -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.ml grammar_bug_test.ml -o grammar_bug_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.quotations,camlp5.macro_gram -syntax camlp5r -I ../main -linkall -linkpkg alt_pa_o.ml grammar_bug_test.ml -o grammar_bug_test.byte
 
 little_lang_test:: little_lang_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./little_lang_test.byte $(TESTARGS)
 
 little_lang_test.byte: little_lang_test.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo little_lang_test.ml -o little_lang_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo little_lang_test.ml -o little_lang_test.byte
 
 o_lexer_test:: o_lexer_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./o_lexer_test.byte $(TESTARGS)
 
 o_lexer_test.byte: o_lexer_test.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo o_lexer_test.ml -o o_lexer_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_o.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo o_lexer_test.ml -o o_lexer_test.byte
 
 r_lexer_test:: r_lexer_test.byte
 	$(NOVERBOSE) mkdir -p _build
 	./r_lexer_test.byte $(TESTARGS)
 
 r_lexer_test.byte: r_lexer_test.ml
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),oUnit,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo r_lexer_test.ml -o r_lexer_test.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),ounit2,camlp5.extend,camlp5.extprint,camlp5.extfun,camlp5.pprintf,camlp5.pa_r.link,camlp5.quotations -syntax camlp5r -I ../main -linkall -linkpkg testutil.cmo testutil2.cmo r_lexer_test.ml -o r_lexer_test.byte
 
 o_top_test:: o_top_test.byte
 	./o_top_test.byte
