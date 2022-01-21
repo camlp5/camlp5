@@ -86,11 +86,13 @@ Extensible grammars
    language when the syntax extension kit "``pa_extend.cmo``" is loaded.
    Its syntax is:
 
-   ::
+   .. code-block:: abnf
 
           expression ::= extend
               extend ::= "EXTEND" extend-body "END"
          extend-body ::= global-opt entries
+             entries ::= entry entries
+                       | entry
           global-opt ::= "GLOBAL" ":" entry-names ";"
                        | <nothing>
          entry-names ::= entry-name entry-names
