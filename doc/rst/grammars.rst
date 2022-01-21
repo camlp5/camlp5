@@ -32,58 +32,58 @@ Extensible grammars
    The extensible grammars are a system to build *grammar entries* which
    can be extended dynamically. A grammar entry is an abstract value
    internally containing a stream parser. The type of a grammar entry is
-   ``"Grammar.Entry.e t"`` where ``"t"`` is the type of the values
+   ``Grammar.Entry.e t`` where ``t`` is the type of the values
    returned by the grammar entry.
 
    To start with extensible grammars, it is necessary to build a
-   *grammar*, a value of type "``Grammar.g``", using the function
-   "``Grammar.gcreate``":
+   *grammar*, a value of type ``Grammar.g``, using the function
+   ``Grammar.gcreate``:
 
-   ::
+   .. code-block:: ocaml
 
         value g = Grammar.gcreate lexer;
 
-   where "``lexer``" is a lexer previously defined. See the section
+   where ``lexer`` is a lexer previously defined. See the section
    explaining the interface with lexers. In a first time, it is possible
-   to use a lexer of the module "``Plexer``" provided by Camlp5:
+   to use a lexer of the module ``Plexer`` provided by Camlp5:
 
-   ::
+   .. code-block:: ocaml
 
         value g = Grammar.gcreate (Plexer.gmake ());
 
    Each grammar entry is associated with a grammar. Only grammar entries
    of the same grammar can call each other. To create a grammar entry,
-   one has to use the function "``Grammar.Entry.create``" with takes the
+   one has to use the function ``Grammar.Entry.create`` with takes the
    grammar as first parameter and a name as second parameter. This name
    is used in case of syntax errors. For example:
 
-   ::
+   .. code-block:: ocaml
 
         value exp = Grammar.Entry.create g "expression";
 
-   To apply a grammar entry, the function "``Grammar.Entry.parse``" can
+   To apply a grammar entry, the function ``Grammar.Entry.parse`` can
    be used. Its first parameter is the grammar entry, the second one a
    stream of characters:
 
-   ::
+   .. code-block:: ocaml
 
         Grammar.Entry.parse exp (Stream.of_string "hello");
 
    But if you experiment this, since the entry was just created without
    any rules, you receive an error message:
 
-   ::
+   .. code-block:: ocaml
 
         Stream.Error "entry [expression] is empty"
 
    To add grammar rules to the grammar entry, it is necessary to
-   *extend* it, using a specific syntactic statement: "``EXTEND``".
+   *extend* it, using a specific syntactic statement: ``EXTEND``.
 
    .. rubric:: Syntax of the EXTEND statement
       :name: syntax-of-the-extend-statement
 
-   The "``EXTEND``" statement is added in the expressions of the OCaml
-   language when the syntax extension kit "``pa_extend.cmo``" is loaded.
+   The ``EXTEND`` statement is added in the expressions of the OCaml
+   language when the syntax extension kit ``pa_extend.cmo`` is loaded.
    Its syntax is:
 
    .. code-block:: abnf
@@ -157,42 +157,42 @@ Extensible grammars
           ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | misc-letter)
          misc-letter ::= '\128'-'\255'
 
-   Other statements, "``GEXTEND``", "``DELETE_RULE``",
-   "``GDELETE_RULE``" are also defined by the same syntax extension kit.
+   Other statements, ``GEXTEND``, ``DELETE_RULE``,
+   ``GDELETE_RULE`` are also defined by the same syntax extension kit.
    See further.
 
-   In the description above, only "``EXTEND``" and "``END``" are new
+   In the description above, only ``EXTEND`` and ``END`` are new
    keywords (reserved words which cannot be used in variables,
-   constructors or module names). The other strings (e.g. "``GLOBAL``",
-   "``LEVEL``", "``LIST0``", "``LEFTA``", etc.) are not reserved.
+   constructors or module names). The other strings (e.g. ``GLOBAL``,
+   ``LEVEL``, ``LIST0``, ``LEFTA``, etc.) are not reserved.
 
    .. rubric:: Semantics of the EXTEND statement
       :name: semantics-of-the-extend-statement
 
-   The EXTEND statement starts with the "``EXTEND``" keyword and ends
-   with the "``END``" keyword.
+   The EXTEND statement starts with the ``EXTEND`` keyword and ends
+   with the ``END`` keyword.
 
    .. rubric:: GLOBAL indicator
       :name: global-indicator
 
    After the first keyword, it is possible to see the identifier
-   "``GLOBAL``" followed by a colon, a list of entries names and a
+   ``GLOBAL`` followed by a colon, a list of entries names and a
    semicolon. It says that these entries correspond to visible
-   (previously defined) entry variables, in the context of the EXTEND
+   (previously defined) entry variables, in the context of the ``EXTEND``
    statement, the other ones being locally and silently defined inside.
 
-   -  If an entry, which is extended in the EXTEND statement, is in the
-      GLOBAL list, but is not defined in the context of the EXTEND
+   -  If an entry, which is extended in the ``EXTEND`` statement, is in the
+      ``GLOBAL`` list, but is not defined in the context of the ``EXTEND``
       statement, the OCaml compiler will fail with the error "unbound
       value".
-   -  If there is no GLOBAL indicator, and an entry, which is extended
-      in the EXTEND statement, is not defined in the contex of the
-      EXTEND statement, the OCaml compiler will also fail with the error
+   -  If there is no ``GLOBAL`` indicator, and an entry, which is extended
+      in the ``EXTEND`` statement, is not defined in the contex of the
+      ``EXTEND`` statement, the OCaml compiler will also fail with the error
       "unbound value".
 
    Example:
 
-   ::
+   .. code-block:: ocaml
 
         value exp = Grammar.Entry.create g "exp";
         EXTEND
@@ -204,9 +204,9 @@ Extensible grammars
 
    The entry "exp" is an existing variable (defined by value exp = ...).
    On the other hand, the entries "foo" and "bar" have not been defined.
-   Because of the GLOBAL indicator, the system define them locally.
+   Because of the ``GLOBAL`` indicator, the system define them locally.
 
-   Without the GLOBAL indicator, the three entries would have been
+   Without the ``GLOBAL`` indicator, the three entries would have been
    considered as global variables, therefore the OCaml compiler would
    say "unbound variable" under the first undefined entry, "foo".
 
@@ -224,20 +224,20 @@ Extensible grammars
    After the colon, it is possible to specify a where to insert the
    defined levels:
 
-   -  The identifier "``FIRST``" (resp. "``LAST``") indicates that the
+   -  The identifier ``FIRST`` (resp. ``LAST``) indicates that the
       level must be inserted before (resp. after) all possibly existing
       levels of the entry. They become their first (resp. last) levels.
-   -  The identifier "``BEFORE``" (resp. "``AFTER``") followed by a
+   -  The identifier ``BEFORE`` (resp. ``AFTER``) followed by a
       level label (a string) indicates that the levels must be inserted
       before (resp. after) that level, if it exists. If it does not
       exist, the extend statement fails at run time.
-   -  The identifier "``LIKE``" followed by a string indicates that the
+   -  The identifier ``LIKE`` followed by a string indicates that the
       first level defined in the extend statement must be inserted in
       the first already existing level with a rule containing this
-      string as keyword or token name. For example, "``LIKE "match"``"
-      is the first level having "``match``" as keyword. If there is no
+      string as keyword or token name. For example, ``LIKE "match``
+      is the first level having ``match`` as keyword. If there is no
       level with this string, the extend statement fails at run time.
-   -  The identifier "``LEVEL``" followed by a level label indicates
+   -  The identifier ``LEVEL`` followed by a level label indicates
       that the first level defined in the extend statement must be
       inserted at the given level, extending and modifying it. The other
       levels defined in the statement are inserted after this level, and
@@ -274,12 +274,12 @@ Extensible grammars
    At last, the grammar *rule* list appear. The rules are separated by
    vertical bars, the whole list being brackets.
 
-   A rule looks like a match case in the "``match``" statement or a
-   parser case in the "``parser``" statement: a list of psymbols (see
+   A rule looks like a match case in the ``match`` statement or a
+   parser case in the ``parser`` statement: a list of psymbols (see
    next paragraph) separated by semicolons, followed by a right arrow
    and an expression, the semantic action. Actually, the right arrow and
    expression are optional: in this case, it is equivalent to an
-   expression which would be the unit "``()``" constructor.
+   expression which would be the unit ``()`` constructor.
 
    A psymbol is either a pattern, followed with the equal sign and a
    symbol, or by a symbol alone. It corresponds to a test of this
@@ -301,13 +301,13 @@ Extensible grammars
       QUOTATION, ANTIQUOT and EOI; other lexers may propose other lists
       of tokens),
    -  an entry name, which correspond to a call to this entry,
-   -  an entry name followed by the identifier "``LEVEL``" and a level
+   -  an entry name followed by the identifier ``LEVEL`` and a level
       label, which correspond to the call to this entry at that level,
-   -  the identifier "``SELF``" which is a recursive call to the present
+   -  the identifier ``SELF`` which is a recursive call to the present
       entry, according to the associativity (i.e. it may be a call at
       the current level, to the next level, or to the top level of the
-      entry): "``SELF``" is equivalent to the name of the entry itself,
-   -  the identifier "``NEXT``", which is a call to the next level of
+      entry): ``SELF`` is equivalent to the name of the entry itself,
+   -  the identifier ``NEXT``, which is a call to the next level of
       the current entry,
    -  a left brace, followed by a list of rules separated by vertical
       bars, and a right brace: equivalent to a call to an entry, with
@@ -319,7 +319,7 @@ Extensible grammars
    depending on the first items of the rule (see the section about the
    kind of grammars recognized):
 
-   -  the parsing may fail by raising the exception "``Stream.Error``"
+   -  the parsing may fail by raising the exception ``Stream.Error``
    -  the parsing may continue with the next rule.
 
    .. rubric:: Meta symbols
@@ -328,28 +328,28 @@ Extensible grammars
    Extra symbols exist, allowing to manipulate lists or optional
    symbols. They are:
 
-   -  LIST0 followed by a symbol: this is a list of this symbol,
+   -  ``LIST0`` followed by a symbol: this is a list of this symbol,
       possibly empty,
-   -  LIST0 followed by a symbol, SEP and another symbol, and optional
-      OPT_SEP: this is a list, possibly empty, of the first symbol
+   -  ``LIST0`` followed by a symbol, ``SEP`` and another symbol, and optional
+      ``OPT_SEP``: this is a list, possibly empty, of the first symbol
       separated by the second one, possibly ended with the separator if
-      OPT_SEP is present,
-   -  LIST1 followed by a symbol: this is a list of this symbol, with at
+      ``OPT_SEP`` is present,
+   -  ``LIST1`` followed by a symbol: this is a list of this symbol, with at
       least one element,
-   -  LIST1 followed by a symbol, SEP and another symbol, and optional
-      OPT_SEP: this is a list, with at least one element, of the first
+   -  ``LIST1`` followed by a symbol, ``SEP`` and another symbol, and optional
+      ``OPT_SEP``: this is a list, with at least one element, of the first
       symbol separated by the second one, possibly ended with the
-      separator if OPT_SEP is present,
-   -  OPT followed by a symbol: equivalent to "this symbol or nothing"
-      returning a value of type "``option``".
-   -  FLAG followed by a symbol: equivalent to "this symbol or nothing",
+      separator if ``OPT_SEP`` is present,
+   -  ``OPT`` followed by a symbol: equivalent to "this symbol or nothing"
+      returning a value of type ``option``.
+   -  ``FLAG`` followed by a symbol: equivalent to "this symbol or nothing",
       returning a boolean.
 
    .. rubric:: The V meta symbol
       :name: the-v-meta-symbol
 
    The V meta symbol is destinated to allow antiquotations while using
-   the syntax tree quotation kit ```q_ast.cmo`` <q_ast.html>`__. It
+   the syntax tree quotation kit :doc:`q_ast.cmo <q_ast>`. It
    works only in strict mode. In transitional mode, it is just
    equivalent to its symbol parameter.
 
@@ -357,7 +357,7 @@ Extensible grammars
       :name: antiquotation-kind
 
    The antiquotation kind is the optional identifier between the
-   starting "``$``" (dollar) and the "``:``" (colon) in a quotation of
+   starting ``$`` (dollar) and the ``:`` (colon) in a quotation of
    syntax tree (see the chapter `syntax tree <ml_ast.html>`__).
 
    The optional list of strings following the "V" meta symbol and its
@@ -376,16 +376,16 @@ Extensible grammars
 
         V (FLAG "rec")
 
-   is like "FLAG" while normally parsing, allowing to parse the keyword
-   "``rec``". While using it in quotations, also allows the parse the
-   keyword "``rec``" but, moreover, the antiquotation "``$flag:..$``"
-   where "``..``" is an expression or a pattern depending on the
+   is like ``FLAG`` while normally parsing, allowing to parse the keyword
+   ``rec``. While using it in quotations, also allows the parse the
+   keyword ``rec`` but, moreover, the antiquotation ``$flag:..$``
+   where ``..`` is an expression or a pattern depending on the
    position of the quotation.
 
    There are also default antiquotations kinds for the tokens used in
-   the OCaml language predefined parsers "``pa_r.cmo``" (revised syntax)
-   and "``pa_o.cmo``" (normal syntax), actually all parsers using the
-   provided lexer "``Plexer``" (see the chapter
+   the OCaml language predefined parsers ``pa_r.cmo`` (revised syntax)
+   and ``pa_o.cmo`` (normal syntax), actually all parsers using the
+   provided lexer ``Plexer`` (see the chapter
    `Library <library.html>`__). They are:
 
    -  ``["chr"]`` for CHAR
@@ -402,12 +402,12 @@ Extensible grammars
    (grammars entries), but there is no default antiquotation kind. For
    example, while parsing a quotation, the symbol:
 
-   ::
+   .. code-block:: ocaml
 
         V foo "bar" "oops"
 
-   corresponds to either a call to the grammar entry "``foo``", or to
-   the antiquotations "``$bar:...$``" or "``$oops:...$``".
+   corresponds to either a call to the grammar entry ``foo``, or to
+   the antiquotations ``$bar:...$`` or ``$oops:...$``.
 
    .. rubric:: Type
       :name: type
@@ -415,24 +415,24 @@ Extensible grammars
    The type of the value returned by a V meta symbol is:
 
    -  in transitional mode, the type of its symbol parameter,
-   -  in strict mode, "``Ploc.vala t``", where "``t``" is its symbol
+   -  in strict mode, ``Ploc.vala t``, where ``t`` is its symbol
       parameter.
 
    In strict mode, if the symbol parameter is found, whose value is,
-   say, "``x``", the result is "``Ploc.VaVal x``". If an antiquotation
-   is found the result is "``Ploc.VaAnt s``" where "``s``" is some
+   say, ``x``, the result is ``Ploc.VaVal x``. If an antiquotation
+   is found the result is ``Ploc.VaAnt s`` where ``s`` is some
    string containing the antiquotation text and some other internal
    information.
 
    .. rubric:: Rules insertion
       :name: rules-insertion
 
-   Remember that "``EXTEND``" is a statement, not a declaration: the
+   Remember that ``EXTEND`` is a statement, not a declaration: the
    rules are added in the entries at run time. Each rule is internally
    inserted in a tree, allowing the left factorization of the rule. For
    example, with this list of rules (borrowed from the Camlp5 sources):
 
-   ::
+   .. code-block:: ocaml
 
         "method"; "private"; "virtual"; l = label; ":"; t = poly_type
         "method"; "virtual"; "private"; l = label; ":"; t = poly_type
@@ -444,7 +444,7 @@ Extensible grammars
 
    the rules are inserted in a tree and the result looks like:
 
-   ::
+   .. code-block:: text
 
         "method"
            |-- "private"
@@ -474,7 +474,7 @@ Extensible grammars
                  |-- fun_binding
 
    This tree is built as long as rules are inserted. When used, by
-   applying the function "``Grammar.Entry.parse``" to the current entry,
+   applying the function ``Grammar.Entry.parse`` to the current entry,
    the input is matched with that tree, starting from the tree root,
    descending on it as long as the parsing advances.
 
@@ -488,30 +488,30 @@ Extensible grammars
 
    -  the variables bound by the patterns of the symbols found in the
       rules,
-   -  the specific variable "``loc``" which contain the location of the
+   -  the specific variable ``loc`` which contain the location of the
       whole rule in the source.
 
-   The location is an abstract type defined in the module "``Ploc``" of
+   The location is an abstract type defined in the module ``Ploc`` of
    Camlp5.
 
    It is possible to change the name of this variable by using the
-   option "``-loc``" of Camlp5. For example, compiling a file like this:
+   option ``-loc`` of Camlp5. For example, compiling a file like this:
 
    ::
 
         camlp5r -loc foobar file.ml
 
-   the variable name, for the location will be "``foobar``" instead of
-   "``loc``".
+   the variable name, for the location will be ``foobar`` instead of
+   ``loc``.
 
    .. rubric:: The DELETE_RULE statement
       :name: the-delete_rule-statement
 
-   The "``DELETE_RULE``" statement is also added in the expressions of
-   the OCaml language when the syntax extension kit "``pa_extend.cmo``"
+   The ``DELETE_RULE`` statement is also added in the expressions of
+   the OCaml language when the syntax extension kit ``pa_extend.cmo``
    is loaded. Its syntax is:
 
-   ::
+   .. code-block:: abnf
 
               expression ::= delete-rule
              delete-rule ::= "DELETE_RULE" delete-rule-body "END"
@@ -524,16 +524,16 @@ Extensible grammars
 
    The entry is scanned for a rule matching the giving symbol list. When
    found, the rule is removed. If no rule is found, the exception
-   "``Not_found``" is raised.
+   ``Not_found`` is raised.
 
    .. rubric:: Extensions FOLD0 and FOLD1
       :name: extensions-fold0-and-fold1
 
-   When loading "``pa_extfold.cmo``" after "``pa_extend.cmo``", the
-   entry "``symbol``" of the EXTEND statement is extended with what is
+   When loading ``pa_extfold.cmo`` after ``pa_extend.cmo``, the
+   entry ``symbol`` of the EXTEND statement is extended with what is
    named the *fold iterators*, like this:
 
-   ::
+   .. code-block::
 
              symbol ::= "FOLD0" simple_expr simple_expr symbol
                       | "FOLD1" simple_expr simple_expr symbol
@@ -541,8 +541,8 @@ Extensible grammars
                       | "FOLD1" simple_expr simple_expr symbol "SEP" symbol
         simple_expr ::= expr (level "simple")
 
-   Like their equivalent with the lists iterators: "``LIST0``",
-   "``LIST1``", "``LIST0SEP``", "``LIST1SEP``", they read a sequence of
+   Like their equivalent with the lists iterators: ``LIST0``,
+   ``LIST1``, ``LIST0SEP``, ``LIST1SEP``, they read a sequence of
    symbols, possibly with the separators, but instead of building the
    list of these symbols, apply a fold function to each symbol, starting
    at the second "expr" (which must be a expression node) and continuing
@@ -552,13 +552,13 @@ Extensible grammars
    The list iterators can be seen almost as a specific case of these
    fold iterators where the initial "expr" would be:
 
-   ::
+   .. code-block:: ocaml
 
         <:expr< [] >>
 
    and the fold function would be:
 
-   ::
+   .. code-block:: ocaml
 
         fun e1 e2 -> <:expr< [$e1$ :: $e2$ ] >>
 
@@ -567,13 +567,13 @@ Extensible grammars
 
    Actually, a program using them can be written with the lists
    iterators with the semantic action applying the function
-   "``List.fold_left``" to the returned list, except that with the fold
+   ``List.fold_left`` to the returned list, except that with the fold
    iterators, this operation is done as long as the symbols are read on
    the input, no intermediate list being built.
 
    Example, file "sum.ml":
 
-   ::
+   .. code-block:: ocaml
 
         #load "pa_extend.cmo";
         #load "pa_extfold.cmo";
@@ -619,9 +619,9 @@ Extensible grammars
    At each entry level, the rules are separated into two trees:
 
    -  The tree of the rules *not* starting with the current entry name
-      nor by "``SELF``".
+      nor by ``SELF``.
    -  The tree of the rules starting with the current entry name or by
-      the identifier "``SELF``", this symbol not being included in the
+      the identifier ``SELF``, this symbol not being included in the
       tree.
 
    They determine two functions:
@@ -630,7 +630,7 @@ Extensible grammars
    -  The function named "continue", taking, as parameter, a value
       previously parsed, and analyzing the second tree.
 
-   A call to an entry, using "``Grammar.Entry.parse``" correspond to a
+   A call to an entry, using ``Grammar.Entry.parse`` correspond to a
    call to the "start" function of the first level of the entry.
 
    The "start" function tries its associated tree. If it works, it calls
@@ -666,7 +666,7 @@ Extensible grammars
 
    Example. Let us consider the following grammar:
 
-   ::
+   .. code-block:: ocaml
 
         EXTEND
           expr:
@@ -699,7 +699,7 @@ Extensible grammars
    indicated in the next sections.
 
    However, it is possible to change the parsing algorithm, by calling
-   the function "``Grammar.set_algorithm``". The possible values are:
+   the function ``Grammar.set_algorithm``. The possible values are:
 
    ``Grammar.Predictive``
       internally using `normal parsers <parsers.html>`__, with a
@@ -717,7 +717,7 @@ Extensible grammars
       parsing algorithm is "backtracking". Otherwise it is "predictive".
 
    An interesting function, when using then backtracking algorithm, is
-   "``Grammar.Entry.parse_all``" which returns all solutions of a given
+   ``Grammar.Entry.parse_all`` which returns all solutions of a given
    input.
 
    See details in the chapter `Library <library.html>`__, section
@@ -730,7 +730,7 @@ Extensible grammars
    exception "Ploc.Exc" giving the location of the error together with
    the exception itself.
 
-   If the parsing algorithm is "``Grammar.Predictive``", the system
+   If the parsing algorithm is ``Grammar.Predictive``, the system
    internally uses `stream parsers <parsers.html>`__. Two exceptions may
    happen: "Stream.Failure" or "Stream.Error". "Stream.Failure"
    indicates that the parsing just could not start. "Stream.Error"
@@ -740,11 +740,11 @@ Extensible grammars
    accepted, all the symbols of the same rule must be accepted,
    otherwise the exception "Stream.Error" is raised.
 
-   If the parsing algorithm is "``Grammar.Functional``" (resp.
-   "``Grammar.Backtracking``"), the system internally uses `functional
+   If the parsing algorithm is ``Grammar.Functional`` (resp.
+   ``Grammar.Backtracking``), the system internally uses `functional
    parsers <fparsers.html>`__ (resp `backtracking
    parsers <bparsers.html>`__. If no solution is found, the exception
-   "``Stream.Error``" is raised and the location of the error is the
+   ``Stream.Error`` is raised and the location of the error is the
    location of the last unfrozen token, i.e. where the stream advanced
    the farthest.
 
@@ -771,25 +771,25 @@ Extensible grammars
    .. rubric:: Interface with the lexer
       :name: interface-with-the-lexer
 
-   To create a grammar, the function "``Grammar.gcreate``" must be
+   To create a grammar, the function ``Grammar.gcreate`` must be
    called, with a lexer as parameter.
 
    A simple solution, as possible lexer, is the predefined lexer built
-   by "``Plexer.gmake ()``", lexer used for the OCaml grammar of Camlp5.
+   by ``Plexer.gmake ()``, lexer used for the OCaml grammar of Camlp5.
    In this case, you can just put it as parameter of
-   "``Grammar.gcreate``" and it is not necessary to read this section.
+   ``Grammar.gcreate`` and it is not necessary to read this section.
 
    The section first introduces the notion of "token patterns" which are
    the way the tokens and keywords symbols in the EXTEND statement are
    represented. Then follow the description of the type of the parameter
-   of "``Grammar.gcreate``".
+   of ``Grammar.gcreate``.
 
    .. rubric:: Token patterns
       :name: token-patterns
 
    A token pattern is a value of the type defined like this:
 
-   ::
+   .. code-block:: ocaml
 
         type pattern = (string * string);
 
@@ -806,7 +806,7 @@ Extensible grammars
 
    For example, given this grammar rule:
 
-   ::
+   .. code-block:: ocaml
 
         "for"; i = LIDENT; "="; e1 = SELF; "to"; e2 = SELF
 
@@ -818,14 +818,14 @@ Extensible grammars
    -  the keyword "to" by ``("", "to")``),
    -  and the token symbol ``LIDENT`` by ``("LIDENT", "")``.
 
-   The symbol ``UIDENT "Foo"`` in a rule would be represented by the
+   The symbol ``UIDENT "Foo`` in a rule would be represented by the
    token pattern:
 
    ::
 
         ("UIDENT", "Foo")
 
-   Notice that the symbol "``SELF``" is a specific symbol of the EXTEND
+   Notice that the symbol ``SELF`` is a specific symbol of the EXTEND
    syntax: it does not correspond to a token pattern and is represented
    differently. A token constructor name must not belong to the specific
    symbols: SELF, NEXT, LIST0, LIST1, OPT and FLAG.
@@ -833,8 +833,8 @@ Extensible grammars
    .. rubric:: The lexer record
       :name: the-lexer-record
 
-   The type of the parameter of the function "``Grammar.gcreate``" is
-   "``lexer``", defined in the module "``Plexing``". It is a record type
+   The type of the parameter of the function ``Grammar.gcreate`` is
+   ``lexer``, defined in the module ``Plexing``. It is a record type
    with the following fields:
 
    .. rubric:: ``tok_func``
@@ -842,7 +842,7 @@ Extensible grammars
 
    It is the lexer itself. Its type is:
 
-   ::
+   .. code-block:: ocaml
 
         Stream.t char -> (Stream.t (string * string) * location_function);
 
@@ -865,7 +865,7 @@ Extensible grammars
 
    Is a function of type:
 
-   ::
+   .. code-block:: ocaml
 
         pattern -> unit
 
@@ -884,14 +884,14 @@ Extensible grammars
    check of correctness of tokens is not done.
 
    In case or error, the function must raise the exception
-   "``Plexing.Error``" with an error message as parameter.
+   ``Plexing.Error`` with an error message as parameter.
 
    .. rubric:: ``tok_removing``
       :name: tok_removing
 
    Is a function of type:
 
-   ::
+   .. code-block:: ocaml
 
         pattern -> unit
 
@@ -906,7 +906,7 @@ Extensible grammars
 
    Is a function of type:
 
-   ::
+   .. code-block:: ocaml
 
         pattern -> ((string * string) -> unit)
 
@@ -915,17 +915,17 @@ Extensible grammars
 
    This function takes a token pattern as parameter and return a
    function matching a token, returning the matched string or raising
-   the exception "``Stream.Failure``" if the token does not match.
+   the exception ``Stream.Failure`` if the token does not match.
 
    Notice that, for efficiency, it is necessary to write this function
    as a match of token patterns returning, for each case, the function
    which matches the token, *not* a function matching the token pattern
    and the token together and returning a string for each case.
 
-   An acceptable function is provided in the module "``Plexing``" and is
+   An acceptable function is provided in the module ``Plexing`` and is
    named "default_match". Its code looks like this:
 
-   ::
+   .. code-block:: ocaml
 
         value default_match =
           fun
@@ -941,14 +941,14 @@ Extensible grammars
 
    Is a function of type:
 
-   ::
+   .. code-block:: ocaml
 
         pattern -> string
 
    Designed for error messages, it takes a token pattern as parameter
    and returns the string giving its name.
 
-   It is possible to use the predefined function "``lexer_text``" of the
+   It is possible to use the predefined function ``lexer_text`` of the
    Plexing module. This function just returns the name of the token
    pattern constructor and its parameter if any.
 
@@ -962,7 +962,7 @@ Extensible grammars
 
    Is a mutable field of type:
 
-   ::
+   .. code-block:: ocaml
 
         option (list location)
 
@@ -975,14 +975,15 @@ Extensible grammars
    .. rubric:: Minimalist version
       :name: minimalist-version
 
-   If a lexer have been written, named "``lexer``", here is the
+   If a lexer have been written, named ``lexer``, here is the
    minimalist version of the value suitable as parameter to
-   "``Grammar.gcreate``":
+   ``Grammar.gcreate``:
 
-   ::
+   .. code-block:: ocaml
 
         {Plexing.tok_func = lexer;
-         Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
+         Plexing.tok_using _ = ();
+         Plexing.tok_removing _ = ();
          Plexing.tok_match = Plexing.default_match;
          Plexing.tok_text = Plexing.lexer_text;
          Plexing.tok_comm = None}
@@ -994,7 +995,7 @@ Extensible grammars
    has two drawbacks:
 
    -  First, the type of tokens of the lexers must be
-      "``(string *       string)``"
+      ``(string * string)``
    -  Second, since the entry type has no parameter to specify the
       grammar it is bound to, there is no static check that entries are
       compatible, i.e. belong to the same grammar. The check is done at
@@ -1006,17 +1007,17 @@ Extensible grammars
    resulting module define entries compatible the ones to the other, and
    this is controlled by the OCaml type checker.
 
-   The syntax extension must be done with the statement GEXTEND, instead
-   of EXTEND, and deletion by GDELETE_RULE instead of DELETE_RULE.
+   The syntax extension must be done with the statement ``GEXTEND``, instead
+   of ``EXTEND``, and deletion by ``GDELETE_RULE`` instead of ``DELETE_RULE``.
 
    .. rubric:: The lexer type
       :name: the-lexer-type
 
    In the section about the interface with the lexer, we presented the
-   "``Plexing.lexer``" type as a record without type parameter.
+   ``Plexing.lexer`` type as a record without type parameter.
    Actually, this type is defined as:
 
-   ::
+   .. code-block:: ocaml
 
         type lexer 'te =
           { tok_func : lexer_func 'te;
@@ -1028,16 +1029,16 @@ Extensible grammars
         ;
 
    where the type parameter is the type of the token, which can be any
-   type, different from "``(string * string)``", providing the lexer
+   type, different from ``(string * string)``, providing the lexer
    function (``tok_func``) returns a stream of this token type and the
    match function (``tok_match``) indicates how to match values of this
    token type against the token patterns (which remain defined as
-   "``(string * string)``").
+   ``(string * string)``).
 
    Here is an example of an user token type and the associated match
    function:
 
-   ::
+   .. code-block:: ocaml
 
         type mytoken =
           [ Ident of string
@@ -1068,7 +1069,7 @@ Extensible grammars
 
    The type of the functor parameter is defined as:
 
-   ::
+   .. code-block:: ocaml
 
         module type GLexerType =
           sig
@@ -1076,7 +1077,7 @@ Extensible grammars
             value lexer : Plexing.lexer te;
           end;
 
-   The token type must be specified (type "``te``") and the lexer also,
+   The token type must be specified (type ``te``) and the lexer also,
    with the interface for lexers, of the lexer type defined above, the
    record fields being described in the section "interface with the
    lexer", but with a general token type.
@@ -1084,40 +1085,40 @@ Extensible grammars
    .. rubric:: The resulting grammar module
       :name: the-resulting-grammar-module
 
-   Once a module of type "``GLexerType``" has been built (previous
+   Once a module of type ``GLexerType`` has been built (previous
    section), it is possible to create a grammar module by applying the
-   functor "``Grammar.GMake``". For example:
+   functor ``Grammar.GMake``. For example:
 
-   ::
+   .. code-block:: ocaml
 
         module MyGram = Grammar.GMake MyLexer;
 
-   Notice that the function "``Entry.parse``" of this resulting module
+   Notice that the function ``Entry.parse`` of this resulting module
    does not take a character stream as parameter, but a value of type
-   "``parsable``". This function is equivalent to the function
-   "``parse_parsable``" of the non functorial interface. In short, the
-   parsing of some character stream "``cs``" by some entry "``e``" of
+   ``parsable``. This function is equivalent to the function
+   ``parse_parsable`` of the non functorial interface. In short, the
+   parsing of some character stream ``cs`` by some entry ``e`` of
    the example grammar above, must be done by:
 
-   ::
+   .. code-block:: ocaml
 
         MyGram.Entry.parse e (MyGram.parsable cs)
 
    instead of:
 
-   ::
+   .. code-block:: ocaml
 
         MyGram.Entry.parse e cs
 
    .. rubric:: GEXTEND and GDELETE_RULE
       :name: gextend-and-gdelete_rule
 
-   The "``GEXTEND``" and "``GDELETE_RULE``" statements are also added in
+   The ``GEXTEND`` and ``GDELETE_RULE`` statements are also added in
    the expressions of the OCaml language when the syntax extension kit
-   "``pa_extend.cmo``" is loaded. They must be used for grammars defined
+   ``pa_extend.cmo`` is loaded. They must be used for grammars defined
    with the functorial interface. Their syntax is:
 
-   ::
+   .. code-block:: abnf
 
                  expression ::= gextend
                               | gdelete-rule
@@ -1138,7 +1139,7 @@ Extensible grammars
 
    File "calc.ml":
 
-   ::
+   .. code-block:: ocaml
 
         #load "pa_extend.cmo";
 
