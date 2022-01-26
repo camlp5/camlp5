@@ -10,7 +10,7 @@ else
 FMTINCLUDES=
 endif
 INCLUDES=-I ../main -I ../boot $(FMTINCLUDES)
-OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) -I "$(OCLIBDIR)" -I $(OTOPU) -I $(OTOPP)
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 
 CAMLP5_OBJS=$(OTOPU)/pconfig.cmo ../boot/versdep.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/fstream.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/diff.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/pretty.cmo ../boot/pprintf.cmo ../boot/eprinter.cmo ../main/asttools.cmo ../main/mlsyntax.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/pp_debug.cmo ../main/prtools.cmo ../main/ast2pt.cmo ../main/pcaml.cmo ../main/parserify.cmo ../main/exparser.cmo ../boot/stdpp.cmo ../boot/token.cmo
 

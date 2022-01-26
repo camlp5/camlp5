@@ -8,10 +8,6 @@ VERSSDIR=.$(VERSDIR)/$(OVERSION)
 all:
 	cd $(VERSSDIR)/utils; \
 	$(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN)
-	if [ "$(OTOPP)" != "$(OCLIBDIR)" ]; then \
-	  cd $(VERSSDIR)/parsing; \
-	  $(MAKE) all EXE=$(EXE) OCAMLN=$(OCAMLN); \
-	fi
 
 opt:
 	cd $(VERSSDIR)/utils; $(MAKE) OCAMLN=$(OCAMLN) opt; cd ../..
@@ -19,18 +15,10 @@ opt:
 clean:
 	cd $(VERSSDIR)/utils; \
 	$(MAKE) clean EXE=$(EXE)
-	if [ "$(OTOPP)" != "$(OCLIBDIR)" ]; then \
-	  cd $(VERSSDIR)/parsing; \
-	  $(MAKE) clean EXE=$(EXE); \
-	fi
 
 depend:
 	cd $(VERSSDIR)/utils; \
 	$(MAKE) depend
-	if [ "$(OTOPP)" != "$(OCLIBDIR)" ]; then \
-	  cd $(VERSSDIR)/parsing; \
-	  $(MAKE) depend; \
-	fi
 
 steal:
 	$(NOVERBOSE) if test "$(OCAML_SRC)" = ""; then \

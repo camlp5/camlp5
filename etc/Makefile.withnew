@@ -2,7 +2,7 @@
 
 include ../config/Makefile
 
-INCLUDES=-I ../main -I ../meta -I ../lib -I +compiler-libs
+INCLUDES=-I ../main -I ../meta -I ../lib
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPWITH=new
 

@@ -185,11 +185,6 @@ if test "$x" = ""; then win=false; else win=true; fi
 x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
 if test "$x" = ""; then win32=false; else win32=true; fi
 OLIBDIR="$y"
-if [ "$OVERSION" "<" "4.00" ]; then
-  OCLIBDIR="."
-else
-  OCLIBDIR="+compiler-libs"
-fi
 
 if test "$win" = "true"; then
     EXE=.exe
@@ -269,16 +264,8 @@ echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo WARNERR=\"$WARNERR\"
 echo NO_PR_DIR=$NO_PR_DIR
 echo OLIBDIR=$OLIBDIR
-echo OCLIBDIR=$OCLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
-fi
-if test "$OVERSION" "<" "4.00.0"; then
-  echo "OTOPP=\$(TOP)/ocaml_stuff/$STUFFVERSION/parsing"
-  echo "OTOPW=\$(TOP)/ocaml_stuff/$STUFFVERSION/utils"
-else
-  echo "OTOPP=$OCLIBDIR"
-  echo "OTOPW=$OCLIBDIR"
 fi
 echo "OTOPU=\$(TOP)/ocaml_stuff/$STUFFVERSION/utils"
 echo BINDIR=$BINDIR

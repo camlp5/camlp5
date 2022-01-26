@@ -11,7 +11,7 @@ else
 FMTINCLUDES=
 endif
 INCLUDES=-I ../main -I ../boot
-OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) $(FMTINCLUDES) -I "$(OCLIBDIR)" -I $(OTOPU) -I $(OTOPP)
+OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) $(FMTINCLUDES)
 
 NOT_OCAMLFIND=not-ocamlfind
 PREPROCESS_PACKAGES := unix,compiler-libs.common,camlp5.quotations,camlp5.extfun,rresult,fmt
