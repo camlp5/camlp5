@@ -1,5 +1,5 @@
 #!/bin/sh -e
 
-COMM=${OCAMLN}c$OPT
-echo $COMM $*
-$COMM $*
+COMM=${OCAMLN}c
+echo ocamlfind $COMM -package camlp-streams $*
+ocamlfind $COMM -package camlp-streams $*

@@ -394,9 +394,15 @@ value ocaml_pctf_extension e = Pctf_extension e ;
 value ocaml_pcf_extension e = Pcf_extension e ;
 
 value ocaml_extension_exception loc s ed alg_attributes =
+  IFDEF OCAML_VERSION < OCAML_4_14_0 THEN
   {pext_name = mkloc loc s;
    pext_kind = Pext_decl (Pcstr_tuple ed) None;
    pext_loc = loc; pext_attributes = alg_attributes}
+  ELSE
+  {pext_name = mkloc loc s;
+   pext_kind = Pext_decl [] (Pcstr_tuple ed) None;
+   pext_loc = loc; pext_attributes = alg_attributes}
+  END
 ;
 
 value ocaml_pexp_unreachable () = Pexp_unreachable ;
@@ -486,10 +492,16 @@ END;
 
 IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
 value ocaml_ec_tuple ?{alg_attributes=[]} _ _ _ = assert False ;
-ELSE
+ELSIFDEF OCAML_VERSION < OCAML_4_14_0 THEN
 value ocaml_ec_tuple ?{alg_attributes=[]} loc s (x, rto) =
   {pext_name = mkloc loc s;
    pext_kind = Pext_decl (Pcstr_tuple x) rto;
+   pext_loc = loc; pext_attributes = alg_attributes}
+;
+ELSE
+value ocaml_ec_tuple ?{alg_attributes=[]} loc s (x, rto) =
+  {pext_name = mkloc loc s;
+   pext_kind = Pext_decl [] (Pcstr_tuple x) rto;
    pext_loc = loc; pext_attributes = alg_attributes}
 ;
 END
@@ -505,9 +517,15 @@ value ocaml_ec_record ?{alg_attributes=[]} loc s (x, rto) =
       (Ptype_record x) -> Pcstr_record x
     | _ -> assert False
     ] in
+  IFDEF OCAML_VERSION < OCAML_4_14_0 THEN
   {pext_name = mkloc loc s;
    pext_kind = Pext_decl x rto;
    pext_loc = loc; pext_attributes = alg_attributes}
+  ELSE
+  {pext_name = mkloc loc s;
+   pext_kind = Pext_decl [] x rto;
+   pext_loc = loc; pext_attributes = alg_attributes}
+  END
 ;
 
 value ocaml_ec_rebind loc s li =
@@ -674,12 +692,19 @@ value ocaml_ptype_variant ctl priv =
                    let (tl,rto) = match tl with [ (Left x,y) -> (x,y) | (Right _,_) -> raise Exit ] in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = []} }
-                 ELSE
+                 ELSIFDEF OCAML_VERSION < OCAML_4_14_0 THEN
                    let (tl,rto) = match tl with [
                      (Left x,rto) -> (Pcstr_tuple x, rto)
                    | (Right (Ptype_record x),rto) -> (Pcstr_record x, rto)
                    | _ -> assert False ] in
                    {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto ;
+                    pcd_loc = loc; pcd_attributes = attrs}
+                 ELSE
+                   let (tl,rto) = match tl with [
+                     (Left x,rto) -> (Pcstr_tuple x, rto)
+                   | (Right (Ptype_record x),rto) -> (Pcstr_record x, rto)
+                   | _ -> assert False ] in
+                   {pcd_name = mkloc loc c; pcd_vars = []; pcd_args = tl; pcd_res = rto ;
                     pcd_loc = loc; pcd_attributes = attrs}
                  END)
             ctl

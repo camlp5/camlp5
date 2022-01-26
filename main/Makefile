@@ -22,10 +22,10 @@ opt: $(OBJS:.cma=.cmxa)
 optp5: $(CAMLP5OPT)
 
 $(CAMLP5): $(OBJS) ../odyl/odyl.cmo
-	$(OCAMLC) $(DEBUG) $(OBJS) $(CAMLP5M) ../odyl/odyl.cmo -linkall -o $(CAMLP5)
+	$(OCAMLC) $(DEBUG) $(OBJS) $(CAMLP5M) ../odyl/odyl.cmo -linkall -linkpkg -o $(CAMLP5)
 
 $(CAMLP5OPT): $(OBJS:.cma=.cmxa) ../odyl/odyl.cmx
-	$(OCAMLOPT) $(DEBUG) $(OBJS:.cma=.cmxa) $(CAMLP5M) ../odyl/odyl.cmx -linkall -o $(CAMLP5OPT)
+	$(OCAMLOPT) $(DEBUG) $(OBJS:.cma=.cmxa) $(CAMLP5M) ../odyl/odyl.cmx -linkall -linkpkg -o $(CAMLP5OPT)
 
 $(CAMLP5N).cma: $(CAMLP5_OBJS)
 	$(OCAMLC) $(LINKFLAGS) $(CAMLP5_OBJS) -a -o $(CAMLP5N).cma

@@ -618,12 +618,12 @@ and t2 = bool[@@"foo"];
     {name="letop-binding-item-attributes1-FAILS"; implem = True ;
      exclude=[];
      o_input = EXN {foo|let|| x = 1 [@@argle] in 2|foo}
-                   (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error
+                   (Ploc.Exc Ploc.dummy (Stream.Error
                     "[andop_binding] expected after [letop_binding] (in [expr])")) ;
      official_input = EXN {foo|let|| x = 1 [@@argle] in 2|foo}
                    (Syntaxerr.Error (Syntaxerr.Other Location.none)) ;
      r_input = EXN {foo|let|| x = 1 [@@argle] in 2;|foo}
-                   (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error
+                   (Ploc.Exc Ploc.dummy (Stream.Error
                     "[andop_binding] expected after [letop_binding] (in [expr])")) ;
      o_output = OK "should never get here";
      official_output = OK "should never get here";
@@ -1404,7 +1404,7 @@ and t2 = bool[@@"foo"];
      official_input = OK {foo|{|argle|}|foo} ;
      r_input = EXN {foo|{|argle|}|foo}
                    (Ploc.Exc Ploc.dummy
-                              (Stdlib.Stream.Error "illegal begin of implem"));
+                              (Stream.Error "illegal begin of implem"));
      o_output = OK {foo|let _ = "argle";;
 |foo};
      official_output = SKIP "meh" "meh" ;
@@ -1454,7 +1454,7 @@ and t2 = bool[@@"foo"];
     };
     {name="unreachable-2"; implem = True ;
      exclude=[];
-     o_input = EXN {foo|.|foo} (Ploc.Exc Ploc.dummy (Stdlib.Stream.Error "illegal begin of implem")) ;
+     o_input = EXN {foo|.|foo} (Ploc.Exc Ploc.dummy (Stream.Error "illegal begin of implem")) ;
      official_input = EXN {foo|.|foo} (Syntaxerr.Error (Syntaxerr.Other Location.none)) ;
      r_input = OK {foo| . ;|foo} ;
      o_output = EXN "" (Ploc.Exc Ploc.dummy

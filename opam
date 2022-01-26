@@ -28,7 +28,9 @@ homepage: "https://camlp5.github.io"
 doc: "https://camlp5.github.io/doc/html"
 bug-reports: "https://github.com/camlp5/camlp5/issues"
 depends: [
-  "ocaml" {>= "4.02" & < "4.14.0"}
+  "ocaml" {>= "4.02" & < "4.15.0"}
+  "ocamlfind"
+  "camlp-streams" { >= "5.0" }
   "conf-perl"
   "conf-perl-ipc-system-simple" { with-test | (os-family != "homebrew" & os-family != "macports") }
   "conf-perl-string-shellquote" { with-test | (os-family != "homebrew" & os-family != "macports") }

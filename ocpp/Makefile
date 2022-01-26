@@ -12,7 +12,7 @@ OBJS=ocpp.cmo
 all: ocpp$(EXE)
 
 ocpp$(EXE): $(OBJS)
-	$(OCAMLC) $(LINKFLAGS) ../boot/versdep.cmo ../boot/ploc.cmo ../boot/stdpp.cmo ../main/quotation.cmo ../odyl/odyl.cma $(OBJS) ../odyl/odyl.cmo -linkall -o ocpp$(EXE)
+	$(OCAMLC) $(LINKFLAGS) ../boot/versdep.cmo ../boot/ploc.cmo ../boot/stdpp.cmo ../main/quotation.cmo ../odyl/odyl.cma $(OBJS) ../odyl/odyl.cmo -linkall -linkpkg -o ocpp$(EXE)
 
 clean::
 	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.out *.bak .*.bak

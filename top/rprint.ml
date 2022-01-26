@@ -304,7 +304,7 @@ and print_out_constr ppf (name, tyl) =
   | _ ->
       fprintf ppf "@[<2>%s of@ %a@]" name
         (print_typlist print_out_type " and") tyl ]
-and print_out_constr_gadt_opt ppf (name, tyl, rto) =
+and print_out_constr_gadt_opt ppf {ocstr_name=name; ocstr_args=tyl; ocstr_return_type=rto} =
   match rto with
   [ Some rt ->
       let t = List.fold_right (fun t1 t2 -> Otyp_arrow "" t1 t2) tyl rt in
@@ -459,7 +459,7 @@ and print_out_sig_item ppf =
       match _es with [
         Oext_exception ->
           fprintf ppf "@[<2>exception %a@]"
-            print_out_constr_gadt_opt (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+            print_out_constr_gadt_opt {ocstr_name=ext.oext_name; ocstr_args=ext.oext_args; ocstr_return_type=ext.oext_ret_type}
       | _ ->
         let print_out_extension_constructor ppf ext =
           let pr_var = tyvar in
@@ -483,7 +483,7 @@ and print_out_sig_item ppf =
           fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
             print_extended_type
             (if ext.oext_private = Asttypes.Private then " private" else "")
-            print_out_constr_gadt_opt (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+            print_out_constr_gadt_opt {ocstr_name=ext.oext_name; ocstr_args=ext.oext_args; ocstr_return_type=ext.oext_ret_type}
         in
         print_out_extension_constructor ppf ext
       ]
