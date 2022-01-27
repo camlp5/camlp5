@@ -61,7 +61,7 @@ value rec ctyp =
   | <:ctyp< [ > $list:sbtll$ ] >> -> list variant sbtll
   | <:ctyp< [ < $list:sbtll$ > $list:_$ ] >> -> list variant sbtll
   | x -> not_impl "ctyp" x ]
-and constr_decl (_, _, tl, rto,_) = list ctyp (Pcaml.unvala tl)
+and constr_decl (_, _, _, tl, rto,_) = list ctyp (Pcaml.unvala tl)
 and label_decl (_, _, _, t, _) = ctyp t
 and variant =
   fun

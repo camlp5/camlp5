@@ -1347,9 +1347,9 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   rest_constructor_declaration:
     [ [ "of"; cal = SV (LIST1 ctyp SEP "and") ;
         rto = SV (OPT [ ":" ; t = ctyp -> t ]) "rto" ; alg_attrs = alg_attributes →
-          [cal; rto; alg_attrs]
+          [Qast.VaVal (Qast.List[]); cal; rto; alg_attrs]
       | rto = SV (OPT [ ":" ; t = ctyp -> t ]) "rto" ; alg_attrs = alg_attributes →
-          [Qast.VaVal (Qast.List []); rto; alg_attrs]
+          [Qast.VaVal (Qast.List[]); Qast.VaVal (Qast.List []); rto; alg_attrs]
       ] ]
   ;
   extension_constructor:

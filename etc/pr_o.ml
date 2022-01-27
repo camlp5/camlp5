@@ -628,7 +628,11 @@ value label_decl pc (_, l, m, t, attrs) =
 ;
 
 value cons_decl pc = fun [
-  <:constructor:< $_uid:c$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >> ->
+(*
+  <:constructor:< $_uid:c$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
+ *)
+  (loc, c, _, tl, rto, alg_attrs)
+ ->
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
@@ -667,7 +671,7 @@ value extension_constructor loc pc ec = match ec with [
 value has_ecs_with_params vdl =
   List.exists
     (fun [
-       MLast.EcTuple _ (_, _, tl, rto,_) ->
+       MLast.EcTuple _ (_, _, _, tl, rto,_) ->
        match tl with
          [ <:vala< [] >> -> False
          | _ -> True ]
@@ -718,7 +722,7 @@ value type_extension loc pc te =
 
 value has_cons_with_params vdl =
   List.exists
-    (fun (_, _, tl, rto,_) ->
+    (fun (_, _, _, tl, rto,_) ->
        match tl with
        [ <:vala< [] >> -> False
        | _ -> True ])

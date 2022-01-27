@@ -136,9 +136,9 @@ value rec ctyp floc sh =
         let loc = floc loc in
         TyExten loc (attribute_body floc sh exten)
     ]
-and generic_constructor floc sh = fun (loc, x1, x2, x3, x4) ->
-    (floc loc, x1, vala_map (List.map (ctyp floc sh)) x2,
-     vala_map (option_map (ctyp floc sh)) x3, attributes floc sh x4)
+and generic_constructor floc sh = fun (loc, x1, x2, x3, x4, x5) ->
+    (floc loc, x1, x2, vala_map (List.map (ctyp floc sh)) x3,
+     vala_map (option_map (ctyp floc sh)) x4, attributes floc sh x5)
 and poly_variant floc sh =
   fun
   [ PvTag loc x1 x2 x3 x4 →

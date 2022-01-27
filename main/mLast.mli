@@ -226,7 +226,7 @@ and type_decl =
     tdDef : ctyp;
     tdCon : V (list (ctyp * ctyp));
     tdAttributes: attributes }
-and generic_constructor = (loc * V string * V (list ctyp) * V (option ctyp) * attributes)
+and generic_constructor = (loc * V string * V (list string) * V (list ctyp) * V (option ctyp) * attributes)
 and extension_constructor = [
     EcTuple of loc and generic_constructor
   | EcRebind of loc and V string and V longid and attributes

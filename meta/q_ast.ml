@@ -92,10 +92,10 @@ module Meta_make (C : MetaSig) =
     | TyAttr _ t -> C.node "TyAttr" [C.vala ctyp t]
     | PaAttr _ p eo -> C.node "PaAttr" [C.vala patt p; C.option (C.vala expr) eo]
     ]
-    and generic_constructor = fun (_, s, lt, ot, attrs) →
+    and generic_constructor = fun (_, s, ls, lt, ot, attrs) →
       let attrs = conv_attributes attrs in
         C.tuple
-          [C.loc_v (); C.vala C.string s;
+          [C.loc_v (); C.vala C.string s; C.vala (C.list C.string) ls;
            C.vala (C.list ctyp) lt; C.vala (C.option ctyp) ot; attrs]
     and poly_variant =
       fun

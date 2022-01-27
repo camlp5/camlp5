@@ -1578,7 +1578,7 @@ and object_field_list_se sel =
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Suid _ ci :: sel] →
-      (loc, <:vala< (rename_id ci) >>, <:vala< (List.map ctyp_se sel) >>,
+      (loc, <:vala< (rename_id ci) >>, <:vala< [] >>, <:vala< (List.map ctyp_se sel) >>,
        <:vala< None >>, <:vala< [] >>)
   | se → error se "constructor_declaration" ]
 and variant_declaration_se =

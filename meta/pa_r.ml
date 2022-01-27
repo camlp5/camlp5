@@ -1398,10 +1398,10 @@ EXTEND
     ] ] ;
   constructor_declaration:
     [ [ ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
-          <:constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
 (*
-          (loc, ci, tl, rto, attrs)
+          <:constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
 *)
+          (loc, ci, <:vala< [] >>, tl, rto, attrs)
       ] ]
   ;
   rest_constructor_declaration:
@@ -1416,7 +1416,10 @@ EXTEND
   [ [ ci = cons_ident ; "="; b = V longident "longid" ; alg_attrs = alg_attributes ->
         <:extension_constructor< $_uid:ci$ = $_longid:b$ $_algattrs:alg_attrs$ >>
     | ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
+(*
         <:extension_constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
+ *)
+      MLast.EcTuple loc (loc, ci, <:vala< [] >>, tl, rto, attrs)
     ] ]
   ;
 
