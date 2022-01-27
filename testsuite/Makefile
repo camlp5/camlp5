@@ -64,7 +64,7 @@ CAMLP5R=$(LAUNCH) camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
-PACKAGES_NOCAMLP5=rresult,fmt,pcre,ounit2,compiler-libs.common,camlp-streams
+PACKAGES_NOCAMLP5=rresult,fmt,pcre,ounit2,compiler-libs.common,$(C5PACKAGES)
 PACKAGES=$(PACKAGES_NOCAMLP5),camlp5,camlp5.macro
 
 pa_ounit2.cmo: pa_ounit2.ml

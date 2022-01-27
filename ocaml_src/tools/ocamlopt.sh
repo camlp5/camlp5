@@ -7,5 +7,5 @@ else
   PACK=camlp-streams,compiler-libs
 fi
 
-echo ocamlfind $COMM -package $PACK $*
-ocamlfind $COMM -package $PACK $*
+echo ocamlfind $COMM -package $C5PACKAGES $*
+ocamlfind $COMM -package $C5PACKAGES $*

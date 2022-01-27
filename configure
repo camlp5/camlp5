@@ -185,6 +185,11 @@ if test "$x" = ""; then win=false; else win=true; fi
 x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
 if test "$x" = ""; then win32=false; else win32=true; fi
 OLIBDIR="$y"
+if [ "$OVERSION" "<" "4.14" ]; then
+  C5PACKAGES="compiler-libs"
+else
+  C5PACKAGES="compiler-libs,camlp-streams"
+fi
 
 if test "$win" = "true"; then
     EXE=.exe
@@ -264,6 +269,7 @@ echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo WARNERR=\"$WARNERR\"
 echo NO_PR_DIR=$NO_PR_DIR
 echo OLIBDIR=$OLIBDIR
+echo export C5PACKAGES=$C5PACKAGES
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
 fi
