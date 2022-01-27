@@ -304,12 +304,23 @@ and print_out_constr ppf (name, tyl) =
   | _ ->
       fprintf ppf "@[<2>%s of@ %a@]" name
         (print_typlist print_out_type " and") tyl ]
-and print_out_constr_gadt_opt ppf {ocstr_name=name; ocstr_args=tyl; ocstr_return_type=rto} =
+and print_out_constr_gadt_opt ppf = fun [
+  IFDEF OCAML_VERSION < OCAML_4_14_0 THEN
+ (name, tyl, rto) ->
   match rto with
   [ Some rt ->
       let t = List.fold_right (fun t1 t2 -> Otyp_arrow "" t1 t2) tyl rt in
       fprintf ppf "%s : %a" name print_out_type t
   | None -> print_out_constr ppf (name, tyl) ]
+  ELSE
+ {ocstr_name=name; ocstr_args=tyl; ocstr_return_type=rto} ->
+  match rto with
+  [ Some rt ->
+      let t = List.fold_right (fun t1 t2 -> Otyp_arrow "" t1 t2) tyl rt in
+      fprintf ppf "%s : %a" name print_out_type t
+  | None -> print_out_constr ppf (name, tyl) ]
+  END
+]
 and print_out_label ppf (name, mut, arg) =
   fprintf ppf "@[<2>%s :@ %s%a@]" name (if mut then "mutable " else "")
     print_out_type arg
@@ -459,7 +470,12 @@ and print_out_sig_item ppf =
       match _es with [
         Oext_exception ->
           fprintf ppf "@[<2>exception %a@]"
-            print_out_constr_gadt_opt {ocstr_name=ext.oext_name; ocstr_args=ext.oext_args; ocstr_return_type=ext.oext_ret_type}
+            print_out_constr_gadt_opt
+            (IFDEF OCAML_VERSION < OCAML_4_14_0 THEN
+            (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+            ELSE
+            {ocstr_name=ext.oext_name; ocstr_args=ext.oext_args; ocstr_return_type=ext.oext_ret_type}
+            END)
       | _ ->
         let print_out_extension_constructor ppf ext =
           let pr_var = tyvar in
@@ -483,7 +499,12 @@ and print_out_sig_item ppf =
           fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
             print_extended_type
             (if ext.oext_private = Asttypes.Private then " private" else "")
-            print_out_constr_gadt_opt {ocstr_name=ext.oext_name; ocstr_args=ext.oext_args; ocstr_return_type=ext.oext_ret_type}
+            print_out_constr_gadt_opt
+            (IFDEF OCAML_VERSION < OCAML_4_14_0 THEN
+            (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+            ELSE
+            {ocstr_name=ext.oext_name; ocstr_args=ext.oext_args; ocstr_return_type=ext.oext_ret_type}
+            END)
         in
         print_out_extension_constructor ppf ext
       ]
