@@ -216,7 +216,7 @@ let ocaml_pcty_extension e = Pcty_extension e;;
 let ocaml_pctf_extension e = Pctf_extension e;;
 let ocaml_pcf_extension e = Pcf_extension e;;
 let ocaml_extension_exception loc s ed alg_attributes =
-  {pext_name = mkloc loc s; pext_kind = Pext_decl ([],Pcstr_tuple ed, None);
+  {pext_name = mkloc loc s; pext_kind = Pext_decl ([], Pcstr_tuple ed, None);
    pext_loc = loc; pext_attributes = alg_attributes}
 ;;
 let ocaml_pexp_unreachable () = Pexp_unreachable;;
@@ -264,7 +264,7 @@ let convert_camlp5_variance (va, inj) =
 ;;
 
 let ocaml_ec_tuple ?(alg_attributes = []) loc s (x, rto) =
-  {pext_name = mkloc loc s; pext_kind = Pext_decl ([],Pcstr_tuple x, rto);
+  {pext_name = mkloc loc s; pext_kind = Pext_decl ([], Pcstr_tuple x, rto);
    pext_loc = loc; pext_attributes = alg_attributes}
 ;;
 
@@ -274,8 +274,8 @@ let ocaml_ec_record ?(alg_attributes = []) loc s (x, rto) =
       Ptype_record x -> Pcstr_record x
     | _ -> assert false
   in
-  {pext_name = mkloc loc s; pext_kind = Pext_decl ([], x, rto); pext_loc = loc;
-   pext_attributes = alg_attributes}
+  {pext_name = mkloc loc s; pext_kind = Pext_decl ([], x, rto);
+   pext_loc = loc; pext_attributes = alg_attributes}
 ;;
 let ocaml_ec_rebind loc s li =
   {pext_name = mkloc loc s; pext_kind = Pext_rebind (mkloc loc li);
@@ -368,8 +368,8 @@ let ocaml_ptype_variant ctl priv =
              | Right (Ptype_record x), rto -> Pcstr_record x, rto
              | _ -> assert false
            in
-           {pcd_name = mkloc loc c; pcd_vars = []; pcd_args = tl; pcd_res = rto;
-            pcd_loc = loc; pcd_attributes = attrs})
+           {pcd_name = mkloc loc c; pcd_vars = []; pcd_args = tl;
+            pcd_res = rto; pcd_loc = loc; pcd_attributes = attrs})
         ctl
     in
     Some (Ptype_variant ctl)

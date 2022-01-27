@@ -30,9 +30,9 @@ our $verbose = 0 ;
 
 {
   while (@ARGV) {
-    if ($ARGV[0] eq '--only-switch') {
+    if ($ARGV[0] eq '--switches') {
       shift @ARGV ;
-      @switches = ( shift @ARGV ) ;
+      @switches = split(m/,/, shift @ARGV) ;
     }
     elsif ($ARGV[0] eq '-v') {
       shift @ARGV ;
