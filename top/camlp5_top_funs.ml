@@ -185,6 +185,5 @@ Toploop.parse_use_file.val :=
 Pcaml.warning.val :=
   fun loc txt ->
       Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
-        (IFDEF OCAML_VERSION < OCAML_4_02_0 THEN Warnings.Camlp4 txt
-         ELSE Warnings.Preprocessor txt END)
+        (Warnings.Preprocessor txt)
 ;

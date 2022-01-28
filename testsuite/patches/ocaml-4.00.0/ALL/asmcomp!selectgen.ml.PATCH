@@ -1,9 +1,0 @@
---- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/asmcomp/selectgen.ml	2012-02-21 09:41:02.000000000 -0800
-+++ patches/ocaml-4.00.0/ALL/asmcomp!selectgen.ml.INPUT	2020-02-10 13:42:00.410450630 -0800
-@@ -835,5 +835,4 @@
-   let (loc_arg, stack_ofs) = Proc.loc_arguments args in
-   stack_ofs = 0
- 
--let _ =
--  Simplif.is_tail_native_heuristic := is_tail_call
-+  Simplif.is_tail_native_heuristic := is_tail_call ;;

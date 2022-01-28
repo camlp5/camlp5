@@ -1,7 +1,0 @@
---- /home/chetsky/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/ocamlbuild/examples/example1/hello.ml	2007-02-07 00:59:16.000000000 -0800
-+++ patches/ocaml-4.00.0/ALL/ocamlbuild!examples!example1!hello.ml.INPUT	2020-02-10 14:16:12.435364398 -0800
-@@ -1,4 +1,3 @@
--let _ =
-   Printf.printf "Hello, %s ! My name is %s\n"
-     (if Array.length Sys.argv > 1 then Sys.argv.(1) else "stranger")
-     Sys.argv.(0)

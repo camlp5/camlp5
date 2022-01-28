@@ -272,7 +272,7 @@ and print_simple_out_type ppf =
   | Otyp_manifest ty1 ty2 ->
       fprintf ppf "@[<2>%a ==@ %a@]" print_out_type ty1 print_out_type ty2
   | Otyp_abstract -> fprintf ppf "'abstract"
-  | IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
+  | IFDEF OCAML_VERSION >= OCAML_4_05_0 THEN
     Otyp_open -> fprintf ppf "open"
     END
   | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
@@ -295,7 +295,7 @@ and print_simple_out_type ppf =
   | Otyp_record lbls ->
         fprintf ppf "@[<hv 2>{ %a }@]"
           (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
-  | IFDEF OCAML_VERSION >= OCAML_4_03_0 THEN
+  | IFDEF OCAML_VERSION >= OCAML_4_05_0 THEN
       Otyp_attribute _ _ -> ()
     END ]
 and print_out_constr ppf (name, tyl) =
@@ -386,15 +386,9 @@ value rec print_out_class_type ppf =
               (print_typlist print_out_type ",") tyl ]
       in
       fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
-  | IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Octy_fun lab ty cty ->
+  | Octy_arrow lab ty cty ->
       fprintf ppf "@[%s[ %a ] ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type ty print_out_class_type cty
-    ELSE
-    Octy_arrow lab ty cty ->
-      fprintf ppf "@[%s[ %a ] ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
-        print_out_type ty print_out_class_type cty
-    END
   | Octy_signature self_ty csil ->
       let pr_param ppf =
         fun
@@ -423,11 +417,7 @@ value rec print_out_module_type ppf =
   [ Omty_ident id -> fprintf ppf "%a" print_ident id
   | Omty_signature sg ->
       fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" print_out_signature sg
-  | IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Omty_functor name mty_arg mty_res ->
-        fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
-          print_out_module_type mty_arg print_out_module_type mty_res
-    ELSIFDEF OCAML_VERSION < OCAML_4_10_0 THEN
+  | IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     Omty_functor name mty_arg mty_res ->
         match mty_arg with
         [ Some mty_arg ->
@@ -450,7 +440,7 @@ value rec print_out_module_type ppf =
               print_out_module_type mty_res ]
       END
   | Omty_abstract -> ()
-  | IFDEF OCAML_VERSION >= OCAML_4_02_0 THEN
+  | IFDEF OCAML_VERSION >= OCAML_4_05_0 THEN
     Omty_alias oi -> fprintf ppf "<rprint.ml: Omty_alias not impl>"
     END ]
 and print_out_signature ppf =
@@ -462,11 +452,7 @@ and print_out_signature ppf =
         print_out_signature items ]
 and print_out_sig_item ppf =
   fun
-  [ IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-    Osig_exception id tyl ->
-      fprintf ppf "@[<2>exception %a@]" print_out_constr (id, tyl)
-    ELSE
-    Osig_typext ext _es ->
+  [ Osig_typext ext _es ->
       match _es with [
         Oext_exception ->
           fprintf ppf "@[<2>exception %a@]"
@@ -508,7 +494,6 @@ and print_out_sig_item ppf =
         in
         print_out_extension_constructor ppf ext
       ]
-    END
   | Osig_modtype name Omty_abstract ->
       fprintf ppf "@[<2>module type %s = 'a@]" name
   | Osig_modtype name mty ->
@@ -519,22 +504,7 @@ and print_out_sig_item ppf =
   | Osig_type td rs ->
         print_out_type_decl (if rs = Orec_next then "and" else "type" )
           ppf td
-  | IFDEF OCAML_VERSION < OCAML_4_03 THEN
-      Osig_value name ty prims ->
-        let kwd = if prims = [] then "value" else "external" in
-        let pr_prims ppf =
-          fun
-          [ [] -> ()
-          | [s :: sl] ->
-              do {
-                fprintf ppf "@ = \"%s\"" s;
-                List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
-              } ]
-        in
-        fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
-          print_out_type ty pr_prims prims
-    ELSE
-      Osig_value ovd ->
+  |   Osig_value ovd ->
         let name = ovd.oval_name in
         let ty = ovd.oval_type in
         let prims = ovd.oval_prims in
@@ -550,7 +520,6 @@ and print_out_sig_item ppf =
         in
         fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
           print_out_type ty pr_prims prims
-      END
   | x ->
       match x with
         [ Osig_class vir_flag name params clt _ ->
@@ -565,12 +534,8 @@ and print_out_sig_item ppf =
     ]
 and print_out_type_decl kwd ppf x =
   let (name, args, ty, priv, constraints) =
-    IFDEF OCAML_VERSION < OCAML_4_02_0 THEN
-      x
-    ELSE
       (x.otype_name, x.otype_params, x.otype_type, x.otype_private,
        x.otype_cstrs)
-    END
   in
   let constrain ppf (ty, ty') =
     fprintf ppf "@ @[<2>constraint %a =@ %a@]" print_out_type ty

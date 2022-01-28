@@ -1,6 +1,0 @@
---- /home/chet/Hack/Ocaml/GENERIC/4.00.0/.opam-switch/sources/ocaml-base-compiler.4.00.0/testsuite/tests/basic-multdef/usemultdef.ml	2011-07-20 02:17:07.000000000 -0700
-+++ patches/ocaml-4.00.0/ALL/testsuite!tests!basic-multdef!usemultdef.ml.INPUT	2020-02-11 17:32:24.531144556 -0800
-@@ -1 +1,2 @@
--let _ = print_int(Multdef.f 1); print_newline(); exit 0
-+print_int(Multdef.f 1); print_newline(); exit 0
-+;;
