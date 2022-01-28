@@ -1103,7 +1103,12 @@ EXTEND_PRINTER
              (fun pc -> module_expr pc me, "")]
       | <:str_item< module type $s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
+(*
       | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->
+ *)
+      | MLast.StExt loc i <:vala< [] >> t pd <:vala< [] >> ->
+         let i = Pcaml.unvala i in
+         let pd = Pcaml.unvala pd in
           plistbf 0 (paren pc "external")
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> ctyp pc t, "") ::
@@ -1133,7 +1138,12 @@ EXTEND_PRINTER
       | <:sig_item< declare $list:sil$ end >> ->
           if sil = [] then sprintf "%s%s" pc.bef pc.aft
           else vlist sig_item pc sil
+(*
       | <:sig_item< external $lid:i$ : $t$ = $list:pd$ >> ->
+ *)
+      | MLast.SgExt loc i <:vala< [] >> t pd <:vala< [] >> ->
+         let i = Pcaml.unvala i in
+         let pd = Pcaml.unvala pd in
           plistbf 0 (paren pc "external")
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> ctyp pc t, "") ::

@@ -196,7 +196,7 @@ and sig_item =
   fun
   [ <:sig_item< declare $list:sil$ end >> -> list sig_item sil
   | <:sig_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
-  | SgExt _ _ t _ _ -> ctyp t
+  | SgExt _ _ _ t _ _ -> ctyp t
   | <:sig_item< include $mt$ >> -> module_type mt
   | <:sig_item< module $flag:_$ $list:ntl$ >> ->
       list (fun (_, mt,_) -> module_type mt) ntl
@@ -232,7 +232,10 @@ and str_item =
   | StDir _ _ _ -> ()
   | <:str_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
+(*
   | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
+ *)
+  | MLast.StExt loc _ _ t _ _ -> ctyp t
   | <:str_item< include $me$ >> -> module_expr me
   | <:str_item< module $flag:_$ $list:nel$ >> ->
       list (fun (_, me,_) -> module_expr me) nel

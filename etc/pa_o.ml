@@ -783,6 +783,17 @@ value check_lparen_type =
     check_lparen_type_f
 ;
 
+value is_type_binder_f strm = check_fsm type_binder_fsm strm ;
+
+value check_type_binder_f strm =
+  if is_type_binder_f strm then () else raise Stream.Failure
+;
+
+value check_type_binder =
+  Grammar.Entry.of_parser gram "check_type_binder"
+    check_type_binder_f
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -791,6 +802,7 @@ EXTEND
     constructor_declaration label_declaration
     match_case with_constr poly_variant
     attribute_body alg_attribute alg_attributes
+    check_type_binder
     ext_attributes
     ;
   (* This is copied from parser.mly (nonterminal "single_attr_id") in the ocaml 4.10.0 distribution. *)
@@ -936,6 +948,12 @@ EXTEND
       ]
     ]
   ;
+
+  type_binder_opt: [ [
+    check_type_binder ; ls = V (LIST1 typevar) ; "." -> ls
+  | -> <:vala< [] >>
+  ] ]
+  ;
   ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
   ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
   str_item:
@@ -943,14 +961,17 @@ EXTEND
       [ "exception"; ext = ext_opt; ec = V extension_constructor "excon" ; attrs = item_attributes →
           str_item_to_inline <:str_item< exception $_excon:ec$ $_itemattrs:attrs$ >> ext
 
-      | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+      | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
-      | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp; "=";
+          str_item_to_inline (MLast.StExt loc i ls t pd attrs) ext
+      | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
+(*
           str_item_to_inline <:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+ *)
+          str_item_to_inline (MLast.StExt loc <:vala< i >> ls t pd attrs) ext
       | "include"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< include $me$ $_itemattrs:attrs$ >> ext
@@ -1088,14 +1109,14 @@ EXTEND
           let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-exception"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs0 alg_attrs1 in
           let gc = (x1, x2, x3, x4, x5, alg_attrs) in
           sig_item_to_inline (MLast.SgExc loc gc item_attrs) ext
-      | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+      | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
-      | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp; "=";
+          sig_item_to_inline (MLast.SgExt loc i ls t pd attrs) ext
+      | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
+          sig_item_to_inline (MLast.SgExt loc <:vala< i >> ls t pd attrs) ext
       | "include"; (ext,alg_attrs) = ext_attributes; mt = module_type ; item_attrs = item_attributes →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           sig_item_to_inline <:sig_item< include $mt$ $_itemattrs:attrs$ >> ext
@@ -1141,11 +1162,13 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           let te = { (te) with MLast.teAttributes = attrs } in
           sig_item_to_inline <:sig_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >> ext
 
-      | "val"; (ext,attrs1) = ext_attributes; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs2 = item_attributes ->
+      | "val"; (ext,attrs1) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
+          let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
           sig_item_to_inline <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >> ext
-      | "val"; (ext,attrs1) = ext_attributes; "("; i = operator_rparen; ":"; t = ctyp ; attrs2 = item_attributes ->
+      | "val"; (ext,attrs1) = ext_attributes; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
+          let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
           sig_item_to_inline <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension ; attrs = item_attributes ->
@@ -1882,8 +1905,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | "of"; cdrec = record_type ; alg_attrs = alg_attributes ->
           (<:vala< [] >>, Ploc.VaVal [cdrec], <:vala< None >>, alg_attrs)
 
-      | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*"); "->"; t = ctyp ; alg_attrs = alg_attributes ->
+      | ":"; check_type_binder ; ls = V (LIST1 typevar) ; "." ; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*"); "->"; t = ctyp ; alg_attrs = alg_attributes ->
+          (ls, cal, <:vala< Some t >>, alg_attrs)
+      | ":" ; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*"); "->"; t = ctyp ; alg_attrs = alg_attributes ->
           (<:vala< [] >>, cal, <:vala< Some t >>, alg_attrs)
+
       | ":"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ; alg_attrs = alg_attributes ->
           let t =
             match cal with

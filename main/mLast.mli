@@ -166,7 +166,7 @@ and sig_item =
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and V string and V (option expr)
   | SgExc of loc and generic_constructor and attributes
-  | SgExt of loc and V string and ctyp and V (list string) and attributes
+  | SgExt of loc and V string and V (list string) and ctyp and V (list string) and attributes
   | SgInc of loc and module_type and attributes
   | SgMod of loc and V bool and V (list (V (option (V string)) * module_type * attributes))
   | SgMty of loc and V string and module_type and attributes
@@ -206,7 +206,7 @@ and str_item =
   | StDir of loc and V string and V (option expr)
   | StExc of loc and V extension_constructor and attributes
   | StExp of loc and expr and attributes
-  | StExt of loc and V string and ctyp and V (list string) and attributes
+  | StExt of loc and V string and V (list string) and ctyp and V (list string) and attributes
   | StInc of loc and module_expr and attributes
   | StMod of loc and V bool and V (list (V (option (V string)) * module_expr * attributes))
   | StMty of loc and V string and module_type and attributes

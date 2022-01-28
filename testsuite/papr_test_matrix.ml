@@ -5068,6 +5068,164 @@ end;|foo}
      r_output = OK {foo||foo}
     }
   ]
+END @
+IFDEF OCAML_VERSION < OCAML_4_14_0 THEN
+  []
+ELSE
+[{name="binders-val-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type Id1 = sig val id : 'a -> 'a end|foo} ;
+     official_input = OK {foo|module type Id1 = sig val id : 'a -> 'a end|foo} ;
+     r_input = OK {foo|module type Id1 = sig value id : 'a -> 'a ; end ; |foo} ;
+     o_output = OK {foo|module type Id1 = sig val id : 'a -> 'a end;;
+|foo};
+     official_output = OK {foo|module type Id1  = sig val id : 'a -> 'a end|foo} ;
+     r_output = OK {foo|module type Id1 = sig value id : 'a -> 'a; end;
+|foo}
+  }
+ ;{name="binders-val-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type Id1 = sig val id : 'a . 'a -> 'a end;;
+|foo} ;
+     official_input = OK {foo|module type Id1 = sig val id : 'a . 'a -> 'a end|foo} ;
+     r_input = OK {foo|module type Id1 = sig value id : 'a . 'a -> 'a ; end ;|foo} ;
+     o_output = OK {foo|module type Id1 = sig val id : 'a . 'a -> 'a end;;
+|foo};
+     official_output = OK {foo|module type Id1  = sig val id : 'a . 'a -> 'a end|foo} ;
+     r_output = OK {foo|module type Id1 = sig value id : 'a . 'a -> 'a; end;
+|foo}
+  }
+ ;{name="binders-val-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type Id1 = sig val id : 'a 'b . 'a -> 'b end;;
+|foo} ;
+     official_input = OK {foo|module type Id1 = sig val id : 'a 'b . 'a -> 'b end|foo} ;
+     r_input = OK {foo|module type Id1 = sig value id : 'a 'b . 'a -> 'b ; end ;|foo} ;
+     o_output = OK {foo|module type Id1 = sig val id : 'a 'b . 'a -> 'b end;;
+|foo};
+     official_output = OK {foo|module type Id1  = sig val id : 'a 'b . 'a -> 'b end|foo} ;
+     r_output = OK {foo|module type Id1 = sig value id : 'a 'b . 'a -> 'b; end;
+|foo}
+  }
+ ;{name="binders-external-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type Id1 = sig external id : 'a 'b . 'a -> 'b = "%identity" end;;
+|foo} ;
+     official_input = OK {foo|module type Id1 = sig external id : 'a 'b . 'a -> 'b = "%identity" end|foo} ;
+     r_input = OK {foo|module type Id1 = sig external id : 'a 'b . 'a -> 'b = "%identity" ; end ;|foo} ;
+     o_output = OK {foo|module type Id1 = sig external id : 'a 'b . 'a -> 'b = "%identity" end;;
+|foo};
+     official_output = OK {foo|module type Id1  = sig external id : 'a 'b . 'a -> 'b = "%identity" end|foo} ;
+     r_output = OK {foo|module type Id1 = sig external id : 'a 'b . 'a -> 'b = "%identity"; end;
+|foo}
+  }
+ ;{name="binders-external-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module Id1 = struct external id : 'a 'b . 'a -> 'b = "%identity" end;;
+|foo} ;
+     official_input = OK {foo|module Id1 = struct external id : 'a 'b . 'a -> 'b = "%identity" end|foo} ;
+     r_input = OK {foo|module Id1 = struct external id : 'a 'b . 'a -> 'b = "%identity" ; end ;|foo} ;
+     o_output = OK {foo|module Id1 = struct external id : 'a 'b . 'a -> 'b = "%identity" end;;
+|foo};
+     official_output = OK {foo|module Id1  = struct external id : 'a 'b . 'a -> 'b = "%identity" end|foo} ;
+     r_output = OK {foo|module Id1 = struct external id : 'a 'b . 'a -> 'b = "%identity"; end;
+|foo}
+  }
+ ;{name="binders-cdt-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type g2 =
+    Foo : 'a . 'a * ('a -> unit) -> g2;;
+|foo} ;
+     official_input = OK {foo|type g2 = Foo : 'a . 'a * ('a -> unit) -> g2|foo} ;
+     r_input = OK {foo|type g2 = [ Foo of 'a . 'a and ('a -> unit) : g2 ] ;|foo} ;
+     o_output = OK {foo|type g2 =
+    Foo : 'a . 'a * ('a -> unit) -> g2;;
+|foo};
+     official_output = OK {foo|type g2 =
+  | Foo: 'a . 'a * ('a -> unit) -> g2 |foo} ;
+     r_output = OK {foo|type g2 =
+  [ Foo of 'a . 'a and 'a -> unit : g2 ];
+|foo}
+  }
+ ;{name="binders-cdt-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type g3 =
+  g2 =
+      Foo : 'b 'c 'd . 'd * ('d -> unit) -> g3;;
+|foo} ;
+     official_input = OK {foo|type g3 = g2 = Foo : 'b 'c 'd . 'd * ('d -> unit) -> g3|foo} ;
+     r_input = OK {foo|type g3 = g2 == [ Foo of 'b 'c 'd . 'd and ('d -> unit) : g3 ];|foo} ;
+     o_output = OK {foo|type g3 =
+  g2 =
+      Foo : 'b 'c 'd . 'd * ('d -> unit) -> g3;;
+|foo};
+     official_output = OK {foo|type g3 = g2 =
+  | Foo: 'b 'c 'd . 'd * ('d -> unit) -> g3 |foo} ;
+     r_output = OK {foo|type g3 =
+  g2 ==
+    [ Foo of 'b 'c 'd . 'd and 'd -> unit : g3 ];
+|foo}
+  }
+ ;{name="binders-cdt-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type 'a t =
+    Ok1 : 'b 'a . 'a -> 'a t
+  | Ok2 of 'a;;
+|foo} ;
+     official_input = OK {foo|type 'a t =
+  | Ok1 : 'b 'a . 'a -> 'a t
+  | Ok2 of 'a|foo} ;
+     r_input = OK {foo|type t 'a = [
+    Ok1 of 'b 'a . 'a : t 'a
+  | Ok2 of 'a ] ;|foo} ;
+     o_output = OK {foo|type 'a t =
+    Ok1 : 'b 'a . 'a -> 'a t
+  | Ok2 of 'a;;
+|foo};
+     official_output = OK {foo|type 'a t =
+  | Ok1: 'b 'a . 'a -> 'a t 
+  | Ok2 of 'a |foo} ;
+     r_output = OK {foo|type t 'a =
+  [ Ok1 of 'b 'a . 'a : t 'a
+  | Ok2 of 'a ];
+|foo}
+    }
+ ;{name="binders-extension-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type 'a t +=
+    Ok1 : 'b 'a . 'a -> 'a t;;
+|foo} ;
+     official_input = OK {foo|type 'a t += Ok1 : 'b 'a . 'a -> 'a t|foo} ;
+     r_input = OK {foo|type t 'a += [ Ok1 of 'b 'a . 'a : t 'a ] ;|foo} ;
+     o_output = OK {foo|type 'a t +=
+    Ok1 : 'b 'a . 'a -> 'a t;;
+|foo};
+     official_output = OK {foo|type 'a t +=  
+  | Ok1: 'b 'a . 'a -> 'a t |foo} ;
+     r_output = OK {foo|type t 'a +=
+  [ Ok1 of 'b 'a . 'a : t 'a ];
+|foo}
+    }
+ ;{name="binders-exception-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|exception Ok1: 'b 'a . 'a * 'b -> exn;;|foo} ;
+     official_input = OK {foo|exception Ok1 : 'b 'a . 'a * 'b -> exn|foo} ;
+     r_input = OK {foo|exception Ok1 of 'b 'a . 'a and 'b : exn ;|foo} ;
+     o_output = OK {foo|exception Ok1: 'b 'a . 'a * 'b -> exn;;|foo};
+     official_output = OK {foo|exception Ok1: 'b 'a . 'a * 'b -> exn |foo} ;
+     r_output = OK {foo|exception Ok1 of 'b 'a . 'a and 'b : exn;
+|foo}
+    }
+ ;{name="test-prototype"; implem = True ;
+     exclude=[];
+     o_input = OK {foo||foo} ;
+     official_input = OK {foo||foo} ;
+     r_input = OK {foo||foo} ;
+     o_output = OK {foo||foo};
+     official_output = OK {foo||foo} ;
+     r_output = OK {foo||foo}
+    }
+]
 END
 ;
 

@@ -810,7 +810,10 @@ and sig_item_se =
       let i = anti_lid_or_error se1 in
       let t = ctyp_se se2 in
       let pd = anti_list_map string_se sel in
+(*
       <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+ *)
+      MLast.SgExt loc i <:vala< [] >> t pd <:vala< [] >>
   | Sexpr loc [Slid _ "include"; se] →
       let mt = module_type_se se in
       <:sig_item< include $mt$ >>
@@ -876,7 +879,10 @@ and str_item_se se =
       let i = anti_lid_or_error se1 in
       let t = ctyp_se se2 in
       let pd = anti_list_map string_se sel in
+(*
       <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+ *)
+      MLast.StExt loc i <:vala< [] >> t pd <:vala< [] >>
   | Sexpr loc [Slid _ "include"; se] →
       let me = module_expr_se se in
       <:str_item< include $me$ >>

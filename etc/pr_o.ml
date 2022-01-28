@@ -627,31 +627,43 @@ value label_decl pc (_, l, m, t, attrs) =
   (hlist (pr_attribute "@")) (Pcaml.unvala attrs)
 ;
 
+value typevars_binder pc = fun [
+  [] -> pprintf pc ""
+| l -> pprintf pc "%p . " (hlist type_var) l
+]
+;
+
 value cons_decl pc = fun [
 (*
   <:constructor:< $_uid:c$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
  *)
-  (loc, c, _, tl, rto, alg_attrs)
+  (loc, c, tyvars, tl, rto, alg_attrs)
  ->
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   if tl = [] then do {
-    match Pcaml.unvala rto with
-    [ Some rt -> pprintf pc "%p : %p%p" cons_escaped (loc, c) ctyp_below_alg_attribute rt
+    match (Pcaml.unvala tyvars, Pcaml.unvala rto) with
+    [ ([], Some rt) -> pprintf pc "%p : %p%p" cons_escaped (loc, c) ctyp_below_alg_attribute rt
                    (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
-    | None -> pprintf pc "%p%p" cons_escaped (loc, c)
+    | (l, Some rt) -> pprintf pc "%p : %p%p%p" cons_escaped (loc, c) typevars_binder l ctyp_below_alg_attribute rt
+                   (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
+    | (_, None) -> pprintf pc "%p%p" cons_escaped (loc, c)
                    (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
     ]
   }
   else do {
     let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
     let tl = List.map (fun t -> (t, " *")) tl in
-    match Pcaml.unvala rto with
-    [ Some rt ->
+    match (Pcaml.unvala tyvars, Pcaml.unvala rto) with
+    [ ([], Some rt) ->
         pprintf pc "%p :@;<1 4>%p -> %p%p" cons_escaped (loc, c)
           (plist ctyp_apply 2) tl ctyp_below_alg_attribute rt
           (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
-    | None ->
+    | (l, Some rt) ->
+        pprintf pc "%p :@;<1 4>%p%p -> %p%p" cons_escaped (loc, c) typevars_binder l
+          (plist ctyp_apply 2) tl ctyp_below_alg_attribute rt
+          (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs)
+    | (_, None) ->
         pprintf pc "%p of@;<1 4>%p%p" cons_escaped (loc, c) (plist ctyp_apply 2)
           tl (hlist (pr_attribute "@")) (Pcaml.unvala alg_attrs) ]
   }
@@ -907,8 +919,8 @@ value flatten_sequ e =
 value lident pc s = pprintf pc "%s" s;
 value string pc s = pprintf pc "\"%s\"" s;
 
-value external_decl pc (loc, n, t, sl, attrs) =
-  pprintf pc "external %p :@;%p@[ = %p%p@]" var_escaped (loc, n) ctyp t
+value external_decl pc (loc, n, tyvars, t, sl, attrs) =
+  pprintf pc "external %p :@;%p%p@[ = %p%p@]" var_escaped (loc, n) typevars_binder tyvars ctyp t
     (hlist string) sl
     (hlist (pr_attribute "@@")) attrs
 ;
@@ -1858,8 +1870,15 @@ EXTEND_PRINTER
       | <:str_item:< exception $excon:ec$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "exception %p%p" (extension_constructor loc) ec
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
+(*
       | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
-          external_decl pc (loc, n, t, sl, attrs)
+ *)
+      | MLast.StExt loc n tyvars t sl attrs ->
+         let n = Pcaml.unvala n in
+         let sl = Pcaml.unvala sl in
+         let attrs = Pcaml.unvala attrs in
+         let tyvars = Pcaml.unvala tyvars in
+          external_decl pc (loc, n, tyvars, t, sl, attrs)
       | <:str_item< include $me$ $_itemattrs:attrs$ >> ->
           pprintf pc "include %p%p" module_expr me (hlist (pr_attribute "@@")) (Pcaml.unvala attrs)
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1909,8 +1928,15 @@ EXTEND_PRINTER
           pprintf pc "(* #%s %p *)" s expr e
       | MLast.SgExc _ gc item_attrs -> pprintf pc "exception %p%p" cons_decl gc
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
+(*
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
-          external_decl pc (loc, n, t, sl, attrs)
+ *)
+      | MLast.SgExt loc n tyvars t sl attrs ->
+         let n = Pcaml.unvala n in
+         let sl = Pcaml.unvala sl in
+         let attrs = Pcaml.unvala attrs in
+         let tyvars = Pcaml.unvala tyvars in
+          external_decl pc (loc, n, tyvars, t, sl, attrs)
       | <:sig_item< include $mt$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "include %p%p" module_type mt (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:sig_item:< declare $list:sil$ end >> ->

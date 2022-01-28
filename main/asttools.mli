@@ -37,6 +37,9 @@ value check_stream :
        choice (list (string * string) → option α)
          (list (string * string) → bool)) →
     Stream.t (string * string) → (int * α);
+type fsm 'a = { start : 'a ; accept : 'a ; fail : 'a ; delta : list ('a * (string * string) -> 'a) } ;
+value check_fsm : fsm 'a -> Stream.t (string * string) -> bool ;
+value type_binder_fsm : fsm string ;
 value expr_wrap_attrs :
   loc → expr → list attribute → expr;
 value expr_to_inline :

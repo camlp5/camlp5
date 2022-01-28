@@ -160,6 +160,50 @@ value check_stream ?{avoid_tokens=[]} matchers strm =
   crec 1 matchers
 ;
 
+type fsm 'a = { start : 'a ; accept : 'a ; fail : 'a ; delta : list ('a * (string * string) -> 'a) } ;
+value check_fsm { start=start_st ; accept=accept_st ; fail=fail_st ; delta=delta } strm =
+  let rec exec st n =
+    let l = Stream.npeek n strm in
+    if List.length l < n then False else
+    let tok = fst (sep_last l) in
+    let f = List.assoc st delta in
+    match f tok with [
+        st' ->
+        if st' = fail_st then False
+        else if st' = accept_st then True
+        else exec st' (n+1)
+      | exception Failure _ ->
+         False
+      ]
+  in
+  exec start_st 1
+;
+
+value type_binder_delta = [
+    ("START",fun [
+                 ("","'") -> "QUO"
+               | ("GIDENT",_) -> "IDS"
+               | _ -> failwith "START"
+    ])
+   ;("IDS",fun [
+               ("","'") -> "QUO"
+             | ("GIDENT",_) -> "IDS"
+             | ("",".") -> "ACCEPT"
+               | _ -> failwith "IDS"
+    ])
+   ;("QUO",fun [
+               ("LIDENT",_) -> "IDS"
+             | ("UIDENT",_) -> "IDS"
+               | _ -> failwith "QUO"
+    ])
+(*
+   ;("ANTILIST",fun [
+    ])
+ *)
+  ]
+;
+value type_binder_fsm = {start="START";accept="ACCEPT";fail="FAIL";delta=type_binder_delta} ;
+
 value expr_wrap_attrs loc e l =
 let rec wrec e = fun [
   [] -> e

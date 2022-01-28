@@ -465,9 +465,9 @@ and sig_item floc sh =
     | SgExc loc x1 x2 →
         let loc = floc loc in
         SgExc loc (generic_constructor floc sh x1) (attributes floc sh x2)
-    | SgExt loc x1 x2 x3 x4 →
+    | SgExt loc x1 x2 x3 x4 x5 →
         let loc = floc loc in
-        SgExt loc x1 (ctyp floc sh x2) x3 (attributes floc sh x4)
+        SgExt loc x1 x2 (ctyp floc sh x3) x4 (attributes floc sh x5)
     | SgInc loc x1 x2 →
         let loc = floc loc in
         SgInc loc (module_type floc sh x1) (attributes floc sh x2)
@@ -607,9 +607,9 @@ and str_item floc sh =
     | StExp loc x1 x2 →
         let loc = floc loc in
         StExp loc (expr floc sh x1) (attributes floc sh x2)
-    | StExt loc x1 x2 x3 x4 →
+    | StExt loc x1 x2 x3 x4 x5 →
         let loc = floc loc in
-        StExt loc x1 (ctyp floc sh x2) x3 (attributes floc sh x4)
+        StExt loc x1 x2 (ctyp floc sh x3) x4 (attributes floc sh x5)
     | StInc loc x1 x2 →
         let loc = floc loc in
         StInc loc (module_expr floc sh x1) (attributes floc sh x2)

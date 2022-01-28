@@ -54,7 +54,7 @@ pr_official.cmo pr_official.cmx: pr_official.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 
 META:: META.tpl
-	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(LIBDIR)/$(CAMLP5N)|" META.tpl > META
+	OVERSION=$(OVERSION) VERSION=$(VERSION) CAMLP5DIR="$(LIBDIR)/$(CAMLP5N)" ./META.pl > META
 
 
 $(CAMLP5N)o$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5OM)
@@ -106,7 +106,7 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_lex.cmo"
 	cp $(OBJS) $(INSTALL_CMI) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
-	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(LIBDIR)/$(CAMLP5N)|" META.tpl > META
+	OVERSION=$(OVERSION) VERSION=$(VERSION) CAMLP5DIR="$(LIBDIR)/$(CAMLP5N)" ./META.pl > META
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."

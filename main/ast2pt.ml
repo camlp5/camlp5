@@ -440,7 +440,10 @@ and mkwithc =
               error loc msg ]
       | None → error loc "no with type := in this ocaml version" ] ]
 
-and mkvalue_desc ~{item_attributes} vn t p =
+and mkvalue_desc ~{item_attributes} vn (tyvars, t) p =
+  let t = match tyvars with [ [] -> t | l ->
+    let loc = loc_of_ctyp t in
+    TyPol loc <:vala< l >> t ] in
  ocaml_value_description ~{item_attributes=item_attributes} vn (ctyp t) p
 
 and sumbranch_ctyp ?{priv=False} loc tyvars l rto =
@@ -1276,9 +1279,9 @@ and sig_item s l =
       [mksig loc
          (ocaml_psig_exception ~{alg_attributes=alg_attrs} ~{item_attributes=uv_item_attributes item_attrs} (mkloc loc) n tl) ::
        l]
-  | SgExt loc n t p attrs →
+  | SgExt loc n ls t p attrs →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn t (uv p))) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn (uv ls, t) (uv p))) :: l]
   | SgInc loc mt attrs →
       [mksig loc (ocaml_psig_include ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (module_type mt)) :: l]
   | SgMod loc rf ntl →
@@ -1349,7 +1352,7 @@ and sig_item s l =
         (fun () → List.fold_right (fun (si, _) → sig_item si) (uv sl) l) ()
   | SgVal loc n t attrs →
       let vn = uv n in
-      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn t [])) :: l]
+      [mksig loc (ocaml_psig_value vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn ([], t) [])) :: l]
   | SgXtr loc _ _ → error loc "bad ast SgXtr"
   | SgFlAtt loc float_attr →
       [mksig loc
@@ -1435,9 +1438,9 @@ and str_item s l =
       [mkstr loc si :: l]
     ]
   | StExp loc e attrs → [mkstr loc (ocaml_pstr_eval ~{item_attributes=uv_item_attributes attrs} (expr e)) :: l]
-  | StExt loc n t p attrs →
+  | StExt loc n ls t p attrs →
       let vn = uv n in
-      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn t (uv p))) :: l]
+      [mkstr loc (ocaml_pstr_primitive vn (mkvalue_desc ~{item_attributes=uv_item_attributes attrs} vn (uv ls, t) (uv p))) :: l]
   | StInc loc me attrs →
       match ocaml_pstr_include with
       [ Some pstr_include →

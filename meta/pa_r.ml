@@ -599,6 +599,18 @@ value check_lparen_type =
     check_lparen_type_f
 ;
 
+value is_type_binder_f strm = check_fsm type_binder_fsm strm ;
+
+value check_type_binder_f strm =
+  if is_type_binder_f strm then () else raise Stream.Failure
+;
+
+value check_type_binder =
+  Grammar.Entry.of_parser gram "check_type_binder"
+    check_type_binder_f
+;
+
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -609,6 +621,7 @@ EXTEND
     constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant attribute_body alg_attribute alg_attributes
     check_type_decl check_type_extension check_dot_uid
+    check_type_binder
     ext_attributes
     ;
   attribute_id:
@@ -708,6 +721,11 @@ EXTEND
     [ [ st = V (LIST0 [ s = str_item; ";" → s ]) → st ] ]
   ;
 
+  type_binder_opt: [ [
+    check_type_binder ; ls = V (LIST1 typevar) ; "." -> ls
+  | -> <:vala< [] >>
+  ] ]
+  ;
   str_item:
     [ "top"
       [ "declare"; st = V (LIST0 [ s = str_item; ";" → s ]); "end" →
@@ -715,12 +733,18 @@ EXTEND
       | "exception"; ec = V extension_constructor "excon" ; item_attrs = item_attributes →
           <:str_item< exception $_excon:ec$ $_itemattrs:item_attrs$ >>
 
-      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+      | "external"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+(*
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-      | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
+ *)
+        MLast.StExt loc i ls t pd attrs
+      | "external"; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+(*
           <:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
+ *)
+        MLast.StExt loc <:vala< i >> ls t pd attrs
       | "include"; me = module_expr ; attrs = item_attributes → <:str_item< include $me$ $_itemattrs:attrs$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
@@ -800,12 +824,18 @@ EXTEND
           <:sig_item< declare $_list:st$ end >>
       | "exception"; gc = constructor_declaration ; item_attrs = item_attributes →
           MLast.SgExc loc gc item_attrs
-      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+      | "external"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+(*
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-      | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
+ *)
+        MLast.SgExt loc i ls t pd attrs
+      | "external"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+(*
           <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
+ *)
+        MLast.SgExt loc <:vala< i >> ls t pd attrs
       | "include"; mt = module_type ; attrs = item_attributes → <:sig_item< include $mt$ $_itemattrs:attrs$ >>
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") →
@@ -833,10 +863,18 @@ EXTEND
           }
       | "type" ; check_type_extension ; te = type_extension →
           <:sig_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
-      | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ; attrs = item_attributes →
+      | "value"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
+(*
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
-      | "value"; "("; i = operator_rparen; ":"; t = ctyp ; attrs = item_attributes →
+ *)
+        let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
+        MLast.SgVal loc i t attrs
+      | "value"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
+(*
           <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
+ *)
+        let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
+        MLast.SgVal loc <:vala< i >> t attrs
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →
@@ -1397,29 +1435,29 @@ EXTEND
     | "(" ; "::" ; ")" -> <:vala< "::" >>
     ] ] ;
   constructor_declaration:
-    [ [ ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
+    [ [ ci = cons_ident; (ls, tl,rto,attrs) = rest_constructor_declaration →
 (*
           <:constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
 *)
-          (loc, ci, <:vala< [] >>, tl, rto, attrs)
+          (loc, ci, ls, tl, rto, attrs)
       ] ]
   ;
   rest_constructor_declaration:
-    [ [ "of"; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ;
+    [ [ "of"; ls = type_binder_opt ; cal = V (LIST1 ctyp_below_alg_attribute SEP "and") ;
         rto = V (OPT [ ":"; t = ctyp_below_alg_attribute -> t ]) "rto" ; attrs = alg_attributes →
-          (cal, rto, attrs)
+          (ls, cal, rto, attrs)
       | rto = V (OPT [ ":"; t = ctyp_below_alg_attribute -> t ]) "rto" ; attrs = alg_attributes →
-          (<:vala< [] >>, rto, attrs)
+          (<:vala< [] >>, <:vala< [] >>, rto, attrs)
       ] ]
   ;
   extension_constructor:
   [ [ ci = cons_ident ; "="; b = V longident "longid" ; alg_attrs = alg_attributes ->
         <:extension_constructor< $_uid:ci$ = $_longid:b$ $_algattrs:alg_attrs$ >>
-    | ci = cons_ident; (tl,rto,attrs) = rest_constructor_declaration →
+    | ci = cons_ident; (ls, tl,rto,attrs) = rest_constructor_declaration →
 (*
         <:extension_constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
  *)
-      MLast.EcTuple loc (loc, ci, <:vala< [] >>, tl, rto, attrs)
+      MLast.EcTuple loc (loc, ci, ls, tl, rto, attrs)
     ] ]
   ;
 

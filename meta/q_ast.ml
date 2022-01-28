@@ -285,10 +285,10 @@ module Meta_make (C : MetaSig) =
       | SgExc _ gc item_attrs →
           let item_attrs = conv_attributes item_attrs in
           C.node "SgExc" [generic_constructor gc; item_attrs]
-      | SgExt _ s t ls attrs →
+      | SgExt _ s ltv t ls attrs →
           let attrs = conv_attributes attrs in
           C.node "SgExt"
-            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
+            [C.vala C.string s; C.vala (C.list C.string) ltv; ctyp t; C.vala (C.list C.string) ls; attrs]
       | SgInc _ mt attrs →
           let attrs = conv_attributes attrs in
           C.node "SgInc" [module_type mt; attrs]
@@ -398,10 +398,10 @@ module Meta_make (C : MetaSig) =
       | StExp _ e attrs →
           let attrs = conv_attributes attrs in
           C.node "StExp" [expr e; attrs]
-      | StExt _ s t ls attrs →
+      | StExt _ s ltv t ls attrs →
           let attrs = conv_attributes attrs in
           C.node "StExt"
-            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
+            [C.vala C.string s; C.vala (C.list C.string) ltv; ctyp t; C.vala (C.list C.string) ls; attrs]
       | StInc _ me attrs → 
           let attrs = conv_attributes attrs in
           C.node "StInc" [module_expr me; attrs]

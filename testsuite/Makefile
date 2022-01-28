@@ -223,16 +223,16 @@ sch2r_test.pa_schemer.byte: sch2r_test.ml testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),camlp5.pr_r.link -syntax camlp5r -linkall -linkpkg pa_schemer.cmo testutil.cmo testutil2.cmo sch2r_test.ml -o sch2r_test.pa_schemer.byte
 
 tools/ROUNDTRIP-pa_r-pr_r.byte:
-	$(MKCAMLP5) -verbose -package camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@
+	$(MKCAMLP5) -verbose -package $(C5PACKAGES),camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@
 
 tools/ROUNDTRIP-pa_r-pr_r.opt:
-	$(MKCAMLP5OPT) -verbose -package camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@
+	$(MKCAMLP5OPT) -verbose -package $(C5PACKAGES),camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.byte:
-	$(MKCAMLP5) -verbose -package camlp5.pa_o,camlp5.pr_o -o $@
+	$(MKCAMLP5) -verbose -package $(C5PACKAGES),camlp5.pa_o,camlp5.pr_o -o $@
 
 tools/ROUNDTRIP-pa_o-pr_o.opt:
-	$(MKCAMLP5OPT) -verbose -package camlp5.pa_o,camlp5.pr_o -o $@
+	$(MKCAMLP5OPT) -verbose -package $(C5PACKAGES),camlp5.pa_o,camlp5.pr_o -o $@
 
 setup-ocaml:
 	opam install -y rresult fmt pcre ounit bos
