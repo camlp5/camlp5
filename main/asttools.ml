@@ -187,10 +187,10 @@ value type_binder_delta = [
     ("START",fun [
                  ("","'") -> "QUO"
                | ("GIDENT",_) -> "IDS"
-               | ("ANTIQUOT", s) when Some "list" = (s |> Plexer.parse_antiquot |> Option.map fst) -> "PREDOT"
-               | ("ANTIQUOT", s) when Some "_list" = (s |> Plexer.parse_antiquot |> Option.map fst) -> "PREDOT"
-               | ("ANTIQUOT_LOC", s) when Some "list" = (s |> Plexer.parse_antiloc |> Option.map snd3) -> "PREDOT"
-               | ("ANTIQUOT_LOC", s) when Some "_list" = (s |> Plexer.parse_antiloc |> Option.map snd3) -> "PREDOT"
+               | ("ANTIQUOT", s) when Some "list" = (s |> Plexer.parse_antiquot |> option_map fst) -> "PREDOT"
+               | ("ANTIQUOT", s) when Some "_list" = (s |> Plexer.parse_antiquot |> option_map fst) -> "PREDOT"
+               | ("ANTIQUOT_LOC", s) when Some "list" = (s |> Plexer.parse_antiloc |> option_map snd3) -> "PREDOT"
+               | ("ANTIQUOT_LOC", s) when Some "_list" = (s |> Plexer.parse_antiloc |> option_map snd3) -> "PREDOT"
                | _ -> failwith "START"
     ])
    ;("PREDOT",fun [
