@@ -735,16 +735,16 @@ EXTEND
 
       | "external"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+          <:str_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
 (*
-          <:str_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
- *)
         MLast.StExt loc i ls t pd attrs
+*)
       | "external"; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+          <:str_item< external $lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
 (*
-          <:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
- *)
         MLast.StExt loc <:vala< i >> ls t pd attrs
+ *)
       | "include"; me = module_expr ; attrs = item_attributes → <:str_item< include $me$ $_itemattrs:attrs$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
@@ -826,16 +826,16 @@ EXTEND
           MLast.SgExc loc gc item_attrs
       | "external"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+          <:sig_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
 (*
-          <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
- *)
         MLast.SgExt loc i ls t pd attrs
+ *)
       | "external"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
+          <:sig_item< external $lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
 (*
-          <:sig_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >>
- *)
         MLast.SgExt loc <:vala< i >> ls t pd attrs
+ *)
       | "include"; mt = module_type ; attrs = item_attributes → <:sig_item< include $mt$ $_itemattrs:attrs$ >>
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") →
