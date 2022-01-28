@@ -708,6 +708,17 @@ let check_lparen_type =
   Grammar.Entry.of_parser gram "check_lparen_type" check_lparen_type_f
 ;;
 
+let is_type_binder_f strm = check_fsm type_binder_fsm strm;;
+
+let check_type_binder_f strm =
+  if is_type_binder_f strm then () else raise Stream.Failure
+;;
+
+let check_type_binder =
+  Grammar.Entry.of_parser gram "check_type_binder" check_type_binder_f
+;;
+
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -746,6 +757,7 @@ Grammar.safe_extend
    and _ = (check_type_decl : 'check_type_decl Grammar.Entry.e)
    and _ = (check_type_extension : 'check_type_extension Grammar.Entry.e)
    and _ = (check_dot_uid : 'check_dot_uid Grammar.Entry.e)
+   and _ = (check_type_binder : 'check_type_binder Grammar.Entry.e)
    and _ = (ext_attributes : 'ext_attributes Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
@@ -768,6 +780,8 @@ Grammar.safe_extend
      grammar_entry_create "item_extension"
    and alg_extension : 'alg_extension Grammar.Entry.e =
      grammar_entry_create "alg_extension"
+   and type_binder_opt : 'type_binder_opt Grammar.Entry.e =
+     grammar_entry_create "type_binder_opt"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
@@ -1294,6 +1308,25 @@ Grammar.safe_extend
                           (s : 'e__4)))])),
            "194fe98d",
            (fun (st : 'e__4 list) (loc : Ploc.t) -> (st : 'structure)))]];
+    Grammar.extension (type_binder_opt : 'type_binder_opt Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_stop, "194fe98d",
+           (fun (loc : Ploc.t) -> ([] : 'type_binder_opt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (check_type_binder :
+                       'check_type_binder Grammar.Entry.e)))
+                (Grammar.s_list1
+                   (Grammar.s_nterm (typevar : 'typevar Grammar.Entry.e))))
+             (Grammar.s_token ("", ".")),
+           "194fe98d",
+           (fun _ (ls : 'typevar list) _ (loc : Ploc.t) ->
+              (ls : 'type_binder_opt)))]];
     Grammar.extension (str_item : 'str_item Grammar.Entry.e) None
       [Some "top", None,
        [Grammar.production
@@ -1472,22 +1505,27 @@ Grammar.safe_extend
                       (Grammar.r_next
                          (Grammar.r_next
                             (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "external")))
-                               (Grammar.s_token ("", "(")))
-                            (Grammar.s_nterm
-                               (operator_rparen :
-                                'operator_rparen Grammar.Entry.e)))
-                         (Grammar.s_token ("", ":")))
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_token ("", "external")))
+                                  (Grammar.s_token ("", "(")))
+                               (Grammar.s_nterm
+                                  (operator_rparen :
+                                   'operator_rparen Grammar.Entry.e)))
+                            (Grammar.s_token ("", ":")))
+                         (Grammar.s_nterm
+                            (type_binder_opt :
+                             'type_binder_opt Grammar.Entry.e)))
                       (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_list1 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            "194fe98d",
-           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp) _
-                (i : 'operator_rparen) _ _ (loc : Ploc.t) ->
-              (MLast.StExt (loc, i, t, pd, attrs) : 'str_item)));
+           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp)
+                (ls : 'type_binder_opt) _ (i : 'operator_rparen) _ _
+                (loc : Ploc.t) ->
+              (MLast.StExt (loc, i, ls, t, pd, attrs) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1495,19 +1533,23 @@ Grammar.safe_extend
                    (Grammar.r_next
                       (Grammar.r_next
                          (Grammar.r_next
-                            (Grammar.r_next Grammar.r_stop
-                               (Grammar.s_token ("", "external")))
-                            (Grammar.s_token ("LIDENT", "")))
-                         (Grammar.s_token ("", ":")))
+                            (Grammar.r_next
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("", "external")))
+                               (Grammar.s_token ("LIDENT", "")))
+                            (Grammar.s_token ("", ":")))
+                         (Grammar.s_nterm
+                            (type_binder_opt :
+                             'type_binder_opt Grammar.Entry.e)))
                       (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_list1 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            "194fe98d",
-           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp) _
-                (i : string) _ (loc : Ploc.t) ->
-              (MLast.StExt (loc, i, t, pd, attrs) : 'str_item)));
+           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp)
+                (ls : 'type_binder_opt) _ (i : string) _ (loc : Ploc.t) ->
+              (MLast.StExt (loc, i, ls, t, pd, attrs) : 'str_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1782,36 +1824,54 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next
-                         (Grammar.r_next Grammar.r_stop
-                            (Grammar.s_token ("", "value")))
-                         (Grammar.s_token ("", "(")))
-                      (Grammar.s_nterm
-                         (operator_rparen :
-                          'operator_rparen Grammar.Entry.e)))
-                   (Grammar.s_token ("", ":")))
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "value")))
+                            (Grammar.s_token ("", "(")))
+                         (Grammar.s_nterm
+                            (operator_rparen :
+                             'operator_rparen Grammar.Entry.e)))
+                      (Grammar.s_token ("", ":")))
+                   (Grammar.s_nterm
+                      (type_binder_opt : 'type_binder_opt Grammar.Entry.e)))
                 (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            "194fe98d",
-           (fun (attrs : 'item_attributes) (t : 'ctyp) _
-                (i : 'operator_rparen) _ _ (loc : Ploc.t) ->
-              (MLast.SgVal (loc, i, t, attrs) : 'sig_item)));
+           (fun (attrs : 'item_attributes) (t : 'ctyp) (ls : 'type_binder_opt)
+                _ (i : 'operator_rparen) _ _ (loc : Ploc.t) ->
+              (let t =
+                 match Pcaml.unvala ls with
+                   [] -> t
+                 | _ -> MLast.TyPol (loc, ls, t)
+               in
+               MLast.SgVal (loc, i, t, attrs) :
+               'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "value")))
-                      (Grammar.s_token ("LIDENT", "")))
-                   (Grammar.s_token ("", ":")))
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "value")))
+                         (Grammar.s_token ("LIDENT", "")))
+                      (Grammar.s_token ("", ":")))
+                   (Grammar.s_nterm
+                      (type_binder_opt : 'type_binder_opt Grammar.Entry.e)))
                 (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            "194fe98d",
-           (fun (attrs : 'item_attributes) (t : 'ctyp) _ (i : string) _
-                (loc : Ploc.t) ->
-              (MLast.SgVal (loc, i, t, attrs) : 'sig_item)));
+           (fun (attrs : 'item_attributes) (t : 'ctyp) (ls : 'type_binder_opt)
+                _ (i : string) _ (loc : Ploc.t) ->
+              (let t =
+                 match Pcaml.unvala ls with
+                   [] -> t
+                 | _ -> MLast.TyPol (loc, ls, t)
+               in
+               MLast.SgVal (loc, i, t, attrs) :
+               'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -1989,22 +2049,27 @@ Grammar.safe_extend
                       (Grammar.r_next
                          (Grammar.r_next
                             (Grammar.r_next
-                               (Grammar.r_next Grammar.r_stop
-                                  (Grammar.s_token ("", "external")))
-                               (Grammar.s_token ("", "(")))
-                            (Grammar.s_nterm
-                               (operator_rparen :
-                                'operator_rparen Grammar.Entry.e)))
-                         (Grammar.s_token ("", ":")))
+                               (Grammar.r_next
+                                  (Grammar.r_next Grammar.r_stop
+                                     (Grammar.s_token ("", "external")))
+                                  (Grammar.s_token ("", "(")))
+                               (Grammar.s_nterm
+                                  (operator_rparen :
+                                   'operator_rparen Grammar.Entry.e)))
+                            (Grammar.s_token ("", ":")))
+                         (Grammar.s_nterm
+                            (type_binder_opt :
+                             'type_binder_opt Grammar.Entry.e)))
                       (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_list1 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            "194fe98d",
-           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp) _
-                (i : 'operator_rparen) _ _ (loc : Ploc.t) ->
-              (MLast.SgExt (loc, i, t, pd, attrs) : 'sig_item)));
+           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp)
+                (ls : 'type_binder_opt) _ (i : 'operator_rparen) _ _
+                (loc : Ploc.t) ->
+              (MLast.SgExt (loc, i, ls, t, pd, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -2012,19 +2077,23 @@ Grammar.safe_extend
                    (Grammar.r_next
                       (Grammar.r_next
                          (Grammar.r_next
-                            (Grammar.r_next Grammar.r_stop
-                               (Grammar.s_token ("", "external")))
-                            (Grammar.s_token ("LIDENT", "")))
-                         (Grammar.s_token ("", ":")))
+                            (Grammar.r_next
+                               (Grammar.r_next Grammar.r_stop
+                                  (Grammar.s_token ("", "external")))
+                               (Grammar.s_token ("LIDENT", "")))
+                            (Grammar.s_token ("", ":")))
+                         (Grammar.s_nterm
+                            (type_binder_opt :
+                             'type_binder_opt Grammar.Entry.e)))
                       (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
                    (Grammar.s_token ("", "=")))
                 (Grammar.s_list1 (Grammar.s_token ("STRING", ""))))
              (Grammar.s_nterm
                 (item_attributes : 'item_attributes Grammar.Entry.e)),
            "194fe98d",
-           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp) _
-                (i : string) _ (loc : Ploc.t) ->
-              (MLast.SgExt (loc, i, t, pd, attrs) : 'sig_item)));
+           (fun (attrs : 'item_attributes) (pd : string list) _ (t : 'ctyp)
+                (ls : 'type_binder_opt) _ (i : string) _ (loc : Ploc.t) ->
+              (MLast.SgExt (loc, i, ls, t, pd, attrs) : 'sig_item)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4861,9 +4930,9 @@ Grammar.safe_extend
                 (rest_constructor_declaration :
                  'rest_constructor_declaration Grammar.Entry.e)),
            "194fe98d",
-           (fun (tl, rto, attrs : 'rest_constructor_declaration)
+           (fun (ls, tl, rto, attrs : 'rest_constructor_declaration)
                 (ci : 'cons_ident) (loc : Ploc.t) ->
-              (loc, ci, tl, rto, attrs : 'constructor_declaration)))]];
+              (loc, ci, ls, tl, rto, attrs : 'constructor_declaration)))]];
     Grammar.extension
       (rest_constructor_declaration :
        'rest_constructor_declaration Grammar.Entry.e)
@@ -4890,13 +4959,17 @@ Grammar.safe_extend
            "194fe98d",
            (fun (attrs : 'alg_attributes) (rto : 'e__14 option)
                 (loc : Ploc.t) ->
-              ([], rto, attrs : 'rest_constructor_declaration)));
+              ([], [], rto, attrs : 'rest_constructor_declaration)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "of")))
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "of")))
+                      (Grammar.s_nterm
+                         (type_binder_opt :
+                          'type_binder_opt Grammar.Entry.e)))
                    (Grammar.s_list1sep
                       (Grammar.s_nterm
                          (ctyp_below_alg_attribute :
@@ -4919,8 +4992,9 @@ Grammar.safe_extend
                 (alg_attributes : 'alg_attributes Grammar.Entry.e)),
            "194fe98d",
            (fun (attrs : 'alg_attributes) (rto : 'e__13 option)
-                (cal : 'ctyp_below_alg_attribute list) _ (loc : Ploc.t) ->
-              (cal, rto, attrs : 'rest_constructor_declaration)))]];
+                (cal : 'ctyp_below_alg_attribute list) (ls : 'type_binder_opt)
+                _ (loc : Ploc.t) ->
+              (ls, cal, rto, attrs : 'rest_constructor_declaration)))]];
     Grammar.extension
       (extension_constructor : 'extension_constructor Grammar.Entry.e) None
       [None, None,
@@ -4932,9 +5006,9 @@ Grammar.safe_extend
                 (rest_constructor_declaration :
                  'rest_constructor_declaration Grammar.Entry.e)),
            "194fe98d",
-           (fun (tl, rto, attrs : 'rest_constructor_declaration)
+           (fun (ls, tl, rto, attrs : 'rest_constructor_declaration)
                 (ci : 'cons_ident) (loc : Ploc.t) ->
-              (MLast.EcTuple (loc, (loc, ci, tl, rto, attrs)) :
+              (MLast.EcTuple (loc, (loc, ci, ls, tl, rto, attrs)) :
                'extension_constructor)));
         Grammar.production
           (Grammar.r_next

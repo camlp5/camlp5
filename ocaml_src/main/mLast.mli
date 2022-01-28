@@ -152,7 +152,7 @@ and sig_item =
   | SgDcl of loc * sig_item list
   | SgDir of loc * string * expr option
   | SgExc of loc * generic_constructor * attributes
-  | SgExt of loc * string * ctyp * string list * attributes
+  | SgExt of loc * string * string list * ctyp * string list * attributes
   | SgInc of loc * module_type * attributes
   | SgMod of loc * bool * (string option * module_type * attributes) list
   | SgMty of loc * string * module_type * attributes
@@ -192,7 +192,7 @@ and str_item =
   | StDir of loc * string * expr option
   | StExc of loc * extension_constructor * attributes
   | StExp of loc * expr * attributes
-  | StExt of loc * string * ctyp * string list * attributes
+  | StExt of loc * string * string list * ctyp * string list * attributes
   | StInc of loc * module_expr * attributes
   | StMod of loc * bool * (string option * module_expr * attributes) list
   | StMty of loc * string * module_type * attributes
@@ -212,7 +212,8 @@ and type_decl =
     tdDef : ctyp;
     tdCon : (ctyp * ctyp) list;
     tdAttributes : attributes }
-and generic_constructor = loc * string * ctyp list * ctyp option * attributes
+and generic_constructor =
+  loc * string * string list * ctyp list * ctyp option * attributes
 and extension_constructor =
     EcTuple of loc * generic_constructor
   | EcRebind of loc * string * longid * attributes

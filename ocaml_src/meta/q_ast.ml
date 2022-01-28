@@ -95,11 +95,11 @@ module Meta_make (C : MetaSig) =
       | TyAttr (_, t) -> C.node "TyAttr" [C.vala ctyp t]
       | PaAttr (_, p, eo) ->
           C.node "PaAttr" [C.vala patt p; C.option (C.vala expr) eo]
-    and generic_constructor (_, s, lt, ot, attrs) =
+    and generic_constructor (_, s, ls, lt, ot, attrs) =
       let attrs = conv_attributes attrs in
       C.tuple
-        [C.loc_v (); C.vala C.string s; C.vala (C.list ctyp) lt;
-         C.vala (C.option ctyp) ot; attrs]
+        [C.loc_v (); C.vala C.string s; C.vala (C.list C.string) ls;
+         C.vala (C.list ctyp) lt; C.vala (C.option ctyp) ot; attrs]
     and poly_variant =
       function
         PvTag (_, s, b, lt, attrs) ->
@@ -293,10 +293,11 @@ module Meta_make (C : MetaSig) =
       | SgExc (_, gc, item_attrs) ->
           let item_attrs = conv_attributes item_attrs in
           C.node "SgExc" [generic_constructor gc; item_attrs]
-      | SgExt (_, s, t, ls, attrs) ->
+      | SgExt (_, s, ltv, t, ls, attrs) ->
           let attrs = conv_attributes attrs in
           C.node "SgExt"
-            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
+            [C.vala C.string s; C.vala (C.list C.string) ltv; ctyp t;
+             C.vala (C.list C.string) ls; attrs]
       | SgInc (_, mt, attrs) ->
           let attrs = conv_attributes attrs in
           C.node "SgInc" [module_type mt; attrs]
@@ -401,10 +402,11 @@ module Meta_make (C : MetaSig) =
           C.node "StExc" [C.vala extension_constructor extc; attrs]
       | StExp (_, e, attrs) ->
           let attrs = conv_attributes attrs in C.node "StExp" [expr e; attrs]
-      | StExt (_, s, t, ls, attrs) ->
+      | StExt (_, s, ltv, t, ls, attrs) ->
           let attrs = conv_attributes attrs in
           C.node "StExt"
-            [C.vala C.string s; ctyp t; C.vala (C.list C.string) ls; attrs]
+            [C.vala C.string s; C.vala (C.list C.string) ltv; ctyp t;
+             C.vala (C.list C.string) ls; attrs]
       | StInc (_, me, attrs) ->
           let attrs = conv_attributes attrs in
           C.node "StInc" [module_expr me; attrs]

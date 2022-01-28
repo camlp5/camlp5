@@ -648,6 +648,15 @@ let skip_to_next_colon s i =
   loop (i + 1)
 ;;
 
+let parse_antiquot s =
+  try
+    let i = String.index s ':' in
+    let kind = String.sub s 0 i in
+    let name = String.sub s (i + 1) (String.length s - (i + 1)) in
+    Some (kind, name)
+  with Not_found | Failure _ -> None
+;;
+
 let parse_antiloc s =
   try
     let i = String.index s ':' in
@@ -1913,12 +1922,12 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 1007, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1007, 45)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1016, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1016, 45)));
        tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 1007, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1008, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1008, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 1016, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1017, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1017, 37)));
        tok_comm = None}
   in
   let glex =

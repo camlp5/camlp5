@@ -184,6 +184,7 @@ value type_binder_delta = [
                  ("","'") -> "QUO"
                | ("GIDENT",_) -> "IDS"
                | ("ANTIQUOT", s) when Some "list" = (s |> Plexer.parse_antiquot |> Option.map fst) -> "PREDOT"
+               | ("ANTIQUOT", s) when Some "_list" = (s |> Plexer.parse_antiquot |> Option.map fst) -> "PREDOT"
                | _ -> failwith "START"
     ])
    ;("PREDOT",fun [

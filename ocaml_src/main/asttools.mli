@@ -35,6 +35,14 @@ val check_stream :
          choice)
       list ->
     (string * string) Stream.t -> int * 'a;;
+type 'a fsm =
+  { start : 'a;
+    accept : 'a;
+    fail : 'a;
+    delta : ('a * (string * string -> 'a)) list }
+;;
+val check_fsm : 'a fsm -> (string * string) Stream.t -> bool;;
+val type_binder_fsm : string fsm;;
 val expr_wrap_attrs : loc -> expr -> attribute list -> expr;;
 val expr_to_inline : expr -> (loc * string) option -> attribute list -> expr;;
 val ctyp_wrap_attrs : ctyp -> attribute list -> ctyp;;

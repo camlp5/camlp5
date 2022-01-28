@@ -183,6 +183,61 @@ let check_stream ?(avoid_tokens = []) matchers strm =
   crec 1 matchers
 ;;
 
+type 'a fsm =
+  { start : 'a;
+    accept : 'a;
+    fail : 'a;
+    delta : ('a * (string * string -> 'a)) list }
+;;
+let check_fsm
+    {start = start_st; accept = accept_st; fail = fail_st; delta = delta}
+    strm =
+  let rec exec st n =
+    let l = Stream.npeek n strm in
+    if List.length l < n then false
+    else
+      let tok = fst (sep_last l) in
+      let f = List.assoc st delta in
+      match f tok with
+        st' ->
+          if st' = fail_st then false
+          else if st' = accept_st then true
+          else exec st' (n + 1)
+      | exception Failure _ -> false
+  in
+  exec start_st 1
+;;
+
+let type_binder_delta =
+  ["START",
+   (function
+      "", "'" -> "QUO"
+    | "GIDENT", _ -> "IDS"
+    | "ANTIQUOT", s
+      when Some "list" = ((s |> Plexer.parse_antiquot) |> Option.map fst) ->
+        "PREDOT"
+    | _ -> failwith "START");
+   "PREDOT",
+   (function
+      "", "." -> "ACCEPT"
+    | _ -> failwith "PREDOT");
+   "IDS",
+   (function
+      "", "'" -> "QUO"
+    | "GIDENT", _ -> "IDS"
+    | "", "." -> "ACCEPT"
+    | _ -> failwith "IDS");
+   "QUO",
+   (function
+      "LIDENT", _ -> "IDS"
+    | "UIDENT", _ -> "IDS"
+    | _ -> failwith "QUO")]
+;;
+let type_binder_fsm =
+  {start = "START"; accept = "ACCEPT"; fail = "FAIL";
+   delta = type_binder_delta}
+;;
+
 let expr_wrap_attrs loc e l =
   let rec wrec e =
     function

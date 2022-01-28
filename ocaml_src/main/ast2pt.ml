@@ -602,17 +602,23 @@ and mkwithc =
           | Left msg -> error loc msg
           end
       | None -> error loc "no with type := in this ocaml version"
-and mkvalue_desc ~item_attributes vn t p =
+and mkvalue_desc ~item_attributes vn (tyvars, t) p =
+  let t =
+    match tyvars with
+      [] -> t
+    | l -> let loc = loc_of_ctyp t in TyPol (loc, l, t)
+  in
   ocaml_value_description ~item_attributes:item_attributes vn (ctyp t) p
-and sumbranch_ctyp ?(priv = false) loc l rto =
+and sumbranch_ctyp ?(priv = false) loc tyvars l rto =
   let rto = option_map ctyp rto in
   match l with
-    [TyRec (loc, ltl)] -> Right (mktrecord (uv ltl) priv), rto
+    [TyRec (loc, ltl)] ->
+      assert ([] = tyvars); Right (mktrecord (uv ltl) priv), rto
   | TyRec (_, _) :: _ -> error loc "only ONE record type allowed here"
-  | l -> Left (List.map ctyp l), rto
-and conv_constructor priv (loc, c, tl, rto, alg_attrs) =
-  conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tl) (uv rto), mkloc loc,
-  uv_alg_attributes alg_attrs
+  | l -> Left (tyvars, List.map ctyp l), rto
+and conv_constructor priv (loc, c, tyvars, tl, rto, alg_attrs) =
+  conv_con (uv c), sumbranch_ctyp ~priv:priv loc (uv tyvars) (uv tl) (uv rto),
+  mkloc loc, uv_alg_attributes alg_attrs
 and mktvariant loc ctl priv =
   let ctl = List.map (conv_constructor priv) ctl in
   match ocaml_ptype_variant ctl priv with
@@ -798,8 +804,8 @@ and extension_constructor ec =
     EcTuple (loc, gc) ->
       let (n, tl, _, alg_attrs) = conv_constructor false gc in
       begin match tl with
-        Left x, y ->
-          ocaml_ec_tuple ~alg_attributes:alg_attrs (mkloc loc) n (x, y)
+        Left (tyvars, x), y ->
+          ocaml_ec_tuple ~alg_attributes:alg_attrs (mkloc loc) n tyvars (x, y)
       | Right x, y ->
           ocaml_ec_record ~alg_attributes:alg_attrs (mkloc loc) n (x, y)
       end
@@ -1514,12 +1520,12 @@ and sig_item s l =
            ~item_attributes:(uv_item_attributes item_attrs) (mkloc loc) n
            tl) ::
       l
-  | SgExt (loc, n, t, p, attrs) ->
+  | SgExt (loc, n, ls, t, p, attrs) ->
       let vn = uv n in
       mksig loc
         (ocaml_psig_value vn
-           (mkvalue_desc ~item_attributes:(uv_item_attributes attrs) vn t
-              (uv p))) ::
+           (mkvalue_desc ~item_attributes:(uv_item_attributes attrs) vn
+              (uv ls, t) (uv p))) ::
       l
   | SgInc (loc, mt, attrs) ->
       mksig loc
@@ -1611,8 +1617,8 @@ and sig_item s l =
       let vn = uv n in
       mksig loc
         (ocaml_psig_value vn
-           (mkvalue_desc ~item_attributes:(uv_item_attributes attrs) vn t
-              [])) ::
+           (mkvalue_desc ~item_attributes:(uv_item_attributes attrs) vn
+              ([], t) [])) ::
       l
   | SgXtr (loc, _, _) -> error loc "bad ast SgXtr"
   | SgFlAtt (loc, float_attr) ->
@@ -1717,12 +1723,12 @@ and str_item s l =
         (ocaml_pstr_eval ~item_attributes:(uv_item_attributes attrs)
            (expr e)) ::
       l
-  | StExt (loc, n, t, p, attrs) ->
+  | StExt (loc, n, ls, t, p, attrs) ->
       let vn = uv n in
       mkstr loc
         (ocaml_pstr_primitive vn
-           (mkvalue_desc ~item_attributes:(uv_item_attributes attrs) vn t
-              (uv p))) ::
+           (mkvalue_desc ~item_attributes:(uv_item_attributes attrs) vn
+              (uv ls, t) (uv p))) ::
       l
   | StInc (loc, me, attrs) ->
       begin match ocaml_pstr_include with
