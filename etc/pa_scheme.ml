@@ -547,9 +547,7 @@
      ((i (anti_lid_or_error se1))
       (t (ctyp_se se2))
       (pd (anti_list_map string_se sel)))
-;;     <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>
-      (MLast.SgExt loc i <:vala< [] >> t pd <:vala< [] >>)
-))
+     <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>))
    ((Sexpr loc [(Slid _ "include") se])
     (let ((mt (module_type_se se))) <:sig_item< include $mt$ >>))
    ((Sexpr loc [(Slid _ "module") se1 se2])
@@ -604,9 +602,7 @@
      ((i (anti_lid_or_error se1))
       (t (ctyp_se se2))
       (pd (anti_list_map string_se sel)))
-;;     <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
-     (MLast.StExt loc i <:vala< [] >> t pd <:vala< [] >>)
-))
+     <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>))
    ((Sexpr loc [(Slid _ "include") se])
     (let ((me (module_expr_se se))) <:str_item< include $me$ >>))
    ((Sexpr loc [(Slid _ "module") se1 se2])

@@ -232,10 +232,7 @@ and str_item =
   | StDir _ _ _ -> ()
   | <:str_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
-(*
-  | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
- *)
-  | MLast.StExt loc _ _ t _ _ -> ctyp t
+  | <:str_item< external $lid:_$ : $_list:_$ . $t$ = $list:_$ >> -> ctyp t
   | <:str_item< include $me$ >> -> module_expr me
   | <:str_item< module $flag:_$ $list:nel$ >> ->
       list (fun (_, me,_) -> module_expr me) nel

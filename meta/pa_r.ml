@@ -736,15 +736,11 @@ EXTEND
       | "external"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:str_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-(*
-        MLast.StExt loc i ls t pd attrs
-*)
+
       | "external"; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:str_item< external $lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-(*
-        MLast.StExt loc <:vala< i >> ls t pd attrs
- *)
+
       | "include"; me = module_expr ; attrs = item_attributes → <:str_item< include $me$ $_itemattrs:attrs$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") →
           <:str_item< module $_flag:r$ $_list:l$ >>
@@ -827,15 +823,11 @@ EXTEND
       | "external"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:sig_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-(*
-        MLast.SgExt loc i ls t pd attrs
- *)
+
       | "external"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp; "=";
         pd = V (LIST1 STRING) ; attrs = item_attributes →
           <:sig_item< external $lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >>
-(*
-        MLast.SgExt loc <:vala< i >> ls t pd attrs
- *)
+
       | "include"; mt = module_type ; attrs = item_attributes → <:sig_item< include $mt$ $_itemattrs:attrs$ >>
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") →
@@ -866,15 +858,11 @@ EXTEND
       | "value"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
         let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
-(*
-        MLast.SgVal loc i t attrs
- *)
+
       | "value"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
         let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
           <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
-(*
-        MLast.SgVal loc <:vala< i >> t attrs
- *)
+
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →
@@ -1437,9 +1425,6 @@ EXTEND
   constructor_declaration:
     [ [ ci = cons_ident; (ls, tl,rto,attrs) = rest_constructor_declaration →
           <:constructor< $_uid:ci$ of $_list:ls$ . $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
-(*
-          (loc, ci, ls, tl, rto, attrs)
- *)
       ] ]
   ;
   rest_constructor_declaration:
@@ -1455,9 +1440,6 @@ EXTEND
         <:extension_constructor< $_uid:ci$ = $_longid:b$ $_algattrs:alg_attrs$ >>
     | ci = cons_ident; (ls, tl,rto,attrs) = rest_constructor_declaration →
         <:extension_constructor< $_uid:ci$ of $_list:ls$ . $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >>
-(*
-      MLast.EcTuple loc (loc, ci, ls, tl, rto, attrs)
- *)
     ] ]
   ;
 

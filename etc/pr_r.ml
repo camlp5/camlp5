@@ -885,10 +885,7 @@ value typevars_binder pc = fun [
 ;
 
 value cons_decl pc = fun [
-(*
-  <:constructor< $_uid:c$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
- *)
-  (loc, c, tyvars, tl, rto, alg_attrs)
+  <:constructor< $_uid:c$ of $_list:tyvars$ . $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
  ->
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
@@ -2031,14 +2028,8 @@ EXTEND_PRINTER
       | <:str_item:< exception $excon:ec$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "exception %p%p" (extension_constructor loc) ec
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
-(*
-      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
- *)
-      | MLast.StExt loc n tyvars t sl attrs ->
-         let n = Pcaml.unvala n in
-         let sl = Pcaml.unvala sl in
-         let attrs = Pcaml.unvala attrs in
-         let tyvars = Pcaml.unvala tyvars in
+
+      | <:str_item:< external $lid:n$ : $list:tyvars$ . $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           if is_special_op n then
             external_decl_original pc (loc, n, tyvars, t, sl, attrs)
           else
@@ -2100,14 +2091,8 @@ EXTEND_PRINTER
                    (vlist (semi_after sig_item)) sil)
       | MLast.SgExc _ gc item_attrs -> pprintf pc "exception %p%p" cons_decl gc
             (hlist (pr_attribute "@@")) (Pcaml.unvala item_attrs)
-(*
-      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ $itemattrs:attrs$ >> ->
- *)
-      | MLast.SgExt loc n tyvars t sl attrs ->
-         let n = Pcaml.unvala n in
-         let sl = Pcaml.unvala sl in
-         let attrs = Pcaml.unvala attrs in
-         let tyvars = Pcaml.unvala tyvars in
+
+      | <:sig_item:< external $lid:n$ : $list:tyvars$ . $t$ = $list:sl$ $itemattrs:attrs$ >> ->
           if is_special_op n then
             external_decl_original pc (loc, n, tyvars, t, sl, attrs)
           else
@@ -2134,28 +2119,16 @@ EXTEND_PRINTER
       | MLast.SgTypExten loc te ->
           pprintf pc "type %p" (type_extension loc) te
 
-(*
-      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_special_op s ->
- *)
-      | MLast.SgVal loc <:vala< s >> (MLast.TyPol _ <:vala< ls >> t) <:vala< attrs >> when is_special_op s ->
+      | <:sig_item:< value $lid:s$ : ! $list:ls$ . $t$ $itemattrs:attrs$ >> when is_special_op s ->
           pprintf pc "value ( %s ) :@;%p%p%p" s typevars_binder ls ctyp t (hlist (pr_attribute "@@")) attrs
 
-(*
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> when is_special_op s ->
- *)
-      | MLast.SgVal loc <:vala< s >> t <:vala< attrs >> when is_special_op s ->
           pprintf pc "value ( %s ) :@;%p%p" s ctyp t (hlist (pr_attribute "@@")) attrs
 
-(*
-      | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
- *)
-      | MLast.SgVal loc <:vala< s >> (MLast.TyPol _ <:vala< ls >> t) <:vala< attrs >> ->
+      | <:sig_item:< value $lid:s$ : ! $list:ls$ . $t$ $itemattrs:attrs$ >> ->
           pprintf pc "value %p :@;%p%p%p" var_escaped (loc, s) typevars_binder ls ctyp t (hlist (pr_attribute "@@")) attrs
 
-(*
       | <:sig_item:< value $lid:s$ : $t$ $itemattrs:attrs$ >> ->
- *)
-      | MLast.SgVal loc <:vala< s >> t <:vala< attrs >> ->
           pprintf pc "value %p :@;%p%p" var_escaped (loc, s) ctyp t (hlist (pr_attribute "@@")) attrs
 
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->

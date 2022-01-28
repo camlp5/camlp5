@@ -1161,11 +1161,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
 
       | "val"; (ext,attrs1) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
+          let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >>] in
           sig_item_to_inline <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | "val"; (ext,attrs1) = ext_attributes; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp ; attrs2 = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} attrs1 attrs2 in
-          let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
+          let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >>] in
           sig_item_to_inline <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >> ext
       | attr = floating_attribute -> <:sig_item< [@@@ $_attribute:attr$ ] >>
       | e = item_extension ; attrs = item_attributes ->
@@ -1890,9 +1890,6 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   constructor_declaration:
     [ [ ci = cons_ident; (sl, tl, rto, alg_attrs) = rest_constructor_declaration ->
-(*
-          <:constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
- *)
           (loc, ci, sl, tl, rto, alg_attrs)
       ] ]
   ;
@@ -1929,10 +1926,10 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
 
     | attrs = alg_attributes_no_anti; ci = cons_ident; (sl, tl, rto, alg_attrs) = rest_constructor_declaration ->
         let alg_attrs = merge_left_auxiliary_attrs ~{nonterm_name="extension_constructor"} ~{left_name="algebraic attributes"} ~{right_name="(right) algebraic attributes"} attrs alg_attrs in
+        <:extension_constructor< $_uid:ci$ of $_list:sl$ . $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
 (*
-        <:extension_constructor< $_uid:ci$ of $_list:tl$ $_rto:rto$ $_algattrs:alg_attrs$ >>
- *)
       MLast.EcTuple loc (loc, ci, sl, tl, rto, alg_attrs)
+ *)
     ] ]
   ;
   cons_ident:
