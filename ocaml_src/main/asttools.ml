@@ -216,6 +216,9 @@ let type_binder_delta =
     | "ANTIQUOT", s
       when Some "list" = ((s |> Plexer.parse_antiquot) |> Option.map fst) ->
         "PREDOT"
+    | "ANTIQUOT", s
+      when Some "_list" = ((s |> Plexer.parse_antiquot) |> Option.map fst) ->
+        "PREDOT"
     | _ -> failwith "START");
    "PREDOT",
    (function
