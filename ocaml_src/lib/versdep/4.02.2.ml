@@ -283,7 +283,7 @@ let convert_camlp5_variance (va, inj) =
   va
 ;;
 
-let ocaml_ec_tuple ?(alg_attributes = []) _ _ _ = assert false;;
+let ocaml_ec_tuple ?(alg_attributes = []) _ _ _ _ = assert false;;
 
 let ocaml_ec_record ?(alg_attributes = []) _ _ _ =
   failwith "Only available in OCaml versions >= 4.10.0"
@@ -364,7 +364,7 @@ let ocaml_ptype_variant ctl priv =
            assert (attrs = []);
            let (tl, rto) =
              match tl with
-               Left x, y -> x, y
+               Left (tyvars, x), y -> assert ([] = tyvars); x, y
              | Right _, _ -> raise Exit
            in
            {pcd_name = mkloc loc c; pcd_args = tl; pcd_res = rto;
@@ -611,8 +611,11 @@ let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     (ed, rto) =
   assert (alg_attributes = []);
   assert (item_attributes = []);
-  let ed = mustLeft "ocaml_psig_exception (record-types not allowed)" ed in
+  let (tyvar, ed) =
+    mustLeft "ocaml_psig_exception (record-types not allowed)" ed
+  in
   assert (None = rto);
+  assert ([] = tyvars);
   Psig_exception
     {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
      pext_loc = loc; pext_attributes = []}
@@ -690,8 +693,11 @@ let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     (ed, rto) =
   assert (alg_attributes = []);
   assert (item_attributes = []);
-  let ed = mustLeft "ocaml_pstr_exception (record-types not allowed)" ed in
+  let (tyvars, ed) =
+    mustLeft "ocaml_pstr_exception (record-types not allowed)" ed
+  in
   assert (None = rto);
+  assert ([] = tyvars);
   Pstr_exception
     {pext_name = mkloc loc s; pext_kind = Pext_decl (ed, None);
      pext_loc = loc; pext_attributes = []}

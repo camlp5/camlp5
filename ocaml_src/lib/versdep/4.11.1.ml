@@ -259,7 +259,8 @@ let convert_camlp5_variance (va, inj) =
   va
 ;;
 
-let ocaml_ec_tuple ?(alg_attributes = []) loc s (x, rto) =
+let ocaml_ec_tuple ?(alg_attributes = []) loc s tyvars (x, rto) =
+  assert ([] = tyvars);
   {pext_name = mkloc loc s; pext_kind = Pext_decl (Pcstr_tuple x, rto);
    pext_loc = loc; pext_attributes = alg_attributes}
 ;;
@@ -360,7 +361,8 @@ let ocaml_ptype_variant ctl priv =
         (fun (c, tl, loc, attrs) ->
            let (tl, rto) =
              match tl with
-               Left x, rto -> Pcstr_tuple x, rto
+               Left (tyvars, x), rto ->
+                 assert ([] = tyvars); Pcstr_tuple x, rto
              | Right (Ptype_record x), rto -> Pcstr_record x, rto
              | _ -> assert false
            in
@@ -629,7 +631,8 @@ let ocaml_psig_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     (ed, rto) =
   let ec =
     match ed with
-      Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
+      Left (tyvars, x) ->
+        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s tyvars (x, rto)
     | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s (x, rto)
   in
   Psig_exception
@@ -709,7 +712,8 @@ let ocaml_pstr_exception ?(alg_attributes = []) ?(item_attributes = []) loc s
     (ed, rto) =
   let ec =
     match ed with
-      Left x -> ocaml_ec_tuple ~alg_attributes:alg_attributes loc s (x, rto)
+      Left (tyvars, x) ->
+        ocaml_ec_tuple ~alg_attributes:alg_attributes loc s tyvars (x, rto)
     | Right x -> ocaml_ec_record ~alg_attributes:alg_attributes loc s (x, rto)
   in
   Pstr_exception

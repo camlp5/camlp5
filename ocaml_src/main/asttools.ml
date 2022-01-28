@@ -202,12 +202,13 @@ let check_fsm
     else
       let tok = fst (sep_last l) in
       let f = List.assoc st delta in
-      match f tok with
-        st' ->
-          if st' = fail_st then false
-          else if st' = accept_st then true
-          else exec st' (n + 1)
-      | exception Failure _ -> false
+      try
+        match f tok with
+          st' ->
+            if st' = fail_st then false
+            else if st' = accept_st then true
+            else exec st' (n + 1)
+      with Failure _ -> false
   in
   exec start_st 1
 ;;
