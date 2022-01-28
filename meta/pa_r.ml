@@ -864,17 +864,17 @@ EXTEND
       | "type" ; check_type_extension ; te = type_extension →
           <:sig_item< type $_lilongid:te.MLast.teNam$ $_list:te.MLast.tePrm$ += $_priv:te.MLast.tePrv$ [ $_list:te.MLast.teECs$ ] $_itemattrs:te.MLast.teAttributes$ >>
       | "value"; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
-(*
+        let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
           <:sig_item< value $_lid:i$ : $t$ $_itemattrs:attrs$ >>
- *)
-        let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
-        MLast.SgVal loc i t attrs
-      | "value"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
 (*
-          <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
+        MLast.SgVal loc i t attrs
  *)
-        let t = match Pcaml.unvala ls with [ [] -> t | _ -> (MLast.TyPol loc ls t)] in
+      | "value"; "("; i = operator_rparen; ":"; ls = type_binder_opt ; t = ctyp ; attrs = item_attributes →
+        let t = match Pcaml.unvala ls with [ [] -> t | _ -> <:ctyp< ! $_list:ls$ . $t$ >> ] in
+          <:sig_item< value $lid:i$ : $t$ $_itemattrs:attrs$ >>
+(*
         MLast.SgVal loc <:vala< i >> t attrs
+ *)
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) →
           <:sig_item< # $_lid:n$ $_opt:dp$ >>
       | "#"; s = V STRING; sil = V (LIST0 [ si = sig_item → (si, loc) ]) →

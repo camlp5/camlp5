@@ -4,6 +4,10 @@
 
 #load "q_MLast.cmo";
 
+value fst3 (a, b, c) = a ;
+value snd3 (a, b, c) = b ;
+value third3 (a, b, c) = c ;
+
 value prefix_eq s0 s1 =
   let s0len = String.length s0 in
   s0len <= String.length s1 && s0 = (String.sub s1 0 s0len)
@@ -185,6 +189,8 @@ value type_binder_delta = [
                | ("GIDENT",_) -> "IDS"
                | ("ANTIQUOT", s) when Some "list" = (s |> Plexer.parse_antiquot |> Option.map fst) -> "PREDOT"
                | ("ANTIQUOT", s) when Some "_list" = (s |> Plexer.parse_antiquot |> Option.map fst) -> "PREDOT"
+               | ("ANTIQUOT_LOC", s) when Some "list" = (s |> Plexer.parse_antiloc |> Option.map snd3) -> "PREDOT"
+               | ("ANTIQUOT_LOC", s) when Some "_list" = (s |> Plexer.parse_antiloc |> Option.map snd3) -> "PREDOT"
                | _ -> failwith "START"
     ])
    ;("PREDOT",fun [
