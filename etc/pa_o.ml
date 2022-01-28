@@ -964,14 +964,11 @@ EXTEND
       | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          str_item_to_inline (MLast.StExt loc i ls t pd attrs) ext
+          str_item_to_inline <:str_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-(*
-          str_item_to_inline <:str_item< external $lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
- *)
-          str_item_to_inline (MLast.StExt loc <:vala< i >> ls t pd attrs) ext
+          str_item_to_inline <:str_item< external $lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "include"; (ext,alg_attrs) = ext_attributes; me = module_expr ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="str_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           str_item_to_inline <:str_item< include $me$ $_itemattrs:attrs$ >> ext
@@ -1112,11 +1109,11 @@ EXTEND
       | "external"; (ext,alg_attrs) = ext_attributes; i = V LIDENT "lid" ""; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline (MLast.SgExt loc i ls t pd attrs) ext
+          sig_item_to_inline <:sig_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "external"; (ext,alg_attrs) = ext_attributes; "("; i = operator_rparen; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = V (LIST1 STRING) ; item_attrs = item_attributes ->
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-external"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          sig_item_to_inline (MLast.SgExt loc <:vala< i >> ls t pd attrs) ext
+          sig_item_to_inline <:sig_item< external $lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >> ext
       | "include"; (ext,alg_attrs) = ext_attributes; mt = module_type ; item_attrs = item_attributes →
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="sig_item-include"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
           sig_item_to_inline <:sig_item< include $mt$ $_itemattrs:attrs$ >> ext
