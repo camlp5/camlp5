@@ -454,6 +454,17 @@ value check_lparen_type =
     check_lparen_type_f
 ;
 
+value is_type_binder_f strm = check_fsm type_binder_fsm strm ;
+
+value check_type_binder_f strm =
+  if is_type_binder_f strm then () else raise Stream.Failure
+;
+
+value check_type_binder =
+  Grammar.Entry.of_parser gram "check_type_binder"
+    check_type_binder_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -464,6 +475,7 @@ EXTEND
     constructor_declaration
     label_declaration match_case ipatt with_constr poly_variant attribute_body
     check_type_decl check_type_extension check_dot_uid ctyp_ident
+    check_type_binder
     ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." ->
@@ -553,6 +565,12 @@ EXTEND
   ;
   structure:
     [ [ st = SV (LIST0 [ s = str_item; ";" → s ]) → st ] ]
+  ;
+
+  type_binder_opt: [ [
+    check_type_binder ; ls = SV (LIST1 typevar) ; "." -> ls
+  | -> Qast.VaVal (Qast.List [])
+  ] ]
   ;
   str_item:
     [ "top" LEFTA
@@ -1345,9 +1363,9 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
           Qast.Tuple [Qast.Loc; ci :: l] ] ]
   ;
   rest_constructor_declaration:
-    [ [ "of"; cal = SV (LIST1 ctyp SEP "and") ;
+    [ [ "of"; ls = type_binder_opt; cal = SV (LIST1 ctyp SEP "and") ;
         rto = SV (OPT [ ":" ; t = ctyp -> t ]) "rto" ; alg_attrs = alg_attributes →
-          [Qast.VaVal (Qast.List[]); cal; rto; alg_attrs]
+          [ls; cal; rto; alg_attrs]
       | rto = SV (OPT [ ":" ; t = ctyp -> t ]) "rto" ; alg_attrs = alg_attributes →
           [Qast.VaVal (Qast.List[]); Qast.VaVal (Qast.List []); rto; alg_attrs]
       ] ]

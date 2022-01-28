@@ -324,6 +324,15 @@ value skip_to_next_colon s i =
       | _ -> (i, 0) ]
 ;
 
+value parse_antiquot s =
+  try
+    let i = String.index s ':' in
+    let kind = String.sub s 0 i in
+    let name = String.sub s (i+1) (String.length s - (i+1)) in
+    Some (kind, name)
+  with [ Not_found | Failure _ -> None ]
+;
+
 value parse_antiloc s =
   try
     let i = String.index s ':' in

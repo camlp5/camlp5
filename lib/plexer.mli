@@ -87,6 +87,11 @@ value parse_antiloc : string -> option (Ploc.t * string * string);
        (which is <begin-pos>,<end-pos>:<type>:<token-string>)
        into its colon-separated parts *)
 
+value parse_antiquot : string -> option (string * string);
+   (** breaks apart the payload of an ANTIQUOT
+       (which is <type>:<token-string>)
+       into its colon-separated parts *)
+
 (*** For system use *)
 
 value force_antiquot_loc : ref bool;

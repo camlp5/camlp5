@@ -183,7 +183,12 @@ value type_binder_delta = [
     ("START",fun [
                  ("","'") -> "QUO"
                | ("GIDENT",_) -> "IDS"
+               | ("ANTIQUOT", s) when Some "list" = (s |> Plexer.parse_antiquot |> Option.map fst) -> "PREDOT"
                | _ -> failwith "START"
+    ])
+   ;("PREDOT",fun [
+               ("",".") -> "ACCEPT"
+               | _ -> failwith "PREDOT"
     ])
    ;("IDS",fun [
                ("","'") -> "QUO"

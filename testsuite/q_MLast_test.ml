@@ -243,7 +243,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
    MLast.teECs =
      Ploc.VaVal
        [MLast.EcTuple loc
-          (loc, Ploc.VaVal "A", Ploc.VaVal [], Ploc.VaVal None,
+          (loc, Ploc.VaVal "A", Ploc.VaVal [], Ploc.VaVal [], Ploc.VaVal None,
            Ploc.VaVal [])];
    MLast.teAttributes = Ploc.VaVal []};
 |foo} ;
@@ -270,8 +270,8 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
        MLast.tdDef =
          MLast.TySum loc
            (Ploc.VaVal
-              [(loc, Ploc.VaVal "A", Ploc.VaVal [], Ploc.VaVal None,
-                Ploc.VaVal [])]);
+              [(loc, Ploc.VaVal "A", Ploc.VaVal [], Ploc.VaVal [],
+                Ploc.VaVal None, Ploc.VaVal [])]);
        MLast.tdCon = Ploc.VaVal []; MLast.tdAttributes = Ploc.VaVal []}]);
 |foo} ;
           code = {foo|<:str_item< type $lid:li$ = [ A ] >>;|foo}
@@ -344,19 +344,24 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         }
       ; { name = "generic-constructor-1" ;
           expect = {foo|fun
-[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) -> 1 ];
+[ (loc, Ploc.VaVal ci, Ploc.VaVal [], Ploc.VaVal tl, Ploc.VaVal None, l) ->
+    1 ];
 |foo} ;
           code = {foo|fun [ <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:l$ >> -> 1 ];|foo}
         }
       ; { name = "generic-constructor-2" ;
           expect = {foo|fun
-[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, l) as gc -> 1 ];
+[ (loc, Ploc.VaVal ci, Ploc.VaVal [], Ploc.VaVal tl, Ploc.VaVal None,
+   l) as gc ->
+    1 ];
 |foo} ;
           code = {foo|fun [ <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:l$ >> as gc -> 1 ];|foo}
         }
       ; { name = "generic-constructor-3" ;
           expect = {foo|match b with
-[ (loc, Ploc.VaVal ci, Ploc.VaVal tl, Ploc.VaVal None, _) as gc -> 1 ];
+[ (loc, Ploc.VaVal ci, Ploc.VaVal [], Ploc.VaVal tl, Ploc.VaVal None,
+   _) as gc ->
+    1 ];
 |foo} ;
           code = {foo|match b with [
     <:constructor:< $uid:ci$ of $list:tl$ $_algattrs:_$ >> as gc -> 1 ];|foo}
