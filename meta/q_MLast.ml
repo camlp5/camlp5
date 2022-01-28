@@ -583,9 +583,9 @@ EXTEND
       | "exception"; ec = SV extension_constructor "excon" ; item_attrs = item_attributes →
           Qast.Node "StExc" [Qast.Loc; ec; item_attrs]
 
-      | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
+      | "external"; i = SV LIDENT; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
-          Qast.Node "StExt" [Qast.Loc; i; t; pd; attrs]
+          Qast.Node "StExt" [Qast.Loc; i; ls; t; pd; attrs]
       | "include"; me = module_expr ; attrs = item_attributes → Qast.Node "StInc" [Qast.Loc; me; attrs]
       | "module"; r = SV (FLAG "rec"); l = SV (LIST1 mod_binding SEP "and") →
           Qast.Node "StMod" [Qast.Loc; r; l]
@@ -665,9 +665,9 @@ EXTEND
           Qast.Node "SgDcl" [Qast.Loc; st]
       | "exception"; ctl = constructor_declaration ; item_attrs = item_attributes →
           Qast.Node "SgExc" [Qast.Loc; ctl; item_attrs]
-      | "external"; i = SV LIDENT; ":"; t = ctyp; "=";
+      | "external"; i = SV LIDENT; ":"; ls = type_binder_opt; t = ctyp; "=";
         pd = SV (LIST1 STRING) ; attrs = item_attributes →
-          Qast.Node "SgExt" [Qast.Loc; i; t; pd; attrs]
+          Qast.Node "SgExt" [Qast.Loc; i; ls; t; pd; attrs]
       | "include"; mt = module_type ; attrs = item_attributes → Qast.Node "SgInc" [Qast.Loc; mt; attrs]
       | "module"; rf = SV (FLAG "rec");
         l = SV (LIST1 mod_decl_binding SEP "and") →

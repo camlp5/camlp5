@@ -400,19 +400,22 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo}
       }
       ; {
-        name = "prototype";
-        code = {foo||foo};
-        expect = {foo||foo}
+        name = "binders-constructor-1";
+        code = {foo|<:constructor< $_uid:ci$ of $_list:ls$ . $_list:tl$ $_rto:rto$ $_algattrs:attrs$ >> ;|foo};
+        expect = {foo|(loc, ci, ls, tl, rto, attrs);
+|foo}
       }
       ; {
-        name = "prototype";
-        code = {foo||foo};
-        expect = {foo||foo}
+        name = "binders-external-1";
+        code = {foo|<:str_item< external $_lid:i$ : $_list:ls$ . $t$ = $_list:pd$ $_itemattrs:attrs$ >> ;|foo};
+        expect = {foo|MLast.StExt loc i ls t pd attrs;
+|foo}
       }
       ; {
-        name = "prototype";
-        code = {foo||foo};
-        expect = {foo||foo}
+        name = "binders-external-2";
+        code = {foo|<:sig_item< external $_lid:i$ : $t$ = $_list:pd$ $_itemattrs:attrs$ >> ;|foo};
+        expect = {foo|MLast.SgExt loc i (Ploc.VaVal []) t pd attrs;
+|foo}
       }
     ])
  ;
