@@ -1,5 +1,3 @@
-name: "camlp5"
-version: "dev"
 opam-version: "2.0"
 synopsis: "Preprocessor-pretty-printer of OCaml"
 description: """
@@ -32,8 +30,8 @@ depends: [
   "ocamlfind"
   "camlp-streams" { >= "5.0" }
   "conf-perl"
-  "conf-perl-ipc-system-simple" { with-test | (os-family != "homebrew" & os-family != "macports") }
-  "conf-perl-string-shellquote" { with-test | (os-family != "homebrew" & os-family != "macports") }
+  "conf-perl-ipc-system-simple"
+  "conf-perl-string-shellquote"
   "conf-diffutils" { with-test & os-distribution = "alpine" }
   "pcre" { with-test }
   "ounit" { with-test }
@@ -44,8 +42,16 @@ build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
   [make "-j%{jobs}%" "DEBUG=-g" "world.opt"]
   [make "-j%{jobs}%" "DEBUG=-g" "all"]
-  [make "-C" "testsuite" "clean" "all-tests"] { with-test & ocaml:version >= "4.10.0" }
-  [make "-C" "test" "clean" "all"] {with-test & ocaml:version >= "4.10.0" }
+  [make "-C" "testsuite" "clean" "all-tests"] {
+    with-test
+  & ocaml:version >= "4.10.0"
+  & os-distribution != "homebrew"
+  }
+  [make "-C" "test" "clean" "all"] {
+    with-test
+  & ocaml:version >= "4.10.0"
+  & os-distribution != "homebrew"
+  }
 ]
 install: [make "install"]
 
@@ -53,3 +59,9 @@ post-messages:
   "To use mkcamlp5 and mkcamlp5.opt properly you will require Perl module which contains 'IPC/System/Simple.pm'. We currently don't know the right way to specify this dependecy on BSD and MacOS systems. You can use https://github.com/camlp5/camlp5/issues/66 for discussion." { os = "macos" | os = "freebsd" | os = "openbsd" }
 
 dev-repo: "git+https://github.com/camlp5/camlp5.git"
+url {
+  src: ""
+  checksum: [
+    "sha512="
+  ]
+}
