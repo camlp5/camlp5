@@ -9,6 +9,7 @@ if ($ENV{OVERSION} < "4.14") {
 }
 else {
   $requires .= ",camlp-streams" ;
+  $streams_requires = "camlp-streams"
 }
 
 print <<"EOF";
@@ -487,4 +488,10 @@ package "toploop" (
 
   archive(byte,toploop) = "camlp5_top.cma"
 )
+
+package "streams" (
+  requires = "${streams_requires}"
+  description = "proxy package for Streams so users don't need to know whether it's provided by ocaml or camlp-streams"
+)
+
 EOF
