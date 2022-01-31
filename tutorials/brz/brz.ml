@@ -3,6 +3,23 @@
 
 open Brzozowski ;
 
+
+module CharToken = struct
+  include Char ;
+  value hash = Hashtbl.hash ;
+  value foreach f = do {
+    for i = Char.code 'a' to Char.code 'e' do { f (Char.chr i) };
+    List.iter f [ '$' ]
+  }
+  ;
+  value print c =
+    Printf.sprintf "'%s'" (Char.escaped c) ;
+end ;
+module CharRegexp = Regexp(CharToken) ;
+
+module BSyn = RESyntax(CharToken)(CharRegexp) ;
+module BEval = Eval(CharToken)(CharRegexp) ;
+
 value g = Grammar.gcreate (Plexer.gmake ());
 value e = Grammar.Entry.create g "regexp";
 

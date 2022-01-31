@@ -1,6 +1,35 @@
 open Fix
 open Printf
 
+module ListAux = struct
+let rec equal (=) xs ys =
+  match xs, ys with
+  | [], [] ->
+      true
+  | x :: xs, y :: ys ->
+      x = y && equal (=) xs ys
+  | _, _ ->
+      false
+
+let rec uniq1 cmp x ys =
+  match ys with
+  | [] ->
+      []
+  | y :: ys ->
+      if cmp x y = 0 then
+        uniq1 compare x ys
+      else
+        y :: uniq1 cmp y ys
+
+let uniq cmp xs =
+  match xs with
+  | [] ->
+      []
+  | x :: xs ->
+      x :: uniq1 cmp x xs
+
+end
+
 let exists = List.exists
 let flatten = List.flatten
 let forall = List.for_all
@@ -700,38 +729,3 @@ let dump f { n; init; decode; transition } =
 (* -------------------------------------------------------------------------- *)
 
 end
-
-module CharToken = struct
-  include Char
-  let hash = Hashtbl.hash
-  let foreach f =
-    for i = Char.code 'a' to Char.code 'e' do f (Char.chr i) done;
-    List.iter f [ '$' ]
-  let print c =
-    Printf.sprintf "'%s'" (Char.escaped c)
-end
-module CharRegexp = Regexp(CharToken)
-
-module BSyn = RESyntax(CharToken)(CharRegexp)
-module BEval = Eval(CharToken)(CharRegexp)
-
-module StringBaseToken = struct
-  include String
-  let hash = Hashtbl.hash
-  let print s =
-    Printf.sprintf "\"%s\"" (String.escaped s)
-end
-module StringRegexp = Regexp(StringBaseToken)
-module SBSyn = RESyntax(StringBaseToken)(StringRegexp)
-
-let eval rex =
-  let toks = StringRegexp.tokens rex in
-  let module StringToken = struct
-      include StringBaseToken
-      let foreach f =
-        List.iter f toks ;
-        f "EOI"
-      end in
-  let module BEval = Eval(StringToken)(StringRegexp) in
-  let dfa = BEval.dfa rex in
-  fun input -> BEval.exec dfa input

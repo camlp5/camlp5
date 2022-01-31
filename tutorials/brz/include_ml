@@ -1,0 +1,12 @@
+#use "../../local-install/lib/ocaml/topfind.camlp5";;
+#require "fmt";;
+
+#require "camlp5.pa_op";;
+Pcaml.inter_phrases := Some ";;\n";;
+#require "camlp5.pr_o";;
+
+#load "sbrz.cmo";;
+open Token_regexps ;;
+open Sbrz ;;
+let pr_re x = Fmt.(pf stdout "<:re<%s>>" (SBSyn.print x)) ;;
+#install_printer pr_re ;;

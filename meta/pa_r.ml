@@ -602,14 +602,14 @@ value check_lparen_type =
 value is_type_binder_f strm = check_fsm type_binder_fsm strm ;
 
 value binder_re =
-  let open Brzozowski.SBSyn in
-  (((token "'" @@ token "LIDENT") @@ star(token "'" @@ token "LIDENT"))
-   ||| token "list" ||| token "_list")
-  @@ token "."
+  let open Token_regexps in
+  parse {foo|
+         ("'" "LIDENT" ("'" "LIDENT")* | ("list" | "_list")) "."
+         |foo}
 ;
 
 value is_type_binder_f' strm =
-  check_regexp binder_re strm
+  Token_regexps.check_regexp binder_re strm
 ;
 
 value check_type_binder_f strm =
