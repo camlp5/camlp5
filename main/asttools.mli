@@ -39,6 +39,8 @@ value check_stream :
     Stream.t (string * string) → (int * α);
 type fsm 'a = { start : 'a ; accept : 'a ; fail : 'a ; delta : list ('a * (string * string) -> 'a) } ;
 value check_fsm : fsm 'a -> Stream.t (string * string) -> bool ;
+value check_regexp : Brzozowski.StringRegexp.regexp ->
+                     Stream.t (string * string) -> bool ;
 value type_binder_fsm : fsm string ;
 value expr_wrap_attrs :
   loc → expr → list attribute → expr;

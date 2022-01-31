@@ -217,6 +217,28 @@ value type_binder_delta = [
 ;
 value type_binder_fsm = {start="START";accept="ACCEPT";fail="FAIL";delta=type_binder_delta} ;
 
+value nondestructive_token_stream_to_string_seq strm =
+  let rec trec ofs () =
+    let l = Stream.npeek ofs strm in
+    if List.length l = ofs then
+      let tok = fst (sep_last l) in
+      match convert_token tok with [
+          None -> Seq.Nil
+        | Some s -> Seq.Cons s (trec (ofs+1))
+        ]
+    else Seq.Nil
+  in trec 1
+;
+
+value check_regexp rex =
+  let e = Brzozowski.eval rex in
+  fun strm ->
+  match e (nondestructive_token_stream_to_string_seq strm) with [
+    None -> False
+  | Some _ -> True
+  ]
+;
+
 value expr_wrap_attrs loc e l =
 let rec wrec e = fun [
   [] -> e

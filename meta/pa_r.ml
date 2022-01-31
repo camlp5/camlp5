@@ -601,8 +601,19 @@ value check_lparen_type =
 
 value is_type_binder_f strm = check_fsm type_binder_fsm strm ;
 
+value binder_re =
+  let open Brzozowski.SBSyn in
+  (((token "'" @@ token "LIDENT") @@ star(token "'" @@ token "LIDENT"))
+   ||| token "list" ||| token "_list")
+  @@ token "."
+;
+
+value is_type_binder_f' strm =
+  check_regexp binder_re strm
+;
+
 value check_type_binder_f strm =
-  if is_type_binder_f strm then () else raise Stream.Failure
+  if is_type_binder_f' strm then () else raise Stream.Failure
 ;
 
 value check_type_binder =
