@@ -345,7 +345,7 @@ let rec print0 b e =
 and print1 b e =
   match skeleton e with
   | ECat (e1, e2) ->
-      bprintf b "%a%a" print0 e1 print1 e2
+      bprintf b "%a %a" print0 e1 print1 e2
   | _ ->
       print0 b e
 
@@ -361,7 +361,7 @@ and print3 b e =
   | EConj (e :: es) ->
       bprintf b "%a" print2 e;
       List.iter (fun e ->
-        bprintf b "&%a" print2 e
+        bprintf b " & %a" print2 e
       ) es
   | _ ->
       print2 b e
@@ -371,7 +371,7 @@ and print4 b e =
   | EDisj (e :: es) ->
       bprintf b "%a" print3 e;
       List.iter (fun e ->
-        bprintf b "|%a" print3 e
+        bprintf b " | %a" print3 e
       ) es
   | _ ->
       print3 b e
@@ -708,7 +708,7 @@ module CharToken = struct
     for i = Char.code 'a' to Char.code 'e' do f (Char.chr i) done;
     List.iter f [ '$' ]
   let print c =
-    Printf.sprintf "%c" c
+    Printf.sprintf "'%s'" (Char.escaped c)
 end
 module CharRegexp = Regexp(CharToken)
 
