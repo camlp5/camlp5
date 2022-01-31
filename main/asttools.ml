@@ -183,35 +183,36 @@ value check_fsm { start=start_st ; accept=accept_st ; fail=fail_st ; delta=delta
   exec start_st 1
 ;
 
+value convert_token = fun [
+      ("",s) -> Some s
+    | ("ANTIQUOT", s) -> s |> Plexer.parse_antiquot |> option_map fst
+    | ("ANTIQUOT_LOC", s) -> s |> Plexer.parse_antiloc |> option_map snd3
+    | (s, _) -> Some s
+]
+;
+
 value type_binder_delta = [
-    ("START",fun [
-                 ("","'") -> "QUO"
-               | ("GIDENT",_) -> "IDS"
-               | ("ANTIQUOT", s) when Some "list" = (s |> Plexer.parse_antiquot |> option_map fst) -> "PREDOT"
-               | ("ANTIQUOT", s) when Some "_list" = (s |> Plexer.parse_antiquot |> option_map fst) -> "PREDOT"
-               | ("ANTIQUOT_LOC", s) when Some "list" = (s |> Plexer.parse_antiloc |> option_map snd3) -> "PREDOT"
-               | ("ANTIQUOT_LOC", s) when Some "_list" = (s |> Plexer.parse_antiloc |> option_map snd3) -> "PREDOT"
+    ("START",fun tok -> match convert_token tok with [
+                 Some "'" -> "QUO"
+               | Some "GIDENT" -> "IDS"
+               | Some ("list"|"_list") -> "PREDOT"
                | _ -> failwith "START"
     ])
-   ;("PREDOT",fun [
-               ("",".") -> "ACCEPT"
+   ;("PREDOT",fun tok -> match convert_token tok with [
+                 Some "." -> "ACCEPT"
                | _ -> failwith "PREDOT"
     ])
-   ;("IDS",fun [
-               ("","'") -> "QUO"
-             | ("GIDENT",_) -> "IDS"
-             | ("",".") -> "ACCEPT"
-               | _ -> failwith "IDS"
+   ;("IDS",fun tok -> match convert_token tok with [
+               Some "'" -> "QUO"
+             | Some "GIDENT" -> "IDS"
+             | Some "." -> "ACCEPT"
+             | _ -> failwith "IDS"
     ])
-   ;("QUO",fun [
-               ("LIDENT",_) -> "IDS"
-             | ("UIDENT",_) -> "IDS"
-               | _ -> failwith "QUO"
+   ;("QUO",fun tok -> match convert_token tok with [
+               Some "LIDENT" -> "IDS"
+             | Some "UIDENT" -> "IDS"
+             | _ -> failwith "QUO"
     ])
-(*
-   ;("ANTILIST",fun [
-    ])
- *)
   ]
 ;
 value type_binder_fsm = {start="START";accept="ACCEPT";fail="FAIL";delta=type_binder_delta} ;

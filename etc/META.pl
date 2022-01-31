@@ -3,7 +3,7 @@
 our $version = $ENV{VERSION} ;
 our $camlp5dir = $ENV{CAMLP5DIR} ;
 
-our $requires = "compiler-libs.common";
+our $requires = "fix,compiler-libs.common";
 
 if ($ENV{OVERSION} < "4.14") {
 }

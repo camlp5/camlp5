@@ -186,9 +186,9 @@ x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
 if test "$x" = ""; then win32=false; else win32=true; fi
 OLIBDIR="$y"
 if [ "$OVERSION" "<" "4.14" ]; then
-  C5PACKAGES="compiler-libs"
+  C5PACKAGES="compiler-libs,fix"
 else
-  C5PACKAGES="compiler-libs,camlp-streams"
+  C5PACKAGES="compiler-libs,fix,camlp-streams"
 fi
 
 if test "$win" = "true"; then
