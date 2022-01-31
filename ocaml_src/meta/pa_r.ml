@@ -594,36 +594,45 @@ let check_lident_colon_f strm =
   if is_lident_colon_f strm then () else raise Stream.Failure
 ;;
 
-let check_lident_colon =
-  Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f
-;;
-
 let check_not_lident_colon_f strm =
   if not (is_lident_colon_f strm) then () else raise Stream.Failure
 ;;
 
-let check_not_lident_colon =
-  Grammar.Entry.of_parser gram "check_not_lident_colon"
-    check_not_lident_colon_f
+let lident_colon_re = let open Token_regexps in parse " \"LIDENT\" \":\" ";;
+
+let is_lident_colon_f strm = Token_regexps.check_regexp lident_colon_re strm;;
+
+let check_lident_colon_f' strm =
+  if is_lident_colon_f strm then () else raise Stream.Failure
 ;;
 
-let check_uident_coloneq_f strm =
-  match stream_npeek 2 strm with
-    ["UIDENT", _; "", ":="] -> ()
-  | ["ANTIQUOT", qs; "", ":="]
-    when prefix_eq "uid:" qs || prefix_eq "_uid:" qs ->
-      ()
-  | ("ANTIQUOT_LOC", s) :: ("", ":=") :: _
-    when
-      match Plexer.parse_antiloc s with
-        Some (_, ("uid" | "_uid"), _) -> true
-      | _ -> false ->
-      ()
-  | _ -> raise Stream.Failure
+let check_not_lident_colon_f' strm =
+  if not (is_lident_colon_f strm) then () else raise Stream.Failure
+;;
+
+let check_lident_colon =
+  Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f'
+;;
+
+let check_not_lident_colon =
+  Grammar.Entry.of_parser gram "check_not_lident_colon"
+    check_not_lident_colon_f'
+;;
+
+let uident_coloneq_re =
+  let open Token_regexps in parse " (\"UIDENT\" | \"uid\" | \"_uid\") \":=\" "
+;;
+
+let is_uident_coloneq_f strm =
+  Token_regexps.check_regexp uident_coloneq_re strm
+;;
+
+let check_uident_coloneq_f' strm =
+  if is_uident_coloneq_f strm then () else raise Stream.Failure
 ;;
 
 let check_uident_coloneq =
-  Grammar.Entry.of_parser gram "check_uident_coloneq" check_uident_coloneq_f
+  Grammar.Entry.of_parser gram "check_uident_coloneq" check_uident_coloneq_f'
 ;;
 
 let check_colon_f strm =
@@ -644,7 +653,7 @@ let check_not_colon =
   Grammar.Entry.of_parser gram "check_not_colon" check_not_colon_f
 ;;
 
-let test_label_eq =
+let test_label_eq0 =
   Grammar.Entry.of_parser gram "test_label_eq"
     (let rec test lev strm =
        match stream_peek_nth lev strm with
@@ -655,6 +664,23 @@ let test_label_eq =
      in
      test 1)
 ;;
+
+let label_eq_re =
+  let open Token_regexps in
+  parse " (\"UIDENT\" \".\")* \"LIDENT\" (\"=\" | \";\" | \":\") "
+;;
+
+let is_label_eq_f strm = Token_regexps.check_regexp label_eq_re strm;;
+
+let check_label_eq_f strm =
+  if is_label_eq_f strm then () else raise Stream.Failure
+;;
+
+let test_label_eq1 =
+  Grammar.Entry.of_parser gram "test_label_eq" check_label_eq_f
+;;
+
+let test_label_eq = test_label_eq0;;
 
 let patt_wrap_attrs loc e l =
   let rec wrec e =
@@ -687,18 +713,9 @@ let str_item_to_inline loc si ext =
   | Some attrid -> MLast.StExten (loc, (attrid, MLast.StAttr (loc, [si])), [])
 ;;
 
-let is_lparen_f strm =
-  match Stream.npeek 1 strm with
-    ["", "("] -> true
-  | _ -> false
-;;
+let lparen_type_re = let open Token_regexps in parse " \"(\" \"type\" ";;
 
-let is_lparen_type_f strm =
-  is_lparen_f strm &&
-  (match Stream.npeek 2 strm with
-     ["", "("; "", "type"] -> true
-   | _ -> false)
-;;
+let is_lparen_type_f strm = Token_regexps.check_regexp lparen_type_re strm;;
 
 let check_lparen_type_f strm =
   if is_lparen_type_f strm then () else raise Stream.Failure
@@ -708,7 +725,13 @@ let check_lparen_type =
   Grammar.Entry.of_parser gram "check_lparen_type" check_lparen_type_f
 ;;
 
-let is_type_binder_f strm = check_fsm type_binder_fsm strm;;
+let binder_re =
+  let open Token_regexps in
+  parse
+    "\n         (\"'\" \"LIDENT\" (\"'\" \"LIDENT\")* | (\"list\" | \"_list\")) \".\"\n         "
+;;
+
+let is_type_binder_f strm = Token_regexps.check_regexp binder_re strm;;
 
 let check_type_binder_f strm =
   if is_type_binder_f strm then () else raise Stream.Failure
@@ -1123,6 +1146,12 @@ Grammar.safe_extend
       None
       [None, None,
        [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ _ (loc : Ploc.t) -> (None : 'functor_parameter)));
+        Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
@@ -1642,6 +1671,15 @@ Grammar.safe_extend
            (fun (mt : 'module_type) _ (arg : 'functor_parameter) _
                 (loc : Ploc.t) ->
               (MLast.MtFun (loc, arg, mt) : 'module_type)))];
+       Some "->", Some Gramext.RightA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_token ("", "->")))
+             Grammar.s_self,
+           "194fe98d",
+           (fun (mt2 : 'module_type) _ (mt1 : 'module_type) (loc : Ploc.t) ->
+              (MLast.MtFun (loc, Some (None, mt1), mt2) : 'module_type)))];
        Some "alg_attribute", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
@@ -2253,6 +2291,9 @@ Grammar.safe_extend
     Grammar.extension (uidopt : 'uidopt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> (None : 'uidopt)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            "194fe98d",
            (fun (m : string) (loc : Ploc.t) -> (Some m : 'uidopt)))]];

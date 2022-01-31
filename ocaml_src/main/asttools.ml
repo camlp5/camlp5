@@ -213,39 +213,40 @@ let check_fsm
   exec start_st 1
 ;;
 
+let convert_token =
+  function
+    "", s -> Some s
+  | "ANTIQUOT", s -> (s |> Plexer.parse_antiquot) |> option_map fst
+  | "ANTIQUOT_LOC", s -> (s |> Plexer.parse_antiloc) |> option_map snd3
+  | s, _ -> Some s
+;;
+
 let type_binder_delta =
   ["START",
-   (function
-      "", "'" -> "QUO"
-    | "GIDENT", _ -> "IDS"
-    | "ANTIQUOT", s
-      when Some "list" = ((s |> Plexer.parse_antiquot) |> option_map fst) ->
-        "PREDOT"
-    | "ANTIQUOT", s
-      when Some "_list" = ((s |> Plexer.parse_antiquot) |> option_map fst) ->
-        "PREDOT"
-    | "ANTIQUOT_LOC", s
-      when Some "list" = ((s |> Plexer.parse_antiloc) |> option_map snd3) ->
-        "PREDOT"
-    | "ANTIQUOT_LOC", s
-      when Some "_list" = ((s |> Plexer.parse_antiloc) |> option_map snd3) ->
-        "PREDOT"
-    | _ -> failwith "START");
+   (fun tok ->
+      match convert_token tok with
+        Some "'" -> "QUO"
+      | Some "GIDENT" -> "IDS"
+      | Some ("list" | "_list") -> "PREDOT"
+      | _ -> failwith "START");
    "PREDOT",
-   (function
-      "", "." -> "ACCEPT"
-    | _ -> failwith "PREDOT");
+   (fun tok ->
+      match convert_token tok with
+        Some "." -> "ACCEPT"
+      | _ -> failwith "PREDOT");
    "IDS",
-   (function
-      "", "'" -> "QUO"
-    | "GIDENT", _ -> "IDS"
-    | "", "." -> "ACCEPT"
-    | _ -> failwith "IDS");
+   (fun tok ->
+      match convert_token tok with
+        Some "'" -> "QUO"
+      | Some "GIDENT" -> "IDS"
+      | Some "." -> "ACCEPT"
+      | _ -> failwith "IDS");
    "QUO",
-   (function
-      "LIDENT", _ -> "IDS"
-    | "UIDENT", _ -> "IDS"
-    | _ -> failwith "QUO")]
+   (fun tok ->
+      match convert_token tok with
+        Some "LIDENT" -> "IDS"
+      | Some "UIDENT" -> "IDS"
+      | _ -> failwith "QUO")]
 ;;
 let type_binder_fsm =
   {start = "START"; accept = "ACCEPT"; fail = "FAIL";

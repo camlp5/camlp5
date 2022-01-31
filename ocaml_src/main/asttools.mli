@@ -3,6 +3,10 @@
 
 open MLast;;
 
+val fst3 : 'a * 'b * 'c -> 'a;;
+val snd3 : 'a * 'b * 'c -> 'b;;
+val third3 : 'a * 'b * 'c -> 'c;;
+
 val prefix_eq : string -> string -> bool;;
 type ('a, 'b) choice =
     Left of 'a

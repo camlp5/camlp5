@@ -67,27 +67,50 @@ value concatenation l =
   List.fold_left SBSyn.(fun e1 e2 -> e1 @@ e2) (List.hd l) (List.tl l)
 ;
 
+type astre = [
+  TOK of string
+| DISJ of list astre
+| CONJ of list astre
+| CONC of list astre
+| STAR of astre
+| NEG of astre
+| EPS
+]
+;
+
+value rec conv = fun [
+    TOK x -> SBSyn.token (Scanf.unescaped x)
+  | DISJ l -> SBSyn.disjunction (List.map conv l)
+  | CONJ l -> SBSyn.conjunction (List.map conv l)
+  | CONC l -> concatenation (List.map conv l)
+  | STAR x -> SBSyn.star (conv x)
+  | NEG x -> SBSyn.neg (conv x)
+  | EPS -> SBSyn.epsilon
+]
+;
+
 EXTEND
   GLOBAL: e ;
-  e: [ [ x = e5 -> x ] ] ;
-  e5: [ [ l = LIST1 e4 SEP "|" -> SBSyn.disjunction l ] ] ;
+  e: [ [ x = e5 -> conv x ] ] ;
+  e5: [ [ l = LIST1 e4 SEP "|" -> DISJ l ] ] ;
 
-  e4: [ [ l = LIST1 e3 SEP "&" -> SBSyn.conjunction l ] ] ;
+  e4: [ [ l = LIST1 e3 SEP "&" -> CONJ l ] ] ;
 
-  e3: [ [ l = LIST1 e2 -> concatenation l ] ] ;
+  e3: [ [ l = LIST1 e2 -> CONC l ] ] ;
 
-  e2: [ [ "~"; x = e1 -> SBSyn.neg x | x = e1 -> x ] ] ;
+  e2: [ [ "~"; x = e1 -> NEG x | x = e1 -> x ] ] ;
 
-  e1: [ [ x = e0; "*" -> SBSyn.star x | x = e0 -> x ] ] ;
+  e1: [ [ x = e0; "*" -> STAR x | x = e0 -> x ] ] ;
 
   e0:
-    [ [ x = STRING -> SBSyn.token (Scanf.unescaped x)
+    [ [ x = STRING -> TOK x
       | "("; x = e5; ")" -> x
-      | "eps" -> SBSyn.epsilon
+      | "eps" -> EPS
       ]
     ]
   ;
 END;
+
 
 value parse s =
   Grammar.Entry.parse e (Stream.of_string s)
