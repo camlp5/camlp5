@@ -75,18 +75,28 @@ type astre = [
 | STAR of astre
 | NEG of astre
 | EPS
+| LETIN of string and astre and astre
+| ID of string
 ]
 ;
 
-value rec conv = fun [
-    TOK x -> SBSyn.token (Scanf.unescaped x)
-  | DISJ l -> SBSyn.disjunction (List.map conv l)
-  | CONJ l -> SBSyn.conjunction (List.map conv l)
-  | CONC l -> concatenation (List.map conv l)
-  | STAR x -> SBSyn.star (conv x)
-  | NEG x -> SBSyn.neg (conv x)
-  | EPS -> SBSyn.epsilon
-]
+value conv x =
+  let rec convrec env = fun [
+        TOK x -> SBSyn.token (Scanf.unescaped x)
+      | DISJ l -> SBSyn.disjunction (List.map (convrec env) l)
+      | CONJ l -> SBSyn.conjunction (List.map (convrec env) l)
+      | CONC l -> concatenation (List.map (convrec env) l)
+      | STAR x -> SBSyn.star (convrec env x)
+      | NEG x -> SBSyn.neg (convrec env x)
+      | EPS -> SBSyn.epsilon
+      | LETIN s e1 e2 ->
+         convrec [(s,convrec env e1) :: env] e2
+      | ID s -> match List.assoc s env with [
+                    exception Not_found -> failwith Fmt.(str "Token_regexps.conv: unrecognized ID: %s" s)
+                            | e -> e
+                  ]
+      ]
+  in convrec [] x
 ;
 
 EXTEND
@@ -106,6 +116,8 @@ EXTEND
     [ [ x = STRING -> TOK x
       | "("; x = e5; ")" -> x
       | "eps" -> EPS
+      | "let" ; s=LIDENT ; "=" ; re1 = e5 ; "in" ; re2 = e5 -> LETIN s re1 re2
+      | x = LIDENT -> ID x
       ]
     ]
   ;
