@@ -78,6 +78,28 @@ let x = 1|foo};
 value x = 1;
 |foo}
     };
+    {name="type-variable-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f (x : ('a * 'B)) = x|foo} ;
+     official_input = OK {foo|let f (x : 'a * 'B) = x|foo} ;
+     r_input = OK {foo|value f (x : ('a * 'B)) = x;|foo} ;
+     o_output = OK {foo|let f (x : 'a * 'B) = x;;
+|foo};
+     official_output = OK {foo|let f (x : ('a * 'B)) = x|foo} ;
+     r_output = OK {foo|value f (x : ('a * 'B)) = x;
+|foo}
+    };
+    {name="type-variable-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f (x : ('a * 'B)) = x|foo} ;
+     official_input = OK {foo|let f (x : 'a * 'B) = x|foo} ;
+     r_input = OK {foo|value f (x : ('a * 'B)) = x;|foo} ;
+     o_output = OK {foo|let f (x : 'a * 'B) = x;;
+|foo};
+     official_output = OK {foo|let f (x : ('a * 'B)) = x|foo} ;
+     r_output = OK {foo|value f (x : ('a * 'B)) = x;
+|foo}
+    };
     {name="infix1"; implem = True ;
      exclude=[];
      o_input = OK"(a + b) c;;" ;
