@@ -482,33 +482,53 @@ value check_lident_colon_f strm =
   if is_lident_colon_f strm then () else raise Stream.Failure
 ;
 
-value check_lident_colon =
-  Grammar.Entry.of_parser gram "check_lident_colon"
-    check_lident_colon_f
-;
-
 value check_not_lident_colon_f strm =
   if not (is_lident_colon_f strm) then () else raise Stream.Failure
 ;
 
-value check_not_lident_colon =
-  Grammar.Entry.of_parser gram "check_not_lident_colon"
-    check_not_lident_colon_f
+value lident_colon_re =
+  let open Token_regexps in
+  parse {foo| "LIDENT" ":" |foo}
 ;
 
-value check_uident_coloneq_f strm =
-  match stream_npeek 2 strm with [
-    [("UIDENT",_) ; ("", ":=")] -> ()
-  | [("ANTIQUOT",qs); ("", ":=")] when prefix_eq "uid:" qs || prefix_eq "_uid:" qs -> ()
-  | [("ANTIQUOT_LOC",s) ; ("", ":=") :: _]
-    when (match Plexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
-  | _ -> raise Stream.Failure
-  ]
+value is_lident_colon_f strm =
+  Token_regexps.check_regexp lident_colon_re strm
+;
+
+value check_lident_colon_f' strm =
+  if is_lident_colon_f strm then () else raise Stream.Failure
+;
+
+value check_not_lident_colon_f' strm =
+  if not (is_lident_colon_f strm) then () else raise Stream.Failure
+;
+
+value check_lident_colon =
+  Grammar.Entry.of_parser gram "check_lident_colon"
+    check_lident_colon_f'
+;
+
+value check_not_lident_colon =
+  Grammar.Entry.of_parser gram "check_not_lident_colon"
+    check_not_lident_colon_f'
+;
+
+value uident_coloneq_re =
+  let open Token_regexps in
+  parse {foo| ("UIDENT" | "uid" | "_uid") ":=" |foo}
+;
+
+value is_uident_coloneq_f strm =
+  Token_regexps.check_regexp uident_coloneq_re strm
+;
+
+value check_uident_coloneq_f' strm =
+  if is_uident_coloneq_f strm then () else raise Stream.Failure
 ;
 
 value check_uident_coloneq =
   Grammar.Entry.of_parser gram "check_uident_coloneq"
-    check_uident_coloneq_f
+    check_uident_coloneq_f'
 ;
 
 value check_colon_f strm =
@@ -535,7 +555,7 @@ value check_not_colon =
     check_not_colon_f
 ;
 
-value test_label_eq =
+value test_label_eq0 =
   Grammar.Entry.of_parser gram "test_label_eq"
     (test 1 where rec test lev strm =
        match stream_peek_nth lev strm with
@@ -545,6 +565,26 @@ value test_label_eq =
        | Some ("", "=" | ";" | "}" | ":") -> ()
        | _ -> raise Stream.Failure ])
 ;
+
+value label_eq_re =
+  let open Token_regexps in
+  parse {foo| ("UIDENT" ".")* "LIDENT" ("=" | ";" | ":") |foo}
+;
+
+value is_label_eq_f strm =
+  Token_regexps.check_regexp label_eq_re strm
+;
+
+value check_label_eq_f strm =
+  if is_label_eq_f strm then () else raise Stream.Failure
+;
+
+value test_label_eq1 =
+  Grammar.Entry.of_parser gram "test_label_eq"
+    check_label_eq_f
+;
+
+value test_label_eq = test_label_eq0 ;
 
 value patt_wrap_attrs loc e l =
 let rec wrec e = fun [
@@ -575,19 +615,13 @@ value str_item_to_inline loc si ext =
   ]
 ;
 
-value is_lparen_f strm =
-  match Stream.npeek 1 strm with [
-    [("","(")] -> True
-  | _ -> False
-  ]
+value lparen_type_re =
+  let open Token_regexps in
+  parse {foo| "(" "type" |foo}
 ;
 
 value is_lparen_type_f strm =
-  is_lparen_f strm &&
-  match Stream.npeek 2 strm with [
-    [("","(") ; ("","type")] -> True
-  | _ -> False
-  ]
+  Token_regexps.check_regexp lparen_type_re strm
 ;
 
 value check_lparen_type_f strm =
@@ -599,8 +633,6 @@ value check_lparen_type =
     check_lparen_type_f
 ;
 
-value is_type_binder_f strm = check_fsm type_binder_fsm strm ;
-
 value binder_re =
   let open Token_regexps in
   parse {foo|
@@ -608,12 +640,12 @@ value binder_re =
          |foo}
 ;
 
-value is_type_binder_f' strm =
+value is_type_binder_f strm =
   Token_regexps.check_regexp binder_re strm
 ;
 
 value check_type_binder_f strm =
-  if is_type_binder_f' strm then () else raise Stream.Failure
+  if is_type_binder_f strm then () else raise Stream.Failure
 ;
 
 value check_type_binder =
