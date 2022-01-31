@@ -74,17 +74,28 @@ type astre =
   | STAR of astre
   | NEG of astre
   | EPS
+  | LETIN of string * astre * astre
+  | ID of string
 ;;
 
-let rec conv =
-  function
-    TOK x -> SBSyn.token (Scanf.unescaped x)
-  | DISJ l -> SBSyn.disjunction (List.map conv l)
-  | CONJ l -> SBSyn.conjunction (List.map conv l)
-  | CONC l -> concatenation (List.map conv l)
-  | STAR x -> SBSyn.star (conv x)
-  | NEG x -> SBSyn.neg (conv x)
-  | EPS -> SBSyn.epsilon
+let conv x =
+  let rec convrec env =
+    function
+      TOK x -> SBSyn.token (Scanf.unescaped x)
+    | DISJ l -> SBSyn.disjunction (List.map (convrec env) l)
+    | CONJ l -> SBSyn.conjunction (List.map (convrec env) l)
+    | CONC l -> concatenation (List.map (convrec env) l)
+    | STAR x -> SBSyn.star (convrec env x)
+    | NEG x -> SBSyn.neg (convrec env x)
+    | EPS -> SBSyn.epsilon
+    | LETIN (s, e1, e2) -> convrec ((s, convrec env e1) :: env) e2
+    | ID s ->
+        match List.assoc s env with
+          exception Not_found ->
+            failwith Fmt.(str "Token_regexps.conv: unrecognized ID: %s" s)
+        | e -> e
+  in
+  convrec [] x
 ;;
 
 Grammar.safe_extend
@@ -153,6 +164,25 @@ Grammar.safe_extend
     Grammar.extension (e0 : 'e0 Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           "194fe98d", (fun (x : string) (loc : Ploc.t) -> (ID x : 'e0)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "let")))
+                         (Grammar.s_token ("LIDENT", "")))
+                      (Grammar.s_token ("", "=")))
+                   (Grammar.s_nterm (e5 : 'e5 Grammar.Entry.e)))
+                (Grammar.s_token ("", "in")))
+             (Grammar.s_nterm (e5 : 'e5 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (re2 : 'e5) _ (re1 : 'e5) _ (s : string) _ (loc : Ploc.t) ->
+              (LETIN (s, re1, re2) : 'e0)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "eps")),
            "194fe98d", (fun _ (loc : Ploc.t) -> (EPS : 'e0)));
         Grammar.production
