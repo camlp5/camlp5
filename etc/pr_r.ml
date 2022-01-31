@@ -796,6 +796,7 @@ value try_greek s = do {
   if utf8 then do {
     if String.length s = 1 then do {
       let c = Char.code s.[0] - Char.code 'a' in
+      if c < 0 then None else
       let g = greek_tab.(c mod Array.length greek_tab) in
       let n = c / Array.length greek_tab in
       if n < Array.length index_tab then Some (g ^ index_tab.(n))
