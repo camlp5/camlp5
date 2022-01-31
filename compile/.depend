@@ -2,3 +2,9 @@ compile.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../main/mLast.cmi ../main/pcaml.cmi
 compile.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
     ../lib/versdep.cmx ../main/mLast.cmi ../main/pcaml.cmx
+pa_o_fast.cmo: ../lib/grammar.cmi ../lib/plexer.cmi ../lib/ploc.cmi \
+    ../main/asttools.cmi ../main/exparser.cmi ../main/mLast.cmi \
+    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/reloc.cmi
+pa_o_fast.cmx: ../lib/grammar.cmx ../lib/plexer.cmx ../lib/ploc.cmx \
+    ../main/asttools.cmx ../main/exparser.cmx ../main/mLast.cmi \
+    ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/reloc.cmx

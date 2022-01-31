@@ -26,7 +26,7 @@ EXTEND
   e0:
     [ [ x = CHAR -> BSyn.token (String.get (Scanf.unescaped x) 0)
       | "("; x = e5; ")" -> x
-      | "epsilon" -> BSyn.epsilon
+      | "eps" -> BSyn.epsilon
       ]
     ]
   ;

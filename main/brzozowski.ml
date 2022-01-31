@@ -328,7 +328,7 @@ let neg (e : regexp) : regexp =
 let rec print0 b e =
   match skeleton e with
   | EEpsilon ->
-      bprintf b ""
+      bprintf b "eps"
   | EToken c ->
       bprintf b "%s" (Token.print c)
   | EDisj [] ->
