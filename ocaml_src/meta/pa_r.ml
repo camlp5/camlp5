@@ -204,7 +204,10 @@ let operator_rparen_f strm =
            n,
            Left
              (function
-                (("" | "ANDOP" | "LETOP" | "DOTOP" | "HASHOP"), s) :: l
+                (("" | "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" |
+                  "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4"),
+                 s) ::
+                l
                 when pred s && List.mem l suffixes ->
                   Some (xform s)
               | _ -> None)
@@ -321,54 +324,6 @@ let prefixop =
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
          Some ("", x) when is_prefixop x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let infixop0 =
-  Grammar.Entry.of_parser gram "infixop0"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_infixop0 x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let infixop1 =
-  Grammar.Entry.of_parser gram "infixop1"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_infixop1 x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let infixop2 =
-  Grammar.Entry.of_parser gram "infixop2"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_infixop2 x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let infixop3 =
-  Grammar.Entry.of_parser gram "infixop3"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_infixop3 x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let infixop4 =
-  Grammar.Entry.of_parser gram "infixop4"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_infixop4 x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let hashop =
-  Grammar.Entry.of_parser gram "hashop"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("HASHOP", x) -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -2598,10 +2553,10 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_nterm (infixop0 : 'infixop0 Grammar.Entry.e)))
+                (Grammar.s_token ("INFIXOP0", "")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e2 : 'expr) (op : 'infixop0) (e1 : 'expr) (loc : Ploc.t) ->
+           (fun (e2 : 'expr) (op : string) (e1 : 'expr) (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
                'expr)));
@@ -2689,10 +2644,10 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_nterm (infixop1 : 'infixop1 Grammar.Entry.e)))
+                (Grammar.s_token ("INFIXOP1", "")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e2 : 'expr) (op : 'infixop1) (e1 : 'expr) (loc : Ploc.t) ->
+           (fun (e2 : 'expr) (op : string) (e1 : 'expr) (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
                'expr)));
@@ -2732,10 +2687,10 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_nterm (infixop2 : 'infixop2 Grammar.Entry.e)))
+                (Grammar.s_token ("INFIXOP2", "")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e2 : 'expr) (op : 'infixop2) (e1 : 'expr) (loc : Ploc.t) ->
+           (fun (e2 : 'expr) (op : string) (e1 : 'expr) (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
                'expr)));
@@ -2783,10 +2738,10 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_nterm (infixop3 : 'infixop3 Grammar.Entry.e)))
+                (Grammar.s_token ("INFIXOP3", "")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e2 : 'expr) (op : 'infixop3) (e1 : 'expr) (loc : Ploc.t) ->
+           (fun (e2 : 'expr) (op : string) (e1 : 'expr) (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
                'expr)));
@@ -2874,10 +2829,10 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_nterm (infixop4 : 'infixop4 Grammar.Entry.e)))
+                (Grammar.s_token ("INFIXOP4", "")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e2 : 'expr) (op : 'infixop4) (e1 : 'expr) (loc : Ploc.t) ->
+           (fun (e2 : 'expr) (op : string) (e1 : 'expr) (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e1), e2) :
                'expr)));
@@ -5903,10 +5858,10 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                (Grammar.s_nterm (hashop : 'hashop Grammar.Entry.e)))
+                (Grammar.s_token ("HASHOP", "")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e2 : 'expr) (op : 'hashop) (e : 'expr) (loc : Ploc.t) ->
+           (fun (e2 : 'expr) (op : string) (e : 'expr) (loc : Ploc.t) ->
               (MLast.ExApp
                  (loc, MLast.ExApp (loc, MLast.ExLid (loc, op), e), e2) :
                'expr)));

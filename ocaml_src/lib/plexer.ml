@@ -590,8 +590,10 @@ let less ctx bp buf strm =
     | _ ->
         let buf = Plexing.Lexbuf.add '<' buf in
         let buf = ident2 buf strm__ in
-        keyword_or_error ctx (bp, Stream.count strm__)
-          (Plexing.Lexbuf.get buf)
+        match Plexing.Lexbuf.get buf with
+          "<-" | "<" | "<>" | "<=" as s ->
+            keyword_or_error ctx (bp, Stream.count strm__) s
+        | s -> keyword_or_error ctx (bp, Stream.count strm__) s
 ;;
 
 let rec antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
@@ -707,7 +709,10 @@ let dollar ctx bp buf strm =
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = Plexing.Lexbuf.add '$' buf in
-    let buf = ident2 buf strm__ in "", Plexing.Lexbuf.get buf
+    let buf = ident2 buf strm__ in
+    match Plexing.Lexbuf.get buf with
+      "$" as s -> "", s
+    | s -> "INFIXOP0", s
 ;;
 
 (* ANTIQUOT - specific case for QUESTIONIDENT and QUESTIONIDENTCOLON
@@ -1180,13 +1185,60 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                   let buf = string ctx bp buf strm__ in
                   "STRING", Plexing.Lexbuf.get buf
               | Some '$' -> Stream.junk strm__; dollar ctx bp buf strm__
-              | Some
-                  ('=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-                   '%' as c) ->
+              | Some ('*' | '/' | '%' as c) ->
                   Stream.junk strm__;
                   let buf = ident2 (Plexing.Lexbuf.add c buf) strm__ in
-                  keyword_or_error ctx (bp, Stream.count strm__)
-                    (Plexing.Lexbuf.get buf)
+                  begin match Plexing.Lexbuf.get buf with
+                    "*" | "/" | "**" as s ->
+                      keyword_or_error ctx (bp, Stream.count strm__) s
+                  | s
+                    when String.length s > 2 && s.[0] = '*' && s.[1] = '*' ->
+                      keyword_or_error ~kind:"INFIXOP4" ctx
+                        (bp, Stream.count strm__) s
+                  | s ->
+                      keyword_or_error ~kind:"INFIXOP3" ctx
+                        (bp, Stream.count strm__) s
+                  end
+              | Some ('+' | '-' as c) ->
+                  Stream.junk strm__;
+                  let buf = ident2 (Plexing.Lexbuf.add c buf) strm__ in
+                  begin match Plexing.Lexbuf.get buf with
+                    "+" | "-" as s ->
+                      keyword_or_error ctx (bp, Stream.count strm__) s
+                  | s ->
+                      keyword_or_error ~kind:"INFIXOP2" ctx
+                        (bp, Stream.count strm__) s
+                  end
+              | Some ('@' | '^' as c) ->
+                  Stream.junk strm__;
+                  let buf = ident2 (Plexing.Lexbuf.add c buf) strm__ in
+                  begin match Plexing.Lexbuf.get buf with
+                    "@" | "^" as s ->
+                      keyword_or_error ctx (bp, Stream.count strm__) s
+                  | s ->
+                      keyword_or_error ~kind:"INFIXOP1" ctx
+                        (bp, Stream.count strm__) s
+                  end
+              | Some '&' ->
+                  Stream.junk strm__;
+                  let buf = ident2 (Plexing.Lexbuf.add '&' buf) strm__ in
+                  begin match Plexing.Lexbuf.get buf with
+                    "&&" | "&" as s ->
+                      keyword_or_error ctx (bp, Stream.count strm__) s
+                  | s ->
+                      keyword_or_error ~kind:"INFIXOP0" ctx
+                        (bp, Stream.count strm__) s
+                  end
+              | Some '=' ->
+                  Stream.junk strm__;
+                  let buf = ident2 (Plexing.Lexbuf.add '=' buf) strm__ in
+                  begin match Plexing.Lexbuf.get buf with
+                    "==" | "=" as s ->
+                      keyword_or_error ctx (bp, Stream.count strm__) s
+                  | s ->
+                      keyword_or_error ~kind:"INFIXOP0" ctx
+                        (bp, Stream.count strm__) s
+                  end
               | Some '!' ->
                   Stream.junk strm__;
                   let buf =
@@ -1267,8 +1319,12 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                               (Plexing.Lexbuf.add '>' buf)))
                   | _ ->
                       let buf = ident2 (Plexing.Lexbuf.add '>' buf) strm__ in
-                      keyword_or_error ctx (bp, Stream.count strm__)
-                        (Plexing.Lexbuf.get buf)
+                      match Plexing.Lexbuf.get buf with
+                        ">" | ">=" as s ->
+                          keyword_or_error ctx (bp, Stream.count strm__) s
+                      | s ->
+                          keyword_or_error ~kind:"INFIXOP0" ctx
+                            (bp, Stream.count strm__) s
                   end
               | Some '|' ->
                   Stream.junk strm__;
@@ -1287,8 +1343,12 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                               (Plexing.Lexbuf.add '|' buf)))
                   | _ ->
                       let buf = ident2 (Plexing.Lexbuf.add '|' buf) strm__ in
-                      keyword_or_error ctx (bp, Stream.count strm__)
-                        (Plexing.Lexbuf.get buf)
+                      match Plexing.Lexbuf.get buf with
+                        "||" | "|" as s ->
+                          keyword_or_error ctx (bp, Stream.count strm__) s
+                      | s ->
+                          keyword_or_error ~kind:"INFIXOP0" ctx
+                            (bp, Stream.count strm__) s
                   end
               | Some '[' ->
                   Stream.junk strm__;
@@ -1811,7 +1871,8 @@ let using_token ctx kwd_table (p_con, p_prm) =
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" | "CHAR" | "STRING" | "QUOTATION" | "GIDENT" | "ANDOP" |
-    "LETOP" | "DOTOP" | "HASHOP" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
+    "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" | "INFIXOP1" | "INFIXOP2" |
+    "INFIXOP3" | "INFIXOP4" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise
@@ -1843,6 +1904,11 @@ let text =
   | "LETOP", k -> "LETOP '" ^ k ^ "'"
   | "DOTOP", k -> "DOTOP '" ^ k ^ "'"
   | "HASHOP", k -> "HASHOP '" ^ k ^ "'"
+  | "INFIXOP0", k -> "INFIXOP0 '" ^ k ^ "'"
+  | "INFIXOP1", k -> "INFIXOP1 '" ^ k ^ "'"
+  | "INFIXOP2", k -> "INFIXOP2 '" ^ k ^ "'"
+  | "INFIXOP3", k -> "INFIXOP3 '" ^ k ^ "'"
+  | "INFIXOP4", k -> "INFIXOP4 '" ^ k ^ "'"
   | "EOI", "" -> "end of input"
   | con, "" -> con
   | con, prm -> con ^ " \"" ^ prm ^ "\""
@@ -1921,12 +1987,12 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 1016, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1016, 45)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1065, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1065, 45)));
        tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 1016, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1017, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1017, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 1065, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1066, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1066, 37)));
        tok_comm = None}
   in
   let glex =

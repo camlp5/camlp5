@@ -118,7 +118,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"|"INFIXOP1"|"INFIXOP2"|"INFIXOP3"|"INFIXOP4"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -134,7 +134,7 @@ value operator_rparen =
 value check_not_part_of_patt_f strm =
   let matchers = [
     (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
-  ; (4, fun [ [("", "("); ((""|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"), s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
+  ; (4, fun [ [("", "("); ((""|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"|"INFIXOP1"|"INFIXOP2"|"INFIXOP3"|"INFIXOP4"), s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
   ; (6, fun [
               [("", "("); (""|"DOTOP", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); (""|"DOTOP", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
@@ -185,30 +185,6 @@ value prefixop =
   Grammar.Entry.of_parser gram "prefixop"
     (parser
        [: `("", x) when is_prefixop x :] -> x)
-;
-
-value infixop1 =
-  Grammar.Entry.of_parser gram "infixop1"
-    (parser
-       [: `("", x) when is_infixop1 x :] -> x)
-;
-
-value infixop2 =
-  Grammar.Entry.of_parser gram "infixop2"
-    (parser
-       [: `("", x) when is_infixop2 x :] -> x)
-;
-
-value infixop3 =
-  Grammar.Entry.of_parser gram "infixop3"
-    (parser
-       [: `("", x) when is_infixop3 x :] -> x)
-;
-
-value infixop4 =
-  Grammar.Entry.of_parser gram "infixop4"
-    (parser
-       [: `("", x) when is_infixop4 x :] -> x)
 ;
 
 value test_constr_decl_f strm =
@@ -1280,7 +1256,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     | "^" RIGHTA
       [ e1 = SELF; "^"; e2 = SELF -> <:expr< $e1$ ^ $e2$ >>
       | e1 = SELF; "@"; e2 = SELF -> <:expr< $e1$ @ $e2$ >>
-      | e1 = SELF; op = infixop1; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
+      | e1 = SELF; op = INFIXOP1; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "alg_attribute" LEFTA
       [ e1 = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:expr< $e1$ [@ $_attribute:attr$ ] >>
@@ -1290,7 +1266,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     | "+" LEFTA
       [ e1 = SELF; "+"; e2 = SELF -> <:expr< $e1$ + $e2$ >>
       | e1 = SELF; "-"; e2 = SELF -> <:expr< $e1$ - $e2$ >>
-      | e1 = SELF; op = infixop2; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
+      | e1 = SELF; op = INFIXOP2; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "*" LEFTA
       [ e1 = SELF; "*"; e2 = SELF -> <:expr< $e1$ * $e2$ >>
       | e1 = SELF; "/"; e2 = SELF -> <:expr< $e1$ / $e2$ >>
@@ -1299,13 +1275,13 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | e1 = SELF; "lor"; e2 = SELF -> <:expr< $e1$ lor $e2$ >>
       | e1 = SELF; "lxor"; e2 = SELF -> <:expr< $e1$ lxor $e2$ >>
       | e1 = SELF; "mod"; e2 = SELF -> <:expr< $e1$ mod $e2$ >>
-      | e1 = SELF; op = infixop3; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
+      | e1 = SELF; op = INFIXOP3; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "**" RIGHTA
       [ e1 = SELF; "**"; e2 = SELF -> <:expr< $e1$ ** $e2$ >>
       | e1 = SELF; "asr"; e2 = SELF -> <:expr< $e1$ asr $e2$ >>
       | e1 = SELF; "lsl"; e2 = SELF -> <:expr< $e1$ lsl $e2$ >>
       | e1 = SELF; "lsr"; e2 = SELF -> <:expr< $e1$ lsr $e2$ >>
-      | e1 = SELF; op = infixop4; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
+      | e1 = SELF; op = INFIXOP4; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "unary minus" NONA
       [ "-"; e = SELF -> <:expr< - $e$ >>
       | "-."; e = SELF -> <:expr< -. $e$ >>

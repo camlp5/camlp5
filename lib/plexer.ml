@@ -661,8 +661,22 @@ value next_token_after_spaces ctx bp =
   | "'" -> keyword_or_error ctx (bp, $pos) "'"
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
   | "$"/ (dollar ctx bp)!
-  | [       '@' | '^' |       '+' | '-' | '*' | '/' | '%' ] ident2! ->
-      keyword_or_error ctx (bp, $pos) $buf
+  | [ '*' | '/' | '%' ] ident2! ->
+     match $buf with [
+         ("*" | "/" | "**") as s -> keyword_or_error ctx (bp, $pos) s
+        | s when String.length s > 2 && s.[0] = '*' && s.[1] = '*' -> keyword_or_error ~{kind="INFIXOP4"} ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="INFIXOP3"} ctx (bp, $pos) s
+       ]
+  | [ '+' | '-' ] ident2! ->
+     match $buf with [
+         ("+"|"-") as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="INFIXOP2"} ctx (bp, $pos) s
+       ]
+  | [ '@' | '^' ] ident2! ->
+     match $buf with [
+         ("@" | "^") as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="INFIXOP1"} ctx (bp, $pos) s
+       ]
   | "&" ident2! ->
      match $buf with [
          ("&&"|"&") as s -> keyword_or_error ctx (bp, $pos) s
@@ -932,7 +946,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" |
     "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
-    "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" |
+    "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" | "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
@@ -967,6 +981,10 @@ value text =
   | ("DOTOP", k) -> "DOTOP '" ^ k ^ "'"
   | ("HASHOP", k) -> "HASHOP '" ^ k ^ "'"
   | ("INFIXOP0", k) -> "INFIXOP0 '" ^ k ^ "'"
+  | ("INFIXOP1", k) -> "INFIXOP1 '" ^ k ^ "'"
+  | ("INFIXOP2", k) -> "INFIXOP2 '" ^ k ^ "'"
+  | ("INFIXOP3", k) -> "INFIXOP3 '" ^ k ^ "'"
+  | ("INFIXOP4", k) -> "INFIXOP4 '" ^ k ^ "'"
   | ("EOI", "") -> "end of input"
   | (con, "") -> con
   | (con, prm) -> con ^ " \"" ^ prm ^ "\"" ]
