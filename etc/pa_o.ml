@@ -217,12 +217,6 @@ value infixop4 =
        [: `("", x) when is_infixop4 x :] -> x)
 ;
 
-value hashop =
-  Grammar.Entry.of_parser gram "hashop"
-    (parser
-       [: `("HASHOP", x) :] -> x)
-;
-
 value test_constr_decl_f strm =
   match Stream.npeek 1 strm with
     [ [("UIDENT", _)] ->
@@ -2263,7 +2257,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = V LIDENT "lid" -> <:expr< $e$ # $_lid:lab$ >>
-      | e = SELF; op = hashop ; e2 = SELF -> <:expr< $lid:op$ $e$ $e2$ >>
+      | e = SELF; op = HASHOP ; e2 = SELF -> <:expr< $lid:op$ $e$ $e2$ >>
       ] ]
   ;
   expr: LEVEL "simple"
