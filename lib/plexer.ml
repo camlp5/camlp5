@@ -630,19 +630,6 @@ value keyword = fun ctx buf strm ->
     try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
 ;
 
-value dot ctx (bp, pos) buf strm =
-  match Stream.peek strm with [
-    None ->
-      let id =
-        if ctx.specific_space_dot && ctx.after_space then " ." else "."
-      in
-      keyword_or_error ctx (bp, pos) id
-
-  | _ -> match strm with lexer [ [ -> $add "." ] dotsymbolchar_star! -> keyword_or_error ctx (bp, $pos) $buf ]
-  ]
-;
-
-
 value next_token_after_spaces ctx bp =
   lexer
   [ 'A'-'Z' ident! ->
