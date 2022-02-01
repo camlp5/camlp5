@@ -30,12 +30,12 @@ value err ctx loc msg =
   Ploc.raise (ctx.make_lined_loc loc "") (Plexing.Error msg)
 ;
 
-value keyword_or_error ctx loc s =
+value keyword_or_error ?{kind=""} ctx loc s =
   try ("", ctx.find_kwd s) with
   [ Not_found ->
       if error_on_unknown_keywords.val then
         err ctx loc ("illegal token: " ^ s)
-      else ("", s) ]
+      else (kind, s) ]
 ;
 
 value rev_implode l =
@@ -688,7 +688,7 @@ value next_token_after_spaces ctx bp =
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
   | "." dotsymbolchar symbolchar_star ->
-      keyword_or_error ctx (bp, $pos) $buf
+      keyword_or_error ~{kind="DOTOP"} ctx (bp, $pos) $buf
   | "." ->
       let id =
         if ctx.specific_space_dot && ctx.after_space then " ." else "."
@@ -898,7 +898,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" |
     "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
-    "ANDOP" | "LETOP" |
+    "ANDOP" | "LETOP" | "DOTOP" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
@@ -930,6 +930,7 @@ value text =
   | ("ANTIQUOT", k) -> "antiquot \"" ^ k ^ "\""
   | ("ANDOP", k) -> "ANDOP '" ^ k ^ "'"
   | ("LETOP", k) -> "LETOP '" ^ k ^ "'"
+  | ("DOTOP", k) -> "DOTOP '" ^ k ^ "'"
   | ("EOI", "") -> "end of input"
   | (con, "") -> con
   | (con, prm) -> con ^ " \"" ^ prm ^ "\"" ]

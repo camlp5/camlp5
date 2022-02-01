@@ -118,7 +118,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"|"DOTOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -134,26 +134,26 @@ value operator_rparen =
 value check_not_part_of_patt_f strm =
   let matchers = [
     (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
-  ; (4, fun [ [("", "("); ((""|"LETOP"), s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
+  ; (4, fun [ [("", "("); ((""|"LETOP"|"DOTOP"), s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
   ; (6, fun [
-              [("", "("); ("", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+              [("", "("); (""|"DOTOP", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "["); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | _ -> None ])
   ; (7, fun [
-              [("", "("); ("", s); ("", "("); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+              [("", "("); (""|"DOTOP", s); ("", "("); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "{"); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "["); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | _ -> None ])
   ; (8, fun [
-              [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+              [("", "("); (""|"DOTOP", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | _ -> None ])
   ; (9, fun [
-              [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+              [("", "("); (""|"DOTOP", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
+            | [("", "("); (""|"DOTOP", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | _ -> None ])
 
   ] in
@@ -221,12 +221,6 @@ value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
        [: `("", x) when is_hashop x :] -> x)
-;
-
-value dotop =
-  Grammar.Entry.of_parser gram "dotop"
-    (parser
-       [: `("", x) when is_dotop x :] -> x)
 ;
 
 value test_constr_decl_f strm =
@@ -1372,18 +1366,18 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           else
             <:expr< $e1$ .( $e2$ ) >>
 
-      | e1 = SELF; op = V dotop "dotop"; "("; el = LIST1 expr LEVEL "+" SEP ";"; ")" ->
+      | e1 = SELF; op = V DOTOP "dotop"; "("; el = LIST1 expr LEVEL "+" SEP ";"; ")" ->
           <:expr< $e1$ $_dotop:op$ ( $list:el$ ) >>
 
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
 
-      | e1 = SELF; op = V dotop "dotop"; "["; el = LIST1 expr LEVEL "+" SEP ";"; "]" ->
+      | e1 = SELF; op = V DOTOP "dotop"; "["; el = LIST1 expr LEVEL "+" SEP ";"; "]" ->
           <:expr< $e1$ $_dotop:op$ [ $list:el$ ] >>
 
       | e1 = SELF; "."; "{"; el = LIST1 expr LEVEL "+" SEP ","; "}" ->
           <:expr< $e1$ .{ $list:el$ } >>
 
-      | e1 = SELF; op = V dotop "dotop"; "{"; el = LIST1 expr LEVEL "+" SEP ";"; "}" ->
+      | e1 = SELF; op = V DOTOP "dotop"; "{"; el = LIST1 expr LEVEL "+" SEP ";"; "}" ->
           <:expr< $e1$ $_dotop:op$ { $list:el$ } >>
       ]
 

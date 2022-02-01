@@ -178,7 +178,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"|"DOTOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -281,12 +281,6 @@ value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
        [: `("", x) when is_hashop x :] -> x)
-;
-
-value dotop =
-  Grammar.Entry.of_parser gram "dotop"
-    (parser
-       [: `("", x) when is_dotop x :] -> x)
 ;
 
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
@@ -915,18 +909,18 @@ EXTEND
           else
             <:expr< $e1$ .( $e2$ ) >>
 
-      | e1 = SELF; op = V dotop "dotop"; "("; el = V (LIST1 expr LEVEL "+" SEP ";"); ")" ->
+      | e1 = SELF; op = V DOTOP "dotop"; "("; el = V (LIST1 expr LEVEL "+" SEP ";"); ")" ->
           <:expr< $e1$ $_dotop:op$ ( $_list:el$ ) >>
 
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
 
-      | e1 = SELF; op = V dotop "dotop"; "["; el = V (LIST1 expr LEVEL "+" SEP ";"); "]" ->
+      | e1 = SELF; op = V DOTOP "dotop"; "["; el = V (LIST1 expr LEVEL "+" SEP ";"); "]" ->
           <:expr< $e1$ $_dotop:op$ [ $_list:el$ ] >>
 
       | e1 = SELF; "."; "{"; el = V (LIST1 expr LEVEL "+" SEP ","); "}" ->
           <:expr< $e1$ .{ $_list:el$ } >>
 
-      | e1 = SELF; op = V dotop "dotop"; "{"; el = V (LIST1 expr LEVEL "+" SEP ";"); "}" ->
+      | e1 = SELF; op = V DOTOP "dotop"; "{"; el = V (LIST1 expr LEVEL "+" SEP ";"); "}" ->
           <:expr< $e1$ $_dotop:op$ { $_list:el$ } >>
       ]
     | "~-" NONA
