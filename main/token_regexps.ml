@@ -125,5 +125,11 @@ END;
 
 
 value parse s =
-  Grammar.Entry.parse e (Stream.of_string s)
+  try
+    Grammar.Entry.parse e (Stream.of_string s)
+  with [
+      Ploc.Exc loc exc as exc0 -> do { Fmt.(pf stderr "Fatal error in Token_regexps.parse(%a): %s: %a\n"
+                                              Dump.string s (Ploc.string_of_location loc) exn exc) ;
+                                       raise exc0 }
+    ]
 ;

@@ -197,4 +197,11 @@ Grammar.safe_extend
            "194fe98d", (fun (x : string) (loc : Ploc.t) -> (TOK x : 'e0)))]]]);;
 
 
-let parse s = Grammar.Entry.parse e (Stream.of_string s);;
+let parse s =
+  try Grammar.Entry.parse e (Stream.of_string s) with
+    Ploc.Exc (loc, exc) as exc0 ->
+      Fmt.
+      (pf stderr "Fatal error in Token_regexps.parse(%a): %s: %a\n"
+        Dump.string s (Ploc.string_of_location loc) exn exc);
+      raise exc0
+;;

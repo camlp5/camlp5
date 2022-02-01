@@ -386,9 +386,57 @@ value check_type_decl_f strm =
   else raise Stream.Failure
 ;
 
+(* a type decl starts with
+    (LIDENT | "tp" | "_tp" | "lid" | "_lid") ("list" | "_list" | ( ["+" "-" "!" "!+" | "+!" "!-" "-"]* ("'" (LIDENT|UIDENT) | "GIDENT" | "_") )* ) ("=" | ":=")
+
+   That is: a LIDENT, then some type-parameters then "=" or ":="
+
+   a type extension starts with
+
+    ( "lilongid" | "_lilongid" | "UIDENT" | ("list" | "_list" | ( ["+" "-" "!" "!+" | "+!" "!-" "-"]* ("'" (LIDENT|UIDENT) | "GIDENT" | "_") )* ) "+=")
+
+   That is: a UIDENT ..., or a LIDENT, then some type-parameters, then "+="
+ *)
+
+value type_decl_re =
+  let open Token_regexps in
+  parse {foo|
+         let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
+         let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-!")* (tyvar | "_") in
+         let type_parameters = ("list" | "_list" | type_parameter* ) in
+         ("rec"|"nonrec"|eps)("LIDENT" | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":=")
+  |foo}
+;
+
+value is_type_decl_f strm =
+  Token_regexps.check_regexp type_decl_re strm
+;
+
+value check_type_decl_f' strm =
+  if is_type_decl_f strm then () else raise Stream.Failure
+;
+
+value type_extension_re =
+  let open Token_regexps in
+  parse {foo|
+         let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
+         let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-")* (tyvar | "_") in
+         let type_parameters = ("list" | "_list" | type_parameter* ) in
+         "UIDENT" | "lilongid" | "_lilongid" | ("LIDENT" type_parameters "+=")
+  |foo}
+;
+
+value is_type_extension_f strm =
+  Token_regexps.check_regexp type_extension_re strm
+;
+
+value check_type_extension_f' strm =
+  if is_type_extension_f strm then () else raise Stream.Failure
+;
+
 value check_type_decl =
   Grammar.Entry.of_parser gram "check_type_decl"
-    check_type_decl_f
+    check_type_decl_f'
 ;
 
 value check_type_extension_f strm =
@@ -398,7 +446,7 @@ value check_type_extension_f strm =
 
 value check_type_extension =
   Grammar.Entry.of_parser gram "check_type_extension"
-    check_type_extension_f
+    check_type_extension_f'
 ;
 
 value check_dot_uid_f strm =
@@ -415,6 +463,19 @@ value check_dot_uid_f strm =
     | _ -> raise Stream.Failure
     ] in
   crec 1
+;
+
+value dot_uid_re =
+  let open Token_regexps in
+  parse {foo| "." ("UIDENT" | "uid" | "_uid") |foo}
+;
+
+value is_dot_uid_f strm =
+  Token_regexps.check_regexp dot_uid_re strm
+;
+
+value check_dot_uid_f' strm =
+  if is_dot_uid_f strm then () else raise Stream.Failure
 ;
 
 value check_dot_uid =
@@ -505,12 +566,12 @@ value check_not_lident_colon_f' strm =
 
 value check_lident_colon =
   Grammar.Entry.of_parser gram "check_lident_colon"
-    check_lident_colon_f'
+    check_lident_colon_f
 ;
 
 value check_not_lident_colon =
   Grammar.Entry.of_parser gram "check_not_lident_colon"
-    check_not_lident_colon_f'
+    check_not_lident_colon_f
 ;
 
 value uident_coloneq_re =
@@ -636,7 +697,8 @@ value check_lparen_type =
 value binder_re =
   let open Token_regexps in
   parse {foo|
-         ("'" "LIDENT" ("'" "LIDENT")* | ("list" | "_list")) "."
+        let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
+         (tyvar tyvar * | ("list" | "_list")) "."
          |foo}
 ;
 
@@ -1363,9 +1425,6 @@ EXTEND
         pf = V (FLAG "private") "priv"; "[" ; ecs = V (LIST1 extension_constructor SEP "|") ; "]" ;
         attrs = item_attributes →
           <:type_extension< $_lilongid:n$ $_list:tpl$ += $_priv:pf$ [ $_list:ecs$ ] $_itemattrs:attrs$ >>
-(*
-          {MLast.teNam=n; tePrm=tpl; tePrv=pf; teAttributes=attrs; teECs = ecs }
-*)
       ] ]
   ;
   type_patt:

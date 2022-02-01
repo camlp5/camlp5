@@ -505,8 +505,46 @@ let check_type_decl_f strm =
   if is_type_decl_not_extension strm then () else raise Stream.Failure
 ;;
 
+(* a type decl starts with
+    (LIDENT | "tp" | "_tp" | "lid" | "_lid") ("list" | "_list" | ( ["+" "-" "!" "!+" | "+!" "!-" "-"]* ("'" (LIDENT|UIDENT) | "GIDENT" | "_") )* ) ("=" | ":=")
+
+   That is: a LIDENT, then some type-parameters then "=" or ":="
+
+   a type extension starts with
+
+    ( "lilongid" | "_lilongid" | "UIDENT" | ("list" | "_list" | ( ["+" "-" "!" "!+" | "+!" "!-" "-"]* ("'" (LIDENT|UIDENT) | "GIDENT" | "_") )* ) "+=")
+
+   That is: a UIDENT ..., or a LIDENT, then some type-parameters, then "+="
+ *)
+
+let type_decl_re =
+  let open Token_regexps in
+  parse
+    "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-!\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         (\"rec\"|\"nonrec\"|eps)(\"LIDENT\" | \"tp\" | \"_tp\" | \"lid\" | \"lid_\") type_parameters (\"=\" | \":=\")\n  "
+;;
+
+let is_type_decl_f strm = Token_regexps.check_regexp type_decl_re strm;;
+
+let check_type_decl_f' strm =
+  if is_type_decl_f strm then () else raise Stream.Failure
+;;
+
+let type_extension_re =
+  let open Token_regexps in
+  parse
+    "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         \"UIDENT\" | \"lilongid\" | \"_lilongid\" | (\"LIDENT\" type_parameters \"+=\")\n  "
+;;
+
+let is_type_extension_f strm =
+  Token_regexps.check_regexp type_extension_re strm
+;;
+
+let check_type_extension_f' strm =
+  if is_type_extension_f strm then () else raise Stream.Failure
+;;
+
 let check_type_decl =
-  Grammar.Entry.of_parser gram "check_type_decl" check_type_decl_f
+  Grammar.Entry.of_parser gram "check_type_decl" check_type_decl_f'
 ;;
 
 let check_type_extension_f strm =
@@ -514,7 +552,7 @@ let check_type_extension_f strm =
 ;;
 
 let check_type_extension =
-  Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f
+  Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f'
 ;;
 
 let check_dot_uid_f strm =
@@ -535,6 +573,16 @@ let check_dot_uid_f strm =
     | _ -> raise Stream.Failure
   in
   crec 1
+;;
+
+let dot_uid_re =
+  let open Token_regexps in parse " \".\" (\"UIDENT\" | \"uid\" | \"_uid\") "
+;;
+
+let is_dot_uid_f strm = Token_regexps.check_regexp dot_uid_re strm;;
+
+let check_dot_uid_f' strm =
+  if is_dot_uid_f strm then () else raise Stream.Failure
 ;;
 
 let check_dot_uid =
@@ -611,12 +659,12 @@ let check_not_lident_colon_f' strm =
 ;;
 
 let check_lident_colon =
-  Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f'
+  Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f
 ;;
 
 let check_not_lident_colon =
   Grammar.Entry.of_parser gram "check_not_lident_colon"
-    check_not_lident_colon_f'
+    check_not_lident_colon_f
 ;;
 
 let uident_coloneq_re =
@@ -728,7 +776,7 @@ let check_lparen_type =
 let binder_re =
   let open Token_regexps in
   parse
-    "\n         (\"'\" \"LIDENT\" (\"'\" \"LIDENT\")* | (\"list\" | \"_list\")) \".\"\n         "
+    "\n        let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         (tyvar tyvar * | (\"list\" | \"_list\")) \".\"\n         "
 ;;
 
 let is_type_binder_f strm = Token_regexps.check_regexp binder_re strm;;
