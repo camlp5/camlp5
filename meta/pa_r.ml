@@ -304,7 +304,7 @@ value build_letop_binder loc letop b l e =
       b l in
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
-
+(*
 value check_let_exception_f = (fun strm ->
     match Stream.npeek 2 strm with
       [ [("", "let"); ("", "exception")] -> ()
@@ -313,6 +313,24 @@ value check_let_exception_f = (fun strm ->
 
 value check_let_exception =
   Grammar.Entry.of_parser gram "check_let_exception"
+    check_let_exception_f
+;
+  *)
+value let_exception_re =
+  let open Token_regexps in
+  parse {foo| "let" "exception" |foo}
+;
+
+value is_let_exception_f strm =
+  Token_regexps.check_regexp let_exception_re strm
+;
+
+value check_let_exception_f strm =
+  if is_let_exception_f strm then () else raise Stream.Failure
+;
+
+value check_let_exception =
+  Grammar.Entry.of_parser gram "let_exception"
     check_let_exception_f
 ;
 
