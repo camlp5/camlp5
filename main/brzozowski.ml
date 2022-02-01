@@ -373,15 +373,15 @@ let rec print0 b e =
 
 and print1 b e =
   match skeleton e with
-  | ECat (e1, e2) ->
-      bprintf b "%a %a" print0 e1 print1 e2
+  | ENeg e ->
+      bprintf b "~%a" print1 e
   | _ ->
       print0 b e
 
 and print2 b e =
   match skeleton e with
-  | ENeg e ->
-      bprintf b "~%a" print2 e
+  | ECat (e1, e2) ->
+      bprintf b "%a %a" print1 e1 print2 e2
   | _ ->
       print1 b e
 

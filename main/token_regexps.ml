@@ -15,21 +15,26 @@ end ;
 module StringRegexp = Regexp(StringBaseToken) ;
 module SBSyn = RESyntax(StringBaseToken)(StringRegexp) ;
 
-value compile rex =
-  let toks = StringRegexp.tokens rex in
-  let module StringToken = struct
-      include StringBaseToken ;
-      value foreach f = do {
-        List.iter f toks ;
-        f "EOI" 
-      }
-      ;
-      end in
-  let module BEval = Eval(StringToken)(StringRegexp) in
-  let dfa = BEval.dfa rex in
-  fun input -> BEval.exec dfa input
+module Compile(R : sig value rex : StringRegexp.regexp ; end) = struct
+  value toks = StringRegexp.tokens R.rex ;
+  module StringToken = struct
+    include StringBaseToken ;
+    value foreach f = do {
+      List.iter f toks ;
+      f "EOI" 
+    }
+    ;
+  end ;
+  module BEval = Eval(StringToken)(StringRegexp) ;
+  value dfa = BEval.dfa R.rex ;
+  value exec input = BEval.exec dfa input ;
+end
 ;
 
+value compile rex =
+  let module C = Compile(struct value rex = rex ; end) in
+  C.exec
+;
 value convert_token = fun [
       ("",s) -> Some s
     | ("ANTIQUOT", s) -> s |> Plexer.parse_antiquot |> option_map fst
