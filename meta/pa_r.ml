@@ -118,7 +118,6 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
-
 open Token_regexps ;
 module Entry(R : sig value rexs : string ;
                      value extra : list StringBaseToken.t ;
@@ -151,95 +150,7 @@ value check_not =
 end
 ;
 
-value operator_rparen_f strm =
-  let id x = x in
-  let app suff s = s^suff in 
-  let trials = [
-    (1, Right (fun [ [(("LIDENT"|"UIDENT"),_) :: _] -> True | _ -> False ]))
-  ; (2, Left (is_operator, id, [[("",")")]]))
-  ; (2, Left (is_letop, id, [[("",")")]]))
-  ; (2, Left (is_andop, id, [[("",")")]]))
-  ; (4, Left (is_dotop, app "()", [[("","("); ("",")"); ("",")")]]))
-  ; (4, Left (is_dotop, app "{}", [[("","{"); ("","}"); ("",")")]]))
-  ; (4, Left (is_dotop, app "[]", [[("","["); ("","]"); ("",")")]]))
-
-  ; (6, Left (is_dotop, app "(;..)", [[("","("); ("",";"); ("",".."); ("",")"); ("",")")]]))
-  ; (6, Left (is_dotop, app "{;..}", [[("","{"); ("",";"); ("",".."); ("","}"); ("",")")]]))
-  ; (6, Left (is_dotop, app "[;..]", [[("","["); ("",";"); ("",".."); ("","]"); ("",")")]]))
-
-  ; (5, Left (is_dotop, app "()<-", [[("","("); ("",")"); ("","<-"); ("",")")]]))
-  ; (5, Left (is_dotop, app "{}<-", [[("","{"); ("","}"); ("","<-"); ("",")")]]))
-  ; (5, Left (is_dotop, app "[]<-", [[("","["); ("","]"); ("","<-"); ("",")")]]))
-
-  ; (7, Left (is_dotop, app "(;..)<-", [[("","("); ("",";"); ("",".."); ("",")"); ("","<-"); ("",")")]]))
-  ; (7, Left (is_dotop, app "{;..}<-", [[("","{"); ("",";"); ("",".."); ("","}"); ("","<-"); ("",")")]]))
-  ; (7, Left (is_dotop, app "[;..]<-", [[("","["); ("",";"); ("",".."); ("","]"); ("","<-"); ("",")")]]))
-  ] in
-  let matchers = List.map (fun
-    [ (n, Left (pred, xform, suffixes)) ->
-      (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"|"INFIXOP1"|"INFIXOP2"|"INFIXOP3"|"INFIXOP4"|"PREFIXOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
-           | _ -> None]))
-    | (n, Right f) -> (n, Right f)
-    ]) trials in
-  let (n, tok) = check_stream matchers strm in
-  do { for i = 1 to n do { Stream.junk strm } ; tok }
-;
-
-value operator_rparen =
-  Grammar.Entry.of_parser gram "operator_rparen"
-    operator_rparen_f
-;
-
-value check_not_part_of_patt_f strm =
-  let matchers = [
-    (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
-  ; (4, fun [ [("", "("); ("", s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
-  ; (6, fun [
-              [("", "("); ("", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ])
-  ; (7, fun [
-              [("", "("); ("", s); ("", "("); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ])
-  ; (8, fun [
-              [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ])
-  ; (9, fun [
-              [("", "("); ("", s); ("", "("); ("", ";"); ("", ".."); ("", ")"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "{"); ("", ";"); ("", ".."); ("", "}"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | [("", "("); ("", s); ("", "["); ("", ";"); ("", ".."); ("", "]"); ("", "<-"); ("", ")"); tok :: _] when is_special_op s -> Some tok
-            | _ -> None ])
-
-  ] in
-  let rec crec i = fun [
-    [ (n,_) :: _ ] as ml when i < n ->
-      let l = stream_npeek i strm in
-      let last = fst (sep_last l) in
-      if last = ("EOI","") || last = ("",";;") then raise Stream.Failure
-      else crec (i+1) ml
-  | [ (n, f) :: t ] ->
-      match f (stream_npeek n strm) with [
-        None -> crec (i+1) t
-      | Some tok -> tok
-     ]
-  | [] -> raise Stream.Failure
-  ] in
-  let tok = crec 1 matchers in
-  match tok with
-    [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
-    | _ -> () ]
-;
-
-value check_not_part_of_patt =
-  Grammar.Entry.of_parser gram "check_not_part_of_patt"
-    check_not_part_of_patt_f
-;
+value operator_rparen = Grammar.Entry.create gram "operator_rparen";
 
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
 value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
@@ -434,6 +345,12 @@ module CheckTypeBinder = Entry(struct
                              end) ;
 value check_type_binder = CheckTypeBinder.check ;
 
+module CheckAdditiveRparen = Entry(struct
+  value rexs = {foo| ("+" | "-" | "+." | "-." | "+=") ")" |foo} ;
+  value extra = [] ;
+  value name = "additive_rparen" ;
+                             end) ;
+value check_additive_rparen = CheckAdditiveRparen.check ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
 
@@ -445,9 +362,109 @@ EXTEND
     constructor_declaration label_declaration match_case ipatt
     with_constr poly_variant attribute_body alg_attribute alg_attributes
     check_type_decl check_type_extension check_dot_uid
+    operator_rparen
     check_type_binder
     ext_attributes
     ;
+
+  infix_operator0: [ [
+      x = INFIXOP0 -> x
+    | "!=" -> "!="
+    | "=" -> "="
+    | "<" -> "<"
+    | ">" -> ">"
+    | "||" -> "||"
+    | "or" -> "or"
+    | "&" -> "&"
+    | "&&" -> "&&"
+(* NOTE WELL: "$" is not a supported operator in Camlp5's revised syntax,
+   b/c conflicts with antiquotations, e.g. <:expr< a $ $lid:id$ >> would
+   *suck* to parse
+    | "$" -> "$"
+ *)
+    ] ]
+    ;
+  infix_operator1: [ [
+      x = INFIXOP1 -> x
+    | "@" -> "@"
+    | "^" -> "^"
+    ] ]
+    ;
+  additive_operator2: [ [
+      "+" -> "+"
+    | "+=" -> "+="
+    | "-" -> "-"
+    | "+." -> "+."
+    | "-." -> "-."
+    ] ]
+    ;
+  infix_operator2: [ [
+      x = INFIXOP2 -> x
+    | check_additive_rparen ; x = additive_operator2 -> x
+    ] ]
+    ;
+  infix_operator3: [ [
+      x = INFIXOP3 -> x
+    | "lor" -> "lor"
+    | "lxor" -> "lxor"
+    | "mod" -> "mod"
+    | "land" -> "land"
+    | "*" -> "*"
+    | "/" -> "/"
+    | "%" -> "%"
+    ] ]
+    ;
+  infix_operator4: [ [
+      x = INFIXOP4 -> x
+    | "asr" -> "asr"
+    | "lsl" -> "lsl"
+    | "lsr" -> "lsr"
+    | "**" -> "**"
+    ] ]
+    ;
+  prefix_operator: [ [
+      x = PREFIXOP -> x
+    | "!" -> "!"
+    ] ]
+    ;
+  infix_operator: [ [ 
+      x = infix_operator0 -> x
+    | x = infix_operator1 -> x
+    | x = infix_operator2 -> x
+    | x = infix_operator3 -> x
+    | x = infix_operator4 -> x
+    | ":=" -> ":="
+    ] ]
+    ;
+  operator: [ [
+      x = prefix_operator -> x
+    | x = infix_operator -> x
+    | x = HASHOP -> x
+    | op = LETOP -> op
+    | op = ANDOP -> op
+    | op = "::" -> op
+
+    | op = DOTOP ; "(" ; ")" -> op ^ "()"
+    | op = DOTOP ; "(" ; ")" ; "<-" -> op ^ "()<-"
+    | op = DOTOP ; "(" ; ";" ; ".." ; ")" -> op ^ "(;..)"
+    | op = DOTOP ; "(" ; ";" ; ".." ; ")" ; "<-" -> op ^ "(;..)<-"
+
+    | op = DOTOP ; "{" ; "}" -> op ^ "{}"
+    | op = DOTOP ; "{" ; "}" ; "<-" -> op ^ "{}<-"
+    | op = DOTOP ; "{" ; ";" ; ".." ; "}" -> op ^ "{;..}"
+    | op = DOTOP ; "{" ; ";" ; ".." ; "}" ; "<-" -> op ^ "{;..}<-"
+
+    | op = DOTOP ; "[" ; "]" -> op ^ "[]"
+    | op = DOTOP ; "[" ; "]" ; "<-" -> op ^ "[]<-"
+    | op = DOTOP ; "[" ; ";" ; ".." ; "]" -> op ^ "[;..]"
+    | op = DOTOP ; "[" ; ";" ; ".." ; "]" ; "<-" -> op ^ "[;..]<-"
+    ] ]
+    ;
+  operator_rparen: [ [
+      op = operator ; ")" -> op
+    ] ]
+    ;
+
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> (loc, String.concat "." l)
     | s = STRING -> (loc, s)

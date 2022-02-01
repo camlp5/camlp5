@@ -91,46 +91,43 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
-value operator_rparen_f strm =
-  let id x = x in
-  let app suff s = s^suff in 
-  let trials = [
-    (1, Right (fun [ [(("LIDENT"|"UIDENT"),_) :: _] -> True | _ -> False ]))
-  ; (2, Left (is_operator, id, [[("",")")]]))
-  ; (2, Left (is_letop, id, [[("",")")]]))
-  ; (2, Left (is_andop, id, [[("",")")]]))
-  ; (4, Left (is_dotop, app "()", [[("","("); ("",")"); ("",")")]]))
-  ; (4, Left (is_dotop, app "{}", [[("","{"); ("","}"); ("",")")]]))
-  ; (4, Left (is_dotop, app "[]", [[("","["); ("","]"); ("",")")]]))
+open Token_regexps ;
+module Entry(R : sig value rexs : string ;
+                     value extra : list StringBaseToken.t ;
+                     value name : string ;
+                 end) = struct
+  value rex =
+    parse R.rexs
+  ;
+  module C = Compile(struct value rex = rex ; value extra = R.extra ; end) ;
+  value pred strm =
+    check_regexp rex strm
+  ;
 
-  ; (6, Left (is_dotop, app "(;..)", [[("","("); ("",";"); ("",".."); ("",")"); ("",")")]]))
-  ; (6, Left (is_dotop, app "{;..}", [[("","{"); ("",";"); ("",".."); ("","}"); ("",")")]]))
-  ; (6, Left (is_dotop, app "[;..]", [[("","["); ("",";"); ("",".."); ("","]"); ("",")")]]))
+  value check_f strm =
+    if pred strm then () else raise Stream.Failure
+  ;
 
-  ; (5, Left (is_dotop, app "()<-", [[("","("); ("",")"); ("","<-"); ("",")")]]))
-  ; (5, Left (is_dotop, app "{}<-", [[("","{"); ("","}"); ("","<-"); ("",")")]]))
-  ; (5, Left (is_dotop, app "[]<-", [[("","["); ("","]"); ("","<-"); ("",")")]]))
+  value check_not_f strm =
+    if not(pred strm) then () else raise Stream.Failure
+  ;
 
-  ; (7, Left (is_dotop, app "(;..)<-", [[("","("); ("",";"); ("",".."); ("",")"); ("","<-"); ("",")")]]))
-  ; (7, Left (is_dotop, app "{;..}<-", [[("","{"); ("",";"); ("",".."); ("","}"); ("","<-"); ("",")")]]))
-  ; (7, Left (is_dotop, app "[;..]<-", [[("","["); ("",";"); ("",".."); ("","]"); ("","<-"); ("",")")]]))
-  ] in
-  let matchers = List.map (fun
-    [ (n, Left (pred, xform, suffixes)) ->
-      (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"|"INFIXOP1"|"INFIXOP2"|"INFIXOP3"|"INFIXOP4"|"PREFIXOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
-           | _ -> None]))
-    | (n, Right f) -> (n, Right f)
-    ]) trials in
-  let (n, tok) = check_stream matchers strm in
-  do { for i = 1 to n do { Stream.junk strm } ; tok }
+value check =
+  Grammar.Entry.of_parser Pcaml.gram ("check_"^R.name)
+    check_f
 ;
-(*
-value operator_rparen =
-  Grammar.Entry.of_parser gram "operator_rparen"
-    operator_rparen_f
+value check_not =
+  Grammar.Entry.of_parser Pcaml.gram ("check_not_"^R.name)
+    check_not_f
 ;
- *)
+end
+;
+module CheckAdditiveRparen = Entry(struct
+  value rexs = {foo| ("+" | "-" | "+." | "-." | "+=") ")" |foo} ;
+  value extra = [] ;
+  value name = "additive_rparen" ;
+                             end) ;
+value check_additive_rparen = CheckAdditiveRparen.check ;
 
 value operator_rparen = Grammar.Entry.create gram "operator_rparen";
 
@@ -768,13 +765,17 @@ EXTEND
     | "^" -> "^"
     ] ]
     ;
-  infix_operator2: [ [
-      x = INFIXOP2 -> x
-    | "+" -> "+"
+  additive_operator2: [ [
+      "+" -> "+"
     | "+=" -> "+="
     | "-" -> "-"
     | "+." -> "+."
     | "-." -> "-."
+    ] ]
+    ;
+  infix_operator2: [ [
+      x = INFIXOP2 -> x
+    | check_additive_rparen ; x = additive_operator2 -> x
     ] ]
     ;
   infix_operator3: [ [

@@ -1196,7 +1196,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                   Stream.junk strm__;
                   let buf = ident2 (Plexing.Lexbuf.add c buf) strm__ in
                   begin match Plexing.Lexbuf.get buf with
-                    "*" | "/" | "**" as s ->
+                    "*" | "/" | "%" | "**" as s ->
                       keyword_or_error ctx (bp, Stream.count strm__) s
                   | s
                     when String.length s > 2 && s.[0] = '*' && s.[1] = '*' ->

@@ -129,7 +129,6 @@ let mklistpat loc last =
   loop true
 ;;
 
-
 open Token_regexps;;
 module Entry
   (R :
@@ -155,170 +154,7 @@ module Entry
   end
 ;;
 
-let operator_rparen_f strm =
-  let id x = x in
-  let app suff s = s ^ suff in
-  let trials =
-    [1,
-     Right
-       (function
-          (("LIDENT" | "UIDENT"), _) :: _ -> true
-        | _ -> false);
-     2, Left (is_operator, id, [["", ")"]]);
-     2, Left (is_letop, id, [["", ")"]]); 2, Left (is_andop, id, [["", ")"]]);
-     4, Left (is_dotop, app "()", [["", "("; "", ")"; "", ")"]]);
-     4, Left (is_dotop, app "{}", [["", "{"; "", "}"; "", ")"]]);
-     4, Left (is_dotop, app "[]", [["", "["; "", "]"; "", ")"]]);
-     6,
-     Left
-       (is_dotop, app "(;..)",
-        [["", "("; "", ";"; "", ".."; "", ")"; "", ")"]]);
-     6,
-     Left
-       (is_dotop, app "{;..}",
-        [["", "{"; "", ";"; "", ".."; "", "}"; "", ")"]]);
-     6,
-     Left
-       (is_dotop, app "[;..]",
-        [["", "["; "", ";"; "", ".."; "", "]"; "", ")"]]);
-     5, Left (is_dotop, app "()<-", [["", "("; "", ")"; "", "<-"; "", ")"]]);
-     5, Left (is_dotop, app "{}<-", [["", "{"; "", "}"; "", "<-"; "", ")"]]);
-     5, Left (is_dotop, app "[]<-", [["", "["; "", "]"; "", "<-"; "", ")"]]);
-     7,
-     Left
-       (is_dotop, app "(;..)<-",
-        [["", "("; "", ";"; "", ".."; "", ")"; "", "<-"; "", ")"]]);
-     7,
-     Left
-       (is_dotop, app "{;..}<-",
-        [["", "{"; "", ";"; "", ".."; "", "}"; "", "<-"; "", ")"]]);
-     7,
-     Left
-       (is_dotop, app "[;..]<-",
-        [["", "["; "", ";"; "", ".."; "", "]"; "", "<-"; "", ")"]])]
-  in
-  let matchers =
-    List.map
-      (function
-         n, Left (pred, xform, suffixes) ->
-           n,
-           Left
-             (function
-                (("" | "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" |
-                  "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4" |
-                  "PREFIXOP"),
-                 s) ::
-                l
-                when pred s && List.mem l suffixes ->
-                  Some (xform s)
-              | _ -> None)
-       | n, Right f -> n, Right f)
-      trials
-  in
-  let (n, tok) = check_stream matchers strm in
-  for i = 1 to n do Stream.junk strm done; tok
-;;
-
-let operator_rparen =
-  Grammar.Entry.of_parser gram "operator_rparen" operator_rparen_f
-;;
-
-let check_not_part_of_patt_f strm =
-  let matchers =
-    [2,
-     (function
-        ("LIDENT", _) :: tok :: _ -> Some tok
-      | _ -> None);
-     4,
-     (function
-        ("", "(") :: ("", s) :: ("", ")") :: tok :: _ when is_special_op s ->
-          Some tok
-      | _ -> None);
-     6,
-     (function
-        ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", ")") :: tok ::
-        _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", ")") :: tok ::
-        _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", ")") :: tok ::
-        _
-        when is_special_op s ->
-          Some tok
-      | _ -> None);
-     7,
-     (function
-        ("", "(") :: ("", s) :: ("", "(") :: ("", ")") :: ("", "<-") ::
-        ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "{") :: ("", "}") :: ("", "<-") ::
-        ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "[") :: ("", "]") :: ("", "<-") ::
-        ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | _ -> None);
-     8,
-     (function
-        ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
-        ("", ")") :: ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
-        ("", "}") :: ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
-        ("", "]") :: ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | _ -> None);
-     9,
-     (function
-        ("", "(") :: ("", s) :: ("", "(") :: ("", ";") :: ("", "..") ::
-        ("", ")") :: ("", "<-") :: ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "{") :: ("", ";") :: ("", "..") ::
-        ("", "}") :: ("", "<-") :: ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | ("", "(") :: ("", s) :: ("", "[") :: ("", ";") :: ("", "..") ::
-        ("", "]") :: ("", "<-") :: ("", ")") :: tok :: _
-        when is_special_op s ->
-          Some tok
-      | _ -> None)]
-  in
-  let rec crec i =
-    function
-      (n, _) :: _ as ml when i < n ->
-        let l = stream_npeek i strm in
-        let last = fst (sep_last l) in
-        if last = ("EOI", "") || last = ("", ";;") then raise Stream.Failure
-        else crec (i + 1) ml
-    | (n, f) :: t ->
-        begin match f (stream_npeek n strm) with
-          None -> crec (i + 1) t
-        | Some tok -> tok
-        end
-    | [] -> raise Stream.Failure
-  in
-  let tok = crec 1 matchers in
-  match tok with
-    "", ("," | "as" | "|" | "::") -> raise Stream.Failure
-  | _ -> ()
-;;
-
-let check_not_part_of_patt =
-  Grammar.Entry.of_parser gram "check_not_part_of_patt"
-    check_not_part_of_patt_f
-;;
+let operator_rparen = Grammar.Entry.create gram "operator_rparen";;
 
 let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
 let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
@@ -547,6 +383,15 @@ module CheckTypeBinder =
 ;;
 let check_type_binder = CheckTypeBinder.check;;
 
+module CheckAdditiveRparen =
+  Entry
+    (struct
+      let rexs = " (\"+\" | \"-\" | \"+.\" | \"-.\" | \"+=\") \")\" ";;
+      let extra = [];;
+      let name = "additive_rparen";;
+    end)
+;;
+let check_additive_rparen = CheckAdditiveRparen.check;;
 
 (* -- begin copy from pa_r to q_MLast -- *)
 
@@ -586,12 +431,30 @@ Grammar.safe_extend
    and _ = (check_type_decl : 'check_type_decl Grammar.Entry.e)
    and _ = (check_type_extension : 'check_type_extension Grammar.Entry.e)
    and _ = (check_dot_uid : 'check_dot_uid Grammar.Entry.e)
+   and _ = (operator_rparen : 'operator_rparen Grammar.Entry.e)
    and _ = (check_type_binder : 'check_type_binder Grammar.Entry.e)
    and _ = (ext_attributes : 'ext_attributes Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
-   let attribute_id : 'attribute_id Grammar.Entry.e =
+   let infix_operator0 : 'infix_operator0 Grammar.Entry.e =
+     grammar_entry_create "infix_operator0"
+   and infix_operator1 : 'infix_operator1 Grammar.Entry.e =
+     grammar_entry_create "infix_operator1"
+   and additive_operator2 : 'additive_operator2 Grammar.Entry.e =
+     grammar_entry_create "additive_operator2"
+   and infix_operator2 : 'infix_operator2 Grammar.Entry.e =
+     grammar_entry_create "infix_operator2"
+   and infix_operator3 : 'infix_operator3 Grammar.Entry.e =
+     grammar_entry_create "infix_operator3"
+   and infix_operator4 : 'infix_operator4 Grammar.Entry.e =
+     grammar_entry_create "infix_operator4"
+   and prefix_operator : 'prefix_operator Grammar.Entry.e =
+     grammar_entry_create "prefix_operator"
+   and infix_operator : 'infix_operator Grammar.Entry.e =
+     grammar_entry_create "infix_operator"
+   and operator : 'operator Grammar.Entry.e = grammar_entry_create "operator"
+   and attribute_id : 'attribute_id Grammar.Entry.e =
      grammar_entry_create "attribute_id"
    and attribute_structure : 'attribute_structure Grammar.Entry.e =
      grammar_entry_create "attribute_structure"
@@ -723,7 +586,381 @@ Grammar.safe_extend
    and ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon_fun_binding"
    in
-   [Grammar.extension (attribute_id : 'attribute_id Grammar.Entry.e) None
+   [Grammar.extension (infix_operator0 : 'infix_operator0 Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "&&")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("&&" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "&")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("&" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "or")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("or" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "||")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("||" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ">")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> (">" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "<")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("<" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "=")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("=" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!=")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("!=" : 'infix_operator0)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("INFIXOP0", "")),
+           "194fe98d",
+           (fun (x : string) (loc : Ploc.t) -> (x : 'infix_operator0)))]];
+    Grammar.extension (infix_operator1 : 'infix_operator1 Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "^")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("^" : 'infix_operator1)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "@")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("@" : 'infix_operator1)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("INFIXOP1", "")),
+           "194fe98d",
+           (fun (x : string) (loc : Ploc.t) -> (x : 'infix_operator1)))]];
+    Grammar.extension
+      (additive_operator2 : 'additive_operator2 Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-.")),
+           "194fe98d",
+           (fun _ (loc : Ploc.t) -> ("-." : 'additive_operator2)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+.")),
+           "194fe98d",
+           (fun _ (loc : Ploc.t) -> ("+." : 'additive_operator2)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("-" : 'additive_operator2)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+=")),
+           "194fe98d",
+           (fun _ (loc : Ploc.t) -> ("+=" : 'additive_operator2)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")),
+           "194fe98d",
+           (fun _ (loc : Ploc.t) -> ("+" : 'additive_operator2)))]];
+    Grammar.extension (infix_operator2 : 'infix_operator2 Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (check_additive_rparen :
+                    'check_additive_rparen Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (additive_operator2 : 'additive_operator2 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'additive_operator2) _ (loc : Ploc.t) ->
+              (x : 'infix_operator2)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("INFIXOP2", "")),
+           "194fe98d",
+           (fun (x : string) (loc : Ploc.t) -> (x : 'infix_operator2)))]];
+    Grammar.extension (infix_operator3 : 'infix_operator3 Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "%")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("%" : 'infix_operator3)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "/")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("/" : 'infix_operator3)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "*")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("*" : 'infix_operator3)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "land")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("land" : 'infix_operator3)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "mod")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("mod" : 'infix_operator3)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lxor")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("lxor" : 'infix_operator3)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lor")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("lor" : 'infix_operator3)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("INFIXOP3", "")),
+           "194fe98d",
+           (fun (x : string) (loc : Ploc.t) -> (x : 'infix_operator3)))]];
+    Grammar.extension (infix_operator4 : 'infix_operator4 Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "**")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("**" : 'infix_operator4)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lsr")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("lsr" : 'infix_operator4)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "lsl")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("lsl" : 'infix_operator4)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "asr")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("asr" : 'infix_operator4)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("INFIXOP4", "")),
+           "194fe98d",
+           (fun (x : string) (loc : Ploc.t) -> (x : 'infix_operator4)))]];
+    Grammar.extension (prefix_operator : 'prefix_operator Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("!" : 'prefix_operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("PREFIXOP", "")),
+           "194fe98d",
+           (fun (x : string) (loc : Ploc.t) -> (x : 'prefix_operator)))]];
+    Grammar.extension (infix_operator : 'infix_operator Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ":=")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> (":=" : 'infix_operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (infix_operator4 : 'infix_operator4 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'infix_operator4) (loc : Ploc.t) ->
+              (x : 'infix_operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (infix_operator3 : 'infix_operator3 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'infix_operator3) (loc : Ploc.t) ->
+              (x : 'infix_operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (infix_operator2 : 'infix_operator2 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'infix_operator2) (loc : Ploc.t) ->
+              (x : 'infix_operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (infix_operator1 : 'infix_operator1 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'infix_operator1) (loc : Ploc.t) ->
+              (x : 'infix_operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (infix_operator0 : 'infix_operator0 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'infix_operator0) (loc : Ploc.t) ->
+              (x : 'infix_operator)))]];
+    Grammar.extension (operator : 'operator Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("DOTOP", "")))
+                         (Grammar.s_token ("", "[")))
+                      (Grammar.s_token ("", ";")))
+                   (Grammar.s_token ("", "..")))
+                (Grammar.s_token ("", "]")))
+             (Grammar.s_token ("", "<-")),
+           "194fe98d",
+           (fun _ _ _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "[;..]<-" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("DOTOP", "")))
+                      (Grammar.s_token ("", "[")))
+                   (Grammar.s_token ("", ";")))
+                (Grammar.s_token ("", "..")))
+             (Grammar.s_token ("", "]")),
+           "194fe98d",
+           (fun _ _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "[;..]" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("DOTOP", "")))
+                   (Grammar.s_token ("", "[")))
+                (Grammar.s_token ("", "]")))
+             (Grammar.s_token ("", "<-")),
+           "194fe98d",
+           (fun _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "[]<-" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("DOTOP", "")))
+                (Grammar.s_token ("", "[")))
+             (Grammar.s_token ("", "]")),
+           "194fe98d",
+           (fun _ _ (op : string) (loc : Ploc.t) -> (op ^ "[]" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("DOTOP", "")))
+                         (Grammar.s_token ("", "{")))
+                      (Grammar.s_token ("", ";")))
+                   (Grammar.s_token ("", "..")))
+                (Grammar.s_token ("", "}")))
+             (Grammar.s_token ("", "<-")),
+           "194fe98d",
+           (fun _ _ _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "{;..}<-" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("DOTOP", "")))
+                      (Grammar.s_token ("", "{")))
+                   (Grammar.s_token ("", ";")))
+                (Grammar.s_token ("", "..")))
+             (Grammar.s_token ("", "}")),
+           "194fe98d",
+           (fun _ _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "{;..}" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("DOTOP", "")))
+                   (Grammar.s_token ("", "{")))
+                (Grammar.s_token ("", "}")))
+             (Grammar.s_token ("", "<-")),
+           "194fe98d",
+           (fun _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "{}<-" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("DOTOP", "")))
+                (Grammar.s_token ("", "{")))
+             (Grammar.s_token ("", "}")),
+           "194fe98d",
+           (fun _ _ (op : string) (loc : Ploc.t) -> (op ^ "{}" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("DOTOP", "")))
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_token ("", ";")))
+                   (Grammar.s_token ("", "..")))
+                (Grammar.s_token ("", ")")))
+             (Grammar.s_token ("", "<-")),
+           "194fe98d",
+           (fun _ _ _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "(;..)<-" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("DOTOP", "")))
+                      (Grammar.s_token ("", "(")))
+                   (Grammar.s_token ("", ";")))
+                (Grammar.s_token ("", "..")))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "(;..)" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("DOTOP", "")))
+                   (Grammar.s_token ("", "(")))
+                (Grammar.s_token ("", ")")))
+             (Grammar.s_token ("", "<-")),
+           "194fe98d",
+           (fun _ _ _ (op : string) (loc : Ploc.t) ->
+              (op ^ "()<-" : 'operator)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_token ("DOTOP", "")))
+                (Grammar.s_token ("", "(")))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ _ (op : string) (loc : Ploc.t) -> (op ^ "()" : 'operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "::")),
+           "194fe98d",
+           (fun (op : string) (loc : Ploc.t) -> (op : 'operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("ANDOP", "")),
+           "194fe98d",
+           (fun (op : string) (loc : Ploc.t) -> (op : 'operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LETOP", "")),
+           "194fe98d",
+           (fun (op : string) (loc : Ploc.t) -> (op : 'operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("HASHOP", "")),
+           "194fe98d", (fun (x : string) (loc : Ploc.t) -> (x : 'operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (infix_operator : 'infix_operator Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'infix_operator) (loc : Ploc.t) -> (x : 'operator)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (prefix_operator : 'prefix_operator Grammar.Entry.e)),
+           "194fe98d",
+           (fun (x : 'prefix_operator) (loc : Ploc.t) -> (x : 'operator)))]];
+    Grammar.extension (operator_rparen : 'operator_rparen Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (operator : 'operator Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ (op : 'operator) (loc : Ploc.t) ->
+              (op : 'operator_rparen)))]];
+    Grammar.extension (attribute_id : 'attribute_id Grammar.Entry.e) None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
