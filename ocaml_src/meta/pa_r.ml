@@ -129,6 +129,32 @@ let mklistpat loc last =
   loop true
 ;;
 
+
+open Token_regexps;;
+module Entry
+  (R :
+   sig
+     val rexs : string;;
+     val extra : StringBaseToken.t list;;
+     val name : string;;
+   end) =
+  struct
+    let rex = parse R.rexs;;
+    module C = Compile (struct let rex = rex;; let extra = R.extra;; end);;
+    let pred strm = check_regexp rex strm;;
+    let check_f strm = if pred strm then () else raise Stream.Failure;;
+    let check_not_f strm =
+      if not (pred strm) then () else raise Stream.Failure
+    ;;
+    let check =
+      Grammar.Entry.of_parser Pcaml.gram ("check_" ^ R.name) check_f
+    ;;
+    let check_not =
+      Grammar.Entry.of_parser Pcaml.gram ("check_not_" ^ R.name) check_not_f
+    ;;
+  end
+;;
+
 let operator_rparen_f strm =
   let id x = x in
   let app suff s = s ^ suff in
@@ -412,30 +438,16 @@ let build_letop_binder loc letop b l e =
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
-let let_exception_re =
-  let open Token_regexps in parse " \"let\" \"exception\" "
+module CheckLetException =
+  Entry
+    (struct
+      let rexs = " \"let\" \"exception\" ";;
+      let extra = [];;
+      let name = "let_exception";;
+    end)
 ;;
-
-let is_let_exception_f strm =
-  Token_regexps.check_regexp let_exception_re strm
-;;
-
-let check_let_exception_f strm =
-  if is_let_exception_f strm then () else raise Stream.Failure
-;;
-
-let check_let_exception =
-  Grammar.Entry.of_parser gram "let_exception" check_let_exception_f
-;;
-
-let check_let_not_exception_f strm =
-  if not (is_let_exception_f strm) then () else raise Stream.Failure
-;;
-
-let check_let_not_exception =
-  Grammar.Entry.of_parser gram "check_let_not_exception"
-    check_let_not_exception_f
-;;
+let check_let_exception = CheckLetException.check;;
+let check_let_not_exception = CheckLetException.check_not;;
 
 let stream_peek_nth n strm =
   let rec loop n =
@@ -459,194 +471,103 @@ let stream_peek_nth n strm =
    That is: a UIDENT ..., or a LIDENT, then some type-parameters, then "+="
  *)
 
-let type_decl_re =
-  let open Token_regexps in
-  parse
-    "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-!\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         (\"rec\"|\"nonrec\"|eps)(\"LIDENT\" | \"tp\" | \"_tp\" | \"lid\" | \"lid_\") type_parameters (\"=\" | \":=\")\n  "
+module CheckTypeDecl =
+  Entry
+    (struct
+      let rexs =
+        "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-!\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         (\"rec\"|\"nonrec\"|eps)(\"LIDENT\" | \"tp\" | \"_tp\" | \"lid\" | \"lid_\") type_parameters (\"=\" | \":=\")\n  "
+      ;;
+      let extra = [];;
+      let name = "type_decl";;
+    end)
 ;;
+let check_type_decl = CheckTypeDecl.check;;
 
-let is_type_decl_f strm = Token_regexps.check_regexp type_decl_re strm;;
-
-let check_type_decl_f strm =
-  if is_type_decl_f strm then () else raise Stream.Failure
+module CheckTypeExtension =
+  Entry
+    (struct
+      let rexs =
+        "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         \"UIDENT\" | \"lilongid\" | \"_lilongid\" | (\"LIDENT\" type_parameters \"+=\")\n  "
+      ;;
+      let extra = [];;
+      let name = "type_extension";;
+    end)
 ;;
+let check_type_extension = CheckTypeExtension.check;;
 
-let type_extension_re =
-  let open Token_regexps in
-  parse
-    "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         \"UIDENT\" | \"lilongid\" | \"_lilongid\" | (\"LIDENT\" type_parameters \"+=\")\n  "
+module CheckDotUid =
+  Entry
+    (struct
+      let rexs = " \".\" (\"UIDENT\" | \"uid\" | \"_uid\") ";;
+      let extra = [];;
+      let name = "dot_uid";;
+    end)
 ;;
+let check_dot_uid = CheckDotUid.check;;
 
-let is_type_extension_f strm =
-  Token_regexps.check_regexp type_extension_re strm
+module CheckLbracket =
+  Entry
+    (struct
+      let rexs = " \"[\" ";;
+      let extra = [];;
+      let name = "lbracket";;
+    end)
 ;;
+let check_lbracket = CheckLbracket.check;;
 
-let check_type_extension_f strm =
-  if is_type_extension_f strm then () else raise Stream.Failure
+module CheckLbracketBar =
+  Entry
+    (struct
+      let rexs = " \"[|\" ";;
+      let extra = [];;
+      let name = "lbracketbar";;
+    end)
 ;;
+let check_lbracketbar = CheckLbracketBar.check;;
 
-let check_type_decl =
-  Grammar.Entry.of_parser gram "check_type_decl" check_type_decl_f
+module CheckLbrace =
+  Entry
+    (struct let rexs = " \"{\" ";; let extra = [];; let name = "lbrace";; end)
 ;;
+let check_lbrace = CheckLbrace.check;;
 
-let check_type_extension =
-  Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f
+module CheckLidentColon =
+  Entry
+    (struct
+      let rexs = " \"LIDENT\" \":\" ";;
+      let extra = [];;
+      let name = "lident_colon";;
+    end)
 ;;
+let check_lident_colon = CheckLidentColon.check;;
+let check_not_lident_colon = CheckLidentColon.check_not;;
 
-let dot_uid_re =
-  let open Token_regexps in parse " \".\" (\"UIDENT\" | \"uid\" | \"_uid\") "
+module CheckUidentColoneq =
+  Entry
+    (struct
+      let rexs = " (\"UIDENT\" | \"uid\" | \"_uid\") \":=\" ";;
+      let extra = [];;
+      let name = "uident_coloneq";;
+    end)
 ;;
+let check_uident_coloneq = CheckUidentColoneq.check;;
 
-let is_dot_uid_f strm = Token_regexps.check_regexp dot_uid_re strm;;
-
-let check_dot_uid_f strm =
-  if is_dot_uid_f strm then () else raise Stream.Failure
+module CheckColon =
+  Entry
+    (struct let rexs = " \":\" ";; let extra = [];; let name = "colon";; end)
 ;;
+let check_colon = CheckColon.check;;
+let check_not_colon = CheckColon.check_not;;
 
-let check_dot_uid =
-  Grammar.Entry.of_parser gram "check_dot_uid" check_dot_uid_f
+module CheckLabelEq =
+  Entry
+    (struct
+      let rexs = " (\"UIDENT\" \".\")* \"LIDENT\" (\"=\" | \";\" | \":\") ";;
+      let extra = [];;
+      let name = "label_eq";;
+    end)
 ;;
-
-let is_lbracket_f strm =
-  match Stream.npeek 1 strm with
-    ["", "["] -> true
-  | _ -> false
-;;
-
-let check_lbracket_f strm =
-  if is_lbracket_f strm then () else raise Stream.Failure
-;;
-
-let check_lbracket =
-  Grammar.Entry.of_parser gram "check_lbracket" check_lbracket_f
-;;
-
-let is_lbracketbar_f strm =
-  match Stream.npeek 1 strm with
-    ["", "[|"] -> true
-  | _ -> false
-;;
-
-let check_lbracketbar_f strm =
-  if is_lbracketbar_f strm then () else raise Stream.Failure
-;;
-
-let check_lbracketbar =
-  Grammar.Entry.of_parser gram "check_lbracketbar" check_lbracketbar_f
-;;
-
-
-let is_lbrace_f strm =
-  match Stream.npeek 1 strm with
-    ["", "{"] -> true
-  | _ -> false
-;;
-
-let check_lbrace_f strm =
-  if is_lbrace_f strm then () else raise Stream.Failure
-;;
-
-let check_lbrace =
-  Grammar.Entry.of_parser gram "check_lbrace" check_lbrace_f
-;;
-
-let is_lident_colon_f strm =
-  match Stream.npeek 2 strm with
-    ("LIDENT", _) :: ("", ":") :: _ -> true
-  | _ -> false
-;;
-
-let check_lident_colon_f strm =
-  if is_lident_colon_f strm then () else raise Stream.Failure
-;;
-
-let check_not_lident_colon_f strm =
-  if not (is_lident_colon_f strm) then () else raise Stream.Failure
-;;
-
-let lident_colon_re = let open Token_regexps in parse " \"LIDENT\" \":\" ";;
-
-let is_lident_colon_f strm = Token_regexps.check_regexp lident_colon_re strm;;
-
-let check_lident_colon_f' strm =
-  if is_lident_colon_f strm then () else raise Stream.Failure
-;;
-
-let check_not_lident_colon_f' strm =
-  if not (is_lident_colon_f strm) then () else raise Stream.Failure
-;;
-
-let check_lident_colon =
-  Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f
-;;
-
-let check_not_lident_colon =
-  Grammar.Entry.of_parser gram "check_not_lident_colon"
-    check_not_lident_colon_f
-;;
-
-let uident_coloneq_re =
-  let open Token_regexps in parse " (\"UIDENT\" | \"uid\" | \"_uid\") \":=\" "
-;;
-
-let is_uident_coloneq_f strm =
-  Token_regexps.check_regexp uident_coloneq_re strm
-;;
-
-let check_uident_coloneq_f' strm =
-  if is_uident_coloneq_f strm then () else raise Stream.Failure
-;;
-
-let check_uident_coloneq =
-  Grammar.Entry.of_parser gram "check_uident_coloneq" check_uident_coloneq_f'
-;;
-
-let check_colon_f strm =
-  match stream_npeek 1 strm with
-    ["", ":"] -> ()
-  | _ -> raise Stream.Failure
-;;
-
-let check_colon = Grammar.Entry.of_parser gram "check_colon" check_colon_f;;
-
-let check_not_colon_f strm =
-  match stream_npeek 1 strm with
-    ["", ":"] -> raise Stream.Failure
-  | _ -> ()
-;;
-
-let check_not_colon =
-  Grammar.Entry.of_parser gram "check_not_colon" check_not_colon_f
-;;
-
-let test_label_eq0 =
-  Grammar.Entry.of_parser gram "test_label_eq"
-    (let rec test lev strm =
-       match stream_peek_nth lev strm with
-         Some ("UIDENT", _ | "LIDENT", _ | "", ".") -> test (lev + 1) strm
-       | Some ("ANTIQUOT_LOC", _) -> ()
-       | Some ("", ("=" | ";" | "}" | ":")) -> ()
-       | _ -> raise Stream.Failure
-     in
-     test 1)
-;;
-
-let label_eq_re =
-  let open Token_regexps in
-  parse " (\"UIDENT\" \".\")* \"LIDENT\" (\"=\" | \";\" | \":\") "
-;;
-
-let is_label_eq_f strm = Token_regexps.check_regexp label_eq_re strm;;
-
-let check_label_eq_f strm =
-  if is_label_eq_f strm then () else raise Stream.Failure
-;;
-
-let test_label_eq1 =
-  Grammar.Entry.of_parser gram "test_label_eq" check_label_eq_f
-;;
-
-let test_label_eq = test_label_eq0;;
+let check_label_eq = CheckLabelEq.check;;
 
 let patt_wrap_attrs loc e l =
   let rec wrec e =
@@ -679,33 +600,27 @@ let str_item_to_inline loc si ext =
   | Some attrid -> MLast.StExten (loc, (attrid, MLast.StAttr (loc, [si])), [])
 ;;
 
-let lparen_type_re = let open Token_regexps in parse " \"(\" \"type\" ";;
-
-let is_lparen_type_f strm = Token_regexps.check_regexp lparen_type_re strm;;
-
-let check_lparen_type_f strm =
-  if is_lparen_type_f strm then () else raise Stream.Failure
+module CheckLparenType =
+  Entry
+    (struct
+      let rexs = " \"(\" \"type\" ";;
+      let extra = [];;
+      let name = "lparen_type";;
+    end)
 ;;
+let check_lparen_type = CheckLparenType.check;;
 
-let check_lparen_type =
-  Grammar.Entry.of_parser gram "check_lparen_type" check_lparen_type_f
+module CheckTypeBinder =
+  Entry
+    (struct
+      let rexs =
+        "\n        let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         (tyvar tyvar * | (\"list\" | \"_list\")) \".\"\n         "
+      ;;
+      let extra = [];;
+      let name = "type_binder";;
+    end)
 ;;
-
-let binder_re =
-  let open Token_regexps in
-  parse
-    "\n        let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         (tyvar tyvar * | (\"list\" | \"_list\")) \".\"\n         "
-;;
-
-let is_type_binder_f strm = Token_regexps.check_regexp binder_re strm;;
-
-let check_type_binder_f strm =
-  if is_type_binder_f strm then () else raise Stream.Failure
-;;
-
-let check_type_binder =
-  Grammar.Entry.of_parser gram "check_type_binder" check_type_binder_f
-;;
+let check_type_binder = CheckTypeBinder.check;;
 
 
 (* -- begin copy from pa_r to q_MLast -- *)

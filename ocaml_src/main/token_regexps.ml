@@ -43,6 +43,7 @@ let compile rex =
   let module C = Compile (struct let rex = rex;; let extra = [];; end) in
   C.exec
 ;;
+
 let convert_token =
   function
     "", s -> Some s
