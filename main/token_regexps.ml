@@ -15,8 +15,12 @@ end ;
 module StringRegexp = Regexp(StringBaseToken) ;
 module SBSyn = RESyntax(StringBaseToken)(StringRegexp) ;
 
-module Compile(R : sig value rex : StringRegexp.regexp ; end) = struct
-  value toks = StringRegexp.tokens R.rex ;
+module Compile(R : sig value rex : StringRegexp.regexp ;
+                       value extra : list StringBaseToken.t ;
+                   end) = struct
+  value toks = (StringRegexp.tokens R.rex @ R.extra)
+               |> sort StringBaseToken.compare
+               |> ListAux.uniq StringBaseToken.compare ;
   module StringToken = struct
     include StringBaseToken ;
     value foreach f = do {
@@ -32,7 +36,7 @@ end
 ;
 
 value compile rex =
-  let module C = Compile(struct value rex = rex ; end) in
+  let module C = Compile(struct value rex = rex ; value extra = [] ; end) in
   C.exec
 ;
 value convert_token = fun [

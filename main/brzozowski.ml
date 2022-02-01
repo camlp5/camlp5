@@ -687,7 +687,7 @@ let dump f { n; init; decode; transition } =
   for q = 0 to n - 1 do
     fprintf f "q%02d [ label=\"%s\", style = solid, shape = %s ] ;\n"
       q
-      (print (decode q))
+      (String.escaped (print (decode q)))
       (if final q then "doublecircle" else "circle")
   done;
   (* Indicate the initial state. *)
@@ -719,7 +719,7 @@ let dump f { n; init; decode; transition } =
       edges |> List.filter (fun (_, q') -> target = q') |> map fst
     in
     List.iter (fun q' ->
-      let label = String.concat "|" (labels q' |> map Token.print) in
+      let label = String.escaped (String.concat "|" (labels q' |> map Token.print)) in
       fprintf f "q%02d -> q%02d [ label=\"%s\" ] ;\n"
         q q' label
     ) targets
