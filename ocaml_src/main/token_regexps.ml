@@ -16,18 +16,33 @@ module StringBaseToken =
 module StringRegexp = Regexp (StringBaseToken);;
 module SBSyn = RESyntax (StringBaseToken) (StringRegexp);;
 
-let compile rex =
-  let toks = StringRegexp.tokens rex in
-  let module StringToken =
-    struct
-      include StringBaseToken;;
-      let foreach f = List.iter f toks; f "EOI";;
-    end
-  in
-  let module BEval = Eval (StringToken) (StringRegexp) in
-  let dfa = BEval.dfa rex in fun input -> BEval.exec dfa input
+module Compile
+  (R :
+   sig
+     val rex : StringRegexp.regexp;;
+     val extra : StringBaseToken.t list;;
+   end) =
+  struct
+    let toks =
+      (StringRegexp.tokens R.rex @ R.extra |> sort StringBaseToken.compare) |>
+        ListAux.uniq StringBaseToken.compare
+    ;;
+    module StringToken =
+      struct
+        include StringBaseToken;;
+        let foreach f = List.iter f toks; f "EOI";;
+      end
+    ;;
+    module BEval = Eval (StringToken) (StringRegexp);;
+    let dfa = BEval.dfa R.rex;;
+    let exec input = BEval.exec dfa input;;
+  end
 ;;
 
+let compile rex =
+  let module C = Compile (struct let rex = rex;; let extra = [];; end) in
+  C.exec
+;;
 let convert_token =
   function
     "", s -> Some s

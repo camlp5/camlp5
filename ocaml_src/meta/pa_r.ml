@@ -412,21 +412,24 @@ let build_letop_binder loc letop b l e =
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
+let let_exception_re =
+  let open Token_regexps in parse " \"let\" \"exception\" "
+;;
+
+let is_let_exception_f strm =
+  Token_regexps.check_regexp let_exception_re strm
+;;
+
 let check_let_exception_f strm =
-  match Stream.npeek 2 strm with
-    ["", "let"; "", "exception"] -> ()
-  | _ -> raise Stream.Failure
+  if is_let_exception_f strm then () else raise Stream.Failure
 ;;
 
 let check_let_exception =
-  Grammar.Entry.of_parser gram "check_let_exception" check_let_exception_f
+  Grammar.Entry.of_parser gram "let_exception" check_let_exception_f
 ;;
 
 let check_let_not_exception_f strm =
-  match Stream.npeek 2 strm with
-    ["", "let"; "", "exception"] -> raise Stream.Failure
-  | ["", "let"; _] -> ()
-  | _ -> raise Stream.Failure
+  if not (is_let_exception_f strm) then () else raise Stream.Failure
 ;;
 
 let check_let_not_exception =
@@ -442,67 +445,6 @@ let stream_peek_nth n strm =
     | _ :: l -> loop (n - 1) l
   in
   loop n (Stream.npeek n strm)
-;;
-
-(* returns True if the stream is a type-decl, and not an extension.
-   returns False if the stream is an extension and not a type-decl.
-   Since a type-decl might not have an "=" (if it's a list of decls)
-   the default is "type-decl".
-*)
-let word_keywordp s =
-  let rec wrec (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some ('a'..'z' | 'A'..'Z' | '_' | '0'..'9') ->
-        Stream.junk strm__; let strm = strm__ in wrec strm
-    | _ -> let strm = strm__ in Stream.empty strm; true
-  in
-  let check (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some ('a'..'z' | 'A'..'Z' | '_') ->
-        Stream.junk strm__; let strm = strm__ in wrec strm
-    | _ -> false
-  in
-  try check (Stream.of_string s) && s <> "_" with
-    Stream.Failure | Stream.Error _ -> false
-;;
-
-let is_type_decl_not_extension strm =
-  let rec wrec n =
-    match stream_peek_nth n strm with
-      None -> assert false
-    | Some ("", "=" | "", ":=" | "", ";" | "", ";;") -> true
-    | Some ("", s) when word_keywordp s -> true
-    | Some ("EOI", "") -> true
-    | Some ("", "+=") -> false
-    | Some
-        ("", _ | "UIDENT", _ | "LIDENT", _ | "GIDENT", _ | "ANTIQUOT", _) ->
-        wrec (n + 1)
-    | Some ("ANTIQUOT_LOC", s)
-      when
-        match Plexer.parse_antiloc s with
-          Some
-            (_, ("list" | "_list" | "lid" | "_lid" | "flag" | "_flag"), _) ->
-            true
-        | _ -> false ->
-        wrec (n + 1)
-    | Some ("ANTIQUOT_LOC", s)
-      when
-        match Plexer.parse_antiloc s with
-          Some (_, ("lilongid" | "_lilongid"), _) -> true
-        | _ -> false ->
-        false
-    | Some (a, b) ->
-        raise
-          (Stream.Error
-             (Printf.sprintf
-                "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")"
-                a b))
-  in
-  wrec 1
-;;
-
-let check_type_decl_f strm =
-  if is_type_decl_not_extension strm then () else raise Stream.Failure
 ;;
 
 (* a type decl starts with
@@ -525,7 +467,7 @@ let type_decl_re =
 
 let is_type_decl_f strm = Token_regexps.check_regexp type_decl_re strm;;
 
-let check_type_decl_f' strm =
+let check_type_decl_f strm =
   if is_type_decl_f strm then () else raise Stream.Failure
 ;;
 
@@ -539,40 +481,16 @@ let is_type_extension_f strm =
   Token_regexps.check_regexp type_extension_re strm
 ;;
 
-let check_type_extension_f' strm =
+let check_type_extension_f strm =
   if is_type_extension_f strm then () else raise Stream.Failure
 ;;
 
 let check_type_decl =
-  Grammar.Entry.of_parser gram "check_type_decl" check_type_decl_f'
-;;
-
-let check_type_extension_f strm =
-  if not (is_type_decl_not_extension strm) then () else raise Stream.Failure
+  Grammar.Entry.of_parser gram "check_type_decl" check_type_decl_f
 ;;
 
 let check_type_extension =
-  Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f'
-;;
-
-let check_dot_uid_f strm =
-  let rec crec n =
-    match stream_npeek n strm with
-      (_, tok) :: _ when tok <> "." -> raise Stream.Failure
-    | ["", "."] -> crec (n + 1)
-    | ["", "."; "UIDENT", _] -> ()
-    | ["", "."; "ANTIQUOT_LOC", s]
-      when
-        match Plexer.parse_antiloc s with
-          Some (_, ("uid" | "_uid"), _) -> true
-        | _ -> false ->
-        ()
-    | ["", "."; "", "$"] -> crec (n + 1)
-    | ["", "."; "", "$"; "LIDENT", ("uid" | "_uid")] -> crec (n + 1)
-    | ["", "."; "", "$"; "LIDENT", ("uid" | "_uid"); "", ":"] -> ()
-    | _ -> raise Stream.Failure
-  in
-  crec 1
+  Grammar.Entry.of_parser gram "check_type_extension" check_type_extension_f
 ;;
 
 let dot_uid_re =
@@ -581,7 +499,7 @@ let dot_uid_re =
 
 let is_dot_uid_f strm = Token_regexps.check_regexp dot_uid_re strm;;
 
-let check_dot_uid_f' strm =
+let check_dot_uid_f strm =
   if is_dot_uid_f strm then () else raise Stream.Failure
 ;;
 

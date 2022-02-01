@@ -373,15 +373,15 @@ let rec print0 b e =
 
 and print1 b e =
   match skeleton e with
-  | ECat (e1, e2) ->
-      bprintf b "%a %a" print0 e1 print1 e2
+  | ENeg e ->
+      bprintf b "~%a" print1 e
   | _ ->
       print0 b e
 
 and print2 b e =
   match skeleton e with
-  | ENeg e ->
-      bprintf b "~%a" print2 e
+  | ECat (e1, e2) ->
+      bprintf b "%a %a" print1 e1 print2 e2
   | _ ->
       print1 b e
 
@@ -687,7 +687,7 @@ let dump f { n; init; decode; transition } =
   for q = 0 to n - 1 do
     fprintf f "q%02d [ label=\"%s\", style = solid, shape = %s ] ;\n"
       q
-      (print (decode q))
+      (String.escaped (print (decode q)))
       (if final q then "doublecircle" else "circle")
   done;
   (* Indicate the initial state. *)
@@ -719,7 +719,7 @@ let dump f { n; init; decode; transition } =
       edges |> List.filter (fun (_, q') -> target = q') |> map fst
     in
     List.iter (fun q' ->
-      let label = String.concat "|" (labels q' |> map Token.print) in
+      let label = String.escaped (String.concat "|" (labels q' |> map Token.print)) in
       fprintf f "q%02d -> q%02d [ label=\"%s\" ] ;\n"
         q q' label
     ) targets
