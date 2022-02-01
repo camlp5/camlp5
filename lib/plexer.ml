@@ -290,15 +290,12 @@ value less ctx bp buf strm =
         ("QUOTATION", $buf)
     | ":"/ ident! ":<"/ ? less_expected [ -> $add "@" ]! (quotation ctx bp) ->
         ("QUOTATION", $buf)
-    | [ -> $add "<" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
-(*
     | [ -> $add "<" ] ident2! ->
        match $buf with [
            ("<-"|"<"|"<>"|"<=") as s -> keyword_or_error ctx (bp, $pos) s
          | s -> keyword_or_error ctx (bp, $pos) s
          ]
     ]
- *)
 ;
 
 value rec antiquot_rest ctx bp =
@@ -374,15 +371,12 @@ value dollar ctx bp buf strm =
     ("ANTIQUOT_LOC", antiquot_loc ctx bp buf strm)
   else
     match strm with lexer
-    [ [ -> $add "$" ] ident2! -> ("", $buf) ]
-(*
     [ [ -> $add "$" ] ident2! ->
       match $buf with [
           "$" as s -> ("", s)
          | s -> ("INFIXOP0", s)
         ]
     ]
- *)
 ;
 
 (* ANTIQUOT - specific case for QUESTIONIDENT and QUESTIONIDENTCOLON
@@ -667,10 +661,7 @@ value next_token_after_spaces ctx bp =
   | "'" -> keyword_or_error ctx (bp, $pos) "'"
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
   | "$"/ (dollar ctx bp)!
-  | [ '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
-       keyword_or_error ctx (bp, $pos) $buf
-(*
-  | [ '=' | '@' | '^' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
+  | [       '@' | '^' |       '+' | '-' | '*' | '/' | '%' ] ident2! ->
       keyword_or_error ctx (bp, $pos) $buf
   | "&" ident2! ->
      match $buf with [
@@ -682,7 +673,7 @@ value next_token_after_spaces ctx bp =
          ("=="|"=") as s -> keyword_or_error ctx (bp, $pos) s
         | s -> keyword_or_error ~{kind="INFIXOP0"} ctx (bp, $pos) s
        ]
- *)
+
   | '!' hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
   | "~"/ 'a'-'z' ident! tildeident!
   | "~"/ '_' ident! tildeident!
@@ -697,24 +688,19 @@ value next_token_after_spaces ctx bp =
   | ":" -> keyword_or_error ctx (bp, $pos) $buf
   | ">]" -> keyword_or_error ctx (bp, $pos) $buf
   | ">}" -> keyword_or_error ctx (bp, $pos) $buf
-  | ">" ident2! -> keyword_or_error ctx (bp, $pos) $buf
-(*
   | ">" ident2! ->
      match $buf with [
          (">"|">=") as s -> keyword_or_error ctx (bp, $pos) s
         | s -> keyword_or_error ~{kind="INFIXOP0"} ctx (bp, $pos) s
        ]
- *)
+
   | "|]" -> keyword_or_error ctx (bp, $pos) $buf
   | "|}" -> keyword_or_error ctx (bp, $pos) $buf
-  | "|" ident2! -> keyword_or_error ctx (bp, $pos) $buf
-(*
   | "|" ident2! ->
      match $buf with [
          ("||"|"|") as s -> keyword_or_error ctx (bp, $pos) s
-       | s -> keyword_or_error(* ~{kind="INFIXOP0"}*) ctx (bp, $pos) s
+       | s -> keyword_or_error ~{kind="INFIXOP0"} ctx (bp, $pos) s
        ]
- *)
   | "[" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
   | "[@" -> keyword_or_error ctx (bp, $pos) $buf
   | "[@@" -> keyword_or_error ctx (bp, $pos) $buf
