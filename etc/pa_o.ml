@@ -187,12 +187,6 @@ value prefixop =
        [: `("", x) when is_prefixop x :] -> x)
 ;
 
-value infixop0 =
-  Grammar.Entry.of_parser gram "infixop0"
-    (parser
-       [: `(""|"INFIXOP0", x) when is_infixop0 x :] -> x)
-;
-
 value infixop1 =
   Grammar.Entry.of_parser gram "infixop1"
     (parser
@@ -1281,7 +1275,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | e1 = SELF; "<>"; e2 = SELF -> <:expr< $e1$ <> $e2$ >>
       | e1 = SELF; "=="; e2 = SELF -> <:expr< $e1$ == $e2$ >>
       | e1 = SELF; "!="; e2 = SELF -> <:expr< $e1$ != $e2$ >>
-      | e1 = SELF; op = infixop0; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
+      | e1 = SELF; op = INFIXOP0; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >>
+      | e1 = SELF; "$"; e2 = SELF -> let op = "$" in <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "^" RIGHTA
       [ e1 = SELF; "^"; e2 = SELF -> <:expr< $e1$ ^ $e2$ >>
       | e1 = SELF; "@"; e2 = SELF -> <:expr< $e1$ @ $e2$ >>
