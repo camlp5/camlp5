@@ -125,11 +125,14 @@ value operator_rparen_f strm =
   let (n, tok) = check_stream matchers strm in
   do { for i = 1 to n do { Stream.junk strm } ; tok }
 ;
-
+(*
 value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     operator_rparen_f
 ;
+ *)
+
+value operator_rparen = Grammar.Entry.create gram "operator_rparen";
 
 value check_not_part_of_patt_f strm =
   let matchers = [
@@ -742,8 +745,98 @@ EXTEND
     constructor_declaration label_declaration
     match_case with_constr poly_variant
     attribute_body alg_attribute alg_attributes
+    operator_rparen
     check_type_binder
     ext_attributes
+    ;
+  infix_operator0: [ [
+      x = INFIXOP0 -> x
+    | "!=" -> "!="
+    | "=" -> "="
+    | "<" -> "<"
+    | ">" -> ">"
+    | "||" -> "||"
+    | "or" -> "or"
+    | "&" -> "&"
+    | "&&" -> "&&"
+    | "$" -> "$"
+    ] ]
+    ;
+  infix_operator1: [ [
+      x = INFIXOP1 -> x
+    | "@" -> "@"
+    | "^" -> "^"
+    ] ]
+    ;
+  infix_operator2: [ [
+      x = INFIXOP2 -> x
+    | "+" -> "+"
+    | "+=" -> "+="
+    | "-" -> "-"
+    | "+." -> "+."
+    | "-." -> "-."
+    ] ]
+    ;
+  infix_operator3: [ [
+      x = INFIXOP3 -> x
+    | "lor" -> "lor"
+    | "lxor" -> "lxor"
+    | "mod" -> "mod"
+    | "land" -> "land"
+    | "*" -> "*"
+    | "/" -> "/"
+    | "%" -> "%"
+    ] ]
+    ;
+  infix_operator4: [ [
+      x = INFIXOP4 -> x
+    | "asr" -> "asr"
+    | "lsl" -> "lsl"
+    | "lsr" -> "lsr"
+    | "**" -> "**"
+    ] ]
+    ;
+  prefix_operator: [ [
+      x = PREFIXOP -> x
+    | "!" -> "!"
+    ] ]
+    ;
+  infix_operator: [ [ 
+      x = infix_operator0 -> x
+    | x = infix_operator1 -> x
+    | x = infix_operator2 -> x
+    | x = infix_operator3 -> x
+    | x = infix_operator4 -> x
+    | ":=" -> ":="
+    ] ]
+    ;
+  operator: [ [
+      x = prefix_operator -> x
+    | x = infix_operator -> x
+    | x = HASHOP -> x
+    | op = LETOP -> op
+    | op = ANDOP -> op
+    | op = "::" -> op
+
+    | op = DOTOP ; "(" ; ")" -> op ^ "()"
+    | op = DOTOP ; "(" ; ")" ; "<-" -> op ^ "()<-"
+    | op = DOTOP ; "(" ; ";" ; ".." ; ")" -> op ^ "(;..)"
+    | op = DOTOP ; "(" ; ";" ; ".." ; ")" ; "<-" -> op ^ "(;..)<-"
+
+    | op = DOTOP ; "{" ; "}" -> op ^ "{}"
+    | op = DOTOP ; "{" ; "}" ; "<-" -> op ^ "{}<-"
+    | op = DOTOP ; "{" ; ";" ; ".." ; "}" -> op ^ "{;..}"
+    | op = DOTOP ; "{" ; ";" ; ".." ; "}" ; "<-" -> op ^ "{;..}<-"
+
+    | op = DOTOP ; "[" ; "]" -> op ^ "[]"
+    | op = DOTOP ; "[" ; "]" ; "<-" -> op ^ "[]<-"
+    | op = DOTOP ; "[" ; ";" ; ".." ; "]" -> op ^ "[;..]"
+    | op = DOTOP ; "[" ; ";" ; ".." ; "]" ; "<-" -> op ^ "[;..]<-"
+    ] ]
+    ;
+  operator_rparen: [ [
+      op = operator ; ")" -> op
+    ] ]
     ;
   (* This is copied from parser.mly (nonterminal "single_attr_id") in the ocaml 4.10.0 distribution. *)
   kwd_attribute_id:

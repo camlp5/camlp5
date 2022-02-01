@@ -678,7 +678,7 @@ value next_token_after_spaces ctx bp =
   | "$"/ (dollar ctx bp)!
   | [ '*' | '/' | '%' ] ident2! ->
      match $buf with [
-         ("*" | "/" | "**") as s -> keyword_or_error ctx (bp, $pos) s
+         ("*" | "/" | "%" | "**") as s -> keyword_or_error ctx (bp, $pos) s
         | s when String.length s > 2 && s.[0] = '*' && s.[1] = '*' -> keyword_or_error ~{kind="INFIXOP4"} ctx (bp, $pos) s
         | s -> keyword_or_error ~{kind="INFIXOP3"} ctx (bp, $pos) s
        ]
