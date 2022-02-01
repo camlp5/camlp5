@@ -178,7 +178,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"|"INFIXOP1"|"INFIXOP2"|"INFIXOP3"|"INFIXOP4"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"|"INFIXOP1"|"INFIXOP2"|"INFIXOP3"|"INFIXOP4"|"PREFIXOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -239,12 +239,6 @@ value check_not_part_of_patt_f strm =
 value check_not_part_of_patt =
   Grammar.Entry.of_parser gram "check_not_part_of_patt"
     check_not_part_of_patt_f
-;
-
-value prefixop =
-  Grammar.Entry.of_parser gram "prefixop"
-    (parser
-       [: `("", x) when is_prefixop x :] -> x)
 ;
 
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
@@ -890,7 +884,7 @@ EXTEND
     | "~-" NONA
       [ "~-"; e = SELF → <:expr< ~- $e$ >>
       | "~-."; e = SELF → <:expr< ~-. $e$ >>
-      | f = prefixop; e = SELF -> <:expr< $lid:f$ $e$ >>
+      | f = PREFIXOP; e = SELF -> <:expr< $lid:f$ $e$ >>
       ]
     | "simple"
       [ s = V INT → <:expr< $_int:s$ >>

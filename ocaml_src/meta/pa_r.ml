@@ -205,7 +205,8 @@ let operator_rparen_f strm =
            Left
              (function
                 (("" | "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" |
-                  "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4"),
+                  "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4" |
+                  "PREFIXOP"),
                  s) ::
                 l
                 when pred s && List.mem l suffixes ->
@@ -317,14 +318,6 @@ let check_not_part_of_patt_f strm =
 let check_not_part_of_patt =
   Grammar.Entry.of_parser gram "check_not_part_of_patt"
     check_not_part_of_patt_f
-;;
-
-let prefixop =
-  Grammar.Entry.of_parser gram "prefixop"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_prefixop x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
 ;;
 
 let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
@@ -3062,10 +3055,10 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm (prefixop : 'prefixop Grammar.Entry.e)))
+                (Grammar.s_token ("PREFIXOP", "")))
              Grammar.s_self,
            "194fe98d",
-           (fun (e : 'expr) (f : 'prefixop) (loc : Ploc.t) ->
+           (fun (e : 'expr) (f : string) (loc : Ploc.t) ->
               (MLast.ExApp (loc, MLast.ExLid (loc, f), e) : 'expr)));
         Grammar.production
           (Grammar.r_next

@@ -418,7 +418,12 @@ value question ctx bp buf strm =
         [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else
     match strm with lexer
-    [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ]
+    [ hash_follower_chars! ->
+      match $buf with [
+          ("?" | "??" | "?!") as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="PREFIXOP"} ctx (bp, $pos) s
+        ]
+    ]
 ;
 
 value tilde ctx bp buf strm =
@@ -439,10 +444,20 @@ value tilde ctx bp buf strm =
         ("ANTIQUOT_LOC", "~" ^ s)
     | [: :] ->
         match strm with lexer
-        [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+        [ hash_follower_chars! ->
+          match $buf with [
+              "~" as s -> keyword_or_error ctx (bp, $pos) s
+            | s -> keyword_or_error ~{kind="PREFIXOP"} ctx (bp, $pos) s
+            ]
+    ] ]
   else
     match strm with lexer
-    [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ]
+    [ hash_follower_chars! -> 
+      match $buf with [
+          "~" as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="PREFIXOP"} ctx (bp, $pos) s
+        ]
+    ]
 ;
 
 value tildeident =
@@ -688,7 +703,11 @@ value next_token_after_spaces ctx bp =
         | s -> keyword_or_error ~{kind="INFIXOP0"} ctx (bp, $pos) s
        ]
 
-  | '!' hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
+  | '!' hash_follower_chars! ->
+     match $buf with [
+         ("!" | "!=") as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="PREFIXOP"} ctx (bp, $pos) s
+       ]
   | "~"/ 'a'-'z' ident! tildeident!
   | "~"/ '_' ident! tildeident!
   | "~" (tilde ctx bp)
@@ -946,7 +965,8 @@ value using_token ctx kwd_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" |
     "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
-    "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" | "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4" |
+    "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" |
+    "INFIXOP0" | "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4" | "PREFIXOP" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
@@ -985,6 +1005,7 @@ value text =
   | ("INFIXOP2", k) -> "INFIXOP2 '" ^ k ^ "'"
   | ("INFIXOP3", k) -> "INFIXOP3 '" ^ k ^ "'"
   | ("INFIXOP4", k) -> "INFIXOP4 '" ^ k ^ "'"
+  | ("PREFIXOP", k) -> "PREFIXOP '" ^ k ^ "'"
   | ("EOI", "") -> "end of input"
   | (con, "") -> con
   | (con, prm) -> con ^ " \"" ^ prm ^ "\"" ]

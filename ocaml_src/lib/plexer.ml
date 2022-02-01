@@ -773,7 +773,10 @@ let question ctx bp buf strm =
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = hash_follower_chars buf strm__ in
-    keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
+    match Plexing.Lexbuf.get buf with
+      "?" | "??" | "?!" as s ->
+        keyword_or_error ctx (bp, Stream.count strm__) s
+    | s -> keyword_or_error ~kind:"PREFIXOP" ctx (bp, Stream.count strm__) s
 ;;
 
 let tilde ctx bp buf strm =
@@ -811,12 +814,16 @@ let tilde ctx bp buf strm =
     | _ ->
         let (strm__ : _ Stream.t) = strm in
         let buf = hash_follower_chars buf strm__ in
-        keyword_or_error ctx (bp, Stream.count strm__)
-          (Plexing.Lexbuf.get buf)
+        match Plexing.Lexbuf.get buf with
+          "~" as s -> keyword_or_error ctx (bp, Stream.count strm__) s
+        | s ->
+            keyword_or_error ~kind:"PREFIXOP" ctx (bp, Stream.count strm__) s
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = hash_follower_chars buf strm__ in
-    keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
+    match Plexing.Lexbuf.get buf with
+      "~" as s -> keyword_or_error ctx (bp, Stream.count strm__) s
+    | s -> keyword_or_error ~kind:"PREFIXOP" ctx (bp, Stream.count strm__) s
 ;;
 
 let tildeident buf (strm__ : _ Stream.t) =
@@ -1244,8 +1251,13 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                   let buf =
                     hash_follower_chars (Plexing.Lexbuf.add '!' buf) strm__
                   in
-                  keyword_or_error ctx (bp, Stream.count strm__)
-                    (Plexing.Lexbuf.get buf)
+                  begin match Plexing.Lexbuf.get buf with
+                    "!" | "!=" as s ->
+                      keyword_or_error ctx (bp, Stream.count strm__) s
+                  | s ->
+                      keyword_or_error ~kind:"PREFIXOP" ctx
+                        (bp, Stream.count strm__) s
+                  end
               | Some '~' ->
                   Stream.junk strm__;
                   begin try
@@ -1872,7 +1884,8 @@ let using_token ctx kwd_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" | "CHAR" | "STRING" | "QUOTATION" | "GIDENT" | "ANDOP" |
     "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" | "INFIXOP1" | "INFIXOP2" |
-    "INFIXOP3" | "INFIXOP4" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
+    "INFIXOP3" | "INFIXOP4" | "PREFIXOP" | "ANTIQUOT" | "ANTIQUOT_LOC" |
+    "EOI" ->
       ()
   | _ ->
       raise
@@ -1909,6 +1922,7 @@ let text =
   | "INFIXOP2", k -> "INFIXOP2 '" ^ k ^ "'"
   | "INFIXOP3", k -> "INFIXOP3 '" ^ k ^ "'"
   | "INFIXOP4", k -> "INFIXOP4 '" ^ k ^ "'"
+  | "PREFIXOP", k -> "PREFIXOP '" ^ k ^ "'"
   | "EOI", "" -> "end of input"
   | con, "" -> con
   | con, prm -> con ^ " \"" ^ prm ^ "\""
@@ -1987,12 +2001,12 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 1065, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1065, 45)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1086, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1086, 45)));
        tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 1065, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1066, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1066, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 1086, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1087, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1087, 37)));
        tok_comm = None}
   in
   let glex =
