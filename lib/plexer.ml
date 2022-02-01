@@ -291,6 +291,14 @@ value less ctx bp buf strm =
     | ":"/ ident! ":<"/ ? less_expected [ -> $add "@" ]! (quotation ctx bp) ->
         ("QUOTATION", $buf)
     | [ -> $add "<" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
+(*
+    | [ -> $add "<" ] ident2! ->
+       match $buf with [
+           ("<-"|"<"|"<>"|"<=") as s -> keyword_or_error ctx (bp, $pos) s
+         | s -> keyword_or_error ctx (bp, $pos) s
+         ]
+    ]
+ *)
 ;
 
 value rec antiquot_rest ctx bp =
@@ -367,6 +375,14 @@ value dollar ctx bp buf strm =
   else
     match strm with lexer
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]
+(*
+    [ [ -> $add "$" ] ident2! ->
+      match $buf with [
+          "$" as s -> ("", s)
+         | s -> ("INFIXOP0", s)
+        ]
+    ]
+ *)
 ;
 
 (* ANTIQUOT - specific case for QUESTIONIDENT and QUESTIONIDENTCOLON
@@ -652,7 +668,21 @@ value next_token_after_spaces ctx bp =
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
   | "$"/ (dollar ctx bp)!
   | [ '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
+       keyword_or_error ctx (bp, $pos) $buf
+(*
+  | [ '=' | '@' | '^' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
       keyword_or_error ctx (bp, $pos) $buf
+  | "&" ident2! ->
+     match $buf with [
+         ("&&"|"&") as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="INFIXOP0"} ctx (bp, $pos) s
+       ]
+  | "=" ident2! ->
+     match $buf with [
+         ("=="|"=") as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="INFIXOP0"} ctx (bp, $pos) s
+       ]
+ *)
   | '!' hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
   | "~"/ 'a'-'z' ident! tildeident!
   | "~"/ '_' ident! tildeident!
@@ -668,9 +698,23 @@ value next_token_after_spaces ctx bp =
   | ">]" -> keyword_or_error ctx (bp, $pos) $buf
   | ">}" -> keyword_or_error ctx (bp, $pos) $buf
   | ">" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+(*
+  | ">" ident2! ->
+     match $buf with [
+         (">"|">=") as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="INFIXOP0"} ctx (bp, $pos) s
+       ]
+ *)
   | "|]" -> keyword_or_error ctx (bp, $pos) $buf
   | "|}" -> keyword_or_error ctx (bp, $pos) $buf
   | "|" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+(*
+  | "|" ident2! ->
+     match $buf with [
+         ("||"|"|") as s -> keyword_or_error ctx (bp, $pos) s
+       | s -> keyword_or_error(* ~{kind="INFIXOP0"}*) ctx (bp, $pos) s
+       ]
+ *)
   | "[" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
   | "[@" -> keyword_or_error ctx (bp, $pos) $buf
   | "[@@" -> keyword_or_error ctx (bp, $pos) $buf
@@ -702,7 +746,7 @@ value next_token_after_spaces ctx bp =
   | "#" hash_follower_chars! ->
      match $buf with [
          "#" as s -> keyword_or_error ctx (bp, $pos) s
-        | s -> keyword_or_error ~{kind="HASHOP"} ctx (bp, $pos) s
+       | s -> keyword_or_error ~{kind="HASHOP"} ctx (bp, $pos) s
        ]
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
@@ -902,7 +946,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" |
     "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
-    "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" |
+    "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" | "INFIXOP0" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
@@ -936,6 +980,7 @@ value text =
   | ("LETOP", k) -> "LETOP '" ^ k ^ "'"
   | ("DOTOP", k) -> "DOTOP '" ^ k ^ "'"
   | ("HASHOP", k) -> "HASHOP '" ^ k ^ "'"
+  | ("INFIXOP0", k) -> "INFIXOP0 '" ^ k ^ "'"
   | ("EOI", "") -> "end of input"
   | (con, "") -> con
   | (con, prm) -> con ^ " \"" ^ prm ^ "\"" ]

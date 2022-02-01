@@ -178,7 +178,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"|"INFIXOP0"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -250,7 +250,7 @@ value prefixop =
 value infixop0 =
   Grammar.Entry.of_parser gram "infixop0"
     (parser
-       [: `("", x) when is_infixop0 x :] -> x)
+       [: `(""|"INFIXOP0", x) when is_infixop0 x :] -> x)
 ;
 
 value infixop1 =
