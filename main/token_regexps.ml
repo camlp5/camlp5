@@ -39,6 +39,7 @@ value compile rex =
   let module C = Compile(struct value rex = rex ; value extra = [] ; end) in
   C.exec
 ;
+
 value convert_token = fun [
       ("",s) -> Some s
     | ("ANTIQUOT", s) -> s |> Plexer.parse_antiquot |> option_map fst

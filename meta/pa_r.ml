@@ -118,6 +118,39 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
+
+open Token_regexps ;
+module Entry(R : sig value rexs : string ;
+                     value extra : list StringBaseToken.t ;
+                     value name : string ;
+                 end) = struct
+  value rex =
+    parse R.rexs
+  ;
+  module C = Compile(struct value rex = rex ; value extra = R.extra ; end) ;
+  value pred strm =
+    check_regexp rex strm
+  ;
+
+  value check_f strm =
+    if pred strm then () else raise Stream.Failure
+  ;
+
+  value check_not_f strm =
+    if not(pred strm) then () else raise Stream.Failure
+  ;
+
+value check =
+  Grammar.Entry.of_parser Pcaml.gram ("check_"^R.name)
+    check_f
+;
+value check_not =
+  Grammar.Entry.of_parser Pcaml.gram ("check_not_"^R.name)
+    check_not_f
+;
+end
+;
+
 value operator_rparen_f strm =
   let id x = x in
   let app suff s = s^suff in 
@@ -305,32 +338,13 @@ value build_letop_binder loc letop b l e =
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
-value let_exception_re =
-  let open Token_regexps in
-  parse {foo| "let" "exception" |foo}
-;
-
-value is_let_exception_f strm =
-  Token_regexps.check_regexp let_exception_re strm
-;
-
-value check_let_exception_f strm =
-  if is_let_exception_f strm then () else raise Stream.Failure
-;
-
-value check_let_exception =
-  Grammar.Entry.of_parser gram "let_exception"
-    check_let_exception_f
-;
-
-value check_let_not_exception_f strm =
-  if not(is_let_exception_f strm) then () else raise Stream.Failure
-;
-
-value check_let_not_exception =
-  Grammar.Entry.of_parser gram "check_let_not_exception"
-    check_let_not_exception_f
-;
+module CheckLetException = Entry(struct
+  value rexs = {foo| "let" "exception" |foo} ;
+  value extra = [] ;
+  value name = "let_exception" ;
+                             end) ;
+value check_let_exception = CheckLetException.check ;
+value check_let_not_exception = CheckLetException.check_not ;
 
 value stream_peek_nth n strm =
   loop n (Stream.npeek n strm) where rec loop n =
@@ -352,160 +366,65 @@ value stream_peek_nth n strm =
    That is: a UIDENT ..., or a LIDENT, then some type-parameters, then "+="
  *)
 
-value type_decl_re =
-  let open Token_regexps in
-  parse {foo|
+module CheckTypeDecl = Entry(struct
+  value rexs = {foo|
          let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-!")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
          ("rec"|"nonrec"|eps)("LIDENT" | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":=")
-  |foo}
-;
+  |foo} ;
+  value extra = [] ;
+  value name = "type_decl" ;
+                             end) ;
+value check_type_decl = CheckTypeDecl.check ;
 
-value is_type_decl_f strm =
-  Token_regexps.check_regexp type_decl_re strm
-;
-
-value check_type_decl_f strm =
-  if is_type_decl_f strm then () else raise Stream.Failure
-;
-
-value type_extension_re =
-  let open Token_regexps in
-  parse {foo|
+module CheckTypeExtension = Entry(struct
+  value rexs = {foo|
          let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
          "UIDENT" | "lilongid" | "_lilongid" | ("LIDENT" type_parameters "+=")
-  |foo}
-;
+  |foo} ;
+  value extra = [] ;
+  value name = "type_extension" ;
+                             end) ;
+value check_type_extension = CheckTypeExtension.check ;
 
-value is_type_extension_f strm =
-  Token_regexps.check_regexp type_extension_re strm
-;
+module CheckDotUid = Entry(struct
+  value rexs = {foo| "." ("UIDENT" | "uid" | "_uid") |foo} ;
+  value extra = [] ;
+  value name = "dot_uid" ;
+                             end) ;
+value check_dot_uid = CheckDotUid.check ;
 
-value check_type_extension_f strm =
-  if is_type_extension_f strm then () else raise Stream.Failure
-;
+module CheckLbracket = Entry(struct
+  value rexs = {foo| "[" |foo} ;
+  value extra = [] ;
+  value name = "lbracket" ;
+                             end) ;
+value check_lbracket = CheckLbracket.check ;
 
-value check_type_decl =
-  Grammar.Entry.of_parser gram "check_type_decl"
-    check_type_decl_f
-;
+module CheckLbracketBar = Entry(struct
+  value rexs = {foo| "[|" |foo} ;
+  value extra = [] ;
+  value name = "lbracketbar" ;
+                             end) ;
+value check_lbracketbar = CheckLbracketBar.check ;
 
-value check_type_extension =
-  Grammar.Entry.of_parser gram "check_type_extension"
-    check_type_extension_f
-;
+module CheckLbrace = Entry(struct
+  value rexs = {foo| "{" |foo} ;
+  value extra = [] ;
+  value name = "lbrace" ;
+                             end) ;
+value check_lbrace = CheckLbrace.check ;
 
-value dot_uid_re =
-  let open Token_regexps in
-  parse {foo| "." ("UIDENT" | "uid" | "_uid") |foo}
-;
-
-value is_dot_uid_f strm =
-  Token_regexps.check_regexp dot_uid_re strm
-;
-
-value check_dot_uid_f strm =
-  if is_dot_uid_f strm then () else raise Stream.Failure
-;
-
-value check_dot_uid =
-  Grammar.Entry.of_parser gram "check_dot_uid"
-    check_dot_uid_f
-;
-
-value is_lbracket_f strm =
-  match Stream.npeek 1 strm with [
-    [("","[") ] -> True
-  | _ -> False
-  ]
-;
-
-value check_lbracket_f strm =
-  if is_lbracket_f strm then () else raise Stream.Failure
-;
-
-value check_lbracket =
-  Grammar.Entry.of_parser gram "check_lbracket"
-    check_lbracket_f
-;
-
-value is_lbracketbar_f strm =
-  match Stream.npeek 1 strm with [
-    [("","[|") ] -> True
-  | _ -> False
-  ]
-;
-
-value check_lbracketbar_f strm =
-  if is_lbracketbar_f strm then () else raise Stream.Failure
-;
-
-value check_lbracketbar =
-  Grammar.Entry.of_parser gram "check_lbracketbar"
-    check_lbracketbar_f
-;
-
-
-value is_lbrace_f strm =
-  match Stream.npeek 1 strm with [
-    [("","{") ] -> True
-  | _ -> False
-  ]
-;
-
-value check_lbrace_f strm =
-  if is_lbrace_f strm then () else raise Stream.Failure
-;
-
-value check_lbrace =
-  Grammar.Entry.of_parser gram "check_lbrace"
-    check_lbrace_f
-;
-
-value is_lident_colon_f strm =
-  match Stream.npeek 2 strm with [
-    [("LIDENT",_) ; ("",":") :: _] -> True
-  | _ -> False
-  ]
-;
-
-value check_lident_colon_f strm =
-  if is_lident_colon_f strm then () else raise Stream.Failure
-;
-
-value check_not_lident_colon_f strm =
-  if not (is_lident_colon_f strm) then () else raise Stream.Failure
-;
-
-value lident_colon_re =
-  let open Token_regexps in
-  parse {foo| "LIDENT" ":" |foo}
-;
-
-value is_lident_colon_f strm =
-  Token_regexps.check_regexp lident_colon_re strm
-;
-
-value check_lident_colon_f' strm =
-  if is_lident_colon_f strm then () else raise Stream.Failure
-;
-
-value check_not_lident_colon_f' strm =
-  if not (is_lident_colon_f strm) then () else raise Stream.Failure
-;
-
-value check_lident_colon =
-  Grammar.Entry.of_parser gram "check_lident_colon"
-    check_lident_colon_f
-;
-
-value check_not_lident_colon =
-  Grammar.Entry.of_parser gram "check_not_lident_colon"
-    check_not_lident_colon_f
-;
+module CheckLidentColon = Entry(struct
+  value rexs = {foo| "LIDENT" ":" |foo} ;
+  value extra = [] ;
+  value name = "lident_colon" ;
+                             end) ;
+value check_lident_colon = CheckLidentColon.check ;
+value check_not_lident_colon = CheckLidentColon.check_not ;
 
 value uident_coloneq_re =
   let open Token_regexps in
