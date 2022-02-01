@@ -426,78 +426,27 @@ module CheckLidentColon = Entry(struct
 value check_lident_colon = CheckLidentColon.check ;
 value check_not_lident_colon = CheckLidentColon.check_not ;
 
-value uident_coloneq_re =
-  let open Token_regexps in
-  parse {foo| ("UIDENT" | "uid" | "_uid") ":=" |foo}
-;
+module CheckUidentColoneq = Entry(struct
+  value rexs = {foo| ("UIDENT" | "uid" | "_uid") ":=" |foo} ;
+  value extra = [] ;
+  value name = "uident_coloneq" ;
+                             end) ;
+value check_uident_coloneq = CheckUidentColoneq.check ;
 
-value is_uident_coloneq_f strm =
-  Token_regexps.check_regexp uident_coloneq_re strm
-;
+module CheckColon = Entry(struct
+  value rexs = {foo| ":" |foo} ;
+  value extra = [] ;
+  value name = "colon" ;
+                             end) ;
+value check_colon = CheckColon.check ;
+value check_not_colon = CheckColon.check_not ;
 
-value check_uident_coloneq_f' strm =
-  if is_uident_coloneq_f strm then () else raise Stream.Failure
-;
-
-value check_uident_coloneq =
-  Grammar.Entry.of_parser gram "check_uident_coloneq"
-    check_uident_coloneq_f'
-;
-
-value check_colon_f strm =
-  match stream_npeek 1 strm with [
-    [("", ":")] -> ()
-  | _ -> raise Stream.Failure
-  ]
-;
-
-value check_colon =
-  Grammar.Entry.of_parser gram "check_colon"
-    check_colon_f
-;
-
-value check_not_colon_f strm =
-  match stream_npeek 1 strm with [
-    [("", ":")] -> raise Stream.Failure
-  | _ -> ()
-  ]
-;
-
-value check_not_colon =
-  Grammar.Entry.of_parser gram "check_not_colon"
-    check_not_colon_f
-;
-
-value test_label_eq0 =
-  Grammar.Entry.of_parser gram "test_label_eq"
-    (test 1 where rec test lev strm =
-       match stream_peek_nth lev strm with
-       [ Some (("UIDENT", _) | ("LIDENT", _) | ("", ".")) ->
-           test (lev + 1) strm
-       | Some ("ANTIQUOT_LOC", _) -> ()
-       | Some ("", "=" | ";" | "}" | ":") -> ()
-       | _ -> raise Stream.Failure ])
-;
-
-value label_eq_re =
-  let open Token_regexps in
-  parse {foo| ("UIDENT" ".")* "LIDENT" ("=" | ";" | ":") |foo}
-;
-
-value is_label_eq_f strm =
-  Token_regexps.check_regexp label_eq_re strm
-;
-
-value check_label_eq_f strm =
-  if is_label_eq_f strm then () else raise Stream.Failure
-;
-
-value test_label_eq1 =
-  Grammar.Entry.of_parser gram "test_label_eq"
-    check_label_eq_f
-;
-
-value test_label_eq = test_label_eq0 ;
+module CheckLabelEq = Entry(struct
+  value rexs = {foo| ("UIDENT" ".")* "LIDENT" ("=" | ";" | ":") |foo} ;
+  value extra = [] ;
+  value name = "label_eq" ;
+                             end) ;
+value check_label_eq = CheckLabelEq.check ;
 
 value patt_wrap_attrs loc e l =
 let rec wrec e = fun [
@@ -528,44 +477,22 @@ value str_item_to_inline loc si ext =
   ]
 ;
 
-value lparen_type_re =
-  let open Token_regexps in
-  parse {foo| "(" "type" |foo}
-;
+module CheckLparenType = Entry(struct
+  value rexs = {foo| "(" "type" |foo} ;
+  value extra = [] ;
+  value name = "lparen_type" ;
+                             end) ;
+value check_lparen_type = CheckLparenType.check ;
 
-value is_lparen_type_f strm =
-  Token_regexps.check_regexp lparen_type_re strm
-;
-
-value check_lparen_type_f strm =
-  if is_lparen_type_f strm then () else raise Stream.Failure
-;
-
-value check_lparen_type =
-  Grammar.Entry.of_parser gram "check_lparen_type"
-    check_lparen_type_f
-;
-
-value binder_re =
-  let open Token_regexps in
-  parse {foo|
+module CheckTypeBinder = Entry(struct
+  value rexs = {foo|
         let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
          (tyvar tyvar * | ("list" | "_list")) "."
-         |foo}
-;
-
-value is_type_binder_f strm =
-  Token_regexps.check_regexp binder_re strm
-;
-
-value check_type_binder_f strm =
-  if is_type_binder_f strm then () else raise Stream.Failure
-;
-
-value check_type_binder =
-  Grammar.Entry.of_parser gram "check_type_binder"
-    check_type_binder_f
-;
+         |foo} ;
+  value extra = [] ;
+  value name = "type_binder" ;
+                             end) ;
+value check_type_binder = CheckTypeBinder.check ;
 
 
 (* -- begin copy from pa_r to q_MLast -- *)
