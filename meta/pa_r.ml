@@ -178,7 +178,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [("",s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -281,18 +281,6 @@ value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
        [: `("", x) when is_hashop x :] -> x)
-;
-
-value letop =
-  Grammar.Entry.of_parser gram "letop"
-    (parser
-       [: `("", x) when is_letop x :] -> x)
-;
-
-value andop =
-  Grammar.Entry.of_parser gram "andop"
-    (parser
-       [: `("", x) when is_andop x :] -> x)
 ;
 
 value dotop =
@@ -792,7 +780,7 @@ EXTEND
     ]
   ;
   andop_binding:
-  [ [ op = andop ; b = letop_binding -> (op, b) ] ]
+  [ [ op = ANDOP ; b = letop_binding -> (op, b) ] ]
   ;
   ext_opt: [ [ ext = OPT [ "%" ; id = attribute_id -> id ] -> ext ] ] ;
   ext_attributes: [ [ e = ext_opt ; l = alg_attributes_no_anti -> (e, l) ] ] ;
@@ -809,7 +797,7 @@ EXTEND
         x = SELF →
           expr_to_inline <:expr< let $_flag:r$ $_list:l$ in $x$ >> ext []
 
-      | letop = letop ; b = letop_binding ; l = LIST0 andop_binding; "in";
+      | letop = LETOP ; b = letop_binding ; l = LIST0 andop_binding; "in";
         x = expr LEVEL "top" ->
           build_letop_binder loc letop b l x
 

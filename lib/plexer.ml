@@ -619,7 +619,11 @@ value rec symbolchar_star = lexer
 
 value word_operators ctx id = lexer
   [ [ kwdopchar dotsymbolchar_star ->
-      ("", id ^ $buf)
+      match id with [
+          "and" -> ("ANDOP", id ^ $buf)
+         | "let" -> ("LETOP", id ^ $buf)
+         | _ -> assert False
+        ]
     | -> try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
     ] ]
 ;
@@ -894,6 +898,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" |
     "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
+    "ANDOP" | "LETOP" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
@@ -923,6 +928,8 @@ value text =
   | ("CHAR", "") -> "char"
   | ("QUOTATION", "") -> "quotation"
   | ("ANTIQUOT", k) -> "antiquot \"" ^ k ^ "\""
+  | ("ANDOP", k) -> "ANDOP '" ^ k ^ "'"
+  | ("LETOP", k) -> "LETOP '" ^ k ^ "'"
   | ("EOI", "") -> "end of input"
   | (con, "") -> con
   | (con, prm) -> con ^ " \"" ^ prm ^ "\"" ]
