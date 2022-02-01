@@ -178,7 +178,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"|"DOTOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -280,7 +280,7 @@ value infixop4 =
 value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
-       [: `("", x) when is_hashop x :] -> x)
+       [: `("HASHOP", x) :] -> x)
 ;
 
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;

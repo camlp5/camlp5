@@ -204,7 +204,8 @@ let operator_rparen_f strm =
            n,
            Left
              (function
-                ("", s) :: l when pred s && List.mem l suffixes ->
+                (("" | "ANDOP" | "LETOP" | "DOTOP" | "HASHOP"), s) :: l
+                when pred s && List.mem l suffixes ->
                   Some (xform s)
               | _ -> None)
        | n, Right f -> n, Right f)
@@ -367,31 +368,7 @@ let hashop =
   Grammar.Entry.of_parser gram "hashop"
     (fun (strm__ : _ Stream.t) ->
        match Stream.peek strm__ with
-         Some ("", x) when is_hashop x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let letop =
-  Grammar.Entry.of_parser gram "letop"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_letop x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let andop =
-  Grammar.Entry.of_parser gram "andop"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_andop x -> Stream.junk strm__; x
-       | _ -> raise Stream.Failure)
-;;
-
-let dotop =
-  Grammar.Entry.of_parser gram "dotop"
-    (fun (strm__ : _ Stream.t) ->
-       match Stream.peek strm__ with
-         Some ("", x) when is_dotop x -> Stream.junk strm__; x
+         Some ("HASHOP", x) -> Stream.junk strm__; x
        | _ -> raise Stream.Failure)
 ;;
 
@@ -2182,12 +2159,11 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop
-                (Grammar.s_nterm (andop : 'andop Grammar.Entry.e)))
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("ANDOP", "")))
              (Grammar.s_nterm
                 (letop_binding : 'letop_binding Grammar.Entry.e)),
            "194fe98d",
-           (fun (b : 'letop_binding) (op : 'andop) (loc : Ploc.t) ->
+           (fun (b : 'letop_binding) (op : string) (loc : Ploc.t) ->
               (op, b : 'andop_binding)))]];
     Grammar.extension (ext_opt : 'ext_opt Grammar.Entry.e) None
       [None, None,
@@ -2478,7 +2454,7 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_nterm (letop : 'letop Grammar.Entry.e)))
+                         (Grammar.s_token ("LETOP", "")))
                       (Grammar.s_nterm
                          (letop_binding : 'letop_binding Grammar.Entry.e)))
                    (Grammar.s_list0
@@ -2488,7 +2464,7 @@ Grammar.safe_extend
              (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "top"),
            "194fe98d",
            (fun (x : 'expr) _ (l : 'andop_binding list) (b : 'letop_binding)
-                (letop : 'letop) (loc : Ploc.t) ->
+                (letop : string) (loc : Ploc.t) ->
               (build_letop_binder loc letop b l x : 'expr)));
         Grammar.production
           (Grammar.r_next
@@ -3015,14 +2991,14 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                      (Grammar.s_nterm (dotop : 'dotop Grammar.Entry.e)))
+                      (Grammar.s_token ("DOTOP", "")))
                    (Grammar.s_token ("", "{")))
                 (Grammar.s_list1sep
                    (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "+")
                    (Grammar.s_token ("", ";")) false))
              (Grammar.s_token ("", "}")),
            "194fe98d",
-           (fun _ (el : 'expr list) _ (op : 'dotop) (e1 : 'expr)
+           (fun _ (el : 'expr list) _ (op : string) (e1 : 'expr)
                 (loc : Ploc.t) ->
               (MLast.ExBae (loc, op, e1, el) : 'expr)));
         Grammar.production
@@ -3046,14 +3022,14 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                      (Grammar.s_nterm (dotop : 'dotop Grammar.Entry.e)))
+                      (Grammar.s_token ("DOTOP", "")))
                    (Grammar.s_token ("", "[")))
                 (Grammar.s_list1sep
                    (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "+")
                    (Grammar.s_token ("", ";")) false))
              (Grammar.s_token ("", "]")),
            "194fe98d",
-           (fun _ (el : 'expr list) _ (op : 'dotop) (e1 : 'expr)
+           (fun _ (el : 'expr list) _ (op : string) (e1 : 'expr)
                 (loc : Ploc.t) ->
               (MLast.ExSte (loc, op, e1, el) : 'expr)));
         Grammar.production
@@ -3075,14 +3051,14 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop Grammar.s_self)
-                      (Grammar.s_nterm (dotop : 'dotop Grammar.Entry.e)))
+                      (Grammar.s_token ("DOTOP", "")))
                    (Grammar.s_token ("", "(")))
                 (Grammar.s_list1sep
                    (Grammar.s_nterml (expr : 'expr Grammar.Entry.e) "+")
                    (Grammar.s_token ("", ";")) false))
              (Grammar.s_token ("", ")")),
            "194fe98d",
-           (fun _ (el : 'expr list) _ (op : 'dotop) (e1 : 'expr)
+           (fun _ (el : 'expr list) _ (op : string) (e1 : 'expr)
                 (loc : Ploc.t) ->
               (MLast.ExAre (loc, op, e1, el) : 'expr)));
         Grammar.production

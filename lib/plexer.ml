@@ -699,7 +699,11 @@ value next_token_after_spaces ctx bp =
   | (utf8_equiv ctx bp)
   | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "\\"/ ident3! -> ("LIDENT", $buf)
-  | "#" hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
+  | "#" hash_follower_chars! ->
+     match $buf with [
+         "#" as s -> keyword_or_error ctx (bp, $pos) s
+        | s -> keyword_or_error ~{kind="HASHOP"} ctx (bp, $pos) s
+       ]
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
@@ -898,7 +902,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" |
     "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
-    "ANDOP" | "LETOP" | "DOTOP" |
+    "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
@@ -931,6 +935,7 @@ value text =
   | ("ANDOP", k) -> "ANDOP '" ^ k ^ "'"
   | ("LETOP", k) -> "LETOP '" ^ k ^ "'"
   | ("DOTOP", k) -> "DOTOP '" ^ k ^ "'"
+  | ("HASHOP", k) -> "HASHOP '" ^ k ^ "'"
   | ("EOI", "") -> "end of input"
   | (con, "") -> con
   | (con, prm) -> con ^ " \"" ^ prm ^ "\"" ]

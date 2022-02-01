@@ -30,11 +30,11 @@ let err ctx loc msg =
   Ploc.raise (ctx.make_lined_loc loc "") (Plexing.Error msg)
 ;;
 
-let keyword_or_error ctx loc s =
+let keyword_or_error ?(kind = "") ctx loc s =
   try "", ctx.find_kwd s with
     Not_found ->
       if !error_on_unknown_keywords then err ctx loc ("illegal token: " ^ s)
-      else "", s
+      else kind, s
 ;;
 
 let rev_implode l =
@@ -1095,7 +1095,11 @@ let word_operators ctx id buf (strm__ : _ Stream.t) =
         try dotsymbolchar_star buf strm__ with
           Stream.Failure -> raise (Stream.Error "")
       in
-      "", id ^ Plexing.Lexbuf.get buf
+      begin match id with
+        "and" -> "ANDOP", id ^ Plexing.Lexbuf.get buf
+      | "let" -> "LETOP", id ^ Plexing.Lexbuf.get buf
+      | _ -> assert false
+      end
   | _ -> try "", ctx.find_kwd id with Not_found -> "LIDENT", id
 ;;
 let keyword ctx buf strm =
@@ -1104,21 +1108,6 @@ let keyword ctx buf strm =
     word_operators ctx id Plexing.Lexbuf.empty strm
   else try "", ctx.find_kwd id with Not_found -> "LIDENT", id
 ;;
-
-let dot ctx (bp, pos) buf strm =
-  match Stream.peek strm with
-    None ->
-      let id =
-        if ctx.specific_space_dot && ctx.after_space then " ." else "."
-      in
-      keyword_or_error ctx (bp, pos) id
-  | _ ->
-      let (strm__ : _ Stream.t) = strm in
-      let buf = Plexing.Lexbuf.add '.' buf in
-      let buf = dotsymbolchar_star buf strm__ in
-      keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
-;;
-
 
 let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
@@ -1433,8 +1422,8 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                             try symbolchar_star buf strm__ with
                               Stream.Failure -> raise (Stream.Error "")
                           in
-                          keyword_or_error ctx (bp, Stream.count strm__)
-                            (Plexing.Lexbuf.get buf)
+                          keyword_or_error ~kind:"DOTOP" ctx
+                            (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
                       | _ ->
                           let id =
                             if ctx.specific_space_dot && ctx.after_space then
@@ -1474,8 +1463,14 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                                 hash_follower_chars
                                   (Plexing.Lexbuf.add '#' buf) strm__
                               in
-                              keyword_or_error ctx (bp, Stream.count strm__)
-                                (Plexing.Lexbuf.get buf)
+                              begin match Plexing.Lexbuf.get buf with
+                                "#" as s ->
+                                  keyword_or_error ctx
+                                    (bp, Stream.count strm__) s
+                              | s ->
+                                  keyword_or_error ~kind:"HASHOP" ctx
+                                    (bp, Stream.count strm__) s
+                              end
                           | _ ->
                               let buf = any ctx buf strm__ in
                               keyword_or_error ctx (bp, Stream.count strm__)
@@ -1815,8 +1810,8 @@ let using_token ctx kwd_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "QUOTEDEXTENSION" | "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
-    "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
+    "QUOTEDEXTENSION" | "CHAR" | "STRING" | "QUOTATION" | "GIDENT" | "ANDOP" |
+    "LETOP" | "DOTOP" | "HASHOP" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise
@@ -1844,6 +1839,10 @@ let text =
   | "CHAR", "" -> "char"
   | "QUOTATION", "" -> "quotation"
   | "ANTIQUOT", k -> "antiquot \"" ^ k ^ "\""
+  | "ANDOP", k -> "ANDOP '" ^ k ^ "'"
+  | "LETOP", k -> "LETOP '" ^ k ^ "'"
+  | "DOTOP", k -> "DOTOP '" ^ k ^ "'"
+  | "HASHOP", k -> "HASHOP '" ^ k ^ "'"
   | "EOI", "" -> "end of input"
   | con, "" -> con
   | con, prm -> con ^ " \"" ^ prm ^ "\""

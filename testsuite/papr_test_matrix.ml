@@ -3243,6 +3243,17 @@ type nat _ =
      r_output = OK {foo|value () = foo ##. bar.val := ();
 |foo}
     };
+    {name="hashop-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let ( #+ ) x y = 1|foo} ;
+     official_input = OK {foo|let ( #+ ) x y = 1|foo} ;
+     r_input = OK {foo|value ( #+ ) x y = 1;|foo} ;
+     o_output = OK {foo|let (#+) x y = 1;;
+|foo};
+     official_output = OK {foo|let (#+) x y = 1|foo} ;
+     r_output = OK {foo|value ( #+ ) x y = 1;
+|foo}
+    };
     {name="expr-local-open-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let open! [@foo] (M[@bar]) in ()|foo} ;

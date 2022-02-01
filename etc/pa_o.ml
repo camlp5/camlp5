@@ -118,7 +118,7 @@ value operator_rparen_f strm =
   let matchers = List.map (fun
     [ (n, Left (pred, xform, suffixes)) ->
       (n, Left (fun [
-             [((""|"ANDOP"|"LETOP"|"DOTOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
+             [((""|"ANDOP"|"LETOP"|"DOTOP"|"HASHOP"),s) :: l] when pred s && List.mem l suffixes -> Some (xform s)
            | _ -> None]))
     | (n, Right f) -> (n, Right f)
     ]) trials in
@@ -134,7 +134,7 @@ value operator_rparen =
 value check_not_part_of_patt_f strm =
   let matchers = [
     (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
-  ; (4, fun [ [("", "("); ((""|"LETOP"|"DOTOP"), s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
+  ; (4, fun [ [("", "("); ((""|"LETOP"|"DOTOP"|"HASHOP"), s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
   ; (6, fun [
               [("", "("); (""|"DOTOP", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
             | [("", "("); (""|"DOTOP", s); ("", "{"); ("", "}"); ("", ")"); tok :: _] when is_special_op s -> Some tok
@@ -220,7 +220,7 @@ value infixop4 =
 value hashop =
   Grammar.Entry.of_parser gram "hashop"
     (parser
-       [: `("", x) when is_hashop x :] -> x)
+       [: `("HASHOP", x) :] -> x)
 ;
 
 value test_constr_decl_f strm =
