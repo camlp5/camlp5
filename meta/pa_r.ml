@@ -336,56 +336,6 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-(* returns True if the stream is a type-decl, and not an extension.
-   returns False if the stream is an extension and not a type-decl.
-   Since a type-decl might not have an "=" (if it's a list of decls)
-   the default is "type-decl".
-*)
-value word_keywordp s =
-  let rec wrec = parser [
-    [: `('a'..'z'|'A'..'Z'|'_'|'0'..'9') ; strm :] -> wrec strm
-  | [: strm :] -> do { Stream.empty strm ; True }
-  ] in
-  let check = parser [
-    [: `('a'..'z'|'A'..'Z'|'_') ; strm :] -> wrec strm
-  | [:  :] -> False
-  ] in
-  try check (Stream.of_string s) && s <> "_"
-  with Stream.Failure | (Stream.Error _) -> False
-;
-
-value is_type_decl_not_extension strm =
-  let rec wrec n =
-    match stream_peek_nth n strm with [
-      None -> assert False
-    | Some (
-        ("","=")
-      | ("",":=")
-      | ("",";")
-      | ("",";;")
-      ) -> True
-    | Some ("",s) when word_keywordp s -> True
-    | Some ("EOI","") -> True
-    | Some ("","+=") -> False
-    | Some (
-      ("",_)
-      | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
-      | ("ANTIQUOT",_)
-    ) -> wrec (n+1)
-    | Some ("ANTIQUOT_LOC",s)
-      when (match Plexer.parse_antiloc s with [ Some(_, ("list"|"_list"|"lid"|"_lid"|"flag"|"_flag"), _) -> True | _ -> False ]) -> wrec (n+1)
-    | Some ("ANTIQUOT_LOC",s)
-      when (match Plexer.parse_antiloc s with [ Some(_, ("lilongid"|"_lilongid"), _) -> True | _ -> False ]) -> False
-    | Some (a,b) -> raise (Stream.Error (Printf.sprintf "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")" a b))
- ]
-  in wrec 1
-;
-
-value check_type_decl_f strm =
-  if is_type_decl_not_extension strm then ()
-  else raise Stream.Failure
-;
-
 (* a type decl starts with
     (LIDENT | "tp" | "_tp" | "lid" | "_lid") ("list" | "_list" | ( ["+" "-" "!" "!+" | "+!" "!-" "-"]* ("'" (LIDENT|UIDENT) | "GIDENT" | "_") )* ) ("=" | ":=")
 
@@ -412,7 +362,7 @@ value is_type_decl_f strm =
   Token_regexps.check_regexp type_decl_re strm
 ;
 
-value check_type_decl_f' strm =
+value check_type_decl_f strm =
   if is_type_decl_f strm then () else raise Stream.Failure
 ;
 
@@ -430,39 +380,18 @@ value is_type_extension_f strm =
   Token_regexps.check_regexp type_extension_re strm
 ;
 
-value check_type_extension_f' strm =
+value check_type_extension_f strm =
   if is_type_extension_f strm then () else raise Stream.Failure
 ;
 
 value check_type_decl =
   Grammar.Entry.of_parser gram "check_type_decl"
-    check_type_decl_f'
-;
-
-value check_type_extension_f strm =
-  if not (is_type_decl_not_extension strm) then ()
-  else raise Stream.Failure
+    check_type_decl_f
 ;
 
 value check_type_extension =
   Grammar.Entry.of_parser gram "check_type_extension"
-    check_type_extension_f'
-;
-
-value check_dot_uid_f strm =
-  let rec crec n =
-    match stream_npeek n strm with [
-      [(_, tok) :: _ ] when tok <> "." -> raise Stream.Failure
-    | [("",".") ] -> crec (n+1)
-    | [("",".") ; ("UIDENT",_)] -> ()
-    | [("",".") ; ("ANTIQUOT_LOC",s)]
-      when (match Plexer.parse_antiloc s with [ Some(_, ("uid"|"_uid"), _) -> True | _ -> False ]) -> ()
-    | [("",".") ; ("","$")] -> crec (n+1)
-    | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid"))] -> crec (n+1)
-    | [("",".") ; ("","$") ; ("LIDENT",("uid"|"_uid")) ; ("", ":")] -> ()
-    | _ -> raise Stream.Failure
-    ] in
-  crec 1
+    check_type_extension_f
 ;
 
 value dot_uid_re =
@@ -474,7 +403,7 @@ value is_dot_uid_f strm =
   Token_regexps.check_regexp dot_uid_re strm
 ;
 
-value check_dot_uid_f' strm =
+value check_dot_uid_f strm =
   if is_dot_uid_f strm then () else raise Stream.Failure
 ;
 
