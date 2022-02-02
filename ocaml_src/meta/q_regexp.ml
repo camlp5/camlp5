@@ -52,8 +52,7 @@ let export_dfa (init, initre, states) =
       in
       let branches =
         branches @
-        [MLast.PaLong (loc, MLast.LiUid (loc, "None"), []), None,
-         MLast.ExLong (loc, MLast.LiUid (loc, "None"))]
+        [MLast.PaAny loc, None, MLast.ExLong (loc, MLast.LiUid (loc, "None"))]
       in
       let rhs =
         MLast.ExFun

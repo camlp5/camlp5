@@ -6,6 +6,7 @@
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
 #load "pa_macro_gram.cmo";
+#load "q_regexp.cmo";
 
 open Asttools;
 open Pcaml;
@@ -123,30 +124,24 @@ module Entry(R : sig value rexs : string ;
                      value extra : list PatternBaseToken.t ;
                      value name : string ;
                  end) = struct
-  value rex =
-    parse R.rexs
-  ;
+  value rex = parse R.rexs ;
   module C = Compile(struct value rex = rex ; value extra = R.extra ; end) ;
-  value pred strm =
-    check_regexp rex strm
-  ;
-
-  value check_f strm =
-    if pred strm then () else raise Stream.Failure
-  ;
-
-  value check_not_f strm =
-    if not(pred strm) then () else raise Stream.Failure
-  ;
-
-value check =
-  Grammar.Entry.of_parser Pcaml.gram ("check_"^R.name)
-    check_f
+  value pred strm = check_regexp rex strm ;
+  value check_f strm = if pred strm then () else raise Stream.Failure ;
+  value check_not_f strm = if not(pred strm) then () else raise Stream.Failure ;
+  value check = Grammar.Entry.of_parser Pcaml.gram ("check_"^R.name) check_f ;
+  value check_not = Grammar.Entry.of_parser Pcaml.gram ("check_not_"^R.name) check_not_f ;
+end
 ;
-value check_not =
-  Grammar.Entry.of_parser Pcaml.gram ("check_not_"^R.name)
-    check_not_f
-;
+module Compiled(R : sig value rawcheck :  Stream.t (string * string) -> option int ;
+                        value name : string ;
+                 end) = struct
+  value rawcheck = R.rawcheck ;
+  value pred strm = match rawcheck strm with [ None -> False | Some _ -> True ] ;
+  value check_f strm = if pred strm then () else raise Stream.Failure ;
+  value check_not_f strm = if not(pred strm) then () else raise Stream.Failure ;
+  value check = Grammar.Entry.of_parser Pcaml.gram ("check_"^R.name) check_f ;
+  value check_not = Grammar.Entry.of_parser Pcaml.gram ("check_not_"^R.name) check_not_f ;
 end
 ;
 
@@ -189,9 +184,13 @@ value build_letop_binder loc letop b l e =
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
-module CheckLetException = Entry(struct
+module InterpCheckLetException = Entry(struct
   value rexs = {foo| "let" "exception" |foo} ;
   value extra = [] ;
+  value name = "let_exception" ;
+                             end) ;
+module CheckLetException = Compiled(struct
+  value rawcheck = <:regexp< "let" "exception" >>;
   value name = "let_exception" ;
                              end) ;
 value check_let_exception = CheckLetException.check ;

@@ -6,6 +6,7 @@
 (* #load "q_MLast.cmo" *)
 (* #load "pa_macro.cmo" *)
 (* #load "pa_macro_gram.cmo" *)
+(* #load "q_regexp.cmo" *)
 
 open Asttools;;
 open Pcaml;;
@@ -153,6 +154,31 @@ module Entry
     ;;
   end
 ;;
+module Compiled
+  (R :
+   sig
+     val rawcheck : (string * string) Stream.t -> int option;;
+     val name : string;;
+   end) =
+  struct
+    let rawcheck = R.rawcheck;;
+    let pred strm =
+      match rawcheck strm with
+        None -> false
+      | Some _ -> true
+    ;;
+    let check_f strm = if pred strm then () else raise Stream.Failure;;
+    let check_not_f strm =
+      if not (pred strm) then () else raise Stream.Failure
+    ;;
+    let check =
+      Grammar.Entry.of_parser Pcaml.gram ("check_" ^ R.name) check_f
+    ;;
+    let check_not =
+      Grammar.Entry.of_parser Pcaml.gram ("check_not_" ^ R.name) check_not_f
+    ;;
+  end
+;;
 
 let operator_rparen = Grammar.Entry.create gram "operator_rparen";;
 
@@ -199,11 +225,35 @@ let build_letop_binder loc letop b l e =
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
-module CheckLetException =
+module InterpCheckLetException =
   Entry
     (struct
       let rexs = " \"let\" \"exception\" ";;
       let extra = [];;
+      let name = "let_exception";;
+    end)
+;;
+module CheckLetException =
+  Compiled
+    (struct
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "let") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "exception") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "let_exception";;
     end)
 ;;

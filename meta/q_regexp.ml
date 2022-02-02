@@ -23,7 +23,7 @@ value export_dfa (init, initre, states) =
                      (token_pattern tok, <:vala< None >>, <:expr< $lid:(statename newst)$ (ofs+1) >>)
                    ) in
       let branches = branches @ [
-            (<:patt< None >>, <:vala< None >>, <:expr< None >>)
+            (<:patt< _ >>, <:vala< None >>, <:expr< None >>)
           ] in
       let rhs = <:expr< fun ofs ->
                         match must_peek_nth (ofs+1) strm with [
