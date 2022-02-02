@@ -134,7 +134,7 @@ module Entry
   (R :
    sig
      val rexs : string;;
-     val extra : StringBaseToken.t list;;
+     val extra : PatternBaseToken.t list;;
      val name : string;;
    end) =
   struct
@@ -236,7 +236,7 @@ module CheckTypeDecl =
   Entry
     (struct
       let rexs =
-        "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-!\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         (\"rec\"|\"nonrec\"|eps)(\"LIDENT\" | \"tp\" | \"_tp\" | \"lid\" | \"lid_\") type_parameters (\"=\" | \":=\")\n  "
+        "\n         let tyvar = \"'\" (LIDENT | UIDENT) | GIDENT in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-!\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         (\"rec\"|\"nonrec\"|eps)(LIDENT | \"tp\" | \"_tp\" | \"lid\" | \"lid_\") type_parameters (\"=\" | \":=\")\n  "
       ;;
       let extra = [];;
       let name = "type_decl";;
@@ -248,7 +248,7 @@ module CheckTypeExtension =
   Entry
     (struct
       let rexs =
-        "\n         let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         \"UIDENT\" | \"lilongid\" | \"_lilongid\" | (\"LIDENT\" type_parameters \"+=\")\n  "
+        "\n         let tyvar = \"'\" (LIDENT | UIDENT) | GIDENT in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         UIDENT | \"lilongid\" | \"_lilongid\" | (LIDENT type_parameters \"+=\")\n  "
       ;;
       let extra = [];;
       let name = "type_extension";;
@@ -259,7 +259,7 @@ let check_type_extension = CheckTypeExtension.check;;
 module CheckDotUid =
   Entry
     (struct
-      let rexs = " \".\" (\"UIDENT\" | \"uid\" | \"_uid\") ";;
+      let rexs = " \".\" (UIDENT | \"uid\" | \"_uid\") ";;
       let extra = [];;
       let name = "dot_uid";;
     end)
@@ -295,7 +295,7 @@ let check_lbrace = CheckLbrace.check;;
 module CheckLidentColon =
   Entry
     (struct
-      let rexs = " \"LIDENT\" \":\" ";;
+      let rexs = " LIDENT \":\" ";;
       let extra = [];;
       let name = "lident_colon";;
     end)
@@ -306,7 +306,7 @@ let check_not_lident_colon = CheckLidentColon.check_not;;
 module CheckUidentColoneq =
   Entry
     (struct
-      let rexs = " (\"UIDENT\" | \"uid\" | \"_uid\") \":=\" ";;
+      let rexs = " (UIDENT | \"uid\" | \"_uid\") \":=\" ";;
       let extra = [];;
       let name = "uident_coloneq";;
     end)
@@ -323,7 +323,7 @@ let check_not_colon = CheckColon.check_not;;
 module CheckLabelEq =
   Entry
     (struct
-      let rexs = " (\"UIDENT\" \".\")* \"LIDENT\" (\"=\" | \";\" | \":\") ";;
+      let rexs = " (UIDENT \".\")* LIDENT (\"=\" | \";\" | \":\") ";;
       let extra = [];;
       let name = "label_eq";;
     end)
@@ -375,7 +375,7 @@ module CheckTypeBinder =
   Entry
     (struct
       let rexs =
-        "\n        let tyvar = \"'\" (\"LIDENT\" | \"UIDENT\") | \"GIDENT\" in\n         (tyvar tyvar * | (\"list\" | \"_list\")) \".\"\n         "
+        "\n        let tyvar = \"'\" (LIDENT | UIDENT) | GIDENT in\n         (tyvar tyvar * | (\"list\" | \"_list\")) \".\"\n         "
       ;;
       let extra = [];;
       let name = "type_binder";;

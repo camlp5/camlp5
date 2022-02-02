@@ -120,7 +120,7 @@ value mklistpat loc last =
 
 open Token_regexps ;
 module Entry(R : sig value rexs : string ;
-                     value extra : list StringBaseToken.t ;
+                     value extra : list PatternBaseToken.t ;
                      value name : string ;
                  end) = struct
   value rex =
@@ -219,10 +219,10 @@ value stream_peek_nth n strm =
 
 module CheckTypeDecl = Entry(struct
   value rexs = {foo|
-         let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
+         let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-!")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
-         ("rec"|"nonrec"|eps)("LIDENT" | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":=")
+         ("rec"|"nonrec"|eps)(LIDENT | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":=")
   |foo} ;
   value extra = [] ;
   value name = "type_decl" ;
@@ -231,10 +231,10 @@ value check_type_decl = CheckTypeDecl.check ;
 
 module CheckTypeExtension = Entry(struct
   value rexs = {foo|
-         let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
+         let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
-         "UIDENT" | "lilongid" | "_lilongid" | ("LIDENT" type_parameters "+=")
+         UIDENT | "lilongid" | "_lilongid" | (LIDENT type_parameters "+=")
   |foo} ;
   value extra = [] ;
   value name = "type_extension" ;
@@ -242,7 +242,7 @@ module CheckTypeExtension = Entry(struct
 value check_type_extension = CheckTypeExtension.check ;
 
 module CheckDotUid = Entry(struct
-  value rexs = {foo| "." ("UIDENT" | "uid" | "_uid") |foo} ;
+  value rexs = {foo| "." (UIDENT | "uid" | "_uid") |foo} ;
   value extra = [] ;
   value name = "dot_uid" ;
                              end) ;
@@ -270,7 +270,7 @@ module CheckLbrace = Entry(struct
 value check_lbrace = CheckLbrace.check ;
 
 module CheckLidentColon = Entry(struct
-  value rexs = {foo| "LIDENT" ":" |foo} ;
+  value rexs = {foo| LIDENT ":" |foo} ;
   value extra = [] ;
   value name = "lident_colon" ;
                              end) ;
@@ -278,7 +278,7 @@ value check_lident_colon = CheckLidentColon.check ;
 value check_not_lident_colon = CheckLidentColon.check_not ;
 
 module CheckUidentColoneq = Entry(struct
-  value rexs = {foo| ("UIDENT" | "uid" | "_uid") ":=" |foo} ;
+  value rexs = {foo| (UIDENT | "uid" | "_uid") ":=" |foo} ;
   value extra = [] ;
   value name = "uident_coloneq" ;
                              end) ;
@@ -293,7 +293,7 @@ value check_colon = CheckColon.check ;
 value check_not_colon = CheckColon.check_not ;
 
 module CheckLabelEq = Entry(struct
-  value rexs = {foo| ("UIDENT" ".")* "LIDENT" ("=" | ";" | ":") |foo} ;
+  value rexs = {foo| (UIDENT ".")* LIDENT ("=" | ";" | ":") |foo} ;
   value extra = [] ;
   value name = "label_eq" ;
                              end) ;
@@ -337,7 +337,7 @@ value check_lparen_type = CheckLparenType.check ;
 
 module CheckTypeBinder = Entry(struct
   value rexs = {foo|
-        let tyvar = "'" ("LIDENT" | "UIDENT") | "GIDENT" in
+        let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
          (tyvar tyvar * | ("list" | "_list")) "."
          |foo} ;
   value extra = [] ;

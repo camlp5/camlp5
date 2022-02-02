@@ -6,30 +6,41 @@
 open Asttools ;
 open Brzozowski ;
 
-module StringBaseToken = struct
-  include String ;
+module PatternBaseToken = struct
+  type t = [ CLS of string | SPCL of string ] ;
   value hash = Hashtbl.hash;
-  value print s =
-    Printf.sprintf "\"%s\"" (String.escaped s) ;
+  value print = fun [
+      SPCL s -> Printf.sprintf "\"%s\"" (String.escaped s)
+    | CLS ty -> Printf.sprintf "%s" ty
+    ]
+  ;
+  value compare t1 t2 = match (t1, t2) with [
+    (CLS s1, CLS s2) -> String.compare s1 s2
+  | (SPCL s1, SPCL s2) -> String.compare s1 s2
+  | (CLS _, SPCL _) -> -1
+  | (SPCL _, CLS _) -> 1
+  ]
+  ;                            
+  value equal t1 t2 = 0 = compare t1 t2 ;
 end ;
-module StringRegexp = Regexp(StringBaseToken) ;
-module SBSyn = RESyntax(StringBaseToken)(StringRegexp) ;
+module PatternRegexp = Regexp(PatternBaseToken) ;
+module PSyn = RESyntax(PatternBaseToken)(PatternRegexp) ;
 
-module Compile(R : sig value rex : StringRegexp.regexp ;
-                       value extra : list StringBaseToken.t ;
+module Compile(R : sig value rex : PatternRegexp.regexp ;
+                       value extra : list PatternBaseToken.t ;
                    end) = struct
-  value toks = (StringRegexp.tokens R.rex @ R.extra)
-               |> sort StringBaseToken.compare
-               |> ListAux.uniq StringBaseToken.compare ;
-  module StringToken = struct
-    include StringBaseToken ;
+  value toks = (PatternRegexp.tokens R.rex @ R.extra)
+               |> sort PatternBaseToken.compare
+               |> ListAux.uniq PatternBaseToken.compare ;
+  module PatternToken = struct
+    include PatternBaseToken ;
     value foreach f = do {
       List.iter f toks ;
-      f "EOI" 
+      f (CLS "EOI")
     }
     ;
   end ;
-  module BEval = Eval(StringToken)(StringRegexp) ;
+  module BEval = Eval(PatternToken)(PatternRegexp) ;
   value dfa = BEval.dfa R.rex ;
   value exec input = BEval.exec dfa input ;
 end
@@ -40,11 +51,13 @@ value compile rex =
   C.exec
 ;
 
-value convert_token = fun [
-      ("",s) -> Some s
-    | ("ANTIQUOT", s) -> s |> Plexer.parse_antiquot |> option_map fst
-    | ("ANTIQUOT_LOC", s) -> s |> Plexer.parse_antiloc |> option_map snd3
-    | (s, _) -> Some s
+value convert_token =
+  let open PatternBaseToken in
+  fun [
+      ("",s) -> Some (SPCL s)
+    | ("ANTIQUOT", s) -> s |> Plexer.parse_antiquot |> option_map fst |> option_map (fun s -> SPCL s)
+    | ("ANTIQUOT_LOC", s) -> s |> Plexer.parse_antiloc |> option_map snd3 |> option_map (fun s -> SPCL s)
+    | (s, _) -> Some (CLS s)
 ]
 ;
 
@@ -74,11 +87,12 @@ value g = Grammar.gcreate (Plexer.gmake ());
 value e = Grammar.Entry.create g "regexp";
 
 value concatenation l =
-  List.fold_left SBSyn.(fun e1 e2 -> e1 @@ e2) (List.hd l) (List.tl l)
+  List.fold_left PSyn.(fun e1 e2 -> e1 @@ e2) (List.hd l) (List.tl l)
 ;
 
 type astre = [
-  TOK of string
+  Special of string
+| Class of string
 | DISJ of list astre
 | CONJ of list astre
 | CONC of list astre
@@ -91,14 +105,16 @@ type astre = [
 ;
 
 value conv x =
+  let open PatternBaseToken in
   let rec convrec env = fun [
-        TOK x -> SBSyn.token (Scanf.unescaped x)
-      | DISJ l -> SBSyn.disjunction (List.map (convrec env) l)
-      | CONJ l -> SBSyn.conjunction (List.map (convrec env) l)
+        Special x -> PSyn.token (SPCL (Scanf.unescaped x))
+      | Class x -> PSyn.token (CLS (Scanf.unescaped x))
+      | DISJ l -> PSyn.disjunction (List.map (convrec env) l)
+      | CONJ l -> PSyn.conjunction (List.map (convrec env) l)
       | CONC l -> concatenation (List.map (convrec env) l)
-      | STAR x -> SBSyn.star (convrec env x)
-      | NEG x -> SBSyn.neg (convrec env x)
-      | EPS -> SBSyn.epsilon
+      | STAR x -> PSyn.star (convrec env x)
+      | NEG x -> PSyn.neg (convrec env x)
+      | EPS -> PSyn.epsilon
       | LETIN s e1 e2 ->
          convrec [(s,convrec env e1) :: env] e2
       | ID s -> match List.assoc s env with [
@@ -123,7 +139,8 @@ EXTEND
   e1: [ [ x = e0; "*" -> STAR x | x = e0 -> x ] ] ;
 
   e0:
-    [ [ x = STRING -> TOK x
+    [ [ x = STRING -> Special x
+      | x = UIDENT -> Class x
       | "("; x = e5; ")" -> x
       | "eps" -> EPS
       | "let" ; s=LIDENT ; "=" ; re1 = e5 ; "in" ; re2 = e5 -> LETIN s re1 re2

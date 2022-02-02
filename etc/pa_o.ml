@@ -93,7 +93,7 @@ value mklistpat loc last =
 
 open Token_regexps ;
 module Entry(R : sig value rexs : string ;
-                     value extra : list StringBaseToken.t ;
+                     value extra : list PatternBaseToken.t ;
                      value name : string ;
                  end) = struct
   value rex =

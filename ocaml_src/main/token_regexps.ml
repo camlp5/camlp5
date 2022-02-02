@@ -6,34 +6,50 @@
 open Asttools;;
 open Brzozowski;;
 
-module StringBaseToken =
+module PatternBaseToken =
   struct
-    include String;;
+    type t =
+        CLS of string
+      | SPCL of string
+    ;;
     let hash = Hashtbl.hash;;
-    let print s = Printf.sprintf "\"%s\"" (String.escaped s);;
+    let print =
+      function
+        SPCL s -> Printf.sprintf "\"%s\"" (String.escaped s)
+      | CLS ty -> Printf.sprintf "%s" ty
+    ;;
+    let compare t1 t2 =
+      match t1, t2 with
+        CLS s1, CLS s2 -> String.compare s1 s2
+      | SPCL s1, SPCL s2 -> String.compare s1 s2
+      | CLS _, SPCL _ -> -1
+      | SPCL _, CLS _ -> 1
+    ;;
+    let equal t1 t2 = 0 = compare t1 t2;;
   end
 ;;
-module StringRegexp = Regexp (StringBaseToken);;
-module SBSyn = RESyntax (StringBaseToken) (StringRegexp);;
+module PatternRegexp = Regexp (PatternBaseToken);;
+module PSyn = RESyntax (PatternBaseToken) (PatternRegexp);;
 
 module Compile
   (R :
    sig
-     val rex : StringRegexp.regexp;;
-     val extra : StringBaseToken.t list;;
+     val rex : PatternRegexp.regexp;;
+     val extra : PatternBaseToken.t list;;
    end) =
   struct
     let toks =
-      (StringRegexp.tokens R.rex @ R.extra |> sort StringBaseToken.compare) |>
-        ListAux.uniq StringBaseToken.compare
+      (PatternRegexp.tokens R.rex @ R.extra |>
+         sort PatternBaseToken.compare) |>
+        ListAux.uniq PatternBaseToken.compare
     ;;
-    module StringToken =
+    module PatternToken =
       struct
-        include StringBaseToken;;
-        let foreach f = List.iter f toks; f "EOI";;
+        include PatternBaseToken;;
+        let foreach f = List.iter f toks; f (CLS "EOI");;
       end
     ;;
-    module BEval = Eval (StringToken) (StringRegexp);;
+    module BEval = Eval (PatternToken) (PatternRegexp);;
     let dfa = BEval.dfa R.rex;;
     let exec input = BEval.exec dfa input;;
   end
@@ -45,11 +61,16 @@ let compile rex =
 ;;
 
 let convert_token =
+  let open PatternBaseToken in
   function
-    "", s -> Some s
-  | "ANTIQUOT", s -> (s |> Plexer.parse_antiquot) |> option_map fst
-  | "ANTIQUOT_LOC", s -> (s |> Plexer.parse_antiloc) |> option_map snd3
-  | s, _ -> Some s
+    "", s -> Some (SPCL s)
+  | "ANTIQUOT", s ->
+      ((s |> Plexer.parse_antiquot) |> option_map fst) |>
+        option_map (fun s -> SPCL s)
+  | "ANTIQUOT_LOC", s ->
+      ((s |> Plexer.parse_antiloc) |> option_map snd3) |>
+        option_map (fun s -> SPCL s)
+  | s, _ -> Some (CLS s)
 ;;
 
 let nondestructive_token_stream_to_string_seq ~convert strm =
@@ -79,11 +100,12 @@ let g = Grammar.gcreate (Plexer.gmake ());;
 let e = Grammar.Entry.create g "regexp";;
 
 let concatenation l =
-  List.fold_left SBSyn.(fun e1 e2 -> e1 @@ e2) (List.hd l) (List.tl l)
+  List.fold_left PSyn.(fun e1 e2 -> e1 @@ e2) (List.hd l) (List.tl l)
 ;;
 
 type astre =
-    TOK of string
+    Special of string
+  | Class of string
   | DISJ of astre list
   | CONJ of astre list
   | CONC of astre list
@@ -95,15 +117,17 @@ type astre =
 ;;
 
 let conv x =
+  let open PatternBaseToken in
   let rec convrec env =
     function
-      TOK x -> SBSyn.token (Scanf.unescaped x)
-    | DISJ l -> SBSyn.disjunction (List.map (convrec env) l)
-    | CONJ l -> SBSyn.conjunction (List.map (convrec env) l)
+      Special x -> PSyn.token (SPCL (Scanf.unescaped x))
+    | Class x -> PSyn.token (CLS (Scanf.unescaped x))
+    | DISJ l -> PSyn.disjunction (List.map (convrec env) l)
+    | CONJ l -> PSyn.conjunction (List.map (convrec env) l)
     | CONC l -> concatenation (List.map (convrec env) l)
-    | STAR x -> SBSyn.star (convrec env x)
-    | NEG x -> SBSyn.neg (convrec env x)
-    | EPS -> SBSyn.epsilon
+    | STAR x -> PSyn.star (convrec env x)
+    | NEG x -> PSyn.neg (convrec env x)
+    | EPS -> PSyn.epsilon
     | LETIN (s, e1, e2) -> convrec ((s, convrec env e1) :: env) e2
     | ID s ->
         match List.assoc s env with
@@ -209,8 +233,12 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            "194fe98d", (fun _ (x : 'e5) _ (loc : Ploc.t) -> (x : 'e0)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
+           "194fe98d", (fun (x : string) (loc : Ploc.t) -> (Class x : 'e0)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
-           "194fe98d", (fun (x : string) (loc : Ploc.t) -> (TOK x : 'e0)))]]]);;
+           "194fe98d",
+           (fun (x : string) (loc : Ploc.t) -> (Special x : 'e0)))]]]);;
 
 
 let parse s =
