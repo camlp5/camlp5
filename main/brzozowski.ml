@@ -728,4 +728,23 @@ let dump f { n; init; decode; transition } =
 
 (* -------------------------------------------------------------------------- *)
 
+let export { n; init; decode; transition } =
+  let init = match init with
+      None -> failwith "cannot export DFA with no initial state"
+    | Some st -> st in
+  let acc = ref [] in
+  let final q = nullable (decode q) in
+  for i = 0 to n-1 do
+    let rex = decode i in
+    let is_final = final i in
+    let transacc = ref [] in
+    Token.foreach (fun a ->
+        match transition i a with
+          None -> ()
+        | Some j -> transacc := (a, j) :: !transacc
+      ) ;
+    acc := (i, rex, is_final, List.rev !transacc) :: !acc
+  done ;
+  (init, decode init, List.rev !acc)
+
 end
