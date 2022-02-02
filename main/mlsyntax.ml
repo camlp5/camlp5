@@ -114,12 +114,14 @@ value is_hashop =
 value is_operator0 = do {
   let ht = Hashtbl.create 73 in
   let ct = Hashtbl.create 73 in
+  let excl = ["<-"] in
   List.iter (fun x -> Hashtbl.add ht x True)
     ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"];
   List.iter (fun x -> Hashtbl.add ct x True)
     ['!'; '&'; '*'; '+'; '-'; '/'; ':'; '<'; '='; '>'; '@'; '^'; '|'; '~';
      '?'; '%'; '.'; '$'];
   fun x ->
+    not (List.mem x excl) &&
     try Hashtbl.find ht x with
     [ Not_found -> try Hashtbl.find ct x.[0] with _ -> False ]
 };
