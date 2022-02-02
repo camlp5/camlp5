@@ -131,7 +131,7 @@ let mklistpat loc last =
 ;;
 
 open Token_regexps;;
-module Entry
+module Interp
   (R :
    sig
      val rexs : string;;
@@ -225,14 +225,6 @@ let build_letop_binder loc letop b l e =
      MLast.ExFun (loc, [argpat, None, e]))
 ;;
 
-module InterpCheckLetException =
-  Entry
-    (struct
-      let rexs = " \"let\" \"exception\" ";;
-      let extra = [];;
-      let name = "let_exception";;
-    end)
-;;
 module CheckLetException =
   Compiled
     (struct
@@ -283,70 +275,287 @@ let stream_peek_nth n strm =
  *)
 
 module CheckTypeDecl =
-  Entry
+  Compiled
     (struct
-      let rexs =
-        "\n         let tyvar = \"'\" (LIDENT | UIDENT) | GIDENT in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-!\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         (\"rec\"|\"nonrec\"|eps)(LIDENT | \"tp\" | \"_tp\" | \"lid\" | \"lid_\") type_parameters (\"=\" | \":=\")\n  "
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0001 (ofs + 1)
+          | Some (SPCL "_tp") -> q0001 (ofs + 1)
+          | Some (SPCL "lid") -> q0001 (ofs + 1)
+          | Some (SPCL "lid_") -> q0001 (ofs + 1)
+          | Some (SPCL "nonrec") -> q0007 (ofs + 1)
+          | Some (SPCL "rec") -> q0007 (ofs + 1)
+          | Some (SPCL "tp") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "!") -> q0005 (ofs + 1)
+          | Some (SPCL "!+") -> q0005 (ofs + 1)
+          | Some (SPCL "!-") -> q0005 (ofs + 1)
+          | Some (SPCL "'") -> q0006 (ofs + 1)
+          | Some (SPCL "+") -> q0005 (ofs + 1)
+          | Some (SPCL "+!") -> q0005 (ofs + 1)
+          | Some (SPCL "-") -> q0005 (ofs + 1)
+          | Some (SPCL "-!") -> q0005 (ofs + 1)
+          | Some (SPCL ":=") -> q0003 (ofs + 1)
+          | Some (SPCL "=") -> q0003 (ofs + 1)
+          | Some (SPCL "_") -> q0004 (ofs + 1)
+          | Some (SPCL "_list") -> q0002 (ofs + 1)
+          | Some (SPCL "list") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ":=") -> q0003 (ofs + 1)
+          | Some (SPCL "=") -> q0003 (ofs + 1)
+          | _ -> None
+        and q0003 ofs = Some ofs
+        and q0004 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "!") -> q0005 (ofs + 1)
+          | Some (SPCL "!+") -> q0005 (ofs + 1)
+          | Some (SPCL "!-") -> q0005 (ofs + 1)
+          | Some (SPCL "'") -> q0006 (ofs + 1)
+          | Some (SPCL "+") -> q0005 (ofs + 1)
+          | Some (SPCL "+!") -> q0005 (ofs + 1)
+          | Some (SPCL "-") -> q0005 (ofs + 1)
+          | Some (SPCL "-!") -> q0005 (ofs + 1)
+          | Some (SPCL ":=") -> q0003 (ofs + 1)
+          | Some (SPCL "=") -> q0003 (ofs + 1)
+          | Some (SPCL "_") -> q0004 (ofs + 1)
+          | _ -> None
+        and q0005 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "!") -> q0005 (ofs + 1)
+          | Some (SPCL "!+") -> q0005 (ofs + 1)
+          | Some (SPCL "!-") -> q0005 (ofs + 1)
+          | Some (SPCL "'") -> q0006 (ofs + 1)
+          | Some (SPCL "+") -> q0005 (ofs + 1)
+          | Some (SPCL "+!") -> q0005 (ofs + 1)
+          | Some (SPCL "-") -> q0005 (ofs + 1)
+          | Some (SPCL "-!") -> q0005 (ofs + 1)
+          | Some (SPCL "_") -> q0004 (ofs + 1)
+          | _ -> None
+        and q0006 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0004 (ofs + 1)
+          | Some (CLS "UIDENT") -> q0004 (ofs + 1)
+          | _ -> None
+        and q0007 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0001 (ofs + 1)
+          | Some (SPCL "_tp") -> q0001 (ofs + 1)
+          | Some (SPCL "lid") -> q0001 (ofs + 1)
+          | Some (SPCL "lid_") -> q0001 (ofs + 1)
+          | Some (SPCL "tp") -> q0001 (ofs + 1)
+          | _ -> None
+        in
+        q0000 0
       ;;
-      let extra = [];;
       let name = "type_decl";;
     end)
 ;;
 let check_type_decl = CheckTypeDecl.check;;
 
 module CheckTypeExtension =
-  Entry
+  Compiled
     (struct
-      let rexs =
-        "\n         let tyvar = \"'\" (LIDENT | UIDENT) | GIDENT in\n         let type_parameter = (\"+\"|\"-\"|\"!\"|\"!+\"|\"+!\"| \"!-\"|\"-\")* (tyvar | \"_\") in\n         let type_parameters = (\"list\" | \"_list\" | type_parameter* ) in\n         UIDENT | \"lilongid\" | \"_lilongid\" | (LIDENT type_parameters \"+=\")\n  "
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0002 (ofs + 1)
+          | Some (CLS "UIDENT") -> q0001 (ofs + 1)
+          | Some (SPCL "_lilongid") -> q0001 (ofs + 1)
+          | Some (SPCL "lilongid") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs = Some ofs
+        and q0002 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "!") -> q0005 (ofs + 1)
+          | Some (SPCL "!+") -> q0005 (ofs + 1)
+          | Some (SPCL "!-") -> q0005 (ofs + 1)
+          | Some (SPCL "'") -> q0006 (ofs + 1)
+          | Some (SPCL "+") -> q0005 (ofs + 1)
+          | Some (SPCL "+!") -> q0005 (ofs + 1)
+          | Some (SPCL "+=") -> q0001 (ofs + 1)
+          | Some (SPCL "-") -> q0005 (ofs + 1)
+          | Some (SPCL "_") -> q0004 (ofs + 1)
+          | Some (SPCL "_list") -> q0003 (ofs + 1)
+          | Some (SPCL "list") -> q0003 (ofs + 1)
+          | _ -> None
+        and q0003 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "+=") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0004 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "!") -> q0005 (ofs + 1)
+          | Some (SPCL "!+") -> q0005 (ofs + 1)
+          | Some (SPCL "!-") -> q0005 (ofs + 1)
+          | Some (SPCL "'") -> q0006 (ofs + 1)
+          | Some (SPCL "+") -> q0005 (ofs + 1)
+          | Some (SPCL "+!") -> q0005 (ofs + 1)
+          | Some (SPCL "+=") -> q0001 (ofs + 1)
+          | Some (SPCL "-") -> q0005 (ofs + 1)
+          | Some (SPCL "_") -> q0004 (ofs + 1)
+          | _ -> None
+        and q0005 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "!") -> q0005 (ofs + 1)
+          | Some (SPCL "!+") -> q0005 (ofs + 1)
+          | Some (SPCL "!-") -> q0005 (ofs + 1)
+          | Some (SPCL "'") -> q0006 (ofs + 1)
+          | Some (SPCL "+") -> q0005 (ofs + 1)
+          | Some (SPCL "+!") -> q0005 (ofs + 1)
+          | Some (SPCL "-") -> q0005 (ofs + 1)
+          | Some (SPCL "_") -> q0004 (ofs + 1)
+          | _ -> None
+        and q0006 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0004 (ofs + 1)
+          | Some (CLS "UIDENT") -> q0004 (ofs + 1)
+          | _ -> None
+        in
+        q0000 0
       ;;
-      let extra = [];;
       let name = "type_extension";;
     end)
 ;;
 let check_type_extension = CheckTypeExtension.check;;
 
 module CheckDotUid =
-  Entry
+  Compiled
     (struct
-      let rexs = " \".\" (UIDENT | \"uid\" | \"_uid\") ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ".") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "UIDENT") -> q0002 (ofs + 1)
+          | Some (SPCL "_uid") -> q0002 (ofs + 1)
+          | Some (SPCL "uid") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "dot_uid";;
     end)
 ;;
 let check_dot_uid = CheckDotUid.check;;
 
 module CheckLbracket =
-  Entry
+  Compiled
     (struct
-      let rexs = " \"[\" ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "[") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "lbracket";;
     end)
 ;;
 let check_lbracket = CheckLbracket.check;;
 
 module CheckLbracketBar =
-  Entry
+  Compiled
     (struct
-      let rexs = " \"[|\" ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "[|") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "lbracketbar";;
     end)
 ;;
 let check_lbracketbar = CheckLbracketBar.check;;
 
 module CheckLbrace =
-  Entry
-    (struct let rexs = " \"{\" ";; let extra = [];; let name = "lbrace";; end)
+  Compiled
+    (struct
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "{") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs = Some ofs in
+        q0000 0
+      ;;
+      let name = "lbrace";;
+    end)
 ;;
 let check_lbrace = CheckLbrace.check;;
 
 module CheckLidentColon =
-  Entry
+  Compiled
     (struct
-      let rexs = " LIDENT \":\" ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ":") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "lident_colon";;
     end)
 ;;
@@ -354,27 +563,84 @@ let check_lident_colon = CheckLidentColon.check;;
 let check_not_lident_colon = CheckLidentColon.check_not;;
 
 module CheckUidentColoneq =
-  Entry
+  Compiled
     (struct
-      let rexs = " (UIDENT | \"uid\" | \"_uid\") \":=\" ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "UIDENT") -> q0001 (ofs + 1)
+          | Some (SPCL "_uid") -> q0001 (ofs + 1)
+          | Some (SPCL "uid") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ":=") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "uident_coloneq";;
     end)
 ;;
 let check_uident_coloneq = CheckUidentColoneq.check;;
 
 module CheckColon =
-  Entry
-    (struct let rexs = " \":\" ";; let extra = [];; let name = "colon";; end)
+  Compiled
+    (struct
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ":") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs = Some ofs in
+        q0000 0
+      ;;
+      let name = "colon";;
+    end)
 ;;
 let check_colon = CheckColon.check;;
 let check_not_colon = CheckColon.check_not;;
 
 module CheckLabelEq =
-  Entry
+  Compiled
     (struct
-      let rexs = " (UIDENT \".\")* LIDENT (\"=\" | \";\" | \":\") ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0002 (ofs + 1)
+          | Some (CLS "UIDENT") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ".") -> q0000 (ofs + 1)
+          | _ -> None
+        and q0002 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ":") -> q0003 (ofs + 1)
+          | Some (SPCL ";") -> q0003 (ofs + 1)
+          | Some (SPCL "=") -> q0003 (ofs + 1)
+          | _ -> None
+        and q0003 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "label_eq";;
     end)
 ;;
@@ -412,32 +678,97 @@ let str_item_to_inline loc si ext =
 ;;
 
 module CheckLparenType =
-  Entry
+  Compiled
     (struct
-      let rexs = " \"(\" \"type\" ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "(") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "type") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "lparen_type";;
     end)
 ;;
 let check_lparen_type = CheckLparenType.check;;
 
 module CheckTypeBinder =
-  Entry
+  Compiled
     (struct
-      let rexs =
-        "\n        let tyvar = \"'\" (LIDENT | UIDENT) | GIDENT in\n         (tyvar tyvar * | (\"list\" | \"_list\")) \".\"\n         "
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "'") -> q0003 (ofs + 1)
+          | Some (SPCL "_list") -> q0001 (ofs + 1)
+          | Some (SPCL "list") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ".") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs = Some ofs
+        and q0003 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "LIDENT") -> q0004 (ofs + 1)
+          | Some (CLS "UIDENT") -> q0004 (ofs + 1)
+          | _ -> None
+        and q0004 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (CLS "GIDENT") -> q0004 (ofs + 1)
+          | Some (SPCL "'") -> q0003 (ofs + 1)
+          | Some (SPCL ".") -> q0002 (ofs + 1)
+          | _ -> None
+        in
+        q0000 0
       ;;
-      let extra = [];;
       let name = "type_binder";;
     end)
 ;;
 let check_type_binder = CheckTypeBinder.check;;
 
 module CheckAdditiveRparen =
-  Entry
+  Compiled
     (struct
-      let rexs = " (\"+\" | \"-\" | \"+.\" | \"-.\" | \"+=\") \")\" ";;
-      let extra = [];;
+      let rawcheck strm =
+        let open Token_regexps in
+        let open PatternBaseToken in
+        let must_peek_nth n strm =
+          let l = Stream.npeek n strm in
+          if List.length l = n then convert_token (fst (sep_last l)) else None
+        in
+        let rec q0000 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL "+") -> q0001 (ofs + 1)
+          | Some (SPCL "+.") -> q0001 (ofs + 1)
+          | Some (SPCL "+=") -> q0001 (ofs + 1)
+          | Some (SPCL "-") -> q0001 (ofs + 1)
+          | Some (SPCL "-.") -> q0001 (ofs + 1)
+          | _ -> None
+        and q0001 ofs =
+          match must_peek_nth (ofs + 1) strm with
+            Some (SPCL ")") -> q0002 (ofs + 1)
+          | _ -> None
+        and q0002 ofs = Some ofs in
+        q0000 0
+      ;;
       let name = "additive_rparen";;
     end)
 ;;

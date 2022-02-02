@@ -120,7 +120,7 @@ value mklistpat loc last =
 ;
 
 open Token_regexps ;
-module Entry(R : sig value rexs : string ;
+module Interp(R : sig value rexs : string ;
                      value extra : list PatternBaseToken.t ;
                      value name : string ;
                  end) = struct
@@ -184,11 +184,6 @@ value build_letop_binder loc letop b l e =
   <:expr< $lid:letop$ $argexp$ (fun $argpat$ -> $e$) >>
 ;
 
-module InterpCheckLetException = Entry(struct
-  value rexs = {foo| "let" "exception" |foo} ;
-  value extra = [] ;
-  value name = "let_exception" ;
-                             end) ;
 module CheckLetException = Compiled(struct
   value rawcheck = <:regexp< "let" "exception" >>;
   value name = "let_exception" ;
@@ -216,84 +211,74 @@ value stream_peek_nth n strm =
    That is: a UIDENT ..., or a LIDENT, then some type-parameters, then "+="
  *)
 
-module CheckTypeDecl = Entry(struct
-  value rexs = {foo|
+module CheckTypeDecl = Compiled(struct
+  value rawcheck = <:regexp<
          let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-!")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
          ("rec"|"nonrec"|eps)(LIDENT | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":=")
-  |foo} ;
-  value extra = [] ;
+  >> ;
   value name = "type_decl" ;
                              end) ;
 value check_type_decl = CheckTypeDecl.check ;
 
-module CheckTypeExtension = Entry(struct
-  value rexs = {foo|
+module CheckTypeExtension = Compiled(struct
+  value rawcheck = <:regexp<
          let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
          UIDENT | "lilongid" | "_lilongid" | (LIDENT type_parameters "+=")
-  |foo} ;
-  value extra = [] ;
+  >> ;
   value name = "type_extension" ;
                              end) ;
 value check_type_extension = CheckTypeExtension.check ;
 
-module CheckDotUid = Entry(struct
-  value rexs = {foo| "." (UIDENT | "uid" | "_uid") |foo} ;
-  value extra = [] ;
+module CheckDotUid = Compiled(struct
+  value rawcheck = <:regexp< "." (UIDENT | "uid" | "_uid") >> ;
   value name = "dot_uid" ;
                              end) ;
 value check_dot_uid = CheckDotUid.check ;
 
-module CheckLbracket = Entry(struct
-  value rexs = {foo| "[" |foo} ;
-  value extra = [] ;
+module CheckLbracket = Compiled(struct
+  value rawcheck = <:regexp< "[" >> ;
   value name = "lbracket" ;
                              end) ;
 value check_lbracket = CheckLbracket.check ;
 
-module CheckLbracketBar = Entry(struct
-  value rexs = {foo| "[|" |foo} ;
-  value extra = [] ;
+module CheckLbracketBar = Compiled(struct
+  value rawcheck = <:regexp< "[|" >> ;
   value name = "lbracketbar" ;
                              end) ;
 value check_lbracketbar = CheckLbracketBar.check ;
 
-module CheckLbrace = Entry(struct
-  value rexs = {foo| "{" |foo} ;
-  value extra = [] ;
+module CheckLbrace = Compiled(struct
+  value rawcheck = <:regexp< "{" >> ;
   value name = "lbrace" ;
                              end) ;
 value check_lbrace = CheckLbrace.check ;
 
-module CheckLidentColon = Entry(struct
-  value rexs = {foo| LIDENT ":" |foo} ;
-  value extra = [] ;
+module CheckLidentColon = Compiled(struct
+  value rawcheck = <:regexp< LIDENT ":" >> ;
   value name = "lident_colon" ;
                              end) ;
 value check_lident_colon = CheckLidentColon.check ;
 value check_not_lident_colon = CheckLidentColon.check_not ;
 
-module CheckUidentColoneq = Entry(struct
-  value rexs = {foo| (UIDENT | "uid" | "_uid") ":=" |foo} ;
-  value extra = [] ;
+module CheckUidentColoneq = Compiled(struct
+  value rawcheck = <:regexp< (UIDENT | "uid" | "_uid") ":=" >> ;
   value name = "uident_coloneq" ;
                              end) ;
 value check_uident_coloneq = CheckUidentColoneq.check ;
 
-module CheckColon = Entry(struct
-  value rexs = {foo| ":" |foo} ;
-  value extra = [] ;
+module CheckColon = Compiled(struct
+  value rawcheck = <:regexp< ":" >> ;
   value name = "colon" ;
                              end) ;
 value check_colon = CheckColon.check ;
 value check_not_colon = CheckColon.check_not ;
 
-module CheckLabelEq = Entry(struct
-  value rexs = {foo| (UIDENT ".")* LIDENT ("=" | ";" | ":") |foo} ;
-  value extra = [] ;
+module CheckLabelEq = Compiled(struct
+  value rawcheck = <:regexp< (UIDENT ".")* LIDENT ("=" | ";" | ":") >> ;
   value name = "label_eq" ;
                              end) ;
 value check_label_eq = CheckLabelEq.check ;
@@ -327,26 +312,23 @@ value str_item_to_inline loc si ext =
   ]
 ;
 
-module CheckLparenType = Entry(struct
-  value rexs = {foo| "(" "type" |foo} ;
-  value extra = [] ;
+module CheckLparenType = Compiled(struct
+  value rawcheck = <:regexp< "(" "type" >> ;
   value name = "lparen_type" ;
                              end) ;
 value check_lparen_type = CheckLparenType.check ;
 
-module CheckTypeBinder = Entry(struct
-  value rexs = {foo|
+module CheckTypeBinder = Compiled(struct
+  value rawcheck = <:regexp<
         let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
          (tyvar tyvar * | ("list" | "_list")) "."
-         |foo} ;
-  value extra = [] ;
+         >> ;
   value name = "type_binder" ;
                              end) ;
 value check_type_binder = CheckTypeBinder.check ;
 
-module CheckAdditiveRparen = Entry(struct
-  value rexs = {foo| ("+" | "-" | "+." | "-." | "+=") ")" |foo} ;
-  value extra = [] ;
+module CheckAdditiveRparen = Compiled(struct
+  value rawcheck = <:regexp< ("+" | "-" | "+." | "-." | "+=") ")" >> ;
   value name = "additive_rparen" ;
                              end) ;
 value check_additive_rparen = CheckAdditiveRparen.check ;
