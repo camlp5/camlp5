@@ -37,7 +37,7 @@ value export_dfa (init, initre, states) =
     let must_peek_nth n strm =
       let l = Stream.npeek n strm in
         if List.length l = n then
-          convert_token (fst(sep_last l))
+          convert_token (fst(Asttools.sep_last l))
         else None in
     let rec $list:bindl$ in $lid:(statename init)$ 0 >>
 ;

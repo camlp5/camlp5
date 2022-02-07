@@ -295,6 +295,23 @@ package "phony_quotations" (
   )
 )
 
+package "regexp" (
+  version = "${version}"
+  description = "Syntax extension: Quotations for compiled regular expressions over tokens"
+
+  requires(toploop) = "camlp5"
+  archive(toploop) = "q_regexp.cmo"
+
+  requires(syntax,preprocessor) = "camlp5"
+  archive(syntax,preprocessor,-native) = "q_regexp.cmo"
+  archive(syntax,preprocessor,native) = "q_regexp.cmx"
+
+  package "link" (
+    requires = "camlp5"
+    archive(byte) = "q_regexp.cmo"
+    archive(native) = "q_regexp.cmx"
+  )
+)
 
 package "extend_m" (
   error(syntax_camlp5o) = "camlp5.extend_m cannot be used with syntax camlp5o"
