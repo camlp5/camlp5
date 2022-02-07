@@ -60,3 +60,5 @@ q_ast_base.cmo: ../lib/grammar.cmi ../lib/plexer.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi ../main/pcaml.cmi
 q_ast_base.cmx: ../lib/grammar.cmx ../lib/plexer.cmx ../lib/ploc.cmx \
     ../main/mLast.cmi ../main/pcaml.cmx
+q_regexp.cmo: ../main/quotation.cmi ../main/token_regexps.cmo
+q_regexp.cmx: ../main/quotation.cmx ../main/token_regexps.cmx

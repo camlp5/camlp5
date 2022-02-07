@@ -44,10 +44,12 @@ pa_mktest.cmx: ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi \
     ../main/pcaml.cmx
 pa_o.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/asttools.cmi ../main/mLast.cmi \
-    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/reloc.cmi
+    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/reloc.cmi \
+    ../main/token_regexps.cmo
 pa_o.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
     ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
-    ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/reloc.cmx
+    ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/reloc.cmx \
+    ../main/token_regexps.cmx
 pa_oop.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi ../main/pcaml.cmi
 pa_oop.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
