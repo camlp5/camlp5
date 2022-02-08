@@ -430,7 +430,7 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo}
       }
       ; {
-        name = "type-recflag-1";
+        name = "type-recflag-2";
         code = {foo|<:str_item< type $flag:f$ t = int >> ;|foo};
         expect = {foo|MLast.StTyp loc (Ploc.VaVal f)
   (Ploc.VaVal
@@ -440,6 +440,11 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
        MLast.tdDef = MLast.TyLid loc (Ploc.VaVal "int");
        MLast.tdCon = Ploc.VaVal []; MLast.tdAttributes = Ploc.VaVal []}]);
 |foo}
+      }
+      ; {
+        name = "type-recflag-3";
+        code = {foo|<:str_item:< type $_flag:nrfl$ $list:tdl$ >> ;|foo};
+        expect = {foo||foo}
       }
     ])
  ;
