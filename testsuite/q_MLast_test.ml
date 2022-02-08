@@ -417,6 +417,30 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         expect = {foo|MLast.SgExt loc i (Ploc.VaVal []) t pd attrs;
 |foo}
       }
+      ; {
+        name = "type-recflag-1";
+        code = {foo|<:sig_item< type $flag:f$ t = int >> ;|foo};
+        expect = {foo|MLast.SgTyp loc (Ploc.VaVal f)
+  (Ploc.VaVal
+     [{MLast.tdIsDecl = Ploc.VaVal True;
+       MLast.tdNam = Ploc.VaVal (loc, Ploc.VaVal "t");
+       MLast.tdPrm = Ploc.VaVal []; MLast.tdPrv = Ploc.VaVal False;
+       MLast.tdDef = MLast.TyLid loc (Ploc.VaVal "int");
+       MLast.tdCon = Ploc.VaVal []; MLast.tdAttributes = Ploc.VaVal []}]);
+|foo}
+      }
+      ; {
+        name = "type-recflag-1";
+        code = {foo|<:str_item< type $flag:f$ t = int >> ;|foo};
+        expect = {foo|MLast.StTyp loc (Ploc.VaVal f)
+  (Ploc.VaVal
+     [{MLast.tdIsDecl = Ploc.VaVal True;
+       MLast.tdNam = Ploc.VaVal (loc, Ploc.VaVal "t");
+       MLast.tdPrm = Ploc.VaVal []; MLast.tdPrv = Ploc.VaVal False;
+       MLast.tdDef = MLast.TyLid loc (Ploc.VaVal "int");
+       MLast.tdCon = Ploc.VaVal []; MLast.tdAttributes = Ploc.VaVal []}]);
+|foo}
+      }
     ])
  ;
 
