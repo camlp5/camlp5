@@ -447,6 +447,22 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
         expect = {foo|MLast.StTyp loc nrfl (Ploc.VaVal tdl);
 |foo}
       }
+      ; {
+        name = "type-lid-1";
+        code = {foo|<:sig_item< type $_lid:x$ $_list:x$ = $_priv:x$ .. $_itemattrs:x$ >> ;|foo};
+        expect = {foo|MLast.SgTyp loc (Ploc.VaVal False)
+  (Ploc.VaVal
+     [{MLast.tdIsDecl = Ploc.VaVal True; MLast.tdNam = Ploc.VaVal (loc, x);
+       MLast.tdPrm = x; MLast.tdPrv = x; MLast.tdDef = MLast.TyOpn loc;
+       MLast.tdCon = Ploc.VaVal []; MLast.tdAttributes = x}]);
+|foo}
+      }
+      ; {
+        name = "type-list-1";
+        code = {foo|<:str_item< type $list:tdl$ >> ;|foo};
+        expect = {foo|MLast.StTyp loc (Ploc.VaVal False) (Ploc.VaVal tdl);
+|foo}
+      }
     ])
  ;
 

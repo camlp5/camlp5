@@ -217,7 +217,9 @@ module CheckTypeDecl = Compiled(struct
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-!")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
          ("flag" | "_flag" |
-          ("rec"|"nonrec"|eps) (LIDENT | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":="))
+          ("rec"|"nonrec") |
+          ("list" | "_list") |
+          (LIDENT | "tp" | "_tp" | "lid" | "_lid") type_parameters ("=" | ":="))
   >> ;
   value name = "type_decl" ;
                              end) ;

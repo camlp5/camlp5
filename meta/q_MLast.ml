@@ -6,6 +6,7 @@
 #load "pa_extend_m.cmo";
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
+#load "q_regexp.cmo";
 
 open Asttools ;
 open Mlsyntax.Original ;
@@ -298,6 +299,32 @@ value warning_deprecated_since_6_00 loc =
   else ()
 ;
 
+open Token_regexps ;
+module Interp(R : sig value rexs : string ;
+                     value extra : list PatternBaseToken.t ;
+                     value name : string ;
+                 end) = struct
+  value rex = parse R.rexs ;
+  module C = Compile(struct value rex = rex ; value extra = R.extra ; end) ;
+  value pred strm = check_regexp rex strm ;
+  value check_f strm = if pred strm then () else raise Stream.Failure ;
+  value check_not_f strm = if not(pred strm) then () else raise Stream.Failure ;
+  value check = Grammar.Entry.of_parser gram ("check_"^R.name) check_f ;
+  value check_not = Grammar.Entry.of_parser gram ("check_not_"^R.name) check_not_f ;
+end
+;
+module Compiled(R : sig value rawcheck :  Stream.t (string * string) -> option int ;
+                        value name : string ;
+                 end) = struct
+  value rawcheck = R.rawcheck ;
+  value pred strm = match rawcheck strm with [ None -> False | Some _ -> True ] ;
+  value check_f strm = if pred strm then () else raise Stream.Failure ;
+  value check_not_f strm = if not(pred strm) then () else raise Stream.Failure ;
+  value check = Grammar.Entry.of_parser gram ("check_"^R.name) check_f ;
+  value check_not = Grammar.Entry.of_parser gram ("check_not_"^R.name) check_not_f ;
+end
+;
+
 value check_let_exception_f = (fun strm ->
        match Stream.npeek 2 strm with
        [ [("", "let"); ("", "exception")] -> ()
@@ -329,66 +356,30 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-(* returns True if the stream is a type-decl, and not an extension.
-   returns False if the stream is an extension and not a type-decl.
-   Since a type-decl might not have an "=" (if it's a list of decls)
-   the default is "type-decl".
-*)
-value word_keywordp s =
-  let rec wrec = parser [
-    [: `('a'..'z'|'A'..'Z'|'_'|'0'..'9') ; strm :] -> wrec strm
-  | [: strm :] -> do { Stream.empty strm ; True }
-  ] in
-  let check = parser [
-    [: `('a'..'z'|'A'..'Z'|'_') ; strm :] -> wrec strm
-  | [:  :] -> False
-  ] in
-  try check (Stream.of_string s)
-  with Stream.Failure | (Stream.Error _) -> False
-;
+module CheckTypeDecl = Compiled(struct
+  value rawcheck = <:regexp<
+         let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
+         let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-!")* (tyvar | "_") in
+         let type_parameters = ("list" | "_list" | type_parameter* ) in
+         ("flag" | "_flag" |
+          ("rec"|"nonrec") |
+          ("list" | "_list") |
+          (LIDENT | "tp" | "_tp" | "lid" | "_lid") type_parameters ("=" | ":="))
+  >> ;
+  value name = "type_decl" ;
+                             end) ;
+value check_type_decl = CheckTypeDecl.check ;
 
-value is_type_decl_not_extension strm =
-  let rec wrec n =
-    match stream_peek_nth n strm with [
-      None -> assert False
-    | Some (
-        ("","=")
-      | ("",":=")
-      | ("",";")
-      | ("",";;")
-      ) -> True
-    | Some ("",s) when word_keywordp s -> True
-    | Some ("EOI","") -> True
-    | Some ("","+=") -> False
-    | Some (
-      ("",_)
-      | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
-      | ("ANTIQUOT",_)
-    ) -> wrec (n+1)
-    | Some (a,b) -> raise (Stream.Error (Printf.sprintf "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")" a b))
- ]
-  in wrec 1
-;
-
-value check_type_decl_f strm =
-  if is_type_decl_not_extension strm then ()
-  else raise Stream.Failure
-;
-
-value check_type_decl =
-  Grammar.Entry.of_parser gram "check_type_decl"
-    check_type_decl_f
-;
-
-value check_type_extension_f strm =
-  if not (is_type_decl_not_extension strm) then ()
-  else raise Stream.Failure
-;
-
-value check_type_extension =
-  Grammar.Entry.of_parser gram "check_type_extension"
-    check_type_extension_f
-;
+module CheckTypeExtension = Compiled(struct
+  value rawcheck = <:regexp<
+         let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
+         let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-")* (tyvar | "_") in
+         let type_parameters = ("list" | "_list" | type_parameter* ) in
+         UIDENT | "lilongid" | "_lilongid" | (LIDENT type_parameters "+=")
+  >> ;
+  value name = "type_extension" ;
+                             end) ;
+value check_type_extension = CheckTypeExtension.check ;
 
 value stream_npeek n (strm  : Stream.t (string * string)) =
   Stream.npeek n strm
