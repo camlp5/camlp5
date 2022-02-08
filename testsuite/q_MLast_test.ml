@@ -444,7 +444,8 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
       ; {
         name = "type-recflag-3";
         code = {foo|<:str_item:< type $_flag:nrfl$ $list:tdl$ >> ;|foo};
-        expect = {foo||foo}
+        expect = {foo|MLast.StTyp loc nrfl (Ploc.VaVal tdl);
+|foo}
       }
     ])
  ;

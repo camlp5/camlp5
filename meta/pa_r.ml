@@ -216,7 +216,8 @@ module CheckTypeDecl = Compiled(struct
          let tyvar = "'" (LIDENT | UIDENT) | GIDENT in
          let type_parameter = ("+"|"-"|"!"|"!+"|"+!"| "!-"|"-!")* (tyvar | "_") in
          let type_parameters = ("list" | "_list" | type_parameter* ) in
-         ("flag" | "_flag" | ("rec"|"nonrec"|eps)) (LIDENT | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":=")
+         ("flag" | "_flag" |
+          ("rec"|"nonrec"|eps) (LIDENT | "tp" | "_tp" | "lid" | "lid_") type_parameters ("=" | ":="))
   >> ;
   value name = "type_decl" ;
                              end) ;
