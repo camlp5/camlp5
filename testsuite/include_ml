@@ -115,3 +115,7 @@ print_string "================ START ================\n";; flush stdout ;;
 ;;; End: ***
 
 *)
+
+#require "camlp5.quotations";;
+#directory "../meta";;
+#load "q_regexp.cmo";;
