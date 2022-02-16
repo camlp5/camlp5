@@ -124,6 +124,12 @@ module CheckAdditiveRparen = Compiled(struct
                              end) ;
 value check_additive_rparen = CheckAdditiveRparen.check ;
 
+module CheckBangCloseParen = Compiled(struct
+  value rawcheck = <:regexp< "!" ")" >> ;
+  value name = "bang_close_paren" ;
+                             end) ;
+value check_bang_closeparen = CheckBangCloseParen.check ;
+
 value operator_rparen = Grammar.Entry.create gram "operator_rparen";
 
 value check_not_part_of_patt_f strm =
@@ -795,7 +801,7 @@ EXTEND
     ;
   prefix_operator: [ [
       x = PREFIXOP -> x
-    | "!" -> "!"
+    | check_bang_closeparen ; "!" -> "!"
     ] ]
     ;
   infix_operator: [ [ 
