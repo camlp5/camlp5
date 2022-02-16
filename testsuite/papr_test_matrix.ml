@@ -4719,7 +4719,7 @@ END
      r_output = OK {foo|x +. y;
 |foo}
     };
-    {name="bang-parsing"; implem = True ;
+    {name="bang-parsing-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|(!fvrec _M)|foo} ;
      official_input = OK {foo|(!fvrec _M)|foo} ;
@@ -4728,6 +4728,17 @@ END
 |foo};
      official_output = OK {foo|;;(!fvrec) _M|foo} ;
      r_output = OK {foo|fvrec.val _M;
+|foo}
+    };
+    {name="bang-parsing-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|(!foo)|foo} ;
+     official_input = OK {foo|(!foo)|foo} ;
+     r_input = OK {foo|foo.val;|foo} ;
+     o_output = OK {foo|let _ = !foo;;
+|foo};
+     official_output = OK {foo|;;!foo|foo} ;
+     r_output = OK {foo|foo.val;
 |foo}
     };
     {name="test-prototype"; implem = True ;
