@@ -3808,6 +3808,66 @@ end
   end;
 |foo}
     };
+    {name="module-type-precedence-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module S = struct
+module type mty = s -> t
+module type mty = s -> t [@foo]
+module type mty = s with type u = v -> t [@foo]
+module type mty = (s with type u = v -> t) [@foo]
+module type mty = s with type u = (v -> t) [@foo]
+module type mty = (s with type u = v) -> t [@foo]
+module type mty = s -> t with type u = v [@foo]
+module type mty = s with module M = N.P
+module type mty = s with module M = N.P -> t
+end|foo} ;
+     official_input = OK {foo|module S = struct
+module type mty = s -> t
+module type mty = s -> t [@foo]
+module type mty = s with type u = v -> t [@foo]
+module type mty = (s with type u = v -> t) [@foo]
+module type mty = s with type u = (v -> t) [@foo]
+module type mty = (s with type u = v) -> t [@foo]
+module type mty = s -> t with type u = v [@foo]
+module type mty = s with module M = N.P
+module type mty = s with module M = N.P -> t
+end|foo} ;
+     r_input = OK {foo|module S = struct
+module type mty = s -> t ;
+module type mty = s -> t [@foo] ;
+module type mty = s with type u = v -> t [@foo] ;
+module type mty = (s with type u = v -> t) [@foo] ;
+module type mty = s with type u = (v -> t) [@foo] ;
+module type mty = (s with type u = v) -> t [@foo] ;
+module type mty = s -> t with type u = v [@foo] ;
+module type mty = s with module M = N.P ;
+module type mty = s with module M = N.P -> t ;
+end ;|foo} ;
+     o_output = OK {foo|module S = struct
+module type mty = (functor (_ : s) -> t)
+module type mty = (functor (_ : s) -> t[@foo])
+module type mty = (s with type u = v -> t[@foo])
+module type mty = (s with type u = v -> t[@foo])
+module type mty = (s with type u = v -> t[@foo])
+module type mty = (functor (_ : s with type u = v) -> t[@foo])
+module type mty = (functor (_ : s) -> t with type u = v[@foo])
+module type mty = (s with module M = N.P)
+module type mty = (functor (_ : s with module M = N.P) -> t)
+end;;
+|foo};
+     official_output = OK {foo|module S = struct
+module type mty  = s -> t
+module type mty  = s -> ((t)[@foo ])
+module type mty  = ((s with type  u =  v -> t)[@foo ])
+module type mty  = ((s with type  u =  v -> t)[@foo ])
+module type mty  = ((s with type  u =  v -> t)[@foo ])
+module type mty  = (s with type  u =  v) -> ((t)[@foo ])
+module type mty  = s -> ((t with type  u =  v)[@foo ])
+module type mty  = s with module M = N.P
+module type mty  = (s with module M = N.P) -> t
+end|foo} ;
+     r_output = SKIP "" ""
+    };
     {name="irrefut-module-prefix-patt-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f M.N.(x) = ()|foo} ;

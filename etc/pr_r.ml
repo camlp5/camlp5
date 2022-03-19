@@ -1353,7 +1353,7 @@ value with_constraint pc wc =
       pprintf pc "type %p =@;%s%p" con_typ_pat (loc, sl, tpl)
         (if pf then "private " else "") ctyp t
   | <:with_constr:< type $lilongid:sl$ $list:tpl$ := $t$ >> ->
-      pprintf pc "type %p :=@;%p" con_typ_pat (loc, sl, tpl) ctyp t
+      pprintf pc "type %p :=@;%p" con_typ_pat (loc, sl, tpl) ctyp_below_alg_attribute t
   | <:with_constr:< module $longid:sl$ = $me$ >> ->
       pprintf pc "module %p =@;%p" longident sl module_expr me
   | <:with_constr:< module $longid:sl$ := $me$ >> ->
