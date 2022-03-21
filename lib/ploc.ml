@@ -64,6 +64,9 @@ value after loc sh len =
   {(loc) with bp = loc.ep + sh; ep = loc.ep + sh + len}
 ;
 value with_comment loc comm = {(loc) with comm = comm};
+value with_comment_last loc ecomm = {(loc) with ecomm = ecomm};
+value with_line_nb_last loc n = {(loc) with line_nb_last = n};
+value with_bol_pos_last loc n = {(loc) with bol_pos_last = n};
 
 value name = ref "loc";
 

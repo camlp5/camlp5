@@ -84,6 +84,9 @@ value after : t -> int -> int -> t;
        [len]. *)
 value with_comment : t -> string -> t;
    (** Change the comment part of the given location *)
+value with_comment_last : t -> string -> t;
+value with_line_nb_last : t -> int -> t;
+value with_bol_pos_last : t -> int -> t;
 
 (* miscellaneous *)
 
