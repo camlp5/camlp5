@@ -4869,6 +4869,24 @@ ELSE
      o_input = OK {foo|{%goo.ha bar|argle|bar}|foo} ;
      r_input = OK {foo| [%goo.ha {bar|argle|bar};]; |foo} ;
      official_output = OK {foo|;;[%goo.ha "argle"]|foo}
+    };
+    {name="quoted-extension-3"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK {foo|{%%goo.ha|argle|}|foo} ;
+     official_input = OK {foo|{%%goo.ha|argle|}|foo} ;
+     r_input = OK {foo| [%%goo.ha {bar|argle|bar};]; |foo} ;
+     o_output = OK {foo|[%%goo.ha "argle"];;
+|foo};
+     official_output = OK {foo|[%%goo.ha {|argle|}]|foo} ;
+     r_output = OK {foo|[%%"goo.ha" "argle";];
+|foo}
+    };
+    {(skip) with
+     name="quoted-extension-3-[ro]2official"; implem = True ;
+     exclude=["o2official"; "r2official"];
+     o_input = OK {foo|{%%goo.ha|argle|}|foo} ;
+     r_input = OK {foo| [%%goo.ha {bar|argle|bar};]; |foo} ;
+     official_output = OK {foo|;;[%%goo.ha "argle"]|foo}
     }
   ]
 END @

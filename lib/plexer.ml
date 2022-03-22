@@ -608,21 +608,22 @@ value rec extattrident =
   [ ident [ "." extattrident | ] ]
 ;
 
-value quoted_extension1 ctx (bp, _) extid buf strm =
+value quoted_extension1 ~{alg} ctx (bp, _) extid buf strm =
   let (delim, s) = rawstring0 ctx bp $empty strm in
-  ("QUOTEDEXTENSION", extid^":"^(String.escaped s))
+  let ty = if alg then "QUOTEDALGEXTENSION" else "QUOTEDITEMEXTENSION" in
+  (ty, extid^":"^(String.escaped s))
 ;
 
-value quoted_extension0 ctx (bp, _) extid =
+value quoted_extension0 ~{alg} ctx (bp, _) extid =
   lexer
-  [ ws (zerobuf (quoted_extension1 ctx (bp, $pos) extid))
-  | (zerobuf (quoted_extension1 ctx (bp, $pos) extid))
+  [ ws (zerobuf (quoted_extension1 ~{alg=alg} ctx (bp, $pos) extid))
+  | (zerobuf (quoted_extension1 ~{alg=alg} ctx (bp, $pos) extid))
   ]
 ;
 
-value quoted_extension ctx (bp, _) =
+value quoted_extension ~{alg} ctx (bp, _) =
   lexer [
-    extattrident (zerobuf (quoted_extension0 ctx (bp, $pos) $buf))
+    extattrident (zerobuf (quoted_extension0 ~{alg=alg} ctx (bp, $pos) $buf))
   ]
 ;
 value dotsymbolchar = lexer
@@ -746,7 +747,8 @@ value next_token_after_spaces ctx bp =
   | "[" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
   | "{<" -> keyword_or_error ctx (bp, $pos) $buf
-  | "{%"/ (zerobuf (quoted_extension ctx (bp, $pos)))
+  | "{%%" (zerobuf (quoted_extension ~{alg=False} ctx (bp, $pos)))
+  | "{%" (zerobuf (quoted_extension ~{alg=True} ctx (bp, $pos)))
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
@@ -963,7 +965,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
         | _ -> () ]
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "QUOTEDEXTENSION" |
+    "QUOTEDALGEXTENSION" | "QUOTEDITEMEXTENSION" |
     "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
     "ANDOP" | "LETOP" | "DOTOP" | "HASHOP" |
     "INFIXOP0" | "INFIXOP1" | "INFIXOP2" | "INFIXOP3" | "INFIXOP4" | "PREFIXOP" |
