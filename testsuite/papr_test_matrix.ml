@@ -5162,6 +5162,19 @@ end;|foo}
 1;
 |foo}
     }
+   ;{name="let-punning-1'"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x and y in 1|foo} ;
+     official_input = SKIP "{foo|let x in 1|foo}" "" ;
+     r_input = OK {foo|let x = x and y = y in 1;|foo} ;
+     o_output = OK {foo|let _ = let x = x and y = y in 1;;
+|foo};
+     official_output = OK {foo|;;let x = x and y = y in 1|foo} ;
+     r_output = OK {foo|let x = x
+and y = y in
+1;
+|foo}
+    }
    ;{name="let-punning-2"; implem = True ;
      exclude=[];
      o_input = OK {foo|let* x in 1|foo} ;
@@ -5171,6 +5184,19 @@ end;|foo}
 |foo};
      official_output = OK {foo|;;( let* ) x (fun x -> 1)|foo} ;
      r_output = OK {foo|let* x = x in
+1;
+|foo}
+    }
+   ;{name="let-punning-2'"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let* x and* y in 1|foo} ;
+     official_input = SKIP "{foo|let* x and* y in 1|foo}" "" ;
+     r_input = OK {foo|let* x = x and* y = y in 1;|foo} ;
+     o_output = OK {foo|let _ = let* x = x and* y = y in 1;;
+|foo};
+     official_output = OK {foo|;;( let* ) (( and* ) x y) (fun (x, y) -> 1)|foo} ;
+     r_output = OK {foo|let* x = x
+and* y = y in
 1;
 |foo}
     }
