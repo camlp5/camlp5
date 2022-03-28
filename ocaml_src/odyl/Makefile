@@ -16,10 +16,10 @@ all: odyl$(EXE)
 opt: odyl.cmxa odyl.cmx
 
 odyl$(EXE): odyl.cma odyl.cmo
-	$(OCAMLC) $(DEBUG) odyl.cma odyl.cmo -o odyl$(EXE)
+	$(OCAMLC) $(DEBUG) -linkpkg odyl.cma odyl.cmo -o odyl$(EXE)
 
 odyl.cma: $(OBJS)
-	$(OCAMLC) $(LINKFLAGS) dynlink.cma $(OBJS) -a -o odyl.cma
+	$(OCAMLC) $(LINKFLAGS) $(OBJS) -a -o odyl.cma
 
 odyl.cmxa: $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(LINKFLAGS) $(OBJS:.cmo=.cmx) -a -o odyl.cmxa
