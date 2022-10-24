@@ -4628,6 +4628,28 @@ END
      r_output = OK {foo|type fst 'tuple = 'fst constraint 'tuple = ('fst * _);
 |foo}
     };
+    {name="typedef-with-constraint-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type 'a t constraint 'a = rng|foo} ;
+     official_input = OK {foo|type 'a t constraint 'a = rng|foo} ;
+     r_input = OK {foo|type t 'a = 'b constraint 'a = rng;|foo} ;
+     o_output = OK {foo|type 'a t constraint 'a = rng
+;;|foo};
+     official_output = OK {foo|type 'a t constraint 'a = rng|foo} ;
+     r_output = OK {foo|type t 'a = 'b constraint 'a = rng;
+|foo}
+    };
+    {name="typedef-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type 'a t|foo} ;
+     official_input = OK {foo|type 'a t|foo} ;
+     r_input = OK {foo|type t 'a = 'b;|foo} ;
+     o_output = OK {foo|type 'a t;;
+|foo};
+     official_output = OK {foo|type 'a t|foo} ;
+     r_output = OK {foo|type t 'a = 'b;
+|foo}
+    };
     {name="letop-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let* x = 1 in 2|foo} ;

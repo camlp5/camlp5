@@ -59,6 +59,9 @@ let shift sh loc = {loc with bp = sh + loc.bp; ep = sh + loc.ep};;
 let sub loc sh len = {loc with bp = loc.bp + sh; ep = loc.bp + sh + len};;
 let after loc sh len = {loc with bp = loc.ep + sh; ep = loc.ep + sh + len};;
 let with_comment loc comm = {loc with comm = comm};;
+let with_comment_last loc ecomm = {loc with ecomm = ecomm};;
+let with_line_nb_last loc n = {loc with line_nb_last = n};;
+let with_bol_pos_last loc n = {loc with bol_pos_last = n};;
 
 let name = ref "loc";;
 

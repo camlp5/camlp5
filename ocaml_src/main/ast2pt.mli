@@ -18,6 +18,7 @@ val mkloc : Ploc.t -> Location.t;;
    (** Convert a Camlp5 location into an OCaml location. *)
 val fast : bool ref;;
    (** Flag to generate fast (unsafe) access to arrays. Default: False. *)
+val ctyp_mentions : string -> MLast.ctyp -> bool;;
 val ctyp : MLast.ctyp -> Parsetree.core_type;;
 val expr : MLast.expr -> Parsetree.expression;;
 val patt : MLast.patt -> Parsetree.pattern;;

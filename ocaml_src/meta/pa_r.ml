@@ -1124,6 +1124,12 @@ Grammar.safe_extend
       [None, None,
        [Grammar.production
           (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ _ (loc : Ploc.t) -> (None : 'functor_parameter)));
+        Grammar.production
+          (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
                    (Grammar.r_next
@@ -1642,6 +1648,15 @@ Grammar.safe_extend
            (fun (mt : 'module_type) _ (arg : 'functor_parameter) _
                 (loc : Ploc.t) ->
               (MLast.MtFun (loc, arg, mt) : 'module_type)))];
+       Some "->", Some Gramext.RightA,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next (Grammar.r_next Grammar.r_stop Grammar.s_self)
+                (Grammar.s_token ("", "->")))
+             Grammar.s_self,
+           "194fe98d",
+           (fun (mt2 : 'module_type) _ (mt1 : 'module_type) (loc : Ploc.t) ->
+              (MLast.MtFun (loc, Some (None, mt1), mt2) : 'module_type)))];
        Some "alg_attribute", Some Gramext.LeftA,
        [Grammar.production
           (Grammar.r_next
@@ -2253,6 +2268,9 @@ Grammar.safe_extend
     Grammar.extension (uidopt : 'uidopt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> (None : 'uidopt)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("UIDENT", "")),
            "194fe98d",
            (fun (m : string) (loc : Ploc.t) -> (Some m : 'uidopt)))]];

@@ -386,6 +386,17 @@ value label_of_patt =
   | p → error (MLast.loc_of_patt p) "label_of_patt; case not impl" ]
 ;
 
+value ctyp_mentions s cty =
+  let rec crec = fun [
+    <:ctyp< '$s2$ >> ->  s = s2
+  | <:ctyp< $t1$ $t2$ >> ->  crec t1 || crec t2
+  | <:ctyp< $t1$ -> $t2$ >> ->  crec t1 || crec t2
+  | <:ctyp< ($list:tl$) >> -> List.exists crec tl
+  | _ -> False
+  ] in
+  crec cty
+;
+
 value rec type_decl_of_with_type loc tn tpl pf ct =
   let (params, variance) = List.split (uv tpl) in
   let params = List.map uv params in
@@ -610,7 +621,7 @@ and package_of_module_type loc mt =
   let li = module_type_long_id mt in
   ocaml_package_type li with_con
 
-and type_decl ?{item_attributes=[]} tn tl priv cl =
+and type_decl ?{item_attributes=[]} tn tl priv (cl,tdCon) =
   fun
   [ TyMan loc t pf <:ctyp< { $list:ltl$ } >> →
       let priv = if uv pf then Private else Public in
@@ -632,7 +643,7 @@ and type_decl ?{item_attributes=[]} tn tl priv cl =
   | t →
       let m =
         match t with
-        [ <:ctyp< '$s$ >> when cl = [] →
+        [ <:ctyp< '$s$ >> when not (List.exists (fun [ (t1, t2) -> ctyp_mentions s t1 || ctyp_mentions s t2 ]) tdCon) →
             if List.exists (fun (t, _) → Some s = uv t) tl then Some (ctyp t)
             else None
         | _ → Some (ctyp t) ]
@@ -1233,7 +1244,7 @@ and mktype_decl td =
       (uv td.tdCon)
   in
   let tn = uv (snd (uv td.tdNam)) in
-  (tn, type_decl ~{item_attributes=uv_item_attributes td.tdAttributes} tn (uv td.tdPrm) priv cl td.tdDef)
+  (tn, type_decl ~{item_attributes=uv_item_attributes td.tdAttributes} tn (uv td.tdPrm) priv (cl,uv td.tdCon) td.tdDef)
 and module_type =
   fun
   [ MtAtt loc e a ->

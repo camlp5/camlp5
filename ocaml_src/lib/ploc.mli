@@ -84,6 +84,9 @@ val after : t -> int -> int -> t;;
        [len]. *)
 val with_comment : t -> string -> t;;
    (** Change the comment part of the given location *)
+val with_comment_last : t -> string -> t;;
+val with_line_nb_last : t -> int -> t;;
+val with_bol_pos_last : t -> int -> t;;
 
 (* miscellaneous *)
 
