@@ -38,7 +38,7 @@ real_steal:
 	  $(VERSSDIR)/parsing/Makefile
 	cp common/parsing/.gitignore $(VERSSDIR)/parsing/.
 	cp common/parsing/.depend $(VERSSDIR)/parsing/.
-	(grep "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp | \
+	(grep -h "and ast_.*_magic_number" $(OCAML_SRC)/utils/config.mlp $(OCAML_SRC)/utils/config.common.ml | \
 	 sed -e 's/^and/let/') > $(VERSSDIR)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
 	$(MAKE) copy_steal FILE=parsing/asttypes.mli

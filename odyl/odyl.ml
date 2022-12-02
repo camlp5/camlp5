@@ -38,4 +38,4 @@ value main () =
       } ]
 ;
 
-Printexc.catch main ();
+main ();

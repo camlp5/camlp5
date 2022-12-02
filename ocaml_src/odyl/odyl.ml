@@ -37,4 +37,4 @@ let main () =
       exit 2
 ;;
 
-Printexc.catch main ();;
+main ();;

@@ -5,7 +5,7 @@ include $(TOP)/config/Makefile
 
 SHELL=/bin/sh
 
-INCLUDES=
+INCLUDES=-I +dynlink
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 LINKFLAGS=$(DEBUG) $(INCLUDES)
 
