@@ -26,6 +26,8 @@ for v in \
 	   4.05.0 \
 	     ;
     do
-    testsuite/tools/inopam $v testsuite/tools/TRIP-TEST-2 >& ~/tmp/TRIP-TEST-$v.log &
+    echo "==== $v ===="
+    testsuite/tools/inopam $v opam clean -y -s
+    testsuite/tools/inopam $v opam install -y --deps-only -t --working-dir . &
     done
 wait

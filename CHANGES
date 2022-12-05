@@ -1,4 +1,10 @@
 
+Camlp5 Version 8.00.04:
+--------------------
+
+* [02 Dec 2022] (exceedingly modest) updates to support OCaml 5.0.0~beta2:
+  basically just changes to Makefile and opam
+
 Camlp5 Version 8.00.03:
 --------------------
 

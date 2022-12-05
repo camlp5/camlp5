@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+switch="$1"
+shift
+exec opam exec --switch "$switch" --set-switch --set-root -- "$@"

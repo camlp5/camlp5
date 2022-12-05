@@ -1,43 +1,5 @@
 #!/bin/bash
 
-set -e
-trap noisy_error ERR
-
-VERS=$1
-
-ENABLE_LOG=${ENABLE_LOG:-1}
-LOG=~/tmp/TRIP-TEST-$VERS.log
-
-if (( $ENABLE_LOG ))
-then
-  rm -f $LOG && touch $LOG
-fi
-
-echo "================ $VERS ================" 2>&1
-opam switch $VERS
-. $OPAMROOT/dot.bashrc
-
-{
-  (make clean && ./configure && make -j32 && make) 2>&1
-  echo "build OK" 1>&2
-} | if (( $ENABLE_LOG ))
-then
-  tee 1>>$LOG
-else
-  cat
-fi
-grep OVERSION config/Makefile.cnf
-{
-  (make -C test clean && make -C test clean all && make -C testsuite setup clean all-tests) 2>&1 
-  echo "test OK" 1>&2
-} | if (( $ENABLE_LOG ))
-then
-  tee 1>>$LOG
-else
-  cat
-fi
-
-function noisy_error {
-    echo "FAILED FAILED FAILED FAILED FAILED"
-    exit 1
-}
+opam clean -y -s
+opam install -y --deps-only -t --working-dir .
+opam install --verbose --working-dir --with-test .
