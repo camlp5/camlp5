@@ -3,7 +3,6 @@
 set -e
 
 for v in \
-	   5.0.0~rc1 \
 	   4.14.0 \
 	   4.13.1 \
 	   4.13.0 \
@@ -28,5 +27,9 @@ for v in \
     do
     echo "==== $v ===="
     testsuite/tools/inopam $v opam pin add ocaml-base-compiler $v
+    testsuite/tools/inopam $v opam pin add ocaml $v
     done
+
+    testsuite/tools/inopam $v opam pin add ocaml-base-compiler 5.0.0~rc1
+    testsuite/tools/inopam $v opam pin add ocaml 5.0.0
 wait
