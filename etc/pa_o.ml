@@ -2486,6 +2486,7 @@ EXTEND
   ;
   top_phrase:
     [ [ ph = phrase; ";;" -> Some ph
+      | ";;" -> Some <:str_item< declare end >>
       | EOI -> None ] ]
   ;
   use_file:

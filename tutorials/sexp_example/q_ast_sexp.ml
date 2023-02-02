@@ -13,7 +13,7 @@ value meta_e_sexp se =
   let open Meta_E in
   let prefix =
     let loc = Ploc.dummy in
-    <:expr< Sexp >> in
+    <:longident< Sexp >> in
   let node_no_loc = C.node_no_loc ~{prefix=prefix} in
   let rec sexp = fun [
     Sexp.Nil -> node_no_loc "Nil" []

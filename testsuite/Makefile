@@ -54,7 +54,6 @@ roundtrippers: \
 	tools/ROUNDTRIP-pa_o-pr_o.byte \
 	tools/ROUNDTRIP-pa_o-pr_o.opt \
 
-LAUNCH=env TOP=$(TOP) $(TOP)/tools/LAUNCH
 OCAMLFIND=$(LAUNCH) ocamlfind
 OCAMLTOPLEVEL=$(LAUNCH) ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)

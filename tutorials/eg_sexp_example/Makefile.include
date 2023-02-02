@@ -5,7 +5,7 @@ TOP=../..
 DESTDIR=
 RM=rm
 
-LAUNCH=env TOP=$(TOP) $(TOP)/tools/LAUNCH
+LAUNCH=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH --
 OCAMLFIND=$(LAUNCH) ocamlfind
 NOT_OCAMLFIND=$(LAUNCH) not-ocamlfind
 MKCAMLP5=$(LAUNCH) mkcamlp5

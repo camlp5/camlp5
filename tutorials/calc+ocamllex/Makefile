@@ -1,5 +1,7 @@
+TOP=../..
 
-OCAMLFIND=ocamlfind
+LAUNCH=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH --
+OCAMLFIND=$(LAUNCH) ocamlfind
 PACKAGES=fmt,camlp5.extprint,camlp5.extend,camlp5.pprintf,pcre
 
 all: calc calc.opt

@@ -1,5 +1,7 @@
+TOP=../..
 
-OCAMLFIND=ocamlfind
+LAUNCH=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH --
+OCAMLFIND=$(LAUNCH) ocamlfind
 PACKAGES=camlp5,fmt
 
 all: streams streams.opt
