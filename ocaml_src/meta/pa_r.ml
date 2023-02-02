@@ -6918,6 +6918,11 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("EOI", "")),
            "194fe98d", (fun _ (loc : Ploc.t) -> (None : 'top_phrase)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ";")),
+           "194fe98d",
+           (fun _ (loc : Ploc.t) ->
+              (Some (MLast.StDcl (loc, [])) : 'top_phrase)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (phrase : 'phrase Grammar.Entry.e)),
            "194fe98d",

@@ -60,7 +60,7 @@ value print_location lb loc =
     }
 ;
 
-value wrap f shfn lb =
+value wrap f default_value shfn lb =
   let cs =
     let shift = shfn lb in
     Stream.from
@@ -97,7 +97,14 @@ value wrap f shfn lb =
       Pcaml.report_error x;
       Format.close_box ();
       Format.print_newline ();
-      raise Exit
+      Printexc.(print_raw_backtrace stdout (get_callstack 100)) ;
+      raise Exit ;
+(*
+      flush stdout ;
+      match default_value with [
+          None -> raise Exit
+        | Some v -> v ]
+ *)
     } ]
 ;
 
@@ -175,11 +182,11 @@ value use_file cs = do {
 };
 
 value wrapped_toplevel_phrase lb =
-  wrap toplevel_phrase (fun _ -> 0) lb
+  wrap toplevel_phrase (Some (Parsetree.Ptop_def [])) (fun _ -> 0) lb
 ;
 
 Toploop.parse_use_file.val :=
-  wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
+  wrap use_file None (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
 ;
 
 Pcaml.warning.val :=

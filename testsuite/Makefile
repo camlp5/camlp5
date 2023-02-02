@@ -15,6 +15,9 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 
 export LC_ALL=C
 
+mdx-test::
+	$(LAUNCH) ocaml-mdx test bar.asciidoc
+
 all-tests: all $(TESTS)
 
 all: prereqs roundtrippers \

@@ -13,7 +13,7 @@ open Camlp5_top_funs;
 Toploop.parse_toplevel_phrase.val := wrapped_toplevel_phrase ;
 
 Toploop.parse_use_file.val :=
-  wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
+  wrap use_file None (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
 ;
 
 Pcaml.warning.val :=

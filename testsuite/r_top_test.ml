@@ -29,6 +29,9 @@ value papr s =
 value fmt_pair (x,y) = "<<"^x^"||"^y^">>" ;
 
 value tests = "test r top" >::: [
+    "empty" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ("","") (papr {foo|;|foo})
+    ]) ;
     "simplest" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} (";;1","1") (papr {foo| 1; 1|foo})
     ]) ;
