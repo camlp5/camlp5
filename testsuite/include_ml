@@ -93,7 +93,7 @@ let pp_expr ty = Fmt.(pf stdout "#<expr< %s >>" (Eprinter.apply Pcaml.pr_expr Pp
 let pp_patt ty = Fmt.(pf stdout "#<patt< %s >>" (Eprinter.apply Pcaml.pr_patt Pprintf.empty_pc ty));;
 
 let pp_str_item ty = Fmt.(pf stdout "#<str_item< %s >>" (Eprinter.apply Pcaml.pr_str_item Pprintf.empty_pc ty));;
-let pp_sig_item ty = Fmt.(pf stdout "#<str_item< %s >>" (Eprinter.apply Pcaml.pr_sig_item Pprintf.empty_pc ty));;
+let pp_sig_item ty = Fmt.(pf stdout "#<sig_item< %s >>" (Eprinter.apply Pcaml.pr_sig_item Pprintf.empty_pc ty));;
 (*
 let pp_ctyp ty = Fmt.(pf stdout "#<ctyp< %a >>" Pa_ppx_base.Pp_MLast.pp_ctyp ty);;
 let pp_expr ty = Fmt.(pf stdout "#<expr< %a >>" Pa_ppx_base.Pp_MLast.pp_expr ty);;
