@@ -43,39 +43,6 @@ let chomp s =
   [%subst {|\n+$|} / {||} / s pcre] s
 ;;
 
-let toremove = ref []
-let ocaml_version = chomp (capturex("ocamlc",[|"ocamlc"; "-version"|]))
-let ocaml_lib = chomp (capturex("ocamlc", [|"ocamlc"; "-where"|]))
-;;
-
-let verbose = ref false
-let preserve = ref false
-let noexecute = ref false
-let rev_interfaces = ref []
-let rev_options = ref []
-let rev_predicates = ref ["preprocessor"; "syntax"]
-let rev_packages = ref ["camlp5"]
-let randpid = ref (Unix.getpid())
-let opt = ([%match {|mkcamlp5.opt$|}/pred] Sys.argv.(0))
-;;
-if opt then
-  L.push rev_predicates "native"
-else
-  L.push rev_predicates "byte" ;;
-
-Stdlib.at_exit (fun () ->
-    !toremove
-    |>  List.iter (fun f ->
-            (let* existsp = OS.File.exists (v f) in
-             if existsp then
-               if !preserve then
-                 Ok (Fmt.(pf stderr "Preserving tmpfile %s\n%!" f))
-               else
-                 OS.Path.delete (v f)
-             else Ok()) |> ignore
-          )
-  )
-;;
 
 let usage_msg = {|
 Options:
@@ -92,16 +59,39 @@ Files:
 
 let usage () = Fmt.(pf stdout "%s" usage_msg)
 
-let rest_arg s =
-  if ([%match {|\.cmi$|}/pred] s) then begin
-    if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
-    L.push rev_interfaces s
-    end
-  else
-    L.push rev_options s
-;;
+let toremove = ref []
+let ocaml_version = chomp (capturex("ocamlc",[|"ocamlc"; "-version"|]))
+let ocaml_lib = chomp (capturex("ocamlc", [|"ocamlc"; "-where"|]))
+let verbose = ref false
+let preserve = ref false
+let noexecute = ref false
+let rev_interfaces = ref []
+let rev_options = ref []
+let rev_predicates = ref ["preprocessor"; "syntax"]
+let rev_packages = ref ["camlp5"]
+let randpid = ref (Unix.getpid())
 
-let argv = List.tl (Array.to_list Sys.argv) ;;
+let main cmd args =
+let opt = ([%match {|mkcamlp5.opt$|}/pred] cmd) in
+
+if opt then
+  L.push rev_predicates "native"
+else
+  L.push rev_predicates "byte" ;
+
+Stdlib.at_exit (fun () ->
+    !toremove
+    |>  List.iter (fun f ->
+            (let* existsp = OS.File.exists (v f) in
+             if existsp then
+               if !preserve then
+                 Ok (Fmt.(pf stderr "Preserving tmpfile %s\n%!" f))
+               else
+                 OS.Path.delete (v f)
+             else Ok()) |> ignore
+          )
+  )
+;
 
 let rec parec = function
     "-help"::l ->
@@ -127,7 +117,7 @@ let rec parec = function
      parec l
   | s::l ->
      if ([%match {|\.cmi$|}/pred] s) then begin
-         if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
+         if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" cmd cmd) ;
          L.push rev_interfaces s
        end
      else
@@ -135,13 +125,12 @@ let rec parec = function
      parec l
   | [] -> ()
     in
-    parec argv
-;;
+    parec args ;
 
-let interfaces = List.rev !rev_interfaces
-let options = List.rev !rev_options
-let packages = List.rev !rev_packages
-let predicates = List.rev !rev_predicates
+let interfaces = List.rev !rev_interfaces in
+let options = List.rev !rev_options in
+let packages = List.rev !rev_packages in
+let predicates = List.rev !rev_predicates in
 
 let link =
 if not opt then begin
@@ -165,7 +154,7 @@ Dynlink.set_allowed_units [
     write_fully ~mode:0o755 [%pattern {|${linkbase}.ml|}] txt ;
     [[%pattern {|${linkbase}.ml|}]]
   end
-else []
+else [] in
 
 let cmd = ["ocamlfind"]
 	  @[if opt then "ocamlopt" else "ocamlc"]
@@ -179,3 +168,7 @@ let cmd = ["ocamlfind"]
     if not !noexecute then
       Unix.execvp "ocamlfind" (Array.of_list cmd)
 ;;
+
+let cmd = Sys.argv.(0) ;;
+let argv = List.tl (Array.to_list Sys.argv) ;;
+main cmd argv ;;
