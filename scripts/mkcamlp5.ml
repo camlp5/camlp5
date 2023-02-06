@@ -53,16 +53,16 @@ let preserve = ref false
 let noexecute = ref false
 let rev_interfaces = ref []
 let rev_options = ref []
-let predicates = ref ["syntax"; "preprocessor"]
-let packages = ref ["camlp5"]
+let rev_predicates = ref ["preprocessor"; "syntax"]
+let rev_packages = ref ["camlp5"]
 let randpid = ref (Unix.getpid())
 let opt =
   None <> ([%match {|mkcamlp5.opt$|}] Sys.argv.(0))
 ;;
 if opt then
-  L.push predicates "native"
+  L.push rev_predicates "native"
 else
-  L.push predicates "byte" ;;
+  L.push rev_predicates "byte" ;;
 
 Stdlib.at_exit (fun () ->
     !toremove
@@ -102,8 +102,7 @@ let rest_arg s =
     L.push rev_options s
 ;;
 
-let argv = ref (Array.to_list Sys.argv) ;;
-Fmt.(pf stderr "args: %a\n%!" (list ~sep:(const string " ") string) !argv) ;;
+let argv = ref (List.tl (Array.to_list Sys.argv)) ;;
 
 while L.len argv > 0 do
     if L.sub argv 0 = "-help" then begin
@@ -129,11 +128,11 @@ while L.len argv > 0 do
       end
     else if L.sub argv 0 = "-package" then begin
         ignore(L.pop argv);
-        List.iter (L.push packages) ([%split {|,|}] (L.pop argv))
+        List.iter (L.push rev_packages) ([%split {|,|}] (L.pop argv))
       end
     else if L.sub argv 0 = "-predicates" then begin
         ignore(L.pop argv) ;
-        List.iter (L.push predicates) ([%split {|,|}] (L.pop argv))
+        List.iter (L.push rev_predicates) ([%split {|,|}] (L.pop argv))
       end
     else if None <> ([%match {|\.cmi$|}] (L.sub argv  0)) then begin
         if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
@@ -159,6 +158,8 @@ Arg.(parse [
  *)
 let interfaces = List.rev !rev_interfaces
 let options = List.rev !rev_options
+let packages = List.rev !rev_packages
+let predicates = List.rev !rev_predicates
 
 let link =
 if not opt then begin
@@ -186,13 +187,13 @@ else []
 
 let cmd = ["ocamlfind"]
 	  @[if opt then "ocamlopt" else "ocamlc"]
-	     @["-predicates"; join"," !predicates]
-	    @["-package"; join "," !packages]
+	     @["-predicates"; join"," predicates]
+	    @["-package"; join "," packages]
 	    @(if !verbose then ["-verbose"] else [])
 	    @["-linkall"; "-linkpkg"]
 	    @ link @ options
 	    @[if opt then "odyl.cmx" else "odyl.cmo"] in
-    if !verbose then Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") Dump.string) cmd) ;
+    if !verbose then Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") string) cmd) ;
     if not !noexecute then
       Unix.execvp "ocamlfind" (Array.of_list cmd)
 ;;

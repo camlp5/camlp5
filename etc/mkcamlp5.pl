@@ -18,7 +18,18 @@ our $preserve ;
 our $noexecute ;
 our $randompid = $$ ;
 
-END { systemx("rm", "-f", @toremove) unless $preserve ; }
+END {
+  for my $f (@toremove) {
+    if (-f $f) {
+      if ($main::preserve) {
+	print STDERR "Preserving tmpfile $f\n" ;
+      }
+      else {
+	systemx("rm", "-f", $f) ;
+      }
+    }
+  }
+}
 
 {
   my @interfaces ;

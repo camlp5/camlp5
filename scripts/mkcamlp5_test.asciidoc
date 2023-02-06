@@ -15,7 +15,7 @@ Files:
 
 ```sh
 $ bin/mkcamlp5 -help
-args: bin/mkcamlp5 -help
+args: -help
 
 Options:
   -I <dir>   Add directory in search path for object files
@@ -32,6 +32,7 @@ Files:
 ```sh
 $ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -I +dynlink -package pack1,pack2,pack3 obj1.cmo obj2.cmo obj2.cmo -o exe.exe
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,pack1,pack2,pack3 -verbose -linkall -linkpkg link314159.ml -I +dynlink obj1.cmo obj2.cmo obj2.cmo -o exe.exe odyl.cmo
+Preserving tmpfile link314159.ml
 $ cat link314159.ml
 Dynlink.set_allowed_units [
 
@@ -47,6 +48,7 @@ ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,pack1,
 ```sh
 $ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.quotations,camlp5.pr_dump,camlp5.pa_o,camlp5.extend,ocamlgraph -package ppx_inline_test.runtime-lib -o pp5+dump.byte
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,camlp5,camlp5.quotations,camlp5.pr_dump,camlp5.pa_o,camlp5.extend,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg link314159.ml -o pp5+dump.byte odyl.cmo
+Preserving tmpfile link314159.ml
 ```
 
 ```ssh
@@ -56,6 +58,7 @@ $ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package cam
 ```sh
 $ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -package ppx_inline_test.runtime-lib -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph -package ppx_inline_test.runtime-lib pa_gt.cma -o pp5+gt+o.byte
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,ppx_inline_test.runtime-lib,camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg link314159.ml pa_gt.cma -o pp5+gt+o.byte odyl.cmo
+Preserving tmpfile link314159.ml
 $ cat link314159.ml
 Dynlink.set_allowed_units [
 
