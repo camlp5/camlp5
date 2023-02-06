@@ -101,60 +101,43 @@ let rest_arg s =
     L.push rev_options s
 ;;
 
-let argv = ref (List.tl (Array.to_list Sys.argv)) ;;
+let argv = List.tl (Array.to_list Sys.argv) ;;
 
-while L.len argv > 0 do
-    if L.sub argv 0 = "-help" then begin
-        ignore(L.pop argv) ;
-        usage() ;
-        exit 0
-      end
-    else if L.sub argv 0 = "-verbose" then begin
-        ignore(L.pop argv) ;
-        verbose := true
-      end
-    else if L.sub argv 0 = "-random-pid" then begin
-        ignore(L.pop argv) ;
-        randpid := int_of_string (L.pop argv)
-      end
-    else if L.sub argv 0 = "-preserve" then begin
-        ignore(L.pop argv) ;
-        preserve := true
-      end
-    else if L.sub argv 0 = "-n" then begin
-        ignore(L.pop argv) ;
-        noexecute := true
-      end
-    else if L.sub argv 0 = "-package" then begin
-        ignore(L.pop argv);
-        List.iter (L.push rev_packages) ([%split {|,|}] (L.pop argv))
-      end
-    else if L.sub argv 0 = "-predicates" then begin
-        ignore(L.pop argv) ;
-        List.iter (L.push rev_predicates) ([%split {|,|}] (L.pop argv))
-      end
-    else if ([%match {|\.cmi$|}/pred] (L.sub argv  0)) then begin
-        if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
-        L.push rev_interfaces (L.pop argv)
-      end
-    else
-      L.push rev_options (L.pop argv)
-done
-
-(*
-Arg.(parse [
-         "-verbose",Set verbose,"enable verbose output"
-       ; "-preserve",Set preserve,"preserve generated tmp-files"
-       ; "-random-pid",Set_int randpid,"supply the value for the PID (for generating tmp filenames)"
-       ; "-n",Set preserve,"no-execute"
-       ; "-package",String(fun s -> List.iter (L.push packages) ([%split {|,|}] s)),"add packages"
-       ; "-predicates",String(fun s -> List.iter (L.push predicates) ([%split {|,|}] s)),"add predicates"
-       ; "--", Rest rest_arg, "rest of the arguments"
-       ]
-       rest_arg
-       usage_msg)
+let rec parec = function
+    "-help"::l ->
+     usage() ;
+     exit 0
+  | "-verbose"::l ->
+     verbose := true ;
+     parec l
+  | "-random-pid"::pid::l ->
+     randpid := int_of_string pid ;
+     parec l
+  | "-preserve"::l ->
+     preserve := true ;
+     parec l
+  | "-n"::l ->
+     noexecute := true ;
+     parec l
+  | "-package"::s::l ->
+     List.iter (L.push rev_packages) ([%split {|,|}] s) ;
+     parec l
+  | "-predicates"::s::l ->
+     List.iter (L.push rev_predicates) ([%split {|,|}] s) ;
+     parec l
+  | s::l ->
+     if ([%match {|\.cmi$|}/pred] s) then begin
+         if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
+         L.push rev_interfaces s
+       end
+     else
+       L.push rev_options s ;
+     parec l
+  | [] -> ()
+    in
+    parec argv
 ;;
- *)
+
 let interfaces = List.rev !rev_interfaces
 let options = List.rev !rev_options
 let packages = List.rev !rev_packages
