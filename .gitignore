@@ -9,3 +9,5 @@ local-install
 */.merlin
 */*/.merlin
 *.ppo
+*.corrected
+*.cm*

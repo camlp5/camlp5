@@ -39,6 +39,7 @@ depends: [
   "ounit" { with-test }
   "rresult" { with-test }
   "fmt" { with-test }
+  "mdx" { with-test }
 ]
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]

@@ -31,3 +31,12 @@ COMPWITH=old
 	$(NOVERBOSE) $(CAMLP5_COMM) $< -o $*.ppo
 	$(OCAMLOPT) $(OCAMLCFLAGS) -c -impl $*.ppo
 	$(RM) -f $*.ppo
+
+
+.PRECIOUS: %.asciidoc.corrected
+
+%.asciidoc.corrected: %.asciidoc
+	$(LAUNCH) ocaml-mdx test -o $@ $<
+
+%.asciidoc.TEST: %.asciidoc.corrected %.asciidoc
+	diff -Bwiu $^

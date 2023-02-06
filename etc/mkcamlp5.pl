@@ -8,14 +8,17 @@ use String::ShellQuote ;
 
 my @toremove ;
 
-END { systemx("rm", "-f", @toremove) ; }
-
 our $ocaml_version = capturex("ocamlc","-version") ;
 chomp $ocaml_version ;
 our $ocaml_lib = capturex("ocamlc","-where") ;
 chomp $ocaml_lib ;
 
 our $verbose ;
+our $preserve ;
+our $noexecute ;
+our $randompid = $$ ;
+
+END { systemx("rm", "-f", @toremove) unless $preserve ; }
 
 {
   my @interfaces ;
@@ -39,6 +42,18 @@ our $verbose ;
     }
     elsif ($ARGV[0] eq '-verbose') {
       $verbose = shift @ARGV ;
+    }
+    elsif ($ARGV[0] eq '-random-pid') {
+      shift @ARGV ;
+      $randompid = shift @ARGV ;
+    }
+    elsif ($ARGV[0] eq '-preserve') {
+      shift @ARGV ;
+      $preserve = 1 ;
+    }
+    elsif ($ARGV[0] eq '-n') {
+      shift @ARGV ;
+      $noexecute = 1 ;
     }
     elsif ($ARGV[0] eq '-package') {
       shift @ARGV ;
@@ -77,9 +92,9 @@ Dynlink.set_allowed_units [
 ] ;;
 EOF
     }
-    push(@toremove, "link$$.ml", "link$$.cmi", "link$$.cmo", "link$$.cmx") ;
-    f_write("link$$.ml", $txt) ;
-    push(@link, "link$$.ml") ;
+    push(@toremove, "link${randompid}.ml", "link${randompid}.cmi", "link${randompid}.cmo", "link${randompid}.cmx") ;
+    f_write("link${randompid}.ml", $txt) ;
+    push(@link, "link${randompid}.ml") ;
   }
 
   my @verbose ;
@@ -100,7 +115,7 @@ sub v_systemx {
   $codes = shift if (ref($_[0]) eq 'ARRAY') ;
   my @cmd = @_ ;
   print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if ($main::verbose) ;
-
+  return if $noexecute ;
   if ($codes) {
     return runx($codes, @cmd) ;
   }
