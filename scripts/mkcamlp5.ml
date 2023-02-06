@@ -116,12 +116,12 @@ let rec parec = function
      List.iter (L.push rev_predicates) ([%split {|,|}] s) ;
      parec l
   | s::l ->
-     if ([%match {|\.cmi$|}/pred] s) then begin
-         if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" cmd cmd) ;
-         L.push rev_interfaces s
-       end
-     else
-       L.push rev_options s ;
+     (match ([%match {|([^\./]+)\.cmi$|}/strings !1] s) with
+       Some s ->
+        if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" cmd cmd) ;
+        L.push rev_interfaces (String.capitalize_ascii s)
+       | None ->
+          L.push rev_options s) ;
      parec l
   | [] -> ()
     in
@@ -140,12 +140,10 @@ if not opt then begin
         let extract_crc = [%pattern {|${ocaml_lib}/extract_crc|}] in
         let crcs = capturex(extract_crc,Array.of_list (["extract_crc"; "-I"; ocaml_lib] @ interfaces)) in
         if !verbose then Fmt.(pf stderr "%s%!" crcs) ;
-        [%pattern {|
-${crcs}
+        [%pattern {|${crcs}
 let _ = Dynlink.add_available_units crc_unit_list
 |}]
-        else [%pattern {|
-Dynlink.set_allowed_units [
+        else [%pattern {|Dynlink.set_allowed_units [
   ${stringified}
 ] ;;
 |}] in

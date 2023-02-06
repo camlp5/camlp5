@@ -110,3 +110,13 @@ ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5
 $ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,GT.syntax,GT.syntax.all,logger.syntax pa_ocanren.cmxa pr_dump.cmx -o pp5+gt+plugins+ocanren+logger+dump.exe -
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,GT.syntax,GT.syntax.all,logger.syntax -verbose -linkall -linkpkg pa_ocanren.cmxa pr_dump.cmx -o pp5+gt+plugins+ocanren+logger+dump.exe - odyl.cmx
 ```
+
+```sh
+$ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -package camlp5,str str.cmi -o camlp5str.exe
+ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,camlp5,str -verbose -linkall -linkpkg link314159.ml -o camlp5str.exe odyl.cmo
+Preserving tmpfile link314159.ml
+$ cat link314159.ml
+Dynlink.set_allowed_units [
+  "Str"
+] ;;
+```
