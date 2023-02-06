@@ -56,8 +56,7 @@ let rev_options = ref []
 let rev_predicates = ref ["preprocessor"; "syntax"]
 let rev_packages = ref ["camlp5"]
 let randpid = ref (Unix.getpid())
-let opt =
-  None <> ([%match {|mkcamlp5.opt$|}] Sys.argv.(0))
+let opt = ([%match {|mkcamlp5.opt$|}/pred] Sys.argv.(0))
 ;;
 if opt then
   L.push rev_predicates "native"
@@ -94,7 +93,7 @@ Files:
 let usage () = Fmt.(pf stdout "%s" usage_msg)
 
 let rest_arg s =
-  if None <> ([%match {|\.cmi$|}] s) then begin
+  if ([%match {|\.cmi$|}/pred] s) then begin
     if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
     L.push rev_interfaces s
     end
@@ -134,7 +133,7 @@ while L.len argv > 0 do
         ignore(L.pop argv) ;
         List.iter (L.push rev_predicates) ([%split {|,|}] (L.pop argv))
       end
-    else if None <> ([%match {|\.cmi$|}] (L.sub argv  0)) then begin
+    else if ([%match {|\.cmi$|}/pred] (L.sub argv  0)) then begin
         if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
         L.push rev_interfaces (L.pop argv)
       end

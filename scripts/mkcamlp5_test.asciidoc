@@ -15,7 +15,6 @@ Files:
 
 ```sh
 $ bin/mkcamlp5 -help
-args: -help
 
 Options:
   -I <dir>   Add directory in search path for object files
