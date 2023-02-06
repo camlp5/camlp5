@@ -14,13 +14,32 @@ Files:
 ```
 
 ```sh
-$ ./mkcamlp5.exe -help
-sh: 1: ./mkcamlp5.exe: not found
-[127]
+$ bin/mkcamlp5 -help
+
+Options:
+  -I <dir>   Add directory in search path for object files
+
+All options of ocamlc (and ocamlfind) are also available
+
+Files:
+  .cmi file  Add visible interface for possible future loading
+  .cmo file  Load this file in core
+  .cma file  Load this file in core
+
+
+  -verbose enable verbose output
+  -preserve preserve generated tmp-files
+  -random-pid supply the value for the PID (for generating tmp filenames)
+  -n no-execute
+  -package add packages
+  -predicates add predicates
+  -- rest of the arguments
+  -help  Display this list of options
+  --help  Display this list of options
 ```
 
 ```sh
-$ mkcamlp5 -random-pid 314159 -n -preserve -verbose -I +dynlink -package pack1,pack2,pack3 obj1.cmo obj2.cmo obj2.cmo -o exe.exe
+$ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -I +dynlink -package pack1,pack2,pack3 obj1.cmo obj2.cmo obj2.cmo -o exe.exe
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,pack1,pack2,pack3 -verbose -linkall -linkpkg link314159.ml -I +dynlink obj1.cmo obj2.cmo obj2.cmo -o exe.exe odyl.cmo
 $ cat link314159.ml
 Dynlink.set_allowed_units [
@@ -30,21 +49,21 @@ $ rm link314159.ml
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -I +dynlink -package pack1,pack2,pack3 obj1.cmx obj2.cmx obj2.cmx -o camlp5o.pa_ppx_deriving_plugins.opt
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -I +dynlink -package pack1,pack2,pack3 obj1.cmx obj2.cmx obj2.cmx -o camlp5o.pa_ppx_deriving_plugins.opt
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,pack1,pack2,pack3 -verbose -linkall -linkpkg -I +dynlink obj1.cmx obj2.cmx obj2.cmx -o camlp5o.pa_ppx_deriving_plugins.opt odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5 -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.quotations,camlp5.pr_dump,camlp5.pa_o,camlp5.extend,ocamlgraph -package ppx_inline_test.runtime-lib -o pp5+dump.byte
+$ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.quotations,camlp5.pr_dump,camlp5.pa_o,camlp5.extend,ocamlgraph -package ppx_inline_test.runtime-lib -o pp5+dump.byte
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,camlp5,camlp5.quotations,camlp5.pr_dump,camlp5.pa_o,camlp5.extend,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg link314159.ml -o pp5+dump.byte odyl.cmo
 ```
 
 ```ssh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.extend,camlp5.quotations -package ppx_inline_test.runtime-lib pr_dump.cmx -o pp5+dump.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.extend,camlp5.quotations -package ppx_inline_test.runtime-lib pr_dump.cmx -o pp5+dump.exe
 ```
 
 ```sh
-$ mkcamlp5 -random-pid 314159 -n -preserve -verbose -package ppx_inline_test.runtime-lib -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph -package ppx_inline_test.runtime-lib pa_gt.cma -o pp5+gt+o.byte
+$ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -package ppx_inline_test.runtime-lib -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph -package ppx_inline_test.runtime-lib pa_gt.cma -o pp5+gt+o.byte
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,ppx_inline_test.runtime-lib,camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg link314159.ml pa_gt.cma -o pp5+gt+o.byte odyl.cmo
 $ cat link314159.ml
 Dynlink.set_allowed_units [
@@ -54,47 +73,47 @@ $ rm link314159.ml
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -I ../common -package camlp5,camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations -package logger,ppxlib,ocamlgraph -package ppx_inline_test.runtime-lib ../common/GTCommon.cmxa pa_gt.cmxa -o pp5+gt+dump.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -I ../common -package camlp5,camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations -package logger,ppxlib,ocamlgraph -package ppx_inline_test.runtime-lib ../common/GTCommon.cmxa pa_gt.cmxa -o pp5+gt+dump.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations,logger,ppxlib,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg -I ../common ../common/GTCommon.cmxa pa_gt.cmxa -o pp5+gt+dump.exe odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package ppx_inline_test.runtime-lib -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph pa_gt.cmxa -o pp5+gt+o.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package ppx_inline_test.runtime-lib -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph pa_gt.cmxa -o pp5+gt+o.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,ppx_inline_test.runtime-lib,camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,GT.common,ocamlgraph -verbose -linkall -linkpkg pa_gt.cmxa -o pp5+gt+o.exe odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,ppxlib,ocamlgraph -package ppx_inline_test.runtime-lib -I ../common ../common/GTCommon.cmxa pa_gt.cmxa ../plugins/show.cmxa ../plugins/gmap.cmxa ../plugins/gfmt.cmxa ../plugins/compare.cmxa ../plugins/eq.cmxa ../plugins/foldl.cmxa ../plugins/foldr.cmxa ../plugins/stateful.cmxa ../plugins/eval.cmxa ../plugins/html.cmxa ../plugins/enum.cmxa -o pp5+gt+plugins+o.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,ppxlib,ocamlgraph -package ppx_inline_test.runtime-lib -I ../common ../common/GTCommon.cmxa pa_gt.cmxa ../plugins/show.cmxa ../plugins/gmap.cmxa ../plugins/gfmt.cmxa ../plugins/compare.cmxa ../plugins/eq.cmxa ../plugins/foldl.cmxa ../plugins/foldr.cmxa ../plugins/stateful.cmxa ../plugins/eval.cmxa ../plugins/html.cmxa ../plugins/enum.cmxa -o pp5+gt+plugins+o.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.extend,camlp5.quotations,logger,ppxlib,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg -I ../common ../common/GTCommon.cmxa pa_gt.cmxa ../plugins/show.cmxa ../plugins/gmap.cmxa ../plugins/gfmt.cmxa ../plugins/compare.cmxa ../plugins/eq.cmxa ../plugins/foldl.cmxa ../plugins/foldr.cmxa ../plugins/stateful.cmxa ../plugins/eval.cmxa ../plugins/html.cmxa ../plugins/enum.cmxa -o pp5+gt+plugins+o.exe odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations,logger,ppxlib,ocamlgraph -package ppx_inline_test.runtime-lib -I ../common ../common/GTCommon.cmxa pa_gt.cmxa ../plugins/show.cmxa ../plugins/gmap.cmxa ../plugins/gfmt.cmxa ../plugins/compare.cmxa ../plugins/eq.cmxa ../plugins/foldl.cmxa ../plugins/foldr.cmxa ../plugins/stateful.cmxa ../plugins/eval.cmxa ../plugins/html.cmxa ../plugins/enum.cmxa -o pp5+gt+plugins+dump.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations,logger,ppxlib,ocamlgraph -package ppx_inline_test.runtime-lib -I ../common ../common/GTCommon.cmxa pa_gt.cmxa ../plugins/show.cmxa ../plugins/gmap.cmxa ../plugins/gfmt.cmxa ../plugins/compare.cmxa ../plugins/eq.cmxa ../plugins/foldl.cmxa ../plugins/foldr.cmxa ../plugins/stateful.cmxa ../plugins/eval.cmxa ../plugins/html.cmxa ../plugins/enum.cmxa -o pp5+gt+plugins+dump.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations,logger,ppxlib,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg -I ../common ../common/GTCommon.cmxa pa_gt.cmxa ../plugins/show.cmxa ../plugins/gmap.cmxa ../plugins/gfmt.cmxa ../plugins/compare.cmxa ../plugins/eq.cmxa ../plugins/foldl.cmxa ../plugins/foldr.cmxa ../plugins/stateful.cmxa ../plugins/eval.cmxa ../plugins/html.cmxa ../plugins/enum.cmxa -o pp5+gt+plugins+dump.exe odyl.cmx
 ```
 
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5.pa_o,camlp5.pr_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations -o pp5+dump.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5.pa_o,camlp5.pr_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations -o pp5+dump.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5.pa_o,camlp5.pr_o,camlp5.pr_dump,camlp5.extend,camlp5.quotations -verbose -linkall -linkpkg -o pp5+dump.exe odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT.syntax,GT.syntax.all -o pp5+gt+plugins+dump.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT.syntax,GT.syntax.all -o pp5+gt+plugins+dump.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump,GT.syntax,GT.syntax.all -verbose -linkall -linkpkg -o pp5+gt+plugins+dump.exe odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o pa_ocanren.cmxa -o pp5+ocanren+o.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o pa_ocanren.cmxa -o pp5+ocanren+o.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_o -verbose -linkall -linkpkg pa_ocanren.cmxa -o pp5+ocanren+o.exe odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump pa_ocanren.cmxa -o pp5+ocanren+dump.exe
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump pa_ocanren.cmxa -o pp5+ocanren+dump.exe
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,camlp5.macro,camlp5.pr_dump -verbose -linkall -linkpkg pa_ocanren.cmxa -o pp5+ocanren+dump.exe odyl.cmx
 ```
 
 ```sh
-$ mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,GT.syntax,GT.syntax.all,logger.syntax pa_ocanren.cmxa pr_dump.cmx -o pp5+gt+plugins+ocanren+logger+dump.exe -
+$ ${SCRIPTDIR}mkcamlp5.opt -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.pa_o,GT.syntax,GT.syntax.all,logger.syntax pa_ocanren.cmxa pr_dump.cmx -o pp5+gt+plugins+ocanren+logger+dump.exe -
 ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5,camlp5.pa_o,GT.syntax,GT.syntax.all,logger.syntax -verbose -linkall -linkpkg pa_ocanren.cmxa pr_dump.cmx -o pp5+gt+plugins+ocanren+logger+dump.exe - odyl.cmx
 ```

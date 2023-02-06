@@ -11,6 +11,9 @@ all: $(EXE)
 
 test: all mkcamlp5_test.asciidoc.TEST
 
+alt-test:
+	SCRIPTDIR=bin/ $(LAUNCH) ocaml-mdx test -o mkcamlp5_test.asciidoc.camlp5.corrected mkcamlp5_test.asciidoc
+
 bin/mkcamlp5: mkcamlp5.cmo
 	mkdir -p bin
 	$(LAUNCH) $(OCAMLFIND) ocamlc -linkall -linkpkg -package $(PACKAGES) $^ -o $@
