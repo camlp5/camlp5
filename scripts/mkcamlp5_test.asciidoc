@@ -15,6 +15,7 @@ Files:
 
 ```sh
 $ bin/mkcamlp5 -help
+args: bin/mkcamlp5 -help
 
 Options:
   -I <dir>   Add directory in search path for object files
@@ -26,16 +27,6 @@ Files:
   .cmo file  Load this file in core
   .cma file  Load this file in core
 
-
-  -verbose enable verbose output
-  -preserve preserve generated tmp-files
-  -random-pid supply the value for the PID (for generating tmp filenames)
-  -n no-execute
-  -package add packages
-  -predicates add predicates
-  -- rest of the arguments
-  -help  Display this list of options
-  --help  Display this list of options
 ```
 
 ```sh

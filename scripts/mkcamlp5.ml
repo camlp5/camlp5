@@ -6,7 +6,15 @@ open Fpath
 let ( let* ) x f = Rresult.(>>=) x f ;;
 
 
+module L = struct
+let sub l n = List.nth !l n
 let push l x = (l := x :: !l)
+let pop l =
+  match !l with
+    [] -> failwith "pop: empty list"
+  | h::t -> l := t ; h
+let len l = List.length !l
+end
 
 let read_ic_fully ?(msg="") ?(channel=stdin) () =
   let fd = Unix.descr_of_in_channel channel in
@@ -52,9 +60,9 @@ let opt =
   None <> ([%match {|mkcamlp5.opt$|}] Sys.argv.(0))
 ;;
 if opt then
-  push predicates "native"
+  L.push predicates "native"
 else
-  push predicates "byte" ;;
+  L.push predicates "byte" ;;
 
 Stdlib.at_exit (fun () ->
     !toremove
@@ -83,28 +91,72 @@ Files:
 
 |} ;;
 
+let usage () = Fmt.(pf stdout "%s" usage_msg)
+
 let rest_arg s =
   if None <> ([%match {|\.cmi$|}] s) then begin
     if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
-    push rev_interfaces s
+    L.push rev_interfaces s
     end
   else
-    push rev_options s
+    L.push rev_options s
 ;;
 
+let argv = ref (Array.to_list Sys.argv) ;;
+Fmt.(pf stderr "args: %a\n%!" (list ~sep:(const string " ") string) !argv) ;;
+
+while L.len argv > 0 do
+    if L.sub argv 0 = "-help" then begin
+        ignore(L.pop argv) ;
+        usage() ;
+        exit 0
+      end
+    else if L.sub argv 0 = "-verbose" then begin
+        ignore(L.pop argv) ;
+        verbose := true
+      end
+    else if L.sub argv 0 = "-random-pid" then begin
+        ignore(L.pop argv) ;
+        randpid := int_of_string (L.pop argv)
+      end
+    else if L.sub argv 0 = "-preserve" then begin
+        ignore(L.pop argv) ;
+        preserve := true
+      end
+    else if L.sub argv 0 = "-n" then begin
+        ignore(L.pop argv) ;
+        noexecute := true
+      end
+    else if L.sub argv 0 = "-package" then begin
+        ignore(L.pop argv);
+        List.iter (L.push packages) ([%split {|,|}] (L.pop argv))
+      end
+    else if L.sub argv 0 = "-predicates" then begin
+        ignore(L.pop argv) ;
+        List.iter (L.push predicates) ([%split {|,|}] (L.pop argv))
+      end
+    else if None <> ([%match {|\.cmi$|}] (L.sub argv  0)) then begin
+        if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" Sys.argv.(0) Sys.argv.(0)) ;
+        L.push rev_interfaces (L.pop argv)
+      end
+    else
+      L.push rev_options (L.pop argv)
+done
+
+(*
 Arg.(parse [
          "-verbose",Set verbose,"enable verbose output"
        ; "-preserve",Set preserve,"preserve generated tmp-files"
        ; "-random-pid",Set_int randpid,"supply the value for the PID (for generating tmp filenames)"
        ; "-n",Set preserve,"no-execute"
-       ; "-package",String(fun s -> List.iter (push packages) ([%split {|,|}] s)),"add packages"
-       ; "-predicates",String(fun s -> List.iter (push predicates) ([%split {|,|}] s)),"add predicates"
+       ; "-package",String(fun s -> List.iter (L.push packages) ([%split {|,|}] s)),"add packages"
+       ; "-predicates",String(fun s -> List.iter (L.push predicates) ([%split {|,|}] s)),"add predicates"
        ; "--", Rest rest_arg, "rest of the arguments"
        ]
        rest_arg
        usage_msg)
 ;;
-
+ *)
 let interfaces = List.rev !rev_interfaces
 let options = List.rev !rev_options
 
@@ -126,7 +178,7 @@ Dynlink.set_allowed_units [
 ] ;;
 |}] in
     let linkbase = Fmt.(str "link%04d" !randpid) in
-    List.iter (push toremove) [[%pattern {|${linkbase}.ml|}]; [%pattern {|${linkbase}.cmi|}]; [%pattern {|${linkbase}.cmo|}]; [%pattern {|${linkbase}.cmx|}]] ;
+    List.iter (L.push toremove) [[%pattern {|${linkbase}.ml|}]; [%pattern {|${linkbase}.cmi|}]; [%pattern {|${linkbase}.cmo|}]; [%pattern {|${linkbase}.cmx|}]] ;
     write_fully ~mode:0o755 [%pattern {|${linkbase}.ml|}] txt ;
     [[%pattern {|${linkbase}.ml|}]]
   end
