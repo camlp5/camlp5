@@ -239,6 +239,6 @@ toplevel::
 	$(OCAMLTOPLEVEL) -nopromptcont
 
 clean:
-	$(RM) -f *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt
+	$(RM) -f *.cm* *.byte *.log *.cache *.ppo tools/*.byte tools/*.opt link*
 
 realclean: clean
