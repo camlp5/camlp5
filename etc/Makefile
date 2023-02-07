@@ -114,7 +114,7 @@ install:
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
-	cp mk$(CAMLP5N).pl "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
+	cp mk$(CAMLP5N) "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N)"
 	if test -f pa_o.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
@@ -122,7 +122,7 @@ install:
 	    cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  done; \
 	  cp $(CAMLP5N)o.opt "$(DESTDIR)$(BINDIR)/."; \
-	  cp mk$(CAMLP5N).pl "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
+	  cp mk$(CAMLP5N) "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
 	  chmod a+x "$(DESTDIR)$(BINDIR)/mk$(CAMLP5N).opt"; \
 	fi
 
