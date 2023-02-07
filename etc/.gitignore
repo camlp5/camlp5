@@ -6,3 +6,5 @@ mkcamlp5.sh
 mkcamlp5.opt.sh
 META
 *.old
+mkcamlp5
+mkcamlp5.opt
