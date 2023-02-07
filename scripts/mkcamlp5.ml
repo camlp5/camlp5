@@ -31,11 +31,9 @@ let read_ic_fully ?(msg="") ?(channel=stdin) () =
 let write_fully ~mode ofile txt =
   OS.File.write ~mode (v ofile) txt |> R.failwith_error_msg
 
-let capturex (cmd, args) =
-  let channel = Unix.open_process_args_in cmd args in
-  let txt = read_ic_fully ~channel () in
-  close_in channel ;
-  txt
+let capturex cmd =
+  let channel = Unix.open_process_in cmd in
+  let txt = read_ic_fully ~channel () in close_in channel; txt
 
 let join s l = String.concat s l
 
@@ -60,8 +58,8 @@ Files:
 let usage () = Fmt.(pf stdout "%s" usage_msg)
 
 let toremove = ref []
-let ocaml_version = chomp (capturex("ocamlc",[|"ocamlc"; "-version"|]))
-let ocaml_lib = chomp (capturex("ocamlc", [|"ocamlc"; "-where"|]))
+let ocaml_version = chomp (capturex("ocamlc -version"))
+let ocaml_lib = chomp (capturex("ocamlc -where"))
 let verbose = ref false
 let preserve = ref false
 let noexecute = ref false
@@ -135,15 +133,7 @@ let predicates = List.rev !rev_predicates in
 let link =
 if not opt then begin
     let stringified = Fmt.(str "%a" (list ~sep:(const string "; ") (quote string)) interfaces) in
-    let txt =
-      if ocaml_version < "4.08.0" then
-        let extract_crc = [%pattern {|${ocaml_lib}/extract_crc|}] in
-        let crcs = capturex(extract_crc,Array.of_list (["extract_crc"; "-I"; ocaml_lib] @ interfaces)) in
-        if !verbose then Fmt.(pf stderr "%s%!" crcs) ;
-        [%pattern {|${crcs}
-let _ = Dynlink.add_available_units crc_unit_list
-|}]
-        else [%pattern {|Dynlink.set_allowed_units [
+    let txt = [%pattern {|Dynlink.set_allowed_units [
   ${stringified}
 ] ;;
 |}] in

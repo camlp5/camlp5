@@ -133,17 +133,6 @@ let main cmd args =
         (str "%a" (list ~sep:(const string "; ") (quote string)) interfaces)
       in
       let txt =
-        if ocaml_version < "4.08.0" then
-          let extract_crc = String.concat "" [ocaml_lib; "/extract_crc"] in
-          let crcs =
-            capturex
-              (extract_crc,
-               Array.of_list (["extract_crc"; "-I"; ocaml_lib] @ interfaces))
-          in
-          if !verbose then Fmt.(pf stderr "%s%!" crcs);
-          String.concat ""
-            [crcs; "\nlet _ = Dynlink.add_available_units crc_unit_list\n"]
-        else
           String.concat ""
             ["Dynlink.set_allowed_units [\n  "; stringified; "\n] ;;\n"]
       in
