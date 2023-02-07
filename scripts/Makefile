@@ -15,13 +15,10 @@ alt-test:
 	SCRIPTDIR=bin/ $(LAUNCH) ocaml-mdx test -o mkcamlp5_test.asciidoc.camlp5.corrected mkcamlp5_test.asciidoc
 	diff -Bwiu  mkcamlp5_test.asciidoc.camlp5.corrected mkcamlp5_test.asciidoc
 
-bin/mkcamlp5: mkcamlp5.cmo
+bin/mkcamlp5 bin/mkcamlp5.opt: mkcamlp5.cmo
 	mkdir -p bin
 	$(LAUNCH) $(OCAMLFIND) ocamlc -linkall -linkpkg -package $(PACKAGES) $^ -o $@
-
-bin/mkcamlp5.opt: mkcamlp5.cmx
-	mkdir -p bin
-	$(LAUNCH) $(OCAMLFIND) ocamlopt -linkall -linkpkg -package $(PACKAGES) $^ -o $@
+	cp bin/mkcamlp5 bin/mkcamlp5.opt
 
 toplevel::
 	$(LAUNCH) ocaml -nopromptcont
@@ -33,9 +30,6 @@ toplevel::
 #	$(OCAMLFIND) ocamlc $(DEBUG) $(WARNERR) $(OCAMLCFLAGS) -package $(PACKAGES) -syntax camlp5o -c $*_ppo.ml
 	$(LAUNCH) $(YAWRAP) $(OCAMLFIND) ocamlc $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -c $<
 
-.ml.cmx:
-	$(LAUNCH) $(YAWRAP) $(OCAMLFIND) ocamlopt $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -c $<
-
 clean::
-	rm -f *.cm* $(EXE) *.corrected
+	rm -f *.cm* $(EXE) *.corrected *.o link*
 

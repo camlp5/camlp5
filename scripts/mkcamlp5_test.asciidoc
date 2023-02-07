@@ -48,6 +48,11 @@ ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,pack1,
 $ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -package camlp5,camlp5.quotations,camlp5.pr_dump,camlp5.pa_o,camlp5.extend,ocamlgraph -package ppx_inline_test.runtime-lib -o pp5+dump.byte
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,camlp5,camlp5.quotations,camlp5.pr_dump,camlp5.pa_o,camlp5.extend,ocamlgraph,ppx_inline_test.runtime-lib -verbose -linkall -linkpkg link314159.ml -o pp5+dump.byte odyl.cmo
 Preserving tmpfile link314159.ml
+$ cat link314159.ml
+Dynlink.set_allowed_units [
+
+] ;;
+$ rm link314159.ml
 ```
 
 ```ssh
@@ -119,4 +124,5 @@ $ cat link314159.ml
 Dynlink.set_allowed_units [
   "Str"
 ] ;;
+$ rm link314159.ml
 ```
