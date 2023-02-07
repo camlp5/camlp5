@@ -17,7 +17,7 @@ export LC_ALL=C
 
 all-tests: all $(TESTS)
 
-all: prereqs roundtrippers \
+all: roundtrippers \
 	o2r_test.byte \
 	r2r_test.byte \
 	r2o_test.byte \
@@ -43,10 +43,6 @@ all: prereqs roundtrippers \
 	little_lang_test \
 	o_lexer_test \
 	r_lexer_test \
-
-prereqs:
-	(perl -MIPC::System::Simple -e 1 > /dev/null 2>&1) || (echo "MUST install Perl module IPC::System::Simple" && exit -1)
-	(perl -MString::ShellQuote -e 1 > /dev/null 2>&1) || (echo "MUST install Perl module String::ShellQuote" && exit -1)
 
 roundtrippers: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
