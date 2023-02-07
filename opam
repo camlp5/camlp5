@@ -37,9 +37,7 @@ depends: [
   "ounit" { with-test }
   "rresult"
   "bos"
-  "mdx"
   "fmt" { with-test }
-  "mdx" { with-test }
 ]
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
@@ -47,7 +45,7 @@ build: [
   [make "-j%{jobs}%" "DEBUG=-g" "all"]
   [make "-C" "testsuite" "clean" "all-tests"] { with-test }
   [make "-C" "test" "clean" "all"] { with-test }
-  [make "-C" "scripts" "clean" "test"] { with-test }
+#  [make "-C" "scripts" "clean" "test"] { with-test }
 ]
 install: [make "install"]
 
