@@ -10,7 +10,7 @@ EXE=bin/mkcamlp5 bin/mkcamlp5.opt
 
 all: $(EXE)
 
-promote:: all
+bootstrap:: all
 	$(LAUNCH) $(YAWRAP) $(NOT_OCAMLFIND) preprocess $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pr_o mkcamlp5.ml > $(TOP)/etc/mkcamlp5.ml
 
 test: all mkcamlp5_test.asciidoc.TEST
