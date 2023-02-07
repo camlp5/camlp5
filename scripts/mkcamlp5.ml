@@ -1,4 +1,4 @@
-(** -syntax camlp5o *)
+(** -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic *)
 open Rresult
 open Bos
 open Fpath

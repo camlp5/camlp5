@@ -2,12 +2,16 @@ TOP=..
 include $(TOP)/config/Makefile
 
 OCAMLFIND=ocamlfind
+NOT_OCAMLFIND=not-ocamlfind
 YAWRAP=ocamlfind camlp5-buildscripts/ya-wrap-ocamlfind
 PACKAGES=pa_ppx_regexp,camlp5,bos,fmt,ocaml-version
 
 EXE=bin/mkcamlp5 bin/mkcamlp5.opt
 
 all: $(EXE)
+
+promote:: all
+	$(LAUNCH) $(YAWRAP) $(NOT_OCAMLFIND) preprocess $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pr_o mkcamlp5.ml > $(TOP)/etc/mkcamlp5.ml
 
 test: all mkcamlp5_test.asciidoc.TEST
 
