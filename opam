@@ -33,11 +33,12 @@ depends: [
   "conf-perl"
   "camlp5-buildscripts"
   "conf-diffutils" { with-test & os-distribution = "alpine" }
-  "pcre" { with-test }
+  "re"
+  "pcre"
   "ounit" { with-test }
   "rresult"
   "bos"
-  "fmt" { with-test }
+  "fmt"
 ]
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
