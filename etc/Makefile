@@ -15,8 +15,12 @@ OTHEROUT=$(CAMLP5N)sch$(EXE)
 COUT=$(OBJS) $(CAMLP5N)o$(EXE) $(OTHEROUT)
 COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)o.opt
 
-all: $(COUT) META
+all: $(COUT) META mkcamlp5 mkcamlp5.opt
 opt: $(COPT)
+
+mkcamlp5 mkcamlp5.opt: mkcamlp5.cmo
+	ocamlfind ocamlc -linkall -linkpkg -package bos,pcre,re,rresult mkcamlp5.ml -o mkcamlp5
+	cp mkcamlp5 mkcamlp5.opt
 
 # these ones must be compiled with new created camlp5:
 
@@ -89,7 +93,7 @@ compare_l:
 
 clean::
 	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
-	$(RM) -f $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE)
+	$(RM) -f $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) mkcamlp5 mkcamlp5.opt
 	$(RM) -f META
 
 depend:

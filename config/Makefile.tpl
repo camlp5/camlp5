@@ -35,8 +35,7 @@ COMPWITH=old
 
 .PRECIOUS: %.asciidoc.corrected
 
-%.asciidoc.corrected: %.asciidoc
-	$(LAUNCH) ocaml-mdx test -o $@ $<
-
-%.asciidoc.TEST: %.asciidoc.corrected %.asciidoc
-	diff -Bwiu $^
+%.asciidoc.TEST: %.asciidoc
+	rm -f $<.corrected
+	$(LAUNCH) ocaml-mdx test -o $<.corrected $<
+	diff -Bwiu $<.corrected $< 

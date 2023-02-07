@@ -1,20 +1,6 @@
 
 ```sh
-$ mkcamlp5 -help
-Options:
-  -I <dir>   Add directory in search path for object files
-
-All options of ocamlc (and ocamlfind) are also available
-
-Files:
-  .cmi file  Add visible interface for possible future loading
-  .cmo file  Load this file in core
-  .cma file  Load this file in core
-
-```
-
-```sh
-$ bin/mkcamlp5 -help
+$ ${SCRIPTDIR}mkcamlp5 -help
 
 Options:
   -I <dir>   Add directory in search path for object files

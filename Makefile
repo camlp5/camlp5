@@ -81,6 +81,7 @@ clean::
 	$(RM) -rf local-install
 	$(MAKE) -C test clean
 	$(MAKE) -C testsuite clean
+	$(MAKE) -C scripts clean
 
 scratch: clean
 

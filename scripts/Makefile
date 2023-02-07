@@ -13,9 +13,9 @@ all: $(EXE)
 bootstrap:: all
 	$(LAUNCH) $(YAWRAP) $(NOT_OCAMLFIND) preprocess $(OCAMLCFLAGS) -package $(PACKAGES),camlp5.pr_o mkcamlp5.ml > $(TOP)/etc/mkcamlp5.ml
 
-test: all mkcamlp5_test.asciidoc.TEST
+test: mkcamlp5_test.asciidoc.TEST
 
-alt-test:
+alt-test: all
 	SCRIPTDIR=bin/ $(LAUNCH) ocaml-mdx test -o mkcamlp5_test.asciidoc.camlp5.corrected mkcamlp5_test.asciidoc
 	diff -Bwiu  mkcamlp5_test.asciidoc.camlp5.corrected mkcamlp5_test.asciidoc
 
@@ -36,4 +36,5 @@ toplevel::
 
 clean::
 	rm -f *.cm* $(EXE) *.corrected *.o link*
+	rm -rf bin
 
