@@ -35,6 +35,6 @@ toplevel::
 	$(YAWRAP) $(OCAMLFIND) ocamlc $(DEBUG) $(OCAMLCFLAGS) -package $(PACKAGES) -c $<
 
 clean::
-	rm -f *.cm* $(EXE) *.corrected *.o link*
+	rm -f *.cm* $(EXE) *.corrected *.o link* *.exe
 	rm -rf bin
 

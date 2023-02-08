@@ -103,12 +103,19 @@ ocamlfind ocamlopt -predicates syntax,preprocessor,native -package camlp5,camlp5
 ```
 
 ```sh
-$ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -n -preserve -verbose -package camlp5,str str.cmi -o camlp5str.exe
+$ ${SCRIPTDIR}mkcamlp5 -random-pid 314159 -preserve -verbose -package camlp5,str str.cmi -o camlp5str.exe
 ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,camlp5,str -verbose -linkall -linkpkg link314159.ml -o camlp5str.exe odyl.cmo
+findlib: [WARNING] Interface topdirs.cmi occurs in several directories: /home/chet/Hack/Opam-2.1.2/GENERIC/4.10.0/lib/ocaml, /home/chet/Hack/Opam-2.1.2/GENERIC/4.10.0/lib/ocaml/compiler-libs
+Effective set of compiler predicates: pkg_compiler-libs,pkg_compiler-libs.common,pkg_camlp5,pkg_str,autolink,byte,syntax,preprocessor,byte
++ ocamlc.opt -verbose -linkall -o camlp5str.exe -I /home/chet/Hack/Opam-2.1.2/GENERIC/4.10.0/lib/ocaml/compiler-libs -I /home/chet/Hack/Camlp5/src/ALL/camlp5/local-install/lib/camlp5 /home/chet/Hack/Opam-2.1.2/GENERIC/4.10.0/lib/ocaml/compiler-libs/ocamlcommon.cma /home/chet/Hack/Camlp5/src/ALL/camlp5/local-install/lib/camlp5/odyl.cma /home/chet/Hack/Camlp5/src/ALL/camlp5/local-install/lib/camlp5/camlp5.cma /home/chet/Hack/Opam-2.1.2/GENERIC/4.10.0/lib/ocaml/str.cma link314159.ml odyl.cmo
+Preserving tmpfile link314159.cmo
+Preserving tmpfile link314159.cmi
 Preserving tmpfile link314159.ml
 $ cat link314159.ml
 Dynlink.set_allowed_units [
   "Str"
 ] ;;
-$ rm link314159.ml
+$ rm link314159.ml link314159.cmo link314159.cmi
+$ ls camlp5str.exe
+camlp5str.exe
 ```
