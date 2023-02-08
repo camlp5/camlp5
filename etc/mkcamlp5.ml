@@ -1,4 +1,4 @@
-(** -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic *)
+(** -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic -package bos *)
 open Rresult
 open Bos
 open Fpath
@@ -31,8 +31,8 @@ let read_ic_fully ?(msg = "") ?(channel = stdin) () =
 let write_fully ~mode ofile txt =
   OS.File.write ~mode (v ofile) txt |> R.failwith_error_msg
 
-let capturex (cmd, args) =
-  let channel = Unix.open_process_args_in cmd args in
+let capturex cmd =
+  let channel = Unix.open_process_in cmd in
   let txt = read_ic_fully ~channel () in close_in channel; txt
 
 let join s l = String.concat s l
@@ -48,8 +48,8 @@ let usage_msg =
 let usage () = Fmt.(pf stdout "%s" usage_msg)
 
 let toremove = ref []
-let ocaml_version = chomp (capturex ("ocamlc", [| "ocamlc"; "-version" |]))
-let ocaml_lib = chomp (capturex ("ocamlc", [| "ocamlc"; "-where" |]))
+let ocaml_version = chomp (capturex "ocamlc -version")
+let ocaml_lib = chomp (capturex "ocamlc -where")
 let verbose = ref false
 let preserve = ref false
 let noexecute = ref false
@@ -133,8 +133,8 @@ let main cmd args =
         (str "%a" (list ~sep:(const string "; ") (quote string)) interfaces)
       in
       let txt =
-          String.concat ""
-            ["Dynlink.set_allowed_units [\n  "; stringified; "\n] ;;\n"]
+        String.concat ""
+          ["Dynlink.set_allowed_units [\n  "; stringified; "\n] ;;\n"]
       in
       let linkbase = Fmt.(str "link%04d" !randpid) in
       List.iter (L.push toremove)
@@ -154,7 +154,19 @@ let main cmd args =
   in
   if !verbose then
     Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") string) cmd);
-  if not !noexecute then Unix.execvp "ocamlfind" (Array.of_list cmd)
+  if not !noexecute then
+    match
+      Unix.system (Filename.quote_command (List.hd cmd) (List.tl cmd))
+    with
+      WEXITED 0 -> ()
+    | WEXITED n ->
+        Fmt.(pf stderr "Maybe an error? Command exited with code %d\n%!" n)
+    | WSIGNALED n ->
+        Fmt.
+        (pf stderr "Maybe an error? Command signaled (??) with code %d\n%!" n)
+    | WSTOPPED n ->
+        Fmt.
+        (pf stderr "Maybe an error? Command stopped (??) with code %d\n%!" n)
 
 let cmd = Sys.argv.(0)
 let argv = List.tl (Array.to_list Sys.argv)

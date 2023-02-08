@@ -1,4 +1,4 @@
-(** -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic *)
+(** -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic -package bos *)
 open Rresult
 open Bos
 open Fpath
@@ -154,7 +154,17 @@ let cmd = ["ocamlfind"]
 	    @[if opt then "odyl.cmx" else "odyl.cmo"] in
     if !verbose then Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") string) cmd) ;
     if not !noexecute then
+      match Unix.system (Filename.quote_command (List.hd cmd) (List.tl cmd)) with
+        WEXITED 0 -> ()
+      | WEXITED n ->
+         Fmt.(pf stderr "Maybe an error? Command exited with code %d\n%!" n)
+      | WSIGNALED n -> 
+         Fmt.(pf stderr "Maybe an error? Command signaled (??) with code %d\n%!" n)
+      | WSTOPPED n -> 
+         Fmt.(pf stderr "Maybe an error? Command stopped (??) with code %d\n%!" n)
+(*
       Unix.execvp "ocamlfind" (Array.of_list cmd)
+ *)
 ;;
 
 let cmd = Sys.argv.(0) ;;
