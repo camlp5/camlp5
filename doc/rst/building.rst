@@ -116,14 +116,7 @@ it, one must install a number of packages:
 * `pcre`
 * `ounit2`
 * `patdiff`
-* `IPC::System::Simple`
-* `String::ShellQuote`
-
-On Debian/Ubuntu systems, the Perl packages can be installed with:
-
-::
-
-   apt-get install libstring-shellquote-perl libipc-system-simple-perl
+* `camlp5-buildscripts`
    
 and using opam:
 

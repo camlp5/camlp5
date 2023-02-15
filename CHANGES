@@ -1,4 +1,9 @@
 
+Camlp5 Version 8.00.05:
+--------------------
+
+* [07 Feb 2023] switch from perl buildscripts to camlp5-buildscripts
+
 Camlp5 Version 8.00.04:
 --------------------
 
