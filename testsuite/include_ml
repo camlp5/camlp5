@@ -22,8 +22,8 @@ Pcaml.inter_phrases := Some ";\n";;
 Pcaml.inter_phrases := Some ";\n";;
  *)
 
-(*
 #require "camlp5.quotations";;
+(*
 #require "camlp5.extfun";;
 #require "camlp5.extend";;
 #require "camlp5.phony_quotations" ;;
