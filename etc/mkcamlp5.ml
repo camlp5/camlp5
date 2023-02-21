@@ -160,16 +160,17 @@ let main cmd args =
     with
       WEXITED 0 -> ()
     | WEXITED n ->
-        Fmt.(pf stderr "Maybe an error? Command exited with code %d\n%!" n) ;
-         Stdlib.exit n
+        Fmt.(pf stderr "Maybe an error? Command exited with code %d\n%!" n);
+        Stdlib.exit n
     | WSIGNALED n ->
         Fmt.
-        (pf stderr "Maybe an error? Command signaled (??) with code %d\n%!" n) ;
-         Stdlib.exit (-1)
+        (pf stderr "Maybe an error? Command signaled (??) with code %d\n%!"
+          n);
+        Stdlib.exit (-1)
     | WSTOPPED n ->
         Fmt.
-        (pf stderr "Maybe an error? Command stopped (??) with code %d\n%!" n) ;
-         Stdlib.exit (-1)
+        (pf stderr "Maybe an error? Command stopped (??) with code %d\n%!" n);
+        Stdlib.exit (-1)
 
 let cmd = Sys.argv.(0)
 let argv = List.tl (Array.to_list Sys.argv)
