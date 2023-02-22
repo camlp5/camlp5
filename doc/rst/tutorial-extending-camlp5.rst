@@ -131,9 +131,9 @@ To use it in a toplevel:
 ::
 
    #use "topfind.camlp5";;
-   #camlp54 ;;
-   #load "sum_revised.cmo";;
-   let x = 1 in sum x ; x ; 2 end ;;
+   #camlp5r ;;
+   #load "sum_revised.cmo";
+   let x = 1 in sum x ; x ; 2 end ;
 
 with the obvious output
 
