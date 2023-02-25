@@ -452,7 +452,12 @@ value mem_tvar s tpl =
   List.exists (fun (t, _) -> Pcaml.unvala t = Some s) tpl
 ;
 
-value choose_tvar tpl =
+value choose_tvar loc tpl =
+  let tpl = match tpl with [
+        Ploc.VaAnt _ ->
+        failwith "choose_tvar: cannot write a typedecl quotation lacking a type_kind (rhs)"
+      | Ploc.VaVal tpl -> tpl
+      ] in
   let rec find_alpha v =
     let s = String.make 1 v in
     if mem_tvar s tpl then
@@ -464,8 +469,8 @@ value choose_tvar tpl =
     if mem_tvar v tpl then make_n (succ n) else v
   in
   match find_alpha 'a' with
-  [ Some x -> x
-  | None -> make_n 1 ]
+    [ Some x -> x
+    | None -> make_n 1 ]
 ;
 
 value quotation_content s = do {
@@ -574,7 +579,7 @@ value is_type_decl_not_extension strm =
     | Some (
       ("",_)
       | ("UIDENT",_) | ("LIDENT",_) | ("GIDENT",_)
-      | ("ANTIQUOT",_)
+      | ("ANTIQUOT",_) | ("ANTIQUOT_LOC",_)
     ) -> wrec (n+1)
     | Some (a,b) -> raise (Stream.Error (Printf.sprintf "unexpected tokens in a type-decl/extension: (\"%s\",\"%s\")" a b))
  ]
@@ -1190,10 +1195,10 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   (* "with" constraints (additional type equations over signature
      components) *)
   with_constr:
-    [ [ "type"; tpl = V type_parameters "list"; i = V longident_lident "lilongid"; "=";
-        pf = V (FLAG "private"); t = ctyp LEVEL "below_alg_attribute" ->
+    [ [ "type"; tpl = type_parameters; i = V longident_lident "lilongid"; "=";
+        pf = V (FLAG "private") "priv"; t = ctyp LEVEL "below_alg_attribute" ->
           <:with_constr< type $_lilongid:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
-      | "type"; tpl = V type_parameters "list"; i = V longident_lident "lilongid"; ":=";
+      | "type"; tpl = type_parameters; i = V longident_lident "lilongid"; ":=";
         t = ctyp LEVEL "below_alg_attribute" ->
           <:with_constr< type $_lilongid:i$ $_list:tpl$ := $t$ >>
       | "module"; i = V longident "longid"; "="; me = module_expr ->
@@ -1787,43 +1792,43 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   ;
   (* Type declaration *)
   type_decl:
-    [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
+    [ [ tpl = type_parameters; n = V type_patt "tp"; "="; pf = V (FLAG "private") "priv";
         tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
-          <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
-      | tpl = type_parameters; n = V type_patt; ":="; pf = V (FLAG "private");
+          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | tpl = type_parameters; n = V type_patt "tp"; ":="; pf = V (FLAG "private") "priv";
         tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
-          <:type_decl< $_tp:n$ $list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
-      | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; attrs = item_attributes ->
-          let tk = <:ctyp< '$choose_tvar tpl$ >> in
-          <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
+          <:type_decl< $_tp:n$ $_list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | tpl = type_parameters; n = V type_patt "tp"; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+          let tk = <:ctyp< '$choose_tvar loc tpl$ >> in
+          <:type_decl< $_tp:n$ $_list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
   ;
   first_type_decl:
-    [ [ tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
+    [ [ tpl = type_parameters; n = V type_patt "tp"; "="; pf = V (FLAG "private") "priv";
         tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
-          <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
-      | tpl = type_parameters; n = V type_patt; ":="; pf = V (FLAG "private");
+          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | tpl = type_parameters; n = V type_patt "tp"; ":="; pf = V (FLAG "private") "priv";
         tk = type_kind; cl = V (LIST0 constrain) ; attrs = item_attributes ->
-          <:type_decl< $_tp:n$ $list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
-      | tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; attrs = item_attributes ->
-          let tk = <:ctyp< '$choose_tvar tpl$ >> in
-          <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
+          <:type_decl< $_tp:n$ $_list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+      | tpl = type_parameters; n = V type_patt "tp"; cl = V (LIST0 constrain) ; attrs = item_attributes ->
+          let tk = <:ctyp< '$choose_tvar loc tpl$ >> in
+          <:type_decl< $_tp:n$ $_list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
   ;
   (* Type declaration *)
   rest_type_decl:
-    [ [ "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt; "="; pf = V (FLAG "private");
+    [ [ "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt "tp"; "="; pf = V (FLAG "private") "priv";
         tk = type_kind; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          <:type_decl< $_tp:n$ $list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+          <:type_decl< $_tp:n$ $_list:tpl$ = $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
 
-      | "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt; ":="; pf = V (FLAG "private");
+      | "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt "tp"; ":="; pf = V (FLAG "private")  "priv";
         tk = type_kind; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
         let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          <:type_decl< $_tp:n$ $list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
+          <:type_decl< $_tp:n$ $_list:tpl$ := $_priv:pf$ $tk$ $_list:cl$ $_itemattrs:attrs$ >>
 
-      | "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
-          let tk = <:ctyp< '$choose_tvar tpl$ >> in
+      | "and"; alg_attrs = alg_attributes_no_anti; tpl = type_parameters; n = V type_patt "tp"; cl = V (LIST0 constrain) ; item_attrs = item_attributes ->
+          let tk = <:ctyp< '$choose_tvar loc tpl$ >> in
           let attrs = merge_left_auxiliary_attrs ~{nonterm_name="type_decl"} ~{left_name="algebraic attributes"} ~{right_name="item attributes"} alg_attrs item_attrs in
-          <:type_decl< $_tp:n$ $list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
+          <:type_decl< $_tp:n$ $_list:tpl$ = $tk$ $_list:cl$ $_itemattrs:attrs$ >> ] ]
   ;
   (* TODO FIX: this should be a longident+lid, to match ocaml's grammar *)
   type_extension:
@@ -1833,7 +1838,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
 (*
           <:type_extension< $_tp:n$ $_list:tpl$ += $_priv:pf$ $tk$ $_itemattrs:attrs$ >>
 *)
-          {MLast.teNam=n; tePrm= <:vala< tpl >>; tePrv=pf; teAttributes=attrs; teECs = ecs }
+          {MLast.teNam=n; tePrm= tpl; tePrv=pf; teAttributes=attrs; teECs = ecs }
       ] ]
   ;
   type_patt:
@@ -1849,21 +1854,21 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | ".." -> <:ctyp< .. >>
       | t = ctyp ->
           <:ctyp< $t$ >>
-      | t = ctyp; "="; pf = FLAG "private"; "{";
+      | t = ctyp; "="; pf = V (FLAG "private") "priv"; "{";
         ldl = V label_declarations "list"; "}" ->
-          <:ctyp< $t$ == $priv:pf$ { $_list:ldl$ } >>
-      | t = ctyp; "="; pf = FLAG "private"; OPT "|";
+          <:ctyp< $t$ == $_priv:pf$ { $_list:ldl$ } >>
+      | t = ctyp; "="; pf = V (FLAG "private") "priv"; OPT "|";
         cdl = LIST1 constructor_declaration SEP "|" ->
-          <:ctyp< $t$ == $priv:pf$ [ $list:cdl$ ] >>
-      | t = ctyp; "="; pf = FLAG "private"; ".." ->
-          <:ctyp< $t$ == $priv:pf$ .. >>
+          <:ctyp< $t$ == $_priv:pf$ [ $list:cdl$ ] >>
+      | t = ctyp; "="; pf = V (FLAG "private") "priv"; ".." ->
+          <:ctyp< $t$ == $_priv:pf$ .. >>
       | "{"; ldl = V label_declarations "list"; "}" ->
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;
   type_parameters:
-    [ [ -> (* empty *) []
-      | tp = type_parameter -> [tp]
-      | "("; tpl = LIST1 type_parameter SEP ","; ")" -> tpl ] ]
+    [ [ -> (* empty *) <:vala< [] >>
+      | tp = type_parameter -> <:vala< [tp] >>
+      | "("; tpl = V (LIST1 type_parameter SEP ","); ")" -> tpl ] ]
   ;
   type_parameter:
     [ [ "+"; p = V simple_type_parameter -> (p, (Some True, False))

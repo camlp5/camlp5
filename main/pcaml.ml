@@ -116,7 +116,7 @@ type err_ctx =
   | Expanding
   | ParsingResult of Ploc.t and string ]
 ;
-exception Qerror of string and err_ctx and exn;
+exception Qerror of string and string and err_ctx and exn;
 
 value quotation_location () =
   match quotation_loc.val with
@@ -147,7 +147,7 @@ value expand_quotation gloc expander shift name str = do {
      try
        try expander str with
        [ Ploc.Exc loc exc ->
-           let exc1 = Qerror name Expanding exc in
+           let exc1 = Qerror name str Expanding exc in
            let shift = Ploc.first_pos gloc + shift in
            let loc =
              let gloc_line_nb = Ploc.line_nb gloc in
@@ -164,7 +164,7 @@ value expand_quotation gloc expander shift name str = do {
            in
            raise (Ploc.Exc loc exc1)
        | exc ->
-           let exc1 = Qerror name Expanding exc in
+           let exc1 = Qerror name str Expanding exc in
            Ploc.raise gloc exc1 ]
     with
     [ exn -> do { restore (); raise exn } ]
@@ -176,15 +176,15 @@ value expand_quotation gloc expander shift name str = do {
 value parse_quotation_result entry loc shift name str =
   let cs = Stream.of_string str in
   try Grammar.Entry.parse entry cs with
-  [ Ploc.Exc iloc (Qerror _ Expanding exc) ->
+  [ Ploc.Exc iloc (Qerror _ _ Expanding exc) ->
       let ctx = ParsingResult iloc str in
-      let exc1 = Qerror name ctx exc in
+      let exc1 = Qerror name str ctx exc in
       Ploc.raise loc exc1
-  | Ploc.Exc _ (Qerror _ _ _ as exc) ->
+  | Ploc.Exc _ (Qerror _ _ _ _ as exc) ->
       Ploc.raise loc exc
   | Ploc.Exc iloc exc ->
       let ctx = ParsingResult iloc str in
-      let exc1 = Qerror name ctx exc in
+      let exc1 = Qerror name str ctx exc in
       Ploc.raise loc exc1 ]
 ;
 
@@ -207,7 +207,7 @@ value handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
   in
   let expander =
     try Quotation.find name with exc ->
-      let exc1 = Qerror name Finding exc in
+      let exc1 = Qerror name str Finding exc in
       raise (Ploc.Exc (Ploc.sub loc 0 shift) exc1)
   in
   let ast =
@@ -274,16 +274,16 @@ value string_of_loc fname line bp ep =
       sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep ]
 ;
 
-value pp_report_quotation_error pps name ctx = do {
+value pp_report_quotation_error pps name str ctx = do {
   let name = if name = "" then Quotation.default.val else name in
   Format.pp_print_flush pps ();
   Format.pp_open_hovbox pps 2;
-  eprintf "While %s \"%s\":"
+  eprintf "While %s \"%s\" for string \"%s\":"
     (match ctx with
      [ Finding -> "finding quotation"
      | Expanding -> "expanding quotation"
      | ParsingResult _ _ -> "parsing result of quotation" ])
-    name;
+    name str;
   match ctx with
   [ ParsingResult loc str ->
       match quotation_dump_file.val with
@@ -396,15 +396,15 @@ value pp_print_exn pps =
 
 value pp_report_error pps exn =
   match exn with
-  [ Qerror name Finding Not_found -> do {
+  [ Qerror name str Finding Not_found -> do {
       let name = if name = "" then Quotation.default.val else name in
       Format.pp_print_flush pps ();
       Format.pp_open_hovbox pps 2;
-      Format.fprintf pps "Unbound quotation: \"%s\"" name;
+      Format.fprintf pps "Unbound quotation: \"%s\" for string \"%s\"" name str;
       Format.pp_close_box pps ()
     }
-  | Qerror name ctx exn -> do {
-      pp_report_quotation_error pps name ctx;
+  | Qerror name str ctx exn -> do {
+      pp_report_quotation_error pps name str ctx;
       pp_print_exn pps exn
     }
   | e -> pp_print_exn pps exn ]
@@ -413,7 +413,7 @@ value pp_report_error pps exn =
 value report_error exn = pp_report_error Format.std_formatter exn ;
 
 Printexc.register_printer (fun [
-    (Qerror _ _ _) as exn ->
+    (Qerror _ _ _ _) as exn ->
     let b = Buffer.create 23 in
     let pps = Format.formatter_of_buffer b in do {
       Format.fprintf pps "%a%!" pp_report_error exn ;
