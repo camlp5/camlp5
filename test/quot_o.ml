@@ -1,10 +1,10 @@
 (* quot_o.ml,v *)
 
-MLast.LiAcc (loc, x, Ploc.VaVal s);;
-MLast.LiAcc (loc, x, s);;
-MLast.LiApp (loc, x1, x2);;
-MLast.LiUid (loc, Ploc.VaVal s);;
-MLast.LiUid (loc, s);;
+<:extended_longident< $longid:x$ . $uid:s$ >> ;;
+<:extended_longident< $longid:x$ . $_uid:s$ >> ;;
+<:extended_longident< $longid:x1$ ( $longid:x2$ ) >> ;;
+<:extended_longident< $uid:s$ >> ;;
+<:extended_longident< $_uid:s$ >> ;;
 MLast.TyAcc (loc, x, Ploc.VaVal s);;
 MLast.TyAcc (loc, x, s);;
 MLast.TyAli (loc, t1, t2);;
