@@ -95,6 +95,7 @@ module type MetaSig =
     value list : ('a -> t) -> list 'a -> t;
     value option : ('a -> t) -> option 'a -> t;
     value vala : ('a -> t) -> MLast.v 'a -> t;
+    value char : char -> t;
     value bool : bool -> t;
     value string : string -> t;
     value tuple : list t -> t;
@@ -152,6 +153,7 @@ module E_MetaSig = struct
           else <:expr< Ploc.VaVal $elem v$ >> ]
     END
   ;
+  value char c = let c = Char.escaped c in <:expr< $chr:c$ >>;
   value bool b = if b then <:expr< True >> else <:expr< False >>;
   value string s = <:expr< $str:s$ >>;
   value tuple le = <:expr< ($list:le$) >>;
@@ -233,6 +235,7 @@ module P_MetaSig = struct
           else <:patt< Ploc.VaVal $elem v$ >> ]
     END
   ;
+  value char c = let c = Char.escaped c in <:patt< $chr:c$ >>;
   value bool b = if b then <:patt< True >> else <:patt< False >>;
   value string s = <:patt< $str:s$ >>;
   value tuple lp = <:patt< ($list:lp$) >>;
