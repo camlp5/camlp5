@@ -97,6 +97,11 @@ module type MetaSig =
     value vala : ('a -> t) -> MLast.v 'a -> t;
     value char : char -> t;
     value bool : bool -> t;
+    value int : int -> t;
+    value int32 : int32 -> t;
+    value int64 : int64 -> t;
+    value nativeint : nativeint -> t;
+    value float : float -> t;
     value string : string -> t;
     value tuple : list t -> t;
     value record : list (MLast.patt * t) -> t;
@@ -155,6 +160,11 @@ module E_MetaSig = struct
   ;
   value char c = let c = Char.escaped c in <:expr< $chr:c$ >>;
   value bool b = if b then <:expr< True >> else <:expr< False >>;
+  value int n = let loc = Ploc.dummy in <:expr< $int:string_of_int n$ >> ;
+  value int32 n = let loc = Ploc.dummy in <:expr< $int32:Int32.to_string n$ >> ;
+  value int64 n = let loc = Ploc.dummy in <:expr< $int64:Int64.to_string n$ >> ;
+  value nativeint n = let loc = Ploc.dummy in <:expr< $nativeint:Nativeint.to_string n$ >> ;
+  value float n = let loc = Ploc.dummy in <:expr< $flo:Float.to_string n$ >> ;
   value string s = <:expr< $str:s$ >>;
   value tuple le = <:expr< ($list:le$) >>;
   value record lfe = <:expr< {$list:lfe$} >>;
@@ -237,6 +247,11 @@ module P_MetaSig = struct
   ;
   value char c = let c = Char.escaped c in <:patt< $chr:c$ >>;
   value bool b = if b then <:patt< True >> else <:patt< False >>;
+  value int n = let loc = Ploc.dummy in <:patt< $int:string_of_int n$ >> ;
+  value int32 n = let loc = Ploc.dummy in <:patt< $int32:Int32.to_string n$ >> ;
+  value int64 n = let loc = Ploc.dummy in <:patt< $int64:Int64.to_string n$ >> ;
+  value nativeint n = let loc = Ploc.dummy in <:patt< $nativeint:Nativeint.to_string n$ >> ;
+  value float n = let loc = Ploc.dummy in <:patt< $flo:Float.to_string n$ >> ;
   value string s = <:patt< $str:s$ >>;
   value tuple lp = <:patt< ($list:lp$) >>;
   value record lfp = <:patt< {$list:lfp$} >>;
