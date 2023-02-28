@@ -658,6 +658,8 @@
 
 (Pcaml.set_ast_parse Pcaml.transduce_interf (Grammar.Entry.parse interf))
 (Pcaml.set_ast_parse Pcaml.transduce_implem (Grammar.Entry.parse implem))
+(Pcaml.set_ast_parse Pcaml.transduce_top_phrase (Grammar.Entry.parse top_phrase))
+(Pcaml.set_ast_parse Pcaml.transduce_use_file (Grammar.Entry.parse use_file))
 
 (value sexpr (Grammar.Entry.create gram "sexpr"))
 (value atom (Grammar.Entry.create gram "atom"))

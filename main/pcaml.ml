@@ -117,9 +117,6 @@ value transduce_implem = { name = "implem" ; parse = ref None ; transform = ref 
 value transduce_top_phrase = { name = "top_phrase" ; parse = ref None ; transform = ref None } ;
 value transduce_use_file = { name = "use_file" ; parse = ref None ; transform = ref None } ;
 
-set_ast_parse transduce_top_phrase (Grammar.Entry.parse top_phrase);
-set_ast_parse transduce_use_file (Grammar.Entry.parse use_file);
-
 value parse_interf x = transduce transduce_interf x ;
 value parse_implem x = transduce transduce_implem x ;
 value parse_top_phrase x = transduce transduce_top_phrase x ;

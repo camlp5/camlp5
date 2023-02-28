@@ -1751,6 +1751,8 @@ do {
 
 Pcaml.(set_ast_parse transduce_interf (Grammar.Entry.parse interf));
 Pcaml.(set_ast_parse transduce_implem (Grammar.Entry.parse implem));
+Pcaml.(set_ast_parse transduce_top_phrase (Grammar.Entry.parse top_phrase));
+Pcaml.(set_ast_parse transduce_use_file (Grammar.Entry.parse use_file));
 
 value sexpr = Grammar.Entry.create gram "sexpr";
 
