@@ -61,8 +61,8 @@ do {
   Grammar.Unsafe.clear_entry class_str_item
 };
 
-Pcaml.parse_interf.val := Grammar.Entry.parse interf;
-Pcaml.parse_implem.val := Grammar.Entry.parse implem;
+Pcaml.(set_ast_parse transduce_interf (Grammar.Entry.parse interf));
+Pcaml.(set_ast_parse transduce_implem (Grammar.Entry.parse implem));
 
 Pcaml.add_option "-ignloaddir"
   (Arg.Unit (fun _ → add_directive "load" (fun _ → ())))

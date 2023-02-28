@@ -140,10 +140,10 @@ value usesig loc fname ast = MLast.SgUse loc fname ast;
 value usestr loc fname ast = MLast.StUse loc fname ast;
 
 value process_intf () =
-  process Pcaml.parse_interf.val Pcaml.print_interf.val gind usesig
+  process Pcaml.parse_interf Pcaml.print_interf.val gind usesig
 ;
 value process_impl () =
-  process Pcaml.parse_implem.val Pcaml.print_implem.val gimd usestr
+  process Pcaml.parse_implem Pcaml.print_implem.val gimd usestr
 ;
 
 type file_kind = [ Intf | Impl ];

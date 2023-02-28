@@ -15,10 +15,24 @@ value syntax_name : ref string;
 
 type status = option Ploc.t;
 
+type ast_transducer_t 'a = {
+  name : string ;
+  parse : ref (option (Stream.t char -> 'a)) ;
+  transform : ref (option ('a -> 'a))
+} ;
+value set_ast_parse : ast_transducer_t 'a ->  (Stream.t char -> 'a) -> unit ;
+value set_ast_transform : ast_transducer_t 'a -> ('a -> 'a) -> unit ;
+value transduce : ast_transducer_t 'a -> Stream.t char -> 'a ;
+value transduce_interf : ast_transducer_t (list (MLast.sig_item * MLast.loc) * status) ;
+value transduce_implem : ast_transducer_t (list (MLast.str_item * MLast.loc) * status) ;
+value transduce_top_phrase : ast_transducer_t (option MLast.str_item) ;
+value transduce_use_file : ast_transducer_t (list MLast.str_item * bool) ;
+
+
 value parse_interf :
-  ref (Stream.t char -> (list (MLast.sig_item * MLast.loc) * status));
+  (Stream.t char -> (list (MLast.sig_item * MLast.loc) * status));
 value parse_implem :
-  ref (Stream.t char -> (list (MLast.str_item * MLast.loc) * status));
+  (Stream.t char -> (list (MLast.str_item * MLast.loc) * status));
    (** Called when parsing an interface (mli file) or an implementation
        (ml file) to build the syntax tree; the returned list contains the
        phrases (signature items or structure items) and their locations;
@@ -32,9 +46,9 @@ value parse_implem :
        defined below. *)
 
 value parse_top_phrase :
-  ref (Stream.t char -> (option MLast.str_item));
+  (Stream.t char -> (option MLast.str_item));
 value parse_use_file :
-  ref (Stream.t char -> (list MLast.str_item * bool));
+  (Stream.t char -> (list MLast.str_item * bool));
 
 
 value gram : Grammar.g;

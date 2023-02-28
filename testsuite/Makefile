@@ -202,13 +202,13 @@ r_lexer_test.byte: r_lexer_test.ml
 o_top_test:: o_top_test.byte
 	./o_top_test.byte
 
-o_top_test.byte: o_top_test.ml testutil.cmo
+o_top_test.byte: o_top_test.ml testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl o_top_test.ml -o o_top_test.byte
 
 r_top_test:: r_top_test.byte
 	./r_top_test.byte
 
-r_top_test.byte: r_top_test.ml testutil.cmo
+r_top_test.byte: r_top_test.ml testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_r.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl r_top_test.ml -o r_top_test.byte
 
 sch2r_test.pa_scheme:: sch2r_test.pa_scheme.byte

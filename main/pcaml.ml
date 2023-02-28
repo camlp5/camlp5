@@ -80,10 +80,50 @@ value alg_attribute = Grammar.Entry.create gram "alg_attribute";
 value alg_attributes = Grammar.Entry.create gram "alg_attributes";
 value ext_attributes = Grammar.Entry.create gram "ext_attributes";
 
-value parse_interf = ref (Grammar.Entry.parse interf);
-value parse_implem = ref (Grammar.Entry.parse implem);
-value parse_top_phrase = ref (Grammar.Entry.parse top_phrase);
-value parse_use_file = ref (Grammar.Entry.parse use_file);
+type ast_transducer_t 'a = {
+    name : string
+  ; parse : ref (option (Stream.t char -> 'a))
+  ; transform : ref (option ('a -> 'a))
+  } ;
+
+value set_ast_parse att pf =
+  match att.parse.val with [
+      Some _ -> failwith (Printf.sprintf "Pcaml.set_ast_parse: transducer \"%s\" already has a parse(r)" att.name)
+    | None -> att.parse.val := Some pf
+    ]
+;
+
+value set_ast_transform att tf =
+  match att.transform.val with [
+      Some _ -> failwith (Printf.sprintf "Pcaml.set_ast_transform: transducer \"%s\" already has a tranform(er)" att.name)
+    | None -> att.transform.val := Some tf
+    ]
+;
+
+value transduce att x =
+  let parse = match att.parse.val with [
+        None -> failwith (Printf.sprintf "Pcaml.transduce: transducer \"%s\" has no configured parser" att.name)
+      | Some x -> x
+      ] in
+  let x = parse x in
+  match att.transform.val with [
+      None -> x
+    | Some f -> f x
+    ]
+;
+
+value transduce_interf = { name = "interf" ; parse = ref None ; transform = ref None } ;
+value transduce_implem = { name = "implem" ; parse = ref None ; transform = ref None } ;
+value transduce_top_phrase = { name = "top_phrase" ; parse = ref None ; transform = ref None } ;
+value transduce_use_file = { name = "use_file" ; parse = ref None ; transform = ref None } ;
+
+set_ast_parse transduce_top_phrase (Grammar.Entry.parse top_phrase);
+set_ast_parse transduce_use_file (Grammar.Entry.parse use_file);
+
+value parse_interf x = transduce transduce_interf x ;
+value parse_implem x = transduce transduce_implem x ;
+value parse_top_phrase x = transduce transduce_top_phrase x ;
+value parse_use_file x = transduce transduce_use_file x ;
 
 value rec skip_to_eol cs =
   match Stream.peek cs with

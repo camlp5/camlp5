@@ -291,8 +291,7 @@ value implem_gen_ast (l, status) = do {
   }
 ;
 
-value before_implem = Pcaml.parse_implem.val ;
-Pcaml.parse_implem.val := (fun arg ->  implem_gen_ast (before_implem arg));
+Pcaml.(set_ast_transform transduce_implem implem_gen_ast);
 
 Pcaml.add_option "-pa_mktest-ignore-type" (Arg.String add_ignored_type)
   "ignore specified type";

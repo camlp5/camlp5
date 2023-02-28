@@ -656,8 +656,8 @@
  (Grammar.Unsafe.clear_entry class_sig_item)
  (Grammar.Unsafe.clear_entry class_str_item))
 
-(:= Pcaml.parse_interf.val (Grammar.Entry.parse interf))
-(:= Pcaml.parse_implem.val (Grammar.Entry.parse implem))
+(Pcaml.set_ast_parse Pcaml.transduce_interf (Grammar.Entry.parse interf))
+(Pcaml.set_ast_parse Pcaml.transduce_implem (Grammar.Entry.parse implem))
 
 (value sexpr (Grammar.Entry.create gram "sexpr"))
 (value atom (Grammar.Entry.create gram "atom"))

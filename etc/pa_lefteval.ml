@@ -228,9 +228,8 @@ and class_str_item x =
   | x -> not_impl "class_str_item" x ]
 ;
 
-value parse_implem = Pcaml.parse_implem.val;
-value parse_implem_with_left_eval strm =
-  let (r, b) = parse_implem strm in
+value left_eval_transform (r,b) =
   (List.map (fun (si, loc) -> (str_item si, loc)) r, b)
 ;
-Pcaml.parse_implem.val := parse_implem_with_left_eval;
+
+Pcaml.(set_ast_transform transduce_implem left_eval_transform);
