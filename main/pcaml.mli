@@ -122,6 +122,14 @@ value string_of_loc : string -> int -> int -> int -> string;
    (** [string_of_loc fname line bp ep] returns the location string for
        file [fname] at [line] and between character [bp] and [ep]. *)
 
+
+type err_ctx =
+  [ Finding
+  | Expanding
+  | ParsingResult of Ploc.t and string ]
+;
+exception Qerror of string and string and err_ctx and exn;
+
 value expand_quotation : Ploc.t -> (string -> 'b) -> int -> string -> string -> 'b ;
 value handle_expr_quotation : MLast.loc -> (string * string) -> MLast.expr;
 value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;
