@@ -633,55 +633,6 @@ EXTEND
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
 END;
 
-IFDEF STRICT THEN
-  EXTEND
-    Pcaml.class_expr_simple: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.CeXtr loc s None ] ]
-    ;
-    Pcaml.class_type: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.CtXtr loc s None ] ]
-    ;
-    Pcaml.ctyp: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
-    ;
-    Pcaml.longident: LAST
-      [ [ s = ANTIQUOT_LOC "longid" -> MLast.LiXtr loc s None ] ]
-    ;
-    Pcaml.extended_longident: LAST
-      [ [ s = ANTIQUOT_LOC "longid" -> MLast.LiXtr loc s None ] ]
-    ;
-    Pcaml.expr: LAST
-      [ [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc s None
-        | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc s None
-        | s = ANTIQUOT_LOC "exp" -> MLast.ExXtr loc s None
-        ] ]
-    ;
-    Pcaml.ipatt: LAST
-      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None ] ]
-    ;
-    Pcaml.module_expr: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.MeXtr loc s None ] ]
-    ;
-    Pcaml.module_type: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.MtXtr loc s None ] ]
-    ;
-    Pcaml.patt: LAST
-      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None
-        | s = ANTIQUOT_LOC "anti" -> MLast.PaXtr loc s None ] ]
-    ;
-    Pcaml.sig_item: FIRST
-      [ [ s = ANTIQUOT_LOC -> MLast.SgXtr loc s None ] ]
-    ;
-    Pcaml.str_item: FIRST
-      [ [ s = ANTIQUOT_LOC -> MLast.StXtr loc s None
-        | s = ANTIQUOT_LOC "stri" ->
-          let s = replace_antiloc_kind ~{newkind=""} s in
-          MLast.StXtr loc s None
-        ] ]
-    ;
-  END;
-END;
-
 value separate_locate s =
   let len = String.length s in
   if len > 0 && s.[0] = '@' then (String.sub s 1 (len - 1), True)
