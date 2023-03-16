@@ -6,9 +6,7 @@ open OUnit2 ;
 open OUnitTest ;
 open Testutil ;
 open Testutil2;
-(*
-open Camlp5_top_funs;
- *)
+
 Pcaml.inter_phrases.val := Some (";;") ;
 
 value lexbuf_contents lb =
@@ -137,6 +135,7 @@ value papr0 (e, pr) s =
 value papr = papr0 (Pcaml.top_phrase, pr_toplevel_phrase) ;
 
 value pr_str_item si = Eprinter.apply Pcaml.pr_str_item Pprintf.empty_pc si ;
+value pr_let_binding si = Pr_o.let_binding Pprintf.empty_pc si ;
 
 value papr_str_item = papr0 (Pcaml.str_item, pr_str_item) ;
 
@@ -184,6 +183,9 @@ value tests = "test o top2" >::: [
   ])
   ; "compare-to-bug-4'" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} ("let x = 1"," ") (papr_str_item {foo|let x = 1;; |foo})
+  ])
+  ; "bug-4-1" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ("let [x] = [1]"," ") (papr_str_item {foo|let [x] = [1];; |foo})
   ])
   ]
 ;

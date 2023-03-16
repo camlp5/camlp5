@@ -135,7 +135,8 @@ value operator_rparen =
 
 value check_not_part_of_patt_f strm =
   let matchers = [
-    (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
+    (1, fun [ [(("", "[") as tok) :: _] -> Some tok | _ -> None ])
+  ; (2, fun [ [("LIDENT", _); tok :: _] -> Some tok | _ -> None ])
   ; (4, fun [ [("", "("); ("", s); ("", ")"); tok :: _] when is_special_op s -> Some tok | _ -> None ])
   ; (6, fun [
               [("", "("); ("", s); ("", "("); ("", ")"); ("", ")"); tok :: _] when is_special_op s -> Some tok
@@ -174,7 +175,7 @@ value check_not_part_of_patt_f strm =
   ] in
   let tok = crec 1 matchers in
   match tok with
-    [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
+    [ ("", "," | "as" | "|" | "::" | "[") -> raise Stream.Failure
     | _ -> () ]
 ;
 
