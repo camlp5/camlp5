@@ -145,48 +145,48 @@ value fmt_pair (x,y) = "<<"^x^"||"^y^">>" ;
 value tests = "test o top2" >::: [
     "empty" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} ("","") (papr {foo|;;|foo})
-    ]) ;
-    "simplest" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} (";;1"," ") (papr {foo| 1;; |foo})
-    ]) ;
-    "bug-1" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ("let x = M (a b)"," ") (papr {foo| let x = M(a b);; |foo})
-    ]) ;
-    "bug-1b" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} (";;M (a b)"," 1;;") (papr {foo|M(a b);; 1;;|foo})
-    ]) ;
-    "bug-2" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} (";;let open M.N in a b"," ") (papr {foo| M.N.(a b);; |foo})
-    ]) ;
-    "directive-1" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ({foo|#require  "foo"|foo}," ") (papr {foo| #require "foo";; |foo})
-    ]) ;
-    "show-1" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ({foo|#show  List|foo}," 1") (papr {foo| #show List;; 1|foo})
-    ]) ;
-    "show-2" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ({foo|#show  Stdlib.List|foo}," 1") (papr {foo| #show Stdlib.List;; 1|foo})
-    ]) ;
-    "show-3" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ({foo|#show  Stdlib.List.hd|foo}," 1") (papr {foo| #show Stdlib.List.hd;; 1|foo})
-    ]) ;
-    "show-4" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ({foo|#show  hd|foo}," 1") (papr {foo| #show hd;; 1|foo})
-    ]) ;
-    "bug-3" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} (";;F.f 1"," 1") (papr {foo| (F.f 1);; 1|foo})
-    ]) ;
-    "bug-4" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ("let x::[] = [1]"," ") (papr {foo|let [x] = [1];; |foo})
-    ]) ;
-    "compare-to-bug-4" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ("let x = 1"," ") (papr {foo|let x = 1;; |foo})
-    ]) ;
-    "compare-to-bug-4'" >:: (fun  [ _ ->
-      assert_equal ~{printer=fmt_pair} ("let x = 1"," ") (papr_str_item {foo|let x = 1;; |foo})
     ])
+  ; "simplest" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} (";;1"," ") (papr {foo| 1;; |foo})
+  ])
+  ; "bug-1" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ("let x = M (a b)"," ") (papr {foo| let x = M(a b);; |foo})
+  ])
+  ; "bug-1b" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} (";;M (a b)"," 1;;") (papr {foo|M(a b);; 1;;|foo})
+  ])
+  ; "bug-2" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} (";;let open M.N in a b"," ") (papr {foo| M.N.(a b);; |foo})
+  ])
+  ; "directive-1" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#require  "foo"|foo}," ") (papr {foo| #require "foo";; |foo})
+  ])
+  ; "show-1" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  List|foo}," 1") (papr {foo| #show List;; 1|foo})
+  ])
+  ; "show-2" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  Stdlib.List|foo}," 1") (papr {foo| #show Stdlib.List;; 1|foo})
+  ])
+  ; "show-3" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  Stdlib.List.hd|foo}," 1") (papr {foo| #show Stdlib.List.hd;; 1|foo})
+  ])
+  ; "show-4" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ({foo|#show  hd|foo}," 1") (papr {foo| #show hd;; 1|foo})
+  ])
+  ; "bug-3" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} (";;F.f 1"," 1") (papr {foo| (F.f 1);; 1|foo})
+  ])
+  ; "bug-4" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ("let x::[] = [1]"," ") (papr {foo|let [x] = [1];; |foo})
+  ])
+  ; "compare-to-bug-4" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ("let x = 1"," ") (papr {foo|let x = 1;; |foo})
+  ])
+  ; "compare-to-bug-4'" >:: (fun  [ _ ->
+      assert_equal ~{printer=fmt_pair} ("let x = 1"," ") (papr_str_item {foo|let x = 1;; |foo})
+  ])
   ]
- ;
+;
 
 (* this needs to remain using invoked_with *)
 value _ =
