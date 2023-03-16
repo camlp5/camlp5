@@ -210,7 +210,7 @@ o_top_test2:: o_top_test2.byte
 	./o_top_test2.byte
 
 o_top_test2.byte: o_top_test2.ml testutil.cmo testutil2.cmo
-	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl o_top_test2.ml -o o_top_test2.byte
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link,camlp5.pr_o.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl o_top_test2.ml -o o_top_test2.byte
 
 r_top_test:: r_top_test.byte
 	./r_top_test.byte
