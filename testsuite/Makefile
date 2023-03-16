@@ -10,7 +10,7 @@ RM=rm
 TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test r2official_test \
         r2sch_test q_MLast_test revised_q_ast_test \
 	sch2r_test.pa_scheme sch2r_test.pa_schemer \
-	extfun_test reloc_test o_top_test r_top_test grammar_bug_test \
+	extfun_test reloc_test o_top_test2 o_top_test r_top_test grammar_bug_test \
 	little_lang_test o_lexer_test r_lexer_test
 
 export LC_ALL=C
@@ -35,6 +35,7 @@ all: roundtrippers \
 	reloc_test.byte \
 	roundtrip_lexer.byte \
 	o_top_test.byte \
+	o_top_test2.byte \
 	r_top_test.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.opt \
@@ -204,6 +205,12 @@ o_top_test:: o_top_test.byte
 
 o_top_test.byte: o_top_test.ml testutil.cmo testutil2.cmo
 	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl o_top_test.ml -o o_top_test.byte
+
+o_top_test2:: o_top_test2.byte
+	./o_top_test2.byte
+
+o_top_test2.byte: o_top_test2.ml testutil.cmo testutil2.cmo
+	$(OCAMLFIND) ocamlc $(DEBUG) -package $(PACKAGES),compiler-libs.toplevel,camlp5.pa_op.link,camlp5.pr_official.link,camlp5.toploop.link -syntax camlp5r -linkall -linkpkg testutil.cmo testutil2.cmo -impl o_top_test2.ml -o o_top_test2.byte
 
 r_top_test:: r_top_test.byte
 	./r_top_test.byte

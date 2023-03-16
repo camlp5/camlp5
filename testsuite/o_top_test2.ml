@@ -28,7 +28,7 @@ value papr s =
 
 value fmt_pair (x,y) = "<<"^x^"||"^y^">>" ;
 
-value tests = "test o top" >::: [
+value tests = "test o top2" >::: [
     "empty" >:: (fun  [ _ ->
       assert_equal ~{printer=fmt_pair} ("","") (papr {foo|;;|foo})
     ]) ;
@@ -73,7 +73,7 @@ value tests = "test o top" >::: [
 
 (* this needs to remain using invoked_with *)
 value _ =
-if invoked_with "o_top_test" then
+if invoked_with "o_top_test2" then
   run_test_tt_main tests
 else ()
 ;  
