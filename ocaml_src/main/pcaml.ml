@@ -84,10 +84,65 @@ let alg_attribute = Grammar.Entry.create gram "alg_attribute";;
 let alg_attributes = Grammar.Entry.create gram "alg_attributes";;
 let ext_attributes = Grammar.Entry.create gram "ext_attributes";;
 
-let parse_interf = ref (Grammar.Entry.parse interf);;
-let parse_implem = ref (Grammar.Entry.parse implem);;
-let parse_top_phrase = ref (Grammar.Entry.parse top_phrase);;
-let parse_use_file = ref (Grammar.Entry.parse use_file);;
+type 'a ast_transducer_t =
+  { name : string;
+    parse : (char Stream.t -> 'a) option ref;
+    transform : ('a -> 'a) option ref }
+;;
+
+let set_ast_parse att pf =
+  match !(att.parse) with
+    Some _ ->
+      failwith
+        (Printf.sprintf
+           "Pcaml.set_ast_parse: transducer \"%s\" already has a parse(r)"
+           att.name)
+  | None -> att.parse := Some pf
+;;
+
+let set_ast_transform att tf =
+  match !(att.transform) with
+    Some _ ->
+      failwith
+        (Printf.sprintf
+           "Pcaml.set_ast_transform: transducer \"%s\" already has a tranform(er)"
+           att.name)
+  | None -> att.transform := Some tf
+;;
+
+let transduce att x =
+  let parse =
+    match !(att.parse) with
+      None ->
+        failwith
+          (Printf.sprintf
+             "Pcaml.transduce: transducer \"%s\" has no configured parser"
+             att.name)
+    | Some x -> x
+  in
+  let x = parse x in
+  match !(att.transform) with
+    None -> x
+  | Some f -> f x
+;;
+
+let transduce_interf =
+  {name = "interf"; parse = ref None; transform = ref None}
+;;
+let transduce_implem =
+  {name = "implem"; parse = ref None; transform = ref None}
+;;
+let transduce_top_phrase =
+  {name = "top_phrase"; parse = ref None; transform = ref None}
+;;
+let transduce_use_file =
+  {name = "use_file"; parse = ref None; transform = ref None}
+;;
+
+let parse_interf x = transduce transduce_interf x;;
+let parse_implem x = transduce transduce_implem x;;
+let parse_top_phrase x = transduce transduce_top_phrase x;;
+let parse_use_file x = transduce transduce_use_file x;;
 
 let rec skip_to_eol cs =
   match Stream.peek cs with
@@ -119,7 +174,7 @@ type err_ctx =
   | Expanding
   | ParsingResult of Ploc.t * string
 ;;
-exception Qerror of string * err_ctx * exn;;
+exception Qerror of string * string * err_ctx * exn;;
 
 let quotation_location () =
   match !quotation_loc with
@@ -146,7 +201,7 @@ let expand_quotation gloc expander shift name str =
     try
       try expander str with
         Ploc.Exc (loc, exc) ->
-          let exc1 = Qerror (name, Expanding, exc) in
+          let exc1 = Qerror (name, str, Expanding, exc) in
           let shift = Ploc.first_pos gloc + shift in
           let loc =
             let gloc_line_nb = Ploc.line_nb gloc in
@@ -163,7 +218,8 @@ let expand_quotation gloc expander shift name str =
           in
           raise (Ploc.Exc (loc, exc1))
       | exc ->
-          let exc1 = Qerror (name, Expanding, exc) in Ploc.raise gloc exc1
+          let exc1 = Qerror (name, str, Expanding, exc) in
+          Ploc.raise gloc exc1
     with exn -> restore (); raise exn
   in
   restore (); r
@@ -172,13 +228,13 @@ let expand_quotation gloc expander shift name str =
 let parse_quotation_result entry loc shift name str =
   let cs = Stream.of_string str in
   try Grammar.Entry.parse entry cs with
-    Ploc.Exc (iloc, Qerror (_, Expanding, exc)) ->
+    Ploc.Exc (iloc, Qerror (_, _, Expanding, exc)) ->
       let ctx = ParsingResult (iloc, str) in
-      let exc1 = Qerror (name, ctx, exc) in Ploc.raise loc exc1
-  | Ploc.Exc (_, (Qerror (_, _, _) as exc)) -> Ploc.raise loc exc
+      let exc1 = Qerror (name, str, ctx, exc) in Ploc.raise loc exc1
+  | Ploc.Exc (_, (Qerror (_, _, _, _) as exc)) -> Ploc.raise loc exc
   | Ploc.Exc (iloc, exc) ->
       let ctx = ParsingResult (iloc, str) in
-      let exc1 = Qerror (name, ctx, exc) in Ploc.raise loc exc1
+      let exc1 = Qerror (name, str, ctx, exc) in Ploc.raise loc exc1
 ;;
 
 let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
@@ -200,7 +256,7 @@ let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
   let expander =
     try Quotation.find name with
       exc ->
-        let exc1 = Qerror (name, Finding, exc) in
+        let exc1 = Qerror (name, str, Finding, exc) in
         raise (Ploc.Exc (Ploc.sub loc 0 shift, exc1))
   in
   let ast =
@@ -276,16 +332,16 @@ let string_of_loc fname line bp ep =
   | _ -> sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep
 ;;
 
-let pp_report_quotation_error pps name ctx =
+let pp_report_quotation_error pps name str ctx =
   let name = if name = "" then !(Quotation.default) else name in
   Format.pp_print_flush pps ();
   Format.pp_open_hovbox pps 2;
-  eprintf "While %s \"%s\":"
+  eprintf "While %s \"%s\" for string \"%s\":"
     (match ctx with
        Finding -> "finding quotation"
      | Expanding -> "expanding quotation"
      | ParsingResult (_, _) -> "parsing result of quotation")
-    name;
+    name str;
   match ctx with
     ParsingResult (loc, str) ->
       begin match !quotation_dump_file with
@@ -384,14 +440,15 @@ let pp_print_exn pps =
 
 let pp_report_error pps exn =
   match exn with
-    Qerror (name, Finding, Not_found) ->
+    Qerror (name, str, Finding, Not_found) ->
       let name = if name = "" then !(Quotation.default) else name in
       Format.pp_print_flush pps ();
       Format.pp_open_hovbox pps 2;
-      Format.fprintf pps "Unbound quotation: \"%s\"" name;
+      Format.fprintf pps "Unbound quotation: \"%s\" for string \"%s\"" name
+        str;
       Format.pp_close_box pps ()
-  | Qerror (name, ctx, exn) ->
-      pp_report_quotation_error pps name ctx; pp_print_exn pps exn
+  | Qerror (name, str, ctx, exn) ->
+      pp_report_quotation_error pps name str ctx; pp_print_exn pps exn
   | e -> pp_print_exn pps exn
 ;;
 
@@ -399,7 +456,7 @@ let report_error exn = pp_report_error Format.std_formatter exn;;
 
 Printexc.register_printer
   (function
-     Qerror (_, _, _) as exn ->
+     Qerror (_, _, _, _) as exn ->
        let b = Buffer.create 23 in
        let pps = Format.formatter_of_buffer b in
        Format.fprintf pps "%a%!" pp_report_error exn; Some (Buffer.contents b)

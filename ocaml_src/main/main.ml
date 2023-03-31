@@ -127,10 +127,10 @@ let usesig loc fname ast = MLast.SgUse (loc, fname, ast);;
 let usestr loc fname ast = MLast.StUse (loc, fname, ast);;
 
 let process_intf () =
-  process !(Pcaml.parse_interf) !(Pcaml.print_interf) gind usesig
+  process Pcaml.parse_interf !(Pcaml.print_interf) gind usesig
 ;;
 let process_impl () =
-  process !(Pcaml.parse_implem) !(Pcaml.print_implem) gimd usestr
+  process Pcaml.parse_implem !(Pcaml.print_implem) gimd usestr
 ;;
 
 type file_kind = Intf | Impl;;

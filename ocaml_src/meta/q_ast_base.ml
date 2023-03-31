@@ -90,7 +90,13 @@ module type MetaSig =
     val list : ('a -> t) -> 'a list -> t;;
     val option : ('a -> t) -> 'a option -> t;;
     val vala : ('a -> t) -> 'a MLast.v -> t;;
+    val char : char -> t;;
     val bool : bool -> t;;
+    val int : int -> t;;
+    val int32 : int32 -> t;;
+    val int64 : int64 -> t;;
+    val nativeint : nativeint -> t;;
+    val float : float -> t;;
     val string : string -> t;;
     val tuple : t list -> t;;
     val record : (MLast.patt * t) list -> t;;
@@ -151,9 +157,25 @@ module E_MetaSig =
             (loc, MLast.ExLong (loc, MLast.LiUid (loc, "Some")), elem e)
     ;;
     let vala elem e = elem e;;
+    let char c = let c = Char.escaped c in MLast.ExChr (loc, c);;
     let bool b =
       if b then MLast.ExLong (loc, MLast.LiUid (loc, "True"))
       else MLast.ExLong (loc, MLast.LiUid (loc, "False"))
+    ;;
+    let int n =
+      let loc = Ploc.dummy in MLast.ExInt (loc, string_of_int n, "")
+    ;;
+    let int32 n =
+      let loc = Ploc.dummy in MLast.ExInt (loc, Int32.to_string n, "l")
+    ;;
+    let int64 n =
+      let loc = Ploc.dummy in MLast.ExInt (loc, Int64.to_string n, "L")
+    ;;
+    let nativeint n =
+      let loc = Ploc.dummy in MLast.ExInt (loc, Nativeint.to_string n, "n")
+    ;;
+    let float n =
+      let loc = Ploc.dummy in MLast.ExFlo (loc, Float.to_string n)
     ;;
     let string s = MLast.ExStr (loc, s);;
     let tuple le = MLast.ExTup (loc, le);;
@@ -242,9 +264,25 @@ module P_MetaSig =
             (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some"), []), elem e)
     ;;
     let vala elem p = elem p;;
+    let char c = let c = Char.escaped c in MLast.PaChr (loc, c);;
     let bool b =
       if b then MLast.PaLong (loc, MLast.LiUid (loc, "True"), [])
       else MLast.PaLong (loc, MLast.LiUid (loc, "False"), [])
+    ;;
+    let int n =
+      let loc = Ploc.dummy in MLast.PaInt (loc, string_of_int n, "")
+    ;;
+    let int32 n =
+      let loc = Ploc.dummy in MLast.PaInt (loc, Int32.to_string n, "l")
+    ;;
+    let int64 n =
+      let loc = Ploc.dummy in MLast.PaInt (loc, Int64.to_string n, "L")
+    ;;
+    let nativeint n =
+      let loc = Ploc.dummy in MLast.PaInt (loc, Nativeint.to_string n, "n")
+    ;;
+    let float n =
+      let loc = Ploc.dummy in MLast.PaFlo (loc, Float.to_string n)
     ;;
     let string s = MLast.PaStr (loc, s);;
     let tuple lp = MLast.PaTup (loc, lp);;
@@ -283,3 +321,208 @@ module P_MetaSig =
     ;;
   end
 ;;
+
+(* *)
+
+let check_anti_loc s =
+  try
+    let i = String.index s ':' in
+    let (j, len) = skip_to_next_colon s i in String.sub s (i + 1) len
+  with Not_found | Failure _ -> raise Stream.Failure
+;;
+
+let lex = Grammar.glexer Pcaml.gram in
+let tok_match = lex.Plexing.tok_match in
+lex.Plexing.tok_match <-
+  function
+    "ANTIQUOT_LOC", p_prm ->
+      if p_prm <> "" && (p_prm.[0] = '~' || p_prm.[0] = '?') then
+        let p_prm0 = p_prm.[0] in
+        if p_prm.[String.length p_prm - 1] = ':' then
+          let p_prm = String.sub p_prm 1 (String.length p_prm - 2) in
+          function
+            "ANTIQUOT_LOC", prm ->
+              if prm <> "" && prm.[0] = p_prm0 then
+                if prm.[String.length prm - 1] = ':' then
+                  let prm = String.sub prm 1 (String.length prm - 2) in
+                  let kind = check_anti_loc prm in
+                  if kind = p_prm || kind = anti_anti p_prm then prm
+                  else raise Stream.Failure
+                else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure
+        else
+          let p_prm = String.sub p_prm 1 (String.length p_prm - 1) in
+          function
+            "ANTIQUOT_LOC", prm ->
+              if prm <> "" && prm.[0] = p_prm0 then
+                if prm.[String.length prm - 1] = ':' then raise Stream.Failure
+                else
+                  let prm = String.sub prm 1 (String.length prm - 1) in
+                  let kind = check_anti_loc prm in
+                  if kind = p_prm || kind = anti_anti p_prm then prm
+                  else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure
+      else
+        (function
+           "ANTIQUOT_LOC", prm ->
+             if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+               raise Stream.Failure
+             else
+               let kind = check_anti_loc prm in
+               if kind = p_prm then prm else raise Stream.Failure
+         | _ -> raise Stream.Failure)
+  | "V", p_prm ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = p_prm || kind = anti_anti p_prm then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V CHAR", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "chr" || kind = anti_anti "chr" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V FLAG", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "flag" || kind = anti_anti "flag" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V FLOAT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "flo" || kind = anti_anti "flo" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V INT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "int" || kind = anti_anti "int" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V INT_l", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "int32" || kind = anti_anti "int32" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V INT_L", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "int64" || kind = anti_anti "int64" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V INT_n", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "nativeint" || kind = anti_anti "nativeint" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V LIDENT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+             raise Stream.Failure
+           else
+             let kind = check_anti_loc prm in
+             if kind = "lid" || kind = anti_anti "lid" then prm
+             else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V LIST", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "list" || kind = anti_anti "list" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V OPT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc prm in
+           if kind = "opt" || kind = anti_anti "opt" then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V QUESTIONIDENT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && prm.[0] = '?' then
+             if prm.[String.length prm - 1] = ':' then raise Stream.Failure
+             else
+               let prm = String.sub prm 1 (String.length prm - 1) in
+               let kind = check_anti_loc prm in
+               if kind = "" || kind = anti_anti "" then prm
+               else raise Stream.Failure
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V QUESTIONIDENTCOLON", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && prm.[0] = '?' then
+             if prm.[String.length prm - 1] = ':' then
+               let prm = String.sub prm 1 (String.length prm - 2) in
+               let kind = check_anti_loc prm in
+               if kind = "" || kind = anti_anti "" then prm
+               else raise Stream.Failure
+             else raise Stream.Failure
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V STRING", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+             raise Stream.Failure
+           else
+             let kind = check_anti_loc prm in
+             if kind = "str" || kind = anti_anti "str" then prm
+             else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V TILDEIDENT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && prm.[0] = '~' then
+             if prm.[String.length prm - 1] = ':' then raise Stream.Failure
+             else
+               let prm = String.sub prm 1 (String.length prm - 1) in
+               let kind = check_anti_loc prm in
+               if kind = "" || kind = anti_anti "" then prm
+               else raise Stream.Failure
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V TILDEIDENTCOLON", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && prm.[0] = '~' then
+             if prm.[String.length prm - 1] = ':' then
+               let prm = String.sub prm 1 (String.length prm - 2) in
+               let kind = check_anti_loc prm in
+               if kind = "" || kind = anti_anti "" then prm
+               else raise Stream.Failure
+             else raise Stream.Failure
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V UIDENT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && (prm.[0] = '~' || prm.[0] = '?') then
+             raise Stream.Failure
+           else
+             let kind = check_anti_loc prm in
+             if kind = "uid" || kind = anti_anti "uid" then prm
+             else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | tok -> tok_match tok;;
+
+(* reinit the entry functions to take the new tok_match into account *)
+Grammar.iter_entry Grammar.reinit_entry_functions
+  (Grammar.Entry.obj Pcaml.expr);;

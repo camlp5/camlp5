@@ -15,10 +15,26 @@ val syntax_name : string ref;;
 
 type status = Ploc.t option;;
 
+type 'a ast_transducer_t =
+  { name : string;
+    parse : (char Stream.t -> 'a) option ref;
+    transform : ('a -> 'a) option ref }
+;;
+val set_ast_parse : 'a ast_transducer_t -> (char Stream.t -> 'a) -> unit;;
+val set_ast_transform : 'a ast_transducer_t -> ('a -> 'a) -> unit;;
+val transduce : 'a ast_transducer_t -> char Stream.t -> 'a;;
+val transduce_interf :
+  ((MLast.sig_item * MLast.loc) list * status) ast_transducer_t;;
+val transduce_implem :
+  ((MLast.str_item * MLast.loc) list * status) ast_transducer_t;;
+val transduce_top_phrase : MLast.str_item option ast_transducer_t;;
+val transduce_use_file : (MLast.str_item list * bool) ast_transducer_t;;
+
+
 val parse_interf :
-  (char Stream.t -> (MLast.sig_item * MLast.loc) list * status) ref;;
+  char Stream.t -> (MLast.sig_item * MLast.loc) list * status;;
 val parse_implem :
-  (char Stream.t -> (MLast.str_item * MLast.loc) list * status) ref;;
+  char Stream.t -> (MLast.str_item * MLast.loc) list * status;;
    (** Called when parsing an interface (mli file) or an implementation
        (ml file) to build the syntax tree; the returned list contains the
        phrases (signature items or structure items) and their locations;
@@ -31,8 +47,8 @@ val parse_implem :
        default, they use the grammars entries [implem] and [interf]
        defined below. *)
 
-val parse_top_phrase : (char Stream.t -> MLast.str_item option) ref;;
-val parse_use_file : (char Stream.t -> MLast.str_item list * bool) ref;;
+val parse_top_phrase : char Stream.t -> MLast.str_item option;;
+val parse_use_file : char Stream.t -> MLast.str_item list * bool;;
 
 
 val gram : Grammar.g;;
@@ -108,6 +124,16 @@ val string_of_loc : string -> int -> int -> int -> string;;
    (** [string_of_loc fname line bp ep] returns the location string for
        file [fname] at [line] and between character [bp] and [ep]. *)
 
+
+type err_ctx =
+    Finding
+  | Expanding
+  | ParsingResult of Ploc.t * string
+;;
+exception Qerror of string * string * err_ctx * exn;;
+
+val expand_quotation :
+  Ploc.t -> (string -> 'b) -> int -> string -> string -> 'b;;
 val handle_expr_quotation : MLast.loc -> string * string -> MLast.expr;;
 val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;
 
