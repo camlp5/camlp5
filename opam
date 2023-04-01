@@ -1,4 +1,3 @@
-version: "dev"
 opam-version: "2.0"
 synopsis: "Preprocessor-pretty-printer of OCaml"
 description: """
@@ -31,7 +30,7 @@ depends: [
   "ocamlfind"
   "camlp-streams" { >= "5.0" }
   "conf-perl"
-  "camlp5-buildscripts"
+  "camlp5-buildscripts" { >= "0.02" }
   "conf-diffutils" { with-test & os-distribution = "alpine" }
   "re"
   "pcre"
@@ -49,7 +48,9 @@ build: [
 #  [make "-C" "scripts" "clean" "test"] { with-test }
 ]
 install: [make "install"]
-
+conflicts: [
+   "ocaml-option-bytecode-only"
+]
 dev-repo: "git+https://github.com/camlp5/camlp5.git"
 url {
   src: ""
