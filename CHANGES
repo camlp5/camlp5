@@ -1,4 +1,19 @@
 
+Camlp5 Version 8.00.06:
+--------------------
+
+* [31 Mar 2023] bugfixes, most notably improvements in quasi-quotation support
+
+  * switch to camlp5-buildscripts (away from Perl scripts)
+
+  * change install procedure for grammars so that installing more than
+    one grammar will cause an error
+
+  * minor parsing errors in official OCaml grammar (pa_o)
+
+  * continue factoring apart q_ast.ml and q_ast_base.ml so only the latter is needed for
+    quotations over other AST types.
+
 Camlp5 Version 8.00.05:
 --------------------
 
