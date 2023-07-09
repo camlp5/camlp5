@@ -1102,7 +1102,9 @@ EXTEND
       | li = extended_longident → <:module_type< $longid:li$ >>
       | i = V LIDENT → <:module_type< $_lid:i$ >>
       | e = alg_extension -> <:module_type< [% $_extension:e$ ] >>
-      | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
+      | "("; mt = SELF; ")" -> <:module_type< $mt$ >>
+      | "(" ; ")" ; "->" ; mt = SELF -> <:module_type< functor () -> $mt$ >>
+      ] ]
   ;
   signature:
     [ [ sg = V (LIST0 [ s = sig_item; OPT ";;" -> s ]) -> sg ] ]

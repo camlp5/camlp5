@@ -5263,6 +5263,24 @@ IFDEF OCAML_VERSION < OCAML_5_0_0 THEN
 ELSE
 []
 END
+ @
+IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+  []
+ELSE
+  [
+    {name="module-type-syntax-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type MT = () -> sig end|foo} ;
+     official_input = OK {foo|module type MT = () -> sig end|foo} ;
+     r_input = OK {foo|module type MT = functor() -> sig end;|foo} ;
+     o_output = OK {foo|module type MT = (functor () -> sig  end);;
+|foo};
+     official_output = OK {foo|module type MT =  () -> sig end|foo} ;
+     r_output = OK {foo|module type MT () = sig end;|foo}
+    }
+  ]
+END
+
 ;
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
