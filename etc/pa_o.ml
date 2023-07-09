@@ -2,10 +2,10 @@
 (* pa_o.ml,v *)
 (* Copyright (c) INRIA 2007-2017 *)
 
-#load "pa_extend.cmo";
-#load "q_MLast.cmo";
-#load "pa_macro.cmo";
-#load "pa_macro_gram.cmo";
+#load "pa_extend.cmo"; (* REMOVE FOR COMPILE *)
+#load "q_MLast.cmo"; (* REMOVE FOR COMPILE *)
+#load "pa_macro.cmo"; (* REMOVE FOR COMPILE *)
+#load "pa_macro_gram.cmo"; (* REMOVE FOR COMPILE *)
 
 open Asttools;
 open Pcaml;
@@ -59,7 +59,7 @@ do {
 };
 
 Pcaml.(set_ast_parse transduce_interf (Grammar.Entry.parse interf));
-Pcaml.(set_ast_parse transduce_implem (Grammar.Entry.parse implem));
+Pcaml.(set_ast_parse transduce_implem (Grammar.Entry.parse implem)); (* REMOVE FOR COMPILE *)
 Pcaml.(set_ast_parse transduce_top_phrase (Grammar.Entry.parse top_phrase));
 Pcaml.(set_ast_parse transduce_use_file (Grammar.Entry.parse use_file));
 

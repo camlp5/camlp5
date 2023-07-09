@@ -115,7 +115,11 @@ value pr_present =
 
 value rec print_out_type ppf =
   fun
-  [ Otyp_alias ty s -> fprintf ppf "@[%a as '%s@]" print_out_type ty s
+  [ IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+    Otyp_alias ty s -> fprintf ppf "@[%a as '%s@]" print_out_type ty s
+    ELSE
+    Otyp_alias {non_gen; aliased=ty;  aliase=s} -> fprintf ppf "@[%a as '%s%s@]" print_out_type ty (if non_gen then "_" else "") s
+    END
   | ty -> print_out_type_1 ppf ty ]
 and print_out_type_1 ppf =
   fun

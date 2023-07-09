@@ -30,7 +30,7 @@ $(CAMLP5N)$D.fast.opt: pa_$D_fast.cmx
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$(CAMLP5N)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: compile.cmo comp_head.ml.tpl comp_trail.ml.tpl $(SRC)
-	cat $(SRC) | perl -n -e 'print unless /#load/' > tmp.$D_concat.ml
+	cat $(SRC) | perl -n -e 'print unless /REMOVE FOR COMPILE/' > tmp.$D_concat.ml
 	../meta/camlp5r -I ../meta -I ../etc pa_extend.cmo q_MLast.cmo pa_macro.cmo pa_macro_gram.cmo pr_r.cmo pr_ro.cmo pr_extend.cmo tmp.$D_concat.ml > tmp.$D_postprocessed.ml.ppo.TMP && mv tmp.$D_postprocessed.ml.ppo.TMP tmp.$D_postprocessed.ml.ppo
 	./strip-parser.pl tmp.$D_postprocessed.ml.ppo > $D_stripped.tmp
 	OCAMLN=$(OCAMLN) CAMLP5N=$(CAMLP5N) EXE=$(EXE) RM=$(RM) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp

@@ -197,9 +197,15 @@ value try_greek s = do {
 
 value rec print_out_type ppf =
   fun
-  [ Otyp_alias ty s ->
+  [ IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+    Otyp_alias ty s ->
       let (q, s) = try_greek s in
       fprintf ppf "@[%a as %s%s@]" print_out_type ty q s
+    ELSE
+    Otyp_alias {non_gen=non_gen; aliased=ty; \alias =s} ->
+      let (q, s) = try_greek s in
+      fprintf ppf "@[%a as %s%s%s@]" print_out_type ty (if non_gen then "_" else "") q s
+    END
   | ty -> print_out_type_1 ppf ty ]
 and print_out_type_1 ppf =
   fun
@@ -238,7 +244,8 @@ and print_simple_out_type ppf =
   | Otyp_tuple tyl ->
       fprintf ppf "@[<1>(%a)@]" (print_typlist print_out_type " *") tyl
   | Otyp_stuff s -> fprintf ppf "%s" s
-  | Otyp_variant non_gen poly_variants closed tags ->
+  | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+    Otyp_variant non_gen poly_variants closed tags ->
       let print_present ppf =
         fun
         [ None | Some [] -> ()
@@ -264,18 +271,57 @@ and print_simple_out_type ppf =
          else "? ")
         print_fields poly_variants
         print_present tags
-  | Otyp_object fields rest ->
+    ELSE
+    Otyp_variant poly_variants closed tags ->
+      let print_present ppf =
+        fun
+        [ None | Some [] -> ()
+        | Some l -> fprintf ppf "@;<1 -2>> @[<hov>%a@]" pr_present l ]
+      in
+      let print_fields ppf =
+        fun
+        | Ovar_fields fields ->
+            print_list print_poly_variant
+              (fun ppf -> fprintf ppf "@;<1 -2>| ") ppf fields
+        | IFDEF OCAML_VERSION < OCAML_4_05_0 THEN
+          Ovar_name id tyl ->
+            fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id
+          ELSE
+          Ovar_typ ty ->
+            fprintf ppf "%a@ " print_simple_out_type ty
+          END
+        end
+      in
+      fprintf ppf "[%s@[<hv>@[<hv>%a@]%a ]@]"
+        (if closed then if tags = None then "= " else "< "
+         else if tags = None then "> "
+         else "? ")
+        print_fields poly_variants
+        print_present tags
+    END
+  | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+    Otyp_object fields rest ->
       fprintf ppf "@[<2>< %a >@]" (print_fields rest) fields
-  | Otyp_class ng id tyl ->
+    ELSE
+    Otyp_object {fields=fields; open_row=open_row} ->
+      fprintf ppf "@[<2>< %a >@]" (print_fields open_row) fields
+    END
+  | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+    Otyp_class ng id tyl ->
       fprintf ppf "@[%a%s#%a@]" print_typargs tyl (if ng then "_" else "")
         print_ident id
+    ELSE
+    Otyp_class id tyl ->
+      fprintf ppf "@[%a#%a@]" print_typargs tyl
+        print_ident id
+    END
   | Otyp_manifest ty1 ty2 ->
       fprintf ppf "@[<2>%a ==@ %a@]" print_out_type ty1 print_out_type ty2
   | Otyp_abstract -> fprintf ppf "'abstract"
   | IFDEF OCAML_VERSION >= OCAML_4_05_0 THEN
     Otyp_open -> fprintf ppf "open"
     END
-  | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
+  | Otyp_alias _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
   | Otyp_poly _ _ as ty ->
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
@@ -327,16 +373,12 @@ and print_out_label ppf (name, mut, arg) =
 and print_fields rest ppf =
   fun
   [ [] ->
-      match rest with
-      [ Some non_gen -> fprintf ppf "%s.." (if non_gen then "_" else "")
-      | None -> () ]
+    fprintf ppf "%s.." (if rest then "_" else "")
+
   | [(s, t)] ->
       do {
         fprintf ppf "%s : %a" s print_out_type t;
-        match rest with
-        [ Some _ -> fprintf ppf ";@ "
-        | None -> () ];
-        print_fields rest ppf []
+        fprintf ppf ";@ "
       }
   | [(s, t) :: l] ->
       fprintf ppf "%s : %a;@ %a" s print_out_type t (print_fields rest) l ]

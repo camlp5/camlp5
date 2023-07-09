@@ -613,7 +613,7 @@ value compile () =
   ([(si1, loc); (si2, loc)], Some loc)
 ;
 
-Pcaml.parse_implem.val := fun _ -> compile ();
+Pcaml.(set_ast_parse transduce_implem (fun _ -> compile ()));
 
 Pcaml.add_option "-strict_parsing" (Arg.Set strict_parsing)
   "Don't generate error recovering by trying continuations or first levels";

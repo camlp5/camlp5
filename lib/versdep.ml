@@ -914,7 +914,15 @@ value ocaml_value_binding ?{item_attributes=[]} loc p e =
       { (p0) with ppat_desc = Ppat_constraint p1 t }
     | p -> p
     ] in
-    {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
+    IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+      {pvb_pat = p; pvb_expr = e; pvb_loc = loc; pvb_attributes = item_attributes}
+    ELSE
+    let (p,c) = match p with [
+          {ppat_desc=Ppat_constraint p1 t} -> (p1, Some (Pvc_constraint {locally_abstract_univars = []; typ = t}))
+        | _ -> (p, None)
+        ] in
+      {pvb_pat = p; pvb_expr = e; pvb_constraint = c; pvb_loc = loc; pvb_attributes = item_attributes}
+    END
   END
 ;
 

@@ -10,6 +10,7 @@ while (<ARGV>) {
   next if /Grammar.Entry.gcreate/;
   next if /Grammar.Entry.create/;
   next if /^\s*#load/ ;
+  next if /REMOVE FOR COMPILE/ ;
   die "MUST preprocess away IFDEFs first" if /IFDEF/ ;
   next if /DELETE_RULE/ ;
   print ;
