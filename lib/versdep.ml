@@ -898,12 +898,26 @@ value ocaml_pexp_variant =
 ;
 
 value ocaml_value_binding_constraint loc vb (sl, ct) =
+IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+  if sl = [] then
+    let e = vb.pvb_expr in
+    let e = ocaml_mkexp loc (ocaml_pexp_constraint e (Some ct) None) in
+    { (vb) with pvb_expr = e }
+  else failwith "ocaml_value_binding_constraint: Only available in Ocaml versions >= 5.1.0"
+ELSE
   let sl = List.map (mkloc loc) sl in
   { (vb) with pvb_constraint = Some(Pvc_constraint { locally_abstract_univars = sl ; typ = ct }) }
+END
 ;
 
 value ocaml_value_binding_coerce loc vb (ct_opt, ct2) =
+IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+  let e = vb.pvb_expr in
+  let e = ocaml_mkexp loc (ocaml_pexp_constraint e ct_opt (Some ct2)) in
+  { (vb) with pvb_expr = e }
+ELSE
   { (vb) with pvb_constraint = Some(Pvc_coercion {ground=ct_opt; coercion=ct2 }) }
+END
 ;
 
 value ocaml_value_binding ?{item_attributes=[]} loc p e =

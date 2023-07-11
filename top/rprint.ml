@@ -321,8 +321,13 @@ and print_simple_out_type ppf =
   | IFDEF OCAML_VERSION >= OCAML_4_05_0 THEN
     Otyp_open -> fprintf ppf "open"
     END
-  | Otyp_alias _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
+  | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+    Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
+      fprintf ppf "@[<1>(%a)@]" print_out_type ty    
+    ELSE
+    Otyp_alias _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
+    END
   | Otyp_poly _ _ as ty ->
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
   | IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
@@ -373,12 +378,27 @@ and print_out_label ppf (name, mut, arg) =
 and print_fields rest ppf =
   fun
   [ [] ->
-    fprintf ppf "%s.." (if rest then "_" else "")
+    IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+      match rest with
+      [ Some non_gen -> fprintf ppf "%s.." (if non_gen then "_" else "")
+      | None -> () ]
+    ELSE
+      fprintf ppf "%s.." (if rest then "_" else "")
+    END
 
   | [(s, t)] ->
       do {
         fprintf ppf "%s : %a" s print_out_type t;
-        fprintf ppf ";@ "
+        IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+          do {
+            match rest with
+            [ Some _ -> fprintf ppf ";@ "
+            | None -> () ] ;
+            print_fields rest ppf []
+          }
+        ELSE
+          fprintf ppf ";@ "
+        END
       }
   | [(s, t) :: l] ->
       fprintf ppf "%s : %a;@ %a" s print_out_type t (print_fields rest) l ]

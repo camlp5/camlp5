@@ -1865,7 +1865,12 @@ END ;
      official_input = OK {foo|let (x[@foo]) : unit [@foo] = ()[@foo]  [@@foo]|foo} ;
      r_input = SKIP "meh" "meh" ;
      o_output = SKIP "meh" "meh" ;
-     official_output = OK {foo|let ((x)[@foo ]) : ((unit)[@foo ]) = ((())[@foo ])[@@foo ]|foo} ;
+     official_output =
+       IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+         OK {foo|let (((x)[@foo ]) : ((unit)[@foo ])) = ((())[@foo ])[@@foo ]|foo}
+       ELSE
+         OK {foo|let ((x)[@foo ]) : ((unit)[@foo ]) = ((())[@foo ])[@@foo ]|foo}
+       END ;
      r_output = SKIP "meh" "meh"
     };
     {name="attributes-in-odd-locations3-stripped"; implem = False ;
@@ -3135,10 +3140,19 @@ type nat _ =
   functor (X : sig  end) ->
     functor () -> functor (Z : sig  end) -> struct  end;;
 |foo};
-     official_output = OK {foo|module GZ =
+     official_output =
+       IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+         OK {foo|module GZ =
   (functor (X : sig  end) -> functor () -> functor (Z : sig  end) ->
     struct  end :
-    functor (X : sig  end) -> () -> functor (Z : sig  end) -> sig  end)|foo} ;
+    functor (X : sig  end) ->
+      functor () -> functor (Z : sig  end) -> sig  end)|foo}
+       ELSE
+         OK {foo|module GZ =
+  (functor (X : sig  end) -> functor () -> functor (Z : sig  end) ->
+    struct  end :
+    functor (X : sig  end) -> () -> functor (Z : sig  end) -> sig  end)|foo}
+       END ;
      r_output = OK {foo|module GZ :
   functor (X : sig  end) -> functor () -> functor (Z : sig  end) -> sig  end =
   functor (X : sig  end) ->
@@ -3727,7 +3741,12 @@ value ( .%{;..}<- ) x y = Hashtbl.add;
      r_input = OK {foo|value [%foo: [ = `Foo ]] : [%foo: t -> t] = [%foo: < foo : t > ];|foo} ;
      o_output = OK {foo|let ([%foo: [ `Foo ]] : [%foo: t -> t]) = [%foo: < foo : t > ];;
 |foo};
-     official_output = OK {foo|let [%foo : [ `Foo ]] : [%foo :t -> t] = [%foo : < foo: t   > ]|foo} ;
+     official_output =
+       IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
+         OK {foo|let ([%foo :[ `Foo ]] : [%foo :t -> t]) = [%foo :< foo: t   > ]|foo}
+       ELSE
+         OK {foo|let [%foo : [ `Foo ]] : [%foo :t -> t] = [%foo : < foo: t   > ]|foo}
+       END ;
      r_output = OK {foo|value [%"foo": [ = `Foo ]] : [%"foo": t -> t] = [%"foo": < foo : t > ];
 |foo}
     };
@@ -4257,7 +4276,7 @@ IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
     {(skip) with name="printing-1-[or]2official";
      o_input = OK {foo|let (f : t) = fun x -> b|foo} ;
      r_input = OK {foo|value (f : t) = fun x -> b;|foo} ;
-     official_output = OK {foo|let (f : t) = fun x -> b|foo}
+     official_output = OK {foo|let f : t = fun x -> b|foo}
     }
 ELSE
     {(skip) with name="printing-1-[or]2official";
