@@ -359,6 +359,7 @@ value record_binding is_last pc (p, e) =
 
 value is_polytype_constraint = fun [
   <:patt< ( $_$ : ! $list:_$ . $_$ ) >> -> True
+| <:patt< ( $_$ : type $list:_$ . $_$ ) >> -> True
 | _ -> False
 ]
 ;

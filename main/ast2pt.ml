@@ -1209,12 +1209,23 @@ and label_expr rev_al =
   | e → [("", expr e) :: rev_al] ]
 and mkpe (p, e, attrs) =
   let loc = Ploc.encl (loc_of_patt p) (loc_of_expr e) in
+(*
   let (p, e) =
     match p with
     [ PaTyc loc p (TyPot loc1 nt ct) → expand_gadt_type loc p loc1 nt ct e
     | p → (p, e) ]
   in
-  ocaml_value_binding ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (patt p) (expr e)
+ *)
+  match (p,e) with [
+      (PaTyc loc p (TyPot _ sl ct),_) ->
+      let vb = ocaml_value_binding ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (patt p) (expr e) in
+      ocaml_value_binding_constraint (mkloc loc) vb (uv sl, ctyp ct)
+    | (p,ExCoe loc e cty_opt cty2) ->
+      let vb = ocaml_value_binding ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (patt p) (expr e) in
+      ocaml_value_binding_coerce (mkloc loc) vb (option_map ctyp cty_opt, ctyp cty2)
+    | _ ->
+       ocaml_value_binding ~{item_attributes=uv_item_attributes attrs} (mkloc loc) (patt p) (expr e)
+    ]
 and expand_gadt_type loc p loc1 nt ct e =
   let nt = uv nt in
   let e = <:expr< ($e$ : $ct$) >> in

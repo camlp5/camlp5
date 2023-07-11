@@ -1581,7 +1581,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | check_not_new_type_extended ; p = patt LEVEL "simple"; e = SELF -> <:expr< fun $p$ -> $e$ >>
       | "="; e = expr -> <:expr< $e$ >>
       | ":"; t = poly_type; "="; e = expr -> <:expr< ($e$ : $t$) >>
-      | ":"; t = poly_type; ":>"; t2 = poly_type ; "="; e = expr -> <:expr< ( ( $e$ : $t$ ) :> $t2$ ) >>
+      | ":"; t = poly_type; ":>"; t2 = poly_type ; "="; e = expr -> <:expr< ( $e$ : $t$ :> $t2$ ) >>
       | ":>"; t = poly_type; "="; e = expr -> <:expr< ($e$ :> $t$) >>
       ] ]
   ;

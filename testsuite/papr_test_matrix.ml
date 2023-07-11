@@ -5277,6 +5277,46 @@ ELSE
 |foo};
      official_output = OK {foo|module type MT =  () -> sig end|foo} ;
      r_output = OK {foo|module type MT () = sig end;|foo}
+    };
+    {name="let-type-constraint-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x : type a . a -> a  = ()|foo} ;
+     official_input = OK {foo|let x : type a . a -> a  = ()|foo} ;
+     r_input = OK {foo|value x : type a . a -> a = ();|foo} ;
+     o_output = OK {foo|let x : type a . a -> a = ();;
+|foo};
+     official_output = OK {foo|let x : type a . a -> a = ()|foo} ;
+     r_output = OK {foo|value x : type a . a -> a = ();
+|foo}
+    };
+    {name="let-type-constraint-5"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x : a -> a  = ()|foo} ;
+     official_input = OK {foo|let x : a -> a  = ()|foo} ;
+     r_input = OK {foo|value x : a -> a = ();|foo} ;
+     o_output = OK {foo|let (x : a -> a) = ();;
+|foo};
+     official_output = OK {foo|let x : a -> a = ()|foo} ;
+     r_output = OK {foo|value x : a -> a = ();
+|foo}
+    };
+    {name="let-type-constraint-6"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x  = (() : t1 :> t2) in e|foo} ;
+     official_input = OK {foo|let x : t1 :> t2  = () in e|foo} ;
+     r_input = OK {foo|let x  = (() : t1 :> t2) in e;|foo} ;
+     o_output = OK {foo|let _ = let x  = (() : t1 :> t2) in e;;|foo};
+     official_output = OK {foo|;;let x : t1 :> t2 = () in e|foo} ;
+     r_output = OK {foo|let x  = (() : t1 :> t2) in e;|foo}
+    };
+    {name="let-type-constraint-6b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x : t1 :> t2  = ()|foo} ;
+     official_input = OK {foo|let x : t1 :> t2  = ()|foo} ;
+     r_input = OK {foo|value x = (() : t1 :> t2);|foo} ;
+     o_output = OK {foo|let x = (() : t1 :> t2);;|foo};
+     official_output = OK {foo|let x :t1 :> t2 = ()|foo} ;
+     r_output = OK {foo|value x = (() : t1 :> t2);|foo}
     }
   ]
 END

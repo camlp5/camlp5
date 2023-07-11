@@ -563,6 +563,15 @@ let ocaml_pexp_variant =
   Some (pexp_variant_pat, pexp_variant)
 ;;
 
+let ocaml_value_binding_constraint loc vb (sl, ct) =
+  let sl = List.map (mkloc loc) sl in
+  { (vb) with pvb_constraint = Some (Pvc_constraint { locally_abstract_univars = sl ; typ = ct }) }
+;;
+
+let ocaml_value_binding_coerce loc vb (ct_opt, ct2) =
+  { (vb) with pvb_constraint = Some(Pvc_coercion {ground=ct_opt; coercion=ct2 }) }
+;;
+
 let ocaml_value_binding ?(item_attributes = []) loc p e =
   let p =
     match p with
