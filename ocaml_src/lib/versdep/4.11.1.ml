@@ -558,6 +558,22 @@ let ocaml_pexp_variant =
   Some (pexp_variant_pat, pexp_variant)
 ;;
 
+let ocaml_value_binding_constraint loc vb (sl, ct) =
+  if sl = [] then
+    let e = vb.pvb_expr in
+    let e = ocaml_mkexp loc (ocaml_pexp_constraint e (Some ct) None) in
+    {vb with pvb_expr = e}
+  else
+    failwith
+      "ocaml_value_binding_constraint: Only available in Ocaml versions >= 5.1.0"
+;;
+
+let ocaml_value_binding_coerce loc vb (ct_opt, ct2) =
+  let e = vb.pvb_expr in
+  let e = ocaml_mkexp loc (ocaml_pexp_constraint e ct_opt (Some ct2)) in
+  {vb with pvb_expr = e}
+;;
+
 let ocaml_value_binding ?(item_attributes = []) loc p e =
   let p =
     match p with

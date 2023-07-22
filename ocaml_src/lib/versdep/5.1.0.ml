@@ -565,11 +565,13 @@ let ocaml_pexp_variant =
 
 let ocaml_value_binding_constraint loc vb (sl, ct) =
   let sl = List.map (mkloc loc) sl in
-  { (vb) with pvb_constraint = Some (Pvc_constraint { locally_abstract_univars = sl ; typ = ct }) }
+  {vb with pvb_constraint =
+    Some (Pvc_constraint {locally_abstract_univars = sl; typ = ct})}
 ;;
 
 let ocaml_value_binding_coerce loc vb (ct_opt, ct2) =
-  { (vb) with pvb_constraint = Some(Pvc_coercion {ground=ct_opt; coercion=ct2 }) }
+  {vb with pvb_constraint =
+    Some (Pvc_coercion {ground = ct_opt; coercion = ct2})}
 ;;
 
 let ocaml_value_binding ?(item_attributes = []) loc p e =
@@ -585,11 +587,14 @@ let ocaml_value_binding ?(item_attributes = []) loc p e =
         {p0 with ppat_desc = Ppat_constraint (p1, t)}
     | p -> p
   in
-  let (p,c) = match p with
-        {ppat_desc=Ppat_constraint(p1, t)} -> (p1, Some (Pvc_constraint {locally_abstract_univars = []; typ = t}))
-      | _ -> (p, None)
-      in
-  {pvb_pat = p; pvb_expr = e; pvb_constraint = c; pvb_loc = loc; pvb_attributes = item_attributes}
+  let (p, c) =
+    match p with
+      {ppat_desc = Ppat_constraint (p1, t)} ->
+        p1, Some (Pvc_constraint {locally_abstract_univars = []; typ = t})
+    | _ -> p, None
+  in
+  {pvb_pat = p; pvb_expr = e; pvb_constraint = c; pvb_loc = loc;
+   pvb_attributes = item_attributes}
 ;;
 
 let ocaml_ppat_open loc li p = Ppat_open (mkloc loc li, p);;
