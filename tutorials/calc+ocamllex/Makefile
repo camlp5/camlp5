@@ -2,7 +2,7 @@ TOP=../..
 
 LAUNCH=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH --
 OCAMLFIND=$(LAUNCH) ocamlfind
-PACKAGES=fmt,camlp5.extprint,camlp5.extend,camlp5.pprintf,pcre
+PACKAGES=fmt,camlp5.extprint,camlp5.extend,camlp5.pprintf,re
 
 all: calc calc.opt
 

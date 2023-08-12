@@ -24,7 +24,7 @@ type d_version_t = [ DVERSION of string ]
 
 value ocaml_version = "OCAML_4_10_0" ;
 
-value is_version s = Pcre.pmatch ~{pat="^OCAML_[0-9_]+(?:_[0-9a-zA-Z]+)$"} s ;
+value is_version s = Re.Pcre.pmatch ~{rex = Re.Pcre.regexp "^OCAML_[0-9_]+(?:_[0-9a-zA-Z]+)$"} s ;
 
 type dexpr = [
     DE_uident of Ploc.t and string
@@ -339,10 +339,10 @@ value lex_stream1 is = do {
 }
 ;
 
-value quot_re = Pcre.(regexp ~{flags=[`DOTALL]} "^([^:@]*)([:@])(.*)$") ;
+value quot_re = Re.Perl.(compile @@ re ~{opts=[`Dotall]} "^([^:@]*)([:@])(.*)$") ;
 
-value nonws_re = Pcre.(regexp ~{flags=[`DOTALL]} ".*\\S") ;
-value nl_re = Pcre.(regexp ~{flags=[`DOTALL]} ".*\n") ;
+value nonws_re = Re.Perl.(compile @@ re ~{opts=[`Dotall]} ".*\\S") ;
+value nl_re = Re.Perl.(compile @@ re ~{opts=[`Dotall]} ".*\n") ;
 
 value strip_comments = ref False ;
 
@@ -404,8 +404,8 @@ value has_special_chars s =
 value pp_stream1 oc strm =
   let comment loc =
     let s = Ploc.comment loc in
-    if strip_comments.val && Pcre.pmatch ~{rex=nonws_re} s then
-      if Pcre.pmatch ~{rex=nl_re} s then "\n" else " "
+    if strip_comments.val && Re.Pcre.pmatch ~{rex=nonws_re} s then
+      if Re.Pcre.pmatch ~{rex=nl_re} s then "\n" else " "
     else s in
   let rec pp1 =
     parser
@@ -450,7 +450,7 @@ value pp_stream1 oc strm =
       | [: `(loc,("QUOTATION",qstring)) ; strm :] -> do {
           output_string oc (comment loc) ;
           let (qname, qbody) =
-            try let strs = Pcre.(extract ~{rex=quot_re} qstring) in
+            try let strs = Re.Pcre.(extract ~{rex=quot_re} qstring) in
                 if strs.(2) = "@" then
                   (strs.(1)^":", strs.(3))
                 else (strs.(1), strs.(3))

@@ -15,7 +15,7 @@ let invoked_with ?flag cmdna =
   let variant_names = [cmdna; cmdna^".byte"; cmdna^".native"; cmdna^".opt"] in
 
   let argv = Array.to_list Sys.argv in
-  let path = Pcre.split ~rex:(Pcre.regexp "/") (car argv) in
+  let path = Re.Pcre.split ~rex:(Re.Pcre.regexp "/") (car argv) in
   let fname, _ = sep_last path in
 
   List.exists ((=) fname) variant_names &&

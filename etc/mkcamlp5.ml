@@ -38,7 +38,7 @@ let capturex cmd =
 let join s l = String.concat s l
 
 let chomp s =
-  Pcre.substitute_substrings_first ~rex:(Pcre.regexp ~flags:[`DOTALL] "\\n+$")
+  Re.Pcre.substitute ~rex:(Re.Pcre.regexp "\n+$")
     ~subst:(fun __g__ -> String.concat "" []) s
 
 
