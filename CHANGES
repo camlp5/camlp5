@@ -1,4 +1,14 @@
 
+Camlp5 Version 8.02.01:
+--------------------
+
+* [01 Sep 2023] switch from pcre to ocaml-re, add readthedocs config-file
+
+Camlp5 Version 8.02.00:
+--------------------
+
+* [22 Jul 2023] update for OCaml 5.1.0
+
 Camlp5 Version 8.00.06:
 --------------------
 
