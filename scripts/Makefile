@@ -17,6 +17,7 @@ test: mkcamlp5_test.asciidoc.TEST
 
 alt-test: all
 	SCRIPTDIR=bin/ $(LAUNCH) ocaml-mdx test -o mkcamlp5_test.asciidoc.camlp5.corrected mkcamlp5_test.asciidoc
+	perl -p -i -e 's,/\S+/lib/,LIBDIR/,g' mkcamlp5_test.asciidoc.camlp5.corrected
 	diff -Bwiu  mkcamlp5_test.asciidoc.camlp5.corrected mkcamlp5_test.asciidoc
 
 bin/mkcamlp5 bin/mkcamlp5.opt: mkcamlp5.cmo

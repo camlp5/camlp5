@@ -1,4 +1,4 @@
-(** -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic -package bos *)
+(**pp -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic -package bos *)
 open Rresult
 open Bos
 open Fpath
@@ -38,7 +38,7 @@ let capturex cmd =
 let join s l = String.concat s l
 
 let chomp s =
-  [%subst {|\n+$|} / {||} / s pcre] s
+  [%subst {|\n+$|} / {||} / s] s
 ;;
 
 
@@ -149,7 +149,7 @@ let cmd = ["ocamlfind"]
 	     @["-predicates"; join"," predicates]
 	    @["-package"; join "," packages]
 	    @(if !verbose then ["-verbose"] else [])
-	    @["-linkall"; "-linkpkg"]
+	    @["-linkall"; "-linkpkg"; "-I" ; "+dynlink"]
 	    @ link @ options
 	    @[if opt then "odyl.cmx" else "odyl.cmo"] in
     if !verbose then Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") string) cmd) ;

@@ -1,4 +1,4 @@
-(** -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic -package bos *)
+(**pp -syntax camlp5o -ppopt -pa_ppx_regexp-nostatic -package bos *)
 open Rresult
 open Bos
 open Fpath
@@ -38,8 +38,8 @@ let capturex cmd =
 let join s l = String.concat s l
 
 let chomp s =
-  Pcre.substitute_substrings_first ~rex:(Pcre.regexp ~flags:[`DOTALL] "\\n+$")
-    ~subst:(fun __g__ -> String.concat "" []) s
+  Re.replace ~all:false (Re.Perl.compile_pat ~opts:[`Dotall] "\\n+$")
+    ~f:(fun __g__ -> String.concat "" []) s
 
 
 let usage_msg =
@@ -149,8 +149,9 @@ let main cmd args =
   let cmd =
     ["ocamlfind"] @ [if opt then "ocamlopt" else "ocamlc"] @
     ["-predicates"; join "," predicates] @ ["-package"; join "," packages] @
-    (if !verbose then ["-verbose"] else []) @ ["-linkall"; "-linkpkg"] @
-    link @ options @ [if opt then "odyl.cmx" else "odyl.cmo"]
+    (if !verbose then ["-verbose"] else []) @
+    ["-linkall"; "-linkpkg"; "-I"; "+dynlink"] @ link @ options @
+    [if opt then "odyl.cmx" else "odyl.cmo"]
   in
   if !verbose then
     Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") string) cmd);
