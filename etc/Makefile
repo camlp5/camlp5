@@ -19,7 +19,7 @@ all: $(COUT) META mkcamlp5
 opt: $(COPT)
 
 mkcamlp5: mkcamlp5.cmo
-	ocamlfind ocamlc -linkall -linkpkg -package bos,pcre2,re,rresult mkcamlp5.ml -o mkcamlp5
+	ocamlfind ocamlc -linkall -linkpkg -package bos,re,rresult mkcamlp5.ml -o mkcamlp5
 
 # these ones must be compiled with new created camlp5:
 
