@@ -26,6 +26,8 @@ CMTI := $(MLI:.mli=.cmti)
 
 all: $(CMO) $(CMX) local-install
 
+test:
+
 doc: $(CMT) $(CMTI)
 
 KITS=$(CMO)

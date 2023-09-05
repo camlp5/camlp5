@@ -1,7 +1,7 @@
-
 Camlp5 Version 8.02.01:
 --------------------
 
+* [04 Sep 2023] switch test code from pcre to pcre2
 * [01 Sep 2023] switch from pcre to ocaml-re, add readthedocs config-file
 
 Camlp5 Version 8.02.00:

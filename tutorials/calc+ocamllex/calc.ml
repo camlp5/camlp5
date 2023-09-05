@@ -2,8 +2,8 @@
 (* calc.ml,v *)
 
 value input_file = ref "" ;
-value nonws_re = Pcre.regexp "\\S" ;
-value has_nonws s = Pcre.pmatch ~{rex=nonws_re} s;
+value nonws_re = Pcre2.regexp "\\S" ;
+value has_nonws s = Pcre2.pmatch ~{rex=nonws_re} s;
 
 value lexer = Plexing.lexer_func_of_ocamllex_located Calclexer.token ;
 value lexer = {Plexing.tok_func = lexer;

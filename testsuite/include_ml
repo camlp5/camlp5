@@ -5,7 +5,7 @@
 #require "oUnit";;
 #require "fmt";;
 #require "rresult";;
-#require "pcre";;
+#require "pcre2";;
 #require "bos";;
 (*
 #require "camlp5.pa_op";;

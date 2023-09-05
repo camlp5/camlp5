@@ -2,8 +2,8 @@
 (* calc.ml,v *)
 
 let input_file = ref "" ;;
-let nonws_re = Pcre.regexp "\\S" ;;
-let has_nonws s = Pcre.pmatch ~rex:nonws_re s ;;
+let nonws_re = Pcre2.regexp "\\S" ;;
+let has_nonws s = Pcre2.pmatch ~rex:nonws_re s ;;
 
 type ctxt = {
   line_nb : int ref ;

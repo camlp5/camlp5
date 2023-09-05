@@ -113,7 +113,8 @@ it, one must install a number of packages:
 
 * `rresult`
 * `fmt`
-* `pcre`
+* `pcre2`
+* `re`
 * `ounit2`
 * `patdiff`
 * `camlp5-buildscripts`
@@ -122,7 +123,7 @@ and using opam:
 
 ::  
 
-  opam install rresult fmt pcre ounit2 patdiff
+  opam install rresult fmt pcre2 re ounit2 patdiff
 
 These packages are *not* required to build/install camlp5, but only to
 build and run the testsuite.  However, for add-on packages (like

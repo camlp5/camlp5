@@ -5353,7 +5353,7 @@ value official_input i = i.official_input ;
 
 type syntax_kind = [ KIND_Revised | KIND_Original | KIND_Official ] ;
 
-value stripws s = Pcre.(replace ~{pat="[ \n\t]"} ~{itempl=subst ""} s) ;
+value stripws s = Pcre2.(replace ~{pat="[ \n\t]"} ~{itempl=subst ""} s) ;
 
 value i2test ~{kind} (pa_implem,pa_interf) (pp_implem, pp_interf) pa_official_opt inputf outputkind i =
   let outputf = match outputkind with [

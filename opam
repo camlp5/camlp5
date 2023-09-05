@@ -35,6 +35,7 @@ depends: [
   "conf-diffutils" { with-test & os-distribution = "alpine" }
   "re" { >= "1.11.0" }
   "ounit" { with-test }
+  "pcre2" { with-test }
   "rresult"
   "bos"
   "fmt"

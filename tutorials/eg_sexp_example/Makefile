@@ -16,6 +16,8 @@ CMTI := $(MLI:.mli=.cmti)
 
 all: $(CMO) $(CMX)
 
+test:
+
 doc: $(CMT) $(CMTI)
 
 eg_quotations.cmo: eg_quotations.ml

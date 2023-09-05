@@ -61,7 +61,7 @@ CAMLP5R=$(LAUNCH) camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)
 COMPILERLIBS= -I +compiler-libs ocamlcommon.cma ocamlbytecomp.cma ocamltoplevel.cma
-PACKAGES_NOCAMLP5=rresult,fmt,pcre,ounit2,compiler-libs.common,$(C5PACKAGES)
+PACKAGES_NOCAMLP5=rresult,fmt,pcre2,ounit2,compiler-libs.common,$(C5PACKAGES)
 PACKAGES=$(PACKAGES_NOCAMLP5),camlp5,camlp5.macro
 
 pa_ounit2.cmo: pa_ounit2.ml
@@ -243,7 +243,7 @@ tools/ROUNDTRIP-pa_o-pr_o.opt:
 	$(MKCAMLP5OPT) -verbose -package $(C5PACKAGES),camlp5.pa_o,camlp5.pr_o -o $@
 
 setup-ocaml:
-	opam install -y rresult fmt pcre ounit bos
+	opam install -y rresult fmt pcre2 ounit bos
 
 setup: setup-ocaml
 	sudo apt-get install libstring-shellquote-perl libdigest-md5-file-perl
