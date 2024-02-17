@@ -118,6 +118,7 @@ EXTEND_PRINTER
       | UNOP _ MINUS x -> pprintf pc "- %p" curr x ]
     | "simple"
       [ INT _ x -> pprintf pc "%d" x
+      | VAR _ s -> pprintf pc "%s" s
       | x -> pprintf pc "(%p)" print_expr x ]
     ] ;
   pr_stmt:
