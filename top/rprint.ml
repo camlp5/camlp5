@@ -374,7 +374,13 @@ and print_out_constr_gadt_opt ppf = fun [
  {ocstr_name=name; ocstr_args=tyl; ocstr_return_type=rto} ->
   match rto with
   [ Some rt ->
-      let t = List.fold_right (fun t1 t2 -> Otyp_arrow Nolabel t1 t2) tyl rt in
+    let lab =
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
+      ""
+    ELSE
+      Nolabel
+    END in
+      let t = List.fold_right (fun t1 t2 -> Otyp_arrow lab t1 t2) tyl rt in
       fprintf ppf "%s : %a" name print_out_type t
   | None -> print_out_constr ppf (name, tyl) ]
   END
