@@ -626,7 +626,7 @@ and print_out_type_decl kwd ppf x =
   let print_constraints ppf params = List.iter (constrain ppf) params in
   let type_parameter ppf otp =
     let (ty, var_inj) =
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
       otp
     ELSE
       (otp.ot_name, otp.ot_variance)

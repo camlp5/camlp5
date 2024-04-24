@@ -126,6 +126,9 @@ let ocaml_mktyp ?(alg_attributes = []) loc x =
   {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = [];
    ptyp_attributes = alg_attributes}
 ;;
+
+let ocaml_ptyp_alias loc t i = Ptyp_alias (t, i);;
+
 let ocaml_mkpat loc x =
   {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
 ;;
@@ -499,6 +502,8 @@ let ocaml_case (p, wo, loc, e) =
   {pc_lhs = p; pc_guard = wo; pc_rhs = e}
 ;;
 
+(* *)
+
 let ocaml_pexp_function lab eo pel =
   match pel with
     [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable}}]
@@ -521,7 +526,7 @@ let ocaml_pexp_letmodule =
 
 let ocaml_pexp_new loc li = Pexp_new (mkloc loc li);;
 
-let ocaml_pexp_newtype = Some (fun loc s e -> Pexp_newtype (mkloc loc s, e));;
+let ocaml_pexp_newtype loc s e = Pexp_newtype (mkloc loc s, e);;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 

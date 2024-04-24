@@ -1771,7 +1771,7 @@ and t2 = bool[@@"foo"];
      r_output = OK {foo|value ( let+ ) = 1;
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="printing-letop2"; implem = True ;
      exclude=[];
      o_input = OK {foo|let (let+) f x = 1|foo} ;
@@ -2984,7 +2984,7 @@ type nat _ =
   | B : foo int ];
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="gadt-5"; implem = True ;
      exclude=[];
      o_input = OK {foo| fun (type a) (x : a) -> x |foo} ;
@@ -3009,7 +3009,7 @@ type nat _ =
 |foo}
     }
     END ;
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="gadt-5b"; implem = True ;
      exclude=[];
      o_input = OK {foo| fun (type a b) (x : a) -> x |foo} ;
@@ -3082,7 +3082,7 @@ type nat _ =
      r_output = OK {foo|value magic : ! 'a 'b . 'a -> 'b = ();
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="gadt-6"; implem = True ;
      exclude=[];
      o_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
@@ -3320,7 +3320,7 @@ type nat _ =
   [ Succ of 'a ];
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="type-variable-slots-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
@@ -4074,7 +4074,7 @@ END;
      r_output = OK {foo|module M := T;
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="fun-types-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun ?x y : t -> x|foo} ;
@@ -4122,7 +4122,7 @@ END;
      r_output = OK {foo|value a : t = b;
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="let-type-3"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f x : t = y;;|foo} ;
@@ -4368,7 +4368,7 @@ END;
      r_output = OK {foo|"abc d";
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="attribute-body-expr-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x [@with core_type    := Parsetree.core_type [@printer Pprintast.core_type];
@@ -4726,7 +4726,7 @@ END
      r_output = OK {foo|A.True_;
 |foo}
     };
-    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+    IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     {name="patt-true"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun true -> 1|foo} ;
