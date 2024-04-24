@@ -1238,14 +1238,7 @@ and expr =
           | _ -> error loc "bad AST"
           end
       | [PaNty (loc, s), w, e] ->
-          begin match ocaml_pexp_newtype with
-            Some newtype ->
-              begin match uv w with
-                Some _ -> error loc "(type ..) not allowed with 'when'"
-              | None -> mkexp loc (newtype (mkloc loc) (uv s) (expr e))
-              end
-          | None -> error loc "(type ..) not in this ocaml version"
-          end
+          mkexp loc (ocaml_pexp_newtype (mkloc loc) (uv s) (expr e))
       | [PaOlb (loc, p, eo), w, e] ->
           let lab = label_of_patt p in
           let (p, eo) =

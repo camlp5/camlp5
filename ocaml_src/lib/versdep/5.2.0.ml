@@ -127,7 +127,7 @@ let ocaml_mktyp ?(alg_attributes = []) loc x =
    ptyp_attributes = alg_attributes}
 ;;
 
-let ocaml_ptyp_alias loc t i = Ptyp_alias (t, mkloc loc i) ;;
+let ocaml_ptyp_alias loc t i = Ptyp_alias (t, mkloc loc i);;
 
 let ocaml_mkpat loc x =
   {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
@@ -502,21 +502,39 @@ let ocaml_case (p, wo, loc, e) =
   {pc_lhs = p; pc_guard = wo; pc_rhs = e}
 ;;
 
+let ocaml_pexp_function_coalesce e =
+  match e with
+    Pexp_function
+      (params1, None,
+       Pfunction_body
+         {pexp_desc = Pexp_function (params2, tycon, body);
+          pexp_attributes = []}) ->
+      Pexp_function (params1 @ params2, tycon, body)
+  | Pexp_function
+      (params, None, Pfunction_body {pexp_desc = Pexp_constraint (e, ty)}) ->
+      Pexp_function (params, Some (Pconstraint ty), Pfunction_body e)
+  | e -> e
+;;
+
 let ocaml_pexp_function lab eo pel =
-  match pel with
-    [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable; pexp_loc = loc}}]
-    when lab = "" && eo = None ->
-      Pexp_function ([], None, Pfunction_cases (pel, loc, []))
-
-  | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
-     let loc = e.pexp_loc in
-     let fparam = { pparam_desc = Pparam_val (labelled lab, eo, p) ; pparam_loc = loc_none } in
-     Pexp_function ([fparam], None, Pfunction_body e)
-
-  | pel ->
-      if lab = "" && eo = None then
-        Pexp_function ([], None, Pfunction_cases (pel, loc_none, []))
-      else failwith "internal error: bad ast in ocaml_pexp_function"
+  let e =
+    match pel with
+      [{pc_lhs = p; pc_guard = None;
+        pc_rhs = {pexp_desc = Pexp_unreachable; pexp_loc = loc}}]
+      when lab = "" && eo = None ->
+        Pexp_function ([], None, Pfunction_cases (pel, loc, []))
+    | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
+        let loc = e.pexp_loc in
+        let fparam =
+          {pparam_desc = Pparam_val (labelled lab, eo, p); pparam_loc = loc}
+        in
+        Pexp_function ([fparam], None, Pfunction_body e)
+    | pel ->
+        if lab = "" && eo = None then
+          Pexp_function ([], None, Pfunction_cases (pel, loc_none, []))
+        else failwith "internal error: bad ast in ocaml_pexp_function"
+  in
+  ocaml_pexp_function_coalesce e
 ;;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
@@ -529,7 +547,14 @@ let ocaml_pexp_letmodule =
 
 let ocaml_pexp_new loc li = Pexp_new (mkloc loc li);;
 
-let ocaml_pexp_newtype = Some (fun loc s e -> Pexp_newtype (mkloc loc s, e));;
+let ocaml_pexp_newtype loc s e =
+  let e =
+    Pexp_function
+      ([{pparam_loc = loc; pparam_desc = Pparam_newtype (mkloc loc s)}], None,
+       Pfunction_body e)
+  in
+  ocaml_pexp_function_coalesce e
+;;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
