@@ -10,7 +10,7 @@ value gram =
     {Plexing.tok_func _ = failwith "no loaded parsing module";
      Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
      Plexing.tok_match = fun []; Plexing.tok_text _ = "";
-     Plexing.tok_comm = None}
+     Plexing.tok_comm = None; Plexing.kwds = Hashtbl.create 23 }
 ;
 
 do {

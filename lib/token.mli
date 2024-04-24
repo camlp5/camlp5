@@ -16,7 +16,9 @@ type glexer 'te = Plexing.lexer 'te ==
     tok_removing : pattern -> unit;
     tok_match : mutable pattern -> 'te -> string;
     tok_text : pattern -> string;
-    tok_comm : mutable option (list Ploc.t) }
+    tok_comm : mutable option (list Ploc.t);
+    kwds : Hashtbl.t string string
+  }
 ;
 
 type lexer_func 'te = Stream.t char -> (Stream.t 'te * Plexing.Locations.t)

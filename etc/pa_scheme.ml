@@ -286,7 +286,7 @@
   {(Plexing.tok_func (Plexing.lexer_func_of_parser (lexer2 kwt)))
    (Plexing.tok_using (lexer_using kwt)) (Plexing.tok_removing (lambda))
    (Plexing.tok_match Plexing.default_match) (Plexing.tok_text lexer_text)
-   (Plexing.tok_comm None)}))
+   (Plexing.tok_comm None) (Plexing.kwds (Hashtbl.create 23))}))
 
 ; Building AST
 

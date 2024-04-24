@@ -16,7 +16,9 @@ type glexer 'te = Plexing.lexer 'te ==
     tok_removing : pattern -> unit;
     tok_match : mutable pattern -> 'te -> string;
     tok_text : pattern -> string;
-    tok_comm : mutable option (list location) }
+    tok_comm : mutable option (list location);
+    kwds : Hashtbl.t string string
+   }
 ;
 
 value make_loc = Ploc.make_unlined;

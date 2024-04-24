@@ -625,7 +625,10 @@ value word_operators ctx id = lexer
 ;
 value keyword = fun ctx buf strm ->
   let id = $buf in
-  if id = "let" || id = "and" then word_operators ctx id $empty strm
+  let idlen = String.length id in
+  if idlen > 2 && id.[0] = '\\' && id.[1] = '#' then
+    ("LIDENT", String.sub id 2 (idlen-2))
+  else if id = "let" || id = "and" then word_operators ctx id $empty strm
   else
     try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
 ;
@@ -707,6 +710,7 @@ value next_token_after_spaces ctx bp =
   | ";" -> keyword_or_error ctx (bp, $pos) ";"
   | (utf8_equiv ctx bp)
   | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "\\#" [ 'a'-'z' | '_' | misc_letter ] ident! (keyword ctx)
   | "\\"/ ident3! -> ("LIDENT", $buf)
   | "#" hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
@@ -1014,13 +1018,13 @@ value gmake () =
   let glexr =
     ref
      {Plexing.tok_func = fun []; tok_using = fun []; tok_removing = fun [];
-      tok_match = fun []; tok_text = fun []; tok_comm = None}
+      tok_match = fun []; tok_text = fun []; tok_comm = None; kwds = kwd_table }
   in
   let glex =
     {Plexing.tok_func = func ctx kwd_table glexr;
      tok_using = using_token ctx kwd_table;
      tok_removing = removing_token kwd_table;
-     tok_match = tok_match; tok_text = text; tok_comm = None}
+     tok_match = tok_match; tok_text = text; tok_comm = None ; kwds = kwd_table }
   in
   do { glexr.val := glex; glex }
 ;
