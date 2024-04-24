@@ -5560,6 +5560,48 @@ ELSE
     }
   ]
 END
+@
+IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
+  []
+ELSE
+  [{name="raw-ident-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x|foo} ;
+     official_input = OK {foo|x|foo} ;
+     r_input = OK {foo|x;|foo} ;
+     o_output = OK {foo|let _ = x;;|foo};
+     official_output = OK {foo|;;x|foo} ;
+     r_output = OK {foo|x;|foo}
+    }
+  ;{name="raw-ident-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|\#x|foo} ;
+     official_input = OK {foo|\#x|foo} ;
+     r_input = OK {foo|\#x;|foo} ;
+     o_output = OK {foo|let _ = x;;|foo};
+     official_output = OK {foo|;;x|foo} ;
+     r_output = OK {foo|x;|foo}
+    }
+  ;{name="raw-ident-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|\#xyz|foo} ;
+     official_input = OK {foo|\#xyz|foo} ;
+     r_input = OK {foo|\#xyz;|foo} ;
+     o_output = OK {foo|let _ = xyz;;|foo};
+     official_output = OK {foo|;;xyz|foo} ;
+     r_output = OK {foo|xyz;|foo}
+    }
+  ;{name="raw-ident-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|\#declare|foo} ;
+     official_input = OK {foo|\#declare|foo} ;
+     r_input = OK {foo|\#declare;|foo} ;
+     o_output = OK {foo|let _ = declare;;|foo};
+     official_output = OK {foo|;;declare|foo} ;
+     r_output = OK {foo|\#declare;|foo}
+    }
+  ]
+END
 
 ;
 
