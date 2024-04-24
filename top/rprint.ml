@@ -378,7 +378,7 @@ and print_out_constr_gadt_opt ppf = fun [
     IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
       ""
     ELSE
-      Nolabel
+      Asttypes.Nolabel
     END in
       let t = List.fold_right (fun t1 t2 -> Otyp_arrow lab t1 t2) tyl rt in
       fprintf ppf "%s : %a" name print_out_type t
