@@ -1771,6 +1771,7 @@ and t2 = bool[@@"foo"];
      r_output = OK {foo|value ( let+ ) = 1;
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="printing-letop2"; implem = True ;
      exclude=[];
      o_input = OK {foo|let (let+) f x = 1|foo} ;
@@ -1781,7 +1782,21 @@ and t2 = bool[@@"foo"];
      official_output = OK {foo|let (let+) f x = 1|foo} ;
      r_output = OK {foo|value ( let+ ) f x = 1;
 |foo}
-    };
+    }
+    ELSE
+    {name="printing-letop2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (let+) f x = 1|foo} ;
+     official_input = OK {foo|let (let+) f x = 1|foo} ;
+     r_input = OK {foo|value (let+) f x = 1;|foo} ;
+     o_output = OK {foo|let (let+) f x = 1;;
+|foo};
+     official_output = OK {foo|let (let+) f x = 1|foo} ;
+     r_output = OK {foo|value ( let+ ) f x = 1;
+|foo}
+    }
+    END
+    ;
     {name="printing-letop3"; implem = True ;
      exclude=[];
      o_input = OK {foo|let x = let (let+) f x = 1 in ()|foo} ;
@@ -2969,6 +2984,7 @@ type nat _ =
   | B : foo int ];
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="gadt-5"; implem = True ;
      exclude=[];
      o_input = OK {foo| fun (type a) (x : a) -> x |foo} ;
@@ -2979,7 +2995,21 @@ type nat _ =
      official_output = OK {foo|;;fun (type a) -> fun (x : a) -> x|foo} ;
      r_output = OK {foo|fun (type a) (x : a) -> x;
 |foo}
-    };
+    }
+    ELSE
+    {name="gadt-5"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| fun (type a) (x : a) -> x |foo} ;
+     official_input = OK {foo| fun (type a) (x : a) -> x|foo} ;
+     r_input = OK {foo|fun (type a) (x : a) -> x;|foo} ;
+     o_output = OK {foo|let _ = fun (type a) (x : a) -> x;;
+|foo};
+     official_output = OK {foo|;;fun (type a) (x : a) -> x|foo} ;
+     r_output = OK {foo|fun (type a) (x : a) -> x;
+|foo}
+    }
+    END ;
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="gadt-5b"; implem = True ;
      exclude=[];
      o_input = OK {foo| fun (type a b) (x : a) -> x |foo} ;
@@ -2990,7 +3020,20 @@ type nat _ =
      official_output = OK {foo|;;fun (type a) -> fun (type b) -> fun (x : a) -> x|foo} ;
      r_output = OK {foo|fun (type a) (type b) (x : a) -> x;
 |foo}
-    };
+    }
+    ELSE
+    {name="gadt-5b"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| fun (type a b) (x : a) -> x |foo} ;
+     official_input = OK {foo| fun (type a b) (x : a) -> x|foo} ;
+     r_input = OK {foo|fun (type a)(type b) (x : a) -> x;|foo} ;
+     o_output = OK {foo|let _ = fun (type a) (type b) (x : a) -> x;;
+|foo};
+     official_output = OK {foo|;;fun (type a) (type b) (x : a) -> x|foo} ;
+     r_output = OK {foo|fun (type a) (type b) (x : a) -> x;
+|foo}
+    }
+    END;
     {name="gadt-5c"; implem = True ;
      exclude=[];
      o_input = OK {foo| let f (type a b) (x : a) = x |foo} ;
@@ -3039,6 +3082,7 @@ type nat _ =
      r_output = OK {foo|value magic : ! 'a 'b . 'a -> 'b = ();
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="gadt-6"; implem = True ;
      exclude=[];
      o_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
@@ -3112,7 +3156,82 @@ type nat _ =
     in
     M.f Refl;
 |foo}
-    };
+    }
+    ELSE
+    {name="gadt-6"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
+  fun (type a b) (x : a) ->
+    let module M =
+      (functor (T : sig type 'a t end) ->
+       struct
+         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
+       end)
+        (struct type 'a t = unit end)
+    in M.f Refl
+|foo} ;
+     official_input = OK {foo|let magic : 'a 'b. 'a -> 'b =
+  fun (type a b) (x : a) ->
+    let module M =
+      (functor (T : sig type 'a t end) ->
+       struct
+         let f (Refl : (a T.t, b T.t) eq) = (x :> b)
+       end)
+        (struct type 'a t = unit end)
+    in M.f Refl
+|foo} ;
+     r_input = OK {foo|value magic : ! 'a 'b . 'a -> 'b =
+  fun (type a) (type b) (x : a) ->
+    let module M =
+      (functor (T : sig type t 'a = 'b; end) ->
+         struct
+           value f =
+             fun
+             [ (Refl : eq (T.t a) (T.t b)) -> (x :> b) ]
+           ;
+         end)
+        (struct type t 'a = unit; end)
+    in
+    M.f Refl;|foo} ;
+     o_output = OK {foo|let magic : 'a 'b . 'a -> 'b =
+  fun (type a) (type b) (x : a) ->
+    let module M =
+      (functor (T : sig type 'a t end) ->
+         struct
+           let f =
+             function
+               (Refl : (a T.t, b T.t) eq) -> (x :> b)
+         end)
+        (struct type 'a t = unit end)
+    in
+    M.f Refl;;
+|foo};
+     official_output = OK {foo|let magic : 'a 'b . 'a -> 'b =
+  fun (type a) (type b) (x : a) ->
+        let module M = (functor (T : sig type 'a t end) ->
+          struct let f (Refl : (a T.t, b T.t) eq) = (x :> b) end)(struct
+                                                                    type 
+                                                                    'a t =
+                                                                    unit
+                                                                  end) in
+          M.f Refl|foo} ;
+     r_output = OK {foo|value magic : ! 'a 'b . 'a -> 'b =
+  fun (type a) (type b) (x : a) ->
+    let module M =
+      (functor (T : sig type t 'a = 'b; end) ->
+         struct
+           value f =
+             fun
+             [ (Refl : eq (T.t a) (T.t b)) -> (x :> b) ]
+           ;
+         end)
+        (struct type t 'a = unit; end)
+    in
+    M.f Refl;
+|foo}
+    }
+    END
+    ;
     {name="functor-syntax-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|module Y = functor (X: sig end) (Y:sig end) -> functor (Z: sig end) ->
@@ -3201,6 +3320,7 @@ type nat _ =
   [ Succ of 'a ];
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="type-variable-slots-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
@@ -3211,7 +3331,21 @@ type nat _ =
      official_output = OK {foo|;;fun b -> (if b then "x" else "y" : (_, _, _) format)|foo} ;
      r_output = OK {foo|fun b -> (if b then "x" else "y" : format _ _ _);
 |foo}
-    };
+    }
+    ELSE
+    {name="type-variable-slots-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
+     official_input = OK {foo|fun b : (_,_,_) format -> if b then "x" else "y"|foo} ;
+     r_input = OK {foo|fun b -> (if b then "x" else "y" : format _ _ _);|foo} ;
+     o_output = OK {foo|let _ = fun b -> (if b then "x" else "y" : (_, _, _) format);;
+|foo};
+     official_output = OK {foo|;;fun b : (_, _, _) format -> if b then "x" else "y"|foo} ;
+     r_output = OK {foo|fun b -> (if b then "x" else "y" : format _ _ _);
+|foo}
+    }
+    END
+    ;
     {name="class-type-member-attribute"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t = < foo: int [@foo] >|foo} ;
@@ -3940,6 +4074,7 @@ END;
      r_output = OK {foo|module M := T;
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="fun-types-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun ?x y : t -> x|foo} ;
@@ -3950,7 +4085,21 @@ END;
      official_output = OK {foo|;;fun ?x -> fun y -> (x : t)|foo} ;
      r_output = OK {foo|fun ?{x} y -> (x : t);
 |foo}
-    };
+    }
+    ELSE
+    {name="fun-types-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun ?x y : t -> x|foo} ;
+     official_input = OK {foo|fun ?x y : t -> x|foo} ;
+     r_input = OK {foo|fun ?{x} y -> (x : t);|foo} ;
+     o_output = OK {foo|let _ = fun ?x y -> (x : t);;
+|foo};
+     official_output = OK {foo|;;fun ?x y : t -> x|foo} ;
+     r_output = OK {foo|fun ?{x} y -> (x : t);
+|foo}
+    }
+    END
+    ;
     {name="let-type-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let a = (b : t)|foo} ;
@@ -3973,6 +4122,7 @@ END;
      r_output = OK {foo|value a : t = b;
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="let-type-3"; implem = True ;
      exclude=[];
      o_input = OK {foo|let f x : t = y;;|foo} ;
@@ -3983,7 +4133,21 @@ END;
      official_output = OK {foo|let f x = (y : t)|foo} ;
      r_output = OK {foo|value f x : t = y;
 |foo}
-    };
+    }
+    ELSE
+    {name="let-type-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f x : t = y;;|foo} ;
+     official_input = OK {foo|let f x : t = y|foo} ;
+     r_input = OK {foo|value f x : t = y;|foo} ;
+     o_output = OK {foo|let f x : t = y;;
+|foo};
+     official_output = OK {foo|let f x : t = y|foo} ;
+     r_output = OK {foo|value f x : t = y;
+|foo}
+    }
+    END
+    ;
     {name="match-patt-record-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|match x with { x } -> ()|foo} ;
@@ -4204,6 +4368,7 @@ END;
      r_output = OK {foo|"abc d";
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="attribute-body-expr-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|x [@with core_type    := Parsetree.core_type [@printer Pprintast.core_type];
@@ -4238,7 +4403,45 @@ END;
   Longident.t.val := Longident.t[@"printer" pp_longident;]
 };];
 |foo}
-    };
+    }
+    ELSE
+    {name="attribute-body-expr-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|x [@with core_type    := Parsetree.core_type [@printer Pprintast.core_type];
+                 Asttypes.loc := Asttypes.loc [@polyprinter fun pp fmt x -> pp fmt x.Asttypes.txt];
+                 Longident.t  := Longident.t [@printer pp_longident]] ;|foo} ;
+     official_input = OK {foo|x [@with core_type    := Parsetree.core_type [@printer Pprintast.core_type];
+                 Asttypes.loc := Asttypes.loc [@polyprinter fun pp fmt x -> pp fmt x.Asttypes.txt];
+                 Longident.t  := Longident.t [@printer pp_longident]] ;|foo} ;
+     r_input = OK {foo|x[@"with" do {
+  core_type.val := Parsetree.core_type[@"printer" Pprintast.core_type;];
+  Asttypes.loc.val :=
+    Asttypes.loc[@"polyprinter" fun pp fmt x -> pp fmt x.Asttypes.txt;];
+  Longident.t.val := Longident.t[@"printer" pp_longident;]
+};];
+|foo} ;
+     o_output = OK {foo|let _ =
+  x[@with core_type := Parsetree.core_type[@printer Pprintast.core_type];
+  Asttypes.loc :=
+    Asttypes.loc[@polyprinter (fun pp fmt x -> pp fmt x.Asttypes.txt)];
+  Longident.t := Longident.t[@printer pp_longident]];;
+|foo};
+     official_output = OK {foo|;;((x)
+  [@with
+    core_type := ((Parsetree.core_type)[@printer Pprintast.core_type]);
+    Asttypes.loc := ((Asttypes.loc)
+      [@polyprinter (fun pp fmt x -> pp fmt x.Asttypes.txt)]);
+    Longident.t := ((Longident.t)[@printer pp_longident])])|foo} ;
+     r_output = OK {foo|x[@"with" do {
+  core_type.val := Parsetree.core_type[@"printer" Pprintast.core_type;];
+  Asttypes.loc.val :=
+    Asttypes.loc[@"polyprinter" fun pp fmt x -> pp fmt x.Asttypes.txt;];
+  Longident.t.val := Longident.t[@"printer" pp_longident;]
+};];
+|foo}
+    }
+    END
+    ;
     {name="fun-unit-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun () -> 1|foo} ;
@@ -4523,6 +4726,7 @@ END
      r_output = OK {foo|A.True_;
 |foo}
     };
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
     {name="patt-true"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun true -> 1|foo} ;
@@ -4536,7 +4740,24 @@ END
      r_output = OK {foo|fun
 [ True -> 1 ];
 |foo}
-    };
+    }
+    ELSE
+    {name="patt-true"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|fun true -> 1|foo} ;
+     official_input = OK {foo|fun true -> 1|foo} ;
+     r_input = OK {foo|fun [ True -> 1 ];|foo} ;
+     o_output = OK {foo|let _ =
+  function
+    true -> 1;;
+|foo};
+     official_output = OK {foo|;;fun true -> 1|foo} ;
+     r_output = OK {foo|fun
+[ True -> 1 ];
+|foo}
+    }
+    END
+    ;
     {name="patt-True"; implem = True ;
      exclude=[];
      o_input = OK {foo|fun True -> 1|foo} ;
