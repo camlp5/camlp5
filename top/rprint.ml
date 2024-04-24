@@ -210,6 +210,13 @@ value rec print_out_type ppf =
 and print_out_type_1 ppf =
   fun
   [ Otyp_arrow lab ty1 ty2 ->
+    let lab =
+      IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
+      lab
+      ELSE
+      match lab with [ Nolabel -> "" | Labelled s -> s | Optional s -> s ]
+      END
+    in
       fprintf ppf "@[%s%a %s@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type_2 ty1 (if utf8 then "→" else "->") print_out_type_1 ty2
   | ty -> print_out_type_2 ppf ty ]
@@ -367,7 +374,7 @@ and print_out_constr_gadt_opt ppf = fun [
  {ocstr_name=name; ocstr_args=tyl; ocstr_return_type=rto} ->
   match rto with
   [ Some rt ->
-      let t = List.fold_right (fun t1 t2 -> Otyp_arrow "" t1 t2) tyl rt in
+      let t = List.fold_right (fun t1 t2 -> Otyp_arrow Nolabel t1 t2) tyl rt in
       fprintf ppf "%s : %a" name print_out_type t
   | None -> print_out_constr ppf (name, tyl) ]
   END
@@ -425,12 +432,18 @@ and print_typargs ppf =
       fprintf ppf "@[<1>(%a)@]@ " (print_typlist print_out_type ",") tyl ]
 ;
 
+IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
+value print_out_class_param ppf (x, _) = fprintf ppf "'%s" x ;
+ELSE
+value print_out_class_param ppf p = fprintf ppf "'%s" p.ot_name ;
+END ;
+
 value print_out_class_params ppf =
   fun
   [ [] -> ()
   | tyl ->
       fprintf ppf "@[<1>[%a]@]@ "
-        (print_list (fun ppf (x, _) -> fprintf ppf "'%s" x)
+        (print_list print_out_class_param
            (fun ppf -> fprintf ppf ", "))
         tyl ]
 ;
@@ -449,6 +462,13 @@ value rec print_out_class_type ppf =
       in
       fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
   | Octy_arrow lab ty cty ->
+     let lab =
+       IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
+       lab
+       ELSE
+       match lab with [ Nolabel -> "" | Labelled s -> s | Optional s -> s ]
+       END
+     in
       fprintf ppf "@[%s[ %a ] ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
         print_out_type ty print_out_class_type cty
   | Octy_signature self_ty csil ->
@@ -604,7 +624,14 @@ and print_out_type_decl kwd ppf x =
       print_out_type ty'
   in
   let print_constraints ppf params = List.iter (constrain ppf) params in
-  let type_parameter ppf (ty, var_inj) =
+  let type_parameter ppf otp =
+    let (ty, var_inj) =
+    IFDEF OCAML_VERSION < OCAML_5_02_0 THEN
+      otp
+    ELSE
+      (otp.ot_name, otp.ot_variance)
+    END
+    in
     let (q, ty) = try_greek ty in
     IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
     let (co, cn) = var_inj in

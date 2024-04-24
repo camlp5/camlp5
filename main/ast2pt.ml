@@ -508,7 +508,7 @@ and ctyp =
         | (<:ctyp< '$s$ >>, t) → (t, s)
         | _ → error loc "incorrect alias type" ]
       in
-      mktyp loc (Ptyp_alias (ctyp t) i)
+      mktyp loc (ocaml_ptyp_alias (mkloc loc) (ctyp t) i)
   | TyAny loc → mktyp loc Ptyp_any
   | TyApp loc _ _ as f →
       let (f, al) = ctyp_fa [] f in
