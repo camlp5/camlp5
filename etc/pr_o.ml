@@ -146,10 +146,16 @@ value expand_lprintf pc loc f =
   else f pc
 ;
 
+value is_keyword =
+  let kwdhash = O_keywords.keywords_hash in
+  fun s -> Hashtbl.mem kwdhash s
+;
+
 value var_escaped pc (loc, v) =
   let x =
     if v.[0] = '*' || v.[String.length v - 1] = '*' then "( " ^ v ^ " )"
     else if is_infix v || has_special_chars v || is_letop v || is_andop v then "(" ^ v ^ ")"
+    else if is_keyword v then sprintf "\\#%s" v
     else v
   in
   lprintf pc "%s" x

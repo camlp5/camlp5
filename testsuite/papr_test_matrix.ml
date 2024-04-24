@@ -5591,14 +5591,41 @@ ELSE
      official_output = OK {foo|;;xyz|foo} ;
      r_output = OK {foo|xyz;|foo}
     }
-  ;{name="raw-ident-2"; implem = True ;
+  ;{name="raw-ident-3"; implem = True ;
      exclude=[];
-     o_input = OK {foo|\#declare|foo} ;
-     official_input = OK {foo|\#declare|foo} ;
+     o_input = OK {foo|\#begin|foo} ;
+     official_input = OK {foo|\#begin|foo} ;
+     r_input = OK {foo|\#begin;|foo} ;
+     o_output = OK {foo|let _ = \#begin;;|foo};
+     official_output = OK {foo|;;\#begin|foo} ;
+     r_output = OK {foo|begin;|foo}
+    }
+  ;{name="raw-ident-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|declare|foo} ;
+     official_input = OK {foo|declare|foo} ;
      r_input = OK {foo|\#declare;|foo} ;
      o_output = OK {foo|let _ = declare;;|foo};
      official_output = OK {foo|;;declare|foo} ;
      r_output = OK {foo|\#declare;|foo}
+    }
+  ;{name="raw-ident-5"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|val value : int|foo} ;
+     official_input = OK {foo|val value : int|foo} ;
+     r_input = OK {foo|value \#value : int ;|foo} ;
+     o_output = OK {foo|val value: int;;|foo};
+     official_output = OK {foo|val value: int|foo} ;
+     r_output = OK {foo|value \#value : int;|foo}
+    }
+  ;{name="raw-ident-6"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|val \#val : int|foo} ;
+     official_input = OK {foo|val \#val : int|foo} ;
+     r_input = OK {foo|value val : int;|foo} ;
+     o_output = OK {foo|val \#val : int;;|foo};
+     official_output = OK {foo|val \#val : int|foo} ;
+     r_output = OK {foo|value val : int;|foo}
     }
   ]
 END
