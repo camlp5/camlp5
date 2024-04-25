@@ -39,28 +39,6 @@ value is_infix = do {
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
 
-value is_keyword =
-  let keywords = ["value"] in
-  fun s -> List.mem s keywords
-;
-
-value has_special_chars s =
-  if String.length s = 0 then False
-  else
-    match s.[0] with
-    [ '0'..'9' | 'A'..'Z' | 'a'..'z' | '_' -> False
-    | _ -> True ]
-;
-
-value var_escaped pc v =
-  let x =
-    if is_infix v || has_special_chars v then "\\" ^ v
-    else if is_keyword v then v ^ "__"
-    else v
-  in
-  pprintf pc "%s" x
-;
-
 value alone_in_line pc =
   (pc.aft = "" || pc.aft = ";") && pc.bef <> "" &&
   loop 0 where rec loop i =
@@ -114,9 +92,9 @@ value class_type_params pc ctp =
 ;
 
 value class_def_or_type_decl char pc ci =
-  pprintf pc "%s%s%p %c@;%p%p"
+  pprintf pc "%s%p%p %c@;%p%p"
     (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-    (Pcaml.unvala ci.MLast.ciNam)
+    Pr_r.var_escaped_noloc (Pcaml.unvala ci.MLast.ciNam)
     class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm)) char
     class_type ci.MLast.ciExp
     (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala ci.MLast.ciAttributes)
@@ -171,9 +149,9 @@ value class_decl pc ci =
   let cdef pc () =
     horiz_vertic
       (fun () ->
-         pprintf pc "%s%s%p%s%p%p ="
+         pprintf pc "%s%p%p%s%p%p ="
            (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-           (Pcaml.unvala ci.MLast.ciNam)
+           Pr_r.var_escaped (ci.MLast.ciLoc, Pcaml.unvala ci.MLast.ciNam)
            class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
            (if pl = [] then "" else " ") (hlist patt) pl
            class_type_opt ct_opt)
@@ -196,10 +174,10 @@ value class_decl pc ci =
 
 value variant_decl pc pv =
   match pv with
-  [ <:poly_variant< `$c$ $_algattrs:alg_attrs$ >> ->
-       pprintf pc "`%s%p" c (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala alg_attrs)
-  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ $_algattrs:alg_attrs$ >> ->
-       pprintf pc "`%s of%s@;<1 5>%p%p" c (if ao then "& " else "")
+  [ <:poly_variant:< `$c$ $_algattrs:alg_attrs$ >> ->
+       pprintf pc "`%p%p" Pr_r.var_escaped (loc, c) (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala alg_attrs)
+  | <:poly_variant:< `$c$ of $flag:ao$ $list:tl$ $_algattrs:alg_attrs$ >> ->
+       pprintf pc "`%p of%s@;<1 5>%p%p" Pr_r.var_escaped (loc, c) (if ao then "& " else "")
          (hlist2 ctyp (amp_before ctyp)) tl (hlist (Pr_r.pr_attribute "@")) (Pcaml.unvala alg_attrs)
   | <:poly_variant< $t$ >> ->
        ctyp pc t
@@ -282,7 +260,7 @@ value class_object pc (csp, csl) =
 ;
 
 value sig_method_or_method_virtual pc virt priv s t item_attrs =
-  pprintf pc "method%s%s %s :@;%p%p" virt (if priv then " private" else "") s
+  pprintf pc "method%s%s %p :@;%p%p" virt (if priv then " private" else "") Pr_r.var_escaped_noloc s
     ctyp t (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
 ;
 
@@ -305,8 +283,8 @@ EXTEND_PRINTER
       | <:patt< ?{$p$} >> ->
           pprintf pc "?{%p}" patt p
 
-      | <:patt< `$s$ >> ->
-          pprintf pc "`%s" s
+      | <:patt:< `$s$ >> ->
+          pprintf pc "`%p" Pr_r.var_escaped (loc, s)
       | <:patt< # $lilongid:lili$ >> ->
           pprintf pc "#%p" Pr_r.longident_lident lili
       | z ->
@@ -343,8 +321,8 @@ EXTEND_PRINTER
           else
             let fel = List.map (fun fe -> (fe, ";")) fel in
             pprintf pc "{< %p >}" (plist field_expr 3) fel
-      | <:expr< `$s$ >> ->
-          pprintf pc "`%s" s
+      | <:expr:< `$s$ >> ->
+          pprintf pc "`%p" Pr_r.var_escaped (loc, s)
       | <:expr< new $longid:_$ . $lid:_$ >> | <:expr< new $lid:_$ >> | <:expr< object $list:_$ end >> as z ->
           pprintf pc "@[<1>(%p)@]" expr z
       | z ->
@@ -535,7 +513,7 @@ EXTEND_PRINTER
           pprintf pc "value%s%s %p :@;%p%p"
             (if mf then " mutable" else "")
             (if vf then " virtual" else "")
-            var_escaped s ctyp t
+            Pr_r.var_escaped_noloc s ctyp t
             (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_sig_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_attribute "@@@") attr
@@ -548,11 +526,11 @@ EXTEND_PRINTER
   ;
   pr_class_str_item:
     [ "top"
-      [ <:class_str_item< inherit $!:ovf$ $ce$ $opt:pb$ $_itemattrs:item_attrs$ >> ->
+      [ <:class_str_item:< inherit $!:ovf$ $ce$ $opt:pb$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "inherit%s@;%p%p%p" (if ovf then "!" else "") class_expr ce
             (fun pc ->
                fun
-               [ Some s -> pprintf pc " as %s" s
+               [ Some s -> pprintf pc " as %p" Pr_r.var_escaped (loc, s)
                | None -> pprintf pc "" ])
             pb
             (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
@@ -569,8 +547,8 @@ EXTEND_PRINTER
             | None -> expr_fun_args e ]
           in
           let pl = List.map (fun p -> (p, "")) pl in
-          pprintf pc "method%s%s %s%s%p%p =@;%p%p"
-            (if ov then "!" else "") (if priv then " private" else "") s
+          pprintf pc "method%s%s %p%s%p%p =@;%p%p"
+            (if ov then "!" else "") (if priv then " private" else "") Pr_r.var_escaped_noloc s
             (if pl = [] then "" else " ") (plist patt 2) pl
             (fun pc ->
                fun
@@ -582,11 +560,11 @@ EXTEND_PRINTER
             (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< value $!:ovf$ $flag:mf$ $lid:s$ = $e$ $_itemattrs:item_attrs$ >> ->
           pprintf pc "value%s%s %p =@;%p%p" (if ovf then "!" else "")
-            (if mf then " mutable" else "") var_escaped s expr e
+            (if mf then " mutable" else "") Pr_r.var_escaped_noloc s expr e
             (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< value virtual $flag:mf$ $lid:s$ : $t$ $_itemattrs:item_attrs$ >> ->
-          pprintf pc "value virtual%s %s :@;%p%p"
-            (if mf then " mutable" else "") s ctyp t
+          pprintf pc "value virtual%s %p :@;%p%p"
+            (if mf then " mutable" else "") Pr_r.var_escaped_noloc s ctyp t
             (hlist (Pr_r.pr_attribute "@@")) (Pcaml.unvala item_attrs)
       | <:class_str_item< [@@@ $_attribute:attr$ ] >> ->
           pprintf pc "%p" (Pr_r.pr_attribute "@@@") attr

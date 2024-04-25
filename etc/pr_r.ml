@@ -190,6 +190,8 @@ value var_escaped pc (loc, v) =
   else lident pc v
 ;
 
+value var_escaped_noloc pc v = var_escaped pc (Ploc.dummy, v) ;
+
 value cons_escaped pc s =
   let s = match s with [
     "[]" -> "[]"
@@ -282,7 +284,7 @@ value pr_extension atstring pc attr =
 
 value longident_lident pc (lio, id) =
   match lio with
-  [ None -> pprintf pc "%s" (Pcaml.unvala id)
+  [ None -> pprintf pc "%p" lident (Pcaml.unvala id)
   | Some li -> pprintf pc "%p.%p" longident (Pcaml.unvala li) lident (Pcaml.unvala id)
   ]
 ;
@@ -819,7 +821,10 @@ value typevar pc s =
   | None ->
     if String.contains s '\'' then
       pprintf pc "' %s" s
-    else pprintf pc "'%s" s
+    else if is_keyword s then
+      pprintf pc "'\#%s" s
+    else
+      pprintf pc "'%s" s
    ]
 ;
 
@@ -1863,8 +1868,8 @@ EXTEND_PRINTER
               pprintf pc "@[<1>[%p]@]" (plist patt 0) xl ]
       | <:patt< ($p$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
-      | <:patt< (type $lid:s$) >> ->
-          pprintf pc "(type %s)" s
+      | <:patt:< (type $lid:s$) >> ->
+          pprintf pc "(type %p)" var_escaped (loc, s)
       | <:patt< (module $uidopt:s$ : $mt$) >> ->
           let s = uidopt_to_maybe_blank s in
           pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt

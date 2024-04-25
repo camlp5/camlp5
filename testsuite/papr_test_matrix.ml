@@ -5627,10 +5627,538 @@ ELSE
      official_output = OK {foo|val \#val : int|foo} ;
      r_output = OK {foo|value val : int;|foo}
     }
+  ;{name="raw-ident-7"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|type t = [ `\#type ]|foo} ;
+     official_input = OK {foo|type t = [ `\#type ]|foo} ;
+     r_input = OK {foo|type t = [ = `\#type ];|foo} ;
+     o_output = OK {foo|type t = [ `\#type ];;|foo};
+     official_output = OK {foo|type t = [ `\#type ]|foo} ;
+     r_output = OK {foo|type t = [ = `\#type ];|foo}
+    }
+  ;{name="raw-ident-7b"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|type \#begin = [ `Foo ]|foo} ;
+     official_input = OK {foo|type \#begin = [ `Foo ]|foo} ;
+     r_input = OK {foo|type begin = [ = `Foo ];|foo} ;
+     o_output = OK {foo|type \#begin = [ `Foo ];;|foo};
+     official_output = OK {foo|type \#begin = [ `Foo ]|foo} ;
+     r_output = OK {foo|type begin = [ = `Foo ];|foo}
+    }
+  ;{name="raw-ident-7c"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|type declare = [ `Foo ]|foo} ;
+     official_input = OK {foo|type declare = [ `Foo ]|foo} ;
+     r_input = OK {foo|type \#declare = [ = `Foo ];|foo} ;
+     o_output = OK {foo|type declare = [ `Foo ];;|foo};
+     official_output = OK {foo|type declare = [ `Foo ]|foo} ;
+     r_output = OK {foo|type \#declare = [ = `Foo ];|foo}
+    }
+  ;{name="raw-ident-8"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f ~x = 1|foo} ;
+     official_input = OK {foo|let f ~x = 1|foo} ;
+     r_input = OK {foo|value f ~{x} = 1;|foo} ;
+     o_output = OK {foo|let f ~x = 1;;|foo};
+     official_output = OK {foo|let f ~x = 1|foo} ;
+     r_output = OK {foo|value f ~{x} = 1;|foo}
+    }
+  ;{name="raw-ident-9"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f ~\#type = 1|foo} ;
+     official_input = OK {foo|let f ~\#type = 1|foo} ;
+     r_input = OK {foo|value f ~{\#type} = 1;|foo} ;
+     o_output = OK {foo|let f ~\#type = 1;;|foo};
+     official_output = OK {foo|let f ~\#type = 1|foo} ;
+     r_output = OK {foo|value f ~{\#type} = 1;|foo}
+    }
+  ;{name="raw-ident-10"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with `\#type -> 1|foo} ;
+     official_input = OK {foo|match x with `\#type -> 1|foo} ;
+     r_input = OK {foo|match x with [ `\#type -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with `\#type -> 1;;|foo};
+     official_output = OK {foo|;;match x with | `\#type -> 1|foo} ;
+     r_output = OK {foo|match x with [ `\#type -> 1 ];|foo}
+    }
+  ;{name="raw-ident-11"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|`foo|foo} ;
+     official_input = OK {foo|`foo|foo} ;
+     r_input = OK {foo|`foo;|foo} ;
+     o_output = OK {foo|let _ = `foo;;|foo} ;
+     official_output = OK {foo|;;`foo|foo} ;
+     r_output = OK {foo|`foo;|foo}
+    }
+  ;{name="raw-ident-12"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f ?\#type = 1|foo} ;
+     official_input = OK {foo|let f ?\#type = 1|foo} ;
+     r_input = OK {foo|value f ?{\#type} = 1;|foo} ;
+     o_output = OK {foo|let f ?\#type = 1;;|foo};
+     official_output = OK {foo|let f ?\#type = 1|foo} ;
+     r_output = OK {foo|value f ?{\#type} = 1;|foo}
+    }
+  ;{name="raw-ident-13"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type '\#type t = '\#type|foo} ;
+     official_input = OK {foo|type '\#type t = '\#type|foo} ;
+     r_input = OK {foo|type t '\#type = '\#type;|foo} ;
+     o_output = OK {foo|type '\#type t =  '\#type;;|foo};
+     official_output = OK {foo|type '\#type t = '\#type|foo} ;
+     r_output = OK {foo|type t '\#type = '\#type;|foo}
+    }
+
+  ;{name="raw-ident-14"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module type A = sig
+  type ('\#let, '\#a) \#virtual = ('\#let * '\#a) as '\#mutable
+  val foo : '\#let '\#a . '\#a -> '\#let -> unit
+  type \#foo = { \#let : int }
+end
+
+module M = struct
+  let (\#let,\#foo) as \#val = (\#mutable,\#baz)
+  let hh = fun (type \#let) (type \#foo) -> 1
+  let f g ~\#let ?\#and ?(\#for = \#and) () =
+    g ~\#let ?\#and ()
+  class \#let = object
+    inherit \#val \#let as \#mutable
+  end
+end|foo} ;
+     official_input = OK {foo|module type A = sig
+  type ('\#let, '\#a) \#virtual = ('\#let * '\#a) as '\#mutable
+  val foo : '\#let '\#a . '\#a -> '\#let -> unit
+  type \#foo = { \#let : int }
+end
+
+module M = struct
+  let (\#let,\#foo) as \#val = (\#mutable,\#baz)
+  let hh = fun (type \#let) (type \#foo) -> 1
+  let f g ~\#let ?\#and ?(\#for = \#and) () =
+    g ~\#let ?\#and ()
+  class \#let = object
+    inherit \#val \#let as \#mutable
+  end
+end|foo} ;
+     r_input = OK {foo|module type A  =
+  sig
+    type \#virtual '\#let 'a = ('\#let * 'a) as '\#mutable;
+    value foo : '\#let 'a . 'a -> '\#let -> unit ;
+    type foo = {
+      \#let: int } ;
+  end ;
+module M =
+  struct
+    value ((\#let, foo) as val) = (\#mutable, baz) ;
+    value hh (type \#let) (type foo) = 1 ;
+    value f g ~{\#let} ?{\#and} ?{\#for= \#and} () = g ~{\#let} ?{\#and} () ;
+    class \#let = object inherit  val \#let as \#mutable; end ;
+  end;|foo} ;
+     o_output = OK {foo|module type A = sig
+  type ('\#let, 'a) \#virtual = '\#let * 'a as '\#mutable
+  val foo : '\#let 'a . 'a -> '\#let -> unit
+  type foo = { \#let : int }
+end;;
+
+module M = struct
+  let (\#let,foo as \#val) = \#mutable,baz
+  let hh (type \#let) (type foo) = 1
+  let f g ~\#let ?\#and ?(\#for = \#and) () =
+    g ~\#let ?\#and ()
+  class \#let = object
+    inherit \#val \#let as \#mutable
+  end
+end;;|foo};
+     official_output = OK {foo|module type A  =
+  sig
+    type ('\#let, 'a) \#virtual = ('\#let * 'a) as '\#mutable
+    val foo : '\#let 'a . 'a -> '\#let -> unit
+    type foo = {
+      \#let: int }
+  end
+module M =
+  struct
+    let (\#let, foo) as \#val = (\#mutable, baz)
+    let hh (type \#let) (type foo) = 1
+    let f g ~\#let ?\#and ?(\#for= \#and) () = g ~\#let ?\#and ()
+    class \#let = object inherit  ((\#val) \#let) as \#mutable end
+  end|foo} ;
+     r_output = OK {foo|module type A  =
+  sig
+    type \#virtual '\#let 'a = ('\#let * 'a) as '\#mutable;
+    value foo : '\#let 'a . 'a -> '\#let -> unit ;
+    type foo = {
+      \#let: int } ;
+  end ;
+module M =
+  struct
+    value ((\#let, foo) as val) = (\#mutable, baz) ;
+    value hh (type \#let) (type foo) = 1 ;
+    value f g ~{\#let} ?{\#and} ?{\#for= \#and} () = g ~{\#let} ?{\#and} () ;
+    class \#let = object inherit  val \#let as \#mutable; end ;
+  end;|foo}
+    }
+
+  ;{name="raw-ident-15"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let hh = fun x (type \#let) (type \#foo) -> 1|foo} ;
+     official_input = OK {foo|let hh = fun x (type \#let) (type \#foo) -> 1|foo} ;
+     r_input = OK {foo|value hh x (type \#let) (type foo) = 1 ;|foo} ;
+     o_output = OK {foo|let hh x (type \#let) (type foo) = 1;;|foo};
+     official_output = OK {foo|let hh x (type \#let) (type foo) = 1|foo} ;
+     r_output = OK {foo|value hh x (type \#let) (type foo) = 1 ;|foo}
+    }
+
+  ;{name="raw-ident-16"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let obj = new M.\#and|foo} ;
+     official_input = OK {foo|let obj = new M.\#and|foo} ;
+     r_input = OK {foo|value obj = new M.\#and;|foo} ;
+     o_output = OK {foo|let obj = new M.\#and;;|foo} ;
+     official_output = OK {foo|let obj = new M.\#and|foo} ;
+     r_output = OK {foo|value obj = new M.\#and;|foo}
+    }
+  ;{name="raw-ident-17"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|class \#and : object end|foo} ;
+     official_input = OK {foo|class \#and : object end|foo} ;
+     r_input = OK {foo|class \#and : object end;|foo} ;
+     o_output = OK {foo|class \#and : object end;;|foo} ;
+     official_output = OK {foo|class \#and : object end|foo} ;
+     r_output = OK {foo|class \#and : object end;|foo}
+    }
+  ;{name="raw-ident-18"; implem = False ;
+     exclude=[];
+     o_input = OK {foo|class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end|foo} ;
+     official_input = OK {foo|class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end|foo} ;
+     r_input = OK {foo|class \#and : object
+    value mutable \#and : int ;
+    method \#and : int ;
+  end;|foo} ;
+     o_output = OK {foo|class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end;;|foo} ;
+     official_output = OK {foo|class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end|foo} ;
+     r_output = OK {foo|class \#and : object
+    value mutable \#and : int ;
+    method \#and : int ;
+  end;|foo}
+    }
+  ;{name="raw-ident-19"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|    module M : sig
+  class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end
+end = struct
+  class \#and =
+    let \#and = 1 in
+    object
+      val mutable \#and = \#and
+      method \#and = 2
+    end
+end
+let obj = new M.\#and
+|foo} ;
+     official_input = OK {foo|    module M : sig
+  class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end
+end = struct
+  class \#and =
+    let \#and = 1 in
+    object
+      val mutable \#and = \#and
+      method \#and = 2
+    end
+end
+let obj = new M.\#and
+|foo} ;
+     r_input = OK {foo|    module M : sig
+  class \#and : object
+    value mutable \#and : int ;
+    method \#and : int ;
+  end ;
+end = struct
+  class \#and =
+    let \#and = 1 in
+    object
+      value mutable \#and = \#and ;
+      method \#and = 2 ;
+    end ;
+end ;
+value obj = new M.\#and ;
+|foo} ;
+     o_output = OK {foo|    module M : sig
+  class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end
+end = struct
+  class \#and =
+    let \#and = 1 in
+    object
+      val mutable \#and = \#and
+      method \#and = 2
+    end
+end ;;
+let obj = new M.\#and ;;
+|foo} ;
+     official_output = OK {foo|    module M : sig
+  class \#and : object
+    val mutable \#and : int
+    method \#and : int
+  end
+end = struct
+  class \#and =
+    let \#and = 1 in
+    object
+      val mutable \#and = \#and
+      method \#and = 2
+    end
+end
+let obj = new M.\#and
+|foo} ;
+     r_output = OK {foo|    module M : sig
+  class \#and : object
+    value mutable \#and : int ;
+    method \#and : int ;
+  end ;
+end = struct
+  class \#and =
+    let \#and = 1 in
+    object
+      value mutable \#and = \#and ;
+      method \#and = 2 ;
+    end ;
+end ;
+value obj = new M.\#and ;
+|foo}
+    }
+  ;{name="raw-ident-20"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module M : sig type \#and = int end = struct type \#and = string end|foo} ;
+     official_input = OK {foo|module M : sig type \#and = int end = struct type \#and = string end|foo} ;
+     r_input = OK {foo|module M : sig type \#and = int; end = struct type \#and = string; end;|foo} ;
+     o_output = OK {foo|module M : sig type \#and = int end = struct type \#and = string end;;|foo} ;
+     official_output = OK {foo|module M : sig type \#and = int end = struct type \#and = string end|foo} ;
+     r_output = OK {foo|module M : sig type \#and = int; end = struct type \#and = string; end;|foo}
+    }
+  ;{name="raw-ident-21"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = (`\#let `\#and : [ `\#let of [ `\#and ] ])
+let \#rec  = match x with `\#let  \#rec  -> \#rec
+|foo} ;
+     official_input = OK {foo|let x = (`\#let `\#and : [ `\#let of [ `\#and ] ])
+let \#rec  = match x with `\#let  \#rec  -> \#rec
+|foo} ;
+     r_input = OK {foo|value x = (`\#let `\#and : [= `\#let of [= `\#and ] ]);
+value \#rec  = match x with [ `\#let  \#rec  -> \#rec  ];
+|foo} ;
+     o_output = OK {foo|let x : [ `\#let of [ `\#and ] ] = `\#let `\#and;;
+let \#rec  = match x with `\#let  \#rec  -> \#rec;;
+|foo} ;
+     official_output = OK {foo|let x = (`\#let `\#and : [ `\#let of [ `\#and ] ])
+let \#rec  = match x with | `\#let  \#rec  -> \#rec
+|foo} ;
+     r_output = OK {foo|value x : [= `\#let of [= `\#and ] ] = `\#let `\#and;
+value \#rec  = match x with [ `\#let  \#rec  -> \#rec  ];
+|foo}
+    }
+  ;{name="raw-ident-22"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f g ~\#let ?\#and ?(\#for = \#and) () =
+  g ~\#let ?\#and ()|foo} ;
+     official_input = OK {foo|let f g ~\#let ?\#and ?(\#for = \#and) () =
+  g ~\#let ?\#and ()|foo} ;
+     r_input = OK {foo|value f g ~{\#let} ?{\#and} ?{\#for = \#and} () =
+  g ~{\#let} ?{\#and} ();|foo} ;
+     o_output = OK {foo|let f g ~\#let ?\#and ?(\#for = \#and) () =
+  g ~\#let ?\#and ();;|foo} ;
+     official_output = OK {foo|let f g ~\#let ?\#and ?(\#for = \#and) () =
+  g ~\#let ?\#and ()|foo} ;
+     r_output = OK {foo|value f g ~{\#let} ?{\#and} ?{\#for = \#and} () =
+  g ~{\#let} ?{\#and} ();|foo}
+    }
+  ;{name="raw-ident-23"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type '\#let t = '\#let|foo} ;
+     official_input = OK {foo|type '\#let t = '\#let|foo} ;
+     r_input = OK {foo|type t '\#let = '\#let;|foo} ;
+     o_output = OK {foo|type '\#let t = '\#let;;|foo} ;
+     official_output = OK {foo|type '\#let t = '\#let|foo} ;
+     r_output = OK {foo|type t '\#let = '\#let;|foo}
+    }
+  ;{name="raw-ident-24"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type \#mutable = { mutable \#mutable : \#mutable }
+let rec \#rec = { \#mutable = \#rec }|foo} ;
+     official_input = OK {foo|type \#mutable = { mutable \#mutable : \#mutable }
+let rec \#rec = { \#mutable = \#rec }|foo} ;
+     r_input = OK {foo|type \#mutable = { \#mutable : mutable \#mutable };
+value rec \#rec = { \#mutable = \#rec };|foo} ;
+     o_output = OK {foo|type \#mutable = { mutable \#mutable : \#mutable };;
+let rec \#rec = { \#mutable = \#rec };;|foo} ;
+     official_output = OK {foo|type \#mutable = { mutable \#mutable : \#mutable }
+let rec \#rec = { \#mutable = \#rec }|foo} ;
+     r_output = OK {foo|type \#mutable = { \#mutable : mutable \#mutable };
+value rec \#rec = { \#mutable = \#rec };|foo}
+    }
+  ;{name="raw-ident-25"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type \#and = ..
+type \#and += Foo|foo} ;
+     official_input = OK {foo|type \#and = ..
+type \#and += Foo|foo} ;
+     r_input = OK {foo|type \#and = .. ;
+type \#and += [ Foo ];|foo} ;
+     o_output = OK {foo|type \#and = ..;;
+type \#and += Foo;;|foo} ;
+     official_output = OK {foo|type \#and = ..
+type \#and += | Foo|foo} ;
+     r_output = OK {foo|type \#and = .. ;
+type \#and += [ Foo ];|foo}
+    }
+  ;{name="raw-ident-26"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = (++);;|foo} ;
+     official_input = OK {foo|let x = (++);;|foo} ;
+     r_input = OK {foo|value x = (++);|foo} ;
+     o_output = OK {foo|let x = (++);;|foo} ;
+     official_output = OK {foo|let x = (++)|foo} ;
+     r_output = OK {foo|value x = (++);|foo}
+    }
+  ;{name="raw-ident-27"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = \#let;;|foo} ;
+     official_input = OK {foo|let x = \#let;;|foo} ;
+     r_input = OK {foo|value x = \#let;|foo} ;
+     o_output = OK {foo|let x = \#let;;|foo} ;
+     official_output = OK {foo|let x = \#let|foo} ;
+     r_output = OK {foo|value x = \#let;|foo}
+    }
+  ;{name="raw-ident-28"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let x = \#let;;|foo} ;
+     official_input = OK {foo|let x = \#let;;|foo} ;
+     r_input = OK {foo|value x = \#let;|foo} ;
+     o_output = OK {foo|let x = \#let;;|foo} ;
+     official_output = OK {foo|let x = \#let|foo} ;
+     r_output = OK {foo|value x = \#let;|foo}
+    }
+  ;{name="raw-ident-29"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f ~\#let ?\#and () = 1|foo} ;
+     official_input = OK {foo|let f ~\#let ?\#and () = 1|foo} ;
+     r_input = OK {foo|value f ~{\#let} ?{\#and} () = 1;|foo} ;
+     o_output = OK {foo|let f ~\#let ?\#and () = 1;;|foo} ;
+     official_output = OK {foo|let f ~\#let ?\#and () = 1|foo} ;
+     r_output = OK {foo|value f ~{\#let} ?{\#and} () = 1;|foo}
+    }
   ]
 END
 
 ;
+
+  (*
+[%%expect{|
+module M :
+  sig class \#and : object val mutable \#and : int method \#and : int end end
+val obj : M.\#and = <obj>
+|}]
+
+module M : sig type \#and = int end = struct type \#and = string end
+[%%expect{|
+Line 1, characters 38-68:
+1 | module M : sig type \#and = int end = struct type \#and = string end
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Error: Signature mismatch:
+       Modules do not match:
+         sig type \#and = string end
+       is not included in
+         sig type \#and = int end
+       Type declarations do not match:
+         type \#and = string
+       is not included in
+         type \#and = int
+       The type "string" is not equal to the type "int"
+|}]
+
+let x = (`\#let `\#and : [ `\#let of [ `\#and ] ])
+let `\#let \#rec = x
+[%%expect{|
+val x : [ `\#let of [ `\#and ] ] = `\#let `\#and
+val \#rec : [ `\#and ] = `\#and
+|}]
+
+
+let f g ~\#let ?\#and ?(\#for = \#and) () =
+  g ~\#let ?\#and ()
+[%%expect{|
+val f :
+  (\#let:'a -> ?\#and:'b -> unit -> 'c) ->
+  \#let:'a -> ?\#and:'b -> ?\#for:'b option -> unit -> 'c = <fun>
+|}]
+
+
+type t = '\#let
+[%%expect{|
+Line 1, characters 9-15:
+1 | type t = '\#let
+             ^^^^^^
+Error: The type variable "'\#let" is unbound in this type declaration.
+|}]
+
+type \#mutable = { mutable \#mutable : \#mutable }
+let rec \#rec = { \#mutable = \#rec }
+[%%expect{|
+type \#mutable = { mutable \#mutable : \#mutable; }
+val \#rec : \#mutable = {\#mutable = <cycle>}
+|}]
+
+type \#and = ..
+type \#and += Foo
+[%%expect{|
+type \#and = ..
+type \#and += Foo
+|}]
+
+let x = (++);;
+[%%expect{|
+Line 1, characters 8-12:
+1 | let x = (++);;
+            ^^^^
+Error: Unbound value "(++)"
+|}]
+
+let x = \#let;;
+[%%expect{|
+Line 1, characters 8-13:
+1 | let x = \#let;;
+            ^^^^^
+Error: Unbound value "\#let"
+|}]
+
+let f ~\#let ?\#and () = 1
+[%%expect{|
+val f : \#let:'a -> ?\#and:'b -> unit -> int = <fun>
+|}]
+   *)
+
+
 
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
 
