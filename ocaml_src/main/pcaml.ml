@@ -28,7 +28,8 @@ let gram =
      Plexing.tok_using = (fun _ -> ()); Plexing.tok_removing = (fun _ -> ());
      Plexing.tok_match =
        (fun _ -> raise (Match_failure ("pcaml.ml", 28, 25)));
-     Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None}
+     Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None;
+     Plexing.kwds = Hashtbl.create 23}
 ;;
 
 (*

@@ -17,7 +17,8 @@ type 'te glexer =
       tok_removing : pattern -> unit;
       mutable tok_match : pattern -> 'te -> string;
       tok_text : pattern -> string;
-      mutable tok_comm : Ploc.t list option }
+      mutable tok_comm : Ploc.t list option;
+      kwds : (string, string) Hashtbl.t }
 ;;
 
 type 'te lexer_func = char Stream.t -> 'te Stream.t * Plexing.Locations.t
