@@ -62,7 +62,9 @@ and ctyp =
       option (option (V (list string)))
   | TyXtr of loc and string and option (V ctyp)
   | TyAtt of loc and ctyp and attribute
-  | TyExten of loc and attribute ]
+  | TyExten of loc and attribute
+  | TyOpen of loc and longid and ctyp
+  ]
 and poly_variant =
   [ PvTag of loc and V string and V bool and V (list ctyp) and attributes
   | PvInh of loc and ctyp ]

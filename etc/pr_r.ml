@@ -1956,6 +1956,7 @@ EXTEND_PRINTER
     | "dot"
       [
         <:ctyp< $longid:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" longident me lid
+      | <:ctyp< $longid:me$ . ( $t$ ) >> -> pprintf pc "%p.( %p )" longident me ctyp t
       ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->

@@ -1310,6 +1310,8 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
     [ LEFTA
       [ me1 = extended_longident ; "." ; i = SV LIDENT "lid" → 
           Qast.Node "TyAcc" [Qast.Loc; me1; i]
+      | me1 = extended_longident ; "." ; "(" ; t = ctyp ; ")" → 
+          Qast.Node "TyOpen" [Qast.Loc; me1; t]
       | i = SV LIDENT "lid" → 
           Qast.Node "TyLid" [Qast.Loc; i]
       ] 

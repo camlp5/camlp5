@@ -55,6 +55,7 @@ and ctyp =
   | TyXtr of loc * string * ctyp option
   | TyAtt of loc * ctyp * attribute
   | TyExten of loc * attribute
+  | TyOpen of loc * longid * ctyp
 and poly_variant =
     PvTag of loc * string * bool * ctyp list * attributes
   | PvInh of loc * ctyp

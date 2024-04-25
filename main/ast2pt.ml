@@ -569,6 +569,9 @@ and ctyp =
       | None → error loc "no variant type or inherit in this ocaml version" ]
   | TyXtr loc _ _ → error loc "bad ast TyXtr"
   | TyExten loc ebody -> mktyp loc (ocaml_ptyp_extension (extension (uv ebody)))
+  | TyOpen loc li t ->
+     let li = longid_long_id li in
+     mktyp loc (ocaml_ptyp_open (mkloc loc) li (ctyp t))
   ]
 and meth_list loc fl v =
   match fl with

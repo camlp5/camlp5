@@ -139,8 +139,10 @@ value ocaml_mktyp ?{alg_attributes=[]} loc x =
 
 IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
 value ocaml_ptyp_alias loc t i = Ptyp_alias t i ;
+value ocaml_ptyp_open loc li t = failwith "Only available in OCaml versions >= 5.2.0" ;
 ELSE
 value ocaml_ptyp_alias loc t i = Ptyp_alias t (mkloc loc i) ;
+value ocaml_ptyp_open loc li t = Ptyp_open (mkloc loc li) t ;
 END;
 
 value ocaml_mkpat loc x =
