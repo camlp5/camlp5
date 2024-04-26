@@ -90,6 +90,17 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
 |foo} ;
           code = {foo|<:expr< new $lilongid:li$ >>;|foo}
         }
+      ; { name = "expr-open-1" ; 
+          expect = {foo|MLast.ExOpen loc (MLast.LiUid loc (Ploc.VaVal "A"))
+  (MLast.ExLid loc (Ploc.VaVal "e"));
+|foo} ;
+          code = {foo|<:expr< A.( e ) >>;|foo}
+        }
+      ; { name = "expr-open-2" ; 
+          expect = {foo|MLast.ExOpen loc li t;
+|foo} ;
+          code = {foo|<:expr< $longid:li$.( $t$ ) >>;|foo}
+        }
       ; { name = "ctyp-tycls-1" ; 
           expect = {foo|MLast.TyCls loc (Ploc.VaVal (None, Ploc.VaVal "a"));
 |foo} ;
@@ -111,6 +122,17 @@ value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
           expect = {foo|MLast.TyCls loc (Ploc.VaVal li);
 |foo} ;
           code = {foo|<:ctyp< # $lilongid:li$ >> ;|foo}
+        }
+      ; { name = "ctyp-tyopen-1" ; 
+          expect = {foo|MLast.TyOpen loc (MLast.LiUid loc (Ploc.VaVal "M"))
+  (MLast.TyLid loc (Ploc.VaVal "t"));
+|foo} ;
+          code = {foo|<:ctyp< M.( t ) >> ;|foo}
+        }
+      ; { name = "ctyp-tyopen-2" ; 
+          expect = {foo|MLast.TyOpen loc li t;
+|foo} ;
+          code = {foo|<:ctyp< $longid:li$ . ( $t$ ) >> ;|foo}
         }
       ; { name = "class-expr-cecon-1" ; 
           expect = {foo|MLast.CeCon loc (Ploc.VaVal (None, Ploc.VaVal "a"))

@@ -61,6 +61,7 @@ MLast.TyVrn (loc, lpv, Some ols);;
 MLast.TyVrn (loc, lpv, ools);;
 MLast.TyAtt (loc, t, x);;
 MLast.TyExten (loc, x);;
+<:ctyp< $longid:x$ . ( $t$ ) >> ;;
 MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal lt, Ploc.VaVal x);;
 MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal true, Ploc.VaVal lt, x);;
 MLast.PvTag (loc, Ploc.VaVal s, Ploc.VaVal true, lt, Ploc.VaVal x);;

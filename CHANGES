@@ -1,3 +1,18 @@
+Camlp5 Version 8.03.00:
+--------------------
+
+* [25 Apr 2024] update for Ocaml 5.2.0
+
+  Only really salient change (other than supporting new ocaml syntax)
+  is that the former Camlp5 revised-syntax "raw-identifier" syntax is
+  now removed in favor of the new Ocaml 5.2.0 raw-identifier syntax.
+  This should affect almost literally nobody, but just in case, the
+  old syntax was (e.g.) "\begin" and the new 5.2.0 syntax is "\#begin".
+
+  I highly doubt that anybody used the old syntax, since it was
+  undocumented and only available in revised mode, but hey, just in
+  case, letting you know I removed it.
+
 Camlp5 Version 8.02.01:
 --------------------
 
