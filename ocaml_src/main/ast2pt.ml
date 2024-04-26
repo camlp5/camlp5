@@ -731,6 +731,9 @@ and ctyp =
   | TyXtr (loc, _, _) -> error loc "bad ast TyXtr"
   | TyExten (loc, ebody) ->
       mktyp loc (ocaml_ptyp_extension (extension (uv ebody)))
+  | TyOpen (loc, li, t) ->
+      let li = longid_long_id li in
+      mktyp loc (ocaml_ptyp_open (mkloc loc) li (ctyp t))
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then mkfield_var loc else []

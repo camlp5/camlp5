@@ -128,6 +128,9 @@ let ocaml_mktyp ?(alg_attributes = []) loc x =
 ;;
 
 let ocaml_ptyp_alias loc t i = Ptyp_alias (t, i);;
+let ocaml_ptyp_open loc li t =
+  failwith "Only available in OCaml versions >= 5.2.0"
+;;
 
 let ocaml_mkpat loc x =
   {ppat_desc = x; ppat_loc = loc; ppat_loc_stack = []; ppat_attributes = []}
