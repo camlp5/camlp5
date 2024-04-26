@@ -1371,7 +1371,7 @@ EXTEND
     [ LEFTA
       [ me1 = extended_longident ; "." ; i = V LIDENT "lid" → 
           <:ctyp< $longid:me1$ . $_lid:i$ >>
-      | me1 = extended_longident ; "." ; "(" ; t = ctyp ; ")" → 
+      | me1 = extended_longident ; "." ; t = paren_ctyp → 
         <:ctyp< $longid:me1$ . ( $t$ ) >>
       | i = V LIDENT "lid" → 
           <:ctyp< $_lid:i$ >>
@@ -1406,16 +1406,20 @@ EXTEND
       | ".." -> <:ctyp< .. >>
       | "_" → <:ctyp< _ >>
       | e = alg_extension -> <:ctyp< [% $_extension:e$ ] >>
-      | "(" ; "module"; mt = module_type ; ")" → <:ctyp< ( module $mt$ ) >>
-      | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" → mktuptyp loc t tl
-      | "("; t = SELF; ")" → <:ctyp< $t$ >>
-      | "("; tl = V (LIST1 ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>
+      | t = paren_ctyp -> t
       | "["; cdl = V (LIST1 constructor_declaration SEP "|"); "]" →
           <:ctyp< [ $_list:cdl$ ] >>
       | "["; "|"; "]" →
           <:ctyp< [ $list:[]$ ] >>
       | "{"; ldl = V (LIST1 label_declaration SEP ";"); "}" →
           <:ctyp< { $_list:ldl$ } >> ] ]
+  ;
+  paren_ctyp:
+    [ [ "(" ; "module"; mt = module_type ; ")" → <:ctyp< ( module $mt$ ) >>
+      | "("; t = ctyp; "*"; tl = LIST1 ctyp SEP "*"; ")" → mktuptyp loc t tl
+      | "("; t = ctyp; ")" → <:ctyp< $t$ >>
+      | "("; tl = V (LIST1 ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>
+    ] ]
   ;
   ctyp_below_alg_attribute:
   [ [ x = ctyp LEVEL "below_alg_attribute" -> x ]

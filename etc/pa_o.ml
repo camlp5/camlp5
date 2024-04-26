@@ -1996,6 +1996,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     [ LEFTA
       [ me1 = extended_longident ; "." ; i = V LIDENT "lid" → 
           <:ctyp< $longid:me1$ . $_lid:i$ >>
+      | me1 = extended_longident ; "." ; "(" ; t = ctyp ; ")" → 
+        <:ctyp< $longid:me1$ . ( $t$ ) >>
       | i = V LIDENT "lid" → 
           <:ctyp< $_lid:i$ >>
       ] 

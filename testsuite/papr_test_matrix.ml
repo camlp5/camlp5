@@ -6068,6 +6068,25 @@ type \#and += [ Foo ];|foo}
      official_output = OK {foo|let f ~\#let ?\#and () = 1|foo} ;
      r_output = OK {foo|value f ~{\#let} ?{\#and} () = 1;|foo}
     }
+  ;{name="local-open-type-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = T.U.V.( int * bool)|foo} ;
+     official_input = OK {foo|type t = T.U.V.( int * bool)|foo} ;
+     r_input = OK {foo|type t = T.U.V.( int * bool);|foo} ;
+     o_output = OK {foo|type t = T.U.V.( int * bool);;|foo} ;
+     official_output = OK {foo|type t = T.U.V.((int * bool))|foo} ;
+     r_output = OK {foo|type t = T.U.V.( (int * bool));|foo}
+    }
+  ;{name="local-open-type-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|(1 : T.U.V.( int * bool))|foo} ;
+     official_input = OK {foo|(1 : T.U.V.( int * bool))|foo} ;
+     r_input = OK {foo|(1 : T.U.V.( int * bool));|foo} ;
+     o_output = OK {foo|let _ = (1 : T.U.V.( int * bool));;|foo} ;
+     official_output = OK {foo|;;(1 : T.U.V.( (int * bool)))|foo} ;
+     r_output = OK {foo|(1 : T.U.V.( (int * bool)));|foo}
+    }
+
   ]
 END
 
