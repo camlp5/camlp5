@@ -102,6 +102,8 @@ let rec ctyp floc sh =
         let loc = floc loc in TyXtr (loc, x1, option_map (vala_map self) x2)
     | TyExten (loc, exten) ->
         let loc = floc loc in TyExten (loc, attribute_body floc sh exten)
+    | TyOpen (loc, li, t) ->
+        let loc = floc loc in TyOpen (loc, longid floc sh li, ctyp floc sh t)
   in
   self
 and generic_constructor floc sh (loc, x1, x2, x3, x4, x5) =
