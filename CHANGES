@@ -13,6 +13,34 @@ Camlp5 Version 8.03.00:
   undocumented and only available in revised mode, but hey, just in
   case, letting you know I removed it.
 
+  BUT BUT BUT NOTE WELL this has impact on packages that use camlp5
+  internals, b/c some of the internal interfaces have changed.  Specifically:
+
+  (1) if you use "camlp5 pa_r.cmo .... pr_o.cmo" to invoke the preprocessor
+  rather than
+
+  "not-ocamlfind preprocess -package camlp5.pa_r,....,camlp5.pr_o"
+
+  you will need to add "o_keywords.cmo" before "pr_o.cmo" (this is
+  required by the need to print keywords for each syntax as escaped
+  raw identifiers.  Since each syntax has a slightly different set of
+  keywords, the printer needs to be parameterized by the
+  keyword-table.
+
+  (2) Similarly, if you use the Camlp5 lexer in your package, there is
+  a new field, "kwds", which is initialized to the keyword hashtable,
+  viz.
+
+    let kwd_table = Hashtbl.create 301 in
+    let glex =
+    {Plexing.tok_func = func ctx kwd_table glexr;
+     tok_using = using_token ctx kwd_table;
+     tok_removing = removing_token kwd_table;
+     tok_match = tok_match; tok_text = text; tok_comm = None ; kwds = kwd_table }
+
+  note the "kwds = kwd_table".
+
+
 Camlp5 Version 8.02.01:
 --------------------
 
