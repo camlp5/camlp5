@@ -48,7 +48,7 @@
 (define (identifier kwt s)
  (let
   ((con
-    (try (begin (: (Hashtbl.find kwt s) unit) "")
+    (try (begin (ignore (: (Hashtbl.find kwt s) string)) "")
      (Not_found (match s.[0] ((range 'A' 'Z') "UIDENT") (_ "LIDENT"))))))
   (values con s)))
 
@@ -266,7 +266,7 @@
     "QUOT" "SPACEDOT" "STRING" "UIDENT")
    ())
   ((or "ANTIQUOT" "ANTIQUOT_LOC") ())
-  ("" (try (Hashtbl.find kwt prm) (Not_found (Hashtbl.add kwt prm ()))))
+  ("" (try (begin (Hashtbl.find kwt prm) ()) (Not_found (Hashtbl.add kwt prm prm))))
   (_
    (raise
     (Plexing.Error

@@ -27,6 +27,6 @@ echo "ocamlfind ${OCAMLN}c -package $C5PACKAGES -g -I ../lib -I ../main -c -impl
 ocamlfind ${OCAMLN}c -package $C5PACKAGES -g -I ../lib -I ../main -c -impl tmp.ppo
 echo "${RM} tmp.ppo" 1>&2
 ${RM} tmp.ppo
-echo "${OCAMLN}run$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_ro.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2
-${OCAMLN}run$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_ro.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
+echo "${OCAMLN}run$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/r_keywords.cmo ../etc/pr_r.cmo ../etc/pr_ro.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2
+${OCAMLN}run$EXE ../main/${CAMLP5N}$EXE ./compile.cmo ./tmp.cmo ../etc/r_keywords.cmo ../etc/pr_r.cmo ../etc/pr_ro.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
 #${RM} tmp.*

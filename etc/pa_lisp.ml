@@ -85,7 +85,7 @@
            (((` (as (range '0' '9') c)) (n (number (Buff.store 0 c)))) ep
             (, n (, bp ep)))
            (((` x) (s (ident (Buff.store 0 x)))) ep
-            (let ((con (try (progn (: (Hashtbl.find kwt s) unit) "")
+            (let ((con (try (progn (ignore (: (Hashtbl.find kwt s) string)) "")
                             (Not_found
                              (match x
                                     ((range 'A' 'Z') "UIDENT")
@@ -136,8 +136,8 @@
                 ((or "CHAR" "EOI" "INT" "LIDENT" "QUOT" "STRING" "UIDENT") ())
                 ((or "ANTIQUOT" "ANTIQUOT_LOC") ())
                 (("")
-                 (try (Hashtbl.find kwt prm)
-                      (Not_found (Hashtbl.add kwt prm ()))))
+                 (try (progn (Hashtbl.find kwt prm) ())
+                      (Not_found (Hashtbl.add kwt prm prm))))
                 (_ (raise
                     (Plexing.Error
                      (^ "the constructor \""
