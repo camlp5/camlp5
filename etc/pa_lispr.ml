@@ -110,7 +110,7 @@ value rec next_token_after_spaces kwt =
       let ep = Stream.count strm__ in
       let con =
         try do {
-          (Hashtbl.find kwt s : unit);
+          ignore(Hashtbl.find kwt s : string);
           ""
         }
         with
@@ -170,7 +170,7 @@ value lexer_using kwt (con, prm) =
   match con with
   [ "CHAR" | "EOI" | "INT" | "LIDENT" | "QUOT" | "STRING" | "UIDENT" → ()
   | "ANTIQUOT" | "ANTIQUOT_LOC" → ()
-  | "" → try Hashtbl.find kwt prm with [ Not_found → Hashtbl.add kwt prm () ]
+  | "" → try do { Hashtbl.find kwt prm; () } with [ Not_found → Hashtbl.add kwt prm prm ]
   | _ →
       raise
         (Plexing.Error
@@ -192,7 +192,7 @@ value lexer_gmake () =
   {Plexing.tok_func = Plexing.lexer_func_of_parser (lexer2 kwt);
    Plexing.tok_using = lexer_using kwt; Plexing.tok_removing = fun [];
    Plexing.tok_match = Plexing.default_match; Plexing.tok_text = lexer_text;
-   Plexing.tok_comm = None}
+   Plexing.tok_comm = None; Plexing.kwds = kwt }
 ;
 
 (* Building AST *)

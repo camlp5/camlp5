@@ -41,7 +41,9 @@ type lexer 'te =
     tok_removing : pattern -> unit;
     tok_match : mutable pattern -> 'te -> string;
     tok_text : pattern -> string;
-    tok_comm : mutable option (list Ploc.t) }
+    tok_comm : mutable option (list Ploc.t);
+    kwds : Hashtbl.t string string
+  }
    (** The type for lexers compatible with camlp5 grammars. The parameter
        type ['te] is the type of the tokens.
 -      The field [tok_func] is the main lexer function. See [lexer_func]

@@ -106,31 +106,46 @@ package "pa_op" (
 
 package "pr_r" (
   requires(toploop) = "camlp5"
-  archive(toploop)      = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
+  archive(toploop)      = "r_keywords.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
-  archive(syntax,preprocessor,native) = "pr_r.cmx pr_ro.cmx pr_rp.cmx"
+  archive(syntax,preprocessor,-native) = "r_keywords.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo"
+  archive(syntax,preprocessor,native) = "r_keywords.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx"
 
   package "link" (
     requires = "camlp5"
-    archive(byte) = "pr_r.cmo pr_ro.cmo pr_rp.cmo"
-    archive(native) = "pr_r.cmx pr_ro.cmx pr_rp.cmx"
+    archive(byte) = "r_keywords.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo"
+    archive(native) = "r_keywords.cmx pr_r.cmx pr_ro.cmx pr_rp.cmx"
+  )
+)
+
+package "pr_o_basic" (
+  requires(toploop) = "camlp5"
+  archive(toploop)      = "o_keywords.cmo pr_o.cmo"
+
+  requires(syntax,preprocessor) = "camlp5"
+  archive(syntax,preprocessor,-native) = "o_keywords.cmo pr_o.cmo"
+  archive(syntax,preprocessor,native) = "o_keywords.cmx pr_o.cmx"
+
+  package "link" (
+    requires = "camlp5"
+    archive(byte) = "o_keywords.cmo pr_o.cmo"
+    archive(native) = "o_keywords.cmx pr_o.cmx"
   )
 )
 
 package "pr_o" (
-  requires(toploop) = "camlp5"
-  archive(toploop)      = "pr_o.cmo pr_op.cmo"
+  requires(toploop) = "camlp5.pr_o_basic"
+  archive(toploop)      = "pr_op.cmo"
 
-  requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "pr_o.cmo pr_op.cmo"
-  archive(syntax,preprocessor,native) = "pr_o.cmx pr_op.cmx"
+  requires(syntax,preprocessor) = "camlp5.pr_o_basic"
+  archive(syntax,preprocessor,-native) = "pr_op.cmo"
+  archive(syntax,preprocessor,native) = "pr_op.cmx"
 
   package "link" (
-    requires = "camlp5"
-    archive(byte) = "pr_o.cmo pr_op.cmo"
-    archive(native) = "pr_o.cmx pr_op.cmx"
+    requires = "camlp5.pr_o_basic.link"
+    archive(byte) = "pr_op.cmo"
+    archive(native) = "pr_op.cmx"
   )
 )
 

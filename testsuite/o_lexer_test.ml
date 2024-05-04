@@ -103,6 +103,30 @@ bar|}
  x|a}))
   }
   ])
+; "lex-2" >:: (fun [ _ -> do {
+    assert_equal ~{printer=pp_rvs}
+      [(("LIDENT","x"),(0,1,1,0))
+      ;(("EOI",""),(1,2,1,0))]
+      (List.map extract (lex_string {a|x|a}))
+;   assert_equal ~{printer=pp_rvs}
+      [(("LIDENT","x"),(0,3,1,0))
+      ;(("EOI",""),(3,4,1,0))]
+      (List.map extract (lex_string {a|\#x|a}))
+;   assert_equal ~{printer=pp_rvs}
+      [(("LIDENT","begin"),(0,7,1,0))
+      ;(("EOI",""),(7,8,1,0))]
+      (List.map extract (lex_string {a|\#begin|a}))
+;   assert_equal ~{printer=pp_rvs}
+      [(("TILDEIDENT","type"),(0,7,1,0));(("EOI",""),(7,8,1,0))]
+      (List.map extract (lex_string {foo|~\#type|foo}))
+;   assert_equal ~{printer=pp_rvs}
+      [(("TILDEIDENTCOLON","type"),(0,8,1,0));(("EOI",""),(8,9,1,0))]
+      (List.map extract (lex_string {foo|~\#type:|foo}))
+;   assert_equal ~{printer=pp_rvs}
+      [(("","'"),(0,1,1,0));(("LIDENT","type"),(1,7,1,0));(("EOI",""),(7,8,1,0))]
+      (List.map extract (lex_string {foo|'\#type|foo}))
+  }
+  ])
 ]
 ;
 

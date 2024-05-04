@@ -21,6 +21,7 @@ type context =
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
+    is_kwd : string -> bool;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
     make_lined_loc : int * int -> string -> Ploc.t }
@@ -814,17 +815,32 @@ let tilde ctx bp buf strm =
     keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
 ;;
 
-let tildeident buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ':' -> Stream.junk strm__; "TILDEIDENTCOLON", Plexing.Lexbuf.get buf
-  | _ -> "TILDEIDENT", Plexing.Lexbuf.get buf
+let tildeident ~raw ctx loc =
+  let check_kwd s =
+    if raw then s
+    else if ctx.is_kwd s then err ctx loc "illegal token in TILDEIDENT"
+    else s
+  in
+  fun buf (strm__ : _ Stream.t) ->
+    match Stream.peek strm__ with
+      Some ':' ->
+        Stream.junk strm__;
+        "TILDEIDENTCOLON", check_kwd (Plexing.Lexbuf.get buf)
+    | _ -> "TILDEIDENT", check_kwd (Plexing.Lexbuf.get buf)
 ;;
 
-let questionident buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ':' ->
-      Stream.junk strm__; "QUESTIONIDENTCOLON", Plexing.Lexbuf.get buf
-  | _ -> "QUESTIONIDENT", Plexing.Lexbuf.get buf
+let questionident ~raw ctx loc =
+  let check_kwd s =
+    if raw then s
+    else if ctx.is_kwd s then err ctx loc "illegal token in QUESTIONIDENT"
+    else s
+  in
+  fun buf (strm__ : _ Stream.t) ->
+    match Stream.peek strm__ with
+      Some ':' ->
+        Stream.junk strm__;
+        "QUESTIONIDENTCOLON", check_kwd (Plexing.Lexbuf.get buf)
+    | _ -> "QUESTIONIDENT", check_kwd (Plexing.Lexbuf.get buf)
 ;;
 
 let rec linedir n s =
@@ -1098,9 +1114,10 @@ let word_operators ctx id buf (strm__ : _ Stream.t) =
       "", id ^ Plexing.Lexbuf.get buf
   | _ -> try "", ctx.find_kwd id with Not_found -> "LIDENT", id
 ;;
-let keyword ctx buf strm =
+let keyword ~raw ctx buf strm =
   let id = Plexing.Lexbuf.get buf in
-  if id = "let" || id = "and" then
+  if raw then "LIDENT", id
+  else if id = "let" || id = "and" then
     word_operators ctx id Plexing.Lexbuf.empty strm
   else try "", ctx.find_kwd id with Not_found -> "LIDENT", id
 ;;
@@ -1145,7 +1162,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
           with
             Some buf ->
               let buf = ident buf strm__ in
-              begin try keyword ctx buf strm__ with
+              begin try keyword ~raw:false ctx buf strm__ with
                 Stream.Failure -> raise (Stream.Error "")
               end
           | _ ->
@@ -1174,8 +1191,8 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                   end
               | Some '\'' ->
                   Stream.junk strm__;
-                  begin match Stream.npeek 3 strm__ with
-                    ['\\'; 'a'..'z'; 'a'..'z'] ->
+                  begin match Stream.npeek 2 strm__ with
+                    ['\\'; '#'] ->
                       keyword_or_error ctx (bp, Stream.count strm__) "'"
                   | _ ->
                       match
@@ -1209,24 +1226,70 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                   Stream.junk strm__;
                   begin try
                     match Stream.peek strm__ with
-                      Some ('a'..'z' as c) ->
+                      Some '\\' ->
+                        Stream.junk strm__;
+                        begin match Stream.peek strm__ with
+                          Some '#' ->
+                            Stream.junk strm__;
+                            begin try
+                              match Stream.peek strm__ with
+                                Some ('a'..'z' as c) ->
+                                  Stream.junk strm__;
+                                  let buf =
+                                    ident (Plexing.Lexbuf.add c buf) strm__
+                                  in
+                                  tildeident ~raw:true ctx
+                                    (bp, Stream.count strm__) buf strm__
+                              | Some '_' ->
+                                  Stream.junk strm__;
+                                  let buf =
+                                    ident (Plexing.Lexbuf.add '_' buf) strm__
+                                  in
+                                  tildeident ~raw:true ctx
+                                    (bp, Stream.count strm__) buf strm__
+                              | _ -> raise Stream.Failure
+                            with Stream.Failure -> raise (Stream.Error "")
+                            end
+                        | _ -> raise (Stream.Error "")
+                        end
+                    | Some ('a'..'z' as c) ->
                         Stream.junk strm__;
                         let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
-                        tildeident buf strm__
+                        tildeident ~raw:false ctx (bp, Stream.count strm__)
+                          buf strm__
                     | Some '_' ->
                         Stream.junk strm__;
                         let buf = ident (Plexing.Lexbuf.add '_' buf) strm__ in
-                        tildeident buf strm__
+                        tildeident ~raw:false ctx (bp, Stream.count strm__)
+                          buf strm__
                     | _ -> tilde ctx bp (Plexing.Lexbuf.add '~' buf) strm__
                   with Stream.Failure -> raise (Stream.Error "")
                   end
               | Some '?' ->
                   Stream.junk strm__;
                   begin match Stream.peek strm__ with
-                    Some ('a'..'z' as c) ->
+                    Some '\\' ->
+                      Stream.junk strm__;
+                      begin match Stream.peek strm__ with
+                        Some '#' ->
+                          Stream.junk strm__;
+                          begin match Stream.peek strm__ with
+                            Some ('a'..'z' as c) ->
+                              Stream.junk strm__;
+                              let buf =
+                                ident (Plexing.Lexbuf.add c buf) strm__
+                              in
+                              questionident ~raw:true ctx
+                                (bp, Stream.count strm__) buf strm__
+                          | _ -> raise (Stream.Error "")
+                          end
+                      | _ -> raise (Stream.Error "")
+                      end
+                  | Some ('a'..'z' as c) ->
                       Stream.junk strm__;
                       let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
-                      questionident buf strm__
+                      questionident ~raw:false ctx (bp, Stream.count strm__)
+                        buf strm__
                   | _ -> question ctx bp (Plexing.Lexbuf.add '?' buf) strm__
                   end
               | Some '<' -> Stream.junk strm__; less ctx bp buf strm__
@@ -1466,8 +1529,29 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                           match Stream.peek strm__ with
                             Some '\\' ->
                               Stream.junk strm__;
-                              let buf = ident3 buf strm__ in
-                              "LIDENT", Plexing.Lexbuf.get buf
+                              begin match Stream.peek strm__ with
+                                Some '#' ->
+                                  Stream.junk strm__;
+                                  let buf =
+                                    try
+                                      match Stream.peek strm__ with
+                                        Some ('a'..'z' | '_' as c) ->
+                                          Stream.junk strm__;
+                                          Plexing.Lexbuf.add c buf
+                                      | _ -> misc_letter buf strm__
+                                    with Stream.Failure ->
+                                      raise (Stream.Error "")
+                                  in
+                                  let buf = ident buf strm__ in
+                                  begin try
+                                    keyword ~raw:true ctx buf strm__
+                                  with Stream.Failure ->
+                                    raise (Stream.Error "")
+                                  end
+                              | _ ->
+                                  let buf = ident3 buf strm__ in
+                                  "LIDENT", Plexing.Lexbuf.get buf
+                              end
                           | Some '#' ->
                               Stream.junk strm__;
                               let buf =
@@ -1581,7 +1665,7 @@ let make_ctx kwd_table =
   {after_space = false; dollar_for_antiquotation = !dollar_for_antiquotation;
    simplest_raw_strings = !simplest_raw_strings;
    specific_space_dot = !specific_space_dot;
-   find_kwd = Hashtbl.find kwd_table;
+   find_kwd = Hashtbl.find kwd_table; is_kwd = Hashtbl.mem kwd_table;
    line_cnt =
      (fun bp1 c ->
         match c with
@@ -1922,19 +2006,19 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 1016, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1016, 45)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1034, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1034, 45)));
        tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 1016, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1017, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1017, 37)));
-       tok_comm = None}
+         (fun _ -> raise (Match_failure ("plexer.ml", 1034, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1035, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1035, 37)));
+       tok_comm = None; kwds = kwd_table}
   in
   let glex =
     {Plexing.tok_func = func ctx kwd_table glexr;
      tok_using = using_token ctx kwd_table;
      tok_removing = removing_token kwd_table; tok_match = tok_match;
-     tok_text = text; tok_comm = None}
+     tok_text = text; tok_comm = None; kwds = kwd_table}
   in
   glexr := glex; glex
 ;;

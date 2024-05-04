@@ -81,6 +81,7 @@ clean::
 	$(RM) -rf local-install
 	$(MAKE) -C test clean
 	$(MAKE) -C testsuite clean
+	$(MAKE) -C toolsuite clean
 	$(MAKE) -C scripts clean
 
 scratch: clean
@@ -215,6 +216,11 @@ bootstrap_source:
 	mv ocaml_src.new/$$DIR/$$FILE ocaml_src/$$DIR/$$FILE
 	rmdir ocaml_src.new/$$DIR
 	rmdir ocaml_src.new
+
+bootstrap_keywords:
+	$(MAKE) -C toolsuite clean all
+	toolsuite/r_lexer_kwds.byte > etc/r_keywords.ml
+	toolsuite/o_lexer_kwds.byte > etc/o_keywords.ml
 
 new_sources: oprinter
 	$(NOVERBOSE) for i in $(FDIRS); do \

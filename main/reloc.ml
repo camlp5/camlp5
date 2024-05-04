@@ -135,6 +135,9 @@ value rec ctyp floc sh =
     | TyExten loc exten ->
         let loc = floc loc in
         TyExten loc (attribute_body floc sh exten)
+    | TyOpen loc li t ->
+       let loc = floc loc in
+       TyOpen loc (longid floc sh li) (ctyp floc sh t)
     ]
 and generic_constructor floc sh = fun (loc, x1, x2, x3, x4, x5) ->
     (floc loc, x1, x2, vala_map (List.map (ctyp floc sh)) x3,

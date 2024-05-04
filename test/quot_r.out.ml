@@ -61,6 +61,7 @@ MLast.TyVrn loc lpv (Some ols);
 MLast.TyVrn loc lpv ools;
 MLast.TyAtt loc t x;
 MLast.TyExten loc x;
+MLast.TyOpen loc x t;
 MLast.PvTag loc (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal lt) (Ploc.VaVal x);
 MLast.PvTag loc (Ploc.VaVal s) (Ploc.VaVal True) (Ploc.VaVal lt) x;
 MLast.PvTag loc (Ploc.VaVal s) (Ploc.VaVal True) lt (Ploc.VaVal x);

@@ -843,6 +843,8 @@ Grammar.safe_extend
      grammar_entry_create "simple_type_parameter"
    and ctyp_ident : 'ctyp_ident Grammar.Entry.e =
      grammar_entry_create "ctyp_ident"
+   and paren_ctyp : 'paren_ctyp Grammar.Entry.e =
+     grammar_entry_create "paren_ctyp"
    and ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e =
      grammar_entry_create "ctyp_below_alg_attribute"
    and cons_ident : 'cons_ident Grammar.Entry.e =
@@ -4696,6 +4698,19 @@ Grammar.safe_extend
                       (extended_longident :
                        'extended_longident Grammar.Entry.e)))
                 (Grammar.s_token ("", ".")))
+             (Grammar.s_nterm (paren_ctyp : 'paren_ctyp Grammar.Entry.e)),
+           "194fe98d",
+           (fun (t : 'paren_ctyp) _ (me1 : 'extended_longident)
+                (loc : Ploc.t) ->
+              (MLast.TyOpen (loc, me1, t) : 'ctyp_ident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop
+                   (Grammar.s_nterm
+                      (extended_longident :
+                       'extended_longident Grammar.Entry.e)))
+                (Grammar.s_token ("", ".")))
              (Grammar.s_token ("LIDENT", "")),
            "194fe98d",
            (fun (i : string) _ (me1 : 'extended_longident) (loc : Ploc.t) ->
@@ -4820,51 +4835,9 @@ Grammar.safe_extend
            (fun _ (cdl : 'constructor_declaration list) _ (loc : Ploc.t) ->
               (MLast.TySum (loc, cdl) : 'ctyp)));
         Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
-                   (Grammar.s_token ("", "*")) false))
-             (Grammar.s_token ("", ")")),
-           "194fe98d",
-           (fun _ (tl : 'ctyp list) _ (loc : Ploc.t) ->
-              (MLast.TyTup (loc, tl) : 'ctyp)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                Grammar.s_self)
-             (Grammar.s_token ("", ")")),
-           "194fe98d", (fun _ (t : 'ctyp) _ (loc : Ploc.t) -> (t : 'ctyp)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next
-                      (Grammar.r_next Grammar.r_stop
-                         (Grammar.s_token ("", "(")))
-                      Grammar.s_self)
-                   (Grammar.s_token ("", "*")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
-                   (Grammar.s_token ("", "*")) false))
-             (Grammar.s_token ("", ")")),
-           "194fe98d",
-           (fun _ (tl : 'ctyp list) _ (t : 'ctyp) _ (loc : Ploc.t) ->
-              (mktuptyp loc t tl : 'ctyp)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                   (Grammar.s_token ("", "module")))
-                (Grammar.s_nterm
-                   (module_type : 'module_type Grammar.Entry.e)))
-             (Grammar.s_token ("", ")")),
-           "194fe98d",
-           (fun _ (mt : 'module_type) _ _ (loc : Ploc.t) ->
-              (MLast.TyPck (loc, mt) : 'ctyp)));
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (paren_ctyp : 'paren_ctyp Grammar.Entry.e)),
+           "194fe98d", (fun (t : 'paren_ctyp) (loc : Ploc.t) -> (t : 'ctyp)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
@@ -4890,6 +4863,55 @@ Grammar.safe_extend
            "194fe98d",
            (fun (i : 'ident) _ (loc : Ploc.t) ->
               (MLast.TyQuo (loc, i) : 'ctyp)))]];
+    Grammar.extension (paren_ctyp : 'paren_ctyp Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
+                   (Grammar.s_token ("", "*")) false))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ (tl : 'ctyp list) _ (loc : Ploc.t) ->
+              (MLast.TyTup (loc, tl) : 'paren_ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ (t : 'ctyp) _ (loc : Ploc.t) -> (t : 'paren_ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "(")))
+                      (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                   (Grammar.s_token ("", "*")))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
+                   (Grammar.s_token ("", "*")) false))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ (tl : 'ctyp list) _ (t : 'ctyp) _ (loc : Ploc.t) ->
+              (mktuptyp loc t tl : 'paren_ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
+                   (Grammar.s_token ("", "module")))
+                (Grammar.s_nterm
+                   (module_type : 'module_type Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ (mt : 'module_type) _ _ (loc : Ploc.t) ->
+              (MLast.TyPck (loc, mt) : 'paren_ctyp)))]];
     Grammar.extension
       (ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e)
       None

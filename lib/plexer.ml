@@ -21,6 +21,7 @@ type context =
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
+    is_kwd : string -> bool;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
     make_lined_loc : (int * int) -> string -> Ploc.t }
@@ -435,16 +436,26 @@ value tilde ctx bp buf strm =
     [ hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
-value tildeident =
+value tildeident ~{raw} ctx loc =
+  let check_kwd s =
+    if raw then s
+    else if ctx.is_kwd s then err ctx loc "illegal token in TILDEIDENT"
+    else s
+  in
   lexer
-  [ ":"/ -> ("TILDEIDENTCOLON", $buf)
-  | -> ("TILDEIDENT", $buf) ]
+  [ ":"/ -> ("TILDEIDENTCOLON", check_kwd $buf)
+  | -> ("TILDEIDENT", check_kwd $buf) ]
 ;
 
-value questionident =
+value questionident ~{raw} ctx loc =
+  let check_kwd s =
+    if raw then s
+    else if ctx.is_kwd s then err ctx loc "illegal token in QUESTIONIDENT"
+    else s
+  in
   lexer
-  [ ":"/ -> ("QUESTIONIDENTCOLON", $buf)
-  | -> ("QUESTIONIDENT", $buf) ]
+  [ ":"/ -> ("QUESTIONIDENTCOLON", check_kwd $buf)
+  | -> ("QUESTIONIDENT", check_kwd $buf) ]
 ;
 
 value rec linedir n s =
@@ -623,9 +634,11 @@ value word_operators ctx id = lexer
     | -> try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
     ] ]
 ;
-value keyword = fun ctx buf strm ->
+value keyword = fun ~{raw} ctx buf strm ->
   let id = $buf in
-  if id = "let" || id = "and" then word_operators ctx id $empty strm
+  if raw then
+    ("LIDENT", id)
+  else if id = "let" || id = "and" then word_operators ctx id $empty strm
   else
     try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
 ;
@@ -649,13 +662,13 @@ value next_token_after_spaces ctx bp =
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
   | greek_letter ident! -> ("GIDENT", $buf)
-  | [ 'a'-'z' | '_' | misc_letter ] ident! (keyword ctx)
+  | [ 'a'-'z' | '_' | misc_letter ] ident! (keyword ~{raw=False} ctx)
   | '1'-'9' number!
   | "0" [ 'o' | 'O' ] (digits octal)!
   | "0" [ 'x' | 'X' ] (hex_number)!
   | "0" [ 'b' | 'B' ] (digits binary)!
   | "0" number!
-  | "'"/ ?= [ '\\' 'a'-'z' 'a'-'z' ] -> keyword_or_error ctx (bp, $pos) "'"
+  | "'"/ ?= [ '\\' '#' ] -> keyword_or_error ctx (bp, $pos) "'"
   | "'"/ (char ctx bp) -> ("CHAR", $buf)
   | "'" -> keyword_or_error ctx (bp, $pos) "'"
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
@@ -663,10 +676,13 @@ value next_token_after_spaces ctx bp =
   | [ '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
       keyword_or_error ctx (bp, $pos) $buf
   | '!' hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
-  | "~"/ 'a'-'z' ident! tildeident!
-  | "~"/ '_' ident! tildeident!
+  | "~\\#"/ 'a'-'z' ident! (tildeident ~{raw=True} ctx (bp, $pos))!
+  | "~\\#"/ '_' ident! (tildeident ~{raw=True} ctx (bp, $pos))!
+  | "~"/ 'a'-'z' ident! (tildeident ~{raw=False} ctx (bp, $pos))!
+  | "~"/ '_' ident! (tildeident ~{raw=False} ctx (bp, $pos))!
   | "~" (tilde ctx bp)
-  | "?"/ 'a'-'z' ident! questionident!
+  | "?\\#"/ 'a'-'z' ident! (questionident ~{raw=True} ctx (bp, $pos))!
+  | "?"/ 'a'-'z' ident! (questionident ~{raw=False} ctx (bp, $pos))!
   | "?" (question ctx bp)!
   | "<"/ (less ctx bp)!
   | ":]" -> keyword_or_error ctx (bp, $pos) $buf
@@ -707,6 +723,7 @@ value next_token_after_spaces ctx bp =
   | ";" -> keyword_or_error ctx (bp, $pos) ";"
   | (utf8_equiv ctx bp)
   | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "\\#"/ [ 'a'-'z' | '_' | misc_letter ] ident! (keyword ~{raw=True} ctx)
   | "\\"/ ident3! -> ("LIDENT", $buf)
   | "#" hash_follower_chars! -> keyword_or_error ctx (bp, $pos) $buf
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
@@ -797,6 +814,7 @@ value make_ctx kwd_table =
      simplest_raw_strings = simplest_raw_strings.val ;
      specific_space_dot = specific_space_dot.val;
      find_kwd = Hashtbl.find kwd_table;
+     is_kwd = Hashtbl.mem kwd_table;
      line_cnt bp1 c =
        match c with
        [ '\n' | '\r' -> do {
@@ -1014,13 +1032,13 @@ value gmake () =
   let glexr =
     ref
      {Plexing.tok_func = fun []; tok_using = fun []; tok_removing = fun [];
-      tok_match = fun []; tok_text = fun []; tok_comm = None}
+      tok_match = fun []; tok_text = fun []; tok_comm = None; kwds = kwd_table }
   in
   let glex =
     {Plexing.tok_func = func ctx kwd_table glexr;
      tok_using = using_token ctx kwd_table;
      tok_removing = removing_token kwd_table;
-     tok_match = tok_match; tok_text = text; tok_comm = None}
+     tok_match = tok_match; tok_text = text; tok_comm = None ; kwds = kwd_table }
   in
   do { glexr.val := glex; glex }
 ;

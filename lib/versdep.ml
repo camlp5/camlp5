@@ -136,6 +136,15 @@ value ocaml_mktyp ?{alg_attributes=[]} loc x =
     {ptyp_desc = x; ptyp_loc = loc; ptyp_loc_stack = []; ptyp_attributes = alg_attributes}
   END
 ;
+
+IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
+value ocaml_ptyp_alias loc t i = Ptyp_alias t i ;
+value ocaml_ptyp_open loc li t = failwith "Only available in OCaml versions >= 5.2.0" ;
+ELSE
+value ocaml_ptyp_alias loc t i = Ptyp_alias t (mkloc loc i) ;
+value ocaml_ptyp_open loc li t = Ptyp_open (mkloc loc li) t ;
+END;
+
 value ocaml_mkpat loc x =
   IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     {ppat_desc = x; ppat_loc = loc; ppat_attributes = []}
@@ -799,6 +808,18 @@ value ocaml_case (p, wo, loc, e) =
   END
 ;
 
+IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
+ELSE
+value ocaml_pexp_function_coalesce e =
+  match e with [
+      Pexp_function params1 None (Pfunction_body {pexp_desc=Pexp_function params2 tycon body;pexp_attributes=[]}) ->
+      Pexp_function (params1@params2) tycon body
+    | Pexp_function params None (Pfunction_body {pexp_desc=Pexp_constraint e ty}) ->
+       Pexp_function params (Some (Pconstraint ty)) (Pfunction_body e)
+    | e -> e
+    ] ;
+END ;
+
 value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     match pel with [
@@ -809,6 +830,7 @@ value ocaml_pexp_function lab eo pel =
         else failwith "internal error: bad ast in ocaml_pexp_function"
     ]
   ELSE
+  IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
     match pel with [
       [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable}}] when lab = "" && eo = None ->
         Pexp_function pel
@@ -818,6 +840,22 @@ value ocaml_pexp_function lab eo pel =
         if lab = "" && eo = None then Pexp_function pel
         else failwith "internal error: bad ast in ocaml_pexp_function"
     ]
+  ELSE
+    let e = 
+    match pel with [
+      [{pc_lhs = p; pc_guard = None; pc_rhs = {pexp_desc = Pexp_unreachable; pexp_loc = loc}}] when lab = "" && eo = None ->
+      Pexp_function [] None (Pfunction_cases  pel loc [])
+    | [{pc_lhs = p; pc_guard = None; pc_rhs = e}] ->
+       let loc = e.pexp_loc in
+       let fparam = { pparam_desc = Pparam_val (labelled lab) eo p ; pparam_loc = loc } in
+       Pexp_function [fparam] None (Pfunction_body e)
+    | pel ->
+        if lab = "" && eo = None then
+          Pexp_function [] None (Pfunction_cases pel loc_none [])
+        else failwith "internal error: bad ast in ocaml_pexp_function"
+    ] in
+        ocaml_pexp_function_coalesce e
+  END
   END
 ;
 
@@ -837,8 +875,15 @@ value ocaml_pexp_letmodule =
 
 value ocaml_pexp_new loc li = Pexp_new (mkloc loc li);
 
+IFDEF OCAML_VERSION < OCAML_5_2_0 THEN
 value ocaml_pexp_newtype =
-    Some (fun loc s e -> Pexp_newtype (mkloc loc s) e)
+    (fun loc s e -> Pexp_newtype (mkloc loc s) e) ;
+ELSE
+value ocaml_pexp_newtype loc s e =
+  let e = Pexp_function [{pparam_loc = loc ; pparam_desc = Pparam_newtype (mkloc loc s)}] None (Pfunction_body e) in
+  ocaml_pexp_function_coalesce e
+;
+END
 ;
 
 value ocaml_pexp_object =
@@ -956,7 +1001,7 @@ value ocaml_ppat_open loc li p = Ppat_open (mkloc loc li) p ;
 END
 ;
 
-value ocaml_ppat_alias p i iloc = Ppat_alias p (mkloc iloc i);
+value ocaml_ppat_alias p i iloc = Ppat_alias p (mkloc iloc i) ;
 
 value ocaml_ppat_array =
   Some (fun pl -> Ppat_array pl)

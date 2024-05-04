@@ -54,7 +54,8 @@ type 'te lexer =
     tok_removing : pattern -> unit;
     mutable tok_match : pattern -> 'te -> string;
     tok_text : pattern -> string;
-    mutable tok_comm : location list option }
+    mutable tok_comm : location list option;
+    kwds : (string, string) Hashtbl.t }
 ;;
 
 let lexer_text (con, prm) =

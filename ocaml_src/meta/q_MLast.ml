@@ -8082,6 +8082,23 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_nterm
+                            (extended_longident :
+                             'extended_longident Grammar.Entry.e)))
+                      (Grammar.s_token ("", ".")))
+                   (Grammar.s_token ("", "(")))
+                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+             (Grammar.s_token ("", ")")),
+           "194fe98d",
+           (fun _ (t : 'ctyp) _ _ (me1 : 'extended_longident)
+                (loc : Ploc.t) ->
+              (Qast.Node ("TyOpen", [Qast.Loc; me1; t]) : 'ctyp_ident)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_nterm
                       (extended_longident :

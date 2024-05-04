@@ -661,7 +661,7 @@ and ctyp =
         | MLast.TyQuo (_, s), t -> t, s
         | _ -> error loc "incorrect alias type"
       in
-      mktyp loc (Ptyp_alias (ctyp t, i))
+      mktyp loc (ocaml_ptyp_alias (mkloc loc) (ctyp t) i)
   | TyAny loc -> mktyp loc Ptyp_any
   | TyApp (loc, _, _) as f ->
       let (f, al) = ctyp_fa [] f in
@@ -731,6 +731,9 @@ and ctyp =
   | TyXtr (loc, _, _) -> error loc "bad ast TyXtr"
   | TyExten (loc, ebody) ->
       mktyp loc (ocaml_ptyp_extension (extension (uv ebody)))
+  | TyOpen (loc, li, t) ->
+      let li = longid_long_id li in
+      mktyp loc (ocaml_ptyp_open (mkloc loc) li (ctyp t))
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then mkfield_var loc else []
@@ -1238,14 +1241,7 @@ and expr =
           | _ -> error loc "bad AST"
           end
       | [PaNty (loc, s), w, e] ->
-          begin match ocaml_pexp_newtype with
-            Some newtype ->
-              begin match uv w with
-                Some _ -> error loc "(type ..) not allowed with 'when'"
-              | None -> mkexp loc (newtype (mkloc loc) (uv s) (expr e))
-              end
-          | None -> error loc "(type ..) not in this ocaml version"
-          end
+          mkexp loc (ocaml_pexp_newtype (mkloc loc) (uv s) (expr e))
       | [PaOlb (loc, p, eo), w, e] ->
           let lab = label_of_patt p in
           let (p, eo) =

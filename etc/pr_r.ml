@@ -74,8 +74,8 @@ value is_infix = do {
 };
 
 value is_keyword =
-  let keywords = ["declare"; "value"; "where"] in
-  fun s -> List.mem s keywords
+  let kwdhash = R_keywords.keywords_hash in
+  fun s -> Hashtbl.mem kwdhash s
 ;
 
 value has_special_chars s =
@@ -177,11 +177,20 @@ value expand_lprintf pc loc f =
   else f pc
 ;
 
+
+value string pc s = pprintf pc "\"%s\"" s;
+
+value lident pc v =
+  if is_keyword v then pprintf pc "\\#%s@ " v
+  else pprintf pc "%s" v
+;
+
 value var_escaped pc (loc, v) =
   if is_infix v || has_special_chars v then lprintf pc "\\%s@ " v
-  else if is_keyword v then lprintf pc "\\%s@ " v
-  else lprintf pc "%s" v
+  else lident pc v
 ;
+
+value var_escaped_noloc pc v = var_escaped pc (Ploc.dummy, v) ;
 
 value cons_escaped pc s =
   let s = match s with [
@@ -275,8 +284,8 @@ value pr_extension atstring pc attr =
 
 value longident_lident pc (lio, id) =
   match lio with
-  [ None -> pprintf pc "%s" (Pcaml.unvala id)
-  | Some li -> pprintf pc "%p.%s" longident (Pcaml.unvala li) (Pcaml.unvala id)
+  [ None -> pprintf pc "%p" lident (Pcaml.unvala id)
+  | Some li -> pprintf pc "%p.%p" longident (Pcaml.unvala li) lident (Pcaml.unvala id)
   ]
 ;
 
@@ -812,7 +821,10 @@ value typevar pc s =
   | None ->
     if String.contains s '\'' then
       pprintf pc "' %s" s
-    else pprintf pc "'%s" s
+    else if is_keyword s then
+      pprintf pc "'\#%s" s
+    else
+      pprintf pc "'%s" s
    ]
 ;
 
@@ -1156,9 +1168,6 @@ value expr_short pc x =
 ;
 
 (* definitions of printers *)
-
-value string pc s = pprintf pc "\"%s\"" s;
-value lident pc s = pprintf pc "%s" s;
 
 value external_decl pc (loc, n, tyvars, t, sl, attrs) =
   pprintf pc "external %p :@;%p%p = %s%p" var_escaped (loc, n) typevars_binder tyvars ctyp t
@@ -1859,8 +1868,8 @@ EXTEND_PRINTER
               pprintf pc "@[<1>[%p]@]" (plist patt 0) xl ]
       | <:patt< ($p$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
-      | <:patt< (type $lid:s$) >> ->
-          pprintf pc "(type %s)" s
+      | <:patt:< (type $lid:s$) >> ->
+          pprintf pc "(type %p)" var_escaped (loc, s)
       | <:patt< (module $uidopt:s$ : $mt$) >> ->
           let s = uidopt_to_maybe_blank s in
           pprintf pc "@[<1>(module %s :@ %p)@]" s module_type mt
@@ -1947,6 +1956,7 @@ EXTEND_PRINTER
     | "dot"
       [
         <:ctyp< $longid:me$ . $lid:lid$ >> -> pprintf pc "%p.%s" longident me lid
+      | <:ctyp< $longid:me$ . ( $t$ ) >> -> pprintf pc "%p.( %p )" longident me ctyp t
       ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->

@@ -78,6 +78,7 @@ module Meta_make (C : MetaSig) =
       | TyXtr (loc, s, _) -> C.xtr loc s
       | TyExten (loc, exten) ->
           let exten = conv_extension exten in C.node "TyExten" [exten]
+      | TyOpen (_, li, t) -> C.node "TyOpen" [longid li; ctyp t]
     and longid_lident (lio, s) =
       C.tuple [C.option (C.vala longid) lio; C.vala C.string s]
     and conv_attributes attrs = C.vala (C.list attribute) attrs
