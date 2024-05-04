@@ -119,7 +119,7 @@ package "pr_r" (
   )
 )
 
-package "pr_o_basic" (
+package "pr_o" (
   requires(toploop) = "camlp5"
   archive(toploop)      = "o_keywords.cmo pr_o.cmo"
 
@@ -134,16 +134,16 @@ package "pr_o_basic" (
   )
 )
 
-package "pr_o" (
-  requires(toploop) = "camlp5.pr_o_basic"
+package "pr_op" (
+  requires(toploop) = "camlp5.pr_o"
   archive(toploop)      = "pr_op.cmo"
 
-  requires(syntax,preprocessor) = "camlp5.pr_o_basic"
+  requires(syntax,preprocessor) = "camlp5.pr_o"
   archive(syntax,preprocessor,-native) = "pr_op.cmo"
   archive(syntax,preprocessor,native) = "pr_op.cmx"
 
   package "link" (
-    requires = "camlp5.pr_o_basic.link"
+    requires = "camlp5.pr_o.link"
     archive(byte) = "pr_op.cmo"
     archive(native) = "pr_op.cmx"
   )
