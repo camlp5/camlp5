@@ -119,18 +119,33 @@ package "pr_r" (
   )
 )
 
-package "pr_o" (
+package "pr_o_basic" (
   requires(toploop) = "camlp5"
-  archive(toploop)      = "o_keywords.cmo pr_o.cmo pr_op.cmo"
+  archive(toploop)      = "o_keywords.cmo pr_o.cmo"
 
   requires(syntax,preprocessor) = "camlp5"
-  archive(syntax,preprocessor,-native) = "o_keywords.cmo pr_o.cmo pr_op.cmo"
-  archive(syntax,preprocessor,native) = "o_keywords.cmx pr_o.cmx pr_op.cmx"
+  archive(syntax,preprocessor,-native) = "o_keywords.cmo pr_o.cmo"
+  archive(syntax,preprocessor,native) = "o_keywords.cmx pr_o.cmx"
 
   package "link" (
     requires = "camlp5"
-    archive(byte) = "o_keywords.cmo pr_o.cmo pr_op.cmo"
-    archive(native) = "o_keywords.cmx pr_o.cmx pr_op.cmx"
+    archive(byte) = "o_keywords.cmo pr_o.cmo"
+    archive(native) = "o_keywords.cmx pr_o.cmx"
+  )
+)
+
+package "pr_o" (
+  requires(toploop) = "camlp5.pr_o_basic"
+  archive(toploop)      = "pr_op.cmo"
+
+  requires(syntax,preprocessor) = "camlp5.pr_o_basic"
+  archive(syntax,preprocessor,-native) = "pr_op.cmo"
+  archive(syntax,preprocessor,native) = "pr_op.cmx"
+
+  package "link" (
+    requires = "camlp5.pr_o_basic.link"
+    archive(byte) = "pr_op.cmo"
+    archive(native) = "pr_op.cmx"
   )
 )
 
