@@ -3,9 +3,10 @@
 
 TOP=..
 include $(TOP)/config/Makefile
+include $(TOP)/config/Makefile.tools
 OVERSION_NAME := $(shell ./make_version_name.sh $(OVERSION))
 
-DIFF=diff -Bwi -U 10
+DIFF:=$(DIFF) -Bwi -U 10
 DEP=../etc/r_keywords.cmo ../etc/pr_r.cmo quot_r.out.ml
 RM=rm
 

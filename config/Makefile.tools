@@ -1,0 +1,13 @@
+
+ifdef OPAMROOT
+ifeq ($(shell opam var os),freebsd)
+DIFF=gdiff
+BASH=/usr/local/bin/bash
+else
+DIFF=diff
+BASH=/bin/bash
+endif
+else
+DIFF=diff
+BASH=/bin/bash
+endif
