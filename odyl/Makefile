@@ -13,7 +13,7 @@ OBJS=odyl_config.cmo odyl_main.cmo
 
 all: odyl$(EXE)
 
-opt: odyl.cmxa odyl.cmx
+opt: odyl.cmxa odyl.cmx odyl.cmxs
 
 odyl$(EXE): odyl.cma odyl.cmo
 	$(OCAMLC) $(DEBUG) odyl.cma odyl.cmo -o odyl$(EXE)
@@ -23,6 +23,9 @@ odyl.cma: $(OBJS)
 
 odyl.cmxa: $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(LINKFLAGS) $(OBJS:.cmo=.cmx) -a -o odyl.cmxa
+
+odyl.cmxs: $(OBJS:.cmo=.cmx)
+	$(OCAMLOPT) -shared -linkall $(LINKFLAGS) $(OBJS:.cmo=.cmx) -o odyl.cmxs
 
 odyl_main.cmx: odyl_main.ml
 	$(CAMLP5_COMM) -DOPT -o odyl_main.ppo odyl_main.ml
@@ -55,7 +58,7 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	if test -f odyl.cmxa; then \
-	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
+	  cp odyl.cmxa odyl.cmxs odyl.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  cp odyl$(EXT_LIB) odyl$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	fi
 

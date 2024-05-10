@@ -18,7 +18,7 @@ CAMLP5=$(CAMLP5N)$(EXE)
 CAMLP5OPT=phony
 
 all: $(CAMLP5)
-opt: $(OBJS:.cma=.cmxa)
+opt: $(OBJS:.cma=.cmxa) $(OBJS:.cma=.cmxs)
 optp5: $(CAMLP5OPT)
 
 $(CAMLP5): $(OBJS) ../odyl/odyl.cmo
@@ -32,6 +32,9 @@ $(CAMLP5N).cma: $(CAMLP5_OBJS)
 
 $(CAMLP5N).cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o $(CAMLP5N).cmxa
+
+$(CAMLP5N).cmxs: $(CAMLP5_XOBJS)
+	$(OCAMLOPT) -shared $(LINKFLAGS) $(CAMLP5_XOBJS) -o $(CAMLP5N).cmxs
 
 clean::
 	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
@@ -72,6 +75,7 @@ install:
 	cp $(CAMLP5N).cma "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	if test -f $(CAMLP5N).cmxa; then \
 	  cp $(CAMLP5N).cmxa "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
+	  cp $(CAMLP5N).cmxs "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	  cp $(CAMLP5N)$(EXT_LIB) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	fi
 
