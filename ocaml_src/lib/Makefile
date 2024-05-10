@@ -9,13 +9,16 @@ SHELL=/bin/sh
 TARGET=gramlib.cma
 
 all: $(TARGET)
-opt: $(TARGET:.cma=.cmxa)
+opt: $(TARGET:.cma=.cmxa) $(TARGET:.cma=.cmxs)
 
 $(TARGET): $(OBJS)
 	$(OCAMLC) $(DEBUG) $(OBJS) -a -o $(TARGET)
 
 $(TARGET:.cma=.cmxa): $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(DEBUG) $(OBJS:.cmo=.cmx) -a -o $(TARGET:.cma=.cmxa)
+
+$(TARGET:.cma=.cmxs): $(OBJS:.cmo=.cmx)
+	$(OCAMLOPT) -shared $(DEBUG) $(OBJS:.cmo=.cmx) -o $(TARGET:.cma=.cmxs)
 
 clean::
 	$(RM) -f *.cm[ioax] *.cmxa *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak
@@ -28,8 +31,10 @@ depend:
 	  ../tools/depend.sh -name $(CAMLP5N) $$i >> .depend; \
 	done
 
-promote:
-	cp $(OBJS) $(OBJS:.cmo=.cmi) $(TOP)/boot/.
+#promote:
+#	cp $(OBJS) $(OBJS:.cmo=.cmi) $(TOP)/boot/.
+promote: $(OBJS) $(OBJS:.cmo=.cmi) $(OBJS:.cmo=.cmx)
+	cp $(OBJS) $(OBJS:.cmo=.cmi) $(OBJS:.cmo=.cmx) $(OBJS:.cmo=.o) $(TOP)/boot/.
 
 compare:
 	@for j in $(OBJS) $(OBJS:.cmo=.cmi); do \
@@ -45,7 +50,7 @@ install:
 	fi
 
 installopt:
-	cp $(TARGET:.cma=.cmxa) *.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(TARGET:.cma=.cmxa) *.cmx $(TARGET:.cma=.cmxs) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	if test -f $(TARGET:.cma=.lib); then \
 	  cp $(TARGET:.cma=.lib) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
 	else \

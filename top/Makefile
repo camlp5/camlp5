@@ -24,6 +24,7 @@ OBJS=$(OTOPU)/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/prtool
 TARGET=$(CAMLP5N)o.cma $(CAMLP5N)r.cma $(CAMLP5N)sch.cma $(CAMLP5N)_top.cma
 
 all: $(TARGET)
+opt: all $(TARGET:.cma=.cmxs)
 
 $(CAMLP5N)oo.cma: $(OOOBJS)
 	$(OCAMLC) $(OOOBJS) $(DEBUG) -linkall -a -o $(CAMLP5N)oo.cma
@@ -31,14 +32,26 @@ $(CAMLP5N)oo.cma: $(OOOBJS)
 $(CAMLP5N)o.cma: $(OOBJS)
 	$(OCAMLC) $(OOBJS) $(DEBUG) -linkall -a -o $(CAMLP5N)o.cma
 
+$(CAMLP5N)o.cmxs: $(OOBJS:.cmo=.cmx)
+	$(OCAMLOPT) -shared $(OOBJS:.cmo=.cmx) $(DEBUG) -linkall -o $(CAMLP5N)o.cmxs
+
 $(CAMLP5N)r.cma: $(ROBJS)
 	$(OCAMLC) $(ROBJS) $(DEBUG) -linkall -a -o $(CAMLP5N)r.cma
+
+$(CAMLP5N)r.cmxs: $(ROBJS:.cmo=.cmx)
+	$(OCAMLOPT) -shared $(ROBJS:.cmo=.cmx) $(DEBUG) -linkall -o $(CAMLP5N)r.cmxs
 
 $(CAMLP5N)sch.cma: $(SOBJS)
 	$(OCAMLC) $(SOBJS) $(DEBUG) -linkall -a -o $(CAMLP5N)sch.cma
 
+$(CAMLP5N)sch.cmxs: $(SOBJS:.cmo=.cmx)
+	$(OCAMLOPT) -shared $(SOBJS:.cmo=.cmx) $(DEBUG) -linkall -o $(CAMLP5N)sch.cmxs
+
 $(CAMLP5N)_top.cma: $(OBJS)
 	$(OCAMLC) $(OBJS) $(DEBUG) -linkall -a -o $(CAMLP5N)_top.cma
+
+$(CAMLP5N)_top.cmxs: $(OBJS:.cmo=.cmx)
+	$(OCAMLOPT) -shared $(OBJS:.cmo=.cmx) $(DEBUG) -linkall -o $(CAMLP5N)_top.cmxs
 
 clean::
 	$(RM) -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)
@@ -55,7 +68,7 @@ get_promote:
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
-	cp $(TARGET) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp $(TARGET) $(TARGET:.cma=.cmxs) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp camlp5_top_funs.cmi camlp5_top_funs.cmo "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 
 include .depend

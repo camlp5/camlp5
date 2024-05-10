@@ -31,8 +31,10 @@ depend:
 	  ../tools/depend.sh -name $(CAMLP5N) $$i >> .depend; \
 	done
 
-promote:
-	cp $(OBJS) $(OBJS:.cmo=.cmi) $(TOP)/boot/.
+#promote:
+#	cp $(OBJS) $(OBJS:.cmo=.cmi) $(TOP)/boot/.
+promote: $(OBJS) $(OBJS:.cmo=.cmi) $(OBJS:.cmo=.cmx)
+	cp $(OBJS) $(OBJS:.cmo=.cmi) $(OBJS:.cmo=.cmx) $(OBJS:.cmo=.o) $(TOP)/boot/.
 
 compare:
 	@for j in $(OBJS) $(OBJS:.cmo=.cmi); do \
