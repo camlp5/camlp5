@@ -3,6 +3,8 @@ ifdef OPAMROOT
 ifeq ($(shell opam var os),freebsd)
 DIFF=gdiff
 BASH=/usr/local/bin/bash
+else ($(shell opam var os),opensuse)
+DIFF=gdiff
 else
 DIFF=diff
 BASH=/bin/bash
