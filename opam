@@ -33,7 +33,7 @@ depends: [
   "conf-perl"
   "conf-bash" { with-test }
   "camlp5-buildscripts" { >= "0.02" }
-  "conf-diffutils" { with-test & (os-distribution = "alpine" | os-distribution = "freebsd" | os-distribution = "opensuse") }
+  "conf-diffutils" { with-test & (os-distribution = "alpine" | os-distribution = "freebsd" | os-family = "opensuse") }
   "re" { >= "1.11.0" }
   "ounit2" { with-test }
   "pcre2" { with-test }
@@ -55,7 +55,9 @@ conflicts: [
    "pa_ppx" { < "0.15" }
    "p5scm" { <= "0.3.1" }
    "matita" { <= "0.99.5" }
+   "lablgl" { <= "1.07" }
 ]
+x-ci-accept-failures: [ "opensuse-tumbleweed" ]
 dev-repo: "git+https://github.com/camlp5/camlp5.git"
 url {
   src: ""
