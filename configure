@@ -101,8 +101,14 @@ fi
 
 echo "mode=$mode" > myconfig
 
+x="$(echo 'Sys.os_type;;' | ocaml | egrep 'Win32|Cygwin')"
+if test "$x" = ""; then win=false; else win=true; fi
+x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
+if test "$x" = ""; then win32=false; else win32=true; fi
+
 # Sanity checks
 
+if test "$win32" = "false"; then
 case "$prefix" in
   /*) ;;
   "") ;;
@@ -128,6 +134,7 @@ case "$camlp5n" in
   "") echo "Camlp5 name must not be empty." 1>&2; exit 2;;
    *) ;;
 esac
+fi
 
 # Check Ocaml
 
@@ -180,10 +187,6 @@ fi
 
 x=$ocamlc_where
 y=$(echo $x | sed -e 's|\\\\|/|g')
-x="$(echo 'Sys.os_type;;' | ocaml | egrep 'Win32|Cygwin')"
-if test "$x" = ""; then win=false; else win=true; fi
-x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
-if test "$x" = ""; then win32=false; else win32=true; fi
 OLIBDIR="$y"
 if [ "$OVERSION" "<" "4.14" ]; then
   C5PACKAGES="compiler-libs,rresult,bos,re"
