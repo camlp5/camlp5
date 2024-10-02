@@ -239,9 +239,7 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
-let ocaml_mkconst loc x =
-  {pconst_desc = x; pconst_loc = loc}
-;;
+let ocaml_mkconst loc x = {pconst_desc = x; pconst_loc = loc};;
 
 let ocaml_mkfield_inh ?(alg_attributes = []) loc x fl =
   {pof_desc = Oinherit x; pof_loc = loc; pof_attributes = alg_attributes} ::
@@ -617,7 +615,7 @@ let ocaml_value_binding ?(item_attributes = []) loc p e =
       {ppat_desc = Ppat_constraint (_, {ptyp_desc = Ptyp_poly (_, _)})} -> p
     | {ppat_desc = Ppat_constraint ({ppat_desc = Ppat_extension _}, _)} -> p
     | {ppat_desc = Ppat_constraint (p1, t)} as p0 ->
-        {p0 with ppat_desc = Ppat_constraint (p1, t)}
+        let t = t in {p0 with ppat_desc = Ppat_constraint (p1, t)}
     | p -> p
   in
   let (p, c) =
