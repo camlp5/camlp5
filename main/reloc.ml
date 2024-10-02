@@ -183,6 +183,9 @@ and patt floc sh =
     | PaExc loc x1 →
         let loc = floc loc in
         PaExc loc (self x1)
+    | PaEff loc x1 x2 →
+        let loc = floc loc in
+        PaEff loc (self x1) (self x2)
     | PaFlo loc x1 →
         let loc = floc loc in
         PaFlo loc x1

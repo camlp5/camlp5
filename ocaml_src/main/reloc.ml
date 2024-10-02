@@ -141,6 +141,8 @@ and patt floc sh =
         let loc = floc loc in PaArr (loc, vala_map (List.map self) x1)
     | PaChr (loc, x1) -> let loc = floc loc in PaChr (loc, x1)
     | PaExc (loc, x1) -> let loc = floc loc in PaExc (loc, self x1)
+    | PaEff (loc, x1, x2) ->
+        let loc = floc loc in PaEff (loc, self x1, self x2)
     | PaFlo (loc, x1) -> let loc = floc loc in PaFlo (loc, x1)
     | PaInt (loc, x1, x2) -> let loc = floc loc in PaInt (loc, x1, x2)
     | PaLab (loc, x1) ->

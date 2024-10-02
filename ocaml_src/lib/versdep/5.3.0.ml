@@ -518,6 +518,8 @@ let ocaml_pexp_function_coalesce e =
   | e -> e
 ;;
 
+let ocaml_ppat_effect p1 p2 = Ppat_effect (p1, p2);;
+
 let ocaml_pexp_function lab eo pel =
   let e =
     match pel with

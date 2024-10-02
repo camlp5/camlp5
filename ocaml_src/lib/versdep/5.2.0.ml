@@ -518,6 +518,10 @@ let ocaml_pexp_function_coalesce e =
   | e -> e
 ;;
 
+let ocaml_ppat_effect p1 p2 =
+  failwith "Internal error: effect pattern not  available until Ocaml 5.3.0"
+;;
+
 let ocaml_pexp_function lab eo pel =
   let e =
     match pel with
