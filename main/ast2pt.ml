@@ -45,6 +45,7 @@ value mkexp loc d = ocaml_mkexp (mkloc loc) d;
 value mkmty loc d = ocaml_mkmty (mkloc loc) d;
 value mksig loc d = {psig_desc = d; psig_loc = mkloc loc};
 value mkmod loc d = ocaml_mkmod (mkloc loc) d;
+value mkconst loc d = ocaml_mkconst (mkloc loc) d;
 value mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};
 value mkfield_tag ~{alg_attributes=alg_attributes} loc d fl = ocaml_mkfield_tag ~{alg_attributes=alg_attributes} (mkloc loc) d fl;
 value mkfield_inh ~{alg_attributes=alg_attributes} loc d fl = ocaml_mkfield_inh ~{alg_attributes=alg_attributes} (mkloc loc) d fl;
@@ -293,10 +294,10 @@ in erec
 
 value rec mkrangepat loc c1 c2 =
   if c1 > c2 then mkrangepat loc c2 c1
-  else if c1 = c2 then mkpat loc (Ppat_constant (ocaml_pconst_char c1))
+  else if c1 = c2 then mkpat loc (Ppat_constant (mkconst loc (ocaml_pconst_char c1)))
   else
     mkpat loc
-      (Ppat_or (mkpat loc (Ppat_constant (ocaml_pconst_char c1)))
+      (Ppat_or (mkpat loc (Ppat_constant (mkconst loc (ocaml_pconst_char c1))))
          (mkrangepat loc (Char.chr (Char.code c1 + 1)) c2))
 ;
 
@@ -748,10 +749,10 @@ and patt =
       | None → error loc "no array patterns in this ocaml version" ]
   | PaChr loc s →
       mkpat loc
-        (Ppat_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
+        (Ppat_constant (mkconst loc (ocaml_pconst_char (char_of_char_token loc (uv s)))))
   | PaInt loc s c →
-      mkpat loc (Ppat_constant (pconst_of_const (mkintconst loc (uv s) c)))
-  | PaFlo loc s → mkpat loc (Ppat_constant (ocaml_pconst_float (uv s)))
+      mkpat loc (Ppat_constant (mkconst loc (pconst_of_const (mkintconst loc (uv s) c))))
+  | PaFlo loc s → mkpat loc (Ppat_constant (mkconst loc (ocaml_pconst_float (uv s))))
   | PaLab loc _ → error loc "labeled pattern not allowed here"
   | PaLaz loc p →
       match ocaml_ppat_lazy with
@@ -781,7 +782,7 @@ and patt =
   | PaStr loc s →
       mkpat loc
         (Ppat_constant
-           (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None))
+           (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))
   | PaTup loc pl → mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc loc p t → mkpat loc (Ppat_constraint (patt p) (ctyp t))
   | PaTyp loc lili →
@@ -863,10 +864,10 @@ and expr =
   | ExAnt _ e → expr e
   | ExApp loc (ExLid _ <:vala< "-" >>) (ExInt _ s c) →
       let s = neg_string (uv s) in
-      mkexp loc (Pexp_constant (pconst_of_const (mkintconst loc s c)))
+      mkexp loc (Pexp_constant (mkconst loc (pconst_of_const (mkintconst loc s c))))
   | ExApp loc (ExLid _ <:vala< "-" | "-." >>) (ExFlo _ s) →
       let s = neg_string (uv s) in
-      mkexp loc (Pexp_constant (ocaml_pconst_float s))
+      mkexp loc (Pexp_constant (mkconst loc (ocaml_pconst_float s)))
   | ExApp loc _ _ as f →
       let (f, al) = expr_fa [] f in
       let f =
@@ -1009,11 +1010,11 @@ and expr =
       ]
   | ExChr loc s →
       mkexp loc
-        (Pexp_constant (ocaml_pconst_char (char_of_char_token loc (uv s))))
+        (Pexp_constant (mkconst loc (ocaml_pconst_char (char_of_char_token loc (uv s)))))
   | ExCoe loc e t1 t2 →
       mkexp loc
         (ocaml_pexp_constraint (expr e) (option_map ctyp t1) (Some (ctyp t2)))
-  | ExFlo loc s → mkexp loc (Pexp_constant (ocaml_pconst_float (uv s)))
+  | ExFlo loc s → mkexp loc (Pexp_constant (mkconst loc (ocaml_pconst_float (uv s))))
   | ExFor loc i e1 e2 df el →
       let e3 = <:expr< do { $list:uv el$ } >> in
       let df = if uv df then Upto else Downto in
@@ -1058,7 +1059,7 @@ and expr =
       in
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) e3o)
   | ExInt loc s c →
-      mkexp loc (Pexp_constant (pconst_of_const (mkintconst loc (uv s) c)))
+      mkexp loc (Pexp_constant (mkconst loc (pconst_of_const (mkintconst loc (uv s) c))))
   | ExLab loc _ → error loc "labeled expression not allowed here 1"
   | ExLaz loc e → mklazy loc (expr e)
   | ExLet loc rf pel e →
@@ -1163,7 +1164,7 @@ and expr =
   | ExStr loc s →
       mkexp loc
         (Pexp_constant
-           (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None))
+           (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))
   | ExTry loc e pel → mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
   | ExTup loc el → mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc loc e t →

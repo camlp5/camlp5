@@ -380,6 +380,13 @@ value ocaml_mkmty loc x =
 value ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;
+value ocaml_mkconst loc x =
+IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+  x
+ELSE
+  {pconst_desc = x; pconst_loc = loc}
+END
+;
 
 IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
 value ocaml_mkfield_inh ?{alg_attributes=[]} loc x fl = failwith "Only available in OCaml versions >= 4.10.0"
@@ -973,12 +980,18 @@ value ocaml_value_binding ?{item_attributes=[]} loc p e =
       {ppat_desc = Ppat_constraint _ {ptyp_desc = Ptyp_poly _ _}} -> p
     | {ppat_desc = Ppat_constraint {ppat_desc = Ppat_extension _} _} -> p
     | {ppat_desc = Ppat_constraint p1 t} as p0 ->
-      let t = {
-        ptyp_desc = Ptyp_poly [] t ;
-        ptyp_loc = to_ghost_loc t.ptyp_loc ;
-        ptyp_loc_stack = [] ;
-        ptyp_attributes = []
-      } in
+      let t =
+      IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+        {
+          ptyp_desc = Ptyp_poly [] t ;
+          ptyp_loc = to_ghost_loc t.ptyp_loc ;
+          ptyp_loc_stack = [] ;
+          ptyp_attributes = []
+        }
+      ELSE
+        t
+      END
+      in
       { (p0) with ppat_desc = Ppat_constraint p1 t }
     | p -> p
     ] in

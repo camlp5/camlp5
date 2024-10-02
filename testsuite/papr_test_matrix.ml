@@ -2478,9 +2478,16 @@ END ;
   ((functor (M : S) ->
     functor (_ : (module type of M)[@foo2]) -> sig  end[@foo3])[@foo1]);;
 |foo};
-     official_output = OK {foo|module type S  =
+     official_output =
+       IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+ OK {foo|module type S  =
   ((functor (M : S) -> ((module type of M)[@foo2 ]) -> ((sig  end)[@foo3 ]))
-  [@foo1 ])|foo} ;
+  [@foo1 ])|foo}
+       ELSE
+ OK {foo|module type S  =
+  (((M : S) -> ((module type of M)[@foo2 ]) -> ((sig  end)[@foo3 ]))
+  [@foo1 ])|foo}
+       END ;
      r_output = OK {foo|module type S =
   ((functor (M : S) ->
     functor (_ : (module type of M)[@"foo2"]) -> sig  end[@"foo3"])[@"foo1"]);
@@ -3267,10 +3274,17 @@ type nat _ =
     functor (X : sig  end) ->
       functor () -> functor (Z : sig  end) -> sig  end)|foo}
        ELSE
+       IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
          OK {foo|module GZ =
   (functor (X : sig  end) -> functor () -> functor (Z : sig  end) ->
     struct  end :
     functor (X : sig  end) -> () -> functor (Z : sig  end) -> sig  end)|foo}
+       ELSE
+         OK {foo|module GZ =
+  (functor (X : sig  end) -> functor () -> functor (Z : sig  end) ->
+    struct  end :
+    (X : sig  end) -> () -> (Z : sig  end) -> sig  end)|foo}
+       END
        END ;
      r_output = OK {foo|module GZ :
   functor (X : sig  end) -> functor () -> functor (Z : sig  end) -> sig  end =

@@ -105,7 +105,12 @@ value print_out_value ppf tree =
     | Oval_tuple tree_list ->
         fprintf ppf "@[<1>(%a)@]" (print_tree_list print_tree ",") tree_list
     | Oval_ellipsis -> raise Ellipsis
-    | Oval_printer f -> f ppf
+    | Oval_printer f ->
+       IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+         f ppf
+       ELSE
+         Format.fprintf ppf "%s" (Format_doc.asprintf "%a" (fun ppf () -> f ppf) ())
+       END
     | tree -> fprintf ppf "@[<1>(%a)@]" (cautious print_tree) tree ]
   and print_fields first ppf =
     fun
@@ -385,9 +390,16 @@ and print_out_constr_gadt_opt ppf = fun [
   | None -> print_out_constr ppf (name, tyl) ]
   END
 ]
-and print_out_label ppf (name, mut, arg) =
-  fprintf ppf "@[<2>%s :@ %s%a@]" name (if mut then "mutable " else "")
-    print_out_type arg
+and print_out_label ppf l =
+  IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+  let (name, mut, arg) = l in
+      fprintf ppf "@[<2>%s :@ %s%a@]" name (if mut then "mutable " else "")
+        print_out_type arg
+  ELSE
+  let {olab_name=name; olab_mut=mut; olab_type=arg} = l in
+      fprintf ppf "@[<2>%s :@ %s%a@]" name (if mut=Mutable then "mutable " else "")
+        print_out_type arg
+  END
 and print_fields rest ppf =
   fun
   [ [] ->
@@ -702,18 +714,31 @@ value print_out_phrase ppf =
 value recover_from_print_failure ~{fname} f fallbackf ppf v =
   try f ppf v
   with e -> do {
-    Format.fprintf ppf "%!\n================\n%!EXN %s\nPlease report this error\n%!" (Printexc.to_string e) ;
+    IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+      Format.fprintf ppf "%!\n================\n%!EXN %s\nPlease report this error\n%!" (Printexc.to_string e)
+    ELSE
+      Format_doc.fprintf ppf "%!\n================\n%!EXN %s\nPlease report this error\n%!" (Printexc.to_string e)
+    END ;
     fallbackf ppf v
   }
 ;
 
+IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+value format_to_format_doc__printer pfun ppf t = pfun ppf t ;
+ELSE
+value format_to_format_doc__printer pfun ppf t =
+  let s = Format.asprintf "%a" pfun t in
+  Format_doc.fprintf ppf "%s" s ;
+END
+;
+
 Toploop.print_out_value.val := print_out_value;
-Toploop.print_out_type.val := print_out_type;
-  Toploop.print_out_class_type.val := print_out_class_type;
+Toploop.print_out_type.val := format_to_format_doc__printer print_out_type;
+  Toploop.print_out_class_type.val := format_to_format_doc__printer print_out_class_type;
   Toploop.print_out_module_type.val :=
-  recover_from_print_failure ~{fname="print_out_module_type"} print_out_module_type Toploop.print_out_module_type.val;
+  recover_from_print_failure ~{fname="print_out_module_type"} (format_to_format_doc__printer print_out_module_type) Toploop.print_out_module_type.val;
 Toploop.print_out_signature.val :=
-  recover_from_print_failure ~{fname="print_out_signature"} print_out_signature Pp_outcometree.pp_out_sig_item_list;
+  recover_from_print_failure ~{fname="print_out_signature"} (format_to_format_doc__printer print_out_signature) (format_to_format_doc__printer Pp_outcometree.pp_out_sig_item_list);
   Toploop.print_out_sig_item.val :=
-  recover_from_print_failure ~{fname="print_out_sig_item"} print_out_sig_item Toploop.print_out_sig_item.val;
+  recover_from_print_failure ~{fname="print_out_sig_item"} (format_to_format_doc__printer print_out_sig_item) Toploop.print_out_sig_item.val;
 Toploop.print_out_phrase.val := print_out_phrase;
