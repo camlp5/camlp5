@@ -1684,6 +1684,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   | NONA
       [ "exception"; (ext,attrs) = ext_attributes; p = SELF →
          patt_to_inline <:patt< exception $p$ >> ext attrs
+      | "effect" ; p1 = NEXT ; "," ; p2 = patt LEVEL "simple" ->
+         <:patt< effect $p1$ , $p2$ >>
       ]
   | NONA
       [ p1 = SELF; ".."; p2 = SELF -> <:patt< $p1$ .. $p2$ >> ]

@@ -78,6 +78,7 @@ and patt =
   | PaArr of loc and V (list patt)
   | PaChr of loc and V string
   | PaExc of loc and patt
+  | PaEff of loc and patt and patt
   | PaFlo of loc and V string
   | PaInt of loc and V string and string
   | PaLab of loc and V (list (patt * V (option patt)))

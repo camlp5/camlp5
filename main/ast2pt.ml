@@ -704,6 +704,11 @@ and patt =
       let p = patt p in
       mkpat loc (ocaml_ppat_exception p)
 
+  | PaEff loc p1 p2 ->
+      let p1 = patt p1 in
+      let p2 = patt p2 in
+      mkpat loc (ocaml_ppat_effect p1 p2)
+
   | PaApp loc _ _ as f0 →
       let (f, al) = patt_fa [] f0 in
       match f with [

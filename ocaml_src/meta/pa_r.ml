@@ -3932,6 +3932,18 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next
              (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", "effect")))
+                   Grammar.s_self)
+                (Grammar.s_token ("", ",")))
+             (Grammar.s_nterml (patt : 'patt Grammar.Entry.e) "simple"),
+           "194fe98d",
+           (fun (p2 : 'patt) _ (p1 : 'patt) _ (loc : Ploc.t) ->
+              (MLast.PaEff (loc, p1, p2) : 'patt)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_token ("", "exception")))
                 (Grammar.s_nterm

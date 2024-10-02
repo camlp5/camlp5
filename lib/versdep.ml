@@ -827,6 +827,12 @@ value ocaml_pexp_function_coalesce e =
     ] ;
 END ;
 
+IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+value ocaml_ppat_effect p1 p2 = failwith "Internal error: effect pattern not  available until Ocaml 5.3.0" ;
+ELSE
+value ocaml_ppat_effect p1 p2 = Ppat_effect p1 p2 ;
+END ;
+
 value ocaml_pexp_function lab eo pel =
   IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     match pel with [

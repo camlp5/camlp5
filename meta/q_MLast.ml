@@ -1151,7 +1151,10 @@ EXTEND
         Qast.Node "PaAtt" [Qast.Loc; p1; attr]
       ]
     | NONA
-      [ "exception"; p = SELF → Qast.Node "PaExc" [Qast.Loc; p] ]
+      [ "exception"; p = SELF → Qast.Node "PaExc" [Qast.Loc; p]
+      | "effect" ; p1 = SELF ; "," ; p2 = patt LEVEL "simple" ->
+         Qast.Node "PaEff" [Qast.Loc; p1; p2]
+      ]
 
     | NONA
       [ p1 = SELF; ".."; p2 = SELF → Qast.Node "PaRng" [Qast.Loc; p1; p2] ]

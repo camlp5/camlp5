@@ -248,6 +248,7 @@ value uidopt_to_maybe_blank = fun [
 
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
+value simple_patt x = Eprinter.apply_level pr_patt "simple" x;
 value ctyp = Eprinter.apply pr_ctyp;
 value ctyp_below_alg_attribute x = Eprinter.apply_level pr_ctyp "below_alg_attribute" x;
 value str_item = Eprinter.apply pr_str_item;
@@ -1674,7 +1675,10 @@ EXTEND_PRINTER
         pprintf pc "%p[@%p]" curr p attribute_body attr
       ]
     | [ <:patt:< exception $p$ >> ->
-          pprintf pc "exception %p" next p ]
+          pprintf pc "exception %p" next p
+      | <:patt< effect $p1$, $p2$ >> ->
+          pprintf pc "effect %p, %p" next p1 simple_patt p2
+      ]
     | "range"
       [ <:patt< $x$ .. $y$ >> ->
           pprintf pc "%p..%p" next x next y ]

@@ -6103,6 +6103,21 @@ type \#and += [ Foo ];|foo}
 
   ]
 END
+@
+IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
+  []
+ELSE
+  [{name="effect-syntax-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with effect x, k -> ()|foo} ;
+     official_input = OK {foo|match x with effect x, k -> ()|foo} ;
+     r_input = OK {foo|match x with [ effect x, k -> () ];|foo} ;
+     o_output = OK {foo|let _ = match x with effect x, k -> ();;|foo};
+     official_output = OK {foo|;;match x with | effect x,  k -> ()|foo} ;
+     r_output = OK {foo|match x with [ effect x, k -> () ];|foo}
+    }
+  ]
+END
 
 ;
 
