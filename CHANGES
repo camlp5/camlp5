@@ -19,13 +19,21 @@ Camlp5 Version 8.03.00:
   (1) if you use "camlp5 pa_r.cmo .... pr_o.cmo" to invoke the preprocessor
   rather than
 
-  "not-ocamlfind preprocess -package camlp5.pa_r,....,camlp5.pr_o"
+  "not-ocamlfind preprocess -syntax camlp5r -package camlp5.pa_r,....,camlp5.pr_o"
 
   you will need to add "o_keywords.cmo" before "pr_o.cmo" (this is
   required by the need to print keywords for each syntax as escaped
   raw identifiers.  Since each syntax has a slightly different set of
   keywords, the printer needs to be parameterized by the
   keyword-table.
+
+  NOTE WELL that you are supplying the same "-syntax" and "-package"
+  args that you would if you were using
+
+  "ocamlfind ocamlc ....."
+
+  Basically, you take that second line and remove the ocamlc-specific
+  args (like -linkpkg, -linkall, -for-pkg, -c, etc).
 
   (2) Similarly, if you use the Camlp5 lexer in your package, there is
   a new field, "kwds", which is initialized to the keyword hashtable,
