@@ -125,6 +125,7 @@ module Meta_make (C : MetaSig) =
       | PaArr (_, lp) -> C.node "PaArr" [C.vala (C.list patt) lp]
       | PaChr (_, s) -> C.node "PaChr" [C.vala C.string s]
       | PaExc (_, p) -> C.node "PaExc" [patt p]
+      | PaEff (_, p1, p2) -> C.node "PaEff" [patt p1; patt p2]
       | PaFlo (_, s) -> C.node "PaFlo" [C.vala C.string s]
       | PaInt (_, s1, s2) -> C.node "PaInt" [C.vala C.string s1; C.string s2]
       | PaLab (_, lpop) ->
