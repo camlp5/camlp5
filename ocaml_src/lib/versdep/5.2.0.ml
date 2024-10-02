@@ -239,6 +239,7 @@ let ocaml_mkmty loc x =
 let ocaml_mkmod loc x =
   {pmod_desc = x; pmod_loc = loc; pmod_attributes = []}
 ;;
+let ocaml_mkconst loc x = x;;
 
 let ocaml_mkfield_inh ?(alg_attributes = []) loc x fl =
   {pof_desc = Oinherit x; pof_loc = loc; pof_attributes = alg_attributes} ::
