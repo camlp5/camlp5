@@ -1,3 +1,10 @@
+Camlp5 Version 8.03.01:
+--------------------
+
+* [01 Oct 2024] update for Ocaml 5.3.0
+
+  * also merged minimal support for Windows (thank you @tobil4sk !)
+
 Camlp5 Version 8.03.00:
 --------------------
 
