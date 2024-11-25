@@ -9,7 +9,7 @@ use Data::Dumper ;
     unless $oversion =~ s,^(\d+(?:\.\d+)+)(?:[~-].*)?$,$1, ;
 
   if (-d "ocaml_stuff/$oversion" && -f "ocaml_src/lib/versdep/$oversion.ml") {
-    print "$oversion\n";
+    print "$oversion";
     exit ;
   }
 
@@ -19,11 +19,11 @@ use Data::Dumper ;
   $oversion =~ s,\.\d+$,.0, ;
   if (-d "ocaml_stuff/$oversion" && -f "ocaml_src/lib/versdep/$oversion.ml") {
     print STDERR "WARNING: FALLING BACK to saved info for ocaml version $oversion; please report to maintainer\n" ;
-    print "$oversion\n";
+    print "$oversion";
     exit ;
   }
 
 
   # let the configure script fail in the usual way
-  print "$oversion\n";
+  print "$oversion";
 }
