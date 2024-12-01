@@ -10,7 +10,7 @@ CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh
 COUT=$(OBJS) $(CAMLP5N)r$(EXE)
-COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)r.opt
+COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)r.opt$(EXE)
 
 all: $(COUT)
 opt: $(COPT)
@@ -19,9 +19,9 @@ $(CAMLP5N)r$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5RM)
 	$(RM) -f $(CAMLP5N)r$(EXE)
 	cd ../main; $(MAKE) CAMLP5=../meta/$(CAMLP5N)r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
 
-$(CAMLP5N)r.opt: $(CAMLP5RMX)
-	$(RM) -f $(CAMLP5N)r.opt
-	cd ../main; $(MAKE) optp5 CAMLP5OPT=../meta/$(CAMLP5N)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
+$(CAMLP5N)r.opt$(EXE): $(CAMLP5RMX)
+	$(RM) -f $@
+	cd ../main; $(MAKE) optp5 CAMLP5OPT=../meta/$@ CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
 	$(RM) -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(COUT) $(COPT)
@@ -65,8 +65,8 @@ install:
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp pa_macro.cmi pa_macro_gram.cmi pa_extend.cmi q_MLast.cmi q_ast_base.cmi q_ast.cmi "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)r$(EXE) "$(DESTDIR)$(BINDIR)/."
-	if test -f $(CAMLP5N)r.opt; then \
-	  cp $(CAMLP5N)r.opt "$(DESTDIR)$(BINDIR)/."; \
+	if test -f $(CAMLP5N)r.opt$(EXE); then \
+	  cp $(CAMLP5N)r.opt$(EXE) "$(DESTDIR)$(BINDIR)/."; \
 	fi
 	if test -f pa_r.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \
