@@ -16,8 +16,8 @@ all: $(COUT)
 opt: $(COPT)
 
 $(CAMLP5N)r$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5RM)
-	$(RM) -f $(CAMLP5N)r$(EXE)
-	cd ../main; $(MAKE) CAMLP5=../meta/$(CAMLP5N)r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
+	$(RM) -f $@
+	cd ../main; $(MAKE) CAMLP5=../meta/$@ CAMLP5M="-I ../meta $(CAMLP5RM)"
 
 $(CAMLP5N)r.opt$(EXE): $(CAMLP5RMX)
 	$(RM) -f $@

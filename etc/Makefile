@@ -61,12 +61,12 @@ META:: META.tpl
 
 
 $(CAMLP5N)o$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5OM)
-	$(RM) -f $(CAMLP5N)o$(EXE)
-	cd ../main; $(MAKE) CAMLP5=../etc/$(CAMLP5N)o$(EXE) CAMLP5M="-I ../etc $(CAMLP5OM)"
+	$(RM) -f $@
+	cd ../main; $(MAKE) CAMLP5=../etc/$@ CAMLP5M="-I ../etc $(CAMLP5OM)"
 
 $(CAMLP5N)sch$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5SCHM)
-	$(RM) -f $(CAMLP5N)sch$(EXE)
-	cd ../main; $(MAKE) CAMLP5=../etc/$(CAMLP5N)sch$(EXE) CAMLP5M="-I ../etc $(CAMLP5SCHM)"
+	$(RM) -f $@
+	cd ../main; $(MAKE) CAMLP5=../etc/$@ CAMLP5M="-I ../etc $(CAMLP5SCHM)"
 
 $(CAMLP5N)o.opt$(EXE): $(CAMLP5OMX)
 	$(RM) -f $@
