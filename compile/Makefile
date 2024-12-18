@@ -18,16 +18,16 @@ RM=rm
 
 all: out
 
-out: $(CAMLP5N)$D.fast
-opt: $(CAMLP5N)$D.fast.opt
+out: $(CAMLP5N)$D.fast$(EXE)
+opt: $(CAMLP5N)$D.fast.opt$(EXE)
 
-$(CAMLP5N)$D.fast: pa_$D_fast.cmo
-	$(RM) -f $(CAMLP5N)$D.fast
-	cd ../main; $(MAKE) CAMLP5=../compile/$(CAMLP5N)$D.fast CAMLP5M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
+$(CAMLP5N)$D.fast$(EXE): pa_$D_fast.cmo
+	$(RM) -f $@
+	cd ../main; $(MAKE) CAMLP5=../compile/$@ CAMLP5M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
 
-$(CAMLP5N)$D.fast.opt: pa_$D_fast.cmx
-	$(RM) -f $(CAMLP5N)$D.fast.opt
-	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$(CAMLP5N)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
+$(CAMLP5N)$D.fast.opt$(EXE): pa_$D_fast.cmx
+	$(RM) -f $@
+	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$@ CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: compile.cmo comp_head.ml.tpl comp_trail.ml.tpl $(SRC)
 	cat $(SRC) | perl -n -e 'print unless /REMOVE FOR COMPILE/' > tmp.$D_concat.ml
@@ -37,8 +37,8 @@ pa_$D_fast.ml: compile.cmo comp_head.ml.tpl comp_trail.ml.tpl $(SRC)
 	cat comp_head.ml.tpl $D_stripped.tmp $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 install:
-	if test -f $(CAMLP5N)o.fast.opt; then \
-	  cp $(CAMLP5N)o.fast.opt "$(DESTDIR)$(BINDIR)/$(CAMLP5N)o.opt"; \
+	if test -f $(CAMLP5N)o.fast.opt$(EXE); then \
+	  cp $(CAMLP5N)o.fast.opt$(EXE) "$(DESTDIR)$(BINDIR)/$(CAMLP5N)o.opt$(EXE)"; \
 	fi
 	if test -f pa_o_fast.cmx; then \
 	  cp pa_o_fast.cmx pa_o_fast.o "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."; \

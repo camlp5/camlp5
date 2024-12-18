@@ -42,7 +42,7 @@ depends: [
   "fmt"
 ]
 build: [
-  ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man]
+  ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man "-oversion" ocaml:version]
   [make "-j%{jobs}%" "DEBUG=-g" "world.opt"]
   [make "-j%{jobs}%" "DEBUG=-g" "all"]
   [make "-C" "testsuite" "clean" "all-tests"] { with-test }
