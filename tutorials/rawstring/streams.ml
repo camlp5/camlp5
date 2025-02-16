@@ -122,7 +122,7 @@ value raw_string_starter_p simplest_raw_strings strm =
       | Some _ -> False ]
   in predrec 1
 ;
-
+(*
 value rec rawstring1 delimtok (ofs, delim) buf =
   parser [: `c ; strm :] -> do {
     let buf = $add c in
@@ -140,6 +140,27 @@ value rec rawstring1 delimtok (ofs, delim) buf =
       }
   }
 ;
+ *)
+
+value rec rawstring1 delimtok (ofs, delim) buf =
+  parser [
+      [: `c  when String.get delim ofs = c && ofs+1 = String.length delim :] ->
+      let buf = $add c in
+      let s = $buf in
+      let slen = String.length s in
+      (delimtok, String.sub s 0 (slen - (String.length delim)))
+
+    | [: `c when String.get delim ofs = c ; strm :] ->
+       rawstring1 delimtok (ofs+1, delim) ($add c) strm
+
+    | [: `c when String.get delim ofs <> c && String.get delim 0 = c ; strm :] ->
+      rawstring1 delimtok (1,delim) ($add c) strm
+
+    | [: `c when String.get delim ofs <> c && String.get delim 0 <> c ; strm :] ->
+      rawstring1 delimtok (0,delim) ($add c) strm
+    ]
+;
+
 
 value rec rawstring0 buf =
   parser [
