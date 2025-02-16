@@ -122,25 +122,6 @@ value raw_string_starter_p simplest_raw_strings strm =
       | Some _ -> False ]
   in predrec 1
 ;
-(*
-value rec rawstring1 delimtok (ofs, delim) buf =
-  parser [: `c ; strm :] -> do {
-    let buf = $add c in
-    if String.get delim ofs <> c then
-       if String.get delim 0 = c then
-         rawstring1 delimtok (1, delim) buf strm
-       else
-         rawstring1 delimtok (0, delim) buf strm
-    else if ofs+1 < String.length delim then
-      rawstring1 delimtok (ofs+1, delim) buf strm
-    else
-      let s = $buf in
-      let slen = String.length s in do {
-      (delimtok, String.sub s 0 (slen - (String.length delim)))
-      }
-  }
-;
- *)
 
 value rec rawstring1 delimtok (ofs, delim) buf =
   parser [
@@ -161,15 +142,14 @@ value rec rawstring1 delimtok (ofs, delim) buf =
     ]
 ;
 
+value start_rawstring1 delimtok (ofs, delim) _ strm =
+  rawstring1 delimtok (ofs, delim) $empty strm
+;
 
-value rec rawstring0 buf =
-  parser [
-    [: `'|' ; strm :] ->
-      rawstring1 $buf (0, "|" ^ $buf ^ "}") $empty strm
-
-  | [: `('a'..'z' | '_' as c) ; strm :] ->
-      rawstring0 ($add c) strm
-  ]
+value rec rawstring0 = lexer [
+  '|' (start_rawstring1 $buf (0, "|" ^ $buf ^ "}"))
+| ['a'-'z'|'_'] rawstring0
+]
 ;
 
 end ;
