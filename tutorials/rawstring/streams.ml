@@ -11,11 +11,13 @@ value rec ws =
   [ [' '/ | '\t'/ | '\n'/] [ ws | ]
   ]
 ;
-value ws_question = lexer [
-  ws
-|
-]
+
+value rec ident =
+  lexer
+  [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' ] ident! | ]
 ;
+
+
 
 module type SIMPLEST_STREAM = sig
   exception Failure ;
@@ -73,7 +75,7 @@ value rec delim = lexer [
 ;
 
 value raw_string_starter = lexer [
-  delim "|"/ -> True
+  delim ["|"/ -> True | -> False]
 | -> False
 ]
 ;
@@ -81,7 +83,7 @@ value raw_string_starter = lexer [
 value raw_string_starter_p strm = raw_string_starter $empty strm ;
 
 value simplest_raw_string_starter = lexer [
-  delim "|"/ -> True
+  delim [ "|"/ -> True | -> False ]
 | "|"/ -> True
 | -> False
 ]
@@ -99,78 +101,29 @@ end ;
 module Imm = RawString(ImmutStream) ;
 module Mut = RawString(MutStream) ;
 
-module Manual = struct
-
-value rec last = fun [
-    [] -> failwith "last"
-  | [x] -> x
-  | [x::l] -> last l
-]
-;
-value stream_peek_nth n strm =
-  let l = Stream.npeek n strm in
-  if List.length l = n then
-    Some (last l)
-  else None
-;
-
-value raw_string_starter_p simplest_raw_strings strm =
-  let rec predrec n =
-    match stream_peek_nth n strm with
-      [ None -> False
-      | Some ('a'..'z' | '_') ->
-         predrec (n+1)
-      | Some '|' when simplest_raw_strings || n > 1 -> True
-      | Some _ -> False ]
-  in predrec 1
-;
-
-value rec rawstring1 delimtok (ofs, delim) buf =
-  parser [
-      [: `c  when String.get delim ofs = c && ofs+1 = String.length delim :] ->
-      let buf = $add c in
-      let s = $buf in
-      let slen = String.length s in
-      (delimtok, String.sub s 0 (slen - (String.length delim)))
-
-    | [: `c when String.get delim ofs = c ; strm :] ->
-       rawstring1 delimtok (ofs+1, delim) ($add c) strm
-
-    | [: `c when String.get delim ofs <> c && String.get delim 0 = c ; strm :] ->
-      rawstring1 delimtok (1,delim) ($add c) strm
-
-    | [: `c when String.get delim ofs <> c && String.get delim 0 <> c ; strm :] ->
-      rawstring1 delimtok (0,delim) ($add c) strm
-    ]
-;
-
-value rec rawstring1' delimtok (ofs, delim) = lexer [
+value rec rawstring1 delimtok (ofs, delim) = lexer [
   _ as c when (String.get delim ofs = c && ofs+1 = String.length delim) ->
     let s = $buf in
     let slen = String.length s in
     (delimtok, String.sub s 0 (slen - (String.length delim)))
 
-| _ as c when (String.get delim ofs = c) (rawstring1' delimtok (ofs+1, delim))
+| _ as c when (String.get delim ofs = c) (rawstring1 delimtok (ofs+1, delim))
 
-| _ as c when (String.get delim ofs <> c && String.get delim 0 = c) (rawstring1' delimtok (1,delim))
+| _ as c when (String.get delim ofs <> c && String.get delim 0 = c) (rawstring1 delimtok (1,delim))
 
-| _ as c when (String.get delim ofs <> c && String.get delim 0 <> c) (rawstring1' delimtok (0,delim))
+| _ as c when (String.get delim ofs <> c && String.get delim 0 <> c) (rawstring1 delimtok (0,delim))
 ]
 ;
 
-value start_rawstring1 delimtok (ofs, delim) _ strm =
-  rawstring1' delimtok (ofs, delim) $empty strm
+value zerobuf f buf strm =
+  f $empty strm
 ;
 
 value rec rawstring0 = lexer [
-  '|' (start_rawstring1 $buf (0, "|" ^ $buf ^ "}"))
+  '|' (zerobuf (rawstring1 $buf (0, "|" ^ $buf ^ "}")))
 | ['a'-'z'|'_'] rawstring0
 ]
 ;
-
-end ;
-
-open Manual ;
 
 value keyword_or_rawstring simplest_raw_strings buf strm =
   let pred =
@@ -179,20 +132,41 @@ value keyword_or_rawstring simplest_raw_strings buf strm =
     else
       Imm.raw_string_starter_p in
   if not (pred (ImmutStream.wrap strm)) then
-    match stream_peek_nth 1 strm with [
-      Some '|' when not simplest_raw_strings -> do {
-        Stream.junk strm ;
-        ("", "{|") ;
-      }
-    | _ -> ("", "{")
-    ]
+    (parser [
+         [: `'|' when not simplest_raw_strings :] -> ("", "{|")
+       | [: :] -> ("", "{")
+       ]) strm
   else
     let (_,s) = rawstring0 $empty strm in
     ("RAWSTRING", String.escaped s)
 ;
 
+value rec extattrident =
+  lexer
+  [ ident [ "." extattrident | ] ]
+;
+
+value quoted_extension1 extid buf strm =
+  let (delim, s) = rawstring0 $empty strm in
+  ("QUOTEDEXTENSION", extid^":"^(String.escaped s))
+;
+
+value quoted_extension0 extid =
+  lexer
+  [ ws (zerobuf (quoted_extension1 extid))
+  | (zerobuf (quoted_extension1 extid))
+  ]
+;
+
+value quoted_extension =
+  lexer [
+    extattrident (zerobuf (quoted_extension0 $buf))
+  ]
+;
+
 value rec token simplest_raw_strings = lexer [
   ws (token simplest_raw_strings)
+| "{%"/ (zerobuf quoted_extension)
 | '{' / (keyword_or_rawstring simplest_raw_strings)
 ]
 ;
@@ -214,19 +188,24 @@ value imm_pa_string pafun s =
 
 value suite = "pa_lexer" >::: [
   "simplest" >:: (fun [ _ -> do {
-    assert_equal "" (pa_string ws_question "")
-  ; assert_equal True (imm_pred Imm.raw_string_starter_p "bar|foo||bar}")
+    assert_equal True (imm_pred Imm.raw_string_starter_p "bar|foo||bar}")
   ; assert_equal False (imm_pred Imm.raw_string_starter_p "|foo||}")
   ; assert_equal True (imm_pred Imm.simplest_raw_string_starter_p "|foo||}")
   ; assert_equal True (imm_pred Imm.simplest_raw_string_starter_p "bar|foo||bar}")
+
   ; assert_equal ("RAWSTRING","foo") (pa0 (token True) "{|foo|}")
   ; assert_equal ("RAWSTRING","") (pa0 (token True) "{||}")
   ; assert_equal ("","{|") (pa0 (token False) "{|foo|}")
-  ; assert_equal ("","{") (pa0 (token False) "{")
+  ; assert_equal ("","{") (pa0 (token False) "{foo")
   ; assert_equal ("RAWSTRING","foo") (pa0 (token True) "{bar|foo|bar}")
   ; assert_equal ("RAWSTRING","foo") (pa0 (token False) "{bar|foo|bar}")
   ; assert_equal ("RAWSTRING","foo|bar") (pa0 (token True)  "{bar|foo|bar|bar}")
   ; assert_equal ("RAWSTRING","foo|bar") (pa0 (token False)  "{bar|foo|bar|bar}")
+
+  ; assert_equal ("QUOTEDEXTENSION","bar:foo") (pa0 (token True) "{%bar|foo|}")
+  ; assert_equal ("QUOTEDEXTENSION","bar:foo") (pa0 (token True) "{%bar bar|foo|bar}")
+  ; assert_equal ("QUOTEDEXTENSION","bar.buzz.goo:foo") (pa0 (token True) "{%bar.buzz.goo bar|foo|bar}")
+
   }])
 ]
 ;
