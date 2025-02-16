@@ -244,13 +244,13 @@ EXTEND
   ;
   symb:
     [ [ "_"; norec = no_rec -> make_any loc norec
-      | "_" ; "as" ; id = LIDENT; eo = V (OPT [ "when"; e = expr -> e ]) ; norec = no_rec ->
+      | "_" ; "as" ; id = LIDENT; eo = V (OPT [ "when"; e = expr LEVEL "simple" -> e ]) ; norec = no_rec ->
          make_named id eo loc norec
       | s = STRING; norec = no_rec -> make_chars loc s norec
       | c = CHAR; norec = no_rec -> make_char loc c norec
       | c = CHAR; "-"; d = CHAR; norec = no_rec -> make_range loc c d norec
       | f = simple_expr -> make_sub_lexer loc f
-      | "?="; "["; pll = LIST1 lookahead SEP "|"; "]" ; eo = V (OPT [ "when"; e = expr -> e ]) ->
+      | "?="; "["; pll = LIST1 lookahead SEP "|"; "]" ; eo = V (OPT [ "when"; e = expr LEVEL "simple" -> e ]) ->
          make_lookahd loc pll eo
       | rl = rules -> make_rules loc rl ] ]
   ;

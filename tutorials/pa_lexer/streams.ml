@@ -8,10 +8,10 @@ module LB = Plexing.Lexbuf ;
 value lexer1 = lexer [ "[<" | "[:" | "[" ] ;
 value lexer2 = lexer [ _ as c1 ] ;
 
-value lexer3 = lexer [ ?= [ 'a' c ] when c = 'b' ] ;
+value lexer3 = lexer [ ?= [ 'a' c ] when (c = 'b') ] ;
 
 value not_dollar buf =
-  parser [: `c when c <> '$' :] -> do { $add c }
+  parser [: `c when (c <> '$') :] -> do { $add c }
 ;
 
 type t = [ Text of string | Interpolate of string and string ] ;
@@ -25,13 +25,13 @@ value rec text = lexer [
 
 value delim_bar_body delim buf strm =
   let rec ptxt = lexer [
-    ?= ['|' c] when c = delim -> ($buf,"")
+    ?= ['|' c] when (c = delim) -> ($buf,"")
   | "|"/ (pfmt0 $buf)
   | _ ptxt
   ]
   and pfmt0 txt buf strm = pfmt txt $empty strm
   and pfmt txt = lexer [
-    ?= ['|' c] when c = delim -> (txt, $buf)
+    ?= ['|' c] when (c = delim) -> (txt, $buf)
   | _ (pfmt txt)
   ] in
   let (a,b) = ptxt buf strm in
