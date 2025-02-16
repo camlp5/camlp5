@@ -409,8 +409,8 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             MLast.loc -> list (list MLast.patt) -> Exparser.spat_comp >>;
-         expr = Obj.repr (fun loc pll -> Exparser.SpLhd loc pll);
+             MLast.loc -> list (list MLast.patt) -> option MLast.expr -> Exparser.spat_comp >>;
+         expr = Obj.repr (fun loc pll eo -> Exparser.SpLhd loc pll eo);
          patt = no_patt loc});
      ("Exparser.SpNtr",
       fun loc ->

@@ -8,7 +8,7 @@ type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
   | SpLet of MLast.loc and MLast.patt and MLast.expr
-  | SpLhd of MLast.loc and list (list MLast.patt)
+  | SpLhd of MLast.loc and list (list MLast.patt) and MLast.v (option MLast.expr)
   | SpStr of MLast.loc and MLast.patt ]
 ;
 

@@ -133,6 +133,16 @@ value make_any loc norec sl cl errk =
   ([s :: sl], cl)
 ;
 
+value make_named c wo loc norec sl cl errk =
+  let (p, cl) =
+    if norec then (<:patt< $lid:c$ >>, cl)
+    else
+      (<:patt< $lid:c$ >>, [<:expr< $lid:c$ >> :: cl])
+  in
+  let s = (SpTrm loc p wo, errk) in
+  ([s :: sl], cl)
+;
+
 value fold_string_chars f s a =
   loop 0 a where rec loop i a =
     if i = String.length s then a
@@ -178,8 +188,8 @@ value make_sub_lexer loc f sl cl errk =
   ([s :: sl], [])
 ;
 
-value make_lookahd loc pll sl cl errk =
-  let s = (SpLhd loc pll, errk) in
+value make_lookahd loc pll wo sl cl errk =
+  let s = (SpLhd loc pll wo, errk) in
   ([s :: sl], cl)
 ;
 
@@ -234,11 +244,14 @@ EXTEND
   ;
   symb:
     [ [ "_"; norec = no_rec -> make_any loc norec
+      | "_" ; "as" ; id = LIDENT; eo = V (OPT [ "when"; e = expr -> e ]) ; norec = no_rec ->
+         make_named id eo loc norec
       | s = STRING; norec = no_rec -> make_chars loc s norec
       | c = CHAR; norec = no_rec -> make_char loc c norec
       | c = CHAR; "-"; d = CHAR; norec = no_rec -> make_range loc c d norec
       | f = simple_expr -> make_sub_lexer loc f
-      | "?="; "["; pll = LIST1 lookahead SEP "|"; "]" -> make_lookahd loc pll
+      | "?="; "["; pll = LIST1 lookahead SEP "|"; "]" ; eo = V (OPT [ "when"; e = expr -> e ]) ->
+         make_lookahd loc pll eo
       | rl = rules -> make_rules loc rl ] ]
   ;
   simple_expr:
@@ -257,7 +270,9 @@ EXTEND
   lookahead_char:
     [ [ c = CHAR -> <:patt< $chr:c$ >>
       | c = CHAR; "-"; d = CHAR -> <:patt< $chr:c$..$chr:d$ >>
-      | "_" -> <:patt< _ >> ] ]
+      | id = LIDENT -> <:patt< $lid:id$ >>
+      | "_" -> <:patt< _ >>
+      ] ]
   ;
   no_rec:
     [ [ "/" -> True

@@ -49,7 +49,7 @@ EXTEND
   stream_patt_comp:
     [ [ "'"; p = patt; eo = V (OPT [ "when"; e = expr LEVEL "expr1" -> e ]) ->
           SpTrm loc p eo
-      | "?="; pll = LIST1 lookahead SEP "|" -> SpLhd loc pll
+      | "?="; pll = LIST1 lookahead SEP "|"; eo = V (OPT [ "when"; e = expr LEVEL "expr1" -> e ]) -> SpLhd loc pll eo
       | p = patt; "="; e = expr LEVEL "expr1" -> SpNtr loc p e
       | p = patt -> SpStr loc p ] ]
   ;
