@@ -164,12 +164,11 @@ value rec rawstring1 delimtok (ofs, delim) buf =
 
 value rec rawstring0 buf =
   parser [
-    [: `'|' ; strm :] -> do {
+    [: `'|' ; strm :] ->
       rawstring1 $buf (0, "|" ^ $buf ^ "}") $empty strm
-    }
-  | [: `('a'..'z' | '_' as c) ; strm :] -> do {
+
+  | [: `('a'..'z' | '_' as c) ; strm :] ->
       rawstring0 ($add c) strm
-    }
   ]
 ;
 
