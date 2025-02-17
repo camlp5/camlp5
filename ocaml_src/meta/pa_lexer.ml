@@ -156,6 +156,14 @@ let make_any loc norec sl cl errk =
   let s = SpTrm (loc, p, None), errk in s :: sl, cl
 ;;
 
+let make_named c wo loc norec sl cl errk =
+  let (p, cl) =
+    if norec then MLast.PaLid (loc, c), cl
+    else MLast.PaLid (loc, c), MLast.ExLid (loc, c) :: cl
+  in
+  let s = SpTrm (loc, p, wo), errk in s :: sl, cl
+;;
+
 let fold_string_chars f s a =
   let rec loop i a =
     if i = String.length s then a
@@ -199,8 +207,8 @@ let make_sub_lexer loc f sl cl errk =
   s :: sl, []
 ;;
 
-let make_lookahd loc pll sl cl errk =
-  let s = SpLhd (loc, pll), errk in s :: sl, cl
+let make_lookahd loc pll wo sl cl errk =
+  let s = SpLhd (loc, pll, wo), errk in s :: sl, cl
 ;;
 
 let gcl = ref [];;
@@ -375,16 +383,29 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next
-                   (Grammar.r_next Grammar.r_stop
-                      (Grammar.s_token ("", "?=")))
-                   (Grammar.s_token ("", "[")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm (lookahead : 'lookahead Grammar.Entry.e))
-                   (Grammar.s_token ("", "|")) false))
-             (Grammar.s_token ("", "]")),
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "?=")))
+                      (Grammar.s_token ("", "[")))
+                   (Grammar.s_list1sep
+                      (Grammar.s_nterm
+                         (lookahead : 'lookahead Grammar.Entry.e))
+                      (Grammar.s_token ("", "|")) false))
+                (Grammar.s_token ("", "]")))
+             (Grammar.s_opt
+                (Grammar.s_rules
+                   [Grammar.production
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "when")))
+                         (Grammar.s_nterml (expr : 'expr Grammar.Entry.e)
+                            "simple"),
+                       "194fe98d",
+                       (fun (e : 'expr) _ (loc : Ploc.t) -> (e : 'e__2)))])),
            "194fe98d",
-           (fun _ (pll : 'lookahead list) _ _ (loc : Ploc.t) ->
-              (make_lookahd loc pll : 'symb)));
+           (fun (eo : 'e__2 option) _ (pll : 'lookahead list) _ _
+                (loc : Ploc.t) ->
+              (make_lookahd loc pll eo : 'symb)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (simple_expr : 'simple_expr Grammar.Entry.e)),
@@ -418,6 +439,31 @@ Grammar.safe_extend
            "194fe98d",
            (fun (norec : 'no_rec) (s : string) (loc : Ploc.t) ->
               (make_chars loc s norec : 'symb)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("", "_")))
+                      (Grammar.s_token ("", "as")))
+                   (Grammar.s_token ("LIDENT", "")))
+                (Grammar.s_opt
+                   (Grammar.s_rules
+                      [Grammar.production
+                         (Grammar.r_next
+                            (Grammar.r_next Grammar.r_stop
+                               (Grammar.s_token ("", "when")))
+                            (Grammar.s_nterml (expr : 'expr Grammar.Entry.e)
+                               "simple"),
+                          "194fe98d",
+                          (fun (e : 'expr) _ (loc : Ploc.t) ->
+                             (e : 'e__1)))])))
+             (Grammar.s_nterm (no_rec : 'no_rec Grammar.Entry.e)),
+           "194fe98d",
+           (fun (norec : 'no_rec) (eo : 'e__1 option) (id : string) _ _
+                (loc : Ploc.t) ->
+              (make_named id eo loc norec : 'symb)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")))
@@ -470,6 +516,11 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "_")),
            "194fe98d",
            (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'lookahead_char)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("LIDENT", "")),
+           "194fe98d",
+           (fun (id : string) (loc : Ploc.t) ->
+              (MLast.PaLid (loc, id) : 'lookahead_char)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

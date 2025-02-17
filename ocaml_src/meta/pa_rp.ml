@@ -261,13 +261,24 @@ Grammar.safe_extend
               (SpNtr (loc, p, e) : 'stream_patt_comp)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "?=")))
-             (Grammar.s_list1sep
-                (Grammar.s_nterm (lookahead : 'lookahead Grammar.Entry.e))
-                (Grammar.s_token ("", "|")) false),
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "?=")))
+                (Grammar.s_list1sep
+                   (Grammar.s_nterm (lookahead : 'lookahead Grammar.Entry.e))
+                   (Grammar.s_token ("", "|")) false))
+             (Grammar.s_opt
+                (Grammar.s_rules
+                   [Grammar.production
+                      (Grammar.r_next
+                         (Grammar.r_next Grammar.r_stop
+                            (Grammar.s_token ("", "when")))
+                         (Grammar.s_nterm (expr : 'expr Grammar.Entry.e)),
+                       "194fe98d",
+                       (fun (e : 'expr) _ (loc : Ploc.t) -> (e : 'e__2)))])),
            "194fe98d",
-           (fun (pll : 'lookahead list) _ (loc : Ploc.t) ->
-              (SpLhd (loc, pll) : 'stream_patt_comp)));
+           (fun (eo : 'e__2 option) (pll : 'lookahead list) _
+                (loc : Ploc.t) ->
+              (SpLhd (loc, pll, eo) : 'stream_patt_comp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

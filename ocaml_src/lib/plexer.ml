@@ -931,11 +931,60 @@ let raw_string_starter_p ctx strm =
   predrec 1
 ;;
 
+let zerobuf f buf strm = f Plexing.Lexbuf.empty strm;;
+
+let rec ws buf (strm__ : _ Stream.t) =
+  let buf =
+    match Stream.peek strm__ with
+      Some ' ' -> Stream.junk strm__; buf
+    | Some '\t' -> Stream.junk strm__; buf
+    | Some '\n' -> Stream.junk strm__; buf
+    | _ -> raise Stream.Failure
+  in
+  try ws buf strm__ with Stream.Failure -> buf
+;;
+
+let rec extattrident buf (strm__ : _ Stream.t) =
+  let buf = ident buf strm__ in
+  match Stream.peek strm__ with
+    Some '.' ->
+      Stream.junk strm__;
+      begin try extattrident (Plexing.Lexbuf.add '.' buf) strm__ with
+        Stream.Failure -> raise (Stream.Error "")
+      end
+  | _ -> buf
+;;
+
 let comment_rawstring ctx bp (buf : Plexing.Lexbuf.t) strm =
   if not (raw_string_starter_p ctx strm) then buf
   else
     let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
     let rs = Printf.sprintf "{%s|%s|%s}" delim s delim in add_string buf rs
+;;
+
+
+let comment_quoted_extension1 ctx bp extid buf strm =
+  let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
+  let exts = Printf.sprintf "{%%%s %s|%s|%s}" extid delim s delim in
+  add_string buf exts
+;;
+
+let comment_quoted_extension0 ctx bp extid buf (strm__ : _ Stream.t) =
+  match try Some (ws buf strm__) with Stream.Failure -> None with
+    Some buf ->
+      begin try
+        zerobuf (comment_quoted_extension1 ctx bp extid) buf strm__
+      with Stream.Failure -> raise (Stream.Error "")
+      end
+  | _ -> zerobuf (comment_quoted_extension1 ctx bp extid) buf strm__
+;;
+
+let comment_quoted_extension ctx bp buf (strm__ : _ Stream.t) =
+  let buf = extattrident buf strm__ in
+  try
+    zerobuf (comment_quoted_extension0 ctx bp (Plexing.Lexbuf.get buf)) buf
+      strm__
+  with Stream.Failure -> raise (Stream.Error "")
 ;;
 
 let comment ctx bp =
@@ -951,10 +1000,17 @@ let comment ctx bp =
         end
     | Some '{' ->
         Stream.junk strm__;
-        let buf =
-          comment_rawstring ctx bp (Plexing.Lexbuf.add '{' buf) strm__
-        in
-        comment buf strm__
+        begin match Stream.peek strm__ with
+          Some '%' ->
+            Stream.junk strm__;
+            let buf = comment_quoted_extension ctx bp buf strm__ in
+            comment buf strm__
+        | _ ->
+            let buf =
+              comment_rawstring ctx bp (Plexing.Lexbuf.add '{' buf) strm__
+            in
+            comment buf strm__
+        end
     | Some '(' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
@@ -1009,30 +1065,6 @@ let keyword_or_error_or_rawstring ctx bp (loc, s) buf strm =
   else
     let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
     "STRING", String.escaped s
-;;
-
-let zerobuf f buf strm = f Plexing.Lexbuf.empty strm;;
-
-let rec ws buf (strm__ : _ Stream.t) =
-  let buf =
-    match Stream.peek strm__ with
-      Some ' ' -> Stream.junk strm__; buf
-    | Some '\t' -> Stream.junk strm__; buf
-    | Some '\n' -> Stream.junk strm__; buf
-    | _ -> raise Stream.Failure
-  in
-  try ws buf strm__ with Stream.Failure -> buf
-;;
-
-let rec extattrident buf (strm__ : _ Stream.t) =
-  let buf = ident buf strm__ in
-  match Stream.peek strm__ with
-    Some '.' ->
-      Stream.junk strm__;
-      begin try extattrident (Plexing.Lexbuf.add '.' buf) strm__ with
-        Stream.Failure -> raise (Stream.Error "")
-      end
-  | _ -> buf
 ;;
 
 let quoted_extension1 ctx (bp, _) extid buf strm =
@@ -2006,12 +2038,12 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 1034, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1034, 45)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1055, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1055, 45)));
        tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 1034, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1035, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1035, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 1055, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1056, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1056, 37)));
        tok_comm = None; kwds = kwd_table}
   in
   let glex =

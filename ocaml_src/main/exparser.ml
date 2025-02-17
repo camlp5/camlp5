@@ -8,7 +8,7 @@ type spat_comp =
     SpTrm of MLast.loc * MLast.patt * MLast.expr option MLast.v
   | SpNtr of MLast.loc * MLast.patt * MLast.expr
   | SpLet of MLast.loc * MLast.patt * MLast.expr
-  | SpLhd of MLast.loc * MLast.patt list list
+  | SpLhd of MLast.loc * MLast.patt list list * MLast.expr option MLast.v
   | SpStr of MLast.loc * MLast.patt
 ;;
 type sexp_comp =
@@ -254,7 +254,7 @@ let stream_pattern_component skont ckont =
             None, skont;
             MLast.PaAny loc, None, ckont])
   | SpLet (_, _, _) -> assert false
-  | SpLhd (loc, pl :: pll) ->
+  | SpLhd (loc, pl :: pll, wo) ->
       let mklistpat loc pl =
         List.fold_right
           (fun p1 p2 ->
@@ -286,8 +286,8 @@ let stream_pattern_component skont ckont =
                     (None, "npeek")),
                  MLast.ExInt (loc, string_of_int len, "")),
               MLast.ExLid (loc, "strm__")),
-           [p, None, skont; MLast.PaAny loc, None, ckont])
-  | SpLhd (loc, []) -> ckont
+           [p, wo, skont; MLast.PaAny loc, None, ckont])
+  | SpLhd (loc, [], wo) -> ckont
   | SpStr (loc, p) ->
       try
         match p with
