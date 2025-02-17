@@ -87,6 +87,7 @@ Stream parsers
                                | stream-patt-comp "!"
             stream-patt-comp ::= "`" pattern
                                | "`" pattern "when" expression
+                               | "?=" lookaheads "when" expression
                                | "?=" lookaheads
                                | pattern "=" expression
                                | pattern
@@ -453,6 +454,18 @@ Stream parsers
    patterns separated by a vertical bar in the lookahead construction,
    but with a limitation (due to the implementation): all lists of
    patterns must have the same number of elements.
+
+   Because sometimes constant patterns aren't enough, one can add a
+   "when" expression to the entire lookahead construct, viz. 
+
+   ::
+
+        parser
+          [: `Lparen;
+             e =
+               parser
+               [ [: ?= [ t ; Rparen ] when <some predicate involving t perhaps>; `Minus; `Rparen :] -> minus_op
+               | [: e = expr; `Rparen :] -> e ] :] -> e
 
    .. rubric:: No error optimization
       :name: no-error-optimization

@@ -77,11 +77,14 @@ Stream lexers
                    symbols ::= symbols symbol err
                              | <nothing>
                     symbol ::= "_" no-record-opt
+                             | "_" as LIDENT no-record-opt
+                             | "_" as LIDENT when <expression> no-record-opt
                              | CHAR no-record-opt
                              | CHAR "-" CHAR no-record-opt
                              | STRING no-record-opt
                              | simple-expression
                              | "?=" "[" lookaheads "]"
+                             | "?=" "[" lookaheads "]" when <expression>
                              | "[" rules "]"
              no-record-opt ::= "/"
                              | <nothing>
@@ -96,7 +99,8 @@ Stream lexers
           lookahead-symbol ::= CHAR
                              | CHAR "-" CHAR
                              | "_"
-                       err ::= "?" simple-expression
+                             | LIDENT
+             err ::= "?" simple-expression
                              | "!"
                              | <nothing>
                     action ::= expression
@@ -121,6 +125,15 @@ Stream lexers
    keywords (they are not reserved words) but just identifiers. On the
    contrary, the identifier "``lexer``", which introduces the syntax, is
    a new keyword and cannot be used as variable identifier any more.
+
+   A symbol can be any of:
+
+     - ``_``: this matches any character
+     - ``_ as LIDENT``: this also binds the character to a pattern variable
+     - ``_ as LIDENT when <expression>``: and here the pattern only succeeds
+       when the expression evaluates to true.  Due to syntax constraints,
+       the expression is a 'simple expression' in the grammar, which mostly
+       means that you'll need to parenthesize it.
 
    .. rubric:: Semantics
       :name: semantics
@@ -272,6 +285,11 @@ Stream lexers
    The second line matches a stream starting with the two characters
    ``<`` and ``<`` or starting with the two characters ``<`` and ``:``
    (this is another example in the same file).
+
+   As with stream-parsers, a lookahead expression can include
+   pattern-variables (which are bound to chars), and a when-expression
+   (a simple-expression in the grammar, so probably needing
+   parenthesization).
 
    .. rubric:: Semantic actions of rules
       :name: semantic-actions-of-rules

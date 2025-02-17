@@ -34,7 +34,7 @@ tests.
 4. AST, Extensible grammars, extensible printers, evaluator (ocamllex lexer): ``tutorials/calc+ocamllex``
 5. Extensible grammars (functorial interface) and ocamllex lexer: ``tutorials/calc+functorial``
 6. like #4, but with ``pa_lexer``-implementation of a lexer:  ``tutorials/calc+pa_lexer``
-7. a translation of #6 into original syntax.
+7. a translation of #6 into original syntax: ``calc+pa_lexer-original``
 
 Stream parsers in original syntax: the simplest program using Camlp5 features
 =============================================================================

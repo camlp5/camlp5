@@ -540,6 +540,21 @@ value raw_string_starter_p ctx strm =
   in predrec 1
 ;
 
+value zerobuf f buf strm =
+  f $empty strm
+;
+
+value rec ws =
+  lexer
+  [ [' '/ | '\t'/ | '\n'/] [ ws | ]
+  ]
+;
+
+value rec extattrident =
+  lexer
+  [ ident [ "." extattrident | ] ]
+;
+
 value comment_rawstring ctx bp (buf : Plexing.Lexbuf.t) strm =
   if not (raw_string_starter_p ctx strm) then
     buf
@@ -549,11 +564,32 @@ value comment_rawstring ctx bp (buf : Plexing.Lexbuf.t) strm =
   add_string buf rs
 ;
 
+
+value comment_quoted_extension1 ctx bp extid buf strm =
+  let (delim, s) = rawstring0 ctx bp $empty strm in
+  let exts = Printf.sprintf "{%%%s %s|%s|%s}" extid delim s delim in
+  add_string buf exts
+;
+
+value comment_quoted_extension0 ctx bp extid =
+  lexer
+  [ ws (zerobuf (comment_quoted_extension1 ctx bp extid))
+  | (zerobuf (comment_quoted_extension1 ctx bp extid))
+  ]
+;
+
+value comment_quoted_extension ctx bp =
+  lexer [
+    extattrident (zerobuf (comment_quoted_extension0 ctx bp $buf))
+  ]
+;
+
 value comment ctx bp =
   comment where rec comment =
     lexer
     [ "*)"
     | "*" comment!
+    | "{%"/ (comment_quoted_extension ctx bp)! comment!
     | "{" (comment_rawstring ctx bp)! comment!
     | "(*" comment! comment!
     | "(" comment!
@@ -577,21 +613,6 @@ value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
   else
     let (delim, s) = rawstring0 ctx bp $empty strm in
     ("STRING", String.escaped s)
-;
-
-value zerobuf f buf strm =
-  f $empty strm
-;
-
-value rec ws =
-  lexer
-  [ [' '/ | '\t'/ | '\n'/] [ ws | ]
-  ]
-;
-
-value rec extattrident =
-  lexer
-  [ ident [ "." extattrident | ] ]
 ;
 
 value quoted_extension1 ctx (bp, _) extid buf strm =

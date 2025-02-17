@@ -4980,6 +4980,24 @@ END
      o_output = OK {foo||foo};
      official_output = OK {foo||foo} ;
      r_output = OK {foo||foo}
+    };
+    {name="comment-quoted_extension-1"; implem = True ;
+     exclude=[];
+     o_input = OK "module M = struct (* {%fmt_str| ${c|c} |} *) end" ;
+     official_input = OK "module M = struct (* {%fmt_str| ${c|c} |} *) end" ;
+     r_input = OK "module M = struct (* {%fmt_str| ${c|c} |} *) end;" ;
+     o_output = OK "module M = struct  end;;" ;
+     official_output = OK "module M = struct  end";
+     r_output = OK "module M = struct  end;"
+    };
+    {name="comment-quoted_extension-2"; implem = True ;
+     exclude=[];
+     o_input = OK "module M = struct (* {%fmt_str bar| ${c|c} |bar} *) end" ;
+     official_input = OK "module M = struct (* {%fmt_str bar| ${c|c} |bar} |} *) end" ;
+     r_input = OK "module M = struct (* {%fmt_str bar| ${c|c} |bar} *) end;" ;
+     o_output = OK "module M = struct  end;;" ;
+     official_output = OK "module M = struct  end";
+     r_output = OK "module M = struct  end;"
     }
 ] @
 IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
