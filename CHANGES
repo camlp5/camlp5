@@ -1,3 +1,11 @@
+Camlp5 Version 8.03.02:
+--------------------
+
+* [16 Feb 2025] Bugfix: quoted-string-extensions within comments were being improperly parsed
+
+  * also added support for when-expressions in stream-parser
+    lookaheads, and stream-lexer patterns and lookaheads.
+
 Camlp5 Version 8.03.01:
 --------------------
 
