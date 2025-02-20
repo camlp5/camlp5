@@ -10,7 +10,7 @@ value lexer = {Plexing.tok_func = lexer;
  Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
  Plexing.tok_match = Plexing.default_match;
  Plexing.tok_text = Plexing.lexer_text;
- Plexing.tok_comm = None} ;
+ Plexing.tok_comm = None ; Plexing.kwds = Hashtbl.create 23 } ;
 
 type binop = [ ADD | SUB | DIV | MUL ] ;
 type unop = [ PLUS | MINUS ] ;

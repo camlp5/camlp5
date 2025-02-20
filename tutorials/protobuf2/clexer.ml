@@ -928,13 +928,13 @@ value gmake () =
   let glexr =
     ref
      {Plexing.tok_func = fun []; tok_using = fun []; tok_removing = fun [];
-      tok_match = fun []; tok_text = fun []; tok_comm = None}
+      tok_match = fun []; tok_text = fun []; tok_comm = None; kwds = Hashtbl.create 23 }
   in
   let glex =
     {Plexing.tok_func = func ctx kwd_table glexr;
      tok_using = using_token ctx kwd_table;
      tok_removing = removing_token kwd_table;
-     tok_match = tok_match; tok_text = text; tok_comm = None}
+     tok_match = tok_match; tok_text = text; tok_comm = None ; kwds = Hashtbl.create 23}
   in
   do { glexr.val := glex; glex }
 ;
