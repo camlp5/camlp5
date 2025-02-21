@@ -17,6 +17,7 @@ END;
 
 open Printf;
 
+if not Sys.interactive.val then
 try
 for i = 1 to Array.length Sys.argv - 1 do {
   let r = Grammar.Entry.parse e (Stream.of_string Sys.argv.(i)) in
@@ -27,4 +28,5 @@ with [ Ploc.Exc loc exc ->
     Fmt.(pf stderr "%s%a@.%!" (Ploc.string_of_location loc) exn exc)
   | exc -> Fmt.(pf stderr "%a@.%!" exn exc)
 ]
+else ()
 ;
