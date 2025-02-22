@@ -1421,6 +1421,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | s = V INT_n -> <:expr< $_nativeint:s$ >>
       | s = V FLOAT -> <:expr< $_flo:s$ >>
       | s = V STRING -> <:expr< $_str:s$ >>
+      | s = RAWSTRING →
+        let (_,s) = Asttools.split_rawstring s in
+        <:expr< $str:s$ >>
       | c = V CHAR -> <:expr< $_chr:c$ >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | UIDENT "True" ->  <:expr< True_ >>

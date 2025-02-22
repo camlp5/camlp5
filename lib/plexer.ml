@@ -612,7 +612,7 @@ value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
     ]
   else
     let (delim, s) = rawstring0 ctx bp $empty strm in
-    ("STRING", String.escaped s)
+    ("RAWSTRING", Printf.sprintf "%d:%s" (String.length delim) (String.escaped s))
 ;
 
 value quoted_extension1 ctx (bp, _) extid buf strm =
@@ -945,7 +945,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "QUOTEDEXTENSION" |
-    "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
+    "CHAR" | "STRING" | "RAWSTRING" | "QUOTATION" | "GIDENT" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
@@ -972,6 +972,7 @@ value text =
   | ("INT", s) -> "'" ^ s ^ "'"
   | ("FLOAT", "") -> "float"
   | ("STRING", "") -> "string"
+  | ("RAWSTRING", "") -> "raw string"
   | ("CHAR", "") -> "char"
   | ("QUOTATION", "") -> "quotation"
   | ("ANTIQUOT", k) -> "antiquot \"" ^ k ^ "\""

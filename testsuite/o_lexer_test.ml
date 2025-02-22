@@ -78,13 +78,13 @@ value lex_tests = "lex" >::: [
       ;(("EOI",""),(7,8,1,0))]
       (List.map extract (lex_string {a|"foo" x|a}))
   ; assert_equal ~{printer=pp_rvs}
-      [(("STRING","foo"),(0,7,1,0))
+      [(("RAWSTRING","0:foo"),(0,7,1,0))
       ;(("LIDENT","x"),(8,9,1,0))
       ;(("EOI",""),(9,10,1,0))]
       (List.map extract (lex_string {a|{|foo|} x|a}))
   ; assert_equal ~{printer=pp_rvs}
       [(("LIDENT","u"),(0,1,1,0))
-      ;(("STRING","foo\\nbar"),(4,15,2,2))
+      ;(("RAWSTRING","0:foo\\nbar"),(4,15,2,2))
       ;(("LIDENT","x"),(17,18,4,16))
       ;(("EOI",""),(18,19,4,16))]
       (List.map extract (lex_string {a|u

@@ -413,3 +413,16 @@ value rec expr_concat e1 e2 =
 
   ]
 ;
+
+
+value split_rawstring s =
+  try
+    let i = String.index s ':' in
+    let delimsize_s = String.sub s 0 i in
+    let rest = String.sub s (i+1) (String.length s - i - 1) in
+    let delimsize = int_of_string delimsize_s in
+    (delimsize, rest)
+  with 
+  [ Not_found | Failure _ ->
+    failwith (Printf.sprintf "Asttools.split_rawstring: unexpected malformed rawstring \"%s\"" s) ]
+;
