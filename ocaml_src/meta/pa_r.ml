@@ -3450,6 +3450,13 @@ Grammar.safe_extend
            (fun (s : string) (loc : Ploc.t) ->
               (MLast.ExChr (loc, s) : 'expr)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("RAWSTRING", "")),
+           "194fe98d",
+           (fun (s : string) (loc : Ploc.t) ->
+              (let (_, s) = Asttools.split_rawstring s in
+               MLast.ExStr (loc, (loc, s)) :
+               'expr)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
            "194fe98d",
            (fun (s : string) (loc : Ploc.t) ->

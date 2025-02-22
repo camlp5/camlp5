@@ -435,7 +435,8 @@ module MetaAction =
                    mloc),
                 mexpr e1),
              mvala (mlist mexpr) e2)
-      | MLast.ExStr (loc, (_, s)) ->
+      | MLast.ExStr (loc, s) ->
+          let (_, s) = Pcaml.unvala s in
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -1040,12 +1041,12 @@ let quot_expr psl e =
                 (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Node")),
               MLast.ExStr (loc, (loc, s))),
            MLast.ExLong (loc, MLast.LiUid (loc, "[]")))
-    | MLast.ExStr (_, s) ->
+    | MLast.ExStr (_, (_, s)) ->
         MLast.ExApp
           (loc,
            MLast.ExLong
              (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Str")),
-           MLast.ExStr (loc, s))
+           MLast.ExStr (loc, (loc, s)))
     | MLast.ExTup (_, el) ->
         let el = List.map loop el in
         MLast.ExApp
@@ -1521,7 +1522,9 @@ let ss2 loc ls oe s =
         (fun a rl ->
            let r1 =
              let ps =
-               let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (loc, a))) in
+               let text =
+                 TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (loc, a)))
+               in
                let styp = STlid (loc, "string") in
                let s = {used = []; text = text; styp = styp} in
                {pattern = Some (MLast.PaLid (loc, "a")); symbol = s}
@@ -1551,7 +1554,9 @@ let ss2 loc ls oe s =
            let r2 =
              let a = anti_anti a in
              let ps =
-               let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (loc, a))) in
+               let text =
+                 TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (loc, a)))
+               in
                let styp = STlid (loc, "string") in
                let s = {used = []; text = text; styp = styp} in
                {pattern = Some (MLast.PaLid (loc, "a")); symbol = s}

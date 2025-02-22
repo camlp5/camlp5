@@ -1401,7 +1401,7 @@ and expr =
                (loc, MLast.ExApp (loc, MLast.ExLid (loc, dotop), e1), aexp))
       end
   | ExStr (loc, s) ->
-     let (_, s) = uv s in
+      let (_, s) = uv s in
       mkexp loc
         (Pexp_constant
            (mkconst loc
@@ -2148,9 +2148,7 @@ let implem fname ast = glob_fname := fname; List.fold_right str_item ast [];;
 
 let directive loc =
   function
-    MLast.ExStr (_, s) ->
-     let (_, s) = uv s in
-     Pdir_string s
+    MLast.ExStr (_, (_, s)) -> Pdir_string s
   | MLast.ExInt (_, i, "") -> ocaml_pdir_int i (int_of_string_l loc i)
   | MLast.ExLong (_, MLast.LiUid (_, "True")) ->
       begin match ocaml_pdir_bool with

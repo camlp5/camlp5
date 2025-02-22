@@ -193,7 +193,9 @@ Pcaml.add_directive "option"
          Some 0 | None -> ()
        | Some x -> failwith "bad option"
        end
-   | Some (MLast.ExApp (_, MLast.ExStr (_, (_, s1)), MLast.ExStr (_, (_, s2)))) ->
+   | Some
+       (MLast.ExApp
+          (_, MLast.ExStr (_, (_, s1)), MLast.ExStr (_, (_, s2)))) ->
        begin match parse_options [s1; s2] with
          Some 0 | None -> ()
        | Some x -> failwith "bad option"

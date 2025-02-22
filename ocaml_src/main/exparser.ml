@@ -85,7 +85,7 @@ let rec handle_failure e =
       List.for_all (fun (p, e, _) -> handle_failure e) pel && handle_failure e
   | MLast.ExSeq (_, el) -> List.for_all handle_failure el
   | MLast.ExFle (_, MLast.ExLong (_, MLast.LiUid (_, _)), (None, _)) |
-    MLast.ExLid (_, _) | MLast.ExInt (_, _, "") | MLast.ExStr (_, _) |
+    MLast.ExLid (_, _) | MLast.ExInt (_, _, "") | MLast.ExStr (_, (_, _)) |
     MLast.ExChr (_, _) | MLast.ExFun (_, _) |
     MLast.ExLong (_, MLast.LiUid (_, _)) ->
       true
@@ -119,7 +119,7 @@ let rec subst v e =
   | MLast.ExLong (_, MLast.LiUid (_, _)) -> e
   | MLast.ExInt (_, _, "") -> e
   | MLast.ExChr (_, _) -> e
-  | MLast.ExStr (_, _) -> e
+  | MLast.ExStr (_, (_, _)) -> e
   | MLast.ExFle (_, _, (None, _)) -> e
   | MLast.ExLet (loc, rf, pel, e) ->
       MLast.ExLet (loc, rf, List.map (subst_pe v) pel, subst v e)
@@ -138,7 +138,7 @@ Pcaml.add_option "-no-pa-opt" (Arg.Clear optim) "No parsers optimization.";;
 let rec perhaps_bound s =
   function
     MLast.ExTup (_, el) -> List.exists (perhaps_bound s) el
-  | MLast.ExLong (_, MLast.LiUid (_, _)) | MLast.ExStr (_, _) -> false
+  | MLast.ExLong (_, MLast.LiUid (_, _)) | MLast.ExStr (_, (_, _)) -> false
   | _ -> true
 ;;
 
@@ -634,7 +634,7 @@ let rec not_computing =
   function
     MLast.ExLid (_, _) | MLast.ExLong (_, MLast.LiUid (_, _)) |
     MLast.ExInt (_, _, "") | MLast.ExFlo (_, _) | MLast.ExChr (_, _) |
-    MLast.ExStr (_, _) ->
+    MLast.ExStr (_, (_, _)) ->
       true
   | MLast.ExApp (_, x, y) -> is_cons_apply_not_computing x && not_computing y
   | _ -> false

@@ -1064,7 +1064,8 @@ let keyword_or_error_or_rawstring ctx bp (loc, s) buf strm =
     | _ -> keyword_or_error ctx loc "{"
   else
     let (delim, s) = rawstring0 ctx bp Plexing.Lexbuf.empty strm in
-    "STRING", String.escaped s
+    "RAWSTRING",
+    Printf.sprintf "%d:%s" (String.length delim) (String.escaped s)
 ;;
 
 let quoted_extension1 ctx (bp, _) extid buf strm =
@@ -1931,8 +1932,8 @@ let using_token ctx kwd_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "QUOTEDEXTENSION" | "CHAR" | "STRING" | "QUOTATION" | "GIDENT" |
-    "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
+    "QUOTEDEXTENSION" | "CHAR" | "STRING" | "RAWSTRING" | "QUOTATION" |
+    "GIDENT" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise
@@ -1957,6 +1958,7 @@ let text =
   | "INT", s -> "'" ^ s ^ "'"
   | "FLOAT", "" -> "float"
   | "STRING", "" -> "string"
+  | "RAWSTRING", "" -> "raw string"
   | "CHAR", "" -> "char"
   | "QUOTATION", "" -> "quotation"
   | "ANTIQUOT", k -> "antiquot \"" ^ k ^ "\""
@@ -2038,12 +2040,12 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 1055, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1055, 45)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1056, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1056, 45)));
        tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 1055, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1056, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1056, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 1056, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1057, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1057, 37)));
        tok_comm = None; kwds = kwd_table}
   in
   let glex =

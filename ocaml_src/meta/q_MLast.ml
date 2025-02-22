@@ -5818,6 +5818,17 @@ Grammar.safe_extend
            (fun (s : 'e__118) (loc : Ploc.t) ->
               (Qast.Node ("ExChr", [Qast.Loc; s]) : 'expr)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("RAWSTRING", "")),
+           "194fe98d",
+           (fun (s : string) (loc : Ploc.t) ->
+              (let (_, s) = Asttools.split_rawstring s in
+               Qast.Node
+                 ("ExStr",
+                  [Qast.Loc;
+                   Qast.VaVal
+                     (Qast.Tuple [Qast.Loc; Qast.VaVal (Qast.Str s)])]) :
+               'expr)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_facto
                 (Grammar.s_rules
@@ -5842,7 +5853,10 @@ Grammar.safe_extend
                            'e__117)))])),
            "194fe98d",
            (fun (s : 'e__117) (loc : Ploc.t) ->
-              (Qast.Node ("ExStr", [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Loc; s])]) : 'expr)));
+              (Qast.Node
+                 ("ExStr",
+                  [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Loc; s])]) :
+               'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_facto
