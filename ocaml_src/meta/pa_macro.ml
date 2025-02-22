@@ -958,7 +958,7 @@ Grammar.safe_extend
              (Grammar.s_token ("LIDENT", "__FILE__")),
            "194fe98d",
            (fun _ (loc : Ploc.t) ->
-              (MLast.ExStr (loc, (None, Ploc.file_name loc)) : 'expr)))]];
+              (MLast.ExStr (loc, (loc, Ploc.file_name loc)) : 'expr)))]];
     Grammar.extension (patt : 'patt Grammar.Entry.e) (Some Gramext.First)
       [None, None,
        [Grammar.production

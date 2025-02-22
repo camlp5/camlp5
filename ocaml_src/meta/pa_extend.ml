@@ -214,8 +214,8 @@ module MetaAction =
         false -> MLast.ExLong (loc, MLast.LiUid (loc, "False"))
       | true -> MLast.ExLong (loc, MLast.LiUid (loc, "True"))
     ;;
-    let mstring s = MLast.ExStr (loc, (None, s));;
-    let mstring_escaped s = MLast.ExStr (loc, (None, String.escaped s));;
+    let mstring s = MLast.ExStr (loc, (loc, s));;
+    let mstring_escaped s = MLast.ExStr (loc, (loc, String.escaped s));;
     let mvala f s = f s;;
     let mloc =
       MLast.ExFle
@@ -332,7 +332,7 @@ module MetaAction =
                       MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "ExInt")),
                    mloc),
                 mvala mstring s),
-             MLast.ExStr (loc, (None, c)))
+             MLast.ExStr (loc, (loc, c)))
       | MLast.ExLab (loc, peoptl) ->
           MLast.ExApp
             (loc,
@@ -435,7 +435,7 @@ module MetaAction =
                    mloc),
                 mexpr e1),
              mvala (mlist mexpr) e2)
-      | MLast.ExStr (loc, (None, s)) ->
+      | MLast.ExStr (loc, (_, s)) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -548,7 +548,7 @@ module MetaAction =
                       MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "PaInt")),
                    mloc),
                 mvala mstring s),
-             MLast.ExStr (loc, (None, c)))
+             MLast.ExStr (loc, (loc, c)))
       | MLast.PaLid (loc, s) ->
           MLast.ExApp
             (loc,
@@ -856,7 +856,7 @@ let quot_expr psl e =
                    MLast.ExLong
                      (loc,
                       MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "VaAnt")),
-                   MLast.ExStr (loc, (None, s))),
+                   MLast.ExStr (loc, (loc, s))),
                 MLast.ExLid (loc, "loc")),
              loop e)
         in
@@ -954,7 +954,7 @@ let quot_expr psl e =
                   MLast.ExLong
                     (loc,
                      MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Node")),
-                  MLast.ExStr (loc, (None, c))),
+                  MLast.ExStr (loc, (loc, c))),
                mklistexp loc al)
         | MLast.ExLong (_, MLast.LiAcc (_, MLast.LiUid (_, "MLast"), c)) ->
             let al = List.map loop al in
@@ -965,7 +965,7 @@ let quot_expr psl e =
                   MLast.ExLong
                     (loc,
                      MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Node")),
-                  MLast.ExStr (loc, (None, c))),
+                  MLast.ExStr (loc, (loc, c))),
                mklistexp loc al)
         | MLast.ExLong (_, MLast.LiAcc (_, MLast.LiUid (_, m), c)) ->
             let al = List.map loop al in
@@ -976,7 +976,7 @@ let quot_expr psl e =
                   MLast.ExLong
                     (loc,
                      MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Node")),
-                  MLast.ExStr (loc, (None, m ^ "." ^ c))),
+                  MLast.ExStr (loc, (loc, m ^ "." ^ c))),
                mklistexp loc al)
         | MLast.ExLid (_, f) ->
             if is_not_translated_function f then e
@@ -993,9 +993,9 @@ let quot_expr psl e =
               (fun (p, e) ->
                  let lab =
                    match p with
-                     MLast.PaLid (_, c) -> MLast.ExStr (loc, (None, c))
+                     MLast.PaLid (_, c) -> MLast.ExStr (loc, (loc, c))
                    | MLast.PaPfx (_, _, MLast.PaLid (_, c)) ->
-                       MLast.ExStr (loc, (None, c))
+                       MLast.ExStr (loc, (loc, c))
                    | _ -> raise Not_found
                  in
                  MLast.ExTup (loc, [lab; loop e]))
@@ -1020,7 +1020,7 @@ let quot_expr psl e =
              (loc,
               MLast.ExLong
                 (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Node")),
-              MLast.ExStr (loc, (None, s))),
+              MLast.ExStr (loc, (loc, s))),
            MLast.ExLong (loc, MLast.LiUid (loc, "[]")))
     | MLast.ExLong (_, MLast.LiAcc (_, MLast.LiUid (_, m), s)) ->
         MLast.ExApp
@@ -1029,7 +1029,7 @@ let quot_expr psl e =
              (loc,
               MLast.ExLong
                 (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Node")),
-              MLast.ExStr (loc, (None, m ^ "." ^ s))),
+              MLast.ExStr (loc, (loc, m ^ "." ^ s))),
            MLast.ExLong (loc, MLast.LiUid (loc, "[]")))
     | MLast.ExLong (_, MLast.LiUid (_, s)) ->
         MLast.ExApp
@@ -1038,7 +1038,7 @@ let quot_expr psl e =
              (loc,
               MLast.ExLong
                 (loc, MLast.LiAcc (loc, MLast.LiUid (loc, "Qast"), "Node")),
-              MLast.ExStr (loc, (None, s))),
+              MLast.ExStr (loc, (loc, s))),
            MLast.ExLong (loc, MLast.LiUid (loc, "[]")))
     | MLast.ExStr (_, s) ->
         MLast.ExApp
@@ -1278,7 +1278,7 @@ let rec make_expr gmod tvar =
                          MLast.LiAcc (loc, MLast.LiUid (loc, gmod), "Entry"),
                          "e"),
                       MLast.TyQuo (loc, n.tvar)))),
-             MLast.ExStr (loc, (None, lab)))
+             MLast.ExStr (loc, (loc, lab)))
       | None ->
           if n.tvar = tvar then
             MLast.ExFle
@@ -1332,9 +1332,9 @@ let rec make_expr gmod tvar =
          MLast.ExFle
            (loc, MLast.ExLong (loc, MLast.LiUid (loc, gmod)),
             (None, "s_token")),
-         MLast.ExTup (loc, [MLast.ExStr (loc, (None, s)); e]))
+         MLast.ExTup (loc, [MLast.ExStr (loc, (loc, s)); e]))
   | TXvala (loc, al, t) ->
-      let al = make_list loc (fun s -> MLast.ExStr (loc, (None, s))) al in
+      let al = make_list loc (fun s -> MLast.ExStr (loc, (loc, s))) al in
       MLast.ExApp
         (loc,
          MLast.ExApp
@@ -1386,7 +1386,7 @@ and make_expr_rules loc gmod rl tvar =
                 MLast.ExFle
                   (loc, MLast.ExLong (loc, MLast.LiUid (loc, gmod)),
                    (None, "production")),
-                MLast.ExTup (loc, [sl; MLast.ExStr (loc, (None, hash)); ac]))),
+                MLast.ExTup (loc, [sl; MLast.ExStr (loc, (loc, hash)); ac]))),
           txt))
     (MLast.ExLong (loc, MLast.LiUid (loc, "[]"))) rl
 ;;
@@ -1521,7 +1521,7 @@ let ss2 loc ls oe s =
         (fun a rl ->
            let r1 =
              let ps =
-               let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (None, a))) in
+               let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (loc, a))) in
                let styp = STlid (loc, "string") in
                let s = {used = []; text = text; styp = styp} in
                {pattern = Some (MLast.PaLid (loc, "a")); symbol = s}
@@ -1542,7 +1542,7 @@ let ss2 loc ls oe s =
                              (loc,
                               MLast.LiAcc
                                 (loc, MLast.LiUid (loc, "Qast"), "VaAnt")),
-                           MLast.ExStr (loc, (None, a))),
+                           MLast.ExStr (loc, (loc, a))),
                         MLast.ExLid (loc, "loc")),
                      MLast.ExLid (loc, "a")))
              in
@@ -1551,7 +1551,7 @@ let ss2 loc ls oe s =
            let r2 =
              let a = anti_anti a in
              let ps =
-               let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (None, a))) in
+               let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, (loc, a))) in
                let styp = STlid (loc, "string") in
                let s = {used = []; text = text; styp = styp} in
                {pattern = Some (MLast.PaLid (loc, "a")); symbol = s}
@@ -1567,7 +1567,7 @@ let ss2 loc ls oe s =
                           (loc,
                            MLast.LiAcc
                              (loc, MLast.LiUid (loc, "Qast"), "VaAnt")),
-                        MLast.ExStr (loc, (None, a))),
+                        MLast.ExStr (loc, (loc, a))),
                      MLast.ExLid (loc, "loc")),
                   MLast.ExLid (loc, "a"))
              in
@@ -1588,7 +1588,7 @@ let ss2 loc ls oe s =
 
 let string_of_a =
   function
-    ATstring (loc, s) -> MLast.ExStr (loc, (None, s))
+    ATstring (loc, s) -> MLast.ExStr (loc, (loc, s))
   | ATexpr (_, e) -> e
 ;;
 
@@ -1635,7 +1635,7 @@ let rec symbol_of_a =
       let e =
         match p with
           Some e -> string_of_a e
-        | None -> MLast.ExStr (loc, (None, ""))
+        | None -> MLast.ExStr (loc, (loc, ""))
       in
       let text = TXtok (loc, s, e) in
       {used = []; text = text; styp = STlid (loc, "string")}
@@ -1768,7 +1768,7 @@ let text_of_entry loc gmod e =
              Some lab ->
                MLast.ExApp
                  (loc, MLast.ExLong (loc, MLast.LiUid (loc, "Some")),
-                  MLast.ExStr (loc, (None, lab)))
+                  MLast.ExStr (loc, (loc, lab)))
            | None -> MLast.ExLong (loc, MLast.LiUid (loc, "None"))
          in
          let ass =
@@ -1839,7 +1839,7 @@ let let_in_of_extend loc gmod functor_version gl el args =
                (loc,
                 MLast.ExApp
                   (loc, MLast.ExLid (loc, "grammar_entry_create"),
-                   MLast.ExStr (loc, (None, i))),
+                   MLast.ExStr (loc, (loc, i))),
                 MLast.TyApp
                   (loc,
                    MLast.TyAcc

@@ -3453,7 +3453,7 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
            "194fe98d",
            (fun (s : string) (loc : Ploc.t) ->
-              (MLast.ExStr (loc, (None, s)) : 'expr)));
+              (MLast.ExStr (loc, (loc, s)) : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("FLOAT", "")),
            "194fe98d",

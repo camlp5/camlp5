@@ -177,7 +177,7 @@ module E_MetaSig =
     let float n =
       let loc = Ploc.dummy in MLast.ExFlo (loc, Float.to_string n)
     ;;
-    let string s = MLast.ExStr (loc, (None, s));;
+    let string s = MLast.ExStr (loc, (loc, s));;
     let tuple le = MLast.ExTup (loc, le);;
     let record lfe = MLast.ExRec (loc, lfe, None);;
     let xtr_typed wantty loc s =

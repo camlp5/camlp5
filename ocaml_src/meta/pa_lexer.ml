@@ -562,7 +562,7 @@ Grammar.safe_extend
              (Grammar.s_token ("STRING", "")),
            "194fe98d",
            (fun (s : string) _ (loc : Ploc.t) ->
-              (SpoQues (MLast.ExStr (loc, (None, s))) : 'err_kont)));
+              (SpoQues (MLast.ExStr (loc, (loc, s))) : 'err_kont)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")),
            "194fe98d", (fun _ (loc : Ploc.t) -> (SpoBang : 'err_kont)))]];

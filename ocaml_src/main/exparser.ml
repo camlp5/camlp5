@@ -351,7 +351,7 @@ let rec stream_pattern loc epo e ekont =
                       (loc,
                        MLast.LiAcc
                          (loc, MLast.LiUid (loc, "Stream"), "Error")),
-                    MLast.ExStr (loc, (None, ""))))
+                    MLast.ExStr (loc, (loc, ""))))
         in
         stream_pattern loc epo e ekont spcl
       in
@@ -395,7 +395,7 @@ let stream_patterns_term loc ekont tspel =
                          (loc,
                           MLast.LiAcc
                             (loc, MLast.LiUid (loc, "Stream"), "Error")),
-                       MLast.ExStr (loc, (None, ""))))
+                       MLast.ExStr (loc, (loc, ""))))
            in
            let skont = stream_pattern loc epo e ekont spcl in
            MLast.ExSeq

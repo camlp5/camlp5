@@ -1037,10 +1037,10 @@ EXTEND
       | s = SV INT_n → Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "n"]
       | s = SV FLOAT → Qast.Node "ExFlo" [Qast.Loc; s]
       | s = SV STRING →
-        Qast.Node "ExStr" [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Option None; s])]
+        Qast.Node "ExStr" [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Loc; s])]
       | s = RAWSTRING ->
        let (_,s) = Asttools.split_rawstring s in
-        Qast.Node "ExStr" [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Option None; Qast.VaVal (Qast.Str s)])]
+        Qast.Node "ExStr" [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Loc; Qast.VaVal (Qast.Str s)])]
       | s = SV CHAR → Qast.Node "ExChr" [Qast.Loc; s]
       | e = alg_extension -> Qast.Node "ExExten" [Qast.Loc; e]
       | i = SV LIDENT → Qast.Node "ExLid" [Qast.Loc; i]

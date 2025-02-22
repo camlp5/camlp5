@@ -380,7 +380,7 @@ and expr floc sh =
         ExSte loc x1 (self x2) (vala_map (List.map self) x3)
     | ExStr loc x1 →
         let loc = floc loc in
-        ExStr loc x1
+        ExStr loc (vala_map (fun (loc', s) -> (floc loc', s)) x1)
     | ExTry loc x1 x2 →
         let loc = floc loc in
         ExTry loc (self x1)

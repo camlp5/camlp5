@@ -101,7 +101,7 @@ module Qast =
           MLast.ExApp
             (loc, MLast.ExLong (loc, MLast.LiUid (loc, "Some")), to_expr m a)
       | Int s -> MLast.ExInt (loc, s, "")
-      | Str s -> MLast.ExStr (loc, (None, s))
+      | Str s -> MLast.ExStr (loc, (loc, s))
       | Bool true -> MLast.ExLong (loc, MLast.LiUid (loc, "True"))
       | Bool false -> MLast.ExLong (loc, MLast.LiUid (loc, "False"))
       | Cons (a1, a2) ->
@@ -5842,7 +5842,7 @@ Grammar.safe_extend
                            'e__117)))])),
            "194fe98d",
            (fun (s : 'e__117) (loc : Ploc.t) ->
-              (Qast.Node ("ExStr", [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Option None; s])]) : 'expr)));
+              (Qast.Node ("ExStr", [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Loc; s])]) : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_facto
@@ -13996,7 +13996,7 @@ Grammar.safe_extend
               else
                 MLast.ExApp
                   (loc, MLast.ExLid (loc, "failwith"),
-                   MLast.ExStr (loc, (None, "antiquot"))) :
+                   MLast.ExStr (loc, (loc, "antiquot"))) :
               'expr_eoi)));
        Grammar.production
          (Grammar.r_next

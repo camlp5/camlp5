@@ -243,7 +243,7 @@ module Meta_make (C : MetaSig) =
       | ExSnd (_, e, s) -> C.node "ExSnd" [expr e; C.vala C.string s]
       | ExSte (_, s, e1, e2) ->
           C.node "ExSte" [C.vala C.string s; expr e1; C.vala (C.list expr) e2]
-      | ExStr (_, s) -> C.node "ExStr" [C.vala (fun (n,s) -> (C.tuple [C.option C.int n; C.vala C.string s])) s]
+      | ExStr (_, s) -> C.node "ExStr" [C.vala (fun (n,s) -> (C.tuple [C.loc_v(); C.vala C.string s])) s]
       | ExTry (_, e, lpoee) ->
           C.node "ExTry"
             [expr e;
@@ -970,7 +970,7 @@ Grammar.safe_extend
               else
                 MLast.ExApp
                   (loc, MLast.ExLid (loc, "failwith"),
-                   MLast.ExStr (loc, (None, "antiquot"))) :
+                   MLast.ExStr (loc, (loc, "antiquot"))) :
               'expr_eoi)))]]];
 let expr s =
   Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
