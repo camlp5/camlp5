@@ -1167,6 +1167,7 @@ and expr =
         expr <:expr< $lid:dotop$ $e1$ $aexp$ >>
       ]
   | ExStr loc s →
+      let (_, s) = uv s in
       mkexp loc
         (Pexp_constant
            (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))

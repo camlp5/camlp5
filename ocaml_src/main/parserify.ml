@@ -64,7 +64,7 @@ let rec contains_strm__ =
 
 let err =
   function
-    MLast.ExStr (_, "") -> SpoNoth
+    MLast.ExStr (_, (_, "")) -> SpoNoth
   | e -> SpoQues e
 ;;
 

@@ -271,6 +271,7 @@ module MetaAction =
       | MLast.ExSte loc s e1 e2 ->
           <:expr< MLast.ExSte $mvala mstring s$ $mloc$ $mexpr e1$ $mvala (mlist mexpr) e2$ >>
       | MLast.ExStr loc s ->
+         let (_, s) = Pcaml.unvala s in
           <:expr< MLast.ExStr $mloc$ $mvala mstring_escaped s$ >>
       | MLast.ExTry loc e pwel ->
           <:expr< MLast.ExTry $mloc$ $mexpr e$ $mvala (mlist mpwe) pwel$ >>

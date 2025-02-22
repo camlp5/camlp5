@@ -232,7 +232,8 @@ module Meta_make (C : MetaSig) =
       | ExSeq _ le → C.node "ExSeq" [C.vala (C.list expr) le]
       | ExSnd _ e s → C.node "ExSnd" [expr e; C.vala C.string s]
       | ExSte _ s e1 e2 → C.node "ExSte" [C.vala C.string s; expr e1; C.vala (C.list expr) e2]
-      | ExStr _ s → C.node "ExStr" [C.vala C.string s]
+      | ExStr _ s →
+          C.node "ExStr" [C.vala (fun (n,s) -> (C.tuple [C.option C.int n; C.vala C.string s])) s]
       | ExTry _ e lpoee →
           C.node "ExTry"
             [expr e;

@@ -133,7 +133,7 @@ and expr =
   | ExSeq of loc and V (list expr)
   | ExSnd of loc and expr and V string
   | ExSte of loc and V string and expr and V (list expr)
-  | ExStr of loc and V string
+  | ExStr of loc and V (option int * V string)
   | ExTry of loc and expr and V (list case_branch)
   | ExTup of loc and V (list expr)
   | ExTyc of loc and expr and ctyp

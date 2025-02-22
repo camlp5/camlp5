@@ -124,7 +124,7 @@ and expr =
   | ExSeq of loc * expr list
   | ExSnd of loc * expr * string
   | ExSte of loc * string * expr * expr list
-  | ExStr of loc * string
+  | ExStr of loc * (int option * string)
   | ExTry of loc * expr * case_branch list
   | ExTup of loc * expr list
   | ExTyc of loc * expr * ctyp

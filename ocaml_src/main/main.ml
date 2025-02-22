@@ -51,12 +51,12 @@ let report_error_and_exit exc =
 
 Pcaml.add_directive "load"
   (function
-     Some (MLast.ExStr (_, s)) -> Odyl_main.loadfile s
+     Some (MLast.ExStr (_, (_, s))) -> Odyl_main.loadfile s
    | Some _ | None -> raise Not_found);;
 
 Pcaml.add_directive "directory"
   (function
-     Some (MLast.ExStr (_, s)) -> Odyl_main.directory s
+     Some (MLast.ExStr (_, (_, s))) -> Odyl_main.directory s
    | Some _ | None -> raise Not_found);;
 
 let rec parse_file pa getdir useast =
@@ -77,7 +77,7 @@ let rec parse_file pa getdir useast =
               match getdir rpl with
                 Some x ->
                   begin match x with
-                    loc1, "use", Some (MLast.ExStr (_, s)) ->
+                    loc1, "use", Some (MLast.ExStr (_, (_, s))) ->
                       let (pl, eloc) = use_file pa getdir useast s in
                       list_rev_append rpl [useast loc1 s pl, loc1]
                   | loc, x, eo ->
@@ -188,12 +188,12 @@ let parse_options sl =
 
 Pcaml.add_directive "option"
   (function
-     Some (MLast.ExStr (_, s)) ->
+     Some (MLast.ExStr (_, (_, s))) ->
        begin match parse_options [s] with
          Some 0 | None -> ()
        | Some x -> failwith "bad option"
        end
-   | Some (MLast.ExApp (_, MLast.ExStr (_, s1), MLast.ExStr (_, s2))) ->
+   | Some (MLast.ExApp (_, MLast.ExStr (_, (_, s1)), MLast.ExStr (_, (_, s2)))) ->
        begin match parse_options [s1; s2] with
          Some 0 | None -> ()
        | Some x -> failwith "bad option"

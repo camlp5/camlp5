@@ -221,7 +221,7 @@ let substp mloc env =
         end
     | MLast.ExInt (_, x, "") -> MLast.PaInt (loc, x, "")
     | MLast.ExChr (_, x) -> MLast.PaChr (loc, x)
-    | MLast.ExStr (_, x) -> MLast.PaStr (loc, x)
+    | MLast.ExStr (_, (_, x)) -> MLast.PaStr (loc, x)
     | MLast.ExTup (_, x) -> MLast.PaTup (loc, List.map loop x)
     | MLast.ExRec (_, pel, None) ->
         let ppl = List.map (fun (p, e) -> p, loop e) pel in
@@ -958,7 +958,7 @@ Grammar.safe_extend
              (Grammar.s_token ("LIDENT", "__FILE__")),
            "194fe98d",
            (fun _ (loc : Ploc.t) ->
-              (MLast.ExStr (loc, Ploc.file_name loc) : 'expr)))]];
+              (MLast.ExStr (loc, (None, Ploc.file_name loc)) : 'expr)))]];
     Grammar.extension (patt : 'patt Grammar.Entry.e) (Some Gramext.First)
       [None, None,
        [Grammar.production
