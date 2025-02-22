@@ -613,6 +613,7 @@ value check_type_binder =
     check_type_binder_f
 ;
 
+value watch_str_expr (x : Ploc.vala string) (e : MLast.expr) = () ;
 
 (* -- begin copy from pa_r to q_MLast -- *)
 
@@ -1071,10 +1072,31 @@ EXTEND
       | s = V INT_L → <:expr< $_int64:s$ >>
       | s = V INT_n → <:expr< $_nativeint:s$ >>
       | s = V FLOAT → <:expr< $_flo:s$ >>
-      | s = V STRING → <:expr< $_str:s$ >>
-      | s = RAWSTRING →
-        let (_,s) = Asttools.split_rawstring s in
-        <:expr< $str:s$ >>
+      | s = V STRING →
+          let rv = <:expr< $_str:s$ >> in do {
+          watch_str_expr s rv ;
+          rv
+        }
+      | s = V RAWSTRING "locstr" →
+              let rv = match s with [
+                  Ploc.VaVal s ->
+                  let (_,s) = Asttools.split_rawstring s in
+                  <:expr< $str:s$ >>
+                | Ploc.VaAnt arg ->
+                   MLast.ExStr loc (Ploc.VaAnt arg)
+                  ] in do {
+          watch_str_expr s rv ;
+          rv
+        }
+(*
+      | s = V RAWSTRING "locstr" →
+              match s with [
+                  Ploc.VaVal s ->
+                  let (_,s) = Asttools.split_rawstring s in
+                  <:expr< $str:s$ >>
+                | 
+                ]
+ *)
       | s = V CHAR → <:expr< $_chr:s$ >>
       | "." -> <:expr< . >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
