@@ -635,7 +635,10 @@ EXTEND
     ext_attributes
     ;
   rawstring: [ [
-      s = V RAWSTRING -> let (_,s) = Asttools.split_rawstring (Pcaml.unvala s) in (loc, <:vala< s >>)
+      s = V RAWSTRING ->
+      let (delimsize,s) = Asttools.split_rawstring (Pcaml.unvala s) in
+      let loc = Asttools.narrow_loc loc (delimsize+2) in
+      (loc, <:vala< s >>)
     ] ] ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> (loc, String.concat "." l)
