@@ -1429,6 +1429,17 @@ and t2 = bool[@@"foo"];
      official_output = OK {foo|;;{|argle|}|foo} ;
      r_output = SKIP "meh" "meh" 
     };
+    {name="raw-string-escape-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| {x|
+|x} |foo} ;
+     official_input = OK {foo| "\n" |foo} ;
+     r_input = OK {foo|{x|
+|x};|foo} ;
+     o_output = OK {foo|let _ = "\n";;|foo};
+     official_output = OK {foo|;;"\n"|foo} ;
+     r_output = OK {foo|"\n";|foo}
+    };
     {name="poly-type-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|type tlist = { x: 'a. 'a list }|foo} ;
