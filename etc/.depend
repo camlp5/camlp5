@@ -15,9 +15,11 @@ pa_extprint.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
 pa_lefteval.cmo: ../lib/ploc.cmi ../main/mLast.cmi ../main/pcaml.cmi
 pa_lefteval.cmx: ../lib/ploc.cmx ../main/mLast.cmi ../main/pcaml.cmx
 pa_lex.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
-    ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi ../meta/pa_r.cmo
+    ../main/asttools.cmi ../main/exparser.cmi ../main/mLast.cmi \
+    ../main/pcaml.cmi ../meta/pa_r.cmo
 pa_lex.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \
-    ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx ../meta/pa_r.cmx
+    ../main/asttools.cmx ../main/exparser.cmx ../main/mLast.cmi \
+    ../main/pcaml.cmx ../meta/pa_r.cmx
 pa_lisp.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../main/asttools.cmi ../main/mLast.cmi \
     ../main/pcaml.cmi
@@ -44,10 +46,12 @@ pa_mktest.cmx: ../lib/ploc.cmx ../lib/versdep.cmx ../main/mLast.cmi \
     ../main/pcaml.cmx
 pa_o.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/plexer.cmi \
     ../lib/ploc.cmi ../main/asttools.cmi ../main/mLast.cmi \
-    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/reloc.cmi
+    ../main/mlsyntax.cmi ../main/pcaml.cmi ../main/quotedext.cmo \
+    ../main/reloc.cmi
 pa_o.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/plexer.cmx \
     ../lib/ploc.cmx ../main/asttools.cmx ../main/mLast.cmi \
-    ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/reloc.cmx
+    ../main/mlsyntax.cmx ../main/pcaml.cmx ../main/quotedext.cmx \
+    ../main/reloc.cmx
 pa_oop.cmo: ../lib/gramext.cmi ../lib/grammar.cmi ../lib/ploc.cmi \
     ../main/mLast.cmi ../main/pcaml.cmi
 pa_oop.cmx: ../lib/gramext.cmx ../lib/grammar.cmx ../lib/ploc.cmx \

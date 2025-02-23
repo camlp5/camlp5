@@ -127,6 +127,18 @@ bar|}
       (List.map extract (lex_string {foo|'\#type|foo}))
   }
   ])
+; "qouted-extensions-2" >:: (fun [ _ -> do {
+    assert_equal ~{printer=pp_rvs}
+      [(("QUOTEDEXTENSION","{%foo|abc|}"),(0,11,1,0))
+      ;(("EOI",""),(11,12,1,0))]
+      (List.map extract (lex_string {a|{%foo|abc|}|a}))
+  ; assert_equal ~{printer=pp_rvs}
+      [(("QUOTEDEXTENSION","{%foo bar|abc|bar}"),(0,18,1,0))
+      ;(("EOI",""),(18,19,1,0))
+      ]
+      (List.map extract (lex_string {a|{%foo bar|abc|bar}|a}))
+  }
+  ])
 ]
 ;
 

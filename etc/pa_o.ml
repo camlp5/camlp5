@@ -760,11 +760,10 @@ value uident_True_True_ = fun [
 ]
 ;
 
-value make_string_extension loc s =
-  let colonpos = String.index s ':' in
-  let attrid = String.sub s 0 colonpos in
-  let strpayload = String.sub s (colonpos+1) (String.length s - (colonpos+1)) in
-  <:attribute_body< $attrid:(loc,attrid)$ $str:strpayload$ ; >>
+value make_string_extension kind loc s =
+  let ((attrloc, attrid), (payloc, payload)) = Quotedext.make_string kind loc s in
+  let payload = Ploc.VaVal payload in
+  <:attribute_body< $attrid:(attrloc,attrid)$ $locstr:(payloc, payload)$ ; >>
 ;
 
 value is_lparen_f strm =
@@ -895,12 +894,12 @@ EXTEND
   ;
   item_extension:
   [ [ "[%%" ; e = V attribute_body "extension"; "]" -> e
-    | s = QUOTEDEXTENSION -> <:vala< make_string_extension loc s >>
+    | s = QUOTEDEXTENSION -> <:vala< make_string_extension "%" loc s >>
     ] ]
   ;
   alg_extension:
   [ [ "[%" ; e = V attribute_body "extension"; "]" -> e
-    | s = QUOTEDEXTENSION -> <:vala< make_string_extension loc s >>
+    | s = QUOTEDEXTENSION -> <:vala< make_string_extension "%" loc s >>
     ] ]
   ;
   functor_parameter:

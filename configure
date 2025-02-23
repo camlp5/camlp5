@@ -189,9 +189,9 @@ x=$ocamlc_where
 y=$(echo $x | sed -e 's|\\\\|/|g')
 OLIBDIR="$y"
 if [ "$OVERSION" "<" "4.14" ]; then
-  C5PACKAGES="compiler-libs,rresult,bos,re"
+  C5PACKAGES="compiler-libs,rresult,bos,re,pcre2"
 else
-  C5PACKAGES="compiler-libs,camlp-streams,rresult,bos,re"
+  C5PACKAGES="compiler-libs,camlp-streams,rresult,bos,re,pcre2"
 fi
 
 if test "$win" = "true"; then

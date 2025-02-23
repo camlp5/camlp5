@@ -615,21 +615,29 @@ value keyword_or_error_or_rawstring ctx bp (loc,s) buf strm =
     ("RAWSTRING", Printf.sprintf "%d:%s" (String.length delim) (String.escaped s))
 ;
 
-value quoted_extension1 ctx (bp, _) extid buf strm =
-  let (delim, s) = rawstring0 ctx bp $empty strm in
-  ("QUOTEDEXTENSION", extid^":"^(String.escaped s))
-;
-
-value quoted_extension0 ctx (bp, _) extid =
+value rec keepws =
   lexer
-  [ ws (zerobuf (quoted_extension1 ctx (bp, $pos) extid))
-  | (zerobuf (quoted_extension1 ctx (bp, $pos) extid))
+  [ [' ' | '\t' | '\n'] [ keepws | ]
   ]
 ;
 
-value quoted_extension ctx (bp, _) =
+value quoted_extension1 kind ctx (bp, _) buf strm =
+  let (delim, s) = rawstring0 ctx bp $empty strm in
+  let lhs = $buf in
+  let qext = Printf.sprintf "%s%s|%s|%s}" lhs delim s delim in
+  (kind, qext)
+;
+
+value quoted_extension0 kind ctx (bp, _) =
+  lexer
+  [ keepws (quoted_extension1 kind ctx (bp, $pos))
+  | (quoted_extension1 kind ctx (bp, $pos))
+  ]
+;
+
+value quoted_extension kind ctx (bp, _) =
   lexer [
-    extattrident (zerobuf (quoted_extension0 ctx (bp, $pos) $buf))
+    extattrident (quoted_extension0 kind ctx (bp, $pos))
   ]
 ;
 value dotsymbolchar = lexer
@@ -729,7 +737,8 @@ value next_token_after_spaces ctx bp =
   | "[" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
   | "{<" -> keyword_or_error ctx (bp, $pos) $buf
-  | "{%"/ (zerobuf (quoted_extension ctx (bp, $pos)))
+  | "{%" (quoted_extension "QUOTEDEXTENSION" ctx (bp, $pos))
+  | "{%%" (quoted_extension "QUOTEDEXTENSION_ITEM" ctx (bp, $pos))
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
