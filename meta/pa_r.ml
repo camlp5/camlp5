@@ -1264,6 +1264,9 @@ EXTEND
       | s = V INT_n → <:patt< $_nativeint:s$ >>
       | s = V FLOAT → <:patt< $_flo:s$ >>
       | s = V STRING → <:patt< $_str:s$ >>
+      | s = RAWSTRING →
+        let (_,s) = Asttools.split_rawstring s in
+        <:patt< $str:s$ >>
       | s = V CHAR → <:patt< $_chr:s$ >>
       | "+"; s = V INT → <:patt< $_int:s$ >>
       | "+"; s = V FLOAT → <:patt< $_flo:s$ >>

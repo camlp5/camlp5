@@ -4998,6 +4998,25 @@ END
      o_output = OK "module M = struct  end;;" ;
      official_output = OK "module M = struct  end";
      r_output = OK "module M = struct  end;"
+    };
+    {name="pattern-strings-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with "foo" -> 1|foo} ;
+     official_input = OK {foo|match x with "foo" -> 1|foo} ;
+     r_input = OK {foo|match x with [ "foo" -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with "foo" -> 1;;|foo};
+     official_output = OK {foo|;;match x with | "foo" -> 1|foo} ;
+     r_output = OK {foo|match x with [ "foo" -> 1 ];|foo}
+    };
+    {name="pattern-strings-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|match x with {bar|foo|bar} -> 1|foo} ;
+     official_input = SKIP {foo|match x with {bar|foo|bar} -> 1|foo}
+                        "ugh, official printer remember delimiter" ;
+     r_input = OK {foo|match x with [ {bar|foo|bar} -> 1 ];|foo} ;
+     o_output = OK {foo|let _ = match x with "foo" -> 1;;|foo};
+     official_output = OK {foo|;;match x with | "foo" -> 1|foo} ;
+     r_output = OK {foo|match x with [ "foo" -> 1 ];|foo}
     }
 ] @
 IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
