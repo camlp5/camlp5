@@ -613,7 +613,13 @@ value check_type_binder =
     check_type_binder_f
 ;
 
+
+IFNDEF STRICT THEN
+value watch_str_expr (x : string) (e : MLast.expr) = () ;
+ELSE
 value watch_str_expr (x : Ploc.vala string) (e : MLast.expr) = () ;
+END;
+
 
 (* -- begin copy from pa_r to q_MLast -- *)
 
@@ -629,7 +635,7 @@ EXTEND
     ext_attributes
     ;
   rawstring: [ [
-      s = V RAWSTRING -> let (_,s) = Asttools.split_rawstring (Pcaml.unvala s) in (loc, Ploc.VaVal s)
+      s = V RAWSTRING -> let (_,s) = Asttools.split_rawstring (Pcaml.unvala s) in (loc, <:vala< s >>)
     ] ] ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> (loc, String.concat "." l)
