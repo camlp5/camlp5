@@ -14,9 +14,9 @@ value printer ((a,b,c),(d,e,f)) = Fmt.(str "(%d,%d,%a),(%d,%d,%a)" a b Dump.stri
 
 value simple_tests = "lex" >::: [
   "simple" >:: (fun [ _ -> do {
-    assert_equal ~{printer=printer} ((3,9,"foo"),(7,9,"abc")) (doit "%%" "{%%foo|abc|}")
-  ; assert_equal ~{printer=printer} ((3,7,"foo"),(7,9,"\n")) (doit "%%" "{%%foo|\n|}")
-  ; assert_equal ~{printer=printer} ((3,7,"foo"),(7,9,"\"")) (doit "%%" "{%%foo|\"|}")
+    assert_equal ~{printer=printer} ((3,6,"foo"),(7,10,"abc")) (doit "%%" "{%%foo|abc|}")
+  ; assert_equal ~{printer=printer} ((3,6,"foo"),(7,8,"\n")) (doit "%%" "{%%foo|\n|}")
+  ; assert_equal ~{printer=printer} ((3,6,"foo"),(7,8,"\"")) (doit "%%" "{%%foo|\"|}")
   }
   ])
 

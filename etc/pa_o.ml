@@ -762,7 +762,7 @@ value uident_True_True_ = fun [
 
 value make_string_extension kind loc s =
   let ((attrloc, attrid), (payloc, payload)) = Quotedext.make_string kind loc s in
-  let payload = Ploc.VaVal payload in
+  let payload = Ploc.VaVal (String.escaped payload) in
   <:attribute_body< $attrid:(attrloc,attrid)$ $locstr:(payloc, payload)$ ; >>
 ;
 
