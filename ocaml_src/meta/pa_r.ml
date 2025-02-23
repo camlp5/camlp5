@@ -726,6 +726,15 @@ let check_type_binder =
 
 
 let watch_str_expr (x : string) (e : MLast.expr) = ();;
+let watch__str_expr (x : string) (e : MLast.expr) = ();;
+let watch_locstr_expr (x : Ploc.t * string) (e : MLast.expr) = ();;
+let watch__locstr_expr (x : Ploc.t * string) (e : MLast.expr) = ();;
+
+let (pa_fails : 'a Stream.t -> string) =
+  fun (strm__ : _ Stream.t) -> raise Stream.Failure
+;;
+
+let fails = Grammar.Entry.of_parser gram "fails" pa_fails;;
 
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -771,8 +780,10 @@ Grammar.safe_extend
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
-   let rawstring : 'rawstring Grammar.Entry.e =
-     grammar_entry_create "rawstring"
+   let located_rawstring : 'located_rawstring Grammar.Entry.e =
+     grammar_entry_create "located_rawstring"
+   and located_string : 'located_string Grammar.Entry.e =
+     grammar_entry_create "located_string"
    and attribute_id : 'attribute_id Grammar.Entry.e =
      grammar_entry_create "attribute_id"
    and attribute_structure : 'attribute_structure Grammar.Entry.e =
@@ -907,7 +918,8 @@ Grammar.safe_extend
    and ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon_fun_binding"
    in
-   [Grammar.extension (rawstring : 'rawstring Grammar.Entry.e) None
+   [Grammar.extension (located_rawstring : 'located_rawstring Grammar.Entry.e)
+      None
       [None, None,
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("RAWSTRING", "")),
@@ -917,7 +929,15 @@ Grammar.safe_extend
                  Asttools.split_rawstring (Pcaml.unvala s)
                in
                let loc = Asttools.narrow_loc loc (delimsize + 2) in loc, s :
-               'rawstring)))]];
+               'located_rawstring)))]];
+    Grammar.extension (located_string : 'located_string Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
+           "194fe98d",
+           (fun (s : string) (loc : Ploc.t) ->
+              (let loc = Asttools.narrow_loc loc 1 in loc, s :
+               'located_string)))]];
     Grammar.extension (attribute_id : 'attribute_id Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -3467,16 +3487,27 @@ Grammar.safe_extend
               (MLast.ExChr (loc, s) : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm (rawstring : 'rawstring Grammar.Entry.e)),
+             (Grammar.s_nterm
+                (located_rawstring : 'located_rawstring Grammar.Entry.e)),
            "194fe98d",
-           (fun (s : 'rawstring) (loc : Ploc.t) ->
-              (MLast.ExStr (loc, s) : 'expr)));
+           (fun (s : 'located_rawstring) (loc : Ploc.t) ->
+              (let rv = MLast.ExStr (loc, s) in watch__locstr_expr s rv; rv :
+               'expr)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (located_string : 'located_string Grammar.Entry.e)),
            "194fe98d",
-           (fun (s : string) (loc : Ploc.t) ->
+           (fun (s : 'located_string) (loc : Ploc.t) ->
+              (let rv = MLast.ExStr (loc, s) in watch_locstr_expr s rv; rv :
+               'expr)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (fails : 'fails Grammar.Entry.e)),
+           "194fe98d",
+           (fun (s : 'fails) (loc : Ploc.t) ->
               (let rv = MLast.ExStr (loc, (loc, s)) in
-               watch_str_expr s rv; rv :
+               watch__str_expr s rv; rv :
                'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("FLOAT", "")),

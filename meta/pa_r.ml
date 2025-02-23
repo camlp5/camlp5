@@ -616,9 +616,22 @@ value check_type_binder =
 
 IFNDEF STRICT THEN
 value watch_str_expr (x : string) (e : MLast.expr) = () ;
+value watch__str_expr (x : string) (e : MLast.expr) = () ;
+value watch_locstr_expr (x : (Ploc.t * string)) (e : MLast.expr) = () ;
+value watch__locstr_expr (x : (Ploc.t * string)) (e : MLast.expr) = () ;
 ELSE
-value watch_str_expr (x : Ploc.vala string) (e : MLast.expr) = () ;
+value watch_str_expr (x : string) (e : MLast.expr) = (); 
+value watch__str_expr (x : Ploc.vala string) (e : MLast.expr) = (); 
+value watch_locstr_expr (x : (Ploc.t * Ploc.vala string)) (e : MLast.expr) = () ;
+value watch__locstr_expr (x : Ploc.vala (Ploc.t * Ploc.vala string)) (e : MLast.expr) = () ;
 END;
+
+value pa_fails : Stream.t 'a -> string = parser [ ] ;
+
+value fails =
+  Grammar.Entry.of_parser gram "fails"
+    pa_fails
+;
 
 
 (* -- begin copy from pa_r to q_MLast -- *)
@@ -634,11 +647,16 @@ EXTEND
     check_type_binder
     ext_attributes
     ;
-  rawstring: [ [
+  located_rawstring: [ [
       s = V RAWSTRING ->
       let (delimsize,s) = Asttools.split_rawstring (Pcaml.unvala s) in
       let loc = Asttools.narrow_loc loc (delimsize+2) in
       (loc, <:vala< s >>)
+    ] ] ;
+  located_string: [ [
+      s = V STRING ->
+      let loc = Asttools.narrow_loc loc 1 in
+      (loc, s)
     ] ] ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> (loc, String.concat "." l)
@@ -1084,13 +1102,22 @@ EXTEND
       | s = V INT_L → <:expr< $_int64:s$ >>
       | s = V INT_n → <:expr< $_nativeint:s$ >>
       | s = V FLOAT → <:expr< $_flo:s$ >>
-      | s = V STRING →
+      | s = V fails "str" ->
           let rv = <:expr< $_str:s$ >> in do {
-          watch_str_expr s rv ;
+          watch__str_expr s rv ;
           rv
         }
-      | s = V rawstring "locstr" →
-        <:expr< $_locstr:s$ >>
+      | s = located_string →
+          let rv = <:expr< $locstr:s$ >> in do {
+          watch_locstr_expr s rv ;
+          rv
+        }
+      | s = V located_rawstring "locstr" →
+          let rv = <:expr< $_locstr:s$ >> in do {
+          watch__locstr_expr s rv ;
+          rv
+        }
+
       | s = V CHAR → <:expr< $_chr:s$ >>
       | "." -> <:expr< . >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
