@@ -650,12 +650,12 @@ EXTEND
   located_rawstring: [ [
       s = V RAWSTRING ->
       let (delimsize,s) = Asttools.split_rawstring (Pcaml.unvala s) in
-      let loc = Asttools.narrow_loc loc (delimsize+2) in
+      let loc = Asttools.narrow_loc loc (delimsize+2) (delimsize+2) in
       (loc, <:vala< s >>)
     ] ] ;
   located_string: [ [
       s = V STRING ->
-      let loc = Asttools.narrow_loc loc 1 in
+      let loc = Asttools.narrow_loc loc 1 1 in
       (loc, s)
     ] ] ;
   attribute_id:

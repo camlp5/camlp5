@@ -928,7 +928,10 @@ Grammar.safe_extend
               (let (delimsize, s) =
                  Asttools.split_rawstring (Pcaml.unvala s)
                in
-               let loc = Asttools.narrow_loc loc (delimsize + 2) in loc, s :
+               let loc =
+                 Asttools.narrow_loc loc (delimsize + 2) (delimsize + 2)
+               in
+               loc, s :
                'located_rawstring)))]];
     Grammar.extension (located_string : 'located_string Grammar.Entry.e) None
       [None, None,
@@ -936,7 +939,7 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
            "194fe98d",
            (fun (s : string) (loc : Ploc.t) ->
-              (let loc = Asttools.narrow_loc loc 1 in loc, s :
+              (let loc = Asttools.narrow_loc loc 1 1 in loc, s :
                'located_string)))]];
     Grammar.extension (attribute_id : 'attribute_id Grammar.Entry.e) None
       [None, None,

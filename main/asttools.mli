@@ -69,5 +69,5 @@ value string_list_of_longident_lident : longid_lident → list string;
 value expr_of_string_list : loc -> list string -> expr ;
 value expr_concat : expr -> expr -> expr ;
 value split_rawstring : string -> (int * string) ;
-value narrow_loc : Ploc.t -> int -> Ploc.t ;
+value narrow_loc : Ploc.t -> int -> int -> Ploc.t ;
 

@@ -426,8 +426,8 @@ value split_rawstring s =
   [ Not_found | Failure _ ->
     failwith (Printf.sprintf "Asttools.split_rawstring: unexpected malformed rawstring \"%s\"" s) ]
 ;
-value narrow_loc loc delimsize =
+value narrow_loc loc left right =
   let open Ploc in
   let len = (last_pos loc) - (first_pos loc) in
-  (sub loc delimsize (len - 2*delimsize))
+  (sub loc left (len - left - right))
   ;
