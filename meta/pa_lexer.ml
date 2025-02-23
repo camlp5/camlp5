@@ -212,8 +212,9 @@ EXTEND
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "lexer"; rl = rules ->
           Asttools.expr_to_inline (mk_lexer_match loc e rl) ext attrs ] ]
   ;
+  string_or_rawstring: [ [ s = STRING -> s | s = RAWSTRING -> snd(Asttools.split_rawstring s) ] ] ;
   expr: LEVEL "simple"
-    [ [ "$"; LIDENT "add"; s = STRING ->
+    [ [ "$"; LIDENT "add"; s = string_or_rawstring ->
           let s = Plexing.eval_string loc s in
           loop (accum_chars loc gcl.val) 0 where rec loop v i =
             if i = String.length s then v
@@ -246,7 +247,7 @@ EXTEND
     [ [ "_"; norec = no_rec -> make_any loc norec
       | "_" ; "as" ; id = LIDENT; eo = V (OPT [ "when"; e = expr LEVEL "simple" -> e ]) ; norec = no_rec ->
          make_named id eo loc norec
-      | s = STRING; norec = no_rec -> make_chars loc s norec
+      | s = string_or_rawstring; norec = no_rec -> make_chars loc s norec
       | c = CHAR; norec = no_rec -> make_char loc c norec
       | c = CHAR; "-"; d = CHAR; norec = no_rec -> make_range loc c d norec
       | f = simple_expr -> make_sub_lexer loc f
@@ -261,7 +262,7 @@ EXTEND
   ;
   lookahead:
     [ [ pl = LIST1 lookahead_char -> pl
-      | s = STRING ->
+      | s = string_or_rawstring ->
           let s = Plexing.eval_string loc s in
           List.rev
             (fold_string_chars (fun c pl -> [<:patt< $chr:c$ >> :: pl]) s
@@ -280,7 +281,7 @@ EXTEND
   ;
   err_kont:
     [ [ "!" -> SpoBang
-      | "?"; s = STRING -> SpoQues <:expr< $str:s$ >>
+      | "?"; s = string_or_rawstring -> SpoQues <:expr< $str:s$ >>
       | "?"; e = simple_expr -> SpoQues e
       | -> SpoNoth ] ]
   ;

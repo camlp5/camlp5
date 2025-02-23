@@ -230,8 +230,9 @@ EXTEND
       | "match"; (ext,attrs) = ext_attributes; e = SELF; "with"; "lexer"; rl = rules ->
           Pa_r.expr_to_inline loc (mk_lexer_match loc e rl) ext attrs ] ]
   ;
+  string_or_rawstring: [ [ s = STRING -> s | s = RAWSTRING -> snd(Asttools.split_rawstring s) ] ] ;
   expr: LEVEL "simple"
-    [ [ "$"; LIDENT "add"; s = STRING ->
+    [ [ "$"; LIDENT "add";  s = string_or_rawstring ->
           loop (accum_chars loc gcl.val) 0 where rec loop v i =
             if i = String.length s then v
             else
@@ -261,7 +262,7 @@ EXTEND
   ;
   symb:
     [ [ "_"; norec = no_rec -> make_any loc norec
-      | s = STRING; norec = no_rec -> make_or_chars loc s norec
+      | s = string_or_rawstring; norec = no_rec -> make_or_chars loc s norec
       | f = simple_expr -> make_sub_lexer loc f
       | "?="; "["; pll = LIST1 lookahead SEP "|"; "]" -> make_lookahd loc pll
       | rl = rules -> make_rules loc rl ] ]
@@ -273,7 +274,7 @@ EXTEND
   ;
   lookahead:
     [ [ pl = LIST1 lookahead_char -> pl
-      | s = STRING ->
+      | s = string_or_rawstring ->
           List.rev
             (fold_string_chars (fun c pl -> [<:patt< $chr:c$ >> :: pl]) s
                []) ] ]
@@ -288,7 +289,7 @@ EXTEND
   ;
   err_kont:
     [ [ "!" -> SpoBang
-      | "?"; s = STRING -> SpoQues <:expr< $str:s$ >>
+      | "?"; s = string_or_rawstring -> SpoQues <:expr< $str:s$ >>
       | "?"; e = simple_expr -> SpoQues e
       | -> SpoNoth ] ]
   ;

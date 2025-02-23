@@ -219,7 +219,9 @@ Grammar.safe_extend
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in
-   let rules : 'rules Grammar.Entry.e = grammar_entry_create "rules"
+   let string_or_rawstring : 'string_or_rawstring Grammar.Entry.e =
+     grammar_entry_create "string_or_rawstring"
+   and rules : 'rules Grammar.Entry.e = grammar_entry_create "rules"
    and rule : 'rule Grammar.Entry.e = grammar_entry_create "rule"
    and symb_list : 'symb_list Grammar.Entry.e =
      grammar_entry_create "symb_list"
@@ -274,6 +276,18 @@ Grammar.safe_extend
                MLast.ExFun
                  (loc, [MLast.PaLid (loc, var ()), None, mk_lexer loc rl]) :
                'expr)))]];
+    Grammar.extension
+      (string_or_rawstring : 'string_or_rawstring Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("RAWSTRING", "")),
+           "194fe98d",
+           (fun (s : string) (loc : Ploc.t) ->
+              (snd (Asttools.split_rawstring s) : 'string_or_rawstring)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
+           "194fe98d",
+           (fun (s : string) (loc : Ploc.t) -> (s : 'string_or_rawstring)))]];
     Grammar.extension (expr : 'expr Grammar.Entry.e)
       (Some (Gramext.Level "simple"))
       [None, None,
@@ -316,9 +330,10 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "$")))
                 (Grammar.s_token ("LIDENT", "add")))
-             (Grammar.s_token ("STRING", "")),
+             (Grammar.s_nterm
+                (string_or_rawstring : 'string_or_rawstring Grammar.Entry.e)),
            "194fe98d",
-           (fun (s : string) _ _ (loc : Ploc.t) ->
+           (fun (s : 'string_or_rawstring) _ _ (loc : Ploc.t) ->
               (let s = Plexing.eval_string loc s in
                let rec loop v i =
                  if i = String.length s then v
@@ -434,10 +449,13 @@ Grammar.safe_extend
               (make_char loc c norec : 'symb)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")))
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (string_or_rawstring :
+                    'string_or_rawstring Grammar.Entry.e)))
              (Grammar.s_nterm (no_rec : 'no_rec Grammar.Entry.e)),
            "194fe98d",
-           (fun (norec : 'no_rec) (s : string) (loc : Ploc.t) ->
+           (fun (norec : 'no_rec) (s : 'string_or_rawstring) (loc : Ploc.t) ->
               (make_chars loc s norec : 'symb)));
         Grammar.production
           (Grammar.r_next
@@ -494,9 +512,11 @@ Grammar.safe_extend
     Grammar.extension (lookahead : 'lookahead Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("STRING", "")),
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm
+                (string_or_rawstring : 'string_or_rawstring Grammar.Entry.e)),
            "194fe98d",
-           (fun (s : string) (loc : Ploc.t) ->
+           (fun (s : 'string_or_rawstring) (loc : Ploc.t) ->
               (let s = Plexing.eval_string loc s in
                List.rev
                  (fold_string_chars (fun c pl -> MLast.PaChr (loc, c) :: pl) s
@@ -559,9 +579,10 @@ Grammar.safe_extend
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "?")))
-             (Grammar.s_token ("STRING", "")),
+             (Grammar.s_nterm
+                (string_or_rawstring : 'string_or_rawstring Grammar.Entry.e)),
            "194fe98d",
-           (fun (s : string) _ (loc : Ploc.t) ->
+           (fun (s : 'string_or_rawstring) _ (loc : Ploc.t) ->
               (SpoQues (MLast.ExStr (loc, (loc, s))) : 'err_kont)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")),

@@ -263,7 +263,7 @@
 (define (lexer_using kwt (values con prm))
  (match con
   ((or "CHAR" "DOT" "EOI" "INT" "INT_l" "INT_L" "INT_n" "FLOAT" "LIDENT" "NL"
-    "QUOT" "SPACEDOT" "STRING" "UIDENT")
+    "QUOT" "SPACEDOT" "STRING" "RAWSTRING" "UIDENT")
    ())
   ((or "ANTIQUOT" "ANTIQUOT_LOC") ())
   ("" (try (begin (Hashtbl.find kwt prm) ()) (Not_found (Hashtbl.add kwt prm prm))))
