@@ -170,6 +170,9 @@ MLast.TyVrn loc lpv ools;
 (* exception *)
 <:patt< exception $p$ >> ;
 
+(* effect *)
+<:patt< effect $p1$ , $p2$ >> ;
+
 (* float *)
 <:patt< $flo:s$ >>;
 <:patt< $_flo:s$ >>;
@@ -451,8 +454,9 @@ MLast.ExRec loc lpe oe;
 
 
 (* string *)
-<:expr< $str:s$ >>;
-<:expr< $_str:s$ >>;
+<:expr< $str:lsf2$ >>;
+<:expr< $_str:lsf2$ >>;
+<:expr< $_locstr:ls$ >>;
 
 (* try <a href="#expr_2">(2)</a> *)
 <:expr< try $e$ with [ $list:lx$ ] >>;
