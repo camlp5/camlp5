@@ -635,7 +635,7 @@ value quoted_extension0 kind ctx (bp, _) =
   ]
 ;
 
-value quoted_extension kind ctx (bp, _) =
+value quoted_extension (kind : string) ctx (bp, _) =
   lexer [
     extattrident (quoted_extension0 kind ctx (bp, $pos))
   ]
@@ -737,8 +737,8 @@ value next_token_after_spaces ctx bp =
   | "[" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
   | "{<" -> keyword_or_error ctx (bp, $pos) $buf
-  | "{%" (quoted_extension "QUOTEDEXTENSION" ctx (bp, $pos))
   | "{%%" (quoted_extension "QUOTEDEXTENSION_ITEM" ctx (bp, $pos))
+  | "{%" (quoted_extension "QUOTEDEXTENSION_EXPR" ctx (bp, $pos))
   | "{:" -> keyword_or_error ctx (bp, $pos) $buf
   | "{" (keyword_or_error_or_rawstring ctx bp ((bp, $pos),$buf))
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
@@ -953,7 +953,7 @@ value using_token ctx kwd_table (p_con, p_prm) =
         | _ -> () ]
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "QUOTEDEXTENSION" |
+    "QUOTEDEXTENSION_EXPR" | "QUOTEDEXTENSION_ITEM" |
     "CHAR" | "STRING" | "RAWSTRING" | "QUOTATION" | "GIDENT" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()

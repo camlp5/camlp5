@@ -127,16 +127,52 @@ bar|}
       (List.map extract (lex_string {foo|'\#type|foo}))
   }
   ])
-; "qouted-extensions-2" >:: (fun [ _ -> do {
+; "quoted-extensions-2" >:: (fun [ _ -> do {
     assert_equal ~{printer=pp_rvs}
-      [(("QUOTEDEXTENSION","{%foo|abc|}"),(0,11,1,0))
+      [(("QUOTEDEXTENSION_ITEM","{%%foo|abc|}"),(0,12,1,0))
+      ;(("EOI",""),(12,13,1,0))]
+      (List.map extract (lex_string {a|{%%foo|abc|}|a}))
+  ; assert_equal ~{printer=pp_rvs}
+      [(("QUOTEDEXTENSION_ITEM","{%%foo bar|abc|bar}"),(0,19,1,0))
+      ;(("EOI",""),(19,20,1,0))
+      ]
+      (List.map extract (lex_string {a|{%%foo bar|abc|bar}|a}))
+  ; assert_equal ~{printer=pp_rvs}
+      [(("QUOTEDEXTENSION_EXPR","{%foo|abc|}"),(0,11,1,0))
       ;(("EOI",""),(11,12,1,0))]
       (List.map extract (lex_string {a|{%foo|abc|}|a}))
   ; assert_equal ~{printer=pp_rvs}
-      [(("QUOTEDEXTENSION","{%foo bar|abc|bar}"),(0,18,1,0))
+      [(("QUOTEDEXTENSION_EXPR","{%foo bar|abc|bar}"),(0,18,1,0))
       ;(("EOI",""),(18,19,1,0))
       ]
       (List.map extract (lex_string {a|{%foo bar|abc|bar}|a}))
+  }
+  ])
+; "attributes-1" >:: (fun [ _ -> do {
+    assert_equal ~{printer=pp_rvs}
+      [
+        (("","[@"),(0,2,1,0))
+       ;(("LIDENT","foo"),(2,5,1,0))
+       ;(("","]"),(5,6,1,0))
+       ;(("EOI",""),(6,7,1,0))
+      ]
+      (List.map extract (lex_string {a|[@foo]|a}))
+  ; assert_equal ~{printer=pp_rvs}
+      [
+        (("","[@@"),(0,3,1,0))
+       ;(("LIDENT","foo"),(3,6,1,0))
+       ;(("","]"),(6,7,1,0))
+       ;(("EOI",""),(7,8,1,0))
+      ]
+      (List.map extract (lex_string {a|[@@foo]|a}))
+  ; assert_equal ~{printer=pp_rvs}
+      [
+        (("","[@@@"),(0,4,1,0))
+       ;(("LIDENT","foo"),(4,7,1,0))
+       ;(("","]"),(7,8,1,0))
+       ;(("EOI",""),(8,9,1,0))
+      ]
+      (List.map extract (lex_string {a|[@@@foo]|a}))
   }
   ])
 ]

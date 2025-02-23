@@ -1093,7 +1093,7 @@ let quoted_extension0 kind ctx (bp, _) buf (strm__ : _ Stream.t) =
   | _ -> quoted_extension1 kind ctx (bp, Stream.count strm__) buf strm__
 ;;
 
-let quoted_extension kind ctx (bp, _) buf (strm__ : _ Stream.t) =
+let quoted_extension (kind : string) ctx (bp, _) buf (strm__ : _ Stream.t) =
   let buf = extattrident buf strm__ in
   try quoted_extension0 kind ctx (bp, Stream.count strm__) buf strm__ with
     Stream.Failure -> raise (Stream.Error "")
@@ -1494,27 +1494,25 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                         | Some '%' ->
                             Stream.junk strm__;
                             begin try
-                              try
-                                quoted_extension "QUOTEDEXTENSION" ctx
-                                  (bp, Stream.count strm__)
-                                  (Plexing.Lexbuf.add '%'
-                                     (Plexing.Lexbuf.add '{' buf))
-                                  strm__
-                              with Stream.Failure ->
-                                match Stream.peek strm__ with
-                                  Some '%' ->
-                                    Stream.junk strm__;
-                                    begin try
-                                      quoted_extension "QUOTEDEXTENSION_ITEM"
-                                        ctx (bp, Stream.count strm__)
-                                        (Plexing.Lexbuf.add '%'
-                                           (Plexing.Lexbuf.add '%'
-                                              (Plexing.Lexbuf.add '{' buf)))
-                                        strm__
-                                    with Stream.Failure ->
-                                      raise (Stream.Error "")
-                                    end
-                                | _ -> raise Stream.Failure
+                              match Stream.peek strm__ with
+                                Some '%' ->
+                                  Stream.junk strm__;
+                                  begin try
+                                    quoted_extension "QUOTEDEXTENSION_ITEM"
+                                      ctx (bp, Stream.count strm__)
+                                      (Plexing.Lexbuf.add '%'
+                                         (Plexing.Lexbuf.add '%'
+                                            (Plexing.Lexbuf.add '{' buf)))
+                                      strm__
+                                  with Stream.Failure ->
+                                    raise (Stream.Error "")
+                                  end
+                              | _ ->
+                                  quoted_extension "QUOTEDEXTENSION_EXPR" ctx
+                                    (bp, Stream.count strm__)
+                                    (Plexing.Lexbuf.add '%'
+                                       (Plexing.Lexbuf.add '{' buf))
+                                    strm__
                             with Stream.Failure -> raise (Stream.Error "")
                             end
                         | Some ':' ->
@@ -1952,8 +1950,9 @@ let using_token ctx kwd_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "QUOTEDEXTENSION" | "CHAR" | "STRING" | "RAWSTRING" | "QUOTATION" |
-    "GIDENT" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
+    "QUOTEDEXTENSION_EXPR" | "QUOTEDEXTENSION_ITEM" | "CHAR" | "STRING" |
+    "RAWSTRING" | "QUOTATION" | "GIDENT" | "ANTIQUOT" | "ANTIQUOT_LOC" |
+    "EOI" ->
       ()
   | _ ->
       raise

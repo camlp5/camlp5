@@ -894,12 +894,12 @@ EXTEND
   ;
   item_extension:
   [ [ "[%%" ; e = V attribute_body "extension"; "]" -> e
-    | s = QUOTEDEXTENSION -> <:vala< make_string_extension "%" loc s >>
+    | s = QUOTEDEXTENSION_ITEM -> <:vala< make_string_extension "%%" loc s >>
     ] ]
   ;
   alg_extension:
   [ [ "[%" ; e = V attribute_body "extension"; "]" -> e
-    | s = QUOTEDEXTENSION -> <:vala< make_string_extension "%" loc s >>
+    | s = QUOTEDEXTENSION_EXPR -> <:vala< make_string_extension "%" loc s >>
     ] ]
   ;
   functor_parameter:
