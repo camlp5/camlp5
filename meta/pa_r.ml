@@ -1087,19 +1087,7 @@ EXTEND
           rv
         }
       | s = V rawstring "locstr" →
-        MLast.ExStr loc s
-(*
         <:expr< $_locstr:s$ >>
- *)
-(*
-      | s = V RAWSTRING "locstr" →
-              match s with [
-                  Ploc.VaVal s ->
-                  let (_,s) = Asttools.split_rawstring s in
-                  <:expr< $str:s$ >>
-                | 
-                ]
- *)
       | s = V CHAR → <:expr< $_chr:s$ >>
       | "." -> <:expr< . >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
