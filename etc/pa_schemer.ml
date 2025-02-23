@@ -520,7 +520,7 @@ and after_space len kwt =
 value lexer_using kwt (con, prm) =
   match con with
   [ "CHAR" | "DOT" | "EOI" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "LIDENT" | "NL" | "QUOT" | "SPACEDOT" | "STRING" | "UIDENT" →
+    "LIDENT" | "NL" | "QUOT" | "SPACEDOT" | "STRING" | "RAWSTRING" | "UIDENT" →
       ()
   | "ANTIQUOT" | "ANTIQUOT_LOC" → ()
   | "" → try do { Hashtbl.find kwt prm ; () } with [ Not_found → Hashtbl.add kwt prm prm ]
@@ -1841,6 +1841,9 @@ EXTEND
       | s = V FLOAT → Sfloat loc s
       | s = V CHAR → Schar loc s
       | s = V STRING → Sstring loc s
+      | s = RAWSTRING →
+        let (_,s) = Asttools.split_rawstring s in
+            Sstring loc (Ploc.VaVal s)
       | s = SPACEDOT → Slid loc "."
       | s = QUOT →
           let i = String.index s ':' in

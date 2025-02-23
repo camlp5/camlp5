@@ -1462,6 +1462,10 @@ EXTEND
       | s = V FLOAT -> (Sfloat loc s)
       | s = V CHAR -> (Schar loc s)
       | s = V STRING -> (Sstring loc s)
+      | s = RAWSTRING ->
+         (let* (((values _ s) (Asttools.split_rawstring s)))
+                 (Sstring loc (Ploc.VaVal s))
+         )
       | s = SPACEDOT -> (Slid loc ".")
       | s = QUOT ->
           (let* ((i (String.index s ':'))
