@@ -1102,21 +1102,10 @@ EXTEND
       | s = V INT_L → <:expr< $_int64:s$ >>
       | s = V INT_n → <:expr< $_nativeint:s$ >>
       | s = V FLOAT → <:expr< $_flo:s$ >>
-      | s = V fails "str" ->
-          let rv = <:expr< $_str:s$ >> in do {
-          watch__str_expr s rv ;
-          rv
-        }
-      | s = located_string →
-          let rv = <:expr< $locstr:s$ >> in do {
-          watch_locstr_expr s rv ;
-          rv
-        }
-      | s = V located_rawstring "locstr" →
-          let rv = <:expr< $_locstr:s$ >> in do {
-          watch__locstr_expr s rv ;
-          rv
-        }
+
+      | s = V fails "str" -> <:expr< $_str:s$ >>
+      | s = located_string → <:expr< $locstr:s$ >>
+      | s = V located_rawstring "locstr" → <:expr< $_locstr:s$ >>
 
       | s = V CHAR → <:expr< $_chr:s$ >>
       | "." -> <:expr< . >>

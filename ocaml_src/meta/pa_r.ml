@@ -3491,24 +3491,20 @@ Grammar.safe_extend
                 (located_rawstring : 'located_rawstring Grammar.Entry.e)),
            "194fe98d",
            (fun (s : 'located_rawstring) (loc : Ploc.t) ->
-              (let rv = MLast.ExStr (loc, s) in watch__locstr_expr s rv; rv :
-               'expr)));
+              (MLast.ExStr (loc, s) : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm
                 (located_string : 'located_string Grammar.Entry.e)),
            "194fe98d",
            (fun (s : 'located_string) (loc : Ploc.t) ->
-              (let rv = MLast.ExStr (loc, s) in watch_locstr_expr s rv; rv :
-               'expr)));
+              (MLast.ExStr (loc, s) : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (fails : 'fails Grammar.Entry.e)),
            "194fe98d",
            (fun (s : 'fails) (loc : Ploc.t) ->
-              (let rv = MLast.ExStr (loc, (loc, s)) in
-               watch__str_expr s rv; rv :
-               'expr)));
+              (MLast.ExStr (loc, (loc, s)) : 'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("FLOAT", "")),
            "194fe98d",

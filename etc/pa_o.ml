@@ -802,6 +802,13 @@ value check_type_binder =
     check_type_binder_f
 ;
 
+value pa_fails : Stream.t 'a -> string = parser [ ] ;
+
+value fails =
+  Grammar.Entry.of_parser gram "fails"
+    pa_fails
+;
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type
     module_expr longident extended_longident
@@ -813,6 +820,17 @@ EXTEND
     check_type_binder
     ext_attributes
     ;
+  located_rawstring: [ [
+      s = V RAWSTRING ->
+      let (delimsize,s) = Asttools.split_rawstring (Pcaml.unvala s) in
+      let loc = Asttools.narrow_loc loc (delimsize+2) in
+      (loc, <:vala< s >>)
+    ] ] ;
+  located_string: [ [
+      s = V STRING ->
+      let loc = Asttools.narrow_loc loc 1 in
+      (loc, s)
+    ] ] ;
   (* This is copied from parser.mly (nonterminal "single_attr_id") in the ocaml 4.10.0 distribution. *)
   kwd_attribute_id:
   [ [ s = [ "and" | "as" | "assert" | "begin" | "class" | "constraint" | "do" | "done"
@@ -1420,10 +1438,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       | s = V INT_L -> <:expr< $_int64:s$ >>
       | s = V INT_n -> <:expr< $_nativeint:s$ >>
       | s = V FLOAT -> <:expr< $_flo:s$ >>
-      | s = V STRING -> <:expr< $_str:s$ >>
-      | s = RAWSTRING →
-        let (_,s) = Asttools.split_rawstring s in
-        <:expr< $str:s$ >>
+
+      | s = V fails "str" -> <:expr< $_str:s$ >>
+      | s = located_string → <:expr< $locstr:s$ >>
+      | s = V located_rawstring "locstr" → <:expr< $_locstr:s$ >>
+
       | c = V CHAR -> <:expr< $_chr:c$ >>
       | e = alg_extension -> <:expr< [% $_extension:e$ ] >>
       | UIDENT "True" ->  <:expr< True_ >>

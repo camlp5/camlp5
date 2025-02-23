@@ -364,6 +364,7 @@ value anti_of_tok =
   | "QUESTIONIDENT" -> ["?"]
   | "QUESTIONIDENTCOLON" -> ["?:"]
   | "STRING" -> ["str"]
+  | "RAWSTRING" -> ["locstr"]
   | "TILDEIDENT" -> ["~"]
   | "TILDEIDENTCOLON" -> ["~:"]
   | "UIDENT" -> ["uid"; ""]
