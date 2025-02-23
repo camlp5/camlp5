@@ -62,3 +62,5 @@ val string_list_of_longident_lident : longid_lident -> string list;;
 val expr_of_string_list : loc -> string list -> expr;;
 val expr_concat : expr -> expr -> expr;;
 val split_rawstring : string -> int * string;;
+val narrow_loc : Ploc.t -> int -> Ploc.t;;
+

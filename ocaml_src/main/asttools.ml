@@ -467,3 +467,8 @@ let split_rawstring s =
       (Printf.sprintf
          "Asttools.split_rawstring: unexpected malformed rawstring \"%s\"" s)
 ;;
+let narrow_loc loc delimsize =
+  let open Ploc in
+  let len = last_pos loc - first_pos loc in
+  sub loc delimsize (len - 2 * delimsize)
+;;
