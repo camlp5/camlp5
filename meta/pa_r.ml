@@ -628,6 +628,9 @@ EXTEND
     check_type_binder
     ext_attributes
     ;
+  rawstring: [ [
+      s = V RAWSTRING -> let (_,s) = Asttools.split_rawstring (Pcaml.unvala s) in (loc, Ploc.VaVal s)
+    ] ] ;
   attribute_id:
   [ [ l = LIST1 [ i = LIDENT -> i | i = UIDENT -> i ] SEP "." -> (loc, String.concat "." l)
     | s = STRING -> (loc, s)
@@ -1077,17 +1080,11 @@ EXTEND
           watch_str_expr s rv ;
           rv
         }
-      | s = V RAWSTRING "locstr" →
-              let rv = match s with [
-                  Ploc.VaVal s ->
-                  let (_,s) = Asttools.split_rawstring s in
-                  <:expr< $str:s$ >>
-                | Ploc.VaAnt arg ->
-                   MLast.ExStr loc (Ploc.VaAnt arg)
-                  ] in do {
-          watch_str_expr s rv ;
-          rv
-        }
+      | s = V rawstring "locstr" →
+        MLast.ExStr loc s
+(*
+        <:expr< $_locstr:s$ >>
+ *)
 (*
       | s = V RAWSTRING "locstr" →
               match s with [
