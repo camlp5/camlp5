@@ -12,7 +12,27 @@ open Pcaml;
 (* Syntax extensions in Ocaml grammar *)
 
 EXTEND
-  GLOBAL: expr ipatt ext_attributes;
+  GLOBAL: expr ipatt ext_attributes stream_expr stream_parser stream_match;
+
+  stream_parser:
+    [ [ "parser"; po = OPT ipatt; OPT "|"; pcl = LIST1 parser_case SEP "|" ->
+          (loc, (po, pcl))
+      ] ]
+  ;
+
+  stream_match:
+    [ [ "match"; (ext,attrs) = ext_attributes; e = expr LEVEL "expr1" ; "with"; "parser"; po = OPT ipatt; OPT "|";
+        pcl = LIST1 parser_case SEP "|" ->
+          (loc, e, (po, pcl))
+      ] ]
+  ;
+
+  stream_expr:
+    [ [ "[<"; ">]" -> (loc, [])
+      | "[<"; sel = stream_expr_comp_list; ">]" ->
+          (loc, sel) ] ]
+  ;
+
   expr: LEVEL "expr1"
     [ [ "parser"; po = OPT ipatt; OPT "|"; pcl = LIST1 parser_case SEP "|" ->
           <:expr< $cparser loc (po, pcl)$ >>

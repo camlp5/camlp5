@@ -8,9 +8,12 @@ ast2pt.cmi: ../lib/ploc.cmi mLast.cmi
 asttools.cmo: ../lib/plexer.cmi ../lib/ploc.cmi asttools.cmi mLast.cmi
 asttools.cmx: ../lib/plexer.cmx ../lib/ploc.cmx asttools.cmi mLast.cmi
 asttools.cmi: ../lib/ploc.cmi mLast.cmi
-exparser.cmo: ../lib/ploc.cmi exparser.cmi mLast.cmi pcaml.cmi reloc.cmi
-exparser.cmx: ../lib/ploc.cmx exparser.cmi mLast.cmi pcaml.cmx reloc.cmx
-exparser.cmi: mLast.cmi
+exparser.cmo: ../lib/ploc.cmi exparser.cmi exparser_types.cmi mLast.cmi \
+    pcaml.cmi reloc.cmi
+exparser.cmx: ../lib/ploc.cmx exparser.cmi exparser_types.cmi mLast.cmi \
+    pcaml.cmx reloc.cmx
+exparser.cmi: exparser_types.cmi mLast.cmi
+exparser_types.cmi: mLast.cmi
 mLast.cmi: ../lib/ploc.cmi
 main.cmo: ../lib/grammar.cmi ../lib/plexing.cmi ../lib/ploc.cmi \
     ../lib/versdep.cmo ../odyl/odyl_main.cmi argl.cmi ast2pt.cmi mLast.cmi \
@@ -32,7 +35,7 @@ pcaml.cmx: ../lib/eprinter.cmx ../lib/extfun.cmx ../lib/grammar.cmx \
     ../lib/plexing.cmx ../lib/ploc.cmx ../lib/versdep.cmx mLast.cmi pcaml.cmi \
     pp_debug.cmx prtools.cmx quotation.cmx reloc.cmx
 pcaml.cmi: ../lib/eprinter.cmi ../lib/extfun.cmi ../lib/grammar.cmi \
-    ../lib/ploc.cmi mLast.cmi
+    ../lib/ploc.cmi exparser_types.cmi mLast.cmi
 pp_debug.cmo: mLast.cmi
 pp_debug.cmx: mLast.cmi
 prtools.cmo: ../lib/ploc.cmi ../lib/pprintf.cmi ../lib/pretty.cmi \
@@ -43,8 +46,8 @@ prtools.cmi: ../lib/pprintf.cmi mLast.cmi
 quotation.cmo: ../lib/ploc.cmi mLast.cmi quotation.cmi
 quotation.cmx: ../lib/ploc.cmx mLast.cmi quotation.cmi
 quotation.cmi: mLast.cmi
-quotedext.cmo: asttools.cmi
-quotedext.cmx: asttools.cmx
+quotedext.cmo: ../lib/ploc.cmi
+quotedext.cmx: ../lib/ploc.cmx
 reloc.cmo: ../lib/ploc.cmi mLast.cmi reloc.cmi
 reloc.cmx: ../lib/ploc.cmx mLast.cmi reloc.cmi
 reloc.cmi: mLast.cmi

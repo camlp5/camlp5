@@ -80,6 +80,10 @@ value alg_attribute = Grammar.Entry.create gram "alg_attribute";
 value alg_attributes = Grammar.Entry.create gram "alg_attributes";
 value ext_attributes = Grammar.Entry.create gram "ext_attributes";
 
+value stream_expr = Grammar.Entry.create gram "stream_expr";
+value stream_parser = Grammar.Entry.create gram "stream_parser";
+value stream_match = Grammar.Entry.create gram "stream_match";
+
 type ast_transducer_t 'a = {
     name : string
   ; parse : ref (option (Stream.t char -> 'a))

@@ -94,6 +94,11 @@ value alg_attributes : Grammar.Entry.e MLast.attributes;
 value ext_attributes : Grammar.Entry.e (option (Ploc.t * string) * MLast.attributes_no_anti);
    (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
 
+open Exparser_types ;
+
+value stream_expr : Grammar.Entry.e (MLast.loc * list sexp_comp);
+value stream_parser : Grammar.Entry.e (MLast.loc * spat_parser_ast) ;
+value stream_match : Grammar.Entry.e (MLast.loc * MLast.expr * spat_parser_ast) ;
 
 value input_file : ref string;
    (** The file currently being parsed. *)
