@@ -66,8 +66,8 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	cp $(CAMLP5) "$(DESTDIR)$(BINDIR)/."
-	cp ast2pt.mli mLast.mli quotation.mli pcaml.mli prtools.mli reloc.mli "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
-	cp asttools.cmi quotedext.cmi ast2pt.cmi mLast.cmi mlsyntax.cmi quotation.cmi pcaml.cmi prtools.cmi reloc.cmi pp_debug.cmi "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp ast2pt.mli mLast.mli quotation.mli pcaml.mli exparser.mli prtools.mli reloc.mli "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
+	cp asttools.cmi quotedext.cmi ast2pt.cmi mLast.cmi mlsyntax.cmi quotation.cmi pcaml.cmi exparser.cmi prtools.cmi reloc.cmi pp_debug.cmi "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp asttools.cmx quotedext.cmx ast2pt.cmx mlsyntax.cmx quotation.cmx pcaml.cmx prtools.cmx reloc.cmx pp_debug.cmx "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N).cma "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	if test -f $(CAMLP5N).cmxa; then \
