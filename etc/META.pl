@@ -72,7 +72,7 @@ package "pa_o" (
   error(syntax_camlp5r) = "camlp5.pa_o cannot be used with syntax camlp5r"
 
   requires(toploop) = "camlp5"
-  archive(toploop,-camlp5o)      = "pa_o.cmo pa_op.cmo"
+  archive(toploop,-camlp5o)      = "pa_o.cmo"
   archive(syntax,toploop,camlp5o)      = ""
 
   requires(syntax,preprocessor) = "camlp5"
