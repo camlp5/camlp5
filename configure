@@ -194,19 +194,9 @@ else
   C5PACKAGES="compiler-libs,camlp-streams,rresult,bos,re,pcre2"
 fi
 
-if test "$win" = "true"; then
-    EXE=.exe
-else
-    EXE=
-fi
-
-if test "$win32" = "true"; then
-    EXT_OBJ=.obj
-    EXT_LIB=.lib
-else
-    EXT_OBJ=.o
-    EXT_LIB=.a
-fi
+EXE=$($ocamlc -config-var ext_exe)
+EXT_OBJ=$($ocamlc -config-var ext_obj)
+EXT_LIB=$($ocamlc -config-var ext_lib)
 
 if test "$bindir" != ""; then
     BINDIR=$bindir

@@ -60,7 +60,7 @@ install:
 	  echo "*** Variable CAMLP5N not set"; exit 1; fi
 	$(RM) -rf "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)"
 	for i in $(DIRS) compile; do \
-	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR) LIBDIR=$(LIBDIR) BINDIR=$(BINDIR) MANDIR=$(MANDIR); cd ..); \
+	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR) LIBDIR="$(LIBDIR)" BINDIR="$(BINDIR)" MANDIR="$(MANDIR)"; cd ..); \
 	done
 	cp etc/topfind.camlp5 "$(DESTDIR)$(LIBDIR)/$(OCAMLN)/." || true
 
