@@ -6,6 +6,8 @@ Camlp5 Version 8.03.02:
   * also added support for when-expressions in stream-parser
     lookaheads, and stream-lexer patterns and lookaheads.
 
+  * merged latest changes from @tobil4sk to support Windows
+
 Camlp5 Version 8.03.01:
 --------------------
 
