@@ -29,6 +29,6 @@ let make_string kind loc s =
                         (match ws_delim_opt with None -> 0 | Some s -> String.length s) +
                         1 in
   let payload_len = String.length payload in
-  let payload_loc = Asttools.narrow_loc loc payload_shift payload_len in
-  let attrid_loc = Asttools.narrow_loc loc (1 + (String.length percents)) (String.length attrid) in
+  let payload_loc = Ploc.(sub loc payload_shift payload_len) in
+  let attrid_loc = Ploc.(sub loc (1 + (String.length percents)) (String.length attrid)) in
   ((attrid_loc, attrid),(payload_loc,payload))

@@ -96,6 +96,12 @@ val ext_attributes :
   ((Ploc.t * string) option * MLast.attributes_no_anti) Grammar.Entry.e;;
    (** Some entries of the language, set by [pa_o.cmo] and [pa_r.cmo]. *)
 
+open Exparser_types;;
+
+val stream_expr : (MLast.loc * sexp_comp list) Grammar.Entry.e;;
+val stream_parser : (MLast.loc * spat_parser_ast) Grammar.Entry.e;;
+val stream_match :
+  (MLast.loc * MLast.expr * spat_parser_ast) Grammar.Entry.e;;
 
 val input_file : string ref;;
    (** The file currently being parsed. *)

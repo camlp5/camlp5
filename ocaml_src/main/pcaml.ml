@@ -85,6 +85,10 @@ let alg_attribute = Grammar.Entry.create gram "alg_attribute";;
 let alg_attributes = Grammar.Entry.create gram "alg_attributes";;
 let ext_attributes = Grammar.Entry.create gram "ext_attributes";;
 
+let stream_expr = Grammar.Entry.create gram "stream_expr";;
+let stream_parser = Grammar.Entry.create gram "stream_parser";;
+let stream_match = Grammar.Entry.create gram "stream_match";;
+
 type 'a ast_transducer_t =
   { name : string;
     parse : (char Stream.t -> 'a) option ref;
