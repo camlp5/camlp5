@@ -212,8 +212,6 @@ module Qast =
   end
 ;;
 
-let watch_qast (x : Qast.t) = ();;
-
 let sig_item = Grammar.Entry.create gram "sig_item";;
 let str_item = Grammar.Entry.create gram "str_item";;
 let ctyp = Grammar.Entry.create gram "type";;
@@ -5844,8 +5842,7 @@ Grammar.safe_extend
                            'e__118)))])),
            "194fe98d",
            (fun (s : 'e__118) (loc : Ploc.t) ->
-              (watch_qast s;
-               match s with
+              (match s with
                  Qast.VaVal (Str s) ->
                    let (_, s) = Asttools.split_rawstring s in
                    Qast.Node
@@ -5854,7 +5851,11 @@ Grammar.safe_extend
                        Qast.VaVal
                          (Qast.Tuple [Qast.Loc; Qast.VaVal (Qast.Str s)])])
                | VaVal (VaAnt (_, _, _)) -> Qast.Node ("ExStr", [Qast.Loc; s])
-               | VaAnt (_, _, _) -> Qast.Node ("ExStr", [Qast.Loc; s]) :
+               | VaAnt (_, _, _) -> Qast.Node ("ExStr", [Qast.Loc; s])
+               | _ ->
+                   Ploc.raise loc
+                     (Failure
+                        "Internal error: a locstr should have been either a raw string or an antiquotation") :
                'expr)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
@@ -5881,8 +5882,7 @@ Grammar.safe_extend
                            'e__117)))])),
            "194fe98d",
            (fun (s : 'e__117) (loc : Ploc.t) ->
-              (watch_qast s;
-               Qast.Node
+              (Qast.Node
                  ("ExStr",
                   [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Loc; s])]) :
                'expr)));

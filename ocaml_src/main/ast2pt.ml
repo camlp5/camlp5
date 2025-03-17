@@ -2161,7 +2161,6 @@ let directive loc =
       | None -> error loc "no such kind of directive in this ocaml version"
       end
   | MLast.ExLong (_, li) -> Pdir_ident (longid_long_id li)
-  | MLast.ExLong (_, li) -> Pdir_ident (longid_long_id li)
   | MLast.ExFle (_, MLast.ExLong (_, li), (None, id)) ->
       Pdir_ident (longid_lident_long_id (Some li, id))
   | MLast.ExLid (_, id) -> Pdir_ident (Lident id)

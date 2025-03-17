@@ -23,7 +23,7 @@ let unpack_qe =
 let make_string kind loc s =
   let (percents, attrid, ws_delim_opt, payload) = unpack_qe s in
   if percents <> kind then
-    failwith "Quotedext.make_string: kind %s was not found (saw <<%s>> instead)" kind percents ;
+    failwith (Printf.sprintf "Quotedext.make_string: kind %s was not found (saw <<%s>> instead)" kind percents) ;
   (* '(' '%' <attrid> <ws+delim> + '|' *)
   let payload_shift = 1 + (String.length percents) + (String.length attrid) +
                         (match ws_delim_opt with None -> 0 | Some s -> String.length s) +

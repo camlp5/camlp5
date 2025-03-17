@@ -12,10 +12,10 @@ all: $(TARGET)
 opt: $(TARGET:.cma=.cmxa)
 
 $(TARGET): $(OBJS)
-	$(OCAMLC) $(DEBUG) $(OBJS) -a -o $(TARGET)
+	$(OCAMLC) $(OCAMLCFLAGS) $(OBJS) -a -o $(TARGET)
 
 $(TARGET:.cma=.cmxa): $(OBJS:.cmo=.cmx)
-	$(OCAMLOPT) $(DEBUG) $(OBJS:.cmo=.cmx) -a -o $(TARGET:.cma=.cmxa)
+	$(OCAMLOPT) $(OCAMLCFLAGS) $(OBJS:.cmo=.cmx) -a -o $(TARGET:.cma=.cmxa)
 
 clean::
 	$(RM) -f *.cm[ioax] *.cmxa *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak

@@ -154,8 +154,6 @@ module Qast =
   end
 ;
 
-value watch_qast (x : Qast.t) = () ;
-
 value sig_item = Grammar.Entry.create gram "sig_item";
 value str_item = Grammar.Entry.create gram "str_item";
 value ctyp = Grammar.Entry.create gram "type";
@@ -1039,11 +1037,9 @@ EXTEND
       | s = SV INT_n → Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "n"]
       | s = SV FLOAT → Qast.Node "ExFlo" [Qast.Loc; s]
       | s = SV STRING → do {
-          watch_qast s ;
         Qast.Node "ExStr" [Qast.Loc; Qast.VaVal (Qast.Tuple [Qast.Loc; s])]
         }
       | s = SV RAWSTRING "locstr" -> do {
-          watch_qast s ;
           match s with [
               Qast.VaVal (Str s) ->
               let (_,s) = Asttools.split_rawstring s in
@@ -1052,6 +1048,7 @@ EXTEND
               Qast.Node "ExStr" [Qast.Loc; s]
             | (VaAnt  _ _ _) ->
               Qast.Node "ExStr" [Qast.Loc; s]
+            | _ -> Ploc.raise loc (Failure "Internal error: a locstr should have been either a raw string or an antiquotation")
             ]
         }
       | s = SV CHAR → Qast.Node "ExChr" [Qast.Loc; s]
