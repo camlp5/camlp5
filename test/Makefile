@@ -25,7 +25,7 @@ quot_o:
 	./mkquot_o.sh > quot_o.out.ml
 
 compare_quot_o:
-	./mkquot_o.sh | $(DIFF) quot_o.ml -
+	./mkquot_o.sh | $(DIFF) quot_o.out.ml -
 
 quot_r.mlt: quot_r.ml ../meta/camlp5r ../meta/q_MLast.cmo $(DEP)
 	cpp -E -DQMLAST -D$(OVERSION_NAME) quot_r.ml > tmp.quot_r.ml
