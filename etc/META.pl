@@ -1,7 +1,12 @@
 #!/usr/bin/env perl
 
+use File::Spec ;
+
 our $version = $ENV{VERSION} ;
-our $camlp5dir = $ENV{CAMLP5DIR} ;
+our $libdir = $ENV{LIBDIR} ;
+our $camlp5n = $ENV{CAMLP5N} ;
+
+our $camlp5dir = File::Spec->catfile( $libdir, $camlp5n );
 
 our $requires = "compiler-libs.common,pcre2";
 
