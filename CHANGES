@@ -1,3 +1,12 @@
+Camlp5 Version 8.03.03:
+--------------------
+
+* [20 Feb 2025] Arrgh, there was still a Windows-specific bug.
+
+  thanks to @a2line and the geneweb folks, we found it, and this release should fix it.
+
+  For real.  I swear.
+
 Camlp5 Version 8.03.02:
 --------------------
 
