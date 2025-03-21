@@ -34,7 +34,7 @@ jobs:
 
       - name: build it all with make
         run: |
-          ./configure
+          sh ./configure
           make all world.opt
           make -C test clean all
           make -C testsuite clean all-tests
