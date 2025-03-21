@@ -17,7 +17,36 @@ export LC_ALL=C
 
 #all-tests: all $(TESTS)
 
-all-tests: all
+all-tests: roundtrippers \
+	o2r_test.byte \
+	r2r_test.byte \
+	r2o_test.byte \
+	o2o_test.byte \
+	o2official_test.byte \
+	r2official_test.byte \
+	official2official_test.byte \
+	r2sch_test.byte \
+	q_MLast_test.byte \
+	revised_q_ast_test.byte \
+	official_q_ast_test.byte \
+	sch2r_test.pa_scheme.byte \
+	sch2r_test.pa_schemer.byte \
+	extfun_test.byte \
+	reloc_test.byte \
+	roundtrip_lexer.byte \
+	o_top_test.byte \
+	o_top_test2.byte \
+	r_top_test.byte \
+	tools/ROUNDTRIP-pa_r-pr_r.byte \
+	tools/ROUNDTRIP-pa_r-pr_r.opt \
+	tools/ROUNDTRIP-pa_o-pr_o.byte \
+	tools/ROUNDTRIP-pa_o-pr_o.opt \
+	grammar_bug_test \
+	little_lang_test \
+	o_lexer_test \
+	r_lexer_test \
+	quotedext_test \
+
 #all-tests: first
 first::
 	echo "================ FIRST ================"
