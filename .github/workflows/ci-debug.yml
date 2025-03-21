@@ -35,10 +35,10 @@ jobs:
       - name: build it all with make
         run: |
           ./configure
-	  make all world.opt
-	  make -C test clean all
-	  make -C testsuite clean all-tests
-	  make clean
+          make all world.opt
+          make -C test clean all
+          make -C testsuite clean all-tests
+          make clean
 
       - name: Install it with opam
         run: |
