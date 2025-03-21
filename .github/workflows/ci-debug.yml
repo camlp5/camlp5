@@ -36,3 +36,19 @@ jobs:
       - name: Install it with opam
         run: |
           opam install -v -j 1 -t --strict camlp5
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: testsuite/*
+
+      - name: Archive local-install
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-install
+          path: |
+            local-install/bin/*
+            local-install/lib/*/*
