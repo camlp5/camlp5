@@ -32,6 +32,14 @@ jobs:
           opam install . --deps-only --with-doc --with-test
           opam pin add camlp5 . --no-action
 
+      - name: build it all with make
+        run: |
+          ./configure
+	  make all world.opt
+	  make -C test clean all
+	  make -C testsuite clean all-tests
+	  make clean
+
       - name: Install it with opam
         run: |
           opam install -t --strict camlp5
