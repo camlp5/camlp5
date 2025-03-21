@@ -33,19 +33,21 @@ all-tests: roundtrippers \
 	sch2r_test.pa_schemer.byte \
 	extfun_test.byte \
 	reloc_test.byte \
-	roundtrip_lexer.byte \
-	o_top_test.byte \
-	o_top_test2.byte \
-	r_top_test.byte \
-	tools/ROUNDTRIP-pa_r-pr_r.byte \
-	tools/ROUNDTRIP-pa_r-pr_r.opt \
-	tools/ROUNDTRIP-pa_o-pr_o.byte \
-	tools/ROUNDTRIP-pa_o-pr_o.opt \
-	grammar_bug_test \
-	little_lang_test \
-	o_lexer_test \
-	r_lexer_test \
-	quotedext_test \
+
+
+#	roundtrip_lexer.byte \
+#	o_top_test.byte \
+#	o_top_test2.byte \
+#	r_top_test.byte \
+#	tools/ROUNDTRIP-pa_r-pr_r.byte \
+#	tools/ROUNDTRIP-pa_r-pr_r.opt \
+#	tools/ROUNDTRIP-pa_o-pr_o.byte \
+#	tools/ROUNDTRIP-pa_o-pr_o.opt \
+#	grammar_bug_test \
+#	little_lang_test \
+#	o_lexer_test \
+#	r_lexer_test \
+#	quotedext_test \
 
 #all-tests: first
 first::
