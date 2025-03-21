@@ -35,7 +35,7 @@ jobs:
 
       - name: Install it with opam
         run: |
-          opam install -v -j 1 -t --strict camlp5
+          opam install -b -v -j 1 -t --strict camlp5
 
       - name: Archive test results
         if: always()
