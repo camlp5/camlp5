@@ -35,4 +35,4 @@ jobs:
 
       - name: Install it with opam
         run: |
-          opam install -v -t --strict camlp5
+          opam install -v -j 1 -t --strict camlp5
