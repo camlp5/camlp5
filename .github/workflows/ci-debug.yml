@@ -29,6 +29,7 @@ jobs:
 
       - name: Setup Dependencies
         run: |
+          (mkdir tmp && cd tmp && git clone https://github.com/camlp5/camlp5-buildscripts.git && cd camlp5-buildscripts && opam pin add camlp5-buildscripts . )
           opam install . --deps-only --with-doc --with-test
           opam pin add camlp5 . --no-action
 
