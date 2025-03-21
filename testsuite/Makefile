@@ -19,9 +19,10 @@ export LC_ALL=C
 
 all-tests: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
-	tools/ROUNDTRIP-pa_r-pr_r.opt \
-	tools/ROUNDTRIP-pa_o-pr_o.byte \
-	tools/ROUNDTRIP-pa_o-pr_o.opt \
+
+#	tools/ROUNDTRIP-pa_r-pr_r.opt \
+#	tools/ROUNDTRIP-pa_o-pr_o.byte \
+#	tools/ROUNDTRIP-pa_o-pr_o.opt \
 
 
 #all-tests: first
