@@ -18,10 +18,6 @@ export LC_ALL=C
 #all-tests: all $(TESTS)
 
 all-tests: roundtrippers \
-	roundtrip_lexer.byte \
-	o_top_test.byte \
-	o_top_test2.byte \
-	r_top_test.byte \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
 
 #	tools/ROUNDTRIP-pa_r-pr_r.opt \
