@@ -1,0 +1,47 @@
+name: CI
+
+# on: [push, pull_request]
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      # Test Linux, macOS and Windows with the oldest and newest supported OCaml
+      # and trunk.
+      matrix:
+        os:
+          - macos-latest
+          - ubuntu-latest
+          - windows-latest
+        ocaml-version:
+          - "4.14"
+          - "5.3"
+        include:
+          - os: ubuntu-latest
+            ocaml-version: "4.10"
+          - os: macos-13
+            ocaml-version: "4.10"
+          - os: macos-latest
+            ocaml-version: "4.10"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set-up OCaml ${{ matrix.ocaml-version }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-version }}
+
+      - name: Setup Dependencies
+        run: |
+          opam install . --deps-only --with-doc --with-test
+          opam pin add camlp5 . --no-action
+
+      - name: Install it with opam
+        run: |
+          opam install -t --strict camlp5
