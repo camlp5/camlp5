@@ -17,7 +17,7 @@ export LC_ALL=C
 
 #all-tests: all $(TESTS)
 
-all-tests: roundtrippers
+all-tests: all
 #all-tests: first
 first::
 	echo "================ FIRST ================"
