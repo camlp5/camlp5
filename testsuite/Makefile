@@ -37,7 +37,7 @@ all-tests: roundtrippers \
 	o_top_test.byte \
 	o_top_test2.byte \
 	r_top_test.byte \
-#	tools/ROUNDTRIP-pa_r-pr_r.byte \
+	tools/ROUNDTRIP-pa_r-pr_r.byte \
 #	tools/ROUNDTRIP-pa_r-pr_r.opt \
 #	tools/ROUNDTRIP-pa_o-pr_o.byte \
 #	tools/ROUNDTRIP-pa_o-pr_o.opt \
