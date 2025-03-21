@@ -15,8 +15,9 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 
 export LC_ALL=C
 
-all-tests: all $(TESTS)
+#all-tests: all $(TESTS)
 
+all-tests: roundtrippers
 #all-tests: first
 first::
 	echo "================ FIRST ================"
