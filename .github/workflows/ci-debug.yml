@@ -50,5 +50,5 @@ jobs:
         with:
           name: local-install
           path: |
-            local-install/bin/*
-            local-install/lib/*/*
+            D:/a/camlp5/camlp5/_opam/.opam-switch/build/camlp5.8.03.04/local-install/bin/*
+            D:/a/camlp5/camlp5/_opam/.opam-switch/build/camlp5.8.03.04/local-install/lib/*/*
