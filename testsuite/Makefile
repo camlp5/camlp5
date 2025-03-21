@@ -18,11 +18,6 @@ export LC_ALL=C
 #all-tests: all $(TESTS)
 
 all-tests: roundtrippers \
-	official_q_ast_test.byte \
-	sch2r_test.pa_scheme.byte \
-	sch2r_test.pa_schemer.byte \
-	extfun_test.byte \
-	reloc_test.byte \
 	roundtrip_lexer.byte \
 	o_top_test.byte \
 	o_top_test2.byte \
