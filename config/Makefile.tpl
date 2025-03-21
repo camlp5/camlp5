@@ -1,6 +1,6 @@
 # Makefile.tpl,v
 
-LAUNCH=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH --
+LAUNCH=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH$(EXE) --
 NOVERBOSE=@
 CAMLP5_COMM=OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) MODE=$(MODE) COMPWITH=$(COMPWITH) CAMLP5N=$(CAMLP5N) ../tools/camlp5_comm.sh
 OCAMLC=@OPT=$(OPT) EXE=$(EXE) OCAMLN=$(OCAMLN) ../tools/ocamlc.sh
