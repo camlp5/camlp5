@@ -17,17 +17,12 @@ export LC_ALL=C
 
 #all-tests: all $(TESTS)
 
-all-tests: roundtrippers \
+all-tests: \
 	tools/ROUNDTRIP-pa_r-pr_r.byte \
+	tools/ROUNDTRIP-pa_r-pr_r.opt \
+	tools/ROUNDTRIP-pa_o-pr_o.byte \
+	tools/ROUNDTRIP-pa_o-pr_o.opt \
 
-#	tools/ROUNDTRIP-pa_r-pr_r.opt \
-#	tools/ROUNDTRIP-pa_o-pr_o.byte \
-#	tools/ROUNDTRIP-pa_o-pr_o.opt \
-#	grammar_bug_test \
-#	little_lang_test \
-#	o_lexer_test \
-#	r_lexer_test \
-#	quotedext_test \
 
 #all-tests: first
 first::
