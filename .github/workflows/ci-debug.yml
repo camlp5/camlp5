@@ -1,4 +1,4 @@
-name: CI
+name: CI-DEBUG
 
 # on: [push, pull_request]
 
