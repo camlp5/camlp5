@@ -19,7 +19,7 @@ export LC_ALL=C
 all-tests: first
 first::
 	echo "================ FIRST ================"
-	$(LAUNCH) ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o first.byte odyl.cmo
+	$(LAUNCH) ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o first.byte ../local-install/lib/camlp5/odyl.cmo
 
 all: roundtrippers \
 	o2r_test.byte \
@@ -57,7 +57,7 @@ roundtrippers: \
 	tools/ROUNDTRIP-pa_o-pr_o.byte \
 	tools/ROUNDTRIP-pa_o-pr_o.opt \
 
-LAUNCH:=OCAMLPATH="../local-install/lib;" PATH="../local-install/bin:$(PATH)"
+#LAUNCH:=OCAMLPATH="../local-install/lib;" PATH="../local-install/bin:$(PATH)"
 OCAMLFIND=$(LAUNCH) ocamlfind
 OCAMLTOPLEVEL=$(LAUNCH) ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
