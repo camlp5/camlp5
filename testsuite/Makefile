@@ -53,7 +53,8 @@ roundtrippers: \
 	tools/ROUNDTRIP-pa_o-pr_o.byte \
 	tools/ROUNDTRIP-pa_o-pr_o.opt \
 
-OCAMLFIND=OCAMLPATH="../local-install/lib;" PATH="../local-install/bin:$(PATH)" ocamlfind
+LAUNCH:=CAMLPATH="../local-install/lib;" PATH="../local-install/bin:$(PATH)"
+OCAMLFIND=$(LAUNCH) ocamlfind
 OCAMLTOPLEVEL=$(LAUNCH) ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
 MKCAMLP5=$(LAUNCH) mkcamlp5$(EXE) -verbose
