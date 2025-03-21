@@ -56,7 +56,7 @@ roundtrippers: \
 OCAMLFIND=$(LAUNCH) ocamlfind
 OCAMLTOPLEVEL=$(LAUNCH) ocaml
 CAMLP5LIB=$(shell $(OCAMLFIND) query camlp5)
-MKCAMLP5=$(LAUNCH) mkcamlp5 -verbose
+MKCAMLP5=$(LAUNCH) mkcamlp5$(EXE) -verbose
 MKCAMLP5OPT=$(LAUNCH) mkcamlp5.opt -verbose
 CAMLP5R=$(LAUNCH) camlp5r -I $(CAMLP5LIB)
 INCLUDES=-I $(CAMLP5LIB)
