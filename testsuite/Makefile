@@ -18,11 +18,15 @@ export LC_ALL=C
 #all-tests: all $(TESTS)
 
 all-tests:
-#	$(MAKE) tools/ROUNDTRIP-pa_r-pr_r.byte
+	ls -la tools/ROUNDTRIP-pa_r-pr_r.byte
+	$(MAKE) tools/ROUNDTRIP-pa_r-pr_r.byte
+	ls -la tools/ROUNDTRIP-pa_r-pr_r.byte
+	ls -la tools/ROUNDTRIP-pa_r-pr_r.opt
 	$(MAKE) tools/ROUNDTRIP-pa_r-pr_r.opt
-#	$(MAKE) tools/ROUNDTRIP-pa_o-pr_o.byte
-
-#	tools/ROUNDTRIP-pa_o-pr_o.opt \
+	ls -la tools/ROUNDTRIP-pa_r-pr_r.opt
+	ls -la tools/ROUNDTRIP-pa_o-pr_o.byte
+	$(MAKE) tools/ROUNDTRIP-pa_o-pr_o.byte
+	ls -la tools/ROUNDTRIP-pa_o-pr_o.byte
 
 
 #all-tests: first
