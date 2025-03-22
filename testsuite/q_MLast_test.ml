@@ -27,7 +27,7 @@ i.name >:: (fun  [ _ ->
                          ])
 ;
 
-value tests = "test pa_r+quotations -> pr_r" >::: (List.map mktest
+value tests = "test pa_r+quotations-to-pr_r" >::: (List.map mktest
     [
       {
         name = "prototype";
