@@ -20,7 +20,7 @@ export LC_ALL=C
 all-tests:
 	echo "================================================================"
 	ls -la tools/ROUNDTRIP-pa_r-pr_r.byte || true
-	$(MAKE) tools/ROUNDTRIP-pa_r-pr_r.byte
+#	$(MAKE) tools/ROUNDTRIP-pa_r-pr_r.byte
 	ls -la tools/ROUNDTRIP-pa_r-pr_r.byte || true
 	echo "================================================================"
 	ls -la tools/ROUNDTRIP-pa_r-pr_r.opt || true
@@ -28,7 +28,7 @@ all-tests:
 	ls -la tools/ROUNDTRIP-pa_r-pr_r.opt || true
 	echo "================================================================"
 	ls -la tools/ROUNDTRIP-pa_o-pr_o.byte || true
-	$(MAKE) tools/ROUNDTRIP-pa_o-pr_o.byte
+#	$(MAKE) tools/ROUNDTRIP-pa_o-pr_o.byte
 	ls -la tools/ROUNDTRIP-pa_o-pr_o.byte || true
 
 
