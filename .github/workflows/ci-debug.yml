@@ -75,7 +75,7 @@ jobs:
       - name: Install Camlp5 test dependencies
         run: |
           opam install --deps-only --with-test .
-	shell: bash
+        shell: bash
 
       - name: List all installed packages
         run: |
