@@ -80,7 +80,7 @@ jobs:
       - name: List all installed packages
         run: |
           opam list
-	shell: bash
+        shell: bash
 
       - name: Run Camlp5 test suite (ocaml-setup@v3 environments)
         if: matrix.setup-version == 'v3'
