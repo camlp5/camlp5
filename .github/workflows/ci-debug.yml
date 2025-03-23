@@ -66,15 +66,15 @@ jobs:
 
       - name: Install Camlp5 dependencies
         run: |
-          opam install . --deps-only ${{ env.FMT_CI == 'true' && '--with-test' || '' }}
+          opam install --deps-only ${{ env.FMT_CI == 'true' && '--with-test' || '' }} camlp5
 
       - name: Install Camlp5 (WITHOUT TESTS, preserve build-dir)
         run: |
-          opam install -b .
+          opam install -b camlp5
 
       - name: Install Camlp5 test dependencies
         run: |
-          opam install --deps-only --with-test .
+          opam install --deps-only --with-test camlp5
         shell: bash
 
       - name: List all installed packages
