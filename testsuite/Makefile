@@ -17,6 +17,7 @@ export LC_ALL=C
 
 all-tests::
 	ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r_byte odyl.cmo
+	ls -la tools/
 
 #all-tests: all $(TESTS)
 
