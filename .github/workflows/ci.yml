@@ -67,6 +67,10 @@ jobs:
         run: |
           opam install . --deps-only ${{ env.FMT_CI == 'true' && '--with-test' || '' }}
 
+      - name: Install Camlp5 (WITHOUT TESTS, preserve build-dir)
+        run: |
+          opam install -b .
+
       - name: Run Camlp5 test suite (ocaml-setup@v3 environments)
         if: matrix.setup-version == 'v3'
         run: |
@@ -113,11 +117,8 @@ jobs:
         shell: bash
         continue-on-error: true
 
-      - name: Configure
-        run: opam exec -- ocaml ./configure.ml --sosa-zarith
-
-      - name: Build Camlp5
-        run: opam exec -- make ${{ env.FMT_CI == 'true' && 'fmt ci' || 'build' }} distrib
+#      - name: Build Camlp5 (WITH TESTS)
+#        run: opam install -t .
 
       - name: Collect Build Metrics
         id: collect-metrics
