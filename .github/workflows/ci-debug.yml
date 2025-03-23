@@ -19,7 +19,8 @@ jobs:
       metric: ${{ steps.collect-metrics.outputs.metric }}
 
     env:
-      FMT_CI: ${{ matrix.os == 'ubuntu-24.04' && matrix.ocaml-compiler == '4.14.2' && matrix.setup-version == 'v3' }}
+#      FMT_CI: ${{ matrix.os == 'ubuntu-24.04' && matrix.ocaml-compiler == '4.14.2' && matrix.setup-version == 'v3' }}
+      FMT_CI: true
 
     steps:
       - name: Checkout code
