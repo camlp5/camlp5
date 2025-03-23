@@ -56,6 +56,12 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
+      - name: Show what is cached
+        run: |
+          opam switch
+          opam list
+          opam pin list
+
       - name: Pin camlp5 and not-ocamlfind without installing
         if: matrix.setup-version == 'v3'
         run: |
