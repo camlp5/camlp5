@@ -71,6 +71,10 @@ jobs:
         run: |
           opam install -b .
 
+      - name: Install Camlp5 test dependencies
+        run: |
+          opam install . --deps-only -t
+
       - name: Run Camlp5 test suite (ocaml-setup@v3 environments)
         if: matrix.setup-version == 'v3'
         run: |
