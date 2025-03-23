@@ -15,7 +15,7 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 
 export LC_ALL=C
 
-all-test:: tools/ROUNDTRIP-pa_r-pr_r.byte
+all-tests: tools/ROUNDTRIP-pa_r-pr_r.byte
 
 #all-tests: all $(TESTS)
 
