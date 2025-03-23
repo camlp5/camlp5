@@ -1,0 +1,148 @@
+name: CI-DEBUG
+on: [workflow_dispatch]
+
+env:
+  OPAMYES: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        ocaml-compiler: [5.3.0]
+        setup-version: [v3]
+
+    outputs:
+      total_matrix_jobs: ${{ strategy.job-total || 0 }}
+      metric: ${{ steps.collect-metrics.outputs.metric }}
+
+    env:
+      FMT_CI: ${{ matrix.os == 'ubuntu-24.04' && matrix.ocaml-compiler == '4.14.2' && matrix.setup-version == 'v3' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Start Build Timer
+        uses: ./.github/actions/ci-utils
+        with:
+          command: start-timer
+
+      - name: Cache Opam dependencies (Unix)
+        id: cache-opam-unix
+        if: runner.os != 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: ~/.opam
+          key: unix-${{ matrix.ocaml-compiler }}-${{ env.FMT_CI == 'true' && 'with-test' || 'no-test' }}-${{ matrix.setup-version }}-${{ hashFiles('*.opam') }}-cache
+          restore-keys: unix-${{ matrix.ocaml-compiler }}-${{ env.FMT_CI == 'true' && 'with-test' || 'no-test' }}-${{ matrix.setup-version }}
+
+      - name: Cache Opam dependencies (Windows)
+        id: cache-opam-windows
+        if: runner.os == 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: D:\.opam
+          key: windows-${{ matrix.ocaml-compiler }}-${{ env.FMT_CI == 'true' && 'with-test' || 'no-test' }}-${{ matrix.setup-version }}-${{ hashFiles('*.opam') }}-cache
+          restore-keys: windows-${{ matrix.ocaml-compiler }}-${{ env.FMT_CI == 'true' && 'with-test' || 'no-test' }}-${{ matrix.setup-version }}
+
+      - name: Setup Ocaml with v3
+        if: matrix.setup-version == 'v3'
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Pin camlp5 and not-ocamlfind without installing
+        if: matrix.setup-version == 'v3'
+        run: |
+          opam pin add --no-action camlp5 https://github.com/camlp5/camlp5.git
+          opam pin add --no-action not-ocamlfind https://github.com/chetmurthy/not-ocamlfind.git
+          opam pin add --no-action camlp5-buildscripts https://github.com/camlp5/camlp5-buildscripts.git
+
+      - name: Install Camlp5 dependencies
+        run: |
+          opam install . --deps-only ${{ env.FMT_CI == 'true' && '--with-test' || '' }}
+
+      - name: Install Camlp5 (WITHOUT TESTS, preserve build-dir)
+        run: |
+          opam install -b .
+
+      - name: Install Camlp5 test dependencies
+        run: |
+          opam install . --deps-only -t
+
+      - name: Run Camlp5 test suite (ocaml-setup@v3 environments)
+        if: matrix.setup-version == 'v3'
+        run: |
+          eval $(opam env)
+          echo "OPAM var prefix: $(opam var prefix)"
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            OPAM_PREFIX="D:/a/camlp5/camlp5/_opam"
+          else
+            OPAM_PREFIX=$(opam var prefix)
+          fi
+          BUILD_PATH="$OPAM_PREFIX/.opam-switch/build"
+          BUILDSCRIPTS_DIR="$OPAM_PREFIX/lib/camlp5-buildscripts"
+          which ocamlfind || echo "WARNING: ocamlfind not found in PATH"
+          CAMLP5_DIR=$(find "$BUILD_PATH" -type d -name "camlp5.*" 2>/dev/null | sort -V | tail -n 1)
+          echo "===== $RUNNER_OS paths ====="
+          echo "OPAM prefix: $OPAM_PREFIX"
+          echo "Build path: $BUILD_PATH"
+          echo "Buildscripts directory: $BUILDSCRIPTS_DIR"
+          echo "Camlp5 directory: $CAMLP5_DIR"
+          if [ "$RUNNER_OS" == "Windows" ] && [ -d "$BUILDSCRIPTS_DIR" ]; then
+            echo "Windows LAUNCH files in buildscripts directory:"
+            ls -la "$BUILDSCRIPTS_DIR"/LAUNCH* || echo "No LAUNCH files found"
+          fi
+          if [ -d "$CAMLP5_DIR" ] && [ -d "$CAMLP5_DIR/testsuite" ]; then
+            echo "Running Camlp5 found test suite…"
+            cd "$CAMLP5_DIR/testsuite"
+            echo "Running test in: $(pwd)"
+
+            echo "===== BEGIN TEST OUTPUT ====="
+            make all-tests || echo "Tests completed with some errors, but continuing build"
+            echo "===== END TEST OUTPUT ====="
+          else
+            if [ ! -d "$CAMLP5_DIR" ]; then
+              echo "Camlp5 directory not found"
+            else
+              echo "Testsuite directory not found"
+              echo "Contents of Camlp5 directory:"
+              ls -la "$CAMLP5_DIR" || echo "Failed to list directory"
+            fi
+            echo "Available Camlp5 directories:"
+            find "$OPAM_PREFIX" -name "camlp5*" -type d | grep -v "lib"
+            echo "Skipping tests"
+          fi
+        shell: bash
+        continue-on-error: true
+
+#      - name: Build Camlp5 (WITH TESTS)
+#        run: opam install -t .
+
+      - name: Collect Build Metrics
+        id: collect-metrics
+        uses: ./.github/actions/ci-utils
+        with:
+          command: collect-metrics
+          os: ${{ matrix.os }}
+          ocaml-version: ${{ matrix.ocaml-compiler }}
+          cache-hit: ${{ runner.os != 'Windows' && steps.cache-opam-unix.outputs.cache-hit || steps.cache-opam-windows.outputs.cache-hit }}
+
+  build-results:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate Build Summary
+        uses: ./.github/actions/ci-utils
+        with:
+          command: generate-summary
+          total-builds: ${{ needs.build.outputs.total_matrix_jobs }}
