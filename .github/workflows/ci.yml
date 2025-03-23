@@ -104,7 +104,7 @@ jobs:
             echo "Running test in: $(pwd)"
 
             echo "===== BEGIN TEST OUTPUT ====="
-            make -k all-tests || echo "Tests completed with some errors, but continuing build"
+            make all-tests || echo "Tests completed with some errors, but continuing build"
             echo "===== END TEST OUTPUT ====="
           else
             if [ ! -d "$CAMLP5_DIR" ]; then
