@@ -77,7 +77,7 @@ jobs:
 
       - name: Install Camlp5 (WITHOUT TESTS, preserve build-dir)
         run: |
-          opam install -b camlp5
+          opam install -v -b camlp5
 
       - name: Install Camlp5 test dependencies
         run: |
