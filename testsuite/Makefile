@@ -6,7 +6,8 @@ include $(TOP)/config/Makefile
 
 ifeq ($(OS),Windows_NT)
 BSDIR:=$(shell ocamlfind query camlp5-buildscripts)
-LAUNCH:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL
+#LAUNCH:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL
+LAUNCH:=env TOP=$(TOP) ../tools/LAUNCH.PL
 endif
 DIFF=diff -Bwi -u20
 RM=rm
