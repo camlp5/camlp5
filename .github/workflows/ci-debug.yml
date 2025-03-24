@@ -66,8 +66,9 @@ jobs:
       - name: install Perl deps
         run: |
           set -x
-          cpan install -T -f String::Shellquote
-          cpan install -T -f IPC::System::Simple
+          cpan -T -f -i String::Shellquote || true
+          cpan -T -f -i IPC::System::Simple || true
+	  cpan -J
           perl -MString::Shellquote -e 'print "String::Shellquote installed\n"'
           perl -MIPC::System::Simple -e 'print "IPC::System::Simple installed\n"'
         shell: bash
