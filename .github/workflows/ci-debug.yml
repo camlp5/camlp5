@@ -67,6 +67,9 @@ jobs:
         run: |
           cpan install String::Shellquote
           cpan install IPC::System::Simple
+          perl -MString::Shellquote -e 'print "String::Shellquote installed\n"'
+          perl -MIPC::System::Simple -e 'print "IPC::System::Simple installed\n"'
+        shell: bash
 
       - name: Pin camlp5 and not-ocamlfind without installing
         if: matrix.setup-version == 'v3'
