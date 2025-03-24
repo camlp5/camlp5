@@ -32,8 +32,6 @@ depends: [
   "ocamlfind"
   "camlp-streams" { >= "5.0" }
   "conf-perl"
-  "conf-perl-ipc-system-simple"
-  "conf-perl-string-shellquote"
   "conf-bash" { with-test }
   "camlp5-buildscripts" { >= "0.02" }
   "conf-diffutils" { with-test & (os-distribution = "alpine" | os-distribution = "freebsd") }

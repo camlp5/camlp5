@@ -4,7 +4,10 @@
 TOP=..
 include $(TOP)/config/Makefile
 
-LAUNCH:=$(TOP)/tools/LAUNCH.PL
+ifeq ($(OS),Windows_NT)
+BSDIR:=`ocamlfind query camlp5-buildscripts`
+LAUNCH:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL
+endif
 DIFF=diff -Bwi -u20
 RM=rm
 
