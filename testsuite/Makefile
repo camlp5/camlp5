@@ -4,6 +4,7 @@
 TOP=..
 include $(TOP)/config/Makefile
 
+LAUNCH:=$(TOP)/tools/LAUNCH.PL
 DIFF=diff -Bwi -u20
 RM=rm
 
@@ -15,14 +16,14 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 
 export LC_ALL=C
 
-all-tests::
+#all-tests::
 #	env TOP=.. ocamlfind camlp5-buildscripts/LAUNCH.exe -- mkcamlp5 -verbose -verbose -package compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o tools/ROUNDTRIP-pa_r-pr_r_byte
-	env TOP=.. ocamlfind camlp5-buildscripts/LAUNCH.exe -vv -- ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r_byte odyl.cmo
+#	env TOP=.. ocamlfind camlp5-buildscripts/LAUNCH.exe -vv -- ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r_byte odyl.cmo
 #	env TOP=.. PATH="../local-install/bin;${PATH}" OCAMLPATH="../local-install/lib;" ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r_byte odyl.cmo
 #	env TOP=.. ocamlfind camlp5-buildscripts/LAUNCH.exe -- ocamlfind ocamlc -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r_byte odyl.cmo
-	ls -la tools/
+#	ls -la tools/
 
-#all-tests: all $(TESTS)
+all-tests: all $(TESTS)
 
 all: roundtrippers \
 	o2r_test.byte \
