@@ -63,6 +63,10 @@ jobs:
           opam list
           opam pin list
 
+      - name: install Perl deps
+        run: |
+          D:\.opam\.cygwin\setup-x86_64.exe "--root" "D:\\cygwin" "--quiet-mode" "unattended" "--no-shortcuts" "--no-startmenu" "--no-desktop" "--no-admin" "--no-version-check" "--no-write-registry" "--packages" "mingw64-x86_64-pcre2,pkgconf,perl-IPC-System-Simple,perl-String-ShellQuote"
+
       - name: Pin camlp5 and not-ocamlfind without installing
         if: matrix.setup-version == 'v3'
         run: |
