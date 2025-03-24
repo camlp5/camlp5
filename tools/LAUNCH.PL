@@ -7,10 +7,31 @@ use File::Basename;
 
 our $verbose = 0 ;
 
+while(@ARGV) {
+  if ($ARGV[0] eq '-v') {
+    shift @ARGV ;
+    $verbose = 1 ;
+  }
+  elsif ($ARGV[0] eq '-vv') {
+    shift @ARGV ;
+    $verbose = 2 ;
+  }
+  else { last ; }
+}
+
 {
   my $wd = dirname(dirname($0)) ;
 
-  my $top = $ENV{'TOP'} || $wd;
+  my $top = $ENV{'TOP'} || die "environment variable TOP MUST be set" ;
+
+  my $searchpathsep;
+  print STDERR "OS: <<$^O>>\n" if $main::verbose > 1;
+  if ($^O eq 'MSWin32' || $^O eq 'cygwin') {
+    $searchpathsep = ";";
+  }
+  else {
+    $searchpathsep = ":";
+  }
 
   my %newenv ;
   $newenv{'PATH'} = "$top/local-install/bin:$ENV{'PATH'}" ;
@@ -27,7 +48,8 @@ sub v_systemx {
   my @cmd = @{ shift @_ } ;
   my %args = @_ ;
 
-  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if $main::verbose ;
+  print STDERR ("PATH=".shell_quote($ENV{'PATH'})." OCAMLPATH=".shell_quote($ENV{'OCAMLPATH'})."\n") if $main::verbose > 1;
+  print STDERR join(' ', map { shell_quote($_) } @cmd)."\n" if $main::verbose > 0;
 
   return runx($codes, @cmd) ;
 }
