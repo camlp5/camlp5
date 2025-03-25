@@ -21,31 +21,7 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 
 export LC_ALL=C
 
-#LOCALREPO="../local-install/lib"
-LOCALREPO=D:/a/camlp5/camlp5/local-install/lib
-
-all-tests:
-	ls -la /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5
-	ls -la ../local-install/lib/camlp5
-	ls -la D:/a/camlp5/camlp5/local-install/lib/camlp5
-	env OCAMLPATH="$(LOCALREPO);" ocamlfind query camlp5
-	ls -la /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5/odyl.cmo
-	ls -la /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\odyl.cmo
-	cat $(LOCALREPO)/camlp5/META
-	ls -la tools/ROUNDTRIP-pa_r-pr_r.byte || true
-	env OCAMLPATH="$(LOCALREPO);" ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
-	ls -la tools/ROUNDTRIP-pa_r-pr_r.byte
-
-# this one works
-#	ocamlc.opt -verbose -verbose -linkall -I D:/a/camlp5/camlp5/_opam/lib/ocaml/dynlink -o tools/ROUNDTRIP-pa_r-pr_r.byte -I D:/a/camlp5/camlp5/_opam/lib/ocaml/compiler-libs -I D:/a/camlp5/camlp5/_opam/lib/pcre2 -I D:/a/camlp5/camlp5/_opam/lib/camlp-streams -I D:/a/camlp5/camlp5/_opam/lib/rresult -I D:/a/camlp5/camlp5/_opam/lib/astring -I D:/a/camlp5/camlp5/_opam/lib/fpath -I D:/a/camlp5/camlp5/_opam/lib/fmt -I D:/a/camlp5/camlp5/_opam/lib/ocaml/unix -I D:/a/camlp5/camlp5/_opam/lib/logs -I D:/a/camlp5/camlp5/_opam/lib/bos -I D:/a/camlp5/camlp5/_opam/lib/seq -I D:/a/camlp5/camlp5/_opam/lib/re -I D:/a/camlp5/camlp5/local-install/lib/camlp5 D:/a/camlp5/camlp5/_opam/lib/ocaml/compiler-libs\ocamlcommon.cma D:/a/camlp5/camlp5/_opam/lib/pcre2\pcre2.cma D:/a/camlp5/camlp5/_opam/lib/camlp-streams\camlp_streams.cma D:/a/camlp5/camlp5/local-install/lib/camlp5\odyl.cma D:/a/camlp5/camlp5/local-install/lib/camlp5\camlp5.cma D:/a/camlp5/camlp5/_opam/lib/rresult\rresult.cma D:/a/camlp5/camlp5/_opam/lib/astring\astring.cma D:/a/camlp5/camlp5/_opam/lib/fpath\fpath.cma D:/a/camlp5/camlp5/_opam/lib/fmt\fmt.cma D:/a/camlp5/camlp5/_opam/lib/ocaml/unix\unix.cma D:/a/camlp5/camlp5/_opam/lib/logs\logs.cma D:/a/camlp5/camlp5/_opam/lib/bos\bos.cma D:/a/camlp5/camlp5/_opam/lib/re\re.cma D:/a/camlp5/camlp5/local-install/lib/camlp5\pa_r.cmo D:/a/camlp5/camlp5/local-install/lib/camlp5\pa_rp.cmo D:/a/camlp5/camlp5/local-install/lib/camlp5\r_keywords.cmo D:/a/camlp5/camlp5/local-install/lib/camlp5\pr_r.cmo D:/a/camlp5/camlp5/local-install/lib/camlp5\pr_ro.cmo D:/a/camlp5/camlp5/local-install/lib/camlp5\pr_rp.cmo D:/a/camlp5/camlp5/local-install/lib/camlp5\pa_extend.cmo D:/a/camlp5/camlp5/local-install/lib/camlp5\q_phony.cmo foo.ml odyl.cmo
-
-# this one does not work
-#	ocamlc.opt -verbose -verbose -linkall -I D:/a/camlp5/camlp5/_opam/lib/ocaml/dynlink -o tools/ROUNDTRIP-pa_r-pr_r.byte -I D:/a/camlp5/camlp5/_opam/lib/ocaml/compiler-libs -I D:/a/camlp5/camlp5/_opam/lib/pcre2 -I D:/a/camlp5/camlp5/_opam/lib/camlp-streams -I D:/a/camlp5/camlp5/_opam/lib/rresult -I D:/a/camlp5/camlp5/_opam/lib/astring -I D:/a/camlp5/camlp5/_opam/lib/fpath -I D:/a/camlp5/camlp5/_opam/lib/fmt -I D:/a/camlp5/camlp5/_opam/lib/ocaml/unix -I D:/a/camlp5/camlp5/_opam/lib/logs -I D:/a/camlp5/camlp5/_opam/lib/bos -I D:/a/camlp5/camlp5/_opam/lib/seq -I D:/a/camlp5/camlp5/_opam/lib/re -I /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5 D:/a/camlp5/camlp5/_opam/lib/ocaml/compiler-libs\ocamlcommon.cma D:/a/camlp5/camlp5/_opam/lib/pcre2\pcre2.cma D:/a/camlp5/camlp5/_opam/lib/camlp-streams\camlp_streams.cma /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\odyl.cma /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\camlp5.cma D:/a/camlp5/camlp5/_opam/lib/rresult\rresult.cma D:/a/camlp5/camlp5/_opam/lib/astring\astring.cma D:/a/camlp5/camlp5/_opam/lib/fpath\fpath.cma D:/a/camlp5/camlp5/_opam/lib/fmt\fmt.cma D:/a/camlp5/camlp5/_opam/lib/ocaml/unix\unix.cma D:/a/camlp5/camlp5/_opam/lib/logs\logs.cma D:/a/camlp5/camlp5/_opam/lib/bos\bos.cma D:/a/camlp5/camlp5/_opam/lib/re\re.cma /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\pa_r.cmo /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\pa_rp.cmo /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\r_keywords.cmo /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\pr_r.cmo /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\pr_ro.cmo /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\pr_rp.cmo /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\pa_extend.cmo /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5\q_phony.cmo foo.ml odyl.cmo
-#	env OCAMLPATH="$(LOCALREPO);" ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
-
-#	$(LAUNCH) ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
-
-#all-tests: all $(TESTS)
+all-tests: all $(TESTS)
 
 all: roundtrippers \
 	o2r_test.byte \
