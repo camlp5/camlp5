@@ -9,6 +9,7 @@ BSDIR:=$(shell ocamlfind query camlp5-buildscripts)
 #LAUNCH:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL -OCAMLPATH-pathsep ";" -vv
 #LAUNCH:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL -vv
 #LAUNCH:=env TOP=$(TOP) ../tools/LAUNCH.PL -vv
+LAUNCH:=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH$(EXE) -vv --
 endif
 DIFF=diff -Bwi -u20
 RM=rm
