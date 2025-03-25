@@ -22,7 +22,7 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 export LC_ALL=C
 
 all-tests::
-	$(LAUNCH) ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink link2616.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
+	$(LAUNCH) ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
 
 #all-tests::
 #	env TOP=.. ocamlfind camlp5-buildscripts/LAUNCH.exe -- mkcamlp5 -verbose -verbose -package compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o tools/ROUNDTRIP-pa_r-pr_r_byte
