@@ -24,7 +24,9 @@ export LC_ALL=C
 all-tests:
 	ls -la /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5
 	ls -la ../local-install/lib/camlp5
-	$(LAUNCH) ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
+#	$(LAUNCH) ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
+	env OCAMLPATH="../local-install/lib;" ocamlfind query camlp5
+	env OCAMLPATH="../local-install/lib;" ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
 
 #all-tests: all $(TESTS)
 
