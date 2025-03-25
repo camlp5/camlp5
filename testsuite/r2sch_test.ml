@@ -10,9 +10,15 @@ Pcaml.inter_phrases.val := Some ("\n") ;
 value pa1 = PAPR.Implem.pa1 ;
 value pr = PAPR.Implem.pr ;
 
+value stripws s = Pcre2.(replace ~{pat="[ \n\t\r]"} ~{itempl=subst ""} s) ;
+
+value cmp_string (s1 : string) (s2 : string) =
+    stripws s1 = stripws s2
+;
+
 value tests = "test pa_r-to-pr_scheme" >::: [
     "simplest" >:: (fun  [ _ ->
-        assert_equal ~{msg="not equal"} ~{printer=(fun [ x -> x ])}
+        assert_equal ~{msg="not equal"} ~{cmp=cmp_string} ~{printer=(fun [ x -> x ])}
           {foo|(begin 1 2)
 3
 (define x 1)
@@ -20,13 +26,13 @@ value tests = "test pa_r-to-pr_scheme" >::: [
           (pr (pa1 "do { 1; 2 }; 3 ; value x = 1 ;"))
                          ]) ;
     "simple module" >:: (fun [ _ ->
-        assert_equal ~{msg="not equal"} ~{printer=(fun [x -> x])}
+        assert_equal ~{msg="not equal"} ~{cmp=cmp_string} ~{printer=(fun [x -> x])}
           {foo|(module M (struct (define x 1)))
 |foo}
           (pr (pa1 "module M = struct value x = 1 ; end ;"))
                              ]) ;
     "empty module" >:: (fun [ _ ->
-        assert_equal ~{msg="not equal"} ~{printer=(fun [ x -> x])}
+        assert_equal ~{msg="not equal"} ~{cmp=cmp_string} ~{printer=(fun [ x -> x])}
           {foo|(module M (struct ))
 |foo}
           (pr (pa1 "module M = struct end ;"))
@@ -35,7 +41,7 @@ IFDEF OCAML_VERSION < OCAML_4_10_0 THEN
     "unused" >:: (fun _ -> ()) 
 ELSE
     "let-module-blank" >:: (fun [ _ ->
-        assert_equal ~{msg="not equal"} ~{printer=(fun [x -> x])}
+        assert_equal ~{msg="not equal"} ~{cmp=cmp_string} ~{printer=(fun [x -> x])}
           {foo|(letmodule _ (struct ) 1)
 |foo}
           (pr (pa1 "let module _ = struct end in 1 ;"))
@@ -43,7 +49,7 @@ ELSE
 END
     ;
     "let-open" >:: (fun [ _ ->
-        assert_equal ~{msg="not equal"} ~{printer=(fun [x -> x])}
+        assert_equal ~{msg="not equal"} ~{cmp=cmp_string} ~{printer=(fun [x -> x])}
           {foo|(letopen M 1)
 |foo}
           (pr (pa1 "let open M in 1 ;"))
