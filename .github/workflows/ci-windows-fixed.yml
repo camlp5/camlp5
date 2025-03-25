@@ -83,12 +83,12 @@ jobs:
       - name: Configure Camlp5
         run: |
           ./configure
-	shell: bash
+        shell: bash
 
       - name: build Camlp5
         run: |
           make all world.opt
-	shell: bash
+        shell: bash
 
       - name: List all installed packages
         run: |
@@ -98,7 +98,7 @@ jobs:
       - name: test Camlp5
         run: |
           make -C testsuite clean all-tests
-	shell: bash
+        shell: bash
 
 #      - name: Build Camlp5 (WITH TESTS)
 #        run: opam install -t .
