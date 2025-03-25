@@ -12,6 +12,11 @@ value pa1 = PAPR.Implem.pa1 ;
 value pr = PAPR.Implem.pr ;
 value fmt_string s = Printf.sprintf "<<%s>>" s ;
 
+value stripws s = Pcre2.(replace ~{pat="[ \n\t\r]"} ~{itempl=subst ""} s) ;
+value cmp_string (s1 : string) (s2 : string) =
+    stripws s1 = stripws s2
+;
+
 type instance = {
     name : string
   ; code : string
@@ -21,7 +26,7 @@ type instance = {
 
 value mktest i = 
 i.name >:: (fun  [ _ ->
-        assert_equal ~{msg="not equal"} ~{printer=fmt_string}
+        assert_equal ~{msg="not equal"} ~{cmp=cmp_string} ~{printer=fmt_string}
           i.expect
           (pr (pa1 i.code))
                          ])

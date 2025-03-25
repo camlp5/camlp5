@@ -11,7 +11,6 @@ value pa1 = PAPR.Implem.pa1 ;
 value pr = PAPR.Implem.pr ;
 
 value stripws s = Pcre2.(replace ~{pat="[ \n\t\r]"} ~{itempl=subst ""} s) ;
-
 value cmp_string (s1 : string) (s2 : string) =
     stripws s1 = stripws s2
 ;
