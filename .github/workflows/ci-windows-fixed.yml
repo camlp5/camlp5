@@ -53,6 +53,11 @@ jobs:
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
 
+      - name: Show what /bin/sh
+        run: |
+          ls -l /bin/sh
+          /bin/sh --version
+
       - name: Show what is cached
         run: |
           opam switch

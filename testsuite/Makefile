@@ -22,7 +22,7 @@ TESTS=official2official_test o2r_test o2o_test o2official_test r2r_test r2o_test
 export LC_ALL=C
 
 #LOCALREPO="../local-install/lib"
-LOCALREPO="D:/a/camlp5/camlp5/local-install/lib"
+LOCALREPO=D:/a/camlp5/camlp5/local-install/lib
 
 all-tests:
 	ls -la /cygdrive/d/a/camlp5/camlp5/local-install/lib/camlp5
