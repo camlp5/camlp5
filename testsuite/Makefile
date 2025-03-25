@@ -7,7 +7,7 @@ include $(TOP)/config/Makefile
 ifeq ($(OS),Windows_NT)
 BSDIR:=$(shell ocamlfind query camlp5-buildscripts)
 #LAUNCH:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL -OCAMLPATH-pathsep ";" -vv
-#LAUNCH:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL -vv
+LAUNCHPL:=env TOP=$(TOP) $(BSDIR)/LAUNCH.PL -vv
 #LAUNCH:=env TOP=$(TOP) ../tools/LAUNCH.PL -vv
 LAUNCH:=env TOP=$(TOP) ocamlfind camlp5-buildscripts/LAUNCH$(EXE) -v --
 endif
@@ -24,7 +24,7 @@ export LC_ALL=C
 
 all-tests::
 	ls -la tools/ROUNDTRIP-pa_r-pr_r.opt || true
-	env TOP=.. ocamlfind camlp5-buildscripts/LAUNCH.exe -v -- mkcamlp5.opt -verbose -package compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o tools/ROUNDTRIP-pa_r-pr_r.opt
+	env TOP=.. $(LAUNCHPL) mkcamlp5.opt -verbose -package compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o tools/ROUNDTRIP-pa_r-pr_r.opt
 	ls -la tools/ROUNDTRIP-pa_r-pr_r.opt
 
 
