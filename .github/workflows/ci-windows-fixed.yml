@@ -97,7 +97,8 @@ jobs:
 
       - name: test Camlp5
         run: |
-          opam exec -- make -C testsuite clean all-tests
+          opam exec -- make -C testsuite clean
+          opam exec -- make -C testsuite -k all-tests
         shell: bash
 
 #      - name: Build Camlp5 (WITH TESTS)
