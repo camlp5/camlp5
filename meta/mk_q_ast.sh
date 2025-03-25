@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 IFILE=pa_r.ml
 OFILE=q_ast.ml

@@ -10,7 +10,7 @@ INSTALL_CMI=pr_o.cmi pr_r.cmi
 CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
-SHELL=/bin/sh
+SHELL=/bin/bash
 OTHEROUT=$(CAMLP5N)sch$(EXE)
 COUT=$(OBJS) $(CAMLP5N)o$(EXE) $(OTHEROUT)
 COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)o.opt$(EXE)

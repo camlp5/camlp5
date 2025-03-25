@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # apply.sh,v
 
 ARGS1=

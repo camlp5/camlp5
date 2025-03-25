@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 COMM=${OCAMLN}c
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # mkcamlp5.sh.tpl,v
 
 OLIB=`OCAMLNc -where`

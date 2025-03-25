@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # camlp5_comm.sh,v
 
 ARGS1="-mode $MODE"

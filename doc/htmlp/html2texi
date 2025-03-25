@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # html2texi,v
 
 FILES1="index.html strict.html ptools.html"

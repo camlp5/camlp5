@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # From top:
 # test/check_ocaml_sources.sh
 
