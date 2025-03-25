@@ -23,6 +23,7 @@ export LC_ALL=C
 
 all-tests::
 	$(LAUNCH) ocamlfind ocamlc -verbose -predicates syntax,preprocessor,byte -package camlp5,compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -verbose -linkall -linkpkg -I +dynlink foo.ml -o tools/ROUNDTRIP-pa_r-pr_r.byte odyl.cmo
+	ls -la tools/ROUNDTRIP-pa_r-pr_r.byte
 
 #all-tests::
 #	env TOP=.. ocamlfind camlp5-buildscripts/LAUNCH.exe -- mkcamlp5 -verbose -verbose -package compiler-libs,camlp-streams,rresult,bos,re,pcre2,camlp5.pa_r,camlp5.pr_r,camlp5.extend,camlp5.phony_quotations -o tools/ROUNDTRIP-pa_r-pr_r_byte
