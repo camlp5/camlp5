@@ -1,0 +1,127 @@
+name: CI-WINDOWS-FIXED
+on: [workflow_dispatch]
+
+env:
+  OPAMYES: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        ocaml-compiler: [5.3.0]
+        setup-version: [v3]
+
+    outputs:
+      total_matrix_jobs: ${{ strategy.job-total || 0 }}
+      metric: ${{ steps.collect-metrics.outputs.metric }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Start Build Timer
+        uses: ./.github/actions/ci-utils
+        with:
+          command: start-timer
+
+      - name: Cache Opam dependencies (Unix)
+        id: cache-opam-unix
+        if: runner.os != 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: ~/.opam
+          key: unix-${{ matrix.ocaml-compiler }}-with-test-${{ matrix.setup-version }}-${{ hashFiles('*.opam') }}-cache
+          restore-keys: unix-${{ matrix.ocaml-compiler }}-with-test-${{ matrix.setup-version }}
+
+      - name: Cache Opam dependencies (Windows)
+        id: cache-opam-windows
+        if: runner.os == 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: D:\.opam
+          key: windows-${{ matrix.ocaml-compiler }}-with-test-${{ matrix.setup-version }}-${{ hashFiles('*.opam') }}-cache
+          restore-keys: windows-${{ matrix.ocaml-compiler }}-with-test-${{ matrix.setup-version }}
+
+      - name: Setup Ocaml with v3
+        if: matrix.setup-version == 'v3'
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - name: Show what is cached
+        run: |
+          opam switch
+          opam list
+          opam pin list
+
+      - name: install Perl deps
+        run: |
+          set -x
+          cpan -j tools/Config.pm -T -f -i String::ShellQuote || true
+          cpan -j tools/Config.pm -T -f -i IPC::System::Simple || true
+          cpan -J
+          perl -MString::Shellquote -e 'print "String::ShellQuote installed\n"'
+          perl -MIPC::System::Simple -e 'print "IPC::System::Simple installed\n"'
+        shell: bash
+
+      - name: Pin camlp5 and not-ocamlfind without installing
+        if: matrix.setup-version == 'v3'
+        run: |
+          opam pin add --no-action ocamlfind https://github.com/chetmurthy/ocamlfind.git
+          opam pin add --no-action not-ocamlfind https://github.com/chetmurthy/not-ocamlfind.git
+          opam pin add --no-action camlp5-buildscripts https://github.com/camlp5/camlp5-buildscripts.git
+
+      - name: Install Camlp5 dependencies
+        run: |
+          opam install --deps-only --with-test .
+
+      - name: Configure Camlp5
+        run: |
+          ./configure
+	shell: bash
+
+      - name: build Camlp5
+        run: |
+          make all world.opt
+	shell: bash
+
+      - name: List all installed packages
+        run: |
+          opam list
+        shell: bash
+
+      - name: test Camlp5
+        run: |
+          make -C testsuite clean all-tests
+	shell: bash
+
+#      - name: Build Camlp5 (WITH TESTS)
+#        run: opam install -t .
+
+      - name: Collect Build Metrics
+        id: collect-metrics
+        uses: ./.github/actions/ci-utils
+        with:
+          command: collect-metrics
+          os: ${{ matrix.os }}
+          ocaml-version: ${{ matrix.ocaml-compiler }}
+          cache-hit: ${{ runner.os != 'Windows' && steps.cache-opam-unix.outputs.cache-hit || steps.cache-opam-windows.outputs.cache-hit }}
+
+  build-results:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate Build Summary
+        uses: ./.github/actions/ci-utils
+        with:
+          command: generate-summary
+          total-builds: ${{ needs.build.outputs.total_matrix_jobs }}
