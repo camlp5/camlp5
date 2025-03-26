@@ -43,7 +43,7 @@ let chomp s =
 
 
 let usage_msg =
-  "\nOptions:\n  -I <dir>   Add directory in search path for object files\n\nAll options of ocamlc (and ocamlfind) are also available\n\nFiles:\n  .cmi file  Add visible interface for possible future loading\n  .cmo file  Load this file in core\n  .cma file  Load this file in core\n\n"
+  "\nOptions:\n  -I <dir>   Add directory in search path for object files\n  -verbose   verbosely print command executed, pass along to ocamlfind/ocamlc\n  -random-pid use PID as random number for generated tmpfile\n  -preserve  preserve temp-files\n  -opt       same as invoking \"mkcamlp5.opt\": create opt executable instead of bytecode\n  -n         no-execute, just print command\n\nAll options of ocamlc (and ocamlfind) are also available\n\nFiles:\n  .cmi file  Add visible interface for possible future loading\n  .cmo file  Load this file in core\n  .cma file  Load this file in core\n\n"
 
 let usage () = Fmt.(pf stdout "%s" usage_msg)
 
@@ -58,15 +58,13 @@ let rev_options = ref []
 let rev_predicates = ref ["preprocessor"; "syntax"]
 let rev_packages = ref ["camlp5"]
 let randpid = ref (Unix.getpid ())
+let opt = ref false
 
 let main cmd args =
-  let opt =
+  opt :=
     (let __re__ = Re.Perl.compile_pat ~opts:[] "mkcamlp5.opt$" in
      fun __subj__ -> Re.execp __re__ __subj__)
-      cmd
-  in
-  if opt then L.push rev_predicates "native"
-  else L.push rev_predicates "byte";
+      cmd;
   Stdlib.at_exit
     (fun () ->
        !toremove |>
@@ -86,6 +84,7 @@ let main cmd args =
     | "-verbose" :: l -> verbose := true; parec l
     | "-random-pid" :: pid :: l -> randpid := int_of_string pid; parec l
     | "-preserve" :: l -> preserve := true; parec l
+    | "-opt" :: l -> opt := true; parec l
     | "-n" :: l -> noexecute := true; parec l
     | "-package" :: s :: l ->
         List.iter (L.push rev_packages)
@@ -112,7 +111,7 @@ let main cmd args =
             s
         with
           Some s ->
-            if opt then
+            if !opt then
               failwith
                 Fmt.(str "%s: cannot specify .cmi file for %s" cmd cmd);
             L.push rev_interfaces (String.capitalize_ascii s)
@@ -122,12 +121,14 @@ let main cmd args =
     | [] -> ()
   in
   parec args;
+  if !opt then L.push rev_predicates "native"
+  else L.push rev_predicates "byte";
   let interfaces = List.rev !rev_interfaces in
   let options = List.rev !rev_options in
   let packages = List.rev !rev_packages in
   let predicates = List.rev !rev_predicates in
   let link =
-    if not opt then
+    if not !opt then
       let stringified =
         Fmt.
         (str "%a" (list ~sep:(const string "; ") (quote string)) interfaces)
@@ -147,11 +148,11 @@ let main cmd args =
     else []
   in
   let cmd =
-    ["ocamlfind"] @ [if opt then "ocamlopt" else "ocamlc"] @
+    ["ocamlfind"] @ [if !opt then "ocamlopt" else "ocamlc"] @
     ["-predicates"; join "," predicates] @ ["-package"; join "," packages] @
     (if !verbose then ["-verbose"] else []) @
     ["-linkall"; "-linkpkg"; "-I"; "+dynlink"] @ link @ options @
-    [if opt then "odyl.cmx" else "odyl.cmo"]
+    [if !opt then "odyl.cmx" else "odyl.cmo"]
   in
   if !verbose then
     Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") string) cmd);

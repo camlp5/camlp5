@@ -45,6 +45,11 @@ let chomp s =
 let usage_msg = {|
 Options:
   -I <dir>   Add directory in search path for object files
+  -verbose   verbosely print command executed, pass along to ocamlfind/ocamlc
+  -random-pid use PID as random number for generated tmpfile
+  -preserve  preserve temp-files
+  -opt       same as invoking "mkcamlp5.opt": create opt executable instead of bytecode
+  -n         no-execute, just print command
 
 All options of ocamlc (and ocamlfind) are also available
 
@@ -68,14 +73,10 @@ let rev_options = ref []
 let rev_predicates = ref ["preprocessor"; "syntax"]
 let rev_packages = ref ["camlp5"]
 let randpid = ref (Unix.getpid())
+let opt = ref false
 
 let main cmd args =
-let opt = ([%match {|mkcamlp5.opt$|}/pred] cmd) in
-
-if opt then
-  L.push rev_predicates "native"
-else
-  L.push rev_predicates "byte" ;
+opt := ([%match {|mkcamlp5.opt$|}/pred] cmd) ;
 
 Stdlib.at_exit (fun () ->
     !toremove
@@ -104,6 +105,9 @@ let rec parec = function
   | "-preserve"::l ->
      preserve := true ;
      parec l
+  | "-opt"::l ->
+     opt := true ;
+     parec l
   | "-n"::l ->
      noexecute := true ;
      parec l
@@ -116,7 +120,7 @@ let rec parec = function
   | s::l ->
      (match ([%match {|([^\./]+)\.cmi$|}/strings !1] s) with
        Some s ->
-        if opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" cmd cmd) ;
+        if !opt then failwith Fmt.(str "%s: cannot specify .cmi file for %s" cmd cmd) ;
         L.push rev_interfaces (String.capitalize_ascii s)
        | None ->
           L.push rev_options s) ;
@@ -125,13 +129,18 @@ let rec parec = function
     in
     parec args ;
 
+if !opt then
+  L.push rev_predicates "native"
+else
+  L.push rev_predicates "byte" ;
+
 let interfaces = List.rev !rev_interfaces in
 let options = List.rev !rev_options in
 let packages = List.rev !rev_packages in
 let predicates = List.rev !rev_predicates in
 
 let link =
-if not opt then begin
+if not !opt then begin
     let stringified = Fmt.(str "%a" (list ~sep:(const string "; ") (quote string)) interfaces) in
     let txt = [%pattern {|Dynlink.set_allowed_units [
   ${stringified}
@@ -145,13 +154,13 @@ if not opt then begin
 else [] in
 
 let cmd = ["ocamlfind"]
-	  @[if opt then "ocamlopt" else "ocamlc"]
+	  @[if !opt then "ocamlopt" else "ocamlc"]
 	     @["-predicates"; join"," predicates]
 	    @["-package"; join "," packages]
 	    @(if !verbose then ["-verbose"] else [])
 	    @["-linkall"; "-linkpkg"; "-I" ; "+dynlink"]
 	    @ link @ options
-	    @[if opt then "odyl.cmx" else "odyl.cmo"] in
+	    @[if !opt then "odyl.cmx" else "odyl.cmo"] in
     if !verbose then Fmt.(pf stderr "%a\n%!" (list ~sep:(const string " ") string) cmd) ;
     if not !noexecute then
       match Unix.system (Filename.quote_command (List.hd cmd) (List.tl cmd)) with
