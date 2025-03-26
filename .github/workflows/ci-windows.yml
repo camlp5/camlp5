@@ -1,4 +1,4 @@
-name: CI-WINDOWS-FIXED
+name: CI-WINDOWS
 on: [workflow_dispatch]
 
 env:
