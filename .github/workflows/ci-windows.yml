@@ -98,6 +98,7 @@ jobs:
       - name: test Camlp5
         run: |
           opam exec -- make -C testsuite clean
+	  opam exec -- ls -la local-install/*
           opam exec -- make -C testsuite -k all-tests
         shell: bash
 
