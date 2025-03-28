@@ -72,8 +72,8 @@ jobs:
       - name: Pin some dependencies
         if: matrix.setup-version == 'v3'
         run: |
-          opam pin add --no-action ocamlfind https://github.com/chetmurthy/ocamlfind.git
-          opam pin add --no-action not-ocamlfind https://github.com/chetmurthy/not-ocamlfind.git
+#          opam pin add --no-action ocamlfind https://github.com/chetmurthy/ocamlfind.git
+#          opam pin add --no-action not-ocamlfind https://github.com/chetmurthy/not-ocamlfind.git
           opam pin add --no-action camlp5-buildscripts https://github.com/camlp5/camlp5-buildscripts.git
 
       - name: Install Camlp5 dependencies
