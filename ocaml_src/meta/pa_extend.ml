@@ -445,7 +445,12 @@ module MetaAction =
                   (loc,
                    MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "ExStr")),
                 mloc),
-             mvala mstring_escaped s)
+             MLast.ExApp
+               (loc,
+                MLast.ExLong
+                  (loc,
+                   MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal")),
+                MLast.ExTup (loc, [mloc; mvala mstring_escaped s])))
       | MLast.ExTry (loc, e, pwel) ->
           MLast.ExApp
             (loc,

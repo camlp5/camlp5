@@ -1,3 +1,13 @@
+Camlp5 Version 8.03.04:
+-----------------------
+
+* [03 Apr 2025] More Windows fixes (b/c the last release didn't fix everything)
+
+  - add Github CI workflows
+  - sh -> bash in scripts everywhere (to make it work with Windows)
+  - fix META file generation (fix cygwin pathnames)
+  - add "-opt" arg to mkcamlp5, so you don't need to use "mkcamlp5.opt" on Windows (another Windows bug)
+
 Camlp5 Version 8.03.03:
 --------------------
 
