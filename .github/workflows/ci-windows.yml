@@ -103,11 +103,13 @@ jobs:
       - name: Build Camlp5 (WITH TESTS)
         run: opam install -t .
 
-      - name: Build Camlp5 (WITH TESTS)
+      - name: Install Camlp5 (WITH TESTS)
+        if: always()
         run: opam install --verbose -t .
 
       - name: Show META
-        run: bash -c "cat `ocamlfind query camlp5`/META"
+        if: always()
+        run: opam exec -- bash -c "cat `ocamlfind query camlp5`/META"
 
       - name: Collect Build Metrics
         id: collect-metrics
