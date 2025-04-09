@@ -97,6 +97,7 @@ jobs:
         run: |
           opam exec -- make -C testsuite clean
           opam exec -- ls -la local-install/*
+          opam exec -- cat local-install/lib/camlp5/META
           opam exec -- make -C testsuite -k all-tests
         shell: bash
 
@@ -106,7 +107,7 @@ jobs:
 
       - name: Show META
         if: always()
-        run: cat "D:\a\camlp5\camlp5\_opam\lib/camlp5/META"
+        run: cat "D:\a\camlp5\camlp5\_opam\lib\camlp5\META"
 
       - name: Collect Build Metrics
         id: collect-metrics
