@@ -9,11 +9,16 @@ our $camlp5dir;
 
 if ($^O eq 'MSWin32' || $^O eq 'cygwin') {
   $libdir =~ s,^/cygdrive/([a-z]),$1:, ;
+
+}
+
+if ($libdir =~ m,\\,) {
   $camlp5dir = "$libdir\\$camlp5n" ;
 }
 else {
   $camlp5dir = "$libdir/$camlp5n" ;
 }
+
 our $requires = "compiler-libs.common,pcre2";
 
 if ($ENV{OVERSION} < "4.14") {
