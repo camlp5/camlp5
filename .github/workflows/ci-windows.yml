@@ -106,7 +106,7 @@ jobs:
 
       - name: Show META
         if: always()
-        run: opam exec -- bash -c "cat `ocamlfind query camlp5`/META"
+        run: cat "D:\a\camlp5\camlp5\_opam\lib/camlp5/META"
 
       - name: Collect Build Metrics
         id: collect-metrics
