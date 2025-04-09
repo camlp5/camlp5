@@ -100,9 +100,6 @@ jobs:
           opam exec -- make -C testsuite -k all-tests
         shell: bash
 
-      - name: Build Camlp5 (WITH TESTS)
-        run: opam install -t .
-
       - name: Install Camlp5 (WITH TESTS)
         if: always()
         run: opam install --verbose -t .
