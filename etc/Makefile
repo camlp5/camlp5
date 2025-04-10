@@ -56,8 +56,8 @@ papr_phony_macro.cmo papr_phony_macro.cmx: papr_phony_macro.ml
 pr_official.cmo pr_official.cmx: pr_official.ml
 	$(MAKE) $(NO_PR_DIR) -f Makefile.withnew $@
 
-META:: META.tpl
-	OVERSION=$(OVERSION) VERSION=$(VERSION) LIBDIR="$(LIBDIR)" CAMLP5N="$(CAMLP5N)" ./META.pl > META
+META:: META.pl
+	OVERSION=$(OVERSION) VERSION=$(VERSION) CAMLP5N="$(CAMLP5N)" ./META.pl > META
 
 $(CAMLP5N)o$(EXE): ../main/$(CAMLP5N)$(EXE) $(CAMLP5OM)
 	$(RM) -f $@
@@ -108,7 +108,7 @@ install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)" "$(DESTDIR)$(BINDIR)"
 	$(RM) -f "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/pa_lex.cmo"
 	cp $(OBJS) $(INSTALL_CMI) "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
-	OVERSION=$(OVERSION) VERSION=$(VERSION) LIBDIR="$(LIBDIR)" CAMLP5N="$(CAMLP5N)" ./META.pl > META
+	OVERSION=$(OVERSION) VERSION=$(VERSION) CAMLP5N="$(CAMLP5N)" ./META.pl > META
 	cp META "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(CAMLP5N)/."
 	cp $(CAMLP5N)o$(EXE) $(CAMLP5N)sch$(EXE) "$(DESTDIR)$(BINDIR)/."

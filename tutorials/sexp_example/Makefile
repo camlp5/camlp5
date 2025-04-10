@@ -37,7 +37,7 @@ META: META.pl
 
 install::
 	mkdir -p $(DESTDIR)/lib
-	./META.pl $(DESTDIR)/lib > META
+	./META.pl > META
 	$(NOT_OCAMLFIND) reinstall-if-diff sexp_example -destdir $(DESTDIR)/lib META $(CMO) $(CMX) $(MLI:.mli=.cmi) $(KITS:.cmo=.o) $(CMI) $(wildcard *.cmt*)
 	$(RM) -f META
 

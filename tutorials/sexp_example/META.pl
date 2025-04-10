@@ -9,7 +9,6 @@ print <<"EOF";
 description = "sexp example parsing & quotation support"
 
 package "runtime" (
-  directory = "$destdir/sexp_example"
   archive(toploop) = "sexp.cmo"
 )
 
