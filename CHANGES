@@ -5,7 +5,7 @@ Camlp5 Version 8.03.04:
 
   - add Github CI workflows
   - sh -> bash in scripts everywhere (to make it work with Windows)
-  - fix META file generation (fix cygwin pathnames)
+  - fix META file generation (REMOVE "directory" entry)
   - add "-opt" arg to mkcamlp5, so you don't need to use "mkcamlp5.opt" on Windows (another Windows bug)
 
 Camlp5 Version 8.03.03:
