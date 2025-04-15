@@ -32,7 +32,7 @@ depends: [
   "ocamlfind"
   "camlp-streams" { >= "5.0" }
   "conf-perl"
-  "conf-bash" { with-test }
+  "conf-bash"
   "camlp5-buildscripts" { >= "0.06" }
   "conf-diffutils" { with-test & (os-distribution = "alpine" | os-distribution = "freebsd") }
   "re" { >= "1.11.0" }
