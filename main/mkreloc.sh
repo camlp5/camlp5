@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # mkreloc.sh,v
 
 IFILE=pa_r.ml

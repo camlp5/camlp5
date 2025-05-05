@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash -x
 
 opam clean -y -s
 opam install -y --deps-only -t --working-dir .

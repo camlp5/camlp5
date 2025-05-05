@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # depend.sh,v
 
 ARGS1="pr_depend.cmo --"

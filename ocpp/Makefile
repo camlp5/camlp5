@@ -2,7 +2,7 @@
 
 include ../config/Makefile
 
-SHELL=/bin/bash
+SHELL=bash
 
 INCLUDES=-I ../main -I ../boot -I ../odyl -I ../lib
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)

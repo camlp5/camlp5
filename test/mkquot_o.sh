@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # mkquot_o.sh,v
 
 head -n2 quot_o.ml

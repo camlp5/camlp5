@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # htmlp2html,v
 
 FILE=$1

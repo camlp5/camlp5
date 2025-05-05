@@ -8,7 +8,7 @@ OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) -I $(OTOPU)
 OBJS=q_MLast.cmo q_ast_base.cmo q_ast.cmo pa_r.cmo pa_rp.cmo pa_macro.cmo pa_macro_gram.cmo pa_fstream.cmo pa_extend.cmo pa_extend_m.cmo pr_dump.cmo pa_lexer.cmo
 CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
-SHELL=/bin/bash
+SHELL=bash
 COUT=$(OBJS) $(CAMLP5N)r$(EXE)
 COPT=$(OBJS:.cmo=.cmx) $(CAMLP5N)r.opt$(EXE)
 

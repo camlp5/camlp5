@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # mktrans.sh,v
 
 top=../..

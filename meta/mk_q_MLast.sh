@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 IFILE=pa_r.ml
 OFILE=q_MLast.ml

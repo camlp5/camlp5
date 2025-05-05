@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/usr/bin/env bash -x
 
 /usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/lexer-passthru.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11
 /usr/bin/time tools/TEST-PASSES --quiet --profile-file profiles/lexer-pa-pr.yaml --packages-file packages/camlp5.yaml run-full camlp5.7.11

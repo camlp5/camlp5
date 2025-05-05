@@ -3,7 +3,7 @@
 TOP=../..
 include $(TOP)/config/Makefile
 
-SHELL=/bin/bash
+SHELL=bash
 
 INCLUDES=-I +dynlink
 OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES)

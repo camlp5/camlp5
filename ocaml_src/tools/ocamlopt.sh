@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 
 COMM=${OCAMLN}opt
 if [ "$OVERSION" "<" "4.14" ]; then

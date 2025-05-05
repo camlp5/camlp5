@@ -1,6 +1,6 @@
 
 DIFF=diff
-BASH=/bin/bash
+BASH=bash
 
 ifdef OPAMROOT
 

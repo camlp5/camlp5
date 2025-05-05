@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DIR=`expr "$0" : "\(.*\)/.*" "|" "."`
 INCL=

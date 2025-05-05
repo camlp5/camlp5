@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 # check_ocaml_versions.sh,v
 
 TOP=$HOME/work
