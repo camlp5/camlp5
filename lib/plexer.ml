@@ -334,6 +334,10 @@ value parse_antiquot s =
   with [ Not_found | Failure _ -> None ]
 ;
 
+value int_of_string_result s =
+  try Some(int_of_string s) with [ Failure _ -> None ]
+;
+
 value parse_antiloc s =
   try
     let i = String.index s ':' in
@@ -472,6 +476,35 @@ and linedir_quote n s =
   [ Some (' ' | '\t') -> linedir_quote (n + 1) s
   | Some '"' -> True
   | _ -> False ]
+;
+
+value linedir_result n s =
+  let rec linedir n s =
+    match stream_peek_nth n s with
+      [ Some (' ' | '\t') -> linedir (n + 1) s
+      | Some ('0'..'9' as c) -> linedir_digits [c] (n + 1) s
+      | _ -> None ]
+  and linedir_digits acc n s =
+    match stream_peek_nth n s with
+      [ Some ('0'..'9' as c) -> linedir_digits [c::acc] (n + 1) s
+      | _ ->
+         match int_of_string_result (rev_implode acc) with [
+             Some lnum -> linedir_quote lnum n s
+           | None -> None
+           ]
+      ]
+  and linedir_quote lnum n s =
+    match stream_peek_nth n s with
+      [ Some (' ' | '\t') -> linedir_quote lnum (n + 1) s
+      | Some '"' -> linedir_qs lnum [] (n+1) s
+      | _ -> None ]
+  and linedir_qs lnum acc n s =
+    match stream_peek_nth n s with
+      [ Some '"' -> Some(lnum, rev_implode acc)
+      | Some '\n' -> None
+      | Some c -> linedir_qs lnum [c::acc] (n+1) s
+      | _ -> None ]
+  in linedir n s
 ;
 
 value rec any_to_nl =
@@ -776,17 +809,20 @@ value rec next_token ctx buf =
     }
   | [: `'#' when bp = Plexing.bol_pos.val.val; s :] ->
       let comm = get_comment buf () in
-      if linedir 1 s then do {
-        let buf = any_to_nl ($add '#') s in
-        incr Plexing.line_nb.val;
-        Plexing.bol_pos.val.val := Stream.count s;
-        ctx.set_line_nb ();
-        ctx.after_space := True;
-        next_token ctx buf s
-      }
-      else
-        let loc = ctx.make_lined_loc (bp, bp + 1) comm in
-        (keyword_or_error ctx (bp, bp + 1) "#", loc)
+      match linedir_result 1 s with [
+          Some (linenum, fname) -> do {
+            let buf = any_to_nl ($add '#') s in
+            Plexing.line_nb.val.val := linenum ;
+            Plexing.input_file.val := fname ;
+            Plexing.bol_pos.val.val := Stream.count s;
+            ctx.set_line_nb ();
+            ctx.after_space := True;
+            next_token ctx buf s
+          }
+        | None ->
+           let loc = ctx.make_lined_loc (bp, bp + 1) comm in
+           (keyword_or_error ctx (bp, bp + 1) "#", loc)
+        ]
   | [: `'(';
        a =
          parser
