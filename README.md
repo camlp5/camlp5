@@ -8,7 +8,7 @@ and jocaml 3.12.0 to 3.12.1, but this version cuts off support at
 4.05.0.  Camlp5 is heavily tested with OCaml versions from 4.10.0
 forward, with an extensive and ever-growing testsuite.
 
-This Camlp5 version is 8.03.04.  NOTE WELL that this is an **new**
+This Camlp5 version is 8.03.05.  NOTE WELL that this is an **new**
 release (very different from the 7.xx releases), and as such, may
 break your code.  If it does, please do reach out to me, and I'll be
 happy to help upgrade it.  I'm still working on the documentation, but
