@@ -501,7 +501,7 @@ value linedir_result n s =
   and linedir_qs lnum acc n s =
     match stream_peek_nth n s with
       [ Some '"' -> Some(lnum, rev_implode acc)
-      | Some '\n' -> None
+      | Some ('\n' | '\r') -> None
       | Some c -> linedir_qs lnum [c::acc] (n+1) s
       | _ -> None ]
   in linedir n s
