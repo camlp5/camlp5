@@ -1,0 +1,10 @@
+```sh
+$ env -u TOP ocamlfind camlp5-buildscripts/LAUNCH echo foo
+Failure("LAUNCH: environment variable TOP *must* be set to use this wrapper")
+[1]
+```
+
+```sh
+$ ocamlfind camlp5-buildscripts/LAUNCH echo foo
+foo
+```

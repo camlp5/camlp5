@@ -1,0 +1,60 @@
+```sh
+$ rm -f fixtures/official.cm*
+$ ocamlfind camlp5-buildscripts/LAUNCH -- ocamlc -c -dparsetree  fixtures/official.ml 2>&1 | ./pull-filenames | uniq
+fixtures/official.ml
+$ ls fixtures/official.*
+fixtures/official.cmi
+fixtures/official.cmo
+fixtures/official.ml
+```
+
+```sh
+$ rm -f fixtures/official_linedir1.cm*
+$ ocamlfind camlp5-buildscripts/LAUNCH -- ocamlc -c -dparsetree  fixtures/official_linedir1.ml 2>&1 | ./pull-filenames | uniq
+fixtures/q.ml
+$ ls fixtures/official_linedir1.*
+fixtures/official_linedir1.cmi
+fixtures/official_linedir1.cmo
+fixtures/official_linedir1.ml
+```
+
+```sh
+$ rm -f fixtures/revised.cm*
+$ ocamlfind camlp5-buildscripts/LAUNCH -- ocamlfind ocamlc -package camlp5 -syntax camlp5r -c -dparsetree fixtures/revised.ml 2>&1 | ./pull-filenames | uniq
+fixtures/revised.ml
+$ ls fixtures/revised.*
+fixtures/revised.cmi
+fixtures/revised.cmo
+fixtures/revised.ml
+```
+
+```sh
+$ rm -f fixtures/official.cm*
+$ ocamlfind camlp5-buildscripts/LAUNCH -- ocamlfind ocamlc -package camlp5 -syntax camlp5o -c -dparsetree  fixtures/official.ml 2>&1 | ./pull-filenames | uniq
+fixtures/official.ml
+$ ls fixtures/official.*
+fixtures/official.cmi
+fixtures/official.cmo
+fixtures/official.ml
+```
+
+```sh
+$ rm -f fixtures/revised_linedir1.cm*
+$ ocamlfind camlp5-buildscripts/LAUNCH -- ocamlfind ocamlc -package camlp5 -syntax camlp5r -c -dparsetree  fixtures/revised_linedir1.ml 2>&1 | ./pull-filenames | uniq
+fixtures/q.ml
+$ ls fixtures/revised_linedir1.*
+fixtures/revised_linedir1.cmi
+fixtures/revised_linedir1.cmo
+fixtures/revised_linedir1.ml
+```
+
+```sh
+$ rm -f fixtures/revised_linedir2.cm*
+$ ocamlfind camlp5-buildscripts/LAUNCH -- ocamlfind ocamlc -package camlp5 -syntax camlp5r -c -dparsetree  fixtures/revised_linedir2.ml 2>&1 | ./pull-filenames | uniq
+fixtures/q.ml
+fixtures/r.ml
+$ ls fixtures/revised_linedir2.*
+fixtures/revised_linedir2.cmi
+fixtures/revised_linedir2.cmo
+fixtures/revised_linedir2.ml
+```

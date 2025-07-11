@@ -41,6 +41,7 @@ depends: [
   "rresult"
   "bos"
   "fmt"
+  "mdx" {>= "2.3.0" & with-test}
 ]
 build: [
   ["./configure" "--prefix" prefix "-libdir" lib "-mandir" man "-oversion" ocaml:version]

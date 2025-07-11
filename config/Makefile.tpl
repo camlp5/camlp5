@@ -35,7 +35,10 @@ COMPWITH=old
 
 .PRECIOUS: %.asciidoc.corrected
 
-%.asciidoc.TEST: %.asciidoc
-	rm -f $<.corrected
-	$(LAUNCH) ocaml-mdx test -o $<.corrected $<
-	diff -Bwiu $<.corrected $< 
+%.asciidoc.corrected: %.asciidoc
+	$(LAUNCH) ocaml-mdx test -o $@ $<
+
+%.asciidoc.TEST: %.asciidoc.corrected %.asciidoc
+	perl -p -i -e 's,.*: added to search path.*,,' $<
+	perl -p -i -e 's,.*: loaded.*,,' $<
+	diff -Bwiu $^
