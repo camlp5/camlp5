@@ -1,0 +1,7 @@
+#!/usr/bin/perl
+
+use strict ;
+
+while($_ = <>) {
+  print "$1\n" if ($_ =~ m,(fixtures/[a-zA-Z0-9_]+.ml),) ;
+}
