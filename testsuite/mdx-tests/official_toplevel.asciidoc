@@ -49,5 +49,12 @@ Error: Syntax error
 ```
 
 ```sh
-$ ocaml fixtures/official_toplevel_linedir3.ml
+$ ocaml fixtures/official_toplevel_linedir1use.ml
+File "fixtures/q.ml", line 10, characters 6-7:
+Error: Syntax error
+[125]
+```
+
+```sh
+$ ocaml fixtures/official_toplevel_linedir2use.ml
 ```
