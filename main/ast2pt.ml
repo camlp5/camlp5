@@ -36,7 +36,11 @@ value mkloc loc =
   let bolp = Ploc.bol_pos loc in
   let lnuml = Ploc.line_nb_last loc in
   let bolpl = Ploc.bol_pos_last loc in
-  ocaml_location (glob_fname.val, lnum, bolp, lnuml, bolpl, bp, ep)
+(*
+  let fname = glob_fname.val in
+ *)
+  let fname = Ploc.file_name loc in
+  ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep)
 ;
 
 value mktyp ?{alg_attributes=[]} loc d = ocaml_mktyp ~{alg_attributes=alg_attributes} (mkloc loc) d;
@@ -999,9 +1003,9 @@ and expr =
       | _ → error loc "bad left part of assignment"
       ]
   | ExAsr loc <:expr< False >> →
-      mkexp loc (ocaml_pexp_assertfalse glob_fname.val (mkloc loc))
+      mkexp loc (ocaml_pexp_assertfalse "-" (mkloc loc))
   | ExAsr loc e →
-      mkexp loc (ocaml_pexp_assert glob_fname.val (mkloc loc) (expr e))
+      mkexp loc (ocaml_pexp_assert "-" (mkloc loc) (expr e))
   | ExBae loc dotop e1 el →
       match (uv dotop, uv el) with [
         (".", el) -> expr (bigarray_get loc e1 el)

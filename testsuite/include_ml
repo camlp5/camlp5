@@ -54,8 +54,12 @@ let pp_plexing_lexbuf b = Fmt.(pf stdout "<<%s>>" (Plexing.Lexbuf.get b)) ;;
 #load "r2r_test.cmo" ;;
 *)
 
-let pp_loc (loc : Location.t) = Format.print_string "<loc>" ;;
-#install_printer pp_loc ;;
+let pp_ploc_t pps (loc : Ploc.t) = Fmt.(pf pps "<%s>" (Ploc.string_of_location loc)) ;;
+#install_printer pp_ploc_t ;;
+let pp_location_t pps (loc : Location.t) = Fmt.(pf pps "<loc>") ;;
+(*
+#install_printer pp_location_t ;;
+ *)
 
 let pp_char_stream strm =
   let l = Stream.npeek !Toploop.max_printer_depth strm in
@@ -103,13 +107,13 @@ let pp_ctyp ty = Fmt.(pf stdout "#<ctyp< %a >>" Pa_ppx_base.Pp_MLast.pp_ctyp ty)
 let pp_expr ty = Fmt.(pf stdout "#<expr< %a >>" Pa_ppx_base.Pp_MLast.pp_expr ty);;
 let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty);;
 *)
-
+(*
 #install_printer pp_ctyp ;;
 #install_printer pp_expr ;;
 #install_printer pp_patt ;;
 #install_printer pp_str_item ;;
 #install_printer pp_sig_item ;;
-
+ *)
 print_string "================ START ================\n";; flush stdout ;;
 
 (*

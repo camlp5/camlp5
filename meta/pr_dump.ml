@@ -30,10 +30,14 @@ value interf (ast, eoi_loc) = do {
   | None -> () ]
 };
 
-value implem (ast, eoi_loc) = do {
+value implem2pt (ast, eoi_loc) =
   let loc = first_loc_of_ast ast in
   let fname = Ploc.file_name loc in
-  let pt = Ast2pt.implem fname (List.map fst ast) in
+  (fname, Ast2pt.implem fname (List.map fst ast))
+;
+
+value implem (ast, eoi_loc) = do {
+  let (fname, pt) = implem2pt (ast, eoi_loc) in
   let oc = open_out_file () in
   output_string oc Pconfig.ast_impl_magic_number;
   output_value oc (if fname = "-" then "" else fname);
