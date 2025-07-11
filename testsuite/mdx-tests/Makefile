@@ -1,7 +1,7 @@
 export TOP=../..
 include $(TOP)/config/Makefile
 
-TESTS=ocamlc.asciidoc.TEST ocamlc.asciidoc.TEST
+TESTS=simplest.asciidoc.TEST ocamlc.asciidoc.TEST official_toplevel.asciidoc.TEST
 
 all: $(TESTS)
 
@@ -11,3 +11,4 @@ clean:
 realclean: clean
 
 ocamlc.asciidoc.corrected: $(shell ls fixtures/*.ml)
+official_toplevel.asciidoc.corrected: $(shell ls fixtures/*.ml)
