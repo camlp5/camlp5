@@ -57,4 +57,11 @@ Error: Syntax error
 
 ```sh
 $ ocaml fixtures/official_toplevel_linedir2use.ml
+Additional Camlp5 directives:
+  #camlp5o;;                to load camlp5 (standard syntax)
+  #camlp5r;;                to load camlp5 (revised syntax)
+
+File "fixtures/q.ml", line 10, characters 4-5:
+Failure: this is not a constructor, it cannot be applied in a pattern
+[125]
 ```

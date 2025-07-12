@@ -25,6 +25,7 @@ module Asttypes = struct
 [%%import: Asttypes.virtual_flag] [@@deriving show]
 [%%import: Asttypes.override_flag] [@@deriving show]
 [%%import: Asttypes.variance] [@@deriving show]
+[%%import: Asttypes.injectivity] [@@deriving show]
 end
 [%%import: Parsetree.constant] [@@deriving show]
 [%%import: Parsetree.location_stack] [@@deriving show]

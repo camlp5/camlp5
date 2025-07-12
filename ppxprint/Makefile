@@ -16,7 +16,7 @@ OCAMLCFLAGS=$(DEBUG) $(WARNERR) $(INCLUDES) $(FMTINCLUDES)
 NOT_OCAMLFIND=not-ocamlfind
 PREPROCESS_PACKAGES := unix,compiler-libs.common,camlp5.quotations,camlp5.extfun,rresult,fmt
 
-CMO=ppxprint_runtime.cmo exceptions.cmo pp_MLast.cmo pp_parsetree.cmo pp_outcometree.cmo
+CMO=ppxprint_runtime.cmo exceptions.cmo pp_MLast.cmo pp_parsetree.cmo pp_outcometree.cmo pp_setup.cmo
 CMI=$(CMO:.cmo=.cmi)
 CMX=$(CMO:.cmo=.cmx)
 OBJ=$(CMO)

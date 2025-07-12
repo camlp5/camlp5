@@ -54,9 +54,7 @@ value print_location lb loc =
   else
     do {
       Format.fprintf Format.err_formatter "%s%!"
-        (Pcaml.string_of_loc Toploop.input_name.val (Ploc.line_nb loc)
-	   (Ploc.first_pos loc - Ploc.bol_pos loc)
-	   (Ploc.last_pos loc - Ploc.bol_pos loc));
+      (Ploc.string_of_location loc)
     }
 ;
 
@@ -178,12 +176,11 @@ value wrapped_toplevel_phrase lb =
   wrap toplevel_phrase (fun _ -> 0) lb
 ;
 
-Toploop.parse_use_file.val :=
-  wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
+value wrapped_use_file lb =
+  wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos) lb
 ;
 
-Pcaml.warning.val :=
-  fun loc txt ->
-      Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
-        (Warnings.Preprocessor txt)
+value wrapped_print_warning loc txt =
+  Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
+    (Warnings.Preprocessor txt)
 ;

@@ -5,7 +5,7 @@ use File::Spec ;
 our $version = $ENV{VERSION} ;
 our $camlp5n = $ENV{CAMLP5N} ;
 
-our $requires = "compiler-libs.common,pcre2";
+our $requires = "compiler-libs.common,pcre2,fmt";
 our $streams_requires ;
 
 if ($ENV{OVERSION} < "4.14") {

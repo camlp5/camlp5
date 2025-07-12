@@ -1780,8 +1780,8 @@ EXTEND_PRINTER
       [ z ->
           let fail () = 
           Ploc.raise (MLast.loc_of_patt z)
-            (Failure (sprintf "pr_patt %d: %s" (Obj.tag (Obj.repr z))
-                        (Pp_MLast.show_patt z))) in
+            (Failure (Format.asprintf "pr_patt %d: %a" (Obj.tag (Obj.repr z))
+                        Pp_MLast.pp_patt z)) in
           pprintf pc "@[<1>(%p)@]" (bottom ~{fail=fail}) z
       ] ]
   ;

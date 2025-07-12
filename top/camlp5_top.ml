@@ -12,12 +12,6 @@ open Camlp5_top_funs;
 
 Toploop.parse_toplevel_phrase.val := wrapped_toplevel_phrase ;
 
-Toploop.parse_use_file.val :=
-  wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
-;
+Toploop.parse_use_file.val := wrapped_use_file ;
 
-Pcaml.warning.val :=
-  fun loc txt ->
-      Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
-        (Warnings.Preprocessor txt)
-;
+Pcaml.warning.val := wrapped_print_warning ;

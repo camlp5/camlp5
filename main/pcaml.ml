@@ -477,7 +477,8 @@ value undef x = ref (fun _ -> failwith x);
 value print_interf = undef "no printer";
 value print_implem = undef "no printer";
 
-value pr_expr = Eprinter.make ~{fail=Pp_debug.Pp_MLast.show_expr} "expr";
+value show_expr e = Format.asprintf "%a" Pp_debug.Pp_MLast.pp_expr e ;
+value pr_expr = Eprinter.make ~{fail=show_expr} "expr";
 value pr_patt = Eprinter.make "patt";
 value pr_ctyp = Eprinter.make "type";
 value pr_str_item = Eprinter.make "str_item";

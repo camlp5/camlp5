@@ -8,6 +8,8 @@ include (module type of Ploc with type t = Ploc.t)
 
 val pp : Format.formatter -> t -> unit
 type 'a vala = [%import: 'a Ploc.vala] [@@deriving show]
+val pp_loc_verbose : bool ref
+
 end
 
 type loc = [%import: MLast.loc] [@@deriving show]

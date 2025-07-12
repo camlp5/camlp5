@@ -1918,8 +1918,8 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p)@]" patt z
       | z ->
           Ploc.raise (MLast.loc_of_patt z)
-            (Failure (sprintf "pr_patt %d: %s" (Obj.tag (Obj.repr z))
-                     (Pp_MLast.show_patt z))) ] ]
+            (Failure (Format.asprintf "pr_patt %d: %a" (Obj.tag (Obj.repr z))
+                        Pp_MLast.pp_patt z)) ] ]
   ;
   pr_ctyp:
     [ "top"

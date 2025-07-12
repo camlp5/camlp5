@@ -3,80 +3,129 @@
 
 module Pp_MLast = struct
 
-value ref_show_loc = ref (fun (_ : MLast.loc) -> "<>") ;
-value ref_show_type_var = ref (fun (_ : MLast.type_var) -> "<type_var>") ;
-value ref_show_longid = ref (fun (_ : MLast.longid) -> "<longid>") ;
-value ref_show_ctyp = ref (fun (_ : MLast.ctyp) -> "<ctyp>") ;
-value ref_show_poly_variant = ref (fun (_ : MLast.poly_variant) -> "<poly_variant>") ;
-value ref_show_patt = ref (fun (_ : MLast.patt) -> "<patt>") ;
-value ref_show_expr = ref (fun (_ : MLast.expr) -> "<expr>") ;
-value ref_show_case_branch = ref (fun (_ : MLast.case_branch) -> "<case_branch>") ;
-value ref_show_module_type = ref (fun (_ : MLast.module_type) -> "<module_type>") ;
-value ref_show_functor_parameter = ref (fun (_ : MLast.functor_parameter) -> "<functor_parameter>") ;
-value ref_show_sig_item = ref (fun (_ : MLast.sig_item) -> "<sig_item>") ;
-value ref_show_with_constr = ref (fun (_ : MLast.with_constr) -> "<with_constr>") ;
-value ref_show_module_expr = ref (fun (_ : MLast.module_expr) -> "<module_expr>") ;
-value ref_show_str_item = ref (fun (_ : MLast.str_item) -> "<str_item>") ;
-value ref_show_type_decl = ref (fun (_ : MLast.type_decl) -> "<type_decl>") ;
-value ref_show_generic_constructor = ref (fun (_ : MLast.generic_constructor) -> "<generic_constructor>") ;
-value ref_show_extension_constructor = ref (fun (_ : MLast.extension_constructor) -> "<extension_constructor>") ;
-value ref_show_type_extension = ref (fun (_ : MLast.type_extension) -> "<type_extension>") ;
-value ref_show_class_type = ref (fun (_ : MLast.class_type) -> "<class_type>") ;
-value ref_show_class_sig_item = ref (fun (_ : MLast.class_sig_item) -> "<class_sig_item>") ;
-value ref_show_class_expr = ref (fun (_ : MLast.class_expr) -> "<class_expr>") ;
-value ref_show_class_str_item = ref (fun (_ : MLast.class_str_item) -> "<class_str_item>") ;
-value ref_show_longid_lident = ref (fun (_ : MLast.longid_lident) -> "<longid_lident>") ;
-value ref_show_payload = ref (fun (_ : MLast.payload) -> "<payload>") ;
-value ref_show_attribute_body = ref (fun (_ : MLast.attribute_body) -> "<attribute_body>") ;
-value ref_show_attribute = ref (fun (_ : MLast.attribute) -> "<attribute>") ;
-value ref_show_attributes_no_anti = ref (fun (_ : MLast.attributes_no_anti) -> "<attributes_no_anti>") ;
-value ref_show_attributes = ref (fun (_ : MLast.attributes) -> "<attributes>") ;
+value ref_pp_str_item = ref (fun pps (x : MLast.str_item) ->
+    Format.fprintf pps "<unrecognized str_item>") ;
 
-value show_longid x = ref_show_longid.val x;
-value show_longid_lident x = ref_show_longid_lident.val x;
-value show_ctyp x = ref_show_ctyp.val x;
-value show_expr x = ref_show_expr.val x;
-value show_patt x = ref_show_patt.val x;
-value show_loc x = ref_show_loc.val x ;
-value show_type_var x = ref_show_type_var.val x ;
-value show_longid x = ref_show_longid.val x ;
-value show_ctyp x = ref_show_ctyp.val x ;
-value show_poly_variant x = ref_show_poly_variant.val x ;
-value show_patt x = ref_show_patt.val x ;
-value show_expr x = ref_show_expr.val x ;
-value show_case_branch x = ref_show_case_branch.val x ;
-value show_module_type x = ref_show_module_type.val x ;
-value show_functor_parameter x = ref_show_functor_parameter.val x ;
-value show_sig_item x = ref_show_sig_item.val x ;
-value show_with_constr x = ref_show_with_constr.val x ;
-value show_module_expr x = ref_show_module_expr.val x ;
-value show_str_item x = ref_show_str_item.val x ;
-value show_type_decl x = ref_show_type_decl.val x ;
-value show_generic_constructor x = ref_show_generic_constructor.val x ;
-value show_extension_constructor x = ref_show_extension_constructor.val x ;
-value show_type_extension x = ref_show_type_extension.val x ;
-value show_class_type x = ref_show_class_type.val x ;
-value show_class_sig_item x = ref_show_class_sig_item.val x ;
-value show_class_expr x = ref_show_class_expr.val x ;
-value show_class_str_item x = ref_show_class_str_item.val x ;
-value show_longid_lident x = ref_show_longid_lident.val x ;
-value show_payload x = ref_show_payload.val x ;
-value show_attribute_body x = ref_show_attribute_body.val x ;
-value show_attribute x = ref_show_attribute.val x ;
-value show_attributes_no_anti x = ref_show_attributes_no_anti.val x ;
-value show_attributes x = ref_show_attributes.val x ;
+value ref_pp_loc = ref (fun pps (x : MLast.loc) ->
+    Format.fprintf pps "<unrecognized loc>") ;
+
+value ref_pp_type_var = ref (fun pps (x : MLast.type_var) ->
+    Format.fprintf pps "<unrecognized type_var>") ;
+
+value ref_pp_longid = ref (fun pps (x : MLast.longid) ->
+    Format.fprintf pps "<unrecognized longid>") ;
+
+value ref_pp_ctyp = ref (fun pps (x : MLast.ctyp) ->
+    Format.fprintf pps "<unrecognized ctyp>") ;
+
+value ref_pp_poly_variant = ref (fun pps (x : MLast.poly_variant) ->
+    Format.fprintf pps "<unrecognized poly_variant>") ;
+
+value ref_pp_patt = ref (fun pps (x : MLast.patt) ->
+    Format.fprintf pps "<unrecognized patt>") ;
+
+value ref_pp_expr = ref (fun pps (x : MLast.expr) ->
+    Format.fprintf pps "<unrecognized expr>") ;
+
+value ref_pp_case_branch = ref (fun pps (x : MLast.case_branch) ->
+    Format.fprintf pps "<unrecognized case_branch>") ;
+
+value ref_pp_module_type = ref (fun pps (x : MLast.module_type) ->
+    Format.fprintf pps "<unrecognized module_type>") ;
+
+value ref_pp_functor_parameter = ref (fun pps (x : MLast.functor_parameter) ->
+    Format.fprintf pps "<unrecognized functor_parameter>") ;
+
+value ref_pp_sig_item = ref (fun pps (x : MLast.sig_item) ->
+    Format.fprintf pps "<unrecognized sig_item>") ;
+
+value ref_pp_with_constr = ref (fun pps (x : MLast.with_constr) ->
+    Format.fprintf pps "<unrecognized with_constr>") ;
+
+value ref_pp_module_expr = ref (fun pps (x : MLast.module_expr) ->
+    Format.fprintf pps "<unrecognized module_expr>") ;
+
+value ref_pp_str_item = ref (fun pps (x : MLast.str_item) ->
+    Format.fprintf pps "<unrecognized str_item>") ;
+
+value ref_pp_type_decl = ref (fun pps (x : MLast.type_decl) ->
+    Format.fprintf pps "<unrecognized type_decl>") ;
+
+value ref_pp_generic_constructor = ref (fun pps (x : MLast.generic_constructor) ->
+    Format.fprintf pps "<unrecognized generic_constructor>") ;
+
+value ref_pp_extension_constructor = ref (fun pps (x : MLast.extension_constructor) ->
+    Format.fprintf pps "<unrecognized extension_constructor>") ;
+
+value ref_pp_type_extension = ref (fun pps (x : MLast.type_extension) ->
+    Format.fprintf pps "<unrecognized type_extension>") ;
+
+value ref_pp_class_type = ref (fun pps (x : MLast.class_type) ->
+    Format.fprintf pps "<unrecognized class_type>") ;
+
+value ref_pp_class_sig_item = ref (fun pps (x : MLast.class_sig_item) ->
+    Format.fprintf pps "<unrecognized class_sig_item>") ;
+
+value ref_pp_class_expr = ref (fun pps (x : MLast.class_expr) ->
+    Format.fprintf pps "<unrecognized class_expr>") ;
+
+value ref_pp_class_str_item = ref (fun pps (x : MLast.class_str_item) ->
+    Format.fprintf pps "<unrecognized class_str_item>") ;
+
+value ref_pp_longid_lident = ref (fun pps (x : MLast.longid_lident) ->
+    Format.fprintf pps "<unrecognized longid_lident>") ;
+
+value ref_pp_payload = ref (fun pps (x : MLast.payload) ->
+    Format.fprintf pps "<unrecognized payload>") ;
+
+value ref_pp_attribute_body = ref (fun pps (x : MLast.attribute_body) ->
+    Format.fprintf pps "<unrecognized attribute_body>") ;
+
+value ref_pp_attribute = ref (fun pps (x : MLast.attribute) ->
+    Format.fprintf pps "<unrecognized attribute>") ;
+
+value ref_pp_attributes_no_anti = ref (fun pps (x : MLast.attributes_no_anti) ->
+    Format.fprintf pps "<unrecognized attributes_no_anti>") ;
+
+value ref_pp_attributes = ref (fun pps (x : MLast.attributes) ->
+    Format.fprintf pps "<unrecognized attributes>") ;
+
+value pp_loc x = ref_pp_loc.val x ;
+value pp_type_var x = ref_pp_type_var.val x ;
+value pp_longid x = ref_pp_longid.val x ;
+value pp_ctyp x = ref_pp_ctyp.val x ;
+value pp_poly_variant x = ref_pp_poly_variant.val x ;
+value pp_patt x = ref_pp_patt.val x ;
+value pp_expr x = ref_pp_expr.val x ;
+value pp_case_branch x = ref_pp_case_branch.val x ;
+value pp_module_type x = ref_pp_module_type.val x ;
+value pp_functor_parameter x = ref_pp_functor_parameter.val x ;
+value pp_sig_item x = ref_pp_sig_item.val x ;
+value pp_with_constr x = ref_pp_with_constr.val x ;
+value pp_module_expr x = ref_pp_module_expr.val x ;
+value pp_str_item x = ref_pp_str_item.val x ;
+value pp_type_decl x = ref_pp_type_decl.val x ;
+value pp_generic_constructor x = ref_pp_generic_constructor.val x ;
+value pp_extension_constructor x = ref_pp_extension_constructor.val x ;
+value pp_type_extension x = ref_pp_type_extension.val x ;
+value pp_class_type x = ref_pp_class_type.val x ;
+value pp_class_sig_item x = ref_pp_class_sig_item.val x ;
+value pp_class_expr x = ref_pp_class_expr.val x ;
+value pp_class_str_item x = ref_pp_class_str_item.val x ;
+value pp_longid_lident x = ref_pp_longid_lident.val x ;
+value pp_payload x = ref_pp_payload.val x ;
+value pp_attribute_body x = ref_pp_attribute_body.val x ;
+value pp_attribute x = ref_pp_attribute.val x ;
+value pp_attributes_no_anti x = ref_pp_attributes_no_anti.val x ;
+value pp_attributes x = ref_pp_attributes.val x ;
 
 end;
 
 module Pp_outcometree = struct
-value ref_pp_out_sig_item = ref (fun pps (x : Outcometree.out_sig_item) ->
-    Format.fprintf pps "<unrecognized out_sig_item>")
-  ;
-value ref_pp_out_sig_item_list = ref (fun pps (x : list Outcometree.out_sig_item) ->
-    Format.fprintf pps "<unrecognized out_sig_item list>")
-  ;
 
-value pp_out_sig_item pps x = ref_pp_out_sig_item.val pps x ;
-value pp_out_sig_item_list pps x = ref_pp_out_sig_item_list.val pps x ;
+value ref_pp_out_sig_item = ref (fun pps (x : Outcometree.out_sig_item) ->
+    Format.fprintf pps "<unrecognized out_sig_item>") ;
+
+value pp_out_sig_item x = ref_pp_out_sig_item.val x ;
 
 end ;
