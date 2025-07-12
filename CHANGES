@@ -1,3 +1,11 @@
+Camlp5 Version 8.03.06:
+-----------------------
+
+* [11 Jul 2025] the previous fix didn't work.  Fixed it.
+
+  The previous fix wasn't very good, and I didn't write any tests. So this time,
+  there are a bunch of tests in mdx-tests, and I think I've covered all the cases.
+
 Camlp5 Version 8.03.05:
 -----------------------
 
