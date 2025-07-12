@@ -81,6 +81,7 @@ clean::
 	$(RM) -rf local-install
 	$(MAKE) -C test clean
 	$(MAKE) -C testsuite clean
+	$(MAKE) -C mdx-tests clean
 	$(MAKE) -C toolsuite clean
 	$(MAKE) -C scripts clean
 	$(MAKE) -C ppxprint clean
