@@ -1,6 +1,6 @@
 <!-- $MDX env=official -->
 ```ocaml
-# #use "../../local-install/lib/ocaml/topfind.camlp5";;
+# #use "../local-install/lib/ocaml/topfind.camlp5";;
 - : unit = ()
 Findlib has been successfully loaded. Additional directives:
   #require "package";;      to load a package

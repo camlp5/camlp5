@@ -1,4 +1,4 @@
-export TOP=../..
+export TOP=..
 include $(TOP)/config/Makefile
 
 TESTS=simplest.asciidoc.TEST ocamlc.asciidoc.TEST official_toplevel.asciidoc.TEST
