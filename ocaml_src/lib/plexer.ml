@@ -658,6 +658,10 @@ let parse_antiquot s =
   with Not_found | Failure _ -> None
 ;;
 
+let int_of_string_result s =
+  try Some (int_of_string s) with Failure _ -> None
+;;
+
 let parse_antiloc s =
   try
     let i = String.index s ':' in
@@ -857,6 +861,34 @@ and linedir_quote n s =
     Some (' ' | '\t') -> linedir_quote (n + 1) s
   | Some '"' -> true
   | _ -> false
+;;
+
+let linedir_result n s =
+  let rec linedir n s =
+    match stream_peek_nth n s with
+      Some (' ' | '\t') -> linedir (n + 1) s
+    | Some ('0'..'9' as c) -> linedir_digits [c] (n + 1) s
+    | _ -> None
+  and linedir_digits acc n s =
+    match stream_peek_nth n s with
+      Some ('0'..'9' as c) -> linedir_digits (c :: acc) (n + 1) s
+    | _ ->
+        match int_of_string_result (rev_implode acc) with
+          Some lnum -> linedir_quote lnum n s
+        | None -> None
+  and linedir_quote lnum n s =
+    match stream_peek_nth n s with
+      Some (' ' | '\t') -> linedir_quote lnum (n + 1) s
+    | Some '"' -> linedir_qs lnum [] (n + 1) s
+    | _ -> None
+  and linedir_qs lnum acc n s =
+    match stream_peek_nth n s with
+      Some '"' -> Some (lnum, rev_implode acc)
+    | Some ('\n' | '\r') -> None
+    | Some c -> linedir_qs lnum (c :: acc) (n + 1) s
+    | _ -> None
+  in
+  linedir n s
 ;;
 
 let rec any_to_nl buf (strm__ : _ Stream.t) =
@@ -1639,16 +1671,19 @@ let rec next_token ctx buf (strm__ : _ Stream.t) =
       Stream.junk strm__;
       let s = strm__ in
       let comm = get_comment buf () in
-      if linedir 1 s then
-        let buf = any_to_nl (Plexing.Lexbuf.add '#' buf) s in
-        incr !(Plexing.line_nb);
-        !(Plexing.bol_pos) := Stream.count s;
-        ctx.set_line_nb ();
-        ctx.after_space <- true;
-        next_token ctx buf s
-      else
-        let loc = ctx.make_lined_loc (bp, bp + 1) comm in
-        keyword_or_error ctx (bp, bp + 1) "#", loc
+      begin match linedir_result 1 s with
+        Some (linenum, fname) ->
+          let buf = any_to_nl (Plexing.Lexbuf.add '#' buf) s in
+          !(Plexing.line_nb) := linenum;
+          Plexing.input_file := fname;
+          !(Plexing.bol_pos) := Stream.count s;
+          ctx.set_line_nb ();
+          ctx.after_space <- true;
+          next_token ctx buf s
+      | None ->
+          let loc = ctx.make_lined_loc (bp, bp + 1) comm in
+          keyword_or_error ctx (bp, bp + 1) "#", loc
+      end
   | Some '(' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
@@ -2059,12 +2094,12 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-        (fun _ -> raise (Match_failure ("plexer.ml", 1065, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1065, 45)));
+        (fun _ -> raise (Match_failure ("plexer.ml", 1101, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 1101, 45)));
        tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 1065, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1066, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1066, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 1101, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 1102, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 1102, 37)));
        tok_comm = None; kwds = kwd_table}
   in
   let glex =

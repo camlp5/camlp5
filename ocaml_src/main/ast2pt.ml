@@ -27,8 +27,6 @@ let string_of_string_token loc s =
   try Plexing.eval_string loc s with Failure _ as exn -> Ploc.raise loc exn
 ;;
 
-let glob_fname = ref "";;
-
 let mkloc loc =
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
@@ -36,7 +34,8 @@ let mkloc loc =
   let bolp = Ploc.bol_pos loc in
   let lnuml = Ploc.line_nb_last loc in
   let bolpl = Ploc.bol_pos_last loc in
-  ocaml_location (!glob_fname, lnum, bolp, lnuml, bolpl, bp, ep)
+  let fname = Ploc.file_name loc in
+  ocaml_location (fname, lnum, bolp, lnuml, bolpl, bp, ep)
 ;;
 
 let mktyp ?(alg_attributes = []) loc d =
@@ -1208,9 +1207,8 @@ and expr =
       | _ -> error loc "bad left part of assignment"
       end
   | ExAsr (loc, MLast.ExLong (_, MLast.LiUid (_, "False"))) ->
-      mkexp loc (ocaml_pexp_assertfalse !glob_fname (mkloc loc))
-  | ExAsr (loc, e) ->
-      mkexp loc (ocaml_pexp_assert !glob_fname (mkloc loc) (expr e))
+      mkexp loc (ocaml_pexp_assertfalse "-" (mkloc loc))
+  | ExAsr (loc, e) -> mkexp loc (ocaml_pexp_assert "-" (mkloc loc) (expr e))
   | ExBae (loc, dotop, e1, el) ->
       begin match uv dotop, uv el with
         ".", el -> expr (bigarray_get loc e1 el)
@@ -1657,8 +1655,7 @@ and sig_item s l =
   | SgTypExten (loc, te) ->
       mksig loc (ocaml_psig_typext (type_extension loc te)) :: l
   | SgUse (loc, fn, sl) ->
-      Ploc.call_with glob_fname (uv fn)
-        (fun () -> List.fold_right (fun (si, _) -> sig_item si) (uv sl) l) ()
+      List.fold_right (fun (si, _) -> sig_item si) (uv sl) l
   | SgVal (loc, n, t, attrs) ->
       let vn = uv n in
       mksig loc
@@ -1838,8 +1835,7 @@ and str_item s l =
   | StTypExten (loc, te) ->
       mkstr loc (ocaml_pstr_typext (type_extension loc te)) :: l
   | StUse (loc, fn, sl) ->
-      Ploc.call_with glob_fname (uv fn)
-        (fun () -> List.fold_right (fun (si, _) -> str_item si) (uv sl) l) ()
+      List.fold_right (fun (si, _) -> str_item si) (uv sl) l
   | StVal (loc, rf, pel) ->
       mkstr loc (Pstr_value (mkrf (uv rf), List.map mkpe (uv pel))) :: l
   | StXtr (loc, _, _) -> error loc "bad ast StXtr"
@@ -2142,9 +2138,9 @@ and extension (idloc, payload) =
       ocaml_extension_patt (mkloc idloc, id) p eopt
 ;;
 
-let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;
+let interf fname ast = List.fold_right sig_item ast [];;
 
-let implem fname ast = glob_fname := fname; List.fold_right str_item ast [];;
+let implem fname ast = List.fold_right str_item ast [];;
 
 let directive loc =
   function
@@ -2187,5 +2183,5 @@ let phrase =
   function
     StDir (loc, d, dp) ->
       ocaml_ptop_dir (mkloc loc) (uv d) (directive_args loc (uv dp))
-  | si -> glob_fname := !(Plexing.input_file); Ptop_def (str_item si [])
+  | si -> Ptop_def (str_item si [])
 ;;
