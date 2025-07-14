@@ -36,8 +36,6 @@ val x : int = 1
 
 ```sh
 $ ocaml < fixtures/official_toplevel_linedir1.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
 
 #   File "fixtures/q.ml", line 10, characters 6-7:
 Error: Syntax error
@@ -46,8 +44,6 @@ Error: Syntax error
 
 ```sh
 $ ocaml < fixtures/official_toplevel_linedir2.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
 
 # - : unit = ()
 Findlib has been successfully loaded. Additional directives:
@@ -77,8 +73,6 @@ Failure: this is not a constructor, it cannot be applied in a pattern
 
 ```sh
 $ ocaml < fixtures/official_toplevel_linedir1use.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
 
 #   File "fixtures/s.ml", line 10, characters 6-7:
 Error: Syntax error
@@ -87,8 +81,6 @@ Error: Syntax error
 
 ```sh
 $ ocaml < fixtures/official_toplevel_linedir2use.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
 
 # - : unit = ()
 Findlib has been successfully loaded. Additional directives:

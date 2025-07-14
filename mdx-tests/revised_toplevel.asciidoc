@@ -36,8 +36,6 @@ value x : int = 1
 
 ```sh
 $ ocaml < fixtures/revised_toplevel_linedir2.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
 
 # - : unit = ()
 Findlib has been successfully loaded. Additional directives:
@@ -67,8 +65,6 @@ Parse error: ')' expected after [paren_ipatt] (in [ipatt])
 
 ```sh
 $ ocaml < fixtures/revised_toplevel_linedir1use.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
 
 # - : unit = ()
 Findlib has been successfully loaded. Additional directives:
@@ -95,8 +91,6 @@ Parse error: ')' expected after [paren_ipatt] (in [ipatt])
 
 ```sh
 $ ocaml < fixtures/revised_toplevel_linedir2use.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
 
 # - : unit = ()
 Findlib has been successfully loaded. Additional directives:
