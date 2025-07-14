@@ -17,6 +17,11 @@ DESTDIR=
 all: world.opt
 	$(MAKE) $(MAKEFLAGS) local-install
 
+test::
+	$(MAKE) -C test clean all
+	$(MAKE) -C testsuite clean all-tests
+	$(MAKE) -C mdx-tests clean all
+
 out: boot/$(CAMLP5N)$(EXE)
 	set -e; cd ocaml_stuff; $(MAKE); cd ..
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done

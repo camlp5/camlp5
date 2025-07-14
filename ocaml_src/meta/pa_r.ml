@@ -7019,7 +7019,17 @@ Grammar.safe_extend
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("EOI", "")),
            "194fe98d", (fun _ (loc : Ploc.t) -> (None : 'top_phrase)));
         Grammar.production
-          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ";")),
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_rules
+                [Grammar.production
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", ";;")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__23)));
+                 Grammar.production
+                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ";")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__23)))]),
            "194fe98d",
            (fun _ (loc : Ploc.t) ->
               (Some (MLast.StDcl (loc, [])) : 'top_phrase)));
@@ -7033,6 +7043,14 @@ Grammar.safe_extend
        [Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("EOI", "")),
            "194fe98d", (fun _ (loc : Ploc.t) -> ([], false : 'use_file)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (str_item : 'str_item Grammar.Entry.e)))
+             (Grammar.s_token ("", ";;")),
+           "194fe98d",
+           (fun _ (si : 'str_item) (loc : Ploc.t) ->
+              ([si], false : 'use_file)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -7052,7 +7070,16 @@ Grammar.safe_extend
                    (Grammar.s_token ("LIDENT", "")))
                 (Grammar.s_opt
                    (Grammar.s_nterm (expr : 'expr Grammar.Entry.e))))
-             (Grammar.s_token ("", ";")),
+             (Grammar.s_rules
+                [Grammar.production
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", ";;")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__24)));
+                 Grammar.production
+                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ";")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__24)))]),
            "194fe98d",
            (fun _ (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
               ([MLast.StDir (loc, n, dp)], true : 'use_file)))]];
@@ -7062,7 +7089,16 @@ Grammar.safe_extend
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop
                 (Grammar.s_nterm (str_item : 'str_item Grammar.Entry.e)))
-             (Grammar.s_token ("", ";")),
+             (Grammar.s_rules
+                [Grammar.production
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", ";;")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__26)));
+                 Grammar.production
+                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ";")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__26)))]),
            "194fe98d",
            (fun _ (sti : 'str_item) (loc : Ploc.t) -> (sti : 'phrase)));
         Grammar.production
@@ -7073,7 +7109,16 @@ Grammar.safe_extend
                    (Grammar.s_token ("LIDENT", "")))
                 (Grammar.s_opt
                    (Grammar.s_nterm (expr : 'expr Grammar.Entry.e))))
-             (Grammar.s_token ("", ";")),
+             (Grammar.s_rules
+                [Grammar.production
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_token ("", ";;")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__25)));
+                 Grammar.production
+                   (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ";")),
+                    "194fe98d",
+                    (fun (x : string) (loc : Ploc.t) -> (x : 'e__25)))]),
            "194fe98d",
            (fun _ (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
               (MLast.StDir (loc, n, dp) : 'phrase)))]];

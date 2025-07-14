@@ -1903,19 +1903,20 @@ EXTEND
   ;
   top_phrase:
     [ [ ph = phrase → Some ph
-      | ";" -> Some <:str_item< declare end >>
+      | [";"|";;"] -> Some <:str_item< declare end >>
       | EOI → None ] ]
   ;
   use_file:
-    [ [ "#"; n = LIDENT; dp = OPT expr; ";" →
+    [ [ "#"; n = LIDENT; dp = OPT expr; [";"|";;"] →
           ([<:str_item< # $lid:n$ $opt:dp$ >>], True)
       | si = str_item; ";"; (sil, stopped) = SELF → ([si :: sil], stopped)
+      | si = str_item; ";;" → ([si], False)
       | EOI → ([], False) ] ]
   ;
   phrase:
-    [ [ "#"; n = LIDENT; dp = OPT expr; ";" →
+    [ [ "#"; n = LIDENT; dp = OPT expr; [";"|";;"] →
           <:str_item< # $lid:n$ $opt:dp$ >>
-      | sti = str_item; ";" → sti ] ]
+      | sti = str_item; [";"|";;"] → sti ] ]
   ;
   expr: LEVEL "simple"
     [ [ x = QUOTATION →
