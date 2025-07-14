@@ -1,2 +1,2 @@
 # 10 "fixtures/q.ml"
-#use "use1.ml" ;;
+#use "fixtures/use1.ml" ;;

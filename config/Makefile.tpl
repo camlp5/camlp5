@@ -39,6 +39,6 @@ COMPWITH=old
 	$(LAUNCH) ocaml-mdx test -o $@ $<
 
 %.asciidoc.TEST: %.asciidoc.corrected %.asciidoc
-	perl -p -i -e 's,.*: added to search path.*,,' $<
-	perl -p -i -e 's,.*: loaded.*,,' $<
-	diff -Bwiu $^
+	perl -n -i -e 'print unless (s,.*: added to search path.*,,)' $<
+	perl -n -i -e 'print unless (s,.*: loaded.*,,)' $<
+	diff -U 10 -Bwiu $^

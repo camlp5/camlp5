@@ -1,4 +1,4 @@
-<!-- $MDX env=official -->
+<!-- $MDX env=revised -->
 ```ocaml
 # #use "../local-install/lib/ocaml/topfind.camlp5";;
 - : unit = ()
@@ -17,35 +17,25 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-# #camlp5o ;;
 # let exc_converter = function
     Exit as exc ->
     let s = Printexc.to_string exc in
     Some (Location.error s)
-  | _ -> None
+  | _ -> None ;;
 val exc_converter : exn -> Location.report option = <fun>
 # Location.register_error_of_exn exc_converter ;;
 - : unit = ()
+# #camlp5r ;;
 ```
 
-<!-- $MDX env=official -->
+<!-- $MDX env=revised -->
 ```ocaml
-# let x = 1 ;;
-val x : int = 1
+# value x = 1 ;;
+value x : int = 1
 ```
 
 ```sh
-$ ocaml < fixtures/official_toplevel_linedir1.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
-
-#   File "fixtures/q.ml", line 10, characters 6-7:
-Error: Syntax error
-#
-```
-
-```sh
-$ ocaml < fixtures/official_toplevel_linedir2.ml
+$ ocaml < fixtures/revised_toplevel_linedir2.ml
 OCaml version 5.3.0
 Enter "#help;;" for help.
 
@@ -65,28 +55,18 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-	Camlp5 parsing version (OCaml) 8.03.06
+	Camlp5 parsing version (Revised) 8.03.06
 
-#   Toplevel input:
+#
+Toplevel input:
 # # 10 "fixtures/r.ml"
-  let _ _ = 1 ;;
-      ^
-Failure: this is not a constructor, it cannot be applied in a pattern
-#
+  value (_ _) = 1 ;
+           ^
+Parse error: ')' expected after [paren_ipatt] (in [ipatt])
 ```
 
 ```sh
-$ ocaml < fixtures/official_toplevel_linedir1use.ml
-OCaml version 5.3.0
-Enter "#help;;" for help.
-
-#   File "fixtures/s.ml", line 10, characters 6-7:
-Error: Syntax error
-#
-```
-
-```sh
-$ ocaml < fixtures/official_toplevel_linedir2use.ml
+$ ocaml < fixtures/revised_toplevel_linedir1use.ml
 OCaml version 5.3.0
 Enter "#help;;" for help.
 
@@ -106,9 +86,37 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-	Camlp5 parsing version (OCaml) 8.03.06
+	Camlp5 parsing version (Revised) 8.03.06
 
-#   File "fixtures/s.ml", line 10, characters 4-5:
-Failure: this is not a constructor, it cannot be applied in a pattern
+#   File "fixtures/s.ml", line 10, characters 9-10:
+Parse error: ')' expected after [paren_ipatt] (in [ipatt])
+#
+```
+
+```sh
+$ ocaml < fixtures/revised_toplevel_linedir2use.ml
+OCaml version 5.3.0
+Enter "#help;;" for help.
+
+# - : unit = ()
+Findlib has been successfully loaded. Additional directives:
+  #require "package";;      to load a package
+  #list;;                   to list the available packages
+  #camlp4o;;                to load camlp4 (standard syntax)
+  #camlp4r;;                to load camlp4 (revised syntax)
+  #predicates "p,q,...";;   to set these predicates
+  Topfind.reset();;         to force that packages will be reloaded
+  #thread;;                 to enable threads
+
+- : unit = ()
+Additional Camlp5 directives:
+  #camlp5o;;                to load camlp5 (standard syntax)
+  #camlp5r;;                to load camlp5 (revised syntax)
+
+- : unit = ()
+	Camlp5 parsing version (Revised) 8.03.06
+
+#   File "fixtures/s.ml", line 10, characters 9-10:
+Parse error: ')' expected after [paren_ipatt] (in [ipatt])
 #
 ```
