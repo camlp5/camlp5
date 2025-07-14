@@ -119,6 +119,37 @@ value pp_attribute x = ref_pp_attribute.val x ;
 value pp_attributes_no_anti x = ref_pp_attributes_no_anti.val x ;
 value pp_attributes x = ref_pp_attributes.val x ;
 
+value show_fun ppf x = Format.asprintf "%a" ppf x ;
+
+value show_loc x = show_fun pp_loc x ;
+value show_type_var x = show_fun pp_type_var x ;
+value show_longid x = show_fun pp_longid x ;
+value show_ctyp x = show_fun pp_ctyp x ;
+value show_poly_variant x = show_fun pp_poly_variant x ;
+value show_patt x = show_fun pp_patt x ;
+value show_expr x = show_fun pp_expr x ;
+value show_case_branch x = show_fun pp_case_branch x ;
+value show_module_type x = show_fun pp_module_type x ;
+value show_functor_parameter x = show_fun pp_functor_parameter x ;
+value show_sig_item x = show_fun pp_sig_item x ;
+value show_with_constr x = show_fun pp_with_constr x ;
+value show_module_expr x = show_fun pp_module_expr x ;
+value show_str_item x = show_fun pp_str_item x ;
+value show_type_decl x = show_fun pp_type_decl x ;
+value show_generic_constructor x = show_fun pp_generic_constructor x ;
+value show_extension_constructor x = show_fun pp_extension_constructor x ;
+value show_type_extension x = show_fun pp_type_extension x ;
+value show_class_type x = show_fun pp_class_type x ;
+value show_class_sig_item x = show_fun pp_class_sig_item x ;
+value show_class_expr x = show_fun pp_class_expr x ;
+value show_class_str_item x = show_fun pp_class_str_item x ;
+value show_longid_lident x = show_fun pp_longid_lident x ;
+value show_payload x = show_fun pp_payload x ;
+value show_attribute_body x = show_fun pp_attribute_body x ;
+value show_attribute x = show_fun pp_attribute x ;
+value show_attributes_no_anti x = show_fun pp_attributes_no_anti x ;
+value show_attributes x = show_fun pp_attributes x ;
+
 end;
 
 module Pp_outcometree = struct
@@ -127,5 +158,7 @@ value ref_pp_out_sig_item = ref (fun pps (x : Outcometree.out_sig_item) ->
     Format.fprintf pps "<unrecognized out_sig_item>") ;
 
 value pp_out_sig_item x = ref_pp_out_sig_item.val x ;
+
+value show_out_sig_item x = Pp_MLast.show_fun pp_out_sig_item x ;
 
 end ;
