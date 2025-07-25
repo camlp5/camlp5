@@ -74,6 +74,18 @@ value mknoloc txt =
 ;
 
 value ocaml_id_or_li_of_string_list loc sl =
+  match sl with [
+      [] -> None
+    | [s :: sl] ->
+       let rec loop acc = fun [
+             [] -> acc
+           | [s :: sl] -> loop (Ldot acc s) sl
+           ]
+       in Some (loop (Lident s) sl)
+    ]
+;
+
+value ocaml_id_or_li_of_string_list loc sl =
     let mkli s =
       loop (fun s -> Lident s) where rec loop f =
         fun
