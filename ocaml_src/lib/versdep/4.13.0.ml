@@ -62,6 +62,18 @@ let mkloc loc txt = {Location.txt = txt; loc = loc};;
 let mknoloc txt = mkloc loc_none txt;;
 
 let ocaml_id_or_li_of_string_list loc sl =
+  match sl with
+    [] -> None
+  | s :: sl ->
+      let rec loop acc =
+        function
+          [] -> acc
+        | s :: sl -> loop (Ldot (acc, s)) sl
+      in
+      Some (loop (Lident s) sl)
+;;
+
+let ocaml_id_or_li_of_string_list loc sl =
   let mkli s =
     let rec loop f =
       function
@@ -550,9 +562,8 @@ let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
 ;;
 
-let ocaml_pexp_pack : ('a -> 'b -> 'c, 'd) choice option =
-  Some (Right ((fun me -> Pexp_pack me), (fun pt -> Ptyp_package pt)))
-;;
+let ocaml_pexp_pack me = Pexp_pack me;;
+let ocaml_ptyp_pack pt = Ptyp_package pt;;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 

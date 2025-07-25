@@ -1333,27 +1333,16 @@ and expr =
   | ExOvr (loc, iel) ->
       mkexp loc (ocaml_pexp_override (List.map mkideexp (uv iel)))
   | ExPck (loc, me, mto) ->
-      begin match ocaml_pexp_pack with
-        Some (Left pexp_pack) ->
-          begin match mto with
-            Some mt ->
-              let pt = package_of_module_type loc mt in
-              mkexp loc (pexp_pack (module_expr me) pt)
-          | None -> error loc "no such module pack in this ocaml version"
-          end
-      | Some (Right (pexp_pack, ptyp_package)) ->
-          let e = pexp_pack (module_expr me) in
-          let e =
-            match mto with
-              Some mt ->
-                let pt = package_of_module_type loc mt in
-                ocaml_pexp_constraint (mkexp loc e)
-                  (Some (mktyp loc (ptyp_package pt))) None
-            | None -> e
-          in
-          mkexp loc e
-      | None -> error loc "no module pack in this ocaml version"
-      end
+      let e = ocaml_pexp_pack (module_expr me) in
+      let e =
+        match mto with
+          Some mt ->
+            let pt = package_of_module_type loc mt in
+            ocaml_pexp_constraint (mkexp loc e)
+              (Some (mktyp loc (ocaml_ptyp_pack pt))) None
+        | None -> e
+      in
+      mkexp loc e
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"

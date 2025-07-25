@@ -937,10 +937,8 @@ value ocaml_pexp_override sel =
   Pexp_override sel
 ;
 
-value ocaml_pexp_pack =
-  (Some (Right (fun me -> Pexp_pack me, fun pt -> Ptyp_package pt)) :
-     option (choice ('a -> 'b -> 'c) 'd))
-;
+value ocaml_pexp_pack me = Pexp_pack me ;
+value ocaml_ptyp_pack pt = Ptyp_package pt ;
 
 value ocaml_pexp_poly =
   Some (fun e t -> Pexp_poly e t)

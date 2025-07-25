@@ -171,6 +171,35 @@ module Pp_MLast =
     let pp_attribute x = !ref_pp_attribute x;;
     let pp_attributes_no_anti x = !ref_pp_attributes_no_anti x;;
     let pp_attributes x = !ref_pp_attributes x;;
+    let show_fun ppf x = Format.asprintf "%a" ppf x;;
+    let show_loc x = show_fun pp_loc x;;
+    let show_type_var x = show_fun pp_type_var x;;
+    let show_longid x = show_fun pp_longid x;;
+    let show_ctyp x = show_fun pp_ctyp x;;
+    let show_poly_variant x = show_fun pp_poly_variant x;;
+    let show_patt x = show_fun pp_patt x;;
+    let show_expr x = show_fun pp_expr x;;
+    let show_case_branch x = show_fun pp_case_branch x;;
+    let show_module_type x = show_fun pp_module_type x;;
+    let show_functor_parameter x = show_fun pp_functor_parameter x;;
+    let show_sig_item x = show_fun pp_sig_item x;;
+    let show_with_constr x = show_fun pp_with_constr x;;
+    let show_module_expr x = show_fun pp_module_expr x;;
+    let show_str_item x = show_fun pp_str_item x;;
+    let show_type_decl x = show_fun pp_type_decl x;;
+    let show_generic_constructor x = show_fun pp_generic_constructor x;;
+    let show_extension_constructor x = show_fun pp_extension_constructor x;;
+    let show_type_extension x = show_fun pp_type_extension x;;
+    let show_class_type x = show_fun pp_class_type x;;
+    let show_class_sig_item x = show_fun pp_class_sig_item x;;
+    let show_class_expr x = show_fun pp_class_expr x;;
+    let show_class_str_item x = show_fun pp_class_str_item x;;
+    let show_longid_lident x = show_fun pp_longid_lident x;;
+    let show_payload x = show_fun pp_payload x;;
+    let show_attribute_body x = show_fun pp_attribute_body x;;
+    let show_attribute x = show_fun pp_attribute x;;
+    let show_attributes_no_anti x = show_fun pp_attributes_no_anti x;;
+    let show_attributes x = show_fun pp_attributes x;;
   end
 ;;
 
@@ -182,5 +211,6 @@ module Pp_outcometree =
            Format.fprintf pps "<unrecognized out_sig_item>")
     ;;
     let pp_out_sig_item x = !ref_pp_out_sig_item x;;
+    let show_out_sig_item x = Pp_MLast.show_fun pp_out_sig_item x;;
   end
 ;;
