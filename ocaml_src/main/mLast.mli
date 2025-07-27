@@ -72,7 +72,7 @@ and patt =
   | PaEff of loc * patt * patt
   | PaFlo of loc * string
   | PaInt of loc * string * string
-  | PaLab of loc * (patt * patt option) list
+  | PaLab of loc * patt * patt option
   | PaLaz of loc * patt
   | PaLid of loc * string
   | PaNty of loc * string
@@ -107,7 +107,7 @@ and expr =
   | ExFun of loc * case_branch list
   | ExIfe of loc * expr * expr * expr
   | ExInt of loc * string * string
-  | ExLab of loc * (patt * expr option) list
+  | ExLab of loc * patt * expr option
   | ExLaz of loc * expr
   | ExLet of loc * bool * (patt * expr * attributes) list * expr
   | ExLEx of loc * string * ctyp list * expr * attributes

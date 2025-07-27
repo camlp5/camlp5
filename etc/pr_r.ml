@@ -107,8 +107,7 @@ value rec is_irrefut_patt =
   | <:patt< (type $lid:_$) >> -> True
   | <:patt< (module $uidopt:_$ : $_$) >> -> True
   | <:patt< (module $uidopt:_$) >> -> True
-  | <:patt< ~{$list:lppo$} >> ->
-      List.for_all (fun (p, _) -> is_irrefut_patt p) lppo
+  | <:patt< ~{$p$ $opt:_$} >> -> is_irrefut_patt p
   | <:patt< ?{$p$ $opt:_$} >> -> is_irrefut_patt p
   | <:patt< [% $_extension:_$ ] >> -> flag_extensions_are_irrefutable.val
   | _ -> False ]
@@ -1791,7 +1790,7 @@ EXTEND_PRINTER
           pprintf pc "%p" (pr_extension "%") e
       | <:expr< $chr:s$ >> ->
           pprintf pc "'%s'" s
-      | MLast.ExOlb loc _ _ | MLast.ExLab loc _ ->
+      | MLast.ExOlb loc _ _ | MLast.ExLab loc _ _ ->
           error loc "labels not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
         <:expr< $_$ := $_$ >> |
@@ -1904,7 +1903,7 @@ EXTEND_PRINTER
           pprintf pc "\"%s\"" s
       | <:patt< _ >> ->
           pprintf pc "_"
-      | MLast.PaLab loc _ | MLast.PaOlb loc _ _ ->
+      | MLast.PaLab loc _ _ | MLast.PaOlb loc _ _ ->
           error loc "labels not pretty printed (in patt); add pr_ro.cmo"
       | <:patt< `$s$ >> ->
           failwith "variants not pretty printed (in patt); add pr_ro.cmo"

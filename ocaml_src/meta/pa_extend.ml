@@ -333,16 +333,19 @@ module MetaAction =
                    mloc),
                 mvala mstring s),
              MLast.ExStr (loc, (loc, c)))
-      | MLast.ExLab (loc, peoptl) ->
+      | MLast.ExLab (loc, p, eo) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExLong
+                MLast.ExApp
                   (loc,
-                   MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "ExLab")),
-                mloc),
-             mvala (mlist mpeopt) peoptl)
+                   MLast.ExLong
+                     (loc,
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "ExLab")),
+                   mloc),
+                mpatt p),
+             mvala (moption mexpr) eo)
       | MLast.ExFlo (loc, s) ->
           MLast.ExApp
             (loc,

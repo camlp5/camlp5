@@ -254,8 +254,8 @@ module MetaAction =
           <:expr< MLast.ExIfe $mloc$ $mexpr e1$ $mexpr e2$ $mexpr e3$ >>
       | MLast.ExInt loc s c ->
           <:expr< MLast.ExInt $mloc$ $mvala mstring s$ $str:c$ >>
-      | MLast.ExLab loc peoptl ->
-          <:expr< MLast.ExLab $mloc$ $mvala (mlist mpeopt) peoptl$ >>
+      | MLast.ExLab loc p eo ->
+          <:expr< MLast.ExLab $mloc$ $mpatt p$ $mvala (moption mexpr) eo$ >>
       | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $mvala mstring s$ >>
       | MLast.ExLet loc rf pel e ->
           let rf = mvala mbool rf in

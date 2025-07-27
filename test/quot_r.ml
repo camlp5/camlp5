@@ -191,8 +191,10 @@ MLast.TyVrn loc lpv ools;
 <:patt< $_nativeint:s1$ >>;
 
 (* label *)
-<:patt< ~{$list:lpp$} >>;
-<:patt< ~{$_list:lpp$} >>;
+<:patt< ~{$p1$} >> ;
+<:patt< ~{$p1$ = $p2$} >> ;
+<:patt< ~{$p1$ $opt:op2$} >> ;
+<:patt< ~{$p1$ $_opt:op2$} >> ;
 
 (* lazy *)
 <:patt< lazy $p$ >>;
@@ -348,8 +350,10 @@ MLast.ExCoe loc e ot1 t2;
 <:expr< $_nativeint:s1$ >>;
 
 (* label *)
-<:expr< ~{$list:lpe$} >>;
-<:expr< ~{$_list:lpe$} >>;
+<:expr< ~{$p$} >> ;
+<:expr< ~{$p$ = $e$} >> ;
+<:expr< ~{$p$ $opt:oe$} >> ;
+<:expr< ~{$p$ $_opt:oe$} >> ;
 
 (* lazy *)
 <:expr< lazy $e$ >>;

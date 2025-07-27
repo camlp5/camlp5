@@ -88,7 +88,7 @@ value rec is_irrefut_patt =
   | <:patt< (type $lid:_$) >> -> True
   | <:patt< (module $uidopt:_$ : $_$) >> -> True
   | <:patt< (module $uidopt:_$) >> -> True
-  | <:patt< ~{$list:_$} >> -> True
+  | <:patt< ~{$_$ $opt:_$} >> -> True
   | <:patt< ?{$_$ $opt:_$} >> -> True
   | <:patt< [% $_extension:_$ ] >> -> flag_extensions_are_irrefutable.val
   | _ -> False ]
@@ -1771,7 +1771,7 @@ EXTEND_PRINTER
       | <:patt< _ >> -> pprintf pc "_"
       | <:patt:< ?{$_$} >> | <:patt:< ?{$_$ = $_$} >> | <:patt:< ?{$_$} >> |
         <:patt:< ?{$_$ = ?{$_$ = $_$}} >> | <:patt:< ?{$_$ = $_$} >> |
-        <:patt:< ~{$list:_$} >> ->
+        <:patt:< ~{$_$ $opt:_$} >> ->
           error loc "labels not pretty printed (in patt)"
       | <:patt< `$s$ >> ->
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo" ]
@@ -2437,9 +2437,10 @@ value label_ipatt_eq_patt curr pc (p, op) =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ~{$list:lpop$} >> ->
-          let lpop = List.map (fun poe -> (poe, "")) lpop in
-          pprintf pc "%p" (plist (label_ipatt_eq_patt curr) 1) lpop
+    [ [ <:patt< ~{$p$ = $p2$} >> ->
+          pprintf pc "%p" (label_ipatt_eq_patt curr) (p, <:vala< Some p2 >>)
+      | <:patt< ~{$p$} >> ->
+          pprintf pc "%p" (label_ipatt_eq_patt curr) (p, <:vala< None >>)
       | <:patt< ?{$lid:p$ : $t$} >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
       | <:patt< ?{$lid:p$ : $t$ = $e$} >> ->
@@ -2556,22 +2557,19 @@ value poly_type pc =
   | t -> ctyp pc t ]
 ;
 
-value label_ipatt expr pc (p, oe) =
-  match Pcaml.unvala oe with
-  [ Some e -> pprintf pc "~%p:%p" patt p expr e
-  | None -> pprintf pc "~%p" patt p ]
-;
-
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
-      [ <:expr< ~{$list:lpoe$} >> ->
-          let lpoe = List.map (fun poe -> (poe, "")) lpoe in
-          pprintf pc "%p" (plist (label_ipatt curr) 1) lpoe
+      [ <:expr< ~{$p$ = $e$} >> ->
+          pprintf pc "~%p:%p" patt p curr e
+      | <:expr< ~{$p$} >> ->
+          pprintf pc "~%p" patt p
       | <:expr< ?{$p$ = $e$} >> ->
           pprintf pc "?%p:%p" patt p curr e
       | <:expr< ?{$p$} >> ->
-          pprintf pc "?%p" patt p ] ]
+          pprintf pc "?%p" patt p
+
+ ] ]
   ;
   pr_ctyp: AFTER "below_alg_attribute"
     [ "as"

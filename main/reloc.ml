@@ -192,13 +192,9 @@ and patt floc sh =
     | PaInt loc x1 x2 →
         let loc = floc loc in
         PaInt loc x1 x2
-    | PaLab loc x1 →
+    | PaLab loc x1 x2 →
         let loc = floc loc in
-        PaLab loc
-          (vala_map
-             (List.map
-                (fun (x1, x2) → (self x1, vala_map (option_map self) x2)))
-             x1)
+        PaLab loc (self x1) (vala_map (option_map self) x2)
     | PaLaz loc x1 →
         let loc = floc loc in
         PaLaz loc (self x1)
@@ -311,14 +307,9 @@ and expr floc sh =
     | ExInt loc x1 x2 →
         let loc = floc loc in
         ExInt loc x1 x2
-    | ExLab loc x1 →
+    | ExLab loc x1 x2 →
         let loc = floc loc in
-        ExLab loc
-          (vala_map
-             (List.map
-                (fun (x1, x2) →
-                   (patt floc sh x1, vala_map (option_map self) x2)))
-             x1)
+        ExLab loc (patt floc sh x1) (vala_map (option_map self) x2)
     | ExLaz loc x1 →
         let loc = floc loc in
         ExLaz loc (self x1)

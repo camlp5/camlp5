@@ -1771,16 +1771,25 @@ EXTEND
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" → <:patt< ` $_:s$ >>
       | "#"; lili = V extended_longident_lident "lilongid" → <:patt< # $_lilongid:lili$ >>
-      | "~"; "{"; lppo = V (LIST1 patt_tcon_opt_eq_patt SEP ";"); "}" →
-          <:patt< ~{$_list:lppo$} >>
+      | "~"; "{"; (p,po) = patt_tcon_opt_eq_patt; "}" →
+              MLast.PaLab loc p po
+(*CHET
+          <:patt< ~{$p$ = $po$} >>
+ *)
       | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr → e ]); "}" →
           <:patt< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; p = SELF →
           let _ = warning_deprecated_since_6_00 loc in
+              MLast.PaLab loc (MLast.PaLid loc i) <:vala< Some p >>
+(*CHET
           <:patt< ~{$_lid:i$ = $p$} >>
+ *)
       | i = V TILDEIDENT →
           let _ = warning_deprecated_since_6_00 loc in
+              MLast.PaLab loc (MLast.PaLid loc i) <:vala< None >>
+(*CHET
           <:patt< ~{$_lid:i$} >>
+ *)
       | p = patt_option_label →
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
@@ -1793,17 +1802,26 @@ EXTEND
       | p = patt; ":"; t = ctyp → <:patt< ($p$ : $t$) >> ] ]
   ;
   ipatt:
-    [ [ "~"; "{"; lppo = V (LIST1 ipatt_tcon_opt_eq_patt SEP ";"); "}" →
+    [ [ "~"; "{"; (p,po) = ipatt_tcon_opt_eq_patt; "}" →
+              MLast.PaLab loc p po
+(*CHET
           <:patt< ~{$_list:lppo$} >>
+ *)
       | "?"; "{"; p = ipatt_tcon; eo = V (OPT [ "="; e = expr → e ]); "}" →
           <:patt< ?{$p$ $_opt:eo$ } >>
 
       | i = V TILDEIDENTCOLON; p = SELF →
           let _ = warning_deprecated_since_6_00 loc in
+              MLast.PaLab loc (MLast.PaLid loc i) <:vala< Some p >>
+(*CHET
           <:patt< ~{$_lid:i$ = $p$} >>
+ *)
       | i = V TILDEIDENT →
           let _ = warning_deprecated_since_6_00 loc in
+              MLast.PaLab loc (MLast.PaLid loc i) <:vala< None >>
+(*CHET
           <:patt< ~{$_lid:i$} >>
+ *)
       | p = patt_option_label →
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
@@ -1838,16 +1856,25 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ "~"; "{"; lpeo = V (LIST1 ipatt_tcon_fun_binding SEP ";"); "}" →
+      [ "~"; "{"; (p,eo) = ipatt_tcon_fun_binding; "}" →
+              MLast.ExLab loc p eo
+(*
           <:expr< ~{$_list:lpeo$ } >>
+ *)
       | "?"; "{"; p = ipatt_tcon; eo = V (OPT fun_binding); "}" →
           <:expr< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; e = SELF →
           let _ = warning_deprecated_since_6_00 loc in
+              MLast.ExLab loc (MLast.PaLid loc i) <:vala< Some e >>
+(*CHET
           <:expr< ~{$_lid:i$ = $e$} >>
+ *)
       | i = V TILDEIDENT →
           let _ = warning_deprecated_since_6_00 loc in
+              MLast.ExLab loc (MLast.PaLid loc i) <:vala< None >>
+(*CHET
           <:expr< ~{$_lid:i$} >>
+ *)
       | i = V QUESTIONIDENTCOLON; e = SELF →
           let _ = warning_deprecated_since_6_00 loc in
           <:expr< ?{$_lid:i$ = $e$} >>

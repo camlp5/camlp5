@@ -268,9 +268,8 @@ value sig_method_or_method_virtual pc virt priv s t item_attrs =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ~{$list:lpop$} >> ->
-          let lpoe = List.map (fun pop -> (pop, ";")) lpop in
-          pprintf pc "@[~{%p}@]" (plist ipatt_tcon_opt_eq_patt 1) lpoe
+    [ [ <:patt< ~{$p$ = $p2$} >> ->
+          pprintf pc "@[~{%p}@]" ipatt_tcon_opt_eq_patt (p,<:vala< Some p2 >>)
       | <:patt< ~{$p$} >> ->
           pprintf pc "~{%p}" patt p
 
@@ -297,9 +296,10 @@ EXTEND_PRINTER
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
-      [ <:expr< ~{$list:lpoe$} >> ->
-          let lpoe = List.map (fun poe -> (poe, ";")) lpoe in
-          pprintf pc "@[~{%p}@]" (plist ipatt_tcon_fun_binding 1) lpoe
+      [ <:expr< ~{$p$ = $e$} >> ->
+          pprintf pc "@[~{%p}@]" ipatt_tcon_fun_binding (p,<:vala< Some e >>)
+      | <:expr< ~{$p$} >> ->
+          pprintf pc "@[~{%p}@]" ipatt_tcon_fun_binding (p,<:vala< None >>)
       | <:expr< ?{$p$ = $e$} >> ->
           pprintf pc "@[<2>?{%p =@;%p}@]" patt p curr e
       | <:expr< ?{$p$} >> ->

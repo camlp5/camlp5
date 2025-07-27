@@ -81,7 +81,7 @@ and patt =
   | PaEff of loc and patt and patt
   | PaFlo of loc and V string
   | PaInt of loc and V string and string
-  | PaLab of loc and V (list (patt * V (option patt)))
+  | PaLab of loc and patt and V (option patt)
   | PaLaz of loc and patt
   | PaLid of loc and V string
   | PaNty of loc and V string
@@ -116,7 +116,7 @@ and expr =
   | ExFun of loc and V (list case_branch)
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
-  | ExLab of loc and V (list (patt * V (option expr)))
+  | ExLab of loc and patt and V (option expr)
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr * attributes)) and expr
   | ExLEx of loc and V string and V (list ctyp) and expr and attributes

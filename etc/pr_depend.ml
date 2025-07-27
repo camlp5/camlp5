@@ -128,8 +128,7 @@ and expr =
   | ExIfe _ e1 e2 e3 -> do { expr e1; expr e2; expr e3 }
   | ExInt _ _ _ -> ()
   | ExFlo _ _ -> ()
-  | ExLab _ <:vala< lpeo >> ->
-      list (fun (_, eo) -> option expr (Pcaml.unvala eo)) lpeo
+  | ExLab _ _ eo -> option expr (Pcaml.unvala eo)
   | ExLaz _ e -> expr e
   | <:expr< let $flag:_$ $list:pel$ in $e$ >> -> do {
       list let_binding pel;

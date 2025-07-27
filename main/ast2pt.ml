@@ -757,7 +757,7 @@ and patt =
   | PaInt loc s c →
       mkpat loc (Ppat_constant (mkconst loc (pconst_of_const (mkintconst loc (uv s) c))))
   | PaFlo loc s → mkpat loc (Ppat_constant (mkconst loc (ocaml_pconst_float (uv s))))
-  | PaLab loc _ → error loc "labeled pattern not allowed here"
+  | PaLab loc _ _ → error loc "labeled pattern not allowed here"
   | PaLaz loc p →
       match ocaml_ppat_lazy with
       [ Some ppat_lazy → mkpat loc (ppat_lazy (patt p))
@@ -1025,17 +1025,15 @@ and expr =
       mkexp loc (ocaml_pexp_for (patt i) (expr e1) (expr e2) df (expr e3))
   | ExFun loc pel →
       match uv pel with
-      [ [(PaLab ploc lppo, w, e)] →
-          match uv lppo with
-          [ [(p, po)] →
-              let lab = label_of_patt p in
-              let p =
-                match uv po with
-                [ Some p → p
-                | None → p ]
-              in
-              mkexp loc (ocaml_pexp_function lab None [mkpwe (p, w, e)])
-          | _ → error loc "bad AST" ]
+      [ [(PaLab ploc p po, w, e)] →
+        let lab = label_of_patt p in
+        let p =
+          match uv po with
+            [ Some p → p
+            | None → p ]
+        in
+        mkexp loc (ocaml_pexp_function lab None [mkpwe (p, w, e)])
+
       | [(PaNty loc s, w, e)] →
           mkexp loc (ocaml_pexp_newtype (mkloc loc) (uv s) (expr e))
       | [(PaOlb loc p eo, w, e)] →
@@ -1064,7 +1062,7 @@ and expr =
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) e3o)
   | ExInt loc s c →
       mkexp loc (Pexp_constant (mkconst loc (pconst_of_const (mkintconst loc (uv s) c))))
-  | ExLab loc _ → error loc "labeled expression not allowed here 1"
+  | ExLab loc _ _ → error loc "labeled expression not allowed here 1"
   | ExLaz loc e → mklazy loc (expr e)
   | ExLet loc rf pel e →
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
@@ -1179,19 +1177,16 @@ and expr =
   ]
 and label_expr rev_al =
   fun
-  [ ExLab loc lpeo →
-      List.fold_left
-        (fun rev_al (p, eo) →
-           match p with
-           [ PaLid loc lab →
-               let e =
-                 match uv eo with
-                 [ Some e → e
-                 | None → ExLid loc lab ]
-               in
-               [(uv lab, expr e) :: rev_al]
-           | _ → error loc "ExLab case not impl" ])
-        rev_al (uv lpeo)
+  [ ExLab loc p eo →
+      match p with
+        [ PaLid loc lab →
+          let e =
+            match uv eo with
+              [ Some e → e
+              | None → ExLid loc lab ]
+              in
+              [(uv lab, expr e) :: rev_al]
+         | _ → error loc "ExLab case not impl" ]
   | ExOlb loc p eo →
       match p with
       [ PaLid loc lab →
@@ -1624,20 +1619,16 @@ and class_expr =
             (pcl_constr (longid_lident_long_id (uv cli))
                (List.map ctyp (uv tl)))
       | None → error loc "no class expr desc in this ocaml version" ]
-  | CeFun loc (PaLab ploc lppo) ce →
+  | CeFun loc (PaLab ploc p po) ce →
       match ocaml_pcl_fun with
       [ Some pcl_fun →
-          match uv lppo with
-          [ [(p, po)] →
-              let lab = label_of_patt p in
-              let p =
-                match uv po with
-                [ Some p → p
-                | None → p ]
-              in
-              mkpcl loc (pcl_fun lab None (patt p) (class_expr ce))
-          | [] | [_ :: _] → error ploc "case class multi lab not yet impl" ]
-      | None → error loc "no class expr desc in this ocaml version" ]
+        let lab = label_of_patt p in
+        let p =
+          match uv po with
+            [ Some p → p
+            | None → p ]
+        in
+        mkpcl loc (pcl_fun lab None (patt p) (class_expr ce)) ]
   | CeFun loc (PaOlb _ p eo) ce →
       match ocaml_pcl_fun with
       [ Some pcl_fun →

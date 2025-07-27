@@ -6454,7 +6454,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
-               MLast.PaLab (loc, [MLast.PaLid (loc, i), None]) :
+               MLast.PaLab (loc, MLast.PaLid (loc, i), None) :
                'patt)));
         Grammar.production
           (Grammar.r_next
@@ -6464,7 +6464,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun (p : 'patt) (i : string) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
-               MLast.PaLab (loc, [MLast.PaLid (loc, i), Some p]) :
+               MLast.PaLab (loc, MLast.PaLid (loc, i), Some p) :
                'patt)));
         Grammar.production
           (Grammar.r_next
@@ -6495,15 +6495,13 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "~")))
                    (Grammar.s_token ("", "{")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm
-                      (patt_tcon_opt_eq_patt :
-                       'patt_tcon_opt_eq_patt Grammar.Entry.e))
-                   (Grammar.s_token ("", ";")) false))
+                (Grammar.s_nterm
+                   (patt_tcon_opt_eq_patt :
+                    'patt_tcon_opt_eq_patt Grammar.Entry.e)))
              (Grammar.s_token ("", "}")),
            "194fe98d",
-           (fun _ (lppo : 'patt_tcon_opt_eq_patt list) _ _ (loc : Ploc.t) ->
-              (MLast.PaLab (loc, lppo) : 'patt)));
+           (fun _ (p, po : 'patt_tcon_opt_eq_patt) _ _ (loc : Ploc.t) ->
+              (MLast.PaLab (loc, p, po) : 'patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "#")))
@@ -6570,7 +6568,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
-               MLast.PaLab (loc, [MLast.PaLid (loc, i), None]) :
+               MLast.PaLab (loc, MLast.PaLid (loc, i), None) :
                'ipatt)));
         Grammar.production
           (Grammar.r_next
@@ -6580,7 +6578,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun (p : 'ipatt) (i : string) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
-               MLast.PaLab (loc, [MLast.PaLid (loc, i), Some p]) :
+               MLast.PaLab (loc, MLast.PaLid (loc, i), Some p) :
                'ipatt)));
         Grammar.production
           (Grammar.r_next
@@ -6612,15 +6610,13 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "~")))
                    (Grammar.s_token ("", "{")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm
-                      (ipatt_tcon_opt_eq_patt :
-                       'ipatt_tcon_opt_eq_patt Grammar.Entry.e))
-                   (Grammar.s_token ("", ";")) false))
+                (Grammar.s_nterm
+                   (ipatt_tcon_opt_eq_patt :
+                    'ipatt_tcon_opt_eq_patt Grammar.Entry.e)))
              (Grammar.s_token ("", "}")),
            "194fe98d",
-           (fun _ (lppo : 'ipatt_tcon_opt_eq_patt list) _ _ (loc : Ploc.t) ->
-              (MLast.PaLab (loc, lppo) : 'ipatt)))]];
+           (fun _ (p, po : 'ipatt_tcon_opt_eq_patt) _ _ (loc : Ploc.t) ->
+              (MLast.PaLab (loc, p, po) : 'ipatt)))]];
     Grammar.extension
       (ipatt_tcon_opt_eq_patt : 'ipatt_tcon_opt_eq_patt Grammar.Entry.e) None
       [None, None,
@@ -6840,7 +6836,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun (i : string) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
-               MLast.ExLab (loc, [MLast.PaLid (loc, i), None]) :
+               MLast.ExLab (loc, MLast.PaLid (loc, i), None) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -6850,7 +6846,7 @@ Grammar.safe_extend
            "194fe98d",
            (fun (e : 'expr) (i : string) (loc : Ploc.t) ->
               (let _ = warning_deprecated_since_6_00 loc in
-               MLast.ExLab (loc, [MLast.PaLid (loc, i), Some e]) :
+               MLast.ExLab (loc, MLast.PaLid (loc, i), Some e) :
                'expr)));
         Grammar.production
           (Grammar.r_next
@@ -6876,15 +6872,13 @@ Grammar.safe_extend
                 (Grammar.r_next
                    (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "~")))
                    (Grammar.s_token ("", "{")))
-                (Grammar.s_list1sep
-                   (Grammar.s_nterm
-                      (ipatt_tcon_fun_binding :
-                       'ipatt_tcon_fun_binding Grammar.Entry.e))
-                   (Grammar.s_token ("", ";")) false))
+                (Grammar.s_nterm
+                   (ipatt_tcon_fun_binding :
+                    'ipatt_tcon_fun_binding Grammar.Entry.e)))
              (Grammar.s_token ("", "}")),
            "194fe98d",
-           (fun _ (lpeo : 'ipatt_tcon_fun_binding list) _ _ (loc : Ploc.t) ->
-              (MLast.ExLab (loc, lpeo) : 'expr)))]];
+           (fun _ (p, eo : 'ipatt_tcon_fun_binding) _ _ (loc : Ploc.t) ->
+              (MLast.ExLab (loc, p, eo) : 'expr)))]];
     Grammar.extension
       (ipatt_tcon_fun_binding : 'ipatt_tcon_fun_binding Grammar.Entry.e) None
       [None, None,
