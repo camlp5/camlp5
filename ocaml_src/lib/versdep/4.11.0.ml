@@ -895,9 +895,7 @@ let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (mknoloc li, ctl));;
 
 let ocaml_pcl_constraint = Some (fun ce ct -> Pcl_constraint (ce, ct));;
 
-let ocaml_pcl_fun =
-  Some (fun lab ceo p ce -> Pcl_fun (labelled lab, ceo, p, ce))
-;;
+let ocaml_pcl_fun lab ceo p ce = Pcl_fun (labelled lab, ceo, p, ce);;
 
 let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
 

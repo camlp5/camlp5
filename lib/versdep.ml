@@ -1475,8 +1475,7 @@ value ocaml_pcl_constraint =
   Some (fun ce ct -> Pcl_constraint ce ct)
 ;
 
-value ocaml_pcl_fun =
-    Some (fun lab ceo p ce -> Pcl_fun (labelled lab) ceo p ce)
+value ocaml_pcl_fun lab ceo p ce = Pcl_fun (labelled lab) ceo p ce
 ;
 
 value ocaml_pcl_let =

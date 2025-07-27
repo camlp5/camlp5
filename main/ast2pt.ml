@@ -1620,32 +1620,26 @@ and class_expr =
                (List.map ctyp (uv tl)))
       | None → error loc "no class expr desc in this ocaml version" ]
   | CeFun loc (PaLab ploc p po) ce →
-      match ocaml_pcl_fun with
-      [ Some pcl_fun →
-        let lab = label_of_patt p in
-        let p =
-          match uv po with
-            [ Some p → p
-            | None → p ]
-        in
-        mkpcl loc (pcl_fun lab None (patt p) (class_expr ce)) ]
+    let lab = label_of_patt p in
+    let p =
+      match uv po with
+        [ Some p → p
+        | None → p ]
+    in
+    mkpcl loc (ocaml_pcl_fun lab None (patt p) (class_expr ce))
+
   | CeFun loc (PaOlb _ p eo) ce →
-      match ocaml_pcl_fun with
-      [ Some pcl_fun →
-          let lab = label_of_patt p in
-          let (p, eo) =
-            match uv eo with
-            [ Some (ExOlb _ p eo) → (p, eo)
-            | Some _ | None → (p, eo) ]
-          in
-          mkpcl loc
-            (pcl_fun ("?" ^ lab) (option_map expr (uv eo)) (patt p)
-               (class_expr ce))
-      | None → error loc "no class expr desc in this ocaml version" ]
+    let lab = label_of_patt p in
+    let (p, eo) =
+      match uv eo with
+        [ Some (ExOlb _ p eo) → (p, eo)
+        | Some _ | None → (p, eo) ]
+    in
+    mkpcl loc
+      (ocaml_pcl_fun ("?" ^ lab) (option_map expr (uv eo)) (patt p)
+         (class_expr ce))
   | CeFun loc p ce →
-      match ocaml_pcl_fun with
-      [ Some pcl_fun → mkpcl loc (pcl_fun "" None (patt p) (class_expr ce))
-      | None → error loc "no class expr desc in this ocaml version" ]
+    mkpcl loc (ocaml_pcl_fun "" None (patt p) (class_expr ce))
   | CeLet loc rf pel ce →
       match ocaml_pcl_let with
       [ Some pcl_let →
