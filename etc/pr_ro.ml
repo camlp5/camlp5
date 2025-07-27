@@ -296,10 +296,8 @@ EXTEND_PRINTER
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
-      [ <:expr< ~{$p$ = $e$} >> ->
-          pprintf pc "@[~{%p}@]" ipatt_tcon_fun_binding (p,<:vala< Some e >>)
-      | <:expr< ~{$p$} >> ->
-          pprintf pc "@[~{%p}@]" ipatt_tcon_fun_binding (p,<:vala< None >>)
+      [ <:expr< ~{$p$ $_opt:oe$} >> ->
+          pprintf pc "@[~{%p}@]" ipatt_tcon_fun_binding (p,oe)
       | <:expr< ?{$p$ = $e$} >> ->
           pprintf pc "@[<2>?{%p =@;%p}@]" patt p curr e
       | <:expr< ?{$p$} >> ->

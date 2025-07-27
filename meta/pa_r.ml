@@ -1772,24 +1772,15 @@ EXTEND
     [ [ "`"; s = V ident "" → <:patt< ` $_:s$ >>
       | "#"; lili = V extended_longident_lident "lilongid" → <:patt< # $_lilongid:lili$ >>
       | "~"; "{"; (p,po) = patt_tcon_opt_eq_patt; "}" →
-              MLast.PaLab loc p po
-(*CHET
-          <:patt< ~{$p$ = $po$} >>
- *)
+          <:patt< ~{$p$ $_opt:po$} >>
       | "?"; "{"; p = patt_tcon; eo = V (OPT [ "="; e = expr → e ]); "}" →
           <:patt< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; p = SELF →
           let _ = warning_deprecated_since_6_00 loc in
-              MLast.PaLab loc (MLast.PaLid loc i) <:vala< Some p >>
-(*CHET
           <:patt< ~{$_lid:i$ = $p$} >>
- *)
       | i = V TILDEIDENT →
           let _ = warning_deprecated_since_6_00 loc in
-              MLast.PaLab loc (MLast.PaLid loc i) <:vala< None >>
-(*CHET
           <:patt< ~{$_lid:i$} >>
- *)
       | p = patt_option_label →
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
@@ -1803,25 +1794,16 @@ EXTEND
   ;
   ipatt:
     [ [ "~"; "{"; (p,po) = ipatt_tcon_opt_eq_patt; "}" →
-              MLast.PaLab loc p po
-(*CHET
-          <:patt< ~{$_list:lppo$} >>
- *)
+          <:patt< ~{$p$ $_opt:po$} >>
       | "?"; "{"; p = ipatt_tcon; eo = V (OPT [ "="; e = expr → e ]); "}" →
           <:patt< ?{$p$ $_opt:eo$ } >>
 
       | i = V TILDEIDENTCOLON; p = SELF →
           let _ = warning_deprecated_since_6_00 loc in
-              MLast.PaLab loc (MLast.PaLid loc i) <:vala< Some p >>
-(*CHET
           <:patt< ~{$_lid:i$ = $p$} >>
- *)
       | i = V TILDEIDENT →
           let _ = warning_deprecated_since_6_00 loc in
-              MLast.PaLab loc (MLast.PaLid loc i) <:vala< None >>
-(*CHET
           <:patt< ~{$_lid:i$} >>
- *)
       | p = patt_option_label →
           let _ = warning_deprecated_since_6_00 loc in
           p ] ]
@@ -1857,24 +1839,15 @@ EXTEND
   expr: AFTER "apply"
     [ "label" NONA
       [ "~"; "{"; (p,eo) = ipatt_tcon_fun_binding; "}" →
-              MLast.ExLab loc p eo
-(*
-          <:expr< ~{$_list:lpeo$ } >>
- *)
+          <:expr< ~{$p$ $_opt:eo$} >>
       | "?"; "{"; p = ipatt_tcon; eo = V (OPT fun_binding); "}" →
           <:expr< ?{$p$ $_opt:eo$ } >>
       | i = V TILDEIDENTCOLON; e = SELF →
           let _ = warning_deprecated_since_6_00 loc in
-              MLast.ExLab loc (MLast.PaLid loc i) <:vala< Some e >>
-(*CHET
           <:expr< ~{$_lid:i$ = $e$} >>
- *)
       | i = V TILDEIDENT →
           let _ = warning_deprecated_since_6_00 loc in
-              MLast.ExLab loc (MLast.PaLid loc i) <:vala< None >>
-(*CHET
           <:expr< ~{$_lid:i$} >>
- *)
       | i = V QUESTIONIDENTCOLON; e = SELF →
           let _ = warning_deprecated_since_6_00 loc in
           <:expr< ?{$_lid:i$ = $e$} >>

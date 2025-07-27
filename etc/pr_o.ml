@@ -2437,10 +2437,8 @@ value label_ipatt_eq_patt curr pc (p, op) =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ~{$p$ = $p2$} >> ->
-          pprintf pc "%p" (label_ipatt_eq_patt curr) (p, <:vala< Some p2 >>)
-      | <:patt< ~{$p$} >> ->
-          pprintf pc "%p" (label_ipatt_eq_patt curr) (p, <:vala< None >>)
+    [ [ <:patt< ~{$p$ $_opt:po$} >> ->
+          pprintf pc "%p" (label_ipatt_eq_patt curr) (p, po)
       | <:patt< ?{$lid:p$ : $t$} >> ->
           pprintf pc "?(%s :@;%p)" p ctyp t
       | <:patt< ?{$lid:p$ : $t$ = $e$} >> ->
@@ -2557,13 +2555,17 @@ value poly_type pc =
   | t -> ctyp pc t ]
 ;
 
+value label_ipatt expr pc (p, oe) =
+  match Pcaml.unvala oe with
+  [ Some e -> pprintf pc "~%p:%p" patt p expr e
+  | None -> pprintf pc "~%p" patt p ]
+;
+
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
-      [ <:expr< ~{$p$ = $e$} >> ->
-          pprintf pc "~%p:%p" patt p curr e
-      | <:expr< ~{$p$} >> ->
-          pprintf pc "~%p" patt p
+      [ <:expr< ~{$p$ $_opt:oe$} >> ->
+          pprintf pc "%p" (label_ipatt curr) (p,oe)
       | <:expr< ?{$p$ = $e$} >> ->
           pprintf pc "?%p:%p" patt p curr e
       | <:expr< ?{$p$} >> ->
