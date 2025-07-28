@@ -552,6 +552,7 @@ EXTEND_PRINTER
           plistbf 0 (paren pc "variantsgreater")
             (List.map (fun v -> (fun pc -> poly_variant_decl pc v, "")) vl)
       | <:ctyp< ( $list:tl$ ) >> ->
+          let tl = List.map snd tl in
           let tl = List.map (fun t -> (t, "")) tl in
           plistb curr 0 (paren pc "*") tl
       | <:ctyp< $t1$ -> $t2$ >> ->

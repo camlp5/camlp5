@@ -94,7 +94,10 @@ let rec ctyp floc sh =
         let loc = floc loc in
         TySum (loc, vala_map (List.map (generic_constructor floc sh)) x1)
     | TyTup (loc, x1) ->
-        let loc = floc loc in TyTup (loc, vala_map (List.map self) x1)
+        let loc = floc loc in
+        TyTup
+          (loc,
+           vala_map (List.map (fun (a, b) -> v_option_v_string a, self b)) x1)
     | TyVrn (loc, x1, x2) ->
         let loc = floc loc in
         TyVrn (loc, vala_map (List.map (poly_variant floc sh)) x1, x2)
@@ -106,6 +109,7 @@ let rec ctyp floc sh =
         let loc = floc loc in TyOpen (loc, longid floc sh li, ctyp floc sh t)
   in
   self
+and v_option_v_string x = vala_map (option_map (vala_map (fun x -> x))) x
 and generic_constructor floc sh (loc, x1, x2, x3, x4, x5) =
   floc loc, x1, x2, vala_map (List.map (ctyp floc sh)) x3,
   vala_map (option_map (ctyp floc sh)) x4, attributes floc sh x5

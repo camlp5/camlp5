@@ -465,6 +465,22 @@ value check_type_binder =
     check_type_binder_f
 ;
 
+value is_lident_colon_f strm =
+  match Stream.npeek 2 strm with [
+    [("LIDENT",_) ; ("",":") :: _] -> True
+  | _ -> False
+  ]
+;
+
+value check_lident_colon_f strm =
+  if is_lident_colon_f strm then () else raise Stream.Failure
+;
+
+value check_lident_colon =
+  Grammar.Entry.of_parser gram "check_lident_colon"
+    check_lident_colon_f
+;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 EXTEND
@@ -1367,13 +1383,21 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" →
           mktuptyp Qast.Loc t tl
       | "("; t = SELF; ")" → t
-      | "("; tl = SV (LIST1 ctyp SEP "*"); ")" →
+      | "("; tl = SV (LIST1 maybe_labeled_ctyp SEP "*"); ")" →
           Qast.Node "TyTup" [Qast.Loc; tl]
       | "["; cdl = SV (LIST0 constructor_declaration SEP "|"); "]" →
           Qast.Node "TySum" [Qast.Loc; cdl]
       | "{"; ldl = SV (LIST1 label_declaration SEP ";"); "}" →
           Qast.Node "TyRec" [Qast.Loc; ldl] ] ]
   ;
+  maybe_labeled_ctyp:
+  [ [ check_lident_colon ; li = LIDENT ; ":" ; t = ctyp ->
+          Qast.Tuple [
+              Qast.VaVal (Qast.Option (Some (Qast.VaVal (Qast.Str li))))
+            ; t
+            ]
+    | t = ctyp -> Qast.Tuple [Qast.VaVal (Qast.Option None); t]
+    ] ] ;
   cons_ident:
   [ [ ci = SV UIDENT -> ci
     ] ] ;

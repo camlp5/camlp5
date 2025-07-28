@@ -12,6 +12,8 @@ open Versdep;
 
 Pcaml.strict_mode.val := True;
 
+value strip_labels tl = List.map snd tl ;
+
 value rec pfx short t =
   let t =
     match t with
@@ -40,7 +42,7 @@ value rec pfx short t =
   | <:ctyp< class_infos $t$ >> -> "ci" ^ pfx True t
   | <:ctyp< list $t$ >> -> "l" ^ pfx True t
   | <:ctyp< option $t$ >> -> "o" ^ pfx True t
-  | <:ctyp< ($list:tl$) >> -> String.concat "" (List.map (pfx True) tl)
+  | <:ctyp< ($list:tl$) >> -> String.concat "" (List.map (pfx True) (strip_labels tl))
   | _ -> "x" ]
 ;
 
@@ -87,7 +89,7 @@ value rec expr_of_type loc t =
       [ "bool" | "string" -> <:expr< C . $lid:tn$ >>
       | _ -> <:expr< $lid:tn$ >> ]
   | <:ctyp< ($list:tl$) >> ->
-      let tnl = name_of_vars tl in
+      let tnl = name_of_vars (strip_labels tl) in
       let rev_pl =
         List.fold_left
           (fun rev_pl (t, name) ->
@@ -206,7 +208,7 @@ value expr_of_type_decl loc td =
       in
       <:expr< fun x -> C.record $e$ >>
   | <:ctyp< ($list:tl$) >> ->
-      let tnl = name_of_vars tl in
+      let tnl = name_of_vars (strip_labels tl) in
       let rev_pl =
         List.fold_left
           (fun rev_pl (t, name) ->

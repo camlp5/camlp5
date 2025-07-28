@@ -57,7 +57,7 @@ and ctyp =
   | TyQuo of loc and V string
   | TyRec of loc and V (list (loc * string * bool * ctyp * attributes))
   | TySum of loc and V (list generic_constructor)
-  | TyTup of loc and V (list ctyp)
+  | TyTup of loc and V (list (V (option (V string)) * ctyp))
   | TyVrn of loc and V (list poly_variant) and
       option (option (V (list string)))
   | TyXtr of loc and string and option (V ctyp)

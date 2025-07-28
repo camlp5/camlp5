@@ -545,6 +545,20 @@ let check_type_binder =
   Grammar.Entry.of_parser gram "check_type_binder" check_type_binder_f
 ;;
 
+let is_lident_colon_f strm =
+  match Stream.npeek 2 strm with
+    ("LIDENT", _) :: ("", ":") :: _ -> true
+  | _ -> false
+;;
+
+let check_lident_colon_f strm =
+  if is_lident_colon_f strm then () else raise Stream.Failure
+;;
+
+let check_lident_colon =
+  Grammar.Entry.of_parser gram "check_lident_colon" check_lident_colon_f
+;;
+
 (* -- begin copy from pa_r to q_MLast -- *)
 
 Grammar.safe_extend
@@ -652,6 +666,8 @@ Grammar.safe_extend
      grammar_entry_create "type_parameter"
    and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
      grammar_entry_create "simple_type_parameter"
+   and maybe_labeled_ctyp : 'maybe_labeled_ctyp Grammar.Entry.e =
+     grammar_entry_create "maybe_labeled_ctyp"
    and cons_ident : 'cons_ident Grammar.Entry.e =
      grammar_entry_create "cons_ident"
    and rest_constructor_declaration : 'rest_constructor_declaration Grammar.Entry.e =
@@ -8426,10 +8442,12 @@ Grammar.safe_extend
                          (Grammar.r_next Grammar.r_stop
                             (Grammar.s_list1sep
                                (Grammar.s_nterm
-                                  (ctyp : 'ctyp Grammar.Entry.e))
+                                  (maybe_labeled_ctyp :
+                                   'maybe_labeled_ctyp Grammar.Entry.e))
                                (Grammar.s_token ("", "*")) false),
                           "194fe98d",
-                          (fun (a : 'ctyp list) (loc : Ploc.t) ->
+                          (fun (a : 'maybe_labeled_ctyp list)
+                               (loc : Ploc.t) ->
                              (Qast.VaVal (Qast.List a) : 'e__184)));
                        Grammar.production
                          (Grammar.r_next Grammar.r_stop
@@ -8534,6 +8552,33 @@ Grammar.safe_extend
            "194fe98d",
            (fun (i : 'e__183) _ (loc : Ploc.t) ->
               (Qast.Node ("TyQuo", [Qast.Loc; i]) : 'ctyp)))]];
+    Grammar.extension
+      (maybe_labeled_ctyp : 'maybe_labeled_ctyp Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           "194fe98d",
+           (fun (t : 'ctyp) (loc : Ploc.t) ->
+              (Qast.Tuple [Qast.VaVal (Qast.Option None); t] :
+               'maybe_labeled_ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_nterm
+                         (check_lident_colon :
+                          'check_lident_colon Grammar.Entry.e)))
+                   (Grammar.s_token ("LIDENT", "")))
+                (Grammar.s_token ("", ":")))
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           "194fe98d",
+           (fun (t : 'ctyp) _ (li : string) _ (loc : Ploc.t) ->
+              (Qast.Tuple
+                 [Qast.VaVal (Qast.Option (Some (Qast.VaVal (Qast.Str li))));
+                  t] :
+               'maybe_labeled_ctyp)))]];
     Grammar.extension (cons_ident : 'cons_ident Grammar.Entry.e) None
       [None, None,
        [Grammar.production

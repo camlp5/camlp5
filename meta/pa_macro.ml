@@ -230,14 +230,16 @@ value substp mloc env =
 ;
 
 value substt mloc env =
-  loop where rec loop =
+  let rec loop =
     fun
     [ <:ctyp< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
     | <:ctyp< $t1$ $t2$ >> -> <:ctyp< $loop t1$ $loop t2$ >>
-    | <:ctyp< ($list:tl$) >> -> <:ctyp< ($list:List.map loop tl$) >>
+    | <:ctyp< ($list:tl$) >> -> <:ctyp< ($list:List.map labloop tl$) >>
     | <:ctyp< $lid:x$ >> as t ->
         try List.assoc x env with [ Not_found -> t ]
     | t -> t ]
+  and labloop (lab, t) = (lab, loop t)
+  in loop
 ;
 
 value cannot_eval e =

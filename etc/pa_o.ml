@@ -1944,7 +1944,9 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           let t =
             match cal with
             [ <:vala< [t] >> -> t
-            | <:vala< [t :: tl] >> -> <:ctyp< ($list:[t :: tl]$) >>
+            | <:vala< ([_ :: _] as tl) >> ->
+               let tl = List.map (fun t -> (<:vala< None >>, t)) tl in
+               <:ctyp< ($list:tl$) >>
             | _ -> assert False ]
           in
           (<:vala< [] >>, <:vala< [] >>, <:vala< Some t >>, alg_attrs)
@@ -2041,8 +2043,12 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "star"
-      [ t = SELF; "*"; tl = LIST1 (ctyp LEVEL "apply") SEP "*" ->
-          <:ctyp< ( $list:[t :: tl]$ ) >> ]
+      [ t = labeled_ctyp; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*" ->
+          <:ctyp< ( $list:[t :: tl]$ ) >>
+      | t = SELF; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*" ->
+         let t = (<:vala< None >>, t) in
+          <:ctyp< ( $list:[t :: tl]$ ) >>
+      ]
     | "apply"
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t2$ $t1$ >> ]
     | "ctyp2" LEFTA
@@ -2061,6 +2067,14 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
           List.fold_left (fun c a -> <:ctyp< $c$ $a$ >>) i [t :: tl]
       | "("; t = SELF; ")" -> <:ctyp< $t$ >> ] ]
   ;
+  maybe_labeled_ctyp:
+  [ [ x = labeled_ctyp -> x
+    | t = ctyp LEVEL "apply" -> (<:vala< None >>, t)
+    ] ] ;
+  labeled_ctyp:
+  [ [ check_lident_colon ; li = LIDENT ; ":" ; t = ctyp LEVEL "apply" ->
+      (Ploc.VaVal (Some (Ploc.VaVal li)), t)
+    ] ] ;
   (* Identifiers *)
   ident:
     [ [ i = LIDENT -> i

@@ -861,6 +861,8 @@ Grammar.safe_extend
      grammar_entry_create "ctyp_ident"
    and paren_ctyp : 'paren_ctyp Grammar.Entry.e =
      grammar_entry_create "paren_ctyp"
+   and maybe_labeled_ctyp : 'maybe_labeled_ctyp Grammar.Entry.e =
+     grammar_entry_create "maybe_labeled_ctyp"
    and ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e =
      grammar_entry_create "ctyp_below_alg_attribute"
    and cons_ident : 'cons_ident Grammar.Entry.e =
@@ -4943,20 +4945,25 @@ Grammar.safe_extend
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
                 (Grammar.s_list1sep
-                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
+                   (Grammar.s_nterm
+                      (maybe_labeled_ctyp :
+                       'maybe_labeled_ctyp Grammar.Entry.e))
                    (Grammar.s_token ("", "*")) false))
              (Grammar.s_token ("", ")")),
            "194fe98d",
-           (fun _ (tl : 'ctyp list) _ (loc : Ploc.t) ->
+           (fun _ (tl : 'maybe_labeled_ctyp list) _ (loc : Ploc.t) ->
               (MLast.TyTup (loc, tl) : 'paren_ctyp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
                 (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "(")))
-                (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                (Grammar.s_nterm
+                   (maybe_labeled_ctyp :
+                    'maybe_labeled_ctyp Grammar.Entry.e)))
              (Grammar.s_token ("", ")")),
            "194fe98d",
-           (fun _ (t : 'ctyp) _ (loc : Ploc.t) -> (t : 'paren_ctyp)));
+           (fun _ (t : 'maybe_labeled_ctyp) _ (loc : Ploc.t) ->
+              (snd t : 'paren_ctyp)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4964,14 +4971,19 @@ Grammar.safe_extend
                    (Grammar.r_next
                       (Grammar.r_next Grammar.r_stop
                          (Grammar.s_token ("", "(")))
-                      (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)))
+                      (Grammar.s_nterm
+                         (maybe_labeled_ctyp :
+                          'maybe_labeled_ctyp Grammar.Entry.e)))
                    (Grammar.s_token ("", "*")))
                 (Grammar.s_list1sep
-                   (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e))
+                   (Grammar.s_nterm
+                      (maybe_labeled_ctyp :
+                       'maybe_labeled_ctyp Grammar.Entry.e))
                    (Grammar.s_token ("", "*")) false))
              (Grammar.s_token ("", ")")),
            "194fe98d",
-           (fun _ (tl : 'ctyp list) _ (t : 'ctyp) _ (loc : Ploc.t) ->
+           (fun _ (tl : 'maybe_labeled_ctyp list) _ (t : 'maybe_labeled_ctyp)
+                _ (loc : Ploc.t) ->
               (mktuptyp loc t tl : 'paren_ctyp)));
         Grammar.production
           (Grammar.r_next
@@ -4985,6 +4997,29 @@ Grammar.safe_extend
            "194fe98d",
            (fun _ (mt : 'module_type) _ _ (loc : Ploc.t) ->
               (MLast.TyPck (loc, mt) : 'paren_ctyp)))]];
+    Grammar.extension
+      (maybe_labeled_ctyp : 'maybe_labeled_ctyp Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next Grammar.r_stop
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           "194fe98d",
+           (fun (t : 'ctyp) (loc : Ploc.t) ->
+              (None, t : 'maybe_labeled_ctyp)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next
+                   (Grammar.r_next Grammar.r_stop
+                      (Grammar.s_nterm
+                         (check_lident_colon :
+                          'check_lident_colon Grammar.Entry.e)))
+                   (Grammar.s_token ("LIDENT", "")))
+                (Grammar.s_token ("", ":")))
+             (Grammar.s_nterm (ctyp : 'ctyp Grammar.Entry.e)),
+           "194fe98d",
+           (fun (t : 'ctyp) _ (li : string) _ (loc : Ploc.t) ->
+              (let li = li in Some li, t : 'maybe_labeled_ctyp)))]];
     Grammar.extension
       (ctyp_below_alg_attribute : 'ctyp_below_alg_attribute Grammar.Entry.e)
       None

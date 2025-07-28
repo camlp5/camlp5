@@ -322,8 +322,10 @@ module MetaAction =
       | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>
       | MLast.TyQuo loc s -> <:expr< MLast.TyQuo $mloc$ $mvala mstring s$ >>
       | MLast.TyTup loc tl ->
-          <:expr< MLast.TyTup $mloc$ $mvala (mlist mctyp) tl$ >>
+          <:expr< MLast.TyTup $mloc$ $mvala (mlist mlabctyp) tl$ >>
       | x -> not_impl "mctyp" x ]
+    and mlabctyp (lab, t) =
+      <:expr< ($mvala (moption (mvala mstring)) lab$, $mctyp t$) >>
     and mpea (p, e, attrs) =
       do { assert ([] = Pcaml.unvala attrs) ;
       <:expr< ($mpatt p$, $mexpr e$, Ploc.VaVal []) >>

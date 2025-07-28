@@ -369,14 +369,17 @@ value neg_string n =
 ;
 
 value varify_constructors var_names =
-  loop where rec loop =
+  let rec loop =
     fun
     [ <:ctyp:< $t1$ → $t2$ >> → <:ctyp< $loop t1$ → $loop t2$ >>
     | <:ctyp:< $t1$ $t2$ >> → <:ctyp:< $loop t1$ $loop t2$ >>
-    | <:ctyp:< ($list:tl$) >> → <:ctyp:< ($list:List.map loop tl$) >>
+    | <:ctyp:< ($list:tl$) >> → <:ctyp:< ($list:List.map labloop tl$) >>
     | <:ctyp:< $lid:s$ >> as t →
         if List.mem s var_names then <:ctyp< '$"&"^s$ >> else t
     | t → t ]
+  and labloop (lab, t) = (lab, loop t)
+  in
+  loop
 ;
 
 value label_of_patt =
@@ -391,7 +394,7 @@ value ctyp_mentions s cty =
     <:ctyp< '$s2$ >> ->  s = s2
   | <:ctyp< $t1$ $t2$ >> ->  crec t1 || crec t2
   | <:ctyp< $t1$ -> $t2$ >> ->  crec t1 || crec t2
-  | <:ctyp< ($list:tl$) >> -> List.exists crec tl
+  | <:ctyp< ($list:tl$) >> -> List.exists crec (List.map snd tl)
   | _ -> False
   ] in
   crec cty
@@ -547,7 +550,7 @@ and ctyp =
   | TyQuo loc s → mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ → error loc "record type not allowed here"
   | TySum loc _ → error loc "sum type not allowed here"
-  | TyTup loc tl → mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
+  | TyTup loc tl → mktyp loc (Ptyp_tuple (List.map ctyp (List.map snd (uv tl))))
   | TyVrn loc catl ool →
       let catl =
         List.map

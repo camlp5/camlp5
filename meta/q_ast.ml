@@ -68,7 +68,7 @@ module Meta_make (C : MetaSig) =
                (C.list
                   generic_constructor)
                llsltot]
-      | TyTup _ lt → C.node "TyTup" [C.vala (C.list ctyp) lt]
+      | TyTup _ lt → C.node "TyTup" [C.vala (C.list labeled_ctyp) lt]
       | TyVrn _ lpv ools →
           C.node "TyVrn"
             [C.vala (C.list poly_variant) lpv;
@@ -80,6 +80,7 @@ module Meta_make (C : MetaSig) =
       | TyOpen _ li t ->
          C.node "TyOpen" [longid li; ctyp t]
       ]
+    and labeled_ctyp (so, ct) = C.tuple [C.vala (C.option (C.vala C.string)) so; ctyp ct]
     and longid_lident (lio, s) = C.tuple [C.option (C.vala longid) lio; C.vala C.string s]
     and conv_attributes attrs =
       C.vala (C.list attribute) attrs

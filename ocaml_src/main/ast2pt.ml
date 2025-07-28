@@ -536,11 +536,11 @@ let varify_constructors var_names =
     function
       MLast.TyArr (loc, t1, t2) -> MLast.TyArr (loc, loop t1, loop t2)
     | MLast.TyApp (loc, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
-    | MLast.TyTup (loc, tl) -> MLast.TyTup (loc, List.map loop tl)
+    | MLast.TyTup (loc, tl) -> MLast.TyTup (loc, List.map labloop tl)
     | MLast.TyLid (loc, s) as t ->
         if List.mem s var_names then MLast.TyQuo (loc, "&" ^ s) else t
     | t -> t
-  in
+  and labloop (lab, t) = lab, loop t in
   loop
 ;;
 
@@ -557,7 +557,7 @@ let ctyp_mentions s cty =
       MLast.TyQuo (_, s2) -> s = s2
     | MLast.TyApp (_, t1, t2) -> crec t1 || crec t2
     | MLast.TyArr (_, t1, t2) -> crec t1 || crec t2
-    | MLast.TyTup (_, tl) -> List.exists crec tl
+    | MLast.TyTup (_, tl) -> List.exists crec (List.map snd tl)
     | _ -> false
   in
   crec cty
@@ -705,7 +705,8 @@ and ctyp =
   | TyQuo (loc, s) -> mktyp loc (Ptyp_var (uv s))
   | TyRec (loc, _) -> error loc "record type not allowed here"
   | TySum (loc, _) -> error loc "sum type not allowed here"
-  | TyTup (loc, tl) -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
+  | TyTup (loc, tl) ->
+      mktyp loc (Ptyp_tuple (List.map ctyp (List.map snd (uv tl))))
   | TyVrn (loc, catl, ool) ->
       let catl =
         List.map

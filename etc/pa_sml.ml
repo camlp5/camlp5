@@ -479,7 +479,10 @@ EXTEND
   ctyp:
     [ RIGHTA
       [ x1 = ctyp; "->"; x2 = ctyp -> <:ctyp< $x1$ -> $x2$ >> ]
-    | [ x1 = ctyp; "*"; x2 = tuple_ty -> <:ctyp< ($list:[x1 :: x2]$) >> ]
+    | [ x1 = ctyp; "*"; x2 = tuple_ty ->
+      let xl = [x1 :: x2] in
+      let xl = List.map (fun x -> (<:vala< None >>, x)) xl in
+      <:ctyp< ($list:xl$) >> ]
     | "ty'"
       [ "'"; x1 = LIDENT -> <:ctyp< '$x1$ >>
       | "'"; "'"; x1 = LIDENT -> <:ctyp< '$x1$ >>

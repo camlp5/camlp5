@@ -725,8 +725,10 @@ module MetaAction =
                   (loc,
                    MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "TyTup")),
                 mloc),
-             mvala (mlist mctyp) tl)
+             mvala (mlist mlabctyp) tl)
       | x -> not_impl "mctyp" x
+    and mlabctyp (lab, t) =
+      MLast.ExTup (loc, [mvala (moption (mvala mstring)) lab; mctyp t])
     and mpea (p, e, attrs) =
       assert ([] = Pcaml.unvala attrs);
       MLast.ExTup

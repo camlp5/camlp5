@@ -1456,11 +1456,17 @@ EXTEND
   ;
   paren_ctyp:
     [ [ "(" ; "module"; mt = module_type ; ")" → <:ctyp< ( module $mt$ ) >>
-      | "("; t = ctyp; "*"; tl = LIST1 ctyp SEP "*"; ")" → mktuptyp loc t tl
-      | "("; t = ctyp; ")" → <:ctyp< $t$ >>
-      | "("; tl = V (LIST1 ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>
+      | "("; t = maybe_labeled_ctyp; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*"; ")" → mktuptyp loc t tl
+      | "("; t = maybe_labeled_ctyp; ")" → <:ctyp< $snd t$ >>
+      | "("; tl = V (LIST1 maybe_labeled_ctyp SEP "*"); ")" → <:ctyp< ( $_list:tl$ ) >>
     ] ]
   ;
+  maybe_labeled_ctyp:
+  [ [ check_lident_colon ; li = LIDENT ; ":" ; t = ctyp ->
+      let li = <:vala< li >> in
+      (<:vala< Some li >>, t)
+    | t = ctyp -> (<:vala< None >>, t)
+    ] ] ;
   ctyp_below_alg_attribute:
   [ [ x = ctyp LEVEL "below_alg_attribute" -> x ]
   ]

@@ -282,6 +282,13 @@ value pr_extension atstring pc attr =
   pprintf pc "[%s%p]" atstring attribute_body (Pcaml.unvala attr)
 ;
 
+value labeled_ctyp pc (lab, ct) =
+  match (Pcaml.unvala lab) with [
+      None -> pprintf pc "%p" ctyp ct
+    | Some l -> pprintf pc "%s:%p" (Pcaml.unvala l) ctyp ct
+    ]
+;
+
 value longident_lident pc (lio, id) =
   match lio with
   [ None -> pprintf pc "%p" lident (Pcaml.unvala id)
@@ -1982,7 +1989,7 @@ EXTEND_PRINTER
                    vdl)
       | <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
-          pprintf pc "@[<1>(%p)@]" (plist ctyp 0) tl
+          pprintf pc "@[<1>(%p)@]" (plist labeled_ctyp 0) tl
       | <:ctyp< ( module $mt$ ) >> ->
           pprintf pc "@[(module@ %p)@]" module_type mt
       | <:ctyp:< $lid:t$ >> ->

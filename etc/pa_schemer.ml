@@ -1522,6 +1522,7 @@ and ctyp_se =
       <:ctyp< ($t1$ as $t2$) >>
   | Sexpr loc [Slid _ "*" :: sel] →
       let tl = anti_list_map ctyp_se sel in
+      let tl = Pcaml.vala_map (List.map (fun ct -> (<:vala< None >>, ct))) tl in
       <:ctyp< ($_list:tl$) >>
   | Sexpr loc [Slid _ "=="; se1; se2] →
       let t1 = ctyp_se se1 in

@@ -50,7 +50,7 @@ and ctyp =
   | TyQuo of loc * string
   | TyRec of loc * (loc * string * bool * ctyp * attributes) list
   | TySum of loc * generic_constructor list
-  | TyTup of loc * ctyp list
+  | TyTup of loc * (string option * ctyp) list
   | TyVrn of loc * poly_variant list * string list option option
   | TyXtr of loc * string * ctyp option
   | TyAtt of loc * ctyp * attribute

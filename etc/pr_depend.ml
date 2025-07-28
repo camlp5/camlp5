@@ -41,6 +41,8 @@ value id_list =
   | _ -> () ]
 ;
 
+value strip_labels tl = List.map snd tl ;
+
 value rec ctyp =
   fun
   [ <:ctyp< $longid:t$ . $lid:_$ >> -> longident t
@@ -56,7 +58,7 @@ value rec ctyp =
   | <:ctyp< ' $_$ >> -> ()
   | <:ctyp< { $list:ldl$ } >> -> list label_decl ldl
   | <:ctyp< [ $list:cdl$ ] >> -> list constr_decl cdl
-  | <:ctyp< ( $list:tl$ ) >> -> list ctyp tl
+  | <:ctyp< ( $list:tl$ ) >> -> list ctyp (strip_labels tl)
   | <:ctyp< [ = $list:sbtll$ ] >> -> list variant sbtll
   | <:ctyp< [ > $list:sbtll$ ] >> -> list variant sbtll
   | <:ctyp< [ < $list:sbtll$ > $list:_$ ] >> -> list variant sbtll

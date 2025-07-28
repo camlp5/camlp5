@@ -7,20 +7,20 @@
 #require "rresult";;
 #require "pcre2";;
 #require "bos";;
-(*
+
 #require "camlp5.pa_op";;
 Pcaml.inter_phrases := Some ";;\n";;
- *)
+(*
 #require "camlp5.pa_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
-(*
-#require "camlp5.pr_o";;
  *)
 
+#require "camlp5.pr_o";;
+
+(*
 #require "camlp5.pr_r";;
 Pcaml.inter_phrases := Some ";\n";;
-
+ *)
 
 #require "camlp5.parser_quotations";;
 (*
@@ -55,7 +55,9 @@ let pp_plexing_lexbuf b = Fmt.(pf stdout "<<%s>>" (Plexing.Lexbuf.get b)) ;;
 *)
 
 let pp_ploc_t pps (loc : Ploc.t) = Fmt.(pf pps "<%s>" (Ploc.string_of_location loc)) ;;
+(*
 #install_printer pp_ploc_t ;;
+ *)
 let pp_location_t pps (loc : Location.t) = Fmt.(pf pps "<loc>") ;;
 (*
 #install_printer pp_location_t ;;
@@ -115,6 +117,8 @@ let pp_patt ty = Fmt.(pf stdout "#<patt< %a >>" Pa_ppx_base.Pp_MLast.pp_patt ty)
 #install_printer pp_sig_item ;;
  *)
 print_string "================ START ================\n";; flush stdout ;;
+
+#directory "../etc";;
 
 (*
 ;;; Local Variables: ***

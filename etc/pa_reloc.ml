@@ -10,6 +10,8 @@
 
 Pcaml.strict_mode.val := True;
 
+value strip_labels tl = List.map snd tl ;
+
 value patt_of_type gtn loc n t =
   let x = "x" ^ string_of_int n in
   let p = <:patt< $lid:x$ >> in
@@ -31,7 +33,7 @@ value rec expr_of_type gtn use_self loc t =
           (fun (rev_pl, n) t ->
              let (p, n) = patt_of_type gtn loc n t in
              ([p :: rev_pl], n))
-          ([], 1) tl
+          ([], 1) (strip_labels tl)
       in
       let (rev_el, _, use_self) =
         List.fold_left
@@ -50,7 +52,7 @@ value rec expr_of_type gtn use_self loc t =
                    (e, n + 1, use_self) ]
              in
              ([e :: rev_el], n, use_self))
-          ([], 1, use_self) tl
+          ([], 1, use_self) (strip_labels tl)
       in
       let p = <:patt< ($list:List.rev rev_pl$) >> in
       let e = <:expr< ($list:List.rev rev_el$) >> in

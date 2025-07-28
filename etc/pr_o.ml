@@ -1807,7 +1807,12 @@ EXTEND_PRINTER
     | "star"
       [ <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
-          plist next 2 pc tl ]
+          let pp1 pc (lab, ct) =
+            match Pcaml.unvala lab with [
+                None -> pprintf pc "%p" next ct
+              | Some l -> pprintf pc "%s:%p" (Pcaml.unvala l) next ct
+              ] in
+          plist pp1 2 pc tl ]
    | "apply"
       [ <:ctyp:< $t1$ $t2$ >> ->
           match t1 with
