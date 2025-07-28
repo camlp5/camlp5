@@ -1,7 +1,7 @@
 (* camlp5r *)
 (* ast2pt.mli,v *)
 
-value longid_long_id : MLast.longid -> Longident.t ;
+value longid_to_longident : MLast.longid -> Longident.t ;
 value conv_con : string -> string ;
 
 (** Conversion between Camlp5 AST into OCaml AST *)

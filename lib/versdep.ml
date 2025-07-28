@@ -73,6 +73,10 @@ value mknoloc txt =
   mkloc loc_none txt
 ;
 
+value ocaml_longident_ldot (loc : Location.t) li s = Ldot li s ;
+value ocaml_longident_lapply (loc : Location.t) li1 li2 = Lapply li1 li2 ;
+value ocaml_longident_lident (loc : Location.t) s = Lident s ;
+
 value ocaml_longident_option_of_string_list (loc : Location.t) sl =
   match sl with [
       [] -> None
@@ -701,7 +705,7 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
   END
 ;
 
-value ocaml_package_type li ltl =
+value ocaml_package_type li ltl : package_type =
   (mknoloc li, List.map (fun (li, t) → (mkloc t.ptyp_loc li, t)) ltl)
 ;
 
