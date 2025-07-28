@@ -61,7 +61,7 @@ let loc_none =
 let mkloc loc txt = {Location.txt = txt; loc = loc};;
 let mknoloc txt = mkloc loc_none txt;;
 
-let ocaml_id_or_li_of_string_list loc sl =
+let ocaml_longident_option_of_string_list (loc : Location.t) sl =
   match sl with
     [] -> None
   | s :: sl ->
@@ -73,18 +73,10 @@ let ocaml_id_or_li_of_string_list loc sl =
       Some (loop (Lident s) sl)
 ;;
 
-let ocaml_id_or_li_of_string_list loc sl =
-  let mkli s =
-    let rec loop f =
-      function
-        i :: il -> loop (fun s -> Ldot (f i, s)) il
-      | [] -> f s
-    in
-    loop (fun s -> Lident s)
-  in
-  match List.rev sl with
-    [] -> None
-  | s :: sl -> Some (mkli s (List.rev sl))
+let ocaml_longident_of_string_list loc sl =
+  match ocaml_longident_option_of_string_list loc sl with
+    None -> failwith "ocaml_longident_of_string_list: empty argument"
+  | Some li -> li
 ;;
 
 let not_extended_longident =

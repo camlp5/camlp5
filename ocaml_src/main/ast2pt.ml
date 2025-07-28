@@ -175,19 +175,12 @@ let uident_True__True =
   | x -> x
 ;;
 
-let mkli s =
-  let rec loop f =
-    function
-      i :: il -> loop (fun s -> Ldot (f i, s)) il
-    | [] -> f s
-  in
-  loop (fun s -> Lident s)
-;;
+let mkli loc s sl = ocaml_longident_of_string_list (mkloc loc) (s :: sl);;
 
 let long_id_of_string_list loc sl =
-  match List.rev sl with
+  match sl with
     [] -> error loc "bad ast"
-  | s :: sl -> mkli s (List.rev sl)
+  | _ -> ocaml_longident_of_string_list (mkloc loc) sl
 ;;
 
 let concat_long_ids l1 l2 =
