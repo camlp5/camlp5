@@ -62,6 +62,7 @@ let mkloc loc txt = {Location.txt = txt; loc = loc};;
 let mknoloc txt = mkloc loc_none txt;;
 
 let ocaml_longident_ldot (loc : Location.t) li s = Ldot (li, s);;
+
 let ocaml_longident_lapply (loc : Location.t) li1 li2 = Lapply (li1, li2);;
 let ocaml_longident_lident (loc : Location.t) s = Lident s;;
 
@@ -72,9 +73,9 @@ let ocaml_longident_option_of_string_list (loc : Location.t) sl =
       let rec loop acc =
         function
           [] -> acc
-        | s :: sl -> loop (Ldot (acc, s)) sl
+        | s :: sl -> loop (ocaml_longident_ldot loc acc s) sl
       in
-      Some (loop (Lident s) sl)
+      Some (loop (ocaml_longident_lident loc s) sl)
 ;;
 
 let ocaml_longident_of_string_list loc sl =
@@ -430,7 +431,7 @@ let ocaml_ptyp_variant loc catl clos sl_opt =
   Some (Ptyp_variant (catl, clos, sl_opt))
 ;;
 
-let ocaml_package_type li ltl : package_type =
+let ocaml_package_type loc li ltl : package_type =
   mknoloc li, List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
 ;;
 
@@ -491,6 +492,7 @@ let ocaml_pexp_construct_args =
 ;;
 
 let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
+  let al = al in
   let a = ocaml_mkexp loc (Pexp_tuple al) in
   {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
    pexp_loc_stack = [];
@@ -561,6 +563,30 @@ let ocaml_pexp_override sel =
 
 let ocaml_pexp_pack me = Pexp_pack me;;
 let ocaml_ptyp_pack pt = Ptyp_package pt;;
+let ocaml_ptyp_tuple x =
+  let x =
+    List.map
+      (function
+         None, t -> t
+       | Some _, t ->
+           failwith
+             "Ptyp_tuple: labeled tuples only available with ocaml >= 5.04")
+      x
+  in
+  Ptyp_tuple x
+;;
+let ocaml_pexp_tuple x =
+  let x =
+    List.map
+      (function
+         None, t -> t
+       | Some _, t ->
+           failwith
+             "Pexp_tuple: labeled tuples only available with ocaml >= 5.04")
+      x
+  in
+  Pexp_tuple x
+;;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
@@ -633,8 +659,24 @@ let ocaml_ppat_construct_args =
   | _ -> None
 ;;
 
+let ocaml_ppat_tuple l cflag =
+  let l =
+    List.map
+      (function
+         None, p -> p
+       | Some _, _ ->
+           failwith
+             "Ppat_tuple: labeled tuples only available at ocaml >= 5.4")
+      l
+  in
+  if cflag = Open then
+    failwith "Ppat_tuple: labeled tuples only available at ocaml >= 5.4"
+  else Ppat_tuple l
+;;
+
 let mkpat_ocaml_ppat_construct_arity loc li_loc li tyvl al =
-  let a = ocaml_mkpat loc (Ppat_tuple al) in
+  let al = List.map (fun x -> None, x) al in
+  let a = ocaml_mkpat loc (ocaml_ppat_tuple al Closed) in
   {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) true;
    ppat_loc = loc; ppat_loc_stack = [];
    ppat_attributes =

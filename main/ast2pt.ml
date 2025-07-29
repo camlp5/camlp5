@@ -401,6 +401,13 @@ value ctyp_mentions s cty =
   crec cty
 ;
 
+value add_empty_labels l = List.map (fun x -> (None, x)) l ;
+value strip_empty_labels loc l = do {
+  assert (List.for_all (fun (lab, _) -> None = uv lab) l) ;
+  List.map snd l
+}
+;
+
 value rec type_decl_of_with_type loc tn tpl pf ct =
   let (params, variance) = List.split (uv tpl) in
   let params = List.map uv params in
@@ -551,7 +558,7 @@ and ctyp =
   | TyQuo loc s → mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ → error loc "record type not allowed here"
   | TySum loc _ → error loc "sum type not allowed here"
-  | TyTup loc tl → mktyp loc (Ptyp_tuple (List.map ctyp (List.map snd (uv tl))))
+  | TyTup loc tl → mktyp loc (ocaml_ptyp_tuple (List.map (fun (lab, t) -> (lab |> uv |> option_map uv, ctyp t)) (uv tl)))
   | TyVrn loc catl ool →
       let catl =
         List.map
@@ -626,7 +633,7 @@ and package_of_module_type loc mt =
     | _ → (mt, []) ]
   in
   let li = module_type_to_longident mt in
-  ocaml_package_type li with_con
+  ocaml_package_type (mkloc loc) li with_con
 
 and type_decl ?{item_attributes=[]} tn tl priv (cl,tdCon) =
   fun
@@ -727,7 +734,9 @@ and patt =
             let a =
               match al with
               [ [a] -> a
-              | _ -> mkpat loc (Ppat_tuple al) ]
+              | _ ->
+                 let al = add_empty_labels al in
+                 mkpat loc (ocaml_ppat_tuple al Closed) ]
             in
             mkpat loc (ocaml_ppat_construct li_loc li (Some ([],a)) False)
           else mkpat_ocaml_ppat_construct_arity (mkloc loc) li_loc li [] al
@@ -739,7 +748,10 @@ and patt =
                   let a =
                     match al with
                     [ [a] → a
-                    | _ → mkpat loc (Ppat_tuple al) ]
+                    | _ →
+                      let al = add_empty_labels al in
+                      mkpat loc (ocaml_ppat_tuple al Closed)
+                    ]
                   in
                   mkpat loc (ppat_variant (s, Some a))
               | Some _ | None →
@@ -791,7 +803,9 @@ and patt =
       mkpat loc
         (Ppat_constant
            (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))
-  | PaTup loc pl → mkpat loc (Ppat_tuple (List.map patt (uv pl)))
+  | PaTup loc pl →
+     let l = add_empty_labels (List.map patt (uv pl)) in
+      mkpat loc (ocaml_ppat_tuple l Closed)
   | PaTyc loc p t → mkpat loc (Ppat_constraint (patt p) (ctyp t))
   | PaTyp loc lili →
       match ocaml_ppat_type with
@@ -895,7 +909,7 @@ and expr =
             let a =
               match al with
               [ [a] -> a
-              | _ -> mkexp loc (Pexp_tuple al) ]
+              | _ -> mkexp loc (ocaml_pexp_tuple (add_empty_labels al)) ]
             in
             mkexp loc (ocaml_pexp_construct li_loc li (Some a) False)
           else
@@ -910,7 +924,7 @@ and expr =
                   let a =
                     match al with
                     [ [a] → a
-                    | _ → mkexp loc (Pexp_tuple al) ]
+                    | _ → mkexp loc (ocaml_pexp_tuple (add_empty_labels al)) ]
                   in
                   mkexp loc (pexp_variant (s, Some a))
               | Some _ | None →
@@ -1165,7 +1179,7 @@ and expr =
         (Pexp_constant
            (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))
   | ExTry loc e pel → mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
-  | ExTup loc el → mkexp loc (Pexp_tuple (List.map expr (uv el)))
+  | ExTup loc el → mkexp loc (ocaml_pexp_tuple (add_empty_labels (List.map expr (uv el))))
   | ExTyc loc e t →
       mkexp loc (ocaml_pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExVrn loc s →

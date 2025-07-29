@@ -73,8 +73,21 @@ value mknoloc txt =
   mkloc loc_none txt
 ;
 
-value ocaml_longident_ldot (loc : Location.t) li s = Ldot li s ;
-value ocaml_longident_lapply (loc : Location.t) li1 li2 = Lapply li1 li2 ;
+value ocaml_longident_ldot (loc : Location.t) li s =
+IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+ Ldot li s
+ELSE
+ Ldot (mkloc loc li) (mkloc loc s)
+END
+;
+
+value ocaml_longident_lapply (loc : Location.t) li1 li2 =
+IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+ Lapply li1 li2
+ELSE
+ Lapply (mkloc loc li1) (mkloc loc li2)
+END
+;
 value ocaml_longident_lident (loc : Location.t) s = Lident s ;
 
 value ocaml_longident_option_of_string_list (loc : Location.t) sl =
@@ -83,9 +96,9 @@ value ocaml_longident_option_of_string_list (loc : Location.t) sl =
     | [s :: sl] ->
        let rec loop acc = fun [
              [] -> acc
-           | [s :: sl] -> loop (Ldot acc s) sl
+           | [s :: sl] -> loop (ocaml_longident_ldot loc acc s) sl
            ]
-       in Some (loop (Lident s) sl)
+       in Some (loop (ocaml_longident_lident loc s) sl)
     ]
 ;
 
@@ -99,7 +112,12 @@ value ocaml_longident_of_string_list loc sl =
 value not_extended_longident =
   let rec not_extended = fun [
     Lident _ -> True
-  | Ldot li _ -> not_extended li
+  | Ldot li _ -> 
+IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+  not_extended li
+ELSE
+  not_extended li.txt
+END
   | Lapply _ _ -> False
   ] in 
   not_extended
@@ -705,8 +723,17 @@ value ocaml_ptyp_variant loc catl clos sl_opt =
   END
 ;
 
-value ocaml_package_type li ltl : package_type =
+value ocaml_package_type loc li ltl : package_type =
+IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
   (mknoloc li, List.map (fun (li, t) → (mkloc t.ptyp_loc li, t)) ltl)
+ELSE
+  {
+    ppt_path = mkloc loc li
+  ; ppt_cstrs = List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
+  ; ppt_loc = loc
+  ; ppt_attrs = []
+  }
+END
 ;
 
 value ocaml_pconst_char c =
@@ -793,6 +820,12 @@ value ocaml_pexp_construct_args =
 ;
 
 value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
+  let al =
+  IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+    al
+  ELSE
+    List.map (fun [ (None, p) -> p | (Some _, _) -> failwith "Ppat_tuple: labeled tuples only available at ocaml >= 5.4" ]) al
+  END in
   let a = ocaml_mkexp loc (Pexp_tuple al) in
   IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     {pexp_desc = ocaml_pexp_construct li_loc li (Some a) True;
@@ -936,8 +969,36 @@ value ocaml_pexp_override sel =
   Pexp_override sel
 ;
 
-value ocaml_pexp_pack me = Pexp_pack me ;
+value ocaml_pexp_pack me =
+IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+  Pexp_pack me
+ELSE
+  Pexp_pack me None
+END
+;
 value ocaml_ptyp_pack pt = Ptyp_package pt ;
+value ocaml_ptyp_tuple x =
+  IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+    let x = List.map (fun [
+                          (None, t) -> t
+                        | (Some _, t) -> failwith "Ptyp_tuple: labeled tuples only available with ocaml >= 5.04"
+                        ]) x in
+    Ptyp_tuple x
+  ELSE
+    Ptyp_tuple x
+  END
+;
+value ocaml_pexp_tuple x =
+  IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+    let x = List.map (fun [
+                          (None, t) -> t
+                        | (Some _, t) -> failwith "Pexp_tuple: labeled tuples only available with ocaml >= 5.04"
+                        ]) x in
+    Pexp_tuple x
+  ELSE
+    Pexp_tuple x
+  END
+;
 
 value ocaml_pexp_poly =
   Some (fun e t -> Pexp_poly e t)
@@ -1050,14 +1111,27 @@ value ocaml_ppat_construct_args =
     | _ -> None ]
 ;
 
+value ocaml_ppat_tuple l cflag =
+  IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+    let l = List.map (fun [ (None, p) -> p | (Some _, _) -> failwith "Ppat_tuple: labeled tuples only available at ocaml >= 5.4" ]) l in
+    if (cflag = Open) then failwith "Ppat_tuple: labeled tuples only available at ocaml >= 5.4"
+    else Ppat_tuple l
+  ELSE
+    Ppat_tuple l cflag
+  END
+;
+
 value mkpat_ocaml_ppat_construct_arity loc li_loc li tyvl al =
+  let al = 
+      List.map (fun x -> (None, x)) al
+  in
   IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
-    let a = ocaml_mkpat loc (Ppat_tuple al) in
+    let a = ocaml_mkpat loc (ocaml_ppat_tuple al Closed) in
     {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) True;
      ppat_loc = loc;
      ppat_attributes = [(mkloc loc "ocaml.explicit_arity", PStr [])]}
   ELSE
-    let a = ocaml_mkpat loc (Ppat_tuple al) in
+    let a = ocaml_mkpat loc (ocaml_ppat_tuple al Closed) in
     {ppat_desc = ocaml_ppat_construct li_loc li (Some (tyvl, a)) True;
      ppat_loc = loc; ppat_loc_stack = [];
      ppat_attributes =

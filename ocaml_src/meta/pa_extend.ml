@@ -526,6 +526,19 @@ module MetaAction =
                    MLast.LiAcc (loc, MLast.LiUid (loc, "Ploc"), "VaVal")),
                 MLast.ExLong (loc, MLast.LiUid (loc, "[]"))))
       | MLast.PaLong (loc, li, _) -> assert false
+      | MLast.PaAli (loc, p1, p2) ->
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExLong
+                     (loc,
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "PaAli")),
+                   mloc),
+                mpatt p1),
+             mpatt p2)
       | MLast.PaAny loc ->
           MLast.ExApp
             (loc,
