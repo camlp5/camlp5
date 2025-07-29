@@ -1088,7 +1088,7 @@ and expr =
             end
         | _ -> f
       in
-      let al = List.rev (List.fold_left label_expr [] al) in
+      let al = List.map label_expr al in
       begin match ocaml_pexp_construct_args (expr f).pexp_desc with
         Some (li, li_loc, None, _) ->
           let al = List.map snd al in
@@ -1434,7 +1434,17 @@ and expr =
   | ExTry (loc, e, pel) ->
       mkexp loc (Pexp_try (expr e, List.map mkpwe (uv pel)))
   | ExTup (loc, el) ->
-      mkexp loc (ocaml_pexp_tuple (add_empty_labels (List.map expr (uv el))))
+      let el = List.map label_expr (uv el) in
+      let el =
+        List.map
+          (function
+             "", e -> None, e
+           | s, e when s.[0] = '?' ->
+               error loc "cannot use optional labels in tuple"
+           | s, e -> Some s, e)
+          el
+      in
+      mkexp loc (ocaml_pexp_tuple el)
   | ExTyc (loc, e, t) ->
       mkexp loc (ocaml_pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExVrn (loc, s) ->
@@ -1451,7 +1461,7 @@ and expr =
   | ExUnr loc ->
       error loc
         "bad ast ExUnr (parses as '.'; cannot have an ExUnr except at the rhs of match-case)"
-and label_expr rev_al =
+and label_expr =
   function
     ExLab (loc, p, eo) ->
       begin match p with
@@ -1461,7 +1471,7 @@ and label_expr rev_al =
               Some e -> e
             | None -> ExLid (loc, lab)
           in
-          (uv lab, expr e) :: rev_al
+          uv lab, expr e
       | _ -> error loc "ExLab case not impl"
       end
   | ExOlb (loc, p, eo) ->
@@ -1472,10 +1482,10 @@ and label_expr rev_al =
               Some e -> e
             | None -> ExLid (loc, lab)
           in
-          ("?" ^ uv lab, expr e) :: rev_al
+          "?" ^ uv lab, expr e
       | _ -> error loc "ExOlb case not impl"
       end
-  | e -> ("", expr e) :: rev_al
+  | e -> "", expr e
 and mkpe (p, e, attrs) =
   let loc = Ploc.encl (loc_of_patt p) (loc_of_expr e) in
   (*
@@ -1985,7 +1995,7 @@ and class_expr =
       begin match ocaml_pcl_apply with
         Some pcl_apply ->
           let (ce, el) = class_expr_fa [] c in
-          let el = List.rev (List.fold_left label_expr [] el) in
+          let el = List.map label_expr el in
           mkpcl loc (pcl_apply (class_expr ce) el)
       | None -> error loc "no class expr desc in this ocaml version"
       end

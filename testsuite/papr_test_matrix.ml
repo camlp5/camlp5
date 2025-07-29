@@ -6227,6 +6227,33 @@ ELSE
      official_output = OK {foo|type t = (int * y:bool)|foo} ;
      r_output = OK {foo|type t = (int * y:bool);|foo}
     }
+  ; {name="labeled-tuple-exp-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| (~x, ~y)|foo} ;
+     official_input = OK {foo|(~x, ~y)|foo} ;
+     r_input = OK {foo|(~{x}, ~{y});|foo} ;
+     o_output = OK {foo|let _ = ~x, ~y;;|foo};
+     official_output = OK {foo|;;(~x, ~y)|foo} ;
+     r_output = OK {foo|(~{x}, ~{y});|foo}
+    }
+  ; {name="labeled-tuple-exp-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| (~x:a, ~y)|foo} ;
+     official_input = OK {foo|(~x:a, ~y)|foo} ;
+     r_input = OK {foo|(~{x=a}, ~{y});|foo} ;
+     o_output = OK {foo|let _ = ~x:a, ~y;;|foo};
+     official_output = OK {foo|;;(~x:a, ~y)|foo} ;
+     r_output = OK {foo|(~{x=a}, ~{y});|foo}
+    }
+  ; {name="labeled-tuple-exp-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| (~x:a, y)|foo} ;
+     official_input = OK {foo|(~x:a, y)|foo} ;
+     r_input = OK {foo|(~{x=a}, y);|foo} ;
+     o_output = OK {foo|let _ = ~x:a, y;;|foo};
+     official_output = OK {foo|;;(~x:a, y)|foo} ;
+     r_output = OK {foo|(~{x=a}, y);|foo}
+    }
   ]
 END
 
