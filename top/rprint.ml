@@ -32,6 +32,22 @@ value rec print_ident ppf =
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2 ]
 ;
 
+value print_label_type ppf =
+  fun [
+    Some s ->
+     fprintf ppf "%s:" s
+  | None -> ()
+  ]
+;
+
+value print_label ppf =
+  fun [
+    Some s ->
+     fprintf ppf "~%s:" s
+  | None -> ()
+  ]
+;
+
 value value_ident ppf name =
   if List.mem name ["or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr"]
   then
@@ -54,6 +70,20 @@ value tyvar ppf s =
 ;
 
 (* Values *)
+
+value print_tree_list print_item sep ppf tree_list =
+    let rec print_list first ppf =
+      fun
+      [ [] -> ()
+      | [tree :: tree_list] ->
+          do {
+            if not first then fprintf ppf "%s@ " sep else ();
+            print_item ppf tree;
+            print_list False ppf tree_list
+          } ]
+    in
+    cautious (print_list True) ppf tree_list
+;
 
 value print_out_value ppf tree =
   let rec print_tree ppf =
@@ -83,8 +113,13 @@ value print_out_value ppf tree =
       END
     | Oval_list tl ->
         fprintf ppf "@[<1>[%a]@]" (print_tree_list print_tree ";") tl
-    | Oval_array tl ->
+    | IFDEF OCAML_VERSION < OCAML_5_4 THEN
+      Oval_array tl ->
         fprintf ppf "@[<2>[|%a|]@]" (print_tree_list print_tree ";") tl
+      ELSE
+      Oval_array tl _ ->
+        fprintf ppf "@[<2>[|%a|]@]" (print_tree_list print_tree ";") tl
+      END
     | IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
       Oval_constr (Oide_ident "true") [] -> fprintf ppf "True"
       ELSE
@@ -102,8 +137,18 @@ value print_out_value ppf tree =
     | Oval_stuff s -> fprintf ppf "%s" s
     | Oval_record fel ->
         fprintf ppf "@[<1>{%a}@]" (cautious (print_fields True)) fel
-    | Oval_tuple tree_list ->
+    | IFDEF OCAML_VERSION < OCAML_5_4 THEN
+      Oval_tuple tree_list ->
         fprintf ppf "@[<1>(%a)@]" (print_tree_list print_tree ",") tree_list
+      ELSE
+      Oval_tuple tree_list ->
+        let print_elem ppf (lbl, item) = do {
+          print_label ppf lbl
+        ; print_simple_tree ppf item
+        }
+        in
+        fprintf ppf "@[<1>(%a)@]" (print_tree_list print_elem ",") tree_list
+      END
     | Oval_ellipsis -> raise Ellipsis
     | Oval_printer f ->
        IFDEF OCAML_VERSION < OCAML_5_3_0 THEN
@@ -133,18 +178,6 @@ value print_out_value ppf tree =
             tree;
           print_fields False ppf fields
         } ]
-  and print_tree_list print_item sep ppf tree_list =
-    let rec print_list first ppf =
-      fun
-      [ [] -> ()
-      | [tree :: tree_list] ->
-          do {
-            if not first then fprintf ppf "%s@ " sep else ();
-            print_item ppf tree;
-            print_list False ppf tree_list
-          } ]
-    in
-    cautious (print_list True) ppf tree_list
   in
   cautious print_tree ppf tree
 ;
@@ -200,6 +233,15 @@ value try_greek s = do {
 
 (* Types *)
 
+value rec print_typlist print_elem sep ppf =
+  fun
+  [ [] -> ()
+  | [ty] -> print_elem ppf ty
+  | [ty :: tyl] ->
+      fprintf ppf "%a%s@ %a" print_elem ty sep (print_typlist print_elem sep)
+        tyl ]
+;
+
 value rec print_out_type ppf =
   fun
   [ IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
@@ -253,8 +295,16 @@ and print_simple_out_type ppf =
       let (q, s) = try_greek s in
       fprintf ppf "%s%s%s" q (if ng then "_" else "") s
   | Otyp_constr id [] -> fprintf ppf "@[%a@]" print_ident id
-  | Otyp_tuple tyl ->
+  | IFDEF OCAML_VERSION < OCAML_5_4 THEN
+    Otyp_tuple tyl ->
       fprintf ppf "@[<1>(%a)@]" (print_typlist print_out_type " *") tyl
+    ELSE
+    Otyp_tuple tyl ->
+      let print_elem ppf (label, ty) =
+        fprintf ppf "@[%a%a]" print_label_type label print_simple_out_type ty
+      in
+      fprintf ppf "@[<1>(%a)@]" (print_typlist print_elem " *") tyl
+    END
   | Otyp_stuff s -> fprintf ppf "%s" s
   | IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
     Otyp_variant non_gen poly_variants closed tags ->
@@ -345,8 +395,11 @@ and print_simple_out_type ppf =
   | IFDEF OCAML_VERSION < OCAML_4_13_0 THEN
     Otyp_module p n tyl ->
       print_module_out_type ppf p n tyl
-    ELSE
+    ELSIFDEF OCAML_VERSION < OCAML_5_4_0 THEN
     Otyp_module p l ->
+      print_module_out_type ppf p (List.map fst l) (List.map snd l)
+    ELSE
+    Otyp_module {opack_path=p; opack_cstrs=l} ->
       print_module_out_type ppf p (List.map fst l) (List.map snd l)
     END
   | Otyp_sum constrs ->
@@ -435,13 +488,6 @@ and print_poly_variant ppf (l, opt_amp, tyl) =
   in
   fprintf ppf "@[<hv 2>`%s%t%a@]" l pr_of (print_typlist print_out_type " &")
     tyl
-and print_typlist print_elem sep ppf =
-  fun
-  [ [] -> ()
-  | [ty] -> print_elem ppf ty
-  | [ty :: tyl] ->
-      fprintf ppf "%a%s@ %a" print_elem ty sep (print_typlist print_elem sep)
-        tyl ]
 and print_typargs ppf =
   fun
   [ [] -> ()
