@@ -2403,7 +2403,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       ] ]
   ;
   (* Labels *)
-  ctyp: AFTER "arrow"
+  ctyp: AFTER "star"
     [ NONA
       [ i = V LIDENT; ":"; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
       | i = V QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$_:i$: $t$ >>

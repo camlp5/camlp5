@@ -6187,6 +6187,48 @@ ELSE
     }
   ]
 END
+@
+IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+  []
+ELSE
+  [{name="tuple-type-0"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = int * bool|foo} ;
+     official_input = OK {foo|type t = int * bool|foo} ;
+     r_input = OK {foo|type t = (int * bool);|foo} ;
+     o_output = OK {foo|type t = int * bool;;|foo};
+     official_output = OK {foo|type t = (int * bool)|foo} ;
+     r_output = OK {foo|type t = (int * bool);|foo}
+    }
+  ; {name="labeled-tuple-type-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = x:int * y:bool|foo} ;
+     official_input = OK {foo|type t = x:int * y:bool|foo} ;
+     r_input = OK {foo|type t = (x:int * y:bool);|foo} ;
+     o_output = OK {foo|type t = x:int * y:bool;;|foo};
+     official_output = OK {foo|type t = (x:int * y:bool)|foo} ;
+     r_output = OK {foo|type t = (x:int * y:bool);|foo}
+    }
+  ; {name="labeled-tuple-type-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = x:int * bool|foo} ;
+     official_input = OK {foo|type t = x:int * bool|foo} ;
+     r_input = OK {foo|type t = (x:int * bool);|foo} ;
+     o_output = OK {foo|type t = x:int * bool;;|foo};
+     official_output = OK {foo|type t = (x:int * bool)|foo} ;
+     r_output = OK {foo|type t = (x:int * bool);|foo}
+    }
+  ; {name="labeled-tuple-type-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = int * y:bool|foo} ;
+     official_input = OK {foo|type t = int * y:bool|foo} ;
+     r_input = OK {foo|type t = (int * y:bool);|foo} ;
+     o_output = OK {foo|type t = int * y:bool;;|foo};
+     official_output = OK {foo|type t = (int * y:bool)|foo} ;
+     r_output = OK {foo|type t = (int * y:bool);|foo}
+    }
+  ]
+END
 
 ;
 
