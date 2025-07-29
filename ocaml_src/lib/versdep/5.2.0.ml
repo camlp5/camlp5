@@ -478,6 +478,18 @@ let ocaml_pexp_constraint e ot1 ot2 =
         Some t1 -> Pexp_constraint (e, t1)
       | None -> failwith "internal error: ocaml_pexp_constraint"
 ;;
+let ocaml_pexp_tuple x =
+  let x =
+    List.map
+      (function
+         None, t -> t
+       | Some _, t ->
+           failwith
+             "Pexp_tuple: labeled tuples only available with ocaml >= 5.04")
+      x
+  in
+  Pexp_tuple x
+;;
 
 let ocaml_pexp_construct loc li po chk_arity =
   Pexp_construct (mkloc loc li, po)
@@ -489,9 +501,9 @@ let ocaml_pexp_construct_args =
   | _ -> None
 ;;
 
-let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
-  let al = al in
-  let a = ocaml_mkexp loc (Pexp_tuple al) in
+let mkexp_ocaml_pexp_construct_arity loc li_loc li (al : expression list) =
+  let al = List.map (fun x -> None, x) al in
+  let a = ocaml_mkexp loc (ocaml_pexp_tuple al) in
   {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
    pexp_loc_stack = [];
    pexp_attributes =
@@ -601,19 +613,6 @@ let ocaml_ptyp_tuple x =
   in
   Ptyp_tuple x
 ;;
-let ocaml_pexp_tuple x =
-  let x =
-    List.map
-      (function
-         None, t -> t
-       | Some _, t ->
-           failwith
-             "Pexp_tuple: labeled tuples only available with ocaml >= 5.04")
-      x
-  in
-  Pexp_tuple x
-;;
-
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
 let ocaml_pexp_record lel eo =

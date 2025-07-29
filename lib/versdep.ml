@@ -729,7 +729,7 @@ IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
 ELSE
   {
     ppt_path = mkloc loc li
-  ; ppt_cstrs = List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl
+  ; ppt_cstrs = List.map (fun (li, t) -> (mkloc t.ptyp_loc li, t)) ltl
   ; ppt_loc = loc
   ; ppt_attrs = []
   }
@@ -808,6 +808,17 @@ value ocaml_pexp_constraint e ot1 ot2 =
         end
     end
 ;
+value ocaml_pexp_tuple x =
+  IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+    let x = List.map (fun [
+                          (None, t) -> t
+                        | (Some _, t) -> failwith "Pexp_tuple: labeled tuples only available with ocaml >= 5.04"
+                        ]) x in
+    Pexp_tuple x
+  ELSE
+    Pexp_tuple x
+  END
+;
 
 value ocaml_pexp_construct loc li po chk_arity =
     Pexp_construct (mkloc loc li) po
@@ -819,14 +830,9 @@ value ocaml_pexp_construct_args =
     | _ -> None ]
 ;
 
-value mkexp_ocaml_pexp_construct_arity loc li_loc li al =
-  let al =
-  IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
-    al
-  ELSE
-    List.map (fun [ (None, p) -> p | (Some _, _) -> failwith "Ppat_tuple: labeled tuples only available at ocaml >= 5.4" ]) al
-  END in
-  let a = ocaml_mkexp loc (Pexp_tuple al) in
+value mkexp_ocaml_pexp_construct_arity loc li_loc li (al : list expression) =
+  let al = List.map (fun x -> (None, x)) al in
+  let a = ocaml_mkexp loc (ocaml_pexp_tuple al) in
   IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
     {pexp_desc = ocaml_pexp_construct li_loc li (Some a) True;
      pexp_loc = loc;
@@ -988,18 +994,6 @@ value ocaml_ptyp_tuple x =
     Ptyp_tuple x
   END
 ;
-value ocaml_pexp_tuple x =
-  IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
-    let x = List.map (fun [
-                          (None, t) -> t
-                        | (Some _, t) -> failwith "Pexp_tuple: labeled tuples only available with ocaml >= 5.04"
-                        ]) x in
-    Pexp_tuple x
-  ELSE
-    Pexp_tuple x
-  END
-;
-
 value ocaml_pexp_poly =
   Some (fun e t -> Pexp_poly e t)
 ;

@@ -435,7 +435,7 @@ let ocaml_ptyp_variant loc catl clos sl_opt =
 
 let ocaml_package_type loc li ltl : package_type =
   {ppt_path = mkloc loc li;
-   ppt_cstrs = List.map ((fun (li, t) -> mkloc t.ptyp_loc li), t) ltl;
+   ppt_cstrs = List.map (fun (li, t) -> mkloc t.ptyp_loc li, t) ltl;
    ppt_loc = loc; ppt_attrs = []}
 ;;
 
@@ -484,6 +484,7 @@ let ocaml_pexp_constraint e ot1 ot2 =
         Some t1 -> Pexp_constraint (e, t1)
       | None -> failwith "internal error: ocaml_pexp_constraint"
 ;;
+let ocaml_pexp_tuple x = Pexp_tuple x;;
 
 let ocaml_pexp_construct loc li po chk_arity =
   Pexp_construct (mkloc loc li, po)
@@ -495,17 +496,9 @@ let ocaml_pexp_construct_args =
   | _ -> None
 ;;
 
-let mkexp_ocaml_pexp_construct_arity loc li_loc li al =
-  let al =
-    List.map
-      (function
-         None, p -> p
-       | Some _, _ ->
-           failwith
-             "Ppat_tuple: labeled tuples only available at ocaml >= 5.4")
-      al
-  in
-  let a = ocaml_mkexp loc (Pexp_tuple al) in
+let mkexp_ocaml_pexp_construct_arity loc li_loc li (al : expression list) =
+  let al = List.map (fun x -> None, x) al in
+  let a = ocaml_mkexp loc (ocaml_pexp_tuple al) in
   {pexp_desc = ocaml_pexp_construct li_loc li (Some a) true; pexp_loc = loc;
    pexp_loc_stack = [];
    pexp_attributes =
@@ -602,8 +595,6 @@ let ocaml_pexp_override sel =
 let ocaml_pexp_pack me = Pexp_pack (me, None);;
 let ocaml_ptyp_pack pt = Ptyp_package pt;;
 let ocaml_ptyp_tuple x = Ptyp_tuple x;;
-let ocaml_pexp_tuple x = Pexp_tuple x;;
-
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
 let ocaml_pexp_record lel eo =
