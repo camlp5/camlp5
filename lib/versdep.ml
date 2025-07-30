@@ -975,14 +975,21 @@ value ocaml_pexp_override sel =
   Pexp_override sel
 ;
 
-value ocaml_pexp_pack me =
+value ocaml_ptyp_pack pt = Ptyp_package pt ;
+
+value ocaml_pexp_pack loc me pto =
 IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
-  Pexp_pack me
+  let e = Pexp_pack me in
+  if pto = None then e
+  else
+    let pto : option Parsetree.core_type_desc = option_map ocaml_ptyp_pack pto in
+    let pto : option Parsetree.core_type = option_map (ocaml_mktyp loc) pto in
+    ocaml_pexp_constraint (ocaml_mkexp loc e) pto None
 ELSE
-  Pexp_pack me None
+  Pexp_pack me pto
 END
 ;
-value ocaml_ptyp_pack pt = Ptyp_package pt ;
+
 value ocaml_ptyp_tuple x =
   IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
     let x = List.map (fun [

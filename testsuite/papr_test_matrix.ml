@@ -5028,6 +5028,15 @@ END
      o_output = OK {foo|let _ = match x with "foo" -> 1;;|foo};
      official_output = OK {foo|;;match x with | "foo" -> 1|foo} ;
      r_output = OK {foo|match x with [ "foo" -> 1 ];|foo}
+    };
+    {name="pexp-pack-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|(module M)|foo} ;
+     official_input = OK {foo|(module M)|foo} ;
+     r_input = OK {foo|(module M);|foo} ;
+     o_output = OK {foo|let _ = (module M);;|foo};
+     official_output = OK {foo|;;(module M)|foo} ;
+     r_output = OK {foo|(module M);|foo}
     }
 ] @
 IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
@@ -6189,9 +6198,29 @@ ELSE
 END
 @
 IFDEF OCAML_VERSION < OCAML_5_4_0 THEN
-  []
+  [
+    {name="pexp-pack-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|(module M : S)|foo} ;
+     official_input = OK {foo|(module M : S)|foo} ;
+     r_input = OK {foo|(module M : S);|foo} ;
+     o_output = OK {foo|let _ = (module M : S);;|foo};
+     official_output = OK {foo|;;((module M) : (module S))|foo} ;
+     r_output = OK {foo|(module M : S);|foo}
+    }
+  ]
 ELSE
-  [{name="tuple-type-0"; implem = True ;
+  [
+    {name="pexp-pack-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|(module M : S)|foo} ;
+     official_input = OK {foo|(module M : S)|foo} ;
+     r_input = OK {foo|(module M : S);|foo} ;
+     o_output = OK {foo|let _ = (module M : S);;|foo};
+     official_output = OK {foo|;;(module M : S)|foo} ;
+     r_output = OK {foo|(module M : S);|foo}
+    }
+  ; {name="tuple-type-0"; implem = True ;
      exclude=[];
      o_input = OK {foo|type t = int * bool|foo} ;
      official_input = OK {foo|type t = int * bool|foo} ;

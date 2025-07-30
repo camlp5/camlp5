@@ -1137,16 +1137,9 @@ and expr =
   | ExOvr loc iel →
       mkexp loc (ocaml_pexp_override (List.map mkideexp (uv iel)))
   | ExPck loc me mto →
-      let e = ocaml_pexp_pack (module_expr me) in
-          let e =
-            match mto with
-              [ Some mt →
-                let pt = package_of_module_type loc mt in
-                    ocaml_pexp_constraint (mkexp loc e)
-                      (Some (mktyp loc (ocaml_ptyp_pack pt))) None
-                  | None → e ]
-          in
-          mkexp loc e
+      let pto : option Parsetree.package_type = option_map (package_of_module_type loc) mto in
+      let e = ocaml_pexp_pack (mkloc loc) (module_expr me) pto in
+      mkexp loc e
 
   | ExRec loc lel eo →
       let lel = uv lel in

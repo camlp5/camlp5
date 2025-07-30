@@ -592,8 +592,10 @@ let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
 ;;
 
-let ocaml_pexp_pack me = Pexp_pack (me, None);;
 let ocaml_ptyp_pack pt = Ptyp_package pt;;
+
+let ocaml_pexp_pack loc me pto = Pexp_pack (me, pto);;
+
 let ocaml_ptyp_tuple x = Ptyp_tuple x;;
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 

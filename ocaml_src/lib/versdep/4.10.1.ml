@@ -574,8 +574,21 @@ let ocaml_pexp_override sel =
   let sel = List.map (fun (s, e) -> mknoloc s, e) sel in Pexp_override sel
 ;;
 
-let ocaml_pexp_pack me = Pexp_pack me;;
 let ocaml_ptyp_pack pt = Ptyp_package pt;;
+
+let ocaml_pexp_pack loc me pto =
+  let e = Pexp_pack me in
+  if pto = None then e
+  else
+    let (pto : Parsetree.core_type_desc option) =
+      option_map ocaml_ptyp_pack pto
+    in
+    let (pto : Parsetree.core_type option) =
+      option_map (ocaml_mktyp loc) pto
+    in
+    ocaml_pexp_constraint (ocaml_mkexp loc e) pto None
+;;
+
 let ocaml_ptyp_tuple x =
   let x =
     List.map
