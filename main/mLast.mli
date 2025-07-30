@@ -90,7 +90,7 @@ and patt =
   | PaRec of loc and V (list (patt * patt))
   | PaRng of loc and patt and patt
   | PaStr of loc and V string
-  | PaTup of loc and V (list patt)
+  | PaTup of loc and V (list patt) and V bool
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and V longid_lident
   | PaUnp of loc and V (option (V string)) and option module_type

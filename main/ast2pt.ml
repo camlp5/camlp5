@@ -803,7 +803,7 @@ and patt =
       mkpat loc
         (Ppat_constant
            (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))
-  | PaTup loc pl →
+  | PaTup loc pl x2 →
       let labeled_patt = fun [
             PaLab ploc (PaLid _ s as p) po ->
             let p =

@@ -137,7 +137,7 @@ module Meta_make (C : MetaSig) =
             [C.vala (C.list (fun (p1, p2) → C.tuple [patt p1; patt p2])) lpp]
       | PaRng _ p1 p2 → C.node "PaRng" [patt p1; patt p2]
       | PaStr _ s → C.node "PaStr" [C.vala C.string s]
-      | PaTup _ lp → C.node "PaTup" [C.vala (C.list patt) lp]
+      | PaTup _ lp clflag → C.node "PaTup" [C.vala (C.list patt) lp; C.vala C.bool clflag]
       | PaTyc _ p t → C.node "PaTyc" [patt p; ctyp t]
       | PaTyp _ lili → C.node "PaTyp" [C.vala longid_lident lili]
       | PaUnp _ s omt →

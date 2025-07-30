@@ -81,8 +81,8 @@
 <:ctyp< [ $_list:lx$ ] >>;
 
 (* t-uple *)
-<:ctyp< ( $list:lt$ ) >>;
-<:ctyp< ( $_list:lt$ ) >>;
+<:ctyp< ( $list:lst$ ) >>;
+<:ctyp< ( $_list:lst$ ) >>;
 
 (* variant *)
 <:ctyp< [ = $list:lpv$ ] >>;
@@ -228,7 +228,13 @@ MLast.TyVrn loc lpv ools;
 
 (* t-uple *)
 <:patt< ($list:lp$) >>;
+MLast.PaTup loc (Ploc.VaVal lp) (Ploc.VaVal False);
+MLast.PaTup loc (Ploc.VaVal lp) (Ploc.VaVal b);
+MLast.PaTup loc (Ploc.VaVal lp) b;
 <:patt< ($_list:lp$) >>;
+MLast.PaTup loc lp (Ploc.VaVal False);
+MLast.PaTup loc lp (Ploc.VaVal b);
+MLast.PaTup loc lp b;
 
 (* type constraint *)
 <:patt< ($p$ : $t$) >>;

@@ -166,8 +166,8 @@ and patt floc sh =
     | PaRng (loc, x1, x2) ->
         let loc = floc loc in PaRng (loc, self x1, self x2)
     | PaStr (loc, x1) -> let loc = floc loc in PaStr (loc, x1)
-    | PaTup (loc, x1) ->
-        let loc = floc loc in PaTup (loc, vala_map (List.map self) x1)
+    | PaTup (loc, x1, x2) ->
+        let loc = floc loc in PaTup (loc, vala_map (List.map self) x1, x2)
     | PaTyc (loc, x1, x2) ->
         let loc = floc loc in PaTyc (loc, self x1, ctyp floc sh x2)
     | PaTyp (loc, x1) ->

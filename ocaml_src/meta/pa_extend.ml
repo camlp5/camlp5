@@ -604,16 +604,19 @@ module MetaAction =
                    MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "PaStr")),
                 mloc),
              mvala mstring_escaped s)
-      | MLast.PaTup (loc, pl) ->
+      | MLast.PaTup (loc, pl, clflag) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExLong
+                MLast.ExApp
                   (loc,
-                   MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "PaTup")),
-                mloc),
-             mvala (mlist mpatt) pl)
+                   MLast.ExLong
+                     (loc,
+                      MLast.LiAcc (loc, MLast.LiUid (loc, "MLast"), "PaTup")),
+                   mloc),
+                mvala (mlist mpatt) pl),
+             mvala mbool clflag)
       | MLast.PaTyc (loc, p, t) ->
           MLast.ExApp
             (loc,
@@ -1101,7 +1104,7 @@ let quotify_action psl act =
   List.fold_left
     (fun e ps ->
        match ps.pattern with
-         Some (MLast.PaTup (_, pl)) ->
+         Some (MLast.PaTup (_, pl, true)) ->
            let loc = Ploc.dummy in
            let pname = pname_of_ptuple pl in
            let (pl1, el1) =
@@ -1117,7 +1120,7 @@ let quotify_action psl act =
            in
            MLast.ExLet
              (loc, false,
-              [MLast.PaTup (loc, pl),
+              [MLast.PaTup (loc, pl, true),
                MLast.ExMat
                  (loc, MLast.ExLid (loc, pname),
                   [MLast.PaApp
@@ -1183,7 +1186,7 @@ let text_of_action loc psl rtvar act tvar =
                  let t = make_ctyp st tvar in
                  let p =
                    match p with
-                     MLast.PaTup (_, pl) when !quotify ->
+                     MLast.PaTup (_, pl, true) when !quotify ->
                        MLast.PaLid (loc, pname_of_ptuple pl)
                    | _ -> p
                  in
@@ -2730,7 +2733,7 @@ Grammar.safe_extend
              (Grammar.s_token ("", ")")),
            "194fe98d",
            (fun _ (pl : 'patterns_comma) _ (p : 'pattern) _ (loc : Ploc.t) ->
-              (MLast.PaTup (loc, p :: pl) : 'pattern)));
+              (MLast.PaTup (loc, p :: pl, true) : 'pattern)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

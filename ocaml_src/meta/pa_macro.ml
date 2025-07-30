@@ -222,7 +222,7 @@ let substp mloc env =
     | MLast.ExInt (_, x, "") -> MLast.PaInt (loc, x, "")
     | MLast.ExChr (_, x) -> MLast.PaChr (loc, x)
     | MLast.ExStr (_, (_, x)) -> MLast.PaStr (loc, x)
-    | MLast.ExTup (_, x) -> MLast.PaTup (loc, List.map loop x)
+    | MLast.ExTup (_, x) -> MLast.PaTup (loc, List.map loop x, true)
     | MLast.ExRec (_, pel, None) ->
         let ppl = List.map (fun (p, e) -> p, loop e) pel in
         MLast.PaRec (loc, ppl)
@@ -368,7 +368,7 @@ let define eo x =
                 (fun (param : 'patt) _ (loc : Ploc.t) ->
                    (let pl =
                       match param with
-                        MLast.PaTup (_, pl) -> pl
+                        MLast.PaTup (_, pl, true) -> pl
                       | p -> [p]
                     in
                     if List.length pl = List.length sl then

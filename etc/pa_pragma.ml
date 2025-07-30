@@ -841,8 +841,8 @@ value val_tab = do {
          patt = no_patt loc});
      ("MLast.PaTup",
       fun loc ->
-        {ctyp = <:ctyp< MLast.loc -> list MLast.patt -> MLast.patt >>;
-         expr = Obj.repr (fun loc pl -> MLast.PaTup loc pl);
+        {ctyp = <:ctyp< MLast.loc -> list MLast.patt -> bool -> MLast.patt >>;
+         expr = Obj.repr (fun loc pl b -> MLast.PaTup loc pl b);
          patt = no_patt loc});
      ("MLast.PaTyc",
       fun loc ->

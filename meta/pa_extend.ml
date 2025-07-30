@@ -299,8 +299,8 @@ module MetaAction =
           <:expr< MLast.PaOrp $mloc$ $mpatt p1$ $mpatt p2$ >>
       | MLast.PaStr loc s ->
           <:expr< MLast.PaStr $mloc$ $mvala mstring_escaped s$ >>
-      | MLast.PaTup loc pl ->
-          <:expr< MLast.PaTup $mloc$ $mvala (mlist mpatt) pl$ >>
+      | MLast.PaTup loc pl clflag ->
+          <:expr< MLast.PaTup $mloc$ $mvala (mlist mpatt) pl$ $mvala mbool clflag$ >>
       | MLast.PaTyc loc p t ->
           <:expr< MLast.PaTyc $mloc$ $mpatt p$ $mctyp t$ >>
       | x -> not_impl "mpatt" x ]

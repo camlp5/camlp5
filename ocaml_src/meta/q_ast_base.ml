@@ -285,7 +285,7 @@ module P_MetaSig =
       let loc = Ploc.dummy in MLast.PaFlo (loc, Float.to_string n)
     ;;
     let string s = MLast.PaStr (loc, s);;
-    let tuple lp = MLast.PaTup (loc, lp);;
+    let tuple lp = MLast.PaTup (loc, lp, true);;
     let record lfp = MLast.PaRec (loc, lfp);;
     let xtr_typed wantty loc s =
       match get_anti_loc s with

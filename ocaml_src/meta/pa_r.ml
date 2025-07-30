@@ -376,7 +376,7 @@ let dotop =
 ;;
 
 let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
-let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
+let mktuppat loc p pl = MLast.PaTup (loc, p :: pl, true);;
 let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 
 let mklabdecl loc i mf t attrs = loc, i, mf, t, attrs;;
@@ -408,7 +408,7 @@ let build_letop_binder loc letop b l e =
     (* TODO FIX THIS CHET *)
     List.fold_left
       (fun (argpat, argexp) (andop, (pat, exp)) ->
-         MLast.PaTup (loc, [argpat; pat]),
+         MLast.PaTup (loc, [argpat; pat], true),
          MLast.ExApp
            (loc, MLast.ExApp (loc, MLast.ExLid (loc, andop), argexp), exp))
       b l
@@ -4245,7 +4245,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ",")) false),
            "194fe98d",
            (fun (pl : 'patt list) (loc : Ploc.t) ->
-              (MLast.PaTup (loc, pl) : 'paren_patt)));
+              (MLast.PaTup (loc, pl, true) : 'paren_patt)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
@@ -4424,7 +4424,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ",")) false),
            "194fe98d",
            (fun (pl : 'ipatt list) (loc : Ploc.t) ->
-              (MLast.PaTup (loc, pl) : 'paren_ipatt)));
+              (MLast.PaTup (loc, pl, true) : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)),

@@ -81,7 +81,7 @@ and patt =
   | PaRec of loc * (patt * patt) list
   | PaRng of loc * patt * patt
   | PaStr of loc * string
-  | PaTup of loc * patt list
+  | PaTup of loc * patt list * bool
   | PaTyc of loc * patt * ctyp
   | PaTyp of loc * longid_lident
   | PaUnp of loc * string option * module_type option

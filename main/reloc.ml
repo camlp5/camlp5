@@ -220,9 +220,9 @@ and patt floc sh =
     | PaStr loc x1 →
         let loc = floc loc in
         PaStr loc x1
-    | PaTup loc x1 →
+    | PaTup loc x1 x2 →
         let loc = floc loc in
-        PaTup loc (vala_map (List.map self) x1)
+        PaTup loc (vala_map (List.map self) x1) x2
     | PaTyc loc x1 x2 →
         let loc = floc loc in
         PaTyc loc (self x1) (ctyp floc sh x2)

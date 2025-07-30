@@ -159,7 +159,7 @@ module Qast =
                      to_patt m a),
                   p))
             al (MLast.PaLong (loc, MLast.LiUid (loc, "[]"), []))
-      | Tuple al -> MLast.PaTup (loc, List.map (to_patt m) al)
+      | Tuple al -> MLast.PaTup (loc, List.map (to_patt m) al, true)
       | Option None -> MLast.PaLong (loc, MLast.LiUid (loc, "None"), [])
       | Option (Some a) ->
           MLast.PaApp
@@ -348,8 +348,11 @@ let mktupexp _ e el =
   Qast.Node ("ExTup", [Qast.Loc; Qast.VaVal (Qast.Cons (e, Qast.List el))])
 ;;
 
-let mktuppat _ p pl =
-  Qast.Node ("PaTup", [Qast.Loc; Qast.VaVal (Qast.Cons (p, Qast.List pl))])
+let mktuppat _ p pl clflag =
+  Qast.Node
+    ("PaTup",
+     [Qast.Loc; Qast.VaVal (Qast.Cons (p, Qast.List pl));
+      Qast.VaVal (Qast.Bool clflag)])
 ;;
 
 let mktuptyp _ t tl =
@@ -7131,7 +7134,9 @@ Grammar.safe_extend
                            'e__147)))])),
            "194fe98d",
            (fun (pl : 'e__147) (loc : Ploc.t) ->
-              (Qast.Node ("PaTup", [Qast.Loc; pl]) : 'paren_patt)));
+              (Qast.Node
+                 ("PaTup", [Qast.Loc; pl; Qast.VaVal (Qast.Bool true)]) :
+               'paren_patt)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)),
@@ -7147,7 +7152,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ",")) false),
            "194fe98d",
            (fun (pl : 'patt list) _ (p : 'patt) (loc : Ploc.t) ->
-              (mktuppat Qast.Loc p pl : 'paren_patt)));
+              (mktuppat Qast.Loc p pl true : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -7505,7 +7510,9 @@ Grammar.safe_extend
                            'e__155)))])),
            "194fe98d",
            (fun (pl : 'e__155) (loc : Ploc.t) ->
-              (Qast.Node ("PaTup", [Qast.Loc; pl]) : 'paren_ipatt)));
+              (Qast.Node
+                 ("PaTup", [Qast.Loc; pl; Qast.VaVal (Qast.Bool true)]) :
+               'paren_ipatt)));
         Grammar.production
           (Grammar.r_next Grammar.r_stop
              (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)),
@@ -7522,7 +7529,7 @@ Grammar.safe_extend
                 (Grammar.s_token ("", ",")) false),
            "194fe98d",
            (fun (pl : 'ipatt list) _ (p : 'ipatt) (loc : Ploc.t) ->
-              (mktuppat Qast.Loc p pl : 'paren_ipatt)));
+              (mktuppat Qast.Loc p pl true : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

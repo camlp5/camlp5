@@ -35,7 +35,7 @@ let rec pattern_eq_expression p e =
       a = b
   | MLast.PaApp (_, p1, p2), MLast.ExApp (_, e1, e2) ->
       pattern_eq_expression p1 e1 && pattern_eq_expression p2 e2
-  | MLast.PaTup (_, pl), MLast.ExTup (_, el) ->
+  | MLast.PaTup (_, pl, true), MLast.ExTup (_, el) ->
       let rec loop pl el =
         match pl, el with
           p :: pl, e :: el -> pattern_eq_expression p e && loop pl el
@@ -52,7 +52,7 @@ let stream_pattern_component skont =
       let p =
         MLast.PaApp
           (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some"), []),
-           MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)]))
+           MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)], true))
       in
       if wo = None && pattern_eq_expression p skont then
         MLast.ExApp (loc, next_fun loc, MLast.ExLid (loc, strm_n))
@@ -66,7 +66,7 @@ let stream_pattern_component skont =
       let p =
         MLast.PaApp
           (loc, MLast.PaLong (loc, MLast.LiUid (loc, "Some"), []),
-           MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)]))
+           MLast.PaTup (loc, [p; MLast.PaLid (loc, strm_n)], true))
       in
       if pattern_eq_expression p skont then
         MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n))
