@@ -1689,6 +1689,17 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     ]
   ]
   ;
+  tuple_patt_body1:
+    [ [ ","; ".." -> ([], False)
+      | ","; p = patt LEVEL "alg_attribute" ; (pl, clflag) = tuple_patt_body1 -> ([p::pl], clflag)
+      |  -> ([], True)
+      ] ]
+  ;
+  tuple_patt_body:
+    [ [ ".." -> ([], False)
+      | p = patt LEVEL "alg_attribute" ; (pl, clflag) = tuple_patt_body1 -> ([p::pl], clflag)
+      ] ]
+  ;
   patt:
     [ LEFTA
       [ p1 = SELF; "as"; i = LIDENT -> <:patt< ($p1$ as $lid:i$) >>
@@ -1696,8 +1707,8 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       ]
     | LEFTA
       [ p1 = SELF; "|"; p2 = SELF -> <:patt< $p1$ | $p2$ >> ]
-    | [ p = SELF; ","; pl = LIST1 NEXT SEP "," ->
-          <:patt< ( $list:[p :: pl]$) >> ]
+    | [ p = SELF; ","; (pl, clflag) = tuple_patt_body ->
+          <:patt< ( $list:[p :: pl]$, $closed:clflag$) >> ]
     | "alg_attribute" LEFTA
       [ p = SELF ; "[@" ; attr = V attribute_body "attribute"; "]" ->
         <:patt< $p$ [@ $_attribute:attr$ ] >>
@@ -1775,7 +1786,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
             <:patt< $uid:op$ >>
           else
             <:patt< $lid:op$ >>
-      | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
+      | "("; pl = V p_phony "list"; ","; clflag = V [ ".." -> False | -> True ] "closed"; ")" -> <:patt< ($_list:pl$, $_closed:clflag$) >>
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "("; "type"; s = V LIDENT; ")" -> <:patt< (type $_lid:s$) >>

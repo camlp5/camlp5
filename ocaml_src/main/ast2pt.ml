@@ -988,7 +988,7 @@ and patt =
            (mkconst loc
               (ocaml_pconst_string (string_of_string_token loc (uv s))
                  (mkloc loc) None)))
-  | PaTup (loc, pl, x2) ->
+  | PaTup (loc, pl, clflag) ->
       let labeled_patt =
         function
           PaLab (ploc, (PaLid (_, s) as p), po) ->
@@ -1001,7 +1001,8 @@ and patt =
         | p -> None, patt p
       in
       let l = List.map labeled_patt (uv pl) in
-      mkpat loc (ocaml_ppat_tuple l Closed)
+      let clflag = if uv clflag then Closed else Open in
+      mkpat loc (ocaml_ppat_tuple l clflag)
   | PaTyc (loc, p, t) -> mkpat loc (Ppat_constraint (patt p, ctyp t))
   | PaTyp (loc, lili) ->
       begin match ocaml_ppat_type with
