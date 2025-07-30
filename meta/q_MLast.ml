@@ -1346,6 +1346,12 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       | "+!" -> Qast.Str "+!"
       | "!-" -> Qast.Str "!-"
       | "-!" -> Qast.Str "-!"
+      | "+-" -> Qast.Str "+-"
+      | "-+" -> Qast.Str "-+"
+      | "+-!" -> Qast.Str "+-!"
+      | "-+!" -> Qast.Str "-+!"
+      | "!+-" -> Qast.Str "!+-"
+      | "!-+" -> Qast.Str "!-+"
       | -> Qast.Str ""
       ] ]
   ;

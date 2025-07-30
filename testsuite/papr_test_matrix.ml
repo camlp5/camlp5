@@ -6319,6 +6319,65 @@ ELSE
      official_output = OK {foo|;;let (~x:a, ..) = 1 in 1|foo} ;
      r_output = OK {foo|let (~{x=a}, ..) = 1 in 1;|foo}
     }
+ ;{name="bivariant-type-parameter-syntax"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|module M = struct
+type +-'a t = int
+type -+'a t = int
+type !+-'a t = int
+type !-+'a t = int
+type +-!'a t = int
+type -+!'a t = int
+end
+|foo} ;
+     official_input = OK {foo|module M = struct
+    type +-'a t = int
+    type +-'a t = int
+    type +-!'a t = int
+    type +-!'a t = int
+    type +-!'a t = int
+    type +-!'a t = int
+end
+|foo} ;
+     r_input = OK {foo|module M = struct
+    type t +-'a = int;
+    type t -+'a = int;
+    type t +-!'a = int;
+    type t -+!'a = int;
+    type t +-!'a = int;
+    type t -+!'a = int;
+end ;
+|foo} ;
+     o_output = OK {foo|module M =
+  struct
+    type +-'a t = int
+    type -+'a t = int
+    type +-!'a t = int
+    type -+!'a t = int
+    type +-!'a t = int
+    type -+!'a t = int
+  end;;
+|foo};
+     official_output = OK {foo|module M =
+  struct
+    type +-'a t = int
+    type +-'a t = int
+    type +-!'a t = int
+    type +-!'a t = int
+    type +-!'a t = int
+    type +-!'a t = int
+  end|foo} ;
+     r_output = OK {foo|module M =
+  struct
+    type t +-'a = int;
+    type t -+'a = int;
+    type t +-!'a = int;
+    type t -+!'a = int;
+    type t +-!'a = int;
+    type t -+!'a = int;
+  end;
+|foo}
+    }
   ]
 END
 ;

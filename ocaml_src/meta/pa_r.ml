@@ -4705,6 +4705,24 @@ Grammar.safe_extend
           (Grammar.r_stop, "194fe98d",
            (fun (loc : Ploc.t) -> ("" : 'type_variance)));
         Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!-+")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("!-+" : 'type_variance)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!+-")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("!+-" : 'type_variance)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-+!")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("-+!" : 'type_variance)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+-!")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("+-!" : 'type_variance)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-+")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("-+" : 'type_variance)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+-")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("+-" : 'type_variance)));
+        Grammar.production
           (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-!")),
            "194fe98d", (fun _ (loc : Ploc.t) -> ("-!" : 'type_variance)));
         Grammar.production
