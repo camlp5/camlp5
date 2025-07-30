@@ -1350,7 +1350,7 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       ] ]
   ;
   type_parameter:
-    [ [ tv = SV type_variance "variance"; p = SV simple_type_parameter →
+    [ [ tv = SV type_variance "variance"; p = SV simple_type_parameter "var" →
           Qast.Tuple [p; tv]
       ] ]
   ;

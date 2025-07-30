@@ -8223,7 +8223,20 @@ Grammar.safe_extend
                              'simple_type_parameter Grammar.Entry.e)),
                        "194fe98d",
                        (fun (a : 'simple_type_parameter) (loc : Ploc.t) ->
-                          (Qast.VaVal a : 'e__177)))])),
+                          (Qast.VaVal a : 'e__177)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "_var")),
+                       "194fe98d",
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaAnt ("_var", loc, a) : 'e__177)));
+                    Grammar.production
+                      (Grammar.r_next Grammar.r_stop
+                         (Grammar.s_token ("ANTIQUOT", "var")),
+                       "194fe98d",
+                       (fun (a : string) (loc : Ploc.t) ->
+                          (Qast.VaVal (Qast.VaAnt ("var", loc, a)) :
+                           'e__177)))])),
            "194fe98d",
            (fun (p : 'e__177) (tv : 'e__176) (loc : Ploc.t) ->
               (Qast.Tuple [p; tv] : 'type_parameter)))]];

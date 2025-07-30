@@ -1928,7 +1928,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
       ] ]
   ;
   type_parameter:
-    [ [ tv = V type_variance "variance" ; p = V simple_type_parameter ->
+    [ [ tv = V type_variance "variance" ; p = V simple_type_parameter "var" ->
         (p, Pcaml.vala_map Versdep.ocaml_normalize_camlp5_variance tv)
       ] ]
   ;
