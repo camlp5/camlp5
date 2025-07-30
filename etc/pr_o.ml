@@ -84,7 +84,7 @@ value rec is_irrefut_patt =
   | <:patt< { $list:fpl$ } >> ->
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
-  | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
+  | <:patt< ($list:pl$, $closed:_$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< (type $lid:_$) >> -> True
   | <:patt< (module $uidopt:_$ : $_$) >> -> True
   | <:patt< (module $uidopt:_$) >> -> True
@@ -105,7 +105,7 @@ value rec get_defined_ident =
   | <:patt< $str:_$ >> -> []
   | <:patt< $chr:_$ >> -> []
   | <:patt< [| $list:pl$ |] >> -> List.flatten (List.map get_defined_ident pl)
-  | <:patt< ($list:pl$) >> -> List.flatten (List.map get_defined_ident pl)
+  | <:patt< ($list:pl$, $closed:_$) >> -> List.flatten (List.map get_defined_ident pl)
   | <:patt< $uid:_$ >> -> []
   | <:patt< ` $_$ >> -> []
   | <:patt< # $lilongid:_$ >> -> []
@@ -1669,7 +1669,11 @@ EXTEND_PRINTER
     | "tuple"
       [ <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
-          plist next 0 pc pl ]
+          plist next 0 pc pl
+      | <:patt< ($list:pl$, ..) >> ->
+          let pl = List.map (fun p -> (p, ",")) pl in
+          pprintf pc "%p, .." (plist next 0) pl
+      ]
     | "alg_attribute"
       [ <:patt< $p$ [@ $attribute:attr$] >> ->
         pprintf pc "%p[@%p]" curr p attribute_body attr
