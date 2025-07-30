@@ -272,7 +272,7 @@ value dotop =
 ;
 
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
-value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
+value mktuppat loc p pl clflag = <:patt< ($list:[p::pl]$, $closed:clflag$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 
 value mklabdecl loc i mf t attrs = (loc, i, mf, t, attrs);
@@ -1289,11 +1289,26 @@ EXTEND
       | "("; p = paren_patt; ")" → p
       | "_" → <:patt< _ >> ] ]
   ;
+  tuple_patt_body1:
+    [ [ ","; ".." -> ([], False)
+      | ","; p = patt ; (pl, clflag) = tuple_patt_body1 -> ([p::pl], clflag)
+      |  -> ([], True)
+      ] ]
+  ;
+  tuple_patt_body:
+    [ [ ".." -> ([], False)
+      | p = patt ; (pl, clflag) = tuple_patt_body1 -> ([p::pl], clflag)
+      ] ]
+  ;
   paren_patt:
     [ [ p = patt; ":"; t = ctyp → <:patt< ($p$ : $t$) >>
       | p = patt; "as"; p2 = patt → <:patt< ($p$ as $p2$) >>
-      | p = patt; ","; pl = LIST1 patt SEP "," → mktuppat loc p pl
+      | p = patt; ","; (pl, clflag) = tuple_patt_body → mktuppat loc p pl clflag
       | p = patt → <:patt< $p$ >>
+(*CHET
+      | pl = V (LIST1 patt SEP ","); ","; clflag = V (FLAG "..") "open" → <:patt< ($_list:pl$, $_open:clflag$) >>
+      | pl = V (LIST1 patt SEP ","); ","; ".." → <:patt< ($_list:pl$, ..) >>
+ *)
       | pl = V (LIST1 patt SEP ",") → <:patt< ($_list:pl$) >>
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
       | "module"; s = V uidopt "uidopt"; ":"; mt = module_type →
@@ -1334,12 +1349,27 @@ EXTEND
       | e = alg_extension -> <:patt< [% $_extension:e$ ] >>
       | "_" → <:patt< _ >> ] ]
   ;
+  tuple_ipatt_body1:
+    [ [ ","; ".." -> ([], False)
+      | ","; p = ipatt ; (pl, clflag) = tuple_ipatt_body1 -> ([p::pl], clflag)
+      |  -> ([], True)
+      ] ]
+  ;
+  tuple_ipatt_body:
+    [ [ ".." -> ([], False)
+      | p = ipatt ; (pl, clflag) = tuple_ipatt_body1 -> ([p::pl], clflag)
+      ] ]
+  ;
   paren_ipatt:
     [ [ p = ipatt; ":"; t = ctyp → <:patt< ($p$ : $t$) >>
       | p = ipatt; "as"; p2 = ipatt → <:patt< ($p$ as $p2$) >>
-      | p = ipatt; ","; pl = LIST1 ipatt SEP "," → mktuppat loc p pl
+      | p = ipatt; ","; (pl, clflag) = tuple_ipatt_body → mktuppat loc p pl clflag
       | p = ipatt → <:patt< $p$ >>
-      | pl = V (LIST1 ipatt SEP ",") → <:patt< ( $_list:pl$) >>
+(*CHET
+      | pl = V (LIST1 ipatt SEP ","); ","; clflag = V (FLAG "..") "open" → <:patt< ( $_list:pl$, $_open:clflag$) >>
+      | pl = V (LIST1 ipatt SEP ","); ","; ".." → <:patt< ( $_list:pl$, ..) >>
+ *)
+      | pl = V (LIST1 ipatt SEP ",") → <:patt< ( $_list:pl$ ) >>
       | "type"; s = V LIDENT → <:patt< (type $_lid:s$) >>
       | "module"; s  = V uidopt "uidopt"; ":"; mt = module_type →
           <:patt< (module $_uidopt:s$ : $mt$) >>

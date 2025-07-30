@@ -376,7 +376,7 @@ let dotop =
 ;;
 
 let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
-let mktuppat loc p pl = MLast.PaTup (loc, p :: pl, true);;
+let mktuppat loc p pl clflag = MLast.PaTup (loc, p :: pl, clflag);;
 let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 
 let mklabdecl loc i mf t attrs = loc, i, mf, t, attrs;;
@@ -837,6 +837,10 @@ Grammar.safe_extend
    and fun_def : 'fun_def Grammar.Entry.e = grammar_entry_create "fun_def"
    and patt_ident : 'patt_ident Grammar.Entry.e =
      grammar_entry_create "patt_ident"
+   and tuple_patt_body1 : 'tuple_patt_body1 Grammar.Entry.e =
+     grammar_entry_create "tuple_patt_body1"
+   and tuple_patt_body : 'tuple_patt_body Grammar.Entry.e =
+     grammar_entry_create "tuple_patt_body"
    and paren_patt : 'paren_patt Grammar.Entry.e =
      grammar_entry_create "paren_patt"
    and cons_patt_opt : 'cons_patt_opt Grammar.Entry.e =
@@ -845,6 +849,10 @@ Grammar.safe_extend
      grammar_entry_create "label_patt"
    and patt_label_ident : 'patt_label_ident Grammar.Entry.e =
      grammar_entry_create "patt_label_ident"
+   and tuple_ipatt_body1 : 'tuple_ipatt_body1 Grammar.Entry.e =
+     grammar_entry_create "tuple_ipatt_body1"
+   and tuple_ipatt_body : 'tuple_ipatt_body Grammar.Entry.e =
+     grammar_entry_create "tuple_ipatt_body"
    and paren_ipatt : 'paren_ipatt Grammar.Entry.e =
      grammar_entry_create "paren_ipatt"
    and label_ipatt : 'label_ipatt Grammar.Entry.e =
@@ -4205,6 +4213,44 @@ Grammar.safe_extend
              (Grammar.s_nterm (patt_ident : 'patt_ident Grammar.Entry.e)),
            "194fe98d",
            (fun (p : 'patt_ident) (loc : Ploc.t) -> (p : 'patt)))]];
+    Grammar.extension (tuple_patt_body1 : 'tuple_patt_body1 Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_stop, "194fe98d",
+           (fun (loc : Ploc.t) -> ([], true : 'tuple_patt_body1)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ",")))
+                (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
+             Grammar.s_self,
+           "194fe98d",
+           (fun (pl, clflag : 'tuple_patt_body1) (p : 'patt) _
+                (loc : Ploc.t) ->
+              (p :: pl, clflag : 'tuple_patt_body1)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ",")))
+             (Grammar.s_token ("", "..")),
+           "194fe98d",
+           (fun _ _ (loc : Ploc.t) -> ([], false : 'tuple_patt_body1)))]];
+    Grammar.extension (tuple_patt_body : 'tuple_patt_body Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (tuple_patt_body1 : 'tuple_patt_body1 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (pl, clflag : 'tuple_patt_body1) (p : 'patt) (loc : Ploc.t) ->
+              (p :: pl, clflag : 'tuple_patt_body)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "..")),
+           "194fe98d",
+           (fun _ (loc : Ploc.t) -> ([], false : 'tuple_patt_body)))]];
     Grammar.extension (paren_patt : 'paren_patt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -4256,12 +4302,12 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_nterm (patt : 'patt Grammar.Entry.e)))
                 (Grammar.s_token ("", ",")))
-             (Grammar.s_list1sep
-                (Grammar.s_nterm (patt : 'patt Grammar.Entry.e))
-                (Grammar.s_token ("", ",")) false),
+             (Grammar.s_nterm
+                (tuple_patt_body : 'tuple_patt_body Grammar.Entry.e)),
            "194fe98d",
-           (fun (pl : 'patt list) _ (p : 'patt) (loc : Ploc.t) ->
-              (mktuppat loc p pl : 'paren_patt)));
+           (fun (pl, clflag : 'tuple_patt_body) _ (p : 'patt)
+                (loc : Ploc.t) ->
+              (mktuppat loc p pl clflag : 'paren_patt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next
@@ -4384,6 +4430,45 @@ Grammar.safe_extend
              (Grammar.s_nterm (patt_ident : 'patt_ident Grammar.Entry.e)),
            "194fe98d",
            (fun (p : 'patt_ident) (loc : Ploc.t) -> (p : 'ipatt)))]];
+    Grammar.extension (tuple_ipatt_body1 : 'tuple_ipatt_body1 Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_stop, "194fe98d",
+           (fun (loc : Ploc.t) -> ([], true : 'tuple_ipatt_body1)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next
+                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ",")))
+                (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+             Grammar.s_self,
+           "194fe98d",
+           (fun (pl, clflag : 'tuple_ipatt_body1) (p : 'ipatt) _
+                (loc : Ploc.t) ->
+              (p :: pl, clflag : 'tuple_ipatt_body1)));
+        Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", ",")))
+             (Grammar.s_token ("", "..")),
+           "194fe98d",
+           (fun _ _ (loc : Ploc.t) -> ([], false : 'tuple_ipatt_body1)))]];
+    Grammar.extension (tuple_ipatt_body : 'tuple_ipatt_body Grammar.Entry.e)
+      None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
+             (Grammar.s_nterm
+                (tuple_ipatt_body1 : 'tuple_ipatt_body1 Grammar.Entry.e)),
+           "194fe98d",
+           (fun (pl, clflag : 'tuple_ipatt_body1) (p : 'ipatt)
+                (loc : Ploc.t) ->
+              (p :: pl, clflag : 'tuple_ipatt_body)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "..")),
+           "194fe98d",
+           (fun _ (loc : Ploc.t) -> ([], false : 'tuple_ipatt_body)))]];
     Grammar.extension (paren_ipatt : 'paren_ipatt Grammar.Entry.e) None
       [None, None,
        [Grammar.production
@@ -4436,12 +4521,12 @@ Grammar.safe_extend
                 (Grammar.r_next Grammar.r_stop
                    (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e)))
                 (Grammar.s_token ("", ",")))
-             (Grammar.s_list1sep
-                (Grammar.s_nterm (ipatt : 'ipatt Grammar.Entry.e))
-                (Grammar.s_token ("", ",")) false),
+             (Grammar.s_nterm
+                (tuple_ipatt_body : 'tuple_ipatt_body Grammar.Entry.e)),
            "194fe98d",
-           (fun (pl : 'ipatt list) _ (p : 'ipatt) (loc : Ploc.t) ->
-              (mktuppat loc p pl : 'paren_ipatt)));
+           (fun (pl, clflag : 'tuple_ipatt_body) _ (p : 'ipatt)
+                (loc : Ploc.t) ->
+              (mktuppat loc p pl clflag : 'paren_ipatt)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next

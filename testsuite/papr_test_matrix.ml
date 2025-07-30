@@ -6291,7 +6291,7 @@ ELSE
      official_output = OK {foo|;;let (~x:a, ..) = 1 in 1|foo} ;
      r_output = OK {foo|let (~{x=a}, ..) = 1 in 1;|foo}
     }
-    *)
+ *)
   ]
 END
 ;

@@ -1226,11 +1226,23 @@ EXTEND
       | "("; p = paren_patt; ")" → p
       | "_" → Qast.Node "PaAny" [Qast.Loc] ] ]
   ;
+  tuple_patt_body1:
+    [ [ ","; ".." -> ([], False)
+      | ","; p = patt ; (pl, clflag) = tuple_patt_body1 -> ([p::pl], clflag)
+      |  -> ([], True)
+      ] ]
+  ;
+  tuple_patt_body:
+    [ [ ".." -> ([], False)
+      | p = patt ; (pl, clflag) = tuple_patt_body1 -> ([p::pl], clflag)
+      ] ]
+  ;
   paren_patt:
     [ [ p = patt; ":"; t = ctyp → Qast.Node "PaTyc" [Qast.Loc; p; t]
       | p = patt; "as"; p2 = patt → Qast.Node "PaAli" [Qast.Loc; p; p2]
-      | p = patt; ","; pl = LIST1 patt SEP "," → mktuppat Qast.Loc p pl True
+      | p = patt; ","; (pl, clflag) = tuple_patt_body → mktuppat Qast.Loc p pl clflag
       | p = patt → p
+      | pl = SV (LIST1 patt SEP ",") ; "," ; clflag = SV [ ".." -> Qast.Bool False | -> Qast.Bool True ] "closed" → Qast.Node "PaTup" [Qast.Loc; pl; clflag]
       | pl = SV (LIST1 patt SEP ",") → Qast.Node "PaTup" [Qast.Loc; pl; Qast.VaVal (Qast.Bool True)]
       | "type"; s = SV LIDENT → Qast.Node "PaNty" [Qast.Loc; s]
       | "module"; s = SV uidopt "uidopt"; ":"; mt = module_type →
@@ -1267,11 +1279,23 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
       | s = SV GIDENT → Qast.Node "PaLid" [Qast.Loc; s]
       | "_" → Qast.Node "PaAny" [Qast.Loc] ] ]
   ;
+  tuple_ipatt_body1:
+    [ [ ","; ".." -> ([], False)
+      | ","; p = ipatt ; (pl, clflag) = tuple_ipatt_body1 -> ([p::pl], clflag)
+      |  -> ([], True)
+      ] ]
+  ;
+  tuple_ipatt_body:
+    [ [ ".." -> ([], False)
+      | p = ipatt ; (pl, clflag) = tuple_ipatt_body1 -> ([p::pl], clflag)
+      ] ]
+  ;
   paren_ipatt:
     [ [ p = ipatt; ":"; t = ctyp → Qast.Node "PaTyc" [Qast.Loc; p; t]
       | p = ipatt; "as"; p2 = ipatt → Qast.Node "PaAli" [Qast.Loc; p; p2]
-      | p = ipatt; ","; pl = LIST1 ipatt SEP "," → mktuppat Qast.Loc p pl True
+      | p = ipatt; ","; (pl, clflag) = tuple_ipatt_body → mktuppat Qast.Loc p pl clflag
       | p = ipatt → p
+      | pl = SV (LIST1 ipatt SEP ","); ","; clflag = SV [ ".." -> Qast.Bool False | -> Qast.Bool True ] "closed" → Qast.Node "PaTup" [Qast.Loc; pl; clflag]
       | pl = SV (LIST1 ipatt SEP ",") → Qast.Node "PaTup" [Qast.Loc; pl; Qast.VaVal (Qast.Bool True)]
       | "type"; s = SV LIDENT → Qast.Node "PaNty" [Qast.Loc; s]
       | "module"; s = SV uidopt "uidopt"; ":"; mt = module_type →
