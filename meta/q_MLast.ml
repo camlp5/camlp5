@@ -1334,12 +1334,25 @@ Qast.Node "PaLong" [Qast.Loc; Qast.Node "LiUid" [Qast.Loc; (Qast.VaVal (Qast.Str
   constrain:
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp → Qast.Tuple [t1; t2] ] ]
   ;
+  type_variance:
+    [ [ "+" -> Qast.Str "+"
+      | "+"; "!" -> Qast.Str "+!"
+      | "-" -> Qast.Str "-"
+      | "-"; "!" -> Qast.Str "-!"
+      | "!" -> Qast.Str "!"
+      | "!" ; "+" -> Qast.Str "!+"
+      | "!" ; "-" -> Qast.Str "!-"
+      | "!+" -> Qast.Str "!+"
+      | "+!" -> Qast.Str "+!"
+      | "!-" -> Qast.Str "!-"
+      | "-!" -> Qast.Str "-!"
+      | -> Qast.Str ""
+      ] ]
+  ;
   type_parameter:
-    [ [ "+"; p = SV simple_type_parameter →
-          Qast.Tuple [p; Qast.Option (Some (Qast.Bool True))]
-      | "-"; p = SV simple_type_parameter →
-          Qast.Tuple [p; Qast.Option (Some (Qast.Bool False))]
-      | p = SV simple_type_parameter → Qast.Tuple [p; Qast.Option None] ] ]
+    [ [ tv = SV type_variance "variance"; p = SV simple_type_parameter →
+          Qast.Tuple [p; tv]
+      ] ]
   ;
   simple_type_parameter:
     [ [ "'"; i = ident → Qast.Option (Some i)

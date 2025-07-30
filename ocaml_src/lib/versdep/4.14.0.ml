@@ -264,19 +264,38 @@ let ocaml_mkfield_tag ?(alg_attributes = []) loc (lab, x) fl =
 ;;
 let ocaml_mkfield_var loc = [];;
 
-let convert_camlp5_variance (va, inj) =
-  let va =
-    match va with
-      Some false -> Contravariant
-    | Some true -> Covariant
-    | _ -> NoVariance
-  in
-  let inj =
-    match inj with
-      true -> Injective
-    | false -> NoInjectivity
-  in
-  va, inj
+let ocaml_variance_map =
+  ["", ("", (NoVariance, NoInjectivity));
+   "+", ("+", (Covariant, NoInjectivity));
+   "-", ("-", (Contravariant, NoInjectivity));
+   "!", ("!", (NoVariance, Injective)); "+!", ("+!", (Covariant, Injective));
+   "!+", ("+!", (Covariant, Injective));
+   "-!", ("-!", (Contravariant, Injective));
+   "!-", ("-!", (Contravariant, Injective));
+   "+!", ("+!", (Covariant, Injective)); "!+", ("+!", (Covariant, Injective));
+   "-!", ("-!", (Contravariant, Injective));
+   "!-", ("-!", (Contravariant, Injective))]
+;;
+
+let ocaml_normalize_camlp5_variance vastr =
+  match List.assoc vastr ocaml_variance_map with
+    v, _ -> v
+  | exception Not_found ->
+      failwith
+        (Printf.sprintf
+           "ocaml_normalize_camp5_variance: internal error, variance \"%s\" not found"
+           vastr)
+;;
+
+
+let convert_camlp5_variance vastr =
+  match List.assoc vastr ocaml_variance_map with
+    _, v -> v
+  | exception Not_found ->
+      failwith
+        (Printf.sprintf
+           "convert_camp5_variance: internal error, variance \"%s\" not found"
+           vastr)
 ;;
 
 let ocaml_ec_tuple ?(alg_attributes = []) loc s tyvars (x, rto) =

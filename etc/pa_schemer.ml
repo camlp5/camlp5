@@ -1480,11 +1480,11 @@ and type_param_se se =
   match se with
   [ Slid _ s when String.length s >= 2 && s.[0] = ''' →
       let s = String.sub s 1 (String.length s - 1) in
-      (<:vala< (Some s) >>, (None, False))
+      (<:vala< (Some s) >>, <:vala< "" >>)
   | Slid _ s when String.length s >= 3 && s.[1] = ''' →
       let vara =
-        if s.[0] = '+' then (Some True, False)
-        else if s.[0] = '-' then (Some False, False)
+        if s.[0] = '+' then <:vala< "+" >>
+        else if s.[0] = '-' then <:vala< "-" >>
         else error se "type_param"
       and s = String.sub s 2 (String.length s - 2) in
       (<:vala< (Some s) >>, vara)

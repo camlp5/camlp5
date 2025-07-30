@@ -443,28 +443,65 @@ value ocaml_mkfield_var loc =
   []
 ;
 
+value ocaml_variance_map =
 IFDEF OCAML_VERSION < OCAML_4_12_0 THEN
-value convert_camlp5_variance (va, inj) = do {
-  assert (inj = False) ;
-  let va = match va with [
-    Some False -> Contravariant
-  | Some True -> Covariant
-  | _ -> Invariant ] in
-  va
-}
-;
+[("",("",Invariant))
+;("+",("+",Covariant))
+;("-",("-",Contravariant))
+]
+ELSIFDEF OCAML_VERSION < OCAML_5_4_0 THEN
+[("",("",(NoVariance, NoInjectivity)))
+;("+",("+",(Covariant, NoInjectivity)))
+;("-",("-",(Contravariant, NoInjectivity)))
+;("!",("!",(NoVariance, Injective)))
+;("+!",("+!",(Covariant, Injective)))
+;("!+",("+!",(Covariant, Injective)))
+;("-!",("-!",(Contravariant, Injective)))
+;("!-",("-!",(Contravariant, Injective)))
+;("+!",("+!",(Covariant, Injective)))
+;("!+",("+!",(Covariant, Injective)))
+;("-!",("-!",(Contravariant, Injective)))
+;("!-",("-!",(Contravariant, Injective)))
+]
 ELSE
-value convert_camlp5_variance (va, inj) =
-  let va = match va with [
-    Some False -> Contravariant
-  | Some True -> Covariant
-  | _ -> NoVariance ] in
-  let inj = match inj with [
-    True -> Injective
-  | False -> NoInjectivity ] in
-  (va, inj)
-  ;
-END;
+[("",("",(NoVariance, NoInjectivity)))
+;("+",("+",(Covariant, NoInjectivity)))
+;("-",("-",(Contravariant, NoInjectivity)))
+;("!",("!",(NoVariance, Injective)))
+;("+!",("+!",(Covariant, Injective)))
+;("!+",("+!",(Covariant, Injective)))
+;("-!",("-!",(Contravariant, Injective)))
+;("!-",("-!",(Contravariant, Injective)))
+;("+!",("+!",(Covariant, Injective)))
+;("!+",("+!",(Covariant, Injective)))
+;("-!",("-!",(Contravariant, Injective)))
+;("!-",("-!",(Contravariant, Injective)))
+;("+-",("+-",(Bivariant, NoInjectivity)))
+;("-+",("-+",(Bivariant, NoInjectivity)))
+;("+-!",("+-!",(Bivariant, Injective)))
+;("-+!",("-+!",(Bivariant, Injective)))
+;("!+-",("+-!",(Bivariant, Injective)))
+;("!-+",("-+!",(Bivariant, Injective)))
+]
+END
+;
+
+value ocaml_normalize_camlp5_variance vastr =
+  match List.assoc vastr ocaml_variance_map with [
+      (v,_) -> v
+    | exception Not_found ->
+       failwith (Printf.sprintf "ocaml_normalize_camp5_variance: internal error, variance \"%s\" not found" vastr)
+    ]
+;
+
+
+value convert_camlp5_variance vastr =
+  match List.assoc vastr ocaml_variance_map with [
+      (_,v) -> v
+    | exception Not_found ->
+       failwith (Printf.sprintf "convert_camp5_variance: internal error, variance \"%s\" not found" vastr)
+    ]
+;
 
 IFDEF OCAML_VERSION < OCAML_4_08_0 THEN
 value ocaml_ec_tuple ?{alg_attributes=[]} _ _ _ _ = assert False ;

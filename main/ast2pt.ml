@@ -258,6 +258,7 @@ value class_type_long_id = fun [
 value mktype ~{item_attributes} loc tn tl cl tk pf tm =
   let (params, variance) = List.split tl in
   let params = List.map uv params in
+  let variance = List.map uv variance in
   match ocaml_type_declaration tn params cl tk pf tm (mkloc loc) variance item_attributes with
   [ Right td → td
   | Left msg → error loc msg ]
@@ -343,7 +344,7 @@ value class_info item_attributes_fun class_expr ci =
             ~{item_attributes=item_attributes_fun ci.ciAttributes}
             (if uv ci.ciVir then Virtual else Concrete)
             (params, mkloc (fst ci.ciPrm)) (uv ci.ciNam) (class_expr ci.ciExp)
-            (mkloc ci.ciLoc) variance
+            (mkloc ci.ciLoc) (List.map uv variance)
       | None → error ci.ciLoc "no '_' type parameter allowed" ]
   | None → error ci.ciLoc "no class_info in this ocaml version" ]
 ;
@@ -411,6 +412,7 @@ value strip_empty_labels loc l = do {
 value rec type_decl_of_with_type loc tn tpl pf ct =
   let (params, variance) = List.split (uv tpl) in
   let params = List.map uv params in
+  let variance = List.map uv variance in
   let ct = Some (ctyp ct) in
   let tk = if pf then ocaml_ptype_abstract else Ptype_abstract in
   let pf = if pf then Private else Public in
@@ -681,7 +683,7 @@ and type_extension loc te =
   let ecstrs = List.map extension_constructor (uv te.teECs) in
   ocaml_type_extension ~{item_attributes=uv_item_attributes te.teAttributes} (mkloc loc)
     (lilongid_to_longident loc (uv te.teNam))
-    (List.map (fun (p,v) -> (uv p, v)) (uv te.tePrm))
+    (List.map (fun (p,v) -> (uv p, uv v)) (uv te.tePrm))
     (if pf then Private else Public)
     ecstrs
 and patt =

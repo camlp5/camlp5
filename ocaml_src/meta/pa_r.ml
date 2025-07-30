@@ -861,6 +861,8 @@ Grammar.safe_extend
      grammar_entry_create "type_patt"
    and constrain : 'constrain Grammar.Entry.e =
      grammar_entry_create "constrain"
+   and type_variance : 'type_variance Grammar.Entry.e =
+     grammar_entry_create "type_variance"
    and type_parameter : 'type_parameter Grammar.Entry.e =
      grammar_entry_create "type_parameter"
    and simple_type_parameter : 'simple_type_parameter Grammar.Entry.e =
@@ -4697,123 +4699,67 @@ Grammar.safe_extend
            "194fe98d",
            (fun (t2 : 'ctyp) _ (t1 : 'ctyp) _ (loc : Ploc.t) ->
               (t1, t2 : 'constrain)))]];
-    Grammar.extension (type_parameter : 'type_parameter Grammar.Entry.e) None
+    Grammar.extension (type_variance : 'type_variance Grammar.Entry.e) None
       [None, None,
        [Grammar.production
-          (Grammar.r_next Grammar.r_stop
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) (loc : Ploc.t) ->
-              (p, (None, false) : 'type_parameter)));
+          (Grammar.r_stop, "194fe98d",
+           (fun (loc : Ploc.t) -> ("" : 'type_variance)));
         Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-!")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, (Some false, true) : 'type_parameter)));
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-!")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("-!" : 'type_variance)));
         Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!-")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, (Some false, true) : 'type_parameter)));
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!-")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("!-" : 'type_variance)));
         Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+!")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, (Some true, true) : 'type_parameter)));
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+!")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("+!" : 'type_variance)));
         Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!+")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, (Some true, true) : 'type_parameter)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")))
-                (Grammar.s_token ("", "-")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ _ (loc : Ploc.t) ->
-              (p, (Some false, true) : 'type_parameter)));
-        Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")))
-                (Grammar.s_token ("", "+")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ _ (loc : Ploc.t) ->
-              (p, (Some true, true) : 'type_parameter)));
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!+")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("!+" : 'type_variance)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, (None, true) : 'type_parameter)));
+             (Grammar.s_token ("", "-")),
+           "194fe98d", (fun _ _ (loc : Ploc.t) -> ("!-" : 'type_variance)));
         Grammar.production
           (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-")))
-                (Grammar.s_token ("", "!")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ _ (loc : Ploc.t) ->
-              (p, (Some false, true) : 'type_parameter)));
+             (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")))
+             (Grammar.s_token ("", "+")),
+           "194fe98d", (fun _ _ (loc : Ploc.t) -> ("!+" : 'type_variance)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "!")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("!" : 'type_variance)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, (Some false, false) : 'type_parameter)));
+             (Grammar.s_token ("", "!")),
+           "194fe98d", (fun _ _ (loc : Ploc.t) -> ("-!" : 'type_variance)));
         Grammar.production
-          (Grammar.r_next
-             (Grammar.r_next
-                (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")))
-                (Grammar.s_token ("", "!")))
-             (Grammar.s_nterm
-                (simple_type_parameter :
-                 'simple_type_parameter Grammar.Entry.e)),
-           "194fe98d",
-           (fun (p : 'simple_type_parameter) _ _ (loc : Ploc.t) ->
-              (p, (Some true, true) : 'type_parameter)));
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "-")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("-" : 'type_variance)));
         Grammar.production
           (Grammar.r_next
              (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")))
+             (Grammar.s_token ("", "!")),
+           "194fe98d", (fun _ _ (loc : Ploc.t) -> ("+!" : 'type_variance)));
+        Grammar.production
+          (Grammar.r_next Grammar.r_stop (Grammar.s_token ("", "+")),
+           "194fe98d", (fun _ (loc : Ploc.t) -> ("+" : 'type_variance)))]];
+    Grammar.extension (type_parameter : 'type_parameter Grammar.Entry.e) None
+      [None, None,
+       [Grammar.production
+          (Grammar.r_next
+             (Grammar.r_next Grammar.r_stop
+                (Grammar.s_nterm
+                   (type_variance : 'type_variance Grammar.Entry.e)))
              (Grammar.s_nterm
                 (simple_type_parameter :
                  'simple_type_parameter Grammar.Entry.e)),
            "194fe98d",
-           (fun (p : 'simple_type_parameter) _ (loc : Ploc.t) ->
-              (p, (Some true, false) : 'type_parameter)))]];
+           (fun (p : 'simple_type_parameter) (tv : 'type_variance)
+                (loc : Ploc.t) ->
+              (p, Pcaml.vala_map Versdep.ocaml_normalize_camlp5_variance tv :
+               'type_parameter)))]];
     Grammar.extension
       (simple_type_parameter : 'simple_type_parameter Grammar.Entry.e) None
       [None, None,

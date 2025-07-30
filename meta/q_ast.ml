@@ -12,8 +12,7 @@ module Meta_make (C : MetaSig) =
   struct
     module C = C ;
     open MLast;
-    value variance (var, inj) =
-      C.tuple [C.option C.bool var; C.bool inj] ;
+    value variance v = C.vala C.string v ;
     value type_var (s, tv) =
       C.tuple [C.vala (C.option C.string) s; variance tv]
     ;

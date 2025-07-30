@@ -68,17 +68,11 @@ value amp_before elem pc x = pprintf pc "& %p" elem x;
 value and_before elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 
-value type_var pc (tv, (vari, inj)) =
+value type_var pc (tv, vastr) =
   let tv = Pcaml.unvala tv in
-  pprintf pc "%s%s%s"
-    (match vari with
-     [ Some True -> "+"
-     | Some False -> "-"
-     | None -> "" ])
-    (match inj with
-       [ True -> "!"
-       | False -> ""
-       ])
+  let vastr = Pcaml.unvala vastr in
+  pprintf pc "%s%s"
+    vastr
     (match tv with
      [ Some v -> "'" ^ v
      | None -> "_" ])

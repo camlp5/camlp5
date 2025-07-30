@@ -1404,19 +1404,24 @@ EXTEND
   constrain:
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp → (t1, t2) ] ]
   ;
+  type_variance:
+    [ [ "+" -> "+"
+      | "+"; "!" -> "+!"
+      | "-" -> "-"
+      | "-"; "!" -> "-!"
+      | "!" -> "!"
+      | "!" ; "+" -> "!+"
+      | "!" ; "-" -> "!-"
+      | "!+" -> "!+"
+      | "+!" -> "+!"
+      | "!-" -> "!-"
+      | "-!" -> "-!"
+      | -> ""
+      ] ]
+  ;
   type_parameter:
-    [ [ "+"; p = V simple_type_parameter -> (p, (Some True, False))
-      | "+"; "!" ; p = V simple_type_parameter -> (p, (Some True, True))
-      | "-"; p = V simple_type_parameter -> (p, (Some False, False))
-      | "-"; "!" ; p = V simple_type_parameter -> (p, (Some False, True))
-      | "!" ; p = V simple_type_parameter -> (p, (None, True))
-      | "!" ; "+" ; p = V simple_type_parameter -> (p, (Some True, True))
-      | "!" ; "-" ; p = V simple_type_parameter -> (p, (Some False, True))
-      | "!+" ; p = V simple_type_parameter -> (p, (Some True, True))
-      | "+!" ; p = V simple_type_parameter -> (p, (Some True, True))
-      | "!-" ; p = V simple_type_parameter -> (p, (Some False, True))
-      | "-!" ; p = V simple_type_parameter -> (p, (Some False, True))
-      | p = V simple_type_parameter -> (p, (None, False))
+    [ [ tv = V type_variance "variance" ; p = V simple_type_parameter ->
+        (p, Pcaml.vala_map Versdep.ocaml_normalize_camlp5_variance tv)
       ] ]
   ;
   simple_type_parameter:

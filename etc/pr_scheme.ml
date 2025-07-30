@@ -132,17 +132,11 @@ value braceless pc b =
    aft = sprintf ">}%s" pc.aft}
 ;
 
-value type_param pc (tv, (vari, inj)) =
+value type_param pc (tv, vastr) =
   let tv = Pcaml.unvala tv in
-  pprintf pc "%s%s%s"
-    (match vari with
-     [ Some True -> "+"
-     | Some False -> "-"
-     | None -> "" ])
-    (match inj with
-       [ True -> "!"
-       | False -> ""
-       ])
+  let vastr = Pcaml.unvala vastr in
+  pprintf pc "%s%s"
+   vastr
     (match tv with
      [ Some v -> "'" ^ v
      | None -> "_" ])
