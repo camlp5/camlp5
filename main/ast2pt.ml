@@ -804,7 +804,17 @@ and patt =
         (Ppat_constant
            (mkconst loc (ocaml_pconst_string (string_of_string_token loc (uv s)) (mkloc loc) None)))
   | PaTup loc pl →
-     let l = add_empty_labels (List.map patt (uv pl)) in
+      let labeled_patt = fun [
+            PaLab ploc (PaLid _ s as p) po ->
+            let p =
+              match uv po with
+                [ Some p → p
+                | None → p ]
+            in
+            (Some (uv s), patt p)
+          | p -> (None, patt p)
+          ] in
+      let l = List.map labeled_patt (uv pl) in
       mkpat loc (ocaml_ppat_tuple l Closed)
   | PaTyc loc p t → mkpat loc (Ppat_constraint (patt p) (ctyp t))
   | PaTyp loc lili →

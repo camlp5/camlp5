@@ -6254,9 +6254,46 @@ ELSE
      official_output = OK {foo|;;(~x:a, y)|foo} ;
      r_output = OK {foo|(~{x=a}, y);|foo}
     }
+ ;{name="labeled-tuple-pat-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (~x, ~y) = 1 in 1|foo} ;
+     official_input = OK {foo|let (~x, ~y) = 1 in 1|foo} ;
+     r_input = OK {foo|let (~{x}, ~{y}) = 1 in 1;|foo} ;
+     o_output = OK {foo|let _ = let (~x, ~y) = 1 in 1;;|foo};
+     official_output = OK {foo|;;let (~x, ~y) = 1 in 1|foo} ;
+     r_output = OK {foo|let (~{x}, ~{y}) = 1 in 1;|foo}
+    }
+ ;{name="labeled-tuple-pat-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (~x, y) = 1 in 1|foo} ;
+     official_input = OK {foo|let (~x, y) = 1 in 1|foo} ;
+     r_input = OK {foo|let (~{x}, y) = 1 in 1;|foo} ;
+     o_output = OK {foo|let _ = let (~x, y) = 1 in 1;;|foo};
+     official_output = OK {foo|;;let (~x, y) = 1 in 1|foo} ;
+     r_output = OK {foo|let (~{x}, y) = 1 in 1;|foo}
+    }
+ ;{name="labeled-tuple-pat-3"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (~x:a, y) = 1 in 1|foo} ;
+     official_input = OK {foo|let (~x:a, y) = 1 in 1|foo} ;
+     r_input = OK {foo|let (~{x=a}, y) = 1 in 1;|foo} ;
+     o_output = OK {foo|let _ = let (~x:a, y) = 1 in 1;;|foo};
+     official_output = OK {foo|;;let (~x:a, y) = 1 in 1|foo} ;
+     r_output = OK {foo|let (~{x=a}, y) = 1 in 1;|foo}
+    }
+(*
+ ;{name="labeled-tuple-pat-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (~x:a, ..) = 1 in 1|foo} ;
+     official_input = OK {foo|let (~x:a, ..) = 1 in 1|foo} ;
+     r_input = OK {foo|let (~{x=a}, ..) = 1 in 1;|foo} ;
+     o_output = OK {foo|let _ = let (~x:a, ..) = 1 in 1;;|foo};
+     official_output = OK {foo|;;let (~x:a, ..) = 1 in 1|foo} ;
+     r_output = OK {foo|let (~{x=a}, ..) = 1 in 1;|foo}
+    }
+    *)
   ]
 END
-
 ;
 
   (*
