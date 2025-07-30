@@ -1305,8 +1305,8 @@ EXTEND
       | p = patt; "as"; p2 = patt → <:patt< ($p$ as $p2$) >>
       | p = patt; ","; (pl, clflag) = tuple_patt_body → mktuppat loc p pl clflag
       | p = patt → <:patt< $p$ >>
+      | pl = V (LIST1 patt SEP ","); ","; clflag = V [ ".." -> False | -> True ] "closed" → <:patt< ($_list:pl$, $_closed:clflag$) >>
 (*CHET
-      | pl = V (LIST1 patt SEP ","); ","; clflag = V (FLAG "..") "open" → <:patt< ($_list:pl$, $_open:clflag$) >>
       | pl = V (LIST1 patt SEP ","); ","; ".." → <:patt< ($_list:pl$, ..) >>
  *)
       | pl = V (LIST1 patt SEP ",") → <:patt< ($_list:pl$) >>
@@ -1365,8 +1365,8 @@ EXTEND
       | p = ipatt; "as"; p2 = ipatt → <:patt< ($p$ as $p2$) >>
       | p = ipatt; ","; (pl, clflag) = tuple_ipatt_body → mktuppat loc p pl clflag
       | p = ipatt → <:patt< $p$ >>
+      | pl = V (LIST1 ipatt SEP ","); ","; clflag = V [ ".." -> False | -> True ] "closed" → <:patt< ( $_list:pl$, $_closed:clflag$) >>
 (*CHET
-      | pl = V (LIST1 ipatt SEP ","); ","; clflag = V (FLAG "..") "open" → <:patt< ( $_list:pl$, $_open:clflag$) >>
       | pl = V (LIST1 ipatt SEP ","); ","; ".." → <:patt< ( $_list:pl$, ..) >>
  *)
       | pl = V (LIST1 ipatt SEP ",") → <:patt< ( $_list:pl$ ) >>
