@@ -1,3 +1,15 @@
+Camlp5 Version 8.04.00:
+-----------------------
+
+* [30 Jul 2025] compatibility with OCaml 5.4.0
+
+  * labeled-tuples
+
+  * new package-type AST (no syntax visibility)
+
+  * new bivariant type-vars (changed representation of
+    variance/injectivity in AST to make it future-proof)
+
 Camlp5 Version 8.03.06:
 -----------------------
 

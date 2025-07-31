@@ -53,7 +53,7 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-	Camlp5 parsing version (Revised) 8.03.06
+	Camlp5 parsing version (Revised) 8.04.00
 
 #
 Toplevel input:
@@ -82,7 +82,7 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-	Camlp5 parsing version (Revised) 8.03.06
+	Camlp5 parsing version (Revised) 8.04.00
 
 #   File "fixtures/s.ml", line 10, characters 9-10:
 Parse error: ')' expected after [paren_ipatt] (in [ipatt])
@@ -108,7 +108,7 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-	Camlp5 parsing version (Revised) 8.03.06
+	Camlp5 parsing version (Revised) 8.04.00
 
 #   File "fixtures/s.ml", line 10, characters 9-10:
 Parse error: ')' expected after [paren_ipatt] (in [ipatt])

@@ -61,7 +61,7 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-	Camlp5 parsing version (OCaml) 8.03.06
+	Camlp5 parsing version (OCaml) 8.04.00
 
 #   Toplevel input:
 # # 10 "fixtures/r.ml"
@@ -98,7 +98,7 @@ Additional Camlp5 directives:
   #camlp5r;;                to load camlp5 (revised syntax)
 
 - : unit = ()
-	Camlp5 parsing version (OCaml) 8.03.06
+	Camlp5 parsing version (OCaml) 8.04.00
 
 #   File "fixtures/s.ml", line 10, characters 4-5:
 Failure: this is not a constructor, it cannot be applied in a pattern
