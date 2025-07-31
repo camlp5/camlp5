@@ -1000,6 +1000,8 @@ and patt =
               | None -> p
             in
             Some (uv s), patt p
+        | PaLab (ploc, (PaTyc (_, PaLid (_, s), ty) as p), None) ->
+            Some (uv s), patt p
         | p -> None, patt p
       in
       let l = List.map labeled_patt (uv pl) in

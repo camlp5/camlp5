@@ -5599,16 +5599,7 @@ END
  @
 IFDEF OCAML_VERSION < OCAML_5_0_0 THEN
   [
-    {name="labeled-function-actual-2"; implem = True ;
-     exclude=[];
-     o_input = OK {foo|f ~(z:t) ~(x:t:>t2) ~(y:>t2)|foo} ;
-     official_input = OK {foo|f ~(z:t) ~(x : t :> t2) ~(y :> t2)|foo} ;
-     r_input = OK {foo|f ~{(z : t)} ~{x = (x : t :> t2)} ~{y = (y :> t2)};|foo} ;
-     o_output = OK {foo|let _ = f ~(z : t) ~x:(x : t :> t2) ~y:(y :> t2);;|foo};
-     official_output = OK {foo|;;f ~z:(z : t) ~x:(x : t :> t2) ~y:(y :> t2)|foo} ;
-     r_output = OK {foo|f ~{(z : t)} ~{x = (x : t :> t2)} ~{y = (y :> t2)};|foo}
-    }
-  ; {name="dot-string-2"; implem = True ;
+    {name="dot-string-2"; implem = True ;
      exclude=["r2official"; "o2official"];
      o_input = OK {foo|x.[y] <- z|foo} ;
      official_input = OK {foo|x.[y] <- z|foo} ;
@@ -5621,7 +5612,17 @@ IFDEF OCAML_VERSION < OCAML_5_0_0 THEN
     }
   ]
 ELSE
-[]
+[
+  {name="labeled-function-actual-2"; implem = True ;
+   exclude=[];
+   o_input = OK {foo|f ~(z:t) ~(x:t:>t2) ~(y:>t2)|foo} ;
+   official_input = OK {foo|f ~(z:t) ~(x : t :> t2) ~(y :> t2)|foo} ;
+   r_input = OK {foo|f ~{(z : t)} ~{x = (x : t :> t2)} ~{y = (y :> t2)};|foo} ;
+   o_output = OK {foo|let _ = f ~(z : t) ~x:(x : t :> t2) ~y:(y :> t2);;|foo};
+   official_output = OK {foo|;;f ~z:(z : t) ~x:(x : t :> t2) ~y:(y :> t2)|foo} ;
+   r_output = OK {foo|f ~{(z : t)} ~{x = (x : t :> t2)} ~{y = (y :> t2)};|foo}
+  }
+]
 END
  @
 IFDEF OCAML_VERSION < OCAML_5_1_0 THEN
