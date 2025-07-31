@@ -14,13 +14,13 @@ Pcaml.inter_phrases := Some ";;\n";;
 #require "camlp5.pa_r";;
 Pcaml.inter_phrases := Some ";\n";;
  *)
-
-#require "camlp5.pr_o";;
-
 (*
+#require "camlp5.pr_o";;
+ *)
+
 #require "camlp5.pr_r";;
 Pcaml.inter_phrases := Some ";\n";;
- *)
+
 
 #require "camlp5.parser_quotations";;
 (*
@@ -59,9 +59,9 @@ let pp_ploc_t pps (loc : Ploc.t) = Fmt.(pf pps "<%s>" (Ploc.string_of_location l
 #install_printer pp_ploc_t ;;
  *)
 let pp_location_t pps (loc : Location.t) = Fmt.(pf pps "<loc>") ;;
-(*
+
 #install_printer pp_location_t ;;
- *)
+
 
 let pp_char_stream strm =
   let l = Stream.npeek !Toploop.max_printer_depth strm in

@@ -6311,6 +6311,24 @@ ELSE
      official_output = OK {foo|;;(~x:a, y)|foo} ;
      r_output = OK {foo|(~{x=a}, y);|foo}
     }
+  ; {name="labeled-tuple-exp-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| (~(x:a), y)|foo} ;
+     official_input = OK {foo|(~(x:a), y)|foo} ;
+     r_input = OK {foo|(~{(x:a)}, y);|foo} ;
+     o_output = OK {foo|let _ = ~(x:a), y;;|foo};
+     official_output = OK {foo|;;(~x:(x:a), y)|foo} ;
+     r_output = OK {foo|(~{(x:a)}, y);|foo}
+    }
+  ; {name="labeled-tuple-exp-4"; implem = True ;
+     exclude=[];
+     o_input = OK {foo| (~(x:a:>b), y)|foo} ;
+     official_input = OK {foo|(~(x:a:>b), y)|foo} ;
+     r_input = OK {foo|(~{x=(x:a:>b)}, y);|foo} ;
+     o_output = OK {foo|let _ = ~x:(x:a:>b), y;;|foo};
+     official_output = OK {foo|;;(~x:(x:a:>b), y)|foo} ;
+     r_output = OK {foo|(~{x=(x:a:>b)}, y);|foo}
+    }
  ;{name="labeled-tuple-pat-1"; implem = True ;
      exclude=[];
      o_input = OK {foo|let (~x, ~y) = 1 in 1|foo} ;
@@ -6346,6 +6364,15 @@ ELSE
      o_output = OK {foo|let _ = let (~x:a, ..) = 1 in 1;;|foo};
      official_output = OK {foo|;;let (~x:a, ..) = 1 in 1|foo} ;
      r_output = OK {foo|let (~{x=a}, ..) = 1 in 1;|foo}
+    }
+ ;{name="labeled-tuple-pat-5"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let (~(x:t), y) = 1 in 1|foo} ;
+     official_input = OK {foo|let (~(x:t), y) = 1 in 1|foo} ;
+     r_input = OK {foo|let (~{x:t}, y) = 1 in 1;|foo} ;
+     o_output = OK {foo|let _ = let (~(x:t), y) = 1 in 1;;|foo};
+     official_output = OK {foo|;;let (~x:(x:t), y) = 1 in 1|foo} ;
+     r_output = OK {foo|let (~{(x:t)}, y) = 1 in 1;|foo}
     }
  ;{name="bivariant-type-parameter-syntax"; implem = True ;
      exclude=[];
