@@ -2463,11 +2463,25 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     [ "label"
       [ i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~{$_:i$ = $e$} >>
       | i = V TILDEIDENT -> <:expr< ~{$_:i$} >>
+      | i = "~" ; "(" ; lid = V LIDENT ; (t1o, t2o) = type_constraint ; ")" ->
+         match (t1o, t2o) with [
+             (None, None) -> assert False
+           | (Some t1, Some t2) -> <:expr< ~{$_:lid$ = ( $_lid:lid$ : $t1$ :> $t2$ ) } >>
+           | (Some t1, None) -> <:expr< ~{( $_lid:lid$ : $t1$ )} >>
+           | (None, Some t2) -> <:expr< ~{$_:lid$ = ( $_lid:lid$ :> $t2$ )} >>
+           ]
       | i = V QUESTIONIDENTCOLON; e = SELF -> <:expr< ?{$_:i$ = $e$} >>
       | i = V QUESTIONIDENT -> <:expr< ?{$_:i$} >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
+  ;
+  type_constraint:
+    [ [ ":"; t = ctyp; ":>"; t2 = ctyp ->
+          (Some t, Some t2)
+      | ":"; t = ctyp -> (Some t, None)
+      | ":>"; t = ctyp -> (None, Some t)
+      ] ]
   ;
   fun_def:
     [ [ p = labeled_patt; (eo, e) = SELF ->

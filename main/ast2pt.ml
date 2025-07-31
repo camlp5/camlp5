@@ -1209,15 +1209,13 @@ and expr =
 and label_expr =
   fun
   [ ExLab loc p eo →
-      match p with
-        [ PaLid loc lab →
-          let e =
-            match uv eo with
-              [ Some e → e
-              | None → ExLid loc lab ]
-              in
-              (uv lab, expr e)
-         | _ → error loc "ExLab case not impl" ]
+      match (p, uv eo) with [
+          (PaLid loc lab, Some e) -> (uv lab, expr e)
+        | (PaLid loc lab, None) -> (uv lab, expr (ExLid loc lab))
+        | (PaTyc loc (PaLid _ lab) ty, None) -> (uv lab, expr (ExTyc loc (ExLid loc lab) ty))
+        | _ → error loc "ExLab case not impl"
+        ]
+
   | ExOlb loc p eo →
       match p with
       [ PaLid loc lab →

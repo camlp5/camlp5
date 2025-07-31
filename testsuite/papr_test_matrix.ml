@@ -5037,6 +5037,24 @@ END
      o_output = OK {foo|let _ = (module M);;|foo};
      official_output = OK {foo|;;(module M)|foo} ;
      r_output = OK {foo|(module M);|foo}
+    };
+    {name="labeled-function-formal-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|let f ~x ~y:e ~(z:t) = 1|foo} ;
+     official_input = OK {foo|let f ~x ~y:e ~(z : t) = 1|foo} ;
+     r_input = OK {foo|value f ~{x} ~{y=e} ~{(z : t)} = 1;|foo} ;
+     o_output = OK {foo|let f ~x ~y:e ~(z : t) = 1;;|foo};
+     official_output = OK {foo|let f ~x ~y:e ~z:(z : t) = 1|foo} ;
+     r_output = OK {foo|value f ~{x} ~{y=e} ~{(z : t)} = 1;|foo}
+    };
+    {name="labeled-function-actual-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|f ~x ~y:e|foo} ;
+     official_input = OK {foo|f ~x ~y:e|foo} ;
+     r_input = OK {foo|f ~{x} ~{y=e} ;|foo} ;
+     o_output = OK {foo|let _ = f ~x ~y:e;;|foo};
+     official_output = OK {foo|;;f ~x ~y:e|foo} ;
+     r_output = OK {foo|f ~{x} ~{y=e};|foo}
     }
 ] @
 IFDEF OCAML_VERSION < OCAML_4_11_0 THEN
@@ -5420,7 +5438,8 @@ end;|foo}
   ]
 END @
 IFDEF OCAML_VERSION < OCAML_4_14_0 THEN
-  []
+  [
+  ]
 ELSE
 [{name="binders-val-1"; implem = True ;
      exclude=[];
@@ -5580,7 +5599,16 @@ END
  @
 IFDEF OCAML_VERSION < OCAML_5_0_0 THEN
   [
-    {name="dot-string-2"; implem = True ;
+    {name="labeled-function-actual-2"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|f ~(z:t) ~(x:t:>t2) ~(y:>t2)|foo} ;
+     official_input = OK {foo|f ~(z:t) ~(x : t :> t2) ~(y :> t2)|foo} ;
+     r_input = OK {foo|f ~{(z : t)} ~{x = (x : t :> t2)} ~{y = (y :> t2)};|foo} ;
+     o_output = OK {foo|let _ = f ~(z : t) ~x:(x : t :> t2) ~y:(y :> t2);;|foo};
+     official_output = OK {foo|;;f ~z:(z : t) ~x:(x : t :> t2) ~y:(y :> t2)|foo} ;
+     r_output = OK {foo|f ~{(z : t)} ~{x = (x : t :> t2)} ~{y = (y :> t2)};|foo}
+    }
+  ; {name="dot-string-2"; implem = True ;
      exclude=["r2official"; "o2official"];
      o_input = OK {foo|x.[y] <- z|foo} ;
      official_input = OK {foo|x.[y] <- z|foo} ;
