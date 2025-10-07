@@ -55,11 +55,12 @@ build: [
 install: [make "install"]
 conflicts: [
    "ocaml-option-bytecode-only"
-   "pa_ppx" { <= "0.20" }
-   "GT" { <= "0.5.4" }
    "frama-clang" { <= "0.0.18" }
+   "GT" { <= "0.5.4" }
    "hol_light" { <= "3.1.0" }
+   "lablgl" { <= "1.07" }
    "p5scm" { <= "0.4.0" }
+   "pa_ppx" { <= "0.20" }
 ]
 x-ci-accept-failures: [ "opensuse-tumbleweed" ]
 dev-repo: "git+https://github.com/camlp5/camlp5.git"
