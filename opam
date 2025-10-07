@@ -59,7 +59,7 @@ conflicts: [
    "GT" { <= "0.5.4" }
    "frama-clang" { <= "0.0.18" }
    "hol_light" { <= "3.1.0" }
-   "p5scm" { <= "0.3.1" }
+   "p5scm" { <= "0.4.0" }
 ]
 x-ci-accept-failures: [ "opensuse-tumbleweed" ]
 dev-repo: "git+https://github.com/camlp5/camlp5.git"
