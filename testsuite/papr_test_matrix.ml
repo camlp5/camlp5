@@ -5055,6 +5055,24 @@ END
      o_output = OK {foo|let _ = f ~x ~y:e;;|foo};
      official_output = OK {foo|;;f ~x ~y:e|foo} ;
      r_output = OK {foo|f ~{x} ~{y=e};|foo}
+    };
+    {name="ctyp-labeled-arguments-1"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = pat:string -> string|foo} ;
+     official_input = OK {foo|type t = pat:string -> string|foo} ;
+     r_input = OK {foo|type t = ~pat:string -> string;|foo} ;
+     o_output = OK {foo|type t = pat:string -> string;;|foo};
+     official_output = OK {foo|type t = pat:string -> string|foo} ;
+     r_output = OK {foo|type t = ~pat:string -> string;|foo}
+    };
+    {name="ctyp-labeled-arguments"; implem = True ;
+     exclude=[];
+     o_input = OK {foo|type t = ?improper:bool -> pat:string -> string -> bool|foo} ;
+     official_input = OK {foo|type t = ?improper:bool -> pat:string -> string -> bool|foo} ;
+     r_input = OK {foo|type t = ?improper:bool -> ~pat:string -> string -> bool;|foo} ;
+     o_output = OK {foo|type t = ?improper:bool -> pat:string -> string -> bool;;|foo};
+     official_output = OK {foo|type t = ?improper:bool -> pat:string -> string -> bool|foo} ;
+     r_output = OK {foo|type t = ?improper:bool -> ~pat:string -> string -> bool;|foo}
     }
 ] @
 IFDEF OCAML_VERSION < OCAML_4_11_0 THEN

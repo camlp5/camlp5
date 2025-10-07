@@ -2067,6 +2067,11 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
     | "star"
       [ t = labeled_ctyp; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*" ->
           <:ctyp< ( $list:[t :: tl]$ ) >>
+      | t = labeled_ctyp ->
+         match t with [
+             (Ploc.VaVal (Some i), t) -> <:ctyp< ~$_:i$: $t$ >>
+           | _ -> failwith "internal error: labeled ctyp at level 'star'"
+           ]
       | t = SELF; "*"; tl = LIST1 maybe_labeled_ctyp SEP "*" ->
          let t = (<:vala< None >>, t) in
           <:ctyp< ( $list:[t :: tl]$ ) >>
@@ -2427,8 +2432,7 @@ MLast.SgMtyAlias loc <:vala< i >> <:vala< li >> attrs
   (* Labels *)
   ctyp: AFTER "star"
     [ NONA
-      [ i = V LIDENT; ":"; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
-      | i = V QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
+      [ i = V QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
       | i = V QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
       | "?" ; i = V LIDENT ; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
     ] ]
