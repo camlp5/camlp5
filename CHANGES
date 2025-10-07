@@ -10,6 +10,13 @@ Camlp5 Version 8.04.00:
   * new bivariant type-vars (changed representation of
     variance/injectivity in AST to make it future-proof)
 
+    The old representation was (bool option * bool).  This was ....
+    pretty difficult-to-understand, and not obviously related to
+    the surface syntax.  The new representation is just a string
+    in the same format as in the surface syntax.  So "+", "-!",
+    etc, as in the syntax.
+
+
 Camlp5 Version 8.03.06:
 -----------------------
 
