@@ -1,0 +1,12 @@
+format_doc.cmo : \
+    format_doc.cmi
+format_doc.cmx : \
+    format_doc.cmi
+format_doc.cmi :
+pconfig.cmo : \
+    pconfig.cmi
+pconfig.cmx : \
+    pconfig.cmi
+pconfig.cmi :
+warnings.cmi : \
+    format_doc.cmi

@@ -57,11 +57,21 @@ real_steal:
 	$(MAKE) copy_steal FILE=parsing/location.mli
 	$(MAKE) copy_steal FILE=parsing/longident.mli
 	$(MAKE) copy_steal FILE=parsing/parsetree.mli
+	$(MAKE) copy_steal2 FILE=warnings.mli ODIR=utils
+	$(MAKE) copy_steal2 FILE=asttypes.mli ODIR=parsing
+	$(MAKE) copy_steal2 FILE=location.mli ODIR=parsing
+	$(MAKE) copy_steal2 FILE=longident.mli ODIR=parsing
+	$(MAKE) copy_steal2 FILE=parsetree.mli ODIR=parsing
 
 copy_steal:
 	if [ -f "$(OCAML_SRC)/$(FILE)" ]; then \
 	  sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/$(FILE); \
 	fi > $(VERSSDIR)/$(FILE)
+
+copy_steal2:
+	if [ -f "$(OCAML_SRC)/compiler-libs/$(FILE)" ]; then \
+	  sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/compiler-libs/$(FILE); \
+	fi > $(VERSSDIR)/$(ODIR)/$(FILE)
 
 compare_stolen:
 	@if test "$(OCAML_SRC)" = ""; then \
