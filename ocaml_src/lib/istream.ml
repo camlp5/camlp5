@@ -1,3 +1,4 @@
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Ocaml                                   *)
@@ -42,54 +43,52 @@ let fill_buff b =
   b.len <- input b.ic b.buff 0 (Bytes.length b.buff); b.ind <- 0
 ;;
 
-let rec get_data count d = match d with
- (* Returns either Sempty or Scons(a, _) even when d is a generator
-    or a buffer. In those cases, the item a is seen as extracted from
- the generator/buffer.
- The count parameter is used for calling `Sgen-functions'.  *)
-   Sempty | Scons (_, _) -> d
- | Sapp (d1, d2) ->
-     begin match get_data count d1 with
-       Scons (a, d11) -> Scons (a, Sapp (d11, d2))
-     | Sempty -> get_data count d2
-     | _ -> assert false
-     end
- | Sgen {curr = Some None; func = _ } -> Sempty
- | Sgen ({curr = Some(Some a); func = f} as g) ->
-     g.curr <- None; Scons(a, d)
- | Sgen g ->
-     begin match g.func count with
-       None -> g.curr <- Some(None); Sempty
-     | Some a -> Scons(a, d)
-         (* Warning: anyone using g thinks that an item has been read *)
-     end
- | Sbuffio b ->
-     if b.ind >= b.len then fill_buff b;
-     if b.len == 0 then Sempty else
-       let r = Obj.magic (Bytes.unsafe_get b.buff b.ind) in
-       (* Warning: anyone using g thinks that an item has been read *)
-       b.ind <- succ b.ind; Scons(r, d)
- | Slazy f -> get_data count (Lazy.force f)
+let rec get_data count d =
+  match d with
+    Sempty | Scons (_, _) -> d
+  | Sapp (d1, d2) ->
+      begin match get_data count d1 with
+        Scons (a, d11) -> Scons (a, Sapp (d11, d2))
+      | Sempty -> get_data count d2
+      | _ -> assert false
+      end
+  | Sgen {curr = Some None; func = _} -> Sempty
+  | Sgen ({curr = Some (Some a); func = f} as g) ->
+      g.curr <- None; Scons (a, d)
+  | Sgen g ->
+      begin match g.func count with
+        None -> g.curr <- Some None; Sempty
+      | Some a -> Scons (a, d)
+      end
+  | Sbuffio b ->
+      if b.ind >= b.len then fill_buff b;
+      if b.len == 0 then Sempty
+      else
+        let r = Obj.magic (Bytes.unsafe_get b.buff b.ind) in
+        (* Warning: anyone using g thinks that an item has been read *)
+        b.ind <- succ b.ind;
+        Scons (r, d)
+  | Slazy f -> get_data count (Lazy.force f)
 ;;
 
 let rec peek s =
- (* consult the first item of s *)
- match s.data with
-   Sempty -> None
- | Scons (a, _) -> Some a
- | Sapp (_, _) ->
-     begin match get_data s.count s.data with
-       Scons(a, _) as d -> set_data s d; Some a
-     | Sempty -> None
-     | _ -> assert false
-     end
- | Slazy f -> set_data s (Lazy.force f); peek s
- | Sgen {curr = Some a} -> a
- | Sgen g -> let x = g.func s.count in g.curr <- Some x; x
- | Sbuffio b ->
-     if b.ind >= b.len then fill_buff b;
-     if b.len == 0 then begin set_data s Sempty; None end
-     else Some (Obj.magic (Bytes.unsafe_get b.buff b.ind))
+  (* consult the first item of s *)
+  match s.data with
+    Sempty -> None
+  | Scons (a, _) -> Some a
+  | Sapp (_, _) ->
+      begin match get_data s.count s.data with
+        Scons (a, _) as d -> set_data s d; Some a
+      | Sempty -> None
+      | _ -> assert false
+      end
+  | Slazy f -> set_data s (Lazy.force f); peek s
+  | Sgen {curr = Some a} -> a
+  | Sgen g -> let x = g.func s.count in g.curr <- Some x; x
+  | Sbuffio b ->
+      if b.ind >= b.len then fill_buff b;
+      if b.len == 0 then begin set_data s Sempty; None end
+      else Some (Obj.magic (Bytes.unsafe_get b.buff b.ind))
 ;;
 
 let rec junk s =
@@ -132,7 +131,7 @@ let empty s =
 let iter f strm =
   let rec do_rec () =
     match peek strm with
-      Some a -> junk strm; ignore(f a); do_rec ()
+      Some a -> junk strm; ignore (f a); do_rec ()
     | None -> ()
   in
   do_rec ()
@@ -161,14 +160,12 @@ let iapp i s = {count = 0; data = Sapp (i.data, s.data)};;
 let icons i s = {count = 0; data = Scons (i, s.data)};;
 let ising i = {count = 0; data = Scons (i, Sempty)};;
 
-let lapp f s =
-  {count = 0; data = Slazy (lazy(Sapp ((f ()).data, s.data)))}
-;;
-let lcons f s = {count = 0; data = Slazy (lazy(Scons (f (), s.data)))};;
-let lsing f = {count = 0; data = Slazy (lazy(Scons (f (), Sempty)))};;
+let lapp f s = {count = 0; data = Slazy (lazy (Sapp ((f ()).data, s.data)))};;
+let lcons f s = {count = 0; data = Slazy (lazy (Scons (f (), s.data)))};;
+let lsing f = {count = 0; data = Slazy (lazy (Scons (f (), Sempty)))};;
 
 let sempty = {count = 0; data = Sempty};;
-let slazy f = {count = 0; data = Slazy (lazy(f ()).data)};;
+let slazy f = {count = 0; data = Slazy (lazy (f ()).data)};;
 
 (* For debugging use *)
 

@@ -16,6 +16,8 @@ gramext.cmi: fstream.cmi plexing.cmi
 grammar.cmo: fstream.cmi gramext.cmi grammar.cmi plexing.cmi ploc.cmi
 grammar.cmx: fstream.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx
 grammar.cmi: gramext.cmi plexing.cmi ploc.cmi
+istream.cmo: istream.cmi
+istream.cmx: istream.cmi
 plexer.cmo: plexer.cmi plexing.cmi ploc.cmi versdep.cmo
 plexer.cmx: plexer.cmi plexing.cmx ploc.cmx versdep.cmx
 plexer.cmi: plexing.cmi
